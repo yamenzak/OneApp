@@ -74,6 +74,10 @@ doctype(
           description="Server name in press, e.g. n1.frappe.cloud"),
         f("press_release_group", label="Press Bench Group", reqd=1),
         f("press_cluster", label="Press Cluster"),
+        f("press_version", label="Press Version", default="Nightly", reqd=1,
+          description="Must match the bench group's version exactly. Without it "
+                      "press cannot match the bench on a dedicated server and "
+                      "falls back to its public marketplace path, which fails."),
         column("cb_press2"),
         f("domain", default="4dl.app", reqd=1,
           description="Root domain tenants are addressed on."),

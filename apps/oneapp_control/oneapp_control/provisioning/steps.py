@@ -107,6 +107,7 @@ def create_site(job):
 		plan=plan,
 		server=shard.press_server or None,
 		cluster=shard.press_cluster or None,
+		version=shard.press_version or None,
 	)
 
 	if not result or not result.get("site"):

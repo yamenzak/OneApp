@@ -45,9 +45,22 @@ tenant. Stage 5 can wait until you actually want files, mail or AI.
 7. **Generate a Frappe Cloud API key.** Account settings → API access. Keep the
    key and secret.
 
-8. **Note the site plan** offered when creating a site on your own server. If
-   sites require a plan selection, that plan's name goes on the Shard as
-   `press_site_plan`. If none is required, leave it blank.
+8. **Note the values the Shard needs.** All are readable from the API:
+
+   | Shard field | Where it comes from |
+   | --- | --- |
+   | `press_server` | Servers list, e.g. `u25-nuremberg-3.frappe.cloud` |
+   | `press_release_group` | the bench group's *name*, e.g. `bench-46799`, not its title |
+   | `press_cluster` | the server's cluster, e.g. `Nuremberg-3` |
+   | `press_version` | the bench group's version, e.g. `Nightly` |
+   | `press_default_domain` | `press.api.site.get_domain`, normally `frappe.cloud` |
+   | `press_site_plan` | on a dedicated server, an `Unlimited - <provider>` plan at $0.00 |
+
+   `press_version` matters more than it looks. On a dedicated server press
+   ignores the bench group you name and re-derives it from
+   (server, version, apps). With no version it matches nothing, then silently
+   falls back to its public marketplace path, which cannot resolve private app
+   sources and fails with "Source not found for app frappe".
 
 ---
 
@@ -88,7 +101,9 @@ All of this is in the desk UI at `admin.4dl.app/app`.
     | `domain` | `4dl.app` |
     | `domain_mode` | `Per-tenant` |
     | `press_default_domain` | Frappe Cloud's root domain for your sites, e.g. `frappe.cloud` |
-    | `press_site_plan` | from step 8, or blank |
+    | `press_version` | the bench group's version, exactly — e.g. `Nightly` |
+    | `site_apps` | apps to install, e.g. `frappe,erpnext,oneapp` — must all be on the bench group |
+    | `press_site_plan` | from step 8, e.g. `Unlimited - Hetzner` |
     | `capacity_tenants` | `30` — a soft cap; see ARCHITECTURE §1 |
 
 14. **Set `default_shard`** in Settings to the shard you just made.

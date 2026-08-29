@@ -18,6 +18,7 @@
   "press_server",
   "press_release_group",
   "press_cluster",
+  "press_version",
   "cb_press2",
   "domain",
   "domain_mode",
@@ -104,6 +105,14 @@
    "fieldname": "press_cluster",
    "fieldtype": "Data",
    "label": "Press Cluster"
+  },
+  {
+   "default": "Nightly",
+   "description": "Must match the bench group's version exactly. Without it press cannot match the bench on a dedicated server and falls back to its public marketplace path, which fails.",
+   "fieldname": "press_version",
+   "fieldtype": "Data",
+   "label": "Press Version",
+   "reqd": 1
   },
   {
    "fieldname": "cb_press2",

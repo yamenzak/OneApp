@@ -124,14 +124,24 @@ class PressClient:
 		plan: str | None = None,
 		server: str | None = None,
 		cluster: str | None = None,
+		version: str | None = None,
 	) -> dict:
-		"""Returns {"site": <name>, "job": <agent job id>}."""
+		"""Returns {"site": <name>, "job": <agent job id>}.
+
+		On a dedicated server press ignores `group` and re-derives the bench from
+		(server, version, apps) — and returns None if `version` is missing, then
+		silently falls back to its public marketplace path, which cannot resolve
+		our private app sources. So version is effectively required, and the app
+		list must be a subset of the bench group's apps.
+		"""
 		payload = {
 			"name": subdomain,
 			"domain": domain,
 			"group": release_group,
 			"apps": apps,
 		}
+		if version:
+			payload["version"] = version
 		if plan:
 			payload["plan"] = plan
 		if server:
