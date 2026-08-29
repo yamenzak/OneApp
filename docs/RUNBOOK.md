@@ -69,7 +69,7 @@ All of this is in the desk UI at `admin.4dl.app/app`.
 11. **OneApp Control Settings → Frappe Cloud**
     | Field | Value |
     | --- | --- |
-    | `press_api_url` | `https://frappecloud.com` |
+    | `press_api_url` | `https://cloud.frappe.io` (frappecloud.com redirects here and the redirect drops auth) |
     | `press_api_key` / `press_api_secret` | from step 7 |
     | `tenant_domain` | `4dl.app` |
     | `control_plane_url` | `https://admin.4dl.app` |

@@ -57,7 +57,8 @@
    "label": "Frappe Cloud"
   },
   {
-   "default": "https://frappecloud.com",
+   "default": "https://cloud.frappe.io",
+   "description": "Canonical host. frappecloud.com 308-redirects here and the redirect drops the Authorization header.",
    "fieldname": "press_api_url",
    "fieldtype": "Data",
    "label": "Press API URL"

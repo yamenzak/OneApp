@@ -23,6 +23,7 @@
   "domain_mode",
   "press_default_domain",
   "press_site_plan",
+  "site_apps",
   "sec_notes",
   "notes"
  ],
@@ -135,6 +136,14 @@
    "fieldname": "press_site_plan",
    "fieldtype": "Data",
    "label": "Default Press Site Plan"
+  },
+  {
+   "default": "frappe,erpnext,oneapp",
+   "description": "Apps installed on sites created here, comma separated. Must all be present on the bench group.",
+   "fieldname": "site_apps",
+   "fieldtype": "Data",
+   "label": "Site Apps",
+   "reqd": 1
   },
   {
    "fieldname": "sec_notes",

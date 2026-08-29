@@ -75,7 +75,7 @@ In **OneApp Control Settings** (Single doctype):
 
 | Field | Notes |
 | --- | --- |
-| `press_api_url` | `https://frappecloud.com` |
+| `press_api_url` | `https://cloud.frappe.io` (frappecloud.com redirects here and the redirect drops auth) |
 | `press_api_key` / `press_api_secret` | from Frappe Cloud |
 | `tenant_domain` | `4dl.app` |
 | `control_plane_url` | `https://admin.4dl.app` — tenant sites call back here |

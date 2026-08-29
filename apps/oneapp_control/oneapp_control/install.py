@@ -12,6 +12,6 @@ def create_default_settings():
 	if not settings.tenant_domain:
 		settings.tenant_domain = "4dl.app"
 	if not settings.press_api_url:
-		settings.press_api_url = "https://frappecloud.com"
+		settings.press_api_url = "https://cloud.frappe.io"
 	settings.save(ignore_permissions=True)
 	frappe.db.commit()

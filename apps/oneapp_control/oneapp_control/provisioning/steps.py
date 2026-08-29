@@ -50,6 +50,23 @@ def uses_wildcard(shard) -> bool:
 	return shard.domain_mode == "Wildcard"
 
 
+def site_apps(shard) -> list[str]:
+	"""Apps to install, from the shard rather than hardcoded.
+
+	Bench groups differ — a control bench carries payments and oneapp_control, a
+	tenant bench carries oneapp — and press rejects a site referencing an app the
+	bench does not have.
+	"""
+	raw = shard.site_apps or "frappe,erpnext,oneapp"
+	apps = [a.strip() for a in raw.split(",") if a.strip()]
+
+	# frappe is implicit but press expects it listed first.
+	if "frappe" not in apps:
+		apps.insert(0, "frappe")
+
+	return apps
+
+
 def check_availability(job):
 	"""Fail early rather than after a half-built site."""
 	tenant = frappe.get_doc("Tenant", job.tenant)
@@ -86,7 +103,7 @@ def create_site(job):
 		subdomain=tenant.tenant_slug,
 		domain=creation_domain(shard),
 		release_group=shard.press_release_group,
-		apps=["frappe", "erpnext", "oneapp"],
+		apps=site_apps(shard),
 		plan=plan,
 		server=shard.press_server or None,
 		cluster=shard.press_cluster or None,

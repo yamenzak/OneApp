@@ -39,7 +39,7 @@ def settings():
 class PressClient:
 	def __init__(self, url=None, api_key=None, api_secret=None):
 		s = settings()
-		self.url = (url or s.press_api_url or "https://frappecloud.com").rstrip("/")
+		self.url = (url or s.press_api_url or "https://cloud.frappe.io").rstrip("/")
 		self.api_key = api_key or s.press_api_key
 		self.api_secret = api_secret or s.get_password("press_api_secret", raise_exception=False)
 

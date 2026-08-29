@@ -87,6 +87,9 @@ doctype(
           description="Frappe Cloud's own root domain for this server, used to create "
                       "sites in Per-tenant mode. e.g. frappe.cloud"),
         f("press_site_plan", label="Default Press Site Plan"),
+        f("site_apps", default="frappe,erpnext,oneapp", reqd=1,
+          description="Apps installed on sites created here, comma separated. Must "
+                      "all be present on the bench group."),
         section("sec_notes"),
         f("notes", "Small Text"),
     ],
@@ -353,7 +356,9 @@ doctype(
     issingle=1,
     fields=[
         section("sec_press_set", "Frappe Cloud"),
-        f("press_api_url", label="Press API URL", default="https://frappecloud.com"),
+        f("press_api_url", label="Press API URL", default="https://cloud.frappe.io",
+          description="Canonical host. frappecloud.com 308-redirects here and the "
+                      "redirect drops the Authorization header."),
         f("press_api_key", label="Press API Key"),
         f("press_api_secret", "Password", label="Press API Secret"),
         column("cb_set1"),
