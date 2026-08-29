@@ -3,7 +3,8 @@
 A single Frappe application presenting a unified SPA over multiple bespoke solutions, with
 ERPNext underneath. Customers never see Frappe or ERPNext — the SPA is their only access point.
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the decisions this is built on.
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the decisions this is built on,
+and [`docs/ROADMAP.md`](docs/ROADMAP.md) for the phased build plan.
 
 ## Layout
 

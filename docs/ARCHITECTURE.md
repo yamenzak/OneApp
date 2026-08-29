@@ -319,6 +319,8 @@ Pricing inputs, not architecture. None of them change the design above.
 
 ## 12. Build order
 
+Superseded in detail by [`ROADMAP.md`](ROADMAP.md); the summary:
+
 1. Control-plane doctypes — `Tenant`, `Shard`, `Plan`, `Subscription`, `App Entitlement`
 2. Frappe Cloud provisioning job (idempotent, retryable)
 3. `oneapp` skeleton + Frappe UI SPA shell + auth
