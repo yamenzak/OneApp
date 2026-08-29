@@ -20,6 +20,13 @@ website_route_rules = [
 	{"from_route": "/portal/<path:app_path>", "to_route": "portal"},
 ]
 
+# Where a signed-in user lands. Without this Frappe falls through to "me",
+# which it rewrites to "desk" for any System User — so signing in as an
+# operator dropped you into the desk, which is the one place this product does
+# not go. Customers are Website Users and resolve to the portal instead.
+home_page = "admin"
+role_home_page = {"OneApp Customer": ["portal/account"]}
+
 # ---------------------------------------------------------------------------
 # Scheduled tasks
 # ---------------------------------------------------------------------------

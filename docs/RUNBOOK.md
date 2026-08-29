@@ -8,6 +8,10 @@ tenant. Stage 5 can wait until you actually want files, mail or AI.
 
 ---
 
+> **Developing?** Do not start here. `docs/DEVLOOP.md` describes the local
+> bench, which answers most questions in seconds rather than minutes. This
+> runbook is for bringing up real infrastructure.
+
 ## Stage 1 — Frappe Cloud
 
 1. **Create the server.** Servers → New Server. The $40 `cpx22` covers the whole

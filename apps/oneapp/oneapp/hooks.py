@@ -17,6 +17,10 @@ website_route_rules = [
 	{"from_route": "/one/<path:app_path>", "to_route": "one"},
 ]
 
+# Signing in lands on the workspace, not the desk. Frappe's fallback is "me",
+# which it rewrites to "desk" for any System User.
+home_page = "one"
+
 # ---------------------------------------------------------------------------
 # Storage
 # ---------------------------------------------------------------------------
