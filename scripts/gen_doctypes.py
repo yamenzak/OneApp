@@ -657,6 +657,14 @@ doctype(
 )
 
 
+# Every key build() understands. Adding one to a doctype() call without adding
+# it here is a hard error rather than a silent omission.
+HANDLED_SPEC_KEYS = {
+    "name", "fields", "perms", "autoname", "title_field",
+    "allow_rename", "issingle", "istable",
+}
+
+
 def build(spec):
     fields = spec["fields"]
     doc = {
@@ -689,6 +697,24 @@ def build(spec):
     if spec.get("issingle"):
         doc["issingle"] = 1
         doc.pop("allow_rename", None)
+
+    if spec.get("istable"):
+        # A child table is not a doctype with a parent field bolted on: without
+        # this Frappe builds an ordinary table with no parent/parenttype/idx
+        # columns, and every read through the parent fails with
+        # "Unknown column 'parent' in 'WHERE'".
+        doc["istable"] = 1
+        doc["editable_grid"] = 1
+        doc.pop("allow_rename", None)
+        doc["permissions"] = []
+
+    # Anything in the spec this function does not know about was silently
+    # dropped before now — istable was, and the doctype generated as a normal
+    # table that nothing could read. Fail instead.
+    unknown = set(spec) - HANDLED_SPEC_KEYS
+    if unknown:
+        raise SystemExit(f"{spec['name']}: build() ignores {sorted(unknown)}")
+
     return doc
 
 

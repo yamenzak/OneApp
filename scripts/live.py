@@ -64,7 +64,7 @@ def require_dev_bench(group: str):
         )
 
 
-def press(method: str, payload: dict, timeout: int = 180) -> dict:
+def press(method: str, payload: dict, timeout: int = 180, optional: bool = False) -> dict:
     key, secret = os.environ.get("PRESS_KEY"), os.environ.get("PRESS_SECRET")
     if not (key and secret):
         sys.exit("PRESS_KEY and PRESS_SECRET are not set — see ONEAPP_FC_ENV.")
@@ -81,6 +81,11 @@ def press(method: str, payload: dict, timeout: int = 180) -> dict:
         return json.loads(urllib.request.urlopen(request, timeout=timeout).read())
     except urllib.error.HTTPError as e:
         body = e.read().decode()[:400]
+        if optional:
+            # Used when probing for which doctype a record is: "not found" is an
+            # answer, not a failure, and exiting on it means never trying the
+            # next candidate.
+            return {}
         # press returns exc_type and nothing about which parameter was wrong, so
         # echo the whole body rather than a tidied summary.
         sys.exit(f"{method} failed: HTTP {e.code} {body}")
@@ -262,24 +267,22 @@ def cmd_deploy(args):
         print("Nothing to deploy — the bench already has the newest releases.")
         return
     print("\n".join(moving))
-    # Two calls, not deploy_and_update. On this account deploy_and_update runs
-    # the newer Release Pipeline flow, which failed in "Preparing deployment"
-    # with no detail exposed to the API; bench.deploy builds the same image and
-    # works. Splitting them is also honest about what each half does — a build
-    # changes nothing a customer sees until a site is moved onto it.
+    # `sites` must be the dicts deploy_information returned, not bare names.
+    # Passing names fails in "Preparing deployment" with nothing exposed to the
+    # API to say why — which reads like a broken bench rather than a bad
+    # argument. The entries carry server, bench and the skip_* flags the deploy
+    # needs to plan each move.
+    sites = info.get("sites") or []
     candidate = press(
-        "press.api.bench.deploy", {"name": args.group, "apps": apps}, timeout=300
+        "press.api.bench.deploy_and_update",
+        {"name": args.group, "apps": apps, "sites": sites},
+        timeout=300,
     ).get("message")
-    print(f"Building {candidate}.")
+    names = ", ".join(s["name"] for s in sites)
+    print(f"Building {candidate}. Sites move onto it when the build succeeds: {names}")
 
-    if not args.wait:
-        print("Sites stay on the old bench until this finishes — rerun with --wait "
-              "to move them, or use `update-sites` afterwards.")
-        return
-
-    if not watch_deploy(args.group, candidate):
-        sys.exit("Build failed; sites left where they were.")
-    update_sites(args.group)
+    if args.wait and not watch_deploy(args.group, candidate):
+        sys.exit("Deploy failed; sites left where they were.")
 
 
 def update_sites(group: str):
@@ -319,7 +322,11 @@ def watch_deploy(group: str, name: str):
     # returns a Release Pipeline where the newer flow is on, and older accounts
     # return a Deploy Candidate. Guessing wrong silently follows nothing.
     for candidate_type in ("Deploy Candidate Build", "Release Pipeline", "Deploy Candidate"):
-        found = press("press.api.client.get", {"doctype": candidate_type, "name": name})
+        found = press(
+            "press.api.client.get",
+            {"doctype": candidate_type, "name": name},
+            optional=True,
+        )
         if found.get("message"):
             doctype = candidate_type
             break
