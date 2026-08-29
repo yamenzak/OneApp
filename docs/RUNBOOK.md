@@ -23,9 +23,27 @@ ONEAPP_FC_ENV=~/.oneapp/fc.env scripts/bootstrap_site.py oneadmin.frappe.cloud
 ```
 
 The script reads the config back after writing it: press drops empty values
-silently, so a write that reports success is not proof the key landed. Then sign
-in as Administrator and finish in Settings — control plane URL, tenant domain,
-Stripe, Cloudflare, and the shard.
+silently, so a write that reports success is not proof the key landed.
+
+Then sign in as Administrator and work down Setup. It goes from red to green as
+you go, and signup opens by itself once provisioning, billing and capacity are
+all satisfied — there is no switch to throw.
+
+| # | Where | What |
+| --- | --- | --- |
+| 1 | Settings → Frappe Cloud | Control plane URL (this site's own https address) and tenant domain |
+| 2 | Settings → Regions → New | e.g. code `nuremberg`, name "Nuremberg, Germany" |
+| 3 | Shards → Register server | Pick the server and bench group — both read live from Frappe Cloud, so the names cannot be mistyped |
+| 4 | Settings → Plans → New | At least one, with its Stripe price ids |
+| 5 | Settings → Billing | Stripe keys and the webhook secret |
+| 6 | Settings → Cloudflare | R2 and the DNS token |
+
+**Set the shard's Environment to Staging** on anything the development tooling
+should touch. It is the shard, not the tenant, that decides: tenants inherit it,
+and `scripts/live.py` refuses any bench carrying a Production tenant. On a
+single-bench setup a Production tenant locks the tooling out of the only bench
+there is, and the default is Production precisely so that forgetting protects
+rather than exposes.
 
 ---
 
