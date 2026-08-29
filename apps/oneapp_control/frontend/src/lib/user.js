@@ -2,6 +2,7 @@
 
 import { computed } from 'vue'
 
+import { sessionUser } from './boot'
 import { useResource } from './resource'
 
 /**
@@ -12,9 +13,21 @@ import { useResource } from './resource'
  * desk is not part of the product, so this is the only place anyone sees their
  * own account.
  */
+/**
+ * Fetched by id, taken from boot.
+ *
+ * There is no user named 'me': frappe.client.get on it returns 404, whose HTML
+ * error page then comes back to be parsed as JSON, and every name and avatar in
+ * the app renders from undefined. It failed silently for exactly that reason —
+ * the resource is quiet by design, so nothing said so.
+ */
 export const currentUser = useResource('frappe.client.get', {
-  params: { doctype: 'User', name: 'me' },
-  cacheKey: 'oneapp-current-user',
+  params: { doctype: 'User', name: sessionUser },
+  cacheKey: `oneapp-user-${sessionUser}`,
+  // A signed-out visitor on the portal has no User doc to read. The option is
+  // `immediate`, not `enabled` — useCall ignores anything it does not know, so
+  // the wrong name fetches anyway and says nothing.
+  immediate: Boolean(sessionUser) && sessionUser !== 'Guest',
   silent: true,
 })
 

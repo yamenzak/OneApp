@@ -3,8 +3,14 @@
 
   <SettingsBody>
     <div class="flex flex-col gap-5 pt-6">
-      <SettingsRow v-for="field in fields" :key="field.name" :label="field.label">
-        <template #description>{{ field.hint }}</template>
+      <!-- SettingsRow's prop is `title`; `label` is silently ignored and the
+           row renders with no name beside its control. -->
+      <SettingsRow
+        v-for="field in fields"
+        :key="field.name"
+        :title="field.label"
+        :description="field.hint"
+      >
         <FormControl
           v-model="form[field.name]"
           :type="field.type || 'text'"

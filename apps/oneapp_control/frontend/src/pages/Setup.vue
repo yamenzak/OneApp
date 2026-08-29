@@ -1,12 +1,11 @@
 <template>
   <PageHeader>
-    <template #title>
-      <Breadcrumbs :items="[{ label: 'Setup' }]" />
-    </template>
-    <template #actions>
+    <Breadcrumbs :items="[{ label: 'Setup' }]" />
+  
+    <div class="flex items-center gap-2">
       <Button :loading="setup.loading" label="Re-check" @click="setup.load()" />
       <Button variant="solid" label="Open settings" @click="openSettings()" />
-    </template>
+</div>
   </PageHeader>
 
   <div class="mx-auto max-w-3xl p-5">

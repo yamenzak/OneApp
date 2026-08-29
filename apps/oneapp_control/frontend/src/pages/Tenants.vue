@@ -1,16 +1,15 @@
 <template>
   <PageHeader>
-    <template #title>
-      <Breadcrumbs :items="[{ label: 'Tenants' }]" />
-    </template>
-    <template #actions>
+    <Breadcrumbs :items="[{ label: 'Tenants' }]" />
+  
+    <div class="flex items-center gap-2">
       <Button
         variant="solid"
         label="New tenant"
         :disabled="!setup.canProvision"
         @click="showCreate = true"
       />
-    </template>
+</div>
   </PageHeader>
 
   <div class="p-5">

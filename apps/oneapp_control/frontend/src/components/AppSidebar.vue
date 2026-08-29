@@ -63,16 +63,8 @@ import {
 import UserMenu from './UserMenu.vue'
 import { setup } from '../lib/setup'
 import { openSettings } from '../lib/settings'
-import { useResource } from '../lib/resource'
+import { user } from '../lib/user'
 
-// Whoever is signed in. The desk is not part of the product, so this is the
-// only place an operator sees their own account.
-const userResource = useResource('frappe.client.get', {
-  params: { doctype: 'User', name: 'me' },
-  cacheKey: 'oneapp-admin-user',
-  silent: true,
-})
-const user = computed(() => userResource.data || {})
 
 const route = useRoute()
 const collapsed = inject('sidebarCollapsed', false)

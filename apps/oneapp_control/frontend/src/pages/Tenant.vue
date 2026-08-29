@@ -1,14 +1,13 @@
 <template>
   <PageHeader>
-    <template #title>
-      <Breadcrumbs
-        :items="[
-          { label: 'Tenants', route: { path: '/tenants' } },
-          { label: tenant?.tenant_name || name },
-        ]"
-      />
-    </template>
-    <template #actions>
+    <Breadcrumbs
+      :items="[
+        { label: 'Tenants', route: { path: '/tenants' } },
+        { label: tenant?.tenant_name || name },
+      ]"
+    />
+  
+    <div class="flex items-center gap-2">
       <Button
         v-if="tenant?.status === 'Active'"
         label="Suspend"
@@ -26,7 +25,7 @@
         label="Retry provisioning"
         @click="act('provision')"
       />
-    </template>
+</div>
   </PageHeader>
 
   <div v-if="tenant" class="mx-auto max-w-3xl p-5">

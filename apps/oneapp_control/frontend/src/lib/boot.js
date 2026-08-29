@@ -18,6 +18,7 @@ const read = (key, fallback) => (window[key] !== undefined ? window[key] : fallb
 export const siteName = read('site_name', window.location.hostname)
 export const socketioPort = read('socketio_port', 9000)
 export const csrfToken = read('csrf_token', null)
+export const sessionUser = read('user', 'Guest')
 export const isDev = import.meta.env.DEV
 
-export default { siteName, socketioPort, csrfToken, isDev }
+export default { siteName, socketioPort, csrfToken, sessionUser, isDev }

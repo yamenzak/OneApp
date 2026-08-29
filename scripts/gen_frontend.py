@@ -174,6 +174,7 @@ def index_html(app: str, spec: dict) -> str:
         }} catch (e) {{}}
       }})()
     </script>
+    <link rel="icon" type="image/svg+xml" href="/assets/{app}/favicon.svg" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#171717" />
   </head>
@@ -556,9 +557,10 @@ const read = (key, fallback) => (window[key] !== undefined ? window[key] : fallb
 export const siteName = read('site_name', window.location.hostname)
 export const socketioPort = read('socketio_port', 9000)
 export const csrfToken = read('csrf_token', null)
+export const sessionUser = read('user', 'Guest')
 export const isDev = import.meta.env.DEV
 
-export default { siteName, socketioPort, csrfToken, isDev }
+export default { siteName, socketioPort, csrfToken, sessionUser, isDev }
 """
 
 
@@ -932,11 +934,24 @@ export function normalize(data) {
  * `watch` names doctypes whose changes should trigger a refetch over the
  * socket.
  */
+/**
+ * Frappe's method endpoints live under /api/method/. useCall concatenates its
+ * `url` onto the base without adding that, so a bare dotted method resolves
+ * *relative to the current page* — and under our SPA route rules Frappe answers
+ * that with the app's own HTML at 200. The fetch then fails parsing JSON rather
+ * than 404ing, which is why it went unnoticed: nothing errored, the data was
+ * simply never there.
+ */
+function methodUrl(method) {
+  if (method.startsWith('/') || method.startsWith('http')) return method
+  return `/api/method/${method}`
+}
+
 export function useResource(url, options = {}) {
   const { watch: watchDoctypes = [], silent = false, transform, onError, ...rest } = options
 
   const resource = useCall({
-    url,
+    url: methodUrl(url),
     transform: (data) => {
       const value = normalize(data)
       return transform ? transform(value) : value
@@ -1017,6 +1032,7 @@ export async function callMethod(method, params = {}, options = {}) {
 USER_JS = BANNER + """
 import { computed } from 'vue'
 
+import { sessionUser } from './boot'
 import { useResource } from './resource'
 
 /**
@@ -1027,9 +1043,21 @@ import { useResource } from './resource'
  * desk is not part of the product, so this is the only place anyone sees their
  * own account.
  */
+/**
+ * Fetched by id, taken from boot.
+ *
+ * There is no user named 'me': frappe.client.get on it returns 404, whose HTML
+ * error page then comes back to be parsed as JSON, and every name and avatar in
+ * the app renders from undefined. It failed silently for exactly that reason —
+ * the resource is quiet by design, so nothing said so.
+ */
 export const currentUser = useResource('frappe.client.get', {
-  params: { doctype: 'User', name: 'me' },
-  cacheKey: 'oneapp-current-user',
+  params: { doctype: 'User', name: sessionUser },
+  cacheKey: `oneapp-user-${sessionUser}`,
+  // A signed-out visitor on the portal has no User doc to read. The option is
+  // `immediate`, not `enabled` — useCall ignores anything it does not know, so
+  // the wrong name fetches anyway and says nothing.
+  immediate: Boolean(sessionUser) && sessionUser !== 'Guest',
   silent: true,
 })
 

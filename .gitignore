@@ -34,3 +34,7 @@ dump.rdb
 
 # Worktree used to rebuild the deployed commit for asset diffs.
 .oneapp-live-base/
+
+# Playwright output.
+apps/*/frontend/test-results/
+apps/*/frontend/playwright-report/

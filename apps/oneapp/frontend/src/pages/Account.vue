@@ -1,9 +1,7 @@
 <template>
   <PageHeader>
-    <template #title>
-      <span class="text-base font-medium text-ink-gray-8">Account</span>
-    </template>
-  </PageHeader>
+    <span class="text-base font-medium text-ink-gray-8">Account</span>
+</PageHeader>
 
   <div class="mx-auto max-w-2xl p-5">
     <div v-if="!session.loaded" class="grid place-items-center py-20">

@@ -1,14 +1,12 @@
 <template>
   <PageHeader>
-    <template #title>
-      <div>
-        <span class="text-base font-medium text-ink-gray-8">Your apps</span>
-        <p class="text-p-sm text-ink-gray-5">
-          Everything enabled for {{ session.tenant?.name || 'this workspace' }}.
-        </p>
-      </div>
-    </template>
-  </PageHeader>
+    <div>
+      <span class="text-base font-medium text-ink-gray-8">Your apps</span>
+      <p class="text-p-sm text-ink-gray-5">
+        Everything enabled for {{ session.tenant?.name || 'this workspace' }}.
+      </p>
+    </div>
+</PageHeader>
 
   <div class="p-5">
     <div v-if="!session.loaded" class="grid place-items-center py-20">

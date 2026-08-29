@@ -47,6 +47,18 @@ services() {
   for port in 11000 13000; do
     redis-cli -p "$port" ping >/dev/null 2>&1 || redis-server --port "$port" --daemonize yes
   done
+
+  # Realtime. Without it the SPA's socket retries forever against a path Frappe
+  # answers with the SPA's own HTML, so the console fills with JSON parse errors
+  # that look like an application bug and are not — and live updates silently
+  # never arrive.
+  # Checked by port, not by pgrep: `pgrep -f socketio.js` also matches the
+  # shell command that contains the string, so it reports the server running
+  # when nothing is.
+  if ! (exec 3<>/dev/tcp/127.0.0.1/9000) 2>/dev/null; then
+    ( cd "$BENCH" && nohup node apps/frappe/socketio.js >"$BENCH/logs/socketio.log" 2>&1 & )
+    sleep 2
+  fi
 }
 
 case "${1:-up}" in

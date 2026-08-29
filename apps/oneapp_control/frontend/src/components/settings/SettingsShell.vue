@@ -2,15 +2,13 @@
   <SettingsDialog v-model:open="showSettings" v-model:tab="activeSettingsTab" size="5xl">
     <SettingsSidebar>
       <SettingsNavGroup v-for="group in GROUPS" :key="group.label" :label="group.label">
-        <SettingsNavItem
-          v-for="item in group.items"
-          :key="item.value"
-          :value="item.value"
-          :label="item.label"
-        >
+        <!-- The label is the default slot, not a prop: passing :label renders
+             an item with an icon and no text. -->
+        <SettingsNavItem v-for="item in group.items" :key="item.value" :value="item.value">
           <template #prefix>
             <Icon :name="item.icon" class="size-4 text-ink-gray-7" />
           </template>
+          {{ item.label }}
         </SettingsNavItem>
       </SettingsNavGroup>
     </SettingsSidebar>

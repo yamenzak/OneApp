@@ -1,12 +1,11 @@
 <template>
   <PageHeader>
-    <template #title>
-      <Breadcrumbs :items="[{ label: 'Shards' }]" />
-    </template>
-    <template #actions>
+    <Breadcrumbs :items="[{ label: 'Shards' }]" />
+  
+    <div class="flex items-center gap-2">
       <Button label="Push config to all" :loading="pushing" @click="pushAll" />
       <Button variant="solid" label="Register server" @click="showNew = true" />
-    </template>
+</div>
   </PageHeader>
 
   <div class="p-5">

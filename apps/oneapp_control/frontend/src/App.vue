@@ -108,7 +108,10 @@ usePageMeta(() => (isAdmin.value ? { title: ADMIN_APP, emoji: '⚙️' } : { tit
 watch(
   [isAdmin, bare],
   ([admin, isBare]) => {
-    if (isBare) return
+    // Until the router has resolved, meta.surface is undefined and every branch
+    // below would guess. Guessing sent the admin console at a customer endpoint
+    // on first paint, and a real failure there redirects to login.
+    if (!route.meta.surface || isBare) return
     if (admin) {
       if (setup.loading && !setup.checks.length) setup.load()
     } else if (!workspaces.list.length) {

@@ -52,11 +52,24 @@ export function normalize(data) {
  * `watch` names doctypes whose changes should trigger a refetch over the
  * socket.
  */
+/**
+ * Frappe's method endpoints live under /api/method/. useCall concatenates its
+ * `url` onto the base without adding that, so a bare dotted method resolves
+ * *relative to the current page* — and under our SPA route rules Frappe answers
+ * that with the app's own HTML at 200. The fetch then fails parsing JSON rather
+ * than 404ing, which is why it went unnoticed: nothing errored, the data was
+ * simply never there.
+ */
+function methodUrl(method) {
+  if (method.startsWith('/') || method.startsWith('http')) return method
+  return `/api/method/${method}`
+}
+
 export function useResource(url, options = {}) {
   const { watch: watchDoctypes = [], silent = false, transform, onError, ...rest } = options
 
   const resource = useCall({
-    url,
+    url: methodUrl(url),
     transform: (data) => {
       const value = normalize(data)
       return transform ? transform(value) : value

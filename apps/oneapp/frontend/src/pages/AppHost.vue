@@ -1,9 +1,7 @@
 <template>
   <PageHeader>
-    <template #title>
-      <Breadcrumbs :items="crumbs" />
-    </template>
-  </PageHeader>
+    <Breadcrumbs :items="crumbs" />
+</PageHeader>
 
   <div class="p-5">
     <EmptyState

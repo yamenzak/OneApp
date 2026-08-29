@@ -18,6 +18,10 @@ def get_context(context):
 	# socket has to be addressed on the bench directly rather than same-origin.
 	context.boot = {
 		"site_name": frappe.local.site,
+		# Who is signed in. The SPA needs the id to fetch the User doc: there
+		# is no user named "me", so frappe.client.get on it 404s and the HTML
+		# error page comes back to be parsed as JSON.
+		"user": frappe.session.user,
 		"socketio_port": frappe.conf.socketio_port or 9000,
 		"csrf_token": frappe.sessions.get_csrf_token(),
 	}

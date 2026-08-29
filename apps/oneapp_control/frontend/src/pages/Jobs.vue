@@ -1,11 +1,10 @@
 <template>
   <PageHeader>
-    <template #title>
-      <Breadcrumbs :items="[{ label: 'Provisioning' }]" />
-    </template>
-    <template #actions>
+    <Breadcrumbs :items="[{ label: 'Provisioning' }]" />
+  
+    <div class="flex items-center gap-2">
       <Button :loading="resource.loading" label="Refresh" @click="resource.reload()" />
-    </template>
+</div>
   </PageHeader>
 
   <div class="p-5">
