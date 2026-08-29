@@ -68,7 +68,7 @@ doctype(
           description="Uncheck to stop the allocator placing new tenants here."),
         f("capacity_tenants", "Int", default="30",
           description="Soft cap. MariaDB is the real ceiling; see docs/ARCHITECTURE.md."),
-        f("tenant_count", "Int", read_only=1, in_list_view=1),
+        f("tenant_count", "Int", default="0", read_only=1, in_list_view=1),
         section("sec_press", "Frappe Cloud"),
         f("press_server", label="Press Server",
           description="Server name in press, e.g. n1.frappe.cloud"),

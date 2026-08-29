@@ -73,6 +73,7 @@
    "label": "Capacity Tenants"
   },
   {
+   "default": "0",
    "fieldname": "tenant_count",
    "fieldtype": "Int",
    "in_list_view": 1,

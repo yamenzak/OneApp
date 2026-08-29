@@ -5,7 +5,8 @@ from frappe.model.document import Document
 
 class Shard(Document):
 	def validate(self):
-		if self.capacity_tenants and self.tenant_count > self.capacity_tenants:
+		# Both are None on an unsaved document.
+		if self.capacity_tenants and (self.tenant_count or 0) > self.capacity_tenants:
 			# Not an error — an operator may deliberately overfill — but it should
 			# stop attracting new tenants.
 			self.accepts_new_tenants = 0
@@ -15,7 +16,7 @@ class Shard(Document):
 			return False
 		if not self.capacity_tenants:
 			return True
-		return self.tenant_count < self.capacity_tenants
+		return (self.tenant_count or 0) < self.capacity_tenants
 
 
 def pick_shard() -> str | None:
@@ -46,7 +47,7 @@ def pick_shard() -> str | None:
 	)
 
 	for row in candidates:
-		if not row.capacity_tenants or row.tenant_count < row.capacity_tenants:
+		if not row.capacity_tenants or (row.tenant_count or 0) < row.capacity_tenants:
 			return row.name
 
 	return None
@@ -66,6 +67,6 @@ def capacity_report() -> list[dict]:
 
 	for row in rows:
 		cap = row.capacity_tenants or 0
-		row["utilisation"] = round(row.tenant_count / cap, 3) if cap else None
+		row["utilisation"] = round((row.tenant_count or 0) / cap, 3) if cap else None
 
 	return rows
