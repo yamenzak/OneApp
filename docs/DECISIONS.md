@@ -228,11 +228,26 @@ never from a Frappe admin role.
 
 ---
 
-## 9. Staging and production share a bench group
+## 9. Staging and production
 
-**Staging tenants and production tenants live on the same bench group, and the
-development tooling is fenced off by what is on the bench rather than by which
-bench it is.**
+**Two bench groups on one server. Tenants of either kind may share a group; the
+control plane may not.**
+
+The control plane is the exception that forces the split. The whole point of the
+development tooling is that it rewrites code on the staging control site — and a
+patch applies to a *bench*, so a production control site sharing that bench
+would be rewritten with it. Two groups on the same machine costs a second set of
+workers and no second server.
+
+| Group | Carries | Automation |
+| --- | --- | --- |
+| `oneapp-staging` | staging control site, staging tenants | patched and deployed automatically |
+| `oneapp-production` | production control site, customers | Frappe Cloud dashboard only |
+
+For *tenants* the earlier reasoning still holds — staging and production tenants
+can share a group, because sites move onto a new bench individually, so staging
+can run ahead while production stays put. What follows is the rule that makes
+that safe.
 
 A separate group for staging would mean a second image, a second set of workers
 and a second Redis on the same budget. Sharing costs nothing extra and the
