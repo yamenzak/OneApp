@@ -230,8 +230,31 @@ never from a Frappe admin role.
 
 ## 9. Staging and production
 
-**Two bench groups on one server. Tenants of either kind may share a group; the
-control plane may not.**
+**One bench group per server, and one control plane per group. Frappe Cloud does
+not allow more.**
+
+The intent was two groups on one machine — staging and production — so the
+development tooling could rewrite the staging control site without touching the
+production one. Frappe Cloud will not do it. Creating a site on a dedicated
+server requires naming the server, and naming the server makes press re-derive
+the bench from `(server, version, apps)` and ignore the `group` argument
+entirely. Two groups with the same version and the same apps are therefore
+indistinguishable: both new control sites landed on a third, older group.
+
+`version_upgrade(name, destination_group)` looks like the way to move one
+afterwards and is not — it is built for cross-version moves and raises
+`IndexError` between two Nightly groups. Omitting `server` fails with "No bench
+is available to deploy this site".
+
+So separation costs a second server, and until there is one:
+
+| | Where | Automation |
+| --- | --- | --- |
+| **Now** | one group, one control site, staging | patched and deployed automatically |
+| **At go-live** | a second server for production | Frappe Cloud dashboard only |
+
+Tenants are separated by `Tenant.environment` regardless, which is what keeps the
+tooling off a bench once a customer lands on it.
 
 The control plane is the exception that forces the split. The whole point of the
 development tooling is that it rewrites code on the staging control site — and a
