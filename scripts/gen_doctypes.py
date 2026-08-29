@@ -226,6 +226,37 @@ doctype(
 )
 
 # --------------------------------------------------------------------------- #
+# Tenant Member — who else may sign in to a workspace.
+#
+# Held here rather than on the tenant site because the control plane has no way
+# to write into a tenant's database: the signed sync is the only channel, and it
+# runs one way. So an invite is a row here, and the tenant site reconciles its
+# own Users against this list on every sync — the same route the owner account
+# already takes.
+#
+# The owner is not a row. `Tenant.owner_email` is load-bearing in provisioning
+# and billing, so it stays authoritative for that one seat and this table holds
+# everyone else. Seats used = 1 + rows.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Tenant Member",
+    istable=1,
+    fields=[
+        f("email", "Data", options="Email", reqd=1, in_list_view=1),
+        f("full_name", "Data", in_list_view=1,
+          description="Shown in the workspace. The member can change it themselves "
+                      "once they have signed in."),
+        column("cb_member"),
+        f("access", "Select", options="Member\nAdmin", default="Member", reqd=1,
+          in_list_view=1,
+          description="Member: use the apps the workspace is entitled to. Admin: "
+                      "also manage the workspace — the owner's role, without "
+                      "being the billing contact."),
+        f("invited_on", "Datetime", read_only=1),
+    ],
+)
+
+# --------------------------------------------------------------------------- #
 # Tenant
 # --------------------------------------------------------------------------- #
 doctype(
@@ -285,6 +316,13 @@ doctype(
         column("cb_usage"),
         f("user_count", "Int", default="0", read_only=1),
         f("usage_synced_on", "Datetime", read_only=1),
+        section("sec_members", "People"),
+        # Everyone but the owner, who is `owner_email` above. The tenant site
+        # creates and disables Users from this on every sync, because nothing
+        # here can reach into its database directly.
+        f("members", "Table", options="Tenant Member",
+          description="Who else may sign in. Seats used is this plus the owner, "
+                      "and the plan's max_users is what caps it."),
         section("sec_secret", "Integration"),
         f("hmac_secret", "Password",
           description="Shared secret for signed calls with this tenant's site."),

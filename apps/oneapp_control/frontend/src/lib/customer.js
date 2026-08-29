@@ -82,3 +82,29 @@ export function useOverview(workspaceRef) {
     watch: ['Tenant'],
   })
 }
+
+/**
+ * Who can sign in to a workspace.
+ *
+ * An invite is a row in the control plane; the workspace's site turns it into
+ * an account on its next sync, because nothing here can write into a tenant's
+ * database. The page says so rather than leaving someone wondering why their
+ * colleague cannot sign in yet.
+ */
+export function useMembers(workspaceRef) {
+  return useResource('oneapp_control.api.customer.members', {
+    params: () => ({ workspace: workspaceRef.value }),
+    refetch: true,
+    watch: ['Tenant'],
+  })
+}
+
+export const inviteMember = (workspace, payload) =>
+  callMethod('oneapp_control.api.customer.invite_member', { workspace, ...payload }, {
+    successMessage: 'Invited — they can sign in once the workspace next syncs',
+  })
+
+export const removeMember = (workspace, email) =>
+  callMethod('oneapp_control.api.customer.remove_member', { workspace, email }, {
+    successMessage: 'Removed',
+  })

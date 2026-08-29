@@ -60,6 +60,7 @@ const items = computed(() => {
   return [
     { label: 'Overview', name: 'AccountOverview', icon: 'lucide-home', to: { name: 'AccountOverview', params: { workspace } } },
     { label: 'Billing', name: 'AccountBilling', icon: 'lucide-credit-card', to: { name: 'AccountBilling', params: { workspace } } },
+    { label: 'People', name: 'AccountTeam', icon: 'lucide-users', to: { name: 'AccountTeam', params: { workspace } } },
     { label: 'Domain', name: 'AccountDomain', icon: 'lucide-globe', to: { name: 'AccountDomain', params: { workspace } } },
   ]
 })

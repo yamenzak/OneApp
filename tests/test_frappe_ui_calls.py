@@ -96,3 +96,32 @@ def test_the_reader_found_the_data_layer():
     options = use_call_options()
     assert {"url", "immediate", "params", "transform"} <= options, sorted(options)
     assert "enabled" not in options, "frappe-ui gained `enabled`; relax this guard"
+
+
+def test_reads_go_to_the_v2_method_endpoint():
+    """useCall reads its payload as `data.value?.data` — the API v2 envelope.
+
+    `/api/method/…` is v1 and answers `{message: …}`, so that lookup finds
+    nothing and the resource settles with `data === null` after a request that
+    succeeded. Nothing throws and nothing logs: the customer portal sat on its
+    loading spinner, and the user menu showed "Account" instead of a name.
+
+    Checked against frappe-ui's own source rather than pinned, so the day it
+    learns to read `message` this fails and the prefix can go back.
+    """
+    resource = (ROOT / "apps/oneapp_control/frontend/src/lib/resource.js").read_text()
+    assert "/api/v2/method/" in resource, "reads are pointed at the v1 endpoint again"
+
+    use_call = (UI_SRC / "data-fetching/useCall/useCall.ts").read_text()
+    assert "data.value?.data" in use_call, (
+        "useCall no longer reads the v2 envelope — check whether the v2 prefix "
+        "in methodUrl() is still right"
+    )
+
+
+def test_the_two_apps_read_through_the_same_endpoint():
+    versions = {
+        app: "/api/v2/method/" in (ROOT / f"apps/{app}/frontend/src/lib/resource.js").read_text()
+        for app in APPS
+    }
+    assert all(versions.values()), f"one app is still on v1: {versions}"

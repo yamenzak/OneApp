@@ -296,3 +296,144 @@ def request_custom_domain(workspace: str, domain: str) -> str:
 		{"domain": domain},
 		idempotency_key=f"domain:{tenant.name}:{domain}",
 	).name
+
+
+# --------------------------------------------------------------------------- #
+# People
+#
+# The control plane cannot write into a tenant's database — the signed sync is
+# the only channel and it runs one way — so an invite is a row here and the
+# tenant site reconciles its own Users against it. That is the same route the
+# owner account already takes, and it means an invite is live on the next sync
+# rather than immediately. `members()` says so rather than pretending otherwise.
+# --------------------------------------------------------------------------- #
+
+ACCESS_LEVELS = ("Member", "Admin")
+
+
+def _seats(tenant) -> dict:
+	"""Seats used and allowed. The owner holds one; members hold the rest.
+
+	Counted from this list rather than from `Tenant.user_count`, which is what
+	the workspace's site last reported. The two agree once a sync has run, and
+	before that this one is right: an invite made a minute ago is a seat that is
+	taken, and enforcing against the older number would let a plan be
+	over-subscribed in the window between inviting and syncing.
+	"""
+	used = 1 + len(tenant.members or [])
+	quota = tenant.max_users or 0
+	return {"used": used, "quota": quota, "remaining": max(quota - used, 0) if quota else None}
+
+
+@frappe.whitelist(methods=["GET"])
+def members(workspace: str) -> dict:
+	"""Everyone who can sign in to the workspace, the owner first."""
+	tenant = require_workspace(workspace)
+
+	people = [
+		{
+			"email": tenant.owner_email,
+			"full_name": tenant.tenant_name,
+			"access": "Owner",
+			"is_owner": True,
+			"invited_on": tenant.creation,
+		}
+	]
+	people += [
+		{
+			"email": row.email,
+			"full_name": row.full_name or "",
+			"access": row.access,
+			"is_owner": False,
+			"invited_on": row.invited_on,
+		}
+		for row in (tenant.members or [])
+	]
+
+	return {
+		"members": people,
+		"seats": _seats(tenant),
+		"access_levels": list(ACCESS_LEVELS),
+		# An invite becomes an account on the workspace's next sync, not now.
+		# Saying so is the difference between "slow" and "broken".
+		"last_synced": tenant.usage_synced_on,
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def invite_member(workspace: str, email: str, full_name: str = "", access: str = "Member") -> dict:
+	"""Add someone to the workspace, within the plan's seat count."""
+	tenant = require_workspace(workspace)
+
+	email = (email or "").strip().lower()
+	if not email:
+		frappe.throw(_("An email address is required."))
+	frappe.utils.validate_email_address(email, throw=True)
+
+	if access not in ACCESS_LEVELS:
+		frappe.throw(_("Unknown access level {0}.").format(access))
+
+	if email == (tenant.owner_email or "").strip().lower():
+		frappe.throw(_("{0} owns this workspace already.").format(email))
+
+	if any((row.email or "").strip().lower() == email for row in tenant.members or []):
+		frappe.throw(_("{0} is already a member.").format(email))
+
+	seats = _seats(tenant)
+	if seats["quota"] and seats["used"] >= seats["quota"]:
+		# Refused here rather than at the tenant site, where the person would
+		# already have had a welcome email for an account that cannot exist.
+		frappe.throw(
+			_("This plan includes {0} seats and all are in use. Change plan to add more.").format(
+				seats["quota"]
+			)
+		)
+
+	tenant.append(
+		"members",
+		{
+			"email": email,
+			"full_name": (full_name or "").strip(),
+			"access": access,
+			"invited_on": frappe.utils.now_datetime(),
+		},
+	)
+	tenant.save(ignore_permissions=True)
+	frappe.db.commit()
+
+	return members(workspace)
+
+
+@frappe.whitelist(methods=["POST"])
+def remove_member(workspace: str, email: str) -> dict:
+	"""Take someone out of the workspace.
+
+	The row goes; the tenant site disables that User on its next sync rather
+	than deleting it, because the documents they created are the workspace's and
+	Frappe hangs ownership off the account.
+	"""
+	tenant = require_workspace(workspace)
+	email = (email or "").strip().lower()
+
+	if email == (tenant.owner_email or "").strip().lower():
+		frappe.throw(_("The owner cannot be removed from their own workspace."))
+
+	remaining = [row for row in (tenant.members or []) if (row.email or "").strip().lower() != email]
+	if len(remaining) == len(tenant.members or []):
+		frappe.throw(_("{0} is not a member of this workspace.").format(email))
+
+	tenant.members = []
+	for row in remaining:
+		tenant.append(
+			"members",
+			{
+				"email": row.email,
+				"full_name": row.full_name,
+				"access": row.access,
+				"invited_on": row.invited_on,
+			},
+		)
+	tenant.save(ignore_permissions=True)
+	frappe.db.commit()
+
+	return members(workspace)

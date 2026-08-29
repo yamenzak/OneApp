@@ -86,6 +86,7 @@ const navItems = computed(() => {
   return [
     { label: 'Overview', icon: 'lucide-home', to: { name: 'AccountOverview', params: { workspace } } },
     { label: 'Billing', icon: 'lucide-credit-card', to: { name: 'AccountBilling', params: { workspace } } },
+    { label: 'People', icon: 'lucide-users', to: { name: 'AccountTeam', params: { workspace } } },
     { label: 'Domain', icon: 'lucide-globe', to: { name: 'AccountDomain', params: { workspace } } },
   ]
 })
@@ -105,14 +106,21 @@ usePageMeta(() => (isAdmin.value ? { title: ADMIN_APP, emoji: '⚙️' } : { tit
 // Loaded here rather than in onMounted so neither surface fires the other's
 // calls: readiness is not the customer's to ask for, and a visitor at signup has
 // no session to list workspaces with.
+// Keyed on the surface itself, not on `isAdmin`.
+//
+// `isAdmin` is a boolean derived from it, and before the router resolves
+// `meta.surface` is undefined — so on the portal the derived value was `false`
+// on the immediate run (where the guard below returns) and `false` again once
+// the route resolved. No change, no re-run, and the whole customer surface sat
+// on its loading spinner having never called anything.
 watch(
-  [isAdmin, bare],
-  ([admin, isBare]) => {
+  [() => route.meta.surface, bare],
+  ([surface, isBare]) => {
     // Until the router has resolved, meta.surface is undefined and every branch
     // below would guess. Guessing sent the admin console at a customer endpoint
     // on first paint, and a real failure there redirects to login.
-    if (!route.meta.surface || isBare) return
-    if (admin) {
+    if (!surface || isBare) return
+    if (surface === 'admin') {
       if (setup.loading && !setup.checks.length) setup.load()
     } else if (!workspaces.list.length) {
       workspaces.load(route.params.workspace || null)

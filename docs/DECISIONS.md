@@ -300,23 +300,29 @@ mechanics already allow it: sites move onto a new bench individually, so staging
 can run ahead while production stays where it is. This is the Canary ring from
 ARCHITECTURE §1, used for what it was for.
 
-| | Staging | Production |
-| --- | --- | --- |
-| Moves to a new bench | automatically, on deploy | deliberately, from the Frappe Cloud dashboard |
-| May be patched | yes | never |
-| `Tenant.environment` | `Staging` | `Production` (the default) |
+**Everything ships from `main`, to every site, until there is a second bench.**
 
-Two gates, because one is not enough:
+The distinction above describes where this lands once the budget carries two
+bench groups. It does not describe today: one group carries every site, so a
+rule that refused to deploy onto a group holding a production workspace refused
+every deploy we could actually make. Enforcing it would have meant either never
+deploying or lying about which tenants are which, and the second is worse.
 
-1. `ONEAPP_DEV_BENCH_GROUP` must name the group. A production machine never sets
-   it, so the tooling is inert there rather than merely discouraged.
-2. `admin.bench_environment` refuses any group carrying a Production tenant. The
-   first gate is correct when it is configured; this one stays correct after a
-   customer is provisioned onto the same group by an allocator that knew nothing
-   about the arrangement.
+So there is one gate, not two:
 
-`Tenant.environment` defaults to `Production`, so a tenant created by any path
-that forgets to set it is protected rather than exposed.
+1. `ONEAPP_DEV_BENCH_GROUP` must name the group. A machine that never sets it
+   has the tooling inert rather than merely discouraged — which is the gate that
+   was doing the real work anyway.
+2. `admin.bench_environment` still answers, and `live.py status` prints it, so
+   an operator can see who is on the bench they are about to deploy to. It no
+   longer refuses.
+
+`Tenant.environment` and `Shard.environment` stay. Nothing reads them as a veto
+today; they are what the split will be built on, and dropping the fields would
+mean reconstructing which tenant was which at exactly the wrong moment.
+
+When a second bench group exists: point staging's shard at it, and turn the
+second gate back into a refusal.
 
 ---
 

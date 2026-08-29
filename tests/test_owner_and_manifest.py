@@ -9,6 +9,8 @@ The failure modes here are quiet ones: a role created with desk access reopens
 sign in to.
 """
 
+import re
+
 import pytest
 
 
@@ -42,12 +44,30 @@ def test_perm_fields_cover_every_level(sync):
 
 
 def test_owner_role_is_never_revoked(sync):
-	source = (
-		__import__("pathlib").Path(sync.__file__).read_text()
+	"""Neither the owner role nor the member marker may be revoked.
+
+	Both are excluded from the same set, so this checks the exclusion rather
+	than one spelling of it. The owner losing their role loses them their own
+	workspace; every member losing the marker makes them invisible to the
+	reconciliation that is supposed to disable a removal.
+	"""
+	import ast
+	import pathlib
+
+	source = pathlib.Path(sync.__file__).read_text()
+	tree = ast.parse(source)
+	body = next(
+		ast.get_source_segment(source, node)
+		for node in ast.walk(tree)
+		if isinstance(node, ast.FunctionDef) and node.name == "sync_roles"
 	)
-	assert "- {owner_role}" in source, (
-		"the owner role must be excluded from revocation, or the owner loses "
-		"access to their own workspace on the next sync"
+
+	excluded = re.search(r"managed = set\(all_managed_roles\(\)\) - \{([^}]*)\}", body)
+	assert excluded, "sync_roles no longer subtracts an exclusion set"
+	names = {n.strip() for n in excluded.group(1).split(",")}
+	assert {"owner_role", "member_role"} <= names, (
+		f"excluded from revocation: {names or 'nothing'} — both the owner role "
+		f"and the member marker have to be there"
 	)
 
 

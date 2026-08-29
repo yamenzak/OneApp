@@ -65,6 +65,16 @@ def entitled_roles(tenant: str) -> list[str]:
 # we run elevated, not a Frappe admin role. See DECISIONS §8.
 OWNER_ROLE = "OneApp Workspace Owner"
 
+# Held by everyone in the workspace, the owner included. It grants nothing —
+# the app roles do that — and exists to mark an account as ours.
+#
+# Without a marker there is no safe way to tell a removed member from a user the
+# site created for its own reasons. Reconciling on "holds one of our app roles"
+# looks equivalent and is not: a member of a workspace with no apps entitled yet
+# holds none of them, so removing that member disabled nobody and they kept
+# their sign-in.
+MEMBER_ROLE = "OneApp Workspace Member"
+
 
 def permission_manifest(tenant: str) -> list[dict]:
 	"""Every role the tenant site should define, and what each may touch.

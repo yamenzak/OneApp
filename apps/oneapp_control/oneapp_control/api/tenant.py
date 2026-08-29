@@ -83,6 +83,7 @@ def sync():
 		# permissions at all. See DECISIONS §8.
 		"permissions": registry.permission_manifest(tenant_name),
 		"owner_role": registry.OWNER_ROLE,
+		"member_role": registry.MEMBER_ROLE,
 		# Who the workspace belongs to. The tenant site creates this account on
 		# first sync — nothing else can, since the control plane has no way to
 		# write into a tenant's database, and until it exists the customer has
@@ -91,6 +92,17 @@ def sync():
 			"email": tenant.owner_email,
 			"first_name": (tenant.tenant_name or "").split(" ")[0] or "Owner",
 		},
+		# Everyone else who may sign in. Sent whole rather than as a diff: the
+		# tenant site reconciles against it, so a member removed here is
+		# disabled there without anything having to remember to send a removal.
+		"members": [
+			{
+				"email": row.email,
+				"full_name": row.full_name or "",
+				"access": row.access,
+			}
+			for row in (tenant.members or [])
+		],
 		"credits": {
 			"balance": ledger.balance(tenant_name),
 			"available": ledger.available(tenant_name),

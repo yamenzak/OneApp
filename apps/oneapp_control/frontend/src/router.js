@@ -63,6 +63,12 @@ const portalRoutes = [
     props: true,
   },
   {
+    path: '/portal/account/:workspace/team',
+    name: 'AccountTeam',
+    component: () => import('./pages/account/AccountTeam.vue'),
+    props: true,
+  },
+  {
     path: '/portal/account/:workspace/domain',
     name: 'AccountDomain',
     component: () => import('./pages/account/AccountDomain.vue'),

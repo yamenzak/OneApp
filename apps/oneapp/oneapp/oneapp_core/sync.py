@@ -84,15 +84,33 @@ def sync_from_control_plane() -> dict:
 	)
 
 	invalidate()
-	sync_roles(payload.get("roles") or [], payload.get("owner_role"))
+	sync_roles(
+		payload.get("roles") or [],
+		payload.get("owner_role"),
+		payload.get("member_role"),
+	)
 	sync_permissions(payload.get("permissions") or [])
-	created = sync_owner(payload.get("owner") or {}, payload.get("owner_role"))
+	created = sync_owner(
+		payload.get("owner") or {},
+		payload.get("owner_role"),
+		payload.get("member_role"),
+	)
+	# After the owner: an Admin member is given the owner role, which must exist
+	# by then, and the reconciliation must not mistake the owner for a removal.
+	people = sync_members(
+		payload.get("members") or [],
+		payload.get("owner_role"),
+		payload.get("member_role"),
+		(payload.get("owner") or {}).get("email") or "",
+	)
 	sync_email_account()
 
 	return {
 		"ok": True,
 		"apps": len(payload.get("apps") or []),
 		"owner_created": created,
+		"members_created": people["created"],
+		"members_disabled": people["disabled"],
 	}
 
 
@@ -215,7 +233,7 @@ def _apply_perm(name: str, perms: dict):
 		current.save(ignore_permissions=True)
 
 
-def sync_owner(owner: dict, owner_role: str | None) -> bool:
+def sync_owner(owner: dict, owner_role: str | None, member_role: str | None = None) -> bool:
 	"""Make sure the workspace's owner can actually sign in.
 
 	Created here rather than by the control plane because there is no route from
@@ -230,12 +248,16 @@ def sync_owner(owner: dict, owner_role: str | None) -> bool:
 		return False
 
 	ensure_role(owner_role)
+	# The owner holds the member role too, so "everyone in this workspace" is one
+	# question with one answer rather than "the owner, plus whoever holds this".
+	if member_role:
+		ensure_role(member_role)
 
 	if frappe.db.exists("User", email):
 		user = frappe.get_doc("User", email)
-		if not any(r.role == owner_role for r in user.roles):
-			user.append("roles", {"role": owner_role})
-			user.save(ignore_permissions=True)
+		_set_role(user, owner_role, True)
+		if member_role:
+			_set_role(user, member_role, True)
 		return False
 
 	user = frappe.get_doc(
@@ -246,14 +268,116 @@ def sync_owner(owner: dict, owner_role: str | None) -> bool:
 			# Frappe's own welcome mail carries a link to set a password. Doing
 			# it this way keeps the reset key on this site.
 			"send_welcome_email": 1,
-			"roles": [{"role": owner_role}],
+			"roles": [{"role": role} for role in (owner_role, member_role) if role],
 		}
 	)
 	user.insert(ignore_permissions=True)
 	return True
 
 
-def sync_roles(entitled_roles: list[str], owner_role: str | None = None):
+
+def sync_members(
+	members: list[dict],
+	owner_role: str | None,
+	member_role: str | None,
+	owner_email: str,
+) -> dict:
+	"""Reconcile workspace accounts against the control plane's member list.
+
+	The control plane cannot write here, so this is where an invite becomes an
+	account. It is a reconciliation rather than a queue of events: the whole list
+	arrives each time, so a member removed upstream is disabled here without
+	anything having to remember to send a removal.
+
+	`member_role` is what makes that safe. It grants nothing — the app roles do
+	that — and marks an account as one of ours. Reconciling instead on "holds one
+	of our app roles" looks equivalent and is not: a member of a workspace with
+	no apps entitled yet holds none of them, so removing them disabled nobody and
+	they kept their sign-in.
+
+	Removed members are **disabled, never deleted**. Frappe hangs document
+	ownership off the User, and the documents someone created belong to the
+	workspace — deleting the account would orphan or destroy them. A disabled
+	user cannot sign in, which is the part that matters.
+
+	An Admin member also holds the owner role, which is what lets them manage the
+	workspace; the billing contact stays whoever `owner_email` is.
+	"""
+	if not member_role:
+		# Nothing to reconcile against. Doing it anyway would mean guessing which
+		# accounts are ours, and guessing wrong disables someone's sign-in.
+		return {"created": [], "disabled": []}
+
+	ensure_role(member_role)
+
+	owner_email = (owner_email or "").strip().lower()
+	wanted = {}
+	for member in members or []:
+		email = (member.get("email") or "").strip().lower()
+		if email and email != owner_email:
+			wanted[email] = member
+
+	created, disabled = [], []
+
+	for email, member in wanted.items():
+		if frappe.db.exists("User", email):
+			user = frappe.get_doc("User", email)
+			# Re-invited after a removal: enable rather than create a second
+			# account, so their documents come back with them.
+			if not user.enabled:
+				user.enabled = 1
+				user.save(ignore_permissions=True)
+		else:
+			user = frappe.get_doc(
+				{
+					"doctype": "User",
+					"email": email,
+					"first_name": member.get("full_name") or email.split("@")[0],
+					# Frappe mails the password link from this site, so the reset
+					# key never crosses the wire — same as the owner's account.
+					"send_welcome_email": 1,
+				}
+			)
+			user.insert(ignore_permissions=True)
+			created.append(email)
+
+		wants_owner = member.get("access") == "Admin"
+		_set_role(user, member_role, True)
+		if owner_role:
+			_set_role(user, owner_role, wants_owner)
+
+	# Anyone marked as ours who is no longer on the list. The owner is excluded
+	# by email: they are not a member row, and disabling them would lock the
+	# workspace's billing contact out of it.
+	for email in frappe.get_all(
+		"User", filters={"enabled": 1}, pluck="name"
+	):
+		if email in ("Administrator", "Guest") or email == owner_email or email in wanted:
+			continue
+		roles = {r.role for r in frappe.get_doc("User", email).roles}
+		if member_role in roles:
+			frappe.db.set_value("User", email, "enabled", 0)
+			disabled.append(email)
+
+	return {"created": created, "disabled": disabled}
+
+
+def _set_role(user, role: str, should_hold: bool):
+	"""Add or remove one role, saving only when it actually changes."""
+	holds = any(r.role == role for r in user.roles)
+	if should_hold and not holds:
+		user.append("roles", {"role": role})
+		user.save(ignore_permissions=True)
+	elif holds and not should_hold:
+		user.roles = [r for r in user.roles if r.role != role]
+		user.save(ignore_permissions=True)
+
+
+def sync_roles(
+	entitled_roles: list[str],
+	owner_role: str | None = None,
+	member_role: str | None = None,
+):
 	"""Reconcile Frappe Roles against entitlements.
 
 	Enforcement is native permissions, so revoking an app is a role removal that
@@ -267,11 +391,13 @@ def sync_roles(entitled_roles: list[str], owner_role: str | None = None):
 
 	# Roles this app manages but the tenant is no longer entitled to.
 	#
-	# The owner role is excluded explicitly. It is not an entitlement — it says
-	# who the workspace belongs to — so it never appears in entitled_roles, and
-	# the day it lands in the managed set it would be stripped from the owner on
-	# the very next sync, locking them out of their own workspace.
-	managed = set(all_managed_roles()) - {owner_role}
+	# The owner and member roles are excluded explicitly. Neither is an
+	# entitlement — one says who the workspace belongs to, the other marks an
+	# account as ours — so neither appears in entitled_roles, and the day either
+	# lands in the managed set it would be stripped on the very next sync: the
+	# owner locked out of their own workspace, and every member invisible to the
+	# reconciliation that is supposed to disable them.
+	managed = set(all_managed_roles()) - {owner_role, member_role}
 	revoked = managed - set(entitled_roles)
 
 	# Not filtered to System Users. Our roles carry no desk access, so every

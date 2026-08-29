@@ -61,16 +61,29 @@ export function normalize(data) {
  * socket.
  */
 /**
- * Frappe's method endpoints live under /api/method/. useCall concatenates its
- * `url` onto the base without adding that, so a bare dotted method resolves
- * *relative to the current page* — and under our SPA route rules Frappe answers
- * that with the app's own HTML at 200. The fetch then fails parsing JSON rather
- * than 404ing, which is why it went unnoticed: nothing errored, the data was
- * simply never there.
+ * Where useCall's reads have to point, and why it is v2.
+ *
+ * Two separate traps, and both end in a page that renders nothing:
+ *
+ * 1. useCall concatenates `url` onto the base without adding a prefix, so a
+ *    bare dotted method resolves *relative to the current page*. Under our SPA
+ *    route rules Frappe answers that with the app's own HTML at 200, so the
+ *    fetch fails parsing JSON rather than 404ing.
+ *
+ * 2. useCall reads its payload as `data.value?.data` — the API **v2** envelope.
+ *    `/api/method/…` is v1 and answers `{message: …}`, so the lookup finds
+ *    nothing and the resource settles with `data === null` after a perfectly
+ *    successful request. Every `useResource` read was silently empty: the
+ *    customer portal sat on its spinner and the user menu showed "Account"
+ *    instead of a name.
+ *
+ * `/api/v2/method/…` returns `{data: …}`, which is what useCall is built to
+ * read. `normalize()` below stays as the belt to this braces — a whitelisted
+ * method that returns something already enveloped still unwraps correctly.
  */
 function methodUrl(method) {
   if (method.startsWith('/') || method.startsWith('http')) return method
-  return `/api/method/${method}`
+  return `/api/v2/method/${method}`
 }
 
 export function useResource(url, options = {}) {

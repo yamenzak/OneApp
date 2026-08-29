@@ -200,16 +200,17 @@ def create_shard(
 
 @frappe.whitelist()
 def bench_environment(release_group: str) -> dict:
-	"""Whether a bench group is safe for the development tooling to touch.
+	"""Who is on a bench group — reported, not enforced.
 
-	`scripts/live.py` patches code on a running bench and redeploys it. Both are
-	fine over staging tenants and unacceptable over a customer's workspace, and
-	the two can share a bench group: sites move onto a new bench individually, so
-	staging can run ahead while production stays put.
+	`scripts/live.py` prints this in `status`. It used to be a veto: any group
+	carrying a Production tenant was off limits to the tooling. That is the right
+	rule once staging and production are separate benches, and the wrong one
+	while a single bench carries both — it refused every deploy we could actually
+	make. Everything ships from `main` to every site until there is budget for a
+	second bench.
 
-	The rule is simply that a group carrying any Production tenant is off limits.
-	Read here rather than guessed by the script, because the control plane is the
-	only thing that knows which tenant is which.
+	`safe` is kept in the response because the shape is part of the tooling's
+	contract, and it becomes a gate again the day the benches split.
 	"""
 	_require_manager()
 

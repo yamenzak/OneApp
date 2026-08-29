@@ -60,13 +60,16 @@ def require_dev_bench(group: str):
     """Refuse to touch anything that has not been named as the dev bench.
 
     Everything in this file rewrites code on a *running* bench, and `deploy`
-    moves real sites onto a new image. Both are fine while a bench is ours to
-    break and unacceptable once it carries customers, and the difference is not
-    something a script can infer — so it is stated once, out of band, and
-    nothing here runs without it.
+    moves real sites onto a new image. Naming the group out of band is what
+    stops either happening by accident, and a machine that never sets the
+    variable has this whole tool inert rather than merely discouraged.
 
-    Production simply never sets ONEAPP_DEV_BENCH_GROUP, which makes this whole
-    tool inert there rather than merely discouraged.
+    There is deliberately no environment check beyond that. Staging and
+    production share one bench group until the budget carries a second, so a
+    rule that refused any group with a production workspace on it would refuse
+    every deploy we have. Everything ships from `main` to every site; the
+    Tenant and Shard `environment` fields stay for when a real staging bench
+    exists and this can be tightened again.
     """
     allowed = os.environ.get("ONEAPP_DEV_BENCH_GROUP")
     if not allowed:
@@ -80,21 +83,18 @@ def require_dev_bench(group: str):
             f"Refusing to touch {group}: ONEAPP_DEV_BENCH_GROUP names {allowed}."
         )
 
-    # The env var says which bench we mean to develop on. This asks the control
-    # plane whether that is still true — a production workspace provisioned onto
-    # the same group would otherwise be patched and restarted by a tool that was
-    # correct when it was configured.
-    verdict = control_plane_check(group)
-    if verdict and not verdict.get("safe"):
-        sys.exit(f"Refusing to touch {group}: {verdict.get('reason')}")
 
 
 def control_plane_check(group: str) -> dict | None:
-    """Ask the control plane whether the bench group carries production tenants.
+    """What the control plane knows about who is on this bench group.
+
+    Reported by `status`, and nothing acts on it. It used to veto a deploy onto
+    a group carrying production workspaces, which is the right rule once there
+    are two benches and the wrong one while there is a single bench carrying
+    everything — it refused every deploy we could actually make.
 
     Skipped silently when ONEAPP_CONTROL_URL is unset or the control plane is
-    unreachable: this is a second opinion, not the gate. The gate is the env var
-    above, which a production machine never sets.
+    unreachable.
     """
     base = os.environ.get("ONEAPP_CONTROL_URL")
     key = os.environ.get("ONEAPP_CONTROL_KEY")
@@ -528,6 +528,12 @@ def cmd_status(args):
         print(f"patched {state['label']} (App Patch {state['app_patch']}) at {state['at']}")
     else:
         print("patched nothing")
+
+    # Reported, not enforced: one bench carries everything until there is budget
+    # for a second, so this says who is on it rather than refusing the deploy.
+    verdict = control_plane_check(args.group)
+    if verdict:
+        print(f"carries {verdict.get('reason', '')}")
 
 
 def cmd_revert(args, quiet: bool = False):

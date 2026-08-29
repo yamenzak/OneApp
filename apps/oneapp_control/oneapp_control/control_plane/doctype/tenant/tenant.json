@@ -37,6 +37,8 @@
   "cb_usage",
   "user_count",
   "usage_synced_on",
+  "sec_members",
+  "members",
   "sec_secret",
   "hmac_secret",
   "suspended_reason"
@@ -242,6 +244,18 @@
    "fieldtype": "Datetime",
    "label": "Usage Synced On",
    "read_only": 1
+  },
+  {
+   "fieldname": "sec_members",
+   "fieldtype": "Section Break",
+   "label": "People"
+  },
+  {
+   "description": "Who else may sign in. Seats used is this plus the owner, and the plan's max_users is what caps it.",
+   "fieldname": "members",
+   "fieldtype": "Table",
+   "label": "Members",
+   "options": "Tenant Member"
   },
   {
    "fieldname": "sec_secret",
