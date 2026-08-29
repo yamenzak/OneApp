@@ -105,6 +105,7 @@ def sync_from_control_plane() -> dict:
 	)
 	sync_email_account()
 	sync_branding(tenant)
+	books = sync_books(payload.get("books"))
 
 	return {
 		"ok": True,
@@ -112,7 +113,29 @@ def sync_from_control_plane() -> dict:
 		"owner_created": created,
 		"members_created": people["created"],
 		"members_disabled": people["disabled"],
+		"books": books,
 	}
+
+
+def sync_books(hint: dict | None) -> dict:
+	"""Set the accounting app up, if it is installed and not set up yet.
+
+	Books is generally available, so without this every new workspace opens it
+	to an ERPNext error about a missing default company — the wizard that would
+	have created one lives on a desk the customer never sees. Runs here because
+	this is the only channel that reaches a tenant's database.
+
+	Never raises. A workspace whose books could not be set up automatically is a
+	workspace that asks in OneSpace instead; one whose whole sync failed for it
+	would also stop receiving entitlements and quotas.
+	"""
+	try:
+		from oneapp.oneapp_core import books
+
+		return books.ensure_setup(hint)
+	except Exception as e:  # noqa: BLE001 — a failed setup must not fail the sync
+		frappe.log_error(title="Books setup failed", message=frappe.get_traceback())
+		return {"error": str(e)[:200]}
 
 
 def sync_branding(tenant: dict) -> None:

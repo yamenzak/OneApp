@@ -19,7 +19,36 @@
     />
 
     <div v-else-if="status.ready" class="flex flex-col gap-4 pt-6">
-      <Alert theme="green" title="Books are set up">
+      <!--
+        Set up from what signup answered rather than by a person. Announced
+        rather than left to be discovered: the country and currency are what
+        they chose, but the chart of accounts and the financial year are
+        defaults for that country, and only they know if those are right.
+      -->
+      <Alert
+        v-if="status.assumed && status.can_reset"
+        theme="amber"
+        title="Set up from your signup answers"
+      >
+        <template #description>
+          Your country and currency are what you chose. The chart of accounts
+          and financial year below are the usual ones for {{ status.company?.country }} —
+          check them before you invoice anything, because they are only easy to
+          change until then.
+        </template>
+        <template #actions>
+          <Button label="Start over" theme="red" :loading="resetting" @click="startOver" />
+        </template>
+      </Alert>
+
+      <Alert v-else-if="status.assumed" theme="blue" title="Set up from your signup answers">
+        <template #description>
+          Entries have been posted, so the chart of accounts can no longer be
+          replaced here. Ask support if it needs to change.
+        </template>
+      </Alert>
+
+      <Alert v-else theme="green" title="Books are set up">
         <template #description>
           Changing a company's currency or chart of accounts after entries exist
           is a migration, not a setting, so this is shown rather than offered.
@@ -96,6 +125,7 @@ const status = ref(null)
 const charts = ref([])
 const loading = ref(true)
 const saving = ref(false)
+const resetting = ref(false)
 const error = ref('')
 
 const form = reactive({
@@ -123,6 +153,7 @@ const summary = computed(() => {
   if (!company) return []
   return [
     { label: 'Company', value: company.company_name },
+    { label: 'Chart of accounts', value: status.value?.charts?.[0] || '—' },
     { label: 'Abbreviation', value: company.abbr },
     { label: 'Currency', value: company.default_currency },
     { label: 'Country', value: company.country },
@@ -168,6 +199,20 @@ onMounted(async () => {
 })
 
 watch(() => form.country, loadCharts)
+
+async function startOver() {
+  resetting.value = true
+  error.value = ''
+  try {
+    status.value = await workspace.resetBooks()
+    await load()
+    await loadCharts()
+  } catch (e) {
+    error.value = e.message || String(e)
+  } finally {
+    resetting.value = false
+  }
+}
 
 async function create() {
   saving.value = true

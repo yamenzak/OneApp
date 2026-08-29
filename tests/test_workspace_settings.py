@@ -222,7 +222,7 @@ def test_the_email_link_needs_nothing_we_have_not_already_wired():
 def test_books_setup_calls_erpnexts_own_wizard():
 	"""A hundred fixtures reimplemented is a hundred fixtures to keep in step
 	with a dependency we do not control."""
-	body = function(BOOKS, "create")
+	body = function(BOOKS, "_run")
 	assert "from erpnext.setup.setup_wizard.setup_wizard import setup_complete" in body
 	assert "setup_complete(frappe._dict(args))" in body
 
@@ -230,13 +230,14 @@ def test_books_setup_calls_erpnexts_own_wizard():
 def test_books_setup_marks_the_site_set_up():
 	"""The wizard sets this from the desk; the programmatic path does not, and
 	ERPNext reads it to decide whether the site is configured."""
-	body = function(BOOKS, "create")
+	body = function(BOOKS, "_run")
 	assert 'set_single_value("System Settings", "setup_complete", 1)' in body
 
 
 def test_books_refuses_to_run_twice():
-	body = function(BOOKS, "create")
-	assert 'frappe.get_all("Company", limit=1)' in body
+	# Both paths, because either running twice would insert fixtures that exist.
+	assert 'frappe.get_all("Company", limit=1)' in function(BOOKS, "_run")
+	assert 'frappe.get_all("Company", limit=1)' in function(BOOKS, "ensure_setup")
 
 
 def test_everything_erpnext_is_guarded_on_it_being_installed():
@@ -248,14 +249,18 @@ def test_everything_erpnext_is_guarded_on_it_being_installed():
 
 	tree = ast.parse(body)
 	for node in ast.walk(tree):
-		if isinstance(node, ast.FunctionDef) and node.name in ("charts", "create"):
+		if isinstance(node, ast.FunctionDef) and node.name in ("charts", "_run", "reset"):
 			segment = ast.get_source_segment(body, node)
 			assert "_require_erpnext()" in segment, node.name
+
+	# The sync's path has no session to throw at, so it checks and returns.
+	assert "if not erpnext_installed():" in function(BOOKS, "ensure_setup")
+	assert "if not erpnext_installed():" in function(BOOKS, "_charts_for")
 
 
 def test_the_chart_list_is_read_from_erpnext():
 	"""It ships as JSON inside the app, per country, and changes with it."""
-	assert "get_charts_for_country" in function(BOOKS, "charts")
+	assert "get_charts_for_country" in function(BOOKS, "_charts_for")
 
 
 # --------------------------------------------------------------------------- #
@@ -311,3 +316,126 @@ def test_every_forbidden_field_is_in_the_audit_too():
 	audit = AUDIT.read_text()
 	missing = [f for f in FORBIDDEN if f not in audit]
 	assert not missing, f"withheld but not explained: {sorted(missing)}"
+
+
+# --------------------------------------------------------------------------- #
+# Books at provisioning
+#
+# Books is a generally available app, so a workspace that has to be told to set
+# it up is a workspace that opens it to an ERPNext error about a missing default
+# company. The wizard that would have created one lives on a desk the customer
+# never sees, so the sync does it from what signup already answered.
+# --------------------------------------------------------------------------- #
+
+CONTROL_TENANT_API = ROOT / "apps/oneapp_control/oneapp_control/api/tenant.py"
+
+
+def test_signups_answers_reach_the_tenant_site():
+	"""The country came from the region they chose and the currency from the
+	plan they bought. Neither is knowable from inside the site."""
+	payload = function(CONTROL_TENANT_API, "sync")
+	assert '"books": _books_hint(tenant)' in payload
+
+	hint = function(CONTROL_TENANT_API, "_books_hint")
+	assert '"Region", tenant.region, "country"' in hint
+	assert '"Plan", tenant.plan, "currency"' in hint
+	assert "tenant.tenant_name" in hint
+
+
+def test_the_sync_sets_books_up():
+	body = function(SYNC, "sync_books")
+	assert "books.ensure_setup(hint)" in body
+
+
+def test_a_failed_books_setup_does_not_fail_the_sync():
+	"""A sync that stopped for it would also stop delivering entitlements,
+	quotas and member changes."""
+	body = function(SYNC, "sync_books")
+	assert "except Exception" in body
+	assert "log_error" in body
+
+
+def test_setup_is_skipped_rather_than_guessed_when_too_little_is_known():
+	"""Guessing a country guesses a chart of accounts and a tax regime."""
+	body = function(BOOKS, "ensure_setup")
+	for skip in ("no accounting app", "already set up", "not enough known"):
+		assert skip in body, skip
+	assert "no chart of accounts for" in body
+
+
+def test_an_assumed_setup_says_so():
+	"""Only the customer knows whether the chart and the financial year are
+	right, and they are only cheap to change before the first entry."""
+	assert "ASSUMED_KEY" in source(BOOKS)
+	assert '"assumed"' in function(BOOKS, "status")
+	assert '"can_reset"' in function(BOOKS, "status")
+
+	panel = source(SPA / "components/settings/BooksSettings.vue")
+	assert "status.assumed" in panel
+	assert "Start over" in panel
+
+
+def test_starting_over_is_refused_once_anything_is_posted():
+	body = function(BOOKS, "reset")
+	assert "_has_entries()" in body
+	assert "frappe.throw" in body
+
+	entries = function(BOOKS, "_has_entries")
+	for doctype in ("GL Entry", "Sales Invoice", "Payment Entry"):
+		assert doctype in entries, doctype
+
+
+def test_both_creation_paths_run_the_same_setup():
+	"""An assumed company and a typed one must be the same company."""
+	assert "_run(" in function(BOOKS, "create")
+	assert "_run(" in function(BOOKS, "ensure_setup")
+	assert "setup_complete(frappe._dict(args))" in function(BOOKS, "_run")
+
+
+def test_the_fiscal_year_follows_the_country():
+	"""A workspace in the UK given a January-to-December year has wrong books
+	from its first invoice."""
+	spec = source(BOOKS)
+	assert '"United Kingdom": ("04-01", "03-31")' in spec
+	assert '"India": ("04-01", "03-31")' in spec
+
+	body = function(BOOKS, "fiscal_year_for")
+	# ERPNext's own rule: a year whose start has not arrived yet began last year.
+	assert "year -= 1" in body
+
+
+def test_the_fiscal_year_table_matches_erpnexts_own():
+	"""Ported from `erpnext/public/js/setup_wizard.js`, which is the only place
+	it exists — and which is not ours, so it can change under us.
+
+	Skipped when ERPNext is not installed, which is every bench but a tenant's.
+	"""
+	candidates = list(ROOT.parent.glob("**/erpnext/public/js/setup_wizard.js"))
+	if not candidates:
+		pytest.skip("erpnext is not installed on this bench")
+
+	js = candidates[0].read_text()
+	block = re.search(r"erpnext\.setup\.fiscal_years = \{(.*?)\n\};", js, re.S).group(1)
+	theirs = {
+		re.sub(r'^"|"$', "", country): (start, end)
+		for country, start, end in re.findall(
+			r'\s*("?[\w ]+"?):\s*\["([\d-]+)",\s*"([\d-]+)"\]', block
+		)
+	}
+
+	import ast as _ast
+
+	spec = _ast.literal_eval(
+		re.search(r"FISCAL_YEARS = (\{.*?\n\})", source(BOOKS), re.S).group(1)
+	)
+	assert spec == theirs, "ERPNext's fiscal-year table has changed"
+
+
+def test_the_abbreviation_is_always_letters():
+	"""ERPNext puts it on every account name."""
+	body = function(BOOKS, "_abbreviate")
+	# Not `isalpha`, which is Unicode-aware: "Ünïcode Çø" would abbreviate to
+	# "ÜÇ" and land in every account name, every ledger export and every
+	# filename built from one.
+	assert '"A" <= c <= "Z"' in body
+	assert 'or "CO"' in body

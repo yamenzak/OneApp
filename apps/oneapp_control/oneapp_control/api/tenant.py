@@ -107,6 +107,29 @@ def sync():
 			"balance": ledger.balance(tenant_name),
 			"available": ledger.available(tenant_name),
 		},
+		# What signup already answered, so the tenant site can set its books up
+		# without asking again. Sent rather than assumed there: the country came
+		# from the region they chose and the currency from the plan they bought,
+		# and neither is knowable from inside the site.
+		"books": _books_hint(tenant),
+	}
+
+
+def _books_hint(tenant) -> dict:
+	"""Country, currency and company name for the accounting setup.
+
+	The tenant site decides whether to act on it — it is the only side that can
+	see whether ERPNext is installed or a company already exists.
+	"""
+	country = (
+		frappe.db.get_value("Region", tenant.region, "country") if tenant.region else None
+	)
+	currency = frappe.db.get_value("Plan", tenant.plan, "currency") if tenant.plan else None
+
+	return {
+		"company_name": tenant.tenant_name,
+		"country": country,
+		"currency": currency,
 	}
 
 

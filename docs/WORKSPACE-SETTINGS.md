@@ -25,8 +25,30 @@ overwritten.
 **ERPNext was installed and unusable.** Its setup wizard lives on the desk, so it
 had never been run: no Company, no Fiscal Year, no chart of accounts, and
 `setup_complete` at 0. Every accounting document would have failed for want of a
-default company. Books setup now asks the four answers the wizard needs and calls
-ERPNext's own `setup_complete`.
+default company.
+
+Books are now set up **at provisioning**, by the sync, from what signup already
+answered — the region gives the country, the plan gives the currency, the
+workspace name gives the company, and the country gives ERPNext's own default
+chart and financial year. That is the same set of defaults its wizard offers and
+most people accept, so a new workspace can invoice on day one rather than
+discovering a missing default company at the worst moment.
+
+What is assumed is announced. `status()` reports `assumed`, and OneSpace says so
+and offers to start over — but only while nothing has been posted, because a
+chart of accounts is structure the whole ledger hangs off. After the first entry
+it is a migration, and the panel says that instead.
+
+Setup is skipped rather than guessed when too little is known: no accounting app,
+a company already there, a missing country or currency, or a country ERPNext
+ships no verified chart for. Those workspaces are asked in OneSpace instead, which
+is the flow that already existed.
+
+The per-country financial years are ported from
+`erpnext/public/js/setup_wizard.js`, the only place they exist and not somewhere
+a Python caller can reach. A test re-reads that file where ERPNext is installed
+and fails if the two have drifted — a workspace in the UK given a
+January-to-December year has wrong books from its first invoice.
 
 **`session.is_admin` answered the wrong question.** It keyed on System Manager,
 which the workspace owner deliberately is not — so the person who administers the

@@ -27,6 +27,11 @@ export const workspace = {
       silent: true, method: 'GET',
     }),
 
+  resetBooks: () =>
+    callMethod('oneapp.oneapp_core.books.reset', {}, {
+      successMessage: 'Cleared — set your books up again below',
+    }),
+
   setUpBooks: (payload) =>
     callMethod('oneapp.oneapp_core.books.create', payload, {
       successMessage: 'Books are ready',
