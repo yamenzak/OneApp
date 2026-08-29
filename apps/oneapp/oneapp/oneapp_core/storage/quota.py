@@ -165,9 +165,12 @@ def database_summary() -> dict:
 	used = database_used_bytes()
 	fraction = (used / quota) if quota else 0
 
+	# Keys match what the shared UsageBar component reads. The component is
+	# generated into both apps, so the summary shapes it consumes are a contract:
+	# renaming one of these silently empties a meter rather than failing.
 	return {
-		"used_bytes": used,
-		"quota_bytes": quota,
+		"used": used,
+		"quota": quota,
 		"fraction": round(fraction, 4),
 		"warn": fraction >= WARN_FRACTION,
 		"exceeded": bool(quota) and used >= quota,
@@ -181,9 +184,12 @@ def usage_summary() -> dict:
 	used = current_usage()
 	fraction = (used / quota) if quota else 0
 
+	# Keys match what the shared UsageBar component reads. The component is
+	# generated into both apps, so the summary shapes it consumes are a contract:
+	# renaming one of these silently empties a meter rather than failing.
 	return {
-		"used_bytes": used,
-		"quota_bytes": quota,
+		"used": used,
+		"quota": quota,
 		"fraction": round(fraction, 4),
 		"warn": fraction >= WARN_FRACTION,
 		"exceeded": bool(quota) and used >= quota,

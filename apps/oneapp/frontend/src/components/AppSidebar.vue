@@ -36,14 +36,12 @@
     <template #footer>
       <div class="p-2">
         <QuotaMeter class="mb-2" />
-        <Dropdown :options="userOptions" placement="top" class="w-full">
-          <Button variant="ghost" class="w-full !justify-start">
-            <template #prefix>
-              <Avatar :label="session.user?.full_name || '?'" size="sm" />
-            </template>
-            <span class="truncate">{{ session.user?.full_name }}</span>
-          </Button>
-        </Dropdown>
+        <UserMenu
+          :name="session.user?.full_name"
+          :email="session.user?.name"
+          :subtitle="session.tenant?.plan"
+          :extra="extraMenuItems"
+        />
       </div>
     </template>
   </Sidebar>
@@ -51,19 +49,26 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   Sidebar, SidebarHeader, SidebarSection, SidebarLabel, SidebarItem,
-  Avatar, Button, Dropdown, Icon,
+  Avatar, Icon,
 } from '@/ui'
 import QuotaMeter from './QuotaMeter.vue'
+import UserMenu from './UserMenu.vue'
 import { session } from '../lib/session'
 
-const userOptions = computed(() => [
-  { label: 'Account', onClick: () => (window.location.href = '/one/account') },
-  // Desk is for support, and noise for everyone else.
-  ...(session.user?.is_admin
-    ? [{ label: 'Desk', onClick: () => (window.location.href = '/app') }]
-    : []),
-  { label: 'Log out', onClick: () => (window.location.href = '/api/method/logout') },
+const router = useRouter()
+
+// Dark mode and logout come from UserMenu, which every surface shares. There is
+// deliberately no link to the desk: it exposes the whole schema behind a UI that
+// was never designed to be a boundary, so it is not part of the product for
+// anyone, ourselves included.
+const extraMenuItems = computed(() => [
+  {
+    label: 'Account',
+    icon: 'lucide-circle-user',
+    onClick: () => router.push({ name: 'Account' }),
+  },
 ])
 </script>

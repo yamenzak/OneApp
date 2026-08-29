@@ -1,26 +1,32 @@
 <template>
-  <div class="mx-auto max-w-5xl p-8">
-    <h1 class="text-xl font-semibold">Your apps</h1>
-    <p class="mt-1 text-sm text-gray-600">
-      Everything enabled for {{ session.tenant?.name || 'this workspace' }}.
-    </p>
+  <PageHeader>
+    <template #title>
+      <div>
+        <span class="text-base font-medium text-ink-gray-8">Your apps</span>
+        <p class="text-p-sm text-ink-gray-5">
+          Everything enabled for {{ session.tenant?.name || 'this workspace' }}.
+        </p>
+      </div>
+    </template>
+  </PageHeader>
 
-    <div v-if="apps.length" class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="p-5">
+    <div v-if="!session.loaded" class="grid place-items-center py-20">
+      <LoadingIndicator class="size-5 text-ink-gray-5" />
+    </div>
+
+    <div v-else-if="apps.length" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <router-link
         v-for="app in apps"
         :key="app.app_code"
-        :to="`/app/${app.app_code}`"
-        class="group rounded-lg border border-gray-200 bg-white p-4 transition hover:border-gray-300 hover:shadow-sm"
+        :to="{ name: 'App', params: { appCode: app.app_code } }"
+        class="rounded-lg border border-outline-gray-2 bg-surface-white p-4 transition hover:border-outline-gray-3 hover:bg-surface-gray-1"
       >
         <div class="flex items-start gap-3">
-          <span
-            class="grid h-9 w-9 shrink-0 place-items-center rounded bg-gray-100 text-sm font-medium"
-          >
-            {{ app.app_label?.[0] || '?' }}
-          </span>
+          <Avatar :label="app.app_label" shape="square" size="lg" />
           <div class="min-w-0">
-            <p class="truncate font-medium">{{ app.app_label }}</p>
-            <p v-if="app.description" class="mt-0.5 line-clamp-2 text-xs text-gray-600">
+            <p class="truncate text-base font-medium text-ink-gray-8">{{ app.app_label }}</p>
+            <p v-if="app.description" class="mt-0.5 line-clamp-2 text-p-sm text-ink-gray-6">
               {{ app.description }}
             </p>
           </div>
@@ -28,21 +34,19 @@
       </router-link>
     </div>
 
-    <div
+    <EmptyState
       v-else
-      class="mt-6 rounded-lg border border-dashed border-gray-300 p-10 text-center"
-    >
-      <p class="text-sm font-medium">No apps yet</p>
-      <p class="mx-auto mt-1 max-w-sm text-sm text-gray-600">
-        Nothing has been enabled for this workspace. If you were expecting something
-        here, get in touch and we'll sort it out.
-      </p>
-    </div>
+      icon="lucide-layout-grid"
+      title="No apps yet"
+      description="Nothing has been enabled for this workspace. If you were expecting something here, get in touch and we will sort it out."
+    />
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { PageHeader, Avatar, LoadingIndicator } from '@/ui'
+import EmptyState from '../components/EmptyState.vue'
 import { session } from '../lib/session'
 
 const apps = computed(() => session.apps)

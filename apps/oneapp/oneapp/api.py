@@ -7,7 +7,8 @@ no tokens, no CORS, no refresh dance.
 import frappe
 from frappe import _
 
-from oneapp.oneapp_core import sync
+from oneapp.oneapp_core import jobs, sync
+from oneapp.oneapp_core.storage import quota
 
 
 @frappe.whitelist()
@@ -29,9 +30,13 @@ def session():
 			"plan": state.get("plan_code"),
 		},
 		"apps": visible_apps(),
+		# Measured here rather than read from cached state, which holds the
+		# allowance and not the consumption. Reading usage from there returned
+		# zero every time, so the meter looked empty on a full site.
 		"quota": {
-			"storage_used_bytes": state.get("storage_used_bytes") or 0,
-			"storage_quota_bytes": state.get("storage_quota_bytes") or 0,
+			"storage": quota.usage_summary(),
+			"database": quota.database_summary(),
+			"jobs": jobs.summary(),
 			"max_users": state.get("max_users") or 0,
 		},
 		"credits": {"balance": state.get("credit_balance") or 0},

@@ -1,5 +1,3 @@
-import { computed } from 'vue'
-
 import { useResource } from './resource'
 
 /**
@@ -49,15 +47,3 @@ export const session = {
   reload: () => sessionResource.reload(),
 }
 
-export const storageFraction = computed(() => {
-  const quota = session.quota
-  if (!quota?.storage_quota_bytes) return 0
-  return quota.storage_used_bytes / quota.storage_quota_bytes
-})
-
-export function formatBytes(bytes) {
-  if (!bytes) return '0 B'
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
-  return `${(bytes / 1024 ** i).toFixed(i === 0 ? 0 : 1)} ${units[i]}`
-}
