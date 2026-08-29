@@ -71,6 +71,12 @@ def test_workspace_account_url_resolves(portal):
 	assert matches("/" + _path(portal.account_url("acme")), declared_paths())
 
 
+def test_billing_section_url_resolves(portal):
+	# The URL Stripe actually returns customers to. It resolves to its own route
+	# now, not a tab index, so this is the one that must not 404.
+	assert matches("/" + _path(portal.account_url("acme", "billing")), declared_paths())
+
+
 def test_prefix_matches_router(portal):
 	# Every portal route shares one prefix; if the router's changes and the
 	# constant does not, the checks above would still pass against stale routes.

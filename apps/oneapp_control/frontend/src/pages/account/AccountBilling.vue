@@ -1,4 +1,9 @@
 <template>
+  <PageHeader>
+    <PageHeaderTitle>Billing</PageHeaderTitle>
+  </PageHeader>
+
+  <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
   <div v-if="data" class="flex flex-col gap-6 py-5">
     <section>
       <div class="flex items-start justify-between gap-4 rounded border border-outline-gray-2 p-4">
@@ -82,13 +87,16 @@
   <div v-else class="grid place-items-center py-16">
     <LoadingIndicator class="size-5 text-ink-gray-5" />
   </div>
+  </div>
 </template>
 
 <script setup>
-import { computed, ref, toRef, watch } from 'vue'
-import { Alert, Badge, Button, LoadingIndicator, List, ListRows, ListRow, ListCell, dayjs } from '@/ui'
+import { computed, onMounted, ref, toRef, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { PageHeader, PageHeaderTitle, Alert, Badge, Button, LoadingIndicator, List, ListRows, ListRow, ListCell, dayjs } from '@/ui'
 import PackCard from '../../components/PackCard.vue'
 import { customer, useOverview } from '../../lib/customer'
+import { notifyInfo, notifySuccess } from '../../lib/notify'
 
 const props = defineProps({ workspace: { type: String, default: null } })
 const resource = useOverview(toRef(props, 'workspace'))
@@ -98,6 +106,27 @@ const packs = ref({ credits: [], storage: [] })
 const invoices = ref([])
 const opening = ref(false)
 const busy = ref(null)
+
+const route = useRoute()
+const router = useRouter()
+
+// Stripe's redirect is the only signal the customer gets that a purchase landed;
+// the webhook that actually applies it arrives separately, so this says
+// "received" rather than claiming the balance is already updated. The flags are
+// stripped afterwards so a refresh does not toast a second time.
+onMounted(() => {
+  if (route.query.checkout === 'success') {
+    notifySuccess('Payment received — your balance updates in a moment')
+  } else if (route.query.checkout === 'cancelled') {
+    notifyInfo('Checkout cancelled. Nothing was charged.')
+  } else {
+    return
+  }
+  const query = { ...route.query }
+  delete query.checkout
+  delete query.session
+  router.replace({ query })
+})
 
 const formatDate = (value) => (value ? dayjs(value).format('D MMM YYYY') : '—')
 

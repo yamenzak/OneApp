@@ -1,54 +1,111 @@
 <template>
   <FrappeUIProvider>
-    <!-- The staff console: sidebar chrome, gated on configuration readiness. -->
-    <template v-if="isAdmin">
-      <DesktopShell v-if="ready">
-        <template #sidebar>
-          <AppSidebar />
-        </template>
-        <router-view :key="$route.fullPath" />
-      </DesktopShell>
+    <!-- Signup and the welcome screen are their own full-bleed pages: a visitor
+         with no session has no workspaces to put in a rail and no sidebar worth
+         showing. Everything else gets the shell. -->
+    <router-view v-if="bare" :key="$route.fullPath" />
 
-      <div v-else class="grid h-screen place-items-center">
-        <LoadingIndicator class="size-5 text-ink-gray-5" />
-      </div>
+    <div v-else-if="!ready" class="grid h-screen place-items-center">
+      <LoadingIndicator class="size-5 text-ink-gray-5" />
+    </div>
 
-      <!-- Outside the v-if chain so it survives the shell mounting, and a dialog
-           rather than a route because settings overlay whatever you were doing —
-           closing should put you back, not navigate you away. -->
-      <SettingsShell />
-    </template>
+    <AppShell v-else :apps="railApps" :active-app="activeWorkspace" :nav-items="navItems">
+      <template #sidebar>
+        <AppSidebar v-if="isAdmin" />
+        <PortalSidebar v-else />
+      </template>
 
-    <!-- The customer portal: no sidebar, no readiness call. A visitor at signup
-         has no session yet, so anything staff-shaped here would 403 on load. -->
-    <router-view v-else :key="$route.fullPath" />
+      <router-view :key="$route.fullPath" />
+    </AppShell>
+
+    <!-- Outside the shell so it survives a layout swap, and a dialog rather than
+         a route because settings overlay whatever you were doing — closing should
+         put you back, not navigate you away. -->
+    <SettingsShell v-if="isAdmin" />
   </FrappeUIProvider>
 </template>
 
 <script setup>
 import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { FrappeUIProvider, DesktopShell, LoadingIndicator, usePageMeta } from '@/ui'
+import { FrappeUIProvider, LoadingIndicator, usePageMeta } from '@/ui'
+import AppShell from './components/AppShell.vue'
 import AppSidebar from './components/AppSidebar.vue'
+import PortalSidebar from './components/PortalSidebar.vue'
 import SettingsShell from './components/settings/SettingsShell.vue'
 import { setup } from './lib/setup'
+import { workspaces } from './lib/customer'
 
 const route = useRoute()
 const isAdmin = computed(() => route.meta.surface === 'admin')
+const bare = computed(() => route.meta.chrome === false)
 
-// The shell renders as soon as readiness is known — including when it reports
-// the control plane is unconfigured, which is exactly when Setup matters.
-const ready = computed(() => !setup.loading || setup.checks.length > 0)
+// The console renders as soon as readiness is known — including when it reports
+// the control plane is unconfigured, which is exactly when Setup matters. The
+// portal waits on its own load instead; readiness is not the customer's call.
+const ready = computed(() =>
+  isAdmin.value ? !setup.loading || setup.checks.length > 0 : !workspaces.loading,
+)
+
+// The rail carries workspaces on the portal. The console is a single surface, so
+// it passes none and AppShell renders no rail — a one-item switcher is worse
+// than no switcher.
+const railApps = computed(() => {
+  if (isAdmin.value) return []
+  return workspaces.list.map((w) => ({
+    key: w.name,
+    label: w.tenant_name,
+    description: w.plan,
+    to: { name: 'AccountOverview', params: { workspace: w.name } },
+  }))
+})
+
+const activeWorkspace = computed(() => (isAdmin.value ? '' : workspaces.current || ''))
+
+// The phone's bottom bar. Same destinations as the sidebar, which is the point:
+// the two must not drift into different products.
+const navItems = computed(() => {
+  if (isAdmin.value) {
+    return [
+      { label: 'Tenants', icon: 'lucide-users', to: { name: 'Tenants' } },
+      { label: 'Jobs', icon: 'lucide-activity', to: { name: 'Jobs' } },
+      { label: 'Shards', icon: 'lucide-server', to: { name: 'Shards' } },
+      { label: 'Setup', icon: 'lucide-settings', to: { name: 'Setup' } },
+    ]
+  }
+  const workspace = workspaces.current
+  if (!workspace) return []
+  return [
+    { label: 'Overview', icon: 'lucide-home', to: { name: 'AccountOverview', params: { workspace } } },
+    { label: 'Billing', icon: 'lucide-credit-card', to: { name: 'AccountBilling', params: { workspace } } },
+    { label: 'Domain', icon: 'lucide-globe', to: { name: 'AccountDomain', params: { workspace } } },
+  ]
+})
 
 usePageMeta(() => (isAdmin.value ? { title: 'OneApp Admin', emoji: '⚙️' } : { title: 'OneApp' }))
 
-// Loaded here rather than in onMounted so it never fires on the portal, where
-// the readiness endpoint is not the customer's to call.
+// Loaded here rather than in onMounted so neither surface fires the other's
+// calls: readiness is not the customer's to ask for, and a visitor at signup has
+// no session to list workspaces with.
 watch(
-  isAdmin,
-  (admin) => {
-    if (admin && setup.loading && !setup.checks.length) setup.load()
+  [isAdmin, bare],
+  ([admin, isBare]) => {
+    if (isBare) return
+    if (admin) {
+      if (setup.loading && !setup.checks.length) setup.load()
+    } else if (!workspaces.list.length) {
+      workspaces.load(route.params.workspace || null)
+    }
   },
   { immediate: true },
+)
+
+// Keep the rail in step with the URL, so back, forward and a pasted link all
+// select the workspace the page is actually showing.
+watch(
+  () => route.params.workspace,
+  (name) => {
+    if (name && workspaces.list.some((w) => w.name === name)) workspaces.current = name
+  },
 )
 </script>

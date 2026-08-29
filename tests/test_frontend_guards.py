@@ -10,6 +10,8 @@ import json
 import sys
 from pathlib import Path
 
+import re
+
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -181,11 +183,18 @@ def test_barrel_covers_everything_frappe_ui_exports():
 
 	exported = set()
 	index = (src / "index.ts").read_text()
-	for directory in re.findall(r"export \* from '\./components/([^']+)'", index):
-		for name in ("index.ts", "index.js"):
-			path = src / "components" / directory / name
-			if path.exists():
+	for target in re.findall(r"export \* from '\./components/([^']+)'", index):
+		# Some re-exports name the barrel file explicitly ('Sidebar/index.ts')
+		# and some name only the directory ('Rail'). Appending index.ts blindly
+		# turned the first kind into .../index.ts/index.ts, which does not exist
+		# — so those directories were skipped in silence and their components
+		# could go missing from our barrel with this guard still passing.
+		candidates = [src / "components" / target]
+		candidates += [src / "components" / target / name for name in ("index.ts", "index.js")]
+		for path in candidates:
+			if path.is_file():
 				exported |= set(re.findall(r"export \{ default as (\w+)", path.read_text()))
+				break
 
 	barrel = (ROOT / "apps/oneapp_control/frontend/src/ui.js").read_text()
 	missing = sorted(c for c in exported if c[0].isupper() and c not in barrel)
@@ -223,3 +232,57 @@ def test_generated_html_shells_are_not_committed():
 
 	missing = sorted(s for s in shells if s not in ignored)
 	assert not missing, f"build output is not gitignored: {missing}"
+
+
+# --- the app shell ----------------------------------------------------------
+#
+# DesktopShell and MobileShell are separate components with different slots, so
+# something has to choose between them. If each surface chooses for itself, one
+# account starts looking like two products on the same tablet — and MobileShell
+# has no rail slot at all, so a surface that reaches for it directly silently
+# loses app switching on phones.
+
+SHELL = "src/components/AppShell.vue"
+
+
+def _sources(app: str, suffix: str = ".vue"):
+	root = ROOT / f"apps/{app}/frontend/src"
+	return {p.relative_to(root.parent).as_posix(): p.read_text() for p in root.rglob(f"*{suffix}")}
+
+
+@pytest.mark.parametrize("app", ["oneapp", "oneapp_control"])
+def test_only_the_shell_composes_the_layout_primitives(app):
+	restricted = ("DesktopShell", "MobileShell", "MobileNav", "Rail")
+	# The boundary matters: <RailAccount> is a component of ours that happens to
+	# start with a restricted name, and matching on the prefix alone would fail
+	# this guard on a file that does nothing wrong.
+	offenders = {
+		path: [name for name in restricted if re.search(rf"<{name}[\s/>]", source)]
+		for path, source in _sources(app).items()
+		if path != SHELL
+	}
+	offenders = {k: v for k, v in offenders.items() if v}
+	assert not offenders, f"compose <AppShell> instead: {offenders}"
+
+
+@pytest.mark.parametrize("app", ["oneapp", "oneapp_control"])
+def test_shell_is_identical_across_apps(app):
+	assert (ROOT / f"apps/{app}/frontend/{SHELL}").read_text() == (
+		ROOT / f"apps/oneapp_control/frontend/{SHELL}"
+	).read_text()
+
+
+@pytest.mark.parametrize("app", ["oneapp", "oneapp_control"])
+def test_mobile_can_still_reach_the_app_switcher(app):
+	# The gap MobileShell leaves: it has no rail slot, so without an explicit
+	# switcher a phone user is stuck in whichever app they opened.
+	shell = (ROOT / f"apps/{app}/frontend/{SHELL}").read_text()
+	assert "BottomSheet" in shell
+
+
+@pytest.mark.parametrize("app", ["oneapp", "oneapp_control"])
+def test_no_binary_theme_toggle(app):
+	# A two-state toggle cannot express "follow the system", so appearance is a
+	# three-way ThemeSwitcher in settings instead.
+	for path, source in _sources(app).items():
+		assert "toggleColorScheme" not in source, f"{app}/{path} still toggles the theme"

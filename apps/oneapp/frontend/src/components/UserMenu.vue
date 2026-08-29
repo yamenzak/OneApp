@@ -20,7 +20,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Avatar, Button, Dropdown, Icon, useColorScheme } from '@/ui'
+import { Avatar, Button, Dropdown, Icon } from '@/ui'
 
 const props = defineProps({
   name: { type: String, default: '' },
@@ -33,15 +33,12 @@ const props = defineProps({
 
 const displayName = computed(() => props.name || props.email || 'Account')
 
-const { colorScheme, toggleColorScheme } = useColorScheme()
-
+// Deliberately no light/dark toggle here. A binary switch cannot express
+// 'follow the system', so anyone who wants that ends up flipping it by hand
+// twice a day. Appearance is a three-way choice and lives in settings, next to
+// every other preference — see ThemeSetting.vue.
 const options = computed(() => [
   ...props.extra,
-  {
-    label: colorScheme.value === 'dark' ? 'Light mode' : 'Dark mode',
-    icon: colorScheme.value === 'dark' ? 'lucide-sun' : 'lucide-moon',
-    onClick: () => toggleColorScheme(),
-  },
   {
     label: 'Log out',
     icon: 'lucide-log-out',

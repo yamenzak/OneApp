@@ -1,4 +1,9 @@
 <template>
+  <PageHeader>
+    <PageHeaderTitle>Overview</PageHeaderTitle>
+  </PageHeader>
+
+  <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
   <div v-if="data" class="flex flex-col gap-6 py-5">
     <Alert
       v-if="exceeded.length"
@@ -59,11 +64,12 @@
   <div v-else class="grid place-items-center py-16">
     <LoadingIndicator class="size-5 text-ink-gray-5" />
   </div>
+  </div>
 </template>
 
 <script setup>
 import { computed, toRef } from 'vue'
-import { Alert, LoadingIndicator, List, ListRows, ListRow, ListCell } from '@/ui'
+import { PageHeader, PageHeaderTitle, Alert, LoadingIndicator, List, ListRows, ListRow, ListCell } from '@/ui'
 import UsageBar from '../../components/UsageBar.vue'
 import { useOverview } from '../../lib/customer'
 

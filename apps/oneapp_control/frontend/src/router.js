@@ -28,24 +28,44 @@ const portalRoutes = [
   {
     path: '/portal/signup',
     name: 'Signup',
+    meta: { chrome: false },
     component: () => import('./pages/signup/SignupPage.vue'),
   },
   {
     path: '/portal/welcome',
     name: 'SignupWelcome',
+    meta: { chrome: false },
     component: () => import('./pages/signup/SignupWelcome.vue'),
   },
   {
     path: '/portal/account',
     name: 'Account',
-    component: () => import('./pages/account/AccountLayout.vue'),
+    component: () => import('./pages/account/AccountResolve.vue'),
+  },
+  // A customer with several workspaces gets one addressable URL each, so the
+  // rail can deep-link and a bookmark keeps working. Each section is its own
+  // route rather than a tab: the sidebar entry has to be linkable, and a tab
+  // index is not something you can send someone.
+  {
+    path: '/portal/account/:workspace',
+    redirect: (to) => `/portal/account/${to.params.workspace}/overview`,
   },
   {
-    // A customer with several workspaces gets one addressable URL each, so the
-    // switcher can deep-link and a bookmark keeps working.
-    path: '/portal/account/:workspace',
-    name: 'AccountWorkspace',
-    component: () => import('./pages/account/AccountLayout.vue'),
+    path: '/portal/account/:workspace/overview',
+    name: 'AccountOverview',
+    component: () => import('./pages/account/AccountOverview.vue'),
+    props: true,
+  },
+  {
+    path: '/portal/account/:workspace/billing',
+    name: 'AccountBilling',
+    component: () => import('./pages/account/AccountBilling.vue'),
+    props: true,
+  },
+  {
+    path: '/portal/account/:workspace/domain',
+    name: 'AccountDomain',
+    component: () => import('./pages/account/AccountDomain.vue'),
     props: true,
   },
 ]

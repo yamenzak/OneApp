@@ -1,8 +1,8 @@
 <template>
-  <div class="p-6">
-    <SettingsHeader :title="title" :description="description" />
+  <SettingsHeader :title="title" :description="description" />
 
-    <div class="mt-6 flex flex-col gap-5">
+  <SettingsBody>
+    <div class="flex flex-col gap-5 pt-6">
       <SettingsRow v-for="field in fields" :key="field.name" :label="field.label">
         <template #description>{{ field.hint }}</template>
         <FormControl
@@ -19,12 +19,12 @@
       <Button variant="solid" label="Save" :loading="saving" @click="save" />
       <span v-if="dirty" class="text-p-sm text-ink-gray-5">Unsaved changes</span>
     </div>
-  </div>
+  </SettingsBody>
 </template>
 
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
-import { Button, FormControl, SettingsHeader, SettingsRow } from '@/ui'
+import { Button, FormControl, SettingsHeader, SettingsBody, SettingsRow } from '@/ui'
 import { callMethod } from '../../lib/resource'
 
 /**

@@ -141,3 +141,86 @@ new operational capability has to be built rather than getting a free doctype
 form. The reason is that the desk exposes the whole schema — every tenant's
 billing, every credential — behind a UI that was never designed to be a boundary,
 and "it is only for admins" stops being true the first time it isn't.
+
+---
+
+## 8. Roles and permissions
+
+**We ignore the roles ERPNext, HRMS and Payments ship with.** We use those apps
+for the business logic they already implement, not for their idea of who an
+"Accounts Manager" is. A customer never sees ERPNext, so a role named for
+ERPNext's org chart describes nothing they recognise.
+
+OneApp defines its own roles instead. Two kinds:
+
+| Kind | Created by | Editable by customer |
+| --- | --- | --- |
+| **Recommended** | us, per app, from the manifest | no — sync would fight them |
+| **Custom** | the customer, through our API | yes, within the allowlist |
+
+### The manifest is the single source of truth
+
+Each `OneApp App` declares the doctypes it exposes. That one list drives three
+things, which is what makes the model hold together:
+
+1. the DocPerms we generate for our own roles,
+2. what an entitlement grants and revokes,
+3. the allowlist a customer's custom role may draw from.
+
+A doctype absent from every manifest is reachable by nobody, without anyone
+having to remember to exclude it.
+
+### Why not reuse ERPNext's roles with `desk_access` turned off
+
+That was the first plan and it is worse. `user_type` is derived on every `User`
+save (`frappe/core/doctype/user/user.py`): any role with `desk_access = 1` makes
+the holder a System User, and `frappe/www/desk.py` only refuses `/app` to Website
+Users. So desk access is decided by role flags, and flipping them on upstream
+roles means re-flipping after every ERPNext upgrade — a silent reopening of the
+desk if it is ever missed. Our own roles are `desk_access = 0` at creation, and
+there is nothing to keep flipping.
+
+### The cost, stated plainly
+
+DocPerms attach to role names, so our roles begin with no permissions and we
+generate them. Scoped to what our apps actually expose that is tens of doctypes,
+not the ~1,200 in a stock site — but it is real work, and two parts of it cannot
+be done by reading code:
+
+- **The transitive set is not the visible set.** Submitting a Sales Invoice
+  writes GL Entry, Payment Ledger Entry, Stock Ledger Entry and updates Item.
+  Much of that runs `ignore_permissions=True` inside ERPNext, but not all, and a
+  miss surfaces as a permission error thrown deep in a hook naming a doctype the
+  customer has never heard of. This set has to be discovered by running the real
+  flows against a real site, not enumerated by guessing.
+- **Some ERPNext logic branches on literal role names** rather than on
+  permissions. Those paths do not fail — they quietly take the other branch for
+  our roles.
+
+### Rules for customer-created roles
+
+Enforced in the API that creates them, not in a doctype form:
+
+- **Allowlist, never denylist.** `User`, `Role`, `DocType`, `Server Script` and
+  `System Settings` are out because they are in no manifest, not because someone
+  remembered to exclude them.
+- **`desk_access` forced to 0 on write**, not defaulted. One saved role with it
+  set would turn every holder into a System User and reopen `/app`.
+- **Managed roles are not customer-editable**, or entitlement sync and their
+  edits overwrite each other.
+
+### Consequence we accept
+
+Every tenant user is a Website User, so Query Report and the report builder are
+gone — they require desk. Reporting is something we build in the SPA. This
+already followed from §7; it is restated here because it is real work, not a
+footnote.
+
+### The workspace owner is not a System Manager
+
+They own the workspace, not the site. `site_config` holds
+`oneapp_control_secret`; a System Manager could read it and sign requests as
+their own tenant, forging usage reports and credit commits. Ops the customer
+needs — inviting users, managing seats, creating roles — are whitelisted methods
+we expose and run elevated, surfaced in the SPA. Capability comes from our API,
+never from a Frappe admin role.

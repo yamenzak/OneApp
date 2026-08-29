@@ -1,7 +1,7 @@
 <template>
-  <div class="p-6">
-    <SettingsHeader :title="title" :description="description" />
+  <SettingsHeader :title="title" :description="description" />
 
+  <SettingsBody>
     <div v-if="resource.loading && !rows.length" class="grid place-items-center py-12">
       <LoadingIndicator class="size-5 text-ink-gray-5" />
     </div>
@@ -23,13 +23,13 @@
         </ListRow>
       </ListRows>
     </List>
-  </div>
+  </SettingsBody>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import {
-  Badge, LoadingIndicator, SettingsHeader,
+  Badge, LoadingIndicator, SettingsHeader, SettingsBody,
   List, ListHeader, ListHeaderCell, ListRows, ListRow, ListCell,
 } from '@/ui'
 import EmptyState from '../EmptyState.vue'

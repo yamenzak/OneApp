@@ -72,4 +72,31 @@ export default [
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
+  {
+    // The layout primitives belong to AppShell and nothing else.
+    //
+    // DesktopShell and MobileShell are different components with different
+    // slots, so every surface that composes them directly makes its own choice
+    // about the breakpoint, about whether a rail appears, and about how a phone
+    // reaches the app switcher. Two surfaces choosing differently is how one
+    // account starts looking like two products on the same tablet — and the
+    // mobile shell has no rail slot at all, so 'just use MobileShell' silently
+    // drops app switching.
+    files: ['src/**/*.vue'],
+    ignores: ['src/components/AppShell.vue'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        paths: [{
+          name: '@/ui',
+          importNames: [
+            'DesktopShell', 'MobileShell', 'MobileNav', 'MobileNavItem',
+            'Rail', 'RailItem',
+          ],
+          message:
+            'Compose <AppShell> instead. It owns the desktop/mobile split, the ' +
+            'rail, and the bottom-bar app switcher, so every surface agrees.',
+        }],
+      }],
+    },
+  },
 ]

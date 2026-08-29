@@ -39,6 +39,11 @@
         <UsageBar label="Background jobs" :usage="jobUsage" format="count" />
       </div>
 
+      <h2 class="mt-8 text-base font-medium text-ink-gray-8">Preferences</h2>
+      <div class="mt-3 rounded-lg border border-outline-gray-2 bg-surface-white p-4">
+        <ThemeSetting />
+      </div>
+
       <p class="mt-4 text-p-sm text-ink-gray-5">
         Billing, storage add-ons and your plan are managed in your OneApp account.
       </p>
@@ -50,6 +55,7 @@
 import { computed } from 'vue'
 import { PageHeader, LoadingIndicator } from '@/ui'
 import UsageBar from '../components/UsageBar.vue'
+import ThemeSetting from '../components/ThemeSetting.vue'
 import { session } from '../lib/session'
 
 const quota = computed(() => session.quota || {})

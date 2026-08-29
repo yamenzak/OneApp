@@ -219,7 +219,7 @@ def billing_portal(workspace: str) -> dict:
 		frappe.throw(_("No Stripe customer on this subscription."))
 
 	session = stripe_client.create_billing_portal_session(
-		customer_id, portal.account_url(tenant.name, tab="billing")
+		customer_id, portal.account_url(tenant.name, "billing")
 	)
 	return {"url": session.get("url")}
 

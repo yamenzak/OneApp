@@ -48,8 +48,17 @@ def welcome_url(request: str) -> str:
 	return _build(WELCOME, {"request": request})
 
 
-def account_url(workspace: str | None = None, **query) -> str:
-	path = f"{ACCOUNT}/{workspace}" if workspace else ACCOUNT
+def account_url(workspace: str | None = None, section: str | None = None, **query) -> str:
+	"""A page in the customer's account.
+
+	`section` is a sidebar destination — overview, billing, domain — and is part
+	of the path rather than a query flag, because each one is its own route.
+	"""
+	path = ACCOUNT
+	if workspace:
+		path = f"{path}/{workspace}"
+		if section:
+			path = f"{path}/{section}"
 	return _build(path, query)
 
 

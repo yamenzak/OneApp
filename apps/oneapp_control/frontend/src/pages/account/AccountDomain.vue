@@ -1,4 +1,9 @@
 <template>
+  <PageHeader>
+    <PageHeaderTitle>Domain</PageHeaderTitle>
+  </PageHeader>
+
+  <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
   <div v-if="guide" class="flex flex-col gap-6 py-5">
     <section v-if="guide.current">
       <div class="flex items-center justify-between rounded border border-outline-gray-2 p-4">
@@ -77,11 +82,12 @@
   <div v-else class="grid place-items-center py-16">
     <LoadingIndicator class="size-5 text-ink-gray-5" />
   </div>
+  </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
-import { Alert, Badge, Button, FormControl, LoadingIndicator } from '@/ui'
+import { PageHeader, PageHeaderTitle, Alert, Badge, Button, FormControl, LoadingIndicator } from '@/ui'
 import { customer } from '../../lib/customer'
 import { notifySuccess } from '../../lib/notify'
 

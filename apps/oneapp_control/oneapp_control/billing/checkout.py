@@ -26,8 +26,8 @@ def _urls(tenant: str):
 	happened. Stripe substitutes the session id into the success URL.
 	"""
 	return (
-		portal.account_url(tenant, tab="billing", checkout="success", session="{CHECKOUT_SESSION_ID}"),
-		portal.account_url(tenant, tab="billing", checkout="cancelled"),
+		portal.account_url(tenant, "billing", checkout="success", session="{CHECKOUT_SESSION_ID}"),
+		portal.account_url(tenant, "billing", checkout="cancelled"),
 	)
 
 
@@ -178,6 +178,6 @@ def billing_portal(tenant: str) -> dict:
 		frappe.throw(_("No Stripe customer for {0}.").format(tenant))
 
 	session = stripe_client.create_billing_portal_session(
-		subscription.stripe_customer_id, portal.account_url(tenant, tab="billing")
+		subscription.stripe_customer_id, portal.account_url(tenant, "billing")
 	)
 	return {"url": session.get("url")}

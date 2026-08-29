@@ -20,6 +20,7 @@ export {
   DesktopShell,
   MobileShell,
   MobileNav,
+  MobileNavItem,
   Rail,
   RailItem,
   ScrollArea,

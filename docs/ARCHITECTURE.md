@@ -152,6 +152,34 @@ frontends; the separate routes are what let `www/admin.py` require System Manage
 Because one bundle answers on two paths, the Vue router's history base is `/` and every route
 carries its own prefix. A base of `/admin` would mis-resolve every URL under `/portal`.
 
+### Layout
+
+Rail → sidebar → content, the frappe-ui shell pattern:
+
+| Region | Tenant SPA | Control `/admin` | Control `/portal` |
+| --- | --- | --- | --- |
+| **Rail** | the workspace's apps | none — one surface | the customer's workspaces |
+| **Sidebar** | sections of the active app | console sections | account sections |
+| **Content** | whatever the sidebar selected | | |
+
+Every sidebar entry is its own route, never a tab index: an entry you cannot
+link to is one you cannot send to someone.
+
+**`AppShell` is the only component allowed to compose the layout primitives.**
+`DesktopShell` and `MobileShell` are different components with different slots,
+so something has to choose between them — and a surface choosing for itself is
+how one account comes to look like two products on the same tablet. It is
+generated into both apps, guarded by an eslint rule on the imports and a test on
+the markup.
+
+`MobileShell` has no rail slot, so below 768px app switching would simply
+disappear. `AppShell` puts it in a `BottomSheet` opened from the bottom bar —
+a touch target per app rather than a menu row.
+
+Appearance is a three-way `ThemeSwitcher` (light / dark / system) in settings,
+not a toggle in the user menu. A two-state toggle cannot express "follow the
+system", so anyone wanting that ends up flipping it by hand twice a day.
+
 Every customer-facing URL the server builds — Stripe return URLs, signup links, the billing
 portal — comes from `oneapp_control/portal.py`, and `tests/test_portal_urls.py` parses the
 router to prove they resolve. Nothing fails loudly when those disagree: Stripe accepts any
