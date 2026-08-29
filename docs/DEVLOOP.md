@@ -61,6 +61,30 @@ through frappe-ui's plugin, so the session cookie and CSRF token are real.
 restarts the bench. No image build, no bench move.
 
 ```bash
+scripts/live.py status     # what the bench runs, and what we have patched onto it
+scripts/live.py push       # send everything since the deployed commit
+scripts/live.py revert     # back to the deployed image
+scripts/live.py watch      # push on every change
+```
+
+Credentials come from `ONEAPP_FC_ENV` (a file setting `PRESS_KEY` and
+`PRESS_SECRET`); the bench group defaults to `ONEAPP_BENCH_GROUP`.
+
+`push` reverts its own previous patch first, because the container is
+cumulative and re-applying an overlapping diff conflicts on context that is
+already changed. It reverts through **press's own `revert_patch`**, which
+re-runs `git apply --reverse` against the stored patch file. Flipping the diff
+by hand looks equivalent and is not — new-file and deleted-file hunks have to be
+rewritten, and one mistake leaves the bench in a state where nothing further
+applies.
+
+Patch filenames must be unique **per bench, forever** — including ones already
+reverted — or press refuses with "Patch already exists for &lt;bench&gt; by the
+filename …". `live.py` labels each with a timestamp and a content hash.
+
+For a one-off diff without the state tracking:
+
+```bash
 scripts/patch.sh oneapp_control > fix.patch     # everything not yet on origin/main
 ```
 
@@ -93,6 +117,25 @@ Do not infer the base from the built asset hash. Two commits produce an
 identical bundle whenever neither touched frontend source, so the hash points at
 a range, not a commit — guessing wrong there is what makes the patch fail with
 nothing useful to read, because the Agent Job output is not exposed to the API.
+
+### Why UI changes cannot be patched yet
+
+`build_assets` does **not** help. It runs `bench build` — Frappe's own esbuild —
+which knows nothing about Vite, so our SPA is never rebuilt on the bench.
+`update_inplace` uses the same call, so it does not help either. Only the image
+build runs our Vite build.
+
+That leaves shipping the built bundle inside the patch, which needs one thing we
+did not have: **a committed lockfile**. Without one, Frappe Cloud resolves
+dependency versions freshly on every build, so its bundle is not ours —
+rebuilding the deployed commit locally produced different content hashes, which
+means `www/admin.html` cannot be diffed against what is actually on the bench.
+
+That was a production problem before it was a dev-loop one: two deploys of the
+same commit could produce different bundles, and a transitive dependency could
+break a release with no code change. `yarn.lock` is committed now (Frappe Cloud
+installs with yarn). Until a deploy has run from a locked build, **UI changes
+need a normal deploy**; backend changes patch fine.
 
 ### The SPA is the part that catches people
 
