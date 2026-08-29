@@ -165,3 +165,32 @@ def test_the_list_entry_point_is_also_guarded(generated):
 	barrel."""
 	for app, files in generated.items():
 		assert "frappe-ui/list" in files["frontend/eslint.config.js"], app
+
+
+def test_barrel_covers_everything_frappe_ui_exports():
+	"""A component missing from the barrel is a component someone hand-rolls.
+
+	Skipped when dependencies are not installed, so CI without an npm install
+	still runs the rest of the suite.
+	"""
+	import re
+
+	src = ROOT / "apps/oneapp_control/frontend/node_modules/frappe-ui/src"
+	if not src.exists():
+		pytest.skip("frappe-ui not installed")
+
+	exported = set()
+	index = (src / "index.ts").read_text()
+	for directory in re.findall(r"export \* from '\./components/([^']+)'", index):
+		for name in ("index.ts", "index.js"):
+			path = src / "components" / directory / name
+			if path.exists():
+				exported |= set(re.findall(r"export \{ default as (\w+)", path.read_text()))
+
+	barrel = (ROOT / "apps/oneapp_control/frontend/src/ui.js").read_text()
+	missing = sorted(c for c in exported if c[0].isupper() and c not in barrel)
+
+	assert not missing, (
+		f"{len(missing)} frappe-ui components are not in the barrel and so cannot "
+		f"be used: {missing}"
+	)

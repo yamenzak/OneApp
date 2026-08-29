@@ -1,0 +1,84 @@
+import { computed, reactive } from 'vue'
+
+import { callMethod, useResource } from './resource'
+
+const method = (name) => `oneapp_control.api.customer.${name}`
+
+export const customer = {
+  workspaces: () => callMethod(method('my_workspaces'), {}, { silent: true }),
+  overview: (workspace) => callMethod(method('overview'), { workspace }, { silent: true }),
+  creditHistory: (workspace) => callMethod(method('credit_history'), { workspace }, { silent: true }),
+  invoices: (workspace) => callMethod(method('invoices'), { workspace }, { silent: true }),
+  packs: () => callMethod(method('packs'), {}, { silent: true }),
+
+  buyCredits: (workspace, pack) => callMethod(method('buy_credits'), { workspace, pack }),
+  buyStorage: (workspace, pack) => callMethod(method('buy_storage'), { workspace, pack }),
+  billingPortal: (workspace) => callMethod(method('billing_portal'), { workspace }),
+
+  domainGuide: (workspace) => callMethod(method('domain_instructions'), { workspace }, { silent: true }),
+  addDomain: (workspace, domain) =>
+    callMethod(method('request_custom_domain'), { workspace, domain }, {
+      successMessage: 'Domain queued — we are verifying your DNS',
+    }),
+}
+
+/**
+ * The workspaces this account owns.
+ *
+ * An account may own several — signing up for a company and later for something
+ * at home is ordinary — so the portal is always scoped to one of them, chosen
+ * here rather than assumed.
+ */
+export const workspaces = reactive({
+  list: [],
+  current: null,
+  loading: true,
+
+  get selected() {
+    return this.list.find((w) => w.name === this.current) || null
+  },
+
+  async load(preferred = null) {
+    this.loading = true
+    try {
+      this.list = (await customer.workspaces()) || []
+      const known = this.list.some((w) => w.name === preferred)
+      this.current = known ? preferred : this.list[0]?.name || null
+    } catch (e) {
+      // An expired session is the ordinary case here, not an error worth
+      // showing: send them to sign in and come back to the same page. Anything
+      // else is a real failure and should surface.
+      if (isNotSignedIn(e)) return signIn()
+      throw e
+    } finally {
+      this.loading = false
+    }
+  },
+})
+
+function isNotSignedIn(error) {
+  const status = error?.httpStatus ?? error?.status
+  const type = error?.exc_type || error?.exception || ''
+  return status === 401 || status === 403 || /PermissionError/.test(type)
+}
+
+/**
+ * Hand off to Frappe's login page, which returns here afterwards.
+ *
+ * A full navigation rather than a router push: the session cookie is set by the
+ * server, so the SPA has to be reloaded for it to take effect.
+ */
+export function signIn() {
+  const back = encodeURIComponent(window.location.pathname + window.location.search)
+  window.location.href = `/login?redirect-to=${back}`
+}
+
+export const hasWorkspaces = computed(() => workspaces.list.length > 0)
+
+export function useOverview(workspaceRef) {
+  return useResource(`oneapp_control.api.customer.overview`, {
+    params: () => ({ workspace: workspaceRef.value }),
+    refetch: true,
+    watch: ['Tenant'],
+  })
+}

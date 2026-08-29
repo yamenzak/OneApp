@@ -28,6 +28,17 @@
     </SidebarSection>
 
     <template #footer>
+      <div class="p-2">
+        <UserMenu
+          :name="user.full_name"
+          :email="user.email"
+          subtitle="Operator"
+          :extra="[
+            { label: 'Settings', icon: 'lucide-settings', onClick: () => openSettings() },
+          ]"
+        />
+      </div>
+
       <SidebarCard v-if="!setup.canProvision" class="m-2">
         <p class="text-sm font-medium text-ink-gray-8">Finish setup</p>
         <p class="mt-1 text-p-sm text-ink-gray-6">
@@ -35,7 +46,7 @@
           {{ setup.blockers.length === 1 ? 'item' : 'items' }} left before you can
           provision.
         </p>
-        <Button class="mt-2 w-full" label="Open setup" @click="$router.push('/setup')" />
+        <Button class="mt-2 w-full" label="Open setup" @click="$router.push({ name: 'Setup' })" />
       </SidebarCard>
     </template>
   </Sidebar>
@@ -48,19 +59,31 @@ import {
   Sidebar, SidebarHeader, SidebarSection, SidebarItem, SidebarCard,
   Avatar, Badge, Button, Icon,
 } from '@/ui'
+import UserMenu from './UserMenu.vue'
 import { setup } from '../lib/setup'
+import { openSettings } from '../lib/settings'
+import { useResource } from '../lib/resource'
+
+// Whoever is signed in. The desk is not part of the product, so this is the
+// only place an operator sees their own account.
+const userResource = useResource('frappe.client.get', {
+  params: { doctype: 'User', name: 'me' },
+  cacheKey: 'oneapp-admin-user',
+  silent: true,
+})
+const user = computed(() => userResource.data || {})
 
 const route = useRoute()
 const collapsed = inject('sidebarCollapsed', false)
 
 const nav = computed(() => [
-  { to: '/tenants', label: 'Tenants', icon: 'lucide-users' },
-  { to: '/jobs', label: 'Provisioning', icon: 'lucide-activity' },
-  { to: '/shards', label: 'Shards', icon: 'lucide-server' },
+  { to: '/admin/tenants', label: 'Tenants', icon: 'lucide-users' },
+  { to: '/admin/jobs', label: 'Provisioning', icon: 'lucide-activity' },
+  { to: '/admin/shards', label: 'Shards', icon: 'lucide-server' },
   {
-    to: '/setup',
-    label: 'Setup',
-    icon: 'lucide-settings',
+    to: '/admin/setup',
+    label: 'Readiness',
+    icon: 'lucide-list-checks',
     badge: setup.canProvision
       ? null
       : { theme: 'orange', label: String(setup.blockers.length) },

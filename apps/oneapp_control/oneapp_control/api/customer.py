@@ -17,6 +17,7 @@ fail the build if an endpoint reaches a workspace any other way.
 import frappe
 from frappe import _
 
+from oneapp_control import portal
 from oneapp_control.billing import checkout, stripe_client
 from oneapp_control.credits import ledger
 
@@ -217,11 +218,8 @@ def billing_portal(workspace: str) -> dict:
 	if not customer_id:
 		frappe.throw(_("No Stripe customer on this subscription."))
 
-	base = (
-		frappe.db.get_single_value("OneApp Control Settings", "control_plane_url") or ""
-	).rstrip("/")
 	session = stripe_client.create_billing_portal_session(
-		customer_id, f"{base}/account/{tenant.name}/billing"
+		customer_id, portal.account_url(tenant.name, tab="billing")
 	)
 	return {"url": session.get("url")}
 

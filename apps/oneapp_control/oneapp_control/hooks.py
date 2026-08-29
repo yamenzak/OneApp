@@ -6,6 +6,21 @@ app_email = "hello@fourdegreelabs.com"
 app_license = "mit"
 
 # ---------------------------------------------------------------------------
+# SPA
+# ---------------------------------------------------------------------------
+# Without these, a page reload on any deep link serves Frappe's 404 instead of
+# the SPA shell: Frappe only resolves the exact route, and the Vue router never
+# gets a chance to run.
+#
+# Two surfaces, one bundle. /admin is the staff console and /portal is the
+# customer's; they are separate website routes so www/admin.py and www/portal.py
+# can apply different access rules to the same built assets.
+website_route_rules = [
+	{"from_route": "/admin/<path:app_path>", "to_route": "admin"},
+	{"from_route": "/portal/<path:app_path>", "to_route": "portal"},
+]
+
+# ---------------------------------------------------------------------------
 # Scheduled tasks
 # ---------------------------------------------------------------------------
 scheduler_events = {

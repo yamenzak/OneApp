@@ -10,6 +10,7 @@ Two shapes, deliberately different:
 import frappe
 from frappe import _
 
+from oneapp_control import portal
 from oneapp_control.billing import stripe_client
 
 
@@ -18,10 +19,15 @@ def _settings():
 
 
 def _urls(tenant: str):
-	base = (_settings().control_plane_url or "").rstrip("/")
+	"""Where Stripe sends the customer back to.
+
+	Both land on the workspace's own billing page — the one place where the
+	result of the purchase is visible — with a flag the page reads to say what
+	happened. Stripe substitutes the session id into the success URL.
+	"""
 	return (
-		f"{base}/billing/success?tenant={tenant}&session={{CHECKOUT_SESSION_ID}}",
-		f"{base}/billing/cancelled?tenant={tenant}",
+		portal.account_url(tenant, tab="billing", checkout="success", session="{CHECKOUT_SESSION_ID}"),
+		portal.account_url(tenant, tab="billing", checkout="cancelled"),
 	)
 
 
@@ -110,13 +116,11 @@ def start_signup(request) -> dict:
 			_("{0} has no Stripe price for {1} billing.").format(plan.plan_name, request.interval)
 		)
 
-	base = (_settings().control_plane_url or "").rstrip("/")
-
 	session = stripe_client.create_checkout_session(
 		mode="subscription",
 		line_items=[{"price": price_id, "quantity": 1}],
-		success_url=f"{base}/signup/welcome?request={request.name}",
-		cancel_url=f"{base}/signup?cancelled={request.name}",
+		success_url=portal.welcome_url(request.name),
+		cancel_url=portal.signup_url(cancelled=request.name),
 		customer_email=request.email,
 		client_reference_id=request.name,
 		subscription_data={
@@ -173,8 +177,7 @@ def billing_portal(tenant: str) -> dict:
 	if not (subscription and subscription.stripe_customer_id):
 		frappe.throw(_("No Stripe customer for {0}.").format(tenant))
 
-	base = (_settings().control_plane_url or "").rstrip("/")
 	session = stripe_client.create_billing_portal_session(
-		subscription.stripe_customer_id, f"{base}/billing?tenant={tenant}"
+		subscription.stripe_customer_id, portal.account_url(tenant, tab="billing")
 	)
 	return {"url": session.get("url")}

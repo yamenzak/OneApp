@@ -4,12 +4,13 @@
  * The sanctioned frappe-ui surface.
  *
  * Both SPAs import from here rather than from 'frappe-ui' directly, so what the
- * product is allowed to use is one reviewable list instead of whatever each file
- * reached for. ESLint enforces it.
+ * product may use is one reviewable list instead of whatever each file reached
+ * for. ESLint enforces it, and a test asserts this covers everything frappe-ui
+ * exports — a component missing here is a component someone will hand-roll.
  *
- * Prefer a component here over hand-rolled markup. A <div> with divide-y is not
- * a list, and a <router-link> with an active class is not a sidebar item — they
- * look close in isolation and wrong next to everything else.
+ * Reach for a component before writing markup. A <div> with divide-y is not a
+ * list; a <router-link> with an active class is not a sidebar item. They look
+ * close in isolation and wrong beside everything else.
  */
 
 export {
@@ -20,10 +21,20 @@ export {
   MobileShell,
   MobileNav,
   Rail,
-  PageHeader,
+  RailItem,
   ScrollArea,
+  ScrollBar,
 
-  // ----- Sidebar family --------------------------------------------------
+  // ----- Page header -----------------------------------------------------
+  PageHeader,
+  PageHeaderBase,
+  PageHeaderTitle,
+  PageHeaderBackButton,
+  PageHeaderMobile,
+  PageHeaderMobileTitle,
+  PageHeaderTarget,
+
+  // ----- Sidebar ---------------------------------------------------------
   Sidebar,
   SidebarItem,
   SidebarLabel,
@@ -32,16 +43,30 @@ export {
   SidebarCard,
   SidebarCollapseToggle,
 
+  // ----- Settings --------------------------------------------------------
+  // A whole family, so settings surfaces are composed rather than hand-built.
+  SettingsDialog,
+  SettingsSidebar,
+  SettingsNavGroup,
+  SettingsNavItem,
+  SettingsBody,
+  SettingsContent,
+  SettingsPanel,
+  SettingsHeader,
+  SettingsRow,
+
   // ----- Structure -------------------------------------------------------
   Divider,
-  Tabs,
-  TabButtons,
   Breadcrumbs,
+  Tabs,
+  TabList,
+  TabTrigger,
+  TabPanel,
+  TabButtons,
 
   // ----- Actions ---------------------------------------------------------
   Button,
   Dropdown,
-  Menu,
   ContextMenu,
 
   // ----- Form controls ---------------------------------------------------
@@ -56,9 +81,12 @@ export {
   Checkbox,
   Switch,
   Radio,
+  RadioGroup,
   Slider,
   Rating,
   DatePicker,
+  DateTimePicker,
+  DateRangePicker,
   TimePicker,
   Duration,
   FileUploader,
@@ -72,15 +100,14 @@ export {
   LoadingIndicator,
   LoadingText,
   Skeleton,
-  Toast,
   Tooltip,
+  TooltipProvider,
 
   // ----- Overlays --------------------------------------------------------
   Dialog,
   Popover,
   HoverCard,
   BottomSheet,
-  SettingsDialog,
   KeyboardShortcut,
   KeyboardShortcutsDialog,
 
@@ -114,6 +141,7 @@ export {
   frappeRequest,
   setConfig,
   getConfig,
+  upload,
   dayjs,
   dayjsLocal,
   debounce,
@@ -123,7 +151,7 @@ export {
  * The list family. A separate entry point in frappe-ui because it ships its own
  * structural CSS; re-exported here so pages have one import path.
  *
- * `List` takes grid track sizes via `columns`, and handles dividers, selection
+ * `List` takes grid track sizes via `columns` and handles dividers, selection
  * and the active row. Reach for it before writing a table or a stack of divs.
  */
 export {

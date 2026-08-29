@@ -3,7 +3,36 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import frappeui from 'frappe-ui/vite'
+import fs from 'node:fs'
 import path from 'node:path'
+
+// Frappe serves one .html per website route. frappe-ui's plugin emits exactly
+// one, so the additional surfaces are copies of it — same hashed asset tags,
+// different <title>, and a sibling .py that decides who may load them. Copying
+// after the build is what guarantees they can never reference stale assets.
+const EXTRA_SHELLS = [{"name": "portal", "title": "OneApp"}]
+
+function extraShells() {
+  return {
+    name: 'oneapp-extra-shells',
+    closeBundle() {
+      if (!EXTRA_SHELLS.length) return
+      const source = path.resolve(__dirname, '../oneapp_control/www/admin.html')
+      if (!fs.existsSync(source)) {
+        // Silently skipping would ship a route that 404s with nothing to
+        // explain why, so fail the build instead.
+        throw new Error(`extraShells: ${source} was not emitted by frappe-ui`)
+      }
+      const html = fs.readFileSync(source, 'utf8')
+      for (const shell of EXTRA_SHELLS) {
+        fs.writeFileSync(
+          path.resolve(__dirname, `../oneapp_control/www/${shell.name}.html`),
+          html.replace(/<title>[^<]*<\/title>/, `<title>${shell.title}</title>`),
+        )
+      }
+    },
+  }
+}
 
 // frappe-ui's plugin owns the parts that are easy to get subtly wrong: it
 // proxies /api, /app, /assets, /files and /private to the bench it detects from
@@ -38,6 +67,7 @@ export default defineConfig({
       },
     }),
     vue(),
+    extraShells(),
   ],
   resolve: {
     alias: { '@': path.resolve(__dirname, 'src') },

@@ -17,7 +17,7 @@
     <Alert v-if="!setup.canProvision" variant="warning" title="Setup incomplete" class="mb-4">
       Provisioning is disabled until the required configuration is in place.
       <template #actions>
-        <Button label="Open setup" @click="$router.push('/setup')" />
+        <Button label="Open setup" @click="$router.push({ name: 'Setup' })" />
       </template>
     </Alert>
 
@@ -41,7 +41,7 @@
           v-for="tenant in rows"
           :key="tenant.name"
           :row-key="tenant.name"
-          @click="$router.push(`/tenants/${tenant.name}`)"
+          @click="$router.push({ name: 'Tenant', params: { name: tenant.name } })"
         >
           <ListCell>
             <div class="flex min-w-0 items-center gap-2.5">
