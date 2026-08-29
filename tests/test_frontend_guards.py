@@ -498,3 +498,47 @@ def test_stored_datetimes_are_converted_from_the_site_timezone():
 		assert "system_timezone" in controller.read_text(), (
 			f"{controller.name} does not put the system timezone in its boot context"
 		)
+
+
+def test_the_installed_frappe_ui_matches_the_pin():
+	"""Every API guard reads the *installed* package.
+
+	Prop and slot declarations, literal unions, retired tokens, the settings
+	dialog's geometry — all of it comes out of node_modules. If node_modules is
+	behind the pin, those guards validate the code against a version that is not
+	the one being shipped, and pass while the built app is wrong. This is the
+	guard the other guards rest on.
+	"""
+	pins, installs = {}, {}
+	for app in APPS:
+		pkg = json.loads((ROOT / f"apps/{app}/frontend/package.json").read_text())
+		pins[app] = pkg["dependencies"]["frappe-ui"]
+
+		installed = ROOT / f"apps/{app}/frontend/node_modules/frappe-ui/package.json"
+		if not installed.exists():
+			pytest.skip(f"{app}: frappe-ui not installed")
+		installs[app] = json.loads(installed.read_text())["version"]
+
+	assert len(set(pins.values())) == 1, f"the apps pin different versions: {pins}"
+	assert len(set(installs.values())) == 1, f"the apps installed different versions: {installs}"
+
+	pin = next(iter(pins.values())).lstrip("^~")
+	version = next(iter(installs.values()))
+	assert version == pin, (
+		f"pinned {pin} but installed {version} — the API guards are reading "
+		f"{version}'s declarations while the app ships against {pin}"
+	)
+
+
+def test_we_are_on_the_v1_line():
+	"""npm's `latest` tag still points at v0, so a bare install lands there.
+
+	Every rule in these guards — flat Dialog props, `theme` over `variant`, the
+	numbered radius scale, the document layer — is v1. On v0 they would be
+	checking the wrong library entirely.
+	"""
+	for app in APPS:
+		pkg = json.loads((ROOT / f"apps/{app}/frontend/package.json").read_text())
+		assert pkg["dependencies"]["frappe-ui"].lstrip("^~").startswith("1."), (
+			f"{app} is not pinned to the v1 line"
+		)
