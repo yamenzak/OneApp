@@ -200,7 +200,25 @@ and four checks compare them against what we write:
 | unknown slots | `<Dialog #body-content>` when the body is the default slot |
 | content with nowhere to go | `<Alert>body</Alert>` when Alert has no default slot |
 | missing required props | `<ListRows>` with no `:items` |
+| values outside a union | `<Badge theme="orange">` when the themes are gray…violet |
 | unknown call options | `useResource(…, { enabled })` when the option is `immediate` |
+| deprecated components | re-exporting `ThemeSwitcher` after 1.0 replaced it |
+| a local component shadowing one | a `Badge.vue` of our own beside the barrel's |
+| markup pretending to be a component | a page built from `<div>`s and raw palette colours |
+| verbs and whitelists | POSTing to a method whitelisted `methods=["GET"]` |
+
+**We are on `1.0.0-beta.55`, and npm's `latest` tag still points at the `0.1.x`
+line.** That is why v0 API shapes keep appearing — `Dialog :options`,
+`#body-content`, `Dropdown placement` are all what the older, still-default
+package documents. The checks compare against the version actually installed,
+so the answer is never a matter of which docs someone happened to read.
+
+There is no blanket exemption for components that forward attributes with
+`useAttrs()`. That was the first shape of this guard, and it turned the check
+off for Button, Dropdown, Avatar, Tooltip and the whole form-control family —
+which is how `<Dropdown placement="top-start">` survived on three surfaces even
+though frappe-ui removed `placement` in 1.0 and warns about it in dev. What each
+forwarding component may legitimately be handed is an explicit list instead.
 
 frappe-ui declares components four different ways — an inline `defineProps<{…}>`
 literal, a named type in `types.ts`, a runtime props object, and the options API
@@ -210,6 +228,26 @@ run, so `tests/test_frappe_ui_usage.py` pins one component per form.
 
 Upgrading frappe-ui runs these against the new declarations. A renamed prop
 fails the suite instead of quietly emptying a page.
+
+The guards sweep `apps/*/frontend/src`, which covers all four surfaces — the
+tenant workspace, the operator console, customer self-service and signup. Each
+is named in `tests/test_frappe_ui_usage.py` with a file that must exist, so a
+fifth surface added somewhere the sweep does not reach fails rather than going
+unguarded.
+
+### Geometry comes from the family's own hooks
+
+`SidebarItem` is a full-width rounded row with no gutter, so the scroll region
+around it supplies one (`viewport-class="px-2"`, as frappe-ui's own sidebar
+stories do) — without it the active row's surface runs edge to edge and its
+shadow is clipped. Lists share a content inset between header and rows through
+`--list-row-padding-x` (the `list-row-px-*` utility); frappe-ui pads only
+interactive rows, so a static list sets its own vertical rhythm.
+
+`SettingsRow` is label-left, control-right, with the control `shrink-0`. That is
+the shape for a `Switch` or a `Select`. A full-width text input in one collapses
+the label to a word per line on a phone, so settings forms stack `FormControl`s
+directly in `SettingsBody` — which is what frappe-ui's own ProfilePanel does.
 
 Every customer-facing URL the server builds — Stripe return URLs, signup links, the billing
 portal — comes from `oneapp_control/portal.py`, and `tests/test_portal_urls.py` parses the

@@ -15,7 +15,7 @@
  * without a visible disable comment.
  */
 
-import { useCall, call as rawCall } from 'frappe-ui'
+import { useCall, call as rawCall, frappeRequest } from 'frappe-ui'
 
 import { notifyError, notifySuccess } from './notify'
 import { onDoctypeChange } from './socket'
@@ -124,11 +124,22 @@ export function useAction(url, options = {}) {
 
 /**
  * One-off call for imperative code. Normalised and toasted like everything else.
+ *
+ * `method: 'GET'` for reads. frappe-ui's `call()` is POST-only, and a method
+ * whitelisted `methods=["GET"]` rejects a POST as a PermissionError — which
+ * reads like an auth problem and is not one. That is what made every read on
+ * the signup page fail, so the page reported signups closed on a site where
+ * they were open. `tests/test_api_calls.py` checks the verb against the
+ * whitelist now.
  */
 export async function callMethod(method, params = {}, options = {}) {
-  const { successMessage, silent = false } = options
+  const { successMessage, silent = false, method: verb = 'POST' } = options
   try {
-    const data = normalize(await rawCall(method, params))
+    const response =
+      verb === 'POST'
+        ? await rawCall(method, params)
+        : await frappeRequest({ url: method, method: verb, params })
+    const data = normalize(response)
     if (successMessage && !silent) notifySuccess(successMessage)
     return data
   } catch (error) {

@@ -9,22 +9,34 @@
       </template>
     </SidebarHeader>
 
-    <SidebarSection>
-      <SidebarItem
-        v-for="item in nav"
-        :key="item.to"
-        :label="item.label"
-        :to="item.to"
-        :active="isActive(item.to)"
-      >
-        <template #prefix>
-          <Icon :name="item.icon" class="size-4 text-ink-gray-7" />
-        </template>
-        <template v-if="item.badge" #suffix>
-          <Badge :theme="item.badge.theme" :label="item.badge.label" variant="subtle" />
-        </template>
-      </SidebarItem>
-    </SidebarSection>
+    <!-- SidebarItem is a full-width rounded row with no gutter of its own, so
+         the active row's surface runs edge to edge unless the scroll region
+         supplies one. frappe-ui's own sidebar stories put the nav in a
+         ScrollArea with `viewport-class="px-2"`, which is also what gives the
+         active row's shadow room instead of clipping it. -->
+    <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pt-0.5 pb-6">
+      <nav class="flex flex-col gap-0.5">
+        <SidebarItem
+          v-for="item in nav"
+          :key="item.to"
+          :label="item.label"
+          :to="item.to"
+          :active="isActive(item.to)"
+        >
+          <template #prefix>
+            <Icon :name="item.icon" class="size-4 text-ink-gray-7" />
+          </template>
+          <template v-if="item.badge" #suffix>
+            <Badge
+              :theme="item.badge.theme"
+              :label="item.badge.label"
+              variant="subtle"
+              class="mr-1"
+            />
+          </template>
+        </SidebarItem>
+      </nav>
+    </ScrollArea>
 
     <!-- Sidebar has one slot, the default: it hands the whole body to the app.
          A `#footer` template renders nothing at all, which is how the quota
@@ -63,11 +75,11 @@
 
 <script setup>
 import { ADMIN_APP } from '../lib/brand'
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-  Sidebar, SidebarHeader, SidebarSection, SidebarItem, SidebarCard,
-  Avatar, Badge, Button, Icon,
+  Sidebar, SidebarHeader, SidebarItem, SidebarCard,
+  Avatar, Badge, Icon, ScrollArea,
 } from '@/ui'
 import UserMenu from './UserMenu.vue'
 import { setup } from '../lib/setup'
@@ -76,7 +88,6 @@ import { user } from '../lib/user'
 
 
 const route = useRoute()
-const collapsed = inject('sidebarCollapsed', false)
 
 const nav = computed(() => [
   { to: '/admin/tenants', label: 'Tenants', icon: 'lucide-users' },
@@ -88,7 +99,7 @@ const nav = computed(() => [
     icon: 'lucide-list-checks',
     badge: setup.canProvision
       ? null
-      : { theme: 'orange', label: String(setup.blockers.length) },
+      : { theme: 'amber', label: String(setup.blockers.length) },
   },
 ])
 

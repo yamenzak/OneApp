@@ -19,13 +19,13 @@
       description="Jobs appear here when a tenant is created, suspended, resumed or archived."
     />
 
-    <List v-else :columns="COLUMNS" divider="full">
+    <List v-else :columns="COLUMNS" :row-height="52" class="list-row-px-3" divider="full">
       <ListHeader>
-        <ListHeaderCell v-for="c in HEADERS" :key="c" :label="c" />
+        <ListHeaderCell v-for="c in HEADERS" :key="c">{{ c }}</ListHeaderCell>
       </ListHeader>
 
-      <ListRows :items="rows" row-key="name" v-slot="{ item: job }">
-        <ListRow>
+      <ListRows :items="rows" row-key="name" v-slot="{ item: job, value }">
+        <ListRow :value="value">
           <ListCell>
             <div class="min-w-0">
               <p class="truncate text-base text-ink-gray-8">{{ job.action }}</p>

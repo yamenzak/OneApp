@@ -62,7 +62,7 @@ async function poll() {
   status.value = await callMethod(
     'oneapp_control.api.signup.status',
     { request },
-    { silent: true },
+    { silent: true, method: 'GET' },
   )
 
   if (status.value?.ready || status.value?.status === 'Failed') {

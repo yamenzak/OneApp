@@ -117,7 +117,6 @@ export {
   Icon,
   Tree,
   ItemListRow,
-  ThemeSwitcher,
 
   // ----- Root provider ---------------------------------------------------
   FrappeUIProvider,

@@ -9,6 +9,7 @@ Guessing an API is cheap and reading one is cheaper, so this reads them.
 """
 
 import re
+from functools import lru_cache
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,8 +47,8 @@ def _script(source: str) -> str:
     return LINE_COMMENT.sub("", BLOCK_COMMENT.sub("", text))
 
 
-def _members(block: str) -> dict[str, bool]:
-    """{name: required} for a TypeScript object-type body.
+def _members(block: str) -> dict[str, tuple[bool, str]]:
+    """{name: (required, declared type)} for a TypeScript object-type body.
 
     Nested object types are dropped first: `menuItems?: { label: string }[]`
     declares `menuItems`, not `label`.
@@ -65,10 +66,48 @@ def _members(block: str) -> dict[str, bool]:
 
     names = {}
     for line in "".join(flat).split("\n"):
-        m = re.match(r"\s*([A-Za-z_$][\w$]*)\s*(\??)\s*:", line)
+        m = re.match(r"\s*([A-Za-z_$][\w$]*)\s*(\??)\s*:(.*)", line)
         if m:
-            names[m.group(1)] = not m.group(2)
+            names[m.group(1)] = (not m.group(2), m.group(3).strip().rstrip(","))
     return names
+
+
+def _runtime_members(block: str) -> dict[str, tuple[bool, str]]:
+    """{name: (False, type)} for a runtime props object.
+
+    `theme: { type: String as PropType<StatusTheme>, default: 'gray' }` carries
+    its real type inside `PropType<…>`. The TypeScript-body reader drops nested
+    braces, so without this the whole runtime-object family — Alert, Button,
+    SidebarCard — reports no closed value sets, and `theme="orange"` stays
+    invisible on exactly the components most likely to be handed one.
+
+    Nothing here is optional-marked, so requiredness is not inferred.
+    """
+    members, i, depth = {}, 0, 0
+    name = None
+    while i < len(block):
+        char = block[i]
+        if depth == 0:
+            m = re.compile(r"([A-Za-z_$][\w$]*)\s*:").match(block, i)
+            if m and not name:
+                name, i = m.group(1), m.end()
+                members.setdefault(name, (False, ""))
+                continue
+        if char == "{":
+            if depth == 0 and name:
+                body = _balanced(block, i)
+                prop_type = re.search(r"PropType<\s*(.*?)\s*>", body, re.S)
+                members[name] = (False, prop_type.group(1) if prop_type else "")
+                i += len(body) + 2
+                name = None
+                continue
+            depth += 1
+        elif char == "}":
+            depth -= 1
+        elif char == "," and depth == 0:
+            name = None
+        i += 1
+    return members
 
 
 def _balanced(text: str, start: int) -> str:
@@ -94,7 +133,7 @@ def _declarations(name: str, script: str, directory: Path) -> list[tuple[str, st
     return texts
 
 
-def _resolve_named_type(name: str, script: str, directory: Path, seen=None) -> dict[str, bool]:
+def _resolve_named_type(name: str, script: str, directory: Path, seen=None) -> dict[str, tuple]:
     """Resolve a props/slots declaration by name.
 
     Three forms are in use across frappe-ui, and a reader that knows only the
@@ -136,11 +175,76 @@ def _resolve_named_type(name: str, script: str, directory: Path, seen=None) -> d
             # Nothing there is a TypeScript optional marker, so requiredness
             # cannot be read off it — assume nothing is required.
             if re.search(r"^\s*(?:export\s+)?const\b", m.group(0)):
-                members = {k: False for k in members}
+                members = _runtime_members(_balanced(text, brace))
             found |= members
         if found:
             return found
     return {}
+
+
+# A union made only of quoted string literals: 'gray' | 'blue' | 'red'.
+QUOTED = re.compile(r"""'([^']*)'|"([^"]*)\"""")
+LITERALS = re.compile(
+    r"""^\s*\|?\s*(?:'[^']*'|"[^"]*")(?:\s*\|\s*(?:'[^']*'|"[^"]*"))*\s*$"""
+)
+
+
+def _quoted(text: str) -> set[str]:
+    return {single or double for single, double in QUOTED.findall(text)}
+
+
+@lru_cache(maxsize=1)
+def _alias_index() -> dict[str, set[str]]:
+    """Every `type X = 'a' | 'b'` in the package: {name: {directory: values}}.
+
+    Indexed package-wide because aliases are shared — `StatusTheme` lives in
+    `components/shared/statusIcon.ts` and Alert, SidebarCard and Toast all use
+    it, so looking only beside the component that uses one finds nothing.
+
+    Kept per-directory because short names are reused: `Variant` is
+    `solid|subtle|outline|ghost` in Button and `outline|subtle` in TimePicker.
+    Resolution prefers the component's own directory and otherwise requires the
+    name to be unambiguous, so a clash is never guessed at.
+    """
+    index = {}
+    for path in UI_SRC.rglob("*.ts"):
+        text = LINE_COMMENT.sub("", BLOCK_COMMENT.sub("", path.read_text()))
+        # The body runs to the `;` or to the next top-level declaration:
+        # DialogSize is fifteen values one per line, and a single-line read
+        # leaves the most-used size union unchecked.
+        for name, body in re.findall(
+            r"^[ \t]*(?:export\s+)?type\s+([A-Za-z_$][\w$]*)\s*="
+            r"((?:[^;]|\n)*?)(?=;|\n[ \t]*\n|\n[ \t]*(?:export|type|interface|const)\b|\Z)",
+            text,
+            re.M,
+        ):
+            if LITERALS.match(" ".join(body.split())):
+                index.setdefault(name, {})[path.parent] = _quoted(body)
+    return index
+
+
+def literal_union(declared: str, script: str, directory: Path) -> set[str] | None:
+    """The allowed values when a prop's type is a union of string literals.
+
+    Returns None for every other type, so only genuinely closed sets are
+    checked. A named alias is followed once: `theme?: StatusTheme` is as closed
+    a set as `theme?: 'gray' | 'red'`, and Alert declares it the first way.
+    """
+    declared = declared.strip()
+    if not declared:
+        return None
+
+    if LITERALS.match(declared):
+        return _quoted(declared)
+
+    if re.fullmatch(r"[A-Za-z_$][\w$]*", declared):
+        by_directory = _alias_index().get(declared, {})
+        if directory in by_directory:
+            return by_directory[directory]
+        unique = {frozenset(values) for values in by_directory.values()}
+        if len(unique) == 1:
+            return set(next(iter(unique)))
+    return None
 
 
 def _models(script: str) -> set[str]:
@@ -196,12 +300,12 @@ def component_api() -> dict[str, dict]:
             m = re.search(options, script, re.M)
             if m:
                 if m.groups():
-                    target |= {k: False for k in _resolve_named_type(m.group(1), script, path.parent)}
+                    target |= _resolve_named_type(m.group(1), script, path.parent)
                 else:
                     target |= _members(_balanced(script, script.find("{", m.end())))
 
         # A v-model always has a value, so nothing declared this way is required.
-        props |= {name: False for name in _models(script)}
+        props |= {name: (False, "") for name in _models(script)}
 
         # Some components deliberately accept more than they declare: with
         # `inheritAttrs: false` and `useAttrs()` they forward the rest to an
@@ -211,9 +315,16 @@ def component_api() -> dict[str, dict]:
         forwards = "useAttrs(" in script or "inheritAttrs: false" in script
 
         if props or slots or forwards:
+            enums = {}
+            for name, (_, declared) in props.items():
+                values = literal_union(declared, script, path.parent)
+                if values:
+                    enums[name] = values
+
             api[path.stem] = {
                 "props": set(props),
-                "required": {name for name, required in props.items() if required},
+                "required": {n for n, (required, _) in props.items() if required},
+                "enums": enums,
                 "slots": set(slots),
                 "forwards": forwards,
             }

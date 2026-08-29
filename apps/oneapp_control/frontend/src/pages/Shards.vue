@@ -20,13 +20,13 @@
       description="Provisioning refuses until one exists with headroom — a tenant placed nowhere is worse than a clear error."
     />
 
-    <List v-else :columns="COLUMNS" divider="full">
+    <List v-else :columns="COLUMNS" :row-height="56" class="list-row-px-3" divider="full">
       <ListHeader>
-        <ListHeaderCell v-for="c in HEADERS" :key="c" :label="c" />
+        <ListHeaderCell v-for="c in HEADERS" :key="c">{{ c }}</ListHeaderCell>
       </ListHeader>
 
-      <ListRows :items="shards" row-key="name" v-slot="{ item: shard }">
-        <ListRow>
+      <ListRows :items="shards" row-key="name" v-slot="{ item: shard, value }">
+        <ListRow :value="value">
           <ListCell>
             <div class="min-w-0">
               <p class="truncate text-base text-ink-gray-8">{{ shard.name }}</p>

@@ -156,12 +156,12 @@ async function submit() {
 }
 
 onMounted(async () => {
-  const status = await callMethod(method('signup_open'), {}, { silent: true })
+  const status = await callMethod(method('signup_open'), {}, { silent: true, method: 'GET' })
   Object.assign(open, { checked: true, open: status.open })
   if (!status.open) return
 
-  plans.value = (await callMethod(method('plans'), {}, { silent: true })) || []
-  regions.value = (await callMethod(method('regions'), {}, { silent: true })) || []
+  plans.value = (await callMethod(method('plans'), {}, { silent: true, method: 'GET' })) || []
+  regions.value = (await callMethod(method('regions'), {}, { silent: true, method: 'GET' })) || []
   form.plan = plans.value[0]?.code || ''
   form.region = regions.value[0]?.code || ''
 })

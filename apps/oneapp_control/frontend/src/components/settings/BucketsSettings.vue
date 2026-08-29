@@ -23,7 +23,7 @@ const cells = (b) => [
   {
     value: b.status,
     badge: true,
-    theme: { Active: 'green', Full: 'orange', Provisioning: 'blue', Retired: 'gray' }[b.status] || 'gray',
+    theme: { Active: 'green', Full: 'amber', Provisioning: 'blue', Retired: 'gray' }[b.status] || 'gray',
   },
 ]
 </script>

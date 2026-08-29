@@ -2,23 +2,27 @@
   <SettingsHeader :title="title" :description="description" />
 
   <SettingsBody>
-    <div class="flex flex-col gap-5 pt-6">
-      <!-- SettingsRow's prop is `title`; `label` is silently ignored and the
-           row renders with no name beside its control. -->
-      <SettingsRow
+    <!--
+      Stacked FormControls, not SettingsRow. SettingsRow is label-left /
+      control-right with a `shrink-0` control and a `gap-8` between them — the
+      shape frappe-ui uses for a Switch or a Select. Give it a full-width text
+      input and on a phone the control keeps its width while the label column
+      collapses, wrapping "API host" one word per line. frappe-ui's own
+      ProfilePanel story stacks FormControls straight into SettingsBody for
+      exactly this reason, and the label and description are FormControl's own
+      props, so nothing is lost by dropping the row.
+    -->
+    <div class="flex max-w-xl flex-col gap-6 pt-6">
+      <FormControl
         v-for="field in fields"
         :key="field.name"
-        :title="field.label"
+        v-model="form[field.name]"
+        :type="field.type || 'text'"
+        :label="field.label"
         :description="field.hint"
-      >
-        <FormControl
-          v-model="form[field.name]"
-          :type="field.type || 'text'"
-          :placeholder="field.placeholder"
-          :options="field.options"
-          class="w-full"
-        />
-      </SettingsRow>
+        :placeholder="field.placeholder"
+        :options="field.options"
+      />
     </div>
 
     <div class="mt-6 flex items-center gap-2">
@@ -30,7 +34,7 @@
 
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
-import { Button, FormControl, SettingsHeader, SettingsBody, SettingsRow } from '@/ui'
+import { Button, FormControl, SettingsHeader, SettingsBody } from '@/ui'
 import { callMethod } from '../../lib/resource'
 
 /**

@@ -32,8 +32,49 @@ SLOT = re.compile(r"<template\s+(?:#|v-slot:)([A-Za-z0-9_-]+)")
 # Attribute *names*, with any quoted value consumed so the scan never treats
 # class names or expression text as further attributes.
 ATTR = re.compile(
-    r"""(?P<name>[@:#]?[A-Za-z_][\w:.\-]*)\s*(?:=\s*(?:"[^"]*"|'[^']*'))?"""
+    r"""(?P<name>[@:#]?[A-Za-z_][\w:.\-]*)"""
+    r"""(?:\s*=\s*(?:"(?P<double>[^"]*)"|'(?P<single>[^']*)'))?"""
 )
+
+# A binding whose branches are string literals: `a ? 'green' : 'red'`. Split on
+# the ternary punctuation outside quotes; a segment that is exactly a quoted
+# string is a value the prop can actually take, while `x === 'blocking'` is a
+# comparison and stays part of a larger segment.
+LITERAL = re.compile(r"""^\s*(?:'([^']*)'|"([^"]*)")\s*$""")
+
+
+def written_values(attr: str, raw: str | None) -> set[str]:
+    """The literal values an attribute can pass, or an empty set if unknowable."""
+    if raw is None:
+        return set()
+    # `v-model="scheme"` binds a variable named scheme; it does not pass the
+    # string "scheme". Reading it as a literal reported every v-model as an
+    # out-of-range value.
+    if not attr.startswith((":", "v-bind:", "v-model")):
+        return {raw}
+
+    segments, current, quote = [], [], None
+    for char in raw:
+        if quote:
+            current.append(char)
+            if char == quote:
+                quote = None
+        elif char in "\"'":
+            quote = char
+            current.append(char)
+        elif char in "?:":
+            segments.append("".join(current))
+            current = []
+        else:
+            current.append(char)
+    segments.append("".join(current))
+
+    values = set()
+    for segment in segments:
+        m = LITERAL.match(segment)
+        if m:
+            values.add(m.group(1) if m.group(1) is not None else m.group(2))
+    return values
 
 
 def sources(app: str):
@@ -93,6 +134,7 @@ def usages(source: str):
         entry = {
             "component": name,
             "props": set(),
+            "values": {},
             "slots": set(),
             "spreads": False,
             "content": "",
@@ -106,6 +148,9 @@ def usages(source: str):
                 prop = normalise(raw)
                 if prop:
                     entry["props"].add(prop)
+                    written = written_values(raw, m.group("double") or m.group("single"))
+                    if written:
+                        entry["values"].setdefault(prop, set()).update(written)
 
         if self_closing:
             found.append(entry)
@@ -116,27 +161,75 @@ def usages(source: str):
     return [e for e in found if e["component"] in API]
 
 
+# Components that pass undeclared attributes to something inside them, and the
+# attributes they are actually expected to be given that way. An allowlist
+# rather than a blanket exemption: `useAttrs()` is common enough in frappe-ui
+# that skipping every component using it turned the check off for Button,
+# Dropdown, Avatar, Tooltip and the whole form-control family. That is how
+# `<Dropdown placement="top-start">` survived — frappe-ui removed `placement`
+# in 1.0 and warns about it in dev, and the menu had been unpositioned since.
+FORWARDED = {
+    # Documented as forwarding the inner control's own attributes: `options`
+    # for a select, `min`/`max`/`rows` for the pickers and textarea.
+    # `v-model` and `placeholder` reach the inner control the same way `options`
+    # does — frappe-ui's own ProfilePanel story writes
+    # `<FormControl label="Full name" v-model="fullName" />`.
+    "FormControl": {
+        "modelValue", "placeholder", "options", "min", "max",
+        "rows", "step", "debounce", "autocomplete", "disabled",
+    },
+    "TextInput": {"min", "max", "step", "autocomplete", "inputmode", "maxlength", "readonly"},
+    "Textarea": {"rows", "maxlength", "readonly"},
+    "Select": {"multiple"},
+    "Avatar": {"alt"},
+    # Forwards to the trigger Button it renders when given no #trigger slot.
+    "Dropdown": {"variant", "theme", "size", "loading", "icon", "iconLeft", "iconRight"},
+}
+
+
 @pytest.mark.parametrize("app", APPS)
 def test_no_unknown_props(app):
     problems = []
     for path, source in sources(app).items():
         for use in usages(source):
             entry = API[use["component"]]
-            if entry["forwards"]:
-                # Forwards the rest to an inner element, so its surface is wider
-                # than its declarations and "unknown" means nothing here.
+            declared = entry["props"] | FORWARDED.get(use["component"], set())
+            if entry["forwards"] and not declared:
                 continue
-            declared = entry["props"]
-            if not declared:
-                # No declarations and no forwarding: anything passed lands on
-                # the root element instead of doing what was intended.
-                continue
+            # A component that declares no props at all is still checked. The
+            # opposite — skipping it as "nothing to compare against" — is how
+            # `<ListHeaderCell :label="c" />` survived on four pages: the label
+            # is ListHeaderCell's default slot, so every column header was blank.
             unknown = use["props"] - declared
             if unknown:
                 problems.append(
                     f"{app}/{path}: <{use['component']}> does not take "
                     f"{sorted(unknown)} — it takes {sorted(declared)}"
                 )
+    assert not problems, "\n".join(problems)
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_prop_values_are_in_range(app):
+    """A value outside a prop's union is ignored, and the default renders.
+
+    `<Badge theme="orange">` is not a warning — Badge's themes are
+    gray|blue|green|amber|red|violet, so the badge came out grey and the "3
+    blockers" pill read as ordinary chrome rather than as something wrong.
+    """
+    problems = []
+    for path, source in sources(app).items():
+        for use in usages(source):
+            allowed = API[use["component"]]["enums"]
+            for prop, written in use["values"].items():
+                if prop not in allowed:
+                    continue
+                outside = written - allowed[prop]
+                if outside:
+                    problems.append(
+                        f"{app}/{path}: <{use['component']} {prop}> cannot be "
+                        f"{sorted(outside)} — only {sorted(allowed[prop])}"
+                    )
     assert not problems, "\n".join(problems)
 
 
@@ -260,3 +353,46 @@ def test_the_reader_does_not_follow_imports():
     # walked into whatever followed the import instead.
     assert "title" in API["Alert"]["slots"]
     assert "dismiss" not in API["Alert"]["slots"]
+
+
+# Every surface the product has, and a file that must exist on each. The guards
+# above sweep `apps/*/frontend/src`, which covers all of them today — but
+# "today" is the problem: a fourth surface added under a path this sweep does
+# not reach would be unguarded and nothing would say so. These are the surfaces
+# in the product, named, so adding one means coming here.
+SURFACES = {
+    "oneapp": {
+        "the tenant workspace (OneSpace)": "pages/Launcher.vue",
+    },
+    "oneapp_control": {
+        "the operator console (OneAdmin)": "pages/Tenants.vue",
+        "customer self-service": "pages/account/AccountOverview.vue",
+        "signup": "pages/signup/SignupPage.vue",
+    },
+}
+
+
+@pytest.mark.parametrize(
+    "app,surface,witness",
+    [(app, s, w) for app, items in SURFACES.items() for s, w in items.items()],
+)
+def test_every_surface_is_swept(app, surface, witness):
+    files = sources(app)
+    assert witness in files, f"{surface}: {witness} is not where the guards look"
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_the_sweep_reaches_pages_and_components(app):
+    files = sources(app)
+    assert any(p.startswith("pages/") for p in files), f"{app}: no pages swept"
+    assert any(p.startswith("components/") for p in files), f"{app}: no components swept"
+
+
+def test_the_sweep_descends_into_subdirectories():
+    """A shallow glob would still find pages/ and components/ and look fine.
+
+    Only the control app nests today — `pages/account`, `pages/signup`,
+    `components/settings` — which is exactly where self-service and signup live.
+    """
+    nested = [p for p in sources("oneapp_control") if p.count("/") >= 2]
+    assert len(nested) >= 3, f"nested files not swept: {nested}"

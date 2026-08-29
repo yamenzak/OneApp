@@ -19,7 +19,7 @@
           <Badge
             v-if="data.subscription?.cancel_at_period_end"
             class="mt-2"
-            theme="orange"
+            theme="amber"
             label="Cancels at period end"
             variant="subtle"
           />
@@ -64,9 +64,9 @@
 
     <section v-if="invoices.length">
       <h3 class="mb-3 text-base font-medium text-ink-gray-8">Invoices</h3>
-      <List :columns="['minmax(0,1fr)', '8rem', '7rem']" divider="full">
-        <ListRows :items="invoices" row-key="name" v-slot="{ item: inv }">
-          <ListRow>
+      <List :columns="['minmax(0,1fr)', '8rem', '7rem']" :row-height="52" class="list-row-px-3" divider="full">
+        <ListRows :items="invoices" row-key="name" v-slot="{ item: inv, value }">
+          <ListRow :value="value">
             <ListCell>
               <span class="text-p-sm text-ink-gray-8">{{ formatDate(inv.posting_date) }}</span>
             </ListCell>

@@ -41,8 +41,11 @@
     </Alert>
 
     <List :columns="['12rem', 'minmax(0,1fr)']" divider="full">
-      <ListRows :items="rows" row-key="label" v-slot="{ item: row }">
-        <ListRow>
+      <ListRows :items="rows" row-key="label" v-slot="{ item: row, value }">
+        <!-- Static rows wrap, so no rowHeight — the family leaves height
+             auto without one. frappe-ui pads only interactive rows, so the
+             vertical rhythm here is this page's to set. -->
+        <ListRow :value="value" class="py-3">
           <ListCell>
             <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
           </ListCell>

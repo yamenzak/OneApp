@@ -183,6 +183,17 @@ def test_barrel_covers_everything_frappe_ui_exports():
 
 	exported = set()
 	index = (src / "index.ts").read_text()
+
+	# A component frappe-ui has deprecated must stay *out* of the barrel, not in
+	# it. ThemeSwitcher is `@deprecated Use Select with useColorScheme instead`
+	# and calls warnDeprecated on every render; re-exporting it is how the
+	# appearance setting kept using it after 1.0 replaced it.
+	deprecated = set()
+	for target in re.findall(
+		r"/\*\* @deprecated[^*]*\*/\s*export \* from '\./components/([^']+)'", index
+	):
+		deprecated.add(target.split("/")[0])
+
 	for target in re.findall(r"export \* from '\./components/([^']+)'", index):
 		# Some re-exports name the barrel file explicitly ('Sidebar/index.ts')
 		# and some name only the directory ('Rail'). Appending index.ts blindly
@@ -197,11 +208,33 @@ def test_barrel_covers_everything_frappe_ui_exports():
 				break
 
 	barrel = (ROOT / "apps/oneapp_control/frontend/src/ui.js").read_text()
-	missing = sorted(c for c in exported if c[0].isupper() and c not in barrel)
+	live = {c for c in exported if c[0].isupper()} - deprecated
 
+	missing = sorted(c for c in live if c not in barrel)
 	assert not missing, (
 		f"{len(missing)} frappe-ui components are not in the barrel and so cannot "
 		f"be used: {missing}"
+	)
+
+	stale = sorted(c for c in deprecated if c in barrel)
+	assert not stale, (
+		f"frappe-ui deprecated {stale}; drop them from the barrel and use the "
+		f"replacement its index.ts names"
+	)
+
+
+def test_the_deprecation_reader_still_finds_one():
+	"""If the marker moves, the rule above passes by finding nothing to enforce."""
+	import re
+
+	src = ROOT / "apps/oneapp_control/frontend/node_modules/frappe-ui/src"
+	if not src.exists():
+		pytest.skip("frappe-ui not installed")
+
+	index = (src / "index.ts").read_text()
+	assert re.search(r"/\*\* @deprecated[^*]*\*/\s*export \* from", index), (
+		"no @deprecated export found in frappe-ui's index.ts — either the "
+		"package stopped marking them this way, or the pattern needs updating"
 	)
 
 
@@ -309,3 +342,91 @@ def test_no_binary_theme_toggle(app):
 	# three-way ThemeSwitcher in settings instead.
 	for path, source in _sources(app).items():
 		assert "toggleColorScheme" not in source, f"{app}/{path} still toggles the theme"
+
+
+# --------------------------------------------------------------------------- #
+# Not hand-rolling what the library ships
+#
+# The rule the user set: if frappe-ui has a component, we use it. These make
+# that checkable rather than a matter of remembering.
+# --------------------------------------------------------------------------- #
+
+def _local_components():
+	"""Every .vue file we wrote, by app."""
+	found = {}
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		found[app] = sorted(root.rglob("*.vue"))
+	return found
+
+
+def _barrel_names():
+	barrel = (ROOT / "apps/oneapp_control/frontend/src/ui.js").read_text()
+	import re
+
+	return set(re.findall(r"^\s{2}([A-Z]\w+),", barrel, re.M))
+
+
+def test_no_local_component_shadows_a_frappe_ui_one():
+	"""A local `Badge.vue` beside the barrel's `Badge` is a coin toss per file.
+
+	Only exact names are checked. `AppSidebar` and `PortalSidebar` are
+	compositions *of* `Sidebar`, which is the point — it is the file that
+	replaces a primitive outright that this is looking for.
+	"""
+	names = _barrel_names()
+	assert len(names) > 60, f"only read {len(names)} names from the barrel"
+
+	clashes = []
+	for app, paths in _local_components().items():
+		for path in paths:
+			if path.stem in names:
+				clashes.append(f"{app}/{path.name} shadows frappe-ui's <{path.stem}>")
+	assert not clashes, "\n".join(clashes)
+
+
+def test_local_components_compose_the_vocabulary():
+	"""A component that imports nothing is markup wearing a component's name.
+
+	Every one of ours has to be built out of the barrel, or out of another of
+	ours that is. The tenant app's 404 page was the exception: a hand-built
+	centred div with a `text-blue-600` router-link, which is both a hand-rolled
+	EmptyState and a colour that does not follow the theme.
+	"""
+	raw = []
+	for app, paths in _local_components().items():
+		for path in paths:
+			source = path.read_text()
+			if "from '@/ui'" in source:
+				continue
+			# Composing our own components is fine — they bottom out in the barrel.
+			if re.search(r"import \w+ from '[^']*\.vue'", source):
+				continue
+			raw.append(f"{app}/{path.relative_to(ROOT / f'apps/{app}/frontend/src')}")
+	assert not raw, (
+		"these build their markup from scratch instead of from the barrel: "
+		+ ", ".join(raw)
+	)
+
+
+# Tailwind's own palette is not the design system. `text-blue-600` is a fixed
+# colour: it does not move with the theme, so it stays a light-mode blue on a
+# dark background. frappe-ui's semantic tokens — ink / surface / outline — are
+# what the theme actually redefines.
+PALETTE = (
+	"slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|"
+	"teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose"
+)
+
+
+def test_colours_come_from_semantic_tokens():
+	offenders = []
+	pattern = re.compile(rf"\b(?:text|bg|border|ring|divide)-(?:{PALETTE})-\d{{2,3}}\b")
+	for app, paths in _local_components().items():
+		for path in paths:
+			for match in set(pattern.findall(path.read_text())):
+				offenders.append(f"{app}/{path.name}: {match}")
+	assert not offenders, (
+		"raw Tailwind palette colours do not follow the theme; use the ink / "
+		"surface / outline tokens instead: " + ", ".join(sorted(offenders))
+	)

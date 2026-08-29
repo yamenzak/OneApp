@@ -1,7 +1,9 @@
 <template>
-  <Dropdown :options="options" placement="right-end">
+  <!-- `side` + `align`, not `placement`: frappe-ui removed `placement` in 1.0
+       and warns about it in dev, so the menu was never positioned. -->
+  <Dropdown :options="options" side="right" align="end">
     <template #trigger>
-      <Tooltip :text="fullName || 'Account'" placement="right">
+      <Tooltip :text="fullName || 'Account'" side="right">
         <Avatar
           :label="fullName || '?'"
           :image="userImage"

@@ -36,8 +36,11 @@
       <p class="mb-3 text-p-sm text-ink-gray-5">{{ group.blurb }}</p>
 
       <List :columns="['5.5rem', 'minmax(0,1fr)']" divider="full">
-        <ListRows :items="setup.group(group.key)" row-key="key" v-slot="{ item: check }">
-          <ListRow>
+        <ListRows :items="setup.group(group.key)" row-key="key" v-slot="{ item: check, value }">
+          <!-- Static rows wrap, so no rowHeight — the family leaves height
+               auto without one. frappe-ui pads only interactive rows, so the
+               vertical rhythm here is this page's to set. -->
+          <ListRow :value="value" class="py-3">
             <ListCell>
               <Badge
                 :theme="check.ok ? 'green' : group.key === 'blocking' ? 'red' : 'gray'"

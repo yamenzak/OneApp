@@ -32,13 +32,13 @@
       description="Creating one provisions a real site on Frappe Cloud. It takes a few minutes unless a warm site is waiting."
     />
 
-    <List v-else :columns="COLUMNS" divider="full">
+    <List v-else :columns="COLUMNS" :row-height="56" class="list-row-px-3" divider="full">
       <ListHeader>
-        <ListHeaderCell v-for="c in HEADERS" :key="c" :label="c" />
+        <ListHeaderCell v-for="c in HEADERS" :key="c">{{ c }}</ListHeaderCell>
       </ListHeader>
 
-      <ListRows :items="rows" row-key="name" v-slot="{ item: tenant }">
-        <ListRow
+      <ListRows :items="rows" row-key="name" v-slot="{ item: tenant, value }">
+        <ListRow :value="value"
           @click="$router.push({ name: 'Tenant', params: { name: tenant.name } })"
         >
           <ListCell>
@@ -95,7 +95,7 @@ const statusTheme = (status) =>
   ({
     Active: 'green',
     Provisioning: 'blue',
-    Suspended: 'orange',
+    Suspended: 'amber',
     Failed: 'red',
     Archived: 'gray',
   })[status] || 'gray'
