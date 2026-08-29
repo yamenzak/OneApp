@@ -10,8 +10,9 @@ required_apps = ["erpnext"]
 # ---------------------------------------------------------------------------
 # SPA
 # ---------------------------------------------------------------------------
-# The Vue router owns everything under /one. Frappe's desk stays at /app so the
-# two never collide, and desk remains available to us for support.
+# The Vue router owns everything under /one. Without this rule Frappe resolves
+# only the exact route, so reloading any deep link serves a 404 before the router
+# ever runs. The desk at /app is left alone rather than used — see DECISIONS §7.
 website_route_rules = [
 	{"from_route": "/one/<path:app_path>", "to_route": "one"},
 ]
