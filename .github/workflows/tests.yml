@@ -28,3 +28,9 @@ jobs:
 
       - name: Validate doctype JSON
         run: python scripts/validate_doctypes.py
+
+      # The two SPAs cannot share an npm workspace — each is mirrored to its own
+      # repository — so their shared setup is generated. This is what stops the
+      # copies drifting apart.
+      - name: Check frontend config is in sync
+        run: python scripts/check_frontend.py

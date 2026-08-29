@@ -45,5 +45,5 @@
 import { computed } from 'vue'
 import { session } from '../lib/session'
 
-const apps = computed(() => session.apps || [])
+const apps = computed(() => session.apps)
 </script>

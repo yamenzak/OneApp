@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { session } from './lib/session'
+import { session, sessionResource } from './lib/session'
 
 const routes = [
   { path: '/', name: 'Launcher', component: () => import('./pages/Launcher.vue') },
@@ -24,7 +24,8 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  await session.load()
+  // The resource fires on setup; wait for the first response before deciding.
+  await sessionResource.promise
 
   if (!session.isLoggedIn) {
     // Hand back to Frappe's own login, which knows how to return here.

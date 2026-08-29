@@ -1,54 +1,59 @@
-import { reactive } from 'vue'
-import { createResource } from 'frappe-ui'
+import { computed } from 'vue'
+
+import { useResource } from './resource'
 
 /**
  * One round trip on boot gives the shell everything it needs: who the user is,
  * which apps they can open, and current quota and credit state.
+ *
+ * Watches OneApp Site State so a control-plane sync — a plan change, an app
+ * granted — reaches the open tab over the socket rather than on next reload.
  */
-const resource = createResource({
-  url: 'oneapp.api.session',
-  cache: 'oneapp-session',
+export const sessionResource = useResource('oneapp.api.session', {
+  cacheKey: 'oneapp-session',
+  watch: ['OneApp Site State'],
 })
 
-export const session = reactive({
-  user: null,
-  tenant: null,
-  apps: [],
-  quota: null,
-  credits: null,
-  loaded: false,
-  error: null,
+export const session = {
+  resource: sessionResource,
 
+  get data() {
+    return sessionResource.data || {}
+  },
+  get user() {
+    return this.data.user || null
+  },
+  get tenant() {
+    return this.data.tenant || null
+  },
+  get apps() {
+    return this.data.apps || []
+  },
+  get quota() {
+    return this.data.quota || null
+  },
+  get credits() {
+    return this.data.credits || null
+  },
+  get loaded() {
+    return sessionResource.isFinished
+  },
   get isLoggedIn() {
-    return Boolean(this.user && this.user.name && this.user.name !== 'Guest')
+    return Boolean(this.user?.name && this.user.name !== 'Guest')
   },
 
   hasApp(appCode) {
     return this.apps.some((a) => a.app_code === appCode)
   },
 
-  async load({ force = false } = {}) {
-    if (this.loaded && !force) return this
-
-    try {
-      const data = await resource.fetch()
-      Object.assign(this, data, { loaded: true, error: null })
-    } catch (e) {
-      this.error = e
-      this.loaded = true
-    }
-    return this
-  },
-
-  async refresh() {
-    return this.load({ force: true })
-  },
-})
-
-export function storageFraction() {
-  if (!session.quota || !session.quota.storage_quota_bytes) return 0
-  return session.quota.storage_used_bytes / session.quota.storage_quota_bytes
+  reload: () => sessionResource.reload(),
 }
+
+export const storageFraction = computed(() => {
+  const quota = session.quota
+  if (!quota?.storage_quota_bytes) return 0
+  return quota.storage_used_bytes / quota.storage_quota_bytes
+})
 
 export function formatBytes(bytes) {
   if (!bytes) return '0 B'

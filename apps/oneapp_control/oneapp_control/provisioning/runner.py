@@ -147,6 +147,12 @@ def enqueue(tenant: str, action: str, payload: dict | None = None,
 
 def provision_tenant(tenant: str):
 	"""Kick off site creation for a tenant."""
+	from oneapp_control.api.setup import assert_ready_to_provision
+
+	# Fail before touching Frappe Cloud. A half-configured run gets several steps
+	# in and leaves a real site behind.
+	assert_ready_to_provision()
+
 	doc = frappe.get_doc("Tenant", tenant)
 
 	if not doc.shard:

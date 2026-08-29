@@ -7,16 +7,22 @@ import path from 'node:path'
 
 // frappe-ui's plugin owns the parts that are easy to get subtly wrong: it
 // proxies /api, /app, /assets, /files and /private to the bench it detects from
-// common_site_config.json, and it emits ../oneapp/www/<route>.html so the SPA is
+// common_site_config.json, and it emits ../oneapp_control/www/<route>.html so the SPA is
 // served by Frappe itself. Hand-rolling any of that is how the two apps drift.
 export default defineConfig({
   plugins: [
     frappeui({
-      frontendRoute: '/one',
+      frontendRoute: '/admin',
       frappeTypes: {
         input: {
-  'oneapp': [
-    'OneApp Site State'
+  'oneapp_control': [
+    'Tenant',
+    'Shard',
+    'Plan',
+    'Subscription',
+    'Provisioning Job',
+    'Credit Ledger Entry',
+    'OneApp App'
   ]
 },
       },
