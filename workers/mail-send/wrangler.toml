@@ -1,0 +1,17 @@
+name = "oneapp-mail-send"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Same map the inbound worker uses: tenant slug -> {"url": ..., "secret": ...}
+[[kv_namespaces]]
+binding = "TENANTS"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+# Cloudflare's outbound email binding. Confirm the binding type and name against
+# the current dashboard before deploying — this is a new product surface.
+# [[send_email]]
+# name = "MAILER"
+
+[vars]
+MAIL_DOMAIN = "mail.4dl.app"

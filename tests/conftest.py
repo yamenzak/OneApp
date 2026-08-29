@@ -58,7 +58,33 @@ def _make_frappe():
 		def count(self, *a, **k):
 			return 0
 
+		def sql(self, *a, **k):
+			return self.sql_result
+
+		sql_result = [[0]]
+
+		def set_value(self, *a, **k):
+			return None
+
 	frappe.db = _DB()
+	frappe.sql = frappe.db.sql
+
+	class _Cache:
+		def __init__(self):
+			self.store = {}
+
+		def get_value(self, key, *a, **k):
+			return self.store.get(key)
+
+		def set_value(self, key, value, **k):
+			self.store[key] = value
+
+		def delete_value(self, key):
+			self.store.pop(key, None)
+
+	_cache = _Cache()
+	frappe.cache = lambda: _cache
+	frappe.conf = {}
 	frappe.get_all = lambda *a, **k: []
 	frappe.get_doc = lambda *a, **k: None
 	frappe.get_single = lambda *a, **k: None

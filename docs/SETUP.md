@@ -1,0 +1,184 @@
+# Setup
+
+What has to exist before any of this runs, and every configuration key the code
+reads. Follow [`ROADMAP.md`](ROADMAP.md) for order; this is the reference.
+
+---
+
+## Python version
+
+**Frappe `develop` requires Python 3.14** (verified against the branch — `v15`
+runs on 3.10–3.11). Frappe Cloud handles this for hosted benches, but it decides
+what a local development machine needs.
+
+---
+
+## Repositories
+
+Work happens in this monorepo. CI publishes each app to a mirror that Frappe
+Cloud clones — see the root [`README`](../README.md).
+
+| Source | Mirror |
+| --- | --- |
+| `apps/oneapp` | `yamenzak/oneapp-app` |
+| `apps/oneapp_control` | `yamenzak/oneapp-control` |
+
+Repository secret `MIRROR_TOKEN`: a fine-grained PAT with **Contents: Read and
+write**, scoped to those two repositories only.
+
+---
+
+## Frappe Cloud
+
+Two bench groups:
+
+| Group | Apps | Sites |
+| --- | --- | --- |
+| Tenant | `frappe` + `erpnext` + `oneapp` | one per tenant |
+| Control | `frappe` + `erpnext` + `payments` + `oneapp_control` | `admin.4dl.app` |
+
+**Wildcard domain.** `*.4dl.app` must be registered as a root domain on the
+server, with Frappe holding a wildcard certificate. Press models this as a
+`Root Domain` with a wildcard `TLS Certificate`, but on hosted Frappe Cloud that
+is press-side configuration — **it is a support request to Frappe, not an API
+call**. Raise it early; provisioning cannot work without it.
+
+Once it exists, creating a tenant is a single `press.api.site.new` call with no
+DNS or certificate work per tenant.
+
+**API credentials.** Generate an API key and secret on the Frappe Cloud account
+and put them in OneApp Control Settings.
+
+---
+
+## Control-plane configuration
+
+In **OneApp Control Settings** (Single doctype):
+
+| Field | Notes |
+| --- | --- |
+| `press_api_url` | `https://frappecloud.com` |
+| `press_api_key` / `press_api_secret` | from Frappe Cloud |
+| `tenant_domain` | `4dl.app` |
+| `control_plane_url` | `https://admin.4dl.app` — tenant sites call back here |
+| `default_shard` | optional; the allocator picks least-loaded otherwise |
+| `reserved_slugs` | additions to the built-in blocklist |
+| `stripe_webhook_secret` | signing secret from the Stripe webhook endpoint |
+| `ai_gateway_url` / `ai_gateway_token` | Cloudflare AI Gateway |
+
+At least one **Shard** must exist, with `press_release_group` set to the tenant
+bench group. Without a shard that has headroom, `pick_shard` returns `None` and
+provisioning refuses rather than placing a tenant nowhere.
+
+**Stripe** is configured through the `payments` app's Stripe Settings, so there
+is one place to rotate the secret key. Point a Stripe webhook at:
+
+```
+https://admin.4dl.app/api/method/oneapp_control.billing.webhooks.stripe
+```
+
+subscribed to `checkout.session.completed`, `customer.subscription.*`,
+`invoice.paid`, `invoice.payment_failed`.
+
+---
+
+## Tenant site configuration
+
+Injected into `site_config.json` by the provisioning engine
+(`push_site_config`). Listed here because they are what a hand-built development
+site needs.
+
+### Identity — set automatically at provisioning
+
+| Key | Purpose |
+| --- | --- |
+| `oneapp_tenant` | tenant name on the control plane |
+| `oneapp_control_url` | control-plane base URL |
+| `oneapp_hmac_secret` | shared secret, scoped to this tenant alone |
+| `oneapp_site_name` | permanent internal address |
+
+A site missing these is orphaned: running, but unable to prove who it is. It will
+log a sync error and serve no apps.
+
+### R2 storage
+
+| Key | Purpose |
+| --- | --- |
+| `oneapp_r2_account_id` | Cloudflare account id |
+| `oneapp_r2_bucket` | bucket name |
+| `oneapp_r2_access_key` / `oneapp_r2_secret_key` | R2 API token |
+| `oneapp_r2_public_base` | `https://cdn.4dl.app` |
+
+Absent, the File override falls back to Frappe's filesystem behaviour rather than
+failing uploads.
+
+### AI
+
+| Key | Purpose |
+| --- | --- |
+| `oneapp_cf_account_id` | Cloudflare account id |
+| `oneapp_ai_gateway` | gateway name |
+| `oneapp_ai_gateway_token` | gateway auth, if enabled |
+| `oneapp_google_ai_key` | Google AI Studio key |
+| `oneapp_cf_api_token` | for Workers AI |
+| `oneapp_ai_markup` | multiplier on measured cost, default `1.5` |
+
+### Email
+
+| Key | Purpose |
+| --- | --- |
+| `oneapp_mail_worker_url` | outbound Worker; omit if using SMTP |
+| `oneapp_mail_domain` | `mail.4dl.app` |
+| `oneapp_mail_hourly_limit` | per-tenant send cap, default `200` |
+
+If Cloudflare exposes SMTP credentials, configure a Frappe **Email Account**
+instead and leave `oneapp_mail_worker_url` unset — Frappe's Email Queue handles
+batching, retries and unsubscribe better than the shim.
+
+---
+
+## Cloudflare
+
+- **R2 bucket** with `cdn.4dl.app` bound to it for public objects.
+- **Email Routing** on `t.4dl.app`, catch-all to the `oneapp-email-inbound`
+  Worker.
+- **KV namespace** `TENANTS`, mapping tenant slug to `{url, secret}`. Both
+  Workers read it. KV rather than a control-plane call so an outage does not
+  bounce mail.
+- **AI Gateway** with per-request logging enabled — that is how AI spend gets
+  attributed per tenant.
+
+See [`workers/README.md`](../workers/README.md).
+
+---
+
+## Local development
+
+```bash
+git clone https://github.com/yamenzak/OneApp ~/src/OneApp
+
+cd ~/frappe-bench
+ln -s ~/src/OneApp/apps/oneapp          apps/oneapp
+ln -s ~/src/OneApp/apps/oneapp_control  apps/oneapp_control
+./env/bin/pip install -e apps/oneapp -e apps/oneapp_control
+printf 'oneapp\noneapp_control\n' >> sites/apps.txt
+
+bench --site control.localhost install-app oneapp_control
+bench --site tenant.localhost  install-app oneapp
+```
+
+Frontend:
+
+```bash
+cd apps/oneapp/frontend && npm install && npm run dev
+```
+
+Tests that need no bench:
+
+```bash
+python -m pytest tests/ -q
+python scripts/validate_doctypes.py
+```
+
+Doctype schemas are generated — edit `scripts/gen_doctypes.py` and re-run it
+rather than hand-editing JSON.
