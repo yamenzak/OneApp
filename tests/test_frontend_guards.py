@@ -125,3 +125,43 @@ def test_banned_elements_carry_a_replacement(generated):
 	config = next(iter(generated.values()))["frontend/eslint.config.js"]
 	for hint in ("<Button>", "<TextInput>", "<Select>", "<Textarea>", "<Dialog>", "<ListView>"):
 		assert hint in config, hint
+
+
+# --------------------------------------------------------------------------- #
+# Component vocabulary
+#
+# The library has primitives for the things that are easy to hand-roll badly: a
+# list, a sidebar item, an icon. Hand-rolled versions look close in isolation and
+# wrong next to everything else, so the barrel has to actually offer them.
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize(
+	"component",
+	[
+		# The list family — a <div> stack with divide-y is not a list.
+		"List", "ListHeader", "ListHeaderCell", "ListRows", "ListRow", "ListCell",
+		# The sidebar family — a <router-link> with an active class is not a
+		# sidebar item.
+		"Sidebar", "SidebarItem", "SidebarSection", "SidebarLabel", "SidebarHeader",
+		# Shell — DesktopShell renders the header target and scroll area itself.
+		"DesktopShell", "PageHeader",
+		# Icons — frappe-ui resolves `lucide-*` names; inlining SVG was wrong.
+		"Icon", "Avatar",
+	],
+)
+def test_barrel_exposes_the_primitive(generated, component):
+	for app, files in generated.items():
+		assert component in files["frontend/src/ui.js"], f"{app} cannot use <{component}>"
+
+
+def test_list_family_comes_from_the_list_entry_point(generated):
+	"""frappe-ui/list ships its own structural CSS and is a separate entry."""
+	for app, files in generated.items():
+		assert "from 'frappe-ui/list'" in files["frontend/src/ui.js"], app
+
+
+def test_the_list_entry_point_is_also_guarded(generated):
+	"""Otherwise pages could import list components directly and bypass the
+	barrel."""
+	for app, files in generated.items():
+		assert "frappe-ui/list" in files["frontend/eslint.config.js"], app

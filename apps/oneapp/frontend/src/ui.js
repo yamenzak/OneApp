@@ -3,31 +3,48 @@
 /**
  * The sanctioned frappe-ui surface.
  *
- * Both SPAs import components from here rather than from 'frappe-ui' directly,
- * so what the product is allowed to use is a single reviewable list instead of
- * whatever each file happened to reach for. ESLint enforces it.
+ * Both SPAs import from here rather than from 'frappe-ui' directly, so what the
+ * product is allowed to use is one reviewable list instead of whatever each file
+ * reached for. ESLint enforces it.
+ *
+ * Prefer a component here over hand-rolled markup. A <div> with divide-y is not
+ * a list, and a <router-link> with an active class is not a sidebar item — they
+ * look close in isolation and wrong next to everything else.
  */
 
 export {
-  // Layout and shell
+  // ----- Shell -----------------------------------------------------------
+  // DesktopShell renders a PageHeaderTarget and a ScrollArea itself, so pages
+  // teleport their header up with <PageHeader> rather than laying one out.
   DesktopShell,
   MobileShell,
   MobileNav,
-  Sidebar,
   Rail,
   PageHeader,
   ScrollArea,
+
+  // ----- Sidebar family --------------------------------------------------
+  Sidebar,
+  SidebarItem,
+  SidebarLabel,
+  SidebarSection,
+  SidebarHeader,
+  SidebarCard,
+  SidebarCollapseToggle,
+
+  // ----- Structure -------------------------------------------------------
   Divider,
   Tabs,
   TabButtons,
+  Breadcrumbs,
 
-  // Actions
+  // ----- Actions ---------------------------------------------------------
   Button,
   Dropdown,
   Menu,
   ContextMenu,
 
-  // Form controls
+  // ----- Form controls ---------------------------------------------------
   FormControl,
   FormLabel,
   TextInput,
@@ -47,7 +64,7 @@ export {
   FileUploader,
   ErrorMessage,
 
-  // Feedback and status
+  // ----- Feedback --------------------------------------------------------
   Alert,
   Badge,
   Progress,
@@ -58,7 +75,7 @@ export {
   Toast,
   Tooltip,
 
-  // Overlays
+  // ----- Overlays --------------------------------------------------------
   Dialog,
   Popover,
   HoverCard,
@@ -67,33 +84,32 @@ export {
   KeyboardShortcut,
   KeyboardShortcutsDialog,
 
-  // Display
+  // ----- Display ---------------------------------------------------------
   Avatar,
   Icon,
-  Breadcrumbs,
   Tree,
   ItemListRow,
   ThemeSwitcher,
 
-  // Root provider — wraps the app so toasts and dialogs work.
+  // ----- Root provider ---------------------------------------------------
   FrappeUIProvider,
 
-  // Imperative helpers
+  // ----- Imperative ------------------------------------------------------
   toast,
   dialog,
 
-  // Composables
+  // ----- Composables -----------------------------------------------------
   usePageMeta,
   useColorScheme,
   useKeyboardShortcut,
   useShellScrolled,
   useFileUpload,
 
-  // Directives
+  // ----- Directives ------------------------------------------------------
   vFocus,
   vOnOutsideClick,
 
-  // Data and utilities
+  // ----- Data and utilities ----------------------------------------------
   call,
   frappeRequest,
   setConfig,
@@ -102,3 +118,21 @@ export {
   dayjsLocal,
   debounce,
 } from 'frappe-ui'
+
+/**
+ * The list family. A separate entry point in frappe-ui because it ships its own
+ * structural CSS; re-exported here so pages have one import path.
+ *
+ * `List` takes grid track sizes via `columns`, and handles dividers, selection
+ * and the active row. Reach for it before writing a table or a stack of divs.
+ */
+export {
+  List,
+  ListHeader,
+  ListHeaderCell,
+  ListHeaderCellSort,
+  ListRows,
+  ListRow,
+  ListCell,
+  ListGroup,
+} from 'frappe-ui/list'

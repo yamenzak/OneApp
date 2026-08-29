@@ -57,6 +57,11 @@ export default [
               'response unwrapping and notification sound.',
           },
           {
+            name: 'frappe-ui/list',
+            message: "Import list components from '@/ui' too — one import path " +
+              'for the whole sanctioned surface.',
+          },
+          {
             name: 'socket.io-client',
             message: "Use onDoctypeChange from '@/lib/socket' — one shared, " +
               'reference-counted socket per app.',

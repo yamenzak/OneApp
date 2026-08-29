@@ -1,12 +1,14 @@
 <template>
-  <div class="grid min-h-[60vh] place-items-center p-8 text-center">
-    <div>
-      <p class="text-p-lg font-medium">Page not found</p>
-      <Button class="mt-3" label="Back to tenants" @click="$router.push('/tenants')" />
-    </div>
+  <div class="grid h-full place-items-center p-8">
+    <EmptyState title="Page not found" description="That route does not exist.">
+      <template #action>
+        <Button class="mt-4" label="Back to tenants" @click="$router.push('/tenants')" />
+      </template>
+    </EmptyState>
   </div>
 </template>
 
 <script setup>
 import { Button } from '@/ui'
+import EmptyState from '../components/EmptyState.vue'
 </script>
