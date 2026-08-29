@@ -370,6 +370,30 @@ doctype(
 )
 
 
+# --------------------------------------------------------------------------- #
+# Stripe Webhook Event — Stripe retries aggressively and delivers out of order.
+# Recording every event id makes replay a no-op instead of a double charge.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Stripe Webhook Event",
+    autoname="field:event_id",
+    perms=READONLY_PERMS,
+    fields=[
+        f("event_id", reqd=1, unique=1, in_list_view=1),
+        f("event_type", in_list_view=1, in_standard_filter=1),
+        f("status", "Select", options="Received\nProcessed\nIgnored\nFailed",
+          default="Received", reqd=1, in_list_view=1, in_standard_filter=1),
+        column("cb_evt"),
+        f("tenant", "Link", options="Tenant"),
+        f("subscription", "Link", options="Subscription"),
+        f("processed_on", "Datetime", read_only=1),
+        section("sec_evt"),
+        f("payload", "Code", options="JSON"),
+        f("error", "Text"),
+    ],
+)
+
+
 def build(spec):
     fields = spec["fields"]
     doc = {
