@@ -63,6 +63,12 @@ doctype(
         f("deploy_ring", "Select", options="Canary\nWave 1\nWave 2\nFleet",
           default="Fleet", reqd=1, in_list_view=1,
           description="Migration order. Canary carries internal tenants and goes first."),
+        f("environment", "Select", options="Production\nStaging",
+          default="Production", reqd=1, in_standard_filter=1,
+          description="Tenants placed here inherit this. Staging shards are ours "
+                      "to break — the dev tooling patches and redeploys their "
+                      "bench, and refuses any bench carrying a Production "
+                      "tenant. Default is the safe one."),
         column("cb_press"),
         f("accepts_new_tenants", "Check", default="1",
           description="Uncheck to stop the allocator placing new tenants here."),

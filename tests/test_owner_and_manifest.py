@@ -99,3 +99,33 @@ def test_control_plane_sends_what_the_tenant_reads(stub_frappe):
 	for key in ("permissions", "owner", "owner_role"):
 		assert key in sent, f"control plane no longer sends {key!r}"
 		assert f'"{key}"' in tenant, f"tenant no longer reads {key!r}"
+
+
+def test_tenant_environment_comes_from_its_shard(stub_frappe):
+	"""The tooling's guard asks what is on a bench; a tenant says where it runs.
+
+	Both answers have to come from the same place or they disagree — and the
+	disagreement is silent, because each looks right on its own.
+	"""
+	import pathlib
+
+	source = (
+		pathlib.Path(__file__).resolve().parents[1]
+		/ "apps/oneapp_control/oneapp_control/control_plane/doctype/tenant/tenant.py"
+	).read_text()
+	assert "inherit_environment_from_shard" in source
+	assert 'get_value("Shard", self.shard, "environment")' in source
+
+
+def test_environment_defaults_to_production_everywhere(stub_frappe):
+	# A path that forgets to set it should protect the bench, not expose it.
+	import json
+	import pathlib
+
+	root = pathlib.Path(__file__).resolve().parents[1]
+	for doctype in ("tenant", "shard"):
+		spec = json.loads(
+			(root / f"apps/oneapp_control/oneapp_control/control_plane/doctype/{doctype}/{doctype}.json").read_text()
+		)
+		field = next(f for f in spec["fields"] if f["fieldname"] == "environment")
+		assert field["default"] == "Production", f"{doctype}.environment must default safe"

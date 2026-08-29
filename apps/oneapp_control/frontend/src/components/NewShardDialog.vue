@@ -38,6 +38,13 @@
           <FormControl v-model="form.region" type="select" label="Region" :options="regionOptions" />
           <FormControl v-model="form.domain" label="Tenant domain" placeholder="4dl.app" />
           <FormControl v-model="form.press_version" label="Frappe version" placeholder="Nightly" />
+          <FormControl
+            v-model="form.environment"
+            type="select"
+            label="Environment"
+            :options="['Production', 'Staging']"
+            description="Staging shards may be patched and redeployed automatically."
+          />
           <FormControl v-model="form.capacity_tenants" type="number" label="Soft cap (tenants)" />
           <FormControl v-model="form.standby_target" type="number" label="Standby sites" />
         </div>
@@ -85,6 +92,7 @@ const form = reactive({
   region: '',
   domain: '',
   press_version: 'Nightly',
+  environment: 'Production',
   capacity_tenants: 60,
   standby_target: 1,
   site_apps: '',

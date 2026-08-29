@@ -10,6 +10,7 @@
   "shard_name",
   "status",
   "deploy_ring",
+  "environment",
   "cb_press",
   "accepts_new_tenants",
   "capacity_tenants",
@@ -58,6 +59,16 @@
    "in_list_view": 1,
    "label": "Deploy Ring",
    "options": "Canary\nWave 1\nWave 2\nFleet",
+   "reqd": 1
+  },
+  {
+   "default": "Production",
+   "description": "Tenants placed here inherit this. Staging shards are ours to break \u2014 the dev tooling patches and redeploys their bench, and refuses any bench carrying a Production tenant. Default is the safe one.",
+   "fieldname": "environment",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Environment",
+   "options": "Production\nStaging",
    "reqd": 1
   },
   {

@@ -23,6 +23,7 @@ class Tenant(Document):
 		self.validate_slug_is_immutable()
 		self.assign_shard()
 		self.inherit_region_from_shard()
+		self.inherit_environment_from_shard()
 		self.set_site_name()
 		self.ensure_hmac_secret()
 
@@ -51,6 +52,23 @@ class Tenant(Document):
 		"""Backfill the region when a shard was assigned directly."""
 		if self.shard and not self.region:
 			self.region = frappe.db.get_value("Shard", self.shard, "region")
+
+	def inherit_environment_from_shard(self):
+		"""A tenant is staging or production because of where it runs.
+
+		Taken from the shard rather than chosen per tenant, because the guard
+		that keeps the development tooling away asks what is on a *bench* — so
+		the two answers have to come from the same place or they will disagree.
+
+		Without this, every tenant defaults to Production, and the first test
+		workspace on a single-bench setup locks the tooling out of the only
+		bench there is.
+		"""
+		if not self.shard:
+			return
+		self.environment = (
+			frappe.db.get_value("Shard", self.shard, "environment") or "Production"
+		)
 
 	def set_site_name(self):
 		"""Derive the permanent internal address once a shard is known."""
