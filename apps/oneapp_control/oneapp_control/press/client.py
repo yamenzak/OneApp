@@ -186,6 +186,58 @@ class PressClient:
 			"press.api.bench.update_config", name=release_group, config=json.dumps(payload)
 		)
 
+	# ------------------------------------------------------------------ #
+	# Bench deploys — the mechanism behind deploy rings
+	# ------------------------------------------------------------------ #
+
+	def deploy_information(self, release_group: str) -> dict:
+		return self.call("press.api.bench.deploy_information", name=release_group) or {}
+
+	def deploy_bench(self, release_group: str, only_apps: list[str] | None = None) -> str:
+		"""Build and deploy a bench group, returning the build name.
+
+		Press requires both a release and its commit hash per app, and refuses
+		the whole deploy if either is missing — so the hash is resolved from each
+		app's own releases list rather than assumed.
+		"""
+		info = self.deploy_information(release_group)
+
+		if info.get("deploy_in_progress"):
+			raise PressPermanentError(
+				f"A deploy is already running on {release_group}."
+			)
+
+		payload = []
+		for app in info.get("apps") or []:
+			if only_apps and app.get("app") not in only_apps:
+				continue
+			if not app.get("update_available"):
+				continue
+
+			release = app.get("next_release")
+			commit = _hash_for_release(app, release)
+			if not (release and commit):
+				raise PressPermanentError(
+					f"No release or commit hash available for {app.get('app')}."
+				)
+
+			payload.append(
+				{
+					"app": app["app"],
+					"source": app.get("source"),
+					"release": release,
+					"hash": commit,
+				}
+			)
+
+		if not payload:
+			raise PressPermanentError("Nothing to deploy — no app has an update.")
+
+		# Sent as a real array, not a JSON string: unlike update_config, this
+		# endpoint does not parse its argument. A string gets iterated as
+		# characters and fails with a bare AttributeError.
+		return self.call("press.api.bench.deploy", name=release_group, apps=payload)
+
 	def deactivate(self, site: str):
 		return self.call("press.api.site.deactivate", name=site)
 
@@ -238,6 +290,14 @@ class PressClient:
 
 	def remove_domain(self, site: str, domain: str):
 		return self.run_doc_method("Site", site, "remove_domain", {"domain": domain})
+
+
+def _hash_for_release(app: dict, release: str) -> str | None:
+	"""Press returns the hash inside the app's releases list, not beside it."""
+	for candidate in app.get("releases") or []:
+		if candidate.get("name") == release:
+			return candidate.get("hash")
+	return None
 
 
 def _config_type(value) -> str:
