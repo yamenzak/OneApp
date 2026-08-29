@@ -430,3 +430,38 @@ def test_colours_come_from_semantic_tokens():
 		"raw Tailwind palette colours do not follow the theme; use the ink / "
 		"surface / outline tokens instead: " + ", ".join(sorted(offenders))
 	)
+
+
+def test_the_prepaint_theme_script_matches_the_composable():
+	"""The scheme is applied from JS on load, so a shell without `data-theme`
+	shows the default and then switches — a visible flash on every cold load.
+
+	Each shell sets the attribute before the app script runs. That only works
+	while it reads the key `useColorScheme` writes, and sets the attribute it
+	reads, so both are checked against the composable rather than assumed.
+	"""
+	src = ROOT / "apps/oneapp_control/frontend/node_modules/frappe-ui/src"
+	if not src.exists():
+		pytest.skip("frappe-ui not installed")
+
+	composable = (src / "composables/useColorScheme.ts").read_text()
+	key = re.search(r"STORAGE_KEY\s*=\s*'([^']+)'", composable)
+	attribute = re.search(r"DOM_ATTRIBUTE\s*=\s*'([^']+)'", composable)
+	assert key and attribute, "useColorScheme no longer names its key/attribute"
+
+	shells = sorted(ROOT.glob("apps/*/frontend/index.html")) + sorted(
+		ROOT.glob("apps/*/*/www/*.html")
+	)
+	assert len(shells) >= 4, f"only found {len(shells)} shells"
+	for shell in shells:
+		html = shell.read_text()
+		assert f"localStorage.getItem('{key.group(1)}')" in html, (
+			f"{shell.name} reads a different key than useColorScheme writes"
+		)
+		assert f"setAttribute('{attribute.group(1)}'" in html, (
+			f"{shell.name} sets a different attribute than useColorScheme reads"
+		)
+		# Before the module script, or it is not a pre-paint script at all.
+		assert html.index("setAttribute") < html.index("<body"), (
+			f"{shell.name} sets the theme after the body starts"
+		)

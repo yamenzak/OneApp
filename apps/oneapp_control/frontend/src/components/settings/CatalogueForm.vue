@@ -27,7 +27,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { Button, Dialog, ErrorMessage, FormControl } from '@/ui'
-import { callMethod } from '../../lib/resource'
+import { useDocWrites } from '../../lib/resource'
 
 /**
  * Create or edit one catalogue record.
@@ -56,6 +56,10 @@ const title = computed(() =>
   props.record ? `Edit ${props.doctype}` : `New ${props.doctype}`,
 )
 
+// The doctype's write side. Each submit runs independently, and the shared
+// document store means a saved row updates any list already showing it.
+const writes = useDocWrites(props.doctype, { silent: true })
+
 const complete = computed(() =>
   props.fields.filter((f) => f.required).every((f) => form[f.name]),
 )
@@ -77,24 +81,18 @@ async function save() {
   error.value = ''
   try {
     if (props.record) {
-      // One call per changed field: set_value takes a mapping, and sending
-      // untouched fields would stamp defaults over values set elsewhere.
+      // Only what changed: sending untouched fields would stamp defaults over
+      // values set elsewhere.
       const changed = Object.fromEntries(
         props.fields
           .filter((f) => form[f.name] !== props.record[f.name])
           .map((f) => [f.name, form[f.name]]),
       )
       if (Object.keys(changed).length) {
-        await callMethod('frappe.client.set_value', {
-          doctype: props.doctype,
-          name: props.record.name,
-          fieldname: changed,
-        })
+        await writes.setValue({ name: props.record.name, ...changed })
       }
     } else {
-      await callMethod('frappe.client.insert', {
-        doc: { doctype: props.doctype, ...form },
-      })
+      await writes.insert({ ...form })
     }
     open.value = false
     emit('saved')

@@ -13,12 +13,10 @@
         <SidebarItem
           v-for="item in items"
           :key="item.label"
+          :icon="item.icon"
           :to="item.to"
           :active="route.name === item.name"
         >
-          <template #prefix>
-            <Icon :name="item.icon" class="size-4 text-ink-gray-7" />
-          </template>
           <span class="flex-1 truncate text-sm">{{ item.label }}</span>
         </SidebarItem>
       </nav>
@@ -47,7 +45,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { Button, Icon, ScrollArea, Sidebar, SidebarHeader, SidebarItem } from '@/ui'
+import { Button, ScrollArea, Sidebar, SidebarHeader, SidebarItem } from '@/ui'
 import UserMenu from './UserMenu.vue'
 import { workspaces } from '../lib/customer'
 import { fullName, email, userImage } from '../lib/user'

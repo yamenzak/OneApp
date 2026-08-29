@@ -141,3 +141,51 @@ def test_guest_surfaces_only_call_guest_methods():
         if entry and not entry["guest"]:
             problems.append(f"{path}: {method} is not allow_guest")
     assert not problems, "\n".join(problems)
+
+
+# The document layer's own methods. Anything here reached through
+# `frappe.client.*` is a hand-rolled version of something the library ships.
+CLIENT_METHODS = re.compile(r"frappe\.client\.(get_list|get|set_value|insert|delete)\b")
+
+# Where the wrappers themselves live. They are the one place allowed to know
+# about the transport.
+DATA_LAYER = ("lib/resource.js", "lib/api.js")
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_documents_go_through_the_document_layer(app):
+    """`useList` / `useDoc` / `useDoctype` are the recommended layer.
+
+    They share one document store, so a row updated through a list and the same
+    record open on a detail page stay in step, and each write submits
+    independently. `frappe.client.get_list` through a generic call gives up all
+    of that — and the helper we wrote on top of it was even called `useList`,
+    shadowing the library's own.
+
+    `lib/user.js` is the exception the User doctype forces: there is no
+    `/api/v2/document/User/<me>` for the session user without knowing the name
+    first, so it reads through the boot payload's user instead.
+    """
+    root = ROOT / f"apps/{app}/frontend/src"
+    problems = []
+    for path in sorted(root.rglob("*")):
+        if path.suffix not in (".vue", ".js"):
+            continue
+        rel = path.relative_to(root).as_posix()
+        if rel in DATA_LAYER or rel == "lib/user.js":
+            continue
+        for method in set(CLIENT_METHODS.findall(path.read_text())):
+            problems.append(
+                f"{app}/{rel}: frappe.client.{method} — use useDocList / "
+                f"useDocument / useDocWrites from lib/resource"
+            )
+    assert not problems, "\n".join(problems)
+
+
+def test_the_document_layer_wraps_the_recommended_composables():
+    """And is the only place that imports them."""
+    resource = (ROOT / "apps/oneapp_control/frontend/src/lib/resource.js").read_text()
+    for composable in ("useList", "useDoc", "useDoctype"):
+        assert f"  {composable},\n" in resource, f"{composable} is not wrapped"
+    for wrapper in ("useDocList", "useDocument", "useDocWrites"):
+        assert f"export function {wrapper}" in resource, f"{wrapper} is missing"

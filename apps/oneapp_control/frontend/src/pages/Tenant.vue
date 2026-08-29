@@ -70,7 +70,9 @@ const props = defineProps({ name: { type: String, required: true } })
 
 // Live: a status change from the provisioning worker lands here on its own.
 const resource = useDocument('Tenant', () => props.name)
-const tenant = computed(() => resource.data)
+// useDoc exposes the document as `doc`, and shares it with any list that
+// fetched the same record — a status change from either lands on both.
+const tenant = computed(() => resource.doc)
 
 const rows = computed(() => {
   const t = tenant.value

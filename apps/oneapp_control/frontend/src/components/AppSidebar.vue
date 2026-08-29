@@ -19,13 +19,11 @@
         <SidebarItem
           v-for="item in nav"
           :key="item.to"
+          :icon="item.icon"
           :label="item.label"
           :to="item.to"
           :active="isActive(item.to)"
         >
-          <template #prefix>
-            <Icon :name="item.icon" class="size-4 text-ink-gray-7" />
-          </template>
           <template v-if="item.badge" #suffix>
             <Badge
               :theme="item.badge.theme"
@@ -79,7 +77,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   Sidebar, SidebarHeader, SidebarItem, SidebarCard,
-  Avatar, Badge, Icon, ScrollArea,
+  Avatar, Badge, ScrollArea,
 } from '@/ui'
 import UserMenu from './UserMenu.vue'
 import { setup } from '../lib/setup'

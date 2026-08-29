@@ -3,7 +3,14 @@
   <!-- `side` + `align`, not `placement`: frappe-ui removed `placement` in 1.0
        and warns about it in dev, so the menu was never positioned. -->
   <Dropdown :options="options" side="top" align="start" class="w-full">
-    <Button variant="ghost" class="!h-11 w-full !justify-start !px-2">
+    <!-- icon-right, not a #suffix holding an <Icon>: Button declares the prop
+         and renders it at the library's own size and tone. The #prefix stays a
+         slot because an Avatar is not something an icon prop can express. -->
+    <Button
+      variant="ghost"
+      icon-right="lucide-chevron-up"
+      class="!h-11 w-full !justify-start !px-2"
+    >
       <template #prefix>
         <Avatar :label="displayName" :image="avatar" size="md" />
       </template>
@@ -13,16 +20,13 @@
           {{ subtitle }}
         </span>
       </span>
-      <template #suffix>
-        <Icon name="lucide-chevron-up" class="size-4 text-ink-gray-5" />
-      </template>
     </Button>
   </Dropdown>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import { Avatar, Button, Dropdown, Icon } from '@/ui'
+import { Avatar, Button, Dropdown } from '@/ui'
 
 const props = defineProps({
   name: { type: String, default: '' },

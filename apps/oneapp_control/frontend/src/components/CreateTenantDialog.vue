@@ -61,13 +61,12 @@
 import { computed, ref, watch } from 'vue'
 import { Dialog, FormControl, Button, Alert, ErrorMessage, vFocus, debounce } from '@/ui'
 import { api } from '../lib/api'
-import { callMethod } from '../lib/resource'
+import { useDocList } from '../lib/resource'
 
 const open = defineModel({ type: Boolean })
 const emit = defineEmits(['created'])
 
 const form = ref({ tenant_name: '', tenant_slug: '', owner_email: '', plan: '' })
-const planOptions = ref([])
 const slugError = ref('')
 const error = ref('')
 const submitting = ref(false)
@@ -98,16 +97,21 @@ const checkSlug = debounce(async (slug) => {
 
 watch(() => form.value.tenant_slug, checkSlug)
 
-watch(open, async (isOpen) => {
-  if (!isOpen) return
-  error.value = ''
-  const plans = await callMethod('frappe.client.get_list', {
-    doctype: 'Plan',
-    fields: JSON.stringify(['name', 'plan_name']),
-    filters: JSON.stringify({ is_active: 1 }),
-    order_by: 'sort_order asc',
-  }, { silent: true })
-  planOptions.value = plans.map((p) => ({ label: p.plan_name, value: p.name }))
+// Fetched once and kept, rather than re-read on every open: the list is shared
+// with the catalogue's own, so editing a plan in settings updates this too.
+const plans = useDocList('Plan', {
+  fields: ['name', 'plan_name'],
+  filters: { is_active: 1 },
+  orderBy: 'sort_order asc',
+  silent: true,
+})
+
+const planOptions = computed(() =>
+  (plans.data || []).map((p) => ({ label: p.plan_name, value: p.name })),
+)
+
+watch(open, (isOpen) => {
+  if (isOpen) error.value = ''
 })
 
 async function submit() {

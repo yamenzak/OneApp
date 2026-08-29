@@ -5,7 +5,7 @@
  * failures render as parsed Frappe errors, and mutations announce themselves.
  */
 
-import { callMethod, useResource } from './resource'
+import { callMethod } from './resource'
 
 const method = (name) => `oneapp_control.api.${name}`
 
@@ -54,26 +54,9 @@ export const api = {
 }
 
 /**
- * A live list. Refetches over the socket when the doctype changes, so a
- * provisioning job advancing on the server updates the screen without polling.
+ * Documents and lists come from the shared document layer, which wraps
+ * frappe-ui's own `useList` / `useDoc`. This file used to hand-roll both on top
+ * of `frappe.client.get_list` — and named its helper `useList`, shadowing the
+ * library's.
  */
-export function useList(doctype, { fields, filters, limit = 50, orderBy } = {}) {
-  return useResource('frappe.client.get_list', {
-    params: {
-      doctype,
-      fields: JSON.stringify(fields),
-      filters: filters ? JSON.stringify(filters) : undefined,
-      limit_page_length: limit,
-      order_by: orderBy,
-    },
-    watch: [doctype],
-    initialData: [],
-  })
-}
-
-export function useDocument(doctype, name) {
-  return useResource('frappe.client.get', {
-    params: () => ({ doctype, name: typeof name === 'function' ? name() : name }),
-    watch: [doctype],
-  })
-}
+export { useDocList, useDocument, useDocWrites } from './resource'

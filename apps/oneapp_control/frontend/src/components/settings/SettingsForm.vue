@@ -35,7 +35,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { Button, FormControl, SettingsHeader, SettingsBody } from '@/ui'
-import { callMethod } from '../../lib/resource'
+import { useDocument, useDocWrites } from '../../lib/resource'
 
 /**
  * A settings panel backed by a Frappe Single doctype.
@@ -59,20 +59,26 @@ const dirty = computed(() =>
   props.fields.some((f) => form[f.name] !== original.value[f.name]),
 )
 
-async function load() {
-  const doc = await callMethod(
-    'frappe.client.get',
-    { doctype: props.doctype, name: props.doctype },
-    { silent: true },
-  )
-  for (const field of props.fields) {
-    // Password fields come back masked; leaving the mask in the form would
-    // write it back as the literal value on save.
-    const value = field.type === 'password' ? '' : (doc?.[field.name] ?? '')
-    form[field.name] = value
-    original.value[field.name] = value
-  }
-}
+// A Single's document name is the doctype's own name. `doctype` is fixed per
+// panel, so it is passed as a value — only `name` accepts a getter.
+const record = useDocument(props.doctype, props.doctype, { silent: true })
+const writes = useDocWrites(props.doctype, { successMessage: 'Settings saved' })
+
+// The document arrives asynchronously, and again after every save, so the form
+// is filled from it reactively rather than fetched imperatively once.
+watch(
+  () => record.doc,
+  (doc) => {
+    for (const field of props.fields) {
+      // Password fields come back masked; leaving the mask in the form would
+      // write it back as the literal value on save.
+      const value = field.type === 'password' ? '' : (doc?.[field.name] ?? '')
+      form[field.name] = value
+      original.value[field.name] = value
+    }
+  },
+  { immediate: true },
+)
 
 async function save() {
   saving.value = true
@@ -87,16 +93,10 @@ async function save() {
     }
     if (!Object.keys(changed).length) return
 
-    await callMethod(
-      'frappe.client.set_value',
-      { doctype: props.doctype, name: props.doctype, fieldname: changed },
-      { successMessage: 'Settings saved' },
-    )
+    await writes.setValue({ name: props.doctype, ...changed })
     Object.assign(original.value, changed)
   } finally {
     saving.value = false
   }
 }
-
-watch(() => props.doctype, load, { immediate: true })
 </script>

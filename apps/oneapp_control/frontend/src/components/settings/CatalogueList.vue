@@ -48,7 +48,7 @@ import {
 } from '@/ui'
 import CatalogueForm from './CatalogueForm.vue'
 import EmptyState from '../EmptyState.vue'
-import { useList } from '../../lib/api'
+import { useDocList } from '../../lib/api'
 
 /**
  * A read-only catalogue panel.
@@ -89,7 +89,7 @@ function edit(row) {
   showForm.value = true
 }
 
-const resource = useList(props.doctype, {
+const resource = useDocList(props.doctype, {
   fields: props.fields,
   orderBy: props.orderBy,
   limit: 100,

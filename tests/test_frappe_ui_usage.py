@@ -396,3 +396,53 @@ def test_the_sweep_descends_into_subdirectories():
     """
     nested = [p for p in sources("oneapp_control") if p.count("/") >= 2]
     assert len(nested) >= 3, f"nested files not swept: {nested}"
+
+
+def test_icons_use_the_component_s_own_icon_prop():
+    """`Icon` is for icons outside a component's icon prop, says its own page.
+
+    Three sidebars filled `#prefix` with a bare `<Icon>` on a `SidebarItem`,
+    which declares `icon` and renders it through SidebarItemIcon — at the
+    library's ink tone rather than whichever one the call site picked. The slot
+    is for something an icon prop cannot express: an avatar, a badge, a stack.
+    """
+    bare_icon = re.compile(
+        r"<template\s+#(prefix|suffix)>\s*<Icon\b[^>]*/>\s*</template>", re.S
+    )
+    problems = []
+    for app in APPS:
+        for path, source in sources(app).items():
+            for use in usages(source):
+                declared = API[use["component"]]["props"]
+                for match in bare_icon.finditer(use["content"]):
+                    slot = match.group(1)
+                    wanted = {"prefix": ("icon", "iconLeft"), "suffix": ("icon", "iconRight")}[slot]
+                    options = [p for p in wanted if p in declared]
+                    if options:
+                        problems.append(
+                            f"{app}/{path}: <{use['component']} #{slot}> holds only an "
+                            f"<Icon>; it declares {' / '.join(options)}"
+                        )
+    assert not problems, "\n".join(problems)
+
+
+def test_shadows_pair_with_an_elevation_surface():
+    """From the Elevation page's own pairing table.
+
+    Shadows fade against dark backgrounds, so in dark mode depth comes from a
+    lighter surface instead. `surface-elevation-*` stays white in light mode and
+    steps lighter in dark; a raw `surface-gray-*` under a shadow is flat in one
+    of the two themes.
+    """
+    shadow = re.compile(r"\bshadow-(sm|base|md|lg|xl|2xl)\b")
+    problems = []
+    for app in APPS:
+        root = ROOT / f"apps/{app}/frontend/src"
+        for path in sorted(root.rglob("*.vue")):
+            for line in path.read_text().split("\n"):
+                if shadow.search(line) and "surface-elevation" not in line:
+                    if re.search(r"\bbg-surface-(?!elevation)", line):
+                        problems.append(
+                            f"{app}/{path.relative_to(root)}: {line.strip()[:90]}"
+                        )
+    assert not problems, "\n".join(problems)

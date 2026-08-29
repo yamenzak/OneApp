@@ -74,7 +74,7 @@ import {
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import CreateTenantDialog from '../components/CreateTenantDialog.vue'
-import { useList } from '../lib/api'
+import { useDocList } from '../lib/api'
 import { setup } from '../lib/setup'
 
 // Deterministic tracks: `auto` sizes independently per row and the columns
@@ -83,7 +83,7 @@ const COLUMNS = ['minmax(0,1fr)', '10rem', '8rem']
 const HEADERS = ['Workspace', 'Plan', 'Status']
 
 // Live over the socket: a site that finishes provisioning appears on its own.
-const resource = useList('Tenant', {
+const resource = useDocList('Tenant', {
   fields: ['name', 'tenant_name', 'tenant_slug', 'status', 'plan', 'site_name'],
   orderBy: 'creation desc',
 })

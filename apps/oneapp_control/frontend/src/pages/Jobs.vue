@@ -61,12 +61,12 @@ import {
   List, ListHeader, ListHeaderCell, ListRows, ListRow, ListCell,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
-import { useList } from '../lib/api'
+import { useDocList } from '../lib/api'
 
 const COLUMNS = ['minmax(0,1fr)', '14rem', '8rem', '9rem']
 const HEADERS = ['Job', 'Step', 'Attempts', 'State']
 
-const resource = useList('Provisioning Job', {
+const resource = useDocList('Provisioning Job', {
   fields: ['name', 'tenant', 'action', 'state', 'step', 'attempts', 'last_error'],
   orderBy: 'creation desc',
   limit: 30,
