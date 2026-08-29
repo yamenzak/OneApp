@@ -162,7 +162,11 @@ class PressClient:
 		Frappe Cloud dashboard — fine for our own account, but it is why the
 		per-tenant secret is scoped to that tenant and nothing else.
 		"""
-		return self.call("press.api.site.update_config", name=site, config=json.dumps(config))
+		# The API takes a list of {key, value, type}, unlike Site.update_config the
+		# doc method, which takes a plain mapping. Passing a dict makes press
+		# iterate its keys as strings and fail with a bare ValueError.
+		payload = [{"key": k, "value": v, "type": _config_type(v)} for k, v in config.items()]
+		return self.call("press.api.site.update_config", name=site, config=json.dumps(payload))
 
 	def update_bench_config(self, release_group: str, config: dict):
 		"""Set common site config for a whole bench group.
