@@ -1,171 +1,140 @@
 """Outbound mail.
 
-If Cloudflare exposes SMTP credentials, configure an ordinary Frappe Email
-Account and none of this is needed — Frappe's Email Queue already handles
-batching, retries and unsubscribe.
+Cloudflare Email Service exposes SMTP, so Frappe sends directly through its own
+Email Queue — batching, retries, unsubscribe handling and attachment assembly all
+come for free, and none of it is worth reimplementing.
 
-This shim exists for the binding-only case: it posts the rendered message to a
-Worker that sends it, and the Worker reports delivery and bounce status back.
+    smtps://smtp.mx.cloudflare.net:465
+    username: api_token
+    password: <API token with Email Sending: Edit>
 
-Per-tenant rate limiting lives here regardless of transport. On a shared sending
-identity, one tenant importing a purchased list degrades deliverability for
-every other tenant, so the limit protects the platform, not the tenant.
+What is *not* free, and stays ours regardless of transport, is per-tenant rate
+limiting. On a shared sending identity one tenant importing a purchased list
+degrades deliverability for every other tenant, so the limit protects the
+platform rather than the tenant.
 """
-
-import hashlib
-import hmac
-import json
-import time
 
 import frappe
 from frappe import _
-import requests
 
-TIMEOUT = 20
+SMTP_SERVER = "smtp.mx.cloudflare.net"
+SMTP_PORT = 465
+SMTP_USER = "api_token"
+
 DEFAULT_HOURLY_LIMIT = 200
+
+ACCOUNT_NAME = "OneApp Outgoing"
 
 
 def config() -> dict:
 	conf = frappe.conf
 	return {
-		"worker_url": conf.get("oneapp_mail_worker_url"),
-		"secret": conf.get("oneapp_hmac_secret"),
+		"api_token": conf.get("oneapp_cf_email_token"),
 		"tenant": conf.get("oneapp_tenant"),
 		"from_domain": conf.get("oneapp_mail_domain") or "mail.4dl.app",
 		"hourly_limit": int(conf.get("oneapp_mail_hourly_limit") or DEFAULT_HOURLY_LIMIT),
 	}
 
 
-def uses_worker() -> bool:
-	return bool(config()["worker_url"])
-
-
 def sender_address() -> str:
+	"""One sending identity per tenant, on our verified domain.
+
+	Replies go to the tenant's real address via Reply-To. Sending as the
+	customer's own domain would need their DKIM, which is the bring-your-own-domain
+	path, not this one.
+	"""
 	c = config()
 	return f"t-{c['tenant']}@{c['from_domain']}"
+
+
+# --------------------------------------------------------------------------- #
+# Email Account setup
+# --------------------------------------------------------------------------- #
+
+def ensure_email_account():
+	"""Create or update the outgoing Email Account for this tenant.
+
+	Called at provisioning and safe to re-run — rotating the token is a re-run.
+	"""
+	c = config()
+	if not c["api_token"]:
+		return None
+
+	values = {
+		"email_account_name": ACCOUNT_NAME,
+		"email_id": sender_address(),
+		"smtp_server": SMTP_SERVER,
+		"smtp_port": SMTP_PORT,
+		"use_ssl_for_outgoing": 1,
+		"use_tls": 0,
+		"login_id_is_different": 1,
+		"login_id": SMTP_USER,
+		"password": c["api_token"],
+		"enable_outgoing": 1,
+		"enable_incoming": 0,
+		"default_outgoing": 1,
+		"always_use_account_email_id_as_sender": 1,
+	}
+
+	if frappe.db.exists("Email Account", ACCOUNT_NAME):
+		account = frappe.get_doc("Email Account", ACCOUNT_NAME)
+		account.update(values)
+		account.save(ignore_permissions=True)
+		return account.name
+
+	account = frappe.get_doc({"doctype": "Email Account", **values})
+	account.insert(ignore_permissions=True)
+	return account.name
 
 
 # --------------------------------------------------------------------------- #
 # Rate limiting
 # --------------------------------------------------------------------------- #
 
-def _rate_key() -> str:
-	return f"oneapp_mail_sent:{int(time.time() // 3600)}"
-
-
-def check_rate_limit(count: int = 1):
-	c = config()
-	key = _rate_key()
-	cache = frappe.cache()
-
-	sent = int(cache.get_value(key) or 0)
-	if sent + count > c["hourly_limit"]:
-		frappe.throw(
-			_("Hourly email limit of {0} reached. Try again shortly.").format(
-				c["hourly_limit"]
-			),
-			exc=SendRateExceeded,
-		)
-
-	cache.set_value(key, sent + count, expires_in_sec=3700)
-
-
 class SendRateExceeded(frappe.ValidationError):
 	pass
 
 
-# --------------------------------------------------------------------------- #
-# Sending
-# --------------------------------------------------------------------------- #
-
-def send(to: list[str] | str, subject: str, html: str, text: str | None = None,
-         reply_to: str | None = None) -> dict:
-	"""Send one message through the Worker."""
-	c = config()
-	if not uses_worker():
-		raise NotConfigured(
-			"No mail worker configured. Use a Frappe Email Account for SMTP instead."
-		)
-
-	recipients = [to] if isinstance(to, str) else list(to)
-	check_rate_limit(len(recipients))
-
-	body = json.dumps(
-		{
-			"tenant": c["tenant"],
-			"from": sender_address(),
-			"to": recipients,
-			"reply_to": reply_to,
-			"subject": subject,
-			"html": html,
-			"text": text,
-		},
-		sort_keys=True,
-		separators=(",", ":"),
-	)
-
-	timestamp = str(int(time.time()))
-	signature = hmac.new(
-		c["secret"].encode(), f"{timestamp}.{body}".encode(), hashlib.sha256
-	).hexdigest()
-
-	try:
-		response = requests.post(
-			c["worker_url"],
-			data=body,
-			headers={
-				"Content-Type": "application/json",
-				"X-OneApp-Signature": signature,
-				"X-OneApp-Timestamp": timestamp,
-				"X-OneApp-Tenant": c["tenant"],
-			},
-			timeout=TIMEOUT,
-		)
-	except requests.RequestException as e:
-		raise SendFailed(f"Mail worker unreachable: {e}") from e
-
-	if response.status_code != 200:
-		raise SendFailed(f"Mail worker {response.status_code}: {response.text[:300]}")
-
-	return response.json()
+def _rate_key() -> str:
+	return f"oneapp_mail_sent:{frappe.utils.now_datetime().strftime('%Y%m%d%H')}"
 
 
-class NotConfigured(Exception):
-	pass
+def sent_this_hour() -> int:
+	return int(frappe.cache().get_value(_rate_key()) or 0)
 
 
-class SendFailed(Exception):
-	pass
+def enforce_send_rate(doc, method=None):
+	"""before_insert on Email Queue.
 
-
-# --------------------------------------------------------------------------- #
-# Delivery feedback
-# --------------------------------------------------------------------------- #
-
-@frappe.whitelist(allow_guest=True, methods=["POST"])
-def delivery_status():
-	"""Bounce and complaint callback from the Worker.
-
-	A hard bounce disables the recipient in Frappe so we stop mailing an address
-	that does not exist — repeatedly sending to dead addresses is exactly what
-	damages a sending reputation.
+	Frappe queues one Email Queue document per send, so counting them is an
+	accurate measure of what actually leaves the site.
 	"""
-	from oneapp.oneapp_core.email.inbound import _verify
+	c = config()
+	limit = c["hourly_limit"]
+	if not limit:
+		return
 
-	payload = _verify()
+	recipients = len(doc.get("recipients") or []) or 1
+	sent = sent_this_hour()
 
-	event = payload.get("event")
-	recipient = payload.get("recipient")
-
-	if event in ("bounce", "complaint") and recipient:
-		if frappe.db.exists("Email Group Member", {"email": recipient}):
-			frappe.db.set_value(
-				"Email Group Member", {"email": recipient}, "unsubscribed", 1
-			)
-
-		frappe.log_error(
-			title=f"Email {event}: {recipient}",
-			message=json.dumps(payload)[:2000],
+	if sent + recipients > limit:
+		frappe.throw(
+			_(
+				"This workspace has reached its limit of {0} emails per hour. "
+				"Queued messages will resume shortly."
+			).format(limit),
+			exc=SendRateExceeded,
 		)
 
-	return {"ok": True}
+	# Expires just past the hour so the counter cannot outlive its window.
+	frappe.cache().set_value(_rate_key(), sent + recipients, expires_in_sec=3700)
+
+
+def usage() -> dict:
+	c = config()
+	return {
+		"sent_this_hour": sent_this_hour(),
+		"hourly_limit": c["hourly_limit"],
+		"sender": sender_address(),
+		"configured": bool(c["api_token"]),
+	}

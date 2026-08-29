@@ -7,9 +7,27 @@ reads. Follow [`ROADMAP.md`](ROADMAP.md) for order; this is the reference.
 
 ## Python version
 
-**Frappe `develop` requires Python 3.14** (verified against the branch — `v15`
-runs on 3.10–3.11). Frappe Cloud handles this for hosted benches, but it decides
-what a local development machine needs.
+Frappe `develop` is **v17 and requires Python 3.14** (`requires-python = ">=3.14,<3.15"`
+in its own `pyproject.toml`; `v15` runs on 3.10–3.11). Frappe Cloud handles this
+for hosted benches; a local machine needs the interpreter provisioned.
+
+Two ways to get it:
+
+```bash
+uv python install 3.14        # uv 0.12+; older uv only offers 3.14 release candidates
+```
+
+or [`pilot`](https://github.com/frappe/pilot), Frappe's bench replacement, which
+uses `uv` internally and manages the interpreter for you:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/frappe/pilot/develop/install.sh | bash
+pilot new dev-bench
+```
+
+Use 3.14 **final**, not a release candidate — pydantic's namespace resolution
+fails on 3.14.0rc2 inside `frappe.integrations.utils`, which breaks site
+creation.
 
 ---
 
@@ -127,13 +145,28 @@ failing uploads.
 
 | Key | Purpose |
 | --- | --- |
-| `oneapp_mail_worker_url` | outbound Worker; omit if using SMTP |
+| `oneapp_cf_email_token` | Cloudflare API token with **Email Sending: Edit** |
 | `oneapp_mail_domain` | `mail.4dl.app` |
 | `oneapp_mail_hourly_limit` | per-tenant send cap, default `200` |
 
-If Cloudflare exposes SMTP credentials, configure a Frappe **Email Account**
-instead and leave `oneapp_mail_worker_url` unset — Frappe's Email Queue handles
-batching, retries and unsubscribe better than the shim.
+Outbound goes through Cloudflare Email Service over SMTP, wired up as a Frappe
+**Email Account** by `ensure_email_account()` at install:
+
+```
+smtps://smtp.mx.cloudflare.net:465
+username: api_token
+password: <the token above>
+```
+
+Frappe's own Email Queue then handles batching, retries, unsubscribe and
+attachments. A REST endpoint and a Workers binding also exist if SMTP is ever
+blocked.
+
+The sending domain must be onboarded through the Cloudflare dashboard, which adds
+the MX, SPF, DKIM and DMARC records — and the domain has to be on Cloudflare DNS.
+
+Per-tenant rate limiting is ours regardless of transport, enforced on
+`Email Queue` insert.
 
 ---
 

@@ -288,32 +288,48 @@ must tolerate a control plane running a version ahead.
 
 ## 10. Cost model
 
+The Frappe Cloud server plan is the whole server — **unlimited benches and sites,
+no per-site charge**. Infrastructure cost per tenant is therefore purely the
+server divided by how many tenants fit on it.
+
 At ~30 tenants on a $40 cpx22:
 
 | Line | Per tenant / month |
-|---|---|
-| Server | ~$1.35 |
+| --- | --- |
+| Server ($40 / 30) | ~$1.33 |
 | R2 (10 GB @ $0.015/GB, zero egress) | ~$0.15 |
-| Email routing + sending | ~$0.05 |
+| Email (Cloudflare Email Service) | ~$0.05 |
 | AI Gateway | $0 (model cost is separate) |
-| **Total** | **~$1.60** |
+| **Total** | **~$1.53** |
 
-Against a $22 entry tier, infrastructure is noise. The margin variable is the **AI credit grant
-inside each plan**, not infrastructure — which is why per-tenant AI Gateway logging is wired in
-from day one rather than retrofitted.
+Against a $22 entry tier that is roughly 7% of revenue, and it improves as a
+server fills: the same $40 across 40 tenants is $1.00 each.
+
+Because there is no per-site fee, the economic pressure is entirely on **how many
+sites fit before MariaDB degrades** (§1), not on anything Frappe Cloud bills. That
+makes the capacity numbers in §1 the figure to watch, and adding a second server
+a capacity decision rather than a pricing one.
+
+The margin variable is the **AI credit grant inside each plan**, not
+infrastructure — which is why per-tenant AI Gateway logging is wired in from day
+one rather than retrofitted.
 
 ---
 
-## 11. Open questions
+## 11. Resolved questions
 
-Pricing inputs, not architecture. None of them change the design above.
+Three questions gated pricing rather than design. All are now answered, and none
+changed the architecture.
 
-1. **Does Frappe Cloud bill per-site plans on our own dedicated server?** At even $5/site this
-   is 3× total infrastructure cost and reshapes the entry tier.
-2. **Is the quoted server price app-server-only, with the database server billed separately?**
-   Likely a ~$80 real floor rather than $40.
-3. **Does Cloudflare email sending expose SMTP credentials, or only a Workers binding?**
-   SMTP → configure an `Email Account`. Binding-only → build the outbound shim (§6).
+1. **Does Frappe Cloud bill per-site plans on our own server?** No. The server
+   plan covers unlimited benches and sites. Capacity, not billing, sets the
+   tenant ceiling.
+2. **Is the server price app-server-only?** No. $40 is the entire server.
+3. **Does Cloudflare email sending expose SMTP?** Yes —
+   `smtps://smtp.mx.cloudflare.net:465`, authenticating as `api_token` with a
+   token carrying *Email Sending: Edit*. Frappe therefore sends through its own
+   Email Queue and the outbound Worker shim was deleted rather than built. A REST
+   API and a Workers binding also exist if SMTP is ever blocked.
 
 ---
 

@@ -34,7 +34,12 @@ doc_events = {
 		# Storage quota is enforced at upload time. Discovering you are 3 GB over
 		# after the fact is a worse experience than a clear rejection now.
 		"before_insert": "oneapp.oneapp_core.storage.quota.enforce_quota",
-	}
+	},
+	"Email Queue": {
+		# Frappe queues one document per send, so counting them measures what
+		# actually leaves the site.
+		"before_insert": "oneapp.oneapp_core.email.outbound.enforce_send_rate",
+	},
 }
 
 # ---------------------------------------------------------------------------

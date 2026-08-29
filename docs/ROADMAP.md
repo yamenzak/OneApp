@@ -65,6 +65,10 @@ Two findings worth designing around:
 Press API rate limits are undocumented to us. Every provisioning operation is therefore
 idempotent and retry-safe by construction, not by later patching.
 
+**The single blocking dependency** is the wildcard root domain. It is press-side
+configuration on hosted Frappe Cloud, so it is a support request to Frappe rather
+than an API call, and no tenant can be provisioned without it. Raise it first.
+
 ---
 
 ## Phase 0 — Foundations
@@ -72,13 +76,16 @@ idempotent and retry-safe by construction, not by later patching.
 Mostly account setup, not code. Blocks everything.
 
 - Frappe Cloud server; bench group on nightly `frappe` + `erpnext` + `oneapp`
+  (frappe `develop` is v17 and requires **Python 3.14** — Frappe Cloud handles this;
+  a local bench needs `uv python install 3.14`, or [`pilot`](https://github.com/frappe/pilot),
+  which manages the interpreter for you)
 - Separate bench group for the control plane: `frappe` + `erpnext` + `payments` + `oneapp_control`
 - `*.4dl.app` DNS → server; root domain + wildcard certificate configured with Frappe (see above)
 - Control-plane site created by hand at `admin.4dl.app`
 - Press API key + secret issued and stored
 - Cloudflare: R2 bucket, `cdn.4dl.app`, email routing zone, AI Gateway
 - Stripe account in test mode
-- Answer the three open questions in ARCHITECTURE §11
+- Confirm the wildcard root domain with Frappe support (see below) — it gates everything
 
 **Exit:** control site reachable; a script of ours can call `press.api.site.exists` and get an
 answer back.
@@ -152,7 +159,7 @@ reconciles against the ledger.
 - Quota counter, rollup to control plane, hard block at upload
 - Backup sync to R2 alongside Frappe Cloud's own
 - Inbound: Cloudflare catch-all → Worker → HMAC POST → tenant site; `ap@`, `support@`, `leads@`
-- Outbound: SMTP `Email Account` if Cloudflare exposes credentials, otherwise the Worker shim
+- Outbound: Cloudflare Email Service over SMTP, wired as a Frappe `Email Account`
 - Per-tenant send rate limits, bounce and complaint handling
 
 **Exit:** attachments live in R2, quotas block at the limit, a supplier invoice email creates a
@@ -184,8 +191,9 @@ No infrastructure work. That is the point of everything above.
 ## Sequencing notes
 
 - **Phase 2 is the keystone.** Phases 3–7 all assume a tenant site can be created on demand.
-- **Phase 4 needs the ARCHITECTURE §11 answers**, since plan pricing rows are data. The schema
-  does not depend on them, so Phase 1 proceeds regardless.
+- **Phase 4 is unblocked.** The pricing questions are answered (ARCHITECTURE §11);
+  what remains is choosing the plan ladder above the $22 entry and sizing the
+  credit grant against measured model cost. Both are data, not schema.
 - **Phases 5 and 6 are independent of each other** and can be built in either order, or in
   parallel.
 - **Phase 3 can start alongside Phase 2** — the SPA shell can be developed against a

@@ -5,6 +5,7 @@ import frappe
 
 def after_install():
 	create_custom_fields()
+	setup_outgoing_email()
 	initial_sync()
 	frappe.db.commit()
 
@@ -32,6 +33,17 @@ def create_custom_fields():
 		},
 		ignore_validate=True,
 	)
+
+
+def setup_outgoing_email():
+	"""Point Frappe's Email Queue at Cloudflare's SMTP endpoint.
+
+	No-ops when the token is absent, so a site without mail configured installs
+	cleanly rather than failing.
+	"""
+	from oneapp.oneapp_core.email import outbound
+
+	outbound.ensure_email_account()
 
 
 def initial_sync():
