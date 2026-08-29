@@ -10,6 +10,7 @@
   "tenant_slug",
   "tenant_name",
   "status",
+  "environment",
   "owner_email",
   "owner_user",
   "cb_place",
@@ -65,6 +66,16 @@
    "in_standard_filter": 1,
    "label": "Status",
    "options": "Draft\nProvisioning\nActive\nSuspended\nArchived\nFailed",
+   "reqd": 1
+  },
+  {
+   "default": "Production",
+   "description": "Staging tenants are ours to break: the dev tooling may patch and redeploy the bench they sit on. It refuses to touch a bench carrying a Production tenant, so the default is the safe one.",
+   "fieldname": "environment",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Environment",
+   "options": "Production\nStaging",
    "reqd": 1
   },
   {

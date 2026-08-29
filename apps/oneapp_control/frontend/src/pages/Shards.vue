@@ -5,6 +5,7 @@
     </template>
     <template #actions>
       <Button label="Push config to all" :loading="pushing" @click="pushAll" />
+      <Button variant="solid" label="Register server" @click="showNew = true" />
     </template>
   </PageHeader>
 
@@ -70,6 +71,8 @@
       </ListRows>
     </List>
   </div>
+
+  <NewShardDialog v-model="showNew" @created="load" />
 </template>
 
 <script setup>
@@ -79,6 +82,7 @@ import {
   List, ListHeader, ListHeaderCell, ListRows, ListRow, ListCell,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
+import NewShardDialog from '../components/NewShardDialog.vue'
 import { api } from '../lib/api'
 
 const COLUMNS = ['minmax(0,1fr)', '7rem', '12rem', '8rem', '9rem']
@@ -86,6 +90,7 @@ const HEADERS = ['Shard', 'Ring', 'Capacity', 'Intake', '']
 
 const shards = ref([])
 const pushing = ref(false)
+const showNew = ref(false)
 
 const load = async () => (shards.value = (await api.shards()) || [])
 

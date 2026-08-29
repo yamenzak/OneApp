@@ -276,6 +276,22 @@ class PressClient:
 		"""One-shot admin login for support. Every use should be audited."""
 		return self.call("press.api.site.login", name=site, reason=reason)
 
+	# ------------------------------------------------------------------ #
+	# Capacity — what exists on the account to build a shard from
+	# ------------------------------------------------------------------ #
+
+	def servers(self) -> list[dict]:
+		"""Every server on the account, with the cluster each sits in."""
+		return self.call("press.api.server.all") or []
+
+	def release_groups(self) -> list[dict]:
+		"""Bench groups. A shard is a (server, group) pair, so both are needed."""
+		return self.call("press.api.bench.all") or []
+
+	def group_regions(self, release_group: str) -> list[dict]:
+		"""Clusters a bench group can deploy into."""
+		return self.call("press.api.bench.regions", name=release_group) or []
+
 	def get_site(self, site: str) -> dict:
 		return self.call("press.api.site.get", name=site) or {}
 

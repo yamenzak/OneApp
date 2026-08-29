@@ -226,6 +226,12 @@ doctype(
         f("status", "Select",
           options="Draft\nProvisioning\nActive\nSuspended\nArchived\nFailed",
           default="Draft", reqd=1, in_list_view=1, in_standard_filter=1),
+        f("environment", "Select", options="Production\nStaging",
+          default="Production", reqd=1, in_standard_filter=1,
+          description="Staging tenants are ours to break: the dev tooling may "
+                      "patch and redeploy the bench they sit on. It refuses to "
+                      "touch a bench carrying a Production tenant, so the "
+                      "default is the safe one."),
         f("owner_email", "Data", options="Email", reqd=1),
         f("owner_user", "Link", options="User", read_only=1,
           description="Control-plane account for the workspace owner. Customer "

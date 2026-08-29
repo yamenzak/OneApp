@@ -224,3 +224,61 @@ their own tenant, forging usage reports and credit commits. Ops the customer
 needs — inviting users, managing seats, creating roles — are whitelisted methods
 we expose and run elevated, surfaced in the SPA. Capability comes from our API,
 never from a Frappe admin role.
+
+
+---
+
+## 9. Staging and production share a bench group
+
+**Staging tenants and production tenants live on the same bench group, and the
+development tooling is fenced off by what is on the bench rather than by which
+bench it is.**
+
+A separate group for staging would mean a second image, a second set of workers
+and a second Redis on the same budget. Sharing costs nothing extra and the
+mechanics already allow it: sites move onto a new bench individually, so staging
+can run ahead while production stays where it is. This is the Canary ring from
+ARCHITECTURE §1, used for what it was for.
+
+| | Staging | Production |
+| --- | --- | --- |
+| Moves to a new bench | automatically, on deploy | deliberately, from the Frappe Cloud dashboard |
+| May be patched | yes | never |
+| `Tenant.environment` | `Staging` | `Production` (the default) |
+
+Two gates, because one is not enough:
+
+1. `ONEAPP_DEV_BENCH_GROUP` must name the group. A production machine never sets
+   it, so the tooling is inert there rather than merely discouraged.
+2. `admin.bench_environment` refuses any group carrying a Production tenant. The
+   first gate is correct when it is configured; this one stays correct after a
+   customer is provisioned onto the same group by an allocator that knew nothing
+   about the arrangement.
+
+`Tenant.environment` defaults to `Production`, so a tenant created by any path
+that forgets to set it is protected rather than exposed.
+
+---
+
+## 10. Adding capacity
+
+**Buy a server on Frappe Cloud, add a bench group to it, register the pair as a
+Shard. Nothing else.**
+
+The allocator picks it up on the next signup with no further work: least-loaded
+first among shards that are Active, accepting, and under their soft cap. A region
+becomes selectable at signup the moment one shard in it has headroom, and stops
+being offered when none does — so a region is never offered that cannot take the
+tenant.
+
+Registering happens in the admin SPA, with servers and bench groups read live
+from Frappe Cloud rather than typed. Both names have to match press exactly, and
+a typo produces a shard that looks right and fails at the first provision, after
+a real site already exists.
+
+Two shards must never cover one bench group: both would count capacity against
+the same machine, so the allocator would overfill it. The form refuses.
+
+Upgrading a server needs nothing at all — raise `capacity_tenants` when the
+machine can hold more. Draining one is `accepts_new_tenants = 0`, which stops
+intake without touching the tenants already there.

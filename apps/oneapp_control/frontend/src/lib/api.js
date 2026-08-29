@@ -29,6 +29,11 @@ export const api = {
     }),
 
   shards: () => callMethod(method('admin.shards'), {}, { silent: true }),
+  pressCapacity: () => callMethod(method('admin.press_capacity'), {}, { silent: true }),
+  createShard: (payload) =>
+    callMethod(method('admin.create_shard'), payload, {
+      successMessage: 'Shard registered — the allocator will use it on the next signup',
+    }),
   grantApp: (tenant, appCode) =>
     callMethod(method('admin.grant_app'), { tenant, app_code: appCode }, {
       successMessage: 'App enabled',

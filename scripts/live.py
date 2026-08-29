@@ -80,6 +80,39 @@ def require_dev_bench(group: str):
             f"Refusing to touch {group}: ONEAPP_DEV_BENCH_GROUP names {allowed}."
         )
 
+    # The env var says which bench we mean to develop on. This asks the control
+    # plane whether that is still true — a production workspace provisioned onto
+    # the same group would otherwise be patched and restarted by a tool that was
+    # correct when it was configured.
+    verdict = control_plane_check(group)
+    if verdict and not verdict.get("safe"):
+        sys.exit(f"Refusing to touch {group}: {verdict.get('reason')}")
+
+
+def control_plane_check(group: str) -> dict | None:
+    """Ask the control plane whether the bench group carries production tenants.
+
+    Skipped silently when ONEAPP_CONTROL_URL is unset or the control plane is
+    unreachable: this is a second opinion, not the gate. The gate is the env var
+    above, which a production machine never sets.
+    """
+    base = os.environ.get("ONEAPP_CONTROL_URL")
+    key = os.environ.get("ONEAPP_CONTROL_KEY")
+    if not (base and key):
+        return None
+
+    request = urllib.request.Request(
+        f"{base.rstrip('/')}/api/method/oneapp_control.api.admin.bench_environment",
+        data=json.dumps({"release_group": group}).encode(),
+        headers={"Authorization": f"token {key}", "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.loads(response.read()).get("message")
+    except Exception as e:
+        print(f"  (could not reach the control plane to double-check: {e})")
+        return None
+
 
 def press(method: str, payload: dict, timeout: int = 180, optional: bool = False) -> dict:
     key, secret = os.environ.get("PRESS_KEY"), os.environ.get("PRESS_SECRET")
