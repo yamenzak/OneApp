@@ -35,25 +35,30 @@
       </div>
       <p class="mb-3 text-p-sm text-ink-gray-5">{{ group.blurb }}</p>
 
-      <List :columns="['5.5rem', 'minmax(0,1fr)']" divider="full">
+      <!-- Name first, status trailing. A leading status column indents every
+           label behind a stack of identical pills, so the eye lands on a
+           repeated word rather than on which check this is — and it is the
+           opposite of every other list here (Tenants, Shards, Jobs, Billing all
+           trail their Badge), which is the stronger argument of the two. -->
+      <List :columns="['minmax(0,1fr)', '5.5rem']" divider="full">
         <ListRows :items="setup.group(group.key)" row-key="key" v-slot="{ item: check, value }">
           <!-- Static rows wrap, so no rowHeight — the family leaves height
                auto without one. frappe-ui pads only interactive rows, so the
                vertical rhythm here is this page's to set. -->
           <ListRow :value="value" class="py-3">
             <ListCell>
-              <Badge
-                :theme="check.ok ? 'green' : group.key === 'blocking' ? 'red' : 'gray'"
-                :label="check.ok ? 'Set' : 'Missing'"
-                variant="subtle"
-              />
-            </ListCell>
-            <ListCell>
               <div class="min-w-0 py-0.5">
                 <p class="text-base text-ink-gray-8">{{ check.label }}</p>
                 <p class="mt-0.5 text-p-sm text-ink-gray-6">{{ check.detail }}</p>
                 <p class="mt-1 text-xs text-ink-gray-4">{{ check.where }}</p>
               </div>
+            </ListCell>
+            <ListCell class="items-start justify-end pt-0.5">
+              <Badge
+                :theme="check.ok ? 'green' : group.key === 'blocking' ? 'red' : 'gray'"
+                :label="check.ok ? 'Set' : 'Missing'"
+                variant="subtle"
+              />
             </ListCell>
           </ListRow>
         </ListRows>

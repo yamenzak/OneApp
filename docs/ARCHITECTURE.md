@@ -247,7 +247,30 @@ interactive rows, so a static list sets its own vertical rhythm.
 `SettingsRow` is label-left, control-right, with the control `shrink-0`. That is
 the shape for a `Switch` or a `Select`. A full-width text input in one collapses
 the label to a word per line on a phone, so settings forms stack `FormControl`s
-directly in `SettingsBody` — which is what frappe-ui's own ProfilePanel does.
+directly in `SettingsBody` — which is what Gameplan's own profile panel does.
+
+**SettingsDialog is not responsive in `1.0.0-beta.55`**, despite documenting
+itself as full-screen on mobile. Measured at 390px: the Dialog's own chrome
+(`px-4 py-4` on the scroll container, `my-8` on the content) leaves the
+`w-screen` panel clipped by 16px, `SettingsHeader` and `SettingsBody` both pad
+`px-[4.4rem]` with no responsive variant — 141px of a 390px screen — and the tab
+sidebar takes `max-h-[38vh]`. Frappe's own consumers, Gameplan and Pilot, are
+desktop-first and never hit it, so there is nothing upstream to copy. One scoped
+block in `index.css` corrects the three, keyed to Dialog's named
+`.dialog-scroll-container` / `.dialog-content` hooks and ScrollArea's
+`data-slot`, and `tests/test_settings_dialog_geometry.py` pins each upstream
+value it compensates for so the override cannot outlive the problem.
+
+A `bare` Dialog renders no close button, which on a full-screen phone dialog
+leaves Escape as the only exit — and a phone has no Escape. `SettingsShell` adds
+one, `sm:hidden`, since desktop still has a backdrop to click.
+
+### Status trails, it does not lead
+
+Every list here puts its `Badge` in a trailing cell. The readiness page led with
+one, which indented every check name behind a column of identical pills and put
+a repeated word where the eye lands first. Frappe-ui's own list stories lead
+with identity — an avatar and a name — for the same reason.
 
 Every customer-facing URL the server builds — Stripe return URLs, signup links, the billing
 portal — comes from `oneapp_control/portal.py`, and `tests/test_portal_urls.py` parses the

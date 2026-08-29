@@ -1,6 +1,22 @@
 <template>
   <SettingsDialog v-model:open="showSettings" v-model:tab="activeSettingsTab" size="5xl">
     <SettingsSidebar>
+      <!--
+        The dialog is genuinely full-screen on a phone, and frappe-ui renders no
+        close button for a `bare` Dialog. That leaves Escape as the only way out
+        — which a phone does not have, and there is no backdrop left to tap.
+        Desktop keeps the backdrop, so this is `sm:hidden`.
+      -->
+      <div class="mb-2 flex items-center justify-between sm:hidden">
+        <span class="text-base font-medium text-ink-gray-8">Settings</span>
+        <Button
+          variant="ghost"
+          icon="lucide-x"
+          label="Close settings"
+          @click="showSettings = false"
+        />
+      </div>
+
       <SettingsNavGroup v-for="group in GROUPS" :key="group.label" :label="group.label">
         <!-- The label is the default slot, not a prop: passing :label renders
              an item with an icon and no text. -->
@@ -33,7 +49,7 @@
 <script setup>
 import {
   SettingsDialog, SettingsSidebar, SettingsNavGroup, SettingsNavItem,
-  SettingsContent, SettingsPanel, SettingsHeader, SettingsBody, Icon,
+  SettingsContent, SettingsPanel, SettingsHeader, SettingsBody, Button, Icon,
 } from '@/ui'
 import ControlSettings from './ControlSettings.vue'
 import CloudflareSettings from './CloudflareSettings.vue'

@@ -3,3 +3,61 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * SettingsDialog geometry below the `sm` breakpoint.
+ *
+ * frappe-ui 1.0.0-beta.55 documents the dialog as "full-screen on mobile", and
+ * its own TabsRoot is `w-screen h-[100dvh]` — but the Dialog it sits in still
+ * applies its desktop chrome, and the panel paddings are fixed pixel values
+ * with no responsive variant. Measured at 390px:
+ *
+ *   - Dialog's scroll container pads `px-4 py-4` and the content carries `my-8`,
+ *     so a `w-screen` child starts at x=16 and 16px of it is clipped by the
+ *     content box's own `overflow-hidden`.
+ *   - SettingsHeader is `px-[4.4rem] pt-10` and SettingsBody's viewport is
+ *     `px-[4.4rem] pb-16` — 70.4px a side, leaving 249px of a 390px screen, so
+ *     a label like "API host" wraps to one word per line.
+ *
+ * Frappe's own consumers (Gameplan, Pilot) are desktop-first and never hit it,
+ * so this is ours to correct rather than something to wait on. Scoped to the
+ * settings dialog by `:has([role='tablist'])` — nothing else nests a tablist in
+ * a bare dialog — and keyed to `.dialog-scroll-container` and `.dialog-content`,
+ * which are named hooks in Dialog's own markup rather than utility classes.
+ *
+ * `tests/test_settings_dialog_geometry.py` pins the upstream values this
+ * compensates for. When frappe-ui makes these responsive, that test fails and
+ * this block should go.
+ */
+@media (max-width: 639px) {
+  .dialog-scroll-container:has([role='tablist']) > div {
+    padding: 0;
+  }
+
+  .dialog-scroll-container:has([role='tablist']) .dialog-content {
+    width: 100vw;
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  /* SettingsHeader is the panel's first child; SettingsBody's padding is on the
+     ScrollArea viewport, which no class on SettingsBody can reach. */
+  .dialog-content:has([role='tablist']) [role='tabpanel'] > :first-child {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 1.25rem;
+  }
+
+  .dialog-content:has([role='tablist'])
+    [role='tabpanel']
+    [data-slot='scroll-area-viewport'] {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* 38vh of a tall phone is 320px of nav before any content. */
+  .dialog-content:has([role='tablist']) [role='tablist'] {
+    max-height: 30vh;
+  }
+}
