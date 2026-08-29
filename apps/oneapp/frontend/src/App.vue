@@ -34,6 +34,7 @@
 </template>
 
 <script setup>
+import { TENANT_APP } from './lib/brand'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { FrappeUIProvider, Button, LoadingIndicator, usePageMeta } from '@/ui'
@@ -64,5 +65,5 @@ const navItems = computed(() => [
   { label: 'Account', icon: 'lucide-circle-user', to: { name: 'Account' } },
 ])
 
-usePageMeta(() => ({ title: session.tenant?.name || 'OneApp' }))
+usePageMeta(() => ({ title: session.tenant?.name || TENANT_APP }))
 </script>

@@ -12,8 +12,8 @@
       <ListHeader>
         <ListHeaderCell v-for="c in headers" :key="c" :label="c" />
       </ListHeader>
-      <ListRows>
-        <ListRow v-for="row in rows" :key="row.name" :row-key="row.name">
+      <ListRows :items="rows" v-slot="{ item: row }">
+        <ListRow :row-key="row.name">
           <ListCell v-for="(cell, i) in cellsFor(row)" :key="i">
             <Badge v-if="cell.badge" :theme="cell.theme" :label="cell.value" variant="subtle" />
             <span v-else class="truncate text-p-sm" :class="cell.muted ? 'text-ink-gray-5' : 'text-ink-gray-8'">

@@ -40,8 +40,8 @@
     </Alert>
 
     <List :columns="['12rem', 'minmax(0,1fr)']" divider="full">
-      <ListRows>
-        <ListRow v-for="row in rows" :key="row.label" :row-key="row.label">
+      <ListRows :items="rows" v-slot="{ item: row }">
+        <ListRow :row-key="row.label">
           <ListCell>
             <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
           </ListCell>

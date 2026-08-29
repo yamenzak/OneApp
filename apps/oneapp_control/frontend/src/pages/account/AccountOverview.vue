@@ -47,8 +47,8 @@
     <section>
       <h3 class="mb-3 text-base font-medium text-ink-gray-8">Workspace</h3>
       <List :columns="['10rem', 'minmax(0,1fr)']" divider="full">
-        <ListRows>
-          <ListRow v-for="row in details" :key="row.label" :row-key="row.label">
+        <ListRows :items="details" v-slot="{ item: row }">
+          <ListRow :row-key="row.label">
             <ListCell>
               <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
             </ListCell>

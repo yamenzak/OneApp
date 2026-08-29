@@ -212,26 +212,49 @@ def test_generated_html_shells_are_not_committed():
 	and then silently points at assets from an older build — the page loads and
 	does nothing, with no error to trace back to the commit that did it.
 	"""
-	import json
-	import re
+	import importlib.util
 
-	gen = (ROOT / "scripts/gen_frontend.py").read_text()
+	# The generator is imported rather than parsed. Reading its source with a
+	# regex and json.loads worked until a constant appeared inside the literal,
+	# at which point the guard failed on its own parsing rather than on anything
+	# real.
+	spec = importlib.util.spec_from_file_location("gen_frontend", ROOT / "scripts/gen_frontend.py")
+	gen = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(gen)
+
 	ignored = (ROOT / ".gitignore").read_text()
 
 	shells = set()
-	for app, route in re.findall(r'"(\w+)": \{\s*"route": "/(\w+)"', gen):
-		module = "oneapp_control" if app == "oneapp_control" else app
-		shells.add(f"apps/{app}/{module}/www/{route}.html")
+	for app, config in gen.APPS.items():
+		route = config["route"].lstrip("/")
+		shells.add(f"apps/{app}/{app}/www/{route}.html")
+		for extra in config.get("shells", []):
+			shells.add(f"apps/{app}/{app}/www/{extra['name']}.html")
 
-	# Plus the copies made after the build.
-	for app, extra in re.findall(r'"(\w+)": \{[^}]*?"shells": (\[[^\]]*\])', gen, re.S):
-		for shell in json.loads(extra):
-			shells.add(f"apps/{app}/{app}/www/{shell['name']}.html")
-
-	assert shells, "no shells found — the parse in this guard has stopped working"
+	assert shells, "no shells found — the generator's shape has changed"
 
 	missing = sorted(s for s in shells if s not in ignored)
 	assert not missing, f"build output is not gitignored: {missing}"
+
+
+@pytest.mark.parametrize("app", ["oneapp", "oneapp_control"])
+def test_listrows_is_given_items(app):
+    """<ListRows> iterates its `items` prop; a v-for child renders nothing.
+
+    This is the worst shape of frontend bug: the page loads, the count beside
+    the heading is right because it comes from the same array, and the list is
+    simply empty. Eight pages shipped like this — every list in the admin
+    console and the customer portal — before anyone opened one on a phone.
+    """
+    for path, source in _sources(app).items():
+        for match in re.finditer(r"<ListRows\b([^>]*)>", source):
+            attrs = match.group(1)
+            assert ":items" in attrs or "v-bind" in attrs, (
+                f"{app}/{path}: <ListRows> without :items renders no rows"
+            )
+            assert "v-slot" in attrs or "#default" in attrs, (
+                f"{app}/{path}: <ListRows> needs a scoped slot to render each item"
+            )
 
 
 # --- the app shell ----------------------------------------------------------

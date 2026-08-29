@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-surface-gray-1 py-10">
     <div class="mx-auto max-w-lg px-5">
       <div class="mb-6 text-center">
-        <Avatar label="OneApp" shape="square" size="2xl" class="mx-auto" />
+        <Avatar :label="TENANT_APP" shape="square" size="2xl" class="mx-auto" />
         <h1 class="mt-3 text-xl font-semibold text-ink-gray-9">Create your workspace</h1>
       </div>
 
@@ -77,6 +77,7 @@
 </template>
 
 <script setup>
+import { TENANT_APP } from '../../lib/brand'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { Alert, Avatar, Button, ErrorMessage, FormControl, LoadingIndicator, debounce } from '@/ui'
 import { callMethod } from '../../lib/resource'

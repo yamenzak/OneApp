@@ -3,7 +3,7 @@
     <!-- No logo: the rail already shows the active app's tile, so a header logo
          beside it would say the same thing twice. -->
     <SidebarHeader
-      :title="activeApp?.app_label || session.tenant?.name || 'OneApp'"
+      :title="activeApp?.app_label || session.tenant?.name || TENANT_APP"
       :subtitle="activeApp ? session.tenant?.name : session.tenant?.plan"
       :show-logo="false"
     />
@@ -33,6 +33,7 @@
 </template>
 
 <script setup>
+import { TENANT_APP } from '../lib/brand'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Icon, ScrollArea, Sidebar, SidebarHeader, SidebarItem } from '@/ui'

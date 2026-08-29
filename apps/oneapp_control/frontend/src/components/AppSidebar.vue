@@ -2,9 +2,9 @@
   <Sidebar class="border-r border-outline-gray-1">
     <SidebarHeader>
       <div class="flex items-center gap-2 px-1 py-0.5">
-        <Avatar label="OneApp" shape="square" size="lg" />
+        <Avatar :label="ADMIN_APP" shape="square" size="lg" />
         <div v-if="!collapsed" class="min-w-0">
-          <p class="truncate text-base font-medium text-ink-gray-8">OneApp</p>
+          <p class="truncate text-base font-medium text-ink-gray-8">{{ ADMIN_APP }}</p>
           <p class="truncate text-xs text-ink-gray-5">Control plane</p>
         </div>
       </div>
@@ -53,6 +53,7 @@
 </template>
 
 <script setup>
+import { ADMIN_APP } from '../lib/brand'
 import { computed, inject } from 'vue'
 import { useRoute } from 'vue-router'
 import {

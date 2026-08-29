@@ -9,7 +9,13 @@
       <LoadingIndicator class="size-5 text-ink-gray-5" />
     </div>
 
-    <AppShell v-else :apps="railApps" :active-app="activeWorkspace" :nav-items="navItems">
+    <AppShell
+      v-else
+      :apps="railApps"
+      :active-app="activeWorkspace"
+      :nav-items="navItems"
+      :menu-items="menuItems"
+    >
       <template #sidebar>
         <AppSidebar v-if="isAdmin" />
         <PortalSidebar v-else />
@@ -34,6 +40,8 @@ import AppSidebar from './components/AppSidebar.vue'
 import PortalSidebar from './components/PortalSidebar.vue'
 import SettingsShell from './components/settings/SettingsShell.vue'
 import { setup } from './lib/setup'
+import { openSettings } from './lib/settings'
+import { ADMIN_APP, TENANT_APP } from './lib/brand'
 import { workspaces } from './lib/customer'
 
 const route = useRoute()
@@ -82,7 +90,17 @@ const navItems = computed(() => {
   ]
 })
 
-usePageMeta(() => (isAdmin.value ? { title: 'OneApp Admin', emoji: '⚙️' } : { title: 'OneApp' }))
+// Settings live in the sidebar's user menu on a desktop. A phone has no
+// sidebar, so without this there is no way to reach them at all — which is
+// exactly what an operator hits when the control plane is unconfigured and
+// setting it up is the only thing they need to do.
+const menuItems = computed(() =>
+  isAdmin.value
+    ? [{ label: 'Settings', icon: 'lucide-settings', onClick: () => openSettings() }]
+    : [],
+)
+
+usePageMeta(() => (isAdmin.value ? { title: ADMIN_APP, emoji: '⚙️' } : { title: TENANT_APP }))
 
 // Loaded here rather than in onMounted so neither surface fires the other's
 // calls: readiness is not the customer's to ask for, and a visitor at signup has

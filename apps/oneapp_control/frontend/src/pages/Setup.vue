@@ -5,6 +5,7 @@
     </template>
     <template #actions>
       <Button :loading="setup.loading" label="Re-check" @click="setup.load()" />
+      <Button variant="solid" label="Open settings" @click="openSettings()" />
     </template>
   </PageHeader>
 
@@ -32,10 +33,8 @@
       <p class="mb-3 text-p-sm text-ink-gray-5">{{ group.blurb }}</p>
 
       <List :columns="['5.5rem', 'minmax(0,1fr)']" divider="full">
-        <ListRows>
+        <ListRows :items="setup.group(group.key)" v-slot="{ item: check }">
           <ListRow
-            v-for="check in setup.group(group.key)"
-            :key="check.key"
             :row-key="check.key"
           >
             <ListCell>
@@ -66,6 +65,7 @@ import {
   List, ListRows, ListRow, ListCell,
 } from '@/ui'
 import { setup } from '../lib/setup'
+import { openSettings } from '../lib/settings'
 
 const GROUPS = [
   {

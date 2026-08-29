@@ -23,6 +23,17 @@
           :active="showSwitcher"
           @click="showSwitcher = true"
         />
+        <!-- The rail footer holds the account and settings on a desktop. There
+             is no rail on a phone, so anything put there would simply be
+             unreachable — which is how the admin console shipped with no way to
+             open settings at all on mobile. -->
+        <MobileNavItem
+          v-for="item in menuItems"
+          :key="item.label"
+          :label="item.label"
+          :icon="item.icon"
+          @click="item.onClick"
+        />
       </MobileNav>
     </template>
   </MobileShell>
@@ -104,6 +115,11 @@ defineProps({
   activeApp: { type: String, default: '' },
   /** Bottom-bar destinations on mobile: { label, icon, to, active? }. */
   navItems: { type: Array, default: () => [] },
+  /**
+   * Actions that live in the rail footer on a desktop, e.g. Settings. Repeated
+   * in the phone's bottom bar, which has no rail to put them in.
+   */
+  menuItems: { type: Array, default: () => [] },
   /** false when inner panes own their scroll — a list/detail split, say. */
   scroll: { type: Boolean, default: true },
 })

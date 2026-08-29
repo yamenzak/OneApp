@@ -36,10 +36,8 @@
         <ListHeaderCell v-for="c in HEADERS" :key="c" :label="c" />
       </ListHeader>
 
-      <ListRows>
+      <ListRows :items="rows" v-slot="{ item: tenant }">
         <ListRow
-          v-for="tenant in rows"
-          :key="tenant.name"
           :row-key="tenant.name"
           @click="$router.push({ name: 'Tenant', params: { name: tenant.name } })"
         >

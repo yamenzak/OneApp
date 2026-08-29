@@ -10,7 +10,7 @@ import path from 'node:path'
 // one, so the additional surfaces are copies of it — same hashed asset tags,
 // different <title>, and a sibling .py that decides who may load them. Copying
 // after the build is what guarantees they can never reference stale assets.
-const EXTRA_SHELLS = [{"name": "portal", "title": "OneApp"}]
+const EXTRA_SHELLS = [{"name": "portal", "title": "OneSpace"}]
 
 function extraShells() {
   return {

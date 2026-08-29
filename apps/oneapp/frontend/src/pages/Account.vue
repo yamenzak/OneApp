@@ -45,7 +45,7 @@
       </div>
 
       <p class="mt-4 text-p-sm text-ink-gray-5">
-        Billing, storage add-ons and your plan are managed in your OneApp account.
+        Billing, storage add-ons and your plan are managed in your {{ TENANT_APP }} account.
       </p>
     </template>
   </div>
@@ -56,6 +56,7 @@ import { computed } from 'vue'
 import { PageHeader, LoadingIndicator } from '@/ui'
 import UsageBar from '../components/UsageBar.vue'
 import ThemeSetting from '../components/ThemeSetting.vue'
+import { TENANT_APP } from '../lib/brand'
 import { session } from '../lib/session'
 
 const quota = computed(() => session.quota || {})

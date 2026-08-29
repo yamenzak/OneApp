@@ -1,5 +1,5 @@
 app_name = "oneapp_control"
-app_title = "OneApp Control"
+app_title = "OneAdmin"
 app_publisher = "Four Degree Labs"
 app_description = "OneApp control plane: tenants, shards, plans, credits and provisioning."
 app_email = "hello@fourdegreelabs.com"
