@@ -91,6 +91,9 @@ doctype(
           description="Frappe Cloud's own root domain for this server, used to create "
                       "sites in Per-tenant mode. e.g. frappe.cloud"),
         f("press_site_plan", label="Default Press Site Plan"),
+        f("standby_target", "Int", default="0",
+          description="Warm sites to keep ready here. Zero disables the pool for "
+                      "this shard, and signup falls back to creating on demand."),
         f("site_apps", default="frappe,erpnext,oneapp", reqd=1,
           description="Apps installed on sites created here, comma separated. Must "
                       "all be present on the bench group."),
@@ -178,6 +181,11 @@ doctype(
           options="Draft\nProvisioning\nActive\nSuspended\nArchived\nFailed",
           default="Draft", reqd=1, in_list_view=1, in_standard_filter=1),
         f("owner_email", "Data", options="Email", reqd=1),
+        f("owner_user", "Link", options="User", read_only=1,
+          description="Control-plane account for the workspace owner. Customer "
+                      "endpoints resolve the tenant from this, never from a "
+                      "parameter — that is what keeps one customer out of "
+                      "another's billing."),
         column("cb_place"),
         f("shard", "Link", options="Shard", in_standard_filter=1),
         f("site_name", read_only=1, in_list_view=1,
@@ -267,11 +275,12 @@ doctype(
     fields=[
         f("naming_series", "Select", options="PJOB-.YYYY.-", default="PJOB-.YYYY.-",
           reqd=1, hidden=1),
-        f("tenant", "Link", options="Tenant", reqd=1, in_list_view=1,
-          in_standard_filter=1),
+        f("tenant", "Link", options="Tenant", in_list_view=1, in_standard_filter=1,
+          description="Empty for standby pool builds, which belong to no tenant yet."),
         f("action", "Select",
           options=("Create Site\nSuspend Site\nResume Site\nBackup Site\nArchive Site\n"
-                   "Add Domain\nSet Primary Domain\nChange Plan\nMigrate Site"),
+                   "Add Domain\nSet Primary Domain\nChange Plan\nMigrate Site\n"
+                   "Create Standby Site\nClaim Standby Site"),
           reqd=1, in_list_view=1, in_standard_filter=1),
         f("state", "Select",
           options=("Requested\nRunning\nAwaiting Agent\nBootstrapping\nSucceeded\n"
@@ -454,6 +463,77 @@ doctype(
         section("sec_evt"),
         f("payload", "Code", options="JSON"),
         f("error", "Text"),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# Account Request — the record that exists before a tenant does.
+#
+# Signup collects a workspace, a plan and a card before there is any site to
+# hold that. This carries it from the form through payment to provisioning, and
+# is what makes the flow resumable when someone abandons checkout and returns.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Account Request",
+    autoname="hash",
+    title_field="workspace_name",
+    fields=[
+        f("email", "Data", options="Email", reqd=1, in_list_view=1, in_standard_filter=1),
+        f("workspace_name", reqd=1, in_list_view=1),
+        f("requested_slug", reqd=1, in_list_view=1,
+          description="Validated at request time, re-checked at claim: someone else "
+                      "may have taken it while this one sat in checkout."),
+        f("status", "Select",
+          options="Pending Payment\nPaid\nProvisioning\nCompleted\nFailed\nAbandoned",
+          default="Pending Payment", reqd=1, in_list_view=1, in_standard_filter=1),
+        column("cb_ar"),
+        f("plan", "Link", options="Plan", reqd=1),
+        f("interval", "Select", options="Monthly\nYearly", default="Monthly", reqd=1),
+        f("tenant", "Link", options="Tenant", read_only=1,
+          description="Set once provisioning starts."),
+        f("user", "Link", options="User", read_only=1,
+          description="The owner account, created after payment clears."),
+        section("sec_ar_pay", "Payment"),
+        f("stripe_checkout_session", label="Stripe Checkout Session", read_only=1, unique=1),
+        f("stripe_customer_id", label="Stripe Customer ID", read_only=1),
+        f("stripe_subscription_id", label="Stripe Subscription ID", read_only=1),
+        column("cb_ar_pay"),
+        f("paid_on", "Datetime", read_only=1),
+        f("completed_on", "Datetime", read_only=1),
+        f("failure_reason", "Small Text", read_only=1),
+        section("sec_ar_meta"),
+        f("source", description="Where the signup came from, for attribution."),
+        f("ip_address", read_only=1),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# Standby Site — a warm site waiting to be claimed.
+#
+# Creating an ERPNext site takes minutes. Someone who has just entered card
+# details should not watch a spinner for that long, so sites are built ahead of
+# demand under throwaway names and claimed on signup. The customer never sees
+# the underlying name: in Per-tenant domain mode they reach their workspace on
+# <slug>.4dl.app regardless.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Standby Site",
+    autoname="field:press_site",
+    fields=[
+        f("press_site", label="Press Site", reqd=1, unique=1, in_list_view=1),
+        f("status", "Select",
+          options="Creating\nReady\nClaimed\nBroken\nArchived",
+          default="Creating", reqd=1, in_list_view=1, in_standard_filter=1),
+        f("shard", "Link", options="Shard", reqd=1, in_list_view=1, in_standard_filter=1),
+        column("cb_sb"),
+        f("claimed_by", "Link", options="Tenant", read_only=1),
+        f("claimed_on", "Datetime", read_only=1),
+        f("created_on", "Datetime", read_only=1),
+        f("provisioning_job", "Link", options="Provisioning Job", read_only=1),
+        section("sec_sb"),
+        f("last_error", "Small Text", read_only=1),
     ],
 )
 

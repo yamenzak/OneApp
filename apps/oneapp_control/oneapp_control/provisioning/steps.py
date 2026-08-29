@@ -344,8 +344,14 @@ def deregister_mail_routing(job):
 
 
 def finalise_creation(job):
+	from oneapp_control.provisioning import signup
+
 	tenant = frappe.get_doc("Tenant", job.tenant)
 	tenant.mark_active(press_site=job.press_site)
+
+	# Closes out the Account Request and emails the owner their invite. Only
+	# does anything when this tenant came from a signup.
+	signup.complete(tenant.name)
 	return None
 
 
@@ -466,6 +472,53 @@ def _capture_job_id(job, result):
 
 
 # --------------------------------------------------------------------------- #
+# Standby pool
+# --------------------------------------------------------------------------- #
+
+def create_standby_site(job):
+	"""Build a warm site under a throwaway name, with no tenant attached."""
+	payload = job.parsed_payload()
+	shard = frappe.get_doc("Shard", payload["shard"])
+
+	if job.press_site:
+		return None
+
+	result = get_client().create_site(
+		subdomain=payload["subdomain"],
+		domain=creation_domain(shard),
+		release_group=shard.press_release_group,
+		apps=site_apps(shard),
+		plan=shard.press_site_plan or None,
+		server=shard.press_server or None,
+		cluster=shard.press_cluster or None,
+		version=shard.press_version or None,
+	)
+
+	if not result or not result.get("site"):
+		raise PressPermanentError(f"press.api.site.new returned no site: {result!r}")
+
+	job.db_set("press_site", result["site"])
+	job.db_set("agent_job_id", result.get("job"))
+	frappe.db.set_value("Standby Site", payload["standby"], "press_site", result["site"])
+
+	return None
+
+
+def mark_standby_ready(job):
+	payload = job.parsed_payload()
+	frappe.db.set_value("Standby Site", payload["standby"], "status", "Ready")
+	return None
+
+
+def adopt_standby_site(job):
+	"""Point the job at the site the tenant just claimed."""
+	payload = job.parsed_payload()
+	if not job.press_site:
+		job.db_set("press_site", payload["press_site"])
+	return None
+
+
+# --------------------------------------------------------------------------- #
 # Step sequences
 # --------------------------------------------------------------------------- #
 
@@ -474,6 +527,24 @@ PIPELINES = {
 		("check_availability", check_availability),
 		("create_site", create_site),
 		("await_agent", await_agent),
+		("push_site_config", push_site_config),
+		("create_dns_record", create_dns_record),
+		("attach_domain", attach_domain),
+		("await_domain_active", await_domain_active),
+		("promote_domain", promote_domain),
+		("register_mail_routing", register_mail_routing),
+		("finalise_creation", finalise_creation),
+	],
+	# Built ahead of demand, belonging to no tenant.
+	"Create Standby Site": [
+		("create_standby_site", create_standby_site),
+		("await_agent", await_agent),
+		("mark_standby_ready", mark_standby_ready),
+	],
+	# Everything after adoption is the same work as a fresh site, minus the
+	# minutes spent building one.
+	"Claim Standby Site": [
+		("adopt_standby_site", adopt_standby_site),
 		("push_site_config", push_site_config),
 		("create_dns_record", create_dns_record),
 		("attach_domain", attach_domain),

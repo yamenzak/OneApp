@@ -148,6 +148,12 @@ def _tenant_from(obj: dict) -> str | None:
 
 
 def handle_checkout_completed(obj: dict, record):
+	meta = obj.get("metadata") or {}
+
+	# A signup has no tenant yet — the Account Request is the only handle.
+	if meta.get("kind") == "signup" or meta.get("account_request"):
+		return handle_signup_paid(obj, record)
+
 	tenant = _tenant_from(obj)
 	if not tenant:
 		return
@@ -172,6 +178,38 @@ def handle_checkout_completed(obj: dict, record):
 			plan=meta.get("plan"),
 			interval=meta.get("interval") or "Monthly",
 		)
+
+
+def handle_signup_paid(obj: dict, record):
+	"""Payment cleared for a signup: create the account and start provisioning.
+
+	Runs inside the webhook's idempotency guard, and additionally refuses to act
+	twice on the same Account Request — Stripe can deliver checkout.session.completed
+	more than once, and the cost of getting that wrong is two sites and two
+	subscriptions for one customer.
+	"""
+	from oneapp_control.provisioning import signup as signup_flow
+
+	name = (obj.get("metadata") or {}).get("account_request") or obj.get("client_reference_id")
+	if not name or not frappe.db.exists("Account Request", name):
+		return
+
+	request = frappe.get_doc("Account Request", name)
+	record.db_set("tenant", request.tenant)
+
+	if request.status not in ("Pending Payment", "Failed"):
+		# Already handled.
+		return
+
+	if obj.get("payment_status") not in ("paid", "no_payment_required"):
+		return
+
+	request.db_set("stripe_customer_id", obj.get("customer"))
+	request.db_set("stripe_subscription_id", obj.get("subscription"))
+	request.db_set("paid_on", now_datetime())
+	request.db_set("status", "Paid")
+
+	signup_flow.fulfil(request.name)
 
 
 def handle_subscription_change(obj: dict, record):

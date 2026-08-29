@@ -93,6 +93,49 @@ def start_credit_pack(tenant: str, credits: float, amount: float,
 	return {"url": session.get("url"), "id": session.get("id")}
 
 
+def start_signup(request) -> dict:
+	"""Checkout for a signup, before any tenant exists.
+
+	The Account Request id rides along in metadata so the webhook can find its
+	way back — at this point there is no tenant to key on.
+	"""
+	plan = frappe.get_doc("Plan", request.plan)
+	price_id = (
+		plan.stripe_price_id_yearly
+		if request.interval == "Yearly"
+		else plan.stripe_price_id_monthly
+	)
+	if not price_id:
+		frappe.throw(
+			_("{0} has no Stripe price for {1} billing.").format(plan.plan_name, request.interval)
+		)
+
+	base = (_settings().control_plane_url or "").rstrip("/")
+
+	session = stripe_client.create_checkout_session(
+		mode="subscription",
+		line_items=[{"price": price_id, "quantity": 1}],
+		success_url=f"{base}/signup/welcome?request={request.name}",
+		cancel_url=f"{base}/signup?cancelled={request.name}",
+		customer_email=request.email,
+		client_reference_id=request.name,
+		subscription_data={
+			"metadata": {"account_request": request.name, "plan": request.plan}
+		},
+		metadata={
+			"account_request": request.name,
+			"plan": request.plan,
+			"interval": request.interval,
+			"kind": "signup",
+		},
+		# Stripe dedupes for 24h, so a double-submitted form cannot create two
+		# subscriptions for the same request.
+		_idempotency_key=f"signup:{request.name}",
+	)
+
+	return {"id": session.get("id"), "url": session.get("url")}
+
+
 @frappe.whitelist()
 def billing_portal(tenant: str) -> dict:
 	"""Hand the customer to Stripe to manage their own card and cancellation."""

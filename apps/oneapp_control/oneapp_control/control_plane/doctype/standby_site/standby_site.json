@@ -1,0 +1,116 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:press_site",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "press_site",
+  "status",
+  "shard",
+  "cb_sb",
+  "claimed_by",
+  "claimed_on",
+  "created_on",
+  "provisioning_job",
+  "sec_sb",
+  "last_error"
+ ],
+ "fields": [
+  {
+   "fieldname": "press_site",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Press Site",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "Creating",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Creating\nReady\nClaimed\nBroken\nArchived",
+   "reqd": 1
+  },
+  {
+   "fieldname": "shard",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Shard",
+   "options": "Shard",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_sb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "claimed_by",
+   "fieldtype": "Link",
+   "label": "Claimed By",
+   "options": "Tenant",
+   "read_only": 1
+  },
+  {
+   "fieldname": "claimed_on",
+   "fieldtype": "Datetime",
+   "label": "Claimed On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "created_on",
+   "fieldtype": "Datetime",
+   "label": "Created On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "provisioning_job",
+   "fieldtype": "Link",
+   "label": "Provisioning Job",
+   "options": "Provisioning Job",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_sb",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Last Error",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Standby Site",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

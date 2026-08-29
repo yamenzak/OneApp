@@ -24,6 +24,7 @@
   "domain_mode",
   "press_default_domain",
   "press_site_plan",
+  "standby_target",
   "site_apps",
   "sec_notes",
   "notes"
@@ -145,6 +146,13 @@
    "fieldname": "press_site_plan",
    "fieldtype": "Data",
    "label": "Default Press Site Plan"
+  },
+  {
+   "default": "0",
+   "description": "Warm sites to keep ready here. Zero disables the pool for this shard, and signup falls back to creating on demand.",
+   "fieldname": "standby_target",
+   "fieldtype": "Int",
+   "label": "Standby Target"
   },
   {
    "default": "frappe,erpnext,oneapp",

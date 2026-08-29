@@ -11,6 +11,7 @@
   "tenant_name",
   "status",
   "owner_email",
+  "owner_user",
   "cb_place",
   "shard",
   "site_name",
@@ -68,6 +69,14 @@
    "label": "Owner Email",
    "options": "Email",
    "reqd": 1
+  },
+  {
+   "description": "Control-plane account for the workspace owner. Customer endpoints resolve the tenant from this, never from a parameter \u2014 that is what keeps one customer out of another's billing.",
+   "fieldname": "owner_user",
+   "fieldtype": "Link",
+   "label": "Owner User",
+   "options": "User",
+   "read_only": 1
   },
   {
    "fieldname": "cb_place",

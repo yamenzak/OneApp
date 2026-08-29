@@ -15,6 +15,11 @@ scheduler_events = {
 		"*/2 * * * *": [
 			"oneapp_control.provisioning.runner.process_pending_jobs",
 		],
+		# Keeps each shard's warm pool topped up. Slow by design — a couple of
+		# sites per run, so a mistyped target cannot flood the server with builds.
+		"*/10 * * * *": [
+			"oneapp_control.provisioning.standby.top_up",
+		],
 	},
 	"hourly": [
 		# A crashed worker must not strand a tenant's credits behind an open
