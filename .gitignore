@@ -31,3 +31,6 @@ dump.rdb
 
 # Live-patch state: which patch this checkout put on which bench.
 .oneapp-live.json
+
+# Worktree used to rebuild the deployed commit for asset diffs.
+.oneapp-live-base/

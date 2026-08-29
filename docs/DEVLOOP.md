@@ -129,7 +129,28 @@ identical bundle whenever neither touched frontend source, so the hash points at
 a range, not a commit — guessing wrong there is what makes the patch fail with
 nothing useful to read, because the Agent Job output is not exposed to the API.
 
-### Why UI changes cannot be patched yet
+### Why UI changes cannot be patched
+
+`build_assets` does **not** help. It runs `bench build` — Frappe's own esbuild —
+which knows nothing about Vite, so our SPA is never rebuilt on the bench.
+`update_inplace` uses the same call. Only the image build runs our Vite build.
+
+Shipping the bundle inside the patch was the obvious next move, and it needed a
+committed lockfile: without one Frappe Cloud resolved dependencies freshly on
+every build, so its bundle was not ours. `yarn.lock` fixed that — the same
+commit now produces byte-identical content hashes here and on Frappe Cloud,
+confirmed against a real deploy.
+
+It still does not work. The generated patch applies cleanly to a faithful local
+reconstruction of the container, and the agent rejects it — including a patch
+containing nothing but new files, which should apply anywhere. Agent Job output
+is not exposed to the API, so there is nothing to diagnose it with. `--assets`
+is left in place and documented as experimental rather than quietly removed.
+
+**Use `deploy` for UI changes.** Minutes rather than seconds, and the honest
+path regardless: an image built from git, which nothing later reverts.
+
+### The old note, kept for the mechanics
 
 `build_assets` does **not** help. It runs `bench build` — Frappe's own esbuild —
 which knows nothing about Vite, so our SPA is never rebuilt on the bench.

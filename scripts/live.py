@@ -5,19 +5,36 @@ Development only. A patch is `git apply` inside the running container — second
 no image build — but it exists in no image, so **the next deploy silently
 reverts it**. Nothing here is a way to ship.
 
-    scripts/live.py status     what the bench is running, and what we have patched
-    scripts/live.py push       send everything since the deployed commit
-    scripts/live.py revert     remove our patch, back to the deployed image
-    scripts/live.py watch      push on every change (Ctrl-C to stop)
+    scripts/live.py status        what the bench runs, and what we have patched
+    scripts/live.py push          send everything since the deployed commit
+    scripts/live.py revert        remove our patch, back to the deployed image
+    scripts/live.py watch         push on every change (Ctrl-C to stop)
+    scripts/live.py deploy        build a real image and move the sites onto it
+    scripts/live.py update-sites  move sites onto the newest bench
+
+`deploy` is the honest path: an image built from git, so nothing silently
+reverts later. Minutes rather than seconds, and the only way to ship a UI change
+— the bench cannot run our Vite build.
+
+Nothing here runs unless ONEAPP_DEV_BENCH_GROUP names the bench being targeted.
+Patching rewrites code on a running bench and deploy restarts real sites; both
+are fine while a bench is ours to break and unacceptable once it carries
+customers. Production never sets it, so this tool is inert there.
 
 Credentials come from ONEAPP_FC_ENV (default: the file named below), which sets
 PRESS_KEY and PRESS_SECRET.
 
-Assets: `--assets` includes the built SPA. It is off by default because the
-bench cannot build it — `build_assets` runs `bench build`, which is Frappe's own
-esbuild and knows nothing about Vite — so the bundle has to travel in the patch,
-and that only applies cleanly when our build reproduces the deployed one byte
-for byte. See docs/DEVLOOP.md.
+Assets: `--assets` is **experimental and currently does not work**. The bench
+cannot build the SPA — `build_assets` runs `bench build`, Frappe's own esbuild,
+which knows nothing about Vite — so the bundle would have to travel inside the
+patch. yarn.lock makes our build byte-identical to Frappe Cloud's (verified: the
+same commit produces the same content hashes both sides), and the resulting
+patch applies cleanly to a faithful local reconstruction of the container — but
+the agent rejects it, including a patch of nothing but new files. Agent Job
+output is not exposed to the API, so there is nothing to diagnose it with.
+
+Use `deploy` for UI changes. It is minutes rather than seconds and it is the
+honest path anyway: an image built from git, which nothing later reverts.
 """
 
 import argparse
@@ -133,19 +150,88 @@ def deployed_commit(group: str, app: str) -> tuple[str, str]:
     return found, mirror_hash
 
 
+def built_tree_at(app: str, base: str) -> Path:
+    """Build the SPA as the deployed commit built it.
+
+    Needed because the bundle already exists in the container: Frappe Cloud
+    built it into the image, so a patch that *adds* those files is rejected with
+    "already exists". To send a modification instead, the deployed content has
+    to be reconstructed — which only works because yarn.lock makes our build
+    byte-identical to theirs. Verified: the same commit produces the same
+    content hashes here and on Frappe Cloud.
+    """
+    work = ROOT / ".oneapp-live-base"
+    if work.exists():
+        subprocess.run(["git", "worktree", "remove", "--force", str(work)], cwd=ROOT,
+                       capture_output=True, check=False)
+    git("worktree", "add", "--force", "--detach", str(work), base)
+
+    frontend = work / "apps" / app / "frontend"
+    modules = ROOT / "apps" / app / "frontend" / "node_modules"
+    link = frontend / "node_modules"
+    if modules.exists() and not link.exists():
+        # Same lockfile, so the same tree — installing again would only be slow.
+        link.symlink_to(modules)
+
+    build = subprocess.run(["npx", "vite", "build"], cwd=frontend,
+                           capture_output=True, text=True, check=False)
+    if build.returncode != 0:
+        sys.exit(f"Could not build {base[:10]} to diff against:\n{build.stderr[-800:]}")
+    return work
+
+
+def _usable_sections(diff: str) -> str:
+    """Keep additions and modifications; drop deletions and build noise.
+
+    Asset filenames carry a content hash, so a rebuild replaces rather than
+    edits them: the new names are additions and the old ones would be deletions.
+    Removing the stale files is not worth the risk — a deletion hunk has to match
+    the old content exactly, and an unreferenced asset costs nothing until the
+    next deploy clears it.
+
+    __pycache__ is dropped for the same reason it is everywhere else here: it is
+    compiled per interpreter version, so one stray .pyc rejects the whole patch.
+    """
+    kept, section, skip = [], [], False
+    for line in diff.splitlines(keepends=True):
+        if line.startswith("diff --git "):
+            if section and not skip:
+                kept.extend(section)
+            section, skip = [line], "__pycache__" in line
+            continue
+        if line.startswith("deleted file mode"):
+            skip = True
+        section.append(line)
+    if section and not skip:
+        kept.extend(section)
+    return "".join(kept)
+
+
 def build_patch(app: str, base: str, with_assets: bool) -> str:
     """Everything from the deployed commit to the working tree, mirror-relative."""
     parts = [git("diff", base, "--", f"apps/{app}")]
 
     if with_assets:
-        paths = [p.format(app=app) for p in ASSET_PATHS]
-        prefixed = [f"apps/{p}" for p in paths]
-        git("add", "-Af", *prefixed, check=False)
-        git("reset", "-q", "--", f":(glob)apps/{app}/**/__pycache__/**", check=False)
-        # --binary or the woff2 fonts arrive as placeholders and git apply
-        # rejects the whole patch.
-        parts.append(git("diff", "--cached", "--binary", "--", *prefixed))
-        git("reset", "-q", "--", *prefixed, check=False)
+        old_root = built_tree_at(app, base) / "apps" / app
+        new_root = ROOT / "apps" / app
+        for relative in ("public/frontend", "www"):
+            old_dir, new_dir = old_root / app / relative, new_root / app / relative
+            if not new_dir.exists():
+                continue
+            # --no-index so untracked build output is compared at all;
+            # --binary or the woff2 fonts arrive as placeholders and git apply
+            # rejects the whole patch; --no-renames because asset filenames
+            # carry a content hash, so every rebuilt file looks like a rename of
+            # the one it replaced and git emits rename hunks that cannot apply.
+            diff = git("diff", "--no-index", "--binary", "--no-renames",
+                       str(old_dir), str(new_dir), check=False)
+            # git renders an absolute path as "a/home/user/..." — the leading
+            # slash is consumed by the a/ prefix — so the replacement has to
+            # match without it, or the result is "aoneapp_control/..." and every
+            # path in the patch is wrong by one character.
+            for absolute in (old_dir, new_dir):
+                diff = diff.replace(str(absolute).lstrip("/"), f"{app}/{relative}")
+            parts.append(_usable_sections(diff))
 
     # The agent applies from apps/<app> in the container, which knows nothing
     # about this monorepo, so the prefixes have to go.
@@ -293,11 +379,32 @@ def update_sites(group: str):
     sees — and the one that restarts them.
     """
     info = press("press.api.bench.deploy_information", {"name": group})["message"]
-    for site in info.get("sites") or []:
-        name = site["name"]
+    sites = [s["name"] for s in info.get("sites") or []]
+    for name in sites:
         print(f"  updating {name}")
         press("press.api.site.update", {"name": name}, timeout=300)
-    print("Sites are moving; each restarts as it lands.")
+
+    # A site returns 503 while it moves, so "the call succeeded" is not the same
+    # as "the site is back". Reporting success at the call and walking away is
+    # how a deploy looks finished while every request is still failing.
+    for name in sites:
+        wait_for_site(name)
+
+
+def wait_for_site(site: str, attempts: int = 45):
+    """Poll a site until it answers again after a move."""
+    url = f"https://{site}/api/method/ping"
+    for _ in range(attempts):
+        try:
+            with urllib.request.urlopen(url, timeout=20) as response:
+                if response.status == 200:
+                    print(f"  {site} is back")
+                    return True
+        except Exception:
+            pass
+        time.sleep(20)
+    print(f"  {site} has not come back yet — check the Frappe Cloud dashboard.")
+    return False
 
 
 def cmd_update_sites(args):
@@ -445,7 +552,8 @@ def main():
     parser.add_argument("command", choices=["status", "push", "revert", "watch", "deploy", "update-sites"])
     parser.add_argument("--group", default=os.environ.get("ONEAPP_BENCH_GROUP", "bench-46799"))
     parser.add_argument("--app", default="oneapp_control")
-    parser.add_argument("--assets", action="store_true", help="include the built SPA")
+    parser.add_argument("--assets", action="store_true",
+                        help="EXPERIMENTAL, currently rejected by the agent; use deploy")
     parser.add_argument("--interval", type=int, default=20)
     parser.add_argument("--apps", nargs="+", default=["oneapp_control", "oneapp"],
                         help="apps to deploy (deploy only)")
