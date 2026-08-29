@@ -192,9 +192,15 @@ Per-tenant rate limiting is ours regardless of transport, enforced on
 - **R2 bucket** with `cdn.4dl.app` bound to it for public objects.
 - **Email Routing** on `t.4dl.app`, catch-all to the `oneapp-email-inbound`
   Worker.
-- **KV namespace** `TENANTS`, mapping tenant slug to `{url, secret}`. Both
-  Workers read it. KV rather than a control-plane call so an outage does not
-  bounce mail.
+- **KV namespace** `TENANTS`, mapping tenant slug to `{url, secret}`. The email
+  worker reads it; the control plane writes it during provisioning. KV rather
+  than a control-plane call so an outage does not bounce mail.
+
+  Put the namespace id and a token with **Workers KV Storage: Edit** in
+  *OneApp Control Settings → Cloudflare KV*. That token is control-plane only and
+  is never pushed to bench config — it could rewrite mail routing for every
+  tenant. If a namespace is ever recreated, `cloudflare.kv.resync_all` rebuilds
+  the map.
 - **AI Gateway** with per-request logging enabled — that is how AI spend gets
   attributed per tenant.
 

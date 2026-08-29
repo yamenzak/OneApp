@@ -360,6 +360,17 @@ doctype(
         column("cb_stripe_set"),
         f("credits_per_currency_unit", "Float", default="100",
           description="Credits granted per unit of currency on a pack purchase."),
+        # Control-plane only. Deliberately NOT pushed to bench groups: a token
+        # that can rewrite the tenant routing map has no business sitting in
+        # config that every tenant site can read.
+        section("sec_cfkv", "Cloudflare KV (control plane only)"),
+        f("cf_kv_namespace_id", label="KV Namespace ID",
+          description="Namespace the email worker reads to route inbound mail."),
+        f("cf_kv_token", "Password", label="KV API Token",
+          description="Needs Workers KV Storage: Edit. Never pushed to tenant benches."),
+        column("cb_cfkv"),
+        f("cf_kv_account_id", label="Cloudflare Account ID",
+          description="Falls back to the account id below when blank."),
         # ------------------------------------------------------------------ #
         # Everything below is pushed to a shard's bench group as common site
         # config, where every tenant site inherits it through frappe.conf.

@@ -118,6 +118,49 @@ def push_site_config(job):
 	return None
 
 
+def register_mail_routing(job):
+	"""Add the tenant to the Cloudflare KV map the email worker reads.
+
+	Without this the worker cannot resolve the tenant and rejects its mail at
+	SMTP time, so it belongs in provisioning rather than in someone's runbook.
+
+	Skipped when KV is unconfigured — a deployment not using inbound mail should
+	still be able to create sites.
+	"""
+	from oneapp_control.cloudflare import kv
+
+	if not kv.is_configured():
+		return None
+
+	try:
+		kv.put_tenant(job.tenant)
+	except kv.KVError as e:
+		# Transient: the site is fine, only inbound mail is not routable yet.
+		raise PressTransientError(f"Cloudflare KV write failed: {e}") from e
+
+	return None
+
+
+def deregister_mail_routing(job):
+	"""Stop accepting mail for an archived tenant."""
+	from oneapp_control.cloudflare import kv
+
+	if not kv.is_configured():
+		return None
+
+	slug = frappe.db.get_value("Tenant", job.tenant, "tenant_slug")
+	try:
+		kv.delete_tenant(slug)
+	except kv.KVError:
+		# Never block an archive on cleanup; resync_all can repair the map.
+		frappe.log_error(
+			title=f"KV deregistration failed for {job.tenant}",
+			message=frappe.get_traceback(),
+		)
+
+	return None
+
+
 def finalise_creation(job):
 	tenant = frappe.get_doc("Tenant", job.tenant)
 	tenant.mark_active(press_site=job.press_site)
@@ -250,6 +293,7 @@ PIPELINES = {
 		("create_site", create_site),
 		("await_agent", await_agent),
 		("push_site_config", push_site_config),
+		("register_mail_routing", register_mail_routing),
 		("finalise_creation", finalise_creation),
 	],
 	"Suspend Site": [
@@ -267,6 +311,7 @@ PIPELINES = {
 		("await_agent", await_agent),
 	],
 	"Archive Site": [
+		("deregister_mail_routing", deregister_mail_routing),
 		("archive_site", archive_site),
 		("await_agent", await_agent),
 		("finalise_archive", finalise_archive),
