@@ -77,6 +77,23 @@ PressClient().apply_patch(
 Or paste the same file into the bench's **Patches** tab in the Frappe Cloud
 dashboard, which needs no API credentials.
 
+### Getting the base right
+
+`git apply` needs exact context, so the patch has to be diffed from **the commit
+the bench is actually running**, not from whatever looks close. Ask press rather
+than infer it:
+
+```python
+info = PressClient().deploy_information("<bench group>")
+# each app carries current_hash; App Release then gives the commit message,
+# which is the monorepo subject line the mirror was synced from
+```
+
+Do not infer the base from the built asset hash. Two commits produce an
+identical bundle whenever neither touched frontend source, so the hash points at
+a range, not a commit — guessing wrong there is what makes the patch fail with
+nothing useful to read, because the Agent Job output is not exposed to the API.
+
 ### The SPA is the part that catches people
 
 `build_assets` runs **Frappe's** bundler, which knows nothing about Vite. A
@@ -96,6 +113,12 @@ Run `npx vite build` in `apps/<app>/frontend` first, or the patch carries a
 stale bundle. Paths are rewritten to be relative to the app repo, because the
 agent applies from `apps/<app>` in the container and knows nothing of this
 monorepo.
+
+`patch_config` is sent as a **nested object, not a JSON string**. Press does not
+parse this one — it calls `.get()` on whatever arrives, so a dumped string comes
+back as a bare HTTP 500 with `{"exc_type": "AttributeError"}` and nothing naming
+the parameter. `bench.update_config` *does* parse its string, which is exactly
+what makes this easy to get wrong; `tests/test_press_payloads.py` pins both.
 
 `press.api.bench.update_inplace` is the sibling: it pulls real app releases onto
 a running bench without building an image. It validates the hashes, so the

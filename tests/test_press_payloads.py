@@ -169,3 +169,55 @@ def test_endpoint_is_not_sent_as_a_parameter(wired):
 	c.site_exists("acme", "frappe.cloud")
 	assert "endpoint" not in sent["body"]
 	assert sent["body"] == {"subdomain": "acme", "domain": "frappe.cloud"}
+
+
+# --------------------------------------------------------------------------- #
+# Which parameters press parses, and which it does not.
+#
+# There is no rule to it. `bench.update_config` json.loads its `config`, so a
+# dict has to be dumped; `bench.apply_patch` does not touch `patch_config` and
+# calls .get() straight on whatever arrives, so a dumped string raises
+# AttributeError server-side. `bench.deploy` does not parse `apps` either, and
+# iterated a JSON string character by character.
+#
+# All three failed the same way from the outside: a bare HTTP 500 naming an
+# exception type and nothing about the parameter. These pin the shapes that were
+# confirmed against the live API.
+# --------------------------------------------------------------------------- #
+
+
+def test_patch_config_is_sent_as_an_object(wired):
+	client, sent = wired
+	client.apply_patch("bench-1", "oneapp_control", patch="diff --git a b\n")
+
+	config = sent["body"]["patch_config"]
+	assert isinstance(config, dict), (
+		"press calls .get() on patch_config without parsing it; a JSON string "
+		"raises AttributeError server-side"
+	)
+	assert config["patch"] == "diff --git a b\n"
+
+
+def test_patch_config_carries_the_targeting_flags(wired):
+	client, sent = wired
+	client.apply_patch("bench-1", "oneapp_control", patch="x", bench="bench-1-000009")
+
+	config = sent["body"]["patch_config"]
+	assert config["patch_bench"] == "bench-1-000009"
+	assert config["patch_all_benches"] is False
+	assert config["patch_latest_deploy"] is True
+
+
+def test_patch_omits_bench_when_not_targeted(wired):
+	# Sending patch_bench=None would target a bench literally named None rather
+	# than falling back to the latest deploy.
+	client, sent = wired
+	client.apply_patch("bench-1", "oneapp_control", patch="x")
+	assert "patch_bench" not in sent["body"]["patch_config"]
+
+
+def test_bench_config_is_still_a_dumped_string(wired):
+	# The counterexample: this one press *does* parse, so it must stay a string.
+	client, sent = wired
+	client.update_bench_config("bench-1", {"a": 1})
+	assert isinstance(sent["body"]["config"], str)

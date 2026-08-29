@@ -324,13 +324,17 @@ class PressClient:
 		if bench:
 			config["patch_bench"] = bench
 
+		# patch_config goes as a nested object, NOT json.dumps'd. Press does not
+		# parse this one — it calls .get() on whatever arrives, so a JSON string
+		# raises AttributeError server-side and comes back as a bare HTTP 500
+		# with {"exc_type": "AttributeError"} and nothing naming the parameter.
+		# (bench.update_config does parse its string, which is exactly why this
+		# is easy to get wrong.) Verified against the live API.
 		return self.call(
 			"press.api.bench.apply_patch",
 			release_group=release_group,
 			app=app,
-			# Sent as JSON: press types this as a dict, and form-encoding a
-			# nested value delivers it as the string "[object Object]".
-			patch_config=json.dumps(config),
+			patch_config=config,
 		) or []
 
 	def update_inplace(self, release_group: str, apps: list[dict], sites: list[str]):
