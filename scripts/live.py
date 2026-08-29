@@ -373,9 +373,15 @@ def cmd_deploy(args):
     # Apps not being updated are pinned to what they already run.
     apps, moving = [], []
     for a in info["apps"]:
-        updating = a["app"] in args.apps and a.get("next_release")
+        # next_release is populated even when it is the release already
+        # deployed, so its presence is not an update — only a difference is.
+        # Treating it as one asks for the hash of a release that is not in the
+        # app's releases list, because press only lists the ones on offer.
+        has_update = a.get("next_release") and a["next_release"] != a.get("current_release")
+        updating = a["app"] in args.apps and has_update
+
         release = a["next_release"] if updating else a.get("current_release")
-        digest = hash_for(a, release) if updating else a.get("current_hash")
+        digest = (hash_for(a, release) if updating else None) or a.get("current_hash")
         if not (release and digest):
             sys.exit(f"No release/hash for {a['app']}; press changed shape.")
         apps.append({"app": a["app"], "source": a["source"], "release": release, "hash": digest})
