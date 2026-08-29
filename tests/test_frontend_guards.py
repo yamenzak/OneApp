@@ -194,3 +194,32 @@ def test_barrel_covers_everything_frappe_ui_exports():
 		f"{len(missing)} frappe-ui components are not in the barrel and so cannot "
 		f"be used: {missing}"
 	)
+
+
+def test_generated_html_shells_are_not_committed():
+	"""Every www/*.html the build emits must be gitignored.
+
+	They carry hashed asset filenames. A committed one looks correct in a diff
+	and then silently points at assets from an older build — the page loads and
+	does nothing, with no error to trace back to the commit that did it.
+	"""
+	import json
+	import re
+
+	gen = (ROOT / "scripts/gen_frontend.py").read_text()
+	ignored = (ROOT / ".gitignore").read_text()
+
+	shells = set()
+	for app, route in re.findall(r'"(\w+)": \{\s*"route": "/(\w+)"', gen):
+		module = "oneapp_control" if app == "oneapp_control" else app
+		shells.add(f"apps/{app}/{module}/www/{route}.html")
+
+	# Plus the copies made after the build.
+	for app, extra in re.findall(r'"(\w+)": \{[^}]*?"shells": (\[[^\]]*\])', gen, re.S):
+		for shell in json.loads(extra):
+			shells.add(f"apps/{app}/{app}/www/{shell['name']}.html")
+
+	assert shells, "no shells found — the parse in this guard has stopped working"
+
+	missing = sorted(s for s in shells if s not in ignored)
+	assert not missing, f"build output is not gitignored: {missing}"
