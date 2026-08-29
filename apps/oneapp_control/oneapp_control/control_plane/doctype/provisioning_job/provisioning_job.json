@@ -1,0 +1,182 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "tenant",
+  "action",
+  "state",
+  "step",
+  "cb_job",
+  "idempotency_key",
+  "attempts",
+  "next_retry_at",
+  "started_at",
+  "finished_at",
+  "sec_press_job",
+  "press_site",
+  "agent_job_id",
+  "agent_job_status",
+  "cb_press_job",
+  "payload",
+  "sec_err",
+  "last_error"
+ ],
+ "fields": [
+  {
+   "default": "PJOB-.YYYY.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming Series",
+   "options": "PJOB-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tenant",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tenant",
+   "options": "Tenant",
+   "reqd": 1
+  },
+  {
+   "fieldname": "action",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Action",
+   "options": "Create Site\nSuspend Site\nResume Site\nBackup Site\nArchive Site\nAdd Domain\nSet Primary Domain\nChange Plan\nMigrate Site",
+   "reqd": 1
+  },
+  {
+   "default": "Requested",
+   "fieldname": "state",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "State",
+   "options": "Requested\nRunning\nAwaiting Agent\nBootstrapping\nSucceeded\nFailed\nCancelled",
+   "reqd": 1
+  },
+  {
+   "description": "Resume cursor. Each step is idempotent.",
+   "fieldname": "step",
+   "fieldtype": "Data",
+   "label": "Step",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_job",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Prevents a retry after timeout from creating a second site.",
+   "fieldname": "idempotency_key",
+   "fieldtype": "Data",
+   "label": "Idempotency Key",
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "attempts",
+   "fieldtype": "Int",
+   "label": "Attempts",
+   "read_only": 1
+  },
+  {
+   "fieldname": "next_retry_at",
+   "fieldtype": "Datetime",
+   "label": "Next Retry At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "started_at",
+   "fieldtype": "Datetime",
+   "label": "Started At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "finished_at",
+   "fieldtype": "Datetime",
+   "label": "Finished At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_press_job",
+   "fieldtype": "Section Break",
+   "label": "Press"
+  },
+  {
+   "fieldname": "press_site",
+   "fieldtype": "Data",
+   "label": "Press Site",
+   "read_only": 1
+  },
+  {
+   "fieldname": "agent_job_id",
+   "fieldtype": "Data",
+   "label": "Agent Job ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "agent_job_status",
+   "fieldtype": "Data",
+   "label": "Agent Job Status",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_press_job",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "payload",
+   "fieldtype": "Code",
+   "label": "Payload",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "sec_err",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Text",
+   "label": "Last Error",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Provisioning Job",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

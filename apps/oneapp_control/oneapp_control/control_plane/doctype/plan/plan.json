@@ -1,0 +1,179 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:plan_code",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "plan_code",
+  "plan_name",
+  "audience",
+  "is_active",
+  "sort_order",
+  "cb_price",
+  "currency",
+  "price_monthly",
+  "price_yearly",
+  "stripe_price_id_monthly",
+  "stripe_price_id_yearly",
+  "sec_quota",
+  "storage_gb",
+  "max_users",
+  "cb_quota",
+  "monthly_credit_grant",
+  "background_workers",
+  "sec_press_plan",
+  "press_site_plan",
+  "description"
+ ],
+ "fields": [
+  {
+   "description": "Stable id, e.g. personal-starter",
+   "fieldname": "plan_code",
+   "fieldtype": "Data",
+   "label": "Plan Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "plan_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Plan Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "audience",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Audience",
+   "options": "Personal\nCommercial",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
+  },
+  {
+   "default": "0",
+   "fieldname": "sort_order",
+   "fieldtype": "Int",
+   "label": "Sort Order"
+  },
+  {
+   "fieldname": "cb_price",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "USD",
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "price_monthly",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Price Monthly"
+  },
+  {
+   "fieldname": "price_yearly",
+   "fieldtype": "Currency",
+   "label": "Price Yearly"
+  },
+  {
+   "fieldname": "stripe_price_id_monthly",
+   "fieldtype": "Data",
+   "label": "Stripe Price ID (Monthly)"
+  },
+  {
+   "fieldname": "stripe_price_id_yearly",
+   "fieldtype": "Data",
+   "label": "Stripe Price ID (Yearly)"
+  },
+  {
+   "fieldname": "sec_quota",
+   "fieldtype": "Section Break",
+   "label": "Quotas"
+  },
+  {
+   "default": "10",
+   "description": "Hard cap enforced at upload.",
+   "fieldname": "storage_gb",
+   "fieldtype": "Int",
+   "label": "Storage Gb"
+  },
+  {
+   "default": "3",
+   "fieldname": "max_users",
+   "fieldtype": "Int",
+   "label": "Max Users"
+  },
+  {
+   "fieldname": "cb_quota",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Non-rollover. Expires at the end of each billing period.",
+   "fieldname": "monthly_credit_grant",
+   "fieldtype": "Float",
+   "label": "Monthly Credit Grant"
+  },
+  {
+   "default": "1",
+   "fieldname": "background_workers",
+   "fieldtype": "Int",
+   "label": "Background Workers"
+  },
+  {
+   "fieldname": "sec_press_plan",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "Overrides the shard default when set.",
+   "fieldname": "press_site_plan",
+   "fieldtype": "Data",
+   "label": "Press Site Plan"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Plan",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "plan_name",
+ "track_changes": 1
+}

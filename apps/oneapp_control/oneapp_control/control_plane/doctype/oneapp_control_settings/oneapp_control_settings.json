@@ -1,0 +1,159 @@
+{
+ "actions": [],
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sec_press_set",
+  "press_api_url",
+  "press_api_key",
+  "press_api_secret",
+  "cb_set1",
+  "default_shard",
+  "tenant_domain",
+  "control_plane_url",
+  "sec_slug",
+  "reserved_slugs",
+  "sec_stripe",
+  "stripe_webhook_secret",
+  "cb_stripe_set",
+  "credits_per_currency_unit",
+  "sec_ai",
+  "ai_gateway_url",
+  "ai_gateway_token",
+  "cb_ai",
+  "ai_markup_multiplier"
+ ],
+ "fields": [
+  {
+   "fieldname": "sec_press_set",
+   "fieldtype": "Section Break",
+   "label": "Frappe Cloud"
+  },
+  {
+   "default": "https://frappecloud.com",
+   "fieldname": "press_api_url",
+   "fieldtype": "Data",
+   "label": "Press API URL"
+  },
+  {
+   "fieldname": "press_api_key",
+   "fieldtype": "Data",
+   "label": "Press API Key"
+  },
+  {
+   "fieldname": "press_api_secret",
+   "fieldtype": "Password",
+   "label": "Press API Secret"
+  },
+  {
+   "fieldname": "cb_set1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_shard",
+   "fieldtype": "Link",
+   "label": "Default Shard",
+   "options": "Shard"
+  },
+  {
+   "default": "4dl.app",
+   "fieldname": "tenant_domain",
+   "fieldtype": "Data",
+   "label": "Tenant Domain",
+   "reqd": 1
+  },
+  {
+   "description": "Base URL tenant sites call back on.",
+   "fieldname": "control_plane_url",
+   "fieldtype": "Data",
+   "label": "Control Plane Url"
+  },
+  {
+   "fieldname": "sec_slug",
+   "fieldtype": "Section Break",
+   "label": "Tenant naming"
+  },
+  {
+   "description": "Additional comma or newline separated slugs to block.",
+   "fieldname": "reserved_slugs",
+   "fieldtype": "Small Text",
+   "label": "Reserved Slugs"
+  },
+  {
+   "fieldname": "sec_stripe",
+   "fieldtype": "Section Break",
+   "label": "Stripe"
+  },
+  {
+   "description": "Signing secret for the Stripe webhook endpoint.",
+   "fieldname": "stripe_webhook_secret",
+   "fieldtype": "Password",
+   "label": "Stripe Webhook Secret"
+  },
+  {
+   "fieldname": "cb_stripe_set",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "100",
+   "description": "Credits granted per unit of currency on a pack purchase.",
+   "fieldname": "credits_per_currency_unit",
+   "fieldtype": "Float",
+   "label": "Credits Per Currency Unit"
+  },
+  {
+   "fieldname": "sec_ai",
+   "fieldtype": "Section Break",
+   "label": "AI Gateway"
+  },
+  {
+   "fieldname": "ai_gateway_url",
+   "fieldtype": "Data",
+   "label": "AI Gateway URL"
+  },
+  {
+   "fieldname": "ai_gateway_token",
+   "fieldtype": "Password",
+   "label": "AI Gateway Token"
+  },
+  {
+   "fieldname": "cb_ai",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1.5",
+   "description": "Applied to measured provider cost when converting to credits.",
+   "fieldname": "ai_markup_multiplier",
+   "fieldtype": "Float",
+   "label": "Ai Markup Multiplier"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "OneApp Control Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

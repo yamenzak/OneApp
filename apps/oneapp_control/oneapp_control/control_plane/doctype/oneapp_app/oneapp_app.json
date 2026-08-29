@@ -1,0 +1,123 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:app_code",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "app_code",
+  "app_label",
+  "module",
+  "is_active",
+  "cb_app",
+  "availability",
+  "icon",
+  "route",
+  "sort_order",
+  "sec_desc",
+  "description"
+ ],
+ "fields": [
+  {
+   "description": "Stable id, e.g. crm",
+   "fieldname": "app_code",
+   "fieldtype": "Data",
+   "label": "App Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "app_label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "App Label",
+   "reqd": 1
+  },
+  {
+   "description": "Frappe module inside the oneapp app that implements this.",
+   "fieldname": "module",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Module",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "cb_app",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "General",
+   "description": "General: every tenant. Restricted: only via App Entitlement.",
+   "fieldname": "availability",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Availability",
+   "options": "General\nRestricted",
+   "reqd": 1
+  },
+  {
+   "description": "Icon name rendered by the launcher.",
+   "fieldname": "icon",
+   "fieldtype": "Data",
+   "label": "Icon"
+  },
+  {
+   "description": "SPA route, e.g. /crm",
+   "fieldname": "route",
+   "fieldtype": "Data",
+   "label": "Route"
+  },
+  {
+   "default": "0",
+   "fieldname": "sort_order",
+   "fieldtype": "Int",
+   "label": "Sort Order"
+  },
+  {
+   "fieldname": "sec_desc",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "OneApp App",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "app_label",
+ "track_changes": 1
+}

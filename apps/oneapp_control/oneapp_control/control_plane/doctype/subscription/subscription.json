@@ -1,0 +1,155 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "tenant",
+  "plan",
+  "status",
+  "interval",
+  "cb_stripe",
+  "stripe_customer_id",
+  "stripe_subscription_id",
+  "cancel_at_period_end",
+  "last_invoice_id",
+  "sec_period",
+  "current_period_start",
+  "current_period_end",
+  "cb_period",
+  "last_grant_period_end"
+ ],
+ "fields": [
+  {
+   "default": "SUB-.YYYY.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming Series",
+   "options": "SUB-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tenant",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tenant",
+   "options": "Tenant",
+   "reqd": 1
+  },
+  {
+   "fieldname": "plan",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Plan",
+   "options": "Plan",
+   "reqd": 1
+  },
+  {
+   "default": "Incomplete",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Incomplete\nTrialing\nActive\nPast Due\nCanceled",
+   "reqd": 1
+  },
+  {
+   "default": "Monthly",
+   "fieldname": "interval",
+   "fieldtype": "Select",
+   "label": "Interval",
+   "options": "Monthly\nYearly",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_stripe",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "stripe_customer_id",
+   "fieldtype": "Data",
+   "label": "Stripe Customer ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stripe_subscription_id",
+   "fieldtype": "Data",
+   "label": "Stripe Subscription ID",
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "cancel_at_period_end",
+   "fieldtype": "Check",
+   "label": "Cancel At Period End"
+  },
+  {
+   "fieldname": "last_invoice_id",
+   "fieldtype": "Data",
+   "label": "Last Stripe Invoice ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_period",
+   "fieldtype": "Section Break",
+   "label": "Current period"
+  },
+  {
+   "fieldname": "current_period_start",
+   "fieldtype": "Datetime",
+   "label": "Current Period Start",
+   "read_only": 1
+  },
+  {
+   "description": "Non-rollover grants expire here.",
+   "fieldname": "current_period_end",
+   "fieldtype": "Datetime",
+   "label": "Current Period End",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_period",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Guards against double-granting on webhook replay.",
+   "fieldname": "last_grant_period_end",
+   "fieldtype": "Datetime",
+   "label": "Last Grant Period End",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Subscription",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

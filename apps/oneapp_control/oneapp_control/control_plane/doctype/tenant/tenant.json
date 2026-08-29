@@ -1,0 +1,235 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:tenant_slug",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "tenant_slug",
+  "tenant_name",
+  "status",
+  "owner_email",
+  "cb_place",
+  "shard",
+  "site_name",
+  "press_site",
+  "primary_domain",
+  "sec_plan",
+  "plan",
+  "subscription",
+  "customer",
+  "cb_plan",
+  "trial_ends_on",
+  "provisioned_on",
+  "suspended_on",
+  "archived_on",
+  "sec_usage",
+  "storage_used_bytes",
+  "storage_quota_gb_override",
+  "cb_usage",
+  "user_count",
+  "usage_synced_on",
+  "sec_secret",
+  "hmac_secret",
+  "suspended_reason"
+ ],
+ "fields": [
+  {
+   "description": "Subdomain label. Immutable once provisioned.",
+   "fieldname": "tenant_slug",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tenant Slug",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "tenant_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tenant Name",
+   "reqd": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nProvisioning\nActive\nSuspended\nArchived\nFailed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "owner_email",
+   "fieldtype": "Data",
+   "label": "Owner Email",
+   "options": "Email",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_place",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "shard",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Shard",
+   "options": "Shard"
+  },
+  {
+   "description": "Permanent internal address. Never the custom domain.",
+   "fieldname": "site_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Site Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "press_site",
+   "fieldtype": "Data",
+   "label": "Press Site",
+   "read_only": 1
+  },
+  {
+   "description": "Customer-owned domain, once verified.",
+   "fieldname": "primary_domain",
+   "fieldtype": "Data",
+   "label": "Primary Domain"
+  },
+  {
+   "fieldname": "sec_plan",
+   "fieldtype": "Section Break",
+   "label": "Plan and billing"
+  },
+  {
+   "fieldname": "plan",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Plan",
+   "options": "Plan"
+  },
+  {
+   "fieldname": "subscription",
+   "fieldtype": "Link",
+   "label": "Subscription",
+   "options": "Subscription",
+   "read_only": 1
+  },
+  {
+   "description": "ERPNext Customer. Created on first successful payment.",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "cb_plan",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "trial_ends_on",
+   "fieldtype": "Date",
+   "label": "Trial Ends On"
+  },
+  {
+   "fieldname": "provisioned_on",
+   "fieldtype": "Datetime",
+   "label": "Provisioned On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "suspended_on",
+   "fieldtype": "Datetime",
+   "label": "Suspended On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "archived_on",
+   "fieldtype": "Datetime",
+   "label": "Archived On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_usage",
+   "fieldtype": "Section Break",
+   "label": "Usage"
+  },
+  {
+   "default": "0",
+   "fieldname": "storage_used_bytes",
+   "fieldtype": "Float",
+   "label": "Storage Used Bytes",
+   "read_only": 1
+  },
+  {
+   "description": "Overrides the plan quota when non-zero.",
+   "fieldname": "storage_quota_gb_override",
+   "fieldtype": "Int",
+   "label": "Storage Quota Gb Override"
+  },
+  {
+   "fieldname": "cb_usage",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "user_count",
+   "fieldtype": "Int",
+   "label": "User Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "usage_synced_on",
+   "fieldtype": "Datetime",
+   "label": "Usage Synced On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_secret",
+   "fieldtype": "Section Break",
+   "label": "Integration"
+  },
+  {
+   "description": "Shared secret for signed calls with this tenant's site.",
+   "fieldname": "hmac_secret",
+   "fieldtype": "Password",
+   "label": "Hmac Secret"
+  },
+  {
+   "fieldname": "suspended_reason",
+   "fieldtype": "Small Text",
+   "label": "Suspended Reason"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Tenant",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "tenant_name",
+ "track_changes": 1
+}

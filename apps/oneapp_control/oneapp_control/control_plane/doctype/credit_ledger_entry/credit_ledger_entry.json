@@ -1,0 +1,130 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "tenant",
+  "entry_type",
+  "credits",
+  "cb_cle",
+  "expires_on",
+  "consumed_from",
+  "reservation",
+  "sec_src",
+  "source_doctype",
+  "source_name",
+  "cb_src",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "default": "CLE-.YYYY.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming Series",
+   "options": "CLE-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tenant",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tenant",
+   "options": "Tenant",
+   "reqd": 1
+  },
+  {
+   "fieldname": "entry_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Entry Type",
+   "options": "Grant\nPurchase\nSpend\nRefund\nExpiry\nAdjustment",
+   "reqd": 1
+  },
+  {
+   "description": "Signed. Positive adds, negative consumes.",
+   "fieldname": "credits",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Credits",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_cle",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Grants only. Blank means it never expires.",
+   "fieldname": "expires_on",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Expires On"
+  },
+  {
+   "description": "For Spend and Expiry rows, the grant they draw down.",
+   "fieldname": "consumed_from",
+   "fieldtype": "Link",
+   "label": "Consumed From",
+   "options": "Credit Ledger Entry"
+  },
+  {
+   "fieldname": "reservation",
+   "fieldtype": "Link",
+   "label": "Reservation",
+   "options": "Credit Reservation"
+  },
+  {
+   "fieldname": "sec_src",
+   "fieldtype": "Section Break",
+   "label": "Source"
+  },
+  {
+   "fieldname": "source_doctype",
+   "fieldtype": "Link",
+   "label": "Source Doctype",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "source_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Source Name",
+   "options": "source_doctype"
+  },
+  {
+   "fieldname": "cb_src",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Credit Ledger Entry",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
