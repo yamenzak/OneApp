@@ -256,6 +256,28 @@ So separation costs a second server, and until there is one:
 Tenants are separated by `Tenant.environment` regardless, which is what keeps the
 tooling off a bench once a customer lands on it.
 
+### Splitting later is supported, and costs a backup-and-restore window
+
+Running on one bench now is not a corner we are painting ourselves into. The
+supported move is **by server**, which is also the split worth paying for:
+
+1. `add_server_to_release_group(name, server)` puts the new machine in the group.
+   It needs at least one successful deploy there first.
+2. `change_server(name, server)` creates a **Site Migration** and moves the site.
+
+Be clear about the cost, because "migration" sounds livelier than it is. Site
+Migration runs: deactivate on source → back up → restore on destination →
+restore on destination proxy → remove from source proxy → archive source →
+reactivate. **The site is offline for all of it**, so the downtime is a backup
+plus a restore — minutes for a small site, longer as it grows. Move workspaces
+while they are small.
+
+Moving between two groups of the *same version* on one server is the thing that
+is not supported. `version_upgrade` is for version progression — it assumes the
+destination is a later version, and raises `IndexError` when it is not. Splitting
+by server sidesteps this entirely, which is another reason the split is a server
+and not a group.
+
 The control plane is the exception that forces the split. The whole point of the
 development tooling is that it rewrites code on the staging control site — and a
 patch applies to a *bench*, so a production control site sharing that bench
