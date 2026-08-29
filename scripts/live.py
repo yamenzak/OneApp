@@ -583,7 +583,7 @@ def main():
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=["status", "push", "revert", "watch", "deploy", "update-sites"])
-    parser.add_argument("--group", default=os.environ.get("ONEAPP_BENCH_GROUP", "bench-46799"))
+    parser.add_argument("--group", default=os.environ.get("ONEAPP_BENCH_GROUP", "bench-46810"))
     parser.add_argument("--app", default="oneapp_control")
     parser.add_argument("--assets", action="store_true",
                         help="EXPERIMENTAL, currently rejected by the agent; use deploy")
