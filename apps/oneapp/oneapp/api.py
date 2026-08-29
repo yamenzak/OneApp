@@ -14,15 +14,24 @@ from oneapp.oneapp_core.storage import quota
 @frappe.whitelist()
 def session():
 	"""Everything the shell needs on boot, in one round trip."""
+	from oneapp.oneapp_core.workspace import OWNER_ROLE, SUPPORT_ROLE
+
 	state = sync.state()
 	user = frappe.session.user
+	roles = set(frappe.get_roles(user))
 
 	return {
 		"user": {
 			"name": user,
 			"full_name": frappe.utils.get_fullname(user),
-			"roles": frappe.get_roles(user),
-			"is_admin": "System Manager" in frappe.get_roles(user),
+			"roles": sorted(roles),
+			# Two different questions, and the old single `is_admin` answered
+			# the wrong one for the SPA: it keyed on System Manager, which the
+			# workspace owner deliberately is not (DECISIONS §8). So the person
+			# who actually administers the workspace read as not an admin, and
+			# our own support read as one.
+			"is_workspace_admin": bool(roles & {OWNER_ROLE, SUPPORT_ROLE}),
+			"is_support": SUPPORT_ROLE in roles,
 		},
 		"tenant": {
 			"name": state.get("tenant"),

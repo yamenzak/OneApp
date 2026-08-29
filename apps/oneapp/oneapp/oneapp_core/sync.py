@@ -104,6 +104,7 @@ def sync_from_control_plane() -> dict:
 		(payload.get("owner") or {}).get("email") or "",
 	)
 	sync_email_account()
+	sync_branding(tenant)
 
 	return {
 		"ok": True,
@@ -112,6 +113,34 @@ def sync_from_control_plane() -> dict:
 		"members_created": people["created"],
 		"members_disabled": people["disabled"],
 	}
+
+
+def sync_branding(tenant: dict) -> None:
+	"""Name the workspace after itself, and keep signup shut.
+
+	Without this a tenant's sign-in page carries Frappe's logo and the word
+	"Frappe" — the one screen every user of the workspace sees before they are
+	anyone, on a product whose whole premise is that they never see Frappe.
+	Provisioning cannot do it: the control plane has no route into this database.
+
+	Only ever fills a blank. The customer owns these afterwards (see
+	oneapp_core/workspace.py), and a sync that reset their logo every hour would
+	be worse than one that never set it.
+	"""
+	name = (tenant.get("name") or "").strip()
+	if name:
+		for doctype, field in (("Website Settings", "app_name"),
+		                       ("System Settings", "app_name"),
+		                       ("System Settings", "otp_issuer_name")):
+			if not frappe.db.get_single_value(doctype, field):
+				frappe.db.set_single_value(doctype, field, name)
+
+	# Not a default an owner may change back. Frappe's signup makes an enabled
+	# Website User that the control plane never counted a seat for — and that
+	# this same sync disables again within the hour, since it reconciles against
+	# the member list. See workspace.joining().
+	if not frappe.db.get_single_value("Website Settings", "disable_signup"):
+		frappe.db.set_single_value("Website Settings", "disable_signup", 1)
 
 
 def sync_email_account():

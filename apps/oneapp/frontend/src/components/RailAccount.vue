@@ -20,6 +20,8 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Avatar, Dropdown, Tooltip } from '@/ui'
 import { useAppearance } from '../lib/appearance'
+import { openSettings } from '../lib/settings'
+import { session } from '../lib/session'
 import { fullName, userImage } from '../lib/user'
 
 // The rail's foot, matching where every frappe-ui shell puts the account. The
@@ -37,6 +39,12 @@ const options = computed(() => [
     icon: 'lucide-circle-user',
     onClick: () => router.push({ name: 'Account' }),
   },
+  // Only an admin sees it: the settings behind it are the workspace's, and a
+  // member who opens a dialog every field of which refuses them has been shown
+  // a door that does not open.
+  ...(session.isAdmin
+    ? [{ label: 'Workspace settings', icon: 'lucide-settings', onClick: () => openSettings() }]
+    : []),
   menuGroup.value,
   {
     label: 'Log out',

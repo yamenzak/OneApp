@@ -214,6 +214,29 @@ Stripe webhook events (including replaying a failed one), app entitlements per
 workspace, and a workspace's subscription and credit ledger. Regions, storage
 buckets, plans and the app registry could be read and not written.
 
+### The customer's half
+
+The same rule points the other way for a workspace. A tenant site is a real
+Frappe site, so the name and logo on its sign-in page, who may sign in and how,
+and what a date looks like all already exist — behind a desk its owner never
+sees. Those are the customer's, and they are in OneSpace under Workspace
+settings.
+
+`oneapp_core/workspace.py` is one object serving as both the spec the SPA renders
+and the allowlist the write path checks, so a setting is writable exactly when it
+is visible and there is no code path for anything else. The owner is deliberately
+not a System Manager, so every write is `ignore_permissions` behind a single role
+check.
+
+What stays ours is the platform: the scheduler, backups, file size limits (that
+is a billed quota), guest uploads, telemetry, the mail footer and tracebacks. A
+workspace that can stop its own scheduler stops its own email, backups and syncs,
+and cannot see why — and we get the ticket.
+
+`docs/WORKSPACE-SETTINGS.md` records every field considered, on both sides, with
+the reason. `tests/test_workspace_settings.py` fails the build if anything on the
+platform's side appears in the spec.
+
 ### What the operator does *not* get to change
 
 Reachable is not the same as editable. A shard's press identity — server, bench

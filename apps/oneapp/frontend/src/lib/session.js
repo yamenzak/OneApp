@@ -40,6 +40,17 @@ export const session = {
     return Boolean(this.user?.name && this.user.name !== 'Guest')
   },
 
+  /**
+   * Whether this person administers the workspace — the owner, an Admin member,
+   * or our support signed in as Administrator.
+   *
+   * Not "is a System Manager": the workspace owner deliberately is not one, so
+   * that question answers about us rather than about them.
+   */
+  get isAdmin() {
+    return Boolean(this.user?.is_workspace_admin)
+  },
+
   hasApp(appCode) {
     return this.apps.some((a) => a.app_code === appCode)
   },

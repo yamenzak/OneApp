@@ -5,6 +5,7 @@
       :apps="railApps"
       :active-app="activeAppCode"
       :nav-items="nav"
+      :menu-items="menuItems"
       :user="identity"
     >
       <template #sidebar>
@@ -17,6 +18,11 @@
 
       <router-view :key="$route.fullPath" />
     </AppShell>
+
+    <!-- Outside the shell so it survives a layout swap, and a dialog rather
+         than a route because settings overlay whatever you were doing —
+         closing should put you back, not navigate you away. -->
+    <SettingsShell v-if="session.loaded && session.isLoggedIn" />
 
     <div v-else-if="sessionResource.error" class="grid h-screen place-items-center p-6">
       <div class="max-w-sm text-center">
@@ -42,7 +48,9 @@ import { FrappeUIProvider, Button, LoadingIndicator, usePageMeta } from '@/ui'
 import AppShell from './components/AppShell.vue'
 import AppSidebar from './components/AppSidebar.vue'
 import RailAccount from './components/RailAccount.vue'
+import SettingsShell from './components/settings/SettingsShell.vue'
 import { useNav } from './lib/nav'
+import { openSettings } from './lib/settings'
 import { session, sessionResource } from './lib/session'
 import { fullName, email, userImage } from './lib/user'
 
@@ -66,6 +74,14 @@ const activeAppCode = computed(() => route.params.appCode || '')
 // an app that declares more sections than the bar has slots keeps the rest
 // reachable in the sheet rather than losing them.
 const { nav } = useNav()
+
+// A phone has no rail, so the account menu's entries have to reach the More
+// sheet instead — the same gap the console hit with its own settings.
+const menuItems = computed(() =>
+  session.isAdmin
+    ? [{ label: 'Workspace settings', icon: 'lucide-settings', onClick: () => openSettings() }]
+    : [],
+)
 
 const identity = computed(() => ({
   name: fullName.value,
