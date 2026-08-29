@@ -13,6 +13,16 @@ export default defineConfig({
   plugins: [
     frappeui({
       frontendRoute: '/admin',
+      // Given explicitly rather than inferred. frappe-ui derives these by
+      // walking up for a bench layout (a directory with both sites/ and apps/),
+      // which exists on Frappe Cloud but not in this monorepo — so inference
+      // returns null here and the production build fails with
+      // "indexHtmlPath is required". Stating them makes the build identical
+      // everywhere: monorepo, bench, and CI.
+      buildConfig: {
+        outDir: path.resolve(__dirname, '../oneapp_control/public/frontend'),
+        indexHtmlPath: '../oneapp_control/www/admin.html',
+      },
       frappeTypes: {
         input: {
   'oneapp_control': [

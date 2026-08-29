@@ -8,3 +8,11 @@ dist/
 .DS_Store
 .env
 .env.*
+
+# Frontend build output — produced by the Vite build on Frappe Cloud, never committed.
+apps/*/*/public/frontend/
+apps/*/frontend/auto-imports.d.ts
+apps/*/frontend/components.d.ts
+apps/*/frontend/*.d.ts
+apps/oneapp/oneapp/www/one.html
+apps/oneapp_control/oneapp_control/www/admin.html

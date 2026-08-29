@@ -9,11 +9,15 @@
  * server serves index.html without Jinja and would otherwise crash on boot.
  */
 
-const boot = window.boot || window.frappe?.boot || {}
+// The plugin emits `window["<key>"] = <value>` for each key in the page's boot
+// context — so `boot.site_name` lands as `window.site_name`, not under a `boot`
+// object. Reading window.boot would silently yield undefined and leave the
+// socket pointed at the wrong host.
+const read = (key, fallback) => (window[key] !== undefined ? window[key] : fallback)
 
-export const siteName = boot.site_name || window.location.hostname
-export const socketioPort = boot.socketio_port || 9000
-export const csrfToken = boot.csrf_token || window.csrf_token || null
+export const siteName = read('site_name', window.location.hostname)
+export const socketioPort = read('socketio_port', 9000)
+export const csrfToken = read('csrf_token', null)
 export const isDev = import.meta.env.DEV
 
-export default boot
+export default { siteName, socketioPort, csrfToken, isDev }
