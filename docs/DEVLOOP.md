@@ -60,6 +60,10 @@ through frappe-ui's plugin, so the session cookie and CSRF token are real.
 `git apply` **inside the running container**, optionally rebuilds assets, and
 restarts the bench. No image build, no bench move.
 
+```bash
+scripts/patch.sh oneapp_control > fix.patch     # everything not yet on origin/main
+```
+
 ```python
 from oneapp_control.press.client import PressClient
 
@@ -67,9 +71,31 @@ PressClient().apply_patch(
     release_group="<bench group>",
     app="oneapp_control",
     patch=open("fix.patch").read(),
-    build_assets=False,   # True only if the diff needs the asset bundler
 )
 ```
+
+Or paste the same file into the bench's **Patches** tab in the Frappe Cloud
+dashboard, which needs no API credentials.
+
+### The SPA is the part that catches people
+
+`build_assets` runs **Frappe's** bundler, which knows nothing about Vite. A
+patch carrying only frontend *source* therefore changes nothing you can see, and
+reports success while doing it.
+
+So the built output has to travel inside the patch. `scripts/patch.sh` does
+that, and two details there are load-bearing:
+
+- `public/frontend/` and `www/*.html` are gitignored — correctly, they are build
+  output — so they have to be forced into the diff explicitly.
+- The diff needs `--binary`. The bundle ships woff2 fonts, and without it git
+  writes a placeholder instead of the content and `git apply` refuses the whole
+  patch with "cannot apply binary patch … without full index line".
+
+Run `npx vite build` in `apps/<app>/frontend` first, or the patch carries a
+stale bundle. Paths are rewritten to be relative to the app repo, because the
+agent applies from `apps/<app>` in the container and knows nothing of this
+monorepo.
 
 `press.api.bench.update_inplace` is the sibling: it pulls real app releases onto
 a running bench without building an image. It validates the hashes, so the
