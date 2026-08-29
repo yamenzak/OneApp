@@ -1,0 +1,87 @@
+{
+ "actions": [],
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "interval",
+  "stripe_price_id",
+  "unit_amount",
+  "currency",
+  "cb_price_state",
+  "is_current",
+  "created_on",
+  "archived_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "interval",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Interval",
+   "options": "Monthly\nYearly",
+   "reqd": 1
+  },
+  {
+   "fieldname": "stripe_price_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Stripe Price ID",
+   "read_only": 1
+  },
+  {
+   "description": "What Stripe charges. Ours to display, Stripe's to enforce.",
+   "fieldname": "unit_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Unit Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Data",
+   "label": "Currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_price_state",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "The price new subscriptions are sold at. Exactly one per interval; the rest are grandfathered.",
+   "fieldname": "is_current",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Current",
+   "read_only": 1
+  },
+  {
+   "fieldname": "created_on",
+   "fieldtype": "Datetime",
+   "label": "Created On",
+   "read_only": 1
+  },
+  {
+   "description": "Archived in Stripe, so it cannot be sold again. Existing subscriptions keep billing on it \u2014 that is the point.",
+   "fieldname": "archived_on",
+   "fieldtype": "Datetime",
+   "label": "Archived On",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Plan Price",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

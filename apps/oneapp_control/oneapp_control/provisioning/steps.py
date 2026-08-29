@@ -94,10 +94,9 @@ def create_site(job):
 	tenant = frappe.get_doc("Tenant", job.tenant)
 	shard = frappe.get_doc("Shard", tenant.shard)
 
-	plan = None
-	if tenant.plan:
-		plan = frappe.db.get_value("Plan", tenant.plan, "press_site_plan")
-	plan = plan or shard.press_site_plan
+	# The site plan the subscription bought, not the one the Plan doc names
+	# today — the same grandfathering that applies to storage and seats.
+	plan = tenant.terms.get("press_site_plan") or shard.press_site_plan
 
 	result = get_client().create_site(
 		subdomain=tenant.tenant_slug,

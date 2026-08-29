@@ -116,6 +116,37 @@ doctype(
 # --------------------------------------------------------------------------- #
 # Plan — quotas only. Never feature flags.
 # --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# Plan Price — every Stripe Price a plan has ever had.
+#
+# Stripe Prices are immutable in amount and currency, so changing what a plan
+# costs means minting a new Price and leaving the old one billing whoever is
+# already on it. That is how price grandfathering works, and it only works if
+# the old ids survive: this table is both the history an operator reads and the
+# reverse lookup a webhook needs to answer "which plan is this price?" when a
+# subscription changes underneath us.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Plan Price",
+    istable=1,
+    fields=[
+        f("interval", "Select", options="Monthly\nYearly", reqd=1, in_list_view=1),
+        f("stripe_price_id", label="Stripe Price ID", in_list_view=1, read_only=1),
+        f("unit_amount", "Currency", in_list_view=1, read_only=1,
+          description="What Stripe charges. Ours to display, Stripe's to enforce."),
+        f("currency", "Data", read_only=1),
+        column("cb_price_state"),
+        f("is_current", "Check", default="0", in_list_view=1, read_only=1,
+          description="The price new subscriptions are sold at. Exactly one per "
+                      "interval; the rest are grandfathered."),
+        f("created_on", "Datetime", read_only=1),
+        f("archived_on", "Datetime", read_only=1,
+          description="Archived in Stripe, so it cannot be sold again. Existing "
+                      "subscriptions keep billing on it — that is the point."),
+    ],
+)
+
+
 doctype(
     "Plan",
     autoname="field:plan_code",
@@ -131,8 +162,18 @@ doctype(
         f("currency", "Link", options="Currency", default="USD"),
         f("price_monthly", "Currency", in_list_view=1),
         f("price_yearly", "Currency"),
-        f("stripe_price_id_monthly", label="Stripe Price ID (Monthly)"),
-        f("stripe_price_id_yearly", label="Stripe Price ID (Yearly)"),
+        # Written by the Stripe sync, never by hand. Saving a plan creates the
+        # product and prices it needs; a changed amount mints a new price and
+        # archives the old one. Two people typing the same id into two systems
+        # is how a page advertises one number while the card is charged another.
+        f("stripe_product_id", label="Stripe Product ID", read_only=1),
+        f("stripe_price_id_monthly", label="Stripe Price ID (Monthly)", read_only=1,
+          description="The current monthly price. History is in Prices below."),
+        f("stripe_price_id_yearly", label="Stripe Price ID (Yearly)", read_only=1),
+        f("sync_error", "Small Text", read_only=1,
+          description="Why the last sync to Stripe did not finish. Saving again "
+                      "retries; the plan stays sellable on whatever prices it "
+                      "already has."),
         section("sec_quota", "Quotas"),
         f("storage_gb", "Int", default="10", description="Hard cap enforced at upload."),
         f("max_users", "Int", default="3"),
@@ -150,6 +191,10 @@ doctype(
         f("press_site_plan", label="Press Site Plan",
           description="Overrides the shard default when set."),
         f("description", "Small Text"),
+        section("sec_prices", "Prices"),
+        f("prices", "Table", options="Plan Price", read_only=1,
+          description="Every Stripe price this plan has had. Subscriptions sold "
+                      "on an older one keep billing on it."),
     ],
 )
 
@@ -390,6 +435,32 @@ doctype(
         column("cb_period"),
         f("last_grant_period_end", "Datetime", read_only=1,
           description="Guards against double-granting on webhook replay."),
+        # ------------------------------------------------------------------ #
+        # The plan's terms as they were when this subscription was sold.
+        #
+        # Enforcement reads these, not the Plan doc. Quotas read live meant that
+        # editing a plan silently re-quotaed everyone already on it — someone who
+        # bought 50GB could wake up with 20GB because a price sheet was being
+        # tidied. Stripe already grandfathers the price by leaving the old Price
+        # on the subscription; this is the same promise for everything the price
+        # bought.
+        #
+        # Same field names as Plan, so the copy is field-for-field and a reader
+        # can see at a glance that nothing was reinterpreted on the way across.
+        # `oneapp_control.billing.quotas` is the only thing that reads them.
+        # ------------------------------------------------------------------ #
+        section("sec_terms", "Plan terms at purchase"),
+        f("storage_gb", "Int", default="0"),
+        f("database_gb", "Int", default="0"),
+        f("max_users", "Int", default="0"),
+        column("cb_terms"),
+        f("monthly_credit_grant", "Float", default="0"),
+        f("background_workers", "Int", default="0"),
+        f("press_site_plan", label="Press Site Plan"),
+        f("terms_captured_on", "Datetime", read_only=1,
+          description="When these were copied from the plan. Empty means this "
+                      "subscription predates the snapshot and still reads the "
+                      "plan live."),
     ],
 )
 

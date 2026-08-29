@@ -14,6 +14,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 CUSTOMER = ROOT / "apps/oneapp_control/oneapp_control/api/customer.py"
+CHECKOUT = ROOT / "apps/oneapp_control/oneapp_control/billing/checkout.py"
 TENANT_API = ROOT / "apps/oneapp_control/oneapp_control/api/tenant.py"
 SYNC = ROOT / "apps/oneapp/oneapp/oneapp_core/sync.py"
 
@@ -256,13 +257,18 @@ def test_a_retired_plan_is_still_shown_to_whoever_is_on_it():
     assert "retired" in body
 
 
+QUOTAS = ROOT / "apps/oneapp_control/oneapp_control/billing/quotas.py"
+
+
 def test_a_plan_too_small_for_the_workspace_is_named_not_just_refused():
     """"storage" tells someone what to clear; a disabled button tells them to
     write in."""
     body = function(CUSTOMER, "plans")
     assert '"blocked_by"' in body
+
+    blockers = function(QUOTAS, "blockers")
     for dimension in ('"storage"', '"database"', '"seats"'):
-        assert dimension in body, dimension
+        assert dimension in blockers, dimension
 
     page = (
         ROOT / "apps/oneapp_control/frontend/src/pages/account/AccountPlan.vue"
@@ -273,20 +279,36 @@ def test_a_plan_too_small_for_the_workspace_is_named_not_just_refused():
 def test_seat_capacity_is_measured_the_same_way_everywhere():
     """The plan page and the invite check must agree on what a seat is, or a
     plan reads as available and refuses the first invite."""
-    plans_body = function(CUSTOMER, "plans")
-    assert "1 + len(tenant.members or [])" in plans_body
+    assert "1 + len(doc.members or [])" in function(QUOTAS, "blockers")
 
     seats_body = function(CUSTOMER, "_seats", code_only=True)
     assert "1 + len(" in seats_body
 
 
-def test_changing_plan_goes_through_stripe():
-    """Proration, tax and payment methods are Stripe's; duplicating them here
-    is how the two disagree about what someone was charged."""
+def test_the_page_and_the_switch_run_the_same_fit_check():
+    """The reason plan changes do not go through Stripe's billing portal.
+
+    The portal cannot know our quotas, so it would sell a downgrade to a
+    workspace already holding more than the smaller plan allows — and the
+    customer finds out afterwards, over quota. One implementation, called from
+    both, is what stops the page offering something the switch refuses and, more
+    importantly, the switch accepting something the page refused.
+    """
+    assert "quotas.blockers" in function(CUSTOMER, "plans")
+    assert "quotas.blockers" in function(CHECKOUT, "change_plan")
+
+
+def test_the_portal_keeps_cards_and_cancellation():
+    """Not a rejection of the portal — it is better at the things it owns."""
     page = (
         ROOT / "apps/oneapp_control/frontend/src/pages/account/AccountPlan.vue"
     ).read_text()
-    assert "billingPortal" in page
+    assert "customer.changePlan" in page, "the plan page no longer changes the plan"
+
+    billing = (
+        ROOT / "apps/oneapp_control/frontend/src/pages/account/AccountBilling.vue"
+    ).read_text()
+    assert "billingPortal" in billing, "nothing hands the customer to Stripe any more"
 
 
 @pytest.mark.parametrize("name", ["AccountApps", "AccountPlan"])

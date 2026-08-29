@@ -11,7 +11,8 @@ import frappe
 from frappe import _
 
 from oneapp_control import portal
-from oneapp_control.billing import stripe_client
+from oneapp_control.billing import plans as plan_catalogue
+from oneapp_control.billing import quotas, stripe_client
 
 
 def _settings():
@@ -31,19 +32,30 @@ def _urls(tenant: str):
 	)
 
 
+def _sellable(plan: str, interval: str):
+	"""The plan doc and the price a new subscription may be sold at.
+
+	Retired plans are refused here as well as hidden from the catalogue: a plan
+	code is not a secret, and "not offered any more" has to mean something at
+	the point of sale rather than only in the list.
+	"""
+	plan_doc = frappe.get_doc("Plan", plan)
+	if not plan_doc.is_active:
+		frappe.throw(_("{0} is no longer offered.").format(plan_doc.plan_name))
+
+	price_id = plan_catalogue.current_price_id(plan_doc, interval)
+	if not price_id:
+		frappe.throw(
+			_("{0} has no Stripe price for {1} billing.").format(plan_doc.plan_name, interval)
+		)
+	return plan_doc, price_id
+
+
 @frappe.whitelist()
 def start_subscription(tenant: str, plan: str, interval: str = "Monthly") -> dict:
 	"""Create a Checkout session for a plan subscription."""
 	tenant_doc = frappe.get_doc("Tenant", tenant)
-	plan_doc = frappe.get_doc("Plan", plan)
-
-	price_id = (
-		plan_doc.stripe_price_id_yearly
-		if interval == "Yearly"
-		else plan_doc.stripe_price_id_monthly
-	)
-	if not price_id:
-		frappe.throw(_("Plan {0} has no Stripe price for {1} billing.").format(plan, interval))
+	plan_doc, price_id = _sellable(plan, interval)
 
 	success_url, cancel_url = _urls(tenant)
 
@@ -99,22 +111,123 @@ def start_credit_pack(tenant: str, credits: float, amount: float,
 	return {"url": session.get("url"), "id": session.get("id")}
 
 
+@frappe.whitelist()
+def change_plan(tenant: str, plan: str, interval: str = "Monthly") -> dict:
+	"""Move an existing subscription onto another plan.
+
+	Ours rather than Stripe's billing portal, for one reason that matters: the
+	portal cannot know our quotas, so it will happily sell a downgrade to a
+	workspace holding more data than the smaller plan allows — and the customer
+	finds out afterwards, over quota, with no way back except paying again. The
+	same fit check the plans page renders runs here, so the two cannot disagree.
+
+	The portal keeps what it is good at: cards, invoices and cancellation.
+
+	Proration is immediate and symmetric. Stripe bills or credits the difference
+	on the next invoice, and the new terms take effect now — a plan change that
+	charges today and applies next month is the kind of split nobody can reason
+	about from a receipt.
+	"""
+	tenant_doc = frappe.get_doc("Tenant", tenant)
+	plan_doc, price_id = _sellable(plan, interval)
+
+	if not tenant_doc.subscription:
+		# Nothing to move. A workspace with no subscription buys one instead.
+		return start_subscription(tenant, plan, interval)
+
+	subscription = frappe.get_doc("Subscription", tenant_doc.subscription)
+	if subscription.plan == plan and subscription.interval == interval:
+		frappe.throw(_("This workspace is already on {0}.").format(plan_doc.plan_name))
+
+	if subscription.status not in ("Active", "Trialing", "Past Due"):
+		frappe.throw(
+			_("This subscription is {0}. Start a new one instead of changing this.").format(
+				subscription.status.lower()
+			)
+		)
+
+	blocked = quotas.blockers(tenant_doc, {field: plan_doc.get(field) for field in quotas.TERMS})
+	if blocked:
+		frappe.throw(
+			_("This workspace is over {0}'s {1} limit. Free some first.").format(
+				plan_doc.plan_name, _(" and ").join(blocked)
+			)
+		)
+
+	if not subscription.stripe_subscription_id:
+		frappe.throw(_("This subscription is not linked to Stripe yet."))
+
+	remote = stripe_client.get_subscription(subscription.stripe_subscription_id)
+	items = (remote.get("items") or {}).get("data") or []
+	if len(items) != 1:
+		# A subscription we did not sell, or one an operator has added line items
+		# to. Guessing which line is "the plan" is how the wrong thing gets
+		# repriced.
+		frappe.throw(_("This subscription has {0} items; change it in Stripe.").format(len(items)))
+
+	stripe_client.update_subscription(
+		subscription.stripe_subscription_id,
+		items=[{"id": items[0]["id"], "price": price_id}],
+		proration_behavior="create_prorations",
+		# Kept in step so a later webhook, which reads metadata when it has to
+		# create a record, does not resurrect the old plan.
+		metadata={"tenant": tenant, "plan": plan},
+		_idempotency_key=f"change-plan:{subscription.name}:{plan}:{interval}",
+	)
+
+	# Applied here as well as in the webhook. The webhook is the durable path,
+	# but it may be seconds away or, on a control plane whose Stripe webhook is
+	# not configured yet, never — and a customer who just paid for more storage
+	# should not have to wait to be given it. Both routes are idempotent.
+	apply_plan(subscription, plan, interval)
+
+	return {"plan": plan, "interval": interval}
+
+
+def apply_plan(subscription, plan: str, interval: str | None = None) -> None:
+	"""Record a plan change and put its terms into force.
+
+	Idempotent: the same change arriving twice, from the API call and again from
+	the webhook, does the work once.
+	"""
+	from oneapp_control.provisioning import runner
+
+	unchanged = subscription.plan == plan and (
+		interval is None or subscription.interval == interval
+	)
+	if unchanged and subscription.terms_captured_on:
+		return
+
+	before = quotas.for_tenant(subscription.tenant)
+
+	subscription.db_set("plan", plan)
+	if interval:
+		subscription.db_set("interval", interval)
+	frappe.db.set_value("Tenant", subscription.tenant, "plan", plan)
+
+	after = quotas.capture(subscription, plan)
+
+	# The site's own plan on Frappe Cloud is part of what was bought — CPU and
+	# memory, not just our quotas — so a change that moves it has to reach press
+	# as well. Enqueued rather than called: press is slow and may be down, and
+	# neither is a reason to fail a paid plan change.
+	press_plan = after.get("press_site_plan")
+	if press_plan and press_plan != before.get("press_site_plan"):
+		runner.enqueue(
+			subscription.tenant,
+			"Change Plan",
+			{"press_site_plan": press_plan},
+			idempotency_key=f"change-plan:{subscription.tenant}:{plan}:{press_plan}",
+		)
+
+
 def start_signup(request) -> dict:
 	"""Checkout for a signup, before any tenant exists.
 
 	The Account Request id rides along in metadata so the webhook can find its
 	way back — at this point there is no tenant to key on.
 	"""
-	plan = frappe.get_doc("Plan", request.plan)
-	price_id = (
-		plan.stripe_price_id_yearly
-		if request.interval == "Yearly"
-		else plan.stripe_price_id_monthly
-	)
-	if not price_id:
-		frappe.throw(
-			_("{0} has no Stripe price for {1} billing.").format(plan.plan_name, request.interval)
-		)
+	plan, price_id = _sellable(request.plan, request.interval)
 
 	session = stripe_client.create_checkout_session(
 		mode="subscription",

@@ -21,7 +21,16 @@
   "current_period_start",
   "current_period_end",
   "cb_period",
-  "last_grant_period_end"
+  "last_grant_period_end",
+  "sec_terms",
+  "storage_gb",
+  "database_gb",
+  "max_users",
+  "cb_terms",
+  "monthly_credit_grant",
+  "background_workers",
+  "press_site_plan",
+  "terms_captured_on"
  ],
  "fields": [
   {
@@ -124,6 +133,57 @@
    "fieldname": "last_grant_period_end",
    "fieldtype": "Datetime",
    "label": "Last Grant Period End",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_terms",
+   "fieldtype": "Section Break",
+   "label": "Plan terms at purchase"
+  },
+  {
+   "default": "0",
+   "fieldname": "storage_gb",
+   "fieldtype": "Int",
+   "label": "Storage Gb"
+  },
+  {
+   "default": "0",
+   "fieldname": "database_gb",
+   "fieldtype": "Int",
+   "label": "Database Gb"
+  },
+  {
+   "default": "0",
+   "fieldname": "max_users",
+   "fieldtype": "Int",
+   "label": "Max Users"
+  },
+  {
+   "fieldname": "cb_terms",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "monthly_credit_grant",
+   "fieldtype": "Float",
+   "label": "Monthly Credit Grant"
+  },
+  {
+   "default": "0",
+   "fieldname": "background_workers",
+   "fieldtype": "Int",
+   "label": "Background Workers"
+  },
+  {
+   "fieldname": "press_site_plan",
+   "fieldtype": "Data",
+   "label": "Press Site Plan"
+  },
+  {
+   "description": "When these were copied from the plan. Empty means this subscription predates the snapshot and still reads the plan live.",
+   "fieldname": "terms_captured_on",
+   "fieldtype": "Datetime",
+   "label": "Terms Captured On",
    "read_only": 1
   }
  ],

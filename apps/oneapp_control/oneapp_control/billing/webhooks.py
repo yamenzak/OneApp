@@ -235,6 +235,16 @@ def handle_subscription_change(obj: dict, record):
 	record.db_set("tenant", subscription.tenant)
 	record.db_set("subscription", subscription.name)
 
+	# Stripe may have been repriced without us: our own change_plan, a coupon
+	# applied in the dashboard, an operator swapping the item by hand. The price
+	# on the subscription is the only thing that says what is actually being
+	# charged, so it — not our record, and not the metadata, which nobody
+	# updates when they edit in the dashboard — decides which plan this is.
+	#
+	# Without this, an upgrade billed at the new price and left the workspace on
+	# the old storage, seats, credit grant and site plan.
+	_reconcile_plan(obj, subscription)
+
 	status = STRIPE_STATUS_MAP.get(obj.get("status"), "Incomplete")
 	subscription.db_set("status", status)
 	subscription.db_set("cancel_at_period_end", 1 if obj.get("cancel_at_period_end") else 0)
@@ -247,6 +257,34 @@ def handle_subscription_change(obj: dict, record):
 		subscription.db_set("current_period_end", _ts(obj["current_period_end"]))
 
 	apply_subscription_status(subscription)
+
+
+def _reconcile_plan(obj: dict, subscription):
+	"""Follow the price Stripe is actually charging back to one of our plans."""
+	from oneapp_control.billing import checkout, plans
+
+	items = (obj.get("items") or {}).get("data") or []
+	if len(items) != 1:
+		# Nothing to follow unambiguously. Left alone rather than guessed at:
+		# repricing a workspace off the wrong line item is worse than a stale
+		# record an operator can see and fix.
+		return
+
+	price_id = ((items[0] or {}).get("price") or {}).get("id")
+	plan = plans.plan_for_price(price_id)
+	if not plan:
+		# A price we did not mint — created in the dashboard, or from before the
+		# catalogue was synced. Logged rather than swallowed: it means a customer
+		# is paying for something the control plane cannot describe.
+		if price_id:
+			frappe.log_error(
+				title="Stripe price is not on any plan",
+				message=f"subscription={subscription.name} price={price_id}",
+			)
+		return
+
+	interval = plans.interval_for_price(price_id) or subscription.interval
+	checkout.apply_plan(subscription, plan, interval)
 
 
 def handle_invoice_paid(obj: dict, record):
@@ -358,6 +396,13 @@ def ensure_subscription(tenant, stripe_subscription_id, stripe_customer_id=None,
 	).insert(ignore_permissions=True)
 
 	frappe.db.set_value("Tenant", tenant, {"subscription": doc.name, "plan": plan})
+
+	# The terms are captured here, at the moment of sale, and enforcement reads
+	# the capture from then on. Editing the plan afterwards is then a decision
+	# about future customers rather than a silent change to this one.
+	from oneapp_control.billing import quotas
+
+	quotas.capture(doc, plan)
 	return doc
 
 
@@ -375,7 +420,13 @@ def grant_period_credits(subscription, period_end):
 	) >= get_datetime(period_end):
 		return
 
-	credits = frappe.db.get_value("Plan", subscription.plan, "monthly_credit_grant") or 0
+	# The grant this subscription bought, not the one the plan currently
+	# advertises — a plan whose grant was raised last week does not retroactively
+	# owe every existing customer the difference, and one whose grant was cut
+	# does not quietly take it away.
+	from oneapp_control.billing import quotas
+
+	credits = quotas.for_subscription(subscription).get("monthly_credit_grant") or 0
 	if credits <= 0:
 		subscription.db_set("last_grant_period_end", period_end)
 		return

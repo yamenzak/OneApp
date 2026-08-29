@@ -100,6 +100,23 @@ class Tenant(Document):
 	# ------------------------------------------------------------------ #
 
 	@property
+	def terms(self) -> dict:
+		"""The plan terms in force, from the subscription that bought them.
+
+		Not `Plan.storage_gb`. Reading the plan live made every price-sheet edit
+		retroactive — see billing/quotas.py, which is the only place that decides
+		between the captured terms and the plan.
+		"""
+		from oneapp_control.billing import quotas
+
+		# Read every time, deliberately. Memoising this looked free — four quota
+		# properties consult it and `over_quota` touches three in a row — but
+		# `reload()` repopulates a document's fields without knowing about a
+		# cache of ours, so a tenant read again after a plan change kept serving
+		# the old limits. A handful of queries is worth less than that.
+		return quotas.for_tenant(self)
+
+	@property
 	def storage_quota_bytes(self) -> int:
 		"""Plan allowance plus any purchased add-on.
 
@@ -110,7 +127,7 @@ class Tenant(Document):
 		if not self.plan:
 			return 0
 
-		plan_gb = int(frappe.db.get_value("Plan", self.plan, "storage_gb") or 0)
+		plan_gb = int(self.terms.get("storage_gb") or 0)
 		return (plan_gb + int(self.extra_storage_gb or 0)) * GB
 
 	@property
@@ -123,13 +140,13 @@ class Tenant(Document):
 		"""
 		if not self.plan:
 			return 0
-		return int(frappe.db.get_value("Plan", self.plan, "database_gb") or 0) * GB
+		return int(self.terms.get("database_gb") or 0) * GB
 
 	@property
 	def max_users(self) -> int:
 		if not self.plan:
 			return 0
-		return int(frappe.db.get_value("Plan", self.plan, "max_users") or 0)
+		return int(self.terms.get("max_users") or 0)
 
 	@property
 	def background_workers(self) -> int:
@@ -141,7 +158,7 @@ class Tenant(Document):
 		"""
 		if not self.plan:
 			return 0
-		return int(frappe.db.get_value("Plan", self.plan, "background_workers") or 0)
+		return int(self.terms.get("background_workers") or 0)
 
 	def storage_fraction_used(self) -> float:
 		return _fraction(self.storage_used_bytes, self.storage_quota_bytes)

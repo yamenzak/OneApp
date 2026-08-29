@@ -14,6 +14,13 @@ export const customer = {
   buyCredits: (workspace, pack) => callMethod(method('buy_credits'), { workspace, pack }),
   buyStorage: (workspace, pack) => callMethod(method('buy_storage'), { workspace, pack }),
   billingPortal: (workspace) => callMethod(method('billing_portal'), { workspace }),
+  // Ours, not the Stripe portal: the portal cannot know our quotas, so it would
+  // sell a downgrade to a workspace already holding more than the smaller plan
+  // allows. See api/customer.change_plan.
+  changePlan: (workspace, plan, interval = 'Monthly') =>
+    callMethod(method('change_plan'), { workspace, plan, interval }, {
+      successMessage: 'Plan changed',
+    }),
 
   domainGuide: (workspace) => callMethod(method('domain_instructions'), { workspace }, { silent: true }),
   addDomain: (workspace, domain) =>

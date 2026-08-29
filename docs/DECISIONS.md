@@ -64,6 +64,59 @@ Plans differ **only in quotas** — storage, seats, credit grant, job concurrenc
 Every feature is available on every plan, which is why no feature flags exist
 anywhere in the codebase.
 
+### The Plan doctype is the source of truth; Stripe holds the money
+
+Saving a plan creates its Stripe Product and Prices. Nobody pastes a `price_...`
+id between two systems, because dual entry is how a page ends up advertising one
+number while the card is charged another — and nothing in either system notices.
+
+Stripe Prices are immutable in amount and currency, so **changing what a plan
+costs mints a new Price and archives the old one**. That is not a workaround. It
+is what makes grandfathering real: everyone already subscribed keeps billing on
+the Price they bought, and `Plan Price` keeps every id we have ever minted, so a
+webhook can still say which plan an old price was.
+
+Stripe being unreachable never blocks a plan being saved. A control plane whose
+price sheet cannot be edited during a Stripe outage is worse than one whose
+catalogue is briefly behind; the failure lands in `Plan.sync_error` and the next
+save retries.
+
+### Quotas are captured when a subscription is sold
+
+Enforcement reads the terms copied onto the **Subscription**, not the Plan
+document. Reading the plan live made every price-sheet edit retroactive: tidying
+a tier re-quotaed everyone already on it, and someone who bought 50GB could wake
+up with 20GB without having agreed to anything.
+
+So `is_active = 0` retires a plan from the catalogue and takes nothing away from
+anyone on it — not the price, not the limits. Editing a live plan changes what
+new customers get. Moving an existing customer onto newer terms is a deliberate
+act (`quotas.adopt_current_terms`), because the automatic version is the bug this
+prevents.
+
+`oneapp_control.billing.quotas` is the only module that decides between the
+captured terms and the plan. Everything else asks it.
+
+### Plan changes do not go through Stripe's billing portal
+
+The portal is better than us at cards, invoices and cancellation, and keeps all
+three. It cannot be given plan switching, for one reason: **it does not know our
+quotas.** It would sell a downgrade to a workspace already holding more than the
+smaller plan allows, and the customer would find out afterwards, over quota, with
+no way back except paying again.
+
+So the switch is ours — `billing.checkout.change_plan` — and it runs the same fit
+check the plans page renders, from the same function. Proration is immediate and
+symmetric in both directions: Stripe bills or credits the difference, and the new
+limits apply now. A change that charges today and applies next month is a split
+nobody can reason about from a receipt.
+
+Stripe can still be repriced without us — a coupon, a dashboard edit — so
+`customer.subscription.updated` follows the price actually being charged back to
+a plan and applies it. Before that, an upgrade made in Stripe billed at the new
+price and left the workspace on the old storage, seats, credit grant and site
+plan.
+
 ---
 
 ## 4. Regions

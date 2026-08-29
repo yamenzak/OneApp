@@ -16,8 +16,10 @@
   "currency",
   "price_monthly",
   "price_yearly",
+  "stripe_product_id",
   "stripe_price_id_monthly",
   "stripe_price_id_yearly",
+  "sync_error",
   "sec_quota",
   "storage_gb",
   "max_users",
@@ -27,7 +29,9 @@
   "database_gb",
   "sec_press_plan",
   "press_site_plan",
-  "description"
+  "description",
+  "sec_prices",
+  "prices"
  ],
  "fields": [
   {
@@ -89,14 +93,30 @@
    "label": "Price Yearly"
   },
   {
+   "fieldname": "stripe_product_id",
+   "fieldtype": "Data",
+   "label": "Stripe Product ID",
+   "read_only": 1
+  },
+  {
+   "description": "The current monthly price. History is in Prices below.",
    "fieldname": "stripe_price_id_monthly",
    "fieldtype": "Data",
-   "label": "Stripe Price ID (Monthly)"
+   "label": "Stripe Price ID (Monthly)",
+   "read_only": 1
   },
   {
    "fieldname": "stripe_price_id_yearly",
    "fieldtype": "Data",
-   "label": "Stripe Price ID (Yearly)"
+   "label": "Stripe Price ID (Yearly)",
+   "read_only": 1
+  },
+  {
+   "description": "Why the last sync to Stripe did not finish. Saving again retries; the plan stays sellable on whatever prices it already has.",
+   "fieldname": "sync_error",
+   "fieldtype": "Small Text",
+   "label": "Sync Error",
+   "read_only": 1
   },
   {
    "fieldname": "sec_quota",
@@ -156,6 +176,19 @@
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
+  },
+  {
+   "fieldname": "sec_prices",
+   "fieldtype": "Section Break",
+   "label": "Prices"
+  },
+  {
+   "description": "Every Stripe price this plan has had. Subscriptions sold on an older one keep billing on it.",
+   "fieldname": "prices",
+   "fieldtype": "Table",
+   "label": "Prices",
+   "options": "Plan Price",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,

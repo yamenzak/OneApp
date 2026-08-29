@@ -91,6 +91,37 @@ def get_subscription(subscription_id: str) -> dict:
 	return request("GET", f"subscriptions/{subscription_id}")
 
 
+def update_subscription(subscription_id: str, **kwargs) -> dict:
+	return request("POST", f"subscriptions/{subscription_id}", kwargs,
+	               idempotency_key=kwargs.pop("_idempotency_key", None))
+
+
+# --------------------------------------------------------------------------- #
+# Catalogue
+#
+# Products carry the name on the invoice; Prices carry the money. A Price is
+# immutable in `unit_amount` and `currency` — the only way to change what a plan
+# costs is to mint a new one and archive the old, which is also what leaves
+# existing subscriptions billing at the price they bought.
+# --------------------------------------------------------------------------- #
+
+def create_product(idempotency_key: str | None = None, **kwargs) -> dict:
+	return request("POST", "products", kwargs, idempotency_key=idempotency_key)
+
+
+def update_product(product_id: str, **kwargs) -> dict:
+	return request("POST", f"products/{product_id}", kwargs)
+
+
+def create_price(idempotency_key: str | None = None, **kwargs) -> dict:
+	return request("POST", "prices", kwargs, idempotency_key=idempotency_key)
+
+
+def archive_price(price_id: str) -> dict:
+	"""Stop a price being sellable. Existing subscriptions keep billing on it."""
+	return request("POST", f"prices/{price_id}", {"active": "false"})
+
+
 def cancel_subscription(subscription_id: str, at_period_end: bool = True) -> dict:
 	if at_period_end:
 		return request("POST", f"subscriptions/{subscription_id}",

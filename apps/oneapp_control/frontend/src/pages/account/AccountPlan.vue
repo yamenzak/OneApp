@@ -25,6 +25,15 @@
             <div class="flex items-center gap-2">
               <h3 class="text-base-medium text-ink-gray-8">{{ plan.name }}</h3>
               <Badge v-if="plan.current" theme="green" label="Current" variant="subtle" />
+              <!-- The limits below are what this workspace was sold, which is
+                   not always what the plan offers today. Saying so beats a card
+                   that quietly disagrees with the price sheet. -->
+              <Badge
+                v-if="plan.grandfathered"
+                theme="blue"
+                label="Your original terms"
+                variant="subtle"
+              />
             </div>
             <p v-if="plan.description" class="mt-1 text-p-sm text-ink-gray-6">
               {{ plan.description }}
@@ -63,18 +72,43 @@
         <Button
           v-else-if="!plan.current"
           class="mt-3"
+          :loading="busy === plan.code"
+          :disabled="Boolean(busy)"
           label="Change to this plan"
-          @click="changePlan"
+          @click="choose(plan)"
         />
       </section>
     </div>
   </div>
+
+  <!--
+    Confirmed, not one-tap. This charges or credits a card immediately, and the
+    number involved is not on the button.
+  -->
+  <Dialog
+    v-model="showConfirm"
+    :title="`Change to ${chosen?.name || ''}?`"
+    :actions="[
+      { label: 'Change plan', variant: 'solid', loading: Boolean(busy), onClick: confirm },
+    ]"
+  >
+    <div class="flex flex-col gap-3">
+      <p class="text-p-base text-ink-gray-7">
+        {{ chosen && chosen.price_monthly > (current?.price_monthly || 0)
+          ? 'Stripe charges the difference for the rest of this billing period, and the new limits apply straight away.'
+          : 'Stripe credits the difference against your next invoice, and the new limits apply straight away.' }}
+      </p>
+      <p v-if="chosen" class="text-p-sm text-ink-gray-5">
+        {{ money(chosen.price_monthly, chosen.currency) }} a month, from now on.
+      </p>
+    </div>
+  </Dialog>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
-  PageHeader, PageHeaderTitle, Alert, Badge, Button, LoadingIndicator,
+  PageHeader, PageHeaderTitle, Alert, Badge, Button, Dialog, LoadingIndicator,
 } from '@/ui'
 import { usePlans, customer } from '../../lib/customer'
 
@@ -102,11 +136,32 @@ const limits = (plan) => {
   return out
 }
 
-// Changing plan is a Stripe change, so it happens where the card lives rather
-// than through a button here that would have to duplicate proration, tax and
-// payment-method rules Stripe already owns.
-const changePlan = async () => {
-  const result = await customer.billingPortal(workspace.value)
-  if (result?.url) window.location.href = result.url
+// Changed here rather than in Stripe's billing portal. The portal owns cards,
+// invoices and cancellation, and it is better at all three — but it cannot know
+// our quotas, so it would happily sell a downgrade to a workspace already
+// holding more than the smaller plan allows. The server runs the same fit check
+// this page renders.
+const showConfirm = ref(false)
+const chosen = ref(null)
+const busy = ref('')
+
+const current = computed(() => data.value?.plans?.find((p) => p.current) || null)
+
+const choose = (plan) => {
+  chosen.value = plan
+  showConfirm.value = true
+}
+
+const confirm = async () => {
+  const plan = chosen.value
+  if (!plan) return
+  busy.value = plan.code
+  try {
+    await customer.changePlan(workspace.value, plan.code)
+    showConfirm.value = false
+    await resource.reload()
+  } finally {
+    busy.value = ''
+  }
 }
 </script>

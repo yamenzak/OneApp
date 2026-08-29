@@ -18,7 +18,7 @@ import frappe
 from frappe import _
 
 from oneapp_control import portal
-from oneapp_control.billing import checkout, stripe_client
+from oneapp_control.billing import checkout, quotas, stripe_client
 from oneapp_control.credits import ledger
 from oneapp_control.entitlements import registry
 
@@ -479,6 +479,20 @@ def apps(workspace: str) -> dict:
 	}
 
 
+@frappe.whitelist(methods=["POST"])
+def change_plan(workspace: str, plan: str, interval: str = "Monthly") -> dict:
+	"""Move this workspace onto another plan.
+
+	Through us rather than Stripe's billing portal, because the portal cannot
+	know our quotas: it would sell a downgrade to a workspace already holding
+	more than the smaller plan allows, and the customer would find out
+	afterwards, over quota. `billing.checkout.change_plan` runs the same fit
+	check this page renders.
+	"""
+	tenant = require_workspace(workspace)
+	return checkout.change_plan(tenant.name, plan, interval)
+
+
 @frappe.whitelist(methods=["GET"])
 def plans(workspace: str) -> dict:
 	"""What this workspace is on, and what else it could be on.
@@ -514,37 +528,48 @@ def plans(workspace: str) -> dict:
 		retired = frappe.get_all("Plan", filters={"name": tenant.plan}, fields=fields)
 		rows = retired + rows
 
-	GB = 1024**3
+	# What this workspace is actually on may differ from what its plan says
+	# today, because the terms were captured when it was sold. The current card
+	# has to show the terms in force, not the price sheet.
+	in_force = quotas.for_tenant(tenant)
+
 	available = []
 	for row in rows:
-		storage_cap = (row.storage_gb or 0) * GB
-		database_cap = (row.database_gb or 0) * GB
-		too_small = [
-			label
-			for label, used, cap in (
-				("storage", usage["storage"]["used"], storage_cap),
-				("database", usage["database"]["used"], database_cap),
-				("seats", 1 + len(tenant.members or []), row.max_users or 0),
-			)
-			if cap and used > cap
-		]
+		current = row.name == tenant.plan
+		terms = in_force if current else {
+			field: row.get(field) for field in quotas.TERMS if field in row
+		}
 		available.append(
 			{
 				"code": row.name,
 				"name": row.plan_name,
 				"price_monthly": row.price_monthly,
 				"price_yearly": row.price_yearly,
-				"storage_gb": row.storage_gb,
-				"database_gb": row.database_gb,
-				"max_users": row.max_users,
-				"monthly_credit_grant": row.monthly_credit_grant,
+				"storage_gb": terms.get("storage_gb"),
+				"database_gb": terms.get("database_gb"),
+				"max_users": terms.get("max_users"),
+				"monthly_credit_grant": terms.get("monthly_credit_grant"),
 				"currency": row.currency,
 				"audience": row.audience,
 				"description": row.description,
-				"current": row.name == tenant.plan,
+				"current": current,
+				# The same check the switch itself runs, so the page cannot offer
+				# a plan the switch would refuse — nor, more importantly, accept
+				# one the page would have refused.
 				# Named, not just refused: "storage" tells them what to clear.
-				"blocked_by": too_small,
+				"blocked_by": [] if current else quotas.blockers(tenant, terms),
+				# A plan whose terms differ from what this workspace holds is a
+				# plan they are grandfathered on. Saying so beats a card that
+				# quietly disagrees with the price sheet.
+				"grandfathered": current and _differs(in_force, row),
 			}
 		)
 
 	return {"current": tenant.plan, "plans": available, "usage": usage}
+
+
+def _differs(in_force: dict, row) -> bool:
+	return any(
+		(in_force.get(field) or 0) != (row.get(field) or 0)
+		for field in ("storage_gb", "database_gb", "max_users", "monthly_credit_grant")
+	)

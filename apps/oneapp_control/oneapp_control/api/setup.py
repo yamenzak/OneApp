@@ -52,6 +52,25 @@ def _press_host_ok(s) -> bool:
 	return host not in REDIRECTING_PRESS_HOSTS
 
 
+def _plans_hint() -> str:
+	"""Say which of the two ways this can be unset actually applies."""
+	if not frappe.get_all("Plan", filters={"is_active": 1}, limit=1):
+		return "One active plan. Saving it creates its Stripe product and prices."
+
+	failed = frappe.get_all(
+		"Plan",
+		filters={"is_active": 1, "sync_error": ("is", "set")},
+		fields=["plan_name", "sync_error"],
+		limit=1,
+	)
+	if failed:
+		return "{0} failed to sync: {1}".format(
+			failed[0].plan_name, (failed[0].sync_error or "").split("\n")[0][:160]
+		)
+
+	return "A monthly price above zero on an active plan, then save it to mint the Stripe price."
+
+
 def checks() -> list[dict]:
 	s = _settings()
 
@@ -135,7 +154,7 @@ def checks() -> list[dict]:
 		{
 			"key": "plans",
 			"group": BILLING,
-			"label": "Plans have Stripe prices",
+			"label": "Plans are synced to Stripe",
 			"ok": bool(
 				frappe.get_all(
 					"Plan",
@@ -143,7 +162,9 @@ def checks() -> list[dict]:
 				)
 			),
 			"detail": "Checkout cannot start without a price to charge.",
-			"needs": "A Stripe Price ID on at least one active plan.",
+			# Prices are minted by saving the plan, not pasted in, so the fix is
+			# always the same gesture: fix the key, save the plan again.
+			"needs": _plans_hint(),
 			"where": "Settings → Plans",
 		},
 		{

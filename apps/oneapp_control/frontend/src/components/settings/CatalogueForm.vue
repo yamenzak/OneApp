@@ -6,7 +6,7 @@
   <Dialog v-model="open" :title="title" size="lg">
     <div class="flex flex-col gap-4">
       <FormControl
-        v-for="field in fields"
+        v-for="field in editable"
         :key="field.name"
         v-model="form[field.name]"
         :type="field.type || 'text'"
@@ -60,8 +60,15 @@ const title = computed(() =>
 // document store means a saved row updates any list already showing it.
 const writes = useDocWrites(props.doctype, { silent: true })
 
+// A field the record is named after cannot be edited: writing it would change
+// the column without renaming the document, leaving the two disagreeing about
+// what this record is called.
+const editable = computed(() =>
+  props.fields.filter((f) => !(f.createOnly && props.record)),
+)
+
 const complete = computed(() =>
-  props.fields.filter((f) => f.required).every((f) => form[f.name]),
+  editable.value.filter((f) => f.required).every((f) => form[f.name]),
 )
 
 watch(
@@ -84,7 +91,7 @@ async function save() {
       // Only what changed: sending untouched fields would stamp defaults over
       // values set elsewhere.
       const changed = Object.fromEntries(
-        props.fields
+        editable.value
           .filter((f) => form[f.name] !== props.record[f.name])
           .map((f) => [f.name, form[f.name]]),
       )
