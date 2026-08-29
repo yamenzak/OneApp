@@ -250,7 +250,43 @@ module. Hiding a nav item is a UX affordance, never a boundary.
 
 ---
 
-## 9. Cost model
+## 9. Repository layout
+
+**One monorepo, two Frappe apps, published to generated mirrors.**
+
+Frappe is one-app-per-repo by construction: `bench get-app` expects the repository root to be
+the app root, and a Frappe Cloud bench group is a list of `(repo URL, branch)` pairs. There is
+no subdirectory option.
+
+The apps are nonetheless kept in a single repository — `yamenzak/OneApp` — because day-to-day
+development, particularly in repo-scoped tooling, is significantly better with one checkout.
+CI publishes each app subdirectory to a standalone mirror that Frappe Cloud consumes:
+
+| Source | Mirror | Consumed by |
+| --- | --- | --- |
+| `apps/oneapp` | `yamenzak/oneapp-app` | tenant bench groups |
+| `apps/oneapp_control` | `yamenzak/oneapp-control` | control-plane bench |
+
+Mirrors are build artifacts. They are never committed to directly, and their READMEs say so.
+Branch names are preserved through the sync, so pushing `canary` updates `canary` on both
+mirrors and a canary bench group tracks it without extra configuration.
+
+Local development symlinks `apps/*` into a bench, so there is no sync step while working.
+
+**The two apps stay separate deployment artifacts**, which is the point that matters. Combining
+them into one app — or gating a single app by role via `site_config` — would mean every
+control-plane change (billing, provisioning, credit logic, all of which iterate fast) ships as
+a new tenant-app version and triggers `bench migrate` across every tenant site. It would also
+place `Credit Ledger Entry`, `Tenant` and Frappe Cloud credential doctypes as real tables on
+customer-administered sites, undoing the boundary §4 exists to create.
+
+Shared code between the two is limited to HMAC signing and the request/response contract. That
+is duplicated deliberately: the two sites deploy on independent schedules, so the tenant side
+must tolerate a control plane running a version ahead.
+
+---
+
+## 10. Cost model
 
 At ~30 tenants on a $40 cpx22:
 
@@ -268,7 +304,7 @@ from day one rather than retrofitted.
 
 ---
 
-## 10. Open questions
+## 11. Open questions
 
 Pricing inputs, not architecture. None of them change the design above.
 
@@ -281,7 +317,7 @@ Pricing inputs, not architecture. None of them change the design above.
 
 ---
 
-## 11. Build order
+## 12. Build order
 
 1. Control-plane doctypes — `Tenant`, `Shard`, `Plan`, `Subscription`, `App Entitlement`
 2. Frappe Cloud provisioning job (idempotent, retryable)

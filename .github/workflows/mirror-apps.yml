@@ -1,0 +1,70 @@
+# Publishes each Frappe app in apps/ to its own standalone repository.
+#
+# Frappe Cloud builds a bench group from (repo URL, branch) pairs and expects the
+# repository root to be the app root. This monorepo is the source of truth; the mirrors
+# are build artifacts that exist purely so Frappe Cloud has something to clone.
+#
+# Branch names are preserved: pushing `canary` here updates `canary` on both mirrors,
+# so a Frappe Cloud bench group can track any branch it likes.
+#
+# Requires repository secret MIRROR_TOKEN — a fine-grained PAT with
+# "Contents: Read and write" scoped to the two mirror repositories only.
+
+name: Mirror apps
+
+on:
+  push:
+    branches: [main, canary, "claude/**", "release/**"]
+  workflow_dispatch:
+
+concurrency:
+  group: mirror-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: oneapp
+            mirror: yamenzak/oneapp-app
+          - app: oneapp_control
+            mirror: yamenzak/oneapp-control
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync apps/${{ matrix.app }} to ${{ matrix.mirror }}
+        env:
+          TOKEN: ${{ secrets.MIRROR_TOKEN }}
+          APP: ${{ matrix.app }}
+          MIRROR: ${{ matrix.mirror }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          SUBJECT="$(git log -1 --pretty=%s)"
+          SHORT="$(git rev-parse --short HEAD)"
+
+          git clone --quiet "https://x-access-token:${TOKEN}@github.com/${MIRROR}.git" /tmp/mirror
+          cd /tmp/mirror
+
+          # Land on the matching branch, creating it if the mirror has never seen it.
+          git checkout --quiet "$BRANCH" 2>/dev/null || git checkout --quiet --orphan "$BRANCH"
+
+          # Replace the whole tree so deletions propagate.
+          git rm -rqf . --ignore-unmatch
+          rsync -a --exclude '.git' "$GITHUB_WORKSPACE/apps/${APP}/" ./
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes for ${APP} on ${BRANCH}."
+            exit 0
+          fi
+
+          git -c user.name="OneApp Mirror" \
+              -c user.email="noreply@fourdegreelabs.com" \
+              commit --quiet -m "${SUBJECT}" -m "Synced from yamenzak/OneApp@${SHORT} (${BRANCH})"
+          git push --quiet origin "$BRANCH"
+          echo "Pushed ${APP} to ${MIRROR}@${BRANCH}."
