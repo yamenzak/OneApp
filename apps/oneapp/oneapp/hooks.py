@@ -17,6 +17,16 @@ website_route_rules = [
 ]
 
 # ---------------------------------------------------------------------------
+# Storage
+# ---------------------------------------------------------------------------
+# Attachments go to R2 rather than the server filesystem. The override falls
+# back to Frappe's normal behaviour when R2 is not configured, so a site without
+# keys still works instead of failing every upload.
+override_doctype_class = {
+	"File": "oneapp.oneapp_core.storage.file.OneAppFile",
+}
+
+# ---------------------------------------------------------------------------
 # Document hooks
 # ---------------------------------------------------------------------------
 doc_events = {
