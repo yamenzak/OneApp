@@ -214,11 +214,10 @@ def test_the_team_page_is_routed_and_reachable():
     router = (ROOT / "apps/oneapp_control/frontend/src/router.js").read_text()
     assert "AccountTeam" in router
 
-    # Sidebar on a desktop, bottom bar on a phone — the two must not drift.
-    sidebar = (ROOT / "apps/oneapp_control/frontend/src/components/PortalSidebar.vue").read_text()
-    shell = (ROOT / "apps/oneapp_control/frontend/src/App.vue").read_text()
-    assert "AccountTeam" in sidebar, "no sidebar entry"
-    assert "AccountTeam" in shell, "no entry in the phone's bottom bar"
+    # One declaration feeds the desktop sidebar and the phone's bottom bar, so
+    # naming it once is enough — and is what stops the two drifting.
+    nav = (ROOT / "apps/oneapp_control/frontend/src/lib/nav.js").read_text()
+    assert "AccountTeam" in nav, "no navigation entry"
 
 
 def test_the_page_says_an_invite_is_not_immediate():
@@ -293,8 +292,6 @@ def test_changing_plan_goes_through_stripe():
 @pytest.mark.parametrize("name", ["AccountApps", "AccountPlan"])
 def test_the_new_pages_are_reachable(name):
     router = (ROOT / "apps/oneapp_control/frontend/src/router.js").read_text()
-    sidebar = (
-        ROOT / "apps/oneapp_control/frontend/src/components/PortalSidebar.vue"
-    ).read_text()
+    nav = (ROOT / "apps/oneapp_control/frontend/src/lib/nav.js").read_text()
     assert name in router, f"{name} is not routed"
-    assert name in sidebar, f"{name} is not in the sidebar"
+    assert name in nav, f"{name} is not in the navigation"

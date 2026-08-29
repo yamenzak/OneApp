@@ -37,7 +37,10 @@
           </span>
         </div>
 
-        <List :columns="['minmax(0,1fr)', '8rem', '3rem']" :row-height="56" class="list-row-px-3" divider="full">
+        <!-- Narrowed rather than dropped: the access badge and the remove
+             button are both short, and a desktop-sized track for them left the
+             person's name about 120px. -->
+        <List :columns="memberColumns" :row-height="56" class="list-row-px-3" divider="full">
           <ListHeader>
             <ListHeaderCell>Person</ListHeaderCell>
             <ListHeaderCell>Access</ListHeaderCell>
@@ -130,7 +133,14 @@ import {
   FormControl, LoadingIndicator, List, ListHeader, ListHeaderCell, ListRows,
   ListRow, ListCell, vFocus,
 } from '@/ui'
+import { useListColumns } from '../../lib/list'
 import { useMembers, inviteMember, removeMember } from '../../lib/customer'
+
+const { columns: memberColumns } = useListColumns([
+  { key: 'person', header: 'Person', track: 'minmax(0,1fr)' },
+  { key: 'access', header: 'Access', track: '8rem', mobile: '5.5rem' },
+  { key: 'remove', header: '', track: '3rem' },
+])
 
 const props = defineProps({ workspace: { type: String, required: true } })
 const workspace = computed(() => props.workspace)

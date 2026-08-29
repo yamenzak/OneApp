@@ -64,7 +64,9 @@
 
     <section v-if="invoices.length">
       <h3 class="mb-3 text-base-medium text-ink-gray-8">Invoices</h3>
-      <List :columns="['minmax(0,1fr)', '8rem', '7rem']" :row-height="52" class="list-row-px-3" divider="full">
+      <!-- Narrowed rather than dropped: three short cells all fit a phone once
+           the two fixed tracks stop being sized for a desktop. -->
+      <List :columns="invoiceColumns" :row-height="52" class="list-row-px-3" divider="full">
         <ListRows :items="invoices" row-key="name" v-slot="{ item: inv, value }">
           <ListRow :value="value">
             <ListCell>
@@ -95,8 +97,15 @@ import { computed, onMounted, ref, toRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { PageHeader, PageHeaderTitle, Alert, Badge, Button, LoadingIndicator, List, ListRows, ListRow, ListCell, dayjsLocal } from '@/ui'
 import PackCard from '../../components/PackCard.vue'
+import { useListColumns } from '../../lib/list'
 import { customer, useOverview } from '../../lib/customer'
 import { notifyInfo, notifySuccess } from '../../lib/notify'
+
+const { columns: invoiceColumns } = useListColumns([
+  { key: 'date', header: 'Date', track: 'minmax(0,1fr)' },
+  { key: 'amount', header: 'Amount', track: '8rem', mobile: '6rem' },
+  { key: 'status', header: 'Status', track: '7rem', mobile: '5rem' },
+])
 
 const props = defineProps({ workspace: { type: String, default: null } })
 const resource = useOverview(toRef(props, 'workspace'))

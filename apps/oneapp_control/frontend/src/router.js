@@ -110,9 +110,20 @@ router.beforeEach(async (to) => {
 
   if (!setup.checks.length && !setup.error) await setup.load()
 
-  // Until the blocking configuration exists there is nothing useful to do here
-  // and provisioning would fail partway. Send everything to Setup.
-  if (!setup.canProvision && to.name !== 'Setup') {
+  // Opening the console with nowhere in particular in mind lands on Readiness
+  // while it is unconfigured, because that is the only thing worth doing. Only
+  // that default landing, though: `redirectedFrom` is set when we chose the
+  // destination ourselves, so a typed or bookmarked URL is still honoured.
+  //
+  // Redirecting *every* admin route made the console look broken: tapping
+  // Tenants or Shards bounced straight back to Readiness with nothing said,
+  // which reads as a dead button rather than as a gate. The pages are useful
+  // unconfigured — the tenant list is empty, the shard list is where you add
+  // the first shard — the actions that would fail are already disabled with a
+  // reason on the page, and provisioning is refused server-side by
+  // assert_ready_to_provision. Nothing was protected by the bounce.
+  const landing = ['/', '/admin'].includes(to.redirectedFrom?.path)
+  if (landing && !setup.canProvision && to.name !== 'Setup') {
     return { name: 'Setup' }
   }
 

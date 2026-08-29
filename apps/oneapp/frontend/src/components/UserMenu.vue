@@ -27,6 +27,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Avatar, Button, Dropdown } from '@/ui'
+import { useAppearance } from '@/lib/appearance'
 
 const props = defineProps({
   name: { type: String, default: '' },
@@ -39,12 +40,19 @@ const props = defineProps({
 
 const displayName = computed(() => props.name || props.email || 'Account')
 
-// Deliberately no light/dark toggle here. A binary switch cannot express
-// 'follow the system', so anyone who wants that ends up flipping it by hand
-// twice a day. Appearance is a three-way choice and lives in settings, next to
-// every other preference — see ThemeSetting.vue.
+// Appearance sits here as well as in settings: it is the preference people
+// change most often, and hunting for it behind a dialog is the slow path.
+//
+// Three rows in a group rather than a switch. A two-state control cannot
+// express "follow the system", so anyone who wants that ends up flipping it by
+// hand twice a day — and a row is the same single tap a switch would be, with
+// the current choice visible instead of inferred. `selected` is a
+// MenuBaseOption field, so the tick is the library's own.
+const { menuGroup } = useAppearance()
+
 const options = computed(() => [
   ...props.extra,
+  menuGroup.value,
   {
     label: 'Log out',
     icon: 'lucide-log-out',

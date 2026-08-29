@@ -62,6 +62,11 @@ def checks() -> list[dict]:
 	)
 	per_tenant = [x for x in shards if x.domain_mode == "Per-tenant"]
 
+	# Three sentences at most per check, and each says a different thing:
+	# `detail` is what breaks without it, `needs` is exactly what to supply, and
+	# `where` is where to put it. The page reads as a checklist that way rather
+	# than as documentation someone has to skim to find the one fact they came
+	# for — which is what it was.
 	result = [
 		{
 			"key": "press_credentials",
@@ -71,7 +76,8 @@ def checks() -> list[dict]:
 			# settings here would report "Missing" on a site that provisions
 			# perfectly well, which is worse than either answer alone.
 			"ok": _press_configured(s),
-			"detail": "Creates and manages tenant sites. Nothing can be provisioned without it.",
+			"detail": "Nothing provisions without it.",
+			"needs": "An API key and secret for a Frappe Cloud user on the team that owns the benches.",
 			"where": "Settings → Frappe Cloud, or site config",
 		},
 		{
@@ -79,11 +85,8 @@ def checks() -> list[dict]:
 			"group": BLOCKING,
 			"label": "Frappe Cloud API host",
 			"ok": _press_host_ok(s),
-			"detail": (
-				"frappecloud.com redirects to cloud.frappe.io and the redirect "
-				"drops the credential, so every call fails as though the key "
-				"were wrong. Must be cloud.frappe.io."
-			),
+			"detail": "frappecloud.com redirects, and the redirect drops the credential — every call then fails as though the key were wrong.",
+			"needs": "https://cloud.frappe.io",
 			"where": "Settings → Frappe Cloud → API host",
 		},
 		{
@@ -91,35 +94,27 @@ def checks() -> list[dict]:
 			"group": BLOCKING,
 			"label": "Control plane URL",
 			"ok": bool(s.control_plane_url),
-			"detail": (
-				"Injected into every tenant site so it can call back. A tenant "
-				"provisioned without it is orphaned — it cannot sync entitlements "
-				"or spend credits."
-			),
-			"where": "OneApp Control Settings → Frappe Cloud",
+			"detail": "Tenants call back on it. Provisioned without one, a tenant is orphaned: no entitlements, no credits.",
+			"needs": "This site's public URL, including https://.",
+			"where": "Settings → Frappe Cloud",
 		},
 		{
 			"key": "shard",
 			"group": BLOCKING,
-			"label": "At least one shard with headroom",
+			"label": "A shard with headroom",
 			"ok": bool(shards),
-			"detail": (
-				"Tenants are placed on a shard. With none accepting, provisioning "
-				"refuses rather than putting a tenant nowhere."
-			),
-			"where": "Shard list",
+			"detail": "Tenants are placed on a shard. With none accepting, provisioning refuses rather than putting a tenant nowhere.",
+			"needs": "One Shard, Active, with 'accepts new tenants' on.",
+			"where": "Shards",
 		},
 		{
 			"key": "shard_version",
 			"group": BLOCKING,
 			"label": "Shards declare a bench version",
 			"ok": all(x.press_version for x in shards) if shards else False,
-			"detail": (
-				"Frappe Cloud matches the bench by (server, version, apps). Without "
-				"a version it silently falls back to its public path and fails with "
-				"an error naming the wrong cause."
-			),
-			"where": "Shard → press_version",
+			"detail": "Frappe Cloud matches a bench by server, version and apps. Without the version it falls back to its public path and fails naming the wrong cause.",
+			"needs": "A Frappe version on every shard, e.g. version-15.",
+			"where": "Shards → Bench version",
 		},
 		{
 			"key": "cloudflare_dns",
@@ -127,27 +122,37 @@ def checks() -> list[dict]:
 			"label": "Cloudflare DNS",
 			"ok": bool(s.cf_zone_id) and _secret(s, "cf_dns_token"),
 			"detail": (
-				"Per-tenant domain mode creates a CNAME per tenant. "
-				+ ("Required: {0} shard(s) use it.".format(len(per_tenant))
-				   if per_tenant else "Not needed while every shard is on Wildcard mode.")
+				"Per-tenant domain mode creates one CNAME per tenant. "
+				+ (
+					"Required: {0} shard(s) use it.".format(len(per_tenant))
+					if per_tenant
+					else "Not needed while every shard is on Wildcard mode."
+				)
 			),
-			"where": "OneApp Control Settings → Cloudflare DNS",
+			"needs": "The zone ID, and an API token with Zone → DNS → Edit scoped to that zone.",
+			"where": "Settings → Cloudflare",
 		},
 		{
 			"key": "plans",
 			"group": BILLING,
 			"label": "Plans have Stripe prices",
-			"ok": bool(frappe.get_all("Plan", filters={"is_active": 1,
-			                                           "stripe_price_id_monthly": ("is", "set")})),
-			"detail": "Checkout cannot start without a Stripe Price ID on the plan.",
-			"where": "Plan list",
+			"ok": bool(
+				frappe.get_all(
+					"Plan",
+					filters={"is_active": 1, "stripe_price_id_monthly": ("is", "set")},
+				)
+			),
+			"detail": "Checkout cannot start without a price to charge.",
+			"needs": "A Stripe Price ID on at least one active plan.",
+			"where": "Settings → Plans",
 		},
 		{
 			"key": "stripe_gateway",
 			"group": BILLING,
 			"label": "Stripe secret key",
 			"ok": bool(frappe.db.exists("Stripe Settings", {})),
-			"detail": "Configured in the payments app, so there is one place to rotate it.",
+			"detail": "Held by the payments app, so there is one place to rotate it.",
+			"needs": "A Stripe secret key (sk_live_… or sk_test_…).",
 			"where": "Stripe Settings (payments app)",
 		},
 		{
@@ -155,39 +160,43 @@ def checks() -> list[dict]:
 			"group": BILLING,
 			"label": "Stripe webhook secret",
 			"ok": _secret(s, "stripe_webhook_secret"),
-			"detail": (
-				"Without it the webhook endpoint rejects everything, so payments "
-				"never grant credits or activate subscriptions."
+			"detail": "Without it the endpoint rejects everything, so payments never grant credits or start subscriptions.",
+			"needs": (
+				"The signing secret (whsec_…) of a Stripe webhook pointed at "
+				"/api/method/oneapp_control.billing.webhooks.stripe."
 			),
-			"where": "OneApp Control Settings → Stripe",
+			"where": "Settings → Billing",
 		},
 		{
 			"key": "r2",
 			"group": OPTIONAL,
 			"label": "R2 storage",
 			"ok": bool(s.r2_account_id and s.r2_bucket and s.r2_access_key)
-			      and _secret(s, "r2_secret_key"),
+			and _secret(s, "r2_secret_key"),
 			"detail": "Tenant sites fall back to local disk until this is set.",
-			"where": "OneApp Control Settings → Tenant bench config",
+			"needs": "A Cloudflare account ID, a bucket, and an R2 API token's access key and secret.",
+			"where": "Settings → Storage buckets",
 		},
 		{
 			"key": "email_outbound",
 			"group": OPTIONAL,
 			"label": "Outbound email",
 			"ok": _secret(s, "cf_email_token") and bool(s.mail_domain),
-			"detail": "Cloudflare Email Service over SMTP. Tenants cannot send mail without it.",
-			"where": "OneApp Control Settings → Tenant bench config",
+			"detail": "Tenants cannot send mail without it.",
+			"needs": (
+				"A verified sending domain, and a Cloudflare API token with "
+				"Email Sending → Edit — it is the SMTP password."
+			),
+			"where": "Settings → Cloudflare",
 		},
 		{
 			"key": "email_inbound",
 			"group": OPTIONAL,
 			"label": "Inbound email routing",
 			"ok": bool(s.cf_kv_namespace_id) and _secret(s, "cf_kv_token"),
-			"detail": (
-				"Tenants provisioned before this exists are missing from the routing "
-				"map; cloudflare.kv.resync_all backfills them."
-			),
-			"where": "OneApp Control Settings → Cloudflare KV",
+			"detail": "Tenants provisioned before this exists are missing from the routing map; cloudflare.kv.resync_all backfills them.",
+			"needs": "A Workers KV namespace ID, and a token with Account → Workers KV Storage → Edit.",
+			"where": "Settings → Cloudflare",
 		},
 		{
 			"key": "ai",
@@ -195,7 +204,8 @@ def checks() -> list[dict]:
 			"label": "AI gateway",
 			"ok": bool(s.cf_account_id and s.ai_gateway) and _secret(s, "google_ai_key"),
 			"detail": "AI features return an error to tenants until this is configured.",
-			"where": "OneApp Control Settings → Tenant bench config",
+			"needs": "A Cloudflare account ID, an AI Gateway name, and a Google AI API key.",
+			"where": "Settings → Cloudflare",
 		},
 	]
 

@@ -542,3 +542,181 @@ def test_we_are_on_the_v1_line():
 		assert pkg["dependencies"]["frappe-ui"].lstrip("^~").startswith("1."), (
 			f"{app} is not pinned to the v1 line"
 		)
+
+
+# --------------------------------------------------------------------------- #
+# Navigation is declared once
+#
+# The sidebar and the phone's bottom bar are two renderings of one list. Declared
+# separately they drift, and they did: the same page was "Readiness" with a
+# checklist icon in the sidebar and "Setup" with a gear in the bottom bar, which
+# reads as two different features — and put a second gear next to the settings
+# dialog's.
+# --------------------------------------------------------------------------- #
+
+NAV_MODULE = "lib/nav.js"
+def _declares_a_nav_item(source: str) -> bool:
+	"""Does this file contain an object literal with both an icon and a route?
+
+	The innermost enclosing literal, found by walking the braces, rather than a
+	regex: the destination is itself an object (`to: { name, params: {...} }`),
+	so a fixed nesting depth either misses real entries or matches the whole
+	surrounding array.
+	"""
+	for match in re.finditer(r"\bicon:", source):
+		start, depth = None, 0
+		for i in range(match.start() - 1, -1, -1):
+			if source[i] == "}":
+				depth += 1
+			elif source[i] == "{":
+				if depth == 0:
+					start = i
+					break
+				depth -= 1
+		if start is None:
+			continue
+		depth = 0
+		for j in range(start, len(source)):
+			if source[j] == "{":
+				depth += 1
+			elif source[j] == "}":
+				depth -= 1
+				if depth == 0:
+					break
+		else:
+			continue
+		if re.search(r"\bto:", source[start : j + 1]):
+			return True
+	return False
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_navigation_is_declared_in_one_place(app):
+	root = ROOT / f"apps/{app}/frontend/src"
+	assert (root / NAV_MODULE).exists(), f"{app} has no {NAV_MODULE}"
+
+	offenders = []
+	for path in sorted(root.rglob("*")):
+		if path.suffix not in (".vue", ".js"):
+			continue
+		if path.relative_to(root).as_posix() == NAV_MODULE:
+			continue
+		if _declares_a_nav_item(path.read_text()):
+			offenders.append(path.relative_to(root).as_posix())
+	assert not offenders, (
+		f"navigation entries declared outside {NAV_MODULE}: {offenders} — the "
+		f"sidebar and the bottom bar have to render the same list"
+	)
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_both_renderings_read_that_one_list(app):
+	"""Not merely that the module exists — that nothing bypasses it."""
+	root = ROOT / f"apps/{app}/frontend/src"
+	shell_consumer = (root / "App.vue").read_text()
+	assert "useNav" in shell_consumer, f"{app}/App.vue does not feed AppShell from {NAV_MODULE}"
+
+	sidebars = [p for p in root.rglob("*Sidebar.vue")]
+	assert sidebars, f"{app} has no sidebar"
+	for path in sidebars:
+		assert "useNav" in path.read_text(), f"{path.name} declares its own navigation"
+
+
+def test_the_bottom_bar_leaves_a_slot_for_everything_else():
+	"""A grid bar of equal columns stops being readable past five on a phone,
+	and a sidebar can hold twenty entries. The last slot is always the account,
+	opening a sheet, so nothing a surface declares is unreachable."""
+	shell = (ROOT / f"apps/oneapp_control/frontend/{SHELL}").read_text()
+
+	assert "PRIMARY_SLOTS = 4" in shell, "the bar no longer reserves a slot for More"
+	assert "slice(0, PRIMARY_SLOTS)" in shell, "the bar is no longer capped"
+	assert "overflowNav" in shell, "items past the cap are dropped rather than moved"
+	assert 'label="More"' in shell, "there is no way into the sheet"
+	# Everything the desktop keeps in the rail footer and the sidebar foot.
+	for reachable in ("overflowNav", "menuItems", "tabOptions", "logout"):
+		assert reachable in shell, f"the More sheet cannot reach {reachable}"
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_appearance_is_reachable_without_opening_settings(app):
+	"""It is the preference people change most often; behind a dialog is the
+	slow path. Three options, not a toggle — see test_no_binary_theme_toggle."""
+	root = ROOT / f"apps/{app}/frontend/src"
+	assert (root / "lib/appearance.js").exists(), f"{app} has no appearance module"
+
+	# The account menu, wherever this surface puts it, and the phone's sheet.
+	menus = [p for p in root.rglob("*.vue") if "Dropdown" in p.read_text() and "Avatar" in p.read_text()]
+	assert menus, f"{app} has no account menu"
+	assert any("useAppearance" in p.read_text() for p in menus), (
+		f"{app}: no account menu offers appearance"
+	)
+	assert "useAppearance" in (root / "components/AppShell.vue").read_text()
+
+
+# --------------------------------------------------------------------------- #
+# Lists fit the screen they are on
+#
+# frappe-ui's List takes explicit grid tracks. Fixed rem tracks add up, and a
+# 390px phone has about 20rem of row to spend: three desktop-sized columns left
+# roughly 60px for the identity column, so the workspace name — the one thing
+# the row exists to say — truncated to "W…" while a plan code kept its full
+# width.
+# --------------------------------------------------------------------------- #
+
+# 390px screen − page padding − row padding ≈ 20rem, and the identity column
+# needs about 9rem of that to be worth reading.
+PHONE_FIXED_TRACK_BUDGET = 11.0
+
+# Scoped to `<List>` itself. A settings catalogue passes its tracks to
+# CatalogueList, which puts them inside a horizontal scroller on purpose — a
+# table someone is reading keeps every column and takes a scrollbar, rather
+# than dropping one.
+COLUMNS_BINDING = re.compile(r'<List\s[^>]*?:columns="(\[[^"]*\])"', re.S)
+
+
+def _fixed_rems(tracks: str) -> float:
+	return sum(float(v) for v in re.findall(r"'([\d.]+)rem'", tracks))
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_lists_wider_than_a_phone_declare_what_they_drop(app):
+	root = ROOT / f"apps/{app}/frontend/src"
+	offenders = []
+	for path in sorted(root.rglob("*.vue")):
+		rel = path.relative_to(root).as_posix()
+		for tracks in COLUMNS_BINDING.findall(path.read_text()):
+			total = _fixed_rems(tracks)
+			if total > PHONE_FIXED_TRACK_BUDGET:
+				offenders.append(f"{rel}: {tracks} = {total}rem of fixed tracks")
+	assert not offenders, (
+		"these lists spend more than "
+		f"{PHONE_FIXED_TRACK_BUDGET}rem on fixed columns, which is more than a "
+		"phone has after the identity column. Declare them through "
+		"useListColumns and say which columns a phone can spare:\n"
+		+ "\n".join(offenders)
+	)
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_a_dropped_column_takes_its_cell_with_it(app):
+	"""Tracks and cells have to agree about how many columns there are.
+
+	A cell left rendering after its track is gone shifts every cell in the row
+	one place left — which looks like the data is wrong rather than the layout.
+	"""
+	root = ROOT / f"apps/{app}/frontend/src"
+	offenders = []
+	for path in sorted(root.rglob("*.vue")):
+		source = path.read_text()
+		dropped = re.findall(r"\{\s*key:\s*'([^']+)'[^}]*mobile:\s*false", source)
+		for key in dropped:
+			assert f"shows('{key}')" in source, (
+				f"{path.relative_to(root)}: column '{key}' is dropped on a phone "
+				f"but no cell tests shows('{key}')"
+			)
+		# The converse: a `shows()` for a key that is never declared silently
+		# renders nothing at every width.
+		for key in set(re.findall(r"shows\('([^']+)'\)", source)):
+			if f"key: '{key}'" not in source:
+				offenders.append(f"{path.relative_to(root)}: shows('{key}') is not a column")
+	assert not offenders, "; ".join(offenders)

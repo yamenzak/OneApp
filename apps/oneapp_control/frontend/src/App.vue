@@ -13,8 +13,10 @@
       v-else
       :apps="railApps"
       :active-app="activeWorkspace"
-      :nav-items="navItems"
+      :apps-label="isAdmin ? 'Apps' : 'Workspaces'"
+      :nav-items="nav"
       :menu-items="menuItems"
+      :user="identity"
     >
       <template #sidebar>
         <AppSidebar v-if="isAdmin" />
@@ -39,10 +41,12 @@ import AppShell from './components/AppShell.vue'
 import AppSidebar from './components/AppSidebar.vue'
 import PortalSidebar from './components/PortalSidebar.vue'
 import SettingsShell from './components/settings/SettingsShell.vue'
+import { useNav } from './lib/nav'
 import { setup } from './lib/setup'
 import { openSettings } from './lib/settings'
 import { ADMIN_APP, TENANT_APP } from './lib/brand'
 import { workspaces } from './lib/customer'
+import { fullName, email, userImage } from './lib/user'
 
 const route = useRoute()
 const isAdmin = computed(() => route.meta.surface === 'admin')
@@ -70,31 +74,23 @@ const railApps = computed(() => {
 
 const activeWorkspace = computed(() => (isAdmin.value ? '' : workspaces.current || ''))
 
-// The phone's bottom bar. Same destinations as the sidebar, which is the point:
-// the two must not drift into different products.
-const navItems = computed(() => {
-  if (isAdmin.value) {
-    return [
-      { label: 'Tenants', icon: 'lucide-users', to: { name: 'Tenants' } },
-      { label: 'Jobs', icon: 'lucide-activity', to: { name: 'Jobs' } },
-      { label: 'Shards', icon: 'lucide-server', to: { name: 'Shards' } },
-      { label: 'Setup', icon: 'lucide-settings', to: { name: 'Setup' } },
-    ]
-  }
-  const workspace = workspaces.current
-  if (!workspace) return []
-  return [
-    { label: 'Overview', icon: 'lucide-home', to: { name: 'AccountOverview', params: { workspace } } },
-    { label: 'Billing', icon: 'lucide-credit-card', to: { name: 'AccountBilling', params: { workspace } } },
-    { label: 'People', icon: 'lucide-users', to: { name: 'AccountTeam', params: { workspace } } },
-    { label: 'Domain', icon: 'lucide-globe', to: { name: 'AccountDomain', params: { workspace } } },
-  ]
-})
+// One list, rendered twice: the sidebar on a desktop, the bottom bar and its
+// More sheet on a phone. Declared in lib/nav.js so the two cannot drift.
+const nav = useNav()
+
+const identity = computed(() => ({
+  name: fullName.value,
+  email: email.value,
+  avatar: userImage.value,
+  subtitle: isAdmin.value ? 'Operator' : workspaces.selected?.tenant_name || '',
+}))
 
 // Settings live in the sidebar's user menu on a desktop. A phone has no
 // sidebar, so without this there is no way to reach them at all — which is
 // exactly what an operator hits when the control plane is unconfigured and
-// setting it up is the only thing they need to do.
+// setting it up is the only thing they need to do. It is an action in the More
+// sheet rather than a tab of its own: a bottom bar slot is for a destination,
+// and a second gear beside Readiness's read as two settings screens.
 const menuItems = computed(() =>
   isAdmin.value
     ? [{ label: 'Settings', icon: 'lucide-settings', onClick: () => openSettings() }]

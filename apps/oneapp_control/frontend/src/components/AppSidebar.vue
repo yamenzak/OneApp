@@ -18,11 +18,11 @@
       <nav class="flex flex-col gap-0.5">
         <SidebarItem
           v-for="item in nav"
-          :key="item.to"
+          :key="item.label"
           :icon="item.icon"
           :label="item.label"
           :to="item.to"
-          :active="isActive(item.to)"
+          :active="item.active"
         >
           <template v-if="item.badge" #suffix>
             <Badge
@@ -73,34 +73,19 @@
 
 <script setup>
 import { ADMIN_APP } from '../lib/brand'
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
 import {
   Sidebar, SidebarHeader, SidebarItem, SidebarCard,
   Avatar, Badge, ScrollArea,
 } from '@/ui'
 import UserMenu from './UserMenu.vue'
+import { useNav } from '../lib/nav'
 import { setup } from '../lib/setup'
 import { openSettings } from '../lib/settings'
 import { user } from '../lib/user'
 
 
-const route = useRoute()
-
-const nav = computed(() => [
-  { to: '/admin/tenants', label: 'Tenants', icon: 'lucide-users' },
-  { to: '/admin/jobs', label: 'Provisioning', icon: 'lucide-activity' },
-  { to: '/admin/shards', label: 'Shards', icon: 'lucide-server' },
-  {
-    to: '/admin/setup',
-    label: 'Readiness',
-    icon: 'lucide-list-checks',
-    badge: setup.canProvision
-      ? null
-      : { theme: 'amber', label: String(setup.blockers.length) },
-  },
-])
-
-// Nested routes should keep their section highlighted.
-const isActive = (to) => route.path === to || route.path.startsWith(`${to}/`)
+// The destinations themselves live in lib/nav.js: the phone's bottom bar
+// renders the same list, and two declarations of it drifted into two different
+// names and icons for the same page.
+const nav = useNav()
 </script>

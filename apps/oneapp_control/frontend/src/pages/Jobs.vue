@@ -19,9 +19,9 @@
       description="Jobs appear here when a tenant is created, suspended, resumed or archived."
     />
 
-    <List v-else :columns="COLUMNS" :row-height="52" class="list-row-px-3" divider="full">
+    <List v-else :columns="columns" :row-height="52" class="list-row-px-3" divider="full">
       <ListHeader>
-        <ListHeaderCell v-for="c in HEADERS" :key="c">{{ c }}</ListHeaderCell>
+        <ListHeaderCell v-for="c in visible" :key="c.key">{{ c.header }}</ListHeaderCell>
       </ListHeader>
 
       <ListRows :items="rows" row-key="name" v-slot="{ item: job, value }">
@@ -29,15 +29,21 @@
           <ListCell>
             <div class="min-w-0">
               <p class="truncate text-base text-ink-gray-8">{{ job.action }}</p>
-              <p class="truncate text-xs text-ink-gray-5">{{ job.tenant || 'pool' }}</p>
+              <!-- The step is a column of its own where there is room, and part
+                   of the subtitle where there is not: which step a job is on is
+                   the thing you came to see. -->
+              <p class="truncate text-xs text-ink-gray-5">
+                {{ job.tenant || 'pool' }}
+                <span v-if="!shows('step')">· {{ job.step || 'not started' }}</span>
+              </p>
             </div>
           </ListCell>
-          <ListCell>
+          <ListCell v-if="shows('step')">
             <span class="truncate text-p-sm text-ink-gray-6">
               {{ job.step || 'not started' }}
             </span>
           </ListCell>
-          <ListCell>
+          <ListCell v-if="shows('attempts')">
             <span class="text-p-sm tabular-nums text-ink-gray-5">
               {{ job.attempts > 1 ? `${job.attempts} attempts` : '' }}
             </span>
@@ -61,10 +67,15 @@ import {
   List, ListHeader, ListHeaderCell, ListRows, ListRow, ListCell,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
+import { useListColumns } from '../lib/list'
 import { useDocList } from '../lib/api'
 
-const COLUMNS = ['minmax(0,1fr)', '14rem', '8rem', '9rem']
-const HEADERS = ['Job', 'Step', 'Attempts', 'State']
+const { visible, columns, shows } = useListColumns([
+  { key: 'job', header: 'Job', track: 'minmax(0,1fr)' },
+  { key: 'step', header: 'Step', track: '14rem', mobile: false },
+  { key: 'attempts', header: 'Attempts', track: '8rem', mobile: false },
+  { key: 'state', header: 'State', track: '9rem', mobile: '6rem' },
+])
 
 const resource = useDocList('Provisioning Job', {
   fields: ['name', 'tenant', 'action', 'state', 'step', 'attempts', 'last_error'],

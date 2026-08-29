@@ -19,6 +19,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Avatar, Dropdown, Tooltip } from '@/ui'
+import { useAppearance } from '../lib/appearance'
 import { fullName, userImage } from '../lib/user'
 
 // The rail's foot, matching where every frappe-ui shell puts the account. The
@@ -26,12 +27,17 @@ import { fullName, userImage } from '../lib/user'
 // action — and it keeps the rail's 28px rhythm.
 const router = useRouter()
 
+// Appearance is here as well as in settings: it is the preference people change
+// most often, and hunting for it behind a dialog is the slow path.
+const { menuGroup } = useAppearance()
+
 const options = computed(() => [
   {
     label: 'Account',
     icon: 'lucide-circle-user',
     onClick: () => router.push({ name: 'Account' }),
   },
+  menuGroup.value,
   {
     label: 'Log out',
     icon: 'lucide-log-out',

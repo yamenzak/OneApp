@@ -1,26 +1,45 @@
 <template>
   <SettingsDialog v-model:open="showSettings" v-model:tab="activeSettingsTab" size="5xl">
-    <SettingsSidebar>
-      <!--
-        The dialog is genuinely full-screen on a phone, and frappe-ui renders no
-        close button for a `bare` Dialog. That leaves Escape as the only way out
-        — which a phone does not have, and there is no backdrop left to tap.
-        Desktop keeps the backdrop, so this is `sm:hidden`.
-      -->
-      <div class="mb-2 flex items-center justify-between sm:hidden">
-        <span class="text-base-medium text-ink-gray-8">Settings</span>
-        <Button
-          variant="ghost"
-          icon="lucide-x"
-          label="Close settings"
-          @click="showSettings = false"
-        />
-      </div>
+    <!--
+      A pinned header, phone only.
 
-      <SettingsNavGroup v-for="group in GROUPS" :key="group.label" :label="group.label">
+      SettingsDialog is `bare`, so frappe-ui renders no close button and no
+      chrome of its own; on a desktop the backdrop is the way out. Full-screen
+      on a phone there is no backdrop left to tap and no Escape key to press,
+      so without this the dialog is a trap. It is the first row of the dialog's
+      flex column below `sm` and vanishes above it, where the column becomes a
+      row and the backdrop comes back.
+    -->
+    <div
+      data-oneapp="settings-dialog"
+      class="flex shrink-0 items-center justify-between border-b border-outline-gray-1 px-4 py-3 sm:hidden"
+    >
+      <span class="text-lg font-semibold text-ink-gray-8">Settings</span>
+      <Button
+        variant="ghost"
+        icon="lucide-x"
+        label="Close settings"
+        @click="showSettings = false"
+      />
+    </div>
+
+    <!-- On a phone the nav is a strip of tabs that scrolls sideways, not a
+         column that eats a third of the screen. See geometry.js. -->
+    <SettingsSidebar :class="TAB_STRIP">
+      <SettingsNavGroup
+        v-for="group in GROUPS"
+        :key="group.label"
+        :label="group.label"
+        :class="TAB_GROUP"
+      >
         <!-- The label is the default slot, not a prop: passing :label renders
              an item with an icon and no text. -->
-        <SettingsNavItem v-for="item in group.items" :key="item.value" :value="item.value">
+        <SettingsNavItem
+          v-for="item in group.items"
+          :key="item.value"
+          :value="item.value"
+          :class="TAB_ITEM"
+        >
           <template #prefix>
             <Icon :name="item.icon" class="size-4 text-ink-gray-7" />
           </template>
@@ -37,8 +56,8 @@
       <SettingsPanel value="regions"><RegionsSettings /></SettingsPanel>
       <SettingsPanel value="buckets"><BucketsSettings /></SettingsPanel>
       <SettingsPanel value="appearance">
-        <SettingsHeader title="Appearance" />
-        <SettingsBody>
+        <SettingsHeader title="Appearance" :class="PANEL_HEADER" />
+        <SettingsBody :class="PANEL_BODY">
           <div class="pt-6"><ThemeSetting /></div>
         </SettingsBody>
       </SettingsPanel>
@@ -58,6 +77,7 @@ import PlansSettings from './PlansSettings.vue'
 import RegionsSettings from './RegionsSettings.vue'
 import BucketsSettings from './BucketsSettings.vue'
 import ThemeSetting from '../ThemeSetting.vue'
+import { PANEL_BODY, PANEL_HEADER, TAB_GROUP, TAB_ITEM, TAB_STRIP } from './geometry'
 import { showSettings, activeSettingsTab } from '../../lib/settings'
 
 // Everything an operator needs, so the desk is never required. Grouped by what

@@ -3,8 +3,9 @@
     <AppShell
       v-if="session.loaded && session.isLoggedIn"
       :apps="railApps"
-      :active-app="activeApp"
-      :nav-items="navItems"
+      :active-app="activeAppCode"
+      :nav-items="nav"
+      :user="identity"
     >
       <template #sidebar>
         <AppSidebar />
@@ -41,7 +42,9 @@ import { FrappeUIProvider, Button, LoadingIndicator, usePageMeta } from '@/ui'
 import AppShell from './components/AppShell.vue'
 import AppSidebar from './components/AppSidebar.vue'
 import RailAccount from './components/RailAccount.vue'
+import { useNav } from './lib/nav'
 import { session, sessionResource } from './lib/session'
+import { fullName, email, userImage } from './lib/user'
 
 const route = useRoute()
 
@@ -56,14 +59,20 @@ const railApps = computed(() =>
   })),
 )
 
-const activeApp = computed(() => route.params.appCode || '')
+const activeAppCode = computed(() => route.params.appCode || '')
 
-// On a phone the rail is gone, so these are the destinations inside the current
-// app. Switching apps is the sheet AppShell adds beside them.
-const navItems = computed(() => [
-  { label: 'Apps', icon: 'lucide-layout-grid', to: { name: 'Launcher' } },
-  { label: 'Account', icon: 'lucide-circle-user', to: { name: 'Account' } },
-])
+// One list, rendered twice: the sidebar on a desktop, the bottom bar and its
+// More sheet on a phone. Declared in lib/nav.js so the two cannot drift — and
+// an app that declares more sections than the bar has slots keeps the rest
+// reachable in the sheet rather than losing them.
+const { nav } = useNav()
+
+const identity = computed(() => ({
+  name: fullName.value,
+  email: email.value,
+  avatar: userImage.value,
+  subtitle: session.tenant?.name || '',
+}))
 
 usePageMeta(() => ({ title: session.tenant?.name || TENANT_APP }))
 </script>

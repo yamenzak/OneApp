@@ -32,9 +32,9 @@
       description="Creating one provisions a real site on Frappe Cloud. It takes a few minutes unless a warm site is waiting."
     />
 
-    <List v-else :columns="COLUMNS" :row-height="56" class="list-row-px-3" divider="full">
+    <List v-else :columns="columns" :row-height="56" class="list-row-px-3" divider="full">
       <ListHeader>
-        <ListHeaderCell v-for="c in HEADERS" :key="c">{{ c }}</ListHeaderCell>
+        <ListHeaderCell v-for="c in visible" :key="c.key">{{ c.header }}</ListHeaderCell>
       </ListHeader>
 
       <ListRows :items="rows" row-key="name" v-slot="{ item: tenant, value }">
@@ -52,7 +52,7 @@
               </div>
             </div>
           </ListCell>
-          <ListCell>
+          <ListCell v-if="shows('plan')">
             <span class="text-p-sm text-ink-gray-6">{{ tenant.plan || '—' }}</span>
           </ListCell>
           <ListCell>
@@ -74,13 +74,18 @@ import {
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import CreateTenantDialog from '../components/CreateTenantDialog.vue'
+import { useListColumns } from '../lib/list'
 import { useDocList } from '../lib/api'
 import { setup } from '../lib/setup'
 
 // Deterministic tracks: `auto` sizes independently per row and the columns
-// would not line up.
-const COLUMNS = ['minmax(0,1fr)', '10rem', '8rem']
-const HEADERS = ['Workspace', 'Plan', 'Status']
+// would not line up. The plan is the column a phone can spare — it is on the
+// tenant's own page, and keeping it left about 60px for the workspace name.
+const { visible, columns, shows } = useListColumns([
+  { key: 'name', header: 'Workspace', track: 'minmax(0,1fr)' },
+  { key: 'plan', header: 'Plan', track: '10rem', mobile: false },
+  { key: 'status', header: 'Status', track: '8rem', mobile: '5.5rem' },
+])
 
 // Live over the socket: a site that finishes provisioning appears on its own.
 const resource = useDocList('Tenant', {

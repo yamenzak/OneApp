@@ -1,32 +1,47 @@
 <template>
-  <SettingsHeader :title="title" :description="description">
+  <SettingsHeader :title="title" :description="description" :class="PANEL_HEADER">
     <template v-if="form.length" #actions>
       <Button icon-left="lucide-plus" label="New" @click="create" />
     </template>
   </SettingsHeader>
 
-  <SettingsBody>
+  <SettingsBody :class="PANEL_BODY">
     <div v-if="resource.loading && !rows.length" class="grid place-items-center py-12">
       <LoadingIndicator class="size-5 text-ink-gray-5" />
     </div>
 
     <EmptyState v-else-if="!rows.length" class="!py-12" :title="emptyTitle" :description="emptyHint" />
 
-    <List v-else :columns="columns" :row-height="52" class="mt-5 list-row-px-3" divider="full">
-      <ListHeader>
-        <ListHeaderCell v-for="c in headers" :key="c">{{ c }}</ListHeaderCell>
-      </ListHeader>
-      <ListRows :items="rows" row-key="name" v-slot="{ item: row, value }">
-        <ListRow :value="value" @click="form.length && edit(row)">
-          <ListCell v-for="(cell, i) in cellsFor(row)" :key="i">
-            <Badge v-if="cell.badge" :theme="cell.theme" :label="cell.value" variant="subtle" />
-            <span v-else class="truncate text-p-sm" :class="cell.muted ? 'text-ink-gray-5' : 'text-ink-gray-8'">
-              {{ cell.value }}
-            </span>
-          </ListCell>
-        </ListRow>
-      </ListRows>
-    </List>
+    <!-- A four-column table does not fit a 390px screen, and SettingsBody's
+         ScrollArea is vertical-only, so reka-ui sets its viewport
+         `overflow-x: hidden` and would simply clip the rest. Wide content owns
+         its own horizontal scroller. -->
+    <div v-else class="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <List
+        :columns="columns"
+        :row-height="52"
+        class="mt-5 min-w-[32rem] list-row-px-3"
+        divider="full"
+      >
+        <ListHeader>
+          <ListHeaderCell v-for="c in headers" :key="c">{{ c }}</ListHeaderCell>
+        </ListHeader>
+        <ListRows :items="rows" row-key="name" v-slot="{ item: row, value }">
+          <ListRow :value="value" @click="form.length && edit(row)">
+            <ListCell v-for="(cell, i) in cellsFor(row)" :key="i">
+              <Badge v-if="cell.badge" :theme="cell.theme" :label="cell.value" variant="subtle" />
+              <span
+                v-else
+                class="truncate text-p-sm"
+                :class="cell.muted ? 'text-ink-gray-5' : 'text-ink-gray-8'"
+              >
+                {{ cell.value }}
+              </span>
+            </ListCell>
+          </ListRow>
+        </ListRows>
+      </List>
+    </div>
   </SettingsBody>
 
   <CatalogueForm
@@ -47,6 +62,7 @@ import {
   List, ListHeader, ListHeaderCell, ListRows, ListRow, ListCell,
 } from '@/ui'
 import CatalogueForm from './CatalogueForm.vue'
+import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import EmptyState from '../EmptyState.vue'
 import { useDocList } from '../../lib/api'
 

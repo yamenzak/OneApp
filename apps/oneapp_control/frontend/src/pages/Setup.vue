@@ -1,28 +1,31 @@
 <template>
   <PageHeader>
-    <Breadcrumbs :items="[{ label: 'Setup' }]" />
-  
+    <Breadcrumbs :items="[{ label: 'Readiness' }]" />
+
     <div class="flex items-center gap-2">
-      <Button :loading="setup.loading" label="Re-check" @click="setup.load()" />
+      <!-- An icon, not the word "Re-check": it sits beside a labelled primary
+           action, and a second word there competes with it for the same glance.
+           `label` stays as the accessible name and the tooltip. -->
+      <Button
+        variant="ghost"
+        icon="lucide-refresh-cw"
+        label="Re-check"
+        :loading="setup.loading"
+        @click="setup.load()"
+      />
       <Button variant="solid" label="Open settings" @click="openSettings()" />
-</div>
+    </div>
   </PageHeader>
 
   <div class="mx-auto max-w-3xl p-5">
-    <Alert
-      v-if="setup.canProvision"
-      theme="green"
-      title="Ready to provision"
-      class="mb-6"
-    >
+    <Alert v-if="setup.canProvision" theme="green" title="Ready to provision" class="mb-6">
       <template #description>
         Anything outstanding below limits what tenants can do, not whether they come up.
       </template>
     </Alert>
     <Alert v-else theme="amber" title="Provisioning is disabled" class="mb-6">
       <template #description>
-        A half-configured control plane fails partway through provisioning, with a real
-        site already created. The required items below have to be set first.
+        A half-configured control plane fails partway, with a real site already created.
       </template>
     </Alert>
 
@@ -47,10 +50,18 @@
                vertical rhythm here is this page's to set. -->
           <ListRow :value="value" class="py-3">
             <ListCell>
+              <!-- A satisfied check is a name and a tick. What it is for, what
+                   to supply and where to put it are only worth the space while
+                   it is missing — thirteen checks each explaining themselves is
+                   the wall of text this page was, and it was longest exactly
+                   when everything was already fine. -->
               <div class="min-w-0 py-0.5">
                 <p class="text-base text-ink-gray-8">{{ check.label }}</p>
-                <p class="mt-0.5 text-p-sm text-ink-gray-6">{{ check.detail }}</p>
-                <p class="mt-1 text-xs text-ink-gray-4">{{ check.where }}</p>
+                <div v-if="!check.ok" class="mt-1 space-y-1">
+                  <p class="text-p-sm text-ink-gray-6">{{ check.detail }}</p>
+                  <p class="text-p-sm text-ink-gray-7">{{ check.needs }}</p>
+                  <p class="text-xs text-ink-gray-4">{{ check.where }}</p>
+                </div>
               </div>
             </ListCell>
             <ListCell class="items-start justify-end pt-0.5">
@@ -80,7 +91,7 @@ const GROUPS = [
   {
     key: 'blocking',
     label: 'Required',
-    blurb: 'Without these, provisioning fails partway and leaves a real site behind.',
+    blurb: 'Provisioning is refused until all of these pass.',
   },
   {
     key: 'billing',

@@ -11,11 +11,11 @@
     <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pb-6">
       <nav class="space-y-0.5">
         <SidebarItem
-          v-for="item in items"
+          v-for="item in nav"
           :key="item.label"
           :icon="item.icon"
           :to="item.to"
-          :active="route.name === item.name"
+          :active="item.active"
         >
           <span class="flex-1 truncate text-sm">{{ item.label }}</span>
         </SidebarItem>
@@ -44,28 +44,18 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
 import { Button, ScrollArea, Sidebar, SidebarHeader, SidebarItem } from '@/ui'
 import UserMenu from './UserMenu.vue'
+import { useNav } from '../lib/nav'
 import { workspaces } from '../lib/customer'
 import { fullName, email, userImage } from '../lib/user'
 
-const route = useRoute()
 const current = computed(() => workspaces.selected)
 
+// The destinations themselves live in lib/nav.js, so the sidebar here and the
+// phone's bottom bar cannot name the same page two different things.
+const nav = useNav()
 
-const items = computed(() => {
-  const workspace = workspaces.current
-  if (!workspace) return []
-  return [
-    { label: 'Overview', name: 'AccountOverview', icon: 'lucide-home', to: { name: 'AccountOverview', params: { workspace } } },
-    { label: 'Apps', name: 'AccountApps', icon: 'lucide-layout-grid', to: { name: 'AccountApps', params: { workspace } } },
-    { label: 'Billing', name: 'AccountBilling', icon: 'lucide-credit-card', to: { name: 'AccountBilling', params: { workspace } } },
-    { label: 'Plan', name: 'AccountPlan', icon: 'lucide-layers', to: { name: 'AccountPlan', params: { workspace } } },
-    { label: 'People', name: 'AccountTeam', icon: 'lucide-users', to: { name: 'AccountTeam', params: { workspace } } },
-    { label: 'Domain', name: 'AccountDomain', icon: 'lucide-globe', to: { name: 'AccountDomain', params: { workspace } } },
-  ]
-})
 
 const openWorkspace = () => window.open(current.value.url, '_blank', 'noopener')
 </script>

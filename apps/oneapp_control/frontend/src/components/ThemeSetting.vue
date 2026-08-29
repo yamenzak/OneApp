@@ -11,29 +11,15 @@
     title="Appearance"
     description="Light, dark, or matching your system."
   >
-    <Select v-model="scheme" :options="SCHEMES" />
+    <Select v-model="scheme" :options="selectOptions" />
   </SettingsRow>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { Select, SettingsRow, useColorScheme } from '@/ui'
+import { Select, SettingsRow } from '@/ui'
+import { useAppearance } from '@/lib/appearance'
 
 // Three states, not a toggle. A binary switch cannot express 'follow the
 // system', so a user who wants that has to keep changing it by hand twice a day.
-const SCHEMES = [
-  { label: 'Light', value: 'light' },
-  { label: 'Dark', value: 'dark' },
-  { label: 'System', value: 'system' },
-]
-
-const { colorScheme, setColorScheme } = useColorScheme()
-
-const scheme = computed({
-  get: () => colorScheme.value,
-  // colorScheme is readonly on purpose: the ref is only a third of the state,
-  // alongside the <html> attribute and the stored value. setColorScheme moves
-  // all three together.
-  set: (value) => setColorScheme(value),
-})
+const { scheme, selectOptions } = useAppearance()
 </script>

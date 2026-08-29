@@ -20,9 +20,9 @@
       description="Provisioning refuses until one exists with headroom — a tenant placed nowhere is worse than a clear error."
     />
 
-    <List v-else :columns="COLUMNS" :row-height="56" class="list-row-px-3" divider="full">
+    <List v-else :columns="columns" :row-height="56" class="list-row-px-3" divider="full">
       <ListHeader>
-        <ListHeaderCell v-for="c in HEADERS" :key="c">{{ c }}</ListHeaderCell>
+        <ListHeaderCell v-for="c in visible" :key="c.key">{{ c.header }}</ListHeaderCell>
       </ListHeader>
 
       <ListRows :items="shards" row-key="name" v-slot="{ item: shard, value }">
@@ -30,15 +30,21 @@
           <ListCell>
             <div class="min-w-0">
               <p class="truncate text-base text-ink-gray-8">{{ shard.name }}</p>
+              <!-- Occupancy is a column of its own where there is room, and
+                   part of the subtitle where there is not: whether a shard has
+                   headroom is the reason to look at this list. -->
               <p class="truncate text-xs text-ink-gray-5">
                 {{ shard.press_release_group }}
+                <span v-if="!shows('capacity')" class="tabular-nums">
+                  · {{ shard.tenant_count }} / {{ shard.capacity_tenants || '∞' }}
+                </span>
               </p>
             </div>
           </ListCell>
-          <ListCell>
+          <ListCell v-if="shows('ring')">
             <Badge :label="shard.deploy_ring" variant="subtle" theme="gray" />
           </ListCell>
-          <ListCell>
+          <ListCell v-if="shows('capacity')">
             <div class="w-full">
               <div class="flex items-baseline justify-between text-xs text-ink-gray-5">
                 <span class="tabular-nums">
@@ -64,7 +70,15 @@
             />
           </ListCell>
           <ListCell>
-            <Button label="Push config" @click.stop="api.pushBenchConfig(shard.name)" />
+            <!-- The action stays reachable on a phone; only its label goes.
+                 `label` is still the accessible name and the tooltip. -->
+            <Button
+              v-if="isMobile"
+              icon="lucide-upload"
+              label="Push config"
+              @click.stop="api.pushBenchConfig(shard.name)"
+            />
+            <Button v-else label="Push config" @click.stop="api.pushBenchConfig(shard.name)" />
           </ListCell>
         </ListRow>
       </ListRows>
@@ -82,10 +96,19 @@ import {
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import NewShardDialog from '../components/NewShardDialog.vue'
+import { useListColumns } from '../lib/list'
+import { useIsMobile } from '../lib/screen'
 import { api } from '../lib/api'
 
-const COLUMNS = ['minmax(0,1fr)', '7rem', '12rem', '8rem', '9rem']
-const HEADERS = ['Shard', 'Ring', 'Capacity', 'Intake', '']
+const isMobile = useIsMobile()
+
+const { visible, columns, shows } = useListColumns([
+  { key: 'shard', header: 'Shard', track: 'minmax(0,1fr)' },
+  { key: 'ring', header: 'Ring', track: '7rem', mobile: false },
+  { key: 'capacity', header: 'Capacity', track: '12rem', mobile: false },
+  { key: 'intake', header: 'Intake', track: '8rem', mobile: '5.5rem' },
+  { key: 'action', header: '', track: '9rem', mobile: '2.5rem' },
+])
 
 const shards = ref([])
 const pushing = ref(false)

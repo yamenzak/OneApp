@@ -32,10 +32,26 @@ JS_CLASS = re.compile(r"""(?<![:\w-])(?:class(?:Name)?|Class)\s*[=:]\s*(['"`])(.
 SCRIPT = re.compile(r"<script[^>]*>(.*?)</script>", re.S)
 STRING_IN_EXPR = re.compile(r"""'([^']*)'|"([^"]*)\"""")
 
-# A Tailwind utility, roughly: lowercase, may carry variants and arbitrary
-# values. Deliberately loose — anything that is not a utility simply will not be
-# in the emitted set either, so the allowlist below carries the exceptions.
-UTILITY = re.compile(r"^[a-z][\w-]*(?:[:/][\w\[\]().,%#/-]+)*$")
+# A Tailwind utility, roughly: an optional `-`/`!` prefix, then lowercase or an
+# arbitrary-variant bracket, then anything a variant or arbitrary value can
+# contain. Deliberately loose — anything that is not a utility simply will not
+# be in the emitted set either, so the allowlist below carries the exceptions.
+#
+# The narrow earlier version excluded `&`, `=` and `!`, which is every arbitrary
+# variant and every `!important` utility: `max-sm:[&_[data-slot=x]]:!px-4` and
+# `-mx-4` were both skipped without a word, so the one that emitted nothing was
+# invisible to the very check meant to find it.
+UTILITY = re.compile(r"""^[-!]?[a-z\[][\w\[\]&=!*>+~:.,%#/()'"$-]*$""")
+
+# Files whose *whole* purpose is to name classes, so every string literal in
+# them is a class list.
+#
+# The regexes above look for `class="…"` and `class: '…'`; a module that exports
+# `export const TAB_STRIP = [...]` matches neither, so its classes were never
+# audited at all — and one of them (an arbitrary variant Tailwind could not
+# parse) emitted nothing for exactly as long as nobody looked. A file listed
+# here is opting in to being read as a class list.
+CLASS_MODULES = ("components/settings/geometry.js",)
 
 # Referenced but never emitted for reasons that are not drift.
 ALLOWED_MISSING = {
@@ -74,6 +90,15 @@ def referenced_classes(app: str) -> dict[str, set[str]]:
         if path.suffix not in (".vue", ".js"):
             continue
         source = path.read_text()
+        if path.relative_to(root).as_posix() in CLASS_MODULES:
+            # Prose in the doc comments is not a class list, and "the" is not a
+            # retired token.
+            code = re.sub(r"/\*.*?\*/", "", source, flags=re.S)
+            code = re.sub(r"//[^\n]*", "", code)
+            for single, double in STRING_IN_EXPR.findall(code):
+                for token in (single or double).split():
+                    record(token, path)
+            continue
         for match in CLASS_ATTR.finditer(source):
             blob = match.group("value")
             if match.group("bound"):

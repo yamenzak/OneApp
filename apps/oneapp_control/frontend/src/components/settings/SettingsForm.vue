@@ -1,7 +1,7 @@
 <template>
-  <SettingsHeader :title="title" :description="description" />
+  <SettingsHeader :title="title" :description="description" :class="PANEL_HEADER" />
 
-  <SettingsBody>
+  <SettingsBody :class="PANEL_BODY">
     <!--
       Stacked FormControls, not SettingsRow. SettingsRow is label-left /
       control-right with a `shrink-0` control and a `gap-8` between them — the
@@ -24,17 +24,20 @@
         :options="field.options"
       />
     </div>
-
-    <div class="mt-6 flex items-center gap-2">
-      <Button variant="solid" label="Save" :loading="saving" @click="save" />
-      <span v-if="dirty" class="text-p-sm text-ink-gray-5">Unsaved changes</span>
-    </div>
   </SettingsBody>
+
+  <!-- Pinned, not the last thing in the scroll region: on a phone a long form
+       puts Save below the fold exactly when there is something to save. -->
+  <div :class="PANEL_FOOTER">
+    <Button variant="solid" label="Save" :loading="saving" :disabled="!dirty" @click="save" />
+    <span v-if="dirty" class="text-p-sm text-ink-gray-5">Unsaved changes</span>
+  </div>
 </template>
 
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { Button, FormControl, SettingsHeader, SettingsBody } from '@/ui'
+import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
 import { useDocument, useDocWrites } from '../../lib/resource'
 
 /**
