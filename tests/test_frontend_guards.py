@@ -105,3 +105,23 @@ def test_tailwind_lists_frappe_ui_content(generated):
 	half the component styles."""
 	for app, files in generated.items():
 		assert "frappeUIContent" in files["frontend/tailwind.config.js"], app
+
+
+def test_formatter_rules_are_off(generated):
+	"""Left on, vue/recommended emits dozens of cosmetic warnings per file and
+	trains everyone to ignore lint — which is where the guard rules live."""
+	for app, files in generated.items():
+		config = files["frontend/eslint.config.js"]
+		for rule in (
+			"vue/max-attributes-per-line",
+			"vue/singleline-html-element-content-newline",
+			"vue/html-self-closing",
+		):
+			assert f"'{rule}': 'off'" in config, f"{app}: {rule} should be off"
+
+
+def test_banned_elements_carry_a_replacement(generated):
+	"""A ban that does not say what to use instead just gets disabled."""
+	config = next(iter(generated.values()))["frontend/eslint.config.js"]
+	for hint in ("<Button>", "<TextInput>", "<Select>", "<Textarea>", "<Dialog>", "<ListView>"):
+		assert hint in config, hint

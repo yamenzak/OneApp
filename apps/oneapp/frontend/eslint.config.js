@@ -25,6 +25,17 @@ export default [
       'vue/no-restricted-html-elements': ['error', ...BANNED],
       'vue/multi-word-component-names': 'off',
       'vue/no-v-html': 'error',
+
+      // Formatting is a formatter's job. Left on, these produce dozens of
+      // warnings per file and train everyone to ignore lint output — which is
+      // where the rules that actually matter live.
+      'vue/max-attributes-per-line': 'off',
+      'vue/singleline-html-element-content-newline': 'off',
+      'vue/html-self-closing': 'off',
+      'vue/html-indent': 'off',
+      'vue/html-closing-bracket-newline': 'off',
+      'vue/attributes-order': 'off',
+      'vue/first-attribute-linebreak': 'off',
     },
   },
   {
