@@ -1,0 +1,30 @@
+# Runs the logic that can be tested without a bench: signature verification,
+# slug rules, retry backoff, Stripe form encoding. Anything needing the ORM
+# belongs in Frappe's own test runner against a real site.
+
+name: Tests
+
+on:
+  push:
+    branches: [main, canary, "release/**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install
+        run: pip install pytest requests
+
+      - name: Run tests
+        run: python -m pytest tests/ -q
+
+      - name: Validate doctype JSON
+        run: python scripts/validate_doctypes.py
