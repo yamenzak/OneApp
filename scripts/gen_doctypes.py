@@ -226,6 +226,37 @@ doctype(
 )
 
 # --------------------------------------------------------------------------- #
+# Support Login — every time an operator signed in to a customer's workspace.
+#
+# Break-glass access to someone else's data. The record is written *before* the
+# session is handed over, so a login that succeeds is always logged: writing it
+# afterwards would lose exactly the ones worth having if anything failed in
+# between. `reason` is required for the same purpose — an audit trail of
+# unexplained entries is a list, not an account.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Support Login",
+    autoname="hash",
+    fields=[
+        f("tenant", "Link", options="Tenant", reqd=1, in_list_view=1,
+          in_standard_filter=1, read_only=1),
+        f("site", "Data", read_only=1, in_list_view=1),
+        f("operator", "Link", options="User", reqd=1, in_list_view=1,
+          in_standard_filter=1, read_only=1),
+        column("cb_support_login"),
+        f("reason", "Small Text", reqd=1, in_list_view=1,
+          description="Why this workspace was entered. Required: an audit trail "
+                      "of unexplained entries is a list, not an account."),
+        f("logged_in_on", "Datetime", reqd=1, read_only=1),
+        # Set after Frappe Cloud hands over the session. The row is written
+        # first so a successful login can never go unrecorded, which leaves the
+        # window where the record exists and the login did not happen — this is
+        # what tells the two apart, rather than the reader assuming.
+        f("succeeded", "Check", default="0", read_only=1, in_list_view=1),
+    ],
+)
+
+# --------------------------------------------------------------------------- #
 # Tenant Member — who else may sign in to a workspace.
 #
 # Held here rather than on the tenant site because the control plane has no way

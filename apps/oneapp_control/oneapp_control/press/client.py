@@ -16,6 +16,15 @@ import requests
 
 TIMEOUT = 30
 
+# Reads that back a panel get a shorter budget than writes.
+#
+# Provisioning genuinely takes 30 seconds to acknowledge, and cutting it short
+# would abandon a site press is already creating. A panel asking what a site's
+# status is has no such excuse: 30 seconds of spinner is worse than saying
+# "Frappe Cloud did not answer" after eight, because the operator opened it to
+# find out why something is slow.
+READ_TIMEOUT = 8
+
 
 class PressError(Exception):
 	def __init__(self, message, status_code=None, payload=None):
@@ -80,12 +89,13 @@ class PressClient:
 			"Accept": "application/json",
 		}
 
-	def call(self, endpoint: str, **params):
+	def call(self, endpoint: str, timeout: int = TIMEOUT, **params):
 		"""Invoke a whitelisted press method and return its `message` payload.
 
 		The positional is named `endpoint`, not `method`: press.api.client.run_doc_method
 		takes a parameter called `method`, and a matching positional name makes
-		that call raise TypeError before it ever leaves the process.
+		that call raise TypeError before it ever leaves the process. `timeout` is
+		keyword-only in practice for the same reason — no press method takes one.
 		"""
 		url = f"{self.url}/api/method/{endpoint}"
 
@@ -94,7 +104,7 @@ class PressClient:
 				url,
 				headers=self._headers(),
 				data=json.dumps(params),
-				timeout=TIMEOUT,
+				timeout=timeout,
 			)
 		except requests.Timeout as e:
 			raise PressTransientError(f"Timeout calling {endpoint}") from e
@@ -316,7 +326,7 @@ class PressClient:
 		return self.call("press.api.bench.regions", name=release_group) or []
 
 	def get_site(self, site: str) -> dict:
-		return self.call("press.api.site.get", name=site) or {}
+		return self.call("press.api.site.get", timeout=READ_TIMEOUT, name=site) or {}
 
 	# ------------------------------------------------------------------ #
 	# Fast iteration
@@ -405,9 +415,58 @@ class PressClient:
 			args=json.dumps(args or {}),
 		)
 
+	def backups(self, site: str) -> list:
+		"""Recent backups press holds for a site, newest first.
+
+		Press keeps its own schedule; this is a view of it rather than a
+		second one. Rows carry the file sizes and whether the copy is offsite.
+		"""
+		return self.call("press.api.site.backups", timeout=READ_TIMEOUT, name=site) or []
+
+	def backup_link(self, site: str, backup: str, file: str = "database") -> str | None:
+		"""A time-limited download URL for one file of one backup.
+
+		`file` is database | public | private | config. Only offsite backups
+		have one — a local backup lives on the server and press has nothing to
+		hand out.
+		"""
+		return self.call(
+			"press.api.site.get_backup_link",
+			timeout=READ_TIMEOUT,
+			name=site,
+			backup=backup,
+			file=file,
+		)
+
+	def site_jobs(self, site: str, limit: int = 10) -> list:
+		"""What press has been doing to a site, newest first.
+
+		The answer to "it says provisioning, but is anything happening?" — press
+		runs the work as Agent Jobs and this is their state.
+		"""
+		return self.call(
+			"press.api.site.jobs",
+			timeout=READ_TIMEOUT,
+			filters={"site": site},
+			order_by="creation desc",
+			limit_page_length=limit,
+		) or []
+
+	def login_sid(self, site: str, reason: str = "support") -> dict:
+		"""A one-shot session id for signing in to a tenant site.
+
+		Press returns the sid; the URL is ours to build, and it deliberately
+		does not point at `/app`. Support should see what the customer sees, and
+		this product's position is that the desk is not part of it — dropping an
+		operator into the desk would make it part of it for them.
+
+		Every use is audited by the caller. See `admin.support_login`.
+		"""
+		return self.call("press.api.site.login", name=site, reason=reason) or {}
+
 	def site_domains(self, site: str) -> list:
 		"""Domains on a site with their certificate status."""
-		return self.call("press.api.site.domains", name=site) or []
+		return self.call("press.api.site.domains", timeout=READ_TIMEOUT, name=site) or []
 
 	def add_domain(self, site: str, domain: str):
 		return self.run_doc_method("Site", site, "add_domain", {"domain": domain})

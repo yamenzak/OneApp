@@ -43,6 +43,34 @@ export const api = {
       successMessage: 'App disabled',
     }),
 
+  // What Frappe Cloud knows about a tenant's site. Read live: the control
+  // plane holds intent, press holds what is actually running, and when the two
+  // disagree the answer is nearly always in press.
+  siteState: (tenant) => callMethod(method('admin.site_state'), { tenant }, { silent: true, method: 'GET' }),
+  siteJobs: (tenant) => callMethod(method('admin.site_jobs'), { tenant }, { silent: true, method: 'GET' }),
+  siteBackups: (tenant) => callMethod(method('admin.site_backups'), { tenant }, { silent: true, method: 'GET' }),
+  siteDomains: (tenant) => callMethod(method('admin.site_domains'), { tenant }, { silent: true, method: 'GET' }),
+  supportLogins: (tenant) => callMethod(method('admin.support_logins'), { tenant }, { silent: true, method: 'GET' }),
+
+  takeBackup: (tenant) =>
+    callMethod(method('admin.take_backup'), { tenant }, {
+      successMessage: 'Backup started',
+    }),
+  backupDownload: (tenant, backup, file) =>
+    callMethod(method('admin.backup_download'), { tenant, backup, file }, {
+      silent: true, method: 'GET',
+    }),
+  setPrimaryDomain: (tenant, domain) =>
+    callMethod(method('admin.set_primary_domain'), { tenant, domain }, {
+      successMessage: 'Primary domain updated',
+    }),
+  removeSiteDomain: (tenant, domain) =>
+    callMethod(method('admin.remove_domain'), { tenant, domain }, {
+      successMessage: 'Domain removed',
+    }),
+  supportLogin: (tenant, reason) =>
+    callMethod(method('admin.support_login'), { tenant, reason }, { silent: true }),
+
   pushBenchConfig: (shard) =>
     callMethod('oneapp_control.provisioning.bench_config.push_to_shard', { shard }, {
       successMessage: 'Config pushed to bench',

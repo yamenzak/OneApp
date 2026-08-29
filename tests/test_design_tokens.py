@@ -35,8 +35,15 @@ def test_every_class_emits_css(app):
         pytest.skip(f"{app} has no built stylesheet; run vite build")
     missing = audit(app)
     assert not missing, "\n".join(
-        f"{app}: `{cls}` emits no CSS — retired token or typo ({', '.join(sorted(files))})"
-        for cls, files in sorted(missing.items())
+        [
+            f"{app}: `{cls}` emits no CSS — retired token, typo, or a stale "
+            f"build ({', '.join(sorted(files))})"
+            for cls, files in sorted(missing.items())
+        ]
+        # A class added since the last `vite build` is not in the stylesheet
+        # yet and looks exactly like a retired one. Say so, rather than sending
+        # someone hunting for a token that is fine.
+        + ["", "If these are new classes, run `npx vite build` and try again."]
     )
 
 

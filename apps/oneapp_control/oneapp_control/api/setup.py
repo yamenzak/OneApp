@@ -32,6 +32,26 @@ def _press_configured(s) -> bool:
 	return bool(key and secret)
 
 
+def _press_host_ok(s) -> bool:
+	"""The API host must be the one that keeps the credential.
+
+	frappecloud.com 308-redirects to cloud.frappe.io, and the redirect drops the
+	Authorization header — so a control plane configured with it has working
+	credentials and no working call, and press blames the key rather than the
+	host. Checked separately from the credentials so the answer names the actual
+	problem.
+	"""
+	from oneapp_control.control_plane.doctype.oneapp_control_settings.oneapp_control_settings import (
+		REDIRECTING_PRESS_HOSTS,
+	)
+
+	url = (s.press_api_url or (frappe.conf or {}).get("press_api_url") or "").strip()
+	if not url:
+		return False
+	host = url.split("://", 1)[-1].split("/", 1)[0].lower()
+	return host not in REDIRECTING_PRESS_HOSTS
+
+
 def checks() -> list[dict]:
 	s = _settings()
 
@@ -53,6 +73,18 @@ def checks() -> list[dict]:
 			"ok": _press_configured(s),
 			"detail": "Creates and manages tenant sites. Nothing can be provisioned without it.",
 			"where": "Settings → Frappe Cloud, or site config",
+		},
+		{
+			"key": "press_host",
+			"group": BLOCKING,
+			"label": "Frappe Cloud API host",
+			"ok": _press_host_ok(s),
+			"detail": (
+				"frappecloud.com redirects to cloud.frappe.io and the redirect "
+				"drops the credential, so every call fails as though the key "
+				"were wrong. Must be cloud.frappe.io."
+			),
+			"where": "Settings → Frappe Cloud → API host",
 		},
 		{
 			"key": "control_plane_url",
