@@ -108,3 +108,25 @@ export const removeMember = (workspace, email) =>
   callMethod('oneapp_control.api.customer.remove_member', { workspace, email }, {
     successMessage: 'Removed',
   })
+
+/** What this workspace can open — the same manifest its launcher renders. */
+export function useApps(workspaceRef) {
+  return useResource('oneapp_control.api.customer.apps', {
+    params: () => ({ workspace: workspaceRef.value }),
+    watch: ['App Entitlement'],
+  })
+}
+
+/**
+ * What the workspace is on and what else it could be on.
+ *
+ * Every plan carries every feature — they differ only in quotas — so the
+ * comparison is the numbers, and a plan too small for what is already stored
+ * comes back marked rather than merely listed.
+ */
+export function usePlans(workspaceRef) {
+  return useResource('oneapp_control.api.customer.plans', {
+    params: () => ({ workspace: workspaceRef.value }),
+    watch: ['Tenant'],
+  })
+}

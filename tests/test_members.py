@@ -226,3 +226,75 @@ def test_the_page_says_an_invite_is_not_immediate():
     'broken' for someone watching a colleague fail to sign in."""
     page = (ROOT / "apps/oneapp_control/frontend/src/pages/account/AccountTeam.vue").read_text()
     assert "syncs" in page
+
+
+# --------------------------------------------------------------------------- #
+# Apps and plan
+# --------------------------------------------------------------------------- #
+
+def test_apps_separates_what_every_plan_carries_from_what_was_granted():
+    """Otherwise "why do we have this?" has no answer on the page."""
+    body = function(CUSTOMER, "apps")
+    assert '"included"' in body
+    assert "App Entitlement" in body
+
+
+def test_plans_lists_more_than_the_current_one():
+    """Frappe ANDs `or_filters` onto `filters` rather than ORing the clause.
+
+    `is_active=1` plus `name=<current>` resolved to exactly the current plan, so
+    the page offered nothing to move to — nine active plans showed as one.
+    """
+    body = function(CUSTOMER, "plans")
+    # The keyword, not the word — the comment above the fix explains the trap
+    # and would otherwise match.
+    assert "or_filters=" not in body, "or_filters is ANDed; it cannot express this"
+    assert 'filters={"is_active": 1}' in body
+
+
+def test_a_retired_plan_is_still_shown_to_whoever_is_on_it():
+    body = function(CUSTOMER, "plans")
+    assert "retired" in body
+
+
+def test_a_plan_too_small_for_the_workspace_is_named_not_just_refused():
+    """"storage" tells someone what to clear; a disabled button tells them to
+    write in."""
+    body = function(CUSTOMER, "plans")
+    assert '"blocked_by"' in body
+    for dimension in ('"storage"', '"database"', '"seats"'):
+        assert dimension in body, dimension
+
+    page = (
+        ROOT / "apps/oneapp_control/frontend/src/pages/account/AccountPlan.vue"
+    ).read_text()
+    assert "blocked_by" in page
+
+
+def test_seat_capacity_is_measured_the_same_way_everywhere():
+    """The plan page and the invite check must agree on what a seat is, or a
+    plan reads as available and refuses the first invite."""
+    plans_body = function(CUSTOMER, "plans")
+    assert "1 + len(tenant.members or [])" in plans_body
+
+    seats_body = function(CUSTOMER, "_seats", code_only=True)
+    assert "1 + len(" in seats_body
+
+
+def test_changing_plan_goes_through_stripe():
+    """Proration, tax and payment methods are Stripe's; duplicating them here
+    is how the two disagree about what someone was charged."""
+    page = (
+        ROOT / "apps/oneapp_control/frontend/src/pages/account/AccountPlan.vue"
+    ).read_text()
+    assert "billingPortal" in page
+
+
+@pytest.mark.parametrize("name", ["AccountApps", "AccountPlan"])
+def test_the_new_pages_are_reachable(name):
+    router = (ROOT / "apps/oneapp_control/frontend/src/router.js").read_text()
+    sidebar = (
+        ROOT / "apps/oneapp_control/frontend/src/components/PortalSidebar.vue"
+    ).read_text()
+    assert name in router, f"{name} is not routed"
+    assert name in sidebar, f"{name} is not in the sidebar"

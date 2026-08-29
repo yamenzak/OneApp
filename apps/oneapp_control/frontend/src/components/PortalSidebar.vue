@@ -59,7 +59,9 @@ const items = computed(() => {
   if (!workspace) return []
   return [
     { label: 'Overview', name: 'AccountOverview', icon: 'lucide-home', to: { name: 'AccountOverview', params: { workspace } } },
+    { label: 'Apps', name: 'AccountApps', icon: 'lucide-layout-grid', to: { name: 'AccountApps', params: { workspace } } },
     { label: 'Billing', name: 'AccountBilling', icon: 'lucide-credit-card', to: { name: 'AccountBilling', params: { workspace } } },
+    { label: 'Plan', name: 'AccountPlan', icon: 'lucide-layers', to: { name: 'AccountPlan', params: { workspace } } },
     { label: 'People', name: 'AccountTeam', icon: 'lucide-users', to: { name: 'AccountTeam', params: { workspace } } },
     { label: 'Domain', name: 'AccountDomain', icon: 'lucide-globe', to: { name: 'AccountDomain', params: { workspace } } },
   ]

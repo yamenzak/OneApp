@@ -20,6 +20,7 @@ from frappe import _
 from oneapp_control import portal
 from oneapp_control.billing import checkout, stripe_client
 from oneapp_control.credits import ledger
+from oneapp_control.entitlements import registry
 
 
 def require_workspace(workspace: str):
@@ -437,3 +438,113 @@ def remove_member(workspace: str, email: str) -> dict:
 	frappe.db.commit()
 
 	return members(workspace)
+
+
+# --------------------------------------------------------------------------- #
+# What the workspace has, and what changing plan would give it
+# --------------------------------------------------------------------------- #
+
+@frappe.whitelist(methods=["GET"])
+def apps(workspace: str) -> dict:
+	"""The apps this workspace can open.
+
+	The same manifest the launcher renders, so a customer looking at their
+	account sees exactly what they see when they sign in. `included` separates
+	what every plan carries from what was granted to them specifically —
+	otherwise "why do we have this?" has no answer on this page.
+	"""
+	tenant = require_workspace(workspace)
+
+	granted = set(
+		frappe.get_all(
+			"App Entitlement",
+			filters={"tenant": tenant.name, "enabled": 1},
+			pluck="app",
+		)
+	)
+
+	return {
+		"apps": [
+			{
+				"code": app["app_code"],
+				"label": app["app_label"],
+				"icon": app.get("icon"),
+				"included": app["app_code"] not in granted,
+			}
+			for app in registry.apps_for_tenant(tenant.name)
+		],
+		"workspace_url": f"https://{tenant.primary_domain or tenant.site_name}"
+		if (tenant.primary_domain or tenant.site_name)
+		else None,
+	}
+
+
+@frappe.whitelist(methods=["GET"])
+def plans(workspace: str) -> dict:
+	"""What this workspace is on, and what else it could be on.
+
+	Every plan carries every feature — they differ only in quotas, which is why
+	no feature flags exist anywhere in this codebase (DECISIONS §3). So the
+	comparison is the numbers, and a plan that would not fit what the workspace
+	already uses is marked rather than merely listed: finding out a downgrade is
+	impossible *after* choosing it is the worst version of this page.
+	"""
+	tenant = require_workspace(workspace)
+	usage = usage_for(tenant)
+
+	fields = [
+		"name", "plan_name", "audience", "currency",
+		"price_monthly", "price_yearly",
+		"storage_gb", "database_gb", "max_users", "monthly_credit_grant",
+		"description",
+	]
+
+	# Two queries rather than one with `or_filters`: Frappe ANDs or_filters onto
+	# filters rather than ORing the whole clause, so `is_active=1` plus
+	# `name=<current>` resolved to just the current plan and the page offered
+	# nothing to move to.
+	rows = frappe.get_all(
+		"Plan", filters={"is_active": 1}, fields=fields, order_by="sort_order asc"
+	)
+
+	# A workspace on a plan that has since been retired still has to see what it
+	# is on — a page that cannot tell you that is worse than one showing a plan
+	# nobody else can buy.
+	if tenant.plan and not any(row.name == tenant.plan for row in rows):
+		retired = frappe.get_all("Plan", filters={"name": tenant.plan}, fields=fields)
+		rows = retired + rows
+
+	GB = 1024**3
+	available = []
+	for row in rows:
+		storage_cap = (row.storage_gb or 0) * GB
+		database_cap = (row.database_gb or 0) * GB
+		too_small = [
+			label
+			for label, used, cap in (
+				("storage", usage["storage"]["used"], storage_cap),
+				("database", usage["database"]["used"], database_cap),
+				("seats", 1 + len(tenant.members or []), row.max_users or 0),
+			)
+			if cap and used > cap
+		]
+		available.append(
+			{
+				"code": row.name,
+				"name": row.plan_name,
+				"price_monthly": row.price_monthly,
+				"price_yearly": row.price_yearly,
+				"storage_gb": row.storage_gb,
+				"database_gb": row.database_gb,
+				"max_users": row.max_users,
+				"monthly_credit_grant": row.monthly_credit_grant,
+				"currency": row.currency,
+				"audience": row.audience,
+				"description": row.description,
+				"current": row.name == tenant.plan,
+				# Named, not just refused: "storage" tells them what to clear.
+				"blocked_by": too_small,
+			}
+		)
+
+	return {"current": tenant.plan, "plans": available, "usage": usage}
