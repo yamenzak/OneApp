@@ -103,3 +103,48 @@ def test_blank_values_are_dropped(bench_config, stub_frappe):
 	assert "oneapp_r2_bucket" not in built
 	assert "oneapp_mail_domain" not in built
 	assert "oneapp_cf_email_token" not in built
+
+
+def test_press_credentials_may_come_from_site_config(stub_frappe, monkeypatch):
+	"""A fresh control site has nobody signed in and nothing configured.
+
+	Press can write a site's config over its own API, so site config is how a
+	new control plane is handed its keys before a human ever opens it. The
+	settings doctype still wins, because rotating a key should be a form save
+	rather than a redeploy.
+	"""
+	from oneapp_control.press import client as module
+
+	stub_frappe.conf = {"press_api_key": "from-conf", "press_api_secret": "conf-secret"}
+	monkeypatch.setattr(
+		module,
+		"settings",
+		lambda: type("S", (), {
+			"press_api_url": None,
+			"press_api_key": None,
+			"get_password": lambda self, *a, **k: None,
+		})(),
+	)
+
+	c = module.PressClient()
+	assert c.api_key == "from-conf"
+	assert c.api_secret == "conf-secret"
+
+
+def test_settings_win_over_site_config(stub_frappe, monkeypatch):
+	from oneapp_control.press import client as module
+
+	stub_frappe.conf = {"press_api_key": "from-conf", "press_api_secret": "conf-secret"}
+	monkeypatch.setattr(
+		module,
+		"settings",
+		lambda: type("S", (), {
+			"press_api_url": "https://cloud.frappe.io",
+			"press_api_key": "from-settings",
+			"get_password": lambda self, *a, **k: "settings-secret",
+		})(),
+	)
+
+	c = module.PressClient()
+	assert c.api_key == "from-settings"
+	assert c.api_secret == "settings-secret"

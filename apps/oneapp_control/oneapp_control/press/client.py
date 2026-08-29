@@ -37,15 +37,38 @@ def settings():
 
 
 class PressClient:
+	"""Talks to Frappe Cloud on behalf of the control plane.
+
+	Credentials come from OneApp Control Settings, falling back to site config.
+	The settings win because rotating a key should be a form save rather than a
+	redeploy — but a brand new control site has nobody signed in yet and nothing
+	configured, so site config is how it gets bootstrapped: press can write a
+	site's config over its own API, which means a fresh control plane can be
+	handed its keys before a human ever opens it.
+	"""
+
 	def __init__(self, url=None, api_key=None, api_secret=None):
 		s = settings()
-		self.url = (url or s.press_api_url or "https://cloud.frappe.io").rstrip("/")
-		self.api_key = api_key or s.press_api_key
-		self.api_secret = api_secret or s.get_password("press_api_secret", raise_exception=False)
+		conf = frappe.conf or {}
+
+		self.url = (
+			url
+			or s.press_api_url
+			or conf.get("press_api_url")
+			or "https://cloud.frappe.io"
+		).rstrip("/")
+		self.api_key = api_key or s.press_api_key or conf.get("press_api_key")
+		self.api_secret = (
+			api_secret
+			or s.get_password("press_api_secret", raise_exception=False)
+			or conf.get("press_api_secret")
+		)
 
 		if not (self.api_key and self.api_secret):
 			raise PressPermanentError(
-				"Press API credentials are not configured in OneApp Control Settings."
+				"Press API credentials are not configured. Set them in Settings, "
+				"or put press_api_key and press_api_secret in site config to "
+				"bootstrap a new control site."
 			)
 
 	# ------------------------------------------------------------------ #

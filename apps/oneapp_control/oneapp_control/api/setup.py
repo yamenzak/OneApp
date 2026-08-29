@@ -25,6 +25,13 @@ def _secret(settings, field) -> bool:
 	return bool(settings.get_password(field, raise_exception=False))
 
 
+def _press_configured(s) -> bool:
+	conf = frappe.conf or {}
+	key = s.press_api_key or conf.get("press_api_key")
+	secret = _secret(s, "press_api_secret") or conf.get("press_api_secret")
+	return bool(key and secret)
+
+
 def checks() -> list[dict]:
 	s = _settings()
 
@@ -40,9 +47,12 @@ def checks() -> list[dict]:
 			"key": "press_credentials",
 			"group": BLOCKING,
 			"label": "Frappe Cloud API",
-			"ok": bool(s.press_api_key) and _secret(s, "press_api_secret"),
+			# Site config counts, matching PressClient. Reading only the
+			# settings here would report "Missing" on a site that provisions
+			# perfectly well, which is worse than either answer alone.
+			"ok": _press_configured(s),
 			"detail": "Creates and manages tenant sites. Nothing can be provisioned without it.",
-			"where": "OneApp Control Settings → Frappe Cloud",
+			"where": "Settings → Frappe Cloud, or site config",
 		},
 		{
 			"key": "control_plane_url",
