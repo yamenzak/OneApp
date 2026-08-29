@@ -207,8 +207,33 @@ def attach_domain(job):
 		# Added on a previous attempt; adding again would error.
 		return None
 
-	get_client().add_domain(_site_for(job), tenant.site_name)
+	try:
+		get_client().add_domain(_site_for(job), tenant.site_name)
+	except PressPermanentError as e:
+		# Press resolves the CNAME synchronously inside add_domain and refuses if
+		# it does not yet point at the site. We created that record moments ago,
+		# so the usual cause is propagation, not misconfiguration — retry rather
+		# than failing the tenant. The attempt ceiling still terminates a record
+		# that is genuinely wrong.
+		if _is_dns_not_ready(e):
+			raise PressTransientError(
+				f"DNS for {tenant.site_name} has not propagated yet: {e}"
+			) from e
+		raise
+
 	return None
+
+
+DNS_NOT_READY_MARKERS = (
+	"unable to connect to the domain",
+	"is the dns correct",
+	"does not resolve",
+)
+
+
+def _is_dns_not_ready(error) -> bool:
+	message = str(error).lower()
+	return any(marker in message for marker in DNS_NOT_READY_MARKERS)
 
 
 def await_domain_active(job):

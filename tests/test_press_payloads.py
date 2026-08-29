@@ -97,3 +97,75 @@ def test_site_new_omits_version_when_absent(client):
 		apps=["frappe"],
 	)
 	assert "version" not in client.call.params["site"]
+
+
+# --------------------------------------------------------------------------- #
+# Signature collisions
+#
+# The Recorder above replaces `call` entirely, so it cannot catch a clash between
+# `call`'s own positional and a parameter press expects to receive. These tests
+# drive the real `call` with the HTTP layer mocked instead.
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def wired(stub_frappe, monkeypatch):
+	"""A real PressClient with only requests.post mocked."""
+	from oneapp_control.press import client as module
+
+	sent = {}
+
+	class Response:
+		status_code = 200
+
+		@staticmethod
+		def json():
+			return {"message": {"ok": True}}
+
+	def fake_post(url, headers=None, data=None, timeout=None):
+		sent["url"] = url
+		sent["body"] = json.loads(data)
+		return Response()
+
+	monkeypatch.setattr(module.requests, "post", fake_post)
+
+	c = object.__new__(module.PressClient)
+	c.url = "https://cloud.frappe.io"
+	c.api_key = "k"
+	c.api_secret = "s"
+	return c, sent
+
+
+def test_run_doc_method_does_not_collide_with_call_signature(wired):
+	"""press.api.client.run_doc_method takes a parameter named `method`. If
+	`call`'s positional shares that name, this raises TypeError before any
+	request is made — which broke every domain operation."""
+	c, sent = wired
+	c.run_doc_method("Site", "acme.frappe.cloud", "add_domain", {"domain": "acme.4dl.app"})
+
+	assert sent["url"].endswith("/api/method/press.api.client.run_doc_method")
+	assert sent["body"]["dt"] == "Site"
+	assert sent["body"]["dn"] == "acme.frappe.cloud"
+	assert sent["body"]["method"] == "add_domain"
+	assert json.loads(sent["body"]["args"]) == {"domain": "acme.4dl.app"}
+
+
+@pytest.mark.parametrize(
+	"call,expected_method",
+	[
+		(lambda c: c.add_domain("s", "d.4dl.app"), "add_domain"),
+		(lambda c: c.set_primary_domain("s", "d.4dl.app"), "set_host_name"),
+		(lambda c: c.remove_domain("s", "d.4dl.app"), "remove_domain"),
+	],
+)
+def test_domain_operations_reach_the_wire(wired, call, expected_method):
+	c, sent = wired
+	call(c)
+	assert sent["body"]["method"] == expected_method
+
+
+def test_endpoint_is_not_sent_as_a_parameter(wired):
+	"""The endpoint belongs in the URL, not the body."""
+	c, sent = wired
+	c.site_exists("acme", "frappe.cloud")
+	assert "endpoint" not in sent["body"]
+	assert sent["body"] == {"subdomain": "acme", "domain": "frappe.cloud"}

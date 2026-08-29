@@ -67,3 +67,18 @@ def test_archive_releases_the_hostname(steps):
 	assert "remove_dns_record" in names
 	# Cleanup precedes the archive so a failed archive does not strand DNS.
 	assert names.index("remove_dns_record") < names.index("archive_site")
+
+
+def test_dns_propagation_is_treated_as_transient(steps):
+	"""Press resolves the CNAME inside add_domain. We create that record seconds
+	earlier, so a propagation lag must retry rather than fail the tenant."""
+	assert steps._is_dns_not_ready(
+		Exception("Unable to connect to the domain. Is the DNS correct?")
+	)
+	assert steps._is_dns_not_ready(Exception("domain does not resolve to the site"))
+
+
+def test_a_real_domain_error_is_still_permanent(steps):
+	"""Retrying a genuinely invalid domain forever would hide the problem."""
+	assert not steps._is_dns_not_ready(Exception("Domain already belongs to another site"))
+	assert not steps._is_dns_not_ready(Exception("Invalid domain name"))

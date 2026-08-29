@@ -57,25 +57,30 @@ class PressClient:
 			"Accept": "application/json",
 		}
 
-	def call(self, method: str, **params):
-		"""Invoke a whitelisted press method and return its `message` payload."""
-		endpoint = f"{self.url}/api/method/{method}"
+	def call(self, endpoint: str, **params):
+		"""Invoke a whitelisted press method and return its `message` payload.
+
+		The positional is named `endpoint`, not `method`: press.api.client.run_doc_method
+		takes a parameter called `method`, and a matching positional name makes
+		that call raise TypeError before it ever leaves the process.
+		"""
+		url = f"{self.url}/api/method/{endpoint}"
 
 		try:
 			response = requests.post(
-				endpoint,
+				url,
 				headers=self._headers(),
 				data=json.dumps(params),
 				timeout=TIMEOUT,
 			)
 		except requests.Timeout as e:
-			raise PressTransientError(f"Timeout calling {method}") from e
+			raise PressTransientError(f"Timeout calling {endpoint}") from e
 		except requests.RequestException as e:
-			raise PressTransientError(f"Network error calling {method}: {e}") from e
+			raise PressTransientError(f"Network error calling {endpoint}: {e}") from e
 
-		return self._handle(method, response)
+		return self._handle(endpoint, response)
 
-	def _handle(self, method, response):
+	def _handle(self, endpoint, response):
 		status = response.status_code
 
 		if status == 200:
@@ -83,7 +88,7 @@ class PressClient:
 				return response.json().get("message")
 			except ValueError as e:
 				raise PressPermanentError(
-					f"{method} returned non-JSON body", status, response.text[:500]
+					f"{endpoint} returned non-JSON body", status, response.text[:500]
 				) from e
 
 		detail = self._error_detail(response)
@@ -91,9 +96,9 @@ class PressClient:
 		# 429 and 5xx are worth another attempt. Everything else in 4xx is our
 		# fault and will fail identically forever.
 		if status == 429 or status >= 500:
-			raise PressTransientError(f"{method} failed: {detail}", status, detail)
+			raise PressTransientError(f"{endpoint} failed: {detail}", status, detail)
 
-		raise PressPermanentError(f"{method} failed: {detail}", status, detail)
+		raise PressPermanentError(f"{endpoint} failed: {detail}", status, detail)
 
 	@staticmethod
 	def _error_detail(response):
