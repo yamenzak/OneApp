@@ -69,16 +69,20 @@
               variant="subtle"
             />
           </ListCell>
-          <ListCell>
-            <!-- The action stays reachable on a phone; only its label goes.
+          <ListCell class="justify-end gap-1">
+            <!-- The actions stay reachable on a phone; only their labels go.
                  `label` is still the accessible name and the tooltip. -->
             <Button
-              v-if="isMobile"
-              icon="lucide-upload"
+              variant="ghost"
+              :icon="isMobile ? 'lucide-pencil' : undefined"
+              :label="isMobile ? `Edit ${shard.name}` : 'Edit'"
+              @click.stop="edit(shard)"
+            />
+            <Button
+              :icon="isMobile ? 'lucide-upload' : undefined"
               label="Push config"
               @click.stop="api.pushBenchConfig(shard.name)"
             />
-            <Button v-else label="Push config" @click.stop="api.pushBenchConfig(shard.name)" />
           </ListCell>
         </ListRow>
       </ListRows>
@@ -86,6 +90,7 @@
   </div>
 
   <NewShardDialog v-model="showNew" @created="load" />
+  <EditShardDialog v-model="showEdit" :name="editing" :capacity="capacity" @saved="load" />
 </template>
 
 <script setup>
@@ -96,6 +101,7 @@ import {
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import NewShardDialog from '../components/NewShardDialog.vue'
+import EditShardDialog from '../components/EditShardDialog.vue'
 import { useListColumns } from '../lib/list'
 import { useIsMobile } from '../lib/screen'
 import { api } from '../lib/api'
@@ -107,14 +113,32 @@ const { visible, columns, shows } = useListColumns([
   { key: 'ring', header: 'Ring', track: '7rem', mobile: false },
   { key: 'capacity', header: 'Capacity', track: '12rem', mobile: false },
   { key: 'intake', header: 'Intake', track: '8rem', mobile: '5.5rem' },
-  { key: 'action', header: '', track: '9rem', mobile: '2.5rem' },
+  { key: 'action', header: '', track: '11rem', mobile: '4.5rem' },
 ])
 
 const shards = ref([])
+const showEdit = ref(false)
+const editing = ref('')
+
+// Fetched with the page rather than when a dialog opens, so editing a shard
+// does not wait on a press round trip. Both dialogs read the same regions,
+// site plans and machine specs.
+const capacity = ref({})
+
+const edit = (shard) => {
+  editing.value = shard.name
+  showEdit.value = true
+}
 const pushing = ref(false)
 const showNew = ref(false)
 
 const load = async () => (shards.value = (await api.shards()) || [])
+
+// Degrades to nothing: the edit form falls back to plain selects with no
+// options rather than failing to open, and press_capacity says so itself.
+const loadCapacity = async () => {
+  capacity.value = (await api.pressCapacity()) || {}
+}
 
 async function pushAll() {
   pushing.value = true
@@ -126,5 +150,8 @@ async function pushAll() {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  loadCapacity()
+})
 </script>

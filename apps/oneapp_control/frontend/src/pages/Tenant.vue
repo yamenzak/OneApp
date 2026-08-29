@@ -44,11 +44,13 @@
         <TabTrigger value="site" label="Site" icon-left="lucide-server" />
         <TabTrigger value="domains" label="Domains" icon-left="lucide-globe" />
         <TabTrigger value="backups" label="Backups" icon-left="lucide-database" />
+        <TabTrigger value="apps" label="Apps" icon-left="lucide-layout-grid" />
+        <TabTrigger value="billing" label="Billing" icon-left="lucide-credit-card" />
         <TabTrigger value="activity" label="Activity" icon-left="lucide-activity" />
       </TabList>
 
       <TabPanel value="record">
-        <List :columns="fieldColumns.columns" divider="full" class="mt-4">
+        <List :columns="fieldTracks" divider="full" class="mt-4">
           <ListRows :items="rows" row-key="label" v-slot="{ item: row, value }">
             <ListRow :value="value" class="py-3">
               <ListCell>
@@ -64,7 +66,7 @@
 
       <TabPanel value="site">
         <PressPanel :state="site" empty="This tenant has no site yet." class="mt-4" @retry="site.reload()">
-          <List :columns="fieldColumns.columns" divider="full">
+          <List :columns="fieldTracks" divider="full">
             <ListRows :items="siteRows" row-key="label" v-slot="{ item: row, value }">
               <ListRow :value="value" class="py-3">
                 <ListCell>
@@ -88,13 +90,13 @@
       <TabPanel value="domains">
         <PressPanel :state="domains" empty="No domains on this site yet." class="mt-4" @retry="domains.reload()">
           <List
-            :columns="domainColumns.columns"
+            :columns="domainTracks"
             :row-height="52"
             class="list-row-px-3"
             divider="full"
           >
             <ListHeader>
-              <ListHeaderCell v-for="c in domainColumns.visible" :key="c.key">
+              <ListHeaderCell v-for="c in domainCols" :key="c.key">
                 {{ c.header }}
               </ListHeaderCell>
             </ListHeader>
@@ -104,7 +106,7 @@
                   <span class="truncate text-base text-ink-gray-8">{{ row.domain }}</span>
                   <Badge v-if="row.primary" class="ml-2" theme="blue" label="Primary" variant="subtle" />
                 </ListCell>
-                <ListCell v-if="domainColumns.shows('certificate')">
+                <ListCell v-if="domainShows('certificate')">
                   <Badge
                     :theme="row.status === 'Active' ? 'green' : 'gray'"
                     :label="row.status || '—'"
@@ -117,7 +119,7 @@
                   <Button
                     v-if="!row.primary"
                     variant="ghost"
-                    :icon="domainColumns.shows('certificate') ? undefined : 'lucide-star'"
+                    :icon="domainShows('certificate') ? undefined : 'lucide-star'"
                     label="Make primary"
                     :loading="busy === row.domain"
                     @click="makePrimary(row.domain)"
@@ -148,13 +150,13 @@
 
         <PressPanel :state="backups" empty="No backups yet." class="mt-3" @retry="backups.reload()">
           <List
-            :columns="backupColumns.columns"
+            :columns="backupTracks"
             :row-height="52"
             class="list-row-px-3"
             divider="full"
           >
             <ListHeader>
-              <ListHeaderCell v-for="c in backupColumns.visible" :key="c.key">
+              <ListHeaderCell v-for="c in backupCols" :key="c.key">
                 {{ c.header }}
               </ListHeaderCell>
             </ListHeader>
@@ -165,14 +167,14 @@
                   <!-- Size is a column where there is room and a suffix where
                        there is not, rather than something a phone never sees. -->
                   <span
-                    v-if="!backupColumns.shows('size')"
+                    v-if="!backupShows('size')"
                     class="ml-2 shrink-0 text-p-sm tabular-nums text-ink-gray-5"
                   >
                     {{ size(row) }}
                   </span>
                   <Badge v-if="row.with_files" class="ml-2" theme="gray" label="With files" variant="subtle" />
                 </ListCell>
-                <ListCell v-if="backupColumns.shows('size')">
+                <ListCell v-if="backupShows('size')">
                   <span class="text-p-sm tabular-nums text-ink-gray-6">{{ size(row) }}</span>
                 </ListCell>
                 <ListCell>
@@ -184,7 +186,7 @@
                   <Button
                     v-if="row.offsite"
                     variant="ghost"
-                    :icon="backupColumns.shows('size') ? undefined : 'lucide-download'"
+                    :icon="backupShows('size') ? undefined : 'lucide-download'"
                     label="Download"
                     :loading="busy === row.name"
                     @click="download(row)"
@@ -196,6 +198,17 @@
         </PressPanel>
       </TabPanel>
 
+      <!-- Both panels fetch on mount, so they are rendered only once their tab
+           is chosen — a tenant page should not make five press and billing
+           calls to show a record. -->
+      <TabPanel value="apps" class="pt-4">
+        <TenantAppsPanel v-if="tab === 'apps'" :tenant="name" />
+      </TabPanel>
+
+      <TabPanel value="billing" class="pt-4">
+        <TenantBillingPanel v-if="tab === 'billing'" :tenant="name" />
+      </TabPanel>
+
       <TabPanel value="activity">
         <PressPanel
           :state="jobs"
@@ -204,13 +217,13 @@
           @retry="jobs.reload()"
         >
           <List
-            :columns="jobColumns.columns"
+            :columns="jobTracks"
             :row-height="52"
             class="list-row-px-3"
             divider="full"
           >
             <ListHeader>
-              <ListHeaderCell v-for="c in jobColumns.visible" :key="c.key">
+              <ListHeaderCell v-for="c in jobCols" :key="c.key">
                 {{ c.header }}
               </ListHeaderCell>
             </ListHeader>
@@ -219,7 +232,7 @@
                 <ListCell>
                   <div class="min-w-0">
                     <p class="truncate text-base text-ink-gray-8">{{ row.job_type }}</p>
-                    <p v-if="!jobColumns.shows('when')" class="truncate text-xs text-ink-gray-5">
+                    <p v-if="!jobShows('when')" class="truncate text-xs text-ink-gray-5">
                       {{ when(row.creation) }}
                     </p>
                   </div>
@@ -227,7 +240,7 @@
                 <ListCell>
                   <Badge :theme="stateTheme(row.status)" :label="row.status || '—'" variant="subtle" />
                 </ListCell>
-                <ListCell v-if="jobColumns.shows('when')">
+                <ListCell v-if="jobShows('when')">
                   <span class="text-p-sm text-ink-gray-6">{{ when(row.creation) }}</span>
                 </ListCell>
               </ListRow>
@@ -241,7 +254,7 @@
             Every time one of us entered this workspace, and why.
           </p>
           <List
-            :columns="loginColumns.columns"
+            :columns="loginTracks"
             :row-height="48"
             class="list-row-px-3"
             divider="full"
@@ -253,7 +266,7 @@
                     <span class="truncate text-p-sm text-ink-gray-8">{{ row.operator }}</span>
                     <!-- Why they signed in is the point of the record, so on a
                          phone it moves under the name rather than disappearing. -->
-                    <p v-if="!loginColumns.shows('reason')" class="truncate text-xs text-ink-gray-5">
+                    <p v-if="!loginShows('reason')" class="truncate text-xs text-ink-gray-5">
                       {{ row.reason }}
                     </p>
                   </div>
@@ -267,7 +280,7 @@
                     variant="subtle"
                   />
                 </ListCell>
-                <ListCell v-if="loginColumns.shows('reason')">
+                <ListCell v-if="loginShows('reason')">
                   <span class="truncate text-p-sm text-ink-gray-6">{{ row.reason }}</span>
                 </ListCell>
                 <ListCell>
@@ -319,6 +332,8 @@ import {
   Tabs, TabList, TabTrigger, TabPanel, dayjsLocal, vFocus,
 } from '@/ui'
 import PressPanel from '../components/PressPanel.vue'
+import TenantAppsPanel from '../components/TenantAppsPanel.vue'
+import TenantBillingPanel from '../components/TenantBillingPanel.vue'
 import { api, useDocument } from '../lib/api'
 import { useListColumns } from '../lib/list'
 import { usePress } from '../lib/press'
@@ -329,31 +344,36 @@ import { usePress } from '../lib/press'
 // desktop shows is simply gone.
 // A label/value list: the label track is fixed so the values line up, and a
 // desktop-width label column leaves a phone about 130px for the value.
-const fieldColumns = useListColumns([
+const { visible: fieldCols, columns: fieldTracks, shows: fieldShows } =
+  useListColumns([
   { key: 'label', header: '', track: '12rem', mobile: '8rem' },
   { key: 'value', header: '', track: 'minmax(0,1fr)' },
 ])
 
-const domainColumns = useListColumns([
+const { visible: domainCols, columns: domainTracks, shows: domainShows } =
+  useListColumns([
   { key: 'domain', header: 'Domain', track: 'minmax(0,1fr)' },
   { key: 'certificate', header: 'Certificate', track: '7rem', mobile: false },
   { key: 'actions', header: '', track: '11rem', mobile: '5rem' },
 ])
 
-const backupColumns = useListColumns([
+const { visible: backupCols, columns: backupTracks, shows: backupShows } =
+  useListColumns([
   { key: 'taken', header: 'Taken', track: 'minmax(0,1fr)' },
   { key: 'size', header: 'Size', track: '7rem', mobile: false },
   { key: 'state', header: 'State', track: '6rem', mobile: '5.5rem' },
   { key: 'download', header: '', track: '7rem', mobile: '2.5rem' },
 ])
 
-const jobColumns = useListColumns([
+const { visible: jobCols, columns: jobTracks, shows: jobShows } =
+  useListColumns([
   { key: 'job', header: 'Job', track: 'minmax(0,1fr)' },
   { key: 'state', header: 'State', track: '8rem', mobile: '6rem' },
   { key: 'when', header: 'When', track: '11rem', mobile: false },
 ])
 
-const loginColumns = useListColumns([
+const { visible: loginCols, columns: loginTracks, shows: loginShows } =
+  useListColumns([
   { key: 'operator', header: 'Operator', track: '14rem', mobile: 'minmax(0,1fr)' },
   { key: 'reason', header: 'Reason', track: 'minmax(0,1fr)', mobile: false },
   { key: 'when', header: 'When', track: '11rem', mobile: '6rem' },

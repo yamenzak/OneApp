@@ -30,6 +30,15 @@ export const api = {
 
   shards: () => callMethod(method('admin.shards'), {}, { silent: true }),
   pressCapacity: () => callMethod(method('admin.press_capacity'), {}, { silent: true }),
+  benchApps: (releaseGroup) =>
+    callMethod(method('admin.bench_apps'), { release_group: releaseGroup }, {
+      silent: true, method: 'GET',
+    }),
+  shard: (shard) => callMethod(method('admin.shard'), { shard }, { silent: true, method: 'GET' }),
+  updateShard: (shard, values) =>
+    callMethod(method('admin.update_shard'), { shard, values }, {
+      successMessage: 'Shard updated',
+    }),
   createShard: (payload) =>
     callMethod(method('admin.create_shard'), payload, {
       successMessage: 'Shard registered — the allocator will use it on the next signup',
@@ -70,6 +79,30 @@ export const api = {
     }),
   supportLogin: (tenant, reason) =>
     callMethod(method('admin.support_login'), { tenant, reason }, { silent: true }),
+
+  // The rest of the control plane, so the desk is never the only way in.
+  signups: () => callMethod(method('admin.signups'), {}, { silent: true, method: 'GET' }),
+  webhookEvents: (status) =>
+    callMethod(method('admin.webhook_events'), { status }, { silent: true, method: 'GET' }),
+  replayWebhook: (event) =>
+    callMethod(method('admin.replay_webhook'), { event }, { successMessage: 'Event replayed' }),
+  standbyPool: () => callMethod(method('admin.standby_pool'), {}, { silent: true, method: 'GET' }),
+
+  // The operator's question is what to *grant*, so this is every app with a
+  // flag — not admin.tenant_apps, which answers the launcher's question and
+  // returns only what the workspace already has.
+  tenantAppAccess: (tenant) =>
+    callMethod(method('admin.tenant_app_access'), { tenant }, { silent: true, method: 'GET' }),
+  tenantBilling: (tenant) =>
+    callMethod(method('admin.tenant_billing'), { tenant }, { silent: true, method: 'GET' }),
+  adoptPlanTerms: (tenant) =>
+    callMethod(method('admin.adopt_plan_terms'), { tenant }, {
+      successMessage: 'Moved onto the plan\'s current terms',
+    }),
+  setTenantPlan: (tenant, plan) =>
+    callMethod(method('admin.set_tenant_plan'), { tenant, plan }, {
+      successMessage: 'Plan changed',
+    }),
 
   pushBenchConfig: (shard) =>
     callMethod('oneapp_control.provisioning.bench_config.push_to_shard', { shard }, {

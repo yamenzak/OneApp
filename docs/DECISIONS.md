@@ -195,6 +195,33 @@ form. The reason is that the desk exposes the whole schema — every tenant's
 billing, every credential — behind a UI that was never designed to be a boundary,
 and "it is only for admins" stops being true the first time it isn't.
 
+### Checked, not remembered
+
+The claim decays quietly. A doctype gains a field, the field is only editable in
+`/app`, and nobody notices until an operator is told to "just open the desk" — at
+which point running this needs someone who knows Frappe, which is the thing the
+decision was protecting against.
+
+So `tests/test_no_desk.py` enumerates every doctype the control plane defines and
+fails the build on any that OneAdmin cannot reach, either by name or through an
+endpoint the SPA calls. Exemptions are listed with a reason: child tables edited
+through their parent, and records written by the system and read somewhere else.
+It also fails on any link into `/app` from either SPA — one would be enough to
+teach that the real interface is elsewhere.
+
+The audit found five surfaces that had none: account requests, the standby pool,
+Stripe webhook events (including replaying a failed one), app entitlements per
+workspace, and a workspace's subscription and credit ledger. Regions, storage
+buckets, plans and the app registry could be read and not written.
+
+### What the operator does *not* get to change
+
+Reachable is not the same as editable. A shard's press identity — server, bench
+group, version, domain and mode — is what the tenants on it were created against,
+so `update_shard` refuses it: editing those would leave the shard describing a
+machine those sites are not on. Replacing a shard is registering a new one and
+draining the old, which is what the intake switch is for.
+
 ---
 
 ## 8. Roles and permissions

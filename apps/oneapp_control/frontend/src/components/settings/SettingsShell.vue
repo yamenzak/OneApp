@@ -53,6 +53,7 @@
       <SettingsPanel value="cloudflare"><CloudflareSettings /></SettingsPanel>
       <SettingsPanel value="billing"><BillingSettings /></SettingsPanel>
       <SettingsPanel value="plans"><PlansSettings /></SettingsPanel>
+      <SettingsPanel value="apps"><AppsSettings /></SettingsPanel>
       <SettingsPanel value="regions"><RegionsSettings /></SettingsPanel>
       <SettingsPanel value="buckets"><BucketsSettings /></SettingsPanel>
       <SettingsPanel value="appearance">
@@ -74,6 +75,7 @@ import ControlSettings from './ControlSettings.vue'
 import CloudflareSettings from './CloudflareSettings.vue'
 import BillingSettings from './BillingSettings.vue'
 import PlansSettings from './PlansSettings.vue'
+import AppsSettings from './AppsSettings.vue'
 import RegionsSettings from './RegionsSettings.vue'
 import BucketsSettings from './BucketsSettings.vue'
 import ThemeSetting from '../ThemeSetting.vue'
@@ -95,6 +97,7 @@ const GROUPS = [
     label: 'Catalogue',
     items: [
       { value: 'plans', label: 'Plans', icon: 'lucide-layers' },
+      { value: 'apps', label: 'Apps', icon: 'lucide-layout-grid' },
       { value: 'regions', label: 'Regions', icon: 'lucide-map-pin' },
       { value: 'buckets', label: 'Storage buckets', icon: 'lucide-database' },
     ],

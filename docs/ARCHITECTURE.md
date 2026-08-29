@@ -55,6 +55,14 @@ MariaDB is the ceiling, not Frappe and not any Frappe Cloud limit. A fresh ERPNe
 
 Disk fills before CPU does.
 
+The shard form reads a server's specs from the Frappe Cloud API and recommends a
+soft cap from this table rather than defaulting every machine to the same number
+— `api.admin.recommended_capacity`, at 7 tenants per GB of RAM and 0.35 per GB of
+disk, which reproduces all three rows (28, 112, 224). It is a starting number an
+operator can change, not a limit: MariaDB is still the ceiling. The same call
+fills in the bench group's version and apps and the server's cluster, all of
+which were text boxes that failed late and obscurely when wrong.
+
 ### Bench composition
 
 One bench group for everyone: `frappe + erpnext + oneapp`. Uniform deploys are worth the

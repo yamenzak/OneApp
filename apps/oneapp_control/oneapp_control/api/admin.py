@@ -1,5 +1,7 @@
 """Operator-facing endpoints. Session-authenticated, System Manager only."""
 
+import json
+
 import frappe
 from frappe import _
 
@@ -84,6 +86,38 @@ def tenant_apps(tenant: str) -> list:
 	return registry.apps_for_tenant(tenant)
 
 
+@frappe.whitelist(methods=["GET"])
+def tenant_app_access(tenant: str) -> list:
+	"""Every app, and whether this workspace has it.
+
+	`apps_for_tenant` answers the launcher's question — what to render — so it
+	returns only what the tenant already has. An operator deciding what to grant
+	needs the other half: the restricted apps this workspace does *not* have are
+	the only ones there is anything to do about, and they are invisible in a list
+	of what it does.
+	"""
+	_require_manager()
+	entitled = {
+		row.app
+		for row in frappe.get_all(
+			"App Entitlement", filters={"tenant": tenant, "enabled": 1}, fields=["app"]
+		)
+	}
+
+	apps = frappe.get_all(
+		"OneApp App",
+		filters={"is_active": 1},
+		fields=["name as app_code", "app_label", "module", "availability", "icon",
+		        "sort_order", "description"],
+		order_by="sort_order asc, app_label asc",
+	)
+	for app in apps:
+		app["entitled"] = (
+			app.availability != "Restricted" or app.app_code in entitled
+		)
+	return apps
+
+
 @frappe.whitelist()
 def grant_app(tenant: str, app_code: str, note: str | None = None) -> str:
 	_require_manager()
@@ -97,6 +131,40 @@ def revoke_app(tenant: str, app_code: str):
 	return {"ok": True}
 
 
+# Tenants per GB of RAM, and per GB of disk, taken from the sizing table in
+# docs/ARCHITECTURE.md §1 — the one that says MariaDB is the ceiling and a fresh
+# ERPNext site is ~150-250MB across ~1,200 tables. Its three rows work out at
+# roughly the same ratio each (4GB/80GB → ~30 tenants, 16/320 → ~115,
+# 32/640 → ~200), so the recommendation is the table, not a new opinion.
+TENANTS_PER_GB_RAM = 7.0
+TENANTS_PER_GB_DISK = 0.35
+
+
+def recommended_capacity(plan: dict | None) -> int | None:
+	"""A starting soft cap for a server, from its own specs.
+
+	A number an operator can change, not a limit — the cap is a soft one and
+	MariaDB is the real ceiling. But "60" was the form's default for every
+	machine, which is wrong in both directions: it overfills a 4GB box and
+	wastes half a 32GB one.
+	"""
+	if not plan:
+		return None
+
+	memory_gb = (plan.get("memory") or 0) / 1024
+	disk_gb = plan.get("disk") or 0
+	if not memory_gb and not disk_gb:
+		return None
+
+	limits = [
+		int(memory_gb * TENANTS_PER_GB_RAM) if memory_gb else None,
+		int(disk_gb * TENANTS_PER_GB_DISK) if disk_gb else None,
+	]
+	# Disk fills before CPU does, and memory before either — whichever runs out
+	# first is the number.
+	return min([x for x in limits if x]) or None
+
+
 @frappe.whitelist()
 def press_capacity() -> dict:
 	"""What exists on the Frappe Cloud account, for the shard form.
@@ -105,35 +173,135 @@ def press_capacity() -> dict:
 	both names have to match press exactly — a typo produces a shard that looks
 	fine here and fails at the first provision, several steps in, after a real
 	site already exists.
+
+	The same argument applies to everything else the form used to ask for and
+	press already knows: the bench group's version, its apps, the server's
+	cluster, and the site plans press will accept. All of them fail late and
+	obscurely when wrong, so none of them is a text box any more.
 	"""
 	_require_manager()
 	from oneapp_control.press.client import PressClient
 
-	client = PressClient()
-	servers = [
-		{
-			"name": s.get("name"),
-			"title": s.get("title"),
-			"cluster": s.get("cluster"),
-			"status": s.get("status"),
-		}
-		for s in client.servers()
-		if s.get("status") == "Active"
-	]
+	# Degrades like every other press read. The form is opened by an operator who
+	# may be *about* to fix the credentials, and a page that 500s tells them
+	# nothing; the regions and the tenant domain are ours and still useful.
+	try:
+		client = PressClient()
+		raw_servers, error = _degrade(client.servers, [])
+		raw_groups, group_error = _degrade(client.release_groups, [])
+		error = error or group_error
+		plans = _site_plans(client)
+	except Exception as e:  # noqa: BLE001 — no credentials at all lands here
+		raw_servers, raw_groups, plans, error = [], [], [], str(e)
+
+	servers = []
+	for s in raw_servers:
+		if s.get("status") != "Active":
+			continue
+		plan = s.get("plan") or {}
+		servers.append(
+			{
+				"name": s.get("name"),
+				"title": s.get("title"),
+				"cluster": s.get("cluster"),
+				"status": s.get("status"),
+				# Shown so an operator can see which machine they picked, and
+				# used for the capacity recommendation below.
+				"instance_type": plan.get("instance_type"),
+				"vcpu": plan.get("vcpu"),
+				"memory_gb": round((plan.get("memory") or 0) / 1024, 1) or None,
+				"disk_gb": plan.get("disk"),
+				"recommended_capacity": recommended_capacity(plan),
+			}
+		)
+
 	groups = [
-		{"name": g.get("name"), "title": g.get("title"), "version": g.get("version")}
-		for g in client.release_groups()
+		{
+			"name": g.get("name"),
+			"title": g.get("title"),
+			# The blocking readiness check exists because this being wrong sends
+			# press down its public marketplace path and fails naming the wrong
+			# cause. It is on every group listing, so there is no reason to ask.
+			"version": g.get("version"),
+			"sites": g.get("number_of_sites"),
+			"apps": g.get("number_of_apps"),
+		}
+		for g in raw_groups
 	]
+
 	taken = frappe.get_all("Shard", fields=["press_server", "press_release_group"])
 	return {
 		"servers": servers,
 		"release_groups": groups,
+		"site_plans": plans,
+		# Named rather than an empty list: "Frappe Cloud is unreachable" and
+		# "you own no servers" are different problems, and only one of them is
+		# solved by buying a server.
+		"error": error,
 		"regions": frappe.get_all(
 			"Region", filters={"is_active": 1}, fields=["name", "region_name"], order_by="sort_order"
 		),
+		"tenant_domain": frappe.db.get_single_value("OneApp Control Settings", "tenant_domain"),
 		# So the form can grey out pairs that already have a shard rather than
 		# letting one be created twice.
 		"existing": [[r.press_server, r.press_release_group] for r in taken],
+	}
+
+
+def _site_plans(client) -> list[dict]:
+	"""Press site plans, deduplicated to the ones worth choosing from.
+
+	Press lists a plan per cluster variant ("USD 5", "USD 5 - Hetzner"), which is
+	a long list of near-duplicates in a select. Sorted by price so the cheapest —
+	the one a shard default usually wants — is first.
+	"""
+	# `_degrade` returns (value, error): a form that cannot list site plans should
+	# still open, with the field left as it was.
+	plans, _error = _degrade(client.site_plans, [])
+	rows = [
+		{
+			"name": p.get("name"),
+			"title": p.get("plan_title") or p.get("name"),
+			"price_usd": p.get("price_usd"),
+			"storage_mb": p.get("max_storage_usage"),
+			"database_mb": p.get("max_database_usage"),
+		}
+		for p in plans
+		if p.get("name")
+	]
+	return sorted(rows, key=lambda r: (r["price_usd"] or 0, r["name"]))
+
+
+@frappe.whitelist(methods=["GET"])
+def bench_apps(release_group: str) -> dict:
+	"""The apps on a bench group, in press's own order.
+
+	A site can only install what its bench carries, so `site_apps` was a text box
+	whose only correct value was already knowable. Fetched per group rather than
+	with the group list, because `deploy_information` is a call each and a form
+	only ever needs the one that was picked.
+	"""
+	_require_manager()
+	from oneapp_control.press.client import PressClient
+
+	apps, error = _degrade(lambda: PressClient().group_apps(release_group), None)
+	if apps is None:
+		# Named rather than silently empty: "we could not ask" and "the bench has
+		# no apps" are different problems and only one of them is the operator's.
+		return {"available": False, "apps": [], "error": error}
+
+	return {
+		"available": True,
+		"error": None,
+		"apps": [
+			{
+				"app": a.get("app") or a.get("name"),
+				"title": a.get("title") or a.get("app"),
+				"branch": a.get("current_branch") or a.get("branch"),
+			}
+			for a in apps
+			if a.get("app") or a.get("name")
+		],
 	}
 
 
@@ -151,6 +319,8 @@ def create_shard(
 	domain_mode: str = "Per-tenant",
 	standby_target: int = 1,
 	site_apps: str | None = None,
+	press_cluster: str | None = None,
+	press_site_plan: str | None = None,
 ) -> str:
 	"""Register a server as somewhere tenants can be placed.
 
@@ -187,6 +357,11 @@ def create_shard(
 			"press_server": press_server,
 			"press_release_group": press_release_group,
 			"press_version": press_version,
+			# Both read off the server press told us about rather than typed:
+			# create_site passes the cluster through, and a wrong site plan fails
+			# at creation.
+			"press_cluster": press_cluster or "",
+			"press_site_plan": press_site_plan or "",
 			"region": region,
 			"domain": domain,
 			"domain_mode": domain_mode,
@@ -196,6 +371,65 @@ def create_shard(
 	)
 	shard.insert(ignore_permissions=True)
 	return shard.name
+
+
+# What an operator may change on a shard after it exists. Deliberately not the
+# press identity — server, bench group, version, domain and mode are what the
+# tenants already on it were created against, and editing them here would leave
+# the shard describing a machine those sites are not on. Replacing a shard is
+# registering a new one and draining the old.
+SHARD_EDITABLE = (
+	"status",
+	"accepts_new_tenants",
+	"capacity_tenants",
+	"deploy_ring",
+	"standby_target",
+	"press_site_plan",
+	"region",
+	"notes",
+)
+
+
+@frappe.whitelist(methods=["POST"])
+def update_shard(shard: str, values: str | dict) -> dict:
+	"""Change a shard's operating settings.
+
+	Draining a server is `accepts_new_tenants = 0`, which docs/DECISIONS.md names
+	as the way to drain one — and which, until now, could only be done in the
+	desk. So could raising a soft cap on a machine that turned out to hold more.
+
+	One `values` object rather than a parameter per field: the endpoint then
+	rejects anything outside SHARD_EDITABLE explicitly, instead of silently
+	ignoring a field it does not have a parameter for.
+	"""
+	_require_manager()
+
+	if isinstance(values, str):
+		values = json.loads(values)
+	if not isinstance(values, dict):
+		frappe.throw(_("Expected an object of fields to change."))
+
+	rejected = sorted(set(values) - set(SHARD_EDITABLE))
+	if rejected:
+		frappe.throw(
+			_("{0} cannot be changed on an existing shard.").format(", ".join(rejected))
+		)
+
+	doc = frappe.get_doc("Shard", shard)
+	for field, value in values.items():
+		doc.set(field, value)
+
+	doc.save(ignore_permissions=True)
+	return {"name": doc.name, "status": doc.status}
+
+
+@frappe.whitelist(methods=["GET"])
+def shard(shard: str) -> dict:
+	"""One shard, with what press says about the machine under it."""
+	_require_manager()
+	doc = frappe.get_doc("Shard", shard).as_dict()
+	doc["editable"] = list(SHARD_EDITABLE)
+	return doc
 
 
 @frappe.whitelist()
@@ -519,3 +753,195 @@ def support_logins(tenant: str, limit: int = 20) -> list:
 		order_by="logged_in_on desc",
 		limit_page_length=limit,
 	)
+
+
+# --------------------------------------------------------------------------- #
+# The rest of the control plane
+#
+# Everything below exists because the desk is not part of this product
+# (DECISIONS §7). A record an operator can only reach through /app is a record
+# only someone who knows Frappe can reach, and the whole point of OneAdmin is
+# that running this does not require that.
+# --------------------------------------------------------------------------- #
+
+@frappe.whitelist(methods=["GET"])
+def signups(limit: int = 50) -> list:
+	"""Account requests, newest first.
+
+	A signup that took payment and then failed to provision is invisible
+	otherwise: the customer has been charged, there is no tenant, and nothing
+	surfaces it.
+	"""
+	_require_manager()
+	return frappe.get_all(
+		"Account Request",
+		fields=[
+			"name", "email", "workspace_name", "requested_slug", "status", "plan",
+			"interval", "region", "tenant", "paid_on", "completed_on",
+			"failure_reason", "creation",
+		],
+		order_by="creation desc",
+		limit=min(int(limit), 200),
+	)
+
+
+@frappe.whitelist(methods=["GET"])
+def webhook_events(limit: int = 50, status: str | None = None) -> list:
+	"""Stripe events we have seen, and what became of them.
+
+	The webhook answers 200 even when a handler raises, because Stripe would
+	otherwise retry a bug forever — the row is the record to replay from once it
+	is fixed. That only works if the rows are visible.
+	"""
+	_require_manager()
+	filters = {"status": status} if status else None
+	return frappe.get_all(
+		"Stripe Webhook Event",
+		filters=filters,
+		fields=["name", "event_id", "event_type", "status", "tenant", "subscription",
+		        "processed_on", "error", "creation"],
+		order_by="creation desc",
+		limit=min(int(limit), 200),
+	)
+
+
+@frappe.whitelist(methods=["POST"])
+def replay_webhook(event: str) -> dict:
+	"""Run a stored Stripe event through its handler again.
+
+	The deliberate half of answering 200 on failure. Idempotent by the same
+	arguments the handlers already rely on — a replayed invoice does not grant
+	twice, and a replayed plan change applies once.
+	"""
+	_require_manager()
+	from oneapp_control.billing import webhooks
+
+	record = frappe.get_doc("Stripe Webhook Event", event)
+	if record.event_type not in webhooks.HANDLERS:
+		frappe.throw(_("{0} has no handler.").format(record.event_type))
+
+	payload = json.loads(record.payload or "{}")
+	obj = (payload.get("data") or {}).get("object")
+	if not obj:
+		frappe.throw(_("This event was recorded without a payload to replay."))
+
+	try:
+		webhooks.HANDLERS[record.event_type](obj, record)
+		record.db_set("status", "Processed")
+		record.db_set("processed_on", frappe.utils.now_datetime())
+		record.db_set("error", None)
+		return {"ok": True}
+	except Exception as e:
+		record.db_set("status", "Failed")
+		record.db_set("error", frappe.get_traceback()[:5000])
+		frappe.throw(_("Replay failed: {0}").format(str(e)[:200]))
+
+
+@frappe.whitelist(methods=["GET"])
+def standby_pool() -> list:
+	"""Warm sites, by shard.
+
+	The pool is what makes signup instant, so an empty one is a slow signup and
+	a stuck one is a wasted site. Neither shows anywhere else.
+	"""
+	_require_manager()
+	rows = frappe.get_all(
+		"Standby Site",
+		fields=["name", "press_site", "status", "shard", "claimed_by", "claimed_on",
+		        "created_on", "last_error"],
+		order_by="creation desc",
+		limit=200,
+	)
+	targets = {
+		s.name: s.standby_target
+		for s in frappe.get_all("Shard", fields=["name", "standby_target"])
+	}
+	for row in rows:
+		row["target"] = targets.get(row.shard)
+	return rows
+
+
+@frappe.whitelist(methods=["GET"])
+def tenant_billing(tenant: str) -> dict:
+	"""What a workspace is on, and on whose terms.
+
+	The operator's view of the thing the customer sees on their plan page — plus
+	the one fact the customer's page cannot show them: whether the terms they
+	hold still match the plan as it stands.
+	"""
+	_require_manager()
+	from oneapp_control.billing import quotas
+
+	doc = frappe.get_doc("Tenant", tenant)
+	subscription = (
+		frappe.get_doc("Subscription", doc.subscription).as_dict()
+		if doc.subscription
+		else None
+	)
+
+	in_force = quotas.for_tenant(doc)
+	current = (
+		frappe.db.get_value("Plan", doc.plan, quotas.TERMS, as_dict=True) if doc.plan else None
+	) or {}
+
+	return {
+		"plan": doc.plan,
+		"subscription": subscription,
+		"terms": in_force,
+		"plan_terms": current,
+		# Named rather than left to be spotted: an operator asking "why does this
+		# workspace have 50GB when the plan says 20" is asking this question.
+		"grandfathered": [
+			field for field in quotas.TERMS if (in_force.get(field) or 0) != (current.get(field) or 0)
+		],
+		"credits": _credit_summary(tenant),
+	}
+
+
+def _credit_summary(tenant: str) -> dict:
+	from oneapp_control.credits import ledger
+
+	return {
+		"balance": ledger.balance(tenant),
+		"available": ledger.available(tenant),
+		"history": frappe.get_all(
+			"Credit Ledger Entry",
+			filters={"tenant": tenant},
+			fields=["creation", "entry_type", "credits", "expires_on", "remarks"],
+			order_by="creation desc",
+			limit=50,
+		),
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def adopt_plan_terms(tenant: str) -> dict:
+	"""Move a workspace onto its plan's terms as they stand now.
+
+	The deliberate half of grandfathering. Quotas are captured when a
+	subscription is sold precisely so a plan edit cannot move an existing
+	customer; this is how an operator moves one on purpose — handing someone the
+	newer, larger plan without making them re-subscribe.
+	"""
+	_require_manager()
+	from oneapp_control.billing import quotas
+
+	subscription = frappe.db.get_value("Tenant", tenant, "subscription")
+	if not subscription:
+		frappe.throw(_("This workspace has no subscription to move."))
+
+	return quotas.adopt_current_terms(subscription)
+
+
+@frappe.whitelist(methods=["POST"])
+def set_tenant_plan(tenant: str, plan: str, interval: str = "Monthly") -> dict:
+	"""Change a workspace's plan on the operator's authority.
+
+	Same path the customer's own switch takes, so the fit check, the proration
+	and the Frappe Cloud site plan all behave identically — an operator moving
+	someone should not be a second, subtly different implementation.
+	"""
+	_require_manager()
+	from oneapp_control.billing import checkout
+
+	return checkout.change_plan(tenant, plan, interval)

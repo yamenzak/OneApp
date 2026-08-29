@@ -42,5 +42,10 @@ export function useListColumns(spec) {
 
   const shows = (key) => visible.value.some((column) => column.key === key)
 
+  // Destructure this. Vue unwraps a ref bound at the top level of `setup`, but
+  // not one reached through a property, so holding the result as an object and
+  // writing `:columns="list.columns"` hands List a ComputedRef — which fails at
+  // `columns.join` with a message that names neither the list nor the ref.
+  // `tests/test_frontend_guards.py` fails the build on that shape.
   return { visible, columns, shows }
 }

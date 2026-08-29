@@ -710,13 +710,63 @@ def test_a_dropped_column_takes_its_cell_with_it(app):
 		source = path.read_text()
 		dropped = re.findall(r"\{\s*key:\s*'([^']+)'[^}]*mobile:\s*false", source)
 		for key in dropped:
-			assert f"shows('{key}')" in source, (
+			# `shows(...)` or a renamed destructure of it — a file with several
+			# lists needs `domainShows`, `backupShows` and so on.
+			assert re.search(rf"[Ss]hows\('{re.escape(key)}'\)", source), (
 				f"{path.relative_to(root)}: column '{key}' is dropped on a phone "
 				f"but no cell tests shows('{key}')"
 			)
 		# The converse: a `shows()` for a key that is never declared silently
 		# renders nothing at every width.
-		for key in set(re.findall(r"shows\('([^']+)'\)", source)):
+		for key in set(re.findall(r"[Ss]hows\('([^']+)'\)", source)):
 			if f"key: '{key}'" not in source:
 				offenders.append(f"{path.relative_to(root)}: shows('{key}') is not a column")
 	assert not offenders, "; ".join(offenders)
+
+
+def _column_helper_results(source: str) -> list[str]:
+	"""Names a `useListColumns(...)` result is bound to, when not destructured."""
+	return re.findall(r"const\s+(\w+)\s*=\s*useListColumns\(", source)
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_a_column_set_is_destructured_not_held_as_an_object(app):
+	"""Vue unwraps a ref bound at the top level of `setup`, not one reached
+	through a property.
+
+	`const list = useListColumns(...)` then `:columns="list.columns"` hands List
+	a ComputedRef, and it fails at `columns.join` with a message that names
+	neither the list nor the ref — which is exactly how the tenant page's
+	Domains, Backups and Activity tabs shipped broken. Destructuring is the only
+	spelling that works, so it is the only one allowed.
+	"""
+	root = ROOT / f"apps/{app}/frontend/src"
+	offenders = []
+	for path in sorted(root.rglob("*.vue")):
+		held = _column_helper_results(path.read_text())
+		if held:
+			offenders.append(f"{path.relative_to(root)}: {held}")
+	assert not offenders, (
+		"destructure the result — `const { visible, columns, shows } = "
+		"useListColumns(...)`: " + "; ".join(offenders)
+	)
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_no_computed_ref_is_bound_straight_into_a_template(app):
+	"""The same mistake in general: `:prop="obj.something"` where `something` is
+	a ref on a plain object.
+
+	Only the shape this project has actually been bitten by is checked — a
+	binding whose value is a property of a `useListColumns` result — because a
+	general "is this a ref" check needs a type system we do not have here.
+	"""
+	root = ROOT / f"apps/{app}/frontend/src"
+	offenders = []
+	for path in sorted(root.rglob("*.vue")):
+		source = path.read_text()
+		names = re.findall(r"const\s+(\w+)\s*=\s*useListColumns\(", source)
+		for name in names:
+			for match in re.findall(rf'"{name}\.(\w+)"', source):
+				offenders.append(f"{path.relative_to(root)}: {name}.{match}")
+	assert not offenders, "these bind a ref, not its value: " + "; ".join(offenders)

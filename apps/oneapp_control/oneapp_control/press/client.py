@@ -321,6 +321,27 @@ class PressClient:
 		"""Bench groups. A shard is a (server, group) pair, so both are needed."""
 		return self.call("press.api.bench.all") or []
 
+	def site_plans(self) -> list[dict]:
+		"""The site plans Frappe Cloud offers.
+
+		Read rather than typed: `press_site_plan` has to match a plan name press
+		knows ("USD 10"), and a wrong one fails at site creation — several steps
+		into a provision, after a real site already exists.
+		"""
+		return self.call("press.api.site.get_plans", timeout=READ_TIMEOUT) or []
+
+	def group_apps(self, release_group: str) -> list[dict]:
+		"""The apps actually on a bench group, in the order press lists them.
+
+		`deploy_information` is the only endpoint that returns them; `bench.all`
+		gives a count and nothing else. Sites created on a shard can only install
+		apps the bench carries, so this is the list, not a suggestion.
+		"""
+		info = self.call(
+			"press.api.bench.deploy_information", timeout=READ_TIMEOUT, name=release_group
+		) or {}
+		return info.get("apps") or []
+
 	def group_regions(self, release_group: str) -> list[dict]:
 		"""Clusters a bench group can deploy into."""
 		return self.call("press.api.bench.regions", name=release_group) or []

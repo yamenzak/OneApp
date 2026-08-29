@@ -124,12 +124,54 @@ def _balanced(text: str, start: int) -> str:
     return ""
 
 
-def _declarations(name: str, script: str, directory: Path) -> list[tuple[str, str]]:
-    """Every place `name` could be declared, as (text, source-label) pairs."""
+def _read(path: Path) -> str:
+    return LINE_COMMENT.sub("", BLOCK_COMMENT.sub("", path.read_text()))
+
+
+# `import type { InputLabelingProps } from '../../composables/useInputLabeling'`
+IMPORT = re.compile(
+    r"^\s*import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['\"]([^'\"]+)['\"]", re.M
+)
+
+
+def _imported_from(name: str, text: str, directory: Path) -> Path | None:
+    """Where a named type is imported from, if it is."""
+    for names, source in IMPORT.findall(text):
+        imported = {
+            part.replace("type ", "").strip().split(" as ")[0].strip()
+            for part in names.split(",")
+        }
+        if name not in imported or not source.startswith("."):
+            continue
+        base = (directory / source).resolve()
+        for candidate in (base.with_suffix(".ts"), base / "index.ts", base.with_suffix(".d.ts")):
+            if candidate.exists():
+                return candidate
+    return None
+
+
+def _declarations(name: str, script: str, directory: Path) -> list[str]:
+    """Every place `name` could be declared.
+
+    The component's own script and the `types.ts` beside it cover most of
+    frappe-ui — but not the props a component inherits. `SwitchProps extends
+    InputLabelingProps`, and that interface lives in `composables/`, so a reader
+    that stops at the directory reports Switch as taking no `label` and no
+    `description`. It takes both, and the guard then flags correct markup as
+    wrong, which is the one failure mode worse than missing a bug: it argues for
+    removing something that works.
+
+    So a named import is followed to the file it comes from.
+    """
     texts = [script]
     for candidate in (directory / "types.ts", directory.parent / "types.ts"):
         if candidate.exists():
-            texts.append(LINE_COMMENT.sub("", BLOCK_COMMENT.sub("", candidate.read_text())))
+            texts.append(_read(candidate))
+
+    for text in list(texts):
+        source = _imported_from(name, text, directory)
+        if source:
+            texts.append(_read(source))
     return texts
 
 
