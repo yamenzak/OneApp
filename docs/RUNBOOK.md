@@ -12,6 +12,23 @@ tenant. Stage 5 can wait until you actually want files, mail or AI.
 > bench, which answers most questions in seconds rather than minutes. This
 > runbook is for bringing up real infrastructure.
 
+## Stage 0 — A fresh control site
+
+Once the site exists on Frappe Cloud, hand it its own Frappe Cloud keys before
+signing in. It cannot be told them through its own UI, because nothing is
+configured yet and that is the thing being configured.
+
+```bash
+ONEAPP_FC_ENV=~/.oneapp/fc.env scripts/bootstrap_site.py oneadmin.frappe.cloud
+```
+
+The script reads the config back after writing it: press drops empty values
+silently, so a write that reports success is not proof the key landed. Then sign
+in as Administrator and finish in Settings — control plane URL, tenant domain,
+Stripe, Cloudflare, and the shard.
+
+---
+
 ## Stage 1 — Frappe Cloud
 
 1. **Create the server.** Servers → New Server. The $40 `cpx22` covers the whole
