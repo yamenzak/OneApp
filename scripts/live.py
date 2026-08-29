@@ -421,7 +421,14 @@ def update_sites(group: str):
     sites = [s["name"] for s in info.get("sites") or []]
     for name in sites:
         print(f"  updating {name}")
-        press("press.api.site.update", {"name": name}, timeout=300)
+        # "Could not find suitable Destination Bench" here means the site is
+        # already on the newest bench, which is the normal case after `deploy`:
+        # deploy_and_update moves the sites itself. Only a build run on its own
+        # leaves anything for this command to do.
+        result = press("press.api.site.update", {"name": name}, timeout=300, optional=True)
+        if not result:
+            print(f"    {name} is already on the newest bench")
+            continue
 
     # A site returns 503 while it moves, so "the call succeeded" is not the same
     # as "the site is back". Reporting success at the call and walking away is
