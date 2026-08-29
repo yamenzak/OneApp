@@ -74,6 +74,7 @@ def sync():
 		},
 		"apps": registry.apps_for_tenant(tenant_name),
 		"modules": registry.entitled_modules(tenant_name),
+		"roles": registry.entitled_roles(tenant_name),
 		"credits": {
 			"balance": ledger.balance(tenant_name),
 			"available": ledger.available(tenant_name),

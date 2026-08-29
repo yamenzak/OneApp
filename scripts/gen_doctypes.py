@@ -134,6 +134,10 @@ doctype(
         f("availability", "Select", options="General\nRestricted", default="General",
           reqd=1, in_list_view=1, in_standard_filter=1,
           description="General: every tenant. Restricted: only via App Entitlement."),
+        f("role_name", reqd=1,
+          description="Frappe Role gating this app's doctypes. Entitlement grants "
+                      "and revokes this role, so enforcement is native permissions "
+                      "rather than a bespoke hook."),
         f("icon", description="Icon name rendered by the launcher."),
         f("route", description="SPA route, e.g. /crm"),
         f("sort_order", "Int", default="0"),

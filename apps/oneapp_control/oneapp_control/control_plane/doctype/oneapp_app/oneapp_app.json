@@ -13,6 +13,7 @@
   "is_active",
   "cb_app",
   "availability",
+  "role_name",
   "icon",
   "route",
   "sort_order",
@@ -62,6 +63,13 @@
    "in_standard_filter": 1,
    "label": "Availability",
    "options": "General\nRestricted",
+   "reqd": 1
+  },
+  {
+   "description": "Frappe Role gating this app's doctypes. Entitlement grants and revokes this role, so enforcement is native permissions rather than a bespoke hook.",
+   "fieldname": "role_name",
+   "fieldtype": "Data",
+   "label": "Role Name",
    "reqd": 1
   },
   {

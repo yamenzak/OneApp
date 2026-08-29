@@ -19,12 +19,14 @@ def apps_for_tenant(tenant: str) -> list[dict]:
 	general = frappe.get_all(
 		"OneApp App",
 		filters={"is_active": 1, "availability": "General"},
-		fields=["name as app_code", "app_label", "module", "icon", "route", "sort_order"],
+		fields=["name as app_code", "app_label", "module", "role_name", "icon", "route",
+			"sort_order"],
 	)
 
 	restricted = frappe.db.sql(
 		"""
-		SELECT a.name AS app_code, a.app_label, a.module, a.icon, a.route, a.sort_order
+		SELECT a.name AS app_code, a.app_label, a.module, a.role_name, a.icon, a.route,
+		       a.sort_order
 		FROM `tabOneApp App` a
 		INNER JOIN `tabApp Entitlement` e ON e.app = a.name
 		WHERE a.is_active = 1
@@ -42,12 +44,18 @@ def apps_for_tenant(tenant: str) -> list[dict]:
 
 
 def entitled_modules(tenant: str) -> list[str]:
-	"""Module names the tenant may reach.
-
-	This is the list the tenant site enforces against — hiding a launcher tile is
-	a UX affordance, the module check is the boundary.
-	"""
 	return [a["module"] for a in apps_for_tenant(tenant) if a.get("module")]
+
+
+def entitled_roles(tenant: str) -> list[str]:
+	"""Roles the tenant site should hold.
+
+	Enforcement is native Frappe permissions: each app's doctypes carry
+	permissions for its role, and the tenant site adds or removes that role from
+	its users on every sync. That covers desk, REST, reports and any future
+	surface, which a bespoke permission hook would not.
+	"""
+	return [a["role_name"] for a in apps_for_tenant(tenant) if a.get("role_name")]
 
 
 def grant(tenant: str, app_code: str, note: str | None = None):
