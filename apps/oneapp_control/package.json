@@ -1,0 +1,12 @@
+{
+  "name": "oneapp-control",
+  "private": true,
+  "type": "module",
+  "_generated": "scripts/gen_frontend.py",
+  "scripts": {
+    "postinstall": "cd frontend && yarn install",
+    "dev": "cd frontend && yarn dev",
+    "build": "cd frontend && yarn build",
+    "lint": "cd frontend && yarn lint"
+  }
+}

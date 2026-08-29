@@ -18,7 +18,7 @@ def main() -> int:
     missing = []
 
     for app, spec in APPS.items():
-        base = os.path.join(ROOT, "apps", app, "frontend")
+        base = os.path.join(ROOT, "apps", app)
         for name, expected in render(app, spec).items():
             path = os.path.join(base, name)
             if not os.path.exists(path):

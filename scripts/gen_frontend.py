@@ -113,6 +113,31 @@ export default {
 """
 
 
+def app_root_package_json(app: str, spec: dict) -> str:
+    """Repo-root package.json.
+
+    Frappe Cloud installs and builds an app by running yarn at its repository
+    root, so this is what makes the SPA exist in a deployed bench at all.
+    Without it the build silently does nothing and the www page 404s, because
+    the HTML is emitted by the Vite build rather than committed.
+    """
+    return json.dumps(
+        {
+            "name": app.replace("_", "-"),
+            "private": True,
+            "type": "module",
+            "_generated": "scripts/gen_frontend.py",
+            "scripts": {
+                "postinstall": "cd frontend && yarn install",
+                "dev": "cd frontend && yarn dev",
+                "build": "cd frontend && yarn build",
+                "lint": "cd frontend && yarn lint",
+            },
+        },
+        indent=2,
+    ) + "\n"
+
+
 def package_json(app: str, spec: dict) -> str:
     return json.dumps(
         {
@@ -793,15 +818,23 @@ FILES = {
     "src/lib/resource.js": lambda app, spec: RESOURCE_JS,
 }
 
+# Written to the app repository root rather than into frontend/.
+ROOT_FILES = {
+    "package.json": app_root_package_json,
+}
+
 
 def render(app: str, spec: dict) -> dict:
-    return {name: fn(app, spec) for name, fn in FILES.items()}
+    """Every generated path, relative to apps/<app>/."""
+    out = {f"frontend/{name}": fn(app, spec) for name, fn in FILES.items()}
+    out.update({name: fn(app, spec) for name, fn in ROOT_FILES.items()})
+    return out
 
 
 def main():
     written = []
     for app, spec in APPS.items():
-        base = os.path.join(ROOT, "apps", app, "frontend")
+        base = os.path.join(ROOT, "apps", app)
         for name, content in render(app, spec).items():
             path = os.path.join(base, name)
             os.makedirs(os.path.dirname(path), exist_ok=True)
