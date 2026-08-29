@@ -7,11 +7,13 @@
   <div v-if="data" class="flex flex-col gap-6 py-5">
     <Alert
       v-if="exceeded.length"
-      variant="warning"
+      theme="amber"
       :title="`At the ${exceeded.join(' and ')} limit`"
     >
-      Nothing has been deleted. Free some space, or add more below — new uploads
-      resume as soon as there is room.
+      <template #description>
+        Nothing has been deleted. Free some space, or add more below — new uploads
+        resume as soon as there is room.
+      </template>
     </Alert>
 
     <section>
@@ -47,8 +49,8 @@
     <section>
       <h3 class="mb-3 text-base font-medium text-ink-gray-8">Workspace</h3>
       <List :columns="['10rem', 'minmax(0,1fr)']" divider="full">
-        <ListRows :items="details" v-slot="{ item: row }">
-          <ListRow :row-key="row.label">
+        <ListRows :items="details" row-key="label" v-slot="{ item: row }">
+          <ListRow>
             <ListCell>
               <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
             </ListCell>

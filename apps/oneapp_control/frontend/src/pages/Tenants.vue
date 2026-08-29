@@ -13,8 +13,10 @@
   </PageHeader>
 
   <div class="p-5">
-    <Alert v-if="!setup.canProvision" variant="warning" title="Setup incomplete" class="mb-4">
-      Provisioning is disabled until the required configuration is in place.
+    <Alert v-if="!setup.canProvision" theme="amber" title="Setup incomplete" class="mb-4">
+      <template #description>
+        Provisioning is disabled until the required configuration is in place.
+      </template>
       <template #actions>
         <Button label="Open setup" @click="$router.push({ name: 'Setup' })" />
       </template>
@@ -35,9 +37,8 @@
         <ListHeaderCell v-for="c in HEADERS" :key="c" :label="c" />
       </ListHeader>
 
-      <ListRows :items="rows" v-slot="{ item: tenant }">
+      <ListRows :items="rows" row-key="name" v-slot="{ item: tenant }">
         <ListRow
-          :row-key="tenant.name"
           @click="$router.push({ name: 'Tenant', params: { name: tenant.name } })"
         >
           <ListCell>

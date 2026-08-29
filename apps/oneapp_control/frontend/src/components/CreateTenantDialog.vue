@@ -1,46 +1,49 @@
 <template>
-  <Dialog v-model="open" :options="{ title: 'New tenant', size: 'lg' }">
-    <template #body-content>
-      <div v-focus class="flex flex-col gap-4">
+  <!-- Title and size are props, and the body is the default slot. The
+       `:options` object and `#body-content` are frappe-ui v0 spelling: both
+       are silently ignored, so the dialog opened with no heading and an
+       empty body. -->
+  <Dialog v-model="open" title="New tenant" size="lg">
+    <div v-focus class="flex flex-col gap-4">
+      <FormControl
+        v-model="form.tenant_name"
+        label="Workspace name"
+        placeholder="Acme Ltd"
+      />
+
+      <div>
         <FormControl
-          v-model="form.tenant_name"
-          label="Workspace name"
-          placeholder="Acme Ltd"
+          v-model="form.tenant_slug"
+          label="Subdomain"
+          placeholder="acme"
+          :description="slugPreview"
         />
+        <ErrorMessage v-if="slugError" class="mt-1" :message="slugError" />
+      </div>
 
-        <div>
-          <FormControl
-            v-model="form.tenant_slug"
-            label="Subdomain"
-            placeholder="acme"
-            :description="slugPreview"
-          />
-          <ErrorMessage v-if="slugError" class="mt-1" :message="slugError" />
-        </div>
+      <FormControl
+        v-model="form.owner_email"
+        type="email"
+        label="Owner email"
+        placeholder="ops@acme.test"
+      />
 
-        <FormControl
-          v-model="form.owner_email"
-          type="email"
-          label="Owner email"
-          placeholder="ops@acme.test"
-        />
+      <FormControl
+        v-model="form.plan"
+        type="select"
+        label="Plan"
+        :options="planOptions"
+      />
 
-        <FormControl
-          v-model="form.plan"
-          type="select"
-          label="Plan"
-          :options="planOptions"
-        />
-
-        <Alert variant="info" title="This creates a real site">
+      <Alert theme="blue" title="This creates a real site">
+        <template #description>
           Provisioning runs against Frappe Cloud and takes a few minutes. Progress
           shows under Provisioning.
-        </Alert>
+        </template>
+      </Alert>
 
-        <ErrorMessage v-if="error" :message="error" />
-      </div>
-    </template>
-
+      <ErrorMessage v-if="error" :message="error" />
+    </div>
     <template #actions>
       <Button
         variant="solid"

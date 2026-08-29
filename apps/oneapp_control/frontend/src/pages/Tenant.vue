@@ -31,16 +31,18 @@
   <div v-if="tenant" class="mx-auto max-w-3xl p-5">
     <Alert
       v-if="tenant.status === 'Failed'"
-      variant="error"
+      theme="red"
       title="Provisioning failed"
       class="mb-5"
     >
-      {{ tenant.suspended_reason || 'See the provisioning job for the reason.' }}
+      <template #description>
+        {{ tenant.suspended_reason || 'See the provisioning job for the reason.' }}
+      </template>
     </Alert>
 
     <List :columns="['12rem', 'minmax(0,1fr)']" divider="full">
-      <ListRows :items="rows" v-slot="{ item: row }">
-        <ListRow :row-key="row.label">
+      <ListRows :items="rows" row-key="label" v-slot="{ item: row }">
+        <ListRow>
           <ListCell>
             <span class="text-p-sm text-ink-gray-6">{{ row.label }}</span>
           </ListCell>

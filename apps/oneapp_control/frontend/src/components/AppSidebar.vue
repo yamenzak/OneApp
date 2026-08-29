@@ -1,13 +1,12 @@
 <template>
   <Sidebar class="border-r border-outline-gray-1">
-    <SidebarHeader>
-      <div class="flex items-center gap-2 px-1 py-0.5">
-        <Avatar :label="ADMIN_APP" shape="square" size="lg" />
-        <div v-if="!collapsed" class="min-w-0">
-          <p class="truncate text-base font-medium text-ink-gray-8">{{ ADMIN_APP }}</p>
-          <p class="truncate text-xs text-ink-gray-5">Control plane</p>
-        </div>
-      </div>
+    <!-- Title and subtitle are props and the logo box is `#prefix`; SidebarHeader
+         has no default slot, so hand-built header markup rendered nothing and
+         left `title` unset, which the component then reads a first letter from. -->
+    <SidebarHeader :title="ADMIN_APP" subtitle="Control plane">
+      <template #prefix>
+        <Avatar :label="ADMIN_APP" shape="square" size="lg" class="size-7" />
+      </template>
     </SidebarHeader>
 
     <SidebarSection>
@@ -27,7 +26,11 @@
       </SidebarItem>
     </SidebarSection>
 
-    <template #footer>
+    <!-- Sidebar has one slot, the default: it hands the whole body to the app.
+         A `#footer` template renders nothing at all, which is how the quota
+         meter, the user menu and the setup card all silently disappeared.
+         `mt-auto` is what pins this to the bottom of the flex column. -->
+    <div class="mt-auto shrink-0">
       <div class="p-2">
         <UserMenu
           :name="user.full_name"
@@ -39,16 +42,22 @@
         />
       </div>
 
-      <SidebarCard v-if="!setup.canProvision" class="m-2">
-        <p class="text-sm font-medium text-ink-gray-8">Finish setup</p>
-        <p class="mt-1 text-p-sm text-ink-gray-6">
-          {{ setup.blockers.length }} required
-          {{ setup.blockers.length === 1 ? 'item' : 'items' }} left before you can
-          provision.
-        </p>
-        <Button class="mt-2 w-full" label="Open setup" @click="$router.push({ name: 'Setup' })" />
-      </SidebarCard>
-    </template>
+      <!-- Title, body and button are props here too — SidebarCard has no default
+           slot either, so the card showed as an empty bordered box. -->
+      <SidebarCard
+        v-if="!setup.canProvision"
+        class="m-2"
+        theme="amber"
+        title="Finish setup"
+        :description="`${setup.blockers.length} required ${
+          setup.blockers.length === 1 ? 'item' : 'items'
+        } left before you can provision.`"
+        :action="{
+          label: 'Open setup',
+          onClick: () => $router.push({ name: 'Setup' }),
+        }"
+      />
+    </div>
   </Sidebar>
 </template>
 

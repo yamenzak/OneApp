@@ -10,8 +10,10 @@
         <LoadingIndicator class="size-5 text-ink-gray-5" />
       </div>
 
-      <Alert v-else-if="!open.open" variant="warning" title="Signups are paused">
-        We are not taking new workspaces at the moment. Please check back shortly.
+      <Alert v-else-if="!open.open" theme="amber" title="Signups are paused">
+        <template #description>
+          We are not taking new workspaces at the moment. Please check back shortly.
+        </template>
       </Alert>
 
       <div v-else class="flex flex-col gap-4 rounded-lg border border-outline-gray-2 bg-surface-white p-5">

@@ -180,6 +180,37 @@ Appearance is a three-way `ThemeSwitcher` (light / dark / system) in settings,
 not a toggle in the user menu. A two-state toggle cannot express "follow the
 system", so anyone wanting that ends up flipping it by hand twice a day.
 
+### The frappe-ui API is read, not remembered
+
+Every UI defect found in this project so far was the same mistake: giving a
+component a prop, a slot, or an option it does not declare. Vue turns an unknown
+prop into a fallthrough attribute on the root element and never renders an
+unknown slot, and `useCall` ignores option keys it does not know. Nothing throws,
+nothing logs, the page loads — and the thing is simply missing. Eight page
+headers were empty, eight lists rendered zero rows beside a correct count, three
+dialogs opened with no title and no body, nine alerts dropped their text, and
+three sidebars lost their footers, all without a single error.
+
+So `tests/frappe_ui_api.py` reads the declarations out of the installed package,
+and four checks compare them against what we write:
+
+| Check | Catches |
+| --- | --- |
+| unknown props | `<Alert variant>` when the prop is `theme` |
+| unknown slots | `<Dialog #body-content>` when the body is the default slot |
+| content with nowhere to go | `<Alert>body</Alert>` when Alert has no default slot |
+| missing required props | `<ListRows>` with no `:items` |
+| unknown call options | `useResource(…, { enabled })` when the option is `immediate` |
+
+frappe-ui declares components four different ways — an inline `defineProps<{…}>`
+literal, a named type in `types.ts`, a runtime props object, and the options API
+— plus `defineModel('open')` for named v-models. A reader that understands only
+some of them reports the rest as taking nothing, which reads exactly like a clean
+run, so `tests/test_frappe_ui_usage.py` pins one component per form.
+
+Upgrading frappe-ui runs these against the new declarations. A renamed prop
+fails the suite instead of quietly emptying a page.
+
 Every customer-facing URL the server builds — Stripe return URLs, signup links, the billing
 portal — comes from `oneapp_control/portal.py`, and `tests/test_portal_urls.py` parses the
 router to prove they resolve. Nothing fails loudly when those disagree: Stripe accepts any

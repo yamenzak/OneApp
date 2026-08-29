@@ -24,8 +24,8 @@
         <ListHeaderCell v-for="c in HEADERS" :key="c" :label="c" />
       </ListHeader>
 
-      <ListRows :items="rows" v-slot="{ item: job }">
-        <ListRow :row-key="job.name">
+      <ListRows :items="rows" row-key="name" v-slot="{ item: job }">
+        <ListRow>
           <ListCell>
             <div class="min-w-0">
               <p class="truncate text-base text-ink-gray-8">{{ job.action }}</p>

@@ -7,7 +7,7 @@
         {{ formatted }}
       </span>
     </div>
-    <Progress class="mt-1.5" size="sm" :value="percent" :theme="theme" />
+    <Progress class="mt-1.5" size="sm" :value="percent" :class="barClass" />
     <p v-if="usage?.exceeded" class="mt-1.5 text-p-sm text-ink-red-3">
       {{ exceededHint }}
     </p>
@@ -31,10 +31,14 @@ const props = defineProps({
 
 const percent = computed(() => Math.min((props.usage?.fraction || 0) * 100, 100))
 
-const theme = computed(() => {
-  if (props.usage?.exceeded) return 'red'
-  if (props.usage?.warn) return 'orange'
-  return 'blue'
+// Progress has no `theme`: its fill is always `bg-surface-gray-10`, so the
+// colour has to be applied from outside. `class` falls through to the root, and
+// the fill is the element inside `role="progressbar"` — `!` because the
+// component's own background class is on that same element.
+const barClass = computed(() => {
+  if (props.usage?.exceeded) return '[&_[role=progressbar]>*]:!bg-surface-red-6'
+  if (props.usage?.warn) return '[&_[role=progressbar]>*]:!bg-surface-amber-5'
+  return ''
 })
 
 const valueClass = computed(() => {

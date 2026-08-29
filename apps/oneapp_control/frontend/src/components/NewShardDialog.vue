@@ -1,65 +1,68 @@
 <template>
-  <Dialog v-model="open" :options="{ title: 'Register a server', size: 'xl' }">
-    <template #body-content>
-      <div v-if="loading" class="grid place-items-center py-10">
-        <LoadingIndicator class="size-5 text-ink-gray-5" />
-      </div>
+  <!-- Title and size are props, and the body is the default slot. The
+       `:options` object and `#body-content` are frappe-ui v0 spelling: both
+       are silently ignored, so the dialog opened with no heading and an
+       empty body. -->
+  <Dialog v-model="open" title="Register a server" size="xl">
+    <div v-if="loading" class="grid place-items-center py-10">
+      <LoadingIndicator class="size-5 text-ink-gray-5" />
+    </div>
 
-      <div v-else class="flex flex-col gap-4">
-        <p class="text-p-base text-ink-gray-6">
-          Buy a server on Frappe Cloud and add a bench group to it, then register
-          the pair here. The allocator places new tenants on it from the next
-          signup — least loaded first — and the region becomes selectable at
-          signup as soon as it has headroom.
-        </p>
+    <div v-else class="flex flex-col gap-4">
+      <p class="text-p-base text-ink-gray-6">
+        Buy a server on Frappe Cloud and add a bench group to it, then register
+        the pair here. The allocator places new tenants on it from the next
+        signup — least loaded first — and the region becomes selectable at
+        signup as soon as it has headroom.
+      </p>
 
-        <FormControl
-          v-model="form.press_server"
-          type="select"
-          label="Server"
-          :options="serverOptions"
-          description="Read live from Frappe Cloud, so the name always matches."
-        />
-        <FormControl
-          v-model="form.press_release_group"
-          type="select"
-          label="Bench group"
-          :options="groupOptions"
-        />
+      <FormControl
+        v-model="form.press_server"
+        type="select"
+        label="Server"
+        :options="serverOptions"
+        description="Read live from Frappe Cloud, so the name always matches."
+      />
+      <FormControl
+        v-model="form.press_release_group"
+        type="select"
+        label="Bench group"
+        :options="groupOptions"
+      />
 
-        <Alert v-if="alreadyUsed" variant="warning" title="Already registered">
+      <Alert v-if="alreadyUsed" theme="amber" title="Already registered">
+        <template #description>
           A shard already covers that server and bench group. Two shards over one
           group would both count capacity against the same machine, so the
           allocator would overfill it.
-        </Alert>
+        </template>
+      </Alert>
 
-        <div class="grid gap-4 sm:grid-cols-2">
-          <FormControl v-model="form.shard_name" label="Shard name" placeholder="hetzner-nuremberg-2" />
-          <FormControl v-model="form.region" type="select" label="Region" :options="regionOptions" />
-          <FormControl v-model="form.domain" label="Tenant domain" placeholder="4dl.app" />
-          <FormControl v-model="form.press_version" label="Frappe version" placeholder="Nightly" />
-          <FormControl
-            v-model="form.environment"
-            type="select"
-            label="Environment"
-            :options="['Production', 'Staging']"
-            description="Staging shards may be patched and redeployed automatically."
-          />
-          <FormControl v-model="form.capacity_tenants" type="number" label="Soft cap (tenants)" />
-          <FormControl v-model="form.standby_target" type="number" label="Standby sites" />
-        </div>
-
+      <div class="grid gap-4 sm:grid-cols-2">
+        <FormControl v-model="form.shard_name" label="Shard name" placeholder="hetzner-nuremberg-2" />
+        <FormControl v-model="form.region" type="select" label="Region" :options="regionOptions" />
+        <FormControl v-model="form.domain" label="Tenant domain" placeholder="4dl.app" />
+        <FormControl v-model="form.press_version" label="Frappe version" placeholder="Nightly" />
         <FormControl
-          v-model="form.site_apps"
-          label="Apps to install"
-          placeholder="frappe, erpnext, payments, oneapp"
-          description="Comma separated, in install order."
+          v-model="form.environment"
+          type="select"
+          label="Environment"
+          :options="['Production', 'Staging']"
+          description="Staging shards may be patched and redeployed automatically."
         />
-
-        <ErrorMessage v-if="error" :message="error" />
+        <FormControl v-model="form.capacity_tenants" type="number" label="Soft cap (tenants)" />
+        <FormControl v-model="form.standby_target" type="number" label="Standby sites" />
       </div>
-    </template>
 
+      <FormControl
+        v-model="form.site_apps"
+        label="Apps to install"
+        placeholder="frappe, erpnext, payments, oneapp"
+        description="Comma separated, in install order."
+      />
+
+      <ErrorMessage v-if="error" :message="error" />
+    </div>
     <template #actions>
       <Button
         variant="solid"

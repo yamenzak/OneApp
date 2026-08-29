@@ -1,22 +1,23 @@
 <template>
-  <Dialog v-model="open" :options="{ title, size: 'lg' }">
-    <template #body-content>
-      <div class="flex flex-col gap-4">
-        <FormControl
-          v-for="field in fields"
-          :key="field.name"
-          v-model="form[field.name]"
-          :type="field.type || 'text'"
-          :label="field.label"
-          :options="field.options"
-          :placeholder="field.placeholder"
-          :description="field.hint"
-          class="w-full"
-        />
-        <ErrorMessage v-if="error" :message="error" />
-      </div>
-    </template>
-
+  <!-- Title and size are props, and the body is the default slot. The
+       `:options` object and `#body-content` are frappe-ui v0 spelling: both
+       are silently ignored, so the dialog opened with no heading and an
+       empty body. -->
+  <Dialog v-model="open" :title="title" size="lg">
+    <div class="flex flex-col gap-4">
+      <FormControl
+        v-for="field in fields"
+        :key="field.name"
+        v-model="form[field.name]"
+        :type="field.type || 'text'"
+        :label="field.label"
+        :options="field.options"
+        :placeholder="field.placeholder"
+        :description="field.hint"
+        class="w-full"
+      />
+      <ErrorMessage v-if="error" :message="error" />
+    </div>
     <template #actions>
       <Button variant="solid" label="Save" :loading="saving" :disabled="!complete" @click="save" />
     </template>

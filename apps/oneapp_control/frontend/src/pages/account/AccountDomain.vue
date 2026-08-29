@@ -16,10 +16,12 @@
     </section>
 
     <section v-if="guide.pending">
-      <Alert variant="info" title="Verifying your DNS">
-        We are checking the record and issuing a certificate. This usually takes a
-        minute or two. If it does not complete, the cause is almost always a
-        proxied record — see step two below.
+      <Alert theme="blue" title="Verifying your DNS">
+        <template #description>
+          We are checking the record and issuing a certificate. This usually takes a
+          minute or two. If it does not complete, the cause is almost always a
+          proxied record — see step two below.
+        </template>
       </Alert>
     </section>
 

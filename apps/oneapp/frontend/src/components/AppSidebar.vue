@@ -24,11 +24,15 @@
       </nav>
     </ScrollArea>
 
-    <template #footer>
+    <!-- Sidebar has one slot, the default: it hands the whole body to the app.
+         A `#footer` template renders nothing at all, which is how the quota
+         meter, the user menu and the setup card all silently disappeared.
+         `mt-auto` is what pins this to the bottom of the flex column. -->
+    <div class="mt-auto shrink-0">
       <div class="p-2">
         <QuotaMeter class="mb-2 px-1" />
       </div>
-    </template>
+    </div>
   </Sidebar>
 </template>
 

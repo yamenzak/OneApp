@@ -11,15 +11,19 @@
   <div class="mx-auto max-w-3xl p-5">
     <Alert
       v-if="setup.canProvision"
-      variant="success"
+      theme="green"
       title="Ready to provision"
       class="mb-6"
     >
-      Anything outstanding below limits what tenants can do, not whether they come up.
+      <template #description>
+        Anything outstanding below limits what tenants can do, not whether they come up.
+      </template>
     </Alert>
-    <Alert v-else variant="warning" title="Provisioning is disabled" class="mb-6">
-      A half-configured control plane fails partway through provisioning, with a real
-      site already created. The required items below have to be set first.
+    <Alert v-else theme="amber" title="Provisioning is disabled" class="mb-6">
+      <template #description>
+        A half-configured control plane fails partway through provisioning, with a real
+        site already created. The required items below have to be set first.
+      </template>
     </Alert>
 
     <section v-for="group in GROUPS" :key="group.key" class="mb-8">
@@ -32,10 +36,8 @@
       <p class="mb-3 text-p-sm text-ink-gray-5">{{ group.blurb }}</p>
 
       <List :columns="['5.5rem', 'minmax(0,1fr)']" divider="full">
-        <ListRows :items="setup.group(group.key)" v-slot="{ item: check }">
-          <ListRow
-            :row-key="check.key"
-          >
+        <ListRows :items="setup.group(group.key)" row-key="key" v-slot="{ item: check }">
+          <ListRow>
             <ListCell>
               <Badge
                 :theme="check.ok ? 'green' : group.key === 'blocking' ? 'red' : 'gray'"

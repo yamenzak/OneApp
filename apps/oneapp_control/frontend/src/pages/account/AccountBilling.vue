@@ -65,8 +65,8 @@
     <section v-if="invoices.length">
       <h3 class="mb-3 text-base font-medium text-ink-gray-8">Invoices</h3>
       <List :columns="['minmax(0,1fr)', '8rem', '7rem']" divider="full">
-        <ListRows :items="invoices" v-slot="{ item: inv }">
-          <ListRow :row-key="inv.name">
+        <ListRows :items="invoices" row-key="name" v-slot="{ item: inv }">
+          <ListRow>
             <ListCell>
               <span class="text-p-sm text-ink-gray-8">{{ formatDate(inv.posting_date) }}</span>
             </ListCell>

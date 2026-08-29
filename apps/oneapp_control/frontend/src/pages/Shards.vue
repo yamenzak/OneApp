@@ -25,8 +25,8 @@
         <ListHeaderCell v-for="c in HEADERS" :key="c" :label="c" />
       </ListHeader>
 
-      <ListRows :items="shards" v-slot="{ item: shard }">
-        <ListRow :row-key="shard.name">
+      <ListRows :items="shards" row-key="name" v-slot="{ item: shard }">
+        <ListRow>
           <ListCell>
             <div class="min-w-0">
               <p class="truncate text-base text-ink-gray-8">{{ shard.name }}</p>
