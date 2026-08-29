@@ -70,7 +70,9 @@ def sync():
 		"plan": {
 			"code": tenant.plan,
 			"storage_quota_bytes": tenant.storage_quota_bytes,
+			"database_quota_bytes": tenant.database_quota_bytes,
 			"max_users": tenant.max_users,
+			"background_workers": tenant.background_workers,
 		},
 		"apps": registry.apps_for_tenant(tenant_name),
 		"modules": registry.entitled_modules(tenant_name),

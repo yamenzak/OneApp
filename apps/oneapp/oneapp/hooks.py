@@ -40,6 +40,13 @@ doc_events = {
 		# actually leaves the site.
 		"before_insert": "oneapp.oneapp_core.email.outbound.enforce_send_rate",
 	},
+	# Inserts are what grow a database, so they are what pauses when a workspace
+	# is over its allowance. Updates and deletes keep working, so deleting
+	# something is always a way back. The check reads a cached verdict — the
+	# measurement is an information_schema scan and must not run per insert.
+	"*": {
+		"before_insert": "oneapp.oneapp_core.storage.quota.enforce_database_quota",
+	},
 }
 
 # ---------------------------------------------------------------------------
@@ -51,7 +58,13 @@ scheduler_events = {
 		# effect in minutes, not hours.
 		"*/15 * * * *": ["oneapp.oneapp_core.sync.sync_from_control_plane"],
 	},
-	"hourly": ["oneapp.oneapp_core.sync.report_usage_to_control_plane"],
+	"hourly": [
+		"oneapp.oneapp_core.sync.report_usage_to_control_plane",
+		# Re-measures the database and caches the verdict the insert hook reads,
+		# so a workspace that frees space is unblocked without waiting out the
+		# cache, and one that fills up is caught within the hour.
+		"oneapp.oneapp_core.storage.quota.refresh_database_verdict",
+	],
 }
 
 after_install = "oneapp.install.after_install"

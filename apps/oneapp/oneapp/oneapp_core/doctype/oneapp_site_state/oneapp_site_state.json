@@ -13,9 +13,12 @@
   "last_sync",
   "last_sync_error",
   "storage_quota_bytes",
+  "database_quota_bytes",
   "max_users",
+  "background_workers",
   "sec_usage",
   "storage_used_bytes",
+  "database_used_bytes",
   "cb2",
   "credit_balance",
   "sec_cache",
@@ -70,10 +73,24 @@
    "read_only": 1
   },
   {
+   "fieldname": "database_quota_bytes",
+   "fieldtype": "Float",
+   "label": "Database Quota Bytes",
+   "read_only": 1,
+   "description": "Synced from the plan. Zero means unconfigured, not zero allowed."
+  },
+  {
    "fieldname": "max_users",
    "fieldtype": "Int",
    "label": "Max Users",
    "read_only": 1
+  },
+  {
+   "fieldname": "background_workers",
+   "fieldtype": "Int",
+   "label": "Background Workers",
+   "read_only": 1,
+   "description": "Concurrent background jobs this workspace may run."
   },
   {
    "fieldname": "sec_usage",
@@ -84,6 +101,12 @@
    "fieldname": "storage_used_bytes",
    "fieldtype": "Float",
    "label": "Storage Used Bytes",
+   "read_only": 1
+  },
+  {
+   "fieldname": "database_used_bytes",
+   "fieldtype": "Float",
+   "label": "Database Used Bytes",
    "read_only": 1
   },
   {
@@ -119,7 +142,7 @@
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-08-29 00:00:00.000000",
+ "modified": "2026-08-29 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "OneApp Core",
  "name": "OneApp Site State",

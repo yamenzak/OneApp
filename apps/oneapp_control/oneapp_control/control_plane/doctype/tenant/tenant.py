@@ -113,6 +113,18 @@ class Tenant(Document):
 			return 0
 		return int(frappe.db.get_value("Plan", self.plan, "max_users") or 0)
 
+	@property
+	def background_workers(self) -> int:
+		"""Concurrent background jobs this workspace may run.
+
+		A cap, not a reservation. Workers are shared across the bench and there is
+		no supported way to preempt another site's job, so the lever we have is
+		stopping one tenant from occupying all of them.
+		"""
+		if not self.plan:
+			return 0
+		return int(frappe.db.get_value("Plan", self.plan, "background_workers") or 0)
+
 	def storage_fraction_used(self) -> float:
 		return _fraction(self.storage_used_bytes, self.storage_quota_bytes)
 
