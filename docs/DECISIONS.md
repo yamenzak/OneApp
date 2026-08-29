@@ -247,6 +247,32 @@ draining the old, which is what the intake switch is for.
 
 ---
 
+### Seeded apps are not a catalogue
+
+The registry ships one row, `books`, and nobody has decided to build a books
+app. It exists so the entitlement pipeline has something running through it end
+to end — registry row, sync payload, role created with `desk_access` off,
+DocPerms written from the manifest, launcher rendering, reconciliation on
+removal. With an empty catalogue every one of those is dead code on a fresh
+control plane, and a break in any of them would go unnoticed until the first
+real app.
+
+It is **Restricted**. It was seeded General, which put an app whose interface
+says "Not built yet" into every workspace's launcher and granted write on eight
+ERPNext doctypes over the REST API — a promise of software that does not exist,
+made to someone paying for it. An operator grants it to a workspace to exercise
+the pipeline; nobody else sees it.
+
+`tests/test_no_desk.py` fails the build on a seeded app that is not Restricted,
+and `seed_apps` defaults to Restricted, so reaching every customer is something
+a seed has to opt into rather than arrive at by forgetting to say.
+
+Note that the company and chart-of-accounts setup does **not** depend on this
+row: it keys on ERPNext being installed, which is the bench composition in
+ARCHITECTURE §1.
+
+---
+
 ## 8. Roles and permissions
 
 **We ignore the roles ERPNext, HRMS and Payments ship with.** We use those apps

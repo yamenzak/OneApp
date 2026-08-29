@@ -2,3 +2,4 @@
 
 [post_model_sync]
 oneapp_control.patches.capture_plan_terms
+oneapp_control.patches.restrict_seeded_books

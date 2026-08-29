@@ -18,11 +18,26 @@ def create_default_settings():
 	frappe.db.commit()
 
 
-# The first app, so a fresh control plane has something to provision rather than
-# an empty catalogue. Its doctype list is deliberately small: the transitive set
-# ERPNext actually touches on submit is not something that can be enumerated by
-# reading, and guessing it produces a workspace that works in a demo and breaks
-# on the fifth invoice. It grows from running the real flows. See DECISIONS §8.
+# A reference entitlement, not a product.
+#
+# Nobody has decided to build a books app. This row exists so the entitlement
+# pipeline has something running through it end to end — registry row, sync
+# payload, role created with desk_access off, DocPerms written from the
+# manifest, launcher rendering, reconciliation on removal. With an empty
+# catalogue every one of those paths is dead code on a fresh control plane, and
+# a break in any of them would go unnoticed until the first real app.
+#
+# **Restricted**, deliberately. General availability would put it in every
+# customer's launcher, where it points at a "Not built yet" screen and grants
+# write on eight ERPNext doctypes over the REST API — a promise of software that
+# does not exist, made to someone paying. An operator grants it to a workspace
+# to exercise the pipeline (OneAdmin → a workspace → Apps), and nobody else sees
+# it.
+#
+# Its doctype list is deliberately small: the transitive set ERPNext actually
+# touches on submit is not something that can be enumerated by reading, and
+# guessing it produces a workspace that works in a demo and breaks on the fifth
+# invoice. It grows from running the real flows. See DECISIONS §8.
 SEED_APPS = [
 	{
 		"app_code": "books",
@@ -32,7 +47,11 @@ SEED_APPS = [
 		"icon": "lucide-book-open",
 		"route": "/books",
 		"sort_order": 10,
-		"description": "Invoicing, payments and the ledger behind them.",
+		"availability": "Restricted",
+		"description": (
+			"Reference entitlement — no interface yet. Grant it to exercise the "
+			"pipeline, not to give a customer accounting."
+		),
 		"doctypes": [
 			("Customer", "Write", 0),
 			("Supplier", "Write", 0),
@@ -55,7 +74,10 @@ def seed_apps():
 			{
 				"doctype": "OneApp App",
 				"is_active": 1,
-				"availability": "General",
+				# Restricted unless a spec says otherwise. Reaching every
+				# customer's launcher should be something a seed opts into, not
+				# something it gets by forgetting to say.
+				"availability": "Restricted",
 				**{k: v for k, v in spec.items() if k != "doctypes"},
 			}
 		)

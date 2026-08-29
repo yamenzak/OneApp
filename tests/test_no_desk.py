@@ -216,3 +216,66 @@ def test_no_spa_sends_anyone_into_the_desk(src):
 		if DESK_NAVIGATION.search(path.read_text()):
 			offenders.append(path.relative_to(src).as_posix())
 	assert not offenders, "these navigate into the desk: " + ", ".join(offenders)
+
+
+# --------------------------------------------------------------------------- #
+# Seeded apps
+#
+# The registry's seed exists so the entitlement pipeline has something running
+# through it end to end. It is not a product catalogue, and the difference is
+# one field: General availability puts a row in every customer's launcher.
+# --------------------------------------------------------------------------- #
+
+INSTALL = CONTROL / "install.py"
+
+
+def _seed_specs() -> list[dict]:
+	import ast as _ast
+
+	source = INSTALL.read_text()
+	tree = _ast.parse(source)
+	for node in _ast.walk(tree):
+		if isinstance(node, _ast.Assign) and getattr(node.targets[0], "id", "") == "SEED_APPS":
+			return _ast.literal_eval(_ast.get_source_segment(source, node.value))
+	raise AssertionError("SEED_APPS is gone")
+
+
+def test_a_seeded_app_is_not_offered_to_customers():
+	"""Nobody decided to build these. A seed reaching a launcher is a promise of
+	software that does not exist, made to someone paying for it — and, for an app
+	naming ERPNext doctypes, write access to them over the REST API."""
+	offenders = [
+		spec["app_code"]
+		for spec in _seed_specs()
+		if spec.get("availability") != "Restricted"
+	]
+	assert not offenders, (
+		"seeded apps must be Restricted until someone decides to build them: "
+		+ ", ".join(offenders)
+	)
+
+
+def test_restricted_is_the_default_a_seed_gets_by_saying_nothing():
+	"""Reaching every customer should be opted into, not arrived at by
+	forgetting to say."""
+	body = INSTALL.read_text()
+	seeder = body[body.index("def seed_apps"):]
+	assert '"availability": "Restricted"' in seeder
+
+
+def test_the_seed_says_what_it_is_for():
+	"""This one was introduced inside a commit about a generator bug, described
+	as "seeds a first app", and read afterwards as a product decision."""
+	body = INSTALL.read_text()
+	header = body[: body.index("SEED_APPS = [")]
+	assert "not a product" in header.lower()
+
+	for spec in _seed_specs():
+		assert "no interface" in (spec.get("description") or "").lower(), spec["app_code"]
+
+
+def test_existing_installs_are_corrected_without_taking_anything_away():
+	patch = (CONTROL / "patches/restrict_seeded_books.py").read_text()
+	assert "App Entitlement" in patch, "workspaces that had it would silently lose it"
+	assert 'availability != "General"' in patch, "an operator's own decision must survive"
+	assert "oneapp_control.patches.restrict_seeded_books" in (CONTROL / "patches.txt").read_text()
