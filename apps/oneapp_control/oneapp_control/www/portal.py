@@ -1,4 +1,5 @@
 import frappe
+from frappe.utils import get_system_timezone
 
 # The SPA owns routing under /portal, so every path below it serves the same
 # shell rather than 404ing on a deep link.
@@ -14,6 +15,11 @@ def get_context(context):
 	# carries no customer data.
 	context.boot = {
 		"site_name": frappe.local.site,
+		# Frappe stores datetimes in the *system* timezone. Without this the SPA
+		# renders them as if they were the reader's own — an invoice dated the
+		# 1st reads as the 31st for anyone far enough west. `dayjsLocal` does the
+		# conversion, and this is the half it cannot know by itself.
+		"system_timezone": get_system_timezone(),
 		# Who is signed in. The SPA needs the id to fetch the User doc: there
 		# is no user named "me", so frappe.client.get on it 404s and the HTML
 		# error page comes back to be parsed as JSON.

@@ -465,3 +465,36 @@ def test_the_prepaint_theme_script_matches_the_composable():
 		assert html.index("setAttribute") < html.index("<body"), (
 			f"{shell.name} sets the theme after the body starts"
 		)
+
+
+def test_stored_datetimes_are_converted_from_the_site_timezone():
+	"""Frappe writes datetimes in the site's timezone, not the reader's.
+
+	`dayjs(value)` reads a stored timestamp as if it were already local, which
+	puts an invoice on the wrong day for anyone far enough from the server.
+	`dayjsLocal` does the conversion — but only once `systemTimezone` is
+	configured, so the boot payload has to carry it and main.js has to set it.
+	"""
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+
+		boot = (root / "lib/boot.js").read_text()
+		assert "system_timezone" in boot, f"{app}: boot.js does not read the timezone"
+
+		main = (root / "main.js").read_text()
+		assert "setConfig('systemTimezone'" in main, f"{app}: main.js never configures it"
+
+		for path in sorted(root.rglob("*.vue")):
+			source = path.read_text()
+			bare = re.findall(r"(?<![\w.])dayjs\(", source)
+			assert not bare, (
+				f"{app}/{path.name} formats a stored datetime with dayjs(); "
+				f"use dayjsLocal so it converts from the site timezone"
+			)
+
+	for controller in sorted(ROOT.glob("apps/*/*/www/*.py")):
+		if controller.name == "__init__.py":
+			continue
+		assert "system_timezone" in controller.read_text(), (
+			f"{controller.name} does not put the system timezone in its boot context"
+		)

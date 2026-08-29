@@ -93,7 +93,7 @@
 <script setup>
 import { computed, onMounted, ref, toRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { PageHeader, PageHeaderTitle, Alert, Badge, Button, LoadingIndicator, List, ListRows, ListRow, ListCell, dayjs } from '@/ui'
+import { PageHeader, PageHeaderTitle, Alert, Badge, Button, LoadingIndicator, List, ListRows, ListRow, ListCell, dayjsLocal } from '@/ui'
 import PackCard from '../../components/PackCard.vue'
 import { customer, useOverview } from '../../lib/customer'
 import { notifyInfo, notifySuccess } from '../../lib/notify'
@@ -128,7 +128,10 @@ onMounted(() => {
   router.replace({ query })
 })
 
-const formatDate = (value) => (value ? dayjs(value).format('D MMM YYYY') : '—')
+// dayjsLocal, not dayjs: the value is stored in the site's timezone, and
+// reading it as local puts an invoice on the wrong day for anyone far
+// enough east or west of the server.
+const formatDate = (value) => (value ? dayjsLocal(value).format('D MMM YYYY') : '—')
 
 async function openPortal() {
   opening.value = true

@@ -559,9 +559,14 @@ export const siteName = read('site_name', window.location.hostname)
 export const socketioPort = read('socketio_port', 9000)
 export const csrfToken = read('csrf_token', null)
 export const sessionUser = read('user', 'Guest')
+// Frappe stores datetimes in the system timezone, not the reader's. `dayjsLocal`
+// converts between the two, but only once it has been told which system zone to
+// convert from — see main.js. Empty is the safe default: dayjsLocal then behaves
+// exactly like dayjs rather than shifting by a guess.
+export const systemTimezone = read('system_timezone', '')
 export const isDev = import.meta.env.DEV
 
-export default { siteName, socketioPort, csrfToken, sessionUser, isDev }
+export default { siteName, socketioPort, csrfToken, sessionUser, systemTimezone, isDev }
 """
 
 
