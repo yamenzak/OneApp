@@ -132,10 +132,30 @@ Rationale, in order of weight:
    refresh dance.
 3. Frappe UI is built for this: doctype metadata, permissions, and file uploads come free.
 
-The desk UI ships too, gated to admins, for support work.
+**The desk is not used at all** — not by customers, and not by us. See DECISIONS §7.
 
-A Cloudflare Worker serves only the **unauthenticated** surface: landing, signup, and tenant
-lookup/redirect. It has no backend coupling.
+### Surfaces
+
+Three, across two SPAs:
+
+| Route | Site | Who | Served by |
+| --- | --- | --- | --- |
+| `/one` | tenant | the workspace's users | `oneapp` |
+| `/admin` | control | us | `oneapp_control` |
+| `/portal` | control | customers: signup, billing, domains | `oneapp_control` |
+
+`/admin` and `/portal` are **one built bundle behind two website routes**. Sharing the build
+is what keeps the component set, error handling and socket wiring from drifting into two
+frontends; the separate routes are what let `www/admin.py` require System Manager while
+`www/portal.py` admits a visitor with no session — otherwise nobody could sign up.
+
+Because one bundle answers on two paths, the Vue router's history base is `/` and every route
+carries its own prefix. A base of `/admin` would mis-resolve every URL under `/portal`.
+
+Every customer-facing URL the server builds — Stripe return URLs, signup links, the billing
+portal — comes from `oneapp_control/portal.py`, and `tests/test_portal_urls.py` parses the
+router to prove they resolve. Nothing fails loudly when those disagree: Stripe accepts any
+URL and the redirect succeeds, so the customer lands on a 404 holding a receipt.
 
 ---
 
@@ -177,9 +197,25 @@ keyed `tenants/<tenant_id>/…`.
 R2 exposes no per-prefix usage metric, so we maintain the counter ourselves: sum of
 `File.file_size` per site, rolled up to the control plane on a schedule.
 
-Enforcement is in the `File` validate hook **at upload time** — warn at 80%, hard block at
-100%. Never auto-delete. A tenant discovering they are 3 GB over after the fact is a worse
+Enforcement is a `before_insert` hook on `File`, **at upload time** — warn at 80%, hard block
+at 100%. Never auto-delete. A tenant discovering they are 3 GB over after the fact is a worse
 experience than a clear rejection at the moment of upload.
+
+**Database size** is capped separately, by `Plan.database_gb`, and it is the cap that actually
+constrains how many sites fit on a server. Over the limit, *inserts* pause; updates and
+deletes keep working, so deleting something is always a way back out. Recovery doctypes are
+exempt — Frappe writes a `Deleted Document` when you delete, and blocking that would block the
+only escape — as are installs, migrations and patches.
+
+Measuring the database is an `information_schema` scan over ~1,200 tables, far too expensive
+for a hook that runs on every insert on the site. It is measured hourly and only the verdict
+is read per insert. An absent verdict reads as *not over*, so a stopped scheduler unblocks
+rather than freezes.
+
+**Background job concurrency** is capped by `Plan.background_workers`, counted from RQ rather
+than a counter of our own — a counter has to be decremented by something, and a worker killed
+mid-job never decrements it. Counting fails open: a Redis blip must not become an outage. See
+DECISIONS §6 for what plan-based priority can and cannot do.
 
 ### Backups
 
