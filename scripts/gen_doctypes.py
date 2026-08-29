@@ -360,10 +360,40 @@ doctype(
         column("cb_stripe_set"),
         f("credits_per_currency_unit", "Float", default="100",
           description="Credits granted per unit of currency on a pack purchase."),
+        # ------------------------------------------------------------------ #
+        # Everything below is pushed to a shard's bench group as common site
+        # config, where every tenant site inherits it through frappe.conf.
+        # Set once here, propagated with "Push Bench Config".
+        # ------------------------------------------------------------------ #
+        section("sec_bench", "Tenant bench config"),
+        f("bench_config_html", "HTML",
+          options="<p class='text-muted'>These values are pushed to each shard's "
+                  "bench group as common site config. Every tenant site inherits "
+                  "them, so a rotation here reaches all tenants without touching "
+                  "any site.</p>"),
+        section("sec_r2", "R2 storage"),
+        f("r2_account_id", label="R2 Account ID"),
+        f("r2_bucket", label="R2 Bucket"),
+        f("r2_public_base", label="R2 Public Base URL",
+          description="e.g. https://cdn.4dl.app"),
+        column("cb_r2"),
+        f("r2_access_key", label="R2 Access Key"),
+        f("r2_secret_key", "Password", label="R2 Secret Key"),
+        section("sec_mail", "Email"),
+        f("cf_email_token", "Password", label="Cloudflare Email Token",
+          description="API token with Email Sending: Edit."),
+        f("mail_domain", default="mail.4dl.app"),
+        column("cb_mail"),
+        f("mail_hourly_limit", "Int", default="200",
+          description="Per-tenant outbound cap. Protects shared sending reputation."),
         section("sec_ai", "AI Gateway"),
-        f("ai_gateway_url", label="AI Gateway URL"),
+        f("cf_account_id", label="Cloudflare Account ID"),
+        f("ai_gateway", label="AI Gateway Name", default="oneapp"),
         f("ai_gateway_token", "Password", label="AI Gateway Token"),
         column("cb_ai"),
+        f("google_ai_key", "Password", label="Google AI Studio Key"),
+        f("cf_api_token", "Password", label="Cloudflare API Token",
+          description="For Workers AI."),
         f("ai_markup_multiplier", "Float", default="1.5",
           description="Applied to measured provider cost when converting to credits."),
     ],

@@ -108,7 +108,7 @@ or shared:
 
 | Level | Holds | Set how | How often |
 | --- | --- | --- | --- |
-| **Bench common config** | Everything identical across tenants — R2 credentials, the Cloudflare email token, AI keys | `press.api.bench.update_config` on the bench group, or the Frappe Cloud dashboard | **Once per bench.** A rotation is one call, not one per tenant |
+| **Bench common config** | Everything identical across tenants — R2 credentials, the Cloudflare email token, AI keys | Fill in **OneApp Control Settings → Tenant bench config**, then **Push Bench Config** on the Shard (or *Push to All Shards* from Settings). Equivalently: the Frappe Cloud dashboard, Bench Group → Config | **Once per bench.** A rotation is one push, not one per tenant |
 | **Site config** | Only what is unique to one tenant — its name, its HMAC secret | Injected by the provisioning engine (`push_site_config`) | Automatically, at site creation |
 
 **You never configure a tenant site by hand.** Shared keys are set once on the
@@ -128,6 +128,10 @@ own.
 
 A site missing these is orphaned: running, but unable to prove who it is. It will
 log a sync error and serve no apps.
+
+> Set these in **OneApp Control Settings**, not by hand on each bench — the push
+> action writes them to the bench group for you, and never overwrites an existing
+> bench value with a blank.
 
 ### R2 storage — bench common config
 
