@@ -250,6 +250,20 @@ class PressClient:
 	def archive(self, site: str, force: bool = False):
 		return self.call("press.api.site.archive", name=site, force=force)
 
+	def update_site(self, site: str, skip_failing_patches: bool = False):
+		"""Move a site onto its bench group's newest bench.
+
+		This is what actually deploys new app code to a site. A successful build
+		only produces a new bench — existing sites stay on the old one until they
+		are updated, which is what makes staged rollouts possible and what makes
+		"the build went green but nothing changed" a confusing first experience.
+
+		Distinct from `migrate`, which runs patches on the site's *current* bench.
+		"""
+		return self.call(
+			"press.api.site.update", name=site, skip_failing_patches=skip_failing_patches
+		)
+
 	def migrate(self, site: str, skip_failing_patches: bool = False):
 		return self.call(
 			"press.api.site.migrate", name=site, skip_failing_patches=skip_failing_patches
