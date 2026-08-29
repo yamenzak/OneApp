@@ -76,7 +76,16 @@ doctype(
         f("press_cluster", label="Press Cluster"),
         column("cb_press2"),
         f("domain", default="4dl.app", reqd=1,
-          description="Root domain sites are created under."),
+          description="Root domain tenants are addressed on."),
+        f("domain_mode", "Select", options="Per-tenant\nWildcard", default="Per-tenant",
+          reqd=1,
+          description="Wildcard: sites are created directly on the root domain, "
+                      "one certificate covers all. Per-tenant: sites are created on "
+                      "the Frappe Cloud default domain and the root domain is attached "
+                      "per site, which costs one Let's Encrypt certificate each."),
+        f("press_default_domain", label="Press Default Domain",
+          description="Frappe Cloud's own root domain for this server, used to create "
+                      "sites in Per-tenant mode. e.g. frappe.cloud"),
         f("press_site_plan", label="Default Press Site Plan"),
         section("sec_notes"),
         f("notes", "Small Text"),
@@ -371,6 +380,11 @@ doctype(
         column("cb_cfkv"),
         f("cf_kv_account_id", label="Cloudflare Account ID",
           description="Falls back to the account id below when blank."),
+        section("sec_cfdns", "Cloudflare DNS (control plane only)"),
+        f("cf_zone_id", label="DNS Zone ID",
+          description="Zone for the tenant root domain. Only needed in Per-tenant mode."),
+        f("cf_dns_token", "Password", label="DNS API Token",
+          description="Needs Zone.DNS: Edit. Never pushed to tenant benches."),
         # ------------------------------------------------------------------ #
         # Everything below is pushed to a shard's bench group as common site
         # config, where every tenant site inherits it through frappe.conf.

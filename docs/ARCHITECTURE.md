@@ -66,16 +66,30 @@ wasted schema on tenants who don't use ERPNext features.
 
 **Tenant sites: `<tenant>.4dl.app`.** Flat, single wildcard level.
 
-`*.4dl.app` is registered as a **wildcard domain on the Frappe Cloud server**, with FC
-holding a scoped Cloudflare API token to complete the DNS-01 challenge. Consequence:
-provisioning a tenant is just "create site" — no per-tenant DNS call, no certificate
-issuance, no async wait, no failure mode.
+Two ways to get a tenant onto that hostname, selected per shard by
+`Shard.domain_mode`:
 
-Tenant traffic is **DNS-only (grey cloud)**; Frappe Cloud terminates TLS. Cloudflare proxying
-is used for surfaces that benefit from it — marketing site, Workers, `cdn.4dl.app` — not for
-authenticated app traffic.
+**Per-tenant** (default, works today). The site is created on Frappe Cloud's own
+root domain; we then create a DNS-only CNAME, ask press to add our hostname, wait
+for its certificate, and set it primary. Every API in that chain is one we can
+call ourselves, so it needs nothing from Frappe support.
 
-`fourdegreelabs.com` remains the corporate/marketing brand. `4dl.app` is the product surface.
+**Wildcard** (the destination). `*.4dl.app` is registered as a root domain on the
+server with a wildcard certificate, and sites are created directly on it —
+provisioning becomes a single call with no DNS work, no certificate wait and no
+failure mode. On hosted Frappe Cloud this is press-side configuration, so it is a
+support request rather than an API call.
+
+**Why both exist.** Let's Encrypt allows **50 certificates per registered domain
+per 7 days**. `4dl.app` is one registered domain, so per-tenant certificates cap
+signups at roughly 50 per week and add a renewal for every tenant, each one able
+to fail on its own. A wildcard is a single certificate covering all of them. Per-
+tenant is the right way to start and the wrong way to scale, which is why the
+mode is a field on Shard: switching later is data, not a rewrite.
+
+Tenant traffic is **DNS-only (grey cloud)** in both modes; Frappe Cloud terminates
+TLS. Proxying breaks certificate validation, because the hostname then resolves
+to Cloudflare's IPs rather than the origin press is trying to reach.
 
 ### Reserved slugs
 

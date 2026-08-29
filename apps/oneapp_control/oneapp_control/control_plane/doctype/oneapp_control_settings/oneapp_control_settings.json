@@ -24,6 +24,9 @@
   "cf_kv_token",
   "cb_cfkv",
   "cf_kv_account_id",
+  "sec_cfdns",
+  "cf_zone_id",
+  "cf_dns_token",
   "sec_bench",
   "bench_config_html",
   "sec_r2",
@@ -151,6 +154,23 @@
    "fieldname": "cf_kv_account_id",
    "fieldtype": "Data",
    "label": "Cloudflare Account ID"
+  },
+  {
+   "fieldname": "sec_cfdns",
+   "fieldtype": "Section Break",
+   "label": "Cloudflare DNS (control plane only)"
+  },
+  {
+   "description": "Zone for the tenant root domain. Only needed in Per-tenant mode.",
+   "fieldname": "cf_zone_id",
+   "fieldtype": "Data",
+   "label": "DNS Zone ID"
+  },
+  {
+   "description": "Needs Zone.DNS: Edit. Never pushed to tenant benches.",
+   "fieldname": "cf_dns_token",
+   "fieldtype": "Password",
+   "label": "DNS API Token"
   },
   {
    "fieldname": "sec_bench",

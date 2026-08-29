@@ -65,9 +65,16 @@ Two findings worth designing around:
 Press API rate limits are undocumented to us. Every provisioning operation is therefore
 idempotent and retry-safe by construction, not by later patching.
 
-**The single blocking dependency** is the wildcard root domain. It is press-side
-configuration on hosted Frappe Cloud, so it is a support request to Frappe rather
-than an API call, and no tenant can be provisioned without it. Raise it first.
+**Nothing here is blocked on Frappe support.** Sites can be provisioned today in
+per-tenant domain mode: create on Frappe Cloud's root domain, add a DNS-only
+CNAME through the Cloudflare API, attach our hostname with `add_domain`, wait for
+the certificate, set it primary.
+
+The wildcard root domain remains worth requesting, but as a scaling move rather
+than a prerequisite: Let's Encrypt allows 50 certificates per registered domain
+per 7 days, so per-tenant certificates cap signups at roughly 50 per week and add
+a renewal per tenant. `Shard.domain_mode` selects between the two, so adopting
+the wildcard later is a field change.
 
 ---
 
@@ -85,7 +92,9 @@ Mostly account setup, not code. Blocks everything.
 - Press API key + secret issued and stored
 - Cloudflare: R2 bucket, `cdn.4dl.app`, email routing zone, AI Gateway
 - Stripe account in test mode
-- Confirm the wildcard root domain with Frappe support (see below) — it gates everything
+- Cloudflare: DNS zone id and a `Zone.DNS: Edit` token, for per-tenant domain mode
+- Optionally request a wildcard root domain from Frappe support (see above) — a
+  scaling improvement, not a prerequisite
 
 **Exit:** control site reachable; a script of ours can call `press.api.site.exists` and get an
 answer back.

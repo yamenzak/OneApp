@@ -28,6 +28,28 @@ AGENT_FAILED = ("Failure", "Delivery Failure")
 # Create Site
 # --------------------------------------------------------------------------- #
 
+def creation_domain(shard) -> str:
+	"""The domain a site is *created* on, which is not always how it is reached.
+
+	Wildcard mode creates directly on our root domain — one certificate covers
+	every tenant. Per-tenant mode creates on Frappe Cloud's own domain and
+	attaches ours afterwards, because a site cannot be created on a root domain
+	press does not hold a certificate for.
+	"""
+	if shard.domain_mode == "Wildcard":
+		return shard.domain
+
+	if not shard.press_default_domain:
+		raise PressPermanentError(
+			f"Shard {shard.name} is in Per-tenant mode but has no press_default_domain."
+		)
+	return shard.press_default_domain
+
+
+def uses_wildcard(shard) -> bool:
+	return shard.domain_mode == "Wildcard"
+
+
 def check_availability(job):
 	"""Fail early rather than after a half-built site."""
 	tenant = frappe.get_doc("Tenant", job.tenant)
@@ -38,9 +60,9 @@ def check_availability(job):
 	if job.press_site:
 		return None
 
-	if get_client().site_exists(tenant.tenant_slug, shard.domain):
+	if get_client().site_exists(tenant.tenant_slug, creation_domain(shard)):
 		raise PressPermanentError(
-			f"Subdomain '{tenant.tenant_slug}.{shard.domain}' is already taken."
+			f"Subdomain '{tenant.tenant_slug}.{creation_domain(shard)}' is already taken."
 		)
 
 	return None
@@ -62,7 +84,7 @@ def create_site(job):
 
 	result = get_client().create_site(
 		subdomain=tenant.tenant_slug,
-		domain=shard.domain,
+		domain=creation_domain(shard),
 		release_group=shard.press_release_group,
 		apps=["frappe", "erpnext", "oneapp"],
 		plan=plan,
@@ -118,6 +140,93 @@ def push_site_config(job):
 	return None
 
 
+def create_dns_record(job):
+	"""Point <slug>.<our domain> at the Frappe Cloud site.
+
+	No-op in Wildcard mode, where a single record already covers every tenant.
+	"""
+	from oneapp_control.cloudflare import dns
+
+	tenant = frappe.get_doc("Tenant", job.tenant)
+	shard = frappe.get_doc("Shard", tenant.shard)
+
+	if uses_wildcard(shard):
+		return None
+
+	if not dns.is_configured():
+		raise PressPermanentError(
+			"Per-tenant domain mode needs Cloudflare DNS configured in "
+			"OneApp Control Settings."
+		)
+
+	try:
+		dns.upsert_cname(tenant.site_name, job.press_site or tenant.press_site)
+	except dns.DNSError as e:
+		raise PressTransientError(f"DNS record failed: {e}") from e
+
+	return None
+
+
+def attach_domain(job):
+	"""Ask Frappe Cloud to serve our hostname and issue a certificate for it."""
+	tenant = frappe.get_doc("Tenant", job.tenant)
+	shard = frappe.get_doc("Shard", tenant.shard)
+
+	if uses_wildcard(shard):
+		return None
+
+	existing = {d.get("domain") for d in (get_client().site_domains(_site_for(job)) or [])}
+	if tenant.site_name in existing:
+		# Added on a previous attempt; adding again would error.
+		return None
+
+	get_client().add_domain(_site_for(job), tenant.site_name)
+	return None
+
+
+def await_domain_active(job):
+	"""Wait for the certificate.
+
+	Frappe Cloud resolves the CNAME and answers an ACME challenge, so this covers
+	DNS propagation as well as issuance. Broken is terminal — retrying will not
+	fix a misconfigured record.
+	"""
+	tenant = frappe.get_doc("Tenant", job.tenant)
+	shard = frappe.get_doc("Shard", tenant.shard)
+
+	if uses_wildcard(shard):
+		return None
+
+	for domain in get_client().site_domains(_site_for(job)) or []:
+		if domain.get("domain") != tenant.site_name:
+			continue
+
+		status = domain.get("status")
+		if status == "Active":
+			return None
+		if status == "Broken":
+			raise PressPermanentError(
+				f"Domain {tenant.site_name} is Broken. Check that the CNAME is "
+				f"DNS-only (not proxied) and points at {tenant.press_site}."
+			)
+		return WAIT
+
+	# Not listed yet — the add is still settling.
+	return WAIT
+
+
+def promote_domain(job):
+	"""Make our hostname primary so Frappe generates links with it."""
+	tenant = frappe.get_doc("Tenant", job.tenant)
+	shard = frappe.get_doc("Shard", tenant.shard)
+
+	if uses_wildcard(shard):
+		return None
+
+	get_client().set_primary_domain(_site_for(job), tenant.site_name)
+	return None
+
+
 def register_mail_routing(job):
 	"""Add the tenant to the Cloudflare KV map the email worker reads.
 
@@ -137,6 +246,27 @@ def register_mail_routing(job):
 	except kv.KVError as e:
 		# Transient: the site is fine, only inbound mail is not routable yet.
 		raise PressTransientError(f"Cloudflare KV write failed: {e}") from e
+
+	return None
+
+
+def remove_dns_record(job):
+	"""Release the hostname when a tenant is archived."""
+	from oneapp_control.cloudflare import dns
+
+	tenant = frappe.get_doc("Tenant", job.tenant)
+	shard = frappe.get_doc("Shard", tenant.shard)
+
+	if uses_wildcard(shard) or not dns.is_configured():
+		return None
+
+	try:
+		dns.delete_cname(tenant.site_name)
+	except dns.DNSError:
+		# Never block an archive on DNS cleanup.
+		frappe.log_error(
+			title=f"DNS cleanup failed for {job.tenant}", message=frappe.get_traceback()
+		)
 
 	return None
 
@@ -293,6 +423,10 @@ PIPELINES = {
 		("create_site", create_site),
 		("await_agent", await_agent),
 		("push_site_config", push_site_config),
+		("create_dns_record", create_dns_record),
+		("attach_domain", attach_domain),
+		("await_domain_active", await_domain_active),
+		("promote_domain", promote_domain),
 		("register_mail_routing", register_mail_routing),
 		("finalise_creation", finalise_creation),
 	],
@@ -312,6 +446,7 @@ PIPELINES = {
 	],
 	"Archive Site": [
 		("deregister_mail_routing", deregister_mail_routing),
+		("remove_dns_record", remove_dns_record),
 		("archive_site", archive_site),
 		("await_agent", await_agent),
 		("finalise_archive", finalise_archive),

@@ -20,6 +20,8 @@
   "press_cluster",
   "cb_press2",
   "domain",
+  "domain_mode",
+  "press_default_domain",
   "press_site_plan",
   "sec_notes",
   "notes"
@@ -108,11 +110,26 @@
   },
   {
    "default": "4dl.app",
-   "description": "Root domain sites are created under.",
+   "description": "Root domain tenants are addressed on.",
    "fieldname": "domain",
    "fieldtype": "Data",
    "label": "Domain",
    "reqd": 1
+  },
+  {
+   "default": "Per-tenant",
+   "description": "Wildcard: sites are created directly on the root domain, one certificate covers all. Per-tenant: sites are created on the Frappe Cloud default domain and the root domain is attached per site, which costs one Let's Encrypt certificate each.",
+   "fieldname": "domain_mode",
+   "fieldtype": "Select",
+   "label": "Domain Mode",
+   "options": "Per-tenant\nWildcard",
+   "reqd": 1
+  },
+  {
+   "description": "Frappe Cloud's own root domain for this server, used to create sites in Per-tenant mode. e.g. frappe.cloud",
+   "fieldname": "press_default_domain",
+   "fieldtype": "Data",
+   "label": "Press Default Domain"
   },
   {
    "fieldname": "press_site_plan",

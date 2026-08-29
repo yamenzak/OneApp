@@ -207,6 +207,10 @@ class PressClient:
 			args=json.dumps(args or {}),
 		)
 
+	def site_domains(self, site: str) -> list:
+		"""Domains on a site with their certificate status."""
+		return self.call("press.api.site.domains", name=site) or []
+
 	def add_domain(self, site: str, domain: str):
 		return self.run_doc_method("Site", site, "add_domain", {"domain": domain})
 
