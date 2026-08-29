@@ -100,13 +100,24 @@ subscribed to `checkout.session.completed`, `customer.subscription.*`,
 
 ---
 
-## Tenant site configuration
+## Configuration: two levels
 
-Injected into `site_config.json` by the provisioning engine
-(`push_site_config`). Listed here because they are what a hand-built development
-site needs.
+Frappe merges the bench's `common_site_config.json` into every site's
+`frappe.conf`, so configuration splits cleanly by whether a value is per-tenant
+or shared:
 
-### Identity — set automatically at provisioning
+| Level | Holds | Set how | How often |
+| --- | --- | --- | --- |
+| **Bench common config** | Everything identical across tenants — R2 credentials, the Cloudflare email token, AI keys | `press.api.bench.update_config` on the bench group, or the Frappe Cloud dashboard | **Once per bench.** A rotation is one call, not one per tenant |
+| **Site config** | Only what is unique to one tenant — its name, its HMAC secret | Injected by the provisioning engine (`push_site_config`) | Automatically, at site creation |
+
+**You never configure a tenant site by hand.** Shared keys are set once on the
+bench; identity is injected at provisioning; and `sync_from_control_plane` (every
+15 minutes) reconciles anything derived from them — including the outgoing Email
+Account — so adding or rotating a shared key reaches every existing tenant on its
+own.
+
+### Identity — per site, injected at provisioning
 
 | Key | Purpose |
 | --- | --- |
@@ -118,7 +129,7 @@ site needs.
 A site missing these is orphaned: running, but unable to prove who it is. It will
 log a sync error and serve no apps.
 
-### R2 storage
+### R2 storage — bench common config
 
 | Key | Purpose |
 | --- | --- |
@@ -130,7 +141,7 @@ log a sync error and serve no apps.
 Absent, the File override falls back to Frappe's filesystem behaviour rather than
 failing uploads.
 
-### AI
+### AI — bench common config
 
 | Key | Purpose |
 | --- | --- |
@@ -141,7 +152,7 @@ failing uploads.
 | `oneapp_cf_api_token` | for Workers AI |
 | `oneapp_ai_markup` | multiplier on measured cost, default `1.5` |
 
-### Email
+### Email — bench common config
 
 | Key | Purpose |
 | --- | --- |
@@ -149,8 +160,10 @@ failing uploads.
 | `oneapp_mail_domain` | `mail.4dl.app` |
 | `oneapp_mail_hourly_limit` | per-tenant send cap, default `200` |
 
-Outbound goes through Cloudflare Email Service over SMTP, wired up as a Frappe
-**Email Account** by `ensure_email_account()` at install:
+Outbound goes through Cloudflare Email Service over SMTP. `ensure_email_account()`
+creates the Frappe **Email Account** at install and reconciles it on every sync,
+so the token is set once on the bench and every tenant picks it up without being
+touched:
 
 ```
 smtps://smtp.mx.cloudflare.net:465

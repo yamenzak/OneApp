@@ -154,6 +154,19 @@ class PressClient:
 		"""
 		return self.call("press.api.site.update_config", name=site, config=json.dumps(config))
 
+	def update_bench_config(self, release_group: str, config: dict):
+		"""Set common site config for a whole bench group.
+
+		Keys that are the same for every tenant — R2 credentials, the Cloudflare
+		email token, AI keys — belong here rather than on each site. Frappe merges
+		common_site_config into frappe.conf, so every site on the bench inherits
+		them and a rotation is one call instead of one per tenant.
+		"""
+		payload = [{"key": k, "value": v, "type": _config_type(v)} for k, v in config.items()]
+		return self.call(
+			"press.api.bench.update_config", name=release_group, config=json.dumps(payload)
+		)
+
 	def deactivate(self, site: str):
 		return self.call("press.api.site.deactivate", name=site)
 
@@ -202,6 +215,16 @@ class PressClient:
 
 	def remove_domain(self, site: str, domain: str):
 		return self.run_doc_method("Site", site, "remove_domain", {"domain": domain})
+
+
+def _config_type(value) -> str:
+	if isinstance(value, bool):
+		return "Boolean"
+	if isinstance(value, (int, float)):
+		return "Number"
+	if isinstance(value, (dict, list)):
+		return "JSON"
+	return "String"
 
 
 def get_client() -> PressClient:

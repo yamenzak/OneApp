@@ -81,8 +81,27 @@ def sync_from_control_plane() -> dict:
 
 	invalidate()
 	sync_roles(payload.get("roles") or [])
+	sync_email_account()
 
 	return {"ok": True, "apps": len(payload.get("apps") or [])}
+
+
+def sync_email_account():
+	"""Keep the outgoing Email Account in step with bench config.
+
+	The Cloudflare token lives in the bench's common site config, so adding or
+	rotating it changes every site's frappe.conf at once. Reconciling here means
+	that reaches every tenant on the next sync with no per-site work.
+	"""
+	from oneapp.oneapp_core.email import outbound
+
+	try:
+		outbound.ensure_email_account()
+	except Exception:
+		# Mail setup must never break an entitlement sync.
+		frappe.log_error(
+			title="OneApp email account sync failed", message=frappe.get_traceback()
+		)
 
 
 def sync_roles(entitled_roles: list[str]):

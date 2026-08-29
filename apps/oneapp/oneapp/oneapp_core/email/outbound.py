@@ -76,14 +76,27 @@ def ensure_email_account():
 		"always_use_account_email_id_as_sender": 1,
 	}
 
-	if frappe.db.exists("Email Account", ACCOUNT_NAME):
-		account = frappe.get_doc("Email Account", ACCOUNT_NAME)
-		account.update(values)
-		account.save(ignore_permissions=True)
+	if not frappe.db.exists("Email Account", ACCOUNT_NAME):
+		account = frappe.get_doc({"doctype": "Email Account", **values})
+		account.insert(ignore_permissions=True)
 		return account.name
 
-	account = frappe.get_doc({"doctype": "Email Account", **values})
-	account.insert(ignore_permissions=True)
+	account = frappe.get_doc("Email Account", ACCOUNT_NAME)
+
+	# Runs on every sync, so only write when something actually differs —
+	# otherwise every site churns its modified timestamp every 15 minutes.
+	changed = any(
+		account.get(field) != value
+		for field, value in values.items()
+		if field != "password"
+	)
+	if account.get_password("password", raise_exception=False) != c["api_token"]:
+		changed = True
+
+	if changed:
+		account.update(values)
+		account.save(ignore_permissions=True)
+
 	return account.name
 
 
