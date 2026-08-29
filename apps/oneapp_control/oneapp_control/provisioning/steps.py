@@ -147,9 +147,18 @@ def push_site_config(job):
 	tenant = frappe.get_doc("Tenant", job.tenant)
 	settings = frappe.get_single("OneApp Control Settings")
 
+	# Without this the site comes up unable to reach us: no entitlements, no
+	# credits, no quota. Press silently drops empty values, so shipping a blank
+	# would leave a site that looks provisioned and is quietly orphaned.
+	if not settings.control_plane_url:
+		raise PressPermanentError(
+			"control_plane_url is not set in OneApp Control Settings. A site "
+			"provisioned without it cannot reach the control plane."
+		)
+
 	config = {
 		"oneapp_tenant": tenant.name,
-		"oneapp_control_url": settings.control_plane_url or "",
+		"oneapp_control_url": settings.control_plane_url,
 		"oneapp_hmac_secret": tenant.signing_secret(),
 		"oneapp_site_name": tenant.site_name,
 	}
