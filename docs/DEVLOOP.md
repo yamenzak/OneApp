@@ -67,6 +67,17 @@ scripts/live.py revert     # back to the deployed image
 scripts/live.py watch      # push on every change
 ```
 
+`deploy` is the other half: it fetches the newest releases, builds an image and
+moves the sites onto it — minutes, but it is a real release and nothing reverts
+it later. UI changes need this, because the bench cannot run our Vite build.
+
+Everything here refuses to run unless `ONEAPP_DEV_BENCH_GROUP` names the bench
+being targeted. Patching rewrites code on a running bench and `deploy` restarts
+real sites; both are fine while a bench is ours to break and unacceptable once it
+carries customers, and that is not something a script can infer. Production never
+sets the variable, which makes this tool inert there rather than merely
+discouraged.
+
 Credentials come from `ONEAPP_FC_ENV` (a file setting `PRESS_KEY` and
 `PRESS_SECRET`); the bench group defaults to `ONEAPP_BENCH_GROUP`.
 
@@ -184,10 +195,22 @@ which are easy to conflate:
 | | What it does | What it does not |
 | --- | --- | --- |
 | **`bench.deploy`** | builds a new image | move any site onto it |
+| **`bench.deploy_and_update`** | both, in one call | — see below |
 | **`site.update`** | moves a site to the newest bench | build anything |
 | **`site.migrate`** | runs patches on the *current* bench | bring new code |
 
 A successful build changes nothing a customer can see until a site is updated
 onto it.
 
-We do not drive this. Frappe Cloud handles app updates and bench moves itself.
+`deploy_and_update` looks like the obvious call and is not, at least here: with
+Press Settings' `use_new_deploy_flow` on it runs a Release Pipeline, which failed
+in "Preparing deployment" with nothing exposed to the API to say why.
+`bench.deploy` followed by `site.update` builds the same image and works — and it
+is honest about the two halves.
+
+Following a build means knowing which record you were handed. `bench.deploy`
+returns a **Deploy Candidate Build**, `deploy_and_update` a **Release Pipeline**
+on newer accounts and a **Deploy Candidate** on older ones. Do not watch the
+bench's `deploy_in_progress` flag instead: it is false for the first few seconds,
+so a watcher started immediately reports the *previous* deploy's result and calls
+it done.

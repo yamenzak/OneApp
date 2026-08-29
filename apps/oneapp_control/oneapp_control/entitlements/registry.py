@@ -58,6 +58,53 @@ def entitled_roles(tenant: str) -> list[str]:
 	return [a["role_name"] for a in apps_for_tenant(tenant) if a.get("role_name")]
 
 
+# The role the workspace owner holds. Deliberately not System Manager: that would
+# let them read site_config, which carries the signing secret this site uses to
+# talk to us — enough to forge its own usage reports and credit commits. What
+# they actually need (inviting users, seats, custom roles) is whitelisted methods
+# we run elevated, not a Frappe admin role. See DECISIONS §8.
+OWNER_ROLE = "OneApp Workspace Owner"
+
+
+def permission_manifest(tenant: str) -> list[dict]:
+	"""Every role the tenant site should define, and what each may touch.
+
+	One row per (role, doctype). The tenant site writes DocPerms from this, so a
+	doctype absent here is reachable by nobody — an allowlist by construction
+	rather than by remembering to exclude things.
+	"""
+	manifest = []
+	for app in apps_for_tenant(tenant):
+		role = app.get("role_name")
+		if not role:
+			continue
+		rows = frappe.get_all(
+			"OneApp App Doctype",
+			filters={"parent": app["app_code"], "parenttype": "OneApp App"},
+			fields=["document_type", "access", "if_owner"],
+		)
+		for row in rows:
+			manifest.append(
+				{
+					"role": role,
+					"doctype": row["document_type"],
+					"access": row["access"],
+					"if_owner": bool(row["if_owner"]),
+				}
+			)
+	return manifest
+
+
+def allowed_doctypes(tenant: str) -> list[str]:
+	"""What a customer's own role may reference.
+
+	The same list the DocPerms come from. User, Role, DocType and the rest are
+	out because they appear in no manifest, not because someone remembered to
+	name them.
+	"""
+	return sorted({row["doctype"] for row in permission_manifest(tenant)})
+
+
 def grant(tenant: str, app_code: str, note: str | None = None):
 	if frappe.db.exists("App Entitlement", {"tenant": tenant, "app": app_code}):
 		name = frappe.db.get_value(

@@ -166,11 +166,48 @@ doctype(
           description="Frappe Role gating this app's doctypes. Entitlement grants "
                       "and revokes this role, so enforcement is native permissions "
                       "rather than a bespoke hook."),
+        section("sec_manifest", "Doctypes"),
+        f("doctypes", "Table", options="OneApp App Doctype",
+          description="Everything this app exposes. One list, three jobs: the "
+                      "DocPerms we write for our own roles, what an entitlement "
+                      "grants, and the allowlist a customer's custom role may "
+                      "draw from. A doctype in no manifest is reachable by "
+                      "nobody, without anyone having to remember to exclude it."),
         f("icon", description="Icon name rendered by the launcher."),
         f("route", description="SPA route, e.g. /crm"),
         f("sort_order", "Int", default="0"),
         section("sec_desc"),
         f("description", "Small Text"),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# OneApp App Doctype — the manifest row.
+#
+# We ignore the roles ERPNext, HRMS and Payments ship with: we use those apps for
+# the logic they implement, not for their idea of who an "Accounts Manager" is.
+# Our own roles therefore start with no permissions, and these rows are where
+# they come from. See DECISIONS §8.
+# --------------------------------------------------------------------------- #
+doctype(
+    "OneApp App Doctype",
+    istable=1,
+    fields=[
+        f("document_type", "Data", reqd=1, in_list_view=1,
+          label="Doctype",
+          description="Name of the doctype, e.g. Sales Invoice."),
+        f("access", "Select", options="Read\nWrite\nManage", default="Write",
+          reqd=1, in_list_view=1,
+          description="Read: see it. Write: create and edit. Manage: also "
+                      "delete, submit and cancel."),
+        column("cb_manifest_row"),
+        f("if_owner", "Check", default="0", in_list_view=1,
+          description="Restrict to documents the user created. For per-user "
+                      "records inside a shared workspace."),
+        f("notes", "Small Text",
+          description="Why this doctype is exposed, when it is not obvious — "
+                      "usually a dependency of something the UI does show."),
     ],
 )
 

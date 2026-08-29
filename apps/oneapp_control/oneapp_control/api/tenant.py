@@ -77,6 +77,20 @@ def sync():
 		"apps": registry.apps_for_tenant(tenant_name),
 		"modules": registry.entitled_modules(tenant_name),
 		"roles": registry.entitled_roles(tenant_name),
+		# One row per (role, doctype). The tenant site writes DocPerms from this
+		# because our roles are ours: we use ERPNext for its logic, not for its
+		# idea of who an "Accounts Manager" is, so they start with no
+		# permissions at all. See DECISIONS §8.
+		"permissions": registry.permission_manifest(tenant_name),
+		"owner_role": registry.OWNER_ROLE,
+		# Who the workspace belongs to. The tenant site creates this account on
+		# first sync — nothing else can, since the control plane has no way to
+		# write into a tenant's database, and until it exists the customer has
+		# a workspace they cannot sign in to.
+		"owner": {
+			"email": tenant.owner_email,
+			"first_name": (tenant.tenant_name or "").split(" ")[0] or "Owner",
+		},
 		"credits": {
 			"balance": ledger.balance(tenant_name),
 			"available": ledger.available(tenant_name),

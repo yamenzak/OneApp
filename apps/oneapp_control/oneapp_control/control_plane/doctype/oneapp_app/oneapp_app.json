@@ -14,6 +14,8 @@
   "cb_app",
   "availability",
   "role_name",
+  "sec_manifest",
+  "doctypes",
   "icon",
   "route",
   "sort_order",
@@ -71,6 +73,18 @@
    "fieldtype": "Data",
    "label": "Role Name",
    "reqd": 1
+  },
+  {
+   "fieldname": "sec_manifest",
+   "fieldtype": "Section Break",
+   "label": "Doctypes"
+  },
+  {
+   "description": "Everything this app exposes. One list, three jobs: the DocPerms we write for our own roles, what an entitlement grants, and the allowlist a customer's custom role may draw from. A doctype in no manifest is reachable by nobody, without anyone having to remember to exclude it.",
+   "fieldname": "doctypes",
+   "fieldtype": "Table",
+   "label": "Doctypes",
+   "options": "OneApp App Doctype"
   },
   {
    "description": "Icon name rendered by the launcher.",
