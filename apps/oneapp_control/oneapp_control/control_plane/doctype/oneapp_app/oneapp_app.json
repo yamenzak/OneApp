@@ -87,10 +87,12 @@
    "options": "OneApp App Doctype"
   },
   {
-   "description": "Icon name rendered by the launcher.",
+   "default": "lucide-layout-grid",
+   "description": "Rendered by the launcher and the app sidebar.",
    "fieldname": "icon",
-   "fieldtype": "Data",
-   "label": "Icon"
+   "fieldtype": "Select",
+   "label": "Icon",
+   "options": "lucide-layout-grid\nlucide-users\nlucide-user-round\nlucide-briefcase\nlucide-file-text\nlucide-receipt\nlucide-wallet\nlucide-shopping-cart\nlucide-package\nlucide-truck\nlucide-factory\nlucide-store\nlucide-calendar\nlucide-clock\nlucide-message-square\nlucide-mail\nlucide-phone\nlucide-chart-line\nlucide-chart-pie\nlucide-database\nlucide-book-open\nlucide-graduation-cap\nlucide-stethoscope\nlucide-wrench\nlucide-shield\nlucide-sparkles"
   },
   {
    "description": "SPA route, e.g. /crm",

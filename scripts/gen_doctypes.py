@@ -10,6 +10,8 @@ Run: python3 scripts/gen_doctypes.py
 import json
 import os
 
+from app_icons import APP_ICONS, DEFAULT_APP_ICON
+
 APP_DIR = os.path.join(os.path.dirname(__file__), "..", "apps", "oneapp_control", "oneapp_control")
 MODULE = "Control Plane"
 STAMP = "2026-08-29 00:00:00.000000"
@@ -179,7 +181,13 @@ doctype(
                       "grants, and the allowlist a customer's custom role may "
                       "draw from. A doctype in no manifest is reachable by "
                       "nobody, without anyone having to remember to exclude it."),
-        f("icon", description="Icon name rendered by the launcher."),
+        # A Select, not free text: an icon name that exists only in the
+        # database is in no source file, so Tailwind's JIT emits no CSS
+        # for it and the launcher renders an empty box. The options come
+        # from scripts/app_icons.py, which also writes the SPA's literals.
+        f("icon", "Select", options="\n".join(APP_ICONS),
+          default="lucide-layout-grid",
+          description="Rendered by the launcher and the app sidebar."),
         f("route", description="SPA route, e.g. /crm"),
         f("sort_order", "Int", default="0"),
         section("sec_desc"),

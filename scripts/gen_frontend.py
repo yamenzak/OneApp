@@ -20,6 +20,8 @@ Run: python3 scripts/gen_frontend.py
 import json
 import os
 
+from app_icons import APP_ICONS, DEFAULT_APP_ICON
+
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 
 # frappe-ui 1.x is Vite 7 / Tailwind 3 / vue-router 4. Pinned in one place so the
@@ -1576,6 +1578,47 @@ const formatted = computed(() => {
 """
 
 
+# The icons an app in the registry may use.
+#
+# frappe-ui renders `lucide-*` names as Tailwind utility classes, and Tailwind's
+# JIT only emits CSS for classes it finds as literal strings in the source. An
+# icon typed by an operator and stored in a doctype is in no source file, so it
+# emits nothing and the launcher shows an empty box.
+#
+# Writing the set here is what makes those classes exist in the CSS.
+ICONS_JS = """\
+/**
+ * The icons an app in the registry may use.
+ *
+ * These literals are what make the CSS exist. frappe-ui renders `lucide-*`
+ * names as Tailwind utility classes, and the JIT only emits a class it can find
+ * as a literal string — so an icon name that only ever exists in the database
+ * renders as an empty box. The icons page gives two ways out: a known set
+ * written as literals, or `~icons/lucide/*` imports for a genuinely open one. A
+ * registry of apps we define is a known set.
+ *
+ * Never build an icon class by interpolation; the scanner cannot see it.
+ *
+ * Generated from scripts/app_icons.py, which also writes the doctype's Select
+ * options, so the picker and the stored values cannot drift.
+ */
+
+export const APP_ICONS = [
+{icon_literals}
+]
+
+export const DEFAULT_APP_ICON = '{default_icon}'
+
+/** A name we know renders — for anything stored before the set was narrowed. */
+export function appIcon(name) {{
+  return APP_ICONS.includes(name) ? name : DEFAULT_APP_ICON
+}}
+""".format(
+    icon_literals="\n".join(f"  '{name}'," for name in APP_ICONS),
+    default_icon=DEFAULT_APP_ICON,
+)
+
+
 FILES = {
     "index.html": index_html,
     "vite.config.js": vite_config,
@@ -1595,6 +1638,7 @@ FILES = {
     "src/components/UsageBar.vue": lambda app, spec: USAGE_BAR_VUE,
     "src/lib/screen.js": lambda app, spec: SCREEN_JS,
     "src/lib/brand.js": lambda app, spec: BRAND_JS,
+    "src/lib/icons.js": lambda app, spec: ICONS_JS,
     "src/lib/user.js": lambda app, spec: USER_JS,
     "src/components/AppShell.vue": lambda app, spec: APP_SHELL_VUE,
     "src/components/ThemeSetting.vue": lambda app, spec: THEME_SETTING_VUE,

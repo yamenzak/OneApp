@@ -13,6 +13,7 @@ emitted — so it covers every token, including ones retired after this was
 written.
 """
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -64,4 +65,91 @@ def test_a_retired_token_would_be_caught(app):
         assert retired not in emitted, (
             f"{retired} emits CSS again — frappe-ui un-retired it, so the "
             f"guard would no longer catch its use"
+        )
+
+
+# --------------------------------------------------------------------------- #
+# Icons
+#
+# frappe-ui renders `lucide-*` names as Tailwind utility classes, so an icon is
+# subject to the same rule as any other class: the JIT emits it only if it can
+# find the complete name as a literal. An icon whose name is built at runtime —
+# or typed by an operator into a doctype — renders as an empty box.
+# --------------------------------------------------------------------------- #
+
+def _generated_icons(app: str) -> list[str]:
+    """The names inside lib/icons.js's APP_ICONS array.
+
+    Scoped to the array: DEFAULT_APP_ICON below it is another `lucide-*` literal
+    and would otherwise be counted as a 27th icon.
+    """
+    js = (ROOT / f"apps/{app}/frontend/src/lib/icons.js").read_text()
+    block = re.search(r"APP_ICONS = \[(.*?)\]", js, re.S)
+    assert block, f"{app}/lib/icons.js has no APP_ICONS array"
+    return re.findall(r"'(lucide-[\w-]+)'", block.group(1))
+
+
+INTERPOLATED_ICON = re.compile(r"""lucide-\$\{|['"`]lucide-['"`]\s*\+|\+\s*['"`]lucide-""")
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_no_icon_class_is_built_by_interpolation(app):
+    """`lucide-${name}` produces no CSS — the scanner cannot see what to emit."""
+    root = ROOT / f"apps/{app}/frontend/src"
+    offenders = [
+        p.relative_to(root).as_posix()
+        for p in sorted(root.rglob("*"))
+        if p.suffix in (".vue", ".js") and INTERPOLATED_ICON.search(p.read_text())
+    ]
+    assert not offenders, (
+        "icon classes built by interpolation emit no CSS: " + ", ".join(offenders)
+    )
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_every_registry_icon_emits_css(app):
+    """The whole point of the generated set.
+
+    App icons come from a doctype, so none of them would otherwise appear as a
+    literal anywhere — which is exactly the case the icons page says to solve
+    with a known set. If the set stops reaching the CSS, every app in the
+    launcher silently loses its icon.
+    """
+    if not _built(app):
+        pytest.skip(f"{app} has no built stylesheet; run vite build")
+
+    names = _generated_icons(app)
+    assert len(names) > 20, f"only found {len(names)} icons in the generated set"
+
+    emitted = emitted_classes(app)
+    missing = [n for n in names if n not in emitted]
+    assert not missing, f"{app}: generated icons emit no CSS: {missing}"
+
+
+def test_the_doctype_offers_exactly_the_generated_set():
+    """The picker's options and the SPA's literals come from one list.
+
+    A name the doctype allows but the SPA never writes as a literal is an icon
+    an operator can pick and nobody can see.
+    """
+    import json
+    import sys
+
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from app_icons import APP_ICONS, DEFAULT_APP_ICON
+
+    spec = json.loads(
+        (
+            ROOT
+            / "apps/oneapp_control/oneapp_control/control_plane/doctype/oneapp_app/oneapp_app.json"
+        ).read_text()
+    )
+    field = next(f for f in spec["fields"] if f["fieldname"] == "icon")
+    assert field["fieldtype"] == "Select", "icon is free text again"
+    assert field["options"].split("\n") == APP_ICONS
+    assert field.get("default") == DEFAULT_APP_ICON
+
+    for app in APPS:
+        assert _generated_icons(app) == APP_ICONS, (
+            f"{app}/lib/icons.js is out of date — run scripts/gen_frontend.py"
         )
