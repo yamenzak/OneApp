@@ -3,7 +3,7 @@
     <div class="mx-auto max-w-lg px-5">
       <div class="mb-6 text-center">
         <Avatar :label="TENANT_APP" shape="square" size="2xl" class="mx-auto" />
-        <h1 class="mt-3 text-xl font-semibold text-ink-gray-9">Create your workspace</h1>
+        <h1 class="mt-3 text-xl-semibold text-ink-gray-9">Create your workspace</h1>
       </div>
 
       <div v-if="!open.checked" class="grid place-items-center py-16">
@@ -16,7 +16,7 @@
         </template>
       </Alert>
 
-      <div v-else class="flex flex-col gap-4 rounded-lg border border-outline-gray-2 bg-surface-white p-5">
+      <div v-else class="flex flex-col gap-4 rounded-6 border border-outline-gray-2 bg-surface-base p-5">
         <FormControl
           v-model="form.workspace_name"
           label="Workspace name"

@@ -8,7 +8,7 @@
         Desktop keeps the backdrop, so this is `sm:hidden`.
       -->
       <div class="mb-2 flex items-center justify-between sm:hidden">
-        <span class="text-base font-medium text-ink-gray-8">Settings</span>
+        <span class="text-base-medium text-ink-gray-8">Settings</span>
         <Button
           variant="ghost"
           icon="lucide-x"

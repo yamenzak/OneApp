@@ -3,7 +3,7 @@
   <div class="grid place-items-center px-6 py-16 text-center">
     <div class="max-w-sm">
       <Icon v-if="icon" :name="icon" class="mx-auto mb-3 size-6 text-ink-gray-4" />
-      <p class="text-base font-medium text-ink-gray-8">{{ title }}</p>
+      <p class="text-base-medium text-ink-gray-8">{{ title }}</p>
       <p v-if="description" class="mt-1.5 text-p-base text-ink-gray-6">
         {{ description }}
       </p>

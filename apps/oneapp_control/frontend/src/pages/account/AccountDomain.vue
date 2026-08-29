@@ -6,9 +6,9 @@
   <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
   <div v-if="guide" class="flex flex-col gap-6 py-5">
     <section v-if="guide.current">
-      <div class="flex items-center justify-between rounded border border-outline-gray-2 p-4">
+      <div class="flex items-center justify-between rounded-4 border border-outline-gray-2 p-4">
         <div>
-          <p class="text-base font-medium text-ink-gray-8">{{ guide.current }}</p>
+          <p class="text-base-medium text-ink-gray-8">{{ guide.current }}</p>
           <p class="mt-0.5 text-p-sm text-ink-gray-6">Live and serving your workspace.</p>
         </div>
         <Badge theme="green" label="Active" variant="subtle" />
@@ -26,7 +26,7 @@
     </section>
 
     <section>
-      <h3 class="mb-1 text-base font-medium text-ink-gray-8">
+      <h3 class="mb-1 text-base-medium text-ink-gray-8">
         {{ guide.current ? 'Use a different domain' : 'Use your own domain' }}
       </h3>
       <p class="mb-4 text-p-sm text-ink-gray-6">
@@ -39,7 +39,7 @@
         <li
           v-for="(step, i) in guide.steps"
           :key="step.title"
-          class="flex gap-3 rounded border border-outline-gray-2 p-3"
+          class="flex gap-3 rounded-4 border border-outline-gray-2 p-3"
         >
           <span
             class="grid size-5 shrink-0 place-items-center rounded-full bg-surface-gray-3 text-xs tabular-nums text-ink-gray-7"
@@ -53,9 +53,9 @@
         </li>
       </ol>
 
-      <div class="rounded border border-outline-gray-2 p-4">
+      <div class="rounded-4 border border-outline-gray-2 p-4">
         <p class="mb-2 text-p-sm text-ink-gray-6">Your CNAME should point at:</p>
-        <div class="flex items-center gap-2 rounded bg-surface-gray-2 px-3 py-2">
+        <div class="flex items-center gap-2 rounded-4 bg-surface-gray-2 px-3 py-2">
           <code class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-8">
             {{ guide.target }}
           </code>

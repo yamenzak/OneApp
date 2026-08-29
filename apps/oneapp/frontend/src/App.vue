@@ -19,7 +19,7 @@
 
     <div v-else-if="sessionResource.error" class="grid h-screen place-items-center p-6">
       <div class="max-w-sm text-center">
-        <p class="text-base font-medium text-ink-gray-8">
+        <p class="text-base-medium text-ink-gray-8">
           We couldn't load your workspace
         </p>
         <p class="mt-1.5 text-p-base text-ink-gray-6">This is usually temporary.</p>

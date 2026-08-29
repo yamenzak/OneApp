@@ -1,7 +1,7 @@
 <template>
   <PageHeader>
     <div>
-      <span class="text-base font-medium text-ink-gray-8">Your apps</span>
+      <span class="text-base-medium text-ink-gray-8">Your apps</span>
       <p class="text-p-sm text-ink-gray-5">
         Everything enabled for {{ session.tenant?.name || 'this workspace' }}.
       </p>
@@ -18,12 +18,12 @@
         v-for="app in apps"
         :key="app.app_code"
         :to="{ name: 'App', params: { appCode: app.app_code } }"
-        class="rounded-lg border border-outline-gray-2 bg-surface-white p-4 transition hover:border-outline-gray-3 hover:bg-surface-gray-1"
+        class="rounded-6 border border-outline-gray-2 bg-surface-base p-4 transition hover:border-outline-gray-3 hover:bg-surface-gray-1"
       >
         <div class="flex items-start gap-3">
           <Avatar :label="app.app_label" shape="square" size="lg" />
           <div class="min-w-0">
-            <p class="truncate text-base font-medium text-ink-gray-8">{{ app.app_label }}</p>
+            <p class="truncate text-base-medium text-ink-gray-8">{{ app.app_label }}</p>
             <p v-if="app.description" class="mt-0.5 line-clamp-2 text-p-sm text-ink-gray-6">
               {{ app.description }}
             </p>

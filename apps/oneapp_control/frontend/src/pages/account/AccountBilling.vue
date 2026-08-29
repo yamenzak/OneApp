@@ -6,9 +6,9 @@
   <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
   <div v-if="data" class="flex flex-col gap-6 py-5">
     <section>
-      <div class="flex items-start justify-between gap-4 rounded border border-outline-gray-2 p-4">
+      <div class="flex items-start justify-between gap-4 rounded-4 border border-outline-gray-2 p-4">
         <div>
-          <p class="text-base font-medium text-ink-gray-8">{{ data.plan.name }}</p>
+          <p class="text-base-medium text-ink-gray-8">{{ data.plan.name }}</p>
           <p class="mt-0.5 text-p-sm text-ink-gray-6">
             <template v-if="data.subscription">
               {{ data.subscription.interval }} · renews
@@ -32,7 +32,7 @@
     </section>
 
     <section>
-      <h3 class="mb-1 text-base font-medium text-ink-gray-8">Add-ons</h3>
+      <h3 class="mb-1 text-base-medium text-ink-gray-8">Add-ons</h3>
       <p class="mb-3 text-p-sm text-ink-gray-6">
         Storage is bought outright and never expires. It is deliberately not paid
         for with AI credits — a large upload should not quietly drain the budget
@@ -63,7 +63,7 @@
     </section>
 
     <section v-if="invoices.length">
-      <h3 class="mb-3 text-base font-medium text-ink-gray-8">Invoices</h3>
+      <h3 class="mb-3 text-base-medium text-ink-gray-8">Invoices</h3>
       <List :columns="['minmax(0,1fr)', '8rem', '7rem']" :row-height="52" class="list-row-px-3" divider="full">
         <ListRows :items="invoices" row-key="name" v-slot="{ item: inv, value }">
           <ListRow :value="value">

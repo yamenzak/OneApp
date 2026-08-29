@@ -28,7 +28,7 @@
 
     <section v-for="group in GROUPS" :key="group.key" class="mb-8">
       <div class="mb-1 flex items-baseline justify-between">
-        <h2 class="text-base font-medium text-ink-gray-8">{{ group.label }}</h2>
+        <h2 class="text-base-medium text-ink-gray-8">{{ group.label }}</h2>
         <span class="text-p-sm tabular-nums text-ink-gray-5">
           {{ done(group.key) }} of {{ setup.group(group.key).length }}
         </span>

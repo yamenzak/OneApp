@@ -3,7 +3,7 @@
     <div class="w-full max-w-md text-center">
       <template v-if="status?.ready">
         <Avatar label="✓" shape="square" size="2xl" class="mx-auto" />
-        <h1 class="mt-4 text-xl font-semibold text-ink-gray-9">
+        <h1 class="mt-4 text-xl-semibold text-ink-gray-9">
           {{ status.workspace_name }} is ready
         </h1>
         <p class="mt-2 text-p-base text-ink-gray-6">
@@ -19,7 +19,7 @@
       </template>
 
       <template v-else-if="status?.status === 'Failed'">
-        <h1 class="text-xl font-semibold text-ink-gray-9">Something went wrong</h1>
+        <h1 class="text-xl-semibold text-ink-gray-9">Something went wrong</h1>
         <p class="mt-2 text-p-base text-ink-gray-6">
           Your payment went through but we could not finish setting up. We have
           been alerted and are looking at it — you do not need to do anything,
@@ -29,7 +29,7 @@
 
       <template v-else>
         <LoadingIndicator class="mx-auto size-6 text-ink-gray-5" />
-        <h1 class="mt-4 text-xl font-semibold text-ink-gray-9">
+        <h1 class="mt-4 text-xl-semibold text-ink-gray-9">
           Setting up your workspace
         </h1>
         <p class="mt-2 text-p-base text-ink-gray-6">

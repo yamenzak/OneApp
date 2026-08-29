@@ -77,7 +77,7 @@
         v-for="app in apps"
         :key="app.key"
         :to="app.to"
-        class="flex items-center gap-3 rounded p-2 active:bg-surface-gray-2"
+        class="flex items-center gap-3 rounded-4 p-2 active:bg-surface-gray-2"
         @click="showSwitcher = false"
       >
         <Avatar :label="app.label" :image="app.image" size="xl" shape="square" />
