@@ -14,5 +14,7 @@ apps/*/*/public/frontend/
 apps/*/frontend/auto-imports.d.ts
 apps/*/frontend/components.d.ts
 apps/*/frontend/*.d.ts
+# Frappe Cloud installs with yarn; an npm lockfile here would be ignored and misleading.
+apps/*/frontend/package-lock.json
 apps/oneapp/oneapp/www/one.html
 apps/oneapp_control/oneapp_control/www/admin.html
