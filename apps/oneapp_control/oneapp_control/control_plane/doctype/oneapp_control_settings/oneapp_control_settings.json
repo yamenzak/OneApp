@@ -36,6 +36,8 @@
   "cb_r2",
   "r2_access_key",
   "r2_secret_key",
+  "r2_admin_token",
+  "bucket_max_tenants",
   "sec_mail",
   "cf_email_token",
   "mail_domain",
@@ -218,6 +220,19 @@
    "fieldname": "r2_secret_key",
    "fieldtype": "Password",
    "label": "R2 Secret Key"
+  },
+  {
+   "description": "Creates buckets, so it is control-plane only and never pushed to a bench. The S3 keys above are what tenant sites use to read and write objects.",
+   "fieldname": "r2_admin_token",
+   "fieldtype": "Password",
+   "label": "R2 Admin API Token"
+  },
+  {
+   "default": "200",
+   "description": "Rotation threshold for new buckets. Bounded buckets bound the blast radius of losing one.",
+   "fieldname": "bucket_max_tenants",
+   "fieldtype": "Int",
+   "label": "Bucket Max Tenants"
   },
   {
    "fieldname": "sec_mail",

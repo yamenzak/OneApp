@@ -1,0 +1,140 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:bucket_name",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "bucket_name",
+  "jurisdiction",
+  "status",
+  "cb_bucket",
+  "tenant_count",
+  "max_tenants",
+  "bytes_used",
+  "max_bytes",
+  "sec_bucket_cf",
+  "public_base_url",
+  "created_on",
+  "cb_bucket_cf",
+  "last_error"
+ ],
+ "fields": [
+  {
+   "fieldname": "bucket_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Bucket Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "Global",
+   "description": "R2 pins EU buckets to EU data centres. Chosen by the customer at signup and never changed afterwards.",
+   "fieldname": "jurisdiction",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Jurisdiction",
+   "options": "Global\nEU",
+   "reqd": 1
+  },
+  {
+   "default": "Provisioning",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Provisioning\nActive\nFull\nRetired",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_bucket",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "tenant_count",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Tenant Count",
+   "read_only": 1
+  },
+  {
+   "default": "200",
+   "description": "Rotation threshold. Reaching it marks the bucket Full and a fresh one is created.",
+   "fieldname": "max_tenants",
+   "fieldtype": "Int",
+   "label": "Max Tenants"
+  },
+  {
+   "default": "0",
+   "fieldname": "bytes_used",
+   "fieldtype": "Float",
+   "label": "Bytes Used",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Optional secondary cap. Zero means tenant count only.",
+   "fieldname": "max_bytes",
+   "fieldtype": "Float",
+   "label": "Max Bytes"
+  },
+  {
+   "fieldname": "sec_bucket_cf",
+   "fieldtype": "Section Break",
+   "label": "Cloudflare"
+  },
+  {
+   "description": "CDN host bound to this bucket, for public objects.",
+   "fieldname": "public_base_url",
+   "fieldtype": "Data",
+   "label": "Public Base Url"
+  },
+  {
+   "fieldname": "created_on",
+   "fieldtype": "Datetime",
+   "label": "Created On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_bucket_cf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Last Error",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Storage Bucket",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

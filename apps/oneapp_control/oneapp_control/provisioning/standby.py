@@ -50,6 +50,26 @@ def pool_status() -> list[dict]:
 	return rows
 
 
+def ensure_depth(shard: str, limit: int = 1) -> list[str]:
+	"""Bring one shard back to its target, now.
+
+	Called the moment a site is claimed rather than waiting for the scheduled
+	sweep, because the next signup is the one that would otherwise wait for a
+	full site build.
+	"""
+	target = frappe.db.get_value("Shard", shard, "standby_target") or 0
+	if not target:
+		return []
+
+	have = frappe.db.count(
+		"Standby Site", {"shard": shard, "status": ("in", (CLAIMABLE, "Creating"))}
+	)
+	created = []
+	for _i in range(min(max(target - have, 0), limit)):
+		created.append(create_standby(shard))
+	return created
+
+
 def top_up(limit_per_run: int = 2):
 	"""Scheduled. Build toward each shard's target.
 

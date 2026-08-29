@@ -14,6 +14,7 @@ from frappe.utils import flt, getdate
 
 DEFAULT_ITEM = "OneApp Subscription"
 CREDIT_ITEM = "OneApp Credits"
+STORAGE_ITEM = "OneApp Storage"
 
 
 def _safe(fn):
@@ -127,8 +128,27 @@ def record_invoice(subscription, stripe_invoice: dict):
 
 
 @_safe
+def record_storage_pack(tenant: str, gb: int, checkout: dict):
+	return _record_one_off(
+		tenant, checkout, STORAGE_ITEM, "OneApp additional storage", f"{int(gb)} GB storage"
+	)
+
+
+@_safe
 def record_credit_pack(tenant: str, credits: float, checkout: dict):
-	"""Create a Sales Invoice for a one-off credit purchase."""
+	return _record_one_off(
+		tenant, checkout, CREDIT_ITEM, "OneApp credit pack", f"{int(credits)} credits"
+	)
+
+
+def _record_one_off(tenant: str, checkout: dict, item_code: str, item_description: str,
+                    line_description: str):
+	"""Sales Invoice for a one-off purchase.
+
+	Keyed on the Stripe session id, because Stripe can deliver the same
+	checkout.session.completed more than once and a duplicate invoice is worse
+	than none.
+	"""
 	session_id = checkout.get("id")
 
 	if session_id and frappe.db.exists(
@@ -144,7 +164,7 @@ def record_credit_pack(tenant: str, credits: float, checkout: dict):
 	if amount <= 0:
 		return None
 
-	item = ensure_item(CREDIT_ITEM, "OneApp credit pack")
+	item = ensure_item(item_code, item_description)
 
 	invoice = frappe.get_doc(
 		{
@@ -158,10 +178,10 @@ def record_credit_pack(tenant: str, credits: float, checkout: dict):
 					"item_code": item,
 					"qty": 1,
 					"rate": amount,
-					"description": f"{int(credits)} credits",
+					"description": line_description,
 				}
 			],
-			"remarks": f"Credit pack for tenant {tenant}",
+			"remarks": f"{item_description} for tenant {tenant}",
 		}
 	)
 	invoice.insert(ignore_permissions=True)

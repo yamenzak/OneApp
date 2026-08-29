@@ -161,6 +161,12 @@ def handle_checkout_completed(obj: dict, record):
 	record.db_set("tenant", tenant)
 	meta = obj.get("metadata") or {}
 
+	if meta.get("kind") == "storage_pack":
+		if obj.get("payment_status") != "paid":
+			return
+		grant_storage_pack(tenant, int(meta.get("storage_gb") or 0), obj)
+		return
+
 	if meta.get("kind") == "credit_pack":
 		# Only credit a pack once payment actually succeeded.
 		if obj.get("payment_status") != "paid":
@@ -412,6 +418,19 @@ def apply_subscription_status(subscription):
 			{"reason": "Subscription canceled"},
 			idempotency_key=f"suspend:{tenant.name}:{subscription.name}",
 		)
+
+
+def grant_storage_pack(tenant: str, gb: int, checkout: dict):
+	"""Add-on storage is permanent — it is not a grant that expires."""
+	if gb <= 0:
+		return
+
+	current = frappe.db.get_value("Tenant", tenant, "extra_storage_gb") or 0
+	frappe.db.set_value("Tenant", tenant, "extra_storage_gb", int(current) + gb)
+
+	from oneapp_control.billing import books
+
+	books.record_storage_pack(tenant, gb, checkout)
 
 
 def grant_credit_pack(tenant: str, credits: float, checkout: dict):

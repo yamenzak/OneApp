@@ -14,6 +14,9 @@
   "owner_user",
   "cb_place",
   "shard",
+  "region",
+  "storage_bucket",
+  "storage_jurisdiction",
   "site_name",
   "press_site",
   "primary_domain",
@@ -28,7 +31,8 @@
   "archived_on",
   "sec_usage",
   "storage_used_bytes",
-  "storage_quota_gb_override",
+  "database_used_bytes",
+  "extra_storage_gb",
   "cb_usage",
   "user_count",
   "usage_synced_on",
@@ -88,6 +92,28 @@
    "in_standard_filter": 1,
    "label": "Shard",
    "options": "Shard"
+  },
+  {
+   "description": "Chosen at signup.",
+   "fieldname": "region",
+   "fieldtype": "Link",
+   "label": "Region",
+   "options": "Region"
+  },
+  {
+   "fieldname": "storage_bucket",
+   "fieldtype": "Link",
+   "label": "Storage Bucket",
+   "options": "Storage Bucket",
+   "read_only": 1
+  },
+  {
+   "default": "Global",
+   "description": "Fixed at signup; moving objects between jurisdictions later is a migration, not a setting.",
+   "fieldname": "storage_jurisdiction",
+   "fieldtype": "Select",
+   "label": "Storage Jurisdiction",
+   "options": "Global\nEU"
   },
   {
    "description": "Permanent internal address. Never the custom domain.",
@@ -175,10 +201,19 @@
    "read_only": 1
   },
   {
-   "description": "Overrides the plan quota when non-zero.",
-   "fieldname": "storage_quota_gb_override",
+   "default": "0",
+   "description": "Reported by the site. The resource that actually threatens the server, so it is capped like file storage.",
+   "fieldname": "database_used_bytes",
+   "fieldtype": "Float",
+   "label": "Database Used Bytes",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Purchased add-on, added to the plan quota. Does not expire \u2014 storage is never paid for with AI credits, which would make a large upload silently drain the AI budget.",
+   "fieldname": "extra_storage_gb",
    "fieldtype": "Int",
-   "label": "Storage Quota Gb Override"
+   "label": "Extra Storage Gb"
   },
   {
    "fieldname": "cb_usage",

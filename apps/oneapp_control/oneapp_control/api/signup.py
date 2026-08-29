@@ -39,6 +39,41 @@ def check_slug(slug: str) -> dict:
 
 
 @frappe.whitelist(allow_guest=True, methods=["GET"])
+def regions() -> list[dict]:
+	"""Regions with capacity right now.
+
+	Filtered rather than listed in full: offering a region that cannot take a
+	tenant turns a clear choice into a failure after payment.
+	"""
+	from oneapp_control.control_plane.doctype.shard.shard import regions_with_capacity
+
+	return regions_with_capacity()
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def signup_open() -> dict:
+	"""Whether self-service can run at all.
+
+	Missing plans, Stripe or capacity are all operator problems; showing a
+	signup form that cannot complete is worse than saying so plainly.
+	"""
+	from oneapp_control.api.setup import checks
+
+	items = {c["key"]: c["ok"] for c in checks()}
+	from oneapp_control.control_plane.doctype.shard.shard import regions_with_capacity
+
+	reasons = []
+	if not items.get("press_credentials") or not items.get("control_plane_url"):
+		reasons.append("provisioning")
+	if not items.get("plans") or not items.get("stripe_gateway") or not items.get("stripe_webhook"):
+		reasons.append("billing")
+	if not regions_with_capacity():
+		reasons.append("capacity")
+
+	return {"open": not reasons, "blocked_on": reasons}
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
 def plans() -> list[dict]:
 	"""Plans as a prospect sees them.
 
@@ -60,6 +95,7 @@ def plans() -> list[dict]:
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def start(email: str, workspace_name: str, slug: str, plan: str,
+          region: str, storage_jurisdiction: str = "Global",
           interval: str = "Monthly", source: str | None = None) -> dict:
 	"""Create an Account Request and return a Stripe Checkout URL.
 
@@ -67,6 +103,9 @@ def start(email: str, workspace_name: str, slug: str, plan: str,
 	Stripe confirms the payment.
 	"""
 	_rate_limit("start")
+
+	if not signup_open()["open"]:
+		frappe.throw(_("Signups are temporarily closed. Please try again shortly."))
 
 	slug = validate_slug(slug)
 	email = (email or "").strip().lower()
@@ -81,6 +120,16 @@ def start(email: str, workspace_name: str, slug: str, plan: str,
 	plan_doc = frappe.get_doc("Plan", plan)
 	if not plan_doc.is_active:
 		frappe.throw(_("That plan is not available."))
+
+	# Offered regions are filtered by capacity, so anything else is either stale
+	# or fabricated.
+	from oneapp_control.control_plane.doctype.shard.shard import regions_with_capacity
+
+	if region not in {r["code"] for r in regions_with_capacity()}:
+		frappe.throw(_("That region is not available right now."))
+
+	if storage_jurisdiction not in ("Global", "EU"):
+		frappe.throw(_("Unknown storage jurisdiction."))
 
 	# Resume rather than duplicate: someone who abandoned checkout and came back
 	# should not end up with two requests, or lose their slug to themselves.
@@ -100,6 +149,8 @@ def start(email: str, workspace_name: str, slug: str, plan: str,
 				"requested_slug": slug,
 				"plan": plan,
 				"interval": interval,
+				"region": region,
+				"storage_jurisdiction": storage_jurisdiction,
 				"status": "Pending Payment",
 				"source": source,
 				"ip_address": _client_ip(),

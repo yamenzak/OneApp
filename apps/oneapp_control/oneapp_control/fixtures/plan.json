@@ -1,9 +1,9 @@
 [
  {
   "doctype": "Plan",
-  "name": "personal-starter",
-  "plan_code": "personal-starter",
-  "plan_name": "Personal",
+  "name": "starter",
+  "plan_code": "starter",
+  "plan_name": "Starter",
   "audience": "Personal",
   "is_active": 1,
   "sort_order": 10,
@@ -13,17 +13,18 @@
   "stripe_price_id_monthly": "",
   "stripe_price_id_yearly": "",
   "storage_gb": 10,
+  "database_gb": 2,
   "max_users": 3,
   "monthly_credit_grant": 2000,
   "background_workers": 1,
   "press_site_plan": "",
-  "description": "10 GB storage, 3 users, 2000 credits per month (non-rollover). Every feature is available on every plan."
+  "description": "For one person getting started."
  },
  {
   "doctype": "Plan",
-  "name": "personal-pro",
-  "plan_code": "personal-pro",
-  "plan_name": "Personal Pro",
+  "name": "pro",
+  "plan_code": "pro",
+  "plan_name": "Pro",
   "audience": "Personal",
   "is_active": 1,
   "sort_order": 20,
@@ -33,17 +34,18 @@
   "stripe_price_id_monthly": "",
   "stripe_price_id_yearly": "",
   "storage_gb": 50,
+  "database_gb": 5,
   "max_users": 5,
   "monthly_credit_grant": 5000,
-  "background_workers": 1,
+  "background_workers": 2,
   "press_site_plan": "",
-  "description": "50 GB storage, 5 users, 5000 credits per month (non-rollover). Every feature is available on every plan."
+  "description": "For individuals who have outgrown Starter."
  },
  {
   "doctype": "Plan",
-  "name": "commercial-standard",
-  "plan_code": "commercial-standard",
-  "plan_name": "Commercial",
+  "name": "business",
+  "plan_code": "business",
+  "plan_name": "Business",
   "audience": "Commercial",
   "is_active": 1,
   "sort_order": 30,
@@ -53,17 +55,18 @@
   "stripe_price_id_monthly": "",
   "stripe_price_id_yearly": "",
   "storage_gb": 200,
+  "database_gb": 20,
   "max_users": 15,
   "monthly_credit_grant": 15000,
-  "background_workers": 2,
+  "background_workers": 3,
   "press_site_plan": "",
-  "description": "200 GB storage, 15 users, 15000 credits per month (non-rollover). Every feature is available on every plan."
+  "description": "The default for a company."
  },
  {
   "doctype": "Plan",
-  "name": "commercial-scale",
-  "plan_code": "commercial-scale",
-  "plan_name": "Commercial Scale",
+  "name": "enterprise",
+  "plan_code": "enterprise",
+  "plan_name": "Enterprise",
   "audience": "Commercial",
   "is_active": 1,
   "sort_order": 40,
@@ -73,10 +76,11 @@
   "stripe_price_id_monthly": "",
   "stripe_price_id_yearly": "",
   "storage_gb": 1000,
+  "database_gb": 100,
   "max_users": 50,
   "monthly_credit_grant": 50000,
-  "background_workers": 4,
+  "background_workers": 6,
   "press_site_plan": "",
-  "description": "1000 GB storage, 50 users, 50000 credits per month (non-rollover). Every feature is available on every plan."
+  "description": "Large teams, more of everything."
  }
 ]

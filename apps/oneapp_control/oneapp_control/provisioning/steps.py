@@ -156,12 +156,30 @@ def push_site_config(job):
 			"provisioned without it cannot reach the control plane."
 		)
 
+	from oneapp_control.cloudflare import r2
+
 	config = {
 		"oneapp_tenant": tenant.name,
 		"oneapp_control_url": settings.control_plane_url,
 		"oneapp_hmac_secret": tenant.signing_secret(),
 		"oneapp_site_name": tenant.site_name,
 	}
+
+	# The bucket is per tenant, so unlike the R2 credentials it cannot live in
+	# bench config. Assigning here also rotates the pool when one fills.
+	if r2.is_configured():
+		try:
+			bucket = r2.assign(tenant.name)
+			config["oneapp_r2_bucket"] = bucket
+			config["oneapp_r2_public_base"] = (
+				frappe.db.get_value("Storage Bucket", bucket, "public_base_url") or ""
+			)
+		except r2.R2Error as e:
+			# Storage is a capability, not a prerequisite: the workspace works
+			# without it and files fall back to local disk until it is fixed.
+			frappe.log_error(
+				title=f"Bucket assignment failed for {tenant.name}", message=str(e)
+			)
 
 	get_client().update_config(job.press_site or tenant.press_site, config)
 	return None
@@ -510,6 +528,26 @@ def mark_standby_ready(job):
 	return None
 
 
+def refill_standby_pool(job):
+	"""Start building a replacement for the site just claimed.
+
+	Done here rather than waiting for the scheduled top-up so the pool is
+	refilled within seconds of being drawn down — the next signup is the one
+	that would otherwise wait minutes.
+	"""
+	from oneapp_control.provisioning import standby
+
+	tenant = frappe.get_doc("Tenant", job.tenant)
+	try:
+		standby.ensure_depth(tenant.shard)
+	except Exception:
+		# The claim succeeded; a refill failure is the scheduler's problem.
+		frappe.log_error(
+			title=f"Standby refill failed on {tenant.shard}", message=frappe.get_traceback()
+		)
+	return None
+
+
 def adopt_standby_site(job):
 	"""Point the job at the site the tenant just claimed."""
 	payload = job.parsed_payload()
@@ -551,6 +589,7 @@ PIPELINES = {
 		("await_domain_active", await_domain_active),
 		("promote_domain", promote_domain),
 		("register_mail_routing", register_mail_routing),
+		("refill_standby_pool", refill_standby_pool),
 		("finalise_creation", finalise_creation),
 	],
 	"Suspend Site": [

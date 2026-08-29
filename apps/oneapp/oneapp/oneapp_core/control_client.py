@@ -101,10 +101,15 @@ def sync() -> dict:
 	return call("sync")
 
 
-def report_usage(storage_used_bytes: int, user_count: int) -> dict:
+def report_usage(storage_used_bytes: int, user_count: int,
+                 database_used_bytes: int = 0) -> dict:
 	return call(
 		"report_usage",
-		{"storage_used_bytes": storage_used_bytes, "user_count": user_count},
+		{
+			"storage_used_bytes": storage_used_bytes,
+			"user_count": user_count,
+			"database_used_bytes": database_used_bytes,
+		},
 	)
 
 

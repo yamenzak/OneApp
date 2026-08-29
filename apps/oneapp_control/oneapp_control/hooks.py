@@ -20,6 +20,11 @@ scheduler_events = {
 		"*/10 * * * *": [
 			"oneapp_control.provisioning.standby.top_up",
 		],
+		# Bucket rollups drive rotation, so they run often enough that a bucket
+		# cannot quietly overshoot its cap between sweeps.
+		"*/30 * * * *": [
+			"oneapp_control.cloudflare.r2.refresh_usage",
+		],
 	},
 	"hourly": [
 		# A crashed worker must not strand a tenant's credits behind an open
@@ -38,6 +43,7 @@ scheduler_events = {
 fixtures = [
 	{"dt": "OneApp App"},
 	{"dt": "Plan"},
+	{"dt": "Region"},
 ]
 
 after_install = "oneapp_control.install.after_install"

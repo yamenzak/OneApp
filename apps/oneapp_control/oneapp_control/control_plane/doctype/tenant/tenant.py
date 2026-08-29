@@ -9,6 +9,9 @@ from oneapp_control.utils.slug import validate_slug
 
 GB = 1024 ** 3
 
+# Warn well before the hard block, so running out is never a surprise.
+WARN_FRACTION = 0.8
+
 
 class Tenant(Document):
 	def autoname(self):
@@ -19,6 +22,7 @@ class Tenant(Document):
 		self.tenant_slug = validate_slug(self.tenant_slug)
 		self.validate_slug_is_immutable()
 		self.assign_shard()
+		self.inherit_region_from_shard()
 		self.set_site_name()
 		self.ensure_hmac_secret()
 
@@ -39,7 +43,14 @@ class Tenant(Document):
 			return
 		from oneapp_control.control_plane.doctype.shard.shard import pick_shard
 
-		self.shard = pick_shard()
+		# The customer picked a region; placing them elsewhere would be a silent
+		# breach of that choice.
+		self.shard = pick_shard(region=self.region)
+
+	def inherit_region_from_shard(self):
+		"""Backfill the region when a shard was assigned directly."""
+		if self.shard and not self.region:
+			self.region = frappe.db.get_value("Shard", self.shard, "region")
 
 	def set_site_name(self):
 		"""Derive the permanent internal address once a shard is known."""
@@ -72,13 +83,29 @@ class Tenant(Document):
 
 	@property
 	def storage_quota_bytes(self) -> int:
-		if self.storage_quota_gb_override:
-			return int(self.storage_quota_gb_override) * GB
+		"""Plan allowance plus any purchased add-on.
 
+		Add-ons are bought outright rather than drawn from credits: a large
+		upload silently draining the AI budget is a bill nobody can predict from
+		their own behaviour.
+		"""
 		if not self.plan:
 			return 0
 
-		return int(frappe.db.get_value("Plan", self.plan, "storage_gb") or 0) * GB
+		plan_gb = int(frappe.db.get_value("Plan", self.plan, "storage_gb") or 0)
+		return (plan_gb + int(self.extra_storage_gb or 0)) * GB
+
+	@property
+	def database_quota_bytes(self) -> int:
+		"""Database size cap.
+
+		Separate from files, and the one that actually constrains how many sites
+		fit on a server — each site is a database with roughly 1,200 tables
+		sharing one InnoDB buffer pool.
+		"""
+		if not self.plan:
+			return 0
+		return int(frappe.db.get_value("Plan", self.plan, "database_gb") or 0) * GB
 
 	@property
 	def max_users(self) -> int:
@@ -87,10 +114,21 @@ class Tenant(Document):
 		return int(frappe.db.get_value("Plan", self.plan, "max_users") or 0)
 
 	def storage_fraction_used(self) -> float:
-		quota = self.storage_quota_bytes
-		if not quota:
-			return 0.0
-		return float(self.storage_used_bytes or 0) / quota
+		return _fraction(self.storage_used_bytes, self.storage_quota_bytes)
+
+	def database_fraction_used(self) -> float:
+		return _fraction(self.database_used_bytes, self.database_quota_bytes)
+
+	def over_quota(self) -> list[str]:
+		"""Which limits this workspace is past, for the warning banner."""
+		out = []
+		if self.storage_quota_bytes and (self.storage_used_bytes or 0) >= self.storage_quota_bytes:
+			out.append("storage")
+		if self.database_quota_bytes and (self.database_used_bytes or 0) >= self.database_quota_bytes:
+			out.append("database")
+		if self.max_users and (self.user_count or 0) >= self.max_users:
+			out.append("users")
+		return out
 
 	# ------------------------------------------------------------------ #
 	# Lifecycle
@@ -113,6 +151,12 @@ class Tenant(Document):
 
 	def signing_secret(self) -> str:
 		return self.get_password("hmac_secret", raise_exception=False) or ""
+
+
+def _fraction(used, quota) -> float:
+	if not quota:
+		return 0.0
+	return float(used or 0) / float(quota)
 
 
 def default_domain() -> str:

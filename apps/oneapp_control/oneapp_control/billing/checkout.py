@@ -136,6 +136,34 @@ def start_signup(request) -> dict:
 	return {"id": session.get("id"), "url": session.get("url")}
 
 
+def start_storage_pack(tenant: str, gb: int, amount: float, currency: str = "usd") -> dict:
+	"""One-off purchase of permanent extra storage."""
+	tenant_doc = frappe.get_doc("Tenant", tenant)
+	success_url, cancel_url = _urls(tenant)
+
+	session = stripe_client.create_checkout_session(
+		mode="payment",
+		line_items=[
+			{
+				"quantity": 1,
+				"price_data": {
+					"currency": currency,
+					"unit_amount": int(round(float(amount) * 100)),
+					"product_data": {"name": f"{int(gb)} GB additional storage"},
+				},
+			}
+		],
+		success_url=success_url,
+		cancel_url=cancel_url,
+		customer_email=tenant_doc.owner_email,
+		client_reference_id=tenant,
+		payment_intent_data={"metadata": {"tenant": tenant, "storage_gb": gb}},
+		metadata={"tenant": tenant, "storage_gb": gb, "kind": "storage_pack"},
+	)
+
+	return {"url": session.get("url"), "id": session.get("id")}
+
+
 @frappe.whitelist()
 def billing_portal(tenant: str) -> dict:
 	"""Hand the customer to Stripe to manage their own card and cancellation."""

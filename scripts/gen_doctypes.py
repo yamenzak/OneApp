@@ -74,6 +74,9 @@ doctype(
           description="Server name in press, e.g. n1.frappe.cloud"),
         f("press_release_group", label="Press Bench Group", reqd=1),
         f("press_cluster", label="Press Cluster"),
+        f("region", "Link", options="Region", reqd=1, in_list_view=1, in_standard_filter=1,
+          description="What customers choose at signup. Several shards may share "
+                      "a region."),
         f("press_version", label="Press Version", default="Nightly", reqd=1,
           description="Must match the bench group's version exactly. Without it "
                       "press cannot match the bench on a dedicated server and "
@@ -128,7 +131,13 @@ doctype(
         column("cb_quota"),
         f("monthly_credit_grant", "Float", default="0",
           description="Non-rollover. Expires at the end of each billing period."),
-        f("background_workers", "Int", default="1"),
+        f("background_workers", "Int", default="1",
+          description="Concurrent background jobs. Caps what one workspace can "
+                      "take from a shared bench — the fleet cannot preempt, so it "
+                      "limits instead."),
+        f("database_gb", "Int", default="2",
+          description="Database size cap. Separate from files: this is the one "
+                      "that constrains how many sites fit on a server."),
         section("sec_press_plan"),
         f("press_site_plan", label="Press Site Plan",
           description="Overrides the shard default when set."),
@@ -188,6 +197,11 @@ doctype(
                       "another's billing."),
         column("cb_place"),
         f("shard", "Link", options="Shard", in_standard_filter=1),
+        f("region", "Link", options="Region", description="Chosen at signup."),
+        f("storage_bucket", "Link", options="Storage Bucket", read_only=1),
+        f("storage_jurisdiction", "Select", options="Global\nEU", default="Global",
+          description="Fixed at signup; moving objects between jurisdictions later "
+                      "is a migration, not a setting."),
         f("site_name", read_only=1, in_list_view=1,
           description="Permanent internal address. Never the custom domain."),
         f("press_site", label="Press Site", read_only=1),
@@ -204,8 +218,13 @@ doctype(
         f("archived_on", "Datetime", read_only=1),
         section("sec_usage", "Usage"),
         f("storage_used_bytes", "Float", default="0", read_only=1),
-        f("storage_quota_gb_override", "Int",
-          description="Overrides the plan quota when non-zero."),
+        f("database_used_bytes", "Float", default="0", read_only=1,
+          description="Reported by the site. The resource that actually threatens "
+                      "the server, so it is capped like file storage."),
+        f("extra_storage_gb", "Int", default="0",
+          description="Purchased add-on, added to the plan quota. Does not expire "
+                      "— storage is never paid for with AI credits, which would "
+                      "make a large upload silently drain the AI budget."),
         column("cb_usage"),
         f("user_count", "Int", default="0", read_only=1),
         f("usage_synced_on", "Datetime", read_only=1),
@@ -422,6 +441,13 @@ doctype(
         column("cb_r2"),
         f("r2_access_key", label="R2 Access Key"),
         f("r2_secret_key", "Password", label="R2 Secret Key"),
+        f("r2_admin_token", "Password", label="R2 Admin API Token",
+          description="Creates buckets, so it is control-plane only and never "
+                      "pushed to a bench. The S3 keys above are what tenant "
+                      "sites use to read and write objects."),
+        f("bucket_max_tenants", "Int", default="200",
+          description="Rotation threshold for new buckets. Bounded buckets bound "
+                      "the blast radius of losing one."),
         section("sec_mail", "Email"),
         f("cf_email_token", "Password", label="Cloudflare Email Token",
           description="API token with Email Sending: Edit."),
@@ -490,6 +516,8 @@ doctype(
         column("cb_ar"),
         f("plan", "Link", options="Plan", reqd=1),
         f("interval", "Select", options="Monthly\nYearly", default="Monthly", reqd=1),
+        f("region", "Link", options="Region", reqd=1),
+        f("storage_jurisdiction", "Select", options="Global\nEU", default="Global", reqd=1),
         f("tenant", "Link", options="Tenant", read_only=1,
           description="Set once provisioning starts."),
         f("user", "Link", options="User", read_only=1,
@@ -533,6 +561,60 @@ doctype(
         f("created_on", "Datetime", read_only=1),
         f("provisioning_job", "Link", options="Provisioning Job", read_only=1),
         section("sec_sb"),
+        f("last_error", "Small Text", read_only=1),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# Region — what a customer picks at signup.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Region",
+    autoname="field:region_code",
+    title_field="region_name",
+    fields=[
+        f("region_code", reqd=1, unique=1, description="e.g. nuremberg"),
+        f("region_name", reqd=1, in_list_view=1, description="Shown at signup, e.g. Nuremberg"),
+        f("country", in_list_view=1),
+        f("is_active", "Check", default="1", in_list_view=1),
+        column("cb_region"),
+        f("sort_order", "Int", default="0"),
+        f("description", "Small Text"),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# Storage Bucket — one R2 bucket, deliberately bounded.
+#
+# A single bucket holding every tenant's files is one credential, one
+# misconfiguration or one bad lifecycle rule away from losing everything. Every
+# bucket is capped and rotated so the worst case stays bounded.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Storage Bucket",
+    autoname="field:bucket_name",
+    fields=[
+        f("bucket_name", reqd=1, unique=1, in_list_view=1),
+        f("jurisdiction", "Select", options="Global\nEU", default="Global", reqd=1,
+          in_list_view=1, in_standard_filter=1,
+          description="R2 pins EU buckets to EU data centres. Chosen by the "
+                      "customer at signup and never changed afterwards."),
+        f("status", "Select", options="Provisioning\nActive\nFull\nRetired",
+          default="Provisioning", reqd=1, in_list_view=1, in_standard_filter=1),
+        column("cb_bucket"),
+        f("tenant_count", "Int", default="0", read_only=1, in_list_view=1),
+        f("max_tenants", "Int", default="200",
+          description="Rotation threshold. Reaching it marks the bucket Full and "
+                      "a fresh one is created."),
+        f("bytes_used", "Float", default="0", read_only=1),
+        f("max_bytes", "Float", default="0",
+          description="Optional secondary cap. Zero means tenant count only."),
+        section("sec_bucket_cf", "Cloudflare"),
+        f("public_base_url", description="CDN host bound to this bucket, for public objects."),
+        f("created_on", "Datetime", read_only=1),
+        column("cb_bucket_cf"),
         f("last_error", "Small Text", read_only=1),
     ],
 )

@@ -19,7 +19,7 @@ class Shard(Document):
 		return (self.tenant_count or 0) < self.capacity_tenants
 
 
-def pick_shard() -> str | None:
+def pick_shard(region: str | None = None) -> str | None:
 	"""Choose where a new tenant's site should live.
 
 	Least-loaded first among shards that are Active, accepting, and below their
@@ -29,19 +29,26 @@ def pick_shard() -> str | None:
 	Returns None when nothing has headroom, which the caller must treat as a
 	capacity incident rather than silently placing the tenant anyway.
 	"""
-	configured = frappe.db.get_single_value("OneApp Control Settings", "default_shard")
-	if configured:
-		shard = frappe.get_cached_doc("Shard", configured)
-		if shard.has_headroom():
-			return shard.name
+	# A region choice is the customer's, so it is never silently overridden by
+	# the configured default.
+	if not region:
+		configured = frappe.db.get_single_value("OneApp Control Settings", "default_shard")
+		if configured and frappe.db.exists("Shard", configured):
+			shard = frappe.get_cached_doc("Shard", configured)
+			if shard.has_headroom():
+				return shard.name
+
+	filters = {
+		"status": "Active",
+		"accepts_new_tenants": 1,
+		"deploy_ring": ("!=", "Canary"),
+	}
+	if region:
+		filters["region"] = region
 
 	candidates = frappe.get_all(
 		"Shard",
-		filters={
-			"status": "Active",
-			"accepts_new_tenants": 1,
-			"deploy_ring": ("!=", "Canary"),
-		},
+		filters=filters,
 		fields=["name", "tenant_count", "capacity_tenants"],
 		order_by="tenant_count asc",
 	)
@@ -51,6 +58,32 @@ def pick_shard() -> str | None:
 			return row.name
 
 	return None
+
+
+def regions_with_capacity() -> list[dict]:
+	"""Regions a customer may currently choose.
+
+	A region with no headroom is not offered rather than accepted and then
+	failed at provisioning.
+	"""
+	rows = frappe.db.sql(
+		"""
+		SELECT r.name AS code, r.region_name, r.country, r.description
+		FROM `tabRegion` r
+		WHERE r.is_active = 1
+		  AND EXISTS (
+			SELECT 1 FROM `tabShard` s
+			WHERE s.region = r.name
+			  AND s.status = 'Active'
+			  AND s.accepts_new_tenants = 1
+			  AND s.deploy_ring != 'Canary'
+			  AND (s.capacity_tenants = 0 OR s.tenant_count < s.capacity_tenants)
+		  )
+		ORDER BY r.sort_order ASC, r.region_name ASC
+		""",
+		as_dict=True,
+	)
+	return rows
 
 
 @frappe.whitelist()

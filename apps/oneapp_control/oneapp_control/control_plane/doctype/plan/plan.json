@@ -24,6 +24,7 @@
   "cb_quota",
   "monthly_credit_grant",
   "background_workers",
+  "database_gb",
   "sec_press_plan",
   "press_site_plan",
   "description"
@@ -128,9 +129,17 @@
   },
   {
    "default": "1",
+   "description": "Concurrent background jobs. Caps what one workspace can take from a shared bench \u2014 the fleet cannot preempt, so it limits instead.",
    "fieldname": "background_workers",
    "fieldtype": "Int",
    "label": "Background Workers"
+  },
+  {
+   "default": "2",
+   "description": "Database size cap. Separate from files: this is the one that constrains how many sites fit on a server.",
+   "fieldname": "database_gb",
+   "fieldtype": "Int",
+   "label": "Database Gb"
   },
   {
    "fieldname": "sec_press_plan",

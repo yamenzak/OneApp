@@ -26,6 +26,24 @@ def quota_bytes() -> int:
 	return int(sync.state().get("storage_quota_bytes") or 0)
 
 
+def database_quota_bytes() -> int:
+	from oneapp.oneapp_core import sync
+
+	return int(sync.state().get("database_quota_bytes") or 0)
+
+
+def database_used_bytes() -> int:
+	return int(
+		frappe.db.sql(
+			"""
+			SELECT COALESCE(SUM(data_length + index_length), 0)
+			FROM information_schema.tables WHERE table_schema = DATABASE()
+			"""
+		)[0][0]
+		or 0
+	)
+
+
 def enforce_quota(doc, method=None):
 	"""before_insert on File.
 

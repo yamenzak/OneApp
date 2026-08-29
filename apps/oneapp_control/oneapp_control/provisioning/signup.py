@@ -32,6 +32,10 @@ def fulfil(request_name: str):
 		# to a state that looks like nothing happened.
 		request.db_set("status", "Failed")
 		request.db_set("failure_reason", str(e)[:500])
+
+		from oneapp_control.notifications import emails
+
+		emails.provisioning_failed(request.name)
 		frappe.log_error(
 			title=f"Signup fulfilment failed for {request_name}",
 			message=frappe.get_traceback(),
@@ -110,6 +114,8 @@ def ensure_tenant(request, user: str):
 			"owner_email": request.email,
 			"owner_user": user,
 			"plan": request.plan,
+			"region": request.region,
+			"storage_jurisdiction": request.storage_jurisdiction or "Global",
 			"status": "Draft",
 		}
 	).insert(ignore_permissions=True)
@@ -142,12 +148,21 @@ def derive_alternative(slug: str) -> str:
 
 
 def start_provisioning(tenant):
-	"""Claim a warm site if one is waiting, otherwise build from scratch."""
+	"""Claim a warm site if one is waiting, otherwise build from scratch.
+
+	The two paths differ by minutes, so the customer is told which one they are
+	on rather than left watching a spinner of unknown length.
+	"""
+	from oneapp_control.notifications import emails
 	from oneapp_control.provisioning import runner, standby
 
 	claimed = standby.claim(tenant.name)
 	if claimed:
 		return claimed
+
+	request = frappe.db.get_value("Account Request", {"tenant": tenant.name}, "name")
+	if request:
+		emails.workspace_building(request)
 
 	tenant.db_set("status", "Provisioning")
 	return runner.provision_tenant(tenant.name)
@@ -171,28 +186,19 @@ def complete(tenant_name: str):
 
 
 def send_owner_invite(request):
-	"""One email, with the link and a way to set a password.
+	"""The workspace-is-ready email, with a link to set a password."""
+	from oneapp_control.notifications import emails
 
-	Best-effort: the workspace is live either way, and the customer can always
-	reset their password. Failing the fulfilment over an email would be worse.
-	"""
+	link = None
 	try:
-		site = frappe.db.get_value("Tenant", request.tenant, "site_name")
 		user = frappe.get_doc("User", request.user)
 		key = user.reset_password()
-
-		frappe.sendmail(
-			recipients=[request.email],
-			subject=f"{request.workspace_name} is ready",
-			message=(
-				f"<p>Your workspace is ready at "
-				f'<a href="https://{site}">{site}</a>.</p>'
-				f'<p><a href="{frappe.utils.get_url()}/update-password?key={key}">'
-				f"Set your password</a> to sign in.</p>"
-			),
-			now=True,
-		)
+		link = f"{frappe.utils.get_url()}/update-password?key={key}"
 	except Exception:
+		# Without a link they can still use "forgot password"; losing the whole
+		# email over it would be worse.
 		frappe.log_error(
-			title=f"Owner invite failed for {request.name}", message=frappe.get_traceback()
+			title=f"Password link failed for {request.name}", message=frappe.get_traceback()
 		)
+
+	emails.workspace_ready(request.tenant, password_link=link)

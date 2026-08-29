@@ -29,6 +29,7 @@ def state() -> dict:
 		"status": doc.status,
 		"plan_code": doc.plan_code,
 		"storage_quota_bytes": doc.storage_quota_bytes or 0,
+		"database_quota_bytes": doc.database_quota_bytes or 0,
 		"max_users": doc.max_users or 0,
 		"credit_balance": doc.credit_balance or 0,
 		"apps": json.loads(doc.apps_json or "[]"),
@@ -70,6 +71,7 @@ def sync_from_control_plane() -> dict:
 			"status": tenant.get("status"),
 			"plan_code": plan.get("code"),
 			"storage_quota_bytes": plan.get("storage_quota_bytes") or 0,
+			"database_quota_bytes": plan.get("database_quota_bytes") or 0,
 			"max_users": plan.get("max_users") or 0,
 			"credit_balance": credits.get("balance") or 0,
 			"apps_json": json.dumps(payload.get("apps") or []),
@@ -172,16 +174,30 @@ def report_usage_to_control_plane() -> dict:
 	storage = (
 		frappe.db.sql("SELECT COALESCE(SUM(file_size), 0) FROM `tabFile`")[0][0] or 0
 	)
+
+	# The database is the resource that actually constrains how many sites fit
+	# on a server, so it is measured and capped alongside files.
+	database = (
+		frappe.db.sql(
+			"""
+			SELECT COALESCE(SUM(data_length + index_length), 0)
+			FROM information_schema.tables WHERE table_schema = DATABASE()
+			"""
+		)[0][0]
+		or 0
+	)
 	users = frappe.db.count(
 		"User", {"enabled": 1, "user_type": "System User", "name": ("not in", ("Administrator", "Guest"))}
 	)
 
 	try:
-		result = control_client.report_usage(int(storage), int(users))
+		result = control_client.report_usage(int(storage), int(users), int(database))
 	except control_client.ControlPlaneError as e:
 		frappe.log_error(title="OneApp usage report failed", message=str(e))
 		return {"ok": False, "error": str(e)}
 
-	frappe.get_single("OneApp Site State").db_set("storage_used_bytes", storage)
+	doc = frappe.get_single("OneApp Site State")
+	doc.db_set("storage_used_bytes", storage)
+	doc.db_set("database_used_bytes", database)
 	invalidate()
 	return {"ok": True, **result}

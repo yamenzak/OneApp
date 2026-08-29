@@ -93,17 +93,49 @@ def report_usage():
 		updates["storage_used_bytes"] = float(data["storage_used_bytes"] or 0)
 	if "user_count" in data:
 		updates["user_count"] = int(data["user_count"] or 0)
+	if "database_used_bytes" in data:
+		updates["database_used_bytes"] = float(data["database_used_bytes"] or 0)
 
 	frappe.db.set_value("Tenant", tenant_name, updates)
 
 	tenant = frappe.get_doc("Tenant", tenant_name)
+
+	# Warn once per threshold crossing rather than on every report, which is
+	# hourly and would be noise.
+	_maybe_warn(tenant)
+
 	return {
 		"storage_used_bytes": tenant.storage_used_bytes,
 		"storage_quota_bytes": tenant.storage_quota_bytes,
 		"fraction_used": round(tenant.storage_fraction_used(), 4),
+		"database_used_bytes": tenant.database_used_bytes,
+		"database_quota_bytes": tenant.database_quota_bytes,
 		"user_count": tenant.user_count,
 		"max_users": tenant.max_users,
 	}
+
+
+def _maybe_warn(tenant):
+	"""Email once as each resource crosses the warning threshold.
+
+	The flag resets when usage drops back below, so freeing space and filling up
+	again warns again — but steady-state usage does not mail every hour.
+	"""
+	from oneapp_control.control_plane.doctype.tenant.tenant import WARN_FRACTION
+	from oneapp_control.notifications import emails
+
+	for resource, fraction in (
+		("storage", tenant.storage_fraction_used()),
+		("database", tenant.database_fraction_used()),
+	):
+		key = f"oneapp_warned:{tenant.name}:{resource}"
+		warned = frappe.cache().get_value(key)
+
+		if fraction >= WARN_FRACTION and not warned:
+			emails.quota_warning(tenant.name, resource, fraction)
+			frappe.cache().set_value(key, 1, expires_in_sec=7 * 24 * 3600)
+		elif fraction < WARN_FRACTION and warned:
+			frappe.cache().delete_value(key)
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
