@@ -85,6 +85,8 @@ import { Badge, Icon, Avatar, Rating } from '@/ui'
 import RecordChip from './RecordChip.vue'
 import RecordPreview from './RecordPreview.vue'
 import { valueTheme } from '../../lib/fields'
+import { formatNumber } from '../../lib/format'
+import { session } from '../../lib/session'
 import { dayjsLocal } from '@/ui'
 
 const props = defineProps({
@@ -104,6 +106,11 @@ const emphasis = computed(() => (props.column.bold ? 'font-medium' : ''))
 
 const link = computed(() => props.links?.[props.column.fieldname] || null)
 
+// How this site renders a number when the field does not say. Read here rather
+// than inside the formatter, which stays a pure question about a number and a
+// docfield.
+const formats = computed(() => session.data?.formats || {})
+
 const NUMERIC = ['number', 'currency', 'percent', 'duration']
 const numeric = computed(() => NUMERIC.includes(props.column.cell))
 
@@ -117,7 +124,10 @@ const formatted = computed(() => {
     case 'datetime':
       return dayjsLocal(raw).format('D MMM YYYY, HH:mm')
     case 'percent':
-      return `${raw}%`
+      return `${formatNumber(raw, props.column, formats.value)}%`
+    case 'number':
+    case 'currency':
+      return formatNumber(raw, props.column, formats.value)
     case 'duration':
       return humanDuration(Number(raw) || 0, props.column)
     case 'html':

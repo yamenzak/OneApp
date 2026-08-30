@@ -68,11 +68,14 @@ declares `hidden_but_we_want_it` in its columns is making a considered choice
 about its own doctype, and the manifest is code we wrote. Honour it, and only
 it — `_offerable` widens the picker, the manifest states an intent.
 
-### 1.2 The three properties we already send and never use
+### 1.2 The two properties we already send and never use
 
-`precision`, `non_negative` and `columns` travel from `_columns` to the browser
-and no component reads them. `bold` is read (`FieldCell.vue:103`), `columns` is
-not, and neither number property is.
+`precision` and `non_negative` travel from `_columns` to the browser and no
+component reads them.
+
+*(Corrected while building: `columns` **is** read — by `_default_width` on the
+server, which the browser never sees. The original audit grepped the frontend
+only.)*
 
 * **`precision`** — Frappe's per-field override of the site's float precision.
   A Float with `precision: 4` currently renders with whatever `toLocaleString`
@@ -83,11 +86,6 @@ not, and neither number property is.
 * **`non_negative`** — Frappe's own "this cannot go below zero". Plan: pass
   `min="0"` to the numeric `FormControl`. Client-side hinting only; the server
   enforces it on save regardless, which is the correct division.
-* **`columns`** — how wide the doctype thinks the field wants to be, in
-  Frappe's twelve-unit grid. Already carried and documented as "a default
-  rather than a ceiling". Plan: use it as the initial column width when a
-  screen first resolves, so a Data field and a Long Text do not start out the
-  same width. The picker still overrides it, which is the existing contract.
 
 ### 1.3 Properties worth adding
 
@@ -409,10 +407,10 @@ it is also most of the work, so it should be planned rather than discovered.
 
 Roughly ascending by risk, and each batch is independently shippable.
 
-**Batch 1 — the bug and the free wins.** `hidden` in `_offerable`; `precision`,
-`non_negative` and `columns` actually used; `sort_options`; `length`,
-`min_value`, `max_value`. All server-side or one-line client-side, no new
-imports, no new components.
+**Batch 1 — the bug and the free wins.** `hidden` in `_offerable`; `precision`
+and `non_negative` actually used; `sort_options`; `length`, `min_value`,
+`max_value`. All server-side or one-line client-side, no new imports, no new
+components. **Done.**
 
 **Batch 2 — the properties that need somewhere to render.** `unique` and
 `not_nullable` (including turning a duplicate-entry error into a field-level

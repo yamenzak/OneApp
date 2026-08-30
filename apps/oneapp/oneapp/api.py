@@ -49,6 +49,22 @@ def session():
 			"max_users": state.get("max_users") or 0,
 		},
 		"credits": {"balance": state.get("credit_balance") or 0},
+		# How this site renders a number when the field does not say. Frappe
+		# keeps both on System Settings and the desk reads them there; without
+		# them a Float column renders with whatever `toLocaleString` defaults
+		# to, which is not the same answer twice across two browsers.
+		"formats": number_formats(),
+	}
+
+
+def number_formats() -> dict:
+	settings = frappe.get_cached_doc("System Settings")
+	return {
+		"float_precision": int(settings.float_precision or 3),
+		# Frappe leaves this unset to mean "follow the float precision", which
+		# is a different thing from zero decimal places.
+		"currency_precision": int(settings.currency_precision or 0)
+		or int(settings.float_precision or 3),
 	}
 
 

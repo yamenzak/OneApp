@@ -57,6 +57,10 @@ def field(fieldname, fieldtype="Data", label=None, **kw):
 		depends_on=kw.get("depends_on", None),
 		mandatory_depends_on=kw.get("mandatory_depends_on", None),
 		read_only_depends_on=kw.get("read_only_depends_on", None),
+		length=kw.get("length", 0),
+		min_value=kw.get("min_value", None),
+		max_value=kw.get("max_value", None),
+		sort_options=kw.get("sort_options", 0),
 	)
 
 
@@ -94,6 +98,7 @@ TODO = meta(
 		field("sec_more", "Section Break", "More"),
 		field("items", "Table", "Items", options="ToDo Item"),
 		field("cost", "Currency", "Cost", permlevel=1),
+		field("plumbing", "Data", "Plumbing", hidden=1),
 	],
 	title_field="description",
 )
@@ -473,6 +478,65 @@ def test_layout_and_child_tables_are_not_columns(spaceview):
 
 def test_frappes_bookkeeping_is_still_out(spaceview):
 	assert "modified" not in spaceview._offerable(TODO)
+
+
+def test_a_hidden_field_is_not_offered(spaceview):
+	"""The doctype hid it, so it is plumbing rather than a column.
+
+	This was checked on the quick-create form and nowhere else, which put every
+	hidden field of a busy doctype into the column picker, the list and the
+	record form.
+	"""
+	assert "plumbing" not in spaceview._offerable(TODO)
+
+
+def test_a_manifest_may_still_name_a_hidden_field(spaceview):
+	"""The picker narrows; an explicit intent stands.
+
+	A space naming a hidden field is a considered choice about a doctype we do
+	not own, made in code we wrote.
+	"""
+	assert "plumbing" in spaceview._offerable(TODO, keep=["plumbing"])
+	# And naming one does not open the others.
+	assert "modified" not in spaceview._offerable(TODO, keep=["plumbing", "modified"])
+
+
+def test_naming_a_hidden_field_does_not_reopen_permlevel(spaceview):
+	"""The manifest is trusted about presentation, never about permissions."""
+	assert "cost" not in spaceview._offerable(TODO, keep=["cost"])
+
+
+def test_the_doctypes_bounds_reach_the_browser(spaceview):
+	"""`length`, `min_value`, `max_value` and `sort_options` were on the
+	docfield and never travelled, so the control could not honour them."""
+	fields = [
+		field("code", "Data", "Code", length=8),
+		field("qty", "Int", "Quantity", min_value=1, max_value=99),
+		field("floor", "Int", "Floor", min_value=0),
+		field("kind", "Select", "Kind", options="b\na", sort_options=1),
+	]
+	columns = {c["fieldname"]: c for c in spaceview._columns(meta(fields), [f.fieldname for f in fields])}
+
+	assert columns["code"]["length"] == 8
+	assert columns["qty"]["min_value"] == 1
+	assert columns["qty"]["max_value"] == 99
+	assert columns["kind"]["sort_options"] == 1
+
+
+def test_a_bound_of_zero_is_not_a_bound(spaceview):
+	"""Because it is not one on the server either.
+
+	`_validate_min_max_value` skips a field when neither bound is truthy and
+	then guards each with `if min_value and ...`, so a zero bound is inert in
+	Frappe. Sending it as a real one would make the browser refuse a negative
+	number the database accepts — a control stricter than the thing it writes
+	to, which is the worst way for the two to disagree.
+	"""
+	fields = [field("floor", "Int", "Floor", min_value=0), field("depth", "Int", "Depth", min_value=-5)]
+	columns = {c["fieldname"]: c for c in spaceview._columns(meta(fields), ["floor", "depth"])}
+
+	assert columns["floor"]["min_value"] is None
+	assert columns["depth"]["min_value"] == -5, "a negative bound is a real one"
 
 
 def test_quick_filters_are_the_ones_the_doctype_marked(spaceview):

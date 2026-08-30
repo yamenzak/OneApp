@@ -74,6 +74,26 @@ def _granted_doctypes(space: dict) -> set[str]:
 	return set(frappe.get_all("Custom DocPerm", filters={"role": role}, pluck="parent"))
 
 
+def _number(value):
+	"""A DocField bound as a number, or None.
+
+	Zero is None, which reads wrong until you look at what Frappe does with
+	these. `_validate_min_max_value` skips a field entirely when neither bound
+	is truthy, and then guards each with `if min_value and ...` — so on the
+	server a bound of zero is not a bound at all.
+
+	Sending it as one would make the browser stricter than the database: a
+	field with `min_value` unset would refuse a negative number that saves
+	perfectly well. `non_negative` is the flag that actually means "not below
+	zero", and Frappe enforces that one separately.
+	"""
+	try:
+		number = float(value)
+	except (TypeError, ValueError):
+		return None
+	return number or None
+
+
 def _columns(meta, wanted: list[str]) -> list[dict]:
 	by_name = {df.fieldname: df for df in meta.fields}
 	columns = []
@@ -122,6 +142,17 @@ def _columns(meta, wanted: list[str]) -> list[dict]:
 			"placeholder": df.placeholder or None,
 			"precision": df.precision or None,
 			"non_negative": int(df.non_negative or 0),
+			# The doctype's own bounds. Hints for the control — Frappe checks
+			# all three on save regardless (`_validate_min_max_value`,
+			# `_validate_non_negative`, and the column width for `length`),
+			# which is the right division: a browser makes a field pleasant to
+			# type into, and a database decides what is true.
+			"length": int(getattr(df, "length", 0) or 0),
+			"min_value": _number(getattr(df, "min_value", None)),
+			"max_value": _number(getattr(df, "max_value", None)),
+			# A Select whose options the desk shows alphabetically rather than
+			# in the order somebody typed them into the doctype.
+			"sort_options": int(getattr(df, "sort_options", 0) or 0),
 			"default": df.default or None,
 			"link_filters": df.link_filters or None,
 			# Dynamic Link names the field holding its doctype; without it the
@@ -173,7 +204,7 @@ def _fetch_fields(columns: list[dict]) -> list[str]:
 	))
 
 
-def _offerable(meta) -> list[str]:
+def _offerable(meta, keep=()) -> list[str]:
 	"""Every field of this doctype a person may be offered as a column.
 
 	The manifest's field list is a default, not a ceiling. A space declaring
@@ -192,8 +223,20 @@ def _offerable(meta) -> list[str]:
 	  permissions.
 	* **Frappe's bookkeeping stays out**, as it always has.
 	* **Layout and child tables stay out**: neither carries a value in a row.
+	* **`hidden` is honoured.** A field the doctype hides holds plumbing nobody
+	  should be asked about — Frappe hides these for presentation, not for
+	  secrecy, so this is not a permission fix. It was still wrong: `hidden` was
+	  checked on the quick-create form (`_quick_entry`) and nowhere else, which
+	  put every hidden field of a busy doctype into the column picker, the list
+	  and the record form.
+
+	`keep` is the one exception, and it names the manifest's own field list. A
+	space declaring a hidden field is a considered choice about a doctype we do
+	not own, made in code we wrote — so the picker narrows and an explicit
+	intent still stands.
 	"""
 	allowed = set(meta.get_permlevel_access("read") or [0])
+	keep = set(keep or ())
 
 	return [
 		df.fieldname
@@ -202,6 +245,7 @@ def _offerable(meta) -> list[str]:
 		and not fieldtypes.is_layout(df.fieldtype)
 		and df.fieldtype not in ("Table", "Table MultiSelect")
 		and (df.permlevel or 0) in allowed
+		and (not getattr(df, "hidden", 0) or df.fieldname in keep)
 	]
 
 
@@ -483,7 +527,7 @@ def _resolve(space_code: str, screen: str | None = None,
 	# Everything this person could put on the screen, which is the doctype's own
 	# field list rather than the manifest's — see `_offerable`. The manifest
 	# decides what is on by default; a person decides what they look at.
-	offerable = [*_columns(meta, _offerable(meta)), _meta_column()]
+	offerable = [*_columns(meta, _offerable(meta, keep=wanted)), _meta_column()]
 	offered = {c["fieldname"]: c for c in offerable}
 
 	# The manifest's list, plus activity at the end. Widths are defaults and
