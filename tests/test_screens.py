@@ -1132,7 +1132,11 @@ def test_an_emoji_is_kept_because_an_emoji_needs_no_build(spaceview):
 	renders. Frappe CRM tolerates one here for legacy reasons; for us it is the
 	more capable of the two."""
 	assert spaceview._view_icon("📦") == "📦"
+	# One emoji, several code points: a flag is two and a family joined by
+	# zero-width joiners is seven. A bound of one or two would reject the ones
+	# people actually use.
 	assert spaceview._view_icon("🇬🇧") == "🇬🇧"
+	assert spaceview._view_icon("👩\u200d👩\u200d👧\u200d👦") == "👩\u200d👩\u200d👧\u200d👦"
 
 
 def test_a_lucide_name_nobody_offered_is_dropped(spaceview):
@@ -1145,10 +1149,14 @@ def test_a_lucide_name_nobody_offered_is_dropped(spaceview):
 
 
 def test_anything_that_could_be_a_class_name_is_dropped(spaceview):
-	"""A value here becomes a class on an element. Checked rather than trusted."""
+	"""A lucide value becomes a class on an element. Checked rather than
+	trusted — and the emoji rule is frappe-ui's own, so what is stored is what
+	its `Icon` will actually draw."""
 	assert spaceview._view_icon("bg-red-500 absolute inset-0") == ""
 	assert spaceview._view_icon("a") == ""
-	assert spaceview._view_icon("📦📦📦") == ""
+	assert spaceview._view_icon("📦 📦") == ""
+	# Short, but not a name for anything.
+	assert spaceview._view_icon("📦📦📦📦📦📦📦📦📦") == ""
 
 
 def test_the_icon_set_is_the_one_the_spa_can_draw(spaceview):

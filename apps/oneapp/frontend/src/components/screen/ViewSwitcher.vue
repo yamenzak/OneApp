@@ -46,19 +46,23 @@
   -->
   <Dialog v-model="naming" :title="renaming ? 'Rename this view' : 'Save as a new view'">
     <form class="flex flex-col gap-4" @submit.prevent="confirmName">
-      <FormControl
-        v-model="draftLabel"
-        type="text"
-        label="Name"
-        placeholder="Overdue and mine"
-        autocomplete="off"
-      />
       <!--
-        Frappe CRM gives a view an icon and it is worth having: a menu of
-        five names is a list to read, and a menu of five icons is a list to
-        recognise.
+        The icon against the name, which is the shape Frappe CRM uses and the
+        right one: they are the two halves of what a view is called. A view is
+        worth an icon at all because a menu of five names is a list to read,
+        and a menu of five icons is a list to recognise.
       -->
-      <IconPicker v-model="draftIcon" />
+      <div class="flex items-end gap-2">
+        <IconPicker v-model="draftIcon" />
+        <FormControl
+          v-model="draftLabel"
+          type="text"
+          class="flex-1"
+          label="Name"
+          placeholder="Overdue and mine"
+          autocomplete="off"
+        />
+      </div>
       <FormControl
         v-if="canShare"
         v-model="draftShared"

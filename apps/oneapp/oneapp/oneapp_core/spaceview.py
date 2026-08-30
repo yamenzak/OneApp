@@ -1310,26 +1310,35 @@ VIEW_ICONS = (
 	"lucide-sparkles",
 )
 
-# Two code points: enough for a flag or a skin-toned figure, short enough that
-# nobody pastes a sentence into a menu row.
-MAX_EMOJI = 2
+# Eight code points at most. One emoji is often several — a flag is two, a skin
+# tone adds one, a family joined by zero-width joiners is seven — so a bound of
+# one or two would reject emoji people actually use. Eight is short enough that
+# nobody puts a sentence in a menu row.
+MAX_EMOJI = 8
 
 
 def _view_icon(value) -> str:
 	"""The icon a view may carry, or nothing.
 
-	A value here reaches the DOM as a class name, so it is checked rather than
-	trusted: one of the offered lucide names, or a short run of characters that
-	is not ASCII — which is what an emoji is and what a class name is not.
+	Two shapes, checked rather than trusted: one of the offered lucide names,
+	which reaches the DOM as a class name and so may only ever be one of ours,
+	or a short glyph with no ASCII letter or digit in it.
+
+	That second rule is frappe-ui's own definition of an emoji — `Icon` renders
+	a name matching it as text and anything else as nothing at all — so this is
+	the same question the component will ask, asked before the value is stored
+	rather than after.
 	"""
 	icon = (value or "").strip()
 	if not icon:
 		return ""
 	if icon in VIEW_ICONS:
 		return icon
-	if len(icon) <= MAX_EMOJI and all(ord(char) > 0x2000 for char in icon):
-		return icon
-	return ""
+	if len(icon) > MAX_EMOJI or icon.startswith("lucide-"):
+		return ""
+	if any(char.isascii() and char.isalnum() for char in icon) or any(char.isspace() for char in icon):
+		return ""
+	return icon
 
 
 def _can_share() -> bool:

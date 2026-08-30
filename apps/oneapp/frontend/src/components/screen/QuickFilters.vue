@@ -19,14 +19,14 @@
       v-for="(quick, index) in boxes"
       :key="quick.key"
       class="items-stretch"
-      :class="[index === 0 || expanded ? 'flex' : 'hidden sm:flex', index === 0 && FIRST_BOX]"
+      :class="[index === 0 || expanded ? 'flex' : 'hidden sm:flex', BOX]"
     >
       <Select
         v-if="quick.options"
         :model-value="String(draft[quick.key] ?? '')"
         :options="quick.options"
         :placeholder="quick.label"
-        class="w-36"
+        class="w-full sm:w-36"
         @update:model-value="set(quick, $event)"
       />
 
@@ -74,13 +74,17 @@ const emit = defineEmits(['changed'])
 // button beside it looks bolted on. Reach the input.
 const SQUARE_END = '[&_input]:rounded-e-none'
 
-// The ID box takes the width it is given on a phone, where it is the only box
-// and the row's three controls sit at its end. At a desktop width every box is
-// the same size, because there they are alternatives rather than one search
-// and some extras. A constant and not a comment inside the binding: the token
-// audit reads a `:class` array as class names, and an English sentence in one
-// is a hundred tokens that emit no CSS.
-const FIRST_BOX = 'flex-1 sm:flex-none'
+// One box per line on a phone, each taking the width it is given: the ID box
+// alone on the first line with the row's three controls at its end, and the
+// rest underneath it once they are revealed. Anything else puts two boxes on
+// the first line and squeezes the one people actually type in. At a desktop
+// width they sit side by side at a size of their own, because there they are
+// alternatives rather than one search and some extras.
+//
+// A constant and not a comment inside the binding: the token audit reads a
+// `:class` array as class names, and an English sentence in one is a hundred
+// tokens that emit no CSS.
+const BOX = 'basis-full sm:basis-auto'
 
 // Whether the boxes past the first are showing. Only ever asked on a phone —
 // above the breakpoint they are all there anyway. The control that toggles it
