@@ -42,7 +42,7 @@
       <div
         v-for="(view, index) in views"
         :key="index"
-        class="flex flex-col gap-3 rounded-4 border border-outline-gray-2 p-4"
+        class="flex flex-col gap-3 rounded-6 border border-outline-gray-2 p-4"
       >
         <div class="flex items-center justify-between gap-3">
           <span class="text-base-medium text-ink-gray-8">

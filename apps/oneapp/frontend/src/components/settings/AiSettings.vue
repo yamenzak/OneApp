@@ -19,7 +19,7 @@
     />
 
     <div v-else class="flex flex-col gap-5 pt-6">
-      <div class="flex items-start justify-between gap-4 rounded-4 border border-outline-gray-1 p-4">
+      <div class="flex items-start justify-between gap-4 rounded-6 border border-outline-gray-1 p-4">
         <div class="min-w-0">
           <p class="text-base-medium text-ink-gray-8">Use AI in this workspace</p>
           <p class="mt-0.5 text-p-sm text-ink-gray-5">
@@ -33,7 +33,7 @@
       <div
         v-for="feature in data.features"
         :key="feature.key"
-        class="flex flex-col gap-3 rounded-4 border border-outline-gray-1 p-4"
+        class="flex flex-col gap-3 rounded-6 border border-outline-gray-1 p-4"
         :class="dimmed(feature) && 'opacity-60'"
       >
         <div class="flex items-start justify-between gap-4">

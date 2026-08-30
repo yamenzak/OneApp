@@ -24,13 +24,12 @@
  ],
  "fields": [
   {
-   "description": "Whose view this is.",
+   "description": "Whose view this is. Empty is a view everyone on the workspace sees \u2014 Frappe's `for_user` empty, on List Filter.",
    "fieldname": "user",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "User",
-   "options": "User",
-   "reqd": 1
+   "options": "User"
   },
   {
    "fieldname": "app_code",
@@ -52,16 +51,17 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "Empty is the person's default for this screen.",
+   "description": "The view's name. Empty is the person's own unnamed default for this screen \u2014 what Save writes.",
    "fieldname": "label",
    "fieldtype": "Data",
    "label": "Label"
   },
   {
-   "default": "1",
+   "default": "0",
    "fieldname": "is_default",
    "fieldtype": "Check",
-   "label": "Is Default"
+   "label": "Is Default",
+   "description": "Opens this screen for whoever this view belongs to."
   },
   {
    "fieldname": "sec_saved_query",

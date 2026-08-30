@@ -593,9 +593,22 @@ never widen it.**
   can show their answer immediately: an unsaved change goes through the same
   merge as a saved one rather than being applied in the browser.
 
-A saved view belongs to one person and one screen (`OneApp Saved View`, keyed on
-user + app + view), so it is a preference and never a permission. It also means
-two screens over the same doctype keep their own answers.
+A saved view belongs to one screen (`OneApp Saved View`, keyed on user + app +
+view), so it is a preference and never a permission. It also means two screens
+over the same doctype keep their own answers.
+
+**A view can be shared, and sharing changes nothing about what it may reach.**
+Leaving the row's user empty makes it a layout the whole workspace sees — the
+shape Frappe's own `List Filter` uses, where an empty `for_user` means global.
+Writing one needs the workspace's admin rights; opening one needs nothing,
+because every filter, column and sort in it is re-checked against the screen on
+the way out, exactly as a private one is. That "on the way out" is the load-
+bearing half: the row is a doctype an operator can write directly, so what it
+carries is bounded when it is read rather than only when it was saved.
+
+Nobody edits anybody else's private layout, admin or not. Frappe allows a System
+Manager to assign a layout to another user; we have no surface that wants it, so
+it is not offered.
 
 **The record dialog shows the screen's whole field list, not the chosen
 columns.** Hiding a column is a statement about the list; the record still has
@@ -646,3 +659,41 @@ Two consequences worth knowing when writing an app: a field you do not want a
 customer to edit needs `read_only` or a permlevel on the doctype, not merely
 absence from the manifest; and `fields` is now purely about what the screen opens
 with.
+
+
+## 14. Follow the framework, not the app that inspired it
+
+Frappe CRM is the best worked example of a Frappe SPA there is, and much of this
+product's list view is a straight answer to "what does CRM do here". Two of its
+answers we took outright: the selection bar floats at the bottom of the screen
+rather than pushing the list down, and the saved view lives in the breadcrumb
+line rather than in a toolbar — the view you are in *is* where you are.
+
+But CRM's saved views are its own doctype, `CRM View Settings`, built before the
+framework had an answer. The framework has one now: `List Filter`, with
+`filter_name`, `for_user`, `filters`, `columns` and a sort — and a permission
+model (`_can_edit_global_filter`, `_can_update_list_filter`) and sanitisers
+(`_sanitize_filters`, `_sanitize_columns`, `_sanitize_sorting`) that we would
+otherwise be reinventing line for line.
+
+**So: where the framework and a Frappe app disagree, follow the framework.** An
+app's invention was right for the app on the day it was written; the framework's
+is what the next version of Frappe will keep working. `OneApp Saved View` is our
+own doctype — it is keyed per screen rather than per doctype, which `List Filter`
+is not — but its *model* is `List Filter`'s: a named layout, empty user meaning
+everybody, one owner deciding who may write it.
+
+Where we did not follow CRM, and why:
+
+* **Column picking** stays a dialog rather than CRM's popover. Ours carries
+  width, both pin edges, keyboard reordering and a search over the doctype's
+  whole field list; that does not fit a popover, and reordering by drag alone
+  reaches neither a keyboard nor a phone.
+* **Quick filters** stay Frappe's standard filter row — `in_standard_filter`
+  plus the title field, with the `=` / `≈` toggle — rather than CRM's
+  configurable set. It is one less thing to configure and it is the answer the
+  doctype already gives.
+* **Per-view actions** are a group in the same menu rather than CRM's
+  hover-revealed `…` on each row. A control that appears on hover is not there
+  on a touch screen, and frappe-ui's Menu gained real submenus since CRM worked
+  around not having them.

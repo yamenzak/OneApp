@@ -465,13 +465,14 @@ PAGE = 100
 
 
 @frappe.whitelist(methods=["GET"])
-def spec(app_code: str, view: str | None = None) -> dict:
-	return _apply_saved(_resolve(app_code, view))
+def spec(app_code: str, view: str | None = None, layout: str | None = None) -> dict:
+	return _apply_saved(_resolve(app_code, view), layout)
 
 
 @frappe.whitelist(methods=["GET"])
 def rows(app_code: str, view: str | None = None, limit: int = PAGE,
-         start: int = 0, overrides: str | dict | None = None) -> dict:
+         start: int = 0, overrides: str | dict | None = None,
+         layout: str | None = None) -> dict:
 	"""The records a screen lists, and whether there are more of them.
 
 	`overrides` is a filter or sort someone has changed but not saved. Folded in
@@ -480,7 +481,7 @@ def rows(app_code: str, view: str | None = None, limit: int = PAGE,
 	"""
 	# Through the saved view as well, or the columns and the rows disagree about
 	# which fields exist and every cell reads empty.
-	resolved = _apply_saved(_resolve(app_code, view))
+	resolved = _apply_saved(_resolve(app_code, view), layout)
 	resolved = _apply_overrides(resolved, overrides)
 	if not resolved.get("doctype"):
 		return {"rows": [], "has_more": False, "columns": [], "order_by": ""}
@@ -753,7 +754,13 @@ def timeline(app_code: str, view: str, name: str) -> dict:
 
 	return {
 		"comments": comments,
+		# How many there are, not how many came back. The page is capped at 50,
+		# so on a record with more than that the count derived from the list
+		# stopped moving when a comment was added — the badge said 50 for ever.
+		# Frappe keeps the same number on the document itself.
+		"comment_count": len(frappe.parse_json(doc.get("_comments") or "[]")),
 		"changes": changes,
+		"more_comments": len(comments) >= TIMELINE_PAGE,
 		"likes": liked,
 		"liked": frappe.session.user in liked,
 		"can_comment": True,
@@ -842,31 +849,134 @@ def toggle_like(app_code: str, view: str, name: str) -> dict:
 
 
 # --------------------------------------------------------------------------- #
-# Saved views
+# Saved views, as named layouts
 #
-# What Frappe calls a List View Setting: the filters, the sort and the columns
-# one person settled on, restored when they come back. Per screen rather than
-# per doctype, because two screens over one doctype are two questions.
+# Frappe's own answer to this is the `List Filter` doctype, and it is worth
+# following rather than approximating: a layout has a name, it belongs to one
+# person or to everybody (`for_user` empty means global), and the filters, the
+# sort and the columns travel together as one saved thing. Frappe CRM built its
+# own before the framework had one; the framework's is the one to follow.
 #
-# A saved view narrows; it never widens. Its columns are intersected with the
+# What we keep from ours: it is per screen rather than per doctype, because two
+# screens over one doctype are two questions.
+#
+# A layout narrows; it never widens. Its columns are intersected with the
 # screen's, and its filters are applied on top of the screen's rather than
 # instead of them — so a person cannot save their way to a column the app did
-# not offer or a row the screen filtered out.
+# not offer or a row the screen filtered out. That holds for a shared layout
+# too: sharing does not raise what a layout may reach, and every filter in one
+# is re-checked against the screen on the way out, not only when it was saved.
 # --------------------------------------------------------------------------- #
 
+# What a layout carries. `user` empty is Frappe's `for_user` empty: a layout
+# everyone on the workspace sees.
+LAYOUT_FIELDS = ("name", "label", "user", "is_default", "filters", "order_by",
+                 "columns", "page_length", "group_by", "favourites")
+
+
+def _can_share() -> bool:
+	"""Who may write a layout everyone on this workspace sees.
+
+	Frappe's rule is Administrator or System Manager. Ours is the same shape
+	with our own role in it: the workspace owner, whom DECISIONS §8 deliberately
+	does *not* make a System Manager, and support, who arrives as one.
+	"""
+	# Imported here rather than at the top: `workspace` reaches into Frappe's
+	# timezone tables at import time, and this module is read by tests that
+	# stand up neither.
+	from oneapp.oneapp_core.workspace import OWNER_ROLE, SUPPORT_ROLE
+
+	if frappe.session.user == "Administrator":
+		return True
+	return bool(set(frappe.get_roles()) & {OWNER_ROLE, SUPPORT_ROLE})
+
+
+def _layouts(app_code: str, view: str) -> list[dict]:
+	"""Every layout this person can open on this screen: theirs, and the shared.
+
+	Two queries rather than one with `or_filters`. Frappe ANDs `or_filters` with
+	`filters` rather than OR-ing the whole thing, which has already cost us once
+	— a panel that showed nine plans as one — and two reads of a tiny table are
+	cheaper than being wrong about it.
+	"""
+	where = {"app_code": app_code, "view": view}
+	fields = list(LAYOUT_FIELDS)
+	mine = frappe.get_all("OneApp Saved View", filters={**where, "user": frappe.session.user},
+	                      fields=fields, ignore_permissions=True)
+	shared = frappe.get_all("OneApp Saved View", filters={**where, "user": ["in", ["", None]]},
+	                        fields=fields, ignore_permissions=True)
+	rows = mine + shared
+	for row in rows:
+		row["user"] = row.get("user") or ""
+		row["shared"] = not row["user"]
+		row["mine"] = row["user"] == frappe.session.user
+	rows.sort(key=lambda row: (row["shared"], (row["label"] or "").lower()))
+	return rows
+
+
+def _default_layout(rows: list[dict]):
+	"""The layout this screen opens with when nothing is asked for.
+
+	This person's own default first, then a shared default an operator set for
+	the workspace — because a personal answer to "what do I look at" outranks
+	the house one, and a workspace that sets a default is setting a starting
+	point rather than overruling anybody.
+	"""
+	mine = next((row for row in rows if row["mine"] and row["is_default"]), None)
+	if mine:
+		return mine
+	return next((row for row in rows if row["shared"] and row["is_default"]), None)
+
+
+def _chosen_layout(rows: list[dict], layout: str | None = None):
+	"""Which layout to render: the one asked for, else the default.
+
+	Asking for one that does not exist — a bookmark to a deleted layout — falls
+	through rather than throwing: the screen still has a declaration to render.
+	"""
+	if layout:
+		found = next((row for row in rows if row["name"] == layout), None)
+		if found:
+			return found
+	return _default_layout(rows)
+
+
 def _saved(app_code: str, view: str):
+	"""This person's unnamed default — the one Save writes when nothing is named.
+
+	Kept as its own lookup because "save what I am looking at" has to land on the
+	same row every time, and a named layout is not that row.
+	"""
 	return frappe.db.get_value(
 		"OneApp Saved View",
 		{"user": frappe.session.user, "app_code": app_code, "view": view,
-		 "is_default": 1},
-		["name", "filters", "order_by", "columns", "page_length", "favourites"],
+		 "label": ["in", ["", None]]},
+		["name"],
 		as_dict=True,
 	)
 
 
-def _apply_saved(resolved: dict) -> dict:
-	"""Fold this person's saved answers into a resolved screen."""
-	saved = _saved(resolved["app"], resolved["view"])
+def _apply_saved(resolved: dict, layout: str | None = None) -> dict:
+	"""Fold a layout's saved answers into a resolved screen."""
+	saved = None
+	resolved["layouts"] = []
+	resolved["can_share"] = False
+	if resolved.get("view"):
+		rows = _layouts(resolved["app"], resolved["view"])
+		# `opens` rather than `is_default`: two rows can both be marked — one
+		# personal, one shared — and only one of them actually opens the screen.
+		# A menu that pins both is telling the reader something untrue.
+		opens = _default_layout(rows)
+		resolved["layouts"] = [
+			{"name": row["name"], "label": row["label"] or "", "shared": row["shared"],
+			 "mine": row["mine"], "is_default": bool(row["is_default"]),
+			 "opens": bool(opens and opens["name"] == row["name"])}
+			for row in rows
+		]
+		resolved["can_share"] = _can_share()
+		saved = _chosen_layout(rows, layout)
+	resolved["layout"] = saved["name"] if saved else ""
+	resolved["layout_label"] = (saved.get("label") or "") if saved else ""
 	resolved["saved"] = None
 	# Always present, so nothing downstream has to ask whether a saved view
 	# exists before reading it.
@@ -1170,8 +1280,18 @@ def _apply_overrides(resolved: dict, overrides) -> dict:
 def save_view(app_code: str, view: str, filters: str | list | dict | None = None,
               order_by: str | None = None, columns: str | list | None = None,
               page_length: int = 0, favourites: str | bool | int = False,
-              group_by: str | None = None) -> dict:
-	"""Remember how this person likes this screen.
+              group_by: str | None = None, layout: str | None = None,
+              label: str | None = None, shared: str | bool | int | None = None,
+              is_default: str | bool | int | None = None) -> dict:
+	"""Write what this person is looking at into a layout.
+
+	Three things it can be asked to do, and which one is decided by what it is
+	given rather than by a mode flag:
+
+	  * `layout` names a row — update that one, if this person may.
+	  * `label` without `layout` — a new named layout.
+	  * neither — this person's unnamed default for the screen, which is what
+	    the Save button on the toolbar writes.
 
 	The annotations are wide on purpose, and `list` in particular is load-
 	bearing: Frappe validates a whitelisted method's arguments against them and
@@ -1188,15 +1308,20 @@ def save_view(app_code: str, view: str, filters: str | list | dict | None = None
 	columns = _placed(offered, columns)
 	filters = _asked_filters(_filterable(resolved), filters)
 
-	existing = _saved(app_code, view)
-	doc = (frappe.get_doc("OneApp Saved View", existing["name"]) if existing
-	       else frappe.new_doc("OneApp Saved View"))
+	doc = _layout_doc(app_code, view, layout, label)
+	# Sharing is a permission, so it is checked against what the row will be
+	# rather than what it was: taking a personal layout public is the same
+	# decision as writing a public one.
+	if shared is not None:
+		doc.user = "" if frappe.utils.sbool(shared) else frappe.session.user
+	_may_write(doc)
+
+	if label is not None:
+		doc.label = frappe.utils.strip_html(str(label)).strip()[:140]
 
 	doc.update({
-		"user": frappe.session.user,
 		"app_code": app_code,
 		"view": view,
-		"is_default": 1,
 		"filters": json.dumps(filters),
 		"order_by": _safe_order(resolved, order_by or "") if order_by else "",
 		# JSON now: a column carries a width and a pin, and a comma-separated
@@ -1210,15 +1335,112 @@ def save_view(app_code: str, view: str, filters: str | list | dict | None = None
 		"favourites": 1 if frappe.utils.sbool(favourites) else 0,
 		"group_by": _group_by(resolved, group_by),
 	})
+
+	# An unnamed layout is always this person's default — it is the only thing
+	# "save what I am looking at" could mean.
+	if is_default is None:
+		doc.is_default = 1 if not doc.label else (doc.is_default or 0)
+	else:
+		doc.is_default = 1 if frappe.utils.sbool(is_default) else 0
+
 	doc.save(ignore_permissions=True)
+	if doc.is_default:
+		_only_default(doc)
 	frappe.db.commit()
 
+	return {"ok": True, "layout": doc.name}
+
+
+def _layout_doc(app_code: str, view: str, layout: str | None, label: str | None):
+	"""The row a save lands on — an existing one, or a new one."""
+	if layout:
+		doc = frappe.get_doc("OneApp Saved View", layout)
+		if (doc.app_code, doc.view) != (app_code, view):
+			# A layout belongs to one screen. Naming another screen's row would
+			# otherwise move it, silently, out from under whoever saved it.
+			frappe.throw(_("That view belongs to a different screen."), frappe.PermissionError)
+		return doc
+	if not label:
+		existing = _saved(app_code, view)
+		if existing:
+			return frappe.get_doc("OneApp Saved View", existing["name"])
+	doc = frappe.new_doc("OneApp Saved View")
+	doc.user = frappe.session.user
+	doc.label = ""
+	# Not a default until something says so. The doctype's own default is 1,
+	# which was right when one unnamed row was the whole feature and is wrong
+	# now: making a view would quietly change which view the screen opens with.
+	doc.is_default = 0
+	return doc
+
+
+def _may_write(doc) -> None:
+	"""Frappe's `_can_update_list_filter`, in our vocabulary.
+
+	A shared layout needs the workspace's own admin rights; a personal one needs
+	only to be yours. Assigning one to somebody else is not offered at all —
+	Frappe allows it for a System Manager and we have no surface that wants it.
+	"""
+	if not doc.user:
+		if not _can_share():
+			frappe.throw(_("Only a workspace admin can change a shared view."),
+			             frappe.PermissionError)
+		return
+	if doc.user != frappe.session.user:
+		frappe.throw(_("That view belongs to someone else."), frappe.PermissionError)
+
+
+def _only_default(doc) -> None:
+	"""One default per person per screen, and one shared default per screen."""
+	siblings = frappe.get_all(
+		"OneApp Saved View",
+		filters={"app_code": doc.app_code, "view": doc.view,
+		         "user": doc.user or ["in", ["", None]], "is_default": 1},
+		pluck="name", ignore_permissions=True,
+	)
+	for name in siblings:
+		if name != doc.name:
+			frappe.db.set_value("OneApp Saved View", name, "is_default", 0,
+			                    update_modified=False)
+
+
+@frappe.whitelist(methods=["POST"])
+def delete_view(app_code: str, view: str, layout: str) -> dict:
+	"""Remove a layout. Whose it is decides who may."""
+	doc = frappe.get_doc("OneApp Saved View", layout)
+	if (doc.app_code, doc.view) != (app_code, view):
+		frappe.throw(_("That view belongs to a different screen."), frappe.PermissionError)
+	_may_write(doc)
+	frappe.delete_doc("OneApp Saved View", doc.name, ignore_permissions=True)
+	frappe.db.commit()
+	return {"ok": True}
+
+
+@frappe.whitelist(methods=["POST"])
+def default_view(app_code: str, view: str, layout: str) -> dict:
+	"""Open this screen with this layout from now on.
+
+	Marking a shared layout the default is a workspace-wide decision, so it
+	needs the rights to write that layout. Marking your own is not.
+	"""
+	doc = frappe.get_doc("OneApp Saved View", layout)
+	if (doc.app_code, doc.view) != (app_code, view):
+		frappe.throw(_("That view belongs to a different screen."), frappe.PermissionError)
+	_may_write(doc)
+	doc.is_default = 1
+	doc.save(ignore_permissions=True)
+	_only_default(doc)
+	frappe.db.commit()
 	return {"ok": True}
 
 
 @frappe.whitelist(methods=["POST"])
 def reset_view(app_code: str, view: str) -> dict:
-	"""Back to what the screen declares."""
+	"""Back to what the screen declares.
+
+	Only this person's unnamed default: a named layout is a thing somebody made
+	and is deleted deliberately, not by a button that means "undo my tinkering".
+	"""
 	existing = _saved(app_code, view)
 	if existing:
 		frappe.delete_doc("OneApp Saved View", existing["name"], ignore_permissions=True)

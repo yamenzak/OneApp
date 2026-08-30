@@ -75,16 +75,19 @@ def emitted_classes(app: str) -> set[str]:
     return {re.sub(r"\\(.)", r"\1", name) for name in re.findall(r"\.((?:[\w-]|\\.)+)", css)}
 
 
-def referenced_classes(app: str) -> dict[str, set[str]]:
-    """{class: {files}} for every utility our source writes."""
-    root = ROOT / f"apps/{app}/frontend/src"
-    found: dict[str, set[str]] = {}
+def class_lists(app: str) -> list[tuple[str, str]]:
+    """Every class list our source writes, as (blob, file).
 
-    def record(token: str, path: Path):
-        token = token.strip()
-        if not token or not UTILITY.match(token):
-            return
-        found.setdefault(token, set()).add(path.relative_to(root).as_posix())
+    A blob rather than a token, because some rules are about what a class list
+    says *together* — an outlined block and its corner radius are one decision,
+    and reading them apart cannot see it.
+    """
+    root = ROOT / f"apps/{app}/frontend/src"
+    found: list[tuple[str, str]] = []
+
+    def record(blob: str, path: Path):
+        if blob.strip():
+            found.append((blob, path.relative_to(root).as_posix()))
 
     for path in sorted(root.rglob("*")):
         if path.suffix not in (".vue", ".js"):
@@ -96,8 +99,7 @@ def referenced_classes(app: str) -> dict[str, set[str]]:
             code = re.sub(r"/\*.*?\*/", "", source, flags=re.S)
             code = re.sub(r"//[^\n]*", "", code)
             for single, double in STRING_IN_EXPR.findall(code):
-                for token in (single or double).split():
-                    record(token, path)
+                record(single or double, path)
             continue
         for match in CLASS_ATTR.finditer(source):
             blob = match.group("value")
@@ -105,23 +107,30 @@ def referenced_classes(app: str) -> dict[str, set[str]]:
                 # `:class="valueClass"` names a variable, not a class. Only the
                 # string literals inside a bound expression are class lists.
                 for single, double in STRING_IN_EXPR.findall(blob):
-                    for token in (single or double).split():
-                        record(token, path)
+                    record(single or double, path)
             else:
-                for token in blob.split():
-                    record(token, path)
+                record(blob, path)
         scripts = SCRIPT.findall(source) if path.suffix == ".vue" else [source]
         for script in scripts:
             for _, blob in JS_CLASS.findall(script):
-                for token in blob.split():
-                    record(token, path)
+                record(blob, path)
             # A class list held in a plain constant matches neither regex above.
             # `const STUCK = 'sticky right-0 z-10 bg-surface-white'` is how a
             # retired token got past this and rendered a transparent column over
             # the one beside it.
             for blob in loose_class_lists(script):
-                for token in blob.split():
-                    record(token, path)
+                record(blob, path)
+    return found
+
+
+def referenced_classes(app: str) -> dict[str, set[str]]:
+    """{class: {files}} for every utility our source writes."""
+    found: dict[str, set[str]] = {}
+    for blob, rel in class_lists(app):
+        for token in blob.split():
+            token = token.strip()
+            if token and UTILITY.match(token):
+                found.setdefault(token, set()).add(rel)
     return found
 
 

@@ -9,7 +9,14 @@
     `_liked_by`, both already on the document. The comments themselves never
     leave the server; only how many there are.
   -->
-  <div class="flex items-center justify-end gap-2 text-p-xs text-ink-gray-5">
+  <!--
+    `w-full` is load-bearing: the cell is a flex row that packs its content at
+    the start, so without it this block is only as wide as what is in it and
+    "justify-end" right-aligns inside a box that is itself floating left. Rows
+    whose age reads "7 hours" and rows that read "2 days" then put their heart
+    in two different places, which is the crooked column of hearts.
+  -->
+  <div class="flex w-full items-center justify-end gap-2 text-p-xs text-ink-gray-5">
     <span class="whitespace-nowrap tabular-nums">{{ when }}</span>
 
     <!-- Always, including the zero: a count that appears only when there is

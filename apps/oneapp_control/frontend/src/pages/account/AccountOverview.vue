@@ -18,7 +18,7 @@
 
     <section>
       <h3 class="mb-3 text-base-medium text-ink-gray-8">Usage</h3>
-      <div class="flex flex-col gap-4 rounded-4 border border-outline-gray-2 p-4">
+      <div class="flex flex-col gap-4 rounded-6 border border-outline-gray-2 p-4">
         <UsageBar label="File storage" :usage="data.usage.storage" />
         <UsageBar label="Database" :usage="data.usage.database" />
         <UsageBar
@@ -32,7 +32,7 @@
 
     <section>
       <h3 class="mb-3 text-base-medium text-ink-gray-8">AI credits</h3>
-      <div class="rounded-4 border border-outline-gray-2 p-4">
+      <div class="rounded-6 border border-outline-gray-2 p-4">
         <div class="flex items-baseline justify-between">
           <span class="text-2xl-medium tabular-nums text-ink-gray-9">
             {{ Math.round(data.credits.available) }}

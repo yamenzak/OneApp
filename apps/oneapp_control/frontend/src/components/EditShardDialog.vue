@@ -12,7 +12,7 @@
         sites are not on. Replacing a shard is registering a new one and
         draining this one, which is what the intake switch below is for.
       -->
-      <div class="rounded-5 bg-surface-gray-1 p-3">
+      <div class="rounded-6 bg-surface-gray-1 p-3">
         <div class="flex flex-wrap gap-x-6 gap-y-1">
           <span v-for="fact in facts" :key="fact.label" class="text-p-sm text-ink-gray-8">
             {{ fact.label }}: <span class="text-ink-gray-6">{{ fact.value }}</span>

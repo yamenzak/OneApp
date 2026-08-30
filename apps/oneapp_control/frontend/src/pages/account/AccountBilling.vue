@@ -6,7 +6,7 @@
   <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
   <div v-if="data" class="flex flex-col gap-6 py-5">
     <section>
-      <div class="flex items-start justify-between gap-4 rounded-4 border border-outline-gray-2 p-4">
+      <div class="flex items-start justify-between gap-4 rounded-6 border border-outline-gray-2 p-4">
         <div>
           <p class="text-base-medium text-ink-gray-8">{{ data.plan.name }}</p>
           <p class="mt-0.5 text-p-sm text-ink-gray-6">

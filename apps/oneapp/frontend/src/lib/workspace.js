@@ -43,10 +43,10 @@ export const workspace = {
   // Rows and writes go through the view too, rather than a generic document
   // API. That is what stops a screen being used to read a doctype the
   // entitlement did not include, or to write a field it does not show.
-  appView: (appCode, view) =>
+  appView: (appCode, view, layout) =>
     callMethod(
       'oneapp.oneapp_core.appview.spec',
-      { app_code: appCode, view },
+      { app_code: appCode, view, layout },
       {
         silent: true,
         method: 'GET',
@@ -55,10 +55,15 @@ export const workspace = {
 
   // `overrides` carries a filter or sort the person changed but has not saved:
   // the list answers the question the controls are asking, saved or not.
-  appRows: (appCode, view, overrides) =>
+  appRows: (appCode, view, overrides, layout) =>
     callMethod(
       'oneapp.oneapp_core.appview.rows',
-      { app_code: appCode, view, overrides: overrides ? JSON.stringify(overrides) : null },
+      {
+        app_code: appCode,
+        view,
+        layout,
+        overrides: overrides ? JSON.stringify(overrides) : null,
+      },
       { silent: true, method: 'GET' },
     ),
 
@@ -110,13 +115,31 @@ export const workspace = {
       { silent: true },
     ),
 
-  // How this person likes this screen: filters, sort and columns, restored when
-  // they come back. Narrows what the screen offers; never widens it.
+  // A layout: the filters, the sort and the columns saved together under a
+  // name, the way Frappe's own List Filter doctype models it. `layout` updates
+  // one, `label` makes a new one, neither writes this person's unnamed default
+  // — the Save button on the toolbar.
+  //
+  // Narrows what the screen offers; never widens it, shared or not.
   saveView: (appCode, view, payload) =>
     callMethod(
       'oneapp.oneapp_core.appview.save_view',
       { app_code: appCode, view, ...payload },
       { successMessage: 'View saved' },
+    ),
+
+  deleteView: (appCode, view, layout) =>
+    callMethod(
+      'oneapp.oneapp_core.appview.delete_view',
+      { app_code: appCode, view, layout },
+      { successMessage: 'View deleted' },
+    ),
+
+  defaultView: (appCode, view, layout) =>
+    callMethod(
+      'oneapp.oneapp_core.appview.default_view',
+      { app_code: appCode, view, layout },
+      { successMessage: 'This opens the screen now' },
     ),
 
   resetView: (appCode, view) =>

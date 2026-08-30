@@ -200,7 +200,24 @@ PYEOF
     ;;
 
   down)
-    [ -f "$PIDFILE" ] && kill "$(cat "$PIDFILE")" 2>/dev/null && rm -f "$PIDFILE" && echo "stopped" || echo "not running"
+    # The pid file is a hint, not the truth. It is written by whichever shell
+    # launched the server, so a `nohup ... &` from a script, a container
+    # restart, or a second `up` all leave it stale — and then `down` prints
+    # "not running" while something is still listening, the next `up` dies with
+    # "Address already in use" into a log nobody is reading, and every request
+    # is answered by the *old* code. That failure costs an hour every time,
+    # because everything looks fine and only the behaviour is old. So ask the
+    # port who has it.
+    stopped=""
+    if [ -f "$PIDFILE" ] && kill "$(cat "$PIDFILE")" 2>/dev/null; then
+      stopped="yes"
+    fi
+    rm -f "$PIDFILE"
+    holder="$(ss -lptnH "sport = :$PORT" 2>/dev/null | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2)"
+    if [ -n "$holder" ] && kill "$holder" 2>/dev/null; then
+      stopped="yes"
+    fi
+    [ -n "$stopped" ] && echo "stopped" || echo "not running"
     ;;
 
   *)

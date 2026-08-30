@@ -1,6 +1,22 @@
 <template>
   <PageHeader>
-    <Breadcrumbs :items="crumbs" />
+    <div class="flex min-w-0 items-center">
+      <Breadcrumbs :items="crumbs" />
+      <ViewSwitcher
+        v-if="spec?.doctype"
+        :layouts="spec.layouts || []"
+        :active="spec.layout || ''"
+        :screen-label="spec.view_label"
+        :can-share="!!spec.can_share"
+        :busy="saving"
+        @open="openLayout"
+        @save-as="saveAs"
+        @rename="renameLayout"
+        @share="shareLayout"
+        @default="defaultLayout"
+        @remove="deleteLayout"
+      />
+    </div>
     <template v-if="spec?.can_create" #right>
       <Button variant="solid" icon-left="lucide-plus" label="New" @click="create" />
     </template>
@@ -55,27 +71,34 @@
             @changed="onPanelFilters"
           />
           <!--
-            The column picker and the favourites filter live in the activity
-            column's header, where the heart lines up with the one on every row
-            — but that column is data, and Frappe hides the activity area on a
-            phone. So when it is not showing, these come here instead. Never
-            both, never neither.
+            The gear is a question about the list, so it lives with the list's
+            other controls. It used to sit in the activity column's header,
+            which worked while that column was glued to the right edge — now
+            that the table scrolls and every column is the reader's to move, a
+            control parked in one of them can be somewhere off to the right.
+            Frappe CRM draws the same line: Columns in the toolbar, the heart on
+            its own column.
           -->
-          <template v-if="!metaColumn">
-            <Button
-              icon="lucide-settings-2"
-              variant="ghost"
-              label="Choose columns"
-              @click="showColumns = true"
-            />
-            <Button
-              icon="lucide-heart"
-              :variant="favourites ? 'subtle' : 'ghost'"
-              :theme="favourites ? 'red' : 'gray'"
-              label="Only my favourites"
-              @click="toggleFavourites"
-            />
-          </template>
+          <Button
+            icon="lucide-settings-2"
+            variant="ghost"
+            label="Choose columns"
+            @click="showColumns = true"
+          />
+          <!--
+            The heart is the exception, and stays in the activity header where
+            it lines up with the one on every row — "filter by the ones I
+            liked", directly above the likes. It comes here only when that
+            column is not on the list at all. Never both, never neither.
+          -->
+          <Button
+            v-if="!metaColumn"
+            icon="lucide-heart"
+            :variant="favourites ? 'subtle' : 'ghost'"
+            :theme="favourites ? 'red' : 'gray'"
+            label="Only my favourites"
+            @click="toggleFavourites"
+          />
           <Button
             v-if="dirty"
             icon-left="lucide-bookmark"
@@ -92,28 +115,6 @@
             @click="resetView"
           />
         </div>
-      </div>
-
-      <!--
-        What a selection is for. Frappe puts this above the list and so does
-        this: a bar that appears when something is ticked and takes the space of
-        nothing when it is not.
-      -->
-      <div
-        v-if="selection.length"
-        class="mb-3 flex flex-wrap items-center gap-2 rounded-4 bg-surface-gray-2 px-3 py-2"
-      >
-        <span class="text-p-sm text-ink-gray-7"> {{ selection.length }} selected </span>
-        <Button variant="ghost" label="Clear" @click="selection = []" />
-        <Button
-          v-if="spec.can_delete"
-          class="ml-auto"
-          theme="red"
-          icon-left="lucide-trash-2"
-          :label="`Delete ${selection.length}`"
-          :loading="deleting"
-          @click="confirmDelete = true"
-        />
       </div>
 
       <!--
@@ -153,137 +154,174 @@
         </template>
       </EmptyState>
 
-      <!-- Wide content owns its own horizontal scroller rather than stretching
-           the page: a doctype with six columns does not fit a phone. -->
-      <div v-else class="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
-        <List
-          v-model:selection="selection"
-          :columns="tracks"
-          :row-height="52"
-          selectable
-          class="list-row-px-3 [&_[data-slot=list-header]]:bg-surface-gray-1"
-          :class="wide && 'min-w-[42rem]'"
-          divider="full"
-        >
-          <ListHeader>
-            <!--
+      <!--
+        One surface, with its own horizontal scroller. A view shows the same
+        columns whatever the screen is — a phone scrolls the table sideways
+        rather than being handed a different set of columns, because the columns
+        are the reader's choice and a saved view that means something different
+        on a phone is not a saved view.
+
+        The border and the radius are the container's, so the header band ends
+        in a rounded corner rather than a square one — and the band is why
+        `ListHeader`'s own inset rule is off: a full-width fill under a rule
+        that stops short on both sides is the "weird border" it read as.
+      -->
+      <div v-else>
+        <div :class="SURFACE">
+          <List
+            v-model:selection="selection"
+            :columns="tracks"
+            :row-height="52"
+            selectable
+            class="list-row-px-3 pb-1"
+            :class="[CHROME, wide && 'min-w-[42rem]']"
+            divider="full"
+          >
+            <ListHeader>
+              <!--
               Sorting lives on the headers, which is where everybody reaches
               first and the only place a direction can sit beside the thing it
               applies to. frappe-ui ships the cell for it — a real button, the
               aria-sort, the arrow that appears on hover — so this wires state
               to it rather than rebuilding it.
             -->
-            <ListHeaderCellSort
-              v-for="c in sortableColumns"
-              :key="c.key"
-              :direction="directionFor(c)"
-              :class="c.pin && PINNED"
-              :style="stickyStyle(c)"
-              @click="sortBy(c.column.fieldname)"
-            >
-              <template #prefix>
-                <Icon :name="c.column.icon" class="size-3.5 text-ink-gray-4" />
-              </template>
-              {{ c.header }}
-            </ListHeaderCellSort>
+              <ListHeaderCellSort
+                v-for="c in sortableColumns"
+                :key="c.key"
+                :direction="directionFor(c)"
+                :class="c.pin && PINNED"
+                :style="stickyStyle(c)"
+                @click="sortBy(c.column.fieldname)"
+              >
+                <template #prefix>
+                  <Icon :name="c.column.icon" class="size-3.5 text-ink-gray-4" />
+                </template>
+                {{ c.header }}
+              </ListHeaderCellSort>
+
+              <!--
+              How many, then favourites. The heart is last and
+              the cell is end-aligned, so it lands on exactly the x every row's
+              heart lands on — the header and the rows carry the same inset, so
+              flush-right in both is the same pixel. Packed from the start it
+              was not, which is what made the column of hearts look crooked.
+
+              The count goes in `#prefix` rather than the default slot because
+              `ListHeaderCell` wraps its default in a `truncate` span: `mr-auto`
+              inside that does nothing, since the span is not the flex row.
+            -->
+              <ListHeaderCell
+                v-if="metaColumn"
+                class="justify-end"
+                :class="metaColumn.pin && PINNED"
+                :style="stickyStyle(metaColumn)"
+              >
+                <template #prefix>
+                  <span class="whitespace-nowrap text-p-xs text-ink-gray-5">{{ counted }}</span>
+                </template>
+                <template #suffix>
+                  <Button
+                    icon="lucide-heart"
+                    :variant="favourites ? 'subtle' : 'ghost'"
+                    :theme="favourites ? 'red' : 'gray'"
+                    label="Only my favourites"
+                    @click="toggleFavourites"
+                  />
+                </template>
+              </ListHeaderCell>
+            </ListHeader>
 
             <!--
-              How many, then the columns, then favourites. The heart is last so
-              it sits directly above the one on every row.
-            -->
-            <ListHeaderCell
-              v-if="metaColumn"
-              :class="metaColumn.pin && PINNED"
-              :style="stickyStyle(metaColumn)"
-            >
-              <span class="mr-auto whitespace-nowrap text-p-xs text-ink-gray-5">
-                {{ counted }}
-              </span>
-              <Button
-                icon="lucide-settings-2"
-                variant="ghost"
-                label="Choose columns"
-                @click="showColumns = true"
-              />
-              <Button
-                icon="lucide-heart"
-                :variant="favourites ? 'subtle' : 'ghost'"
-                :theme="favourites ? 'red' : 'gray'"
-                label="Only my favourites"
-                @click="toggleFavourites"
-              />
-            </ListHeaderCell>
-          </ListHeader>
-
-          <!--
             One group per run of rows sharing a value. The server sorts by the
             group column first, so a run is a group — which is why this is
             chunking rather than bucketing, and why a group never appears twice.
           -->
-          <template v-if="groups">
-            <ListGroup v-for="group in groups" :key="group.label" :label="group.label" sticky>
-              <ListRows :items="group.rows" row-key="name" v-slot="{ item: row, value }">
-                <ListRow :value="value">
-                  <ListCell
-                    v-for="c in visible"
-                    :key="c.key"
-                    :class="c.pin && PINNED"
-                    :style="stickyStyle(c)"
-                  >
-                    <TitleCell
-                      v-if="c.cell === 'title'"
-                      :row="row"
-                      :title-field="spec.title_field"
-                      :image-field="spec.image_field"
-                      @open="open(row)"
-                    />
-                    <RowMeta
-                      v-else-if="c.cell === 'meta'"
-                      :meta="row._meta || {}"
-                      @like="like(row)"
-                    />
-                    <FieldCell
-                      v-else
-                      :column="c.column"
-                      :value="row[c.column.fieldname]"
-                      :states="spec.states"
-                    />
-                  </ListCell>
-                </ListRow>
-              </ListRows>
-            </ListGroup>
-          </template>
+            <template v-if="groups">
+              <ListGroup v-for="group in groups" :key="group.label" :label="group.label" sticky>
+                <ListRows :items="group.rows" row-key="name" v-slot="{ item: row, value }">
+                  <ListRow :value="value">
+                    <ListCell
+                      v-for="c in visible"
+                      :key="c.key"
+                      :class="c.pin && PINNED"
+                      :style="stickyStyle(c)"
+                    >
+                      <TitleCell
+                        v-if="c.cell === 'title'"
+                        :row="row"
+                        :title-field="spec.title_field"
+                        :image-field="spec.image_field"
+                        @open="open(row)"
+                      />
+                      <RowMeta
+                        v-else-if="c.cell === 'meta'"
+                        :meta="row._meta || {}"
+                        @like="like(row)"
+                      />
+                      <FieldCell
+                        v-else
+                        :column="c.column"
+                        :value="row[c.column.fieldname]"
+                        :states="spec.states"
+                      />
+                    </ListCell>
+                  </ListRow>
+                </ListRows>
+              </ListGroup>
+            </template>
 
-          <ListRows v-else :items="rows" row-key="name" v-slot="{ item: row, value }">
-            <ListRow :value="value">
-              <ListCell
-                v-for="c in visible"
-                :key="c.key"
-                :class="c.pin && PINNED"
-                :style="stickyStyle(c)"
-              >
-                <TitleCell
-                  v-if="c.cell === 'title'"
-                  :row="row"
-                  :title-field="spec.title_field"
-                  :image-field="spec.image_field"
-                  @open="open(row)"
-                />
-                <RowMeta v-else-if="c.cell === 'meta'" :meta="row._meta || {}" @like="like(row)" />
-                <FieldCell
-                  v-else
-                  :column="c.column"
-                  :value="row[c.column.fieldname]"
-                  :states="spec.states"
-                />
-              </ListCell>
-            </ListRow>
-          </ListRows>
-        </List>
+            <ListRows v-else :items="rows" row-key="name" v-slot="{ item: row, value }">
+              <ListRow :value="value">
+                <ListCell
+                  v-for="c in visible"
+                  :key="c.key"
+                  :class="c.pin && PINNED"
+                  :style="stickyStyle(c)"
+                >
+                  <TitleCell
+                    v-if="c.cell === 'title'"
+                    :row="row"
+                    :title-field="spec.title_field"
+                    :image-field="spec.image_field"
+                    @open="open(row)"
+                  />
+                  <RowMeta
+                    v-else-if="c.cell === 'meta'"
+                    :meta="row._meta || {}"
+                    @like="like(row)"
+                  />
+                  <FieldCell
+                    v-else
+                    :column="c.column"
+                    :value="row[c.column.fieldname]"
+                    :states="spec.states"
+                  />
+                </ListCell>
+              </ListRow>
+            </ListRows>
+          </List>
+        </div>
 
         <p v-if="hasMore" class="px-1 pt-3 text-p-xs text-ink-gray-5">
           Showing the first {{ rows.length }}. Narrow the list to find something older.
         </p>
+
+        <SelectionBar
+          v-if="selection.length"
+          :count="selection.length"
+          :total="rows.length"
+          @clear="selection = []"
+          @all="selection = rows.map((row) => row.name)"
+        >
+          <Button
+            v-if="spec.can_delete"
+            theme="red"
+            icon-left="lucide-trash-2"
+            :label="`Delete ${selection.length}`"
+            :loading="deleting"
+            @click="confirmDelete = true"
+          />
+        </SelectionBar>
       </div>
     </template>
   </div>
@@ -331,7 +369,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   PageHeader,
   Breadcrumbs,
@@ -358,14 +396,16 @@ import RecordDialog from '../components/app/RecordDialog.vue'
 import FilterPanel from '../components/app/FilterPanel.vue'
 import QuickFilters from '../components/app/QuickFilters.vue'
 import ColumnPicker from '../components/app/ColumnPicker.vue'
+import SelectionBar from '../components/app/SelectionBar.vue'
+import ViewSwitcher from '../components/app/ViewSwitcher.vue'
 import { session } from '../lib/session'
 import { workspace } from '../lib/workspace'
 import { notifyError, notifySuccess } from '../lib/notify'
-import { useListColumns } from '../lib/list'
 import { appComponent } from '../apps'
 
 const props = defineProps({ appCode: { type: String, required: true } })
 const route = useRoute()
+const router = useRouter()
 
 const spec = ref(null)
 const loading = ref(false)
@@ -431,14 +471,15 @@ const columnSpec = computed(() => {
     fromRight += column.width
   }
 
-  return chosen.map((column, index) => ({
+  // No screen-size branching, deliberately. A view is a saved answer to "what
+  // do I look at", and a phone that silently drops half of it is answering a
+  // different question — so the phone gets the same columns and scrolls. Frappe
+  // CRM does the same, and it is only possible because the columns are the
+  // reader's to choose.
+  return chosen.map((column) => ({
     key: column.fieldname,
     header: column.label,
     track: `${column.width}px`,
-    // A phone shows the first two, and anything the reader pinned: pinning is
-    // saying "keep this in view", which is truer on a small screen than a big
-    // one.
-    mobile: index < 2 || !!column.pin,
     cell:
       column.fieldname === META_FIELD
         ? 'meta'
@@ -452,7 +493,11 @@ const columnSpec = computed(() => {
   }))
 })
 
-const { visible, columns: tracks } = useListColumns(columnSpec)
+// Every declared column, and its track. There is nothing between the spec and
+// the grid any more: `useListColumns` exists to narrow a hand-authored list for
+// a phone, and this list is neither hand-authored nor narrowed.
+const visible = columnSpec
+const tracks = computed(() => visible.value.map((c) => c.track))
 
 // A list wide enough to scroll is exactly the list whose column picker you
 // need, so the meta column is pinned to the right edge rather than scrolled off
@@ -464,6 +509,27 @@ const META_FIELD = '__activity'
 // through it — and the offset is an inline style rather than a class because it
 // is a computed pixel value, not a token.
 const PINNED = 'sticky z-10 bg-surface-base'
+
+// The list's own chrome, kept out of the template so the token audit reads it:
+// a class list in an attribute this long is unreadable, and one hidden in a
+// string the audit cannot see is how `bg-surface-white` rendered a transparent
+// column for a week.
+//
+// `rounded-6` is the panel radius — the same one every card on this surface
+// uses. See `docs/APPS.md` for the scale.
+const SURFACE = 'overflow-x-auto rounded-6 border border-outline-gray-2 bg-surface-base'
+
+// The band behind the column headers, and the reason `ListHeader`'s own rule is
+// off: that rule is a grid child inset to the content box, so under a
+// full-width fill it stopped short at both ends. The band carries its own
+// full-width rule instead.
+const CHROME = [
+  '[&_[data-slot=list-header]]:h-9',
+  '[&_[data-slot=list-header]]:bg-surface-gray-1',
+  '[&_[data-slot=list-header]]:border-b',
+  '[&_[data-slot=list-header]]:border-outline-gray-2',
+  '[&_[data-slot=list-header-border]]:hidden',
+].join(' ')
 
 const stickyStyle = (c) => (c.pin ? { [c.pin]: `${c.offset}px` } : undefined)
 
@@ -506,10 +572,13 @@ const emptyBecause = computed(() => {
     : 'Nothing here so far.'
 })
 
+// The trail stops at the app, because the switcher beside it is the next
+// level: it opens on the screen's own name and every saved view of it, so a
+// crumb saying the same word again is one word twice.
 const crumbs = computed(() => {
   const trail = [{ label: 'Apps', route: { name: 'Launcher' } }]
   if (app.value) trail.push({ label: app.value.app_label })
-  if (spec.value?.view_label && spec.value.views?.length > 1) {
+  if (!spec.value?.doctype && spec.value?.view_label && spec.value.views?.length > 1) {
     trail.push({ label: spec.value.view_label })
   }
   return trail
@@ -544,6 +613,81 @@ const payload = () => ({
   favourites: favourites.value,
   group_by: groupBy.value,
 })
+
+// --- views ------------------------------------------------------------------
+//
+// A view is a named layout — filters, sort and columns saved together — which
+// is the shape Frappe's own `List Filter` doctype settles on. Which one is open
+// lives in the URL, so a view is a link somebody can send.
+
+const layout = computed(() => route.query.layout || '')
+
+const openLayout = (name) => {
+  router.push({ query: { ...route.query, layout: name || undefined } })
+}
+
+const withView = async (work) => {
+  saving.value = true
+  try {
+    const result = await work()
+    await load(result?.layout)
+    return result
+  } finally {
+    saving.value = false
+  }
+}
+
+// Saved under a name, and opened straight away: the point of naming it is to
+// be in it.
+const saveAs = ({ label, shared }) =>
+  withView(async () => {
+    const result = await workspace.saveView(props.appCode, spec.value.view, {
+      ...payload(),
+      label,
+      shared,
+    })
+    dirty.value = false
+    if (result?.layout) openLayout(result.layout)
+    return result
+  })
+
+// A rename carries what is on screen with it, because the alternative is a
+// rename that silently discards an unsaved change.
+const renameLayout = ({ label, shared }) =>
+  withView(() =>
+    workspace.saveView(props.appCode, spec.value.view, {
+      ...payload(),
+      layout: spec.value.layout,
+      label,
+      shared,
+    }),
+  )
+
+const shareLayout = (shared) =>
+  withView(() =>
+    workspace.saveView(props.appCode, spec.value.view, {
+      ...payload(),
+      layout: spec.value.layout,
+      shared,
+    }),
+  )
+
+const defaultLayout = () =>
+  withView(() => workspace.defaultView(props.appCode, spec.value.view, spec.value.layout))
+
+const deleteLayout = async () => {
+  const gone = spec.value.layout
+  saving.value = true
+  try {
+    await workspace.deleteView(props.appCode, spec.value.view, gone)
+  } finally {
+    saving.value = false
+  }
+  // Back to the screen's own declaration rather than to another view: which
+  // one would we pick?
+  if (layout.value === gone) openLayout('')
+  else await load()
+}
 
 const changed = async () => {
   dirty.value = true
@@ -596,7 +740,11 @@ const like = async (row) => {
   const result = await workspace.toggleLike(props.appCode, spec.value.view, row.name)
   // Patched in place rather than reloaded: a like is not a reason to lose the
   // reader's scroll position.
-  row._meta = { ...row._meta, liked: !!result?.liked, likes: (result?.likes || []).length }
+  row._meta = {
+    ...row._meta,
+    liked: !!result?.liked,
+    likes: (result?.likes || []).length,
+  }
   // Unless the like is what the list is filtered by, in which case a row that
   // is no longer a favourite has no business still being in it.
   if (favourites.value) await loadRows()
@@ -631,7 +779,12 @@ const loadRows = async () => {
   }
   rowsLoading.value = true
   try {
-    const page = await workspace.appRows(props.appCode, spec.value.view, payload())
+    const page = await workspace.appRows(
+      props.appCode,
+      spec.value.view,
+      payload(),
+      spec.value.layout || '',
+    )
     rows.value = page?.rows || []
     selection.value = []
     // The columns the rows were actually fetched with, which is not always the
@@ -667,11 +820,15 @@ const resetView = async () => {
   }
 }
 
-const load = async () => {
+const load = async (openWith) => {
   if (!app.value) return
   loading.value = true
   try {
-    spec.value = await workspace.appView(props.appCode, route.query.view || '')
+    spec.value = await workspace.appView(
+      props.appCode,
+      route.query.view || '',
+      openWith || layout.value,
+    )
     // Seeded from what the screen resolved to, which already includes this
     // person's saved view.
     quickFilters.value = []
@@ -693,7 +850,9 @@ const load = async () => {
 
 // Re-resolved on every view change: the columns, the filters and what this user
 // may do are all per view, not per app.
-watch([() => props.appCode, () => route.query.view, () => session.loaded], () => load(), {
-  immediate: true,
-})
+watch(
+  [() => props.appCode, () => route.query.view, () => route.query.layout, () => session.loaded],
+  () => load(),
+  { immediate: true },
+)
 </script>

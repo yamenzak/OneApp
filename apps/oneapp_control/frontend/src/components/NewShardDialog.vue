@@ -83,7 +83,7 @@
         path, and an app the bench does not carry fails at site creation. Frappe
         Cloud knows both, so neither is a question any more.
       -->
-      <div class="rounded-5 bg-surface-gray-1 p-3">
+      <div class="rounded-6 bg-surface-gray-1 p-3">
         <p class="text-p-sm text-ink-gray-6">
           Read from Frappe Cloud when you pick a bench group:
         </p>

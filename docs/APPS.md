@@ -149,11 +149,50 @@ already names, so an app gets it by existing.
   Frappe's names for them ("On or Before" rather than "<="). The value control
   follows the pair — a link picker, a choice, a list, two dates, Frappe's
   relative-date words, or Set / Not Set.
-* **Saved views.** Filters, sort, columns and their order, and page length, per
-  person per screen, in `OneApp Saved View`. A saved view narrows what the
-  screen offers and can never widen it — see ADR-13. The same bounds apply to
-  an unsaved change, which is why the controls can show their answer before
-  anything is saved.
+* **Saved views, as named layouts.** Filters, sort, columns and their order,
+  page length, grouping and the favourites flag, saved together under a name in
+  `OneApp Saved View`. This follows the shape of Frappe's own `List Filter`
+  doctype: a layout belongs to one person, or — with its user left empty — to
+  the whole workspace. Which one is open is in the URL, so a view is a link
+  somebody can send. The Save button still writes the person's own unnamed
+  default, which is what "keep this how I left it" means.
+
+  A layout narrows what the screen offers and can never widen it, shared or not
+  — see ADR-13 — and every filter in one is re-checked against the screen on
+  the way out, not only when it was saved. The same bounds apply to an unsaved
+  change, which is why the controls can show their answer before anything is
+  saved.
+
+  Only a workspace admin writes a shared layout (`OneApp Workspace Owner`, or
+  support arriving as a System Manager) — the same shape as Frappe's
+  `_can_edit_global_filter`, with our own role in it. Nobody edits anybody
+  else's private layout, admin or not.
+* **The same columns at every width.** A view means one thing on a phone and on
+  a desktop; the table scrolls sideways rather than being narrowed to a
+  different set of columns. That is only safe because the columns are the
+  reader's own choice — Frappe CRM draws the same conclusion.
+
+## One radius language
+
+frappe-ui's own components draw four corner sizes and mean something different
+by each, so these SPAs use the same four and nothing else:
+
+| Token | | Where |
+| --- | --- | --- |
+| `rounded-4` | 8px | a control — the size Button md and every input draw |
+| `rounded-6` | 12px | a panel — a card, a dialog's inset block, a floating bar |
+| `rounded-7` | 16px | a dialog, which is frappe-ui's own and never ours to set |
+| `rounded-full` | | a circle — an avatar, a colour swatch, a count |
+
+`rounded-s-none` / `rounded-e-none` join a box to the button welded to it, so an
+input group reads as one control rather than two that happen to touch.
+
+Two rules in `tests/test_design_tokens.py` hold it: no radius outside that list
+may appear anywhere in either SPA, and an outlined block — anything carrying
+`border border-outline-*` — is a panel and is drawn at `rounded-6`. Both were
+written because the drift had already happened: cards on the account pages at
+8px sat beside cards on the launcher at 12px, and a grey band behind a list
+header ran into a square corner.
 
 ## What the generic screen does not do yet
 

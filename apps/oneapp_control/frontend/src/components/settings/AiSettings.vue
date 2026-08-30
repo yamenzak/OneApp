@@ -131,7 +131,7 @@
       <!-- The rates are shown and not editable on purpose: they come from the
              provider and the next refresh overwrites them, so a field here
              would be a control that silently stops working. -->
-      <div class="rounded-4 bg-surface-gray-1 p-3">
+      <div class="rounded-6 bg-surface-gray-1 p-3">
         <p class="mb-1 text-p-xs font-medium text-ink-gray-7">
           Published rates — from {{ editing.source }}
         </p>

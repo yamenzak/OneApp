@@ -19,7 +19,7 @@
           />
           <Button
             icon-left="lucide-message-square"
-            :label="String(comments.length)"
+            :label="String(commentCount)"
             variant="ghost"
             @click="tab = 'comments'"
           />
@@ -41,8 +41,8 @@
             <span class="flex items-center gap-1.5"
               >{{ 'Comments'
               }}<Badge
-                v-if="comments.length"
-                :label="String(comments.length)"
+                v-if="commentCount"
+                :label="String(commentCount)"
                 theme="gray"
                 variant="subtle"
               />
@@ -100,6 +100,12 @@
               title="No comments"
               description="Nothing has been said about this one yet."
             />
+
+            <!-- The page is capped, and a list that silently stops at fifty
+                 reads as "that is all of them". -->
+            <p v-if="moreComments" class="text-p-xs text-ink-gray-5">
+              Showing the {{ comments.length }} most recent of {{ commentCount }}.
+            </p>
 
             <div v-for="entry in comments" :key="entry.name" class="flex gap-3">
               <Avatar :label="entry.comment_by || entry.comment_email" size="sm" />
@@ -201,6 +207,11 @@ const draft = ref('')
 const commenting = ref(false)
 const loadingTimeline = ref(false)
 const comments = ref([])
+// How many there are, which is not how many are loaded: the timeline is paged
+// at fifty, so on a busy record the length of the list stops moving while the
+// record keeps gaining comments.
+const commentCount = ref(0)
+const moreComments = ref(false)
 const changes = ref([])
 const likes = ref([])
 const liked = ref(false)
@@ -227,6 +238,7 @@ const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
 const loadTimeline = async () => {
   if (isNew.value || !props.record?.name) {
     comments.value = []
+    commentCount.value = 0
     changes.value = []
     return
   }
@@ -234,6 +246,8 @@ const loadTimeline = async () => {
   try {
     const found = await workspace.timeline(props.appCode, props.view, props.record.name)
     comments.value = found?.comments || []
+    commentCount.value = found?.comment_count ?? comments.value.length
+    moreComments.value = !!found?.more_comments
     changes.value = found?.changes || []
     likes.value = found?.likes || []
     liked.value = !!found?.liked

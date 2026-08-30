@@ -818,3 +818,62 @@ def test_something_waits_visibly_while_a_screen_loads(app):
 		"these track a loading state and render nothing while it is true: "
 		+ ", ".join(offenders)
 	)
+
+
+# --------------------------------------------------------------------------- #
+# One view means one thing on every screen
+#
+# A saved view is a person's answer to "what do I look at". A phone that
+# silently drops half of it is answering a different question — and once the
+# columns are the reader's own choice, there is nothing left to guess on their
+# behalf. The table scrolls sideways instead, which is what Frappe CRM does.
+#
+# This is the app host only. A hand-authored panel in the console has neither a
+# reader-chosen column set nor a horizontal scroller, so `useListColumns` and
+# its `mobile:` key are still how those narrow.
+# --------------------------------------------------------------------------- #
+
+APP_HOST = ROOT / "apps/oneapp/frontend/src/pages/AppHost.vue"
+
+
+def test_the_app_host_shows_the_same_columns_on_every_screen():
+	source = APP_HOST.read_text()
+	offenders = []
+	if "useListColumns" in source.replace("`useListColumns`", ""):
+		offenders.append("it calls useListColumns, which exists to narrow a list for a phone")
+	if re.search(r"^\s*mobile:", source, re.M):
+		offenders.append("a column declares a `mobile:` behaviour")
+	if "useIsMobile" in source:
+		offenders.append("it asks the viewport, which the column set must not depend on")
+	assert not offenders, (
+		"AppHost.vue must render one column set at every width:\n  "
+		+ "\n  ".join(offenders)
+	)
+
+
+# --------------------------------------------------------------------------- #
+# A header band replaces the header's own rule
+#
+# frappe-ui draws `ListHeader`'s bottom border as a grid child inset to the
+# content box, so it lines up with the rows' dividers. Fill the header and that
+# rule stops short at both ends of the fill — which is exactly the "weird
+# border below the band" it rendered as. Whoever adds the fill owns the rule.
+# --------------------------------------------------------------------------- #
+
+BAND = "[data-slot=list-header]]:bg-"
+OWN_RULE = "[data-slot=list-header-border]]:hidden"
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_a_filled_list_header_hides_the_rule_it_covers(app):
+	root = ROOT / f"apps/{app}/frontend/src"
+	offenders = []
+	for path in sorted(root.rglob("*.vue")):
+		source = path.read_text()
+		if BAND in source and OWN_RULE not in source:
+			offenders.append(str(path.relative_to(root)))
+	assert not offenders, (
+		"these fill the list header without hiding its own inset rule, which "
+		f"then stops short at both ends of the fill — add `{OWN_RULE}` and draw "
+		"a full-width border on the header instead: " + ", ".join(offenders)
+	)

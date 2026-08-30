@@ -669,3 +669,117 @@ def test_grouping_sorts_by_the_group_first(appview):
 	# Already leading with it, so nothing to add.
 	resolved["order_by"] = "status desc"
 	assert appview._grouped_order(resolved) == "status desc"
+
+
+# --------------------------------------------------------------------------- #
+# Saved views are named layouts
+#
+# Frappe's `List Filter` doctype is the framework's answer to this, and it is
+# the one to follow: a layout has a name, and `for_user` empty means everybody.
+# Frappe CRM built its own before the framework had one — a good design, but a
+# parallel one, and a parallel one is the thing that drifts.
+# --------------------------------------------------------------------------- #
+
+def layout(name, label="", user="me@x", is_default=0):
+	return {
+		"name": name, "label": label, "user": user, "is_default": is_default,
+		"shared": not user, "mine": user == "me@x",
+		"filters": "[]", "order_by": "", "columns": "[]",
+		"page_length": 0, "group_by": "", "favourites": 0,
+	}
+
+
+def test_my_own_default_outranks_the_workspaces(appview):
+	"""A shared default is a starting point, not an override.
+
+	An operator marking a view as the workspace's default is saying "start
+	here"; someone who has since chosen their own has already answered that.
+	"""
+	rows = [layout("shared", "House", user="", is_default=1),
+	        layout("mine", "Mine", is_default=1)]
+	assert appview._default_layout(rows)["name"] == "mine"
+
+
+def test_the_workspaces_default_opens_a_screen_nobody_has_answered_for(appview):
+	rows = [layout("shared", "House", user="", is_default=1), layout("other", "Other")]
+	assert appview._default_layout(rows)["name"] == "shared"
+
+
+def test_nothing_is_default_when_nothing_is_marked(appview):
+	assert appview._default_layout([layout("a", "A"), layout("b", "B")]) is None
+
+
+def test_a_layout_that_was_asked_for_wins_over_the_default(appview):
+	rows = [layout("mine", "Mine", is_default=1), layout("other", "Other")]
+	assert appview._chosen_layout(rows, "other")["name"] == "other"
+
+
+def test_a_bookmark_to_a_deleted_layout_falls_back(appview):
+	"""A link to a view somebody has since deleted still opens the screen.
+
+	Throwing here would turn a stale bookmark into a page that cannot be
+	reached at all, which is a worse answer than the screen's own default.
+	"""
+	rows = [layout("mine", "Mine", is_default=1)]
+	assert appview._chosen_layout(rows, "gone")["name"] == "mine"
+	assert appview._chosen_layout([], "gone") is None
+
+
+def test_only_one_layout_is_marked_as_the_one_that_opens(appview, monkeypatch):
+	"""Two rows can both be `is_default`; only one of them opens the screen.
+
+	One personal and one shared is a legitimate state, and a menu that pins
+	both is telling the reader something untrue.
+	"""
+	rows = [layout("shared", "House", user="", is_default=1),
+	        layout("mine", "Mine", is_default=1)]
+	monkeypatch.setattr(appview, "_layouts", lambda *a: rows)
+	monkeypatch.setattr(appview, "_can_share", lambda: False)
+	resolved = appview._apply_saved({"app": "a", "view": "v"})
+	assert [l["opens"] for l in resolved["layouts"]] == [False, True]
+	assert sum(l["is_default"] for l in resolved["layouts"]) == 2
+
+
+class _Doc(dict):
+	__getattr__ = dict.get
+
+	def __setattr__(self, key, value):
+		self[key] = value
+
+
+def test_a_shared_layout_needs_the_workspaces_own_admin_rights(appview, stub_frappe, monkeypatch):
+	monkeypatch.setattr(appview, "_can_share", lambda: False)
+	with pytest.raises(stub_frappe.PermissionError):
+		appview._may_write(_Doc(user=""))
+	monkeypatch.setattr(appview, "_can_share", lambda: True)
+	appview._may_write(_Doc(user=""))
+
+
+def test_a_personal_layout_belongs_to_one_person(appview, stub_frappe, monkeypatch):
+	monkeypatch.setattr(appview, "_can_share", lambda: True)
+	stub_frappe.session.user = "me@x"
+	appview._may_write(_Doc(user="me@x"))
+	# Even a workspace admin does not edit somebody else's private view: sharing
+	# rights are about the shared shelf, not about everyone's shelf.
+	with pytest.raises(stub_frappe.PermissionError):
+		appview._may_write(_Doc(user="someone@else"))
+
+
+def test_a_shared_layout_still_only_reaches_what_the_screen_offers(appview, monkeypatch):
+	"""Sharing does not widen a layout.
+
+	The row is a doctype an operator could write directly, so what it carries is
+	re-checked against the screen every time it is read — not only when it was
+	saved through the endpoint.
+	"""
+	rows = [dict(layout("shared", "House", user="", is_default=1),
+	             filters='[["_liked_by", "like", "%someone@else%"]]')]
+	monkeypatch.setattr(appview, "_layouts", lambda *a: rows)
+	monkeypatch.setattr(appview, "_can_share", lambda: True)
+	resolved = appview._apply_saved({
+		"app": "a", "view": "v", "doctype": "ToDo",
+		"columns": appview._columns(TODO, ["description"]),
+		"all_columns": appview._columns(TODO, ["description"]),
+		"order_by": "modified desc",
+	})
+	assert resolved["asked"] == []

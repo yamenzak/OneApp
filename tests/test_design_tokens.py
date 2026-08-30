@@ -22,7 +22,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from token_audit import APPS, ROOT, audit, emitted_classes, referenced_classes
+from token_audit import APPS, ROOT, audit, class_lists, emitted_classes, referenced_classes
 
 
 def _built(app: str) -> bool:
@@ -218,3 +218,114 @@ def test_the_loose_scan_is_wired_into_the_audit():
     assert any(
         "AppHost" in path for path in referenced["bg-surface-base"]
     ), referenced["bg-surface-base"]
+
+
+# --------------------------------------------------------------------------- #
+# One radius language
+#
+# frappe-ui's own components draw four corner sizes and mean something
+# different by each: `rounded-4` is a control (Button md, every input),
+# `rounded-6` is a panel (its select banner), `rounded-7` is a Dialog, and
+# `rounded-full` is a circle. Ours drifted — cards were drawn at both 8px and
+# 12px, and a grey band ran into a square corner beside a rounded one.
+#
+# Two rules, because the drift had two shapes: a radius nobody named, and the
+# same kind of block drawn two ways.
+# --------------------------------------------------------------------------- #
+
+# The whole vocabulary. Anything else is either a token frappe-ui retired or a
+# fifth corner size nobody decided on.
+RADIUS_ROLES = {
+	"rounded-4": "a control — the size Button md and every input draw",
+	"rounded-6": "a panel — a card, a dialog's inset block, a floating bar",
+	"rounded-7": "a dialog, which is frappe-ui's own and never ours to set",
+	"rounded-full": "a circle — an avatar, a dot, a count",
+	# One radius, two halves, so a box and the button welded to it read as one
+	# control rather than as two that happen to touch.
+	"rounded-s-none": "the leading half of an input group",
+	"rounded-e-none": "the trailing half of an input group",
+}
+
+# The panel radius. An outlined block is a card whatever else it is.
+PANEL = "rounded-6"
+
+RADIUS = re.compile(r"^(?:[\w:@\[\]&.,%#/()'\"*>+~=-]+:)?(rounded[\w-]*)$")
+
+
+def _radii(blob: str) -> list[str]:
+	"""The radius utilities in one class list, variants stripped."""
+	found = []
+	for token in blob.split():
+		match = RADIUS.match(token.lstrip("!"))
+		if match and match.group(1).startswith("rounded"):
+			found.append(match.group(1))
+	return found
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_every_radius_is_one_of_the_four_we_named(app):
+	offenders = []
+	for blob, rel in class_lists(app):
+		for radius in _radii(blob):
+			if radius not in RADIUS_ROLES:
+				offenders.append(f"{rel}: `{radius}` in `{blob.strip()[:70]}`")
+	assert not offenders, (
+		"these corner radii are not one of the ones this product draws:\n"
+		+ "\n".join(sorted(set(offenders)))
+		+ "\n\nThe vocabulary is:\n"
+		+ "\n".join(f"  {name:16} {why}" for name, why in RADIUS_ROLES.items())
+		+ "\n\nAdding a fifth is a design decision, not a class — make it in "
+		"RADIUS_ROLES with a reason, or reach for one of these."
+	)
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_an_outlined_block_is_drawn_at_the_panel_radius(app):
+	"""A card is a card, and every card has the same corners.
+
+	This is the drift that showed: `rounded-4 border border-outline-gray-2 p-4`
+	on the account pages and `rounded-6 border border-outline-gray-2` on the
+	launcher, side by side in the same product, eight pixels apart.
+	"""
+	offenders = []
+	for blob, rel in class_lists(app):
+		tokens = set(blob.split())
+		outlined = "border" in tokens and any(t.startswith("border-outline-") for t in tokens)
+		if not outlined:
+			continue
+		for radius in _radii(blob):
+			# A half-radius joins two controls, and a circle is a circle — a
+			# colour swatch with an outline is not a card with square corners.
+			if "-none" in radius or radius == "rounded-full":
+				continue
+			if radius != PANEL:
+				offenders.append(f"{rel}: `{radius}` on `{blob.strip()[:70]}`")
+	assert not offenders, (
+		f"an outlined block is a panel, and a panel is `{PANEL}`:\n"
+		+ "\n".join(sorted(set(offenders)))
+	)
+
+
+def test_the_radius_scan_reads_real_class_lists():
+	"""Both rules pass vacuously if the scan finds nothing."""
+	seen = [r for blob, _ in class_lists("oneapp") for r in _radii(blob)]
+	assert len(seen) > 5, f"only found {len(seen)} radius utilities in the tenant app"
+	assert PANEL in seen
+
+
+@pytest.mark.parametrize("radius", sorted(RADIUS_ROLES))
+def test_every_named_radius_still_exists_in_frappe_ui(radius):
+	"""A role we named is worthless if the token behind it was retired.
+
+	`rounded-lg` was a real class until v1 and emits nothing now; a vocabulary
+	that names a dead token reads as unified and renders square.
+	"""
+	if not _built("oneapp"):
+		pytest.skip("oneapp has no built stylesheet; run vite build")
+	# A radius we only ever write under a variant is emitted under that
+	# variant's escaped selector — `[&_input]:rounded-e-none` — so the bare
+	# token is not in the sheet even though the rule is.
+	emitted = emitted_classes("oneapp")
+	assert any(name == radius or name.endswith(":" + radius) for name in emitted), (
+		f"`{radius}` emits no CSS, under any variant"
+	)
