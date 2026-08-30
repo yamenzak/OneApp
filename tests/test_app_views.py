@@ -783,3 +783,73 @@ def test_a_shared_layout_still_only_reaches_what_the_screen_offers(appview, monk
 		"order_by": "modified desc",
 	})
 	assert resolved["asked"] == []
+
+
+# --------------------------------------------------------------------------- #
+# Paging
+#
+# A list that stops at its first page and says nothing reads as "that is all of
+# them". Frappe CRM's footer is the answer: a page size, a load-more, and a
+# count of what actually matches.
+# --------------------------------------------------------------------------- #
+
+def test_a_page_size_is_one_the_footer_offers(appview):
+	"""Not clamped to a range — checked against the set.
+
+	The footer is four buttons, so a number that is not one of them did not come
+	from the footer. Clamping would turn 10,000 into the largest page we offer
+	and quietly answer a request nobody made.
+	"""
+	for size in appview.PAGE_SIZES:
+		assert appview._page_length(size) == size
+		assert appview._page_length(str(size)) == size
+	for junk in (0, None, "", 37, 10_000, -20, "twenty", [50]):
+		assert appview._page_length(junk) == 0
+
+
+def test_the_page_size_ceiling_is_the_largest_the_footer_offers(appview):
+	"""`rows` bounds `limit` separately, and the two have to agree — a footer
+	button the endpoint would refuse is a button that does nothing."""
+	assert max(appview.PAGE_SIZES) == appview.MAX_PAGE
+	assert appview.PAGE in appview.PAGE_SIZES
+
+
+def test_a_saved_page_size_survives_and_a_junk_one_does_not(appview, monkeypatch):
+	rows = [dict(layout("mine", "Mine", is_default=1), page_length=20)]
+	monkeypatch.setattr(appview, "_layouts", lambda *a: rows)
+	monkeypatch.setattr(appview, "_can_share", lambda: False)
+	resolved = appview._apply_saved({
+		"app": "a", "view": "v", "doctype": "ToDo", "page_length": appview.PAGE,
+		"columns": appview._columns(TODO, ["description"]),
+		"all_columns": appview._columns(TODO, ["description"]),
+		"order_by": "modified desc",
+	})
+	assert resolved["page_length"] == 20
+
+	rows[0]["page_length"] = 999
+	resolved = appview._apply_saved({
+		"app": "a", "view": "v", "doctype": "ToDo", "page_length": appview.PAGE,
+		"columns": appview._columns(TODO, ["description"]),
+		"all_columns": appview._columns(TODO, ["description"]),
+		"order_by": "modified desc",
+	})
+	assert resolved["page_length"] == appview.PAGE
+
+
+def test_the_count_goes_through_the_same_permissions_as_the_rows(appview):
+	"""`get_list`, not `db.count`.
+
+	`db.count` skips the permission query and User Permissions, so it can be
+	larger than the list it labels — and "12 of 400" over twelve rows is worse
+	than no count at all.
+	"""
+	source = APPVIEW.read_text()
+	body = source[source.index("def _total("):]
+	body = body[: body.index("\n\n\n")]
+	# Code only — the docstring names `db.count` to say why it is not used.
+	code = body[body.index('"""', body.index('"""') + 3) + 3 :]
+	assert "frappe.get_list(" in code
+	assert "db.count" not in code
+	# A SQL function written as a string is refused at runtime, and only at
+	# runtime — the dict form is the one Frappe accepts.
+	assert '{"COUNT": "*"}' in body

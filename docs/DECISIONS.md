@@ -678,10 +678,27 @@ otherwise be reinventing line for line.
 
 **So: where the framework and a Frappe app disagree, follow the framework.** An
 app's invention was right for the app on the day it was written; the framework's
-is what the next version of Frappe will keep working. `OneApp Saved View` is our
-own doctype — it is keyed per screen rather than per doctype, which `List Filter`
-is not — but its *model* is `List Filter`'s: a named layout, empty user meaning
-everybody, one owner deciding who may write it.
+is what the next version of Frappe will keep working.
+
+But following a model is not the same as using its table, and here we do not.
+`OneApp Saved View` stays our own doctype, for three reasons that are about
+shape rather than taste:
+
+* **It is keyed per screen, not per doctype.** `List Filter` is keyed on
+  `reference_doctype` plus a `route_signature` — a signature of a *desk URL*,
+  which is a thing this product does not have (§7). Two of our screens can sit
+  over one doctype and are two different questions; on their key they would
+  collide, or we would be encoding our app and view into a field that means
+  something else.
+* **It carries things theirs has no field for** — which column the rows are
+  grouped under, the favourites flag, the page size. The alternative is adding
+  custom fields to a framework doctype, and a framework doctype we have added
+  fields to is a merge conflict waiting for the next Frappe upgrade.
+* **What is worth following is the model, and we do follow it**: a named
+  layout, an empty user meaning everybody, `_can_edit_global_filter` and
+  `_can_update_list_filter` as the permission rules, and sanitising what a row
+  carries when it is *read* rather than trusting what was written. That is the
+  part that took Frappe several versions to get right.
 
 Where we did not follow CRM, and why:
 

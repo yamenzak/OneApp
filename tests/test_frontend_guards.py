@@ -877,3 +877,47 @@ def test_a_filled_list_header_hides_the_rule_it_covers(app):
 		f"then stops short at both ends of the fill — add `{OWN_RULE}` and draw "
 		"a full-width border on the header instead: " + ", ".join(offenders)
 	)
+
+
+# --------------------------------------------------------------------------- #
+# A pane is two halves
+#
+# The list is a fixed-height grid so its horizontal scrollbar lands at the
+# bottom of the window rather than at the bottom of the table. That needs the
+# shell's own page scrolling off for the route — and the two halves live in
+# different files, so either one can go without the other and the failure is
+# quiet: with only the route flag the pane has no height to fill; with only the
+# shell change the page stops scrolling for screens that need it.
+# --------------------------------------------------------------------------- #
+
+def test_the_app_host_is_a_pane_at_both_ends():
+	root = ROOT / "apps/oneapp/frontend/src"
+	router = (root / "router.js").read_text()
+	app = (root / "App.vue").read_text()
+
+	assert re.search(r"AppHost\.vue'\),[\s\S]{0,900}?meta:\s*\{[^}]*pane:\s*true", router), (
+		"router.js no longer marks the app host's route as a pane"
+	)
+	assert 'scroll="!$route.meta.pane"' in app, (
+		"App.vue no longer turns the shell's page scroll off for a pane route"
+	)
+
+
+def test_the_grid_has_exactly_one_scroller():
+	"""Both axes on one element, or the header drifts.
+
+	A separate horizontal wrapper around a vertical one is the obvious way to
+	build this and it is wrong: the header then sits outside the vertical
+	scrollbar's gutter and is a scrollbar's width out of true with the rows
+	under it. One element scrolling both ways has no gutter to disagree about.
+	"""
+	source = APP_HOST.read_text()
+	assert source.count("overflow-auto") == 1, "the grid should have one scroller"
+	# The two-wrapper shape, which is the one that drifts.
+	assert "overflow-x-auto" not in source, (
+		"a separate horizontal scroller puts the header outside the vertical "
+		"scrollbar's gutter — use one element scrolling both ways"
+	)
+	# `overflow-y-auto` is allowed exactly once: the escape hatch a screen an
+	# app wrote itself renders into, which cannot be assumed to fit a pane.
+	assert source.count("overflow-y-auto") == 1

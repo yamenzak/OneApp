@@ -2,6 +2,7 @@
   <FrappeUIProvider>
     <AppShell
       v-if="session.loaded && session.isLoggedIn"
+      :scroll="!$route.meta.pane"
       :apps="railApps"
       :active-app="activeAppCode"
       :nav-items="nav"

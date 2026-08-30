@@ -34,6 +34,15 @@ VIEWS = [
 		"view": "all", "label": "Everything", "icon": "lucide-layout-grid",
 		"document_type": "ToDo", "fields": FIELDS, "order_by": "modified desc",
 	},
+	# Enough rows to page. Everything else on this fixture is two or three
+	# records, which is right for reading a screen and useless for testing what
+	# happens at the end of a page — Load More, the count, the windowing
+	# threshold. Filtered to Closed so it does not disturb the Open screen.
+	{
+		"view": "backlog", "label": "Backlog", "icon": "lucide-package",
+		"document_type": "ToDo", "fields": FIELDS,
+		"filters": json.dumps({"status": "Closed"}), "order_by": "creation asc",
+	},
 ]
 
 TODOS = [
@@ -42,6 +51,11 @@ TODOS = [
 	{"description": "Chase the Halloway invoice", "priority": "High", "status": "Open"},
 	{"description": "File Q3 returns", "priority": "Low", "status": "Closed"},
 ]
+
+# The paging fixture. Deliberately more than one page at the smallest size the
+# footer offers, so "load more" has something to load.
+BACKLOG = 40
+BACKLOG_PREFIX = "Backlog item"
 
 
 def seed_control():
@@ -85,7 +99,17 @@ def seed_tenant():
 		if frappe.db.exists("ToDo", {"description": row["description"]}):
 			continue
 		frappe.get_doc({"doctype": "ToDo", **row}).insert(ignore_permissions=True)
-	print(f"tenant: {CODE} cached, {len(TODOS)} todos present")
+
+	for n in range(1, BACKLOG + 1):
+		description = f"{BACKLOG_PREFIX} {n:02d}"
+		if frappe.db.exists("ToDo", {"description": description}):
+			continue
+		frappe.get_doc({
+			"doctype": "ToDo", "description": description, "status": "Closed",
+			"priority": ["High", "Medium", "Low"][n % 3],
+		}).insert(ignore_permissions=True)
+
+	print(f"tenant: {CODE} cached, {len(TODOS)} todos and {BACKLOG} backlog rows present")
 
 
 if __name__ == "__main__":

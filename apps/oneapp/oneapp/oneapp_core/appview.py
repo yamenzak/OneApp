@@ -431,6 +431,10 @@ def _resolve(app_code: str, view: str | None = None) -> dict:
 		"fields": _fetch_fields(columns),
 		"filters": _json(chosen.get("filters")),
 		"order_by": chosen.get("order_by") or _default_order(meta),
+		# How many rows a page is, and what the footer may offer instead. The
+		# screen's default until a saved view says otherwise.
+		"page_length": PAGE,
+		"page_sizes": list(PAGE_SIZES),
 		"can_create": bool(frappe.has_permission(doctype, "create")),
 		"can_write": bool(frappe.has_permission(doctype, "write")),
 		"can_delete": bool(frappe.has_permission(doctype, "delete")),
@@ -459,9 +463,13 @@ def _json(raw):
 # is asked for.
 # --------------------------------------------------------------------------- #
 
-# A page of records. Large enough that most screens never scroll for more,
-# small enough that a doctype with a hundred thousand rows does not arrive.
+# A page of records. Large enough that most screens never ask for more, small
+# enough that a doctype with a hundred thousand rows does not arrive. The
+# reader can change it — the footer offers PAGE_SIZES and remembers the choice
+# in their view — and MAX_PAGE is the ceiling whatever they ask for.
 PAGE = 100
+MAX_PAGE = 500
+PAGE_SIZES = (20, 50, 100, 500)
 
 
 @frappe.whitelist(methods=["GET"])
@@ -486,13 +494,14 @@ def rows(app_code: str, view: str | None = None, limit: int = PAGE,
 	if not resolved.get("doctype"):
 		return {"rows": [], "has_more": False, "columns": [], "order_by": ""}
 
-	limit = min(int(limit or PAGE), 500)
+	limit = min(int(limit or PAGE), MAX_PAGE)
+	filters = _all_filters(resolved, resolved.get("asked") or [])
 
 	# One more than asked for, so "there are more" needs no second count query.
 	found = frappe.get_list(
 		resolved["doctype"],
 		fields=resolved["fields"] + list(META_FIELDS),
-		filters=_all_filters(resolved, resolved.get("asked") or []),
+		filters=filters,
 		order_by=_grouped_order(resolved),
 		limit_start=int(start or 0),
 		limit_page_length=limit + 1,
@@ -509,6 +518,42 @@ def rows(app_code: str, view: str | None = None, limit: int = PAGE,
 		"order_by": resolved["order_by"],
 		"group_by": resolved.get("group_by") or "",
 	}
+
+
+@frappe.whitelist(methods=["GET"])
+def count(app_code: str, view: str | None = None, overrides: str | dict | None = None,
+          layout: str | None = None) -> dict:
+	"""How many rows match — asked separately from the rows themselves.
+
+	Its own request on purpose. A `COUNT(*)` over a filter with no index behind
+	it is a full scan, and folding it into the page would put that scan in front
+	of every list anybody opens. The rows arrive first and the footer fills in
+	its "of 1,240" when this answers; a footer that reads "48" for a moment is a
+	fair price for a list that is never held up by a count.
+	"""
+	resolved = _apply_overrides(_apply_saved(_resolve(app_code, view), layout), overrides)
+	if not resolved.get("doctype"):
+		return {"total": 0}
+	return {"total": _total(resolved, _all_filters(resolved, resolved.get("asked") or []))}
+
+
+def _total(resolved: dict, filters: list) -> int:
+	"""How many rows match, not how many were fetched.
+
+	Through `get_list` rather than `db.count` so it is the same number the rows
+	came from: `get_list` applies this user's permissions and their User
+	Permissions, and `db.count` does not — a count that is larger than the list
+	it labels is worse than no count.
+	"""
+	# `{"COUNT": "*"}` rather than the string `count(*)`: Frappe refuses a SQL
+	# function written as a string in `fields`, and says so at runtime only.
+	found = frappe.get_list(
+		resolved["doctype"],
+		filters=filters,
+		fields=[{"COUNT": "*"}],
+		as_list=True,
+	)
+	return int(found[0][0]) if found else 0
 
 
 # What every list carries beside its columns: when a row last changed, how many
@@ -1004,6 +1049,9 @@ def _apply_saved(resolved: dict, layout: str | None = None) -> dict:
 
 	resolved["favourites"] = bool(saved.get("favourites"))
 	resolved["group_by"] = _group_by(resolved, saved.get("group_by"))
+	resolved["page_length"] = (
+		_page_length(saved.get("page_length")) or resolved.get("page_length") or PAGE
+	)
 
 	resolved["saved"] = {
 		"filters": resolved["asked"],
@@ -1017,6 +1065,20 @@ def _apply_saved(resolved: dict, layout: str | None = None) -> dict:
 		"page_length": saved.get("page_length") or 0,
 	}
 	return resolved
+
+
+def _page_length(value) -> int:
+	"""One of the sizes the footer offers, or nothing.
+
+	Not clamped to a range: the footer is a set of buttons, so a number that is
+	not one of them did not come from the footer, and `limit` is bounded again
+	where it is used anyway.
+	"""
+	try:
+		asked = int(value or 0)
+	except (TypeError, ValueError):
+		return 0
+	return asked if asked in PAGE_SIZES else 0
 
 
 def _group_by(resolved: dict, fieldname) -> str:
@@ -1331,7 +1393,7 @@ def save_view(app_code: str, view: str, filters: str | list | dict | None = None
 			{"fieldname": c["fieldname"], "width": c["width"], "pin": c["pin"]}
 			for c in columns
 		]),
-		"page_length": int(page_length or 0),
+		"page_length": _page_length(page_length),
 		"favourites": 1 if frappe.utils.sbool(favourites) else 0,
 		"group_by": _group_by(resolved, group_by),
 	})

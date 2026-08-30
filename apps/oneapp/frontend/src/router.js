@@ -8,6 +8,11 @@ const routes = [
     name: 'App',
     component: () => import('./pages/AppHost.vue'),
     props: true,
+    // The app host is a pane, not a page: its list is a fixed-height grid that
+    // owns both scrollbars, so the horizontal one sits at the bottom of the
+    // screen instead of at the bottom of a table somebody has to scroll to
+    // find. `pane` turns the shell's own page scroll off for this route.
+    meta: { pane: true },
   },
   { path: '/account', name: 'Account', component: () => import('./pages/Account.vue') },
   {

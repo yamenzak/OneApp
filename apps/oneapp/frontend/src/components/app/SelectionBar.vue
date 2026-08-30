@@ -5,12 +5,15 @@
     Frappe CRM puts this bar at the bottom of the screen instead of above the
     rows, and it is the better place: ticking a box near the end of a long list
     used to fire an action bar into a part of the page nobody was looking at.
-    Sticky rather than fixed, so it clears the phone's navigation bar without
-    knowing how tall that is — it pins to the bottom of whatever is scrolling,
-    and on a phone that container stops above the nav.
+
+    Absolute within the grid pane rather than fixed to the window, so it floats
+    over the rows and clears the footer without knowing anything about the
+    shell around it — on a phone that pane already stops above the navigation
+    bar. The wrapper does not take pointer events, or an invisible full-width
+    strip would eat clicks on the rows beneath it.
   -->
-  <div class="sticky bottom-4 z-20 mt-3 flex justify-center px-2">
-    <div :class="BAR">
+  <div class="pointer-events-none absolute inset-x-0 bottom-16 z-20 flex justify-center px-2">
+    <div class="pointer-events-auto" :class="BAR">
       <span class="whitespace-nowrap text-p-base text-ink-gray-8"> {{ count }} selected </span>
 
       <div class="ms-2 flex items-center gap-1 border-s border-outline-gray-2 ps-3">

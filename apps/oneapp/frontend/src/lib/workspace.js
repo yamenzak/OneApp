@@ -55,9 +55,28 @@ export const workspace = {
 
   // `overrides` carries a filter or sort the person changed but has not saved:
   // the list answers the question the controls are asking, saved or not.
-  appRows: (appCode, view, overrides, layout) =>
+  appRows: (appCode, view, overrides, layout, page = {}) =>
     callMethod(
       'oneapp.oneapp_core.appview.rows',
+      {
+        app_code: appCode,
+        view,
+        layout,
+        // `start` pages; `limit` is how big a page is, which the reader picks
+        // in the footer and the server bounds again.
+        start: page.start || 0,
+        limit: page.limit || undefined,
+        overrides: overrides ? JSON.stringify(overrides) : null,
+      },
+      { silent: true, method: 'GET' },
+    ),
+
+  // Its own request, and deliberately after the rows: a count over a filter
+  // with no index behind it is a full scan, and nothing should hold a list up
+  // for one.
+  appRowCount: (appCode, view, overrides, layout) =>
+    callMethod(
+      'oneapp.oneapp_core.appview.count',
       {
         app_code: appCode,
         view,

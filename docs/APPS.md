@@ -149,9 +149,21 @@ already names, so an app gets it by existing.
   Frappe's names for them ("On or Before" rather than "<="). The value control
   follows the pair — a link picker, a choice, a list, two dates, Frappe's
   relative-date words, or Set / Not Set.
-* **Saved views, as named layouts.** Filters, sort, columns and their order,
-  page length, grouping and the favourites flag, saved together under a name in
-  `OneApp Saved View`. This follows the shape of Frappe's own `List Filter`
+* **Saved views, as named layouts.** Everything the controls can change travels
+  together under a name in `OneApp Saved View` — there is no half of it that is
+  remembered and half that is not:
+
+  | | |
+  | --- | --- |
+  | which columns, and in what order | `columns` |
+  | how wide each one is | `columns[].width` |
+  | which edge a column is pinned to, if any | `columns[].pin` |
+  | which column the rows are grouped under | `group_by` |
+  | every filter, from the quick boxes and the panel alike | `filters` |
+  | the sort field and its direction | `order_by` |
+  | how big a page is | `page_length` |
+  | whether it is filtered to what you liked | `favourites` |
+  | its name, and whose it is | `label`, `user` | This follows the shape of Frappe's own `List Filter`
   doctype: a layout belongs to one person, or — with its user left empty — to
   the whole workspace. Which one is open is in the URL, so a view is a link
   somebody can send. The Save button still writes the person's own unnamed
@@ -171,6 +183,50 @@ already names, so an app gets it by existing.
   a desktop; the table scrolls sideways rather than being narrowed to a
   different set of columns. That is only safe because the columns are the
   reader's own choice — Frappe CRM draws the same conclusion.
+
+## The list is a data grid, not a long page
+
+The screen is a **pane**: the route marks itself `meta: { pane: true }`, the
+shell turns its own page scrolling off, and the list fills what is left. One
+element inside it scrolls in both directions, with the column header sticky at
+its top.
+
+That shape is the answer to a question worth stating, because the obvious
+layout gets it wrong: **where does the horizontal scrollbar go?** On a page that
+scrolls, a wide table puts its scrollbar at the bottom of the *table* — so on
+two hundred rows you have to scroll down past everything to discover you could
+have scrolled sideways. Fixing the pane's height puts that scrollbar at the
+bottom of the window, where it is always visible.
+
+One scroller rather than two nested ones, and that is not a detail: a separate
+horizontal wrapper around a vertical one leaves the header outside the vertical
+scrollbar's gutter, so the header sits a scrollbar's width out of true with the
+rows beneath it. Sharing one container gives them nothing to disagree about.
+`tests/test_frontend_guards.py` fails the build on the two-wrapper shape.
+
+Three more things carry the idea:
+
+* **An edge tells you there is more.** The side with content beyond it gets a
+  soft wash, and loses it at the end. A `ResizeObserver` drives it rather than a
+  render hook — the first version measured before layout, so a table that opened
+  too wide said nothing until something else made it scroll.
+* **Pinned columns** stay put while the rest scrolls, so the row's identity is
+  still there when you are eight columns to the right. Which columns pin is the
+  reader's choice, saved with the view.
+* **The footer** is Frappe CRM's: a page size (20 / 50 / 100 / 500, remembered
+  in the view), a Load more that appends, and "48 of 1,240" where the total is
+  what matches rather than what was sent.
+
+  The count is **its own request**, made after the rows and never awaited with
+  them. A `COUNT(*)` over a filter with no index behind it is a full scan, and
+  folding it into the page would put that scan in front of every list anybody
+  opens; the footer reads "48" for a moment instead. It goes through `get_list`
+  rather than `db.count` so it sees the same permissions and User Permissions
+  the rows did — a count larger than the list it labels is worse than no count.
+
+Rows are **windowed past two hundred** (frappe-ui's `ListRows virtual`), which
+is where Load more starts to make a page you can feel. Below that the plain
+path is simpler and behaves better with a keyboard.
 
 ## One radius language
 
@@ -200,9 +256,8 @@ Worth knowing before designing around it:
 
 * **No child tables.** A doctype with rows inside it shows its top-level fields
   only.
-* **One page of records.** A hundred, then a line saying there are more. Filters
-  and sort narrow it; there is no infinite scroll and no free-text search across
-  the whole set.
+* **No free-text search across the whole set.** Filters, the quick boxes and
+  sort narrow a list; there is no "search everything" box.
 * **A child table cannot be filtered.** It is rows rather than a value, so
   Frappe needs a four-part filter naming the child doctype and a three-part one
   names a column that is not there. Shown, never filtered.
