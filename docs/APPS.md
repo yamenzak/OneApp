@@ -87,17 +87,47 @@ of those records open cannot be. Reach for it second: the generic path already
 handles most of what an app is, and every screen written by hand is a screen that
 has to be maintained by hand.
 
+## What a screen carries without being asked
+
+None of this is written into a manifest. It comes off the doctype the screen
+already names, so an app gets it by existing.
+
+* **Every fieldtype has a control.** The map is generated from Frappe's own
+  `data_fieldtypes` (`scripts/field_types.py`), so a fieldtype Frappe adds fails
+  a test here rather than rendering as a text box that writes a string into a
+  Currency column. Colour, signature, geolocation, barcode and icon have no
+  frappe-ui counterpart: they are shown, never offered.
+* **Link fields get a picker.** A Combobox backed by `appview.link_options`,
+  bounded by the screen the same way its rows are, and honouring the field's own
+  `link_filters`.
+* **Field icons.** One per fieldtype, in the list header and beside the record.
+* **Badge colours.** From the doctype's own `DocType State` rows where it
+  declares them, and otherwise from Frappe's word lists — so "Open" is the same
+  colour here as in the desk.
+* **Title, image and naming.** `title_field` names the record, `image_field`
+  gives it an avatar, and the naming rule is reported so a screen knows whether
+  a new record names itself.
+* **Comments, history and likes.** Frappe keeps all three on every doctype.
+  History is rendered in the screen's own labels, not the database's field
+  names, and only for fields the screen shows.
+* **Saved views.** Filters, sort, columns and page length, per person per
+  screen, in `OneApp Saved View`. A saved view narrows what the screen offers
+  and can never widen it: filters merge with the screen's winning, columns
+  intersect, and `order_by` is rebuilt from parts rather than passed through.
+  The same bounds apply to an unsaved change, which is why the controls can show
+  their answer before anything is saved.
+
 ## What the generic screen does not do yet
 
 Worth knowing before designing around it:
 
-* **Link fields render as plain text.** Editable, but with no picker behind
-  them — a customer has to know the record's name. `Combobox` is in the
-  vocabulary; wiring it to a search endpoint is the next thing this needs.
 * **No child tables.** A doctype with rows inside it shows its top-level fields
   only.
-* **One page of records.** A hundred, then a line saying there are more. No
-  search, no filter, no infinite scroll.
+* **One page of records.** A hundred, then a line saying there are more. Filters
+  and sort narrow it; there is no infinite scroll and no free-text search across
+  the whole set.
+* **Filters are text and choice only.** A "contains" box over a Date or a
+  Currency is a control that looks like it works and does not.
 * **No delete from the UI**, though the endpoint exists.
 
 None of these block a first app; all of them are worth knowing about before

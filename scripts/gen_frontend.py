@@ -2127,6 +2127,133 @@ export function expectNoRealErrors(errors) {
 """
 
 
+def fields_js(app: str, spec: dict) -> str:
+    """The fieldtype map, as the SPA reads it."""
+    import json as _json
+    import sys as _sys
+
+    _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from field_types import (
+        DATA_OPTIONS, FIELD_TYPES, LAYOUT_TYPES, STATE_COLORS, WORD_COLORS,
+    )
+
+    table = {
+        fieldtype: {
+            "control": control,
+            "cell": cell,
+            "icon": icon,
+            "editable": editable,
+        }
+        for fieldtype, (control, cell, icon, editable) in FIELD_TYPES.items()
+    }
+
+    return BANNER + """
+/**
+ * Every Frappe fieldtype, and what renders it.
+ *
+ * Generated from scripts/field_types.py, which is checked against Frappe's own
+ * `data_fieldtypes` — so a fieldtype Frappe adds fails the build here rather
+ * than rendering as a text box that saves a string into a Currency column.
+ *
+ * `control` is a FormControl type as "FormControl:<type>", or the name of a
+ * component in the barrel. `null` means shown but never offered: colour,
+ * signature and geolocation have no frappe-ui counterpart, and a control that
+ * cannot produce the right shape is worse than none.
+ */
+
+export const FIELD_TYPES = %(table)s
+
+/** Layout fields. They carry no value and are skipped rather than rendered. */
+export const LAYOUT_TYPES = %(layout)s
+
+/** What `options` on a Data field refines the input to. Frappe's own list. */
+export const DATA_OPTIONS = %(data_options)s
+
+/** DocType State's palette, in Badge themes. */
+export const STATE_COLORS = %(state_colors)s
+
+/** Frappe's own word lists, so a status reads the same colour as in the desk. */
+const WORD_COLORS = %(word_colors)s
+
+// Named rather than counted. Stripping this with a hand-written offset is how
+// every FormControl type lost its first letter — "date" became "ate", which is
+// not in the union, and FormControl answers an unknown type with a plain text
+// box and no warning. So the whole record dialog rendered as text inputs and
+// nothing anywhere said so.
+const FORM_CONTROL = 'FormControl:'
+
+const FALLBACK = {
+  control: FORM_CONTROL + 'text',
+  cell: 'text',
+  icon: 'lucide-circle-help',
+  editable: false,
+}
+
+/**
+ * How to render one field.
+ *
+ * An unknown fieldtype falls back to a read-only text cell rather than to an
+ * editable one: if we do not know what it is, we do not know how to write it.
+ */
+export function fieldSpec(field) {
+  const base = FIELD_TYPES[field?.fieldtype] || FALLBACK
+
+  // `options` on a Data field says what it really holds — an email, a URL, a
+  // phone number — and the browser has better keyboards and validation for
+  // each than it does for "text".
+  if (field?.fieldtype === 'Data' && DATA_OPTIONS[field.options]) {
+    return { ...base, control: FORM_CONTROL + DATA_OPTIONS[field.options] }
+  }
+  return base
+}
+
+/** The FormControl `type`, or null when this field needs a named component. */
+export function formControlType(field) {
+  const { control } = fieldSpec(field)
+  return control && control.startsWith(FORM_CONTROL) ? control.slice(FORM_CONTROL.length) : null
+}
+
+/** The component name, or null when a FormControl handles it. */
+export function controlComponent(field) {
+  const { control } = fieldSpec(field)
+  return control && !control.startsWith(FORM_CONTROL) ? control : null
+}
+
+export function isLayout(fieldtype) {
+  return LAYOUT_TYPES.includes(fieldtype)
+}
+
+/**
+ * The Badge theme for a value.
+ *
+ * The doctype's own `states` first — Frappe stores a colour per status right on
+ * the doctype, so a badge is coloured by what the doctype declares rather than
+ * by anything guessed here. Only then the word lists, which are Frappe's, so a
+ * status that has no declared colour still reads the same as it does in the
+ * desk. Then gray, which is an answer rather than a failure.
+ */
+export function valueTheme(value, states = []) {
+  if (!value) return 'gray'
+
+  const declared = states.find((s) => s.title === value)
+  if (declared) return STATE_COLORS[declared.color] || 'gray'
+
+  const text = String(value).toLowerCase()
+  for (const [theme, words] of WORD_COLORS) {
+    if (words.some((word) => text.includes(word))) return theme
+  }
+  return 'gray'
+}
+""" % {
+        "table": _json.dumps(table, indent=2, sort_keys=True),
+        "layout": _json.dumps(list(LAYOUT_TYPES), indent=2),
+        "data_options": _json.dumps(DATA_OPTIONS, indent=2, sort_keys=True),
+        "state_colors": _json.dumps(STATE_COLORS, indent=2, sort_keys=True),
+        "word_colors": _json.dumps([[t, list(w)] for t, w in WORD_COLORS], indent=2),
+    }
+
+
+
 FILES = {
     "index.html": index_html,
     "vite.config.js": vite_config,
@@ -2147,6 +2274,7 @@ FILES = {
     "src/lib/screen.js": lambda app, spec: SCREEN_JS,
     "src/lib/appearance.js": lambda app, spec: APPEARANCE_JS,
     "src/lib/list.js": lambda app, spec: LIST_COLUMNS_JS,
+    "src/lib/fields.js": fields_js,
     "src/components/settings/geometry.js": lambda app, spec: SETTINGS_GEOMETRY_JS,
     "src/lib/brand.js": lambda app, spec: BRAND_JS,
     "src/lib/icons.js": lambda app, spec: ICONS_JS,

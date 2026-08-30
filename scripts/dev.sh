@@ -127,10 +127,14 @@ print('Bound to $SITE. frappe.db is live; nothing commits until frappe.db.commit
     ;;
 
   run)
+    [ -n "${2:-}" ] || { echo "usage: dev.sh run FILE" >&2; exit 1; }
+    # Resolved before require_bench, which cds to the sites directory: a
+    # relative path handed in from the repo would otherwise not exist by the
+    # time python opens it, and the error names the file rather than the cd.
+    script="$(cd "$(dirname "$2")" && pwd)/$(basename "$2")"
     require_bench
     services
-    [ -n "${2:-}" ] || { echo "usage: dev.sh run FILE" >&2; exit 1; }
-    "$PY" - "$sites_path" "$SITE" "$2" <<'PYEOF'
+    "$PY" - "$sites_path" "$SITE" "$script" <<'PYEOF'
 import sys
 import frappe
 

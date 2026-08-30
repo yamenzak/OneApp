@@ -149,6 +149,9 @@ def test_banned_elements_carry_a_replacement(generated):
 		"DesktopShell", "PageHeader",
 		# Icons — frappe-ui resolves `lucide-*` names; inlining SVG was wrong.
 		"Icon", "Avatar",
+		# Waiting — four shapes for four situations, and a hand-rolled
+		# `animate-spin` div is none of them.
+		"Spinner", "LoadingIndicator", "LoadingText", "Skeleton",
 	],
 )
 def test_barrel_exposes_the_primitive(generated, component):
@@ -770,3 +773,48 @@ def test_no_computed_ref_is_bound_straight_into_a_template(app):
 			for match in re.findall(rf'"{name}\.(\w+)"', source):
 				offenders.append(f"{path.relative_to(root)}: {name}.{match}")
 	assert not offenders, "these bind a ref, not its value: " + "; ".join(offenders)
+
+
+# --------------------------------------------------------------------------- #
+# Waiting
+#
+# frappe-ui ships four ways to say "not yet": Skeleton for something whose shape
+# is already known, LoadingIndicator and Spinner for a wait with no shape, and
+# LoadingText for a wait worth naming. A hand-rolled `animate-spin` div is a
+# fifth that matches none of them, and the mismatch is what a customer sees:
+# every list on the site pulsing differently while it loads.
+# --------------------------------------------------------------------------- #
+
+SPINNER = re.compile(r"animate-spin|animate-pulse|border-t-transparent")
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_no_hand_rolled_spinner(app):
+	root = ROOT / f"apps/{app}/frontend/src"
+	offenders = [
+		str(path.relative_to(root))
+		for path in sorted(root.rglob("*.vue"))
+		if SPINNER.search(path.read_text())
+	]
+	assert not offenders, (
+		"use Skeleton / LoadingIndicator / LoadingText / Spinner from @/ui "
+		"rather than a hand-rolled one: " + ", ".join(offenders)
+	)
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_something_waits_visibly_while_a_screen_loads(app):
+	"""A screen that fetches and renders nothing in the meantime reads as broken
+	rather than as slow. Whatever tracks a `loading` ref has to show it — and
+	most of them are panels under components/, not pages."""
+	root = ROOT / f"apps/{app}/frontend/src"
+	waiting = re.compile(r"<(Skeleton|LoadingIndicator|LoadingText|Spinner)\b")
+	offenders = []
+	for path in sorted(root.rglob("*.vue")):
+		source = path.read_text()
+		if re.search(r"const (loading|\w*Loading) = ref\(", source) and not waiting.search(source):
+			offenders.append(str(path.relative_to(root)))
+	assert not offenders, (
+		"these track a loading state and render nothing while it is true: "
+		+ ", ".join(offenders)
+	)

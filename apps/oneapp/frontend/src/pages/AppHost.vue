@@ -37,8 +37,21 @@
     </Alert>
 
     <template v-else>
-      <div v-if="rowsLoading && !rows.length" class="grid place-items-center py-20">
-        <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <ViewControls
+        class="mb-4"
+        :spec="spec"
+        :app-code="appCode"
+        :view="spec.view"
+        @changed="onViewChanged"
+      />
+
+      <!--
+        Skeleton rows rather than a spinner: the shape of what is coming is
+        already known, and a list that appears in place reads as loading where a
+        spinner reads as blocked.
+      -->
+      <div v-if="rowsLoading && !rows.length" class="flex flex-col gap-2 pt-2">
+        <Skeleton v-for="n in 6" :key="n" class="h-11 w-full" />
       </div>
 
       <EmptyState
@@ -63,61 +76,66 @@
           divider="full"
         >
           <ListHeader>
-            <ListHeaderCell v-for="c in visible" :key="c.key">{{ c.header }}</ListHeaderCell>
+            <ListHeaderCell v-for="c in visible" :key="c.key">
+              <span class="flex min-w-0 items-center gap-1.5">
+                <!-- The field's own icon, so a header reads at a glance. -->
+                <Icon :name="c.column.icon" class="size-3.5 shrink-0 text-ink-gray-4" />
+                <span class="truncate">{{ c.header }}</span>
+              </span>
+            </ListHeaderCell>
           </ListHeader>
           <ListRows :items="rows" row-key="name" v-slot="{ item: row, value }">
             <ListRow :value="value" @click="open(row)">
               <ListCell v-for="c in visible" :key="c.key">
-                <span class="truncate text-p-sm text-ink-gray-8">
-                  {{ display(row, c.column) }}
-                </span>
+                <div class="flex min-w-0 items-center gap-2">
+                  <!-- The record's picture, where the doctype names one. -->
+                  <Avatar
+                    v-if="c.first && spec.image_field && row[spec.image_field]"
+                    :image="row[spec.image_field]"
+                    :label="String(row[c.column.fieldname] || row.name)"
+                    shape="square"
+                    size="sm"
+                  />
+                  <FieldCell
+                    :column="c.column"
+                    :value="row[c.column.fieldname]"
+                    :states="spec.states"
+                  />
+                </div>
               </ListCell>
             </ListRow>
           </ListRows>
         </List>
+
+        <p v-if="hasMore" class="px-1 pt-3 text-p-xs text-ink-gray-5">
+          Showing the first {{ rows.length }}. Narrow the list to find something older.
+        </p>
       </div>
     </template>
   </div>
 
-  <Dialog v-model="showRecord" :title="recordTitle" size="xl">
-    <div v-if="editing" class="flex flex-col gap-4">
-      <template v-for="field in formFields" :key="field.fieldname">
-        <Switch
-          v-if="field.fieldtype === 'Check'"
-          v-model="form[field.fieldname]"
-          :label="field.label"
-          :disabled="!writable(field)"
-        />
-        <FormControl
-          v-else
-          v-model="form[field.fieldname]"
-          :type="inputType(field)"
-          :label="field.label"
-          :options="field.fieldtype === 'Select' ? selectOptions(field) : undefined"
-          :required="!!field.reqd"
-          :disabled="!writable(field)"
-        />
-      </template>
-      <ErrorMessage v-if="error" :message="error" />
-    </div>
-    <template v-if="spec?.can_write" #actions>
-      <Button variant="solid" label="Save" :loading="saving" @click="save" />
-    </template>
-  </Dialog>
+  <RecordDialog
+    v-if="spec?.doctype"
+    v-model="showRecord"
+    :record="editing || {}"
+    :spec="spec"
+    :app-code="appCode"
+    :view="spec.view"
+    @saved="loadRows"
+  />
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   PageHeader,
   Breadcrumbs,
   Button,
-  Dialog,
-  FormControl,
-  Switch,
   Alert,
-  ErrorMessage,
+  Avatar,
+  Icon,
+  Skeleton,
   LoadingIndicator,
   List,
   ListHeader,
@@ -127,6 +145,9 @@ import {
   ListCell,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
+import FieldCell from '../components/app/FieldCell.vue'
+import RecordDialog from '../components/app/RecordDialog.vue'
+import ViewControls from '../components/app/ViewControls.vue'
 import { session } from '../lib/session'
 import { workspace } from '../lib/workspace'
 import { useListColumns } from '../lib/list'
@@ -139,9 +160,14 @@ const spec = ref(null)
 const loading = ref(false)
 const showRecord = ref(false)
 const editing = ref(null)
-const saving = ref(false)
-const error = ref('')
-const form = reactive({})
+const rows = ref([])
+// The columns the rows were actually fetched with, which is not always the
+// screen's: an unsaved change to the column list narrows the fetch, and a
+// header list that does not follow leaves a column standing over empty cells.
+const columns = ref([])
+const hasMore = ref(false)
+const rowsLoading = ref(false)
+const pending = ref(null)
 
 const app = computed(() => (session.apps || []).find((a) => a.app_code === props.appCode))
 
@@ -154,12 +180,16 @@ const custom = computed(() => {
 // useListColumns so a six-column doctype drops to two on a phone rather than
 // truncating the one column a row exists to name.
 const columnSpec = computed(() =>
-  (spec.value?.columns || []).map((column, index) => ({
+  (columns.value || []).map((column, index) => ({
     key: column.fieldname,
     header: column.label,
-    track: index === 0 ? 'minmax(0,1fr)' : '10rem',
+    // The identity column gets the room. With five 10rem columns beside it a
+    // bare `1fr` came out the narrowest of the six, so the one field a row
+    // exists to name was the one truncated.
+    track: index === 0 ? 'minmax(12rem,2fr)' : '9rem',
     // The identity column and one more. Everything else is in the record.
     mobile: index < 2,
+    first: index === 0,
     column,
   })),
 )
@@ -171,15 +201,6 @@ const { visible, columns: tracks } = useListColumns(columnSpec)
 // is how the frappe-ui prop guard read `visible.length` as a prop name.
 const wide = computed(() => visible.value.length > 3)
 
-// Not useDocList: which doctype this screen lists is not known until the view
-// has resolved, and a list resource built at setup would have been handed a
-// null doctype, plus a ref where its socket subscription wanted a name. The
-// rows come from the same endpoint that resolved the view instead — one round
-// trip, and the same bounds on both.
-const rows = ref([])
-const hasMore = ref(false)
-const rowsLoading = ref(false)
-
 const crumbs = computed(() => {
   const trail = [{ label: 'Apps', route: { name: 'Launcher' } }]
   if (app.value) trail.push({ label: app.value.app_label })
@@ -189,84 +210,40 @@ const crumbs = computed(() => {
   return trail
 })
 
-const formFields = computed(() => spec.value?.columns || [])
-
-const recordTitle = computed(() => {
-  if (!editing.value) return spec.value?.view_label || ''
-  if (editing.value.__new) return `New ${spec.value?.view_label || 'record'}`
-  return editing.value[spec.value?.title_field] || editing.value.name
-})
-
-const writable = (field) => !!spec.value?.can_write && !!field.editable
-const selectOptions = (field) => (field.options || '').split('\n').filter(Boolean)
-
-const INPUT_TYPES = {
-  Int: 'number',
-  Float: 'number',
-  Currency: 'number',
-  Percent: 'number',
-  Date: 'date',
-  Datetime: 'datetime-local',
-  Time: 'time',
-  Select: 'select',
-  'Small Text': 'textarea',
-  Text: 'textarea',
-  'Long Text': 'textarea',
-  'Text Editor': 'textarea',
-}
-const inputType = (field) => INPUT_TYPES[field.fieldtype] || 'text'
-
-const display = (row, column) => {
-  const value = row[column.fieldname]
-  if (value === null || value === undefined || value === '') return '—'
-  if (column.fieldtype === 'Check') return value ? 'Yes' : 'No'
-  return value
-}
-
 const open = (row) => {
   editing.value = row
-  error.value = ''
-  Object.keys(form).forEach((key) => delete form[key])
-  for (const field of formFields.value) form[field.fieldname] = row[field.fieldname]
   showRecord.value = true
 }
 
-const create = () => {
-  open({ __new: true })
-}
-
-const save = async () => {
-  saving.value = true
-  error.value = ''
-  try {
-    await workspace.saveAppRecord(
-      props.appCode,
-      spec.value.view,
-      { ...form },
-      editing.value.__new ? null : editing.value.name,
-    )
-    showRecord.value = false
-    await loadRows()
-  } catch (e) {
-    error.value = e.message || String(e)
-  } finally {
-    saving.value = false
-  }
-}
+const create = () => open({ __new: true })
 
 const loadRows = async () => {
   if (!spec.value?.doctype) {
     rows.value = []
+    columns.value = spec.value?.columns || []
     return
   }
   rowsLoading.value = true
   try {
-    const page = await workspace.appRows(props.appCode, spec.value.view)
+    const page = await workspace.appRows(props.appCode, spec.value.view, pending.value)
     rows.value = page?.rows || []
+    columns.value = page?.columns || spec.value.columns || []
     hasMore.value = !!page?.has_more
   } finally {
     rowsLoading.value = false
   }
+}
+
+// A change that has not been saved still has to show: the list answers the
+// question the controls are asking, saved or not.
+const onViewChanged = async (payload, options = {}) => {
+  pending.value = payload
+  if (options.reload) {
+    pending.value = null
+    await load()
+    return
+  }
+  await loadRows()
 }
 
 const load = async () => {
@@ -282,7 +259,12 @@ const load = async () => {
 
 // Re-resolved on every view change: the columns, the filters and what this user
 // may do are all per view, not per app.
-watch([() => props.appCode, () => route.query.view, () => session.loaded], load, {
-  immediate: true,
-})
+watch(
+  [() => props.appCode, () => route.query.view, () => session.loaded],
+  () => {
+    pending.value = null
+    load()
+  },
+  { immediate: true },
+)
 </script>

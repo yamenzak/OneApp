@@ -66,7 +66,13 @@ def _members(block: str) -> dict[str, tuple[bool, str]]:
 
     names = {}
     for line in "".join(flat).split("\n"):
-        m = re.match(r"\s*([A-Za-z_$][\w$]*)\s*(\??)\s*:(.*)", line)
+        # Two forms, both legal and both used in frappe-ui:
+        #   property   `default?: (props: P) => any`
+        #   method     `default(props: P): unknown`
+        # Reading only the first is how FileUploader's one slot came back as
+        # "it has none", and a guard that reports a component has no slots
+        # cannot fail on a wrong one.
+        m = re.match(r"\s*([A-Za-z_$][\w$]*)\s*(\??)\s*[:(](.*)", line)
         if m:
             names[m.group(1)] = (not m.group(2), m.group(3).strip().rstrip(","))
     return names

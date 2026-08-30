@@ -125,3 +125,62 @@ def test_the_two_apps_read_through_the_same_endpoint():
         for app in APPS
     }
     assert all(versions.values()), f"one app is still on v1: {versions}"
+
+
+# --------------------------------------------------------------------------- #
+# The v1 data layer, and only it
+#
+# frappe-ui's v0 helpers — createResource, createListResource,
+# createDocumentResource, and the `Resource` / `List Resource` /
+# `Document Resource` documentation calls them — are replaced in v1 by useCall,
+# useList, useDoc, useDoctype and useNewDoc. The v0 names still resolve on the
+# v1 line for a while, which is exactly what makes this worth pinning: code
+# written against them keeps working until it does not, and by then it is
+# everywhere.
+#
+# We wrap four of the five. useNewDoc is deliberately absent: a new record is
+# created through `appview.save`, which is bounded by the screen's own field
+# list, and a client-side document that inserts whatever it holds would be a way
+# around that bound rather than a convenience.
+# --------------------------------------------------------------------------- #
+
+RETIRED = (
+    "createResource",
+    "createListResource",
+    "createDocumentResource",
+    "createDocumentSubmitResource",
+)
+
+V1 = ("useCall", "useList", "useDoc", "useDoctype")
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_no_v0_data_helpers(app):
+    root = ROOT / f"apps/{app}/frontend/src"
+    offenders = []
+    for path in sorted(list(root.rglob("*.js")) + list(root.rglob("*.vue"))):
+        source = path.read_text()
+        for name in RETIRED:
+            if re.search(rf"\b{name}\b", source):
+                offenders.append(f"{path.relative_to(root)}: {name}")
+    assert not offenders, (
+        "these are the v0 data layer; use useCall / useList / useDoc / useDoctype "
+        "through '@/lib/resource': " + ", ".join(offenders)
+    )
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_the_wrappers_are_built_on_the_v1_layer(app):
+    """And that the names are still what frappe-ui exports, so a rename shows up
+    here rather than as a page that fetches nothing."""
+    source = (ROOT / f"apps/{app}/frontend/src/lib/resource.js").read_text()
+    for name in V1:
+        assert re.search(rf"\b{name}\b", source), f"{app} no longer uses {name}"
+
+    # The data layer is its own barrel; the package root re-exports it.
+    index = UI_SRC / "data-fetching/index.ts"
+    if not index.exists():
+        pytest.skip("frappe-ui is not installed")
+    exported = index.read_text()
+    for name in V1 + ("useNewDoc",):
+        assert name in exported, f"frappe-ui no longer exports {name}"

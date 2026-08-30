@@ -1,0 +1,123 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "app_code",
+  "view",
+  "cb_saved_view",
+  "label",
+  "is_default",
+  "sec_saved_query",
+  "filters",
+  "order_by",
+  "cb_saved_columns",
+  "columns",
+  "page_length"
+ ],
+ "fields": [
+  {
+   "description": "Whose view this is.",
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "User",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "app_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "App Code",
+   "reqd": 1
+  },
+  {
+   "description": "The screen's slug, so two screens over one doctype keep their own answers.",
+   "fieldname": "view",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "View",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_saved_view",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Empty is the person's default for this screen.",
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "label": "Label"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Is Default"
+  },
+  {
+   "fieldname": "sec_saved_query",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "fieldname": "filters",
+   "fieldtype": "Code",
+   "label": "Filters",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "order_by",
+   "fieldtype": "Data",
+   "label": "Order By"
+  },
+  {
+   "fieldname": "cb_saved_columns",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Comma-separated fieldnames. Empty follows the screen.",
+   "fieldname": "columns",
+   "fieldtype": "Small Text",
+   "label": "Columns"
+  },
+  {
+   "default": "0",
+   "description": "0 follows the screen.",
+   "fieldname": "page_length",
+   "fieldtype": "Int",
+   "label": "Page Length"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "OneApp Saved View",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

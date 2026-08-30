@@ -549,3 +549,37 @@ permissions still decide whether any of it is allowed.
 **The escape hatch is a registered component**, for a dashboard or a wizard or
 anything a list of records cannot be. Second, not first: every screen written by
 hand is a screen maintained by hand.
+
+## 13. A person may narrow a screen, never widen one
+
+Frappe's desk lets someone save a list view: their filters, their sort, their
+columns. Customers expect that, and building it means handing the browser three
+things that reach the query layer — a filter dict, an `order_by` string and a
+field list — for a screen whose whole security property is that it is an
+allowlist.
+
+So the rule is one sentence: **a saved or pending view narrows a screen and can
+never widen it.**
+
+* **Filters merge with the screen's winning.** `{**theirs, **ours}` — a saved
+  filter of `status: Closed` on a screen filtered to `status: Open` returns the
+  same rows as before. And a value from a browser is never passed through as an
+  operator: anything but a Select, Link or Check becomes `["like", "%value%"]`,
+  because a filter value that can carry its own operator is a query someone else
+  wrote.
+* **Columns intersect.** A saved column list is filtered against the screen's
+  own; naming `owner` or `_liked_by` drops it rather than adding it.
+* **`order_by` is rebuilt from parts.** Split into a fieldname and a direction,
+  each checked against what the screen offers, and reassembled. The string that
+  arrived never reaches the query layer.
+* **The same bounds apply before anything is saved**, which is why the controls
+  can show their answer immediately: an unsaved change goes through the same
+  merge as a saved one rather than being applied in the browser.
+
+A saved view belongs to one person and one screen (`OneApp Saved View`, keyed on
+user + app + view), so it is a preference and never a permission. It also means
+two screens over the same doctype keep their own answers.
+
+**The record dialog shows the screen's whole field list, not the chosen
+columns.** Hiding a column is a statement about the list; the record still has
+the field, and the server still lets that screen write it.
