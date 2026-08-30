@@ -969,6 +969,10 @@ doctype(
         f("columns", "Small Text",
           description="Comma-separated fieldnames. Empty follows the screen."),
         f("page_length", "Int", default="0", description="0 follows the screen."),
+        f("favourites", "Check", default="0",
+          description="Only rows this person liked. A flag rather than a filter "
+                      "on _liked_by: that column holds user ids, so a filter "
+                      "naming it could ask what a colleague liked."),
     ],
 )
 
@@ -1320,6 +1324,12 @@ def icon_for(fieldtype: str) -> str:
 
 def cell_for(fieldtype: str) -> str:
 	return (FIELD_TYPES.get(fieldtype) or (None, "text", None, False))[1]
+
+
+def is_layout(fieldtype: str) -> bool:
+	"""A section break, a column break, a heading. Carries no value, so it is
+	never a column and never something to filter."""
+	return fieldtype in LAYOUT_TYPES
 
 
 # --------------------------------------------------------------------------- #

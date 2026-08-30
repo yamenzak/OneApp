@@ -37,13 +37,59 @@
     </Alert>
 
     <template v-else>
-      <ViewControls
-        class="mb-4"
-        :spec="spec"
-        :app-code="appCode"
-        :view="spec.view"
-        @changed="onViewChanged"
-      />
+      <!--
+        The quick boxes get a row of their own — Frappe's standard filter area.
+        Most questions are "the open ones" rather than a filter builder, and a
+        box you can type into beats a panel you have to open.
+      -->
+      <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start">
+        <QuickFilters class="min-w-0 flex-1" :spec="spec" @changed="onQuickFilters" />
+        <!-- Its own line on a phone. Beside a wrapping row of boxes the actions
+             end up sitting on top of one. -->
+        <div class="flex shrink-0 items-center gap-1">
+          <FilterPanel
+            :filters="panelFilters"
+            :columns="spec.all_columns || []"
+            :app-code="appCode"
+            :view="spec.view"
+            @changed="onPanelFilters"
+          />
+          <!--
+            Frappe puts these in the list header and that is where they belong
+            visually — but the list header does not exist when the list is
+            empty, and "only my favourites" with nothing liked is exactly when
+            you need the button that turns it off again.
+          -->
+          <Button
+            icon="lucide-heart"
+            :variant="favourites ? 'subtle' : 'ghost'"
+            :theme="favourites ? 'red' : 'gray'"
+            label="Only my favourites"
+            @click="toggleFavourites"
+          />
+          <Button
+            icon="lucide-settings-2"
+            variant="ghost"
+            label="Choose columns"
+            @click="showColumns = true"
+          />
+          <Button
+            v-if="dirty"
+            icon-left="lucide-bookmark"
+            label="Save this view"
+            :loading="saving"
+            @click="saveView"
+          />
+          <Button
+            v-if="spec.saved"
+            icon="lucide-rotate-ccw"
+            label="Back to the default view"
+            variant="ghost"
+            :loading="resetting"
+            @click="resetView"
+          />
+        </div>
+      </div>
 
       <!--
         Skeleton rows rather than a spinner: the shape of what is coming is
@@ -57,12 +103,8 @@
       <EmptyState
         v-else-if="!rows.length"
         icon="lucide-inbox"
-        :title="`No ${spec.view_label.toLowerCase()} yet`"
-        :description="
-          spec.can_create
-            ? 'Nothing here so far. New starts the first one.'
-            : 'Nothing here so far.'
-        "
+        :title="favourites ? 'Nothing here yet' : `No ${spec.view_label.toLowerCase()} yet`"
+        :description="emptyBecause"
       />
 
       <!-- Wide content owns its own horizontal scroller rather than stretching
@@ -70,38 +112,55 @@
       <div v-else class="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
         <List
           :columns="tracks"
-          :row-height="48"
+          :row-height="52"
           class="list-row-px-3"
-          :class="wide && 'min-w-[36rem]'"
+          :class="wide && 'min-w-[42rem]'"
           divider="full"
         >
           <ListHeader>
-            <ListHeaderCell v-for="c in visible" :key="c.key">
-              <span class="flex min-w-0 items-center gap-1.5">
-                <!-- The field's own icon, so a header reads at a glance. -->
-                <Icon :name="c.column.icon" class="size-3.5 shrink-0 text-ink-gray-4" />
-                <span class="truncate">{{ c.header }}</span>
+            <!--
+              Sorting lives on the headers, which is where everybody reaches
+              first and the only place a direction can sit beside the thing it
+              applies to. frappe-ui ships the cell for it — a real button, the
+              aria-sort, the arrow that appears on hover — so this wires state
+              to it rather than rebuilding it.
+            -->
+            <ListHeaderCellSort
+              v-for="c in sortableColumns"
+              :key="c.key"
+              :direction="directionFor(c)"
+              @click="sortBy(c.column.fieldname)"
+            >
+              <template #prefix>
+                <Icon :name="c.column.icon" class="size-3.5 text-ink-gray-4" />
+              </template>
+              {{ c.header }}
+            </ListHeaderCellSort>
+
+            <!-- How many, over the column that carries each row's age. -->
+            <ListHeaderCell v-if="metaColumn" :class="PINNED">
+              <span class="ml-auto whitespace-nowrap text-p-xs text-ink-gray-5">
+                {{ counted }}
               </span>
             </ListHeaderCell>
           </ListHeader>
+
           <ListRows :items="rows" row-key="name" v-slot="{ item: row, value }">
             <ListRow :value="value" @click="open(row)">
-              <ListCell v-for="c in visible" :key="c.key">
-                <div class="flex min-w-0 items-center gap-2">
-                  <!-- The record's picture, where the doctype names one. -->
-                  <Avatar
-                    v-if="c.first && spec.image_field && row[spec.image_field]"
-                    :image="row[spec.image_field]"
-                    :label="String(row[c.column.fieldname] || row.name)"
-                    shape="square"
-                    size="sm"
-                  />
-                  <FieldCell
-                    :column="c.column"
-                    :value="row[c.column.fieldname]"
-                    :states="spec.states"
-                  />
-                </div>
+              <ListCell v-for="c in visible" :key="c.key" :class="c.pinned && PINNED">
+                <TitleCell
+                  v-if="c.cell === 'title'"
+                  :row="row"
+                  :title-field="spec.title_field"
+                  :image-field="spec.image_field"
+                />
+                <RowMeta v-else-if="c.cell === 'meta'" :meta="row._meta || {}" @like="like(row)" />
+                <FieldCell
+                  v-else
+                  :column="c.column"
+                  :value="row[c.column.fieldname]"
+                  :states="spec.states"
+                />
               </ListCell>
             </ListRow>
           </ListRows>
@@ -113,6 +172,14 @@
       </div>
     </template>
   </div>
+
+  <ColumnPicker
+    v-if="spec?.doctype"
+    v-model="showColumns"
+    :chosen="chosenColumns"
+    :offered="spec.all_columns || []"
+    @update:chosen="onColumns"
+  />
 
   <RecordDialog
     v-if="spec?.doctype"
@@ -133,21 +200,25 @@ import {
   Breadcrumbs,
   Button,
   Alert,
-  Avatar,
-  Icon,
   Skeleton,
   LoadingIndicator,
   List,
   ListHeader,
   ListHeaderCell,
+  ListHeaderCellSort,
   ListRows,
   ListRow,
   ListCell,
+  Icon,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import FieldCell from '../components/app/FieldCell.vue'
+import TitleCell from '../components/app/TitleCell.vue'
+import RowMeta from '../components/app/RowMeta.vue'
 import RecordDialog from '../components/app/RecordDialog.vue'
-import ViewControls from '../components/app/ViewControls.vue'
+import FilterPanel from '../components/app/FilterPanel.vue'
+import QuickFilters from '../components/app/QuickFilters.vue'
+import ColumnPicker from '../components/app/ColumnPicker.vue'
 import { session } from '../lib/session'
 import { workspace } from '../lib/workspace'
 import { useListColumns } from '../lib/list'
@@ -159,15 +230,24 @@ const route = useRoute()
 const spec = ref(null)
 const loading = ref(false)
 const showRecord = ref(false)
+const showColumns = ref(false)
 const editing = ref(null)
 const rows = ref([])
-// The columns the rows were actually fetched with, which is not always the
-// screen's: an unsaved change to the column list narrows the fetch, and a
-// header list that does not follow leaves a column standing over empty cells.
 const columns = ref([])
 const hasMore = ref(false)
 const rowsLoading = ref(false)
-const pending = ref(null)
+const saving = ref(false)
+const resetting = ref(false)
+const dirty = ref(false)
+
+// The two filter surfaces are separate lists that are asked together, which is
+// what Frappe does: the boxes above answer the common question and the panel
+// answers the rest, and neither clears the other.
+const quickFilters = ref([])
+const panelFilters = ref([])
+const order = ref('')
+const chosenColumns = ref([])
+const favourites = ref(false)
 
 const app = computed(() => (session.apps || []).find((a) => a.app_code === props.appCode))
 
@@ -176,30 +256,95 @@ const custom = computed(() => {
   return name ? appComponent(name) : null
 })
 
-// Only the columns the resolved view actually named. Declared through
-// useListColumns so a six-column doctype drops to two on a phone rather than
-// truncating the one column a row exists to name.
-const columnSpec = computed(() =>
-  (columns.value || []).map((column, index) => ({
+// The title column stands in for the title field wherever it would have been,
+// and leads the list when the field is not chosen at all: a row needs a name
+// before it needs anything else. The meta column closes every list.
+const columnSpec = computed(() => {
+  const titleField = spec.value?.title_field
+  const rest = (columns.value || []).filter((c) => c.fieldname !== titleField)
+
+  const titleColumn = (spec.value?.all_columns || []).find((c) => c.fieldname === titleField)
+
+  const title = {
+    key: '__title',
+    header: titleColumn?.label || 'Name',
+    track: 'minmax(12rem,2fr)',
+    mobile: true,
+    cell: 'title',
+    sortable: !!titleField,
+    column: {
+      fieldname: titleField || 'name',
+      label: titleColumn?.label || 'Name',
+      // The field's own icon, not a stand-in: this column *is* the title field,
+      // and giving it a different icon than the picker shows for the same field
+      // is two names for one thing.
+      icon: titleColumn?.icon || 'lucide-type',
+    },
+  }
+
+  const middle = rest.map((column) => ({
     key: column.fieldname,
     header: column.label,
-    // The identity column gets the room. With five 10rem columns beside it a
-    // bare `1fr` came out the narrowest of the six, so the one field a row
-    // exists to name was the one truncated.
-    track: index === 0 ? 'minmax(12rem,2fr)' : '9rem',
-    // The identity column and one more. Everything else is in the record.
-    mobile: index < 2,
-    first: index === 0,
+    track: '9rem',
+    // A phone shows the name and one more. Everything else is in the record.
+    mobile: false,
+    cell: column.cell,
+    sortable: true,
     column,
-  })),
-)
+  }))
+  if (middle.length) middle[0].mobile = true
+
+  return [
+    title,
+    ...middle,
+    {
+      key: '__meta',
+      header: '',
+      track: '10rem',
+      mobile: true,
+      cell: 'meta',
+      sortable: false,
+      pinned: true,
+      column: { fieldname: 'modified', label: 'Last Updated', icon: 'lucide-clock' },
+    },
+  ]
+})
 
 const { visible, columns: tracks } = useListColumns(columnSpec)
+
+// A list wide enough to scroll is exactly the list whose column picker you
+// need, so the meta column is pinned to the right edge rather than scrolled off
+// it. Opaque, or the columns it covers read through it.
+// A list wide enough to scroll is exactly the list whose count you want to
+// read, so the column carrying each row's age is pinned to the right edge.
+// Opaque, or the columns sliding under it read through it.
+//
+// A constant rather than a literal in the template: a string inside a `:class`
+// expression is read as a class list by the token audit, which then reports
+// `meta` as a retired token.
+const PINNED = 'sticky right-0 z-10 bg-surface-base'
+
+const sortableColumns = computed(() => visible.value.filter((c) => c.cell !== 'meta'))
+const metaColumn = computed(() => visible.value.some((c) => c.cell === 'meta'))
 
 // A computed rather than an inline expression: a `>` inside a template
 // attribute ends the tag as far as any regex-shaped parser is concerned, which
 // is how the frappe-ui prop guard read `visible.length` as a prop name.
 const wide = computed(() => visible.value.length > 3)
+
+const counted = computed(() =>
+  hasMore.value ? `${rows.value.length}+` : String(rows.value.length),
+)
+
+const emptyBecause = computed(() => {
+  if (favourites.value) return 'Nothing you have liked is on this screen.'
+  if (quickFilters.value.length || panelFilters.value.length) {
+    return 'Nothing matches the filters. Clear one to widen the list.'
+  }
+  return spec.value?.can_create
+    ? 'Nothing here so far. New starts the first one.'
+    : 'Nothing here so far.'
+})
 
 const crumbs = computed(() => {
   const trail = [{ label: 'Apps', route: { name: 'Launcher' } }]
@@ -210,12 +355,75 @@ const crumbs = computed(() => {
   return trail
 })
 
+// --- sorting, from the headers ----------------------------------------------
+
+const sortField = computed(() => (order.value || spec.value?.order_by || '').split(' ')[0])
+const ascending = computed(
+  () => (order.value || spec.value?.order_by || '').split(' ')[1] === 'asc',
+)
+
+const directionFor = (c) => {
+  if (c.column.fieldname !== sortField.value) return undefined
+  return ascending.value ? 'asc' : 'desc'
+}
+
+// Clicking the column already sorted flips it; clicking another starts on
+// descending, which is what "show me the newest" means for most columns.
+const sortBy = (fieldname) => {
+  const flip = fieldname === sortField.value && !ascending.value
+  order.value = `${fieldname} ${flip ? 'asc' : 'desc'}`
+  changed()
+}
+
+// --- what the list is being asked -------------------------------------------
+
+const payload = () => ({
+  filters: [...quickFilters.value, ...panelFilters.value],
+  order_by: order.value,
+  columns: chosenColumns.value,
+  favourites: favourites.value,
+})
+
+const changed = async () => {
+  dirty.value = true
+  await loadRows()
+}
+
+const onQuickFilters = (filters) => {
+  quickFilters.value = filters
+  changed()
+}
+
+const onPanelFilters = (filters) => {
+  panelFilters.value = filters
+  changed()
+}
+
+const onColumns = (chosen) => {
+  chosenColumns.value = chosen
+  changed()
+}
+
+const toggleFavourites = () => {
+  favourites.value = !favourites.value
+  changed()
+}
+
+// --- records ----------------------------------------------------------------
+
 const open = (row) => {
   editing.value = row
   showRecord.value = true
 }
 
 const create = () => open({ __new: true })
+
+const like = async (row) => {
+  const result = await workspace.toggleLike(props.appCode, spec.value.view, row.name)
+  // Patched in place rather than reloaded: a like is not a reason to lose the
+  // reader's scroll position.
+  row._meta = { ...row._meta, liked: !!result?.liked, likes: (result?.likes || []).length }
+}
 
 const loadRows = async () => {
   if (!spec.value?.doctype) {
@@ -225,8 +433,12 @@ const loadRows = async () => {
   }
   rowsLoading.value = true
   try {
-    const page = await workspace.appRows(props.appCode, spec.value.view, pending.value)
+    const page = await workspace.appRows(props.appCode, spec.value.view, payload())
     rows.value = page?.rows || []
+    // The columns the rows were actually fetched with, which is not always the
+    // screen's: an unsaved change to the column list narrows the fetch, and a
+    // header list that does not follow leaves a column standing over empty
+    // cells.
     columns.value = page?.columns || spec.value.columns || []
     hasMore.value = !!page?.has_more
   } finally {
@@ -234,16 +446,26 @@ const loadRows = async () => {
   }
 }
 
-// A change that has not been saved still has to show: the list answers the
-// question the controls are asking, saved or not.
-const onViewChanged = async (payload, options = {}) => {
-  pending.value = payload
-  if (options.reload) {
-    pending.value = null
+const saveView = async () => {
+  saving.value = true
+  try {
+    await workspace.saveView(props.appCode, spec.value.view, payload())
+    dirty.value = false
     await load()
-    return
+  } finally {
+    saving.value = false
   }
-  await loadRows()
+}
+
+const resetView = async () => {
+  resetting.value = true
+  try {
+    await workspace.resetView(props.appCode, spec.value.view)
+    dirty.value = false
+    await load()
+  } finally {
+    resetting.value = false
+  }
 }
 
 const load = async () => {
@@ -251,6 +473,14 @@ const load = async () => {
   loading.value = true
   try {
     spec.value = await workspace.appView(props.appCode, route.query.view || '')
+    // Seeded from what the screen resolved to, which already includes this
+    // person's saved view.
+    quickFilters.value = []
+    panelFilters.value = (spec.value?.saved?.filters || []).map((filter) => [...filter])
+    order.value = spec.value?.order_by || ''
+    chosenColumns.value = (spec.value?.columns || []).map((c) => c.fieldname)
+    favourites.value = !!spec.value?.saved?.favourites
+    dirty.value = false
     await loadRows()
   } finally {
     loading.value = false
@@ -259,12 +489,7 @@ const load = async () => {
 
 // Re-resolved on every view change: the columns, the filters and what this user
 // may do are all per view, not per app.
-watch(
-  [() => props.appCode, () => route.query.view, () => session.loaded],
-  () => {
-    pending.value = null
-    load()
-  },
-  { immediate: true },
-)
+watch([() => props.appCode, () => route.query.view, () => session.loaded], () => load(), {
+  immediate: true,
+})
 </script>

@@ -115,6 +115,42 @@ def referenced_classes(app: str) -> dict[str, set[str]]:
             for _, blob in JS_CLASS.findall(script):
                 for token in blob.split():
                     record(token, path)
+            # A class list held in a plain constant matches neither regex above.
+            # `const STUCK = 'sticky right-0 z-10 bg-surface-white'` is how a
+            # retired token got past this and rendered a transparent column over
+            # the one beside it.
+            for blob in loose_class_lists(script):
+                for token in blob.split():
+                    record(token, path)
+    return found
+
+
+# A token nothing but Tailwind writes: it carries a scale, a variant or an
+# arbitrary value. Used to tell a class list from an English sentence.
+TAILWIND_ISH = re.compile(r"[-:\[]")
+
+
+def loose_class_lists(script: str) -> list[str]:
+    """String literals that can only be class lists.
+
+    A heuristic, and it has to be: any string in a script could be anything.
+    The rule is deliberately conservative — several tokens, every one of them
+    shaped like a utility, and at least half carrying a scale, a variant or an
+    arbitrary value. "sticky right-0 z-10 bg-surface-base" qualifies; "Add to
+    favourites" and "last 7 days" do not.
+    """
+    code = re.sub(r"/\*.*?\*/", "", script, flags=re.S)
+    code = re.sub(r"//[^\n]*", "", code)
+
+    found = []
+    for single, double in STRING_IN_EXPR.findall(code):
+        blob = single or double
+        tokens = blob.split()
+        if len(tokens) < 2 or not all(UTILITY.match(t) for t in tokens):
+            continue
+        if sum(bool(TAILWIND_ISH.search(t)) for t in tokens) * 2 < len(tokens):
+            continue
+        found.append(blob)
     return found
 
 

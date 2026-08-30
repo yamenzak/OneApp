@@ -29,10 +29,25 @@
       <Tabs v-model="tab">
         <TabList>
           <TabTrigger value="fields">Details</TabTrigger>
-          <!-- One interpolation rather than text plus one: Vue condenses the
-               newline before the text into a leading space, and a tab whose
-               label starts with a space is a label nothing can match on. -->
-          <TabTrigger v-if="!isNew" value="comments">{{ commentsTab }}</TabTrigger>
+          <!--
+            The count as a badge rather than inside the word: "Comments (3)"
+            reads as a label, a badge reads as a number.
+
+            One interpolation for the text, because Vue condenses the newline
+            before it into a leading space and a tab whose label starts with a
+            space is a label nothing can match on.
+          -->
+          <TabTrigger v-if="!isNew" value="comments">
+            <span class="flex items-center gap-1.5"
+              >{{ 'Comments'
+              }}<Badge
+                v-if="comments.length"
+                :label="String(comments.length)"
+                theme="gray"
+                variant="subtle"
+              />
+            </span>
+          </TabTrigger>
           <TabTrigger v-if="!isNew && trackChanges" value="history">History</TabTrigger>
         </TabList>
 
@@ -147,6 +162,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import {
   Dialog,
+  Badge,
   Button,
   Avatar,
   Icon,
@@ -205,10 +221,6 @@ const title = computed(() => {
   const field = props.spec?.title_field
   return (field && props.record?.[field]) || props.record?.name || 'Record'
 })
-
-const commentsTab = computed(() =>
-  comments.value.length ? `Comments (${comments.value.length})` : 'Comments',
-)
 
 const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
 

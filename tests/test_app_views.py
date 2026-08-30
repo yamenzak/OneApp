@@ -43,6 +43,8 @@ def field(fieldname, fieldtype="Data", label=None, **kw):
 		description=kw.get("description"), placeholder=kw.get("placeholder"),
 		precision=kw.get("precision"), non_negative=kw.get("non_negative", 0),
 		default=kw.get("default"), link_filters=kw.get("link_filters"),
+		in_standard_filter=kw.get("in_standard_filter", 0),
+		permlevel=kw.get("permlevel", 0),
 	)
 
 
@@ -56,18 +58,25 @@ def meta(fields, title_field=None, **kw):
 		is_submittable=kw.get("is_submittable", 0),
 		track_changes=kw.get("track_changes", 0),
 		track_seen=0, max_attachments=0, autoname=kw.get("autoname", ""),
+		# Which permlevels this user may read. Frappe's own answer; a field
+		# above them is a field this screen must not offer.
+		get_permlevel_access=lambda *a, **k: kw.get("permlevels", [0]),
 	)
 
 
 TODO = meta(
 	[
 		field("description", "Small Text", "Description", in_list_view=1),
-		field("status", "Select", "Status", options="Open\nClosed"),
-		field("priority", "Select", "Priority", options="High\nMedium\nLow"),
+		field("status", "Select", "Status", options="Open\nClosed", in_standard_filter=1),
+		field("priority", "Select", "Priority", options="High\nMedium\nLow",
+		      in_standard_filter=1),
 		field("date", "Date", "Due Date"),
 		field("modified", "Datetime", "Last Modified", read_only=1),
 		field("reference_name", "Data", "Reference", read_only=1),
 		field("colour", "Color", "Colour"),
+		field("sec_more", "Section Break", "More"),
+		field("items", "Table", "Items", options="ToDo Item"),
+		field("cost", "Currency", "Cost", permlevel=1),
 	],
 	title_field="description",
 )
@@ -405,3 +414,133 @@ def test_every_argument_admits_a_string():
 			if annotation in ("int", "int | None"):
 				continue
 			assert "str" in annotation, f"{name}({param}: {annotation}) cannot take text"
+
+
+# --------------------------------------------------------------------------- #
+# The manifest's fields are a default, not a ceiling
+#
+# An app declaring `customer,status,total` is saying "start here". Someone who
+# wants the due date on their list should not need a deploy to get it, so the
+# column picker offers the doctype's own fields and the manifest decides which
+# are on to begin with.
+#
+# That is a real widening, and what it does not open is the point of these.
+# --------------------------------------------------------------------------- #
+
+def test_the_whole_doctype_is_offerable(appview):
+	offerable = appview._offerable(TODO)
+	assert "date" in offerable
+	assert "colour" in offerable
+
+
+def test_a_field_above_this_users_permlevel_is_never_offered(appview):
+	"""Frappe protects these separately, and a screen must not become a way
+	around field-level permissions."""
+	assert "cost" not in appview._offerable(TODO)
+
+	# And it is offered to somebody who may read that level.
+	privileged = meta(TODO.fields, title_field="description", permlevels=[0, 1])
+	assert "cost" in appview._offerable(privileged)
+
+
+def test_layout_and_child_tables_are_not_columns(appview):
+	offerable = appview._offerable(TODO)
+	assert "sec_more" not in offerable, "a section break carries no value"
+	assert "items" not in offerable, "a child table is rows, not a value"
+
+
+def test_frappes_bookkeeping_is_still_out(appview):
+	assert "modified" not in appview._offerable(TODO)
+
+
+def test_quick_filters_are_the_ones_the_doctype_marked(appview):
+	"""Frappe's own answer — `in_standard_filter` plus the title field. The
+	doctype already decided what people search this thing by."""
+	columns = appview._columns(TODO, appview._offerable(TODO))
+	assert appview._quick_filters(TODO, columns) == ["description", "status", "priority"]
+
+
+# --------------------------------------------------------------------------- #
+# What a row carries beside its columns
+# --------------------------------------------------------------------------- #
+
+def test_a_row_reports_its_comment_count_and_never_its_comments(appview, stub_frappe):
+	"""`_comments` holds the text, the author and the timestamp of every
+	comment. Only the count belongs in a list."""
+	stub_frappe.session.user = "someone@example.com"
+	row = appview._with_meta({
+		"name": "abc",
+		"modified": "2026-08-30 10:00:00",
+		"_comments": '[{"comment": "a secret", "by": "boss@example.com"}, {"comment": "two"}]',
+		"_liked_by": '["someone@example.com", "other@example.com"]',
+	})
+
+	assert "_comments" not in row
+	assert "_liked_by" not in row
+	assert row["_meta"]["comments"] == 2
+	assert row["_meta"]["likes"] == 2
+	assert row["_meta"]["liked"] is True
+	assert "secret" not in str(row)
+
+
+def test_a_row_with_no_comments_or_likes_still_reports(appview, stub_frappe):
+	stub_frappe.session.user = "someone@example.com"
+	row = appview._with_meta({"name": "abc", "modified": None})
+	assert row["_meta"] == {"modified": None, "comments": 0, "likes": 0, "liked": False}
+
+
+def test_favourites_can_only_ever_mean_the_person_asking(appview, stub_frappe):
+	"""`_liked_by` is a JSON array of user ids. A filter naming it could be
+	pointed at a colleague and would answer what they had liked, so this is a
+	flag the server expands rather than a filter a browser writes."""
+	stub_frappe.session.user = "someone@example.com"
+	assert appview._favourite_filter() == ["_liked_by", "like", "%someone@example.com%"]
+
+	# And the column itself is not offerable, so no filter can name it.
+	offered = offered_todo(appview)
+	assert appview._asked_filters(offered, [["_liked_by", "like", "%boss%"]]) == []
+
+
+def test_the_id_can_be_filtered_even_though_it_is_not_a_column(appview):
+	"""Frappe's list gives `name` a box of its own above every list, and it is
+	the one thing everybody searches by. It is not a column — it lives under the
+	title — so it is described rather than looked up."""
+	resolved = resolved_todo(appview)
+	assert appview._asked_filters(
+		appview._filterable(resolved), [["name", "like", "kos"]]
+	) == [["name", "like", "kos"]]
+
+
+def test_the_id_is_still_not_offered_as_a_column(appview):
+	"""Filterable and offerable are two questions. Answering both from one list
+	would put the id in the column picker, where it duplicates the title cell."""
+	assert "name" not in appview._offerable(TODO)
+	out = appview._apply_overrides(resolved_todo(appview), {"columns": ["name"]})
+	assert "name" not in [c["fieldname"] for c in out["columns"]]
+
+
+def test_a_write_is_bounded_by_the_doctype_not_by_the_manifest(appview):
+	"""The record dialog shows the doctype's whole field list now, so a write
+	has to reach the same set — a control that looks editable and is silently
+	discarded is worse than one that is not offered.
+
+	What still bounds it: the doctype must be one the app granted, Frappe's own
+	write permission decides, `read_only` is not editable, a field above this
+	user's permlevel is not in `all_columns`, and bookkeeping never is.
+	"""
+	resolved = {
+		"columns": appview._columns(TODO, ["description"]),
+		"all_columns": appview._columns(TODO, appview._offerable(TODO)),
+	}
+	writable = appview._writable(resolved)
+
+	# Outside the manifest's list, and writable.
+	assert "date" in writable
+	# Read-only stays read-only.
+	assert "reference_name" not in writable
+	# No frappe-ui control means no write, whatever else is true.
+	assert "colour" not in writable
+	# Above this user's permlevel: never offered, so never writable.
+	assert "cost" not in writable
+	# Bookkeeping, always.
+	assert "modified" not in writable

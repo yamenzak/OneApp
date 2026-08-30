@@ -101,6 +101,12 @@ def cell_for(fieldtype: str) -> str:
 	return (FIELD_TYPES.get(fieldtype) or (None, "text", None, False))[1]
 
 
+def is_layout(fieldtype: str) -> bool:
+	"""A section break, a column break, a heading. Carries no value, so it is
+	never a column and never something to filter."""
+	return fieldtype in LAYOUT_TYPES
+
+
 # --------------------------------------------------------------------------- #
 # Filter operators, ported from Frappe's own filter UI and inverted from its
 # per-fieldtype deny list into an allow list. `tests/test_field_types.py` reads

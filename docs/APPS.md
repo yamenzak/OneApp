@@ -39,12 +39,14 @@ order_by      modified desc
 component                         escape hatch — see below
 ```
 
-Only `fields` is worth writing down about the columns. Labels, types, Select
-options and required-ness come from the tenant site, so a relabelled field is
-relabelled on every workspace without a sync. A field the manifest names and a
-site does not have is skipped rather than fatal — one manifest serves sites on
-different versions. Naming none at all falls back to the doctype's own list
-fields.
+Only `fields` is worth writing down about the columns, and it is **a default
+rather than a ceiling**: it decides which columns a screen opens with, and the
+column picker offers every field the doctype has. Someone who wants the due date
+on their list gets it without a deploy. Labels, types, Select options and
+required-ness come from the tenant site, so a relabelled field is relabelled on
+every workspace without a sync. A field the manifest names and a site does not
+have is skipped rather than fatal — one manifest serves sites on different
+versions. Naming none at all falls back to the doctype's own list fields.
 
 Screens are edited in OneAdmin under **Settings → App screens**. Their order
 there is the order of the app's navigation, in the sidebar and in the phone's
@@ -58,10 +60,14 @@ already granted — checked against the DocPerms actually written, not against t
 manifest as sent. A view pointing outside its app is refused rather than left to
 come back as an empty list, which reads like there is no data.
 
-**A write is bounded by what the screen shows.** Reads and writes go through the
-view rather than a generic document API, so a screen cannot be used to set a
-field it does not display. Frappe's own permissions still decide whether any of
-it is allowed; this only bounds what is asked for.
+**A write is bounded by the doctype the app granted, not by the manifest's field
+list.** Reads and writes go through the view rather than a generic document API,
+so a screen cannot reach a doctype outside its app's grant. Within that doctype
+the bound is Frappe's own: `has_permission(write)` decides, `read_only` fields
+are not editable, a field above this user's permlevel is never offered, and
+Frappe's bookkeeping never is. The manifest's `fields` used to narrow this too;
+it no longer does, because the record now shows the whole doctype and a control
+that looks editable and is silently discarded is worse than one that is absent.
 
 Both are exercised against a real site, and the logic behind them is pinned in
 `tests/test_app_views.py`.
@@ -110,6 +116,20 @@ already names, so an app gets it by existing.
 * **Comments, history and likes.** Frappe keeps all three on every doctype.
   History is rendered in the screen's own labels, not the database's field
   names, and only for fields the screen shows.
+* **A title column.** The doctype's `image_field` as an avatar (falling back to
+  initials from the id), its `title_field` as the name, and the id underneath in
+  subtle text. Always the first column, because a row needs a name before it
+  needs anything else.
+* **A row's age, its comments and a heart**, at the end of every list. All three
+  come off the document — the count is parsed from `_comments`, which itself
+  never leaves the server — so they cost no extra query. The heart in the
+  toolbar filters to what this person liked.
+* **Sortable headers.** Clicking one sorts by that column and shows the
+  direction beside its name; clicking again reverses it.
+* **A quick filter box per field**, above the list. Which fields get one is
+  Frappe's own answer — `in_standard_filter` plus the title field — so no
+  manifest repeats it, and every list gets an ID box. Each typed box carries
+  Frappe's `=` / `≈` toggle for exact against contains.
 * **Filters, in Frappe's own vocabulary.** A filter is
   `[fieldname, operator, value]`, and which operators a field offers comes from
   Frappe's own per-fieldtype table: a Select gets Equals / Not Equals / In /

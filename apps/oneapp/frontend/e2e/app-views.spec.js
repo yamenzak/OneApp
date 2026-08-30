@@ -53,7 +53,11 @@ test('a record opens and saves', async ({ page }, info) => {
   await page.waitForTimeout(600)
 
   // Labels and a Select's options come from the doctype, not from the manifest.
-  await expect(page.getByText('Priority').first()).toBeVisible()
+  // Scoped to the dialog: the quick filter row above the list has a box with
+  // the same label, and on a phone that one is hidden.
+  await expect(
+    page.locator('[role="dialog"]').getByText('Priority', { exact: true }),
+  ).toBeVisible()
   await info.attach(`record-${info.project.name}`, {
     body: await page.screenshot(), contentType: 'image/png' })
   expectNoRealErrors(errors)

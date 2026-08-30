@@ -119,6 +119,55 @@ def _columns(meta, wanted: list[str]) -> list[dict]:
 	return columns
 
 
+def _offerable(meta) -> list[str]:
+	"""Every field of this doctype a person may be offered as a column.
+
+	The manifest's field list is a default, not a ceiling. An app declaring
+	`customer,status,total` is saying "start here", and someone who wants to see
+	the due date should not need a deploy to get it.
+
+	That is a real widening and worth being precise about what it does and does
+	not open. The entitlement granted the *doctype*, and the DocPerms written
+	for it are what let this user read a row at all; showing another column of a
+	row they can already read is not a new permission. What is a new permission
+	is a field Frappe protects separately, so:
+
+	* **permlevel is honoured.** `get_permlevel_access("read")` says which
+	  levels this user may read, and a field above them is not offered here or
+	  anywhere downstream — a screen cannot become a way around field-level
+	  permissions.
+	* **Frappe's bookkeeping stays out**, as it always has.
+	* **Layout and child tables stay out**: neither carries a value in a row.
+	"""
+	allowed = set(meta.get_permlevel_access("read") or [0])
+
+	return [
+		df.fieldname
+		for df in meta.fields
+		if df.fieldname not in HIDDEN
+		and not fieldtypes.is_layout(df.fieldtype)
+		and df.fieldtype not in ("Table", "Table MultiSelect")
+		and (df.permlevel or 0) in allowed
+	]
+
+
+def _quick_filters(meta, columns: list[dict]) -> list[str]:
+	"""Which fields get a box of their own above the list.
+
+	Frappe's own answer: the ones a doctype marks `in_standard_filter`, plus its
+	title field. It is a decision the doctype already made — the fields somebody
+	actually searches this thing by — so no manifest has to repeat it.
+	"""
+	offered = {c["fieldname"] for c in columns}
+	wanted = [
+		df.fieldname
+		for df in meta.fields
+		if df.fieldname in offered
+		and (df.in_standard_filter or df.fieldname == meta.title_field)
+	]
+	return list(dict.fromkeys(wanted))
+
+
 def _default_fields(meta) -> list[str]:
 	"""What to show when an app named nothing.
 
@@ -242,9 +291,16 @@ def _resolve(app_code: str, view: str | None = None) -> dict:
 	wanted = list(dict.fromkeys(wanted or _default_fields(meta)))
 	columns = _columns(meta, wanted)
 
+	# Everything this person could put on the screen, which is the doctype's own
+	# field list rather than the manifest's — see `_offerable`. The manifest
+	# decides what is on by default; a person decides what they look at.
+	offerable = _columns(meta, _offerable(meta))
+
 	resolved.update({
 		"doctype": doctype,
 		"columns": columns,
+		"all_columns": offerable,
+		"quick_filters": _quick_filters(meta, offerable),
 		**presentation(meta),
 		# What to ask the database for: the columns, plus the identity that is
 		# never one.
@@ -310,12 +366,13 @@ def rows(app_code: str, view: str | None = None, limit: int = PAGE,
 	# One more than asked for, so "there are more" needs no second count query.
 	found = frappe.get_list(
 		resolved["doctype"],
-		fields=resolved["fields"],
+		fields=resolved["fields"] + list(META_FIELDS),
 		filters=_all_filters(resolved, resolved.get("asked") or []),
 		order_by=resolved["order_by"],
 		limit_start=int(start or 0),
 		limit_page_length=limit + 1,
 	)
+	found = [_with_meta(row) for row in found]
 
 	# The columns come back with the rows, not only from `spec`. An unsaved
 	# change to the column list narrows what is fetched, and a header list that
@@ -328,8 +385,49 @@ def rows(app_code: str, view: str | None = None, limit: int = PAGE,
 	}
 
 
+# What every list carries beside its columns: when a row last changed, how many
+# comments are on it, and who liked it. Frappe keeps all three on the document,
+# so this costs no extra query.
+META_FIELDS = ("modified", "_comments", "_liked_by")
+
+
+def _with_meta(row: dict) -> dict:
+	"""Turn Frappe's bookkeeping into the three things a row shows.
+
+	`_comments` holds the comments themselves — author, text, timestamp — and
+	only the count belongs in a list, so it is counted here and dropped. That is
+	the whole reason this is a rewrite rather than a passthrough.
+	"""
+	comments = frappe.parse_json(row.pop("_comments", None) or "[]")
+	liked = frappe.parse_json(row.pop("_liked_by", None) or "[]")
+
+	row["_meta"] = {
+		"modified": row.pop("modified", None),
+		"comments": len(comments) if isinstance(comments, list) else 0,
+		"likes": len(liked) if isinstance(liked, list) else 0,
+		"liked": frappe.session.user in liked if isinstance(liked, list) else False,
+	}
+	return row
+
+
 def _writable(resolved: dict) -> set[str]:
-	return {c["fieldname"] for c in resolved["columns"] if c.get("editable")}
+	"""Which fields a save may set.
+
+	Everything the screen could show, not the columns currently on the list —
+	the record dialog renders the doctype's whole field list, and a control that
+	looks editable and is silently discarded is worse than one that is not
+	offered.
+
+	That widened when the column picker did, and it is worth saying what still
+	holds. The doctype has to be one the app's manifest granted with write
+	access; Frappe's own `has_permission(write)` still decides; `read_only`
+	fields are not editable; fields above this user's permlevel are not in
+	`all_columns` at all; and Frappe's bookkeeping is never in it either. What
+	went is our extra narrowing to the manifest's field list, which was a
+	presentation default rather than a permission.
+	"""
+	offered = resolved.get("all_columns") or resolved["columns"]
+	return {c["fieldname"] for c in offered if c.get("editable")}
 
 
 @frappe.whitelist(methods=["POST"])
@@ -395,7 +493,12 @@ def link_options(app_code: str, view: str, fieldname: str, query: str = "") -> l
 	rather than raising, which is the right shape for a picker.
 	"""
 	resolved = _resolve(app_code, view)
-	column = next((c for c in resolved.get("columns") or []
+	# Against everything the screen could show, not only the columns currently
+	# on the list. The record dialog renders the doctype's whole field list —
+	# hiding a column says nothing about whether the record has the field — so
+	# checking the narrower set refused a picker for a field sitting right there
+	# on the form.
+	column = next((c for c in resolved.get("all_columns") or resolved.get("columns") or []
 	               if c["fieldname"] == fieldname), None)
 	if not column:
 		frappe.throw(_("{0} is not on this screen.").format(fieldname),
@@ -607,7 +710,7 @@ def _saved(app_code: str, view: str):
 		"OneApp Saved View",
 		{"user": frappe.session.user, "app_code": app_code, "view": view,
 		 "is_default": 1},
-		["name", "filters", "order_by", "columns", "page_length"],
+		["name", "filters", "order_by", "columns", "page_length", "favourites"],
 		as_dict=True,
 	)
 
@@ -619,13 +722,11 @@ def _apply_saved(resolved: dict) -> dict:
 	# Always present, so nothing downstream has to ask whether a saved view
 	# exists before reading it.
 	resolved["asked"] = []
-	# What the screen offers, before this person narrowed it. The column picker
-	# needs the full set or it can only ever remove.
-	resolved["all_columns"] = list(resolved.get("columns") or [])
+	resolved["favourites"] = False
 	if not saved or not resolved.get("doctype"):
 		return resolved
 
-	offered = {c["fieldname"]: c for c in resolved["columns"]}
+	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or resolved["columns"]}
 	chosen = [f.strip() for f in (saved.get("columns") or "").split(",") if f.strip()]
 	# Intersected, not substituted: a saved column list that names something the
 	# screen no longer offers quietly drops it rather than reintroducing it.
@@ -638,13 +739,16 @@ def _apply_saved(resolved: dict) -> dict:
 	# Bounded again on the way out, not only when it was saved: the row is a
 	# doctype an operator can write, and a filter that reached the table another
 	# way is still a filter this screen never offered.
-	resolved["asked"] = _asked_filters(offered, saved.get("filters"))
+	resolved["asked"] = _asked_filters(_filterable(resolved), saved.get("filters"))
 
 	if saved.get("order_by"):
 		resolved["order_by"] = _safe_order(resolved, saved["order_by"])
 
+	resolved["favourites"] = bool(saved.get("favourites"))
+
 	resolved["saved"] = {
 		"filters": resolved["asked"],
+		"favourites": resolved["favourites"],
 		"order_by": saved.get("order_by") or "",
 		"columns": chosen,
 		"page_length": saved.get("page_length") or 0,
@@ -675,6 +779,25 @@ def _safe_order(resolved: dict, order_by: str) -> str:
 # to make one request cost a great deal.
 MAX_FILTERS = 20
 MAX_IN_VALUES = 100
+
+
+def _filterable(resolved: dict) -> dict:
+	"""The fields a filter may name, keyed by fieldname.
+
+	The columns, plus `name`. The id is not a column — it lives in the title
+	cell, under the title — but it is the one thing everybody searches by, and
+	Frappe's own list gives it a box of its own above every list. Described here
+	rather than looked up, because `name` is not a DocField.
+	"""
+	offered = {c["fieldname"]: c
+	           for c in resolved.get("all_columns") or resolved.get("columns") or []}
+	offered.setdefault("name", {
+		"fieldname": "name",
+		"label": _("ID"),
+		"fieldtype": "Data",
+		"options": None,
+	})
+	return offered
 
 
 def _asked_filters(offered: dict, extra) -> list:
@@ -795,6 +918,18 @@ def _as_query_filters(offered: dict, asked: list) -> list:
 	return query
 
 
+def _favourite_filter() -> list:
+	"""Rows this person liked.
+
+	A flag rather than a filter on `_liked_by`, and the difference matters: the
+	column is a JSON array of user ids, so a filter naming it could be pointed
+	at a colleague and would answer what *they* had liked. The flag can only
+	ever mean the session's own user, which is the only version of this question
+	anyone should be able to ask.
+	"""
+	return ["_liked_by", "like", f"%{frappe.session.user}%"]
+
+
 def _all_filters(resolved: dict, asked: list) -> list:
 	"""The screen's own filters and this person's, as one list.
 
@@ -805,11 +940,12 @@ def _all_filters(resolved: dict, asked: list) -> list:
 	desk behaves the same way, and "no rows, and there is my filter" reads
 	better than a filter that appears to be ignored.
 	"""
-	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or resolved["columns"]}
+	offered = _filterable(resolved)
 	own = [[fieldname, "=", value] if not isinstance(value, (list, tuple))
 	       else [fieldname, value[0], value[1]]
 	       for fieldname, value in (resolved.get("filters") or {}).items()]
-	return own + _as_query_filters(offered, asked)
+	mine = [_favourite_filter()] if resolved.get("favourites") else []
+	return own + mine + _as_query_filters(offered, asked)
 
 
 def _apply_overrides(resolved: dict, overrides) -> dict:
@@ -830,7 +966,10 @@ def _apply_overrides(resolved: dict, overrides) -> dict:
 	# clearing the filters in the controls has to clear them in the list, and a
 	# truthiness check would leave the saved ones standing.
 	if "filters" in overrides:
-		resolved["asked"] = _asked_filters(offered, overrides.get("filters"))
+		resolved["asked"] = _asked_filters(_filterable(resolved), overrides.get("filters"))
+
+	if "favourites" in overrides:
+		resolved["favourites"] = bool(overrides.get("favourites"))
 
 	if overrides.get("order_by"):
 		resolved["order_by"] = _safe_order(resolved, overrides["order_by"])
@@ -841,7 +980,7 @@ def _apply_overrides(resolved: dict, overrides) -> dict:
 @frappe.whitelist(methods=["POST"])
 def save_view(app_code: str, view: str, filters: str | list | dict | None = None,
               order_by: str | None = None, columns: str | list | None = None,
-              page_length: int = 0) -> dict:
+              page_length: int = 0, favourites: str | bool | int = False) -> dict:
 	"""Remember how this person likes this screen.
 
 	The annotations are wide on purpose, and `list` in particular is load-
@@ -858,9 +997,9 @@ def save_view(app_code: str, view: str, filters: str | list | dict | None = None
 	if isinstance(columns, str):
 		columns = [f.strip() for f in columns.split(",") if f.strip()]
 
-	offered = {c["fieldname"]: c for c in resolved["columns"]}
+	offered = {c["fieldname"]: c for c in resolved["all_columns"]}
 	columns = [f for f in (columns or []) if f in offered]
-	filters = _asked_filters(offered, filters)
+	filters = _asked_filters(_filterable(resolved), filters)
 
 	existing = _saved(app_code, view)
 	doc = (frappe.get_doc("OneApp Saved View", existing["name"]) if existing
@@ -875,6 +1014,7 @@ def save_view(app_code: str, view: str, filters: str | list | dict | None = None
 		"order_by": _safe_order(resolved, order_by or "") if order_by else "",
 		"columns": ",".join(columns),
 		"page_length": int(page_length or 0),
+		"favourites": 1 if frappe.utils.sbool(favourites) else 0,
 	})
 	doc.save(ignore_permissions=True)
 	frappe.db.commit()

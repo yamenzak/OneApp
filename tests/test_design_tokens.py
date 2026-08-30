@@ -160,3 +160,61 @@ def test_the_doctype_offers_exactly_the_generated_set():
         assert _generated_icons(app) == APP_ICONS, (
             f"{app}/lib/icons.js is out of date — run scripts/gen_frontend.py"
         )
+
+
+# --------------------------------------------------------------------------- #
+# A class list can hide in a constant
+#
+# The scan looks for `class="…"`, `:class="…"` and `class: '…'`. A plain
+# constant — `const STUCK = 'sticky right-0 z-10 bg-surface-white'` — matches
+# none of them, and that is how a retired token got past this check and rendered
+# a transparent column on top of the one beside it.
+#
+# Telling a class list from an English sentence is a heuristic, so these pin
+# both directions of it.
+# --------------------------------------------------------------------------- #
+
+from token_audit import loose_class_lists  # noqa: E402
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "const STUCK = 'sticky right-0 z-10 bg-surface-white'",
+        'const x = "flex min-w-0 items-center gap-2"',
+        "const y = 'text-p-sm text-ink-gray-5'",
+    ],
+)
+def test_a_class_list_in_a_constant_is_read(source):
+    assert loose_class_lists(source), source
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        # Prose, which is most strings in a component.
+        "const label = 'Add to favourites'",
+        "const empty = 'Nothing matches the filters. Clear one to widen the list.'",
+        # Frappe's own vocabularies, which are words with spaces.
+        "const span = 'last 7 days'",
+        "const op = 'descendants of (inclusive)'",
+        "const order = 'modified desc'",
+        # One token is a name, not a list.
+        "const icon = 'lucide-arrow-up'",
+        "const method = 'oneapp.oneapp_core.appview.rows'",
+        # A hyphenated English word is not enough on its own.
+        "const note = 'a well-known thing happened'",
+    ],
+)
+def test_prose_in_a_constant_is_not_read_as_classes(source):
+    assert not loose_class_lists(source), source
+
+
+def test_the_loose_scan_is_wired_into_the_audit():
+    """End to end: a class list that lives only in a constant has to reach the
+    referenced set, or the widening changed nothing."""
+    referenced = referenced_classes("oneapp")
+    assert "bg-surface-base" in referenced, "the constant scan is not reaching the audit"
+    assert any(
+        "AppHost" in path for path in referenced["bg-surface-base"]
+    ), referenced["bg-surface-base"]

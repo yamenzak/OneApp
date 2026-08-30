@@ -18,7 +18,8 @@
   "order_by",
   "cb_saved_columns",
   "columns",
-  "page_length"
+  "page_length",
+  "favourites"
  ],
  "fields": [
   {
@@ -93,6 +94,13 @@
    "fieldname": "page_length",
    "fieldtype": "Int",
    "label": "Page Length"
+  },
+  {
+   "default": "0",
+   "description": "Only rows this person liked. A flag rather than a filter on _liked_by: that column holds user ids, so a filter naming it could ask what a colleague liked.",
+   "fieldname": "favourites",
+   "fieldtype": "Check",
+   "label": "Favourites"
   }
  ],
  "index_web_pages_for_search": 1,

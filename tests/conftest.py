@@ -99,7 +99,15 @@ def _make_frappe():
 	frappe.log_error = lambda **k: None
 	frappe.get_roles = lambda *a: []
 	frappe.generate_hash = lambda length=10: "0" * length
-	frappe.parse_json = lambda x: x
+	# Frappe's own behaviour: parse a string, pass anything else through. An
+	# identity stub reads a JSON array as a string, which fails where the fake
+	# is thin rather than where the code is wrong.
+	def parse_json(value):
+		if isinstance(value, str | bytes):
+			return __import__("json").loads(value)
+		return value
+
+	frappe.parse_json = parse_json
 	frappe.get_traceback = lambda *a, **k: ""
 
 	def whitelist(*d_args, **d_kwargs):

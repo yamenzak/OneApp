@@ -617,3 +617,32 @@ When filters became a list of triples and `save_view` still said
 test still passed, because calling the function directly skips the check.
 `tests/test_app_views.py` now reads the annotations and checks them against the
 shapes the SPA actually sends.
+
+### The manifest's fields are a default, not a ceiling
+
+This started as "a screen is an allowlist twice over", and the second `twice`
+covered two different things: which *doctype* a screen may reach, and which
+*fields* of it. The first is a real boundary — it is the entitlement. The second
+was a presentation default doing duty as a permission, and it showed: wanting
+the due date on your own list meant a deploy.
+
+So the column picker offers the doctype's own fields, the manifest decides which
+are on to begin with, and the bound that remains is Frappe's:
+
+* the doctype must be one the app's manifest granted, checked against the
+  DocPerms actually written;
+* `get_permlevel_access("read")` decides which fields exist at all here, so a
+  screen never becomes a way around field-level permissions;
+* `read_only` is not editable and Frappe's bookkeeping is never a column;
+* `has_permission` still decides every read and every write.
+
+**Writes moved with it.** The record dialog shows the doctype's whole field list
+— hiding a column says nothing about whether the record has the field — and a
+control that looks editable and is silently discarded is worse than one that is
+not offered. What went is our extra narrowing to the manifest's list; everything
+in the list above still holds.
+
+Two consequences worth knowing when writing an app: a field you do not want a
+customer to edit needs `read_only` or a permlevel on the doctype, not merely
+absence from the manifest; and `fields` is now purely about what the screen opens
+with.
