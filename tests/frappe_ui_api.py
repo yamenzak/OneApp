@@ -16,7 +16,10 @@ ROOT = Path(__file__).resolve().parents[1]
 UI_SRC = ROOT / "apps/oneapp_control/frontend/node_modules/frappe-ui/src"
 
 # Attributes that are never props, whatever the component: Vue's own
-# directives and the handful of attributes Vue itself consumes.
+# directives, the handful of attributes Vue itself consumes, and the
+# accessibility attributes — `role` belongs with `aria-*`, not with the props:
+# it is how an icon-only element gets a name, and no component in the library
+# declares it.
 #
 # Deliberately short. An earlier version also listed the common HTML attributes
 # — `title`, `type`, `placeholder`, `disabled` — and that quietly disabled the
@@ -26,7 +29,7 @@ UI_SRC = ROOT / "apps/oneapp_control/frontend/node_modules/frappe-ui/src"
 # about, so the rest are checked like anything else.
 NOT_PROPS = re.compile(
     r"^(v-if|v-else|v-else-if|v-for|v-show|v-html|v-text|v-pre|v-once|v-cloak"
-    r"|v-slot|key|ref|class|style|is|slot|data-.*|aria-.*)$"
+    r"|v-slot|key|ref|class|style|is|slot|role|data-.*|aria-.*)$"
 )
 
 BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.S)

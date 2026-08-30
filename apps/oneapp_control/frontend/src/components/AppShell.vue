@@ -116,22 +116,51 @@
         </div>
       </div>
 
-      <section v-if="entries.length > 1">
-        <p class="px-1 pb-1 text-p-sm text-ink-gray-5">{{ spacesLabel }}</p>
+      <!--
+        The rail, on a phone. A desktop switches space in one click on the
+        rail; a phone has no rail, so this sheet is the only way — and hiding
+        the section on a workspace with one space left the sheet with no way
+        to reach the launcher, which is where a second one gets opened.
+
+        `ItemListRow` rather than a div with the right padding: it is the row
+        every menu, dropdown and picker in the library is built from, so these
+        rows are the same rows.
+      -->
+      <section v-if="entries.length || entriesTo">
+        <p class="px-1 pb-1 text-p-sm text-ink-gray-5">{{ entriesLabel }}</p>
         <router-link
           v-for="entry in entries"
           :key="entry.key"
           :to="entry.to"
-          class="flex items-center gap-3 rounded-4 p-2 active:bg-surface-gray-2"
+          class="block"
           @click="showMenu = false"
         >
-          <Avatar :label="entry.label" :image="entry.image" size="xl" shape="square" />
-          <span class="min-w-0 flex-1 truncate text-base text-ink-gray-8">{{ entry.label }}</span>
-          <Icon
-            v-if="entry.key === activeEntry"
-            name="lucide-check"
-            class="size-4 shrink-0 text-ink-gray-6"
-          />
+          <ItemListRow
+            size="lg"
+            :active="entry.key === activeEntry"
+            class="min-h-12 active:bg-surface-gray-2"
+          >
+            <template #prefix>
+              <Avatar :label="entry.label" :image="entry.image" size="xl" shape="square" />
+            </template>
+            <span class="min-w-0 flex-1 truncate">{{ entry.label }}</span>
+            <template #suffix>
+              <Icon
+                v-if="entry.key === activeEntry"
+                name="lucide-check"
+                class="size-4 shrink-0 text-ink-gray-6"
+              />
+            </template>
+          </ItemListRow>
+        </router-link>
+
+        <router-link v-if="entriesTo" :to="entriesTo" class="block" @click="showMenu = false">
+          <ItemListRow size="lg" class="min-h-12 active:bg-surface-gray-2">
+            <template #prefix>
+              <Icon name="lucide-layout-grid" class="size-5 shrink-0 text-ink-gray-7" />
+            </template>
+            <span class="min-w-0 flex-1 truncate">All {{ entriesLabel.toLowerCase() }}</span>
+          </ItemListRow>
         </router-link>
       </section>
 
@@ -141,17 +170,27 @@
           v-for="item in overflowNav"
           :key="item.label"
           :to="item.to"
-          class="flex items-center gap-3 rounded-4 p-2 active:bg-surface-gray-2"
+          class="block"
           @click="showMenu = false"
         >
-          <Icon :name="item.icon" class="size-4 shrink-0 text-ink-gray-7" />
-          <span class="min-w-0 flex-1 truncate text-base text-ink-gray-8">{{ item.label }}</span>
-          <Badge
-            v-if="item.badge"
-            :theme="item.badge.theme"
-            :label="item.badge.label"
-            variant="subtle"
-          />
+          <ItemListRow
+            size="lg"
+            :active="!!item.active"
+            class="min-h-12 active:bg-surface-gray-2"
+          >
+            <template #prefix>
+              <Icon :name="item.icon" class="size-4 shrink-0 text-ink-gray-7" />
+            </template>
+            <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
+            <template #suffix>
+              <Badge
+                v-if="item.badge"
+                :theme="item.badge.theme"
+                :label="item.badge.label"
+                variant="subtle"
+              />
+            </template>
+          </ItemListRow>
         </router-link>
       </section>
 
@@ -196,6 +235,7 @@ import {
   Button,
   DesktopShell,
   Icon,
+  ItemListRow,
   MobileNav,
   MobileNavItem,
   MobileShell,
@@ -214,8 +254,18 @@ const props = defineProps({
    */
   entries: { type: Array, default: () => [] },
   activeEntry: { type: String, default: '' },
-  /** Heading the mobile sheet gives the rail's entries. */
-  spacesLabel: { type: String, default: 'Apps' },
+  /**
+   * Heading the mobile sheet gives the rail's entries. Named for the entries
+   * rather than for one product's word for them: both call sites were already
+   * passing `entries-label`, which silently was not a prop, so both sheets
+   * read "Apps" long after neither surface called anything that.
+   */
+  entriesLabel: { type: String, default: 'Spaces' },
+  /**
+   * Where "All spaces" goes — the page that lists every entry. Optional: a
+   * surface with no such page simply does not get the row.
+   */
+  entriesTo: { type: [Object, String], default: null },
   /**
    * Every destination this surface has, in sidebar order:
    * { label, icon, to, active?, badge?, primary? }.

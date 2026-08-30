@@ -5,6 +5,7 @@
       :scroll="!$route.meta.pane"
       :entries="railSpaces"
       :active-entry="activeSpaceCode"
+      :entries-to="{ name: 'Launcher' }"
       :nav-items="nav"
       :menu-items="menuItems"
       :user="identity"
@@ -17,7 +18,14 @@
         <RailAccount />
       </template>
 
-      <router-view :key="$route.fullPath" />
+      <!--
+        Keyed on the path, not the full path. A screen, a view type, a saved
+        view and an open record are all query parameters, and the page watches
+        every one of them — keying on the query as well tore the page down and
+        rebuilt it to open a dialog, which reloaded the list underneath it.
+        The path still changes between spaces, which is what the key is for.
+      -->
+      <router-view :key="$route.path" />
     </AppShell>
 
     <!-- Outside the shell so it survives a layout swap, and a dialog rather

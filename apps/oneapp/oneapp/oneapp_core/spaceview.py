@@ -594,6 +594,46 @@ def rows(space_code: str, screen: str | None = None, limit: int = PAGE,
 
 
 @frappe.whitelist(methods=["GET"])
+def record(space_code: str, screen: str, name: str) -> dict:
+	"""One row, fetched by id rather than found on a page.
+
+	A record is in the URL now, which means it can be arrived at from a link,
+	a bookmark or a reload — none of which have the list it came from. Reading
+	it out of `rows` would mean paging until it turned up.
+
+	The same bounds the list has, and one more: `get_list` with a `name` filter
+	rather than `get_doc`, so User Permissions and the screen's own filters
+	still decide. A record this screen would not list is not a record this
+	screen may open by id.
+	"""
+	resolved = _resolve(space_code, screen)
+	if not resolved.get("doctype"):
+		return {}
+
+	# Every field the record shows, not the columns the list happens to carry.
+	# The dialog renders the doctype's whole field list, and it used to seed
+	# itself from the list row — so a field nobody put on the list opened blank
+	# on a record that has a value for it.
+	fields = _fetch_fields(resolved.get("all_columns") or resolved["columns"])
+
+	found = frappe.get_list(
+		resolved["doctype"],
+		fields=fields + list(META_FIELDS),
+		# The screen's own filters, not a saved view's: you can arrive at a
+		# record from one view and open it under another, and a personal filter
+		# is not a rule about what exists.
+		filters=_all_filters(resolved, []) + [["name", "=", name]],
+		limit_page_length=1,
+	)
+	if not found:
+		return {}
+
+	found = [_with_meta(row) for row in found]
+	_with_links(resolved, found)
+	return found[0]
+
+
+@frappe.whitelist(methods=["GET"])
 def count(space_code: str, screen: str | None = None, overrides: str | dict | None = None,
           layout: str | None = None, view_type: str | None = None) -> dict:
 	"""How many rows match — asked separately from the rows themselves.

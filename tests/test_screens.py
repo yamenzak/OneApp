@@ -405,7 +405,7 @@ def whitelisted():
 def test_the_reader_found_the_whitelisted_methods():
 	"""A parse that quietly matches nothing passes every test below."""
 	found = whitelisted()
-	assert {"spec", "rows", "save", "save_layout", "link_options"} <= set(found)
+	assert {"spec", "rows", "record", "save", "save_layout", "link_options"} <= set(found)
 
 
 def test_a_structured_argument_admits_the_shape_the_spa_sends():
@@ -1081,3 +1081,34 @@ def test_a_declared_width_is_clamped_like_any_other(spaceview):
 	asking the layout to do something silly rather than asking for a wide
 	column."""
 	assert spaceview._default_width({"columns": 40}) == spaceview.MAX_WIDTH
+
+
+# --------------------------------------------------------------------------- #
+# A record is a link
+#
+# It is in the URL, so it is arrived at by id rather than found on a page —
+# from a bookmark, a reload, or somebody else's message. What that changes is
+# which fields come back and which filters decide.
+# --------------------------------------------------------------------------- #
+
+def test_a_record_carries_every_field_it_shows_not_the_listed_columns(spaceview):
+	"""The dialog renders the doctype's whole field list. It used to seed itself
+	from the list row, so a field nobody put on the list opened blank on a
+	record that has a value for it."""
+	source = (spaceview.__file__ and open(spaceview.__file__).read()) or ""
+	body = source.split("def record(", 1)[1].split("\n@frappe.whitelist", 1)[0]
+	assert "all_columns" in body, "record() must fetch what the record shows"
+	assert 'resolved["fields"]' not in body, (
+		"record() must not fetch the list's own field set — that is the columns "
+		"somebody chose to see, not the fields the record has"
+	)
+
+
+def test_a_record_is_bounded_by_the_screen_and_not_by_a_saved_view(spaceview):
+	"""You can arrive at a record from one view and open it under another, and
+	a personal filter is not a rule about what exists. The screen's own filters
+	still are."""
+	source = open(spaceview.__file__).read()
+	body = source.split("def record(", 1)[1].split("\n@frappe.whitelist", 1)[0]
+	assert "_apply_saved" not in body
+	assert "_all_filters(resolved, [])" in body

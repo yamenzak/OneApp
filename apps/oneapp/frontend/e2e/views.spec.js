@@ -11,11 +11,12 @@ test('a named view is made, opened and deleted', async ({ page }) => {
   await page.goto('/one/space/zzmock')
   await expect(page.getByText('Halloway').first()).toBeVisible()
 
-  // The switcher opens on the screen's own name, because nothing this person
-  // saved is what the screen opens with — the fixture's two shared views are
-  // there to switch to, not defaults.
+  // The switcher opens on the *view type*, because nothing this person saved
+  // is what the screen opens with — and the crumb before it already says which
+  // screen this is, so repeating the screen's name here would be one word
+  // twice.
   const views = page.getByRole('group', { name: 'Saved views' })
-  await expect(views.getByRole('button', { name: /^Tasks/ })).toBeVisible()
+  await expect(views.getByRole('button', { name: /^List/ })).toBeVisible()
   await views.getByRole('button').click()
   await page.getByRole('menuitem', { name: 'Save as a new view' }).click()
 
@@ -32,6 +33,6 @@ test('a named view is made, opened and deleted', async ({ page }) => {
 
   await views.getByRole('button').click()
   await page.getByRole('menuitem', { name: 'Delete this view' }).click()
-  await expect(views.getByRole('button', { name: /^Tasks/ })).toBeVisible()
+  await expect(views.getByRole('button', { name: /^List/ })).toBeVisible()
   expectNoRealErrors(errors)
 })

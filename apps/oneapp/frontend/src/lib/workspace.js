@@ -88,6 +88,17 @@ export const workspace = {
       { silent: true, method: 'GET' },
     ),
 
+  // One record, by id. The list row carries only the columns somebody chose to
+  // see; the record shows the doctype's whole field list, so it is fetched
+  // rather than read out of the row — which is also what lets a record be a
+  // link somebody can send.
+  screenRecord: (spaceCode, screen, name) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.record',
+      { space_code: spaceCode, screen, name },
+      { silent: true, method: 'GET' },
+    ),
+
   saveRecord: (spaceCode, screen, values, name) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.save',

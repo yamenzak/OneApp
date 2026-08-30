@@ -124,8 +124,9 @@ test('every row carries its age, its comments and a heart', async ({ page }) => 
     .locator('[data-slot="list-cell"]')
     .last()
   // Relative, and without the "ago": a column of ages, not a sentence repeated
-  // down the page.
-  await expect(meta).toContainText(/hours|minutes|days|seconds/)
+  // down the page. Singular included — dayjs says "a minute", and a row this
+  // suite edited a moment ago is exactly the row that reads that way.
+  await expect(meta).toContainText(/second|minute|hour|day|month|year/)
   await expect(meta.getByRole('button', { name: /favourites/ })).toBeVisible()
   expectNoRealErrors(errors)
 })

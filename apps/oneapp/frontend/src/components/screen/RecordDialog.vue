@@ -282,7 +282,7 @@ const save = async () => {
   saving.value = true
   error.value = ''
   try {
-    await workspace.saveAppRecord(
+    await workspace.saveRecord(
       props.spaceCode,
       props.screen,
       { ...form },

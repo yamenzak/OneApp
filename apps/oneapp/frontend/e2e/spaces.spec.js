@@ -5,6 +5,9 @@ test.beforeEach(async ({ page, baseURL }) => {
   await signIn(page, baseURL)
 })
 
+// The seeded row this file points at, by its own words.
+const SEEDED = 'Chase the Halloway invoice'
+
 test('a space declared as a manifest renders its screens', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/space/zzmock')
@@ -73,6 +76,78 @@ test('a screen expands to the ways it can be opened', async ({ page }, info) => 
   expectNoRealErrors(errors)
 })
 
+test('the trail is a house, a screen, and what you are looking at', async ({ page }, info) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/zzmock?screen=notes')
+
+  // Frappe CRM's shape. The space is the house's tooltip rather than a word:
+  // the rail already says which space this is, and the line has one place to
+  // spend.
+  const trail = page.getByRole('navigation', { name: 'Breadcrumb' })
+  await expect(page.getByRole('link', { name: 'MockSpace home' })).toBeVisible()
+  await expect(trail.getByText('Notes')).toBeVisible()
+  // The last crumb is the view, not the screen's name a second time.
+  await expect(page.getByRole('group', { name: 'Saved views' })).toContainText('List')
+
+  // The house goes to the space's first screen.
+  await page.getByRole('link', { name: 'MockSpace home' }).click()
+  await expect(page).toHaveURL(/screen=tasks/)
+
+  await info.attach(`crumbs-${info.project.name}`, {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+  expectNoRealErrors(errors)
+})
+
+test('an open record is in the URL, and in the trail', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/zzmock')
+  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
+
+  await page.getByText('Chase the Halloway invoice').first().click()
+  await expect(page.locator('[role="dialog"]')).toBeVisible()
+  await expect(page).toHaveURL(/record=/)
+
+  // Located by its slot, not its role: a modal takes the rest of the page out
+  // of the accessibility tree, so while the dialog is open the trail is there
+  // to read and not to reach.
+  const trail = page.locator('[data-slot="breadcrumb"]')
+  await expect(trail).toContainText('Chase the Halloway invoice')
+  await expect(trail).toContainText('kosp1csf48')
+
+  // A record is a link: a reload comes back to it, without the list it was
+  // opened from.
+  await page.reload()
+  await expect(page.locator('[role="dialog"]')).toBeVisible()
+
+  // And closing it puts the URL back.
+  await page.keyboard.press('Escape')
+  await expect(page.locator('[role="dialog"]')).toHaveCount(0)
+  await expect(page).not.toHaveURL(/record=/)
+  expectNoRealErrors(errors)
+})
+
+test('the phone can switch space from the More sheet', async ({ page }, info) => {
+  // A desktop switches space on the rail; a phone has no rail, so this sheet
+  // is the only way — and it was hidden entirely on a workspace with one
+  // space, which is exactly the workspace that needs the way out to find a
+  // second one.
+  test.skip(info.project.name !== 'mobile', 'the sheet is the phone shell')
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/zzmock')
+  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
+
+  await page.getByRole('button', { name: 'More', exact: true }).click()
+  await expect(page.getByText('Spaces', { exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'MockSpace' })).toBeVisible()
+
+  await page.getByRole('link', { name: 'All spaces' }).click()
+  // The launcher, which is where a space that is not on the bar gets opened.
+  await expect(page).toHaveURL(/\/one\/?$/)
+  expectNoRealErrors(errors)
+})
+
 test('a record opens and saves', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/space/zzmock')
@@ -87,5 +162,21 @@ test('a record opens and saves', async ({ page }, info) => {
   ).toBeVisible()
   await info.attach(`record-${info.project.name}`, {
     body: await page.screenshot(), contentType: 'image/png' })
+
+  // And it saves. Worth exercising rather than assuming: the rename left this
+  // calling a `workspace.saveAppRecord` that no longer existed, so Save threw
+  // where nothing was watching — a dialog test that only reads the form would
+  // never have noticed.
+  const dialog = page.locator('[role="dialog"]')
+  const changed = `Chase the Halloway invoice ${Date.now() % 1000}`
+  await dialog.getByLabel('Description').fill(changed)
+  await dialog.getByRole('button', { name: 'Save' }).click()
+  await expect(dialog).toHaveCount(0)
+  await expect(page.getByText(changed).first()).toBeVisible()
+
+  // Put it back, so the next run starts where this one did.
+  await page.getByText(changed).first().click()
+  await page.locator('[role="dialog"]').getByLabel('Description').fill(SEEDED)
+  await page.locator('[role="dialog"]').getByRole('button', { name: 'Save' }).click()
   expectNoRealErrors(errors)
 })

@@ -74,8 +74,12 @@ const props = defineProps({
   // [{ name, label, shared, mine, is_default, opens }]
   layouts: { type: Array, default: () => [] },
   active: { type: String, default: '' },
-  /** The screen's own name, which is what "no saved view" reads as. */
-  screenLabel: { type: String, default: 'Default view' },
+  /**
+   * How the screen is being drawn — "List", "Board". That is what "no saved
+   * view" reads as, because the crumb before this one already says which
+   * screen it is and saying it twice is not a trail.
+   */
+  viewLabel: { type: String, default: 'List' },
   canShare: { type: Boolean, default: false },
   busy: { type: Boolean, default: false },
 })
@@ -88,9 +92,9 @@ const draftShared = ref(false)
 
 const current = computed(() => props.layouts.find((l) => l.name === props.active) || null)
 
-// The screen's own name when nothing is saved, so the line always reads as
-// somewhere rather than as an empty control.
-const label = computed(() => current.value?.label || props.screenLabel)
+// The view type when nothing is saved, so the line always reads as somewhere
+// rather than as an empty control.
+const label = computed(() => current.value?.label || props.viewLabel)
 
 // Only a view you may write can be renamed, shared or deleted — and the server
 // says the same thing again, because a menu is not a permission.
@@ -132,7 +136,7 @@ const options = computed(() => {
     hideLabel: true,
     options: [
       {
-        label: props.screenLabel,
+        label: props.viewLabel,
         selected: !props.active,
         onClick: () => emit('open', ''),
       },

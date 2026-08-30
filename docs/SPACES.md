@@ -158,6 +158,23 @@ already names, so a space gets it by existing.
   toolbar filters to what this person liked.
 * **Sortable headers.** Clicking one sorts by that column and shows the
   direction beside its name; clicking again reverses it.
+* **A trail that says where you are.** A house for the space, the screen, and
+  then the thing you are looking at — the view, or the record when one is
+  open. Frappe CRM's shape, and its argument: the rail already names the
+  space, so the house carries it as a tooltip and the line spends its width on
+  what changes. The house goes to the space's first screen until a space home
+  is a page of its own.
+
+  The last crumb is the **view switcher**: the view type when nothing is
+  saved, the layout's name when one is open, and a menu of every view of that
+  screen either way.
+
+  A record takes the last place from the view, and reads the way a record
+  reads everywhere else — a face, a name, and the id beside it where the name
+  is not already the id. It is in the URL (`?record=…`), so it is a link
+  somebody can send and a place a reload comes back to; opening it fetches the
+  record rather than reading the list row, which is what makes a field nobody
+  put on the list show its value on the form.
 * **An icon says what it does.** Every control that renders as a picture and
   nothing else carries a tooltip — frappe-ui's, through `Button`'s own
   `tooltip` prop, which builds one internally. `label` is the *accessible*

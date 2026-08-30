@@ -1,12 +1,53 @@
 <template>
   <PageHeader>
-    <div class="flex min-w-0 items-center">
-      <Breadcrumbs :items="crumbs" />
+    <!--
+      Frappe CRM's trail, and its shape is the argument: a house for the space,
+      the screen, and then the thing you are actually looking at — which is the
+      view, or the record when one is open. The space's name is the house's
+      tooltip rather than a word in the line, because the rail already says
+      which space this is and the trail has one line to spend.
+    -->
+    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
+      <Breadcrumbs :items="crumbs">
+        <template #prefix="{ item }">
+          <!--
+            The name is a span, not the icon's `aria-label`: frappe-ui's Icon
+            hard-codes `aria-hidden` after the attrs it forwards, which is the
+            right call — an icon is decoration — and it leaves a link whose
+            only content is one with no accessible name at all.
+          -->
+          <Tooltip v-if="item.home" :text="`${item.space} home`">
+            <span class="flex items-center">
+              <Icon name="lucide-house" class="size-4 text-ink-gray-5" />
+              <span class="sr-only">{{ item.space }} home</span>
+            </span>
+          </Tooltip>
+          <!-- A record is a record wherever it is shown: the same face, name
+               and id the list cell and the link picker draw, laid out for one
+               line. -->
+          <Avatar
+            v-else-if="item.record"
+            :image="item.image"
+            :label="item.label"
+            shape="square"
+            size="sm"
+            class="me-1.5"
+          />
+        </template>
+        <template #suffix="{ item }">
+          <span v-if="item.record && item.id" class="ms-1.5 truncate text-p-sm text-ink-gray-5">
+            {{ item.id }}
+          </span>
+        </template>
+      </Breadcrumbs>
+
+      <!-- The last crumb, when no record is open: which view of the screen
+           this is, and every other view of it. -->
       <ViewSwitcher
-        v-if="spec?.doctype"
+        v-if="spec?.doctype && !shownRecord"
         :layouts="spec.layouts || []"
         :active="spec.layout || ''"
-        :screen-label="spec.screen_label"
+        :view-label="viewLabel"
         :can-share="!!spec.can_share"
         :busy="saving"
         @open="openLayout"
@@ -16,7 +57,7 @@
         @default="defaultLayout"
         @remove="deleteLayout"
       />
-    </div>
+    </nav>
     <template v-if="spec?.can_create" #right>
       <Button variant="solid" icon-left="lucide-plus" label="New" @click="create" />
     </template>
@@ -284,6 +325,7 @@
   <RecordDialog
     v-if="spec?.doctype"
     v-model="showRecord"
+    @update:model-value="(shown) => !shown && closeRecord()"
     :record="editing || {}"
     :spec="spec"
     :space-code="spaceCode"
@@ -298,6 +340,9 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   PageHeader,
   Breadcrumbs,
+  Avatar,
+  Icon,
+  Tooltip,
   Button,
   Alert,
   Skeleton,
@@ -316,7 +361,7 @@ import { session } from '../lib/session'
 import { workspace } from '../lib/workspace'
 import { notifyError, notifySuccess } from '../lib/notify'
 import { screenComponent } from '../screens'
-import { bodyFor } from '../lib/viewTypes'
+import { DEFAULT_VIEW_TYPE, VIEW_TYPES, bodyFor } from '../lib/viewTypes'
 
 const props = defineProps({ spaceCode: { type: String, required: true } })
 const route = useRoute()
@@ -420,17 +465,63 @@ const emptyBecause = computed(() => {
     : 'Nothing here so far.'
 })
 
-// The trail stops at the space, because the switcher beside it is the next
-// level: it opens on the screen's own name and every saved view of it, so a
-// crumb saying the same word again is one word twice.
+// A record that exists takes the last place in the trail. A new one does not:
+// there is nothing to name it yet, and a trail ending in nothing reads worse
+// than one that still says which view you were in.
+const shownRecord = computed(() => (editing.value && !editing.value.__new ? editing.value : null))
+
+// What the last crumb says when no view is saved: how this screen is being
+// drawn. "Tasks / Tasks" is one word twice; "Tasks / List" says where you are.
+const viewLabel = computed(() => {
+  const type = spec.value?.view_type || DEFAULT_VIEW_TYPE
+  return VIEW_TYPES[type]?.label || 'List'
+})
+
+// The space's first screen, which is what the house goes to. A space home is a
+// page of its own one day; until it is, the first thing in the navigation is
+// the nearest true thing.
+const homeRoute = computed(() => {
+  const first = spec.value?.screens?.[0]
+  return {
+    name: 'Screen',
+    params: { spaceCode: props.spaceCode },
+    ...(first ? { query: { screen: first.screen } } : {}),
+  }
+})
+
 const crumbs = computed(() => {
-  const trail = [{ label: 'Spaces', route: { name: 'Launcher' } }]
-  // `space_label`, not `app_label` — the rename left this reading a field that
-  // no longer exists, and the crumb had been an empty segment ever since:
-  // "Spaces / / Tasks", which reads as a missing page rather than a typo.
-  if (space.value) trail.push({ label: space.value.space_label })
-  if (!spec.value?.doctype && spec.value?.screen_label && spec.value.screens?.length > 1) {
-    trail.push({ label: spec.value.screen_label })
+  if (!space.value) return []
+  const trail = [{ label: '', home: true, space: space.value.space_label, route: homeRoute.value }]
+  if (spec.value?.screen_label) {
+    trail.push({
+      label: spec.value.screen_label,
+      route: {
+        name: 'Screen',
+        params: { spaceCode: props.spaceCode },
+        query: { screen: spec.value.screen },
+      },
+    })
+  }
+  // A record is where you are, so it takes the last place from the view — and
+  // it reads the way a record reads everywhere else in this product.
+  //
+  // Worth being honest about what this is not yet: the record opens as a modal
+  // dialog, and a modal takes the rest of the page out of the accessibility
+  // tree, so while it is open this crumb can be read by eye and not by a
+  // screen reader. What it does buy today is the URL — a record is a link
+  // somebody can send — and it is the trail a record *page* will want when
+  // there is one.
+  const open = shownRecord.value
+  if (open) {
+    const title = spec.value?.title_field
+    const label = (title && open[title]) || open.name
+    trail.push({
+      label: String(label),
+      record: true,
+      // The id, and only where the name is not already it.
+      id: label === open.name ? '' : open.name,
+      image: spec.value?.image_field ? open[spec.value.image_field] : null,
+    })
   }
   return trail
 })
@@ -585,12 +676,49 @@ const toggleFavourites = () => {
 
 // --- records ----------------------------------------------------------------
 
+// A record is in the URL, so it is a link somebody can send and a place a
+// reload comes back to. What is *not* in the URL is a record that does not
+// exist yet: there is nothing to link to, and a stale "new" in a bookmark
+// would open an empty form nobody asked for.
 const open = (row) => {
-  editing.value = row
+  router.push({ query: { ...route.query, record: row.name } })
+}
+
+const create = () => {
+  editing.value = { __new: true }
   showRecord.value = true
 }
 
-const create = () => open({ __new: true })
+// Opening it is a fetch rather than a read of the row: the list carries the
+// columns somebody chose to see, and the record shows the doctype's whole
+// field list. Seeding the form from the row left every unlisted field blank on
+// a record that has a value for it.
+const openRecord = async (name) => {
+  if (!name) {
+    editing.value = null
+    showRecord.value = false
+    return
+  }
+  if (editing.value && editing.value.name === name) return
+  const found = await workspace.screenRecord(props.spaceCode, spec.value?.screen || '', name)
+  if (!found?.name) {
+    // A link to something that is gone, or that this screen does not list.
+    // Drop it from the URL rather than leaving a dialog that never opens.
+    closeRecord()
+    return
+  }
+  editing.value = found
+  showRecord.value = true
+}
+
+const closeRecord = () => {
+  editing.value = null
+  showRecord.value = false
+  if (!route.query.record) return
+  const query = { ...route.query }
+  delete query.record
+  router.replace({ query })
+}
 
 const like = async (row) => {
   const result = await workspace.toggleLike(props.spaceCode, spec.value.screen, row.name)
@@ -791,4 +919,11 @@ watch(
   () => load(),
   { immediate: true },
 )
+
+// Its own watch, and after the spec: opening a record by id needs the screen
+// resolved first, and the two change independently — clicking a row changes
+// only this, and switching view changes only that.
+watch([() => route.query.record, () => spec.value?.screen], ([name, screen]) => {
+  if (screen) openRecord(name || '')
+})
 </script>
