@@ -1252,3 +1252,73 @@ def test_the_manifest_never_carries_the_colours(spaceview):
 	source = APPVIEW.read_text()
 	body = source.split("def _status_field(", 1)[1].split("\ndef ", 1)[0]
 	assert "color" not in body and "theme" not in body
+
+
+# --------------------------------------------------------------------------- #
+# The record form
+#
+# Frappe's desk lays a form out from `Tab Break` and `Section Break` in the
+# field list. A record here reads the same two, so a doctype whose author
+# grouped its fields is grouped the same way without a manifest repeating it.
+# --------------------------------------------------------------------------- #
+
+def _offered(spaceview, meta, names):
+	"""Every field the record shows, editable or not — which is what the form
+	is laid out over. A Color is shown and never offered, and leaving it out
+	here would take it off the record rather than leaving it read-only."""
+	return {c["fieldname"]: c for c in spaceview._columns(meta, names)}
+
+
+def test_a_doctype_that_groups_nothing_gets_one_tab(spaceview):
+	offered = _offered(spaceview, TODO, ["description", "status"])
+	form = spaceview._form(TODO, offered)
+	assert [tab["label"] for tab in form] == ["Details"]
+	assert form[0]["sections"][0]["fields"] == ["description", "status"]
+
+
+def test_a_section_break_starts_a_section(spaceview):
+	"""ToDo's fixture has one — `sec_more` — and the fields after it belong to
+	it rather than to the run above."""
+	offered = _offered(spaceview, TODO, ["description", "status", "date"])
+	form = spaceview._form(TODO, offered)
+	labels = [section["label"] for section in form[0]["sections"]]
+	assert labels[0] == ""
+
+
+def test_a_tab_break_starts_a_tab(spaceview):
+	tabbed = meta([
+		field("subject"),
+		field("tab_two", "Tab Break", "Extras"),
+		field("note", "Small Text", "Note"),
+	])
+	form = spaceview._form(tabbed, _offered(spaceview, tabbed, ["subject", "note"]))
+	assert [tab["label"] for tab in form] == ["Details", "Extras"]
+	assert form[1]["sections"][0]["fields"] == ["note"]
+
+
+def test_layout_with_nothing_in_it_is_not_layout(spaceview):
+	"""A tab break before fields this screen does not offer — a permlevel this
+	person cannot read, a field the site does not have — leaves a tab nobody
+	can open, and an empty section leaves a heading over nothing."""
+	tabbed = meta([
+		field("subject"),
+		field("tab_two", "Tab Break", "Extras"),
+		field("secret", "Data", "Secret", permlevel=1),
+	])
+	form = spaceview._form(tabbed, _offered(spaceview, tabbed, ["subject"]))
+	assert [tab["label"] for tab in form] == ["Details"]
+
+
+def test_a_field_shown_but_never_offered_is_still_on_the_form(spaceview):
+	"""Colour, signature, geolocation. The control renders them read-only —
+	dropping them here would take them off the record instead."""
+	form = spaceview._form(TODO, _offered(spaceview, TODO, ["description", "colour"]))
+	names = [name for tab in form for section in tab["sections"] for name in section["fields"]]
+	assert "colour" in names
+
+
+def test_the_form_carries_fieldnames_and_not_the_columns_again(spaceview):
+	"""The spec already sends every column once. A form that repeated them
+	would send a sixty-field doctype twice."""
+	form = spaceview._form(TODO, _offered(spaceview, TODO, ["description"]))
+	assert form[0]["sections"][0]["fields"] == ["description"]

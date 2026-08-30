@@ -27,7 +27,15 @@ APPS = ("oneapp", "oneapp_control")
 API = component_api()
 
 # Tags in our templates that are ours, not frappe-ui's.
-TAG = re.compile(r"<(/?)([A-Z][A-Za-z0-9]*)\b([^>]*?)(/?)>", re.S)
+#
+# The attribute run consumes quoted values whole rather than stopping at the
+# first `>`, because `v-if="tabs.length > 1"` is ordinary Vue and cutting the
+# tag there left `tabs.length` looking like a bare attribute — reported as a
+# prop `Tabs` does not take. A guard that has to be written around is a guard
+# people write around.
+TAG = re.compile(
+    r"""<(/?)([A-Z][A-Za-z0-9]*)\b((?:"[^"]*"|'[^']*'|[^>"'])*?)(/?)>""", re.S
+)
 SLOT = re.compile(r"<template\s+(?:#|v-slot:)([A-Za-z0-9_-]+)")
 # Attribute *names*, with any quoted value consumed so the scan never treats
 # class names or expression text as further attributes.

@@ -493,11 +493,74 @@ def _resolve(space_code: str, screen: str | None = None,
 		# doctype's own Document States, read by `presentation` above, so a
 		# status is one colour in the list, the badge and the desk alike.
 		"status_field": _status_field(chosen, offered),
+		# How the record form is laid out — the doctype's own tabs and
+		# sections, over every field the record shows. Not only the editable
+		# ones: a Color or a Signature is shown and never offered, and dropping
+		# it here would take it off the record rather than leaving it read-only.
+		# What may be *written* is `_writable`, which is a different question
+		# and is asked on the way in.
+		"form": _form(meta, {
+			c["fieldname"]: c for c in offerable if c["fieldname"] != META_COLUMN
+		}),
 		"can_create": bool(frappe.has_permission(doctype, "create")),
 		"can_write": bool(frappe.has_permission(doctype, "write")),
 		"can_delete": bool(frappe.has_permission(doctype, "delete")),
 	})
 	return resolved
+
+
+# What the record form is laid out as, when the doctype says nothing: one tab,
+# one section, every field in it.
+DEFAULT_TAB = "Details"
+
+
+def _form(meta, offered: dict) -> list[dict]:
+	"""The doctype's own form, as tabs and sections.
+
+	Frappe's desk reads `Tab Break` and `Section Break` out of the field list
+	and lays the form out with them; a record here reads the same two, so a
+	doctype whose author grouped its fields is grouped the same way in OneSpace
+	without a manifest repeating any of it. A doctype that groups nothing gets
+	one tab called Details, which is what the desk does too.
+
+	Fieldnames rather than the columns themselves: the spec already carries
+	every column once in `all_columns`, and a form that repeated them would
+	send a sixty-field doctype twice.
+	"""
+	tabs: list[dict] = []
+	section: dict | None = None
+
+	def start_tab(label: str) -> None:
+		nonlocal section
+		tabs.append({"key": f"t{len(tabs)}", "label": label or DEFAULT_TAB, "sections": []})
+		section = None
+
+	def start_section(label: str) -> None:
+		nonlocal section
+		if not tabs:
+			start_tab(DEFAULT_TAB)
+		section = {"label": label or "", "fields": []}
+		tabs[-1]["sections"].append(section)
+
+	for df in meta.fields:
+		if df.fieldtype == "Tab Break":
+			start_tab(_(df.label) if df.label else DEFAULT_TAB)
+		elif df.fieldtype == "Section Break":
+			# A new section, opened lazily: a doctype that starts with three
+			# section breaks in a row should produce one section, not three
+			# empty ones.
+			start_section(_(df.label) if df.label else "")
+		elif df.fieldname in offered:
+			if section is None:
+				start_section("")
+			section["fields"].append(df.fieldname)
+
+	# Layout with nothing in it is not layout. A tab break before a run of
+	# read-only fields leaves a tab nobody can open, and an empty section leaves
+	# a heading over nothing.
+	for tab in tabs:
+		tab["sections"] = [one for one in tab["sections"] if one["fields"]]
+	return [tab for tab in tabs if tab["sections"]]
 
 
 def _status_field(screen: dict, offered: dict) -> str:

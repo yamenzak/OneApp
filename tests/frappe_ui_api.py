@@ -55,12 +55,25 @@ def _members(block: str) -> dict[str, tuple[bool, str]]:
 
     Nested object types are dropped first: `menuItems?: { label: string }[]`
     declares `menuItems`, not `label`.
+
+    Parentheses count the same way, and for the same reason. A function-typed
+    property whose parameters are on their own lines —
+
+        validateFile?: (
+          file: File,
+        ) => FileUploaderValidationResult
+
+    — puts `file: File,` at the start of a line, which reads exactly like a
+    member declaration and has no `?` on it. FileUploader came back as having a
+    required prop called `file`, and the guard then reported correct markup as
+    missing it. A guard that argues for changing something that works is the
+    one failure mode worse than missing a bug.
     """
     flat, depth = [], 0
     for char in block:
-        if char == "{":
+        if char in "{(":
             depth += 1
-        elif char == "}":
+        elif char in "})":
             depth -= 1
         elif depth == 0:
             flat.append(char)

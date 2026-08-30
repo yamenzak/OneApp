@@ -53,28 +53,16 @@
 
         <TabPanel value="fields">
           <div class="flex flex-col gap-4 pt-4">
-            <!--
-              The field's own icon, in a gutter beside the control rather than
-              inside its label. Only some of frappe-ui's controls have a `label`
-              slot — DatePicker and Duration do not — so putting it there would
-              give most fields an icon and silently drop the label from the rest.
-              A gutter is uniform, and the control keeps its own label/for pair.
-            -->
-            <div v-for="field in fields" :key="field.fieldname" class="flex gap-2">
-              <Icon
-                :name="field.icon"
-                class="mt-5 size-3.5 shrink-0 text-ink-gray-4"
-                :aria-hidden="true"
-              />
-              <FieldControl
-                v-model="form[field.fieldname]"
-                :field="field"
-                :space-code="spaceCode"
-                :screen="screen"
-                :disabled="!canWrite || !field.editable || locked(field)"
-                class="min-w-0 flex-1"
-              />
-            </div>
+            <!-- The doctype's own tabs and sections, over the fields this
+                 person may write. See RecordForm. -->
+            <RecordForm
+              v-model:values="form"
+              :spec="spec"
+              :space-code="spaceCode"
+              :screen="screen"
+              :disabled="!canWrite"
+              :is-new="isNew"
+            />
             <ErrorMessage v-if="error" :message="error" />
           </div>
         </TabPanel>
@@ -171,7 +159,6 @@ import {
   Badge,
   Button,
   Avatar,
-  Icon,
   Textarea,
   ErrorMessage,
   LoadingText,
@@ -182,7 +169,7 @@ import {
   dayjsLocal,
 } from '@/ui'
 import EmptyState from '../EmptyState.vue'
-import FieldControl from './FieldControl.vue'
+import RecordForm from './RecordForm.vue'
 import { workspace } from '../../lib/workspace'
 
 const props = defineProps({
@@ -219,14 +206,11 @@ const liked = ref(false)
 const isNew = computed(() => !!props.record?.__new)
 // The screen's whole field list, not the columns someone chose to see. Hiding
 // a column is a statement about the list; the record still has the field, and
-// the server still lets this screen write it.
+// the server still lets this screen write it. Read here only to seed the form
+// — how the fields are laid out is the doctype's business, and RecordForm's.
 const fields = computed(() => props.spec?.all_columns || props.spec?.columns || [])
 const canWrite = computed(() => !!props.spec?.can_write)
 
-// `set_only_once` is the doctype saying a field is settled at creation. Only
-// the record knows whether that has happened, so the flag travels on the field
-// and the answer is made here.
-const locked = (field) => !!field.set_only_once && !isNew.value
 const trackChanges = computed(() => !!props.spec?.track_changes)
 const image = computed(() =>
   props.spec?.image_field ? props.record?.[props.spec.image_field] : null,
