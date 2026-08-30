@@ -27,7 +27,14 @@
           class="min-w-0"
           :label="label"
           :icon-right="open ? 'lucide-chevron-up' : 'lucide-chevron-down'"
-        />
+        >
+          <!-- A view's own icon, where it has one. The prefix slot rather than
+               `icon-left`, because an emoji is text and not a class. -->
+          <template v-if="current?.icon" #prefix>
+            <Icon :name="current.icon" class="size-4 text-ink-gray-7" />
+          </template>
+          {{ label }}
+        </Button>
       </template>
     </Dropdown>
   </div>
@@ -46,6 +53,12 @@
         placeholder="Overdue and mine"
         autocomplete="off"
       />
+      <!--
+        Frappe CRM gives a view an icon and it is worth having: a menu of
+        five names is a list to read, and a menu of five icons is a list to
+        recognise.
+      -->
+      <IconPicker v-model="draftIcon" />
       <FormControl
         v-if="canShare"
         v-model="draftShared"
@@ -68,7 +81,8 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { Button, Dialog, Dropdown, FormControl } from '@/ui'
+import { Button, Dialog, Dropdown, FormControl, Icon } from '@/ui'
+import IconPicker from './IconPicker.vue'
 
 const props = defineProps({
   // [{ name, label, shared, mine, is_default, opens }]
@@ -88,6 +102,7 @@ const emit = defineEmits(['open', 'save-as', 'rename', 'share', 'default', 'remo
 const naming = ref(false)
 const renaming = ref(false)
 const draftLabel = ref('')
+const draftIcon = ref('')
 const draftShared = ref(false)
 
 const current = computed(() => props.layouts.find((l) => l.name === props.active) || null)
@@ -103,6 +118,7 @@ const writable = computed(() => !!current.value && (current.value.mine || props.
 const askName = (rename) => {
   renaming.value = rename
   draftLabel.value = rename ? current.value?.label || '' : ''
+  draftIcon.value = rename ? current.value?.icon || '' : ''
   draftShared.value = rename ? !!current.value?.shared : false
   naming.value = true
 }
@@ -110,7 +126,11 @@ const askName = (rename) => {
 const confirmName = () => {
   const name = draftLabel.value.trim()
   if (!name) return
-  emit(renaming.value ? 'rename' : 'save-as', { label: name, shared: draftShared.value })
+  emit(renaming.value ? 'rename' : 'save-as', {
+    label: name,
+    icon: draftIcon.value,
+    shared: draftShared.value,
+  })
   naming.value = false
 }
 
@@ -122,9 +142,11 @@ const options = computed(() => {
   const entry = (layout) => ({
     label: layout.label || 'Untitled view',
     selected: layout.name === props.active,
-    // `opens`, not `is_default`: a personal default and a shared one can both
-    // be set, and only one of them is what this screen actually opens with.
-    icon: layout.opens ? 'lucide-pin' : undefined,
+    // The view's own icon where it has one; the pin where it does not and this
+    // is the one the screen opens with. `opens`, not `is_default`: a personal
+    // default and a shared one can both be set, and only one of them actually
+    // opens the screen.
+    icon: layout.icon || (layout.opens ? 'lucide-pin' : undefined),
     onClick: () => emit('open', layout.name),
   })
 

@@ -91,7 +91,9 @@ export function useNav() {
       layouts: (layouts.value[screen.screen] || []).map((layout) => ({
         key: layout.name,
         label: layout.label,
-        icon: layout.shared ? 'lucide-users' : 'lucide-bookmark',
+        // The view's own icon where somebody gave it one. Otherwise who it is
+        // for, which is the next most useful thing a row can say.
+        icon: layout.icon || (layout.shared ? 'lucide-users' : 'lucide-bookmark'),
         to: screenRoute(space, screen, layout.view_type, layout.name),
       })),
     }))

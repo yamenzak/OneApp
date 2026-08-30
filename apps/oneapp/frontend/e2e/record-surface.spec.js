@@ -327,21 +327,32 @@ test('a quick box and the panel both apply', async ({ page }) => {
   expectNoRealErrors(errors)
 })
 
-test('the filter count is a badge, not a word', async ({ page }) => {
+test('the filter count is a badge, not a word', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await openList(page)
 
+  // On a phone the trigger is the icon alone — the toolbar is one row and the
+  // word is what does not fit — so there is no word for a number to sit inside
+  // and the fill is what says the list is narrowed. Everywhere else the word is
+  // there and the count sits beside it.
+  const phone = info.project.name === 'mobile'
   const filter = page.getByRole('button', { name: /^Filter/ })
-  await expect(filter).toHaveText('Filter')
+  await expect(filter).toHaveText(phone ? '' : 'Filter')
+  await expect(filter).toHaveClass(/bg-transparent/)
 
   await filter.click()
   await page.getByRole('button', { name: 'Add filter' }).click()
   await page.getByRole('button', { name: 'Apply' }).click()
 
-  // The number is beside the word rather than inside it: the label span still
-  // reads exactly "Filter", and the count is its own element.
-  await expect(filter.locator('span.truncate')).toHaveText('Filter')
-  await expect(filter).toContainText('1')
+  if (phone) {
+    await expect(filter).toHaveText('')
+    await expect(filter).toHaveClass(/bg-surface-gray-2/)
+  } else {
+    // The number is beside the word rather than inside it: the label span still
+    // reads exactly "Filter", and the count is its own element.
+    await expect(filter.locator('span.truncate')).toHaveText('Filter')
+    await expect(filter).toContainText('1')
+  }
   expectNoRealErrors(errors)
 })
 
@@ -573,7 +584,8 @@ test('a comment can be added and shows up in the count', async ({ page }) => {
 
   const dialog = page.locator('[role="dialog"]')
   const tab = dialog.getByRole('tab', { name: /^Comments/ })
-  const before = await tab.innerText()
+  const count = async () => Number((await tab.innerText()).replace(/\D/g, '') || 0)
+  const before = await count()
 
   await tab.click()
   const note = `From the browser pass ${Date.now()}`
@@ -581,8 +593,11 @@ test('a comment can be added and shows up in the count', async ({ page }) => {
   await dialog.getByRole('button', { name: 'Comment' }).click()
 
   await expect(dialog.getByText(note)).toBeVisible()
-  // The count is a badge beside the word, so the tab's text changes with it.
-  await expect.poll(() => tab.innerText()).not.toBe(before)
+  // The count is a badge beside the word, so the tab's text changes with it —
+  // up to a hundred, where it stops. Frappe keeps the last hundred comments on
+  // the document and the count is theirs, in the desk as here, so a record that
+  // has been commented on more than that reports a hundred for ever.
+  await expect.poll(count).toBe(Math.min(before + 1, 100))
   expectNoRealErrors(errors)
 })
 

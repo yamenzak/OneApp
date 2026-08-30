@@ -73,8 +73,10 @@ SCREENS = [
 # them. These are what the sidebar lists under a screen alongside its view
 # types, and what the switcher in the breadcrumb line switches between.
 LAYOUTS = [
+	# One with an icon and one without, because both render and only one of
+	# them proves the fallback still says who a view is for.
 	{
-		"label": "Open work", "screen": "tasks",
+		"label": "Open work", "screen": "tasks", "icon": "lucide-clock",
 		"filters": json.dumps([["status", "=", "Open"]]),
 		"order_by": "priority asc",
 	},
@@ -213,9 +215,31 @@ def seed_tenant():
 			"priority": ["High", "Medium", "Low"][n % 3],
 		}).insert(ignore_permissions=True)
 
+	# The browser passes leave their comments behind, and Frappe keeps only the
+	# last hundred of them on the document itself — which is where the count in
+	# the timeline tab comes from, here as in the desk. A fixture that has been
+	# commented on two hundred times therefore has a count that no longer
+	# moves, and a test that adds one and watches the number goes red for a
+	# reason that has nothing to do with what it tests. Every ToDo and Note on
+	# a dev site is this fixture's, so this is the fixture sweeping up after
+	# itself.
+	for doctype in ("ToDo", "Note"):
+		names = frappe.get_all(doctype, pluck="name")
+		if not names:
+			continue
+		frappe.db.delete("Comment", {"reference_doctype": doctype, "reference_name": ("in", names)})
+		# Written the way Frappe writes it: `_comments` sits beside the document
+		# as a cache, and refreshing it must not move `modified`.
+		frappe.db.sql(f"update `tab{doctype}` set `_comments` = '[]'")
+
 	for layout in LAYOUTS:
 		where = {"space_code": CODE, "screen": layout["screen"], "label": layout["label"]}
-		if frappe.db.exists("OneSpace Saved View", where):
+		found = frappe.db.exists("OneSpace Saved View", where)
+		if found:
+			# The icon is the one thing worth re-asserting: a browser test that
+			# picks one leaves it behind, and the next run should look like the
+			# fixture rather than like whatever the last test did.
+			frappe.db.set_value("OneSpace Saved View", found, "icon", layout.get("icon", ""))
 			continue
 		frappe.get_doc({
 			"doctype": "OneSpace Saved View", "space_code": CODE,

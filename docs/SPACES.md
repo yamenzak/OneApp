@@ -228,6 +228,24 @@ already names, so a space gets it by existing.
   somebody can send. The Save button still writes the person's own unnamed
   default, which is what "keep this how I left it" means.
 
+  **A view carries an icon**, chosen when it is named or renamed — a menu of
+  five names is a list to read, and a menu of five icons is a list to
+  recognise. Two kinds, and the reason for both is the build: one of a curated
+  lucide set (Tailwind only emits CSS for class names it saw in the source, so
+  a name chosen at runtime renders as nothing), or **any emoji**, which is
+  text and so needs no build step at all. Frappe CRM tolerates an emoji here
+  for legacy reasons; for us it is the more capable of the two. The server
+  checks the same two rules, because the value reaches the DOM as a class
+  name.
+
+  **Where an unsaved change goes depends on where you are.** In a named view
+  you may write, Save writes into that view; anywhere else it writes this
+  person's own unnamed default for the screen. CRM draws the same line, and
+  the alternative is worse in both directions — a Save that silently makes a
+  private copy of a shared view, or one that quietly rewrites a view other
+  people are using. Discard puts back whichever of the two you were looking
+  at.
+
   A layout narrows what the screen offers and can never widen it, shared or not
   — see ADR-13 — and every filter in one is re-checked against the screen on
   the way out, not only when it was saved. The same bounds apply to an unsaved

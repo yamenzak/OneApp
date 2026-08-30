@@ -1112,3 +1112,53 @@ def test_a_record_is_bounded_by_the_screen_and_not_by_a_saved_view(spaceview):
 	body = source.split("def record(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert "_apply_saved" not in body
 	assert "_all_filters(resolved, [])" in body
+
+
+# --------------------------------------------------------------------------- #
+# A view's icon
+#
+# It reaches the DOM as a class name, and Tailwind only emits CSS for names it
+# saw in the source — so "any lucide icon" is a picker whose choices mostly
+# render as nothing. One curated set, plus emoji, which need no build step.
+# --------------------------------------------------------------------------- #
+
+def test_an_offered_icon_is_kept(spaceview):
+	assert spaceview._view_icon("lucide-calendar") == "lucide-calendar"
+	assert spaceview._view_icon("  lucide-calendar  ") == "lucide-calendar"
+
+
+def test_an_emoji_is_kept_because_an_emoji_needs_no_build(spaceview):
+	"""The escape hatch that actually works: an emoji is text, so any of them
+	renders. Frappe CRM tolerates one here for legacy reasons; for us it is the
+	more capable of the two."""
+	assert spaceview._view_icon("📦") == "📦"
+	assert spaceview._view_icon("🇬🇧") == "🇬🇧"
+
+
+def test_a_lucide_name_nobody_offered_is_dropped(spaceview):
+	"""It would render as nothing at all — the CSS for it was never emitted —
+	and a picker that stores a name the page cannot draw is a picker that
+	silently does nothing."""
+	assert spaceview._view_icon("lucide-rocket") == ""
+	assert spaceview._view_icon("") == ""
+	assert spaceview._view_icon(None) == ""
+
+
+def test_anything_that_could_be_a_class_name_is_dropped(spaceview):
+	"""A value here becomes a class on an element. Checked rather than trusted."""
+	assert spaceview._view_icon("bg-red-500 absolute inset-0") == ""
+	assert spaceview._view_icon("a") == ""
+	assert spaceview._view_icon("📦📦📦") == ""
+
+
+def test_the_icon_set_is_the_one_the_spa_can_draw(spaceview):
+	"""Two lists, one answer. The SPA's is what Tailwind sees and therefore what
+	exists as CSS; the server's is what a save is checked against. A name in one
+	and not the other is either an icon nobody can pick or a stored icon that
+	renders as a blank square."""
+	import re as _re
+
+	icons = APPVIEW.parents[2] / "frontend/src/lib/icons.js"
+	source = icons.read_text()
+	block = _re.search(r"export const SPACE_ICONS = \[(.*?)\]", source, _re.S).group(1)
+	assert tuple(_re.findall(r"'([^']+)'", block)) == spaceview.VIEW_ICONS

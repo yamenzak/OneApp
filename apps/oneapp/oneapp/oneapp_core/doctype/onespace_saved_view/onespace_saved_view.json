@@ -12,6 +12,7 @@
   "screen",
   "cb_saved_view",
   "label",
+  "icon",
   "is_default",
   "sec_saved_query",
   "filters",
@@ -57,6 +58,12 @@
    "fieldname": "label",
    "fieldtype": "Data",
    "label": "Label"
+  },
+  {
+   "description": "A lucide name from the offered set, or an emoji. Anything else is dropped on the way in \u2014 it reaches the DOM as a class name.",
+   "fieldname": "icon",
+   "fieldtype": "Data",
+   "label": "Icon"
   },
   {
    "default": "0",

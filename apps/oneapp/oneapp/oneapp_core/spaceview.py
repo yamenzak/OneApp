@@ -1167,6 +1167,10 @@ def timeline(space_code: str, screen: str, name: str) -> dict:
 		# so on a record with more than that the count derived from the list
 		# stopped moving when a comment was added — the badge said 50 for ever.
 		# Frappe keeps the same number on the document itself.
+		#
+		# It keeps the last hundred and no more, so past that this saturates.
+		# The desk's number is this number, and the alternative — a count query
+		# per row — is a query per row.
 		"comment_count": len(frappe.parse_json(doc.get("_comments") or "[]")),
 		"changes": changes,
 		"more_comments": len(comments) >= TIMELINE_PAGE,
@@ -1279,9 +1283,53 @@ def toggle_like(space_code: str, screen: str, name: str) -> dict:
 
 # What a layout carries. `user` empty is Frappe's `for_user` empty: a layout
 # everyone on the workspace sees.
-LAYOUT_FIELDS = ("name", "label", "user", "is_default", "filters", "order_by",
+LAYOUT_FIELDS = ("name", "label", "icon", "user", "is_default", "filters", "order_by",
                  "columns", "page_length", "group_by", "favourites",
                  "view_type", "view_settings")
+
+# Which icons a view may carry.
+#
+# Not "any lucide name": Tailwind's lucide plugin only emits CSS for the class
+# names it can see in the source, so a name chosen at runtime renders as
+# nothing at all. This is the same curated set the rail offers — one list of
+# icons that are guaranteed to draw — and `tests/test_screens.py` fails when it
+# drifts from `lib/icons.js`.
+#
+# An emoji needs no build step, which makes it the escape hatch that actually
+# works: it is text, so any of them renders. Frappe CRM tolerates an emoji here
+# for legacy reasons; for us it is the more capable of the two.
+VIEW_ICONS = (
+	"lucide-layout-grid", "lucide-users", "lucide-user-round",
+	"lucide-briefcase", "lucide-file-text", "lucide-receipt",
+	"lucide-wallet", "lucide-shopping-cart", "lucide-package",
+	"lucide-truck", "lucide-factory", "lucide-store", "lucide-calendar",
+	"lucide-clock", "lucide-message-square", "lucide-mail",
+	"lucide-phone", "lucide-chart-line", "lucide-chart-pie",
+	"lucide-database", "lucide-book-open", "lucide-graduation-cap",
+	"lucide-stethoscope", "lucide-wrench", "lucide-shield",
+	"lucide-sparkles",
+)
+
+# Two code points: enough for a flag or a skin-toned figure, short enough that
+# nobody pastes a sentence into a menu row.
+MAX_EMOJI = 2
+
+
+def _view_icon(value) -> str:
+	"""The icon a view may carry, or nothing.
+
+	A value here reaches the DOM as a class name, so it is checked rather than
+	trusted: one of the offered lucide names, or a short run of characters that
+	is not ASCII — which is what an emoji is and what a class name is not.
+	"""
+	icon = (value or "").strip()
+	if not icon:
+		return ""
+	if icon in VIEW_ICONS:
+		return icon
+	if len(icon) <= MAX_EMOJI and all(ord(char) > 0x2000 for char in icon):
+		return icon
+	return ""
 
 
 def _can_share() -> bool:
@@ -1352,6 +1400,7 @@ def space_layouts(space_code: str) -> dict:
 		if rows:
 			found[screen["screen"]] = [
 				{"name": row["name"], "label": row["label"] or "",
+				 "icon": row.get("icon") or "",
 				 "view_type": row["view_type"], "shared": row["shared"]}
 				for row in rows
 				if row["label"]
@@ -1413,7 +1462,8 @@ def _apply_saved(resolved: dict, layout: str | None = None) -> dict:
 		# A menu that pins both is telling the reader something untrue.
 		opens = _default_layout(rows)
 		resolved["layouts"] = [
-			{"name": row["name"], "label": row["label"] or "", "shared": row["shared"],
+			{"name": row["name"], "label": row["label"] or "",
+			 "icon": row.get("icon") or "", "shared": row["shared"],
 			 "mine": row["mine"], "is_default": bool(row["is_default"]),
 			 "view_type": row["view_type"],
 			 "opens": bool(opens and opens["name"] == row["name"])}
@@ -1423,6 +1473,7 @@ def _apply_saved(resolved: dict, layout: str | None = None) -> dict:
 		saved = _chosen_layout(rows, layout)
 	resolved["layout"] = saved["name"] if saved else ""
 	resolved["layout_label"] = (saved.get("label") or "") if saved else ""
+	resolved["layout_icon"] = (saved.get("icon") or "") if saved else ""
 	resolved["saved"] = None
 	# Always present, so nothing downstream has to ask whether a saved view
 	# exists before reading it.
@@ -1744,7 +1795,8 @@ def save_layout(space_code: str, screen: str, filters: str | list | dict | None 
               order_by: str | None = None, columns: str | list | None = None,
               page_length: int = 0, favourites: str | bool | int = False,
               group_by: str | None = None, layout: str | None = None,
-              label: str | None = None, shared: str | bool | int | None = None,
+              label: str | None = None, icon: str | None = None,
+              shared: str | bool | int | None = None,
               is_default: str | bool | int | None = None,
               view_type: str | None = None,
               view_settings: str | dict | None = None) -> dict:
@@ -1783,6 +1835,9 @@ def save_layout(space_code: str, screen: str, filters: str | list | dict | None 
 
 	if label is not None:
 		doc.label = frappe.utils.strip_html(str(label)).strip()[:140]
+
+	if icon is not None:
+		doc.icon = _view_icon(icon)
 
 	doc.update({
 		"space_code": space_code,

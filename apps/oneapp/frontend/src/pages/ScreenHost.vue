@@ -177,21 +177,27 @@
             tooltip="Only my favourites"
             @click="toggleFavourites"
           />
+          <!--
+            The pair that appears when there is something unsaved, and the
+            same pair whether "saved" means into a named view or into this
+            person's own default — one decision, made in `savesIntoView`,
+            rather than two controls that look alike and do different things.
+          -->
           <Button
             v-if="dirty"
             icon-left="lucide-bookmark"
-            label="Save this screen"
+            :label="saveLabel"
             :loading="saving"
             @click="saveLayout"
           />
           <Button
-            v-if="spec.saved"
+            v-if="dirty || spec.saved"
             icon="lucide-rotate-ccw"
-            label="Back to the default screen"
-            tooltip="Back to the default screen"
+            :label="discardLabel"
+            :tooltip="discardLabel"
             variant="ghost"
             :loading="resetting"
-            @click="resetLayout"
+            @click="discardChanges"
           />
         </div>
       </div>
@@ -608,11 +614,12 @@ const withView = async (work) => {
 
 // Saved under a name, and opened straight away: the point of naming it is to
 // be in it.
-const saveAs = ({ label, shared }) =>
+const saveAs = ({ label, icon, shared }) =>
   withView(async () => {
     const result = await workspace.saveLayout(props.spaceCode, spec.value.screen, {
       ...payload(),
       label,
+      icon,
       shared,
     })
     dirty.value = false
@@ -622,12 +629,13 @@ const saveAs = ({ label, shared }) =>
 
 // A rename carries what is on screen with it, because the alternative is a
 // rename that silently discards an unsaved change.
-const renameLayout = ({ label, shared }) =>
+const renameLayout = ({ label, icon, shared }) =>
   withView(() =>
     workspace.saveLayout(props.spaceCode, spec.value.screen, {
       ...payload(),
       layout: spec.value.layout,
       label,
+      icon,
       shared,
     }),
   )
@@ -866,10 +874,42 @@ const setPageLength = (size) => {
   changed()
 }
 
+// Where an unsaved change goes when you say to keep it, which depends on where
+// you are. In a named view you may write, it goes into that view; anywhere
+// else it goes into this person's own unnamed default for the screen, which is
+// what "keep this how I left it" has always meant.
+//
+// Frappe CRM draws the same line — Save Changes appears only on a view you may
+// write — and the alternative is worse in both directions: a Save that
+// silently makes a private copy of a shared view, or one that quietly rewrites
+// a view other people are using.
+//
+// "In a named view" and not merely "a layout is open": this person's own
+// unnamed default is a layout row too, and the screen opens with it — so
+// reading `spec.layout` alone made Save write into the default it had just
+// resolved and left Discard with nothing to reset. The label is what makes a
+// layout a view somebody named.
+const currentLayout = computed(
+  () => (spec.value?.layouts || []).find((l) => l.name === spec.value?.layout) || null,
+)
+
+const savesIntoView = computed(
+  () => !!currentLayout.value?.label && (currentLayout.value.mine || !!spec.value?.can_share),
+)
+
+const saveLabel = computed(() => (savesIntoView.value ? 'Save changes' : 'Save this screen'))
+
+const discardLabel = computed(() =>
+  dirty.value ? 'Discard these changes' : 'Back to the default screen',
+)
+
 const saveLayout = async () => {
   saving.value = true
   try {
-    await workspace.saveLayout(props.spaceCode, spec.value.screen, payload())
+    await workspace.saveLayout(props.spaceCode, spec.value.screen, {
+      ...payload(),
+      ...(savesIntoView.value ? { layout: spec.value.layout } : {}),
+    })
     dirty.value = false
     await load()
   } finally {
@@ -877,10 +917,15 @@ const saveLayout = async () => {
   }
 }
 
-const resetLayout = async () => {
+// The way back. In a view that means the view as it was saved — a reload of
+// the same layout, which is what `load()` does; on the screen itself it means
+// dropping this person's saved default altogether.
+const discardChanges = async () => {
   resetting.value = true
   try {
-    await workspace.resetLayout(props.spaceCode, spec.value.screen)
+    if (!savesIntoView.value && spec.value?.saved) {
+      await workspace.resetLayout(props.spaceCode, spec.value.screen)
+    }
     dirty.value = false
     await load()
   } finally {
