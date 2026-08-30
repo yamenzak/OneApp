@@ -54,6 +54,9 @@ def field(fieldname, fieldtype="Data", label=None, **kw):
 		hide_seconds=kw.get("hide_seconds", 0),
 		set_only_once=kw.get("set_only_once", 0),
 		fetch_from=kw.get("fetch_from", None),
+		depends_on=kw.get("depends_on", None),
+		mandatory_depends_on=kw.get("mandatory_depends_on", None),
+		read_only_depends_on=kw.get("read_only_depends_on", None),
 	)
 
 
@@ -1431,3 +1434,26 @@ def test_an_empty_column_is_not_a_column(spaceview):
 	])
 	form = spaceview._form(split, _offered(spaceview, split, ["first"]))
 	assert form[0]["sections"][0]["columns"] == [["first"]]
+
+
+def test_the_doctypes_own_rules_travel_with_the_field(spaceview):
+	"""`depends_on` and its two cousins are what make a Frappe form feel like a
+	form. The screen carries them; the SPA reads them against the record."""
+	ruled = meta([
+		field("status", "Select", "Status", options="Open\nClosed"),
+		field("closed_on", "Date", "Closed On",
+		      depends_on='eval:doc.status=="Closed"',
+		      mandatory_depends_on='eval:doc.status=="Closed"',
+		      read_only_depends_on="eval:doc.status=='Open'"),
+	])
+	column = spaceview._columns(ruled, ["closed_on"])[0]
+	assert column["depends_on"] == 'eval:doc.status=="Closed"'
+	assert column["mandatory_depends_on"] == 'eval:doc.status=="Closed"'
+	assert column["read_only_depends_on"] == "eval:doc.status=='Open'"
+
+
+def test_a_field_with_no_rules_carries_none(spaceview):
+	column = spaceview._columns(TODO, ["description"])[0]
+	assert column["depends_on"] is None
+	assert column["mandatory_depends_on"] is None
+	assert column["read_only_depends_on"] is None

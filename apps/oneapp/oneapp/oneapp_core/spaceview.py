@@ -140,6 +140,14 @@ def _columns(meta, wanted: list[str]) -> list[dict]:
 			# two flags, and the only two it has.
 			"hide_days": int(getattr(df, "hide_days", 0) or 0),
 			"hide_seconds": int(getattr(df, "hide_seconds", 0) or 0),
+			# The doctype's own rules about when this field applies. Each is
+			# either a fieldname — "when that one is filled in" — or `eval:`
+			# and an expression about `doc`. The SPA reads them against the
+			# record being edited; see `lib/rules.js` for why it parses them
+			# rather than running them.
+			"depends_on": getattr(df, "depends_on", None) or None,
+			"mandatory_depends_on": getattr(df, "mandatory_depends_on", None) or None,
+			"read_only_depends_on": getattr(df, "read_only_depends_on", None) or None,
 			# Set on the way in and never again. Editable on a new record and
 			# read-only afterwards, which is a thing only the record knows — so
 			# the flag travels and the dialog decides.

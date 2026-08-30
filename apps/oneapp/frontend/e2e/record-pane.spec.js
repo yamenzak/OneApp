@@ -142,3 +142,38 @@ test('a record says who made it and what is filed against it', async ({ page }, 
   })
   expectNoRealErrors(errors)
 })
+
+test("the doctype's own rules decide what a form shows", async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await openRecord(page)
+  const pane = page.locator('[data-slot="record-pane"]')
+
+  // `depends_on` — the fixture hides Sender until the task is closed, and the
+  // rule is read against the record as it stands rather than as it was saved.
+  // Hidden and not absent: unmounting the control would drop what was typed
+  // into it the moment the rule flips.
+  // Not an exact label: once the rule makes it required its accessible name
+  // grows the marker, and matching exactly would report a field that is right
+  // there as missing.
+  const ruled = pane.getByLabel(/^Sender/)
+  await expect(ruled).toBeHidden()
+  // `read_only_depends_on` the other way: the reference is editable while it
+  // is open.
+  await expect(pane.getByLabel('Reference Type', { exact: true })).toBeEnabled()
+
+  // The Select is frappe-ui's, not a native one: a trigger and a listbox.
+  await pane.getByLabel('Status', { exact: true }).click()
+  await page.getByRole('option', { name: 'Closed', exact: true }).click()
+
+  // It appears the moment the field it depends on says so, without a save.
+  await expect(ruled).toBeVisible()
+  // And `mandatory_depends_on` marks it the way `reqd` would — the control
+  // reads one flag, so the doctype's two answers become one here.
+  await expect(ruled).toHaveAccessibleName('Sender (required)')
+  await expect(pane.getByLabel('Reference Type', { exact: true })).toBeDisabled()
+
+  // Put it back without saving: closing the record throws the change away,
+  // which is what not pressing Save means.
+  await page.getByRole('button', { name: 'Close the record' }).click()
+  expectNoRealErrors(errors)
+})

@@ -238,6 +238,31 @@ already names, so a space gets it by existing.
   checks the same two rules, because the value reaches the DOM as a class
   name.
 
+  **The form is the doctype's form.** Frappe's three layout fields — Tab
+  Break, Section Break, Column Break — are read the way the desk reads them, so
+  a doctype whose author grouped its fields is grouped the same way here.
+  Columns collapse below the breakpoint, because a two-column form in 360px is
+  two columns of hyphens.
+
+  **And the doctype's own rules apply as you type.** `depends_on`,
+  `mandatory_depends_on` and `read_only_depends_on` decide whether a field is
+  shown, required, or editable, against the record as it stands rather than as
+  it was saved. The desk runs those strings as JavaScript; this does not, and
+  the reason is where the string comes from — a row in a database, editable by
+  anyone who can write a Property Setter, and `new Function` on one would turn
+  "can customise a form" into "can run code in every reader's browser". So the
+  expression is parsed by a small grammar covering what these rules actually
+  say, and anything outside it is treated as no rule rather than guessed at.
+  The server validates `reqd` and `mandatory_depends_on` again on save, so a
+  form that is wrong here produces a worse error message rather than a worse
+  record.
+
+  **Two permission questions, not one.** Frappe protects a field by level
+  twice: which levels you may read, and which you may write. A field above the
+  read levels is not offered anywhere; a field above the write levels is shown
+  and never editable — it used to render as a control that looked editable and
+  was dropped on save, which is the answer that looks like it worked.
+
   **A record is a pane beside the list, and a page on a phone.** It was a
   modal dialog, and a dialog is the wrong shape for it: a record is something
   you read *against* the list — mark this one done, glance at the next, come

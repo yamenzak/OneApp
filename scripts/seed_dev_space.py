@@ -122,6 +122,15 @@ PROPERTIES = [
 	("User", "user_type", "in_preview", 1, "Check"),
 	("ToDo", "priority", "bold", 1, "Check"),
 	("ToDo", "description", "columns", 4, "Int"),
+	# The doctype's own rules, so a browser pass exercises the whole chain:
+	# the field is hidden until the task is closed, and required once it is.
+	# `sender` and not `role`: a rule on a field another test drives is a rule
+	# that breaks it, and the link tests type into Role.
+	("ToDo", "sender", "depends_on", 'eval:doc.status=="Closed"', "Data"),
+	("ToDo", "sender", "mandatory_depends_on", 'eval:doc.status=="Closed"', "Data"),
+	# And one that goes the other way: the reference is settled while the task
+	# is open and stops being editable once it is closed.
+	("ToDo", "reference_type", "read_only_depends_on", 'eval:doc.status=="Closed"', "Data"),
 ]
 
 
@@ -198,6 +207,22 @@ def seed_tenant():
 			"doctype": doctype, "fieldname": fieldname, "property": prop,
 			"value": value, "property_type": prop_type,
 		}, is_system_generated=False)
+
+	# And take back the ones this file used to declare. A property setter
+	# outlives the line that made it, so moving a rule from one field to
+	# another leaves the old rule in place — which is how a `depends_on` moved
+	# off `role` and went on hiding it anyway, breaking two tests that type
+	# into it. Scoped to the doctypes this fixture touches and to setters it
+	# made itself: a system-generated one is Frappe's own business.
+	declared = {(row[0], row[1], row[2]) for row in PROPERTIES}
+	for stale in frappe.get_all(
+		"Property Setter",
+		filters={"doc_type": ["in", sorted({row[0] for row in PROPERTIES})],
+		         "is_system_generated": 0},
+		fields=["name", "doc_type", "field_name", "property"],
+	):
+		if (stale["doc_type"], stale["field_name"], stale["property"]) not in declared:
+			frappe.delete_doc("Property Setter", stale["name"], ignore_permissions=True)
 
 	for row in TODOS:
 		if frappe.db.exists("ToDo", {"description": row["description"]}):
