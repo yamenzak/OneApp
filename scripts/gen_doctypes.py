@@ -971,6 +971,9 @@ doctype(
                       "optional left/right pin. Empty follows the screen. The "
                       "comma-separated fieldnames this used to hold still read."),
         f("page_length", "Int", default="0", description="0 follows the screen."),
+        f("group_by", "Data",
+          description="Which column the rows are grouped under. Empty is no "
+                      "grouping."),
         f("favourites", "Check", default="0",
           description="Only rows this person liked. A flag rather than a filter "
                       "on _liked_by: that column holds user ids, so a filter "

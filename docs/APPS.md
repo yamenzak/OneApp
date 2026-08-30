@@ -126,6 +126,18 @@ already names, so an app gets it by existing.
   toolbar filters to what this person liked.
 * **Sortable headers.** Clicking one sorts by that column and shows the
   direction beside its name; clicking again reverses it.
+* **Columns are one model.** Which, in what order, how wide, and whether one
+  stays put while the rest scroll — all chosen in the picker and remembered.
+  Nothing is pinned by default. The title field renders with its avatar and id
+  wherever it sits, and activity (`__activity`) is a column like any other, so
+  a person who does not want a row's age and comment count can drop it.
+* **Selection.** Checkboxes on every row and a select-all in the header, with a
+  bar for what to do with a selection. The title opens a record, because
+  frappe-ui's List hands the row click to the checkbox — which is how Frappe's
+  own list behaves too.
+* **Grouping.** By any column, chosen in the picker. Rows are sorted by the
+  group first, so a group arrives whole rather than as the same heading three
+  times.
 * **A quick filter box per field**, above the list. Which fields get one is
   Frappe's own answer — `in_standard_filter` plus the title field — so no
   manifest repeats it, and every list gets an ID box. Each typed box carries
@@ -155,7 +167,9 @@ Worth knowing before designing around it:
 * **A child table cannot be filtered.** It is rows rather than a value, so
   Frappe needs a four-part filter naming the child doctype and a three-part one
   names a column that is not there. Shown, never filtered.
-* **No delete from the UI**, though the endpoint exists.
+* **Drag to resize a column.** The width box is in the picker; dragging the
+  border is not built. frappe-ui's List takes fixed grid tracks and ships no
+  resize of its own.
 
 None of these block a first app; all of them are worth knowing about before
 designing one around a list of five thousand invoices.

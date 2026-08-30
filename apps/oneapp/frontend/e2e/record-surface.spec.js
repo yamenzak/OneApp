@@ -528,3 +528,130 @@ test('a view saves, survives a reload, and can be undone', async ({ page }, info
   })
   expectNoRealErrors(errors)
 })
+
+// --- selection --------------------------------------------------------------
+
+test('rows can be selected and deleted together', async ({ page, baseURL }, info) => {
+  const errors = collectConsoleErrors(page)
+
+  // Made through the API rather than the UI: this test is about deleting, and
+  // borrowing a fixture row would leave the ones after it with less to look at.
+  const doomed = `Delete me ${Date.now()}`
+  // Frappe rejects a POST without its CSRF token, and `page.request` carries
+  // the session cookie but not the token — so ask the page for it.
+  await page.goto('/one/app/zztasks?view=all')
+  // Settle before reloading: a reload over the in-flight screen resolve aborts
+  // it, which the browser reports as "Failed to fetch".
+  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
+  const csrf = await page.evaluate(() => window.csrf_token)
+  const made = await page.request.post(`${baseURL}/api/method/oneapp.oneapp_core.appview.save`, {
+    headers: { 'X-Frappe-CSRF-Token': csrf },
+    form: {
+      app_code: 'zztasks',
+      view: 'all',
+      values: JSON.stringify({ description: doomed, status: 'Open', priority: 'Low' }),
+    },
+  })
+  expect(made.ok(), await made.text()).toBeTruthy()
+
+  await page.reload()
+  await expect(page.getByText(doomed).first()).toBeVisible()
+
+  const row = page.locator('[data-slot="list-row"]').filter({ hasText: doomed })
+  await row.locator('[data-slot="list-row-checkbox"]').click()
+  await expect(page.getByText('1 selected')).toBeVisible()
+
+  await info.attach(`selection-${info.project.name}`, {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+
+  // Deleting is the one thing here that does not come back, so it asks first.
+  await page.getByRole('button', { name: 'Delete 1' }).click()
+  await expect(page.getByText('This cannot be undone.', { exact: false })).toBeVisible()
+  await page.locator('[role="dialog"]').getByRole('button', { name: 'Delete' }).click()
+
+  await expect(page.getByText(doomed)).toHaveCount(0)
+  await expect(page.getByText('1 selected')).toHaveCount(0)
+  expectNoRealErrors(errors)
+})
+
+test('select-all ticks the page', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await openList(page)
+
+  // However many rows there are: this runs against a real site, and a test
+  // that hard-codes the fixture's size fails for the wrong reason the moment
+  // something else adds a row.
+  const count = await page.locator('[data-slot="list-row"]').count()
+  await page.locator('[data-slot="list-header-checkbox"]').click()
+  await expect(page.getByText(`${count} selected`)).toBeVisible()
+
+  await page.getByRole('button', { name: 'Clear' }).click()
+  await expect(page.getByText('selected')).toHaveCount(0)
+  expectNoRealErrors(errors)
+})
+
+// --- grouping ---------------------------------------------------------------
+
+test('rows can be grouped by a column', async ({ page }, info) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/app/zztasks?view=all')
+  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
+
+  // Chosen where the columns are, because it is a question about the columns.
+  await page.getByRole('button', { name: 'Choose columns' }).click()
+  await page.getByLabel('Group rows by').click()
+  await page.getByRole('option', { name: 'Status', exact: true }).click()
+  await page.getByRole('button', { name: 'Done' }).click()
+
+  const headings = page.locator('[data-slot="list-group-header"]')
+  await expect(headings.first()).toBeVisible()
+  const labels = await headings.allInnerTexts()
+  expect(labels).toContain('Open')
+  expect(labels).toContain('Closed')
+  // Each group appears once: the server sorts by the group column first, so a
+  // run of rows is a group.
+  expect(new Set(labels).size).toBe(labels.length)
+
+  await info.attach(`grouped-${info.project.name}`, {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  })
+
+  // Put it back for whatever runs next.
+  await page.getByRole('button', { name: 'Choose columns' }).click()
+  await page.getByLabel('Group rows by').click()
+  await page.getByRole('option', { name: 'Nothing', exact: true }).click()
+  await page.getByRole('button', { name: 'Done' }).click()
+  await expect(page.locator('[data-slot="list-group-header"]')).toHaveCount(0)
+  expectNoRealErrors(errors)
+})
+
+test('a phone can reach the quick filters it does not show', async ({ page }, info) => {
+  const errors = collectConsoleErrors(page)
+  await openList(page)
+
+  if (info.project.name !== 'mobile') {
+    // Above the breakpoint they are all showing, so there is nothing to reveal.
+    await expect(page.getByRole('button', { name: /More filters/ })).toBeHidden()
+    expectNoRealErrors(errors)
+    return
+  }
+
+  // Five boxes stacked is most of a phone screen, so only the ID box stays —
+  // and Frappe's own mobile list puts the rest behind a chevron rather than
+  // hiding them outright, which is the half we were missing.
+  await expect(page.getByPlaceholder('Description')).toBeHidden()
+  await page.getByRole('button', { name: 'More filters' }).click()
+  await expect(page.getByPlaceholder('Description')).toBeVisible()
+
+  await info.attach(`expanded-${info.project.name}`, {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+
+  await page.getByRole('button', { name: 'Fewer filters' }).click()
+  await expect(page.getByPlaceholder('Description')).toBeHidden()
+  expectNoRealErrors(errors)
+})

@@ -19,6 +19,7 @@
   "cb_saved_columns",
   "columns",
   "page_length",
+  "group_by",
   "favourites"
  ],
  "fields": [
@@ -95,6 +96,12 @@
    "fieldname": "page_length",
    "fieldtype": "Int",
    "label": "Page Length"
+  },
+  {
+   "description": "Which column the rows are grouped under. Empty is no grouping.",
+   "fieldname": "group_by",
+   "fieldtype": "Data",
+   "label": "Group By"
   },
   {
    "default": "0",

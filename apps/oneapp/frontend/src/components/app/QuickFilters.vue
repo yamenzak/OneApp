@@ -10,16 +10,16 @@
   -->
   <div class="flex flex-wrap items-center gap-2">
     <!--
-      On a phone only the ID box stays. Five boxes stacked is most of the screen
-      before a single row shows, and Frappe makes the same call — its mobile
-      list keeps the id filter and puts the rest behind a toggle. Here the rest
-      are in the Filter panel, which a phone has room to open.
+      On a phone only the ID box stays, with a chevron for the rest — which is
+      what Frappe's own mobile list does. Five boxes stacked is most of the
+      screen before a single row shows, and hiding them with no way back was
+      the half of that we had.
     -->
     <div
       v-for="(quick, index) in boxes"
       :key="quick.key"
       class="items-stretch"
-      :class="index === 0 ? 'flex' : 'hidden sm:flex'"
+      :class="index === 0 || expanded ? 'flex' : 'hidden sm:flex'"
     >
       <Select
         v-if="quick.options"
@@ -53,11 +53,18 @@
         </Dropdown>
       </template>
     </div>
+    <Button
+      class="sm:hidden"
+      :icon="expanded ? 'lucide-chevron-up' : 'lucide-chevron-down'"
+      :label="expanded ? 'Fewer filters' : 'More filters'"
+      :variant="expanded ? 'subtle' : 'ghost'"
+      @click="expanded = !expanded"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { Button, Dropdown, FormControl, Select } from '@/ui'
 import { defaultOperator, operatorsFor } from '../../lib/fields'
 
@@ -72,6 +79,10 @@ const emit = defineEmits(['changed'])
 // inside it — so squaring the wrapper leaves the input round and the toggle
 // button beside it looks bolted on. Reach the input.
 const SQUARE_END = '[&_input]:rounded-e-none'
+
+// Whether the boxes past the first are showing. Only ever asked on a phone —
+// above the breakpoint they are all there anyway.
+const expanded = ref(false)
 
 const draft = reactive({})
 const match = reactive({})

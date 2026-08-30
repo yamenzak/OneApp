@@ -69,6 +69,15 @@ export const workspace = {
       { successMessage: 'Saved' },
     ),
 
+  // One call for a whole selection: forty rows is forty round trips otherwise,
+  // and a failure halfway through leaves nobody able to say what happened.
+  removeAppRecords: (appCode, view, names) =>
+    callMethod(
+      'oneapp.oneapp_core.appview.remove',
+      { app_code: appCode, view, name: names },
+      { silent: true },
+    ),
+
   // A Link is a foreign key, and a text box over one asks a customer to know a
   // record's name. Bounded by the screen like every other read.
   linkOptions: (appCode, view, fieldname, query) =>

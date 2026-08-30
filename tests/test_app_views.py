@@ -359,12 +359,15 @@ from pathlib import Path as _Path  # noqa: E402
 APPVIEW = _Path(__file__).resolve().parents[1] / "apps/oneapp/oneapp/oneapp_core/appview.py"
 
 # The parameters the SPA sends as JSON rather than as a query-string value, and
-# the shapes it sends them in.
+# the shapes it sends them in. Keyed by `method.param` where the shape belongs
+# to the endpoint rather than to the word: `name` is one record on `save` and a
+# whole selection on `remove`.
 STRUCTURED = {
 	"values": {"dict"},
 	"filters": {"list", "dict"},
 	"columns": {"list"},
 	"overrides": {"dict"},
+	"remove.name": {"list"},
 }
 
 
@@ -397,7 +400,8 @@ def test_the_reader_found_the_whitelisted_methods():
 def test_a_structured_argument_admits_the_shape_the_spa_sends():
 	for name, params in whitelisted().items():
 		for param, annotation in params.items():
-			for shape in STRUCTURED.get(param, ()):
+			expected = STRUCTURED.get(f"{name}.{param}", STRUCTURED.get(param, ()))
+			for shape in expected:
 				assert shape in annotation, (
 					f"{name}({param}: {annotation}) — the SPA sends a {shape} here and "
 					f"Frappe answers a mismatched annotation with a 417 before the "
@@ -636,3 +640,32 @@ def test_a_json_string_of_columns_reads_the_same_as_a_list(appview):
 	assert appview._placed(offered, dumps(wanted)) == appview._placed(offered, wanted)
 	assert appview._placed(offered, dumps(wanted))[0]["width"] == 200
 	assert appview._placed(offered, dumps(wanted))[0]["pin"] == "left"
+
+
+def test_grouping_names_a_column_the_screen_offers(appview):
+	resolved = resolved_todo(appview)
+	resolved["all_columns"] = appview._columns(TODO, appview._offerable(TODO))
+
+	assert appview._group_by(resolved, "status") == "status"
+	assert appview._group_by(resolved, "owner") == "", "a field the screen hides"
+	assert appview._group_by(resolved, appview.META_COLUMN) == "", "not a field"
+	assert appview._group_by(resolved, "name") == "", "one group per row is not a grouping"
+	assert appview._group_by(resolved, "") == ""
+	assert appview._group_by(resolved, None) == ""
+
+
+def test_grouping_sorts_by_the_group_first(appview):
+	"""The page is one query. A group whose rows are scattered through it
+	renders as the same heading three times."""
+	resolved = resolved_todo(appview)
+	resolved["all_columns"] = appview._columns(TODO, appview._offerable(TODO))
+
+	resolved["group_by"] = ""
+	assert appview._grouped_order(resolved) == "modified desc"
+
+	resolved["group_by"] = "status"
+	assert appview._grouped_order(resolved) == "status asc, modified desc"
+
+	# Already leading with it, so nothing to add.
+	resolved["order_by"] = "status desc"
+	assert appview._grouped_order(resolved) == "status desc"

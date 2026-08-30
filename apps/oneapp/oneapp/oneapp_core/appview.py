@@ -492,7 +492,7 @@ def rows(app_code: str, view: str | None = None, limit: int = PAGE,
 		resolved["doctype"],
 		fields=resolved["fields"] + list(META_FIELDS),
 		filters=_all_filters(resolved, resolved.get("asked") or []),
-		order_by=resolved["order_by"],
+		order_by=_grouped_order(resolved),
 		limit_start=int(start or 0),
 		limit_page_length=limit + 1,
 	)
@@ -506,6 +506,7 @@ def rows(app_code: str, view: str | None = None, limit: int = PAGE,
 		"has_more": len(found) > limit,
 		"columns": resolved["columns"],
 		"order_by": resolved["order_by"],
+		"group_by": resolved.get("group_by") or "",
 	}
 
 
@@ -586,14 +587,38 @@ def save(app_code: str, view: str, values: str | dict, name: str | None = None) 
 
 
 @frappe.whitelist(methods=["POST"])
-def remove(app_code: str, view: str, name: str) -> dict:
+def remove(app_code: str, view: str, name: str | list) -> dict:
+	"""Delete one record, or a selection of them.
+
+	One call rather than one per row: a selection of forty is forty round trips
+	otherwise, and a partial failure halfway through leaves nobody able to say
+	what happened. `frappe.delete_doc` runs its own permission check per
+	document, and a link somewhere else is a real reason for one to fail — so
+	each is attempted, and what could not go is named.
+	"""
 	resolved = _resolve(app_code, view)
 	doctype = resolved.get("doctype")
 	if not doctype:
 		frappe.throw(_("This screen has nothing to delete."))
 
-	frappe.delete_doc(doctype, name)
-	return {"ok": True}
+	names = frappe.parse_json(name) if isinstance(name, str) and name.startswith("[") else name
+	if not isinstance(names, (list, tuple)):
+		names = [names]
+	if len(names) > MAX_DELETE:
+		frappe.throw(_("Too many at once. Delete {0} or fewer.").format(MAX_DELETE))
+
+	deleted, refused = [], []
+	for one in names:
+		try:
+			frappe.delete_doc(doctype, one)
+			deleted.append(one)
+		except Exception as exc:
+			# The usual reason is something else linking to it, which is a fact
+			# about the data rather than a bug. Reported per record so a
+			# selection of forty does not fail as one opaque error.
+			refused.append({"name": one, "reason": str(exc)})
+
+	return {"ok": not refused, "deleted": deleted, "refused": refused}
 
 
 # --------------------------------------------------------------------------- #
@@ -847,6 +872,7 @@ def _apply_saved(resolved: dict) -> dict:
 	# exists before reading it.
 	resolved["asked"] = []
 	resolved["favourites"] = False
+	resolved["group_by"] = ""
 	if not saved or not resolved.get("doctype"):
 		return resolved
 
@@ -867,10 +893,12 @@ def _apply_saved(resolved: dict) -> dict:
 		resolved["order_by"] = _safe_order(resolved, saved["order_by"])
 
 	resolved["favourites"] = bool(saved.get("favourites"))
+	resolved["group_by"] = _group_by(resolved, saved.get("group_by"))
 
 	resolved["saved"] = {
 		"filters": resolved["asked"],
 		"favourites": resolved["favourites"],
+		"group_by": resolved["group_by"],
 		"order_by": saved.get("order_by") or "",
 		"columns": [
 			{"fieldname": c["fieldname"], "width": c["width"], "pin": c["pin"]}
@@ -879,6 +907,35 @@ def _apply_saved(resolved: dict) -> dict:
 		"page_length": saved.get("page_length") or 0,
 	}
 	return resolved
+
+
+def _group_by(resolved: dict, fieldname) -> str:
+	"""Which column the rows are grouped under.
+
+	A column the screen offers, or nothing. Not `name` — grouping by the id
+	makes a group per row — and not the activity column, which is not a field
+	and has no value to group on.
+	"""
+	if not isinstance(fieldname, str) or not fieldname:
+		return ""
+	offered = {c["fieldname"] for c in resolved.get("all_columns") or resolved.get("columns") or []}
+	if fieldname not in offered or fieldname in (META_COLUMN, "name"):
+		return ""
+	return fieldname
+
+
+def _grouped_order(resolved: dict) -> str:
+	"""The sort, with the group column in front of it.
+
+	Rows have to arrive grouped for the list to render them that way — the page
+	is one query and a group whose rows are scattered through it would render as
+	the same heading three times.
+	"""
+	order = resolved["order_by"]
+	group = resolved.get("group_by")
+	if not group or order.split(" ")[0] == group:
+		return order
+	return f"{group} asc, {order}"
 
 
 def _safe_order(resolved: dict, order_by: str) -> str:
@@ -902,6 +959,10 @@ def _safe_order(resolved: dict, order_by: str) -> str:
 # may be asked. Neither is a security boundary on its own — every one of them is
 # already bounded to a field the screen shows — but an unbounded list is a way
 # to make one request cost a great deal.
+# A selection is a person clicking checkboxes, so this is generous. It exists
+# because one request that deletes ten thousand rows is a different thing.
+MAX_DELETE = 100
+
 MAX_FILTERS = 20
 MAX_IN_VALUES = 100
 
@@ -1096,6 +1157,9 @@ def _apply_overrides(resolved: dict, overrides) -> dict:
 	if "favourites" in overrides:
 		resolved["favourites"] = bool(overrides.get("favourites"))
 
+	if "group_by" in overrides:
+		resolved["group_by"] = _group_by(resolved, overrides.get("group_by"))
+
 	if overrides.get("order_by"):
 		resolved["order_by"] = _safe_order(resolved, overrides["order_by"])
 
@@ -1105,7 +1169,8 @@ def _apply_overrides(resolved: dict, overrides) -> dict:
 @frappe.whitelist(methods=["POST"])
 def save_view(app_code: str, view: str, filters: str | list | dict | None = None,
               order_by: str | None = None, columns: str | list | None = None,
-              page_length: int = 0, favourites: str | bool | int = False) -> dict:
+              page_length: int = 0, favourites: str | bool | int = False,
+              group_by: str | None = None) -> dict:
 	"""Remember how this person likes this screen.
 
 	The annotations are wide on purpose, and `list` in particular is load-
@@ -1143,6 +1208,7 @@ def save_view(app_code: str, view: str, filters: str | list | dict | None = None
 		]),
 		"page_length": int(page_length or 0),
 		"favourites": 1 if frappe.utils.sbool(favourites) else 0,
+		"group_by": _group_by(resolved, group_by),
 	})
 	doc.save(ignore_permissions=True)
 	frappe.db.commit()

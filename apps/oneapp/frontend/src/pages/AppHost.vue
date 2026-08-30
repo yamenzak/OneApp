@@ -95,6 +95,28 @@
       </div>
 
       <!--
+        What a selection is for. Frappe puts this above the list and so does
+        this: a bar that appears when something is ticked and takes the space of
+        nothing when it is not.
+      -->
+      <div
+        v-if="selection.length"
+        class="mb-3 flex flex-wrap items-center gap-2 rounded-4 bg-surface-gray-2 px-3 py-2"
+      >
+        <span class="text-p-sm text-ink-gray-7"> {{ selection.length }} selected </span>
+        <Button variant="ghost" label="Clear" @click="selection = []" />
+        <Button
+          v-if="spec.can_delete"
+          class="ml-auto"
+          theme="red"
+          icon-left="lucide-trash-2"
+          :label="`Delete ${selection.length}`"
+          :loading="deleting"
+          @click="confirmDelete = true"
+        />
+      </div>
+
+      <!--
         Skeleton rows rather than a spinner: the shape of what is coming is
         already known, and a list that appears in place reads as loading where a
         spinner reads as blocked.
@@ -135,8 +157,10 @@
            the page: a doctype with six columns does not fit a phone. -->
       <div v-else class="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
         <List
+          v-model:selection="selection"
           :columns="tracks"
           :row-height="52"
+          selectable
           class="list-row-px-3 [&_[data-slot=list-header]]:bg-surface-gray-1"
           :class="wide && 'min-w-[42rem]'"
           divider="full"
@@ -191,15 +215,59 @@
             </ListHeaderCell>
           </ListHeader>
 
-          <ListRows :items="rows" row-key="name" v-slot="{ item: row, value }">
-            <ListRow :value="value" @click="open(row)">
-              <ListCell v-for="c in visible" :key="c.key" :class="c.pin && PINNED"
-                :style="stickyStyle(c)">
+          <!--
+            One group per run of rows sharing a value. The server sorts by the
+            group column first, so a run is a group — which is why this is
+            chunking rather than bucketing, and why a group never appears twice.
+          -->
+          <template v-if="groups">
+            <ListGroup v-for="group in groups" :key="group.label" :label="group.label" sticky>
+              <ListRows :items="group.rows" row-key="name" v-slot="{ item: row, value }">
+                <ListRow :value="value">
+                  <ListCell
+                    v-for="c in visible"
+                    :key="c.key"
+                    :class="c.pin && PINNED"
+                    :style="stickyStyle(c)"
+                  >
+                    <TitleCell
+                      v-if="c.cell === 'title'"
+                      :row="row"
+                      :title-field="spec.title_field"
+                      :image-field="spec.image_field"
+                      @open="open(row)"
+                    />
+                    <RowMeta
+                      v-else-if="c.cell === 'meta'"
+                      :meta="row._meta || {}"
+                      @like="like(row)"
+                    />
+                    <FieldCell
+                      v-else
+                      :column="c.column"
+                      :value="row[c.column.fieldname]"
+                      :states="spec.states"
+                    />
+                  </ListCell>
+                </ListRow>
+              </ListRows>
+            </ListGroup>
+          </template>
+
+          <ListRows v-else :items="rows" row-key="name" v-slot="{ item: row, value }">
+            <ListRow :value="value">
+              <ListCell
+                v-for="c in visible"
+                :key="c.key"
+                :class="c.pin && PINNED"
+                :style="stickyStyle(c)"
+              >
                 <TitleCell
                   v-if="c.cell === 'title'"
                   :row="row"
                   :title-field="spec.title_field"
                   :image-field="spec.image_field"
+                  @open="open(row)"
                 />
                 <RowMeta v-else-if="c.cell === 'meta'" :meta="row._meta || {}" @like="like(row)" />
                 <FieldCell
@@ -220,12 +288,34 @@
     </template>
   </div>
 
+  <!-- Deleting is the one thing on this screen that does not come back, so it
+       asks — and says how many, because a selection is easy to lose track of. -->
+  <Dialog
+    v-model="confirmDelete"
+    :title="`Delete ${selection.length} ${selection.length === 1 ? 'record' : 'records'}?`"
+  >
+    <p class="text-p-base text-ink-gray-7">
+      This cannot be undone. Anything still linked to elsewhere will be kept and named.
+    </p>
+    <template #actions>
+      <Button
+        theme="red"
+        variant="solid"
+        :loading="deleting"
+        label="Delete"
+        @click="removeSelected"
+      />
+    </template>
+  </Dialog>
+
   <ColumnPicker
     v-if="spec?.doctype"
     v-model="showColumns"
     :chosen="chosenColumns"
     :offered="spec.all_columns || []"
+    :group-by="groupBy"
     @update:chosen="onColumns"
+    @update:group-by="onGroupBy"
   />
 
   <RecordDialog
@@ -255,8 +345,10 @@ import {
   ListHeaderCellSort,
   ListRows,
   ListRow,
+  ListGroup,
   ListCell,
   Icon,
+  Dialog,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import FieldCell from '../components/app/FieldCell.vue'
@@ -268,6 +360,7 @@ import QuickFilters from '../components/app/QuickFilters.vue'
 import ColumnPicker from '../components/app/ColumnPicker.vue'
 import { session } from '../lib/session'
 import { workspace } from '../lib/workspace'
+import { notifyError, notifySuccess } from '../lib/notify'
 import { useListColumns } from '../lib/list'
 import { appComponent } from '../apps'
 
@@ -286,6 +379,11 @@ const rowsLoading = ref(false)
 const saving = ref(false)
 const resetting = ref(false)
 const dirty = ref(false)
+const deleting = ref(false)
+const confirmDelete = ref(false)
+// What is ticked. Cleared whenever the list is re-resolved, because a selection
+// that outlives the rows it named is a selection of nothing.
+const selection = ref([])
 
 // The two filter surfaces are separate lists that are asked together, which is
 // what Frappe does: the boxes above answer the common question and the panel
@@ -295,6 +393,7 @@ const panelFilters = ref([])
 const order = ref('')
 const chosenColumns = ref([])
 const favourites = ref(false)
+const groupBy = ref('')
 
 const app = computed(() => (session.apps || []).find((a) => a.app_code === props.appCode))
 
@@ -366,8 +465,7 @@ const META_FIELD = '__activity'
 // is a computed pixel value, not a token.
 const PINNED = 'sticky z-10 bg-surface-base'
 
-const stickyStyle = (c) =>
-  c.pin ? { [c.pin]: `${c.offset}px` } : undefined
+const stickyStyle = (c) => (c.pin ? { [c.pin]: `${c.offset}px` } : undefined)
 
 const sortableColumns = computed(() => visible.value.filter((c) => c.cell !== 'meta'))
 const metaColumn = computed(() => visible.value.find((c) => c.cell === 'meta') || null)
@@ -376,6 +474,23 @@ const metaColumn = computed(() => visible.value.find((c) => c.cell === 'meta') |
 // attribute ends the tag as far as any regex-shaped parser is concerned, which
 // is how the frappe-ui prop guard read `visible.length` as a prop name.
 const wide = computed(() => visible.value.length > 3)
+
+// Null when nothing is grouped, so the template can tell "no grouping" from
+// "one group".
+const groups = computed(() => {
+  const field = groupBy.value
+  if (!field) return null
+
+  const made = []
+  for (const row of rows.value) {
+    const value = row[field]
+    const label = value === null || value === undefined || value === '' ? '—' : String(value)
+    const last = made[made.length - 1]
+    if (last && last.label === label) last.rows.push(row)
+    else made.push({ label, rows: [row] })
+  }
+  return made
+})
 
 const counted = computed(() =>
   hasMore.value ? `${rows.value.length}+` : String(rows.value.length),
@@ -427,6 +542,7 @@ const payload = () => ({
   order_by: order.value,
   columns: chosenColumns.value,
   favourites: favourites.value,
+  group_by: groupBy.value,
 })
 
 const changed = async () => {
@@ -457,6 +573,11 @@ const clearAllFilters = () => {
   load()
 }
 
+const onGroupBy = (fieldname) => {
+  groupBy.value = fieldname || ''
+  changed()
+}
+
 const toggleFavourites = () => {
   favourites.value = !favourites.value
   changed()
@@ -481,6 +602,27 @@ const like = async (row) => {
   if (favourites.value) await loadRows()
 }
 
+const removeSelected = async () => {
+  deleting.value = true
+  try {
+    const result = await workspace.removeAppRecords(props.appCode, spec.value.view, [
+      ...selection.value,
+    ])
+    confirmDelete.value = false
+    selection.value = (result?.refused || []).map((row) => row.name)
+    if (result?.refused?.length) {
+      // Named rather than counted: "3 could not be deleted" is not something a
+      // person can act on, and the reason is usually a link somewhere else.
+      notifyError(result.refused.map((row) => `${row.name}: ${row.reason}`).join('\n'))
+    } else {
+      notifySuccess(`Deleted ${result?.deleted?.length || 0}`)
+    }
+    await loadRows()
+  } finally {
+    deleting.value = false
+  }
+}
+
 const loadRows = async () => {
   if (!spec.value?.doctype) {
     rows.value = []
@@ -491,6 +633,7 @@ const loadRows = async () => {
   try {
     const page = await workspace.appRows(props.appCode, spec.value.view, payload())
     rows.value = page?.rows || []
+    selection.value = []
     // The columns the rows were actually fetched with, which is not always the
     // screen's: an unsaved change to the column list narrows the fetch, and a
     // header list that does not follow leaves a column standing over empty
@@ -540,6 +683,7 @@ const load = async () => {
       pin: c.pin,
     }))
     favourites.value = !!spec.value?.saved?.favourites
+    groupBy.value = spec.value?.saved?.group_by || ''
     dirty.value = false
     await loadRows()
   } finally {

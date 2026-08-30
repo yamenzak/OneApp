@@ -15,6 +15,17 @@
         app put it on the list to begin with.
       </p>
 
+      <!-- Grouping belongs here rather than in a control of its own: it is a
+           question about the columns, and this is where the columns are. -->
+      <FormControl
+        type="select"
+        label="Group rows by"
+        :model-value="groupBy"
+        :options="groupOptions"
+        description="Rows are sorted by this first, so each group arrives whole."
+        @update:model-value="emit('update:groupBy', $event)"
+      />
+
       <ul class="flex flex-col gap-1">
         <li
           v-for="(column, index) in chosen"
@@ -27,10 +38,7 @@
           @dragover.prevent
           @drop="dropOn(index)"
         >
-          <Icon
-            name="lucide-grip-vertical"
-            class="size-3.5 shrink-0 cursor-grab text-ink-gray-4"
-          />
+          <Icon name="lucide-grip-vertical" class="size-3.5 shrink-0 cursor-grab text-ink-gray-4" />
           <Icon :name="iconFor(column)" class="size-3.5 shrink-0 text-ink-gray-4" />
           <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-7">
             {{ labelFor(column) }}
@@ -131,13 +139,16 @@ const props = defineProps({
   modelValue: { type: Boolean, default: false },
   chosen: { type: Array, required: true },
   offered: { type: Array, required: true },
+  groupBy: { type: String, default: '' },
 })
-const emit = defineEmits(['update:modelValue', 'update:chosen'])
+const emit = defineEmits(['update:modelValue', 'update:chosen', 'update:groupBy'])
 
 const open = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value),
 })
+
+const META_FIELD = '__activity'
 
 const dragging = ref(null)
 const search = ref('')
@@ -145,6 +156,14 @@ const search = ref('')
 const columnFor = (fieldname) => props.offered.find((c) => c.fieldname === fieldname)
 const labelFor = (column) => columnFor(column.fieldname)?.label || column.fieldname
 const iconFor = (column) => columnFor(column.fieldname)?.icon || 'lucide-circle-help'
+
+// Not the activity column: it is not a field and has no value to group on.
+const groupOptions = computed(() => [
+  { value: '', label: 'Nothing' },
+  ...props.offered
+    .filter((c) => c.fieldname !== META_FIELD)
+    .map((c) => ({ value: c.fieldname, label: c.label })),
+])
 
 const taken = computed(() => new Set(props.chosen.map((c) => c.fieldname)))
 const unused = computed(() => props.offered.filter((c) => !taken.value.has(c.fieldname)))
