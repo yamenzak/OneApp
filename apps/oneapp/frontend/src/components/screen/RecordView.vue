@@ -7,7 +7,9 @@
       The identity is drawn only where the trail is not already drawing it: on
       a desktop the breadcrumb above the list says which record this is, and
       saying it twice in two different sizes is how a pane starts to read as a
-      second page. On a phone the pane *is* the page, so it says it here.
+      second page. On a phone the pane *is* the page, so it says it here — and
+      on a desktop the row is the controls alone rather than the word "Record",
+      which is a label that says nothing and takes a line to say it.
     -->
     <header class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 px-4 py-3">
       <RecordChip v-if="phone" :record="identity" class="min-w-0 flex-1">
@@ -21,8 +23,6 @@
           />
         </template>
       </RecordChip>
-      <span v-else class="text-p-sm font-medium text-ink-gray-8">Record</span>
-
       <div class="ms-auto flex shrink-0 items-center gap-1">
         <!-- One icon, two themes: lucide ships no filled heart, so the colour
              is what says whether this is yours. -->

@@ -10,10 +10,16 @@
     On a phone there is no room to keep both, so it is a page: full width, its
     own header, and the way back where the way back goes.
   -->
+  <!--
+    Above the list, and above what the list draws over itself. `z-40` and not
+    `z-20`: the grid's "there is more to the right" fade is `z-30`, and at 20
+    it showed through the page as a grey smear down its right edge — the pane
+    is opaque, so it read as a rendering fault rather than as a layer.
+  -->
   <div
     v-if="phone"
     data-slot="record-pane"
-    class="fixed inset-x-0 bottom-0 top-0 z-20 flex flex-col bg-surface-base"
+    class="fixed inset-x-0 bottom-0 top-0 z-40 flex flex-col bg-surface-base"
   >
     <slot name="body" :phone="true" />
   </div>

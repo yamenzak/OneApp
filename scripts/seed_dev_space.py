@@ -236,6 +236,14 @@ def seed_tenant():
 	# invisible, which is the worst thing for a test to inherit.
 	frappe.db.delete("OneSpace Hidden View", {"space_code": CODE})
 
+	# And the records they make. A pass that creates one to prove creating
+	# works has no reason to keep it, and forty runs later the fixture is forty
+	# rows longer than it was written to be. Everything a test makes is named
+	# with this prefix on purpose.
+	for doctype, field in (("ToDo", "description"), ("Note", "title")):
+		for row in frappe.get_all(doctype, filters={field: ["like", "ZZ %"]}, pluck="name"):
+			frappe.delete_doc(doctype, row, ignore_permissions=True, force=True)
+
 	# The browser passes leave their comments behind, and Frappe keeps only the
 	# last hundred of them on the document itself — which is where the count in
 	# the timeline tab comes from, here as in the desk. A fixture that has been
