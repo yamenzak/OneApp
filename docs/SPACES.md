@@ -238,6 +238,17 @@ already names, so a space gets it by existing.
   checks the same two rules, because the value reaches the DOM as a class
   name.
 
+  **A list follows the site, and a record says who else is in it.** Frappe
+  publishes `list_update` for every document that changes, so a list left open
+  on a second screen stops being a photograph of when it was opened — coalesced,
+  because a bulk import publishes hundreds of those a second. A record joins
+  Frappe's own two rooms: the one that carries the document's events, and the
+  open-document room that says who has it open, which is what the row of faces
+  in the header is. When somebody else saves it, the pane says so rather than
+  doing anything about it — the reader may be halfway through typing, and
+  replacing what is on screen with what is on the server is the one thing worse
+  than being out of date.
+
   **The form is the doctype's form.** Frappe's three layout fields — Tab
   Break, Section Break, Column Break — are read the way the desk reads them, so
   a doctype whose author grouped its fields is grouped the same way here.

@@ -3,11 +3,15 @@
 // Sign in through Frappe's own endpoint rather than the login form: the form is
 // Frappe's, not ours, and driving it would make every test depend on markup we
 // do not own.
-export async function signIn(page, baseURL) {
+//
+// `who` names somebody other than the default, which the realtime tests need:
+// some things only exist between two people, and Frappe will not tell you that
+// *you* are the one looking at a record.
+export async function signIn(page, baseURL, who = {}) {
   const response = await page.request.post(`${baseURL}/api/method/login`, {
     form: {
-      usr: process.env.ONEAPP_USER || 'Administrator',
-      pwd: process.env.ONEAPP_PASSWORD || 'Dev-Loop-2026!x',
+      usr: who.user || process.env.ONEAPP_USER || 'Administrator',
+      pwd: who.password || process.env.ONEAPP_PASSWORD || 'Dev-Loop-2026!x',
     },
   })
   if (!response.ok()) {

@@ -24,6 +24,21 @@ export const sessionUser = read('user', 'Guest')
 // convert from — see main.js. Empty is the safe default: dayjsLocal then behaves
 // exactly like dayjs rather than shifting by a guess.
 export const systemTimezone = read('system_timezone', '')
+// Two different questions, and they used to be one. `import.meta.env.DEV` says
+// Vite is serving the app; `dev_server` says the site has nothing in front of
+// it routing `/socket.io/` to the socketio port. A built SPA served by a bench
+// is the case where the first is false and the second is true — and the socket
+// went same-origin and 404ed on every local run, which is why realtime was
+// "not covered locally" for as long as it was.
 export const isDev = import.meta.env.DEV
+export const devServer = !!read('dev_server', 0) || import.meta.env.DEV
 
-export default { siteName, socketioPort, csrfToken, sessionUser, systemTimezone, isDev }
+export default {
+  siteName,
+  socketioPort,
+  csrfToken,
+  sessionUser,
+  systemTimezone,
+  isDev,
+  devServer,
+}

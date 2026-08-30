@@ -353,6 +353,7 @@
           :screen="spec.screen"
           :phone="phone"
           @saved="recordSaved"
+          @reload="reloadRecord"
           @close="closeRecord"
         />
       </template>
@@ -400,7 +401,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   PageHeader,
@@ -430,6 +431,7 @@ import { workspace } from '../lib/workspace'
 import { notifyError, notifySuccess } from '../lib/notify'
 import { screenComponent } from '../screens'
 import { DEFAULT_VIEW_TYPE, VIEW_TYPES, bodyFor } from '../lib/viewTypes'
+import { onDoctypeChange } from '../lib/socket'
 import { valueTheme } from '../lib/fields'
 
 const props = defineProps({ spaceCode: { type: String, required: true } })
@@ -756,6 +758,41 @@ const changed = async () => {
   await loadRows()
 }
 
+// --- the list follows the site ----------------------------------------------
+//
+// Frappe publishes `list_update` for every document that changes, so a list
+// left open on a second screen stops being a photograph of when it was opened.
+//
+// Coalesced, and deliberately: a bulk import or a background job can publish
+// hundreds of these in a second, and one refetch per event is a list that
+// spends its afternoon reloading. A short wait after the last one is what a
+// person experiences as "it just updated".
+let pending = null
+let watching = null
+
+const follow = (doctype) => {
+  if (watching === doctype) return
+  if (unfollow) unfollow()
+  unfollow = null
+  watching = doctype
+  if (!doctype) return
+  unfollow = onDoctypeChange(doctype, () => {
+    // Not while something is unsaved: refetching would replace the rows under
+    // a filter somebody is still choosing, and the Save button would then be
+    // offering to save a screen they are no longer looking at.
+    if (dirty.value) return
+    clearTimeout(pending)
+    pending = setTimeout(() => loadRows(), 400)
+  })
+}
+
+let unfollow = null
+
+onBeforeUnmount(() => {
+  clearTimeout(pending)
+  if (unfollow) unfollow()
+})
+
 const onQuickFilters = (filters) => {
   quickFilters.value = filters
   changed()
@@ -809,6 +846,16 @@ const create = () => {
 const created = async (name) => {
   await loadRows()
   if (name) router.push({ query: { ...route.query, record: name } })
+}
+
+// Somebody else saved it while this was open, and the reader asked for their
+// version. The same re-read a save does, without the save.
+const reloadRecord = async () => {
+  const name = editing.value?.name
+  if (!name) return
+  editing.value = null
+  await openRecord(name)
+  await loadRows()
 }
 
 // Saving from the pane refreshes the list under it — a title or a status that
@@ -1058,6 +1105,7 @@ const load = async (openWith) => {
     groupBy.value = spec.value?.saved?.group_by || ''
     pageLength.value = spec.value?.page_length || 100
     dirty.value = false
+    follow(spec.value?.doctype || '')
     await loadRows()
   } catch (err) {
     // A screen that will not resolve is not a screen with nothing on it. The

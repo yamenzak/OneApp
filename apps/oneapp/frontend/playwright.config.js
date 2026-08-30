@@ -25,7 +25,13 @@ export default defineConfig({
   reporter: [['list']],
   timeout: 45_000,
   use: {
-    baseURL: process.env.ONEAPP_BASE_URL || 'http://localhost:8001',
+    // The site by its own hostname, not `localhost`. Frappe's socketio server
+    // works out which site a socket belongs to from the Origin header and
+    // refuses a namespace that does not match it — so on `localhost` every
+    // connection came back "Invalid namespace" and realtime was silently off
+    // for the whole browser pass. `*.localhost` resolves without a hosts file
+    // entry, and this is also how the site is addressed in production.
+    baseURL: process.env.ONEAPP_BASE_URL || 'http://space.localhost:8001',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },

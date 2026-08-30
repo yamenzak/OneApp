@@ -74,9 +74,58 @@ services() {
 case "${1:-up}" in
   up)
     require_bench
+    # Both of these come before `services`, because they decide what the
+    # socketio server has to be started with.
+    #
+    # The site by its own hostname: Frappe's socketio server works out which
+    # site a connection belongs to from the Origin header and refuses a
+    # namespace that does not match — so on `localhost` every socket comes back
+    # "Invalid namespace" and realtime is silently off. Node does not resolve
+    # `*.localhost` the way a browser does, so the entry has to be real.
+    if ! getent hosts "$SITE" >/dev/null 2>&1; then
+      if [ -w /etc/hosts ]; then
+        echo "127.0.0.1 $SITE" >> /etc/hosts
+        echo "Added $SITE to /etc/hosts, so the socket can name its site."
+      else
+        echo "warning: $SITE does not resolve and /etc/hosts is not writable."
+        echo "         Realtime will be off; add '127.0.0.1 $SITE' by hand."
+      fi
+    fi
+
+    # And the port the socketio server calls back to. It authenticates a
+    # connection by asking the site who the cookie belongs to, and in developer
+    # mode it builds that URL from the origin with `webserver_port` swapped in
+    # — unset on this bench, so every socket failed against a URL ending in
+    # `:undefined`. One bench-wide setting for two sites on two ports: whoever
+    # started last owns realtime, which is the right answer for a dev loop
+    # driving one site at a time.
+    if "$PY" - "$sites_path" "$PORT" <<'PYEOF'
+import json
+import os
+import sys
+
+sites_path, port = sys.argv[1], int(sys.argv[2])
+path = os.path.join(sites_path, "common_site_config.json")
+with open(path) as fh:
+    conf = json.load(fh)
+if conf.get("webserver_port") == port:
+    sys.exit(1)
+conf["webserver_port"] = port
+with open(path, "w") as fh:
+    json.dump(conf, fh, indent=1)
+    fh.write("\n")
+print(f"webserver_port set to {port}, so realtime can authenticate.")
+PYEOF
+    then
+      # The socketio server reads the config once, at startup. A running one is
+      # holding the old port, so it goes and `services` starts a fresh one.
+      pkill -f "node apps/frappe/socketio.js" 2>/dev/null || true
+      sleep 1
+    fi
+
     services
     mkdir -p "$BENCH/logs"
-    echo "Serving $SITE on http://localhost:$PORT"
+    echo "Serving $SITE on http://$SITE:$PORT"
     "$PY" - "$sites_path" "$SITE" "$PORT" <<'PYEOF' &
 import sys
 

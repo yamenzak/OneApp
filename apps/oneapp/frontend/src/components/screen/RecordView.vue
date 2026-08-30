@@ -23,7 +23,25 @@
           />
         </template>
       </RecordChip>
-      <div class="ms-auto flex shrink-0 items-center gap-1">
+      <!--
+        Who else has this open. Frappe's own open-doc room, which is what the
+        desk's row of faces is built on — the server checks the reader may see
+        the document before it lets them into it, so this is not a way to watch
+        something you cannot open.
+      -->
+      <div v-if="others.length" class="ms-auto flex shrink-0 items-center -space-x-1.5">
+        <!-- The gap between overlapping faces is drawn as a ring of the
+             surface behind them. A `ring-*` colour is not one of the theme's
+             tokens — they are background, text and outline — so it is a
+             padded background rather than a ring. -->
+        <Tooltip v-for="who in others" :key="who" :text="`${who} is looking at this too`">
+          <span data-slot="viewer" class="inline-flex rounded-full bg-surface-base p-0.5">
+            <Avatar :label="who" size="sm" />
+          </span>
+        </Tooltip>
+      </div>
+
+      <div class="flex shrink-0 items-center gap-1" :class="!others.length && 'ms-auto'">
         <!-- One icon, two themes: lucide ships no filled heart, so the colour
              is what says whether this is yours. -->
         <Button
@@ -57,6 +75,26 @@
         />
       </div>
     </header>
+
+    <!--
+      Somebody else saved it while this was open. Said rather than done: the
+      reader may be halfway through typing, and replacing what is on screen
+      with what is on the server is the one thing worse than being out of date.
+    -->
+    <Alert
+      v-if="staleSince"
+      class="mx-4 mt-3"
+      theme="amber"
+      title="Someone else changed this"
+    >
+      <template #description>
+        It was saved {{ when(staleSince) }}. Reloading takes what is on the
+        server; anything typed here and not saved goes with it.
+      </template>
+      <template #actions>
+        <Button label="Reload it" @click="emit('reload')" />
+      </template>
+    </Alert>
 
     <div class="min-h-0 flex-1 overflow-y-auto px-4 py-4">
       <Tabs v-model="tab">
@@ -143,8 +181,20 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
-import { Badge, Button, ErrorMessage, Tabs, TabList, TabTrigger, TabPanel } from '@/ui'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import {
+  Alert,
+  Avatar,
+  Badge,
+  Button,
+  ErrorMessage,
+  Tabs,
+  TabList,
+  TabTrigger,
+  TabPanel,
+  Tooltip,
+  dayjsLocal,
+} from '@/ui'
 import RecordChip from './RecordChip.vue'
 import RecordForm from './RecordForm.vue'
 import RecordComments from './RecordComments.vue'
@@ -154,6 +204,8 @@ import RecordImage from './RecordImage.vue'
 import RecordMeta from './RecordMeta.vue'
 import { workspace } from '../../lib/workspace'
 import { valueTheme } from '../../lib/fields'
+import { onDocChange, onDocViewers } from '../../lib/socket'
+import { session } from '../../lib/session'
 
 const props = defineProps({
   record: { type: Object, required: true },
@@ -163,7 +215,7 @@ const props = defineProps({
   /** Whether the pane is the page. The pane knows; this does not ask. */
   phone: { type: Boolean, default: false },
 })
-const emit = defineEmits(['saved', 'close'])
+const emit = defineEmits(['saved', 'close', 'reload'])
 
 const tab = ref('fields')
 const form = reactive({})
@@ -179,6 +231,14 @@ const moreComments = ref(false)
 const changes = ref([])
 const likes = ref([])
 const liked = ref(false)
+// Everybody in the room but this reader — the desk does the same, because a
+// face saying "you are here" is a face saying nothing.
+const others = ref([])
+// When somebody else last saved it, or empty. Set from the document's own
+// room rather than by polling.
+const staleSince = ref('')
+
+const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
 
 // The screen's whole field list, not the columns someone chose to see. Hiding
 // a column is a statement about the list; the record still has the field, and
@@ -246,9 +306,50 @@ const save = async () => {
 // Escape as handled, so closing a dropdown closed the record under it. The
 // way out is the X, the browser's back button, and on a phone the same X at
 // the top of the page.
+// --- the room ---------------------------------------------------------------
+//
+// Two rooms per record, both Frappe's: one carries the document's own events,
+// the other is the list of who has it open. Re-joined whenever the record
+// changes, because a pane that stays mounted while you click down a list would
+// otherwise still be reporting the first record's viewers.
+let leaveRoom = null
+
+const enterRoom = () => {
+  if (leaveRoom) leaveRoom()
+  leaveRoom = null
+  others.value = []
+  staleSince.value = ''
+
+  const doctype = props.spec?.doctype
+  const name = props.record?.name
+  if (!doctype || !name) return
+
+  const stopViewers = onDocViewers(doctype, name, (users) => {
+    // Frappe's rooms carry user ids — an email — which is what `name` is on
+    // the session's user rather than the object itself.
+    others.value = users.filter((who) => who && who !== session.user?.name)
+  })
+  const stopChanges = onDocChange(doctype, name, (data) => {
+    // Our own save comes back through the same room. `saving` is still true
+    // while the round trip finishes, and telling somebody their own change
+    // arrived is noise.
+    if (saving.value) return
+    staleSince.value = data?.modified || new Date().toISOString()
+  })
+  leaveRoom = () => {
+    stopViewers()
+    stopChanges()
+  }
+}
+
+onBeforeUnmount(() => {
+  if (leaveRoom) leaveRoom()
+})
+
 watch(
   () => props.record,
   () => {
+    enterRoom()
     tab.value = 'fields'
     error.value = ''
     Object.keys(form).forEach((key) => delete form[key])

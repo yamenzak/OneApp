@@ -105,7 +105,7 @@ test('the first column is what the row is, with its id underneath', async ({ pag
   // The title from the doctype's own `title_field`, and the id quietly below
   // it — what a person reads, and what they quote on the phone.
   await expect(first).toContainText(SEEDED)
-  await expect(first).toContainText('kosfpdsaqg')
+  await expect(first).toContainText('zzmock-van')
   // An avatar, drawn from the id when the doctype declares no image field.
   await expect(first.locator('[data-slot="avatar"], img, span').first()).toBeVisible()
   expectNoRealErrors(errors)
@@ -294,9 +294,11 @@ test('a quick box can be exact or roughly', async ({ page }) => {
   await openList(page)
 
   // Frappe's `≈` toggle, on the one box every viewport has. The three written
-  // todos were named in one run, so their ids share a prefix the forty backlog
-  // rows do not: Like finds those three and Equals finds none of them.
-  await page.getByPlaceholder('ID').fill('kos')
+  // todos carry ids the fixture chose, all beginning `zzmock-`, which the forty
+  // backlog rows do not: Like finds those three and Equals finds none of them.
+  // Chosen ids rather than the hashes Frappe would give them, because a
+  // fixture remade for any reason would otherwise come back with new ones.
+  await page.getByPlaceholder('ID').fill('zzmock-')
   await page.getByPlaceholder('ID').press('Enter')
   await expect(page.locator('[data-slot="list-row"]')).toHaveCount(3)
 
@@ -310,7 +312,7 @@ test('a quick box and the panel both apply', async ({ page }) => {
   const errors = collectConsoleErrors(page)
   await openList(page)
 
-  await page.getByPlaceholder('ID').fill('kos')
+  await page.getByPlaceholder('ID').fill('zzmock-')
   await page.getByPlaceholder('ID').press('Enter')
   await expect(page.locator('[data-slot="list-row"]')).toHaveCount(3)
 
@@ -323,7 +325,7 @@ test('a quick box and the panel both apply', async ({ page }) => {
   // Neither cleared the other.
   await expect(page.getByText('Chase the Halloway invoice').first()).toBeVisible()
   await expect(page.getByText(SEEDED)).toHaveCount(0)
-  await expect(page.getByPlaceholder('ID')).toHaveValue('kos')
+  await expect(page.getByPlaceholder('ID')).toHaveValue('zzmock-')
   expectNoRealErrors(errors)
 })
 

@@ -132,14 +132,14 @@ test('an open record is in the URL, and in the trail', async ({ page }) => {
   // to read and not to reach.
   const trail = page.locator('[data-slot="breadcrumb"]')
   await expect(trail).toContainText('Chase the Halloway invoice')
-  await expect(trail).toContainText('kosp1csf48')
+  await expect(trail).toContainText('zzmock-halloway')
 
   // Two lines under one face, and the status beside the name: "where does this
   // stand" is the second thing anybody asks about a record. Which field that
   // is comes from the manifest; the colour is ToDo's own.
   await expect(trail.locator('[data-slot="record-status"]')).toHaveText('Open')
   const name = await trail.getByText('Chase the Halloway invoice').boundingBox()
-  const id = await trail.getByText('kosp1csf48').boundingBox()
+  const id = await trail.getByText('zzmock-halloway').boundingBox()
   expect(id.y).toBeGreaterThan(name.y + name.height - 1)
   expect(Math.abs(id.x - name.x)).toBeLessThan(2)
 

@@ -574,9 +574,24 @@ export const sessionUser = read('user', 'Guest')
 // convert from — see main.js. Empty is the safe default: dayjsLocal then behaves
 // exactly like dayjs rather than shifting by a guess.
 export const systemTimezone = read('system_timezone', '')
+// Two different questions, and they used to be one. `import.meta.env.DEV` says
+// Vite is serving the app; `dev_server` says the site has nothing in front of
+// it routing `/socket.io/` to the socketio port. A built SPA served by a bench
+// is the case where the first is false and the second is true — and the socket
+// went same-origin and 404ed on every local run, which is why realtime was
+// "not covered locally" for as long as it was.
 export const isDev = import.meta.env.DEV
+export const devServer = !!read('dev_server', 0) || import.meta.env.DEV
 
-export default { siteName, socketioPort, csrfToken, sessionUser, systemTimezone, isDev }
+export default {
+  siteName,
+  socketioPort,
+  csrfToken,
+  sessionUser,
+  systemTimezone,
+  isDev,
+  devServer,
+}
 """
 
 
@@ -818,16 +833,23 @@ SOCKET_JS = BANNER + """
 import { io } from 'socket.io-client'
 import { onScopeDispose, getCurrentScope } from 'vue'
 
-import { siteName, socketioPort, isDev } from './boot'
+import { siteName, socketioPort, devServer } from './boot'
 
 let socket = null
 const subscribers = new Map()
+const documents = new Map()
+const viewers = new Map()
+const rooms = new Set()
+
+const key = (doctype, name) => `${doctype}/${name}`
 
 function socketUrl() {
-  // In development Vite serves the SPA, so the socket has to be addressed
-  // directly on the bench's socketio port. In production it is proxied on the
-  // site's own origin.
-  if (isDev) {
+  // Whether the socket is same-origin is a question about what is in front of
+  // the site, not about how the SPA was built. In production nginx routes
+  // `/socket.io/` to the socketio port; on a bench nothing does, so the socket
+  // is addressed on the port itself. Frappe's own desk client makes the same
+  // call from `window.dev_server`, and this reads the same flag.
+  if (devServer) {
     return `${window.location.protocol}//${window.location.hostname}:${socketioPort}/${siteName}`
   }
   return `${window.location.origin}/${siteName}`
@@ -846,15 +868,36 @@ export function getSocket() {
   })
 
   socket.on('connect', () => {
-    // Re-subscribe after a reconnect; the server forgets on disconnect.
+    // Re-subscribe after a reconnect; the server forgets on disconnect. Rooms
+    // as well as doctypes — a reader whose wifi blinked is still looking at
+    // the same record, and the list of who is in it is wrong until they say
+    // so again.
     for (const doctype of subscribers.keys()) {
       socket.emit('doctype_subscribe', doctype)
+    }
+    for (const room of rooms) {
+      const [doctype, name] = room.split('/')
+      socket.emit('doc_subscribe', doctype, name)
+      if (viewers.has(room)) socket.emit('doc_open', doctype, name)
     }
   })
 
   socket.on('list_update', (data) => {
     const handlers = subscribers.get(data?.doctype)
     if (handlers) handlers.forEach((fn) => fn(data.name, data))
+  })
+
+  // One document rather than a doctype. Frappe publishes `doc_update` into the
+  // room a `doc_subscribe` joins, and `doc_viewers` into the one `doc_open`
+  // joins — the second is how the desk shows who else has the form open.
+  socket.on('doc_update', (data) => {
+    const handlers = documents.get(key(data?.doctype, data?.name))
+    if (handlers) handlers.forEach((fn) => fn(data))
+  })
+
+  socket.on('doc_viewers', (data) => {
+    const handlers = viewers.get(key(data?.doctype, data?.docname))
+    if (handlers) handlers.forEach((fn) => fn(data?.users || []))
   })
 
   return socket
@@ -888,11 +931,69 @@ export function onDoctypeChange(doctype, handler) {
   return stop
 }
 
+/**
+ * Call `handler` when this one document changes on the server — somebody else
+ * saving it, a background job touching it, a workflow moving it on.
+ *
+ * The server checks the reader may see the document before it lets them into
+ * the room, so this is not a way to watch something you cannot open.
+ */
+export function onDocChange(doctype, name, handler) {
+  return joinDoc(doctype, name, documents, handler, 'doc_subscribe', 'doc_unsubscribe')
+}
+
+/**
+ * Call `handler` with everyone who currently has this document open, including
+ * this reader. Frappe calls it the open-doc room, and it is what the desk's
+ * row of faces at the top of a form is built on.
+ */
+export function onDocViewers(doctype, name, handler) {
+  return joinDoc(doctype, name, viewers, handler, 'doc_open', 'doc_close')
+}
+
+function joinDoc(doctype, name, registry, handler, join, leave) {
+  if (!doctype || !name) return () => {}
+  const sock = getSocket()
+  const room = key(doctype, name)
+
+  // Both rooms need the subscribe: `doc_open` is what publishes the list of
+  // viewers, and `doc_subscribe` is what carries the document's own events.
+  if (!rooms.has(room)) {
+    rooms.add(room)
+    sock.emit('doc_subscribe', doctype, name)
+  }
+  if (!registry.has(room)) {
+    registry.set(room, new Set())
+    if (join !== 'doc_subscribe') sock.emit(join, doctype, name)
+  }
+  registry.get(room).add(handler)
+
+  const stop = () => {
+    const handlers = registry.get(room)
+    if (!handlers) return
+    handlers.delete(handler)
+    if (handlers.size) return
+    registry.delete(room)
+    if (leave !== 'doc_unsubscribe') sock.emit(leave, doctype, name)
+    // The room itself goes only when nothing is left watching it.
+    if (!documents.has(room) && !viewers.has(room)) {
+      rooms.delete(room)
+      sock.emit('doc_unsubscribe', doctype, name)
+    }
+  }
+
+  if (getCurrentScope()) onScopeDispose(stop)
+  return stop
+}
+
 export function closeSocket() {
   if (!socket) return
   socket.close()
   socket = null
   subscribers.clear()
+  documents.clear()
+  viewers.clear()
+  rooms.clear()
 }
 """
 
@@ -2150,7 +2251,13 @@ export default defineConfig({
   reporter: [['list']],
   timeout: 45_000,
   use: {
-    baseURL: process.env.ONEAPP_BASE_URL || 'http://localhost:%(port)d',
+    // The site by its own hostname, not `localhost`. Frappe's socketio server
+    // works out which site a socket belongs to from the Origin header and
+    // refuses a namespace that does not match it — so on `localhost` every
+    // connection came back "Invalid namespace" and realtime was silently off
+    // for the whole browser pass. `*.localhost` resolves without a hosts file
+    // entry, and this is also how the site is addressed in production.
+    baseURL: process.env.ONEAPP_BASE_URL || 'http://%(site)s:%(port)d',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },
@@ -2168,11 +2275,15 @@ E2E_AUTH_JS = BANNER + """
 // Sign in through Frappe's own endpoint rather than the login form: the form is
 // Frappe's, not ours, and driving it would make every test depend on markup we
 // do not own.
-export async function signIn(page, baseURL) {
+//
+// `who` names somebody other than the default, which the realtime tests need:
+// some things only exist between two people, and Frappe will not tell you that
+// *you* are the one looking at a record.
+export async function signIn(page, baseURL, who = {}) {
   const response = await page.request.post(`${baseURL}/api/method/login`, {
     form: {
-      usr: process.env.ONEAPP_USER || 'Administrator',
-      pwd: process.env.ONEAPP_PASSWORD || 'Dev-Loop-2026!x',
+      usr: who.user || process.env.ONEAPP_USER || 'Administrator',
+      pwd: who.password || process.env.ONEAPP_PASSWORD || 'Dev-Loop-2026!x',
     },
   })
   if (!response.ok()) {

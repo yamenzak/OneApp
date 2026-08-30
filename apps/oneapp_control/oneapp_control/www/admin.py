@@ -29,6 +29,11 @@ def get_context(context):
 		# error page comes back to be parsed as JSON.
 		"user": frappe.session.user,
 		"socketio_port": frappe.conf.socketio_port or 9000,
+		# Whether anything in front of this origin routes `/socket.io/` to that
+		# port. In production nginx does; on a bench nothing does, and the
+		# socket has to be addressed on the port itself — which is the same
+		# call Frappe's own desk client makes from `window.dev_server`.
+		"dev_server": 1 if frappe.conf.developer_mode else 0,
 		"csrf_token": frappe.sessions.get_csrf_token(),
 	}
 	context.no_cache = 1

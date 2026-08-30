@@ -37,6 +37,12 @@ ROLE = "OneSpace Mock"
 RETIRED = ("zztasks",)
 RETIRED_ROLES = ("OneSpace Tasks",)
 
+# The other person on this workspace. Only the browser pass needs one, and only
+# for the things that take two people: who else has a record open, and a save
+# arriving from somewhere else.
+COLLEAGUE = "robin@zzmock.test"
+COLLEAGUE_PASSWORD = "Dev-Loop-2026!x"
+
 TASK_FIELDS = "description,status,priority,allocated_to,role,date,color"
 NOTE_FIELDS = "title,public,content"
 
@@ -90,11 +96,24 @@ LAYOUTS = [
 	},
 ]
 
+# Named, not hashed. ToDo autonames by hash, so a row deleted and remade — by
+# the litter sweep below, or by hand — comes back with a different id, and the
+# browser tests that read an id off a row started failing on a fixture that was
+# otherwise identical. A fixture's ids are part of the fixture.
 TODOS = [
-	{"description": "Book the van for Thursday", "priority": "Medium", "status": "Open",
+	{"name": "zzmock-van",
+	 "description": "Book the van for Thursday", "priority": "Medium", "status": "Open",
 	 "allocated_to": "Administrator", "color": "#2490EF"},
-	{"description": "Chase the Halloway invoice", "priority": "High", "status": "Open"},
-	{"description": "File Q3 returns", "priority": "Low", "status": "Closed"},
+	{"name": "zzmock-halloway",
+	 "description": "Chase the Halloway invoice", "priority": "High", "status": "Open"},
+	# Allocated to the colleague on purpose. Frappe's ToDo has a permission
+	# rule of its own — owner, allocated_to, assigned_by — so a second person
+	# cannot so much as join the realtime room for a task that is none of
+	# those, and the row of faces has nothing to show. This is the one record
+	# in the fixture two people can both be in.
+	{"name": "zzmock-q3",
+	 "description": "File Q3 returns", "priority": "Low", "status": "Closed",
+	 "allocated_to": COLLEAGUE},
 ]
 
 NOTES = [
@@ -196,6 +215,21 @@ def seed_tenant():
 		user.append("roles", {"role": ROLE})
 		user.save(ignore_permissions=True)
 
+	# A second person on the workspace, because some things only exist between
+	# two of them. Frappe's own realtime will not tell you that you are looking
+	# at a record — "dont send update to self", says the handler — so a fixture
+	# with one user cannot show the row of faces at all.
+	if not frappe.db.exists("User", COLLEAGUE):
+		frappe.get_doc({
+			"doctype": "User", "email": COLLEAGUE, "first_name": "Robin",
+			"last_name": "Vale", "send_welcome_email": 0, "user_type": "System User",
+			"new_password": COLLEAGUE_PASSWORD,
+		}).insert(ignore_permissions=True)
+	colleague = frappe.get_doc("User", COLLEAGUE)
+	if ROLE not in {r.role for r in colleague.roles}:
+		colleague.append("roles", {"role": ROLE})
+		colleague.save(ignore_permissions=True)
+
 	for role in RETIRED_ROLES:
 		if frappe.db.exists("Role", role):
 			for perm in frappe.get_all("Custom DocPerm", filters={"role": role}, pluck="name"):
@@ -225,9 +259,28 @@ def seed_tenant():
 			frappe.delete_doc("Property Setter", stale["name"], ignore_permissions=True)
 
 	for row in TODOS:
-		if frappe.db.exists("ToDo", {"description": row["description"]}):
+		found = frappe.db.exists("ToDo", {"description": row["description"]})
+		if found and found != row["name"]:
+			# The same task under a hashed id, from before these were named.
+			# Remade rather than renamed: a document's name is its identity and
+			# Frappe renames by rewriting every link to it, which is a lot of
+			# machinery for a fixture.
+			frappe.delete_doc("ToDo", found, ignore_permissions=True, force=True)
+			found = None
+		if found:
+			# Who a task is allocated to is worth re-asserting: it decides who
+			# may open it at all — Frappe's ToDo has its own permission rule —
+			# and a browser pass that reassigns one would otherwise leave the
+			# next run with a record its second user cannot see.
+			frappe.db.set_value("ToDo", found, "allocated_to", row.get("allocated_to") or None)
 			continue
-		frappe.get_doc({"doctype": "ToDo", **row}).insert(ignore_permissions=True)
+		# `set_name`, not a `name` key: ToDo autonames by hash, and `set_new_name`
+		# overwrites whatever is on the document unless the insert was told the
+		# name is already decided.
+		fields = {k: v for k, v in row.items() if k != "name"}
+		frappe.get_doc({"doctype": "ToDo", **fields}).insert(
+			ignore_permissions=True, set_name=row["name"]
+		)
 
 	for row in NOTES:
 		if frappe.db.exists("Note", {"title": row["title"]}):
@@ -311,7 +364,8 @@ def seed_tenant():
 
 	print(
 		f"tenant: {CODE} cached — {len(TODOS)} todos, {len(NOTES)} notes, "
-		f"{BACKLOG} backlog rows, {len(LAYOUTS)} shared views"
+		f"{BACKLOG} backlog rows, {len(LAYOUTS)} shared views, "
+		f"and {COLLEAGUE} to share them with"
 	)
 
 
