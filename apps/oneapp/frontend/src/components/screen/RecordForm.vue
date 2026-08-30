@@ -76,9 +76,11 @@ const tabs = computed(() =>
       sections: one.sections
         .map((section) => ({
           ...section,
-          fields: section.fields.map((name) => columns.value[name]).filter(Boolean),
+          columns: section.columns
+            .map((column) => column.map((name) => columns.value[name]).filter(Boolean))
+            .filter((column) => column.length),
         }))
-        .filter((section) => section.fields.length),
+        .filter((section) => section.columns.length),
     }))
     .filter((one) => one.sections.length),
 )

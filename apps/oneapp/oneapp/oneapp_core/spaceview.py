@@ -77,6 +77,12 @@ def _granted_doctypes(space: dict) -> set[str]:
 def _columns(meta, wanted: list[str]) -> list[dict]:
 	by_name = {df.fieldname: df for df in meta.fields}
 	columns = []
+	# Frappe protects a field twice by level: one list of levels you may read,
+	# another of levels you may write. Only the first was being asked, so a
+	# field at a level this person can read and not write rendered as a control
+	# that looked editable and was dropped on save — the worst of the three
+	# possible answers, because it is the one that looks like it worked.
+	writable = set(meta.get_permlevel_access("write") or [0])
 
 	for fieldname in wanted:
 		if fieldname in HIDDEN:
@@ -97,7 +103,14 @@ def _columns(meta, wanted: list[str]) -> list[dict]:
 			"options": df.options,
 			"reqd": int(df.reqd or 0),
 			"read_only": int(df.read_only or 0),
-			"editable": fieldtypes.editable(df.fieldtype) and not df.read_only,
+			"editable": (
+				fieldtypes.editable(df.fieldtype)
+				and not df.read_only
+				and (df.permlevel or 0) in writable
+			),
+			# Which level protects it, so nothing downstream has to ask the
+			# meta again to know why a field is not offered.
+			"permlevel": int(df.permlevel or 0),
 			# How a list cell reads it and what marks the column. A Check is a
 			# Switch in a form and a tick in a list, which is why these are two
 			# separate answers rather than one.
@@ -544,8 +557,13 @@ def _form(meta, offered: dict) -> list[dict]:
 		nonlocal section
 		if not tabs:
 			start_tab(DEFAULT_TAB)
-		section = {"label": label or "", "fields": []}
+		section = {"label": label or "", "columns": [[]]}
 		tabs[-1]["sections"].append(section)
+
+	def start_column() -> None:
+		if section is None:
+			start_section("")
+		section["columns"].append([])
 
 	for df in meta.fields:
 		if df.fieldtype == "Tab Break":
@@ -555,16 +573,25 @@ def _form(meta, offered: dict) -> list[dict]:
 			# section breaks in a row should produce one section, not three
 			# empty ones.
 			start_section(_(df.label) if df.label else "")
+		elif df.fieldtype == "Column Break":
+			# The third of Frappe's three layout fields, and the one this used
+			# to drop — so a doctype whose author put four fields in two
+			# columns got one tall column of four.
+			start_column()
 		elif df.fieldname in offered:
 			if section is None:
 				start_section("")
-			section["fields"].append(df.fieldname)
+			section["columns"][-1].append(df.fieldname)
 
-	# Layout with nothing in it is not layout. A tab break before a run of
-	# read-only fields leaves a tab nobody can open, and an empty section leaves
-	# a heading over nothing.
+	# Layout with nothing in it is not layout. A tab break before fields this
+	# screen does not offer leaves a tab nobody can open; an empty section
+	# leaves a heading over nothing; and an empty column leaves a gap the width
+	# of the fields that are not there — which is what a trailing column break
+	# on a doctype whose last fields are read-only would draw.
 	for tab in tabs:
-		tab["sections"] = [one for one in tab["sections"] if one["fields"]]
+		for one in tab["sections"]:
+			one["columns"] = [column for column in one["columns"] if column]
+		tab["sections"] = [one for one in tab["sections"] if one["columns"]]
 	return [tab for tab in tabs if tab["sections"]]
 
 

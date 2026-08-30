@@ -68,9 +68,13 @@ def meta(fields, title_field=None, **kw):
 		is_submittable=kw.get("is_submittable", 0),
 		track_changes=kw.get("track_changes", 0),
 		track_seen=0, max_attachments=0, autoname=kw.get("autoname", ""),
-		# Which permlevels this user may read. Frappe's own answer; a field
-		# above them is a field this screen must not offer.
-		get_permlevel_access=lambda *a, **k: kw.get("permlevels", [0]),
+		# Which permlevels this user may read, and which they may write.
+		# Frappe's own answer, and two separate ones: a field above the read
+		# levels is a field this screen must not offer at all, and a field
+		# above the write levels is one it must not let anybody type into.
+		get_permlevel_access=lambda ptype="read", *a, **k: kw.get(
+			"write_levels" if ptype == "write" else "permlevels", [0]
+		),
 	)
 
 
@@ -1273,7 +1277,7 @@ def test_a_doctype_that_groups_nothing_gets_one_tab(spaceview):
 	offered = _offered(spaceview, TODO, ["description", "status"])
 	form = spaceview._form(TODO, offered)
 	assert [tab["label"] for tab in form] == ["Details"]
-	assert form[0]["sections"][0]["fields"] == ["description", "status"]
+	assert form[0]["sections"][0]["columns"] == [["description", "status"]]
 
 
 def test_a_section_break_starts_a_section(spaceview):
@@ -1293,7 +1297,7 @@ def test_a_tab_break_starts_a_tab(spaceview):
 	])
 	form = spaceview._form(tabbed, _offered(spaceview, tabbed, ["subject", "note"]))
 	assert [tab["label"] for tab in form] == ["Details", "Extras"]
-	assert form[1]["sections"][0]["fields"] == ["note"]
+	assert form[1]["sections"][0]["columns"] == [["note"]]
 
 
 def test_layout_with_nothing_in_it_is_not_layout(spaceview):
@@ -1313,7 +1317,13 @@ def test_a_field_shown_but_never_offered_is_still_on_the_form(spaceview):
 	"""Colour, signature, geolocation. The control renders them read-only —
 	dropping them here would take them off the record instead."""
 	form = spaceview._form(TODO, _offered(spaceview, TODO, ["description", "colour"]))
-	names = [name for tab in form for section in tab["sections"] for name in section["fields"]]
+	names = [
+		name
+		for tab in form
+		for section in tab["sections"]
+		for column in section["columns"]
+		for name in column
+	]
 	assert "colour" in names
 
 
@@ -1321,7 +1331,7 @@ def test_the_form_carries_fieldnames_and_not_the_columns_again(spaceview):
 	"""The spec already sends every column once. A form that repeated them
 	would send a sixty-field doctype twice."""
 	form = spaceview._form(TODO, _offered(spaceview, TODO, ["description"]))
-	assert form[0]["sections"][0]["fields"] == ["description"]
+	assert form[0]["sections"][0]["columns"] == [["description"]]
 
 
 # --------------------------------------------------------------------------- #
@@ -1354,3 +1364,70 @@ def test_a_file_from_another_record_is_refused(spaceview):
 	source = APPVIEW.read_text()
 	body = source.split("def remove_attachment(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert "attached_to_doctype" in body and "not on this record" in body
+
+
+# --------------------------------------------------------------------------- #
+# Field-level permissions
+#
+# Frappe protects a field twice by level: one list of levels you may read,
+# another of levels you may write. Reading only the first is the worst of the
+# three possible answers — the control looks editable and the save drops it.
+# --------------------------------------------------------------------------- #
+
+def test_a_level_you_can_read_and_not_write_is_not_editable(spaceview):
+	guarded = meta(
+		[field("subject"), field("cost", "Currency", "Cost", permlevel=1)],
+		permlevels=[0, 1],
+		write_levels=[0],
+	)
+	columns = {c["fieldname"]: c for c in spaceview._columns(guarded, ["subject", "cost"])}
+	assert columns["subject"]["editable"] is True
+	# Shown — it is readable — and never offered.
+	assert columns["cost"]["editable"] is False
+	assert columns["cost"]["permlevel"] == 1
+
+
+def test_a_level_you_can_write_stays_editable(spaceview):
+	guarded = meta(
+		[field("cost", "Currency", "Cost", permlevel=1)],
+		permlevels=[0, 1],
+		write_levels=[0, 1],
+	)
+	assert spaceview._columns(guarded, ["cost"])[0]["editable"] is True
+
+
+def test_a_save_cannot_reach_a_level_this_person_may_not_write(spaceview):
+	"""`_writable` reads the same flag the control does, so the two cannot
+	disagree — and the server is where it counts."""
+	guarded = meta(
+		[field("subject"), field("cost", "Currency", "Cost", permlevel=1)],
+		permlevels=[0, 1],
+		write_levels=[0],
+	)
+	resolved = {"all_columns": spaceview._columns(guarded, ["subject", "cost"])}
+	assert spaceview._writable(resolved) == {"subject"}
+
+
+def test_a_column_break_splits_a_section(spaceview):
+	"""Frappe's third layout field, and the one this used to drop — a doctype
+	whose author put four fields in two columns got one tall column of four."""
+	split = meta([
+		field("first"),
+		field("second"),
+		field("cb", "Column Break"),
+		field("third"),
+	])
+	form = spaceview._form(split, _offered(spaceview, split, ["first", "second", "third"]))
+	assert form[0]["sections"][0]["columns"] == [["first", "second"], ["third"]]
+
+
+def test_an_empty_column_is_not_a_column(spaceview):
+	"""A trailing column break, or one whose fields this screen does not offer,
+	would otherwise draw a gap the width of the fields that are not there."""
+	split = meta([
+		field("first"),
+		field("cb", "Column Break"),
+		field("secret", "Data", "Secret", permlevel=1),
+	])
+	form = spaceview._form(split, _offered(spaceview, split, ["first"]))
+	assert form[0]["sections"][0]["columns"] == [["first"]]
