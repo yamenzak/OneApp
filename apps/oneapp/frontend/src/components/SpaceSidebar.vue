@@ -45,9 +45,11 @@
               :key="type.key"
               :icon="type.icon"
               :to="type.to"
-              :active="type.active"
+              :active="false"
             >
-              <span class="flex-1 truncate text-sm">{{ type.label }}</span>
+              <span class="flex-1 truncate text-sm" :class="SUB_ACTIVE[+type.active]">
+                {{ type.label }}
+              </span>
             </SidebarItem>
 
             <template v-if="item.layouts.length">
@@ -57,9 +59,11 @@
                 :key="layout.key"
                 :icon="layout.icon"
                 :to="layout.to"
-                :active="layout.active"
+                :active="false"
               >
-                <span class="flex-1 truncate text-sm">{{ layout.label }}</span>
+                <span class="flex-1 truncate text-sm" :class="SUB_ACTIVE[+layout.active]">
+                  {{ layout.label }}
+                </span>
               </SidebarItem>
             </template>
           </div>
@@ -93,6 +97,13 @@ import { session } from '../lib/session'
 // names whichever space the list belongs to.
 const { nav, activeSpace } = useNav()
 
+// A sub-item says it is active by weight, not by a filled pill. The fill
+// belongs to the screen — the navigation item — and a second one nested under
+// it competes with its parent for the eye rather than saying something more.
+// `:active="false"` and not simply omitting it: absence falls through to
+// frappe-ui's route inference, which would fill it anyway.
+const SUB_ACTIVE = ['text-ink-gray-6', 'font-medium text-ink-gray-8']
+
 // Which screens are showing their view types. Not persisted: it is a glance,
 // not a preference, and a sidebar that remembers what you opened last week is
 // a sidebar you have to tidy.
@@ -101,8 +112,7 @@ const open = reactive({})
 // Nothing to expand when there is one way to look at a screen and nobody has
 // named a view of it — a chevron that opens a list of one is a control that
 // lies about having a choice.
-const expandable = (item) =>
-  (item.viewTypes || []).length + (item.layouts || []).length > 1
+const expandable = (item) => (item.viewTypes || []).length + (item.layouts || []).length > 1
 
 const toggle = (item) => {
   open[item.key] = !open[item.key]

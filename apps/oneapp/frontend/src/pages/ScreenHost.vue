@@ -116,17 +116,28 @@
         Most questions are "the open ones" rather than a filter builder, and a
         box you can type into beats a panel you have to open.
       -->
-      <div class="mb-4 flex shrink-0 flex-col gap-2 sm:flex-row sm:items-start">
-        <QuickFilters class="min-w-0 flex-1" :spec="spec" @changed="onQuickFilters" />
-        <!-- Its own line on a phone. Beside a wrapping row of boxes the actions
-             end up sitting on top of one. -->
+      <!--
+        One row at every width. On a phone that is the ID box taking the width
+        and three controls at its end — reveal the rest of the boxes, the
+        list's own settings, the filter panel — which is the shape Frappe's
+        mobile list uses and the reason the boxes no longer carry their own
+        chevron.
+      -->
+      <div class="mb-4 flex shrink-0 items-start gap-2">
+        <QuickFilters
+          v-model:expanded="quickExpanded"
+          class="min-w-0 flex-1"
+          :spec="spec"
+          @changed="onQuickFilters"
+        />
         <div class="flex shrink-0 items-center gap-1">
-          <FilterPanel
-            :filters="panelFilters"
-            :columns="spec.all_columns || []"
-            :space-code="spaceCode"
-            :screen="spec.screen"
-            @changed="onPanelFilters"
+          <Button
+            class="sm:hidden"
+            :icon="quickExpanded ? 'lucide-chevron-up' : 'lucide-chevron-down'"
+            :label="quickExpanded ? 'Fewer filters' : 'More filters'"
+            :tooltip="quickExpanded ? 'Fewer filters' : 'More filters'"
+            :variant="quickExpanded ? 'subtle' : 'ghost'"
+            @click="quickExpanded = !quickExpanded"
           />
           <!--
             The gear is a question about the list, so it lives with the list's
@@ -143,6 +154,13 @@
             label="Choose columns"
             tooltip="Choose columns"
             @click="showColumns = true"
+          />
+          <FilterPanel
+            :filters="panelFilters"
+            :columns="spec.all_columns || []"
+            :space-code="spaceCode"
+            :screen="spec.screen"
+            @changed="onPanelFilters"
           />
           <!--
             The heart is the exception, and stays in the activity header where
@@ -366,6 +384,10 @@ import { DEFAULT_VIEW_TYPE, VIEW_TYPES, bodyFor } from '../lib/viewTypes'
 const props = defineProps({ spaceCode: { type: String, required: true } })
 const route = useRoute()
 const router = useRouter()
+
+// Whether the phone is showing the quick boxes past the first. The toolbar
+// owns the control, the boxes own the rendering.
+const quickExpanded = ref(false)
 
 const spec = ref(null)
 const loading = ref(false)

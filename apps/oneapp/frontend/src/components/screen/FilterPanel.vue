@@ -15,11 +15,12 @@
       <!-- A count belongs in a badge, not inside the word. "Filter (2)" reads
            as a label; a badge reads as a number. -->
       <Button
-        icon-left="lucide-list-filter"
+        :icon="compact ? 'lucide-list-filter' : undefined"
+        :icon-left="compact ? undefined : 'lucide-list-filter'"
         label="Filter"
         :variant="filters.length ? 'subtle' : 'ghost'"
       >
-        <template v-if="filters.length" #suffix>
+        <template v-if="filters.length && !compact" #suffix>
           <Badge :label="String(filters.length)" theme="blue" variant="subtle" />
         </template>
       </Button>
@@ -61,6 +62,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useIsMobile } from '@/lib/screen'
 import { Badge, Button, Popover } from '@/ui'
 import FilterRow from './FilterRow.vue'
 import { defaultOperator, operatorsFor, valueShape } from '../../lib/fields'
@@ -73,6 +75,16 @@ const props = defineProps({
   screen: { type: String, required: true },
 })
 const emit = defineEmits(['changed'])
+
+// Icon and nothing else on a phone, where three controls and a filter box have
+// one row between them and the word is the thing that does not fit. The count
+// goes with the word: a badge on a 28px button is a smudge, and the filled
+// variant already says there are filters.
+//
+// Asked here rather than passed in: how a control renders at a width is the
+// control's own business, and the screen host is not allowed to ask the
+// viewport anything — see `test_the_screen_host_shows_the_same_columns_on_every_screen`.
+const compact = useIsMobile()
 
 const open = ref(false)
 

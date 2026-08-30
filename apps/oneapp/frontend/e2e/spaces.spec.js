@@ -76,6 +76,24 @@ test('a screen expands to the ways it can be opened', async ({ page }, info) => 
   expectNoRealErrors(errors)
 })
 
+test('a sub-item says it is active by weight, not by a second pill', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'there is no sidebar on a phone')
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/zzmock')
+
+  const sidebar = page.locator('[data-slot="sidebar"]')
+  const screen = sidebar.locator('[data-slot="sidebar-item"]', { hasText: 'Tasks' }).first()
+  const view = sidebar.locator('[data-slot="sidebar-item"]', { hasText: 'List' }).first()
+
+  // The fill belongs to the screen. A second one nested under it competes with
+  // its parent for the eye rather than saying something more.
+  await expect(screen).toHaveAttribute('data-state', 'active')
+  await expect(view).toHaveAttribute('data-state', 'inactive')
+  // The sub-item still says it is the one you are looking at.
+  await expect(view.locator('.font-medium')).toBeVisible()
+  expectNoRealErrors(errors)
+})
+
 test('the trail is a house, a screen, and what you are looking at', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/space/zzmock?screen=notes')

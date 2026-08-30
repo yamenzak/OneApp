@@ -10,16 +10,16 @@
   -->
   <div class="flex flex-wrap items-center gap-2">
     <!--
-      On a phone only the ID box stays, with a chevron for the rest — which is
-      what Frappe's own mobile list does. Five boxes stacked is most of the
-      screen before a single row shows, and hiding them with no way back was
-      the half of that we had.
+      On a phone only the ID box stays, and the toolbar's chevron reveals the
+      rest — which is what Frappe's own mobile list does. Five boxes stacked is
+      most of the screen before a single row shows, and hiding them with no way
+      back was the half of that we had.
     -->
     <div
       v-for="(quick, index) in boxes"
       :key="quick.key"
       class="items-stretch"
-      :class="index === 0 || expanded ? 'flex' : 'hidden sm:flex'"
+      :class="[index === 0 || expanded ? 'flex' : 'hidden sm:flex', index === 0 && FIRST_BOX]"
     >
       <Select
         v-if="quick.options"
@@ -35,7 +35,7 @@
           type="text"
           :model-value="draft[quick.key] ?? ''"
           :placeholder="quick.label"
-          class="w-36"
+          class="min-w-0 flex-1 sm:w-36 sm:flex-none"
           :class="quick.match && SQUARE_END"
           @update:model-value="set(quick, $event)"
           @keydown.enter="apply"
@@ -54,19 +54,11 @@
         </Dropdown>
       </template>
     </div>
-    <Button
-      class="sm:hidden"
-      :icon="expanded ? 'lucide-chevron-up' : 'lucide-chevron-down'"
-      :label="expanded ? 'Fewer filters' : 'More filters'"
-      :tooltip="expanded ? 'Fewer filters' : 'More filters'"
-      :variant="expanded ? 'subtle' : 'ghost'"
-      @click="expanded = !expanded"
-    />
   </div>
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import { Button, Dropdown, FormControl, Select } from '@/ui'
 import { defaultOperator, operatorsFor } from '../../lib/fields'
 
@@ -82,9 +74,19 @@ const emit = defineEmits(['changed'])
 // button beside it looks bolted on. Reach the input.
 const SQUARE_END = '[&_input]:rounded-e-none'
 
+// The ID box takes the width it is given on a phone, where it is the only box
+// and the row's three controls sit at its end. At a desktop width every box is
+// the same size, because there they are alternatives rather than one search
+// and some extras. A constant and not a comment inside the binding: the token
+// audit reads a `:class` array as class names, and an English sentence in one
+// is a hundred tokens that emit no CSS.
+const FIRST_BOX = 'flex-1 sm:flex-none'
+
 // Whether the boxes past the first are showing. Only ever asked on a phone —
-// above the breakpoint they are all there anyway.
-const expanded = ref(false)
+// above the breakpoint they are all there anyway. The control that toggles it
+// belongs with the list's other controls rather than at the end of a wrapping
+// row of boxes, so it lives in the toolbar and the state comes in.
+const expanded = defineModel('expanded', { type: Boolean, default: false })
 
 const draft = reactive({})
 const match = reactive({})

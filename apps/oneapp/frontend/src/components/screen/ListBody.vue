@@ -279,9 +279,37 @@ const edges = ref({ left: false, right: false })
 // different question — so the phone gets the same columns and scrolls. Frappe
 // CRM does the same, and it is only possible because the columns are the
 // reader's to choose.
+// What a row spends on things that are not columns: the checkbox inset the
+// List adds for `selectable`, the row padding `list-row-px-3` sets at both
+// ends, and the column gap between every pair of tracks. Read off frappe-ui's
+// own `style.css` rather than guessed — the first version forgot the gaps and
+// left the table four pixels wider than the pane, which is a horizontal
+// scrollbar over nothing.
+const CHECKBOX = 32
+const ROW_PAD = 12 * 2
+const COLUMN_GAP = 8
+
+// Three columns in a wide pane is a small table in a pool of white space. The
+// leftover width goes to the title, because a name is the thing a wider list
+// should show more of — and it goes in as pixels rather than as an `fr` track,
+// so the pinning offsets and the edge measurement keep working off one set of
+// numbers.
+const widened = computed(() => {
+  const declared = props.columns || []
+  const fixed = declared.reduce((total, c) => total + c.width, 0)
+  const gaps = Math.max(declared.length - 1, 0) * COLUMN_GAP
+  const slack = paneWidth.value - CHECKBOX - ROW_PAD - gaps - fixed
+  if (slack <= 0) return declared
+
+  const title = props.spec?.title_field
+  const grows =
+    declared.find((c) => c.fieldname === title) || declared.find((c) => !c.pin) || declared[0]
+  return declared.map((c) => (c === grows ? { ...c, width: c.width + slack } : c))
+})
+
 const visible = computed(() => {
   const titleField = props.spec?.title_field
-  const declared = props.columns || []
+  const declared = widened.value
 
   // Where a pinned column starts, in pixels. A left pin sits past everything
   // pinned left before it; a right pin past everything pinned right after it.
@@ -353,12 +381,18 @@ const groups = computed(() => {
   return made
 })
 
+// How much room the pane has, which is what decides whether the tracks add up
+// to less than it. Measured by the same observer the edges use — there is one
+// question here, asked when the box changes.
+const paneWidth = ref(0)
+
 // Read rather than tracked: a scroll position is the DOM's own state, and
 // mirroring it into a ref that then has to be kept in step is how the two end
 // up disagreeing.
 const measureEdges = () => {
   const el = scroller.value
   if (!el) return
+  paneWidth.value = el.clientWidth
   const room = el.scrollWidth - el.clientWidth
   edges.value = {
     left: el.scrollLeft > 1,

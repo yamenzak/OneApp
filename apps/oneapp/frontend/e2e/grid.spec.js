@@ -120,3 +120,30 @@ test('the footer counts what matches, and load more appends', async ({ page }) =
   await expect(counter).toHaveText(`${Math.min(40, total)} of ${total}`)
   expectNoRealErrors(errors)
 })
+
+test('a table narrower than the pane fills it', async ({ page }) => {
+  // Three columns in a wide pane used to be a small table in a pool of white
+  // space. Notes is the narrow screen: a title, a body and the activity column.
+  const errors = collectConsoleErrors(page)
+  await openList(page, 'notes')
+
+  const measured = await page.evaluate((sel) => {
+    const header = document.querySelector(sel)
+    const scroller = header.parentElement.closest('div')
+    const cells = [...header.querySelectorAll('[data-slot="list-header-cell"]')]
+    return {
+      pane: scroller.clientWidth,
+      right: cells.at(-1).getBoundingClientRect().right,
+      left: scroller.getBoundingClientRect().left,
+      scrollable: scroller.scrollWidth - scroller.clientWidth,
+    }
+  }, SCROLLER)
+
+  // The last column ends where the pane's own padding starts, and there is
+  // nothing to scroll sideways to — the arithmetic has to account for the
+  // checkbox inset, the row padding and the gap between every pair of tracks,
+  // and forgetting the gaps is a scrollbar over four pixels of nothing.
+  expect(measured.scrollable).toBeLessThanOrEqual(1)
+  expect(measured.right - measured.left).toBeGreaterThan(measured.pane - 24)
+  expectNoRealErrors(errors)
+})
