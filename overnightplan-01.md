@@ -280,9 +280,24 @@ call, and let `ChildTable.vue` be the small one:
   a cell in a child table is a `FieldControl`, not a `FieldCell`, because the
   grid is editable in place.
 * Add, remove, reorder. Frappe's grid does all three; `idx` is the order.
-* No expansion into a row form in the first pass. The desk has one, it is
-  useful, and it is a second layout engine — it should be its own task once the
-  grid exists.
+* **Row expansion, in the first pass.** A row opens into the child doctype's
+  own form, and that form is `RecordForm` / `FormSections` — the same renderer
+  the record pane and the create dialog use, so a child row gets tabs, section
+  and column breaks, `depends_on` and every property in Part 1 for free, and
+  there is one layout engine rather than two.
+
+  Three things it does not inherit, and each is a prop rather than a fork:
+  `RecordForm` takes `spec` (for `form` and `all_columns`) plus `spaceCode` and
+  `screen`, and a child doctype has no screen of its own. So `_form` runs
+  against the child's meta and the result travels *inside* the parent's column
+  payload as the child field's own `form` — one resolve, on the server, where
+  the permlevel filter already lives. `spaceCode`/`screen` stay the parent's,
+  because that is what bounds the Link pickers inside the row, and a child row's
+  links must be bounded by the same screen as everything else.
+
+  Where it opens is a layout question with an obvious answer on each size: a
+  drawer over the pane on desktop, a full page on a phone — the split
+  `RecordPane` already makes.
 * `Table MultiSelect` becomes reachable at the same time. It is mapped to
   `MultiSelect` today and unreachable: `_offerable` excludes it outright and
   `_placed` intersects the manifest with what is offered, so a manifest naming
@@ -419,17 +434,29 @@ permission boundary, so it gets its own batch and its own tests.
 unsaved-record case.
 
 **Batch 6 — child tables.** Extract the shared grid, `ChildTable.vue`, in-place
-editing, add/remove/reorder, and `Table MultiSelect` alongside it. The biggest
-item by a distance, and the one most likely to want splitting once it starts.
+editing, add/remove/reorder, row expansion through `RecordForm`, and
+`Table MultiSelect` alongside it. The biggest item by a distance, and the one
+most likely to want splitting once it starts — if it does, the seam is the grid
+(rows, cells, add/remove/reorder) against the expansion (`_form` on the child
+meta, the drawer, the page).
 
 ---
 
-## Part 5 — Decisions to make before building
+## Part 5 — Decisions, taken
 
-1. **Markdown as WYSIWYG or as source** (2.2). Recommendation: WYSIWYG, because
-   the reader is a customer.
-2. **Experimental entry point** (2.3). Recommendation: take it, wrapped, with
-   the guard extended to cover it.
-3. **Child-table row expansion** (2.5). Recommendation: not in the first pass.
-4. **Currency precision** (1.6) as a separate task, or folded into Batch 1.
-   Recommendation: separate — it is about currency, not about `precision`.
+1. **Markdown edits as WYSIWYG** (2.2) — `Editor` with `format="markdown"`,
+   the component's own default. The reader is a customer, not a developer. The
+   cost is that markdown the editor does not model — front-matter, raw HTML,
+   footnotes — can be normalised on save; if that turns out to bite, a source
+   toggle is the fix, not a rewrite.
+2. **Take the experimental `CodeEditor`** (2.3), wrapped by `FieldControl` so a
+   breaking change touches one file, and with `tests/frappe_ui_api.py` extended
+   to read `experimental/` so its props are checked like every other
+   component's. That extension is a prerequisite, not a follow-up.
+3. **Child rows expand, in the first pass** (2.5), through `RecordForm` and
+   `FormSections` rather than a second layout engine. `_form` runs against the
+   child's meta on the server and travels inside the parent's column payload.
+4. **Currency precision is its own task** (1.6), after Batch 1. Batch 1 fixes
+   `precision` for Float, Int and Percent; resolving a record's currency, its
+   format and its symbol is a different question and should not turn the
+   free-wins batch into a medium one.
