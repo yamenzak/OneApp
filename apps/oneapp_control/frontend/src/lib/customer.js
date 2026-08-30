@@ -120,7 +120,7 @@ export const removeMember = (workspace, email) =>
 export function useApps(workspaceRef) {
   return useResource('oneapp_control.api.customer.apps', {
     params: () => ({ workspace: workspaceRef.value }),
-    watch: ['App Entitlement'],
+    watch: ['Space Entitlement'],
   })
 }
 

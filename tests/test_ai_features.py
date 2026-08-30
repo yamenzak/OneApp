@@ -52,7 +52,7 @@ class Row(dict):
 
 
 class Single:
-	"""Stands in for the OneApp AI Settings single."""
+	"""Stands in for the OneSpace AI Settings single."""
 
 	def __init__(self, enabled=1, rows=None):
 		self.ai_enabled = enabled
@@ -73,8 +73,8 @@ class Single:
 def wire(ai, stub_frappe, single, policy=None):
 	stub_frappe.get_single = lambda doctype: single
 	singles = {
-		("OneApp AI Settings", "catalogue_json"): json.dumps(CATALOGUE),
-		("OneApp AI Settings", "registry_json"): json.dumps(policy or []),
+		("OneSpace AI Settings", "catalogue_json"): json.dumps(CATALOGUE),
+		("OneSpace AI Settings", "registry_json"): json.dumps(policy or []),
 	}
 	stub_frappe.db.get_single_value = lambda dt, f: singles.get((dt, f))
 

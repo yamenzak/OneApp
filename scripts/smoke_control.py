@@ -7,7 +7,7 @@ provisioning idempotency. The bench-free suite in tests/ cannot reach any of it.
 Run from a bench's sites directory against a site with oneapp_control installed:
 
     cd <bench>/sites
-    ../env/bin/python ../../OneApp/scripts/smoke_control.py [site]
+    ../env/bin/python ../../OneSpace/scripts/smoke_control.py [site]
 
 Writes to the site, so point it at a development site, never production.
 """
@@ -303,27 +303,27 @@ def entitlements():
     from oneapp_control.entitlements import registry
 
     for code, avail in (("core", "General"), ("bespoke", "Restricted")):
-        if not frappe.db.exists("OneApp App", code):
+        if not frappe.db.exists("OneSpace Space", code):
             frappe.get_doc({
-                "doctype": "OneApp App", "app_code": code, "app_label": code.title(),
-                "module": f"Mod{code.title()}", "role_name": f"OneApp {code.title()}",
+                "doctype": "OneSpace Space", "space_code": code, "space_label": code.title(),
+                "module": f"Mod{code.title()}", "role_name": f"OneSpace {code.title()}",
                 "availability": avail, "is_active": 1,
             }).insert()
     frappe.db.commit()
 
-    codes = {a["app_code"] for a in registry.apps_for_tenant("acme")}
+    codes = {a["space_code"] for a in registry.spaces_for_tenant("acme")}
     assert codes == {"core"}, codes
 
     registry.grant("acme", "bespoke")
     frappe.db.commit()
-    codes = {a["app_code"] for a in registry.apps_for_tenant("acme")}
+    codes = {a["space_code"] for a in registry.spaces_for_tenant("acme")}
     assert codes == {"core", "bespoke"}, codes
 
-    assert set(registry.entitled_roles("acme")) == {"OneApp Core", "OneApp Bespoke"}
+    assert set(registry.entitled_roles("acme")) == {"OneSpace Core", "OneSpace Bespoke"}
 
     registry.revoke("acme", "bespoke")
     frappe.db.commit()
-    codes = {a["app_code"] for a in registry.apps_for_tenant("acme")}
+    codes = {a["space_code"] for a in registry.spaces_for_tenant("acme")}
     assert codes == {"core"}, codes
 
 check("restricted apps appear only when entitled", entitlements)
@@ -331,7 +331,7 @@ check("restricted apps appear only when entitled", entitlements)
 
 def duplicate_entitlement_blocked():
     registry_doc = frappe.get_doc({
-        "doctype": "App Entitlement", "tenant": "acme", "app": "bespoke", "enabled": 1,
+        "doctype": "Space Entitlement", "tenant": "acme", "app": "bespoke", "enabled": 1,
     })
     try:
         registry_doc.insert()

@@ -4,7 +4,7 @@ frappe.ui.form.on("Shard", {
 
 		frm.add_custom_button(__("Push Bench Config"), () => {
 			frappe.confirm(
-				__("Push shared config from OneApp Control Settings to {0}? Every tenant site on this bench inherits it.",
+				__("Push shared config from OneSpace Control Settings to {0}? Every tenant site on this bench inherits it.",
 					[frm.doc.press_release_group]),
 				() => {
 					frappe.call({

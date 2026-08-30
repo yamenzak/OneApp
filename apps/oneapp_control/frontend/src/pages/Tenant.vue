@@ -33,7 +33,7 @@
     </Alert>
 
     <!--
-      Two views of one site. The control plane holds intent — the plan, the
+      Two screens of one site. The control plane holds intent — the plan, the
       quotas, who owns it — and Frappe Cloud holds what is actually running. A
       disagreement between them is usually the bug an operator came to find, so
       they sit side by side rather than one being presented as the truth.
@@ -202,7 +202,7 @@
            is chosen — a tenant page should not make five press and billing
            calls to show a record. -->
       <TabPanel value="apps" class="pt-4">
-        <TenantAppsPanel v-if="tab === 'apps'" :tenant="name" />
+        <TenantSpacesPanel v-if="tab === 'apps'" :tenant="name" />
       </TabPanel>
 
       <TabPanel value="billing" class="pt-4">
@@ -332,7 +332,7 @@ import {
   Tabs, TabList, TabTrigger, TabPanel, dayjsLocal, vFocus,
 } from '@/ui'
 import PressPanel from '../components/PressPanel.vue'
-import TenantAppsPanel from '../components/TenantAppsPanel.vue'
+import TenantSpacesPanel from '../components/TenantSpacesPanel.vue'
 import TenantBillingPanel from '../components/TenantBillingPanel.vue'
 import { api, useDocument } from '../lib/api'
 import { useListColumns } from '../lib/list'
@@ -433,7 +433,7 @@ const rows = computed(() => {
   ]
 })
 
-// Where the two views disagree is the interesting part, so it is marked rather
+// Where the two screens disagree is the interesting part, so it is marked rather
 // than left for someone to spot by reading both columns.
 const siteRows = computed(() => {
   const s = site.data

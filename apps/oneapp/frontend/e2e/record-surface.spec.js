@@ -22,7 +22,7 @@ const SEEDED = 'Book the van for Thursday'
 // fixed sleep is both slower than it needs to be and flakier than it looks —
 // too short on a loaded machine, wasted on a fast one.
 const openList = async (page) => {
-  await page.goto('/one/app/zztasks')
+  await page.goto('/one/space/zztasks')
   await expect(page.getByRole('button', { name: /^Filter/ })).toBeVisible()
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
 }
@@ -112,7 +112,7 @@ test('every row carries its age, its comments and a heart', async ({ page }) => 
   const errors = collectConsoleErrors(page)
   await openList(page)
 
-  // At every width. A view is a saved answer to "what do I look at", so a
+  // At every width. A screen is a saved answer to "what do I look at", so a
   // phone gets the same columns and scrolls the table rather than being handed
   // a different list — see `test_the_app_host_shows_the_same_columns_on_every_screen`.
   const meta = page
@@ -341,7 +341,7 @@ test('a Link field offers the records it may point at', async ({ page }, info) =
   const errors = collectConsoleErrors(page)
   const asked = []
   page.on('request', (r) => {
-    if (r.url().includes('appview.link_options')) asked.push(r.url())
+    if (r.url().includes('spaceview.link_options')) asked.push(r.url())
   })
   await openRecord(page)
 
@@ -482,7 +482,7 @@ test('a record can be liked and unliked from the dialog', async ({ page }) => {
 
 // --- remembering it ---------------------------------------------------------
 
-test('a view saves, survives a reload, and can be undone', async ({ page }, info) => {
+test('a screen saves, survives a reload, and can be undone', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await openList(page)
   await expect(page.getByText(SEEDED).first()).toBeVisible()
@@ -494,11 +494,11 @@ test('a view saves, survives a reload, and can be undone', async ({ page }, info
   await page.getByRole('button', { name: 'Apply' }).click()
   await expect(page.getByText(SEEDED)).toHaveCount(0)
 
-  await page.getByRole('button', { name: 'Save this view' }).click()
+  await page.getByRole('button', { name: 'Save this screen' }).click()
   // The save re-resolves the screen, and reloading over that in-flight request
   // aborts it — which the browser reports as "Failed to fetch". Wait for the
   // thing a save produces instead: the button that undoes it.
-  await expect(page.getByRole('button', { name: 'Back to the default view' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Back to the default screen' })).toBeVisible()
   await page.reload()
 
   await expect(page.getByText('Chase the Halloway invoice').first()).toBeVisible()
@@ -510,7 +510,7 @@ test('a view saves, survives a reload, and can be undone', async ({ page }, info
   await expect(box(page, 2)).toContainText('High')
   await page.keyboard.press('Escape')
 
-  await page.getByRole('button', { name: 'Back to the default view' }).click()
+  await page.getByRole('button', { name: 'Back to the default screen' }).click()
   await expect(page.getByText(SEEDED).first()).toBeVisible()
 
   await info.attach(`reset-${info.project.name}`, {
@@ -530,16 +530,16 @@ test('rows can be selected and deleted together', async ({ page, baseURL }, info
   const doomed = `Delete me ${Date.now()}`
   // Frappe rejects a POST without its CSRF token, and `page.request` carries
   // the session cookie but not the token — so ask the page for it.
-  await page.goto('/one/app/zztasks?view=all')
+  await page.goto('/one/space/zztasks?screen=all')
   // Settle before reloading: a reload over the in-flight screen resolve aborts
   // it, which the browser reports as "Failed to fetch".
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
   const csrf = await page.evaluate(() => window.csrf_token)
-  const made = await page.request.post(`${baseURL}/api/method/oneapp.oneapp_core.appview.save`, {
+  const made = await page.request.post(`${baseURL}/api/method/oneapp.oneapp_core.spaceview.save`, {
     headers: { 'X-Frappe-CSRF-Token': csrf },
     form: {
-      app_code: 'zztasks',
-      view: 'all',
+      space_code: 'zztasks',
+      screen: 'all',
       values: JSON.stringify({ description: doomed, status: 'Open', priority: 'Low' }),
     },
   })
@@ -587,7 +587,7 @@ test('select-all ticks the page', async ({ page }) => {
 
 test('rows can be grouped by a column', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
-  await page.goto('/one/app/zztasks?view=all')
+  await page.goto('/one/space/zztasks?screen=all')
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
 
   // Chosen where the columns are, because it is a question about the columns.

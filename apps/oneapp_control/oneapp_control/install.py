@@ -9,7 +9,7 @@ def after_install():
 
 
 def create_default_settings():
-	settings = frappe.get_single("OneApp Control Settings")
+	settings = frappe.get_single("OneSpace Control Settings")
 	if not settings.tenant_domain:
 		settings.tenant_domain = "4dl.app"
 	if not settings.press_api_url:
@@ -40,10 +40,10 @@ def create_default_settings():
 # invoice. It grows from running the real flows. See DECISIONS §8.
 SEED_APPS = [
 	{
-		"app_code": "books",
-		"app_label": "Books",
+		"space_code": "books",
+		"space_label": "Books",
 		"module": "Books",
-		"role_name": "OneApp Books",
+		"role_name": "OneSpace Books",
 		"icon": "lucide-book-open",
 		"sort_order": 10,
 		"availability": "Restricted",
@@ -67,11 +67,11 @@ SEED_APPS = [
 
 def seed_apps():
 	for spec in SEED_APPS:
-		if frappe.db.exists("OneApp App", spec["app_code"]):
+		if frappe.db.exists("OneSpace Space", spec["space_code"]):
 			continue
 		doc = frappe.get_doc(
 			{
-				"doctype": "OneApp App",
+				"doctype": "OneSpace Space",
 				"is_active": 1,
 				# Restricted unless a spec says otherwise. Reaching every
 				# customer's launcher should be something a seed opts into, not

@@ -1,0 +1,119 @@
+{
+ "actions": [],
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "screen",
+  "label",
+  "icon",
+  "cb_view_source",
+  "document_type",
+  "fields",
+  "component",
+  "view_types",
+  "view_settings",
+  "sec_view_query",
+  "filters",
+  "cb_view_sort",
+  "order_by"
+ ],
+ "fields": [
+  {
+   "description": "Slug in the URL, e.g. `invoices`. Stable: it is what a bookmark points at.",
+   "fieldname": "screen",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Screen",
+   "reqd": 1
+  },
+  {
+   "description": "Shown in the app's navigation.",
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Label",
+   "reqd": 1
+  },
+  {
+   "default": "lucide-layout-grid",
+   "fieldname": "icon",
+   "fieldtype": "Select",
+   "label": "Icon",
+   "options": "lucide-layout-grid\nlucide-users\nlucide-user-round\nlucide-briefcase\nlucide-file-text\nlucide-receipt\nlucide-wallet\nlucide-shopping-cart\nlucide-package\nlucide-truck\nlucide-factory\nlucide-store\nlucide-calendar\nlucide-clock\nlucide-message-square\nlucide-mail\nlucide-phone\nlucide-chart-line\nlucide-chart-pie\nlucide-database\nlucide-book-open\nlucide-graduation-cap\nlucide-stethoscope\nlucide-wrench\nlucide-shield\nlucide-sparkles"
+  },
+  {
+   "fieldname": "cb_view_source",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "What the list shows. Data rather than a Link: the doctype belongs to a tenant site and need not exist here.",
+   "fieldname": "document_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Doctype"
+  },
+  {
+   "description": "Comma-separated fieldnames for the columns. Labels and types come from the tenant site's own metadata, so this is the only thing worth writing down. Empty shows the doctype's own list fields.",
+   "fieldname": "fields",
+   "fieldtype": "Small Text",
+   "label": "Fields"
+  },
+  {
+   "description": "Escape hatch: a component the SPA registered under `spaceCode/screen`. Set this and the doctype above is ignored.",
+   "fieldname": "component",
+   "fieldtype": "Data",
+   "label": "Component"
+  },
+  {
+   "fieldname": "sec_view_query",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "Always applied, e.g. {\"status\": \"Open\"}.",
+   "fieldname": "filters",
+   "fieldtype": "Code",
+   "label": "Filters",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "cb_view_sort",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "modified desc",
+   "fieldname": "order_by",
+   "fieldtype": "Data",
+   "label": "Order By"
+  },
+  {
+   "fieldname": "view_types",
+   "fieldtype": "Data",
+   "label": "View Types",
+   "default": "list",
+   "description": "How this screen may be looked at, in order \u2014 `list`, `board`, `calendar`, `grid`, `map`. The first is what it opens with. Anything the SPA does not build yet is ignored rather than refused, so a manifest can name one before it ships."
+  },
+  {
+   "fieldname": "view_settings",
+   "fieldtype": "Code",
+   "options": "JSON",
+   "label": "View Settings",
+   "description": "Per type, what that type needs: `{\"board\": {\"column_field\": \"status\"}, \"calendar\": {\"start_field\": \"date\"}}`. Every fieldname in here is checked against the doctype like any other."
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "OneSpace Space Screen",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

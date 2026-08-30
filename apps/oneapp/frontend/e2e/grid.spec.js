@@ -14,8 +14,8 @@ test.beforeEach(async ({ page, baseURL }) => {
 
 const SCROLLER = '[data-slot="list-header"]'
 
-const openList = async (page, view) => {
-  await page.goto(`/one/app/zztasks${view ? `?view=${view}` : ''}`)
+const openList = async (page, screen) => {
+  await page.goto(`/one/space/zztasks${screen ? `?screen=${screen}` : ''}`)
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
 }
 

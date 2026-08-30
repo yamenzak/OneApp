@@ -32,7 +32,7 @@ def pick_shard(region: str | None = None) -> str | None:
 	# A region choice is the customer's, so it is never silently overridden by
 	# the configured default.
 	if not region:
-		configured = frappe.db.get_single_value("OneApp Control Settings", "default_shard")
+		configured = frappe.db.get_single_value("OneSpace Control Settings", "default_shard")
 		if configured and frappe.db.exists("Shard", configured):
 			shard = frappe.get_cached_doc("Shard", configured)
 			if shard.has_headroom():
@@ -88,7 +88,7 @@ def regions_with_capacity() -> list[dict]:
 
 @frappe.whitelist()
 def capacity_report() -> list[dict]:
-	"""Operational view: how full is each shard."""
+	"""Operational screen: how full is each shard."""
 	rows = frappe.get_all(
 		"Shard",
 		fields=[

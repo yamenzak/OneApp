@@ -11,7 +11,7 @@ from frappe.core.doctype.file.file import File
 from oneapp.oneapp_core.storage import r2
 
 
-class OneAppFile(File):
+class OneSpaceFile(File):
 	def after_insert(self):
 		super_after = getattr(super(), "after_insert", None)
 		if super_after:

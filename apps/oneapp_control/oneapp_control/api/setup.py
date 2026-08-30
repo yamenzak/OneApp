@@ -18,7 +18,7 @@ OPTIONAL = "optional"
 
 
 def _settings():
-	return frappe.get_single("OneApp Control Settings")
+	return frappe.get_single("OneSpace Control Settings")
 
 
 def _secret(settings, field) -> bool:
@@ -41,7 +41,7 @@ def _press_host_ok(s) -> bool:
 	host. Checked separately from the credentials so the answer names the actual
 	problem.
 	"""
-	from oneapp_control.control_plane.doctype.oneapp_control_settings.oneapp_control_settings import (
+	from oneapp_control.control_plane.doctype.onespace_control_settings.onespace_control_settings import (
 		REDIRECTING_PRESS_HOSTS,
 	)
 

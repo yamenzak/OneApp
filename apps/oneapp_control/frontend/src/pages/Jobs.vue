@@ -17,7 +17,7 @@
 
   <div class="p-5">
     <!--
-      Four views of the same question: what is the control plane doing, and what
+      Four screens of the same question: what is the control plane doing, and what
       did it fail to do. They are tabs rather than four sidebar entries because
       an operator checking one usually checks the next — and because the desk,
       which is where three of these used to live, is not part of this product.

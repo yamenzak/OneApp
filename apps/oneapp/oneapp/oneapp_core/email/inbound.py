@@ -33,8 +33,8 @@ def _verify() -> dict:
 		frappe.throw(_("Site is not provisioned."), frappe.PermissionError)
 
 	raw = frappe.request.get_data(as_text=True) or ""
-	signature = frappe.request.headers.get("X-OneApp-Signature")
-	timestamp = frappe.request.headers.get("X-OneApp-Timestamp")
+	signature = _header("Signature")
+	timestamp = _header("Timestamp")
 
 	if not (signature and timestamp):
 		frappe.throw(_("Missing signature."), frappe.PermissionError)
@@ -159,3 +159,16 @@ HANDLERS = {
 	"leads": handle_lead,
 	"sales": handle_lead,
 }
+
+
+def _header(name: str) -> str | None:
+	"""One header, under either name.
+
+	The signing headers were `X-OneApp-*` and are `X-OneSpace-*`. Both ends are
+	ours, but they deploy separately — a tenant on the old build talking to a
+	control plane on the new one would be refused, and "signature missing" is
+	not a message anybody would trace back to a rename. The sender writes the
+	new name; the receiver takes either, for one release.
+	"""
+	headers = frappe.request.headers
+	return headers.get(f"X-OneSpace-{name}") or headers.get(f"X-OneApp-{name}")

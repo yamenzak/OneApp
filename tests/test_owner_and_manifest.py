@@ -93,7 +93,7 @@ def test_role_reconciliation_is_not_limited_to_system_users(sync):
 
 
 def test_owner_is_skipped_without_an_email_or_role(sync):
-	assert sync.sync_owner({}, "OneApp Workspace Owner") is False
+	assert sync.sync_owner({}, "OneSpace Workspace Owner") is False
 	assert sync.sync_owner({"email": "a@b.com"}, None) is False
 
 

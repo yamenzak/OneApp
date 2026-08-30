@@ -1,0 +1,65 @@
+{
+ "actions": [],
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "document_type",
+  "access",
+  "cb_manifest_row",
+  "if_owner",
+  "notes"
+ ],
+ "fields": [
+  {
+   "description": "Name of the doctype, e.g. Sales Invoice.",
+   "fieldname": "document_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Doctype",
+   "reqd": 1
+  },
+  {
+   "default": "Write",
+   "description": "Read: see it. Write: create and edit. Manage: also delete, submit and cancel.",
+   "fieldname": "access",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Access",
+   "options": "Read\nWrite\nManage",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_manifest_row",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Restrict to documents the user created. For per-user records inside a shared workspace.",
+   "fieldname": "if_owner",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "If Owner"
+  },
+  {
+   "description": "Why this doctype is exposed, when it is not obvious \u2014 usually a dependency of something the UI does show.",
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "OneSpace Space Doctype",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

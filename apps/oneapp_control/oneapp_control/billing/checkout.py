@@ -16,7 +16,7 @@ from oneapp_control.billing import quotas, stripe_client
 
 
 def _settings():
-	return frappe.get_single("OneApp Control Settings")
+	return frappe.get_single("OneSpace Control Settings")
 
 
 def _urls(tenant: str):
@@ -96,7 +96,7 @@ def start_credit_pack(tenant: str, credits: float, amount: float,
 				"price_data": {
 					"currency": currency,
 					"unit_amount": int(round(amount * 100)),
-					"product_data": {"name": f"{int(credits)} OneApp credits"},
+					"product_data": {"name": f"{int(credits)} OneSpace credits"},
 				},
 			}
 		],

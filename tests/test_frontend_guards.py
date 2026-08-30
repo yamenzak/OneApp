@@ -373,7 +373,7 @@ def _barrel_names():
 def test_no_local_component_shadows_a_frappe_ui_one():
 	"""A local `Badge.vue` beside the barrel's `Badge` is a coin toss per file.
 
-	Only exact names are checked. `AppSidebar` and `PortalSidebar` are
+	Only exact names are checked. `SpaceSidebar` and `PortalSidebar` are
 	compositions *of* `Sidebar`, which is the point — it is the file that
 	replaces a primitive outright that this is looking for.
 	"""
@@ -821,23 +821,25 @@ def test_something_waits_visibly_while_a_screen_loads(app):
 
 
 # --------------------------------------------------------------------------- #
-# One view means one thing on every screen
+# One screen means one thing on every screen
 #
 # A saved view is a person's answer to "what do I look at". A phone that
 # silently drops half of it is answering a different question — and once the
 # columns are the reader's own choice, there is nothing left to guess on their
 # behalf. The table scrolls sideways instead, which is what Frappe CRM does.
 #
-# This is the app host only. A hand-authored panel in the console has neither a
+# This is the screen host only. A hand-authored panel in the console has neither a
 # reader-chosen column set nor a horizontal scroller, so `useListColumns` and
 # its `mobile:` key are still how those narrow.
 # --------------------------------------------------------------------------- #
 
-APP_HOST = ROOT / "apps/oneapp/frontend/src/pages/AppHost.vue"
+SCREEN_HOST = ROOT / "apps/oneapp/frontend/src/pages/ScreenHost.vue"
+# The shell renders a body per view type; the list is the one that draws a grid.
+LIST_BODY = ROOT / "apps/oneapp/frontend/src/components/screen/ListBody.vue"
 
 
-def test_the_app_host_shows_the_same_columns_on_every_screen():
-	source = APP_HOST.read_text()
+def test_the_screen_host_shows_the_same_columns_on_every_screen():
+	source = SCREEN_HOST.read_text() + LIST_BODY.read_text()
 	offenders = []
 	if "useListColumns" in source.replace("`useListColumns`", ""):
 		offenders.append("it calls useListColumns, which exists to narrow a list for a phone")
@@ -846,7 +848,7 @@ def test_the_app_host_shows_the_same_columns_on_every_screen():
 	if "useIsMobile" in source:
 		offenders.append("it asks the viewport, which the column set must not depend on")
 	assert not offenders, (
-		"AppHost.vue must render one column set at every width:\n  "
+		"ScreenHost.vue must render one column set at every width:\n  "
 		+ "\n  ".join(offenders)
 	)
 
@@ -890,13 +892,13 @@ def test_a_filled_list_header_hides_the_rule_it_covers(app):
 # shell change the page stops scrolling for screens that need it.
 # --------------------------------------------------------------------------- #
 
-def test_the_app_host_is_a_pane_at_both_ends():
+def test_the_screen_host_is_a_pane_at_both_ends():
 	root = ROOT / "apps/oneapp/frontend/src"
 	router = (root / "router.js").read_text()
 	app = (root / "App.vue").read_text()
 
-	assert re.search(r"AppHost\.vue'\),[\s\S]{0,900}?meta:\s*\{[^}]*pane:\s*true", router), (
-		"router.js no longer marks the app host's route as a pane"
+	assert re.search(r"ScreenHost\.vue'\),[\s\S]{0,900}?meta:\s*\{[^}]*pane:\s*true", router), (
+		"router.js no longer marks the screen host's route as a pane"
 	)
 	assert 'scroll="!$route.meta.pane"' in app, (
 		"App.vue no longer turns the shell's page scroll off for a pane route"
@@ -911,13 +913,16 @@ def test_the_grid_has_exactly_one_scroller():
 	scrollbar's gutter and is a scrollbar's width out of true with the rows
 	under it. One element scrolling both ways has no gutter to disagree about.
 	"""
-	source = APP_HOST.read_text()
-	assert source.count("overflow-auto") == 1, "the grid should have one scroller"
+	body = LIST_BODY.read_text()
+	assert body.count("overflow-auto") == 1, "the grid should have one scroller"
 	# The two-wrapper shape, which is the one that drifts.
-	assert "overflow-x-auto" not in source, (
+	assert "overflow-x-auto" not in body, (
 		"a separate horizontal scroller puts the header outside the vertical "
 		"scrollbar's gutter — use one element scrolling both ways"
 	)
-	# `overflow-y-auto` is allowed exactly once: the escape hatch a screen an
-	# app wrote itself renders into, which cannot be assumed to fit a pane.
-	assert source.count("overflow-y-auto") == 1
+	# The shell scrolls nothing itself. `overflow-y-auto` appears once: the
+	# escape hatch a screen a space wrote itself renders into, which cannot be
+	# assumed to fit a pane.
+	shell = SCREEN_HOST.read_text()
+	assert shell.count("overflow-y-auto") == 1
+	assert "overflow-auto" not in shell

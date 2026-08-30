@@ -5,7 +5,7 @@ AI keys — lives in the bench group's common site config, not on each site. Fra
 merges common site config into every site's `frappe.conf`, so one push reaches
 every tenant on that bench.
 
-Set the values once in OneApp Control Settings, push, and the tenant sites
+Set the values once in OneSpace Control Settings, push, and the tenant sites
 reconcile whatever is derived from them on their next sync. Rotating a token is
 one action, not one per tenant.
 """
@@ -23,7 +23,7 @@ def build_config() -> dict:
 	`oneapp.oneapp_core.storage.r2.config`, `.email.outbound.config` and
 	`.ai.gateway.config`.
 	"""
-	s = frappe.get_single("OneApp Control Settings")
+	s = frappe.get_single("OneSpace Control Settings")
 
 	config = {
 		# R2
@@ -63,7 +63,7 @@ def push_to_shard(shard: str) -> dict:
 
 	config = build_config()
 	if not config:
-		frappe.throw(_("Nothing to push — OneApp Control Settings is empty."))
+		frappe.throw(_("Nothing to push — OneSpace Control Settings is empty."))
 
 	get_client().update_bench_config(release_group, config)
 

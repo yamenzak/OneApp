@@ -153,7 +153,7 @@ def test_what_is_settled_is_what_the_model_reported(gateway):
 
 
 def test_the_gateway_log_id_is_carried_to_settlement(gateway):
-	"""It is the only handle on Cloudflare's own view of the call."""
+	"""It is the only handle on Cloudflare's own screen of the call."""
 	_, calls, feature = wire(gateway, GEMINI_OK)
 	gateway.module.call(feature, "hi")
 	assert calls[1][1]["log_id"] == "log-1"

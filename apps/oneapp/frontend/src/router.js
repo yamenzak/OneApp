@@ -4,9 +4,9 @@ import { session, sessionReady } from './lib/session'
 const routes = [
   { path: '/', name: 'Launcher', component: () => import('./pages/Launcher.vue') },
   {
-    path: '/app/:appCode',
-    name: 'App',
-    component: () => import('./pages/AppHost.vue'),
+    path: '/space/:spaceCode',
+    name: 'Screen',
+    component: () => import('./pages/ScreenHost.vue'),
     props: true,
     // The app host is a pane, not a page: its list is a fixed-height grid that
     // owns both scrollbars, so the horizontal one sits at the bottom of the
@@ -44,7 +44,7 @@ router.beforeEach(async (to) => {
 
   // Entitlement is enforced server-side by role. This only avoids rendering a
   // shell for something the user will be refused anyway.
-  if (to.name === 'App' && !session.hasApp(to.params.appCode)) {
+  if (to.name === 'Screen' && !session.hasSpace(to.params.spaceCode)) {
     return { name: 'Launcher' }
   }
 

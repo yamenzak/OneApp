@@ -40,7 +40,7 @@ def normalise(slug: str) -> str:
 
 def reserved_slugs() -> set:
 	"""Built-in blocklist plus anything added in settings."""
-	extra = frappe.db.get_single_value("OneApp Control Settings", "reserved_slugs") or ""
+	extra = frappe.db.get_single_value("OneSpace Control Settings", "reserved_slugs") or ""
 	extra = {s.strip().lower() for s in re.split(r"[,\n]", extra) if s.strip()}
 	return RESERVED_SLUGS | extra
 

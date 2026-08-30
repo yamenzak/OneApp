@@ -2,7 +2,7 @@
   <SettingsForm
     title="Frappe Cloud"
     description="Credentials for creating and managing tenant sites, and the address tenants call back on."
-    doctype="OneApp Control Settings"
+    doctype="OneSpace Control Settings"
     :fields="FIELDS"
   />
 </template>

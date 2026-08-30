@@ -32,11 +32,11 @@ def pinned(app: str) -> str:
 
 def published() -> dict:
     out = subprocess.run(
-        ["npm", "view", "frappe-ui", "dist-tags", "--json"],
+        ["npm", "screen", "frappe-ui", "dist-tags", "--json"],
         capture_output=True, text=True, timeout=60,
     )
     if out.returncode:
-        raise SystemExit(f"npm view failed: {out.stderr.strip()[:200]}")
+        raise SystemExit(f"npm screen failed: {out.stderr.strip()[:200]}")
     return json.loads(out.stdout)
 
 

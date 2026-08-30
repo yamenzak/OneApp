@@ -207,7 +207,7 @@ def _fraction(used, quota) -> float:
 
 
 def default_domain() -> str:
-	return frappe.db.get_single_value("OneApp Control Settings", "tenant_domain") or "4dl.app"
+	return frappe.db.get_single_value("OneSpace Control Settings", "tenant_domain") or "4dl.app"
 
 
 def refresh_tenant_count(shard: str):

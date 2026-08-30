@@ -55,7 +55,7 @@ export default defineConfig({
       frappeTypes: {
         input: {
   'oneapp': [
-    'OneApp Site State'
+    'OneSpace Site State'
   ]
 },
       },

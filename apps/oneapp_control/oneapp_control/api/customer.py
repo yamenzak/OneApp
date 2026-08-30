@@ -457,7 +457,7 @@ def apps(workspace: str) -> dict:
 
 	granted = set(
 		frappe.get_all(
-			"App Entitlement",
+			"Space Entitlement",
 			filters={"tenant": tenant.name, "enabled": 1},
 			pluck="app",
 		)
@@ -466,12 +466,12 @@ def apps(workspace: str) -> dict:
 	return {
 		"apps": [
 			{
-				"code": app["app_code"],
-				"label": app["app_label"],
+				"code": app["space_code"],
+				"label": app["space_label"],
 				"icon": app.get("icon"),
-				"included": app["app_code"] not in granted,
+				"included": app["space_code"] not in granted,
 			}
-			for app in registry.apps_for_tenant(tenant.name)
+			for app in registry.spaces_for_tenant(tenant.name)
 		],
 		"workspace_url": f"https://{tenant.primary_domain or tenant.site_name}"
 		if (tenant.primary_domain or tenant.site_name)

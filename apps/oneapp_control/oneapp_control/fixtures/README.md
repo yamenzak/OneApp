@@ -16,9 +16,9 @@ that grant, not infrastructure, is the margin variable.
 `stripe_price_id_monthly` and `stripe_price_id_yearly` are blank and must be
 filled with real Stripe Price IDs before checkout will work.
 
-## `oneapp_app.json`
+## `onespace_space.json`
 
 Intentionally absent. The app registry describes real products, so it is seeded
-as those are built rather than invented here. Each entry needs an `app_code`, a
+as those are built rather than invented here. Each entry needs an `space_code`, a
 `module` in the `oneapp` app, and a `role_name` — the role is what actually
 enforces access.

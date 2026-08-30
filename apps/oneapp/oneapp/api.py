@@ -38,7 +38,7 @@ def session():
 			"status": state.get("status"),
 			"plan": state.get("plan_code"),
 		},
-		"apps": visible_apps(),
+		"spaces": visible_spaces(),
 		# Measured here rather than read from cached state, which holds the
 		# allowance and not the consumption. Reading usage from there returned
 		# zero every time, so the meter looked empty on a full site.
@@ -53,20 +53,20 @@ def session():
 
 
 @frappe.whitelist()
-def visible_apps():
-	"""Apps this user can actually open.
+def visible_spaces():
+	"""Spaces this user can actually open.
 
 	Two filters, and both matter. The tenant's entitlements decide what the
-	*site* has; the user's roles decide what *they* may open. An entitled app the
-	user lacks the role for is correctly absent.
+	*site* has; the user's roles decide what *they* may open. An entitled space
+	the user lacks the role for is correctly absent.
 	"""
 	state = sync.state()
 	roles = set(frappe.get_roles())
 
 	return [
-		app
-		for app in state.get("apps", [])
-		if not app.get("role_name") or app["role_name"] in roles
+		space
+		for space in state.get("spaces", [])
+		if not space.get("role_name") or space["role_name"] in roles
 	]
 
 

@@ -1,4 +1,4 @@
-# OneApp — Development Roadmap
+# OneSpace — Development Roadmap
 
 From an empty Frappe Cloud server to a self-provisioning platform, at which point all
 remaining work is product features rather than infrastructure.
@@ -101,7 +101,7 @@ answer back.
 
 ## Phase 1 — Control-plane data model
 
-- `Shard`, `Tenant`, `Plan`, `Subscription`, `App Entitlement`, `Provisioning Job`,
+- `Shard`, `Tenant`, `Plan`, `Subscription`, `Space Entitlement`, `Provisioning Job`,
   `Credit Ledger Entry`
 - `Tenant` ↔ ERPNext `Customer` link
 - Slug validation with the reserved-name blocklist

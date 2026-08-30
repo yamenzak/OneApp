@@ -8,7 +8,7 @@ test.beforeEach(async ({ page, baseURL }) => {
 // The whole arc: make a view, come back to it, and take it away again.
 test('a named view is made, opened and deleted', async ({ page }) => {
   const errors = collectConsoleErrors(page)
-  await page.goto('/one/app/zztasks')
+  await page.goto('/one/space/zztasks')
   await expect(page.getByText('Halloway').first()).toBeVisible()
 
   // The switcher opens on the screen's own name, because nothing is saved.

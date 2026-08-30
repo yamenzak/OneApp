@@ -173,7 +173,7 @@ def test_the_marker_role_is_sent_and_never_revoked():
     registry = (
         ROOT / "apps/oneapp_control/oneapp_control/entitlements/registry.py"
     ).read_text()
-    assert 'MEMBER_ROLE = "OneApp Workspace Member"' in registry
+    assert 'MEMBER_ROLE = "OneSpace Workspace Member"' in registry
 
     # sync_roles revokes any managed role that is not entitled. Neither the
     # owner nor the member role is an entitlement, so both must be excluded —
@@ -236,7 +236,7 @@ def test_apps_separates_what_every_plan_carries_from_what_was_granted():
     """Otherwise "why do we have this?" has no answer on the page."""
     body = function(CUSTOMER, "apps")
     assert '"included"' in body
-    assert "App Entitlement" in body
+    assert "Space Entitlement" in body
 
 
 def test_plans_lists_more_than_the_current_one():

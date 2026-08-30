@@ -40,7 +40,7 @@ def matches(url_path: str, declared: set[str]) -> bool:
 def portal(stub_frappe):
 	from oneapp_control import portal as module
 
-	stub_frappe.db.singles[("OneApp Control Settings", "control_plane_url")] = (
+	stub_frappe.db.singles[("OneSpace Control Settings", "control_plane_url")] = (
 		"https://app.4dl.app/"
 	)
 	return module
@@ -102,7 +102,7 @@ def test_base_url_has_no_trailing_slash(portal):
 
 
 def test_base_url_refuses_when_unconfigured(portal, stub_frappe):
-	stub_frappe.db.singles[("OneApp Control Settings", "control_plane_url")] = None
+	stub_frappe.db.singles[("OneSpace Control Settings", "control_plane_url")] = None
 	with pytest.raises(Exception, match="control_plane_url"):
 		portal.base_url()
 

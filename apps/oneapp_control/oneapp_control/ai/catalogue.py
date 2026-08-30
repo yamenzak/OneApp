@@ -48,7 +48,7 @@ class SyncError(Exception):
 
 
 def settings():
-	return frappe.get_single("OneApp Control Settings")
+	return frappe.get_single("OneSpace Control Settings")
 
 
 def _get(url, headers=None, params=None) -> requests.Response:
@@ -398,7 +398,7 @@ def sync() -> dict:
 		f"{len(report[k])} {k}" for k in
 		("created", "updated", "withdrawn", "restored", "retired") if report[k]
 	)
-	frappe.db.set_single_value("OneApp Control Settings", {
+	frappe.db.set_single_value("OneSpace Control Settings", {
 		"ai_catalogue_synced_on": now_datetime(),
 		"ai_catalogue_note": (summary or "nothing changed") + (
 			"\n" + "\n".join(report["errors"]) if report["errors"] else ""),

@@ -1,0 +1,161 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:space_code",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "space_code",
+  "space_label",
+  "module",
+  "is_active",
+  "cb_app",
+  "availability",
+  "role_name",
+  "sec_views",
+  "screens",
+  "sec_manifest",
+  "doctypes",
+  "icon",
+  "logo",
+  "sort_order",
+  "sec_desc",
+  "description"
+ ],
+ "fields": [
+  {
+   "description": "Stable id, e.g. crm",
+   "fieldname": "space_code",
+   "fieldtype": "Data",
+   "label": "App Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "space_label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "App Label",
+   "reqd": 1
+  },
+  {
+   "description": "Frappe module inside the oneapp app that implements this.",
+   "fieldname": "module",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Module",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "cb_app",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "General",
+   "description": "General: every tenant. Restricted: only via Space Entitlement.",
+   "fieldname": "availability",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Availability",
+   "options": "General\nRestricted",
+   "reqd": 1
+  },
+  {
+   "description": "Frappe Role gating this app's doctypes. Entitlement grants and revokes this role, so enforcement is native permissions rather than a bespoke hook.",
+   "fieldname": "role_name",
+   "fieldtype": "Data",
+   "label": "Role Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sec_views",
+   "fieldtype": "Section Break",
+   "label": "Screens"
+  },
+  {
+   "description": "What the customer sees. An app with none of these is an entitlement with no interface, which is a real thing to be \u2014 it still grants its roles and doctypes.",
+   "fieldname": "screens",
+   "fieldtype": "Table",
+   "label": "Views",
+   "options": "OneSpace Space Screen"
+  },
+  {
+   "fieldname": "sec_manifest",
+   "fieldtype": "Section Break",
+   "label": "Doctypes"
+  },
+  {
+   "description": "Everything this app exposes. One list, three jobs: the DocPerms we write for our own roles, what an entitlement grants, and the allowlist a customer's custom role may draw from. A doctype in no manifest is reachable by nobody, without anyone having to remember to exclude it.",
+   "fieldname": "doctypes",
+   "fieldtype": "Table",
+   "label": "Doctypes",
+   "options": "OneSpace Space Doctype"
+  },
+  {
+   "default": "lucide-layout-grid",
+   "description": "Rendered by the launcher and the app sidebar.",
+   "fieldname": "icon",
+   "fieldtype": "Select",
+   "label": "Icon",
+   "options": "lucide-layout-grid\nlucide-users\nlucide-user-round\nlucide-briefcase\nlucide-file-text\nlucide-receipt\nlucide-wallet\nlucide-shopping-cart\nlucide-package\nlucide-truck\nlucide-factory\nlucide-store\nlucide-calendar\nlucide-clock\nlucide-message-square\nlucide-mail\nlucide-phone\nlucide-chart-line\nlucide-chart-pie\nlucide-database\nlucide-book-open\nlucide-graduation-cap\nlucide-stethoscope\nlucide-wrench\nlucide-shield\nlucide-sparkles"
+  },
+  {
+   "fieldname": "logo",
+   "fieldtype": "Attach Image",
+   "label": "Logo",
+   "description": "Shown on the rail. Without one the icon is drawn instead."
+  },
+  {
+   "default": "0",
+   "fieldname": "sort_order",
+   "fieldtype": "Int",
+   "label": "Sort Order"
+  },
+  {
+   "fieldname": "sec_desc",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "OneSpace Space",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "space_label",
+ "track_changes": 1
+}

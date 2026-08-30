@@ -34,8 +34,8 @@ def _authenticate() -> str:
 	if not verify(
 		secret,
 		body,
-		frappe.request.headers.get("X-OneApp-Signature"),
-		frappe.request.headers.get("X-OneApp-Timestamp"),
+		_header("Signature"),
+		_header("Timestamp"),
 	):
 		frappe.throw(_("Invalid or expired signature."), frappe.PermissionError)
 
@@ -75,7 +75,7 @@ def sync():
 			"max_users": tenant.max_users,
 			"background_workers": tenant.background_workers,
 		},
-		"apps": registry.apps_for_tenant(tenant_name),
+		"spaces": registry.spaces_for_tenant(tenant_name),
 		"modules": registry.entitled_modules(tenant_name),
 		"roles": registry.entitled_roles(tenant_name),
 		# One row per (role, doctype). The tenant site writes DocPerms from this
@@ -437,3 +437,16 @@ def commit_credits():
 		"committed": reservation.credits_committed,
 		"balance": ledger.balance(tenant_name),
 	}
+
+
+def _header(name: str) -> str | None:
+	"""One header, under either name.
+
+	The signing headers were `X-OneApp-*` and are `X-OneSpace-*`. Both ends are
+	ours, but they deploy separately — a tenant on the old build talking to a
+	control plane on the new one would be refused, and "signature missing" is
+	not a message anybody would trace back to a rename. The sender writes the
+	new name; the receiver takes either, for one release.
+	"""
+	headers = frappe.request.headers
+	return headers.get(f"X-OneSpace-{name}") or headers.get(f"X-OneApp-{name}")

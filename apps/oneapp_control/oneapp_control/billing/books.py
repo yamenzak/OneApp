@@ -12,9 +12,9 @@ are logged for an operator, not raised.
 import frappe
 from frappe.utils import flt, getdate
 
-DEFAULT_ITEM = "OneApp Subscription"
-CREDIT_ITEM = "OneApp Credits"
-STORAGE_ITEM = "OneApp Storage"
+DEFAULT_ITEM = "OneSpace Subscription"
+CREDIT_ITEM = "OneSpace Credits"
+STORAGE_ITEM = "OneSpace Storage"
 
 
 def _safe(fn):
@@ -102,7 +102,7 @@ def record_invoice(subscription, stripe_invoice: dict):
 	if amount <= 0:
 		return None
 
-	item = ensure_item(DEFAULT_ITEM, "OneApp platform subscription")
+	item = ensure_item(DEFAULT_ITEM, "OneSpace platform subscription")
 
 	invoice = frappe.get_doc(
 		{
@@ -130,14 +130,14 @@ def record_invoice(subscription, stripe_invoice: dict):
 @_safe
 def record_storage_pack(tenant: str, gb: int, checkout: dict):
 	return _record_one_off(
-		tenant, checkout, STORAGE_ITEM, "OneApp additional storage", f"{int(gb)} GB storage"
+		tenant, checkout, STORAGE_ITEM, "OneSpace additional storage", f"{int(gb)} GB storage"
 	)
 
 
 @_safe
 def record_credit_pack(tenant: str, credits: float, checkout: dict):
 	return _record_one_off(
-		tenant, checkout, CREDIT_ITEM, "OneApp credit pack", f"{int(credits)} credits"
+		tenant, checkout, CREDIT_ITEM, "OneSpace credit pack", f"{int(credits)} credits"
 	)
 
 

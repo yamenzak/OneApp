@@ -68,7 +68,7 @@ Prose rules that needed work:
 
 | Page | Found | Applied | Guarded |
 | --- | --- | --- | --- |
-| Icon | **A `lucide-*` class built from data emits no CSS.** `OneApp App.icon` was free text, so any icon an operator typed rendered as an empty box | Curated set in `scripts/app_icons.py` → SPA literals + doctype Select | Interpolated icon classes banned; every set member must emit CSS; the two lists must match |
+| Icon | **A `lucide-*` class built from data emits no CSS.** `OneSpace Space.icon` was free text, so any icon an operator typed rendered as an empty box | Curated set in `scripts/app_icons.py` → SPA literals + doctype Select | Interpolated icon classes banned; every set member must emit CSS; the two lists must match |
 | Icon | Reach for `<Icon>` only outside a component's icon prop | Three sidebars and UserMenu moved to `:icon` / `icon-right` | `test_icons_use_the_component_s_own_icon_prop` |
 | Sidebar | The app owns the gutter; `SidebarItem` has none | Admin sidebar given a `ScrollArea` with `px-2` | Covered by the slot/prop checks |
 | Sidebar | One slot, the default — no `#footer` | Footers rebuilt with `mt-auto` | Unknown-slot check |

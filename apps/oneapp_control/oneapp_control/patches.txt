@@ -1,4 +1,5 @@
 [pre_model_sync]
+oneapp_control.patches.rename_to_onespace
 
 [post_model_sync]
 oneapp_control.patches.capture_plan_terms

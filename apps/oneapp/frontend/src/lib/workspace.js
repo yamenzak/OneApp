@@ -40,13 +40,13 @@ export const workspace = {
   // One screen, resolved against this site's own metadata: what each field is
   // called and whether this user may write it are facts only the tenant has.
   //
-  // Rows and writes go through the view too, rather than a generic document
+  // Rows and writes go through the screen too, rather than a generic document
   // API. That is what stops a screen being used to read a doctype the
   // entitlement did not include, or to write a field it does not show.
-  appView: (appCode, view, layout) =>
+  screenSpec: (spaceCode, screen, layout, viewType) =>
     callMethod(
-      'oneapp.oneapp_core.appview.spec',
-      { app_code: appCode, view, layout },
+      'oneapp.oneapp_core.spaceview.spec',
+      { space_code: spaceCode, screen, layout, view_type: viewType },
       {
         silent: true,
         method: 'GET',
@@ -55,13 +55,14 @@ export const workspace = {
 
   // `overrides` carries a filter or sort the person changed but has not saved:
   // the list answers the question the controls are asking, saved or not.
-  appRows: (appCode, view, overrides, layout, page = {}) =>
+  screenRows: (spaceCode, screen, overrides, layout, page = {}, viewType) =>
     callMethod(
-      'oneapp.oneapp_core.appview.rows',
+      'oneapp.oneapp_core.spaceview.rows',
       {
-        app_code: appCode,
-        view,
+        space_code: spaceCode,
+        screen,
         layout,
+        view_type: viewType,
         // `start` pages; `limit` is how big a page is, which the reader picks
         // in the footer and the server bounds again.
         start: page.start || 0,
@@ -74,63 +75,64 @@ export const workspace = {
   // Its own request, and deliberately after the rows: a count over a filter
   // with no index behind it is a full scan, and nothing should hold a list up
   // for one.
-  appRowCount: (appCode, view, overrides, layout) =>
+  screenRowCount: (spaceCode, screen, overrides, layout, viewType) =>
     callMethod(
-      'oneapp.oneapp_core.appview.count',
+      'oneapp.oneapp_core.spaceview.count',
       {
-        app_code: appCode,
-        view,
+        space_code: spaceCode,
+        screen,
         layout,
+        view_type: viewType,
         overrides: overrides ? JSON.stringify(overrides) : null,
       },
       { silent: true, method: 'GET' },
     ),
 
-  saveAppRecord: (appCode, view, values, name) =>
+  saveRecord: (spaceCode, screen, values, name) =>
     callMethod(
-      'oneapp.oneapp_core.appview.save',
-      { app_code: appCode, view, values, name },
+      'oneapp.oneapp_core.spaceview.save',
+      { space_code: spaceCode, screen, values, name },
       { successMessage: 'Saved' },
     ),
 
   // One call for a whole selection: forty rows is forty round trips otherwise,
   // and a failure halfway through leaves nobody able to say what happened.
-  removeAppRecords: (appCode, view, names) =>
+  removeRecords: (spaceCode, screen, names) =>
     callMethod(
-      'oneapp.oneapp_core.appview.remove',
-      { app_code: appCode, view, name: names },
+      'oneapp.oneapp_core.spaceview.remove',
+      { space_code: spaceCode, screen, name: names },
       { silent: true },
     ),
 
   // A Link is a foreign key, and a text box over one asks a customer to know a
   // record's name. Bounded by the screen like every other read.
-  linkOptions: (appCode, view, fieldname, query) =>
+  linkOptions: (spaceCode, screen, fieldname, query) =>
     callMethod(
-      'oneapp.oneapp_core.appview.link_options',
-      { app_code: appCode, view, fieldname, query },
+      'oneapp.oneapp_core.spaceview.link_options',
+      { space_code: spaceCode, screen, fieldname, query },
       { silent: true, method: 'GET' },
     ),
 
   // Comments and the change log. Frappe keeps both on every doctype, so no app
   // has to ask for them.
-  timeline: (appCode, view, name) =>
+  timeline: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.appview.timeline',
-      { app_code: appCode, view, name },
+      'oneapp.oneapp_core.spaceview.timeline',
+      { space_code: spaceCode, screen, name },
       { silent: true, method: 'GET' },
     ),
 
-  comment: (appCode, view, name, content) =>
+  comment: (spaceCode, screen, name, content) =>
     callMethod(
-      'oneapp.oneapp_core.appview.comment',
-      { app_code: appCode, view, name, content },
+      'oneapp.oneapp_core.spaceview.comment',
+      { space_code: spaceCode, screen, name, content },
       { successMessage: 'Added' },
     ),
 
-  toggleLike: (appCode, view, name) =>
+  toggleLike: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.appview.toggle_like',
-      { app_code: appCode, view, name },
+      'oneapp.oneapp_core.spaceview.toggle_like',
+      { space_code: spaceCode, screen, name },
       { silent: true },
     ),
 
@@ -140,32 +142,32 @@ export const workspace = {
   // — the Save button on the toolbar.
   //
   // Narrows what the screen offers; never widens it, shared or not.
-  saveView: (appCode, view, payload) =>
+  saveLayout: (spaceCode, screen, payload) =>
     callMethod(
-      'oneapp.oneapp_core.appview.save_view',
-      { app_code: appCode, view, ...payload },
+      'oneapp.oneapp_core.spaceview.save_layout',
+      { space_code: spaceCode, screen, ...payload },
       { successMessage: 'View saved' },
     ),
 
-  deleteView: (appCode, view, layout) =>
+  deleteLayout: (spaceCode, screen, layout) =>
     callMethod(
-      'oneapp.oneapp_core.appview.delete_view',
-      { app_code: appCode, view, layout },
+      'oneapp.oneapp_core.spaceview.delete_layout',
+      { space_code: spaceCode, screen, layout },
       { successMessage: 'View deleted' },
     ),
 
-  defaultView: (appCode, view, layout) =>
+  defaultLayout: (spaceCode, screen, layout) =>
     callMethod(
-      'oneapp.oneapp_core.appview.default_view',
-      { app_code: appCode, view, layout },
+      'oneapp.oneapp_core.spaceview.default_layout',
+      { space_code: spaceCode, screen, layout },
       { successMessage: 'This opens the screen now' },
     ),
 
-  resetView: (appCode, view) =>
+  resetLayout: (spaceCode, screen) =>
     callMethod(
-      'oneapp.oneapp_core.appview.reset_view',
-      { app_code: appCode, view },
-      { successMessage: 'Back to the default view' },
+      'oneapp.oneapp_core.spaceview.reset_layout',
+      { space_code: spaceCode, screen },
+      { successMessage: 'Back to the default screen' },
     ),
 
   books: () => callMethod('oneapp.oneapp_core.books.status', {}, { silent: true, method: 'GET' }),

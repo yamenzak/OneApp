@@ -61,7 +61,7 @@ export default defineConfig({
     'Subscription',
     'Provisioning Job',
     'Credit Ledger Entry',
-    'OneApp App'
+    'OneSpace Space'
   ]
 },
       },

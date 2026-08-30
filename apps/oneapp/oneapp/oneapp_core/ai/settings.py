@@ -26,11 +26,11 @@ from oneapp.oneapp_core.ai import features
 
 
 def doc():
-	return frappe.get_single("OneApp AI Settings")
+	return frappe.get_single("OneSpace AI Settings")
 
 
 def _cached(field: str):
-	raw = frappe.db.get_single_value("OneApp AI Settings", field)
+	raw = frappe.db.get_single_value("OneSpace AI Settings", field)
 	try:
 		return json.loads(raw) if raw else {}
 	except (TypeError, ValueError):

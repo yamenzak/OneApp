@@ -42,7 +42,7 @@ DB_EXEMPT_DOCTYPES = {
 	"Session Default",
 	"View Log",
 	"Version",
-	"OneApp Site State",
+	"OneSpace Site State",
 }
 
 

@@ -66,19 +66,19 @@
   </MobileShell>
 
   <DesktopShell v-else :scroll="scroll">
-    <template v-if="apps.length" #rail>
+    <template v-if="entries.length" #rail>
       <Rail class="border-r border-outline-gray-1">
         <RailItem
-          v-for="app in apps"
-          :key="app.key"
-          :label="app.label"
-          :description="app.description"
-          :active="app.key === activeApp"
-          :to="app.to"
+          v-for="entry in entries"
+          :key="entry.key"
+          :label="entry.label"
+          :description="entry.description"
+          :active="entry.key === activeEntry"
+          :to="entry.to"
           variant="tile"
-          @click="$emit('select-app', app.key)"
+          @click="$emit('select-entry', entry.key)"
         >
-          <Avatar :label="app.label" :image="app.image" size="lg" shape="square" class="size-7" />
+          <Avatar :label="entry.label" :image="entry.image" size="lg" shape="square" class="size-7" />
         </RailItem>
 
         <div class="mt-auto flex flex-col items-center gap-2.5 pt-3">
@@ -116,19 +116,19 @@
         </div>
       </div>
 
-      <section v-if="apps.length > 1">
-        <p class="px-1 pb-1 text-p-sm text-ink-gray-5">{{ appsLabel }}</p>
+      <section v-if="entries.length > 1">
+        <p class="px-1 pb-1 text-p-sm text-ink-gray-5">{{ spacesLabel }}</p>
         <router-link
-          v-for="app in apps"
-          :key="app.key"
-          :to="app.to"
+          v-for="entry in entries"
+          :key="entry.key"
+          :to="entry.to"
           class="flex items-center gap-3 rounded-4 p-2 active:bg-surface-gray-2"
           @click="showMenu = false"
         >
-          <Avatar :label="app.label" :image="app.image" size="xl" shape="square" />
-          <span class="min-w-0 flex-1 truncate text-base text-ink-gray-8">{{ app.label }}</span>
+          <Avatar :label="entry.label" :image="entry.image" size="xl" shape="square" />
+          <span class="min-w-0 flex-1 truncate text-base text-ink-gray-8">{{ entry.label }}</span>
           <Icon
-            v-if="app.key === activeApp"
+            v-if="entry.key === activeEntry"
             name="lucide-check"
             class="size-4 shrink-0 text-ink-gray-6"
           />
@@ -212,10 +212,10 @@ const props = defineProps({
    * Empty renders no rail at all — a single-app surface should not show a
    * one-item switcher.
    */
-  apps: { type: Array, default: () => [] },
-  activeApp: { type: String, default: '' },
+  entries: { type: Array, default: () => [] },
+  activeEntry: { type: String, default: '' },
   /** Heading the mobile sheet gives the rail's entries. */
-  appsLabel: { type: String, default: 'Apps' },
+  spacesLabel: { type: String, default: 'Apps' },
   /**
    * Every destination this surface has, in sidebar order:
    * { label, icon, to, active?, badge?, primary? }.
@@ -236,7 +236,7 @@ const props = defineProps({
   scroll: { type: Boolean, default: true },
 })
 
-defineEmits(['select-app'])
+defineEmits(['select-entry'])
 
 defineSlots()
 
@@ -245,7 +245,7 @@ const isMobile = useIsMobile()
  * Navigate from the click rather than leaving it to the item's own link.
  *
  * MobileNavItem decides link-versus-button by comparing route *names*, and
- * every screen of an app is the same route name with a different `?view=`. So
+ * every screen of an app is the same route name with a different `?screen=`. So
  * an app's tabs all looked current, all rendered as scroll-to-top buttons, and
  * none of them navigated — on a phone an app with more than one screen had
  * exactly one reachable screen. The item keeps `to` so it still renders an

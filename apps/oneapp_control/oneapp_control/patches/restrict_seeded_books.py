@@ -22,10 +22,10 @@ HONEST_DESCRIPTION = (
 
 
 def execute():
-	if not frappe.db.exists("OneApp App", "books"):
+	if not frappe.db.exists("OneSpace Space", "books"):
 		return
 
-	app = frappe.get_doc("OneApp App", "books")
+	app = frappe.get_doc("OneSpace Space", "books")
 
 	if app.description == SEEDED_DESCRIPTION:
 		app.db_set("description", HONEST_DESCRIPTION)
@@ -37,11 +37,11 @@ def execute():
 	# entitlement an operator can now see and revoke — rather than losing their
 	# apps to a migration they did not ask for.
 	for tenant in frappe.get_all("Tenant", pluck="name"):
-		if frappe.db.exists("App Entitlement", {"tenant": tenant, "app": "books"}):
+		if frappe.db.exists("Space Entitlement", {"tenant": tenant, "app": "books"}):
 			continue
 		frappe.get_doc(
 			{
-				"doctype": "App Entitlement",
+				"doctype": "Space Entitlement",
 				"tenant": tenant,
 				"app": "books",
 				"enabled": 1,

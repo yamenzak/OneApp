@@ -23,7 +23,7 @@ SMTP_USER = "api_token"
 
 DEFAULT_HOURLY_LIMIT = 200
 
-ACCOUNT_NAME = "OneApp Outgoing"
+ACCOUNT_NAME = "OneSpace Outgoing"
 
 
 def config() -> dict:

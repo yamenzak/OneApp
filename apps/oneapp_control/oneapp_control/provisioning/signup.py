@@ -15,7 +15,7 @@ from frappe.utils import now_datetime
 
 from oneapp_control.utils.slug import is_available
 
-CUSTOMER_ROLE = "OneApp Customer"
+CUSTOMER_ROLE = "OneSpace Customer"
 
 
 def fulfil(request_name: str):

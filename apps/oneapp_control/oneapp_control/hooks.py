@@ -1,7 +1,7 @@
 app_name = "oneapp_control"
 app_title = "OneAdmin"
 app_publisher = "Four Degree Labs"
-app_description = "OneApp control plane: tenants, shards, plans, credits and provisioning."
+app_description = "OneSpace control plane: tenants, shards, plans, credits and provisioning."
 app_email = "hello@fourdegreelabs.com"
 app_license = "mit"
 
@@ -25,7 +25,7 @@ website_route_rules = [
 # operator dropped you into the desk, which is the one place this product does
 # not go. Customers are Website Users and resolve to the portal instead.
 home_page = "admin"
-role_home_page = {"OneApp Customer": ["portal/account"]}
+role_home_page = {"OneSpace Customer": ["portal/account"]}
 
 # ---------------------------------------------------------------------------
 # Scheduled tasks
@@ -69,7 +69,7 @@ scheduler_events = {
 # Fixtures — the app registry and plans are configuration, not customer data.
 # ---------------------------------------------------------------------------
 fixtures = [
-	{"dt": "OneApp App"},
+	{"dt": "OneSpace Space"},
 	{"dt": "Plan"},
 	{"dt": "Region"},
 ]

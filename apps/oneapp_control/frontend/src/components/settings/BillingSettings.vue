@@ -2,7 +2,7 @@
   <SettingsForm
     title="Billing"
     description="Stripe owns the recurring schedule, dunning and card updates. The secret key lives in the payments app so there is one place to rotate it."
-    doctype="OneApp Control Settings"
+    doctype="OneSpace Control Settings"
     :fields="FIELDS"
   />
 </template>

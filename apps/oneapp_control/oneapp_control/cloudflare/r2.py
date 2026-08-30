@@ -32,7 +32,7 @@ class R2NotConfigured(R2Error):
 
 
 def config() -> dict:
-	s = frappe.get_single("OneApp Control Settings")
+	s = frappe.get_single("OneSpace Control Settings")
 	return {
 		"account_id": s.r2_account_id,
 		"token": s.get_password("r2_admin_token", raise_exception=False),
@@ -48,7 +48,7 @@ def is_configured() -> bool:
 def _request(method: str, path: str, jurisdiction: str | None = None, **kwargs):
 	c = config()
 	if not is_configured():
-		raise R2NotConfigured("R2 admin credentials are not set in OneApp Control Settings.")
+		raise R2NotConfigured("R2 admin credentials are not set in OneSpace Control Settings.")
 
 	headers = {"Authorization": f"Bearer {c['token']}"}
 	if jurisdiction == EU:

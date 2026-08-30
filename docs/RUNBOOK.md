@@ -118,7 +118,7 @@ Only DNS is needed to create a tenant. The rest can follow.
 
 All of this is in the desk UI at `admin.4dl.app/app`.
 
-11. **OneApp Control Settings → Frappe Cloud**
+11. **OneSpace Control Settings → Frappe Cloud**
     | Field | Value |
     | --- | --- |
     | `press_api_url` | `https://cloud.frappe.io` (frappecloud.com redirects here and the redirect drops auth) |
@@ -126,7 +126,7 @@ All of this is in the desk UI at `admin.4dl.app/app`.
     | `tenant_domain` | `4dl.app` |
     | `control_plane_url` | `https://admin.4dl.app` |
 
-12. **OneApp Control Settings → Cloudflare DNS**
+12. **OneSpace Control Settings → Cloudflare DNS**
     `cf_zone_id` and `cf_dns_token` from steps 9–10.
 
 13. **Create a Shard** — this is what makes provisioning possible at all.
@@ -181,7 +181,7 @@ All of this is in the desk UI at `admin.4dl.app/app`.
 
 ## Stage 5 — Storage, mail and AI
 
-Each is independent. Fill the fields in **OneApp Control Settings → Tenant bench
+Each is independent. Fill the fields in **OneSpace Control Settings → Tenant bench
 config**, then use **Push Bench Config** on the Shard.
 
 18. **R2.** Create the bucket, an R2 API token, and bind `cdn.4dl.app` to the

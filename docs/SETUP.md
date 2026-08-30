@@ -65,13 +65,13 @@ Once it exists, creating a tenant is a single `press.api.site.new` call with no
 DNS or certificate work per tenant.
 
 **API credentials.** Generate an API key and secret on the Frappe Cloud account
-and put them in OneApp Control Settings.
+and put them in OneSpace Control Settings.
 
 ---
 
 ## Control-plane configuration
 
-In **OneApp Control Settings** (Single doctype):
+In **OneSpace Control Settings** (Single doctype):
 
 | Field | Notes |
 | --- | --- |
@@ -108,7 +108,7 @@ or shared:
 
 | Level | Holds | Set how | How often |
 | --- | --- | --- | --- |
-| **Bench common config** | Everything identical across tenants — R2 credentials, the Cloudflare email token, AI keys | Fill in **OneApp Control Settings → Tenant bench config**, then **Push Bench Config** on the Shard (or *Push to All Shards* from Settings). Equivalently: the Frappe Cloud dashboard, Bench Group → Config | **Once per bench.** A rotation is one push, not one per tenant |
+| **Bench common config** | Everything identical across tenants — R2 credentials, the Cloudflare email token, AI keys | Fill in **OneSpace Control Settings → Tenant bench config**, then **Push Bench Config** on the Shard (or *Push to All Shards* from Settings). Equivalently: the Frappe Cloud dashboard, Bench Group → Config | **Once per bench.** A rotation is one push, not one per tenant |
 | **Site config** | Only what is unique to one tenant — its name, its HMAC secret | Injected by the provisioning engine (`push_site_config`) | Automatically, at site creation |
 
 **You never configure a tenant site by hand.** Shared keys are set once on the
@@ -129,7 +129,7 @@ own.
 A site missing these is orphaned: running, but unable to prove who it is. It will
 log a sync error and serve no apps.
 
-> Set these in **OneApp Control Settings**, not by hand on each bench — the push
+> Set these in **OneSpace Control Settings**, not by hand on each bench — the push
 > action writes them to the bench group for you, and never overwrites an existing
 > bench value with a blank.
 
@@ -197,7 +197,7 @@ Per-tenant rate limiting is ours regardless of transport, enforced on
   than a control-plane call so an outage does not bounce mail.
 
   Put the namespace id and a token with **Workers KV Storage: Edit** in
-  *OneApp Control Settings → Cloudflare KV*. That token is control-plane only and
+  *OneSpace Control Settings → Cloudflare KV*. That token is control-plane only and
   is never pushed to bench config — it could rewrite mail routing for every
   tenant. If a namespace is ever recreated, `cloudflare.kv.resync_all` rebuilds
   the map.
@@ -211,11 +211,11 @@ See [`workers/README.md`](../workers/README.md).
 ## Local development
 
 ```bash
-git clone https://github.com/yamenzak/OneApp ~/src/OneApp
+git clone https://github.com/yamenzak/OneSpace ~/src/OneSpace
 
 cd ~/frappe-bench
-ln -s ~/src/OneApp/apps/oneapp          apps/oneapp
-ln -s ~/src/OneApp/apps/oneapp_control  apps/oneapp_control
+ln -s ~/src/OneSpace/apps/oneapp          apps/oneapp
+ln -s ~/src/OneSpace/apps/oneapp_control  apps/oneapp_control
 ./env/bin/pip install -e apps/oneapp -e apps/oneapp_control
 printf 'oneapp\noneapp_control\n' >> sites/apps.txt
 

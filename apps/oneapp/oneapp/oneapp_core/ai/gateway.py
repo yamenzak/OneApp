@@ -34,7 +34,7 @@ from oneapp.oneapp_core.ai import features, meter, settings
 TIMEOUT = 120
 
 # Cloudflare returns this on every response. It is the handle for the log entry
-# holding Cloudflare's own view of the call.
+# holding Cloudflare's own screen of the call.
 LOG_ID_HEADER = "cf-aig-log-id"
 
 

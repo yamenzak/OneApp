@@ -1,4 +1,4 @@
-"""Keep this site's view of its tenant fresh.
+"""Keep this site's screen of its tenant fresh.
 
 The control plane is authoritative; this site caches. The cache is a Single
 doctype rather than only Redis, deliberately: if the control plane is
@@ -13,8 +13,21 @@ from frappe.utils import now_datetime
 
 from oneapp.oneapp_core import control_client
 
-CACHE_KEY = "oneapp_site_state"
+CACHE_KEY = "onespace_site_state"
 CACHE_TTL = 300
+
+
+def _spaces(payload: dict) -> list:
+	"""The spaces in a sync payload, under either name.
+
+	The control plane sent `apps` and sends `spaces`. Both ends are ours but
+	they deploy separately, and a tenant that reads only the new key would
+	answer a sync by forgetting every space it has.
+	"""
+	found = payload.get("spaces")
+	if found is None:
+		found = payload.get("apps")
+	return found or []
 
 
 def state() -> dict:
@@ -23,7 +36,7 @@ def state() -> dict:
 	if cached:
 		return cached
 
-	doc = frappe.get_single("OneApp Site State")
+	doc = frappe.get_single("OneSpace Site State")
 	data = {
 		"tenant": doc.tenant,
 		"status": doc.status,
@@ -33,7 +46,7 @@ def state() -> dict:
 		"max_users": doc.max_users or 0,
 		"background_workers": doc.background_workers or 0,
 		"credit_balance": doc.credit_balance or 0,
-		"apps": json.loads(doc.apps_json or "[]"),
+		"spaces": json.loads(doc.spaces_json or "[]"),
 		"roles": json.loads(doc.roles_json or "[]"),
 		"last_sync": str(doc.last_sync) if doc.last_sync else None,
 	}
@@ -47,7 +60,7 @@ def invalidate():
 
 def sync_from_control_plane() -> dict:
 	"""Pull entitlements, quotas and balance. Scheduled, and callable on demand."""
-	doc = frappe.get_single("OneApp Site State")
+	doc = frappe.get_single("OneSpace Site State")
 
 	if not control_client.is_provisioned():
 		doc.db_set("last_sync_error", "Site is not provisioned (missing site_config keys).")
@@ -58,7 +71,7 @@ def sync_from_control_plane() -> dict:
 	except control_client.ControlPlaneError as e:
 		# Keep serving the last known good state rather than degrading the site.
 		doc.db_set("last_sync_error", str(e)[:500])
-		frappe.log_error(title="OneApp control-plane sync failed", message=str(e))
+		frappe.log_error(title="OneSpace control-plane sync failed", message=str(e))
 		return {"ok": False, "reason": "unreachable", "error": str(e)}
 
 	tenant = payload.get("tenant") or {}
@@ -76,7 +89,7 @@ def sync_from_control_plane() -> dict:
 			"max_users": plan.get("max_users") or 0,
 			"background_workers": plan.get("background_workers") or 0,
 			"credit_balance": credits.get("balance") or 0,
-			"apps_json": json.dumps(payload.get("apps") or []),
+			"spaces_json": json.dumps(_spaces(payload)),
 			"roles_json": json.dumps(payload.get("roles") or []),
 			"last_sync": now_datetime(),
 			"last_sync_error": None,
@@ -110,7 +123,7 @@ def sync_from_control_plane() -> dict:
 
 	return {
 		"ok": True,
-		"apps": len(payload.get("apps") or []),
+		"spaces": len(_spaces(payload)),
 		"owner_created": created,
 		"members_created": people["created"],
 		"members_disabled": people["disabled"],
@@ -132,7 +145,7 @@ def sync_ai(block: dict, credits: dict) -> None:
 	from oneapp.oneapp_core.ai import features
 
 	try:
-		frappe.db.set_single_value("OneApp AI Settings", {
+		frappe.db.set_single_value("OneSpace AI Settings", {
 			"catalogue_json": json.dumps(block.get("models") or [], default=str),
 			"registry_json": json.dumps(block.get("features") or [], default=str),
 			"credit_balance": credits.get("balance") or 0,
@@ -212,7 +225,7 @@ def sync_email_account():
 	except Exception:
 		# Mail setup must never break an entitlement sync.
 		frappe.log_error(
-			title="OneApp email account sync failed", message=frappe.get_traceback()
+			title="OneSpace email account sync failed", message=frappe.get_traceback()
 		)
 
 
@@ -520,12 +533,12 @@ def all_managed_roles() -> list[str]:
 	Only roles we know about are ever revoked — a role an operator created by
 	hand is left alone.
 	"""
-	doc = frappe.get_single("OneApp Site State")
+	doc = frappe.get_single("OneSpace Site State")
 	try:
-		apps = json.loads(doc.apps_json or "[]")
+		spaces = json.loads(doc.spaces_json or "[]")
 	except (json.JSONDecodeError, TypeError):
 		return []
-	return [a["role_name"] for a in apps if a.get("role_name")]
+	return [s["role_name"] for s in spaces if s.get("role_name")]
 
 
 def report_usage_to_control_plane() -> dict:
@@ -559,10 +572,10 @@ def report_usage_to_control_plane() -> dict:
 	try:
 		result = control_client.report_usage(int(storage), int(users), int(database))
 	except control_client.ControlPlaneError as e:
-		frappe.log_error(title="OneApp usage report failed", message=str(e))
+		frappe.log_error(title="OneSpace usage report failed", message=str(e))
 		return {"ok": False, "error": str(e)}
 
-	doc = frappe.get_single("OneApp Site State")
+	doc = frappe.get_single("OneSpace Site State")
 	doc.db_set("storage_used_bytes", storage)
 	doc.db_set("database_used_bytes", database)
 	invalidate()

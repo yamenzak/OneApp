@@ -144,14 +144,14 @@ def push_site_config(job):
 	site is running but orphaned — it cannot sync entitlements or spend credits.
 	"""
 	tenant = frappe.get_doc("Tenant", job.tenant)
-	settings = frappe.get_single("OneApp Control Settings")
+	settings = frappe.get_single("OneSpace Control Settings")
 
 	# Without this the site comes up unable to reach us: no entitlements, no
 	# credits, no quota. Press silently drops empty values, so shipping a blank
 	# would leave a site that looks provisioned and is quietly orphaned.
 	if not settings.control_plane_url:
 		raise PressPermanentError(
-			"control_plane_url is not set in OneApp Control Settings. A site "
+			"control_plane_url is not set in OneSpace Control Settings. A site "
 			"provisioned without it cannot reach the control plane."
 		)
 
@@ -200,7 +200,7 @@ def create_dns_record(job):
 	if not dns.is_configured():
 		raise PressPermanentError(
 			"Per-tenant domain mode needs Cloudflare DNS configured in "
-			"OneApp Control Settings."
+			"OneSpace Control Settings."
 		)
 
 	try:

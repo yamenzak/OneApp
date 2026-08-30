@@ -11,12 +11,12 @@ import json
 import os
 
 from ai_capabilities import OPTIONS as AI_CAPABILITY_OPTIONS
-from app_icons import APP_ICONS, DEFAULT_APP_ICON
+from app_icons import SPACE_ICONS, DEFAULT_SPACE_ICON
 
 APPS = {
     # key -> (app package dir, module directory, Frappe module name)
     "control": ("oneapp_control", "control_plane", "Control Plane"),
-    "tenant": ("oneapp", "oneapp_core", "OneApp Core"),
+    "tenant": ("oneapp", "oneapp_core", "OneSpace Core"),
 }
 APPS_ROOT = os.path.join(os.path.dirname(__file__), "..", "apps")
 STAMP = "2026-08-29 00:00:00.000000"
@@ -204,12 +204,12 @@ doctype(
 )
 
 # --------------------------------------------------------------------------- #
-# OneApp App — the registry the SPA launcher reads.
+# OneSpace Space — the registry the SPA launcher reads.
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
-# OneApp App View — one screen an app puts in front of a customer.
+# OneSpace Space Screen — one screen an app puts in front of a customer.
 #
-# An app is configuration before it is code. A view names a doctype and the
+# An app is configuration before it is code. A screen names a doctype and the
 # fields worth showing, and OneSpace renders the list and the record from the
 # tenant site's own metadata — so a new app is a registration plus its doctypes,
 # with no OneSpace release and nothing hand-written per app.
@@ -219,14 +219,14 @@ doctype(
 # then the app's business rather than ours.
 # --------------------------------------------------------------------------- #
 doctype(
-    "OneApp App View",
+    "OneSpace Space Screen",
     istable=1,
     fields=[
-        f("view", reqd=1, in_list_view=1,
+        f("screen", reqd=1, in_list_view=1,
           description="Slug in the URL, e.g. `invoices`. Stable: it is what a "
                       "bookmark points at."),
         f("label", reqd=1, in_list_view=1, description="Shown in the app's navigation."),
-        f("icon", "Select", options="\n".join(APP_ICONS),
+        f("icon", "Select", options="\n".join(SPACE_ICONS),
           default="lucide-layout-grid"),
         column("cb_view_source"),
         f("document_type", label="Doctype", in_list_view=1,
@@ -239,7 +239,7 @@ doctype(
                       "doctype's own list fields."),
         f("component",
           description="Escape hatch: a component the SPA registered under "
-                      "`appCode/view`. Set this and the doctype above is ignored."),
+                      "`spaceCode/screen`. Set this and the doctype above is ignored."),
         section("sec_view_query"),
         f("filters", "Code", options="JSON",
           description='Always applied, e.g. {"status": "Open"}.'),
@@ -250,30 +250,30 @@ doctype(
 
 
 doctype(
-    "OneApp App",
-    autoname="field:app_code",
-    title_field="app_label",
+    "OneSpace Space",
+    autoname="field:space_code",
+    title_field="space_label",
     fields=[
-        f("app_code", reqd=1, unique=1, description="Stable id, e.g. crm"),
-        f("app_label", reqd=1, in_list_view=1),
+        f("space_code", reqd=1, unique=1, description="Stable id, e.g. crm"),
+        f("space_label", reqd=1, in_list_view=1),
         f("module", reqd=1, in_list_view=1,
           description="Frappe module inside the oneapp app that implements this."),
         f("is_active", "Check", default="1"),
         column("cb_app"),
         f("availability", "Select", options="General\nRestricted", default="General",
           reqd=1, in_list_view=1, in_standard_filter=1,
-          description="General: every tenant. Restricted: only via App Entitlement."),
+          description="General: every tenant. Restricted: only via Space Entitlement."),
         f("role_name", reqd=1,
           description="Frappe Role gating this app's doctypes. Entitlement grants "
                       "and revokes this role, so enforcement is native permissions "
                       "rather than a bespoke hook."),
         section("sec_views", "Screens"),
-        f("views", "Table", options="OneApp App View",
+        f("screens", "Table", options="OneSpace Space Screen",
           description="What the customer sees. An app with none of these is an "
                       "entitlement with no interface, which is a real thing to "
                       "be — it still grants its roles and doctypes."),
         section("sec_manifest", "Doctypes"),
-        f("doctypes", "Table", options="OneApp App Doctype",
+        f("doctypes", "Table", options="OneSpace Space Doctype",
           description="Everything this app exposes. One list, three jobs: the "
                       "DocPerms we write for our own roles, what an entitlement "
                       "grants, and the allowlist a customer's custom role may "
@@ -283,7 +283,7 @@ doctype(
         # database is in no source file, so Tailwind's JIT emits no CSS
         # for it and the launcher renders an empty box. The options come
         # from scripts/app_icons.py, which also writes the SPA's literals.
-        f("icon", "Select", options="\n".join(APP_ICONS),
+        f("icon", "Select", options="\n".join(SPACE_ICONS),
           default="lucide-layout-grid",
           description="Rendered by the launcher and the app sidebar."),
         f("sort_order", "Int", default="0"),
@@ -294,7 +294,7 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
-# OneApp App Doctype — the manifest row.
+# OneSpace Space Doctype — the manifest row.
 #
 # We ignore the roles ERPNext, HRMS and Payments ship with: we use those apps for
 # the logic they implement, not for their idea of who an "Accounts Manager" is.
@@ -302,7 +302,7 @@ doctype(
 # they come from. See DECISIONS §8.
 # --------------------------------------------------------------------------- #
 doctype(
-    "OneApp App Doctype",
+    "OneSpace Space Doctype",
     istable=1,
     fields=[
         f("document_type", "Data", reqd=1, in_list_view=1,
@@ -517,15 +517,15 @@ doctype(
 )
 
 # --------------------------------------------------------------------------- #
-# App Entitlement
+# Space Entitlement
 # --------------------------------------------------------------------------- #
 doctype(
-    "App Entitlement",
+    "Space Entitlement",
     autoname="hash",
     fields=[
         f("tenant", "Link", options="Tenant", reqd=1, in_list_view=1,
           in_standard_filter=1),
-        f("app", "Link", options="OneApp App", reqd=1, in_list_view=1,
+        f("app", "Link", options="OneSpace Space", reqd=1, in_list_view=1,
           in_standard_filter=1),
         f("enabled", "Check", default="1", in_list_view=1),
         column("cb_ent"),
@@ -633,7 +633,7 @@ doctype(
 # Settings (Single)
 # --------------------------------------------------------------------------- #
 doctype(
-    "OneApp Control Settings",
+    "OneSpace Control Settings",
     issingle=1,
     fields=[
         section("sec_press_set", "Frappe Cloud"),
@@ -939,7 +939,7 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
-# OneApp Saved View — how one person likes to look at one screen.
+# OneSpace Saved View — how one person likes to look at one screen.
 #
 # Frappe calls this a List View Setting and keeps it per doctype; here it is per
 # screen, because two screens over the same doctype are two different questions
@@ -949,14 +949,14 @@ doctype(
 # a setting to inherit.
 # --------------------------------------------------------------------------- #
 doctype(
-    "OneApp Saved View",
+    "OneSpace Saved View",
     app="tenant",
     autoname="hash",
     fields=[
         f("user", "Link", options="User", reqd=1, in_list_view=1,
-          description="Whose view this is."),
-        f("app_code", reqd=1, in_list_view=1),
-        f("view", reqd=1, in_list_view=1,
+          description="Whose screen this is."),
+        f("space_code", reqd=1, in_list_view=1),
+        f("screen", reqd=1, in_list_view=1,
           description="The screen's slug, so two screens over one doctype keep "
                       "their own answers."),
         column("cb_saved_view"),
@@ -983,7 +983,7 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
-# OneApp AI Feature Setting — a workspace's answer for one declared feature.
+# OneSpace AI Feature Setting — a workspace's answer for one declared feature.
 #
 # Rows are created from the registry, not typed: the decorator is the only thing
 # that knows a feature exists, so a workspace's settings page is whatever its
@@ -992,7 +992,7 @@ doctype(
 # lose the customer's wording.
 # --------------------------------------------------------------------------- #
 doctype(
-    "OneApp AI Feature Setting",
+    "OneSpace AI Feature Setting",
     app="tenant",
     istable=1,
     fields=[
@@ -1011,14 +1011,14 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
-# OneApp AI Settings — the workspace's AI switch and its per-feature answers.
+# OneSpace AI Settings — the workspace's AI switch and its per-feature answers.
 #
 # The catalogue is cached here from the control plane rather than fetched per
 # request: choosing a model must work while the control plane is unreachable,
 # and pricing a call must not depend on a network hop in the middle of one.
 # --------------------------------------------------------------------------- #
 doctype(
-    "OneApp AI Settings",
+    "OneSpace AI Settings",
     app="tenant",
     issingle=1,
     fields=[
@@ -1030,7 +1030,7 @@ doctype(
         column("cb_ai_set"),
         f("last_sync", "Datetime", read_only=1),
         section("sec_ai_features", "Features"),
-        f("features", "Table", options="OneApp AI Feature Setting"),
+        f("features", "Table", options="OneSpace AI Feature Setting"),
         section("sec_ai_cache", "Cached from the control plane"),
         f("catalogue_json", "Code", options="JSON", read_only=1,
           description="Models the workspace may choose, with prices."),

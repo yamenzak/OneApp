@@ -66,14 +66,14 @@ def inflight() -> int | None:
 		# Frappe's RQ Job virtual doctype scopes to the current site already.
 		return frappe.db.count("RQ Job", {"status": ["in", LIVE_STATUSES]})
 	except Exception:
-		frappe.log_error(title="OneApp job count failed", message=frappe.get_traceback())
+		frappe.log_error(title="OneSpace job count failed", message=frappe.get_traceback())
 		return None
 
 
 def enqueue(method, *, queue: str | None = None, **kwargs):
 	"""Enqueue one of our jobs, respecting the plan's concurrency cap.
 
-	Use this instead of ``frappe.enqueue`` for anything OneApp starts. Framework
+	Use this instead of ``frappe.enqueue`` for anything OneSpace starts. Framework
 	and ERPNext jobs deliberately keep going through Frappe directly — reaching
 	into those would mean maintaining a patch across upgrades.
 	"""

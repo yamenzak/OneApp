@@ -14,7 +14,7 @@
  * options, so the picker and the stored values cannot drift.
  */
 
-export const APP_ICONS = [
+export const SPACE_ICONS = [
   'lucide-layout-grid',
   'lucide-users',
   'lucide-user-round',
@@ -43,9 +43,9 @@ export const APP_ICONS = [
   'lucide-sparkles',
 ]
 
-export const DEFAULT_APP_ICON = 'lucide-layout-grid'
+export const DEFAULT_SPACE_ICON = 'lucide-layout-grid'
 
 /** A name we know renders — for anything stored before the set was narrowed. */
-export function appIcon(name) {
-  return APP_ICONS.includes(name) ? name : DEFAULT_APP_ICON
+export function spaceIcon(name) {
+  return SPACE_ICONS.includes(name) ? name : DEFAULT_SPACE_ICON
 }

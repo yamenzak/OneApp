@@ -26,7 +26,7 @@ class DNSNotConfigured(DNSError):
 
 
 def config() -> dict:
-	s = frappe.get_single("OneApp Control Settings")
+	s = frappe.get_single("OneSpace Control Settings")
 	return {
 		"zone": s.cf_zone_id,
 		"token": s.get_password("cf_dns_token", raise_exception=False),
@@ -41,7 +41,7 @@ def is_configured() -> bool:
 def _request(method: str, path: str, **kwargs):
 	c = config()
 	if not is_configured():
-		raise DNSNotConfigured("Cloudflare DNS is not configured in OneApp Control Settings.")
+		raise DNSNotConfigured("Cloudflare DNS is not configured in OneSpace Control Settings.")
 
 	try:
 		response = requests.request(
@@ -82,7 +82,7 @@ def upsert_cname(name: str, target: str) -> dict:
 		"ttl": 60,
 		# Never proxied — see the module docstring.
 		"proxied": False,
-		"comment": "OneApp tenant (managed)",
+		"comment": "OneSpace tenant (managed)",
 	}
 
 	existing = find_record(name)

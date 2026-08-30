@@ -139,7 +139,7 @@ def test_the_two_apps_read_through_the_same_endpoint():
 # everywhere.
 #
 # We wrap four of the five. useNewDoc is deliberately absent: a new record is
-# created through `appview.save`, which is bounded by the screen's own field
+# created through `spaceview.save`, which is bounded by the screen's own field
 # list, and a client-side document that inserts whatever it holds would be a way
 # around that bound rather than a convenience.
 # --------------------------------------------------------------------------- #

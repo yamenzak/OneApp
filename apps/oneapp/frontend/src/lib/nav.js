@@ -2,8 +2,9 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 // An icon name that only exists in the database emits no CSS, so anything
 // outside the generated set falls back to one that does.
-import { appIcon } from './icons'
+import { spaceIcon } from './icons'
 import { session } from './session'
+import { VIEW_TYPES, viewTypesOf } from './viewTypes'
 
 /**
  * Every destination, declared once.
@@ -12,57 +13,81 @@ import { session } from './session'
  * two lists. Declared separately they drift — which is how the control plane
  * ended up calling the same page "Readiness" in one and "Setup" in the other.
  *
- * Inside an app the list is the app's own manifest, so a new app brings its
- * navigation with it rather than needing an edit here. An app can declare more
- * sections than a bottom bar has room for: the first four reach the bar and the
- * rest land in the More sheet, so nothing is silently unreachable on a phone.
+ * Inside a space the list is the space's own manifest, so a new space brings
+ * its navigation with it rather than needing an edit here. A space can declare
+ * more screens than a bottom bar has room for: the first four reach the bar and
+ * the rest land in the More sheet, so nothing is silently unreachable.
  */
 export function useNav() {
   const route = useRoute()
 
-  const activeApp = computed(
-    () => session.apps.find((a) => a.app_code === route.params.appCode) || null,
+  const activeSpace = computed(
+    () => session.spaces.find((s) => s.space_code === route.params.spaceCode) || null,
   )
 
   const workspaceItems = [
-    { label: 'Apps', icon: 'lucide-layout-grid', to: { name: 'Launcher' } },
+    { label: 'Spaces', icon: 'lucide-layout-grid', to: { name: 'Launcher' } },
     { label: 'Account', icon: 'lucide-circle-user', to: { name: 'Account' } },
   ]
 
-  const items = computed(() => {
-    const app = activeApp.value
-    if (!app) return workspaceItems
+  const screenRoute = (space, screen, viewType) => ({
+    name: 'Screen',
+    params: { spaceCode: space.space_code },
+    query: {
+      screen: screen.screen,
+      // Only when it is not the screen's own first type: a query parameter
+      // that repeats the default is noise in every link and every bookmark.
+      ...(viewType && viewType !== viewTypesOf(screen)[0] ? { type: viewType } : {}),
+    },
+  })
 
-    const declared = app.views || []
-    // A single-screen app declares no sections; its landing page is the nav.
+  const items = computed(() => {
+    const space = activeSpace.value
+    if (!space) return workspaceItems
+
+    const declared = space.screens || []
+    // A space with one screen declares none; its landing page is the nav.
     if (!declared.length) {
       return [
         {
-          label: app.app_label,
-          icon: appIcon(app.icon),
-          to: { name: 'App', params: { appCode: app.app_code } },
+          label: space.space_label,
+          icon: spaceIcon(space.icon),
+          to: { name: 'Screen', params: { spaceCode: space.space_code } },
         },
       ]
     }
-    return declared.map((view) => ({
-      label: view.label,
-      icon: appIcon(view.icon),
-      to: {
-        name: 'App',
-        params: { appCode: app.app_code },
-        query: { view: view.view },
-      },
+    return declared.map((screen) => ({
+      key: screen.screen,
+      label: screen.label,
+      icon: spaceIcon(screen.icon),
+      to: screenRoute(space, screen),
+      // What the sidebar offers when this screen is expanded. A screen that
+      // only knows one way to be looked at has nothing to expand.
+      viewTypes: viewTypesOf(screen).map((type) => ({
+        key: type,
+        label: VIEW_TYPES[type].label,
+        icon: VIEW_TYPES[type].icon,
+        to: screenRoute(space, screen, type),
+      })),
     }))
   })
+
+  const activeType = computed(() => route.query.type || '')
 
   const nav = computed(() =>
     items.value.map((item) => ({
       ...item,
       active:
         route.name === item.to.name &&
-        (!item.to.query?.view || route.query.view === item.to.query.view),
+        (!item.to.query?.screen || route.query.screen === item.to.query.screen),
+      viewTypes: (item.viewTypes || []).map((type) => ({
+        ...type,
+        active:
+          route.query.screen === item.to.query?.screen &&
+          (activeType.value || item.viewTypes[0].key) === type.key,
+      })),
     })),
   )
 
-  return { nav, activeApp }
+  return { nav, activeSpace }
 }

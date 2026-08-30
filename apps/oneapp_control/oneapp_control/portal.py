@@ -31,10 +31,10 @@ def base_url() -> str:
 	could not get back. Refusing is the safe failure: signup is already gated on
 	this setting being present.
 	"""
-	configured = frappe.db.get_single_value("OneApp Control Settings", "control_plane_url")
+	configured = frappe.db.get_single_value("OneSpace Control Settings", "control_plane_url")
 	if not configured:
 		frappe.throw(
-			"control_plane_url is not set in OneApp Control Settings, so no "
+			"control_plane_url is not set in OneSpace Control Settings, so no "
 			"customer-facing link can be built."
 		)
 	return configured.rstrip("/")

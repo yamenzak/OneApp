@@ -42,13 +42,13 @@ class PressPermanentError(PressError):
 
 
 def settings():
-	return frappe.get_single("OneApp Control Settings")
+	return frappe.get_single("OneSpace Control Settings")
 
 
 class PressClient:
 	"""Talks to Frappe Cloud on behalf of the control plane.
 
-	Credentials come from OneApp Control Settings, falling back to site config.
+	Credentials come from OneSpace Control Settings, falling back to site config.
 	The settings win because rotating a key should be a form save rather than a
 	redeploy — but a brand new control site has nobody signed in yet and nothing
 	configured, so site config is how it gets bootstrapped: press can write a
@@ -439,7 +439,7 @@ class PressClient:
 	def backups(self, site: str) -> list:
 		"""Recent backups press holds for a site, newest first.
 
-		Press keeps its own schedule; this is a view of it rather than a
+		Press keeps its own schedule; this is a screen of it rather than a
 		second one. Rows carry the file sizes and whether the copy is offsite.
 		"""
 		return self.call("press.api.site.backups", timeout=READ_TIMEOUT, name=site) or []

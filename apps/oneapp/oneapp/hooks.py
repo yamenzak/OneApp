@@ -38,7 +38,7 @@ home_page = "one"
 # back to Frappe's normal behaviour when R2 is not configured, so a site without
 # keys still works instead of failing every upload.
 override_doctype_class = {
-	"File": "oneapp.oneapp_core.storage.file.OneAppFile",
+	"File": "oneapp.oneapp_core.storage.file.OneSpaceFile",
 }
 
 # ---------------------------------------------------------------------------
@@ -74,7 +74,7 @@ doc_events = {
 # walking the package: a feature that only registers when something happens to
 # import its module is a feature missing from the settings page on a cold worker.
 #
-# Apps built on OneApp add their own here. Nothing ships one yet — the mechanism
+# Apps built on OneSpace add their own here. Nothing ships one yet — the mechanism
 # exists so the first app that needs AI declares it and gets the settings row,
 # the credit hold and the operator registry entry for free.
 ai_features = []

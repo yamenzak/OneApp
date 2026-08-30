@@ -2,7 +2,7 @@
   <SettingsForm
     title="Cloudflare"
     description="DNS, storage and mail routing. The DNS and KV tokens stay here and are never pushed to a bench — each can act across every tenant."
-    doctype="OneApp Control Settings"
+    doctype="OneSpace Control Settings"
     :fields="FIELDS"
   />
 </template>

@@ -1,9 +1,9 @@
-# OneApp
+# OneSpace
 
 Unified application surface for Four Degree Labs tenants. Installed on every tenant site.
 
 > **This repository is generated.** It is a read-only mirror of `apps/oneapp/` in
-> [yamenzak/OneApp](https://github.com/yamenzak/OneApp), published automatically so that
+> [yamenzak/OneSpace](https://github.com/yamenzak/OneSpace), published automatically so that
 > Frappe Cloud can consume it as a standalone Frappe app.
 >
 > **Do not commit here — changes will be overwritten on the next sync.**

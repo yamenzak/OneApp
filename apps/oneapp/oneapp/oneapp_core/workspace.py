@@ -30,7 +30,7 @@ from frappe.utils.momentjs import get_all_timezones
 
 # Set by the control plane's sync. An Admin member holds it too — see
 # oneapp_core/sync.py, which is deliberately the only thing that grants it.
-OWNER_ROLE = "OneApp Workspace Owner"
+OWNER_ROLE = "OneSpace Workspace Owner"
 
 # Support reaches a workspace as Administrator, who holds this instead.
 SUPPORT_ROLE = "System Manager"

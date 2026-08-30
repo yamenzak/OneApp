@@ -31,7 +31,7 @@ class KVNotConfigured(KVError):
 
 
 def config() -> dict:
-	s = frappe.get_single("OneApp Control Settings")
+	s = frappe.get_single("OneSpace Control Settings")
 	return {
 		"account_id": s.cf_kv_account_id or s.cf_account_id,
 		"namespace": s.cf_kv_namespace_id,
@@ -47,7 +47,7 @@ def is_configured() -> bool:
 def _request(method: str, path: str, **kwargs):
 	c = config()
 	if not is_configured():
-		raise KVNotConfigured("Cloudflare KV is not configured in OneApp Control Settings.")
+		raise KVNotConfigured("Cloudflare KV is not configured in OneSpace Control Settings.")
 
 	url = (
 		f"{API_BASE}/accounts/{c['account_id']}"

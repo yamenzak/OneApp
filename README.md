@@ -1,4 +1,4 @@
-# OneApp
+# OneSpace
 
 A single Frappe application presenting a unified SPA over multiple bespoke solutions, with
 ERPNext underneath. Customers never see Frappe or ERPNext — the SPA is their only access point.
@@ -36,11 +36,11 @@ canary bench group can track it.
 Symlink both apps into a bench rather than cloning the mirrors:
 
 ```bash
-git clone https://github.com/yamenzak/OneApp ~/src/OneApp
+git clone https://github.com/yamenzak/OneSpace ~/src/OneSpace
 
 cd ~/frappe-bench
-ln -s ~/src/OneApp/apps/oneapp          apps/oneapp
-ln -s ~/src/OneApp/apps/oneapp_control  apps/oneapp_control
+ln -s ~/src/OneSpace/apps/oneapp          apps/oneapp
+ln -s ~/src/OneSpace/apps/oneapp_control  apps/oneapp_control
 
 ./env/bin/pip install -e apps/oneapp -e apps/oneapp_control
 echo -e "oneapp\noneapp_control" >> sites/apps.txt

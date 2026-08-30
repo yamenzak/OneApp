@@ -85,14 +85,14 @@ def test_a_retired_token_would_be_caught(app):
 # --------------------------------------------------------------------------- #
 
 def _generated_icons(app: str) -> list[str]:
-    """The names inside lib/icons.js's APP_ICONS array.
+    """The names inside lib/icons.js's SPACE_ICONS array.
 
-    Scoped to the array: DEFAULT_APP_ICON below it is another `lucide-*` literal
+    Scoped to the array: DEFAULT_SPACE_ICON below it is another `lucide-*` literal
     and would otherwise be counted as a 27th icon.
     """
     js = (ROOT / f"apps/{app}/frontend/src/lib/icons.js").read_text()
-    block = re.search(r"APP_ICONS = \[(.*?)\]", js, re.S)
-    assert block, f"{app}/lib/icons.js has no APP_ICONS array"
+    block = re.search(r"SPACE_ICONS = \[(.*?)\]", js, re.S)
+    assert block, f"{app}/lib/icons.js has no SPACE_ICONS array"
     return re.findall(r"'(lucide-[\w-]+)'", block.group(1))
 
 
@@ -143,21 +143,21 @@ def test_the_doctype_offers_exactly_the_generated_set():
     import sys
 
     sys.path.insert(0, str(ROOT / "scripts"))
-    from app_icons import APP_ICONS, DEFAULT_APP_ICON
+    from app_icons import SPACE_ICONS, DEFAULT_SPACE_ICON
 
     spec = json.loads(
         (
             ROOT
-            / "apps/oneapp_control/oneapp_control/control_plane/doctype/oneapp_app/oneapp_app.json"
+            / "apps/oneapp_control/oneapp_control/control_plane/doctype/onespace_space/onespace_space.json"
         ).read_text()
     )
     field = next(f for f in spec["fields"] if f["fieldname"] == "icon")
     assert field["fieldtype"] == "Select", "icon is free text again"
-    assert field["options"].split("\n") == APP_ICONS
-    assert field.get("default") == DEFAULT_APP_ICON
+    assert field["options"].split("\n") == SPACE_ICONS
+    assert field.get("default") == DEFAULT_SPACE_ICON
 
     for app in APPS:
-        assert _generated_icons(app) == APP_ICONS, (
+        assert _generated_icons(app) == SPACE_ICONS, (
             f"{app}/lib/icons.js is out of date — run scripts/gen_frontend.py"
         )
 
@@ -201,7 +201,7 @@ def test_a_class_list_in_a_constant_is_read(source):
         "const order = 'modified desc'",
         # One token is a name, not a list.
         "const icon = 'lucide-arrow-up'",
-        "const method = 'oneapp.oneapp_core.appview.rows'",
+        "const method = 'oneapp.oneapp_core.spaceview.rows'",
         # A hyphenated English word is not enough on its own.
         "const note = 'a well-known thing happened'",
     ],
@@ -216,7 +216,7 @@ def test_the_loose_scan_is_wired_into_the_audit():
     referenced = referenced_classes("oneapp")
     assert "bg-surface-base" in referenced, "the constant scan is not reaching the audit"
     assert any(
-        "AppHost" in path for path in referenced["bg-surface-base"]
+        "ScreenHost" in path for path in referenced["bg-surface-base"]
     ), referenced["bg-surface-base"]
 
 

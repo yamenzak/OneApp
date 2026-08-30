@@ -280,7 +280,7 @@ for the business logic they already implement, not for their idea of who an
 "Accounts Manager" is. A customer never sees ERPNext, so a role named for
 ERPNext's org chart describes nothing they recognise.
 
-OneApp defines its own roles instead. Two kinds:
+OneSpace defines its own roles instead. Two kinds:
 
 | Kind | Created by | Editable by customer |
 | --- | --- | --- |
@@ -289,7 +289,7 @@ OneApp defines its own roles instead. Two kinds:
 
 ### The manifest is the single source of truth
 
-Each `OneApp App` declares the doctypes it exposes. That one list drives three
+Each `OneSpace Space` declares the doctypes it exposes. That one list drives three
 things, which is what makes the model hold together:
 
 1. the DocPerms we generate for our own roles,
@@ -522,7 +522,7 @@ and the markup is what an operator turns.
 
 ## 12. An app is configuration before it is code
 
-The full contract is in `docs/APPS.md`.
+The full contract is in `docs/SPACES.md`.
 
 Every other part of this platform is registry-driven — entitlements, roles,
 DocPerms, AI features all come from a declaration rather than from an edit in
@@ -593,7 +593,7 @@ never widen it.**
   can show their answer immediately: an unsaved change goes through the same
   merge as a saved one rather than being applied in the browser.
 
-A saved view belongs to one screen (`OneApp Saved View`, keyed on user + app +
+A saved view belongs to one screen (`OneSpace Saved View`, keyed on user + app +
 view), so it is a preference and never a permission. It also means two screens
 over the same doctype keep their own answers.
 
@@ -628,7 +628,7 @@ arguments against them and answers a mismatch with a 417 before the body runs.
 When filters became a list of triples and `save_view` still said
 `filters: str | dict`, every save from the browser was refused — and every unit
 test still passed, because calling the function directly skips the check.
-`tests/test_app_views.py` now reads the annotations and checks them against the
+`tests/test_screens.py` now reads the annotations and checks them against the
 shapes the SPA actually sends.
 
 ### The manifest's fields are a default, not a ceiling
@@ -681,7 +681,7 @@ app's invention was right for the app on the day it was written; the framework's
 is what the next version of Frappe will keep working.
 
 But following a model is not the same as using its table, and here we do not.
-`OneApp Saved View` stays our own doctype, for three reasons that are about
+`OneSpace Saved View` stays our own doctype, for three reasons that are about
 shape rather than taste:
 
 * **It is keyed per screen, not per doctype.** `List Filter` is keyed on

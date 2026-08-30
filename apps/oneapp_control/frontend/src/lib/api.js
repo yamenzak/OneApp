@@ -22,10 +22,10 @@ export const api = {
       },
     ),
 
-  setAppViews: (app, views) =>
+  setAppViews: (app, screens) =>
     callMethod(
       'oneapp_control.api.admin.set_app_views',
-      { app, views },
+      { app, screens },
       {
         successMessage: 'Saved',
       },
@@ -81,18 +81,18 @@ export const api = {
     callMethod(method('admin.create_shard'), payload, {
       successMessage: 'Shard registered — the allocator will use it on the next signup',
     }),
-  grantApp: (tenant, appCode) =>
+  grantApp: (tenant, spaceCode) =>
     callMethod(
       method('admin.grant_app'),
-      { tenant, app_code: appCode },
+      { tenant, space_code: spaceCode },
       {
         successMessage: 'App enabled',
       },
     ),
-  revokeApp: (tenant, appCode) =>
+  revokeApp: (tenant, spaceCode) =>
     callMethod(
       method('admin.revoke_app'),
-      { tenant, app_code: appCode },
+      { tenant, space_code: spaceCode },
       {
         successMessage: 'App disabled',
       },

@@ -11,15 +11,15 @@
 
     <AppShell
       v-else
-      :apps="railApps"
-      :active-app="activeWorkspace"
-      :apps-label="isAdmin ? 'Apps' : 'Workspaces'"
+      :entries="railEntries"
+      :active-entry="activeWorkspace"
+      :entries-label="isAdmin ? 'Spaces' : 'Workspaces'"
       :nav-items="nav"
       :menu-items="menuItems"
       :user="identity"
     >
       <template #sidebar>
-        <AppSidebar v-if="isAdmin" />
+        <ConsoleSidebar v-if="isAdmin" />
         <PortalSidebar v-else />
       </template>
 
@@ -38,7 +38,7 @@ import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { FrappeUIProvider, LoadingIndicator, usePageMeta } from '@/ui'
 import AppShell from './components/AppShell.vue'
-import AppSidebar from './components/AppSidebar.vue'
+import ConsoleSidebar from './components/ConsoleSidebar.vue'
 import PortalSidebar from './components/PortalSidebar.vue'
 import SettingsShell from './components/settings/SettingsShell.vue'
 import { useNav } from './lib/nav'
@@ -62,7 +62,7 @@ const ready = computed(() =>
 // The rail carries workspaces on the portal. The console is a single surface, so
 // it passes none and AppShell renders no rail — a one-item switcher is worse
 // than no switcher.
-const railApps = computed(() => {
+const railEntries = computed(() => {
   if (isAdmin.value) return []
   return workspaces.list.map((w) => ({
     key: w.name,

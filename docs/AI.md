@@ -1,6 +1,6 @@
 # AI
 
-Everything AI in OneApp turns on one sentence: **we never invent a price.**
+Everything AI in OneSpace turns on one sentence: **we never invent a price.**
 
 That constraint is what shapes the rest — the catalogue, the unit-aware price
 rows, the decorator, the reservation, the reconciliation job. This file records
@@ -245,7 +245,7 @@ system prompt qualify what came before rather than replacing it.
 
 ## Markup
 
-One multiplier in OneApp Control Settings, applied to measured provider cost,
+One multiplier in OneSpace Control Settings, applied to measured provider cost,
 with a per-model override on the model's own row. Credits are
 `cost_usd × 100 × markup`, rounded up so a million tiny calls are not free.
 

@@ -14,7 +14,7 @@ Both are generated from here, so they cannot drift.
 """
 
 # Grouped by what an app is, not by glyph, so the list stays choosable.
-APP_ICONS = [
+SPACE_ICONS = [
     "lucide-layout-grid",      # default / launcher
     "lucide-users",            # CRM, contacts
     "lucide-user-round",       # HR, people
@@ -43,4 +43,4 @@ APP_ICONS = [
     "lucide-sparkles",         # AI, automation
 ]
 
-DEFAULT_APP_ICON = "lucide-layout-grid"
+DEFAULT_SPACE_ICON = "lucide-layout-grid"

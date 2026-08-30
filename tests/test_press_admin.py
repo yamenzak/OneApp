@@ -22,7 +22,7 @@ ADMIN = ROOT / "apps/oneapp_control/oneapp_control/api/admin.py"
 CLIENT = ROOT / "apps/oneapp_control/oneapp_control/press/client.py"
 SETTINGS = (
     ROOT
-    / "apps/oneapp_control/oneapp_control/control_plane/doctype/oneapp_control_settings/oneapp_control_settings.py"
+    / "apps/oneapp_control/oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.py"
 )
 PAGE = ROOT / "apps/oneapp_control/frontend/src/pages/Tenant.vue"
 

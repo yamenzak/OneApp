@@ -101,7 +101,7 @@ def stripe():
 
 
 def verify_signature(payload: str, header: str | None):
-	secret = frappe.get_single("OneApp Control Settings").get_password(
+	secret = frappe.get_single("OneSpace Control Settings").get_password(
 		"stripe_webhook_secret", raise_exception=False
 	)
 	if not secret:

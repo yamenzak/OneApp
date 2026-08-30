@@ -41,7 +41,7 @@ EXEMPT = {
 	# its own page would be a second, disagreeing way in.
 	"Tenant Member": "child table, edited on the workspace's People page",
 	"Plan Price": "child table, written by the Stripe sync and shown on the plan",
-	"OneApp App Doctype": "child table; the permission manifest is code, not config",
+	"OneSpace Space Doctype": "child table; the permission manifest is code, not config",
 	"AI Model Price": (
 		"child table, synced from the provider and shown on the model it belongs "
 		"to; editable rates would be overwritten by the next sync"
@@ -51,7 +51,7 @@ EXEMPT = {
 		"held for an in-flight call and released on completion; the balance it "
 		"affects is on the workspace's Billing tab"
 	),
-	"App Entitlement": "granted and revoked on the workspace's Apps tab",
+	"Space Entitlement": "granted and revoked on the workspace's Apps tab",
 	"Support Login": "an audit record, listed on the workspace's Activity tab",
 	"Credit Ledger Entry": "listed on the workspace's Billing tab",
 	"Subscription": "shown, and moved between plans, on the workspace's Billing tab",
@@ -116,11 +116,11 @@ def test_every_control_doctype_is_reachable_from_oneadmin():
 # The tenant app's own doctypes. Fewer, because most of what a workspace holds
 # is Frappe's or ERPNext's; these are the ones we define.
 TENANT_EXEMPT = {
-	"OneApp Site State": (
+	"OneSpace Site State": (
 		"written by the control-plane sync and never by a person; what it holds "
 		"is shown as quota, plan and balance across the SPA"
 	),
-	"OneApp AI Feature Setting": (
+	"OneSpace AI Feature Setting": (
 		"child table; one row per declared feature, edited in the workspace's AI "
 		"settings tab"
 	),
@@ -244,7 +244,7 @@ def test_a_catalogue_an_operator_must_populate_has_a_form():
 	for panel, doctype in (
 		("PlansSettings.vue", "Plan"),
 		("RegionsSettings.vue", "Region"),
-		("AppsSettings.vue", "OneApp App"),
+		("SpacesSettings.vue", "OneSpace Space"),
 	):
 		source = (CONTROL_SRC / "components/settings" / panel).read_text()
 		assert ':form="FORM"' in source, f"{panel} is read-only, so {doctype} needs the desk"
@@ -280,7 +280,7 @@ def _block(source: str, const: str, attr: str | None) -> str:
 
 
 # Frappe's desk is at /app. A SPA route of the same shape is not a desk link —
-# OneSpace's own app route is `/app/:appCode` under a `/one` history base, so it
+# OneSpace's own app route is `/app/:spaceCode` under a `/one` history base, so it
 # resolves to /one/app/crm — so this looks for *navigation*, not for the string.
 DESK_NAVIGATION = re.compile(
 	r"""(?:href\s*=\s*["'`]|window\.location(?:\.href)?\s*=\s*["'`]|window\.open\(\s*["'`])/app\b"""
@@ -330,7 +330,7 @@ def test_a_seeded_app_is_not_offered_to_customers():
 	software that does not exist, made to someone paying for it — and, for an app
 	naming ERPNext doctypes, write access to them over the REST API."""
 	offenders = [
-		spec["app_code"]
+		spec["space_code"]
 		for spec in _seed_specs()
 		if spec.get("availability") != "Restricted"
 	]
@@ -356,11 +356,11 @@ def test_the_seed_says_what_it_is_for():
 	assert "not a product" in header.lower()
 
 	for spec in _seed_specs():
-		assert "no interface" in (spec.get("description") or "").lower(), spec["app_code"]
+		assert "no interface" in (spec.get("description") or "").lower(), spec["space_code"]
 
 
 def test_existing_installs_are_corrected_without_taking_anything_away():
 	patch = (CONTROL / "patches/restrict_seeded_books.py").read_text()
-	assert "App Entitlement" in patch, "workspaces that had it would silently lose it"
+	assert "Space Entitlement" in patch, "workspaces that had it would silently lose it"
 	assert 'availability != "General"' in patch, "an operator's own decision must survive"
 	assert "oneapp_control.patches.restrict_seeded_books" in (CONTROL / "patches.txt").read_text()

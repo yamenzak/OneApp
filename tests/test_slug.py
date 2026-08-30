@@ -66,6 +66,6 @@ def test_reserved_check_is_case_insensitive(slug):
 
 
 def test_settings_can_add_reserved_slugs(slug, stub_frappe):
-	stub_frappe.db.singles[("OneApp Control Settings", "reserved_slugs")] = "acme, beta\ngamma"
+	stub_frappe.db.singles[("OneSpace Control Settings", "reserved_slugs")] = "acme, beta\ngamma"
 	for value in ("acme", "beta", "gamma"):
 		_throws(slug, value)

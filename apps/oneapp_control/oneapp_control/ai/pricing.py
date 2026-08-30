@@ -22,7 +22,7 @@ from frappe.utils import getdate
 CREDITS_PER_USD = 100.0
 
 # Used only when nothing else is configured. Every real deployment sets this in
-# OneApp Control Settings.
+# OneSpace Control Settings.
 FALLBACK_MARKUP = 1.5
 
 
@@ -92,7 +92,7 @@ def markup_for(model) -> float:
 	if model.markup_override and float(model.markup_override) > 0:
 		return float(model.markup_override)
 	configured = frappe.db.get_single_value(
-		"OneApp Control Settings", "ai_markup_multiplier")
+		"OneSpace Control Settings", "ai_markup_multiplier")
 	return float(configured) if configured and float(configured) > 0 else FALLBACK_MARKUP
 
 

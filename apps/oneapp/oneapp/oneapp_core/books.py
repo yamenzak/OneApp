@@ -1,7 +1,7 @@
 """Company setup — ERPNext's wizard, without the wizard.
 
 ERPNext ships a multi-step setup wizard on the desk. The desk is not part of
-this product (DECISIONS §7), so on a OneApp workspace that wizard is never run —
+this product (DECISIONS §7), so on a OneSpace workspace that wizard is never run —
 which is not a cosmetic gap. Until it is, there is no Company, no Fiscal Year and
 no chart of accounts, `System Settings.setup_complete` is 0, and every accounting
 document fails for want of a default company. Books is installed and unusable.

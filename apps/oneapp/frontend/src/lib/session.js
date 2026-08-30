@@ -6,12 +6,12 @@ import { useResource } from './resource'
  * One round trip on boot gives the shell everything it needs: who the user is,
  * which apps they can open, and current quota and credit state.
  *
- * Watches OneApp Site State so a control-plane sync — a plan change, an app
+ * Watches OneSpace Site State so a control-plane sync — a plan change, an app
  * granted — reaches the open tab over the socket rather than on next reload.
  */
 export const sessionResource = useResource('oneapp.api.session', {
   cacheKey: 'oneapp-session',
-  watch: ['OneApp Site State'],
+  watch: ['OneSpace Site State'],
 })
 
 /**
@@ -44,8 +44,9 @@ export const session = {
   get tenant() {
     return this.data.tenant || null
   },
-  get apps() {
-    return this.data.apps || []
+  /** Every space this person may open, in the order the manifest gave them. */
+  get spaces() {
+    return this.data.spaces || []
   },
   get quota() {
     return this.data.quota || null
@@ -71,8 +72,8 @@ export const session = {
     return Boolean(this.user?.is_workspace_admin)
   },
 
-  hasApp(appCode) {
-    return this.apps.some((a) => a.app_code === appCode)
+  hasSpace(spaceCode) {
+    return this.spaces.some((space) => space.space_code === spaceCode)
   },
 
   reload: () => sessionResource.reload(),

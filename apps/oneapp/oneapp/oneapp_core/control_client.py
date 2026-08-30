@@ -17,9 +17,9 @@ import requests
 
 TIMEOUT = 15
 
-SIGNATURE_HEADER = "X-OneApp-Signature"
-TIMESTAMP_HEADER = "X-OneApp-Timestamp"
-TENANT_HEADER = "X-OneApp-Tenant"
+SIGNATURE_HEADER = "X-OneSpace-Signature"
+TIMESTAMP_HEADER = "X-OneSpace-Timestamp"
+TENANT_HEADER = "X-OneSpace-Tenant"
 
 
 class ControlPlaneError(Exception):

@@ -1,8 +1,8 @@
-# OneApp — Architecture Decisions
+# OneSpace — Architecture Decisions
 
 Status: agreed, pre-implementation.
 
-OneApp is a single Frappe application presenting a unified SPA over multiple bespoke
+OneSpace is a single Frappe application presenting a unified SPA over multiple bespoke
 solutions, with ERPNext underneath. Customers never see Frappe or ERPNext — the SPA is
 their only access point.
 
@@ -298,7 +298,7 @@ Owns:
 
 - `Tenant`, `Shard`, `Plan`, `Subscription`
 - `Credit Ledger Entry` (append-only)
-- `App Entitlement`
+- `Space Entitlement`
 - `Provisioning Job` (FC API orchestration; idempotent and retryable)
 - Storage usage rollups, Frappe Cloud credentials, feature flags
 
@@ -436,7 +436,7 @@ Frappe is one-app-per-repo by construction: `bench get-app` expects the reposito
 the app root, and a Frappe Cloud bench group is a list of `(repo URL, branch)` pairs. There is
 no subdirectory option.
 
-The apps are nonetheless kept in a single repository — `yamenzak/OneApp` — because day-to-day
+The apps are nonetheless kept in a single repository — `yamenzak/OneSpace` — because day-to-day
 development, particularly in repo-scoped tooling, is significantly better with one checkout.
 CI publishes each app subdirectory to a standalone mirror that Frappe Cloud consumes:
 
@@ -515,7 +515,7 @@ changed the architecture.
 
 Superseded in detail by [`ROADMAP.md`](ROADMAP.md); the summary:
 
-1. Control-plane doctypes — `Tenant`, `Shard`, `Plan`, `Subscription`, `App Entitlement`
+1. Control-plane doctypes — `Tenant`, `Shard`, `Plan`, `Subscription`, `Space Entitlement`
 2. Frappe Cloud provisioning job (idempotent, retryable)
 3. `oneapp` skeleton + Frappe UI SPA shell + auth
 4. R2 file layer and quota enforcement

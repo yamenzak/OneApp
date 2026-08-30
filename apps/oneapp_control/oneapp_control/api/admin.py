@@ -83,14 +83,14 @@ def shards() -> list:
 @frappe.whitelist()
 def tenant_apps(tenant: str) -> list:
 	_require_manager()
-	return registry.apps_for_tenant(tenant)
+	return registry.spaces_for_tenant(tenant)
 
 
 @frappe.whitelist(methods=["GET"])
 def tenant_app_access(tenant: str) -> list:
 	"""Every app, and whether this workspace has it.
 
-	`apps_for_tenant` answers the launcher's question — what to render — so it
+	`spaces_for_tenant` answers the launcher's question — what to render — so it
 	returns only what the tenant already has. An operator deciding what to grant
 	needs the other half: the restricted apps this workspace does *not* have are
 	the only ones there is anything to do about, and they are invisible in a list
@@ -100,34 +100,34 @@ def tenant_app_access(tenant: str) -> list:
 	entitled = {
 		row.app
 		for row in frappe.get_all(
-			"App Entitlement", filters={"tenant": tenant, "enabled": 1}, fields=["app"]
+			"Space Entitlement", filters={"tenant": tenant, "enabled": 1}, fields=["app"]
 		)
 	}
 
 	apps = frappe.get_all(
-		"OneApp App",
+		"OneSpace Space",
 		filters={"is_active": 1},
-		fields=["name as app_code", "app_label", "module", "availability", "icon",
+		fields=["name as space_code", "space_label", "module", "availability", "icon",
 		        "sort_order", "description"],
-		order_by="sort_order asc, app_label asc",
+		order_by="sort_order asc, space_label asc",
 	)
 	for app in apps:
 		app["entitled"] = (
-			app.availability != "Restricted" or app.app_code in entitled
+			app.availability != "Restricted" or app.space_code in entitled
 		)
 	return apps
 
 
 @frappe.whitelist()
-def grant_app(tenant: str, app_code: str, note: str | None = None) -> str:
+def grant_app(tenant: str, space_code: str, note: str | None = None) -> str:
 	_require_manager()
-	return registry.grant(tenant, app_code, note)
+	return registry.grant(tenant, space_code, note)
 
 
 @frappe.whitelist()
-def revoke_app(tenant: str, app_code: str):
+def revoke_app(tenant: str, space_code: str):
 	_require_manager()
-	registry.revoke(tenant, app_code)
+	registry.revoke(tenant, space_code)
 	return {"ok": True}
 
 
@@ -241,7 +241,7 @@ def press_capacity() -> dict:
 		"regions": frappe.get_all(
 			"Region", filters={"is_active": 1}, fields=["name", "region_name"], order_by="sort_order"
 		),
-		"tenant_domain": frappe.db.get_single_value("OneApp Control Settings", "tenant_domain"),
+		"tenant_domain": frappe.db.get_single_value("OneSpace Control Settings", "tenant_domain"),
 		# So the form can grey out pairs that already have a shard rather than
 		# letting one be created twice.
 		"existing": [[r.press_server, r.press_release_group] for r in taken],
@@ -553,7 +553,7 @@ def site_state(tenant: str) -> dict:
 		"site_migration": facts.get("site_migration"),
 		"version_upgrade": facts.get("version_upgrade"),
 		"archive_failed": bool(facts.get("archive_failed")),
-		# What the control plane believes, beside it. Two views of one site is
+		# What the control plane believes, beside it. Two screens of one site is
 		# the point: a disagreement here is the bug an operator is looking for.
 		"control_plane": {
 			"status": doc.status,
@@ -865,7 +865,7 @@ def standby_pool() -> list:
 def tenant_billing(tenant: str) -> dict:
 	"""What a workspace is on, and on whose terms.
 
-	The operator's view of the thing the customer sees on their plan page — plus
+	The operator's screen of the thing the customer sees on their plan page — plus
 	the one fact the customer's page cannot show them: whether the terms they
 	hold still match the plan as it stands.
 	"""
@@ -1099,7 +1099,7 @@ def ai_settings() -> dict:
 	"""The gateway's own configuration, and how fresh the catalogue is."""
 	_require_manager()
 
-	conf = frappe.get_single("OneApp Control Settings")
+	conf = frappe.get_single("OneSpace Control Settings")
 	return {
 		"cf_account_id": conf.cf_account_id,
 		"ai_gateway": conf.ai_gateway,
@@ -1134,7 +1134,7 @@ def set_ai_markup(markup: float) -> dict:
 	if markup <= 0:
 		frappe.throw(_("Markup must be greater than zero."))
 
-	frappe.db.set_single_value("OneApp Control Settings", "ai_markup_multiplier", markup)
+	frappe.db.set_single_value("OneSpace Control Settings", "ai_markup_multiplier", markup)
 	frappe.db.commit()
 	return {"ok": True, "markup": markup}
 
@@ -1158,7 +1158,7 @@ def reconcile_ai_usage() -> dict:
 # without the desk like everything else.
 # --------------------------------------------------------------------------- #
 
-APP_VIEW_FIELDS = ("view", "label", "icon", "document_type", "fields",
+APP_VIEW_FIELDS = ("screen", "label", "icon", "document_type", "fields",
                    "component", "filters", "order_by")
 
 
@@ -1167,15 +1167,15 @@ def app_views(app: str) -> list:
 	_require_manager()
 
 	return frappe.get_all(
-		"OneApp App View",
-		filters={"parent": app, "parenttype": "OneApp App"},
+		"OneSpace Space Screen",
+		filters={"parent": app, "parenttype": "OneSpace Space"},
 		fields=["name", *APP_VIEW_FIELDS, "idx"],
 		order_by="idx asc",
 	)
 
 
 @frappe.whitelist(methods=["POST"])
-def set_app_views(app: str, views: str | list) -> dict:
+def set_app_views(app: str, screens: str | list) -> dict:
 	"""Replace an app's screens with what was sent.
 
 	Replaced rather than patched: the order of these is the order of the app's
@@ -1183,22 +1183,22 @@ def set_app_views(app: str, views: str | list) -> dict:
 	"""
 	_require_manager()
 
-	if isinstance(views, str):
-		views = frappe.parse_json(views)
-	if not isinstance(views, list):
+	if isinstance(screens, str):
+		screens = frappe.parse_json(screens)
+	if not isinstance(screens, list):
 		frappe.throw(_("Expected a list of screens."))
 
-	slugs = [str(row.get("view") or "").strip() for row in views]
+	slugs = [str(row.get("screen") or "").strip() for row in screens]
 	if not all(slugs):
 		frappe.throw(_("Every screen needs a slug — it is what a bookmark points at."))
 	if len(set(slugs)) != len(slugs):
 		frappe.throw(_("Two screens share a slug, so one of them is unreachable."))
 
-	doc = frappe.get_doc("OneApp App", app)
-	doc.set("views", [
-		{field: row.get(field) for field in APP_VIEW_FIELDS} for row in views
+	doc = frappe.get_doc("OneSpace Space", app)
+	doc.set("screens", [
+		{field: row.get(field) for field in APP_VIEW_FIELDS} for row in screens
 	])
 	doc.save(ignore_permissions=True)
 	frappe.db.commit()
 
-	return {"ok": True, "views": len(views)}
+	return {"ok": True, "screens": len(screens)}
