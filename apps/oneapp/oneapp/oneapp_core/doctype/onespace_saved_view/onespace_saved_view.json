@@ -20,9 +20,9 @@
   "cb_saved_columns",
   "columns",
   "page_length",
-  "view_type",
   "group_by",
   "favourites",
+  "view_type",
   "view_settings"
  ],
  "fields": [
@@ -38,7 +38,7 @@
    "fieldname": "space_code",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "App Code",
+   "label": "Space Code",
    "reqd": 1
   },
   {
@@ -60,17 +60,17 @@
    "label": "Label"
   },
   {
-   "description": "A lucide name from the offered set, or an emoji. Anything else is dropped on the way in \u2014 it reaches the DOM as a class name.",
+   "description": "A lucide name from the offered set, or an emoji. Anything else is dropped on the way in \u2014 a lucide name reaches the DOM as a class.",
    "fieldname": "icon",
    "fieldtype": "Data",
    "label": "Icon"
   },
   {
    "default": "0",
+   "description": "Opens this screen for whoever this screen belongs to.",
    "fieldname": "is_default",
    "fieldtype": "Check",
-   "label": "Is Default",
-   "description": "Opens this screen for whoever this screen belongs to."
+   "label": "Is Default"
   },
   {
    "fieldname": "sec_saved_query",
@@ -120,17 +120,17 @@
    "label": "Favourites"
   },
   {
+   "description": "Which of the screen's view types this view is of. Empty is the screen's first.",
    "fieldname": "view_type",
    "fieldtype": "Data",
-   "label": "View Type",
-   "description": "Which of the screen's view types this view is of. Empty is the screen's first."
+   "label": "View Type"
   },
   {
+   "description": "What this view type needs that columns and filters do not carry.",
    "fieldname": "view_settings",
    "fieldtype": "Code",
-   "options": "JSON",
    "label": "View Settings",
-   "description": "What this view type needs that columns and filters do not carry."
+   "options": "JSON"
   }
  ],
  "index_web_pages_for_search": 1,

@@ -29,7 +29,7 @@
    "description": "Stable id, e.g. crm",
    "fieldname": "space_code",
    "fieldtype": "Data",
-   "label": "App Code",
+   "label": "Space Code",
    "reqd": 1,
    "unique": 1
   },
@@ -37,7 +37,7 @@
    "fieldname": "space_label",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "App Label",
+   "label": "Space Label",
    "reqd": 1
   },
   {
@@ -85,7 +85,7 @@
    "description": "What the customer sees. An app with none of these is an entitlement with no interface, which is a real thing to be \u2014 it still grants its roles and doctypes.",
    "fieldname": "screens",
    "fieldtype": "Table",
-   "label": "Views",
+   "label": "Screens",
    "options": "OneSpace Space Screen"
   },
   {
@@ -109,10 +109,10 @@
    "options": "lucide-layout-grid\nlucide-users\nlucide-user-round\nlucide-briefcase\nlucide-file-text\nlucide-receipt\nlucide-wallet\nlucide-shopping-cart\nlucide-package\nlucide-truck\nlucide-factory\nlucide-store\nlucide-calendar\nlucide-clock\nlucide-message-square\nlucide-mail\nlucide-phone\nlucide-chart-line\nlucide-chart-pie\nlucide-database\nlucide-book-open\nlucide-graduation-cap\nlucide-stethoscope\nlucide-wrench\nlucide-shield\nlucide-sparkles"
   },
   {
+   "description": "Shown on the rail. Without one the icon is drawn instead.",
    "fieldname": "logo",
    "fieldtype": "Attach Image",
-   "label": "Logo",
-   "description": "Shown on the rail. Without one the icon is drawn instead."
+   "label": "Logo"
   },
   {
    "default": "0",

@@ -16,7 +16,11 @@ from app_icons import SPACE_ICONS, DEFAULT_SPACE_ICON
 APPS = {
     # key -> (app package dir, module directory, Frappe module name)
     "control": ("oneapp_control", "control_plane", "Control Plane"),
-    "tenant": ("oneapp", "oneapp_core", "OneSpace Core"),
+    # "OneApp Core" and not "OneSpace Core": a Frappe module name is plumbing —
+    # it has to match `apps/oneapp/oneapp/modules.txt` and the directory beside
+    # it, and renaming one is a migration on every site rather than an edit
+    # here. The product-facing names are the labels, and those did move.
+    "tenant": ("oneapp", "oneapp_core", "OneApp Core"),
 }
 APPS_ROOT = os.path.join(os.path.dirname(__file__), "..", "apps")
 STAMP = "2026-08-29 00:00:00.000000"
@@ -240,6 +244,17 @@ doctype(
         f("component",
           description="Escape hatch: a component the SPA registered under "
                       "`spaceCode/screen`. Set this and the doctype above is ignored."),
+        f("view_types", default="list",
+          description="How this screen may be looked at, in order — `list`, "
+                      "`board`, `calendar`, `grid`, `map`. The first is what "
+                      "it opens with. Anything the SPA does not build yet is "
+                      "ignored rather than refused, so a manifest can name one "
+                      "before it ships."),
+        f("view_settings", "Code", options="JSON",
+          description='Per type, what that type needs: {"board": '
+                      '{"column_field": "status"}, "calendar": {"start_field": '
+                      '"date"}}. Every fieldname in here is checked against the '
+                      'doctype like any other.'),
         section("sec_view_query"),
         f("filters", "Code", options="JSON",
           description='Always applied, e.g. {"status": "Open"}.'),
@@ -286,6 +301,9 @@ doctype(
         f("icon", "Select", options="\n".join(SPACE_ICONS),
           default="lucide-layout-grid",
           description="Rendered by the launcher and the app sidebar."),
+        f("logo", "Attach Image",
+          description="Shown on the rail. Without one the icon is drawn "
+                      "instead."),
         f("sort_order", "Int", default="0"),
         section("sec_desc"),
         f("description", "Small Text"),
@@ -953,15 +971,32 @@ doctype(
     app="tenant",
     autoname="hash",
     fields=[
-        f("user", "Link", options="User", reqd=1, in_list_view=1,
-          description="Whose screen this is."),
+        # Not required: an empty user is Frappe's own `for_user` empty on List
+        # Filter — a view everyone on the workspace sees rather than one
+        # person's.
+        f("user", "Link", options="User", in_list_view=1,
+          description="Whose screen this is. Empty is a screen everyone on "
+                      "the workspace sees — Frappe's `for_user` empty, on "
+                      "List Filter."),
         f("space_code", reqd=1, in_list_view=1),
         f("screen", reqd=1, in_list_view=1,
           description="The screen's slug, so two screens over one doctype keep "
                       "their own answers."),
         column("cb_saved_view"),
-        f("label", description="Empty is the person's default for this screen."),
-        f("is_default", "Check", default="1"),
+        f("label", description="The screen's name. Empty is the person's own "
+                               "unnamed default for this screen — what Save "
+                               "writes."),
+        # Free text and not a Select of SPACE_ICONS, because the other half of
+        # what may go here is an emoji — and the reason for both is the build:
+        # Tailwind only emits CSS for the lucide class names it saw in the
+        # source, so the offered set is the one that draws, while an emoji is
+        # text and needs no build step at all. `spaceview._view_icon` is where
+        # the two rules are enforced.
+        f("icon", description="A lucide name from the offered set, or an "
+                              "emoji. Anything else is dropped on the way in — "
+                              "a lucide name reaches the DOM as a class."),
+        f("is_default", "Check", default="0",
+          description="Opens this screen for whoever this screen belongs to."),
         section("sec_saved_query"),
         f("filters", "Code", options="JSON"),
         f("order_by"),
@@ -978,6 +1013,11 @@ doctype(
           description="Only rows this person liked. A flag rather than a filter "
                       "on _liked_by: that column holds user ids, so a filter "
                       "naming it could ask what a colleague liked."),
+        f("view_type", description="Which of the screen's view types this view "
+                                   "is of. Empty is the screen's first."),
+        f("view_settings", "Code", options="JSON",
+          description="What this view type needs that columns and filters do "
+                      "not carry."),
     ],
 )
 

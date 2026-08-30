@@ -67,6 +67,20 @@
    "label": "Component"
   },
   {
+   "default": "list",
+   "description": "How this screen may be looked at, in order \u2014 `list`, `board`, `calendar`, `grid`, `map`. The first is what it opens with. Anything the SPA does not build yet is ignored rather than refused, so a manifest can name one before it ships.",
+   "fieldname": "view_types",
+   "fieldtype": "Data",
+   "label": "View Types"
+  },
+  {
+   "description": "Per type, what that type needs: {\"board\": {\"column_field\": \"status\"}, \"calendar\": {\"start_field\": \"date\"}}. Every fieldname in here is checked against the doctype like any other.",
+   "fieldname": "view_settings",
+   "fieldtype": "Code",
+   "label": "View Settings",
+   "options": "JSON"
+  },
+  {
    "fieldname": "sec_view_query",
    "fieldtype": "Section Break",
    "label": ""
@@ -87,20 +101,6 @@
    "fieldname": "order_by",
    "fieldtype": "Data",
    "label": "Order By"
-  },
-  {
-   "fieldname": "view_types",
-   "fieldtype": "Data",
-   "label": "View Types",
-   "default": "list",
-   "description": "How this screen may be looked at, in order \u2014 `list`, `board`, `calendar`, `grid`, `map`. The first is what it opens with. Anything the SPA does not build yet is ignored rather than refused, so a manifest can name one before it ships."
-  },
-  {
-   "fieldname": "view_settings",
-   "fieldtype": "Code",
-   "options": "JSON",
-   "label": "View Settings",
-   "description": "Per type, what that type needs: `{\"board\": {\"column_field\": \"status\"}, \"calendar\": {\"start_field\": \"date\"}}`. Every fieldname in here is checked against the doctype like any other."
   }
  ],
  "index_web_pages_for_search": 1,
