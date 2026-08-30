@@ -2133,6 +2133,7 @@ def fields_js(app: str, spec: dict) -> str:
     import sys as _sys
 
     _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import field_types
     from field_types import (
         DATA_OPTIONS, FIELD_TYPES, LAYOUT_TYPES, STATE_COLORS, WORD_COLORS,
     )
@@ -2219,6 +2220,79 @@ export function controlComponent(field) {
   return control && !control.startsWith(FORM_CONTROL) ? control : null
 }
 
+/**
+ * Filter operators, ported from Frappe's own filter UI.
+ *
+ * Frappe writes this as a deny list per fieldtype (`invalid_condition_map`);
+ * it is inverted into an allow list here and generated into the server module
+ * too, so the menu a person sees and the check the server makes are the same
+ * table. `tests/test_field_types.py` reads Frappe's `filter.js` back and fails
+ * when the two drift.
+ */
+export const OPERATORS = %(operators)s
+
+/** Frappe relabels the comparisons for a date: "Before" reads better than "<". */
+export const OPERATOR_LABELS_BY_TYPE = %(operator_labels)s
+
+const VALID_OPERATORS = %(valid_operators)s
+
+/** Frappe's relative-date vocabulary, in its order. */
+export const TIMESPANS = %(timespans)s
+
+const DEFAULT_OPERATORS = %(default_operators)s
+
+const EQUALITY = ['=', '!=']
+const IN = ['in', 'not in']
+
+/** Which operators a filter on this field may use. */
+export function operatorsFor(field) {
+  return VALID_OPERATORS[field?.fieldtype] || ['=', '!=', 'is']
+}
+
+/** What an operator is called on this field. */
+export function operatorLabel(field, operator) {
+  return OPERATOR_LABELS_BY_TYPE[field?.fieldtype]?.[operator] || OPERATORS[operator] || operator
+}
+
+/** What a filter opens on: a substring for text, a range for a date. */
+export function defaultOperator(field) {
+  // Stored as a JSON array, so an exact match can never hit.
+  if (['_assign', '_liked_by'].includes(field?.fieldname)) return 'like'
+  return DEFAULT_OPERATORS[field?.fieldtype] || '='
+}
+
+/**
+ * What the value control has to be, once the operator is known.
+ *
+ * Frappe does this by rewriting the docfield in `set_fieldtype`. Naming the
+ * decision instead means the server can check a value without rendering one,
+ * which is why this same function exists on both sides.
+ */
+export function valueShape(field, operator) {
+  if (operator === 'is') return 'set'
+  if (operator === 'timespan') return 'timespan'
+  if (operator === 'between') return 'range'
+  if (IN.includes(operator)) return 'multi'
+  const fieldtype = field?.fieldtype
+  if (fieldtype === 'Check' || fieldtype === 'Select') return 'choice'
+  if (['Link', 'Dynamic Link'].includes(fieldtype) && EQUALITY.includes(operator)) return 'link'
+  // Everything else is a plain box, a Link under `like` included: matching part
+  // of a name is a text question.
+  return 'value'
+}
+
+/** Set / Not Set, which is what `is` asks. */
+export const IS_OPTIONS = [
+  { value: 'set', label: 'Set' },
+  { value: 'not set', label: 'Not Set' },
+]
+
+/** A checkbox is one of two things, and neither of them is a text box. */
+export const CHECK_OPTIONS = [
+  { value: '1', label: 'Yes' },
+  { value: '0', label: 'No' },
+]
+
 export function isLayout(fieldtype) {
   return LAYOUT_TYPES.includes(fieldtype)
 }
@@ -2250,6 +2324,16 @@ export function valueTheme(value, states = []) {
         "data_options": _json.dumps(DATA_OPTIONS, indent=2, sort_keys=True),
         "state_colors": _json.dumps(STATE_COLORS, indent=2, sort_keys=True),
         "word_colors": _json.dumps([[t, list(w)] for t, w in WORD_COLORS], indent=2),
+        "operators": _json.dumps(field_types.OPERATORS, indent=2),
+        "operator_labels": _json.dumps(field_types.OPERATOR_LABELS_BY_TYPE, indent=2),
+        "valid_operators": _json.dumps(
+            {t: list(field_types.operators_for(t)) for t in FIELD_TYPES},
+            indent=2, sort_keys=True),
+        "timespans": _json.dumps(
+            [{"value": v, "label": l} for v, l in field_types.TIMESPANS], indent=2),
+        "default_operators": _json.dumps(
+            {t: field_types.default_operator(t) for t in FIELD_TYPES},
+            indent=2, sort_keys=True),
     }
 
 

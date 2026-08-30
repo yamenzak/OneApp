@@ -180,51 +180,133 @@ def resolved_todo(appview, fields=("description", "status", "priority", "date"))
 	}
 
 
-def test_a_pending_filter_cannot_loosen_the_screens_own(appview):
-	out = appview._apply_overrides(resolved_todo(appview), {"filters": {"status": "Closed"}})
-	assert out["filters"]["status"] == "Open"
+def offered_todo(appview, fields=("description", "status", "priority", "date")):
+	return {c["fieldname"]: c for c in appview._columns(TODO, list(fields))}
+
+
+def test_a_pending_filter_never_replaces_the_screens_own(appview):
+	"""Both are applied; neither wins. A saved `status = Closed` on a screen
+	filtered to `status = Open` returns nothing rather than quietly returning
+	the screen's rows — which is what Frappe's desk does, and "no rows, and
+	there is my filter" reads better than a filter that appears to be ignored."""
+	out = appview._apply_overrides(
+		resolved_todo(appview), {"filters": [["status", "=", "Closed"]]})
+	applied = appview._all_filters(out, out["asked"])
+	assert ["status", "=", "Open"] in applied
+	assert ["status", "=", "Closed"] in applied
 
 
 def test_a_pending_filter_on_another_field_is_kept(appview):
-	out = appview._apply_overrides(resolved_todo(appview), {"filters": {"priority": "High"}})
-	assert out["filters"] == {"status": "Open", "priority": "High"}
+	out = appview._apply_overrides(
+		resolved_todo(appview), {"filters": [["priority", "=", "High"]]})
+	assert out["asked"] == [["priority", "=", "High"]]
 
 
-def test_a_free_text_filter_becomes_a_contains_match(appview):
-	"""A value from a browser is never passed through as an operator: `["=",
-	"x"]` arriving in a filter would be a query someone else wrote."""
-	out = appview._apply_overrides(resolved_todo(appview), {"filters": {"description": "van"}})
-	assert out["filters"]["description"] == ["like", "%van%"]
+def test_clearing_the_filters_clears_them(appview):
+	"""An empty list is a real answer, and a truthiness check would leave the
+	saved filters standing while the controls showed none."""
+	out = resolved_todo(appview)
+	out["asked"] = [["priority", "=", "High"]]
+	assert appview._apply_overrides(out, {"filters": []})["asked"] == []
 
 
-def test_a_pending_filter_on_a_field_the_screen_hides_is_dropped(appview):
+def test_a_filter_on_a_field_the_screen_hides_is_dropped(appview):
 	"""It would only narrow the list — and that is the point: someone watching
 	which rows come back can read a field they were never shown, one guess at a
 	time."""
-	out = appview._apply_overrides(resolved_todo(appview), {"filters": {"owner": "someone@x"}})
-	assert "owner" not in out["filters"]
+	out = appview._apply_overrides(
+		resolved_todo(appview), {"filters": [["owner", "=", "someone@x"]]})
+	assert out["asked"] == []
 
 
-def test_a_filter_value_may_never_carry_its_own_operator(appview):
-	"""Frappe's filter syntax lets a value be `["in", […]]` or `["descendants
-	of", …]`. Passing one through hands the query layer a question the screen
-	never granted."""
-	for hostile in (["in", ["Open", "Closed"]], ["like", "%"], {"x": 1}, ("=", "Open")):
-		out = appview._apply_overrides(resolved_todo(appview),
-		                               {"filters": {"priority": hostile}})
-		assert "priority" not in out["filters"], hostile
+# --- operators --------------------------------------------------------------
+
+def test_an_operator_a_fieldtype_does_not_allow_is_dropped(appview):
+	"""The allow list is Frappe's own, inverted. A Select has no `like` in its
+	filter menu and has none here either."""
+	offered = offered_todo(appview)
+	assert appview._asked_filters(offered, [["status", "like", "Op"]]) == []
+	assert appview._asked_filters(offered, [["description", "like", "van"]]) == [
+		["description", "like", "van"]]
 
 
-def test_a_saved_filter_is_stored_as_what_was_asked_not_as_a_query(appview):
-	"""So a text filter can be read back into the box someone typed it into —
-	`["like", "%van%"]` in a text box is not what they wrote."""
-	offered = {c["fieldname"]: c for c in appview._columns(
-		TODO, ["description", "status"])}
-	asked = appview._asked_filters(offered, {"description": "van", "status": "Open"})
-	assert asked == {"description": "van", "status": "Open"}
+def test_an_operator_frappe_has_but_never_offers_is_dropped(appview):
+	"""`regex` and the nested-set operators are in Frappe's OPERATOR_MAP and not
+	in its filter menu. One is a way to spend a lot of database time; the other
+	runs a subquery against a doctype this screen was never granted."""
+	offered = offered_todo(appview)
+	for operator in ("regex", "ilike", "descendants of", "ancestors of", "+"):
+		assert appview._asked_filters(offered, [["description", operator, "x"]]) == [], operator
 
-	query = appview._as_query_filters(offered, asked)
-	assert query == {"description": ["like", "%van%"], "status": "Open"}
+
+def test_a_value_must_be_the_shape_its_operator_takes(appview):
+	offered = offered_todo(appview)
+
+	# `is` is one of two words.
+	assert appview._asked_filters(offered, [["date", "is", "set"]]) == [["date", "is", "set"]]
+	assert appview._asked_filters(offered, [["date", "is", "anything"]]) == []
+
+	# `between` is exactly two.
+	assert appview._asked_filters(
+		offered, [["date", "between", ["2026-01-01", "2026-02-01"]]]
+	) == [["date", "between", ["2026-01-01", "2026-02-01"]]]
+	assert appview._asked_filters(offered, [["date", "between", "2026-01-01"]]) == []
+	assert appview._asked_filters(offered, [["date", "between", ["a", "b", "c"]]]) == []
+
+	# `timespan` is one of Frappe's own words, because Frappe is what reads it.
+	assert appview._asked_filters(offered, [["date", "timespan", "last week"]]) == [
+		["date", "timespan", "last week"]]
+	assert appview._asked_filters(offered, [["date", "timespan", "last fortnight"]]) == []
+
+	# A scalar operator will not take a list.
+	assert appview._asked_filters(offered, [["status", "=", ["Open", "Closed"]]]) == []
+
+
+def test_in_takes_a_list_or_the_commas_someone_typed(appview):
+	offered = offered_todo(appview)
+	assert appview._asked_filters(offered, [["status", "in", ["Open", "Closed"]]]) == [
+		["status", "in", ["Open", "Closed"]]]
+	assert appview._asked_filters(offered, [["status", "in", "Open, Closed"]]) == [
+		["status", "in", ["Open", "Closed"]]]
+	assert appview._asked_filters(offered, [["status", "in", []]]) == []
+
+
+def test_a_filter_that_is_not_three_parts_is_dropped(appview):
+	offered = offered_todo(appview)
+	for row in ("status", ["status"], ["status", "="], ["status", "=", "Open", "extra"],
+	            {"status": "Open"}, None, 7):
+		assert appview._asked_filters(offered, [row]) == [], row
+
+
+def test_the_number_of_filters_and_values_is_bounded(appview):
+	"""Not a permission boundary — every one is already a field the screen shows
+	— but an unbounded list is a way to make one request cost a great deal."""
+	offered = offered_todo(appview)
+	many = [["description", "like", str(n)] for n in range(appview.MAX_FILTERS + 20)]
+	assert len(appview._asked_filters(offered, many)) == appview.MAX_FILTERS
+
+	huge = [["status", "in", [str(n) for n in range(appview.MAX_IN_VALUES + 50)]]]
+	assert len(appview._asked_filters(offered, huge)[0][2]) == appview.MAX_IN_VALUES
+
+
+def test_a_like_gets_wildcards_unless_someone_wrote_their_own(appview):
+	"""Frappe's own rule, so a box labelled "Contains" contains — and a person
+	who writes `van%` still gets a prefix match."""
+	offered = offered_todo(appview)
+	assert appview._as_query_filters(offered, [["description", "like", "van"]]) == [
+		["description", "like", "%van%"]]
+	assert appview._as_query_filters(offered, [["description", "like", "van%"]]) == [
+		["description", "like", "van%"]]
+
+
+def test_the_old_dict_shape_still_reads(appview):
+	"""Saved views written before filters had operators are still on disk. They
+	are read as what they meant: Frappe's own default operator for the type."""
+	offered = offered_todo(appview)
+	assert appview._asked_filters(offered, {"description": "van", "status": "Open"}) == [
+		["description", "like", "van"],
+		["status", "=", "Open"],
+	]
 
 
 def test_pending_columns_intersect_with_what_the_screen_offers(appview):
@@ -247,3 +329,79 @@ def test_order_by_is_rebuilt_from_parts(appview):
 	for hostile in ("owner asc", "date sideways", "(select 1) desc -- ",
 	                "date asc, (select 1)", "", None):
 		assert appview._safe_order(base, hostile) == "modified desc"
+
+
+# --------------------------------------------------------------------------- #
+# What a whitelisted method will accept
+#
+# Frappe validates a whitelisted method's arguments against its own annotations
+# and answers a mismatch with a 417 before the body runs. That is a good thing,
+# and it bites in a specific way: when filters became a list of triples and the
+# annotation still said `str | dict`, every save from the browser was refused
+# before reaching a line of the function — while every test here passed, because
+# calling the function directly skips the check entirely.
+#
+# So the annotations are part of the wire contract, not documentation.
+# --------------------------------------------------------------------------- #
+
+import ast as _ast  # noqa: E402
+from pathlib import Path as _Path  # noqa: E402
+
+APPVIEW = _Path(__file__).resolve().parents[1] / "apps/oneapp/oneapp/oneapp_core/appview.py"
+
+# The parameters the SPA sends as JSON rather than as a query-string value, and
+# the shapes it sends them in.
+STRUCTURED = {
+	"values": {"dict"},
+	"filters": {"list", "dict"},
+	"columns": {"list"},
+	"overrides": {"dict"},
+}
+
+
+def whitelisted():
+	"""Every `@frappe.whitelist` function in appview, with its annotations."""
+	tree = _ast.parse(APPVIEW.read_text())
+	found = {}
+	for node in tree.body:
+		if not isinstance(node, _ast.FunctionDef):
+			continue
+		if not any(
+			isinstance(d, _ast.Call)
+			and _ast.unparse(d.func).endswith("frappe.whitelist")
+			for d in node.decorator_list
+		):
+			continue
+		found[node.name] = {
+			arg.arg: (_ast.unparse(arg.annotation) if arg.annotation else "")
+			for arg in node.args.args
+		}
+	return found
+
+
+def test_the_reader_found_the_whitelisted_methods():
+	"""A parse that quietly matches nothing passes every test below."""
+	found = whitelisted()
+	assert {"spec", "rows", "save", "save_view", "link_options"} <= set(found)
+
+
+def test_a_structured_argument_admits_the_shape_the_spa_sends():
+	for name, params in whitelisted().items():
+		for param, annotation in params.items():
+			for shape in STRUCTURED.get(param, ()):
+				assert shape in annotation, (
+					f"{name}({param}: {annotation}) — the SPA sends a {shape} here and "
+					f"Frappe answers a mismatched annotation with a 417 before the "
+					f"body runs"
+				)
+
+
+def test_every_argument_admits_a_string():
+	"""A GET carries its arguments in the query string, where everything is
+	text. An `int`-only annotation is fine — Frappe coerces those — but a
+	`dict`-only one rejects the string form of the same value."""
+	for name, params in whitelisted().items():
+		for param, annotation in params.items():
+			if annotation in ("int", "int | None"):
+				continue
+			assert "str" in annotation, f"{name}({param}: {annotation}) cannot take text"

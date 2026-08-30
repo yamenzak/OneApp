@@ -1320,6 +1320,73 @@ def icon_for(fieldtype: str) -> str:
 
 def cell_for(fieldtype: str) -> str:
 	return (FIELD_TYPES.get(fieldtype) or (None, "text", None, False))[1]
+
+
+# --------------------------------------------------------------------------- #
+# Filter operators, ported from Frappe's own filter UI and inverted from its
+# per-fieldtype deny list into an allow list. `tests/test_field_types.py` reads
+# `filter.js` back and fails when the two disagree.
+# --------------------------------------------------------------------------- #
+
+# operator -> label, in the order Frappe lists them.
+OPERATORS = {operators}
+
+# Frappe relabels the comparisons for a date: "Before" reads better than "<".
+OPERATOR_LABELS_BY_TYPE = {operator_labels}
+
+# operator -> whether a fieldtype may use it.
+VALID_OPERATORS = {valid_operators}
+
+# Frappe's relative-date vocabulary. Handed to its `timespan` operator verbatim,
+# so a value it does not know is a filter that returns nothing and says nothing.
+TIMESPANS = {timespans}
+
+DEFAULT_OPERATORS = {default_operators}
+
+_EQUALITY = ("=", "!=")
+_IN = ("in", "not in")
+
+
+def operators_for(fieldtype: str) -> tuple:
+	"""Which operators a filter on this fieldtype may use.
+
+	A fieldtype nobody listed gets equality and `is`. An allow list rather than
+	Frappe's deny list precisely so that is the answer: on a server, a fieldtype
+	nobody thought about must not inherit every operator.
+	"""
+	return VALID_OPERATORS.get(fieldtype, ("=", "!=", "is"))
+
+
+def default_operator(fieldtype: str, fieldname: str = "") -> str:
+	"""What a filter opens on. A Data field is almost always a substring
+	search, a date almost always a range."""
+	if fieldname in ("_assign", "_liked_by"):
+		# Stored as a JSON array, so an exact match can never hit.
+		return "like"
+	return DEFAULT_OPERATORS.get(fieldtype, "=")
+
+
+def value_shape(fieldtype: str, operator: str) -> str:
+	"""What the value has to be, once the operator is known.
+
+	Frappe does this by rewriting the docfield in `set_fieldtype`; the same
+	decision, named, so the server can check a value without rendering one.
+	"""
+	if operator == "is":
+		return "set"
+	if operator == "timespan":
+		return "timespan"
+	if operator == "between":
+		return "range"
+	if operator in _IN:
+		return "multi"
+	if fieldtype in ("Check", "Select"):
+		return "choice"
+	if fieldtype in ("Link", "Dynamic Link") and operator in _EQUALITY:
+		return "link"
+	# Everything else is a plain box, a Link under `like` included: matching
+	# part of a name is a text question.
+	return "value"
 '''
 
 
@@ -1329,6 +1396,7 @@ def write_fieldtypes():
     import sys as _sys
 
     _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import field_types
     from field_types import DATA_OPTIONS, FIELD_TYPES, LAYOUT_TYPES
 
     reserved = (
@@ -1338,11 +1406,20 @@ def write_fieldtypes():
         "naming_series",
     )
 
+    valid = {t: field_types.operators_for(t) for t in FIELD_TYPES}
+    defaults = {t: field_types.default_operator(t) for t in FIELD_TYPES}
+
     body = FIELDTYPES_MODULE.format(
         fields=pprint.pformat(FIELD_TYPES, width=92, sort_dicts=True),
         layout=pprint.pformat(LAYOUT_TYPES, width=88),
         data_options=pprint.pformat(DATA_OPTIONS, width=88, sort_dicts=True),
         reserved=pprint.pformat(frozenset(reserved), width=88),
+        operators=pprint.pformat(field_types.OPERATORS, width=88, sort_dicts=False),
+        operator_labels=pprint.pformat(
+            field_types.OPERATOR_LABELS_BY_TYPE, width=88, sort_dicts=False),
+        valid_operators=pprint.pformat(valid, width=92, sort_dicts=True),
+        timespans=pprint.pformat(dict(field_types.TIMESPANS), width=88, sort_dicts=False),
+        default_operators=pprint.pformat(defaults, width=88, sort_dicts=True),
     )
     path = os.path.join(APPS_ROOT, "oneapp", "oneapp", "oneapp_core")
     with open(os.path.join(path, "fieldtypes.py"), "w") as fh:

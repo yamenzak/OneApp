@@ -140,3 +140,234 @@ WORD_COLORS = (
                "success")),
     ("blue", ("submitted", "in progress", "working", "scheduled")),
 )
+
+
+# --------------------------------------------------------------------------- #
+# Filter operators
+#
+# Ported from Frappe's own filter UI — `frappe/public/js/frappe/ui/filters/
+# filter.js`, where `conditions` is the list and `invalid_condition_map` says
+# which of them a fieldtype may not use. Frappe writes it as a deny list per
+# fieldtype; it is inverted into an allow list here, because a deny list has the
+# wrong failure mode on a server: a fieldtype nobody thought about would get
+# every operator rather than none.
+#
+# This is the whole reason the filter surface can be wider than "contains". A
+# value that carries its own operator used to be dropped outright, since there
+# was no way to tell `["like", "%x%"]` from `["descendants of", …]`. Now the
+# operator is a separate, named field and it is checked against this table, so a
+# filter can say what Frappe's own filter can say and no more.
+# --------------------------------------------------------------------------- #
+
+# operator -> label, in the order Frappe lists them.
+# Lower case, because that is what Frappe's query layer knows: its filter UI
+# labels these "Between" and "Timespan" and lowercases them on the way in
+# (`_operator.lower()`), and a filter is stored here as the query, not as the
+# label.
+OPERATORS = {
+    "=":        "Equals",
+    "!=":       "Not Equals",
+    "like":     "Like",
+    "not like": "Not Like",
+    "in":       "In",
+    "not in":   "Not In",
+    "is":       "Is",
+    ">":        "Greater Than",
+    "<":        "Less Than",
+    ">=":       "Greater Than Or Equal To",
+    "<=":       "Less Than Or Equal To",
+    "between":  "Between",
+    "timespan": "Timespan",
+}
+
+# A date reads better with words than with symbols, and Frappe relabels them for
+# exactly these two fieldtypes.
+OPERATOR_LABELS_BY_TYPE = {
+    "Date":     {"<": "Before", ">": "After", "<=": "On or Before", ">=": "On or After"},
+    "Datetime": {"<": "Before", ">": "After", "<=": "On or Before", ">=": "On or After"},
+}
+
+# Frappe's own groupings, kept by name so the deny lists below read the way its
+# do.
+_RANGE = ("between", "timespan")
+_COMPARISON = (">", "<", ">=", "<=")
+_LIKE = ("like", "not like")
+_IN = ("in", "not in")
+_EQUALITY = ("=", "!=")
+
+_TEXT_FIELDS = (
+    "Code", "HTML Editor", "Markdown Editor", "Text Editor", "Small Text",
+    "Long Text", "Text", "Password",
+)
+_NUMERIC_FIELDS = ("Rating", "Int", "Float", "Percent")
+
+_INVALID = {
+    "Date":     _LIKE,
+    "Time":     _RANGE,
+    "Data":     _RANGE,
+    "Currency": _RANGE,
+    "Link":     _RANGE + _COMPARISON,
+    "Color":    _RANGE + _COMPARISON,
+    "Datetime": _LIKE + _IN + _EQUALITY,
+    "Select":   _LIKE + _RANGE + _COMPARISON,
+    # A checkbox is one of two things. Everything but equality is noise.
+    "Check":    tuple(op for op in OPERATORS if op != "="),
+    **{f: _RANGE + _COMPARISON + _IN for f in _TEXT_FIELDS},
+    **{f: _LIKE + _RANGE + _IN for f in _NUMERIC_FIELDS},
+}
+
+
+# Frappe does not look a fieldtype up directly. `set_fieldtype` first rewrites
+# the docfield to whatever can actually render a filter value for it — a Phone
+# or an Attach or a Barcode all become a Data box — and `hide_invalid_conditions`
+# then falls back to the rewritten type's deny list when the original has none of
+# its own. Without this step a Phone field would offer Between and Timespan,
+# because nothing names Phone.
+#
+# Frappe's own list, from `set_fieldtype`.
+_AS_IF = {
+    **{f: "Data" for f in (
+        "Text", "Small Text", "Text Editor", "Code", "Attach", "Attach Image",
+        "Markdown Editor", "HTML Editor", "Phone", "JSON", "Barcode",
+        "Dynamic Link", "Read Only",
+    )},
+    "Check": "Select",
+}
+
+# Where Frappe stops, and we do not. These reach the end of its rewrite with no
+# deny list of their own, which in a deny list means every operator — Timespan
+# on a Signature, Between on an Icon. Harmless in a desk somebody administers,
+# not something to offer a customer, so they are classified here instead.
+#
+# Deliberately narrower than Frappe. The guard reads Frappe's map back and
+# compares the fieldtypes it names; these are the ones it does not.
+_OURS = {
+    **{f: "Int" for f in ("Long Int", "Duration", "Slider")},
+    "Autocomplete": "Data",
+    # Rows in a child table rather than a value on the document. Frappe can
+    # filter one, but only with a four-part filter naming the child doctype; a
+    # three-part filter on the parent names a column that is not there, and the
+    # database says so. So: shown, never filtered.
+    "Table": None,
+    "Table MultiSelect": None,
+    # A hex string, a blob of coordinates, an icon name. Equality is the only
+    # question worth asking, and `is` is the useful one.
+    "Signature": "narrow",
+    "Geolocation": "narrow",
+    "Icon": "narrow",
+}
+
+_NARROW = ("=", "!=", "is")
+
+
+def operators_for(fieldtype: str) -> tuple:
+    """Which operators a filter on this fieldtype may use.
+
+    An allow list rather than Frappe's deny list, and that is the whole point:
+    a deny list gives a fieldtype nobody thought about every operator, which is
+    the wrong way round for something a browser can send.
+    """
+    if fieldtype not in FIELD_TYPES:
+        return _NARROW
+
+    if fieldtype in _INVALID:
+        invalid = set(_INVALID[fieldtype])
+    else:
+        stand_in = _AS_IF.get(fieldtype) or _OURS.get(fieldtype, "missing")
+        if stand_in is None:
+            return ()
+        if stand_in == "narrow":
+            return _NARROW
+        if stand_in == "missing":
+            return _NARROW
+        invalid = set(_INVALID.get(stand_in, ()))
+
+    return tuple(op for op in OPERATORS if op not in invalid)
+
+
+# The default Frappe reaches for when a filter is first added, from
+# `get_default_condition`. A Data field is almost always a substring search, and
+# a date is almost always a range.
+def default_operator(fieldtype: str, fieldname: str = "") -> str:
+    if fieldname in ("_assign", "_liked_by"):
+        # Stored as a JSON array, so an exact match can never hit.
+        return "like"
+    if fieldtype in ("Date", "Datetime"):
+        return "between"
+    stands_in_for = _AS_IF.get(fieldtype) or _OURS.get(fieldtype)
+    text = fieldtype in ("Data",) + _TEXT_FIELDS or stands_in_for == "Data"
+    default = "like" if text else "="
+    # Never an operator this field's own menu does not contain, or the filter
+    # opens on something its dropdown cannot show.
+    allowed = operators_for(fieldtype)
+    if not allowed:
+        # Nothing to filter by. An empty string rather than a plausible-looking
+        # operator, so a caller that ignores this gets a filter the server drops
+        # rather than one it half-accepts.
+        return ""
+    return default if default in allowed else allowed[0]
+
+
+# What the value control has to be, once the operator is known. Frappe does this
+# in `set_fieldtype` by rewriting the docfield; the same decision, named.
+#
+#   choice     a Select of fixed options carried alongside
+#   set        Set / Not Set
+#   timespan   the relative-date vocabulary below
+#   range      two dates
+#   multi      a list of values
+#   link       a picker against the linked doctype
+#   value      whatever the field itself renders
+def value_shape(fieldtype: str, operator: str) -> str:
+    if operator == "is":
+        return "set"
+    if operator == "timespan":
+        return "timespan"
+    if operator == "between":
+        return "range"
+    if operator in _IN:
+        return "multi"
+    if fieldtype == "Check":
+        return "choice"
+    if fieldtype == "Select":
+        return "choice"
+    if fieldtype in ("Link", "Dynamic Link") and operator in _EQUALITY:
+        return "link"
+    # Frappe falls back to a plain Data box for everything else, including a
+    # Link under `like`: matching part of a name is a text question.
+    return "value"
+
+
+IS_OPTIONS = (("set", "Set"), ("not set", "Not Set"))
+
+CHECK_OPTIONS = (("1", "Yes"), ("0", "No"))
+
+# Frappe's relative-date vocabulary, in its order. The server hands these
+# straight to Frappe's own `timespan` operator, so the strings have to be the
+# ones it knows.
+TIMESPANS = (
+    ("last 7 days", "Last 7 Days"),
+    ("last 14 days", "Last 14 Days"),
+    ("last 30 days", "Last 30 Days"),
+    ("last 90 days", "Last 90 Days"),
+    ("last week", "Last Week"),
+    ("last month", "Last Month"),
+    ("last quarter", "Last Quarter"),
+    ("last 6 months", "Last 6 Months"),
+    ("last year", "Last Year"),
+    ("yesterday", "Yesterday"),
+    ("today", "Today"),
+    ("tomorrow", "Tomorrow"),
+    ("this week", "This Week"),
+    ("this month", "This Month"),
+    ("this quarter", "This Quarter"),
+    ("this year", "This Year"),
+    ("next 7 days", "Next 7 Days"),
+    ("next 14 days", "Next 14 Days"),
+    ("next 30 days", "Next 30 Days"),
+    ("next week", "Next Week"),
+    ("next month", "Next Month"),
+    ("next quarter", "Next Quarter"),
+    ("next 6 months", "Next 6 Months"),
+    ("next year", "Next Year"),
+)

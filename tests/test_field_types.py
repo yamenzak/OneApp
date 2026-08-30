@@ -275,3 +275,229 @@ def test_frappes_bookkeeping_is_all_reserved():
         "Frappe keeps these on every document and a customer reading one is "
         f"always an accident: {sorted(missing)}"
     )
+
+
+# --------------------------------------------------------------------------- #
+# Filter operators, read out of Frappe's own filter UI
+#
+# The same trick as the fieldtype list, and for the same reason: this table was
+# ported from `frappe/public/js/frappe/ui/filters/filter.js`, and a port is a
+# copy that stops being true quietly. Frappe writes it as a deny list per
+# fieldtype; we invert it, so a change on their side has to show up as a failure
+# here rather than as a filter that offers an operator their query layer will
+# reject — or, worse, one it will accept and we never meant to expose.
+# --------------------------------------------------------------------------- #
+
+FRAPPE_FILTER_JS = next(
+    (p for p in (
+        Path("/home/frappe/bench1/apps/frappe/frappe/public/js/frappe/ui/filters/filter.js"),
+        ROOT.parent / "frappe/frappe/public/js/frappe/ui/filters/filter.js",
+    ) if p.exists()),
+    None,
+)
+
+FRAPPE_OPERATOR_MAP = next(
+    (p for p in (
+        Path("/home/frappe/bench1/apps/frappe/frappe/database/operator_map.py"),
+        ROOT.parent / "frappe/frappe/database/operator_map.py",
+    ) if p.exists()),
+    None,
+)
+
+needs_filter_js = pytest.mark.skipif(
+    FRAPPE_FILTER_JS is None, reason="no frappe checkout to read the filter UI from"
+)
+
+
+def frappe_conditions() -> list[str]:
+    """The operators Frappe's own filter offers, in its order.
+
+    Lowercased: its UI writes "Between" and "Timespan" and its query layer
+    lowercases them (`_operator.lower()`), so the two spellings are one
+    operator and the lower one is what goes on the wire.
+    """
+    source = FRAPPE_FILTER_JS.read_text()
+    body = re.search(r"this\.conditions = \[(.*?)\n\t\t\];", source, re.S)
+    assert body, "frappe's filter.js no longer declares `this.conditions` as a list"
+    return [m.group(1).lower() for m in re.finditer(r'\["([^"]+)", __\(', body.group(1))]
+
+
+@needs_filter_js
+def test_every_operator_we_offer_is_one_frappes_filter_offers(spec):
+    """Not merely one its query layer accepts: `regex`, `ilike` and the
+    arithmetic operators are all in OPERATOR_MAP and none of them belong in
+    front of a customer."""
+    theirs = set(frappe_conditions())
+    extra = set(spec.OPERATORS) - theirs
+    assert not extra, f"not in frappe's own filter: {sorted(extra)}"
+
+
+@needs_filter_js
+def test_the_operator_order_is_frappes(spec):
+    """The list reads as an ordered menu, and reordering it silently reorders
+    every filter dropdown in the product."""
+    theirs = [op for op in frappe_conditions() if op in spec.OPERATORS]
+    assert list(spec.OPERATORS) == theirs
+
+
+@pytest.mark.skipif(FRAPPE_OPERATOR_MAP is None, reason="no frappe checkout")
+def test_every_operator_survives_the_query_layer(spec):
+    """The other half: an operator the filter UI offers but `OPERATOR_MAP` does
+    not know raises rather than filtering, at the point a customer clicks
+    Apply."""
+    source = FRAPPE_OPERATOR_MAP.read_text()
+    body = re.search(r"^OPERATOR_MAP: dict\[str, Callable\] = \{(.*?)^\}", source, re.S | re.M)
+    assert body, "frappe no longer declares OPERATOR_MAP as a dict literal"
+    known = set(re.findall(r'^\t"([^"]+)":', body.group(1), re.M))
+
+    unknown = set(spec.OPERATORS) - known
+    assert not unknown, f"frappe's query layer has no such operator: {sorted(unknown)}"
+
+
+@needs_filter_js
+def test_the_per_fieldtype_deny_lists_match_frappes(spec):
+    """Read Frappe's `invalid_condition_map` back and compare it to ours for the
+    fieldtypes it names explicitly."""
+    source = FRAPPE_FILTER_JS.read_text()
+    body = re.search(r"this\.invalid_condition_map = \{(.*?)\n\t\t\};", source, re.S)
+    assert body, "frappe's filter.js no longer declares `invalid_condition_map`"
+
+    groups = {
+        "range_conditions": set(spec._RANGE),
+        "comparison_conditions": set(spec._COMPARISON),
+        "like_conditions": set(spec._LIKE),
+        "in_conditions": set(spec._IN),
+        "equality_conditions": set(spec._EQUALITY),
+    }
+    # Read frappe's own group members rather than trusting that ours are the
+    # same set — the names could stay and the contents change.
+    for name, ours in groups.items():
+        declared = re.search(rf"this\.{name} = \[([^\]]*)\]", source)
+        assert declared, f"frappe's filter.js no longer declares {name}"
+        theirs = {v.lower() for v in re.findall(r'"([^"]+)"', declared.group(1))}
+        assert ours == theirs, f"{name}: frappe has {sorted(theirs)}, we have {sorted(ours)}"
+
+    for fieldtype, expression in re.findall(
+        r"^\t\t\t(\w+): (this\.\w+|\[[^\]]*\]),$", body.group(1), re.M
+    ):
+        theirs = set()
+        for name in re.findall(r"this\.(\w+)", expression):
+            assert name in groups, f"frappe's filter.js grew a group we do not have: {name}"
+            theirs |= groups[name]
+
+        ours = set(spec.OPERATORS) - set(spec.operators_for(fieldtype))
+        assert ours == theirs, (
+            f"{fieldtype}: frappe forbids {sorted(theirs)}, we forbid {sorted(ours)}"
+        )
+
+
+@needs_filter_js
+def test_the_timespan_vocabulary_is_frappes(spec):
+    """These strings are handed to Frappe's `timespan` operator verbatim, so one
+    it does not know is a filter that returns nothing and explains nothing."""
+    source = FRAPPE_FILTER_JS.read_text()
+    theirs = set(re.findall(r'value: "((?:last|this|next|yesterday|today|tomorrow)[^"]*)"', source))
+    ours = {value for value, _label in spec.TIMESPANS}
+    assert ours == theirs, (
+        f"added {sorted(ours - theirs)}, missing {sorted(theirs - ours)}"
+    )
+
+
+def test_every_fieldtype_that_can_be_a_column_can_be_filtered(spec):
+    """Including the ones with no control. A Colour cannot be edited through a
+    screen and can still be asked about.
+
+    A child table is the exception, and it is not one: it is rows rather than a
+    value, so it is never a column and never a filter either."""
+    # The two child-table types are the exception, and they are not really one:
+    # rows rather than a value, so Frappe needs a four-part filter naming the
+    # child doctype and a three-part one names a column that is not there.
+    rows_not_a_value = ("Table", "Table MultiSelect")
+    for fieldtype in spec.FIELD_TYPES:
+        if fieldtype in rows_not_a_value:
+            assert not spec.operators_for(fieldtype), (
+                f"{fieldtype} is rows in a child table and cannot be filtered"
+            )
+        else:
+            assert spec.operators_for(fieldtype), f"{fieldtype} has no operators at all"
+
+
+def test_a_fieldtype_frappe_never_classified_does_not_get_everything(spec):
+    """Frappe's deny list gives a Signature or a Duration every operator,
+    because nothing names them. Timespan on a signature is not a question."""
+    for fieldtype in ("Signature", "Geolocation", "Icon"):
+        assert set(spec.operators_for(fieldtype)) == {"=", "!=", "is"}, fieldtype
+    for fieldtype in ("Duration", "Long Int", "Slider"):
+        assert "timespan" not in spec.operators_for(fieldtype), fieldtype
+        assert "between" not in spec.operators_for(fieldtype), fieldtype
+
+
+def test_only_a_date_gets_the_date_operators(spec):
+    """Which is Frappe's own answer once `set_fieldtype` has run: a Phone or an
+    Attach is a Data box by the time the operator menu is built."""
+    for fieldtype in spec.FIELD_TYPES:
+        if "between" in spec.operators_for(fieldtype):
+            assert fieldtype in ("Date", "Datetime"), fieldtype
+
+
+def test_an_unknown_fieldtype_gets_the_narrow_set(spec):
+    """A deny list gives a fieldtype nobody thought about every operator. This
+    is an allow list precisely so the answer is the other way round."""
+    assert set(spec.operators_for("Something Frappe Added")) == {"=", "!=", "is"}
+
+
+def test_the_default_operator_is_always_one_of_the_offered(spec):
+    """Otherwise a new filter opens on an operator its own dropdown does not
+    contain, and the first change resets the value."""
+    for fieldtype in spec.FIELD_TYPES:
+        allowed = spec.operators_for(fieldtype)
+        default = spec.default_operator(fieldtype)
+        if not allowed:
+            assert default == "", f"{fieldtype} cannot be filtered but has a default operator"
+        else:
+            assert default in allowed, fieldtype
+
+
+def test_every_operator_has_a_value_shape(spec):
+    for fieldtype in spec.FIELD_TYPES:
+        for operator in spec.operators_for(fieldtype):
+            shape = spec.value_shape(fieldtype, operator)
+            assert shape in ("choice", "set", "timespan", "range", "multi", "link", "value"), (
+                f"{fieldtype} {operator} -> {shape}"
+            )
+
+
+@needs_filter_js
+def test_the_text_and_numeric_groups_match_frappes(spec):
+    """These reach `invalid_condition_map` through a spread rather than a line
+    of their own, so the scan above cannot see them."""
+    source = FRAPPE_FILTER_JS.read_text()
+    for name, ours in (("text_fields", spec._TEXT_FIELDS),
+                       ("numeric_fields", spec._NUMERIC_FIELDS)):
+        declared = re.search(rf"const {name} = \[(.*?)\];", source, re.S)
+        assert declared, f"frappe's filter.js no longer declares {name}"
+        theirs = set(re.findall(r'"([^"]+)"', declared.group(1)))
+        assert set(ours) == theirs, (
+            f"{name}: frappe has {sorted(theirs)}, we have {sorted(ours)}"
+        )
+
+
+@needs_filter_js
+def test_the_fieldtype_rewrite_is_frappes(spec):
+    """`set_fieldtype` turns a Phone, an Attach and a Barcode into a Data box
+    before the operator menu is built, and that rewrite is what decides which
+    operators they get. Ported, so read it back."""
+    source = FRAPPE_FILTER_JS.read_text()
+    body = re.search(r'\t\t\t\[\n((?:\t+"[A-Za-z ]+",\n)+)\t\t\t\]\.indexOf\(df\.fieldtype\)', source)
+    assert body, "frappe's filter.js no longer scrubs a list of fieldtypes to Data"
+    theirs = set(re.findall(r'"([^"]+)"', body.group(1)))
+
+    # Frappe scrubs a few fieldtypes we do not have at all (Tag, Comments,
+    # Assign are desk-only) and a few it names in the deny list anyway, where
+    # the original type wins and the rewrite never applies.
+    ours = {f for f, stand_in in spec._AS_IF.items() if stand_in == "Data"}
+    unhandled = (theirs & set(spec.FIELD_TYPES)) - ours - set(spec._INVALID)
+    assert not unhandled, (
+        f"frappe rewrites these to Data before choosing operators and we do not: "
+        f"{sorted(unhandled)}"
+    )

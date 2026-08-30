@@ -374,6 +374,571 @@ export function controlComponent(field) {
   return control && !control.startsWith(FORM_CONTROL) ? control : null
 }
 
+/**
+ * Filter operators, ported from Frappe's own filter UI.
+ *
+ * Frappe writes this as a deny list per fieldtype (`invalid_condition_map`);
+ * it is inverted into an allow list here and generated into the server module
+ * too, so the menu a person sees and the check the server makes are the same
+ * table. `tests/test_field_types.py` reads Frappe's `filter.js` back and fails
+ * when the two drift.
+ */
+export const OPERATORS = {
+  "=": "Equals",
+  "!=": "Not Equals",
+  "like": "Like",
+  "not like": "Not Like",
+  "in": "In",
+  "not in": "Not In",
+  "is": "Is",
+  ">": "Greater Than",
+  "<": "Less Than",
+  ">=": "Greater Than Or Equal To",
+  "<=": "Less Than Or Equal To",
+  "between": "Between",
+  "timespan": "Timespan"
+}
+
+/** Frappe relabels the comparisons for a date: "Before" reads better than "<". */
+export const OPERATOR_LABELS_BY_TYPE = {
+  "Date": {
+    "<": "Before",
+    ">": "After",
+    "<=": "On or Before",
+    ">=": "On or After"
+  },
+  "Datetime": {
+    "<": "Before",
+    ">": "After",
+    "<=": "On or Before",
+    ">=": "On or After"
+  }
+}
+
+const VALID_OPERATORS = {
+  "Attach": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Attach Image": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Autocomplete": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Barcode": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Check": [
+    "="
+  ],
+  "Code": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "is"
+  ],
+  "Color": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is"
+  ],
+  "Currency": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Data": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Date": [
+    "=",
+    "!=",
+    "in",
+    "not in",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<=",
+    "between",
+    "timespan"
+  ],
+  "Datetime": [
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<=",
+    "between",
+    "timespan"
+  ],
+  "Duration": [
+    "=",
+    "!=",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Dynamic Link": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Float": [
+    "=",
+    "!=",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Geolocation": [
+    "=",
+    "!=",
+    "is"
+  ],
+  "HTML Editor": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "is"
+  ],
+  "Icon": [
+    "=",
+    "!=",
+    "is"
+  ],
+  "Int": [
+    "=",
+    "!=",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "JSON": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Link": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is"
+  ],
+  "Long Int": [
+    "=",
+    "!=",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Long Text": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "is"
+  ],
+  "Markdown Editor": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "is"
+  ],
+  "Password": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "is"
+  ],
+  "Percent": [
+    "=",
+    "!=",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Phone": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Rating": [
+    "=",
+    "!=",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Read Only": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Select": [
+    "=",
+    "!=",
+    "in",
+    "not in",
+    "is"
+  ],
+  "Signature": [
+    "=",
+    "!=",
+    "is"
+  ],
+  "Slider": [
+    "=",
+    "!=",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ],
+  "Small Text": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "is"
+  ],
+  "Table": [],
+  "Table MultiSelect": [],
+  "Text": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "is"
+  ],
+  "Text Editor": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "is"
+  ],
+  "Time": [
+    "=",
+    "!=",
+    "like",
+    "not like",
+    "in",
+    "not in",
+    "is",
+    ">",
+    "<",
+    ">=",
+    "<="
+  ]
+}
+
+/** Frappe's relative-date vocabulary, in its order. */
+export const TIMESPANS = [
+  {
+    "value": "last 7 days",
+    "label": "Last 7 Days"
+  },
+  {
+    "value": "last 14 days",
+    "label": "Last 14 Days"
+  },
+  {
+    "value": "last 30 days",
+    "label": "Last 30 Days"
+  },
+  {
+    "value": "last 90 days",
+    "label": "Last 90 Days"
+  },
+  {
+    "value": "last week",
+    "label": "Last Week"
+  },
+  {
+    "value": "last month",
+    "label": "Last Month"
+  },
+  {
+    "value": "last quarter",
+    "label": "Last Quarter"
+  },
+  {
+    "value": "last 6 months",
+    "label": "Last 6 Months"
+  },
+  {
+    "value": "last year",
+    "label": "Last Year"
+  },
+  {
+    "value": "yesterday",
+    "label": "Yesterday"
+  },
+  {
+    "value": "today",
+    "label": "Today"
+  },
+  {
+    "value": "tomorrow",
+    "label": "Tomorrow"
+  },
+  {
+    "value": "this week",
+    "label": "This Week"
+  },
+  {
+    "value": "this month",
+    "label": "This Month"
+  },
+  {
+    "value": "this quarter",
+    "label": "This Quarter"
+  },
+  {
+    "value": "this year",
+    "label": "This Year"
+  },
+  {
+    "value": "next 7 days",
+    "label": "Next 7 Days"
+  },
+  {
+    "value": "next 14 days",
+    "label": "Next 14 Days"
+  },
+  {
+    "value": "next 30 days",
+    "label": "Next 30 Days"
+  },
+  {
+    "value": "next week",
+    "label": "Next Week"
+  },
+  {
+    "value": "next month",
+    "label": "Next Month"
+  },
+  {
+    "value": "next quarter",
+    "label": "Next Quarter"
+  },
+  {
+    "value": "next 6 months",
+    "label": "Next 6 Months"
+  },
+  {
+    "value": "next year",
+    "label": "Next Year"
+  }
+]
+
+const DEFAULT_OPERATORS = {
+  "Attach": "like",
+  "Attach Image": "like",
+  "Autocomplete": "like",
+  "Barcode": "like",
+  "Check": "=",
+  "Code": "like",
+  "Color": "=",
+  "Currency": "=",
+  "Data": "like",
+  "Date": "between",
+  "Datetime": "between",
+  "Duration": "=",
+  "Dynamic Link": "like",
+  "Float": "=",
+  "Geolocation": "=",
+  "HTML Editor": "like",
+  "Icon": "=",
+  "Int": "=",
+  "JSON": "like",
+  "Link": "=",
+  "Long Int": "=",
+  "Long Text": "like",
+  "Markdown Editor": "like",
+  "Password": "like",
+  "Percent": "=",
+  "Phone": "like",
+  "Rating": "=",
+  "Read Only": "like",
+  "Select": "=",
+  "Signature": "=",
+  "Slider": "=",
+  "Small Text": "like",
+  "Table": "",
+  "Table MultiSelect": "",
+  "Text": "like",
+  "Text Editor": "like",
+  "Time": "="
+}
+
+const EQUALITY = ['=', '!=']
+const IN = ['in', 'not in']
+
+/** Which operators a filter on this field may use. */
+export function operatorsFor(field) {
+  return VALID_OPERATORS[field?.fieldtype] || ['=', '!=', 'is']
+}
+
+/** What an operator is called on this field. */
+export function operatorLabel(field, operator) {
+  return OPERATOR_LABELS_BY_TYPE[field?.fieldtype]?.[operator] || OPERATORS[operator] || operator
+}
+
+/** What a filter opens on: a substring for text, a range for a date. */
+export function defaultOperator(field) {
+  // Stored as a JSON array, so an exact match can never hit.
+  if (['_assign', '_liked_by'].includes(field?.fieldname)) return 'like'
+  return DEFAULT_OPERATORS[field?.fieldtype] || '='
+}
+
+/**
+ * What the value control has to be, once the operator is known.
+ *
+ * Frappe does this by rewriting the docfield in `set_fieldtype`. Naming the
+ * decision instead means the server can check a value without rendering one,
+ * which is why this same function exists on both sides.
+ */
+export function valueShape(field, operator) {
+  if (operator === 'is') return 'set'
+  if (operator === 'timespan') return 'timespan'
+  if (operator === 'between') return 'range'
+  if (IN.includes(operator)) return 'multi'
+  const fieldtype = field?.fieldtype
+  if (fieldtype === 'Check' || fieldtype === 'Select') return 'choice'
+  if (['Link', 'Dynamic Link'].includes(fieldtype) && EQUALITY.includes(operator)) return 'link'
+  // Everything else is a plain box, a Link under `like` included: matching part
+  // of a name is a text question.
+  return 'value'
+}
+
+/** Set / Not Set, which is what `is` asks. */
+export const IS_OPTIONS = [
+  { value: 'set', label: 'Set' },
+  { value: 'not set', label: 'Not Set' },
+]
+
+/** A checkbox is one of two things, and neither of them is a text box. */
+export const CHECK_OPTIONS = [
+  { value: '1', label: 'Yes' },
+  { value: '0', label: 'No' },
+]
+
 export function isLayout(fieldtype) {
   return LAYOUT_TYPES.includes(fieldtype)
 }

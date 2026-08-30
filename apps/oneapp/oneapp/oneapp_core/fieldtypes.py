@@ -99,3 +99,208 @@ def icon_for(fieldtype: str) -> str:
 
 def cell_for(fieldtype: str) -> str:
 	return (FIELD_TYPES.get(fieldtype) or (None, "text", None, False))[1]
+
+
+# --------------------------------------------------------------------------- #
+# Filter operators, ported from Frappe's own filter UI and inverted from its
+# per-fieldtype deny list into an allow list. `tests/test_field_types.py` reads
+# `filter.js` back and fails when the two disagree.
+# --------------------------------------------------------------------------- #
+
+# operator -> label, in the order Frappe lists them.
+OPERATORS = {'=': 'Equals',
+ '!=': 'Not Equals',
+ 'like': 'Like',
+ 'not like': 'Not Like',
+ 'in': 'In',
+ 'not in': 'Not In',
+ 'is': 'Is',
+ '>': 'Greater Than',
+ '<': 'Less Than',
+ '>=': 'Greater Than Or Equal To',
+ '<=': 'Less Than Or Equal To',
+ 'between': 'Between',
+ 'timespan': 'Timespan'}
+
+# Frappe relabels the comparisons for a date: "Before" reads better than "<".
+OPERATOR_LABELS_BY_TYPE = {'Date': {'<': 'Before', '>': 'After', '<=': 'On or Before', '>=': 'On or After'},
+ 'Datetime': {'<': 'Before', '>': 'After', '<=': 'On or Before', '>=': 'On or After'}}
+
+# operator -> whether a fieldtype may use it.
+VALID_OPERATORS = {'Attach': ('=', '!=', 'like', 'not like', 'in', 'not in', 'is', '>', '<', '>=', '<='),
+ 'Attach Image': ('=',
+                  '!=',
+                  'like',
+                  'not like',
+                  'in',
+                  'not in',
+                  'is',
+                  '>',
+                  '<',
+                  '>=',
+                  '<='),
+ 'Autocomplete': ('=',
+                  '!=',
+                  'like',
+                  'not like',
+                  'in',
+                  'not in',
+                  'is',
+                  '>',
+                  '<',
+                  '>=',
+                  '<='),
+ 'Barcode': ('=', '!=', 'like', 'not like', 'in', 'not in', 'is', '>', '<', '>=', '<='),
+ 'Check': ('=',),
+ 'Code': ('=', '!=', 'like', 'not like', 'is'),
+ 'Color': ('=', '!=', 'like', 'not like', 'in', 'not in', 'is'),
+ 'Currency': ('=', '!=', 'like', 'not like', 'in', 'not in', 'is', '>', '<', '>=', '<='),
+ 'Data': ('=', '!=', 'like', 'not like', 'in', 'not in', 'is', '>', '<', '>=', '<='),
+ 'Date': ('=', '!=', 'in', 'not in', 'is', '>', '<', '>=', '<=', 'between', 'timespan'),
+ 'Datetime': ('is', '>', '<', '>=', '<=', 'between', 'timespan'),
+ 'Duration': ('=', '!=', 'is', '>', '<', '>=', '<='),
+ 'Dynamic Link': ('=',
+                  '!=',
+                  'like',
+                  'not like',
+                  'in',
+                  'not in',
+                  'is',
+                  '>',
+                  '<',
+                  '>=',
+                  '<='),
+ 'Float': ('=', '!=', 'is', '>', '<', '>=', '<='),
+ 'Geolocation': ('=', '!=', 'is'),
+ 'HTML Editor': ('=', '!=', 'like', 'not like', 'is'),
+ 'Icon': ('=', '!=', 'is'),
+ 'Int': ('=', '!=', 'is', '>', '<', '>=', '<='),
+ 'JSON': ('=', '!=', 'like', 'not like', 'in', 'not in', 'is', '>', '<', '>=', '<='),
+ 'Link': ('=', '!=', 'like', 'not like', 'in', 'not in', 'is'),
+ 'Long Int': ('=', '!=', 'is', '>', '<', '>=', '<='),
+ 'Long Text': ('=', '!=', 'like', 'not like', 'is'),
+ 'Markdown Editor': ('=', '!=', 'like', 'not like', 'is'),
+ 'Password': ('=', '!=', 'like', 'not like', 'is'),
+ 'Percent': ('=', '!=', 'is', '>', '<', '>=', '<='),
+ 'Phone': ('=', '!=', 'like', 'not like', 'in', 'not in', 'is', '>', '<', '>=', '<='),
+ 'Rating': ('=', '!=', 'is', '>', '<', '>=', '<='),
+ 'Read Only': ('=', '!=', 'like', 'not like', 'in', 'not in', 'is', '>', '<', '>=', '<='),
+ 'Select': ('=', '!=', 'in', 'not in', 'is'),
+ 'Signature': ('=', '!=', 'is'),
+ 'Slider': ('=', '!=', 'is', '>', '<', '>=', '<='),
+ 'Small Text': ('=', '!=', 'like', 'not like', 'is'),
+ 'Table': (),
+ 'Table MultiSelect': (),
+ 'Text': ('=', '!=', 'like', 'not like', 'is'),
+ 'Text Editor': ('=', '!=', 'like', 'not like', 'is'),
+ 'Time': ('=', '!=', 'like', 'not like', 'in', 'not in', 'is', '>', '<', '>=', '<=')}
+
+# Frappe's relative-date vocabulary. Handed to its `timespan` operator verbatim,
+# so a value it does not know is a filter that returns nothing and says nothing.
+TIMESPANS = {'last 7 days': 'Last 7 Days',
+ 'last 14 days': 'Last 14 Days',
+ 'last 30 days': 'Last 30 Days',
+ 'last 90 days': 'Last 90 Days',
+ 'last week': 'Last Week',
+ 'last month': 'Last Month',
+ 'last quarter': 'Last Quarter',
+ 'last 6 months': 'Last 6 Months',
+ 'last year': 'Last Year',
+ 'yesterday': 'Yesterday',
+ 'today': 'Today',
+ 'tomorrow': 'Tomorrow',
+ 'this week': 'This Week',
+ 'this month': 'This Month',
+ 'this quarter': 'This Quarter',
+ 'this year': 'This Year',
+ 'next 7 days': 'Next 7 Days',
+ 'next 14 days': 'Next 14 Days',
+ 'next 30 days': 'Next 30 Days',
+ 'next week': 'Next Week',
+ 'next month': 'Next Month',
+ 'next quarter': 'Next Quarter',
+ 'next 6 months': 'Next 6 Months',
+ 'next year': 'Next Year'}
+
+DEFAULT_OPERATORS = {'Attach': 'like',
+ 'Attach Image': 'like',
+ 'Autocomplete': 'like',
+ 'Barcode': 'like',
+ 'Check': '=',
+ 'Code': 'like',
+ 'Color': '=',
+ 'Currency': '=',
+ 'Data': 'like',
+ 'Date': 'between',
+ 'Datetime': 'between',
+ 'Duration': '=',
+ 'Dynamic Link': 'like',
+ 'Float': '=',
+ 'Geolocation': '=',
+ 'HTML Editor': 'like',
+ 'Icon': '=',
+ 'Int': '=',
+ 'JSON': 'like',
+ 'Link': '=',
+ 'Long Int': '=',
+ 'Long Text': 'like',
+ 'Markdown Editor': 'like',
+ 'Password': 'like',
+ 'Percent': '=',
+ 'Phone': 'like',
+ 'Rating': '=',
+ 'Read Only': 'like',
+ 'Select': '=',
+ 'Signature': '=',
+ 'Slider': '=',
+ 'Small Text': 'like',
+ 'Table': '',
+ 'Table MultiSelect': '',
+ 'Text': 'like',
+ 'Text Editor': 'like',
+ 'Time': '='}
+
+_EQUALITY = ("=", "!=")
+_IN = ("in", "not in")
+
+
+def operators_for(fieldtype: str) -> tuple:
+	"""Which operators a filter on this fieldtype may use.
+
+	A fieldtype nobody listed gets equality and `is`. An allow list rather than
+	Frappe's deny list precisely so that is the answer: on a server, a fieldtype
+	nobody thought about must not inherit every operator.
+	"""
+	return VALID_OPERATORS.get(fieldtype, ("=", "!=", "is"))
+
+
+def default_operator(fieldtype: str, fieldname: str = "") -> str:
+	"""What a filter opens on. A Data field is almost always a substring
+	search, a date almost always a range."""
+	if fieldname in ("_assign", "_liked_by"):
+		# Stored as a JSON array, so an exact match can never hit.
+		return "like"
+	return DEFAULT_OPERATORS.get(fieldtype, "=")
+
+
+def value_shape(fieldtype: str, operator: str) -> str:
+	"""What the value has to be, once the operator is known.
+
+	Frappe does this by rewriting the docfield in `set_fieldtype`; the same
+	decision, named, so the server can check a value without rendering one.
+	"""
+	if operator == "is":
+		return "set"
+	if operator == "timespan":
+		return "timespan"
+	if operator == "between":
+		return "range"
+	if operator in _IN:
+		return "multi"
+	if fieldtype in ("Check", "Select"):
+		return "choice"
+	if fieldtype in ("Link", "Dynamic Link") and operator in _EQUALITY:
+		return "link"
+	# Everything else is a plain box, a Link under `like` included: matching
+	# part of a name is a text question.
+	return "value"

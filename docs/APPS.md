@@ -110,12 +110,18 @@ already names, so an app gets it by existing.
 * **Comments, history and likes.** Frappe keeps all three on every doctype.
   History is rendered in the screen's own labels, not the database's field
   names, and only for fields the screen shows.
-* **Saved views.** Filters, sort, columns and page length, per person per
-  screen, in `OneApp Saved View`. A saved view narrows what the screen offers
-  and can never widen it: filters merge with the screen's winning, columns
-  intersect, and `order_by` is rebuilt from parts rather than passed through.
-  The same bounds apply to an unsaved change, which is why the controls can show
-  their answer before anything is saved.
+* **Filters, in Frappe's own vocabulary.** A filter is
+  `[fieldname, operator, value]`, and which operators a field offers comes from
+  Frappe's own per-fieldtype table: a Select gets Equals / Not Equals / In /
+  Not In / Is, a Date also gets Between, Timespan and the comparisons under
+  Frappe's names for them ("On or Before" rather than "<="). The value control
+  follows the pair — a link picker, a choice, a list, two dates, Frappe's
+  relative-date words, or Set / Not Set.
+* **Saved views.** Filters, sort, columns and their order, and page length, per
+  person per screen, in `OneApp Saved View`. A saved view narrows what the
+  screen offers and can never widen it — see ADR-13. The same bounds apply to
+  an unsaved change, which is why the controls can show their answer before
+  anything is saved.
 
 ## What the generic screen does not do yet
 
@@ -126,8 +132,9 @@ Worth knowing before designing around it:
 * **One page of records.** A hundred, then a line saying there are more. Filters
   and sort narrow it; there is no infinite scroll and no free-text search across
   the whole set.
-* **Filters are text and choice only.** A "contains" box over a Date or a
-  Currency is a control that looks like it works and does not.
+* **A child table cannot be filtered.** It is rows rather than a value, so
+  Frappe needs a four-part filter naming the child doctype and a three-part one
+  names a column that is not there. Shown, never filtered.
 * **No delete from the UI**, though the endpoint exists.
 
 None of these block a first app; all of them are worth knowing about before

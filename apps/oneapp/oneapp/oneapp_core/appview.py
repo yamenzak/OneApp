@@ -311,7 +311,7 @@ def rows(app_code: str, view: str | None = None, limit: int = PAGE,
 	found = frappe.get_list(
 		resolved["doctype"],
 		fields=resolved["fields"],
-		filters=resolved["filters"],
+		filters=_all_filters(resolved, resolved.get("asked") or []),
 		order_by=resolved["order_by"],
 		limit_start=int(start or 0),
 		limit_page_length=limit + 1,
@@ -616,6 +616,9 @@ def _apply_saved(resolved: dict) -> dict:
 	"""Fold this person's saved answers into a resolved screen."""
 	saved = _saved(resolved["app"], resolved["view"])
 	resolved["saved"] = None
+	# Always present, so nothing downstream has to ask whether a saved view
+	# exists before reading it.
+	resolved["asked"] = []
 	# What the screen offers, before this person narrowed it. The column picker
 	# needs the full set or it can only ever remove.
 	resolved["all_columns"] = list(resolved.get("columns") or [])
@@ -635,16 +638,13 @@ def _apply_saved(resolved: dict) -> dict:
 	# Bounded again on the way out, not only when it was saved: the row is a
 	# doctype an operator can write, and a filter that reached the table another
 	# way is still a filter this screen never offered.
-	asked = _asked_filters(offered, _json(saved.get("filters")))
-	if asked:
-		# The screen's filters win on a clash. Theirs narrow within ours.
-		resolved["filters"] = {**_as_query_filters(offered, asked), **resolved["filters"]}
+	resolved["asked"] = _asked_filters(offered, saved.get("filters"))
 
 	if saved.get("order_by"):
 		resolved["order_by"] = _safe_order(resolved, saved["order_by"])
 
 	resolved["saved"] = {
-		"filters": asked,
+		"filters": resolved["asked"],
 		"order_by": saved.get("order_by") or "",
 		"columns": chosen,
 		"page_length": saved.get("page_length") or 0,
@@ -669,47 +669,147 @@ def _safe_order(resolved: dict, order_by: str) -> str:
 	return f"{fieldname} {direction}"
 
 
-def _asked_filters(offered: dict, extra) -> dict:
+# How many values one `in` filter may carry, and how many filters one screen
+# may be asked. Neither is a security boundary on its own — every one of them is
+# already bounded to a field the screen shows — but an unbounded list is a way
+# to make one request cost a great deal.
+MAX_FILTERS = 20
+MAX_IN_VALUES = 100
+
+
+def _asked_filters(offered: dict, extra) -> list:
 	"""What someone asked to filter by, reduced to something a screen may ask.
 
-	Two separate bounds, and both matter:
+	A filter is `[fieldname, operator, value]`, which is Frappe's own shape. The
+	operator being a named part rather than something smuggled inside the value
+	is what lets this be checked at all: it is looked up against the operators
+	that fieldtype allows — Frappe's own table, inverted from a deny list into
+	an allow list in `fieldtypes.OPERATORS` — and anything else is dropped.
+
+	Three bounds, and all three matter:
 
 	* **Only fields the screen shows.** A filter on a hidden field narrows the
 	  list, which sounds harmless — but a customer who can watch which rows come
 	  back can read a field they were never shown, one guess at a time.
-	* **Only a value, never an operator.** Frappe's filter syntax lets a value
-	  be `["like", …]`, `["in", […]]`, `["descendants of", …]`. Passing one
-	  through hands the query layer a question the screen never granted, so
-	  anything that is not a plain scalar is dropped rather than reinterpreted.
+	* **Only operators that fieldtype allows.** `descendants of` runs a subquery
+	  against another doctype's tree; `regex` is a way to spend a lot of database
+	  time. Neither is in Frappe's own filter menu, so neither is here.
+	* **Only values of the shape the operator takes.** `between` is exactly two,
+	  `is` is one of two words, `in` is a bounded list, everything else is a
+	  scalar. A list arriving where a scalar belongs is dropped rather than
+	  reinterpreted.
 
-	This is the form that gets stored and echoed back to the controls: the words
-	someone typed, not the query they turn into.
+	This is the form that gets stored and echoed back to the controls: what
+	someone chose, not the query it turns into.
 	"""
 	if isinstance(extra, str):
 		extra = frappe.parse_json(extra or "null")
-	if not isinstance(extra, dict):
-		return {}
 
-	return {
-		fieldname: value
-		for fieldname, value in extra.items()
-		if fieldname in offered
-		and value not in ("", None)
-		and not isinstance(value, (list, tuple, dict))
-	}
+	# The shape this used to be, before operators: `{fieldname: value}`. Saved
+	# views written then are still on disk, so they are read as what they meant.
+	if isinstance(extra, dict):
+		extra = [
+			[fieldname, fieldtypes.default_operator(
+				offered[fieldname]["fieldtype"] if fieldname in offered else "Data", fieldname),
+			 value]
+			for fieldname, value in extra.items()
+			if fieldname in offered
+		]
+	if not isinstance(extra, (list, tuple)):
+		return []
+
+	asked = []
+	for row in extra[:MAX_FILTERS]:
+		clean = _asked_filter(offered, row)
+		if clean:
+			asked.append(clean)
+	return asked
 
 
-def _as_query_filters(offered: dict, asked: dict) -> dict:
-	"""The same filters, as a question the query layer can be asked.
+def _asked_filter(offered: dict, row) -> list | None:
+	"""One filter, or None if it is not one this screen may be asked."""
+	if not isinstance(row, (list, tuple)) or len(row) != 3:
+		return None
 
-	A choice matches exactly; anything else is a contains match, because a
-	customer typing into a box labelled "Contains…" means contains.
+	fieldname, operator, value = row
+	column = offered.get(fieldname)
+	if not column or not isinstance(operator, str):
+		return None
+
+	operator = operator.strip().lower()
+	if operator not in fieldtypes.operators_for(column["fieldtype"]):
+		return None
+
+	shape = fieldtypes.value_shape(column["fieldtype"], operator)
+
+	if shape == "set":
+		return [fieldname, operator, value] if value in ("set", "not set") else None
+
+	if shape == "timespan":
+		return [fieldname, operator, value] if value in fieldtypes.TIMESPANS else None
+
+	if shape == "range":
+		if not isinstance(value, (list, tuple)) or len(value) != 2:
+			return None
+		if any(_not_a_value(v) for v in value):
+			return None
+		return [fieldname, operator, [value[0], value[1]]]
+
+	if shape == "multi":
+		if isinstance(value, str):
+			# Frappe's own filter splits a typed list on commas.
+			value = [v.strip() for v in value.split(",") if v.strip()]
+		if not isinstance(value, (list, tuple)) or not value:
+			return None
+		values = [v for v in value[:MAX_IN_VALUES] if not _not_a_value(v)]
+		return [fieldname, operator, values] if values else None
+
+	return None if _not_a_value(value) else [fieldname, operator, value]
+
+
+def _not_a_value(value) -> bool:
+	"""A scalar someone could have typed. Anything else is a shape we did not
+	ask for, and reinterpreting it is how a filter becomes a query."""
+	return (
+		value in ("", None)
+		or isinstance(value, (list, tuple, dict, set))
+	)
+
+
+def _as_query_filters(offered: dict, asked: list) -> list:
+	"""The same filters, as questions the query layer can be asked.
+
+	Only two rewrites, both Frappe's own (`get_selected_value`): a `like` gets
+	wildcards unless the person wrote their own, so a box labelled "Contains"
+	contains; and a Check is stored as the word someone picked and asked as the
+	0 or 1 the column holds.
 	"""
-	return {
-		fieldname: (value if offered[fieldname]["fieldtype"] in ("Select", "Link", "Check")
-		            else ["like", f"%{value}%"])
-		for fieldname, value in asked.items()
-	}
+	query = []
+	for fieldname, operator, value in asked:
+		if operator in ("like", "not like") and isinstance(value, str):
+			if not (value.startswith("%") or value.endswith("%")):
+				value = f"%{value}%"
+		elif offered[fieldname]["fieldtype"] == "Check":
+			value = 1 if str(value) in ("1", "Yes", "true", "True") else 0
+		query.append([fieldname, operator, value])
+	return query
+
+
+def _all_filters(resolved: dict, asked: list) -> list:
+	"""The screen's own filters and this person's, as one list.
+
+	Both are applied; neither replaces the other. That is what makes the
+	narrowing rule hold without a special case: two filters on one field are
+	ANDed, so a saved `status = Closed` on a screen filtered to `status = Open`
+	returns nothing rather than quietly returning the screen's rows. Frappe's
+	desk behaves the same way, and "no rows, and there is my filter" reads
+	better than a filter that appears to be ignored.
+	"""
+	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or resolved["columns"]}
+	own = [[fieldname, "=", value] if not isinstance(value, (list, tuple))
+	       else [fieldname, value[0], value[1]]
+	       for fieldname, value in (resolved.get("filters") or {}).items()]
+	return own + _as_query_filters(offered, asked)
 
 
 def _apply_overrides(resolved: dict, overrides) -> dict:
@@ -726,10 +826,11 @@ def _apply_overrides(resolved: dict, overrides) -> dict:
 		resolved["columns"] = [offered[f] for f in chosen]
 		resolved["fields"] = list(dict.fromkeys(chosen + list(ALWAYS)))
 
-	asked = _asked_filters(offered, overrides.get("filters"))
-	if asked:
-		# The screen's own filters still win: theirs narrow within ours.
-		resolved["filters"] = {**_as_query_filters(offered, asked), **resolved["filters"]}
+	# Set whenever the payload mentions filters at all, empty list included:
+	# clearing the filters in the controls has to clear them in the list, and a
+	# truthiness check would leave the saved ones standing.
+	if "filters" in overrides:
+		resolved["asked"] = _asked_filters(offered, overrides.get("filters"))
 
 	if overrides.get("order_by"):
 		resolved["order_by"] = _safe_order(resolved, overrides["order_by"])
@@ -738,10 +839,18 @@ def _apply_overrides(resolved: dict, overrides) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def save_view(app_code: str, view: str, filters: str | dict | None = None,
+def save_view(app_code: str, view: str, filters: str | list | dict | None = None,
               order_by: str | None = None, columns: str | list | None = None,
               page_length: int = 0) -> dict:
-	"""Remember how this person likes this screen."""
+	"""Remember how this person likes this screen.
+
+	The annotations are wide on purpose, and `list` in particular is load-
+	bearing: Frappe validates a whitelisted method's arguments against them and
+	answers a mismatch with a 417 before the body runs. A filter is a list of
+	triples now, and while this still said `str | dict` every save from the
+	browser was refused before reaching a line of it — which no test that calls
+	this function directly can see, because a direct call skips the check.
+	"""
 	resolved = _resolve(app_code, view)
 	if not resolved.get("doctype"):
 		frappe.throw(_("There is nothing to save a view for here."))

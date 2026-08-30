@@ -561,14 +561,31 @@ allowlist.
 So the rule is one sentence: **a saved or pending view narrows a screen and can
 never widen it.**
 
-* **Filters merge with the screen's winning.** `{**theirs, **ours}` — a saved
-  filter of `status: Closed` on a screen filtered to `status: Open` returns the
-  same rows as before. And a value from a browser is never passed through as an
-  operator: anything but a Select, Link or Check becomes `["like", "%value%"]`,
-  because a filter value that can carry its own operator is a query someone else
-  wrote.
-* **Columns intersect.** A saved column list is filtered against the screen's
-  own; naming `owner` or `_liked_by` drops it rather than adding it.
+* **Filters are ANDed with the screen's own.** Neither replaces the other, so a
+  saved `status = Closed` on a screen filtered to `status = Open` returns
+  nothing rather than quietly returning the screen's rows. Frappe's desk does
+  the same, and "no rows, and there is my filter" reads better than a filter
+  that appears to be ignored. Narrowing is all an extra condition can do, which
+  is what makes this safe as well as honest.
+* **The operator is a named part, checked against a table.** A filter is
+  `[fieldname, operator, value]`. Which operators a fieldtype may use is
+  Frappe's own list — `invalid_condition_map` in its filter UI — inverted from a
+  deny list into an allow list, because a deny list gives a fieldtype nobody
+  thought about every operator, and that is the wrong way round for something a
+  browser sends. `regex`, `ilike` and the nested-set operators are in Frappe's
+  query layer and not in its filter menu, so they are not here either.
+  `tests/test_field_types.py` reads Frappe's file back and fails when the two
+  drift.
+* **A value has to be the shape its operator takes.** `between` is exactly two,
+  `is` is one of two words, `timespan` is one of Frappe's own relative-date
+  strings, `in` is a bounded list, everything else is a scalar. A list arriving
+  where a scalar belongs is dropped rather than reinterpreted — which is what
+  the old rule ("never an operator inside a value") was really protecting, and
+  it still holds now that operators have somewhere honest to live.
+* **Columns intersect, and their order is kept.** A saved column list is
+  filtered against the screen's own; naming `owner` or `_liked_by` drops it
+  rather than adding it. The order that survives is the order someone chose,
+  because that is the other half of what a column picker is for.
 * **`order_by` is rebuilt from parts.** Split into a fieldname and a direction,
   each checked against what the screen offers, and reassembled. The string that
   arrived never reaches the query layer.
@@ -583,3 +600,20 @@ two screens over the same doctype keep their own answers.
 **The record dialog shows the screen's whole field list, not the chosen
 columns.** Hiding a column is a statement about the list; the record still has
 the field, and the server still lets that screen write it.
+
+The shapes of the controls are Frappe's desk too, and deliberately: a customer
+who has used one Frappe list should not have to learn a second. A stack of
+`[field] [operator] [value]` rows with Add filter and Clear all; a sort that is
+a field plus a direction toggle rather than every field listed twice; a column
+picker that is the chosen columns in their order, with a grip to drag and
+buttons that do the same thing — because a pointer drag reaches neither a
+keyboard nor a phone, and order is the whole point of that panel.
+
+One thing worth writing down about the wire: a whitelisted method's **type
+annotations are part of the contract**, not documentation. Frappe validates
+arguments against them and answers a mismatch with a 417 before the body runs.
+When filters became a list of triples and `save_view` still said
+`filters: str | dict`, every save from the browser was refused — and every unit
+test still passed, because calling the function directly skips the check.
+`tests/test_app_views.py` now reads the annotations and checks them against the
+shapes the SPA actually sends.
