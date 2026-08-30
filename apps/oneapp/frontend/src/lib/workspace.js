@@ -30,6 +30,29 @@ export const workspace = {
       successMessage: 'Saved',
     }),
 
+  // One screen, resolved against this site's own metadata: what each field is
+  // called and whether this user may write it are facts only the tenant has.
+  //
+  // Rows and writes go through the view too, rather than a generic document
+  // API. That is what stops a screen being used to read a doctype the
+  // entitlement did not include, or to write a field it does not show.
+  appView: (appCode, view) =>
+    callMethod('oneapp.oneapp_core.appview.spec', { app_code: appCode, view }, {
+      silent: true, method: 'GET',
+    }),
+
+  appRows: (appCode, view) =>
+    callMethod('oneapp.oneapp_core.appview.rows', { app_code: appCode, view }, {
+      silent: true, method: 'GET',
+    }),
+
+  saveAppRecord: (appCode, view, values, name) =>
+    callMethod(
+      'oneapp.oneapp_core.appview.save',
+      { app_code: appCode, view, values, name },
+      { successMessage: 'Saved' },
+    ),
+
   books: () =>
     callMethod('oneapp.oneapp_core.books.status', {}, { silent: true, method: 'GET' }),
 

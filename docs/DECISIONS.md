@@ -516,3 +516,36 @@ which one to recommend. The sync never touches those.
 The corollary is that prices are not editable in OneAdmin. A field that the next
 sync overwrites is a control that silently stops working, so the rates are shown
 and the markup is what an operator turns.
+
+
+---
+
+## 12. An app is configuration before it is code
+
+The full contract is in `docs/APPS.md`.
+
+Every other part of this platform is registry-driven — entitlements, roles,
+DocPerms, AI features all come from a declaration rather than from an edit in
+the SPA. Screens were the exception: OneSpace had one route, which rendered
+"Not built yet", and `lib/nav.js` already mapped an `app.links` that nothing
+produced. Half a contract, sketched and never finished.
+
+So an app declares its screens the way it declares everything else, and OneSpace
+renders them from the tenant site's own metadata. A screen names a doctype and
+some fieldnames; what each field is called and whether this user may write it
+are facts only the tenant has, and copying them into the control plane would
+mean a copy that is wrong the first time a field changes.
+
+That makes a new app a registration plus its doctypes, with no OneSpace release
+— which matters more than it sounds, because the alternative is that every app
+ships a frontend and the generic CRUD that most screens are gets rewritten each
+time.
+
+**Reads and writes go through the view, not through a generic document API.**
+That is the security property rather than a formality: a screen can only name a
+doctype its app's manifest granted, and can only write a field it shows. Frappe's
+permissions still decide whether any of it is allowed.
+
+**The escape hatch is a registered component**, for a dashboard or a wizard or
+anything a list of records cannot be. Second, not first: every screen written by
+hand is a screen maintained by hand.

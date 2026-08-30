@@ -30,6 +30,7 @@
           :icon="item.icon"
           :to="item.to"
           :active="item.active"
+          @click="go(item)"
         >
           <!-- The default slot replaces the icon, not the label, so a badged
                item still reads the same as its neighbours. -->
@@ -187,6 +188,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   Avatar,
   Badge,
@@ -239,6 +241,25 @@ defineEmits(['select-app'])
 defineSlots()
 
 const isMobile = useIsMobile()
+/**
+ * Navigate from the click rather than leaving it to the item's own link.
+ *
+ * MobileNavItem decides link-versus-button by comparing route *names*, and
+ * every screen of an app is the same route name with a different `?view=`. So
+ * an app's tabs all looked current, all rendered as scroll-to-top buttons, and
+ * none of them navigated — on a phone an app with more than one screen had
+ * exactly one reachable screen. The item keeps `to` so it still renders an
+ * anchor where it can; this is what makes the tap do something.
+ *
+ * Pushing the route we are already on is a duplicate navigation, which
+ * vue-router rejects rather than throws on, so the rejection is swallowed.
+ */
+const router = useRouter()
+
+const go = (item) => {
+  router.push(item.to).catch(() => {})
+}
+
 const showMenu = ref(false)
 
 // Four, because the avatar always takes the fifth. `primary: false` opts an

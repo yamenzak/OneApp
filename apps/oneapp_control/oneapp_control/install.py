@@ -45,7 +45,6 @@ SEED_APPS = [
 		"module": "Books",
 		"role_name": "OneApp Books",
 		"icon": "lucide-book-open",
-		"route": "/books",
 		"sort_order": 10,
 		"availability": "Restricted",
 		"description": (

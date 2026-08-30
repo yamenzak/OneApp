@@ -14,10 +14,11 @@
   "cb_app",
   "availability",
   "role_name",
+  "sec_views",
+  "views",
   "sec_manifest",
   "doctypes",
   "icon",
-  "route",
   "sort_order",
   "sec_desc",
   "description"
@@ -75,6 +76,18 @@
    "reqd": 1
   },
   {
+   "fieldname": "sec_views",
+   "fieldtype": "Section Break",
+   "label": "Screens"
+  },
+  {
+   "description": "What the customer sees. An app with none of these is an entitlement with no interface, which is a real thing to be \u2014 it still grants its roles and doctypes.",
+   "fieldname": "views",
+   "fieldtype": "Table",
+   "label": "Views",
+   "options": "OneApp App View"
+  },
+  {
    "fieldname": "sec_manifest",
    "fieldtype": "Section Break",
    "label": "Doctypes"
@@ -93,12 +106,6 @@
    "fieldtype": "Select",
    "label": "Icon",
    "options": "lucide-layout-grid\nlucide-users\nlucide-user-round\nlucide-briefcase\nlucide-file-text\nlucide-receipt\nlucide-wallet\nlucide-shopping-cart\nlucide-package\nlucide-truck\nlucide-factory\nlucide-store\nlucide-calendar\nlucide-clock\nlucide-message-square\nlucide-mail\nlucide-phone\nlucide-chart-line\nlucide-chart-pie\nlucide-database\nlucide-book-open\nlucide-graduation-cap\nlucide-stethoscope\nlucide-wrench\nlucide-shield\nlucide-sparkles"
-  },
-  {
-   "description": "SPA route, e.g. /crm",
-   "fieldname": "route",
-   "fieldtype": "Data",
-   "label": "Route"
   },
   {
    "default": "0",

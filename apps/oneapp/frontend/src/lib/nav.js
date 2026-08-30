@@ -33,7 +33,7 @@ export function useNav() {
     const app = activeApp.value
     if (!app) return workspaceItems
 
-    const declared = app.links || []
+    const declared = app.views || []
     // A single-screen app declares no sections; its landing page is the nav.
     if (!declared.length) {
       return [
@@ -44,13 +44,13 @@ export function useNav() {
         },
       ]
     }
-    return declared.map((link) => ({
-      label: link.label,
-      icon: appIcon(link.icon),
+    return declared.map((view) => ({
+      label: view.label,
+      icon: appIcon(view.icon),
       to: {
         name: 'App',
         params: { appCode: app.app_code },
-        query: { view: link.view },
+        query: { view: view.view },
       },
     }))
   })

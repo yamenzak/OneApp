@@ -19,14 +19,14 @@ def apps_for_tenant(tenant: str) -> list[dict]:
 	general = frappe.get_all(
 		"OneApp App",
 		filters={"is_active": 1, "availability": "General"},
-		fields=["name as app_code", "app_label", "module", "role_name", "icon", "route",
-			"sort_order"],
+		fields=["name as app_code", "app_label", "module", "role_name", "icon",
+			"sort_order", "description"],
 	)
 
 	restricted = frappe.db.sql(
 		"""
-		SELECT a.name AS app_code, a.app_label, a.module, a.role_name, a.icon, a.route,
-		       a.sort_order
+		SELECT a.name AS app_code, a.app_label, a.module, a.role_name, a.icon,
+		       a.sort_order, a.description
 		FROM `tabOneApp App` a
 		INNER JOIN `tabApp Entitlement` e ON e.app = a.name
 		WHERE a.is_active = 1
@@ -40,7 +40,25 @@ def apps_for_tenant(tenant: str) -> list[dict]:
 
 	apps = general + restricted
 	apps.sort(key=lambda a: (a.get("sort_order") or 0, a.get("app_label") or ""))
+
+	# The screens each app puts in front of a customer. Sent with the app rather
+	# than fetched per app: OneSpace renders its navigation from this the moment
+	# a workspace opens, and a second round trip for a list of four labels is a
+	# spinner where a sidebar should be.
+	for app in apps:
+		app["views"] = views_for(app["app_code"])
+
 	return apps
+
+
+def views_for(app_code: str) -> list[dict]:
+	return frappe.get_all(
+		"OneApp App View",
+		filters={"parent": app_code, "parenttype": "OneApp App"},
+		fields=["view", "label", "icon", "document_type", "fields", "component",
+		        "filters", "order_by"],
+		order_by="idx asc",
+	)
 
 
 def entitled_modules(tenant: str) -> list[str]:

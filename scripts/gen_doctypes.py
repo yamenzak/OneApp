@@ -206,6 +206,49 @@ doctype(
 # --------------------------------------------------------------------------- #
 # OneApp App — the registry the SPA launcher reads.
 # --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# OneApp App View — one screen an app puts in front of a customer.
+#
+# An app is configuration before it is code. A view names a doctype and the
+# fields worth showing, and OneSpace renders the list and the record from the
+# tenant site's own metadata — so a new app is a registration plus its doctypes,
+# with no OneSpace release and nothing hand-written per app.
+#
+# `component` is the way out for a screen that generic list-and-record cannot
+# be. It names a component the SPA has registered; everything else on the row is
+# then the app's business rather than ours.
+# --------------------------------------------------------------------------- #
+doctype(
+    "OneApp App View",
+    istable=1,
+    fields=[
+        f("view", reqd=1, in_list_view=1,
+          description="Slug in the URL, e.g. `invoices`. Stable: it is what a "
+                      "bookmark points at."),
+        f("label", reqd=1, in_list_view=1, description="Shown in the app's navigation."),
+        f("icon", "Select", options="\n".join(APP_ICONS),
+          default="lucide-layout-grid"),
+        column("cb_view_source"),
+        f("document_type", label="Doctype", in_list_view=1,
+          description="What the list shows. Data rather than a Link: the doctype "
+                      "belongs to a tenant site and need not exist here."),
+        f("fields", "Small Text",
+          description="Comma-separated fieldnames for the columns. Labels and "
+                      "types come from the tenant site's own metadata, so this "
+                      "is the only thing worth writing down. Empty shows the "
+                      "doctype's own list fields."),
+        f("component",
+          description="Escape hatch: a component the SPA registered under "
+                      "`appCode/view`. Set this and the doctype above is ignored."),
+        section("sec_view_query"),
+        f("filters", "Code", options="JSON",
+          description='Always applied, e.g. {"status": "Open"}.'),
+        column("cb_view_sort"),
+        f("order_by", default="modified desc"),
+    ],
+)
+
+
 doctype(
     "OneApp App",
     autoname="field:app_code",
@@ -224,6 +267,11 @@ doctype(
           description="Frappe Role gating this app's doctypes. Entitlement grants "
                       "and revokes this role, so enforcement is native permissions "
                       "rather than a bespoke hook."),
+        section("sec_views", "Screens"),
+        f("views", "Table", options="OneApp App View",
+          description="What the customer sees. An app with none of these is an "
+                      "entitlement with no interface, which is a real thing to "
+                      "be — it still grants its roles and doctypes."),
         section("sec_manifest", "Doctypes"),
         f("doctypes", "Table", options="OneApp App Doctype",
           description="Everything this app exposes. One list, three jobs: the "
@@ -238,7 +286,6 @@ doctype(
         f("icon", "Select", options="\n".join(APP_ICONS),
           default="lucide-layout-grid",
           description="Rendered by the launcher and the app sidebar."),
-        f("route", description="SPA route, e.g. /crm"),
         f("sort_order", "Int", default="0"),
         section("sec_desc"),
         f("description", "Small Text"),

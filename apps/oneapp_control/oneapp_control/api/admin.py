@@ -1147,3 +1147,58 @@ def reconcile_ai_usage() -> dict:
 	from oneapp_control.ai import reconcile
 
 	return reconcile.run()
+
+
+# --------------------------------------------------------------------------- #
+# App screens
+#
+# An app is configuration before it is code: a screen names a doctype and the
+# fields worth showing, and OneSpace renders it from the tenant site's own
+# metadata. So this is where an app gets built, and it has to be reachable
+# without the desk like everything else.
+# --------------------------------------------------------------------------- #
+
+APP_VIEW_FIELDS = ("view", "label", "icon", "document_type", "fields",
+                   "component", "filters", "order_by")
+
+
+@frappe.whitelist(methods=["GET"])
+def app_views(app: str) -> list:
+	_require_manager()
+
+	return frappe.get_all(
+		"OneApp App View",
+		filters={"parent": app, "parenttype": "OneApp App"},
+		fields=["name", *APP_VIEW_FIELDS, "idx"],
+		order_by="idx asc",
+	)
+
+
+@frappe.whitelist(methods=["POST"])
+def set_app_views(app: str, views: str | list) -> dict:
+	"""Replace an app's screens with what was sent.
+
+	Replaced rather than patched: the order of these is the order of the app's
+	navigation, so a partial update would need a second way to express it.
+	"""
+	_require_manager()
+
+	if isinstance(views, str):
+		views = frappe.parse_json(views)
+	if not isinstance(views, list):
+		frappe.throw(_("Expected a list of screens."))
+
+	slugs = [str(row.get("view") or "").strip() for row in views]
+	if not all(slugs):
+		frappe.throw(_("Every screen needs a slug — it is what a bookmark points at."))
+	if len(set(slugs)) != len(slugs):
+		frappe.throw(_("Two screens share a slug, so one of them is unreachable."))
+
+	doc = frappe.get_doc("OneApp App", app)
+	doc.set("views", [
+		{field: row.get(field) for field in APP_VIEW_FIELDS} for row in views
+	])
+	doc.save(ignore_permissions=True)
+	frappe.db.commit()
+
+	return {"ok": True, "views": len(views)}

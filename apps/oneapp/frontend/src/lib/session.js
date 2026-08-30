@@ -1,3 +1,5 @@
+import { watch } from 'vue'
+
 import { useResource } from './resource'
 
 /**
@@ -10,6 +12,24 @@ import { useResource } from './resource'
 export const sessionResource = useResource('oneapp.api.session', {
   cacheKey: 'oneapp-session',
   watch: ['OneApp Site State'],
+})
+
+/**
+ * Settles once, the first time the session has loaded, and stays settled.
+ *
+ * Not `sessionResource.promise`: frappe-ui replaces that with a fresh,
+ * unresolved promise after every response, so awaiting it a second time waits
+ * for a fetch nobody is going to make. The router guard awaited it on every
+ * navigation, which meant client-side navigation in this app worked exactly
+ * once — the first load — and then silently did nothing at all. No error, no
+ * console message, the URL simply never changed.
+ */
+export const sessionReady = new Promise((resolve) => {
+  watch(
+    () => sessionResource.isFinished,
+    (finished) => finished && resolve(),
+    { immediate: true },
+  )
 })
 
 export const session = {
