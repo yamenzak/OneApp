@@ -1322,3 +1322,35 @@ def test_the_form_carries_fieldnames_and_not_the_columns_again(spaceview):
 	would send a sixty-field doctype twice."""
 	form = spaceview._form(TODO, _offered(spaceview, TODO, ["description"]))
 	assert form[0]["sections"][0]["fields"] == ["description"]
+
+
+# --------------------------------------------------------------------------- #
+# Attachments
+#
+# Frappe's own File rows, which is what the desk's sidebar lists and what an
+# Attach field points at — so a file uploaded through a field and a file
+# dropped on the record are one list rather than two.
+# --------------------------------------------------------------------------- #
+
+def test_reading_the_record_is_what_lets_you_see_its_files(spaceview):
+	"""What is filed against a record is no less private than the record."""
+	source = APPVIEW.read_text()
+	body = source.split("def _attachable(", 1)[1].split("\n@frappe.whitelist", 1)[0]
+	assert 'check_permission("read")' in body
+
+
+def test_removing_a_file_needs_the_record_to_be_writable(spaceview):
+	"""Removing what is filed against something is a change to it, even though
+	the row being deleted is a File."""
+	source = APPVIEW.read_text()
+	body = source.split("def remove_attachment(", 1)[1].split("\n@frappe.whitelist", 1)[0]
+	assert 'check_permission("write")' in body
+
+
+def test_a_file_from_another_record_is_refused(spaceview):
+	"""A File name arriving in the payload is a File name somebody sent. It has
+	to be attached to *this* record, and the check is against the row rather
+	than against what was asked for."""
+	source = APPVIEW.read_text()
+	body = source.split("def remove_attachment(", 1)[1].split("\n@frappe.whitelist", 1)[0]
+	assert "attached_to_doctype" in body and "not on this record" in body

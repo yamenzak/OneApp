@@ -119,3 +119,26 @@ test('a record is made in a dialog and opens into the pane', async ({ page }) =>
   await page.getByPlaceholder('ID').fill('')
   expectNoRealErrors(errors)
 })
+
+test('a record says who made it and what is filed against it', async ({ page }, info) => {
+  const errors = collectConsoleErrors(page)
+  await openRecord(page)
+  const pane = page.locator('[data-slot="record-pane"]')
+
+  // Who made this and when it last changed: the question every desk sidebar
+  // answers, and the one thing on a record that no field carries.
+  await expect(pane.getByText('Created by')).toBeVisible()
+  await expect(pane.getByText('Administrator').first()).toBeVisible()
+
+  // Files are Frappe's own File rows, so a file uploaded through an Attach
+  // field and a file dropped on the record are one list rather than two.
+  await pane.getByRole('tab', { name: 'Files' }).click()
+  await expect(pane.getByText('Nothing is filed against this one yet.')).toBeVisible()
+  await expect(pane.getByRole('button', { name: 'Attach a file' })).toBeVisible()
+
+  await info.attach(`files-${info.project.name}`, {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+  expectNoRealErrors(errors)
+})

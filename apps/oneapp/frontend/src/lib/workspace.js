@@ -188,6 +188,22 @@ export const workspace = {
       { silent: true },
     ),
 
+  // What is filed against a record. Frappe's own File rows, so a file uploaded
+  // through an Attach field and a file dropped on the record are one list.
+  attachments: (spaceCode, screen, name) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.attachments',
+      { space_code: spaceCode, screen, name },
+      { silent: true, method: 'GET' },
+    ),
+
+  removeAttachment: (spaceCode, screen, name, file) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.remove_attachment',
+      { space_code: spaceCode, screen, name, file },
+      { successMessage: 'File removed' },
+    ),
+
   // A layout: the filters, the sort and the columns saved together under a
   // name, the way Frappe's own List Filter doctype models it. `layout` updates
   // one, `label` makes a new one, neither writes this person's unnamed default

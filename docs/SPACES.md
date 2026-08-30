@@ -248,6 +248,18 @@ already names, so a space gets it by existing.
   both, so the pane draws itself as a page; the screen host does not know which
   it is.
 
+  **The record carries what surrounds it**, in the shape Frappe CRM uses: the
+  doctype's own image where it declares an `image_field`, replaced in place
+  rather than as a file box halfway down the form; who made it and when it last
+  changed, at the foot of the details, because that is what you look for second;
+  and the files, which are Frappe's own File rows — so a file uploaded through
+  an Attach field and a file dropped on the record are one list rather than two.
+  Uploading attaches in the same request, because Frappe's upload endpoint takes
+  the doctype and the name.
+
+  Not emails. CRM's record has a tab for them because CRM has an inbox; a space
+  has none, and a tab that cannot be filled is worse than one that is not there.
+
   **Making a record is still a dialog**, which is the one place a modal is the
   right answer: nothing behind it to refer to yet, a short decision, and
   cancelling leaves nothing behind. It posts only what was typed into it —

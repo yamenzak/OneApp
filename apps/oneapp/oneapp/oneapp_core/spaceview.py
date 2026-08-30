@@ -700,7 +700,12 @@ def record(space_code: str, screen: str, name: str) -> dict:
 
 	found = frappe.get_list(
 		resolved["doctype"],
-		fields=fields + list(META_FIELDS),
+		# Frappe's own bookkeeping as well as the fields. It is never a column
+		# — `HIDDEN` sees to that, and a customer reading `modified_by` in a
+		# list is always an accident — but on the record itself "who made this,
+		# and when did it last change" is the question every desk sidebar
+		# answers, and there is nowhere else to read it from.
+		fields=fields + list(META_FIELDS) + list(RECORD_META),
 		# The screen's own filters, not a saved view's: you can arrive at a
 		# record from one view and open it under another, and a personal filter
 		# is not a rule about what exists.
@@ -757,6 +762,11 @@ def _total(resolved: dict, filters: list) -> int:
 # comments are on it, and who liked it. Frappe keeps all three on the document,
 # so this costs no extra query.
 META_FIELDS = ("modified", "_comments", "_liked_by")
+
+# Read for a record and never for a row. Who made it and who last touched it is
+# the question every desk sidebar answers, and it is the one thing on a record
+# that no field carries.
+RECORD_META = ("owner", "creation", "modified_by")
 
 
 def _with_links(resolved: dict, rows: list[dict]) -> None:
@@ -1290,6 +1300,69 @@ def _change(row: dict, resolved: dict) -> dict:
 		"on": row["creation"],
 		"entries": entries,
 	}
+
+
+# What a File row carries that is worth showing. `file_size` in bytes, because
+# the browser knows how to say "1.2 MB" in the reader's own locale and the
+# server does not know what that is.
+FILE_FIELDS = ("name", "file_name", "file_url", "file_size", "is_private", "creation", "owner")
+
+
+def _attachable(space_code: str, screen: str, name: str) -> str:
+	"""The doctype of a record this screen may open, or a refusal.
+
+	Reading the document is the permission check, the same one the timeline
+	makes: `get_doc` raises when this user may not, and what is attached to a
+	record is no less private than the record.
+	"""
+	resolved = _resolve(space_code, screen)
+	doctype = resolved.get("doctype")
+	if not doctype:
+		frappe.throw(_("This screen has no records to attach anything to."))
+	frappe.get_doc(doctype, name).check_permission("read")
+	return doctype
+
+
+@frappe.whitelist(methods=["GET"])
+def attachments(space_code: str, screen: str, name: str) -> dict:
+	"""Everything filed against one record.
+
+	Frappe's own File rows, which is what the desk's sidebar lists and what an
+	Attach field points at — so a file uploaded through a field and a file
+	dropped on the record are one list rather than two.
+	"""
+	doctype = _attachable(space_code, screen, name)
+	found = frappe.get_all(
+		"File",
+		filters={"attached_to_doctype": doctype, "attached_to_name": name},
+		fields=list(FILE_FIELDS),
+		order_by="creation desc",
+	)
+	return {"files": found, "doctype": doctype}
+
+
+@frappe.whitelist(methods=["POST"])
+def remove_attachment(space_code: str, screen: str, name: str, file: str) -> dict:
+	"""Take one file off a record.
+
+	Writing the record is the permission: removing what is filed against
+	something is a change to it, even though the row being deleted is a File.
+	And the file has to be attached to *this* record — a File name arriving in
+	the payload is a File name somebody sent.
+	"""
+	doctype = _attachable(space_code, screen, name)
+	doc = frappe.get_doc(doctype, name)
+	doc.check_permission("write")
+
+	attached = frappe.db.get_value(
+		"File", file, ["attached_to_doctype", "attached_to_name"], as_dict=True
+	)
+	if not attached or (attached.attached_to_doctype, attached.attached_to_name) != (doctype, name):
+		frappe.throw(_("That file is not on this record."), frappe.PermissionError)
+
+	frappe.delete_doc("File", file)
+	frappe.db.commit()
+	return {"ok": True}
 
 
 @frappe.whitelist(methods=["POST"])

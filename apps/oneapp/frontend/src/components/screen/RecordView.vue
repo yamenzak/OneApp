@@ -82,10 +82,24 @@
             </span>
           </TabTrigger>
           <TabTrigger v-if="trackChanges" value="history">History</TabTrigger>
+          <TabTrigger value="files">Files</TabTrigger>
         </TabList>
 
         <TabPanel value="fields">
           <div class="flex flex-col gap-4 pt-4">
+            <!-- The record's own picture, where the doctype declares one.
+                 Replaced in place, because an Attach Image field otherwise
+                 renders as a file box halfway down the form. -->
+            <RecordImage
+              v-if="spec.image_field"
+              :value="form[spec.image_field] || ''"
+              :label="identity.label"
+              :field="spec.image_field"
+              :doctype="spec.doctype"
+              :name="record.name"
+              :can-write="canWrite"
+              @update:value="form[spec.image_field] = $event"
+            />
             <RecordForm
               v-model:values="form"
               :spec="spec"
@@ -94,6 +108,7 @@
               :disabled="!canWrite"
             />
             <ErrorMessage v-if="error" :message="error" />
+            <RecordMeta :record="record" />
           </div>
         </TabPanel>
 
@@ -113,6 +128,15 @@
         <TabPanel value="history">
           <RecordHistory :changes="changes" :loading="loadingTimeline" />
         </TabPanel>
+
+        <TabPanel value="files">
+          <RecordFiles
+            :space-code="spaceCode"
+            :screen="screen"
+            :name="record.name"
+            :can-write="canWrite"
+          />
+        </TabPanel>
       </Tabs>
     </div>
   </div>
@@ -125,6 +149,9 @@ import RecordChip from './RecordChip.vue'
 import RecordForm from './RecordForm.vue'
 import RecordComments from './RecordComments.vue'
 import RecordHistory from './RecordHistory.vue'
+import RecordFiles from './RecordFiles.vue'
+import RecordImage from './RecordImage.vue'
+import RecordMeta from './RecordMeta.vue'
 import { workspace } from '../../lib/workspace'
 import { valueTheme } from '../../lib/fields'
 
