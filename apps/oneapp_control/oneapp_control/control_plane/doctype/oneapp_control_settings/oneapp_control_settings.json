@@ -50,7 +50,9 @@
   "cb_ai",
   "google_ai_key",
   "cf_api_token",
-  "ai_markup_multiplier"
+  "ai_markup_multiplier",
+  "ai_catalogue_synced_on",
+  "ai_catalogue_note"
  ],
  "fields": [
   {
@@ -300,10 +302,24 @@
   },
   {
    "default": "1.5",
-   "description": "Applied to measured provider cost when converting to credits.",
+   "description": "Applied to measured provider cost when converting to credits. A model may override it; see AI Model.",
    "fieldname": "ai_markup_multiplier",
    "fieldtype": "Float",
    "label": "Ai Markup Multiplier"
+  },
+  {
+   "description": "Last successful model and price sync.",
+   "fieldname": "ai_catalogue_synced_on",
+   "fieldtype": "Datetime",
+   "label": "Ai Catalogue Synced On",
+   "read_only": 1
+  },
+  {
+   "description": "What the last sync did, and what it could not parse.",
+   "fieldname": "ai_catalogue_note",
+   "fieldtype": "Small Text",
+   "label": "Ai Catalogue Note",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,

@@ -39,12 +39,19 @@ def _make_frappe():
 	frappe.throw = throw
 	frappe._ = lambda s: s
 	frappe.request = None
+	frappe.get_hooks = lambda key, *a, **kw: []
+	frappe.get_module = __import__
+	frappe.parse_json = lambda v: __import__("json").loads(v) if isinstance(v, str) else v
 	frappe.session = types.SimpleNamespace(user="Administrator")
 
 	class _DB:
 		def __init__(self):
 			self.singles = {}
 			self.records = {}
+			self.commits = 0
+
+		def commit(self):
+			self.commits += 1
 
 		def get_single_value(self, doctype, field):
 			return self.singles.get((doctype, field))
@@ -110,7 +117,22 @@ def _make_frappe():
 	utils.now_datetime = lambda: None
 	utils.add_to_date = lambda *a, **k: None
 	utils.get_datetime = lambda x: x
-	utils.getdate = lambda *a: None
+	# Real, not a stub returning None: the AI pricer picks between two rows by
+	# comparing today against a rate's effective window, and a getdate that
+	# answers None makes every dated rate look current.
+	def getdate(value=None):
+		import datetime
+
+		if value is None:
+			return datetime.date.today()
+		if isinstance(value, datetime.datetime):
+			return value.date()
+		if isinstance(value, datetime.date):
+			return value
+		return datetime.date.fromisoformat(str(value)[:10])
+
+	utils.getdate = getdate
+	utils.today = lambda: str(getdate())
 	utils.flt = float
 	utils.get_fullname = lambda u: u
 	frappe.utils = utils

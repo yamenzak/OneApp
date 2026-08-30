@@ -48,7 +48,7 @@
       </SettingsNavGroup>
     </SettingsSidebar>
 
-    <SettingsContent>
+    <SettingsContent :class="PANEL_CONTENT">
       <SettingsPanel value="control"><ControlSettings /></SettingsPanel>
       <SettingsPanel value="cloudflare"><CloudflareSettings /></SettingsPanel>
       <SettingsPanel value="billing"><BillingSettings /></SettingsPanel>
@@ -56,6 +56,8 @@
       <SettingsPanel value="apps"><AppsSettings /></SettingsPanel>
       <SettingsPanel value="regions"><RegionsSettings /></SettingsPanel>
       <SettingsPanel value="buckets"><BucketsSettings /></SettingsPanel>
+      <SettingsPanel value="ai"><AiSettings /></SettingsPanel>
+      <SettingsPanel value="ai-features"><AiFeaturesSettings /></SettingsPanel>
       <SettingsPanel value="appearance">
         <SettingsHeader title="Appearance" :class="PANEL_HEADER" />
         <SettingsBody :class="PANEL_BODY">
@@ -68,8 +70,16 @@
 
 <script setup>
 import {
-  SettingsDialog, SettingsSidebar, SettingsNavGroup, SettingsNavItem,
-  SettingsContent, SettingsPanel, SettingsHeader, SettingsBody, Button, Icon,
+  SettingsDialog,
+  SettingsSidebar,
+  SettingsNavGroup,
+  SettingsNavItem,
+  SettingsContent,
+  SettingsPanel,
+  SettingsHeader,
+  SettingsBody,
+  Button,
+  Icon,
 } from '@/ui'
 import ControlSettings from './ControlSettings.vue'
 import CloudflareSettings from './CloudflareSettings.vue'
@@ -78,8 +88,10 @@ import PlansSettings from './PlansSettings.vue'
 import AppsSettings from './AppsSettings.vue'
 import RegionsSettings from './RegionsSettings.vue'
 import BucketsSettings from './BucketsSettings.vue'
+import AiSettings from './AiSettings.vue'
+import AiFeaturesSettings from './AiFeaturesSettings.vue'
 import ThemeSetting from '../ThemeSetting.vue'
-import { PANEL_BODY, PANEL_HEADER, TAB_GROUP, TAB_ITEM, TAB_STRIP } from './geometry'
+import { PANEL_BODY, PANEL_HEADER, TAB_GROUP, TAB_ITEM, TAB_STRIP, PANEL_CONTENT } from './geometry'
 import { showSettings, activeSettingsTab } from '../../lib/settings'
 
 // Everything an operator needs, so the desk is never required. Grouped by what
@@ -103,10 +115,15 @@ const GROUPS = [
     ],
   },
   {
-    label: 'Preferences',
+    label: 'AI',
     items: [
-      { value: 'appearance', label: 'Appearance', icon: 'lucide-sun-moon' },
+      { value: 'ai', label: 'Models', icon: 'lucide-sparkles' },
+      { value: 'ai-features', label: 'Features', icon: 'lucide-wand-2' },
     ],
+  },
+  {
+    label: 'Preferences',
+    items: [{ value: 'appearance', label: 'Appearance', icon: 'lucide-sun-moon' }],
   },
 ]
 </script>

@@ -106,6 +106,7 @@ def sync_from_control_plane() -> dict:
 	sync_email_account()
 	sync_branding(tenant)
 	books = sync_books(payload.get("books"))
+	sync_ai(payload.get("ai") or {}, credits)
 
 	return {
 		"ok": True,
@@ -115,6 +116,37 @@ def sync_from_control_plane() -> dict:
 		"members_disabled": people["disabled"],
 		"books": books,
 	}
+
+
+def sync_ai(block: dict, credits: dict) -> None:
+	"""Cache the model catalogue and the platform's feature policy, then report
+	back what this site declares.
+
+	Cached rather than fetched per call so the settings page renders and a model
+	stays chosen while the control plane is unreachable. It is never used to
+	price a call — that happens on the control plane, against the same rows.
+
+	Reporting is the other half of autodiscovery: features exist only in app
+	code, so an operator would otherwise have no way to know what a site can do.
+	"""
+	from oneapp.oneapp_core.ai import features
+
+	try:
+		frappe.db.set_single_value("OneApp AI Settings", {
+			"catalogue_json": json.dumps(block.get("models") or [], default=str),
+			"registry_json": json.dumps(block.get("features") or [], default=str),
+			"credit_balance": credits.get("balance") or 0,
+			"last_sync": now_datetime(),
+		})
+	except Exception:
+		# A site whose AI settings will not write is still a working site.
+		frappe.log_error(title="AI settings cache failed", message=frappe.get_traceback())
+		return
+
+	try:
+		features.report()
+	except Exception:
+		frappe.log_error(title="AI feature report failed", message=frappe.get_traceback())
 
 
 def sync_books(hint: dict | None) -> dict:

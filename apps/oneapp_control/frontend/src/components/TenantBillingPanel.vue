@@ -99,6 +99,61 @@
         </ListRows>
       </List>
     </section>
+
+    <section>
+      <div class="mb-1 flex items-center justify-between gap-2">
+        <h3 class="text-base-medium text-ink-gray-8">AI usage</h3>
+        <Button
+          icon="lucide-refresh-cw"
+          variant="ghost"
+          label="Compare against the gateway log"
+          :loading="reconciling"
+          @click="reconcile"
+        />
+      </div>
+      <!--
+        Two numbers per row, deliberately. We charge what the model reported it
+        used; the gateway keeps its own figure and bills the account on it. Where
+        they differ an adjustment has already been posted to the ledger above,
+        and this is where an operator sees why.
+      -->
+      <p class="mb-3 text-p-sm text-ink-gray-5">
+        Charged from what each model reported it used. The gateway column is
+        Cloudflare's own figure, filled in once its log catches up.
+      </p>
+
+      <EmptyState
+        v-if="!usage.length"
+        class="!py-8"
+        title="No AI calls"
+        description="Nothing in this workspace has called a model yet."
+      />
+      <List v-else :columns="usageTracks" :row-height="48" class="list-row-px-3" divider="full">
+        <ListRows :items="usage" row-key="name" v-slot="{ item: row, value }">
+          <ListRow :value="value">
+            <ListCell>
+              <div class="min-w-0">
+                <p class="truncate text-p-sm text-ink-gray-8">{{ row.feature || 'AI call' }}</p>
+                <p class="truncate text-xs text-ink-gray-5">{{ row.model }}</p>
+              </div>
+            </ListCell>
+            <ListCell v-if="usageShows('when')">
+              <span class="text-p-sm text-ink-gray-5">{{ when(row.creation) }}</span>
+            </ListCell>
+            <ListCell v-if="usageShows('gateway')">
+              <span class="text-p-sm tabular-nums text-ink-gray-5">
+                {{ row.reconciled_on ? `$${row.gateway_cost_usd}` : '—' }}
+              </span>
+            </ListCell>
+            <ListCell>
+              <span class="text-p-sm tabular-nums text-ink-gray-8">
+                {{ row.credits_charged }}
+              </span>
+            </ListCell>
+          </ListRow>
+        </ListRows>
+      </List>
+    </section>
   </div>
 
   <Dialog v-model="showChange" title="Change plan" size="lg">
@@ -137,6 +192,7 @@ import {
 import EmptyState from './EmptyState.vue'
 import { useListColumns } from '../lib/list'
 import { api, useDocList } from '../lib/api'
+import { ai } from '../lib/ai'
 
 const props = defineProps({ tenant: { type: String, required: true } })
 
@@ -151,6 +207,16 @@ const error = ref('')
 const { columns: fieldTracks } = useListColumns([
   { key: 'label', header: '', track: '12rem', mobile: '8rem' },
   { key: 'value', header: '', track: 'minmax(0,1fr)' },
+])
+
+const usage = ref([])
+const reconciling = ref(false)
+
+const { columns: usageTracks, shows: usageShows } = useListColumns([
+  { key: 'call', header: 'Call', track: 'minmax(0,1fr)' },
+  { key: 'when', header: 'When', track: '9rem', mobile: false },
+  { key: 'gateway', header: 'Gateway', track: '7rem', mobile: false },
+  { key: 'credits', header: 'Credits', track: '7rem', mobile: '5rem' },
 ])
 
 const { columns: creditTracks, shows: creditShows } = useListColumns([
@@ -225,10 +291,25 @@ const when = (value) => (value ? dayjsLocal(value).format('D MMM YYYY, HH:mm') :
 const load = async () => {
   loading.value = true
   try {
-    data.value = await api.tenantBilling(props.tenant)
+    const [billing, calls] = await Promise.all([
+      api.tenantBilling(props.tenant),
+      ai.usage({ tenant: props.tenant, limit: 25 }),
+    ])
+    data.value = billing
+    usage.value = calls || []
     chosen.value = data.value?.plan || ''
   } finally {
     loading.value = false
+  }
+}
+
+async function reconcile() {
+  reconciling.value = true
+  try {
+    await ai.reconcile()
+    usage.value = (await ai.usage({ tenant: props.tenant, limit: 25 })) || []
+  } finally {
+    reconciling.value = false
   }
 }
 

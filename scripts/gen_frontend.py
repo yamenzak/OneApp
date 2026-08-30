@@ -1318,6 +1318,22 @@ export const TAB_ITEM = 'max-sm:!w-auto max-sm:shrink-0 max-sm:whitespace-nowrap
 export const PANEL_HEADER = 'max-sm:!px-4 max-sm:!pt-5'
 
 /**
+ * The panel column, so a wide table scrolls instead of stretching the dialog.
+ *
+ * A flex item's `min-width` defaults to `auto`: it refuses to shrink below its
+ * content. SettingsPanel is a flex item of SettingsContent, so a table
+ * declaring `min-w-[40rem]` inside an `overflow-x-auto` wrapper does not make
+ * the wrapper scroll — it makes the panel grow. Measured on a Pixel 7, the
+ * models panel came out 787px wide in a 412px viewport with a third of it
+ * unreachable, and `document.scrollWidth` stayed clean the whole time because
+ * the dialog clips what overflows. Every catalogue panel had it.
+ *
+ * Applied to SettingsContent and reaching its panels, so it is one class in one
+ * place rather than a prop every panel has to remember.
+ */
+export const PANEL_CONTENT = '[&>[role=tabpanel]]:min-w-0'
+
+/**
  * A panel's scrolling body. The padding lives on the ScrollArea viewport, which
  * SettingsBody hardcodes, so it is reached through the viewport's data-slot
  * rather than by a class on the component.

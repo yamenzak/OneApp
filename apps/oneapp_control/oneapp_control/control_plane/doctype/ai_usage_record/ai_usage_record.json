@@ -1,0 +1,183 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "tenant",
+  "feature",
+  "model",
+  "provider",
+  "cb_usage_money",
+  "credits_charged",
+  "cost_usd",
+  "markup",
+  "reservation",
+  "sec_usage_units",
+  "units",
+  "cb_usage_log",
+  "gateway_log_id",
+  "cached",
+  "sec_usage_recon",
+  "reconciled_on",
+  "gateway_cost_usd",
+  "cb_usage_recon",
+  "adjustment",
+  "recon_note"
+ ],
+ "fields": [
+  {
+   "default": "AIU-.YYYY.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming Series",
+   "options": "AIU-.YYYY.-"
+  },
+  {
+   "fieldname": "tenant",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tenant",
+   "options": "Tenant",
+   "reqd": 1
+  },
+  {
+   "fieldname": "feature",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Feature"
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Model",
+   "options": "AI Model"
+  },
+  {
+   "fieldname": "provider",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Provider"
+  },
+  {
+   "fieldname": "cb_usage_money",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "credits_charged",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Credits Charged"
+  },
+  {
+   "description": "Measured provider cost before markup.",
+   "fieldname": "cost_usd",
+   "fieldtype": "Float",
+   "label": "Cost Usd",
+   "precision": "9"
+  },
+  {
+   "fieldname": "markup",
+   "fieldtype": "Float",
+   "label": "Markup"
+  },
+  {
+   "fieldname": "reservation",
+   "fieldtype": "Link",
+   "label": "Reservation",
+   "options": "Credit Reservation"
+  },
+  {
+   "fieldname": "sec_usage_units",
+   "fieldtype": "Section Break",
+   "label": "What was counted"
+  },
+  {
+   "description": "The metered units, as reported by the provider.",
+   "fieldname": "units",
+   "fieldtype": "Code",
+   "label": "Units",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "cb_usage_log",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "cf-aig-log-id. The handle for reconciliation.",
+   "fieldname": "gateway_log_id",
+   "fieldtype": "Data",
+   "label": "Gateway Log ID"
+  },
+  {
+   "default": "0",
+   "fieldname": "cached",
+   "fieldtype": "Check",
+   "label": "Cached"
+  },
+  {
+   "fieldname": "sec_usage_recon",
+   "fieldtype": "Section Break",
+   "label": "Reconciliation"
+  },
+  {
+   "fieldname": "reconciled_on",
+   "fieldtype": "Datetime",
+   "label": "Reconciled On",
+   "read_only": 1
+  },
+  {
+   "description": "What AI Gateway's log says the call cost.",
+   "fieldname": "gateway_cost_usd",
+   "fieldtype": "Float",
+   "label": "Gateway Cost Usd",
+   "precision": "9",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_usage_recon",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Posted when the gateway disagreed with us.",
+   "fieldname": "adjustment",
+   "fieldtype": "Link",
+   "label": "Adjustment",
+   "options": "Credit Ledger Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "recon_note",
+   "fieldtype": "Small Text",
+   "label": "Recon Note",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "AI Usage Record",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

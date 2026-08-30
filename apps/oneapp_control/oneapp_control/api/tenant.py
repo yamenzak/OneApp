@@ -11,6 +11,7 @@ import json
 import frappe
 from frappe import _
 
+from oneapp_control.ai import catalogue, pricing
 from oneapp_control.credits import ledger
 from oneapp_control.entitlements import registry
 from oneapp_control.utils.signing import TENANT_HEADER, verify
@@ -107,12 +108,35 @@ def sync():
 			"balance": ledger.balance(tenant_name),
 			"available": ledger.available(tenant_name),
 		},
+		# The models a workspace may choose from and the policy for each declared
+		# feature. Cached on the site so the settings page renders and a model
+		# can be chosen while the control plane is unreachable — but never used
+		# to price a call, which happens here or not at all.
+		"ai": {
+			"models": catalogue.catalogue_for_tenant(),
+			"features": _ai_features(),
+		},
 		# What signup already answered, so the tenant site can set its books up
 		# without asking again. Sent rather than assumed there: the country came
 		# from the region they chose and the currency from the plan they bought,
 		# and neither is knowable from inside the site.
 		"books": _books_hint(tenant),
 	}
+
+
+def _ai_features() -> list[dict]:
+	"""Platform policy per feature: what a workspace may change, and what it may not."""
+	return frappe.get_all(
+		"AI Feature",
+		filters={"status": ["!=", "Withdrawn"]},
+		fields=[
+			"name as key", "label", "app", "capability", "status",
+			"tenant_can_disable", "allow_prompt_addendum", "default_model",
+			"max_input_tokens", "max_output_tokens", "max_images",
+			"max_audio_seconds", "max_credits", "description",
+		],
+		order_by="app asc, label asc",
+	)
 
 
 def _books_hint(tenant) -> dict:
@@ -212,6 +236,183 @@ def reserve_credits():
 		"reservation": reservation.name,
 		"expires_at": str(reservation.expires_at),
 	}
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def ai_reserve():
+	"""Hold the most an AI call may cost, before it is made.
+
+	The tenant site does not price its own calls. It says which model and which
+	feature; the ceiling and, later, the charge are both computed here against
+	the synced catalogue. One place holds the prices, and a site cannot bill
+	itself a number of its own choosing.
+	"""
+	tenant_name = _authenticate()
+	data = _body()
+
+	model_key = data.get("model")
+	if not frappe.db.exists("AI Model", model_key):
+		return {"ok": False, "reason": "unknown_model", "model": model_key}
+
+	status = frappe.db.get_value("AI Model", model_key, "status")
+	if status not in ("Available", "Preview"):
+		return {"ok": False, "reason": "model_unavailable", "status": status}
+
+	try:
+		ceiling = pricing.ceiling(model_key, data.get("limits") or {})
+	except pricing.Unpriceable as e:
+		return {"ok": False, "reason": "unpriceable", "message": str(e)}
+
+	purpose = f"ai:{data.get('feature') or 'unspecified'}"
+	try:
+		reservation = ledger.reserve(tenant_name, ceiling, purpose)
+	except ledger.InsufficientCredits:
+		return {
+			"ok": False,
+			"reason": "insufficient_credits",
+			"available": ledger.available(tenant_name),
+			"needed": ceiling,
+		}
+
+	return {
+		"ok": True,
+		"reservation": reservation.name,
+		"ceiling": ceiling,
+		"expires_at": str(reservation.expires_at),
+	}
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def ai_settle():
+	"""Charge what the call actually used, and keep the receipt.
+
+	`units` are counts the provider returned — tokens by modality, tiles, audio
+	minutes. Nothing here is estimated, and a unit the catalogue cannot price
+	is an error rather than a zero.
+	"""
+	tenant_name = _authenticate()
+	data = _body()
+
+	reservation = frappe.get_doc("Credit Reservation", data["reservation"])
+	if reservation.tenant != tenant_name:
+		frappe.throw(_("Reservation does not belong to this tenant."), frappe.PermissionError)
+
+	if data.get("release"):
+		reservation.release(data.get("reason") or "call failed")
+		return {"ok": True, "status": reservation.status, "credits": 0,
+		        "balance": ledger.balance(tenant_name)}
+
+	model_key = data.get("model")
+	units = data.get("units") or []
+
+	try:
+		priced = pricing.charge(model_key, units, data.get("tier") or "Standard")
+	except (pricing.Unpriceable, frappe.DoesNotExistError) as e:
+		# The work is done and the customer has their answer. Releasing the hold
+		# is the only honest move: we cannot name a price, so we do not charge
+		# one, and the record below says why.
+		reservation.release("could not be priced")
+		_usage_record(tenant_name, data, {"credits": 0, "cost_usd": 0, "markup": 0,
+		                                  "provider": ""}, note=str(e))
+		frappe.log_error(title="AI call could not be priced", message=str(e))
+		return {"ok": True, "status": reservation.status, "credits": 0,
+		        "unpriced": True, "balance": ledger.balance(tenant_name)}
+
+	remarks = f"{model_key} {data.get('feature') or ''}".strip()
+	held = float(reservation.credits_reserved or 0)
+	reservation.commit_usage(priced["credits"], remarks)
+
+	# commit_usage never charges more than was held, which is the right rule for
+	# a hold and the wrong one for a bill: a call that overran its ceiling still
+	# cost us the money. Post the remainder rather than absorb it silently.
+	overrun = round(float(priced["credits"]) - held, 2)
+	if overrun > 0:
+		ledger.post_entry(
+			tenant=tenant_name,
+			entry_type="Adjustment",
+			credits=-overrun,
+			remarks=f"{remarks} exceeded its {held} credit ceiling by {overrun}.",
+		)
+		frappe.log_error(
+			title="AI call exceeded its ceiling",
+			message=f"{remarks}: held {held}, used {priced['credits']}.",
+		)
+
+	_usage_record(tenant_name, data, priced)
+
+	return {
+		"ok": True,
+		"status": reservation.status,
+		"credits": priced["credits"],
+		"cost_usd": priced["cost_usd"],
+		"balance": ledger.balance(tenant_name),
+	}
+
+
+def _usage_record(tenant_name: str, data: dict, priced: dict, note: str = ""):
+	"""One row per call: what it used, what it cost, and the gateway log id.
+
+	The log id is the whole point of writing this down. It is how a later job
+	compares what we charged against what Cloudflare says the call cost.
+	"""
+	frappe.get_doc({
+		"doctype": "AI Usage Record",
+		"tenant": tenant_name,
+		"feature": data.get("feature"),
+		"model": data.get("model") if frappe.db.exists("AI Model", data.get("model")) else None,
+		"provider": priced.get("provider"),
+		"credits_charged": priced.get("credits") or 0,
+		"cost_usd": priced.get("cost_usd") or 0,
+		"markup": priced.get("markup") or 0,
+		"reservation": data.get("reservation"),
+		"units": json.dumps(data.get("units") or [], sort_keys=True),
+		"gateway_log_id": data.get("log_id"),
+		"cached": 1 if data.get("cached") else 0,
+		"recon_note": note,
+	}).insert(ignore_permissions=True)
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def report_ai_features():
+	"""Take delivery of a site's feature registry.
+
+	Features exist in app code behind a decorator, which is the only thing that
+	knows they exist. Sites report what they found; this is the upsert, so an
+	operator can see the whole surface and pin a model or suspend a feature
+	without a deploy and without anyone maintaining a list.
+	"""
+	_authenticate()
+	features = _body().get("features") or []
+
+	for spec in features:
+		key = spec.get("key")
+		if not key:
+			continue
+
+		existing = frappe.db.exists("AI Feature", key)
+		doc = frappe.get_doc("AI Feature", key) if existing else frappe.new_doc("AI Feature")
+		doc.update({
+			"feature_key": key,
+			"label": spec.get("label") or key,
+			"app": spec.get("app"),
+			"capability": spec.get("capability") or "Text Generation",
+			# Declared in code, not configured here: whether a feature can run
+			# without AI is a property of the process, and an operator toggling
+			# it would be overruling the app that has to work afterwards.
+			"tenant_can_disable": 1 if spec.get("tenant_can_disable") else 0,
+			"allow_prompt_addendum": 1 if spec.get("allow_prompt_addendum") else 0,
+			"max_input_tokens": spec.get("max_input_tokens") or 0,
+			"max_output_tokens": spec.get("max_output_tokens") or 0,
+			"max_images": spec.get("max_images") or 0,
+			"max_audio_seconds": spec.get("max_audio_seconds") or 0,
+			"description": spec.get("description"),
+			"last_seen": frappe.utils.now_datetime(),
+		})
+		if not existing:
+			doc.status = "Active"
+		doc.save(ignore_permissions=True)
+
+	return {"ok": True, "features": len(features)}
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])

@@ -8,7 +8,12 @@
       class="flex shrink-0 items-center justify-between border-b border-outline-gray-1 px-4 py-3 sm:hidden"
     >
       <span class="text-lg font-semibold text-ink-gray-8">Settings</span>
-      <Button variant="ghost" icon="lucide-x" label="Close settings" @click="settings.open = false" />
+      <Button
+        variant="ghost"
+        icon="lucide-x"
+        label="Close settings"
+        @click="settings.open = false"
+      />
     </div>
 
     <SettingsSidebar :class="TAB_STRIP">
@@ -31,6 +36,13 @@
           </template>
           Books
         </SettingsNavItem>
+
+        <SettingsNavItem value="ai" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-sparkles" class="size-4 text-ink-gray-7" />
+          </template>
+          AI
+        </SettingsNavItem>
       </SettingsNavGroup>
 
       <SettingsNavGroup label="You" :class="TAB_GROUP">
@@ -43,12 +55,14 @@
       </SettingsNavGroup>
     </SettingsSidebar>
 
-    <SettingsContent>
+    <SettingsContent :class="PANEL_CONTENT">
       <SettingsPanel v-for="group in groups" :key="group.key" :value="group.key">
         <SettingsFields :group="group" @saved="reload" />
       </SettingsPanel>
 
       <SettingsPanel value="books"><BooksSettings /></SettingsPanel>
+
+      <SettingsPanel value="ai"><AiSettings /></SettingsPanel>
 
       <SettingsPanel value="appearance">
         <SettingsHeader title="Appearance" :class="PANEL_HEADER" />
@@ -66,13 +80,22 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import {
-  SettingsDialog, SettingsSidebar, SettingsNavGroup, SettingsNavItem,
-  SettingsContent, SettingsPanel, SettingsHeader, SettingsBody, Button, Icon,
+  SettingsDialog,
+  SettingsSidebar,
+  SettingsNavGroup,
+  SettingsNavItem,
+  SettingsContent,
+  SettingsPanel,
+  SettingsHeader,
+  SettingsBody,
+  Button,
+  Icon,
 } from '@/ui'
 import SettingsFields from './SettingsFields.vue'
 import BooksSettings from './BooksSettings.vue'
+import AiSettings from './AiSettings.vue'
 import ThemeSetting from '../ThemeSetting.vue'
-import { PANEL_BODY, PANEL_HEADER, TAB_GROUP, TAB_ITEM, TAB_STRIP } from './geometry'
+import { PANEL_BODY, PANEL_HEADER, TAB_GROUP, TAB_ITEM, TAB_STRIP, PANEL_CONTENT } from './geometry'
 import { settings } from '../../lib/settings'
 import { workspace } from '../../lib/workspace'
 

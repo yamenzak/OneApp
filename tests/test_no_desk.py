@@ -42,6 +42,10 @@ EXEMPT = {
 	"Tenant Member": "child table, edited on the workspace's People page",
 	"Plan Price": "child table, written by the Stripe sync and shown on the plan",
 	"OneApp App Doctype": "child table; the permission manifest is code, not config",
+	"AI Model Price": (
+		"child table, synced from the provider and shown on the model it belongs "
+		"to; editable rates would be overwritten by the next sync"
+	),
 	# Written by the system, read through something else.
 	"Credit Reservation": (
 		"held for an in-flight call and released on completion; the balance it "
@@ -109,16 +113,97 @@ def test_every_control_doctype_is_reachable_from_oneadmin():
 	)
 
 
+# The tenant app's own doctypes. Fewer, because most of what a workspace holds
+# is Frappe's or ERPNext's; these are the ones we define.
+TENANT_EXEMPT = {
+	"OneApp Site State": (
+		"written by the control-plane sync and never by a person; what it holds "
+		"is shown as quota, plan and balance across the SPA"
+	),
+	"OneApp AI Feature Setting": (
+		"child table; one row per declared feature, edited in the workspace's AI "
+		"settings tab"
+	),
+}
+
+
+def _tenant_endpoints_by_doctype() -> dict[str, set[str]]:
+	"""Which whitelisted tenant methods name each doctype, as dotted paths.
+
+	The tenant app has no single admin module — its endpoints live in the
+	feature modules that own them, which is the right shape there — so this
+	walks the package and builds the same `module.function` string the SPA
+	calls by.
+
+	Scoped to the module rather than to the function body, unlike the control
+	plane's version. A tenant module owns one subject and reaches its doctype
+	through helpers; requiring the literal inside the endpoint would only teach
+	us to inline a string to satisfy a test.
+	"""
+	import ast
+
+	tenant = ROOT / "apps/oneapp/oneapp"
+	found: dict[str, set[str]] = {}
+
+	for path in sorted(tenant.rglob("*.py")):
+		source = path.read_text()
+		if "whitelist" not in source:
+			continue
+
+		dotted = path.relative_to(tenant.parent).with_suffix("").as_posix().replace("/", ".")
+		named = set(re.findall(r'"([A-Z][A-Za-z ]+)"', source))
+
+		for node in ast.walk(ast.parse(source)):
+			if not isinstance(node, ast.FunctionDef):
+				continue
+			if not any("whitelist" in ast.unparse(d) for d in node.decorator_list):
+				continue
+			for name in named:
+				found.setdefault(name, set()).add(f"{dotted}.{node.name}")
+
+	return found
+
+
+def test_every_tenant_doctype_is_reachable_from_onespace():
+	"""The claim in this file's docstring, checked for the customer's half too.
+
+	It went unchecked while the tenant app had one doctype, which is exactly how
+	a rule stops applying: not by being repealed, but by never being tested on
+	anything.
+	"""
+	spa = _spa_source(TENANT_SRC)
+	endpoints = _tenant_endpoints_by_doctype()
+
+	missing = []
+	for name in doctypes(ROOT / "apps/oneapp/oneapp"):
+		if name in TENANT_EXEMPT or name in spa:
+			continue
+		if any(path in spa for path in endpoints.get(name, ())):
+			continue
+		missing.append(name)
+
+	assert not missing, (
+		"these have no customer surface, so the desk is the only way to see or "
+		"change them: " + ", ".join(sorted(missing))
+	)
+
+
 def test_the_exemptions_say_why():
 	"""An exemption without a reason is a to-do that stopped looking like one."""
 	for name, reason in EXEMPT.items():
 		assert len(reason) > 20, f"{name} is exempt for no stated reason"
 
 
+	for name, reason in TENANT_EXEMPT.items():
+		assert len(reason) > 20, f"{name} is exempt for no stated reason"
+
+
 def test_the_exemption_list_has_no_stale_entries():
 	"""A doctype that has since gone should not leave a rule behind."""
-	known = set(doctypes(CONTROL))
-	stale = set(EXEMPT) - known
+	stale = set(EXEMPT) - set(doctypes(CONTROL))
+	assert not stale, f"these no longer exist: {sorted(stale)}"
+
+	stale = set(TENANT_EXEMPT) - set(doctypes(ROOT / "apps/oneapp/oneapp"))
 	assert not stale, f"these no longer exist: {sorted(stale)}"
 
 

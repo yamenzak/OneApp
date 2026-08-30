@@ -477,3 +477,42 @@ the same machine, so the allocator would overfill it. The form refuses.
 Upgrading a server needs nothing at all — raise `capacity_tenants` when the
 machine can hold more. Draining one is `accepts_new_tenants = 0`, which stops
 intake without touching the tenants already there.
+
+---
+
+## 11. AI is metered, never estimated
+
+The full design is in `docs/AI.md`. The decisions worth stating here are the
+three that constrain everything else.
+
+**We do not invent a price.** Every charge starts from a count the provider
+returned — tokens by modality, tiles, audio minutes — or from a parameter we
+ourselves set on the request. Nothing is derived from the length of a string.
+A model whose rate we could not read is not sellable, and a call we could not
+meter is not billed. The old code did the opposite: a hardcoded price table, a
+default for anything missing, and a reservation estimated at four characters per
+token. Both failure modes were the same one — a number we made up appearing on
+a customer's bill.
+
+This was worth confirming rather than assuming, because the initial brief had
+it the other way round: AI Gateway does not return a cost. There is no cost
+header; the figure lives in the gateway's log, arrives after the fact, and
+Cloudflare's own documentation calls it an estimate. What is exact and immediate
+is the usage the model reports, which is what we charge on.
+
+**The reservation is a ceiling, not a forecast.** Something has to be held
+before the answer exists, and the honest way to choose that number is to make it
+a limit we enforce rather than a guess at what the answer will cost. A feature
+declares the most it may consume; that is priced at catalogue rates and held;
+the hold collapses to the measured actual when the provider answers.
+
+**The catalogue is fetched, not typed.** Providers ship models weekly and
+re-price them without notice, and the way you find out about a hand-maintained
+table is a margin rather than an error. Models, capabilities and prices are
+synced nightly from each provider's API and published price page. What stays
+ours is the commercial layer: whether to sell a model, what to charge on top,
+which one to recommend. The sync never touches those.
+
+The corollary is that prices are not editable in OneAdmin. A field that the next
+sync overwrites is a control that silently stops working, so the rates are shown
+and the markup is what an operator turns.

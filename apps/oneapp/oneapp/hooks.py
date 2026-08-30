@@ -57,6 +57,18 @@ doc_events = {
 # ---------------------------------------------------------------------------
 # Scheduled tasks
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# AI features
+# ---------------------------------------------------------------------------
+# Modules holding @ai_feature declarations. Listed rather than discovered by
+# walking the package: a feature that only registers when something happens to
+# import its module is a feature missing from the settings page on a cold worker.
+#
+# Apps built on OneApp add their own here. Nothing ships one yet — the mechanism
+# exists so the first app that needs AI declares it and gets the settings row,
+# the credit hold and the operator registry entry for free.
+ai_features = []
+
 scheduler_events = {
 	"cron": {
 		# Entitlements and balance. Frequent because revoking an app should take

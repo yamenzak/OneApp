@@ -1,0 +1,122 @@
+{
+ "actions": [],
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "kind",
+  "modality",
+  "unit",
+  "cb_price_rate",
+  "cost_usd",
+  "per_units",
+  "tier",
+  "sec_price_window",
+  "effective_from",
+  "effective_to",
+  "cb_price_src",
+  "note"
+ ],
+ "fields": [
+  {
+   "description": "What is being charged for. Reasoning is Gemini's thinking tokens, which bill at the output rate but are counted separately.",
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Kind",
+   "options": "Input\nCached Input\nCache Write\nOutput\nReasoning\nRequest\nSearch",
+   "reqd": 1
+  },
+  {
+   "default": "Text",
+   "description": "Which modality of that kind. A multimodal model has several rows here and they do not cost the same.",
+   "fieldname": "modality",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Modality",
+   "options": "Text\nImage\nAudio\nVideo\nFile\nAny",
+   "reqd": 1
+  },
+  {
+   "default": "Token",
+   "description": "What the provider counts.",
+   "fieldname": "unit",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Unit",
+   "options": "Token\nImage\nTile\nStep\nSecond\nMinute\nCharacter\nRequest\nSearch",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_price_rate",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "USD for `per_units` of them.",
+   "fieldname": "cost_usd",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Cost Usd",
+   "precision": "9",
+   "reqd": 1
+  },
+  {
+   "default": "1000000",
+   "description": "1,000,000 for token rates, 1 for an image or a minute.",
+   "fieldname": "per_units",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Per Units",
+   "reqd": 1
+  },
+  {
+   "default": "Standard",
+   "description": "Only Standard is charged unless a call asks for another.",
+   "fieldname": "tier",
+   "fieldtype": "Select",
+   "label": "Tier",
+   "options": "Standard\nBatch\nFlex\nPriority",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sec_price_window",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "Providers publish dated rate changes. The row in effect on the day of the call is the one that prices it.",
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From"
+  },
+  {
+   "fieldname": "effective_to",
+   "fieldtype": "Date",
+   "label": "Effective To"
+  },
+  {
+   "fieldname": "cb_price_src",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The published wording this row came from.",
+   "fieldname": "note",
+   "fieldtype": "Data",
+   "label": "Note"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "AI Model Price",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,246 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:model_key",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "model_key",
+  "display_name",
+  "provider",
+  "model_id",
+  "status",
+  "cb_model_cap",
+  "capability",
+  "input_modalities",
+  "output_modalities",
+  "is_recommended",
+  "sec_model_limits",
+  "context_window",
+  "max_output_tokens",
+  "supports_tools",
+  "cb_model_feat",
+  "supports_json",
+  "supports_reasoning",
+  "supports_streaming",
+  "sec_model_price",
+  "markup_override",
+  "prices",
+  "sec_model_sync",
+  "source",
+  "last_synced",
+  "deprecation_date",
+  "cb_model_sync",
+  "sync_note",
+  "description"
+ ],
+ "fields": [
+  {
+   "description": "provider:model_id. Set on sync.",
+   "fieldname": "model_key",
+   "fieldtype": "Data",
+   "label": "Model Key",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "display_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Display Name"
+  },
+  {
+   "description": "The AI Gateway provider slug, used verbatim in the URL.",
+   "fieldname": "provider",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Provider",
+   "options": "workers-ai\ngoogle-ai-studio",
+   "reqd": 1
+  },
+  {
+   "description": "What goes in the request, e.g. @cf/meta/llama-3.3-70b-instruct-fp8-fast.",
+   "fieldname": "model_id",
+   "fieldtype": "Data",
+   "label": "Model Id",
+   "reqd": 1
+  },
+  {
+   "default": "Needs Review",
+   "description": "Only Available and Preview models can be chosen or called. Needs Review means the sync could not price it.",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Available\nPreview\nNeeds Review\nDeprecated\nRetired",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_model_cap",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Text Generation",
+   "description": "What the model is for. A feature declares the capability it needs and only matching models are offered.",
+   "fieldname": "capability",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Capability",
+   "options": "Text Generation\nText Embeddings\nReranking\nClassification\nSummarization\nTranslation\nImage Generation\nVideo Generation\nAudio Generation\nImage Understanding\nSpeech to Text\nText to Speech\nObject Detection",
+   "reqd": 1
+  },
+  {
+   "default": "text",
+   "description": "Comma-separated: text, image, audio, video, file.",
+   "fieldname": "input_modalities",
+   "fieldtype": "Data",
+   "label": "Input Modalities"
+  },
+  {
+   "default": "text",
+   "fieldname": "output_modalities",
+   "fieldtype": "Data",
+   "label": "Output Modalities"
+  },
+  {
+   "default": "0",
+   "description": "Pre-selected for features that do not pin a model.",
+   "fieldname": "is_recommended",
+   "fieldtype": "Check",
+   "label": "Is Recommended"
+  },
+  {
+   "fieldname": "sec_model_limits",
+   "fieldtype": "Section Break",
+   "label": "Limits and features"
+  },
+  {
+   "fieldname": "context_window",
+   "fieldtype": "Int",
+   "label": "Context Window"
+  },
+  {
+   "fieldname": "max_output_tokens",
+   "fieldtype": "Int",
+   "label": "Max Output Tokens"
+  },
+  {
+   "default": "0",
+   "fieldname": "supports_tools",
+   "fieldtype": "Check",
+   "label": "Supports Tools"
+  },
+  {
+   "fieldname": "cb_model_feat",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "supports_json",
+   "fieldtype": "Check",
+   "label": "Supports Structured Output"
+  },
+  {
+   "default": "0",
+   "fieldname": "supports_reasoning",
+   "fieldtype": "Check",
+   "label": "Supports Reasoning"
+  },
+  {
+   "default": "0",
+   "fieldname": "supports_streaming",
+   "fieldtype": "Check",
+   "label": "Supports Streaming"
+  },
+  {
+   "fieldname": "sec_model_price",
+   "fieldtype": "Section Break",
+   "label": "Pricing"
+  },
+  {
+   "default": "0",
+   "description": "Multiplier applied instead of the global one. 0 uses the global.",
+   "fieldname": "markup_override",
+   "fieldtype": "Float",
+   "label": "Markup Override"
+  },
+  {
+   "fieldname": "prices",
+   "fieldtype": "Table",
+   "label": "Prices",
+   "options": "AI Model Price"
+  },
+  {
+   "fieldname": "sec_model_sync",
+   "fieldtype": "Section Break",
+   "label": "Sync"
+  },
+  {
+   "default": "Manual",
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Cloudflare API\nCloudflare Docs\nGoogle API\nGoogle Docs\nManual"
+  },
+  {
+   "fieldname": "last_synced",
+   "fieldtype": "Datetime",
+   "label": "Last Synced",
+   "read_only": 1
+  },
+  {
+   "fieldname": "deprecation_date",
+   "fieldtype": "Date",
+   "label": "Deprecation Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_model_sync",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Why this model is where it is \u2014 including what could not be priced.",
+   "fieldname": "sync_note",
+   "fieldtype": "Small Text",
+   "label": "Sync Note",
+   "read_only": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "AI Model",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "display_name",
+ "track_changes": 1
+}

@@ -171,3 +171,31 @@ def test_wide_content_owns_its_own_horizontal_scroller():
 
     catalogue = (SETTINGS_SRC / "CatalogueList.vue").read_text()
     assert "overflow-x-auto" in catalogue, "the wide table lost its scroller"
+
+
+def test_a_panel_may_shrink_below_its_widest_child():
+    """The scroller only scrolls if the panel is allowed to be narrower than it.
+
+    SettingsPanel is a flex item of SettingsContent, and a flex item's
+    `min-width` defaults to `auto` — it refuses to shrink below its content. So
+    `overflow-x-auto` around a `min-w-[40rem]` table did not scroll: it stretched
+    the panel to 787px inside a 412px phone, with a third of it unreachable and
+    `document.scrollWidth` clean the whole time because the dialog clips what
+    overflows. Every catalogue panel had it.
+
+    Applied once, on SettingsContent, reaching its panels — so a new panel gets
+    it without having to know.
+    """
+    from pathlib import Path
+
+    for app in ("oneapp_control", "oneapp"):
+        settings = Path(__file__).resolve().parents[1] / (
+            f"apps/{app}/frontend/src/components/settings")
+
+        geometry = (settings / "geometry.js").read_text()
+        assert "[&>[role=tabpanel]]:min-w-0" in geometry, (
+            f"{app}: PANEL_CONTENT no longer lets a panel shrink")
+
+        shell = (settings / "SettingsShell.vue").read_text()
+        assert 'SettingsContent :class="PANEL_CONTENT"' in shell, (
+            f"{app}: SettingsContent is not carrying PANEL_CONTENT")

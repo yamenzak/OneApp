@@ -1,0 +1,101 @@
+{
+ "actions": [],
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "ai_enabled",
+  "credit_balance",
+  "cb_ai_set",
+  "last_sync",
+  "sec_ai_features",
+  "features",
+  "sec_ai_cache",
+  "catalogue_json",
+  "registry_json"
+ ],
+ "fields": [
+  {
+   "default": "1",
+   "description": "Off stops every feature a workspace is allowed to stop. Features declared as critical keep running \u2014 they are the process, not an assistant beside it.",
+   "fieldname": "ai_enabled",
+   "fieldtype": "Check",
+   "label": "Ai Enabled"
+  },
+  {
+   "fieldname": "credit_balance",
+   "fieldtype": "Float",
+   "label": "Credit Balance",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_ai_set",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_sync",
+   "fieldtype": "Datetime",
+   "label": "Last Sync",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_ai_features",
+   "fieldtype": "Section Break",
+   "label": "Features"
+  },
+  {
+   "fieldname": "features",
+   "fieldtype": "Table",
+   "label": "Features",
+   "options": "OneApp AI Feature Setting"
+  },
+  {
+   "fieldname": "sec_ai_cache",
+   "fieldtype": "Section Break",
+   "label": "Cached from the control plane"
+  },
+  {
+   "description": "Models the workspace may choose, with prices.",
+   "fieldname": "catalogue_json",
+   "fieldtype": "Code",
+   "label": "Catalogue Json",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "description": "Platform policy per feature: what may be disabled, what model is pinned, what the ceiling is.",
+   "fieldname": "registry_json",
+   "fieldtype": "Code",
+   "label": "Registry Json",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "OneApp AI Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

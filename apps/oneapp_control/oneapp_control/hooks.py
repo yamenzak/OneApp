@@ -52,8 +52,14 @@ scheduler_events = {
 		# A crashed worker must not strand a tenant's credits behind an open
 		# reservation forever.
 		"oneapp_control.control_plane.doctype.credit_reservation.credit_reservation.sweep_expired_reservations",
+		# Compares what we charged for AI against what the gateway's own log says
+		# the call cost. Hourly because gateway logs are written after the fact.
+		"oneapp_control.ai.reconcile.scheduled_run",
 	],
 	"daily": [
+		# Models and prices change without notice, and the way you find out is a
+		# margin rather than an error. Cheap enough to run every day.
+		"oneapp_control.ai.catalogue.scheduled_sync",
 		# Posts explicit Expiry rows so the ledger reads as a complete history.
 		"oneapp_control.credits.ledger.expire_stale_grants",
 	],
