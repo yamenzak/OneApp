@@ -473,6 +473,11 @@ def _resolve(space_code: str, screen: str | None = None,
 
 	resolved.update({
 		"doctype": doctype,
+		# What the site calls one of these. The screen's own label is plural by
+		# convention — "Tasks", "Invoices" — and "New Tasks" is not a sentence;
+		# this is the word the desk and the link picker's quick-create already
+		# use, and it comes from the doctype rather than from the manifest.
+		"doctype_label": _(meta.get("name")),
 		"columns": columns,
 		"all_columns": [{**c, "width": _default_width(c)} for c in offerable],
 		"quick_filters": _quick_filters(meta, offerable),

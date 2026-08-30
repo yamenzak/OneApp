@@ -8,7 +8,10 @@
     Reading a record is not this — that is a pane beside the list, because a
     record you are reading is a record you are reading *against* the list.
   -->
-  <Dialog v-model="open" :title="`New ${spec?.screen_label || 'record'}`" size="3xl">
+  <!-- The doctype's own word for one of these, not the screen's: a screen is
+       called "Tasks" and "New Tasks" is not a sentence. It is the same label
+       the link picker's quick-create uses. -->
+  <Dialog v-model="open" :title="`New ${spec?.doctype_label || 'record'}`" size="3xl">
     <form class="flex flex-col gap-4" @submit.prevent="save">
       <!-- The doctype's own tabs and sections. See RecordForm. -->
       <RecordForm
