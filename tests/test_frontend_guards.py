@@ -633,10 +633,14 @@ def test_the_bottom_bar_leaves_a_slot_for_everything_else():
 
 	assert "PRIMARY_SLOTS = 4" in shell, "the bar no longer reserves a slot for More"
 	assert "slice(0, PRIMARY_SLOTS)" in shell, "the bar is no longer capped"
-	assert "overflowNav" in shell, "items past the cap are dropped rather than moved"
 	assert 'label="More"' in shell, "there is no way into the sheet"
-	# Everything the desktop keeps in the rail footer and the sidebar foot.
-	for reachable in ("overflowNav", "menuItems", "tabOptions", "logout"):
+	# Everything the desktop keeps in the rail, its footer and the sidebar foot.
+	#
+	# `navItems` and not `overflowNav`: the sheet lists every destination this
+	# surface has, not only the ones the bar had no room for. A list that
+	# silently omits the four you can already see is a list you cannot trust to
+	# be complete — and it went empty on a space whose screens all fit.
+	for reachable in ("navItems", "entryOptions", "menuItems", "iconOptions", "logout"):
 		assert reachable in shell, f"the More sheet cannot reach {reachable}"
 
 

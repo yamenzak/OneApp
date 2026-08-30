@@ -99,75 +99,44 @@
   <!-- v-model:open, not v-model. BottomSheet's prop is `open`, so a bare
        v-model binds a `modelValue` it never reads and the sheet never opens. -->
   <BottomSheet v-model:open="showMenu" title="Menu">
-    <div class="flex flex-col gap-5 p-3 pb-8">
-      <div class="flex items-center gap-3 px-1">
-        <Avatar
-          :label="user.name || user.email || 'Account'"
-          :image="user.avatar"
-          size="2xl"
-        />
-        <div class="min-w-0 flex-1">
-          <p class="truncate text-base-medium text-ink-gray-8">
-            {{ user.name || user.email || 'Account' }}
-          </p>
-          <p v-if="user.subtitle || user.email" class="truncate text-p-sm text-ink-gray-5">
-            {{ user.subtitle || user.email }}
-          </p>
-        </div>
-      </div>
-
+    <div class="flex flex-col gap-4 p-3 pb-8">
       <!--
-        The rail, on a phone. A desktop switches space in one click on the
-        rail; a phone has no rail, so this sheet is the only way — and hiding
-        the section on a workspace with one space left the sheet with no way
-        to reach the launcher, which is where a second one gets opened.
-
-        `ItemListRow` rather than a div with the right padding: it is the row
-        every menu, dropdown and picker in the library is built from, so these
-        rows are the same rows.
+        The rail, on a phone. A desktop switches space in one click; a phone
+        has no rail, so this is the only way — and a list of every space, most
+        of which you are not in, is a list to read rather than a control. One
+        row saying where you are, and a menu behind it.
       -->
-      <section v-if="entries.length || entriesTo">
-        <p class="px-1 pb-1 text-p-sm text-ink-gray-5">{{ entriesLabel }}</p>
-        <router-link
-          v-for="entry in entries"
-          :key="entry.key"
-          :to="entry.to"
-          class="block"
-          @click="showMenu = false"
-        >
-          <ItemListRow
-            size="lg"
-            :active="entry.key === activeEntry"
-            class="min-h-12 active:bg-surface-gray-2"
+      <Dropdown v-if="entries.length || entriesTo" class="w-full" :options="entryOptions">
+        <template #default="{ open }">
+          <Button
+            variant="subtle"
+            class="!h-12 w-full !justify-start !px-2"
+            :icon-right="open ? 'lucide-chevron-up' : 'lucide-chevron-down'"
           >
             <template #prefix>
-              <Avatar :label="entry.label" :image="entry.image" size="xl" shape="square" />
-            </template>
-            <span class="min-w-0 flex-1 truncate">{{ entry.label }}</span>
-            <template #suffix>
-              <Icon
-                v-if="entry.key === activeEntry"
-                name="lucide-check"
-                class="size-4 shrink-0 text-ink-gray-6"
+              <Avatar
+                :label="activeEntry_?.label || entriesLabel"
+                :image="activeEntry_?.image"
+                size="lg"
+                shape="square"
               />
             </template>
-          </ItemListRow>
-        </router-link>
+            <span class="min-w-0 flex-1 truncate text-base text-ink-gray-8">
+              {{ activeEntry_?.label || entriesLabel }}
+            </span>
+          </Button>
+        </template>
+      </Dropdown>
 
-        <router-link v-if="entriesTo" :to="entriesTo" class="block" @click="showMenu = false">
-          <ItemListRow size="lg" class="min-h-12 active:bg-surface-gray-2">
-            <template #prefix>
-              <Icon name="lucide-layout-grid" class="size-5 shrink-0 text-ink-gray-7" />
-            </template>
-            <span class="min-w-0 flex-1 truncate">All {{ entriesLabel.toLowerCase() }}</span>
-          </ItemListRow>
-        </router-link>
-      </section>
-
-      <section v-if="overflowNav.length">
-        <p class="px-1 pb-1 text-p-sm text-ink-gray-5">More pages</p>
+      <!--
+        Everywhere this space goes. All of it, not only what the bottom bar had
+        no room for: the sheet is the phone's navigation, and a list that
+        silently omits the four you can already see is a list you cannot trust
+        to be complete.
+      -->
+      <section v-if="navItems.length" class="flex flex-col">
         <router-link
-          v-for="item in overflowNav"
+          v-for="item in navItems"
           :key="item.label"
           :to="item.to"
           class="block"
@@ -194,9 +163,9 @@
         </router-link>
       </section>
 
-      <section v-if="menuItems.length" class="flex flex-col gap-1">
+      <section v-if="otherMenuItems.length" class="flex flex-col gap-1">
         <Button
-          v-for="item in menuItems"
+          v-for="item in otherMenuItems"
           :key="item.label"
           variant="ghost"
           class="!h-11 w-full !justify-start !px-2"
@@ -206,21 +175,54 @@
         />
       </section>
 
-      <div>
-        <p class="px-1 pb-1.5 text-p-sm text-ink-gray-5">Appearance</p>
-        <!-- Three buttons, not a switch: a two-state control cannot express
-             "follow the system", and one tap still picks any of the three. -->
-        <TabButtons v-model="scheme" :options="tabOptions" fluid />
+      <Divider />
+
+      <!--
+        The drawer's own two rows: what you can set, and who you are. Each is
+        one thing on the left and its control on the right, because a row that
+        reads left to right and acts on the right is the shape a phone's
+        settings list already has.
+      -->
+      <div class="flex items-center justify-between gap-3 pl-2">
+        <Button
+          v-if="settingsItem"
+          variant="ghost"
+          class="!px-0 hover:!bg-transparent"
+          :icon-left="settingsItem.icon"
+          :label="settingsItem.label"
+          @click="run(settingsItem)"
+        />
+        <span v-else class="text-base text-ink-gray-7">Appearance</span>
+        <!-- Icons alone: the word beside them already says what they are for,
+             and three labelled tabs is most of a phone's width. -->
+        <TabButtons v-model="scheme" :options="iconOptions" />
       </div>
 
-      <Button
-        class="w-full"
-        variant="subtle"
-        theme="red"
-        icon-left="lucide-log-out"
-        label="Log out"
-        @click="logout"
-      />
+      <div class="flex items-center justify-between gap-3 pl-2">
+        <div class="flex min-w-0 items-center gap-2.5">
+          <Avatar
+            :label="user.name || user.email || 'Account'"
+            :image="user.avatar"
+            size="lg"
+          />
+          <div class="min-w-0">
+            <p class="truncate text-base text-ink-gray-8">
+              {{ user.name || user.email || 'Account' }}
+            </p>
+            <p v-if="user.subtitle || user.email" class="truncate text-p-sm text-ink-gray-5">
+              {{ user.subtitle || user.email }}
+            </p>
+          </div>
+        </div>
+        <Button
+          icon="lucide-log-out"
+          variant="ghost"
+          theme="red"
+          label="Log out"
+          tooltip="Log out"
+          @click="logout"
+        />
+      </div>
     </div>
   </BottomSheet>
 </template>
@@ -239,6 +241,8 @@ import {
   MobileNav,
   MobileNavItem,
   MobileShell,
+  Divider,
+  Dropdown,
   Rail,
   RailItem,
   TabButtons,
@@ -320,11 +324,56 @@ const primaryNav = computed(() =>
   props.navItems.filter((item) => item.primary !== false).slice(0, PRIMARY_SLOTS),
 )
 
-const overflowNav = computed(() =>
-  props.navItems.filter((item) => !primaryNav.value.includes(item)),
+// The rail entry the sheet's switcher shows, and the menu behind it. Every
+// entry is in the menu, the current one ticked: hiding it would leave the row
+// saying where you are with no way to see that as one of a set.
+const activeEntry_ = computed(
+  () => props.entries.find((entry) => entry.key === props.activeEntry) || null,
 )
 
-const { scheme, tabOptions } = useAppearance()
+const entryOptions = computed(() => {
+  const groups = []
+  if (props.entries.length) {
+    groups.push({
+      group: props.entriesLabel,
+      hideLabel: true,
+      options: props.entries.map((entry) => ({
+        label: entry.label,
+        icon: entry.key === props.activeEntry ? 'lucide-check' : undefined,
+        onClick: () => {
+          showMenu.value = false
+          router.push(entry.to)
+        },
+      })),
+    })
+  }
+  if (props.entriesTo) {
+    groups.push({
+      group: 'all',
+      hideLabel: true,
+      options: [
+        {
+          label: `All ${props.entriesLabel.toLowerCase()}`,
+          icon: 'lucide-layout-grid',
+          onClick: () => {
+            showMenu.value = false
+            router.push(props.entriesTo)
+          },
+        },
+      ],
+    })
+  }
+  return groups
+})
+
+// The first menu item shares the drawer's settings row with the appearance
+// control — on both surfaces today that is "Workspace settings", and a word
+// beside three icons is what the row is for. Anything after it keeps a row of
+// its own rather than being dropped.
+const settingsItem = computed(() => props.menuItems[0] || null)
+const otherMenuItems = computed(() => props.menuItems.slice(1))
+
+const { scheme, iconOptions } = useAppearance()
 
 function run(item) {
   showMenu.value = false

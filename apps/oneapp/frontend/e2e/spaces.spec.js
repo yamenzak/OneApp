@@ -157,10 +157,19 @@ test('the phone can switch space from the More sheet', async ({ page }, info) =>
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
 
   await page.getByRole('button', { name: 'More', exact: true }).click()
-  await expect(page.getByText('Spaces', { exact: true })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'MockSpace' })).toBeVisible()
 
-  await page.getByRole('link', { name: 'All spaces' }).click()
+  // One row saying where you are, and a menu behind it — a list of every
+  // space, most of which you are not in, is a list to read rather than a
+  // control.
+  const switcher = page.getByRole('button', { name: 'MockSpace' })
+  await expect(switcher).toBeVisible()
+  // The sheet is the phone's navigation, so it lists every screen — not only
+  // the ones the bottom bar had no room for.
+  await expect(page.getByRole('link', { name: 'Tasks' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Notes' })).toBeVisible()
+
+  await switcher.click()
+  await page.getByRole('menuitem', { name: 'All spaces' }).click()
   // The launcher, which is where a space that is not on the bar gets opened.
   await expect(page).toHaveURL(/\/one\/?$/)
   expectNoRealErrors(errors)

@@ -46,11 +46,20 @@ export function useAppearance() {
     iconLeft: item.icon,
   }))
 
+  /** The same three, as icons alone — for a row that already has a word on it. */
+  const iconOptions = SCHEMES.map((item) => ({
+    value: item.value,
+    // `icon` rather than `iconLeft`: TabButtons treats that as an icon-only tab
+    // and turns the label into the accessible name.
+    icon: item.icon,
+    label: item.label,
+  }))
+
   /** Select options, for a settings row. */
   const selectOptions = SCHEMES.map((item) => ({
     value: item.value,
     label: item.label,
   }))
 
-  return { scheme, menuGroup, tabOptions, selectOptions }
+  return { scheme, menuGroup, tabOptions, iconOptions, selectOptions }
 }
