@@ -180,7 +180,7 @@ def test_barrel_covers_everything_frappe_ui_exports():
 	"""
 	import re
 
-	src = ROOT / "apps/oneapp_control/frontend/node_modules/frappe-ui/src"
+	src = ROOT / "apps/oneapp/frontend/node_modules/frappe-ui/src"
 	if not src.exists():
 		pytest.skip("frappe-ui not installed")
 
@@ -210,7 +210,7 @@ def test_barrel_covers_everything_frappe_ui_exports():
 				exported |= set(re.findall(r"export \{ default as (\w+)", path.read_text()))
 				break
 
-	barrel = (ROOT / "apps/oneapp_control/frontend/src/ui.js").read_text()
+	barrel = (ROOT / "apps/oneapp/frontend/src/ui.js").read_text()
 	live = {c for c in exported if c[0].isupper()} - deprecated
 
 	missing = sorted(c for c in live if c not in barrel)
@@ -230,7 +230,7 @@ def test_the_deprecation_reader_still_finds_one():
 	"""If the marker moves, the rule above passes by finding nothing to enforce."""
 	import re
 
-	src = ROOT / "apps/oneapp_control/frontend/node_modules/frappe-ui/src"
+	src = ROOT / "apps/oneapp/frontend/node_modules/frappe-ui/src"
 	if not src.exists():
 		pytest.skip("frappe-ui not installed")
 
@@ -364,7 +364,7 @@ def _local_components():
 
 
 def _barrel_names():
-	barrel = (ROOT / "apps/oneapp_control/frontend/src/ui.js").read_text()
+	barrel = (ROOT / "apps/oneapp/frontend/src/ui.js").read_text()
 	import re
 
 	return set(re.findall(r"^\s{2}([A-Z]\w+),", barrel, re.M))
@@ -455,7 +455,7 @@ def test_the_prepaint_theme_script_matches_the_composable():
 	while it reads the key `useColorScheme` writes, and sets the attribute it
 	reads, so both are checked against the composable rather than assumed.
 	"""
-	src = ROOT / "apps/oneapp_control/frontend/node_modules/frappe-ui/src"
+	src = ROOT / "apps/oneapp/frontend/node_modules/frappe-ui/src"
 	if not src.exists():
 		pytest.skip("frappe-ui not installed")
 

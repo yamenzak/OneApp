@@ -109,7 +109,7 @@ def test_reads_go_to_the_v2_method_endpoint():
     Checked against frappe-ui's own source rather than pinned, so the day it
     learns to read `message` this fails and the prefix can go back.
     """
-    resource = (ROOT / "apps/oneapp_control/frontend/src/lib/resource.js").read_text()
+    resource = (ROOT / "apps/oneapp/frontend/src/lib/resource.js").read_text()
     assert "/api/v2/method/" in resource, "reads are pointed at the v1 endpoint again"
 
     use_call = (UI_SRC / "data-fetching/useCall/useCall.ts").read_text()

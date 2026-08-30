@@ -13,7 +13,10 @@ from functools import lru_cache
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-UI_SRC = ROOT / "apps/oneapp_control/frontend/node_modules/frappe-ui/src"
+# Either app's node_modules would do — `test_shared_runtime_is_byte_identical`
+# proves the two SPAs run the same barrel over the same version — so this reads
+# the tenant app's, which is the one that survives OneAdmin becoming a Space.
+UI_SRC = ROOT / "apps/oneapp/frontend/node_modules/frappe-ui/src"
 
 # Attributes that are never props, whatever the component: Vue's own
 # directives, the handful of attributes Vue itself consumes, and the
