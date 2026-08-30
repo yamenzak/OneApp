@@ -714,3 +714,49 @@ Where we did not follow CRM, and why:
   hover-revealed `…` on each row. A control that appears on hover is not there
   on a touch screen, and frappe-ui's Menu gained real submenus since CRM worked
   around not having them.
+
+
+## 15. A view type is declared before it is built
+
+A screen says how it may be looked at — `view_types: list,board` — and the
+first is its default. Today exactly one of them is built. A type a manifest
+names and nothing can draw is **dropped on the way out** rather than refused:
+the screen renders as a list, and the day a board ships the same manifest gets
+one without an edit.
+
+The three places that decide this are deliberately three and not one:
+
+| | |
+| --- | --- |
+| `spaceview.VIEW_TYPES` / `BUILT_VIEW_TYPES` | what the server will resolve and shape |
+| `lib/viewTypes.js` | what the SPA can draw, and which component draws it |
+| `OneSpace Space Screen.view_types` | what this screen offers |
+
+The first two are checked against each other by a test, because the failure
+otherwise is silent in both directions: a type the server offers and the SPA
+cannot draw is a blank page, and one the SPA can draw and the server refuses is
+a switcher control that does nothing.
+
+**Rows are shaped for a list, and only for a list.** A board wants buckets, a
+calendar a date window, a map a point field — none of which `rows()` knows how
+to produce. That is not an oversight, it is the order of work: shaping code
+with no view to render it is code nobody can look at, and the shape a board
+actually needs is a thing you learn by building the board. The seam is where it
+belongs — `rows(space_code, screen, …, view_type)` already takes the type and
+already carries per-type settings through `view_settings` — so the day a second
+type is built, it is a branch in one function rather than a change to the API.
+
+What *is* already general, and is the reason a second type is a small job
+rather than a rewrite:
+
+* **The screen resolves once.** Columns, filters, the sort, permissions and the
+  saved layout are all decided before any view type is consulted, so a board
+  gets the same allowlist and the same bounds a list does.
+* **A layout knows which type it is for.** `OneSpace Saved View` carries
+  `view_type` and a `view_settings` blob, and every `*_field` in that blob is
+  checked against the screen's own columns on the way out — a board's column
+  field is a fieldname that reaches a query, and "it came from the settings
+  blob" is not a reason to trust one.
+* **The shell owns everything that is not the rows.** The header, the
+  breadcrumb, the toolbar, the filters, the footer and the selection bar live
+  in `ScreenHost.vue`; a view type supplies a body and nothing else.

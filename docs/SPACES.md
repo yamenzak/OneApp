@@ -336,6 +336,11 @@ is a second screen to navigate to. One form has neither problem.
 
 Worth knowing before designing around it:
 
+* **One view type.** A screen may declare `list,board,calendar`; only the list
+  is built, and a type nothing can draw is dropped rather than refused — so the
+  screen renders as a list today and gains the rest without a manifest edit.
+  Rows are shaped for a list and only for a list; see ADR-15 for why the
+  shaping is not written ahead of the view that needs it.
 * **No child tables.** A doctype with rows inside it shows its top-level fields
   only.
 * **No free-text search across the whole set.** Filters, the quick boxes and
