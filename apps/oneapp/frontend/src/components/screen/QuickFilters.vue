@@ -75,7 +75,7 @@ const emit = defineEmits(['changed'])
 const SQUARE_END = '[&_input]:rounded-e-none'
 
 // One box per line on a phone, each taking the width it is given: the ID box
-// alone on the first line with the row's three controls at its end, and the
+// alone on the first line with the row's two controls at its end, and the
 // rest underneath it once they are revealed. Anything else puts two boxes on
 // the first line and squeezes the one people actually type in. At a desktop
 // width they sit side by side at a size of their own, because there they are

@@ -1,0 +1,72 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "space_code",
+  "screen",
+  "layout"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "User",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "space_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Space Code",
+   "reqd": 1
+  },
+  {
+   "fieldname": "screen",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Screen",
+   "reqd": 1
+  },
+  {
+   "description": "The OneSpace Saved View this hides. Data rather than a Link so deleting the view cannot fail on a row that only says somebody stopped looking at it \u2014 the delete sweeps these up itself.",
+   "fieldname": "layout",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Layout",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "OneSpace Hidden View",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

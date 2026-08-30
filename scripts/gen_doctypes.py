@@ -1023,6 +1023,33 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
+# OneSpace Hidden View — a shared view one person does not want to see.
+#
+# A row here rather than a flag on the view itself, because the view is shared:
+# one row, many readers, and "I do not want this in my menu" is each reader's
+# own answer. Hiding is not deleting and is never offered as it — a shared view
+# somebody else relies on stays where it is.
+#
+# Only shared views are hideable. Your own you delete.
+# --------------------------------------------------------------------------- #
+doctype(
+    "OneSpace Hidden View",
+    app="tenant",
+    autoname="hash",
+    fields=[
+        f("user", "Link", options="User", reqd=1, in_list_view=1),
+        f("space_code", reqd=1, in_list_view=1),
+        f("screen", reqd=1, in_list_view=1),
+        f("layout", reqd=1, in_list_view=1,
+          description="The OneSpace Saved View this hides. Data rather than a "
+                      "Link so deleting the view cannot fail on a row that "
+                      "only says somebody stopped looking at it — the delete "
+                      "sweeps these up itself."),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
 # OneSpace AI Feature Setting — a workspace's answer for one declared feature.
 #
 # Rows are created from the registry, not typed: the decorator is the only thing

@@ -238,6 +238,20 @@ already names, so a space gets it by existing.
   checks the same two rules, because the value reaches the DOM as a class
   name.
 
+  **The switcher is where a view is managed**, and the only place. Each view
+  in it opens a submenu of its own: open it, put the unsaved change on screen
+  into it, rename it, share it, make it what the screen opens with, delete it.
+  Before this the menu managed only the view you were already in, so renaming
+  any other one meant opening it first — and putting a change into a view you
+  were not looking at was not offered at all.
+
+  **A shared view you would rather not see can be hidden**, per person. Not
+  deleted: a shared view belongs to the workspace and somebody else may be
+  living in it, so hiding writes a row of your own rather than touching theirs.
+  Your own views are not hideable — you made them, and deleting is what you
+  want. They come back all at once, because a hidden view is not in the menu
+  and a menu is the wrong place to pick one out of.
+
   **Where an unsaved change goes depends on where you are.** In a named view
   you may write, Save writes into that view; anywhere else it writes this
   person's own unnamed default for the screen. CRM draws the same line, and

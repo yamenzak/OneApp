@@ -44,7 +44,7 @@
     because they ask the same question, and the only other thing worth asking
     at the same time is who it is for.
   -->
-  <Dialog v-model="naming" :title="renaming ? 'Rename this view' : 'Save as a new view'">
+  <Dialog v-model="naming" :title="editing ? 'Rename this view' : 'Save as a new view'">
     <form class="flex flex-col gap-4" @submit.prevent="confirmName">
       <!--
         The icon against the name, which is the shape Frappe CRM uses and the
@@ -89,7 +89,7 @@ import { Button, Dialog, Dropdown, FormControl, Icon } from '@/ui'
 import IconPicker from './IconPicker.vue'
 
 const props = defineProps({
-  // [{ name, label, shared, mine, is_default, opens }]
+  // [{ name, label, icon, shared, mine, is_default, opens }]
   layouts: { type: Array, default: () => [] },
   active: { type: String, default: '' },
   /**
@@ -99,12 +99,22 @@ const props = defineProps({
    */
   viewLabel: { type: String, default: 'List' },
   canShare: { type: Boolean, default: false },
+  // Whether there is something on screen that no view is carrying yet. It
+  // decides whether a view offers to take it.
+  dirty: { type: Boolean, default: false },
+  // How many shared views this person has hidden. They are not in the list —
+  // that is what hiding them did — so the only way back is a count and an
+  // offer to undo all of it.
+  hidden: { type: Number, default: 0 },
   busy: { type: Boolean, default: false },
 })
-const emit = defineEmits(['open', 'save-as', 'rename', 'share', 'default', 'remove'])
+const emit = defineEmits([
+  'open', 'save-as', 'save-into', 'rename', 'share', 'default', 'remove', 'hide', 'show',
+])
 
 const naming = ref(false)
-const renaming = ref(false)
+// Which view is being renamed, or null for a new one.
+const editing = ref(null)
 const draftLabel = ref('')
 const draftIcon = ref('')
 const draftShared = ref(false)
@@ -117,25 +127,86 @@ const label = computed(() => current.value?.label || props.viewLabel)
 
 // Only a view you may write can be renamed, shared or deleted — and the server
 // says the same thing again, because a menu is not a permission.
-const writable = computed(() => !!current.value && (current.value.mine || props.canShare))
+const writable = (view) => !!view && (view.mine || props.canShare)
 
-const askName = (rename) => {
-  renaming.value = rename
-  draftLabel.value = rename ? current.value?.label || '' : ''
-  draftIcon.value = rename ? current.value?.icon || '' : ''
-  draftShared.value = rename ? !!current.value?.shared : false
+const askName = (view) => {
+  editing.value = view || null
+  draftLabel.value = view?.label || ''
+  draftIcon.value = view?.icon || ''
+  draftShared.value = !!view?.shared
   naming.value = true
 }
 
 const confirmName = () => {
   const name = draftLabel.value.trim()
   if (!name) return
-  emit(renaming.value ? 'rename' : 'save-as', {
-    label: name,
-    icon: draftIcon.value,
-    shared: draftShared.value,
-  })
+  const payload = { label: name, icon: draftIcon.value, shared: draftShared.value }
+  if (editing.value) emit('rename', { layout: editing.value.name, ...payload })
+  else emit('save-as', payload)
   naming.value = false
+}
+
+/**
+ * What one view offers.
+ *
+ * A submenu rather than a row that only opens it, because this menu is now the
+ * only place a view is managed — it used to be here for the one you were in
+ * and nowhere at all for the rest, so renaming another view meant opening it
+ * first. Opening is the submenu's first item and stays one gesture away.
+ */
+const submenuFor = (view) => {
+  const mayWrite = writable(view)
+  const items = []
+  if (view.name !== props.active) {
+    items.push({
+      label: 'Open it', icon: 'lucide-corner-down-right',
+      onClick: () => emit('open', view.name),
+    })
+  }
+  // Overwriting a view with what is on screen, which is the other half of
+  // "save": one of these, or a new view. Offered per view rather than only for
+  // the one you are in, so a change made while looking at one view can be put
+  // into another without opening it first.
+  if (props.dirty && mayWrite) {
+    items.push({
+      label: 'Save the changes here', icon: 'lucide-bookmark',
+      onClick: () => emit('save-into', view.name),
+    })
+  }
+  if (mayWrite) {
+    items.push({ label: 'Rename', icon: 'lucide-pencil', onClick: () => askName(view) })
+    if (props.canShare) {
+      items.push({
+        label: view.shared ? 'Make it mine alone' : 'Share with the workspace',
+        icon: view.shared ? 'lucide-lock' : 'lucide-users',
+        onClick: () => emit('share', { layout: view.name, shared: !view.shared }),
+      })
+    }
+    // `opens`, not `is_default`: a personal default and a shared one can both
+    // be set, and only one of them actually opens the screen.
+    if (!view.opens) {
+      items.push({
+        label: 'Open this screen with it', icon: 'lucide-pin',
+        onClick: () => emit('default', view.name),
+      })
+    }
+  }
+  // Hiding is for a view somebody else shared and you would rather not see.
+  // Never for your own — you made it, and deleting is what you want — and
+  // never instead of deleting, because a shared view is somebody else's too.
+  if (view.shared) {
+    items.push({
+      label: 'Hide it from my menu', icon: 'lucide-eye-off',
+      onClick: () => emit('hide', view.name),
+    })
+  }
+  if (mayWrite) {
+    items.push({
+      label: 'Delete it', icon: 'lucide-trash-2', theme: 'red',
+      onClick: () => emit('remove', view.name),
+    })
+  }
+  return items
 }
 
 const options = computed(() => {
@@ -143,20 +214,18 @@ const options = computed(() => {
   const mine = props.layouts.filter((l) => !l.shared)
   const shared = props.layouts.filter((l) => l.shared)
 
-  const entry = (layout) => ({
-    label: layout.label || 'Untitled view',
-    selected: layout.name === props.active,
+  const entry = (view) => ({
+    label: view.label || 'Untitled view',
+    selected: view.name === props.active,
     // The view's own icon where it has one; the pin where it does not and this
-    // is the one the screen opens with. `opens`, not `is_default`: a personal
-    // default and a shared one can both be set, and only one of them actually
-    // opens the screen.
-    icon: layout.icon || (layout.opens ? 'lucide-pin' : undefined),
-    onClick: () => emit('open', layout.name),
+    // is the one the screen opens with.
+    icon: view.icon || (view.opens ? 'lucide-pin' : undefined),
+    submenu: submenuFor(view),
   })
 
   // The screen as its author wrote it is always reachable, and is what an empty
   // selection means. Without it there is no way back from a saved view except
-  // deleting it.
+  // deleting it. No submenu: there is nothing to manage about a screen.
   groups.push({
     group: 'Views',
     hideLabel: true,
@@ -172,37 +241,18 @@ const options = computed(() => {
   if (shared.length) groups.push({ group: 'Shared', options: shared.map(entry) })
 
   const actions = [
-    { label: 'Save as a new view', icon: 'lucide-plus', onClick: () => askName(false) },
+    { label: 'Save as a new view', icon: 'lucide-plus', onClick: () => askName(null) },
   ]
-  if (writable.value) {
-    actions.push({ label: 'Rename', icon: 'lucide-pencil', onClick: () => askName(true) })
-    if (props.canShare) {
-      actions.push({
-        label: current.value.shared ? 'Make it mine alone' : 'Share with the workspace',
-        icon: current.value.shared ? 'lucide-lock' : 'lucide-users',
-        onClick: () => emit('share', !current.value.shared),
-      })
-    }
-    if (!current.value.opens) {
-      actions.push({
-        label: 'Open this screen with it',
-        icon: 'lucide-pin',
-        onClick: () => emit('default'),
-      })
-    }
-  }
-  groups.push({ group: 'Actions', hideLabel: true, options: actions })
-
-  if (writable.value) {
-    groups.push({
-      group: 'Delete',
-      hideLabel: true,
-      theme: 'red',
-      options: [
-        { label: 'Delete this view', icon: 'lucide-trash-2', onClick: () => emit('remove') },
-      ],
+  // All of them at once. A hidden view is not in this menu — that is what
+  // hiding it did — so this menu is the wrong place to pick one out of.
+  if (props.hidden) {
+    actions.push({
+      label: props.hidden === 1 ? 'Show the hidden view' : `Show ${props.hidden} hidden views`,
+      icon: 'lucide-eye',
+      onClick: () => emit('show'),
     })
   }
+  groups.push({ group: 'Actions', hideLabel: true, options: actions })
   return groups
 })
 </script>

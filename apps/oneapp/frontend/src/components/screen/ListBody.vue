@@ -223,7 +223,7 @@ const props = defineProps({
   groupBy: { type: String, default: '' },
 })
 
-const emit = defineEmits(['open', 'like', 'sort', 'columns', 'favourites'])
+const emit = defineEmits(['open', 'like', 'sort', 'favourites'])
 
 const selection = defineModel('selection', { type: Array, default: () => [] })
 const chosen = selection

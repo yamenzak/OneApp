@@ -208,6 +208,22 @@ export const workspace = {
       { successMessage: 'View deleted' },
     ),
 
+  // Not a delete. A shared view belongs to the workspace and somebody else may
+  // be living in it — this says only that one reader would rather not see it.
+  hideLayout: (spaceCode, screen, layout) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.hide_layout',
+      { space_code: spaceCode, screen, layout },
+      { successMessage: 'Hidden from your menu' },
+    ),
+
+  showLayouts: (spaceCode, screen) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.show_layouts',
+      { space_code: spaceCode, screen },
+      { successMessage: 'Hidden views are back' },
+    ),
+
   defaultLayout: (spaceCode, screen, layout) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.default_layout',

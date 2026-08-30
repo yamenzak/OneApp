@@ -76,8 +76,9 @@ const props = defineProps({
 })
 const emit = defineEmits(['changed'])
 
-// Icon and nothing else on a phone, where three controls and a filter box have
-// one row between them and the word is the thing that does not fit. The count
+// Icon and nothing else on a phone, where a filter box and the controls beside
+// it have one row between them and the word is the thing that does not fit. The
+// count
 // goes with the word: a badge on a 28px button is a smudge, and the filled
 // variant already says there are filters.
 //

@@ -215,6 +215,24 @@ def seed_tenant():
 			"priority": ["High", "Medium", "Low"][n % 3],
 		}).insert(ignore_permissions=True)
 
+	# And their views. A browser pass that makes a view and fails before
+	# deleting it leaves one behind, and three runs later "Only the urgent"
+	# matches three rows and every test that names one is ambiguous. The
+	# fixture's own views are the ones in LAYOUTS; a named view on this space
+	# that is not one of them is litter.
+	strays = frappe.get_all(
+		"OneSpace Saved View",
+		filters={"space_code": CODE, "label": ["not in", [row["label"] for row in LAYOUTS]]},
+		fields=["name", "label"],
+	)
+	for stray in strays:
+		if stray["label"]:
+			frappe.delete_doc("OneSpace Saved View", stray["name"], ignore_permissions=True)
+
+	# Nobody is hiding anything on a fresh fixture either — a hidden view is
+	# invisible, which is the worst thing for a test to inherit.
+	frappe.db.delete("OneSpace Hidden View", {"space_code": CODE})
+
 	# The browser passes leave their comments behind, and Frappe keeps only the
 	# last hundred of them on the document itself — which is where the count in
 	# the timeline tab comes from, here as in the desk. A fixture that has been

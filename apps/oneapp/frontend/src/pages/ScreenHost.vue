@@ -49,13 +49,18 @@
         :active="spec.layout || ''"
         :view-label="viewLabel"
         :can-share="!!spec.can_share"
+        :dirty="dirty"
+        :hidden="spec.hidden || 0"
         :busy="saving"
         @open="openLayout"
         @save-as="saveAs"
+        @save-into="saveIntoLayout"
         @rename="renameLayout"
         @share="shareLayout"
         @default="defaultLayout"
         @remove="deleteLayout"
+        @hide="hideLayout"
+        @show="showLayouts"
       />
     </nav>
     <template v-if="spec?.can_create" #right>
@@ -118,10 +123,9 @@
       -->
       <!--
         One row at every width. On a phone that is the ID box taking the width
-        and three controls at its end — reveal the rest of the boxes, the
-        list's own settings, the filter panel — which is the shape Frappe's
-        mobile list uses and the reason the boxes no longer carry their own
-        chevron.
+        and two controls at its end — reveal the rest of the boxes, open the
+        filter panel — which is the shape Frappe's mobile list uses and the
+        reason the boxes no longer carry their own chevron.
       -->
       <div class="mb-4 flex shrink-0 items-start gap-2">
         <QuickFilters
@@ -140,21 +144,11 @@
             @click="quickExpanded = !quickExpanded"
           />
           <!--
-            The gear is a question about the list, so it lives with the list's
-            other controls. It used to sit in the activity column's header,
-            which worked while that column was glued to the right edge — now
-            that the table scrolls and every column is the reader's to move, a
-            control parked in one of them can be somewhere off to the right.
-            Frappe CRM draws the same line: Columns in the toolbar, the heart on
-            its own column.
+            The column picker is not here. It lives in the footer beside the
+            count: both are questions about the table rather than about the
+            rows, and this row is the one people type in — a fourth control
+            beside the box is the clutter, not the answer.
           -->
-          <Button
-            icon="lucide-settings-2"
-            variant="ghost"
-            label="Choose columns"
-            tooltip="Choose columns"
-            @click="showColumns = true"
-          />
           <FilterPanel
             :filters="panelFilters"
             :columns="spec.all_columns || []"
@@ -280,7 +274,6 @@
             @open="open"
             @like="like"
             @sort="sortBy"
-            @columns="showColumns = true"
             @favourites="toggleFavourites"
           />
 
@@ -293,6 +286,7 @@
             :loading="loadingMore"
             @more="loadMore"
             @page-length="setPageLength"
+            @columns="showColumns = true"
           />
         </div>
 
@@ -627,44 +621,70 @@ const saveAs = ({ label, icon, shared }) =>
     return result
   })
 
-// A rename carries what is on screen with it, because the alternative is a
-// rename that silently discards an unsaved change.
-const renameLayout = ({ label, icon, shared }) =>
+// Every one of these names the view it acts on rather than assuming the one on
+// screen: the menu manages all of them now, so "rename" can mean a view this
+// person is not looking at.
+//
+// What is on screen goes with a write only when it is meant to. Renaming the
+// view you are looking at carries it, because the alternative is a rename that
+// silently discards an unsaved change; renaming some *other* view must not,
+// because that would put this screen's filters into a view nobody was editing.
+// Saving into a view carries it either way — that is what saving into it is.
+const intoLayout = (name, extra, carry = name === spec.value.layout) =>
   withView(() =>
     workspace.saveLayout(props.spaceCode, spec.value.screen, {
-      ...payload(),
-      layout: spec.value.layout,
-      label,
-      icon,
-      shared,
+      ...(carry ? payload() : {}),
+      layout: name,
+      ...extra,
     }),
   )
 
-const shareLayout = (shared) =>
-  withView(() =>
-    workspace.saveLayout(props.spaceCode, spec.value.screen, {
-      ...payload(),
-      layout: spec.value.layout,
-      shared,
-    }),
-  )
+const renameLayout = ({ layout: name, label, icon, shared }) =>
+  intoLayout(name, { label, icon, shared })
 
-const defaultLayout = () =>
-  withView(() => workspace.defaultLayout(props.spaceCode, spec.value.screen, spec.value.layout))
+const shareLayout = ({ layout: name, shared }) => intoLayout(name, { shared })
 
-const deleteLayout = async () => {
-  const gone = spec.value.layout
+// The other half of Save: put what is on screen into a view that already
+// exists rather than into a new one. Only offered for a view you may write.
+const saveIntoLayout = async (name) => {
+  await intoLayout(name, {}, true)
+  dirty.value = false
+  if (name !== spec.value.layout) openLayout(name)
+}
+
+const defaultLayout = (name) =>
+  withView(() => workspace.defaultLayout(props.spaceCode, spec.value.screen, name))
+
+const deleteLayout = async (name) => {
   saving.value = true
   try {
-    await workspace.deleteLayout(props.spaceCode, spec.value.screen, gone)
+    await workspace.deleteLayout(props.spaceCode, spec.value.screen, name)
   } finally {
     saving.value = false
   }
   // Back to the screen's own declaration rather than to another screen: which
-  // one would we pick?
-  if (layout.value === gone) openLayout('')
+  // one would we pick? Only when the deleted one is what is open.
+  if (layout.value === name) openLayout('')
   else await load()
 }
+
+// Hiding is not deleting, and the difference matters: the view stays where it
+// is for everybody else. If it is the one open, the screen goes back to its own
+// declaration — staying in a view you just took out of your menu reads as a
+// button that did nothing.
+const hideLayout = async (name) => {
+  saving.value = true
+  try {
+    await workspace.hideLayout(props.spaceCode, spec.value.screen, name)
+  } finally {
+    saving.value = false
+  }
+  if (layout.value === name) openLayout('')
+  else await load()
+}
+
+const showLayouts = () =>
+  withView(() => workspace.showLayouts(props.spaceCode, spec.value.screen))
 
 const changed = async () => {
   dirty.value = true

@@ -744,7 +744,7 @@ def test_only_one_layout_is_marked_as_the_one_that_opens(spaceview, monkeypatch)
 	"""
 	rows = [layout("shared", "House", user="", is_default=1),
 	        layout("mine", "Mine", is_default=1)]
-	monkeypatch.setattr(spaceview, "_layouts", lambda *a: rows)
+	monkeypatch.setattr(spaceview, "_layouts", lambda *a, **kw: rows)
 	monkeypatch.setattr(spaceview, "_can_share", lambda: False)
 	resolved = spaceview._apply_saved({"space": "a", "screen": "v"})
 	assert [l["opens"] for l in resolved["layouts"]] == [False, True]
@@ -785,7 +785,7 @@ def test_a_shared_layout_still_only_reaches_what_the_screen_offers(spaceview, mo
 	"""
 	rows = [dict(layout("shared", "House", user="", is_default=1),
 	             filters='[["_liked_by", "like", "%someone@else%"]]')]
-	monkeypatch.setattr(spaceview, "_layouts", lambda *a: rows)
+	monkeypatch.setattr(spaceview, "_layouts", lambda *a, **kw: rows)
 	monkeypatch.setattr(spaceview, "_can_share", lambda: True)
 	resolved = spaceview._apply_saved({
 		"space": "a", "screen": "v", "doctype": "ToDo",
@@ -827,7 +827,7 @@ def test_the_page_size_ceiling_is_the_largest_the_footer_offers(spaceview):
 
 def test_a_saved_page_size_survives_and_a_junk_one_does_not(spaceview, monkeypatch):
 	rows = [dict(layout("mine", "Mine", is_default=1), page_length=20)]
-	monkeypatch.setattr(spaceview, "_layouts", lambda *a: rows)
+	monkeypatch.setattr(spaceview, "_layouts", lambda *a, **kw: rows)
 	monkeypatch.setattr(spaceview, "_can_share", lambda: False)
 	resolved = spaceview._apply_saved({
 		"space": "a", "screen": "v", "doctype": "ToDo", "page_length": spaceview.PAGE,
@@ -1170,3 +1170,53 @@ def test_the_icon_set_is_the_one_the_spa_can_draw(spaceview):
 	source = icons.read_text()
 	block = _re.search(r"export const SPACE_ICONS = \[(.*?)\]", source, _re.S).group(1)
 	assert tuple(_re.findall(r"'([^']+)'", block)) == spaceview.VIEW_ICONS
+
+
+# --------------------------------------------------------------------------- #
+# Hiding a shared view
+#
+# A shared view has one row and many readers, so "I do not want this in my
+# menu" cannot be a change to the row. It is a row of the reader's own, and
+# hiding is never offered as deleting: somebody else may be living in it.
+# --------------------------------------------------------------------------- #
+
+def test_a_screen_says_how_many_views_are_hidden_so_they_can_come_back(spaceview, monkeypatch):
+	"""A hidden view is not in the menu, which is the wrong place to pick one
+	out of — so the menu offers all of them back at once, and needs to know
+	there are any."""
+	rows = [dict(layout("shared", "House", user=""), hidden=True),
+	        dict(layout("mine", "Mine"), hidden=False)]
+	monkeypatch.setattr(spaceview, "_layouts", lambda *a, **kw: rows)
+	monkeypatch.setattr(spaceview, "_can_share", lambda: False)
+
+	resolved = spaceview._apply_saved({"space": "a", "screen": "v"})
+	assert resolved["hidden"] == 1
+	assert [row["name"] for row in resolved["layouts"]] == ["mine"]
+
+
+def test_hiding_your_own_view_is_refused(spaceview, monkeypatch):
+	"""You made it. Deleting is what you want, and it is offered — hiding a row
+	nobody else can see would be a way to lose a view without meaning to."""
+	import frappe
+
+	doc = types.SimpleNamespace(space_code="a", screen="v", user="me@x", name="mine")
+	monkeypatch.setattr(frappe, "get_doc", lambda *a, **kw: doc)
+	with pytest.raises(Exception, match="delete it rather than hiding"):
+		spaceview.hide_layout("a", "v", "mine")
+
+
+def test_hiding_a_view_from_another_screen_is_refused(spaceview, monkeypatch):
+	import frappe
+
+	doc = types.SimpleNamespace(space_code="a", screen="elsewhere", user="", name="shared")
+	monkeypatch.setattr(frappe, "get_doc", lambda *a, **kw: doc)
+	with pytest.raises(Exception, match="different screen"):
+		spaceview.hide_layout("a", "v", "shared")
+
+
+def test_deleting_a_view_stops_anybody_hiding_it(spaceview):
+	"""A hidden row pointing at nothing would be counted as a view waiting to
+	come back, and bringing it back would produce nothing."""
+	source = APPVIEW.read_text()
+	body = source.split("def delete_layout(", 1)[1].split("\n@frappe.whitelist", 1)[0]
+	assert 'frappe.db.delete("OneSpace Hidden View"' in body

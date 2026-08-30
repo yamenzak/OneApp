@@ -17,7 +17,7 @@
       @update:model-value="emit('page-length', $event)"
     />
 
-    <div class="ms-auto flex items-center gap-3">
+    <div class="ms-auto flex items-center gap-2">
       <Button
         v-if="hasMore"
         label="Load more"
@@ -27,6 +27,21 @@
       <span class="whitespace-nowrap text-p-xs tabular-nums text-ink-gray-5">
         {{ shown }}
       </span>
+      <!--
+        Which columns, and how wide. It sat above the table with the filters,
+        where it was a fourth control competing with the box people type in —
+        and it is not a question about the rows, it is a question about the
+        table. Here it is beside the other one of those: how many of them
+        there are, and how many to fetch.
+      -->
+      <Button
+        icon="lucide-settings"
+        variant="ghost"
+        size="sm"
+        label="Choose columns"
+        tooltip="Choose columns"
+        @click="emit('columns')"
+      />
     </div>
   </div>
 </template>
@@ -45,7 +60,7 @@ const props = defineProps({
   hasMore: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
 })
-const emit = defineEmits(['more', 'page-length'])
+const emit = defineEmits(['more', 'page-length', 'columns'])
 
 const options = computed(() =>
   props.sizes.map((size) => ({ label: String(size), value: size })),

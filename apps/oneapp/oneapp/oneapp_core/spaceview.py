@@ -1358,7 +1358,22 @@ def _can_share() -> bool:
 	return bool(set(frappe.get_roles()) & {OWNER_ROLE, SUPPORT_ROLE})
 
 
-def _layouts(space_code: str, screen: str, view_type: str | None = None) -> list[dict]:
+def _hidden(space_code: str, screen: str) -> set[str]:
+	"""Which shared views this person has taken out of their own menu.
+
+	Per person, so it is a table of rows rather than a flag on the view: a
+	shared view has one row and many readers, and "I do not want this one" is
+	each reader's own answer rather than a change to what everybody sees.
+	"""
+	return set(frappe.get_all(
+		"OneSpace Hidden View",
+		filters={"user": frappe.session.user, "space_code": space_code, "screen": screen},
+		pluck="layout", ignore_permissions=True,
+	))
+
+
+def _layouts(space_code: str, screen: str, view_type: str | None = None,
+             include_hidden: bool = False) -> list[dict]:
 	"""Every layout this person can open on this screen: theirs, and the shared.
 
 	Two queries rather than one with `or_filters`. Frappe ANDs `or_filters` with
@@ -1380,6 +1395,13 @@ def _layouts(space_code: str, screen: str, view_type: str | None = None) -> list
 		# A layout written before view types, or by a screen that only has one,
 		# belongs to the default.
 		row["view_type"] = row.get("view_type") or DEFAULT_VIEW_TYPE
+	# Only a shared row can be hidden — your own you delete — so a stale row
+	# naming something else changes nothing.
+	hidden = _hidden(space_code, screen)
+	for row in rows:
+		row["hidden"] = bool(row["shared"] and row["name"] in hidden)
+	if not include_hidden:
+		rows = [row for row in rows if not row["hidden"]]
 	if view_type:
 		# A board's saved views have no business in a list's switcher: they
 		# carry columns and a grouping that mean something else there.
@@ -1464,8 +1486,15 @@ def _apply_saved(resolved: dict, layout: str | None = None) -> dict:
 	saved = None
 	resolved["layouts"] = []
 	resolved["can_share"] = False
+	resolved["hidden"] = 0
 	if resolved.get("screen"):
-		rows = _layouts(resolved["space"], resolved["screen"], resolved.get("view_type"))
+		# Asked for with the hidden ones in, then split here: the count of what
+		# somebody turned off comes from the same pair of queries rather than
+		# from a second pair.
+		offered = _layouts(resolved["space"], resolved["screen"],
+		                   resolved.get("view_type"), include_hidden=True)
+		rows = [row for row in offered if not row.get("hidden")]
+		resolved["hidden"] = len(offered) - len(rows)
 		# `opens` rather than `is_default`: two rows can both be marked — one
 		# personal, one shared — and only one of them actually opens the screen.
 		# A menu that pins both is telling the reader something untrue.
@@ -1974,6 +2003,51 @@ def delete_layout(space_code: str, screen: str, layout: str) -> dict:
 		frappe.throw(_("That screen belongs to a different screen."), frappe.PermissionError)
 	_may_write(doc)
 	frappe.delete_doc("OneSpace Saved View", doc.name, ignore_permissions=True)
+	# Whoever had hidden it is no longer hiding anything. Swept here rather
+	# than left to point at nothing: a stale row would be counted as a view
+	# waiting to be brought back, and bringing it back would produce nothing.
+	frappe.db.delete("OneSpace Hidden View", {"layout": doc.name})
+	frappe.db.commit()
+	return {"ok": True}
+
+
+@frappe.whitelist(methods=["POST"])
+def hide_layout(space_code: str, screen: str, layout: str) -> dict:
+	"""Take a shared view out of this person's own menu.
+
+	Not a delete, and never offered as one: a shared view belongs to the
+	workspace and somebody else may be living in it. This says only that one
+	reader would rather not see it — the row is theirs, and `show_layouts`
+	takes it back.
+
+	A view of your own is not hideable. You made it; delete it.
+	"""
+	doc = frappe.get_doc("OneSpace Saved View", layout)
+	if (doc.space_code, doc.screen) != (space_code, screen):
+		frappe.throw(_("That screen belongs to a different screen."), frappe.PermissionError)
+	if doc.user:
+		frappe.throw(_("That view is yours — delete it rather than hiding it."))
+	if not frappe.db.exists("OneSpace Hidden View",
+	                        {"user": frappe.session.user, "layout": layout}):
+		frappe.get_doc({
+			"doctype": "OneSpace Hidden View", "user": frappe.session.user,
+			"space_code": space_code, "screen": screen, "layout": layout,
+		}).insert(ignore_permissions=True)
+		frappe.db.commit()
+	return {"ok": True}
+
+
+@frappe.whitelist(methods=["POST"])
+def show_layouts(space_code: str, screen: str) -> dict:
+	"""Bring back every shared view this person hid on this screen.
+
+	All of them at once rather than one at a time: a hidden view is not in the
+	menu, so a menu is the wrong place to pick one out of. What the person
+	wants at this point is to see what they turned off.
+	"""
+	frappe.db.delete("OneSpace Hidden View", {
+		"user": frappe.session.user, "space_code": space_code, "screen": screen,
+	})
 	frappe.db.commit()
 	return {"ok": True}
 

@@ -756,17 +756,18 @@ test('rows can be grouped by a column', async ({ page }, info) => {
   expectNoRealErrors(errors)
 })
 
-test('the phone puts the box and its three controls on one row', async ({ page }, info) => {
+test('the phone puts the box and its controls on one row', async ({ page }, info) => {
   test.skip(info.project.name !== 'mobile', 'this is the phone layout')
   const errors = collectConsoleErrors(page)
   await openList(page)
 
-  // The ID box takes the width; the three controls sit at its end — reveal the
-  // rest of the boxes, the list's settings, the filter panel.
+  // The ID box takes the width; the controls sit at its end — reveal the rest
+  // of the boxes, and the filter panel. The column picker is not among them:
+  // it is a question about the table rather than about the rows, so it sits in
+  // the footer beside the count.
   const box = page.getByPlaceholder('ID')
   const controls = [
     page.getByRole('button', { name: 'More filters' }),
-    page.getByRole('button', { name: 'Choose columns' }),
     page.getByRole('button', { name: /^Filter/ }),
   ]
   const boxBox = await box.boundingBox()
@@ -776,6 +777,12 @@ test('the phone puts the box and its three controls on one row', async ({ page }
     expect(Math.abs(rect.y + rect.height / 2 - (boxBox.y + boxBox.height / 2))).toBeLessThan(8)
     expect(rect.x).toBeGreaterThan(boxBox.x + boxBox.width - 1)
   }
+
+  // And the picker is where it now lives: on the footer's row, with the count.
+  const gear = await page.getByRole('button', { name: 'Choose columns' }).boundingBox()
+  const count = await page.getByText(/^\d+ of \d+$/).boundingBox()
+  expect(Math.abs(gear.y + gear.height / 2 - (count.y + count.height / 2))).toBeLessThan(8)
+  expect(gear.y).toBeGreaterThan(boxBox.y)
   expectNoRealErrors(errors)
 })
 
