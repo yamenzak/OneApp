@@ -22,24 +22,38 @@
               <span class="sr-only">{{ item.space }} home</span>
             </span>
           </Tooltip>
-          <!-- A record is a record wherever it is shown: the same face, name
-               and id the list cell and the link picker draw, laid out for one
-               line. -->
-          <Avatar
-            v-else-if="item.record"
-            :image="item.image"
-            :label="item.label"
-            shape="square"
-            size="sm"
-            class="me-1.5"
-          />
-        </template>
-        <template #suffix="{ item }">
-          <span v-if="item.record && item.id" class="ms-1.5 truncate text-p-sm text-ink-gray-5">
-            {{ item.id }}
-          </span>
         </template>
       </Breadcrumbs>
+
+      <!--
+        A record is a record wherever it is shown: the same face, name and id
+        the list cell and the link picker draw, from the same component — with
+        the status beside the name, because "where does this stand" is the
+        second thing anybody asks about a record and the first thing they look
+        for.
+
+        Its own element rather than a crumb, for the same reason the view
+        switcher is one: a crumb is a line of text, and this is a block two
+        lines tall.
+      -->
+      <div v-if="recordCrumb" class="flex min-w-0 items-center">
+        <span class="mx-0.5 text-base text-ink-gray-4" aria-hidden="true">/</span>
+        <RecordChip :record="recordCrumb">
+          <template #badge>
+            <!-- The colours are the doctype's own Document States — the same
+                 ones the cell in the list reads — so a status is not one
+                 colour here and another there. The manifest says which field;
+                 it does not repeat the palette. -->
+            <Badge
+              v-if="statusValue"
+              data-slot="record-status"
+              :label="String(statusValue)"
+              :theme="statusTheme"
+              variant="subtle"
+            />
+          </template>
+        </RecordChip>
+      </div>
 
       <!-- The last crumb, when no record is open: which view of the screen
            this is, and every other view of it. -->
@@ -358,7 +372,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   PageHeader,
   Breadcrumbs,
-  Avatar,
+  Badge,
   Icon,
   Tooltip,
   Button,
@@ -368,6 +382,7 @@ import {
   Dialog,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
+import RecordChip from '../components/screen/RecordChip.vue'
 import RecordDialog from '../components/screen/RecordDialog.vue'
 import FilterPanel from '../components/screen/FilterPanel.vue'
 import QuickFilters from '../components/screen/QuickFilters.vue'
@@ -380,6 +395,7 @@ import { workspace } from '../lib/workspace'
 import { notifyError, notifySuccess } from '../lib/notify'
 import { screenComponent } from '../screens'
 import { DEFAULT_VIEW_TYPE, VIEW_TYPES, bodyFor } from '../lib/viewTypes'
+import { valueTheme } from '../lib/fields'
 
 const props = defineProps({ spaceCode: { type: String, required: true } })
 const route = useRoute()
@@ -524,29 +540,40 @@ const crumbs = computed(() => {
       },
     })
   }
-  // A record is where you are, so it takes the last place from the view — and
-  // it reads the way a record reads everywhere else in this product.
-  //
-  // Worth being honest about what this is not yet: the record opens as a modal
-  // dialog, and a modal takes the rest of the page out of the accessibility
-  // tree, so while it is open this crumb can be read by eye and not by a
-  // screen reader. What it does buy today is the URL — a record is a link
-  // somebody can send — and it is the trail a record *page* will want when
-  // there is one.
-  const open = shownRecord.value
-  if (open) {
-    const title = spec.value?.title_field
-    const label = (title && open[title]) || open.name
-    trail.push({
-      label: String(label),
-      record: true,
-      // The id, and only where the name is not already it.
-      id: label === open.name ? '' : open.name,
-      image: spec.value?.image_field ? open[spec.value.image_field] : null,
-    })
-  }
   return trail
 })
+
+// The record, when one is open. It is where you are, so it takes the last
+// place from the view.
+//
+// Worth being honest about what this is not yet: the record opens as a modal
+// dialog, and a modal takes the rest of the page out of the accessibility
+// tree, so while it is open this can be read by eye and not by a screen
+// reader. What it does buy today is the URL — a record is a link somebody can
+// send — and it is the trail a record *page* will want when there is one.
+const recordCrumb = computed(() => {
+  const open = shownRecord.value
+  if (!open) return null
+  const title = spec.value?.title_field
+  const label = (title && open[title]) || open.name
+  return {
+    value: open.name,
+    label: String(label),
+    // The id, and only where the name is not already it.
+    id: label === open.name ? '' : open.name,
+    image: spec.value?.image_field ? open[spec.value.image_field] : null,
+  }
+})
+
+// Where the record stands. Which field that is comes from the manifest and is
+// checked against the doctype on the way out; what colour it is comes from the
+// doctype's own states, the same way the list cell reads it.
+const statusValue = computed(() => {
+  const field = spec.value?.status_field
+  return (field && shownRecord.value?.[field]) || ''
+})
+
+const statusTheme = computed(() => valueTheme(statusValue.value, spec.value?.states || []))
 
 // --- sorting, from the headers ----------------------------------------------
 //

@@ -1220,3 +1220,35 @@ def test_deleting_a_view_stops_anybody_hiding_it(spaceview):
 	source = APPVIEW.read_text()
 	body = source.split("def delete_layout(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert 'frappe.db.delete("OneSpace Hidden View"' in body
+
+
+# --------------------------------------------------------------------------- #
+# The status field
+#
+# The manifest names which field says where a record stands; the doctype owns
+# what colour that is. A fieldname reaching a badge is a fieldname somebody
+# typed, so it is checked like a filter or a sort.
+# --------------------------------------------------------------------------- #
+
+def test_the_status_field_has_to_be_a_field_this_screen_offers(spaceview):
+	offered = {c["fieldname"]: c for c in spaceview._columns(TODO, ["description", "status"])}
+	assert spaceview._status_field({"status_field": "status"}, offered) == "status"
+	assert spaceview._status_field({"status_field": "invented"}, offered) == ""
+	assert spaceview._status_field({"status_field": " status "}, offered) == "status"
+
+
+def test_a_screen_that_names_no_status_badges_nothing(spaceview):
+	"""Most screens. A record with no status is a record with no badge rather
+	than one with an empty badge."""
+	offered = {c["fieldname"]: c for c in spaceview._columns(TODO, ["description"])}
+	assert spaceview._status_field({}, offered) == ""
+	assert spaceview._status_field({"status_field": ""}, offered) == ""
+
+
+def test_the_manifest_never_carries_the_colours(spaceview):
+	"""They are the doctype's own Document States, which `presentation` already
+	reads — so a status is one colour in the list, in the badge and in the desk
+	rather than three."""
+	source = APPVIEW.read_text()
+	body = source.split("def _status_field(", 1)[1].split("\ndef ", 1)[0]
+	assert "color" not in body and "theme" not in body

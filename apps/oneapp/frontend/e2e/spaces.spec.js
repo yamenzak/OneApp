@@ -134,6 +134,15 @@ test('an open record is in the URL, and in the trail', async ({ page }) => {
   await expect(trail).toContainText('Chase the Halloway invoice')
   await expect(trail).toContainText('kosp1csf48')
 
+  // Two lines under one face, and the status beside the name: "where does this
+  // stand" is the second thing anybody asks about a record. Which field that
+  // is comes from the manifest; the colour is ToDo's own.
+  await expect(trail.locator('[data-slot="record-status"]')).toHaveText('Open')
+  const name = await trail.getByText('Chase the Halloway invoice').boundingBox()
+  const id = await trail.getByText('kosp1csf48').boundingBox()
+  expect(id.y).toBeGreaterThan(name.y + name.height - 1)
+  expect(Math.abs(id.x - name.x)).toBeLessThan(2)
+
   // A record is a link: a reload comes back to it, without the list it was
   // opened from.
   await page.reload()

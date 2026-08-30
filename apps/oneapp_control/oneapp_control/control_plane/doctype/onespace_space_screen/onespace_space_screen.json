@@ -12,6 +12,7 @@
   "document_type",
   "fields",
   "component",
+  "status_field",
   "view_types",
   "view_settings",
   "sec_view_query",
@@ -65,6 +66,12 @@
    "fieldname": "component",
    "fieldtype": "Data",
    "label": "Component"
+  },
+  {
+   "description": "Which field says where a record stands \u2014 the one whose value goes on the badge beside a record's name. A fieldname, checked against the doctype like any other; the colours are the doctype's own Document States, not something to repeat here. Empty is no badge.",
+   "fieldname": "status_field",
+   "fieldtype": "Data",
+   "label": "Status Field"
   },
   {
    "default": "list",

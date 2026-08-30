@@ -22,9 +22,15 @@
       :size="compact ? 'sm' : 'md'"
     />
     <div class="flex min-w-0 flex-col">
-      <span class="truncate text-p-sm text-ink-gray-8">
-        {{ record.label || record.value }}
-      </span>
+      <div class="flex min-w-0 items-center gap-1.5">
+        <span class="truncate text-p-sm text-ink-gray-8">
+          {{ record.label || record.value }}
+        </span>
+        <!-- Anything the caller wants said beside the name. A status badge in
+             the breadcrumb; nothing at all in a list cell, where the status
+             has a column of its own. -->
+        <slot name="badge" />
+      </div>
       <!-- The id, and anything the doctype calls searchable, quietly beneath —
            what a person quotes on the phone and never what they read first. -->
       <span v-if="detail" class="truncate text-p-xs text-ink-gray-5">{{ detail }}</span>

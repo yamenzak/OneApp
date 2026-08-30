@@ -244,6 +244,12 @@ doctype(
         f("component",
           description="Escape hatch: a component the SPA registered under "
                       "`spaceCode/screen`. Set this and the doctype above is ignored."),
+        f("status_field",
+          description="Which field says where a record stands — the one whose "
+                      "value goes on the badge beside a record's name. A "
+                      "fieldname, checked against the doctype like any other; "
+                      "the colours are the doctype's own Document States, not "
+                      "something to repeat here. Empty is no badge."),
         f("view_types", default="list",
           description="How this screen may be looked at, in order — `list`, "
                       "`board`, `calendar`, `grid`, `map`. The first is what "

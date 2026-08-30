@@ -486,11 +486,30 @@ def _resolve(space_code: str, screen: str | None = None,
 		# screen's default until a saved view says otherwise.
 		"page_length": PAGE,
 		"page_sizes": list(PAGE_SIZES),
+		# Which field says where a record stands. Checked against the doctype's
+		# own fields like a filter or a sort is: it names a fieldname and ends
+		# up on a badge, and "an operator typed it into the manifest" has never
+		# been a reason to trust one. The colours are not here — they are the
+		# doctype's own Document States, read by `presentation` above, so a
+		# status is one colour in the list, the badge and the desk alike.
+		"status_field": _status_field(chosen, offered),
 		"can_create": bool(frappe.has_permission(doctype, "create")),
 		"can_write": bool(frappe.has_permission(doctype, "write")),
 		"can_delete": bool(frappe.has_permission(doctype, "delete")),
 	})
 	return resolved
+
+
+def _status_field(screen: dict, offered: dict) -> str:
+	"""The field whose value goes on the badge beside a record's name.
+
+	Named in the manifest and checked here, so a screen over Contact does not
+	badge a field Contact does not have. Empty where the manifest says nothing,
+	which is most screens: a record with no status is a record with no badge
+	rather than one with an empty one.
+	"""
+	asked = (screen.get("status_field") or "").strip()
+	return asked if asked in offered else ""
 
 
 # Every way a screen can be looked at. Only `list` has a body; the rest are

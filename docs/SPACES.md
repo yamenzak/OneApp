@@ -238,6 +238,14 @@ already names, so a space gets it by existing.
   checks the same two rules, because the value reaches the DOM as a class
   name.
 
+  **An open record is the last thing in the trail**, and it reads the way a
+  record reads everywhere else: one face, the name, the id beneath it. Beside
+  the name is the status — "where does this stand" is the second thing anybody
+  asks about a record. Which field that is comes from the manifest's
+  `status_field`; the colours do not, because the doctype already declares them
+  as Document States and the list cell already reads those. A screen that names
+  no status field gets no badge rather than an empty one.
+
   **The switcher is where a view is managed**, and the only place. Each view
   in it opens a submenu of its own: open it, put the unsaved change on screen
   into it, rename it, share it, make it what the screen opens with, delete it.

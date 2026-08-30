@@ -62,6 +62,9 @@ SCREENS = [
 		# body yet and is dropped on the way out — which is the behaviour worth
 		# having in the fixture, not a mistake in it.
 		"view_types": "list,board",
+		# Where a task stands, which is what the badge beside its name says.
+		# A fieldname and nothing else: the colours are ToDo's own.
+		"status_field": "status",
 	},
 	{
 		"screen": "notes", "label": "Notes", "icon": "lucide-book-open",
