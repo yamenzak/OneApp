@@ -50,6 +50,10 @@
       <component :is="custom" :space-code="spaceCode" :screen="spec.screen" />
     </div>
 
+    <Alert v-else-if="specError" theme="red" title="This screen could not be opened">
+      <template #description>{{ specError }}</template>
+    </Alert>
+
     <!--
       An entitlement with no interface is a real thing to be: it still grants
       its roles and doctypes, and something else may be using them.
@@ -329,6 +333,9 @@ const hasMore = ref(false)
 const rowsLoading = ref(false)
 const loadingMore = ref(false)
 const rowsError = ref('')
+// Why the screen would not resolve at all — a different failure from a list
+// that would not load, and the one that used to read as "no screens".
+const specError = ref('')
 // How many match, which the server counts once when a list opens. Null until
 // it has: "48 of 0" while the answer is in flight is worse than "48".
 const total = ref(null)
@@ -418,7 +425,10 @@ const emptyBecause = computed(() => {
 // crumb saying the same word again is one word twice.
 const crumbs = computed(() => {
   const trail = [{ label: 'Spaces', route: { name: 'Launcher' } }]
-  if (space.value) trail.push({ label: space.value.app_label })
+  // `space_label`, not `app_label` — the rename left this reading a field that
+  // no longer exists, and the crumb had been an empty segment ever since:
+  // "Spaces / / Tasks", which reads as a missing page rather than a typo.
+  if (space.value) trail.push({ label: space.value.space_label })
   if (!spec.value?.doctype && spec.value?.screen_label && spec.value.screens?.length > 1) {
     trail.push({ label: spec.value.screen_label })
   }
@@ -731,6 +741,7 @@ const resetLayout = async () => {
 const load = async (openWith) => {
   if (!space.value) return
   loading.value = true
+  specError.value = ''
   try {
     spec.value = await workspace.screenSpec(
       props.spaceCode,
@@ -753,6 +764,14 @@ const load = async (openWith) => {
     pageLength.value = spec.value?.page_length || 100
     dirty.value = false
     await loadRows()
+  } catch (err) {
+    // A screen that will not resolve is not a screen with nothing on it. The
+    // spec is fetched silently, so a refused one used to leave `spec` null and
+    // fall through to "this space has no screens" — which sent us looking at
+    // the manifest for an hour while the real answer, a permission the fixture
+    // had not written, was in the response body all along.
+    spec.value = null
+    specError.value = err?.message || String(err)
   } finally {
     loading.value = false
   }

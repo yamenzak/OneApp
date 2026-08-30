@@ -134,6 +134,16 @@ export const workspace = {
       { successMessage: 'Created' },
     ),
 
+  // Every named layout in a space, keyed by screen. The sidebar's question:
+  // it lists what each screen can be looked at as before anybody has opened
+  // one, and asking a spec per screen to draw a menu is a request per item.
+  spaceLayouts: (spaceCode) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.space_layouts',
+      { space_code: spaceCode },
+      { silent: true, method: 'GET' },
+    ),
+
   // A few facts about the record a link points at, for a card on hover. Which
   // facts is the target doctype's own answer — its `in_preview` fields — so no
   // manifest chooses them and every screen pointing at that doctype agrees.

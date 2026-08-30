@@ -8,12 +8,14 @@ test.beforeEach(async ({ page, baseURL }) => {
 // The whole arc: make a view, come back to it, and take it away again.
 test('a named view is made, opened and deleted', async ({ page }) => {
   const errors = collectConsoleErrors(page)
-  await page.goto('/one/space/zztasks')
+  await page.goto('/one/space/zzmock')
   await expect(page.getByText('Halloway').first()).toBeVisible()
 
-  // The switcher opens on the screen's own name, because nothing is saved.
+  // The switcher opens on the screen's own name, because nothing this person
+  // saved is what the screen opens with — the fixture's two shared views are
+  // there to switch to, not defaults.
   const views = page.getByRole('group', { name: 'Saved views' })
-  await expect(views.getByRole('button', { name: /^Open/ })).toBeVisible()
+  await expect(views.getByRole('button', { name: /^Tasks/ })).toBeVisible()
   await views.getByRole('button').click()
   await page.getByRole('menuitem', { name: 'Save as a new view' }).click()
 
@@ -30,6 +32,6 @@ test('a named view is made, opened and deleted', async ({ page }) => {
 
   await views.getByRole('button').click()
   await page.getByRole('menuitem', { name: 'Delete this view' }).click()
-  await expect(views.getByRole('button', { name: /^Open/ })).toBeVisible()
+  await expect(views.getByRole('button', { name: /^Tasks/ })).toBeVisible()
   expectNoRealErrors(errors)
 })

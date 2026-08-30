@@ -15,7 +15,7 @@ test.beforeEach(async ({ page, baseURL }) => {
 const SCROLLER = '[data-slot="list-header"]'
 
 const openList = async (page, screen) => {
-  await page.goto(`/one/space/zztasks${screen ? `?screen=${screen}` : ''}`)
+  await page.goto(`/one/space/zzmock${screen ? `?screen=${screen}` : ''}`)
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
 }
 
@@ -38,7 +38,7 @@ const scrollerBox = (page) =>
 
 test('the horizontal scrollbar is on screen, not at the foot of the table', async ({ page }) => {
   const errors = collectConsoleErrors(page)
-  await openList(page, 'backlog')
+  await openList(page)
 
   const box = await scrollerBox(page)
   // There is something to scroll sideways to.
@@ -55,7 +55,7 @@ test('the horizontal scrollbar is on screen, not at the foot of the table', asyn
 })
 
 test('the column header stays put while the rows scroll under it', async ({ page }) => {
-  await openList(page, 'backlog')
+  await openList(page)
 
   const header = page.locator(SCROLLER)
   const before = await header.boundingBox()
@@ -70,7 +70,7 @@ test('the column header stays put while the rows scroll under it', async ({ page
 })
 
 test('the edge says there is more to the right, and stops when there is not', async ({ page }) => {
-  await openList(page, 'backlog')
+  await openList(page)
 
   // An aria-hidden marker, found by its geometry rather than by text: a strip
   // the full height of the pane at one edge of it.
@@ -98,7 +98,7 @@ test('the edge says there is more to the right, and stops when there is not', as
 
 test('the footer counts what matches, and load more appends', async ({ page }) => {
   const errors = collectConsoleErrors(page)
-  await openList(page, 'backlog')
+  await openList(page)
 
   const rows = () => page.locator('[data-slot="list-row"]')
 

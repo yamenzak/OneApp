@@ -22,7 +22,7 @@ const SEEDED = 'Book the van for Thursday'
 // fixed sleep is both slower than it needs to be and flakier than it looks —
 // too short on a loaded machine, wasted on a fast one.
 const openList = async (page) => {
-  await page.goto('/one/space/zztasks')
+  await page.goto('/one/space/zzmock')
   await expect(page.getByRole('button', { name: /^Filter/ })).toBeVisible()
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
 }
@@ -95,9 +95,11 @@ test('the first column is what the row is, with its id underneath', async ({ pag
   const errors = collectConsoleErrors(page)
   await openList(page)
 
+  // The seeded row rather than whichever is first: what is being pinned is
+  // the shape of the title cell, and the screen's sort is the screen's own
+  // business.
   const first = page
-    .locator('[data-slot="list-row"]')
-    .first()
+    .locator('[data-slot="list-row"]', { hasText: SEEDED })
     .locator('[data-slot="list-cell"]')
     .first()
   // The title from the doctype's own `title_field`, and the id quietly below
@@ -146,7 +148,7 @@ test('a row can be liked from the list, and the heart filters to it', async ({ p
       await remove.click()
     }
   }
-  await expect(rows()).toHaveCount(2)
+  await expect(page.getByRole('button', { name: 'Remove from favourites' })).toHaveCount(0)
 
   // With nothing liked the filter empties the list, and the list header goes
   // with it — so the way back out is in the empty state.
@@ -156,12 +158,17 @@ test('a row can be liked from the list, and the heart filters to it', async ({ p
 
   await page.getByRole('button', { name: 'Show everything' }).click()
 
+  // Whichever row is first, not a row named here: the fixture's order is the
+  // screen's to decide, and a test that hard-codes one breaks when a manifest
+  // changes its sort rather than when the heart breaks.
+  const title = () => rows().first().locator('[data-slot="list-cell"]').first()
+  const liked = (await title().innerText()).split('\n')[0]
   await rows().first().getByRole('button', { name: 'Add to favourites' }).click()
   await expect(rows().first().getByRole('button', { name: 'Remove from favourites' })).toBeVisible()
 
   await heart.click()
   await expect(rows()).toHaveCount(1)
-  await expect(page.getByText(SEEDED).first()).toBeVisible()
+  await expect(title()).toContainText(liked)
 
   await info.attach(`favourites-${info.project.name}`, {
     body: await page.screenshot({ fullPage: true }),
@@ -285,11 +292,12 @@ test('a quick box can be exact or roughly', async ({ page }) => {
   const errors = collectConsoleErrors(page)
   await openList(page)
 
-  // Frappe's `≈` toggle, on the one box every viewport has. Both ids start
-  // "kos", so Like finds them and Equals finds neither.
+  // Frappe's `≈` toggle, on the one box every viewport has. The three written
+  // todos were named in one run, so their ids share a prefix the forty backlog
+  // rows do not: Like finds those three and Equals finds none of them.
   await page.getByPlaceholder('ID').fill('kos')
   await page.getByPlaceholder('ID').press('Enter')
-  await expect(page.locator('[data-slot="list-row"]')).toHaveCount(2)
+  await expect(page.locator('[data-slot="list-row"]')).toHaveCount(3)
 
   await page.getByRole('button', { name: 'How ID matches' }).click()
   await page.getByRole('menuitem', { name: 'Equals' }).click()
@@ -303,7 +311,7 @@ test('a quick box and the panel both apply', async ({ page }) => {
 
   await page.getByPlaceholder('ID').fill('kos')
   await page.getByPlaceholder('ID').press('Enter')
-  await expect(page.locator('[data-slot="list-row"]')).toHaveCount(2)
+  await expect(page.locator('[data-slot="list-row"]')).toHaveCount(3)
 
   await page.getByRole('button', { name: /^Filter/ }).click()
   await page.getByRole('button', { name: 'Add filter' }).click()
@@ -643,7 +651,7 @@ test('rows can be selected and deleted together', async ({ page, baseURL }, info
   const doomed = `Delete me ${Date.now()}`
   // Frappe rejects a POST without its CSRF token, and `page.request` carries
   // the session cookie but not the token — so ask the page for it.
-  await page.goto('/one/space/zztasks?screen=all')
+  await page.goto('/one/space/zzmock')
   // Settle before reloading: a reload over the in-flight screen resolve aborts
   // it, which the browser reports as "Failed to fetch".
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
@@ -651,7 +659,7 @@ test('rows can be selected and deleted together', async ({ page, baseURL }, info
   const made = await page.request.post(`${baseURL}/api/method/oneapp.oneapp_core.spaceview.save`, {
     headers: { 'X-Frappe-CSRF-Token': csrf },
     form: {
-      space_code: 'zztasks',
+      space_code: 'zzmock',
       screen: 'all',
       values: JSON.stringify({ description: doomed, status: 'Open', priority: 'Low' }),
     },
@@ -700,7 +708,7 @@ test('select-all ticks the page', async ({ page }) => {
 
 test('rows can be grouped by a column', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
-  await page.goto('/one/space/zztasks?screen=all')
+  await page.goto('/one/space/zzmock')
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
 
   // Chosen where the columns are, because it is a question about the columns.

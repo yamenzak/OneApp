@@ -1,9 +1,10 @@
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 // An icon name that only exists in the database emits no CSS, so anything
 // outside the generated set falls back to one that does.
 import { spaceIcon } from './icons'
 import { session } from './session'
+import { workspace } from './workspace'
 import { VIEW_TYPES, viewTypesOf } from './viewTypes'
 
 /**
@@ -30,7 +31,7 @@ export function useNav() {
     { label: 'Account', icon: 'lucide-circle-user', to: { name: 'Account' } },
   ]
 
-  const screenRoute = (space, screen, viewType) => ({
+  const screenRoute = (space, screen, viewType, layout) => ({
     name: 'Screen',
     params: { spaceCode: space.space_code },
     query: {
@@ -38,8 +39,22 @@ export function useNav() {
       // Only when it is not the screen's own first type: a query parameter
       // that repeats the default is noise in every link and every bookmark.
       ...(viewType && viewType !== viewTypesOf(screen)[0] ? { type: viewType } : {}),
+      ...(layout ? { layout } : {}),
     },
   })
+
+  // The space's named layouts, keyed by screen. Fetched once when a space is
+  // opened rather than per screen: the sidebar lists what every screen can be
+  // looked at as, and a request per item to draw a menu is a menu that
+  // arrives in pieces.
+  const layouts = ref({})
+  watch(
+    () => activeSpace.value?.space_code,
+    async (code) => {
+      layouts.value = code ? (await workspace.spaceLayouts(code)) || {} : {}
+    },
+    { immediate: true },
+  )
 
   const items = computed(() => {
     const space = activeSpace.value
@@ -61,32 +76,59 @@ export function useNav() {
       label: screen.label,
       icon: spaceIcon(screen.icon),
       to: screenRoute(space, screen),
-      // What the sidebar offers when this screen is expanded. A screen that
-      // only knows one way to be looked at has nothing to expand.
+      // What the sidebar offers when this screen is expanded: the ways it can
+      // be drawn, then the layouts somebody named. Two groups rather than one
+      // list, because they answer different questions — "as a board or a
+      // list" and "which slice of it" — and a menu that mixes them reads as
+      // one set of alternatives when picking a layout leaves the view type
+      // where it was.
       viewTypes: viewTypesOf(screen).map((type) => ({
         key: type,
         label: VIEW_TYPES[type].label,
         icon: VIEW_TYPES[type].icon,
         to: screenRoute(space, screen, type),
       })),
+      layouts: (layouts.value[screen.screen] || []).map((layout) => ({
+        key: layout.name,
+        label: layout.label,
+        icon: layout.shared ? 'lucide-users' : 'lucide-bookmark',
+        to: screenRoute(space, screen, layout.view_type, layout.name),
+      })),
     }))
   })
 
   const activeType = computed(() => route.query.type || '')
+  const activeLayout = computed(() => route.query.layout || '')
+
+  // A space opened without a screen in the URL renders its first one — that is
+  // what the server resolves to — so the sidebar has to mark the same item.
+  // Reading `route.query.screen` alone left the whole list unmarked on the one
+  // route people arrive at from the launcher.
+  const activeScreen = computed(
+    () => route.query.screen || items.value[0]?.to.query?.screen || '',
+  )
 
   const nav = computed(() =>
-    items.value.map((item) => ({
-      ...item,
-      active:
-        route.name === item.to.name &&
-        (!item.to.query?.screen || route.query.screen === item.to.query.screen),
-      viewTypes: (item.viewTypes || []).map((type) => ({
-        ...type,
-        active:
-          route.query.screen === item.to.query?.screen &&
-          (activeType.value || item.viewTypes[0].key) === type.key,
-      })),
-    })),
+    items.value.map((item) => {
+      const here = activeScreen.value === item.to.query?.screen
+      return {
+        ...item,
+        active: route.name === item.to.name && (!item.to.query?.screen || here),
+        viewTypes: (item.viewTypes || []).map((type) => ({
+          ...type,
+          // A layout is open, so no view type is what you are looking at —
+          // marking one active would claim the list is unfiltered.
+          active:
+            here &&
+            !activeLayout.value &&
+            (activeType.value || item.viewTypes[0].key) === type.key,
+        })),
+        layouts: (item.layouts || []).map((layout) => ({
+          ...layout,
+          active: here && activeLayout.value === layout.key,
+        })),
+      }
+    }),
   )
 
   return { nav, activeSpace }

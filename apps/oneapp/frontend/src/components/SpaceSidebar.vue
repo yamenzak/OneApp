@@ -30,7 +30,16 @@
             </template>
           </SidebarItem>
 
-          <div v-if="expandable(item) && open[item.key]" class="ms-3 border-s border-outline-gray-1 ps-1">
+          <!--
+            Two groups, not one list. "As a board or as a list" and "which
+            slice of it" are different questions, and a run of items that mixes
+            them reads as one set of alternatives — when picking a layout
+            leaves the view type exactly where it was.
+          -->
+          <div
+            v-if="expandable(item) && open[item.key]"
+            class="ms-3 border-s border-outline-gray-1 ps-1"
+          >
             <SidebarItem
               v-for="type in item.viewTypes"
               :key="type.key"
@@ -40,6 +49,19 @@
             >
               <span class="flex-1 truncate text-sm">{{ type.label }}</span>
             </SidebarItem>
+
+            <template v-if="item.layouts.length">
+              <SidebarLabel class="mt-2">Views</SidebarLabel>
+              <SidebarItem
+                v-for="layout in item.layouts"
+                :key="layout.key"
+                :icon="layout.icon"
+                :to="layout.to"
+                :active="layout.active"
+              >
+                <span class="flex-1 truncate text-sm">{{ layout.label }}</span>
+              </SidebarItem>
+            </template>
           </div>
         </template>
       </nav>
@@ -60,7 +82,7 @@
 <script setup>
 import { reactive, watch } from 'vue'
 import { TENANT_APP } from '../lib/brand'
-import { Button, ScrollArea, Sidebar, SidebarHeader, SidebarItem } from '@/ui'
+import { Button, ScrollArea, Sidebar, SidebarHeader, SidebarItem, SidebarLabel } from '@/ui'
 import QuotaMeter from './QuotaMeter.vue'
 import { useNav } from '../lib/nav'
 import { session } from '../lib/session'
@@ -76,9 +98,11 @@ const { nav, activeSpace } = useNav()
 // a sidebar you have to tidy.
 const open = reactive({})
 
-// Nothing to expand when a screen knows one way to be looked at — a chevron
-// that opens a list of one is a control that lies about having a choice.
-const expandable = (item) => (item.viewTypes || []).length > 1
+// Nothing to expand when there is one way to look at a screen and nobody has
+// named a view of it — a chevron that opens a list of one is a control that
+// lies about having a choice.
+const expandable = (item) =>
+  (item.viewTypes || []).length + (item.layouts || []).length > 1
 
 const toggle = (item) => {
   open[item.key] = !open[item.key]

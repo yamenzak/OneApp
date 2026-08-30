@@ -1,10 +1,17 @@
-"""A manifest-only app on the local sites, so the generic screen has something
-to render.
+"""A manifest-only space on the local sites, so the generic screen has
+something to render.
 
-Points at Frappe's own ToDo rather than inventing a product: the field list is
-chosen for coverage — a Text Editor, two Selects (badge colours), a Link (the
-picker), a Date, and a Color, which has no frappe-ui counterpart and so must be
-shown without ever being offered.
+**MockSpace**, on the rail. Two screens under it, over two of Frappe's own
+doctypes rather than an invented product:
+
+* **Tasks** (ToDo) — the field list is chosen for coverage: a Text Editor, two
+  Selects (badge colours), two Links (the picker, and one that may be created
+  from), a Date, and a Color, which has no frappe-ui counterpart and so must be
+  shown without ever being offered. It also carries two shared saved views, so
+  the sidebar has named layouts to list under it and the switcher has something
+  to switch between.
+* **Notes** (Note) — a second doctype under one space, which is the point: a
+  space is not a doctype, and a screen is one item in its navigation.
 
 Run it against both sites: the manifest lives on the control plane, and the
 tenant caches it.
@@ -20,32 +27,61 @@ import json
 
 import frappe
 
-CODE = "zztasks"
-ROLE = "OneSpace Tasks"
-FIELDS = "description,status,priority,allocated_to,role,date,color"
+CODE = "zzmock"
+LABEL = "MockSpace"
+ROLE = "OneSpace Mock"
+# Fixtures this one replaces. A dev site keeps whatever a previous fixture
+# wrote, so a space that is no longer seeded stays on the rail with a role that
+# still grants doctypes — a stale entitlement is a confusing thing to debug
+# around and a trivial thing to clear.
+RETIRED = ("zztasks",)
+RETIRED_ROLES = ("OneSpace Tasks",)
 
-VIEWS = [
+TASK_FIELDS = "description,status,priority,allocated_to,role,date,color"
+NOTE_FIELDS = "title,public,content"
+
+# What the space grants. ToDo and Note are what its screens show; Role is a
+# link target, granted so the picker's Create row has somewhere to create —
+# a link to a doctype the space did not grant is readable and never creatable,
+# and both halves are worth having in the fixture.
+DOCTYPES = [
+	{"document_type": "ToDo", "access": "Manage", "if_owner": 0},
+	{"document_type": "Note", "access": "Manage", "if_owner": 0},
+	{"document_type": "Role", "access": "Manage", "if_owner": 0},
+]
+
+SCREENS = [
 	{
-		"screen": "open", "label": "Open", "icon": "lucide-clock",
-		"document_type": "ToDo", "fields": FIELDS,
-		"filters": json.dumps({"status": "Open"}), "order_by": "modified desc",
+		"screen": "tasks", "label": "Tasks", "icon": "lucide-file-text",
+		# Oldest first, so the three written-out tasks lead and the forty
+		# backlog rows trail them. A fixture reads better as "three real tasks
+		# and a long tail" than as forty numbered ones, and it makes the first
+		# row a stable thing for a browser test to point at.
+		"document_type": "ToDo", "fields": TASK_FIELDS, "order_by": "creation asc",
 		# More than one, so the sidebar has something to expand. `board` has no
 		# body yet and is dropped on the way out — which is the behaviour worth
 		# having in the fixture, not a mistake in it.
 		"view_types": "list,board",
 	},
 	{
-		"screen": "all", "label": "Everything", "icon": "lucide-layout-grid",
-		"document_type": "ToDo", "fields": FIELDS, "order_by": "modified desc",
+		"screen": "notes", "label": "Notes", "icon": "lucide-book-open",
+		"document_type": "Note", "fields": NOTE_FIELDS, "order_by": "modified desc",
 	},
-	# Enough rows to page. Everything else on this fixture is two or three
-	# records, which is right for reading a screen and useless for testing what
-	# happens at the end of a page — Load More, the count, the windowing
-	# threshold. Filtered to Closed so it does not disturb the Open screen.
+]
+
+# Shared layouts on the Tasks screen: no user, so the whole workspace sees
+# them. These are what the sidebar lists under a screen alongside its view
+# types, and what the switcher in the breadcrumb line switches between.
+LAYOUTS = [
 	{
-		"screen": "backlog", "label": "Backlog", "icon": "lucide-package",
-		"document_type": "ToDo", "fields": FIELDS,
-		"filters": json.dumps({"status": "Closed"}), "order_by": "creation asc",
+		"label": "Open work", "screen": "tasks",
+		"filters": json.dumps([["status", "=", "Open"]]),
+		"order_by": "priority asc",
+	},
+	{
+		"label": "High priority", "screen": "tasks",
+		"filters": json.dumps([["priority", "=", "High"]]),
+		"order_by": "modified desc",
 	},
 ]
 
@@ -56,35 +92,52 @@ TODOS = [
 	{"description": "File Q3 returns", "priority": "Low", "status": "Closed"},
 ]
 
-# The paging fixture. Deliberately more than one page at the smallest size the
-# footer offers, so "load more" has something to load.
+NOTES = [
+	{"title": "Van hire terms", "public": 1,
+	 "content": "<p>Collection before nine, or the day counts as two.</p>"},
+	{"title": "Halloway contacts", "public": 0,
+	 "content": "<p>Chris is the one who signs; Sam answers the phone.</p>"},
+]
+
+# The paging fixture. Everything else here is two or three records, which is
+# right for reading a screen and useless for testing what happens at the end of
+# a page — Load More, the count, the windowing threshold. Closed, so it does
+# not crowd the Open work layout.
 BACKLOG = 40
 BACKLOG_PREFIX = "Backlog item"
+
+# Field metadata the UI honours and stock Frappe never sets. These are
+# ERPNext-shaped flags — a doctype there marks the two or three fields worth
+# seeing on hover, the one worth reading heavy, and how wide a column wants to
+# be — and nothing on a plain bench declares one, so there is nothing to look
+# at unless the fixture says so.
+PROPERTIES = [
+	("User", "email", "in_preview", 1, "Check"),
+	("User", "enabled", "in_preview", 1, "Check"),
+	("User", "user_type", "in_preview", 1, "Check"),
+	("ToDo", "priority", "bold", 1, "Check"),
+	("ToDo", "description", "columns", 4, "Int"),
+]
 
 
 def seed_control():
 	"""The manifest itself. Only the control plane has OneSpace Space."""
-	if frappe.db.exists("OneSpace Space", CODE):
-		frappe.delete_doc("OneSpace Space", CODE, force=True, ignore_permissions=True)
+	for code in (CODE, *RETIRED):
+		if frappe.db.exists("OneSpace Space", code):
+			frappe.delete_doc("OneSpace Space", code, force=True, ignore_permissions=True)
 
 	doc = frappe.get_doc({
-		"doctype": "OneSpace Space", "space_code": CODE, "space_label": "Tasks",
-		"module": "Tasks", "role_name": ROLE, "icon": "lucide-file-text",
+		"doctype": "OneSpace Space", "space_code": CODE, "space_label": LABEL,
+		"module": "Mock", "role_name": ROLE, "icon": "lucide-briefcase",
 		"is_active": 1, "availability": "General", "sort_order": 5,
-		"description": "Everything on your plate, and who it is waiting on.",
+		"description": "Two screens over two doctypes, for looking at.",
 	})
-	doc.append("doctypes", {"document_type": "ToDo", "access": "Manage", "if_owner": 0})
-	# Two link targets, deliberately different. `allocated_to` points at User,
-	# which has a title and a picture, so the picker shows a face and a name;
-	# `role` points at Role, which has neither, so it shows its id once instead
-	# of twice. Role is also granted here, which is what puts Create in the
-	# picker — a link to a doctype the space did not grant is readable and never
-	# creatable, and both halves are worth having in the fixture.
-	doc.append("doctypes", {"document_type": "Role", "access": "Manage", "if_owner": 0})
-	for screen in VIEWS:
+	for grant in DOCTYPES:
+		doc.append("doctypes", grant)
+	for screen in SCREENS:
 		doc.append("screens", screen)
 	doc.insert(ignore_permissions=True)
-	print(f"control plane: {CODE} with {len(VIEWS)} screens")
+	print(f"control plane: {CODE} with {len(SCREENS)} screens")
 
 
 def seed_tenant():
@@ -98,13 +151,13 @@ def seed_tenant():
 	state = frappe.get_single("OneSpace Site State")
 	spaces = [
 		one for one in json.loads(state.spaces_json or "[]")
-		if one.get("space_code") != CODE
+		if one.get("space_code") not in (CODE, *RETIRED)
 	]
 	spaces.append({
-		"space_code": CODE, "space_label": "Tasks", "module": "Tasks",
-		"role_name": ROLE, "icon": "lucide-file-text", "sort_order": 5,
-		"description": "Everything on your plate, and who it is waiting on.",
-		"screens": [dict(v, component=None) for v in VIEWS],
+		"space_code": CODE, "space_label": LABEL, "module": "Mock",
+		"role_name": ROLE, "icon": "lucide-briefcase", "sort_order": 5,
+		"description": "Two screens over two doctypes, for looking at.",
+		"screens": [dict(v, component=None) for v in SCREENS],
 	})
 	state.db_set("spaces_json", json.dumps(spaces), update_modified=False)
 	sync.invalidate()
@@ -112,40 +165,44 @@ def seed_tenant():
 	# The role, its permissions, and this session in it. On a real tenant the
 	# control plane's permission sync does all three; a dev site has no control
 	# plane, and a space whose role holds no DocPerms is refused at the first
-	# read with "ToDo is not part of Tasks" — which reads like a manifest bug
-	# and is a fixture that stopped halfway.
+	# read with "ToDo is not part of MockSpace" — which reads like a manifest
+	# bug and is a fixture that stopped halfway.
 	sync.ensure_role(ROLE)
+	# `document_type` is the manifest child row's fieldname; `doctype` is what
+	# the permission sync reads. They are not the same word, and a row with the
+	# wrong one is silently skipped — which surfaces later as "ToDo is not part
+	# of MockSpace" and reads like a manifest bug.
 	sync.sync_permissions([
-		{"role": ROLE, "doctype": "ToDo", "access": "Manage", "if_owner": 0},
-		{"role": ROLE, "doctype": "Role", "access": "Manage", "if_owner": 0},
+		{"role": ROLE, "doctype": grant["document_type"],
+		 "access": grant["access"], "if_owner": grant["if_owner"]}
+		for grant in DOCTYPES
 	])
 	user = frappe.get_doc("User", frappe.session.user)
 	if ROLE not in {r.role for r in user.roles}:
 		user.append("roles", {"role": ROLE})
 		user.save(ignore_permissions=True)
 
-	# Field metadata the UI honours and stock Frappe never sets. These are
-	# ERPNext-shaped flags — a doctype there marks the two or three fields worth
-	# seeing on hover, the one worth reading heavy, and how wide a column wants
-	# to be — and nothing on a plain bench declares one, so there is nothing to
-	# look at unless the fixture says so. Property Setters, which is how a site
-	# customises a doctype it does not own.
-	for doctype, fieldname, prop, value in (
-		("User", "email", "in_preview", 1),
-		("User", "enabled", "in_preview", 1),
-		("User", "user_type", "in_preview", 1),
-		("ToDo", "priority", "bold", 1),
-		("ToDo", "description", "columns", 4),
-	):
+	for role in RETIRED_ROLES:
+		if frappe.db.exists("Role", role):
+			for perm in frappe.get_all("Custom DocPerm", filters={"role": role}, pluck="name"):
+				frappe.delete_doc("Custom DocPerm", perm, force=True, ignore_permissions=True)
+			frappe.delete_doc("Role", role, force=True, ignore_permissions=True)
+
+	for doctype, fieldname, prop, value, prop_type in PROPERTIES:
 		frappe.make_property_setter({
 			"doctype": doctype, "fieldname": fieldname, "property": prop,
-			"value": value, "property_type": "Check" if prop != "columns" else "Int",
+			"value": value, "property_type": prop_type,
 		}, is_system_generated=False)
 
 	for row in TODOS:
 		if frappe.db.exists("ToDo", {"description": row["description"]}):
 			continue
 		frappe.get_doc({"doctype": "ToDo", **row}).insert(ignore_permissions=True)
+
+	for row in NOTES:
+		if frappe.db.exists("Note", {"title": row["title"]}):
+			continue
+		frappe.get_doc({"doctype": "Note", **row}).insert(ignore_permissions=True)
 
 	for n in range(1, BACKLOG + 1):
 		description = f"{BACKLOG_PREFIX} {n:02d}"
@@ -156,7 +213,28 @@ def seed_tenant():
 			"priority": ["High", "Medium", "Low"][n % 3],
 		}).insert(ignore_permissions=True)
 
-	print(f"tenant: {CODE} cached, {len(TODOS)} todos and {BACKLOG} backlog rows present")
+	for layout in LAYOUTS:
+		where = {"space_code": CODE, "screen": layout["screen"], "label": layout["label"]}
+		if frappe.db.exists("OneSpace Saved View", where):
+			continue
+		frappe.get_doc({
+			"doctype": "OneSpace Saved View", "space_code": CODE,
+			# No user: shared with the whole workspace, which is what makes it
+			# something the sidebar can list for anybody.
+			"user": "", **layout,
+		}).insert(ignore_permissions=True)
+
+	# Again, and last. Everything between the first call and here reads the
+	# site state — the permission sync does, the role grant does — and any one
+	# of them repopulates the cache from a document this process had already
+	# loaded. Clearing it at the end is the only order that leaves the next
+	# request reading what was just written.
+	sync.invalidate()
+
+	print(
+		f"tenant: {CODE} cached — {len(TODOS)} todos, {len(NOTES)} notes, "
+		f"{BACKLOG} backlog rows, {len(LAYOUTS)} shared views"
+	)
 
 
 if __name__ == "__main__":

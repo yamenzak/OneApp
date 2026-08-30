@@ -54,6 +54,17 @@ Screens are edited in OneAdmin under **Settings → Space screens**. Their order
 there is the order of the space's navigation, in the sidebar and in the phone's
 bottom bar alike.
 
+A screen in the sidebar **expands** when there is more than one way to open it:
+the view types it declares, then the named views somebody saved on it, under a
+"Views" heading. Two groups rather than one run of items, because they answer
+different questions — "as a board or as a list" and "which slice of it" — and
+picking a view leaves the view type exactly where it was. A screen with one
+view type and no saved views has nothing to expand, and gets no chevron.
+
+The sidebar asks for a space's layouts once (`spaceview.space_layouts`) rather
+than fetching a spec per screen to draw a menu. On a phone there is no sidebar,
+and the same views are in the switcher in the breadcrumb line.
+
 ## Two rules make a screen safe to hand a customer
 
 **A screen is an allowlist, twice over.** It can only be reached through a space

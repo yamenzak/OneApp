@@ -1291,6 +1291,34 @@ def _layouts(space_code: str, screen: str, view_type: str | None = None) -> list
 	return rows
 
 
+@frappe.whitelist(methods=["GET"])
+def space_layouts(space_code: str) -> dict:
+	"""Every named layout in a space, keyed by the screen it belongs to.
+
+	The sidebar's question, and a different one from the screen's. A screen
+	spec answers "what is on this list"; the sidebar has to say what the
+	*other* screens can be looked at as, before anybody has opened one — so it
+	asks once for the space rather than fetching a spec per screen to draw a
+	menu.
+
+	Only what a layout is called and which view type it belongs to. The filters
+	and columns are the screen's business, and they are re-checked when the
+	screen opens rather than trusted from here.
+	"""
+	space = _space(space_code)
+	found = {}
+	for screen in space.get("screens") or []:
+		rows = _layouts(space_code, screen["screen"])
+		if rows:
+			found[screen["screen"]] = [
+				{"name": row["name"], "label": row["label"] or "",
+				 "view_type": row["view_type"], "shared": row["shared"]}
+				for row in rows
+				if row["label"]
+			]
+	return found
+
+
 def _default_layout(rows: list[dict]):
 	"""The layout this screen opens with when nothing is asked for.
 
