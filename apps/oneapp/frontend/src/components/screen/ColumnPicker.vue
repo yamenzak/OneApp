@@ -54,12 +54,14 @@
             icon="lucide-arrow-left-to-line"
             :variant="column.pin === 'left' ? 'subtle' : 'ghost'"
             :label="`Pin ${labelFor(column)} to the left edge`"
+            :tooltip="`Pin ${labelFor(column)} to the left edge`"
             @click="setPin(index, 'left')"
           />
           <Button
             icon="lucide-arrow-right-to-line"
             :variant="column.pin === 'right' ? 'subtle' : 'ghost'"
             :label="`Pin ${labelFor(column)} to the right edge`"
+            :tooltip="`Pin ${labelFor(column)} to the right edge`"
             @click="setPin(index, 'right')"
           />
           <!--
@@ -81,6 +83,7 @@
             icon="lucide-chevron-up"
             variant="ghost"
             :label="`Move ${labelFor(column)} up`"
+            :tooltip="`Move ${labelFor(column)} up`"
             :disabled="index === 0"
             @click="move(index, -1)"
           />
@@ -88,6 +91,7 @@
             icon="lucide-chevron-down"
             variant="ghost"
             :label="`Move ${labelFor(column)} down`"
+            :tooltip="`Move ${labelFor(column)} down`"
             :disabled="index === chosen.length - 1"
             @click="move(index, 1)"
           />
@@ -95,6 +99,7 @@
             icon="lucide-x"
             variant="ghost"
             :label="`Remove ${labelFor(column)}`"
+            :tooltip="`Remove ${labelFor(column)}`"
             :disabled="chosen.length === 1"
             @click="remove(index)"
           />

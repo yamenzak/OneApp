@@ -52,6 +52,7 @@
             icon="lucide-trash-2"
             variant="ghost"
             label="Remove screen"
+            tooltip="Remove screen"
             @click="screens.splice(index, 1)"
           />
         </div>

@@ -10,6 +10,7 @@
         variant="ghost"
         icon="lucide-refresh-cw"
         label="Re-check"
+        tooltip="Re-check"
         :loading="setup.loading"
         @click="setup.load()"
       />

@@ -9,6 +9,7 @@
         variant="ghost"
         icon="lucide-refresh-cw"
         label="Refresh"
+        tooltip="Refresh"
         :loading="panel?.loading"
         @click="panel?.reload()"
       />

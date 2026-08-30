@@ -23,6 +23,7 @@
           icon="lucide-x"
           variant="ghost"
           label="Clear the selection"
+          tooltip="Clear the selection"
           @click="emit('clear')"
         />
       </div>

@@ -80,6 +80,7 @@
                 :variant="favourites ? 'subtle' : 'ghost'"
                 :theme="favourites ? 'red' : 'gray'"
                 label="Only my favourites"
+                tooltip="Only my favourites"
                 @click="emit('favourites')"
               />
             </template>

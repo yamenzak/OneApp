@@ -73,6 +73,7 @@
                   variant="ghost"
                   icon="lucide-trash-2"
                   :label="`Remove ${person.email}`"
+                  :tooltip="`Remove ${person.email}`"
                   :loading="removing === person.email"
                   @click="remove(person)"
                 />

@@ -802,6 +802,80 @@ def test_no_hand_rolled_spinner(app):
 	)
 
 
+# A `<Button>` tag, whole, so its attributes can be read together.
+BUTTON = re.compile(r"<Button\b[^>]*?/?>", re.S)
+# `icon="lucide-x"` or `:icon="…"`, and not `icon-left` / `icon-right`, which
+# sit beside a label rather than instead of one.
+ICON_ONLY = re.compile(r'(?<![\w-])(:?)icon="([^"]*)"')
+HAS_TOOLTIP = re.compile(r'(?<![\w-]):?tooltip="')
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_an_icon_only_control_says_what_it_does(app):
+	"""A button that is only a picture has to name itself on hover.
+
+	`label` on an icon-only Button is the *accessible* name — it reaches a
+	screen reader and nobody else. The gear beside a list, the two pin arrows in
+	the column picker, the heart: sighted people were left to guess, and half of
+	them are one click from changing what a list shows.
+
+	frappe-ui's Button takes a `tooltip`, which builds its own Tooltip
+	internally — so this is also what keeps every tooltip in both SPAs the same
+	component.
+
+	Exempt is the button that is *sometimes* an icon:
+	`:icon="isMobile ? 'lucide-pencil' : undefined"` shows its label wherever
+	there is a pointer to hover with, and a tooltip on a touch screen is one
+	nobody can open. A ternary choosing between two icons is not that — it is
+	always an icon — so `undefined` in the expression is the test, not `?`.
+	"""
+	root = ROOT / f"apps/{app}/frontend/src"
+	offenders = []
+	for path in sorted(root.rglob("*.vue")):
+		source = path.read_text()
+		for match in BUTTON.finditer(source):
+			tag = match.group(0)
+			icon = ICON_ONLY.search(tag)
+			if not icon or "undefined" in icon.group(2):
+				continue
+			if HAS_TOOLTIP.search(tag):
+				continue
+			line = source[: match.start()].count("\n") + 1
+			offenders.append(f"{path.relative_to(root)}:{line}")
+	assert not offenders, (
+		"these render as an icon and nothing else, with no tooltip to say what "
+		"they do: " + ", ".join(offenders)
+	)
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_a_tooltip_is_frappe_uis_or_it_is_not_a_tooltip(app):
+	"""One component, or four things that behave differently on a phone.
+
+	The browser's own `title` is the tempting shortcut and it is not a tooltip:
+	it appears after a delay nobody controls, cannot be styled, cannot hold
+	markup, and does nothing at all on a touch screen. A hand-rolled hover card
+	— `@mouseenter` flipping a ref, a `group-hover` absolute div — is the other
+	way this drifts, and it arrives without the delay, the dismissal or the
+	portal that frappe-ui's already handles.
+
+	`title` on a *component* is left alone: it is a real prop on Alert, Dialog,
+	EmptyState and SettingsRow, and means the heading rather than a hover.
+	"""
+	root = ROOT / f"apps/{app}/frontend/src"
+	html_title = re.compile(r"<[a-z][\w-]*\s[^>]*?\stitle=", re.S)
+	hover = re.compile(r"@mouse(enter|over|leave)|group-hover:")
+	offenders = []
+	for path in sorted(root.rglob("*.vue")):
+		source = path.read_text()
+		if html_title.search(source) or hover.search(source):
+			offenders.append(str(path.relative_to(root)))
+	assert not offenders, (
+		"use frappe-ui's Tooltip (or Button's own `tooltip`) rather than a "
+		"`title` attribute or a hand-rolled hover: " + ", ".join(offenders)
+	)
+
+
 @pytest.mark.parametrize("app", APPS)
 def test_something_waits_visibly_while_a_screen_loads(app):
 	"""A screen that fetches and renders nothing in the meantime reads as broken

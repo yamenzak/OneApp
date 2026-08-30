@@ -99,6 +99,7 @@
       icon="lucide-x"
       variant="ghost"
       label="Remove this filter"
+      tooltip="Remove this filter"
       class="mt-0.5 shrink-0"
       @click="emit('remove')"
     />

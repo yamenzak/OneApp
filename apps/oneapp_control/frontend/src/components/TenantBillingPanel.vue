@@ -107,6 +107,7 @@
           icon="lucide-refresh-cw"
           variant="ghost"
           label="Compare against the gateway log"
+          tooltip="Compare against the gateway log"
           :loading="reconciling"
           @click="reconcile"
         />

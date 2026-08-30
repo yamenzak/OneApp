@@ -48,6 +48,7 @@
           <Button
             :icon="match[quick.key] === '=' ? 'lucide-equal' : 'lucide-equal-approximately'"
             :label="`How ${quick.label} matches`"
+            :tooltip="`How ${quick.label} matches`"
             class="rounded-s-none"
           />
         </Dropdown>
@@ -57,6 +58,7 @@
       class="sm:hidden"
       :icon="expanded ? 'lucide-chevron-up' : 'lucide-chevron-down'"
       :label="expanded ? 'Fewer filters' : 'More filters'"
+      :tooltip="expanded ? 'Fewer filters' : 'More filters'"
       :variant="expanded ? 'subtle' : 'ghost'"
       @click="expanded = !expanded"
     />

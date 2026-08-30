@@ -20,14 +20,13 @@
               of the two clicks.
             -->
             <template v-if="expandable(item)" #suffix>
-              <Tooltip :text="`Ways to see ${item.label}`">
-                <Button
-                  variant="ghost"
-                  :icon="open[item.key] ? 'lucide-chevron-down' : 'lucide-chevron-right'"
-                  :label="`Ways to see ${item.label}`"
-                  @click="toggle(item)"
-                />
-              </Tooltip>
+              <Button
+                variant="ghost"
+                :icon="open[item.key] ? 'lucide-chevron-down' : 'lucide-chevron-right'"
+                :label="`Ways to see ${item.label}`"
+                :tooltip="`Ways to see ${item.label}`"
+                @click="toggle(item)"
+              />
             </template>
           </SidebarItem>
 
@@ -61,7 +60,7 @@
 <script setup>
 import { reactive, watch } from 'vue'
 import { TENANT_APP } from '../lib/brand'
-import { Button, ScrollArea, Sidebar, SidebarHeader, SidebarItem, Tooltip } from '@/ui'
+import { Button, ScrollArea, Sidebar, SidebarHeader, SidebarItem } from '@/ui'
 import QuotaMeter from './QuotaMeter.vue'
 import { useNav } from '../lib/nav'
 import { session } from '../lib/session'

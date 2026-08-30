@@ -96,6 +96,7 @@
             icon="lucide-settings-2"
             variant="ghost"
             label="Choose columns"
+            tooltip="Choose columns"
             @click="showColumns = true"
           />
           <!--
@@ -110,6 +111,7 @@
             :variant="favourites ? 'subtle' : 'ghost'"
             :theme="favourites ? 'red' : 'gray'"
             label="Only my favourites"
+            tooltip="Only my favourites"
             @click="toggleFavourites"
           />
           <Button
@@ -123,6 +125,7 @@
             v-if="spec.saved"
             icon="lucide-rotate-ccw"
             label="Back to the default screen"
+            tooltip="Back to the default screen"
             variant="ghost"
             :loading="resetting"
             @click="resetLayout"

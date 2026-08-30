@@ -129,6 +129,7 @@
                     variant="ghost"
                     icon="lucide-trash-2"
                     :label="`Remove ${row.domain}`"
+                    :tooltip="`Remove ${row.domain}`"
                     :loading="busy === row.domain"
                     @click="dropDomain(row.domain)"
                   />

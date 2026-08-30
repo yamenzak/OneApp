@@ -19,6 +19,7 @@
         variant="ghost"
         icon="lucide-x"
         label="Close settings"
+        tooltip="Close settings"
         @click="showSettings = false"
       />
     </div>

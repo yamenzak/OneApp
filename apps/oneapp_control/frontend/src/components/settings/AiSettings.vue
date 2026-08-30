@@ -5,7 +5,13 @@
     :class="PANEL_HEADER"
   >
     <template #actions>
-      <Button icon="lucide-refresh-cw" label="Refresh catalogue" :loading="syncing" @click="sync" />
+      <Button
+        icon="lucide-refresh-cw"
+        label="Refresh catalogue"
+        tooltip="Refresh catalogue"
+        :loading="syncing"
+        @click="sync"
+      />
     </template>
   </SettingsHeader>
 

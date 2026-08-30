@@ -41,6 +41,7 @@
       variant="ghost"
       icon="lucide-heart"
       :label="likeLabel"
+      :tooltip="likeLabel"
       :theme="meta.liked ? 'red' : 'gray'"
       @click.stop="emit('like')"
     />

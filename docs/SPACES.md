@@ -147,6 +147,16 @@ already names, so a space gets it by existing.
   toolbar filters to what this person liked.
 * **Sortable headers.** Clicking one sorts by that column and shows the
   direction beside its name; clicking again reverses it.
+* **An icon says what it does.** Every control that renders as a picture and
+  nothing else carries a tooltip — frappe-ui's, through `Button`'s own
+  `tooltip` prop, which builds one internally. `label` is the *accessible*
+  name and reaches a screen reader alone; the gear beside a list is one click
+  from changing what the list shows, and sighted people were left guessing.
+  `tests/test_frontend_guards.py` fails the build on an icon-only button with
+  no tooltip, and on any other kind of tooltip: a `title` attribute is not one
+  (undelayed, unstyleable, and inert on a touch screen), and neither is a
+  hand-rolled hover card. A button that is only *sometimes* an icon is exempt,
+  because it shows its label wherever there is a pointer to hover with.
 * **Columns are one model.** Which, in what order, how wide, and whether one
   stays put while the rest scroll — all chosen in the picker and remembered.
   Nothing is pinned by default. The title field renders with its avatar and id

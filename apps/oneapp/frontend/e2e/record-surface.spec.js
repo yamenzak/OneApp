@@ -338,6 +338,21 @@ test('the filter count is a badge, not a word', async ({ page }) => {
 
 // --- the record ------------------------------------------------------------
 
+test('an icon-only control names itself on hover', async ({ page }, info) => {
+  // A picture is not a label. Every icon-only control carries frappe-ui's own
+  // tooltip — `label` alone reaches a screen reader and nobody else, and the
+  // gear beside a list is one click from changing what the list shows.
+  test.skip(info.project.name === 'mobile', 'hover is a thing pointers do')
+  const errors = collectConsoleErrors(page)
+  await openList(page)
+
+  await page.getByRole('button', { name: 'Choose columns' }).hover()
+  // reka's TooltipContent, which frappe-ui wraps — a bubble in a portal, not
+  // the browser's own `title`, which is why it is findable at all.
+  await expect(page.locator('[data-slot="bubble"]')).toContainText('Choose columns')
+  expectNoRealErrors(errors)
+})
+
 test('a Link field offers the records it may point at', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   const asked = []
