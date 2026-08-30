@@ -544,3 +544,95 @@ def test_a_write_is_bounded_by_the_doctype_not_by_the_manifest(appview):
 	assert "cost" not in writable
 	# Bookkeeping, always.
 	assert "modified" not in writable
+
+
+# --------------------------------------------------------------------------- #
+# A column is a fieldname, a width and where it sticks
+#
+# All three are the reader's, not ours: which columns, how wide, and whether one
+# stays put while the rest scroll. We pin nothing by default — guessing that for
+# somebody is how the activity column ended up glued to an edge nobody asked
+# for.
+# --------------------------------------------------------------------------- #
+
+def offerable_todo(appview):
+	return {c["fieldname"]: c for c in
+	        [*appview._columns(TODO, appview._offerable(TODO)), appview._meta_column()]}
+
+
+def test_activity_is_a_column_like_any_other(appview):
+	"""Every list carries when a row changed and what has been said about it —
+	and a person who does not want that should be able to drop it the same way
+	they drop anything else."""
+	offered = offerable_todo(appview)
+	assert appview.META_COLUMN in offered
+
+	placed = appview._placed(offered, [{"fieldname": appview.META_COLUMN}])
+	assert placed and placed[0]["cell"] == "meta"
+
+
+def test_activity_is_never_asked_of_the_database(appview):
+	"""It is a column and not a field. Asking for it is a SQL error rather than
+	an empty cell."""
+	offered = offerable_todo(appview)
+	placed = appview._placed(offered, [{"fieldname": "status"},
+	                                   {"fieldname": appview.META_COLUMN}])
+	fields = appview._fetch_fields(placed)
+	assert "status" in fields
+	assert appview.META_COLUMN not in fields
+	assert "name" in fields
+
+
+def test_a_width_is_clamped_rather_than_trusted(appview):
+	"""It reaches a CSS grid track. A browser sending 900000 is asking the
+	layout to do something silly, not asking for a wide column."""
+	offered = offerable_todo(appview)
+	wide = appview._placed(offered, [{"fieldname": "status", "width": 900000}])
+	assert wide[0]["width"] == appview.MAX_WIDTH
+
+	thin = appview._placed(offered, [{"fieldname": "status", "width": 1}])
+	assert thin[0]["width"] == appview.MIN_WIDTH
+
+	junk = appview._placed(offered, [{"fieldname": "status", "width": "wide"}])
+	assert junk[0]["width"] == appview._default_width(offered["status"])
+
+
+def test_a_pin_is_one_of_two_edges(appview):
+	offered = offerable_todo(appview)
+	for pin, expected in (("left", "left"), ("right", "right"), ("middle", None),
+	                      (None, None), (["left"], None)):
+		placed = appview._placed(offered, [{"fieldname": "status", "pin": pin}])
+		assert placed[0]["pin"] == expected, pin
+
+
+def test_a_column_the_screen_does_not_offer_is_dropped(appview):
+	offered = offerable_todo(appview)
+	assert appview._placed(offered, [{"fieldname": "owner", "width": 200}]) == []
+
+
+def test_the_order_someone_chose_is_the_order_they_get(appview):
+	offered = offerable_todo(appview)
+	placed = appview._placed(offered, [{"fieldname": "date"}, {"fieldname": "status"}])
+	assert [c["fieldname"] for c in placed] == ["date", "status"]
+
+
+def test_the_comma_separated_shape_still_reads(appview):
+	"""Views saved before a column carried a width are still on disk."""
+	offered = offerable_todo(appview)
+	placed = appview._placed(offered, "description,status")
+	assert [c["fieldname"] for c in placed] == ["description", "status"]
+	assert all(c["width"] and c["pin"] is None for c in placed)
+
+
+def test_a_json_string_of_columns_reads_the_same_as_a_list(appview):
+	"""It arrives as a string from the browser and as a string out of the
+	database, and as a list from a direct call. The one call site that forgot to
+	parse it stored an empty list and silently kept the screen's defaults —
+	which looks exactly like a save that worked."""
+	offered = offerable_todo(appview)
+	wanted = [{"fieldname": "status", "width": 200, "pin": "left"}]
+
+	from json import dumps
+	assert appview._placed(offered, dumps(wanted)) == appview._placed(offered, wanted)
+	assert appview._placed(offered, dumps(wanted))[0]["width"] == 200
+	assert appview._placed(offered, dumps(wanted))[0]["pin"] == "left"

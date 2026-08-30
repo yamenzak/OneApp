@@ -54,6 +54,28 @@
             :view="spec.view"
             @changed="onPanelFilters"
           />
+          <!--
+            The column picker and the favourites filter live in the activity
+            column's header, where the heart lines up with the one on every row
+            — but that column is data, and Frappe hides the activity area on a
+            phone. So when it is not showing, these come here instead. Never
+            both, never neither.
+          -->
+          <template v-if="!metaColumn">
+            <Button
+              icon="lucide-settings-2"
+              variant="ghost"
+              label="Choose columns"
+              @click="showColumns = true"
+            />
+            <Button
+              icon="lucide-heart"
+              :variant="favourites ? 'subtle' : 'ghost'"
+              :theme="favourites ? 'red' : 'gray'"
+              label="Only my favourites"
+              @click="toggleFavourites"
+            />
+          </template>
           <Button
             v-if="dirty"
             icon-left="lucide-bookmark"
@@ -115,7 +137,7 @@
         <List
           :columns="tracks"
           :row-height="52"
-          class="list-row-px-3"
+          class="list-row-px-3 [&_[data-slot=list-header]]:bg-surface-gray-1"
           :class="wide && 'min-w-[42rem]'"
           divider="full"
         >
@@ -131,6 +153,8 @@
               v-for="c in sortableColumns"
               :key="c.key"
               :direction="directionFor(c)"
+              :class="c.pin && PINNED"
+              :style="stickyStyle(c)"
               @click="sortBy(c.column.fieldname)"
             >
               <template #prefix>
@@ -143,7 +167,11 @@
               How many, then the columns, then favourites. The heart is last so
               it sits directly above the one on every row.
             -->
-            <ListHeaderCell v-if="metaColumn" :class="PINNED">
+            <ListHeaderCell
+              v-if="metaColumn"
+              :class="metaColumn.pin && PINNED"
+              :style="stickyStyle(metaColumn)"
+            >
               <span class="mr-auto whitespace-nowrap text-p-xs text-ink-gray-5">
                 {{ counted }}
               </span>
@@ -165,7 +193,8 @@
 
           <ListRows :items="rows" row-key="name" v-slot="{ item: row, value }">
             <ListRow :value="value" @click="open(row)">
-              <ListCell v-for="c in visible" :key="c.key" :class="c.pinned && PINNED">
+              <ListCell v-for="c in visible" :key="c.key" :class="c.pin && PINNED"
+                :style="stickyStyle(c)">
                 <TitleCell
                   v-if="c.cell === 'title'"
                   :row="row"
@@ -277,55 +306,51 @@ const custom = computed(() => {
 // The title column stands in for the title field wherever it would have been,
 // and leads the list when the field is not chosen at all: a row needs a name
 // before it needs anything else. The meta column closes every list.
+// One model for every column. The title field renders with its avatar and id,
+// activity renders its own cell, everything else is a value — but all three are
+// entries in the same list, so all three can be moved, resized, pinned and
+// dropped in the picker. That the title used to be a column the picker could
+// not touch was a wart: it listed the field and removing it changed nothing.
 const columnSpec = computed(() => {
   const titleField = spec.value?.title_field
-  const rest = (columns.value || []).filter((c) => c.fieldname !== titleField)
+  const chosen = columns.value || []
 
-  const titleColumn = (spec.value?.all_columns || []).find((c) => c.fieldname === titleField)
-
-  const title = {
-    key: '__title',
-    header: titleColumn?.label || 'Name',
-    track: 'minmax(12rem,2fr)',
-    mobile: true,
-    cell: 'title',
-    sortable: !!titleField,
-    column: {
-      fieldname: titleField || 'name',
-      label: titleColumn?.label || 'Name',
-      // The field's own icon, not a stand-in: this column *is* the title field,
-      // and giving it a different icon than the picker shows for the same field
-      // is two names for one thing.
-      icon: titleColumn?.icon || 'lucide-type',
-    },
+  // Where a pinned column starts, in pixels. A left pin sits past everything
+  // pinned left before it; a right pin past everything pinned right after it.
+  // Fixed widths are what make this computable at all.
+  let fromLeft = 0
+  const offsets = new Map()
+  for (const column of chosen) {
+    if (column.pin !== 'left') continue
+    offsets.set(column.fieldname, fromLeft)
+    fromLeft += column.width
+  }
+  let fromRight = 0
+  for (const column of [...chosen].reverse()) {
+    if (column.pin !== 'right') continue
+    offsets.set(column.fieldname, fromRight)
+    fromRight += column.width
   }
 
-  const middle = rest.map((column) => ({
+  return chosen.map((column, index) => ({
     key: column.fieldname,
     header: column.label,
-    track: '9rem',
-    // A phone shows the name and one more. Everything else is in the record.
-    mobile: false,
-    cell: column.cell,
-    sortable: true,
+    track: `${column.width}px`,
+    // A phone shows the first two, and anything the reader pinned: pinning is
+    // saying "keep this in view", which is truer on a small screen than a big
+    // one.
+    mobile: index < 2 || !!column.pin,
+    cell:
+      column.fieldname === META_FIELD
+        ? 'meta'
+        : column.fieldname === titleField
+          ? 'title'
+          : column.cell,
+    sortable: column.fieldname !== META_FIELD,
+    pin: column.pin,
+    offset: offsets.get(column.fieldname) || 0,
     column,
   }))
-  if (middle.length) middle[0].mobile = true
-
-  return [
-    title,
-    ...middle,
-    {
-      key: '__meta',
-      header: '',
-      track: '10rem',
-      mobile: true,
-      cell: 'meta',
-      sortable: false,
-      pinned: true,
-      column: { fieldname: 'modified', label: 'Last Updated', icon: 'lucide-clock' },
-    },
-  ]
 })
 
 const { visible, columns: tracks } = useListColumns(columnSpec)
@@ -333,17 +358,19 @@ const { visible, columns: tracks } = useListColumns(columnSpec)
 // A list wide enough to scroll is exactly the list whose column picker you
 // need, so the meta column is pinned to the right edge rather than scrolled off
 // it. Opaque, or the columns it covers read through it.
-// A list wide enough to scroll is exactly the list whose count you want to
-// read, so the column carrying each row's age is pinned to the right edge.
-// Opaque, or the columns sliding under it read through it.
-//
-// A constant rather than a literal in the template: a string inside a `:class`
-// expression is read as a class list by the token audit, which then reports
-// `meta` as a retired token.
-const PINNED = 'sticky right-0 z-10 bg-surface-base'
+// The server's name for the column that is not a field.
+const META_FIELD = '__activity'
+
+// A pinned column stops scrolling. Opaque, or the columns sliding under it read
+// through it — and the offset is an inline style rather than a class because it
+// is a computed pixel value, not a token.
+const PINNED = 'sticky z-10 bg-surface-base'
+
+const stickyStyle = (c) =>
+  c.pin ? { [c.pin]: `${c.offset}px` } : undefined
 
 const sortableColumns = computed(() => visible.value.filter((c) => c.cell !== 'meta'))
-const metaColumn = computed(() => visible.value.some((c) => c.cell === 'meta'))
+const metaColumn = computed(() => visible.value.find((c) => c.cell === 'meta') || null)
 
 // A computed rather than an inline expression: a `>` inside a template
 // attribute ends the tag as far as any regex-shaped parser is concerned, which
@@ -507,7 +534,11 @@ const load = async () => {
     quickFilters.value = []
     panelFilters.value = (spec.value?.saved?.filters || []).map((filter) => [...filter])
     order.value = spec.value?.order_by || ''
-    chosenColumns.value = (spec.value?.columns || []).map((c) => c.fieldname)
+    chosenColumns.value = (spec.value?.columns || []).map((c) => ({
+      fieldname: c.fieldname,
+      width: c.width,
+      pin: c.pin,
+    }))
     favourites.value = !!spec.value?.saved?.favourites
     dirty.value = false
     await loadRows()

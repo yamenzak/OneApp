@@ -966,8 +966,10 @@ doctype(
         f("filters", "Code", options="JSON"),
         f("order_by"),
         column("cb_saved_columns"),
-        f("columns", "Small Text",
-          description="Comma-separated fieldnames. Empty follows the screen."),
+        f("columns", "Code", options="JSON",
+          description="Which columns, in order, each with a width and an "
+                      "optional left/right pin. Empty follows the screen. The "
+                      "comma-separated fieldnames this used to hold still read."),
         f("page_length", "Int", default="0", description="0 follows the screen."),
         f("favourites", "Check", default="0",
           description="Only rows this person liked. A flag rather than a filter "

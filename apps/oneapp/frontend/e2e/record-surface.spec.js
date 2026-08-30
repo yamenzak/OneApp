@@ -108,9 +108,21 @@ test('the first column is what the row is, with its id underneath', async ({ pag
   expectNoRealErrors(errors)
 })
 
-test('every row carries its age, its comments and a heart', async ({ page }) => {
+test('every row carries its age, its comments and a heart', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await openList(page)
+
+  if (info.project.name === 'mobile') {
+    // A phone shows the first two columns, and activity is not one of them.
+    // Frappe hides the same area at this width — `list-row-activity hidden-xs`
+    // — and someone who wants it back pins it in the picker.
+    await expect(page.getByRole('columnheader', { name: 'Activity' })).toHaveCount(0)
+    // What must not go with it is the way out of a filtered list.
+    await expect(page.getByRole('button', { name: 'Only my favourites' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Choose columns' })).toBeVisible()
+    expectNoRealErrors(errors)
+    return
+  }
 
   const meta = page
     .locator('[data-slot="list-row"]')
@@ -127,6 +139,9 @@ test('every row carries its age, its comments and a heart', async ({ page }) => 
 test('a row can be liked from the list, and the heart filters to it', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await openList(page)
+
+  // The row heart is in the activity column, which a phone does not show.
+  test.skip(info.project.name === 'mobile', 'no row heart at this width')
 
   const rows = () => page.locator('[data-slot="list-row"]')
   const heart = page.getByRole('button', { name: 'Only my favourites' })

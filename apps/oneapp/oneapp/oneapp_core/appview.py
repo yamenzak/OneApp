@@ -119,6 +119,18 @@ def _columns(meta, wanted: list[str]) -> list[dict]:
 	return columns
 
 
+def _fetch_fields(columns: list[dict]) -> list[str]:
+	"""The columns that are actually fields on the document.
+
+	`__activity` is a column and not a field; asking the database for it is a
+	`SQL syntax` error rather than an empty cell, so it is filtered here rather
+	than remembered at every call site.
+	"""
+	return list(dict.fromkeys(
+		[c["fieldname"] for c in columns if c["fieldname"] != META_COLUMN] + list(ALWAYS)
+	))
+
+
 def _offerable(meta) -> list[str]:
 	"""Every field of this doctype a person may be offered as a column.
 
@@ -149,6 +161,111 @@ def _offerable(meta) -> list[str]:
 		and df.fieldtype not in ("Table", "Table MultiSelect")
 		and (df.permlevel or 0) in allowed
 	]
+
+
+# The one column that is not a field. Every list carries when a row last
+# changed, how many comments are on it and whether this person liked it — and
+# a person who does not want that should be able to drop it like any other
+# column, which means it has to be in the picker like any other column.
+META_COLUMN = "__activity"
+
+# What a column may be. Widths are clamped rather than trusted: the number
+# reaches a CSS grid track, and a browser sending 900000 is asking the layout
+# to do something silly rather than asking for a wide column.
+MIN_WIDTH = 64
+MAX_WIDTH = 800
+PINS = ("left", "right")
+
+
+def _meta_column() -> dict:
+	return {
+		"fieldname": META_COLUMN,
+		"label": _("Activity"),
+		"fieldtype": "Data",
+		"options": None,
+		"cell": "meta",
+		"icon": "lucide-clock",
+		"editable": False,
+		"read_only": 1,
+		"width": 176,
+	}
+
+
+def _default_width(column: dict) -> int:
+	"""How wide a column starts. The cell kind knows better than the fieldtype:
+	a badge is a badge whether it came from a Select or a Link."""
+	by_cell = {
+		"meta": 176,
+		"badge": 128,
+		"check": 80,
+		"date": 128,
+		"datetime": 176,
+		"time": 96,
+		"rating": 128,
+		"color": 112,
+		"numeric": 112,
+		"duration": 128,
+		"image": 96,
+	}
+	return by_cell.get(column.get("cell"), 144)
+
+
+def _json_list(value):
+	"""A stored column list, whichever shape it is in.
+
+	A JSON array parses. Anything else is handed straight back — a
+	comma-separated string is the shape this used to be stored in, and `_placed`
+	knows how to read it.
+	"""
+	if not value:
+		return []
+	if isinstance(value, str) and value.lstrip().startswith("["):
+		try:
+			return frappe.parse_json(value)
+		except Exception:
+			return []
+	return value
+
+
+def _placed(offered: dict, wanted) -> list[dict]:
+	"""A person's column list, as columns.
+
+	Accepts the shape it is stored in now — `[{fieldname, width, pin}, …]` — and
+	the comma-separated fieldnames it used to be, because views saved then are
+	still on disk. Anything naming a field the screen does not offer is dropped
+	rather than invented, which is the same rule as everywhere else here.
+	"""
+	# Normalised here rather than at each call site, because there are four and
+	# the one that forgot stored an empty list and silently kept the defaults.
+	wanted = _json_list(wanted)
+	if isinstance(wanted, str):
+		wanted = [{"fieldname": f.strip()} for f in wanted.split(",") if f.strip()]
+	if not isinstance(wanted, (list, tuple)):
+		return []
+
+	placed = []
+	for entry in wanted:
+		if isinstance(entry, str):
+			entry = {"fieldname": entry}
+		if not isinstance(entry, dict):
+			continue
+		column = offered.get(entry.get("fieldname"))
+		if not column:
+			continue
+
+		width = entry.get("width")
+		try:
+			width = int(width)
+		except (TypeError, ValueError):
+			width = _default_width(column)
+		pin = entry.get("pin")
+
+		placed.append({
+			**column,
+			"width": max(MIN_WIDTH, min(width or _default_width(column), MAX_WIDTH)),
+			"pin": pin if pin in PINS else None,
+		})
+	return placed
 
 
 def _quick_filters(meta, columns: list[dict]) -> list[str]:
@@ -294,17 +411,24 @@ def _resolve(app_code: str, view: str | None = None) -> dict:
 	# Everything this person could put on the screen, which is the doctype's own
 	# field list rather than the manifest's — see `_offerable`. The manifest
 	# decides what is on by default; a person decides what they look at.
-	offerable = _columns(meta, _offerable(meta))
+	offerable = [*_columns(meta, _offerable(meta)), _meta_column()]
+	offered = {c["fieldname"]: c for c in offerable}
+
+	# The manifest's list, plus activity at the end. Widths are defaults and
+	# nothing is pinned: where a column sticks is a reading preference, and
+	# guessing it for somebody is how the meta column ended up glued to an edge
+	# nobody asked for.
+	columns = _placed(offered, [c["fieldname"] for c in columns] + [META_COLUMN])
 
 	resolved.update({
 		"doctype": doctype,
 		"columns": columns,
-		"all_columns": offerable,
+		"all_columns": [{**c, "width": _default_width(c)} for c in offerable],
 		"quick_filters": _quick_filters(meta, offerable),
 		**presentation(meta),
-		# What to ask the database for: the columns, plus the identity that is
-		# never one.
-		"fields": list(dict.fromkeys([c["fieldname"] for c in columns] + list(ALWAYS))),
+		# What to ask the database for: the columns that are fields, plus the
+		# identity that is never one. Activity is neither.
+		"fields": _fetch_fields(columns),
 		"filters": _json(chosen.get("filters")),
 		"order_by": chosen.get("order_by") or _default_order(meta),
 		"can_create": bool(frappe.has_permission(doctype, "create")),
@@ -727,14 +851,12 @@ def _apply_saved(resolved: dict) -> dict:
 		return resolved
 
 	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or resolved["columns"]}
-	chosen = [f.strip() for f in (saved.get("columns") or "").split(",") if f.strip()]
 	# Intersected, not substituted: a saved column list that names something the
 	# screen no longer offers quietly drops it rather than reintroducing it.
-	kept = [offered[f] for f in chosen if f in offered]
+	kept = _placed(offered, saved.get("columns"))
 	if kept:
 		resolved["columns"] = kept
-		resolved["fields"] = list(dict.fromkeys(
-			[c["fieldname"] for c in kept] + list(ALWAYS)))
+		resolved["fields"] = _fetch_fields(kept)
 
 	# Bounded again on the way out, not only when it was saved: the row is a
 	# doctype an operator can write, and a filter that reached the table another
@@ -750,7 +872,10 @@ def _apply_saved(resolved: dict) -> dict:
 		"filters": resolved["asked"],
 		"favourites": resolved["favourites"],
 		"order_by": saved.get("order_by") or "",
-		"columns": chosen,
+		"columns": [
+			{"fieldname": c["fieldname"], "width": c["width"], "pin": c["pin"]}
+			for c in kept
+		],
 		"page_length": saved.get("page_length") or 0,
 	}
 	return resolved
@@ -957,10 +1082,10 @@ def _apply_overrides(resolved: dict, overrides) -> dict:
 
 	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or resolved["columns"]}
 
-	chosen = [f for f in (overrides.get("columns") or []) if f in offered]
+	chosen = _placed(offered, overrides.get("columns"))
 	if chosen:
-		resolved["columns"] = [offered[f] for f in chosen]
-		resolved["fields"] = list(dict.fromkeys(chosen + list(ALWAYS)))
+		resolved["columns"] = chosen
+		resolved["fields"] = _fetch_fields(chosen)
 
 	# Set whenever the payload mentions filters at all, empty list included:
 	# clearing the filters in the controls has to clear them in the list, and a
@@ -994,11 +1119,8 @@ def save_view(app_code: str, view: str, filters: str | list | dict | None = None
 	if not resolved.get("doctype"):
 		frappe.throw(_("There is nothing to save a view for here."))
 
-	if isinstance(columns, str):
-		columns = [f.strip() for f in columns.split(",") if f.strip()]
-
 	offered = {c["fieldname"]: c for c in resolved["all_columns"]}
-	columns = [f for f in (columns or []) if f in offered]
+	columns = _placed(offered, columns)
 	filters = _asked_filters(_filterable(resolved), filters)
 
 	existing = _saved(app_code, view)
@@ -1012,7 +1134,13 @@ def save_view(app_code: str, view: str, filters: str | list | dict | None = None
 		"is_default": 1,
 		"filters": json.dumps(filters),
 		"order_by": _safe_order(resolved, order_by or "") if order_by else "",
-		"columns": ",".join(columns),
+		# JSON now: a column carries a width and a pin, and a comma-separated
+		# list of fieldnames has nowhere to put either. The old shape is still
+		# read — see `_placed` — because views saved then are still on disk.
+		"columns": json.dumps([
+			{"fieldname": c["fieldname"], "width": c["width"], "pin": c["pin"]}
+			for c in columns
+		]),
 		"page_length": int(page_length or 0),
 		"favourites": 1 if frappe.utils.sbool(favourites) else 0,
 	})

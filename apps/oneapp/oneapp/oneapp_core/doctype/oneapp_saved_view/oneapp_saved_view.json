@@ -83,10 +83,11 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "Comma-separated fieldnames. Empty follows the screen.",
+   "description": "Which columns, in order, each with a width and an optional left/right pin. Empty follows the screen. The comma-separated fieldnames this used to hold still read.",
    "fieldname": "columns",
-   "fieldtype": "Small Text",
-   "label": "Columns"
+   "fieldtype": "Code",
+   "label": "Columns",
+   "options": "JSON"
   },
   {
    "default": "0",
