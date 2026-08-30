@@ -44,12 +44,19 @@
     rather than what the database stores — and falls back to the id when the
     target is one they may not read, which is the truthful thing to show.
   -->
+  <RecordPreview
+    v-else-if="column.cell === 'link' && link && spaceCode"
+    :record="link"
+    :fieldname="column.fieldname"
+    :space-code="spaceCode"
+    :screen="screen"
+  />
+
+  <!-- Outside a screen — inside a preview card, say — there is nothing to
+       bound a second lookup by, so the chip is the whole of it. -->
   <RecordChip v-else-if="column.cell === 'link' && link" :record="link" compact />
 
-  <span
-    v-else-if="column.cell === 'link' && value"
-    class="truncate text-p-sm text-ink-gray-8"
-  >
+  <span v-else-if="column.cell === 'link' && value" class="truncate text-p-sm text-ink-gray-8">
     {{ value }}
   </span>
 
@@ -57,12 +64,17 @@
        column nobody can scan. -->
   <span
     v-else-if="numeric"
-    class="w-full truncate text-right text-p-sm tabular-nums text-ink-gray-8"
+    class="w-full truncate text-right text-p-sm tabular-nums"
+    :class="[emphasis, value ? 'text-ink-gray-8' : 'text-ink-gray-4']"
   >
     {{ formatted }}
   </span>
 
-  <span v-else class="truncate text-p-sm" :class="value ? 'text-ink-gray-8' : 'text-ink-gray-4'">
+  <span
+    v-else
+    class="truncate text-p-sm"
+    :class="[emphasis, value ? 'text-ink-gray-8' : 'text-ink-gray-4']"
+  >
     {{ formatted }}
   </span>
 </template>
@@ -71,6 +83,7 @@
 import { computed } from 'vue'
 import { Badge, Icon, Avatar, Rating } from '@/ui'
 import RecordChip from './RecordChip.vue'
+import RecordPreview from './RecordPreview.vue'
 import { valueTheme } from '../../lib/fields'
 import { dayjsLocal } from '@/ui'
 
@@ -80,7 +93,14 @@ const props = defineProps({
   states: { type: Array, default: () => [] },
   /** The row's resolved links, keyed by fieldname — see `_with_links`. */
   links: { type: Object, default: () => ({}) },
+  /** What bounds a link's preview lookup. Absent inside a preview card. */
+  spaceCode: { type: String, default: '' },
+  screen: { type: String, default: '' },
 })
+
+// The doctype's own emphasis. `bold` on a DocField is Frappe saying this is
+// the field somebody scans the column for, and it costs one class to honour.
+const emphasis = computed(() => (props.column.bold ? 'font-medium' : ''))
 
 const link = computed(() => props.links?.[props.column.fieldname] || null)
 
@@ -99,7 +119,7 @@ const formatted = computed(() => {
     case 'percent':
       return `${raw}%`
     case 'duration':
-      return humanDuration(Number(raw) || 0)
+      return humanDuration(Number(raw) || 0, props.column)
     case 'html':
       // The list is not the place to render markup: a cell is one line, and
       // stripping is honest where interpreting would be a security decision.
@@ -114,15 +134,24 @@ const formatted = computed(() => {
   }
 })
 
-function humanDuration(seconds) {
+// Frappe's own two flags decide which parts of a duration are worth reading:
+// `hide_days` folds days into hours, `hide_seconds` drops the tail. A field
+// that sets neither reads the way it always did.
+function humanDuration(seconds, column) {
   if (!seconds) return '—'
-  const days = Math.floor(seconds / 86400)
-  const hours = Math.floor((seconds % 86400) / 3600)
+  const days = column.hide_days ? 0 : Math.floor(seconds / 86400)
+  const hours = Math.floor((seconds - days * 86400) / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
+  const rest = seconds % 60
   return (
-    [days && `${days}d`, hours && `${hours}h`, minutes && `${minutes}m`]
+    [
+      days && `${days}d`,
+      hours && `${hours}h`,
+      minutes && `${minutes}m`,
+      !column.hide_seconds && rest && `${rest}s`,
+    ]
       .filter(Boolean)
-      .join(' ') || `${seconds}s`
+      .join(' ') || (column.hide_seconds ? '0m' : `${seconds}s`)
   )
 }
 </script>

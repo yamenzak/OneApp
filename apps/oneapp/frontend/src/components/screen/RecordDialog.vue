@@ -71,7 +71,7 @@
                 :field="field"
                 :space-code="spaceCode"
                 :screen="screen"
-                :disabled="!canWrite || !field.editable"
+                :disabled="!canWrite || !field.editable || locked(field)"
                 class="min-w-0 flex-1"
               />
             </div>
@@ -222,6 +222,11 @@ const isNew = computed(() => !!props.record?.__new)
 // the server still lets this screen write it.
 const fields = computed(() => props.spec?.all_columns || props.spec?.columns || [])
 const canWrite = computed(() => !!props.spec?.can_write)
+
+// `set_only_once` is the doctype saying a field is settled at creation. Only
+// the record knows whether that has happened, so the flag travels on the field
+// and the answer is made here.
+const locked = (field) => !!field.set_only_once && !isNew.value
 const trackChanges = computed(() => !!props.spec?.track_changes)
 const image = computed(() =>
   props.spec?.image_field ? props.record?.[props.spec.image_field] : null,

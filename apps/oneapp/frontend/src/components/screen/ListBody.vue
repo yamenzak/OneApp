@@ -120,6 +120,8 @@
                     :value="row[c.column.fieldname]"
                     :links="row._links || {}"
                     :states="spec.states"
+                    :space-code="spec.space"
+                    :screen="spec.screen"
                   />
                 </ListCell>
               </ListRow>
@@ -166,6 +168,8 @@
                 :value="row[c.column.fieldname]"
                 :links="row._links || {}"
                 :states="spec.states"
+                :space-code="spec.space"
+                :screen="spec.screen"
               />
             </ListCell>
           </ListRow>

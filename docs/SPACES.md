@@ -281,6 +281,57 @@ written because the drift had already happened: cards on the account pages at
 8px sat beside cards on the launcher at 12px, and a grey band behind a list
 header ran into a square corner.
 
+## Every DocField flag, and what we do with it
+
+A DocField carries more than a type and a label, and each of these is set once
+on the doctype and honoured on every screen pointing at it — nothing below is
+ever written into a manifest.
+
+| Flag | What OneSpace does with it |
+| --- | --- |
+| `label`, `fieldtype`, `options`, `description`, `placeholder`, `precision`, `non_negative`, `default` | The control and how it reads |
+| `reqd`, `read_only`, `permlevel` | Whether it is offered, and to whom |
+| `in_list_view` | Which columns a screen opens with, when the manifest names none |
+| `in_standard_filter` | Which fields get a quick-filter box |
+| `link_filters` | What the link picker may offer |
+| `in_preview` | The card on hover over a link to this doctype |
+| `allow_in_quick_entry` | What creating one from a link picker asks for |
+| `bold` | The cell is drawn heavier |
+| `columns` | Where the column's width starts — Frappe's grid units, 96px each |
+| `hide_days`, `hide_seconds` | Which parts of a Duration are worth reading |
+| `set_only_once` | Editable on a new record, read-only afterwards |
+| `fetch_from` | Said under the box: "From Customer", so a field that fills itself explains why |
+| `title_field`, `image_field`, `search_fields` | How a record is named, faced and told apart — in the title column, in a link cell and in the picker alike |
+| `states` | Badge colours, the same ones the desk draws |
+
+Deliberately not honoured, and worth saying why:
+
+* **`depends_on` and its siblings.** They are JavaScript, evaluated against the
+  document. Running them means an expression evaluator in the SPA, and a
+  half-implemented one hides a field that should be visible — which is worse
+  than showing one that could have been hidden. The server still enforces
+  `mandatory_depends_on` on save, so nothing is written that Frappe would
+  refuse.
+* **`in_global_search`, `search_index`, `unique`, `no_copy`, `print_hide`.**
+  Each is about something a screen does not do yet: search across doctypes,
+  index tuning, duplication, printing. Frappe enforces `unique` on save
+  regardless.
+* **`translatable`.** Labels come through `_()` already; translating stored
+  *values* is a data question rather than a rendering one.
+* **`is_virtual`.** Frappe computes it; a screen reads it like any other field.
+
+## The record form is the whole form
+
+Frappe's desk opens a Quick Entry dialog for a new record and asks for
+`allow_in_quick_entry` fields alone, with a link out to the full form. OneSpace
+shows the whole form for a new record and uses the quick-entry set only where
+space is genuinely tight — creating a record from inside a link picker, without
+leaving the form you were already filling in.
+
+That is a deliberate difference. A dialog that asks for four fields and hides
+eleven leaves people to discover the rest later, and the desk's answer to that
+is a second screen to navigate to. One form has neither problem.
+
 ## What the generic screen does not do yet
 
 Worth knowing before designing around it:

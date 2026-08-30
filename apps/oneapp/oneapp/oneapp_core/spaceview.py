@@ -114,6 +114,27 @@ def _columns(meta, wanted: list[str]) -> list[dict]:
 			# Dynamic Link names the field holding its doctype; without it the
 			# picker has nothing to search.
 			"depends_on_field": df.options if df.fieldtype == "Dynamic Link" else None,
+			# The doctype's own emphasis. Frappe's list draws a `bold` field
+			# heavier, and a field that matters on one doctype and not on
+			# another is exactly the kind of thing a manifest should not have
+			# to repeat.
+			"bold": int(getattr(df, "bold", 0) or 0),
+			# How wide the doctype thinks this column wants to be, in Frappe's
+			# own grid units. A default rather than a ceiling, like the field
+			# list itself — the picker still has a width box.
+			"columns": int(getattr(df, "columns", 0) or 0),
+			# A Duration says which of its parts are worth reading. Frappe's own
+			# two flags, and the only two it has.
+			"hide_days": int(getattr(df, "hide_days", 0) or 0),
+			"hide_seconds": int(getattr(df, "hide_seconds", 0) or 0),
+			# Set on the way in and never again. Editable on a new record and
+			# read-only afterwards, which is a thing only the record knows — so
+			# the flag travels and the dialog decides.
+			"set_only_once": int(getattr(df, "set_only_once", 0) or 0),
+			# Where the value comes from when it is not typed. Shown as the
+			# field's own note, because "Company (from Customer)" answers the
+			# question a read-only box otherwise raises.
+			"fetch_from": getattr(df, "fetch_from", None) or None,
 		})
 
 	return columns
@@ -191,9 +212,27 @@ def _meta_column() -> dict:
 	}
 
 
+# What one of Frappe's grid units is worth in pixels. Frappe's list lays a row
+# out in ten of them across the width it has; this is that at a comfortable
+# desktop width, and it is only where a column *starts* — the picker still has
+# a width box, and a saved layout overrides it.
+UNIT_WIDTH = 96
+
+
 def _default_width(column: dict) -> int:
-	"""How wide a column starts. The cell kind knows better than the fieldtype:
-	a badge is a badge whether it came from a Select or a Link."""
+	"""How wide a column starts.
+
+	The doctype's own answer first, where it gave one: `columns` on a DocField
+	is what Frappe's list uses, and a doctype that says its description wants
+	four units and its status one is saying something worth honouring.
+
+	Otherwise the cell kind, which knows better than the fieldtype: a badge is a
+	badge whether it came from a Select or a Link.
+	"""
+	units = column.get("columns") or 0
+	if units:
+		return max(MIN_WIDTH, min(units * UNIT_WIDTH, MAX_WIDTH))
+
 	by_cell = {
 		"meta": 176,
 		"badge": 128,
@@ -930,6 +969,66 @@ def link_new(space_code: str, screen: str, fieldname: str, values: str | dict) -
 		as_dict=True,
 	)
 	return _link_row(fresh or {"name": doc.name}, shape)
+
+
+@frappe.whitelist(methods=["GET"])
+def link_preview(space_code: str, screen: str, fieldname: str, name: str) -> dict:
+	"""A few facts about the record a link points at, for a card on hover.
+
+	Frappe's own answer to "what would you want to know without leaving the
+	list": the target doctype's `in_preview` fields, which is a flag a doctype
+	sets once and every screen pointing at it gets for free. A doctype that
+	marks none has nothing to preview and says so, rather than showing an empty
+	card — which reads as a card that failed to load.
+
+	Bounded like the picker on the way in, and by Frappe on the way out:
+	`get_doc` raises where this user may not read the record, and a field above
+	their permlevel is not in `_columns` to begin with.
+	"""
+	resolved = _resolve(space_code, screen)
+	target = _link_target(resolved, _link_column(resolved, fieldname))
+	if not target or not frappe.db.exists("DocType", target):
+		return {"fields": []}
+
+	meta = frappe.get_meta(target)
+	wanted = [
+		df.fieldname
+		for df in meta.fields
+		if getattr(df, "in_preview", 0)
+		and df.fieldname not in HIDDEN
+		and not fieldtypes.is_layout(df.fieldtype)
+		and df.fieldtype not in ("Table", "Table MultiSelect")
+		and (df.permlevel or 0) in set(meta.get_permlevel_access("read") or [0])
+	]
+	if not wanted:
+		return {"fields": []}
+
+	doc = frappe.get_doc(target, name)
+	doc.check_permission("read")
+
+	shape = _link_shape(meta)
+	return {
+		"record": _link_row(
+			{"name": doc.name, **{f: doc.get(f) for f in _preview_shape_fields(shape)}},
+			shape,
+		),
+		# The target's own status colours, not the screen's: a card over a
+		# Contact shows Contact's states, and a badge that changes colour
+		# between a cell and the card above it is worse than no colour.
+		"states": [
+			{"title": row.title, "color": row.color}
+			for row in (getattr(meta, "states", None) or [])
+		],
+		"fields": [
+			{**column, "value": doc.get(column["fieldname"])}
+			for column in _columns(meta, wanted)
+		],
+	}
+
+
+def _preview_shape_fields(shape: dict) -> list[str]:
+	"""The fields `_link_row` reads, so the header of a card matches a cell."""
+	return [f for f in (shape["title"], shape["image"], *shape["search"]) if f]
 
 
 def _link_column(resolved: dict, fieldname: str) -> dict:

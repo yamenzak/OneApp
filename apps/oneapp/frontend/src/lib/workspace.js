@@ -134,6 +134,16 @@ export const workspace = {
       { successMessage: 'Created' },
     ),
 
+  // A few facts about the record a link points at, for a card on hover. Which
+  // facts is the target doctype's own answer — its `in_preview` fields — so no
+  // manifest chooses them and every screen pointing at that doctype agrees.
+  linkPreview: (spaceCode, screen, fieldname, name) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.link_preview',
+      { space_code: spaceCode, screen, fieldname, name },
+      { silent: true, method: 'GET' },
+    ),
+
   // Comments and the change log. Frappe keeps both on every doctype, so no app
   // has to ask for them.
   timeline: (spaceCode, screen, name) =>

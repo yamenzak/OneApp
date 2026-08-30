@@ -353,6 +353,40 @@ test('an icon-only control names itself on hover', async ({ page }, info) => {
   expectNoRealErrors(errors)
 })
 
+test('a link previews the record it points at, on hover', async ({ page }, info) => {
+  // `in_preview` is a flag the *target* doctype sets on its own fields, and
+  // the fixture sets three on User through a Property Setter. Which fields the
+  // card shows is that doctype's answer — no manifest chooses them, and every
+  // screen pointing at User gets the same card.
+  test.skip(info.project.name === 'mobile', 'hover is a thing pointers do')
+  const errors = collectConsoleErrors(page)
+  await openList(page)
+
+  await page.getByText('Administrator').first().hover()
+  await expect(page.getByText('admin@example.com')).toBeVisible()
+  await expect(page.getByText('User Type')).toBeVisible()
+
+  await info.attach(`preview-${info.project.name}`, {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+  expectNoRealErrors(errors)
+})
+
+test('a doctype that says how wide a column wants to be is believed', async ({ page }) => {
+  // `columns: 4` on ToDo's description, set by the fixture. Four of Frappe's
+  // grid units, and a column that opens at its own default rather than at the
+  // one the cell kind guessed.
+  const errors = collectConsoleErrors(page)
+  await openList(page)
+
+  const header = page.getByRole('columnheader', { name: 'Description' })
+  const wide = await header.boundingBox()
+  const narrow = await page.getByRole('columnheader', { name: 'Status' }).boundingBox()
+  expect(wide.width).toBeGreaterThan(narrow.width * 2)
+  expectNoRealErrors(errors)
+})
+
 test('a Link field offers the records it may point at', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   const asked = []

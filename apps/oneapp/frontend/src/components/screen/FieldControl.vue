@@ -18,7 +18,7 @@
     :space-code="spaceCode"
     :screen="screen"
     :label="field.label"
-    :description="field.description"
+    :description="note"
     :placeholder="field.placeholder"
     :disabled="disabled"
     :required="!!field.reqd"
@@ -30,7 +30,7 @@
     v-else-if="component === 'Switch'"
     :model-value="!!modelValue"
     :label="field.label"
-    :description="field.description"
+    :description="note"
     :disabled="disabled"
     @update:model-value="emit('update:modelValue', $event ? 1 : 0)"
   />
@@ -51,9 +51,15 @@
     @update:model-value="emit('update:modelValue', $event)"
   />
 
+  <!--
+    frappe-ui's Duration has no day unit at all — hours accumulate — so Frappe's
+    `hide_days` is already how it behaves and only `hide_seconds` has anything
+    to change here.
+  -->
   <Duration
     v-else-if="component === 'Duration'"
     :model-value="Number(modelValue) || 0"
+    :format="field.hide_seconds ? `h'h' m'm'` : 'short'"
     :label="field.label"
     :disabled="disabled"
     @update:model-value="emit('update:modelValue', $event)"
@@ -119,7 +125,7 @@
     :model-value="modelValue"
     :type="controlType"
     :label="field.label"
-    :description="field.description"
+    :description="note"
     :placeholder="field.placeholder"
     :options="controlType === 'select' ? selectOptions : undefined"
     :required="!!field.reqd"
@@ -158,6 +164,17 @@ const component = computed(() => controlComponent(props.field))
 const controlType = computed(() => formControlType(props.field))
 
 const selectOptions = computed(() => (props.field.options || '').split('\n').filter(Boolean))
+
+// A `fetch_from` field is filled in from somewhere else, and a box that fills
+// itself with no explanation is a box people retype. Frappe writes the source
+// as `customer.customer_name`; the field it comes from is the half worth
+// saying.
+const note = computed(() => {
+  const source = props.field.fetch_from
+  if (!source) return props.field.description
+  const from = `From ${String(source).split('.')[0].replace(/_/g, ' ')}`
+  return props.field.description ? `${props.field.description} · ${from}` : from
+})
 
 // A Select and a Table MultiSelect both choose from the field's own `options`
 // list. A Link does not — its list is records, which the picker fetches from

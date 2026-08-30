@@ -124,6 +124,24 @@ def seed_tenant():
 		user.append("roles", {"role": ROLE})
 		user.save(ignore_permissions=True)
 
+	# Field metadata the UI honours and stock Frappe never sets. These are
+	# ERPNext-shaped flags — a doctype there marks the two or three fields worth
+	# seeing on hover, the one worth reading heavy, and how wide a column wants
+	# to be — and nothing on a plain bench declares one, so there is nothing to
+	# look at unless the fixture says so. Property Setters, which is how a site
+	# customises a doctype it does not own.
+	for doctype, fieldname, prop, value in (
+		("User", "email", "in_preview", 1),
+		("User", "enabled", "in_preview", 1),
+		("User", "user_type", "in_preview", 1),
+		("ToDo", "priority", "bold", 1),
+		("ToDo", "description", "columns", 4),
+	):
+		frappe.make_property_setter({
+			"doctype": doctype, "fieldname": fieldname, "property": prop,
+			"value": value, "property_type": "Check" if prop != "columns" else "Int",
+		}, is_system_generated=False)
+
 	for row in TODOS:
 		if frappe.db.exists("ToDo", {"description": row["description"]}):
 			continue

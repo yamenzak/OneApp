@@ -49,6 +49,11 @@ def field(fieldname, fieldtype="Data", label=None, **kw):
 		allow_in_quick_entry=kw.get("allow_in_quick_entry", 0),
 		in_preview=kw.get("in_preview", 0),
 		bold=kw.get("bold", 0),
+		columns=kw.get("columns", 0),
+		hide_days=kw.get("hide_days", 0),
+		hide_seconds=kw.get("hide_seconds", 0),
+		set_only_once=kw.get("set_only_once", 0),
+		fetch_from=kw.get("fetch_from", None),
 	)
 
 
@@ -1030,3 +1035,49 @@ def test_quick_entry_never_offers_what_cannot_be_written(spaceview):
 	assert spaceview._quick_entry(field("subject", reqd=1, hidden=1)) is False
 	assert spaceview._quick_entry(field("owner", reqd=1)) is False
 	assert spaceview._quick_entry(field("sec", "Section Break", reqd=1)) is False
+
+
+# --------------------------------------------------------------------------- #
+# What the doctype already says about a field
+#
+# Frappe's DocField carries more than a type and a label, and every flag we
+# honour is one nobody has to repeat in a manifest — set once on the doctype,
+# respected on every screen pointing at it.
+# --------------------------------------------------------------------------- #
+
+SHAPED = meta([
+	field("description", "Small Text", "Description", columns=4),
+	field("priority", "Select", "Priority", options="High\nLow", bold=1),
+	field("spent", "Duration", "Time Spent", hide_days=1, hide_seconds=1),
+	field("company", "Link", "Company", options="Company", set_only_once=1),
+	field("company_name", "Data", "Company Name", fetch_from="company.name"),
+])
+
+
+def test_a_column_carries_the_doctypes_own_presentation_flags(spaceview):
+	by_name = {c["fieldname"]: c for c in spaceview._columns(SHAPED, [
+		"description", "priority", "spent", "company", "company_name",
+	])}
+	assert by_name["priority"]["bold"] == 1
+	assert by_name["description"]["columns"] == 4
+	assert by_name["spent"]["hide_days"] == 1
+	assert by_name["spent"]["hide_seconds"] == 1
+	assert by_name["company"]["set_only_once"] == 1
+	assert by_name["company_name"]["fetch_from"] == "company.name"
+
+
+def test_a_doctype_that_says_how_wide_a_column_wants_to_be_is_believed(spaceview):
+	"""`columns` on a DocField is what Frappe's own list lays out with. A
+	default rather than a ceiling, like the field list itself — the picker still
+	has a width box and a saved layout still wins."""
+	wide, plain = spaceview._columns(SHAPED, ["description", "priority"])
+	assert spaceview._default_width(wide) == 4 * spaceview.UNIT_WIDTH
+	# Nothing declared, so the cell kind decides: a badge is a badge.
+	assert spaceview._default_width(plain) == 128
+
+
+def test_a_declared_width_is_clamped_like_any_other(spaceview):
+	"""It reaches a CSS grid track, and a doctype asking for twenty units is
+	asking the layout to do something silly rather than asking for a wide
+	column."""
+	assert spaceview._default_width({"columns": 40}) == spaceview.MAX_WIDTH
