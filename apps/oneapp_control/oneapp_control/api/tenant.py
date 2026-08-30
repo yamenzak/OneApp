@@ -133,7 +133,7 @@ def _ai_features() -> list[dict]:
 			"name as key", "label", "app", "capability", "status",
 			"tenant_can_disable", "allow_prompt_addendum", "default_model",
 			"max_input_tokens", "max_output_tokens", "max_images",
-			"max_audio_seconds", "max_credits", "description",
+			"max_outputs", "max_audio_seconds", "max_credits", "description",
 		],
 		order_by="app asc, label asc",
 	)
@@ -404,6 +404,7 @@ def report_ai_features():
 			"max_input_tokens": spec.get("max_input_tokens") or 0,
 			"max_output_tokens": spec.get("max_output_tokens") or 0,
 			"max_images": spec.get("max_images") or 0,
+			"max_outputs": spec.get("max_outputs") or 0,
 			"max_audio_seconds": spec.get("max_audio_seconds") or 0,
 			"description": spec.get("description"),
 			"last_seen": frappe.utils.now_datetime(),

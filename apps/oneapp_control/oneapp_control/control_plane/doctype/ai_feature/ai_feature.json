@@ -20,6 +20,7 @@
   "max_input_tokens",
   "max_output_tokens",
   "max_images",
+  "max_outputs",
   "cb_feat_ceiling",
   "max_audio_seconds",
   "max_credits",
@@ -118,6 +119,13 @@
    "fieldname": "max_images",
    "fieldtype": "Int",
    "label": "Max Images"
+  },
+  {
+   "default": "0",
+   "description": "Generations per call, for a model billed per generation rather than per token \u2014 Lyria charges per song whatever its length. 0 means one.",
+   "fieldname": "max_outputs",
+   "fieldtype": "Int",
+   "label": "Max Outputs"
   },
   {
    "fieldname": "cb_feat_ceiling",

@@ -829,6 +829,10 @@ doctype(
                       "most the provider would accept anyway."),
         f("max_output_tokens", "Int", default="0"),
         f("max_images", "Int", default="0"),
+        f("max_outputs", "Int", default="0",
+          description="Generations per call, for a model billed per generation "
+                      "rather than per token — Lyria charges per song whatever "
+                      "its length. 0 means one."),
         column("cb_feat_ceiling"),
         f("max_audio_seconds", "Int", default="0"),
         f("max_credits", "Float", default="0",

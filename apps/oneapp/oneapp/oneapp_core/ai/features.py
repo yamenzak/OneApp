@@ -50,7 +50,7 @@ class FeatureDisabled(AIError):
 class Feature:
 	def __init__(self, key, label, capability, system, description,
 	             tenant_can_disable, allow_prompt_addendum, app,
-	             max_input_tokens, max_output_tokens, max_images,
+	             max_input_tokens, max_output_tokens, max_images, max_outputs,
 	             max_audio_seconds, max_credits, model):
 		self.key = key
 		self.label = label
@@ -68,6 +68,7 @@ class Feature:
 			"max_input_tokens": max_input_tokens,
 			"max_output_tokens": max_output_tokens,
 			"max_images": max_images,
+			"max_outputs": max_outputs,
 			"max_audio_seconds": max_audio_seconds,
 			"max_credits": max_credits,
 		}
@@ -97,6 +98,7 @@ def ai_feature(
 	max_input_tokens: int = 0,
 	max_output_tokens: int = 0,
 	max_images: int = 0,
+	max_outputs: int = 0,
 	max_audio_seconds: int = 0,
 	max_credits: float = 0,
 	model: str = "",
@@ -129,6 +131,7 @@ def ai_feature(
 			max_input_tokens=max_input_tokens,
 			max_output_tokens=max_output_tokens,
 			max_images=max_images,
+			max_outputs=max_outputs,
 			max_audio_seconds=max_audio_seconds,
 			max_credits=max_credits,
 			model=model,

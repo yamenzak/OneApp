@@ -42,6 +42,11 @@ CATALOGUE = [{
 	"provider": "google-ai-studio", "model_id": "gemini-3.7-flash",
 	"capability": "Text Generation", "is_recommended": 1, "prices": [],
 }, {
+	"model_key": "google-ai-studio:lyria", "display_name": "Lyria 3 Pro",
+	"provider": "google-ai-studio", "model_id": "lyria-3-pro-preview",
+	"capability": "Audio Generation", "is_recommended": 1,
+	"prices": [{"kind": "Output", "modality": "Audio", "unit": "Request"}],
+}, {
 	"model_key": "workers-ai:flux", "display_name": "Flux",
 	"provider": "workers-ai", "model_id": "@cf/black-forest-labs/flux-1-schnell",
 	"capability": "Image Generation", "is_recommended": 1,
@@ -254,3 +259,68 @@ def test_an_image_call_is_metered_from_what_we_asked_for(gateway):
 	assert result["images"] == ["base64..."]
 	units = {(u["unit"], u["count"]) for u in calls[1][1]["units"]}
 	assert units == {("Tile", 4), ("Step", 4)}
+
+
+# --------------------------------------------------------------------------- #
+# Music, on a different endpoint shape entirely
+# --------------------------------------------------------------------------- #
+
+LYRIA_OK = Response({
+	"steps": [{"type": "model_output", "content": [
+		{"type": "text", "text": "Verse one..."},
+		{"type": "audio", "data": "bXAzLi4u"},
+	]}],
+})
+
+
+def test_music_goes_to_the_interactions_endpoint(gateway):
+	"""Not generateContent: the model is in the body rather than the path, and
+	there is one `input` instead of a contents array."""
+	sent, _, feature = wire(gateway, LYRIA_OK, capability="Audio Generation")
+	gateway.module.call(feature, "A beautiful piano melody.")
+
+	assert sent["url"].endswith("/google-ai-studio/v1beta/interactions")
+	assert sent["body"]["model"] == "lyria-3-pro-preview"
+	assert "A beautiful piano melody." in sent["body"]["input"]
+
+
+def test_our_instructions_still_reach_a_model_with_no_system_field(gateway):
+	"""The Interactions create call takes no separate system field, so ours are
+	prepended rather than quietly dropped."""
+	sent, _, feature = wire(gateway, LYRIA_OK, capability="Audio Generation")
+	gateway.module.call(feature, "A beautiful piano melody.")
+
+	body = sent["body"]["input"]
+	assert body.startswith("You are our assistant.")
+	assert body.index("You are our assistant.") < body.index("A beautiful piano")
+
+
+def test_the_audio_and_the_lyrics_both_come_back(gateway):
+	sent, _, feature = wire(gateway, LYRIA_OK, capability="Audio Generation")
+	result = gateway.module.call(feature, "A song")
+
+	assert result["audio"] == ["bXAzLi4u"]
+	assert result["text"] == "Verse one..."
+
+
+def test_a_song_is_charged_as_one_generation(gateway):
+	"""Lyria reports no tokens and bills per song, so the count is the number of
+	generations we asked for."""
+	_, calls, feature = wire(gateway, LYRIA_OK, capability="Audio Generation")
+	gateway.module.call(feature, "A song")
+
+	assert calls[1][1]["units"] == [
+		{"kind": "Output", "modality": "Audio", "unit": "Request", "count": 1}]
+
+
+def test_the_convenience_property_is_read_when_there_are_no_steps(gateway):
+	"""The SDKs expose `output_audio` over the timeline, and the docs warn it
+	can miss parts of an interleaved answer — so steps are the source and this
+	is the fallback, not the other way round."""
+	_, _, feature = wire(gateway, Response({
+		"output_audio": {"data": "c2hvcnRjdXQ="}, "output_text": "Lyrics",
+	}), capability="Audio Generation")
+
+	result = gateway.module.call(feature, "A song")
+	assert result["audio"] == ["c2hvcnRjdXQ="]
+	assert result["text"] == "Lyrics"

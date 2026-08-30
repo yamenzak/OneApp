@@ -157,6 +157,15 @@ def ceiling_units(model, limits: dict) -> list[dict]:
 			units.append({"kind": "Output", "modality": "Image", "unit": "Token",
 			              "count": images * 2520})
 
+	# Models billed per generation rather than per token — Lyria charges per
+	# song, whatever its length. The count of generations is the only thing to
+	# cap, and one is the honest floor: a call produces at least one.
+	generations = int(limits.get("max_outputs") or 0) or 1
+	for row in model.prices:
+		if row.kind == "Output" and row.unit == "Request" and row.tier == "Standard":
+			units.append({"kind": "Output", "modality": row.modality,
+			              "unit": "Request", "count": generations})
+
 	seconds = int(limits.get("max_audio_seconds") or 0)
 	if seconds and "audio" in outputs:
 		for unit, count in (("Second", seconds), ("Minute", math.ceil(seconds / 60)),

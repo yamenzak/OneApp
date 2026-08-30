@@ -1040,7 +1040,8 @@ def ai_features() -> list:
 		fields=[
 			"name", "label", "app", "capability", "status", "tenant_can_disable",
 			"allow_prompt_addendum", "default_model", "max_input_tokens",
-			"max_output_tokens", "max_images", "max_audio_seconds", "max_credits",
+			"max_output_tokens", "max_images", "max_outputs", "max_audio_seconds",
+			"max_credits",
 			"description", "last_seen",
 		],
 		order_by="app asc, label asc",
@@ -1048,8 +1049,8 @@ def ai_features() -> list:
 
 
 AI_FEATURE_EDITABLE = ("status", "default_model", "max_input_tokens",
-                       "max_output_tokens", "max_images", "max_audio_seconds",
-                       "max_credits")
+                       "max_output_tokens", "max_images", "max_outputs",
+                       "max_audio_seconds", "max_credits")
 
 
 @frappe.whitelist(methods=["POST"])

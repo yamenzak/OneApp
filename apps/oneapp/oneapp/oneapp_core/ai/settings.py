@@ -208,14 +208,33 @@ def _rate_line(model: dict) -> str:
 	A rate, not an estimate of a call. We do not know what a call will use until
 	it has been made, and saying otherwise on a settings page is where made-up
 	numbers start.
+
+	Whatever unit the rate is in, rather than tokens only: a music model is
+	billed per song and a picker that describes it with a blank is a picker that
+	makes the choice look arbitrary.
 	"""
 	parts = []
 	for price in model.get("prices") or []:
-		if price["kind"] not in ("Input", "Output") or price["unit"] != "Token":
+		if price["kind"] not in ("Input", "Output"):
 			continue
-		per = "1M tokens" if price["per_units"] >= 1_000_000 else f"{price['per_units']} tokens"
-		parts.append(f"{price['kind'].lower()} ${price['cost_usd']:g}/{per}")
+
+		per_units = int(price["per_units"] or 1)
+		unit = price["unit"].lower()
+		if per_units == 1:
+			per = unit
+		elif per_units == 1_000_000:
+			per = f"1M {unit}s"
+		else:
+			per = f"{per_units:,} {unit}s"
+
+		parts.append(f"{price['kind'].lower()} ${_amount(price['cost_usd'])}/{per}")
 	return ", ".join(parts[:2])
+
+
+def _amount(value: float) -> str:
+	"""Plain decimals. A tile rate of 0.0000528 formats as 5.28e-05 under the
+	obvious %g and reads as a typo."""
+	return f"{value:.10f}".rstrip("0").rstrip(".") or "0"
 
 
 def save(values: dict) -> dict:

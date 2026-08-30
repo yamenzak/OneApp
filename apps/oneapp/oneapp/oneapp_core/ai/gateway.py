@@ -114,6 +114,23 @@ def _google_speech(model, prompt, system, limits, request):
 	return path, headers, body
 
 
+def _google_interaction(model, prompt, system, limits, request):
+	"""Lyria and the rest of the Interactions API.
+
+	A different endpoint shape from generateContent: the model is in the body
+	rather than the path, and there is one `input` instead of a contents array.
+	Our instructions are prepended to the prompt because the Interactions
+	create call takes no separate system field.
+	"""
+	body = {
+		"model": model["model_id"],
+		"input": f"{system}\n\n{prompt}".strip() if system else prompt,
+	}
+	if request.get("response_format"):
+		body["response_format"] = {"type": request["response_format"]}
+	return "v1beta/interactions", _google_headers(), body
+
+
 def _google_embed(model, prompt, system, limits, request):
 	return (
 		f"v1beta/models/{model['model_id']}:embedContent",
@@ -168,6 +185,7 @@ BUILDERS = {
 	("google-ai-studio", "Image Generation"): _google_image,
 	("google-ai-studio", "Text to Speech"): _google_speech,
 	("google-ai-studio", "Text Embeddings"): _google_embed,
+	("google-ai-studio", "Audio Generation"): _google_interaction,
 	("workers-ai", "Text Generation"): _workers_text,
 	("workers-ai", "Text Embeddings"): _workers_embed,
 	("workers-ai", "Image Generation"): _workers_image,
@@ -180,7 +198,39 @@ BUILDERS = {
 # Reading a response
 # --------------------------------------------------------------------------- #
 
+def _interaction_result(payload: dict) -> dict:
+	"""Pull the audio and the lyrics out of an Interaction.
+
+	The SDKs expose `output_audio` and `output_text` as conveniences over a
+	timeline of steps, and the docs say those conveniences can miss parts of an
+	interleaved answer. So the steps are the source and the conveniences are the
+	shortcut, not the other way round.
+	"""
+	text, audio = "", []
+
+	for step in payload.get("steps") or []:
+		if step.get("type") != "model_output":
+			continue
+		for block in step.get("content") or []:
+			if block.get("type") == "audio" and block.get("data"):
+				audio.append(block["data"])
+			elif block.get("type") == "text":
+				text += block.get("text") or ""
+
+	if not audio:
+		shortcut = payload.get("output_audio") or payload.get("outputAudio") or {}
+		if shortcut.get("data"):
+			audio.append(shortcut["data"])
+	if not text:
+		text = payload.get("output_text") or payload.get("outputText") or ""
+
+	return {"audio": audio, "text": text, "images": []}
+
+
 def _google_result(payload: dict, capability: str) -> dict:
+	if capability == "Audio Generation":
+		return _interaction_result(payload)
+
 	text, images, audio = "", [], []
 	for candidate in payload.get("candidates") or []:
 		for part in (candidate.get("content") or {}).get("parts") or []:
@@ -328,17 +378,25 @@ def _execute(model, feature, builder, prompt, system, limits, request):
 
 
 def _meter(model, feature, request, payload, prompt):
-	if model["provider"] == "google-ai-studio":
-		return meter.gemini(payload)
+	"""Counts for the models that report none back.
 
-	# What Cloudflare bills for the models that report nothing: the picture size
-	# and step count we asked for, the length of the audio we sent, the number
-	# of characters we asked it to speak.
+	Counting the request is not estimating the response: the picture size and
+	step count we asked for, the length of the audio we sent, the number of
+	characters we asked it to speak and the number of generations we asked for
+	are the same numbers the provider bills against.
+
+	Set unconditionally because the meters only reach for them when the model
+	has no usage to report and actually holds a rate in that unit.
+	"""
 	counted = dict(request)
+	counted.setdefault("outputs", 1)
 	if feature.capability == "Image Generation":
 		counted.setdefault("images", 1)
 	if feature.capability == "Text to Speech":
 		counted.setdefault("characters", len(prompt or ""))
+
+	if model["provider"] == "google-ai-studio":
+		return meter.gemini(payload, model, counted)
 	return meter.workers(payload, model, counted)
 
 

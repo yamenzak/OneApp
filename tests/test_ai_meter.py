@@ -158,3 +158,44 @@ def test_units_follow_the_models_rates_not_its_capability(meter):
 		{"kind": "Output", "modality": "Image", "unit": "Image"}]}
 	units = meter.workers({"result": {"image": "."}}, per_image, {"images": 3, "steps": 8})
 	assert [(u["unit"], u["count"]) for u in units] == [("Image", 3)]
+
+
+# --------------------------------------------------------------------------- #
+# Models billed per generation
+# --------------------------------------------------------------------------- #
+
+LYRIA = {
+	"model_id": "lyria-3-pro-preview",
+	"prices": [{"kind": "Output", "modality": "Audio", "unit": "Request"}],
+}
+
+
+def test_a_song_is_counted_as_one_generation(meter):
+	"""Lyria answers on the Interactions API and reports no tokens. It bills per
+	song whatever the length, and the number of songs is what we asked for."""
+	units = meter.gemini({"steps": [{"type": "model_output", "content": [
+		{"type": "audio", "data": "..."}]}]}, LYRIA, {"outputs": 1})
+
+	assert units == [{"kind": "Output", "modality": "Audio", "unit": "Request",
+	                  "count": 1}]
+
+
+def test_two_generations_cost_two(meter):
+	units = meter.gemini({}, LYRIA, {"outputs": 2})
+	assert units[0]["count"] == 2
+
+
+def test_a_token_model_still_meters_from_its_usage(meter):
+	"""The fallback must not shadow the reported counts where there are some."""
+	units = meter.gemini(
+		{"usageMetadata": {"promptTokenCount": 10, "candidatesTokenCount": 4}},
+		LYRIA, {"outputs": 9},
+	)
+	assert {u["unit"] for u in units} == {"Token"}
+
+
+def test_a_generation_count_without_a_rate_for_it_is_refused(meter):
+	"""`outputs` is set on every call, so it must only produce a charge where
+	the model actually holds a per-request rate."""
+	with pytest.raises(meter.Unmetered):
+		meter.gemini({}, {"model_id": "x", "prices": []}, {"outputs": 1})

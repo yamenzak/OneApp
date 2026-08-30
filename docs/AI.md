@@ -35,7 +35,8 @@ usage each model reports in its own response.
 
 ## What each provider actually reports
 
-**Gemini** counts everything in tokens, by modality. `usageMetadata` carries
+**Gemini** counts everything in tokens, by modality — with one exception noted
+below. `usageMetadata` carries
 `promptTokensDetails`, `cacheTokensDetails` and `candidatesTokensDetails`, each
 a list of `(modality, tokenCount)`, plus `thoughtsTokenCount` for reasoning and
 `toolUsePromptTokenCount` for tool calls. Generated pictures and generated speech
@@ -50,6 +51,14 @@ Two traps, both handled in `oneapp_core/ai/meter.py`:
 * `thoughtsTokenCount` bills at the output rate and is absent from
   `candidatesTokensDetails`, so a meter that reads only that list gives
   reasoning away.
+
+**Lyria**, Google's music generation family, is the exception on both counts. It
+answers on the [Interactions API](https://ai.google.dev/gemini-api/docs/music-generation)
+(`POST /v1beta/interactions`, model in the body, one `input` instead of a
+contents array) and returns a timeline of steps carrying the audio and the
+lyrics, with no token counts at all. It is billed per request — $0.04 for a
+30-second clip, $0.08 for a full song — so the count is how many generations we
+asked for, which is exactly what Google charges for.
 
 **Workers AI** reports `usage.prompt_tokens` and `usage.completion_tokens` for
 text and embeddings, and nothing at all for the rest. `flux-1-schnell` returns
@@ -88,7 +97,7 @@ picture.
 | | models and capabilities | prices |
 |---|---|---|
 | Workers AI | `GET /accounts/{id}/ai/models/search` — `task.name`, `properties` | [the pricing page](https://developers.cloudflare.com/workers-ai/platform/pricing/), whose sections already separate LLM, embeddings, image, audio |
-| Gemini | `GET /v1beta/models` — `supportedGenerationMethods`, token limits, `thinking` | [the pricing page](https://ai.google.dev/gemini-api/docs/pricing), whose cells state the modalities |
+| Gemini | `GET /v1beta/models` — `supportedGenerationMethods`, token limits, `thinking` | [the pricing page](https://ai.google.dev/gemini-api/docs/pricing), whose cells state the modalities and whose header states the unit |
 
 The parsers are in `oneapp_control/ai/sources.py` and have no frappe import, so
 they are tested against the real pages saved under `tests/fixtures/`. When a
@@ -102,10 +111,35 @@ and cannot be chosen or called. Real examples today:
 * `@cf/black-forest-labs/flux-2-dev` — "per input 512x512 tile, per step" is
   tiles *times* steps, a compound unit; storing it as either is wrong by the
   factor of the other.
-* `veo-3.1-generate-preview` — video billed per second and per resolution.
-* `lyria-3-clip-preview` — billed per song.
+* `veo-3.1-generate-preview` — video billed per second *and* per resolution
+  ("$0.40 (720p and 1080p) $0.60 (4k)"). Nothing in a request says which one a
+  generation will land on, so either choice is wrong by a fixed factor on every
+  call.
 
 Better to sell nothing than to sell at a rate we made up.
+
+### The unit comes from the table header
+
+Every Gemini table states its unit in the header of the paid column: "Paid Tier,
+per 1M tokens in USD". Across the page that reads tokens 77 times, "per second"
+once (Veo) and "per request" once (Lyria) — so assuming tokens is right until it
+is expensively wrong, and the header is sitting there saying so. A header naming
+a unit we cannot count holds its models back rather than falling through to
+tokens.
+
+One more attribution rule, which Lyria is the only case of so far: a table can
+price several models with a row each, labelled by model name rather than by kind
+of charge.
+
+```
+|   | Free Tier | Paid Tier, per request in USD |
+| Lyria 3 Clip Preview (30s)      | Not available | $0.04 per song |
+| Lyria 3 Pro Preview (Full Song) | Not available | $0.08 per song |
+```
+
+Applying both rows to both models hands Pro the Clip's rate and bills full songs
+at half price, so a row whose label names exactly one model in the section is
+attributed to it alone.
 
 The sync creates and refreshes; it does not overrule an operator. It makes
 exactly two status decisions on its own: a model it can no longer price comes
@@ -156,8 +190,11 @@ absent from the operator's editable fields.
 
 Something must be held before the answer exists. That hold is a **limit**, not a
 forecast: the most the call may consume — `max_input_tokens`, `max_output_tokens`,
-`max_images`, `max_audio_seconds`, or a flat `max_credits` — priced at the same
-catalogue rates. The hold is released down to the measured actual the moment the
+`max_images`, `max_outputs`, `max_audio_seconds`, or a flat `max_credits` —
+priced at the same catalogue rates. `max_outputs` is for a model billed per
+generation rather than per unit of what it generates; it defaults to one,
+because a call produces at least one thing and holding nothing would let a call
+run against no reservation at all. The hold is released down to the measured actual the moment the
 provider answers.
 
 An operator can tighten any of them per feature in OneAdmin without a deploy.

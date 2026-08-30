@@ -263,3 +263,32 @@ def test_a_workspace_cannot_switch_off_what_it_may_not(ai, stub_frappe):
 
 	ai.settings.save({"features": {feature.key: {"enabled": 0}}})
 	assert single.features[0].enabled == 1
+
+
+# --------------------------------------------------------------------------- #
+# What a workspace is told a model costs
+# --------------------------------------------------------------------------- #
+
+def test_a_model_is_described_in_whatever_unit_it_is_billed_in(ai, stub_frappe):
+	"""A rate, not a prediction of a call. And in the model's own unit: a music
+	model billed per song described with a blank makes the choice look
+	arbitrary."""
+	from oneapp.oneapp_core.ai.settings import _rate_line
+
+	assert _rate_line({"prices": [
+		{"kind": "Output", "unit": "Request", "cost_usd": 0.08, "per_units": 1},
+	]}) == "output $0.08/request"
+
+	assert _rate_line({"prices": [
+		{"kind": "Input", "unit": "Token", "cost_usd": 0.75, "per_units": 1_000_000},
+	]}) == "input $0.75/1M tokens"
+
+
+def test_a_tiny_rate_is_not_written_in_scientific_notation(ai, stub_frappe):
+	"""A tile costs 0.0000528, which the obvious formatter renders as 5.28e-05
+	and a customer reads as a typo."""
+	from oneapp.oneapp_core.ai.settings import _rate_line
+
+	assert _rate_line({"prices": [
+		{"kind": "Output", "unit": "Tile", "cost_usd": 0.0000528, "per_units": 1},
+	]}) == "output $0.0000528/tile"

@@ -210,6 +210,28 @@ GEMINI_ROWS = {
 	"context caching price": "Cached Input",
 }
 
+# Every Gemini price table states its unit in the header of the paid column:
+# "Paid Tier, per 1M tokens in USD". Across the whole page that reads tokens 77
+# times, "per second" once (Veo) and "per request" once (Lyria) — so assuming
+# tokens is right until it is expensively wrong, and the header is sitting there
+# saying so.
+GEMINI_UNITS = (
+	("token", ("Token", MILLION)),
+	("per second", ("Second", 1)),
+	("per request", ("Request", 1)),
+	("per image", ("Image", 1)),
+)
+
+# What a model of this kind produces, for rows that name a model instead of a
+# modality — Lyria's "Lyria 3 Clip Preview (30s) | $0.04 per song" says nothing
+# about audio because the whole table is about audio.
+CAPABILITY_MODALITY = {
+	"Audio Generation": "Audio",
+	"Video Generation": "Video",
+	"Image Generation": "Image",
+	"Text to Speech": "Audio",
+}
+
 # One line can name several models — "*[`veo-3.1-generate-preview`](...),
 # [`veo-3.1-fast-generate-preview`](...)*" — and taking only the first leaves the
 # rest of the family absent from the catalogue entirely.
@@ -236,7 +258,8 @@ def _gemini_modality(label: str) -> list[str]:
 	return found or ["Text"]
 
 
-def _gemini_cell(cell: str, kind: str, tier: str) -> Parsed:
+def _gemini_cell(cell: str, kind: str, tier: str, unit: str = "Token",
+                 per_units: int = MILLION, modality: str = "") -> Parsed:
 	parsed = Parsed()
 	body = re.sub(r"\^?\\?\*+\^?", "", cell)          # footnote markers
 	body = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", body)  # links
@@ -258,6 +281,16 @@ def _gemini_cell(cell: str, kind: str, tier: str) -> Parsed:
 		return parsed
 
 	pieces = _AMOUNT.split(body)
+
+	# Several rates in one cell is normal for tokens — dated changes and a rate
+	# per modality — and a warning sign anywhere else. Veo's video seconds come
+	# as "$0.40 (720p and 1080p) $0.60 (4k)": a rate per resolution, and we
+	# cannot tell from a request which one a generation will land on. Picking
+	# either would undercharge or overcharge every call by a fixed factor.
+	if unit != "Token" and len(pieces) > 3:
+		parsed.unparsed.append(" ".join(body.split())[:140])
+		return parsed
+
 	for amount, tail in zip(pieces[1::2], pieces[2::2]):
 		# Storage rates are a per-hour charge on cached bytes, not a rate on
 		# this call. Recorded as unparsed so nobody thinks it was priced.
@@ -270,13 +303,15 @@ def _gemini_cell(cell: str, kind: str, tier: str) -> Parsed:
 		effective_from = _date(tail) if "starting" in window else None
 		effective_to = _date(tail) if "through" in window else None
 
-		for modality in _gemini_modality(label.group(1) if label else ""):
+		modalities = ([modality] if modality
+		              else _gemini_modality(label.group(1) if label else ""))
+		for found in modalities:
 			parsed.add(Price(
 				kind=kind,
-				modality=modality,
-				unit="Token",
+				modality=found,
+				unit=unit,
 				cost_usd=_money(amount),
-				per_units=MILLION,
+				per_units=per_units,
 				tier=tier,
 				effective_from=effective_from,
 				effective_to=effective_to,
@@ -289,11 +324,37 @@ def _gemini_cell(cell: str, kind: str, tier: str) -> Parsed:
 	return parsed
 
 
+def _unit_from_header(cell: str):
+	"""The unit this table prices in, or None if it names one we cannot count."""
+	low = cell.lower()
+	for needle, unit in GEMINI_UNITS:
+		if needle in low:
+			return unit
+	return None
+
+
+def _names_model(label: str, model_id: str) -> bool:
+	"""Whether a row label is naming this model rather than a kind of charge.
+
+	Lyria prices two models in one table, a row each: "Lyria 3 Clip Preview
+	(30s)" and "Lyria 3 Pro Preview (Full Song)". Applying both rows to both
+	models would hand the Pro model the Clip's rate and bill full songs at half
+	price.
+	"""
+	words = set(re.findall(r"[a-z0-9.]+", label.lower()))
+	# Split on hyphens only: "veo-3.1-generate-preview" keeps "3.1" as one word,
+	# the way the label writes it.
+	parts = set(model_id.lower().split("-")) - {""}
+	return parts.issubset(words)
+
+
 def parse_gemini_pricing(text: str) -> dict[str, Parsed]:
 	"""Model id -> the rates published for it, across every tier."""
 	out: dict[str, Parsed] = {}
 	model_ids: list[str] = []
 	tier = "Standard"
+	unit, per_units = "Token", MILLION
+	countable = True
 
 	for line in text.splitlines():
 		stripped = line.strip()
@@ -301,6 +362,7 @@ def parse_gemini_pricing(text: str) -> dict[str, Parsed]:
 		if _MODEL_LINE.match(stripped):
 			model_ids = _MODEL_ID.findall(stripped)
 			tier = "Standard"
+			unit, per_units, countable = "Token", MILLION, True
 			for model_id in model_ids:
 				out.setdefault(model_id, Parsed())
 			continue
@@ -315,6 +377,7 @@ def parse_gemini_pricing(text: str) -> dict[str, Parsed]:
 			# the models here stops the rates under it landing on the previous
 			# ones, which is the bug that silently halves someone's bill.
 			model_ids = []
+			unit, per_units, countable = "Token", MILLION, True
 			continue
 
 		if not model_ids or not stripped.startswith("|"):
@@ -328,6 +391,13 @@ def parse_gemini_pricing(text: str) -> dict[str, Parsed]:
 		# price"; Google qualifies these labels differently per model and an
 		# exact match quietly drops the output rate of whichever model got a
 		# parenthesis this month.
+		# The header row states the unit for every rate under it.
+		if not cells[0] and any("tier" in c.lower() for c in cells):
+			found = _unit_from_header(cells[-1])
+			countable = found is not None
+			unit, per_units = found or ("Token", MILLION)
+			continue
+
 		label = re.sub(r"[^a-z ]", " ", cells[0].lower())
 		label = " ".join(label.split())
 		# `endswith` as well as `startswith` because Google qualifies on both
@@ -335,20 +405,37 @@ def parse_gemini_pricing(text: str) -> dict[str, Parsed]:
 		# models, "Text input price".
 		kind = next((k for phrase, k in GEMINI_ROWS.items()
 		             if label.startswith(phrase) or label.endswith(phrase)), None)
+		targets = model_ids
+		modality = ""
+
 		if not kind:
-			# A priced row that is not one of our rate slots. Search grounding
-			# is the common one — a real charge, on a feature we do not call.
-			# Veo's per-resolution video seconds and Lyria's per-song rate land
-			# here too; those models end up with no rates at all, which is what
-			# holds them back, not this note.
-			if "$" in cells[2]:
-				for model_id in model_ids:
-					out[model_id].notes.append(
-						f"{cells[0]}: {' '.join(cells[2].split())[:100]}")
+			# A row whose label is a model name rather than a kind of charge.
+			# Lyria prices per song that way, one row per model, and what it is
+			# charging for is the thing generated — so the modality comes from
+			# what the model makes rather than from a label that has none.
+			named = [m for m in model_ids if _names_model(cells[0], m)]
+			if len(named) == 1 and "$" in cells[2]:
+				kind, targets = "Output", named
+				modality = CAPABILITY_MODALITY.get(
+					gemini_capability(named[0], []), "Text")
+			else:
+				# A priced row that is not one of our rate slots. Search
+				# grounding is the common one — a real charge, on a feature we
+				# do not call.
+				if "$" in cells[2]:
+					for model_id in model_ids:
+						out[model_id].notes.append(
+							f"{cells[0]}: {' '.join(cells[2].split())[:100]}")
+				continue
+
+		if not countable:
+			for model_id in targets:
+				out[model_id].unparsed.append(
+					f"{cells[0]}: priced in a unit we do not count")
 			continue
 
-		result = _gemini_cell(cells[2], kind, tier)
-		for model_id in model_ids:
+		result = _gemini_cell(cells[2], kind, tier, unit, per_units, modality)
+		for model_id in targets:
 			for price in result.prices:
 				out[model_id].add(price)
 			out[model_id].unparsed.extend(result.unparsed)

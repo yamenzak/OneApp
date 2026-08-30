@@ -201,3 +201,35 @@ def test_a_wild_extra_charge_is_not(reconcile):
 	disagreement about what happened, and re-billing a customer on the strength
 	of a figure its own vendor calls an estimate is not automatic."""
 	assert not reconcile.believable(100.0, 1600.0)
+
+
+# --------------------------------------------------------------------------- #
+# Models billed per generation
+# --------------------------------------------------------------------------- #
+
+LYRIA = model("google-ai-studio:lyria-3-pro-preview", [
+	rate("Output", "Audio", "Request", 0.08, per=1),
+], output_modalities="audio")
+
+
+def test_a_song_costs_its_published_rate(pricing):
+	usd = pricing.cost_usd(LYRIA, [
+		{"kind": "Output", "modality": "Audio", "unit": "Request", "count": 1},
+	])
+	assert usd == pytest.approx(0.08)
+
+
+def test_the_ceiling_for_a_per_generation_model_counts_generations(pricing):
+	"""Not tokens, not seconds: Lyria charges per song whatever its length, so
+	the only thing a ceiling can cap is how many songs."""
+	units = pricing.ceiling_units(LYRIA, {"max_outputs": 3})
+	requests = [u for u in units if u["unit"] == "Request"]
+	assert requests == [{"kind": "Output", "modality": "Audio", "unit": "Request",
+	                     "count": 3}]
+
+
+def test_a_feature_that_declares_nothing_may_still_make_one(pricing):
+	"""One is the honest floor — a call produces at least one thing — and
+	holding nothing would let a call run against no reservation at all."""
+	units = pricing.ceiling_units(LYRIA, {})
+	assert [u["count"] for u in units if u["unit"] == "Request"] == [1]

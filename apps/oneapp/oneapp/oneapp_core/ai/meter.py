@@ -56,9 +56,18 @@ def _details(rows) -> dict[str, int]:
 	return out
 
 
-def gemini(payload: dict) -> list[dict]:
+def gemini(payload: dict, model: dict | None = None,
+           request: dict | None = None) -> list[dict]:
 	usage = payload.get("usageMetadata") or {}
 	if not usage:
+		# Not every Google model counts tokens. Lyria answers on the
+		# Interactions API and is billed per song, so there is nothing to count
+		# in the response — the number of generations we asked for is the same
+		# number Google bills, and `from_request` reads it off the model's own
+		# rate rows.
+		units = from_request(model or {}, request or {})
+		if units:
+			return units
 		raise Unmetered("Gemini returned no usageMetadata.")
 
 	units = []
@@ -158,6 +167,14 @@ def from_request(model: dict, request: dict) -> list[dict]:
 				units.append(_line(kind, "Audio", "Minute", math.ceil(seconds / 60)))
 			elif (kind, "Audio", "Second") in rates:
 				units.append(_line(kind, "Audio", "Second", math.ceil(seconds)))
+
+	# Models billed per generation rather than per unit of what they generate.
+	# The count is what we asked for, which is what the provider charges for.
+	generations = int(request.get("outputs") or 0)
+	if generations:
+		for kind, modality, unit in rates:
+			if kind == "Output" and unit == "Request":
+				units.append(_line("Output", modality, "Request", generations))
 
 	characters = int(request.get("characters") or 0)
 	if characters:

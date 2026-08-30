@@ -143,6 +143,8 @@ def _workers_modalities(capability: str, prices: list) -> tuple[str, str]:
 		outputs.add("image")
 	if capability == "Text to Speech":
 		outputs.add("audio")
+	if capability == "Audio Generation":
+		outputs.add("audio")
 	if capability in ("Text Embeddings", "Reranking"):
 		outputs = {"embedding"}
 
@@ -256,7 +258,9 @@ def gemini_rows(models: list[dict], pricing_txt: str) -> list[dict]:
 # Not every model has an input rate and that is not a fault: Cloudflare bills
 # Flux only for the picture it draws, and Deepgram's speech models only for the
 # text going in. Requiring both would hold back models that are priced correctly.
-NEEDS_OUTPUT_RATE = {"Text Generation", "Image Generation"}
+NEEDS_OUTPUT_RATE = {
+	"Text Generation", "Image Generation", "Audio Generation", "Video Generation",
+}
 
 
 def _status(row: dict) -> tuple[str, list[str]]:

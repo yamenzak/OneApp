@@ -94,6 +94,14 @@
         <FormControl v-model="form.max_input_tokens" type="number" label="Max input tokens" />
         <FormControl v-model="form.max_output_tokens" type="number" label="Max output tokens" />
         <FormControl v-model="form.max_images" type="number" label="Max images" />
+        <!-- For a model billed per generation rather than per unit of what it
+             generates — Lyria charges per song whatever its length. -->
+        <FormControl
+          v-model="form.max_outputs"
+          type="number"
+          label="Max generations"
+          description="0 means one."
+        />
         <FormControl v-model="form.max_credits" type="number" label="Max credits per call" />
       </div>
       <p class="text-p-xs text-ink-gray-5">
@@ -177,6 +185,7 @@ const edit = (feature) => {
     max_input_tokens: feature.max_input_tokens || 0,
     max_output_tokens: feature.max_output_tokens || 0,
     max_images: feature.max_images || 0,
+    max_outputs: feature.max_outputs || 0,
     max_credits: feature.max_credits || 0,
   }
   showForm.value = true
@@ -191,6 +200,7 @@ const save = async () => {
       max_input_tokens: Number(form.value.max_input_tokens) || 0,
       max_output_tokens: Number(form.value.max_output_tokens) || 0,
       max_images: Number(form.value.max_images) || 0,
+      max_outputs: Number(form.value.max_outputs) || 0,
       max_credits: Number(form.value.max_credits) || 0,
     })
     showForm.value = false

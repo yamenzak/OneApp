@@ -210,3 +210,91 @@ def test_modalities_are_read_off_the_rates(sources, gemini):
 	                                            "Image Generation", prices)
 	assert "image" in inputs
 	assert "image" in outputs
+
+
+# --------------------------------------------------------------------------- #
+# Units that are not tokens
+#
+# Google states the unit in the header of every table's paid column. Across the
+# whole page that reads "per 1M tokens" 77 times, "per second" once and "per
+# request" once — so assuming tokens is right until it is expensively wrong, and
+# the header is sitting there saying so.
+# --------------------------------------------------------------------------- #
+
+def test_music_is_priced_per_song(gemini):
+    """Lyria bills per request whatever the song's length, which is a unit no
+    amount of token arithmetic reaches."""
+    rates = [r for r in gemini["lyria-3-clip-preview"].prices if r.tier == "Standard"]
+    assert len(rates) == 1
+
+    rate = rates[0]
+    assert (rate.kind, rate.modality, rate.unit, rate.per_units) == (
+        "Output", "Audio", "Request", 1)
+    assert rate.cost_usd == 0.04
+
+
+def test_two_models_in_one_table_do_not_share_a_rate(gemini):
+    """Lyria prices Clip and Pro in one table, a row each. Applying both rows to
+    both models hands Pro the Clip's rate and bills full songs at half price."""
+    clip = gemini["lyria-3-clip-preview"].prices
+    pro = gemini["lyria-3-pro-preview"].prices
+
+    assert len(clip) == len(pro) == 1
+    assert pro[0].cost_usd == clip[0].cost_usd * 2
+
+
+def test_a_row_naming_no_model_still_applies_to_all_of_them(gemini):
+    """The attribution must not break the ordinary case, where a table prices
+    several models together and every row is an "Input price"."""
+    rates = {r.kind for r in gemini["gemini-3.7-flash"].prices}
+    assert {"Input", "Output", "Cached Input"} <= rates
+
+
+def test_a_token_table_is_still_read_as_tokens(gemini):
+    """77 of the 79 tables. The header change must not disturb any of them."""
+    for rate in gemini["gemini-3.7-flash"].prices:
+        assert (rate.unit, rate.per_units) == ("Token", 1_000_000)
+
+
+def test_video_priced_per_resolution_is_still_refused(gemini):
+    """Veo bills video per second *and* per resolution — "$0.40 (720p and
+    1080p) $0.60 (4k)". Nothing in a request says which one a generation will
+    land on, so either choice is wrong by a fixed factor on every call."""
+    assert not gemini["veo-3.1-generate-preview"].prices
+
+
+def test_a_non_token_cell_with_several_rates_is_refused(sources):
+    """The rule behind that, stated on its own. Several amounts in one cell is
+    normal for tokens — dated changes, a rate per modality — and a warning sign
+    anywhere else."""
+    table = "\n".join([
+        "## Veo",
+        "*[`veo-3.1-fast-generate-preview`](https://example.test)*",
+        "|   | Free Tier | Paid Tier, per second in USD |",
+        "|---|---|---|",
+        "| Veo 3.1 Fast Generate Preview | Not available | $0.10 (720p) $0.30 (4k) |",
+    ])
+    parsed = sources.parse_gemini_pricing(table)["veo-3.1-fast-generate-preview"]
+    assert not parsed.prices
+    assert parsed.unparsed
+
+
+def test_a_unit_we_cannot_count_holds_the_model_back(sources):
+    """A header naming something we have no way to measure is a reason to sell
+    nothing, not a reason to fall back to tokens."""
+    table = "\n".join([
+        "## Something new",
+        "*[`some-future-model`](https://example.test)*",
+        "|   | Free Tier | Paid Tier, per furlong in USD |",
+        "|---|---|---|",
+        "| Output price | Not available | $2.00 |",
+    ])
+    parsed = sources.parse_gemini_pricing(table)["some-future-model"]
+    assert not parsed.prices
+    assert parsed.unparsed
+
+
+def test_music_generation_is_recognised_as_a_capability(sources):
+    assert sources.gemini_capability("lyria-3-pro-preview", []) == "Audio Generation"
+    assert sources.gemini_modalities(
+        "lyria-3-pro-preview", "Audio Generation", [])[1] == "audio"
