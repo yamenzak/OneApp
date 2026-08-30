@@ -61,6 +61,20 @@ def field(fieldname, fieldtype="Data", label=None, **kw):
 		min_value=kw.get("min_value", None),
 		max_value=kw.get("max_value", None),
 		sort_options=kw.get("sort_options", 0),
+		unique=kw.get("unique", 0),
+		not_nullable=kw.get("not_nullable", 0),
+		allow_on_submit=kw.get("allow_on_submit", 0),
+		fetch_if_empty=kw.get("fetch_if_empty", 0),
+		remember_last_selected_value=kw.get("remember_last_selected_value", 0),
+		documentation_url=kw.get("documentation_url", None),
+		show_description_on_click=kw.get("show_description_on_click", 0),
+		mask=kw.get("mask", None),
+		max_height=kw.get("max_height", None),
+		translatable=kw.get("translatable", 0),
+		ignore_user_permissions=kw.get("ignore_user_permissions", 0),
+		collapsible=kw.get("collapsible", 0),
+		collapsible_depends_on=kw.get("collapsible_depends_on", None),
+		hide_border=kw.get("hide_border", 0),
 	)
 
 
@@ -521,6 +535,84 @@ def test_the_doctypes_bounds_reach_the_browser(spaceview):
 	assert columns["qty"]["min_value"] == 1
 	assert columns["qty"]["max_value"] == 99
 	assert columns["kind"]["sort_options"] == 1
+
+
+def test_the_rest_of_the_docfield_travels(spaceview):
+	"""Every property the form has somewhere to put. Asserted as one list
+	because the failure this guards against is a property quietly stopping —
+	nothing throws, the affordance simply is not there any more."""
+	fields = [field(
+		"code", "Data", "Code",
+		unique=1, not_nullable=1, allow_on_submit=1, fetch_if_empty=1,
+		remember_last_selected_value=1, documentation_url="https://example.test/code",
+		show_description_on_click=1, mask="AA-999", max_height="120",
+		translatable=1, ignore_user_permissions=1,
+	)]
+	column = spaceview._columns(meta(fields), ["code"])[0]
+
+	assert column["unique"] == 1
+	assert column["not_nullable"] == 1
+	assert column["allow_on_submit"] == 1
+	assert column["fetch_if_empty"] == 1
+	assert column["remember_last_selected_value"] == 1
+	assert column["documentation_url"] == "https://example.test/code"
+	assert column["show_description_on_click"] == 1
+	assert column["mask"] == "AA-999"
+	assert column["max_height"] == "120"
+	assert column["translatable"] == 1
+	assert column["ignore_user_permissions"] == 1
+
+
+def test_ignore_user_permissions_is_carried_and_not_acted_on(spaceview):
+	"""A docfield saying User Permissions do not apply to this Link is a
+	legitimate escape hatch in the desk, where an administrator is reasoning
+	about their own site. Here it would let a doctype we did not write widen
+	what a customer's screen can reach.
+
+	So it travels — the payload should be honest about what the doctype says —
+	and nothing reads it. This asserts the second half: the resolver has no
+	branch on it anywhere.
+	"""
+	import inspect
+
+	source = inspect.getsource(spaceview)
+	uses = [
+		line.strip() for line in source.splitlines()
+		if "ignore_user_permissions" in line
+		# The two lines that carry it: the payload key and the docfield read.
+		# Everything else is a branch on it, which is the thing being refused.
+		and not line.strip().startswith('"ignore_user_permissions"')
+		and "getattr(df" not in line
+		and not line.strip().startswith("#")
+	]
+	assert not uses, f"ignore_user_permissions is being acted on: {uses}"
+
+
+def test_a_section_carries_its_own_collapse_and_border(spaceview):
+	"""`collapsible`, `collapsible_depends_on` and `hide_border` are the
+	section's, not the field's, so they ride on the layout rather than in
+	`all_columns`."""
+	fields = [
+		field("sec_one", "Section Break", "First"),
+		field("a", "Data", "A"),
+		field("sec_two", "Section Break", "Second", collapsible=1,
+		      collapsible_depends_on="eval:doc.a", hide_border=1),
+		field("b", "Data", "B"),
+	]
+	offered = {"a": {}, "b": {}}
+	sections = spaceview._form(meta(fields), offered)[0]["sections"]
+
+	assert sections[0]["collapsible"] == 0
+	assert sections[0]["hide_border"] == 0
+	assert sections[1]["collapsible"] == 1
+	assert sections[1]["collapsible_depends_on"] == "eval:doc.a"
+	assert sections[1]["hide_border"] == 1
+
+
+def test_a_record_carries_its_docstatus(spaceview):
+	"""Never a column — HIDDEN sees to that — and required on the record, or a
+	submitted document offers every field and has every save refused."""
+	assert "docstatus" in spaceview.RECORD_META
 
 
 def test_a_bound_of_zero_is_not_a_bound(spaceview):

@@ -213,7 +213,26 @@ export function fieldRules(field, doc) {
   const readOnly = evaluate(field?.read_only_depends_on, doc)
   return {
     hidden: shown === false,
-    required: !!field?.reqd || required === true,
+    // Three ways for a field to insist on a value, and they end up as one
+    // question for the control. `not_nullable` is the strictest — Frappe
+    // refuses an empty value on one outright rather than asking — so it counts
+    // here even though its message elsewhere is different.
+    required: !!field?.reqd || !!field?.not_nullable || required === true,
     readOnly: readOnly === true,
   }
+}
+
+/**
+ * Whether a section starts folded.
+ *
+ * `collapsible` is the doctype's plain answer and `collapsible_depends_on` is
+ * the same expression dialect as `depends_on` — so a section can be folded
+ * only while some other field says so. An unreadable expression collapses
+ * nothing, which is the safe direction: a section nobody can open is worse
+ * than one that is always open.
+ */
+export function sectionCollapsed(section, doc) {
+  if (!section?.collapsible) return false
+  if (!section.collapsible_depends_on) return true
+  return evaluate(section.collapsible_depends_on, doc) === true
 }

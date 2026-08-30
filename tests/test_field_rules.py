@@ -110,3 +110,83 @@ def test_nothing_it_reads_can_call_anything():
 	source = re.sub(r"^[ \t]*//.*$", "", source, flags=re.M)
 	for banned in ("new Function", "eval(", "setTimeout", "import("):
 		assert banned not in source, f"rules.js reaches for {banned}"
+
+
+# --------------------------------------------------------------------------- #
+# What the rules answer for a whole field, and for a whole section
+# --------------------------------------------------------------------------- #
+
+def run_field(cases: list[tuple[dict, dict]]) -> list:
+	"""[(field, doc)] -> [what `fieldRules` answered]."""
+	script = (
+		f"import {{ fieldRules }} from {json.dumps(RULES.as_uri())};"
+		f"const cases = {json.dumps(cases)};"
+		"console.log(JSON.stringify(cases.map(([field, doc]) => fieldRules(field, doc))));"
+	)
+	out = subprocess.run(
+		["node", "--input-type=module", "-e", script],
+		capture_output=True, text=True, check=True,
+	)
+	return json.loads(out.stdout.strip().splitlines()[-1])
+
+
+def run_section(cases: list[tuple[dict, dict]]) -> list:
+	"""[(section, doc)] -> [whether it starts folded]."""
+	script = (
+		f"import {{ sectionCollapsed }} from {json.dumps(RULES.as_uri())};"
+		f"const cases = {json.dumps(cases)};"
+		"console.log(JSON.stringify("
+		"cases.map(([section, doc]) => sectionCollapsed(section, doc))));"
+	)
+	out = subprocess.run(
+		["node", "--input-type=module", "-e", script],
+		capture_output=True, text=True, check=True,
+	)
+	return json.loads(out.stdout.strip().splitlines()[-1])
+
+
+def test_not_nullable_is_required():
+	"""Three ways for a field to insist on a value, one question for the
+	control. `not_nullable` is the strictest — Frappe refuses an empty value
+	outright rather than asking — so it counts here even though its message
+	elsewhere is different."""
+	assert [r["required"] for r in run_field([
+		({"reqd": 0, "not_nullable": 0}, {}),
+		({"reqd": 1, "not_nullable": 0}, {}),
+		({"reqd": 0, "not_nullable": 1}, {}),
+		({"reqd": 0, "mandatory_depends_on": "eval:doc.kind == 'x'"}, {"kind": "x"}),
+	])] == [False, True, True, True]
+
+
+def test_a_section_folds_only_when_the_doctype_says_so():
+	assert run_section([
+		({"collapsible": 0}, {}),
+		({"collapsible": 1}, {}),
+	]) == [False, True]
+
+
+def test_a_conditional_fold_reads_the_record():
+	"""`collapsible_depends_on` is the same dialect as `depends_on`, so it goes
+	through the same parser rather than a second one."""
+	assert run_section([
+		({"collapsible": 1, "collapsible_depends_on": "eval:doc.kind == 'simple'"},
+		 {"kind": "simple"}),
+		({"collapsible": 1, "collapsible_depends_on": "eval:doc.kind == 'simple'"},
+		 {"kind": "full"}),
+	]) == [True, False]
+
+
+def test_an_unreadable_fold_expression_leaves_the_section_open():
+	"""The safe direction. A section nobody can open is worse than one that is
+	always open, and `evaluate` answers null rather than guessing."""
+	assert run_section([
+		({"collapsible": 1, "collapsible_depends_on": "eval:doc.a ?? ("}, {"a": 1}),
+	]) == [False]
+
+
+def test_a_section_that_is_not_collapsible_ignores_its_expression():
+	"""Frappe writes both, and only the first decides whether there is a
+	disclosure at all."""
+	assert run_section([
+		({"collapsible": 0, "collapsible_depends_on": "eval:1 == 1"}, {}),
+	]) == [False]

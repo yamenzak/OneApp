@@ -187,6 +187,51 @@ def _columns(meta, wanted: list[str]) -> list[dict]:
 			# field's own note, because "Company (from Customer)" answers the
 			# question a read-only box otherwise raises.
 			"fetch_from": getattr(df, "fetch_from", None) or None,
+			# ...and whether it will overwrite what you typed. Without this
+			# every fetched field reads as "From Customer" whether it fills a
+			# blank once or replaces your answer on every save.
+			"fetch_if_empty": int(getattr(df, "fetch_if_empty", 0) or 0),
+			# Two different ways for a value to be refused, and they deserve
+			# two different messages. `reqd` asks; `not_nullable` refuses.
+			# `unique` is neither until a save comes back — it is what turns a
+			# DuplicateEntryError into a message on this field rather than a
+			# red toast about a database constraint.
+			"unique": int(getattr(df, "unique", 0) or 0),
+			"not_nullable": int(getattr(df, "not_nullable", 0) or 0),
+			# Editable after submit. Only matters on a submittable doctype, and
+			# without it a submitted record looks fully editable and every save
+			# is refused.
+			"allow_on_submit": int(getattr(df, "allow_on_submit", 0) or 0),
+			# A Link that reopens on your last choice, which is the doctype
+			# saying this is a field somebody sets to the same thing all day.
+			"remember_last_selected_value": int(
+				getattr(df, "remember_last_selected_value", 0) or 0
+			),
+			# Where the field's own documentation is, and whether its
+			# description is inline or behind an icon.
+			"documentation_url": getattr(df, "documentation_url", None) or None,
+			"show_description_on_click": int(
+				getattr(df, "show_description_on_click", 0) or 0
+			),
+			# An input mask, applied as a display format rather than as a
+			# validator: a mask that fights the typist is worse than none.
+			"mask": getattr(df, "mask", None) or None,
+			# A ceiling on a text control's height, in Frappe's own units.
+			"max_height": getattr(df, "max_height", None) or None,
+			# The value is user text somebody may translate. No UI reads this
+			# yet; it travels so the next audit does not have to rediscover it.
+			"translatable": int(getattr(df, "translatable", 0) or 0),
+			# Carried, and deliberately not honoured — see `_link_target` and
+			# `tests/test_permission_paths.py`. A docfield saying "User
+			# Permissions do not apply to this Link" is a legitimate escape
+			# hatch inside the desk, where an administrator is reasoning about
+			# their own site. Here it would let a doctype we did not write
+			# widen what a customer's screen can reach, so the picker keeps
+			# asking Frappe with permissions on and this is only ever read to
+			# explain why a field looks narrower than the desk's.
+			"ignore_user_permissions": int(
+				getattr(df, "ignore_user_permissions", 0) or 0
+			),
 		})
 
 	return columns
@@ -605,11 +650,24 @@ def _form(meta, offered: dict) -> list[dict]:
 		tabs.append({"key": f"t{len(tabs)}", "label": label or DEFAULT_TAB, "sections": []})
 		section = None
 
-	def start_section(label: str) -> None:
+	def start_section(label: str, df=None) -> None:
 		nonlocal section
 		if not tabs:
 			start_tab(DEFAULT_TAB)
-		section = {"label": label or "", "columns": [[]]}
+		section = {
+			"label": label or "",
+			"columns": [[]],
+			# The doctype's own answer to "does this start folded". Frappe's
+			# `collapsible_depends_on` is the same expression dialect as
+			# `depends_on`, so the browser reads it with the same parser.
+			"collapsible": int(getattr(df, "collapsible", 0) or 0) if df else 0,
+			"collapsible_depends_on": (
+				getattr(df, "collapsible_depends_on", None) or None if df else None
+			),
+			# A section that draws no rule above it. Presentation, and the one
+			# thing that makes a two-section form read as one.
+			"hide_border": int(getattr(df, "hide_border", 0) or 0) if df else 0,
+		}
 		tabs[-1]["sections"].append(section)
 
 	def start_column() -> None:
@@ -624,7 +682,7 @@ def _form(meta, offered: dict) -> list[dict]:
 			# A new section, opened lazily: a doctype that starts with three
 			# section breaks in a row should produce one section, not three
 			# empty ones.
-			start_section(_(df.label) if df.label else "")
+			start_section(_(df.label) if df.label else "", df)
 		elif df.fieldtype == "Column Break":
 			# The third of Frappe's three layout fields, and the one this used
 			# to drop — so a doctype whose author put four fields in two
@@ -850,7 +908,12 @@ META_FIELDS = ("modified", "_comments", "_liked_by")
 # Read for a record and never for a row. Who made it and who last touched it is
 # the question every desk sidebar answers, and it is the one thing on a record
 # that no field carries.
-RECORD_META = ("owner", "creation", "modified_by")
+#
+# `docstatus` rides along for a different reason: on a submittable doctype a
+# submitted record is editable only in the fields marked `allow_on_submit`, and
+# a form that does not know it is looking at one offers every field and has
+# every save refused.
+RECORD_META = ("owner", "creation", "modified_by", "docstatus")
 
 
 def _with_links(resolved: dict, rows: list[dict]) -> None:
@@ -952,6 +1015,14 @@ def save(space_code: str, screen: str, values: str | dict, name: str | None = No
 	if not changes:
 		frappe.throw(_("Nothing on this screen can be changed."))
 
+	# A unique-constraint failure is left to Frappe on purpose. It resolves the
+	# key that actually collided back to its docfield and says "{label} must be
+	# unique" before raising — so it already names the field, and it names the
+	# right one. Catching it here to say something friendlier would mean
+	# guessing which of a doctype's unique fields broke, which is a worse
+	# message that merely sounds better. What is ours to do is the preventive
+	# half: `unique` reaches the control as a note, so the collision is avoided
+	# rather than explained.
 	if name:
 		doc = frappe.get_doc(doctype, name)
 		doc.update(changes)

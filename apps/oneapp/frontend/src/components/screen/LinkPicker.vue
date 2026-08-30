@@ -30,7 +30,7 @@
       :loading="loading"
       :filterable="false"
       :empty-text="emptyText"
-      @update:model-value="emit('update:modelValue', $event)"
+      @update:model-value="pick"
     >
       <!-- The chosen record's face, in the box itself. -->
       <template #prefix>
@@ -80,15 +80,15 @@
     -->
     <Dialog v-model="creating" :title="`New ${spec?.label || 'record'}`" size="lg">
       <div class="flex flex-col gap-4">
-        <div v-for="field in spec?.fields || []" :key="field.fieldname" class="flex gap-2">
+        <div v-for="one in spec?.fields || []" :key="one.fieldname" class="flex gap-2">
           <Icon
-            :name="field.icon"
+            :name="one.icon"
             class="mt-5 size-3.5 shrink-0 text-ink-gray-4"
             :aria-hidden="true"
           />
           <FieldControl
-            v-model="draft[field.fieldname]"
-            :field="field"
+            v-model="draft[one.fieldname]"
+            :field="one"
             :space-code="spaceCode"
             :screen="screen"
             class="min-w-0 flex-1"
@@ -105,7 +105,7 @@
 </template>
 
 <script setup>
-import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from 'vue'
 import { Combobox, Avatar, Icon, Dialog, Button, ErrorMessage } from '@/ui'
 import { workspace } from '../../lib/workspace'
 
@@ -131,6 +131,19 @@ const props = defineProps({
    * not — nobody creates a record in order to filter by it.
    */
   allowCreate: { type: Boolean, default: false },
+  /**
+   * The docfield, for the handful of its properties this picker reads —
+   * `remember_last_selected_value` today. Optional: a filter row builds a
+   * picker without one and should not have to invent a docfield to do it.
+   */
+  field: { type: Object, default: () => ({}) },
+  /**
+   * A record being made rather than edited. Only a new one may be seeded from
+   * the remembered choice: filling a blank on an existing record would change
+   * it without anybody asking, and a save would then write a value nobody
+   * typed.
+   */
+  isNew: { type: Boolean, default: false },
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -140,6 +153,53 @@ const loading = ref(false)
 const spec = ref(null)
 
 const detail = (record) => [record.id, record.description].filter(Boolean).join(' · ')
+
+/**
+ * `remember_last_selected_value` — a Link that reopens on your last choice.
+ *
+ * The doctype saying this is a field somebody sets to the same thing all day,
+ * so the desk offers the previous answer first. Per person and per browser,
+ * which is what localStorage is: it is a typing convenience, not a default
+ * worth storing on the server and certainly not one worth sharing between two
+ * people using the same screen.
+ *
+ * Keyed by screen and fieldname rather than by doctype: the same doctype behind
+ * two screens is two different habits.
+ */
+const REMEMBERED = 'onespace.link'
+const memoryKey = computed(() => `${REMEMBERED}.${props.spaceCode}.${props.screen}.${props.fieldname}`)
+
+function remember(value) {
+  if (!props.field?.remember_last_selected_value || !value) return
+  try {
+    window.localStorage.setItem(memoryKey.value, String(value))
+  } catch {
+    // A private window, or storage that is full. Forgetting is the whole cost.
+  }
+}
+
+function remembered() {
+  if (!props.field?.remember_last_selected_value) return ''
+  try {
+    return window.localStorage.getItem(memoryKey.value) || ''
+  } catch {
+    return ''
+  }
+}
+
+function pick(value) {
+  remember(value)
+  emit('update:modelValue', value)
+}
+
+// Offered once, when a new record's field opens empty. Not `pick` — that would
+// write the value back to storage it just came from, and the point is to offer
+// last time's answer rather than to reconfirm it.
+onMounted(() => {
+  if (!props.isNew || props.modelValue) return
+  const last = remembered()
+  if (last) emit('update:modelValue', last)
+})
 
 // The record behind the current value. It is not always in `found` — a value
 // chosen yesterday is not in today's first twenty rows — so it is fetched once
@@ -264,7 +324,7 @@ const create = async () => {
     // Adopt it straight away: the point of creating one here was to pick it.
     chosen.value = record
     found.value = [record, ...found.value.filter((r) => r.value !== record.value)]
-    emit('update:modelValue', record.value)
+    pick(record.value)
     creating.value = false
   } catch (err) {
     error.value = err?.message || String(err)

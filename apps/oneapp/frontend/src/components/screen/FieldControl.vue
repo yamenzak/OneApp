@@ -22,6 +22,8 @@
     :placeholder="field.placeholder"
     :disabled="disabled"
     :required="!!field.reqd"
+    :field="field"
+    :is-new="isNew"
     allow-create
     @update:model-value="emit('update:modelValue', $event)"
   />
@@ -164,6 +166,9 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   spaceCode: { type: String, required: true },
   screen: { type: String, required: true },
+  /** A record being made rather than edited. Only the Link picker reads it,
+      for `remember_last_selected_value`. */
+  isNew: { type: Boolean, default: false },
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -196,19 +201,49 @@ const bounds = computed(() => {
   } else if (field.length) {
     found.maxlength = field.length
   }
+  // Frappe's own ceiling on a text control, in pixels. Bound as a style rather
+  // than a prop because no frappe-ui control takes a height: the textarea
+  // still grows to it and then scrolls, which is what the flag asks for.
+  if (field.max_height && controlType.value === 'textarea') {
+    found.style = { maxHeight: `${parseInt(field.max_height, 10) || 0}px`, overflowY: 'auto' }
+  }
   return found
 })
 
-// A `fetch_from` field is filled in from somewhere else, and a box that fills
-// itself with no explanation is a box people retype. Frappe writes the source
-// as `customer.customer_name`; the field it comes from is the half worth
-// saying.
+/**
+ * The line under the control.
+ *
+ * Three things can want to be there, and a field that says all three should
+ * read as one sentence rather than three stacked notes:
+ *
+ *  - the doctype's own `description`
+ *  - where a `fetch_from` value comes from, because a box that fills itself
+ *    with no explanation is a box people retype. Frappe writes the source as
+ *    `customer.customer_name`; the field it comes from is the half worth
+ *    saying, and `fetch_if_empty` is the difference between "filled in once"
+ *    and "replaced on every save"
+ *  - that the value may not repeat, which is otherwise something you find out
+ *    from a database error
+ *
+ * `show_description_on_click` moves the description behind the label's info
+ * icon instead, which is the doctype saying it is long.
+ */
 const note = computed(() => {
-  const source = props.field.fetch_from
-  if (!source) return props.field.description
-  const from = `From ${String(source).split('.')[0].replace(/_/g, ' ')}`
-  return props.field.description ? `${props.field.description} · ${from}` : from
+  const field = props.field
+  const parts = []
+
+  if (field.description && !field.show_description_on_click) parts.push(field.description)
+
+  if (field.fetch_from) {
+    const from = String(field.fetch_from).split('.')[0].replace(/_/g, ' ')
+    parts.push(field.fetch_if_empty ? `From ${from} if left blank` : `From ${from}`)
+  }
+
+  if (field.unique) parts.push('Must be unique')
+
+  return parts.join(' · ') || undefined
 })
+
 
 // A Select and a Table MultiSelect both choose from the field's own `options`
 // list. A Link does not — its list is records, which the picker fetches from
