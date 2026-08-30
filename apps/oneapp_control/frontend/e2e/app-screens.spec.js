@@ -10,7 +10,6 @@ test('an app screen can be defined without the desk', async ({ page }, info) => 
   await page.goto('/admin/setup')
   await page.getByRole('button', { name: /settings/i }).first().click()
   await page.getByText('App screens', { exact: true }).click()
-  await page.waitForTimeout(1500)
 
   await expect(page.getByText('App screens').first()).toBeVisible()
   // The declared screens of whichever app the picker landed on, or an honest

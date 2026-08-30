@@ -54,25 +54,6 @@
             :view="spec.view"
             @changed="onPanelFilters"
           />
-          <!--
-            Frappe puts these in the list header and that is where they belong
-            visually — but the list header does not exist when the list is
-            empty, and "only my favourites" with nothing liked is exactly when
-            you need the button that turns it off again.
-          -->
-          <Button
-            icon="lucide-heart"
-            :variant="favourites ? 'subtle' : 'ghost'"
-            :theme="favourites ? 'red' : 'gray'"
-            label="Only my favourites"
-            @click="toggleFavourites"
-          />
-          <Button
-            icon="lucide-settings-2"
-            variant="ghost"
-            label="Choose columns"
-            @click="showColumns = true"
-          />
           <Button
             v-if="dirty"
             icon-left="lucide-bookmark"
@@ -100,12 +81,33 @@
         <Skeleton v-for="n in 6" :key="n" class="h-11 w-full" />
       </div>
 
+      <!--
+        The way back out lives here, because the header it would otherwise live
+        in does not exist when there are no rows — and "only my favourites"
+        with nothing liked is exactly when you need the button that turns it
+        off again.
+      -->
       <EmptyState
         v-else-if="!rows.length"
         icon="lucide-inbox"
         :title="favourites ? 'Nothing here yet' : `No ${spec.view_label.toLowerCase()} yet`"
         :description="emptyBecause"
-      />
+      >
+        <template #action>
+          <Button
+            v-if="favourites"
+            icon-left="lucide-heart-off"
+            label="Show everything"
+            @click="toggleFavourites"
+          />
+          <Button
+            v-else-if="quickFilters.length || panelFilters.length"
+            icon-left="lucide-filter-x"
+            label="Clear the filters"
+            @click="clearAllFilters"
+          />
+        </template>
+      </EmptyState>
 
       <!-- Wide content owns its own horizontal scroller rather than stretching
            the page: a doctype with six columns does not fit a phone. -->
@@ -137,11 +139,27 @@
               {{ c.header }}
             </ListHeaderCellSort>
 
-            <!-- How many, over the column that carries each row's age. -->
+            <!--
+              How many, then the columns, then favourites. The heart is last so
+              it sits directly above the one on every row.
+            -->
             <ListHeaderCell v-if="metaColumn" :class="PINNED">
-              <span class="ml-auto whitespace-nowrap text-p-xs text-ink-gray-5">
+              <span class="mr-auto whitespace-nowrap text-p-xs text-ink-gray-5">
                 {{ counted }}
               </span>
+              <Button
+                icon="lucide-settings-2"
+                variant="ghost"
+                label="Choose columns"
+                @click="showColumns = true"
+              />
+              <Button
+                icon="lucide-heart"
+                :variant="favourites ? 'subtle' : 'ghost'"
+                :theme="favourites ? 'red' : 'gray'"
+                label="Only my favourites"
+                @click="toggleFavourites"
+              />
             </ListHeaderCell>
           </ListHeader>
 
@@ -404,6 +422,14 @@ const onColumns = (chosen) => {
   changed()
 }
 
+const clearAllFilters = () => {
+  quickFilters.value = []
+  panelFilters.value = []
+  // The controls read their state from the spec, so re-resolving is what puts
+  // the boxes back to empty rather than leaving them showing a cleared filter.
+  load()
+}
+
 const toggleFavourites = () => {
   favourites.value = !favourites.value
   changed()
@@ -423,6 +449,9 @@ const like = async (row) => {
   // Patched in place rather than reloaded: a like is not a reason to lose the
   // reader's scroll position.
   row._meta = { ...row._meta, liked: !!result?.liked, likes: (result?.likes || []).length }
+  // Unless the like is what the list is filtered by, in which case a row that
+  // is no longer a favourite has no business still being in it.
+  if (favourites.value) await loadRows()
 }
 
 const loadRows = async () => {

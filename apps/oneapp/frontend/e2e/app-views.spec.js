@@ -8,7 +8,6 @@ test.beforeEach(async ({ page, baseURL }) => {
 test('an app declared as a manifest renders its screens', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/app/zztasks')
-  await page.waitForTimeout(1800)
 
   console.log('BODY:', (await page.locator('body').innerText()).slice(0, 700))
   await info.attach(`app-${info.project.name}`, {
@@ -28,14 +27,12 @@ test('an app declared as a manifest renders its screens', async ({ page }, info)
 test('the app brings its own navigation', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/app/zztasks')
-  await page.waitForTimeout(1500)
 
   // Both declared views, without a line of SPA code naming either.
   await expect(page.getByText('Open', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('Everything', { exact: true }).first()).toBeVisible()
 
   await page.getByText('Everything', { exact: true }).first().click()
-  await page.waitForTimeout(1200)
   // The unfiltered view shows the closed one too.
   await expect(page.getByText('File Q3 returns').first()).toBeVisible()
 
@@ -47,10 +44,8 @@ test('the app brings its own navigation', async ({ page }, info) => {
 test('a record opens and saves', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/app/zztasks')
-  await page.waitForTimeout(1500)
 
   await page.getByText('Halloway').first().click()
-  await page.waitForTimeout(600)
 
   // Labels and a Select's options come from the doctype, not from the manifest.
   // Scoped to the dialog: the quick filter row above the list has a box with

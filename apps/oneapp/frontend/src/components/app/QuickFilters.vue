@@ -36,7 +36,7 @@
           :model-value="draft[quick.key] ?? ''"
           :placeholder="quick.label"
           class="w-36"
-          :class="quick.match && 'rounded-e-none'"
+          :class="quick.match && SQUARE_END"
           @update:model-value="set(quick, $event)"
           @keydown.enter="apply"
         />
@@ -68,6 +68,11 @@ const emit = defineEmits(['changed'])
 
 // What the person has typed, and how each box matches. Both keyed by fieldname,
 // with `name` standing for the ID box.
+// FormControl puts a class on its wrapper, and the rounding is on the input
+// inside it — so squaring the wrapper leaves the input round and the toggle
+// button beside it looks bolted on. Reach the input.
+const SQUARE_END = '[&_input]:rounded-e-none'
+
 const draft = reactive({})
 const match = reactive({})
 

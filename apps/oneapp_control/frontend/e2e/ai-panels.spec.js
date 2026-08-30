@@ -9,7 +9,6 @@ async function openTab(page, label) {
   await page.goto('/admin/setup')
   await page.getByRole('button', { name: /settings/i }).first().click()
   await page.getByText(label, { exact: true }).click()
-  await page.waitForTimeout(1000)
 }
 
 test('the model catalogue renders', async ({ page }, info) => {
@@ -29,7 +28,6 @@ test('a model that could not be priced says why', async ({ page }, info) => {
   await openTab(page, 'Models')
 
   await page.getByText('flux-2-dev').first().click()
-  await page.waitForTimeout(500)
   // The wording that defeated the parser, verbatim. A model held back with no
   // reason is a model nobody can put back.
   await expect(page.getByText(/could not price/i).first()).toBeVisible()

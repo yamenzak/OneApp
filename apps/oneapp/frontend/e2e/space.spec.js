@@ -8,7 +8,6 @@ test.beforeEach(async ({ page, baseURL }) => {
 test('the launcher renders', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/')
-  await page.waitForTimeout(1500)
 
   const overflow = await page.evaluate(() =>
     document.documentElement.scrollWidth - document.documentElement.clientWidth)

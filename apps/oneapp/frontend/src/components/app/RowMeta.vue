@@ -12,9 +12,12 @@
   <div class="flex items-center justify-end gap-2 text-p-xs text-ink-gray-5">
     <span class="whitespace-nowrap tabular-nums">{{ when }}</span>
 
-    <span v-if="meta.comments" class="flex items-center gap-1">
+    <!-- Always, including the zero: a count that appears only when there is
+         one shifts everything after it, and the hearts stop lining up down the
+         column. Frappe shows the zero for the same reason. -->
+    <span class="flex items-center gap-1">
       <Icon name="lucide-message-circle" class="size-3.5" />
-      {{ meta.comments > 99 ? '99+' : meta.comments }}
+      <span class="tabular-nums">{{ meta.comments > 99 ? '99+' : meta.comments || 0 }}</span>
     </span>
 
     <!--
@@ -24,6 +27,7 @@
       "1", and nothing looking for a favourites button could find it.
     -->
     <span v-if="meta.likes" class="tabular-nums">{{ meta.likes }}</span>
+    <!-- The heart is last, so it lines up with the one in the header. -->
     <!-- Its own theme rather than its own icon: lucide ships no filled heart,
          so the colour is what says whether this one is yours. -->
     <Button

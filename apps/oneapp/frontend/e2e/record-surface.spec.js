@@ -18,15 +18,19 @@ test.beforeEach(async ({ page, baseURL }) => {
 // The one carrying a Link, a Colour and the seeded comments.
 const SEEDED = 'Book the van for Thursday'
 
+// Waiting on the thing, not on a number. Playwright's expect() retries, so a
+// fixed sleep is both slower than it needs to be and flakier than it looks —
+// too short on a loaded machine, wasted on a fast one.
 const openList = async (page) => {
   await page.goto('/one/app/zztasks')
-  await page.waitForTimeout(1800)
+  await expect(page.getByRole('button', { name: /^Filter/ })).toBeVisible()
+  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
 }
 
 const openRecord = async (page) => {
   await openList(page)
   await page.getByText(SEEDED).first().click()
-  await page.waitForTimeout(1200)
+  await expect(page.locator('[role="dialog"]')).toBeVisible()
 }
 
 // What each column's fieldtype maps to. A phone shows two of the six, so the
@@ -48,9 +52,10 @@ const box = (page, at) => page.locator('[data-slot="content-body"] button[role="
 
 const pick = async (page, at, option) => {
   await box(page, at).click()
-  await page.waitForTimeout(400)
+  // click() waits for the option to be actionable, so the listbox opening is
+  // already covered.
   await page.getByRole('option', { name: option, exact: true }).click()
-  await page.waitForTimeout(500)
+  await expect(box(page, at)).toContainText(option)
 }
 
 test('every list header carries the icon its fieldtype maps to', async ({ page }, info) => {
@@ -132,28 +137,23 @@ test('a row can be liked from the list, and the heart filters to it', async ({ p
     const remove = row.getByRole('button', { name: 'Remove from favourites' })
     if (await remove.count()) {
       await remove.click()
-      await page.waitForTimeout(900)
     }
   }
-  expect(await rows().count()).toBe(2)
+  await expect(rows()).toHaveCount(2)
 
-  // With nothing liked the filter empties the list — and the button that turns
-  // it off has to survive that, which is why it is not in the list header.
+  // With nothing liked the filter empties the list, and the list header goes
+  // with it — so the way back out is in the empty state.
   await heart.click()
-  await page.waitForTimeout(1500)
   await expect(page.getByText('Nothing you have liked is on this screen.')).toBeVisible()
-  await expect(heart).toBeVisible()
+  await expect(heart).toHaveCount(0)
 
-  await heart.click()
-  await page.waitForTimeout(1500)
+  await page.getByRole('button', { name: 'Show everything' }).click()
 
   await rows().first().getByRole('button', { name: 'Add to favourites' }).click()
-  await page.waitForTimeout(1200)
   await expect(rows().first().getByRole('button', { name: 'Remove from favourites' })).toBeVisible()
 
   await heart.click()
-  await page.waitForTimeout(1500)
-  expect(await rows().count()).toBe(1)
+  await expect(rows()).toHaveCount(1)
   await expect(page.getByText(SEEDED).first()).toBeVisible()
 
   await info.attach(`favourites-${info.project.name}`, {
@@ -163,9 +163,7 @@ test('a row can be liked from the list, and the heart filters to it', async ({ p
 
   // Put it back, so the next test starts where this one did.
   await rows().first().getByRole('button', { name: 'Remove from favourites' }).click()
-  await page.waitForTimeout(1200)
-  await heart.click()
-  await page.waitForTimeout(1200)
+  await page.getByRole('button', { name: 'Show everything' }).click()
   expectNoRealErrors(errors)
 })
 
@@ -178,18 +176,15 @@ test('clicking a header sorts by it and says which way', async ({ page }) => {
   await expect(header).not.toHaveAttribute('aria-sort', /ascending|descending/)
 
   await header.getByRole('button').click()
-  await page.waitForTimeout(1400)
   // Descending first: "show me the newest" is what a column usually means.
   await expect(header).toHaveAttribute('aria-sort', 'descending')
 
   await header.getByRole('button').click()
-  await page.waitForTimeout(1400)
   await expect(header).toHaveAttribute('aria-sort', 'ascending')
 
   // And only one column is the sort key at a time.
   const other = page.getByRole('columnheader', { name: 'Status' })
   await other.getByRole('button').click()
-  await page.waitForTimeout(1400)
   await expect(other).toHaveAttribute('aria-sort', 'descending')
   await expect(header).not.toHaveAttribute('aria-sort', /ascending|descending/)
   expectNoRealErrors(errors)
@@ -200,7 +195,6 @@ test('the column picker offers the whole doctype, not the manifest', async ({ pa
   await openList(page)
 
   await page.getByRole('button', { name: 'Choose columns' }).click()
-  await page.waitForTimeout(700)
   const picker = page.locator('[role="dialog"]')
 
   await info.attach(`columns-${info.project.name}`, {
@@ -214,10 +208,8 @@ test('the column picker offers the whole doctype, not the manifest', async ({ pa
   await expect(picker.getByRole('button', { name: 'Assigned By', exact: true })).toBeVisible()
 
   await picker.getByRole('button', { name: 'Reference Type' }).click()
-  await page.waitForTimeout(1400)
   await expect(picker.getByRole('button', { name: 'Remove Reference Type' })).toBeVisible()
   await page.keyboard.press('Escape')
-  await page.waitForTimeout(500)
   expectNoRealErrors(errors)
 })
 
@@ -226,28 +218,22 @@ test('columns can be reordered and removed', async ({ page }) => {
   await openList(page)
 
   const headers = () => page.getByRole('columnheader').allInnerTexts()
-  expect(await headers()).toContain('Status')
+  await expect.poll(headers).toContain('Status')
 
   await page.getByRole('button', { name: 'Choose columns' }).click()
-  await page.waitForTimeout(700)
 
   // The arrows are not a nicety: a pointer drag reaches neither a keyboard nor
   // a phone, and order is the point of this dialog.
   await page.getByRole('button', { name: 'Move Status up' }).click()
-  await page.waitForTimeout(1400)
   await page.getByRole('button', { name: 'Remove Status' }).click()
-  await page.waitForTimeout(1400)
   await page.keyboard.press('Escape')
-  await page.waitForTimeout(500)
 
-  expect(await headers()).not.toContain('Status')
+  await expect.poll(headers).not.toContain('Status')
 
   // Put it back: these run against one shared site, and the next test should
   // not have to know what this one did.
   await page.getByRole('button', { name: 'Choose columns' }).click()
-  await page.waitForTimeout(600)
   await page.getByRole('button', { name: 'Status', exact: true }).click()
-  await page.waitForTimeout(1400)
   await page.keyboard.press('Escape')
   expectNoRealErrors(errors)
 })
@@ -283,7 +269,6 @@ test('a box per field, above the list', async ({ page }, info) => {
 
   await page.getByPlaceholder('Description').fill('van')
   await page.getByPlaceholder('Description').press('Enter')
-  await page.waitForTimeout(1500)
   await expect(page.getByText(SEEDED).first()).toBeVisible()
   await expect(page.getByText('Chase the Halloway invoice')).toHaveCount(0)
   expectNoRealErrors(errors)
@@ -297,14 +282,11 @@ test('a quick box can be exact or roughly', async ({ page }) => {
   // "kos", so Like finds them and Equals finds neither.
   await page.getByPlaceholder('ID').fill('kos')
   await page.getByPlaceholder('ID').press('Enter')
-  await page.waitForTimeout(1500)
-  expect(await page.locator('[data-slot="list-row"]').count()).toBe(2)
+  await expect(page.locator('[data-slot="list-row"]')).toHaveCount(2)
 
   await page.getByRole('button', { name: 'How ID matches' }).click()
-  await page.waitForTimeout(500)
   await page.getByRole('menuitem', { name: 'Equals' }).click()
-  await page.waitForTimeout(1500)
-  expect(await page.locator('[data-slot="list-row"]').count()).toBe(0)
+  await expect(page.locator('[data-slot="list-row"]')).toHaveCount(0)
   expectNoRealErrors(errors)
 })
 
@@ -314,17 +296,13 @@ test('a quick box and the panel both apply', async ({ page }) => {
 
   await page.getByPlaceholder('ID').fill('kos')
   await page.getByPlaceholder('ID').press('Enter')
-  await page.waitForTimeout(1400)
-  expect(await page.locator('[data-slot="list-row"]').count()).toBe(2)
+  await expect(page.locator('[data-slot="list-row"]')).toHaveCount(2)
 
   await page.getByRole('button', { name: /^Filter/ }).click()
-  await page.waitForTimeout(500)
   await page.getByRole('button', { name: 'Add filter' }).click()
-  await page.waitForTimeout(600)
   await pick(page, 0, 'Priority')
   await pick(page, 2, 'High')
   await page.getByRole('button', { name: 'Apply' }).click()
-  await page.waitForTimeout(1500)
 
   // Neither cleared the other.
   await expect(page.getByText('Chase the Halloway invoice').first()).toBeVisible()
@@ -341,11 +319,8 @@ test('the filter count is a badge, not a word', async ({ page }) => {
   await expect(filter).toHaveText('Filter')
 
   await filter.click()
-  await page.waitForTimeout(500)
   await page.getByRole('button', { name: 'Add filter' }).click()
-  await page.waitForTimeout(600)
   await page.getByRole('button', { name: 'Apply' }).click()
-  await page.waitForTimeout(1200)
 
   // The number is beside the word rather than inside it: the label span still
   // reads exactly "Filter", and the count is its own element.
@@ -374,7 +349,6 @@ test('a Link field offers the records it may point at', async ({ page }, info) =
   const combo = dialog.locator('input[role="combobox"]').first()
   await expect(combo).toHaveValue('Administrator')
   await dialog.getByRole('button', { name: 'Show popup' }).first().click()
-  await page.waitForTimeout(900)
 
   await info.attach(`link-${info.project.name}`, {
     body: await page.screenshot(),
@@ -418,7 +392,6 @@ test('every fieldtype reaches its own control, not a text box', async ({ page },
   // Date -> DatePicker, which is not a bare text input: it opens a calendar.
   // The calendar renders in a portal outside the dialog, as a role=grid.
   await dialog.getByLabel('Due Date').click()
-  await page.waitForTimeout(700)
   await expect(page.getByRole('grid').first()).toBeVisible()
 
   await info.attach(`controls-${info.project.name}`, {
@@ -435,15 +408,11 @@ test('the record shows every field, not the columns someone chose', async ({ pag
   // Drop a column, then open a record: the field is still there. Hiding a
   // column is a statement about the list; the record still has the field.
   await page.getByRole('button', { name: 'Choose columns' }).click()
-  await page.waitForTimeout(700)
   await page.getByRole('button', { name: 'Remove Priority' }).click()
-  await page.waitForTimeout(1400)
   await page.keyboard.press('Escape')
-  await page.waitForTimeout(500)
   await expect(page.getByRole('columnheader', { name: 'Priority' })).toHaveCount(0)
 
   await page.getByText(SEEDED).first().click()
-  await page.waitForTimeout(1200)
   await expect(page.locator('[role="dialog"]').getByText('Priority', { exact: true })).toBeVisible()
   expectNoRealErrors(errors)
 })
@@ -454,7 +423,6 @@ test('comments and history are there without an app asking for them', async ({ p
 
   const dialog = page.locator('[role="dialog"]')
   await dialog.getByRole('tab', { name: /^Comments/ }).click()
-  await page.waitForTimeout(800)
   await expect(dialog.getByPlaceholder('Add a comment')).toBeVisible()
   // Either comments or the empty state; both are the tab working against real
   // data. That the round trip works is the next test's job.
@@ -466,7 +434,6 @@ test('comments and history are there without an app asking for them', async ({ p
   })
 
   await dialog.getByRole('tab', { name: 'History' }).click()
-  await page.waitForTimeout(700)
   // Either recorded changes or the empty state; both are the tab working.
   await expect(dialog.getByText(/No changes recorded|→/).first()).toBeVisible()
   expectNoRealErrors(errors)
@@ -481,15 +448,13 @@ test('a comment can be added and shows up in the count', async ({ page }) => {
   const before = await tab.innerText()
 
   await tab.click()
-  await page.waitForTimeout(700)
   const note = `From the browser pass ${Date.now()}`
   await dialog.getByPlaceholder('Add a comment').fill(note)
   await dialog.getByRole('button', { name: 'Comment' }).click()
-  await page.waitForTimeout(1600)
 
   await expect(dialog.getByText(note)).toBeVisible()
   // The count is a badge beside the word, so the tab's text changes with it.
-  expect(await tab.innerText()).not.toBe(before)
+  await expect.poll(() => tab.innerText()).not.toBe(before)
   expectNoRealErrors(errors)
 })
 
@@ -502,12 +467,10 @@ test('a record can be liked and unliked from the dialog', async ({ page }) => {
   const heart = page.locator('[role="dialog"] button:has(.lucide-heart)')
   const before = (await heart.innerText()).trim()
   await heart.click()
-  await page.waitForTimeout(1000)
-  expect((await heart.innerText()).trim()).not.toBe(before)
+  await expect.poll(async () => (await heart.innerText()).trim()).not.toBe(before)
 
   await heart.click()
-  await page.waitForTimeout(1000)
-  expect((await heart.innerText()).trim()).toBe(before)
+  await expect.poll(async () => (await heart.innerText()).trim()).toBe(before)
   expectNoRealErrors(errors)
 })
 
@@ -519,32 +482,29 @@ test('a view saves, survives a reload, and can be undone', async ({ page }, info
   await expect(page.getByText(SEEDED).first()).toBeVisible()
 
   await page.getByRole('button', { name: /^Filter/ }).click()
-  await page.waitForTimeout(500)
   await page.getByRole('button', { name: 'Add filter' }).click()
-  await page.waitForTimeout(600)
   await pick(page, 0, 'Priority')
   await pick(page, 2, 'High')
   await page.getByRole('button', { name: 'Apply' }).click()
-  await page.waitForTimeout(1500)
   await expect(page.getByText(SEEDED)).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Save this view' }).click()
-  await page.waitForTimeout(1800)
+  // The save re-resolves the screen, and reloading over that in-flight request
+  // aborts it — which the browser reports as "Failed to fetch". Wait for the
+  // thing a save produces instead: the button that undoes it.
+  await expect(page.getByRole('button', { name: 'Back to the default view' })).toBeVisible()
   await page.reload()
-  await page.waitForTimeout(2200)
 
   await expect(page.getByText('Chase the Halloway invoice').first()).toBeVisible()
   await expect(page.getByText(SEEDED)).toHaveCount(0)
   // And it comes back into the controls as what was chosen, not as the query
   // it turned into.
   await page.getByRole('button', { name: /^Filter/ }).click()
-  await page.waitForTimeout(700)
   await expect(box(page, 0)).toContainText('Priority')
   await expect(box(page, 2)).toContainText('High')
   await page.keyboard.press('Escape')
 
   await page.getByRole('button', { name: 'Back to the default view' }).click()
-  await page.waitForTimeout(2000)
   await expect(page.getByText(SEEDED).first()).toBeVisible()
 
   await info.attach(`reset-${info.project.name}`, {
