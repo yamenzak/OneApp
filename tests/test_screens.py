@@ -45,6 +45,10 @@ def field(fieldname, fieldtype="Data", label=None, **kw):
 		default=kw.get("default"), link_filters=kw.get("link_filters"),
 		in_standard_filter=kw.get("in_standard_filter", 0),
 		permlevel=kw.get("permlevel", 0),
+		hidden=kw.get("hidden", 0),
+		allow_in_quick_entry=kw.get("allow_in_quick_entry", 0),
+		in_preview=kw.get("in_preview", 0),
+		bold=kw.get("bold", 0),
 	)
 
 
@@ -52,6 +56,7 @@ def meta(fields, title_field=None, **kw):
 	return types.SimpleNamespace(
 		fields=fields, title_field=title_field,
 		image_field=kw.get("image_field"),
+		search_fields=kw.get("search_fields", ""),
 		sort_field=kw.get("sort_field", "modified"),
 		sort_order=kw.get("sort_order", "DESC"),
 		states=kw.get("states", []),
@@ -913,3 +918,115 @@ def test_a_view_settings_fieldname_is_checked_like_any_other(spaceview):
 	# Not a fieldname at all, so not carried.
 	assert spaceview._view_settings(resolved, {"colour": "red"}) == {}
 	assert spaceview._view_settings(resolved, "not json at all") == {}
+
+
+# --------------------------------------------------------------------------- #
+# A link is a record
+#
+# The server resolves a Link's ids into something a person recognises — a face,
+# a name, and the id underneath — so a cell and a picker row are the same
+# rendering of the same thing. What is pinned here is the shape of that row and
+# the bounds around producing it.
+# --------------------------------------------------------------------------- #
+
+CONTACT = meta(
+	[field("first_name"), field("email_id"), field("company")],
+	title_field="full_name",
+	image_field="image",
+	search_fields="email_id,company",
+)
+
+
+def test_a_link_row_is_a_face_a_name_and_an_id(spaceview):
+	shape = spaceview._link_shape(CONTACT)
+	row = spaceview._link_row(
+		{"name": "CT-0001", "full_name": "Chris Halloway",
+		 "image": "/files/chris.png", "email_id": "chris@halloway.test"},
+		shape,
+	)
+	assert row["value"] == "CT-0001"
+	assert row["label"] == "Chris Halloway"
+	assert row["id"] == "CT-0001"
+	assert row["image"] == "/files/chris.png"
+	# The doctype's own search fields, which is what tells two people called
+	# Chris apart.
+	assert row["description"] == "chris@halloway.test"
+
+
+def test_a_doctype_with_no_title_shows_its_id_once(spaceview):
+	"""Most doctypes have no `title_field`, and repeating the id underneath
+	itself is noise in every row of the menu."""
+	plain = meta([field("subject")])
+	row = spaceview._link_row({"name": "TASK-01"}, spaceview._link_shape(plain))
+	assert row["label"] == "TASK-01"
+	assert row["id"] is None
+
+
+def test_a_record_named_after_its_own_title_says_it_once(spaceview):
+	"""Frappe's User is the case: `full_name` is the title, `full_name` is the
+	only search field, and the Administrator is named "Administrator". Three
+	truthful lookups, one word, and a row reading it three times."""
+	user = meta([field("full_name")], title_field="full_name",
+	            search_fields="full_name")
+	row = spaceview._link_row(
+		{"name": "Administrator", "full_name": "Administrator"},
+		spaceview._link_shape(user),
+	)
+	assert row["label"] == "Administrator"
+	assert row["id"] is None
+	assert row["description"] is None
+
+
+def test_a_search_matches_the_id_the_title_and_the_doctypes_own_fields(spaceview):
+	clauses = spaceview._search(CONTACT, "hall", spaceview._link_shape(CONTACT))
+	assert ["name", "like", "%hall%"] in clauses
+	assert ["full_name", "like", "%hall%"] in clauses
+	assert ["email_id", "like", "%hall%"] in clauses
+	# One clause per field, however many lists a fieldname appears on.
+	assert len(clauses) == len({tuple(c) for c in clauses})
+
+
+def test_a_picker_is_refused_for_a_field_the_screen_does_not_have(spaceview):
+	"""The same allowlist the rows go through: a fieldname is a string somebody
+	sent, and a picker over an ungranted field is a read of it."""
+	import frappe
+
+	resolved = {"all_columns": spaceview._columns(TODO, ["description", "status"])}
+	with pytest.raises(frappe.PermissionError):
+		spaceview._link_column(resolved, "owner")
+
+
+def test_a_picker_is_offered_for_a_field_the_record_shows_but_the_list_does_not(spaceview):
+	"""Hiding a column says nothing about whether the record has the field, and
+	the record dialog renders the doctype's whole field list."""
+	resolved = {
+		"columns": spaceview._columns(TODO, ["description"]),
+		"all_columns": spaceview._columns(TODO, ["description", "status"]),
+	}
+	assert spaceview._link_column(resolved, "status")["fieldname"] == "status"
+
+
+def test_a_dynamic_link_has_no_target_to_offer(spaceview):
+	"""It names another field that holds the answer, which only a record has —
+	so it is refused rather than guessed at."""
+	assert spaceview._link_target({}, {"fieldtype": "Link", "options": "User"}) == "User"
+	assert spaceview._link_target({}, {"fieldtype": "Dynamic Link", "options": "ref_dt"}) is None
+
+
+# --------------------------------------------------------------------------- #
+# Creating one from the picker
+# --------------------------------------------------------------------------- #
+
+def test_quick_entry_asks_for_what_the_doctype_marks_and_what_it_insists_on(spaceview):
+	assert spaceview._quick_entry(field("subject", reqd=1)) is True
+	assert spaceview._quick_entry(field("notes", allow_in_quick_entry=1)) is True
+	assert spaceview._quick_entry(field("notes")) is False
+
+
+def test_quick_entry_never_offers_what_cannot_be_written(spaceview):
+	"""A read-only or hidden field is neither, whatever the flags say — and
+	Frappe's own bookkeeping is never on a form of ours."""
+	assert spaceview._quick_entry(field("subject", reqd=1, read_only=1)) is False
+	assert spaceview._quick_entry(field("subject", reqd=1, hidden=1)) is False
+	assert spaceview._quick_entry(field("owner", reqd=1)) is False
+	assert spaceview._quick_entry(field("sec", "Section Break", reqd=1)) is False

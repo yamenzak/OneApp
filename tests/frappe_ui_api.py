@@ -66,15 +66,24 @@ def _members(block: str) -> dict[str, tuple[bool, str]]:
 
     names = {}
     for line in "".join(flat).split("\n"):
-        # Two forms, both legal and both used in frappe-ui:
+        # Three forms, all legal and all used in frappe-ui:
         #   property   `default?: (props: P) => any`
         #   method     `default(props: P): unknown`
+        #   quoted     `'item-prefix'?: (props: P) => any`
         # Reading only the first is how FileUploader's one slot came back as
         # "it has none", and a guard that reports a component has no slots
-        # cannot fail on a wrong one.
-        m = re.match(r"\s*([A-Za-z_$][\w$]*)\s*(\??)\s*[:(](.*)", line)
+        # cannot fail on a wrong one. Reading only the first two hid every
+        # hyphenated slot in the library — Combobox's `item-prefix` and
+        # `group-label`, Sidebar's and Dialog's alike — which are exactly the
+        # ones a template has to quote, so they are exactly the ones somebody
+        # is most likely to misspell.
+        m = re.match(
+            r"""\s*(?:'([^']+)'|"([^"]+)"|([A-Za-z_$][\w$]*))\s*(\??)\s*[:(](.*)""",
+            line,
+        )
         if m:
-            names[m.group(1)] = (not m.group(2), m.group(3).strip().rstrip(","))
+            name = m.group(1) or m.group(2) or m.group(3)
+            names[name] = (not m.group(4), m.group(5).strip().rstrip(","))
     return names
 
 

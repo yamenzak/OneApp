@@ -806,9 +806,17 @@ def test_no_hand_rolled_spinner(app):
 def test_something_waits_visibly_while_a_screen_loads(app):
 	"""A screen that fetches and renders nothing in the meantime reads as broken
 	rather than as slow. Whatever tracks a `loading` ref has to show it — and
-	most of them are panels under components/, not pages."""
+	most of them are panels under components/, not pages.
+
+	Handing the ref to a component's own `loading` prop counts: Combobox
+	replaces its results with a wait, and Button draws a spinner in place of its
+	label. Both are the component's answer to this question, and a Skeleton
+	stapled beside one would be a second wait for the same fetch.
+	"""
 	root = ROOT / f"apps/{app}/frontend/src"
-	waiting = re.compile(r"<(Skeleton|LoadingIndicator|LoadingText|Spinner)\b")
+	waiting = re.compile(
+		r"<(Skeleton|LoadingIndicator|LoadingText|Spinner)\b|:loading="
+	)
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):
 		source = path.read_text()

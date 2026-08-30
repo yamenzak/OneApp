@@ -540,6 +540,7 @@ def rows(space_code: str, screen: str | None = None, limit: int = PAGE,
 		limit_page_length=limit + 1,
 	)
 	found = [_with_meta(row) for row in found]
+	_with_links(resolved, found[:limit])
 
 	# The columns come back with the rows, not only from `spec`. An unsaved
 	# change to the column list narrows what is fetched, and a header list that
@@ -595,6 +596,46 @@ def _total(resolved: dict, filters: list) -> int:
 # comments are on it, and who liked it. Frappe keeps all three on the document,
 # so this costs no extra query.
 META_FIELDS = ("modified", "_comments", "_liked_by")
+
+
+def _with_links(resolved: dict, rows: list[dict]) -> None:
+	"""Turn the ids in Link columns into records, in place.
+
+	A link is a record, not a string: a cell showing `HR-EMP-00042` is showing
+	the database's answer rather than the reader's. So every Link column on the
+	page is resolved to the same three things the title column shows — a face, a
+	name, an id — and rendered the same way.
+
+	One query per link column per page, not one per cell: forty rows with three
+	link columns is three queries, and the ids repeat. A target this user may
+	not read simply comes back empty and the cell falls back to the id, which is
+	the truthful thing to show.
+	"""
+	links = [c for c in resolved.get("columns") or [] if c["fieldtype"] == "Link"]
+	if not links or not rows:
+		return
+
+	for column in links:
+		target = column.get("options")
+		if not target or not frappe.db.exists("DocType", target):
+			continue
+		ids = {row.get(column["fieldname"]) for row in rows if row.get(column["fieldname"])}
+		if not ids:
+			continue
+
+		meta = frappe.get_meta(target)
+		shape = _link_shape(meta)
+		fields = ["name"] + [f for f in (shape["title"], shape["image"]) if f]
+		found = frappe.get_list(
+			target, fields=fields, filters={"name": ["in", list(ids)]},
+			limit_page_length=len(ids),
+		)
+		by_id = {row["name"]: _link_row(row, dict(shape, search=[])) for row in found}
+
+		for row in rows:
+			value = row.get(column["fieldname"])
+			if value and value in by_id:
+				row.setdefault("_links", {})[column["fieldname"]] = by_id[value]
 
 
 def _with_meta(row: dict) -> dict:
@@ -723,45 +764,189 @@ def link_options(space_code: str, screen: str, fieldname: str, query: str = "") 
 	rather than raising, which is the right shape for a picker.
 	"""
 	resolved = _resolve(space_code, screen)
-	# Against everything the screen could show, not only the columns currently
-	# on the list. The record dialog renders the doctype's whole field list —
-	# hiding a column says nothing about whether the record has the field — so
-	# checking the narrower set refused a picker for a field sitting right there
-	# on the form.
-	column = next((c for c in resolved.get("all_columns") or resolved.get("columns") or []
-	               if c["fieldname"] == fieldname), None)
-	if not column:
-		frappe.throw(_("{0} is not on this screen.").format(fieldname),
-		             frappe.PermissionError)
-
+	column = _link_column(resolved, fieldname)
 	target = _link_target(resolved, column)
 	if not target or not frappe.db.exists("DocType", target):
 		return []
 
 	meta = frappe.get_meta(target)
-	title = meta.title_field if meta.title_field and meta.show_title_field_in_link else None
-	fields = ["name"] + ([title] if title else [])
+	shape = _link_shape(meta)
+	fields = ["name"] + [f for f in (shape["title"], shape["image"]) if f]
+	# The doctype's own search fields, which is what the desk shows under a
+	# result: "Contact" without "the one at Halloway" is not a choice anybody
+	# can make between two people called Chris.
+	extra = [f for f in shape["search"] if f not in fields]
 
 	filters = _json(column.get("link_filters"))
 	found = frappe.get_list(
 		target,
-		fields=fields,
+		fields=fields + extra,
 		filters=filters,
-		or_filters=_search(meta, query, title) if query else None,
+		or_filters=_search(meta, query, shape) if query else None,
 		limit_page_length=LINK_PAGE,
 		order_by="modified desc",
 	)
 
-	return [
-		{
-			"value": row["name"],
-			# What a person recognises, falling back to the id when a doctype
-			# has no title — which is most of them.
-			"label": (row.get(title) if title else None) or row["name"],
-			"description": row["name"] if title and row.get(title) else None,
-		}
-		for row in found
-	]
+	return [_link_row(row, shape) for row in found]
+
+
+def _link_shape(meta) -> dict:
+	"""How one record of a doctype is shown: its name, its face, its detail.
+
+	The same three things the list's title column shows, because a link *is* a
+	record — a person picking one from a menu and reading one in a cell should
+	not be looking at two different renderings of it.
+
+	`title_field` regardless of `show_title_field_in_link`: that flag decides
+	whether Frappe *stores* the title alongside the id, which is a data
+	question. What to show a person is not.
+	"""
+	return {
+		"title": meta.title_field or None,
+		"image": meta.image_field or None,
+		"search": [f.strip() for f in (meta.search_fields or "").split(",") if f.strip()],
+	}
+
+
+def _link_row(row: dict, shape: dict) -> dict:
+	"""One picker row: an id, what to call it, a face, and a line of detail.
+
+	Nothing is said twice. A doctype with no `title_field` shows its id as the
+	name rather than under it, and one whose title *is* its id — a User named
+	after its own full name, a Role named `field:role_name` — does the same,
+	because "Administrator / Administrator / Administrator" is what three
+	truthful lookups against Frappe's own metadata produce and it is not a row
+	anybody can read.
+	"""
+	name = row["name"]
+	title = (row.get(shape["title"]) if shape["title"] else None) or None
+	label = str(title or name)
+
+	seen = {label, str(name)}
+	detail = []
+	for fieldname in shape["search"]:
+		value = row.get(fieldname)
+		if value and str(value) not in seen:
+			seen.add(str(value))
+			detail.append(str(value))
+
+	return {
+		"value": name,
+		# What a person recognises, falling back to the id when a doctype has no
+		# title — which is most of them.
+		"label": label,
+		# The id, and only where it adds something the name does not.
+		"id": name if label != str(name) else None,
+		"image": (row.get(shape["image"]) if shape["image"] else None) or None,
+		"description": ", ".join(detail) or None,
+	}
+
+
+@frappe.whitelist(methods=["GET"])
+def link_new_spec(space_code: str, screen: str, fieldname: str) -> dict:
+	"""What creating a record for a Link field would ask for.
+
+	Frappe's quick entry, in our vocabulary: the fields a doctype marks
+	`allow_in_quick_entry`, plus anything mandatory, because a form that omits a
+	required field is a form that cannot be submitted.
+
+	Refused unless the target is a doctype this space granted *and* this user
+	may create. The first is the rule that makes a screen an allowlist; the
+	second is Frappe's.
+	"""
+	resolved = _resolve(space_code, screen)
+	target = _link_target(resolved, _link_column(resolved, fieldname))
+	if not target or not frappe.db.exists("DocType", target):
+		return {"can_create": False, "fields": []}
+
+	space = _space(space_code)
+	if target not in _granted_doctypes(space) or not frappe.has_permission(target, "create"):
+		return {"can_create": False, "fields": []}
+
+	meta = frappe.get_meta(target)
+	wanted = [df.fieldname for df in meta.fields if _quick_entry(df)]
+	return {
+		"can_create": True,
+		"doctype": target,
+		"label": _(meta.get("name")),
+		# Which field the typed text should land in. Frappe's own quick entry
+		# does the same thing: somebody who typed "Halloway" into the picker
+		# and pressed Create meant it as the record's name, not as nothing.
+		"title_field": meta.title_field or None,
+		"fields": _columns(meta, wanted),
+	}
+
+
+def _quick_entry(df) -> bool:
+	"""Whether a field belongs on the quick-create form.
+
+	The doctype's own answer, twice over: `allow_in_quick_entry` is what the
+	desk asks, and `reqd` is what a save will insist on anyway. A read-only or
+	hidden field is neither, whatever the flags say.
+	"""
+	if df.fieldname in HIDDEN or fieldtypes.is_layout(df.fieldtype):
+		return False
+	if df.read_only or getattr(df, "hidden", 0):
+		return False
+	return bool(getattr(df, "allow_in_quick_entry", 0) or df.reqd)
+
+
+@frappe.whitelist(methods=["POST"])
+def link_new(space_code: str, screen: str, fieldname: str, values: str | dict) -> dict:
+	"""Create one record for a Link field, and hand back the row to show.
+
+	Bounded the same way the picker is, and then again by Frappe: only fields
+	the quick form offered are written, so a payload naming something else
+	writes nothing rather than being refused — the same rule `save` follows for
+	the screen's own doctype.
+	"""
+	resolved = _resolve(space_code, screen)
+	target = _link_target(resolved, _link_column(resolved, fieldname))
+	space = _space(space_code)
+	if (
+		not target
+		or not frappe.db.exists("DocType", target)
+		or target not in _granted_doctypes(space)
+	):
+		frappe.throw(_("Nothing can be created for {0} here.").format(fieldname),
+		             frappe.PermissionError)
+
+	if isinstance(values, str):
+		values = frappe.parse_json(values)
+	if not isinstance(values, dict):
+		frappe.throw(_("Expected an object of values."))
+
+	meta = frappe.get_meta(target)
+	allowed = {df.fieldname for df in meta.fields if _quick_entry(df)}
+	changes = {k: v for k, v in values.items() if k in allowed}
+
+	doc = frappe.get_doc({"doctype": target, **changes})
+	doc.insert()
+
+	shape = _link_shape(meta)
+	fresh = frappe.db.get_value(
+		target, doc.name,
+		["name"] + [f for f in (shape["title"], shape["image"], *shape["search"]) if f],
+		as_dict=True,
+	)
+	return _link_row(fresh or {"name": doc.name}, shape)
+
+
+def _link_column(resolved: dict, fieldname: str) -> dict:
+	"""The screen's own column for a field, or a refusal.
+
+	Against everything the screen could show, not only the columns currently on
+	the list. The record dialog renders the doctype's whole field list — hiding
+	a column says nothing about whether the record has the field — so checking
+	the narrower set refused a picker for a field sitting right there on the
+	form.
+	"""
+	offered = resolved.get("all_columns") or resolved.get("columns") or []
+	column = next((c for c in offered if c["fieldname"] == fieldname), None)
+	if not column:
+		frappe.throw(_("{0} is not on this screen.").format(fieldname),
+		             frappe.PermissionError)
+	return column
 
 
 def _link_target(resolved: dict, column: dict) -> str | None:
@@ -776,13 +961,18 @@ def _link_target(resolved: dict, column: dict) -> str | None:
 	return None
 
 
-def _search(meta, query: str, title: str | None) -> list:
-	"""Match the id or the title. `like` rather than a full-text search: this is
-	a twenty-row picker, not a search page."""
+def _search(meta, query: str, shape: dict) -> list:
+	"""Match the id, the title, or anything the doctype calls searchable.
+
+	`like` rather than a full-text search: this is a twenty-row picker, not a
+	search page. `search_fields` is the doctype's own answer to "what would
+	somebody type to find one of these", so it is the right list to use.
+	"""
 	term = f"%{query}%"
 	clauses = [["name", "like", term]]
-	if title:
-		clauses.append([title, "like", term])
+	for fieldname in [shape["title"], *shape["search"]]:
+		if fieldname and [fieldname, "like", term] not in clauses:
+			clauses.append([fieldname, "like", term])
 	return clauses
 
 

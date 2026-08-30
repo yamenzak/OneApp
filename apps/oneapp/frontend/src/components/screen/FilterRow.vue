@@ -67,12 +67,14 @@
           @update:model-value="pickList"
         />
 
-        <Combobox
+        <!-- The same record picker the form uses, minus Create: nobody makes a
+             record in order to filter by it. -->
+        <LinkPicker
           v-else-if="shape === 'link'"
           :model-value="filter[2]"
-          v-model:query="query"
-          :options="linked"
-          placeholder="Search…"
+          :fieldname="filter[0]"
+          :space-code="spaceCode"
+          :screen="screen"
           @update:model-value="pickValue"
         />
 
@@ -104,8 +106,8 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
-import { Button, Select, MultiSelect, Combobox, FormControl, DateRangePicker } from '@/ui'
+import { computed } from 'vue'
+import { Button, Select, MultiSelect, FormControl, DateRangePicker } from '@/ui'
 import {
   CHECK_OPTIONS,
   IS_OPTIONS,
@@ -115,7 +117,7 @@ import {
   operatorsFor,
   valueShape,
 } from '../../lib/fields'
-import { workspace } from '../../lib/workspace'
+import LinkPicker from './LinkPicker.vue'
 
 const props = defineProps({
   // [fieldname, operator, value] — Frappe's own filter shape, and the server's.
@@ -215,21 +217,4 @@ const pickRange = (value) => {
   const [from = '', to = ''] = String(value || '').split(',')
   change([props.filter[0], props.filter[1], [from.trim(), to.trim()]])
 }
-
-// The link picker, bounded by the screen the same way the list is.
-const query = ref('')
-const linked = ref([])
-
-const search = async () => {
-  if (shape.value !== 'link') return
-  linked.value = await workspace.linkOptions(
-    props.spaceCode,
-    props.screen,
-    props.filter[0],
-    query.value,
-  )
-}
-
-watch(query, search)
-watch([() => props.filter[0], shape], search, { immediate: true })
 </script>

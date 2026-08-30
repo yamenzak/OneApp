@@ -6,14 +6,23 @@
     a type nobody placed fails the build rather than quietly becoming a text box
     over a Currency column.
   -->
-  <Combobox
+  <!--
+    A Link is a record, so it gets the record picker rather than a text box
+    over a foreign key — searchable, showing a face and a name, and able to
+    create one where the doctype and this person's permissions allow it.
+  -->
+  <LinkPicker
     v-if="component === 'Combobox'"
     :model-value="modelValue"
-    v-model:query="query"
-    :options="options"
+    :fieldname="field.fieldname"
+    :space-code="spaceCode"
+    :screen="screen"
     :label="field.label"
-    :placeholder="field.placeholder || 'Search…'"
+    :description="field.description"
+    :placeholder="field.placeholder"
     :disabled="disabled"
+    :required="!!field.reqd"
+    allow-create
     @update:model-value="emit('update:modelValue', $event)"
   />
 
@@ -121,11 +130,10 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import {
   FormControl,
   FormLabel,
-  Combobox,
   Switch,
   Rating,
   Password,
@@ -134,8 +142,8 @@ import {
   FileUploader,
   Button,
 } from '@/ui'
+import LinkPicker from './LinkPicker.vue'
 import { controlComponent, formControlType } from '../../lib/fields'
-import { workspace } from '../../lib/workspace'
 
 const props = defineProps({
   field: { type: Object, required: true },
@@ -151,27 +159,8 @@ const controlType = computed(() => formControlType(props.field))
 
 const selectOptions = computed(() => (props.field.options || '').split('\n').filter(Boolean))
 
-// Link and Table MultiSelect both need a list to choose from, and a Link's list
-// lives on the server behind the screen's own bounds.
-const query = ref('')
-const fetched = ref([])
-
-const options = computed(() =>
-  component.value === 'Combobox' && props.field.fieldtype !== 'Autocomplete'
-    ? fetched.value
-    : selectOptions.value,
-)
-
-const search = async () => {
-  if (component.value !== 'Combobox' || props.field.fieldtype === 'Autocomplete') return
-  fetched.value = await workspace.linkOptions(
-    props.spaceCode,
-    props.screen,
-    props.field.fieldname,
-    query.value,
-  )
-}
-
-watch(query, search)
-watch(() => props.field.fieldname, search, { immediate: true })
+// A Select and a Table MultiSelect both choose from the field's own `options`
+// list. A Link does not — its list is records, which the picker fetches from
+// the server behind the screen's own bounds.
+const options = computed(() => selectOptions.value)
 </script>

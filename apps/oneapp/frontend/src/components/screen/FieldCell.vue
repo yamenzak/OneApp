@@ -38,9 +38,17 @@
     <span class="truncate text-p-sm text-ink-gray-7">{{ value || '—' }}</span>
   </div>
 
+  <!--
+    A link is a record. The server resolves the ids on a page to their title and
+    image in one query per column, so a cell shows what a person recognises
+    rather than what the database stores — and falls back to the id when the
+    target is one they may not read, which is the truthful thing to show.
+  -->
+  <RecordChip v-else-if="column.cell === 'link' && link" :record="link" compact />
+
   <span
     v-else-if="column.cell === 'link' && value"
-    class="truncate text-p-sm text-ink-gray-8 underline underline-offset-2"
+    class="truncate text-p-sm text-ink-gray-8"
   >
     {{ value }}
   </span>
@@ -62,6 +70,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Badge, Icon, Avatar, Rating } from '@/ui'
+import RecordChip from './RecordChip.vue'
 import { valueTheme } from '../../lib/fields'
 import { dayjsLocal } from '@/ui'
 
@@ -69,7 +78,11 @@ const props = defineProps({
   column: { type: Object, required: true },
   value: { type: [String, Number, Boolean, Object, Array], default: null },
   states: { type: Array, default: () => [] },
+  /** The row's resolved links, keyed by fieldname — see `_with_links`. */
+  links: { type: Object, default: () => ({}) },
 })
+
+const link = computed(() => props.links?.[props.column.fieldname] || null)
 
 const NUMERIC = ['number', 'currency', 'percent', 'duration']
 const numeric = computed(() => NUMERIC.includes(props.column.cell))

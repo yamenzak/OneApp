@@ -117,6 +117,7 @@
                     v-else
                     :column="c.column"
                     :value="row[c.column.fieldname]"
+                    :links="row._links || {}"
                     :states="spec.states"
                   />
                 </ListCell>
@@ -162,6 +163,7 @@
                 v-else
                 :column="c.column"
                 :value="row[c.column.fieldname]"
+                :links="row._links || {}"
                 :states="spec.states"
               />
             </ListCell>

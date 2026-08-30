@@ -41,6 +41,7 @@ const HEADER_ICONS = {
   Status: 'lucide-list',
   Priority: 'lucide-list',
   'Allocated To': 'lucide-link',
+  Role: 'lucide-link',
   'Due Date': 'lucide-calendar',
   Color: 'lucide-palette',
 }
@@ -361,6 +362,69 @@ test('a Link field offers the records it may point at', async ({ page }, info) =
     contentType: 'image/png',
   })
   await expect(page.getByRole('option', { name: 'Administrator' }).first()).toBeVisible()
+  expectNoRealErrors(errors)
+})
+
+test('a link search asks the server, and Create is offered only where it is allowed', async ({
+  page,
+}, info) => {
+  const errors = collectConsoleErrors(page)
+  await openRecord(page)
+  const dialog = page.locator('[role="dialog"]')
+
+  // Role is the second Link on the fixture and the one the space granted, so
+  // it is the one that may be created from. `allocated_to` points at User,
+  // which the space did not grant — no Create row, whatever this person's own
+  // permissions are.
+  const roles = dialog.getByLabel('Role', { exact: true })
+  await roles.click()
+  await expect(page.getByRole('option', { name: /Create a new Role/ })).toBeVisible()
+
+  await dialog.getByLabel('Allocated To', { exact: true }).click()
+  await expect(page.getByRole('option', { name: /^Create/ })).toHaveCount(0)
+  await page.keyboard.press('Escape')
+
+  // Typing searches the server rather than filtering what is already on
+  // screen: the row below is not in the first page of results.
+  const asked = []
+  page.on('request', (r) => {
+    if (r.url().includes('spaceview.link_options')) asked.push(r.url())
+  })
+  await roles.click()
+  await roles.fill('Report')
+  await expect(page.getByRole('option', { name: 'Report Manager' })).toBeVisible()
+  expect(asked.some((url) => url.includes('query=Report'))).toBe(true)
+
+  // And what was typed is offered as a name rather than thrown away.
+  await expect(page.getByRole('option', { name: 'Create "Report"' })).toBeVisible()
+
+  await info.attach(`link-create-${info.project.name}`, {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+  expectNoRealErrors(errors)
+})
+
+test('a record can be created from the picker and is adopted as the value', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  const made = `ZZ Picker ${Date.now()}`
+  await openRecord(page)
+  const dialog = page.locator('[role="dialog"]').first()
+
+  const roles = dialog.getByLabel('Role', { exact: true })
+  await roles.click()
+  await roles.fill(made)
+  await page.getByRole('option', { name: `Create "${made}"` }).click()
+
+  // The quick form is the doctype's own answer: Role marks `role_name`
+  // mandatory and nothing else, and the search text is already in it.
+  const quick = page.locator('[role="dialog"]').last()
+  await expect(quick.getByLabel('Role Name')).toHaveValue(made)
+  await quick.getByRole('button', { name: 'Create' }).click()
+
+  // Created and picked in one move — the point of creating one here was to
+  // choose it.
+  await expect(roles).toHaveValue(made)
   expectNoRealErrors(errors)
 })
 

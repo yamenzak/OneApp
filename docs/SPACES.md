@@ -105,9 +105,28 @@ already names, so a space gets it by existing.
   a test here rather than rendering as a text box that writes a string into a
   Currency column. Colour, signature, geolocation, barcode and icon have no
   frappe-ui counterpart: they are shown, never offered.
-* **Link fields get a picker.** A Combobox backed by `spaceview.link_options`,
-  bounded by the screen the same way its rows are, and honouring the field's own
-  `link_filters`.
+* **A link is a record, everywhere.** The same three things a row's title
+  column shows — a face, a name, and the id beneath it where the name is not
+  already the id — render in a list cell and in the picker's menu, because a
+  link *is* a record and reading one and choosing one should not look like two
+  different things. The list resolves a page's ids in one query per column, so
+  the cells cost nothing extra; a target this person may not read falls back to
+  the id, which is the truthful thing to show.
+
+  The picker searches on the server (`spaceview.link_options`), bounded by the
+  screen the same way its rows are, matching the id, the title and the
+  doctype's own `search_fields`, and honouring the field's `link_filters`.
+  Client-side filtering is off deliberately: the server already decided what
+  matched, and a second literal substring pass drops rows a person can see are
+  right.
+
+  **Create is in the menu** where the target doctype is one the space granted
+  and this user may create — Frappe's own quick entry, which is the fields the
+  doctype marks `allow_in_quick_entry` plus anything mandatory. What was typed
+  into the search becomes the new record's name, and the record is adopted as
+  the value, because choosing it was the point. Elsewhere there is simply no
+  Create row. A filter never offers one: nobody makes a record in order to
+  filter by it.
 * **Field icons.** One per fieldtype, in the list header and beside the record.
 * **Badge colours.** From the doctype's own `DocType State` rows where it
   declares them, and otherwise from Frappe's word lists — so "Open" is the same

@@ -22,7 +22,7 @@ import frappe
 
 CODE = "zztasks"
 ROLE = "OneSpace Tasks"
-FIELDS = "description,status,priority,allocated_to,date,color"
+FIELDS = "description,status,priority,allocated_to,role,date,color"
 
 VIEWS = [
 	{
@@ -74,6 +74,13 @@ def seed_control():
 		"description": "Everything on your plate, and who it is waiting on.",
 	})
 	doc.append("doctypes", {"document_type": "ToDo", "access": "Manage", "if_owner": 0})
+	# Two link targets, deliberately different. `allocated_to` points at User,
+	# which has a title and a picture, so the picker shows a face and a name;
+	# `role` points at Role, which has neither, so it shows its id once instead
+	# of twice. Role is also granted here, which is what puts Create in the
+	# picker — a link to a doctype the space did not grant is readable and never
+	# creatable, and both halves are worth having in the fixture.
+	doc.append("doctypes", {"document_type": "Role", "access": "Manage", "if_owner": 0})
 	for screen in VIEWS:
 		doc.append("screens", screen)
 	doc.insert(ignore_permissions=True)
@@ -110,6 +117,7 @@ def seed_tenant():
 	sync.ensure_role(ROLE)
 	sync.sync_permissions([
 		{"role": ROLE, "doctype": "ToDo", "access": "Manage", "if_owner": 0},
+		{"role": ROLE, "doctype": "Role", "access": "Manage", "if_owner": 0},
 	])
 	user = frappe.get_doc("User", frappe.session.user)
 	if ROLE not in {r.role for r in user.roles}:

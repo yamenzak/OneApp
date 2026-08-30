@@ -113,6 +113,27 @@ export const workspace = {
       { silent: true, method: 'GET' },
     ),
 
+  // What creating one of those records would ask for: Frappe's own quick entry,
+  // which is the fields a doctype marks `allow_in_quick_entry` plus anything
+  // mandatory. Answers `can_create: false` rather than raising when the target
+  // is outside the space or this user may not create it — a picker with no
+  // Create row is the right shape for that.
+  linkNewSpec: (spaceCode, screen, fieldname) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.link_new_spec',
+      { space_code: spaceCode, screen, fieldname },
+      { silent: true, method: 'GET' },
+    ),
+
+  // Create one, and hand back the picker row for it so the field can adopt the
+  // record without a second search.
+  linkNew: (spaceCode, screen, fieldname, values) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.link_new',
+      { space_code: spaceCode, screen, fieldname, values },
+      { successMessage: 'Created' },
+    ),
+
   // Comments and the change log. Frappe keeps both on every doctype, so no app
   // has to ask for them.
   timeline: (spaceCode, screen, name) =>
