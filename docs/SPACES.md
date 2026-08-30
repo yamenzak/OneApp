@@ -238,6 +238,22 @@ already names, so a space gets it by existing.
   checks the same two rules, because the value reaches the DOM as a class
   name.
 
+  **A record is a pane beside the list, and a page on a phone.** It was a
+  modal dialog, and a dialog is the wrong shape for it: a record is something
+  you read *against* the list — mark this one done, glance at the next, come
+  back — and a modal takes the list away and the page out of the accessibility
+  tree with it. The pane's width is dragged and remembered in the browser,
+  because how wide somebody likes it is a property of the screen they are
+  sitting at rather than of their account. On a phone there is no room to keep
+  both, so the pane draws itself as a page; the screen host does not know which
+  it is.
+
+  **Making a record is still a dialog**, which is the one place a modal is the
+  right answer: nothing behind it to refer to yet, a short decision, and
+  cancelling leaves nothing behind. It posts only what was typed into it —
+  Frappe's defaults are words like `Today` and `__user` that only the server
+  can turn into values, so a form that posts them back writes the word.
+
   **An open record is the last thing in the trail**, and it reads the way a
   record reads everywhere else: one face, the name, the id beneath it. Beside
   the name is the status — "where does this stand" is the second thing anybody

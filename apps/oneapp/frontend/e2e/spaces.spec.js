@@ -124,7 +124,7 @@ test('an open record is in the URL, and in the trail', async ({ page }) => {
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
 
   await page.getByText('Chase the Halloway invoice').first().click()
-  await expect(page.locator('[role="dialog"]')).toBeVisible()
+  await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
   await expect(page).toHaveURL(/record=/)
 
   // Located by its slot, not its role: a modal takes the rest of the page out
@@ -146,11 +146,13 @@ test('an open record is in the URL, and in the trail', async ({ page }) => {
   // A record is a link: a reload comes back to it, without the list it was
   // opened from.
   await page.reload()
-  await expect(page.locator('[role="dialog"]')).toBeVisible()
+  await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
 
-  // And closing it puts the URL back.
-  await page.keyboard.press('Escape')
-  await expect(page.locator('[role="dialog"]')).toHaveCount(0)
+  // And closing it puts the URL back. The X and not Escape: a pane is not
+  // modal, and the controls inside it do not mark their own Escape as handled
+  // — so closing a link picker with it closed the record underneath.
+  await page.getByRole('button', { name: 'Close the record' }).click()
+  await expect(page.locator('[data-slot="record-pane"]')).toHaveCount(0)
   await expect(page).not.toHaveURL(/record=/)
   expectNoRealErrors(errors)
 })
@@ -194,7 +196,7 @@ test('a record opens and saves', async ({ page }, info) => {
   // Scoped to the dialog: the quick filter row above the list has a box with
   // the same label, and on a phone that one is hidden.
   await expect(
-    page.locator('[role="dialog"]').getByText('Priority', { exact: true }),
+    page.locator('[data-slot="record-pane"]').getByText('Priority', { exact: true }),
   ).toBeVisible()
   await info.attach(`record-${info.project.name}`, {
     body: await page.screenshot(), contentType: 'image/png' })
@@ -203,16 +205,19 @@ test('a record opens and saves', async ({ page }, info) => {
   // calling a `workspace.saveAppRecord` that no longer existed, so Save threw
   // where nothing was watching — a dialog test that only reads the form would
   // never have noticed.
-  const dialog = page.locator('[role="dialog"]')
+  const dialog = page.locator('[data-slot="record-pane"]')
   const changed = `Chase the Halloway invoice ${Date.now() % 1000}`
   await dialog.getByLabel('Description').fill(changed)
   await dialog.getByRole('button', { name: 'Save' }).click()
-  await expect(dialog).toHaveCount(0)
-  await expect(page.getByText(changed).first()).toBeVisible()
+
+  // The pane stays open — a record you just saved is a record you are still
+  // reading — and what it shows is what came back from the server rather than
+  // what was typed into it.
+  await expect(dialog.getByLabel('Description')).toHaveValue(changed)
 
   // Put it back, so the next run starts where this one did.
-  await page.getByText(changed).first().click()
-  await page.locator('[role="dialog"]').getByLabel('Description').fill(SEEDED)
-  await page.locator('[role="dialog"]').getByRole('button', { name: 'Save' }).click()
+  await dialog.getByLabel('Description').fill(SEEDED)
+  await dialog.getByRole('button', { name: 'Save' }).click()
+  await expect(dialog.getByLabel('Description')).toHaveValue(SEEDED)
   expectNoRealErrors(errors)
 })

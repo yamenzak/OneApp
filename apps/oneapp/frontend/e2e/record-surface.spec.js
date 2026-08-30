@@ -30,7 +30,7 @@ const openList = async (page) => {
 const openRecord = async (page) => {
   await openList(page)
   await page.getByText(SEEDED).first().click()
-  await expect(page.locator('[role="dialog"]')).toBeVisible()
+  await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
 }
 
 // What each column's fieldtype maps to. A phone shows two of the six, so the
@@ -419,7 +419,7 @@ test('a Link field offers the records it may point at', async ({ page }, info) =
   // the SPA made up.
   expect(asked.length).toBeGreaterThan(0)
 
-  const dialog = page.locator('[role="dialog"]')
+  const dialog = page.locator('[data-slot="record-pane"]')
   // frappe-ui's Combobox is a text input with role=combobox and a chevron that
   // opens the list — not a Select's listbox button.
   const combo = dialog.locator('input[role="combobox"]').first()
@@ -439,7 +439,7 @@ test('a link search asks the server, and Create is offered only where it is allo
 }, info) => {
   const errors = collectConsoleErrors(page)
   await openRecord(page)
-  const dialog = page.locator('[role="dialog"]')
+  const dialog = page.locator('[data-slot="record-pane"]')
 
   // Role is the second Link on the fixture and the one the space granted, so
   // it is the one that may be created from. `allocated_to` points at User,
@@ -478,7 +478,7 @@ test('a record can be created from the picker and is adopted as the value', asyn
   const errors = collectConsoleErrors(page)
   const made = `ZZ Picker ${Date.now()}`
   await openRecord(page)
-  const dialog = page.locator('[role="dialog"]').first()
+  const dialog = page.locator('[data-slot="record-pane"]')
 
   const roles = dialog.getByLabel('Role', { exact: true })
   await roles.click()
@@ -487,7 +487,7 @@ test('a record can be created from the picker and is adopted as the value', asyn
 
   // The quick form is the doctype's own answer: Role marks `role_name`
   // mandatory and nothing else, and the search text is already in it.
-  const quick = page.locator('[role="dialog"]').last()
+  const quick = page.locator('[role="dialog"]')
   await expect(quick.getByLabel('Role Name')).toHaveValue(made)
   await quick.getByRole('button', { name: 'Create' }).click()
 
@@ -501,7 +501,7 @@ test('a fieldtype with no counterpart is shown and never offered', async ({ page
   const errors = collectConsoleErrors(page)
   await openRecord(page)
 
-  const dialog = page.locator('[role="dialog"]')
+  const dialog = page.locator('[data-slot="record-pane"]')
   await expect(dialog.getByText('Color is shown here but edited elsewhere.')).toBeVisible()
   // The value is readable; there is nothing to type into.
   await expect(dialog.getByText('#2490EF')).toBeVisible()
@@ -512,7 +512,7 @@ test('a fieldtype with no counterpart is shown and never offered', async ({ page
 test('every fieldtype reaches its own control, not a text box', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await openRecord(page)
-  const dialog = page.locator('[role="dialog"]')
+  const dialog = page.locator('[data-slot="record-pane"]')
 
   // The regression this pins: FormControl answers a type it does not recognise
   // with a plain TextInput and logs nothing, so a whole form of the wrong
@@ -552,7 +552,7 @@ test('the record shows every field, not the columns someone chose', async ({ pag
   await expect(page.getByRole('columnheader', { name: 'Priority' })).toHaveCount(0)
 
   await page.getByText(SEEDED).first().click()
-  await expect(page.locator('[role="dialog"]').getByText('Priority', { exact: true })).toBeVisible()
+  await expect(page.locator('[data-slot="record-pane"]').getByText('Priority', { exact: true })).toBeVisible()
   expectNoRealErrors(errors)
 })
 
@@ -560,7 +560,7 @@ test('comments and history are there without an app asking for them', async ({ p
   const errors = collectConsoleErrors(page)
   await openRecord(page)
 
-  const dialog = page.locator('[role="dialog"]')
+  const dialog = page.locator('[data-slot="record-pane"]')
   await dialog.getByRole('tab', { name: /^Comments/ }).click()
   await expect(dialog.getByPlaceholder('Add a comment')).toBeVisible()
   // Either comments or the empty state; both are the tab working against real
@@ -582,7 +582,7 @@ test('a comment can be added and shows up in the count', async ({ page }) => {
   const errors = collectConsoleErrors(page)
   await openRecord(page)
 
-  const dialog = page.locator('[role="dialog"]')
+  const dialog = page.locator('[data-slot="record-pane"]')
   const tab = dialog.getByRole('tab', { name: /^Comments/ })
   const count = async () => Number((await tab.innerText()).replace(/\D/g, '') || 0)
   const before = await count()
@@ -607,7 +607,7 @@ test('a record can be liked and unliked from the dialog', async ({ page }) => {
 
   // By its icon, not by its text: the comment count beside it is also a bare
   // number, and which of the two comes first is a layout detail.
-  const heart = page.locator('[role="dialog"] button:has(.lucide-heart)')
+  const heart = page.locator('[data-slot="record-pane"] button:has(.lucide-heart)')
   const before = (await heart.innerText()).trim()
   await heart.click()
   await expect.poll(async () => (await heart.innerText()).trim()).not.toBe(before)

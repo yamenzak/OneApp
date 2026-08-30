@@ -388,6 +388,16 @@ def test_no_local_component_shadows_a_frappe_ui_one():
 	assert not clashes, "\n".join(clashes)
 
 
+# The one kind of file this cannot ask for: layout with no widget in it.
+#
+# RecordPane is a drag handle and a box that gets wider. frappe-ui ships no
+# resizer and no split pane — the component list was read, not assumed — so
+# there is nothing to compose it out of, and the alternative was importing
+# something it does not use to satisfy a test. Named one at a time on purpose:
+# the next file like it has to argue its case here rather than slip through.
+LAYOUT_ONLY = frozenset({"RecordPane.vue"})
+
+
 def test_local_components_compose_the_vocabulary():
 	"""A component that imports nothing is markup wearing a component's name.
 
@@ -400,6 +410,8 @@ def test_local_components_compose_the_vocabulary():
 	for app, paths in _local_components().items():
 		for path in paths:
 			source = path.read_text()
+			if path.name in LAYOUT_ONLY:
+				continue
 			if "from '@/ui'" in source:
 				continue
 			# Composing our own components is fine — they bottom out in the barrel.

@@ -77,9 +77,21 @@
         @show="showLayouts"
       />
     </nav>
-    <template v-if="spec?.can_create" #right>
-      <Button variant="solid" icon-left="lucide-plus" label="New" @click="create" />
-    </template>
+
+    <!--
+      In the default slot, not a `#right` one: PageHeader has exactly one slot
+      and lays it out as a `justify-between` row, so the trail goes left and
+      this goes right by being second. It spent this long in a slot that does
+      not exist, rendering nowhere — `test_no_unknown_slots` now catches the
+      shape that hid it.
+    -->
+    <Button
+      v-if="spec?.can_create"
+      variant="solid"
+      icon-left="lucide-plus"
+      label="New"
+      @click="create"
+    />
   </PageHeader>
 
   <!--
@@ -89,7 +101,8 @@
     of a table is a scrollbar you have to scroll down to find, and on a list of
     two hundred rows nobody finds it.
   -->
-  <div class="flex h-full min-h-0 flex-col p-5">
+  <div class="flex h-full min-h-0">
+   <div class="flex min-w-0 flex-1 flex-col p-5">
     <div v-if="loading" class="grid place-items-center py-20">
       <LoadingIndicator class="size-5 text-ink-gray-5" />
     </div>
@@ -322,6 +335,28 @@
         </SelectionBar>
       </div>
     </template>
+   </div>
+
+    <!--
+      The open record, beside the list rather than over it. A record is
+      something you read *against* the list — mark this one done, glance at the
+      next, come back — and a modal takes the list away and the page out of the
+      accessibility tree with it. On a phone there is no room to keep both, so
+      the pane draws itself as a page; it decides that, not this file.
+    -->
+    <RecordPane v-if="shownRecord && spec?.doctype">
+      <template #body="{ phone }">
+        <RecordView
+          :record="shownRecord"
+          :spec="spec"
+          :space-code="spaceCode"
+          :screen="spec.screen"
+          :phone="phone"
+          @saved="recordSaved"
+          @close="closeRecord"
+        />
+      </template>
+    </RecordPane>
   </div>
 
   <!-- Deleting is the one thing on this screen that does not come back, so it
@@ -354,15 +389,13 @@
     @update:group-by="onGroupBy"
   />
 
-  <RecordDialog
+  <CreateDialog
     v-if="spec?.doctype"
-    v-model="showRecord"
-    @update:model-value="(shown) => !shown && closeRecord()"
-    :record="editing || {}"
+    v-model="showCreate"
     :spec="spec"
     :space-code="spaceCode"
     :screen="spec.screen"
-    @saved="loadRows"
+    @created="created"
   />
 </template>
 
@@ -383,7 +416,9 @@ import {
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import RecordChip from '../components/screen/RecordChip.vue'
-import RecordDialog from '../components/screen/RecordDialog.vue'
+import CreateDialog from '../components/screen/CreateDialog.vue'
+import RecordPane from '../components/screen/RecordPane.vue'
+import RecordView from '../components/screen/RecordView.vue'
 import FilterPanel from '../components/screen/FilterPanel.vue'
 import QuickFilters from '../components/screen/QuickFilters.vue'
 import ColumnPicker from '../components/screen/ColumnPicker.vue'
@@ -407,8 +442,11 @@ const quickExpanded = ref(false)
 
 const spec = ref(null)
 const loading = ref(false)
-const showRecord = ref(false)
+const showCreate = ref(false)
 const showColumns = ref(false)
+// The record that is open, fetched. Null is "no record", which is also what
+// closing one means — there is no second flag, because two of them is how a
+// pane ends up open over nothing.
 const editing = ref(null)
 const rows = ref([])
 const columns = ref([])
@@ -503,10 +541,10 @@ const emptyBecause = computed(() => {
     : 'Nothing here so far.'
 })
 
-// A record that exists takes the last place in the trail. A new one does not:
-// there is nothing to name it yet, and a trail ending in nothing reads worse
-// than one that still says which view you were in.
-const shownRecord = computed(() => (editing.value && !editing.value.__new ? editing.value : null))
+// A record that exists takes the last place in the trail. A record being made
+// does not, and never reaches here: it is a dialog, and there is nothing to
+// name it with yet.
+const shownRecord = computed(() => editing.value)
 
 // What the last crumb says when no view is saved: how this screen is being
 // drawn. "Tasks / Tasks" is one word twice; "Tasks / List" says where you are.
@@ -762,8 +800,26 @@ const open = (row) => {
 }
 
 const create = () => {
-  editing.value = { __new: true }
-  showRecord.value = true
+  showCreate.value = true
+}
+
+// A record that was just made is a record you want to be in — so the dialog
+// closes onto it rather than onto the list, which would leave the person
+// hunting for the row they created.
+const created = async (name) => {
+  await loadRows()
+  if (name) router.push({ query: { ...route.query, record: name } })
+}
+
+// Saving from the pane refreshes the list under it — a title or a status that
+// changed is a row that now reads differently — and re-reads the record, so
+// what the pane shows is what the server has rather than what was typed.
+const recordSaved = async () => {
+  await loadRows()
+  const name = editing.value?.name
+  if (!name) return
+  editing.value = null
+  await openRecord(name)
 }
 
 // Opening it is a fetch rather than a read of the row: the list carries the
@@ -773,24 +829,21 @@ const create = () => {
 const openRecord = async (name) => {
   if (!name) {
     editing.value = null
-    showRecord.value = false
     return
   }
   if (editing.value && editing.value.name === name) return
   const found = await workspace.screenRecord(props.spaceCode, spec.value?.screen || '', name)
   if (!found?.name) {
     // A link to something that is gone, or that this screen does not list.
-    // Drop it from the URL rather than leaving a dialog that never opens.
+    // Drop it from the URL rather than leaving a pane that never opens.
     closeRecord()
     return
   }
   editing.value = found
-  showRecord.value = true
 }
 
 const closeRecord = () => {
   editing.value = null
-  showRecord.value = false
   if (!route.query.record) return
   const query = { ...route.query }
   delete query.record

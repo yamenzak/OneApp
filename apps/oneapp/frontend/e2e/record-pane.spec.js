@@ -1,0 +1,121 @@
+import { expect, test } from '@playwright/test'
+import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
+
+test.beforeEach(async ({ page, baseURL }) => {
+  await signIn(page, baseURL)
+})
+
+const openRecord = async (page) => {
+  await page.goto('/one/space/zzmock')
+  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
+  await page.getByText('Chase the Halloway invoice').first().click()
+  await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
+}
+
+test('the list is still there beside the record', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'there is no room to keep both on a phone')
+  const errors = collectConsoleErrors(page)
+  await openRecord(page)
+
+  // The whole point of a pane over a dialog: a record is something you read
+  // *against* the list — mark this one done, glance at the next, come back.
+  const rows = page.locator('[data-slot="list-row"]')
+  await expect(rows.first()).toBeVisible()
+  expect(await rows.count()).toBeGreaterThan(1)
+
+  // Beside, not over. The row's own box is wider than what is on screen — the
+  // grid scrolls sideways inside its pane — so what is asserted is that the
+  // list starts to the left of the record and the record runs to the edge.
+  const list = await rows.first().boundingBox()
+  const pane = await page.locator('[data-slot="record-pane"]').boundingBox()
+  expect(list.x).toBeLessThan(pane.x)
+  expect(Math.round(pane.x + pane.width)).toBe(page.viewportSize().width)
+
+  await info.attach(`pane-${info.project.name}`, {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+  expectNoRealErrors(errors)
+})
+
+test('the pane can be resized, and it stays that way', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the pane is the page there, and pages have one width')
+  const errors = collectConsoleErrors(page)
+  await openRecord(page)
+
+  const pane = page.locator('[data-slot="record-pane"]')
+  const before = (await pane.boundingBox()).width
+
+  // The keyboard, not a drag: the same handle, and the half of it that a
+  // pointer test cannot cover. Left is wider — the handle is on the pane's
+  // left edge.
+  const handle = page.locator('[data-slot="record-resizer"]')
+  await handle.focus()
+  await page.keyboard.press('Shift+ArrowLeft')
+  await expect.poll(async () => (await pane.boundingBox()).width).toBeGreaterThan(before)
+
+  // Remembered in this browser, because how wide somebody likes a pane is a
+  // property of the screen they are sitting at.
+  const widened = (await pane.boundingBox()).width
+  await page.reload()
+  await expect(pane).toBeVisible()
+  expect(Math.abs((await pane.boundingBox()).width - widened)).toBeLessThan(2)
+  expectNoRealErrors(errors)
+})
+
+test('on a phone the record is the page', async ({ page }, info) => {
+  test.skip(info.project.name !== 'mobile', 'this is the phone layout')
+  const errors = collectConsoleErrors(page)
+  await openRecord(page)
+
+  // No room to keep both, so it does not pretend to: full width, its own
+  // header, and the way back at the top of it.
+  const pane = await page.locator('[data-slot="record-pane"]').boundingBox()
+  const view = page.viewportSize()
+  expect(pane.width).toBe(view.width)
+  await expect(page.locator('[data-slot="record-resizer"]')).toHaveCount(0)
+
+  // The identity is here rather than in a trail, because the trail is behind
+  // the page.
+  await expect(
+    page.locator('[data-slot="record-pane"]').getByText('Chase the Halloway invoice'),
+  ).toBeVisible()
+
+  await info.attach(`record-page-${info.project.name}`, {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+
+  await page.getByRole('button', { name: 'Close the record' }).click()
+  await expect(page.locator('[data-slot="record-pane"]')).toHaveCount(0)
+  expectNoRealErrors(errors)
+})
+
+test('a record is made in a dialog and opens into the pane', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/zzmock')
+  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
+
+  // Creating is the one place a modal is right: nothing behind it to refer to
+  // yet, a short decision, and cancelling leaves nothing behind.
+  await page.getByRole('button', { name: 'New' }).click()
+  const dialog = page.locator('[role="dialog"]')
+  await expect(dialog).toBeVisible()
+
+  const made = `ZZ From the dialog ${Date.now() % 10000}`
+  await dialog.getByLabel('Description').fill(made)
+  await dialog.getByRole('button', { name: 'Create' }).click()
+
+  // And it opens into the record, because the point of making one is to be in
+  // it — a dialog that closes onto a list leaves you hunting for the row.
+  await expect(dialog).toHaveCount(0)
+  const pane = page.locator('[data-slot="record-pane"]')
+  await expect(pane).toBeVisible()
+  await expect(pane.getByLabel('Description')).toHaveValue(made)
+  await expect(page).toHaveURL(/record=/)
+
+  // Put the fixture back.
+  await page.getByRole('button', { name: 'Close the record' }).click()
+  await page.getByPlaceholder('ID').fill('')
+  expectNoRealErrors(errors)
+})

@@ -36,7 +36,12 @@ API = component_api()
 TAG = re.compile(
     r"""<(/?)([A-Z][A-Za-z0-9]*)\b((?:"[^"]*"|'[^']*'|[^>"'])*?)(/?)>""", re.S
 )
-SLOT = re.compile(r"<template\s+(?:#|v-slot:)([A-Za-z0-9_-]+)")
+# A named slot, wherever the marker sits among the attributes. `<template
+# v-if="..." #right>` is ordinary Vue and this used to miss it entirely — which
+# is how a "New" button spent months in a `#right` slot that PageHeader does
+# not have, rendering nowhere, with the guard for exactly that reporting
+# nothing.
+SLOT = re.compile(r"<template\s(?:[^>]*\s)?(?:#|v-slot:)([A-Za-z0-9_-]+)")
 # Attribute *names*, with any quoted value consumed so the scan never treats
 # class names or expression text as further attributes.
 ATTR = re.compile(
