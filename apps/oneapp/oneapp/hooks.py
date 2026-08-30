@@ -5,7 +5,17 @@ app_description = "Unified application surface for Four Degree Labs tenants."
 app_email = "hello@fourdegreelabs.com"
 app_license = "mit"
 
-required_apps = ["erpnext"]
+# Deliberately not `required_apps = ["erpnext"]`.
+#
+# Nothing in this app imports erpnext at module level: every import in
+# oneapp_core/books.py is deferred inside a function and gated on
+# `erpnext_installed()`, and `books.status()` answers `available: False` when it
+# is absent — which the workspace's Books panel renders as "No accounting app".
+#
+# So the hard requirement claimed a dependency the code does not have, and the
+# only thing it actually stopped was running OneSpace anywhere erpnext is not
+# installed — including every development bench, which is why this SPA went so
+# long without being opened in a browser. Tenant benches still carry erpnext.
 
 # ---------------------------------------------------------------------------
 # SPA

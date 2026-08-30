@@ -14,12 +14,18 @@ test('the console renders its chrome and navigation', async ({ page }, info) => 
   await expect(page.getByRole('banner').or(page.locator('[data-slot*="page-header"]')).first())
     .toBeVisible()
 
-  await expect(page.getByText('Provisioning is disabled')).toBeVisible()
+  // The verdict, in whichever form the local site's configuration earns. Which
+  // one is not the assertion: pinning "Provisioning is disabled" made this fail
+  // the moment the dev site was given its Frappe Cloud keys, which is a thing
+  // an operator is supposed to be able to do.
+  await expect(
+    page.getByText(/Provisioning is disabled|Ready to provision/),
+  ).toBeVisible()
 
   // Every readiness item, not just the group counts. The counts came from the
   // same array as the rows and were right while the list rendered nothing.
-  await expect(page.getByText('Frappe Cloud API')).toBeVisible()
-  await expect(page.getByText('Control plane URL')).toBeVisible()
+  await expect(page.getByText('Frappe Cloud API').first()).toBeVisible()
+  await expect(page.getByText('Control plane URL').first()).toBeVisible()
 
   await info.attach('setup', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' })
   expectNoRealErrors(errors)

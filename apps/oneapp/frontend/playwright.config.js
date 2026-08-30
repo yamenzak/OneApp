@@ -7,7 +7,7 @@
 // tests and a clean build say nothing about them. Only looking does.
 //
 // Start the site this points at first:
-//   ONEAPP_SITE=control.localhost ONEAPP_PORT=8000 scripts/dev.sh up
+//   ONEAPP_SITE=space.localhost ONEAPP_PORT=8001 scripts/dev.sh up
 import { defineConfig, devices } from '@playwright/test'
 
 // The image ships one Chromium build and this runner expects another;
@@ -25,7 +25,7 @@ export default defineConfig({
   reporter: [['list']],
   timeout: 45_000,
   use: {
-    baseURL: process.env.ONEAPP_BASE_URL || 'http://localhost:8000',
+    baseURL: process.env.ONEAPP_BASE_URL || 'http://localhost:8001',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },

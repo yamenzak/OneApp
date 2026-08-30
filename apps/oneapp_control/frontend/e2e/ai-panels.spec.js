@@ -45,7 +45,12 @@ test('the feature registry renders', async ({ page }, info) => {
   await openTab(page, 'Features')
 
   await expect(page.getByText('Invoice summary').first()).toBeVisible()
-  await expect(page.getByText('Always on').first()).toBeVisible()
+
+  // Desktop only: the Control column is dropped on a phone, where which
+  // features are always-on is answered by opening one rather than by the list.
+  if (test.info().project.name === 'desktop') {
+    await expect(page.getByText('Always on').first()).toBeVisible()
+  }
 
   await info.attach('features', {
     body: await page.screenshot({ fullPage: true }), contentType: 'image/png' })

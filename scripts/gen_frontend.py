@@ -34,6 +34,10 @@ DEPENDENCIES = {
 }
 
 DEV_DEPENDENCIES = {
+    # The browser pass. Both SPAs get one: the bugs it catches — an empty list,
+    # a dialog that will not open, a panel unreachable at one viewport — all
+    # render without throwing, so a clean build says nothing about them.
+    "@playwright/test": "^1.49.0",
     "@vitejs/plugin-vue": "^6.0.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.17.0",
@@ -52,12 +56,17 @@ APPS = {
     "oneapp": {
         "route": "/one",
         "title": BRAND["tenant"],
+        # Two SPAs, two sites, both running at once — see scripts/dev.sh.
+        "site": "space.localhost",
+        "port": 8001,
         # Doctypes to generate TypeScript definitions for.
         "types": {"oneapp": ["OneApp Site State"]},
     },
     "oneapp_control": {
         "route": "/admin",
         "title": BRAND["admin"],
+        "site": "control.localhost",
+        "port": 8000,
         # Extra Frappe routes serving the same bundle. One build, several
         # server-side guards: /admin is System Managers only, /portal has to let
         # a signed-out visitor reach signup. Sharing the bundle is what keeps
@@ -247,6 +256,7 @@ def package_json(app: str, spec: dict) -> str:
                 "build": "vite build",
                 "preview": "vite preview",
                 "lint": "eslint src",
+                "e2e": "playwright test",
             },
             "dependencies": DEPENDENCIES,
             "devDependencies": DEV_DEPENDENCIES,
@@ -1977,6 +1987,118 @@ export function appIcon(name) {{
 )
 
 
+def playwright_config(app: str, spec: dict) -> str:
+    return BANNER + """
+// Visual checks against a real local site, not a mocked one.
+//
+// The bugs this exists to catch — an empty list, a dialog that will not open, a
+// control unreachable at one viewport — all render without throwing, so unit
+// tests and a clean build say nothing about them. Only looking does.
+//
+// Start the site this points at first:
+//   ONEAPP_SITE=%(site)s ONEAPP_PORT=%(port)d scripts/dev.sh up
+import { defineConfig, devices } from '@playwright/test'
+
+// The image ships one Chromium build and this runner expects another;
+// `playwright install` is disabled here, so point at what exists rather than
+// letting it try to download a build it will never get.
+const CHROMIUM =
+  process.env.ONEAPP_CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'
+const launchOptions = { executablePath: CHROMIUM }
+
+export default defineConfig({
+  testDir: './e2e',
+  // One worker: these drive a single shared site, and parallel logins race on
+  // the same session.
+  workers: 1,
+  reporter: [['list']],
+  timeout: 45_000,
+  use: {
+    baseURL: process.env.ONEAPP_BASE_URL || 'http://localhost:%(port)d',
+    screenshot: 'only-on-failure',
+    trace: 'retain-on-failure',
+  },
+  projects: [
+    { name: 'desktop', use: { ...devices['Desktop Chrome'], launchOptions } },
+    // The screenshot that started this was a phone: no sidebar, so anything
+    // that lives only there is unreachable.
+    { name: 'mobile', use: { ...devices['Pixel 7'], launchOptions } },
+  ],
+})
+""" % {"site": spec["site"], "port": spec["port"]}
+
+
+E2E_AUTH_JS = BANNER + """
+// Sign in through Frappe's own endpoint rather than the login form: the form is
+// Frappe's, not ours, and driving it would make every test depend on markup we
+// do not own.
+export async function signIn(page, baseURL) {
+  const response = await page.request.post(`${baseURL}/api/method/login`, {
+    form: {
+      usr: process.env.ONEAPP_USER || 'Administrator',
+      pwd: process.env.ONEAPP_PASSWORD || 'Dev-Loop-2026!x',
+    },
+  })
+  if (!response.ok()) {
+    throw new Error(`login failed: ${response.status()} ${await response.text()}`)
+  }
+}
+
+/**
+ * Console errors and failed requests, because a page can be broken and silent.
+ *
+ * Failed requests are collected from the network rather than from the console.
+ * The console message for one is "Failed to load resource: the server responded
+ * with a status of 404 (NOT FOUND)" — no URL, nothing to tell a broken endpoint
+ * from a route that only exists behind nginx. Reading the response gives the
+ * URL, which is both a better failure message and the only way to ignore one
+ * thing without ignoring everything.
+ */
+export function collectConsoleErrors(page) {
+  const errors = []
+  page.on('console', (m) => {
+    // Dropped: the network hook below reports the same failure with its URL.
+    if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) {
+      errors.push(m.text())
+    }
+  })
+  page.on('pageerror', (e) => errors.push(String(e)))
+  page.on('response', (r) => {
+    if (r.status() >= 400) errors.push(`${r.status()} ${r.url()}`)
+  })
+  return errors
+}
+
+/**
+ * Fail on errors that mean something is broken, not on noise.
+ *
+ * The one worth catching is a fetch whose body is HTML: under our SPA route
+ * rules Frappe answers an unknown path with the app's own page at 200, so a
+ * mis-built request URL never 404s — it quietly returns a document and the data
+ * is simply absent. That is how every useResource call fetched nothing.
+ */
+const NL = String.fromCharCode(10)
+
+export function expectNoRealErrors(errors) {
+  const ignorable = [
+    // Logged by frappe-ui during a brief window before a resource resolves;
+    // renders correctly and does not throw. Tracked, not silenced everywhere.
+    /reading 'charAt'/,
+    // Realtime is proxied to the socketio port by nginx in production. The
+    // development server serves the built SPA with no proxy in front of it, so
+    // this 404s locally and only locally — and it did so on every page, which
+    // meant this whole check was passing nothing. Realtime is therefore not
+    // covered by the browser pass; it is exercised on a real site.
+    /\/socket\.io\//,
+  ]
+  const real = errors.filter((e) => !ignorable.some((p) => p.test(e)))
+  if (real.length) {
+    throw new Error('console errors:' + NL + real.join(NL))
+  }
+}
+"""
+
+
 FILES = {
     "index.html": index_html,
     "vite.config.js": vite_config,
@@ -2000,6 +2122,8 @@ FILES = {
     "src/components/settings/geometry.js": lambda app, spec: SETTINGS_GEOMETRY_JS,
     "src/lib/brand.js": lambda app, spec: BRAND_JS,
     "src/lib/icons.js": lambda app, spec: ICONS_JS,
+    "playwright.config.js": playwright_config,
+    "e2e/auth.js": lambda app, spec: E2E_AUTH_JS,
     "src/lib/user.js": lambda app, spec: USER_JS,
     "src/components/AppShell.vue": lambda app, spec: APP_SHELL_VUE,
     "src/components/ThemeSetting.vue": lambda app, spec: THEME_SETTING_VUE,

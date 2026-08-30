@@ -14,6 +14,13 @@
 #   scripts/dev.sh run FILE  execute a Python file against the site
 #   scripts/dev.sh down      stop the web server
 #
+# There are two SPAs and therefore two sites. ONEAPP_SITE and ONEAPP_PORT pick
+# which, and the pid file is named after the port so both can run at once:
+#
+#   scripts/dev.sh up                                    OneAdmin, :8000
+#   ONEAPP_SITE=space.localhost ONEAPP_PORT=8001 \
+#     scripts/dev.sh up                                  OneSpace, :8001
+#
 # Nothing here touches Frappe Cloud.
 
 set -euo pipefail
@@ -22,7 +29,10 @@ BENCH="${ONEAPP_BENCH:-/home/frappe/bench1}"
 SITE="${ONEAPP_SITE:-control.localhost}"
 PY="$BENCH/env/bin/python"
 PORT="${ONEAPP_PORT:-8000}"
-PIDFILE="$BENCH/.oneapp-dev.pid"
+# Per port, not per bench: one pid file for both sites means starting the second
+# server orphans the first, and `down` then reports success while something is
+# still listening.
+PIDFILE="$BENCH/.oneapp-dev-$PORT.pid"
 
 sites_path="$BENCH/sites"
 
