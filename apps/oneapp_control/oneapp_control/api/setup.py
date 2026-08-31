@@ -109,7 +109,11 @@ def _sweep_state() -> tuple[bool, str]:
 	from frappe.utils import add_to_date, get_datetime, now_datetime
 
 	swept = frappe.db.get_single_value("OneSpace Control Settings", "lifecycle_swept_on")
-	if not swept:
+	# `not swept` is not enough: an unset Datetime on a Single reads back as
+	# Frappe's zero date rather than None, which is truthy and a real datetime.
+	# Without this the board said "the last sweep was 0001-01-01, which is more
+	# than a day and a half ago" — true, and not what somebody needs to be told.
+	if not swept or get_datetime(swept).year < 1900:
 		return False, "The lifecycle sweep has not run on this site yet."
 
 	note = frappe.db.get_single_value("OneSpace Control Settings", "lifecycle_note") or ""
