@@ -216,10 +216,28 @@
    "write": 1
   }
  ],
+ "search_fields": "shard_name,region,press_release_group",
  "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Green",
+   "title": "Active"
+  },
+  {
+   "color": "Orange",
+   "title": "Draining"
+  },
+  {
+   "color": "Yellow",
+   "title": "Full"
+  },
+  {
+   "color": "Gray",
+   "title": "Maintenance"
+  }
+ ],
  "title_field": "shard_name",
  "track_changes": 1
 }

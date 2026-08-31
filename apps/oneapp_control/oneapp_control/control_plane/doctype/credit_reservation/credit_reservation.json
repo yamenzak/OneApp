@@ -113,8 +113,26 @@
    "write": 1
   }
  ],
+ "search_fields": "tenant,purpose,status",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Blue",
+   "title": "Open"
+  },
+  {
+   "color": "Green",
+   "title": "Committed"
+  },
+  {
+   "color": "Gray",
+   "title": "Released"
+  },
+  {
+   "color": "Orange",
+   "title": "Expired"
+  }
+ ],
  "track_changes": 1
 }

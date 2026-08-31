@@ -101,6 +101,23 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Gray",
+   "title": "Received"
+  },
+  {
+   "color": "Green",
+   "title": "Processed"
+  },
+  {
+   "color": "Yellow",
+   "title": "Ignored"
+  },
+  {
+   "color": "Red",
+   "title": "Failed"
+  }
+ ],
  "track_changes": 1
 }

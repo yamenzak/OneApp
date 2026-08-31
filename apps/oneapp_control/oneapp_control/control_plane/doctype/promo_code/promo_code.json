@@ -209,8 +209,18 @@
    "write": 1
   }
  ],
+ "search_fields": "description,discount_type",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Blue",
+   "title": "Percent"
+  },
+  {
+   "color": "Purple",
+   "title": "Amount"
+  }
+ ],
  "track_changes": 1
 }

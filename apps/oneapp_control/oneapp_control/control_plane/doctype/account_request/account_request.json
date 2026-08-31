@@ -209,10 +209,36 @@
    "write": 1
   }
  ],
+ "search_fields": "email,workspace_name",
  "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Yellow",
+   "title": "Pending Payment"
+  },
+  {
+   "color": "Light Blue",
+   "title": "Paid"
+  },
+  {
+   "color": "Blue",
+   "title": "Provisioning"
+  },
+  {
+   "color": "Green",
+   "title": "Completed"
+  },
+  {
+   "color": "Red",
+   "title": "Failed"
+  },
+  {
+   "color": "Gray",
+   "title": "Abandoned"
+  }
+ ],
  "title_field": "workspace_name",
  "track_changes": 1
 }

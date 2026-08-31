@@ -474,10 +474,40 @@
    "write": 1
   }
  ],
+ "search_fields": "tenant_name,site_name,owner_email",
  "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Gray",
+   "title": "Draft"
+  },
+  {
+   "color": "Blue",
+   "title": "Provisioning"
+  },
+  {
+   "color": "Green",
+   "title": "Active"
+  },
+  {
+   "color": "Orange",
+   "title": "Suspended"
+  },
+  {
+   "color": "Yellow",
+   "title": "Archived"
+  },
+  {
+   "color": "Red",
+   "title": "Purged"
+  },
+  {
+   "color": "Red",
+   "title": "Failed"
+  }
+ ],
  "title_field": "tenant_name",
  "track_changes": 1
 }

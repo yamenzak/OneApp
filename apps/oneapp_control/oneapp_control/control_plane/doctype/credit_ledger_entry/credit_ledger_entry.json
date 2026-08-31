@@ -124,8 +124,34 @@
    "role": "System Manager"
   }
  ],
+ "search_fields": "tenant,entry_type,remarks",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Green",
+   "title": "Grant"
+  },
+  {
+   "color": "Green",
+   "title": "Purchase"
+  },
+  {
+   "color": "Blue",
+   "title": "Spend"
+  },
+  {
+   "color": "Orange",
+   "title": "Refund"
+  },
+  {
+   "color": "Gray",
+   "title": "Expiry"
+  },
+  {
+   "color": "Purple",
+   "title": "Adjustment"
+  }
+ ],
  "track_changes": 1
 }

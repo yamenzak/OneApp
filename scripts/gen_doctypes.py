@@ -70,6 +70,13 @@ def doctype(name, fields, autoname=None, perms=None, app="control", **kw):
 # --------------------------------------------------------------------------- #
 doctype(
     "Shard",
+    search_fields="shard_name,region,press_release_group",
+    states=[
+        ("Active", "Green"),
+        ("Draining", "Orange"),
+        ("Full", "Yellow"),
+        ("Maintenance", "Gray"),
+    ],
     autoname="field:shard_name",
     title_field="shard_name",
     fields=[
@@ -190,6 +197,11 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Promo Code",
+    search_fields="description,discount_type",
+    states=[
+        ("Percent", "Blue"),
+        ("Amount", "Purple"),
+    ],
     autoname="field:promo_code",
     fields=[
         f("promo_code", label="Code", reqd=1, unique=1, in_list_view=1,
@@ -255,6 +267,7 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Credit Pack",
+    search_fields="pack_name,credits",
     autoname="field:pack_code",
     title_field="pack_name",
     fields=[
@@ -296,6 +309,11 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Add-on",
+    search_fields="addon_name,kind",
+    states=[
+        ("File Storage", "Blue"),
+        ("Database Storage", "Purple"),
+    ],
     autoname="field:addon_code",
     title_field="addon_name",
     fields=[
@@ -341,6 +359,11 @@ doctype(
 
 doctype(
     "Plan",
+    search_fields="plan_name,audience",
+    states=[
+        ("Personal", "Blue"),
+        ("Commercial", "Purple"),
+    ],
     autoname="field:plan_code",
     title_field="plan_name",
     fields=[
@@ -477,6 +500,11 @@ doctype(
 
 doctype(
     "OneSpace Space",
+    search_fields="space_label,module",
+    states=[
+        ("General", "Green"),
+        ("Restricted", "Orange"),
+    ],
     autoname="field:space_code",
     title_field="space_label",
     fields=[
@@ -691,6 +719,7 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Workspace Role",
+    search_fields="tenant,role_label",
     autoname="hash",
     title_field="role_label",
     fields=[
@@ -768,6 +797,16 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Tenant",
+    search_fields="tenant_name,site_name,owner_email",
+    states=[
+        ("Draft", "Gray"),
+        ("Provisioning", "Blue"),
+        ("Active", "Green"),
+        ("Suspended", "Orange"),
+        ("Archived", "Yellow"),
+        ("Purged", "Red"),
+        ("Failed", "Red"),
+    ],
     autoname="field:tenant_slug",
     title_field="tenant_name",
     allow_rename=0,
@@ -969,6 +1008,14 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Subscription",
+    search_fields="tenant,plan,status",
+    states=[
+        ("Incomplete", "Yellow"),
+        ("Trialing", "Light Blue"),
+        ("Active", "Green"),
+        ("Past Due", "Orange"),
+        ("Canceled", "Red"),
+    ],
     # Not made by hand: Stripe owns the schedule; the webhook writes this.
     in_create=1,
     autoname="naming_series:",
@@ -1061,6 +1108,16 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Provisioning Job",
+    search_fields="tenant,action,state",
+    states=[
+        ("Requested", "Gray"),
+        ("Running", "Blue"),
+        ("Awaiting Agent", "Light Blue"),
+        ("Bootstrapping", "Blue"),
+        ("Succeeded", "Green"),
+        ("Failed", "Red"),
+        ("Cancelled", "Gray"),
+    ],
     # Not made by hand: the runner creates these; one made by hand has no idempotency key.
     in_create=1,
     autoname="naming_series:",
@@ -1110,6 +1167,24 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Tenant Lifecycle Event",
+    states=[
+        ("Dunning Started", "Orange"),
+        ("Dunning Cleared", "Green"),
+        ("Warned", "Yellow"),
+        ("Suspended", "Orange"),
+        ("Resumed", "Green"),
+        ("Cold Copy Taken", "Light Blue"),
+        ("Archived", "Yellow"),
+        ("Restored", "Green"),
+        ("Purge Warned", "Red"),
+        ("Purged", "Red"),
+        ("Backup Taken", "Green"),
+        ("Backup Failed", "Red"),
+        ("Over Quota", "Orange"),
+        ("Back Under Quota", "Green"),
+        ("Held", "Purple"),
+        ("Released", "Gray"),
+    ],
     # Not made by hand: the ladder's append-only trail.
     in_create=1,
     autoname="naming_series:",
@@ -1147,6 +1222,15 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Credit Ledger Entry",
+    search_fields="tenant,entry_type,remarks",
+    states=[
+        ("Grant", "Green"),
+        ("Purchase", "Green"),
+        ("Spend", "Blue"),
+        ("Refund", "Orange"),
+        ("Expiry", "Gray"),
+        ("Adjustment", "Purple"),
+    ],
     # Not made by hand: the ledger is append-only and balance is a sum of it.
     in_create=1,
     autoname="naming_series:",
@@ -1180,6 +1264,13 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Credit Reservation",
+    search_fields="tenant,purpose,status",
+    states=[
+        ("Open", "Blue"),
+        ("Committed", "Green"),
+        ("Released", "Gray"),
+        ("Expired", "Orange"),
+    ],
     # Not made by hand: reserve/commit is the gateway's, and a stray Open row expires.
     in_create=1,
     autoname="naming_series:",
@@ -1395,6 +1486,14 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "AI Model",
+    search_fields="display_name,provider,model_id",
+    states=[
+        ("Available", "Green"),
+        ("Preview", "Light Blue"),
+        ("Needs Review", "Orange"),
+        ("Deprecated", "Yellow"),
+        ("Retired", "Gray"),
+    ],
     # Not made by hand: synced from the providers; one typed here would have no prices.
     in_create=1,
     autoname="field:model_key",
@@ -1460,6 +1559,11 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "AI Feature",
+    states=[
+        ("Active", "Green"),
+        ("Withdrawn", "Gray"),
+        ("Suspended", "Orange"),
+    ],
     # Not made by hand: reported by tenant sites from the decorator, never authored.
     in_create=1,
     autoname="field:feature_key",
@@ -1715,6 +1819,12 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Stripe Webhook Event",
+    states=[
+        ("Received", "Gray"),
+        ("Processed", "Green"),
+        ("Ignored", "Yellow"),
+        ("Failed", "Red"),
+    ],
     # Not made by hand: a mirror of what Stripe delivered.
     in_create=1,
     autoname="field:event_id",
@@ -1744,6 +1854,15 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Account Request",
+    search_fields="email,workspace_name",
+    states=[
+        ("Pending Payment", "Yellow"),
+        ("Paid", "Light Blue"),
+        ("Provisioning", "Blue"),
+        ("Completed", "Green"),
+        ("Failed", "Red"),
+        ("Abandoned", "Gray"),
+    ],
     # Not made by hand: signup creates these, and carries them through checkout.
     in_create=1,
     autoname="hash",
@@ -1796,6 +1915,14 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Standby Site",
+    search_fields="shard,status",
+    states=[
+        ("Creating", "Blue"),
+        ("Ready", "Green"),
+        ("Claimed", "Gray"),
+        ("Broken", "Red"),
+        ("Archived", "Yellow"),
+    ],
     # Not made by hand: the pool builder creates these against a real site on Frappe Cloud.
     in_create=1,
     autoname="field:press_site",
@@ -1821,6 +1948,7 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Region",
+    search_fields="region_name,country",
     autoname="field:region_code",
     title_field="region_name",
     fields=[
@@ -1856,6 +1984,13 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Storage Bucket",
+    search_fields="jurisdiction,status",
+    states=[
+        ("Provisioning", "Blue"),
+        ("Active", "Green"),
+        ("Full", "Yellow"),
+        ("Retired", "Gray"),
+    ],
     # Not made by hand: `r2.provision_bucket` makes the bucket first and the row after.
     in_create=1,
     autoname="field:bucket_name",
@@ -1952,7 +2087,7 @@ doctype(
 HANDLED_SPEC_KEYS = {
     "name", "fields", "perms", "autoname", "title_field",
     "allow_rename", "issingle", "istable", "app", "track_changes",
-    "in_create",
+    "in_create", "states", "search_fields",
 }
 
 
@@ -1977,7 +2112,20 @@ def build(spec):
         "permissions": spec["perms"],
         "sort_field": "modified",
         "sort_order": "DESC",
-        "states": [],
+        # Frappe's Document States: one colour per value of the field a screen
+        # calls its status. The desk reads these for its indicators and so does
+        # `spaceview.presentation`, so a status is one colour in the list, in
+        # the record header and in the desk alike.
+        #
+        # Empty for a doctype no screen shows a badge for. Where a screen *does*
+        # declare a `status_field`, `test_manifests.py` insists every option of
+        # it is here — because the alternative is not "no colour", it is
+        # `valueTheme`'s word list guessing from the text. "Failed" happens to
+        # come out red and "Draining" happens to come out gray, and neither is
+        # a decision anybody made.
+        "states": [
+            {"title": title, "color": color} for title, color in spec.get("states", ())
+        ],
         # On by default: a Version row per edit is what makes an operator's
         # change to a plan or a shard answerable. Off only for a document that
         # is written by machinery rather than by a person — a cache rewritten on
@@ -1997,6 +2145,14 @@ def build(spec):
     if spec.get("title_field"):
         doc["title_field"] = spec["title_field"]
         doc["show_title_field_in_link"] = 1
+
+    if spec.get("search_fields"):
+        # What a picker searches besides the id and the title, and what it
+        # prints under each result. Frappe's own desk reads it the same way —
+        # "Contact" without "the one at Halloway" is not a choice anybody can
+        # make, and until now every link target of ours answered with the id
+        # alone and nothing underneath it.
+        doc["search_fields"] = spec["search_fields"]
     if spec.get("issingle"):
         doc["issingle"] = 1
         doc.pop("allow_rename", None)

@@ -237,8 +237,30 @@
    "write": 1
   }
  ],
+ "search_fields": "tenant,plan,status",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Yellow",
+   "title": "Incomplete"
+  },
+  {
+   "color": "Light Blue",
+   "title": "Trialing"
+  },
+  {
+   "color": "Green",
+   "title": "Active"
+  },
+  {
+   "color": "Orange",
+   "title": "Past Due"
+  },
+  {
+   "color": "Red",
+   "title": "Canceled"
+  }
+ ],
  "track_changes": 1
 }

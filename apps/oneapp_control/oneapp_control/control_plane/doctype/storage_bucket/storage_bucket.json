@@ -134,8 +134,26 @@
    "write": 1
   }
  ],
+ "search_fields": "jurisdiction,status",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Blue",
+   "title": "Provisioning"
+  },
+  {
+   "color": "Green",
+   "title": "Active"
+  },
+  {
+   "color": "Yellow",
+   "title": "Full"
+  },
+  {
+   "color": "Gray",
+   "title": "Retired"
+  }
+ ],
  "track_changes": 1
 }

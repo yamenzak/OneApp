@@ -176,8 +176,38 @@
    "write": 1
   }
  ],
+ "search_fields": "tenant,action,state",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Gray",
+   "title": "Requested"
+  },
+  {
+   "color": "Blue",
+   "title": "Running"
+  },
+  {
+   "color": "Light Blue",
+   "title": "Awaiting Agent"
+  },
+  {
+   "color": "Blue",
+   "title": "Bootstrapping"
+  },
+  {
+   "color": "Green",
+   "title": "Succeeded"
+  },
+  {
+   "color": "Red",
+   "title": "Failed"
+  },
+  {
+   "color": "Gray",
+   "title": "Cancelled"
+  }
+ ],
  "track_changes": 1
 }

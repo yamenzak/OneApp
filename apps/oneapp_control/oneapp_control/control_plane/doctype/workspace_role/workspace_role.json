@@ -93,6 +93,7 @@
    "write": 1
   }
  ],
+ "search_fields": "tenant,role_label",
  "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

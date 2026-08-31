@@ -166,10 +166,20 @@
    "write": 1
   }
  ],
+ "search_fields": "space_label,module",
  "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Green",
+   "title": "General"
+  },
+  {
+   "color": "Orange",
+   "title": "Restricted"
+  }
+ ],
  "title_field": "space_label",
  "track_changes": 1
 }

@@ -238,10 +238,32 @@
    "write": 1
   }
  ],
+ "search_fields": "display_name,provider,model_id",
  "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Green",
+   "title": "Available"
+  },
+  {
+   "color": "Light Blue",
+   "title": "Preview"
+  },
+  {
+   "color": "Orange",
+   "title": "Needs Review"
+  },
+  {
+   "color": "Yellow",
+   "title": "Deprecated"
+  },
+  {
+   "color": "Gray",
+   "title": "Retired"
+  }
+ ],
  "title_field": "display_name",
  "track_changes": 1
 }

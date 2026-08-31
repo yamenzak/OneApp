@@ -116,6 +116,71 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Orange",
+   "title": "Dunning Started"
+  },
+  {
+   "color": "Green",
+   "title": "Dunning Cleared"
+  },
+  {
+   "color": "Yellow",
+   "title": "Warned"
+  },
+  {
+   "color": "Orange",
+   "title": "Suspended"
+  },
+  {
+   "color": "Green",
+   "title": "Resumed"
+  },
+  {
+   "color": "Light Blue",
+   "title": "Cold Copy Taken"
+  },
+  {
+   "color": "Yellow",
+   "title": "Archived"
+  },
+  {
+   "color": "Green",
+   "title": "Restored"
+  },
+  {
+   "color": "Red",
+   "title": "Purge Warned"
+  },
+  {
+   "color": "Red",
+   "title": "Purged"
+  },
+  {
+   "color": "Green",
+   "title": "Backup Taken"
+  },
+  {
+   "color": "Red",
+   "title": "Backup Failed"
+  },
+  {
+   "color": "Orange",
+   "title": "Over Quota"
+  },
+  {
+   "color": "Green",
+   "title": "Back Under Quota"
+  },
+  {
+   "color": "Purple",
+   "title": "Held"
+  },
+  {
+   "color": "Gray",
+   "title": "Released"
+  }
+ ],
  "track_changes": 1
 }

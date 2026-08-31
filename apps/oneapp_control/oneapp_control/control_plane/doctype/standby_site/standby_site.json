@@ -110,8 +110,30 @@
    "write": 1
   }
  ],
+ "search_fields": "shard,status",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Blue",
+   "title": "Creating"
+  },
+  {
+   "color": "Green",
+   "title": "Ready"
+  },
+  {
+   "color": "Gray",
+   "title": "Claimed"
+  },
+  {
+   "color": "Red",
+   "title": "Broken"
+  },
+  {
+   "color": "Yellow",
+   "title": "Archived"
+  }
+ ],
  "track_changes": 1
 }
