@@ -190,10 +190,10 @@ import {
   Alert, Badge, Button, Dialog, ErrorMessage, FormControl, LoadingIndicator,
   List, ListRows, ListRow, ListCell, dayjsLocal,
 } from '@/ui'
-import EmptyState from './EmptyState.vue'
-import { useListColumns } from '../lib/list'
-import { api, useDocList } from '../lib/api'
-import { ai } from '../lib/ai'
+import EmptyState from '../../components/EmptyState.vue'
+import { useListColumns } from '../../lib/list'
+import { useDocList } from '../../lib/resource'
+import { admin } from './admin'
 
 const props = defineProps({ tenant: { type: String, required: true } })
 
@@ -293,8 +293,8 @@ const load = async () => {
   loading.value = true
   try {
     const [billing, calls] = await Promise.all([
-      api.tenantBilling(props.tenant),
-      ai.usage({ tenant: props.tenant, limit: 25 }),
+      admin.tenantBilling(props.tenant),
+      admin.aiUsage({ tenant: props.tenant, limit: 25 }),
     ])
     data.value = billing
     usage.value = calls || []
@@ -307,8 +307,8 @@ const load = async () => {
 async function reconcile() {
   reconciling.value = true
   try {
-    await ai.reconcile()
-    usage.value = (await ai.usage({ tenant: props.tenant, limit: 25 })) || []
+    await admin.reconcileAiUsage()
+    usage.value = (await admin.aiUsage({ tenant: props.tenant, limit: 25 })) || []
   } finally {
     reconciling.value = false
   }
@@ -320,7 +320,7 @@ watch(() => props.tenant, load)
 async function adopt() {
   adopting.value = true
   try {
-    await api.adoptPlanTerms(props.tenant)
+    await admin.adoptPlanTerms(props.tenant)
     await load()
   } finally {
     adopting.value = false
@@ -331,7 +331,7 @@ async function change() {
   changing.value = true
   error.value = ''
   try {
-    await api.setTenantPlan(props.tenant, chosen.value)
+    await admin.setTenantPlan(props.tenant, chosen.value)
     showChange.value = false
     await load()
   } catch (e) {

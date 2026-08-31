@@ -12,11 +12,13 @@ against them.
 
 import ast
 import re
+import sys
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 USAGE_BAR = ROOT / "apps/oneapp/frontend/src/components/UsageBar.vue"
 TENANT_QUOTA = ROOT / "apps/oneapp/oneapp/oneapp_core/storage/quota.py"
 CONTROL_CUSTOMER = ROOT / "apps/oneapp_control/oneapp_control/api/customer.py"
@@ -74,6 +76,13 @@ def test_control_overview_satisfies_the_component():
 	assert not missing, f"bucket() is missing {sorted(missing)}"
 
 
-def test_both_apps_ship_the_same_component():
-	control = ROOT / "apps/oneapp_control/frontend/src/components/UsageBar.vue"
-	assert control.read_text() == USAGE_BAR.read_text()
+def test_the_component_is_generated_rather_than_written():
+	"""Two apps shipped byte-identical copies of this, which is what the guard
+	compared. Only the tenant bundle has it now — signup shows nobody's usage —
+	so what survives is the other half of that claim: the copy on disk is the
+	generator's, not something edited in place beside it."""
+	from gen_frontend import USAGE_BAR_VUE
+
+	assert USAGE_BAR.read_text() == USAGE_BAR_VUE, (
+		"UsageBar was edited in place — edit scripts/gen_frontend.py"
+	)

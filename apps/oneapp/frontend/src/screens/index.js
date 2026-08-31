@@ -28,6 +28,7 @@ export const APP_COMPONENTS = {
   // these are never imported.
   'onespace-ops/readiness': () => import('./ops/Readiness.vue'),
   'onespace-ops/press': () => import('./ops/FrappeCloud.vue'),
+  'onespace-ops/tenant': () => import('./ops/Tenant.vue'),
 
   // The customer's account. Nearly all of it is one workspace's overview,
   // billing and people rather than a list of records, so it is component

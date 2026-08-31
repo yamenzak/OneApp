@@ -208,23 +208,47 @@ def test_members_are_reconciled_after_the_owner():
 
 
 # --------------------------------------------------------------------------- #
-# The portal surface
+# The account surface
+#
+# `/portal` was a second SPA with its own router and its own nav declaration.
+# The account is a Space now — `entitlements/account.py` declares the screens and
+# `screens/index.js` maps each to a component — so "routed and reachable" is a
+# question about those two agreeing, and the rail comes free.
 # --------------------------------------------------------------------------- #
 
-def test_the_team_page_is_routed_and_reachable():
-    router = (ROOT / "apps/oneapp_control/frontend/src/router.js").read_text()
-    assert "AccountTeam" in router
+ACCOUNT_SCREENS = ROOT / "apps/oneapp/frontend/src/screens/account"
+SCREEN_REGISTRY = ROOT / "apps/oneapp/frontend/src/screens/index.js"
 
-    # One declaration feeds the desktop sidebar and the phone's bottom bar, so
-    # naming it once is enough — and is what stops the two drifting.
-    nav = (ROOT / "apps/oneapp_control/frontend/src/lib/nav.js").read_text()
-    assert "AccountTeam" in nav, "no navigation entry"
+
+def account_screens() -> set[str]:
+    """The screens the account Space declares, read without importing frappe."""
+    import ast
+
+    source = (
+        ROOT / "apps/oneapp_control/oneapp_control/entitlements/account.py"
+    ).read_text()
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Assign) and getattr(node.targets[0], "id", "") == "SCREENS":
+            return {row[0] for row in ast.literal_eval(node.value)}
+    raise AssertionError("SCREENS is gone from account.py")
+
+
+def declared_and_registered(screen: str) -> None:
+    assert screen in account_screens(), f"{screen} is not a screen of the account Space"
+    registry = SCREEN_REGISTRY.read_text()
+    assert f"'onespace-account/{screen}'" in registry, (
+        f"{screen} is declared but nothing renders it"
+    )
+
+
+def test_the_team_screen_is_declared_and_reachable():
+    declared_and_registered("people")
 
 
 def test_the_page_says_an_invite_is_not_immediate():
     """It lands on the next sync. Saying so is the difference between 'slow' and
     'broken' for someone watching a colleague fail to sign in."""
-    page = (ROOT / "apps/oneapp_control/frontend/src/pages/account/AccountTeam.vue").read_text()
+    page = (ACCOUNT_SCREENS / "People.vue").read_text()
     assert "syncs" in page
 
 
@@ -270,9 +294,7 @@ def test_a_plan_too_small_for_the_workspace_is_named_not_just_refused():
     for dimension in ('"storage"', '"database"', '"seats"'):
         assert dimension in blockers, dimension
 
-    page = (
-        ROOT / "apps/oneapp_control/frontend/src/pages/account/AccountPlan.vue"
-    ).read_text()
+    page = (ACCOUNT_SCREENS / "Plan.vue").read_text()
     assert "blocked_by" in page
 
 
@@ -300,20 +322,13 @@ def test_the_page_and_the_switch_run_the_same_fit_check():
 
 def test_the_portal_keeps_cards_and_cancellation():
     """Not a rejection of the portal — it is better at the things it owns."""
-    page = (
-        ROOT / "apps/oneapp_control/frontend/src/pages/account/AccountPlan.vue"
-    ).read_text()
+    page = (ACCOUNT_SCREENS / "Plan.vue").read_text()
     assert "customer.changePlan" in page, "the plan page no longer changes the plan"
 
-    billing = (
-        ROOT / "apps/oneapp_control/frontend/src/pages/account/AccountBilling.vue"
-    ).read_text()
+    billing = (ACCOUNT_SCREENS / "Billing.vue").read_text()
     assert "billingPortal" in billing, "nothing hands the customer to Stripe any more"
 
 
-@pytest.mark.parametrize("name", ["AccountApps", "AccountPlan"])
-def test_the_new_pages_are_reachable(name):
-    router = (ROOT / "apps/oneapp_control/frontend/src/router.js").read_text()
-    nav = (ROOT / "apps/oneapp_control/frontend/src/lib/nav.js").read_text()
-    assert name in router, f"{name} is not routed"
-    assert name in nav, f"{name} is not in the navigation"
+@pytest.mark.parametrize("screen", ["apps", "plan"])
+def test_the_new_screens_are_reachable(screen):
+    declared_and_registered(screen)

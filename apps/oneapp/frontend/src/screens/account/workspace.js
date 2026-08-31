@@ -11,14 +11,23 @@
  */
 
 import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 
 import { workspaces } from './customer'
 
 export function useWorkspace() {
+  const route = useRoute()
+
   onMounted(() => {
     // Once per session rather than per screen. `load` refuses to be useful
     // twice and the account has three or four screens somebody clicks through.
-    if (!workspaces.list.length) workspaces.load()
+    //
+    // `?workspace=` is how a link from outside says which one it meant — a
+    // Stripe redirect back from checkout, or a billing email. Preferred rather
+    // than forced: `load` keeps it only if the account actually owns it, so a
+    // stale or guessed link falls back to the first workspace instead of
+    // showing an empty account.
+    if (!workspaces.list.length) workspaces.load(route.query.workspace || null)
   })
 
   return computed(() => workspaces.current)

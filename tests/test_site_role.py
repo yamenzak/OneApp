@@ -191,13 +191,27 @@ def test_the_tenant_app_still_lands_on_its_own_workspace():
 	assert _hook(ROOT / "apps/oneapp/oneapp/hooks.py", "home_page") == "one"
 
 
-def test_a_customer_still_lands_in_their_account():
-	"""What `role_home_page` used to do, kept exactly."""
+def test_everybody_lands_in_the_same_shell_and_the_roles_sort_it_out():
+	"""What `role_home_page` used to do, moved to where it belongs.
+
+	It used to branch: an operator to `/admin`, a customer to `/portal`. Both are
+	Spaces in one shell now, and which of them a person can open is already
+	decided by the role each Space names — `visible_spaces` filters on
+	`role_name` and `_space` refuses the rest. Branching here as well would be a
+	second copy of that rule, able to disagree with the one that is enforced.
+
+	Still a function rather than the `home_page` string: `oneapp` declares one
+	too and Frappe takes the last app's, which depends on install order.
+	"""
 	source = PORTAL.read_text()
 	body = ast.unparse(next(
 		n for n in ast.walk(ast.parse(source))
 		if isinstance(n, ast.FunctionDef) and n.name == "landing"
 	))
-	assert "CUSTOMER_ROLE" in body
-	assert "ACCOUNT" in body
-	assert "'admin'" in body, "an operator no longer lands in the console"
+	assert "'one'" in body
+	assert "CUSTOMER_ROLE" not in body, (
+		"landing is branching on a role again — that rule lives on the Space"
+	)
+	assert "'admin'" not in body and "'portal'" not in body, (
+		"landing still names a retired surface"
+	)

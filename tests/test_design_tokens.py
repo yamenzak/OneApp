@@ -23,6 +23,18 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from token_audit import APPS, ROOT, audit, class_lists, emitted_classes, referenced_classes
+from gen_frontend import APPS as SPECS
+
+# Bundles that render the shell. Only they have a space launcher, so only they
+# generate `lib/icons.js` — the signup page has no space to draw an icon for.
+SHELL_APPS = tuple(app for app, spec in SPECS.items() if spec.get("shell"))
+
+# How many distinct utilities each bundle is expected to reference. Not one
+# number, because they are not one size: the tenant app is a whole product and
+# the signup bundle is two pages. What both are guarding against is the
+# extractor quietly returning nothing, which is what makes the comparison pass
+# vacuously.
+FLOOR = {"oneapp": 60, "oneapp_control": 20}
 
 
 def _built(app: str) -> bool:
@@ -56,10 +68,14 @@ def test_the_audit_is_actually_reading_things(app):
     emitted = emitted_classes(app)
     # Unique utilities, not occurrences. The tenant app is the smaller of the
     # two at ~85; a collapse to a handful means the extractor stopped working.
-    assert len(referenced) > 60, f"{app}: only found {len(referenced)} classes in source"
+    assert len(referenced) > FLOOR[app], (
+        f"{app}: only found {len(referenced)} classes in source"
+    )
     assert len(emitted) > 300, f"{app}: only found {len(emitted)} classes in the CSS"
-    # A class we know is used and valid, proving the two sides line up.
-    assert "text-ink-gray-8" in referenced and "text-ink-gray-8" in emitted
+    # A class we know is used and valid, proving the two sides line up. The
+    # darkest ink is on every page either bundle has, which is what makes it a
+    # witness rather than a coincidence.
+    assert "text-ink-gray-9" in referenced and "text-ink-gray-9" in emitted
 
 
 @pytest.mark.parametrize("app", APPS)
@@ -113,7 +129,7 @@ def test_no_icon_class_is_built_by_interpolation(app):
     )
 
 
-@pytest.mark.parametrize("app", APPS)
+@pytest.mark.parametrize("app", SHELL_APPS)
 def test_every_registry_icon_emits_css(app):
     """The whole point of the generated set.
 
@@ -156,7 +172,7 @@ def test_the_doctype_offers_exactly_the_generated_set():
     assert field["options"].split("\n") == SPACE_ICONS
     assert field.get("default") == DEFAULT_SPACE_ICON
 
-    for app in APPS:
+    for app in SHELL_APPS:
         assert _generated_icons(app) == SPACE_ICONS, (
             f"{app}/lib/icons.js is out of date — run scripts/gen_frontend.py"
         )

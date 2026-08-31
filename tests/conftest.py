@@ -110,6 +110,17 @@ def _make_frappe():
 	frappe.parse_json = parse_json
 	frappe.get_traceback = lambda *a, **k: ""
 
+	def get_attr(path):
+		"""Frappe's own: import the module and take the last attribute."""
+		module, _, attribute = str(path).rpartition(".")
+		return getattr(__import__(module, fromlist=[attribute]), attribute)
+
+	frappe.get_attr = get_attr
+	# Permissive by default, and overridden by the tests that are about
+	# permission. A stub that refused everything would make every unrelated test
+	# assert its own workaround.
+	frappe.has_permission = lambda *a, **k: True
+
 	def whitelist(*d_args, **d_kwargs):
 		"""Passthrough decorator — routing is Frappe's job, not the logic's."""
 		def decorator(fn):

@@ -95,12 +95,24 @@ def test_the_price_ids_are_not_typed_by_hand():
 	for name in ("stripe_product_id", "stripe_price_id_monthly", "stripe_price_id_yearly"):
 		assert fields[name].get("read_only"), f"{name} is editable again"
 
-	form = (
-		ROOT / "apps/oneapp_control/frontend/src/components/settings/PlansSettings.vue"
+	# The operator's form is the generic record form now, over this doctype —
+	# there is no hand-written PlansSettings.vue to keep in step. So `read_only`
+	# above is what makes the field uneditable, and this is the other half: the
+	# Plans screen does not put a Stripe id in front of somebody as if it were
+	# theirs to set.
+	import ast as _ast
+
+	operator = (
+		ROOT / "apps/oneapp_control/oneapp_control/entitlements/operator.py"
 	).read_text()
-	form_block = form[form.index("const FORM"):form.index("const stripeCell")]
-	assert "stripe_price_id" not in form_block, "the operator form offers a price id again"
-	assert "stripe_product_id" not in form_block
+	screens = next(
+		_ast.literal_eval(node.value)
+		for node in _ast.walk(_ast.parse(operator))
+		if isinstance(node, _ast.Assign) and getattr(node.targets[0], "id", "") == "SCREENS"
+	)
+	columns = next(row[4] for row in screens if row[3] == "Plan")
+	assert "stripe_price_id" not in columns, "the Plans screen advertises a price id"
+	assert "stripe_product_id" not in columns
 
 
 def test_syncing_cannot_stop_a_plan_being_saved():

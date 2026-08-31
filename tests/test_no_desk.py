@@ -6,9 +6,15 @@ operator is told to "just open the desk" — at which point running this require
 knowing Frappe, which is the thing the claim was protecting against.
 
 So the claim is checked rather than remembered. Every doctype the control plane
-defines has to be reachable from OneAdmin, and every doctype the tenant app
-defines has to be reachable from OneSpace, unless it is on a list that says why
-not.
+defines has to be reachable from the operator console, and every doctype the
+tenant app defines has to be reachable from a workspace, unless it is on a list
+that says why not.
+
+Both consoles are Spaces now, rendered by `oneapp` on whichever site they belong
+to. So "reachable" is no longer a string in a hand-written Vue page: a control
+doctype is reachable because the operator Space declares a screen over it, or
+because a settings group edits it, or because a bespoke screen calls an endpoint
+that names it. Those are the three shapes, and all three are checked.
 """
 
 import json
@@ -19,8 +25,13 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTROL = ROOT / "apps/oneapp_control/oneapp_control"
-CONTROL_SRC = ROOT / "apps/oneapp_control/frontend/src"
+# What is left of the control app's own frontend: signup, and nothing else.
+SIGNUP_SRC = ROOT / "apps/oneapp_control/frontend/src"
+# Where both consoles live now — the tenant workspace, the operator Space and
+# the customer's account are all screens in this one bundle.
 TENANT_SRC = ROOT / "apps/oneapp/frontend/src"
+OPERATOR = CONTROL / "entitlements/operator.py"
+CONTROL_SETTINGS = CONTROL / "entitlements/settings.py"
 
 
 def doctypes(app_dir: Path) -> dict[str, dict]:
@@ -34,28 +45,36 @@ def doctypes(app_dir: Path) -> dict[str, dict]:
 	return found
 
 
-# A doctype needs no surface of its own when it is reached through its parent,
-# or when nothing about it is ever a decision.
+# A doctype needs no surface of its own when it is reached through its parent.
+#
+# Shorter than it was, and that is the point of the operator Space: five of
+# these used to be exempt because they were "read through something else" on a
+# hand-written tenant page. Each has a screen of its own now, so the exemption
+# was a description of what had not been built rather than of what should not
+# be.
 EXEMPT = {
-	# Child tables. Edited through the document that owns them, and a table with
-	# its own page would be a second, disagreeing way in.
-	"Tenant Member": "child table, edited on the workspace's People page",
+	"Tenant Member": "child table, edited on the workspace's People screen",
 	"Plan Price": "child table, written by the Stripe sync and shown on the plan",
 	"OneSpace Space Doctype": "child table; the permission manifest is code, not config",
+	"OneSpace Space Screen": (
+		"child table; a space's screens are rows on the space, and a screen with "
+		"no space to belong to is not a thing an operator creates"
+	),
 	"AI Model Price": (
 		"child table, synced from the provider and shown on the model it belongs "
 		"to; editable rates would be overwritten by the next sync"
 	),
-	# Written by the system, read through something else.
-	"Credit Reservation": (
-		"held for an in-flight call and released on completion; the balance it "
-		"affects is on the workspace's Billing tab"
-	),
-	"Space Entitlement": "granted and revoked on the workspace's Apps tab",
-	"Support Login": "an audit record, listed on the workspace's Activity tab",
-	"Credit Ledger Entry": "listed on the workspace's Billing tab",
-	"Subscription": "shown, and moved between plans, on the workspace's Billing tab",
 }
+
+
+def _const(path: Path, name: str):
+	"""A module-level constant, read without importing frappe."""
+	import ast
+
+	for node in ast.walk(ast.parse(path.read_text())):
+		if isinstance(node, ast.Assign) and getattr(node.targets[0], "id", "") == name:
+			return ast.literal_eval(node.value)
+	raise AssertionError(f"{name} is gone from {path.name}")
 
 
 def _spa_source(src: Path) -> str:
@@ -92,17 +111,42 @@ def _endpoints_by_doctype(module: Path) -> dict[str, set[str]]:
 	return found
 
 
-def test_every_control_doctype_is_reachable_from_oneadmin():
-	spa = _spa_source(CONTROL_SRC)
+def operator_screens() -> set[str]:
+	"""Every doctype the operator Space declares a screen over."""
+	return {row[3] for row in _const(OPERATOR, "SCREENS")}
+
+
+def settings_targets() -> set[str]:
+	"""Every doctype the control plane's settings groups write.
+
+	A Single has no list to put on a screen; what it has is a settings group,
+	which is a surface in exactly the sense this file cares about — somebody can
+	change the value without opening the desk.
+	"""
+	source = CONTROL_SETTINGS.read_text()
+	return set(re.findall(r'^SETTINGS = "([^"]+)"', source, re.M))
+
+
+def test_every_control_doctype_is_reachable_from_the_operator_console():
+	spa = _spa_source(TENANT_SRC)
 	endpoints = _endpoints_by_doctype(CONTROL / "api/admin.py")
+	screens = operator_screens()
+	settings = settings_targets()
 
 	missing = []
 	for name in doctypes(CONTROL):
 		if name in EXEMPT:
 			continue
+		# A screen of the operator Space, which is the ordinary way.
+		if name in screens:
+			continue
+		# A Single, changed in the settings dialog.
+		if name in settings:
+			continue
+		# Named directly by one of the bespoke screens.
 		if name in spa:
 			continue
-		# Reached through an endpoint the SPA actually calls.
+		# Reached through an endpoint one of them calls.
 		if any(f"admin.{fn}" in spa for fn in endpoints.get(name, ())):
 			continue
 		missing.append(name)
@@ -217,66 +261,136 @@ def test_the_exemption_list_has_no_stale_entries():
 ADMIN_API = (CONTROL / "api/admin.py").read_text()
 
 
-@pytest.mark.parametrize(
-	"endpoint,why",
-	[
-		("update_shard", "draining a server is accepts_new_tenants = 0"),
-		("signups", "a signup that paid and failed to provision is otherwise invisible"),
-		("webhook_events", "the webhook answers 200 on failure; the row is the replay"),
-		("replay_webhook", "and replaying it has to be possible"),
-		("standby_pool", "an empty warm pool is a slow signup"),
-		("tenant_app_access", "granting a restricted app"),
-		("tenant_billing", "what a workspace is on, and on whose terms"),
-		("adopt_plan_terms", "the deliberate half of grandfathering"),
-		("set_tenant_plan", "moving a workspace between plans"),
-	],
-)
-def test_the_operator_can_do_it_without_the_desk(endpoint, why):
+# Nine things `/admin` could do that a doctype list alone cannot express. Each
+# is checked against whichever of the three surfaces now carries it, because
+# "the endpoint exists" was never the claim — the claim is that somebody can
+# reach it without the desk.
+#
+# A screen over the doctype covers the reads and the field edits: the console's
+# Signups page was `admin.signups`, and the Signups screen is the same rows with
+# filters, saved views and a record form on top. What a screen cannot express is
+# a *call* — replaying an event, moving a workspace onto its plan's terms — and
+# those are declared actions or buttons on the workspace screen.
+BY_SCREEN = {
+	"update_shard": ("Shard", "draining a server is accepts_new_tenants = 0"),
+	"signups": ("Account Request", "a signup that paid and failed to provision is otherwise invisible"),
+	"webhook_events": ("Stripe Webhook Event", "the webhook answers 200 on failure; the row is the replay"),
+	"standby_pool": ("Standby Site", "an empty warm pool is a slow signup"),
+	"tenant_billing": ("Subscription", "what a workspace is on, and on whose terms"),
+}
+
+# What the workspace screen carries, because each is a call against one tenant
+# rather than a row anybody edits.
+BY_WORKSPACE_SCREEN = {
+	"tenant_app_access": ("tenantAppAccess", "granting a restricted app"),
+	"set_tenant_plan": ("setTenantPlan", "moving a workspace between plans"),
+}
+
+# And what is a declared action on a screen — see `entitlements/actions.py`.
+BY_ACTION = {
+	"replay_webhook": "and replaying it has to be possible",
+	"adopt_plan_terms": "the deliberate half of grandfathering",
+}
+
+OPS_SCREENS = ROOT / "apps/oneapp/frontend/src/screens/ops"
+ACTIONS = CONTROL / "entitlements/actions.py"
+
+
+@pytest.mark.parametrize("endpoint", sorted(BY_SCREEN), ids=sorted(BY_SCREEN))
+def test_a_read_only_gap_is_closed_by_a_screen(endpoint):
+	doctype, why = BY_SCREEN[endpoint]
+	assert f"def {endpoint}(" in ADMIN_API, f"{endpoint} is missing — {why}"
+	assert doctype in operator_screens(), (
+		f"{doctype} has no operator screen, so {why} needs the desk"
+	)
+
+
+@pytest.mark.parametrize("endpoint", sorted(BY_WORKSPACE_SCREEN), ids=sorted(BY_WORKSPACE_SCREEN))
+def test_a_call_against_one_tenant_lives_on_the_workspace_screen(endpoint):
+	caller, why = BY_WORKSPACE_SCREEN[endpoint]
 	assert f"def {endpoint}(" in ADMIN_API, f"{endpoint} is missing — {why}"
 
-	api = (CONTROL_SRC / "lib/api.js").read_text()
-	assert f"admin.{endpoint}" in api, f"{endpoint} is not wired into the SPA — {why}"
+	wired = _spa_source(OPS_SCREENS)
+	assert f"{endpoint}'" in wired or f"'{endpoint}'" in wired, (
+		f"{endpoint} is not wired into the operator screens — {why}"
+	)
+	assert caller in wired, f"nothing calls {caller} — {why}"
 
 
-def test_a_catalogue_an_operator_must_populate_has_a_form():
+@pytest.mark.parametrize("endpoint", sorted(BY_ACTION), ids=sorted(BY_ACTION))
+def test_a_call_with_no_field_to_edit_is_a_declared_action(endpoint):
+	"""A generic screen lists and edits; these are neither.
+
+	Without the action seam each of these would be an endpoint nothing calls,
+	which is the same as not having it — and the desk would be the only way to
+	replay a failed Stripe event.
+	"""
+	why = BY_ACTION[endpoint]
+	assert f"def {endpoint}(" in ADMIN_API, f"{endpoint} is missing — {why}"
+	assert f"oneapp_control.api.admin.{endpoint}" in ACTIONS.read_text(), (
+		f"{endpoint} is not a declared action — {why}"
+	)
+
+
+def test_a_declared_action_is_the_only_method_the_runner_will_call():
+	"""The seam is an allowlist or it is a way to call anything whitelisted.
+
+	`run_action` looks the key up in the same list the payload was built from and
+	refuses anything else, so a method name in a request body reaches nothing
+	that was not shipped as a declaration.
+	"""
+	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/spaceview.py").read_text()
+	runner = source[source.index("def run_action("):]
+	assert "declared.get(action)" in runner, "the action is not looked up in the declaration"
+	assert "frappe.PermissionError" in runner, "an undeclared action does not refuse"
+	assert 'frappe.has_permission(doctype, "write"' in runner, (
+		"the runner does not ask whether this person may change the record"
+	)
+
+
+def test_an_action_provider_is_code_rather_than_a_row():
+	"""An action names a method somebody can invoke. If an operator could add one
+	by editing a Space, the console would be a way to call any whitelisted
+	method on the site."""
+	hooks = (CONTROL / "hooks.py").read_text()
+	assert "onespace_screen_actions" in hooks, "nothing provides actions"
+
+	doctype = json.loads(
+		(CONTROL / "control_plane/doctype/onespace_space_screen/onespace_space_screen.json").read_text()
+	)
+	fields = {f["fieldname"] for f in doctype["fields"]}
+	assert "method" not in fields and "action" not in fields, (
+		"a screen row can name a method again — actions belong in code"
+	)
+
+
+def test_a_catalogue_an_operator_must_populate_has_a_screen():
 	"""A read-only catalogue that nothing else writes is a dead end: the control
-	plane can show its price sheet and never write one."""
-	for panel, doctype in (
-		("PlansSettings.vue", "Plan"),
-		("RegionsSettings.vue", "Region"),
-		("SpacesSettings.vue", "OneSpace Space"),
-	):
-		source = (CONTROL_SRC / "components/settings" / panel).read_text()
-		assert ':form="FORM"' in source, f"{panel} is read-only, so {doctype} needs the desk"
+	plane can show its price sheet and never write one.
+
+	These were hand-written settings panels with a `:form` prop. They are
+	ordinary screens now, so what makes them writable is the Space's own grant —
+	`Manage`, which is what puts a New button and an editable form on a screen.
+	"""
+	access = {
+		row["document_type"]: row["access"]
+		for row in [
+			{"document_type": doctype, "access": "Manage"}
+			for doctype in _const(OPERATOR, "DOCTYPES")
+		]
+	}
+	for doctype in ("Plan", "Region", "OneSpace Space"):
+		assert doctype in operator_screens(), f"{doctype} has no screen"
+		assert access.get(doctype) == "Manage", f"{doctype} is read-only, so it needs the desk"
 
 
-def test_a_form_only_offers_fields_the_list_actually_fetches():
-	"""A field in the form but not in `fields` reads as empty and is written back
-	as empty on the first save."""
-	offenders = []
-	for path in sorted((CONTROL_SRC / "components/settings").glob("*Settings.vue")):
-		source = path.read_text()
-		if ':form="FORM"' not in source:
-			continue
-
-		fields = set(re.findall(r"'(\w+)'", _block(source, "FIELDS", ":fields")))
-		form = set(re.findall(r"name: '(\w+)'", _block(source, "FORM", None)))
-		missing = form - fields
-		if missing:
-			offenders.append(f"{path.name}: {sorted(missing)}")
-	assert not offenders, "form fields that are never fetched: " + "; ".join(offenders)
-
-
-def _block(source: str, const: str, attr: str | None) -> str:
-	"""The literal a constant or an inline attribute is declared with."""
-	match = re.search(rf"const {const} = (\[.*?\n\])", source, re.S)
-	if match:
-		return match.group(1)
-	if attr:
-		match = re.search(rf'{attr}="(\[[^"]*\])"', source, re.S)
-		if match:
-			return match.group(1)
-	return ""
+# The panel that offered a field its list never fetched — so it read as empty
+# and was written back as empty on the first save — was a hand-written settings
+# form, and there are none left. A screen's form is derived from the doctype by
+# the resolver, over the fields the resolver itself fetched, so the two cannot
+# disagree. What is still worth pinning is that a screen's *declared* columns
+# are real fieldnames, and `test_operator_console.py` does that against the
+# doctype's own JSON.
 
 
 # Frappe's desk is at /app. A SPA route of the same shape is not a desk link —
@@ -287,7 +401,7 @@ DESK_NAVIGATION = re.compile(
 )
 
 
-@pytest.mark.parametrize("src", [CONTROL_SRC, TENANT_SRC], ids=["oneapp_control", "oneapp"])
+@pytest.mark.parametrize("src", [SIGNUP_SRC, TENANT_SRC], ids=["oneapp_control", "oneapp"])
 def test_no_spa_sends_anyone_into_the_desk(src):
 	"""Neither an operator nor a customer is ever handed to /app.
 

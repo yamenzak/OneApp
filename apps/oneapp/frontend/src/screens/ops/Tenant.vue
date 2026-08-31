@@ -1,13 +1,40 @@
 <template>
-  <PageHeader>
-    <Breadcrumbs
-      :items="[
-        { label: 'Tenants', route: { name: 'Tenants' } },
-        { label: tenant?.tenant_name || name },
-      ]"
-    />
+  <!--
+    One tenant, seen from both sides.
 
-    <div class="flex items-center gap-2">
+    A component screen because almost none of it is stored here: the control
+    plane holds intent — the plan, the quotas, who owns it — and Frappe Cloud
+    holds what is actually running. The generic screen over the Tenant doctype
+    shows the first; this is where the second lives, and where a disagreement
+    between them is marked rather than left for somebody to spot by reading two
+    columns.
+
+    Which tenant is in the query, so this is a link an operator can send. The
+    Tenants screen declares a record action that opens it — see
+    `entitlements/actions.py`.
+  -->
+  <div v-if="!name" class="mx-auto w-full max-w-[940px] px-3 py-8 sm:px-5">
+    <EmptyState
+      icon="lucide-users"
+      title="No workspace chosen"
+      description="Open one from the Tenants screen, or name it in the address."
+    />
+  </div>
+
+  <div v-else-if="!tenant" class="grid place-items-center py-16">
+    <LoadingIndicator class="size-5 text-ink-gray-5" />
+  </div>
+
+  <template v-else>
+  <div class="mx-auto flex w-full max-w-[940px] flex-wrap items-center gap-2 px-3 pt-5 sm:px-5">
+    <div class="min-w-0 flex-1">
+      <h2 class="truncate text-lg-semibold text-ink-gray-9">
+        {{ tenant?.tenant_name || name }}
+      </h2>
+      <p class="truncate text-p-sm text-ink-gray-5">{{ tenant?.site_name || 'No site yet' }}</p>
+    </div>
+
+    <div class="flex shrink-0 items-center gap-2">
       <Button label="Sign in" icon-left="lucide-key-round" @click="showSupport = true" />
       <Button v-if="tenant?.status === 'Active'" label="Suspend" @click="act('suspend')" />
       <Button
@@ -23,9 +50,9 @@
         @click="act('provision')"
       />
     </div>
-  </PageHeader>
+  </div>
 
-  <div v-if="tenant" class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
+  <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
     <Alert v-if="tenant.status === 'Failed'" theme="red" title="Provisioning failed" class="my-5">
       <template #description>
         {{ tenant.suspended_reason || 'See the provisioning job for the reason.' }}
@@ -203,11 +230,11 @@
            is chosen — a tenant page should not make five press and billing
            calls to show a record. -->
       <TabPanel value="apps" class="pt-4">
-        <TenantSpacesPanel v-if="tab === 'apps'" :tenant="name" />
+        <TenantSpaces v-if="tab === 'apps'" :tenant="name" />
       </TabPanel>
 
       <TabPanel value="billing" class="pt-4">
-        <TenantBillingPanel v-if="tab === 'billing'" :tenant="name" />
+        <TenantBilling v-if="tab === 'billing'" :tenant="name" />
       </TabPanel>
 
       <TabPanel value="activity">
@@ -294,6 +321,7 @@
       </TabPanel>
     </Tabs>
   </div>
+  </template>
 
   <Dialog v-model="showSupport" title="Sign in to this workspace" size="lg">
     <div v-focus class="flex flex-col gap-4">
@@ -327,17 +355,20 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import {
-  PageHeader, Breadcrumbs, Button, Alert, Badge, Dialog, ErrorMessage, FormControl,
+  Button, Alert, Badge, Dialog, ErrorMessage, FormControl, LoadingIndicator,
   List, ListHeader, ListHeaderCell, ListRows, ListRow, ListCell,
   Tabs, TabList, TabTrigger, TabPanel, dayjsLocal, vFocus,
 } from '@/ui'
-import PressPanel from '../components/PressPanel.vue'
-import TenantSpacesPanel from '../components/TenantSpacesPanel.vue'
-import TenantBillingPanel from '../components/TenantBillingPanel.vue'
-import { api, useDocument } from '../lib/api'
-import { useListColumns } from '../lib/list'
-import { usePress } from '../lib/press'
+import EmptyState from '../../components/EmptyState.vue'
+import PressPanel from './PressPanel.vue'
+import TenantSpaces from './TenantSpaces.vue'
+import TenantBilling from './TenantBilling.vue'
+import { useDocument } from '../../lib/resource'
+import { useListColumns } from '../../lib/list'
+import { admin } from './admin'
+import { usePress } from './press'
 
 // Fixed tracks sized for a desktop leave a phone about 20px for the column the
 // row exists to name. Each list below says which columns a phone can spare;
@@ -380,10 +411,18 @@ const { visible: loginCols, columns: loginTracks, shows: loginShows } =
   { key: 'when', header: 'When', track: '11rem', mobile: '6rem' },
 ])
 
-const props = defineProps({ name: { type: String, required: true } })
+defineProps({
+  spaceCode: { type: String, default: '' },
+  screen: { type: String, default: '' },
+})
+
+// Which workspace, from the address. A screen action on the Tenants list puts
+// it there, and so does a link somebody pastes to a colleague.
+const route = useRoute()
+const name = computed(() => String(route.query.record || ''))
 
 // Live: a status change from the provisioning worker lands here on its own.
-const resource = useDocument('Tenant', () => props.name)
+const resource = useDocument('Tenant', () => name.value)
 // useDoc exposes the document as `doc`, and shares it with any list that
 // fetched the same record — a status change from either lands on both.
 const tenant = computed(() => resource.doc)
@@ -393,10 +432,10 @@ const tab = ref('record')
 // Each press read is its own panel, fetched when its tab is first opened rather
 // than all at once: five calls to Frappe Cloud on page load would make the page
 // as slow as the slowest of them, to show four things nobody looked at.
-const site = usePress(() => api.siteState(props.name), tab, 'site')
-const domains = usePress(() => api.siteDomains(props.name), tab, 'domains')
-const backups = usePress(() => api.siteBackups(props.name), tab, 'backups')
-const jobs = usePress(() => api.siteJobs(props.name), tab, 'activity')
+const site = usePress(() => admin.siteState(name.value), tab, 'site')
+const domains = usePress(() => admin.siteDomains(name.value), tab, 'domains')
+const backups = usePress(() => admin.siteBackups(name.value), tab, 'backups')
+const jobs = usePress(() => admin.siteJobs(name.value), tab, 'activity')
 
 const domainRows = computed(() => domains.data?.domains || [])
 const backupRows = computed(() => backups.data?.backups || [])
@@ -404,7 +443,7 @@ const jobRows = computed(() => jobs.data?.jobs || [])
 
 const logins = ref([])
 watch(tab, async (value) => {
-  if (value === 'activity') logins.value = (await api.supportLogins(props.name)) || []
+  if (value === 'activity') logins.value = (await admin.supportLogins(name.value)) || []
 })
 
 const when = (value) => (value ? dayjsLocal(value).format('D MMM YYYY, HH:mm') : '—')
@@ -486,16 +525,16 @@ watch(showSupport, (open) => {
 })
 
 async function act(kind) {
-  if (kind === 'suspend') await api.suspend(props.name, 'Suspended by operator')
-  if (kind === 'resume') await api.resume(props.name)
-  if (kind === 'provision') await api.provision(props.name)
+  if (kind === 'suspend') await admin.suspend(name.value, 'Suspended by operator')
+  if (kind === 'resume') await admin.resume(name.value)
+  if (kind === 'provision') await admin.provision(name.value)
   resource.reload()
 }
 
 async function backup() {
   backingUp.value = true
   try {
-    await api.takeBackup(props.name)
+    await admin.takeBackup(name.value)
     backups.reload()
   } finally {
     backingUp.value = false
@@ -505,7 +544,7 @@ async function backup() {
 async function download(row) {
   busy.value = row.name
   try {
-    const result = await api.backupDownload(props.name, row.name, 'database')
+    const result = await admin.backupDownload(name.value, row.name, 'database')
     if (result?.url) window.open(result.url, '_blank', 'noopener')
   } finally {
     busy.value = ''
@@ -515,7 +554,7 @@ async function download(row) {
 async function makePrimary(domain) {
   busy.value = domain
   try {
-    await api.setPrimaryDomain(props.name, domain)
+    await admin.setPrimaryDomain(name.value, domain)
     domains.reload()
     resource.reload()
   } finally {
@@ -526,7 +565,7 @@ async function makePrimary(domain) {
 async function dropDomain(domain) {
   busy.value = domain
   try {
-    await api.removeSiteDomain(props.name, domain)
+    await admin.removeSiteDomain(name.value, domain)
     domains.reload()
   } finally {
     busy.value = ''
@@ -537,7 +576,7 @@ async function signIn() {
   signingIn.value = true
   supportError.value = ''
   try {
-    const result = await api.supportLogin(props.name, reason.value)
+    const result = await admin.supportLogin(name.value, reason.value)
     showSupport.value = false
     // A new tab rather than a redirect: the operator is mid-investigation here,
     // and losing this page to go and look is its own small tax.

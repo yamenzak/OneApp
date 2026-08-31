@@ -303,13 +303,21 @@ def test_listrows_is_given_items(app):
 
 SHELL = "src/components/AppShell.vue"
 
+# Which bundles render the shell at all. `oneapp_control` is a signup page and
+# nothing else now — no rail, no bottom bar, no account menu — so asking it to
+# have one would only teach us to generate an AppShell no route mounts. It is
+# read off the generator's own spec rather than off the filesystem: a bundle
+# stops having a shell by someone deleting `shell: True`, which is a visible
+# act, not by a file quietly going missing.
+SHELL_APPS = tuple(app for app, spec in APPS.items() if spec.get("shell"))
+
 
 def _sources(app: str, suffix: str = ".vue"):
 	root = ROOT / f"apps/{app}/frontend/src"
 	return {p.relative_to(root.parent).as_posix(): p.read_text() for p in root.rglob(f"*{suffix}")}
 
 
-@pytest.mark.parametrize("app", ["oneapp", "oneapp_control"])
+@pytest.mark.parametrize("app", APPS)
 def test_only_the_shell_composes_the_layout_primitives(app):
 	restricted = ("DesktopShell", "MobileShell", "MobileNav", "Rail")
 	# The boundary matters: <RailAccount> is a component of ours that happens to
@@ -324,14 +332,21 @@ def test_only_the_shell_composes_the_layout_primitives(app):
 	assert not offenders, f"compose <AppShell> instead: {offenders}"
 
 
-@pytest.mark.parametrize("app", ["oneapp", "oneapp_control"])
-def test_shell_is_identical_across_apps(app):
-	assert (ROOT / f"apps/{app}/frontend/{SHELL}").read_text() == (
-		ROOT / f"apps/oneapp_control/frontend/{SHELL}"
-	).read_text()
+def test_the_shell_is_generated_rather_than_written():
+	"""It used to be two apps holding byte-identical copies; that is what this
+	compared. One bundle renders a shell now, so what is left to check is the
+	other half of the same claim — that nobody edits the copy on disk instead of
+	the template it comes from, which is how the two used to drift apart.
+	"""
+	from gen_frontend import APP_SHELL_VUE
+
+	for app in SHELL_APPS:
+		assert (ROOT / f"apps/{app}/frontend/{SHELL}").read_text() == APP_SHELL_VUE, (
+			f"{app}'s shell was edited in place — edit scripts/gen_frontend.py"
+		)
 
 
-@pytest.mark.parametrize("app", ["oneapp", "oneapp_control"])
+@pytest.mark.parametrize("app", SHELL_APPS)
 def test_mobile_can_still_reach_the_app_switcher(app):
 	# The gap MobileShell leaves: it has no rail slot, so without an explicit
 	# switcher a phone user is stuck in whichever app they opened.
@@ -339,7 +354,7 @@ def test_mobile_can_still_reach_the_app_switcher(app):
 	assert "BottomSheet" in shell
 
 
-@pytest.mark.parametrize("app", ["oneapp", "oneapp_control"])
+@pytest.mark.parametrize("app", APPS)
 def test_no_binary_theme_toggle(app):
 	# A two-state toggle cannot express "follow the system", so appearance is a
 	# three-way ThemeSwitcher in settings instead.
@@ -464,10 +479,16 @@ def test_the_prepaint_theme_script_matches_the_composable():
 	attribute = re.search(r"DOM_ATTRIBUTE\s*=\s*'([^']+)'", composable)
 	assert key and attribute, "useColorScheme no longer names its key/attribute"
 
+	# One authored shell per bundle, plus whatever www copies are checked in.
+	# The rest are emitted by the build from these, so a copy cannot disagree.
 	shells = sorted(ROOT.glob("apps/*/frontend/index.html")) + sorted(
 		ROOT.glob("apps/*/*/www/*.html")
 	)
-	assert len(shells) >= 4, f"only found {len(shells)} shells"
+	authored = {path for path in shells if path.name == "index.html"}
+	assert len(authored) == len(APPS), (
+		f"found {len(authored)} authored shells for {len(APPS)} bundles"
+	)
+	assert len(shells) > len(authored), "no www shell is checked in any more"
 	for shell in shells:
 		html = shell.read_text()
 		assert f"localStorage.getItem('{key.group(1)}')" in html, (
@@ -605,7 +626,7 @@ def _declares_a_nav_item(source: str) -> bool:
 	return False
 
 
-@pytest.mark.parametrize("app", APPS)
+@pytest.mark.parametrize("app", SHELL_APPS)
 def test_navigation_is_declared_in_one_place(app):
 	root = ROOT / f"apps/{app}/frontend/src"
 	assert (root / NAV_MODULE).exists(), f"{app} has no {NAV_MODULE}"
@@ -624,7 +645,7 @@ def test_navigation_is_declared_in_one_place(app):
 	)
 
 
-@pytest.mark.parametrize("app", APPS)
+@pytest.mark.parametrize("app", SHELL_APPS)
 def test_both_renderings_read_that_one_list(app):
 	"""Not merely that the module exists — that nothing bypasses it."""
 	root = ROOT / f"apps/{app}/frontend/src"
@@ -641,7 +662,7 @@ def test_the_bottom_bar_leaves_a_slot_for_everything_else():
 	"""A grid bar of equal columns stops being readable past five on a phone,
 	and a sidebar can hold twenty entries. The last slot is always the account,
 	opening a sheet, so nothing a surface declares is unreachable."""
-	shell = (ROOT / f"apps/oneapp_control/frontend/{SHELL}").read_text()
+	shell = (ROOT / f"apps/{SHELL_APPS[0]}/frontend/{SHELL}").read_text()
 
 	assert "PRIMARY_SLOTS = 4" in shell, "the bar no longer reserves a slot for More"
 	assert "slice(0, PRIMARY_SLOTS)" in shell, "the bar is no longer capped"
@@ -656,7 +677,7 @@ def test_the_bottom_bar_leaves_a_slot_for_everything_else():
 		assert reachable in shell, f"the More sheet cannot reach {reachable}"
 
 
-@pytest.mark.parametrize("app", APPS)
+@pytest.mark.parametrize("app", SHELL_APPS)
 def test_appearance_is_reachable_without_opening_settings(app):
 	"""It is the preference people change most often; behind a dialog is the
 	slow path. Three options, not a toggle — see test_no_binary_theme_toggle."""

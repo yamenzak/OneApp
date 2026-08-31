@@ -1,18 +1,22 @@
 import frappe
 from frappe.utils import get_system_timezone
 
-# The SPA owns routing under /portal, so every path below it serves the same
-# shell rather than 404ing on a deep link.
+# The signup SPA owns routing under /signup, so a reload on the welcome page
+# serves the same shell rather than 404ing.
 no_cache = 1
 
 
 def get_context(context):
-	# Deliberately open to Guest. /portal/signup is the front door for someone
-	# who does not have an account yet, and redirecting them to a login they
-	# cannot complete would make signing up impossible. Everything that reads or
-	# changes data is a whitelisted method that resolves the workspace from the
-	# session and refuses anything the caller does not own — the page itself
-	# carries no customer data.
+	# Deliberately open to Guest, and the only page on this site that is.
+	#
+	# Signing up is the one thing somebody does before they have an account, so
+	# redirecting to a login they cannot complete would make it impossible. That
+	# is also why this outlived the rest of the control app's frontend: `/one`
+	# sends a Guest to sign in, correctly, and this cannot.
+	#
+	# The page carries no customer data. Everything behind it is a whitelisted
+	# method that resolves the workspace from the session and refuses anything
+	# the caller does not own.
 	context.boot = {
 		"site_name": frappe.local.site,
 		# Frappe stores datetimes in the *system* timezone. Without this the SPA

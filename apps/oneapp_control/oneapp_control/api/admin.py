@@ -526,8 +526,11 @@ def site_state(tenant: str) -> dict:
 	if not site:
 		return {"site": None, "reason": "This tenant has no site yet."}
 
-	client = _press()
-	facts, error = _degrade(lambda: client.get_site(site), {})
+	# The client inside the lambda, like every other read here. Built outside it,
+	# a control plane with no press credentials raised while *constructing* the
+	# client — before `_degrade` could turn that into a reason — so the one panel
+	# that exists to say what is wrong with a site was the one that 500'd.
+	facts, error = _degrade(lambda: _press().get_site(site), {})
 
 	# Field names read off a real response rather than guessed: press returns
 	# `group` for the bench, `server` for the machine, `frappe_version` for the

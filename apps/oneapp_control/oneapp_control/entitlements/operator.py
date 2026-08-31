@@ -81,9 +81,14 @@ SCREENS = (
 	 "tenant,site,operator,reason,logged_in_on,succeeded", ""),
 )
 
-# The two that are not lists, and the reason the manifest is a shortcut rather
+# The three that are not lists, and the reason the manifest is a shortcut rather
 # than a cage. Readiness is a checklist with blockers; the Press panel is a live
-# view of Frappe Cloud's own state, fetched from Press rather than stored here.
+# view of Frappe Cloud's own state, fetched from Press rather than stored here;
+# and Workspace is one tenant seen from both sides at once — what we hold beside
+# what Frappe Cloud is running, plus the backups, domains, support sign-in and
+# billing that are calls rather than fields. It is reached from the Tenants
+# screen through a declared action (`entitlements/actions.py`) rather than from
+# the rail, because it is about a record.
 # Keyed `spaceCode/screen`, which is the convention `screens/index.js`
 # documents — so two spaces can each have an `overview` and neither has to know
 # about the other.
@@ -93,6 +98,7 @@ SCREENS = (
 COMPONENTS = (
 	("readiness", "Readiness", "lucide-file-text", "onespace-ops/readiness"),
 	("press", "Frappe Cloud", "lucide-factory", "onespace-ops/press"),
+	("tenant", "Workspace", "lucide-wrench", "onespace-ops/tenant"),
 )
 
 

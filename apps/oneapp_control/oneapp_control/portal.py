@@ -13,36 +13,36 @@ it is worth a test rather than care.
 
 import frappe
 
-# Mirrors the `portalRoutes` prefix in frontend/src/router.js.
-PREFIX = "/portal"
+# Signing up is its own small surface, on its own route, because it is the one
+# page somebody reaches before they have an account — `/one` sends a Guest to
+# sign in, correctly, and this cannot. Mirrors `frontend/src/router.js`.
+PREFIX = "/signup"
 
-SIGNUP = f"{PREFIX}/signup"
+SIGNUP = PREFIX
 WELCOME = f"{PREFIX}/welcome"
-ACCOUNT = f"{PREFIX}/account"
+
+# The account is a Space now, rendered by OneSpace on this site rather than by a
+# second SPA. `onespace-account` is what `entitlements/account.py` declares, and
+# the screen is a query rather than a path segment because that is the shape
+# `oneapp`'s router uses — see its `/space/:spaceCode` route.
+ACCOUNT_SPACE = "onespace-account"
+ACCOUNT = f"/one/space/{ACCOUNT_SPACE}"
 
 
 def landing(user: str | None = None) -> str:
 	"""Where a signed-in person lands on the control site.
 
-	A function rather than the `home_page` string, because `oneapp` is
-	installed here too and declares its own. Frappe takes the *last* app's
-	`home_page`, so which console opened would depend on the order the two
-	apps happened to be installed in — a decision made by a bench rebuild
-	rather than by anybody.
+	`one`, for everybody. An operator and a customer are two Spaces in the same
+	shell now, and which one opens is decided by the roles they hold —
+	`visible_spaces` filters on `role_name`, and the launcher shows what is
+	left. So this no longer has to know the difference.
 
-	Frappe checks this hook before either `home_page` or `role_home_page`, so
-	this is the whole answer.
+	Still a function rather than the `home_page` string, because `oneapp`
+	declares one too and Frappe takes the *last* app's — which app that is
+	depends on the order they were installed in. Frappe checks this hook before
+	either `home_page` or `role_home_page`, so this is the whole answer.
 	"""
-	# Imported here rather than at module scope: this file is the URL contract
-	# and importing provisioning to read one constant would make every caller
-	# of `account_url` pull the signup machinery in with it.
-	from oneapp_control.provisioning.signup import CUSTOMER_ROLE
-
-	roles = set(frappe.get_roles(user) if user else frappe.get_roles())
-	if CUSTOMER_ROLE in roles:
-		return ACCOUNT.lstrip("/")
-	# The operator console. One line to change when it becomes a Space.
-	return "admin"
+	return "one"
 
 
 def base_url() -> str:
@@ -73,17 +73,23 @@ def welcome_url(request: str) -> str:
 
 
 def account_url(workspace: str | None = None, section: str | None = None, **query) -> str:
-	"""A page in the customer's account.
+	"""A screen in the customer's account.
 
-	`section` is a sidebar destination — overview, billing, domain — and is part
-	of the path rather than a query flag, because each one is its own route.
+	`section` is a screen of the account Space — overview, billing, domain — and
+	is a query parameter rather than a path segment, because that is how
+	`oneapp`'s router addresses a screen: the path names the space and the query
+	names the screen.
+
+	`workspace` is carried the same way. The account Space picks which workspace
+	it is showing from shared state with a switcher, and this is how a link out
+	of Stripe or an email says which one it meant.
 	"""
-	path = ACCOUNT
+	found = dict(query)
+	if section:
+		found["screen"] = section
 	if workspace:
-		path = f"{path}/{workspace}"
-		if section:
-			path = f"{path}/{section}"
-	return _build(path, query)
+		found["workspace"] = workspace
+	return _build(ACCOUNT, found)
 
 
 def _build(path: str, query: dict) -> str:

@@ -66,9 +66,9 @@ import {
 } from '@/ui'
 // An icon name that only exists in the database emits no CSS, so anything
 // outside the generated set falls back to one that does.
-import { spaceIcon } from '../lib/icons'
-import { useListColumns } from '../lib/list'
-import { api } from '../lib/api'
+import { spaceIcon } from '../../lib/icons'
+import { useListColumns } from '../../lib/list'
+import { admin } from './admin'
 
 const props = defineProps({ tenant: { type: String, required: true } })
 
@@ -85,7 +85,7 @@ const { visible, columns, shows } = useListColumns([
 const load = async () => {
   loading.value = true
   try {
-    rows.value = (await api.tenantAppAccess(props.tenant)) || []
+    rows.value = (await admin.tenantAppAccess(props.tenant)) || []
   } finally {
     loading.value = false
   }
@@ -97,8 +97,8 @@ watch(() => props.tenant, load)
 async function toggle(app) {
   busy.value = app.space_code
   try {
-    if (app.entitled) await api.revokeApp(props.tenant, app.space_code)
-    else await api.grantApp(props.tenant, app.space_code)
+    if (app.entitled) await admin.revokeApp(props.tenant, app.space_code)
+    else await admin.grantApp(props.tenant, app.space_code)
     await load()
   } finally {
     busy.value = ''

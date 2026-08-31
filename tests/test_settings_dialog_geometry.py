@@ -1,6 +1,6 @@
 """What the settings-dialog geometry classes compensate for, pinned.
 
-`apps/oneapp_control/frontend/src/components/settings/geometry.js` reflows
+`apps/oneapp/frontend/src/components/settings/geometry.js` reflows
 frappe-ui's SettingsDialog for a phone: hard-coded values with no responsive
 variant — a vertical nav capped at 38vh, `px-[4.4rem]` panel padding — become a
 horizontally scrolling tab strip and a 1rem gutter.
@@ -17,7 +17,11 @@ import pytest
 
 from frappe_ui_api import ROOT, UI_SRC
 
-SETTINGS_SRC = ROOT / "apps/oneapp_control/frontend/src/components/settings"
+# One dialog, on the tenant app, for both audiences. The control plane used to
+# have a second copy of this over its own Single; it hands its groups to this one
+# through `onespace_settings_groups` now, so everything below is the only
+# settings shell there is.
+SETTINGS_SRC = ROOT / "apps/oneapp/frontend/src/components/settings"
 GEOMETRY = SETTINGS_SRC / "geometry.js"
 SHELL = SETTINGS_SRC / "SettingsShell.vue"
 SETTINGS = UI_SRC / "components/SettingsDialog"
@@ -42,7 +46,7 @@ def test_the_compensation_is_expressed_as_fallthrough_classes():
     for name in ("TAB_STRIP", "TAB_GROUP", "TAB_ITEM", "PANEL_HEADER", "PANEL_BODY"):
         assert f"export const {name}" in geometry, f"{name} is gone"
 
-    css = (ROOT / "apps/oneapp_control/frontend/src/index.css").read_text()
+    css = (ROOT / "apps/oneapp/frontend/src/index.css").read_text()
     assert "role='tablist'" not in css, (
         "the stylesheet is matching on a role again — scope it to our own marker"
     )
@@ -158,19 +162,24 @@ def test_the_footer_sits_after_the_body_so_it_pins_without_positioning():
     assert "flex min-h-0 flex-1 flex-col" in panel
     assert "min-h-0 flex-1" in source("SettingsBody.vue")
 
-    form = (SETTINGS_SRC / "SettingsForm.vue").read_text()
+    form = (SETTINGS_SRC / "SettingsFields.vue").read_text()
     assert form.index("</SettingsBody>") < form.index("PANEL_FOOTER")
 
 
-def test_wide_content_owns_its_own_horizontal_scroller():
+def test_wide_content_is_still_clipped_rather_than_scrolled():
     """SettingsBody's ScrollArea is vertical-only, and reka-ui then sets the
-    viewport `overflow-x: hidden` — so a wide table is clipped, not scrolled."""
+    viewport `overflow-x: hidden` — so a wide table is clipped, not scrolled.
+
+    Nothing in the dialog is that wide any more: the catalogue panels that were
+    (plans, regions, spaces, the AI models table) are operator *screens* now,
+    rendered in the grid pane that owns both its scrollbars. This still pins the
+    upstream default, because a panel that grows one is on its own again — see
+    `test_a_panel_may_shrink_below_its_widest_child` for the half of this that
+    is still load-bearing.
+    """
     scroll_area = (UI_SRC / "components/ScrollArea/ScrollArea.vue").read_text()
     assert "orientation: 'vertical'" in scroll_area, "ScrollArea's default changed"
     assert "orientation !== 'horizontal'" in scroll_area
-
-    catalogue = (SETTINGS_SRC / "CatalogueList.vue").read_text()
-    assert "overflow-x-auto" in catalogue, "the wide table lost its scroller"
 
 
 def test_a_panel_may_shrink_below_its_widest_child():
@@ -186,16 +195,10 @@ def test_a_panel_may_shrink_below_its_widest_child():
     Applied once, on SettingsContent, reaching its panels — so a new panel gets
     it without having to know.
     """
-    from pathlib import Path
+    geometry = (SETTINGS_SRC / "geometry.js").read_text()
+    assert "[&>[role=tabpanel]]:min-w-0" in geometry, (
+        "PANEL_CONTENT no longer lets a panel shrink")
 
-    for app in ("oneapp_control", "oneapp"):
-        settings = Path(__file__).resolve().parents[1] / (
-            f"apps/{app}/frontend/src/components/settings")
-
-        geometry = (settings / "geometry.js").read_text()
-        assert "[&>[role=tabpanel]]:min-w-0" in geometry, (
-            f"{app}: PANEL_CONTENT no longer lets a panel shrink")
-
-        shell = (settings / "SettingsShell.vue").read_text()
-        assert 'SettingsContent :class="PANEL_CONTENT"' in shell, (
-            f"{app}: SettingsContent is not carrying PANEL_CONTENT")
+    shell = SHELL.read_text()
+    assert 'SettingsContent :class="PANEL_CONTENT"' in shell, (
+        "SettingsContent is not carrying PANEL_CONTENT")

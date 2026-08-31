@@ -61,23 +61,27 @@ APPS = {
         "port": 8001,
         # Doctypes to generate TypeScript definitions for.
         "types": {"oneapp": ["OneSpace Site State"]},
+        # The shell family: the rail, the bottom bar, the account menu, the
+        # settings dialog. Every signed-in surface either audience has is a
+        # Space in here, so this is the only bundle that renders one.
+        "shell": True,
     },
+    # Signing up, and nothing else.
+    #
+    # This app served two full SPAs — /admin for operators and /portal for
+    # customers. Both are Spaces now, rendered by `oneapp` on this same site,
+    # so what is left is the one page somebody reaches *before* they have an
+    # account: `/one` sends a Guest to sign in, correctly, and signup cannot.
+    #
+    # Kept as its own bundle rather than folded into the tenant app because the
+    # two answer different questions about who may load them, and a route that
+    # is open to Guest should be a small, obvious, separate thing.
     "oneapp_control": {
-        "route": "/admin",
-        "title": BRAND["admin"],
+        "route": "/signup",
+        "title": BRAND["tenant"],
         "site": "control.localhost",
         "port": 8000,
-        # Extra Frappe routes serving the same bundle. One build, several
-        # server-side guards: /admin is System Managers only, /portal has to let
-        # a signed-out visitor reach signup. Sharing the bundle is what keeps
-        # the two surfaces from drifting into separate frontends.
-        "shells": [{"name": "portal", "title": BRAND["tenant"]}],
-        "types": {
-            "oneapp_control": [
-                "Tenant", "Shard", "Plan", "Subscription",
-                "Provisioning Job", "Credit Ledger Entry", "OneSpace Space",
-            ]
-        },
+        "types": {"oneapp_control": ["Account Request", "Plan", "Region"]},
     },
 }
 
@@ -2655,6 +2659,9 @@ export function valueTheme(value, states = []) {
 
 
 
+# What any bundle needs: the build, the component barrel, and the request layer
+# every call goes through. A page that fetches nothing at all would still want
+# most of this, because the toast an error becomes is part of the request layer.
 FILES = {
     "index.html": index_html,
     "vite.config.js": vite_config,
@@ -2669,6 +2676,19 @@ FILES = {
     "src/lib/notify.js": lambda app, spec: NOTIFY_JS,
     "src/lib/socket.js": lambda app, spec: SOCKET_JS,
     "src/lib/resource.js": lambda app, spec: RESOURCE_JS,
+    "src/lib/brand.js": lambda app, spec: BRAND_JS,
+    "playwright.config.js": playwright_config,
+    "e2e/auth.js": lambda app, spec: E2E_AUTH_JS,
+}
+
+# What a bundle needs only if it renders the shell: a rail, a bottom bar, an
+# account menu, a settings dialog, screens over doctypes.
+#
+# `oneapp_control` is a signup page and nothing else, and generating these into
+# it produced an AppShell no route mounted and a settings dialog over no
+# settings — dead files that the guards then read as a second navigation surface
+# to keep in step. A bundle asks for this family by declaring `shell` in APPS.
+SHELL_FILES = {
     "src/components/EmptyState.vue": lambda app, spec: EMPTY_STATE_VUE,
     "src/components/UserMenu.vue": lambda app, spec: USER_MENU_VUE,
     "src/components/UsageBar.vue": lambda app, spec: USAGE_BAR_VUE,
@@ -2677,10 +2697,7 @@ FILES = {
     "src/lib/list.js": lambda app, spec: LIST_COLUMNS_JS,
     "src/lib/fields.js": fields_js,
     "src/components/settings/geometry.js": lambda app, spec: SETTINGS_GEOMETRY_JS,
-    "src/lib/brand.js": lambda app, spec: BRAND_JS,
     "src/lib/icons.js": lambda app, spec: ICONS_JS,
-    "playwright.config.js": playwright_config,
-    "e2e/auth.js": lambda app, spec: E2E_AUTH_JS,
     "src/lib/user.js": lambda app, spec: USER_JS,
     "src/components/AppShell.vue": lambda app, spec: APP_SHELL_VUE,
     "src/components/ThemeSetting.vue": lambda app, spec: THEME_SETTING_VUE,
@@ -2694,7 +2711,10 @@ ROOT_FILES = {
 
 def render(app: str, spec: dict) -> dict:
     """Every generated path, relative to apps/<app>/."""
-    out = {f"frontend/{name}": fn(app, spec) for name, fn in FILES.items()}
+    files = dict(FILES)
+    if spec.get("shell"):
+        files.update(SHELL_FILES)
+    out = {f"frontend/{name}": fn(app, spec) for name, fn in files.items()}
     out.update({name: fn(app, spec) for name, fn in ROOT_FILES.items()})
     return out
 

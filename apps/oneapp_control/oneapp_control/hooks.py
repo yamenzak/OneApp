@@ -8,32 +8,32 @@ app_license = "mit"
 # ---------------------------------------------------------------------------
 # SPA
 # ---------------------------------------------------------------------------
-# Without these, a page reload on any deep link serves Frappe's 404 instead of
-# the SPA shell: Frappe only resolves the exact route, and the Vue router never
-# gets a chance to run.
+# Without this, a reload on the welcome page serves Frappe's 404 instead of the
+# SPA shell: Frappe only resolves the exact route, and the Vue router never gets
+# a chance to run.
 #
-# Two surfaces, one bundle. /admin is the staff console and /portal is the
-# customer's; they are separate website routes so www/admin.py and www/portal.py
-# can apply different access rules to the same built assets.
+# One surface now. `/admin` and `/portal` were two SPAs over the same bundle;
+# both are Spaces rendered by `oneapp` on this site, and what is left is signup
+# — the one page somebody reaches before they have an account, which is why it
+# could not move with them. See www/signup.py.
 website_route_rules = [
-	{"from_route": "/admin/<path:app_path>", "to_route": "admin"},
-	{"from_route": "/portal/<path:app_path>", "to_route": "portal"},
+	{"from_route": "/signup/<path:app_path>", "to_route": "signup"},
 ]
 
 # Where a signed-in user lands. Without this Frappe falls through to "me",
 # which it rewrites to "desk" for any System User — so signing in as an
 # operator dropped you into the desk, which is the one place this product does
-# not go. Customers are Website Users and resolve to the portal instead.
+# not go.
 #
-# A function rather than the plain `home_page` string, because `oneapp` is
-# installed on this site too and declares its own. Frappe resolves competing
-# `home_page` hooks by taking the last app's — so which console an operator
-# landed in would depend on the order the two apps happened to be installed
-# in, and would change under them the day the bench was rebuilt. This hook is
-# checked before either, so the answer is a decision rather than an accident.
+# `one`, for everybody. An operator and a customer are two Spaces in the same
+# shell, and which one opens is decided by the roles they hold rather than by
+# the URL they were sent to.
 #
-# `landing` is the one place to change when /admin retires (overnightplan-02
-# Batch K); until then both consoles exist and this says which one opens.
+# Still a function rather than the plain `home_page` string, because `oneapp`
+# declares one too and Frappe resolves competing hooks by taking the last app's
+# — which would make the answer depend on the order the two were installed in.
+# This hook is checked before either, so it is a decision rather than an
+# accident.
 get_website_user_home_page = "oneapp_control.portal.landing"
 
 # ---------------------------------------------------------------------------
@@ -52,6 +52,13 @@ onespace_space_providers = ["oneapp_control.entitlements.registry.local_spaces"]
 # one. Gated on System Manager per group, so a customer signed in to their
 # account area on this site sees none of them.
 onespace_settings_groups = ["oneapp_control.entitlements.settings.groups"]
+
+# And what its screens can *do* — replaying a Stripe event, moving a workspace
+# onto its plan's current terms, opening the workspace screen for a tenant. A
+# generic screen lists and edits; these are the calls that are neither, and
+# declaring them in code is what keeps the set of invokable methods out of the
+# database. See `entitlements/actions.py`.
+onespace_screen_actions = ["oneapp_control.entitlements.actions.actions"]
 
 # ---------------------------------------------------------------------------
 # Scheduled tasks

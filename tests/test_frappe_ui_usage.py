@@ -375,11 +375,15 @@ def test_the_reader_does_not_follow_imports():
 # in the product, named, so adding one means coming here.
 SURFACES = {
     "oneapp": {
-        "the tenant workspace (OneSpace)": "pages/Launcher.vue",
+        "the tenant workspace": "pages/Launcher.vue",
+        # Both consoles moved here as Spaces. They are not routes of their own —
+        # `/one/space/<code>` renders them — so what names each surface is its
+        # entry component, and a fourth Space with a bespoke screen lands in the
+        # same directory and is swept by being there.
+        "the operator console": "screens/ops/Readiness.vue",
+        "customer self-service": "screens/account/Overview.vue",
     },
     "oneapp_control": {
-        "the operator console (OneAdmin)": "pages/Tenants.vue",
-        "customer self-service": "pages/account/AccountOverview.vue",
         "signup": "pages/signup/SignupPage.vue",
     },
 }
@@ -395,20 +399,26 @@ def test_every_surface_is_swept(app, surface, witness):
 
 
 @pytest.mark.parametrize("app", APPS)
-def test_the_sweep_reaches_pages_and_components(app):
+def test_the_sweep_reaches_every_directory_a_surface_lives_in(app):
+    """Both bundles keep their pages under `pages/`; only the one with a shell
+    has components and screens of its own."""
     files = sources(app)
     assert any(p.startswith("pages/") for p in files), f"{app}: no pages swept"
-    assert any(p.startswith("components/") for p in files), f"{app}: no components swept"
+    if app == "oneapp":
+        assert any(p.startswith("components/") for p in files), f"{app}: no components swept"
+        assert any(p.startswith("screens/") for p in files), f"{app}: no screens swept"
 
 
 def test_the_sweep_descends_into_subdirectories():
     """A shallow glob would still find pages/ and components/ and look fine.
 
-    Only the control app nests today — `pages/account`, `pages/signup`,
-    `components/settings` — which is exactly where self-service and signup live.
+    Both bundles nest: `pages/signup` in the signup bundle, and `screens/ops`,
+    `screens/account` and `components/screen` in the tenant one — which is where
+    the operator console and self-service now live.
     """
-    nested = [p for p in sources("oneapp_control") if p.count("/") >= 2]
-    assert len(nested) >= 3, f"nested files not swept: {nested}"
+    for app in APPS:
+        nested = [p for p in sources(app) if p.count("/") >= 2]
+        assert len(nested) >= 2, f"{app}: nested files not swept: {nested}"
 
 
 def test_icons_use_the_component_s_own_icon_prop():

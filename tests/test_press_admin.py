@@ -24,7 +24,12 @@ SETTINGS = (
     ROOT
     / "apps/oneapp_control/oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.py"
 )
-PAGE = ROOT / "apps/oneapp_control/frontend/src/pages/Tenant.vue"
+# The operator console is a Space now, rendered by `oneapp`. The tenant page
+# that carried all of this became a component screen there — reached from the
+# Tenants list through a declared action — so the panels are checked where they
+# actually live.
+OPS = ROOT / "apps/oneapp/frontend/src/screens/ops"
+PAGE = OPS / "Tenant.vue"
 
 
 def function(path: Path, name: str) -> str:
@@ -122,14 +127,14 @@ def test_reads_get_a_shorter_timeout_than_writes():
 
 
 def test_the_panel_names_the_failure():
-    panel = (ROOT / "apps/oneapp_control/frontend/src/components/PressPanel.vue").read_text()
+    panel = (OPS / "PressPanel.vue").read_text()
     assert "did not answer" in panel
     assert "retry" in panel
 
 
 def test_panels_load_when_opened_not_all_at_once():
-    """Five press calls on page load make the page as slow as the slowest."""
-    press = (ROOT / "apps/oneapp_control/frontend/src/lib/press.js").read_text()
+    """Five press calls on load make the screen as slow as the slowest."""
+    press = (OPS / "press.js").read_text()
     assert "state.loaded" in press and "tabValue" in press
 
 
@@ -168,6 +173,24 @@ def test_a_failed_attempt_is_distinguishable_from_an_entry():
     assert "succeeded" in fields
     assert fields["reason"].get("reqd") == 1, "a reason is not required"
     assert fields["operator"].get("reqd") == 1
+
+
+def test_the_screen_is_reachable_from_the_tenants_list():
+    """A screen the rail does not show and nothing links to is a screen nobody
+    opens. It is about one record, so it is a declared action on the list rather
+    than a nav item — see `entitlements/actions.py`."""
+    actions = (
+        ROOT / "apps/oneapp_control/oneapp_control/entitlements/actions.py"
+    ).read_text()
+    assert '"screen": "tenant"' in actions, "nothing opens the workspace screen"
+
+    registry = (ROOT / "apps/oneapp/frontend/src/screens/index.js").read_text()
+    assert "'onespace-ops/tenant'" in registry, "the screen is declared but not rendered"
+
+
+def test_the_screen_reads_the_record_from_the_address():
+    """So it is a link an operator can send, and a reload comes back to it."""
+    assert "route.query.record" in PAGE.read_text()
 
 
 def test_support_lands_in_the_workspace_not_the_desk():

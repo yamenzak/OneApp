@@ -3,34 +3,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/*
- * The settings dialog is full-screen on a phone; Dialog's own chrome is not.
- *
- * SettingsDialog sizes its TabsRoot `w-screen h-[100dvh]`, but the Dialog it
- * sits in still pads its scroll container `px-4 py-4` and gives the content
- * `my-8` — so the "full-screen" dialog starts 32px down and ends 48px past the
- * bottom of the viewport, which is where the pinned Save footer went.
- *
- * Everything else about the mobile layout is fallthrough classes on the
- * library's own components (components/settings/geometry.js). This cannot be:
- * the padding and margin are on elements Dialog renders itself, with no prop
- * and no slot reaching them. It is keyed to `.dialog-scroll-container` and
- * `.dialog-content` — named hooks in Dialog's own markup, which frappe-ui uses
- * itself for the open/close animation, not utility classes — and scoped to our
- * dialog by a marker attribute we put there rather than to any dialog that
- * happens to contain a tablist.
- *
- * `tests/test_settings_dialog_geometry.py` pins the values this compensates for.
- */
-@media (max-width: 639px) {
-  .dialog-scroll-container:has([data-oneapp='settings-dialog']) > div {
-    padding: 0;
-    min-height: 100dvh;
-  }
-
-  .dialog-scroll-container:has([data-oneapp='settings-dialog']) .dialog-content {
-    margin: 0;
-    border-radius: 0;
-  }
-}

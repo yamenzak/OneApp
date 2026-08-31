@@ -22,7 +22,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Alert, Button, LoadingIndicator } from '@/ui'
-import EmptyState from './EmptyState.vue'
+import EmptyState from '../../components/EmptyState.vue'
 
 const props = defineProps({
   /** The object usePress() returns. */

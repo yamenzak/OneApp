@@ -324,6 +324,17 @@
           @clear="selection = []"
           @all="selection = rows.map((row) => row.name)"
         >
+          <!-- What the screen declares for a selection — replaying a batch of
+               webhook events, say. Before Delete, because Delete is the one
+               that does not come back and belongs at the end. -->
+          <ScreenActions
+            :actions="spec.actions || []"
+            scope="selection"
+            :space-code="spaceCode"
+            :screen="spec.screen"
+            :names="selection"
+            @ran="loadRows"
+          />
           <Button
             v-if="spec.can_delete"
             theme="red"
@@ -425,6 +436,7 @@ import QuickFilters from '../components/screen/QuickFilters.vue'
 import ColumnPicker from '../components/screen/ColumnPicker.vue'
 import ListFooter from '../components/screen/ListFooter.vue'
 import SelectionBar from '../components/screen/SelectionBar.vue'
+import ScreenActions from '../components/screen/ScreenActions.vue'
 import ViewSwitcher from '../components/screen/ViewSwitcher.vue'
 import { session } from '../lib/session'
 import { workspace } from '../lib/workspace'
@@ -1138,7 +1150,14 @@ watch(
 // Its own watch, and after the spec: opening a record by id needs the screen
 // resolved first, and the two change independently — clicking a row changes
 // only this, and switching view changes only that.
+//
+// Never on a component screen. There is no list and no record pane there, so
+// `?record=` means whatever that component decided it means — the operator
+// console uses it to say which workspace it is showing. Left to run, this
+// fetched a record the screen does not list, found nothing, and cleaned the
+// parameter out of the URL: a link straight to a workspace opened empty, and
+// only arriving from the list worked.
 watch([() => route.query.record, () => spec.value?.screen], ([name, screen]) => {
-  if (screen) openRecord(name || '')
+  if (screen && !spec.value?.component) openRecord(name || '')
 })
 </script>

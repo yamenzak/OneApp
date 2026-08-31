@@ -42,6 +42,17 @@
       </div>
 
       <div class="flex shrink-0 items-center gap-1" :class="!others.length && 'ms-auto'">
+        <!-- What this screen can do to this record beyond editing its fields.
+             Declared by the space and resolved server-side, so a screen that
+             declares none renders nothing here. -->
+        <ScreenActions
+          :actions="spec.actions || []"
+          scope="record"
+          :space-code="spaceCode"
+          :screen="screen"
+          :names="[record.name]"
+          @ran="emit('reload')"
+        />
         <!-- One icon, two themes: lucide ships no filled heart, so the colour
              is what says whether this is yours. -->
         <Button
@@ -196,6 +207,7 @@ import {
   dayjsLocal,
 } from '@/ui'
 import RecordChip from './RecordChip.vue'
+import ScreenActions from './ScreenActions.vue'
 import RecordForm from './RecordForm.vue'
 import RecordComments from './RecordComments.vue'
 import RecordHistory from './RecordHistory.vue'

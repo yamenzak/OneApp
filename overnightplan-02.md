@@ -1,20 +1,26 @@
 # Overnight plan 02 — OneAdmin becomes a Space
 
-**Status: A, B, C, D, E, F, G, I and J are built, tested and pushed.**
+**Status: done.** A–K are built, tested and pushed.
 
-**H and K are deliberately not done**, and the reason is this plan's own:
+H and K were held back overnight on purpose — Part 11 said to retire `/admin`
+"long after the operator Space is the thing you actually use", and one night
+could not supply that. Both were authorised and done afterwards.
 
-* **K** retires `/admin` and `/portal` and deletes the control app's frontend.
-  Part 11 says to do it "long after the operator Space is the thing you
-  actually use", because until then `/admin` is a working fallback that costs
-  nothing to keep. The operator Space is hours old and nobody has used it. That
-  gate is time and use, and one night cannot supply either.
-* **H** moves the control plane's settings into `oneapp`'s settings dialog. Its
-  only consumer is K, and it would mean changing `require_owner` — the gate on
-  a customer-facing surface — for a batch nothing is waiting on.
+Two things K turned out to need that this plan did not name, and both are now
+part of it:
 
-Everything built is additive: `/admin` and `/portal` are untouched and still
-where an operator and a customer go.
+* **A tenant screen.** Part 8 listed `pages/Tenant.vue` under *Deleted* and
+  never said where its 551 lines went. They were the press-backed panels, the
+  backups, the domains, the support sign-in and the billing calls — none of
+  which a generic screen over the `Tenant` doctype can express. It is a
+  component screen now, `onespace-ops/tenant`, reached from the Tenants list.
+* **Declared screen actions.** A screen can list and edit; it could not *act*.
+  Replaying a Stripe event and moving a workspace onto its plan's current terms
+  had no home, and retiring `/admin` without them would have left both doable
+  only in the desk. There is a small declarative seam now:
+  `onespace_screen_actions`, resolved and authorised server-side, rendered on
+  the record and in the selection bar. It is an allowlist — a method name in a
+  request body reaches nothing that was not shipped as a declaration.
 
 ## The decision
 

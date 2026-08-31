@@ -21,10 +21,7 @@ apps/*/frontend/*.d.ts
 # code change.
 apps/*/frontend/package-lock.json
 apps/oneapp/oneapp/www/one.html
-apps/oneapp_control/oneapp_control/www/admin.html
-# Copied from admin.html at build time, so it carries the same hashed asset
-# tags. Committing it guarantees it goes stale against the next build.
-apps/oneapp_control/oneapp_control/www/portal.html
+apps/oneapp_control/oneapp_control/www/signup.html
 
 # Redis writes its snapshot into whatever directory it was started from.
 dump.rdb

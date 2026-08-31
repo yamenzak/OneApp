@@ -10,14 +10,14 @@ import path from 'node:path'
 // one, so the additional surfaces are copies of it — same hashed asset tags,
 // different <title>, and a sibling .py that decides who may load them. Copying
 // after the build is what guarantees they can never reference stale assets.
-const EXTRA_SHELLS = [{"name": "portal", "title": "OneSpace"}]
+const EXTRA_SHELLS = []
 
 function extraShells() {
   return {
     name: 'oneapp-extra-shells',
     closeBundle() {
       if (!EXTRA_SHELLS.length) return
-      const source = path.resolve(__dirname, '../oneapp_control/www/admin.html')
+      const source = path.resolve(__dirname, '../oneapp_control/www/signup.html')
       if (!fs.existsSync(source)) {
         // Silently skipping would ship a route that 404s with nothing to
         // explain why, so fail the build instead.
@@ -41,7 +41,7 @@ function extraShells() {
 export default defineConfig({
   plugins: [
     frappeui({
-      frontendRoute: '/admin',
+      frontendRoute: '/signup',
       // Given explicitly rather than inferred. frappe-ui derives these by
       // walking up for a bench layout (a directory with both sites/ and apps/),
       // which exists on Frappe Cloud but not in this monorepo — so inference
@@ -50,18 +50,14 @@ export default defineConfig({
       // everywhere: monorepo, bench, and CI.
       buildConfig: {
         outDir: path.resolve(__dirname, '../oneapp_control/public/frontend'),
-        indexHtmlPath: '../oneapp_control/www/admin.html',
+        indexHtmlPath: '../oneapp_control/www/signup.html',
       },
       frappeTypes: {
         input: {
   'oneapp_control': [
-    'Tenant',
-    'Shard',
+    'Account Request',
     'Plan',
-    'Subscription',
-    'Provisioning Job',
-    'Credit Ledger Entry',
-    'OneSpace Space'
+    'Region'
   ]
 },
       },

@@ -673,6 +673,9 @@ def _resolve(space_code: str, screen: str | None = None,
 		# The escape hatch, and the reason the manifest is a shortcut rather
 		# than a cage: name a component and none of the rest of this applies.
 		"component": chosen.get("component") or None,
+		# What this screen can *do* to a record, beyond editing its fields —
+		# see the Actions section at the end of this module.
+		"actions": actions(space_code, chosen["screen"]),
 	}
 
 	if resolved["component"]:
@@ -2763,3 +2766,110 @@ def reset_layout(space_code: str, screen: str) -> dict:
 		frappe.delete_doc("OneSpace Saved View", existing["name"], ignore_permissions=True)
 		frappe.db.commit()
 	return {"ok": True}
+
+
+# --------------------------------------------------------------------------- #
+# Actions
+#
+# A screen can list, open and edit. What it could not do is *act* — replay a
+# webhook, adopt a plan's terms, open the bespoke screen that belongs to this
+# record — and every one of those used to live in a hand-written console page.
+# Retiring those pages without this would have left a handful of things doable
+# only in the desk, which is the one place this product does not go.
+#
+# Declared in code rather than stored on the Space, and the difference matters:
+# an action names a method somebody can invoke, so the list of them is not
+# something an operator should be able to extend by editing a row. A provider
+# is a Python function behind a hook, shipped by an app, reviewed like code.
+# --------------------------------------------------------------------------- #
+
+# What an action may say about itself. Anything else is dropped rather than
+# passed through: this shape ends up as a button that calls a method, and a
+# provider is not a place to smuggle extra arguments in.
+ACTION_FIELDS = ("key", "label", "icon", "scope", "method", "screen", "param", "confirm")
+
+# `record` puts the action on the open record. `selection` puts it in the bar a
+# selection raises, where it is handed every chosen row.
+ACTION_SCOPES = ("record", "selection")
+
+
+def actions(space_code: str, screen: str) -> list[dict]:
+	"""The actions declared for one screen, keyed `space_code/screen`.
+
+	Merged from every provider, in install order, and normalised here so that
+	the payload the frontend sees and the allowlist `run_action` checks against
+	are the same list built by the same code.
+	"""
+	found = []
+	for path in frappe.get_hooks("onespace_screen_actions") or []:
+		try:
+			declared = frappe.get_attr(path)() or {}
+		except Exception:
+			# One app's provider failing must not take out a screen. Logged
+			# rather than raised, exactly as the space providers are.
+			frappe.log_error(title="OneSpace action provider failed", message=path)
+			continue
+		for row in declared.get(f"{space_code}/{screen}") or []:
+			action = _action(row)
+			if action:
+				found.append(action)
+	return found
+
+
+def _action(row: dict) -> dict | None:
+	"""One declared action, narrowed to what an action may be.
+
+	An action either calls a method or opens a screen, never both and never
+	neither — "a button that does nothing" is not a state worth rendering, and a
+	row that means to do both is a provider bug worth failing loudly at the one
+	place that can see it.
+	"""
+	if not row.get("key") or not row.get("label"):
+		return None
+	if bool(row.get("method")) == bool(row.get("screen")):
+		return None
+
+	action = {name: row.get(name) for name in ACTION_FIELDS if row.get(name) is not None}
+	action["scope"] = row.get("scope") if row.get("scope") in ACTION_SCOPES else "record"
+	# Which query parameter the target screen reads the record's name from. Only
+	# meaningful for a screen action, and given a name here so the frontend does
+	# not have to invent one.
+	if action.get("screen"):
+		action["param"] = row.get("param") or "record"
+	return action
+
+
+@frappe.whitelist(methods=["POST"])
+def run_action(space_code: str, screen: str, action: str, name: str | list) -> dict:
+	"""Run a declared action against one or more records.
+
+	Three checks, and none of them is "the frontend sent it":
+
+	  * the space resolves for this person, so a space code they do not hold is
+	    a `PermissionError` before anything else is read;
+	  * the action is one this screen declares, so a method name in the request
+	    body reaches nothing that was not shipped as a declaration;
+	  * Frappe says they may write the record, which is the same permission the
+	    save path asks for.
+
+	The method still runs its own guard — every one of these is a whitelisted
+	endpoint that was reachable directly before this existed — so this narrows
+	what may be called, it does not become the thing that decides.
+	"""
+	resolved = _resolve(space_code, screen)
+	declared = {row["key"]: row for row in actions(space_code, resolved.get("screen") or screen)}
+
+	chosen = declared.get(action)
+	if not chosen or not chosen.get("method"):
+		frappe.throw(_("{0} is not an action of this screen.").format(action),
+		             frappe.PermissionError)
+
+	names = name if isinstance(name, list) else _json_list(name) or [name]
+	doctype = resolved.get("doctype")
+	for one in names:
+		if doctype and not frappe.has_permission(doctype, "write", doc=one):
+			raise frappe.PermissionError(_("You cannot change {0}.").format(one))
+
+	method = frappe.get_attr(chosen["method"])
+	results = [method(one) for one in names]
+	return {"ok": True, "results": results}
