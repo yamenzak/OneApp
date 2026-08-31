@@ -64,3 +64,36 @@ def test_the_module_name_is_one_the_app_actually_declares(gen):
 			f"{key}: the generator writes module {module_name!r}, which "
 			f"apps/{pkg}/{pkg}/modules.txt does not declare"
 		)
+
+
+def test_no_doctype_is_maintained_by_hand(gen):
+	"""The test above only sees doctypes the generator knows about.
+
+	Which left the inverse hole, and something sat in it: `OneSpace Site State`
+	was written by hand, so it was the one doctype whose file could drift from
+	anything at all — the drift check iterates `DOCTYPES` and never noticed a
+	directory that was not in it.
+
+	So this walks the disk instead. Every doctype directory in either app has to
+	be one the generator would write, which means a new doctype is declared in
+	`scripts/gen_doctypes.py` or it fails here rather than silently becoming the
+	next thing nothing checks.
+	"""
+	known = {doctype_slug(name) for name in gen.DOCTYPES}
+	strays = []
+	for pkg, module_dir, _ in gen.APPS.values():
+		root = ROOT / "apps" / pkg / pkg / module_dir / "doctype"
+		if not root.is_dir():
+			continue
+		for child in sorted(root.iterdir()):
+			if not child.is_dir() or child.name.startswith("_"):
+				continue
+			if not (child / f"{child.name}.json").exists():
+				continue
+			if child.name not in known:
+				strays.append(f"{pkg}/{module_dir}/doctype/{child.name}")
+	assert not strays, (
+		"these doctypes exist on disk but are not declared in "
+		"scripts/gen_doctypes.py, so nothing checks them for drift: "
+		+ ", ".join(strays)
+	)

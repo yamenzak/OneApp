@@ -38,7 +38,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Country",
-   "options": "Country"
+   "options": "Country",
+   "reqd": 1
   },
   {
    "default": "1",

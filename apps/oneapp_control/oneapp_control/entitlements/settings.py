@@ -79,9 +79,6 @@ def groups() -> list[dict]:
 			),
 			"settings": [
 				_setting("stripe_webhook_secret", "Stripe webhook secret", type="Password"),
-				_setting("credits_per_currency_unit", "Credits per unit of currency",
-				         type="Float",
-				         hint="How many AI credits one unit of the plan's currency buys."),
 				_setting("ai_markup_multiplier", "AI markup", type="Float",
 				         hint="What a model's own cost is multiplied by before it is charged."),
 			],

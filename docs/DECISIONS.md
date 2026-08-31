@@ -862,3 +862,81 @@ rather than a rewrite:
 * **The shell owns everything that is not the rows.** The header, the
   breadcrumb, the toolbar, the filters, the footer and the selection bar live
   in `ScreenHost.vue`; a view type supplies a body and nothing else.
+
+## 16. What a field is allowed to be
+
+Found by auditing every field on all 34 doctypes and asking, one at a time,
+what reads it and whether it says honestly what it does. Three of them did not,
+and each was a class rather than an accident — so the rules are written down and
+`tests/test_field_purpose.py` enforces them.
+
+**A setting an operator can change has to change something.** The R2 rotation
+threshold was on the settings dialog, described itself as the cap a new bucket
+is created with, and was wired to nothing: `provision_bucket` used the field
+default. Narrowing the blast radius to 50 tenants a bucket produced buckets
+that still took 200, silently. `credits_per_currency_unit` was the same shape
+for a different reason — a Credit Pack names the credits it grants, so the
+conversion rate had been outlived by the catalogue that replaced it. A setting
+is either read outside the form that offers it or it comes off the form.
+
+**A derived field is read-only.** `Tenant.environment` is overwritten from the
+shard on every save; as an editable Select it was a control whose value was
+discarded the moment it was used. This is not decoration: `spaceview._writable`
+keeps only fields marked editable, so `read_only` is the write guard on our own
+surfaces as well as the reason the form draws no box. `Tenant.hmac_secret` went
+the same way for a sharper reason — `ensure_hmac_secret` fills a blank but keeps
+what is already there, so a typo into that box would stick, and every signed
+call from that workspace would start failing its signature with nothing to point
+at. Where a value is authored once and then fixed, `set_only_once` says so:
+`Tenant.storage_jurisdiction` had a description promising it, and nothing
+enforcing it.
+
+**A field that is only written is not a record of anything.** The lifecycle
+sweep stamped what it did onto the control settings Single every night. On a
+site with no desk that is unreachable, so the one question worth asking about
+the ladder — did it run — had no answer. It is a readiness check now.
+
+**Data or Link is a question about where the record lives, not about tidiness.**
+A Link is right when the target exists on the same site and the value is meant
+to be one of them:
+
+* `Region.country` → `Country`, because it is not a label. It rides the sync
+  payload into every workspace created in that region, names its ERPNext
+  Company, and picks its chart of accounts by exact string match in
+  `books._charts_for`. Free text meant a typo produced a workspace whose books
+  quietly never got set up; the tenant's own settings dialog had been a picker
+  over the same list the whole time. Required, too, because an empty one does
+  the same thing as a wrong one.
+
+Data is right, and changing it would be the bug, when:
+
+* **the record is on the other side of the wire.** `OneSpace Site State.tenant`,
+  `OneSpace Space Screen.document_type`, `OneSpace Saved View.space_code`,
+  `OneSpace AI Feature Setting.model_key` — each names something that exists on
+  the *other* plane. A Link needs a local table to point at.
+* **it is somebody else's identifier.** Everything `press_*`, every
+  `stripe_*_id`. Those are names in a system that is not ours to constrain.
+* **the casing is theirs too.** `Catalogue Price.currency` and
+  `Subscription Add-on.currency` sit next to `Plan.currency`, which *is* a Link
+  to Currency — but those two hold Stripe's code for the same thing, and Stripe
+  is lowercase (`usd`) while Frappe's Currency records are uppercase (`USD`).
+  A Link there fails validation on every row, and `Subscription Add-on.currency`
+  is written by `_reconcile_addons` inside the Stripe webhook, which is the one
+  path that must never throw. `test_the_two_stripe_currencies_stay_free_text`
+  exists to stop this being "fixed".
+* **the value is a report, not a reference.** `AI Usage Record.feature` is
+  whatever a tenant site said it called the call. `Tenant Lifecycle Event`'s
+  `from_status` and `to_status` are what was true then, and stay true when the
+  Select they came from is edited.
+
+A Select is right where the list is short, closed and ours: `AI Usage
+Record.provider` was Data with a standard filter over it, which drew a free-text
+box for a two-item list that `pricing` copies straight off `AI Model.provider`.
+
+**Every doctype is declared in `scripts/gen_doctypes.py`.** `OneSpace Site
+State` was not, which made it the one doctype the drift check could not see —
+that check walks `DOCTYPES` and never noticed a directory missing from it. The
+generator's whole purpose is that a field cannot be added to a JSON by hand, so
+a doctype outside it is the failure the generator exists to prevent, wearing the
+generator's clothes. `test_no_doctype_is_maintained_by_hand` now walks the disk
+instead.

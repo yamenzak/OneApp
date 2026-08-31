@@ -634,12 +634,17 @@ doctype(
         f("status", "Select",
           options="Draft\nProvisioning\nActive\nSuspended\nArchived\nPurged\nFailed",
           default="Draft", reqd=1, in_list_view=1, in_standard_filter=1),
+        # Read-only because it is not a choice: `inherit_environment_from_shard`
+        # overwrites it from the shard on every save, so an editable control
+        # here is one whose value is discarded the moment it is used. The shard
+        # is where this is decided, and `read_only` is a real guard on our own
+        # surfaces — `spaceview._writable` drops read-only fields before a save.
         f("environment", "Select", options="Production\nStaging",
-          default="Production", reqd=1, in_standard_filter=1,
-          description="Staging tenants are ours to break: the dev tooling may "
-                      "patch and redeploy the bench they sit on. It refuses to "
-                      "touch a bench carrying a Production tenant, so the "
-                      "default is the safe one."),
+          default="Production", reqd=1, read_only=1, in_standard_filter=1,
+          description="Taken from the shard, which is where it is decided. "
+                      "Staging tenants are ours to break: the dev tooling may "
+                      "patch and redeploy the bench they sit on, and refuses "
+                      "any bench carrying a Production tenant."),
         f("owner_email", "Data", options="Email", reqd=1),
         f("owner_user", "Link", options="User", read_only=1,
           description="Control-plane account for the workspace owner. Customer "
@@ -650,7 +655,13 @@ doctype(
         f("shard", "Link", options="Shard", in_standard_filter=1),
         f("region", "Link", options="Region", description="Chosen at signup."),
         f("storage_bucket", "Link", options="Storage Bucket", read_only=1),
+        # The description already said this is fixed at signup; `set_only_once`
+        # is what makes that true. A bucket is allocated once, at provisioning,
+        # and the tenant keeps it for life — so editing this afterwards moved
+        # nothing and changed nothing except what the cold-copy manifest claims
+        # about where the data lives.
         f("storage_jurisdiction", "Select", options="Global\nEU", default="Global",
+          set_only_once=1,
           description="Fixed at signup; moving objects between jurisdictions later "
                       "is a migration, not a setting."),
         f("site_name", read_only=1, in_list_view=1,
@@ -757,8 +768,14 @@ doctype(
           description="Who else may sign in. Seats used is this plus the owner, "
                       "and the plan's max_users is what caps it."),
         section("sec_secret", "Integration"),
-        f("hmac_secret", "Password",
-          description="Shared secret for signed calls with this tenant's site."),
+        # Generated on creation and never typed. Editable, this was the one
+        # field on the workspace form where a stray keystroke silently severs
+        # the site's only channel back — `ensure_hmac_secret` fills a blank but
+        # keeps whatever is already there, so a typo would stick and every
+        # signed call from that site would start failing its signature.
+        f("hmac_secret", "Password", read_only=1,
+          description="Shared secret for signed calls with this tenant's site. "
+                      "Generated on creation."),
         f("suspended_reason", "Small Text"),
     ],
 )
@@ -1049,8 +1066,11 @@ doctype(
         f("stripe_webhook_secret", "Password",
           description="Signing secret for the Stripe webhook endpoint."),
         column("cb_stripe_set"),
-        f("credits_per_currency_unit", "Float", default="100",
-          description="Credits granted per unit of currency on a pack purchase."),
+        # `credits_per_currency_unit` was here and is gone: a Credit Pack names
+        # the credits it grants, so there was nothing left for a conversion rate
+        # to convert. Nothing had read it since the pack catalogue landed, and a
+        # settings field an operator can set that changes nothing is worse than
+        # no field at all.
         # Control-plane only. Deliberately NOT pushed to bench groups: a token
         # that can rewrite the tenant routing map has no business sitting in
         # config that every tenant site can read.
@@ -1342,7 +1362,11 @@ doctype(
           in_standard_filter=1),
         f("feature", "Data", in_list_view=1, in_standard_filter=1),
         f("model", "Link", options="AI Model", in_list_view=1),
-        f("provider", "Data", in_standard_filter=1),
+        # The same closed list AI Model carries, because it is the same value:
+        # `pricing` copies `model.provider` onto the row. As Data it was a
+        # standard filter rendering a free-text box over two possible answers.
+        f("provider", "Select", options="workers-ai\ngoogle-ai-studio",
+          in_standard_filter=1),
         column("cb_usage_money"),
         f("credits_charged", "Float", in_list_view=1),
         f("cost_usd", "Float", precision="9",
@@ -1641,7 +1665,7 @@ doctype(
         # and the workspace's own settings dialog already declares country the
         # same way — the two ends now agree instead of one being a picker and
         # the other a text box feeding it.
-        f("country", "Link", options="Country", in_list_view=1,
+        f("country", "Link", options="Country", reqd=1, in_list_view=1,
           description="Where this region physically is. Sent to tenants created "
                       "here to set up their company and chart of accounts."),
         f("is_active", "Check", default="1", in_list_view=1),
@@ -1687,11 +1711,74 @@ doctype(
 )
 
 
+# --------------------------------------------------------------------------- #
+# OneSpace Site State (Single, tenant) — what the control plane last told us.
+#
+# The tenant end of the signed sync: quotas, usage, credits and the space
+# manifest, cached here so every page load is a local read rather than a call
+# across the wire to a site that may be unreachable. Nothing here is authored —
+# every field is written by `oneapp_core.sync` and read by the app.
+#
+# It was the one doctype maintained by hand rather than declared here, which
+# made it the one doctype `test_every_doctype_on_disk_is_what_the_generator_
+# would_write` did not cover — the file could drift and nothing would say so.
+# That is the whole failure the generator exists to prevent, so it is declared
+# here now and a second test refuses any new doctype directory that is not.
+# --------------------------------------------------------------------------- #
+doctype(
+    "OneSpace Site State",
+    app="tenant",
+    issingle=1,
+    # A cache the sync rewrites every few minutes. With change tracking on,
+    # each of those files a Version row recording a change no person made.
+    track_changes=0,
+    # Read-only to a person for the same reason the audit trails are: editing
+    # the cached copy of a quota does not raise the quota, it just makes this
+    # site disagree with the control plane until the next sync overwrites it.
+    perms=READONLY_PERMS,
+    fields=[
+        f("tenant", read_only=1,
+          description="Data, not a Link: `Tenant` is a control-plane doctype "
+                      "and does not exist on this site."),
+        f("site_name", read_only=1),
+        f("status", read_only=1),
+        f("plan_code", read_only=1),
+        column("cb1"),
+        f("last_sync", "Datetime", read_only=1),
+        f("last_sync_error", "Small Text", read_only=1),
+        f("storage_quota_bytes", "Float", read_only=1),
+        f("database_quota_bytes", "Float", read_only=1,
+          description="Synced from the plan. Zero means unconfigured, not zero "
+                      "allowed."),
+        f("max_users", "Int", read_only=1),
+        f("background_workers", "Int", read_only=1,
+          description="Concurrent background jobs this workspace may run."),
+        f("backups_per_day", "Int", read_only=1,
+          description="How many times a day this workspace copies itself into "
+                      "R2. A plan term, so the schedule is a decision the "
+                      "control plane makes and this site carries out."),
+        section("sec_usage", "Usage"),
+        f("storage_used_bytes", "Float", read_only=1),
+        f("database_used_bytes", "Float", read_only=1),
+        f("quota_json", "Code", label="Quota Enforcement", options="JSON",
+          read_only=1,
+          description="Whether to enforce quotas at all, and until when if not. "
+                      "A workspace over its limit because a line left its "
+                      "subscription is given a window rather than a wall."),
+        column("cb2"),
+        f("credit_balance", "Float", read_only=1),
+        section("sec_cache", "Cached manifest"),
+        f("spaces_json", "Code", label="Spaces JSON", options="JSON", read_only=1),
+        f("roles_json", "Code", label="Roles JSON", options="JSON", read_only=1),
+    ],
+)
+
+
 # Every key build() understands. Adding one to a doctype() call without adding
 # it here is a hard error rather than a silent omission.
 HANDLED_SPEC_KEYS = {
     "name", "fields", "perms", "autoname", "title_field",
-    "allow_rename", "issingle", "istable", "app",
+    "allow_rename", "issingle", "istable", "app", "track_changes",
 }
 
 
@@ -1717,7 +1804,12 @@ def build(spec):
         "sort_field": "modified",
         "sort_order": "DESC",
         "states": [],
-        "track_changes": 1,
+        # On by default: a Version row per edit is what makes an operator's
+        # change to a plan or a shard answerable. Off only for a document that
+        # is written by machinery rather than by a person — a cache rewritten on
+        # every sync would file a Version every few minutes, for a change nobody
+        # made and nobody would ever read.
+        "track_changes": spec.get("track_changes", 1),
     }
     if spec.get("autoname"):
         doc["autoname"] = spec["autoname"]

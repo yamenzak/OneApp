@@ -29,6 +29,7 @@
  ],
  "fields": [
   {
+   "description": "Data, not a Link: `Tenant` is a control-plane doctype and does not exist on this site.",
    "fieldname": "tenant",
    "fieldtype": "Data",
    "label": "Tenant",
@@ -75,11 +76,11 @@
    "read_only": 1
   },
   {
+   "description": "Synced from the plan. Zero means unconfigured, not zero allowed.",
    "fieldname": "database_quota_bytes",
    "fieldtype": "Float",
    "label": "Database Quota Bytes",
-   "read_only": 1,
-   "description": "Synced from the plan. Zero means unconfigured, not zero allowed."
+   "read_only": 1
   },
   {
    "fieldname": "max_users",
@@ -88,18 +89,18 @@
    "read_only": 1
   },
   {
+   "description": "Concurrent background jobs this workspace may run.",
    "fieldname": "background_workers",
    "fieldtype": "Int",
    "label": "Background Workers",
-   "read_only": 1,
-   "description": "Concurrent background jobs this workspace may run."
+   "read_only": 1
   },
   {
+   "description": "How many times a day this workspace copies itself into R2. A plan term, so the schedule is a decision the control plane makes and this site carries out.",
    "fieldname": "backups_per_day",
    "fieldtype": "Int",
    "label": "Backups Per Day",
-   "read_only": 1,
-   "description": "How many times a day this workspace copies itself into R2. A plan term, so the schedule is a decision the control plane makes and this site carries out."
+   "read_only": 1
   },
   {
    "fieldname": "sec_usage",
@@ -119,12 +120,12 @@
    "read_only": 1
   },
   {
+   "description": "Whether to enforce quotas at all, and until when if not. A workspace over its limit because a line left its subscription is given a window rather than a wall.",
    "fieldname": "quota_json",
    "fieldtype": "Code",
    "label": "Quota Enforcement",
    "options": "JSON",
-   "read_only": 1,
-   "description": "Whether to enforce quotas at all, and until when if not. A workspace over its limit because a line left its subscription is given a window rather than a wall."
+   "read_only": 1
   },
   {
    "fieldname": "cb2",
@@ -151,27 +152,25 @@
   {
    "fieldname": "roles_json",
    "fieldtype": "Code",
-   "label": "Roles Json",
+   "label": "Roles JSON",
    "options": "JSON",
    "read_only": 1
   }
  ],
- "index_web_pages_for_search": 0,
+ "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-08-29 12:00:00.000000",
+ "modified": "2026-08-29 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "OneApp Core",
  "name": "OneSpace Site State",
  "owner": "Administrator",
  "permissions": [
   {
-   "email": 1,
-   "print": 1,
+   "export": 1,
    "read": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
+   "report": 1,
+   "role": "System Manager"
   }
  ],
  "sort_field": "modified",

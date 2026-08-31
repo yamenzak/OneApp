@@ -151,6 +151,15 @@ def provision_bucket(jurisdiction: str = "Global") -> str:
 			"bucket_name": name,
 			"jurisdiction": jurisdiction,
 			"status": "Provisioning",
+			# The fleet-wide rotation threshold, copied onto the bucket at
+			# creation. Copied rather than read live for the same reason a
+			# plan's terms are: lowering the setting should bound the *next*
+			# bucket, not retroactively declare a running one full.
+			#
+			# Without this the setting was inert — an operator narrowing the
+			# blast radius to 50 tenants a bucket got buckets that still took
+			# 200, and nothing said so.
+			"max_tenants": _bucket_cap(),
 			"created_on": now_datetime(),
 		}
 	).insert(ignore_permissions=True)
@@ -167,6 +176,17 @@ def provision_bucket(jurisdiction: str = "Global") -> str:
 		doc.db_set("public_base_url", config()["public_base"])
 
 	return doc.name
+
+
+def _bucket_cap() -> int:
+	"""Tenants a fresh bucket accepts, from settings, falling back to the field
+	default. Zero in settings means the doctype default rather than no cap: an
+	unset Int and a deliberate "unlimited" look identical, and of the two only
+	one of them is safe to assume."""
+	return int(
+		frappe.db.get_single_value("OneSpace Control Settings", "bucket_max_tenants")
+		or 200
+	)
 
 
 def assign(tenant_name: str) -> str:

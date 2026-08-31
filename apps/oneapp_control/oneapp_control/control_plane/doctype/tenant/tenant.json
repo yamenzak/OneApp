@@ -95,12 +95,13 @@
   },
   {
    "default": "Production",
-   "description": "Staging tenants are ours to break: the dev tooling may patch and redeploy the bench they sit on. It refuses to touch a bench carrying a Production tenant, so the default is the safe one.",
+   "description": "Taken from the shard, which is where it is decided. Staging tenants are ours to break: the dev tooling may patch and redeploy the bench they sit on, and refuses any bench carrying a Production tenant.",
    "fieldname": "environment",
    "fieldtype": "Select",
    "in_standard_filter": 1,
    "label": "Environment",
    "options": "Production\nStaging",
+   "read_only": 1,
    "reqd": 1
   },
   {
@@ -149,7 +150,8 @@
    "fieldname": "storage_jurisdiction",
    "fieldtype": "Select",
    "label": "Storage Jurisdiction",
-   "options": "Global\nEU"
+   "options": "Global\nEU",
+   "set_only_once": 1
   },
   {
    "description": "Permanent internal address. Never the custom domain.",
@@ -439,10 +441,11 @@
    "label": "Integration"
   },
   {
-   "description": "Shared secret for signed calls with this tenant's site.",
+   "description": "Shared secret for signed calls with this tenant's site. Generated on creation.",
    "fieldname": "hmac_secret",
    "fieldtype": "Password",
-   "label": "Hmac Secret"
+   "label": "Hmac Secret",
+   "read_only": 1
   },
   {
    "fieldname": "suspended_reason",

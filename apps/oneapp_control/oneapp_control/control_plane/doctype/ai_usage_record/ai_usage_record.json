@@ -63,9 +63,10 @@
   },
   {
    "fieldname": "provider",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
    "in_standard_filter": 1,
-   "label": "Provider"
+   "label": "Provider",
+   "options": "workers-ai\ngoogle-ai-studio"
   },
   {
    "fieldname": "cb_usage_money",

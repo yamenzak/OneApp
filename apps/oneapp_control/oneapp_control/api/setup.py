@@ -93,6 +93,44 @@ def _scheduler_state() -> tuple[bool, str]:
 	return True, f"Last job ran at {last}."
 
 
+# A day and a half: one missed run is a deploy or a slow night, two is a fault.
+SWEEP_STALE_HOURS = 36
+
+
+def _sweep_state() -> tuple[bool, str]:
+	"""When the lifecycle ladder last ran, and what it did.
+
+	Written by `lifecycle.sweep.run` onto the settings Single, which on a site
+	with no desk nothing could read. The sweep is what suspends, archives and
+	eventually purges a workspace, so "it silently stopped running" is the
+	failure worth being able to see — every rung would just quietly stop
+	advancing, and each tenant would sit on whichever one it had reached.
+	"""
+	from frappe.utils import add_to_date, get_datetime, now_datetime
+
+	swept = frappe.db.get_single_value("OneSpace Control Settings", "lifecycle_swept_on")
+	if not swept:
+		return False, "The lifecycle sweep has not run on this site yet."
+
+	note = frappe.db.get_single_value("OneSpace Control Settings", "lifecycle_note") or ""
+	cutoff = add_to_date(now_datetime(), hours=-SWEEP_STALE_HOURS)
+	if get_datetime(swept) < get_datetime(cutoff):
+		return False, (
+			f"The last sweep was {swept}, which is more than a day and a half "
+			f"ago. Nothing is advancing along the ladder. {note}".strip()
+		)
+
+	return True, f"Last swept {swept}. {note}".strip()
+
+
+def _sweep_ok() -> bool:
+	return _sweep_state()[0]
+
+
+def _sweep_detail() -> str:
+	return _sweep_state()[1]
+
+
 def _scheduler_ok() -> bool:
 	return _scheduler_state()[0]
 
@@ -322,6 +360,23 @@ def checks() -> list[dict]:
 			),
 			"needs": "Redeploy the bench after `boto3` was added to the apps.",
 			"where": "Frappe Cloud → bench",
+		},
+		{
+			# The sweep already wrote down what it did every night; nothing
+			# ever showed it. On a control plane with no desk, a read-only
+			# field on a Single is unreachable — so the ladder's own status
+			# was the one thing about it nobody could see. This is where an
+			# operator asks "did it run, and what did it do to whom".
+			"key": "lifecycle_sweep",
+			"group": OPTIONAL,
+			"label": "The lifecycle sweep is running",
+			"ok": _sweep_ok(),
+			"detail": _sweep_detail(),
+			"needs": (
+				"A scheduler that is running. The sweep is a daily job; it is "
+				"idempotent, so a missed night is caught up by the next one."
+			),
+			"where": "Operations → Lifecycle",
 		},
 		{
 			"key": "email_outbound",
