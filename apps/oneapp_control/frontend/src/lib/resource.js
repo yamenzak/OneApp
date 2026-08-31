@@ -86,6 +86,18 @@ function methodUrl(method) {
   return `/api/v2/method/${method}`
 }
 
+/**
+ * A request the caller replaced, rather than one that failed.
+ *
+ * The browser rejects a cancelled fetch with an AbortError, and frappe-ui
+ * cancels the previous request whenever a resource's params change. Named
+ * rather than matched at each call site: the message wording is the browser's
+ * and differs between them, so the name is the reliable half.
+ */
+function isAbort(error) {
+  return error?.name === 'AbortError' || /aborted/i.test(error?.message || '')
+}
+
 export function useResource(url, options = {}) {
   const { watch: watchDoctypes = [], silent = false, transform, onError, ...rest } = options
 
@@ -96,6 +108,12 @@ export function useResource(url, options = {}) {
       return transform ? transform(value) : value
     },
     onError: (error) => {
+      // An abort is the resource cancelling its own in-flight request because
+      // its params changed — a screen that fetched before its workspace was
+      // chosen, and then fetched again once it was. Nothing failed and there is
+      // nothing to do, so reporting it puts "Something went wrong" over a page
+      // that is loading correctly.
+      if (isAbort(error)) return
       if (!silent) notifyError(error)
       onError?.(error)
     },
@@ -136,6 +154,7 @@ export function useAction(url, options = {}) {
       onSuccess?.(data)
     },
     onError: (error) => {
+      if (isAbort(error)) return
       if (!silent) notifyError(error)
       onError?.(error)
     },

@@ -1,3 +1,5 @@
+import { defineAsyncComponent } from 'vue'
+
 /**
  * The escape hatch: screens an app writes itself.
  *
@@ -43,6 +45,25 @@ export const APP_COMPONENTS = {
   'onespace-account/domain': () => import('./account/Domain.vue'),
 }
 
+/**
+ * The component for a screen, ready to render.
+ *
+ * `defineAsyncComponent`, not the bare loader. `<component :is>` given a plain
+ * function treats it as a *functional component* and renders whatever it
+ * returns — so a raw `() => import(…)` renders the string `[object Promise]`
+ * where the screen should be, with no error anywhere. This registry held only a
+ * commented-out example until the operator console arrived, so the escape hatch
+ * had never actually rendered anything.
+ *
+ * Memoised: `defineAsyncComponent` returns a new wrapper each call, and a new
+ * component identity on every render is a screen that remounts — losing its
+ * state — whenever anything above it updates.
+ */
+const resolved = new Map()
+
 export function screenComponent(name) {
-  return APP_COMPONENTS[name] || null
+  const loader = APP_COMPONENTS[name]
+  if (!loader) return null
+  if (!resolved.has(name)) resolved.set(name, defineAsyncComponent(loader))
+  return resolved.get(name)
 }
