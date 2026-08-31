@@ -1951,3 +1951,58 @@ def test_a_table_multiselect_resolves_like_a_child_table(spaceview, stub_frappe)
 
 	assert column["child"]["doctype"] == "Tag Link"
 	assert [c["fieldtype"] for c in column["child"]["fields"]] == ["Link"]
+
+
+# --------------------------------------------------------------------------- #
+# Which spaces a person may open
+#
+# The site's entitlements decide which exist here; the reader's roles decide
+# which are theirs. `_space` used to ask only the first, so a space code
+# guessed at resolved and handed back the space's shape — its label, its
+# screens, its navigation. Harmless while one audience shares a site, and
+# exactly wrong once two do.
+# --------------------------------------------------------------------------- #
+
+SPACES = [
+	{"space_code": "sales", "space_label": "Sales", "role_name": "Sales User"},
+	{"space_code": "ops", "space_label": "Operations", "role_name": "OneSpace Operator"},
+	{"space_code": "open", "space_label": "Everyone", "role_name": ""},
+]
+
+
+@pytest.fixture
+def sited(spaceview, stub_frappe, monkeypatch):
+	# `_space` imports sync inside the function, so the module has to be
+	# imported here rather than looked up in sys.modules — the resolver fixture
+	# has just cleared it.
+	from oneapp.oneapp_core import sync
+
+	monkeypatch.setattr(sync, "state", lambda: {"spaces": SPACES})
+	return stub_frappe
+
+
+def test_a_space_whose_role_you_hold_resolves(spaceview, sited):
+	sited.get_roles = lambda user=None: ["Sales User"]
+	assert spaceview._space("sales")["space_label"] == "Sales"
+
+
+def test_a_space_whose_role_you_lack_is_refused(spaceview, sited):
+	"""The fix. It used to resolve, and hand back the screens."""
+	sited.get_roles = lambda user=None: ["Sales User"]
+	with pytest.raises(sited.PermissionError):
+		spaceview._space("ops")
+
+
+def test_a_space_with_no_role_is_open_to_everybody(spaceview, sited):
+	"""Which is what an empty `role_name` has always meant — a manifest
+	declares one when it wants the space narrowed."""
+	sited.get_roles = lambda user=None: []
+	assert spaceview._space("open")["space_label"] == "Everyone"
+
+
+def test_the_rail_and_the_resolver_share_one_answer(spaceview, sited):
+	"""They used to disagree: the rail asked about roles and the resolver did
+	not, so a space absent from somebody's rail still answered when its code
+	was asked for by name."""
+	sited.get_roles = lambda user=None: ["OneSpace Operator"]
+	assert [s["space_code"] for s in spaceview.visible(SPACES)] == ["ops", "open"]

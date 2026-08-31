@@ -75,15 +75,15 @@ def visible_spaces():
 	Two filters, and both matter. The tenant's entitlements decide what the
 	*site* has; the user's roles decide what *they* may open. An entitled space
 	the user lacks the role for is correctly absent.
-	"""
-	state = sync.state()
-	roles = set(frappe.get_roles())
 
-	return [
-		space
-		for space in state.get("spaces", [])
-		if not space.get("role_name") or space["role_name"] in roles
-	]
+	Shares its answer with `_space`, which resolves a space code for every
+	whitelisted read. They used to disagree — the rail asked about roles and
+	the resolver did not — so a space absent from somebody's rail still
+	answered when its code was asked for by name.
+	"""
+	from oneapp.oneapp_core.spaceview import visible
+
+	return visible(sync.state().get("spaces", []))
 
 
 @frappe.whitelist()

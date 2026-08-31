@@ -51,14 +51,42 @@ HIDDEN = {
 
 
 def _space(space_code: str) -> dict:
-	"""The space, if this workspace is entitled to it."""
+	"""The space, if this person may open it.
+
+	Two questions, and this used to ask only the first. The site's entitlements
+	decide which spaces exist here; the reader's roles decide which of those are
+	theirs — and `api.visible_spaces` has always asked both, while this asked
+	neither about the reader. So a space code guessed at resolved, and what came
+	back was the space's shape: its label, its screens, its navigation.
+
+	Not data — `_granted_doctypes` and Frappe's own permissions still stood
+	behind every row, so the answer was an empty list rather than somebody
+	else's records. But it is the wrong direction, and it stops being harmless
+	the moment two audiences share a site: an operator console and a customer's
+	account area on the same control plane, where a customer guessing the
+	operator space's code could read its screen list.
+
+	One function, two callers, so the rail and the resolver cannot drift into
+	different answers about what a person may open.
+	"""
 	from oneapp.oneapp_core import sync
 
-	for space in sync.state().get("spaces") or []:
+	for space in visible(sync.state().get("spaces") or []):
 		if space.get("space_code") == space_code:
 			return space
 	frappe.throw(_("No space named {0} is enabled here.").format(space_code),
 	             frappe.PermissionError)
+
+
+def visible(spaces: list) -> list:
+	"""The spaces this reader may open, out of the ones this site has.
+
+	A space with no role is open to everybody on the site, which is what an
+	empty `role_name` has always meant — the manifest declares one when it
+	wants the space narrowed.
+	"""
+	roles = set(frappe.get_roles())
+	return [s for s in spaces if not s.get("role_name") or s["role_name"] in roles]
 
 
 def _granted_doctypes(space: dict) -> set[str]:
