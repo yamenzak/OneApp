@@ -81,6 +81,16 @@ in front of it, so that 404s locally on every page — which had been failing th
 console check everywhere and therefore checking nothing. Realtime is exercised on
 a real site instead.
 
+> **Start the site you are about to test, last.** `webserver_port` is one
+> bench-wide setting and the socketio server reads it at startup to know where to
+> call back and authenticate a connection. Two sites on two ports means whichever
+> started most recently owns realtime, and the other one's sockets connect,
+> subscribe, and are then never put in a room. `dev.sh up` handles it — it
+> rewrites the port and restarts socketio — so this only bites when you bring the
+> *other* site up in between. The symptom is the realtime specs failing alone
+> while everything else passes, with no error anywhere: the socket handshakes, the
+> `doctype_subscribe` goes out, and nothing ever comes back.
+
 **A Python edit needs `restart`. An SPA edit needs nothing** — run
 `scripts/dev.sh spa` and Vite hot-reloads, proxying `/api` to the local site
 through frappe-ui's plugin, so the session cookie and CSRF token are real.
