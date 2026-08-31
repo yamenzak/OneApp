@@ -39,6 +39,7 @@ def make(shard):
         def __init__(self, **kw):
             self.press_server = "u25-nuremberg-3.frappe.cloud"
             self.press_release_group = "bench-46919"
+            self.press_cluster = "Nuremberg-3"
             self.press_version = "Nightly"
             self.capacity_tenants = 0
             self.tenant_count = 0
@@ -180,3 +181,81 @@ def test_press_is_asked_once_per_request(shard, stub_frappe, monkeypatch):
     assert first == second
     assert calls.count("built") == 1, calls
     assert calls.count("groups") == 1, "release_groups was fetched twice"
+
+
+# --------------------------------------------------------------------------- #
+# What derives, and what refuses to guess
+# --------------------------------------------------------------------------- #
+# A shard is one choice and a handful of decisions. The bench group determines
+# the version, the server determines the cluster, and a single-server account
+# determines the server — none of those is a judgement, so none should be typed.
+
+def test_the_group_supplies_the_version(shard, make, monkeypatch):
+    _known(shard, monkeypatch)
+    doc = make(press_version="")
+    validate(doc)
+    assert doc.press_version == "Nightly"
+
+
+def test_the_server_supplies_the_cluster(shard, make, monkeypatch):
+    _known(shard, monkeypatch, {
+        "servers": [{"name": "u25-nuremberg-3.frappe.cloud", "cluster": "Nuremberg-3"}],
+        "release_groups": [{"name": "bench-46919", "version": "Nightly"}],
+        "versions": ["Nightly"],
+    })
+    doc = make(press_cluster="")
+    validate(doc)
+    assert doc.press_cluster == "Nuremberg-3"
+
+
+def test_a_single_server_account_does_not_have_to_name_it(shard, make, monkeypatch):
+    _known(shard, monkeypatch, {
+        "servers": [{"name": "u25-nuremberg-3.frappe.cloud", "cluster": "Nuremberg-3"}],
+        "release_groups": [{"name": "bench-46919", "version": "Nightly"}],
+        "versions": ["Nightly"],
+    })
+    doc = make(press_server="", press_cluster="")
+    validate(doc)
+    assert doc.press_server == "u25-nuremberg-3.frappe.cloud"
+    assert doc.press_cluster == "Nuremberg-3"
+
+
+def test_two_servers_are_a_real_choice_and_are_not_guessed(shard, make, monkeypatch):
+    """Guessing here puts somebody's tenants on a machine nobody picked."""
+    _known(shard, monkeypatch, {
+        "servers": [{"name": "a.frappe.cloud", "cluster": "X"},
+                    {"name": "b.frappe.cloud", "cluster": "Y"}],
+        "release_groups": [{"name": "bench-46919", "version": "Nightly"}],
+        "versions": ["Nightly"],
+    })
+    doc = make(press_server="", press_cluster="")
+    validate(doc)
+    assert doc.press_server == ""
+
+
+def test_a_value_already_set_is_never_overwritten(shard, make, monkeypatch):
+    """A set value is a deliberate one — a shard pinned somewhere press would
+    not have chosen, or one mid-migration between groups."""
+    _known(shard, monkeypatch, {
+        "servers": [{"name": "u25-nuremberg-3.frappe.cloud", "cluster": "Nuremberg-3"}],
+        "release_groups": [{"name": "bench-46919", "version": "Nightly"}],
+        "versions": ["Nightly"],
+    })
+    doc = make(press_cluster="Somewhere-Else")
+    validate(doc)
+    assert doc.press_cluster == "Somewhere-Else"
+
+
+def test_filling_does_not_excuse_a_wrong_value(shard, make, monkeypatch):
+    """Filling is the convenience; refusing is the guarantee. Both run."""
+    _known(shard, monkeypatch)
+    with pytest.raises(Exception):
+        validate(make(press_version="", press_release_group="bench-46810"))
+
+
+def test_an_empty_shard_asks_press_nothing(shard, make, monkeypatch):
+    def explode():
+        raise AssertionError("nothing named, nothing to derive")
+
+    monkeypatch.setattr(shard, "press_inventory", explode)
+    validate(make(press_server="", press_release_group="", press_version=""))

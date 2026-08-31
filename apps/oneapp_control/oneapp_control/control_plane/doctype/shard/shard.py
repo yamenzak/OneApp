@@ -23,7 +23,61 @@ class Shard(Document):
 			# stop attracting new tenants.
 			self.accepts_new_tenants = 0
 
+		self.fill_from_press()
 		self.validate_against_press()
+
+	def fill_from_press(self):
+		"""Derive what Frappe Cloud already knows, and leave the rest alone.
+
+		A shard is one choice and a handful of decisions, not seventeen fields.
+		The bench group determines the version; the server determines the
+		cluster; and an account with a single server determines the server. None
+		of those is a judgement, so asking somebody to copy them off another
+		screen only creates a chance to get one wrong.
+
+		**Only ever fills a blank.** A value already set is a deliberate one —
+		an operator pinning a shard to a cluster press would not have picked, or
+		a shard mid-migration between groups — and `validate_against_press`
+		still checks whatever ends up here. Filling is a convenience; refusing a
+		wrong answer is the guarantee.
+
+		Silent by design where it cannot help: no server named and several to
+		choose from is a real decision, and guessing would put tenants on a
+		machine nobody chose.
+		"""
+		if not self.get("press_release_group") and not self.get("press_server"):
+			return
+
+		flags = frappe.flags
+		if any(getattr(flags, f, False) for f in
+		       ("in_install", "in_migrate", "in_patch", "in_test", "in_import")):
+			return
+
+		known = press_inventory()
+		if not known:
+			return
+
+		servers = known.get("servers") or []
+		groups = known.get("release_groups") or []
+
+		# One server on the account is not a choice, so it does not need to be
+		# made. Two or more and it is, so this stays out of it.
+		if not self.get("press_server") and len(servers) == 1:
+			self.press_server = servers[0].get("name")
+
+		if not self.get("press_cluster") and self.get("press_server"):
+			match = next(
+				(s for s in servers if s.get("name") == self.get("press_server")), None
+			)
+			if match:
+				self.press_cluster = match.get("cluster")
+
+		if not self.get("press_version") and self.get("press_release_group"):
+			match = next(
+				(g for g in groups if g.get("name") == self.get("press_release_group")), None
+			)
+			if match:
+				self.press_version = match.get("version")
 
 	def validate_against_press(self):
 		"""Refuse a shard naming something Frappe Cloud does not have.
