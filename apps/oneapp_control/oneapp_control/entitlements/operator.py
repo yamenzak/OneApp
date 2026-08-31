@@ -29,7 +29,7 @@ DOCTYPES = (
 	"Subscription", "Credit Ledger Entry", "Credit Reservation",
 	"Stripe Webhook Event", "Plan", "Region", "Storage Bucket",
 	"OneSpace Space", "Space Entitlement", "AI Model", "AI Feature",
-	"AI Usage Record", "Support Login", "Add-on", "Credit Pack",
+	"AI Usage Record", "Support Login", "Add-on", "Credit Pack", "Promo Code",
 )
 
 # screen, label, icon, doctype, fields, status field
@@ -67,6 +67,9 @@ SCREENS = (
 	 "addon_name,addon_code,kind,unit_gb,is_active,price_monthly", "kind"),
 	("packs", "Credit packs", "lucide-wallet", "Credit Pack",
 	 "pack_name,pack_code,credits,amount,currency,is_active", ""),
+	("promos", "Promo codes", "lucide-shopping-cart", "Promo Code",
+	 "promo_code,description,discount_type,percent_off,duration,times_redeemed,is_active",
+	 "discount_type"),
 	("regions", "Regions", "lucide-store", "Region",
 	 "region_name,region_code,country,is_active", ""),
 	("buckets", "Buckets", "lucide-database", "Storage Bucket",

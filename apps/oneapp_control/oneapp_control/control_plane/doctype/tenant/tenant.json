@@ -27,6 +27,7 @@
   "customer",
   "cb_plan",
   "trial_ends_on",
+  "promo_code",
   "provisioned_on",
   "suspended_on",
   "archived_on",
@@ -183,6 +184,14 @@
    "fieldname": "trial_ends_on",
    "fieldtype": "Date",
    "label": "Trial Ends On"
+  },
+  {
+   "description": "What this workspace was signed up under, if anything. The answer to 'which of these are free demos'.",
+   "fieldname": "promo_code",
+   "fieldtype": "Link",
+   "label": "Promo Code",
+   "options": "Promo Code",
+   "read_only": 1
   },
   {
    "fieldname": "provisioned_on",

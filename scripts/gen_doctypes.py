@@ -170,6 +170,78 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
+# Promo Code — a discount on anything we sell, including all of it.
+#
+# Ours to declare, Stripe's to enforce. Saving one creates a Stripe **Coupon**
+# (the money: percent or amount, and for how long) and a **Promotion Code** (the
+# string somebody types, its redemption limit and its expiry). Nobody pastes a
+# `promo_...` id between two systems, for the same reason nobody pastes a price.
+#
+# A coupon's terms are immutable in Stripe once created. So changing a percentage
+# mints a new coupon and a new promotion code and deactivates the old one:
+# anybody already redeemed keeps what they were given, which is the same
+# grandfathering shape a plan price has, for the same reason.
+#
+# 100% off forever is how a demo or training workspace exists. It is a real
+# subscription at zero — real terms, real quotas, real monthly credit grants —
+# rather than a comped tenant on a second lifecycle. Stripe asks for no card when
+# the total is zero, and `handle_signup_paid` already accepts the
+# `no_payment_required` that comes back.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Promo Code",
+    autoname="field:promo_code",
+    fields=[
+        f("promo_code", label="Code", reqd=1, unique=1, in_list_view=1,
+          description="What somebody types. Upper-cased on save, because nobody "
+                      "types a code the way it was written down."),
+        f("description", "Small Text", reqd=1,
+          description="What it is for. An operator reads this in six months and "
+                      "has to know whether it can be retired."),
+        f("is_active", "Check", default="1", in_list_view=1,
+          description="Unchecking deactivates the promotion code in Stripe. "
+                      "Anybody already redeemed keeps their discount — that is "
+                      "Stripe's behaviour and it is the right one."),
+        column("cb_promo_money"),
+        f("discount_type", "Select", options="Percent\nAmount", default="Percent",
+          reqd=1, in_list_view=1),
+        f("percent_off", "Float", depends_on="eval:doc.discount_type=='Percent'",
+          description="1 to 100. A hundred is free — which is the point."),
+        f("amount_off", "Currency", depends_on="eval:doc.discount_type=='Amount'"),
+        f("currency", "Link", options="Currency", default="USD",
+          depends_on="eval:doc.discount_type=='Amount'",
+          description="An amount-off coupon only applies to purchases in its own "
+                      "currency. Stripe enforces that, not us."),
+        f("duration", "Select", options="Once\nRepeating\nForever", default="Once",
+          reqd=1,
+          description="How many billing periods it lasts. Irrelevant to a "
+                      "one-off purchase, which only ever has one."),
+        f("duration_in_months", "Int", depends_on="eval:doc.duration=='Repeating'"),
+        section("sec_promo_scope", "What it applies to"),
+        f("on_subscriptions", "Check", default="1",
+          description="Plans. This is the one a free demo instance needs."),
+        f("on_addons", "Check", default="0",
+          description="Extra storage, bought per month."),
+        f("on_credit_packs", "Check", default="0"),
+        column("cb_promo_limits"),
+        f("max_redemptions", "Int", default="0",
+          description="Total times it may be used, across everybody. Zero for no "
+                      "limit."),
+        f("expires_on", "Date", description="Stripe stops accepting it after this."),
+        f("first_time_only", "Check", default="0",
+          description="Only for a customer who has never paid us before."),
+        section("sec_promo_stripe"),
+        f("stripe_coupon_id", label="Stripe Coupon ID", read_only=1),
+        f("stripe_promotion_code_id", label="Stripe Promotion Code ID", read_only=1),
+        f("times_redeemed", "Int", default="0", read_only=1, in_list_view=1,
+          description="Counted by Stripe, refreshed from it. Not incremented "
+                      "here — two systems counting the same thing disagree."),
+        f("sync_error", "Small Text", read_only=1),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
 # Credit Pack — AI credits, bought once.
 #
 # The other half of how credits arrive. A plan grants some every period and they
@@ -564,6 +636,9 @@ doctype(
           description="ERPNext Customer. Created on first successful payment."),
         column("cb_plan"),
         f("trial_ends_on", "Date"),
+        f("promo_code", "Link", options="Promo Code", read_only=1,
+          description="What this workspace was signed up under, if anything. "
+                      "The answer to 'which of these are free demos'."),
         f("provisioned_on", "Datetime", read_only=1),
         f("suspended_on", "Datetime", read_only=1),
         f("archived_on", "Datetime", read_only=1),
@@ -1325,6 +1400,10 @@ doctype(
         f("interval", "Select", options="Monthly\nYearly", default="Monthly", reqd=1),
         f("region", "Link", options="Region", reqd=1),
         f("storage_jurisdiction", "Select", options="Global\nEU", default="Global", reqd=1),
+        f("promo_code", "Link", options="Promo Code",
+          description="Validated when the request is made and applied to the "
+                      "checkout. A hundred-percent code is how a demo workspace "
+                      "signs up without a card."),
         f("tenant", "Link", options="Tenant", read_only=1,
           description="Set once provisioning starts."),
         f("user", "Link", options="User", read_only=1,

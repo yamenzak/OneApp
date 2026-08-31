@@ -96,7 +96,8 @@ def plans() -> list[dict]:
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def start(email: str, workspace_name: str, slug: str, plan: str,
           region: str, storage_jurisdiction: str = "Global",
-          interval: str = "Monthly", source: str | None = None) -> dict:
+          interval: str = "Monthly", source: str | None = None,
+          code: str | None = None) -> dict:
 	"""Create an Account Request and return a Stripe Checkout URL.
 
 	Nothing is provisioned here. The tenant only comes into existence once
@@ -131,6 +132,13 @@ def start(email: str, workspace_name: str, slug: str, plan: str,
 	if storage_jurisdiction not in ("Global", "EU"):
 		frappe.throw(_("Unknown storage jurisdiction."))
 
+	# Checked here as well as at checkout, so a bad code is a message beside the
+	# field rather than a Stripe page that refuses after everything else was
+	# filled in. Throws with the reason.
+	from oneapp_control.billing import promos
+
+	promo = promos.resolve(code, "subscription") if code else None
+
 	# Resume rather than duplicate: someone who abandoned checkout and came back
 	# should not end up with two requests, or lose their slug to themselves.
 	existing = frappe.db.get_value(
@@ -152,11 +160,17 @@ def start(email: str, workspace_name: str, slug: str, plan: str,
 				"region": region,
 				"storage_jurisdiction": storage_jurisdiction,
 				"status": "Pending Payment",
+				"promo_code": promo.name if promo else None,
 				"source": source,
 				"ip_address": _client_ip(),
 			}
 		).insert(ignore_permissions=True)
 	)
+
+	# Somebody resuming an abandoned checkout may be typing a different code, or
+	# one for the first time.
+	if (request.promo_code or None) != (promo.name if promo else None):
+		request.db_set("promo_code", promo.name if promo else None)
 
 	from oneapp_control.billing import checkout
 

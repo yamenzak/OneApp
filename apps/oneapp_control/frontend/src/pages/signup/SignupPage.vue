@@ -58,6 +58,19 @@
           description="Where your files are stored. This cannot be changed later."
         />
 
+        <!--
+          Optional, and last: a field somebody has no code for should read as
+          "skip this" rather than as one more thing to fill in. Validated
+          server-side on submit, so a wrong code is a message here rather than a
+          Stripe page that refuses after everything else was typed.
+        -->
+        <FormControl
+          v-model="form.code"
+          label="Promo code"
+          placeholder="Optional"
+          description="If you were given one."
+        />
+
         <ErrorMessage v-if="error" :message="error" />
 
         <Button
@@ -98,6 +111,7 @@ const form = reactive({
   plan: '',
   region: '',
   storage_jurisdiction: 'Global',
+  code: '',
 })
 
 const open = reactive({ checked: false, open: false })
@@ -146,7 +160,8 @@ async function submit() {
   submitting.value = true
   error.value = ''
   try {
-    const { url } = await callMethod(method('start'), { ...form }, { silent: true })
+    const payload = { ...form, code: form.code.trim() || undefined }
+    const { url } = await callMethod(method('start'), payload, { silent: true })
     if (url) window.location.href = url
   } catch (e) {
     error.value = e.message || String(e)

@@ -172,7 +172,7 @@ def packs() -> dict:
 
 
 @frappe.whitelist()
-def buy_credits(workspace: str, pack: str) -> dict:
+def buy_credits(workspace: str, pack: str, code: str | None = None) -> dict:
 	"""Start checkout for a pack, named by code.
 
 	The code and nothing else. What it costs is looked up server-side, because
@@ -180,7 +180,7 @@ def buy_credits(workspace: str, pack: str) -> dict:
 	for a penny.
 	"""
 	tenant = require_workspace(workspace)
-	return checkout.start_credit_pack(tenant.name, pack)
+	return checkout.start_credit_pack(tenant.name, pack, code)
 
 
 @frappe.whitelist(methods=["GET"])
@@ -256,10 +256,11 @@ def addons(workspace: str) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def set_addon(workspace: str, addon: str, quantity: int) -> dict:
+def set_addon(workspace: str, addon: str, quantity: int,
+              code: str | None = None) -> dict:
 	"""Hold this many units. Zero releases it."""
 	tenant = require_workspace(workspace)
-	return checkout.set_addon_quantity(tenant.name, addon, quantity)
+	return checkout.set_addon_quantity(tenant.name, addon, quantity, code)
 
 
 @frappe.whitelist()

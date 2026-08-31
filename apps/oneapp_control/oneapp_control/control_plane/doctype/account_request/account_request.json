@@ -16,6 +16,7 @@
   "interval",
   "region",
   "storage_jurisdiction",
+  "promo_code",
   "tenant",
   "user",
   "sec_ar_pay",
@@ -98,6 +99,13 @@
    "label": "Storage Jurisdiction",
    "options": "Global\nEU",
    "reqd": 1
+  },
+  {
+   "description": "Validated when the request is made and applied to the checkout. A hundred-percent code is how a demo workspace signs up without a card.",
+   "fieldname": "promo_code",
+   "fieldtype": "Link",
+   "label": "Promo Code",
+   "options": "Promo Code"
   },
   {
    "description": "Set once provisioning starts.",

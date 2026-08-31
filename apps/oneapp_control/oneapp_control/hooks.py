@@ -95,6 +95,11 @@ scheduler_events = {
 		"oneapp_control.ai.catalogue.scheduled_sync",
 		# Posts explicit Expiry rows so the ledger reads as a complete history.
 		"oneapp_control.credits.ledger.expire_stale_grants",
+		# Stripe counts redemptions; this copies the count across so an operator
+		# can see how much of a code is left. Ours is never incremented — two
+		# systems with an opinion about the same number drift the first time a
+		# checkout is abandoned after the code was applied.
+		"oneapp_control.billing.promos.refresh_redemptions",
 	],
 }
 

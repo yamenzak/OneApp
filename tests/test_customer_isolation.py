@@ -118,7 +118,9 @@ def test_a_pack_purchase_does_not_trust_a_client_supplied_price():
 	body = code_of(CUSTOMER_API, "buy_credits")
 	assert "amount" not in body, "buy_credits passes an amount"
 	assert "credits" not in body, "buy_credits passes a size"
-	assert "checkout.start_credit_pack(tenant.name, pack)" in body
+	# The code a customer typed may go through — it is validated server-side and
+	# resolves to a Stripe promotion code, never to an amount.
+	assert "checkout.start_credit_pack(tenant.name, pack, code)" in body
 
 
 def test_the_checkout_prices_a_pack_from_the_catalogue():

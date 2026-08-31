@@ -116,6 +116,10 @@ def ensure_tenant(request, user: str):
 			"plan": request.plan,
 			"region": request.region,
 			"storage_jurisdiction": request.storage_jurisdiction or "Global",
+			# Carried onto the workspace so "which of these are free demos" is a
+			# filter rather than a spreadsheet. Stripe holds the discount; this
+			# is only the name of the code it was sold under.
+			"promo_code": request.promo_code,
 			"status": "Draft",
 		}
 	).insert(ignore_permissions=True)

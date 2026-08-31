@@ -14,6 +14,7 @@ from frappe.utils import now_datetime
 from oneapp_control import portal
 from oneapp_control.billing import addons as addon_catalogue
 from oneapp_control.billing import packs as pack_catalogue
+from oneapp_control.billing import promos
 from oneapp_control.billing import plans as plan_catalogue
 from oneapp_control.billing import quotas, stripe_client
 
@@ -79,7 +80,7 @@ def start_subscription(tenant: str, plan: str, interval: str = "Monthly") -> dic
 
 
 @frappe.whitelist()
-def start_credit_pack(tenant: str, pack: str) -> dict:
+def start_credit_pack(tenant: str, pack: str, code: str | None = None) -> dict:
 	"""Create a Checkout session for a one-off credit pack.
 
 	The pack names itself and the catalogue supplies the price. Neither the size
@@ -93,6 +94,7 @@ def start_credit_pack(tenant: str, pack: str) -> dict:
 	"""
 	tenant_doc = frappe.get_doc("Tenant", tenant)
 	pack_doc = pack_catalogue.sellable(pack)
+	promo = promos.resolve(code, "credit_pack")
 	success_url, cancel_url = _urls(tenant)
 
 	session = stripe_client.create_checkout_session(
@@ -110,7 +112,9 @@ def start_credit_pack(tenant: str, pack: str) -> dict:
 			"credits": pack_doc.credits,
 			"pack": pack,
 			"kind": "credit_pack",
+			**({"promo": promo.name} if promo else {}),
 		},
+		**({"discounts": promos.discounts_for(promo)} if promo else {}),
 	)
 
 	return {"url": session.get("url"), "id": session.get("id")}
@@ -238,6 +242,7 @@ def start_signup(request) -> dict:
 	way back — at this point there is no tenant to key on.
 	"""
 	plan, price_id = _sellable(request.plan, request.interval)
+	promo = promos.resolve(request.get("promo_code"), "subscription")
 
 	session = stripe_client.create_checkout_session(
 		mode="subscription",
@@ -254,7 +259,20 @@ def start_signup(request) -> dict:
 			"plan": request.plan,
 			"interval": request.interval,
 			"kind": "signup",
+			**({"promo": promo.name} if promo else {}),
 		},
+		# The code, applied rather than offered. A signup already knows which one
+		# was typed and validated it server-side, so showing Stripe's own promo
+		# field on top would be a second place to enter a second code.
+		**({"discounts": promos.discounts_for(promo)} if promo else {}),
+		# Nothing to collect when the whole thing is free. Without this Stripe
+		# asks for a card it will never charge, which is the difference between a
+		# demo instance somebody can spin up and one they give up on.
+		**(
+			{"payment_method_collection": "if_required"}
+			if promos.is_total_discount(promo)
+			else {}
+		),
 		# Stripe dedupes for 24h, so a double-submitted form cannot create two
 		# subscriptions for the same request.
 		_idempotency_key=f"signup:{request.name}",
@@ -292,7 +310,8 @@ def billing_portal(tenant: str) -> dict:
 # --------------------------------------------------------------------------- #
 
 @frappe.whitelist(methods=["POST"])
-def set_addon_quantity(tenant: str, addon: str, quantity: int) -> dict:
+def set_addon_quantity(tenant: str, addon: str, quantity: int,
+                       code: str | None = None) -> dict:
 	"""Hold `quantity` units of `addon` on this workspace's subscription.
 
 	Zero releases it. Stripe prorates in both directions: buying mid-cycle is
@@ -322,7 +341,13 @@ def set_addon_quantity(tenant: str, addon: str, quantity: int) -> dict:
 	# refuses a plan that is too small.
 	_refuse_shrinking_below_use(tenant_doc, subscription, addon_doc, quantity, held)
 
-	item = _apply_addon_item(subscription, addon_doc, price_id, quantity, held)
+	# A code on an add-on discounts the *subscription*, because that is where the
+	# line lives — Stripe has no notion of a discount on one item. So it is
+	# applied only when the subscription is not already carrying one, rather than
+	# silently replacing a discount the customer is already receiving.
+	promo = promos.resolve(code, "addon") if code else None
+
+	item = _apply_addon_item(subscription, addon_doc, price_id, quantity, held, promo)
 	_capture_addon(subscription, addon_doc, price_id, quantity, item)
 
 	return {"addon": addon, "quantity": quantity}
@@ -376,7 +401,8 @@ def _refuse_shrinking_below_use(tenant_doc, subscription, addon_doc, quantity, h
 		)
 
 
-def _apply_addon_item(subscription, addon_doc, price_id: str, quantity: int, held) -> dict:
+def _apply_addon_item(subscription, addon_doc, price_id: str, quantity: int, held,
+                      promo=None) -> dict:
 	"""Add, change or remove the Stripe line, and return what it became."""
 	key = f"addon:{subscription.name}:{addon_doc.name}:{quantity}"
 
@@ -395,6 +421,7 @@ def _apply_addon_item(subscription, addon_doc, price_id: str, quantity: int, hel
 		subscription.stripe_subscription_id,
 		items=[item],
 		proration_behavior="create_prorations",
+		**({"discounts": promos.discounts_for(promo)} if promo else {}),
 		_idempotency_key=key,
 	)
 	return _item_for_price(remote, price_id)

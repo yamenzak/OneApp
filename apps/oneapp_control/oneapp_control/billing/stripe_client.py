@@ -133,3 +133,32 @@ def create_billing_portal_session(customer_id: str, return_url: str) -> dict:
 	"""Let customers manage their own card and cancellations."""
 	return request("POST", "billing_portal/sessions",
 	               {"customer": customer_id, "return_url": return_url})
+
+
+# --------------------------------------------------------------------------- #
+# Discounts
+#
+# Two objects, deliberately. A **Coupon** is the money — percent or amount, and
+# for how many billing periods. A **Promotion Code** is the string somebody types
+# and the rules about who may type it: how many times in total, until when,
+# first-time customers only.
+#
+# A coupon's terms are immutable once created, exactly like a price. Changing a
+# percentage means minting a new coupon, which is why nothing here updates one.
+# --------------------------------------------------------------------------- #
+
+def create_coupon(idempotency_key: str | None = None, **kwargs) -> dict:
+	return request("POST", "coupons", kwargs, idempotency_key=idempotency_key)
+
+
+def create_promotion_code(idempotency_key: str | None = None, **kwargs) -> dict:
+	return request("POST", "promotion_codes", kwargs, idempotency_key=idempotency_key)
+
+
+def update_promotion_code(promotion_code_id: str, **kwargs) -> dict:
+	"""Only `active` and `metadata` are mutable; the money is on the coupon."""
+	return request("POST", f"promotion_codes/{promotion_code_id}", kwargs)
+
+
+def get_promotion_code(promotion_code_id: str) -> dict:
+	return request("GET", f"promotion_codes/{promotion_code_id}")
