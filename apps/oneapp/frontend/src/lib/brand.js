@@ -8,4 +8,3 @@
  * so every surface reads these instead.
  */
 export const TENANT_APP = 'OneSpace'
-export const ADMIN_APP = 'OneAdmin'

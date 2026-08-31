@@ -763,8 +763,8 @@ def support_logins(tenant: str, limit: int = 20) -> list:
 #
 # Everything below exists because the desk is not part of this product
 # (DECISIONS §7). A record an operator can only reach through /app is a record
-# only someone who knows Frappe can reach, and the whole point of OneAdmin is
-# that running this does not require that.
+# only someone who knows Frappe can reach, and the whole point of the operator
+# console is that running this does not require that.
 # --------------------------------------------------------------------------- #
 
 @frappe.whitelist(methods=["GET"])
@@ -953,7 +953,7 @@ def set_tenant_plan(tenant: str, plan: str, interval: str = "Monthly") -> dict:
 # --------------------------------------------------------------------------- #
 # AI: the model catalogue, the feature registry, and what tenants spent
 #
-# All of it operable from OneAdmin. There is no desk (DECISIONS §7), so a model
+# All of it operable from the console. There is no desk (DECISIONS §7), so a model
 # that can only be re-priced by editing a doctype is a model nobody re-prices.
 # --------------------------------------------------------------------------- #
 

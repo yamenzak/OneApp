@@ -145,6 +145,13 @@ PROPERTIES = [
 	# the field is hidden until the task is closed, and required once it is.
 	# `sender` and not `role`: a rule on a field another test drives is a rule
 	# that breaks it, and the link tests type into Role.
+	#
+	# `hidden` first, and it is not decoration. ToDo ships `sender` hidden, and
+	# a hidden field is not offered at all — `depends_on` decides whether a
+	# field somebody can see is showing, not whether a field nobody can see
+	# becomes visible. So a rule on a hidden field is a rule on nothing, and
+	# this fixture was asserting against a control that was never rendered.
+	("ToDo", "sender", "hidden", 0, "Check"),
 	("ToDo", "sender", "depends_on", 'eval:doc.status=="Closed"', "Data"),
 	("ToDo", "sender", "mandatory_depends_on", 'eval:doc.status=="Closed"', "Data"),
 	# And one that goes the other way: the reference is settled while the task

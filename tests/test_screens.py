@@ -12,6 +12,7 @@ the logic that decides them.
 """
 
 import types
+from pathlib import Path
 
 import pytest
 
@@ -1287,7 +1288,7 @@ def test_a_record_carries_every_field_it_shows_not_the_listed_columns(spaceview)
 	"""The dialog renders the doctype's whole field list. It used to seed itself
 	from the list row, so a field nobody put on the list opened blank on a
 	record that has a value for it."""
-	source = (spaceview.__file__ and open(spaceview.__file__).read()) or ""
+	source = Path(spaceview.__file__).read_text() if spaceview.__file__ else ""
 	body = source.split("def record(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert "all_columns" in body, "record() must fetch what the record shows"
 	assert 'resolved["fields"]' not in body, (
@@ -1300,7 +1301,7 @@ def test_a_record_is_bounded_by_the_screen_and_not_by_a_saved_view(spaceview):
 	"""You can arrive at a record from one view and open it under another, and
 	a personal filter is not a rule about what exists. The screen's own filters
 	still are."""
-	source = open(spaceview.__file__).read()
+	source = Path(spaceview.__file__).read_text()
 	body = source.split("def record(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert "_apply_saved" not in body
 	assert "_all_filters(resolved, [])" in body

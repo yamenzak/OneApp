@@ -50,7 +50,13 @@ DEV_DEPENDENCIES = {
 # The repositories and Frappe apps stay oneapp / oneapp_control — renaming those
 # would move every import path and every mirror. What customers see is separate,
 # and lives here so a rename is one edit rather than a hunt.
-BRAND = {"tenant": "OneSpace", "admin": "OneAdmin"}
+#
+# One entry, and it used to be two. "OneAdmin" named the operator console at
+# `/admin`; the console is a Space inside OneSpace now, so there is no second
+# product for a customer or an operator to be looking at, and a constant nothing
+# titles is a name waiting to be put back on something by mistake. The control
+# plane is `oneapp_control`, which is an app, not a place.
+BRAND = {"tenant": "OneSpace"}
 
 APPS = {
     "oneapp": {
@@ -1394,7 +1400,6 @@ BRAND_JS = BANNER + """
  * so every surface reads these instead.
  */
 export const TENANT_APP = 'OneSpace'
-export const ADMIN_APP = 'OneAdmin'
 """
 
 SCREEN_JS = BANNER + """

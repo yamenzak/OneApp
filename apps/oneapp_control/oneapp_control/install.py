@@ -65,7 +65,7 @@ def create_default_settings():
 # customer's launcher, where it points at a "Not built yet" screen and grants
 # write on eight ERPNext doctypes over the REST API — a promise of software that
 # does not exist, made to someone paying. An operator grants it to a workspace
-# to exercise the pipeline (OneAdmin → a workspace → Apps), and nobody else sees
+# to exercise the pipeline (the console → a workspace → Apps), and nobody else sees
 # it.
 #
 # Its doctype list is deliberately small: the transitive set ERPNext actually
