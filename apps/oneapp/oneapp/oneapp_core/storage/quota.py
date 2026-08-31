@@ -74,10 +74,24 @@ def overage() -> dict:
 
 	Absent reads as "enforce", which is the safe direction and the right answer
 	for a site that has never synced.
+
+	**Never raises.** This is reached from `enforce_database_quota`, which is a
+	`before_insert` on every doctype — so anything that throws here stops the
+	site accepting writes at all. That is not theoretical: new app code against
+	a database that has not been migrated yet is exactly the window a Frappe
+	Cloud deploy opens, and reading the site-state singleton is enough to land
+	in it. The rest of this module already fails open for the same reason; this
+	was the one path that did not.
 	"""
 	from oneapp.oneapp_core import sync
 
-	return sync.state().get("quota") or {}
+	try:
+		return sync.state().get("quota") or {}
+	except Exception:
+		frappe.log_error(
+			title="Could not read the quota verdict", message=frappe.get_traceback()
+		)
+		return {}
 
 
 def enforcement_ceiling() -> int | None:

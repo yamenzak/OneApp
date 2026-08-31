@@ -183,3 +183,35 @@ def test_an_unsynced_site_enforces_rather_than_letting_everything_through(quota,
 class FakeDoc:
 	def __init__(self, doctype):
 		self.doctype = doctype
+
+
+def test_an_unreadable_verdict_does_not_stop_the_site_accepting_writes(
+	stub_frappe, monkeypatch
+):
+	"""`enforce_database_quota` is a before_insert on every doctype.
+
+	Anything that throws on the way to the verdict stops the whole site taking
+	writes — and reading the site-state singleton is enough to do that when new
+	app code meets a database that has not been migrated yet, which is exactly
+	the window a deploy opens. The rest of this module already fails open; this
+	path did not, and a dev site proved it by rendering no rows anywhere.
+
+	Deliberately not using the `quota` fixture, which replaces the very function
+	under test.
+	"""
+	from oneapp.oneapp_core import sync
+	from oneapp.oneapp_core.storage import quota as module
+
+	def explode():
+		raise RuntimeError("Unknown column 'quota_json' in 'field list'")
+
+	monkeypatch.setattr(sync, "state", explode)
+
+	assert module.overage() == {}
+	# And the verdict it produces is the enforcing one, not a free pass.
+	assert module.enforcement_ceiling() is None
+
+	monkeypatch.setattr(module, "database_over_quota", lambda: True)
+	monkeypatch.setattr(module, "database_quota_bytes", lambda: 2 * GB)
+	with pytest.raises(module.DatabaseQuotaExceeded):
+		module.enforce_database_quota(FakeDoc("Sales Invoice"))
