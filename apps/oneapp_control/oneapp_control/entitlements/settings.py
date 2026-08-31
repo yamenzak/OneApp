@@ -118,4 +118,38 @@ def groups() -> list[dict]:
 				_setting("google_ai_key", "Google AI Studio key", type="Password"),
 			],
 		},
+		{
+			"key": "control-lifecycle",
+			"label": "Lifecycle",
+			"icon": "lucide-clock",
+			"roles": OPERATOR_ROLES,
+			"description": (
+				"How long a workspace that stops being paid for keeps working, "
+				"keeps its site, and keeps its data. Every window is in days, "
+				"and each is measured from the one before it."
+			),
+			"settings": [
+				_setting("dunning_grace_days", "Grace period", type="Int",
+				         hint="Days from the first failed payment to the site "
+				              "being switched off. It works throughout."),
+				_setting("suspended_days", "Suspended for", type="Int",
+				         hint="Days from being switched off to the site being "
+				              "removed from Frappe Cloud. Nothing is deleted."),
+				_setting("cold_retention_days", "Cold copy kept for", type="Int",
+				         hint="Days we hold the copy after the site is removed. "
+				              "Never fewer than seven, whatever is typed here."),
+				_setting("purge_warning_days", "Warn before deleting", type="Int",
+				         hint="Days of notice before the copy is destroyed. "
+				              "Deleting refuses on a workspace that was not warned."),
+				_setting("overage_grace_days", "Over-quota grace", type="Int",
+				         hint="Days a workspace may sit over its limit before "
+				              "uploads stop. Usually because a line left their "
+				              "subscription rather than anything they did."),
+				_setting("auto_purge_enabled", "Delete automatically", type="Check",
+				         hint="Whether the sweep may destroy a cold copy once "
+				              "every window and warning has passed. Off means "
+				              "everything is kept forever, which is a bill "
+				              "rather than a policy."),
+			],
+		},
 	]

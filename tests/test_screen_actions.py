@@ -274,3 +274,20 @@ def test_anything_that_cannot_be_undone_says_so_first(declared):
 	nothing here puts them back."""
 	rows = {row["key"]: row for group in declared.values() for row in group}
 	assert rows["adopt-terms"].get("confirm"), "grandfathering is dropped without a word"
+
+	# The lifecycle's own. `purge` is the only action in the product that
+	# destroys customer data, and `restore` replaces a site's database — a
+	# dialog is the last thing between an operator and either.
+	for key in ("purge", "restore", "run-lifecycle", "release"):
+		assert rows[key].get("confirm"), f"{key} does something it cannot take back"
+
+
+def test_the_purge_confirmation_says_the_word(declared):
+	"""A confirmation that reads like every other confirmation is a button
+	somebody clicks through. This one has to name what goes and that it is
+	permanent, because after it there is nothing to appeal to."""
+	rows = {row["key"]: row for group in declared.values() for row in group}
+	text = rows["purge"]["confirm"].lower()
+
+	assert "permanently" in text or "cannot be undone" in text, text
+	assert "backup" in text or "cold copy" in text, text

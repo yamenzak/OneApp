@@ -71,6 +71,7 @@
         <TabTrigger value="site" label="Site" icon-left="lucide-server" />
         <TabTrigger value="domains" label="Domains" icon-left="lucide-globe" />
         <TabTrigger value="backups" label="Backups" icon-left="lucide-database" />
+        <TabTrigger value="lifecycle" label="Lifecycle" icon-left="lucide-clock" />
         <TabTrigger value="apps" label="Apps" icon-left="lucide-layout-grid" />
         <TabTrigger value="billing" label="Billing" icon-left="lucide-credit-card" />
         <TabTrigger value="activity" label="Activity" icon-left="lucide-activity" />
@@ -229,6 +230,10 @@
       <!-- Both panels fetch on mount, so they are rendered only once their tab
            is chosen — a tenant page should not make five press and billing
            calls to show a record. -->
+      <TabPanel value="lifecycle" class="pt-4">
+        <TenantLifecycle :tenant="name" />
+      </TabPanel>
+
       <TabPanel value="apps" class="pt-4">
         <TenantSpaces v-if="tab === 'apps'" :tenant="name" />
       </TabPanel>
@@ -364,6 +369,7 @@ import {
 import EmptyState from '../../components/EmptyState.vue'
 import PressPanel from './PressPanel.vue'
 import TenantSpaces from './TenantSpaces.vue'
+import TenantLifecycle from './TenantLifecycle.vue'
 import TenantBilling from './TenantBilling.vue'
 import { useDocument } from '../../lib/resource'
 import { useListColumns } from '../../lib/list'

@@ -28,6 +28,10 @@ export const admin = {
   supportLogins: (tenant) => read('support_logins')({ tenant }),
   tenantAppAccess: (tenant) => read('tenant_app_access')({ tenant }),
   tenantBilling: (tenant) => read('tenant_billing')({ tenant }),
+  // Where this workspace stands on the ladder: the clock, the copy we hold, the
+  // backups arriving from the site, and what the sweep actually did. One call
+  // because "why is this suspended" needs all four at once.
+  tenantLifecycle: (tenant) => read('tenant_lifecycle')({ tenant }),
 
   provision: (tenant) =>
     callMethod(method('provision'), { tenant }, { successMessage: 'Provisioning queued' }),
@@ -74,6 +78,21 @@ export const admin = {
       { tenant, credits, reason },
       { successMessage: 'Credits added' },
     ),
+
+  holdLifecycle: (tenant) =>
+    callMethod(method('hold_lifecycle'), { tenant }, { successMessage: 'Held from the lifecycle' }),
+  releaseLifecycle: (tenant) =>
+    callMethod(
+      method('release_lifecycle'),
+      { tenant },
+      { successMessage: 'Released into the lifecycle' },
+    ),
+  runLifecycle: (tenant) =>
+    callMethod(method('run_lifecycle'), { tenant }, { successMessage: 'Lifecycle applied' }),
+  takeColdCopy: (tenant) =>
+    callMethod(method('take_cold_copy'), { tenant }, { successMessage: 'Cold copy requested' }),
+  restoreFromCold: (tenant) =>
+    callMethod(method('restore_from_cold'), { tenant }, { successMessage: 'Restore queued' }),
 
   adoptPlanTerms: (tenant) =>
     callMethod(

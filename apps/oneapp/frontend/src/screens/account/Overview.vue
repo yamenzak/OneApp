@@ -9,8 +9,67 @@
 
   <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
   <div v-if="data" class="flex flex-col gap-6 py-5">
+    <!--
+      The ladder, said out loud. Every step of it is also an email, and an email
+      is the one thing somebody can miss — so the dates appear here too, on the
+      page they open when they wonder what is going on.
+
+      Ordered by how bad it is. Only the worst one shows: three stacked alerts
+      about the same unpaid subscription is noise, and the one that matters is
+      always the one furthest down the ladder.
+    -->
+    <Alert v-if="lifecycle.deleted_on" theme="red" title="This workspace is scheduled for deletion">
+      <template #description>
+        On {{ date(lifecycle.deleted_on) }} everything we hold for this
+        workspace is permanently deleted — the database, every file and every
+        backup. Paying before then restores it in full.
+      </template>
+    </Alert>
+
     <Alert
-      v-if="exceeded.length"
+      v-else-if="lifecycle.archives_on"
+      theme="red"
+      title="This workspace is switched off"
+    >
+      <template #description>
+        Your data has not been touched and paying brings it back within a
+        minute. If it is still unpaid on {{ date(lifecycle.archives_on) }} we
+        remove the running site and keep a copy instead.
+      </template>
+    </Alert>
+
+    <Alert
+      v-else-if="lifecycle.suspends_on"
+      theme="amber"
+      title="We could not take payment"
+    >
+      <template #description>
+        Nothing has changed yet and your workspace is working normally. If the
+        payment has not gone through by {{ date(lifecycle.suspends_on) }} it
+        will be switched off until it does.
+      </template>
+    </Alert>
+
+    <!--
+      Over quota is its own thing and can happen to a workspace that is paid up
+      — usually because an add-on stopped being billed, which is a sentence the
+      person reading this did not cause and cannot guess.
+    -->
+    <Alert
+      v-if="grace"
+      theme="amber"
+      :title="`Over the ${overQuota.join(' and ')} limit`"
+    >
+      <template #description>
+        Nothing is blocked and nothing has been deleted. Until
+        {{ date(grace) }} the workspace works normally, except that it cannot
+        grow past where it is now. After that, new uploads stop until there is
+        room.
+      </template>
+    </Alert>
+
+    <Alert
+      v-else-if="exceeded.length"
       theme="amber"
       :title="`At the ${exceeded.join(' and ')} limit`"
     >
@@ -78,7 +137,7 @@
 
 <script setup>
 import { computed, toRef } from 'vue'
-import { Alert, LoadingIndicator, List, ListRows, ListRow, ListCell } from '@/ui'
+import { Alert, LoadingIndicator, List, ListRows, ListRow, ListCell, dayjsLocal } from '@/ui'
 import WorkspaceBar from './WorkspaceBar.vue'
 import { useWorkspace } from './workspace'
 import UsageBar from './UsageBar.vue'
@@ -90,6 +149,18 @@ const resource = useOverview(workspace)
 
 const data = computed(() => resource.data)
 const plan = computed(() => data.value?.plan)
+
+const lifecycle = computed(() => data.value?.lifecycle || {})
+const overQuota = computed(() => lifecycle.value.over_quota?.over || [])
+
+// The grace window, when one is open. `enforced` false is the whole test: the
+// dates beside it describe a window that has already closed once it is true.
+const grace = computed(() => {
+  const block = lifecycle.value.over_quota
+  return block && !block.enforced ? block.grace_until : ''
+})
+
+const date = (value) => (value ? dayjsLocal(value).format('D MMMM YYYY') : '')
 
 const exceeded = computed(() => {
   const usage = data.value?.usage || {}
@@ -108,6 +179,17 @@ const details = computed(() => {
     { label: 'Region', value: d.workspace.region || '—' },
     { label: 'Data location', value: d.workspace.storage_jurisdiction || 'Global' },
     { label: 'Status', value: d.workspace.status },
+    // A plan term people pay for and could otherwise not see — and the fastest
+    // way to notice a workspace has quietly stopped backing up.
+    { label: 'Backups', value: backups(d.backups) },
   ]
 })
+
+const backups = (block) => {
+  if (!block?.per_day) return 'Not on this plan'
+  const rate = block.per_day === 1 ? 'Daily' : `${block.per_day} times a day`
+  const kept = block.retention_days ? `, kept ${block.retention_days} days` : ''
+  const last = block.last_on ? ` — last ${date(block.last_on)}` : ' — none yet'
+  return `${rate}${kept}${last}`
+}
 </script>

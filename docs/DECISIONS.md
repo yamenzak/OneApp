@@ -101,6 +101,51 @@ alternative, a tenant with no subscription at all, is a second lifecycle: no
 period boundaries, no grants, its own branch in every billing path, and a demo
 that stops resembling the thing being demonstrated.
 
+A zero-total subscription is `Active` and never becomes unpaid, so a demo
+workspace never enters the lifecycle ladder on its own. `lifecycle_hold` is for
+the cases that are not about money at all — a dispute, a legal hold, an account
+somebody is mid-conversation with.
+
+---
+
+## 2b. Going over a limit is a window, not a wall
+
+There are two ways to end up over a quota and they feel completely different to
+the person it happens to.
+
+**They filled it up.** Warned at 80%, watching the number climb, and the block at
+100% is the thing they were told about. That is §2 above and it stands.
+
+**The limit came down.** An add-on line left the subscription — dunning, a
+cancellation, an edit in the Stripe dashboard — and `_reconcile_addons` followed
+it, because Stripe is the authority on what is being charged. The workspace did
+not change; what it was allowed to hold did, and from inside the next upload
+fails on an ordinary day for no reason anybody can see.
+
+After the fact there is no reliable way to tell the two apart, so both get a
+window: enforcement pauses for `overage_grace_days` and the owner is emailed at
+the moment it happens with the date it ends.
+
+**But usage may not grow.** The ceiling during the window is what the workspace
+was holding when it went over, recorded at that moment rather than at the first
+refused upload — taking it later would ratchet upward every time one more file
+squeezed through. They can replace a file, finish what they were doing and delete
+their way back under; they cannot treat the window as a free upgrade.
+
+The database has no ceiling of that kind, because its block is on inserts and
+half-blocking those gives a workspace that can be typed into and not saved. So
+inside the window database enforcement is simply off. A workspace whose
+accounting stops because a *storage* add-on lapsed is the worse outcome, and it
+is the one this exists to prevent.
+
+### A missing add-on payment is a missing subscription payment
+
+Stripe bills the plan and every add-on line on one invoice against one card.
+There is no such thing as "the storage add-on failed" — the invoice failed, the
+subscription goes `Past Due`, and the lifecycle ladder is the whole answer.
+Building a second dunning cycle per line would be inventing a failure mode Stripe
+does not have. See docs/LIFECYCLE.md.
+
 ---
 
 ## 3. Plans

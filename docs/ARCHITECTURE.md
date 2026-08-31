@@ -347,7 +347,25 @@ DECISIONS §6 for what plan-based priority can and cannot do.
 
 ### Backups
 
-Frappe Cloud's managed backups **and** an independent sync to R2. Two custodians.
+Frappe Cloud's managed backups **and** our own, into R2. Two custodians, because
+one provider holding both your site and the only copy of it is not a backup
+strategy.
+
+Ours are taken by the tenant site, on the frequency its plan bought
+(`backups_per_day`, captured like every other term), and land under
+`backups/<tenant>/<stamp>/`. Retention and staleness detection are the control
+plane's, not the site's: both have to keep working for a workspace whose site is
+suspended, off, or gone. See docs/LIFECYCLE.md §3.
+
+### Lifecycle
+
+A workspace that stops being paid for walks a ladder — grace, suspension,
+archiving, purge — driven by one clock and a daily sweep. The rung before the
+site is deleted promotes its newest backup to `cold/<tenant>/`, which is what a
+restore is built from and the reason archiving is allowed to be automatic at all.
+
+The whole of it, including every refusal and why each one exists, is
+docs/LIFECYCLE.md.
 
 ---
 

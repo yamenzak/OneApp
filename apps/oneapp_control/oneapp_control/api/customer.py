@@ -106,10 +106,70 @@ def overview(workspace: str | None = None) -> dict:
 		},
 		"subscription": subscription,
 		"usage": usage_for(tenant),
+		# Where this workspace stands if it has stopped being paid for, and what
+		# happens next. Shown to the customer rather than only to us: the whole
+		# point of the ladder is that nobody is surprised, and an email they
+		# missed is the only other place these dates appear.
+		"lifecycle": lifecycle_for(tenant),
+		"backups": backups_for(tenant),
 		"credits": {
 			"balance": ledger.balance(tenant.name),
 			"available": ledger.available(tenant.name),
 		},
+	}
+
+
+def lifecycle_for(tenant) -> dict:
+	"""What is scheduled to happen to this workspace, in the customer's terms.
+
+	Empty when nothing is: a workspace that is paid for should not carry a panel
+	explaining what would happen if it were not.
+	"""
+	from oneapp_control.lifecycle import overage, policy
+
+	quota = overage.state(tenant)
+	if not tenant.dunning_started_on and not quota.get("over"):
+		return {}
+
+	windows = policy.windows()
+	from frappe.utils import add_to_date, getdate
+
+	found = {"stage": tenant.dunning_stage, "over_quota": quota}
+
+	if tenant.dunning_started_on:
+		found["unpaid_since"] = str(tenant.dunning_started_on)
+		found["suspends_on"] = add_to_date(
+			getdate(tenant.dunning_started_on),
+			days=windows["dunning_grace_days"],
+			as_string=True,
+		)
+	if tenant.suspended_on:
+		found["archives_on"] = add_to_date(
+			getdate(tenant.suspended_on), days=windows["suspended_days"], as_string=True
+		)
+	if tenant.purge_after:
+		found["deleted_on"] = str(tenant.purge_after)
+	if tenant.cold_storage_key:
+		found["restorable"] = True
+
+	return found
+
+
+def backups_for(tenant) -> dict:
+	"""What is being kept, and when the last one landed.
+
+	A plan term people are paying for and could not otherwise see. It is also
+	the fastest way for somebody to notice their workspace has quietly stopped
+	backing up, which matters more to them than it does to us.
+	"""
+	from oneapp_control.billing import quotas
+
+	terms = quotas.for_tenant(tenant)
+	return {
+		"per_day": int(terms.get("backups_per_day") or 0),
+		"retention_days": int(terms.get("backup_retention_days") or 0),
+		"last_on": str(tenant.last_backup_on) if tenant.last_backup_on else None,
+		"last_bytes": tenant.last_backup_bytes or 0,
 	}
 
 

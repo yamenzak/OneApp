@@ -35,6 +35,73 @@ def actions() -> dict:
 				"screen": "tenant",
 			},
 			{
+				# The ladder runs on a timer and destroys data at the end of it,
+				# so stopping it has to be one click from the list an operator
+				# is already looking at — not a field on a form two screens in.
+				"key": "hold",
+				"label": "Hold from the lifecycle",
+				"icon": "lucide-shield",
+				"scope": "selection",
+				"method": "oneapp_control.api.admin.hold_lifecycle",
+			},
+			{
+				"key": "release",
+				"label": "Release into the lifecycle",
+				"icon": "lucide-refresh-cw",
+				"scope": "selection",
+				"method": "oneapp_control.api.admin.release_lifecycle",
+				"confirm": (
+					"The clock did not stop while this workspace was held — only "
+					"the consequences did. It resumes at whatever rung its dates "
+					"say it is on, which may be further down than when it was held."
+				),
+			},
+			{
+				# How a policy change is tested: widen a window, run this, read
+				# the event log.
+				"key": "run-lifecycle",
+				"label": "Apply the lifecycle now",
+				"icon": "lucide-clock",
+				"scope": "record",
+				"method": "oneapp_control.api.admin.run_lifecycle",
+				"confirm": (
+					"This takes exactly the path the nightly sweep takes, "
+					"including suspending or archiving the workspace if its "
+					"dates say so."
+				),
+			},
+			{
+				"key": "cold-copy",
+				"label": "Take a cold copy",
+				"icon": "lucide-package",
+				"scope": "record",
+				"method": "oneapp_control.api.admin.take_cold_copy",
+			},
+			{
+				"key": "restore",
+				"label": "Restore from cold",
+				"icon": "lucide-refresh-cw",
+				"scope": "record",
+				"method": "oneapp_control.api.admin.restore_from_cold",
+				"confirm": (
+					"This builds a new site and replaces its database with the "
+					"cold copy. Only offered for a workspace that no longer has "
+					"a site of its own."
+				),
+			},
+			{
+				"key": "purge",
+				"label": "Purge everything",
+				"icon": "lucide-trash",
+				"scope": "record",
+				"method": "oneapp_control.api.admin.purge_tenant",
+				"confirm": (
+					"This permanently deletes the cold copy, every backup and "
+					"every file this workspace owns. It cannot be undone, and "
+					"afterwards the workspace cannot be restored by anyone."
+				),
+			},
+			{
 				"key": "adopt-terms",
 				"label": "Move to the plan's current terms",
 				"icon": "lucide-refresh-cw",

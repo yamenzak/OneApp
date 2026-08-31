@@ -147,6 +147,8 @@ owner able to log in. **This is the milestone that makes everything after it rou
 - Mirror into ERPNext: Customer, Sales Invoice, Payment Entry
 - Seat and storage quota enforcement from the active plan
 - Dunning → suspend (site deactivate), then archive with an export window
+  — **done**, and it grew a cold copy and an automatic restore on the way.
+  docs/LIFECYCLE.md is the whole of it.
 
 **Exit:** a real card in test mode produces a paid tenant with a credit grant, and a failed
 renewal suspends it.
@@ -166,7 +168,8 @@ reconciles against the ledger.
 
 - `File` doctype override → R2; presigned redirect for private, `cdn.4dl.app` for public
 - Quota counter, rollup to control plane, hard block at upload
-- Backup sync to R2 alongside Frappe Cloud's own
+- Backup sync to R2 alongside Frappe Cloud's own — **done**, on the plan's own
+  frequency, with retention and staleness detection on the control plane
 - Inbound: Cloudflare catch-all → Worker → HMAC POST → tenant site; `ap@`, `support@`, `leads@`
 - Outbound: Cloudflare Email Service over SMTP, wired as a Frappe `Email Account`
 - Per-tenant send rate limits, bounce and complaint handling
