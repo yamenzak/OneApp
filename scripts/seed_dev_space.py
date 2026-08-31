@@ -266,28 +266,46 @@ def seed_tenant():
 			frappe.delete_doc("Property Setter", stale["name"], ignore_permissions=True)
 
 	for row in TODOS:
-		found = frappe.db.exists("ToDo", {"description": row["description"]})
-		if found and found != row["name"]:
-			# The same task under a hashed id, from before these were named.
-			# Remade rather than renamed: a document's name is its identity and
-			# Frappe renames by rewriting every link to it, which is a lot of
-			# machinery for a fixture.
-			frappe.delete_doc("ToDo", found, ignore_permissions=True, force=True)
-			found = None
-		if found:
+		# Keyed on the name, which is the record's identity and is stable.
+		#
+		# This used to look the task up by its description, and that quietly
+		# littered: ToDo sanitises a Text Editor field, so what comes back is
+		# `<p>Book the van…</p>` and never matches the plain string being
+		# searched for. Every run therefore decided the fixture was missing and
+		# inserted another one. The realtime test then clicked whichever of the
+		# duplicates sorted first — sometimes the stray, which is allocated to
+		# nobody and so cannot be opened by the second user — and failed on
+		# litter the seed itself had left.
+		if frappe.db.exists("ToDo", row["name"]):
 			# Who a task is allocated to is worth re-asserting: it decides who
 			# may open it at all — Frappe's ToDo has its own permission rule —
 			# and a browser pass that reassigns one would otherwise leave the
 			# next run with a record its second user cannot see.
-			frappe.db.set_value("ToDo", found, "allocated_to", row.get("allocated_to") or None)
-			continue
-		# `set_name`, not a `name` key: ToDo autonames by hash, and `set_new_name`
-		# overwrites whatever is on the document unless the insert was told the
-		# name is already decided.
-		fields = {k: v for k, v in row.items() if k != "name"}
-		frappe.get_doc({"doctype": "ToDo", **fields}).insert(
-			ignore_permissions=True, set_name=row["name"]
-		)
+			frappe.db.set_value(
+				"ToDo", row["name"], "allocated_to", row.get("allocated_to") or None
+			)
+		else:
+			# `set_name`, not a `name` key: ToDo autonames by hash, and
+			# `set_new_name` overwrites whatever is on the document unless the
+			# insert was told the name is already decided.
+			fields = {k: v for k, v in row.items() if k != "name"}
+			frappe.get_doc({"doctype": "ToDo", **fields}).insert(
+				ignore_permissions=True, set_name=row["name"]
+			)
+
+		# And take back any other copy of the same task — a hash-named one from
+		# before these were named, or one of the duplicates the description
+		# lookup produced. Matched on the text with and without the wrapper,
+		# because that is exactly the difference that caused them.
+		for stray in frappe.get_all(
+			"ToDo",
+			filters={
+				"name": ["!=", row["name"]],
+				"description": ["in", (row["description"], f"<p>{row['description']}</p>")],
+			},
+			pluck="name",
+		):
+			frappe.delete_doc("ToDo", stray, ignore_permissions=True, force=True)
 
 	for row in NOTES:
 		if frappe.db.exists("Note", {"title": row["title"]}):
