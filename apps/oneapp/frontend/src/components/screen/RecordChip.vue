@@ -17,14 +17,14 @@
     -->
     <Avatar
       :image="record.image"
-      :label="String(record.label || record.value || '')"
+      :label="plainText(record.label) || String(record.value || '')"
       shape="square"
       :size="compact ? 'sm' : 'md'"
     />
     <div class="flex min-w-0 flex-col">
       <div class="flex min-w-0 items-center gap-1.5">
         <span class="truncate text-p-sm text-ink-gray-8">
-          {{ record.label || record.value }}
+          {{ plainText(record.label) || record.value }}
         </span>
         <!-- Anything the caller wants said beside the name. A status badge in
              the breadcrumb; nothing at all in a list cell, where the status
@@ -39,6 +39,7 @@
 </template>
 
 <script setup>
+import { plainText } from '../../lib/format'
 import { computed } from 'vue'
 import { Avatar } from '@/ui'
 

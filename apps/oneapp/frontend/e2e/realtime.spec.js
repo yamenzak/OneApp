@@ -54,7 +54,9 @@ test.describe('realtime', () => {
     } finally {
       await pane.getByLabel('Description').fill(original)
       await pane.getByRole('button', { name: 'Save' }).click()
-      await expect(pane.getByLabel('Description')).toHaveValue(original)
+      // `toContainText`, not `toHaveValue`: a Text Editor field is a
+      // contenteditable rather than an input, so it has no value to read.
+      await expect(pane.getByLabel('Description')).toContainText(original)
     }
     expectNoRealErrors(errors)
     await reader.close()

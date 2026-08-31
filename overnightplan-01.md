@@ -1,6 +1,8 @@
 # Overnight plan 01 — field properties, and the types we never mapped
 
-A plan, not a change. Nothing here is built yet.
+**Status: done.** All six batches are built, tested and pushed. What each batch
+turned out to involve is in its commit; where the plan was wrong, the commit
+says so and this file is corrected in place.
 
 Two gaps came out of the last review, and they are the same gap seen from two
 sides. A doctype describes its fields in sixty-six properties and thirty-seven
@@ -417,26 +419,26 @@ components. **Done.**
 message), `fetch_if_empty`, `documentation_url`, `show_description_on_click`,
 `max_height`, `mask`, `remember_last_selected_value`, `translatable`,
 `ignore_user_permissions` (carried, not honoured), `allow_on_submit`, and
-`collapsible` / `collapsible_depends_on` / `hide_border` through `_form`.
+`collapsible` / `collapsible_depends_on` / `hide_border` through `_form`. **Done.**
 
 **Batch 3 — the editors.** Barrel and ESLint for `frappe-ui/editor`; extend the
 API reader to `experimental/`; barrel and ESLint for `frappe-ui/experimental`;
 then Text Editor, Markdown Editor, Code, JSON, HTML Editor, and the four
-read-only renderings from 2.8, which are small and sit in the same two files.
+read-only renderings from 2.8, which are small and sit in the same two files. **Done.**
 
 **Batch 4 — Dynamic Link.** Server-validated target, `_with_links` grouping,
 the picker clearing on target change. Small, but it is the one that touches the
-permission boundary, so it gets its own batch and its own tests.
+permission boundary, so it gets its own batch and its own tests. **Done.**
 
 **Batch 5 — Attachment Gallery.** Endpoint filter, carousel, upload, the
-unsaved-record case.
+unsaved-record case. **Done.**
 
 **Batch 6 — child tables.** Extract the shared grid, `ChildTable.vue`, in-place
 editing, add/remove/reorder, row expansion through `RecordForm`, and
 `Table MultiSelect` alongside it. The biggest item by a distance, and the one
 most likely to want splitting once it starts — if it does, the seam is the grid
 (rows, cells, add/remove/reorder) against the expansion (`_form` on the child
-meta, the drawer, the page).
+meta, the drawer, the page). **Done.**
 
 ---
 

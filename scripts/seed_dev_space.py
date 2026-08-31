@@ -299,16 +299,22 @@ def seed_tenant():
 	# And their views. A browser pass that makes a view and fails before
 	# deleting it leaves one behind, and three runs later "Only the urgent"
 	# matches three rows and every test that names one is ambiguous. The
-	# fixture's own views are the ones in LAYOUTS; a named view on this space
-	# that is not one of them is litter.
+	# fixture's own views are the ones in LAYOUTS; anything else on this space
+	# is litter.
+	#
+	# The unnamed ones go too, and they used to be spared. An unnamed row is a
+	# person's own working state for a screen — the filters and columns they
+	# have changed but not saved — so leaving one behind means the next run
+	# starts with somebody else's unsaved changes, and "Save this screen" is
+	# still offered on a screen nobody has touched. That is a test inheriting a
+	# fixture rather than reading one.
 	strays = frappe.get_all(
 		"OneSpace Saved View",
 		filters={"space_code": CODE, "label": ["not in", [row["label"] for row in LAYOUTS]]},
 		fields=["name", "label"],
 	)
 	for stray in strays:
-		if stray["label"]:
-			frappe.delete_doc("OneSpace Saved View", stray["name"], ignore_permissions=True)
+		frappe.delete_doc("OneSpace Saved View", stray["name"], ignore_permissions=True)
 
 	# Nobody is hiding anything on a fresh fixture either — a hidden view is
 	# invisible, which is the worst thing for a test to inherit.

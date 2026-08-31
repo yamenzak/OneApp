@@ -111,3 +111,48 @@ def test_no_site_formats_still_renders():
 	"""The session has not loaded yet, or this site answered nothing. A cell
 	that renders nothing at all is worse than one that renders plainly."""
 	assert run([[1234.5678, {"cell": "number"}, {}]]) == ["1,234.568"]
+
+
+# --------------------------------------------------------------------------- #
+# Markup as one line
+# --------------------------------------------------------------------------- #
+
+def strip(cases: list) -> list:
+	script = (
+		f"import {{ plainText }} from {json.dumps(FORMAT.as_uri())};"
+		f"const cases = {json.dumps(cases)};"
+		"console.log(JSON.stringify(cases.map((value) => plainText(value))));"
+	)
+	out = subprocess.run(
+		["node", "--input-type=module", "-e", script],
+		capture_output=True, text=True, check=True,
+	)
+	return json.loads(out.stdout.strip().splitlines()[-1])
+
+
+def test_a_title_that_is_html_reads_as_one_line():
+	"""A Text Editor field holds HTML, and a title field may be one — ToDo's
+	`description` is exactly that. Drawn raw, the title of every record reads
+	`<p>Chase the Halloway invoice</p>`, in the list, in the crumb and in every
+	link chip pointing at it."""
+	assert strip([
+		"<p>Chase the Halloway invoice</p>",
+		"<p>Two</p><p>paragraphs</p>",
+		"<em>Emphasis</em> and <strong>weight</strong>",
+	]) == [
+		"Chase the Halloway invoice",
+		"Two paragraphs",
+		"Emphasis and weight",
+	]
+
+
+def test_plain_text_is_returned_untouched():
+	"""Which is most titles, so it is the path worth being cheap."""
+	assert strip(["Chase the Halloway invoice", "", None]) == [
+		"Chase the Halloway invoice", "", "",
+	]
+
+
+def test_a_stray_angle_bracket_is_not_markup():
+	"""`5 < 6` is a title somebody wrote, not a tag."""
+	assert strip(["5 < 6"]) == ["5 < 6"]

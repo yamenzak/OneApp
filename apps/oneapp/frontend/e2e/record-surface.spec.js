@@ -504,8 +504,10 @@ test('a fieldtype with no counterpart is shown and never offered', async ({ page
   await openRecord(page)
 
   const dialog = page.locator('[data-slot="record-pane"]')
-  await expect(dialog.getByText('Color is shown here but edited elsewhere.')).toBeVisible()
-  // The value is readable; there is nothing to type into.
+  // The value is readable; there is nothing to type into. frappe-ui has no
+  // colour picker, so the field is read-only until it does — and it says so by
+  // being read-only rather than by apologising underneath, which is a sentence
+  // repeated under every colour, signature and barcode on the record.
   await expect(dialog.getByText('#2490EF')).toBeVisible()
   await expect(dialog.locator('input[type="color"]')).toHaveCount(0)
   expectNoRealErrors(errors)
@@ -521,8 +523,15 @@ test('every fieldtype reaches its own control, not a text box', async ({ page },
   // controls looks exactly like a form of the right ones. Only the rendered
   // shape tells them apart.
   //
-  // Text Editor -> Textarea.
-  expect(await dialog.locator('textarea').count()).toBeGreaterThanOrEqual(1)
+  // Text Editor -> the rich editor, which is a contenteditable rather than a
+  // textarea. `Editor` is renderless, so this is also what catches the field
+  // being an empty box: it renders nothing at all without its slot, and a
+  // build and the unit tests both had nothing to say about that.
+  const prose = dialog.locator('[data-slot="editor-content"]')
+  await expect(prose.first()).toBeVisible()
+  // Reachable by its own label, which is what a screen reader needs and what
+  // an unnamed contenteditable does not have.
+  await expect(dialog.getByLabel('Description')).toBeVisible()
   // Selects -> listbox buttons, showing the record's own values.
   const selects = dialog.locator('button[role="combobox"]')
   expect(await selects.count()).toBeGreaterThanOrEqual(2)

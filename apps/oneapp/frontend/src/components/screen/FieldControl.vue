@@ -163,6 +163,13 @@
         tables, task lists, headings, alignment. A lighter one exists
         (CommentKit) and is the wrong choice here, because a Text Editor field
         is where a doctype's author put the long-form content.
+
+        `Editor` is *renderless*: it owns the lifecycle, the v-model, the upload
+        and the placeholder, and renders no UI at all. Without this slot the
+        field is an empty box — which is exactly what it was, and what a build
+        and 944 unit tests had nothing to say about. The consumer owns the
+        chrome, which is why the menu is a deliberate choice here rather than
+        something that arrived by default.
       -->
       <Editor
         :model-value="modelValue || ''"
@@ -172,7 +179,18 @@
         :placeholder="field.placeholder"
         :upload-function="uploadInto"
         @update:model-value="emit('update:modelValue', $event)"
-      />
+      >
+        <template #default="{ editor }">
+          <EditorFixedMenu v-if="!disabled" :editor="editor" :items="articleToolbar" class="mb-2" />
+          <!--
+            The accessible name. EditorContent forwards attributes onto the
+            element ProseMirror mounts on, which is the thing a person actually
+            types into — so this is what gives the field a name for a screen
+            reader, and the only way to reach it by its label.
+          -->
+          <EditorContent :editor="editor" :aria-label="field.label" />
+        </template>
+      </Editor>
     </div>
     <p v-if="note" class="text-p-xs text-ink-gray-5">{{ note }}</p>
   </div>
@@ -298,6 +316,9 @@ import {
   FileUploader,
   Button,
   Editor,
+  EditorContent,
+  EditorFixedMenu,
+  articleToolbar,
   CodeEditor,
   CodePreview,
   RichTextKit,

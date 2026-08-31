@@ -77,8 +77,12 @@ test('on a phone the record is the page', async ({ page }, info) => {
 
   // The identity is here rather than in a trail, because the trail is behind
   // the page.
+  //
+  // `.first()` because the title legitimately appears twice now: once as the
+  // record's identity in the pane header, and once inside the Text Editor that
+  // is the field it comes from.
   await expect(
-    page.locator('[data-slot="record-pane"]').getByText('Chase the Halloway invoice'),
+    page.locator('[data-slot="record-pane"]').getByText('Chase the Halloway invoice').first(),
   ).toBeVisible()
 
   await info.attach(`record-page-${info.project.name}`, {
@@ -111,7 +115,10 @@ test('a record is made in a dialog and opens into the pane', async ({ page }) =>
   await expect(dialog).toHaveCount(0)
   const pane = page.locator('[data-slot="record-pane"]')
   await expect(pane).toBeVisible()
-  await expect(pane.getByLabel('Description')).toHaveValue(made)
+  // `toContainText`, not `toHaveValue`: a Text Editor field is a
+  // contenteditable rather than an input, so it has no value to read — and the
+  // text it holds is wrapped in whatever markup the editor produced.
+  await expect(pane.getByLabel('Description')).toContainText(made)
   await expect(page).toHaveURL(/record=/)
 
   // Put the fixture back.

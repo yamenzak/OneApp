@@ -86,7 +86,7 @@ import { Badge, Icon, Avatar, Rating } from '@/ui'
 import RecordChip from './RecordChip.vue'
 import RecordPreview from './RecordPreview.vue'
 import { valueTheme } from '../../lib/fields'
-import { formatNumber } from '../../lib/format'
+import { formatNumber, plainText } from '../../lib/format'
 import { session } from '../../lib/session'
 import { dayjsLocal } from '@/ui'
 
@@ -149,12 +149,7 @@ const formatted = computed(() => {
     case 'html':
       // The list is not the place to render markup: a cell is one line, and
       // stripping is honest where interpreting would be a security decision.
-      return (
-        String(raw)
-          .replace(/<[^>]*>/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim() || '—'
-      )
+      return plainText(raw) || '—'
     default:
       return String(raw)
   }

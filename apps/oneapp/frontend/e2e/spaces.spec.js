@@ -213,11 +213,14 @@ test('a record opens and saves', async ({ page }, info) => {
   // The pane stays open — a record you just saved is a record you are still
   // reading — and what it shows is what came back from the server rather than
   // what was typed into it.
-  await expect(dialog.getByLabel('Description')).toHaveValue(changed)
+  // `toContainText`, not `toHaveValue`: a Text Editor field is a
+  // contenteditable rather than an input, so it has no value to read — and the
+  // text it holds is wrapped in whatever markup the editor produced.
+  await expect(dialog.getByLabel('Description')).toContainText(changed)
 
   // Put it back, so the next run starts where this one did.
   await dialog.getByLabel('Description').fill(SEEDED)
   await dialog.getByRole('button', { name: 'Save' }).click()
-  await expect(dialog.getByLabel('Description')).toHaveValue(SEEDED)
+  await expect(dialog.getByLabel('Description')).toContainText(SEEDED)
   expectNoRealErrors(errors)
 })

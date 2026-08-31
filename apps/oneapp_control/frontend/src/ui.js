@@ -174,8 +174,24 @@ export {
  * which of those they store. HTML Editor is *not* one of them — that is
  * Frappe's source editor, markup a person edits as markup, so it goes to
  * CodeEditor below.
+ *
+ * `Editor` is renderless — it owns the lifecycle and renders nothing — so the
+ * building blocks come with it. `EditorContent` is the element ProseMirror
+ * mounts on and the thing a person types into; without it the field is an
+ * empty box.
  */
-export { Editor, RichTextKit } from 'frappe-ui/editor'
+export {
+  Editor,
+  EditorContent,
+  EditorFixedMenu,
+  EditorBubbleMenu,
+  RichTextKit,
+  // The toolbar that matches the kit. frappe-ui ships three presets —
+  // `minimalToolbar`, `commentToolbar`, `articleToolbar` — and a menu whose
+  // buttons are not in the loaded extension list is a row of controls that do
+  // nothing, so the pair is chosen together rather than separately.
+  articleToolbar,
+} from 'frappe-ui/editor'
 
 /**
  * The code editor, and the one unstable thing in this barrel.

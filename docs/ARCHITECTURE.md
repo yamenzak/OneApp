@@ -462,6 +462,20 @@ Shared code between the two is limited to HMAC signing and the request/response 
 is duplicated deliberately: the two sites deploy on independent schedules, so the tenant side
 must tolerate a control plane running a version ahead.
 
+**The frontends are not separate, and that is a later decision.** `oneapp` is installed on the
+control plane as well, for its shell and its Space runtime — so the operator console and the
+customer's account area are Spaces on the control site rather than a second SPA. Everything
+above still holds: the apps remain separate deployment artifacts, control-plane changes still
+do not ship as a tenant-app version, and `Credit Ledger Entry`, `Tenant` and the Frappe Cloud
+credentials are still not tables on a customer-administered site. What changed is that
+improvements to the screen machinery reach the console instead of stopping at the tenant
+boundary. See `overnightplan-02.md`.
+
+A site says which kind it is with `oneapp_role` in `site_config.json`; three things are gated
+on it (the R2 File override and the two scheduled jobs that talk to the control plane). And a
+consequence worth stating: the control plane now serves two audiences on one site, kept apart
+by `role_name` on the Space and nothing else.
+
 ---
 
 ## 10. Cost model

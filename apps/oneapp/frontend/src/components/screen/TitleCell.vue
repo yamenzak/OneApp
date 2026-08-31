@@ -9,7 +9,7 @@
     than a blank square.
   -->
   <div class="flex min-w-0 items-center gap-2">
-    <Avatar :image="image" :label="String(title || row.name)" shape="square" size="lg" />
+    <Avatar :image="image" :label="plainText(title) || String(row.name)" shape="square" size="lg" />
     <!--
       The title is what opens the record, because the row click belongs to
       selection — frappe-ui's List hands every row click to the checkbox when
@@ -22,11 +22,11 @@
     <Button
       variant="ghost"
       class="min-w-0 flex-1 justify-start !px-1 !h-auto !py-1"
-      :label="String(title || row.name)"
+      :label="plainText(title) || String(row.name)"
       @click.stop="emit('open')"
     >
       <div class="flex min-w-0 flex-col items-start">
-        <span class="truncate text-p-sm text-ink-gray-8">{{ title || row.name }}</span>
+        <span class="truncate text-p-sm text-ink-gray-8">{{ plainText(title) || row.name }}</span>
         <!-- The id underneath, quietly: it is what a person quotes on the phone
              and never what they read first. Suppressed when the title is the
              id, which is most doctypes without a title field. -->
@@ -39,6 +39,7 @@
 </template>
 
 <script setup>
+import { plainText } from '../../lib/format'
 import { computed } from 'vue'
 import { Avatar, Button } from '@/ui'
 

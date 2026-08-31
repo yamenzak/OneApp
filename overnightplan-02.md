@@ -1,6 +1,20 @@
 # Overnight plan 02 — OneAdmin becomes a Space
 
-A plan, not a change. Nothing here is built yet.
+**Status: A, B, C, D, E, F, G, I and J are built, tested and pushed.**
+
+**H and K are deliberately not done**, and the reason is this plan's own:
+
+* **K** retires `/admin` and `/portal` and deletes the control app's frontend.
+  Part 11 says to do it "long after the operator Space is the thing you
+  actually use", because until then `/admin` is a working fallback that costs
+  nothing to keep. The operator Space is hours old and nobody has used it. That
+  gate is time and use, and one night cannot supply either.
+* **H** moves the control plane's settings into `oneapp`'s settings dialog. Its
+  only consumer is K, and it would mean changing `require_owner` — the gate on
+  a customer-facing surface — for a batch nothing is waiting on.
+
+Everything built is additive: `/admin` and `/portal` are untouched and still
+where an operator and a customer go.
 
 ## The decision
 

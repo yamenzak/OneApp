@@ -1,5 +1,5 @@
 /**
- * How a number reads.
+ * How a value reads.
  *
  * Three answers stacked, most specific first: the field's own `precision`, then
  * the site's `float_precision` / `currency_precision` from System Settings, then
@@ -56,4 +56,28 @@ export function formatNumber(value, column, formats = {}) {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   })
+}
+
+
+/**
+ * Markup as one line of text.
+ *
+ * A Text Editor field holds HTML, and a title field may be one — ToDo's
+ * `description` is exactly that. Drawn raw, the title of every record reads
+ * `<p>Chase the Halloway invoice</p>`, in the list, in the crumb and in every
+ * link chip pointing at it.
+ *
+ * Stripping rather than rendering, and everywhere a title is drawn rather than
+ * once in the list: a title is one line, and interpreting markup there would be
+ * a security decision made in four places. The record's own field still gets
+ * the real HTML, because that is what it is editing.
+ */
+export function plainText(value) {
+  if (value === null || value === undefined) return ''
+  const text = String(value)
+  if (!text.includes('<')) return text
+  return text
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
