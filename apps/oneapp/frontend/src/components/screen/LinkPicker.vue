@@ -144,6 +144,15 @@ const props = defineProps({
    * typed.
    */
   isNew: { type: Boolean, default: false },
+  /**
+   * Which doctype this points at, for a Dynamic Link only.
+   *
+   * A Dynamic Link's target is not a property of the field — it lives in
+   * another field on the record, which only the form holds. So the form reads
+   * it and hands it here, and the server validates it against the space's own
+   * grant before fetching anything.
+   */
+  target: { type: String, default: '' },
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -241,12 +250,40 @@ const search = async () => {
   loading.value = true
   try {
     found.value =
-      (await workspace.linkOptions(props.spaceCode, props.screen, props.fieldname, query.value)) ||
-      []
+      (await workspace.linkOptions(
+        props.spaceCode,
+        props.screen,
+        props.fieldname,
+        query.value,
+        props.target,
+      )) || []
   } finally {
     loading.value = false
   }
 }
+
+/**
+ * A Dynamic Link whose target has changed points at nothing.
+ *
+ * The desk does the same, and for the same reason: a value left over from the
+ * doctype you just stopped pointing at is a link into the wrong table, which
+ * reads as data rather than as the silent bug it is. Cleared rather than
+ * re-resolved because there is nothing to re-resolve it against.
+ *
+ * The first sight of a target is not a change — an existing record opens with
+ * both fields already set, and clearing then would empty the field just by
+ * looking at it.
+ */
+watch(
+  () => props.target,
+  (now, before) => {
+    if (before === undefined || now === before) return
+    found.value = []
+    chosen.value = null
+    if (props.modelValue) emit('update:modelValue', null)
+    search()
+  },
+)
 
 const resolveChosen = async () => {
   const value = props.modelValue
@@ -271,7 +308,7 @@ const loadSpec = async () => {
     spec.value = null
     return
   }
-  spec.value = await workspace.linkNewSpec(props.spaceCode, props.screen, props.fieldname)
+  spec.value = await workspace.linkNewSpec(props.spaceCode, props.screen, props.fieldname, props.target)
 }
 
 watch(query, search)
@@ -320,6 +357,7 @@ const create = async () => {
       props.screen,
       props.fieldname,
       JSON.stringify({ ...draft }),
+      props.target,
     )
     // Adopt it straight away: the point of creating one here was to pick it.
     chosen.value = record

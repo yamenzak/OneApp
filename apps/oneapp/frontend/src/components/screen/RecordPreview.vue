@@ -73,6 +73,8 @@ const props = defineProps({
   fieldname: { type: String, required: true },
   spaceCode: { type: String, required: true },
   screen: { type: String, required: true },
+  /** Which doctype this points at, for a Dynamic Link only — see LinkPicker. */
+  target: { type: String, default: '' },
 })
 
 const open = ref(false)
@@ -95,6 +97,7 @@ const load = async () => {
       props.screen,
       props.fieldname,
       props.record.value,
+      props.target,
     )
     if (!found?.fields?.length) {
       barren.value = true

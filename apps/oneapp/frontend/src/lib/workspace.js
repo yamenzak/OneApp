@@ -117,10 +117,15 @@ export const workspace = {
 
   // A Link is a foreign key, and a text box over one asks a customer to know a
   // record's name. Bounded by the screen like every other read.
-  linkOptions: (spaceCode, screen, fieldname, query) =>
+  //
+  // `target` is only meaningful for a Dynamic Link, whose doctype is on the
+  // record rather than on the field. The server validates it against the
+  // space's grant and this user's permissions before fetching anything, and
+  // ignores it for a plain Link.
+  linkOptions: (spaceCode, screen, fieldname, query, target) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.link_options',
-      { space_code: spaceCode, screen, fieldname, query },
+      { space_code: spaceCode, screen, fieldname, query, target },
       { silent: true, method: 'GET' },
     ),
 
@@ -129,19 +134,19 @@ export const workspace = {
   // mandatory. Answers `can_create: false` rather than raising when the target
   // is outside the space or this user may not create it — a picker with no
   // Create row is the right shape for that.
-  linkNewSpec: (spaceCode, screen, fieldname) =>
+  linkNewSpec: (spaceCode, screen, fieldname, target) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.link_new_spec',
-      { space_code: spaceCode, screen, fieldname },
+      { space_code: spaceCode, screen, fieldname, target },
       { silent: true, method: 'GET' },
     ),
 
   // Create one, and hand back the picker row for it so the field can adopt the
   // record without a second search.
-  linkNew: (spaceCode, screen, fieldname, values) =>
+  linkNew: (spaceCode, screen, fieldname, values, target) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.link_new',
-      { space_code: spaceCode, screen, fieldname, values },
+      { space_code: spaceCode, screen, fieldname, values, target },
       { successMessage: 'Created' },
     ),
 
@@ -158,10 +163,10 @@ export const workspace = {
   // A few facts about the record a link points at, for a card on hover. Which
   // facts is the target doctype's own answer — its `in_preview` fields — so no
   // manifest chooses them and every screen pointing at that doctype agrees.
-  linkPreview: (spaceCode, screen, fieldname, name) =>
+  linkPreview: (spaceCode, screen, fieldname, name, target) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.link_preview',
-      { space_code: spaceCode, screen, fieldname, name },
+      { space_code: spaceCode, screen, fieldname, name, target },
       { silent: true, method: 'GET' },
     ),
 

@@ -1613,3 +1613,107 @@ def test_a_field_with_no_rules_carries_none(spaceview):
 	assert column["depends_on"] is None
 	assert column["mandatory_depends_on"] is None
 	assert column["read_only_depends_on"] is None
+
+
+# --------------------------------------------------------------------------- #
+# Dynamic Link
+#
+# A Link says which doctype it points at. A Dynamic Link does not — it names
+# another *field*, and the answer is on the record. So the browser has to send
+# it, which makes it the one place a client names a doctype, which makes the
+# validation the whole feature.
+# --------------------------------------------------------------------------- #
+
+DYNAMIC = meta(
+	[
+		field("reference_type", "Link", "Type", options="DocType"),
+		field("reference_name", "Dynamic Link", "Reference", options="reference_type"),
+	],
+	title_field=None,
+)
+
+
+@pytest.fixture
+def dynamic(spaceview, stub_frappe, monkeypatch):
+	"""A resolved screen over the two fields above, with the space granting
+	ToDo and Contact and nothing else."""
+	monkeypatch.setattr(spaceview, "_space", lambda code: {"role_name": "R", "space_label": "S"})
+	monkeypatch.setattr(spaceview, "_granted_doctypes", lambda space: {"ToDo", "Contact"})
+	stub_frappe.db.exists = lambda dt, name=None: name in ("ToDo", "Contact", "User")
+	stub_frappe.has_permission = lambda dt, ptype=None, **kw: dt != "Contact"
+	return {"space": "s", "all_columns": spaceview._columns(DYNAMIC, ["reference_type", "reference_name"])}
+
+
+def column_of(spaceview, fieldname):
+	return next(
+		c for c in spaceview._columns(DYNAMIC, ["reference_type", "reference_name"])
+		if c["fieldname"] == fieldname
+	)
+
+
+def test_a_dynamic_link_carries_the_field_that_names_its_target(spaceview):
+	"""Without it the browser cannot say what the row points at, and every cell
+	shows a raw id."""
+	assert column_of(spaceview, "reference_name")["depends_on_field"] == "reference_type"
+	assert column_of(spaceview, "reference_type")["depends_on_field"] is None
+
+
+def test_a_granted_readable_target_resolves(spaceview, dynamic):
+	column = column_of(spaceview, "reference_name")
+	assert spaceview._link_target(dynamic, column, "ToDo") == "ToDo"
+
+
+def test_a_target_outside_the_space_is_refused(spaceview, dynamic):
+	"""The check that makes this safe. A Dynamic Link is a pointer to an
+	arbitrary doctype, so a client naming its own is exactly the widening the
+	screen allowlist exists to stop."""
+	column = column_of(spaceview, "reference_name")
+	assert spaceview._link_target(dynamic, column, "User") is None
+
+
+def test_a_target_this_user_cannot_read_is_refused(spaceview, dynamic):
+	"""Granted to the space and refused to the person. Both have to pass."""
+	column = column_of(spaceview, "reference_name")
+	assert spaceview._link_target(dynamic, column, "Contact") is None
+
+
+def test_a_target_that_is_not_a_doctype_is_refused(spaceview, dynamic):
+	column = column_of(spaceview, "reference_name")
+	assert spaceview._link_target(dynamic, column, "Nonexistent Doctype") is None
+	assert spaceview._link_target(dynamic, column, "") is None
+	assert spaceview._link_target(dynamic, column, None) is None
+
+
+def test_a_plain_link_ignores_a_named_target(spaceview, dynamic):
+	"""Its doctype is a property of the field, so a client cannot redirect one
+	by asking. This is the half that would be easy to lose by threading the
+	argument through and using it everywhere."""
+	column = column_of(spaceview, "reference_type")
+	assert spaceview._link_target(dynamic, column, "ToDo") == "DocType"
+
+
+def test_rows_are_grouped_by_the_doctype_they_point_at(spaceview, dynamic):
+	"""One query per target rather than one per row: a page of forty pointing
+	at three doctypes is three queries."""
+	column = column_of(spaceview, "reference_name")
+	rows = [
+		{"reference_type": "ToDo", "reference_name": "T-1"},
+		{"reference_type": "ToDo", "reference_name": "T-2"},
+		{"reference_type": "Contact", "reference_name": "C-1"},
+		{"reference_type": "User", "reference_name": "U-1"},
+		{"reference_type": "ToDo", "reference_name": None},
+		{"reference_type": None, "reference_name": "T-3"},
+	]
+	groups = spaceview._link_groups(dynamic, column, rows)
+
+	assert groups == {"ToDo": {"T-1", "T-2"}}, (
+		"a refused target contributes no group, and a row missing either half "
+		"contributes nothing"
+	)
+
+
+def test_the_companion_field_is_always_fetched(spaceview):
+	"""Whether somebody chose to *look* at the type field has nothing to do
+	with whether the link beside it can be resolved."""
+	columns = [column_of(spaceview, "reference_name")]
+	assert "reference_type" in spaceview._fetch_fields(columns)

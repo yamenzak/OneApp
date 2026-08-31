@@ -50,6 +50,7 @@
     :fieldname="column.fieldname"
     :space-code="spaceCode"
     :screen="screen"
+    :target="target"
   />
 
   <!-- Outside a screen — inside a preview card, say — there is nothing to
@@ -95,6 +96,12 @@ const props = defineProps({
   states: { type: Array, default: () => [] },
   /** The row's resolved links, keyed by fieldname — see `_with_links`. */
   links: { type: Object, default: () => ({}) },
+  /**
+   * The whole row. Read only by a Dynamic Link, whose target doctype lives in
+   * another of its fields — every other cell needs `value` and nothing else,
+   * which is why this is optional rather than the primary input.
+   */
+  row: { type: Object, default: () => ({}) },
   /** What bounds a link's preview lookup. Absent inside a preview card. */
   spaceCode: { type: String, default: '' },
   screen: { type: String, default: '' },
@@ -105,6 +112,15 @@ const props = defineProps({
 const emphasis = computed(() => (props.column.bold ? 'font-medium' : ''))
 
 const link = computed(() => props.links?.[props.column.fieldname] || null)
+
+// A Dynamic Link's target is on the row, not on the column — it is whatever
+// the field named by `depends_on_field` holds — so the cell has to read it out
+// of the record before anything downstream can look the value up.
+const target = computed(() => {
+  const column = props.column
+  if (column.fieldtype !== 'Dynamic Link' || !column.depends_on_field) return ''
+  return props.row?.[column.depends_on_field] || ''
+})
 
 // How this site renders a number when the field does not say. Read here rather
 // than inside the formatter, which stays a pure question about a number and a

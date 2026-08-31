@@ -243,10 +243,20 @@ def _fetch_fields(columns: list[dict]) -> list[str]:
 	`__activity` is a column and not a field; asking the database for it is a
 	`SQL syntax` error rather than an empty cell, so it is filtered here rather
 	than remembered at every call site.
+
+	A Dynamic Link brings a second field with it. Its target doctype is not on
+	the field — it is in whatever other field `options` names — so fetching the
+	link without its companion gives a column of ids and no way to say what any
+	of them is. Asked for even when that companion is not itself a column,
+	because whether somebody chose to *look* at the type field has nothing to do
+	with whether the link beside it can be resolved.
 	"""
-	return list(dict.fromkeys(
-		[c["fieldname"] for c in columns if c["fieldname"] != META_COLUMN] + list(ALWAYS)
-	))
+	wanted = [c["fieldname"] for c in columns if c["fieldname"] != META_COLUMN]
+	wanted += [
+		c["depends_on_field"] for c in columns
+		if c["fieldtype"] == "Dynamic Link" and c.get("depends_on_field")
+	]
+	return list(dict.fromkeys(wanted + list(ALWAYS)))
 
 
 def _offerable(meta, keep=()) -> list[str]:
@@ -924,36 +934,78 @@ def _with_links(resolved: dict, rows: list[dict]) -> None:
 	page is resolved to the same three things the title column shows — a face, a
 	name, an id — and rendered the same way.
 
-	One query per link column per page, not one per cell: forty rows with three
-	link columns is three queries, and the ids repeat. A target this user may
-	not read simply comes back empty and the cell falls back to the id, which is
-	the truthful thing to show.
+	One query per target per column per page, not one per cell: forty rows with
+	three link columns is three queries, and the ids repeat. A Dynamic Link can
+	spread one column over several doctypes, so it is grouped rather than
+	assumed — three targets on a page is three queries, not forty. A target this
+	user may not read simply comes back empty and the cell falls back to the id,
+	which is the truthful thing to show.
 	"""
-	links = [c for c in resolved.get("columns") or [] if c["fieldtype"] == "Link"]
+	links = [
+		c for c in resolved.get("columns") or []
+		if c["fieldtype"] in ("Link", "Dynamic Link")
+	]
 	if not links or not rows:
 		return
 
 	for column in links:
-		target = column.get("options")
-		if not target or not frappe.db.exists("DocType", target):
-			continue
-		ids = {row.get(column["fieldname"]) for row in rows if row.get(column["fieldname"])}
-		if not ids:
-			continue
+		for target, ids in _link_groups(resolved, column, rows).items():
+			meta = frappe.get_meta(target)
+			shape = _link_shape(meta)
+			fields = ["name"] + [f for f in (shape["title"], shape["image"]) if f]
+			found = frappe.get_list(
+				target, fields=fields, filters={"name": ["in", list(ids)]},
+				limit_page_length=len(ids),
+			)
+			by_id = {row["name"]: _link_row(row, dict(shape, search=[])) for row in found}
 
-		meta = frappe.get_meta(target)
-		shape = _link_shape(meta)
-		fields = ["name"] + [f for f in (shape["title"], shape["image"]) if f]
-		found = frappe.get_list(
-			target, fields=fields, filters={"name": ["in", list(ids)]},
-			limit_page_length=len(ids),
-		)
-		by_id = {row["name"]: _link_row(row, dict(shape, search=[])) for row in found}
+			for row in rows:
+				value = row.get(column["fieldname"])
+				if value and value in by_id:
+					row.setdefault("_links", {})[column["fieldname"]] = by_id[value]
 
-		for row in rows:
-			value = row.get(column["fieldname"])
-			if value and value in by_id:
-				row.setdefault("_links", {})[column["fieldname"]] = by_id[value]
+
+def _link_groups(resolved: dict, column: dict, rows: list[dict]) -> dict:
+	"""{target doctype: the ids on this page that point at it}.
+
+	A plain Link has one target for the whole column, so this is one group. A
+	Dynamic Link's target is on each *row* — in whatever field `options` names —
+	so a page can point at several doctypes at once, and the grouping is what
+	keeps that to one query each.
+
+	Every target goes through `_link_target`, so a row naming a doctype outside
+	the space's grant resolves to nothing and its cell falls back to the raw id.
+	That is the truthful thing to show: the value is real, we are simply not
+	willing to look it up.
+	"""
+	groups: dict = {}
+	fieldname = column["fieldname"]
+	dynamic = column["fieldtype"] == "Dynamic Link"
+	source = column.get("depends_on_field")
+
+	# A plain Link's doctype is a property of the field, so it is asked once.
+	static = None if dynamic else _link_target(resolved, column)
+	seen: dict = {}
+
+	for row in rows:
+		value = row.get(fieldname)
+		if not value:
+			continue
+		if dynamic:
+			named = row.get(source) if source else None
+			if not named:
+				continue
+			# Resolved once per distinct doctype rather than once per row: the
+			# check is a doctype lookup and a permission call, and forty rows
+			# naming the same target is one question.
+			if named not in seen:
+				seen[named] = _link_target(resolved, column, named)
+			target = seen[named]
+		else:
+			target = static
+		if target:
+			groups.setdefault(target, set()).add(value)
+	return groups
 
 
 def _with_meta(row: dict) -> dict:
@@ -1081,17 +1133,24 @@ LINK_PAGE = 20
 
 
 @frappe.whitelist(methods=["GET"])
-def link_options(space_code: str, screen: str, fieldname: str, query: str = "") -> list:
+def link_options(space_code: str, screen: str, fieldname: str, query: str = "",
+                 target: str | None = None) -> list:
 	"""Records a Link field may point at.
 
 	Bounded by the screen, like every other read: the field has to be one the
 	screen shows, and the doctype it points at has to be readable by this user.
 	Frappe's own permissions do the second part — `get_list` returns nothing
 	rather than raising, which is the right shape for a picker.
+
+	`target` is only read for a Dynamic Link, whose doctype lives on the record
+	rather than on the field. It is validated in `_link_target` against the
+	space's own grant and this user's permissions before anything is fetched,
+	and ignored entirely for a plain Link — a client cannot redirect one of
+	those by asking.
 	"""
 	resolved = _resolve(space_code, screen)
 	column = _link_column(resolved, fieldname)
-	target = _link_target(resolved, column)
+	target = _link_target(resolved, column, target)
 	if not target or not frappe.db.exists("DocType", target):
 		return []
 
@@ -1169,7 +1228,8 @@ def _link_row(row: dict, shape: dict) -> dict:
 
 
 @frappe.whitelist(methods=["GET"])
-def link_new_spec(space_code: str, screen: str, fieldname: str) -> dict:
+def link_new_spec(space_code: str, screen: str, fieldname: str,
+                  target: str | None = None) -> dict:
 	"""What creating a record for a Link field would ask for.
 
 	Frappe's quick entry, in our vocabulary: the fields a doctype marks
@@ -1181,7 +1241,7 @@ def link_new_spec(space_code: str, screen: str, fieldname: str) -> dict:
 	second is Frappe's.
 	"""
 	resolved = _resolve(space_code, screen)
-	target = _link_target(resolved, _link_column(resolved, fieldname))
+	target = _link_target(resolved, _link_column(resolved, fieldname), target)
 	if not target or not frappe.db.exists("DocType", target):
 		return {"can_create": False, "fields": []}
 
@@ -1218,7 +1278,8 @@ def _quick_entry(df) -> bool:
 
 
 @frappe.whitelist(methods=["POST"])
-def link_new(space_code: str, screen: str, fieldname: str, values: str | dict) -> dict:
+def link_new(space_code: str, screen: str, fieldname: str, values: str | dict,
+             target: str | None = None) -> dict:
 	"""Create one record for a Link field, and hand back the row to show.
 
 	Bounded the same way the picker is, and then again by Frappe: only fields
@@ -1227,7 +1288,7 @@ def link_new(space_code: str, screen: str, fieldname: str, values: str | dict) -
 	the screen's own doctype.
 	"""
 	resolved = _resolve(space_code, screen)
-	target = _link_target(resolved, _link_column(resolved, fieldname))
+	target = _link_target(resolved, _link_column(resolved, fieldname), target)
 	space = _space(space_code)
 	if (
 		not target
@@ -1259,7 +1320,8 @@ def link_new(space_code: str, screen: str, fieldname: str, values: str | dict) -
 
 
 @frappe.whitelist(methods=["GET"])
-def link_preview(space_code: str, screen: str, fieldname: str, name: str) -> dict:
+def link_preview(space_code: str, screen: str, fieldname: str, name: str,
+                 target: str | None = None) -> dict:
 	"""A few facts about the record a link points at, for a card on hover.
 
 	Frappe's own answer to "what would you want to know without leaving the
@@ -1273,7 +1335,7 @@ def link_preview(space_code: str, screen: str, fieldname: str, name: str) -> dic
 	their permlevel is not in `_columns` to begin with.
 	"""
 	resolved = _resolve(space_code, screen)
-	target = _link_target(resolved, _link_column(resolved, fieldname))
+	target = _link_target(resolved, _link_column(resolved, fieldname), target)
 	if not target or not frappe.db.exists("DocType", target):
 		return {"fields": []}
 
@@ -1335,16 +1397,39 @@ def _link_column(resolved: dict, fieldname: str) -> dict:
 	return column
 
 
-def _link_target(resolved: dict, column: dict) -> str | None:
+def _link_target(resolved: dict, column: dict, target: str | None = None) -> str | None:
 	"""Which doctype a Link points at.
 
-	A Link says so in `options`. A Dynamic Link names another field that holds
-	the answer, so it can only be resolved against a record — which the picker
-	does not have, so it is refused rather than guessed at.
+	A Link says so in `options`. A Dynamic Link names *another field* that holds
+	the answer, so the doctype is not a property of the field at all — it is a
+	property of the record being edited, and only the form holds that. So the
+	browser sends it, and this decides whether to believe it.
+
+	It is checked rather than trusted, and the check is the whole feature. A
+	Dynamic Link is a pointer to an arbitrary doctype, so a client naming its
+	own target is precisely the widening the screen allowlist exists to stop:
+
+	* it has to be a real doctype
+	* it has to be one this space's manifest granted
+	* Frappe has to agree this user may read it
+
+	Fail any of those and the answer is None, which every caller renders as an
+	empty picker — the same thing an unreadable target has always produced.
 	"""
 	if column["fieldtype"] == "Link":
 		return column.get("options")
-	return None
+
+	if column["fieldtype"] != "Dynamic Link":
+		return None
+
+	target = (target or "").strip()
+	if not target or not frappe.db.exists("DocType", target):
+		return None
+	if target not in _granted_doctypes(_space(resolved["space"])):
+		return None
+	if not frappe.has_permission(target, "read"):
+		return None
+	return target
 
 
 def _search(meta, query: str, shape: dict) -> list:

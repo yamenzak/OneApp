@@ -24,6 +24,7 @@
     :required="!!field.reqd"
     :field="field"
     :is-new="isNew"
+    :target="target"
     allow-create
     @update:model-value="emit('update:modelValue', $event)"
   />
@@ -312,10 +313,26 @@ const props = defineProps({
    */
   doctype: { type: String, default: '' },
   docname: { type: String, default: '' },
+  /**
+   * The record as it stands, for the fields whose behaviour depends on another
+   * of its values. Only a Dynamic Link reads it today — its target doctype is
+   * in the field `depends_on_field` names — and it is the same object
+   * `FormSections` is already editing, so nothing is copied to provide it.
+   */
+  doc: { type: Object, default: () => ({}) },
 })
 const emit = defineEmits(['update:modelValue'])
 
 const component = computed(() => controlComponent(props.field))
+
+// A Dynamic Link points wherever another field on this record says. Empty
+// until that field is filled in, which is exactly right: a picker with no
+// target has nothing to search, and the server refuses an unnamed one.
+const target = computed(() => {
+  const field = props.field
+  if (field.fieldtype !== 'Dynamic Link' || !field.depends_on_field) return ''
+  return props.doc?.[field.depends_on_field] || ''
+})
 const controlType = computed(() => formControlType(props.field))
 
 /**

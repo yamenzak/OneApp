@@ -118,6 +118,7 @@
                     v-else
                     :column="c.column"
                     :value="row[c.column.fieldname]"
+                    :row="row"
                     :links="row._links || {}"
                     :states="spec.states"
                     :space-code="spec.space"
@@ -166,6 +167,7 @@
                 v-else
                 :column="c.column"
                 :value="row[c.column.fieldname]"
+                :row="row"
                 :links="row._links || {}"
                 :states="spec.states"
                 :space-code="spec.space"

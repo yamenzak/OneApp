@@ -91,6 +91,7 @@
               :is-new="isNew"
               :doctype="doctype"
               :docname="values.name || ''"
+              :doc="values"
               :disabled="
                 disabled ||
                 !field.editable ||
