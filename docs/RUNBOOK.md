@@ -209,6 +209,84 @@ config**, then use **Push Bench Config** on the Shard.
 
 ---
 
+## Stage 6 — The lifecycle rehearsal
+
+Do this once, on a **staging shard**, before any real customer exists. It is the
+only way to find out whether a restore works before somebody needs one — and
+`press.api.site.restore` is the one call in this system that has never run
+against real Frappe Cloud.
+
+**Before you start, the readiness board must be green on all four of:**
+the scheduler, this site can send email, R2 storage, and the R2 client library.
+The first two are blocking and the sweep will refuse without them; the second two
+are marked optional because sites work without storage, but a lifecycle rehearsal
+without them is testing nothing — there is no backup to promote and no cold copy
+to restore from.
+
+> **The scheduler and the client library both fail silently.** A stopped
+> scheduler means nothing is synced, backed up or swept, and the console still
+> looks healthy. A missing `boto3` means every upload and backup raises
+> `ImportError` behind an exception handler, so attachments and backups are
+> simply absent. Both are on the readiness board precisely because neither
+> announces itself.
+
+### The walk
+
+The windows have floors — `cold_retention_days` will not go below seven — so the
+shortest honest walk from a failed payment to a purge is about nine days. The
+rehearsal moves **the calendar**, not the rules: every window, warning and
+refusal behaves exactly as it will in production.
+
+```bash
+# Age a staging workspace's whole lifecycle by N days, then apply the ladder.
+# Refuses outright on a Production tenant.
+bench --site <control-site> execute \
+  oneapp_control.api.admin.advance_lifecycle_clock \
+  --kwargs "{'tenant': 'rehearsal', 'days': 8}"
+
+bench --site <control-site> execute \
+  oneapp_control.api.admin.run_lifecycle --kwargs "{'tenant': 'rehearsal'}"
+```
+
+Repeat the two together, checking the workspace's **Lifecycle** tab after each,
+and confirm in order:
+
+| Step | What to see |
+| --- | --- |
+| 1. Sign up and pay with a Stripe test card | The site is built; the owner gets a link that works |
+| 2. Wait for the first backup, or take one | `Last backup` fills in; objects appear under `backups/<tenant>/` in R2 |
+| 3. Fail the renewal in Stripe | Subscription goes `Past Due`; the clock starts; **the first email arrives** |
+| 4. Age past the grace window, apply | `Suspend Site` runs; the site is off; **a cold copy exists** |
+| 5. Check `cold/<tenant>/` in R2 | Database, both file tarballs, and `manifest.json` |
+| 6. Age past the suspension window, apply | `Archive Site` runs; the site is gone from Frappe Cloud; `purge_after` is set |
+| 7. **Pay the invoice** | `Restore Site` runs on its own; the site is rebuilt and **your data is in it** |
+| 8. Sign in and check a record and an attachment | This is the step the whole thing exists for |
+
+Then, on a second throwaway workspace, take it to the end:
+
+| Step | What to see |
+| --- | --- |
+| 9. Age to within the warning window, apply | The final warning email arrives; `Warned on` fills in |
+| 10. Age past `purge_after`, apply | Every prefix under the tenant is deleted; status `Purged` |
+| 11. Look in R2 | `cold/`, `backups/` and `tenants/` for that tenant are all empty |
+
+**If step 7 fails, stop and fix it before launching.** Everything upstream of a
+restore is reversible; a restore that does not work turns the whole ladder from
+a safety net into a way of deleting customers on a schedule.
+
+### What the rehearsal will not tell you
+
+* **Nothing alerts you.** Failures land in Error Log and `Tenant Lifecycle Event`
+  and wait to be looked at. Until something pages you, "automated" means
+  "unattended", not "unwatched".
+* **The control plane is not backed up by any of this.** It holds every HMAC
+  secret, the credit ledger, and the tenant-to-Stripe mapping — lose it and every
+  tenant site is fine and none of them is billable or reachable. Confirm Frappe
+  Cloud is backing up the control site itself, and restore it once, somewhere
+  else, before you rely on it.
+
+---
+
 ## Notes
 
 **Two token boundaries.** The DNS and KV tokens stay on the control plane and are

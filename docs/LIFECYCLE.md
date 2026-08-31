@@ -233,7 +233,27 @@ actions on the Tenants screen.
 | Restore | Rebuild an archived workspace. Normally automatic on payment; this is the door for a bank transfer, a mistake, or a restore rehearsal |
 | Purge | Delete everything now. For a deletion request under data-protection law, or a retention that is pointless |
 
-## 9. Where it lives
+## 9. Rehearsing it
+
+The windows have floors, so the shortest honest walk from a failed payment to a
+purge is about nine days — right for production, useless for finding out whether
+a restore works.
+
+`admin.advance_lifecycle_clock(tenant, days)` ages every lifecycle date on a
+workspace, and the next `run_lifecycle` sees it further down the ladder. It moves
+**the calendar, not the rules**: every window, warning and refusal behaves as it
+will in production, which is the only reason the rehearsal is worth anything.
+
+It refuses on a Production tenant, and `Tenant.environment` comes from the shard
+rather than from the workspace — so pointing it at a customer would mean moving
+them onto a staging shard first, which is deliberate and visible. It is also not
+a button in the console: a control that fast-forwards a deletion has no business
+in a row of ordinary actions where somebody can reach it while meaning to click
+the one above.
+
+The ordered walk, and what to check at each step, is docs/RUNBOOK.md §6.
+
+## 10. Where it lives
 
 | | |
 |---|---|

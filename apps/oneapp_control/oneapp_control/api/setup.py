@@ -52,6 +52,61 @@ def _press_host_ok(s) -> bool:
 	return host not in REDIRECTING_PRESS_HOSTS
 
 
+# A job that has not run in this long means the worker is gone, whatever the
+# settings say. The most frequent job here is every two minutes, so an hour is
+# thirty missed runs — long enough not to trip on a deploy, short enough to
+# catch a dead worker the same morning.
+SCHEDULER_STALE_HOURS = 1
+
+
+def _scheduler_state() -> tuple[bool, str]:
+	"""Whether jobs are actually running, and how we know.
+
+	Two questions, because they fail differently. "Is it switched on" is a
+	setting and a config flag; "is anything actually running" is the last time a
+	job executed. A site can pass the first and fail the second — a paused
+	worker, a queue nobody drains — and only the second failure is the one that
+	silently stops the product.
+	"""
+	from frappe.utils import add_to_date, get_datetime, now_datetime
+	from frappe.utils.scheduler import is_scheduler_disabled
+
+	if frappe.conf.get("maintenance_mode"):
+		return False, "This site is in maintenance mode, which stops the scheduler."
+
+	if is_scheduler_disabled(verbose=False):
+		return False, "The scheduler is switched off for this site."
+
+	last = frappe.db.sql(
+		"SELECT MAX(last_execution) FROM `tabScheduled Job Type` WHERE stopped = 0"
+	)[0][0]
+	if not last:
+		return False, "No scheduled job has ever run on this site."
+
+	cutoff = add_to_date(now_datetime(), hours=-SCHEDULER_STALE_HOURS)
+	if get_datetime(last) < get_datetime(cutoff):
+		return False, (
+			f"The scheduler is enabled but nothing has run since {last}. "
+			"The worker is not draining the queue."
+		)
+
+	return True, f"Last job ran at {last}."
+
+
+def _scheduler_ok() -> bool:
+	return _scheduler_state()[0]
+
+
+def _scheduler_detail() -> str:
+	ok, why = _scheduler_state()
+	if ok:
+		return why
+	return (
+		f"{why} Nothing is provisioned, synced, backed up, or moved through "
+		"the lifecycle while this is true, and none of it reports an error."
+	)
+
+
 def _outgoing_email_ok() -> bool:
 	"""Whether this site has somewhere to send mail from.
 
@@ -214,6 +269,25 @@ def checks() -> list[dict]:
 			"detail": "Tenant sites fall back to local disk until this is set.",
 			"needs": "A Cloudflare account ID, a bucket, and an R2 API token's access key and secret.",
 			"where": "Settings → Storage buckets",
+		},
+		{
+			# Everything in this product that happens without somebody clicking
+			# is a scheduled job: provisioning steps advance, tenants sync,
+			# usage is reported, backups are taken, credits expire, and the
+			# lifecycle ladder runs. A stopped scheduler breaks all of it at
+			# once and says nothing at all — the console looks healthy, the
+			# tenants look healthy, and nothing is happening.
+			"key": "scheduler",
+			"group": BLOCKING,
+			"label": "The scheduler is running",
+			"ok": _scheduler_ok(),
+			"detail": _scheduler_detail(),
+			"needs": (
+				"An enabled scheduler on this site, and a running bench worker. "
+				"Frappe Cloud enables it for an active site; a site restored "
+				"from a backup comes back with it paused."
+			),
+			"where": "Frappe Cloud → site → enable scheduler",
 		},
 		{
 			# The control plane's *own* ability to send, which is a different

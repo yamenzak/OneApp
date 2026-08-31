@@ -1459,3 +1459,99 @@ def tenant_lifecycle(tenant: str) -> dict:
 			limit=30,
 		),
 	}
+
+
+# The lifecycle's windows have floors — `cold_retention_days` will not go below
+# seven, on purpose — so the shortest honest walk from a failed payment to a
+# purge is about nine days. That is right for production and useless for a
+# rehearsal, and a rehearsal is the only way to find out whether a restore
+# actually works before a customer needs one.
+#
+# So the clock moves instead of the windows. Every lifecycle date on the
+# workspace shifts back by the days given, and the next `run_lifecycle` sees it
+# further down the ladder — with every window, warning and refusal exactly as
+# they are in production, which is the point. Nothing about the rules is
+# loosened; only the calendar is.
+LIFECYCLE_DATES = (
+	"dunning_started_on",
+	"suspended_on",
+	"archived_on",
+	"purge_after",
+	"purge_warned_on",
+	"over_quota_since",
+	"cold_stored_on",
+	"cold_copy_requested_on",
+	"last_backup_on",
+	"trial_ends_on",
+)
+
+
+@frappe.whitelist(methods=["POST"])
+def advance_lifecycle_clock(tenant: str, days: int) -> dict:
+	"""Age a workspace's lifecycle by `days`, for a rehearsal.
+
+	**Refuses on a Production tenant.** `Tenant.environment` is inherited from
+	the shard rather than chosen per tenant, so this cannot be pointed at a
+	customer by editing the workspace — somebody would have to move it onto a
+	staging shard first, which is a deliberate act and a visible one.
+
+	Deliberately not a button in the console. A control that fast-forwards a
+	deletion has no business sitting in a row of ordinary actions where somebody
+	can reach it while meaning to click the one above; it is called from the
+	rehearsal in docs/RUNBOOK.md and nowhere else.
+	"""
+	_require_manager()
+	from frappe.utils import add_to_date, getdate
+
+	from oneapp_control.lifecycle import events
+
+	days = int(days)
+	if days <= 0:
+		frappe.throw(_("Give a positive number of days to age the workspace by."))
+
+	doc = frappe.get_doc("Tenant", tenant)
+	if doc.environment == "Production":
+		frappe.throw(
+			_(
+				"{0} is a Production workspace. Ageing its clock would suspend, "
+				"archive and eventually delete somebody's live business several "
+				"days early. Rehearse on a staging shard."
+			).format(tenant),
+			frappe.PermissionError,
+		)
+
+	moved = {}
+	for field in LIFECYCLE_DATES:
+		value = doc.get(field)
+		if not value:
+			continue
+		# Dates and datetimes both, and `add_to_date` keeps whichever it was
+		# given — a Datetime field written as a date reads as midnight, which
+		# is a day's drift on a window measured in days.
+		moved[field] = add_to_date(value, days=-days)
+
+	if moved:
+		doc.db_set(moved)
+
+	events.record(
+		tenant,
+		"Held" if doc.lifecycle_hold else "Dunning Started",
+		triggered_by="Operator",
+		reason=(
+			f"Rehearsal: {frappe.session.user} aged this workspace's lifecycle "
+			f"by {days} days. Not a real transition."
+		),
+		detail={"rehearsal": True, "days": days, "moved": {k: str(v) for k, v in moved.items()}},
+	)
+
+	return {
+		"ok": True,
+		"tenant": tenant,
+		"days": days,
+		"moved": {k: str(v) for k, v in moved.items()},
+		"now": {
+			"status": doc.status,
+			"dunning_started_on": str(doc.dunning_started_on or ""),
+			"purge_after": str(doc.purge_after or ""),
+		},
+	}

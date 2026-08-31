@@ -522,3 +522,66 @@ def test_the_event_log_records_whether_they_were_actually_told(sweep, wired, mon
 
 	warned = [kwargs for event, kwargs in wired.events if event == "Purge Warned"]
 	assert warned and warned[0]["detail"] == {"delivered": False}
+
+
+# --------------------------------------------------------------------------- #
+# The rehearsal clock
+# --------------------------------------------------------------------------- #
+# The windows have floors, so the shortest honest walk to a purge is about nine
+# days. A rehearsal moves the calendar instead of the rules — and must never be
+# pointable at somebody's live business.
+
+def test_the_rehearsal_clock_refuses_a_production_workspace(stub_frappe, monkeypatch):
+	"""The one thing this must never do."""
+	from oneapp_control.api import admin
+
+	monkeypatch.setattr(admin.frappe, "get_roles", lambda *a: ["System Manager"])
+	tenant = type("T", (), {
+		"environment": "Production", "name": "acme", "lifecycle_hold": 0,
+		"get": lambda self, f, d=None: None, "db_set": lambda self, *a: None,
+	})()
+	monkeypatch.setattr(admin.frappe, "get_doc", lambda *a: tenant)
+
+	with pytest.raises(Exception, match="Production"):
+		admin.advance_lifecycle_clock("acme", 30)
+
+
+def test_the_rehearsal_clock_refuses_a_backwards_number(stub_frappe, monkeypatch):
+	from oneapp_control.api import admin
+
+	monkeypatch.setattr(admin.frappe, "get_roles", lambda *a: ["System Manager"])
+	for days in (0, -5):
+		with pytest.raises(Exception):
+			admin.advance_lifecycle_clock("acme", days)
+
+
+def test_every_lifecycle_date_moves_together(stub_frappe):
+	"""A clock that moved some dates and not others would put a workspace into
+	a state the ladder can never produce, and the rehearsal would be testing
+	something that cannot happen."""
+	import json
+	from pathlib import Path
+
+	from oneapp_control.api.admin import LIFECYCLE_DATES
+
+	root = Path(__file__).resolve().parent.parent
+	fields = {
+		f["fieldname"]: f
+		for f in json.loads(
+			(root / "apps/oneapp_control/oneapp_control/control_plane/doctype"
+			        "/tenant/tenant.json").read_text()
+		)["fields"]
+	}
+
+	dated = {
+		name
+		for name, f in fields.items()
+		if f["fieldtype"] in ("Date", "Datetime")
+		and name not in ("provisioned_on", "purged_on", "restored_on", "usage_synced_on")
+	}
+
+	assert set(LIFECYCLE_DATES) == dated, (
+		"the rehearsal clock and the Tenant's own dates disagree: "
+		f"missing {dated - set(LIFECYCLE_DATES)}, "
+		f"unknown {set(LIFECYCLE_DATES) - dated}"
+	)
