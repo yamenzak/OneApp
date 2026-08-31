@@ -244,6 +244,9 @@ def handle_subscription_change(obj: dict, record):
 	# Without this, an upgrade billed at the new price and left the workspace on
 	# the old storage, seats, credit grant and site plan.
 	_reconcile_plan(obj, subscription)
+	# After the plan, because both write the subscription and the plan's capture
+	# is what the add-ons are added on top of.
+	_reconcile_addons(obj, subscription)
 
 	status = STRIPE_STATUS_MAP.get(obj.get("status"), "Incomplete")
 	subscription.db_set("status", status)
@@ -285,6 +288,82 @@ def _reconcile_plan(obj: dict, subscription):
 
 	interval = plans.interval_for_price(price_id) or subscription.interval
 	checkout.apply_plan(subscription, plan, interval)
+
+
+def _reconcile_addons(obj: dict, subscription):
+	"""Follow the add-on lines Stripe is actually charging.
+
+	The sibling of `_reconcile_plan`, and it exists for the same reason: a line
+	added or removed in the Stripe dashboard is real money, and a subscription
+	whose add-on rows disagree with Stripe under-quotas or over-quotas a paying
+	workspace silently.
+
+	Stripe is the authority on *which lines exist and at what quantity*. It is
+	not the authority on what a unit is worth in GB — that was captured when the
+	line was bought, and a line minted in the dashboard has no capture to read,
+	so it falls back to the catalogue as it stands.
+	"""
+	from oneapp_control.billing import addons
+
+	items = (obj.get("items") or {}).get("data") or []
+	held = {row.addon: row for row in (subscription.addons or [])}
+
+	rows = []
+	for item in items:
+		price_id = ((item or {}).get("price") or {}).get("id")
+		addon = addons.addon_for_price(price_id)
+		if not addon:
+			continue
+
+		quantity = int(item.get("quantity") or 0)
+		if not quantity:
+			continue
+
+		before = held.get(addon)
+		rows.append({
+			"addon": addon,
+			"quantity": quantity,
+			"stripe_subscription_item_id": item.get("id"),
+			"stripe_price_id": price_id,
+			# What was captured, where there is a capture. A line somebody added
+			# in the dashboard has none, so the catalogue answers instead — and
+			# the alternative, treating it as zero GB, would take a workspace
+			# below what it is paying for.
+			"kind": (before.kind if before else None) or _addon_field(addon, "kind"),
+			"unit_gb": (before.unit_gb if before else None) or _addon_field(addon, "unit_gb"),
+			"unit_amount": before.unit_amount if before else None,
+			"currency": before.currency if before else None,
+			"added_on": (before.added_on if before else None) or now_datetime(),
+		})
+
+	if _same_addons(subscription, rows):
+		return
+
+	subscription.set("addons", [])
+	for row in rows:
+		subscription.append("addons", row)
+	subscription.save(ignore_permissions=True)
+
+
+def _addon_field(addon: str, field: str):
+	return frappe.db.get_value("Add-on", addon, field)
+
+
+def _same_addons(subscription, rows: list[dict]) -> bool:
+	"""Whether the rows already say what Stripe says.
+
+	Compared on what is billed — which add-on, how many, which line — rather than
+	on the whole row: the captured GB and rate are deliberately allowed to differ
+	from the catalogue, and rewriting them on every webhook would undo the
+	grandfathering they exist for.
+	"""
+	def shape(row):
+		get = row.get if isinstance(row, dict) else lambda k: getattr(row, k, None)
+		return (get("addon"), int(get("quantity") or 0), get("stripe_subscription_item_id"))
+
+	return sorted(shape(r) for r in (subscription.addons or [])) == sorted(
+		shape(r) for r in rows
+	)
 
 
 def handle_invoice_paid(obj: dict, record):

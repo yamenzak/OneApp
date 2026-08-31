@@ -556,6 +556,41 @@ doctype(
 )
 
 # --------------------------------------------------------------------------- #
+# Subscription Add-on — an add-on line as this subscription actually holds it.
+#
+# Captured, not looked up. `unit_gb` and the rate are copied at purchase for the
+# same reason the plan's terms are: editing the catalogue must change what the
+# *next* purchase buys and nothing else. Somebody who bought three lots of 50 GB
+# keeps 150 GB when the add-on is redefined as 100 GB a unit.
+#
+# `stripe_subscription_item_id` is how a quantity change addresses the right
+# line. Without it the only way to raise a quantity would be to guess which of
+# the subscription's items this row meant.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Subscription Add-on",
+    istable=1,
+    fields=[
+        f("addon", "Link", options="Add-on", reqd=1, in_list_view=1),
+        f("kind", "Select", options="File Storage\nDatabase Storage", reqd=1,
+          in_list_view=1,
+          description="Captured, so a retired add-on's rows still add up."),
+        f("quantity", "Int", default="1", reqd=1, in_list_view=1),
+        f("unit_gb", "Int", label="Unit GB", default="0", in_list_view=1,
+          description="GB per unit at the moment of purchase."),
+        column("cb_addon_line"),
+        f("stripe_subscription_item_id", label="Stripe Subscription Item ID",
+          read_only=1,
+          description="The line on the Stripe subscription this row is."),
+        f("stripe_price_id", label="Stripe Price ID", read_only=1),
+        f("unit_amount", "Currency", read_only=1,
+          description="What one unit costs. Grandfathered like a plan price."),
+        f("currency", "Data", read_only=1),
+        f("added_on", "Datetime", read_only=1),
+    ],
+)
+
+# --------------------------------------------------------------------------- #
 # Subscription — mirrors Stripe. Stripe owns the schedule; this reflects it.
 # --------------------------------------------------------------------------- #
 doctype(
@@ -610,6 +645,18 @@ doctype(
           description="When these were copied from the plan. Empty means this "
                       "subscription predates the snapshot and still reads the "
                       "plan live."),
+        # ------------------------------------------------------------------ #
+        # And what was bought on top of the plan.
+        #
+        # Separate from the terms above rather than folded into them, because
+        # they answer different questions: the terms are what this plan gave at
+        # purchase and never move, while add-ons are held and released as the
+        # workspace grows. `quotas.for_subscription` adds the two.
+        # ------------------------------------------------------------------ #
+        section("sec_addons", "Add-ons"),
+        f("addons", "Table", options="Subscription Add-on",
+          description="Extra quota this workspace is paying for, as lines on "
+                      "the same Stripe subscription."),
     ],
 )
 

@@ -184,3 +184,163 @@ def test_a_retired_add_on_and_an_unpriced_one_fail_differently(addons):
 
 def test_a_price_belongs_to_the_catalogue_it_was_sold_from(addons):
 	assert '"Add-on"' in function(ADDONS, "addon_for_price")
+
+
+# --------------------------------------------------------------------------- #
+# On a subscription
+#
+# An add-on is a line on the same Stripe subscription, so buying, growing and
+# releasing are one operation at different quantities. Three endpoints would be
+# three places to get the proration wrong.
+# --------------------------------------------------------------------------- #
+
+CHECKOUT = APP / "billing/checkout.py"
+WEBHOOKS = APP / "billing/webhooks.py"
+QUOTAS = APP / "billing/quotas.py"
+CUSTOMER = APP / "api/customer.py"
+LINE = APP / "control_plane/doctype/subscription_add_on/subscription_add_on.json"
+
+
+def line_fields() -> dict:
+	return {f["fieldname"]: f for f in json.loads(LINE.read_text())["fields"]}
+
+
+def test_the_line_records_which_stripe_item_it_is():
+	"""Without it the only way to change a quantity would be to guess which of
+	the subscription's items this row meant."""
+	assert "stripe_subscription_item_id" in line_fields()
+
+
+def test_the_line_captures_what_was_bought():
+	"""Same promise as the plan's terms: redefining the add-on changes the next
+	purchase and never this one."""
+	shape = line_fields()
+	for field in ("kind", "unit_gb", "unit_amount", "currency"):
+		assert field in shape, field
+
+
+def test_the_subscription_carries_its_lines():
+	spec = json.loads((APP / "control_plane/doctype/subscription/subscription.json").read_text())
+	table = next(f for f in spec["fields"] if f["fieldname"] == "addons")
+	assert table["options"] == "Subscription Add-on"
+
+
+def test_one_entry_point_buys_grows_and_releases():
+	body = function(CHECKOUT, "set_addon_quantity")
+	assert "quantity == 0" in function(CHECKOUT, "_apply_addon_item")
+	assert "proration_behavior" in function(CHECKOUT, "_apply_addon_item")
+	assert "create_prorations" in function(CHECKOUT, "_apply_addon_item")
+	assert "max_units" in body
+
+
+def test_a_released_line_is_deleted_rather_than_held_at_zero():
+	"""A zero-quantity item keeps appearing on the invoice at nothing."""
+	assert '"deleted": "true"' in function(CHECKOUT, "_apply_addon_item")
+
+
+def test_an_add_on_needs_a_subscription_to_hang_from():
+	"""Selling one as a separate charge would mean a second billing relationship
+	for the same workspace."""
+	body = function(CHECKOUT, "_subscription_for")
+	assert "no subscription to add to" in body
+
+
+def test_releasing_below_what_is_used_is_refused():
+	"""DECISIONS §2: never destroy data and never surprise-charge. Taking the
+	quota below what a workspace holds does the first."""
+	body = function(CHECKOUT, "_refuse_shrinking_below_use")
+	assert "quotas.blockers" in body
+	assert "Free some first" in body
+
+
+def test_the_purchase_is_captured_rather_than_looked_up_later():
+	body = function(CHECKOUT, "_capture_addon")
+	assert "unit_gb=addon_doc.unit_gb" in body
+	assert "unit_amount=" in body
+
+
+# --------------------------------------------------------------------------- #
+# In the quota
+# --------------------------------------------------------------------------- #
+
+def test_the_quota_adds_add_ons_in_one_place():
+	"""Every reader of "what is this workspace allowed" has to get the same
+	answer. A caller that forgot to add would silently under-quota somebody who
+	is paying."""
+	for name in ("for_tenant", "for_subscription"):
+		assert "with_addons" in function(QUOTAS, name), name
+
+
+def test_the_added_gb_come_off_the_purchase():
+	body = function(QUOTAS, "with_addons")
+	assert '"Subscription Add-on"' in body
+	assert "addons.quota_for" in body
+
+
+def test_an_operator_grant_is_not_folded_into_the_terms():
+	"""It is not something bought, so a plan change and a proration must not
+	reason about it. The Tenant's own properties add it."""
+	# The code, not the prose: the docstring names the grant precisely to say it
+	# is somebody else's job.
+	tree = ast.parse(function(QUOTAS, "for_tenant").replace("\t", "    "))
+	fn = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef))
+	code = "\n".join(ast.unparse(n) for n in fn.body if not isinstance(n, ast.Expr))
+	assert "extra_storage_gb" not in code
+
+	tenant = (APP / "control_plane/doctype/tenant/tenant.py").read_text()
+	assert "extra_storage_gb" in tenant
+	assert "extra_database_gb" in tenant
+
+
+# --------------------------------------------------------------------------- #
+# Reconciled from Stripe
+# --------------------------------------------------------------------------- #
+
+def test_lines_are_followed_back_from_stripe():
+	"""A line added or removed in the dashboard is real money, and rows that
+	disagree with Stripe under- or over-quota a paying workspace silently."""
+	assert "_reconcile_addons" in function(WEBHOOKS, "handle_subscription_change")
+	body = function(WEBHOOKS, "_reconcile_addons")
+	assert "addon_for_price" in body
+
+
+def test_reconciliation_does_not_undo_grandfathering():
+	"""Stripe is the authority on which lines exist and at what quantity. It is
+	not the authority on what a unit was worth when it was sold."""
+	body = function(WEBHOOKS, "_same_addons")
+	assert "quantity" in body
+	assert "unit_amount" not in body, "the rate is being compared, so it would be rewritten"
+
+
+def test_a_line_minted_in_the_dashboard_still_gets_its_gb():
+	"""There is no capture to read, and treating it as zero would take a
+	workspace below what it is paying for."""
+	body = function(WEBHOOKS, "_reconcile_addons")
+	assert "_addon_field(addon" in body
+
+
+# --------------------------------------------------------------------------- #
+# What a customer sees
+# --------------------------------------------------------------------------- #
+
+def test_the_catalogue_and_what_is_held_arrive_together():
+	"""A stepper needs both in the same render, or the control jumps a frame
+	after it appears."""
+	body = function(CUSTOMER, "addons")
+	assert "quantity" in body
+	assert "Subscription Add-on" in body
+
+
+def test_an_add_on_is_priced_at_the_cadence_the_workspace_bills_on():
+	body = function(CUSTOMER, "addons")
+	assert "Yearly" in body
+	assert "available" in body
+
+
+def test_the_quantity_is_set_through_the_one_entry_point():
+	assert "checkout.set_addon_quantity" in function(CUSTOMER, "set_addon")
+
+
+def test_the_customer_endpoints_prove_they_own_the_workspace():
+	for name in ("addons", "set_addon"):
+		assert "require_workspace(workspace)" in function(CUSTOMER, name), name

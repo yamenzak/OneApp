@@ -29,7 +29,7 @@ DOCTYPES = (
 	"Subscription", "Credit Ledger Entry", "Credit Reservation",
 	"Stripe Webhook Event", "Plan", "Region", "Storage Bucket",
 	"OneSpace Space", "Space Entitlement", "AI Model", "AI Feature",
-	"AI Usage Record", "Support Login",
+	"AI Usage Record", "Support Login", "Add-on",
 )
 
 # screen, label, icon, doctype, fields, status field
@@ -63,6 +63,8 @@ SCREENS = (
 	 "event_type,status,tenant,processed_on", "status"),
 	("plans", "Plans", "lucide-briefcase", "Plan",
 	 "plan_name,plan_code,audience,is_active,price_monthly,storage_gb", "audience"),
+	("addons", "Add-ons", "lucide-package", "Add-on",
+	 "addon_name,addon_code,kind,unit_gb,is_active,price_monthly", "kind"),
 	("regions", "Regions", "lucide-store", "Region",
 	 "region_name,region_code,country,is_active", ""),
 	("buckets", "Buckets", "lucide-database", "Storage Bucket",

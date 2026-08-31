@@ -17,6 +17,8 @@ from pathlib import Path
 
 import pytest
 
+from doctype_paths import slug as doctype_slug
+
 ROOT = Path(__file__).resolve().parent.parent
 OPERATOR = ROOT / "apps/oneapp_control/oneapp_control/entitlements/operator.py"
 CONTROL = ROOT / "apps/oneapp_control/oneapp_control"
@@ -33,7 +35,7 @@ def _const(name):
 
 
 def _doctype_json(doctype: str):
-	slug = doctype.lower().replace(" ", "_")
+	slug = doctype_slug(doctype)
 	found = list(CONTROL.glob(f"*/doctype/{slug}/{slug}.json"))
 	return json.loads(found[0].read_text()) if found else None
 

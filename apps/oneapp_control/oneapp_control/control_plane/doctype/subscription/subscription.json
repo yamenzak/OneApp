@@ -30,7 +30,9 @@
   "monthly_credit_grant",
   "background_workers",
   "press_site_plan",
-  "terms_captured_on"
+  "terms_captured_on",
+  "sec_addons",
+  "addons"
  ],
  "fields": [
   {
@@ -185,6 +187,18 @@
    "fieldtype": "Datetime",
    "label": "Terms Captured On",
    "read_only": 1
+  },
+  {
+   "fieldname": "sec_addons",
+   "fieldtype": "Section Break",
+   "label": "Add-ons"
+  },
+  {
+   "description": "Extra quota this workspace is paying for, as lines on the same Stripe subscription.",
+   "fieldname": "addons",
+   "fieldtype": "Table",
+   "label": "Addons",
+   "options": "Subscription Add-on"
   }
  ],
  "index_web_pages_for_search": 1,

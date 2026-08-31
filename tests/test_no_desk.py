@@ -63,6 +63,10 @@ EXEMPT = {
 		"child table; a space's screens are rows on the space, and a screen with "
 		"no space to belong to is not a thing an operator creates"
 	),
+	"Subscription Add-on": (
+		"child table; the add-on lines one subscription holds, shown on it and "
+		"changed by buying or releasing one rather than by editing a row"
+	),
 	"AI Model Price": (
 		"child table, synced from the provider and shown on the model it belongs "
 		"to; editable rates would be overwritten by the next sync"

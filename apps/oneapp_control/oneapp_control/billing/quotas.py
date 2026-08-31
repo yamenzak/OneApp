@@ -50,8 +50,41 @@ def capture(subscription, plan: str | None = None) -> dict:
 	return values
 
 
+def with_addons(terms: dict, subscription: str | None) -> dict:
+	"""The terms, plus whatever add-ons the subscription is paying for.
+
+	Added here rather than by each caller, because "what is this workspace
+	allowed" has exactly one answer and every reader of it — the sync payload,
+	the quota properties, the plan page, the credit grant — has to get the same
+	one. A caller that forgot to add would silently under-quota somebody who is
+	paying.
+
+	The GB come off the captured rows, not off the `Add-on` catalogue. Editing
+	an add-on changes what the next purchase buys, never what somebody already
+	holds, exactly as editing a plan does not move an existing subscriber.
+	"""
+	if not subscription:
+		return terms
+
+	rows = frappe.get_all(
+		"Subscription Add-on",
+		filters={"parent": subscription, "parenttype": "Subscription"},
+		fields=["kind", "quantity", "unit_gb"],
+	)
+	if not rows:
+		return terms
+
+	from oneapp_control.billing import addons
+
+	found = dict(terms)
+	for field, extra in addons.quota_for(rows).items():
+		if extra:
+			found[field] = (found.get(field) or 0) + extra
+	return found
+
+
 def for_subscription(subscription) -> dict:
-	"""The terms one subscription is on.
+	"""The terms one subscription is on, add-ons included.
 
 	Same rule as `for_tenant`, keyed the other way: a subscription that predates
 	the snapshot still reads its plan, because "no terms" is not the same as
@@ -63,19 +96,27 @@ def for_subscription(subscription) -> dict:
 		else frappe.get_doc("Subscription", subscription)
 	)
 	if doc.get("terms_captured_on"):
-		return {field: doc.get(field) for field in TERMS}
+		terms = {field: doc.get(field) for field in TERMS}
+	else:
+		plan = frappe.db.get_value("Plan", doc.plan, TERMS, as_dict=True) or {}
+		terms = {field: plan.get(field) for field in TERMS}
 
-	terms = frappe.db.get_value("Plan", doc.plan, TERMS, as_dict=True) or {}
-	return {field: terms.get(field) for field in TERMS}
+	return with_addons(terms, doc.name)
 
 
 def for_tenant(tenant) -> dict:
-	"""The terms in force for a workspace.
+	"""The terms in force for a workspace, add-ons included.
 
 	The subscription's captured terms when there are any; the plan as it stands
 	otherwise. The fallback is not a nicety — a tenant an operator created by
 	hand, one still in trial, and every subscription sold before terms were
 	captured all have no snapshot, and all of them still need a quota.
+
+	What is *not* here is `Tenant.extra_storage_gb` and its sibling. Those are an
+	operator's grant rather than something bought, and they are added by the
+	Tenant's own quota properties — so this stays "what the subscription is
+	paying for", which is what a plan change and a proration have to reason
+	about.
 	"""
 	doc = tenant if hasattr(tenant, "get") else frappe.get_doc("Tenant", tenant)
 
@@ -87,13 +128,15 @@ def for_tenant(tenant) -> dict:
 			as_dict=True,
 		)
 		if captured and captured.get("terms_captured_on"):
-			return {field: captured.get(field) for field in TERMS}
+			return with_addons(
+				{field: captured.get(field) for field in TERMS}, doc.subscription
+			)
 
 	if not doc.plan:
 		return {field: None for field in TERMS}
 
 	terms = frappe.db.get_value("Plan", doc.plan, TERMS, as_dict=True) or {}
-	return {field: terms.get(field) for field in TERMS}
+	return with_addons({field: terms.get(field) for field in TERMS}, doc.subscription)
 
 
 def adopt_current_terms(subscription) -> dict:

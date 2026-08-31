@@ -16,6 +16,8 @@ from pathlib import Path
 
 import pytest
 
+from doctype_paths import slug as doctype_slug
+
 ROOT = Path(__file__).resolve().parent.parent
 REGISTRY = ROOT / "apps/oneapp_control/oneapp_control/entitlements/registry.py"
 CONTROL_HOOKS = ROOT / "apps/oneapp_control/oneapp_control/hooks.py"
@@ -33,7 +35,7 @@ def _literal(path: Path, name: str):
 
 
 def _docfields(doctype: str, module: str) -> set[str]:
-	slug = doctype.lower().replace(" ", "_")
+	slug = doctype_slug(doctype)
 	path = ROOT / f"apps/oneapp_control/oneapp_control/{module}/doctype/{slug}/{slug}.json"
 	data = json.loads(path.read_text())
 	return {

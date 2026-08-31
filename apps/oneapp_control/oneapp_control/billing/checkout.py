@@ -9,8 +9,10 @@ Two shapes, deliberately different:
 
 import frappe
 from frappe import _
+from frappe.utils import now_datetime
 
 from oneapp_control import portal
+from oneapp_control.billing import addons as addon_catalogue
 from oneapp_control.billing import plans as plan_catalogue
 from oneapp_control.billing import quotas, stripe_client
 
@@ -299,3 +301,162 @@ def billing_portal(tenant: str) -> dict:
 		subscription.stripe_customer_id, portal.account_url(tenant, "billing")
 	)
 	return {"url": session.get("url")}
+
+
+# --------------------------------------------------------------------------- #
+# Add-ons
+#
+# Extra quota, bought per month against the subscription that is already there.
+# Not a checkout: there is a card on file and a billing cycle running, so this is
+# a change to the subscription and the money arrives on the next invoice, prorated
+# from the moment it is bought.
+#
+# One entry point, because "buy", "add more" and "cancel" are the same operation
+# at different quantities. Three endpoints would be three places to get the
+# proration wrong.
+# --------------------------------------------------------------------------- #
+
+@frappe.whitelist(methods=["POST"])
+def set_addon_quantity(tenant: str, addon: str, quantity: int) -> dict:
+	"""Hold `quantity` units of `addon` on this workspace's subscription.
+
+	Zero releases it. Stripe prorates in both directions: buying mid-cycle is
+	charged for the part of the month it covers, releasing is credited the same
+	way, and both land on the next invoice rather than as a separate charge.
+	"""
+	quantity = int(quantity or 0)
+	if quantity < 0:
+		frappe.throw(_("A quantity below zero is not a quantity."))
+
+	tenant_doc = frappe.get_doc("Tenant", tenant)
+	subscription = _subscription_for(tenant_doc)
+	addon_doc, price_id = addon_catalogue.sellable(addon, subscription.interval)
+
+	if addon_doc.max_units and quantity > addon_doc.max_units:
+		frappe.throw(
+			_("{0} is sold up to {1} units.").format(addon_doc.addon_name, addon_doc.max_units)
+		)
+
+	held = _addon_row(subscription, addon)
+	if held and int(held.quantity or 0) == quantity:
+		return {"addon": addon, "quantity": quantity, "unchanged": True}
+
+	# Releasing storage a workspace is sitting on would take the quota below what
+	# it holds, which is the one thing overage policy says never to do — see
+	# DECISIONS §2. Refused with the resource named, the same shape a plan change
+	# refuses a plan that is too small.
+	_refuse_shrinking_below_use(tenant_doc, subscription, addon_doc, quantity, held)
+
+	item = _apply_addon_item(subscription, addon_doc, price_id, quantity, held)
+	_capture_addon(subscription, addon_doc, price_id, quantity, item)
+
+	return {"addon": addon, "quantity": quantity}
+
+
+def _subscription_for(tenant_doc):
+	"""The subscription an add-on hangs from, or a refusal saying why not."""
+	if not tenant_doc.subscription:
+		# An add-on with no subscription has nowhere to live and no invoice to
+		# appear on. Selling one as a separate charge would mean a second billing
+		# relationship for the same workspace.
+		frappe.throw(_("This workspace has no subscription to add to. Choose a plan first."))
+
+	subscription = frappe.get_doc("Subscription", tenant_doc.subscription)
+	if subscription.status not in ("Active", "Trialing", "Past Due"):
+		frappe.throw(
+			_("This workspace's subscription is {0}.").format(subscription.status)
+		)
+	if not subscription.stripe_subscription_id:
+		frappe.throw(_("This subscription is not linked to Stripe yet."))
+	return subscription
+
+
+def _addon_row(subscription, addon: str):
+	for row in subscription.addons or []:
+		if row.addon == addon:
+			return row
+	return None
+
+
+def _refuse_shrinking_below_use(tenant_doc, subscription, addon_doc, quantity, held) -> None:
+	"""Refuse a release that would put the workspace over its own quota."""
+	if not held or quantity >= int(held.quantity or 0):
+		return
+
+	shed = (int(held.quantity or 0) - quantity) * int(held.unit_gb or 0)
+	if not shed:
+		return
+
+	after = dict(quotas.for_tenant(tenant_doc))
+	field = addon_catalogue.QUOTA_FIELD.get(addon_doc.kind)
+	if not field:
+		return
+	after[field] = (after.get(field) or 0) - shed
+
+	blocked = quotas.blockers(tenant_doc, after)
+	if blocked:
+		frappe.throw(
+			_("Releasing this would put the workspace over its {0} limit. "
+			  "Free some first.").format(" and ".join(blocked))
+		)
+
+
+def _apply_addon_item(subscription, addon_doc, price_id: str, quantity: int, held) -> dict:
+	"""Add, change or remove the Stripe line, and return what it became."""
+	key = f"addon:{subscription.name}:{addon_doc.name}:{quantity}"
+
+	if held and held.stripe_subscription_item_id:
+		item = {"id": held.stripe_subscription_item_id}
+		# Stripe deletes a line rather than holding it at zero, and a zero-quantity
+		# item would keep appearing on the invoice at nothing.
+		item.update({"deleted": "true"} if quantity == 0 else {"quantity": quantity})
+	elif quantity == 0:
+		# Nothing held and nothing asked for.
+		return {}
+	else:
+		item = {"price": price_id, "quantity": quantity}
+
+	remote = stripe_client.update_subscription(
+		subscription.stripe_subscription_id,
+		items=[item],
+		proration_behavior="create_prorations",
+		_idempotency_key=key,
+	)
+	return _item_for_price(remote, price_id)
+
+
+def _item_for_price(remote: dict, price_id: str) -> dict:
+	for item in (remote.get("items") or {}).get("data") or []:
+		if ((item or {}).get("price") or {}).get("id") == price_id:
+			return item
+	return {}
+
+
+def _capture_addon(subscription, addon_doc, price_id: str, quantity: int, item: dict) -> None:
+	"""Write what the workspace now holds onto the subscription.
+
+	Captured, like the plan's terms: the GB per unit and the rate are what was
+	bought, so redefining the add-on later changes the next purchase and not this
+	one.
+	"""
+	rows = [row for row in (subscription.addons or []) if row.addon != addon_doc.name]
+
+	if quantity:
+		rows.append(
+			frappe._dict(
+				addon=addon_doc.name,
+				kind=addon_doc.kind,
+				quantity=quantity,
+				unit_gb=addon_doc.unit_gb,
+				stripe_subscription_item_id=item.get("id"),
+				stripe_price_id=price_id,
+				unit_amount=addon_catalogue.amount_for(addon_doc, subscription.interval),
+				currency=(addon_doc.currency or "USD").lower(),
+				added_on=now_datetime(),
+			)
+		)
+
+	subscription.set("addons", [])
+	for row in rows:
+		subscription.append("addons", row)
+	subscription.save(ignore_permissions=True)

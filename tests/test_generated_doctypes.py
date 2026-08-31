@@ -18,6 +18,8 @@ from pathlib import Path
 
 import pytest
 
+from doctype_paths import slug as doctype_slug
+
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
 
@@ -33,10 +35,7 @@ def gen():
 
 def _path(gen, name):
 	pkg, module_dir, _ = gen.APPS[gen.DOCTYPES[name]["app"]]
-	# Frappe's `scrub`: spaces and hyphens both become underscores, so "Add-on"
-	# lives at add_on/add_on.json. A directory named any other way is one Frappe
-	# never reads.
-	slug = name.lower().replace(" ", "_").replace("-", "_")
+	slug = doctype_slug(name)
 	return ROOT / "apps" / pkg / pkg / module_dir / "doctype" / slug / f"{slug}.json"
 
 
