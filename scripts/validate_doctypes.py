@@ -32,6 +32,13 @@ def check(path: Path) -> list[str]:
 	fields = doc.get("fields", [])
 	names = [f["fieldname"] for f in fields]
 
+	# Whether anybody can make one of these through a screen. Append-only records
+	# — the credit ledger, the lifecycle log, support logins — are written in
+	# code with `ignore_permissions` and grant nobody `create`, and the
+	# reqd + read_only rule below is about a form that cannot be saved. There is
+	# no form.
+	creatable = any(p.get("create") for p in doc.get("permissions", []))
+
 	if len(names) != len(set(names)):
 		dupes = {n for n in names if names.count(n) > 1}
 		problems.append(f"duplicate fieldnames: {sorted(dupes)}")
@@ -54,8 +61,15 @@ def check(path: Path) -> list[str]:
 			problems.append(f"{fieldname}: no label")
 
 		# A required field with no default that is also read-only can never be
-		# saved through the UI.
-		if field.get("reqd") and field.get("read_only") and not field.get("default"):
+		# saved through the UI — on a doctype the UI can create. On an
+		# append-only one it is the correct shape: required because the row is
+		# worthless without it, read-only because nobody may edit it afterwards.
+		if (
+			creatable
+			and field.get("reqd")
+			and field.get("read_only")
+			and not field.get("default")
+		):
 			problems.append(f"{fieldname}: reqd + read_only with no default")
 
 	autoname = doc.get("autoname", "")

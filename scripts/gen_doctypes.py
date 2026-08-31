@@ -554,6 +554,16 @@ doctype(
 doctype(
     "Support Login",
     autoname="hash",
+    # Read-only, like the credit ledger and the lifecycle log. An audit trail an
+    # operator can write by hand is not an audit trail — and every row is
+    # inserted by `admin.support_login` with `ignore_permissions`, so nothing
+    # legitimate went through the create permission this removes.
+    #
+    # It is also what `validate_doctypes` was objecting to: `tenant`, `operator`
+    # and `logged_in_on` are all required *and* read-only, which on a doctype
+    # somebody can press New on is a form that cannot be saved. On one nobody
+    # can create, it is the correct shape.
+    perms=READONLY_PERMS,
     fields=[
         f("tenant", "Link", options="Tenant", reqd=1, in_list_view=1,
           in_standard_filter=1, read_only=1),
