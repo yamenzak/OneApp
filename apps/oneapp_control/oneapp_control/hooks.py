@@ -110,3 +110,8 @@ fixtures = [
 ]
 
 after_install = "oneapp_control.install.after_install"
+
+# The operator console's shape lives in code, so a migration is how it changes.
+# Without this an existing control plane would keep whatever console it was
+# installed with until somebody remembered to re-seed it by hand.
+after_migrate = "oneapp_control.install.after_migrate"

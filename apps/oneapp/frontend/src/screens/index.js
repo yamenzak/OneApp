@@ -15,6 +15,17 @@
  */
 export const APP_COMPONENTS = {
   // 'crm/pipeline': () => import('./crm/Pipeline.vue'),
+
+  // The operator console's two surfaces that are genuinely not lists.
+  // Registered here rather than in the control app because this is where the
+  // shell resolves them — `oneapp_control` declares the screens, `oneapp`
+  // renders them, and neither has to know more about the other than the key.
+  //
+  // They call whitelisted methods on the same site, so nothing about them is
+  // cross-site: on a tenant, the space that names them does not exist and
+  // these are never imported.
+  'onespace-ops/readiness': () => import('./ops/Readiness.vue'),
+  'onespace-ops/press': () => import('./ops/FrappeCloud.vue'),
 }
 
 export function screenComponent(name) {

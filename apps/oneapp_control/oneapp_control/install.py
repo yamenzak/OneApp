@@ -6,6 +6,37 @@ import frappe
 def after_install():
 	create_default_settings()
 	seed_apps()
+	setup_console()
+
+
+def after_migrate():
+	"""Re-seed the operator console from code on every migration.
+
+	The console's shape lives in `entitlements/operator.py` rather than in a
+	fixture somebody edits, so "change the console" is an edit and a migrate.
+	Running it here rather than only at install means an existing control plane
+	picks up a new screen without anybody remembering to.
+	"""
+	setup_console()
+
+
+def setup_console():
+	"""The operator Space, and the DocPerms its screens depend on.
+
+	Only where `oneapp` is installed — the console is a Space, and a Space with
+	nothing to render it is a row nobody reads. A control plane running only
+	this app is a perfectly good control plane; it just has no console yet.
+	"""
+	try:
+		import oneapp  # noqa: F401
+	except ImportError:
+		return
+
+	from oneapp_control.entitlements import operator
+
+	operator.seed()
+	operator.sync_permissions()
+	frappe.db.commit()
 
 
 def create_default_settings():
