@@ -24,8 +24,17 @@ website_route_rules = [
 # which it rewrites to "desk" for any System User — so signing in as an
 # operator dropped you into the desk, which is the one place this product does
 # not go. Customers are Website Users and resolve to the portal instead.
-home_page = "admin"
-role_home_page = {"OneSpace Customer": ["portal/account"]}
+#
+# A function rather than the plain `home_page` string, because `oneapp` is
+# installed on this site too and declares its own. Frappe resolves competing
+# `home_page` hooks by taking the last app's — so which console an operator
+# landed in would depend on the order the two apps happened to be installed
+# in, and would change under them the day the bench was rebuilt. This hook is
+# checked before either, so the answer is a decision rather than an accident.
+#
+# `landing` is the one place to change when /admin retires (overnightplan-02
+# Batch K); until then both consoles exist and this says which one opens.
+get_website_user_home_page = "oneapp_control.portal.landing"
 
 # ---------------------------------------------------------------------------
 # Spaces, for OneSpace running on this site

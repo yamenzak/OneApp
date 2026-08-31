@@ -21,6 +21,30 @@ WELCOME = f"{PREFIX}/welcome"
 ACCOUNT = f"{PREFIX}/account"
 
 
+def landing(user: str | None = None) -> str:
+	"""Where a signed-in person lands on the control site.
+
+	A function rather than the `home_page` string, because `oneapp` is
+	installed here too and declares its own. Frappe takes the *last* app's
+	`home_page`, so which console opened would depend on the order the two
+	apps happened to be installed in — a decision made by a bench rebuild
+	rather than by anybody.
+
+	Frappe checks this hook before either `home_page` or `role_home_page`, so
+	this is the whole answer.
+	"""
+	# Imported here rather than at module scope: this file is the URL contract
+	# and importing provisioning to read one constant would make every caller
+	# of `account_url` pull the signup machinery in with it.
+	from oneapp_control.provisioning.signup import CUSTOMER_ROLE
+
+	roles = set(frappe.get_roles(user) if user else frappe.get_roles())
+	if CUSTOMER_ROLE in roles:
+		return ACCOUNT.lstrip("/")
+	# The operator console. One line to change when it becomes a Space.
+	return "admin"
+
+
 def base_url() -> str:
 	"""The control plane's public origin, without a trailing slash.
 

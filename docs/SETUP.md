@@ -129,6 +129,24 @@ own.
 A site missing these is orphaned: running, but unable to prove who it is. It will
 log a sync error and serve no apps.
 
+### What kind of site this is — set by hand, once
+
+| Key | Purpose |
+| --- | --- |
+| `oneapp_role` | `"control"` on the control plane. Absent or anything else means a tenant. |
+
+`oneapp` runs on the control site as well as on tenant sites, for its shell and
+its Space runtime rather than for anything a tenant needs. Three things must not
+follow it there: the R2 File override, and the two scheduled jobs that talk to
+the control plane — which has no control plane to talk to.
+
+Declared rather than derived. Asking "is `oneapp_control` installed?" would make
+this a consequence of an app list, and its failure mode is silence: install an
+app for an unrelated reason and a customer's attachments quietly stop going to
+R2. This is a different question from the identity above — a site can be a
+tenant and not yet provisioned, which is an orphan, and worth telling apart from
+a site never meant to have a tenant identity at all.
+
 > Set these in **OneSpace Control Settings**, not by hand on each bench — the push
 > action writes them to the bench group for you, and never overwrites an existing
 > bench value with a blank.

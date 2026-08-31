@@ -154,3 +154,50 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		"a scheduled job was added or renamed; decide whether it should run on "
 		"the control plane and then add it here"
 	)
+
+
+# --------------------------------------------------------------------------- #
+# Which console opens on the control site
+# --------------------------------------------------------------------------- #
+
+CONTROL_HOOKS = ROOT / "apps/oneapp_control/oneapp_control/hooks.py"
+PORTAL = ROOT / "apps/oneapp_control/oneapp_control/portal.py"
+
+
+def _hook(path: Path, name: str):
+	for node in ast.walk(ast.parse(path.read_text())):
+		if isinstance(node, ast.Assign):
+			for target in node.targets:
+				if isinstance(target, ast.Name) and target.id == name:
+					return ast.literal_eval(node.value)
+	return None
+
+
+def test_the_landing_page_is_decided_rather_than_ordered():
+	"""`oneapp` is installed on the control site too and declares its own
+	`home_page`. Frappe takes the *last* app's, so which console opened would
+	depend on the order the two apps happened to be installed in — a decision
+	made by a bench rebuild rather than by anybody."""
+	assert _hook(CONTROL_HOOKS, "home_page") is None, (
+		"the plain hook is back, and with it the ordering dependence"
+	)
+	assert _hook(CONTROL_HOOKS, "get_website_user_home_page") == (
+		"oneapp_control.portal.landing"
+	)
+
+
+def test_the_tenant_app_still_lands_on_its_own_workspace():
+	"""Unchanged for every tenant site, which has only the one console."""
+	assert _hook(ROOT / "apps/oneapp/oneapp/hooks.py", "home_page") == "one"
+
+
+def test_a_customer_still_lands_in_their_account():
+	"""What `role_home_page` used to do, kept exactly."""
+	source = PORTAL.read_text()
+	body = ast.unparse(next(
+		n for n in ast.walk(ast.parse(source))
+		if isinstance(n, ast.FunctionDef) and n.name == "landing"
+	))
+	assert "CUSTOMER_ROLE" in body
+	assert "ACCOUNT" in body
+	assert "'admin'" in body, "an operator no longer lands in the console"
