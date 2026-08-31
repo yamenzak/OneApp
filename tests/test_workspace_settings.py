@@ -127,6 +127,16 @@ def test_every_write_goes_through_the_spec():
 		)
 
 
+# The three ways an endpoint here can check a role, and there are only three.
+#
+# `require_owner` is the workspace's own gate, and was the only one until the
+# settings dialog started carrying groups from another app. `require_group` and
+# `may_read` are the per-group version: two audiences share the control plane
+# now, so "may you open the dialog" and "may you see the Frappe Cloud
+# credentials" are different questions.
+ROLE_CHECKS = ("require_owner()", "require_group(", "may_read(")
+
+
 def test_every_endpoint_checks_the_role_first():
 	"""The owner is not a System Manager, so Frappe's own permissions do not
 	protect these — the role check is the only thing that does."""
@@ -139,7 +149,26 @@ def test_every_endpoint_checks_the_role_first():
 			if not decorated:
 				continue
 			body = ast.get_source_segment(source(path), node) or ""
-			assert "require_owner()" in body, f"{path.name}:{node.name} has no role check"
+			assert any(check in body for check in ROLE_CHECKS), (
+				f"{path.name}:{node.name} has no role check"
+			)
+
+
+def test_reading_a_group_and_writing_it_ask_the_same_question():
+	"""The gate that would be easy to get half-right: `get` filtering a group
+	out of the list while `save` still accepts it would be a dialog that hides
+	the Frappe Cloud credentials from a customer and writes them anyway."""
+	text = source(WORKSPACE)
+	tree = ast.parse(text)
+	bodies = {
+		node.name: ast.get_source_segment(text, node) or ""
+		for node in ast.walk(tree)
+		if isinstance(node, ast.FunctionDef)
+	}
+	assert "may_read(group)" in bodies["get"]
+	assert "require_group(" in bodies["save"]
+	# And they share one implementation rather than two that agree today.
+	assert "may_read(group)" in bodies["require_group"]
 
 
 def test_the_role_check_accepts_the_owner_and_support_only():

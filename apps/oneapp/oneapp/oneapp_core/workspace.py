@@ -257,8 +257,30 @@ GROUPS = [
 ]
 
 
+def all_groups() -> list[dict]:
+	"""Every settings group on this site, ours and anybody else's.
+
+	`GROUPS` is what a workspace has. An app installed alongside may add more
+	through the `onespace_settings_groups` hook — which is how the control plane
+	puts its own settings in this dialog instead of shipping a second one. Each
+	provider returns groups in the same shape, so nothing downstream can tell
+	them apart.
+
+	A provider that raises is skipped rather than fatal: this runs behind the
+	settings dialog, and one app's bad group should not be a dialog that will
+	not open.
+	"""
+	found = list(GROUPS)
+	for path in frappe.get_hooks("onespace_settings_groups") or []:
+		try:
+			found += frappe.get_attr(path)() or []
+		except Exception:
+			frappe.log_error(title="OneSpace settings provider failed", message=path)
+	return found
+
+
 def _group(key: str) -> dict:
-	for group in GROUPS:
+	for group in all_groups():
 		if group["key"] == key:
 			return group
 	frappe.throw(_("Unknown settings group {0}.").format(key))
@@ -266,6 +288,28 @@ def _group(key: str) -> dict:
 
 def _settings(group_key: str) -> dict:
 	return {s.key: s for s in _group(group_key)["settings"]}
+
+
+def may_read(group: dict) -> bool:
+	"""Whether this reader may see a group at all.
+
+	Per group rather than per dialog, because two audiences now share the
+	control plane: a workspace admin owns branding and sign-in, and only a
+	System Manager has any business in the Frappe Cloud credentials. A group
+	that names no roles is the workspace's own, which is what every group was
+	before this existed.
+	"""
+	roles = set(frappe.get_roles())
+	wanted = set(group.get("roles") or (OWNER_ROLE, SUPPORT_ROLE))
+	return bool(roles & wanted)
+
+
+def require_group(group: dict) -> None:
+	if not may_read(group):
+		frappe.throw(
+			_("You cannot change {0}.").format(group.get("label") or group["key"]),
+			frappe.PermissionError,
+		)
 
 
 def require_owner():
@@ -301,11 +345,17 @@ def _options_for(setting: Setting) -> list | str | None:
 
 @frappe.whitelist()
 def get() -> dict:
-	"""Every group, its settings, and what they are set to."""
-	require_owner()
+	"""Every group this reader may see, its settings, and what they are set to.
 
+	No longer `require_owner` at the door. The dialog is shared now — a
+	workspace admin sees the workspace's groups, an operator on the control
+	plane sees the control plane's — so the gate is per group, and somebody who
+	may see none gets an empty dialog rather than a refusal they cannot act on.
+	"""
 	groups = []
-	for group in GROUPS:
+	for group in all_groups():
+		if not may_read(group):
+			continue
 		fields = []
 		for setting in group["settings"]:
 			entry = setting.as_dict()
@@ -322,13 +372,16 @@ def get() -> dict:
 			}
 		)
 
-	return {"groups": groups, "joining": joining()}
+	# The sign-in rules are the workspace's own, so they travel with it and not
+	# with a control-plane group somebody happens to be able to see.
+	joins = joining() if any(g["key"] == "signin" for g in groups) else None
+	return {"groups": groups, "joining": joins}
 
 
 @frappe.whitelist(methods=["POST"])
 def save(group: str, values: str | dict) -> dict:
 	"""Write one group. Anything outside its spec is refused, not ignored."""
-	require_owner()
+	require_group(_group(group))
 
 	if isinstance(values, str):
 		values = frappe.parse_json(values)

@@ -48,6 +48,11 @@ get_website_user_home_page = "oneapp_control.portal.landing"
 # `oneapp` ships no provider of its own, so a tenant site is unaffected.
 onespace_space_providers = ["oneapp_control.entitlements.registry.local_spaces"]
 
+# And its settings, in OneSpace's own settings dialog rather than in a second
+# one. Gated on System Manager per group, so a customer signed in to their
+# account area on this site sees none of them.
+onespace_settings_groups = ["oneapp_control.entitlements.settings.groups"]
+
 # ---------------------------------------------------------------------------
 # Scheduled tasks
 # ---------------------------------------------------------------------------
