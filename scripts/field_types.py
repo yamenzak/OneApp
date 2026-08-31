@@ -97,6 +97,21 @@ FIELD_TYPES = {
     # A child table is a list inside a record. Neither a form control nor a
     # cell; an app that needs one uses a custom component.
     "Table":           (None,                    "hidden",   "lucide-table",         False),
+
+    # A gallery of the record's own attachments, and the one entry here whose
+    # field holds nothing at all.
+    #
+    # Frappe lists it in `no_value_fields` and in `display_fieldtypes`: the
+    # desk control renders the *record's* File rows, optionally narrowed by
+    # `link_filters` on the docfield, and an upload attaches to the record.
+    # So "several attachments under one field" is already how Frappe models
+    # it — the field is a window onto the record's attachments rather than a
+    # place a list of them is stored.
+    #
+    # `editable` is False because there is no value to write. The control
+    # still uploads and deletes; it does so through the File endpoints, which
+    # is what `_writable` correctly refuses to let a record save do.
+    "Attachment Gallery": ("AttachmentGallery",  "hidden",   "lucide-images",        False),
 }
 
 # What frappe-ui's Editor will round-trip. It declares three; Frappe stores two
@@ -110,7 +125,7 @@ EDITOR_FORMATS = {"html", "markdown"}
 # and are skipped rather than displayed.
 LAYOUT_TYPES = (
     "Section Break", "Column Break", "Tab Break", "HTML", "Button",
-    "Image", "Fold", "Heading", "Attachment Gallery",
+    "Image", "Fold", "Heading",
 )
 
 # `options` on a Data field refines what the browser should offer. Frappe's own

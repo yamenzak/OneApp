@@ -74,6 +74,7 @@ import { ref, watch } from 'vue'
 import { Button, FileUploader, Icon, LoadingText } from '@/ui'
 import EmptyState from '../EmptyState.vue'
 import { workspace } from '../../lib/workspace'
+import { humanSize as size, iconFor } from '../../lib/files'
 import { notifyError } from '../../lib/notify'
 
 const props = defineProps({
@@ -86,32 +87,6 @@ const props = defineProps({
 const files = ref([])
 const doctype = ref('')
 const loading = ref(false)
-
-// The extension is all a File row says about what it is, and it is enough for
-// an icon. Anything unrecognised is a file, which is true.
-const ICONS = [
-  [/\.(png|jpe?g|gif|webp|svg|avif)$/i, 'lucide-image'],
-  [/\.(pdf)$/i, 'lucide-file-text'],
-  [/\.(csv|xlsx?|ods)$/i, 'lucide-table'],
-  [/\.(zip|tar|gz|7z|rar)$/i, 'lucide-file-archive'],
-]
-
-const iconFor = (file) => {
-  const found = ICONS.find(([pattern]) => pattern.test(file.file_name || file.file_url || ''))
-  return found ? found[1] : 'lucide-file'
-}
-
-// The browser knows how to say "1.2 MB" in the reader's own locale and the
-// server does not know what that is, so the bytes come over and the words are
-// made here.
-const size = (file) => {
-  const bytes = Number(file.file_size) || 0
-  if (!bytes) return ''
-  const units = ['B', 'KB', 'MB', 'GB']
-  const step = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
-  const value = bytes / 1024 ** step
-  return `${value.toLocaleString(undefined, { maximumFractionDigits: step ? 1 : 0 })} ${units[step]}`
-}
 
 const reload = async () => {
   if (!props.name) {

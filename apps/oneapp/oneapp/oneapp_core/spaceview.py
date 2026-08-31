@@ -757,6 +757,49 @@ def _json(raw):
 	return value if isinstance(value, dict) else {}
 
 
+def _filter_rows(raw, target: str) -> list:
+	"""`link_filters` off a docfield, as filter rows Frappe will accept.
+
+	Frappe stores this as a JSON *array* of `[doctype, fieldname, operator,
+	value]` rows — the shape its own link query and its Attachment Gallery both
+	read. It was being parsed with `_json`, which answers `{}` for anything that
+	is not an object, so every `link_filters` on the site silently narrowed
+	nothing: a picker that should have offered active customers offered all of
+	them, with no error anywhere to say so.
+
+	Two rows are dropped rather than obeyed:
+
+	* one naming a doctype other than the target, which is a join nobody asked
+	  for and the same refusal Frappe makes for a gallery
+	* one whose value is `eval:` — the desk runs that as JavaScript against the
+	  record, and we do not run expressions (see `lib/rules.js`). A filter we
+	  cannot evaluate narrows nothing rather than being guessed at.
+	"""
+	if not raw:
+		return []
+	try:
+		rows = json.loads(raw) if isinstance(raw, str) else raw
+	except (TypeError, ValueError):
+		return []
+	if not isinstance(rows, list):
+		return []
+
+	kept = []
+	for row in rows:
+		if not isinstance(row, (list, tuple)) or len(row) != 4:
+			continue
+		doctype, fieldname, operator, value = row
+		if doctype != target:
+			frappe.throw(
+				_("A filter on {0} may only narrow {0}.").format(target),
+				frappe.PermissionError,
+			)
+		if isinstance(value, str) and value.startswith("eval:"):
+			continue
+		kept.append([doctype, fieldname, operator, value])
+	return kept
+
+
 # --------------------------------------------------------------------------- #
 # Endpoints
 #
@@ -1162,7 +1205,7 @@ def link_options(space_code: str, screen: str, fieldname: str, query: str = "",
 	# can make between two people called Chris.
 	extra = [f for f in shape["search"] if f not in fields]
 
-	filters = _json(column.get("link_filters"))
+	filters = _filter_rows(column.get("link_filters"), target)
 	found = frappe.get_list(
 		target,
 		fields=fields + extra,
@@ -1564,21 +1607,60 @@ def _attachable(space_code: str, screen: str, name: str) -> str:
 
 
 @frappe.whitelist(methods=["GET"])
-def attachments(space_code: str, screen: str, name: str) -> dict:
+def attachments(space_code: str, screen: str, name: str,
+                fieldname: str | None = None) -> dict:
 	"""Everything filed against one record.
 
 	Frappe's own File rows, which is what the desk's sidebar lists and what an
 	Attach field points at — so a file uploaded through a field and a file
 	dropped on the record are one list rather than two.
+
+	`fieldname` narrows the list to one Attachment Gallery's share of them.
+	That fieldtype holds no value: Frappe's own control renders the record's
+	attachments and narrows them by `link_filters` on the docfield, so a
+	doctype with two galleries filters each to the files it wants. Reading the
+	filter off the docfield rather than taking one from the caller is the
+	point — a client that could send its own filter could read any File row on
+	the site.
 	"""
 	doctype = _attachable(space_code, screen, name)
+	filters = {"attached_to_doctype": doctype, "attached_to_name": name}
+	filters.update(_gallery_filters(space_code, screen, fieldname))
+
 	found = frappe.get_all(
 		"File",
-		filters={"attached_to_doctype": doctype, "attached_to_name": name},
+		filters=filters,
 		fields=list(FILE_FIELDS),
 		order_by="creation desc",
 	)
 	return {"files": found, "doctype": doctype}
+
+
+def _gallery_filters(space_code: str, screen: str, fieldname: str | None) -> dict:
+	"""What one Attachment Gallery narrows the record's attachments to.
+
+	The docfield's own `link_filters`, read by `_filter_rows` — so a row naming
+	anything but File is refused, exactly as
+	`frappe.desk.form.load.get_filtered_attachments` refuses one.
+
+	A field that is not a gallery, or one with no filters, narrows nothing.
+	Silently: a doctype that renamed a field should show all its attachments
+	rather than fail to open.
+	"""
+	if not fieldname:
+		return {}
+
+	resolved = _resolve(space_code, screen)
+	offered = resolved.get("all_columns") or resolved.get("columns") or []
+	column = next((c for c in offered if c["fieldname"] == fieldname), None)
+	if not column or column["fieldtype"] != "Attachment Gallery":
+		return {}
+
+	return {
+		fieldname: [operator, value]
+		for _dt, fieldname, operator, value
+		in _filter_rows(column.get("link_filters"), "File")
+	}
 
 
 @frappe.whitelist(methods=["POST"])

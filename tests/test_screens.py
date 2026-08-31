@@ -1717,3 +1717,107 @@ def test_the_companion_field_is_always_fetched(spaceview):
 	with whether the link beside it can be resolved."""
 	columns = [column_of(spaceview, "reference_name")]
 	assert "reference_type" in spaceview._fetch_fields(columns)
+
+
+# --------------------------------------------------------------------------- #
+# Attachment Gallery
+#
+# The one fieldtype whose field holds nothing. Frappe lists it in
+# `no_value_fields` and its own control renders the *record's* File rows,
+# narrowed by `link_filters` on the docfield — so several attachments under one
+# field is already Frappe's model, and ours reads the same two things.
+# --------------------------------------------------------------------------- #
+
+def _gallery(spaceview, link_filters):
+	fields = [field("photos", "Attachment Gallery", "Photos", link_filters=link_filters)]
+	return {
+		"space": "s",
+		"all_columns": spaceview._columns(meta(fields), ["photos"]),
+	}
+
+
+def test_a_gallery_is_not_layout(spaceview):
+	"""It was in LAYOUT_TYPES, so it was skipped entirely — a doctype with a
+	gallery simply did not show one."""
+	assert not spaceview.fieldtypes.is_layout("Attachment Gallery")
+
+
+def test_a_gallery_is_never_editable(spaceview):
+	"""There is no value to write. The control still uploads and deletes; it
+	does that through the File endpoints, which is what `_writable` is right to
+	refuse a record save."""
+	assert not spaceview.fieldtypes.editable("Attachment Gallery")
+	column = _gallery(spaceview, None)["all_columns"][0]
+	assert column["editable"] is False
+
+
+def test_a_gallery_narrows_by_the_docfields_own_filters(spaceview, monkeypatch):
+	resolved = _gallery(spaceview, '[["File", "is_private", "=", 0]]')
+	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **kw: resolved)
+
+	assert spaceview._gallery_filters("s", "screen", "photos") == {"is_private": ["=", 0]}
+
+
+def test_a_filter_that_is_not_about_files_is_refused(spaceview, monkeypatch, stub_frappe):
+	"""The same refusal Frappe's own `get_filtered_attachments` makes, and for
+	the same reason: a filter naming another doctype is a join nobody asked
+	for."""
+	resolved = _gallery(spaceview, '[["ToDo", "status", "=", "Open"]]')
+	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **kw: resolved)
+
+	with pytest.raises(Exception):
+		spaceview._gallery_filters("s", "screen", "photos")
+
+
+def test_an_expression_filter_is_dropped_rather_than_run(spaceview, monkeypatch):
+	"""`eval:` in a filter value is the desk running JavaScript against the
+	record. We do not run expressions — see `lib/rules.js` — so a filter we
+	cannot evaluate narrows nothing instead of being guessed at."""
+	resolved = _gallery(spaceview, '[["File", "file_name", "like", "eval:doc.name"]]')
+	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **kw: resolved)
+
+	assert spaceview._gallery_filters("s", "screen", "photos") == {}
+
+
+def test_no_fieldname_narrows_nothing(spaceview):
+	"""The record's whole attachment list, which is what the sidebar asks for."""
+	assert spaceview._gallery_filters("s", "screen", None) == {}
+	assert spaceview._gallery_filters("s", "screen", "") == {}
+
+
+def test_a_field_that_is_not_a_gallery_narrows_nothing(spaceview, monkeypatch):
+	"""Silently. A doctype that renamed a field should show all its attachments
+	rather than fail to open."""
+	fields = [field("notes", "Data", "Notes", link_filters='[["File", "is_private", "=", 0]]')]
+	resolved = {"space": "s", "all_columns": spaceview._columns(meta(fields), ["notes"])}
+	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **kw: resolved)
+
+	assert spaceview._gallery_filters("s", "screen", "notes") == {}
+	assert spaceview._gallery_filters("s", "screen", "missing") == {}
+
+
+def test_link_filters_are_read_as_the_rows_frappe_stores(spaceview):
+	"""They were parsed as an object and Frappe stores an array.
+
+	`_json` answers `{}` for anything that is not a dict, so every
+	`link_filters` on every site narrowed nothing — a picker that should have
+	offered only active customers offered all of them, with no error anywhere
+	to say so. Silent, and the kind of silence a permission-shaped feature
+	should never have.
+	"""
+	rows = spaceview._filter_rows('[["Customer", "disabled", "=", 0]]', "Customer")
+	assert rows == [["Customer", "disabled", "=", 0]]
+
+
+def test_a_link_filter_on_another_doctype_is_refused(spaceview, stub_frappe):
+	"""A join nobody asked for, and the same refusal the gallery makes."""
+	with pytest.raises(Exception):
+		spaceview._filter_rows('[["ToDo", "status", "=", "Open"]]', "Customer")
+
+
+def test_a_malformed_link_filter_narrows_nothing(spaceview):
+	"""Not fatal. A doctype with a filter we cannot read should still open."""
+	assert spaceview._filter_rows("not json", "Customer") == []
+	assert spaceview._filter_rows('{"disabled": 0}', "Customer") == []
+	assert spaceview._filter_rows('[["Customer", "disabled"]]', "Customer") == []
+	assert spaceview._filter_rows(None, "Customer") == []

@@ -9,6 +9,7 @@ would offer a control the server then refuses.
 # fieldtype -> (control, cell, icon, editable)
 FIELD_TYPES = {'Attach': ('FileUploader', 'attachment', 'lucide-paperclip', True),
  'Attach Image': ('FileUploader', 'image', 'lucide-image', True),
+ 'Attachment Gallery': ('AttachmentGallery', 'hidden', 'lucide-images', False),
  'Autocomplete': ('FormControl:combobox', 'text', 'lucide-text-cursor-input', True),
  'Barcode': (None, 'text', 'lucide-scan-barcode', False),
  'Check': ('Switch', 'check', 'lucide-toggle-left', True),
@@ -52,8 +53,7 @@ LAYOUT_TYPES = ('Section Break',
  'Button',
  'Image',
  'Fold',
- 'Heading',
- 'Attachment Gallery')
+ 'Heading')
 
 DATA_OPTIONS = {'Barcode': 'text',
  'Email': 'email',
@@ -145,6 +145,7 @@ VALID_OPERATORS = {'Attach': ('=', '!=', 'like', 'not like', 'in', 'not in', 'is
                   '<',
                   '>=',
                   '<='),
+ 'Attachment Gallery': ('=', '!=', 'is'),
  'Autocomplete': ('=',
                   '!=',
                   'like',
@@ -230,6 +231,7 @@ TIMESPANS = {'last 7 days': 'Last 7 Days',
 
 DEFAULT_OPERATORS = {'Attach': 'like',
  'Attach Image': 'like',
+ 'Attachment Gallery': '=',
  'Autocomplete': 'like',
  'Barcode': 'like',
  'Check': '=',

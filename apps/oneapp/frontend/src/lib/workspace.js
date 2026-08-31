@@ -195,10 +195,14 @@ export const workspace = {
 
   // What is filed against a record. Frappe's own File rows, so a file uploaded
   // through an Attach field and a file dropped on the record are one list.
-  attachments: (spaceCode, screen, name) =>
+  // `fieldname` narrows the list to one Attachment Gallery's share of them,
+  // by the `link_filters` on that docfield. The filter is read off the field
+  // server-side rather than sent from here, so this only names which field is
+  // asking.
+  attachments: (spaceCode, screen, name, fieldname) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.attachments',
-      { space_code: spaceCode, screen, name },
+      { space_code: spaceCode, screen, name, fieldname },
       { silent: true, method: 'GET' },
     ),
 

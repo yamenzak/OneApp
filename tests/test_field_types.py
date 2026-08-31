@@ -75,12 +75,25 @@ def test_nothing_is_placed_that_frappe_does_not_have(spec):
     assert not invented, f"these are not Frappe fieldtypes: {sorted(invented)}"
 
 
+# In Frappe's `no_value_fields` and placed in the map anyway, each for its own
+# reason. Named one at a time so a fourth has to argue its case here.
+NOT_LAYOUT = {
+    # Both carry rows. The field holds nothing itself, but there is data behind
+    # it and something to render.
+    "Table",
+    "Table MultiSelect",
+    # Holds nothing and renders the *record's* attachments — Frappe's own
+    # control reads the File rows and narrows them by the docfield's
+    # `link_filters`. Layout renders nothing at all; this renders a gallery, so
+    # treating it as layout meant it simply never appeared.
+    "Attachment Gallery",
+}
+
+
 @needs_frappe
 def test_layout_fields_are_the_ones_that_carry_no_value(spec):
     declared = frappe_tuple("no_value_fields")
-    # Table and Table MultiSelect are in frappe's no_value_fields but do carry
-    # rows, so they are placed in the map rather than treated as layout.
-    assert set(spec.LAYOUT_TYPES) == declared - {"Table", "Table MultiSelect"}
+    assert set(spec.LAYOUT_TYPES) == declared - NOT_LAYOUT
 
 
 @needs_frappe
@@ -163,13 +176,22 @@ def test_a_named_control_is_in_the_barrel(spec):
     actually export, or the form renders nothing where a field should be."""
     exported = barrel_exports()
 
+    # A control may also be one of ours. `AttachmentGallery` has no frappe-ui
+    # counterpart — the library ships no carousel — so it lives beside the other
+    # screen components, and the rule this guard exists for still holds: the
+    # name has to resolve to something that actually renders.
+    ours = {
+        path.stem
+        for path in (ROOT / "apps/oneapp/frontend/src/components/screen").glob("*.vue")
+    }
+
     missing = [
         control for control, *_ in spec.FIELD_TYPES.values()
         if control and not control.startswith("FormControl:")
         # `Editor:html` and `Editor:markdown` are one component and a format.
-        and control.split(":", 1)[0] not in exported
+        and control.split(":", 1)[0] not in exported | ours
     ]
-    assert not missing, f"not exported from @/ui: {missing}"
+    assert not missing, f"neither exported from @/ui nor a screen component: {missing}"
 
 
 def test_every_editor_format_is_one_the_component_takes(spec):
@@ -302,7 +324,11 @@ def test_the_generated_helpers_return_real_control_types(spec):
         else:
             assert control_type is None
             assert editor_format is None
-            assert component in exported, f"{fieldtype} resolves to {component!r}"
+            ours = {
+                path.stem
+                for path in (ROOT / "apps/oneapp/frontend/src/components/screen").glob("*.vue")
+            }
+            assert component in exported | ours, f"{fieldtype} resolves to {component!r}"
 
 
 @needs_node

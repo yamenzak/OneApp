@@ -26,6 +26,12 @@ export const FIELD_TYPES = {
     "editable": true,
     "icon": "lucide-image"
   },
+  "Attachment Gallery": {
+    "cell": "hidden",
+    "control": "AttachmentGallery",
+    "editable": false,
+    "icon": "lucide-images"
+  },
   "Autocomplete": {
     "cell": "text",
     "control": "FormControl:combobox",
@@ -247,8 +253,7 @@ export const LAYOUT_TYPES = [
   "Button",
   "Image",
   "Fold",
-  "Heading",
-  "Attachment Gallery"
+  "Heading"
 ]
 
 /** What `options` on a Data field refines the input to. Frappe's own list. */
@@ -461,6 +466,11 @@ const VALID_OPERATORS = {
     "<",
     ">=",
     "<="
+  ],
+  "Attachment Gallery": [
+    "=",
+    "!=",
+    "is"
   ],
   "Autocomplete": [
     "=",
@@ -870,6 +880,7 @@ export const TIMESPANS = [
 const DEFAULT_OPERATORS = {
   "Attach": "like",
   "Attach Image": "like",
+  "Attachment Gallery": "=",
   "Autocomplete": "like",
   "Barcode": "like",
   "Check": "=",

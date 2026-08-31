@@ -104,6 +104,23 @@
   </div>
 
   <!--
+    A gallery of the record's own attachments. The field holds no value at all
+    — Frappe lists this in `no_value_fields` — so the control writes through
+    the File endpoints rather than through the record, and never emits an
+    update.
+  -->
+  <AttachmentGallery
+    v-else-if="component === 'AttachmentGallery'"
+    :field="field"
+    :space-code="spaceCode"
+    :screen="screen"
+    :doctype="doctype"
+    :docname="docname"
+    :disabled="disabled"
+    :note="note"
+  />
+
+  <!--
     Prose. One component for both of Frappe's prose fieldtypes — a Text Editor
     stores HTML and a Markdown Editor stores markdown, and `format` is the only
     difference between them. An image pasted in becomes an attachment on the
@@ -263,6 +280,7 @@ import {
   upload,
 } from '@/ui'
 import LinkPicker from './LinkPicker.vue'
+import AttachmentGallery from './AttachmentGallery.vue'
 import { controlComponent, editorFormat, formControlType } from '../../lib/fields'
 
 // Built once for the module rather than per field: the kit is a static
