@@ -89,6 +89,8 @@
               :space-code="spaceCode"
               :screen="screen"
               :is-new="isNew"
+              :doctype="doctype"
+              :docname="values.name || ''"
               :disabled="
                 disabled ||
                 !field.editable ||
@@ -155,6 +157,8 @@ const props = defineProps({
   screen: { type: String, required: true },
   disabled: { type: Boolean, default: false },
   isNew: { type: Boolean, default: false },
+  /** What the record is, for the fields that attach files to it. */
+  doctype: { type: String, default: '' },
 })
 
 // The draft, written into per field. A model rather than a prop: the object is

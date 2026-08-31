@@ -46,7 +46,7 @@ export const FIELD_TYPES = {
   },
   "Code": {
     "cell": "code",
-    "control": "FormControl:textarea",
+    "control": "CodeEditor",
     "editable": true,
     "icon": "lucide-code"
   },
@@ -106,7 +106,7 @@ export const FIELD_TYPES = {
   },
   "HTML Editor": {
     "cell": "html",
-    "control": "FormControl:textarea",
+    "control": "CodeEditor",
     "editable": true,
     "icon": "lucide-code-xml"
   },
@@ -124,7 +124,7 @@ export const FIELD_TYPES = {
   },
   "JSON": {
     "cell": "code",
-    "control": "FormControl:textarea",
+    "control": "CodeEditor",
     "editable": true,
     "icon": "lucide-braces"
   },
@@ -148,7 +148,7 @@ export const FIELD_TYPES = {
   },
   "Markdown Editor": {
     "cell": "text",
-    "control": "FormControl:textarea",
+    "control": "Editor:markdown",
     "editable": true,
     "icon": "lucide-file-text"
   },
@@ -226,7 +226,7 @@ export const FIELD_TYPES = {
   },
   "Text Editor": {
     "cell": "html",
-    "control": "FormControl:textarea",
+    "control": "Editor:html",
     "editable": true,
     "icon": "lucide-pilcrow"
   },
@@ -362,6 +362,12 @@ export function fieldSpec(field) {
   return base
 }
 
+// The prose editor, and the format it round-trips. Frappe's Text Editor and
+// Markdown Editor are the same component storing different text, so the table
+// names both as `Editor:<format>` rather than as two components that do not
+// exist.
+const EDITOR = 'Editor:'
+
 /** The FormControl `type`, or null when this field needs a named component. */
 export function formControlType(field) {
   const { control } = fieldSpec(field)
@@ -371,7 +377,21 @@ export function formControlType(field) {
 /** The component name, or null when a FormControl handles it. */
 export function controlComponent(field) {
   const { control } = fieldSpec(field)
-  return control && !control.startsWith(FORM_CONTROL) ? control : null
+  if (!control || control.startsWith(FORM_CONTROL)) return null
+  return control.startsWith(EDITOR) ? 'Editor' : control
+}
+
+/**
+ * The Editor's `format`, or null for every field that is not one.
+ *
+ * Named rather than sliced at the call site for the reason the FORM_CONTROL
+ * comment above gives: a hand-written offset is how every control type once
+ * lost its first letter, and an Editor handed a format it does not know
+ * renders an empty document rather than complaining.
+ */
+export function editorFormat(field) {
+  const { control } = fieldSpec(field)
+  return control && control.startsWith(EDITOR) ? control.slice(EDITOR.length) : null
 }
 
 /**

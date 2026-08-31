@@ -127,17 +127,78 @@ def test_the_form_control_union_is_still_what_frappe_ui_declares(spec):
     )
 
 
+def barrel_exports() -> set[str]:
+    """Every component name `@/ui` re-exports.
+
+    Reads the export blocks rather than matching indented lines. The line-based
+    version only saw the multi-line blocks, so a single-line
+    `export { Editor } from 'frappe-ui/editor'` was invisible to it — and the
+    guard below would then have reported a component that is exported as
+    missing, or worse, passed a fieldtype whose control genuinely was not.
+    """
+    barrel = (ROOT / "apps/oneapp/frontend/src/ui.js").read_text()
+    names = set()
+    for block in re.findall(r"export\s*\{([^}]*)\}\s*from", barrel, re.S):
+        # Comments first, and whole-line: the section headers sit *above* the
+        # name they introduce, so splitting an entry on "//" and keeping the
+        # left half throws away the name rather than the comment. That silently
+        # hid every component under a header — which is most of them.
+        block = re.sub(r"//[^\n]*", "", block)
+        for entry in block.split(","):
+            name = entry.strip()
+            if re.fullmatch(r"[A-Za-z_$][\w$]*", name):
+                names.add(name)
+    return names
+
+
+def test_the_barrel_reader_finds_both_shapes():
+    """If it stops finding one, the guard below passes by finding nothing."""
+    exported = barrel_exports()
+    assert "Button" in exported, "the multi-line blocks are no longer read"
+    assert "Editor" in exported, "the single-line blocks are no longer read"
+
+
 def test_a_named_control_is_in_the_barrel(spec):
     """A control that is not a FormControl type has to be a component we
     actually export, or the form renders nothing where a field should be."""
-    barrel = (ROOT / "apps/oneapp/frontend/src/ui.js").read_text()
-    exported = set(re.findall(r"^  ([A-Z]\w+),", barrel, re.M))
+    exported = barrel_exports()
 
     missing = [
         control for control, *_ in spec.FIELD_TYPES.values()
-        if control and not control.startswith("FormControl:") and control not in exported
+        if control and not control.startswith("FormControl:")
+        # `Editor:html` and `Editor:markdown` are one component and a format.
+        and control.split(":", 1)[0] not in exported
     ]
     assert not missing, f"not exported from @/ui: {missing}"
+
+
+def test_every_editor_format_is_one_the_component_takes(spec):
+    """`Editor` round-trips three formats and Frappe stores two of them. A
+    format it does not declare is a prop that silently does nothing, which is
+    the failure mode this whole table exists to prevent."""
+    bad = [
+        (fieldtype, control)
+        for fieldtype, (control, *_rest) in spec.FIELD_TYPES.items()
+        if control and control.startswith("Editor:")
+        and control.split(":", 1)[1] not in spec.EDITOR_FORMATS
+    ]
+    assert not bad, f"not an Editor format: {bad}"
+
+
+def test_the_editor_format_union_is_still_what_frappe_ui_declares(spec):
+    """Read from the component rather than restated here, for the same reason
+    the FormControl union is."""
+    source = (
+        ROOT / "apps/oneapp/frontend/node_modules/frappe-ui/src/molecules/editor/Editor.vue"
+    )
+    if not source.exists():
+        pytest.skip("frappe-ui not installed")
+    declared = set(
+        re.findall(r"'(\w+)'", re.search(r"format\?\s*:\s*([^\n]+)", source.read_text()).group(1))
+    )
+    assert spec.EDITOR_FORMATS <= declared, (
+        f"frappe-ui's Editor no longer takes {sorted(spec.EDITOR_FORMATS - declared)}"
+    )
 
 
 def test_a_field_with_no_control_is_not_editable(spec):
@@ -209,18 +270,19 @@ def test_the_generated_helpers_return_real_control_types(spec):
     got = run_fields_js(
         "Object.fromEntries(Object.keys(fields.FIELD_TYPES).map((t) => "
         "[t, [fields.formControlType({ fieldtype: t }), "
-        "fields.controlComponent({ fieldtype: t })]]))"
+        "fields.controlComponent({ fieldtype: t }), "
+        "fields.editorFormat({ fieldtype: t })]]))"
     )
 
-    barrel = (ROOT / "apps/oneapp/frontend/src/ui.js").read_text()
-    exported = set(re.findall(r"^  ([A-Z]\w+),", barrel, re.M))
+    exported = barrel_exports()
 
-    for fieldtype, (control_type, component) in got.items():
+    for fieldtype, (control_type, component, editor_format) in got.items():
         declared = spec.FIELD_TYPES[fieldtype][0]
         if declared is None:
             assert control_type is None and component is None, (
                 f"{fieldtype} has no counterpart but the module offered one"
             )
+            assert editor_format is None
         elif declared.startswith("FormControl:"):
             assert component is None
             assert control_type in spec.FORM_CONTROL_TYPES, (
@@ -228,8 +290,18 @@ def test_the_generated_helpers_return_real_control_types(spec):
                 "does not know — it renders a plain text box and says nothing"
             )
             assert control_type == declared.split(":", 1)[1]
+            assert editor_format is None
+        elif declared.startswith("Editor:"):
+            assert control_type is None
+            assert component == "Editor", f"{fieldtype} resolves to {component!r}"
+            assert component in exported
+            assert editor_format == declared.split(":", 1)[1], (
+                f"{fieldtype} would render the editor in {editor_format!r} and "
+                "store something the field cannot hold"
+            )
         else:
             assert control_type is None
+            assert editor_format is None
             assert component in exported, f"{fieldtype} resolves to {component!r}"
 
 
@@ -501,3 +573,46 @@ def test_the_fieldtype_rewrite_is_frappes(spec):
         f"frappe rewrites these to Data before choosing operators and we do not: "
         f"{sorted(unhandled)}"
     )
+
+
+# --------------------------------------------------------------------------- #
+# Prose and source are different questions
+# --------------------------------------------------------------------------- #
+
+def test_prose_goes_to_the_editor_and_source_goes_to_the_code_editor(spec):
+    """The distinction most easily got backwards.
+
+    Frappe's `Text Editor` and `Markdown Editor` hold prose somebody wrote in a
+    formatting UI. `HTML Editor` holds markup somebody wrote *as* markup — it is
+    Frappe's source editor, and putting it in a rich editor would silently
+    rewrite the markup it exists to let people control. `Code` and `JSON` are
+    the same kind of thing.
+    """
+    control = {t: spec.FIELD_TYPES[t][0] for t in (
+        "Text Editor", "Markdown Editor", "HTML Editor", "Code", "JSON",
+    )}
+    assert control["Text Editor"] == "Editor:html"
+    assert control["Markdown Editor"] == "Editor:markdown"
+    assert control["HTML Editor"] == "CodeEditor"
+    assert control["Code"] == "CodeEditor"
+    assert control["JSON"] == "CodeEditor"
+
+
+def test_no_prose_or_source_type_is_a_textarea_any_more(spec):
+    """The regression this batch existed to fix: five fieldtypes rendered as
+    plain textareas, so a paragraph typed into a Text Editor field saved as
+    text into a column the rest of Frappe renders as HTML."""
+    plain = [
+        fieldtype for fieldtype in
+        ("Text Editor", "Markdown Editor", "HTML Editor", "Code", "JSON")
+        if (spec.FIELD_TYPES[fieldtype][0] or "").startswith("FormControl:")
+    ]
+    assert not plain, f"still a textarea: {plain}"
+
+
+def test_the_plain_text_types_are_still_textareas(spec):
+    """And the ones that should be. Small Text and Long Text hold text with no
+    formatting at all; an editor over one would invent markup nobody asked
+    for."""
+    for fieldtype in ("Small Text", "Text", "Long Text"):
+        assert spec.FIELD_TYPES[fieldtype][0] == "FormControl:textarea"

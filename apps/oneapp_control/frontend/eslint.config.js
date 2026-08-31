@@ -62,6 +62,20 @@ export default [
               'for the whole sanctioned surface.',
           },
           {
+            name: 'frappe-ui/editor',
+            message: "Import the editor from '@/ui' too — one import path for " +
+              'the whole sanctioned surface.',
+          },
+          {
+            // The unstable entry point, so the one reviewable list matters
+            // more here rather than less: a breaking change upstream should
+            // show up in one file, not in however many reached for it.
+            name: 'frappe-ui/experimental',
+            message: "Import experimental components from '@/ui' too. They " +
+              'carry no backward-compatibility promise, so the barrel is what ' +
+              'keeps the blast radius to one file.',
+          },
+          {
             name: 'socket.io-client',
             message: "Use onDoctypeChange from '@/lib/socket' — one shared, " +
               'reference-counted socket per app.',

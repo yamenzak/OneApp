@@ -16,7 +16,26 @@ ROOT = Path(__file__).resolve().parents[1]
 # Either app's node_modules would do — `test_shared_runtime_is_byte_identical`
 # proves the two SPAs run the same barrel over the same version — so this reads
 # the tenant app's, which is the one that survives OneAdmin becoming a Space.
-UI_SRC = ROOT / "apps/oneapp/frontend/node_modules/frappe-ui/src"
+UI_PKG = ROOT / "apps/oneapp/frontend/node_modules/frappe-ui"
+UI_SRC = UI_PKG / "src"
+
+# Where components actually live. `src/` is the stable library; `experimental/`
+# is a sibling of it, published under its own entry point with no
+# backward-compatibility promise — CodeEditor, CodePreview, the parked Calendar
+# and TextEditor families.
+#
+# Reading only `src/` meant every experimental component was unchecked, which is
+# exactly backwards: an unstable API is the one where a prop most needs
+# verifying against the source rather than against memory. Anything imported
+# from `frappe-ui/experimental` is now held to the same standard as the rest.
+UI_ROOTS = (UI_SRC, UI_PKG / "experimental")
+
+
+def _sources(suffix: str):
+    """Every file of a kind, across the roots that hold components."""
+    for root in UI_ROOTS:
+        if root.exists():
+            yield from root.rglob(suffix)
 
 # Attributes that are never props, whatever the component: Vue's own
 # directives, the handful of attributes Vue itself consumes, and the
@@ -283,7 +302,7 @@ def _alias_index() -> dict[str, set[str]]:
     name to be unambiguous, so a clash is never guessed at.
     """
     index = {}
-    for path in UI_SRC.rglob("*.ts"):
+    for path in _sources("*.ts"):
         text = LINE_COMMENT.sub("", BLOCK_COMMENT.sub("", path.read_text()))
         # The body runs to the `;` or to the next top-level declaration:
         # DialogSize is fifteen values one per line, and a single-line read
@@ -342,7 +361,7 @@ def _models(script: str) -> set[str]:
 def component_api() -> dict[str, dict]:
     """{component: {"props", "required", "slots", "forwards"}}."""
     api = {}
-    for path in UI_SRC.rglob("*.vue"):
+    for path in _sources("*.vue"):
         script = _script(path.read_text())
         props, slots = {}, {}
 

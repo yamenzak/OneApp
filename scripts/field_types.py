@@ -24,22 +24,31 @@ Three columns matter:
 
 # fieldtype -> (control, cell, icon, editable)
 #
-# `control` is either "FormControl:<type>" or the bare name of a component in
-# the barrel. Anything else fails the guard.
+# `control` is "FormControl:<type>", "Editor:<format>", or the bare name of a
+# component in the barrel. Anything else fails the guard.
 FIELD_TYPES = {
     # -- text ---------------------------------------------------------------
     "Data":            ("FormControl:text",      "text",     "lucide-type",          True),
     "Small Text":      ("FormControl:textarea",  "text",     "lucide-align-left",    True),
     "Text":            ("FormControl:textarea",  "text",     "lucide-align-left",    True),
     "Long Text":       ("FormControl:textarea",  "text",     "lucide-align-left",    True),
-    "Code":            ("FormControl:textarea",  "code",     "lucide-code",          True),
-    "JSON":            ("FormControl:textarea",  "code",     "lucide-braces",        True),
-    "Markdown Editor": ("FormControl:textarea",  "text",     "lucide-file-text",     True),
-    "HTML Editor":     ("FormControl:textarea",  "html",     "lucide-code-xml",      True),
-    # frappe-ui ships a TipTap Editor on its own subpath. It is heavy and not
-    # SSR-safe, so a record dialog gets a textarea and the rich editor is a
-    # deliberate choice an app makes with a custom component.
-    "Text Editor":     ("FormControl:textarea",  "html",     "lucide-pilcrow",       True),
+    # Source, not prose: markup and data a person edits as markup and data. All
+    # four go to CodeMirror through frappe-ui's CodeEditor, with the language
+    # picked in `FieldControl` — `options` on a Code field is where Frappe puts
+    # it. A textarea over JSON is a customer counting braces by eye.
+    "Code":            ("CodeEditor",            "code",     "lucide-code",          True),
+    "JSON":            ("CodeEditor",            "code",     "lucide-braces",        True),
+    # Frappe's *source* editor, and the one most easily mistaken for a rich one:
+    # HTML Editor stores markup somebody wrote by hand. Getting this and Text
+    # Editor the right way round is the whole point of separating them.
+    "HTML Editor":     ("CodeEditor",            "html",     "lucide-code-xml",      True),
+    # Prose. frappe-ui's TipTap editor on its own subpath, which round-trips
+    # both of Frappe's prose formats — `format` is what differs, not the
+    # component. An earlier note here said the editor was too heavy and not
+    # SSR-safe to be worth it; there is no SSR in this product, and the weight
+    # is one async chunk on a route that has a rich-text field.
+    "Markdown Editor": ("Editor:markdown",       "text",     "lucide-file-text",     True),
+    "Text Editor":     ("Editor:html",           "html",     "lucide-pilcrow",       True),
     "Password":        ("Password",              "hidden",   "lucide-key-round",     True),
     "Phone":           ("FormControl:tel",       "text",     "lucide-phone",         True),
     "Read Only":       ("FormControl:text",      "text",     "lucide-lock",          False),
@@ -89,6 +98,12 @@ FIELD_TYPES = {
     # cell; an app that needs one uses a custom component.
     "Table":           (None,                    "hidden",   "lucide-table",         False),
 }
+
+# What frappe-ui's Editor will round-trip. It declares three; Frappe stores two
+# of them, and `json` is the editor's own document model rather than a
+# fieldtype. Named here so `tests/test_field_types.py` can check the table
+# against the component instead of against memory.
+EDITOR_FORMATS = {"html", "markdown"}
 
 # Frappe's `no_value_fields`, minus Table and Table MultiSelect which carry
 # data and are placed above. These are layout: they render nothing on their own

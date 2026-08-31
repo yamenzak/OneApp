@@ -90,6 +90,10 @@ const passthrough = computed(() => ({
   screen: props.screen,
   disabled: props.disabled,
   isNew: props.isNew,
+  // Read off the spec rather than passed in: the screen already knows what it
+  // is over, and threading it through every caller would be one more thing to
+  // forget on the next form that renders this.
+  doctype: props.spec?.doctype || '',
 }))
 
 // Back to the first tab whenever the form is for something else. Landing on

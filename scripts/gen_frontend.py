@@ -329,6 +329,20 @@ export default [
               'for the whole sanctioned surface.',
           },
           {
+            name: 'frappe-ui/editor',
+            message: \"Import the editor from '@/ui' too — one import path for \" +
+              'the whole sanctioned surface.',
+          },
+          {
+            // The unstable entry point, so the one reviewable list matters
+            // more here rather than less: a breaking change upstream should
+            // show up in one file, not in however many reached for it.
+            name: 'frappe-ui/experimental',
+            message: \"Import experimental components from '@/ui' too. They \" +
+              'carry no backward-compatibility promise, so the barrel is what ' +
+              'keeps the blast radius to one file.',
+          },
+          {
             name: 'socket.io-client',
             message: "Use onDoctypeChange from '@/lib/socket' — one shared, " +
               'reference-counted socket per app.',
@@ -537,6 +551,35 @@ export {
   ListCell,
   ListGroup,
 } from 'frappe-ui/list'
+
+/**
+ * The rich-text editor. Its own entry point in frappe-ui because it ships the
+ * ProseMirror stylesheet with it, so importing from here pulls both.
+ *
+ * One component covers two fieldtypes: `format` is 'html' | 'json' |
+ * 'markdown', and Frappe's Text Editor and Markdown Editor differ only in
+ * which of those they store. HTML Editor is *not* one of them — that is
+ * Frappe's source editor, markup a person edits as markup, so it goes to
+ * CodeEditor below.
+ */
+export { Editor, RichTextKit } from 'frappe-ui/editor'
+
+/**
+ * The code editor, and the one unstable thing in this barrel.
+ *
+ * `frappe-ui/experimental` carries no backward-compatibility promise, and this
+ * is a deliberate bet: the alternative for Code, JSON and HTML Editor is a
+ * plain textarea, which is a customer editing braces in a box with no bracket
+ * matching. The bet is bounded — one entry point, three exports, wrapped by
+ * FieldControl, so a breaking change touches one file — and it is checked:
+ * `tests/frappe_ui_api.py` reads `experimental/` alongside `src/`, so these
+ * props are verified against the source like every other component's.
+ *
+ * `loadLanguage` is a function rather than a component: CodeMirror's language
+ * packs are dynamic imports, so a page with no code field pays for none of
+ * them.
+ */
+export { CodeEditor, CodePreview, loadLanguage } from 'frappe-ui/experimental'
 """
 
 
@@ -2427,6 +2470,12 @@ export function fieldSpec(field) {
   return base
 }
 
+// The prose editor, and the format it round-trips. Frappe's Text Editor and
+// Markdown Editor are the same component storing different text, so the table
+// names both as `Editor:<format>` rather than as two components that do not
+// exist.
+const EDITOR = 'Editor:'
+
 /** The FormControl `type`, or null when this field needs a named component. */
 export function formControlType(field) {
   const { control } = fieldSpec(field)
@@ -2436,7 +2485,21 @@ export function formControlType(field) {
 /** The component name, or null when a FormControl handles it. */
 export function controlComponent(field) {
   const { control } = fieldSpec(field)
-  return control && !control.startsWith(FORM_CONTROL) ? control : null
+  if (!control || control.startsWith(FORM_CONTROL)) return null
+  return control.startsWith(EDITOR) ? 'Editor' : control
+}
+
+/**
+ * The Editor's `format`, or null for every field that is not one.
+ *
+ * Named rather than sliced at the call site for the reason the FORM_CONTROL
+ * comment above gives: a hand-written offset is how every control type once
+ * lost its first letter, and an Editor handed a format it does not know
+ * renders an empty document rather than complaining.
+ */
+export function editorFormat(field) {
+  const { control } = fieldSpec(field)
+  return control && control.startsWith(EDITOR) ? control.slice(EDITOR.length) : null
 }
 
 /**
