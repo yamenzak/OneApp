@@ -8,7 +8,15 @@ bench. That is minutes per change, and it restarts every site on the bench. It
 is the right mechanism for shipping and the wrong one for "does this button
 work".
 
-Three loops, fastest first. Use the first one that can answer your question.
+Two loops. Use the first one that can answer your question.
+
+> **There used to be a third.** `scripts/live.py` pushed the working tree onto a
+> running Frappe Cloud bench as a `git apply` patch — seconds instead of minutes,
+> and it silently reverted on the next deploy. It is gone, along with the
+> `apply_patch` and `update_inplace` methods on the press client that nothing
+> else called. It needed an API token with rights to modify running containers,
+> and a shipped control plane holding a method that rewrites code inside a live
+> bench is a bigger thing to own than the minutes it saved.
 
 ---
 
@@ -115,161 +123,7 @@ through frappe-ui's plugin, so the session cookie and CSRF token are real.
 
 ---
 
-## 2. Patch a running Frappe Cloud bench — seconds, no image
-
-`press.api.bench.apply_patch` hands a git diff to the agent, which runs
-`git apply` **inside the running container**, optionally rebuilds assets, and
-restarts the bench. No image build, no bench move.
-
-```bash
-scripts/live.py status     # what the bench runs, and what we have patched onto it
-scripts/live.py push       # send everything since the deployed commit
-scripts/live.py revert     # back to the deployed image
-scripts/live.py watch      # push on every change
-```
-
-`deploy` is the other half: it fetches the newest releases, builds an image and
-moves the sites onto it — minutes, but it is a real release and nothing reverts
-it later. UI changes need this, because the bench cannot run our Vite build.
-
-Everything here refuses to run unless `ONEAPP_DEV_BENCH_GROUP` names the bench
-being targeted. Patching rewrites code on a running bench and `deploy` restarts
-real sites; both are fine while a bench is ours to break and unacceptable once it
-carries customers, and that is not something a script can infer. Production never
-sets the variable, which makes this tool inert there rather than merely
-discouraged.
-
-Credentials come from `ONEAPP_FC_ENV` (a file setting `PRESS_KEY` and
-`PRESS_SECRET`); the bench group defaults to `ONEAPP_BENCH_GROUP`.
-
-`push` reverts its own previous patch first, because the container is
-cumulative and re-applying an overlapping diff conflicts on context that is
-already changed. It reverts through **press's own `revert_patch`**, which
-re-runs `git apply --reverse` against the stored patch file. Flipping the diff
-by hand looks equivalent and is not — new-file and deleted-file hunks have to be
-rewritten, and one mistake leaves the bench in a state where nothing further
-applies.
-
-Patch filenames must be unique **per bench, forever** — including ones already
-reverted — or press refuses with "Patch already exists for &lt;bench&gt; by the
-filename …". `live.py` labels each with a timestamp and a content hash.
-
-For a one-off diff without the state tracking:
-
-```bash
-scripts/patch.sh oneapp_control > fix.patch     # everything not yet on origin/main
-```
-
-```python
-from oneapp_control.press.client import PressClient
-
-PressClient().apply_patch(
-    release_group="<bench group>",
-    app="oneapp_control",
-    patch=open("fix.patch").read(),
-)
-```
-
-Or paste the same file into the bench's **Patches** tab in the Frappe Cloud
-dashboard, which needs no API credentials.
-
-### Getting the base right
-
-`git apply` needs exact context, so the patch has to be diffed from **the commit
-the bench is actually running**, not from whatever looks close. Ask press rather
-than infer it:
-
-```python
-info = PressClient().deploy_information("<bench group>")
-# each app carries current_hash; App Release then gives the commit message,
-# which is the monorepo subject line the mirror was synced from
-```
-
-Do not infer the base from the built asset hash. Two commits produce an
-identical bundle whenever neither touched frontend source, so the hash points at
-a range, not a commit — guessing wrong there is what makes the patch fail with
-nothing useful to read, because the Agent Job output is not exposed to the API.
-
-### Why UI changes cannot be patched
-
-`build_assets` does **not** help. It runs `bench build` — Frappe's own esbuild —
-which knows nothing about Vite, so our SPA is never rebuilt on the bench.
-`update_inplace` uses the same call. Only the image build runs our Vite build.
-
-Shipping the bundle inside the patch was the obvious next move, and it needed a
-committed lockfile: without one Frappe Cloud resolved dependencies freshly on
-every build, so its bundle was not ours. `yarn.lock` fixed that — the same
-commit now produces byte-identical content hashes here and on Frappe Cloud,
-confirmed against a real deploy.
-
-It still does not work. The generated patch applies cleanly to a faithful local
-reconstruction of the container, and the agent rejects it — including a patch
-containing nothing but new files, which should apply anywhere. Agent Job output
-is not exposed to the API, so there is nothing to diagnose it with. `--assets`
-is left in place and documented as experimental rather than quietly removed.
-
-**Use `deploy` for UI changes.** Minutes rather than seconds, and the honest
-path regardless: an image built from git, which nothing later reverts.
-
-### The old note, kept for the mechanics
-
-`build_assets` does **not** help. It runs `bench build` — Frappe's own esbuild —
-which knows nothing about Vite, so our SPA is never rebuilt on the bench.
-`update_inplace` uses the same call, so it does not help either. Only the image
-build runs our Vite build.
-
-That leaves shipping the built bundle inside the patch, which needs one thing we
-did not have: **a committed lockfile**. Without one, Frappe Cloud resolves
-dependency versions freshly on every build, so its bundle is not ours —
-rebuilding the deployed commit locally produced different content hashes, which
-means `www/admin.html` cannot be diffed against what is actually on the bench.
-
-That was a production problem before it was a dev-loop one: two deploys of the
-same commit could produce different bundles, and a transitive dependency could
-break a release with no code change. `yarn.lock` is committed now (Frappe Cloud
-installs with yarn). Until a deploy has run from a locked build, **UI changes
-need a normal deploy**; backend changes patch fine.
-
-### The SPA is the part that catches people
-
-`build_assets` runs **Frappe's** bundler, which knows nothing about Vite. A
-patch carrying only frontend *source* therefore changes nothing you can see, and
-reports success while doing it.
-
-So the built output has to travel inside the patch. `scripts/patch.sh` does
-that, and two details there are load-bearing:
-
-- `public/frontend/` and `www/*.html` are gitignored — correctly, they are build
-  output — so they have to be forced into the diff explicitly.
-- The diff needs `--binary`. The bundle ships woff2 fonts, and without it git
-  writes a placeholder instead of the content and `git apply` refuses the whole
-  patch with "cannot apply binary patch … without full index line".
-
-Run `npx vite build` in `apps/<app>/frontend` first, or the patch carries a
-stale bundle. Paths are rewritten to be relative to the app repo, because the
-agent applies from `apps/<app>` in the container and knows nothing of this
-monorepo.
-
-`patch_config` is sent as a **nested object, not a JSON string**. Press does not
-parse this one — it calls `.get()` on whatever arrives, so a dumped string comes
-back as a bare HTTP 500 with `{"exc_type": "AttributeError"}` and nothing naming
-the parameter. `bench.update_config` *does* parse its string, which is exactly
-what makes this easy to get wrong; `tests/test_press_payloads.py` pins both.
-
-`press.api.bench.update_inplace` is the sibling: it pulls real app releases onto
-a running bench without building an image. It validates the hashes, so the
-commits have to be pushed releases rather than arbitrary work in progress.
-
-**Both write code that exists in no image, so the next deploy silently reverts
-them** — images are built from git. That makes them right for chasing a bug on
-a live bench and wrong as a way to ship. A fix that exists only as a patch
-disappears the next time anything else deploys, and nothing warns you.
-
-Reverting is the same call with the patch reversed, via the App Patch record.
-
----
-
-## 3. Full deploy — minutes
+## 2. Full deploy — minutes
 
 What Frappe Cloud does on its own when app code is pushed. Note the two halves,
 which are easy to conflate:

@@ -71,7 +71,6 @@ def test_every_default_points_at_the_canonical_host():
     for path in (
         ROOT / "apps/oneapp_control/oneapp_control/install.py",
         ROOT / "apps/oneapp_control/oneapp_control/press/client.py",
-        ROOT / "scripts/live.py",
         ROOT / "scripts/bootstrap_site.py",
         ROOT / "scripts/gen_doctypes.py",
     ):

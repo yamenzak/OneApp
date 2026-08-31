@@ -537,14 +537,16 @@ rule that refused to deploy onto a group holding a production workspace refused
 every deploy we could actually make. Enforcing it would have meant either never
 deploying or lying about which tenants are which, and the second is worse.
 
-So there is one gate, not two:
+So there is no gate at all any more, and that is deliberate rather than
+neglected. The gate it used to have was `ONEAPP_DEV_BENCH_GROUP`, which kept the
+live-patch tooling inert on a machine that had not opted in. That tooling is
+gone — see docs/DEVLOOP.md — and a gate in front of a door that no longer exists
+is a thing future readers have to work out the meaning of.
 
-1. `ONEAPP_DEV_BENCH_GROUP` must name the group. A machine that never sets it
-   has the tooling inert rather than merely discouraged — which is the gate that
-   was doing the real work anyway.
-2. `admin.bench_environment` still answers, and `live.py status` prints it, so
-   an operator can see who is on the bench they are about to deploy to. It no
-   longer refuses.
+What remains is `admin.bench_environment`, which still answers, so an operator
+can see who is on the bench they are about to deploy to. It reports; it does not
+refuse. Deploys are made from the Frappe Cloud dashboard, by a person who can
+see the same thing.
 
 `Tenant.environment` and `Shard.environment` stay. Nothing reads them as a veto
 today; they are what the split will be built on, and dropping the fields would

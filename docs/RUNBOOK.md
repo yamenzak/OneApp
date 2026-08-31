@@ -38,12 +38,13 @@ all satisfied — there is no switch to throw.
 | 5 | Settings → Billing | Stripe keys and the webhook secret |
 | 6 | Settings → Cloudflare | R2 and the DNS token |
 
-**Set the shard's Environment to Staging** on anything the development tooling
-should touch. It is the shard, not the tenant, that decides: tenants inherit it,
-and `scripts/live.py` refuses any bench carrying a Production tenant. On a
-single-bench setup a Production tenant locks the tooling out of the only bench
-there is, and the default is Production precisely so that forgetting protects
-rather than exposes.
+**Set the shard's Environment** deliberately. It is the shard, not the tenant,
+that decides — tenants inherit it — and the default is Production so that
+forgetting protects rather than exposes.
+
+It is what `admin.bench_environment` reports before a deploy, and what
+`advance_lifecycle_clock` refuses to touch: the lifecycle rehearsal in §6 will
+not age a Production workspace, so a rehearsal tenant needs a Staging shard.
 
 ---
 

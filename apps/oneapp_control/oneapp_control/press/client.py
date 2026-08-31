@@ -380,67 +380,6 @@ class PressClient:
 	# exists only as a patch disappears the next time anything else deploys.
 	# ------------------------------------------------------------------ #
 
-	def apply_patch(
-		self,
-		release_group: str,
-		app: str,
-		patch: str,
-		filename: str = "oneapp.patch",
-		build_assets: bool = False,
-		bench: str | None = None,
-		all_benches: bool = False,
-		latest_deploy: bool = True,
-	) -> list:
-		"""`git apply` a diff to a running bench, without rebuilding the image.
-
-		The agent writes the patch into the container and runs `git apply` in the
-		app directory, optionally `bench build`, then restarts. Seconds rather
-		than minutes.
-
-		`build_assets` is only needed when the diff touches something the asset
-		bundler compiles. Our SPAs are built by Vite into the app's public/
-		directory, so a patch that carries the built bundle needs no rebuild —
-		but one that changes only frontend source does nothing without it.
-		"""
-		config = {
-			"patch": patch,
-			"filename": filename,
-			"build_assets": build_assets,
-			"patch_all_benches": all_benches,
-			"patch_latest_deploy": latest_deploy,
-		}
-		if bench:
-			config["patch_bench"] = bench
-
-		# patch_config goes as a nested object, NOT json.dumps'd. Press does not
-		# parse this one — it calls .get() on whatever arrives, so a JSON string
-		# raises AttributeError server-side and comes back as a bare HTTP 500
-		# with {"exc_type": "AttributeError"} and nothing naming the parameter.
-		# (bench.update_config does parse its string, which is exactly why this
-		# is easy to get wrong.) Verified against the live API.
-		return self.call(
-			"press.api.bench.apply_patch",
-			release_group=release_group,
-			app=app,
-			patch_config=config,
-		) or []
-
-	def update_inplace(self, release_group: str, apps: list[dict], sites: list[str]):
-		"""Pull new app code onto a running bench without building an image.
-
-		`apps` are {"app": ..., "hash": ..., "release": ...} entries as
-		`deploy_information` returns them — press validates the hashes, so they
-		have to be real releases rather than arbitrary commits.
-
-		Returns the Agent Job name, which `job()` can then be polled with.
-		"""
-		return self.call(
-			"press.api.bench.update_inplace",
-			name=release_group,
-			apps=json.dumps(apps),
-			sites=json.dumps(sites),
-		)
-
 	# ------------------------------------------------------------------ #
 	# Domains — no dedicated API, so go through the generic doc-method gateway
 	# ------------------------------------------------------------------ #

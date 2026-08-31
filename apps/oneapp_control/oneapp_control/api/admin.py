@@ -436,15 +436,15 @@ def shard(shard: str) -> dict:
 def bench_environment(release_group: str) -> dict:
 	"""Who is on a bench group — reported, not enforced.
 
-	`scripts/live.py` prints this in `status`. It used to be a veto: any group
-	carrying a Production tenant was off limits to the tooling. That is the right
-	rule once staging and production are separate benches, and the wrong one
-	while a single bench carries both — it refused every deploy we could actually
-	make. Everything ships from `main` to every site until there is budget for a
-	second bench.
+	Answers "what am I about to restart" before a deploy. It used to be a veto,
+	consulted by tooling that patched a running bench; that tooling is gone and
+	deploys are made from the Frappe Cloud dashboard by somebody who can read
+	this first.
 
-	`safe` is kept in the response because the shape is part of the tooling's
-	contract, and it becomes a gate again the day the benches split.
+	`safe` is kept in the response because it is the question worth asking —
+	whether this group carries a Production tenant — and it becomes a gate again
+	the day staging and production are separate benches. Today one bench carries
+	both, so enforcing it would refuse every deploy that can actually be made.
 	"""
 	_require_manager()
 
