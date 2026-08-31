@@ -33,10 +33,12 @@
    "reqd": 1
   },
   {
+   "description": "Where this region physically is. Sent to tenants created here to set up their company and chart of accounts.",
    "fieldname": "country",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Country"
+   "label": "Country",
+   "options": "Country"
   },
   {
    "default": "1",

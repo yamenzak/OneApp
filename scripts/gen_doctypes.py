@@ -1631,7 +1631,19 @@ doctype(
     fields=[
         f("region_code", reqd=1, unique=1, description="e.g. nuremberg"),
         f("region_name", reqd=1, in_list_view=1, description="Shown at signup, e.g. Nuremberg"),
-        f("country", in_list_view=1),
+        # A Link, not free text, because this is not decoration: it reaches a
+        # tenant through the sync payload, names the Company that is created
+        # there, and picks its chart of accounts — `_charts_for(country)` in
+        # `oneapp/oneapp_core/books.py` looks up by exactly this string. A typo
+        # produced a workspace whose books quietly never got set up.
+        #
+        # `Country` is core Frappe (`frappe/geo`), so this costs no dependency,
+        # and the workspace's own settings dialog already declares country the
+        # same way — the two ends now agree instead of one being a picker and
+        # the other a text box feeding it.
+        f("country", "Link", options="Country", in_list_view=1,
+          description="Where this region physically is. Sent to tenants created "
+                      "here to set up their company and chart of accounts."),
         f("is_active", "Check", default="1", in_list_view=1),
         column("cb_region"),
         f("sort_order", "Int", default="0"),
