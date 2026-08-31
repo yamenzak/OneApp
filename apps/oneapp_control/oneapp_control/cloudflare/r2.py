@@ -207,3 +207,184 @@ def bucket_report() -> list[dict]:
 		cap = row["max_tenants"] or 0
 		row["utilisation"] = round(row["tenant_count"] / cap, 3) if cap else None
 	return rows
+
+
+# --------------------------------------------------------------------------- #
+# Objects
+# --------------------------------------------------------------------------- #
+# Everything above talks to the Cloudflare API, which administers *buckets*. It
+# cannot see an object. The lifecycle needs to: promote a backup to cold storage,
+# hand press a download URL to restore from, expire a workspace's old copies, and
+# eventually delete everything it owns.
+#
+# So there is a second client here, over R2's S3-compatible endpoint, using the
+# same access keys the tenant sites hold. Deliberately on the control plane and
+# not on the tenant: retention has to run for a workspace whose site is
+# suspended, and a purge must not depend on the thing being purged.
+
+# S3 caps a page at 1,000 keys, and both list and delete-batch inherit it.
+PAGE = 1000
+
+
+def s3():
+	"""boto3 against R2's S3 endpoint.
+
+	Imported inside the function, like the tenant side does it, so a control
+	plane without boto3 fails on the one call that needs it rather than at
+	import and taking the whole app with it.
+	"""
+	import boto3
+	from botocore.config import Config
+
+	c = config()
+	if not is_configured():
+		raise R2NotConfigured("R2 admin credentials are not set in OneSpace Control Settings.")
+
+	settings = frappe.get_single("OneSpace Control Settings")
+	access_key = settings.r2_access_key
+	secret_key = settings.get_password("r2_secret_key", raise_exception=False)
+	if not (access_key and secret_key):
+		raise R2NotConfigured(
+			"R2 access keys are not set. The admin token administers buckets; "
+			"reading and writing objects needs the S3 keys."
+		)
+
+	return boto3.client(
+		"s3",
+		endpoint_url=f"https://{c['account_id']}.r2.cloudflarestorage.com",
+		aws_access_key_id=access_key,
+		aws_secret_access_key=secret_key,
+		# R2 ignores the region but the SDK insists on one.
+		region_name="auto",
+		config=Config(signature_version="s3v4", retries={"max_attempts": 3}),
+	)
+
+
+def objects(bucket: str, prefix: str) -> list[dict]:
+	"""Every object under a prefix, paginated. Newest last.
+
+	Returns `{"key", "size", "modified"}`. The whole listing rather than a
+	generator: a caller deciding what to delete has to see the set before it
+	deletes any of it, and a tenant's prefix is thousands of keys at worst.
+	"""
+	found = []
+	token = None
+	client = s3()
+
+	while True:
+		kwargs = {"Bucket": bucket, "Prefix": prefix, "MaxKeys": PAGE}
+		if token:
+			kwargs["ContinuationToken"] = token
+
+		page = client.list_objects_v2(**kwargs)
+		for row in page.get("Contents") or []:
+			found.append(
+				{
+					"key": row["Key"],
+					"size": int(row.get("Size") or 0),
+					"modified": row.get("LastModified"),
+				}
+			)
+
+		if not page.get("IsTruncated"):
+			break
+		token = page.get("NextContinuationToken")
+		if not token:
+			break
+
+	found.sort(key=lambda row: (row["modified"] is None, row["modified"]))
+	return found
+
+
+def prefix_bytes(bucket: str, prefix: str) -> int:
+	return sum(row["size"] for row in objects(bucket, prefix))
+
+
+def copy(bucket: str, source_key: str, target_key: str) -> None:
+	"""Server-side copy. The bytes never travel through us.
+
+	Which is the whole reason cold storage is a copy rather than a re-upload:
+	promoting a 4 GB backup costs a request, not four gigabytes of transfer on
+	a control plane that has no business moving them.
+	"""
+	s3().copy_object(
+		Bucket=bucket,
+		CopySource={"Bucket": bucket, "Key": source_key},
+		Key=target_key,
+	)
+
+
+def put(bucket: str, key: str, body: bytes, content_type: str = "application/json") -> None:
+	s3().put_object(Bucket=bucket, Key=key, Body=body, ContentType=content_type)
+
+
+def get(bucket: str, key: str) -> bytes | None:
+	"""One object's bytes, or None if it is not there.
+
+	For the manifest and nothing larger — anything big is presigned and handed
+	to whoever actually needs the bytes.
+	"""
+	try:
+		return s3().get_object(Bucket=bucket, Key=key)["Body"].read()
+	except Exception:
+		return None
+
+
+def delete_keys(bucket: str, keys: list[str]) -> int:
+	"""Delete an explicit list. Returns how many R2 confirmed.
+
+	Explicit rather than by prefix, because the caller has already decided what
+	may go — a delete that takes its own argument from a listing it did not
+	inspect is how a retention sweep eats a cold copy.
+	"""
+	if not keys:
+		return 0
+
+	client = s3()
+	deleted = 0
+
+	for start in range(0, len(keys), PAGE):
+		batch = keys[start : start + PAGE]
+		result = client.delete_objects(
+			Bucket=bucket, Delete={"Objects": [{"Key": k} for k in batch], "Quiet": True}
+		)
+		errors = result.get("Errors") or []
+		if errors:
+			frappe.log_error(
+				title="R2 delete refused some keys",
+				message="\n".join(
+					f"{e.get('Key')}: {e.get('Code')} {e.get('Message')}" for e in errors[:50]
+				),
+			)
+		deleted += len(batch) - len(errors)
+
+	return deleted
+
+
+def delete_prefix(bucket: str, prefix: str) -> int:
+	"""Everything under a prefix. Returns how many objects went.
+
+	Refuses an empty or bare prefix outright. `delete_prefix(bucket, "")` would
+	empty the bucket for every tenant in it, and the shape of this function is
+	such that one missing f-string argument produces exactly that call.
+	"""
+	prefix = (prefix or "").strip()
+	if not prefix or prefix == "/" or "/" not in prefix.rstrip("/"):
+		raise R2Error(
+			f"Refusing to delete by the prefix {prefix!r}: it is not scoped to "
+			"anything. A prefix has to name a tenant."
+		)
+
+	return delete_keys(bucket, [row["key"] for row in objects(bucket, prefix)])
+
+
+def presign(bucket: str, key: str, ttl: int = 3600) -> str:
+	"""A time-limited download URL.
+
+	An hour by default, which is what a restore needs: press fetches the files
+	itself and a database dump of any size takes longer than the five minutes
+	an attachment redirect is given.
+	"""
+	return s3().generate_presigned_url(
+		"get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=ttl
+	)
