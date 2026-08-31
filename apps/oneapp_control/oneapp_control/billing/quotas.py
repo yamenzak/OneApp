@@ -28,6 +28,13 @@ TERMS = (
 	"monthly_credit_grant",
 	"background_workers",
 	"press_site_plan",
+	# How often this workspace backs itself up to R2, and how long those copies
+	# are kept. Captured with everything else so raising the frequency on a plan
+	# is an offer to the next customer rather than a change to this one's bill
+	# — the storage costs money, and a plan whose retention was cut must not
+	# quietly start deleting a subscriber's backups.
+	"backups_per_day",
+	"backup_retention_days",
 )
 
 

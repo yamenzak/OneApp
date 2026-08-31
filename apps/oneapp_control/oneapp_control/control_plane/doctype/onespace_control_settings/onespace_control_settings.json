@@ -52,7 +52,17 @@
   "cf_api_token",
   "ai_markup_multiplier",
   "ai_catalogue_synced_on",
-  "ai_catalogue_note"
+  "ai_catalogue_note",
+  "sec_lifecycle_set",
+  "dunning_grace_days",
+  "suspended_days",
+  "cold_retention_days",
+  "cb_lifecycle_set",
+  "purge_warning_days",
+  "overage_grace_days",
+  "auto_purge_enabled",
+  "lifecycle_note",
+  "lifecycle_swept_on"
  ],
  "fields": [
   {
@@ -319,6 +329,70 @@
    "fieldname": "ai_catalogue_note",
    "fieldtype": "Small Text",
    "label": "Ai Catalogue Note",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_lifecycle_set",
+   "fieldtype": "Section Break",
+   "label": "Lifecycle"
+  },
+  {
+   "default": "7",
+   "description": "From the first failed payment to suspension. The site works throughout; Stripe is still retrying.",
+   "fieldname": "dunning_grace_days",
+   "fieldtype": "Int",
+   "label": "Dunning Grace Days"
+  },
+  {
+   "default": "14",
+   "description": "From suspension to archiving. The site is off but intact and comes back in seconds.",
+   "fieldname": "suspended_days",
+   "fieldtype": "Int",
+   "label": "Suspended Days"
+  },
+  {
+   "default": "60",
+   "description": "From archiving to purge. The site is gone from Frappe Cloud and we hold a cold copy in R2.",
+   "fieldname": "cold_retention_days",
+   "fieldtype": "Int",
+   "label": "Cold Retention Days"
+  },
+  {
+   "fieldname": "cb_lifecycle_set",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "7",
+   "description": "How long before a purge the final warning goes out. Purging refuses on a workspace that was not warned.",
+   "fieldname": "purge_warning_days",
+   "fieldtype": "Int",
+   "label": "Purge Warning Days"
+  },
+  {
+   "default": "7",
+   "description": "How long a workspace may sit over its quota before uploads are blocked. The usual cause is a line leaving their subscription rather than anything they did.",
+   "fieldname": "overage_grace_days",
+   "fieldtype": "Int",
+   "label": "Overage Grace Days"
+  },
+  {
+   "default": "1",
+   "description": "Whether the sweep may delete a cold copy and a workspace's objects once every window and warning has passed. Turning it off keeps everything forever, which is a bill rather than a policy.",
+   "fieldname": "auto_purge_enabled",
+   "fieldtype": "Check",
+   "label": "Auto Purge Enabled"
+  },
+  {
+   "description": "What the last sweep did.",
+   "fieldname": "lifecycle_note",
+   "fieldtype": "Small Text",
+   "label": "Lifecycle Note",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lifecycle_swept_on",
+   "fieldtype": "Datetime",
+   "label": "Lifecycle Swept On",
    "read_only": 1
   }
  ],

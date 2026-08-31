@@ -379,6 +379,19 @@ doctype(
         f("database_gb", "Int", default="2",
           description="Database size cap. Separate from files: this is the one "
                       "that constrains how many sites fit on a server."),
+        section("sec_backups", "Backups"),
+        # Ours, into R2, alongside whatever Frappe Cloud keeps. R2 storage is
+        # cheap enough that the frequency is a product lever rather than a cost
+        # one — which is why it is a plan term and not a constant.
+        f("backups_per_day", "Int", default="1",
+          description="How often this plan's workspaces back themselves up to "
+                      "R2. The first run of each day takes files as well; the "
+                      "rest are database-only, which is what actually changes."),
+        column("cb_backups"),
+        f("backup_retention_days", "Int", default="7",
+          description="How long those backups are kept. The cold copy taken "
+                      "when a workspace is suspended is exempt — it lives under "
+                      "its own prefix and answers to the lifecycle windows."),
         section("sec_press_plan"),
         f("press_site_plan", label="Press Site Plan",
           description="Overrides the shard default when set."),
@@ -603,8 +616,13 @@ doctype(
         f("tenant_slug", reqd=1, unique=1, in_list_view=1,
           description="Subdomain label. Immutable once provisioned."),
         f("tenant_name", reqd=1, in_list_view=1),
+        # The rungs of the lifecycle ladder, in the order a workspace walks
+        # them. `Suspended` still has its site on Frappe Cloud and comes back in
+        # seconds; `Archived` does not, and comes back from the cold copy in
+        # minutes; `Purged` has nothing left and is the one that cannot be
+        # undone. See `oneapp_control/lifecycle/` and docs/LIFECYCLE.md.
         f("status", "Select",
-          options="Draft\nProvisioning\nActive\nSuspended\nArchived\nFailed",
+          options="Draft\nProvisioning\nActive\nSuspended\nArchived\nPurged\nFailed",
           default="Draft", reqd=1, in_list_view=1, in_standard_filter=1),
         f("environment", "Select", options="Production\nStaging",
           default="Production", reqd=1, in_standard_filter=1,
@@ -642,6 +660,58 @@ doctype(
         f("provisioned_on", "Datetime", read_only=1),
         f("suspended_on", "Datetime", read_only=1),
         f("archived_on", "Datetime", read_only=1),
+        section("sec_lifecycle", "Lifecycle"),
+        # One clock, and every rung is derived from it. Set the first time a
+        # subscription is seen unpaid (or a trial lapses with nothing bought),
+        # and cleared the moment it recovers — so recovering and failing again
+        # restarts the ladder from the top rather than resuming mid-fall.
+        f("dunning_started_on", "Date", read_only=1, in_standard_filter=1,
+          description="When this workspace stopped being paid for. Empty means "
+                      "it is not on the ladder."),
+        f("dunning_stage", "Select",
+          options="\nGrace\nSuspended\nArchived\nPurged",
+          read_only=1, in_standard_filter=1,
+          description="Which rung the sweep last acted on. Distinct from status: "
+                      "an operator can suspend a paid-up workspace, and that is "
+                      "not the ladder."),
+        f("lifecycle_hold", "Check", default="0",
+          description="Freeze this workspace out of the ladder entirely. A demo "
+                      "instance, a billing dispute, a legal hold. Nothing is "
+                      "suspended, archived or purged while this is set."),
+        f("purge_after", "Date", read_only=1,
+          description="The date the cold copy and every object this workspace "
+                      "owns may be deleted. Set when it is archived."),
+        f("purge_warned_on", "Date", read_only=1,
+          description="When the final warning went out. Purging refuses without "
+                      "one, so a bad window cannot delete a workspace that was "
+                      "never told."),
+        f("purged_on", "Datetime", read_only=1),
+        column("cb_lifecycle"),
+        # The cold copy: the last full backup, promoted to a prefix retention
+        # never touches. Archiving refuses without one.
+        f("cold_storage_key", "Data", read_only=1,
+          description="R2 prefix holding the database, files and config this "
+                      "workspace can be rebuilt from."),
+        f("cold_stored_on", "Datetime", read_only=1),
+        f("cold_storage_bytes", "Float", default="0", read_only=1),
+        f("restored_on", "Datetime", read_only=1,
+          description="When it last came back from cold."),
+        # Over-quota is a grace window rather than an instant block, because the
+        # usual way a workspace gets here is a line disappearing from its
+        # subscription rather than anything it uploaded. See DECISIONS §2b.
+        f("over_quota_since", "Date", read_only=1,
+          description="When what it holds first exceeded what it is allowed. "
+                      "Enforcement bites after the overage grace window."),
+        section("sec_backups", "Backups"),
+        f("last_backup_on", "Datetime", read_only=1, in_standard_filter=1,
+          description="Reported by the site after each successful push to R2."),
+        f("last_backup_key", "Data", read_only=1),
+        column("cb_backups"),
+        f("last_backup_bytes", "Float", default="0", read_only=1),
+        f("last_backup_error", "Small Text", read_only=1,
+          description="Why the last attempt did not finish. A workspace that "
+                      "has not backed up in twice its interval is a fault, not "
+                      "a quiet gap."),
         section("sec_usage", "Usage"),
         f("storage_used_bytes", "Float", default="0", read_only=1),
         f("database_used_bytes", "Float", default="0", read_only=1,
@@ -758,6 +828,8 @@ doctype(
         f("monthly_credit_grant", "Float", default="0"),
         f("background_workers", "Int", default="0"),
         f("press_site_plan", label="Press Site Plan"),
+        f("backups_per_day", "Int", default="0"),
+        f("backup_retention_days", "Int", default="0"),
         f("terms_captured_on", "Datetime", read_only=1,
           description="When these were copied from the plan. Empty means this "
                       "subscription predates the snapshot and still reads the "
@@ -808,6 +880,7 @@ doctype(
           description="Empty for standby pool builds, which belong to no tenant yet."),
         f("action", "Select",
           options=("Create Site\nSuspend Site\nResume Site\nBackup Site\nArchive Site\n"
+                   "Restore Site\nPurge Tenant\n"
                    "Add Domain\nSet Primary Domain\nChange Plan\nMigrate Site\n"
                    "Create Standby Site\nClaim Standby Site"),
           reqd=1, in_list_view=1, in_standard_filter=1),
@@ -832,6 +905,47 @@ doctype(
         f("payload", "Code", options="JSON"),
         section("sec_err"),
         f("last_error", "Text", read_only=1),
+    ],
+)
+
+# --------------------------------------------------------------------------- #
+# Tenant Lifecycle Event — what the ladder did, and why.
+#
+# Append-only, and read-only to everyone including an operator. The ladder
+# suspends sites and eventually deletes data on a timer, so "when did this
+# happen and what decided it" cannot be a thing you reconstruct from logs that
+# rotate. A row is written before the work is attempted and completed after, so
+# a transition that failed halfway still leaves its intent behind.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Tenant Lifecycle Event",
+    autoname="naming_series:",
+    perms=READONLY_PERMS,
+    fields=[
+        f("naming_series", "Select", options="TLE-.YYYY.-", default="TLE-.YYYY.-",
+          reqd=1, hidden=1),
+        f("tenant", "Link", options="Tenant", reqd=1, in_list_view=1,
+          in_standard_filter=1),
+        f("event", "Select",
+          options=("Dunning Started\nDunning Cleared\nWarned\nSuspended\nResumed\n"
+                   "Cold Copy Taken\nArchived\nRestored\nPurge Warned\nPurged\n"
+                   "Backup Taken\nBackup Failed\nOver Quota\nBack Under Quota\n"
+                   "Held\nReleased"),
+          reqd=1, in_list_view=1, in_standard_filter=1),
+        f("occurred_on", "Datetime", reqd=1, in_list_view=1),
+        column("cb_event"),
+        f("from_status", "Data", read_only=1),
+        f("to_status", "Data", read_only=1),
+        f("triggered_by", "Select",
+          options="Sweep\nWebhook\nOperator\nTenant Site\nSignup",
+          default="Sweep", in_standard_filter=1,
+          description="A timer and a person are answerable for different things, "
+                      "so the row says which one this was."),
+        section("sec_detail"),
+        f("reason", "Small Text",
+          description="Written for somebody reading it a year later, in a "
+                      "dispute. Say what was true, not what the code called it."),
+        f("detail", "Code", options="JSON", read_only=1),
     ],
 )
 
@@ -980,6 +1094,40 @@ doctype(
           description="Last successful model and price sync."),
         f("ai_catalogue_note", "Small Text", read_only=1,
           description="What the last sync did, and what it could not parse."),
+        # ------------------------------------------------------------------ #
+        # The lifecycle ladder's windows.
+        #
+        # Here rather than as constants because an operator has to be able to
+        # widen them without a deploy — the day somebody's card fails over a
+        # weekend is the day you want the grace period to be a field. Every one
+        # is in days, and each is measured from the rung before it.
+        # ------------------------------------------------------------------ #
+        section("sec_lifecycle_set", "Lifecycle"),
+        f("dunning_grace_days", "Int", default="7",
+          description="From the first failed payment to suspension. The site "
+                      "works throughout; Stripe is still retrying."),
+        f("suspended_days", "Int", default="14",
+          description="From suspension to archiving. The site is off but intact "
+                      "and comes back in seconds."),
+        f("cold_retention_days", "Int", default="60",
+          description="From archiving to purge. The site is gone from Frappe "
+                      "Cloud and we hold a cold copy in R2."),
+        column("cb_lifecycle_set"),
+        f("purge_warning_days", "Int", default="7",
+          description="How long before a purge the final warning goes out. "
+                      "Purging refuses on a workspace that was not warned."),
+        f("overage_grace_days", "Int", default="7",
+          description="How long a workspace may sit over its quota before "
+                      "uploads are blocked. The usual cause is a line leaving "
+                      "their subscription rather than anything they did."),
+        f("auto_purge_enabled", "Check", default="1",
+          description="Whether the sweep may delete a cold copy and a "
+                      "workspace's objects once every window and warning has "
+                      "passed. Turning it off keeps everything forever, which "
+                      "is a bill rather than a policy."),
+        f("lifecycle_note", "Small Text", read_only=1,
+          description="What the last sweep did."),
+        f("lifecycle_swept_on", "Datetime", read_only=1),
     ],
 )
 

@@ -31,6 +31,25 @@
   "provisioned_on",
   "suspended_on",
   "archived_on",
+  "sec_lifecycle",
+  "dunning_started_on",
+  "dunning_stage",
+  "lifecycle_hold",
+  "purge_after",
+  "purge_warned_on",
+  "purged_on",
+  "cb_lifecycle",
+  "cold_storage_key",
+  "cold_stored_on",
+  "cold_storage_bytes",
+  "restored_on",
+  "over_quota_since",
+  "sec_backups",
+  "last_backup_on",
+  "last_backup_key",
+  "cb_backups",
+  "last_backup_bytes",
+  "last_backup_error",
   "sec_usage",
   "storage_used_bytes",
   "database_used_bytes",
@@ -69,7 +88,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Draft\nProvisioning\nActive\nSuspended\nArchived\nFailed",
+   "options": "Draft\nProvisioning\nActive\nSuspended\nArchived\nPurged\nFailed",
    "reqd": 1
   },
   {
@@ -209,6 +228,130 @@
    "fieldname": "archived_on",
    "fieldtype": "Datetime",
    "label": "Archived On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_lifecycle",
+   "fieldtype": "Section Break",
+   "label": "Lifecycle"
+  },
+  {
+   "description": "When this workspace stopped being paid for. Empty means it is not on the ladder.",
+   "fieldname": "dunning_started_on",
+   "fieldtype": "Date",
+   "in_standard_filter": 1,
+   "label": "Dunning Started On",
+   "read_only": 1
+  },
+  {
+   "description": "Which rung the sweep last acted on. Distinct from status: an operator can suspend a paid-up workspace, and that is not the ladder.",
+   "fieldname": "dunning_stage",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Dunning Stage",
+   "options": "\nGrace\nSuspended\nArchived\nPurged",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Freeze this workspace out of the ladder entirely. A demo instance, a billing dispute, a legal hold. Nothing is suspended, archived or purged while this is set.",
+   "fieldname": "lifecycle_hold",
+   "fieldtype": "Check",
+   "label": "Lifecycle Hold"
+  },
+  {
+   "description": "The date the cold copy and every object this workspace owns may be deleted. Set when it is archived.",
+   "fieldname": "purge_after",
+   "fieldtype": "Date",
+   "label": "Purge After",
+   "read_only": 1
+  },
+  {
+   "description": "When the final warning went out. Purging refuses without one, so a bad window cannot delete a workspace that was never told.",
+   "fieldname": "purge_warned_on",
+   "fieldtype": "Date",
+   "label": "Purge Warned On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "purged_on",
+   "fieldtype": "Datetime",
+   "label": "Purged On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_lifecycle",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "R2 prefix holding the database, files and config this workspace can be rebuilt from.",
+   "fieldname": "cold_storage_key",
+   "fieldtype": "Data",
+   "label": "Cold Storage Key",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cold_stored_on",
+   "fieldtype": "Datetime",
+   "label": "Cold Stored On",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "cold_storage_bytes",
+   "fieldtype": "Float",
+   "label": "Cold Storage Bytes",
+   "read_only": 1
+  },
+  {
+   "description": "When it last came back from cold.",
+   "fieldname": "restored_on",
+   "fieldtype": "Datetime",
+   "label": "Restored On",
+   "read_only": 1
+  },
+  {
+   "description": "When what it holds first exceeded what it is allowed. Enforcement bites after the overage grace window.",
+   "fieldname": "over_quota_since",
+   "fieldtype": "Date",
+   "label": "Over Quota Since",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_backups",
+   "fieldtype": "Section Break",
+   "label": "Backups"
+  },
+  {
+   "description": "Reported by the site after each successful push to R2.",
+   "fieldname": "last_backup_on",
+   "fieldtype": "Datetime",
+   "in_standard_filter": 1,
+   "label": "Last Backup On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_backup_key",
+   "fieldtype": "Data",
+   "label": "Last Backup Key",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_backups",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "last_backup_bytes",
+   "fieldtype": "Float",
+   "label": "Last Backup Bytes",
+   "read_only": 1
+  },
+  {
+   "description": "Why the last attempt did not finish. A workspace that has not backed up in twice its interval is a fault, not a quiet gap.",
+   "fieldname": "last_backup_error",
+   "fieldtype": "Small Text",
+   "label": "Last Backup Error",
    "read_only": 1
   },
   {

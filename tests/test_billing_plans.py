@@ -159,6 +159,12 @@ QUOTA_FIELDS = (
 	"monthly_credit_grant",
 	"background_workers",
 	"press_site_plan",
+	# Backups are a term like any other: how often a workspace is copied to R2
+	# and how long the copies are kept both cost money and both are sold, so
+	# raising either on a plan must not change what an existing subscriber has
+	# already bought.
+	"backups_per_day",
+	"backup_retention_days",
 )
 
 

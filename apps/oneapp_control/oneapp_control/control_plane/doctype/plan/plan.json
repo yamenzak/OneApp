@@ -27,6 +27,10 @@
   "monthly_credit_grant",
   "background_workers",
   "database_gb",
+  "sec_backups",
+  "backups_per_day",
+  "cb_backups",
+  "backup_retention_days",
   "sec_press_plan",
   "press_site_plan",
   "description",
@@ -160,6 +164,29 @@
    "fieldname": "database_gb",
    "fieldtype": "Int",
    "label": "Database Gb"
+  },
+  {
+   "fieldname": "sec_backups",
+   "fieldtype": "Section Break",
+   "label": "Backups"
+  },
+  {
+   "default": "1",
+   "description": "How often this plan's workspaces back themselves up to R2. The first run of each day takes files as well; the rest are database-only, which is what actually changes.",
+   "fieldname": "backups_per_day",
+   "fieldtype": "Int",
+   "label": "Backups Per Day"
+  },
+  {
+   "fieldname": "cb_backups",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "7",
+   "description": "How long those backups are kept. The cold copy taken when a workspace is suspended is exempt \u2014 it lives under its own prefix and answers to the lifecycle windows.",
+   "fieldname": "backup_retention_days",
+   "fieldtype": "Int",
+   "label": "Backup Retention Days"
   },
   {
    "fieldname": "sec_press_plan",

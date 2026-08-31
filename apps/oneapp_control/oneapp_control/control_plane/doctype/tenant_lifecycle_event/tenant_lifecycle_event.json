@@ -1,0 +1,120 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "tenant",
+  "event",
+  "occurred_on",
+  "cb_event",
+  "from_status",
+  "to_status",
+  "triggered_by",
+  "sec_detail",
+  "reason",
+  "detail"
+ ],
+ "fields": [
+  {
+   "default": "TLE-.YYYY.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming Series",
+   "options": "TLE-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tenant",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tenant",
+   "options": "Tenant",
+   "reqd": 1
+  },
+  {
+   "fieldname": "event",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Event",
+   "options": "Dunning Started\nDunning Cleared\nWarned\nSuspended\nResumed\nCold Copy Taken\nArchived\nRestored\nPurge Warned\nPurged\nBackup Taken\nBackup Failed\nOver Quota\nBack Under Quota\nHeld\nReleased",
+   "reqd": 1
+  },
+  {
+   "fieldname": "occurred_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Occurred On",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_event",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "from_status",
+   "fieldtype": "Data",
+   "label": "From Status",
+   "read_only": 1
+  },
+  {
+   "fieldname": "to_status",
+   "fieldtype": "Data",
+   "label": "To Status",
+   "read_only": 1
+  },
+  {
+   "default": "Sweep",
+   "description": "A timer and a person are answerable for different things, so the row says which one this was.",
+   "fieldname": "triggered_by",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Triggered By",
+   "options": "Sweep\nWebhook\nOperator\nTenant Site\nSignup"
+  },
+  {
+   "fieldname": "sec_detail",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "Written for somebody reading it a year later, in a dispute. Say what was true, not what the code called it.",
+   "fieldname": "reason",
+   "fieldtype": "Small Text",
+   "label": "Reason"
+  },
+  {
+   "fieldname": "detail",
+   "fieldtype": "Code",
+   "label": "Detail",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Tenant Lifecycle Event",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

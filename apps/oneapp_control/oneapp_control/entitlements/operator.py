@@ -30,6 +30,7 @@ DOCTYPES = (
 	"Stripe Webhook Event", "Plan", "Region", "Storage Bucket",
 	"OneSpace Space", "Space Entitlement", "AI Model", "AI Feature",
 	"AI Usage Record", "Support Login", "Add-on", "Credit Pack", "Promo Code",
+	"Tenant Lifecycle Event",
 )
 
 # screen, label, icon, doctype, fields, status field
@@ -86,6 +87,11 @@ SCREENS = (
 	 "tenant,feature,model,credits_charged,cost_usd", ""),
 	("support", "Support logins", "lucide-stethoscope", "Support Login",
 	 "tenant,site,operator,reason,logged_in_on,succeeded", ""),
+	# The ladder's audit trail. On the rail rather than only on a workspace,
+	# because the question it answers most often is fleet-shaped: what did the
+	# sweep do last night, and to whom.
+	("lifecycle", "Lifecycle", "lucide-clock", "Tenant Lifecycle Event",
+	 "tenant,event,occurred_on,to_status,triggered_by,reason", "event"),
 )
 
 # The three that are not lists, and the reason the manifest is a shortcut rather

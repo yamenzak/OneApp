@@ -52,7 +52,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Action",
-   "options": "Create Site\nSuspend Site\nResume Site\nBackup Site\nArchive Site\nAdd Domain\nSet Primary Domain\nChange Plan\nMigrate Site\nCreate Standby Site\nClaim Standby Site",
+   "options": "Create Site\nSuspend Site\nResume Site\nBackup Site\nArchive Site\nRestore Site\nPurge Tenant\nAdd Domain\nSet Primary Domain\nChange Plan\nMigrate Site\nCreate Standby Site\nClaim Standby Site",
    "reqd": 1
   },
   {

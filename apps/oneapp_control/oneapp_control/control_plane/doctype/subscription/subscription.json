@@ -30,6 +30,8 @@
   "monthly_credit_grant",
   "background_workers",
   "press_site_plan",
+  "backups_per_day",
+  "backup_retention_days",
   "terms_captured_on",
   "sec_addons",
   "addons"
@@ -180,6 +182,18 @@
    "fieldname": "press_site_plan",
    "fieldtype": "Data",
    "label": "Press Site Plan"
+  },
+  {
+   "default": "0",
+   "fieldname": "backups_per_day",
+   "fieldtype": "Int",
+   "label": "Backups Per Day"
+  },
+  {
+   "default": "0",
+   "fieldname": "backup_retention_days",
+   "fieldtype": "Int",
+   "label": "Backup Retention Days"
   },
   {
    "description": "When these were copied from the plan. Empty means this subscription predates the snapshot and still reads the plan live.",
