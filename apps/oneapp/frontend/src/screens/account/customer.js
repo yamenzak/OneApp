@@ -141,6 +141,38 @@ export const removeMember = (workspace, email) =>
     successMessage: 'Removed',
   })
 
+export const setMemberRoles = (workspace, email, roles, access) =>
+  callMethod(
+    'oneapp_control.api.customer.set_member_roles',
+    { workspace, email, roles, access },
+    { successMessage: 'Saved — it applies on the next sync' },
+  )
+
+/**
+ * The roles a workspace may hand out, and the parts a new one is built from.
+ *
+ * Shipped roles come from the spaces this workspace is entitled to; custom ones
+ * it built itself. One list, because the person handing them out does not care
+ * which of the two a role is — only what it lets somebody do.
+ */
+export function useRoles(workspaceRef) {
+  return useResource('oneapp_control.api.customer.roles', {
+    params: () => ({ workspace: workspaceRef.value }),
+    refetch: true,
+    watch: ['Workspace Role'],
+  })
+}
+
+export const saveRole = (workspace, payload) =>
+  callMethod('oneapp_control.api.customer.save_role', { workspace, ...payload }, {
+    successMessage: 'Saved — it applies on the next sync',
+  })
+
+export const deleteRole = (workspace, name) =>
+  callMethod('oneapp_control.api.customer.delete_role', { workspace, name }, {
+    successMessage: 'Deleted',
+  })
+
 /** What this workspace can open — the same manifest its launcher renders. */
 export function useApps(workspaceRef) {
   return useResource('oneapp_control.api.customer.apps', {

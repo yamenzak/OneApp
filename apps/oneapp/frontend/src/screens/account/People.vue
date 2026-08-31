@@ -57,13 +57,35 @@
                 </div>
               </ListCell>
               <ListCell>
-                <Badge
-                  :theme="person.is_owner ? 'blue' : 'gray'"
-                  :label="person.access"
-                  variant="subtle"
-                />
+                <!--
+                  Access is the workspace-wide half — may they manage the
+                  workspace — and the roles are the per-app half. Both on one
+                  row because they are one question about one person.
+                -->
+                <div class="flex min-w-0 flex-wrap items-center gap-1">
+                  <Badge
+                    :theme="person.is_owner ? 'blue' : 'gray'"
+                    :label="person.access"
+                    variant="subtle"
+                  />
+                  <Badge
+                    v-for="key in person.roles || []"
+                    :key="key"
+                    theme="gray"
+                    variant="outline"
+                    :label="roleLabel(key)"
+                  />
+                </div>
               </ListCell>
-              <ListCell class="justify-end">
+              <ListCell class="justify-end gap-1">
+                <Button
+                  v-if="!person.is_owner"
+                  variant="ghost"
+                  label="Change what they can do"
+                  tooltip="Change what they can do"
+                  icon="lucide-settings-2"
+                  @click="startRoles(person)"
+                />
                 <Button
                   v-if="!person.is_owner"
                   variant="ghost"
@@ -107,6 +129,7 @@
             : 'Can use the apps this workspace is entitled to.'
         "
       />
+      <RolePicker v-model="form.roles" :roles="offeredRoles" />
       <ErrorMessage v-if="error" :message="error" />
     </div>
 
@@ -121,6 +144,34 @@
       <Button label="Cancel" @click="showInvite = false" />
     </template>
   </Dialog>
+
+  <!--
+    Changing someone is its own dialog rather than an inline edit on the row:
+    it is two decisions (workspace access, and which apps) and a row is one
+    line high.
+  -->
+  <Dialog v-model="showRoles" :title="editing?.full_name || editing?.email || 'Access'" size="lg">
+    <div class="flex flex-col gap-4">
+      <FormControl
+        v-model="roleForm.access"
+        type="select"
+        label="Access"
+        :options="accessOptions"
+        :description="
+          roleForm.access === 'Admin'
+            ? 'Can manage the workspace as well as use the apps.'
+            : 'Can use the apps this workspace is entitled to.'
+        "
+      />
+      <RolePicker v-model="roleForm.roles" :roles="offeredRoles" />
+      <ErrorMessage v-if="roleError" :message="roleError" />
+    </div>
+
+    <template #actions>
+      <Button variant="solid" label="Save" :loading="savingRoles" @click="saveRoles" />
+      <Button label="Cancel" @click="showRoles = false" />
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
@@ -130,10 +181,11 @@ import {
   FormControl, LoadingIndicator, List, ListHeader, ListHeaderCell, ListRows,
   ListRow, ListCell, vFocus,
 } from '@/ui'
+import RolePicker from './RolePicker.vue'
 import WorkspaceBar from './WorkspaceBar.vue'
 import { useWorkspace } from './workspace'
 import { useListColumns } from '../../lib/list'
-import { useMembers, inviteMember, removeMember } from './customer'
+import { useMembers, inviteMember, removeMember, setMemberRoles } from './customer'
 
 const { columns: memberColumns } = useListColumns([
   { key: 'person', header: 'Person', track: 'minmax(0,1fr)' },
@@ -168,12 +220,48 @@ const showInvite = ref(false)
 const inviting = ref(false)
 const removing = ref('')
 const error = ref('')
-const form = reactive({ email: '', full_name: '', access: 'Member' })
+const form = reactive({ email: '', full_name: '', access: 'Member', roles: [] })
+
+// Every role this workspace may hand out, shipped and custom alike. It arrives
+// with the members because the two are read together — you are looking at a
+// person in order to decide what they may do.
+const offeredRoles = computed(() => data.value?.roles || [])
+
+// key -> label, so a badge on the row reads "Sales" rather than "books:sales".
+const roleLabel = (key) =>
+  offeredRoles.value.find((role) => role.key === key)?.label || key
+
+const showRoles = ref(false)
+const savingRoles = ref(false)
+const roleError = ref('')
+const editing = ref(null)
+const roleForm = reactive({ access: 'Member', roles: [] })
+
+const startRoles = (person) => {
+  roleError.value = ''
+  editing.value = person
+  Object.assign(roleForm, { access: person.access, roles: [...(person.roles || [])] })
+  showRoles.value = true
+}
+
+const saveRoles = async () => {
+  savingRoles.value = true
+  roleError.value = ''
+  try {
+    await setMemberRoles(workspace.value, editing.value.email, roleForm.roles, roleForm.access)
+    showRoles.value = false
+    resource.reload()
+  } catch (e) {
+    roleError.value = e.message || String(e)
+  } finally {
+    savingRoles.value = false
+  }
+}
 
 watch(showInvite, (open) => {
   if (!open) return
   error.value = ''
-  Object.assign(form, { email: '', full_name: '', access: 'Member' })
+  Object.assign(form, { email: '', full_name: '', access: 'Member', roles: [] })
 })
 
 async function invite() {

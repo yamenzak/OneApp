@@ -43,6 +43,7 @@ export const APP_COMPONENTS = {
   'onespace-account/billing': () => import('./account/Billing.vue'),
   'onespace-account/plan': () => import('./account/Plan.vue'),
   'onespace-account/people': () => import('./account/People.vue'),
+  'onespace-account/roles': () => import('./account/Roles.vue'),
   'onespace-account/domain': () => import('./account/Domain.vue'),
 }
 

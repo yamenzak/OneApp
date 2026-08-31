@@ -447,6 +447,77 @@ def _seats(tenant) -> dict:
 	return {"used": used, "quota": quota, "remaining": max(quota - used, 0) if quota else None}
 
 
+def _role_keys(held) -> list[str]:
+	return [part.strip() for part in str(held or "").split(",") if part.strip()]
+
+
+def _validated_roles(tenant, roles) -> str:
+	"""The role keys a workspace may actually hand out, as the field stores them.
+
+	Checked against `offered_roles` rather than taken on trust. The keys travel
+	from a browser, and an unknown one would be silently dropped at sync time —
+	which reads as "I ticked it and nothing happened" and is the worst way to
+	find out. Better to refuse and say which.
+
+	Defaults are not stored: every space's default arrives with the entitlement
+	(`roles_for_member`), so writing them down here would mean a role removed
+	from a space lingers on every member who was invited while it existed.
+	"""
+	from oneapp_control.entitlements import registry
+
+	if roles is None:
+		return ""
+	if isinstance(roles, str):
+		wanted = _role_keys(roles)
+	else:
+		wanted = [str(one).strip() for one in roles if str(one).strip()]
+
+	offered = {r["key"]: r for r in registry.offered_roles(tenant.name)}
+	unknown = [key for key in wanted if key not in offered]
+	if unknown:
+		frappe.throw(
+			_("This workspace does not offer {0}.").format(", ".join(sorted(unknown)))
+		)
+
+	return ",".join(sorted({key for key in wanted if not offered[key]["is_default"]}))
+
+
+@frappe.whitelist(methods=["POST"])
+def set_member_roles(workspace: str, email: str, roles: str | list | None = None,
+                     access: str | None = None) -> dict:
+	"""Change what one person may do.
+
+	Roles and access together, because they are one decision on one screen —
+	`access` is the workspace-wide half (may they manage the workspace) and the
+	roles are the per-app half.
+	"""
+	tenant = require_workspace(workspace)
+	email = (email or "").strip().lower()
+
+	if email == (tenant.owner_email or "").strip().lower():
+		# The owner's reach is not a role. They hold the workspace, they are the
+		# billing contact, and a screen that let somebody demote them would let
+		# a workspace lock itself out of its own subscription.
+		frappe.throw(_("The workspace owner's access cannot be changed here."))
+
+	row = next(
+		(r for r in tenant.members or [] if (r.email or "").strip().lower() == email), None
+	)
+	if not row:
+		frappe.throw(_("{0} is not a member of this workspace.").format(email))
+
+	if access is not None:
+		if access not in ACCESS_LEVELS:
+			frappe.throw(_("Unknown access level {0}.").format(access))
+		row.access = access
+
+	row.roles = _validated_roles(tenant, roles)
+	tenant.save(ignore_permissions=True)
+	frappe.db.commit()
+
+	return members(workspace)
+
+
 @frappe.whitelist(methods=["GET"])
 def members(workspace: str | None = None) -> dict:
 	"""Everyone who can sign in to the workspace, the owner first."""
@@ -461,6 +532,9 @@ def members(workspace: str | None = None) -> dict:
 			"invited_on": tenant.creation,
 		}
 	]
+	from oneapp_control.entitlements import registry
+
+	offered = {r["key"] for r in registry.offered_roles(tenant.name)}
 	people += [
 		{
 			"email": row.email,
@@ -468,6 +542,18 @@ def members(workspace: str | None = None) -> dict:
 			"access": row.access,
 			"is_owner": False,
 			"invited_on": row.invited_on,
+			# The keys, not the resolved Frappe roles: this list is what the
+			# picker ticks against, and the Frappe names are an implementation
+			# detail of the site this person will sign in to.
+			#
+			# Narrowed to what is still offered. A key outlives the role it
+			# names — deleting a custom role deliberately leaves it on whoever
+			# held it, because `roles_for_member` drops what it does not
+			# recognise and that is what makes the delete safe. Showing the
+			# stale key here would put a tick beside a role that no longer
+			# exists, and saving that back would be refused by
+			# `_validated_roles` for a box the person never touched.
+			"roles": [key for key in _role_keys(row.roles) if key in offered],
 		}
 		for row in (tenant.members or [])
 	]
@@ -476,6 +562,10 @@ def members(workspace: str | None = None) -> dict:
 		"members": people,
 		"seats": _seats(tenant),
 		"access_levels": list(ACCESS_LEVELS),
+		# Everything this workspace may hand out, shipped and custom alike. Sent
+		# with the members because the two are read together — you are looking
+		# at a person to decide what they may do.
+		"roles": registry.offered_roles(tenant.name),
 		# An invite becomes an account on the workspace's next sync, not now.
 		# Saying so is the difference between "slow" and "broken".
 		"last_synced": tenant.usage_synced_on,
@@ -483,7 +573,8 @@ def members(workspace: str | None = None) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def invite_member(workspace: str, email: str, full_name: str = "", access: str = "Member") -> dict:
+def invite_member(workspace: str, email: str, full_name: str = "", access: str = "Member",
+                  roles: str | list | None = None) -> dict:
 	"""Add someone to the workspace, within the plan's seat count."""
 	tenant = require_workspace(workspace)
 
@@ -517,6 +608,7 @@ def invite_member(workspace: str, email: str, full_name: str = "", access: str =
 			"email": email,
 			"full_name": (full_name or "").strip(),
 			"access": access,
+			"roles": _validated_roles(tenant, roles),
 			"invited_on": frappe.utils.now_datetime(),
 		},
 	)
@@ -694,3 +786,164 @@ def _differs(in_force: dict, row) -> bool:
 		(in_force.get(field) or 0) != (row.get(field) or 0)
 		for field in ("storage_gb", "database_gb", "max_users", "monthly_credit_grant")
 	)
+
+
+# --------------------------------------------------------------------------- #
+# Roles the workspace builds for itself
+#
+# The shipped roles are what an app thinks the jobs are. A workspace that
+# disagrees builds its own out of the same parts, and `allowed_doctypes` is the
+# bound: the union of every doctype the workspace's own spaces expose. A custom
+# role therefore cannot reach `User`, `Role` or `DocType` — they appear in no
+# manifest — and cannot reach an app the workspace has not bought.
+#
+# `Workspace Role.validate` checks the same thing, because the operator console
+# is a second door onto the same records and an allowlist one door skips is not
+# an allowlist. This is where a person is told *why*, which is the part a
+# validate hook is bad at.
+# --------------------------------------------------------------------------- #
+
+GRANT_LEVELS = ("Read", "Write", "Manage")
+
+
+@frappe.whitelist(methods=["GET"])
+def roles(workspace: str | None = None) -> dict:
+	"""Every role on offer, and the parts a new one can be built from."""
+	tenant = require_workspace(workspace)
+	from oneapp_control.entitlements import registry
+
+	custom = frappe.get_all(
+		"Workspace Role",
+		filters={"tenant": tenant.name},
+		fields=["name", "role_label", "description", "is_active", "created_by_email"],
+		order_by="role_label asc",
+	)
+	for role in custom:
+		role["grants"] = frappe.get_all(
+			"Workspace Role Grant",
+			filters={"parent": role["name"], "parenttype": "Workspace Role"},
+			fields=["space", "document_type", "access", "if_owner"],
+			order_by="idx asc",
+		)
+
+	return {
+		"offered": registry.offered_roles(tenant.name),
+		"custom": custom,
+		"available": _available_grants(tenant.name),
+		"levels": list(GRANT_LEVELS),
+	}
+
+
+def _available_grants(tenant: str) -> list[dict]:
+	"""What a custom role may reach, grouped the way somebody thinks about it.
+
+	Named by the screen that shows it wherever there is one. A doctype is called
+	`Sales Invoice` and the workspace's own navigation calls it `Invoices`, and
+	the second is the word the person building a role has been looking at all
+	week. Falls back to the doctype's name, which is honest rather than helpful
+	and is better than inventing something.
+	"""
+	from oneapp_control.entitlements.registry import screens_for, spaces_for_tenant
+
+	rows = []
+	for space in spaces_for_tenant(tenant):
+		labels = {
+			screen["document_type"]: screen["label"]
+			for screen in screens_for(space["space_code"])
+			if screen.get("document_type")
+		}
+		seen = set()
+		for grant in frappe.get_all(
+			"OneSpace Space Doctype",
+			filters={"parent": space["space_code"], "parenttype": "OneSpace Space"},
+			fields=["document_type"],
+			order_by="idx asc",
+		):
+			doctype = grant["document_type"]
+			if doctype in seen:
+				# One doctype can appear once per role in the manifest; the
+				# builder offers it once.
+				continue
+			seen.add(doctype)
+			rows.append({
+				"space": space["space_code"],
+				"space_label": space.get("space_label"),
+				"document_type": doctype,
+				"label": labels.get(doctype) or doctype,
+			})
+	return rows
+
+
+@frappe.whitelist(methods=["POST"])
+def save_role(workspace: str, role_label: str, grants: str | list,
+              description: str = "", name: str | None = None) -> dict:
+	"""Create or replace one of the workspace's own roles.
+
+	Replace, not patch: the builder sends the whole grant list, so a doctype
+	dropped from it is dropped from the role. A patch would need the browser and
+	the server to agree about what was there before, and they cannot.
+	"""
+	tenant = require_workspace(workspace)
+	rows = _grant_rows(grants)
+
+	if name:
+		doc = frappe.get_doc("Workspace Role", name)
+		if doc.tenant != tenant.name:
+			# Not "not found": a workspace asking about another workspace's role
+			# has been handed an id it should not have.
+			frappe.throw(_("That role belongs to another workspace."), frappe.PermissionError)
+		doc.role_label = role_label
+		doc.description = description
+		doc.set("grants", rows)
+	else:
+		doc = frappe.get_doc({
+			"doctype": "Workspace Role",
+			"tenant": tenant.name,
+			"role_label": role_label,
+			"description": description,
+			"is_active": 1,
+			"grants": rows,
+		})
+
+	# `validate` re-checks every grant against the allowlist and refuses the
+	# save, so this is the one call that has to succeed for the role to exist.
+	doc.save(ignore_permissions=True)
+	frappe.db.commit()
+	return roles(workspace)
+
+
+def _grant_rows(grants) -> list[dict]:
+	rows = []
+	for one in frappe.parse_json(grants) or []:
+		access = one.get("access") or "Read"
+		if access not in GRANT_LEVELS:
+			frappe.throw(_("Unknown access level {0}.").format(access))
+		rows.append({
+			"space": one.get("space") or "",
+			"document_type": one.get("document_type"),
+			"access": access,
+			"if_owner": 1 if one.get("if_owner") else 0,
+		})
+	if not rows:
+		frappe.throw(_("A role has to grant something."))
+	return rows
+
+
+@frappe.whitelist(methods=["POST"])
+def delete_role(workspace: str, name: str) -> dict:
+	"""Remove a role the workspace built.
+
+	The people holding it keep the key in their member row and simply stop
+	resolving to anything — `roles_for_member` drops a key it does not
+	recognise, which is what makes a delete safe to do while somebody holds it.
+	The Frappe role itself goes on the tenant site's next sync, because it stops
+	appearing in the manifest.
+	"""
+	tenant = require_workspace(workspace)
+	doc = frappe.get_doc("Workspace Role", name)
+	if doc.tenant != tenant.name:
+		frappe.throw(_("That role belongs to another workspace."), frappe.PermissionError)
+
+	doc.delete(ignore_permissions=True)
+	frappe.db.commit()
+	return roles(workspace)

@@ -35,6 +35,10 @@ SCREENS = (
 	("billing", "Billing", "lucide-receipt"),
 	("plan", "Plan", "lucide-briefcase"),
 	("people", "People", "lucide-users"),
+	# Beside People rather than inside it: a role is a thing that exists whether
+	# or not anybody holds it, and building one is a different sitting from
+	# handing one out.
+	("roles", "Roles", "lucide-user-round"),
 	("domain", "Domain", "lucide-store"),
 )
 

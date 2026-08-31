@@ -220,3 +220,60 @@ def _source(module) -> str:
 	from pathlib import Path
 
 	return Path(module.__file__).read_text()
+
+
+# --------------------------------------------------------------------------- #
+# What a workspace's own role is allowed to reach
+# --------------------------------------------------------------------------- #
+
+def test_the_operator_space_is_entitled_to_nobody():
+	"""It was General, and `spaces_for_tenant` hands every General space to every
+	tenant — so the operator console was in every workspace's permission
+	manifest, and each tenant site was told to create an `OneSpace Operator`
+	role with permissions over Tenant, Subscription and the credit ledger.
+
+	Inert while nothing read it: those doctypes do not exist on a tenant site
+	and `sync_permissions` skips what it cannot find. It stopped being inert the
+	moment `allowed_doctypes` got its first caller — the workspace's own role
+	builder — because the builder offers exactly that list. Measured against a
+	real site, the allowlist went from 34 doctypes to 11 when this changed.
+
+	`local_spaces`, which is what actually serves the control site, filters on
+	`is_active` alone — so nothing here ever depended on General.
+	"""
+	from pathlib import Path
+
+	root = Path(__file__).resolve().parent.parent / "apps/oneapp_control/oneapp_control"
+	operator = (root / "entitlements/operator.py").read_text()
+	manifest = operator[operator.index("def manifest()"):]
+	assert '"availability": "Restricted"' in manifest, (
+		"the operator console is General again, so every tenant's permission "
+		"manifest carries it and every workspace's role builder offers the "
+		"control plane's own doctypes"
+	)
+
+	registry = (root / "entitlements/registry.py").read_text()
+	local = registry[registry.index("def local_spaces"):]
+	local = local[: local.index("\ndef ")]
+	assert "availability" not in local, (
+		"local_spaces now filters on availability, so making the operator space "
+		"Restricted would hide it from the console it exists for"
+	)
+
+
+def test_a_custom_role_is_bounded_by_the_allowlist():
+	"""The whole security argument for letting a customer author permissions.
+
+	Checked in `validate` rather than only in the API, because the operator
+	console is a second door onto the same records and an allowlist one door
+	skips is not an allowlist.
+	"""
+	from pathlib import Path
+
+	root = Path(__file__).resolve().parent.parent / "apps/oneapp_control/oneapp_control"
+	controller = (root / "control_plane/doctype/workspace_role/workspace_role.py").read_text()
+	assert "def validate(" in controller
+	assert "allowed_doctypes" in controller, (
+		"a custom role is no longer bounded by what the workspace's spaces expose"
+	)
+	assert "validate_grants_are_allowed" in controller

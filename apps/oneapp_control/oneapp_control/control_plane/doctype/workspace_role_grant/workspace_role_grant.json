@@ -13,12 +13,11 @@
  ],
  "fields": [
   {
-   "description": "Which space this doctype came from. Data rather than a Link so a space retired from the catalogue leaves a row that reads instead of a delete that fails.",
+   "description": "Which space this doctype came from, for grouping. Data rather than a Link so a space retired from the catalogue leaves a row that reads instead of a delete that fails.",
    "fieldname": "space",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Space",
-   "reqd": 1
+   "label": "Space"
   },
   {
    "fieldname": "document_type",

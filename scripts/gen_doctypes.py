@@ -658,10 +658,13 @@ doctype(
     "Workspace Role Grant",
     istable=1,
     fields=[
-        f("space", reqd=1, in_list_view=1,
-          description="Which space this doctype came from. Data rather than a "
-                      "Link so a space retired from the catalogue leaves a row "
-                      "that reads instead of a delete that fails."),
+        # Not required: it labels the row, it does not identify it. The doctype
+        # is what the grant is *about*, and one doctype can be exposed by two
+        # spaces — insisting on one answer would make a true row unsaveable.
+        f("space", in_list_view=1,
+          description="Which space this doctype came from, for grouping. Data "
+                      "rather than a Link so a space retired from the catalogue "
+                      "leaves a row that reads instead of a delete that fails."),
         f("document_type", label="Doctype", reqd=1, in_list_view=1),
         f("access", "Select", options="Read\nWrite\nManage", default="Read",
           reqd=1, in_list_view=1),
