@@ -761,7 +761,26 @@ def _resolve(space_code: str, screen: str | None = None,
 		"form": _form(meta, {
 			c["fieldname"]: c for c in offerable if c["fieldname"] != META_COLUMN
 		}),
-		"can_create": bool(frappe.has_permission(doctype, "create")),
+		# Three answers, and the narrowest wins.
+		#
+		# The permission is the first, and on its own it was the only one — which
+		# is why New sat over the credit ledger, the webhook log and the
+		# provisioning queue. `has_permission(create)` is true for all of them:
+		# the code that owns those rows writes them through this same
+		# permission, so taking it away would break the writer to tidy a button.
+		#
+		# `in_create` is Frappe's own answer to exactly that — "User Cannot
+		# Create", a flag that hides New while leaving the permission intact.
+		# The desk reads it in `perm.js` and `toolbar.js`, and now so does this.
+		#
+		# `hide_new` is the manifest's, and it can only narrow: a screen over a
+		# doctype we do not own — ERPNext's, on a tenant site — may still be a
+		# reading surface.
+		"can_create": (
+			bool(frappe.has_permission(doctype, "create"))
+			and not int(getattr(meta, "in_create", 0) or 0)
+			and not int(chosen.get("hide_new") or 0)
+		),
 		"can_write": bool(frappe.has_permission(doctype, "write")),
 		"can_delete": bool(frappe.has_permission(doctype, "delete")),
 	})

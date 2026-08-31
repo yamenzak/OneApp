@@ -11,13 +11,14 @@
   <div class="flex min-w-0 items-center gap-2">
     <Avatar :image="image" :label="plainText(title) || String(row.name)" shape="square" size="lg" />
     <!--
-      The title is what opens the record, because the row click belongs to
-      selection — frappe-ui's List hands every row click to the checkbox when
-      `selectable` is on, with no way to share it. Frappe's own list works the
-      same way: the subject is the link and the rest of the row is not.
+      A Button, still, now that the whole row opens the record (see
+      `ListBody.openRow`). The row is a `div` — frappe-ui only renders it as a
+      `button` when it carries its own click handler, and ours is on the cells
+      — so a div is the one thing a keyboard cannot reach. This is that path,
+      and it is also the visible affordance that the row leads somewhere.
 
-      A Button rather than a span with a handler: this is the primary action on
-      the row and it has to be reachable from a keyboard.
+      `@click.stop` because `openRow` already skips anything inside a control:
+      without the stop this would open the record twice.
     -->
     <Button
       variant="ghost"

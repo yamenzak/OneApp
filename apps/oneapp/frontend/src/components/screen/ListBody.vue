@@ -101,6 +101,7 @@
                   :key="c.key"
                   :class="c.pin && PINNED"
                   :style="stickyStyle(c)"
+                  @click="openRow(row, $event)"
                 >
                   <TitleCell
                     v-if="c.cell === 'title'"
@@ -150,6 +151,7 @@
               :key="c.key"
               :class="c.pin && PINNED"
               :style="stickyStyle(c)"
+              @click="openRow(row, $event)"
             >
               <TitleCell
                 v-if="c.cell === 'title'"
@@ -183,10 +185,10 @@
       A table wide enough to scroll has to say so. The scrollbar is on
       screen now, but an overlay scrollbar fades and a full-bleed column
       at the edge reads as the end of the table — so the edge with more
-      beyond it carries a shadow, and it goes away when there is not.
+      beyond it carries a rule, and it goes away when there is not.
     -->
-    <div v-if="edges.left" aria-hidden="true" :class="[EDGE, 'left-0', EDGE_LEFT]" />
-    <div v-if="edges.right" aria-hidden="true" :class="[EDGE, 'right-0', EDGE_RIGHT]" />
+    <div v-if="edges.left" aria-hidden="true" :class="[EDGE, 'left-0']" />
+    <div v-if="edges.right" aria-hidden="true" :class="[EDGE, 'right-0']" />
   </div>
 </template>
 
@@ -227,6 +229,30 @@ const props = defineProps({
 
 const emit = defineEmits(['open', 'like', 'sort', 'favourites'])
 
+// A row click opens the record; the checkbox selects.
+//
+// frappe-ui's own answer is the other way round — `selectable` is documented as
+// switching "row click from navigate to toggle", and `ListRow.onClick` returns
+// before the app's handler ever runs — so the only thing that opened a record
+// was the title text, and clicking anywhere else in the row silently ticked a
+// checkbox. That is not what a list of records does anywhere else, and it is
+// not what Frappe's desk does either.
+//
+// Handled on the cell rather than the row, because the cell is where the click
+// can still be caught: stopping it here means `ListRow` never sees it, so its
+// toggle never fires. The checkbox keeps working — `ListRowBase` renders it as
+// an absolutely-positioned sibling of the cells with its own `.stop` handler,
+// so it is not inside anything this intercepts.
+const INTERACTIVE = 'a[href], button, input, select, textarea, [role="checkbox"], [contenteditable="true"]'
+
+const openRow = (row, event) => {
+  // A control inside the cell owns its own click: the like heart, a link
+  // chip, the title button. Without this, liking a row would also open it.
+  if (event.target?.closest?.(INTERACTIVE)) return
+  event.stopPropagation()
+  emit('open', row)
+}
+
 const selection = defineModel('selection', { type: Array, default: () => [] })
 const chosen = selection
 
@@ -237,17 +263,22 @@ const META_FIELD = '__activity'
 // is a computed pixel value, not a token.
 const PINNED = 'sticky z-10 bg-surface-base'
 
-// The edge affordance: a wash over the column at whichever side has more beyond
-// it. Not a border — a border says "the table ends here", which is the opposite
-// of what this means.
+// The edge affordance: a hairline at whichever side has more beyond it.
 //
-// It has to be legible, which the first version was not: this environment's
-// scrollbars are overlay ones, so the horizontal bar is invisible until you are
-// already scrolling and this is the *only* thing saying there is more. Above
-// the sticky header's z-index too, or it stops at the first row.
-const EDGE = 'pointer-events-none absolute inset-y-0 z-30 w-10'
-const EDGE_LEFT = 'bg-gradient-to-r from-surface-gray-4 to-transparent opacity-70'
-const EDGE_RIGHT = 'bg-gradient-to-l from-surface-gray-4 to-transparent opacity-70'
+// It was a 40px gradient wash, which is the shape a phone app uses to fade
+// content out and reads as decoration on a data grid — it dimmed a strip of
+// real values to say something about scrolling. A rule says the same thing in
+// one pixel and hides nothing: it is drawn only on the side with more table,
+// and it goes away at the end, so its presence is the whole message.
+//
+// A border rather than a background, because the hairline wants the same token
+// the header band and the row dividers already draw — and that token is an
+// *outline* colour, so `bg-outline-gray-2` is not a class at all. It emitted no
+// CSS and the affordance was simply invisible; `test_every_class_emits_css`
+// caught it. Zero width plus a left border is the 1px line, once.
+//
+// Above the sticky header's z-index, or it stops at the first row.
+const EDGE = 'pointer-events-none absolute inset-y-0 z-30 w-0 border-l border-outline-gray-2'
 
 // How many rows before windowing them is worth the complexity it adds.
 const VIRTUAL_FROM = 200

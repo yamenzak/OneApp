@@ -440,6 +440,15 @@ doctype(
         f("component",
           description="Escape hatch: a component the SPA registered under "
                       "`spaceCode/screen`. Set this and the doctype above is ignored."),
+        # Narrowing only, deliberately. A screen may refuse to offer New over a
+        # doctype that allows it — an ERPNext doctype we do not own, a screen
+        # meant as a report — but it may not offer New over a doctype whose own
+        # `in_create` says no. A manifest that could grant creation would be a
+        # second, weaker answer to a question the doctype already answers.
+        f("hide_new", "Check", default="0", label="Never offer New",
+          description="Hide New on this screen even where the doctype allows "
+                      "one to be made. For a screen that reads records "
+                      "something else writes."),
         f("status_field",
           description="Which field says where a record stands — the one whose "
                       "value goes on the badge beside a record's name. A "
@@ -553,6 +562,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Support Login",
+    # Not made by hand: every row is written by `admin.support_login` before it hands over a session.
+    in_create=1,
     autoname="hash",
     # Read-only, like the credit ledger and the lifecycle log. An audit trail an
     # operator can write by hand is not an audit trail — and every row is
@@ -820,6 +831,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Subscription",
+    # Not made by hand: Stripe owns the schedule; the webhook writes this.
+    in_create=1,
     autoname="naming_series:",
     fields=[
         f("naming_series", "Select", options="SUB-.YYYY.-", default="SUB-.YYYY.-",
@@ -910,6 +923,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Provisioning Job",
+    # Not made by hand: the runner creates these; one made by hand has no idempotency key.
+    in_create=1,
     autoname="naming_series:",
     fields=[
         f("naming_series", "Select", options="PJOB-.YYYY.-", default="PJOB-.YYYY.-",
@@ -957,6 +972,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Tenant Lifecycle Event",
+    # Not made by hand: the ladder's append-only trail.
+    in_create=1,
     autoname="naming_series:",
     perms=READONLY_PERMS,
     fields=[
@@ -992,6 +1009,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Credit Ledger Entry",
+    # Not made by hand: the ledger is append-only and balance is a sum of it.
+    in_create=1,
     autoname="naming_series:",
     perms=READONLY_PERMS,
     fields=[
@@ -1023,6 +1042,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Credit Reservation",
+    # Not made by hand: reserve/commit is the gateway's, and a stray Open row expires.
+    in_create=1,
     autoname="naming_series:",
     fields=[
         f("naming_series", "Select", options="CRES-.YYYY.-", default="CRES-.YYYY.-",
@@ -1236,6 +1257,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "AI Model",
+    # Not made by hand: synced from the providers; one typed here would have no prices.
+    in_create=1,
     autoname="field:model_key",
     title_field="display_name",
     fields=[
@@ -1299,6 +1322,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "AI Feature",
+    # Not made by hand: reported by tenant sites from the decorator, never authored.
+    in_create=1,
     autoname="field:feature_key",
     title_field="label",
     fields=[
@@ -1353,6 +1378,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "AI Usage Record",
+    # Not made by hand: one row per call, written by the gateway.
+    in_create=1,
     autoname="naming_series:",
     perms=READONLY_PERMS,
     fields=[
@@ -1550,6 +1577,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Stripe Webhook Event",
+    # Not made by hand: a mirror of what Stripe delivered.
+    in_create=1,
     autoname="field:event_id",
     perms=READONLY_PERMS,
     fields=[
@@ -1577,6 +1606,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Account Request",
+    # Not made by hand: signup creates these, and carries them through checkout.
+    in_create=1,
     autoname="hash",
     title_field="workspace_name",
     fields=[
@@ -1627,6 +1658,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Standby Site",
+    # Not made by hand: the pool builder creates these against a real site on Frappe Cloud.
+    in_create=1,
     autoname="field:press_site",
     fields=[
         f("press_site", label="Press Site", reqd=1, unique=1, in_list_view=1),
@@ -1685,6 +1718,8 @@ doctype(
 # --------------------------------------------------------------------------- #
 doctype(
     "Storage Bucket",
+    # Not made by hand: `r2.provision_bucket` makes the bucket first and the row after.
+    in_create=1,
     autoname="field:bucket_name",
     fields=[
         f("bucket_name", reqd=1, unique=1, in_list_view=1),
@@ -1779,6 +1814,7 @@ doctype(
 HANDLED_SPEC_KEYS = {
     "name", "fields", "perms", "autoname", "title_field",
     "allow_rename", "issingle", "istable", "app", "track_changes",
+    "in_create",
 }
 
 
@@ -1811,6 +1847,13 @@ def build(spec):
         # made and nobody would ever read.
         "track_changes": spec.get("track_changes", 1),
     }
+    if spec.get("in_create"):
+        # Frappe's own "User Cannot Create". It does *not* remove the create
+        # permission — `has_permission(create)` stays true, which is what lets
+        # the code that owns these keep writing them — it tells a UI not to
+        # offer New. Frappe's desk reads it in `perm.js` and `toolbar.js`;
+        # OneSpace reads it in `spaceview._resolve`.
+        doc["in_create"] = 1
     if spec.get("autoname"):
         doc["autoname"] = spec["autoname"]
     if spec.get("title_field"):
