@@ -40,6 +40,7 @@
   "purged_on",
   "cb_lifecycle",
   "cold_storage_key",
+  "cold_copy_requested_on",
   "cold_stored_on",
   "cold_storage_bytes",
   "restored_on",
@@ -288,6 +289,12 @@
    "fieldname": "cold_storage_key",
    "fieldtype": "Data",
    "label": "Cold Storage Key",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cold_copy_requested_on",
+   "fieldtype": "Datetime",
+   "label": "Cold Copy Requested On",
    "read_only": 1
   },
   {

@@ -78,6 +78,11 @@ def sync():
 			# schedule because it owns the files; the plan owns the number.
 			"backups_per_day": int(tenant.terms.get("backups_per_day") or 0),
 		},
+		# One flag, and it is how the control plane asks for a final full backup
+		# before a workspace is archived. There is no channel from here into a
+		# tenant site — every wire runs the other way — so a request is something
+		# the site collects rather than something we deliver.
+		"backup": {"requested": bool(tenant.cold_copy_requested_on)},
 		"spaces": registry.spaces_for_tenant(tenant_name),
 		"modules": registry.entitled_modules(tenant_name),
 		"roles": registry.entitled_roles(tenant_name),
@@ -253,7 +258,13 @@ def report_backup():
 				"files": data.get("files"),
 			},
 		)
-		return {"ok": True}
+
+		# This is the copy we asked for. Promote it now rather than waiting for
+		# tomorrow's sweep: a workspace held one rung short of suspension for a
+		# day because its backup landed an hour after the sweep is a day we are
+		# carrying somebody who has stopped paying.
+		promoted = _promote_if_requested(tenant_name, data)
+		return {"ok": True, **({"cold": promoted} if promoted else {})}
 
 	error = (data.get("error") or "Backup failed")[:1000]
 	frappe.db.set_value("Tenant", tenant_name, "last_backup_error", error)
@@ -261,6 +272,41 @@ def report_backup():
 		tenant_name, "Backup Failed", triggered_by="Tenant Site", reason=error
 	)
 	return {"ok": True, "recorded": "failure"}
+
+
+def _promote_if_requested(tenant_name: str, data: dict) -> dict | None:
+	"""Promote a just-reported backup to cold storage, if one was asked for.
+
+	Only a full backup will do. An intra-day database-only run carries no files
+	and restoring from it would silently produce a workspace with every record
+	and no attachments — which looks like it worked.
+	"""
+	tenant = frappe.get_doc("Tenant", tenant_name)
+	if not tenant.cold_copy_requested_on or tenant.cold_storage_key:
+		return None
+	if not data.get("with_files"):
+		return None
+
+	from oneapp_control.lifecycle import backups as backup_policy
+	from oneapp_control.lifecycle import cold
+
+	bucket = cold.bucket_for(tenant)
+	if not bucket:
+		return None
+
+	held = backup_policy.sets(bucket, tenant_name)
+	if not held:
+		return None
+
+	try:
+		return cold.promote(tenant, held[-1], bucket=bucket, triggered_by="Tenant Site")
+	except Exception:
+		# The backup itself arrived and is recorded. Failing the report because
+		# a copy between two prefixes failed would make the site take it again.
+		frappe.log_error(
+			title=f"Cold promotion failed for {tenant_name}", message=frappe.get_traceback()
+		)
+		return None
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])

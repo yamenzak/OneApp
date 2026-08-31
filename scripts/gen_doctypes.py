@@ -692,6 +692,12 @@ doctype(
         f("cold_storage_key", "Data", read_only=1,
           description="R2 prefix holding the database, files and config this "
                       "workspace can be rebuilt from."),
+        # Every wire between here and a tenant site runs the other way, over
+        # HMAC, so asking for a final backup is a flag the site picks up on its
+        # next sync rather than a call. This is when we started asking — and
+        # what stops us asking forever, because a site that has not synced in
+        # days is not about to.
+        f("cold_copy_requested_on", "Datetime", read_only=1),
         f("cold_stored_on", "Datetime", read_only=1),
         f("cold_storage_bytes", "Float", default="0", read_only=1),
         f("restored_on", "Datetime", read_only=1,

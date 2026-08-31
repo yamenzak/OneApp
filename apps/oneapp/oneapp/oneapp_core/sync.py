@@ -157,6 +157,7 @@ def sync_from_control_plane() -> dict:
 		(payload.get("owner") or {}).get("email") or "",
 	)
 	sync_email_account()
+	sync_backup_request(payload.get("backup") or {})
 	sync_branding(tenant)
 	books = sync_books(payload.get("books"))
 	sync_ai(payload.get("ai") or {}, credits)
@@ -169,6 +170,45 @@ def sync_from_control_plane() -> dict:
 		"members_disabled": people["disabled"],
 		"books": books,
 	}
+
+
+def sync_backup_request(block: dict) -> None:
+	"""Take a final full backup, if the control plane has asked for one.
+
+	This is how a workspace about to be archived gets a copy it can be restored
+	from. Enqueued rather than run inline: a full backup of a large workspace is
+	minutes of dumping and tarring, and the sync job also creates users, writes
+	permissions and reconciles the email account — holding all of that behind a
+	tarball would turn one slow backup into a site that looks stuck.
+
+	No guard against asking twice. The control plane clears the flag the moment
+	the copy is promoted, so the worst a duplicate costs is one extra backup,
+	and refusing one would mean a failed upload could never be retried.
+	"""
+	if not block.get("requested"):
+		return
+
+	from oneapp.oneapp_core import backup
+
+	try:
+		frappe.enqueue(
+			backup.run_backup,
+			queue="long",
+			timeout=3600,
+			with_files=True,
+			job_id=f"oneapp-cold-backup-{frappe.local.site}",
+			deduplicate=True,
+		)
+	except Exception:
+		# An older Frappe without `deduplicate`, or no worker to enqueue onto.
+		# Taking it inline is slower than we would like and better than not
+		# taking it at all — this is the copy that decides whether a workspace
+		# can be brought back.
+		frappe.log_error(
+			title="Cold backup could not be enqueued; taking it inline",
+			message=frappe.get_traceback(),
+		)
+		backup.run_backup(with_files=True)
 
 
 def sync_ai(block: dict, credits: dict) -> None:
