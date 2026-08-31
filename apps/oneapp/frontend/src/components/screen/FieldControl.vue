@@ -381,7 +381,7 @@ import FieldLabel from './FieldLabel.vue'
 import LinkPicker from './LinkPicker.vue'
 import AttachmentGallery from './AttachmentGallery.vue'
 import ChildTable from './ChildTable.vue'
-import { controlComponent, editorFormat, formControlType } from '../../lib/fields'
+import { controlComponent, editorFormat, formControlType, valueIcon } from '../../lib/fields'
 
 // Built once for the module rather than per field: the kit is a static
 // extension list, and a form with six rich-text fields should not assemble six
@@ -424,6 +424,8 @@ const props = defineProps({
   /** A record being made rather than edited. Only the Link picker reads it,
       for `remember_last_selected_value`. */
   isNew: { type: Boolean, default: false },
+  /** The doctype's Document States, so an option's glyph matches its badge. */
+  states: { type: Array, default: () => [] },
   /**
    * The record this field belongs to, where there is one. Only the rich-text
    * editor reads them, to attach a pasted image to it — so both are absent on
@@ -476,7 +478,23 @@ const language = computed(() => {
 // the desk does and the only thing that flag means.
 const selectOptions = computed(() => {
   const options = (props.field.options || '').split('\n').filter(Boolean)
-  return props.field.sort_options ? [...options].sort((a, b) => a.localeCompare(b)) : options
+  const ordered = props.field.sort_options
+    ? [...options].sort((a, b) => a.localeCompare(b))
+    : options
+
+  // The same glyph the badge draws, so a value looks the same being chosen as
+  // it does once chosen. frappe-ui's Select renders `option.icon` itself, both
+  // in the list and on the trigger.
+  //
+  // Every option or none: a list where half the rows carry a glyph reads as
+  // broken rather than as varied, which is why `valueIcon` answers with a
+  // neutral tag rather than nothing for a Select that is a category rather
+  // than a status.
+  return ordered.map((value) => ({
+    label: value,
+    value,
+    icon: valueIcon(value, props.states),
+  }))
 })
 
 /**
@@ -544,7 +562,9 @@ const note = computed(() => {
 // A Select and a Table MultiSelect both choose from the field's own `options`
 // list. A Link does not — its list is records, which the picker fetches from
 // the server behind the screen's own bounds.
-const options = computed(() => selectOptions.value)
+// A Table MultiSelect takes plain values rather than option objects — it has
+// no icon slot and would print `[object Object]`.
+const options = computed(() => selectOptions.value.map((one) => one.value))
 
 /**
  * The one field a Table MultiSelect's rows actually carry.

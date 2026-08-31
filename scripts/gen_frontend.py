@@ -2455,6 +2455,7 @@ def fields_js(app: str, spec: dict) -> str:
 
     _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import field_types
+    from app_icons import STATE_ICON_WORDS, STATE_ICONS
     from field_types import (
         DATA_OPTIONS, FIELD_TYPES, LAYOUT_TYPES, STATE_COLORS, WORD_COLORS,
     )
@@ -2496,6 +2497,44 @@ export const STATE_COLORS = %(state_colors)s
 
 /** Frappe's own word lists, so a status reads the same colour as in the desk. */
 const WORD_COLORS = %(word_colors)s
+
+/**
+ * The glyphs a status may carry, written as literals so Tailwind emits them.
+ *
+ * A second closed set beside SPACE_ICONS, closed for the same reason and
+ * answering a different question: those say what an app *is*, these say where a
+ * record *stands*.
+ */
+export const STATE_ICONS = %(state_icons)s
+
+/** Which glyph a state's own words earn, in order — first match wins. */
+const STATE_ICON_WORDS = %(state_icon_words)s
+
+/**
+ * The icon for one value of a status Select.
+ *
+ * Derived from the words rather than declared, because the alternative is
+ * typing an icon name beside all fifty-odd options and the words already say
+ * it — `Failed` and `Broken` mean the same thing to a reader and should not
+ * need two decisions. A doctype that disagrees declares its own, and that
+ * override arrives on the state itself.
+ *
+ * Never nothing: a Select shown as a badge is a category even where it is not a
+ * status, and a row where half the badges carry an icon reads as broken rather
+ * than as varied. Those get the neutral tag.
+ */
+export function valueIcon(value, states = []) {
+  if (!value) return ''
+
+  const declared = states.find((s) => s.title === value)
+  if (declared?.icon) return declared.icon
+
+  const text = String(value).toLowerCase()
+  for (const [icon, words] of STATE_ICON_WORDS) {
+    if (words.some((word) => text.includes(word))) return icon
+  }
+  return 'lucide-tag'
+}
 
 // Named rather than counted. Stripping this with a hand-written offset is how
 // every FormControl type lost its first letter — "date" became "ate", which is
@@ -2664,6 +2703,9 @@ export function valueTheme(value, states = []) {
         "layout": _json.dumps(list(LAYOUT_TYPES), indent=2),
         "data_options": _json.dumps(DATA_OPTIONS, indent=2, sort_keys=True),
         "state_colors": _json.dumps(STATE_COLORS, indent=2, sort_keys=True),
+        "state_icons": _json.dumps(STATE_ICONS, indent=2),
+        "state_icon_words": _json.dumps(
+            [[icon, list(words)] for icon, words in STATE_ICON_WORDS], indent=2),
         "word_colors": _json.dumps([[t, list(w)] for t, w in WORD_COLORS], indent=2),
         "operators": _json.dumps(field_types.OPERATORS, indent=2),
         "operator_labels": _json.dumps(field_types.OPERATOR_LABELS_BY_TYPE, indent=2),

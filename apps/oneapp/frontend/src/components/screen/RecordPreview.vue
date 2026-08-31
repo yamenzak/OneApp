@@ -21,39 +21,18 @@
 
     <!--
       The panel shell brings a radius, a background and a shadow and no padding
-      at all — that is the consumer's, and the first version of this card
-      forgot it, so the header sat against the corner and the rows ran into
-      each other.
-
-      A header, a rule, and then a label/value grid: the labels are a narrow
-      column of their own rather than a line above each value, because five
-      stacked pairs read as ten unrelated lines and the same five in two
-      columns read as a record.
+      at all — that is the consumer's, and the first version of this card forgot
+      it, so the header sat against the corner and the rows ran into each other.
+      `RecordCard` owns the padding now.
     -->
     <div class="w-72">
-      <div class="p-3">
-        <RecordChip :record="preview?.record || record" />
-      </div>
-
-      <Divider />
-
-      <div class="p-3">
-        <LoadingText v-if="loading" text="Loading" />
-
-        <dl
-          v-else-if="fields.length"
-          class="grid grid-cols-[7rem_1fr] items-baseline gap-x-3 gap-y-2"
-        >
-          <template v-for="field in fields" :key="field.fieldname">
-            <dt class="truncate text-p-sm text-ink-gray-5">{{ field.label }}</dt>
-            <dd class="flex min-w-0 items-center">
-              <FieldCell :column="field" :value="field.value" :states="preview?.states || []" />
-            </dd>
-          </template>
-        </dl>
-
-        <span v-else class="text-p-sm text-ink-gray-5">Nothing else to show.</span>
-      </div>
+      <RecordCard
+        :record="preview?.record || record"
+        :fields="fields"
+        :states="preview?.states || []"
+        :loading="loading"
+        shape="panel"
+      />
     </div>
   </HoverCard>
 
@@ -62,9 +41,9 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Divider, HoverCard, LoadingText } from '@/ui'
+import { HoverCard } from '@/ui'
+import RecordCard from './RecordCard.vue'
 import RecordChip from './RecordChip.vue'
-import FieldCell from './FieldCell.vue'
 import { workspace } from '../../lib/workspace'
 
 const props = defineProps({

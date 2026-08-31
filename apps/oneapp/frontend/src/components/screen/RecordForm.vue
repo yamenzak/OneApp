@@ -94,6 +94,9 @@ const passthrough = computed(() => ({
   // is over, and threading it through every caller would be one more thing to
   // forget on the next form that renders this.
   doctype: props.spec?.doctype || '',
+  // Same argument: the spec carries the doctype's Document States, so a
+  // Select's options draw the glyph their badge will draw once chosen.
+  states: props.spec?.states || [],
 }))
 
 // Back to the first tab whenever the form is for something else. Landing on

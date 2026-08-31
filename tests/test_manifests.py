@@ -200,3 +200,70 @@ def test_every_column_a_screen_names_is_a_real_field(screen):
 		f"the {screen['screen']} screen names {unknown}, which {screen['doctype']} "
 		f"does not have — the column is dropped and the screen opens short"
 	)
+
+
+# --------------------------------------------------------------------------- #
+# ...and a glyph, from the same place
+# --------------------------------------------------------------------------- #
+
+def _state_icons() -> set:
+	import sys
+
+	sys.path.insert(0, str(ROOT / "scripts"))
+	from app_icons import STATE_ICONS as icons
+
+	return set(icons)
+
+
+def test_every_status_value_earns_a_glyph():
+	"""A badge carries a colour and an icon, and neither may be absent.
+
+	Derived from the words rather than declared, because the alternative is
+	typing an icon beside all fifty-odd Select options and the words already say
+	it — `Failed` and `Broken` mean the same thing to a reader. What has to hold
+	is that *every* value resolves to one: a list where half the badges carry a
+	glyph reads as broken rather than as varied, which is why the fallback is a
+	neutral tag rather than nothing.
+	"""
+	import sys
+
+	sys.path.insert(0, str(ROOT / "scripts"))
+	from app_icons import state_icon
+
+	icons = _state_icons()
+	unresolved = []
+	for screen in STATUS_SCREENS:
+		doc = DOCTYPES[screen["doctype"]]
+		field = next(f for f in doc["fields"] if f["fieldname"] == screen["status"])
+		for option in (field.get("options") or "").split("\n"):
+			if not option.strip():
+				continue
+			got = state_icon(option)
+			if got not in icons:
+				unresolved.append(f"{screen['doctype']}.{option} -> {got!r}")
+	assert not unresolved, (
+		"these status values resolve to an icon outside the closed set, so "
+		"Tailwind emits no CSS for them and the badge draws an empty box: "
+		+ ", ".join(unresolved)
+	)
+
+
+def test_the_glyphs_reach_the_spa_as_literals():
+	"""The closed-set argument, again. Tailwind emits CSS only for class names
+	it finds written out in the source, so a glyph that exists only in Python
+	draws nothing."""
+	fields = (ROOT / "apps/oneapp/frontend/src/lib/fields.js").read_text()
+	block = fields[fields.index("export const STATE_ICONS"):]
+	block = block[: block.index("]")]
+	for icon in _state_icons():
+		assert f'"{icon}"' in block, f"{icon} is not written into the SPA"
+
+
+def test_a_badge_and_its_select_draw_the_same_glyph():
+	"""One function, two callers. A value that looks one way being chosen and
+	another way once chosen is the kind of thing nobody reports and everybody
+	notices."""
+	cell = (ROOT / "apps/oneapp/frontend/src/components/screen/FieldCell.vue").read_text()
+	control = (ROOT / "apps/oneapp/frontend/src/components/screen/FieldControl.vue").read_text()
+	assert "valueIcon(value, states)" in cell
+	assert "valueIcon(value, props.states)" in control

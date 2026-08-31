@@ -92,6 +92,7 @@
               :space-code="spaceCode"
               :screen="screen"
               :is-new="isNew"
+              :states="states"
               :doctype="doctype"
               :docname="values.name || ''"
               :doc="values"
@@ -164,6 +165,8 @@ const props = defineProps({
   isNew: { type: Boolean, default: false },
   /** What the record is, for the fields that attach files to it. */
   doctype: { type: String, default: '' },
+  /** The doctype's Document States, so a Select's options carry their glyph. */
+  states: { type: Array, default: () => [] },
 })
 
 // The draft, written into per field. A model rather than a prop: the object is

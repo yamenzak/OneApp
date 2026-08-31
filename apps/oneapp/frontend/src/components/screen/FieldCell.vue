@@ -8,12 +8,26 @@
     from Frappe's word lists otherwise — so a status is not one colour in
     OneSpace and another in the desk.
   -->
+  <!--
+    A badge carries a colour and a glyph, both from the same place: the
+    doctype's own `states` where it declares them, Frappe's word lists
+    otherwise. So a status is not one colour in OneSpace and another in the
+    desk, and it is not iconless in one list and iconed in the next.
+
+    `prefix` rather than the label, because the glyph is the value said again
+    rather than something extra to read — it should sit inside the badge, not
+    beside it.
+  -->
   <Badge
     v-if="column.cell === 'badge' && value"
     :theme="valueTheme(value, states)"
     :label="String(value)"
     variant="subtle"
-  />
+  >
+    <template #prefix>
+      <Icon :name="valueIcon(value, states)" class="size-3" :aria-hidden="true" />
+    </template>
+  </Badge>
 
   <span v-else-if="column.cell === 'check'" class="text-ink-gray-7">
     <Icon
@@ -85,7 +99,7 @@ import { computed } from 'vue'
 import { Badge, Icon, Avatar, Rating } from '@/ui'
 import RecordChip from './RecordChip.vue'
 import RecordPreview from './RecordPreview.vue'
-import { valueTheme } from '../../lib/fields'
+import { valueIcon, valueTheme } from '../../lib/fields'
 import { formatNumber, plainText } from '../../lib/format'
 import { session } from '../../lib/session'
 import { dayjsLocal } from '@/ui'

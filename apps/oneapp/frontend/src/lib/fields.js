@@ -335,6 +335,192 @@ const WORD_COLORS = [
   ]
 ]
 
+/**
+ * The glyphs a status may carry, written as literals so Tailwind emits them.
+ *
+ * A second closed set beside SPACE_ICONS, closed for the same reason and
+ * answering a different question: those say what an app *is*, these say where a
+ * record *stands*.
+ */
+export const STATE_ICONS = [
+  "lucide-circle-check",
+  "lucide-circle-dashed",
+  "lucide-circle-dot",
+  "lucide-loader",
+  "lucide-clock",
+  "lucide-triangle-alert",
+  "lucide-circle-x",
+  "lucide-circle-pause",
+  "lucide-archive",
+  "lucide-trash-2",
+  "lucide-arrow-down-left",
+  "lucide-arrow-up-right",
+  "lucide-tag"
+]
+
+/** Which glyph a state's own words earn, in order — first match wins. */
+const STATE_ICON_WORDS = [
+  [
+    "lucide-circle-x",
+    [
+      "failed",
+      "broken",
+      "cancelled",
+      "canceled",
+      "refused",
+      "rejected",
+      "lost",
+      "abandoned"
+    ]
+  ],
+  [
+    "lucide-trash-2",
+    [
+      "purged",
+      "deleted",
+      "destroyed"
+    ]
+  ],
+  [
+    "lucide-archive",
+    [
+      "archived",
+      "retired",
+      "withdrawn",
+      "expired",
+      "closed",
+      "deprecated",
+      "released",
+      "ignored"
+    ]
+  ],
+  [
+    "lucide-circle-pause",
+    [
+      "suspended",
+      "paused",
+      "held",
+      "on hold",
+      "draining",
+      "maintenance",
+      "past due",
+      "overdue",
+      "blocked"
+    ]
+  ],
+  [
+    "lucide-triangle-alert",
+    [
+      "warned",
+      "review",
+      "over",
+      "full",
+      "attention",
+      "incomplete",
+      "unpaid"
+    ]
+  ],
+  [
+    "lucide-loader",
+    [
+      "provisioning",
+      "running",
+      "creating",
+      "bootstrapping",
+      "restoring",
+      "syncing",
+      "processing",
+      "pending"
+    ]
+  ],
+  [
+    "lucide-clock",
+    [
+      "requested",
+      "awaiting",
+      "queued",
+      "scheduled",
+      "trialing",
+      "trial",
+      "received",
+      "preview"
+    ]
+  ],
+  [
+    "lucide-circle-check",
+    [
+      "active",
+      "succeeded",
+      "success",
+      "completed",
+      "complete",
+      "done",
+      "paid",
+      "ready",
+      "available",
+      "processed",
+      "committed",
+      "claimed",
+      "resumed",
+      "cleared",
+      "taken",
+      "restored",
+      "granted"
+    ]
+  ],
+  [
+    "lucide-circle-dot",
+    [
+      "open",
+      "draft",
+      "new"
+    ]
+  ],
+  [
+    "lucide-arrow-down-left",
+    [
+      "grant",
+      "purchase",
+      "refund",
+      "credit"
+    ]
+  ],
+  [
+    "lucide-arrow-up-right",
+    [
+      "spend",
+      "charge",
+      "debit"
+    ]
+  ]
+]
+
+/**
+ * The icon for one value of a status Select.
+ *
+ * Derived from the words rather than declared, because the alternative is
+ * typing an icon name beside all fifty-odd options and the words already say
+ * it — `Failed` and `Broken` mean the same thing to a reader and should not
+ * need two decisions. A doctype that disagrees declares its own, and that
+ * override arrives on the state itself.
+ *
+ * Never nothing: a Select shown as a badge is a category even where it is not a
+ * status, and a row where half the badges carry an icon reads as broken rather
+ * than as varied. Those get the neutral tag.
+ */
+export function valueIcon(value, states = []) {
+  if (!value) return ''
+
+  const declared = states.find((s) => s.title === value)
+  if (declared?.icon) return declared.icon
+
+  const text = String(value).toLowerCase()
+  for (const [icon, words] of STATE_ICON_WORDS) {
+    if (words.some((word) => text.includes(word))) return icon
+  }
+  return 'lucide-tag'
+}
+
 // Named rather than counted. Stripping this with a hand-written offset is how
 // every FormControl type lost its first letter — "date" became "ate", which is
 // not in the union, and FormControl answers an unknown type with a plain text
