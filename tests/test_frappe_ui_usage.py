@@ -21,7 +21,10 @@ from pathlib import Path
 
 import pytest
 
-from frappe_ui_api import NOT_PROPS, ROOT, UI_SRC, component_api
+from frappe_ui_api import needs_frappe_ui, NOT_PROPS, ROOT, UI_SRC, component_api
+
+# Nothing here can be checked without the library it reads.
+pytestmark = needs_frappe_ui()
 
 APPS = ("oneapp", "oneapp_control")
 API = component_api()

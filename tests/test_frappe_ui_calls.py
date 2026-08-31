@@ -12,7 +12,10 @@ from pathlib import Path
 
 import pytest
 
-from frappe_ui_api import ROOT, UI_SRC, _balanced
+from frappe_ui_api import ROOT, UI_SRC, _balanced, needs_frappe_ui
+
+# Nothing here can be checked without the library it reads.
+pytestmark = needs_frappe_ui()
 
 APPS = ("oneapp", "oneapp_control")
 

@@ -19,6 +19,35 @@ ROOT = Path(__file__).resolve().parents[1]
 UI_PKG = ROOT / "apps/oneapp/frontend/node_modules/frappe-ui"
 UI_SRC = UI_PKG / "src"
 
+# Whether the vendored library is actually here.
+#
+# Everything in this module reads frappe-ui's own source, so on a machine that
+# has not run `npm install` there is nothing to read. That is the normal state
+# of CI, which installs Python and nothing else — and these are guards against
+# the *library* changing shape under us, which only happens when somebody bumps
+# it, which they do locally.
+#
+# `_sources` already skips a root that does not exist, so `component_api()`
+# quietly returns `{}` there. Quietly is the problem: the tests then failed on
+# `KeyError: 'SidebarHeader'` and on "SettingsDialog was restructured", which
+# reads as frappe-ui having changed rather than as nothing being installed. CI
+# was red on every run for days because of it, and a permanently red CI is one
+# nobody looks at.
+INSTALLED = UI_SRC.exists()
+
+
+def needs_frappe_ui():
+    """A skip marker for a module that cannot say anything without the library."""
+    import pytest
+
+    return pytest.mark.skipif(
+        not INSTALLED,
+        reason=(
+            "frappe-ui is not installed — run `npm install` in "
+            "apps/oneapp/frontend to check our usage against it"
+        ),
+    )
+
 # Where components actually live. `src/` is the stable library; `experimental/`
 # is a sibling of it, published under its own entry point with no
 # backward-compatibility promise — CodeEditor, CodePreview, the parked Calendar

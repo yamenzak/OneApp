@@ -15,7 +15,10 @@ import re
 
 import pytest
 
-from frappe_ui_api import ROOT, UI_SRC
+from frappe_ui_api import needs_frappe_ui, ROOT, UI_SRC
+
+# Nothing here can be checked without the library it reads.
+pytestmark = needs_frappe_ui()
 
 # One dialog, on the tenant app, for both audiences. The control plane used to
 # have a second copy of this over its own Single; it hands its groups to this one
