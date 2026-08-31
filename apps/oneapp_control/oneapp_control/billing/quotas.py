@@ -124,8 +124,18 @@ def blockers(tenant, plan_terms: dict) -> list[str]:
 	"""
 	doc = tenant if hasattr(tenant, "get") else frappe.get_doc("Tenant", tenant)
 
-	storage_cap = (plan_terms.get("storage_gb") or 0) * GB
-	database_cap = (plan_terms.get("database_gb") or 0) * GB
+	# What the plan gives, plus what the workspace holds on top of it. The two
+	# were not added together here, while `Tenant.storage_quota_bytes` did add
+	# them — so a workspace that had been granted extra storage was refused a
+	# plan change it would comfortably have fitted, and the message named a
+	# limit it was not actually past.
+	#
+	# Only the grants, not the add-ons: an add-on is bought against the
+	# subscription and moves with it, so counting it toward a *different* plan's
+	# fit would let somebody downgrade into a plan the add-on is paying to
+	# escape.
+	storage_cap = ((plan_terms.get("storage_gb") or 0) + (doc.extra_storage_gb or 0)) * GB
+	database_cap = ((plan_terms.get("database_gb") or 0) + (doc.extra_database_gb or 0)) * GB
 	seats = 1 + len(doc.members or [])
 
 	checks = (

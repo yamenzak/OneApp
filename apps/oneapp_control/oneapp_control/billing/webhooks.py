@@ -264,14 +264,14 @@ def _reconcile_plan(obj: dict, subscription):
 	from oneapp_control.billing import checkout, plans
 
 	items = (obj.get("items") or {}).get("data") or []
-	if len(items) != 1:
-		# Nothing to follow unambiguously. Left alone rather than guessed at:
-		# repricing a workspace off the wrong line item is worse than a stale
-		# record an operator can see and fix.
-		return
+	# The plan line, among however many the subscription carries. An add-on is a
+	# second recurring item by design, and this used to give up entirely as soon
+	# as there was one — silently, by returning, so a plan change made in the
+	# dashboard would simply never land.
+	item = plans.plan_item(items)
 
-	price_id = ((items[0] or {}).get("price") or {}).get("id")
-	plan = plans.plan_for_price(price_id)
+	price_id = ((item or {}).get("price") or {}).get("id")
+	plan = plans.plan_for_price(price_id) if price_id else None
 	if not plan:
 		# A price we did not mint — created in the dashboard, or from before the
 		# catalogue was synced. Logged rather than swallowed: it means a customer

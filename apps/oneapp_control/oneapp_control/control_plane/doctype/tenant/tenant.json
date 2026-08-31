@@ -34,6 +34,7 @@
   "storage_used_bytes",
   "database_used_bytes",
   "extra_storage_gb",
+  "extra_database_gb",
   "cb_usage",
   "user_count",
   "usage_synced_on",
@@ -223,10 +224,17 @@
   },
   {
    "default": "0",
-   "description": "Purchased add-on, added to the plan quota. Does not expire \u2014 storage is never paid for with AI credits, which would make a large upload silently drain the AI budget.",
+   "description": "Extra file storage granted by an operator, on top of the plan and any add-ons. Never billed and never expires: this is the goodwill lever, not a product.",
    "fieldname": "extra_storage_gb",
    "fieldtype": "Int",
-   "label": "Extra Storage Gb"
+   "label": "Extra Storage GB"
+  },
+  {
+   "default": "0",
+   "description": "Extra database granted by an operator, on top of the plan and any add-ons. Never billed and never expires: this is the goodwill lever, not a product.",
+   "fieldname": "extra_database_gb",
+   "fieldtype": "Int",
+   "label": "Extra Database GB"
   },
   {
    "fieldname": "cb_usage",

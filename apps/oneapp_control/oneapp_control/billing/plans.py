@@ -18,6 +18,7 @@ land in `Plan.sync_error` and the next save retries.
 """
 
 import frappe
+from frappe import _
 from frappe.utils import now_datetime
 
 from oneapp_control.billing import stripe_client
@@ -179,15 +180,49 @@ def plan_for_price(price_id: str) -> str | None:
 	"""
 	if not price_id:
 		return None
+	# Narrowed to Plan rows. The price table is shared with the other things we
+	# sell — add-ons carry their own history in it — and without this an add-on
+	# price would resolve to "a plan" and reprice the workspace onto it.
 	return frappe.db.get_value(
-		"Plan Price", {"stripe_price_id": price_id}, "parent"
+		"Plan Price", {"stripe_price_id": price_id, "parenttype": "Plan"}, "parent"
 	)
 
 
 def interval_for_price(price_id: str) -> str | None:
 	if not price_id:
 		return None
-	return frappe.db.get_value("Plan Price", {"stripe_price_id": price_id}, "interval")
+	return frappe.db.get_value(
+		"Plan Price", {"stripe_price_id": price_id, "parenttype": "Plan"}, "interval"
+	)
+
+
+def plan_item(items: list[dict]) -> dict | None:
+	"""The one line on a Stripe subscription that is the plan.
+
+	A subscription used to be assumed to have exactly one item, and both the
+	plan change and the webhook reconciliation threw or gave up when it did not.
+	That assumption stopped being true the moment an add-on could be bought: an
+	add-on is a second recurring item on the same subscription, deliberately, so
+	that a customer gets one invoice and one dunning cycle.
+
+	So the plan is *found* rather than counted to. Every item's price is
+	resolved against the plan catalogue, grandfathered prices included; the one
+	that resolves is the plan. Two that resolve is still an error worth
+	refusing, because a workspace on two plans cannot be reasoned about and
+	guessing which to reprice is how the wrong one moves.
+
+	Returns None when nothing resolves — a subscription sold before the
+	catalogue, or one created in the dashboard.
+	"""
+	found = [
+		item for item in items
+		if plan_for_price(((item or {}).get("price") or {}).get("id"))
+	]
+	if len(found) > 1:
+		frappe.throw(
+			_("This subscription has {0} plan lines; sort it out in Stripe.").format(len(found))
+		)
+	return found[0] if found else None
 
 
 def current_price_id(plan, interval: str = "Monthly") -> str | None:

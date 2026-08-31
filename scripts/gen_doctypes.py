@@ -51,6 +51,12 @@ def column(name):
     return {"fieldname": name, "fieldtype": "Column Break"}
 
 
+# Both operator-granted quota fields say the same thing, so they say it once.
+GRANTED_GB = (
+    "Extra {resource} granted by an operator, on top of the plan and any add-ons. "
+    "Never billed and never expires: this is the goodwill lever, not a product."
+)
+
 DOCTYPES = {}
 
 
@@ -461,10 +467,14 @@ doctype(
         f("database_used_bytes", "Float", default="0", read_only=1,
           description="Reported by the site. The resource that actually threatens "
                       "the server, so it is capped like file storage."),
-        f("extra_storage_gb", "Int", default="0",
-          description="Purchased add-on, added to the plan quota. Does not expire "
-                      "— storage is never paid for with AI credits, which would "
-                      "make a large upload silently drain the AI budget."),
+        # Grants, not purchases. An add-on is bought against the subscription
+        # and lives in its own table there; these two are the lever an operator
+        # pulls by hand — goodwill, a migration allowance, room on a demo
+        # instance — and nothing ever bills for them.
+        f("extra_storage_gb", "Int", label="Extra Storage GB", default="0",
+          description=GRANTED_GB.format(resource="file storage")),
+        f("extra_database_gb", "Int", label="Extra Database GB", default="0",
+          description=GRANTED_GB.format(resource="database")),
         column("cb_usage"),
         f("user_count", "Int", default="0", read_only=1),
         f("usage_synced_on", "Datetime", read_only=1),

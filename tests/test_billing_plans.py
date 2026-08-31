@@ -306,11 +306,35 @@ def test_the_price_decides_the_plan_not_the_metadata():
 	assert '("price") or {}).get("id")' in body
 
 
+def test_the_plan_line_is_found_rather_than_counted_to():
+	"""A subscription carries the plan *and* any add-ons the workspace holds.
+
+	Both of these used to require exactly one line item and give up otherwise —
+	`change_plan` by throwing, `_reconcile_plan` by silently returning, which is
+	the worse of the two. So the first add-on anybody bought would have frozen
+	their plan and stopped reconciliation without a word.
+	"""
+	for source, name in ((WEBHOOKS, "_reconcile_plan"), (CHECKOUT, "change_plan")):
+		body = function(source, name)
+		assert "plan_item(" in body, f"{name} does not find the plan line"
+		assert "len(items) != 1" not in body, f"{name} still assumes one line item"
+
+
 def test_an_ambiguous_subscription_is_left_alone_rather_than_guessed_at():
 	"""Repricing a workspace off the wrong line item is worse than a stale record
-	an operator can see."""
-	assert "len(items) != 1" in function(WEBHOOKS, "_reconcile_plan")
-	assert "len(items) != 1" in function(CHECKOUT, "change_plan")
+	an operator can see. Ambiguity is now two lines that *both* resolve to a
+	plan, which is the only case that cannot be reasoned about."""
+	body = function(PLANS, "plan_item")
+	assert "len(found) > 1" in body
+	assert "frappe.throw" in body
+
+
+def test_a_price_belongs_to_the_catalogue_it_was_sold_from():
+	"""The price table is shared with the other things we sell. Without the
+	parenttype filter an add-on's price would resolve to 'a plan' and reprice the
+	workspace onto whatever add-on happened to match."""
+	for name in ("plan_for_price", "interval_for_price"):
+		assert '"parenttype": "Plan"' in function(PLANS, name), name
 
 
 def test_a_price_we_did_not_mint_is_reported_rather_than_swallowed():

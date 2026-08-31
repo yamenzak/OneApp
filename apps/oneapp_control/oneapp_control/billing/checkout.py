@@ -159,15 +159,20 @@ def change_plan(tenant: str, plan: str, interval: str = "Monthly") -> dict:
 
 	remote = stripe_client.get_subscription(subscription.stripe_subscription_id)
 	items = (remote.get("items") or {}).get("data") or []
-	if len(items) != 1:
-		# A subscription we did not sell, or one an operator has added line items
-		# to. Guessing which line is "the plan" is how the wrong thing gets
-		# repriced.
-		frappe.throw(_("This subscription has {0} items; change it in Stripe.").format(len(items)))
+	# Found rather than counted to: a subscription carries the plan *and* any
+	# add-ons the workspace holds, on purpose, so that they arrive on one
+	# invoice. `plan_item` resolves each line's price against the plan catalogue
+	# and refuses only the case that is genuinely ambiguous — two plan lines.
+	current = plan_catalogue.plan_item(items)
+	if not current:
+		# A subscription we did not sell, or one whose price predates the
+		# catalogue. Repricing a line we cannot name is how the wrong thing
+		# moves.
+		frappe.throw(_("This subscription is not on a plan we recognise; sort it out in Stripe."))
 
 	stripe_client.update_subscription(
 		subscription.stripe_subscription_id,
-		items=[{"id": items[0]["id"], "price": price_id}],
+		items=[{"id": current["id"], "price": price_id}],
 		proration_behavior="create_prorations",
 		# Kept in step so a later webhook, which reads metadata when it has to
 		# create a record, does not resurrect the old plan.

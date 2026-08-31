@@ -118,29 +118,35 @@ class Tenant(Document):
 
 	@property
 	def storage_quota_bytes(self) -> int:
-		"""Plan allowance plus any purchased add-on.
+		"""What the workspace may hold in files, from all three sources.
 
-		Add-ons are bought outright rather than drawn from credits: a large
+		The plan's own allowance and any add-ons the subscription carries arrive
+		together in `terms` — `quotas.for_tenant` sums them, so nothing here has
+		to know an add-on exists. On top of that, `extra_storage_gb`, which is an
+		operator's grant and has no price.
+
+		Storage is never paid for with AI credits, in any of the three: a large
 		upload silently draining the AI budget is a bill nobody can predict from
 		their own behaviour.
 		"""
 		if not self.plan:
 			return 0
 
-		plan_gb = int(self.terms.get("storage_gb") or 0)
-		return (plan_gb + int(self.extra_storage_gb or 0)) * GB
+		return (int(self.terms.get("storage_gb") or 0) + int(self.extra_storage_gb or 0)) * GB
 
 	@property
 	def database_quota_bytes(self) -> int:
-		"""Database size cap.
+		"""Database size cap, from the same three sources as files.
 
 		Separate from files, and the one that actually constrains how many sites
 		fit on a server — each site is a database with roughly 1,200 tables
-		sharing one InnoDB buffer pool.
+		sharing one InnoDB buffer pool. That it is *our* number rather than one
+		Frappe Cloud imposes is what makes it sellable: the server's disk is ours
+		in full, so the limit is a product decision.
 		"""
 		if not self.plan:
 			return 0
-		return int(self.terms.get("database_gb") or 0) * GB
+		return (int(self.terms.get("database_gb") or 0) + int(self.extra_database_gb or 0)) * GB
 
 	@property
 	def max_users(self) -> int:
