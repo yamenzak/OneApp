@@ -108,7 +108,9 @@ test('a record is made in a dialog and opens into the pane', async ({ page }) =>
 
   const made = `ZZ From the dialog ${Date.now() % 10000}`
   await dialog.getByLabel('Description').fill(made)
-  await dialog.getByRole('button', { name: 'Create' }).click()
+  // `exact`, because the dialog now offers "Create" *and* "Create another" —
+  // a substring match finds both and Playwright's strict mode refuses.
+  await dialog.getByRole('button', { name: 'Create', exact: true }).click()
 
   // And it opens into the record, because the point of making one is to be in
   // it — a dialog that closes onto a list leaves you hunting for the row.

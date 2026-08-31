@@ -491,7 +491,7 @@ test('a record can be created from the picker and is adopted as the value', asyn
   // mandatory and nothing else, and the search text is already in it.
   const quick = page.locator('[role="dialog"]')
   await expect(quick.getByLabel('Role Name')).toHaveValue(made)
-  await quick.getByRole('button', { name: 'Create' }).click()
+  await quick.getByRole('button', { name: 'Create', exact: true }).click()
 
   // Created and picked in one move — the point of creating one here was to
   // choose it.
