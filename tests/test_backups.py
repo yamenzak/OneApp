@@ -166,3 +166,62 @@ def test_a_set_with_no_timestamp_is_left_alone(dated):
 	orphan = _set("a", 90)
 	orphan["modified"] = None
 	assert dated.expired([orphan, _set("b", 1)], keep_days=7) == []
+
+
+# --------------------------------------------------------------------------- #
+# Every plan sells a schedule
+# --------------------------------------------------------------------------- #
+
+def test_every_seeded_plan_has_a_backup_schedule():
+	"""A plan with `backups_per_day` of zero takes no backups at all.
+
+	The doctype default is 1, and a fixture overwrites it with whatever the JSON
+	says — including nothing, which lands as zero. So a plan added to the fixture
+	without thinking about this ships a tier whose customers have no copies of
+	their workspace, and nothing anywhere reports it as wrong.
+	"""
+	import json
+	from pathlib import Path
+
+	root = Path(__file__).resolve().parent.parent
+	plans = json.loads(
+		(root / "apps/oneapp_control/oneapp_control/fixtures/plan.json").read_text()
+	)
+
+	for plan in plans:
+		assert plan.get("backups_per_day", 0) >= 1, (
+			f"{plan['name']} would take no backups"
+		)
+		assert plan.get("backup_retention_days", 0) >= 1, (
+			f"{plan['name']} would keep no backups"
+		)
+
+
+def test_the_schedule_never_goes_down_as_a_plan_goes_up():
+	"""What grows with the tier is how much work a customer can afford to lose.
+
+	Not a claim that the numbers are right — that is a pricing decision — but a
+	plan that pays more and is backed up less often is a mistake, and it is one
+	nobody would notice from the fixture, where the plans are in no order.
+	"""
+	import json
+	from pathlib import Path
+
+	root = Path(__file__).resolve().parent.parent
+	plans = {
+		p["name"]: p
+		for p in json.loads(
+			(root / "apps/oneapp_control/oneapp_control/fixtures/plan.json").read_text()
+		)
+	}
+
+	ordered = sorted(plans.values(), key=lambda p: p.get("price_monthly") or 0)
+	rates = [p["backups_per_day"] for p in ordered]
+	kept = [p["backup_retention_days"] for p in ordered]
+
+	assert rates == sorted(rates), [
+		(p["name"], p["backups_per_day"]) for p in ordered
+	]
+	assert kept == sorted(kept), [
+		(p["name"], p["backup_retention_days"]) for p in ordered
+	]

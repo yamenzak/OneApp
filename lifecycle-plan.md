@@ -1,9 +1,24 @@
 # Tenant lifecycle, grace periods, cold storage and backups
 
-**Status: planning.**
+**Status: done.** A–H are built, tested and pushed.
 
-What follows is an assessment of what exists, what is missing, and the batches
-that close the gap.
+What follows is the assessment this started from — what existed, what was
+missing, and the batches that closed the gap. The durable half now lives in
+`docs/LIFECYCLE.md`, which is where to look for how the thing works; this file
+is the record of the decision and can go once it has been read.
+
+Two things came out differently from the plan and are worth naming:
+
+* **The cold copy is taken at suspension, not at archiving.** Frappe Cloud's
+  deactivate puts a site into maintenance mode, and Frappe's scheduler refuses
+  to run at all under maintenance mode — so a suspended site can never sync,
+  back itself up, or be asked for anything. That ordering is the difference
+  between a workspace that can be brought back and one that cannot, and it is
+  invisible from either end on its own.
+* **The restore pipeline needed a second `await_agent`,** and the runner
+  resumes by looking a step name up in its pipeline with `list.index`, which
+  returns the first match — so two steps sharing a name loop until the attempt
+  ceiling. Named apart, and now guarded by a test over every pipeline.
 
 ---
 
@@ -163,6 +178,8 @@ This ladder deletes customer data on a timer, so it is built to refuse:
 ---
 
 ## 4. Batches
+
+All eight shipped.
 
 | | Batch | What |
 |---|---|---|

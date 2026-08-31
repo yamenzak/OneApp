@@ -18,7 +18,9 @@
   "monthly_credit_grant": 2000,
   "background_workers": 1,
   "press_site_plan": "",
-  "description": "For one person getting started."
+  "description": "For one person getting started.",
+  "backups_per_day": 1,
+  "backup_retention_days": 7
  },
  {
   "doctype": "Plan",
@@ -39,7 +41,9 @@
   "monthly_credit_grant": 5000,
   "background_workers": 2,
   "press_site_plan": "",
-  "description": "For individuals who have outgrown Starter."
+  "description": "For individuals who have outgrown Starter.",
+  "backups_per_day": 2,
+  "backup_retention_days": 14
  },
  {
   "doctype": "Plan",
@@ -60,7 +64,9 @@
   "monthly_credit_grant": 15000,
   "background_workers": 3,
   "press_site_plan": "",
-  "description": "The default for a company."
+  "description": "The default for a company.",
+  "backups_per_day": 3,
+  "backup_retention_days": 30
  },
  {
   "doctype": "Plan",
@@ -81,6 +87,8 @@
   "monthly_credit_grant": 50000,
   "background_workers": 6,
   "press_site_plan": "",
-  "description": "Large teams, more of everything."
+  "description": "Large teams, more of everything.",
+  "backups_per_day": 4,
+  "backup_retention_days": 60
  }
 ]

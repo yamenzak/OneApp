@@ -5,3 +5,5 @@ oneapp_control.patches.rename_plan_price
 [post_model_sync]
 oneapp_control.patches.capture_plan_terms
 oneapp_control.patches.restrict_seeded_books
+oneapp_control.patches.seed_lifecycle_windows
+oneapp_control.patches.seed_backup_terms

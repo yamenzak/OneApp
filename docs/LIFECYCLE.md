@@ -86,6 +86,18 @@ made of.
   hourly and decides whether this hour is one of the slots — evenly spaced from
   midnight. The first slot of the day takes files as well; the rest are
   database-only, which is what actually changes.
+
+  | Plan | Backups | Kept |
+  |---|---|---|
+  | Starter | 1 a day | 7 days |
+  | Pro | 2 a day | 14 days |
+  | Business | 3 a day | 30 days |
+  | Enterprise | 4 a day | 60 days |
+
+  R2 is cheap enough that this is a product lever rather than a cost one. What
+  actually grows with the tier is how much work a customer can afford to lose:
+  an Enterprise workspace losing a day of invoicing is a different conversation
+  from a personal one losing a day of notes.
 * **Retention is the control plane's**, along with noticing that new ones stopped
   arriving. Both have to keep working for a workspace whose site is suspended,
   off, or gone, which is exactly when the site cannot do them.
