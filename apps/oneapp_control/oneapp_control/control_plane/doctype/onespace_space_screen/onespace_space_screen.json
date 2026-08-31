@@ -16,6 +16,7 @@
   "status_field",
   "view_types",
   "view_settings",
+  "tab_icons",
   "sec_view_query",
   "filters",
   "cb_view_sort",
@@ -93,6 +94,13 @@
    "fieldname": "view_settings",
    "fieldtype": "Code",
    "label": "View Settings",
+   "options": "JSON"
+  },
+  {
+   "description": "An icon per tab of the record form, keyed by the tab's label: {\"Overview\": \"lucide-list\"}. Only where the tab's own words earn the wrong glyph \u2014 every tab has one without this. Names come from the SPA's TAB_ICONS.",
+   "fieldname": "tab_icons",
+   "fieldtype": "Code",
+   "label": "Tab Icons",
    "options": "JSON"
   },
   {

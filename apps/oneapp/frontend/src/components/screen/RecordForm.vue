@@ -5,9 +5,13 @@
     The tabs and sections are the doctype's own — Frappe's desk reads `Tab
     Break` and `Section Break` out of the field list and so does this, which is
     why a doctype whose author grouped its fields is grouped the same way here
-    without a manifest repeating any of it. A doctype that groups nothing has
-    one tab called Details and no headings at all, so a small form stays a
-    small form.
+    without a manifest repeating any of it. The glyph on each is derived from
+    the tab's own label: Frappe has no icon property on a Tab Break, so a form
+    laid out by somebody who never heard of OneSpace still reads as a strip of
+    tabs rather than a row of bare words. A manifest may override one.
+
+    A doctype that groups nothing has one tab called Details and no headings at
+    all, so a small form stays a small form.
 
     Not the settings dialog's left rail: that shape earns its place over a
     dozen unrelated pages, and a record with two tabs beside a rail reads as a
@@ -16,9 +20,13 @@
   -->
   <Tabs v-if="tabs.length > 1" v-model="tab">
     <TabList>
-      <TabTrigger v-for="one in tabs" :key="one.key" :value="one.key">
-        {{ one.label }}
-      </TabTrigger>
+      <TabTrigger
+        v-for="one in tabs"
+        :key="one.key"
+        :value="one.key"
+        :label="one.label"
+        :icon-left="tabIcon(one.label, spec.tab_icons)"
+      />
     </TabList>
     <TabPanel v-for="one in tabs" :key="one.key" :value="one.key">
       <div class="pt-4">
@@ -41,6 +49,7 @@
 import { computed, ref, watch } from 'vue'
 import { Tabs, TabList, TabTrigger, TabPanel } from '@/ui'
 import FormSections from './FormSections.vue'
+import { tabIcon } from '../../lib/fields'
 
 const props = defineProps({
   /** The screen spec: `form` for the layout, `all_columns` for the fields. */

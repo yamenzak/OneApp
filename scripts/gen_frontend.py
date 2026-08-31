@@ -2455,7 +2455,10 @@ def fields_js(app: str, spec: dict) -> str:
 
     _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import field_types
-    from app_icons import STATE_ICON_WORDS, STATE_ICONS
+    from app_icons import (
+        DEFAULT_TAB_ICON, STATE_ICON_WORDS, STATE_ICONS, TAB_ICON_WORDS,
+        TAB_ICONS,
+    )
     from field_types import (
         DATA_OPTIONS, FIELD_TYPES, LAYOUT_TYPES, STATE_COLORS, WORD_COLORS,
     )
@@ -2534,6 +2537,43 @@ export function valueIcon(value, states = []) {
     if (words.some((word) => text.includes(word))) return icon
   }
   return 'lucide-tag'
+}
+
+/**
+ * The glyphs a tab may carry, written as literals so Tailwind emits them.
+ *
+ * A third closed set, for the same build-time reason as the other two. Frappe
+ * has no icon property on a Tab Break — a doctype's tabs are a label and
+ * nothing else — so this is how a form laid out by somebody who never heard of
+ * OneSpace still gets a strip of tabs that reads as one.
+ */
+export const TAB_ICONS = %(tab_icons)s
+
+/** Which glyph a tab's own words earn, in order — first match wins. */
+const TAB_ICON_WORDS = %(tab_icon_words)s
+
+const DEFAULT_TAB_ICON = '%(default_tab_icon)s'
+
+/**
+ * The icon for one tab, by its label.
+ *
+ * `declared` is a manifest's override, keyed by the tab's label — the escape
+ * hatch for a tab whose words say nothing useful. Checked against the closed
+ * set rather than trusted: a name outside it emits no CSS and draws a blank,
+ * which is worse than the derived glyph it replaced.
+ *
+ * Never nothing. A strip where three tabs carry an icon and the fourth does
+ * not reads as a tab that failed to load.
+ */
+export function tabIcon(label, declared = null) {
+  const override = declared?.[label]
+  if (override && TAB_ICONS.includes(override)) return override
+
+  const text = String(label || '').trim().toLowerCase()
+  for (const [icon, words] of TAB_ICON_WORDS) {
+    if (words.some((word) => text.includes(word))) return icon
+  }
+  return DEFAULT_TAB_ICON
 }
 
 // Named rather than counted. Stripping this with a hand-written offset is how
@@ -2706,6 +2746,10 @@ export function valueTheme(value, states = []) {
         "state_icons": _json.dumps(STATE_ICONS, indent=2),
         "state_icon_words": _json.dumps(
             [[icon, list(words)] for icon, words in STATE_ICON_WORDS], indent=2),
+        "tab_icons": _json.dumps(TAB_ICONS, indent=2),
+        "tab_icon_words": _json.dumps(
+            [[icon, list(words)] for icon, words in TAB_ICON_WORDS], indent=2),
+        "default_tab_icon": DEFAULT_TAB_ICON,
         "word_colors": _json.dumps([[t, list(w)] for t, w in WORD_COLORS], indent=2),
         "operators": _json.dumps(field_types.OPERATORS, indent=2),
         "operator_labels": _json.dumps(field_types.OPERATOR_LABELS_BY_TYPE, indent=2),

@@ -1071,3 +1071,38 @@ def test_no_component_is_shadowed_by_a_copy_in_a_screen():
 		"these shadow a component of the same name in components/: "
 		+ ", ".join(sorted(offenders))
 	)
+
+
+# A `<TabTrigger` opening tag, whole, so its attributes can be read together.
+TAB_TRIGGER = re.compile(r"<TabTrigger\b[^>]*?/?>", re.S)
+TAB_ICON = re.compile(r'(?<![\w-]):?icon(-left)?="')
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_every_tab_carries_an_icon(app):
+	"""A strip of bare words is a strip that reads as unfinished.
+
+	Every tab in either SPA has a glyph, and none of them is typed twice: the
+	four over a record and the doctype's own Tab Breaks all resolve through
+	`tabIcon`, which derives one from the tab's own label — Frappe has no icon
+	property on a Tab Break, so a doctype we do not own would otherwise have
+	nothing to offer. The operator console's tabs name theirs directly, because
+	those are eight hand-written pages rather than a list of labels.
+
+	What this catches is the fifth tab added without one. That is the whole
+	failure mode: a tab strip where three carry an icon and the fourth does not
+	reads as a tab that failed to load rather than as a tab with no icon.
+	"""
+	root = ROOT / f"apps/{app}/frontend/src"
+	offenders = []
+	for path in sorted(root.rglob("*.vue")):
+		source = path.read_text()
+		for match in TAB_TRIGGER.finditer(source):
+			if TAB_ICON.search(match.group(0)):
+				continue
+			line = source[: match.start()].count("\n") + 1
+			offenders.append(f"{path.relative_to(root)}:{line}")
+	assert not offenders, (
+		"these tabs carry no icon — give them one, or `tabIcon(label)` where "
+		"the label is the doctype's: " + ", ".join(offenders)
+	)

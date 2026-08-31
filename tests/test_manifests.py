@@ -267,3 +267,111 @@ def test_a_badge_and_its_select_draw_the_same_glyph():
 	control = (ROOT / "apps/oneapp/frontend/src/components/screen/FieldControl.vue").read_text()
 	assert "valueIcon(value, states)" in cell
 	assert "valueIcon(value, props.states)" in control
+
+
+# --------------------------------------------------------------------------- #
+# Tab icons
+#
+# Every tab in OneSpace carries a glyph, and none of them is declared twice.
+# Frappe has no icon property on a Tab Break, so the glyph is derived from the
+# tab's own label — the same argument the status glyphs make, for the same
+# reason: a doctype we do not own will never have a manifest entry and should
+# still get something better than a bare word.
+# --------------------------------------------------------------------------- #
+
+
+def _tab_icons() -> tuple:
+	import sys
+
+	sys.path.insert(0, str(ROOT / "scripts"))
+	from app_icons import DEFAULT_TAB_ICON, TAB_ICONS, TAB_ICON_WORDS, tab_icon
+
+	return DEFAULT_TAB_ICON, TAB_ICONS, TAB_ICON_WORDS, tab_icon
+
+
+def test_every_tab_glyph_is_in_the_closed_set():
+	"""A name outside it emits no CSS and draws an empty box."""
+	default, icons, words, _ = _tab_icons()
+	stray = [icon for icon, _ in words if icon not in icons]
+	assert not stray, f"these are derived and never written out: {stray}"
+	assert default in icons
+
+
+def test_every_tab_the_spa_names_earns_a_glyph():
+	"""Every tab label written out in the SPA, resolved.
+
+	Two kinds of tab reach `tabIcon`. The doctype's own Tab Breaks are one, and
+	they cannot be enumerated here — our doctypes group with Section Breaks and
+	declare no Tab Break at all, so the labels the derivation actually sees are
+	ERPNext's and whatever a customer's site adds. That half is covered by the
+	fallback being an icon rather than nothing.
+
+	The other kind is the fixed tabs over a record, which *are* written out, as
+	`tabIcon('Details')` and its three siblings. Those are the ones that can go
+	wrong by being added without a thought, so those are the ones checked: a
+	fifth tab whose label falls through to the neutral panel is named here
+	rather than noticed in a screenshot.
+	"""
+	_, icons, _, tab_icon = _tab_icons()
+	root = ROOT / "apps/oneapp/frontend/src"
+	labels = sorted({
+		match.group(1)
+		for path in root.rglob("*.vue")
+		for match in re.finditer(r"tabIcon\('([^']+)'", path.read_text())
+	})
+	assert len(labels) >= 4, f"only found {labels} — the record's tabs have moved"
+
+	fell_through = {label: tab_icon(label) for label in labels}
+	unresolved = [f"{k} -> {v!r}" for k, v in fell_through.items() if v not in icons]
+	assert not unresolved, (
+		"these resolve to an icon outside the closed set: " + ", ".join(unresolved)
+	)
+	# And none of them lands on the fallback: these four are ours, and a tab we
+	# named ourselves earning the neutral panel means the word list is missing a
+	# word rather than that the tab is unusual.
+	default = _tab_icons()[0]
+	bare = [k for k, v in fell_through.items() if v == default]
+	assert not bare, (
+		"these are our own tabs and they earn nothing but the neutral panel — "
+		"add the word to TAB_ICON_WORDS: " + ", ".join(bare)
+	)
+
+
+def test_the_tab_glyphs_reach_the_spa_as_literals():
+	"""The closed-set argument, again. Tailwind emits CSS only for class names
+	it finds written out in the source."""
+	_, icons, _, _ = _tab_icons()
+	fields = (ROOT / "apps/oneapp/frontend/src/lib/fields.js").read_text()
+	block = fields[fields.index("export const TAB_ICONS"):]
+	block = block[: block.index("]")]
+	for icon in icons:
+		assert f'"{icon}"' in block, f"{icon} is not written into the SPA"
+
+
+def test_a_declared_tab_icon_is_one_of_ours():
+	"""The manifest override, checked.
+
+	`tab_icons` on a screen names an icon per tab label — the escape hatch for a
+	tab whose words earn the wrong glyph. The browser falls back to the derived
+	one when the name is not in the set, so a typo is quiet rather than broken;
+	this is what makes it loud for a manifest we ship.
+	"""
+	_, icons, _, _ = _tab_icons()
+	offenders = []
+	for path in sorted((ROOT / "apps").rglob("*.py")):
+		source = path.read_text()
+		if '"tab_icons"' not in source:
+			continue
+		for match in re.finditer(r'"tab_icons"\s*:\s*(\'\'\'|"""|")(.*?)\1', source, re.S):
+			try:
+				declared = json.loads(match.group(2))
+			except ValueError:
+				offenders.append(f"{path.name}: tab_icons is not JSON")
+				continue
+			for label, icon in (declared or {}).items():
+				if icon not in icons:
+					offenders.append(f"{path.name}: {label} -> {icon!r}")
+	assert not offenders, (
+		"these declared tab icons are outside the closed set, so the browser "
+		"quietly falls back to the derived one: " + ", ".join(offenders)
+	)

@@ -521,6 +521,287 @@ export function valueIcon(value, states = []) {
   return 'lucide-tag'
 }
 
+/**
+ * The glyphs a tab may carry, written as literals so Tailwind emits them.
+ *
+ * A third closed set, for the same build-time reason as the other two. Frappe
+ * has no icon property on a Tab Break — a doctype's tabs are a label and
+ * nothing else — so this is how a form laid out by somebody who never heard of
+ * OneSpace still gets a strip of tabs that reads as one.
+ */
+export const TAB_ICONS = [
+  "lucide-list",
+  "lucide-link",
+  "lucide-info",
+  "lucide-sticky-note",
+  "lucide-message-circle",
+  "lucide-history",
+  "lucide-activity",
+  "lucide-paperclip",
+  "lucide-settings",
+  "lucide-shield",
+  "lucide-users",
+  "lucide-map-pin",
+  "lucide-calculator",
+  "lucide-banknote",
+  "lucide-calendar",
+  "lucide-package",
+  "lucide-file-text",
+  "lucide-mail",
+  "lucide-bell",
+  "lucide-plug",
+  "lucide-ruler",
+  "lucide-panel-top"
+]
+
+/** Which glyph a tab's own words earn, in order — first match wins. */
+const TAB_ICON_WORDS = [
+  [
+    "lucide-link",
+    [
+      "connection",
+      "related",
+      "reference",
+      "linked"
+    ]
+  ],
+  [
+    "lucide-history",
+    [
+      "history",
+      "changes",
+      "audit",
+      "log",
+      "version",
+      "revision"
+    ]
+  ],
+  [
+    "lucide-activity",
+    [
+      "activity",
+      "timeline",
+      "event"
+    ]
+  ],
+  [
+    "lucide-message-circle",
+    [
+      "comment",
+      "discussion",
+      "feedback",
+      "reply"
+    ]
+  ],
+  [
+    "lucide-paperclip",
+    [
+      "file",
+      "attachment",
+      "document",
+      "upload"
+    ]
+  ],
+  [
+    "lucide-shield",
+    [
+      "permission",
+      "role",
+      "access",
+      "security",
+      "sharing"
+    ]
+  ],
+  [
+    "lucide-bell",
+    [
+      "notification",
+      "alert",
+      "reminder",
+      "subscriber"
+    ]
+  ],
+  [
+    "lucide-mail",
+    [
+      "email",
+      "mail",
+      "inbox",
+      "message"
+    ]
+  ],
+  [
+    "lucide-plug",
+    [
+      "integration",
+      "api",
+      "webhook",
+      "connector",
+      "sync"
+    ]
+  ],
+  [
+    "lucide-banknote",
+    [
+      "payment",
+      "pricing",
+      "price",
+      "billing",
+      "currency",
+      "invoice",
+      "credit",
+      "cost",
+      "rate",
+      "amount",
+      "commission",
+      "discount"
+    ]
+  ],
+  [
+    "lucide-calculator",
+    [
+      "accounting",
+      "account",
+      "tax",
+      "total",
+      "charge",
+      "ledger"
+    ]
+  ],
+  [
+    "lucide-package",
+    [
+      "item",
+      "product",
+      "stock",
+      "inventory",
+      "material",
+      "warehouse",
+      "delivery",
+      "shipping"
+    ]
+  ],
+  [
+    "lucide-map-pin",
+    [
+      "address",
+      "location",
+      "region",
+      "territory"
+    ]
+  ],
+  [
+    "lucide-users",
+    [
+      "contact",
+      "people",
+      "member",
+      "team",
+      "user",
+      "party",
+      "customer",
+      "supplier",
+      "employee",
+      "assign"
+    ]
+  ],
+  [
+    "lucide-calendar",
+    [
+      "date",
+      "schedule",
+      "timing",
+      "period"
+    ]
+  ],
+  [
+    "lucide-ruler",
+    [
+      "dimension",
+      "measurement",
+      "size",
+      "weight"
+    ]
+  ],
+  [
+    "lucide-sticky-note",
+    [
+      "note",
+      "remark",
+      "description",
+      "summary"
+    ]
+  ],
+  [
+    "lucide-settings",
+    [
+      "setting",
+      "preference",
+      "configuration",
+      "option",
+      "advanced",
+      "rule"
+    ]
+  ],
+  [
+    "lucide-info",
+    [
+      "information",
+      "about",
+      "misc",
+      "other"
+    ]
+  ],
+  [
+    "lucide-file-text",
+    [
+      "print",
+      "template",
+      "content",
+      "text",
+      "letter",
+      "legal",
+      "term",
+      "condition"
+    ]
+  ],
+  [
+    "lucide-list",
+    [
+      "detail",
+      "general",
+      "overview",
+      "main",
+      "basic",
+      "primary"
+    ]
+  ]
+]
+
+const DEFAULT_TAB_ICON = 'lucide-panel-top'
+
+/**
+ * The icon for one tab, by its label.
+ *
+ * `declared` is a manifest's override, keyed by the tab's label — the escape
+ * hatch for a tab whose words say nothing useful. Checked against the closed
+ * set rather than trusted: a name outside it emits no CSS and draws a blank,
+ * which is worse than the derived glyph it replaced.
+ *
+ * Never nothing. A strip where three tabs carry an icon and the fourth does
+ * not reads as a tab that failed to load.
+ */
+export function tabIcon(label, declared = null) {
+  const override = declared?.[label]
+  if (override && TAB_ICONS.includes(override)) return override
+
+  const text = String(label || '').trim().toLowerCase()
+  for (const [icon, words] of TAB_ICON_WORDS) {
+    if (words.some((word) => text.includes(word))) return icon
+  }
+  return DEFAULT_TAB_ICON
+}
+
 // Named rather than counted. Stripping this with a hand-written offset is how
 // every FormControl type lost its first letter — "date" became "ate", which is
 // not in the union, and FormControl answers an unknown type with a plain text

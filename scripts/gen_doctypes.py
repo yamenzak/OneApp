@@ -489,6 +489,17 @@ doctype(
                       '{"column_field": "status"}, "calendar": {"start_field": '
                       '"date"}}. Every fieldname in here is checked against the '
                       'doctype like any other.'),
+        # The override, and only an override. Every tab already gets a glyph
+        # derived from its own label — Frappe has no icon property on a Tab
+        # Break, and a doctype we do not own will never have a manifest entry —
+        # so this is for the tab whose words say nothing useful. A name outside
+        # the SPA's closed set falls back to the derived one rather than
+        # drawing a blank; `tests/test_manifests.py` fails the build on one.
+        f("tab_icons", "Code", options="JSON",
+          description='An icon per tab of the record form, keyed by the tab\'s '
+                      'label: {"Overview": "lucide-list"}. Only where the tab\'s '
+                      'own words earn the wrong glyph — every tab has one '
+                      'without this. Names come from the SPA\'s TAB_ICONS.'),
         section("sec_view_query"),
         f("filters", "Code", options="JSON",
           description='Always applied, e.g. {"status": "Open"}.'),

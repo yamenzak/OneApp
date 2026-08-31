@@ -677,6 +677,14 @@ def _resolve(space_code: str, screen: str | None = None,
 		"view_types": offered,
 		"view_type": view_type if view_type in offered else offered[0],
 		"view_settings": _json(chosen.get("view_settings")),
+		# An icon per tab of the record form, keyed by the tab's label, and an
+		# override rather than the answer: every tab already gets a glyph
+		# derived from its own words in the browser, because Frappe has no icon
+		# property on a Tab Break and a doctype we do not own will never have a
+		# manifest entry. Carried verbatim and checked there against the closed
+		# set the build emits — a name outside it draws nothing at all, so the
+		# derived glyph is the better answer to a typo.
+		"tab_icons": _json(chosen.get("tab_icons")),
 		# The escape hatch, and the reason the manifest is a shortcut rather
 		# than a cage: name a component and none of the rest of this applies.
 		"component": chosen.get("component") or None,

@@ -675,7 +675,10 @@ test('rows can be selected and deleted together', async ({ page, baseURL }, info
 
   // Made through the API rather than the UI: this test is about deleting, and
   // borrowing a fixture row would leave the ones after it with less to look at.
-  const doomed = `Delete me ${Date.now()}`
+  // `ZZ ` on purpose: that is the prefix the fixture's own sweep looks for, so
+  // a run that fails between creating this and deleting it leaves nothing the
+  // next seed cannot clear.
+  const doomed = `ZZ Delete me ${Date.now()}`
   // Frappe rejects a POST without its CSRF token, and `page.request` carries
   // the session cookie but not the token — so ask the page for it.
   await page.goto('/one/space/zzmock')

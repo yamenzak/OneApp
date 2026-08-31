@@ -117,3 +117,100 @@ def state_icon(title: str) -> str:
         if any(word in text for word in words):
             return icon
     return "lucide-tag"
+
+
+# --------------------------------------------------------------------------- #
+# Tab icons
+#
+# Every tab in OneSpace carries a glyph, and none of them is declared.
+#
+# Frappe has no icon property on a Tab Break — a doctype's tabs are a label and
+# nothing else — and the tabs we draw over a record are ours. So the glyph is
+# derived from the tab's own words, exactly the way a status's is, and for the
+# same reason: a doctype we do not own (ERPNext's) will never have a manifest
+# entry and should still get something better than a blank.
+#
+# Closed set, written as literals, because Tailwind emits CSS only for class
+# names it can find in the source. See SPACE_ICONS.
+# --------------------------------------------------------------------------- #
+
+TAB_ICONS = [
+    "lucide-list",           # details, the first tab of almost everything
+    "lucide-link",           # connections, related records
+    "lucide-info",           # more information
+    "lucide-sticky-note",    # notes, remarks
+    "lucide-message-circle",  # comments
+    "lucide-history",        # history, changes
+    "lucide-activity",       # activity, timeline
+    "lucide-paperclip",      # files, attachments
+    "lucide-settings",       # settings, preferences, advanced
+    "lucide-shield",         # permissions, roles, access
+    "lucide-users",          # people, contacts, members
+    "lucide-map-pin",        # address, region
+    "lucide-calculator",     # accounting, tax
+    "lucide-banknote",       # payments, pricing, billing
+    "lucide-calendar",       # dates, schedule
+    "lucide-package",        # items, stock
+    "lucide-file-text",      # terms, printing, content
+    "lucide-mail",           # email
+    "lucide-bell",           # notifications, alerts
+    "lucide-plug",           # integrations, api, webhooks
+    "lucide-ruler",          # dimensions, measurements
+    "lucide-panel-top",      # a tab, and nothing more specific
+]
+
+DEFAULT_TAB_ICON = "lucide-panel-top"
+
+# Which glyph a tab's own words earn, in order — first match wins.
+#
+# Ordered by how specific the words are rather than alphabetically: `Payment
+# Terms` is about money before it is about a document, and `Email Alerts` is a
+# notification before it is a mailbox.
+TAB_ICON_WORDS = [
+    ("lucide-link", ("connection", "related", "reference", "linked")),
+    ("lucide-history", ("history", "changes", "audit", "log", "version",
+                        "revision")),
+    ("lucide-activity", ("activity", "timeline", "event")),
+    ("lucide-message-circle", ("comment", "discussion", "feedback", "reply")),
+    ("lucide-paperclip", ("file", "attachment", "document", "upload")),
+    ("lucide-shield", ("permission", "role", "access", "security", "sharing")),
+    ("lucide-bell", ("notification", "alert", "reminder", "subscriber")),
+    ("lucide-mail", ("email", "mail", "inbox", "message")),
+    ("lucide-plug", ("integration", "api", "webhook", "connector", "sync")),
+    ("lucide-banknote", ("payment", "pricing", "price", "billing", "currency",
+                         "invoice", "credit", "cost", "rate", "amount",
+                         "commission", "discount")),
+    ("lucide-calculator", ("accounting", "account", "tax", "total", "charge",
+                           "ledger")),
+    ("lucide-package", ("item", "product", "stock", "inventory", "material",
+                        "warehouse", "delivery", "shipping")),
+    ("lucide-map-pin", ("address", "location", "region", "territory")),
+    ("lucide-users", ("contact", "people", "member", "team", "user", "party",
+                      "customer", "supplier", "employee", "assign")),
+    ("lucide-calendar", ("date", "schedule", "timing", "period")),
+    ("lucide-ruler", ("dimension", "measurement", "size", "weight")),
+    ("lucide-sticky-note", ("note", "remark", "description", "summary")),
+    ("lucide-settings", ("setting", "preference", "configuration", "option",
+                         "advanced", "rule")),
+    # Before the printing words, because "information" contains "form" and a
+    # tab called More Information is not a print format.
+    ("lucide-info", ("information", "about", "misc", "other")),
+    ("lucide-file-text", ("print", "template", "content", "text", "letter",
+                          "legal", "term", "condition")),
+    ("lucide-list", ("detail", "general", "overview", "main", "basic",
+                     "primary")),
+]
+
+
+def tab_icon(label: str) -> str:
+    """The glyph a tab's words earn, or the neutral panel.
+
+    Never nothing. A strip where three tabs carry an icon and the fourth does
+    not reads as a tab that failed to load, which is the same argument
+    `state_icon` makes about a row of badges.
+    """
+    text = (label or "").strip().lower()
+    for icon, words in TAB_ICON_WORDS:
+        if any(word in text for word in words):
+            return icon
+    return DEFAULT_TAB_ICON

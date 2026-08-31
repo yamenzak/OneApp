@@ -110,28 +110,37 @@
     <div class="min-h-0 flex-1 overflow-y-auto px-4 py-4">
       <Tabs v-model="tab">
         <TabList>
-          <TabTrigger value="fields">Details</TabTrigger>
+          <!--
+            A glyph on every one of them, from the same derivation the
+            doctype's own tabs use — these four are labels like any other, and
+            a strip where the doctype's tabs carry icons and ours do not would
+            read as two different strips.
+          -->
+          <TabTrigger value="fields" label="Details" :icon-left="tabIcon('Details')" />
           <!--
             The count as a badge rather than inside the word: "Comments (3)"
-            reads as a label, a badge reads as a number.
-
-            One interpolation for the text, because Vue condenses the newline
-            before it into a leading space and a tab whose label starts with a
-            space is a label nothing can match on.
+            reads as a label, a badge reads as a number. `#suffix` is the slot
+            TabTrigger ships for exactly this — the first version put the badge
+            in the default slot, which replaces the label region, so the label
+            and the icon had to be rebuilt by hand around it.
           -->
-          <TabTrigger value="comments">
-            <span class="flex items-center gap-1.5"
-              >{{ 'Comments'
-              }}<Badge
+          <TabTrigger value="comments" label="Comments" :icon-left="tabIcon('Comments')">
+            <template #suffix>
+              <Badge
                 v-if="commentCount"
                 :label="String(commentCount)"
                 theme="gray"
                 variant="subtle"
               />
-            </span>
+            </template>
           </TabTrigger>
-          <TabTrigger v-if="trackChanges" value="history">History</TabTrigger>
-          <TabTrigger value="files">Files</TabTrigger>
+          <TabTrigger
+            v-if="trackChanges"
+            value="history"
+            label="History"
+            :icon-left="tabIcon('History')"
+          />
+          <TabTrigger value="files" label="Files" :icon-left="tabIcon('Files')" />
         </TabList>
 
         <TabPanel value="fields">
@@ -215,7 +224,7 @@ import RecordFiles from './RecordFiles.vue'
 import RecordImage from './RecordImage.vue'
 import RecordMeta from './RecordMeta.vue'
 import { workspace } from '../../lib/workspace'
-import { valueTheme } from '../../lib/fields'
+import { tabIcon, valueTheme } from '../../lib/fields'
 import { onDocChange, onDocViewers } from '../../lib/socket'
 import { session } from '../../lib/session'
 

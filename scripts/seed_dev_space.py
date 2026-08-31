@@ -353,6 +353,23 @@ def seed_tenant():
 		for row in frappe.get_all(doctype, filters={field: ["like", "ZZ %"]}, pluck="name"):
 			frappe.delete_doc(doctype, row, ignore_permissions=True, force=True)
 
+	# And anything else that is not this fixture.
+	#
+	# The prefix above only catches what a test remembered to prefix, and a run
+	# that fails halfway leaves its row behind whatever it was called. Sixty of
+	# those later the first page of the list is litter, the fixture's own rows
+	# are on page two, and a test that creates a row and looks for it fails
+	# with "100 of 105" — which reads as a bug in the list rather than as a
+	# dirty fixture. Every ToDo on a dev site is this fixture's, which is the
+	# same thing the comment sweep below already assumes.
+	keep = {row["name"] for row in TODOS} | {
+		f"{BACKLOG_PREFIX} {n:02d}" for n in range(1, BACKLOG + 1)
+	}
+	for row in frappe.get_all("ToDo", fields=["name", "description"]):
+		if row["name"] in keep or row["description"] in keep:
+			continue
+		frappe.delete_doc("ToDo", row["name"], ignore_permissions=True, force=True)
+
 	# The browser passes leave their comments behind, and Frappe keeps only the
 	# last hundred of them on the document itself — which is where the count in
 	# the timeline tab comes from, here as in the desk. A fixture that has been
