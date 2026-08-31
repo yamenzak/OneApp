@@ -38,6 +38,8 @@ filters       {"status": "Open"}  always applied
 order_by      modified desc
 view_types    list,board          how it may be looked at; the first is default
 view_settings {"board": {...}}    what a type needs beyond columns and filters
+status_field  status              where a record stands — the badge, and the
+                                  board's columns
 component                         escape hatch — see below
 ```
 
@@ -391,6 +393,43 @@ Rows are **windowed past two hundred** (frappe-ui's `ListRows virtual`), which
 is where Load more starts to make a page you can feel. Below that the plain
 path is simpler and behaves better with a keyboard.
 
+## The board is the same list, drawn as columns
+
+A screen that names a `status_field` may offer `board`. It is the same rows —
+the same filters, the same order, the same page — placed in the column its
+status names.
+
+Nothing about a board is configured, and that is the point:
+
+* **The columns are the field's own options**, in the doctype's own order, or
+  alphabetically where the DocField says `sort_options`. Not a list in a
+  manifest, because a manifest's copy of a Select goes stale the first time
+  somebody edits the doctype.
+* **The colour and the glyph are the doctype's Document States**, the same ones
+  the list cell and the record's badge read. A status is one colour everywhere
+  or it is not a status.
+* **The card is `RecordCard`**, the component the hover card over a link uses —
+  a face, a title, the id beneath, then the fields the reader has on their list,
+  minus the title and the status the column already is. Blank fields are left
+  off: a list draws an em dash because the column header says what is missing,
+  and a card has no column headers.
+* **A value the field no longer offers still gets a column.** A card that
+  vanishes because somebody edited the doctype is worse than an extra column.
+
+Moving a card writes one field, through the same `save` a form uses — so
+permissions, `read_only`, workflows and `fetch_from` all apply exactly as they
+would in the record. The list is re-read afterwards rather than trusted: the
+save may have changed more than was sent.
+
+Two rules are enforced rather than documented. A screen that names no
+`status_field` is not offered a board at all — `spaceview._view_types` and
+`lib/viewTypes.js` both drop it, and a test fails when the two disagree — and
+the status field is fetched with every row whether or not it is one of the
+columns the reader is looking at, the same way a Dynamic Link's companion is.
+
+A phone shows the board and cannot drag on it: HTML5 drag and drop is a pointer
+gesture. A status changes there by opening the record, like every other field.
+
 ## One radius language
 
 frappe-ui's own components draw four corner sizes and mean something different
@@ -468,10 +507,10 @@ is a second screen to navigate to. One form has neither problem.
 
 Worth knowing before designing around it:
 
-* **One view type.** A screen may declare `list,board,calendar`; only the list
-  is built, and a type nothing can draw is dropped rather than refused — so the
-  screen renders as a list today and gains the rest without a manifest edit.
-  Rows are shaped for a list and only for a list; see ADR-15 for why the
+* **Two view types.** A screen may declare `list,board,calendar,grid,map`; the
+  list and the board are built, and a type nothing can draw is dropped rather
+  than refused — so a screen declaring a calendar renders as a list today and
+  gains the calendar without a manifest edit. See ADR-15 for why per-type row
   shaping is not written ahead of the view that needs it.
 * **No child tables.** A doctype with rows inside it shows its top-level fields
   only.

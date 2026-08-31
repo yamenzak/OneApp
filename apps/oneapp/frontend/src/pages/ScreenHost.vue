@@ -302,6 +302,8 @@
             @like="like"
             @sort="sortBy"
             @favourites="toggleFavourites"
+            @change="writeField"
+            @new="newWith"
           />
 
           <ListFooter
@@ -407,6 +409,7 @@
     :spec="spec"
     :space-code="spaceCode"
     :screen="spec.screen"
+    :preset="preset"
     @created="created"
   />
 </template>
@@ -457,6 +460,9 @@ const quickExpanded = ref(false)
 const spec = ref(null)
 const loading = ref(false)
 const showCreate = ref(false)
+// What the create dialog opens with already filled in. Empty for the toolbar's
+// New; a status for a board column's.
+const preset = ref({})
 const showColumns = ref(false)
 // The record that is open, fetched. Null is "no record", which is also what
 // closing one means — there is no second flag, because two of them is how a
@@ -849,7 +855,39 @@ const open = (row) => {
 }
 
 const create = () => {
+  preset.value = {}
   showCreate.value = true
+}
+
+// New, from somewhere that already knows part of the answer. A board's column
+// header is the one today: pressing New inside "In Progress" means a record
+// that is in progress, and making the person pick the status they just pressed
+// is the kind of small stupidity that makes a board not worth using.
+const newWith = (values) => {
+  preset.value = values || {}
+  showCreate.value = true
+}
+
+// One field, written from a body, without opening the record.
+//
+// A board's whole reason to exist: dragging a card between columns is a save
+// of the field the columns are. Optimistic on the row so the card stays where
+// it was dropped while the request is in flight, then the list is re-read —
+// the save may have changed more than was sent (a workflow, a fetch_from, a
+// `modified` that reorders the page), and a board showing our guess instead of
+// the server's answer is a board that lies quietly.
+const writeField = async ({ row, field, value }) => {
+  if (!row || !field) return
+  const was = row[field]
+  row[field] = value
+  try {
+    await workspace.saveRecord(props.spaceCode, spec.value.screen, { [field]: value }, row.name)
+  } catch (e) {
+    row[field] = was
+    notifyError(e.message || String(e))
+    return
+  }
+  await loadRows()
 }
 
 // A record that was just made is a record you want to be in — so the dialog

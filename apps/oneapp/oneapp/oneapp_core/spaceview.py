@@ -341,7 +341,7 @@ def _child(df) -> dict | None:
 	}
 
 
-def _fetch_fields(columns: list[dict]) -> list[str]:
+def _fetch_fields(columns: list[dict], status: str = "") -> list[str]:
 	"""The columns that are actually fields on the document.
 
 	`__activity` is a column and not a field; asking the database for it is a
@@ -371,6 +371,13 @@ def _fetch_fields(columns: list[dict]) -> list[str]:
 		c["depends_on_field"] for c in columns
 		if c["fieldtype"] == "Dynamic Link" and c.get("depends_on_field")
 	]
+	# Where the record stands, whether or not anybody is looking at that column.
+	# A board puts each card in the column its status names, and a reader who
+	# dropped the status column from the list has not stopped a board from
+	# needing it — the same way a Dynamic Link's companion is fetched whether or
+	# not it is shown. Already validated against the doctype by `_status_field`.
+	if status:
+		wanted.append(status)
 	return list(dict.fromkeys(wanted + list(ALWAYS)))
 
 
@@ -738,7 +745,7 @@ def _resolve(space_code: str, screen: str | None = None,
 		**presentation(meta),
 		# What to ask the database for: the columns that are fields, plus the
 		# identity that is never one. Activity is neither.
-		"fields": _fetch_fields(columns),
+		"fields": _fetch_fields(columns, _status_field(chosen, offered)),
 		"filters": _json(chosen.get("filters")),
 		"order_by": chosen.get("order_by") or _default_order(meta),
 		# How many rows a page is, and what the footer may offer instead. The
@@ -886,8 +893,15 @@ def _status_field(screen: dict, offered: dict) -> str:
 # nothing. `apps/oneapp/frontend/src/lib/viewTypes.js` is the same list, and a
 # test fails when the two drift.
 VIEW_TYPES = ("list", "board", "calendar", "grid", "map")
-BUILT_VIEW_TYPES = ("list",)
+BUILT_VIEW_TYPES = ("list", "board")
 DEFAULT_VIEW_TYPE = "list"
+
+# View types that are a way of reading one field, and are nothing without it.
+# A board is columns of a status: no status field, no columns, and a board of
+# one column called "everything" is not a board. Declaring one without a
+# `status_field` is caught by the manifest check; this is the runtime half of
+# the same rule, because a manifest is not the only way a screen is written.
+NEEDS_STATUS = ("board",)
 
 
 def _view_types(screen: dict) -> list[str]:
@@ -897,6 +911,8 @@ def _view_types(screen: dict) -> list[str]:
 		for one in str(screen.get("view_types") or "").split(",")
 		if one.strip().lower() in BUILT_VIEW_TYPES
 	]
+	if not (screen.get("status_field") or "").strip():
+		declared = [one for one in declared if one not in NEEDS_STATUS]
 	return list(dict.fromkeys(declared)) or [DEFAULT_VIEW_TYPE]
 
 

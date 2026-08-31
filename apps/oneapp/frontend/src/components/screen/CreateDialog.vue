@@ -71,6 +71,15 @@ const props = defineProps({
   spec: { type: Object, required: true },
   spaceCode: { type: String, required: true },
   screen: { type: String, required: true },
+  /**
+   * Fields the form opens with already filled in, keyed by fieldname.
+   *
+   * The board's New sits inside a column and means "a new one, here" — the
+   * status it lands in is the column it was pressed in, not whatever the
+   * doctype defaults to. Seeded rather than forced: it is an ordinary value in
+   * an ordinary control and the person can change it before saving.
+   */
+  preset: { type: Object, default: () => ({}) },
 })
 const emit = defineEmits(['update:modelValue', 'created'])
 
@@ -117,6 +126,7 @@ const dirty = computed(() => Object.keys(filled()).length > 0)
 const blank = () => {
   error.value = ''
   Object.keys(form).forEach((key) => delete form[key])
+  Object.assign(form, props.preset || {})
 }
 
 const save = async ({ another = false } = {}) => {
@@ -145,8 +155,9 @@ const save = async ({ another = false } = {}) => {
   }
 }
 
-// A blank form every time it opens. A dialog that remembers the last attempt
-// is a dialog that quietly creates a second copy of it.
+// A blank form every time it opens — blank being the preset, where there is
+// one. A dialog that remembers the last attempt is a dialog that quietly
+// creates a second copy of it.
 watch(open, (showing) => {
   if (showing) blank()
 })

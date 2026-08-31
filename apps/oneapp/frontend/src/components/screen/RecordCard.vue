@@ -39,7 +39,12 @@
         <template v-for="field in fields" :key="field.fieldname">
           <dt class="truncate text-p-sm text-ink-gray-5">{{ field.label }}</dt>
           <dd class="flex min-w-0 items-center">
-            <FieldCell :column="field" :value="field.value" :states="states" />
+            <FieldCell
+              :column="field"
+              :value="field.value"
+              :states="states"
+              :links="links"
+            />
           </dd>
         </template>
       </dl>
@@ -52,6 +57,7 @@
           :column="field"
           :value="field.value"
           :states="states"
+          :links="links"
           class="min-w-0"
         />
       </div>
@@ -77,6 +83,13 @@ const props = defineProps({
   fields: { type: Array, default: () => [] },
   /** The target doctype's Document States, so a status reads in its colour. */
   states: { type: Array, default: () => [] },
+  /**
+   * The row's resolved links, keyed by fieldname. A board card draws fields
+   * straight off a list row, where a Link is an id and the label for it came
+   * back beside it; a hover card's fields arrive already resolved and pass
+   * nothing here.
+   */
+  links: { type: Object, default: () => ({}) },
   loading: { type: Boolean, default: false },
   shape: { type: String, default: 'panel' },
 })

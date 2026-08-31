@@ -4,7 +4,7 @@ import { defineAsyncComponent } from 'vue'
  * The ways a screen can be looked at.
  *
  * A screen declares which of these it offers and in what order; the first is
- * what it opens with. Only `list` is built — the rest are declared here so a
+ * what it opens with. Only some are built — the rest are declared here so a
  * manifest can name one before the body exists, and so the vocabulary lives in
  * one place rather than in three components.
  *
@@ -19,13 +19,29 @@ export const VIEW_TYPES = {
     built: true,
     body: () => import('../components/screen/ListBody.vue'),
   },
-  board: { label: 'Board', icon: 'lucide-columns-3', built: false },
+  board: {
+    label: 'Board',
+    icon: 'lucide-columns-3',
+    built: true,
+    body: () => import('../components/screen/BoardBody.vue'),
+  },
   calendar: { label: 'Calendar', icon: 'lucide-calendar', built: false },
   grid: { label: 'Grid', icon: 'lucide-layout-grid', built: false },
   map: { label: 'Map', icon: 'lucide-map', built: false },
 }
 
 export const DEFAULT_VIEW_TYPE = 'list'
+
+/**
+ * View types that are a way of reading one field, and are nothing without it.
+ *
+ * A board is columns of a status: a screen that names no `status_field` has no
+ * columns to make, and a board of one column called "everything" is not a
+ * board. The manifest check catches declaring one anyway; this drops it from
+ * the sidebar so a screen offers a board only where there is one to offer.
+ * `spaceview._view_types` is the same rule on the server.
+ */
+export const NEEDS_STATUS = ['board']
 
 /**
  * The types one screen offers, in order, filtered to what this build renders.
@@ -35,10 +51,12 @@ export const DEFAULT_VIEW_TYPE = 'list'
  * that is never the better answer.
  */
 export function viewTypesOf(screen) {
+  const status = String(screen?.status_field || '').trim()
   const declared = String(screen?.view_types || '')
     .split(',')
     .map((type) => type.trim().toLowerCase())
     .filter((type) => VIEW_TYPES[type]?.built)
+    .filter((type) => status || !NEEDS_STATUS.includes(type))
   return declared.length ? [...new Set(declared)] : [DEFAULT_VIEW_TYPE]
 }
 

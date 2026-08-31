@@ -1087,18 +1087,51 @@ def test_the_two_halves_agree_on_what_a_view_type_is(spaceview):
 	built = set(_re.findall(r"^  (\w+): \{[^}]*built: true", source, _re.M | _re.S))
 	assert built == set(spaceview.BUILT_VIEW_TYPES)
 
+	# And on which of them are nothing without a status field. The sidebar is
+	# the SPA's answer and the resolved screen is the server's; a type dropped
+	# by one and kept by the other is a menu entry that opens the wrong body.
+	needs = set(
+		_re.findall(r"'([\w]+)'", _re.search(
+			r"export const NEEDS_STATUS = \[([^\]]*)\]", source
+		).group(1))
+	)
+	assert needs == set(spaceview.NEEDS_STATUS), (
+		f"lib/viewTypes.js says {sorted(needs)} need a status field, spaceview "
+		f"says {sorted(spaceview.NEEDS_STATUS)}"
+	)
+	assert needs <= set(spaceview.VIEW_TYPES)
+
 
 def test_a_screen_offers_what_it_declares_and_nothing_it_cannot_draw(spaceview):
 	assert spaceview._view_types({"view_types": "list"}) == ["list"]
 	# Unbuilt types are dropped rather than refused: a manifest naming one gets
 	# a list today and the real thing the day it ships.
-	assert spaceview._view_types({"view_types": "list,board"}) == ["list"]
-	assert spaceview._view_types({"view_types": "board"}) == ["list"]
+	assert spaceview._view_types({"view_types": "list,calendar"}) == ["list"]
+	assert spaceview._view_types({"view_types": "calendar"}) == ["list"]
 	# Order is the manifest's, duplicates collapse, and nothing declared is
 	# still a list.
 	assert spaceview._view_types({"view_types": "list, list"}) == ["list"]
 	assert spaceview._view_types({}) == ["list"]
 	assert spaceview._view_types({"view_types": ""}) == ["list"]
+
+
+def test_a_board_is_only_offered_where_there_is_a_status_to_column_it_by(spaceview):
+	"""A board is columns of one field, so a screen naming no status has none.
+
+	Dropped rather than refused, like an unbuilt type: the alternative is a
+	board of a single column called "everything", which is a list drawn badly.
+	The manifest check catches declaring one anyway; this is what stops it
+	rendering when it slips through.
+	"""
+	board = {"view_types": "list,board", "status_field": "status"}
+	assert spaceview._view_types(board) == ["list", "board"]
+	assert spaceview._view_types({**board, "status_field": ""}) == ["list"]
+	assert spaceview._view_types({**board, "status_field": "   "}) == ["list"]
+	# The whole declaration, so a screen that offers only a board still opens.
+	assert spaceview._view_types({"view_types": "board"}) == ["list"]
+	assert spaceview._view_types({"view_types": "board", "status_field": "status"}) == [
+		"board"
+	]
 
 
 def test_a_view_settings_fieldname_is_checked_like_any_other(spaceview):
@@ -1747,6 +1780,22 @@ def test_the_companion_field_is_always_fetched(spaceview):
 	with whether the link beside it can be resolved."""
 	columns = [column_of(spaceview, "reference_name")]
 	assert "reference_type" in spaceview._fetch_fields(columns)
+
+
+def test_the_status_field_is_always_fetched(spaceview):
+	"""A board puts each card in the column its status names.
+
+	The same rule as the companion field above: a reader who dropped the status
+	column from the list has not stopped a board from being made of it, and a
+	row fetched without it is a card with nowhere to go.
+	"""
+	columns = spaceview._columns(TODO, ["description"])
+	assert "status" not in spaceview._fetch_fields(columns)
+	assert "status" in spaceview._fetch_fields(columns, "status")
+	# Asked for once, not twice, where it is also a column somebody is looking
+	# at — a duplicate reaches the query as `select status, status`.
+	both = spaceview._fetch_fields(spaceview._columns(TODO, ["status"]), "status")
+	assert both.count("status") == 1
 
 
 # --------------------------------------------------------------------------- #
