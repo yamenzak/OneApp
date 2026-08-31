@@ -2,9 +2,24 @@
   <div class="flex flex-col gap-2">
     <div class="flex items-center justify-between gap-2">
       <FormLabel :label="field.label" />
-      <span class="text-p-xs tabular-nums text-ink-gray-5">
-        {{ rows.length }} {{ rows.length === 1 ? 'row' : 'rows' }}
-      </span>
+      <div class="flex items-center gap-2">
+        <!-- What is ticked, and the one thing worth doing to it. Beside the
+             count rather than in a floating bar: a child table is a few rows
+             inside a form, and a bar over the form to delete two lines of it
+             is more chrome than the action deserves. -->
+        <Button
+          v-if="editable && chosen.length"
+          size="sm"
+          theme="red"
+          variant="subtle"
+          icon-left="lucide-trash-2"
+          :label="`Remove ${chosen.length}`"
+          @click="removeChosen"
+        />
+        <span class="text-p-xs tabular-nums text-ink-gray-5">
+          {{ rows.length }} {{ rows.length === 1 ? 'row' : 'rows' }}
+        </span>
+      </div>
     </div>
 
     <!--
@@ -19,22 +34,68 @@
     <div v-if="rows.length" class="overflow-x-auto rounded-6 border border-outline-gray-2">
       <List :columns="tracks" :row-height="44" class="w-max min-w-full list-row-px-3">
         <ListHeader>
-          <ListHeaderCell>#</ListHeaderCell>
-          <ListHeaderCell v-for="column in columns" :key="column.fieldname">
+          <ListHeaderCell>
+            <div class="flex items-center gap-2">
+              <Checkbox
+                v-if="editable"
+                :model-value="allChosen"
+                :indeterminate="!!chosen.length && !allChosen"
+                aria-label="Select every row"
+                @update:model-value="chooseAll"
+              />
+              <span>#</span>
+            </div>
+          </ListHeaderCell>
+          <ListHeaderCell
+            v-for="column in columns"
+            :key="column.fieldname"
+            :class="isNumericCell(column.cell) ? 'justify-end' : ''"
+          >
             {{ column.label }}
+            <!-- The child doctype's own `reqd`, said where the label is said.
+                 A grid cell has no room for a label, so without this the only
+                 warning that a column may not be left blank is the save
+                 failing. -->
+            <span v-if="column.reqd" class="text-ink-red-4" aria-hidden="true">*</span>
           </ListHeaderCell>
           <ListHeaderCell />
         </ListHeader>
 
         <ListRows :items="rows" row-key="name" v-slot="{ item: row, value, index }">
-          <ListRow :value="value">
+          <ListRow
+            :value="value"
+            :class="draggedTo === index && dragging !== null ? 'bg-surface-gray-2' : ''"
+            @dragover.prevent="draggedTo = index"
+            @drop.prevent="drop(index)"
+          >
             <!-- Frappe orders a child table by `idx`, so the number is the
                  row's position and worth showing: it is what a person means
-                 when they say "the third line". -->
+                 when they say "the third line". It is also the handle — the
+                 number *is* the position, so the thing you drag to change it
+                 is the thing that says what it is, rather than a second grip
+                 column beside it. -->
             <ListCell>
-              <span class="text-p-xs tabular-nums text-ink-gray-5">{{ index + 1 }}</span>
+              <div class="flex w-full items-center gap-2">
+                <Checkbox
+                  v-if="editable"
+                  :model-value="chosen.includes(index)"
+                  :aria-label="`Select row ${index + 1}`"
+                  @update:model-value="choose(index, $event)"
+                />
+                <span
+                  class="text-p-xs tabular-nums text-ink-gray-5"
+                  :class="editable ? 'cursor-grab' : ''"
+                  :draggable="editable"
+                  @dragstart="dragging = index"
+                  @dragend="endDrag"
+                >{{ index + 1 }}</span>
+              </div>
             </ListCell>
-            <ListCell v-for="column in columns" :key="column.fieldname">
+            <ListCell
+              v-for="column in columns"
+              :key="column.fieldname"
+              :class="isNumericCell(column.cell) && !editable ? 'justify-end' : ''"
+            >
               <FieldControl
                 v-if="editable && column.editable"
                 :model-value="row[column.fieldname]"
@@ -81,7 +142,7 @@
       v-if="editable"
       class="self-start"
       icon-left="lucide-plus"
-      :label="`Add a ${child.label.toLowerCase()}`"
+      label="Add row"
       @click="add"
     />
 
@@ -116,6 +177,7 @@
 import { computed, ref } from 'vue'
 import {
   Button,
+  Checkbox,
   Dialog,
   FormLabel,
   List,
@@ -128,6 +190,7 @@ import {
 import FieldCell from './FieldCell.vue'
 import FieldControl from './FieldControl.vue'
 import RecordForm from './RecordForm.vue'
+import { isNumericCell } from '../../lib/fields'
 
 const props = defineProps({
   /** The parent's docfield, whose `child` carries the child doctype's shape. */
@@ -162,7 +225,7 @@ const childSpec = computed(() => ({
  * every row is the difference between a grid and a stack of forms. The
  * behaviour — required, read-only, the bounds — all still travels.
  */
-const bare = (column) => ({ ...column, label: '', description: null })
+const bare = (column) => ({ ...column, label: '', icon: null, description: null })
 
 /**
  * Grid track sizes, in the shape `List` takes.
@@ -207,5 +270,71 @@ const add = () => {
 const remove = (index) => {
   rows.value = rows.value.filter((_row, at) => at !== index)
   if (editingAt.value === index) expanded.value = false
+  chosen.value = []
+}
+
+// --- selection ---------------------------------------------------------------
+//
+// By position, not by key. A saved child row has a `name` and a new one does
+// not — that is how Frappe tells an update from an insert — so half the rows in
+// an edited table have nothing to key a selection on. Position is what a child
+// table already is: `idx` ordered, renumbered on save.
+//
+// Which is also why every operation that moves a row clears the selection. A
+// selection held by position through a reorder is a selection of different
+// rows, and that is the kind of bug that deletes the wrong line.
+
+const chosen = ref([])
+
+const allChosen = computed(
+  () => rows.value.length > 0 && chosen.value.length === rows.value.length,
+)
+
+const choose = (index, ticked) => {
+  chosen.value = ticked
+    ? [...chosen.value, index]
+    : chosen.value.filter((at) => at !== index)
+}
+
+const chooseAll = (ticked) => {
+  chosen.value = ticked ? rows.value.map((_row, at) => at) : []
+}
+
+const removeChosen = () => {
+  const going = new Set(chosen.value)
+  rows.value = rows.value.filter((_row, at) => !going.has(at))
+  if (editingAt.value !== null && going.has(editingAt.value)) expanded.value = false
+  chosen.value = []
+}
+
+// --- reordering ---------------------------------------------------------------
+//
+// Native drag and drop, and `idx` rewritten to match: Frappe orders a child
+// table by that column and renumbers on save, but the record in the browser is
+// what the form reads back, so leaving the old numbers there would show the
+// rows in one order and save them in another.
+
+const dragging = ref(null)
+const draggedTo = ref(null)
+
+const endDrag = () => {
+  dragging.value = null
+  draggedTo.value = null
+}
+
+const drop = (index) => {
+  const from = dragging.value
+  endDrag()
+  if (from === null || from === index) return
+
+  const next = [...rows.value]
+  const [moved] = next.splice(from, 1)
+  next.splice(index, 0, moved)
+  rows.value = next.map((row, at) => ({ ...row, idx: at + 1 }))
+  chosen.value = []
+  // The expanded row followed its position rather than its contents, which is
+  // the wrong half of the pair. Closing is the honest answer to "the thing you
+  // had open is somewhere else now".
+  expanded.value = false
 }
 </script>

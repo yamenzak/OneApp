@@ -128,6 +128,15 @@ LAYOUT_TYPES = (
     "Image", "Fold", "Heading",
 )
 
+# Cells whose value is a number, and so belongs against the right edge of its
+# column rather than the left.
+#
+# Named by cell rather than by fieldtype because the cell is what already
+# decides how the value is drawn — a Currency and an Int are one question here
+# — and because a fieldtype added to the map lands in one of these buckets
+# without a second list to remember. Frappe's own grid aligns the same three.
+NUMERIC_CELLS = ("number", "currency", "percent")
+
 # `options` on a Data field refines what the browser should offer. Frappe's own
 # `data_field_options`.
 DATA_OPTIONS = {

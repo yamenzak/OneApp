@@ -167,7 +167,7 @@ DEFAULT_TAB_ICON = "lucide-panel-top"
 # Terms` is about money before it is about a document, and `Email Alerts` is a
 # notification before it is a mailbox.
 TAB_ICON_WORDS = [
-    ("lucide-link", ("connection", "related", "reference", "linked")),
+    ("lucide-link", ("connection", "link", "related", "reference")),
     ("lucide-history", ("history", "changes", "audit", "log", "version",
                         "revision")),
     ("lucide-activity", ("activity", "timeline", "event")),
@@ -186,7 +186,8 @@ TAB_ICON_WORDS = [
                         "warehouse", "delivery", "shipping")),
     ("lucide-map-pin", ("address", "location", "region", "territory")),
     ("lucide-users", ("contact", "people", "member", "team", "user", "party",
-                      "customer", "supplier", "employee", "assign")),
+                      "participant", "attendee", "guest", "customer",
+                      "supplier", "employee", "assign")),
     ("lucide-calendar", ("date", "schedule", "timing", "period")),
     ("lucide-ruler", ("dimension", "measurement", "size", "weight")),
     ("lucide-sticky-note", ("note", "remark", "description", "summary")),

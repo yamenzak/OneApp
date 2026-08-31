@@ -393,6 +393,41 @@ Rows are **windowed past two hundred** (frappe-ui's `ListRows virtual`), which
 is where Load more starts to make a page you can feel. Below that the plain
 path is simpler and behaves better with a keyboard.
 
+## A child table is a grid, not a second list
+
+A doctype with rows inside it renders them as a grid on the record: the child
+doctype's own `in_list_view` fields as columns, edited in place, with the whole
+row available in a dialog for the child doctypes that carry twenty fields.
+
+`in_list_view` rather than a picker is the whole design. Frappe CRM ships a
+column editor per grid and stores what it chose as client-side state; the
+child doctype has already answered that question, once, for every screen that
+ever shows it. A manifest repeating it would be a second answer to drift from.
+
+What the grid does beyond drawing rows:
+
+* **Tick rows and remove them together.** By position, not by key — a saved
+  child row has a `name` and a new one does not, which is how Frappe tells an
+  update from an insert, so half the rows in an edited table have nothing to
+  key a selection on. Every operation that moves a row therefore clears the
+  selection: a selection held by position through a reorder is a selection of
+  different rows.
+* **Drag to reorder**, with `idx` rewritten to match. Frappe orders a child
+  table by that column and renumbers on save, but the record in the browser is
+  what the form reads back — leaving the old numbers would show one order and
+  save another. The handle is the row number itself: the number *is* the
+  position, so the thing you drag to change it is the thing that says what it
+  is.
+* **Numbers against the right edge.** Which cells are numbers is
+  `NUMERIC_CELLS`, generated from the same fieldtype map that decides how a
+  value is drawn — so a Currency and an Int are one question, and a fieldtype
+  added to the map lands in a bucket without a second list to remember.
+* **A required column says so in its header.** A grid cell has no room for a
+  label, so without the marker the only warning that a column may not be left
+  blank is the save failing.
+
+None of it is declared anywhere. A doctype with a child table gets all of it.
+
 ## The board is the same list, drawn as columns
 
 A screen that names a `status_field` may offer `board`. It is the same rows —
@@ -512,8 +547,6 @@ Worth knowing before designing around it:
   than refused — so a screen declaring a calendar renders as a list today and
   gains the calendar without a manifest edit. See ADR-15 for why per-type row
   shaping is not written ahead of the view that needs it.
-* **No child tables.** A doctype with rows inside it shows its top-level fields
-  only.
 * **No free-text search across the whole set.** Filters, the quick boxes and
   sort narrow a list; there is no "search everything" box.
 * **A child table cannot be filtered.** It is rows rather than a value, so

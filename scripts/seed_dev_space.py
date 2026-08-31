@@ -45,6 +45,10 @@ COLLEAGUE_PASSWORD = "Dev-Loop-2026!x"
 
 TASK_FIELDS = "description,status,priority,allocated_to,role,date,color"
 NOTE_FIELDS = "title,public,content"
+# Event's own list fields. The child tables are not among them — a child table
+# is rows rather than a value and never a column — which is the point: they are
+# on the record, and only there.
+EVENT_FIELDS = "subject,event_type,status,starts_on"
 
 # What the space grants. ToDo and Note are what its screens show; Role is a
 # link target, granted so the picker's Create row has somewhere to create —
@@ -54,6 +58,13 @@ DOCTYPES = [
 	{"document_type": "ToDo", "access": "Manage", "if_owner": 0},
 	{"document_type": "Note", "access": "Manage", "if_owner": 0},
 	{"document_type": "Role", "access": "Manage", "if_owner": 0},
+	# The child-table fixture. Frappe's Event is the one core doctype that
+	# carries every question a child grid raises at once: two child tables, a
+	# required column in one (`reference_doctype`), an Int column in the other
+	# (`before`), and a status Select on the parent that a board can column by.
+	# Inventing a doctype to ask those four questions would be inventing a
+	# doctype to test our own code with.
+	{"document_type": "Event", "access": "Manage", "if_owner": 0},
 ]
 
 SCREENS = [
@@ -75,6 +86,11 @@ SCREENS = [
 	{
 		"screen": "notes", "label": "Notes", "icon": "lucide-book-open",
 		"document_type": "Note", "fields": NOTE_FIELDS, "order_by": "modified desc",
+	},
+	{
+		"screen": "events", "label": "Events", "icon": "lucide-calendar",
+		"document_type": "Event", "fields": EVENT_FIELDS, "order_by": "creation asc",
+		"status_field": "status",
 	},
 ]
 
@@ -121,6 +137,34 @@ NOTES = [
 	 "content": "<p>Collection before nine, or the day counts as two.</p>"},
 	{"title": "Halloway contacts", "public": 0,
 	 "content": "<p>Chris is the one who signs; Sam answers the phone.</p>"},
+]
+
+# Two events, and only one of them has rows in its child tables — a grid with
+# nothing in it and a grid with three lines are different renderings and both
+# are worth having something to look at.
+#
+# `starts_on` is a fixed date rather than "today": a fixture whose values move
+# is a fixture a test cannot assert against.
+EVENTS = [
+	{
+		"subject": "Quarterly review", "event_type": "Private", "status": "Open",
+		"starts_on": "2026-09-15 10:00:00",
+		"event_participants": [
+			{"reference_doctype": "User", "reference_docname": "Administrator",
+			 "attending": "Yes"},
+			{"reference_doctype": "User", "reference_docname": COLLEAGUE,
+			 "attending": "Maybe"},
+		],
+		"notifications": [
+			{"type": "Email", "before": 30, "interval": "minutes"},
+			{"type": "Email", "before": 2, "interval": "hours"},
+			{"type": "Email", "before": 1, "interval": "days"},
+		],
+	},
+	{
+		"subject": "Van collection", "event_type": "Public", "status": "Open",
+		"starts_on": "2026-09-17 09:00:00",
+	},
 ]
 
 # The paging fixture. Everything else here is two or three records, which is
@@ -312,6 +356,11 @@ def seed_tenant():
 			continue
 		frappe.get_doc({"doctype": "Note", **row}).insert(ignore_permissions=True)
 
+	for row in EVENTS:
+		if frappe.db.exists("Event", {"subject": row["subject"]}):
+			continue
+		frappe.get_doc({"doctype": "Event", **row}).insert(ignore_permissions=True)
+
 	for n in range(1, BACKLOG + 1):
 		description = f"{BACKLOG_PREFIX} {n:02d}"
 		if frappe.db.exists("ToDo", {"description": description}):
@@ -349,7 +398,8 @@ def seed_tenant():
 	# works has no reason to keep it, and forty runs later the fixture is forty
 	# rows longer than it was written to be. Everything a test makes is named
 	# with this prefix on purpose.
-	for doctype, field in (("ToDo", "description"), ("Note", "title")):
+	for doctype, field in (("ToDo", "description"), ("Note", "title"),
+	                       ("Event", "subject")):
 		for row in frappe.get_all(doctype, filters={field: ["like", "ZZ %"]}, pluck="name"):
 			frappe.delete_doc(doctype, row, ignore_permissions=True, force=True)
 

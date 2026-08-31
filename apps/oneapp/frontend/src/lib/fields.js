@@ -266,6 +266,24 @@ export const DATA_OPTIONS = {
   "URL": "url"
 }
 
+/**
+ * Cells whose value is a number, and so sits against the right edge.
+ *
+ * By cell rather than by fieldtype: the cell is what already decides how a
+ * value is drawn, so a Currency and an Int are one question here, and a
+ * fieldtype added to the map lands in a bucket without a second list to
+ * remember.
+ */
+export const NUMERIC_CELLS = [
+  "number",
+  "currency",
+  "percent"
+]
+
+export function isNumericCell(cell) {
+  return NUMERIC_CELLS.includes(cell)
+}
+
 /** DocType State's palette, in Badge themes. */
 export const STATE_COLORS = {
   "Blue": "blue",
@@ -560,9 +578,9 @@ const TAB_ICON_WORDS = [
     "lucide-link",
     [
       "connection",
+      "link",
       "related",
-      "reference",
-      "linked"
+      "reference"
     ]
   ],
   [
@@ -699,6 +717,9 @@ const TAB_ICON_WORDS = [
       "team",
       "user",
       "party",
+      "participant",
+      "attendee",
+      "guest",
       "customer",
       "supplier",
       "employee",

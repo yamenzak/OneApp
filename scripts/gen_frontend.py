@@ -2460,7 +2460,8 @@ def fields_js(app: str, spec: dict) -> str:
         TAB_ICONS,
     )
     from field_types import (
-        DATA_OPTIONS, FIELD_TYPES, LAYOUT_TYPES, STATE_COLORS, WORD_COLORS,
+        DATA_OPTIONS, FIELD_TYPES, LAYOUT_TYPES, NUMERIC_CELLS, STATE_COLORS,
+        WORD_COLORS,
     )
 
     table = {
@@ -2494,6 +2495,20 @@ export const LAYOUT_TYPES = %(layout)s
 
 /** What `options` on a Data field refines the input to. Frappe's own list. */
 export const DATA_OPTIONS = %(data_options)s
+
+/**
+ * Cells whose value is a number, and so sits against the right edge.
+ *
+ * By cell rather than by fieldtype: the cell is what already decides how a
+ * value is drawn, so a Currency and an Int are one question here, and a
+ * fieldtype added to the map lands in a bucket without a second list to
+ * remember.
+ */
+export const NUMERIC_CELLS = %(numeric_cells)s
+
+export function isNumericCell(cell) {
+  return NUMERIC_CELLS.includes(cell)
+}
 
 /** DocType State's palette, in Badge themes. */
 export const STATE_COLORS = %(state_colors)s
@@ -2742,6 +2757,7 @@ export function valueTheme(value, states = []) {
         "table": _json.dumps(table, indent=2, sort_keys=True),
         "layout": _json.dumps(list(LAYOUT_TYPES), indent=2),
         "data_options": _json.dumps(DATA_OPTIONS, indent=2, sort_keys=True),
+        "numeric_cells": _json.dumps(list(NUMERIC_CELLS), indent=2),
         "state_colors": _json.dumps(STATE_COLORS, indent=2, sort_keys=True),
         "state_icons": _json.dumps(STATE_ICONS, indent=2),
         "state_icon_words": _json.dumps(

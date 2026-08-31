@@ -28,7 +28,15 @@
     allow-create
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <template #label>
+    <!--
+      `v-if` on the slot, not inside it. A child grid strips the label from
+      every control it draws — the column header is the label, and repeating it
+      in every row is the difference between a grid and a stack of forms — and
+      frappe-ui renders its label element whenever the *slot* exists, whatever
+      is in it. So a labelless control still drew a row of bare type icons
+      floating above the inputs.
+    -->
+    <template #label v-if="field.label">
       <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
     </template>
   </LinkPicker>
@@ -41,7 +49,7 @@
     :disabled="disabled"
     @update:model-value="emit('update:modelValue', $event ? 1 : 0)"
   >
-    <template #label>
+    <template #label v-if="field.label">
       <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
     </template>
   </Switch>
@@ -53,7 +61,7 @@
     :disabled="disabled"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <template #label>
+    <template #label v-if="field.label">
       <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
     </template>
   </Rating>
@@ -65,7 +73,7 @@
     :disabled="disabled"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <template #label>
+    <template #label v-if="field.label">
       <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
     </template>
   </Password>
@@ -102,7 +110,7 @@
     :disabled="disabled"
     @update:model-value="emit('update:modelValue', tagged($event))"
   >
-    <template #label>
+    <template #label v-if="field.label">
       <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
     </template>
   </MultiSelect>
@@ -349,7 +357,7 @@
     :rows="controlType === 'textarea' ? 3 : undefined"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <template #label>
+    <template #label v-if="field.label">
       <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
     </template>
   </FormControl>
