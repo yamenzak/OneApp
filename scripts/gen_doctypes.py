@@ -498,6 +498,10 @@ doctype(
           description="What the customer sees. An app with none of these is an "
                       "entitlement with no interface, which is a real thing to "
                       "be — it still grants its roles and doctypes."),
+        section("sec_space_roles", "Roles"),
+        f("roles", "Table", options="OneSpace Space Role",
+          description="What this app offers a workspace to hand out. None is "
+                      "the old shape: one role, everything in the manifest."),
         section("sec_manifest", "Doctypes"),
         f("doctypes", "Table", options="OneSpace Space Doctype",
           description="Everything this app exposes. One list, three jobs: the "
@@ -523,6 +527,44 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
+# OneSpace Space Role — a role a space ships with.
+#
+# A space used to carry exactly one role and hand every doctype in its manifest
+# to it, so "has this app" and "may do everything in this app" were the same
+# sentence. They are not: a shop wants someone who raises invoices and someone
+# who only reads them, and neither of those is a second app.
+#
+# So a space ships a handful of named roles, and each grant row says which of
+# them it belongs to. The workspace picks from these; it never edits them —
+# a preshipped role is part of what the app *is*, and a customer who wants a
+# different mix builds their own (see Workspace Role) rather than quietly
+# redefining what "Sales" means everywhere.
+# --------------------------------------------------------------------------- #
+doctype(
+    "OneSpace Space Role",
+    istable=1,
+    fields=[
+        f("role_key", reqd=1, in_list_view=1,
+          description="Stable id inside this space, e.g. `sales`. What a grant "
+                      "row and a member's role list name."),
+        f("label", reqd=1, in_list_view=1,
+          description="What a workspace manager reads when handing it out."),
+        column("cb_space_role"),
+        # Everyone entitled to the space gets this one without anybody choosing
+        # it. Without a default, entitling an app would grant an app nobody can
+        # open — which is how the single-role model behaved by accident and
+        # what this has to keep doing on purpose.
+        f("is_default", "Check", default="0", in_list_view=1,
+          description="Given to every member of a workspace that has this "
+                      "space. One role per space should be this, and it should "
+                      "be the least of them."),
+        f("description", "Small Text",
+          description="What somebody holding it can do, in a sentence."),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
 # OneSpace Space Doctype — the manifest row.
 #
 # We ignore the roles ERPNext, HRMS and Payments ship with: we use those apps for
@@ -541,6 +583,15 @@ doctype(
           reqd=1, in_list_view=1,
           description="Read: see it. Write: create and edit. Manage: also "
                       "delete, submit and cancel."),
+        # Which of the space's roles this grant belongs to.
+        #
+        # Empty means every role in the space, which is exactly what a manifest
+        # written before roles existed meant — one role, everything in the list.
+        # So an untouched space keeps behaving the way it did, and a space that
+        # wants two roles says so row by row.
+        f("role", in_list_view=1,
+          description="The `role_key` of a role this space ships. Empty grants "
+                      "it to every role in the space."),
         column("cb_manifest_row"),
         f("if_owner", "Check", default="0", in_list_view=1,
           description="Restrict to documents the user created. For per-user "
@@ -595,6 +646,73 @@ doctype(
 )
 
 # --------------------------------------------------------------------------- #
+# Workspace Role Grant — one line of a custom role.
+#
+# The same three words a preshipped grant uses, so the two kinds of role are
+# the same shape and one screen renders both. `space` is here and not on the
+# parent because a custom role is allowed to reach across apps — "Bookkeeper"
+# reads invoices in Books and contacts in CRM, and splitting that into two
+# roles to satisfy a schema would be the schema showing through.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Workspace Role Grant",
+    istable=1,
+    fields=[
+        f("space", reqd=1, in_list_view=1,
+          description="Which space this doctype came from. Data rather than a "
+                      "Link so a space retired from the catalogue leaves a row "
+                      "that reads instead of a delete that fails."),
+        f("document_type", label="Doctype", reqd=1, in_list_view=1),
+        f("access", "Select", options="Read\nWrite\nManage", default="Read",
+          reqd=1, in_list_view=1),
+        column("cb_role_grant"),
+        f("if_owner", "Check", default="0", in_list_view=1,
+          description="Only documents this person created."),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# Workspace Role — a role the workspace made for itself.
+#
+# The preshipped roles are what an app thinks the jobs are. A workspace that
+# disagrees builds its own out of the same parts: `entitlements.allowed_doctypes`
+# is the allowlist, and it is the union of every doctype the workspace's own
+# spaces expose — so a custom role can never reach a doctype an entitlement did
+# not already grant, and never reach `User`, `Role` or `DocType`, which appear
+# in no manifest.
+#
+# Held here rather than on the tenant site for the same reason members are: the
+# signed sync runs one way, and whoever holds a role has to be decided beside
+# whoever the members are.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Workspace Role",
+    autoname="hash",
+    title_field="role_label",
+    fields=[
+        f("tenant", "Link", options="Tenant", reqd=1, in_list_view=1,
+          in_standard_filter=1),
+        f("role_label", reqd=1, in_list_view=1,
+          description="What the workspace calls it. Shown wherever roles are "
+                      "handed out."),
+        f("is_active", "Check", default="1", in_list_view=1,
+          description="Unchecking takes it off everyone holding it at the next "
+                      "sync, without losing what it was."),
+        column("cb_workspace_role"),
+        f("created_by_email", "Data", options="Email", read_only=1,
+          description="Who built it. A role that grants more than somebody "
+                      "expected is a question with an answer."),
+        f("description", "Small Text"),
+        section("sec_workspace_role_grants", "What it may reach"),
+        f("grants", "Table", options="Workspace Role Grant",
+          description="Bounded by what this workspace's spaces already expose. "
+                      "A doctype outside that list is refused on save."),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
 # Tenant Member — who else may sign in to a workspace.
 #
 # Held here rather than on the tenant site because the control plane has no way
@@ -621,6 +739,23 @@ doctype(
           description="Member: use the apps the workspace is entitled to. Admin: "
                       "also manage the workspace — the owner's role, without "
                       "being the billing contact."),
+        # Which roles this person holds, preshipped or custom, as a
+        # comma-separated list of keys — `crm:sales`, `books:reader`,
+        # `custom:<name>`.
+        #
+        # A list rather than one, because the useful answer is usually two: the
+        # person who raises invoices *and* answers the phone. And a list rather
+        # than a child table because Frappe does not nest one child table inside
+        # another, and a member is already a row on a Tenant. The picker is
+        # ours, so the comma is a storage detail rather than something to type.
+        #
+        # Empty is not "nothing": every space's default role comes automatically
+        # with the entitlement, so an invited member can open what the workspace
+        # has without anyone choosing anything.
+        f("roles", "Small Text",
+          description="Extra roles this person holds, beyond each space's "
+                      "default. Comma separated keys; the workspace's own "
+                      "People screen is what fills this in."),
         f("invited_on", "Datetime", read_only=1),
     ],
 )

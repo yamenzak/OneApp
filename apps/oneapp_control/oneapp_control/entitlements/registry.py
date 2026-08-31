@@ -130,7 +130,81 @@ def entitled_roles(tenant: str) -> list[str]:
 	its users on every sync. That covers desk, REST, reports and any future
 	surface, which a bespoke permission hook would not.
 	"""
-	return [a["role_name"] for a in spaces_for_tenant(tenant) if a.get("role_name")]
+	return sorted({row["role"] for row in permission_manifest(tenant)})
+
+
+# --------------------------------------------------------------------------- #
+# Role keys, and the Frappe roles they become
+#
+# A *key* is what a membership stores and what a manifest row names:
+# `crm:sales` for a role a space ships, `custom:<label>` for one the workspace
+# built. A *Frappe role* is what the tenant site actually holds — the thing
+# DocPerms hang off.
+#
+# The Frappe name is derived rather than stored, so nothing has to be kept in
+# step; and it is derived from the space's existing `role_name`, so every site
+# already running keeps the role it has. A space's **default** role is
+# `role_name` unchanged, which is precisely what a space meant before it could
+# ship more than one — so the whole change is additive on a live workspace.
+# --------------------------------------------------------------------------- #
+
+CUSTOM = "custom"
+
+
+def role_key(space_code: str, key: str) -> str:
+	return f"{space_code}:{key}"
+
+
+def custom_key(label: str) -> str:
+	return f"{CUSTOM}:{label}"
+
+
+def is_custom(key: str) -> bool:
+	return str(key or "").startswith(CUSTOM + ":")
+
+
+def frappe_role_for(space: dict, row: dict | None = None) -> str:
+	"""The Frappe role one of a space's roles becomes."""
+	base = space.get("role_name") or ""
+	if not row or row.get("is_default"):
+		return base
+	return f"{base} {row['label']}".strip()
+
+
+def custom_frappe_role(label: str) -> str:
+	"""A workspace's own role, namespaced so it cannot collide with a shipped
+	one or with ERPNext's. `Custom` is in the name deliberately: an operator
+	reading a tenant's roles should be able to tell at a glance which of them we
+	shipped and which the customer built."""
+	return f"OneSpace Custom {label}".strip()
+
+
+def space_roles(space: dict) -> list[dict]:
+	"""The roles a space offers, always at least one.
+
+	A space that declares none is the shape every space had until now: one role
+	holding everything in its manifest. Returning a synthetic default here means
+	nothing downstream needs a branch for the old shape.
+	"""
+	rows = frappe.get_all(
+		"OneSpace Space Role",
+		filters={"parent": space["space_code"], "parenttype": "OneSpace Space"},
+		fields=["role_key", "label", "is_default", "description"],
+		order_by="idx asc",
+	)
+	if not rows:
+		return [{
+			"role_key": "member",
+			"label": space.get("space_label") or space["space_code"],
+			"is_default": 1,
+			"description": None,
+		}]
+
+	# Exactly one default, and if the space named none the first row is it —
+	# otherwise entitling an app grants an app nobody can open.
+	if not any(r.get("is_default") for r in rows):
+		rows[0]["is_default"] = 1
+	return rows
 
 
 # The role the workspace owner holds. Deliberately not System Manager: that would
@@ -160,24 +234,129 @@ def permission_manifest(tenant: str) -> list[dict]:
 	"""
 	manifest = []
 	for app in spaces_for_tenant(tenant):
-		role = app.get("role_name")
-		if not role:
+		if not app.get("role_name"):
 			continue
+		roles = space_roles(app)
 		rows = frappe.get_all(
 			"OneSpace Space Doctype",
 			filters={"parent": app["space_code"], "parenttype": "OneSpace Space"},
-			fields=["document_type", "access", "if_owner"],
+			fields=["document_type", "access", "if_owner", "role"],
 		)
 		for row in rows:
-			manifest.append(
-				{
-					"role": role,
+			# A grant naming no role belongs to every role in the space. That is
+			# what a manifest written before roles existed meant, and it is also
+			# the honest way to say "everyone here can at least see this".
+			wanted = [r for r in roles if not row.get("role") or r["role_key"] == row["role"]]
+			for one in wanted:
+				manifest.append({
+					"role": frappe_role_for(app, one),
 					"doctype": row["document_type"],
 					"access": row["access"],
 					"if_owner": bool(row["if_owner"]),
-				}
-			)
+				})
+
+	manifest.extend(_custom_manifest(tenant))
 	return manifest
+
+
+def _custom_manifest(tenant: str) -> list[dict]:
+	"""The workspace's own roles, as manifest rows.
+
+	Not re-checked against the allowlist here: `Workspace Role` refuses a grant
+	outside it on save, which is where a person can be told why. Re-deriving the
+	allowlist on every sync would also be circular — it is computed *from* this
+	function's other half.
+	"""
+	rows = []
+	for role in frappe.get_all(
+		"Workspace Role", filters={"tenant": tenant, "is_active": 1}, fields=["name", "role_label"]
+	):
+		name = custom_frappe_role(role["role_label"])
+		for grant in frappe.get_all(
+			"Workspace Role Grant",
+			filters={"parent": role["name"], "parenttype": "Workspace Role"},
+			fields=["document_type", "access", "if_owner"],
+		):
+			rows.append({
+				"role": name,
+				"doctype": grant["document_type"],
+				"access": grant["access"],
+				"if_owner": bool(grant["if_owner"]),
+			})
+	return rows
+
+
+def offered_roles(tenant: str) -> list[dict]:
+	"""Every role this workspace may hand out, shipped and custom alike.
+
+	One list, because the person handing them out does not care which of the two
+	a role is — only what it lets somebody do. `is_default` is the half that
+	needs saying: those arrive with the entitlement and are not chosen.
+	"""
+	offered = []
+	for app in spaces_for_tenant(tenant):
+		if not app.get("role_name"):
+			continue
+		for row in space_roles(app):
+			offered.append({
+				"key": role_key(app["space_code"], row["role_key"]),
+				"label": row["label"],
+				"description": row.get("description"),
+				"space": app["space_code"],
+				"space_label": app.get("space_label"),
+				"is_default": bool(row.get("is_default")),
+				"custom": False,
+			})
+
+	for role in frappe.get_all(
+		"Workspace Role",
+		filters={"tenant": tenant, "is_active": 1},
+		fields=["role_label", "description"],
+		order_by="role_label asc",
+	):
+		offered.append({
+			"key": custom_key(role["role_label"]),
+			"label": role["role_label"],
+			"description": role.get("description"),
+			"space": None,
+			"space_label": None,
+			"is_default": False,
+			"custom": True,
+		})
+	return offered
+
+
+def roles_for_member(tenant: str, held: str | None) -> list[str]:
+	"""The Frappe roles one person should hold.
+
+	Every space's default, because entitling an app to a workspace has to mean
+	its members can open it — then whatever else was ticked for this person. A
+	key that names a role the workspace no longer offers is dropped rather than
+	failing: spaces get un-entitled and custom roles get deleted, and neither
+	should be able to wedge a sync.
+	"""
+	by_key = {}
+	defaults = []
+	for app in spaces_for_tenant(tenant):
+		if not app.get("role_name"):
+			continue
+		for row in space_roles(app):
+			name = frappe_role_for(app, row)
+			by_key[role_key(app["space_code"], row["role_key"])] = name
+			if row.get("is_default"):
+				defaults.append(name)
+
+	for role in frappe.get_all(
+		"Workspace Role", filters={"tenant": tenant, "is_active": 1}, pluck="role_label"
+	):
+		by_key[custom_key(role)] = custom_frappe_role(role)
+
+	chosen = [by_key[k] for k in _keys(held) if k in by_key]
+	return sorted(set(defaults + chosen))
+
+
+def _keys(held: str | None) -> list[str]:
+	return [part.strip() for part in str(held or "").split(",") if part.strip()]
 
 
 def allowed_doctypes(tenant: str) -> list[str]:

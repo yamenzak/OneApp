@@ -115,6 +115,15 @@ def sync():
 				"email": row.email,
 				"full_name": row.full_name or "",
 				"access": row.access,
+				# Resolved here rather than sent as keys, because the keys mean
+				# nothing on a tenant site: it holds Frappe roles, and which
+				# Frappe role a key becomes is a question only the control plane
+				# can answer — it is the side that knows which spaces this
+				# workspace is entitled to and what custom roles it built.
+				#
+				# Every space's default is already in here, so a member with
+				# nothing ticked can still open what the workspace has.
+				"roles": registry.roles_for_member(tenant_name, row.roles),
 			}
 			for row in (tenant.members or [])
 		],

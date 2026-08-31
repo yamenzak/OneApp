@@ -1,0 +1,102 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "tenant",
+  "role_label",
+  "is_active",
+  "cb_workspace_role",
+  "created_by_email",
+  "description",
+  "sec_workspace_role_grants",
+  "grants"
+ ],
+ "fields": [
+  {
+   "fieldname": "tenant",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tenant",
+   "options": "Tenant",
+   "reqd": 1
+  },
+  {
+   "description": "What the workspace calls it. Shown wherever roles are handed out.",
+   "fieldname": "role_label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Role Label",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "description": "Unchecking takes it off everyone holding it at the next sync, without losing what it was.",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "cb_workspace_role",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Who built it. A role that grants more than somebody expected is a question with an answer.",
+   "fieldname": "created_by_email",
+   "fieldtype": "Data",
+   "label": "Created By Email",
+   "options": "Email",
+   "read_only": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "sec_workspace_role_grants",
+   "fieldtype": "Section Break",
+   "label": "What it may reach"
+  },
+  {
+   "description": "Bounded by what this workspace's spaces already expose. A doctype outside that list is refused on save.",
+   "fieldname": "grants",
+   "fieldtype": "Table",
+   "label": "Grants",
+   "options": "Workspace Role Grant"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Workspace Role",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "role_label",
+ "track_changes": 1
+}

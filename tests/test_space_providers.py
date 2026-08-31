@@ -125,6 +125,8 @@ def test_every_space_field_is_sent_or_deliberately_held_back():
 	sent = {f.split(" as ")[-1] for f in _literal(REGISTRY, "SPACE_FIELDS") or ()}
 	sent.add("name")
 
-	held_back = {"is_active", "availability", "screens", "doctypes"}
+	# `screens`, `doctypes` and `roles` are all sent — through their own
+	# functions, because each is a list a site reads for a different job.
+	held_back = {"is_active", "availability", "screens", "doctypes", "roles"}
 	missing = declared - sent - held_back
 	assert not missing, f"a Space carries {sorted(missing)} and no site is told"

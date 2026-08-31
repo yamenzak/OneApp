@@ -9,6 +9,7 @@
   "full_name",
   "cb_member",
   "access",
+  "roles",
   "invited_on"
  ],
  "fields": [
@@ -40,6 +41,12 @@
    "label": "Access",
    "options": "Member\nAdmin",
    "reqd": 1
+  },
+  {
+   "description": "Extra roles this person holds, beyond each space's default. Comma separated keys; the workspace's own People screen is what fills this in.",
+   "fieldname": "roles",
+   "fieldtype": "Small Text",
+   "label": "Roles"
   },
   {
    "fieldname": "invited_on",

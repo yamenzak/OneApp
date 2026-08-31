@@ -30,7 +30,7 @@ DOCTYPES = (
 	"Stripe Webhook Event", "Plan", "Region", "Storage Bucket",
 	"OneSpace Space", "Space Entitlement", "AI Model", "AI Feature",
 	"AI Usage Record", "Support Login", "Add-on", "Credit Pack", "Promo Code",
-	"Tenant Lifecycle Event",
+	"Tenant Lifecycle Event", "Workspace Role",
 )
 
 # screen, label, icon, doctype, fields, status field
@@ -79,6 +79,11 @@ SCREENS = (
 	 "space_label,module,role_name,availability,is_active", "availability"),
 	("entitlements", "Entitlements", "lucide-shield", "Space Entitlement",
 	 "tenant,app,enabled", ""),
+	# A workspace's own roles. Read here rather than written: the workspace
+	# builds these itself, and an operator's reason to look is a support call
+	# about who can reach what.
+	("roles", "Workspace roles", "lucide-user-round", "Workspace Role",
+	 "tenant,role_label,is_active,created_by_email", ""),
 	("models", "AI models", "lucide-sparkles", "AI Model",
 	 "display_name,provider,capability,status,is_recommended", "status"),
 	("features", "AI features", "lucide-sparkles", "AI Feature",

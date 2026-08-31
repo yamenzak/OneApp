@@ -59,6 +59,14 @@ EXEMPT = {
 		"the sync and shown on the record it belongs to"
 	),
 	"OneSpace Space Doctype": "child table; the permission manifest is code, not config",
+	"OneSpace Space Role": (
+		"child table; the roles a space ships are part of what the app is, and "
+		"are edited on the space beside the grants that fill them"
+	),
+	"Workspace Role Grant": (
+		"child table; the lines of a custom role, edited on the role — and by "
+		"the workspace itself, in its own People and Roles screens"
+	),
 	"OneSpace Space Screen": (
 		"child table; a space's screens are rows on the space, and a screen with "
 		"no space to belong to is not a thing an operator creates"

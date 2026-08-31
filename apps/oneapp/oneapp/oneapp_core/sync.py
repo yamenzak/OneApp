@@ -458,6 +458,44 @@ def sync_owner(owner: dict, owner_role: str | None, member_role: str | None = No
 
 
 
+def _granted_roles() -> set:
+	"""Every role this app manages on this site.
+
+	Read off the Roles we created rather than off the manifest, so a role that
+	has just been dropped from every space is still recognised as ours and can
+	be taken away from whoever holds it. `desk_access` is 0 on all of them —
+	`ensure_role` is the only thing here that makes one — which is exactly what
+	makes this a safe set to reconcile against.
+	"""
+	return {
+		row["name"]
+		for row in frappe.get_all("Role", filters={"desk_access": 0}, fields=["name"])
+		if row["name"].startswith("OneSpace ")
+	}
+
+
+def _reconcile_app_roles(user, wanted: list, granted: set):
+	"""Give this person exactly the roles the control plane says, and no others.
+
+	Reconciled rather than added, because the interesting case is removal: a
+	member moved off "Sales" keeps selling until something takes the role away,
+	and nothing else on this site is going to.
+
+	Narrowed to `granted` on both sides. Without that, a payload naming
+	"System Manager" would be a workspace owner granting themselves the desk and
+	the signing secret with it — the control plane would never send that, but a
+	permission path that is only safe because of what the sender chooses to send
+	is not a permission path.
+
+	The caller holds the workspace-wide roles out of `granted`: those follow
+	`access`, and reconciling them here would strip the membership marker this
+	function's own caller had just set.
+	"""
+	keep = {role for role in wanted if role in granted}
+	for role in sorted(granted):
+		_set_role(user, role, role in keep)
+
+
 def sync_members(
 	members: list[dict],
 	owner_role: str | None,
@@ -491,6 +529,13 @@ def sync_members(
 		return {"created": [], "disabled": []}
 
 	ensure_role(member_role)
+
+	# Every role the manifest just wrote DocPerms for. Reconciling a person's
+	# roles needs both halves — what they should hold, and what they might be
+	# holding that they should not — and this is the second half. Bounded to
+	# roles the manifest names, so nothing here can add or take away a role
+	# belonging to Frappe, ERPNext or the site's own administrator.
+	granted = _granted_roles()
 
 	owner_email = (owner_email or "").strip().lower()
 	wanted = {}
@@ -527,6 +572,15 @@ def sync_members(
 		_set_role(user, member_role, True)
 		if owner_role:
 			_set_role(user, owner_role, wants_owner)
+
+		# The two workspace-wide roles are decided by `access` just above, not by
+		# the role list, so they are held out of the reconciliation — otherwise
+		# it would take back the membership marker it was just given and disable
+		# the account on the next pass.
+		_reconcile_app_roles(
+			user, member.get("roles") or [],
+			granted - {member_role, owner_role} - {None},
+		)
 
 	# Anyone marked as ours who is no longer on the list. The owner is excluded
 	# by email: they are not a member row, and disabling them would lock the

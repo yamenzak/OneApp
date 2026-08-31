@@ -16,6 +16,8 @@
   "role_name",
   "sec_views",
   "screens",
+  "sec_space_roles",
+  "roles",
   "sec_manifest",
   "doctypes",
   "icon",
@@ -87,6 +89,18 @@
    "fieldtype": "Table",
    "label": "Screens",
    "options": "OneSpace Space Screen"
+  },
+  {
+   "fieldname": "sec_space_roles",
+   "fieldtype": "Section Break",
+   "label": "Roles"
+  },
+  {
+   "description": "What this app offers a workspace to hand out. None is the old shape: one role, everything in the manifest.",
+   "fieldname": "roles",
+   "fieldtype": "Table",
+   "label": "Roles",
+   "options": "OneSpace Space Role"
   },
   {
    "fieldname": "sec_manifest",
