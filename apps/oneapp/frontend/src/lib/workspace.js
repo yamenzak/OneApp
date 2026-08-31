@@ -129,6 +129,23 @@ export const workspace = {
       { silent: true, method: 'GET' },
     ),
 
+  // What choosing that record fills in elsewhere on the form.
+  //
+  // Frappe's `fetch_from` already applies on save, wherever the write came
+  // from, so this changes no outcome — only when you see it. Without it the
+  // Company box sits empty, somebody types into it, and the save quietly
+  // replaces what they typed with the value it was always going to use.
+  //
+  // `silent`, because a form that fills itself in is a convenience: if the
+  // lookup fails the field stays as it was and the save still fills it, which
+  // is the behaviour that existed before this call did.
+  fetched: (spaceCode, screen, fieldname, value) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.fetched',
+      { space_code: spaceCode, screen, fieldname, value },
+      { silent: true, method: 'GET' },
+    ),
+
   // What creating one of those records would ask for: Frappe's own quick entry,
   // which is the fields a doctype marks `allow_in_quick_entry` plus anything
   // mandatory. Answers `can_create: false` rather than raising when the target
