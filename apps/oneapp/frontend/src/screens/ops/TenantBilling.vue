@@ -63,7 +63,10 @@
     </section>
 
     <section>
-      <h3 class="mb-1 text-base-medium text-ink-gray-8">Credits</h3>
+      <div class="mb-1 flex items-baseline justify-between gap-3">
+        <h3 class="text-base-medium text-ink-gray-8">Credits</h3>
+        <Button label="Add credits" variant="subtle" @click="showGrant = true" />
+      </div>
       <p class="mb-3 text-p-sm text-ink-gray-5">
         {{ data.credits.available }} available of {{ data.credits.balance }} —
         the difference is reserved by calls in flight.
@@ -157,6 +160,39 @@
     </section>
   </div>
 
+  <!--
+    The one way credits arrive that is not Stripe. Goodwill, a migration
+    allowance, a demo top-up — none of which had a path before, so they meant
+    opening the desk, which this product does not do.
+  -->
+  <Dialog v-model="showGrant" title="Add credits">
+    <div v-focus class="flex flex-col gap-4">
+      <FormControl
+        v-model="grantAmount"
+        type="number"
+        label="Credits"
+        description="Negative takes some away. Nothing here expires."
+      />
+      <FormControl
+        v-model="grantReason"
+        type="textarea"
+        label="Why"
+        placeholder="Goodwill after the outage on the 12th"
+        description="Goes on the ledger. Somebody will read it in six months."
+      />
+      <ErrorMessage v-if="grantError" :message="grantError" />
+    </div>
+    <template #actions>
+      <Button
+        variant="solid"
+        label="Add credits"
+        :loading="granting"
+        :disabled="!Number(grantAmount) || !grantReason.trim()"
+        @click="grant"
+      />
+    </template>
+  </Dialog>
+
   <Dialog v-model="showChange" title="Change plan" size="lg">
     <div class="flex flex-col gap-4">
       <p class="text-p-base text-ink-gray-7">
@@ -187,7 +223,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import {
-  Alert, Badge, Button, Dialog, ErrorMessage, FormControl, LoadingIndicator,
+  Alert, Badge, Button, Dialog, ErrorMessage, FormControl, LoadingIndicator, vFocus,
   List, ListRows, ListRow, ListCell, dayjsLocal,
 } from '@/ui'
 import EmptyState from '../../components/EmptyState.vue'
@@ -202,6 +238,11 @@ const loading = ref(false)
 const adopting = ref(false)
 const changing = ref(false)
 const showChange = ref(false)
+const showGrant = ref(false)
+const granting = ref(false)
+const grantAmount = ref('')
+const grantReason = ref('')
+const grantError = ref('')
 const chosen = ref('')
 const error = ref('')
 
@@ -316,6 +357,27 @@ async function reconcile() {
 
 onMounted(load)
 watch(() => props.tenant, load)
+
+watch(showGrant, (open) => {
+  if (!open) return
+  grantAmount.value = ''
+  grantReason.value = ''
+  grantError.value = ''
+})
+
+async function grant() {
+  granting.value = true
+  grantError.value = ''
+  try {
+    await admin.grantCredits(props.tenant, Number(grantAmount.value), grantReason.value)
+    showGrant.value = false
+    await load()
+  } catch (e) {
+    grantError.value = e.message || String(e)
+  } finally {
+    granting.value = false
+  }
+}
 
 async function adopt() {
   adopting.value = true

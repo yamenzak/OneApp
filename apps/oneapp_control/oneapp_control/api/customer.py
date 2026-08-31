@@ -24,11 +24,17 @@ from oneapp_control.credits import ledger
 from oneapp_control.entitlements import registry
 
 
-def require_workspace(workspace: str):
+def require_workspace(workspace: str | None):
 	"""Resolve a workspace the caller owns, or refuse.
 
 	The single ownership check in the customer surface. Raises rather than
 	returning None so no caller can proceed on an empty result.
+
+	The workspace is optional in the signature of every endpoint that takes one,
+	so that *this* answers a missing one. A required parameter meant Frappe
+	raised a TypeError first — a 500 in the log on every load of a screen whose
+	resource fetches once before the workspace switcher has resolved, which is
+	the normal first render rather than a fault.
 	"""
 	user = frappe.session.user
 	if not user or user == "Guest":
@@ -66,7 +72,7 @@ def my_workspaces() -> list[dict]:
 
 
 @frappe.whitelist()
-def overview(workspace: str) -> dict:
+def overview(workspace: str | None = None) -> dict:
 	"""Everything the account page shows for one workspace, in one call."""
 	tenant = require_workspace(workspace)
 	plan = frappe.get_doc("Plan", tenant.plan) if tenant.plan else None
@@ -184,7 +190,7 @@ def buy_credits(workspace: str, pack: str, code: str | None = None) -> dict:
 
 
 @frappe.whitelist(methods=["GET"])
-def addons(workspace: str) -> dict:
+def addons(workspace: str | None = None) -> dict:
 	"""What extra quota is for sale, and how much of it this workspace holds.
 
 	Both together rather than two calls: a stepper needs the catalogue and the
@@ -281,7 +287,7 @@ def billing_portal(workspace: str) -> dict:
 
 
 @frappe.whitelist()
-def domain_instructions(workspace: str) -> dict:
+def domain_instructions(workspace: str | None = None) -> dict:
 	"""What the customer has to do in their own DNS, and how it is going.
 
 	Written out rather than linked because the two ways this fails — a proxied
@@ -382,7 +388,7 @@ def _seats(tenant) -> dict:
 
 
 @frappe.whitelist(methods=["GET"])
-def members(workspace: str) -> dict:
+def members(workspace: str | None = None) -> dict:
 	"""Everyone who can sign in to the workspace, the owner first."""
 	tenant = require_workspace(workspace)
 
@@ -500,7 +506,7 @@ def remove_member(workspace: str, email: str) -> dict:
 # --------------------------------------------------------------------------- #
 
 @frappe.whitelist(methods=["GET"])
-def apps(workspace: str) -> dict:
+def apps(workspace: str | None = None) -> dict:
 	"""The apps this workspace can open.
 
 	The same manifest the launcher renders, so a customer looking at their
@@ -549,7 +555,7 @@ def change_plan(workspace: str, plan: str, interval: str = "Monthly") -> dict:
 
 
 @frappe.whitelist(methods=["GET"])
-def plans(workspace: str) -> dict:
+def plans(workspace: str | None = None) -> dict:
 	"""What this workspace is on, and what else it could be on.
 
 	Every plan carries every feature — they differ only in quotas, which is why

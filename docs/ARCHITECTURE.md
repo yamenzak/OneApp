@@ -406,6 +406,13 @@ entries.
 Consumption order: **soonest-expiring grant first, purchased packs last.** Packs roll over —
 that is what makes them worth buying.
 
+A pack is a `Credit Pack` in the catalogue, with its own Stripe Product and Price
+like everything else we sell; buying one is a `mode="payment"` Checkout that
+posts a `Purchase` row with no expiry. An operator can also post an `Adjustment`
+by hand through `admin.grant_credits`, which is the only path into the ledger
+that is not Stripe telling us something happened — a reason is required and lands
+on the row.
+
 ---
 
 ## 8. Plans, apps and entitlements

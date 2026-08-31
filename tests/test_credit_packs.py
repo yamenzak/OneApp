@@ -155,3 +155,41 @@ def test_a_purchased_credit_never_expires():
 	body = function(WEBHOOKS, "grant_credit_pack")
 	assert "expires_on=None" in body
 	assert 'entry_type="Purchase"' in body
+
+
+# --------------------------------------------------------------------------- #
+# What the customer sees
+# --------------------------------------------------------------------------- #
+
+BILLING = ROOT / "apps/oneapp/frontend/src/screens/account/Billing.vue"
+PACK_CARD = ROOT / "apps/oneapp/frontend/src/screens/account/PackCard.vue"
+
+
+def test_a_price_is_shown_in_its_own_currency():
+	"""A hard-coded `$` reads as a price in the wrong currency, which is worse
+	than no symbol at all — it is a number somebody plans around."""
+	card = PACK_CARD.read_text()
+	assert "${{ price }}" not in card
+	assert "currency" in card
+	assert "Intl.NumberFormat" in card
+
+
+def test_the_balance_is_shown_beside_what_is_for_sale():
+	"""'Why am I out of credits' is the question this section exists to answer,
+	and a pack offered next to no balance is a shop with no price tag."""
+	page = BILLING.read_text()
+	assert "credits.available" in page
+
+
+def test_the_ledger_is_shown_and_not_just_the_number():
+	"""A balance with no history behind it is one nobody can question."""
+	page = BILLING.read_text()
+	assert "creditHistory" in page
+	assert "entry_type" in page
+
+
+def test_the_page_says_which_credits_go_first():
+	"""The reason a pack is worth buying, and it is not obvious."""
+	page = BILLING.read_text()
+	assert "roll over" in page
+	assert "spent last" in page

@@ -1,5 +1,10 @@
 # Overnight plan 03 — add-ons, credit packs and promo codes
 
+**Status: done.** A–G are built, tested and pushed. `DECISIONS.md` §2 is
+rewritten (add-ons are monthly, not permanent) and gains §2a for promo codes;
+`ARCHITECTURE.md` §7 names the pack catalogue and the operator's grant.
+
+
 Three things to sell that the product does not sell yet, and one that it half
 sells already.
 

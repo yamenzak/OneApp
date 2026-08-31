@@ -66,6 +66,15 @@ export const admin = {
   reconcileAiUsage: () =>
     callMethod(method('reconcile_ai_usage'), {}, { successMessage: 'Compared against the gateway log' }),
 
+  // The only way credits arrive that is not Stripe telling us something
+  // happened. A reason is required and lands on the ledger row.
+  grantCredits: (tenant, credits, reason) =>
+    callMethod(
+      method('grant_credits'),
+      { tenant, credits, reason },
+      { successMessage: 'Credits added' },
+    ),
+
   adoptPlanTerms: (tenant) =>
     callMethod(
       method('adopt_plan_terms'),

@@ -344,3 +344,55 @@ def test_the_quantity_is_set_through_the_one_entry_point():
 def test_the_customer_endpoints_prove_they_own_the_workspace():
 	for name in ("addons", "set_addon"):
 		assert "require_workspace(workspace)" in function(CUSTOMER, name), name
+
+
+# --------------------------------------------------------------------------- #
+# What the customer sees
+# --------------------------------------------------------------------------- #
+
+BILLING = ROOT / "apps/oneapp/frontend/src/screens/account/Billing.vue"
+ADDON_ROW = ROOT / "apps/oneapp/frontend/src/screens/account/AddonRow.vue"
+
+
+def test_an_add_on_is_a_stepper_rather_than_a_buy_button():
+	"""Buying more and giving some back are the same operation at different
+	quantities, and what somebody wants to know first is what they already
+	have."""
+	row = ADDON_ROW.read_text()
+	assert "emit('set', held - 1)" in row
+	assert "emit('set', held + 1)" in row
+
+
+def test_the_ceiling_stops_the_stepper_rather_than_the_server():
+	"""A control that lets somebody ask for something the server refuses is a
+	round trip to be told no."""
+	assert "max_units" in ADDON_ROW.read_text()
+
+
+def test_a_grandfathered_rate_is_shown_as_what_it_is():
+	"""A rate that shows as the new price is a billing surprise waiting on the
+	next invoice."""
+	row = ADDON_ROW.read_text()
+	assert "held_amount" in row
+	assert "original rate" in row
+
+
+def test_an_unavailable_add_on_says_why_rather_than_vanishing():
+	"""One that disappears between visits reads as a fault; this reads as a
+	reason, and the fix — change plan — is a thing they can do."""
+	assert "Not sold on a" in ADDON_ROW.read_text()
+
+
+def test_there_is_no_redirect_to_buy_one():
+	"""There is a card on file and a cycle running, so this is a change to the
+	subscription rather than a checkout."""
+	page = BILLING.read_text()
+	block = page[page.index("async function setAddon"):page.index("const loadAddons")]
+	assert "window.location" not in block
+	assert "customer.setAddon" in block
+
+
+def test_a_workspace_with_no_plan_is_told_why_rather_than_shown_controls():
+	page = BILLING.read_text()
+	assert "can_buy" in page
+	assert "there has to be a plan first" in page

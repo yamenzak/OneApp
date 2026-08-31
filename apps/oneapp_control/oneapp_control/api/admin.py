@@ -918,6 +918,47 @@ def _credit_summary(tenant: str) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
+def grant_credits(tenant: str, credits: float, reason: str) -> dict:
+	"""Put credits on a workspace by hand.
+
+	Nothing else in the system can. Credits arrive from a paid invoice or a
+	purchased pack, and both are Stripe telling us something happened — so a
+	goodwill credit, a migration allowance or a demo top-up had no path at all
+	and would have meant opening the desk, which this product does not do
+	(DECISIONS §7).
+
+	A reason is required and lands on the ledger row. The ledger is append-only
+	and an entry with no explanation is one nobody can audit six months later;
+	this is the one entry type a person creates, so it is the one that most needs
+	saying why.
+
+	Posted as `Adjustment` rather than `Grant`: a Grant is what a plan gives and
+	expires at the period end, and this should not quietly evaporate. It never
+	expires, so it is spent after everything else — `open_grants` orders
+	never-expiring last — which is the right order for something given away.
+	"""
+	_require_manager()
+	from oneapp_control.credits import ledger
+
+	amount = float(credits or 0)
+	if not amount:
+		frappe.throw(_("Nothing to grant."))
+	if not (reason or "").strip():
+		frappe.throw(_("Say why. It goes on the ledger and somebody will read it."))
+
+	entry = ledger.post_entry(
+		tenant=tenant,
+		entry_type="Adjustment",
+		credits=amount,
+		expires_on=None,
+		source_doctype="User",
+		source_name=frappe.session.user,
+		remarks=f"{reason.strip()} — by {frappe.session.user}",
+	)
+	return {"entry": entry.name if hasattr(entry, "name") else None, "credits": amount}
+
+
+@frappe.whitelist(methods=["POST"])
 def adopt_plan_terms(tenant: str) -> dict:
 	"""Move a workspace onto its plan's terms as they stand now.
 

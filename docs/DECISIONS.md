@@ -43,8 +43,63 @@ throughout: **never produce a surprise charge, and never destroy data.**
 
 **Storage is not paid for with credits.** Mixing the two currencies means a
 tenant uploading a large file silently drains the AI budget they were saving —
-a bill nobody can predict from their own behaviour. Extra storage is a separate
-add-on, purchased explicitly, and it does not expire.
+a bill nobody can predict from their own behaviour. Extra room is an **add-on**,
+bought explicitly and separately.
+
+### Add-ons are monthly, not permanent
+
+An add-on is a recurring line on the workspace's existing subscription: one
+invoice, one dunning cycle, one card, prorated from the day it is bought and
+credited the same way when it is released. Not a one-off purchase — that was the
+earlier decision and it is reversed. A permanent entitlement is revenue collected
+once for a cost incurred every month, and a workspace that churns keeps the room
+it stopped paying for.
+
+Two kinds, both sold per unit so a workspace grows by quantity rather than by a
+new product for every size:
+
+| | |
+| --- | --- |
+| **File storage** | R2. The cost is ours and linear. |
+| **Database storage** | The server's disk is ours in full, so the per-tenant limit is a number we choose rather than one Frappe Cloud imposes. That is what makes it sellable. |
+
+What a workspace holds is **captured on its subscription** — the GB per unit and
+the rate at purchase — for the same reason plan terms are: editing the catalogue
+changes what the next purchase buys and never moves somebody who already bought.
+
+`Tenant.extra_storage_gb` and `extra_database_gb` survive as something else
+entirely: an operator's grant. Never billed, never expiring, no price. Goodwill,
+a migration allowance, room on a demo instance.
+
+**Releasing below what is in use is refused**, naming the resource. Taking the
+quota under what a workspace is holding is the "never destroy data" half of this
+section, arrived at from the other direction.
+
+---
+
+## 2a. Promo codes, and the free instance
+
+Ours to declare, Stripe's to enforce. A `Promo Code` creates a Stripe Coupon (the
+money) and a Promotion Code (the string somebody types, and who may type it).
+Nobody pastes a `promo_...` id between two systems, for the same reason nobody
+pastes a price — see §3.
+
+A coupon is immutable in Stripe once created, so changing a percentage mints a
+new one and retires the old; anybody already redeemed keeps what they were given.
+Stripe counts redemptions and we copy the number across, because two systems with
+an opinion about one number drift.
+
+**Scope is ours**, enforced where a checkout is created rather than by Stripe: a
+session only carries a code if the code says it may be spent on that kind of
+purchase. Subscriptions, add-ons and credit packs are three separate switches.
+
+**A demo or training workspace is a 100%-off-forever code**, not a comped tenant.
+Stripe collects no payment method when the total is zero, and the result is a
+real subscription — real terms, real quotas, and `invoice.paid` still fires for a
+zero invoice so it receives its monthly credit grant like anybody else. The
+alternative, a tenant with no subscription at all, is a second lifecycle: no
+period boundaries, no grants, its own branch in every billing path, and a demo
+that stops resembling the thing being demonstrated.
 
 ---
 

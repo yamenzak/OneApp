@@ -38,32 +38,96 @@
     <section>
       <h3 class="mb-1 text-base-medium text-ink-gray-8">Add-ons</h3>
       <p class="mb-3 text-p-sm text-ink-gray-6">
-        Storage is bought outright and never expires. It is deliberately not paid
-        for with AI credits — a large upload should not quietly drain the budget
-        you were keeping for something else.
+        Extra room, billed with your plan and prorated from the day you add it.
+        Deliberately not paid for with AI credits — a large upload should not
+        quietly drain the budget you were keeping for something else.
+      </p>
+
+      <Alert v-if="!addons.can_buy" theme="amber" title="No subscription yet">
+        <template #description>
+          Add-ons go on your plan's invoice, so there has to be a plan first.
+        </template>
+      </Alert>
+
+      <div v-else class="flex flex-col gap-2">
+        <AddonRow
+          v-for="addon in addons.addons"
+          :key="addon.code"
+          :addon="addon"
+          :interval="addons.interval"
+          :busy="busy === addon.code"
+          @set="(quantity) => setAddon(addon, quantity)"
+        />
+        <EmptyState
+          v-if="!addons.addons.length"
+          class="!py-8"
+          icon="lucide-package"
+          title="Nothing on offer yet"
+          description="Extra storage will appear here when it is available."
+        />
+      </div>
+    </section>
+
+    <section>
+      <div class="mb-1 flex items-baseline justify-between gap-3">
+        <h3 class="text-base-medium text-ink-gray-8">AI credits</h3>
+        <span class="text-p-sm tabular-nums text-ink-gray-6">
+          {{ Math.round(data.credits.available).toLocaleString() }} available
+        </span>
+      </div>
+      <p class="mb-3 text-p-sm text-ink-gray-6">
+        Your plan grants some every month and those expire at the end of it.
+        Bought credits roll over and are spent last, so a pack is only ever
+        drawn on once the month's grant is gone.
       </p>
 
       <div class="grid gap-3 sm:grid-cols-3">
         <PackCard
-          v-for="pack in packs.storage"
+          v-for="pack in packs.credits"
           :key="pack.code"
-          :title="`${pack.gb} GB`"
+          :title="`${Number(pack.credits).toLocaleString()} credits`"
           :price="pack.amount"
+          :currency="pack.currency"
+          :description="pack.description"
           :busy="busy === pack.code"
-          @buy="buy('storage', pack.code)"
+          @buy="buy(pack.code)"
         />
       </div>
 
-      <div class="mt-4 grid gap-3 sm:grid-cols-3">
-        <PackCard
-          v-for="pack in packs.credits"
-          :key="pack.code"
-          :title="`${pack.credits.toLocaleString()} credits`"
-          :price="pack.amount"
-          :busy="busy === pack.code"
-          @buy="buy('credits', pack.code)"
-        />
-      </div>
+      <!-- Where the balance went. A number with no history behind it is one
+           nobody can question, and "why am I out of credits" is the question
+           this section exists to answer. -->
+      <List
+        v-if="history.length"
+        :columns="historyColumns"
+        :row-height="48"
+        class="list-row-px-3 mt-4"
+        divider="full"
+      >
+        <ListRows :items="history" row-key="creation" v-slot="{ item: row, value }">
+          <ListRow :value="value">
+            <ListCell>
+              <div class="min-w-0">
+                <p class="truncate text-p-sm text-ink-gray-8">{{ row.entry_type }}</p>
+                <p v-if="row.remarks" class="truncate text-xs text-ink-gray-5">
+                  {{ row.remarks }}
+                </p>
+              </div>
+            </ListCell>
+            <ListCell v-if="historyShows('when')">
+              <span class="text-p-sm text-ink-gray-5">{{ formatDate(row.creation) }}</span>
+            </ListCell>
+            <ListCell>
+              <span
+                class="text-p-sm tabular-nums"
+                :class="row.credits < 0 ? 'text-ink-red-3' : 'text-ink-gray-8'"
+              >
+                {{ row.credits > 0 ? '+' : '' }}{{ Math.round(row.credits).toLocaleString() }}
+              </span>
+            </ListCell>
+          </ListRow>
+        </ListRows>
+      </List>
     </section>
 
     <section v-if="invoices.length">
@@ -103,6 +167,8 @@ import { Alert, Badge, Button, LoadingIndicator, List, ListRows, ListRow, ListCe
 import WorkspaceBar from './WorkspaceBar.vue'
 import { useWorkspace } from './workspace'
 import PackCard from './PackCard.vue'
+import AddonRow from './AddonRow.vue'
+import EmptyState from '../../components/EmptyState.vue'
 import { useListColumns } from '../../lib/list'
 import { customer, useOverview } from './customer'
 import { notifyInfo, notifySuccess } from '../../lib/notify'
@@ -113,12 +179,20 @@ const { columns: invoiceColumns } = useListColumns([
   { key: 'status', header: 'Status', track: '7rem', mobile: '5rem' },
 ])
 
+const { columns: historyColumns, shows: historyShows } = useListColumns([
+  { key: 'entry', header: 'Entry', track: 'minmax(0,1fr)' },
+  { key: 'when', header: 'When', track: '10rem', mobile: false },
+  { key: 'credits', header: 'Credits', track: '7rem', mobile: '5rem' },
+])
+
 defineProps({ spaceCode: { type: String, default: '' }, screen: { type: String, default: '' } })
 const workspace = useWorkspace()
 const resource = useOverview(workspace)
 
 const data = computed(() => resource.data)
-const packs = ref({ credits: [], storage: [] })
+const packs = ref({ credits: [] })
+const addons = ref({ interval: 'Monthly', addons: [], can_buy: false })
+const history = ref([])
 const invoices = ref([])
 const opening = ref(false)
 const busy = ref(null)
@@ -159,23 +233,53 @@ async function openPortal() {
   }
 }
 
-async function buy(kind, pack) {
+async function buy(pack) {
   busy.value = pack
   try {
-    const fn = kind === 'storage' ? customer.buyStorage : customer.buyCredits
-    const { url } = await fn(workspace.value, pack)
+    const { url } = await customer.buyCredits(workspace.value, pack)
     if (url) window.location.href = url
   } finally {
     busy.value = null
   }
 }
 
+// No redirect: there is a card on file and a cycle running, so this is a change
+// to the subscription rather than a checkout. The money arrives on the next
+// invoice, prorated from now.
+async function setAddon(addon, quantity) {
+  busy.value = addon.code
+  try {
+    await customer.setAddon(workspace.value, addon.code, quantity)
+    await loadAddons()
+    resource.reload()
+  } finally {
+    busy.value = null
+  }
+}
+
+const loadAddons = async () => {
+  addons.value = (await customer.addons(workspace.value)) || {
+    interval: 'Monthly',
+    addons: [],
+    can_buy: false,
+  }
+}
+
 watch(
   () => workspace.value,
-  async (workspace) => {
-    if (!workspace) return
-    packs.value = (await customer.packs()) || { credits: [], storage: [] }
-    invoices.value = (await customer.invoices(workspace)) || []
+  async (chosen) => {
+    if (!chosen) return
+    // In parallel: four independent reads, and doing them in turn makes the
+    // page as slow as their sum for no reason.
+    const [catalogue, ledger, bills] = await Promise.all([
+      customer.packs(),
+      customer.creditHistory(chosen),
+      customer.invoices(chosen),
+      loadAddons(),
+    ])
+    packs.value = catalogue || { credits: [] }
+    history.value = ledger || []
+    invoices.value = bills || []
   },
   { immediate: true },
 )
