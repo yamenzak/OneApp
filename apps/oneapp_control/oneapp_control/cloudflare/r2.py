@@ -45,6 +45,21 @@ def is_configured() -> bool:
 	return bool(c["account_id"] and c["token"])
 
 
+def has_client() -> bool:
+	"""Whether the object half of this module can run at all.
+
+	Separate from `is_configured`, which is about the Cloudflare admin token and
+	governs bucket creation. Retention, promotion to cold storage and the purge
+	all go through boto3 instead, and a control plane without it would report
+	every sweep as having found nothing to do.
+	"""
+	try:
+		import boto3  # noqa: F401
+	except ImportError:
+		return False
+	return True
+
+
 def _request(method: str, path: str, jurisdiction: str | None = None, **kwargs):
 	c = config()
 	if not is_configured():

@@ -5,7 +5,9 @@ description = "OneApp control plane: tenants, shards, plans, credits and provisi
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
-dependencies = []
+# Retention, promotion to cold storage, presigned restore links and the purge
+# are all S3 object calls.
+dependencies = ["boto3~=1.35"]
 
 [build-system]
 requires = ["flit_core >=3.4,<4"]

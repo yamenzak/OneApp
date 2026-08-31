@@ -107,9 +107,11 @@ def wired(sweep, monkeypatch):
 
 	for name in ("payment_failed", "suspension_warning", "suspended", "archived",
 	             "purge_warning", "purged", "restored", "nothing_to_restore"):
+		# True, because a real send returns whether the mail actually went and
+		# the ladder now reads that — see `_warn_about_purge`.
 		monkeypatch.setattr(
 			sweep.emails, name,
-			lambda *a, _n=name, **k: rec.emails.append((_n, k)),
+			lambda *a, _n=name, **k: rec.emails.append((_n, k)) or True,
 		)
 
 	import types
@@ -470,3 +472,53 @@ def test_recovering_clears_the_whole_clock(sweep, wired, monkeypatch):
 	assert tenant.dunning_stage is None
 	assert tenant.purge_after is None
 	assert tenant.purge_warned_on is None
+
+
+# --------------------------------------------------------------------------- #
+# The warning has to have actually been sent
+# --------------------------------------------------------------------------- #
+# `purge_warned_on` is the gate in front of the only irreversible step in the
+# product. A gate satisfied by an email nobody received is not a gate — it is a
+# record of us having meant to.
+
+def test_a_warning_that_could_not_be_sent_does_not_count(sweep, wired, monkeypatch):
+	"""A control plane with no outgoing Email Account would otherwise mark every
+	workspace as warned and destroy them all on schedule, silently."""
+	_sub(monkeypatch, sweep, "Canceled")
+	monkeypatch.setattr(sweep.emails, "purge_warning", lambda *a, **k: False)
+
+	tenant = FakeTenant(status="Archived", dunning_started_on="2026-01-01",
+	                    purge_after="2026-06-05", cold_storage_key="cold/acme/x")
+	monkeypatch.setattr(sweep.frappe, "get_doc", lambda *a: tenant)
+
+	assert sweep.consider("acme", WINDOWS) == "could not warn them; the purge is on hold"
+	assert tenant.purge_warned_on is None
+	assert wired.purged == []
+
+
+def test_an_unsendable_warning_holds_the_purge_open_indefinitely(sweep, wired, monkeypatch):
+	"""Past the date, past the window, and still not purged — because nobody was
+	told. The workspace waits for an operator rather than for a timer."""
+	_sub(monkeypatch, sweep, "Canceled")
+	monkeypatch.setattr(sweep.emails, "purge_warning", lambda *a, **k: False)
+
+	tenant = FakeTenant(status="Archived", dunning_started_on="2026-01-01",
+	                    purge_after="2026-01-01", purge_warned_on=None)
+	monkeypatch.setattr(sweep.frappe, "get_doc", lambda *a: tenant)
+
+	assert sweep.consider("acme", WINDOWS) == "could not warn them; the purge is on hold"
+	assert wired.purged == []
+
+
+def test_the_event_log_records_whether_they_were_actually_told(sweep, wired, monkeypatch):
+	"""A year later, in a dispute, "we warned them" has to be checkable."""
+	_sub(monkeypatch, sweep, "Canceled")
+	monkeypatch.setattr(sweep.emails, "purge_warning", lambda *a, **k: False)
+
+	tenant = FakeTenant(status="Archived", dunning_started_on="2026-01-01",
+	                    purge_after="2026-06-05")
+	monkeypatch.setattr(sweep.frappe, "get_doc", lambda *a: tenant)
+	sweep.consider("acme", WINDOWS)
+
+	warned = [kwargs for event, kwargs in wired.events if event == "Purge Warned"]
+	assert warned and warned[0]["detail"] == {"delivered": False}

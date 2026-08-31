@@ -52,6 +52,23 @@ def _press_host_ok(s) -> bool:
 	return host not in REDIRECTING_PRESS_HOSTS
 
 
+def _outgoing_email_ok() -> bool:
+	"""Whether this site has somewhere to send mail from.
+
+	Frappe queues a mail with no outgoing account without complaining, so this
+	cannot be inferred from a successful send.
+	"""
+	return bool(
+		frappe.db.exists("Email Account", {"enable_outgoing": 1, "default_outgoing": 1})
+	)
+
+
+def _r2_client_ok() -> bool:
+	from oneapp_control.cloudflare import r2
+
+	return r2.has_client()
+
+
 def _plans_hint() -> str:
 	"""Say which of the two ways this can be unset actually applies."""
 	if not frappe.get_all("Plan", filters={"is_active": 1}, limit=1):
@@ -197,6 +214,40 @@ def checks() -> list[dict]:
 			"detail": "Tenant sites fall back to local disk until this is set.",
 			"needs": "A Cloudflare account ID, a bucket, and an R2 API token's access key and secret.",
 			"where": "Settings → Storage buckets",
+		},
+		{
+			# The control plane's *own* ability to send, which is a different
+			# thing from the Cloudflare token below — that one is what tenant
+			# sites send with. Blocking, and it is the check this list was
+			# missing for longest: without it a workspace is suspended,
+			# archived and eventually deleted while every notification is
+			# swallowed, and the first anybody hears is a customer asking
+			# where their business went.
+			"key": "control_email",
+			"group": BLOCKING,
+			"label": "This site can send email",
+			"ok": _outgoing_email_ok(),
+			"detail": (
+				"Signup links and every lifecycle warning are sent from here. "
+				"Nothing is suspended, archived or deleted without one, and "
+				"the lifecycle refuses to purge a workspace it could not warn."
+			),
+			"needs": "An Email Account on this site with Default Outgoing set.",
+			"where": "Email Account",
+		},
+		{
+			"key": "r2_client",
+			"group": OPTIONAL,
+			"label": "R2 client library",
+			"ok": _r2_client_ok(),
+			"detail": (
+				"boto3 is not installed on this bench, so nothing can read or "
+				"write an object: no attachments, no backups, no cold copies "
+				"and no purge. Frappe no longer depends on it, so it comes "
+				"from these apps' own requirements."
+			),
+			"needs": "Redeploy the bench after `boto3` was added to the apps.",
+			"where": "Frappe Cloud → bench",
 		},
 		{
 			"key": "email_outbound",

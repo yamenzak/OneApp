@@ -394,19 +394,51 @@ def _archived(tenant, windows: dict) -> str | None:
 	days_left = (getdate(tenant.purge_after) - getdate(today())).days
 
 	if days_left <= windows["purge_warning_days"] and not tenant.purge_warned_on:
-		tenant.db_set("purge_warned_on", today())
-		events.record(
-			tenant.name,
-			"Purge Warned",
-			reason=f"Everything held for this workspace is deleted on {tenant.purge_after}.",
-		)
-		emails.purge_warning(tenant.name, purge_after=tenant.purge_after)
-		return "warned about the purge"
+		return _warn_about_purge(tenant)
 
 	if days_left > 0:
 		return None
 
 	return _purge(tenant, windows)
+
+
+def _warn_about_purge(tenant) -> str:
+	"""The last thing anybody is told before their workspace is destroyed.
+
+	`purge_warned_on` is stamped **only when the mail actually went**. It is the
+	gate the purge checks, and a gate satisfied by an email nobody received is
+	not a gate — it is a record of us having meant to. So a send that fails
+	leaves the date unset, the workspace unpurged, and an operator with an error
+	to find. The alternative is deleting somebody's business and being able to
+	prove only that we tried to tell them.
+	"""
+	sent = emails.purge_warning(tenant.name, purge_after=tenant.purge_after)
+
+	events.record(
+		tenant.name,
+		"Purge Warned",
+		reason=(
+			f"Everything held for this workspace is deleted on {tenant.purge_after}."
+			if sent
+			else "Could not warn them — this site cannot send email, so nothing "
+			     "will be deleted until it can."
+		),
+		detail={"delivered": bool(sent)},
+	)
+
+	if not sent:
+		frappe.log_error(
+			title=f"Cannot warn {tenant.name} before purge",
+			message=(
+				"The purge warning could not be sent, so the workspace has not "
+				"been marked as warned and will not be purged. Fix outgoing "
+				"email on this site."
+			),
+		)
+		return "could not warn them; the purge is on hold"
+
+	tenant.db_set("purge_warned_on", today())
+	return "warned about the purge"
 
 
 def _purge(tenant, windows: dict) -> str | None:
@@ -426,9 +458,7 @@ def _purge(tenant, windows: dict) -> str | None:
 		# The window elapsed without a warning ever going out — a window that was
 		# widened and then narrowed, or a sweep that did not run. Warn now and
 		# purge on the next pass.
-		tenant.db_set("purge_warned_on", today())
-		emails.purge_warning(tenant.name, purge_after=tenant.purge_after)
-		return "warned about the purge"
+		return _warn_about_purge(tenant)
 
 	warned_days_ago = (getdate(today()) - getdate(tenant.purge_warned_on)).days
 	if warned_days_ago < windows["purge_warning_days"]:

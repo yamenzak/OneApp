@@ -16,20 +16,62 @@ import frappe
 
 
 def _safe(fn):
+	"""Never let a failed send break the thing it was reporting on.
+
+	Returns True when the mail actually went and False when it did not, and the
+	distinction matters in exactly one place: the lifecycle refuses to destroy a
+	workspace that was not warned, and "warned" has to mean an email that left
+	the building rather than one we attempted. See `lifecycle.sweep._purge`.
+	"""
 	def wrapper(*args, **kwargs):
 		try:
-			return fn(*args, **kwargs)
+			fn(*args, **kwargs)
+			return True
 		except Exception:
 			frappe.log_error(
 				title=f"Notification failed: {fn.__name__}", message=frappe.get_traceback()
 			)
-			return None
+			return False
 
 	return wrapper
 
 
 def _send(to: str, subject: str, body: str):
+	"""One mail, now rather than queued.
+
+	`now=True` on purpose: a queued mail is handed to a background worker and
+	the caller learns nothing about whether it will ever be delivered. Every
+	send here is either telling somebody their workspace is ready or telling
+	them it is about to be switched off, and both are worth a failure the caller
+	can see.
+
+	Refuses outright when the site has no way to send. Frappe queues a mail with
+	no outgoing account without complaining, so without this a control plane
+	that was never given an Email Account would report every notification as
+	sent and deliver none of them.
+	"""
+	if not outgoing_configured():
+		raise RuntimeError(
+			"This site has no default outgoing Email Account, so nothing can be "
+			"sent. Nobody is being told their workspace is suspended, archived "
+			"or about to be deleted."
+		)
+
+	if not to:
+		raise RuntimeError("No recipient.")
+
 	frappe.sendmail(recipients=[to], subject=subject, message=body, now=True)
+
+
+def outgoing_configured() -> bool:
+	"""Whether this site can send mail at all.
+
+	Read on every send rather than cached: an operator fixing this mid-incident
+	should not have to wait out a cache to find out whether it worked.
+	"""
+	return bool(
+		frappe.db.exists("Email Account", {"enable_outgoing": 1, "default_outgoing": 1})
+	)
 
 
 @_safe

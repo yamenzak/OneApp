@@ -5,7 +5,11 @@ description = "Unified application surface for Four Degree Labs tenants."
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
-dependencies = []
+# Attachments live in R2 and so do this site's backups. Neither is optional-
+# at-runtime in the way the config keys are: without boto3 every upload and
+# every backup raises ImportError, and Frappe dropped its own boto3
+# dependency, so nothing else pulls it in.
+dependencies = ["boto3~=1.35"]
 
 [build-system]
 requires = ["flit_core >=3.4,<4"]

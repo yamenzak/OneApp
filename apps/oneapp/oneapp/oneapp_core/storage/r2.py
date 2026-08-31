@@ -38,8 +38,27 @@ def config() -> dict:
 
 
 def is_configured() -> bool:
+	"""Whether this site can actually put an object in R2.
+
+	The keys *and* the client library, because they fail differently and only
+	one of them is visible. Keys missing is a site that has not been given
+	storage yet and correctly falls back to local disk. boto3 missing is a site
+	that thinks it has storage and raises `ImportError` on every upload — and
+	since `File.after_insert` swallows exceptions so an upload never fails
+	outright, that lands as attachments that quietly are not there.
+	"""
 	c = config()
-	return all([c["account_id"], c["bucket"], c["access_key"], c["secret_key"]])
+	if not all([c["account_id"], c["bucket"], c["access_key"], c["secret_key"]]):
+		return False
+	return has_client()
+
+
+def has_client() -> bool:
+	try:
+		import boto3  # noqa: F401
+	except ImportError:
+		return False
+	return True
 
 
 def client():
