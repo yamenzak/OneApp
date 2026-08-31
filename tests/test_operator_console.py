@@ -145,3 +145,60 @@ def test_the_role_is_not_system_manager():
 	System Manager would grant them to every operator tool on the site rather
 	than to this console."""
 	assert _const("ROLE") == "OneSpace Operator"
+
+
+# --------------------------------------------------------------------------- #
+# The account Space, beside it on the same site
+#
+# The two audiences that now share a control plane. What keeps them apart is
+# `role_name` and nothing else, which is why `_space` filtering on it (Batch B)
+# was a prerequisite rather than a tidy-up.
+# --------------------------------------------------------------------------- #
+
+ACCOUNT = ROOT / "apps/oneapp_control/oneapp_control/entitlements/account.py"
+
+
+def _account_const(name):
+	for node in ast.walk(ast.parse(ACCOUNT.read_text())):
+		if isinstance(node, ast.Assign):
+			for target in node.targets:
+				if isinstance(target, ast.Name) and target.id == name:
+					return ast.literal_eval(node.value)
+	raise AssertionError(f"{name} is gone from account.py")
+
+
+ACCOUNT_SCREENS = _account_const("SCREENS")
+
+
+@pytest.mark.parametrize("row", ACCOUNT_SCREENS, ids=[s[0] for s in ACCOUNT_SCREENS])
+def test_every_account_screen_is_registered(row):
+	screen, _label, _icon = row
+	key = f"{_account_const('SPACE_CODE')}/{screen}"
+	assert f"'{key}'" in SCREENS_INDEX.read_text(), f"{key} is not in the SPA's registry"
+
+
+@pytest.mark.parametrize("row", ACCOUNT_SCREENS, ids=[s[0] for s in ACCOUNT_SCREENS])
+def test_every_account_screen_component_exists(row):
+	screen, _label, _icon = row
+	name = screen.capitalize() if screen != "apps" else "Apps"
+	found = list((ROOT / "apps/oneapp/frontend/src/screens/account").glob("*.vue"))
+	stems = {p.stem.lower() for p in found}
+	assert screen.lower() in stems, f"no component for {screen}; have {sorted(stems)}"
+
+
+def test_the_account_space_grants_no_doctypes():
+	"""Every screen is a component calling the customer-facing methods, each of
+	which resolves the workspace from the session and refuses anything the
+	caller does not own. A DocPerm here would be a second, weaker path to the
+	same data, reachable over REST by anybody holding the role."""
+	source = ACCOUNT.read_text()
+	assert '"doctypes": []' in source
+
+
+def test_the_two_spaces_are_kept_apart_only_by_role():
+	"""Which is why `_space` filtering on `role_name` was a prerequisite. If
+	that regresses, a customer can resolve the operator console by name."""
+	assert _account_const("SPACE_CODE") != _const("SPACE_CODE")
+	source = ACCOUNT.read_text()
+	assert "CUSTOMER_ROLE" in source, "the account Space is not narrowed to customers"
+	assert _const("ROLE") not in source

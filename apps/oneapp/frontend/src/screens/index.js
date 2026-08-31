@@ -26,6 +26,21 @@ export const APP_COMPONENTS = {
   // these are never imported.
   'onespace-ops/readiness': () => import('./ops/Readiness.vue'),
   'onespace-ops/press': () => import('./ops/FrappeCloud.vue'),
+
+  // The customer's account. Nearly all of it is one workspace's overview,
+  // billing and people rather than a list of records, so it is component
+  // screens by nature rather than by exception — which is the right shape for
+  // it, not a compromise.
+  //
+  // It lives on the control plane because that is the only place that knows a
+  // person owns three tenancies: a tenant site's HMAC secret proves it is
+  // *itself* and nothing more.
+  'onespace-account/overview': () => import('./account/Overview.vue'),
+  'onespace-account/apps': () => import('./account/Apps.vue'),
+  'onespace-account/billing': () => import('./account/Billing.vue'),
+  'onespace-account/plan': () => import('./account/Plan.vue'),
+  'onespace-account/people': () => import('./account/People.vue'),
+  'onespace-account/domain': () => import('./account/Domain.vue'),
 }
 
 export function screenComponent(name) {

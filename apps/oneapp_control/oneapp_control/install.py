@@ -21,7 +21,7 @@ def after_migrate():
 
 
 def setup_console():
-	"""The operator Space, and the DocPerms its screens depend on.
+	"""The two Spaces this site provides, and the DocPerms they depend on.
 
 	Only where `oneapp` is installed — the console is a Space, and a Space with
 	nothing to render it is a row nobody reads. A control plane running only
@@ -32,9 +32,12 @@ def setup_console():
 	except ImportError:
 		return
 
-	from oneapp_control.entitlements import operator
+	from oneapp_control.entitlements import account, operator
 
 	operator.seed()
+	account.seed()
+	# One call for both: `sync_permissions` reconciles every local space's
+	# grants at once, and the account Space deliberately grants nothing.
 	operator.sync_permissions()
 	frappe.db.commit()
 
