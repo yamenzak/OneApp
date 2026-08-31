@@ -28,6 +28,18 @@ home_page = "admin"
 role_home_page = {"OneSpace Customer": ["portal/account"]}
 
 # ---------------------------------------------------------------------------
+# Spaces, for OneSpace running on this site
+# ---------------------------------------------------------------------------
+# A tenant learns which spaces it has from the control plane, over HMAC. The
+# control plane has no control plane to ask — it is one — so where a tenant
+# syncs, this hands `oneapp` the same list in process, read from the registry
+# it already holds. Everything downstream cannot tell the two apart, which is
+# the point: where a space's description came from is not a property of it.
+#
+# `oneapp` ships no provider of its own, so a tenant site is unaffected.
+onespace_space_providers = ["oneapp_control.entitlements.registry.local_spaces"]
+
+# ---------------------------------------------------------------------------
 # Scheduled tasks
 # ---------------------------------------------------------------------------
 scheduler_events = {
@@ -63,6 +75,20 @@ scheduler_events = {
 		# Posts explicit Expiry rows so the ledger reads as a complete history.
 		"oneapp_control.credits.ledger.expire_stale_grants",
 	],
+}
+
+# ---------------------------------------------------------------------------
+# Document hooks
+# ---------------------------------------------------------------------------
+# Editing a space in the console has to reach the shell that renders it, and
+# `oneapp`'s state cache holds the space list for five minutes. Without this a
+# screen added to a space appears somewhere between now and then, which reads
+# as the change not having saved.
+doc_events = {
+	"OneSpace Space": {
+		"on_update": "oneapp_control.entitlements.registry.forget_spaces",
+		"on_trash": "oneapp_control.entitlements.registry.forget_spaces",
+	},
 }
 
 # ---------------------------------------------------------------------------

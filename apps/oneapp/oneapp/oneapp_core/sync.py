@@ -46,12 +46,44 @@ def state() -> dict:
 		"max_users": doc.max_users or 0,
 		"background_workers": doc.background_workers or 0,
 		"credit_balance": doc.credit_balance or 0,
-		"spaces": json.loads(doc.spaces_json or "[]"),
+		"spaces": json.loads(doc.spaces_json or "[]") + local_spaces(),
 		"roles": json.loads(doc.roles_json or "[]"),
 		"last_sync": str(doc.last_sync) if doc.last_sync else None,
 	}
 	frappe.cache().set_value(CACHE_KEY, data, expires_in_sec=CACHE_TTL)
 	return data
+
+
+def local_spaces() -> list:
+	"""Spaces this site provides itself, rather than being told about.
+
+	A tenant learns which spaces it has from the control plane, over HMAC, and
+	caches the answer in the Single above. The control plane has no control
+	plane to ask — it *is* one — so it needs a second way to say the same thing,
+	and an app installed there registers a provider:
+
+	    onespace_space_providers = ["oneapp_control.…:local_spaces"]
+
+	Each returns the same list of space dicts the sync payload carries, so
+	everything downstream — `_space`, `_granted_doctypes`, `visible_spaces`, the
+	rail, the resolver — is untouched and cannot tell the two apart. Which is
+	the point: a space is a space, and where the description came from is not a
+	property of it.
+
+	`oneapp` ships no provider. A site with none and no sync has no spaces,
+	which is what it had before this existed.
+
+	A provider that raises is skipped rather than fatal. This runs behind every
+	page load of the shell, and one app's bad manifest should not be a site that
+	will not open.
+	"""
+	found = []
+	for path in frappe.get_hooks("onespace_space_providers") or []:
+		try:
+			found += frappe.get_attr(path)() or []
+		except Exception:
+			frappe.log_error(title="OneSpace space provider failed", message=path)
+	return found
 
 
 def invalidate():

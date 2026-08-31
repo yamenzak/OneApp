@@ -14,13 +14,20 @@ been entitled to is simply invisible, not an error.
 import frappe
 
 
+# What describes a space to a site. One list, two readers — the tenant sync and
+# the local provider — so the two cannot drift into describing different things.
+SPACE_FIELDS = (
+	"name as space_code", "space_label", "module", "role_name", "icon",
+	"logo", "sort_order", "description",
+)
+
+
 def spaces_for_tenant(tenant: str) -> list[dict]:
 	"""The manifest OneSpace renders: every space this workspace may open."""
 	general = frappe.get_all(
 		"OneSpace Space",
 		filters={"is_active": 1, "availability": "General"},
-		fields=["name as space_code", "space_label", "module", "role_name", "icon",
-			"logo", "sort_order", "description"],
+		fields=list(SPACE_FIELDS),
 	)
 
 	restricted = frappe.db.sql(
@@ -51,14 +58,63 @@ def spaces_for_tenant(tenant: str) -> list[dict]:
 	return spaces
 
 
+# Every field a Space Screen carries, sent verbatim. Listed rather than `["*"]`
+# so a field added here is a deliberate act — and read off the doctype in
+# `tests/test_owner_and_manifest.py`, because the failure mode of a forgotten
+# one is silent: `status_field` was stored, edited in the console, and never
+# sent, so no screen anywhere ever showed a status badge and nothing said why.
+SCREEN_FIELDS = (
+	"screen", "label", "icon", "document_type", "fields", "component",
+	"filters", "order_by", "view_types", "view_settings", "status_field",
+)
+
+
 def screens_for(space_code: str) -> list[dict]:
 	return frappe.get_all(
 		"OneSpace Space Screen",
 		filters={"parent": space_code, "parenttype": "OneSpace Space"},
-		fields=["screen", "label", "icon", "document_type", "fields", "component",
-		        "filters", "order_by", "view_types", "view_settings"],
+		fields=list(SCREEN_FIELDS),
 		order_by="idx asc",
 	)
+
+
+def local_spaces() -> list[dict]:
+	"""Every space this site offers itself, for `oneapp` running on it.
+
+	The control plane holds the space registry and has no control plane to ask,
+	so where a tenant syncs, this reads the same rows in process. Registered
+	through `onespace_space_providers` in hooks, which is `oneapp`'s one seam
+	for it.
+
+	No entitlement join, unlike `spaces_for_tenant`: there is no tenant here.
+	Who sees which space is decided by role — `visible_spaces` filters on
+	`role_name`, so an operator space and a customer's account space separate
+	cleanly on one site — and by `_space`, which refuses a space code whose
+	role the caller does not hold.
+	"""
+	spaces = frappe.get_all(
+		"OneSpace Space",
+		filters={"is_active": 1},
+		fields=list(SPACE_FIELDS),
+	)
+	spaces.sort(key=lambda s: (s.get("sort_order") or 0, s.get("space_label") or ""))
+	for space in spaces:
+		space["screens"] = screens_for(space["space_code"])
+	return spaces
+
+
+def forget_spaces(doc=None, method=None) -> None:
+	"""Drop OneSpace's cached view of this site's spaces.
+
+	Only meaningful where `oneapp` is installed alongside this app — the
+	control site. Elsewhere the import fails and there is nothing to forget,
+	which is not an error: a tenant's cache is invalidated by its own sync.
+	"""
+	try:
+		from oneapp.oneapp_core import sync
+	except ImportError:
+		return
+	sync.invalidate()
 
 
 def entitled_modules(tenant: str) -> list[str]:
