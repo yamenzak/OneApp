@@ -430,6 +430,100 @@ def finalise_archive(job):
 	return None
 
 
+# --------------------------------------------------------------------------- #
+# Restore, from the cold copy
+# --------------------------------------------------------------------------- #
+# An archived workspace has no site. Bringing it back is a fresh site plus the
+# contents of `cold/<tenant>/`, which is why `Restore Site` reuses most of the
+# creation pipeline rather than being its own thing — the DNS record, the
+# domain, the certificate and the mail routing all have to be made again, and
+# they are made the same way.
+
+# What press needs, keyed the way press names them, from the way we name them.
+RESTORE_FILES = {
+	"database.sql.gz": "database",
+	"public-files.tar": "public",
+	"private-files.tar": "private",
+	"site-config.json": "config",
+}
+
+
+def restore_from_cold(job):
+	"""Hand press presigned links to the cold copy and let it rebuild the site.
+
+	The config is deliberately *not* sent. Ours has been redacted of every
+	secret before it was stored, so restoring it would overwrite the working
+	keys `push_site_config` has just written with a set of nulls — a site that
+	comes up and cannot reach the control plane, which reads as the restore
+	having failed for reasons nobody can see.
+	"""
+	from oneapp_control.lifecycle import cold
+
+	tenant = frappe.get_doc("Tenant", job.tenant)
+	key = job.parsed_payload().get("cold_storage_key") or tenant.cold_storage_key
+	if not key:
+		raise PressPermanentError(
+			f"Tenant {job.tenant} has no cold copy to restore from."
+		)
+
+	links = cold.links(tenant)
+	files = {
+		RESTORE_FILES[name]: url
+		for name, url in links.items()
+		if name in RESTORE_FILES and RESTORE_FILES[name] != "config"
+	}
+
+	if "database" not in files:
+		raise PressPermanentError(
+			f"The cold copy at {key} has no database dump. Restoring from it "
+			"would produce an empty workspace that looks like it worked."
+		)
+
+	result = get_client().restore(_site_for(job), files)
+	_capture_job_id(job, result)
+	return None
+
+
+def finalise_restore(job):
+	"""The workspace is back. Say so, and take it off the ladder for good."""
+	from oneapp_control.lifecycle import events
+
+	tenant = frappe.get_doc("Tenant", job.tenant)
+	tenant.db_set(
+		{
+			"status": "Active",
+			"restored_on": now_datetime(),
+			"suspended_reason": None,
+			"suspended_on": None,
+			"archived_on": None,
+			"purge_after": None,
+			"purge_warned_on": None,
+			"dunning_started_on": None,
+			"dunning_stage": None,
+			# The objects stay where they are — this was somebody's only copy an
+			# hour ago. What changes is that they stop being *the* cold copy, so
+			# retention may expire them like any other old backup once the
+			# window passes. See `lifecycle/backups.expire_orphaned_cold`.
+			"cold_storage_key": None,
+		}
+	)
+	if job.press_site:
+		tenant.db_set("press_site", job.press_site)
+
+	events.record(
+		tenant.name,
+		"Restored",
+		triggered_by="Sweep",
+		reason="Restored from cold storage after payment.",
+		to_status="Active",
+	)
+
+	from oneapp_control.notifications import emails
+
+	emails.restored(tenant.name)
+	return None
+
+
 def migrate_site(job):
 	result = get_client().migrate(_site_for(job))
 	_capture_job_id(job, result)
@@ -611,6 +705,29 @@ PIPELINES = {
 		("archive_site", archive_site),
 		("await_agent", await_agent),
 		("finalise_archive", finalise_archive),
+	],
+	# A fresh site, then the cold copy poured into it, then everything a new
+	# site needs anyway. The steps are the creation pipeline's own, in the same
+	# order, with the restore wedged in after the config and before the DNS —
+	# there is no point issuing a certificate for a site that is about to have
+	# its database replaced.
+	"Restore Site": [
+		("check_availability", check_availability),
+		("create_site", create_site),
+		("await_agent", await_agent),
+		("push_site_config", push_site_config),
+		("restore_from_cold", restore_from_cold),
+		# Named apart from the `await_agent` above it. The runner resumes by
+		# looking a step name up in the pipeline, and `index()` returns the
+		# first match — two steps sharing a name send the job back to the
+		# earlier one and it loops forever.
+		("await_restore", await_agent),
+		("create_dns_record", create_dns_record),
+		("attach_domain", attach_domain),
+		("await_domain_active", await_domain_active),
+		("promote_domain", promote_domain),
+		("register_mail_routing", register_mail_routing),
+		("finalise_restore", finalise_restore),
 	],
 	"Migrate Site": [
 		("migrate_site", migrate_site),

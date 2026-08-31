@@ -221,3 +221,39 @@ def test_bench_config_is_still_a_dumped_string(wired):
 	client, sent = wired
 	client.update_bench_config("bench-1", {"a": 1})
 	assert isinstance(sent["body"]["config"], str)
+
+
+# --------------------------------------------------------------------------- #
+# Pipelines
+# --------------------------------------------------------------------------- #
+
+def test_no_pipeline_repeats_a_step_name():
+	"""The runner resumes by looking the step name up in its pipeline, and
+	`list.index` returns the first match.
+
+	A pipeline with two steps called the same thing sends the job back to the
+	earlier one every time it reaches the later one, and loops until the attempt
+	ceiling. Nothing about the pipeline declaration makes that visible, which is
+	why it is a test — the two `await_agent` calls a restore genuinely needs are
+	the obvious way to write it and the wrong one.
+	"""
+	import ast
+	from pathlib import Path
+
+	root = Path(__file__).resolve().parent.parent
+	tree = ast.parse(
+		(root / "apps/oneapp_control/oneapp_control/provisioning/steps.py").read_text()
+	)
+	pipelines = next(
+		node.value
+		for node in ast.walk(tree)
+		if isinstance(node, ast.Assign)
+		and any(getattr(t, "id", None) == "PIPELINES" for t in node.targets)
+	)
+
+	for action, steps in zip(pipelines.keys, pipelines.values, strict=True):
+		names = [step.elts[0].value for step in steps.elts]
+		assert len(names) == len(set(names)), (
+			f"{action.value} repeats a step name: "
+			f"{[n for n in names if names.count(n) > 1]}"
+		)

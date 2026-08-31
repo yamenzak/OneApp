@@ -280,6 +280,24 @@ class PressClient:
 	def backup(self, site: str, with_files: bool = True):
 		return self.call("press.api.site.backup", name=site, with_files=with_files)
 
+	def restore(self, site: str, files: dict, skip_failing_patches: bool = False):
+		"""Rebuild a site from files it downloads itself.
+
+		`files` is `{database, public, private, config}` — URLs press fetches,
+		not uploads. Ours are presigned R2 links with an hour on them, which is
+		why they are minted immediately before this call rather than stored.
+
+		This is destructive on the target: press drops the site's database and
+		replaces it. It is only ever aimed at a site we have just created for
+		exactly this purpose. See `provisioning/steps.restore_from_cold`.
+		"""
+		return self.call(
+			"press.api.site.restore",
+			name=site,
+			files=files,
+			skip_failing_patches=skip_failing_patches,
+		)
+
 	def archive(self, site: str, force: bool = False):
 		return self.call("press.api.site.archive", name=site, force=force)
 

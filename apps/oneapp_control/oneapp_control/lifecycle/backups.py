@@ -127,6 +127,9 @@ def retention_sweep(limit: int = 200) -> dict:
 				r2.delete_keys(bucket, keys)
 				swept += len(going)
 				freed += sum(one["bytes"] for one in going)
+
+			# And the promoted copies this workspace no longer points at.
+			expire_orphaned_cold(row["name"], bucket, keep_days)
 		except Exception as e:
 			# One unreachable bucket must not stop the rest being swept.
 			failures.append({"tenant": row["name"], "error": str(e)[:200]})
@@ -181,6 +184,57 @@ def staleness_sweep(limit: int = 500) -> dict:
 		)
 
 	return {"ok": True, "stale": stale}
+
+
+def cold_sets(bucket: str, tenant: str) -> list[dict]:
+	"""The promoted copies a workspace holds, oldest first.
+
+	Same shape as `sets`, over the cold prefix. Separate function rather than a
+	parameter because every other caller of `sets` must never be handed the cold
+	prefix by accident — that is the one thing retention may not touch.
+	"""
+	prefix = cold_prefix_for(tenant)
+	grouped: dict[str, dict] = {}
+
+	for row in r2.objects(bucket, prefix):
+		stamp, _, name = row["key"][len(prefix):].partition("/")
+		if not name:
+			continue
+		found = grouped.setdefault(
+			stamp, {"stamp": stamp, "keys": [], "bytes": 0, "modified": row["modified"]}
+		)
+		found["keys"].append(row["key"])
+		found["bytes"] += row["size"]
+
+	return sorted(grouped.values(), key=lambda s: s["stamp"])
+
+
+def expire_orphaned_cold(tenant: str, bucket: str, keep_days: int) -> int:
+	"""Delete promoted copies that are no longer *the* cold copy.
+
+	A workspace holds one at a time, named by `Tenant.cold_storage_key`, and
+	that one is never touched — it may be the only copy of somebody's business.
+	What this expires is the leftovers: the copy a restore drew from, which
+	stops being the cold copy the moment the site is back, and any earlier
+	promotion superseded by a newer one.
+
+	Without this a workspace that fell and recovered twice would accumulate
+	permanent copies of itself, under the one prefix nothing else expires.
+	"""
+	held = frappe.db.get_value("Tenant", tenant, "cold_storage_key") or ""
+	going = []
+
+	for one in cold_sets(bucket, tenant):
+		prefix = f"{COLD_PREFIX}/{tenant}/{one['stamp']}"
+		if held and (held == prefix or held.rstrip("/") == prefix):
+			continue
+		going.append(one)
+
+	# Same window as an ordinary backup: once a workspace is live again, an old
+	# promoted copy is an old backup and nothing more.
+	return r2.delete_keys(
+		bucket, [key for one in expired(going, keep_days) for key in one["keys"]]
+	)
 
 
 def scheduled_run() -> dict:
