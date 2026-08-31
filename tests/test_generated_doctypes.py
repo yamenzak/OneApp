@@ -33,7 +33,10 @@ def gen():
 
 def _path(gen, name):
 	pkg, module_dir, _ = gen.APPS[gen.DOCTYPES[name]["app"]]
-	slug = name.lower().replace(" ", "_")
+	# Frappe's `scrub`: spaces and hyphens both become underscores, so "Add-on"
+	# lives at add_on/add_on.json. A directory named any other way is one Frappe
+	# never reads.
+	slug = name.lower().replace(" ", "_").replace("-", "_")
 	return ROOT / "apps" / pkg / pkg / module_dir / "doctype" / slug / f"{slug}.json"
 
 

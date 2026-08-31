@@ -169,6 +169,62 @@ doctype(
 )
 
 
+# --------------------------------------------------------------------------- #
+# Add-on — extra quota, bought per month on the subscription.
+#
+# An add-on is a second recurring line on the same Stripe subscription, so the
+# customer gets one invoice, one dunning cycle and one card. It is not a plan:
+# plans differ only in quotas and every feature is on every one of them, while an
+# add-on adds to a quota without changing what plan somebody is on.
+#
+# Sold per unit. "+50 GB" bought three times is one line with quantity 3, which
+# is what lets somebody grow without a new product every time.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Add-on",
+    autoname="field:addon_code",
+    title_field="addon_name",
+    fields=[
+        f("addon_code", reqd=1, unique=1, description="Stable id, e.g. storage-50"),
+        f("addon_name", reqd=1, in_list_view=1),
+        # A Select and not free text: the quota layer switches on this, and a
+        # third kind is a code change either way. Better to fail at save time.
+        f("kind", "Select", options="File Storage\nDatabase Storage", reqd=1,
+          in_list_view=1, in_standard_filter=1,
+          description="Which quota a unit of this adds to."),
+        f("unit_gb", "Int", label="Unit GB", default="50", reqd=1, in_list_view=1,
+          description="How much one unit buys. Quantity multiplies it."),
+        f("max_units", "Int", default="0",
+          description="Most units one workspace may hold. Zero for no ceiling."),
+        f("is_active", "Check", default="1"),
+        f("sort_order", "Int", default="0"),
+        column("cb_addon_price"),
+        f("currency", "Link", options="Currency", default="USD"),
+        # Both cadences, because Stripe requires every recurring line on one
+        # subscription to share an interval. A yearly workspace cannot be sold a
+        # monthly add-on, so an add-on priced only monthly is simply not offered
+        # to them.
+        f("price_monthly", "Currency", in_list_view=1),
+        f("price_yearly", "Currency"),
+        f("stripe_product_id", label="Stripe Product ID", read_only=1),
+        f("stripe_price_id_monthly", label="Stripe Price ID (Monthly)", read_only=1,
+          description="The current monthly price. History is in Prices below."),
+        f("stripe_price_id_yearly", label="Stripe Price ID (Yearly)", read_only=1),
+        f("sync_error", "Small Text", read_only=1,
+          description="Why the last sync to Stripe did not finish. Saving again "
+                      "retries; the add-on stays sellable on whatever prices it "
+                      "already has."),
+        section("sec_addon_copy"),
+        f("description", "Small Text",
+          description="What a customer reads next to the price."),
+        section("sec_addon_prices", "Prices"),
+        f("prices", "Table", options="Catalogue Price", read_only=1,
+          description="Every Stripe price this add-on has had. Subscriptions "
+                      "holding an older one keep billing on it."),
+    ],
+)
+
+
 doctype(
     "Plan",
     autoname="field:plan_code",
@@ -1552,7 +1608,11 @@ def main():
     for name, spec in DOCTYPES.items():
         pkg, module_dir, _ = APPS[spec["app"]]
         base = os.path.join(APPS_ROOT, pkg, pkg, module_dir, "doctype")
-        slug = name.lower().replace(" ", "_")
+        # Frappe's own `scrub`: spaces and hyphens both become underscores, so
+        # "Add-on" is looked for at add_on/add_on.json. Getting this wrong
+        # produces a directory Frappe never reads and a doctype that silently
+        # does not exist.
+        slug = name.lower().replace(" ", "_").replace("-", "_")
         d = os.path.join(base, slug)
         os.makedirs(d, exist_ok=True)
         open(os.path.join(d, "__init__.py"), "a").close()
@@ -1561,7 +1621,11 @@ def main():
             fh.write("\n")
         ctrl = os.path.join(d, f"{slug}.py")
         if not os.path.exists(ctrl):
-            cls = name.replace(" ", "")
+            # The class name Frappe looks for is the doctype with spaces and
+            # hyphens removed — `base_document.get_controller` builds it that
+            # way, so "Add-on" is `Addon` and anything else is an ImportError at
+            # the first read.
+            cls = name.replace(" ", "").replace("-", "")
             with open(ctrl, "w") as fh:
                 fh.write(CONTROLLER.format(cls=cls))
         written.append(name)

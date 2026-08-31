@@ -1,0 +1,184 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:addon_code",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "addon_code",
+  "addon_name",
+  "kind",
+  "unit_gb",
+  "max_units",
+  "is_active",
+  "sort_order",
+  "cb_addon_price",
+  "currency",
+  "price_monthly",
+  "price_yearly",
+  "stripe_product_id",
+  "stripe_price_id_monthly",
+  "stripe_price_id_yearly",
+  "sync_error",
+  "sec_addon_copy",
+  "description",
+  "sec_addon_prices",
+  "prices"
+ ],
+ "fields": [
+  {
+   "description": "Stable id, e.g. storage-50",
+   "fieldname": "addon_code",
+   "fieldtype": "Data",
+   "label": "Addon Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "addon_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Addon Name",
+   "reqd": 1
+  },
+  {
+   "description": "Which quota a unit of this adds to.",
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Kind",
+   "options": "File Storage\nDatabase Storage",
+   "reqd": 1
+  },
+  {
+   "default": "50",
+   "description": "How much one unit buys. Quantity multiplies it.",
+   "fieldname": "unit_gb",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Unit GB",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "description": "Most units one workspace may hold. Zero for no ceiling.",
+   "fieldname": "max_units",
+   "fieldtype": "Int",
+   "label": "Max Units"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
+  },
+  {
+   "default": "0",
+   "fieldname": "sort_order",
+   "fieldtype": "Int",
+   "label": "Sort Order"
+  },
+  {
+   "fieldname": "cb_addon_price",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "USD",
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "price_monthly",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Price Monthly"
+  },
+  {
+   "fieldname": "price_yearly",
+   "fieldtype": "Currency",
+   "label": "Price Yearly"
+  },
+  {
+   "fieldname": "stripe_product_id",
+   "fieldtype": "Data",
+   "label": "Stripe Product ID",
+   "read_only": 1
+  },
+  {
+   "description": "The current monthly price. History is in Prices below.",
+   "fieldname": "stripe_price_id_monthly",
+   "fieldtype": "Data",
+   "label": "Stripe Price ID (Monthly)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stripe_price_id_yearly",
+   "fieldtype": "Data",
+   "label": "Stripe Price ID (Yearly)",
+   "read_only": 1
+  },
+  {
+   "description": "Why the last sync to Stripe did not finish. Saving again retries; the add-on stays sellable on whatever prices it already has.",
+   "fieldname": "sync_error",
+   "fieldtype": "Small Text",
+   "label": "Sync Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_addon_copy",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "What a customer reads next to the price.",
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "sec_addon_prices",
+   "fieldtype": "Section Break",
+   "label": "Prices"
+  },
+  {
+   "description": "Every Stripe price this add-on has had. Subscriptions holding an older one keep billing on it.",
+   "fieldname": "prices",
+   "fieldtype": "Table",
+   "label": "Prices",
+   "options": "Catalogue Price",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Add-on",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "addon_name",
+ "track_changes": 1
+}
