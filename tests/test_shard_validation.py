@@ -253,9 +253,54 @@ def test_filling_does_not_excuse_a_wrong_value(shard, make, monkeypatch):
         validate(make(press_version="", press_release_group="bench-46810"))
 
 
-def test_an_empty_shard_asks_press_nothing(shard, make, monkeypatch):
-    def explode():
-        raise AssertionError("nothing named, nothing to derive")
+def test_an_empty_shard_fills_itself_when_the_account_leaves_no_choice(
+    shard, make, monkeypatch
+):
+    """This used to assert the opposite — that naming nothing asked press
+    nothing — which was true and unhelpful. One server and one bench group is
+    not a decision anybody has to make, so the whole Frappe Cloud half of the
+    form derives from an empty start."""
+    _known(shard, monkeypatch, {
+        "servers": [{"name": "u25-nuremberg-3.frappe.cloud", "cluster": "Nuremberg-3"}],
+        "release_groups": [{"name": "bench-46919", "version": "Nightly"}],
+        "versions": ["Nightly"],
+    })
+    doc = make(press_server="", press_release_group="", press_cluster="",
+               press_version="")
+    validate(doc)
 
-    monkeypatch.setattr(shard, "press_inventory", explode)
-    validate(make(press_server="", press_release_group="", press_version=""))
+    assert (doc.press_server, doc.press_release_group,
+            doc.press_cluster, doc.press_version) == (
+        "u25-nuremberg-3.frappe.cloud", "bench-46919", "Nuremberg-3", "Nightly")
+
+
+def test_a_single_bench_group_does_not_have_to_be_named_either(shard, make,
+                                                               monkeypatch):
+    """The same rule as the server. Automating one and not the other was an
+    inconsistency, not a principle."""
+    _known(shard, monkeypatch, {
+        "servers": [{"name": "u25-nuremberg-3.frappe.cloud", "cluster": "Nuremberg-3"}],
+        "release_groups": [{"name": "bench-46919", "version": "Nightly"}],
+        "versions": ["Nightly"],
+    })
+    doc = make(press_server="", press_release_group="", press_cluster="",
+               press_version="")
+    validate(doc)
+
+    assert doc.press_server == "u25-nuremberg-3.frappe.cloud"
+    assert doc.press_release_group == "bench-46919"
+    assert doc.press_cluster == "Nuremberg-3"
+    assert doc.press_version == "Nightly"
+
+
+def test_two_bench_groups_are_a_real_choice(shard, make, monkeypatch):
+    _known(shard, monkeypatch, {
+        "servers": [{"name": "u25-nuremberg-3.frappe.cloud", "cluster": "Nuremberg-3"}],
+        "release_groups": [{"name": "bench-1", "version": "Nightly"},
+                           {"name": "bench-2", "version": "Version 16"}],
+        "versions": ["Nightly", "Version 16"],
+    })
+    doc = make(press_release_group="", press_version="")
+    validate(doc)
+    assert doc.press_release_group == ""
+    assert doc.press_version == ""

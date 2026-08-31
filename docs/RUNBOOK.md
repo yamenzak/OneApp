@@ -33,7 +33,7 @@ all satisfied — there is no switch to throw.
 | --- | --- | --- |
 | 1 | Settings → Frappe Cloud | Control plane URL (this site's own https address) and tenant domain |
 | 2 | Settings → Regions → New | e.g. code `nuremberg`, name "Nuremberg, Germany" |
-| 3 | Shards → New | Name the **bench group** and the policy fields — region, environment, deploy ring. The server, cluster and version fill themselves from Frappe Cloud on save, and a name press does not have is refused there rather than several steps into a provision |
+| 3 | Shards → New | Fill in the **policy** — region, environment, deploy ring, domain. The whole Frappe Cloud half (server, bench group, cluster, version) derives on save while the account has one of each, and a name press does not have is refused there rather than several steps into a provision |
 | 4 | Settings → Plans → New | At least one, with its Stripe price ids |
 | 5 | Settings → Billing | Stripe keys and the webhook secret |
 | 6 | Settings → Cloudflare | R2 and the DNS token |

@@ -45,8 +45,10 @@ class Shard(Document):
 		choose from is a real decision, and guessing would put tenants on a
 		machine nobody chose.
 		"""
-		if not self.get("press_release_group") and not self.get("press_server"):
-			return
+		# Nothing named at all still derives, as long as the account leaves no
+		# choice: one server and one bench group is not a decision anybody has
+		# to make, and refusing to make it for them was an inconsistency rather
+		# than a principle.
 
 		flags = frappe.flags
 		if any(getattr(flags, f, False) for f in
@@ -60,10 +62,15 @@ class Shard(Document):
 		servers = known.get("servers") or []
 		groups = known.get("release_groups") or []
 
-		# One server on the account is not a choice, so it does not need to be
-		# made. Two or more and it is, so this stays out of it.
+		# One of a thing on the account is not a choice, so it does not need to
+		# be made. Two or more and it is, so this stays out of it — picking for
+		# somebody would put their tenants on a machine, or a bench, nobody
+		# chose.
 		if not self.get("press_server") and len(servers) == 1:
 			self.press_server = servers[0].get("name")
+
+		if not self.get("press_release_group") and len(groups) == 1:
+			self.press_release_group = groups[0].get("name")
 
 		if not self.get("press_cluster") and self.get("press_server"):
 			match = next(
