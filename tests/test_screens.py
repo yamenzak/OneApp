@@ -412,6 +412,7 @@ STRUCTURED = {
 	"columns": {"list"},
 	"overrides": {"dict"},
 	"remove.name": {"list"},
+	"assign.users": {"list"},
 }
 
 

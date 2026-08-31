@@ -1090,6 +1090,7 @@ def record(space_code: str, screen: str, name: str) -> dict:
 	found = [_with_meta(row) for row in found]
 	_with_links(resolved, found)
 	_with_children(resolved, found[0], name)
+	found[0]["_assigned"] = _people(found[0].pop("_assign", None))
 	return found[0]
 
 
@@ -1178,7 +1179,48 @@ META_FIELDS = ("modified", "_comments", "_liked_by")
 # submitted record is editable only in the fields marked `allow_on_submit`, and
 # a form that does not know it is looking at one offers every field and has
 # every save refused.
-RECORD_META = ("owner", "creation", "modified_by", "docstatus")
+RECORD_META = ("owner", "creation", "modified_by", "docstatus", "_assign")
+
+
+def _people(assigned) -> list[dict]:
+	"""`_assign` — a JSON array of user ids — as people you can look at.
+
+	Frappe stores assignment as a list of ids on the document and keeps a ToDo
+	beside it; the ids are what the desk reads and a row of email addresses is
+	not what anybody wants to see. Resolved into the same three things every
+	other identity in this product is drawn from — a name, a face, and the id
+	underneath — so a stack of assignees and a Link cell are the same rendering.
+
+	One query, never one per id. A user who no longer exists drops out rather
+	than rendering as a blank face: `_assign` is not a foreign key and Frappe
+	does not clean it up when an account goes.
+	"""
+	ids = frappe.parse_json(assigned or "[]")
+	if not isinstance(ids, list) or not ids:
+		return []
+
+	found = {
+		row["name"]: row
+		for row in frappe.get_all(
+			"User",
+			filters={"name": ["in", list(dict.fromkeys(ids))]},
+			# `get_all` rather than `get_list`: a name beside a face on a
+			# record you can already read is not a directory, and the
+			# alternative is a reader seeing "assigned to" with nobody in it.
+			fields=["name", "full_name", "user_image"],
+		)
+	}
+	# In the order the document holds them, so the face on the left is the same
+	# face on every reload.
+	return [
+		{
+			"value": found[one]["name"],
+			"label": found[one]["full_name"] or found[one]["name"],
+			"image": found[one]["user_image"],
+		}
+		for one in dict.fromkeys(ids)
+		if one in found
+	]
 
 
 def _with_links(resolved: dict, rows: list[dict]) -> None:
@@ -1989,6 +2031,111 @@ def toggle_like(space_code: str, screen: str, name: str) -> dict:
 
 
 # --------------------------------------------------------------------------- #
+# Assignment
+#
+# Frappe's own model, unchanged: `_assign` is a JSON list of user ids on the
+# document, and `frappe.desk.form.assign_to` keeps a ToDo beside each one so the
+# person sees it in their own list. Both halves matter — writing `_assign`
+# directly would put a face on the record and no task in anybody's day — so the
+# framework's functions do the writing here and this only decides who may ask.
+# --------------------------------------------------------------------------- #
+
+# How many people one picker offers. The same bound the link picker uses, for
+# the same reason: a workspace with four hundred users is a scroll, not a list.
+ASSIGNEE_PAGE = 20
+
+
+def _assignable(doctype: str, name: str):
+	"""The document, if this person may assign it.
+
+	Read permission and nothing more, deliberately. Assigning is how work
+	reaches somebody, and a reader who can see a record and cannot ask a
+	colleague to look at it is a reader who sends an email instead. Frappe takes
+	the same line — `assign_to.add` checks share/read, not write — and it runs
+	its own checks under everything below regardless.
+	"""
+	doc = frappe.get_doc(doctype, name)
+	doc.check_permission("read")
+	return doc
+
+
+@frappe.whitelist()
+def assignees(space_code: str, screen: str, query: str = "") -> list[dict]:
+	"""Who this record could be assigned to.
+
+	Everybody who can sign in to this workspace. Not "everybody with a User
+	row": a disabled account and a website user are not colleagues, and Frappe's
+	own assignment dialog filters the same two out.
+
+	Bounded by the screen like every other read, so a space code somebody
+	guessed does not become a directory of the workspace.
+	"""
+	resolved = _resolve(space_code, screen)
+	if not resolved.get("doctype"):
+		return []
+
+	filters = {"enabled": 1, "user_type": "System User"}
+	found = frappe.get_all(
+		"User",
+		filters=filters,
+		or_filters=(
+			{"full_name": ["like", f"%{query}%"], "name": ["like", f"%{query}%"]}
+			if query else None
+		),
+		fields=["name", "full_name", "user_image"],
+		limit_page_length=ASSIGNEE_PAGE,
+		order_by="full_name asc",
+	)
+	return [
+		{"value": row["name"], "label": row["full_name"] or row["name"],
+		 "image": row["user_image"]}
+		for row in found
+	]
+
+
+@frappe.whitelist(methods=["POST"])
+def assign(space_code: str, screen: str, name: str, users: str | list) -> dict:
+	"""Set who this record is assigned to, whole.
+
+	A list rather than an add and a remove, because that is what the control
+	above it is: a set of people, edited. The difference is worked out here and
+	handed to Frappe's own `add` and `remove`, so every assignment still writes
+	the ToDo that puts the record in that person's own list — and every
+	unassignment still closes it.
+
+	Re-read at the end rather than reported from what was asked for: an id that
+	is not a user, one Frappe refuses, or a duplicate all end with the document
+	holding something other than the argument, and answering with the argument
+	is how a control ends up out of step with the record it edits.
+	"""
+	resolved = _resolve(space_code, screen)
+	doctype = resolved.get("doctype")
+	if not doctype:
+		frappe.throw(_("There is nothing to assign here."))
+
+	_assignable(doctype, name)
+
+	from frappe.desk.form.assign_to import add as assign_add, remove as assign_remove
+
+	wanted = frappe.parse_json(users) if isinstance(users, str) else (users or [])
+	wanted = [one for one in dict.fromkeys(wanted) if one]
+
+	held = frappe.parse_json(
+		frappe.db.get_value(doctype, name, "_assign") or "[]")
+	held = held if isinstance(held, list) else []
+
+	for one in wanted:
+		if one not in held:
+			assign_add({"doctype": doctype, "name": name, "assign_to": [one]})
+	for one in held:
+		if one not in wanted:
+			assign_remove(doctype, name, one)
+
+	after = frappe.db.get_value(doctype, name, "_assign")
+	return {"assigned": _people(after)}
+
+
+# --------------------------------------------------------------------------- #
 # Saved views, as named layouts
 #
 # Frappe's own answer to this is the `List Filter` doctype, and it is worth
@@ -2026,15 +2173,27 @@ LAYOUT_FIELDS = ("name", "label", "icon", "user", "is_default", "filters", "orde
 # works: it is text, so any of them renders. Frappe CRM tolerates an emoji here
 # for legacy reasons; for us it is the more capable of the two.
 VIEW_ICONS = (
-	"lucide-layout-grid", "lucide-users", "lucide-user-round",
-	"lucide-briefcase", "lucide-file-text", "lucide-receipt",
-	"lucide-wallet", "lucide-shopping-cart", "lucide-package",
-	"lucide-truck", "lucide-factory", "lucide-store", "lucide-calendar",
-	"lucide-clock", "lucide-message-square", "lucide-mail",
-	"lucide-phone", "lucide-chart-line", "lucide-chart-pie",
-	"lucide-database", "lucide-book-open", "lucide-graduation-cap",
-	"lucide-stethoscope", "lucide-wrench", "lucide-shield",
-	"lucide-sparkles",
+	# General
+	"lucide-layout-grid", "lucide-database",
+	"lucide-sparkles", "lucide-shield",
+	# People
+	"lucide-users", "lucide-user-round",
+	"lucide-graduation-cap", "lucide-stethoscope",
+	# Work
+	"lucide-briefcase", "lucide-calendar",
+	"lucide-clock", "lucide-wrench",
+	# Money
+	"lucide-file-text", "lucide-receipt",
+	"lucide-wallet", "lucide-shopping-cart",
+	# Goods
+	"lucide-package", "lucide-truck",
+	"lucide-factory", "lucide-store",
+	# Talking
+	"lucide-message-square", "lucide-mail",
+	"lucide-phone",
+	# Numbers
+	"lucide-chart-line", "lucide-chart-pie",
+	"lucide-book-open",
 )
 
 # Eight code points at most. One emoji is often several — a flag is two, a skin

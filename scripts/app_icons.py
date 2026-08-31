@@ -13,35 +13,64 @@ doctype as Select options (which is what stops a name outside it being saved).
 Both are generated from here, so they cannot drift.
 """
 
-# Grouped by what an app is, not by glyph, so the list stays choosable.
-SPACE_ICONS = [
-    "lucide-layout-grid",      # default / launcher
-    "lucide-users",            # CRM, contacts
-    "lucide-user-round",       # HR, people
-    "lucide-briefcase",        # projects, work
-    "lucide-file-text",        # documents, invoices
-    "lucide-receipt",          # billing, expenses
-    "lucide-wallet",           # finance, payments
-    "lucide-shopping-cart",    # commerce, orders
-    "lucide-package",          # inventory, stock
-    "lucide-truck",            # logistics, delivery
-    "lucide-factory",          # manufacturing
-    "lucide-store",            # retail, POS
-    "lucide-calendar",         # scheduling
-    "lucide-clock",            # timesheets, attendance
-    "lucide-message-square",   # chat, support
-    "lucide-mail",             # email, campaigns
-    "lucide-phone",            # telephony
-    "lucide-chart-line",       # analytics, reports
-    "lucide-chart-pie",        # dashboards
-    "lucide-database",         # data, records
-    "lucide-book-open",        # knowledge, docs
-    "lucide-graduation-cap",   # training, LMS
-    "lucide-stethoscope",      # healthcare
-    "lucide-wrench",           # maintenance, service
-    "lucide-shield",           # compliance, security
-    "lucide-sparkles",         # AI, automation
+# Grouped by what an app is, not by glyph, so the list stays choosable — and
+# the grouping is data rather than a comment now, because the picker draws it.
+#
+# The words beside each icon are what a person types to find it. They were
+# already written here as comments; a comment is not searchable, so they moved
+# into the tuple. Nobody looking for the sales app types "chart line".
+SPACE_ICON_GROUPS = [
+    ("General", [
+        ("lucide-layout-grid", ("grid", "launcher", "apps", "default", "home")),
+        ("lucide-database", ("data", "records", "storage", "table")),
+        ("lucide-sparkles", ("ai", "automation", "magic", "assistant")),
+        ("lucide-shield", ("compliance", "security", "policy", "audit")),
+    ]),
+    ("People", [
+        ("lucide-users", ("crm", "contacts", "customers", "people", "team")),
+        ("lucide-user-round", ("hr", "people", "staff", "employee", "person")),
+        ("lucide-graduation-cap", ("training", "lms", "learning", "course")),
+        ("lucide-stethoscope", ("healthcare", "medical", "clinic", "patient")),
+    ]),
+    ("Work", [
+        ("lucide-briefcase", ("projects", "work", "tasks", "jobs")),
+        ("lucide-calendar", ("scheduling", "calendar", "events", "bookings")),
+        ("lucide-clock", ("timesheets", "attendance", "hours", "time")),
+        ("lucide-wrench", ("maintenance", "service", "repairs", "field")),
+    ]),
+    ("Money", [
+        ("lucide-file-text", ("documents", "invoices", "quotes", "papers")),
+        ("lucide-receipt", ("billing", "expenses", "receipts", "claims")),
+        ("lucide-wallet", ("finance", "payments", "accounts", "money")),
+        ("lucide-shopping-cart", ("commerce", "orders", "sales", "shop")),
+    ]),
+    ("Goods", [
+        ("lucide-package", ("inventory", "stock", "items", "warehouse")),
+        ("lucide-truck", ("logistics", "delivery", "shipping", "fleet")),
+        ("lucide-factory", ("manufacturing", "production", "plant", "works")),
+        ("lucide-store", ("retail", "pos", "shop", "branch", "outlet")),
+    ]),
+    ("Talking", [
+        ("lucide-message-square", ("chat", "support", "helpdesk", "tickets")),
+        ("lucide-mail", ("email", "campaigns", "newsletter", "inbox")),
+        ("lucide-phone", ("telephony", "calls", "phone", "dialer")),
+    ]),
+    ("Numbers", [
+        ("lucide-chart-line", ("analytics", "reports", "trends", "metrics")),
+        ("lucide-chart-pie", ("dashboards", "insights", "breakdown", "share")),
+        ("lucide-book-open", ("knowledge", "docs", "wiki", "handbook", "notes")),
+    ]),
 ]
+
+# The flat list, in group order. Written out as literals in the SPA, which is
+# what makes the CSS exist, and written into the doctype as Select options,
+# which is what stops a name outside it being saved.
+SPACE_ICONS = [icon for _group, icons in SPACE_ICON_GROUPS for icon, _words in icons]
+
+# What each icon answers to, for the picker's search box.
+SPACE_ICON_WORDS = {
+    icon: words for _group, icons in SPACE_ICON_GROUPS for icon, words in icons
+}
 
 DEFAULT_SPACE_ICON = "lucide-layout-grid"
 

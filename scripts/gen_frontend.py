@@ -20,7 +20,9 @@ Run: python3 scripts/gen_frontend.py
 import json
 import os
 
-from app_icons import SPACE_ICONS, DEFAULT_SPACE_ICON
+from app_icons import (
+    DEFAULT_SPACE_ICON, SPACE_ICON_GROUPS, SPACE_ICONS,
+)
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 
@@ -2316,6 +2318,31 @@ export const SPACE_ICONS = [
 
 export const DEFAULT_SPACE_ICON = '{default_icon}'
 
+/**
+ * The same set, grouped, and with the words each icon answers to.
+ *
+ * The words were comments in `app_icons.py` before the picker had a search box,
+ * which made them exactly as useful as no words at all: nobody looking for the
+ * sales app types "chart line". Groups for the same reason — twenty-six glyphs
+ * in one grid is a wall, and the same twenty-six under seven headings is a
+ * list you can read.
+ */
+export const SPACE_ICON_GROUPS = {groups}
+
+/** Every icon whose name or words match, in group order. */
+export function findSpaceIcons(query) {{
+  const text = String(query || '').trim().toLowerCase()
+  return SPACE_ICON_GROUPS.map((group) => ({{
+    ...group,
+    icons: group.icons.filter(
+      (one) =>
+        !text ||
+        one.icon.includes(text) ||
+        one.words.some((word) => word.includes(text)),
+    ),
+  }})).filter((group) => group.icons.length)
+}}
+
 /** A name we know renders — for anything stored before the set was narrowed. */
 export function spaceIcon(name) {{
   return SPACE_ICONS.includes(name) ? name : DEFAULT_SPACE_ICON
@@ -2323,6 +2350,18 @@ export function spaceIcon(name) {{
 """.format(
     icon_literals="\n".join(f"  '{name}'," for name in SPACE_ICONS),
     default_icon=DEFAULT_SPACE_ICON,
+    groups=json.dumps(
+        [
+            {
+                "group": group,
+                "icons": [
+                    {"icon": icon, "words": list(words)} for icon, words in icons
+                ],
+            }
+            for group, icons in SPACE_ICON_GROUPS
+        ],
+        indent=2,
+    ),
 )
 
 

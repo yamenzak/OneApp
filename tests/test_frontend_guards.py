@@ -410,7 +410,14 @@ def test_no_local_component_shadows_a_frappe_ui_one():
 # there is nothing to compose it out of, and the alternative was importing
 # something it does not use to satisfy a test. Named one at a time on purpose:
 # the next file like it has to argue its case here rather than slip through.
-LAYOUT_ONLY = frozenset({"RecordPane.vue"})
+# `Resizer.vue` for the same reason: it is a hit area and a rule. The barrel
+# has no drag handle to compose it out of, and everything it does — the floor,
+# the ceiling, the keyboard, the width remembered per browser — is behaviour
+# rather than markup.
+# `FadedScroll.vue` is the third: a scroll box and two gradients. There is no
+# scroller in the barrel that fades its own edges, and what it does — measuring
+# whether there is content past each edge — is behaviour rather than markup.
+LAYOUT_ONLY = frozenset({"RecordPane.vue", "Resizer.vue", "FadedScroll.vue"})
 
 
 def test_local_components_compose_the_vocabulary():

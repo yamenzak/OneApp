@@ -113,20 +113,24 @@
           placeholder="Find a field"
           :label="`Add a column (${unused.length} left)`"
         />
-        <div class="flex max-h-64 flex-col gap-1 overflow-y-auto">
-          <Button
-            v-for="column in matching"
-            :key="column.fieldname"
-            variant="ghost"
-            class="justify-start"
-            :icon-left="column.icon"
-            :label="column.label"
-            @click="add(column)"
-          />
-          <p v-if="!matching.length" class="px-2 py-1 text-p-sm text-ink-gray-5">
-            Nothing matches “{{ search }}”.
-          </p>
-        </div>
+        <!-- Faded rather than clipped: a field name cut in half by a hard
+             edge reads as a rendering fault, not as "there is more below". -->
+        <FadedScroll class="max-h-64">
+          <div class="flex flex-col gap-1 pe-1">
+            <Button
+              v-for="column in matching"
+              :key="column.fieldname"
+              variant="ghost"
+              class="justify-start"
+              :icon-left="column.icon"
+              :label="column.label"
+              @click="add(column)"
+            />
+            <p v-if="!matching.length" class="px-2 py-1 text-p-sm text-ink-gray-5">
+              Nothing matches “{{ search }}”.
+            </p>
+          </div>
+        </FadedScroll>
       </div>
     </div>
 
@@ -139,6 +143,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { Button, Dialog, FormControl, Icon } from '@/ui'
+import FadedScroll from './FadedScroll.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },

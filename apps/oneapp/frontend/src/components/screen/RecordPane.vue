@@ -26,20 +26,20 @@
 
   <template v-else>
     <!--
-      The handle. Its own element rather than a border, because a 1px target is
-      a target nobody hits: this is 5px of grab area drawn as a 1px rule.
+      The handle, and everything about resizing with it: the floor, the
+      ceiling, the keyboard, the width remembered per browser. All of that
+      used to be written out here, which is fine for one resizable thing and
+      is why the sidebar never became one.
     -->
-    <div
-      data-slot="record-resizer"
-      role="separator"
-      aria-orientation="vertical"
-      :aria-label="`Resize the record, currently ${Math.round(width)} pixels`"
-      tabindex="0"
-      class="w-1.5 shrink-0 cursor-col-resize touch-none select-none border-l transition-colors hover:border-outline-gray-3"
-      :class="dragging ? 'border-outline-gray-3' : 'border-outline-gray-2'"
-      @pointerdown="grab"
-      @keydown="nudge"
-      @dblclick="reset"
+    <Resizer
+      v-model="width"
+      :min="MIN"
+      :default-size="DEFAULT"
+      :max-share="maxShare"
+      side="left"
+      label="the record"
+      remember="onespace.record-pane"
+      slot-name="record-resizer"
     />
 
     <div
@@ -53,10 +53,11 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { ref } from 'vue'
+import Resizer from './Resizer.vue'
 import { useIsMobile } from '@/lib/screen'
 
-const props = defineProps({
+defineProps({
   /** How wide the pane may get, as a share of the window. */
   maxShare: { type: Number, default: 0.6 },
 })
@@ -70,89 +71,6 @@ const phone = useIsMobile()
 // labels wrap and the pane is a column of hyphens.
 const MIN = 360
 const DEFAULT = 480
-const REMEMBERED = 'onespace.record-pane'
 
-// Remembered per person, in this browser. Not on the server: how wide somebody
-// likes a pane is a property of the screen they are sitting at, and syncing it
-// would make a laptop and a monitor argue.
-const stored = () => {
-  try {
-    return Number(window.localStorage.getItem(REMEMBERED)) || 0
-  } catch {
-    // A private window, or site data turned off. A default is a fine answer.
-    return 0
-  }
-}
-
-const width = ref(Math.max(MIN, stored() || DEFAULT))
-const dragging = ref(false)
-
-const ceiling = computed(() => Math.max(MIN, window.innerWidth * props.maxShare))
-
-const put = (next) => {
-  width.value = Math.min(Math.max(next, MIN), ceiling.value)
-}
-
-const remember = () => {
-  try {
-    window.localStorage.setItem(REMEMBERED, String(Math.round(width.value)))
-  } catch {
-    // Nothing to do about it, and nothing worth saying: the pane still works.
-  }
-}
-
-let start = 0
-let from = 0
-
-const move = (event) => {
-  // Dragging left widens: the handle is on the pane's left edge.
-  put(from + (start - event.clientX))
-}
-
-const release = () => {
-  dragging.value = false
-  window.removeEventListener('pointermove', move)
-  window.removeEventListener('pointerup', release)
-  remember()
-}
-
-const grab = (event) => {
-  event.preventDefault()
-  dragging.value = true
-  start = event.clientX
-  from = width.value
-  window.addEventListener('pointermove', move)
-  window.addEventListener('pointerup', release)
-}
-
-// The same handle from the keyboard, because a drag is not something everybody
-// can do. A separator with a tabindex and no keys is a promise the page does
-// not keep.
-const nudge = (event) => {
-  const step = event.shiftKey ? 64 : 16
-  if (event.key === 'ArrowLeft') put(width.value + step)
-  else if (event.key === 'ArrowRight') put(width.value - step)
-  else if (event.key !== 'Home') return
-  else put(DEFAULT)
-  event.preventDefault()
-  remember()
-}
-
-const reset = () => {
-  put(DEFAULT)
-  remember()
-}
-
-// A window that shrank below what the pane was given leaves the list with no
-// room at all, so the ceiling is applied again rather than only on drag.
-const fit = () => put(width.value)
-window.addEventListener('resize', fit)
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', fit)
-  release()
-})
-
-watch(phone, (yes) => {
-  if (yes) release()
-})
+const width = ref(DEFAULT)
 </script>

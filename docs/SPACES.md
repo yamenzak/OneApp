@@ -428,6 +428,27 @@ What the grid does beyond drawing rows:
 
 None of it is declared anywhere. A doctype with a child table gets all of it.
 
+## Assignment is a thing you do to a record
+
+Frappe's own model, unchanged: `_assign` is a list of user ids on the document,
+and `frappe.desk.form.assign_to` keeps a ToDo beside each one so the record
+turns up in that person's own list rather than only on their avatar. Both
+halves matter, so the framework's functions do the writing and OneSpace only
+decides who may ask.
+
+It is not a field. It is not on the doctype, it is not in the form, there is no
+column for it — so it sits with the other things you do to a record: a stack of
+faces in the record's header, beside the actions and the heart. Read permission
+is enough to assign, deliberately: assigning is how work reaches somebody, and
+a reader who can see a record and cannot ask a colleague to look at it sends an
+email instead. Frappe draws the same line.
+
+The picker offers everybody who can sign in to this workspace — enabled System
+Users, which is what the desk's own dialog filters to — bounded by the screen
+like every other read, so a guessed space code is not a directory. The set is
+sent whole and the difference worked out on the server, and what comes back is
+what the document ended up holding rather than what was asked for.
+
 ## The board is the same list, drawn as columns
 
 A screen that names a `status_field` may offer `board`. It is the same rows —

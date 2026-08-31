@@ -297,7 +297,7 @@
             :order-by="order || spec.order_by"
             :favourites="favourites"
             :counted="counted"
-            :group-by="groupBy"
+            :group-by="groupedBy"
             @open="open"
             @like="like"
             @sort="sortBy"
@@ -499,6 +499,9 @@ const order = ref('')
 const chosenColumns = ref([])
 const favourites = ref(false)
 const groupBy = ref('')
+// The same question, answered by the last page that arrived rather than by the
+// control. See `loadRows`.
+const groupedBy = ref('')
 
 const space = computed(() =>
   (session.spaces || []).find((one) => one.space_code === props.spaceCode),
@@ -1009,6 +1012,13 @@ const loadRows = async () => {
     // header list that does not follow leaves a column standing over empty
     // cells.
     columns.value = page?.columns || spec.value.columns || []
+    // What the rows actually came back grouped by, which is not always what
+    // the picker says: pressing Done sets the local answer immediately, and
+    // the list would group the rows it still has — in the old order — into
+    // headings that repeat, for as long as the request takes. The server sorts
+    // by the group column, so the heading appears when the rows sorted for it
+    // do.
+    groupedBy.value = page?.group_by || ''
     hasMore.value = !!page?.has_more
     countRows()
   } catch (error) {

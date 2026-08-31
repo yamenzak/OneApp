@@ -203,6 +203,27 @@ export const workspace = {
       { successMessage: 'Added' },
     ),
 
+  // Who a record is assigned to, and who it could be.
+  //
+  // Frappe's own model: `_assign` is a list of user ids on the document and a
+  // ToDo sits beside each one, so assigning is how a record reaches somebody's
+  // own list rather than only somebody's avatar. Both halves are the server's
+  // — this sends a set of people and reads back what the document ended up
+  // holding.
+  assignees: (spaceCode, screen, query) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.assignees',
+      { space_code: spaceCode, screen, query },
+      { silent: true, method: 'GET' },
+    ),
+
+  assign: (spaceCode, screen, name, users) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.assign',
+      { space_code: spaceCode, screen, name, users },
+      { silent: true },
+    ),
+
   toggleLike: (spaceCode, screen, name) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.toggle_like',

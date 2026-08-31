@@ -29,16 +29,8 @@
         the document before it lets them into it, so this is not a way to watch
         something you cannot open.
       -->
-      <div v-if="others.length" class="ms-auto flex shrink-0 items-center -space-x-1.5">
-        <!-- The gap between overlapping faces is drawn as a ring of the
-             surface behind them. A `ring-*` colour is not one of the theme's
-             tokens — they are background, text and outline — so it is a
-             padded background rather than a ring. -->
-        <Tooltip v-for="who in others" :key="who" :text="`${who} is looking at this too`">
-          <span data-slot="viewer" class="inline-flex rounded-full bg-surface-base p-0.5">
-            <Avatar :label="who" size="sm" />
-          </span>
-        </Tooltip>
+      <div v-if="others.length" class="ms-auto flex shrink-0 items-center">
+        <AvatarStack :people="watching" slot-name="viewer" />
       </div>
 
       <div class="flex shrink-0 items-center gap-1" :class="!others.length && 'ms-auto'">
@@ -52,6 +44,18 @@
           :screen="screen"
           :names="[record.name]"
           @ran="emit('reload')"
+        />
+        <!--
+          Who this is for. Beside the actions rather than in the form, because
+          assignment is not a field: it is not on the doctype, there is no
+          column for it, and it is a thing you do to a record.
+        -->
+        <AssignControl
+          :space-code="spaceCode"
+          :screen="screen"
+          :name="record.name"
+          :people="assigned"
+          @assigned="assigned = $event"
         />
         <!-- One icon, two themes: lucide ships no filled heart, so the colour
              is what says whether this is yours. -->
@@ -215,6 +219,8 @@ import {
   Tooltip,
   dayjsLocal,
 } from '@/ui'
+import AssignControl from './AssignControl.vue'
+import AvatarStack from './AvatarStack.vue'
 import RecordChip from './RecordChip.vue'
 import ScreenActions from './ScreenActions.vue'
 import RecordForm from './RecordForm.vue'
@@ -255,6 +261,19 @@ const liked = ref(false)
 // Everybody in the room but this reader — the desk does the same, because a
 // face saying "you are here" is a face saying nothing.
 const others = ref([])
+// The same shape every identity in this product is drawn from, so the faces in
+// the room and the faces on the assignment are one component. The room carries
+// ids and no more — Frappe's open-doc room is a list of users, not a query —
+// so the id is the label too.
+const watching = computed(() =>
+  others.value.map((who) => ({ value: who, label: who, image: null })),
+)
+
+// Who the record is assigned to, as the server resolved it. A ref rather than
+// a computed over the record, because the control writes it back: the answer
+// after an assignment is what the document ended up holding, and re-reading
+// the whole record to learn one list is a round trip for nothing.
+const assigned = ref([])
 // When somebody else last saved it, or empty. Set from the document's own
 // room rather than by polling.
 const staleSince = ref('')
@@ -375,6 +394,7 @@ watch(
     error.value = ''
     Object.keys(form).forEach((key) => delete form[key])
     for (const field of fields.value) form[field.fieldname] = props.record?.[field.fieldname]
+    assigned.value = props.record?._assigned || []
     loadTimeline()
   },
   { immediate: true },
