@@ -3,11 +3,17 @@
 Registered via override_doctype_class. Falls back to Frappe's normal filesystem
 behaviour whenever R2 is not configured, so a site without R2 keys still works
 rather than failing every upload.
+
+Tenant sites only. `oneapp` is installed on the control plane too, for its
+shell and its Space runtime, and the override travels with the app — so
+without this the control site would silently acquire a tenant's storage
+arrangement for its own attachments. See `oneapp_core.site`.
 """
 
 import frappe
 from frappe.core.doctype.file.file import File
 
+from oneapp.oneapp_core import site
 from oneapp.oneapp_core.storage import r2
 
 
@@ -17,7 +23,7 @@ class OneSpaceFile(File):
 		if super_after:
 			super_after()
 
-		if not r2.is_configured() or self.is_folder:
+		if site.is_control() or not r2.is_configured() or self.is_folder:
 			return
 
 		self.move_to_r2()

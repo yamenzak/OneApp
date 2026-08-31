@@ -1,0 +1,156 @@
+"""Which kind of site this is, and the three things that depend on it.
+
+`oneapp` runs on a customer's workspace and on the control plane, where it is
+installed for its shell and its Space runtime rather than for anything a tenant
+needs. Nearly all of it behaves identically. These pin the handful of places
+that must not, and pin the mechanism itself — because the failure mode of
+getting this wrong is silent on both sides: a control site quietly acquiring a
+tenant's storage arrangement, or a tenant quietly losing it.
+"""
+
+import ast
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parent.parent
+SITE = ROOT / "apps/oneapp/oneapp/oneapp_core/site.py"
+FILE_OVERRIDE = ROOT / "apps/oneapp/oneapp/oneapp_core/storage/file.py"
+SYNC = ROOT / "apps/oneapp/oneapp/oneapp_core/sync.py"
+
+
+@pytest.fixture
+def site(stub_frappe):
+	import sys
+
+	for name in list(sys.modules):
+		if name.startswith("oneapp.oneapp_core"):
+			del sys.modules[name]
+	from oneapp.oneapp_core import site as module
+
+	return module
+
+
+def test_a_site_that_says_nothing_is_a_tenant(site, stub_frappe):
+	"""Every site that exists today is one, and a migration that requires
+	touching every site_config is a migration that will be half-done
+	forever."""
+	stub_frappe.conf = {}
+	assert site.is_tenant()
+	assert not site.is_control()
+
+
+def test_a_site_may_say_it_is_the_control_plane(site, stub_frappe):
+	stub_frappe.conf = {"oneapp_role": "control"}
+	assert site.is_control()
+	assert not site.is_tenant()
+
+
+def test_case_and_padding_are_forgiven(site, stub_frappe):
+	""" "Control" in a config file is not ambiguous about what it meant."""
+	for value in ("Control", "  control  ", "CONTROL"):
+		stub_frappe.conf = {"oneapp_role": value}
+		assert site.is_control(), value
+
+
+def test_a_value_nobody_recognises_is_a_tenant(site, stub_frappe):
+	"""A typo must not silently turn a customer's workspace into something
+	else. The safe direction is the one every existing site is already in."""
+	for value in ("conrol", "", None, "operator", "control plane"):
+		stub_frappe.conf = {"oneapp_role": value}
+		assert site.is_tenant(), value
+
+
+def test_the_role_is_declared_rather_than_derived():
+	"""Asking "is oneapp_control installed?" would make a safety property a
+	consequence of an app list, and its failure mode is silence: install an app
+	for an unrelated reason and a customer's attachments stop going to R2."""
+	source = SITE.read_text()
+	assert "installed_apps" not in source
+	assert "get_installed_apps" not in source
+	assert 'frappe.conf.get("oneapp_role")' in source
+
+
+def test_it_is_a_different_question_from_being_provisioned():
+	"""A site can be a tenant and not yet have its identity — that is an
+	orphan, and worth telling apart from a site never meant to have one.
+
+	Checked as a call rather than as a word, because the reason the two are
+	separate is worth writing down in the module and a substring search would
+	then fail on its own explanation.
+	"""
+	called = {
+		node.func.attr
+		for node in ast.walk(ast.parse(SITE.read_text()))
+		if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+	}
+	assert "is_provisioned" not in called
+
+
+# --------------------------------------------------------------------------- #
+# What the role actually gates
+# --------------------------------------------------------------------------- #
+
+def test_the_r2_override_is_tenant_only():
+	"""The override travels with the app, so without this the control site
+	would silently acquire a tenant's storage arrangement."""
+	source = FILE_OVERRIDE.read_text()
+	assert "site.is_control()" in source
+	body = source[source.index("def after_insert"):source.index("def move_to_r2")]
+	assert "site.is_control()" in body, "the gate is not on the path that uploads"
+
+
+@pytest.mark.parametrize("function", [
+	"sync_from_control_plane",
+	"report_usage_to_control_plane",
+])
+def test_the_tenant_scheduler_jobs_stand_down_on_the_control_plane(function):
+	"""It has no control plane to ask. Left ungated they would write a
+	misleading "not provisioned" error onto the singleton every fifteen
+	minutes."""
+	# By AST rather than by slicing to the next `def `: the last function in a
+	# module has no next one, and the string version failed on exactly that.
+	tree = ast.parse(SYNC.read_text())
+	node = next(
+		n for n in ast.walk(tree)
+		if isinstance(n, ast.FunctionDef) and n.name == function
+	)
+	body = ast.unparse(node)
+
+	assert "site.is_control()" in body, f"{function} runs on the control plane"
+	assert "not_a_tenant" in body, (
+		f"{function} should say why it stood down, and not by claiming the site "
+		"is unprovisioned — that is a different thing"
+	)
+
+
+def test_every_scheduled_tenant_job_is_accounted_for():
+	"""The list that would otherwise drift. A job added to hooks and not
+	considered here runs on the control plane and nobody finds out."""
+	hooks = ast.parse((ROOT / "apps/oneapp/oneapp/hooks.py").read_text())
+	events = next(
+		ast.literal_eval(node.value)
+		for node in ast.walk(hooks)
+		if isinstance(node, ast.Assign)
+		and any(getattr(t, "id", None) == "scheduler_events" for t in node.targets)
+	)
+
+	scheduled = set()
+	for value in events.values():
+		if isinstance(value, dict):
+			for entries in value.values():
+				scheduled |= set(entries)
+		else:
+			scheduled |= set(value)
+
+	# Gated above, and the two that are correct on any site: measuring this
+	# site's own database says nothing to anybody else.
+	known = {
+		"oneapp.oneapp_core.sync.sync_from_control_plane",
+		"oneapp.oneapp_core.sync.report_usage_to_control_plane",
+		"oneapp.oneapp_core.storage.quota.refresh_database_verdict",
+	}
+	assert scheduled == known, (
+		"a scheduled job was added or renamed; decide whether it should run on "
+		"the control plane and then add it here"
+	)

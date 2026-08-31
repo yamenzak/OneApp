@@ -11,7 +11,7 @@ import json
 import frappe
 from frappe.utils import now_datetime
 
-from oneapp.oneapp_core import control_client
+from oneapp.oneapp_core import control_client, site
 
 CACHE_KEY = "onespace_site_state"
 CACHE_TTL = 300
@@ -92,6 +92,12 @@ def invalidate():
 
 def sync_from_control_plane() -> dict:
 	"""Pull entitlements, quotas and balance. Scheduled, and callable on demand."""
+	if site.is_control():
+		# The control plane has no control plane to ask. Answered here rather
+		# than left to fail as "not provisioned", which is a different thing and
+		# would leave a misleading error on the singleton every fifteen minutes.
+		return {"ok": True, "reason": "not_a_tenant"}
+
 	doc = frappe.get_single("OneSpace Site State")
 
 	if not control_client.is_provisioned():
@@ -575,6 +581,8 @@ def all_managed_roles() -> list[str]:
 
 def report_usage_to_control_plane() -> dict:
 	"""Push storage and seat counts upward."""
+	if site.is_control():
+		return {"ok": True, "reason": "not_a_tenant"}
 	if not control_client.is_provisioned():
 		return {"ok": False, "reason": "not_provisioned"}
 
