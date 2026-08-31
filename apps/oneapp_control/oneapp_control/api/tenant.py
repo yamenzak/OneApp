@@ -74,6 +74,9 @@ def sync():
 			"database_quota_bytes": tenant.database_quota_bytes,
 			"max_users": tenant.max_users,
 			"background_workers": tenant.background_workers,
+			# How often this workspace copies itself into R2. The site owns the
+			# schedule because it owns the files; the plan owns the number.
+			"backups_per_day": int(tenant.terms.get("backups_per_day") or 0),
 		},
 		"spaces": registry.spaces_for_tenant(tenant_name),
 		"modules": registry.entitled_modules(tenant_name),
@@ -211,6 +214,53 @@ def _maybe_warn(tenant):
 			frappe.cache().set_value(key, 1, expires_in_sec=7 * 24 * 3600)
 		elif fraction < WARN_FRACTION and warned:
 			frappe.cache().delete_value(key)
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def report_backup():
+	"""Take delivery of a backup result, good or bad.
+
+	Recorded on the tenant rather than only logged, because "when did this
+	workspace last have a restorable copy" is a question an operator has to be
+	able to answer per workspace and across the fleet at once. A failure clears
+	nothing — the last good backup stays the last good backup, and the error sits
+	beside it.
+	"""
+	tenant_name = _authenticate()
+	data = _body()
+
+	from oneapp_control.lifecycle import events
+
+	if data.get("ok"):
+		frappe.db.set_value(
+			"Tenant",
+			tenant_name,
+			{
+				"last_backup_on": frappe.utils.now_datetime(),
+				"last_backup_key": (data.get("key") or "")[:140],
+				"last_backup_bytes": float(data.get("bytes") or 0),
+				"last_backup_error": None,
+			},
+		)
+		events.record(
+			tenant_name,
+			"Backup Taken",
+			triggered_by="Tenant Site",
+			reason=data.get("key") or "",
+			detail={
+				"bytes": data.get("bytes"),
+				"with_files": data.get("with_files"),
+				"files": data.get("files"),
+			},
+		)
+		return {"ok": True}
+
+	error = (data.get("error") or "Backup failed")[:1000]
+	frappe.db.set_value("Tenant", tenant_name, "last_backup_error", error)
+	events.record(
+		tenant_name, "Backup Failed", triggered_by="Tenant Site", reason=error
+	)
+	return {"ok": True, "recorded": "failure"}
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])

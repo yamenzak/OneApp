@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "apps/oneapp/oneapp/oneapp_core/site.py"
 FILE_OVERRIDE = ROOT / "apps/oneapp/oneapp/oneapp_core/storage/file.py"
 SYNC = ROOT / "apps/oneapp/oneapp/oneapp_core/sync.py"
+BACKUP = ROOT / "apps/oneapp/oneapp/oneapp_core/backup.py"
 
 
 @pytest.fixture
@@ -100,17 +101,21 @@ def test_the_r2_override_is_tenant_only():
 	assert "site.is_control()" in body, "the gate is not on the path that uploads"
 
 
-@pytest.mark.parametrize("function", [
-	"sync_from_control_plane",
-	"report_usage_to_control_plane",
+@pytest.mark.parametrize("module,function", [
+	(SYNC, "sync_from_control_plane"),
+	(SYNC, "report_usage_to_control_plane"),
+	# The control plane has no tenant to back up on anybody's behalf, and it is
+	# not the control plane's own backup — that is Frappe Cloud's job for the
+	# site this all runs on.
+	(BACKUP, "scheduled_backup"),
 ])
-def test_the_tenant_scheduler_jobs_stand_down_on_the_control_plane(function):
+def test_the_tenant_scheduler_jobs_stand_down_on_the_control_plane(module, function):
 	"""It has no control plane to ask. Left ungated they would write a
 	misleading "not provisioned" error onto the singleton every fifteen
 	minutes."""
 	# By AST rather than by slicing to the next `def `: the last function in a
 	# module has no next one, and the string version failed on exactly that.
-	tree = ast.parse(SYNC.read_text())
+	tree = ast.parse(module.read_text())
 	node = next(
 		n for n in ast.walk(tree)
 		if isinstance(n, ast.FunctionDef) and n.name == function
@@ -148,6 +153,7 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 	known = {
 		"oneapp.oneapp_core.sync.sync_from_control_plane",
 		"oneapp.oneapp_core.sync.report_usage_to_control_plane",
+		"oneapp.oneapp_core.backup.scheduled_backup",
 		"oneapp.oneapp_core.storage.quota.refresh_database_verdict",
 	}
 	assert scheduled == known, (

@@ -100,6 +100,11 @@ scheduler_events = {
 		# systems with an opinion about the same number drift the first time a
 		# checkout is abandoned after the code was applied.
 		"oneapp_control.billing.promos.refresh_redemptions",
+		# Expire each workspace's old backups, and notice the ones that have
+		# quietly stopped arriving. Here rather than on the tenant because both
+		# have to keep working for a site that is suspended, off, or gone —
+		# which is exactly when the site cannot do them.
+		"oneapp_control.lifecycle.backups.scheduled_run",
 	],
 }
 

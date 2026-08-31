@@ -87,6 +87,11 @@ scheduler_events = {
 	},
 	"hourly": [
 		"oneapp.oneapp_core.sync.report_usage_to_control_plane",
+		# Backups, into R2, on the frequency the plan bought. Hourly rather than
+		# daily because the frequency is a plan term and cannot be a cron line:
+		# this wakes every hour and decides whether this hour is one of the
+		# slots. See `oneapp_core/backup.py`.
+		"oneapp.oneapp_core.backup.scheduled_backup",
 		# Re-measures the database and caches the verdict the insert hook reads,
 		# so a workspace that frees space is unblocked without waiting out the
 		# cache, and one that fills up is caught within the hour.
