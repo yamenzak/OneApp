@@ -8,7 +8,16 @@
       </span>
     </div>
     <Progress class="mt-1.5" size="sm" :value="percent" :class="barClass" />
-    <p v-if="usage?.exceeded" class="mt-1.5 text-p-sm text-ink-red-3">
+    <!--
+      A workspace inside an overage window is over its limit and not blocked,
+      and the two things have to be said together. Without this the bar reads
+      "At the limit. Free some space" directly under an alert saying nothing is
+      blocked, and the customer believes whichever they read second.
+    -->
+    <p v-if="usage?.exceeded && graceUntil" class="mt-1.5 text-p-sm text-ink-amber-3">
+      Over the limit, but not blocked until {{ graceUntil }}.
+    </p>
+    <p v-else-if="usage?.exceeded" class="mt-1.5 text-p-sm text-ink-red-3">
       {{ exceededHint }}
     </p>
     <p v-else-if="usage?.warn" class="mt-1.5 text-p-sm text-ink-amber-3">
@@ -27,6 +36,9 @@ const props = defineProps({
   // 'bytes' for storage and database, 'count' for seats.
   format: { type: String, default: 'bytes' },
   exceededHint: { type: String, default: 'At the limit. Free some space or add more.' },
+  // Set while an overage window is open, and it changes what being over means:
+  // amber and a date rather than red and an instruction.
+  graceUntil: { type: String, default: '' },
 })
 
 const percent = computed(() => Math.min((props.usage?.fraction || 0) * 100, 100))
@@ -36,12 +48,15 @@ const percent = computed(() => Math.min((props.usage?.fraction || 0) * 100, 100)
 // the fill is the element inside `role="progressbar"` — `!` because the
 // component's own background class is on that same element.
 const barClass = computed(() => {
+  if (props.usage?.exceeded && props.graceUntil)
+    return '[&_[role=progressbar]>*]:!bg-surface-amber-5'
   if (props.usage?.exceeded) return '[&_[role=progressbar]>*]:!bg-surface-red-6'
   if (props.usage?.warn) return '[&_[role=progressbar]>*]:!bg-surface-amber-5'
   return ''
 })
 
 const valueClass = computed(() => {
+  if (props.usage?.exceeded && props.graceUntil) return 'text-ink-amber-3'
   if (props.usage?.exceeded) return 'text-ink-red-3'
   if (props.usage?.warn) return 'text-ink-amber-3'
   return 'text-ink-gray-7'

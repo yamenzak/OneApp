@@ -82,8 +82,12 @@
     <section>
       <h3 class="mb-3 text-base-medium text-ink-gray-8">Usage</h3>
       <div class="flex flex-col gap-4 rounded-6 border border-outline-gray-2 p-4">
-        <UsageBar label="File storage" :usage="data.usage.storage" />
-        <UsageBar label="Database" :usage="data.usage.database" />
+        <!--
+          The window applies to whichever resource is over, so it is passed to
+          both. A bar that is not over ignores it.
+        -->
+        <UsageBar label="File storage" :usage="data.usage.storage" :grace-until="graceLabel" />
+        <UsageBar label="Database" :usage="data.usage.database" :grace-until="graceLabel" />
         <UsageBar
           label="Members"
           :usage="data.usage.users"
@@ -140,7 +144,11 @@ import { computed, toRef } from 'vue'
 import { Alert, LoadingIndicator, List, ListRows, ListRow, ListCell, dayjsLocal } from '@/ui'
 import WorkspaceBar from './WorkspaceBar.vue'
 import { useWorkspace } from './workspace'
-import UsageBar from './UsageBar.vue'
+// The generated one, and the only one. `screens/account/` carried its own copy
+// from the port, identical to it — so an edit to the component the generator
+// owns changed nothing here, and the two rendered differently with no way to
+// see why from either file.
+import UsageBar from '../../components/UsageBar.vue'
 import { useOverview } from './customer'
 
 defineProps({ spaceCode: { type: String, default: '' }, screen: { type: String, default: '' } })
@@ -161,6 +169,7 @@ const grace = computed(() => {
 })
 
 const date = (value) => (value ? dayjsLocal(value).format('D MMMM YYYY') : '')
+const graceLabel = computed(() => date(grace.value))
 
 const exceeded = computed(() => {
   const usage = data.value?.usage || {}

@@ -1045,3 +1045,29 @@ def test_the_grid_has_exactly_one_scroller():
 	shell = SCREEN_HOST.read_text()
 	assert shell.count("overflow-y-auto") == 1
 	assert "overflow-auto" not in shell
+
+
+def test_no_component_is_shadowed_by_a_copy_in_a_screen():
+	"""One component, one behaviour.
+
+	`screens/account/` carried its own `UsageBar.vue`, identical to the one in
+	`components/` that the generator owns. Editing the generated one changed
+	nothing on the account screen, and nothing in either file said the other
+	existed — the two just rendered differently.
+
+	A screen may of course have components of its own. What it may not have is
+	one whose name is already taken in `components/`.
+	"""
+	offenders = []
+
+	for app in APPS:
+		frontend = ROOT / "apps" / app / "frontend"
+		shared = {p.name for p in (frontend / "src/components").glob("*.vue")}
+		for path in (frontend / "src/screens").rglob("*.vue"):
+			if path.name in shared:
+				offenders.append(path.relative_to(frontend).as_posix())
+
+	assert not offenders, (
+		"these shadow a component of the same name in components/: "
+		+ ", ".join(sorted(offenders))
+	)
