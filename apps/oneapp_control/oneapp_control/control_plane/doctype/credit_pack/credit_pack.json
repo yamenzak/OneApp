@@ -1,0 +1,151 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:pack_code",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "pack_code",
+  "pack_name",
+  "credits",
+  "is_active",
+  "sort_order",
+  "cb_pack_price",
+  "currency",
+  "amount",
+  "stripe_product_id",
+  "stripe_price_id",
+  "sync_error",
+  "sec_pack_copy",
+  "description",
+  "sec_pack_prices",
+  "prices"
+ ],
+ "fields": [
+  {
+   "description": "Stable id, e.g. credits-5k",
+   "fieldname": "pack_code",
+   "fieldtype": "Data",
+   "label": "Pack Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "pack_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Pack Name",
+   "reqd": 1
+  },
+  {
+   "description": "What the buyer receives. Never expires.",
+   "fieldname": "credits",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Credits",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
+  },
+  {
+   "default": "0",
+   "fieldname": "sort_order",
+   "fieldtype": "Int",
+   "label": "Sort Order"
+  },
+  {
+   "fieldname": "cb_pack_price",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "USD",
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount",
+   "reqd": 1
+  },
+  {
+   "fieldname": "stripe_product_id",
+   "fieldtype": "Data",
+   "label": "Stripe Product ID",
+   "read_only": 1
+  },
+  {
+   "description": "The current price. History is in Prices below.",
+   "fieldname": "stripe_price_id",
+   "fieldtype": "Data",
+   "label": "Stripe Price ID",
+   "read_only": 1
+  },
+  {
+   "description": "Why the last sync to Stripe did not finish. Saving again retries; the pack stays sellable on whatever price it already has.",
+   "fieldname": "sync_error",
+   "fieldtype": "Small Text",
+   "label": "Sync Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_pack_copy",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "What a customer reads next to the price.",
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "sec_pack_prices",
+   "fieldtype": "Section Break",
+   "label": "Prices"
+  },
+  {
+   "fieldname": "prices",
+   "fieldtype": "Table",
+   "label": "Prices",
+   "options": "Catalogue Price",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Credit Pack",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "pack_name",
+ "track_changes": 1
+}

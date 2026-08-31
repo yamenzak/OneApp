@@ -162,6 +162,9 @@ def handle_checkout_completed(obj: dict, record):
 	meta = obj.get("metadata") or {}
 
 	if meta.get("kind") == "storage_pack":
+		# Storage is an add-on now — bought per month on the subscription rather
+		# than outright. This stays because a session opened before the change
+		# can still be paid for afterwards, and the money has arrived either way.
 		if obj.get("payment_status") != "paid":
 			return
 		grant_storage_pack(tenant, int(meta.get("storage_gb") or 0), obj)
@@ -551,7 +554,14 @@ def apply_subscription_status(subscription):
 
 
 def grant_storage_pack(tenant: str, gb: int, checkout: dict):
-	"""Add-on storage is permanent — it is not a grant that expires."""
+	"""Honour a one-off storage purchase made before add-ons existed.
+
+	Storage is sold per month now, as a line on the subscription. Nothing opens
+	one of these sessions any more; this survives so that a checkout somebody had
+	open when the change shipped still delivers what they paid for. It lands in
+	`extra_storage_gb`, which is otherwise an operator's grant — permanent and
+	never billed again, which is exactly what they bought.
+	"""
 	if gb <= 0:
 		return
 

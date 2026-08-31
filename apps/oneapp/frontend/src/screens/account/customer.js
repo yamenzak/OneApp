@@ -25,7 +25,19 @@ export const customer = {
   packs: () => callMethod(method('packs'), {}, { silent: true }),
 
   buyCredits: (workspace, pack) => callMethod(method('buy_credits'), { workspace, pack }),
-  buyStorage: (workspace, pack) => callMethod(method('buy_storage'), { workspace, pack }),
+
+  // Storage is an add-on rather than a pack now: bought per month against the
+  // subscription, prorated, and released the same way. `addons` answers with the
+  // catalogue and what this workspace holds together, because a stepper needs
+  // both in the same render.
+  addons: (workspace) =>
+    callMethod(method('addons'), { workspace }, { silent: true, method: 'GET' }),
+  setAddon: (workspace, addon, quantity) =>
+    callMethod(
+      method('set_addon'),
+      { workspace, addon, quantity },
+      { successMessage: quantity ? 'Added — it is on your next invoice' : 'Released' },
+    ),
   billingPortal: (workspace) => callMethod(method('billing_portal'), { workspace }),
   // Ours, not the Stripe portal: the portal cannot know our quotas, so it would
   // sell a downgrade to a workspace already holding more than the smaller plan

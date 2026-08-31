@@ -13,6 +13,7 @@ from frappe.utils import now_datetime
 
 from oneapp_control import portal
 from oneapp_control.billing import addons as addon_catalogue
+from oneapp_control.billing import packs as pack_catalogue
 from oneapp_control.billing import plans as plan_catalogue
 from oneapp_control.billing import quotas, stripe_client
 
@@ -78,36 +79,38 @@ def start_subscription(tenant: str, plan: str, interval: str = "Monthly") -> dic
 
 
 @frappe.whitelist()
-def start_credit_pack(tenant: str, credits: float, amount: float,
-                      currency: str = "usd") -> dict:
-	"""Create a Checkout session for a one-off credit pack."""
+def start_credit_pack(tenant: str, pack: str) -> dict:
+	"""Create a Checkout session for a one-off credit pack.
+
+	The pack names itself and the catalogue supplies the price. Neither the size
+	nor the amount comes from the caller: accepting both would let anyone buy a
+	million credits for a penny, and accepting the size alone would still let
+	them buy the expensive pack at the cheap one's price.
+
+	A real Stripe Price rather than the inline `price_data` this used, so the
+	receipt names a product that exists and a reprice archives the old id like
+	everything else we sell.
+	"""
 	tenant_doc = frappe.get_doc("Tenant", tenant)
-	credits = float(credits)
-	amount = float(amount)
-
-	if credits <= 0 or amount <= 0:
-		frappe.throw(_("Credit pack must have a positive size and price."))
-
+	pack_doc = pack_catalogue.sellable(pack)
 	success_url, cancel_url = _urls(tenant)
 
 	session = stripe_client.create_checkout_session(
 		mode="payment",
-		line_items=[
-			{
-				"quantity": 1,
-				"price_data": {
-					"currency": currency,
-					"unit_amount": int(round(amount * 100)),
-					"product_data": {"name": f"{int(credits)} OneSpace credits"},
-				},
-			}
-		],
+		line_items=[{"price": pack_doc.stripe_price_id, "quantity": 1}],
 		success_url=success_url,
 		cancel_url=cancel_url,
 		customer_email=tenant_doc.owner_email,
 		client_reference_id=tenant,
-		payment_intent_data={"metadata": {"tenant": tenant, "credits": credits}},
-		metadata={"tenant": tenant, "credits": credits, "kind": "credit_pack"},
+		payment_intent_data={
+			"metadata": {"tenant": tenant, "credits": pack_doc.credits, "pack": pack}
+		},
+		metadata={
+			"tenant": tenant,
+			"credits": pack_doc.credits,
+			"pack": pack,
+			"kind": "credit_pack",
+		},
 	)
 
 	return {"url": session.get("url"), "id": session.get("id")}
@@ -258,34 +261,6 @@ def start_signup(request) -> dict:
 	)
 
 	return {"id": session.get("id"), "url": session.get("url")}
-
-
-def start_storage_pack(tenant: str, gb: int, amount: float, currency: str = "usd") -> dict:
-	"""One-off purchase of permanent extra storage."""
-	tenant_doc = frappe.get_doc("Tenant", tenant)
-	success_url, cancel_url = _urls(tenant)
-
-	session = stripe_client.create_checkout_session(
-		mode="payment",
-		line_items=[
-			{
-				"quantity": 1,
-				"price_data": {
-					"currency": currency,
-					"unit_amount": int(round(float(amount) * 100)),
-					"product_data": {"name": f"{int(gb)} GB additional storage"},
-				},
-			}
-		],
-		success_url=success_url,
-		cancel_url=cancel_url,
-		customer_email=tenant_doc.owner_email,
-		client_reference_id=tenant,
-		payment_intent_data={"metadata": {"tenant": tenant, "storage_gb": gb}},
-		metadata={"tenant": tenant, "storage_gb": gb, "kind": "storage_pack"},
-	)
-
-	return {"url": session.get("url"), "id": session.get("id")}
 
 
 @frappe.whitelist()

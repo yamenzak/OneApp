@@ -94,25 +94,50 @@ def test_listing_workspaces_is_scoped_to_the_session_user(endpoints):
 	assert '"owner_user": user' in listing
 
 
-@pytest.mark.parametrize("fn,table", [("buy_credits", "CREDIT_PACKS"), ("buy_storage", "STORAGE_PACKS")])
-def test_pack_purchases_do_not_trust_a_client_supplied_price(fn, table):
-	"""Taking both size and price from the caller would let anyone buy a million
-	credits, or a terabyte, for a penny."""
-	source = CUSTOMER_API.read_text()
-	body = source[source.index(f"def {fn}("):]
-	body = body[: body.index("@frappe.whitelist()")] if "@frappe.whitelist()" in body else body
+def code_of(path, name: str) -> str:
+	"""A function's statements, without its docstring.
 
-	assert table in body, f"{fn} must look the price up in {table}"
-	assert 'chosen["amount"]' in body, f"{fn} must charge the table price, not an argument"
-	assert "amount: float" not in body, f"{fn} must not accept an amount"
+	The prose says what the rule is and names the thing it forbids, so matching
+	on the whole source would find the very word the rule is about.
+	"""
+	import ast
+
+	source = path.read_text() if hasattr(path, "read_text") else path
+	fn = next(
+		n for n in ast.walk(ast.parse(source))
+		if isinstance(n, ast.FunctionDef) and n.name == name
+	)
+	return "\n".join(ast.unparse(n) for n in fn.body if not isinstance(n, ast.Expr))
+
+
+def test_a_pack_purchase_does_not_trust_a_client_supplied_price():
+	"""Taking both size and price from the caller would let anyone buy a million
+	credits for a penny — and taking the size alone would still let them buy the
+	expensive pack at the cheap one's price. So the caller names a code and
+	nothing else."""
+	body = code_of(CUSTOMER_API, "buy_credits")
+	assert "amount" not in body, "buy_credits passes an amount"
+	assert "credits" not in body, "buy_credits passes a size"
+	assert "checkout.start_credit_pack(tenant.name, pack)" in body
+
+
+def test_the_checkout_prices_a_pack_from_the_catalogue():
+	"""The receipt names a product that exists, and a reprice archives the old
+	Stripe id like everything else we sell — neither of which an inline
+	`price_data` amount can do."""
+	body = code_of(ROOT / "apps/oneapp_control/oneapp_control/billing/checkout.py",
+	               "start_credit_pack")
+	assert "pack_catalogue.sellable(pack)" in body
+	assert "price_data" not in body, "the amount is being built inline again"
+	assert "stripe_price_id" in body
 
 
 def test_storage_is_not_bought_with_credits():
 	"""Mixing the currencies means a large upload silently drains the AI budget
-	— a bill nobody can predict from their own behaviour."""
-	source = CUSTOMER_API.read_text()
-	body = source[source.index("def buy_storage("):]
-	assert "ledger" not in body[: body.index("@frappe.whitelist()")]
+	— a bill nobody can predict from their own behaviour. Storage is an add-on
+	on the subscription; credits are a pack. Neither path may reach the other."""
+	assert "ledger" not in code_of(CUSTOMER_API, "set_addon")
+	assert "storage" not in code_of(CUSTOMER_API, "buy_credits").lower()
 
 
 def test_customer_role_has_no_desk_access():

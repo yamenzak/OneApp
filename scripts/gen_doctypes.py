@@ -170,6 +170,48 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
+# Credit Pack — AI credits, bought once.
+#
+# The other half of how credits arrive. A plan grants some every period and they
+# expire at the end of it; a pack is bought outright and rolls over, which is
+# what makes it worth buying — `ledger.open_grants` spends the soonest-expiring
+# grant first and never-expiring purchases last.
+#
+# One price, not two: a pack is bought once, so it has no cadence. It still
+# carries the full price history, because repricing one has to archive the old
+# Stripe price like everything else.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Credit Pack",
+    autoname="field:pack_code",
+    title_field="pack_name",
+    fields=[
+        f("pack_code", reqd=1, unique=1, description="Stable id, e.g. credits-5k"),
+        f("pack_name", reqd=1, in_list_view=1),
+        f("credits", "Float", reqd=1, in_list_view=1,
+          description="What the buyer receives. Never expires."),
+        f("is_active", "Check", default="1"),
+        f("sort_order", "Int", default="0"),
+        column("cb_pack_price"),
+        f("currency", "Link", options="Currency", default="USD"),
+        f("amount", "Currency", reqd=1, in_list_view=1),
+        f("stripe_product_id", label="Stripe Product ID", read_only=1),
+        f("stripe_price_id", label="Stripe Price ID", read_only=1,
+          description="The current price. History is in Prices below."),
+        f("sync_error", "Small Text", read_only=1,
+          description="Why the last sync to Stripe did not finish. Saving again "
+                      "retries; the pack stays sellable on whatever price it "
+                      "already has."),
+        section("sec_pack_copy"),
+        f("description", "Small Text",
+          description="What a customer reads next to the price."),
+        section("sec_pack_prices", "Prices"),
+        f("prices", "Table", options="Catalogue Price", read_only=1),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
 # Add-on — extra quota, bought per month on the subscription.
 #
 # An add-on is a second recurring line on the same Stripe subscription, so the

@@ -18,7 +18,8 @@ import frappe
 from frappe import _
 
 from oneapp_control import portal
-from oneapp_control.billing import checkout, quotas, stripe_client
+from oneapp_control.billing import checkout
+from oneapp_control.billing import packs as pack_catalogue, quotas, stripe_client
 from oneapp_control.credits import ledger
 from oneapp_control.entitlements import registry
 
@@ -158,54 +159,28 @@ def invoices(workspace: str, limit: int = 24) -> list[dict]:
 	)
 
 
-# Packs live server-side so the amount charged is never client-supplied —
-# accepting both size and price would let anyone buy a million credits for a
-# penny.
-CREDIT_PACKS = [
-	{"code": "credits-1k", "credits": 1000, "amount": 10.0, "currency": "usd"},
-	{"code": "credits-5k", "credits": 5500, "amount": 50.0, "currency": "usd"},
-	{"code": "credits-12k", "credits": 12000, "amount": 100.0, "currency": "usd"},
-]
-
-# Storage is bought outright rather than drawn from credits: a large upload
-# silently draining the AI budget is a bill nobody can predict.
-STORAGE_PACKS = [
-	{"code": "storage-50", "gb": 50, "amount": 5.0, "currency": "usd"},
-	{"code": "storage-250", "gb": 250, "amount": 20.0, "currency": "usd"},
-	{"code": "storage-1000", "gb": 1000, "amount": 70.0, "currency": "usd"},
-]
-
-
 @frappe.whitelist()
 def packs() -> dict:
-	return {"credits": CREDIT_PACKS, "storage": STORAGE_PACKS}
+	"""What credit packs are for sale.
+
+	Read from the `Credit Pack` catalogue rather than a list in this file, so
+	changing a price is an edit an operator makes rather than a deploy. Storage
+	is not here any more: it is an add-on now, bought per month against the
+	subscription, and `addons()` below answers for it.
+	"""
+	return {"credits": pack_catalogue.offered()}
 
 
 @frappe.whitelist()
 def buy_credits(workspace: str, pack: str) -> dict:
+	"""Start checkout for a pack, named by code.
+
+	The code and nothing else. What it costs is looked up server-side, because
+	accepting an amount from the caller would let anyone buy a million credits
+	for a penny.
+	"""
 	tenant = require_workspace(workspace)
-	chosen = next((p for p in CREDIT_PACKS if p["code"] == pack), None)
-	if not chosen:
-		frappe.throw(_("Unknown credit pack."))
-
-	return checkout.start_credit_pack(
-		tenant.name,
-		credits=chosen["credits"],
-		amount=chosen["amount"],
-		currency=chosen["currency"],
-	)
-
-
-@frappe.whitelist()
-def buy_storage(workspace: str, pack: str) -> dict:
-	tenant = require_workspace(workspace)
-	chosen = next((p for p in STORAGE_PACKS if p["code"] == pack), None)
-	if not chosen:
-		frappe.throw(_("Unknown storage pack."))
-
-	return checkout.start_storage_pack(
-		tenant.name, gb=chosen["gb"], amount=chosen["amount"], currency=chosen["currency"]
-	)
+	return checkout.start_credit_pack(tenant.name, pack)
 
 
 @frappe.whitelist(methods=["GET"])
