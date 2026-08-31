@@ -108,6 +108,10 @@ def _make_frappe():
 		return value
 
 	frappe.parse_json = parse_json
+	# Frappe's own, near enough: it serialises with a default that stringifies
+	# dates. A plain `json.dumps` raises on the datetimes that turn up in a
+	# lifecycle detail block, which would fail in the test and not in production.
+	frappe.as_json = lambda value, **k: __import__("json").dumps(value, default=str)
 	frappe.get_traceback = lambda *a, **k: ""
 
 	def get_attr(path):

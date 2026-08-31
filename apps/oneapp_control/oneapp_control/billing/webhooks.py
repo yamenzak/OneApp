@@ -527,24 +527,57 @@ def grant_period_credits(subscription, period_end):
 def apply_subscription_status(subscription):
 	"""Translate billing state into tenant lifecycle.
 
-	Suspension is deliberately conservative: Past Due does nothing, because
-	Stripe is still retrying and cutting a paying customer off mid-dunning is
-	worse than carrying them for a few more days.
+	Stripe decides *when* a workspace stops being paid for; the ladder in
+	`oneapp_control.lifecycle.sweep` decides what follows, and this is the seam
+	between the two. Past Due still does nothing to the site — Stripe is retrying
+	and cutting a customer off mid-dunning is worse than carrying them — but it
+	now starts the clock here rather than waiting for tomorrow's sweep, so the
+	first email goes out within minutes of the failure instead of within a day.
+
+	Recovery is immediate for the same reason in reverse: somebody who has just
+	paid should not wait on a nightly job to get their workspace back.
 	"""
-	from oneapp_control.provisioning import runner
+	from oneapp_control.lifecycle import sweep
 
 	tenant = frappe.get_doc("Tenant", subscription.tenant)
 
-	if subscription.status in ("Active", "Trialing"):
-		if tenant.status == "Suspended":
-			runner.enqueue(
-				tenant.name,
-				"Resume Site",
-				idempotency_key=f"resume:{tenant.name}:{subscription.name}",
-			)
+	if tenant.lifecycle_hold:
 		return
 
+	if subscription.status in ("Active", "Trialing"):
+		if tenant.dunning_started_on or tenant.status in ("Suspended", "Archived"):
+			sweep.recover(tenant, triggered_by="Webhook")
+		return
+
+	if subscription.status in sweep.UNPAID and not tenant.dunning_started_on:
+		sweep.start(
+			tenant,
+			reason=f"Stripe reports the subscription as {subscription.status}.",
+			triggered_by="Webhook",
+		)
+
+	# A deliberate cancellation is not a missed payment: the customer asked for
+	# it, and carrying them through a grace period they did not want reads as us
+	# still billing. The site goes off now, and the rest of the ladder — archive,
+	# then purge — runs from the clock the same way.
 	if subscription.status == "Canceled" and tenant.status == "Active":
+		from oneapp_control.lifecycle import cold, events
+		from oneapp_control.provisioning import runner
+
+		# Last chance at a copy: a deactivated site is in maintenance mode, and
+		# Frappe's scheduler refuses to run at all under maintenance mode, so it
+		# can never make one afterwards.
+		cold.ensure(tenant.name, triggered_by="Webhook")
+
+		events.record(
+			tenant.name,
+			"Suspended",
+			triggered_by="Webhook",
+			reason="The customer cancelled the subscription.",
+			from_status=tenant.status,
+			to_status="Suspended",
+		)
+		tenant.db_set("dunning_stage", "Suspended")
 		runner.enqueue(
 			tenant.name,
 			"Suspend Site",

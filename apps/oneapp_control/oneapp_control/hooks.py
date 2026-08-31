@@ -105,6 +105,9 @@ scheduler_events = {
 		# have to keep working for a site that is suspended, off, or gone —
 		# which is exactly when the site cannot do them.
 		"oneapp_control.lifecycle.backups.scheduled_run",
+		# The ladder. Every rung is a comparison between two dates, so running
+		# this twice — or after a week of downtime — does the same thing once.
+		"oneapp_control.lifecycle.sweep.run",
 	],
 }
 

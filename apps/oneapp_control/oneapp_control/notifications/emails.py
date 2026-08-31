@@ -126,3 +126,180 @@ def domain_verified(tenant_name: str, domain: str):
 		f"{domain} is now live",
 		f'<p>{tenant.tenant_name} is now reachable at <a href="https://{domain}">{domain}</a>.</p>',
 	)
+
+
+# --------------------------------------------------------------------------- #
+# The lifecycle ladder
+# --------------------------------------------------------------------------- #
+# Six emails, and they are the only warning anybody gets before a workspace is
+# switched off and eventually destroyed. Two rules run through all of them:
+#
+# * **Always name the date.** "Soon" and "shortly" are what make somebody put an
+#   email aside. Every one of these says the day.
+# * **Never imply the data is already gone when it is not.** Suspended is not
+#   archived and archived is not purged, and somebody reading in a hurry will
+#   act on whichever they think it is.
+
+def _workspace(tenant_name: str):
+	return frappe.get_doc("Tenant", tenant_name)
+
+
+def _account_link() -> str:
+	url = frappe.db.get_single_value("OneSpace Control Settings", "control_plane_url") or ""
+	return f"{url.rstrip('/')}/one" if url else ""
+
+
+def _billing_line() -> str:
+	link = _account_link()
+	if not link:
+		return "<p>Update your card from your account area.</p>"
+	return f'<p><a href="{link}">Update your card</a> to put this right.</p>'
+
+
+@_safe
+def payment_failed(tenant_name: str, suspends_on: str):
+	"""The first one. The workspace is still working and nothing has happened yet."""
+	tenant = _workspace(tenant_name)
+	_send(
+		tenant.owner_email,
+		f"We could not take payment for {tenant.tenant_name}",
+		f"""
+		<p>The last payment for {tenant.tenant_name} did not go through. Your
+		   card issuer may have declined it, or the card may have expired.</p>
+		<p><strong>Nothing has changed yet.</strong> Your workspace is working
+		   normally, and we will keep trying the card. If it has not gone
+		   through by <strong>{suspends_on}</strong>, the workspace will be
+		   switched off until it does.</p>
+		{_billing_line()}
+		""",
+	)
+
+
+@_safe
+def suspension_warning(tenant_name: str, suspends_on: str):
+	"""The second. Close enough to act on, far enough to still have time."""
+	tenant = _workspace(tenant_name)
+	_send(
+		tenant.owner_email,
+		f"{tenant.tenant_name} will be switched off on {suspends_on}",
+		f"""
+		<p>We still have not been able to take payment for
+		   {tenant.tenant_name}.</p>
+		<p>On <strong>{suspends_on}</strong> the workspace will be switched off.
+		   Nothing is deleted — your data stays exactly as it is, and paying
+		   brings it back within a minute.</p>
+		{_billing_line()}
+		""",
+	)
+
+
+@_safe
+def suspended(tenant_name: str, archives_on: str, has_copy: bool = True):
+	"""It is off. Say plainly that the data is still there."""
+	tenant = _workspace(tenant_name)
+	_send(
+		tenant.owner_email,
+		f"{tenant.tenant_name} has been switched off",
+		f"""
+		<p>{tenant.tenant_name} is switched off because the subscription is
+		   unpaid. Nobody can sign in to it at the moment.</p>
+		<p><strong>Your data has not been touched.</strong> Paying brings the
+		   workspace back within a minute, exactly as you left it.</p>
+		<p>If it is still unpaid on <strong>{archives_on}</strong> we will remove
+		   the running site and keep a copy of everything instead. Bringing it
+		   back from there takes a few minutes rather than a minute, and we will
+		   write to you again before anything is deleted for good.</p>
+		{_billing_line()}
+		""",
+	)
+
+
+@_safe
+def archived(tenant_name: str, purge_after: str):
+	"""The site is gone. The copy is not, and the date it goes is the point."""
+	tenant = _workspace(tenant_name)
+	_send(
+		tenant.owner_email,
+		f"{tenant.tenant_name} has been archived",
+		f"""
+		<p>{tenant.tenant_name} has been unpaid long enough that we have removed
+		   the running site.</p>
+		<p><strong>We are holding a complete copy of it</strong> — your database,
+		   your files and your settings — until
+		   <strong>{purge_after}</strong>. Paying before then restores the whole
+		   workspace; it takes a few minutes rather than being instant.</p>
+		<p>After {purge_after} the copy and every file we hold for you are
+		   deleted permanently. We will write to you again before that happens.</p>
+		{_billing_line()}
+		""",
+	)
+
+
+@_safe
+def purge_warning(tenant_name: str, purge_after: str):
+	"""The last chance. Nothing after this is recoverable."""
+	tenant = _workspace(tenant_name)
+	_send(
+		tenant.owner_email,
+		f"Last chance: {tenant.tenant_name} is deleted on {purge_after}",
+		f"""
+		<p>On <strong>{purge_after}</strong> we permanently delete everything we
+		   hold for {tenant.tenant_name}: the database, every file, and every
+		   backup.</p>
+		<p><strong>This cannot be undone</strong>, and after that date we will
+		   not be able to recover your workspace even if you ask us to.</p>
+		<p>Paying before {purge_after} restores it in full.</p>
+		{_billing_line()}
+		""",
+	)
+
+
+@_safe
+def purged(tenant_name: str):
+	"""After the fact. Short, and it does not pretend anything can be done."""
+	tenant = _workspace(tenant_name)
+	_send(
+		tenant.owner_email,
+		f"{tenant.tenant_name} has been deleted",
+		f"""
+		<p>Everything we held for {tenant.tenant_name} has now been deleted, as
+		   we said it would be.</p>
+		<p>There is nothing left to restore. You are welcome to start a new
+		   workspace at any time, and it will begin empty.</p>
+		""",
+	)
+
+
+@_safe
+def restored(tenant_name: str):
+	tenant = _workspace(tenant_name)
+	url = f"https://{tenant.primary_domain or tenant.site_name}"
+	_send(
+		tenant.owner_email,
+		f"{tenant.tenant_name} is back",
+		f"""
+		<p>Thank you — your payment went through and
+		   {tenant.tenant_name} has been restored from the copy we were
+		   holding.</p>
+		<p>It is live again at <a href="{url}">{url}</a>, with your data as it
+		   was when the workspace was archived.</p>
+		""",
+	)
+
+
+@_safe
+def nothing_to_restore(tenant_name: str):
+	"""Paid, but there is no copy left. Says so rather than quietly doing nothing."""
+	tenant = _workspace(tenant_name)
+	_send(
+		tenant.owner_email,
+		f"About {tenant.tenant_name}",
+		f"""
+		<p>Your payment went through, but we are no longer holding a copy of
+		   {tenant.tenant_name} — it was deleted after the retention period we
+		   wrote to you about.</p>
+		<p>We have not charged you for a workspace we cannot bring back. Please
+		   reply to this email and we will sort out either a new workspace or a
+		   refund, whichever you would prefer.</p>
+		""",
+	)
