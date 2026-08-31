@@ -23,13 +23,23 @@
  *
  * `tests/test_settings_dialog_geometry.py` pins the values this compensates for.
  */
+/*
+ * Two dialogs need it, for the same reason and with the same fix: the settings
+ * dialog and the form dialog a record is created in. Both are full-screen on a
+ * phone and both pin a footer to the bottom of themselves, which only works if
+ * the bottom of themselves is the bottom of the screen. Dialog's `py-4` and
+ * `my-8` add 48px below that, so the pinned row lands off the bottom — measured
+ * as `viewport ratio 0` on a Pixel 7, with Create simply unreachable.
+ */
 @media (max-width: 639px) {
-  .dialog-scroll-container:has([data-oneapp='settings-dialog']) > div {
+  .dialog-scroll-container:has([data-oneapp='settings-dialog']) > div,
+  .dialog-scroll-container:has([data-oneapp='form-dialog']) > div {
     padding: 0;
     min-height: 100dvh;
   }
 
-  .dialog-scroll-container:has([data-oneapp='settings-dialog']) .dialog-content {
+  .dialog-scroll-container:has([data-oneapp='settings-dialog']) .dialog-content,
+  .dialog-scroll-container:has([data-oneapp='form-dialog']) .dialog-content {
     margin: 0;
     border-radius: 0;
   }
