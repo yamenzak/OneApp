@@ -79,8 +79,14 @@ def field(fieldname, fieldtype="Data", label=None, **kw):
 
 
 def meta(fields, title_field=None, **kw):
+	# Frappe's Meta is a Document, so `meta.get("name")` is how its own doctype
+	# name is read — which the resolver does for a label. A SimpleNamespace has
+	# no `.get`, and without one the failure is an AttributeError from inside
+	# the code under test rather than a missing label.
+	name = kw.get("name", "Thing")
 	return types.SimpleNamespace(
-		fields=fields, title_field=title_field,
+		fields=fields, title_field=title_field, name=name,
+		get=lambda key, default=None: {"name": name}.get(key, default),
 		image_field=kw.get("image_field"),
 		search_fields=kw.get("search_fields", ""),
 		sort_field=kw.get("sort_field", "modified"),
@@ -484,10 +490,33 @@ def test_a_field_above_this_users_permlevel_is_never_offered(spaceview):
 	assert "cost" in spaceview._offerable(privileged)
 
 
-def test_layout_and_child_tables_are_not_columns(spaceview):
+def test_layout_is_not_a_column(spaceview):
 	offerable = spaceview._offerable(TODO)
 	assert "sec_more" not in offerable, "a section break carries no value"
-	assert "items" not in offerable, "a child table is rows, not a value"
+
+
+def test_a_child_table_is_offered_to_the_record_and_kept_off_the_list(spaceview):
+	"""Rows are a real thing on a record and nothing at all in a cell one line
+	high — so it is offered, and `list_ok` is what keeps it out of the list and
+	its column picker.
+
+	It used to be excluded from `_offerable` outright, which is why
+	`Table MultiSelect` was mapped to a control nobody could reach: `_placed`
+	intersects the manifest with what is offered, so a screen naming one got
+	nothing at all.
+	"""
+	assert "items" in spaceview._offerable(TODO)
+
+	by_name = {c["fieldname"]: c for c in spaceview._columns(TODO, spaceview._offerable(TODO))}
+	assert by_name["items"]["list_ok"] is False
+	assert by_name["description"]["list_ok"] is True
+
+
+def test_a_password_is_not_a_column_either(spaceview):
+	"""Same rule, different reason: a value nobody may read is not a cell. The
+	point of `list_ok` is that this needed no new rule."""
+	fields = [field("secret", "Password", "Secret")]
+	assert spaceview._columns(meta(fields), ["secret"])[0]["list_ok"] is False
 
 
 def test_frappes_bookkeeping_is_still_out(spaceview):
@@ -1821,3 +1850,104 @@ def test_a_malformed_link_filter_narrows_nothing(spaceview):
 	assert spaceview._filter_rows('{"disabled": 0}', "Customer") == []
 	assert spaceview._filter_rows('[["Customer", "disabled"]]', "Customer") == []
 	assert spaceview._filter_rows(None, "Customer") == []
+
+
+# --------------------------------------------------------------------------- #
+# Child tables
+#
+# A list inside a record. Frappe grants access to child rows through the
+# parent, so the interesting questions are all about what a *row* may hold
+# rather than about whether the table may be read.
+# --------------------------------------------------------------------------- #
+
+ITEM = meta(
+	[
+		field("item", "Link", "Item", options="Item", in_list_view=1),
+		field("qty", "Int", "Quantity", in_list_view=1),
+		field("rate", "Currency", "Rate", in_list_view=1),
+		field("notes", "Small Text", "Notes"),
+		field("margin", "Currency", "Margin", permlevel=1),
+		field("parent", "Data", "Parent"),
+	],
+	title_field=None,
+)
+
+
+@pytest.fixture
+def parent(spaceview, stub_frappe):
+	"""A doctype with one child table, resolved."""
+	stub_frappe.db.exists = lambda dt, name=None: name == "Sales Item"
+	stub_frappe.has_permission = lambda dt, ptype=None, **kw: True
+	stub_frappe.get_meta = lambda dt: ITEM
+	fields = [field("items", "Table", "Items", options="Sales Item")]
+	columns = spaceview._columns(meta(fields), ["items"])
+	return {"doctype": "Sales Order", "space": "s", "all_columns": columns}
+
+
+def test_a_child_table_carries_the_child_doctypes_own_shape(spaceview, parent):
+	child = parent["all_columns"][0]["child"]
+	assert child["doctype"] == "Sales Item"
+	# The grid draws what the child marks `in_list_view`, which is the child
+	# doctype's own answer to what belongs in a row.
+	assert [c["fieldname"] for c in child["columns"]] == ["item", "qty", "rate"]
+	# And the form gets everything, so opening a row shows the fields the grid
+	# had no room for.
+	assert "notes" in [c["fieldname"] for c in child["fields"]]
+
+
+def test_a_child_rows_permlevel_is_honoured(spaceview, parent):
+	"""A grid is not a way around field permissions any more than a list is."""
+	child = parent["all_columns"][0]["child"]
+	assert "margin" not in [c["fieldname"] for c in child["fields"]]
+
+
+def test_frappes_bookkeeping_is_out_of_a_child_row_too(spaceview, parent):
+	child = parent["all_columns"][0]["child"]
+	assert "parent" not in [c["fieldname"] for c in child["fields"]]
+
+
+def test_a_child_table_is_never_asked_for_in_sql(spaceview, parent):
+	"""Its rows are in another table, so selecting it by name is a syntax
+	error rather than an empty cell — the same reason `__activity` is filtered
+	out here."""
+	assert "items" not in spaceview._fetch_fields(parent["all_columns"])
+
+
+def test_a_child_row_is_narrowed_to_what_the_child_offers(spaceview, parent):
+	"""Every key in every row goes through the child's own allowlist, so a row
+	naming `parent` or a permlevel field writes neither."""
+	changes = spaceview._child_changes(parent, {
+		"items": [
+			{"item": "A", "qty": 2, "parent": "somewhere-else", "margin": 999, "name": "row-1"},
+		],
+	})
+	assert changes == {"items": [{"item": "A", "qty": 2, "name": "row-1"}]}
+
+
+def test_a_child_rows_name_survives(spaceview, parent):
+	"""It is how Frappe tells an edited row from a new one. Without it every
+	save deletes and recreates the whole table, losing each row's identity and
+	anything attached to it."""
+	changes = spaceview._child_changes(parent, {"items": [{"item": "A", "name": "row-1"}]})
+	assert changes["items"][0]["name"] == "row-1"
+
+
+def test_a_payload_that_is_not_rows_is_ignored(spaceview, parent):
+	assert spaceview._child_changes(parent, {"items": "not rows"}) == {}
+	assert spaceview._child_changes(parent, {}) == {}
+
+
+def test_a_table_multiselect_resolves_like_a_child_table(spaceview, stub_frappe):
+	"""It is a child table whose rows hold one Link each, which is why it goes
+	through the same resolver — and why the control can find its own link
+	field rather than guessing at a name."""
+	stub_frappe.db.exists = lambda dt, name=None: name == "Tag Link"
+	stub_frappe.has_permission = lambda dt, ptype=None, **kw: True
+	stub_frappe.get_meta = lambda dt: meta(
+		[field("tag", "Link", "Tag", options="Tag", in_list_view=1)], title_field=None,
+	)
+	fields = [field("tags", "Table MultiSelect", "Tags", options="Tag Link")]
+	column = spaceview._columns(meta(fields), ["tags"])[0]
+
+	assert column["child"]["doctype"] == "Tag Link"
+	assert [c["fieldtype"] for c in column["child"]["fields"]] == ["Link"]

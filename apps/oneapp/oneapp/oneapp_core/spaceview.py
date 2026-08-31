@@ -124,7 +124,12 @@ def _columns(meta, wanted: list[str]) -> list[dict]:
 			"reqd": int(df.reqd or 0),
 			"read_only": int(df.read_only or 0),
 			"editable": (
-				fieldtypes.editable(df.fieldtype)
+				# A child table is a list of rows rather than a value, so
+				# `fieldtypes.editable` says False for it — correctly, because
+				# no control writes one field. The parent's save assigns the
+				# whole list, so the question here is only whether this field
+				# may be written at all.
+				(fieldtypes.editable(df.fieldtype) or df.fieldtype == "Table")
 				and not df.read_only
 				and (df.permlevel or 0) in writable
 			),
@@ -135,6 +140,18 @@ def _columns(meta, wanted: list[str]) -> list[dict]:
 			# Switch in a form and a tick in a list, which is why these are two
 			# separate answers rather than one.
 			"cell": fieldtypes.cell_for(df.fieldtype),
+			# Whether it belongs on a list at all.
+			#
+			# A child table is rows, an Attachment Gallery is a strip of
+			# pictures and a Password is a value nobody may read — each is a
+			# real thing on a record and nothing at all in a cell one line high.
+			# They are still offered, because the record renders them; the list
+			# and its column picker read this instead of the fieldtype, so the
+			# next one like them needs no new rule.
+			"list_ok": fieldtypes.cell_for(df.fieldtype) != "hidden",
+			# The doctype's own answer to "does this belong in a list", which
+			# a child table's grid reads to pick its columns.
+			"in_list_view": int(getattr(df, "in_list_view", 0) or 0),
 			"icon": fieldtypes.icon_for(df.fieldtype),
 			# The rest of what the doctype already says about presentation, so
 			# nobody has to repeat it in a manifest.
@@ -232,9 +249,68 @@ def _columns(meta, wanted: list[str]) -> list[dict]:
 			"ignore_user_permissions": int(
 				getattr(df, "ignore_user_permissions", 0) or 0
 			),
+			# A child table's own shape: which columns its grid draws, and the
+			# form a row opens into. Resolved here, on the server, inside the
+			# parent's payload — one resolve, where the permlevel filter and
+			# the offerable rules already live, rather than a second endpoint
+			# the browser would have to call per table per record.
+			"child": _child(df),
+			# A child table is written by assigning the whole list, which the
+			# parent's own save does — so it is editable exactly when the
+			# parent field is and the child doctype allows writing.
+
 		})
 
 	return columns
+
+
+# How many fields a child row's grid shows before it needs the form. Frappe's
+# own grid stops around here too: past it the columns are narrower than the
+# words in them, and the row is better read one at a time.
+CHILD_COLUMNS = 5
+
+
+def _child(df) -> dict | None:
+	"""The child doctype behind a Table field, as columns and a form.
+
+	Both, because a grid and an expanded row are two views of the same rows: the
+	grid draws the fields the child marks `in_list_view`, and opening one shows
+	the whole thing laid out the way the child doctype lays itself out. Reusing
+	`_columns` means every property in the parent's fields applies inside a row
+	too — `depends_on`, `reqd`, permlevel, the bounds — without a second
+	implementation to keep in step.
+
+	A `Table MultiSelect` is the same thing narrowed to one Link per row, so it
+	resolves through here as well and its control reads the single field out.
+
+	None for anything that is not a child table, and for a child doctype this
+	site does not have — the same tolerance `_columns` has for a field a
+	manifest names and a site lacks.
+	"""
+	if df.fieldtype not in ("Table", "Table MultiSelect"):
+		return None
+	target = df.options
+	if not target or not frappe.db.exists("DocType", target):
+		return None
+
+	meta = frappe.get_meta(target)
+	offered = _columns(meta, _offerable(meta))
+	by_name = {c["fieldname"]: c for c in offered}
+
+	listed = [c["fieldname"] for c in offered if c.get("in_list_view") and c["list_ok"]]
+	if not listed:
+		# Frappe's grid falls back to the first few editable fields when a child
+		# doctype marks none, and an empty grid is worse than an approximate one.
+		listed = [c["fieldname"] for c in offered if c["list_ok"]][:CHILD_COLUMNS]
+
+	return {
+		"doctype": target,
+		"label": _(meta.get("name")),
+		"columns": [by_name[name] for name in listed[:CHILD_COLUMNS]],
+		"fields": offered,
+		"form": _form(meta, by_name),
+		"editable": bool(frappe.has_permission(target, "write")),
+	}
 
 
 def _fetch_fields(columns: list[dict]) -> list[str]:
@@ -251,7 +327,18 @@ def _fetch_fields(columns: list[dict]) -> list[str]:
 	because whether somebody chose to *look* at the type field has nothing to do
 	with whether the link beside it can be resolved.
 	"""
-	wanted = [c["fieldname"] for c in columns if c["fieldname"] != META_COLUMN]
+	wanted = [
+		c["fieldname"] for c in columns
+		if c["fieldname"] != META_COLUMN
+		# A child table is rows in another table, so asking the database for it
+		# by name is a `SQL syntax` error rather than an empty cell — the same
+		# reason `__activity` is filtered here. Its rows are fetched separately,
+		# by `_with_children`.
+		and c["fieldtype"] not in ("Table", "Table MultiSelect")
+		# An Attachment Gallery holds nothing at all; there is no column behind
+		# it to select.
+		and c["fieldtype"] != "Attachment Gallery"
+	]
 	wanted += [
 		c["depends_on_field"] for c in columns
 		if c["fieldtype"] == "Dynamic Link" and c.get("depends_on_field")
@@ -277,7 +364,14 @@ def _offerable(meta, keep=()) -> list[str]:
 	  anywhere downstream — a screen cannot become a way around field-level
 	  permissions.
 	* **Frappe's bookkeeping stays out**, as it always has.
-	* **Layout and child tables stay out**: neither carries a value in a row.
+	* **Layout stays out**: it carries no value anywhere.
+
+	Child tables are offered here and kept off the *list* by `list_ok` on the
+	column rather than by being absent — a Table is rows, which is a real thing
+	to render on a record and nothing at all in a cell. They used to be excluded
+	outright, which is why `Table MultiSelect` was mapped to a control nobody
+	could ever reach: `_placed` intersects the manifest with what is offered,
+	so a screen naming one got nothing.
 	* **`hidden` is honoured.** A field the doctype hides holds plumbing nobody
 	  should be asked about — Frappe hides these for presentation, not for
 	  secrecy, so this is not a permission fix. It was still wrong: `hidden` was
@@ -298,7 +392,6 @@ def _offerable(meta, keep=()) -> list[str]:
 		for df in meta.fields
 		if df.fieldname not in HIDDEN
 		and not fieldtypes.is_layout(df.fieldtype)
-		and df.fieldtype not in ("Table", "Table MultiSelect")
 		and (df.permlevel or 0) in allowed
 		and (not getattr(df, "hidden", 0) or df.fieldname in keep)
 	]
@@ -584,12 +677,14 @@ def _resolve(space_code: str, screen: str | None = None,
 	# decides what is on by default; a person decides what they look at.
 	offerable = [*_columns(meta, _offerable(meta, keep=wanted)), _meta_column()]
 	offered = {c["fieldname"]: c for c in offerable}
+	# What the list may draw, which is not everything the record may show.
+	listable = {name: c for name, c in offered.items() if c.get("list_ok", True)}
 
 	# The manifest's list, plus activity at the end. Widths are defaults and
 	# nothing is pinned: where a column sticks is a reading preference, and
 	# guessing it for somebody is how the meta column ended up glued to an edge
 	# nobody asked for.
-	columns = _placed(offered, [c["fieldname"] for c in columns] + [META_COLUMN])
+	columns = _placed(listable, [c["fieldname"] for c in columns] + [META_COLUMN])
 
 	resolved.update({
 		"doctype": doctype,
@@ -599,7 +694,15 @@ def _resolve(space_code: str, screen: str | None = None,
 		# use, and it comes from the doctype rather than from the manifest.
 		"doctype_label": _(meta.get("name")),
 		"columns": columns,
+		# Everything the *record* may show, child tables included.
 		"all_columns": [{**c, "width": _default_width(c)} for c in offerable],
+		# What the column picker may offer, which is the subset a list can
+		# draw. Two lists rather than one flag read in three places: the picker
+		# is a list of columns, and handing it fields it must then filter out
+		# is how one of them eventually slips through.
+		"list_columns": [
+			{**c, "width": _default_width(c)} for c in offerable if c.get("list_ok", True)
+		],
 		"quick_filters": _quick_filters(meta, offerable),
 		**presentation(meta),
 		# What to ask the database for: the columns that are fields, plus the
@@ -912,7 +1015,42 @@ def record(space_code: str, screen: str, name: str) -> dict:
 
 	found = [_with_meta(row) for row in found]
 	_with_links(resolved, found)
+	_with_children(resolved, found[0], name)
 	return found[0]
+
+
+def _with_children(resolved: dict, row: dict, name: str) -> None:
+	"""The record's child rows, in place.
+
+	Read through the parent document rather than by querying the child doctype.
+	That is not a shortcut, it is the framework's own model: a child doctype has
+	no permissions of its own — Frappe grants access to child rows through the
+	parent, which is why `get_doc` returns them and why asking the child
+	directly means either an empty grid or `ignore_permissions`, and the second
+	is where User Permissions go to die.
+
+	Safe here because of the order. `record()` has already been through
+	`get_list` with the screen's filters and User Permissions applied, so by the
+	time this runs the reader has been *shown* they may read this record. Rows
+	belonging to a record you may read are rows you may read — and one `get_doc`
+	for every table beats one query each.
+
+	Only the fields the child offers travel. `get_doc` returns the whole row,
+	permlevel-protected fields included, and a grid is not a way around field
+	permissions any more than a list is.
+	"""
+	tables = [c for c in resolved.get("all_columns") or [] if c.get("child")]
+	if not tables:
+		return
+
+	doc = frappe.get_doc(resolved["doctype"], name)
+	for column in tables:
+		offered = [c["fieldname"] for c in column["child"]["fields"]]
+		wanted = list(dict.fromkeys(offered + ["name", "idx"]))
+		row[column["fieldname"]] = [
+			{key: child.get(key) for key in wanted}
+			for child in (doc.get(column["fieldname"]) or [])
+		]
 
 
 @frappe.whitelist(methods=["GET"])
@@ -1090,6 +1228,43 @@ def _writable(resolved: dict) -> set[str]:
 	return {c["fieldname"] for c in offered if c.get("editable")}
 
 
+def _child_changes(resolved: dict, values: dict) -> dict:
+	"""Child-table rows from the payload, narrowed to what the child offers.
+
+	Separate from `_writable` because a child table is not one field with one
+	value — it is a list of rows, and each row has its own allowlist. Frappe
+	replaces the whole table when you assign to it, so what arrives has to be
+	the complete list rather than a patch, and every key in every row is
+	checked against the child's own offered fields.
+
+	That check is the same one the parent gets and matters for the same reason:
+	the child's `_columns` has already dropped fields above this user's
+	permlevel and Frappe's bookkeeping, so a row naming `parent` or a
+	level-1 field writes neither.
+
+	`name` survives, and only `name`. It is how Frappe tells an edited row from
+	a new one — without it every save would delete and recreate the whole table,
+	losing each row's identity and anything attached to it.
+	"""
+	tables = {
+		c["fieldname"]: c for c in resolved.get("all_columns") or []
+		if c.get("child") and c["child"]["editable"] and c.get("editable")
+	}
+	changes = {}
+	for fieldname, column in tables.items():
+		rows = values.get(fieldname)
+		if not isinstance(rows, list):
+			continue
+		allowed = {
+			c["fieldname"] for c in column["child"]["fields"] if c.get("editable")
+		} | {"name", "idx"}
+		changes[fieldname] = [
+			{k: v for k, v in row.items() if k in allowed}
+			for row in rows if isinstance(row, dict)
+		]
+	return changes
+
+
 @frappe.whitelist(methods=["POST"])
 def save(space_code: str, screen: str, values: str | dict, name: str | None = None) -> dict:
 	"""Create or update one record, within what the screen declares."""
@@ -1107,6 +1282,7 @@ def save(space_code: str, screen: str, values: str | dict, name: str | None = No
 	# this screen may write, whatever arrives in the payload.
 	allowed = _writable(resolved)
 	changes = {k: v for k, v in values.items() if k in allowed}
+	changes.update(_child_changes(resolved, values))
 	if not changes:
 		frappe.throw(_("Nothing on this screen can be changed."))
 

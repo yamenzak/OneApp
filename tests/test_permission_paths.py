@@ -159,8 +159,16 @@ def test_permissions_are_only_ever_skipped_for_our_own_rows(tree):
 		named = _named_doctype(child)
 		# A method call on a document — `doc.save(ignore_permissions=True)` —
 		# is only ever reached after `_may_write`, which is the gate above.
+		#
+		# `frappe` is not a document. `frappe.get_all(something, …)` is an
+		# Attribute on a Name exactly like `doc.save(…)` is, so this exemption
+		# used to wave through any framework call whose doctype was a variable
+		# rather than a literal — which is the shape a child table's query
+		# takes, and the shape anything reaching for a doctype it computed
+		# takes. Named explicitly rather than by shape.
 		if named is None and isinstance(child.func, ast.Attribute):
-			if isinstance(child.func.value, ast.Name):
+			receiver = child.func.value
+			if isinstance(receiver, ast.Name) and receiver.id not in {"frappe"}:
 				continue
 		if isinstance(named, str) and (named.startswith(OURS) or named in FOLLOWS_A_DOCUMENT):
 			continue

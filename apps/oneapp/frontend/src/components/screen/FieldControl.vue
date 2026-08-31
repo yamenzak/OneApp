@@ -68,13 +68,23 @@
     @update:model-value="emit('update:modelValue', $event)"
   />
 
+  <!--
+    A Table MultiSelect is a child table whose rows hold one Link each, so what
+    a person edits is a list of ids and what Frappe stores is a list of rows.
+    The control shows the ids; `tagged` puts the rows back together.
+
+    It was mapped to this component and unreachable for as long as it has
+    existed: `_offerable` excluded child tables outright and `_placed`
+    intersects the manifest with what is offered, so a screen naming one got
+    nothing at all.
+  -->
   <MultiSelect
     v-else-if="component === 'MultiSelect'"
-    :model-value="Array.isArray(modelValue) ? modelValue : []"
+    :model-value="tags"
     :options="options"
     :label="field.label"
     :disabled="disabled"
-    @update:model-value="emit('update:modelValue', $event)"
+    @update:model-value="emit('update:modelValue', tagged($event))"
   />
 
   <!--
@@ -102,6 +112,20 @@
       </template>
     </FileUploader>
   </div>
+
+  <!--
+    A child table: rows of another doctype belonging to this record. The
+    control writes the whole list, which is how Frappe stores one.
+  -->
+  <ChildTable
+    v-else-if="field.fieldtype === 'Table' && field.child"
+    :rows="Array.isArray(modelValue) ? modelValue : []"
+    :field="field"
+    :space-code="spaceCode"
+    :screen="screen"
+    :disabled="disabled"
+    @update:rows="emit('update:modelValue', $event)"
+  />
 
   <!--
     A gallery of the record's own attachments. The field holds no value at all
@@ -281,6 +305,7 @@ import {
 } from '@/ui'
 import LinkPicker from './LinkPicker.vue'
 import AttachmentGallery from './AttachmentGallery.vue'
+import ChildTable from './ChildTable.vue'
 import { controlComponent, editorFormat, formControlType } from '../../lib/fields'
 
 // Built once for the module rather than per field: the kit is a static
@@ -445,4 +470,38 @@ const note = computed(() => {
 // list. A Link does not — its list is records, which the picker fetches from
 // the server behind the screen's own bounds.
 const options = computed(() => selectOptions.value)
+
+/**
+ * The one field a Table MultiSelect's rows actually carry.
+ *
+ * Frappe stores these as a child table whose child doctype has a single Link,
+ * so the value on the record is `[{link_field: 'ACME'}, …]` and what a person
+ * means is `['ACME', …]`. The fieldname comes from the child's own shape
+ * rather than being guessed at, so a doctype that named its column something
+ * other than the usual still works.
+ */
+const tagField = computed(() => {
+  const fields = props.field.child?.fields || []
+  const link = fields.find((one) => one.fieldtype === 'Link')
+  return link?.fieldname || ''
+})
+
+const tags = computed(() => {
+  const rows = Array.isArray(props.modelValue) ? props.modelValue : []
+  const key = tagField.value
+  // A list of plain strings is what this looked like before the rows arrived,
+  // and a draft that has not been saved yet may still be one.
+  return rows.map((row) => (typeof row === 'string' ? row : row?.[key])).filter(Boolean)
+})
+
+// Rows back out, keeping each one's identity where it had one: without `name`
+// Frappe deletes and recreates every row on every save.
+const tagged = (values) => {
+  const key = tagField.value
+  const rows = Array.isArray(props.modelValue) ? props.modelValue : []
+  const known = new Map(
+    rows.filter((row) => row && typeof row === 'object').map((row) => [row[key], row]),
+  )
+  return (values || []).map((value) => known.get(value) || { [key]: value })
+}
 </script>
