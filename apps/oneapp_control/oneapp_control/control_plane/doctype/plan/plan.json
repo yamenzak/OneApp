@@ -187,7 +187,7 @@
    "fieldname": "prices",
    "fieldtype": "Table",
    "label": "Prices",
-   "options": "Plan Price",
+   "options": "Catalogue Price",
    "read_only": 1
   }
  ],

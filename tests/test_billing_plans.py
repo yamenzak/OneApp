@@ -22,6 +22,9 @@ ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "apps/oneapp_control/oneapp_control"
 
 PLANS = APP / "billing/plans.py"
+# The price mechanics moved here when add-ons and credit packs needed them too,
+# so these claims now hold for every catalogue rather than only for plans.
+CATALOGUE = APP / "billing/catalogue.py"
 QUOTAS = APP / "billing/quotas.py"
 CHECKOUT = APP / "billing/checkout.py"
 WEBHOOKS = APP / "billing/webhooks.py"
@@ -49,10 +52,10 @@ def function(path: Path, name: str) -> str:
 def test_a_price_change_mints_a_new_price_rather_than_editing_one():
 	"""Stripe rejects an edit to `unit_amount`, and even if it did not, editing
 	would reprice everyone already subscribed."""
-	body = function(PLANS, "_ensure_price")
+	body = function(CATALOGUE, "ensure_price")
 	assert "create_price" in body
 	assert "archive_price" in body
-	assert not re.search(r"update_price\b", source(PLANS)), (
+	assert not re.search(r"update_price\b", source(CATALOGUE)), (
 		"there is no such thing as updating a price"
 	)
 
@@ -73,13 +76,14 @@ def test_archiving_is_explained_as_the_thing_that_grandfathers():
 def test_every_price_is_kept_not_just_the_current_one():
 	"""The reverse lookup a webhook needs: Stripe names a price, and only this
 	table can say which plan that was."""
-	plan_price = ROOT / (
-		"apps/oneapp_control/oneapp_control/control_plane/doctype/plan_price/plan_price.json"
+	price_table = ROOT / (
+		"apps/oneapp_control/oneapp_control/control_plane/doctype"
+		"/catalogue_price/catalogue_price.json"
 	)
-	assert plan_price.exists(), "the Plan Price table is gone"
+	assert price_table.exists(), "the Catalogue Price table is gone"
 
 	plan = ROOT / "apps/oneapp_control/oneapp_control/control_plane/doctype/plan/plan.json"
-	assert '"options": "Plan Price"' in plan.read_text()
+	assert '"options": "Catalogue Price"' in plan.read_text()
 
 	assert "def plan_for_price" in source(PLANS)
 
@@ -118,18 +122,21 @@ def test_the_price_ids_are_not_typed_by_hand():
 def test_syncing_cannot_stop_a_plan_being_saved():
 	"""Stripe being unreachable is temporary. A plan an operator cannot edit is
 	not."""
-	body = function(PLANS, "sync")
+	body = function(CATALOGUE, "sync")
 	assert "except Exception" in body
 	assert "sync_error" in body
 
-	# The prose says "never raises"; this is the part a compiler can check.
-	tree = ast.parse(body.replace("\t", "    ", 1) if body.startswith("\t") else body)
-	raises = [n for n in ast.walk(tree) if isinstance(n, ast.Raise)]
-	assert not raises, "sync raises, so a Stripe outage stops a plan being edited"
+	# The prose says "never raises"; this is the part a compiler can check. Both
+	# halves: the shared sync must swallow, and the plan's own wrapper must not
+	# reintroduce a raise on the way in.
+	for text in (body, function(PLANS, "sync")):
+		tree = ast.parse(text.replace("\t", "    ", 1) if text.startswith("\t") else text)
+		raises = [n for n in ast.walk(tree) if isinstance(n, ast.Raise)]
+		assert not raises, "sync raises, so a Stripe outage stops a plan being edited"
 
 
 def test_a_control_plane_without_stripe_can_still_draft_plans():
-	assert "_configured()" in function(PLANS, "sync")
+	assert "configured()" in function(CATALOGUE, "sync")
 
 
 def test_the_sync_runs_inside_the_save_it_belongs_to():
@@ -334,7 +341,9 @@ def test_a_price_belongs_to_the_catalogue_it_was_sold_from():
 	parenttype filter an add-on's price would resolve to 'a plan' and reprice the
 	workspace onto whatever add-on happened to match."""
 	for name in ("plan_for_price", "interval_for_price"):
-		assert '"parenttype": "Plan"' in function(PLANS, name), name
+		assert '"Plan"' in function(PLANS, name), name
+	for name in ("owner_of_price", "interval_of_price"):
+		assert '"parenttype": parenttype' in function(CATALOGUE, name), name
 
 
 def test_a_price_we_did_not_mint_is_reported_rather_than_swallowed():

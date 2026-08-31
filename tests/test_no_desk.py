@@ -54,7 +54,10 @@ def doctypes(app_dir: Path) -> dict[str, dict]:
 # be.
 EXEMPT = {
 	"Tenant Member": "child table, edited on the workspace's People screen",
-	"Plan Price": "child table, written by the Stripe sync and shown on the plan",
+	"Catalogue Price": (
+		"child table; every Stripe price anything we sell has ever had, written by "
+		"the sync and shown on the record it belongs to"
+	),
 	"OneSpace Space Doctype": "child table; the permission manifest is code, not config",
 	"OneSpace Space Screen": (
 		"child table; a space's screens are rows on the space, and a screen with "

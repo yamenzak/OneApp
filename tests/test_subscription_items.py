@@ -27,9 +27,9 @@ def priced(*price_ids):
 
 
 def catalogue(stub_frappe, mapping: dict):
-	"""Make `plan_for_price` answer from `mapping`, as the price table would."""
+	"""Make `plan_for_price` answer from `mapping`, as the shared price table would."""
 	def get_value(doctype, filters=None, fieldname=None, *a, **k):
-		if doctype != "Plan Price" or not isinstance(filters, dict):
+		if doctype != "Catalogue Price" or not isinstance(filters, dict):
 			return None
 		if filters.get("parenttype") != "Plan":
 			return None

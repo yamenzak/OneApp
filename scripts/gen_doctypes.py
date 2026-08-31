@@ -132,20 +132,27 @@ doctype(
 # Plan — quotas only. Never feature flags.
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
-# Plan Price — every Stripe Price a plan has ever had.
+# Catalogue Price — every Stripe Price anything we sell has ever had.
 #
-# Stripe Prices are immutable in amount and currency, so changing what a plan
+# Stripe Prices are immutable in amount and currency, so changing what something
 # costs means minting a new Price and leaving the old one billing whoever is
 # already on it. That is how price grandfathering works, and it only works if
 # the old ids survive: this table is both the history an operator reads and the
-# reverse lookup a webhook needs to answer "which plan is this price?" when a
+# reverse lookup a webhook needs to answer "which of ours is this price?" when a
 # subscription changes underneath us.
+#
+# One table for plans, add-ons and credit packs rather than three near-identical
+# ones. Every row already carries `parenttype`, so the lookups say which
+# catalogue they mean and a plan's price can never resolve to an add-on.
 # --------------------------------------------------------------------------- #
 doctype(
-    "Plan Price",
+    "Catalogue Price",
     istable=1,
     fields=[
-        f("interval", "Select", options="Monthly\nYearly", reqd=1, in_list_view=1),
+        # `One-off` is what a credit pack is: bought once, so it has no cadence.
+        # Said rather than left blank, because a price with no interval and a
+        # price whose interval nobody filled in are different problems.
+        f("interval", "Select", options="Monthly\nYearly\nOne-off", reqd=1, in_list_view=1),
         f("stripe_price_id", label="Stripe Price ID", in_list_view=1, read_only=1),
         f("unit_amount", "Currency", in_list_view=1, read_only=1,
           description="What Stripe charges. Ours to display, Stripe's to enforce."),
@@ -207,7 +214,7 @@ doctype(
           description="Overrides the shard default when set."),
         f("description", "Small Text"),
         section("sec_prices", "Prices"),
-        f("prices", "Table", options="Plan Price", read_only=1,
+        f("prices", "Table", options="Catalogue Price", read_only=1,
           description="Every Stripe price this plan has had. Subscriptions sold "
                       "on an older one keep billing on it."),
     ],
