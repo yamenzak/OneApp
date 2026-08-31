@@ -78,11 +78,13 @@
             :key="field.fieldname"
             class="flex gap-2"
           >
-            <Icon
-              :name="field.icon"
-              class="mt-5 size-3.5 shrink-0 text-ink-gray-4"
-              :aria-hidden="true"
-            />
+            <!--
+              No icon gutter here any more. The field's type icon goes inside
+              its label — see FieldLabel — because a gutter is a column: it
+              aligned the icon to the *control* rather than to the label, and
+              it indented every label and every input in the form past the
+              section heading, leaving a ragged empty channel down the side.
+            -->
             <FieldControl
               v-model="values[field.fieldname]"
               :field="shaped(field)"

@@ -27,7 +27,11 @@
     :target="target"
     allow-create
     @update:model-value="emit('update:modelValue', $event)"
-  />
+  >
+    <template #label>
+      <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
+    </template>
+  </LinkPicker>
 
   <Switch
     v-else-if="component === 'Switch'"
@@ -36,7 +40,11 @@
     :description="note"
     :disabled="disabled"
     @update:model-value="emit('update:modelValue', $event ? 1 : 0)"
-  />
+  >
+    <template #label>
+      <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
+    </template>
+  </Switch>
 
   <Rating
     v-else-if="component === 'Rating'"
@@ -44,7 +52,11 @@
     :label="field.label"
     :disabled="disabled"
     @update:model-value="emit('update:modelValue', $event)"
-  />
+  >
+    <template #label>
+      <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
+    </template>
+  </Rating>
 
   <Password
     v-else-if="component === 'Password'"
@@ -52,7 +64,11 @@
     :label="field.label"
     :disabled="disabled"
     @update:model-value="emit('update:modelValue', $event)"
-  />
+  >
+    <template #label>
+      <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
+    </template>
+  </Password>
 
   <!--
     frappe-ui's Duration has no day unit at all — hours accumulate — so Frappe's
@@ -85,7 +101,11 @@
     :label="field.label"
     :disabled="disabled"
     @update:model-value="emit('update:modelValue', tagged($event))"
-  />
+  >
+    <template #label>
+      <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
+    </template>
+  </MultiSelect>
 
   <!--
     Attach and Attach Image. FileUploader takes a callback rather than a
@@ -93,7 +113,14 @@
     its URL.
   -->
   <div v-else-if="component === 'FileUploader'" class="flex flex-col gap-1">
-    <FormLabel :label="field.label" />
+    <div class="flex items-center gap-1.5">
+      <!-- These four draw their own label because the control below has none
+           to give: FormLabel is frappe-ui's, takes the text as a prop and has
+           no slot, so the icon goes beside it rather than inside it. -->
+      <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0 text-ink-gray-4"
+            :aria-hidden="true" />
+      <FormLabel :label="field.label" :required="!!field.reqd" />
+    </div>
     <FileUploader
       :file-types="field.fieldtype === 'Attach Image' ? 'image/*' : undefined"
       @success="(file) => emit('update:modelValue', file.file_url)"
@@ -151,7 +178,14 @@
     record like any other, through the same File endpoints the sidebar lists.
   -->
   <div v-else-if="component === 'Editor'" class="flex flex-col gap-1">
-    <FormLabel :label="field.label" />
+    <div class="flex items-center gap-1.5">
+      <!-- These four draw their own label because the control below has none
+           to give: FormLabel is frappe-ui's, takes the text as a prop and has
+           no slot, so the icon goes beside it rather than inside it. -->
+      <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0 text-ink-gray-4"
+            :aria-hidden="true" />
+      <FormLabel :label="field.label" :required="!!field.reqd" />
+    </div>
     <div
       class="rounded-6 border border-outline-gray-2 bg-surface-base px-3 py-2"
       :class="disabled ? 'opacity-60' : ''"
@@ -208,7 +242,14 @@
     <!-- CodePreview is the reader and takes only what it reads, so the label
          and the note are drawn here rather than passed to it. -->
     <template v-if="disabled">
-      <FormLabel :label="field.label" />
+      <div class="flex items-center gap-1.5">
+      <!-- These four draw their own label because the control below has none
+           to give: FormLabel is frappe-ui's, takes the text as a prop and has
+           no slot, so the icon goes beside it rather than inside it. -->
+      <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0 text-ink-gray-4"
+            :aria-hidden="true" />
+      <FormLabel :label="field.label" :required="!!field.reqd" />
+    </div>
       <CodePreview :model-value="modelValue || ''" :language="language" />
       <p v-if="note" class="text-p-xs text-ink-gray-5">{{ note }}</p>
     </template>
@@ -230,7 +271,14 @@
     field is worse than a value someone can read.
   -->
   <div v-else-if="!controlType" class="flex flex-col gap-1">
-    <FormLabel :label="field.label" />
+    <div class="flex items-center gap-1.5">
+      <!-- These four draw their own label because the control below has none
+           to give: FormLabel is frappe-ui's, takes the text as a prop and has
+           no slot, so the icon goes beside it rather than inside it. -->
+      <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0 text-ink-gray-4"
+            :aria-hidden="true" />
+      <FormLabel :label="field.label" :required="!!field.reqd" />
+    </div>
     <div class="flex items-center gap-2 rounded-4 bg-surface-gray-1 px-3 py-2">
       <!-- A colour is a colour. The list cell has always drawn the swatch;
            there is no reason the record should show the hex and not it. -->
@@ -300,12 +348,17 @@
     :disabled="disabled"
     :rows="controlType === 'textarea' ? 3 : undefined"
     @update:model-value="emit('update:modelValue', $event)"
-  />
+  >
+    <template #label>
+      <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
+    </template>
+  </FormControl>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import {
+  Icon,
   FormControl,
   FormLabel,
   Switch,
@@ -324,6 +377,7 @@ import {
   RichTextKit,
   upload,
 } from '@/ui'
+import FieldLabel from './FieldLabel.vue'
 import LinkPicker from './LinkPicker.vue'
 import AttachmentGallery from './AttachmentGallery.vue'
 import ChildTable from './ChildTable.vue'

@@ -32,6 +32,20 @@
       :empty-text="emptyText"
       @update:model-value="pick"
     >
+      <!--
+        The field's label, forwarded. This component is a wrapper, so a slot
+        given to it has to be handed on or it is silently dropped — and the
+        label is what carries the type icon now.
+      -->
+      <!-- `#label` before `v-if`, deliberately: `test_content_goes_somewhere`
+           recognises a named-slot block by `<template` followed immediately by
+           `#` or `v-slot:`, so with the condition first this read as content
+           handed to a component that has no default slot. The order is free in
+           Vue and not free here. -->
+      <template #label="slotProps" v-if="$slots.label">
+        <slot name="label" v-bind="slotProps" />
+      </template>
+
       <!-- The chosen record's face, in the box itself. -->
       <template #prefix>
         <Avatar
