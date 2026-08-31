@@ -303,3 +303,34 @@ def nothing_to_restore(tenant_name: str):
 		   refund, whichever you would prefer.</p>
 		""",
 	)
+
+
+@_safe
+def over_quota(tenant_name: str, resources: list[str], grace_until: str):
+	"""Sent the moment a workspace ends up holding more than it is allowed.
+
+	Distinct from `quota_warning`, which fires at 80% of a limit they are walking
+	towards. This one usually fires because the limit came *down* — an add-on
+	line left the subscription — so it leads with that rather than telling
+	somebody they have used too much, which from where they are sitting is not
+	what happened.
+	"""
+	tenant = _workspace(tenant_name)
+	labels = {"storage": "file storage", "database": "database", "users": "user seats"}
+	named = ", ".join(labels.get(r, r) for r in resources)
+
+	_send(
+		tenant.owner_email,
+		f"{tenant.tenant_name} is over its {named} limit",
+		f"""
+		<p>{tenant.tenant_name} is currently holding more {named} than its plan
+		   and add-ons allow. This often happens because an add-on stopped being
+		   billed rather than because anything in the workspace changed.</p>
+		<p><strong>Nothing is blocked and nothing has been deleted.</strong> You
+		   have until <strong>{grace_until}</strong> to either add the storage
+		   back or free some up. Until then the workspace works normally, except
+		   that it cannot grow past where it is now.</p>
+		<p>After {grace_until}, new uploads stop until there is room again.</p>
+		{_billing_line()}
+		""",
+	)

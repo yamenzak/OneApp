@@ -43,6 +43,10 @@ def _make_frappe():
 	frappe.get_module = __import__
 	frappe.parse_json = lambda v: __import__("json").loads(v) if isinstance(v, str) else v
 	frappe.session = types.SimpleNamespace(user="Administrator")
+	# The flags a request carries. Empty by default, which is what an ordinary
+	# request looks like — the code that reads them is guarding against installs,
+	# migrations and patches, and every one of those is set by Frappe itself.
+	frappe.flags = types.SimpleNamespace()
 
 	class _DB:
 		def __init__(self):

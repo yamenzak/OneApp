@@ -45,6 +45,7 @@
   "cold_storage_bytes",
   "restored_on",
   "over_quota_since",
+  "over_quota_bytes",
   "sec_backups",
   "last_backup_on",
   "last_backup_key",
@@ -322,6 +323,14 @@
    "fieldname": "over_quota_since",
    "fieldtype": "Date",
    "label": "Over Quota Since",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "What it was holding at that moment, and the ceiling it may not grow past while the window is open. Taken then rather than at the first refused upload, which would ratchet upward every time one more file got through.",
+   "fieldname": "over_quota_bytes",
+   "fieldtype": "Float",
+   "label": "Over Quota Bytes",
    "read_only": 1
   },
   {

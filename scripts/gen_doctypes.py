@@ -708,6 +708,11 @@ doctype(
         f("over_quota_since", "Date", read_only=1,
           description="When what it holds first exceeded what it is allowed. "
                       "Enforcement bites after the overage grace window."),
+        f("over_quota_bytes", "Float", default="0", read_only=1,
+          description="What it was holding at that moment, and the ceiling it "
+                      "may not grow past while the window is open. Taken then "
+                      "rather than at the first refused upload, which would "
+                      "ratchet upward every time one more file got through."),
         section("sec_backups", "Backups"),
         f("last_backup_on", "Datetime", read_only=1, in_standard_filter=1,
           description="Reported by the site after each successful push to R2."),

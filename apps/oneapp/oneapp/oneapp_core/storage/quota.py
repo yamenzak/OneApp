@@ -63,6 +63,39 @@ def database_quota_bytes() -> int:
 	return int(sync.state().get("database_quota_bytes") or 0)
 
 
+def overage() -> dict:
+	"""The control plane's verdict on whether to enforce at all.
+
+	A workspace can end up over its limit without doing anything: an add-on line
+	leaves the subscription, the quota comes down, and from in here the next
+	upload fails on an ordinary day. The control plane gives them a window
+	instead — see `oneapp_control/lifecycle/overage.py` — and this is that
+	verdict, cached with everything else.
+
+	Absent reads as "enforce", which is the safe direction and the right answer
+	for a site that has never synced.
+	"""
+	from oneapp.oneapp_core import sync
+
+	return sync.state().get("quota") or {}
+
+
+def enforcement_ceiling() -> int | None:
+	"""How large this site may grow right now, or None for the ordinary quota.
+
+	During the grace window uploads are allowed up to what the workspace was
+	holding when it went over — so somebody can replace a file, finish what they
+	were doing and delete their way back under, without the window becoming a
+	free upgrade.
+	"""
+	block = overage()
+	if block.get("enforced", True):
+		return None
+
+	ceiling = int(block.get("ceiling_bytes") or 0)
+	return ceiling or None
+
+
 def database_used_bytes() -> int:
 	return int(
 		frappe.db.sql(
@@ -91,15 +124,32 @@ def enforce_quota(doc, method=None):
 
 	used = current_usage()
 
-	if used + incoming > quota:
+	# Inside the overage window the limit is where they already were, not what
+	# the plan says. Whichever is larger, so a grace window can only ever be
+	# more permissive than the quota it stands in for — a stale ceiling below
+	# the plan's own limit would otherwise enforce something nobody agreed to.
+	ceiling = enforcement_ceiling()
+	limit = max(quota, ceiling) if ceiling else quota
+
+	if used + incoming > limit:
+		if ceiling:
+			frappe.throw(
+				_(
+					"This workspace is over its storage limit and cannot grow "
+					"further. Nothing has been deleted — free some space, or add "
+					"storage from your account, and uploads resume."
+				),
+				exc=StorageQuotaExceeded,
+			)
+
 		frappe.throw(
 			_(
 				"Storage limit reached. This file needs {0} but only {1} of {2} remains. "
 				"Delete some files or upgrade your plan."
 			).format(
 				format_bytes(incoming),
-				format_bytes(max(quota - used, 0)),
-				format_bytes(quota),
+				format_bytes(max(limit - used, 0)),
+				format_bytes(limit),
 			),
 			exc=StorageQuotaExceeded,
 		)
@@ -149,6 +199,13 @@ def enforce_database_quota(doc, method=None):
 	if getattr(frappe.flags, "in_patch", False) or getattr(frappe.flags, "in_test", False):
 		return
 	if not database_over_quota():
+		return
+	# Inside the overage window, nothing. Unlike files there is no ceiling that
+	# would work here: the block is on inserts, and half-blocking those gives a
+	# workspace that can be typed into and not saved. A larger table for a few
+	# days is a better outcome than accounting that stops because a storage
+	# add-on stopped being billed.
+	if not overage().get("enforced", True):
 		return
 
 	frappe.throw(

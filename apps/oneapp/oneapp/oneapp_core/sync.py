@@ -46,6 +46,7 @@ def state() -> dict:
 		"max_users": doc.max_users or 0,
 		"background_workers": doc.background_workers or 0,
 		"backups_per_day": doc.backups_per_day or 0,
+		"quota": json.loads(doc.quota_json or "{}"),
 		"credit_balance": doc.credit_balance or 0,
 		"spaces": json.loads(doc.spaces_json or "[]") + local_spaces(),
 		"roles": json.loads(doc.roles_json or "[]"),
@@ -128,6 +129,10 @@ def sync_from_control_plane() -> dict:
 			"max_users": plan.get("max_users") or 0,
 			"background_workers": plan.get("background_workers") or 0,
 			"backups_per_day": plan.get("backups_per_day") or 0,
+			# Whether to enforce quotas at all, and until when if not. Stored
+			# rather than only cached: an unreachable control plane must not
+			# silently re-block a workspace that was given a window.
+			"quota_json": json.dumps(payload.get("quota") or {}),
 			"credit_balance": credits.get("balance") or 0,
 			"spaces_json": json.dumps(_spaces(payload)),
 			"roles_json": json.dumps(payload.get("roles") or []),

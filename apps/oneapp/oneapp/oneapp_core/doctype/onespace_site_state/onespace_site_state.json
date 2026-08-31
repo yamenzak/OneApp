@@ -20,6 +20,7 @@
   "sec_usage",
   "storage_used_bytes",
   "database_used_bytes",
+  "quota_json",
   "cb2",
   "credit_balance",
   "sec_cache",
@@ -116,6 +117,14 @@
    "fieldtype": "Float",
    "label": "Database Used Bytes",
    "read_only": 1
+  },
+  {
+   "fieldname": "quota_json",
+   "fieldtype": "Code",
+   "label": "Quota Enforcement",
+   "options": "JSON",
+   "read_only": 1,
+   "description": "Whether to enforce quotas at all, and until when if not. A workspace over its limit because a line left its subscription is given a window rather than a wall."
   },
   {
    "fieldname": "cb2",

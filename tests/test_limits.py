@@ -11,12 +11,16 @@ GB = 1024**3
 
 
 @pytest.fixture
-def quota(stub_frappe):
+def quota(stub_frappe, monkeypatch):
 	from oneapp.oneapp_core.storage import quota as module
 
 	frappe = stub_frappe
 	frappe.cache().store.clear()
-	frappe.flags = type("Flags", (), {})()
+	# Enforcing, which is the ordinary case. The overage window is a different
+	# question and has its own tests in `test_quota.py`; left unstubbed this
+	# reaches the site-state singleton and every "is the insert blocked" test
+	# would be answering an AttributeError instead.
+	monkeypatch.setattr(module, "overage", lambda: {"enforced": True})
 	return module
 
 

@@ -14,6 +14,7 @@ from frappe import _
 from oneapp_control.ai import catalogue, pricing
 from oneapp_control.credits import ledger
 from oneapp_control.entitlements import registry
+from oneapp_control.lifecycle import overage
 from oneapp_control.utils.signing import TENANT_HEADER, verify
 
 
@@ -78,6 +79,11 @@ def sync():
 			# schedule because it owns the files; the plan owns the number.
 			"backups_per_day": int(tenant.terms.get("backups_per_day") or 0),
 		},
+		# Whether the site should enforce its quotas at all, and until when if
+		# not. A workspace over its limit because a line left its subscription
+		# did nothing wrong, and blocking it the moment Stripe dropped the line
+		# is the surprise this exists to prevent. See `lifecycle/overage.py`.
+		"quota": overage.state(tenant),
 		# One flag, and it is how the control plane asks for a final full backup
 		# before a workspace is archived. There is no channel from here into a
 		# tenant site — every wire runs the other way — so a request is something
@@ -187,6 +193,12 @@ def report_usage():
 	# hourly and would be noise.
 	_maybe_warn(tenant)
 
+	# And reconcile the overage window. Here rather than in the sweep because
+	# this is the one place that sees what is held and what is allowed at the
+	# same moment — the sweep runs daily and would leave a workspace refused for
+	# up to a day before anybody told it why.
+	quota = overage.check(tenant)
+
 	return {
 		"storage_used_bytes": tenant.storage_used_bytes,
 		"storage_quota_bytes": tenant.storage_quota_bytes,
@@ -195,6 +207,7 @@ def report_usage():
 		"database_quota_bytes": tenant.database_quota_bytes,
 		"user_count": tenant.user_count,
 		"max_users": tenant.max_users,
+		"quota": quota,
 	}
 
 
