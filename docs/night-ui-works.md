@@ -202,6 +202,48 @@ Ranked by what our manifest can generate cheaply:
 
 ---
 
+## 7a. Shell and layout — the second audit
+
+Read `Layouts/`, `Mobile/`, `AppSidebar.vue` (736 lines) and `LayoutHeader.vue`
+against our `AppShell.vue` (388), `SpaceSidebar.vue` (132) and `ScreenHost.vue`.
+
+**Where they are ahead:**
+
+- **The sidebar collapses.** `Sidebar v-model:collapsed`, icon-only when shut,
+  and the notification badge repositions to a dot on the icon. Ours is a fixed
+  `width="14rem"` that never collapses. On a laptop running a data grid, 224px
+  of permanent chrome is the single biggest thing between the user and their
+  columns. This is the clearest shell win available.
+- **Collapsible sidebar sections**, each with its own open state and an optional
+  hidden label. Ours renders one flat list.
+- **`LayoutHeader` teleports into `#app-header`.** The shell owns the header
+  bar; a page fills it by declaring `<LayoutHeader><template #left-header>`.
+  No prop-drilling, no header-shape prop threaded through three components.
+  Ours passes crumbs down from `ScreenHost` and the shell has no header of its
+  own — which works, and stops working the moment a second kind of page wants
+  one.
+
+**Where we are ahead, and should stay:**
+
+- **One shell, not two.** They ship `DesktopLayout.vue` and `MobileLayout.vue`
+  as separate components chosen by route, each with its own sidebar and header.
+  Ours is one `AppShell` that switches on `isMobile`. Theirs means every shell
+  change is made twice — and the mobile one has already drifted (their
+  `MobileSidebar` is 57 lines against a 736-line desktop sibling).
+- **Our mobile bar is better reasoned.** MobileNav is a grid, so five items is
+  the readable ceiling; ours takes four primary destinations plus a fixed
+  account avatar, and everything past the fourth falls into the More sheet
+  rather than being dropped. Theirs is a drawer, which is a hamburger by another
+  name.
+- **Breadcrumbs.** Theirs is hand-built from a route name plus a views dropdown.
+  Ours uses frappe-ui's `Breadcrumbs` and is generated from the space, screen and
+  record.
+
+**Proposal.** Take the collapsible sidebar and the teleported header. Keep one
+shell. Do not split desktop and mobile into two component trees.
+
+---
+
 ## 8. What I would do tonight, in order
 
 Each is independently shippable and independently revertable.
@@ -216,8 +258,18 @@ Each is independently shippable and independently revertable.
 | 6 | Collapsible sections (we carry the metadata already) | Two properties currently read and ignored |
 | 7 | Merge Comments + History into one Activity timeline with typed icons | Largest of the seven; do last |
 
+**Added after review**, all agreed:
+
+| # | Work | Note |
+|---|------|------|
+| 8 | **Assignment as a control**, over `MultipleAvatar` | The two are one job: `_assign` is a list of users, and a stack of overlapping avatars with an overflow count is both how you read it and how you open the picker. We carry `_assign` and render it as text today. |
+| 9 | **`Resizer`** | A reusable drag handle. We resize the record pane with a bespoke implementation; this replaces it and makes the sidebar and the child-table columns resizable for free. |
+| 10 | **`FadedScrollableDiv`** | A scroll container that fades its top and bottom edge. The honest version of the wash we removed from the list — there it dimmed data to talk about scrolling; here it marks a real scroll boundary on a bounded panel. |
+| 11 | **A better icon picker** | Theirs searches and groups emoji via the `gemoji` package; ours offers the lucide set plus a bare text box that leans on the OS emoji keyboard. Take the searchable, grouped emoji half. Keep our lucide set closed and keep the build-time reason for it — an icon name that exists only in the database emits no CSS and draws nothing. |
+| 12 | **Collapsible sidebar + teleported header** | §7a. |
+
 Not tonight, and I would want to talk about them first: nested AND/OR filters,
-calendar view, assignment as a control, keyboard shortcuts.
+calendar view, keyboard shortcuts.
 
 ---
 
