@@ -905,6 +905,67 @@ def test_my_own_default_outranks_the_workspaces(spaceview):
 	assert spaceview._default_layout(rows)["name"] == "mine"
 
 
+def test_a_saved_view_belongs_to_the_view_type_it_was_made_in(spaceview, monkeypatch):
+	"""Every write scoped by view type, the same way every read already was.
+
+	`_layouts` filtered by view type from the day view types shipped. Nothing on
+	the writing side did — so a screen offering a list and a board had *one*
+	unnamed default between them, one default flag between them, and one reset
+	button for both. Saving on the board rewrote the list's row with the board's
+	columns and re-filed it, and the list quietly went back to the manifest's
+	answer.
+
+	What is checked here is that the type reaches the query, because that is the
+	whole of the fix and the part that silently stops being true.
+	"""
+	asked = []
+	monkeypatch.setattr(
+		spaceview.frappe.db, "get_value",
+		lambda doctype, filters=None, *a, **k: asked.append(filters) or None,
+	)
+
+	spaceview._saved("zz", "tasks", "board")
+	assert asked[-1]["view_type"] == "board"
+
+	# A row written before view types existed, or by a screen that only ever had
+	# one, belongs to the list — and the list has to find it, or its own Save
+	# starts writing a second row beside the one it should be updating.
+	spaceview._saved("zz", "tasks", "list")
+	assert asked[-1]["view_type"] == ["in", ["list", "", None]]
+	spaceview._saved("zz", "tasks", None)
+	assert asked[-1]["view_type"] == ["in", ["list", "", None]]
+
+	# And the same rule where one default is made to unmake the others.
+	seen = []
+	monkeypatch.setattr(
+		spaceview.frappe, "get_all",
+		lambda doctype, filters=None, *a, **k: seen.append(filters) or [],
+	)
+	spaceview._only_default(
+		types.SimpleNamespace(space_code="zz", screen="tasks", user="me@x",
+		                      view_type="grid", name="one")
+	)
+	assert seen[-1]["view_type"] == "grid"
+
+
+def test_the_view_type_filter_is_the_same_answer_reading_and_writing(spaceview):
+	"""`_of_type` and `_layouts`' normalisation have to agree.
+
+	They are the two halves of one rule — empty means the list — and if they
+	drift, a save lands on a row the switcher does not show. Which is a bug with
+	no error message: the view is there, in the table, invisible.
+	"""
+	assert spaceview._of_type("board") == "board"
+	assert spaceview._of_type("") == ["in", ["list", "", None]]
+	assert spaceview._of_type(None) == ["in", ["list", "", None]]
+
+	# The reading half, on rows shaped the way the table holds them.
+	rows = [{"view_type": ""}, {"view_type": None}, {"view_type": "board"}]
+	for row in rows:
+		row["view_type"] = row.get("view_type") or spaceview.DEFAULT_VIEW_TYPE
+	assert [row["view_type"] for row in rows] == ["list", "list", "board"]
+
+
 def test_the_workspaces_default_opens_a_screen_nobody_has_answered_for(spaceview):
 	rows = [layout("shared", "House", user="", is_default=1), layout("other", "Other")]
 	assert spaceview._default_layout(rows)["name"] == "shared"

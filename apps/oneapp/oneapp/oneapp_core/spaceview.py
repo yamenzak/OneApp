@@ -2454,16 +2454,36 @@ def _chosen_layout(rows: list[dict], layout: str | None = None):
 	return _default_layout(rows)
 
 
-def _saved(space_code: str, screen: str):
+def _of_type(view_type: str | None):
+	"""A filter value matching the layouts of one view type.
+
+	Empty counts as the default type, in exactly one direction: a row written
+	before view types existed, or by a screen that only ever had one, belongs to
+	the list. `_layouts` says the same thing when it reads them back, and the
+	two have to agree or a save lands on a row the switcher will not show.
+	"""
+	wanted = view_type or DEFAULT_VIEW_TYPE
+	if wanted == DEFAULT_VIEW_TYPE:
+		return ["in", [DEFAULT_VIEW_TYPE, "", None]]
+	return wanted
+
+
+def _saved(space_code: str, screen: str, view_type: str | None = None):
 	"""This person's unnamed default — the one Save writes when nothing is named.
 
 	Kept as its own lookup because "save what I am looking at" has to land on the
 	same row every time, and a named layout is not that row.
+
+	One per *view type*, not one per screen. A screen offering a list and a
+	board has two unnamed defaults, because "what I am looking at" is two
+	different things — and while this was keyed by screen alone, saving on the
+	board rewrote the list's row with the board's columns and re-filed it, so
+	the list quietly lost the answers somebody had saved for it.
 	"""
 	return frappe.db.get_value(
 		"OneSpace Saved View",
 		{"user": frappe.session.user, "space_code": space_code, "screen": screen,
-		 "label": ["in", ["", None]]},
+		 "label": ["in", ["", None]], "view_type": _of_type(view_type)},
 		["name"],
 		as_dict=True,
 	)
@@ -2878,7 +2898,7 @@ def save_layout(space_code: str, screen: str, filters: str | list | dict | None 
 	columns = _placed(offered, columns)
 	filters = _asked_filters(_filterable(resolved), filters)
 
-	doc = _layout_doc(space_code, screen, layout, label)
+	doc = _layout_doc(space_code, screen, layout, label, resolved["view_type"])
 	# Sharing is a permission, so it is checked against what the row will be
 	# rather than what it was: taking a personal layout public is the same
 	# decision as writing a public one.
@@ -2908,7 +2928,13 @@ def save_layout(space_code: str, screen: str, filters: str | list | dict | None 
 		# Which way of looking this view is of. Checked against the screen's own
 		# list rather than taken: a layout tagged with a type the screen does
 		# not offer would be invisible in every switcher.
-		"view_type": resolved["view_type"],
+		#
+		# Settled when the row is made and never rewritten. A view *belongs* to
+		# a view type — renaming one, or sharing it, is not a decision to move
+		# it, and those writes carry no view type of their own. Before this, a
+		# rename re-filed the view under whatever the screen happened to open
+		# with, which for a board view meant it vanished from the board.
+		"view_type": doc.view_type or resolved["view_type"],
 		"view_settings": json.dumps(_view_settings(resolved, view_settings)),
 		"favourites": 1 if frappe.utils.sbool(favourites) else 0,
 		"group_by": _group_by(resolved, group_by),
@@ -3106,7 +3132,8 @@ def _resolve_views(resolved: dict) -> dict:
 	return resolved
 
 
-def _layout_doc(space_code: str, screen: str, layout: str | None, label: str | None):
+def _layout_doc(space_code: str, screen: str, layout: str | None, label: str | None,
+                view_type: str | None = None):
 	"""The row a save lands on — an existing one, or a new one."""
 	if layout:
 		doc = frappe.get_doc("OneSpace Saved View", layout)
@@ -3116,7 +3143,7 @@ def _layout_doc(space_code: str, screen: str, layout: str | None, label: str | N
 			frappe.throw(_("That screen belongs to a different screen."), frappe.PermissionError)
 		return doc
 	if not label:
-		existing = _saved(space_code, screen)
+		existing = _saved(space_code, screen, view_type)
 		if existing:
 			return frappe.get_doc("OneSpace Saved View", existing["name"])
 	doc = frappe.new_doc("OneSpace Saved View")
@@ -3146,11 +3173,18 @@ def _may_write(doc) -> None:
 
 
 def _only_default(doc) -> None:
-	"""One default per person per screen, and one shared default per screen."""
+	"""One default per person per screen per view type, and one shared each.
+
+	Per view type because a default is "what this screen opens with", and a
+	screen opens differently as a list and as a board. Without it, marking a
+	board view the default un-marked the list's — so the list went back to the
+	manifest's answer because somebody had chosen a favourite board.
+	"""
 	siblings = frappe.get_all(
 		"OneSpace Saved View",
 		filters={"space_code": doc.space_code, "screen": doc.screen,
-		         "user": doc.user or ["in", ["", None]], "is_default": 1},
+		         "user": doc.user or ["in", ["", None]], "is_default": 1,
+		         "view_type": _of_type(doc.view_type)},
 		pluck="name", ignore_permissions=True,
 	)
 	for name in siblings:
@@ -3235,13 +3269,15 @@ def default_layout(space_code: str, screen: str, layout: str) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def reset_layout(space_code: str, screen: str) -> dict:
-	"""Back to what the screen declares.
+def reset_layout(space_code: str, screen: str, view_type: str | None = None) -> dict:
+	"""Back to what the screen declares, for the way you are looking at it.
 
-	Only this person's unnamed default: a named layout is a thing somebody made
-	and is deleted deliberately, not by a button that means "undo my tinkering".
+	Only this person's unnamed default, and only this view type's: a named
+	layout is a thing somebody made and is deleted deliberately rather than by a
+	button that means "undo my tinkering", and the board's tinkering is not the
+	list's.
 	"""
-	existing = _saved(space_code, screen)
+	existing = _saved(space_code, screen, view_type)
 	if existing:
 		frappe.delete_doc("OneSpace Saved View", existing["name"], ignore_permissions=True)
 		frappe.db.commit()

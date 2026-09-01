@@ -158,3 +158,58 @@ test('a shared view can be hidden, and every hidden one comes back at once', asy
   await expect(page.getByRole('menuitem', { name: 'High priority' })).toBeVisible()
   expectNoRealErrors(errors)
 })
+
+// --- switching the way you are looking ---------------------------------------
+//
+// A view type and a saved view answer two different questions, and so do the
+// two halves of what is on screen: a filter and a sort are about *which
+// records*, and columns, widths and grouping are about *how they are drawn*.
+// Switching from a list to a board changes the second and not the first.
+
+test('a filter follows you from the list to the board and the grid', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone has no view-type sidebar')
+  await page.goto('/one/space/zzmock?screen=tasks')
+  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
+
+  // Only the open ones — three of the fixture's forty-three.
+  await page.getByRole('combobox').filter({ hasText: 'Status' }).click()
+  await page.getByRole('option', { name: 'Open', exact: true }).click()
+  await expect
+    .poll(() => page.locator('[data-slot="list-row"]').count(), { timeout: 10_000 })
+    .toBeLessThan(10)
+  const rows = await page.locator('[data-slot="list-row"]').count()
+
+  // The same question, drawn as columns. Every card is in Open, and the forty
+  // closed ones are not on the board at all.
+  await page.getByRole('link', { name: 'Board' }).click()
+  await page.locator('[data-oneapp-column]').first().waitFor({ timeout: 15_000 })
+  await expect
+    .poll(() => page.locator('[data-oneapp-column="Closed"] article').count(),
+      { timeout: 10_000 })
+    .toBe(0)
+  expect(await page.locator('[data-oneapp-column="Open"] article').count()).toBe(rows)
+
+  // And on to the grid, which is the same cards again.
+  await page.getByRole('link', { name: 'Grid' }).click()
+  await page.locator('[data-oneapp-card]').first().waitFor({ timeout: 15_000 })
+  await expect
+    .poll(() => page.locator('[data-oneapp-card]').count(), { timeout: 10_000 })
+    .toBe(rows)
+})
+
+test('a link opened cold gets that view type\'s own default', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone has no view-type sidebar')
+
+  // The other half of the rule, and the reason the filter is not in the URL:
+  // arriving at a board is not carrying anything, so it opens the way the
+  // board opens. A link that quietly filtered itself would be a link nobody
+  // could reason about.
+  await page.goto('/one/space/zzmock?screen=tasks&type=board')
+  await page.locator('[data-oneapp-column]').first().waitFor({ timeout: 15_000 })
+  await expect
+    .poll(() => page.locator('[data-oneapp-column="Closed"] article').count(),
+      { timeout: 10_000 })
+    .toBeGreaterThan(10)
+})

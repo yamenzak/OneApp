@@ -546,6 +546,44 @@ assignment should be readable in a list, the honest answer is a column of its
 own — filterable like any other — rather than a fourth thing squeezed into
 that one.
 
+## A view type and a saved view are two different questions
+
+A screen offers ways of *looking* — list, board, grid — and, under each, saved
+views: named sets of filters, sort and columns. Both are in the URL (`type` and
+`layout`), and every one of them is per view type:
+
+* **Saved views are filed under the type they were made in.** A board's views
+  carry a column field and a card; a list's carry widths and pinning. Neither
+  means anything in the other's switcher, so `_layouts` shows a type only its
+  own — and every *write* is scoped the same way. A view saved on the board is
+  a board view, and a rename or a share does not move it.
+* **The unnamed default is per type too.** "Save what I am looking at" is a
+  different sentence on a board than on a list, so there is one of those rows
+  per view type, one default flag per view type, and Reset drops only the one
+  for the way you are looking.
+* **Opening a screen applies that type's default**, narrowest first: the URL's
+  `layout`, else your own default for this type, else the workspace's shared
+  default, else the screen's declaration. Two rows can both be flagged — one
+  personal, one shared — so the menu pins the one that actually opens.
+
+**Switching the view type carries the row question and drops the drawing.** A
+filter, a sort and "only my favourites" are about *which records*; columns,
+widths, pinning, grouping and what a card carries are about *how they are
+drawn*. "Only the open ones, by priority" is the same question drawn as columns,
+so it follows you from the list to the board; the columns do not, because a
+board has none. Where what you carried differs from what the destination's own
+view says, the screen says so — it is that view, with unsaved changes.
+
+Only when the switch happens under somebody. A link opened cold carries nothing,
+so it gets that type's own default, which is what a link should mean — and it is
+why a filter is not in the URL. `views.spec.js` holds both halves.
+
+All of this was a *read*-side rule for its first few weeks and nothing on the
+write side knew about it: no save sent the view type, so every view was filed
+under the screen's first one; one unnamed row served both types, so saving on a
+board rewrote the list's; and one default flag served both, so choosing a
+favourite board unmade the list's. A screen with one view type never noticed.
+
 ## The board is the same list, drawn as columns
 
 A screen that names a field a board could be made of may offer `board`. It is

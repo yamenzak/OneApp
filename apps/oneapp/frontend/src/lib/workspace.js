@@ -294,10 +294,13 @@ export const workspace = {
       { successMessage: 'This opens the screen now' },
     ),
 
-  resetLayout: (spaceCode, screen) =>
+  // The view type goes with it: a screen has one unnamed default per way of
+  // looking at it, and "undo my tinkering" on the board is not a decision about
+  // the list.
+  resetLayout: (spaceCode, screen, viewType) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.reset_layout',
-      { space_code: spaceCode, screen },
+      { space_code: spaceCode, screen, view_type: viewType || undefined },
       { successMessage: 'Back to the default screen' },
     ),
 

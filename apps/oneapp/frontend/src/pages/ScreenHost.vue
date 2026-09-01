@@ -704,6 +704,10 @@ const sortBy = (fieldname) => {
 // --- what the list is being asked -------------------------------------------
 
 const payload = () => ({
+  // Which way of looking this view is of. Without it every save landed on the
+  // screen's *first* type, so a view saved from the board was filed as a list
+  // view and never appeared in the board's own switcher again.
+  view_type: spec.value?.view_type || DEFAULT_VIEW_TYPE,
   filters: [...quickFilters.value, ...panelFilters.value],
   order_by: order.value,
   columns: chosenColumns.value,
@@ -1185,7 +1189,9 @@ const discardChanges = async () => {
   resetting.value = true
   try {
     if (!savesIntoView.value && spec.value?.saved) {
-      await workspace.resetLayout(props.spaceCode, spec.value.screen)
+      await workspace.resetLayout(
+        props.spaceCode, spec.value.screen, spec.value.view_type,
+      )
     }
     dirty.value = false
     await load()
@@ -1194,7 +1200,30 @@ const discardChanges = async () => {
   }
 }
 
-const load = async (openWith) => {
+/**
+ * What the reader has asked of the *rows*, as it stands.
+ *
+ * The distinction this turns on is one the reader already makes: a filter, a
+ * sort and "only my favourites" are questions about **which records**, and
+ * columns, widths, pinning, grouping and what a card carries are questions
+ * about **how they are drawn**. Switching from a list to a board changes the
+ * second and not the first — "only the open ones, by priority" is the same
+ * question drawn as columns — so that is what crosses over.
+ *
+ * Only when the switch happens under somebody. Opening a link cold is not
+ * carrying anything, so it gets that view type's own default, which is what a
+ * link should mean.
+ */
+const askedOfRows = () => ({
+  quick: quickFilters.value.map((one) => [...one]),
+  panel: panelFilters.value.map((one) => [...one]),
+  order: order.value,
+  favourites: favourites.value,
+})
+
+const sameRows = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+
+const load = async (openWith, carry = null) => {
   if (!space.value) return
   loading.value = true
   specError.value = ''
@@ -1224,6 +1253,24 @@ const load = async (openWith) => {
     groupBy.value = spec.value?.saved?.group_by || ''
     pageLength.value = spec.value?.page_length || 100
     dirty.value = false
+    drawnAs.value = {
+      screen: spec.value?.screen || '',
+      type: spec.value?.view_type || '',
+    }
+
+    // What the reader was asking of the rows before the view type changed
+    // under them, applied over what this type resolved to — and marked unsaved
+    // where the two differ, so the switcher says "this view, with changes"
+    // rather than showing a filtered board under a view's name that means
+    // something else.
+    if (carry) {
+      const resolved = askedOfRows()
+      quickFilters.value = carry.quick
+      panelFilters.value = carry.panel
+      order.value = carry.order || order.value
+      favourites.value = carry.favourites
+      dirty.value = !sameRows(carry, resolved)
+    }
     follow(spec.value?.doctype || '')
     await loadRows()
   } catch (err) {
@@ -1242,6 +1289,12 @@ const load = async (openWith) => {
 
 // Re-resolved on every screen change: the columns, the filters and what this user
 // may do are all per screen, not per space.
+// What the last render was actually of — the screen, and the way of looking the
+// server settled on, which is not always the one the URL asked for. Only a
+// change of view type carries anything: another screen is another set of
+// records and has nothing to carry.
+const drawnAs = ref({ screen: '', type: '' })
+
 watch(
   [
     () => props.spaceCode,
@@ -1250,7 +1303,16 @@ watch(
     () => route.query.layout,
     () => session.loaded,
   ],
-  () => load(),
+  () => {
+    // Not when a named view is being opened: a view carries its own answers,
+    // and the point of opening one is to see them.
+    const switching =
+      !!spec.value &&
+      !!drawnAs.value.type &&
+      drawnAs.value.screen === (route.query.screen || spec.value.screen) &&
+      !route.query.layout
+    load(undefined, switching ? askedOfRows() : null)
+  },
   { immediate: true },
 )
 
