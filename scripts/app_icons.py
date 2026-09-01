@@ -292,6 +292,11 @@ NOTIFICATION_ICONS = {
     "Share": "lucide-share-2",
     "Alert": "lucide-triangle-alert",
     "Energy Point": "lucide-zap",
+    # Ours. The bell on purpose: it is the same glyph as the control that turns
+    # following on, so the row and the button that caused it read as one thing.
+    # Rarely drawn — a followed-document notification always has a person behind
+    # it, and the panel shows a face where it has one.
+    "Following": "lucide-bell",
 }
 
 DEFAULT_NOTIFICATION_ICON = "lucide-bell"

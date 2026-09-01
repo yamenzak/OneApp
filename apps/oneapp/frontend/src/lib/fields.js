@@ -854,6 +854,7 @@ export const NOTIFICATION_ICONS = {
   "Alert": "lucide-triangle-alert",
   "Assignment": "lucide-user-check",
   "Energy Point": "lucide-zap",
+  "Following": "lucide-bell",
   "Mention": "lucide-at-sign",
   "Share": "lucide-share-2"
 }

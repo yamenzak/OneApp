@@ -1882,6 +1882,10 @@ def timeline(space_code: str, screen: str, name: str) -> dict:
 	doc = frappe.get_doc(doctype, name)
 	doc.check_permission("read")
 
+	# Imported here rather than at the top: `notifications` reads screens
+	# through this module, so a module-level import either way is a cycle.
+	from oneapp.oneapp_core import notifications as follow
+
 	comments = frappe.get_all(
 		"Comment",
 		filters={"reference_doctype": doctype, "reference_name": name,
@@ -1921,6 +1925,13 @@ def timeline(space_code: str, screen: str, name: str) -> dict:
 		"likes": liked,
 		"liked": frappe.session.user in liked,
 		"can_comment": True,
+		# Following, on the same request as the likes and for the same reason:
+		# it is the record's social state, the reader is already waiting for
+		# this call, and a second round trip to draw one bell is a second round
+		# trip. `can_follow` because a doctype whose changes are not tracked has
+		# nothing to report, and a control that cannot work should not be drawn.
+		"can_follow": follow.followable(doctype),
+		"following": follow.is_following(doctype, name),
 	}
 
 
@@ -2130,6 +2141,31 @@ def toggle_like(space_code: str, screen: str, name: str) -> dict:
 	after = frappe.parse_json(
 		frappe.db.get_value(doctype, name, "_liked_by") or "[]")
 	return {"liked": frappe.session.user in after, "likes": after}
+
+
+@frappe.whitelist(methods=["POST"])
+def toggle_follow(space_code: str, screen: str, name: str) -> dict:
+	"""Follow this record, or stop.
+
+	The store is Frappe's `Document Follow`; the delivery is ours, because the
+	framework only ever built a digest email. See `oneapp_core.notifications`.
+	"""
+	from oneapp.oneapp_core import notifications as follow
+
+	resolved = _resolve(space_code, screen)
+	doctype = resolved.get("doctype")
+	if not doctype:
+		frappe.throw(_("There is nothing to follow here."))
+
+	if not follow.followable(doctype):
+		frappe.throw(_("This kind of record does not report its changes."))
+
+	# Reading the document is the permission: being told when something changes
+	# is exactly as private as being able to look at it.
+	frappe.get_doc(doctype, name).check_permission("read")
+
+	wanted = not follow.is_following(doctype, name)
+	return {"following": follow.set_following(doctype, name, wanted)}
 
 
 # --------------------------------------------------------------------------- #

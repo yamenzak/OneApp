@@ -55,6 +55,20 @@ doc_events = {
 		# actually leaves the site.
 		"before_insert": "oneapp.oneapp_core.email.outbound.enforce_send_rate",
 	},
+	# Following a document. Frappe stores the follow and then only ever emails a
+	# digest about it, so these two are the in-app half — see
+	# `oneapp_core.notifications`, "Following a document".
+	#
+	# Version and Comment rather than `on_update` for `*`: they are the same two
+	# sources the framework's own digest reads, and a Version row exists only
+	# where `track_changes` is on, which is exactly the condition a document has
+	# to meet to be followable at all.
+	"Version": {
+		"after_insert": "oneapp.oneapp_core.notifications.on_version",
+	},
+	"Comment": {
+		"after_insert": "oneapp.oneapp_core.notifications.on_comment",
+	},
 	# Inserts are what grow a database, so they are what pauses when a workspace
 	# is over its allowance. Updates and deletes keep working, so deleting
 	# something is always a way back. The check reads a cached verdict — the
@@ -113,4 +127,10 @@ after_migrate = "oneapp.oneapp_core.notifications.install_types"
 # happened, from the side that knows the billing address and owns the wording.
 # The in-app notification is the second half of that, not a duplicate of it, and
 # `is_email_notifications_enabled_for_type` reads this hook to keep it so.
-notification_skip_email_types = ["Workspace"]
+# `Following` never sends its own email either, and for a different reason:
+# following a busy record is one email per save. Frappe's answer to that is the
+# Hourly/Daily/Weekly digest in `send_document_follow_mails`, which is the right
+# shape for email and needs a frequency preference we have not built — so a
+# follow is an in-app subscription and says so, rather than quietly filling an
+# inbox. The digest is left alone: `User.document_follow_notify` stays 0.
+notification_skip_email_types = ["Workspace", "Following"]

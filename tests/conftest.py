@@ -177,6 +177,30 @@ def _make_frappe():
 
 	document.Document = Document
 	model.document = document
+	# The framework's own set of "this doctype is a record of what happened".
+	# Real names, because `followable` excludes them and a test that used an
+	# invented one would prove nothing about the list production uses.
+	model.log_types = (
+		"Version",
+		"Error Log",
+		"Scheduled Job Log",
+		"Activity Log",
+		"Route History",
+	)
+
+	# Bold is markup, and the panel strips markup — so a producer that formats
+	# with it and a reader that removes it are one round trip in the tests.
+	frappe.bold = lambda value: f"<b>{value}</b>"
+
+	# Meta, thin: what the follow producer asks of it is `track_changes` and a
+	# field's label. Tests set `frappe._meta` to say what a doctype is.
+	def get_meta(doctype):
+		return frappe._meta.get(doctype) or types.SimpleNamespace(
+			track_changes=0, get_field=lambda name: None
+		)
+
+	frappe._meta = {}
+	frappe.get_meta = get_meta
 
 	# The framework's notification producer, as a module rather than a function,
 	# because `sync.sync_notices` imports it by path — and a `from a.b.c import
@@ -187,8 +211,19 @@ def _make_frappe():
 	log = types.ModuleType("frappe.desk.doctype.notification_log.notification_log")
 	log.enqueue_create_notification = lambda users, doc, dedupe_on=None: None
 	log.get_skip_email_types = lambda: set()
+	log.get_title = lambda doctype, name, title_field=None: name
+	log.get_title_html = lambda title: f'<b class="subject-title">{title}</b>'
 
-	return frappe, model, document, utils, (desk, desk_doctype, log_pkg, log)
+	# `frappe.desk.notifications`, for the mention extractor the follow producer
+	# uses to avoid telling somebody about a comment twice.
+	desk_notifications = types.ModuleType("frappe.desk.notifications")
+	desk_notifications.extract_mentions = lambda txt: re.findall(
+		r'data-id="([^"]+)"', str(txt or "")
+	)
+
+	return frappe, model, document, utils, (
+		desk, desk_doctype, log_pkg, log, desk_notifications,
+	)
 
 
 @pytest.fixture(autouse=True)

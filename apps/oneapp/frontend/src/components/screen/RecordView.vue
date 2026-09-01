@@ -67,6 +67,31 @@
           @click="like"
         />
         <!--
+          Tell me when this changes. Beside the heart because it is the same
+          kind of thing — a standing statement about one record, made by one
+          person, that no field carries — and the pair reads as "mine" and
+          "watch this" rather than as two unrelated controls.
+
+          Drawn only where the doctype tracks its changes: a follow that can
+          never report anything is a switch that lies, and the server decides
+          that rather than this file guessing from a fieldtype.
+        -->
+        <Button
+          v-if="canFollow"
+          data-slot="follow"
+          icon="lucide-bell"
+          :variant="following ? 'subtle' : 'ghost'"
+          :theme="following ? 'blue' : 'gray'"
+          :label="following ? 'Stop following this record' : 'Follow this record'"
+          :tooltip="
+            following
+              ? 'Following — you are told when this changes'
+              : 'Follow, to be told when this changes'
+          "
+          :loading="followBusy"
+          @click="follow"
+        />
+        <!--
           Save lives up here rather than in a footer, and the reason is the
           corner: the toast that says a save worked is fixed to the bottom
           right of the window, which is exactly where a pane's footer button
@@ -255,6 +280,9 @@ const moreComments = ref(false)
 const changes = ref([])
 const likes = ref([])
 const liked = ref(false)
+const following = ref(false)
+const canFollow = ref(false)
+const followBusy = ref(false)
 // Everybody in the room but this reader — the desk does the same, because a
 // face saying "you are here" is a face saying nothing.
 const others = ref([])
@@ -313,6 +341,8 @@ const loadTimeline = async () => {
     changes.value = found?.changes || []
     likes.value = found?.likes || []
     liked.value = !!found?.liked
+    following.value = !!found?.following
+    canFollow.value = !!found?.can_follow
   } finally {
     loadingTimeline.value = false
   }
@@ -322,6 +352,23 @@ const like = async () => {
   const result = await workspace.toggleLike(props.spaceCode, props.screen, props.record.name)
   liked.value = !!result?.liked
   likes.value = result?.likes || []
+}
+
+// What the server says afterwards, not what was asked for. A follow that was
+// refused — the record moved out of reach between opening it and pressing this
+// — would otherwise leave a bell lit over a subscription that does not exist.
+const follow = async () => {
+  followBusy.value = true
+  try {
+    const result = await workspace.toggleFollow(
+      props.spaceCode,
+      props.screen,
+      props.record.name,
+    )
+    following.value = !!result?.following
+  } finally {
+    followBusy.value = false
+  }
 }
 
 const save = async () => {

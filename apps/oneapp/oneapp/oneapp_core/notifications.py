@@ -201,14 +201,21 @@ def _shaped(row: dict, people: dict, routes: dict) -> dict:
 # all about a document, and this one is about the account the documents live in.
 WORKSPACE_TYPE = "Workspace"
 
+# What a document you follow has to say. Frappe has no type for this because
+# Frappe never notifies a follower in-app — see the Following section below.
+FOLLOW_TYPE = "Following"
+
+OUR_TYPES = (WORKSPACE_TYPE, FOLLOW_TYPE)
+
 
 def install_types():
 	"""Our Notification Types. From `after_install` and `after_migrate`."""
-	if frappe.db.exists("Notification Type", WORKSPACE_TYPE):
-		return
-	frappe.get_doc(
-		{"doctype": "Notification Type", "type_name": WORKSPACE_TYPE, "enabled": 1}
-	).insert(ignore_permissions=True)
+	for name in OUR_TYPES:
+		if frappe.db.exists("Notification Type", name):
+			continue
+		frappe.get_doc(
+			{"doctype": "Notification Type", "type_name": name, "enabled": 1}
+		).insert(ignore_permissions=True)
 
 
 # --------------------------------------------------------------------------- #
@@ -300,3 +307,290 @@ def set_preferences(enabled=None, email=None, types: str | list | None = None) -
 	doc.save(ignore_permissions=True)
 	frappe.db.commit()
 	return preferences()
+
+
+# --------------------------------------------------------------------------- #
+# Following a document
+#
+# Frappe has this and it is half of what people assume it is.
+#
+# What it has: the `Document Follow` doctype — `ref_doctype`, `ref_docname`,
+# `user` — and `frappe.desk.form.document_follow`, which follows, unfollows and
+# answers whether a document is followed. That is a real store, permissioned
+# per user and worth using rather than inventing.
+#
+# What it does *not* have: any in-app delivery at all. The only thing that reads
+# `Document Follow` is `send_document_follow_mails`, an Hourly/Daily/Weekly cron
+# that assembles a digest email from `Version` and `Comment` rows. It writes no
+# Notification Log, so a bell wired straight to the framework's own follow
+# toggles a subscription to an email nobody on our surface has turned on, and
+# nothing appears in the panel. The producer below is that missing half.
+#
+# Three of the framework's four refusals are also about the desk rather than
+# about correctness, and would have refused every member of every workspace:
+#
+#   * `has_permission("Document Follow", "create")` — the doctype grants only
+#     System Manager and Desk User, and our roles ship `desk_access = 0`;
+#   * `User.document_follow_notify`, which defaults to 0 and gates the digest;
+#   * `Administrator`, refused outright.
+#
+# So the writes here are `ignore_permissions` behind a read check on the
+# *document*, which is the permission that actually decides — the same shape
+# `spaceview.toggle_like` and `spaceview.assign` use. The refusals we keep are
+# the two that are about correctness: a doctype whose changes are not tracked
+# has nothing to report, and the doctypes below *are* the activity, so
+# following one is a loop.
+# --------------------------------------------------------------------------- #
+
+# Frappe's own exclusions, and for its own reason: these doctypes are what a
+# timeline is made of. Following a ToDo means being notified about the record
+# the ToDo is about, one level of indirection away from where anybody looked.
+NOT_FOLLOWABLE = frozenset({
+	"Comment",
+	"Communication",
+	"Email Account",
+	"Email Domain",
+	"Email Unsubscribe",
+	"File",
+	"ToDo",
+	"Version",
+})
+
+# How many followers one document may notify in a single write. A document
+# followed by the whole workspace is a mailing list, and the notification is
+# not the place to discover that.
+FOLLOWERS = 50
+
+
+def followable(doctype: str) -> bool:
+	"""Whether this doctype can be followed at all.
+
+	`track_changes` because a follow that reports nothing is a switch that lies,
+	and Frappe's log types because a log of what happened is not a thing that
+	happens.
+	"""
+	from frappe.model import log_types
+
+	if not doctype or doctype in NOT_FOLLOWABLE or doctype in log_types:
+		return False
+	return bool(frappe.get_meta(doctype).track_changes)
+
+
+def _followed(doctype: str, name: str) -> bool:
+	"""Does anybody follow this at all?
+
+	Asked first, and before anything else costs a query. `on_version` runs on
+	every save of every doctype that tracks its changes, site-wide — so the
+	common case is nobody follows this record, and the common case has to be one
+	indexed `exists` and nothing more.
+	"""
+	return bool(
+		frappe.db.exists("Document Follow", {"ref_doctype": doctype, "ref_docname": str(name)})
+	)
+
+
+def is_following(doctype: str, name: str, user: str | None = None) -> bool:
+	return bool(
+		frappe.db.exists(
+			"Document Follow",
+			{
+				"ref_doctype": doctype,
+				"ref_docname": str(name),
+				"user": user or frappe.session.user,
+			},
+		)
+	)
+
+
+def set_following(doctype: str, name: str, wanted: bool) -> bool:
+	"""Follow or unfollow, and answer with what is true afterwards.
+
+	Re-read rather than reported from the argument, for the reason every toggle
+	in this product is: a control that says what it asked for rather than what
+	happened is a control that ends up out of step with its own icon.
+	"""
+	user = frappe.session.user
+	held = is_following(doctype, name, user)
+
+	if wanted and not held:
+		frappe.get_doc(
+			{
+				"doctype": "Document Follow",
+				"ref_doctype": doctype,
+				"ref_docname": str(name),
+				"user": user,
+			}
+		).insert(ignore_permissions=True)
+	elif held and not wanted:
+		for row in frappe.get_all(
+			"Document Follow",
+			filters={"ref_doctype": doctype, "ref_docname": str(name), "user": user},
+			pluck="name",
+		):
+			frappe.delete_doc("Document Follow", row, force=True, ignore_permissions=True)
+
+	return is_following(doctype, name, user)
+
+
+def _followers(doctype: str, name: str, exclude=()) -> list[str]:
+	"""Who to tell, as the emails `enqueue_create_notification` filters on.
+
+	Two things happen here that cannot be skipped. Followers are checked against
+	the document one at a time, because a follow outlives the permission that
+	allowed it — somebody removed from a role keeps the row, and the framework's
+	own digest deletes it when it notices. And the ids are turned into emails,
+	because `_get_user_ids` filters recipients on `User.email` rather than on
+	`User.name`: a list of ids enqueues a job that succeeds and writes nothing.
+	"""
+	skip = {one for one in exclude if one}
+
+	users = [
+		row
+		for row in frappe.get_all(
+			"Document Follow",
+			filters={"ref_doctype": doctype, "ref_docname": str(name)},
+			pluck="user",
+			limit_page_length=FOLLOWERS,
+		)
+		if row and row not in skip
+	]
+	if not users:
+		return []
+
+	allowed = [
+		one
+		for one in users
+		if frappe.has_permission(doctype, "read", doc=str(name), user=one)
+	]
+	if not allowed:
+		return []
+
+	return frappe.get_all(
+		"User", filters={"name": ["in", allowed], "enabled": 1}, pluck="email"
+	)
+
+
+def notify_followers(doctype: str, name: str, said: str, body: str = "", exclude=()) -> int:
+	"""One Notification Log per follower, through the framework's own producer.
+
+	Not a bespoke write: `enqueue_create_notification` is what applies each
+	person's notification settings, skips the actor, dedupes and fans out — and
+	using it is the reason a followed-document notification lands in the same
+	panel, with the same read state and the same counts, as an assignment.
+	"""
+	from frappe.desk.doctype.notification_log.notification_log import (
+		enqueue_create_notification,
+	)
+
+	actor = frappe.session.user
+	recipients = _followers(doctype, name, exclude=[*exclude, actor])
+	if not recipients:
+		return 0
+
+	enqueue_create_notification(
+		recipients,
+		{
+			"type": FOLLOW_TYPE,
+			"document_type": doctype,
+			"document_name": str(name),
+			"subject": said,
+			"email_content": body or said,
+			"from_user": actor,
+		},
+	)
+	return len(recipients)
+
+
+# --- the two things that happen to a document -------------------------------
+#
+# Both from `doc_events` in hooks.py, and both chosen rather than inherited:
+# they are the same two sources the framework's own digest reads. A `Version`
+# row exists only where `track_changes` is on, which is exactly the condition
+# `followable` requires — so hooking Version rather than `on_update` for `*`
+# means the handler never runs for a doctype that could not have been followed.
+
+
+def _title(doctype: str, name: str) -> str:
+	from frappe.desk.doctype.notification_log.notification_log import (
+		get_title,
+		get_title_html,
+	)
+
+	return get_title_html(get_title(doctype, name))
+
+
+def _changed(doc, meta) -> list[str]:
+	"""The labels of what changed, in the screen's words rather than the table's.
+
+	A follower is told *that* something changed and *what* — the values are on
+	the record, one click away, and a notification that carries them is a
+	notification that leaks a permlevel-protected field into a panel.
+	"""
+	data = frappe.parse_json(doc.get("data") or "{}") or {}
+	names = [row[0] for row in (data.get("changed") or []) if row and row[0]]
+	names += [row[0] for row in (data.get("row_changed") or []) if row and row[0]]
+	names += [row[0] for row in (data.get("added") or []) if row and row[0]]
+
+	labels = []
+	for fieldname in dict.fromkeys(names):
+		field = meta.get_field(fieldname)
+		labels.append(_(field.label) if field and field.label else fieldname)
+	return labels
+
+
+def on_version(doc, method=None):
+	"""A followed document was edited."""
+	doctype, name = doc.get("ref_doctype"), doc.get("docname")
+	if not doctype or not name or not followable(doctype):
+		return
+	if not _followed(doctype, name):
+		return
+
+	meta = frappe.get_meta(doctype)
+	changed = _changed(doc, meta)
+	if not changed:
+		# A Version with nothing readable in it. Frappe writes these for
+		# changes that are only bookkeeping, and "somebody updated this" with
+		# no answer to "what" is the notification people turn off.
+		return
+
+	said = _("{0} updated {1} {2}").format(
+		frappe.bold(_full_name(frappe.session.user)),
+		frappe.bold(_(doctype)),
+		_title(doctype, name),
+	)
+	notify_followers(doctype, name, said, body=", ".join(changed[:6]))
+
+
+def on_comment(doc, method=None):
+	"""Somebody commented on a followed document."""
+	if doc.get("comment_type") != "Comment":
+		return
+
+	doctype, name = doc.get("reference_doctype"), doc.get("reference_name")
+	if not doctype or not name or not followable(doctype):
+		return
+	if not _followed(doctype, name):
+		return
+
+	# Anybody named in the comment is already being told, by Frappe, as a
+	# Mention. Two rows for one comment is how a panel teaches somebody that
+	# most of what is in it is noise.
+	from frappe.desk.notifications import extract_mentions
+
+	said = _("{0} commented on {1} {2}").format(
+		frappe.bold(_full_name(frappe.session.user)),
+		frappe.bold(_(doctype)),
+		_title(doctype, name),
+	)
+	notify_followers(
+		doctype,
+		name,
+		said,
+		body=strip_html(doc.get("content") or "")[:BODY],
+		exclude=extract_mentions(doc.get("content") or ""),
+	)
+
+
+def _full_name(user: str) -> str:
+	return frappe.db.get_value("User", user, "full_name") or user

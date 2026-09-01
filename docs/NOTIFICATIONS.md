@@ -104,6 +104,36 @@ Three, all honest:
 rule with **Send System Notification** ticked (Alert) · Email Account failures ·
 Submission Queue.
 
+### Document Follow — the store without the delivery
+
+Frappe has "subscribe to this document" and it is **half** of what the name
+suggests.
+
+What it has: the `Document Follow` doctype (`ref_doctype`, `ref_docname`,
+`user`) and `frappe.desk.form.document_follow` — follow, unfollow, and
+`is_document_followed`. A real store, per user, and worth using rather than
+inventing.
+
+What it does not have: **any in-app delivery at all.** Exactly one thing reads
+that table — `send_document_follow_mails`, an Hourly/Daily/Weekly cron that
+assembles a digest email out of `Version` and `Comment` rows. No Notification
+Log is ever written. So a bell wired straight to the framework's own follow
+subscribes somebody to an email nobody on our surface has turned on, and
+nothing appears in the panel.
+
+Four refusals inside `_follow_document`, and only two of them are about
+correctness:
+
+| Refusal | Ours to keep? |
+|---|---|
+| `has_permission("Document Follow", "create")` | **No.** The doctype grants only System Manager and Desk User; our roles ship `desk_access = 0`, so every member of every workspace holds neither. |
+| `User.document_follow_notify` is 0 by default | **No.** It gates the *digest*, which we do not use. |
+| `Administrator` refused outright | **No.** A desk convention. |
+| `track_changes` must be 1 | **Yes.** A follow on a doctype that writes no Version is a subscription to silence. |
+| ToDo, Comment, File, Communication, Email\* and the log types | **Yes**, and for Frappe's own reason: those doctypes *are* the activity, so following one is a loop. |
+
+See Decision 7.
+
 ---
 
 ## 3. Push, and what the framework does *not* do
@@ -241,6 +271,41 @@ transit Frappe's relay and Google's FCM?* If yes, the relay is less work. If no
 — which is the answer our own jurisdiction promise implies — Phase 2 is Web
 Push and the relay never ships.
 
+### Decision 7 — following uses Frappe's store and our own delivery
+
+The bell beside the heart on a record writes a `Document Follow` row, through
+`spaceview.toggle_follow`. The write is `ignore_permissions` behind
+`check_permission("read")` on the *document* — the same shape `toggle_like` and
+`assign` use, and the right gate: being told when something changes is exactly
+as private as being able to look at it.
+
+The delivery is ours, because the framework has none. Two `doc_events`:
+
+* **`Version.after_insert`** — "Ada updated Note *Van hire terms*", with the
+  changed field *labels* as the body. Labels and never values: the values are on
+  the record one click away, and a panel row carrying them would be a way to
+  read a permlevel-protected field without opening anything.
+* **`Comment.after_insert`** — "Ada commented on …", with the comment's own
+  words. Anybody `extract_mentions` finds is dropped, because Frappe is already
+  telling them, as a Mention.
+
+Version and Comment rather than `on_update` for `*`: they are the same two
+sources the framework's own digest reads, and a Version row exists only where
+`track_changes` is on — which is exactly the condition a document has to meet
+to be followable at all. `on_version` still runs on every save of every tracked
+doctype site-wide, so the first thing it does is one indexed `exists` on
+`Document Follow` and the common case stops there.
+
+Recipients are re-checked against the document one at a time. A follow outlives
+the permission that allowed it — somebody dropped from a role keeps the row —
+and the framework's own digest deletes such rows when it notices.
+
+**In-app only.** Following a busy record is one email per save; the digest is
+the right shape for email and needs a frequency preference we have not built.
+So `Following` is in `notification_skip_email_types`, `preferences` drops it
+from the list rather than offering a switch that would do nothing, and
+`User.document_follow_notify` is left at 0.
+
 ### Decision 6 — what we are not building
 
 * **The desk's open-document counts.** Our screens carry their own count and
@@ -274,7 +339,10 @@ Push and the relay never ships.
    told about; the tenant writes each one into the framework's own Notification
    Log, to whoever holds the owner role, and advances a watermark. Ten wordings
    for the ten events a customer can act on, out of the sixteen recorded.
-5. **Push behind the seam** — Decision 5. Deliberately not built: see below.
+5. ~~**Following a document.**~~ **Done** — Decision 7. Frappe had the store
+   and no delivery; the bell writes the store and two `doc_events` are the
+   delivery. In-app only, on purpose.
+6. **Push behind the seam** — Decision 5. Deliberately not built: see below.
 
 ### On push, and why the arc closes without it
 
@@ -297,10 +365,12 @@ per browser, and a sender — not a data model.
 | | |
 |---|---|
 | The store, per user | `Notification Log` (framework) |
-| Types | `Notification Type` (framework) + `Workspace` (`notifications.install_types`) |
+| Types | `Notification Type` (framework) + `Workspace` and `Following` (`notifications.install_types`) |
 | Preferences | `Notification Settings` (framework), read/written by `notifications.preferences` |
 | Which types email | the allow-list, plus `notification_skip_email_types` in `oneapp/hooks.py` |
-| Producers | `assign_to.add`, `notify_mentions`, `frappe.share.add` (all framework), and `sync.sync_notices` |
+| Producers | `assign_to.add`, `notify_mentions`, `frappe.share.add` (all framework), `sync.sync_notices`, and `notifications.on_version` / `on_comment` |
+| Following, the store | `Document Follow` (framework), written by `notifications.set_following` |
+| Following, the control | the bell in `RecordView.vue`, over `spaceview.toggle_follow` |
 | The feed, shaped | `oneapp_core/notifications.py` |
 | Where a row goes | `notifications._routes`, derived from the manifest |
 | The panel | `NotificationBell` (rail) · `NotificationList` (both) · a Dialog on a phone |

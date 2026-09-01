@@ -231,6 +231,16 @@ export const workspace = {
       { silent: true },
     ),
 
+  // Follow this record, or stop. Not silent: unlike a like, nothing on the
+  // screen changes to prove it worked — the whole result is a notification
+  // that has not happened yet — so the toast is the confirmation.
+  toggleFollow: (spaceCode, screen, name) =>
+    callMethod('oneapp.oneapp_core.spaceview.toggle_follow', {
+      space_code: spaceCode,
+      screen,
+      name,
+    }),
+
   // What is filed against a record. Frappe's own File rows, so a file uploaded
   // through an Attach field and a file dropped on the record are one list.
   // `fieldname` narrows the list to one Attachment Gallery's share of them,
