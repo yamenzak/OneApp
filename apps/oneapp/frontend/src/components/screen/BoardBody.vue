@@ -1,23 +1,36 @@
 <template>
   <!--
-    The board: one column per value of the field that says where a record
-    stands, and a card in the column its record names.
+    The board: one column per value of a field, and a card in the column its
+    record names.
 
     A board is not a different list. It is the same rows, the same filters, the
     same order and the same selection as every other body — the shell above
-    owns all of that — drawn as columns instead of as lines. Which is why the
-    columns are not a board setting: they are the Select's own options, in the
-    doctype's own order, coloured by the doctype's own Document States. There
-    is nothing to configure, and so nothing to configure wrongly.
+    owns all of that — drawn as columns instead of as lines.
+
+    Which field is the reader's, and so is what a card says. A screen declares
+    the one a board *opens* on; from there "show me this by assignee instead"
+    is the same kind of question as "sort by this column", and it is answered
+    the same way — changed in the settings dialog, kept in a saved view.
+
+    Two kinds of field make columns, and they make them differently:
+
+      * A **Select** becomes its own options, in the doctype's own order,
+        coloured and glyphed by the doctype's own Document States. Every option
+        gets a column whether or not anything is in it, because an empty column
+        is where you drop something.
+      * A **Link** becomes the values actually on the page, drawn as records —
+        a face and a name, the same rendering a link cell uses. Not every row
+        of the target doctype: a board by assignee in a workspace of four
+        hundred people is four hundred columns, and 397 of them are empty.
 
     Moving a card writes one field. That is the whole interaction, and it is
-    the reason a board is worth having over a list: a status is the field
-    people change most and the one that costs a dialog to change.
+    the reason a board is worth having over a list: the field people change
+    most is the one that otherwise costs a dialog to change.
   -->
   <div class="min-h-0 flex-1 overflow-x-auto overflow-y-hidden">
     <div class="flex h-full items-stretch gap-3 p-3">
       <section
-        v-for="column in board"
+        v-for="column in columns"
         :key="column.value"
         class="flex h-full w-72 shrink-0 flex-col rounded-6 bg-surface-gray-1"
         :data-oneapp-column="column.value"
@@ -29,7 +42,12 @@
              badge is the same one the cell draws, so a card's status and its
              column read as the same fact rather than as two. -->
         <header class="flex items-center gap-2 px-3 pt-3 pb-2">
-          <Badge :theme="column.theme" variant="subtle" size="md">
+          <!-- A record where the field is a Link, a badge where it is a
+               Select. The same two renderings the cells in the list use, so a
+               column heading and the value under it are the same thing said
+               twice rather than two different things. -->
+          <RecordChip v-if="column.record" :record="column.record" compact class="min-w-0" />
+          <Badge v-else :theme="column.theme" variant="subtle" size="md">
             <template #prefix>
               <Icon :name="column.icon" class="size-3" />
             </template>
@@ -93,6 +111,7 @@
 import { computed, ref } from 'vue'
 import { Badge, Button, Icon } from '@/ui'
 import RecordCard from './RecordCard.vue'
+import RecordChip from './RecordChip.vue'
 import { valueIcon, valueTheme } from '../../lib/fields'
 import { plainText } from '../../lib/format'
 
@@ -107,6 +126,13 @@ const props = defineProps({
   favourites: { type: Boolean, default: false },
   counted: { type: String, default: '' },
   groupBy: { type: String, default: '' },
+  /**
+   * Which field the columns are and what a card says, as the last page came
+   * back for it. The shell owns this because it owns the request: the reader
+   * changes it, the rows are fetched again with the new field in them, and the
+   * board redraws when they arrive rather than before.
+   */
+  board: { type: Object, default: () => ({}) },
 })
 
 // Declared so the shell can bind one set of props to every body. A board does
@@ -116,9 +142,11 @@ defineModel('selection', { type: Array, default: () => [] })
 
 const emit = defineEmits(['open', 'like', 'sort', 'favourites', 'change', 'new'])
 
-// Which field the columns are. Already checked against the doctype by the
-// server, and a screen with none is never offered a board at all.
-const field = computed(() => props.spec?.status_field || '')
+// Which field the columns are, resolved by the server: the screen's own
+// answer, or the manifest's, or this reader's saved one. Checked there against
+// both the column list and the fieldtype, so a board is never made of a Date.
+const board = computed(() => props.board || {})
+const field = computed(() => board.value.column_field || '')
 
 // The field's own definition, from every column the record may show rather
 // than from the ones on screen: a reader who hid the status column has not
@@ -127,16 +155,41 @@ const definition = computed(() =>
   (props.spec?.all_columns || []).find((c) => c.fieldname === field.value),
 )
 
-// The column values, in the doctype's order — or alphabetically, where the
-// field says the desk sorts them. Frappe's `sort_options` is exactly this
-// question and the answer should not differ between the two surfaces.
+const isLink = computed(() => definition.value?.fieldtype === 'Link')
+
+// The column values.
+//
+// A Select's are its own options, in the doctype's order — or alphabetically,
+// where the field says the desk sorts them, because `sort_options` is exactly
+// this question and the answer should not differ between two surfaces.
+//
+// A Link has no options to read, so its columns are the values on the page,
+// in the order the rows arrived. That is a real difference and worth naming:
+// a Select's empty column is still a column you can drop into, and a Link's
+// only appears once something is in it.
 const values = computed(() => {
+  if (isLink.value) {
+    return [...new Set(
+      props.rows.map((row) => String(row[field.value] || '')).filter(Boolean),
+    )]
+  }
   const options = String(definition.value?.options || '')
     .split('\n')
     .map((one) => one.trim())
     .filter(Boolean)
   return definition.value?.sort_options ? [...options].sort() : options
 })
+
+// What a link column is called, and whose face is on it. The rows carry their
+// links already resolved — the same `_links` a cell reads — so this is a
+// lookup rather than a second request.
+const linkRecord = (value) => {
+  for (const row of props.rows) {
+    const found = (row._links || {})[field.value]
+    if (found && found.value === value) return found
+  }
+  return { value, label: value }
+}
 
 // A record whose status is empty, or is a value the field no longer offers,
 // still has to be somewhere: a card that vanishes because somebody edited the
@@ -148,10 +201,11 @@ const strays = computed(() => {
   )]
 })
 
-const board = computed(() =>
+const columns = computed(() =>
   [...values.value, ...strays.value].map((value) => ({
     value,
     label: value || 'None',
+    record: isLink.value && value ? linkRecord(value) : null,
     theme: valueTheme(value, props.spec?.states || []),
     icon: valueIcon(value, props.spec?.states || []) || 'lucide-tag',
     cards: props.rows.filter((row) => String(row[field.value] || '') === value),
@@ -181,16 +235,32 @@ const identity = (row) => {
 const META_FIELD = '__activity'
 const CARD_FIELDS = 4
 
-const shown = computed(() =>
-  (props.columns || []).filter(
+// What a card says, in order.
+//
+// The reader's own list where they have made one, and otherwise the columns
+// they are looking at minus the three the card already shows in its own way:
+// the title, the field the column itself is, and the activity column, which is
+// a row's meta rather than a field.
+//
+// Chosen fields are not filtered that way. Somebody who puts the status on the
+// card meant to put it there.
+const shown = computed(() => {
+  const chosen = board.value.card_fields || []
+  const offered = props.spec?.all_columns || props.columns || []
+  if (chosen.length) {
+    return chosen
+      .map((name) => offered.find((c) => c.fieldname === name))
+      .filter(Boolean)
+  }
+  return (props.columns || []).filter(
     (c) =>
       c.fieldname !== META_FIELD &&
       c.fieldname !== field.value &&
       c.fieldname !== (props.spec?.title_field || 'name') &&
       c.fieldname !== 'name' &&
       c.list_ok !== false,
-  ),
-)
+  )
+})
 
 // A blank field is not on the card at all.
 //

@@ -298,6 +298,7 @@
             :favourites="favourites"
             :counted="counted"
             :group-by="groupedBy"
+            :board="fetchedBoard || spec.board || {}"
             @open="open"
             @like="like"
             @sort="sortBy"
@@ -315,7 +316,8 @@
             :loading="loadingMore"
             @more="loadMore"
             @page-length="setPageLength"
-            @columns="showColumns = true"
+            :view-type="spec.view_type"
+            @columns="openSettings"
           />
         </div>
 
@@ -393,6 +395,14 @@
     </template>
   </Dialog>
 
+  <BoardSettings
+    v-if="spec?.doctype"
+    v-model="showBoard"
+    :spec="spec"
+    :board="fetchedBoard || spec.board || {}"
+    @changed="boardChanged"
+  />
+
   <ColumnPicker
     v-if="spec?.doctype"
     v-model="showColumns"
@@ -436,6 +446,7 @@ import RecordPane from '../components/screen/RecordPane.vue'
 import RecordView from '../components/screen/RecordView.vue'
 import FilterPanel from '../components/screen/FilterPanel.vue'
 import QuickFilters from '../components/screen/QuickFilters.vue'
+import BoardSettings from '../components/screen/BoardSettings.vue'
 import ColumnPicker from '../components/screen/ColumnPicker.vue'
 import ListFooter from '../components/screen/ListFooter.vue'
 import SelectionBar from '../components/screen/SelectionBar.vue'
@@ -464,6 +475,24 @@ const showCreate = ref(false)
 // New; a status for a board column's.
 const preset = ref({})
 const showColumns = ref(false)
+const showBoard = ref(false)
+
+// One gear, two dialogs. Which one is the body's question, not the footer's:
+// a board has no column widths and a list has no cards.
+const openSettings = () => {
+  if (spec.value?.view_type === 'board') showBoard.value = true
+  else showColumns.value = true
+}
+
+// What the reader has said about the board and not yet saved. Empty until they
+// touch it, so the screen's own answer stands — the same shape the filters and
+// the sort use, and it rides in the same payload.
+const boardSettings = ref({})
+
+const boardChanged = (changes) => {
+  boardSettings.value = { ...boardSettings.value, ...changes }
+  changed()
+}
 // The record that is open, fetched. Null is "no record", which is also what
 // closing one means — there is no second flag, because two of them is how a
 // pane ends up open over nothing.
@@ -502,6 +531,9 @@ const groupBy = ref('')
 // The same question, answered by the last page that arrived rather than by the
 // control. See `loadRows`.
 const groupedBy = ref('')
+// The board the last page came back for. Null until one has, which is when the
+// screen's own answer stands.
+const fetchedBoard = ref(null)
 
 const space = computed(() =>
   (session.spaces || []).find((one) => one.space_code === props.spaceCode),
@@ -663,6 +695,10 @@ const payload = () => ({
   favourites: favourites.value,
   group_by: groupBy.value,
   page_length: pageLength.value,
+  // Nested by view type, the same shape the manifest uses and the same shape a
+  // saved view stores. Sent whole so that clearing a choice clears it: a
+  // truthiness check would leave the last board field standing after a reset.
+  view_settings: { board: boardSettings.value },
 })
 
 
@@ -1019,6 +1055,8 @@ const loadRows = async () => {
     // by the group column, so the heading appears when the rows sorted for it
     // do.
     groupedBy.value = page?.group_by || ''
+    // Same reason as the grouping above: the board the rows were fetched for.
+    fetchedBoard.value = page?.board || null
     hasMore.value = !!page?.has_more
     countRows()
   } catch (error) {

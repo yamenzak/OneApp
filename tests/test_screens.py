@@ -1134,22 +1134,101 @@ def test_a_board_is_only_offered_where_there_is_a_status_to_column_it_by(spacevi
 		"board"
 	]
 
+	# Or the screen's own settings name the field instead, which is what a
+	# doctype with no status but an obvious grouping field wants.
+	by_settings = {
+		"view_types": "board",
+		"view_settings": '{"board": {"column_field": "priority"}}',
+	}
+	assert spaceview._view_types(by_settings) == ["board"]
+	# Settings that name no field are not a declaration.
+	assert spaceview._view_types({
+		"view_types": "board", "view_settings": '{"board": {"card_fields": ["x"]}}',
+	}) == ["list"]
+	assert spaceview._view_types({
+		"view_types": "board", "view_settings": "not json",
+	}) == ["list"]
+
 
 def test_a_view_settings_fieldname_is_checked_like_any_other(spaceview):
 	"""A board's column field is a fieldname that reaches a query.
 
 	"It came from the settings blob" is not a reason to trust one, so every
 	value ending in `_field` is checked against the screen's own columns the
-	same way a filter or a sort is.
+	same way a filter or a sort is — and `_fields` is the same check over a
+	list.
 	"""
 	resolved = {"all_columns": spaceview._columns(TODO, ["status", "description"])}
-	kept = spaceview._view_settings(resolved, {"column_field": "status"})
-	assert kept == {"column_field": "status"}
+	settings = {"board": {"column_field": "status"}}
+	assert spaceview._view_settings(resolved, settings) == settings
+
 	# Not a column here, so not a setting.
-	assert spaceview._view_settings(resolved, {"column_field": "owner"}) == {}
+	assert spaceview._view_settings(resolved, {"board": {"column_field": "owner"}}) == {}
 	# Not a fieldname at all, so not carried.
-	assert spaceview._view_settings(resolved, {"colour": "red"}) == {}
+	assert spaceview._view_settings(resolved, {"board": {"colour": "red"}}) == {}
+	# Not a view type, so there is nothing it could be settings for.
+	assert spaceview._view_settings(resolved, {"kanban": {"column_field": "status"}}) == {}
 	assert spaceview._view_settings(resolved, "not json at all") == {}
+
+	# A list of fieldnames, filtered rather than refused: a card that names one
+	# field the screen dropped should lose that field, not all of them.
+	kept = spaceview._view_settings(
+		resolved, {"board": {"card_fields": ["status", "owner", "description"]}}
+	)
+	assert kept == {"board": {"card_fields": ["status", "description"]}}
+	# And capped, because a card is a glance.
+	many = ["status", "description"] * 10
+	assert len(
+		spaceview._view_settings(resolved, {"board": {"card_fields": many}})
+		["board"]["card_fields"]
+	) <= spaceview.MAX_CARD_FIELDS
+
+
+def test_a_board_falls_back_to_the_status_field_and_refuses_the_unboardable(spaceview):
+	"""Columns of a Select or a Link, and of nothing else.
+
+	`_view_settings` checks the name is a column this screen offers. What it
+	cannot check is that a board can be *made* of it — that is a question about
+	the fieldtype — so a settings blob naming the description field falls back
+	to the status field rather than drawing a column per sentence.
+	"""
+	# Its own doctype rather than the shared one: the question needs a Link
+	# field, and adding one to `TODO` would change what every other test in this
+	# file counts.
+	boardable = meta([
+		field("description", "Small Text", "Description"),
+		field("status", "Select", "Status", options="Open\nClosed"),
+		field("date", "Date", "Due Date"),
+		field("allocated_to", "Link", "Assigned To", options="User"),
+	])
+	resolved = {
+		"all_columns": spaceview._columns(
+			boardable, ["status", "description", "date", "allocated_to"]
+		),
+		"status_field": "status",
+	}
+
+	assert spaceview._board(resolved)["column_field"] == "status"
+
+	resolved["view_settings"] = {"board": {"column_field": "allocated_to"}}
+	assert spaceview._board(resolved)["column_field"] == "allocated_to", (
+		"a Link is boardable — 'by assignee' is the board people ask for next"
+	)
+
+	# A Text and a Date are not: one is a column per sentence, the other wants a
+	# calendar.
+	for unboardable in ("description", "date"):
+		resolved["view_settings"] = {"board": {"column_field": unboardable}}
+		assert spaceview._board(resolved)["column_field"] == "status"
+
+	# And with nothing to fall back to, there is no board at all.
+	resolved["status_field"] = ""
+	resolved["view_settings"] = {"board": {"column_field": "description"}}
+	assert spaceview._board(resolved)["column_field"] == ""
+
+	# What the picker offers is every field a board could be made of.
+	offered = {f["fieldname"] for f in spaceview._board(resolved)["fields"]}
+	assert offered == {"status", "allocated_to"}
 
 
 # --------------------------------------------------------------------------- #

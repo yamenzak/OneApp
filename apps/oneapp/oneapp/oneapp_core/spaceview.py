@@ -341,7 +341,7 @@ def _child(df) -> dict | None:
 	}
 
 
-def _fetch_fields(columns: list[dict], status: str = "") -> list[str]:
+def _fetch_fields(columns: list[dict], *always: str) -> list[str]:
 	"""The columns that are actually fields on the document.
 
 	`__activity` is a column and not a field; asking the database for it is a
@@ -371,13 +371,13 @@ def _fetch_fields(columns: list[dict], status: str = "") -> list[str]:
 		c["depends_on_field"] for c in columns
 		if c["fieldtype"] == "Dynamic Link" and c.get("depends_on_field")
 	]
-	# Where the record stands, whether or not anybody is looking at that column.
-	# A board puts each card in the column its status names, and a reader who
-	# dropped the status column from the list has not stopped a board from
-	# needing it — the same way a Dynamic Link's companion is fetched whether or
-	# not it is shown. Already validated against the doctype by `_status_field`.
-	if status:
-		wanted.append(status)
+	# Fields something else on the screen needs, whether or not anybody is
+	# looking at that column: where the record stands, and whatever a board is
+	# making columns of. A reader who dropped the status column from the list
+	# has not stopped a board from being made of it — the same rule a Dynamic
+	# Link's companion field already had. Each is validated before it gets
+	# here, by `_status_field` and by `_board`.
+	wanted += [one for one in always if one]
 	return list(dict.fromkeys(wanted + list(ALWAYS)))
 
 
@@ -676,6 +676,9 @@ def _resolve(space_code: str, screen: str | None = None,
 		# that rather than an error, because a stale link is not a failure.
 		"view_types": offered,
 		"view_type": view_type if view_type in offered else offered[0],
+		# Raw here, validated once the columns are known — see `_board`. A
+		# fieldname is only checkable against a field list, and that list is
+		# built forty lines below this.
 		"view_settings": _json(chosen.get("view_settings")),
 		# An icon per tab of the record form, keyed by the tab's label, and an
 		# override rather than the answer: every tab already gets a glyph
@@ -753,6 +756,8 @@ def _resolve(space_code: str, screen: str | None = None,
 		**presentation(meta),
 		# What to ask the database for: the columns that are fields, plus the
 		# identity that is never one. Activity is neither.
+		# Replaced below, once the board is resolved. Set here so the key exists
+		# in the same place as everything else the screen answers with.
 		"fields": _fetch_fields(columns, _status_field(chosen, offered)),
 		"filters": _json(chosen.get("filters")),
 		"order_by": chosen.get("order_by") or _default_order(meta),
@@ -799,6 +804,18 @@ def _resolve(space_code: str, screen: str | None = None,
 		"can_write": bool(frappe.has_permission(doctype, "write")),
 		"can_delete": bool(frappe.has_permission(doctype, "delete")),
 	})
+
+	# Now that there are columns to check names against. The screen's own
+	# settings are validated here rather than where they were read, and the
+	# board is resolved from them; a saved view narrows both again in
+	# `_apply_saved`.
+	resolved["view_settings"] = _view_settings(resolved, resolved.get("view_settings"))
+	resolved["board"] = _board(resolved)
+	resolved["fields"] = _fetch_fields(
+		resolved["columns"],
+		resolved["status_field"],
+		resolved["board"]["column_field"],
+	)
 	return resolved
 
 
@@ -919,9 +936,28 @@ def _view_types(screen: dict) -> list[str]:
 		for one in str(screen.get("view_types") or "").split(",")
 		if one.strip().lower() in BUILT_VIEW_TYPES
 	]
-	if not (screen.get("status_field") or "").strip():
+	if not _has_column_field(screen):
 		declared = [one for one in declared if one not in NEEDS_STATUS]
 	return list(dict.fromkeys(declared)) or [DEFAULT_VIEW_TYPE]
+
+
+def _has_column_field(screen: dict) -> bool:
+	"""Whether this screen names a field a board could make columns of.
+
+	The `status_field` is the usual answer and the one a manifest should give.
+	A screen may instead name another in its own `view_settings`, which is what
+	a doctype with no status but an obvious grouping field wants — and either
+	way this is a *declaration* check, not a fieldtype one: the fieldtype is
+	checked in `_board`, where there are columns to check it against.
+
+	A reader's own choice does not appear here on purpose. A saved view narrows
+	what a screen offers; it cannot add a view type the screen never offered.
+	"""
+	if (screen.get("status_field") or "").strip():
+		return True
+	settings = _json(screen.get("view_settings"))
+	board = settings.get("board") if isinstance(settings, dict) else None
+	return bool(isinstance(board, dict) and (board.get("column_field") or "").strip())
 
 
 def _json(raw):
@@ -1044,6 +1080,11 @@ def rows(space_code: str, screen: str | None = None, limit: int = PAGE,
 		"columns": resolved["columns"],
 		"order_by": resolved["order_by"],
 		"group_by": resolved.get("group_by") or "",
+		# The board these rows were fetched for, not the one the screen opened
+		# with. Changing the column field changes which field is fetched, so a
+		# board drawn from the spec while rows arrive for a different field is a
+		# board of empty columns for as long as the request takes.
+		"board": resolved.get("board") or {},
 	}
 
 
@@ -2431,6 +2472,7 @@ def _apply_saved(resolved: dict, layout: str | None = None) -> dict:
 	resolved["group_by"] = ""
 	if not saved or not resolved.get("doctype"):
 		return resolved
+	kept_settings: dict = {}
 
 	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or resolved["columns"]}
 	# Intersected, not substituted: a saved column list that names something the
@@ -2450,6 +2492,25 @@ def _apply_saved(resolved: dict, layout: str | None = None) -> dict:
 
 	resolved["favourites"] = bool(saved.get("favourites"))
 	resolved["group_by"] = _group_by(resolved, saved.get("group_by"))
+
+	# The reader's own answer to "columns of what, and what does a card say".
+	#
+	# Stored by `save_layout` since saved views shipped and read by nothing
+	# until now, which is why a board only ever drew the status field. Merged
+	# over the screen's rather than replacing it: a view that names a column
+	# field and no card fields should keep the manifest's card.
+	kept_settings = _view_settings(resolved, saved.get("view_settings"))
+	if kept_settings:
+		merged = {**(resolved.get("view_settings") or {})}
+		for view_type, settings in kept_settings.items():
+			merged[view_type] = {**(merged.get(view_type) or {}), **settings}
+		resolved["view_settings"] = merged
+		resolved["board"] = _board(resolved)
+		resolved["fields"] = _fetch_fields(
+			resolved["columns"],
+			resolved.get("status_field") or "",
+			resolved["board"]["column_field"],
+		)
 	resolved["page_length"] = (
 		_page_length(saved.get("page_length")) or resolved.get("page_length") or PAGE
 	)
@@ -2458,6 +2519,7 @@ def _apply_saved(resolved: dict, layout: str | None = None) -> dict:
 		"filters": resolved["asked"],
 		"favourites": resolved["favourites"],
 		"group_by": resolved["group_by"],
+		"view_settings": kept_settings,
 		"order_by": saved.get("order_by") or "",
 		"columns": [
 			{"fieldname": c["fieldname"], "width": c["width"], "pin": c["pin"]}
@@ -2733,6 +2795,22 @@ def _apply_overrides(resolved: dict, overrides) -> dict:
 	if "group_by" in overrides:
 		resolved["group_by"] = _group_by(resolved, overrides.get("group_by"))
 
+	# A board's field changed and not yet saved, through the same door a filter
+	# uses — narrowing only, and re-checked here rather than trusted because it
+	# was checked when it was saved.
+	if "view_settings" in overrides:
+		asked = _view_settings(resolved, overrides.get("view_settings"))
+		merged = {**(resolved.get("view_settings") or {})}
+		for view_type, settings in asked.items():
+			merged[view_type] = {**(merged.get(view_type) or {}), **settings}
+		resolved["view_settings"] = merged
+		resolved["board"] = _board(resolved)
+		resolved["fields"] = _fetch_fields(
+			resolved["columns"],
+			resolved.get("status_field") or "",
+			resolved["board"]["column_field"],
+		)
+
 	if overrides.get("order_by"):
 		resolved["order_by"] = _safe_order(resolved, overrides["order_by"])
 
@@ -2828,10 +2906,16 @@ def save_layout(space_code: str, screen: str, filters: str | list | dict | None 
 def _view_settings(resolved: dict, asked) -> dict:
 	"""What a view type needs that columns and filters do not carry.
 
-	Every value in it that names a field is checked against the screen's own
-	columns, the same way a filter or a sort is — a board's column field is a
-	fieldname reaching a query, and "it came from the settings blob" is not a
-	reason to trust one.
+	Nested by view type — `{"board": {"column_field": "status"}}` — because one
+	screen offers several, and a flat blob makes "which field" ambiguous the
+	moment a calendar wants one too. The same shape in the manifest and in a
+	saved view, so there is one thing to learn.
+
+	Every fieldname in it is checked against the screen's own columns, the same
+	way a filter or a sort is: a board's column field reaches a query, and "it
+	came from the settings blob" has never been a reason to trust one. A key
+	ending in `_field` is one fieldname; one ending in `_fields` is a list of
+	them. Anything else is dropped — this is a validator, not a passthrough.
 	"""
 	if isinstance(asked, str):
 		try:
@@ -2844,13 +2928,86 @@ def _view_settings(resolved: dict, asked) -> dict:
 		return {}
 
 	offered = {c["fieldname"] for c in resolved.get("all_columns") or []}
-	kept = {}
-	for key, value in asked.items():
-		if not isinstance(key, str) or not key.endswith("_field"):
+	kept: dict[str, dict] = {}
+	for view_type, settings in asked.items():
+		if view_type not in VIEW_TYPES or not isinstance(settings, dict):
 			continue
-		if isinstance(value, str) and value in offered:
-			kept[key] = value
+		for key, value in settings.items():
+			if not isinstance(key, str):
+				continue
+			if key.endswith("_fields") and isinstance(value, list):
+				names = [
+					one for one in dict.fromkeys(value)
+					if isinstance(one, str) and one in offered
+				][:MAX_CARD_FIELDS]
+				if names:
+					kept.setdefault(view_type, {})[key] = names
+			elif key.endswith("_field") and isinstance(value, str) and value in offered:
+				kept.setdefault(view_type, {})[key] = value
 	return kept
+
+
+# How many fields a board card may carry. A card is a glance: past this it is a
+# record rendered badly, and the person wanting the sixth field wants the record.
+MAX_CARD_FIELDS = 6
+
+# What a board may make columns of.
+#
+# A Select is the obvious one — its options *are* the columns, in the doctype's
+# own order, and they exist whether or not any record is in them. A Link works
+# too and is the one people ask for next ("by assignee", "by customer"), with
+# one difference worth being honest about: its columns are the values actually
+# present on the page, because the alternative is a column for every row of the
+# target doctype and nobody wants four hundred empty ones.
+#
+# Nothing else. A Date wants a calendar, a Currency wants a chart, and a board
+# of two hundred one-card columns is not a board.
+BOARDABLE = ("Select", "Link")
+
+
+def _boardable(column: dict | None) -> bool:
+	return bool(column) and column.get("fieldtype") in BOARDABLE
+
+
+def _board(resolved: dict) -> dict:
+	"""Which field a board draws columns of, and what its cards say.
+
+	Three answers, narrowest last. The screen's `status_field` is the default,
+	because a manifest that offers a board has already said where a record
+	stands. The manifest's own `view_settings` may name another. A saved view
+	may name another again — that is the reader's, and it is why this is
+	resolved here rather than read straight off the screen.
+
+	Empty `column_field` means no board: the type is dropped on the way out and
+	the screen opens as a list, which is what `_view_types` already does for a
+	screen that never had a status field.
+	"""
+	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or []}
+	settings = (resolved.get("view_settings") or {}).get("board") or {}
+
+	asked = settings.get("column_field") or ""
+	status = resolved.get("status_field") or ""
+	# `_view_settings` already checked the name is a column this screen offers;
+	# what it cannot check is that a board can be made of it, because that is a
+	# question about the fieldtype rather than about the name.
+	column = asked if _boardable(offered.get(asked)) else ""
+	if not column and _boardable(offered.get(status)):
+		column = status
+
+	return {
+		"column_field": column,
+		# Which fields a card carries. Empty means the browser decides from the
+		# columns the reader is looking at, which is the right default and the
+		# one thing a manifest should not have to repeat.
+		"card_fields": list(settings.get("card_fields") or []),
+		# Every field a board could be columns of, so the picker offers them
+		# without asking the doctype a second question.
+		"fields": [
+			{"fieldname": c["fieldname"], "label": c["label"], "fieldtype": c["fieldtype"]}
+			for c in resolved.get("all_columns") or []
+			if _boardable(c) and c.get("list_ok", True)
+		],
+	}
 
 
 def _layout_doc(space_code: str, screen: str, layout: str | None, label: str | None):

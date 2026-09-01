@@ -34,12 +34,17 @@
         table. Here it is beside the other one of those: how many of them
         there are, and how many to fetch.
       -->
+      <!--
+        One gear, and what it opens is whatever the body is: a list's columns,
+        a board's columns-of and card. Both are "what does this show" rather
+        than "which rows", which is the question this corner already answers.
+      -->
       <Button
         icon="lucide-settings"
         variant="ghost"
         size="sm"
-        label="Choose columns"
-        tooltip="Choose columns"
+        :label="settingsLabel"
+        :tooltip="settingsLabel"
         @click="emit('columns')"
       />
     </div>
@@ -59,8 +64,16 @@ const props = defineProps({
   sizes: { type: Array, default: () => [20, 50, 100, 500] },
   hasMore: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
+  /** Which body is under it, because the gear opens that body's settings. */
+  viewType: { type: String, default: 'list' },
 })
 const emit = defineEmits(['more', 'page-length', 'columns'])
+
+// Named for what it opens. "Choose columns" over a board is a control that
+// says the wrong thing about itself.
+const settingsLabel = computed(() =>
+  props.viewType === 'board' ? 'Board settings' : 'Choose columns',
+)
 
 const options = computed(() =>
   props.sizes.map((size) => ({ label: String(size), value: size })),

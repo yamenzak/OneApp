@@ -503,24 +503,49 @@ what the document ended up holding rather than what was asked for.
 
 ## The board is the same list, drawn as columns
 
-A screen that names a `status_field` may offer `board`. It is the same rows —
-the same filters, the same order, the same page — placed in the column its
-status names.
+A screen that names a field a board could be made of may offer `board`. It is
+the same rows — the same filters, the same order, the same page — placed in the
+column that field names.
 
-Nothing about a board is configured, and that is the point:
+**Which field is the reader's.** A screen declares the one a board *opens* on:
+its `status_field`, or another named in its own `view_settings`. From there
+"show me this by assignee instead" is the same kind of question as "sort by this
+column", and it is answered the same way — changed in the board's settings,
+kept in a saved view, narrowing what the screen offers rather than widening it.
+So is what a card says.
 
-* **The columns are the field's own options**, in the doctype's own order, or
-  alphabetically where the DocField says `sort_options`. Not a list in a
-  manifest, because a manifest's copy of a Select goes stale the first time
-  somebody edits the doctype.
+Three answers, narrowest last: the screen's status field, the manifest's
+`view_settings`, the reader's saved view.
+
+**Two kinds of field make columns, and they make them differently:**
+
+* A **Select** becomes its own options, in the doctype's own order — or
+  alphabetically where the DocField says `sort_options`, because that is
+  exactly this question and the answer should not differ between two surfaces.
+  Every option gets a column whether or not anything is in it, because an empty
+  column is where you drop something.
+* A **Link** becomes the values actually on the page, drawn as records — a face
+  and a name, the same rendering a link cell uses. Not every row of the target
+  doctype: a board by assignee in a workspace of four hundred people is four
+  hundred columns and 397 of them are empty.
+
+Nothing else. A Date wants a calendar, a Currency wants a chart, and a board of
+two hundred one-card columns is not a board. `_view_settings` checks the name is
+a column the screen offers; `_board` checks a board can be *made* of it, which
+is a question about the fieldtype, and falls back to the status field when it
+cannot.
+
+The rest is not configured, and that is deliberate:
+
 * **The colour and the glyph are the doctype's Document States**, the same ones
   the list cell and the record's badge read. A status is one colour everywhere
   or it is not a status.
 * **The card is `RecordCard`**, the component the hover card over a link uses —
-  a face, a title, the id beneath, then the fields the reader has on their list,
-  minus the title and the status the column already is. Blank fields are left
-  off: a list draws an em dash because the column header says what is missing,
-  and a card has no column headers.
+  a face, a title, the id beneath, then the fields. Which fields is the
+  reader's: what they chose, or the columns they have on the list minus the
+  title and the field the column itself is. Blank fields are left off, and a
+  card carries six at most — past that it is a record rendered badly, and the
+  person who wants the seventh wants the record.
 * **A value the field no longer offers still gets a column.** A card that
   vanishes because somebody edited the doctype is worse than an extra column.
 
@@ -529,11 +554,16 @@ permissions, `read_only`, workflows and `fetch_from` all apply exactly as they
 would in the record. The list is re-read afterwards rather than trusted: the
 save may have changed more than was sent.
 
-Two rules are enforced rather than documented. A screen that names no
-`status_field` is not offered a board at all — `spaceview._view_types` and
-`lib/viewTypes.js` both drop it, and a test fails when the two disagree — and
-the status field is fetched with every row whether or not it is one of the
+Two rules are enforced rather than documented. A screen that names no field to
+column by is not offered a board at all — `spaceview._has_column_field` and
+`lib/viewTypes.js` are the same rule, and a test fails when the two disagree —
+and the column field is fetched with every row whether or not it is one of the
 columns the reader is looking at, the same way a Dynamic Link's companion is.
+
+The board redraws when the rows fetched for it arrive, not when the setting
+changes: the rows come back with the board they were fetched for, the same way
+they come back with the grouping. Otherwise a board drawn from the old field
+while rows arrive for the new one is a board of empty columns.
 
 A phone shows the board and cannot drag on it: HTML5 drag and drop is a pointer
 gesture. A status changes there by opening the record, like every other field.

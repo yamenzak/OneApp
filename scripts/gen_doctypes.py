@@ -486,9 +486,14 @@ doctype(
                       "before it ships."),
         f("view_settings", "Code", options="JSON",
           description='Per type, what that type needs: {"board": '
-                      '{"column_field": "status"}, "calendar": {"start_field": '
-                      '"date"}}. Every fieldname in here is checked against the '
-                      'doctype like any other.'),
+                      '{"column_field": "status", "card_fields": ["priority"]}}. '
+                      'Nested by view type because one screen offers several. '
+                      'A key ending in `_field` is one fieldname and `_fields` '
+                      'is a list of them; both are checked against the doctype '
+                      'like a filter or a sort, and anything else is dropped. '
+                      'A board may name a Select or a Link here instead of the '
+                      'status field — and a reader may name another again in a '
+                      'saved view, which is where their own choice lives.'),
         # The override, and only an override. Every tab already gets a glyph
         # derived from its own label — Frappe has no icon property on a Tab
         # Break, and a doctype we do not own will never have a manifest entry —

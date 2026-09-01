@@ -51,13 +51,37 @@ export const NEEDS_STATUS = ['board']
  * that is never the better answer.
  */
 export function viewTypesOf(screen) {
-  const status = String(screen?.status_field || '').trim()
   const declared = String(screen?.view_types || '')
     .split(',')
     .map((type) => type.trim().toLowerCase())
     .filter((type) => VIEW_TYPES[type]?.built)
-    .filter((type) => status || !NEEDS_STATUS.includes(type))
+    .filter((type) => hasColumnField(screen) || !NEEDS_STATUS.includes(type))
   return declared.length ? [...new Set(declared)] : [DEFAULT_VIEW_TYPE]
+}
+
+/**
+ * Whether a screen names a field a board could make columns of.
+ *
+ * `status_field` is the usual answer and the one a manifest should give. A
+ * screen with no status but an obvious grouping field may name that instead,
+ * in its own `view_settings`. Either way this is a declaration check — the
+ * fieldtype is checked on the server, where there are columns to check against
+ * — and `spaceview._has_column_field` is the same rule.
+ *
+ * A reader's own choice is deliberately not here: a saved view narrows what a
+ * screen offers, it cannot add a view type the screen never offered.
+ */
+function hasColumnField(screen) {
+  if (String(screen?.status_field || '').trim()) return true
+  let settings = screen?.view_settings
+  if (typeof settings === 'string') {
+    try {
+      settings = JSON.parse(settings || 'null')
+    } catch {
+      return false
+    }
+  }
+  return !!String(settings?.board?.column_field || '').trim()
 }
 
 /**
