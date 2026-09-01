@@ -1,5 +1,9 @@
 <template>
-  <Sidebar width="14rem" class="border-r border-outline-gray-1">
+  <Sidebar
+    v-model:collapsed="collapsed"
+    :width="`${width}px`"
+    class="border-r border-outline-gray-1"
+  >
     <!-- No logo: the rail already shows the active space's tile, so a header
          logo beside it would say the same thing twice. -->
     <SidebarHeader
@@ -19,7 +23,7 @@
               is invalid, and the browser's own answer to it is to swallow one
               of the two clicks.
             -->
-            <template v-if="expandable(item)" #suffix>
+            <template v-if="expandable(item) && !collapsed" #suffix>
               <Button
                 variant="ghost"
                 :icon="open[item.key] ? 'lucide-chevron-down' : 'lucide-chevron-right'"
@@ -37,7 +41,7 @@
             leaves the view type exactly where it was.
           -->
           <div
-            v-if="expandable(item) && open[item.key]"
+            v-if="expandable(item) && open[item.key] && !collapsed"
             class="ms-3 border-s border-outline-gray-1 ps-1"
           >
             <SidebarItem
@@ -77,16 +81,54 @@
          `mt-auto` is what pins this to the bottom of the flex column. -->
     <div class="mt-auto shrink-0">
       <div class="p-2">
-        <QuotaMeter class="mb-2 px-1" />
+        <!-- A meter is a number and a bar, and neither survives 3rem of width.
+             Collapsed, the sidebar is a column of icons. -->
+        <QuotaMeter v-if="!collapsed" class="mb-2 px-1" />
+        <!--
+          frappe-ui's own toggle, which is a SidebarItem — so it collapses to
+          its icon with everything else and stays where the eye already is when
+          the sidebar is shut, rather than hiding in a corner of the header.
+        -->
+        <SidebarCollapseToggle />
       </div>
     </div>
   </Sidebar>
+
+  <!--
+    And how wide it is when it is open. Two roots rather than a wrapper: the
+    shell lays its sidebar out as a flex child, so the handle is the next one
+    along rather than something nested inside the sidebar's own scroll.
+
+    Hidden while collapsed — a collapsed sidebar is one width by definition,
+    and a handle that resizes something to a size it will not take is a handle
+    that does nothing.
+  -->
+  <Resizer
+    v-if="!collapsed"
+    v-model="width"
+    :min="MIN"
+    :default-size="DEFAULT"
+    :max="MAX"
+    side="right"
+    label="the sidebar"
+    remember="onespace.sidebar"
+    slot-name="sidebar-resizer"
+  />
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { TENANT_APP } from '../lib/brand'
-import { Button, ScrollArea, Sidebar, SidebarHeader, SidebarItem, SidebarLabel } from '@/ui'
+import {
+  Button,
+  ScrollArea,
+  Sidebar,
+  SidebarCollapseToggle,
+  SidebarHeader,
+  SidebarItem,
+  SidebarLabel,
+} from '@/ui'
+import Resizer from './screen/Resizer.vue'
 import QuotaMeter from './QuotaMeter.vue'
 import { useNav } from '../lib/nav'
 import { session } from '../lib/session'
@@ -103,6 +145,46 @@ const { nav, activeSpace } = useNav()
 // `:active="false"` and not simply omitting it: absence falls through to
 // frappe-ui's route inference, which would fill it anyway.
 const SUB_ACTIVE = ['text-ink-gray-6', 'font-medium text-ink-gray-8']
+
+// Shut or open, remembered in this browser.
+//
+// The clearest shell win there is: on a laptop running a data grid, a fixed
+// 224px of chrome sits between the reader and their columns with no way to
+// take it back. frappe-ui's Sidebar already knows how to do this — SidebarItem
+// shrinks to its icon on its own — so what was missing is the state and the
+// toggle, not a layout.
+//
+// Explicitly boolean rather than left null: unset, Sidebar collapses itself
+// below the `sm` breakpoint, and below that breakpoint this component is not
+// rendered at all — the shell has switched to the phone's bar.
+const REMEMBERED = 'onespace.sidebar-collapsed'
+
+const stored = () => {
+  try {
+    return window.localStorage.getItem(REMEMBERED) === '1'
+  } catch {
+    // A private window, or site data turned off. Open is a fine answer.
+    return false
+  }
+}
+
+const collapsed = ref(stored())
+
+watch(collapsed, (shut) => {
+  try {
+    window.localStorage.setItem(REMEMBERED, shut ? '1' : '0')
+  } catch {
+    // Nothing to do about it, and nothing worth saying.
+  }
+})
+
+// How wide when it is open. Narrow enough that a screen name still fits, wide
+// enough that "Provisioning queue" is not three lines.
+const MIN = 176
+const DEFAULT = 224
+const MAX = 420
+
+const width = ref(DEFAULT)
 
 // Which screens are showing their view types. Not persisted: it is a glance,
 // not a preference, and a sidebar that remembers what you opened last week is

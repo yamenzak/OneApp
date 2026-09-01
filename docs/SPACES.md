@@ -428,6 +428,27 @@ What the grid does beyond drawing rows:
 
 None of it is declared anywhere. A doctype with a child table gets all of it.
 
+## The shell: a rail, a sidebar you can shut, and one header
+
+The desktop shell is frappe-ui's `DesktopShell`: a rail of spaces, a sidebar,
+and the page. One shell rather than two — the phone switches to `MobileShell`
+inside the same component — because Frappe CRM ships a desktop layout and a
+mobile layout as separate component trees and the mobile one has already
+drifted behind its sibling.
+
+**The sidebar collapses**, and remembers it in this browser. On a laptop
+running a data grid, a fixed 224px of chrome sits between the reader and their
+columns; `SidebarItem` already knows how to shrink to its icon, so what was
+missing was the state and a toggle. It also **resizes**, through the same
+`Resizer` the record pane uses — which is the whole reason that component was
+pulled out of the pane.
+
+**The header is teleported, and always was.** `DesktopShell` renders a
+`PageHeaderTarget` above the scroll region and a page fills it with
+`<PageHeader>`; the screen's breadcrumb line has been going through it since
+the pane work. There is no header prop threaded through three components to
+remove.
+
 ## Assignment is a thing you do to a record
 
 Frappe's own model, unchanged: `_assign` is a list of user ids on the document,
