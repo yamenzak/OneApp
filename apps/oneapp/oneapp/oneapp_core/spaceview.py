@@ -803,6 +803,15 @@ def _resolve(space_code: str, screen: str | None = None,
 		),
 		"can_write": bool(frappe.has_permission(doctype, "write")),
 		"can_delete": bool(frappe.has_permission(doctype, "delete")),
+		# Frappe's own gate, and the whole of it: `allow_rename` on the doctype
+		# plus write on the document. A doctype that names its records by hash
+		# or by a series says `allow_rename` is off, and the desk hides its
+		# rename for the same reason — an id somebody chose is a different kind
+		# of thing from an id the framework issued.
+		"can_rename": (
+			bool(int(getattr(meta, "allow_rename", 0) or 0))
+			and bool(frappe.has_permission(doctype, "write"))
+		),
 	})
 
 	# Now that there are columns to check names against. The screen's own
@@ -2141,6 +2150,58 @@ def toggle_like(space_code: str, screen: str, name: str) -> dict:
 	after = frappe.parse_json(
 		frappe.db.get_value(doctype, name, "_liked_by") or "[]")
 	return {"liked": frappe.session.user in after, "likes": after}
+
+
+@frappe.whitelist(methods=["POST"])
+def rename(space_code: str, screen: str, name: str, new_name: str) -> dict:
+	"""Give this record a different id.
+
+	Through `frappe.rename_doc`, which is not a nicety: an id is a foreign key
+	in every Link field pointing at it, in `_assign`, in every Comment, File,
+	ToDo, Version and Document Follow row that references it, and in the child
+	tables it parents. The framework's own rename updates all of them in one
+	transaction. An `UPDATE ... SET name` would leave a workspace full of links
+	to a record that no longer exists.
+
+	Renaming the *title* is not this: the title is an ordinary field on the
+	form, and changing it is a save. This changes the id, which is why it is
+	behind `allow_rename` and lives beside the id rather than beside the title.
+	"""
+	resolved = _resolve(space_code, screen)
+	doctype = resolved.get("doctype")
+	if not doctype:
+		frappe.throw(_("There is nothing to rename here."))
+
+	wanted = (new_name or "").strip()
+	if not wanted:
+		frappe.throw(_("A record needs an id."))
+	if wanted == name:
+		return {"name": name}
+
+	# The screen's own reach, not `get_doc`: a record this screen would not
+	# list is not a record this screen may rename. `record()` already applies
+	# the filters and User Permissions, so an empty answer is a refusal.
+	if not record(space_code, screen, name):
+		frappe.throw(_("There is nothing to rename here."))
+
+	# `allow_rename` is re-read here rather than trusted from the spec the
+	# browser was sent: a flag that decides whether a button is drawn and a
+	# flag that decides whether a write happens have to be the same flag, read
+	# at the same moment.
+	frappe.get_doc(doctype, name).check_permission("write")
+
+	from frappe.model.rename_doc import update_document_title
+
+	# `enqueue=False`: the reader is looking at the record and the URL has to
+	# change to the new id when this answers. Frappe enqueues for the desk
+	# because a rename of something with thousands of links is slow — that is
+	# a real limit and it belongs in the copy beside the control rather than in
+	# a background job whose result nobody is watching for.
+	return {
+		"name": update_document_title(
+			doctype=doctype, docname=name, name=wanted, enqueue=False
+		)
+	}
 
 
 @frappe.whitelist(methods=["POST"])

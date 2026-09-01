@@ -170,23 +170,16 @@
             </template>
           </TabTrigger>
           <TabTrigger value="files" label="Files" :icon-left="tabIcon('Files')" />
+          <!--
+            What the record *is*, as opposed to what it says: its id, its
+            picture and its provenance. Last, because it is the tab you go to
+            on purpose rather than the one you land on.
+          -->
+          <TabTrigger value="meta" label="Meta" :icon-left="tabIcon('Meta')" />
         </TabList>
 
         <TabPanel value="fields">
           <div class="flex flex-col gap-4 pt-4">
-            <!-- The record's own picture, where the doctype declares one.
-                 Replaced in place, because an Attach Image field otherwise
-                 renders as a file box halfway down the form. -->
-            <RecordImage
-              v-if="spec.image_field"
-              :value="form[spec.image_field] || ''"
-              :label="identity.label"
-              :field="spec.image_field"
-              :doctype="spec.doctype"
-              :name="record.name"
-              :can-write="canWrite"
-              @update:value="form[spec.image_field] = $event"
-            />
             <RecordForm
               v-model:values="form"
               :spec="spec"
@@ -195,7 +188,6 @@
               :disabled="!canWrite"
             />
             <ErrorMessage v-if="error" :message="error" />
-            <RecordMeta :record="record" />
           </div>
         </TabPanel>
 
@@ -220,6 +212,22 @@
             :screen="screen"
             :name="record.name"
             :can-write="canWrite"
+          />
+        </TabPanel>
+
+        <TabPanel value="meta">
+          <RecordMeta
+            :record="record"
+            :space-code="spaceCode"
+            :screen="screen"
+            :doctype="spec.doctype || ''"
+            :label="identity.label"
+            :image-field="spec.image_field || ''"
+            :image="form[spec.image_field] || ''"
+            :can-write="canWrite"
+            :can-rename="!!spec.can_rename && canWrite"
+            @update:image="form[spec.image_field] = $event"
+            @renamed="renamed"
           />
         </TabPanel>
       </Tabs>
@@ -249,7 +257,6 @@ import ScreenActions from './ScreenActions.vue'
 import RecordForm from './RecordForm.vue'
 import RecordActivity from './RecordActivity.vue'
 import RecordFiles from './RecordFiles.vue'
-import RecordImage from './RecordImage.vue'
 import RecordMeta from './RecordMeta.vue'
 import { workspace } from '../../lib/workspace'
 import { tabIcon, valueTheme } from '../../lib/fields'
@@ -264,7 +271,7 @@ const props = defineProps({
   /** Whether the pane is the page. The pane knows; this does not ask. */
   phone: { type: Boolean, default: false },
 })
-const emit = defineEmits(['saved', 'close', 'reload'])
+const emit = defineEmits(['saved', 'close', 'reload', 'renamed'])
 
 const tab = ref('fields')
 const form = reactive({})
@@ -430,11 +437,23 @@ onBeforeUnmount(() => {
   if (leaveRoom) leaveRoom()
 })
 
+// Set by the Meta tab just before a rename lands. The watch below resets the
+// tab because a *different* record is a different form — but a rename is the
+// same record with a new id, and being thrown back to Details for pressing
+// Rename is the kind of small rudeness that makes people not press it twice.
+const renamedInPlace = ref(false)
+
+const renamed = (name) => {
+  renamedInPlace.value = true
+  emit('renamed', name)
+}
+
 watch(
   () => props.record,
   () => {
     enterRoom()
-    tab.value = 'fields'
+    if (!renamedInPlace.value) tab.value = 'fields'
+    renamedInPlace.value = false
     error.value = ''
     Object.keys(form).forEach((key) => delete form[key])
     for (const field of fields.value) form[field.fieldname] = props.record?.[field.fieldname]

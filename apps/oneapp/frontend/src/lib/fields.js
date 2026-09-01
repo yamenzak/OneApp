@@ -770,7 +770,8 @@ const TAB_ICON_WORDS = [
       "information",
       "about",
       "misc",
-      "other"
+      "other",
+      "meta"
     ]
   ],
   [

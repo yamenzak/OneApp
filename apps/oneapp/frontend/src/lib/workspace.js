@@ -231,6 +231,15 @@ export const workspace = {
       { silent: true },
     ),
 
+  // Give a record a different id. Not silent: a rename is the one edit that
+  // changes what everything else points at, and it deserves saying so.
+  rename: (spaceCode, screen, name, newName) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.rename',
+      { space_code: spaceCode, screen, name, new_name: newName },
+      { successMessage: 'Renamed' },
+    ),
+
   // Follow this record, or stop. Not silent: unlike a like, nothing on the
   // screen changes to prove it worked — the whole result is a notification
   // that has not happened yet — so the toast is the confirmation.

@@ -758,6 +758,45 @@ The gear in the footer opens one dialog for both: **Card settings** over a grid,
 buckets are — appears. Over a list it is still the column picker, because width
 and pinning are questions about a table.
 
+## A record has four tabs, and one of them is not about the fields
+
+Details, Activity, Files — and **Meta**.
+
+Meta holds the three things that are true of a record and are not fields on
+its doctype: its **picture** (`image_field`, Frappe's own answer to "which
+field is the face of this thing", the same one the desk reads), its **id**,
+and its **provenance** — created by, created, last changed, changed by.
+
+They used to sit at the foot of Details, under the form. That put the least
+interesting thing where the eye stops, and made the picture — which is not a
+field either — render as a file box in the middle of the fields. Meta is the
+tab you go to on purpose.
+
+### Renaming is Frappe's rename, and only where Frappe allows it
+
+The id is a foreign key: in every Link field pointing at the record, in
+`_assign`, in every Comment, File, ToDo, Version and Document Follow row that
+references it, and in the child tables it parents. So `spaceview.rename` goes
+through `frappe.model.rename_doc.update_document_title`, which updates all of
+them in one transaction. An `UPDATE ... SET name` would leave a workspace full
+of links to a record that no longer exists.
+
+The control is drawn on `meta.allow_rename` plus write permission — the
+framework's own gate, which the desk reads for the same reason: a doctype that
+names its records by hash or by a naming series has an id the framework
+issued, and that is a different kind of thing from an id somebody chose. Of
+Frappe's own doctypes, Contact allows it; Note, ToDo and Event do not.
+
+Renaming the **title** is not this. The title is an ordinary field on the
+form and changing it is a save; this changes the id, which is why it lives
+beside the id and not beside the title. `enqueue=False`, because the reader is
+looking at the record and the URL has to follow when it answers — Frappe
+enqueues for the desk, and the cost of not doing so is a slow rename on a
+record with thousands of links, which the copy beside the control says.
+
+The answer is the name the *server* ended with, not the one that was typed:
+`before_rename` is a hook and a doctype may transform what it was handed.
+
 ## One radius language
 
 frappe-ui's own components draw four corner sizes and mean something different

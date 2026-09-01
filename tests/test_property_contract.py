@@ -79,8 +79,8 @@ THEIRS = {
 }
 
 DOCTYPE_OURS = {
-	"autoname", "in_create", "sort_field", "sort_order", "states",
-	"title_field", "track_changes", "search_fields",
+	"allow_rename", "autoname", "in_create", "sort_field", "sort_order",
+	"states", "title_field", "track_changes", "search_fields",
 }
 
 DOCTYPE_THEIRS = {

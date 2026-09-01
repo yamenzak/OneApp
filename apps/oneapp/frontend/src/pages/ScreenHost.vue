@@ -371,6 +371,7 @@
           @saved="recordSaved"
           @reload="reloadRecord"
           @close="closeRecord"
+          @renamed="recordRenamed"
         />
       </template>
     </RecordPane>
@@ -945,6 +946,15 @@ const writeField = async ({ row, field, value }) => {
     notifyError(e.message || String(e))
     return
   }
+  await loadRows()
+}
+
+// The record's id changed, so the URL is now pointing at something that no
+// longer exists. Replaced rather than pushed: the old id is not a place to go
+// back to, and leaving it in the history is leaving a 404 in it.
+const recordRenamed = async (name) => {
+  if (!name) return
+  await router.replace({ query: { ...route.query, record: name } })
   await loadRows()
 }
 

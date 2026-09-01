@@ -224,7 +224,7 @@ TAB_ICON_WORDS = [
                          "advanced", "rule")),
     # Before the printing words, because "information" contains "form" and a
     # tab called More Information is not a print format.
-    ("lucide-info", ("information", "about", "misc", "other")),
+    ("lucide-info", ("information", "about", "misc", "other", "meta")),
     ("lucide-file-text", ("print", "template", "content", "text", "letter",
                           "legal", "term", "condition")),
     ("lucide-list", ("detail", "general", "overview", "main", "basic",
