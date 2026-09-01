@@ -23,6 +23,11 @@ export function cellText(column, value, formats = {}, link = null) {
   if (value === null || value === undefined || value === '') return '—'
 
   switch (column.cell) {
+    case 'tags':
+      // `_user_tags` is comma-joined by Frappe, with a leading comma left
+      // behind on the first one by some versions. Read as a list wherever it
+      // is drawn, so the list cell, the card pill and a copied value agree.
+      return tagList(value).join(', ')
     case 'link':
       return plainText(link?.label) || String(link?.value || value)
     case 'date':
@@ -70,4 +75,18 @@ export function humanDuration(seconds, column) {
       .filter(Boolean)
       .join(' ') || (column.hide_seconds ? '0m' : `${seconds}s`)
   )
+}
+
+/**
+ * `_user_tags` as a list.
+ *
+ * Frappe stores a record's tags as one comma-joined string on the row, which is
+ * what makes a tag filterable with the same machinery as any other column and
+ * is why it arrives here needing to be read rather than iterated.
+ */
+export function tagList(value) {
+  return String(value || '')
+    .split(',')
+    .map((one) => one.trim())
+    .filter(Boolean)
 }

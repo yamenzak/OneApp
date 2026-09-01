@@ -79,6 +79,7 @@
           <article
             v-for="row in column.cards"
             :key="row.name"
+            :data-oneapp-card="row.name"
             class="cursor-pointer rounded-6 bg-surface-elevation-1 shadow-sm"
             :class="dragging === row.name ? 'opacity-50' : ''"
             draggable="true"

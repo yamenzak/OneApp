@@ -758,19 +758,92 @@ The gear in the footer opens one dialog for both: **Card settings** over a grid,
 buckets are — appears. Over a list it is still the column picker, because width
 and pinning are questions about a table.
 
+## Tags and sharing are Frappe's, and both were half-built
+
+### Tags
+
+Frappe stores a record's tags twice, and the pair is the design:
+
+* **`_user_tags`** — a comma-joined `Data` column added to the doctype's own
+  table on demand. Being on the row is what makes a tag filterable, sortable
+  and pageable with the same machinery as any other column, and costs no join.
+* **`Tag Link`** — a row per (tag, document), which is what makes "everything
+  tagged urgent" answerable across doctypes, plus a `Tag` master so a tag can
+  be picked rather than retyped.
+
+`DocTags.update` keeps them in step, so we go through it rather than writing
+either. What is ours is where they appear:
+
+* **A Tags column**, offered in the picker like any other. It is a real column,
+  so `like %urgent%` is an ordinary filter and a saved view can carry it.
+  Offered only once the column exists — Frappe adds it the first time anything
+  on that doctype is tagged, and filtering on a column that is not there is a
+  SQL error rather than an empty list.
+* **On every card**, whether or not anybody added the column. The tags ride
+  with the row meta, next to the comment count and the likes, because a board
+  is not a place people go to configure columns.
+* **On the record**, in the Meta panel, as the control that adds and removes
+  them. The picker offers the workspace's whole vocabulary rather than this
+  doctype's: "urgent" means the same thing on an invoice and on a task, and
+  offering it only where it has been used already is how one word becomes
+  three spellings of it.
+
+Two bounds are ours and neither is technical. A record takes twelve tags —
+past that a `Data` column truncates silently — and a tag is stripped of the
+comma it would otherwise be split on.
+
+### Sharing
+
+`DocShare`: one row per (document, person or everyone) carrying read, write,
+submit and share. The part that matters is what reads it — Frappe's own
+`db_query` folds shares into the permission condition of *every* `get_list`,
+so a record shared with somebody becomes visible to them with nothing written
+anywhere else. Writing our own share table would have meant reimplementing
+list permissions.
+
+Three levels rather than four checkboxes: **Can view**, **Can edit**, **Can
+share**. `submit` is a question about a document's state that only means
+anything on a submittable doctype, and putting it in the same list makes the
+other three harder to read; it stays available to `frappe.share`.
+
+Two things had to change for any of it to work on a real workspace:
+
+* **`share` had to be in what a manifest grants.** Frappe gates handing a
+  record to somebody on `has_permission(doctype, "share")`, and our access
+  levels never set it — so every share on every workspace would have been
+  refused. It rides with Write and above now, and not with Read: giving a
+  colleague a record you may edit is part of working with it, and Read is the
+  level that may not give away what it was given.
+* **The writes are `ignore_permissions` behind a check on the document.**
+  `DocShare` grants only System Manager, and our members are Website Users by
+  design. The gate that decides is `share` on the record, which is what
+  `frappe.share.add_docshare` checks — including that you hold each permission
+  you are handing over.
+
+A share still cannot widen a screen. `record()` re-reads through the screen's
+own filters, so a record shared with somebody is reachable on a screen that
+lists it and nowhere else.
+
 ## A record has four tabs, and one of them is not about the fields
 
 Details, Activity, Files — and **Meta**.
 
-Meta holds the three things that are true of a record and are not fields on
-its doctype: its **picture** (`image_field`, Frappe's own answer to "which
-field is the face of this thing", the same one the desk reads), its **id**,
-and its **provenance** — created by, created, last changed, changed by.
+Meta is the desk's own sidebar, and its shape is the argument: the record's
+face and name, then the four things you do to a record *about other people* —
+assign it, file something against it, tag it, share it — then who made it and
+when, then its id.
 
-They used to sit at the foot of Details, under the form. That put the least
-interesting thing where the eye stops, and made the picture — which is not a
-field either — render as a file box in the middle of the fields. Meta is the
-tab you go to on purpose.
+None of them is a field on the doctype. All of them are answers to "what is
+going on with this one", and every desk sidebar has answered them in that
+order for a decade. One row shape throughout — a glyph, a label, and the
+current answer pressed to the right — so the column of values lands on the
+same x whatever the row is, and the fifth thing is a row rather than a
+redesign.
+
+The provenance used to sit at the foot of Details, under the form, which put
+the least interesting thing where the eye stops; the picture rendered as a
+file box in the middle of the fields, because an Attach Image field is what it
+is.
 
 ### Renaming is Frappe's rename, and only where Frappe allows it
 

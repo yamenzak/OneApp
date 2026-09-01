@@ -403,13 +403,22 @@ def sync_email_account():
 # What each access level means in DocPerm terms. Three levels rather than a
 # checkbox per permission: the manifest is meant to be readable by whoever
 # decides what an app exposes, and a matrix of eight flags per row is not.
+#
+# `share` rides with Write and above, and not with Read. Frappe gates handing a
+# record to somebody on `has_permission(doctype, "share")`, so without it here
+# every share on every workspace is refused — and it belongs at Write because
+# giving a colleague a record you may edit is part of working with it, while
+# Read is the level that may not give away what it was given.
 ACCESS_LEVELS = {
 	"Read": {"read": 1},
-	"Write": {"read": 1, "write": 1, "create": 1, "print": 1, "email": 1, "export": 1},
+	"Write": {
+		"read": 1, "write": 1, "create": 1,
+		"print": 1, "email": 1, "export": 1, "share": 1,
+	},
 	"Manage": {
 		"read": 1, "write": 1, "create": 1, "delete": 1,
 		"submit": 1, "cancel": 1, "amend": 1,
-		"print": 1, "email": 1, "export": 1, "report": 1,
+		"print": 1, "email": 1, "export": 1, "report": 1, "share": 1,
 	},
 }
 

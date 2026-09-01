@@ -19,6 +19,21 @@ Two loops. Use the first one that can answer your question.
 > bench is a bigger thing to own than the minutes it saved.
 
 ---
+## A Python edit needs the server restarted
+
+`dev.sh up` runs Werkzeug without the reloader, so an edit to a `.py` file is
+*not* live on the next request — the process is still holding the module it
+imported at boot. It looks exactly like the code being wrong: the endpoint
+answers, the shape is the old shape, and nothing in the log says why.
+
+    ONEAPP_SITE=space.localhost ONEAPP_PORT=8001 scripts/dev.sh down
+    ONEAPP_SITE=space.localhost ONEAPP_PORT=8001 scripts/dev.sh up
+
+The SPA is the other way round: `dev.sh spa` hot-reloads, and the *built*
+bundle the browser suite runs against does not — so a front-end change needs
+`yarn build` before a Playwright pass, for the same reason and with the same
+symptom.
+
 ## The browser pass takes eight minutes, and here is where it goes
 
 164 real tests against a real site, one at a time. Measured: no test is slow —

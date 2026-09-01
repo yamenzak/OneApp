@@ -37,7 +37,14 @@ FOLLOWS_A_DOCUMENT = {"Comment"}
 # may name. `_resolve` and `_space` throw for anything outside the manifest;
 # `_attachable` and `_may_write` are the same gate for the two endpoints that
 # start from a document rather than from a screen.
-GATES = {"_resolve", "_space", "_attachable", "_may_write", "_layout_doc"}
+# `_reachable` is a stricter gate than `_resolve`, not a looser one: it resolves
+# the screen *and* re-reads the record through `record()`, so a row the screen
+# would not list is refused before anything is tagged or shared. `assignees`
+# resolves the screen itself and is the list `shareable` hands back unchanged.
+GATES = {
+	"_resolve", "_space", "_attachable", "_may_write", "_layout_doc",
+	"_reachable", "assignees",
+}
 
 # Calls that reach the database.
 REACHES = {

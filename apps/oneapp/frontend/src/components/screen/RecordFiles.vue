@@ -84,6 +84,8 @@ const props = defineProps({
   canWrite: { type: Boolean, default: false },
 })
 
+const emit = defineEmits(['count'])
+
 const files = ref([])
 const doctype = ref('')
 const loading = ref(false)
@@ -98,6 +100,8 @@ const reload = async () => {
     const found = await workspace.attachments(props.spaceCode, props.screen, props.name)
     files.value = found?.files || []
     doctype.value = found?.doctype || ''
+    // So the panel's Attachments row can say how many without asking again.
+    emit('count', files.value.length)
   } finally {
     loading.value = false
   }

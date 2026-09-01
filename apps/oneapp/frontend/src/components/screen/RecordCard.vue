@@ -238,6 +238,24 @@
       Only where the caller has them. A hover card is one record fetched on its
       own and has no row meta to show.
     -->
+    <!--
+      Tags, where the record has any. Above the meta band rather than among the
+      fields: a tag is not a value of the record, it is what somebody called
+      it — and on a card that is the one thing worth reading before the fields.
+
+      Every card, not only where a Tags column was added: the tags are already
+      on the row, and a board is not a place people go to configure columns.
+    -->
+    <div v-if="!isPanel && tags.length" class="flex flex-wrap items-center gap-1 px-3 pb-1">
+      <Badge
+        v-for="tag in tags"
+        :key="tag"
+        :label="tag"
+        theme="gray"
+        variant="subtle"
+      />
+    </div>
+
     <template v-if="!isPanel && meta">
       <Divider />
       <RowMeta spread :meta="meta" :people="people" @like="emit('like')" />
@@ -295,6 +313,10 @@ const emit = defineEmits(['open', 'like'])
 // utility, so `shape === 'panel' ? 'p-3' : ''` offered it `panel` and `tile` as
 // class names and it rightly said neither emits any CSS.
 const isPanel = computed(() => props.shape === 'panel')
+
+// A card's tags come from the same `_meta.tags` the list's Tags column reads,
+// so a record tagged twice is not tagged once here. See `spaceview._with_meta`.
+const tags = computed(() => props.meta?.tags || [])
 
 // `gap-2.5` is the rhythm the hairlines sit in: the same space above and below
 // each one, which is what makes three bands read as three bands.

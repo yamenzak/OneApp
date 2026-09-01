@@ -212,6 +212,7 @@
             :screen="screen"
             :name="record.name"
             :can-write="canWrite"
+            @count="fileCount = $event"
           />
         </TabPanel>
 
@@ -224,10 +225,18 @@
             :label="identity.label"
             :image-field="spec.image_field || ''"
             :image="form[spec.image_field] || ''"
+            :assigned="assigned"
+            :tags="tags"
+            :shares="shares"
+            :files="fileCount"
             :can-write="canWrite"
             :can-rename="!!spec.can_rename && canWrite"
             @update:image="form[spec.image_field] = $event"
             @renamed="renamed"
+            @assigned="assigned = $event"
+            @tagged="tags = $event"
+            @shared="shares = $event"
+            @files="tab = 'files'"
           />
         </TabPanel>
       </Tabs>
@@ -274,6 +283,16 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'close', 'reload', 'renamed'])
 
 const tab = ref('fields')
+
+// Read the panel's own two lists the first time somebody opens it, and not
+// again while they are on the same record — every write from inside it answers
+// with the state that followed.
+watch(tab, (now) => {
+  if (now === 'meta' && !collabLoaded.value) {
+    collabLoaded.value = true
+    loadCollab()
+  }
+})
 const form = reactive({})
 const error = ref('')
 const saving = ref(false)
@@ -287,6 +306,13 @@ const moreComments = ref(false)
 const changes = ref([])
 const likes = ref([])
 const liked = ref(false)
+const tags = ref([])
+const shares = ref({})
+// Null while nothing has counted them. The Files tab reports what it found, so
+// this stays empty until somebody opens it rather than costing a second request
+// on every record that is never asked about.
+const fileCount = ref(null)
+const collabLoaded = ref(false)
 const following = ref(false)
 const canFollow = ref(false)
 const followBusy = ref(false)
@@ -353,6 +379,23 @@ const loadTimeline = async () => {
   } finally {
     loadingTimeline.value = false
   }
+}
+
+/**
+ * Tags and shares, on opening the Meta tab rather than on opening the record.
+ *
+ * Two requests that most records never need: a person reads a record to read
+ * it, and paying for who-else-can-see-this on every open is paying for the
+ * exception. The panel is the only thing that draws either.
+ */
+const loadCollab = async () => {
+  if (!props.record?.name) return
+  const [found, given] = await Promise.all([
+    workspace.tags(props.spaceCode, props.screen, props.record.name),
+    workspace.shares(props.spaceCode, props.screen, props.record.name),
+  ])
+  tags.value = found?.tags || []
+  shares.value = given || {}
 }
 
 const like = async () => {
@@ -454,6 +497,13 @@ watch(
     enterRoom()
     if (!renamedInPlace.value) tab.value = 'fields'
     renamedInPlace.value = false
+    // A different record's tags and shares are a different record's. Cleared
+    // rather than left standing, or the panel shows the last one's for as long
+    // as the request takes.
+    tags.value = []
+    shares.value = {}
+    fileCount.value = null
+    collabLoaded.value = false
     error.value = ''
     Object.keys(form).forEach((key) => delete form[key])
     for (const field of fields.value) form[field.fieldname] = props.record?.[field.fieldname]

@@ -75,6 +75,28 @@
     {{ value }}
   </span>
 
+  <!--
+    Tags. Badges rather than text, because a tag is a thing you scan a column
+    for rather than read — and grey, all of them, because a tag is the
+    workspace's own word and colouring it would be inventing a meaning the
+    person who typed it did not give it.
+
+    The overflow is counted rather than wrapped: a row is one line high, and a
+    record with nine tags would otherwise push every other row's baseline down.
+  -->
+  <div v-else-if="column.cell === 'tags'" class="flex min-w-0 items-center gap-1">
+    <Badge
+      v-for="tag in shownTags"
+      :key="tag"
+      :label="tag"
+      theme="gray"
+      variant="subtle"
+    />
+    <Tooltip v-if="moreTags.length" :text="moreTags.join(', ')">
+      <span class="shrink-0 text-p-xs text-ink-gray-5">+{{ moreTags.length }}</span>
+    </Tooltip>
+  </div>
+
   <!-- Right-aligned, because a column of numbers that does not line up is a
        column nobody can scan. -->
   <span
@@ -96,11 +118,11 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Badge, Icon, Avatar, Rating } from '@/ui'
+import { Badge, Icon, Avatar, Rating, Tooltip } from '@/ui'
 import RecordChip from './RecordChip.vue'
 import RecordPreview from './RecordPreview.vue'
 import { valueIcon, valueTheme } from '../../lib/fields'
-import { cellText } from '../../lib/cells'
+import { cellText, tagList } from '../../lib/cells'
 import { plainText } from '../../lib/format'
 import { session } from '../../lib/session'
 
@@ -140,6 +162,18 @@ const target = computed(() => {
 // than inside the formatter, which stays a pure question about a number and a
 // docfield.
 const formats = computed(() => session.data?.formats || {})
+
+// How many tags fit on one line of a list cell before the rest become a count.
+// Three is what a 200px column holds at the sizes this list uses; past that the
+// row either wraps — which pushes every other row's baseline down — or clips
+// mid-word, and a count is more honest than either.
+const TAGS_SHOWN = 3
+
+const tags = computed(() =>
+  props.column.cell === 'tags' ? tagList(props.value) : [],
+)
+const shownTags = computed(() => tags.value.slice(0, TAGS_SHOWN))
+const moreTags = computed(() => tags.value.slice(TAGS_SHOWN))
 
 const NUMERIC = ['number', 'currency', 'percent', 'duration']
 const numeric = computed(() => NUMERIC.includes(props.column.cell))

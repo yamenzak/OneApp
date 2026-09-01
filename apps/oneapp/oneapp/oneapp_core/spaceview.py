@@ -25,7 +25,7 @@ import json
 import frappe
 from frappe import _
 
-from oneapp.oneapp_core import fieldtypes
+from oneapp.oneapp_core import collab, fieldtypes
 
 # Fetched on every screen and shown on none. `name` is how a record is opened
 # and saved, and on most doctypes it is a hash — "8eleplcmv6" as the first thing
@@ -446,6 +446,31 @@ MAX_WIDTH = 800
 PINS = ("left", "right")
 
 
+# The other column that is not a field. `_user_tags` is a real column on the
+# doctype's own table — Frappe adds it the first time anything on that doctype
+# is tagged — so once it exists it filters, sorts and pages like any other, and
+# a tag is a first-class way to find a record rather than a decoration on one.
+#
+# Offered only where the column exists, because a filter on a column that is
+# not there is a SQL error rather than an empty list. The first tag on a
+# doctype creates it.
+TAGS_COLUMN = "_user_tags"
+
+
+def _tags_column() -> dict:
+	return {
+		"fieldname": TAGS_COLUMN,
+		"label": _("Tags"),
+		"fieldtype": "Data",
+		"options": None,
+		"cell": "tags",
+		"icon": "lucide-tag",
+		"editable": False,
+		"read_only": 1,
+		"width": 200,
+	}
+
+
 def _meta_column() -> dict:
 	return {
 		"fieldname": META_COLUMN,
@@ -725,6 +750,8 @@ def _resolve(space_code: str, screen: str | None = None,
 	# field list rather than the manifest's — see `_offerable`. The manifest
 	# decides what is on by default; a person decides what they look at.
 	offerable = [*_columns(meta, _offerable(meta, keep=wanted)), _meta_column()]
+	if collab.has_tags_column(meta.name):
+		offerable.append(_tags_column())
 	offered = {c["fieldname"]: c for c in offerable}
 	# What the list may draw, which is not everything the record may show.
 	listable = {name: c for name, c in offered.items() if c.get("list_ok", True)}
@@ -1236,7 +1263,13 @@ def _total(resolved: dict, filters: list) -> int:
 # comments are on it, who liked it, and who it is on. Frappe keeps all four on
 # the document, so reading them costs no extra query — resolving `_assign`'s
 # ids into faces costs one for the whole page, in `_with_people`.
-META_FIELDS = ("modified", "_comments", "_liked_by", "_assign")
+# `_user_tags` rides with them and is *not* consumed by `_with_meta`: it stays
+# on the row under its own name, because it is a column like any other when
+# somebody has added it to the list — and it is on every row regardless, so a
+# card can show a record's tags without the reader having gone to the picker
+# first. Frappe's `db_query` drops it from the field list on a doctype whose
+# table has no such column, so asking for it is always safe.
+META_FIELDS = ("modified", "_comments", "_liked_by", "_assign", "_user_tags")
 
 # Read for a record and never for a row. Who made it and who last touched it is
 # the question every desk sidebar answers, and it is the one thing on a record
@@ -1423,6 +1456,10 @@ def _with_meta(row: dict) -> dict:
 		"comments": len(comments) if isinstance(comments, list) else 0,
 		"likes": len(liked) if isinstance(liked, list) else 0,
 		"liked": frappe.session.user in liked if isinstance(liked, list) else False,
+		# Read rather than popped: the same value is the Tags column's cell
+		# when somebody has added that column, and a card's tags when nobody
+		# has. One fetch, two readers, no second opinion about what it says.
+		"tags": collab.parse(row.get("_user_tags")),
 	}
 	return row
 
@@ -2382,6 +2419,116 @@ def assign(space_code: str, screen: str, name: str, users: str | list) -> dict:
 
 	after = frappe.db.get_value(doctype, name, "_assign")
 	return {"assigned": _people(after)}
+
+
+# --------------------------------------------------------------------------- #
+# Tags and sharing
+#
+# Both are Frappe's — see `oneapp_core.collab` for what each one actually is
+# and why neither was worth inventing. What is here is the screen: which
+# doctype, and whether this reader may reach this record at all.
+#
+# `record()` rather than `get_doc` for the reach check, in every one of these.
+# A record this screen would not list is not a record this screen may tag or
+# share, and `record()` is the one path that applies the screen's own filters
+# and this person's User Permissions together.
+# --------------------------------------------------------------------------- #
+
+
+def _reachable(space_code: str, screen: str, name: str) -> str:
+	"""The doctype, if this reader may reach this record through this screen."""
+	resolved = _resolve(space_code, screen)
+	doctype = resolved.get("doctype")
+	if not doctype:
+		frappe.throw(_("There are no records on this screen."))
+	if not record(space_code, screen, name):
+		frappe.throw(_("That record is not on this screen."), frappe.PermissionError)
+	return doctype
+
+
+@frappe.whitelist(methods=["GET"])
+def tags(space_code: str, screen: str, name: str) -> dict:
+	"""This record's tags, and what else the workspace calls things."""
+	doctype = _reachable(space_code, screen, name)
+	held = collab.tags_of(doctype, name)
+	return {"tags": held, "options": collab.tag_options(exclude=held)}
+
+
+@frappe.whitelist(methods=["GET"])
+def tag_options(space_code: str, screen: str, name: str, query: str = "") -> list:
+	"""Tags to pick from, as somebody types.
+
+	The workspace's whole vocabulary rather than this doctype's: "urgent" means
+	the same thing on an invoice and on a task, and offering it only where it
+	has been used already is how one word becomes three spellings of it.
+	"""
+	doctype = _reachable(space_code, screen, name)
+	return collab.tag_options(query, exclude=collab.tags_of(doctype, name))
+
+
+@frappe.whitelist(methods=["POST"])
+def set_tag(space_code: str, screen: str, name: str, tag: str,
+            on: str | int = 1) -> dict:
+	"""Put a tag on this record, or take it off.
+
+	One endpoint rather than two: it is a toggle in the UI, the permission is
+	the same, and the answer is the same — the tags as they stand afterwards,
+	re-read rather than reported from the argument.
+	"""
+	doctype = _reachable(space_code, screen, name)
+	held = collab.set_tag(doctype, name, tag, on=frappe.utils.sbool(on))
+	return {"tags": held, "options": collab.tag_options(exclude=held)}
+
+
+@frappe.whitelist(methods=["GET"])
+def shares(space_code: str, screen: str, name: str) -> dict:
+	"""Who this record has been given to, and how far."""
+	doctype = _reachable(space_code, screen, name)
+	return {
+		**collab.shares_of(doctype, name),
+		# Asked here rather than taken from the spec: a control that is drawn
+		# and a write that is allowed have to read the same flag at the same
+		# moment, and `share` is a permission on the doctype like any other.
+		"can_share": bool(frappe.has_permission(doctype, "share", doc=str(name))),
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def set_share(space_code: str, screen: str, name: str, user: str | None = None,
+              everyone: str | int = 0, level: str = "read") -> dict:
+	"""Share it with somebody, or change how far their share goes."""
+	doctype = _reachable(space_code, screen, name)
+	if user and user not in _colleagues():
+		# The same bound the assignment picker uses: sharing is a thing you do
+		# with the people on this workspace, and a share with an account from
+		# somewhere else on the site is a hole rather than a feature.
+		frappe.throw(_("{0} is not on this workspace.").format(user))
+	return {
+		**collab.share(doctype, name, user=user, everyone=everyone, level=level),
+		"can_share": True,
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def unshare(space_code: str, screen: str, name: str, user: str | None = None,
+            everyone: str | int = 0) -> dict:
+	"""Take a share back."""
+	doctype = _reachable(space_code, screen, name)
+	return {
+		**collab.unshare(doctype, name, user=user, everyone=everyone),
+		"can_share": True,
+	}
+
+
+@frappe.whitelist(methods=["GET"])
+def shareable(space_code: str, screen: str, query: str = "") -> list[dict]:
+	"""Who this record can be shared with: the workspace, minus nobody.
+
+	The same list the assignment picker offers and for the same reason — these
+	are colleagues, and an account that holds no role on any space this
+	workspace granted is not one.
+	"""
+	return assignees(space_code, screen, query)
 
 
 # --------------------------------------------------------------------------- #

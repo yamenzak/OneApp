@@ -231,6 +231,64 @@ export const workspace = {
       { silent: true },
     ),
 
+  // --- tags and sharing ---------------------------------------------------
+  //
+  // Frappe's `_user_tags` and `DocShare`, screen-gated. See
+  // `oneapp_core/collab.py` for what each one is and why neither is ours.
+
+  tags: (spaceCode, screen, name) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.tags',
+      { space_code: spaceCode, screen, name },
+      { silent: true, method: 'GET' },
+    ),
+
+  tagOptions: (spaceCode, screen, name, query = '') =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.tag_options',
+      { space_code: spaceCode, screen, name, query },
+      { silent: true, method: 'GET' },
+    ),
+
+  // Silent: the badge appearing is the confirmation, and a toast for every
+  // tag is a toast for something nobody was unsure about.
+  setTag: (spaceCode, screen, name, tag, on) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.set_tag',
+      { space_code: spaceCode, screen, name, tag, on: on ? 1 : 0 },
+      { silent: true },
+    ),
+
+  shares: (spaceCode, screen, name) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.shares',
+      { space_code: spaceCode, screen, name },
+      { silent: true, method: 'GET' },
+    ),
+
+  shareable: (spaceCode, screen, query = '') =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.shareable',
+      { space_code: spaceCode, screen, query },
+      { silent: true, method: 'GET' },
+    ),
+
+  // Not silent, either way. Handing somebody access to a record — or taking it
+  // back — is the kind of change you want told you happened.
+  setShare: (spaceCode, screen, name, { user = null, everyone = 0, level = 'read' }) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.set_share',
+      { space_code: spaceCode, screen, name, user, everyone, level },
+      { successMessage: 'Shared' },
+    ),
+
+  unshare: (spaceCode, screen, name, { user = null, everyone = 0 }) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.unshare',
+      { space_code: spaceCode, screen, name, user, everyone },
+      { successMessage: 'Stopped sharing' },
+    ),
+
   // Give a record a different id. Not silent: a rename is the one edit that
   // changes what everything else points at, and it deserves saying so.
   rename: (spaceCode, screen, name, newName) =>

@@ -266,14 +266,43 @@ def test_no_unknown_slots(app):
 
 # Everything that is not the default slot: named-slot templates, comments, and
 # the `v-if`/`v-for` a wrapper element might carry.
-NAMED_SLOT_BLOCK = re.compile(r"<template\s+(?:#|v-slot:)[^>]*>.*?</template>", re.S)
+SLOT_OPEN = re.compile(r"<template\s+(?:#|v-slot:)[^>]*>")
+TEMPLATE_TAG = re.compile(r"<template\b[^>]*>|</template>")
 COMMENT = re.compile(r"<!--.*?-->", re.S)
+
+
+def strip_named_slots(text: str) -> str:
+    """Remove every `<template #name>…</template>`, nesting and all.
+
+    Counted rather than matched non-greedily. A slot whose content holds a
+    `<template v-if>` — which is ordinary Vue for "group these without a
+    wrapper element" — closed the outer one at the *inner* tag, and everything
+    after it was reported as default-slot content that renders nowhere. The
+    component was fine; the regex was not.
+    """
+    out, at = [], 0
+    while True:
+        start = SLOT_OPEN.search(text, at)
+        if not start:
+            out.append(text[at:])
+            return "".join(out)
+
+        out.append(text[at:start.start()])
+        depth, cursor = 1, start.end()
+        for tag in TEMPLATE_TAG.finditer(text, start.end()):
+            depth += -1 if tag.group().startswith("</") else 1
+            if depth == 0:
+                cursor = tag.end()
+                break
+        else:
+            # Unbalanced. Nothing after it is default content either.
+            return "".join(out)
+        at = cursor
 
 
 def default_slot_content(source: str) -> str:
     """What a component's children would render into its default slot."""
-    text = NAMED_SLOT_BLOCK.sub("", COMMENT.sub("", source))
-    return text.strip()
+    return strip_named_slots(COMMENT.sub("", source)).strip()
 
 
 @pytest.mark.parametrize("app", APPS)

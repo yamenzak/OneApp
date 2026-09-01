@@ -695,7 +695,24 @@ def test_a_row_reports_its_comment_count_and_never_its_comments(spaceview, stub_
 def test_a_row_with_no_comments_or_likes_still_reports(spaceview, stub_frappe):
 	stub_frappe.session.user = "someone@example.com"
 	row = spaceview._with_meta({"name": "abc", "modified": None})
-	assert row["_meta"] == {"modified": None, "comments": 0, "likes": 0, "liked": False}
+	assert row["_meta"] == {
+		"modified": None, "comments": 0, "likes": 0, "liked": False, "tags": [],
+	}
+
+
+def test_tags_stay_on_the_row_as_well_as_in_the_meta(spaceview, stub_frappe):
+	"""Two readers, one fetch.
+
+	`_user_tags` is the Tags column's cell where somebody has added that column
+	to the list, and a card's tags where nobody has. So it is read into the
+	meta and *left* on the row under its own name, unlike `_comments` and
+	`_liked_by`, which are consumed because only their counts are ever shown.
+	"""
+	stub_frappe.session.user = "someone@example.com"
+	row = spaceview._with_meta({"name": "abc", "modified": None, "_user_tags": ",urgent,renewal"})
+
+	assert row["_user_tags"] == ",urgent,renewal"
+	assert row["_meta"]["tags"] == ["urgent", "renewal"]
 
 
 def test_favourites_can_only_ever_mean_the_person_asking(spaceview, stub_frappe):

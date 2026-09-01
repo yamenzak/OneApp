@@ -28,9 +28,17 @@ test('the record says who made it, and when, on its own tab', async ({
   await expect(page.getByText('Created by')).toHaveCount(0)
 
   await meta(page).click()
+  // One sentence apiece — "Created by Administrator" with the age under it —
+  // rather than a label-and-value grid, because that is one fact and splitting
+  // it across two columns makes the reader assemble it.
   await expect(page.getByText('Created by')).toBeVisible()
-  await expect(page.getByText('Created', { exact: true })).toBeVisible()
+  await expect(page.getByText('Administrator').first()).toBeVisible()
   await expect(page.locator('[data-slot="record-id"]')).toBeVisible()
+
+  // And the four collaboration rows, which is what the panel is for.
+  for (const row of ['Assigned to', 'Attachments', 'Tags', 'Shared with']) {
+    await expect(page.getByText(row, { exact: true })).toBeVisible()
+  }
 
   // Note names its records by hash, so `allow_rename` is off and the desk
   // hides its rename for the same reason. So do we.
