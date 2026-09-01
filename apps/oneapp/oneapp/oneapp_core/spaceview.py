@@ -701,7 +701,7 @@ def _resolve(space_code: str, screen: str | None = None,
 
 	doctype = chosen.get("document_type")
 	if not doctype:
-		resolved["error"] = _("This screen names neither a doctype nor a component.")
+		resolved["error"] = _("This screen has nothing to show yet.")
 		return resolved
 
 	if doctype not in _granted_doctypes(space):
@@ -1139,8 +1139,25 @@ def record(space_code: str, screen: str, name: str) -> dict:
 	found = [_with_meta(row) for row in found]
 	_with_links(resolved, found)
 	_with_people(found)
+	_with_authors(found[0])
 	_with_children(resolved, found[0], name)
 	return found[0]
+
+
+def _with_authors(row: dict) -> None:
+	"""Who made it and who touched it last, as people rather than as ids.
+
+	`owner` and `modified_by` are user ids, and a user id is an email address.
+	Printing one is printing the database's answer to a question that was about
+	a person — so they are resolved to the same face-and-name every other person
+	in this product is drawn as, from the same lookup, in one query for both.
+
+	The ids stay on the row. A person removed from the workspace resolves to
+	nothing, and "created by somebody who is gone" still has to say who.
+	"""
+	found = _users([one for one in (row.get("owner"), row.get("modified_by")) if one])
+	row["_owner"] = found.get(row.get("owner"))
+	row["_editor"] = found.get(row.get("modified_by"))
 
 
 def _with_children(resolved: dict, row: dict, name: str) -> None:
@@ -1478,7 +1495,7 @@ def save(space_code: str, screen: str, values: str | dict, name: str | None = No
 	if isinstance(values, str):
 		values = frappe.parse_json(values)
 	if not isinstance(values, dict):
-		frappe.throw(_("Expected an object of values."))
+		frappe.throw(_("Those changes could not be read."))
 
 	# The allowlist is the screen. A field the screen does not show is not a field
 	# this screen may write, whatever arrives in the payload.
@@ -1722,7 +1739,7 @@ def link_new(space_code: str, screen: str, fieldname: str, values: str | dict,
 	if isinstance(values, str):
 		values = frappe.parse_json(values)
 	if not isinstance(values, dict):
-		frappe.throw(_("Expected an object of values."))
+		frappe.throw(_("Those changes could not be read."))
 
 	meta = frappe.get_meta(target)
 	allowed = {df.fieldname for df in meta.fields if _quick_entry(df)}
@@ -3270,7 +3287,7 @@ def _layout_doc(space_code: str, screen: str, layout: str | None, label: str | N
 		if (doc.space_code, doc.screen) != (space_code, screen):
 			# A layout belongs to one screen. Naming another screen's row would
 			# otherwise move it, silently, out from under whoever saved it.
-			frappe.throw(_("That screen belongs to a different screen."), frappe.PermissionError)
+			frappe.throw(_("That view belongs to a different screen."), frappe.PermissionError)
 		return doc
 	if not label:
 		existing = _saved(space_code, screen, view_type)
@@ -3328,7 +3345,7 @@ def delete_layout(space_code: str, screen: str, layout: str) -> dict:
 	"""Remove a layout. Whose it is decides who may."""
 	doc = frappe.get_doc("OneSpace Saved View", layout)
 	if (doc.space_code, doc.screen) != (space_code, screen):
-		frappe.throw(_("That screen belongs to a different screen."), frappe.PermissionError)
+		frappe.throw(_("That view belongs to a different screen."), frappe.PermissionError)
 	_may_write(doc)
 	frappe.delete_doc("OneSpace Saved View", doc.name, ignore_permissions=True)
 	# Whoever had hidden it is no longer hiding anything. Swept here rather
@@ -3352,7 +3369,7 @@ def hide_layout(space_code: str, screen: str, layout: str) -> dict:
 	"""
 	doc = frappe.get_doc("OneSpace Saved View", layout)
 	if (doc.space_code, doc.screen) != (space_code, screen):
-		frappe.throw(_("That screen belongs to a different screen."), frappe.PermissionError)
+		frappe.throw(_("That view belongs to a different screen."), frappe.PermissionError)
 	if doc.user:
 		frappe.throw(_("That view is yours — delete it rather than hiding it."))
 	if not frappe.db.exists("OneSpace Hidden View",
@@ -3389,7 +3406,7 @@ def default_layout(space_code: str, screen: str, layout: str) -> dict:
 	"""
 	doc = frappe.get_doc("OneSpace Saved View", layout)
 	if (doc.space_code, doc.screen) != (space_code, screen):
-		frappe.throw(_("That screen belongs to a different screen."), frappe.PermissionError)
+		frappe.throw(_("That view belongs to a different screen."), frappe.PermissionError)
 	_may_write(doc)
 	doc.is_default = 1
 	doc.save(ignore_permissions=True)

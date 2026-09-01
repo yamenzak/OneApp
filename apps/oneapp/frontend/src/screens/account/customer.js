@@ -133,7 +133,7 @@ export function useMembers(workspaceRef) {
 
 export const inviteMember = (workspace, payload) =>
   callMethod('oneapp_control.api.customer.invite_member', { workspace, ...payload }, {
-    successMessage: 'Invited — they can sign in once the workspace next syncs',
+    successMessage: 'Invited — they can sign in shortly',
   })
 
 export const removeMember = (workspace, email) =>
@@ -145,7 +145,7 @@ export const setMemberRoles = (workspace, email, roles, access) =>
   callMethod(
     'oneapp_control.api.customer.set_member_roles',
     { workspace, email, roles, access },
-    { successMessage: 'Saved — it applies on the next sync' },
+    { successMessage: 'Saved — it takes effect shortly' },
   )
 
 /**
@@ -165,7 +165,7 @@ export function useRoles(workspaceRef) {
 
 export const saveRole = (workspace, payload) =>
   callMethod('oneapp_control.api.customer.save_role', { workspace, ...payload }, {
-    successMessage: 'Saved — it applies on the next sync',
+    successMessage: 'Saved — it takes effect shortly',
   })
 
 export const deleteRole = (workspace, name) =>

@@ -407,7 +407,7 @@ def update_shard(shard: str, values: str | dict) -> dict:
 	if isinstance(values, str):
 		values = json.loads(values)
 	if not isinstance(values, dict):
-		frappe.throw(_("Expected an object of fields to change."))
+		frappe.throw(_("Those changes could not be read."))
 
 	rejected = sorted(set(values) - set(SHARD_EDITABLE))
 	if rejected:

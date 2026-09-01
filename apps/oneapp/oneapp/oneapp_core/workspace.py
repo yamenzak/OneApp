@@ -386,7 +386,7 @@ def save(group: str, values: str | dict) -> dict:
 	if isinstance(values, str):
 		values = frappe.parse_json(values)
 	if not isinstance(values, dict):
-		frappe.throw(_("Expected an object of settings to change."))
+		frappe.throw(_("Those settings could not be read."))
 
 	known = _settings(group)
 	rejected = sorted(set(values) - set(known))
