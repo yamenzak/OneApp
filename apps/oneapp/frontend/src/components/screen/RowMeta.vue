@@ -16,7 +16,16 @@
     whose age reads "7 hours" and rows that read "2 days" then put their heart
     in two different places, which is the crooked column of hearts.
   -->
-  <div class="flex w-full items-center justify-end gap-2 text-p-xs text-ink-gray-5">
+  <!--
+    On a card the same three read the other way round: the counts sit under the
+    fields where the eye already is, and the heart goes to the far corner. A
+    row is a column of hearts and needs them all on one x; a card is one heart
+    and needs it where a card's action goes.
+  -->
+  <div
+    class="flex w-full items-center gap-2 text-p-xs text-ink-gray-5"
+    :class="spread ? '' : 'justify-end'"
+  >
     <span class="whitespace-nowrap tabular-nums">{{ when }}</span>
 
     <!-- Always, including the zero: a count that appears only when there is
@@ -34,6 +43,7 @@
       "1", and nothing looking for a favourites button could find it.
     -->
     <span v-if="meta.likes" class="tabular-nums">{{ meta.likes }}</span>
+    <span v-if="spread" class="flex-1" />
     <!-- The heart is last, so it lines up with the one in the header. -->
     <!-- Its own theme rather than its own icon: lucide ships no filled heart,
          so the colour is what says whether this one is yours. -->
@@ -54,6 +64,8 @@ import { Button, Icon, dayjsLocal } from '@/ui'
 
 const props = defineProps({
   meta: { type: Object, default: () => ({}) },
+  /** Counts at the start and the heart at the end, which is a card's shape. */
+  spread: { type: Boolean, default: false },
 })
 const emit = defineEmits(['like'])
 

@@ -1064,6 +1064,16 @@ def test_a_card_is_mapped_in_one_place():
 		assert "RecordCard" in source, (
 			f"{path.name} no longer renders RecordCard, which is the card itself"
 		)
+		# The card's meta band ends in a real `<button>` — the heart — so the
+		# tile around it cannot be one. It was, in the grid, for exactly as long
+		# as the card had nothing pressable on it. Lowercase, because the
+		# frappe-ui component is `<Button>` and a column heading may hold one.
+		assert "<button" not in source, (
+			f"{path.name} wraps its cards in a raw <button>; the card has "
+			"controls of its own, and a button inside a button is not something "
+			"a browser renders. The tile is a click surface and the title "
+			"inside it is the keyboard target — see RecordCard."
+		)
 
 	# And the mapping knows nothing about how the cards are laid out. A `bucket`
 	# or a `drag` in here is the board leaking into the thing the grid shares.

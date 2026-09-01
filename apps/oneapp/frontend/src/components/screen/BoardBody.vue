@@ -92,6 +92,9 @@
               :fields="cardFields(row)"
               :links="row._links || {}"
               :states="spec.states || []"
+              :meta="row._meta || null"
+              @open="emit('open', row)"
+              @like="emit('like', row)"
             />
           </article>
 

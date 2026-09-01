@@ -26,18 +26,17 @@
     -->
     <div class="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-3">
       <!--
-        A card is a link to its record, so it is a button: a div with a click
-        handler is invisible to a keyboard and to anything reading the page
-        aloud, and a grid of forty of them is forty records nobody can reach.
-        `text-left` because a button centres its content by default and a card
-        is a paragraph, not a label.
+        The tile is a click surface rather than a control, the same way a list
+        row is: the whole card opens the record, and the title inside it is the
+        button that makes that reachable from a keyboard. A `<button>` around
+        the whole card cannot hold the heart the meta band ends with — a button
+        inside a button is not a thing a browser will render.
       -->
-      <button
+      <article
         v-for="row in rows"
         :key="row.name"
-        type="button"
         :data-oneapp-card="row.name"
-        class="rounded-6 bg-surface-elevation-1 text-left shadow-sm ring-outline-gray-2 hover:ring-1 focus-visible:ring-2"
+        class="cursor-pointer rounded-6 bg-surface-elevation-1 shadow-sm"
         @click="emit('open', row)"
       >
         <RecordCard
@@ -46,8 +45,11 @@
           :fields="cardFields(row)"
           :links="row._links || {}"
           :states="spec.states || []"
+          :meta="row._meta || null"
+          @open="emit('open', row)"
+          @like="emit('like', row)"
         />
-      </button>
+      </article>
     </div>
   </div>
 </template>

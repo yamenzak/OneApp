@@ -569,13 +569,29 @@ The rest is not configured, and that is deliberate:
 * **The colour and the glyph are the doctype's Document States**, the same ones
   the list cell and the record's badge read. A status is one colour everywhere
   or it is not a status.
-* **The card is `RecordCard`**, the component the hover card over a link uses —
-  a face, a title, the id beneath, then the fields. Which fields is the
-  reader's: what they chose, or the columns they have on the list minus the
-  title and the field the column itself is. Blank fields are left off, and a
-  card carries six at most — past that it is a record rendered badly, and the
-  person who wants the seventh wants the record. The mapping from a row to
-  what is on its card is `lib/cards.js`, shared with the grid — see below.
+* **The card is `RecordCard`**, the component the hover card over a link uses.
+  Three bands, separated by hairlines, which is the shape Frappe CRM's kanban
+  card settles on and it is the right one:
+
+  1. **Who it is** — a face, the title, the id beneath. The card is a click
+     surface like a list row, so this is also a `<button>`: the tile's one
+     keyboard target and its accessible name.
+  2. **What it says** — the fields, one per line and each truncated, so a long
+     value shortens itself rather than widening the card. Values run together
+     into a paragraph is a sentence nobody wrote. No labels: a Select is
+     already a coloured badge and a Link is already a face with a name, and the
+     rest are recognisable from their own values.
+  3. **How it is doing** — when it last moved, how many have said something,
+     and whether this one is yours, with the heart at the far corner. The same
+     three the list shows at the end of every row; they are already on the row,
+     and a card that drops them says less than the list it came from.
+
+  Which fields is the reader's: what they chose, or the columns they have on
+  the list minus the title and the field the column itself is. Blank fields are
+  left off — a card has no headings, so four em dashes say only "there are
+  fields here and they are empty" — and a card carries six at most. The mapping
+  from a row to what is on its card is `lib/cards.js`, shared with the grid —
+  see below.
 * **A value the field no longer offers still gets a column.** A card that
   vanishes because somebody edited the doctype is worse than an extra column.
 

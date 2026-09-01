@@ -39,6 +39,46 @@ test('a grid draws one card per record', async ({ page }) => {
   expectNoRealErrors(errors)
 })
 
+test('a card is three bands, and the last one is a control', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await openGrid(page)
+
+  const card = page.locator(CARD, { hasText: 'Book the van for Thursday' })
+  await expect(card).toBeVisible()
+
+  // The meta band: when it last moved, how many have said something, and
+  // whether this one is yours. The list shows all three at the end of every
+  // row, and a card that drops them says less than the list it came from.
+  const heart = card.getByRole('button', { name: 'Add to favourites' })
+  await expect(heart).toBeVisible()
+
+  // And it is a real control rather than a picture of one: pressing it
+  // favourites the record without opening it.
+  await heart.click()
+  await expect(page.locator('[data-slot="record-pane"]')).toHaveCount(0)
+  const off = card.getByRole('button', { name: 'Remove from favourites' })
+  await expect(off).toBeVisible()
+
+  // Put it back, so the fixture is where it was for every other spec.
+  await off.click()
+  await expect(card.getByRole('button', { name: 'Add to favourites' })).toBeVisible()
+  expectNoRealErrors(errors)
+})
+
+test('the title is the keyboard way into a card', async ({ page }) => {
+  await openGrid(page)
+
+  // The tile is a click surface, which a keyboard cannot reach — so the title
+  // inside it is a button, the same arrangement a list row uses. One press,
+  // one record: the button stops the tile's own handler rather than letting
+  // both fire.
+  const card = page.locator(CARD, { hasText: 'Book the van for Thursday' })
+  await card.getByRole('button', { name: 'Book the van for Thursday' }).click()
+  await expect(
+    page.locator('[data-slot="record-pane"]').getByText('Book the van for Thursday').first(),
+  ).toBeVisible()
+})
+
 test('the gear over a grid asks what is on a card', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'the settings gear is desktop chrome')
   const errors = collectConsoleErrors(page)
