@@ -46,6 +46,7 @@
           :links="row._links || {}"
           :states="spec.states || []"
           :meta="row._meta || null"
+          :people="row._assigned || []"
           @open="emit('open', row)"
           @like="emit('like', row)"
         />

@@ -530,6 +530,22 @@ like every other read, so a guessed space code is not a directory. The set is
 sent whole and the difference worked out on the server, and what comes back is
 what the document ended up holding rather than what was asked for.
 
+**And it comes back with the rows.** Assignment is the one thing on a row that
+no field carries and that people look for first, so `_assign` rides with the
+page like `modified` and the comment count do, and every card ends its meta
+band with the faces. Resolving those ids is `_with_people`, one lookup for the
+page: the same shape `_with_links` has, and for the same reason — a page of
+forty rows is forty queries otherwise, over a table whose ids repeat on nearly
+every one of them. Nobody assigned anywhere asks nothing at all; a user who no
+longer exists drops out rather than drawing a blank face.
+
+The *list* does not show them. Its activity column is a fixed 176px track
+already holding an age, a count and a heart, and a stack of faces in there is
+what makes a column of hearts crooked again. A card has a whole band. If
+assignment should be readable in a list, the honest answer is a column of its
+own — filterable like any other — rather than a fourth thing squeezed into
+that one.
+
 ## The board is the same list, drawn as columns
 
 A screen that names a field a board could be made of may offer `board`. It is

@@ -118,9 +118,17 @@ LAYOUTS = [
 # browser tests that read an id off a row started failing on a fixture that was
 # otherwise identical. A fixture's ids are part of the fixture.
 TODOS = [
+	# `assigned` is not a field. It is `_assign`, written below — see there for
+	# why the fixture does not go through Frappe's own assignment API.
+	# Two people, so a card draws a stack rather than a single face and the
+	# overlap is something a browser pass can actually look at.
 	{"name": "zzmock-van",
 	 "description": "Book the van for Thursday", "priority": "Medium", "status": "Open",
-	 "allocated_to": "Administrator", "color": "#2490EF"},
+	 "allocated_to": "Administrator", "color": "#2490EF",
+	 "assigned": ["Administrator", COLLEAGUE]},
+	# Assigned to nobody, and it has to stay that way: `assign.spec.js` opens
+	# this one to check that a record with no assignment offers the outline of
+	# a person, and assigns it itself.
 	{"name": "zzmock-halloway",
 	 "description": "Chase the Halloway invoice", "priority": "High", "status": "Open"},
 	# Allocated to the colleague on purpose. Frappe's ToDo has a permission
@@ -130,7 +138,7 @@ TODOS = [
 	# in the fixture two people can both be in.
 	{"name": "zzmock-q3",
 	 "description": "File Q3 returns", "priority": "Low", "status": "Closed",
-	 "allocated_to": COLLEAGUE},
+	 "allocated_to": COLLEAGUE, "assigned": [COLLEAGUE]},
 ]
 
 NOTES = [
@@ -333,10 +341,25 @@ def seed_tenant():
 			# `set_name`, not a `name` key: ToDo autonames by hash, and
 			# `set_new_name` overwrites whatever is on the document unless the
 			# insert was told the name is already decided.
-			fields = {k: v for k, v in row.items() if k != "name"}
+			fields = {k: v for k, v in row.items() if k not in ("name", "assigned")}
 			frappe.get_doc({"doctype": "ToDo", **fields}).insert(
 				ignore_permissions=True, set_name=row["name"]
 			)
+
+		# Who it is assigned to, written straight onto the document.
+		#
+		# Frappe's `assign_to.add` writes this *and* inserts a ToDo beside it as
+		# its bookkeeping — and the records on this screen are ToDos, so a
+		# fixture assigning through the API would put its own bookkeeping in the
+		# list it is a fixture for. The sweep at the end of this file would then
+		# delete those rows and leave `_assign` exactly as it is here, so this
+		# is the same end state reached directly rather than a shortcut past
+		# one. `update_modified` off because the age on a card is part of what a
+		# browser pass looks at.
+		frappe.db.set_value(
+			"ToDo", row["name"], "_assign",
+			json.dumps(row.get("assigned") or []), update_modified=False,
+		)
 
 		# And take back any other copy of the same task — a hash-named one from
 		# before these were named, or one of the duplicates the description

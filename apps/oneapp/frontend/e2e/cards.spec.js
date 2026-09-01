@@ -46,9 +46,15 @@ test('a card is three bands, and the last one is a control', async ({ page }) =>
   const card = page.locator(CARD, { hasText: 'Book the van for Thursday' })
   await expect(card).toBeVisible()
 
-  // The meta band: when it last moved, how many have said something, and
-  // whether this one is yours. The list shows all three at the end of every
-  // row, and a card that drops them says less than the list it came from.
+  // The meta band: when it last moved, how many have said something, who it is
+  // on, and whether this one is yours. The list shows the rest at the end of
+  // every row, and a card that drops them says less than the list it came from.
+  //
+  // Faces rather than ids, and the page resolves them in one query rather than
+  // one per card — the fixture puts two people on this one so the stack is a
+  // stack.
+  await expect(card.locator('[data-slot="row-assignee"]')).toHaveCount(2)
+
   const heart = card.getByRole('button', { name: 'Add to favourites' })
   await expect(heart).toBeVisible()
 

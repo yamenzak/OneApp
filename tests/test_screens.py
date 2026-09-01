@@ -1299,6 +1299,76 @@ def test_a_card_field_is_fetched_even_where_nobody_looks_at_that_column(spacevie
 	assert "items" not in resolved["fields"]
 
 
+def test_who_a_page_is_assigned_to_is_one_lookup(spaceview, monkeypatch):
+	"""`_assign` on every row of a page, resolved into faces, in one query.
+
+	Assignment is the one thing on a row that no field carries and that people
+	look for first, so it comes back with the rows. The naive way to do that is
+	one lookup per row, and the ids repeat on almost every one of them — the
+	same reason `_with_links` resolves a whole column at a time.
+	"""
+	asked = []
+
+	def get_all(doctype, filters=None, **kw):
+		asked.append((doctype, filters))
+		return [
+			{"name": "ada@example.com", "full_name": "Ada Lovelace", "user_image": "/a.png"},
+			# No full name, which is a real state: the id is what is left to
+			# call somebody, and a blank label is a face with no name under it.
+			{"name": "bo@example.com", "full_name": "", "user_image": None},
+		]
+
+	monkeypatch.setattr(spaceview.frappe, "get_all", get_all)
+
+	rows = [
+		{"name": "one", "_assign": '["ada@example.com", "bo@example.com"]'},
+		{"name": "two", "_assign": '["ada@example.com"]'},
+		{"name": "three", "_assign": None},
+		{"name": "four", "_assign": '["gone@example.com"]'},
+		# Not JSON, and not a reason to fail a whole page.
+		{"name": "five", "_assign": "administrator"},
+	]
+	spaceview._with_people(rows)
+
+	assert len(asked) == 1, "a page of rows is one lookup, not one per row"
+	assert asked[0][0] == "User"
+	assert sorted(asked[0][1]["name"][1]) == [
+		"ada@example.com", "bo@example.com", "gone@example.com"
+	]
+
+	# A name, a face and the id underneath — the same three every other
+	# identity here is drawn from — in the order the document holds them.
+	assert [one["label"] for one in rows[0]["_assigned"]] == ["Ada Lovelace", "bo@example.com"]
+	assert rows[0]["_assigned"][0]["image"] == "/a.png"
+	assert rows[1]["_assigned"] == [rows[0]["_assigned"][0]]
+	assert rows[2]["_assigned"] == []
+	# A user who no longer exists drops out rather than rendering as a blank
+	# face: `_assign` is not a foreign key and Frappe does not clean it up.
+	assert rows[3]["_assigned"] == []
+	assert rows[4]["_assigned"] == []
+
+	# And the raw column does not reach the browser — what it holds is ids.
+	assert all("_assign" not in row for row in rows)
+
+
+def test_nobody_assigned_anywhere_asks_nothing(spaceview, monkeypatch):
+	"""The lookup is skipped, not run with an empty list.
+
+	`name in ()` is a query that returns nothing and still costs a round trip,
+	once per page, on every screen of every space that does not use assignment.
+	"""
+	asked = []
+	monkeypatch.setattr(
+		spaceview.frappe, "get_all", lambda *a, **k: asked.append(a) or []
+	)
+
+	rows = [{"name": "one", "_assign": "[]"}, {"name": "two"}]
+	spaceview._with_people(rows)
+
+	assert not asked
+	assert [row["_assigned"] for row in rows] == [[], []]
+
+
 # --------------------------------------------------------------------------- #
 # A link is a record
 #

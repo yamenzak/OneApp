@@ -43,6 +43,25 @@
       "1", and nothing looking for a favourites button could find it.
     -->
     <span v-if="meta.likes" class="tabular-nums">{{ meta.likes }}</span>
+
+    <!--
+      Who it is on. Faces rather than a count, because the question a reader
+      actually asks of an assignment is "is anybody on this, and is it me",
+      and three faces answer it in the width of one name.
+
+      Only where the caller has room for it. A list's activity column is a
+      fixed 176px track holding an age, a count and a heart, and a stack of
+      faces in there is what makes a column of hearts crooked again — so the
+      list passes nothing and the card, which has a whole band, passes people.
+    -->
+    <AvatarStack
+      v-if="people.length"
+      :people="people"
+      :limit="3"
+      size="xs"
+      slot-name="row-assignee"
+    />
+
     <span v-if="spread" class="flex-1" />
     <!-- The heart is last, so it lines up with the one in the header. -->
     <!-- Its own theme rather than its own icon: lucide ships no filled heart,
@@ -61,11 +80,14 @@
 <script setup>
 import { computed } from 'vue'
 import { Button, Icon, dayjsLocal } from '@/ui'
+import AvatarStack from './AvatarStack.vue'
 
 const props = defineProps({
   meta: { type: Object, default: () => ({}) },
   /** Counts at the start and the heart at the end, which is a card's shape. */
   spread: { type: Boolean, default: false },
+  /** `row._assigned` — `[{ value, label, image }]`, already resolved. */
+  people: { type: Array, default: () => [] },
 })
 const emit = defineEmits(['like'])
 

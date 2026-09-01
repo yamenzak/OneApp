@@ -108,7 +108,7 @@
     -->
     <template v-if="!isPanel && meta">
       <Divider />
-      <RowMeta spread :meta="meta" @like="emit('like')" />
+      <RowMeta spread :meta="meta" :people="people" @like="emit('like')" />
     </template>
   </div>
 </template>
@@ -136,6 +136,8 @@ const props = defineProps({
   links: { type: Object, default: () => ({}) },
   /** `row._meta` — when it moved, how many comments, whether it is liked. */
   meta: { type: Object, default: null },
+  /** `row._assigned` — who it is on, already resolved to faces and names. */
+  people: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
   shape: { type: String, default: 'panel' },
 })
