@@ -95,6 +95,13 @@
         a photograph, and out of the middle of the picture.
       -->
       <div class="bg-gradient-to-t from-black/80 via-black/50 to-transparent px-3 pb-3 pt-10">
+        <!--
+          The caption is the control: two lines of type over a photograph.
+          `Button` would bring its own padding, height and label layout to a
+          thing that is none of those. See the row in NotificationList for the
+          same exception and the same reason.
+        -->
+        <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
         <button
           type="button"
           class="block w-full min-w-0 text-left"
@@ -160,6 +167,11 @@
       `.stop` because the tile's own handler would otherwise fire too and open
       the record twice.
     -->
+    <!--
+      Same exception, same reason: the record's identity — a face, a name and
+      an id — is what you press, and it is a block rather than a label.
+    -->
+    <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
     <button
       v-else
       type="button"

@@ -80,10 +80,15 @@
             <span class="shrink-0 text-p-xs text-ink-gray-5">{{ when(entry.on) }}</span>
           </div>
 
+          <!-- eslint-disable vue/multiline-html-element-content-newline --
+               `whitespace-pre-wrap`, so a line break between the tags is a
+               line break on screen: the comment would render indented by
+               however far this file happens to be nested. -->
           <p
             v-if="entry.kind === 'comment'"
             class="whitespace-pre-wrap text-p-sm text-ink-gray-7"
           >{{ entry.content }}</p>
+          <!-- eslint-enable vue/multiline-html-element-content-newline -->
 
           <!--
             One line per field, in the screen's own words. The values come back

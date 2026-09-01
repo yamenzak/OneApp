@@ -47,6 +47,14 @@
         description="Assignments, mentions and alerts turn up here."
       />
 
+      <!--
+        A whole row is the control: a face, a sentence, a time and an unread
+        dot, all of it clickable. `Button` lays its slot out as one line of
+        label with optional icons, so this would have to fight it on every one
+        of those. The rule is right, and this is the case it does not cover — a
+        `<button>` wrapping content rather than a word.
+      -->
+      <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
       <button
         v-for="row in notifications.rows"
         :key="row.name"
