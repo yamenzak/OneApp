@@ -6,8 +6,20 @@ import frappe
 def after_install():
 	create_custom_fields()
 	setup_outgoing_email()
+	install_notification_types()
 	initial_sync()
 	frappe.db.commit()
+
+
+def install_notification_types():
+	"""Our own Notification Type, the way the framework seeds its five.
+
+	Also on `after_migrate`, because a site installed before the type existed
+	has to get it too — see hooks.
+	"""
+	from oneapp.oneapp_core.notifications import install_types
+
+	install_types()
 
 
 def create_custom_fields():

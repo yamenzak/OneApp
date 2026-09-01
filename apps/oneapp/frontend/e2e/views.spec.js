@@ -173,12 +173,17 @@ test('a filter follows you from the list to the board and the grid', async ({
   await page.goto('/one/space/zzmock?screen=tasks')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
 
-  // Only the open ones — three of the fixture's forty-three.
+  // Only the open ones. Waited for by what the filter *means* rather than by a
+  // row count: other specs leave records behind on purpose — a create dialog's,
+  // a realtime probe's — so any absolute number here is a number that goes
+  // stale, which is what it did.
   await page.getByRole('combobox').filter({ hasText: 'Status' }).click()
   await page.getByRole('option', { name: 'Open', exact: true }).click()
   await expect
-    .poll(() => page.locator('[data-slot="list-row"]').count(), { timeout: 10_000 })
-    .toBeLessThan(10)
+    .poll(() => page.locator('[data-slot="list-row"]').getByText('Closed').count(), {
+      timeout: 10_000,
+    })
+    .toBe(0)
   const rows = await page.locator('[data-slot="list-row"]').count()
 
   // The same question, drawn as columns. Every card is in Open, and the forty

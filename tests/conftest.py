@@ -8,6 +8,7 @@ push, rather than only on a machine with MariaDB, Redis and a built site.
 Anything genuinely needing the ORM belongs in Frappe's own test runner instead.
 """
 
+import re
 import sys
 import types
 from pathlib import Path
@@ -162,6 +163,10 @@ def _make_frappe():
 	utils.today = lambda: str(getdate())
 	utils.flt = float
 	utils.get_fullname = lambda u: u
+	# The real one drops tags and unescapes entities. A stub that only had to be
+	# *shaped* right would return the argument, and then every test of "a row
+	# says its sentence without markup" would pass on markup.
+	utils.strip_html = lambda v: re.sub(r"<[^>]*>", "", str(v or ""))
 	frappe.utils = utils
 
 	model = types.ModuleType("frappe.model")
@@ -173,16 +178,28 @@ def _make_frappe():
 	document.Document = Document
 	model.document = document
 
-	return frappe, model, document, utils
+	# The framework's notification producer, as a module rather than a function,
+	# because `sync.sync_notices` imports it by path — and a `from a.b.c import
+	# d` needs every parent in `sys.modules` when `a` is not a real package.
+	desk = types.ModuleType("frappe.desk")
+	desk_doctype = types.ModuleType("frappe.desk.doctype")
+	log_pkg = types.ModuleType("frappe.desk.doctype.notification_log")
+	log = types.ModuleType("frappe.desk.doctype.notification_log.notification_log")
+	log.enqueue_create_notification = lambda users, doc, dedupe_on=None: None
+	log.get_skip_email_types = lambda: set()
+
+	return frappe, model, document, utils, (desk, desk_doctype, log_pkg, log)
 
 
 @pytest.fixture(autouse=True)
 def stub_frappe(monkeypatch):
-	frappe, model, document, utils = _make_frappe()
+	frappe, model, document, utils, desk = _make_frappe()
 	monkeypatch.setitem(sys.modules, "frappe", frappe)
 	monkeypatch.setitem(sys.modules, "frappe.model", model)
 	monkeypatch.setitem(sys.modules, "frappe.model.document", document)
 	monkeypatch.setitem(sys.modules, "frappe.utils", utils)
+	for module in desk:
+		monkeypatch.setitem(sys.modules, module.__name__, module)
 	yield frappe
 
 	# Modules imported against the stub must not leak into the next test.

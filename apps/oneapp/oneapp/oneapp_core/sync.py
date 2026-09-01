@@ -107,7 +107,7 @@ def sync_from_control_plane() -> dict:
 		return {"ok": False, "reason": "not_provisioned"}
 
 	try:
-		payload = control_client.sync()
+		payload = control_client.sync(doc.last_notice or None)
 	except control_client.ControlPlaneError as e:
 		# Keep serving the last known good state rather than degrading the site.
 		doc.db_set("last_sync_error", str(e)[:500])
@@ -166,6 +166,7 @@ def sync_from_control_plane() -> dict:
 	sync_branding(tenant)
 	books = sync_books(payload.get("books"))
 	sync_ai(payload.get("ai") or {}, credits)
+	notices = sync_notices(payload.get("notices") or [], payload.get("owner_role"))
 
 	return {
 		"ok": True,
@@ -174,7 +175,92 @@ def sync_from_control_plane() -> dict:
 		"members_created": people["created"],
 		"members_disabled": people["disabled"],
 		"books": books,
+		"notices": notices,
 	}
+
+
+def sync_notices(notices: list, owner_role: str | None) -> int:
+	"""Turn workspace notices into notifications, and advance the watermark.
+
+	A payment that failed, a quota reached, a workspace restored. These happen
+	on the control plane and are read by people here, and this pull is the only
+	channel between the two — so they arrive with the rest of the state and are
+	written into the framework's own Notification Log, which is where every
+	other notification in this product already lives. One feed, not two.
+
+	The cost of using the channel we have rather than building one: a notice can
+	be up to fifteen minutes late in the app. Every notice that matters is also
+	an email, sent from the control plane the moment it happens, so the late
+	half is the convenience and not the warning.
+
+	**To the owner**, not to everybody. These are about the workspace as an
+	account — its plan, its bill, its storage — and they carry an action only an
+	owner can take. A member told the card was declined has been given somebody
+	else's problem.
+	"""
+	if not notices:
+		return 0
+
+	from frappe.desk.doctype.notification_log.notification_log import (
+		enqueue_create_notification,
+	)
+
+	from oneapp.oneapp_core.notifications import WORKSPACE_TYPE
+
+	owners = _owners(owner_role)
+	written = 0
+	for notice in notices:
+		key = (notice.get("key") or "").strip()
+		if not key:
+			continue
+		if owners:
+			# Frappe's own producer entry point, so a workspace notice is
+			# emailed, deduplicated and swept by exactly the same rules an
+			# assignment is. `dedupe_on` guards the one case the watermark
+			# cannot: a sync that wrote the rows and then failed before saving
+			# where it got to.
+			enqueue_create_notification(
+				owners,
+				{
+					"type": WORKSPACE_TYPE,
+					"title": notice.get("title") or "",
+					"description": notice.get("body") or "",
+					"from_user": None,
+					"link": "/one/account",
+				},
+				dedupe_on=["type", "title", "description"],
+			)
+			written += 1
+		# Advanced whether or not anybody was written to. A workspace with no
+		# owner account yet — the first sync of a new site — must not replay
+		# every notice on the second one.
+		frappe.db.set_value("OneSpace Site State", None, "last_notice", key,
+		                    update_modified=False)
+
+	return written
+
+
+def _owners(owner_role: str | None) -> list[str]:
+	"""Whoever holds the owner role on this site.
+
+	By role rather than by the `owner_email` in the payload, because a workspace
+	can be handed over and the role is what this site actually enforces with —
+	and because two people can hold it.
+	"""
+	if not owner_role:
+		return []
+	holders = frappe.get_all("Has Role", filters={"role": owner_role}, pluck="parent")
+	if not holders:
+		return []
+	# Emails, not names — `enqueue_create_notification` takes "user emails" and
+	# means it: it resolves recipients with `User.email in (...)`. For an
+	# ordinary account the two are the same string, which is why this reads like
+	# a distinction without a difference until the owner is the Administrator,
+	# whose name is `Administrator` and whose email is not. Then the notice is
+	# enqueued, the job succeeds, and nothing is written.
+	return frappe.get_all(
+		"User", filters={"name": ["in", holders], "enabled": 1}, pluck="email"
+	)
 
 
 def sync_backup_request(block: dict) -> None:

@@ -52,11 +52,17 @@ def _body() -> dict:
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
-def sync():
+def sync(since: str | None = None):
 	"""Everything a tenant site needs to render itself and enforce limits.
 
 	Called on a schedule and on demand. The tenant site caches this; the control
 	plane stays authoritative.
+
+	`since` is the tenant's own watermark for workspace notices — the last one
+	it has already shown somebody. There is no channel from here into a tenant
+	database, so a notice is something the site collects rather than something
+	we deliver, and a watermark is what makes collecting it exactly once
+	possible without either side keeping a per-notice record of the other.
 	"""
 	tenant_name = _authenticate()
 	tenant = frappe.get_doc("Tenant", tenant_name)
@@ -144,7 +150,102 @@ def sync():
 		# from the region they chose and the currency from the plan they bought,
 		# and neither is knowable from inside the site.
 		"books": _books_hint(tenant),
+		# What has happened to this workspace that the people in it should be
+		# told about. See `_notices`.
+		"notices": _notices(tenant_name, since),
 	}
+
+
+# Which lifecycle events a customer is told about, and what each one says.
+#
+# Not all sixteen. A cold copy being taken, a backup succeeding, a hold being
+# placed and released are operations — real events, worth recording, and not
+# news. What is here is the set a person in the workspace can either act on or
+# would otherwise discover by finding something broken.
+#
+# The wording is the control plane's because the facts are: it is the side that
+# knows what a plan costs, when a payment failed and what happens next.
+NOTICES = {
+	"Dunning Started": (
+		"A payment did not go through",
+		"We could not charge the card on this workspace. Nothing has changed yet — "
+		"update the card to keep everything running.",
+	),
+	"Dunning Cleared": (
+		"Payment received",
+		"The workspace is up to date again. Nothing else to do.",
+	),
+	"Suspended": (
+		"This workspace is suspended",
+		"Sign-in is off while the account is unpaid. Everything is still here and "
+		"comes straight back when it is settled.",
+	),
+	"Resumed": (
+		"This workspace is back",
+		"Suspension lifted. Everything is where it was.",
+	),
+	"Over Quota": (
+		"This workspace is over its limit",
+		"Uploads and new records are paused until it is back under, or the plan "
+		"is raised. Nothing has been deleted.",
+	),
+	"Back Under Quota": (
+		"Back under the limit",
+		"Uploads and new records are running again.",
+	),
+	"Purge Warned": (
+		"This workspace is scheduled for deletion",
+		"It has been archived and unpaid long enough to be removed. Restoring it "
+		"stops the clock.",
+	),
+	"Archived": (
+		"This workspace has been archived",
+		"It is stored safely and offline. Restoring brings it back as it was.",
+	),
+	"Restored": (
+		"This workspace has been restored",
+		"Everything is back, including the files.",
+	),
+	"Backup Failed": (
+		"A backup did not finish",
+		"The last scheduled copy of this workspace failed. We will try again on "
+		"the next slot; tell us if it keeps happening.",
+	),
+}
+
+# How many notices one sync may carry. A workspace that has been left alone for
+# a month should not answer its first sync with two hundred of them — the
+# watermark still advances past the rest, because what a person needs is the
+# state they are in and not a diary of how they got there.
+NOTICE_LIMIT = 10
+
+
+def _notices(tenant_name: str, since: str | None) -> list[dict]:
+	"""Lifecycle events this workspace has not been told about yet."""
+	filters = {"tenant": tenant_name, "event": ["in", sorted(NOTICES)]}
+	if since:
+		# By name rather than by timestamp: the series is monotonic and two
+		# events in the same second are ordered by it, which a datetime
+		# comparison would drop one of.
+		filters["name"] = [">", since]
+
+	rows = frappe.get_all(
+		"Tenant Lifecycle Event",
+		filters=filters,
+		fields=["name", "event", "occurred_on", "reason"],
+		order_by="name asc",
+		limit_page_length=NOTICE_LIMIT,
+	)
+	return [
+		{
+			"key": row["name"],
+			"event": row["event"],
+			"title": NOTICES[row["event"]][0],
+			"body": row.get("reason") or NOTICES[row["event"]][1],
+			"occurred_on": str(row["occurred_on"]) if row.get("occurred_on") else None,
+		}
+		for row in rows
+	]
 
 
 def _ai_features() -> list[dict]:

@@ -262,12 +262,52 @@ Push and the relay never ships.
    with no producer written, which was the whole bet.
 2. ~~**Route a notification to a screen.**~~ **Done**, and derived — see
    Decision 2.
-3. **Preferences in the settings dialog** we already have: the master switch,
-   the email allow-list per type, and later the push toggle.
-4. **`Workspace` notices over the existing pull** — Decision 4. This is where
-   over-quota, dunning and restore stop being email-only.
-5. **Push behind the seam** — Decision 5 — once 1–4 are being used and there is
-   evidence about which notifications people actually want on a phone.
+3. ~~**Preferences.**~~ **Done**, and on the *account* page rather than in
+   workspace settings: it is a person's own answer, and half a workspace cannot
+   open the settings dialog at all. Two switches and a list, which is the whole
+   of Frappe's model — everything off, email off, and per type whether email is
+   wanted. The list is drawn as switches because the framework treats an empty
+   table as "email me about nothing", and an empty picker reads as "not set up
+   yet", which is the opposite.
+4. ~~**`Workspace` notices over the existing pull.**~~ **Done.** The control
+   plane answers a sync with the lifecycle events this workspace has not been
+   told about; the tenant writes each one into the framework's own Notification
+   Log, to whoever holds the owner role, and advances a watermark. Ten wordings
+   for the ten events a customer can act on, out of the sixteen recorded.
+5. **Push behind the seam** — Decision 5. Deliberately not built: see below.
+
+### On push, and why the arc closes without it
+
+`Push Notification Settings` and `frappe.push_notification` are the framework's,
+and they are a client for a relay Frappe runs that talks to Google's FCM. Our
+own EU-jurisdiction promise (DECISIONS §5) says a customer's data can be pinned
+to a jurisdiction; "except the text of every notification" is not a sentence we
+want to write, and the browser half does not exist in the framework or in
+frappe-ui anyway.
+
+So push waits for Web Push with keys we own, and the arc is closed without a
+seam standing empty. **Nothing has to change for it to arrive**, which is the
+point of having used the framework's store: a push notification carries the
+same title, body and link a Notification Log row already holds, and a producer
+is where it would be sent from. The work is a service worker, a subscription
+per browser, and a sender — not a data model.
+
+## 8. Where each piece lives
+
+| | |
+|---|---|
+| The store, per user | `Notification Log` (framework) |
+| Types | `Notification Type` (framework) + `Workspace` (`notifications.install_types`) |
+| Preferences | `Notification Settings` (framework), read/written by `notifications.preferences` |
+| Which types email | the allow-list, plus `notification_skip_email_types` in `oneapp/hooks.py` |
+| Producers | `assign_to.add`, `notify_mentions`, `frappe.share.add` (all framework), and `sync.sync_notices` |
+| The feed, shaped | `oneapp_core/notifications.py` |
+| Where a row goes | `notifications._routes`, derived from the manifest |
+| The panel | `NotificationBell` (rail) · `NotificationList` (both) · a Dialog on a phone |
+| The count | `lib/notifications.js`, following the framework's `notification` event |
+| Preferences UI | `NotificationSettings.vue`, on the account page |
+| Notices, control-plane end | `api/tenant.NOTICES` and `_notices` |
+| Notices, tenant end | `sync.sync_notices`, watermarked by `OneSpace Site State.last_notice` |
 
 ## 7. Three things building step 1 turned up
 
@@ -290,6 +330,13 @@ goes into it.
 **A notification is enqueued, so a bench with no worker writes none.** See
 DEVLOOP — `scripts/dev.sh worker` exists now, and the spec's failure message
 names it.
+
+**Recipients are emails, not names.** `enqueue_create_notification` documents
+"user emails" and means it — it resolves them with `User.email in (...)`. For an
+ordinary account the two are the same string, which is why the distinction
+looks like nothing until the recipient is the Administrator. Then the notice is
+enqueued, the job succeeds, and nothing is written. `sync._owners` plucks
+`email` for exactly this reason.
 
 One thing we accept rather than fix: the framework's producers write their
 sentence with markup in it (`<b class="subject-title">` around the record's

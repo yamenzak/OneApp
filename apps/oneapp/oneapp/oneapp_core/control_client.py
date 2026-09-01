@@ -97,8 +97,14 @@ def call(method: str, payload: dict | None = None) -> dict:
 	return response.json().get("message") or {}
 
 
-def sync() -> dict:
-	return call("sync")
+def sync(since: str | None = None) -> dict:
+	"""Pull state, and whatever workspace notices are newer than `since`.
+
+	The watermark travels *up* because the control plane keeps no record of what
+	a tenant has already shown somebody: there is no wire from there into this
+	database, so the site is the only side that knows.
+	"""
+	return call("sync", {"since": since} if since else None)
 
 
 def report_usage(storage_used_bytes: int, user_count: int,

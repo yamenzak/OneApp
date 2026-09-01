@@ -185,3 +185,118 @@ def _shaped(row: dict, people: dict, routes: dict) -> dict:
 		"route": routes.get(row.get("document_type")) or None,
 		"link": row.get("link") or "",
 	}
+
+
+# --------------------------------------------------------------------------- #
+# Our own notification type
+#
+# `Notification Type` is a doctype, not an enum — the framework seeds its five
+# in code and protects them from deletion, and an app adds its own the same
+# way. So this is one row, installed idempotently, rather than a fork of
+# anything.
+# --------------------------------------------------------------------------- #
+
+# What the workspace itself has to say: a payment that failed, a quota reached,
+# a backup restored. Not a record somebody touched — the other four types are
+# all about a document, and this one is about the account the documents live in.
+WORKSPACE_TYPE = "Workspace"
+
+
+def install_types():
+	"""Our Notification Types. From `after_install` and `after_migrate`."""
+	if frappe.db.exists("Notification Type", WORKSPACE_TYPE):
+		return
+	frappe.get_doc(
+		{"doctype": "Notification Type", "type_name": WORKSPACE_TYPE, "enabled": 1}
+	).insert(ignore_permissions=True)
+
+
+# --------------------------------------------------------------------------- #
+# Preferences
+#
+# The framework's own `Notification Settings`, one per user, with its own
+# permission rule already pinning a person to their own row. What is added here
+# is a shape the browser can render and a write that cannot reach somebody
+# else's — not a second store.
+# --------------------------------------------------------------------------- #
+
+
+def _settings():
+	"""This person's settings row, made if this is the first time they asked.
+
+	`create_notification_settings` is the framework's own, and it seeds the
+	email allow-list with every type that emails. It runs at user creation, so
+	this is only for accounts made before a type existed — but the alternative
+	is a settings page that 404s for them, which is a worse way to find out.
+	"""
+	from frappe.desk.doctype.notification_settings.notification_settings import (
+		create_notification_settings,
+	)
+
+	create_notification_settings(frappe.session.user)
+	return frappe.get_doc("Notification Settings", frappe.session.user)
+
+
+@frappe.whitelist(methods=["GET"])
+def preferences() -> dict:
+	"""What this person has said about being notified.
+
+	Two switches and a list, which is the whole of the framework's model:
+	everything off; email off; and per type, whether email is wanted. The list
+	is an *allow*-list — the framework treats an empty table as "email me for
+	nothing" — so it is rendered as a row of switches rather than as a picker,
+	because a picker with nothing in it reads as "not set up yet".
+	"""
+	from frappe.desk.doctype.notification_log.notification_log import get_skip_email_types
+
+	doc = _settings()
+	wanted = {row.notification_type for row in doc.email_notification_types}
+	skip = get_skip_email_types()
+
+	return {
+		"enabled": bool(doc.enabled),
+		"email": bool(doc.enable_email_notifications),
+		# Only the types that *can* email. A type in `notification_skip_email_
+		# types` never does — something else owns its email — and a switch that
+		# changes nothing is a switch somebody flips once and stops trusting.
+		"types": [
+			{"name": name, "email": name in wanted}
+			for name in frappe.get_all(
+				"Notification Type", filters={"enabled": 1}, pluck="name", order_by="name asc"
+			)
+			if name not in skip
+		],
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def set_preferences(enabled=None, email=None, types: str | list | None = None) -> dict:
+	"""Change them. Only ever this person's own row.
+
+	Written through the document rather than `db.set_value` because the
+	framework's `on_update` clears the notification cache — a preference that
+	takes effect on the next cache expiry is a preference somebody sets twice.
+	"""
+	doc = _settings()
+
+	if enabled is not None:
+		doc.enabled = 1 if frappe.utils.sbool(enabled) else 0
+	if email is not None:
+		doc.enable_email_notifications = 1 if frappe.utils.sbool(email) else 0
+
+	if types is not None:
+		if isinstance(types, str):
+			types = frappe.parse_json(types or "[]")
+		offered = set(frappe.get_all("Notification Type", filters={"enabled": 1}, pluck="name"))
+		doc.email_notification_types = []
+		for name in dict.fromkeys(types or []):
+			# Checked against the registry like every other name that arrives
+			# from a browser. A disabled or invented type would sit in the
+			# table doing nothing, which is the kind of row that outlives the
+			# reason somebody thinks it is there.
+			if name in offered:
+				doc.append("email_notification_types", {"notification_type": name})
+
+	doc.save(ignore_permissions=True)
+	frappe.db.commit()
+	return preferences()

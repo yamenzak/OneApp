@@ -38,8 +38,9 @@
       </div>
 
       <h2 class="mt-8 text-base-medium text-ink-gray-8">Preferences</h2>
-      <div class="mt-3 rounded-6 border border-outline-gray-2 bg-surface-base p-4">
+      <div class="mt-3 flex flex-col gap-5 rounded-6 border border-outline-gray-2 bg-surface-base p-4">
         <ThemeSetting />
+        <NotificationSettings />
       </div>
 
       <p class="mt-4 text-p-sm text-ink-gray-5">
@@ -54,6 +55,7 @@ import { computed } from 'vue'
 import { PageHeader, LoadingIndicator } from '@/ui'
 import UsageBar from '../components/UsageBar.vue'
 import ThemeSetting from '../components/ThemeSetting.vue'
+import NotificationSettings from '../components/NotificationSettings.vue'
 import { TENANT_APP } from '../lib/brand'
 import { session } from '../lib/session'
 

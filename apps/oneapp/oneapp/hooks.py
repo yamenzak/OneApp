@@ -100,3 +100,17 @@ scheduler_events = {
 }
 
 after_install = "oneapp.install.after_install"
+
+# Our own Notification Type, seeded the way the framework seeds its five: in
+# code, idempotently, on install and on every migrate. A type is a doctype row,
+# so an app adds one rather than forking an enum.
+after_migrate = "oneapp.oneapp_core.notifications.install_types"
+
+# `Workspace` never sends its own email.
+#
+# Every notice under it — a declined card, a workspace archived, a quota
+# reached — is already an email the *control plane* sent the moment it
+# happened, from the side that knows the billing address and owns the wording.
+# The in-app notification is the second half of that, not a duplicate of it, and
+# `is_email_notifications_enabled_for_type` reads this hook to keep it so.
+notification_skip_email_types = ["Workspace"]

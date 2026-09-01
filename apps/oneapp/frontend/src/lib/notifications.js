@@ -84,3 +84,24 @@ export function followNotifications() {
   })
   countNotifications()
 }
+
+/**
+ * What this person has said about being notified.
+ *
+ * Frappe's own `Notification Settings`, one row per user, read and written
+ * through our own endpoints only so the browser gets a shape it can render —
+ * the store, the rules and the permission are all still the framework's.
+ */
+export async function loadPreferences() {
+  return callMethod(`${METHOD}.preferences`, {}, { silent: true, method: 'GET' })
+}
+
+export async function savePreferences(changes) {
+  const answer = await callMethod(`${METHOD}.set_preferences`, changes, {
+    successMessage: 'Saved',
+  })
+  // The master switch decides whether a notification is written at all, so
+  // turning it off makes the bell's count wrong until something else asks.
+  countNotifications()
+  return answer
+}

@@ -25,7 +25,8 @@
   "credit_balance",
   "sec_cache",
   "spaces_json",
-  "roles_json"
+  "roles_json",
+  "last_notice"
  ],
  "fields": [
   {
@@ -154,6 +155,13 @@
    "fieldtype": "Code",
    "label": "Roles JSON",
    "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "description": "The most recent workspace notice this site has already turned into a notification. A watermark rather than a deduplication key: the control plane is asked for what happened after it, so nothing is sent twice and nothing in between is missed.",
+   "fieldname": "last_notice",
+   "fieldtype": "Data",
+   "label": "Last Notice",
    "read_only": 1
   }
  ],

@@ -2097,6 +2097,12 @@ doctype(
         section("sec_cache", "Cached manifest"),
         f("spaces_json", "Code", label="Spaces JSON", options="JSON", read_only=1),
         f("roles_json", "Code", label="Roles JSON", options="JSON", read_only=1),
+        f("last_notice", read_only=1, label="Last Notice",
+          description="The most recent workspace notice this site has already "
+                      "turned into a notification. A watermark rather than a "
+                      "deduplication key: the control plane is asked for what "
+                      "happened after it, so nothing is sent twice and nothing "
+                      "in between is missed."),
     ],
 )
 

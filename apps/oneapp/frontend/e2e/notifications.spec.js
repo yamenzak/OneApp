@@ -31,6 +31,14 @@ test('an assignment turns up in the panel, and opens the record', async ({
   await signIn(page, baseURL)
   await page.goto(`/one/space/zzmock?screen=tasks&record=${TASK}`)
   await page.locator('[data-slot="assign"]').waitFor({ timeout: 15_000 })
+
+  // Start from nobody. The control is a *toggle*: on a record another spec
+  // left assigned to Robin, the click below would take the assignment away
+  // instead of making one, and then wait twenty seconds for a notification
+  // that was never going to be written. Clearing first makes the precondition
+  // a fact rather than a hope — this spec shares one fixture with every other.
+  await clearAssignment(page)
+
   await page.locator('[data-slot="assign"]').click()
   await page.getByRole('option', { name: /robin/i }).click()
   await page.keyboard.press('Escape')
@@ -83,6 +91,26 @@ test('an assignment turns up in the panel, and opens the record', async ({
   await sweepAssignments(page)
 })
 
+/** Assign the fixture record to nobody, whatever it was on when we arrived. */
+const clearAssignment = async (page) =>
+  page.evaluate(
+    async (task) =>
+      fetch('/api/method/oneapp.oneapp_core.spaceview.assign', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Frappe-CSRF-Token': window.csrf_token || '',
+        },
+        body: JSON.stringify({
+          space_code: 'zzmock',
+          screen: 'tasks',
+          name: task,
+          users: [],
+        }),
+      }),
+    TASK,
+  )
+
 /**
  * Delete the ToDos assignment leaves behind.
  *
@@ -133,4 +161,34 @@ test('reading them empties the count', async ({ page, baseURL }, info) => {
   // The bell says so too — its accessible name is what carries the count for
   // anybody who cannot see the dot.
   await expect(page.getByRole('button', { name: 'Notifications' })).toBeVisible()
+})
+
+test('notification preferences are the framework\'s own, made legible', async ({
+  page,
+  baseURL,
+}) => {
+  await signIn(page, baseURL)
+  await page.goto('/one/account')
+
+  // Two switches and a list, which is the whole of Frappe's model: everything
+  // off, email off, and per type whether email is wanted.
+  const app = page.getByText('Notifications', { exact: true })
+  await expect(app).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText('Email me as well')).toBeVisible()
+
+  // The per-type switches only exist while email is on — they are what email
+  // is *for*, and a list of them under a switch that is off is a list that
+  // does nothing.
+  await expect(page.getByText('Assignment', { exact: true })).toBeVisible()
+  await page.getByRole('switch').nth(1).click()
+  await expect(page.getByText('Assignment', { exact: true })).toHaveCount(0)
+
+  // And it is stored, not remembered: a reload says the same thing.
+  await page.reload()
+  await expect(page.getByText('Email me as well')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText('Assignment', { exact: true })).toHaveCount(0)
+
+  // Put it back.
+  await page.getByRole('switch').nth(1).click()
+  await expect(page.getByText('Assignment', { exact: true })).toBeVisible()
 })
