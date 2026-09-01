@@ -18,44 +18,76 @@
     filtered list changes without anybody scrolling, and the first version of
     the list's own edges measured before layout and said nothing until
     something else moved.
+
+    Sideways it draws a hairline rather than a wash — see `axis`.
   -->
-  <div class="relative min-h-0">
+  <div class="relative min-h-0" :class="sideways ? 'min-w-0' : ''">
     <div
       ref="scroller"
-      class="h-full overflow-y-auto overscroll-contain"
+      class="h-full overscroll-contain"
+      :class="sideways ? 'overflow-x-auto' : 'overflow-y-auto'"
       @scroll.passive="measure"
     >
       <slot />
     </div>
 
-    <div v-if="above" :class="[EDGE, 'top-0 bg-gradient-to-b']" />
-    <div v-if="below" :class="[EDGE, 'bottom-0 bg-gradient-to-t']" />
+    <div v-if="before" :class="[EDGE, beforeEdge]" />
+    <div v-if="after" :class="[EDGE, afterEdge]" />
   </div>
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+
+const props = defineProps({
+  /**
+   * Which way it scrolls, and so which edges say there is more.
+   *
+   * `y` fades: a bounded panel of rows ends in a soft edge and the fade is over
+   * empty container, not over data. `x` draws a hairline instead — the same
+   * answer the list came to. A wash down the side of a table dims the values in
+   * the column under it to talk about scrolling, which is the "childish glow"
+   * that came off the list; a rule is the honest version and it is what the
+   * grid already uses.
+   */
+  axis: { type: String, default: 'y' },
+})
+
+const sideways = computed(() => props.axis === 'x')
+
+const EDGE = 'pointer-events-none absolute z-10'
 
 // From the surface behind it to nothing. `from-surface-base` and not a colour:
 // the fade has to be the panel's own background or it is a grey band in dark
 // mode.
-const EDGE =
-  'pointer-events-none absolute inset-x-0 z-10 h-6 from-surface-base to-transparent'
+const FADE = 'inset-x-0 h-6 from-surface-base to-transparent'
+const RULE = 'inset-y-0 w-0 border-l border-outline-gray-2'
+
+const beforeEdge = computed(() =>
+  sideways.value ? `${RULE} left-0` : `${FADE} top-0 bg-gradient-to-b`,
+)
+const afterEdge = computed(() =>
+  sideways.value ? `${RULE} right-0` : `${FADE} bottom-0 bg-gradient-to-t`,
+)
 
 const scroller = ref(null)
-const above = ref(false)
-const below = ref(false)
+// Whether there is content past each edge. Both false on something that fits.
+const before = ref(false)
+const after = ref(false)
 
-// A pixel of slack at each end. A scroller sitting exactly at its bottom can
-// report a fractional difference on a display with a scale factor, and a fade
+// A pixel of slack at each end. A scroller sitting exactly at its end can
+// report a fractional difference on a display with a scale factor, and an edge
 // that never quite goes away is worse than one that never appears.
 const SLACK = 1
 
 const measure = () => {
   const el = scroller.value
   if (!el) return
-  above.value = el.scrollTop > SLACK
-  below.value = el.scrollTop + el.clientHeight < el.scrollHeight - SLACK
+  const at = sideways.value ? el.scrollLeft : el.scrollTop
+  const shown = sideways.value ? el.clientWidth : el.clientHeight
+  const whole = sideways.value ? el.scrollWidth : el.scrollHeight
+  before.value = at > SLACK
+  after.value = at + shown < whole - SLACK
 }
 
 const observer = new ResizeObserver(measure)

@@ -31,8 +31,28 @@
       inside a form. What is genuinely shared is the cell dispatch, and that is
       `FieldControl` and `FieldCell`, which both are used here.
     -->
-    <div v-if="rows.length" class="overflow-x-auto rounded-6 border border-outline-gray-2">
-      <List :columns="tracks" :row-height="44" class="w-max min-w-full list-row-px-3">
+    <!--
+      A child grid is wider than the pane it sits in more often than not — five
+      columns at their minimum is eight hundred pixels — so it scrolls, and it
+      says which side there is more on. Silently clipping three columns is how
+      a required field nobody could see failed a save.
+    -->
+    <FadedScroll
+      v-if="rows.length"
+      axis="x"
+      class="rounded-6 border border-outline-gray-2"
+    >
+      <!--
+        `px-3` on the List rather than `list-row-px-3`.
+
+        That class sets frappe-ui's public `--list-row-padding-x`, which the
+        header reads — but the rows read a private one that the library only
+        sets on rows marked `[data-interactive]`, and a child row has no click
+        handler so it is not one. The result was a header inset twelve pixels
+        and rows flush against the border under it, every column out of true
+        with its own heading. Padding the grid itself moves both together.
+      -->
+      <List :columns="tracks" :row-height="44" class="w-max min-w-full px-3">
         <ListHeader>
           <ListHeaderCell>
             <div class="flex items-center gap-2">
@@ -134,7 +154,7 @@
           </ListRow>
         </ListRows>
       </List>
-    </div>
+    </FadedScroll>
 
     <p v-else class="text-p-sm text-ink-gray-5">Nothing here yet.</p>
 
@@ -187,6 +207,7 @@ import {
   ListRow,
   ListCell,
 } from '@/ui'
+import FadedScroll from './FadedScroll.vue'
 import FieldCell from './FieldCell.vue'
 import FieldControl from './FieldControl.vue'
 import RecordForm from './RecordForm.vue'
@@ -235,7 +256,16 @@ const bare = (column) => ({ ...column, label: '', icon: null, description: null 
  * child grid is already inside a form column and the honest answer at that
  * width is equal shares.
  */
-const tracks = computed(() => ['2rem', ...columns.value.map(() => 'minmax(8rem, 1fr)'), '5rem'])
+const tracks = computed(() => [
+  gutter.value,
+  ...columns.value.map(() => 'minmax(8rem, 1fr)'),
+  '5rem',
+])
+
+// The first track holds the row number, and the tick box as well when the grid
+// is editable. 2rem fitted the number alone; with a checkbox beside it the two
+// were on top of each other.
+const gutter = computed(() => (editable.value ? '3.5rem' : '2rem'))
 
 const expanded = ref(false)
 const editingAt = ref(null)

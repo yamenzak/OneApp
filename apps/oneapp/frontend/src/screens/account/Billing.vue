@@ -101,7 +101,7 @@
         v-if="history.length"
         :columns="historyColumns"
         :row-height="48"
-        class="list-row-px-3 mt-4"
+        class="px-3 mt-4"
         divider="full"
       >
         <ListRows :items="history" row-key="creation" v-slot="{ item: row, value }">
@@ -134,7 +134,7 @@
       <h3 class="mb-3 text-base-medium text-ink-gray-8">Invoices</h3>
       <!-- Narrowed rather than dropped: three short cells all fit a phone once
            the two fixed tracks stop being sized for a desktop. -->
-      <List :columns="invoiceColumns" :row-height="52" class="list-row-px-3" divider="full">
+      <List :columns="invoiceColumns" :row-height="52" class="px-3" divider="full">
         <ListRows :items="invoices" row-key="name" v-slot="{ item: inv, value }">
           <ListRow :value="value">
             <ListCell>

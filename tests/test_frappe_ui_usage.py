@@ -472,3 +472,52 @@ def test_shadows_pair_with_an_elevation_surface():
                             f"{app}/{path.relative_to(root)}: {line.strip()[:90]}"
                         )
     assert not problems, "\n".join(problems)
+
+
+# `list-row-px-3` and friends: the class sets frappe-ui's public
+# `--list-row-padding-x`.
+ROW_PAD = re.compile(r"\blist-row-px-\d")
+# What makes a row interactive, and so what makes it read the private padding
+# variable the library only sets on `[data-interactive]` rows.
+#
+# `ListRowBase.interactive` is `tag !== 'div' || selectable || active`: a row
+# becomes an `<a>` or a `<button>` when it has a `to` or an `onClick`, and a
+# selectable or activatable list marks every row regardless. Those are the four.
+INTERACTIVE_ROW = re.compile(r"<ListRow\b[^>]*(@click|:to=|\bto=)", re.S)
+ACTIVATABLE = re.compile(r"<List\b[^>]*\b(activatable|selectable)\b", re.S)
+
+
+def test_the_row_inset_is_only_used_on_lists_whose_rows_are_interactive():
+	"""Otherwise the header is inset and the rows are not.
+
+	frappe-ui's `style.css` is explicit about it: the header reads the public
+	`--list-row-padding-x`, and the rows read a private `--_list-row-pad` that
+	the library sets **only** on `[data-slot="list-row"][data-interactive]` —
+	which a ListRow becomes by being a link or a button — a `to` or an
+	`@click` — or by sitting in a `selectable` or `activatable` List. A static
+	list given this class renders every column twelve pixels out of true with
+	its own heading.
+
+	That is not theory: it was every table in the operator console, the account
+	area, and the child grid inside a record, all at once, and it read as
+	"the spacing is broken" long before anyone worked out why.
+
+	A static list pads the `<List>` itself — the padding is on the grid, so the
+	header and the rows move together and cannot drift.
+	"""
+	problems = []
+	for app in APPS:
+		root = ROOT / f"apps/{app}/frontend/src"
+		for path in sorted(root.rglob("*.vue")):
+			source = path.read_text()
+			# The comment in ChildTable explains the rule; it does not use it.
+			body = re.sub(r"<!--.*?-->", "", source, flags=re.S)
+			if not ROW_PAD.search(body):
+				continue
+			if INTERACTIVE_ROW.search(body) or ACTIVATABLE.search(body):
+				continue
+			problems.append(f"{app}/{path.relative_to(root)}")
+	assert not problems, (
+		"these lists have static rows, so the class insets the header and "
+		"leaves the rows flush — pad the <List> instead: " + ", ".join(problems)
+	)

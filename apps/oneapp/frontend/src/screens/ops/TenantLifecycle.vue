@@ -84,7 +84,7 @@
         v-else
         :columns="eventTracks"
         :row-height="56"
-        class="list-row-px-3 mt-3"
+        class="px-3 mt-3"
         divider="full"
       >
         <ListHeader>

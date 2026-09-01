@@ -78,7 +78,7 @@
         title="No credit movement"
         description="Grants land on each paid invoice; spend appears as it happens."
       />
-      <List v-else :columns="creditTracks" :row-height="48" class="list-row-px-3" divider="full">
+      <List v-else :columns="creditTracks" :row-height="48" class="px-3" divider="full">
         <ListRows :items="data.credits.history" row-key="creation" v-slot="{ item: row, value }">
           <ListRow :value="value">
             <ListCell>
@@ -132,7 +132,7 @@
         title="No AI calls"
         description="Nothing in this workspace has called a model yet."
       />
-      <List v-else :columns="usageTracks" :row-height="48" class="list-row-px-3" divider="full">
+      <List v-else :columns="usageTracks" :row-height="48" class="px-3" divider="full">
         <ListRows :items="usage" row-key="name" v-slot="{ item: row, value }">
           <ListRow :value="value">
             <ListCell>

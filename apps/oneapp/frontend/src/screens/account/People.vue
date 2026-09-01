@@ -36,7 +36,7 @@
         <!-- Narrowed rather than dropped: the access badge and the remove
              button are both short, and a desktop-sized track for them left the
              person's name about 120px. -->
-        <List :columns="memberColumns" :row-height="56" class="list-row-px-3" divider="full">
+        <List :columns="memberColumns" :row-height="56" class="px-3" divider="full">
           <ListHeader>
             <ListHeaderCell>Person</ListHeaderCell>
             <ListHeaderCell>Access</ListHeaderCell>

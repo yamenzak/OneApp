@@ -120,7 +120,7 @@
           <List
             :columns="domainTracks"
             :row-height="52"
-            class="list-row-px-3"
+            class="px-3"
             divider="full"
           >
             <ListHeader>
@@ -181,7 +181,7 @@
           <List
             :columns="backupTracks"
             :row-height="52"
-            class="list-row-px-3"
+            class="px-3"
             divider="full"
           >
             <ListHeader>
@@ -252,7 +252,7 @@
           <List
             :columns="jobTracks"
             :row-height="52"
-            class="list-row-px-3"
+            class="px-3"
             divider="full"
           >
             <ListHeader>
@@ -289,7 +289,7 @@
           <List
             :columns="loginTracks"
             :row-height="48"
-            class="list-row-px-3"
+            class="px-3"
             divider="full"
           >
             <ListRows :items="logins" row-key="logged_in_on" v-slot="{ item: row, value }">

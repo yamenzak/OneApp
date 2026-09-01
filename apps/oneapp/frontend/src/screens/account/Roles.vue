@@ -24,7 +24,7 @@
         </p>
 
         <List :columns="['minmax(0,1fr)', 'auto']" :row-height="56"
-              class="list-row-px-3" divider="full">
+              class="px-3" divider="full">
           <ListRows :items="shipped" row-key="key" v-slot="{ item: role, value }">
             <ListRow :value="value">
               <ListCell>
@@ -59,7 +59,7 @@
         </p>
 
         <List v-if="custom.length" :columns="['minmax(0,1fr)', 'auto', 'auto']"
-              :row-height="56" class="list-row-px-3" divider="full">
+              :row-height="56" class="px-3" divider="full">
           <ListRows :items="custom" row-key="name" v-slot="{ item: role, value }">
             <ListRow :value="value">
               <ListCell>

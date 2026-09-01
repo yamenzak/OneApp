@@ -10,7 +10,7 @@
       <LoadingIndicator class="size-5 text-ink-gray-5" />
     </div>
 
-    <List v-else :columns="columns" :row-height="56" class="list-row-px-3" divider="full">
+    <List v-else :columns="columns" :row-height="56" class="px-3" divider="full">
       <ListHeader>
         <ListHeaderCell v-for="c in visible" :key="c.key">{{ c.header }}</ListHeaderCell>
       </ListHeader>

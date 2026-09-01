@@ -58,7 +58,19 @@
         class="grid gap-x-4 gap-y-4"
         :class="GRID[Math.min(section.columns.length, 3)]"
       >
-        <div v-for="(column, at) in section.columns" :key="at" class="flex flex-col gap-4">
+        <!--
+          `min-w-0` because a grid item's minimum width is `auto`, which is its
+          content's minimum — so one wide thing inside a form column makes the
+          whole column that wide and the form runs off the side of the pane.
+          The child table is the thing: a five-column grid is 1200px, and
+          without this it pushed the section, the tab and the pane's own
+          scroller out with it instead of scrolling inside its own box.
+        -->
+        <div
+          v-for="(column, at) in section.columns"
+          :key="at"
+          class="flex min-w-0 flex-col gap-4"
+        >
           <!--
             The field's own icon, in a gutter beside the control rather than
             inside its label. Only some of frappe-ui's controls have a `label`
