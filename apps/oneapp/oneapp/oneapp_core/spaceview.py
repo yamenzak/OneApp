@@ -25,7 +25,7 @@ import json
 import frappe
 from frappe import _
 
-from oneapp.oneapp_core import collab, fieldtypes
+from oneapp.oneapp_core import collab, dashboard, fieldtypes
 
 # Fetched on every screen and shown on none. `name` is how a record is opened
 # and saved, and on most doctypes it is a hash — "8eleplcmv6" as the first thing
@@ -947,8 +947,8 @@ def _status_field(screen: dict, offered: dict) -> str:
 # drops what is not built, so such a screen opens as a list rather than as
 # nothing. `apps/oneapp/frontend/src/lib/viewTypes.js` is the same list, and a
 # test fails when the two drift.
-VIEW_TYPES = ("list", "board", "calendar", "grid", "map")
-BUILT_VIEW_TYPES = ("list", "board", "grid")
+VIEW_TYPES = ("list", "board", "calendar", "dashboard", "grid", "map")
+BUILT_VIEW_TYPES = ("list", "board", "grid", "dashboard")
 DEFAULT_VIEW_TYPE = "list"
 
 # View types that are a way of reading one field, and are nothing without it.
@@ -957,6 +957,12 @@ DEFAULT_VIEW_TYPE = "list"
 # `status_field` is caught by the manifest check; this is the runtime half of
 # the same rule, because a manifest is not the only way a screen is written.
 NEEDS_STATUS = ("board",)
+
+# And the same rule for the dashboard, which is nothing without something to
+# measure. A screen that offers one and declares no widgets would open on an
+# empty page — so the type is dropped and the screen opens on its list, the
+# way a board is dropped where there is no field to make columns of.
+NEEDS_WIDGETS = ("dashboard",)
 
 
 def _view_types(screen: dict) -> list[str]:
@@ -968,7 +974,21 @@ def _view_types(screen: dict) -> list[str]:
 	]
 	if not _has_column_field(screen):
 		declared = [one for one in declared if one not in NEEDS_STATUS]
+	if not _has_widgets(screen):
+		declared = [one for one in declared if one not in NEEDS_WIDGETS]
 	return list(dict.fromkeys(declared)) or [DEFAULT_VIEW_TYPE]
+
+
+def _has_widgets(screen: dict) -> bool:
+	"""Whether this screen declares anything for a dashboard to draw.
+
+	A declaration check, like `_has_column_field`: whether each widget is
+	*valid* is decided in `_dashboard`, where there are columns to check the
+	fieldnames against.
+	"""
+	settings = _json(screen.get("view_settings"))
+	found = settings.get("dashboard") if isinstance(settings, dict) else None
+	return bool(isinstance(found, dict) and found.get("widgets"))
 
 
 def _has_column_field(screen: dict) -> bool:
@@ -2421,6 +2441,44 @@ def assign(space_code: str, screen: str, name: str, users: str | list) -> dict:
 	return {"assigned": _people(after)}
 
 
+@frappe.whitelist(methods=["GET"])
+def dashboard_data(space_code: str, screen: str | None = None,
+                   overrides: str | dict | None = None,
+                   layout: str | None = None) -> dict:
+	"""The numbers behind one screen's dashboard.
+
+	Its own request, and separate from `spec` on purpose: a spec is read on
+	every navigation and this is one aggregate query per widget. A dashboard
+	that cost nine `GROUP BY`s to open a list would be a dashboard nobody could
+	afford to leave declared.
+
+	Through `_apply_saved` and `_apply_overrides` like the rows are, so a
+	filter somebody set in the toolbar narrows the charts as well as the list.
+	A dashboard that ignored the filter above it would be a dashboard that
+	disagrees with the screen it is on.
+	"""
+	resolved = _apply_overrides(
+		_apply_saved(_resolve(space_code, screen, "dashboard"), layout), overrides
+	)
+	doctype = resolved.get("doctype")
+	widgets = resolved.get("widgets") or []
+	if not doctype or not widgets:
+		return {"widgets": []}
+
+	# The screen's own filters plus whatever is unsaved above it — the same
+	# `_all_filters` the rows go through, so the charts and the list are
+	# answering the same question.
+	filters = _all_filters(resolved, resolved.get("asked") or [])
+	precision = None
+
+	return {
+		"widgets": [
+			{**widget, **dashboard.compute(widget, doctype, filters, precision)}
+			for widget in widgets
+		]
+	}
+
+
 # --------------------------------------------------------------------------- #
 # Tags and sharing
 #
@@ -3281,7 +3339,16 @@ def _view_settings(resolved: dict, asked) -> dict:
 		for key, value in settings.items():
 			if not isinstance(key, str):
 				continue
-			if key.endswith("_fields") and isinstance(value, list):
+			if key == "widgets" and view_type == "dashboard":
+				# The one key that is a list of objects rather than a field or
+				# a list of them. Still a validator and not a passthrough:
+				# `dashboard.shape` drops a widget whose kind, aggregate or
+				# fieldnames are not ones this screen has, and drops it whole
+				# rather than narrowing it to the parts that were valid.
+				widgets = dashboard.shape(value, offered)
+				if widgets:
+					kept.setdefault(view_type, {})["widgets"] = widgets
+			elif key.endswith("_fields") and isinstance(value, list):
 				names = [
 					one for one in dict.fromkeys(value)
 					if isinstance(one, str) and one in offered
@@ -3394,6 +3461,25 @@ def _cards(resolved: dict) -> dict:
 	return {"card_fields": chosen[:MAX_CARD_FIELDS]}
 
 
+def _widgets(resolved: dict) -> list[dict]:
+	"""What the dashboard draws, checked against this screen's own columns.
+
+	Only the declaration travels to the browser — a kind, a label, a width, the
+	fieldnames — and never the numbers. A screen's spec is read on every
+	navigation and a dashboard is nine aggregate queries; folding them into it
+	would put nine `GROUP BY`s in front of every list anybody opens. The
+	numbers come from `dashboard()`, once, when the dashboard is the thing
+	being looked at.
+	"""
+	settings = resolved.get("view_settings") or {}
+	found = settings.get("dashboard") if isinstance(settings, dict) else None
+	if not isinstance(found, dict):
+		return []
+
+	offered = {c["fieldname"] for c in resolved.get("all_columns") or []}
+	return dashboard.shape(found.get("widgets"), offered)
+
+
 def _resolve_views(resolved: dict) -> dict:
 	"""Settle what the view types need, and what has to be fetched for them.
 
@@ -3409,6 +3495,7 @@ def _resolve_views(resolved: dict) -> dict:
 	"""
 	resolved["board"] = _board(resolved)
 	resolved["cards"] = _cards(resolved)
+	resolved["widgets"] = _widgets(resolved)
 	resolved["fields"] = _fetch_fields(
 		resolved["columns"],
 		resolved.get("status_field") or "",

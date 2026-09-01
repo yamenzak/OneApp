@@ -758,6 +758,75 @@ The gear in the footer opens one dialog for both: **Card settings** over a grid,
 buckets are — appears. Over a list it is still the column picker, because width
 and pinning are questions about a table.
 
+## The dashboard is the fourth body, and the first that draws no records
+
+A list, a board and a grid all answer *which rows*. A dashboard answers *how
+many, how much, and which way is it going* — so what it is made of is not
+columns but **measures**, and a measure is an aggregate over the rows the
+screen already narrows to.
+
+It is declared, never coded:
+
+```json
+"view_types": "list,board,dashboard",
+"view_settings": {"dashboard": {"widgets": [
+  {"kind": "number", "label": "Open", "aggregate": "count",
+   "filters": {"status": "Open"}, "width": 3},
+  {"kind": "donut",  "label": "By status",   "group_by": "status", "width": 6},
+  {"kind": "bar",    "label": "By priority", "group_by": "priority", "width": 6},
+  {"kind": "line",   "label": "Raised",      "group_by": "date",
+   "grain": "month", "width": 6},
+  {"kind": "heatmap","label": "Priority against status",
+   "group_by": "priority", "series": "status", "width": 12}
+]}}
+```
+
+Nine kinds, one per chart frappe-ui ships: `number`, `bar`, `line`, `area`,
+`donut`, `funnel`, `heatmap`, `sankey`, `scatter`. Five aggregates: `count`,
+`sum`, `avg`, `min`, `max`. Widths are twelfths, from a set of five, because
+the browser lays them out on a twelve-column grid with written-out classes —
+Tailwind emits no CSS for a class name it cannot see.
+
+### Everything about it is a consequence of one decision
+
+**Every widget is one `frappe.get_list`, as the person asking.** No raw SQL, no
+`ignore_permissions`, and the screen's own filters underneath every one. So a
+dashboard cannot count a row its reader may not see, cannot reach a doctype the
+space never granted, and answers differently for two people with different User
+Permissions — without a second permission model existing anywhere.
+
+A widget's own `filters` are rows *on top of* the screen's, never instead. A
+widget that could widen them would be a way to count what the screen was
+written to exclude.
+
+**The vocabulary is closed and a bad widget is dropped whole.** A kind nobody
+built, an aggregate nobody implements, a fieldname the screen does not offer —
+`dashboard.shape` drops the widget rather than narrowing it to the parts that
+were valid, because a chart of *something else* is worse than no chart: a
+reader cannot tell the difference. `tests/test_dashboard.py` holds the two
+halves together — every kind names a chart frappe-ui actually exports, and
+`DashboardWidget` can draw every kind the server offers.
+
+**The numbers are their own request.** A screen's spec is read on every
+navigation and a dashboard is up to twelve aggregate queries; folding them in
+would put twelve `GROUP BY`s in front of every list anybody opens. So `spec`
+carries only the declaration and `dashboard_data` carries the numbers, once,
+when the dashboard is what is being looked at — narrowed by the same
+`payload()` the rows go through, so the charts and the list are answering one
+question.
+
+**A screen with no widgets does not offer the type.** The same rule that keeps
+a board off a screen with no field to make columns of: declared, dropped, and
+the screen opens on its list rather than on an empty page.
+
+### One real limit
+
+Frappe refuses a SQL function in `group_by` — `DATE(creation)` comes back as
+*"Unsupported function or operator"* — so a widget grouped down a date column
+fetches the column and buckets in Python, capped at 5,000 rows. That is fine at
+a chart's scale and is not fine at a report's, which is why the cap exists and
+why it is stated rather than hidden.
+
 ## Tags and sharing are Frappe's, and both were half-built
 
 ### Tags

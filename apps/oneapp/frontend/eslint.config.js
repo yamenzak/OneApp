@@ -76,6 +76,12 @@ export default [
               'keeps the blast radius to one file.',
           },
           {
+            name: 'frappe-ui/charts',
+            message: "Import charts from '@/ui' too. They pull echarts in, so " +
+              'the one reviewable list is also the one place that decides ' +
+              'what a page pays for.',
+          },
+          {
             name: 'socket.io-client',
             message: "Use onDoctypeChange from '@/lib/socket' — one shared, " +
               'reference-counted socket per app.',

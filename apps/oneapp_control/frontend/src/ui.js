@@ -209,3 +209,33 @@ export {
  * them.
  */
 export { CodeEditor, CodePreview, loadLanguage } from 'frappe-ui/experimental'
+
+/**
+ * Charts, from frappe-ui's own entry point.
+ *
+ * Nine plots and four pieces of chrome, all echarts-backed. They are a separate
+ * entry point in the library and stay one here — `frappe-ui/charts` also ships
+ * the `--chart-*` colour ramps as a stylesheet, so importing from it is what
+ * makes a plot follow the app's theme rather than echarts' defaults.
+ *
+ * The chrome is exported alongside the plots on purpose. A chart a screen draws
+ * itself — a sparkline, a plot with an axis nothing here has — composes
+ * ChartCard, ChartContainer, ChartLegend and ChartTooltip and reads as one of
+ * the family; hand-rolling the card around it is how two charts on one page
+ * come to have two different titles, two paddings and two empty states.
+ */
+export {
+  AreaChart,
+  BarChart,
+  DonutChart,
+  FunnelChart,
+  HeatmapChart,
+  LineChart,
+  NumberCard,
+  SankeyChart,
+  ScatterChart,
+  ChartCard,
+  ChartContainer,
+  ChartLegend,
+  ChartTooltip,
+} from 'frappe-ui/charts'

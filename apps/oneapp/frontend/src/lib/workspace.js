@@ -231,6 +231,21 @@ export const workspace = {
       { silent: true },
     ),
 
+  // The numbers behind a screen's dashboard. Its own call rather than part of
+  // the spec: a spec is read on every navigation and this is one aggregate
+  // query per widget.
+  dashboard: (spaceCode, screen, { layout = '', overrides = null } = {}) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.dashboard_data',
+      {
+        space_code: spaceCode,
+        screen,
+        layout: layout || undefined,
+        overrides: overrides ? JSON.stringify(overrides) : undefined,
+      },
+      { silent: true, method: 'GET' },
+    ),
+
   // --- tags and sharing ---------------------------------------------------
   //
   // Frappe's `_user_tags` and `DocShare`, screen-gated. See

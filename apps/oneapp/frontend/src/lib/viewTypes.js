@@ -26,6 +26,12 @@ export const VIEW_TYPES = {
     body: () => import('../components/screen/BoardBody.vue'),
   },
   calendar: { label: 'Calendar', icon: 'lucide-calendar', built: false },
+  dashboard: {
+    label: 'Dashboard',
+    icon: 'lucide-chart-column',
+    built: true,
+    body: () => import('../components/screen/DashboardBody.vue'),
+  },
   grid: {
     label: 'Grid',
     icon: 'lucide-layout-grid',
@@ -47,6 +53,16 @@ export const DEFAULT_VIEW_TYPE = 'list'
  * `spaceview._view_types` is the same rule on the server.
  */
 export const NEEDS_STATUS = ['board']
+
+/**
+ * View types that are nothing without something declared for them to draw.
+ *
+ * A dashboard is its widgets: a screen that offers one and declares none opens
+ * on an empty page. The server drops the type for the same reason — this is
+ * the half that keeps it out of the sidebar, so a screen offers a dashboard
+ * only where there is one to offer.
+ */
+export const NEEDS_WIDGETS = ['dashboard']
 
 /**
  * The types that draw a record as a card rather than as a line.

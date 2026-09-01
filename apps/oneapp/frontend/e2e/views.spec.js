@@ -188,7 +188,7 @@ test('a filter follows you from the list to the board and the grid', async ({
 
   // The same question, drawn as columns. Every card is in Open, and the forty
   // closed ones are not on the board at all.
-  await page.getByRole('link', { name: 'Board' }).click()
+  await page.getByRole('link', { name: 'Board', exact: true }).click()
   await page.locator('[data-oneapp-column]').first().waitFor({ timeout: 15_000 })
   await expect
     .poll(() => page.locator('[data-oneapp-column="Closed"] article').count(),

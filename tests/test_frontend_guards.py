@@ -210,6 +210,13 @@ def test_barrel_covers_everything_frappe_ui_exports():
 				exported |= set(re.findall(r"export \{ default as (\w+)", path.read_text()))
 				break
 
+	# `frappe-ui/charts` is its own entry point, and reading only the main one
+	# is how nine chart components stayed invisible to this guard — the barrel
+	# could have shipped four of them and the test would have agreed.
+	charts = src / "charts" / "index.ts"
+	if charts.is_file():
+		exported |= set(re.findall(r"export \{ default as (\w+)", charts.read_text()))
+
 	barrel = (ROOT / "apps/oneapp/frontend/src/ui.js").read_text()
 	live = {c for c in exported if c[0].isupper()} - deprecated
 

@@ -300,6 +300,9 @@
             :group-by="groupedBy"
             :board="fetchedBoard || spec.board || {}"
             :cards="fetchedCards || spec.cards || {}"
+            :space-code="spaceCode"
+            :layout="spec.layout || ''"
+            :overrides="dashboardAsked"
             @open="open"
             @like="like"
             @sort="sortBy"
@@ -308,7 +311,11 @@
             @new="newWith"
           />
 
+          <!-- A dashboard measures every row that matches rather than drawing
+               a page of them, so page sizes, "43 of 43" and Load more are
+               three controls about something it is not doing. -->
           <ListFooter
+            v-if="spec.view_type !== 'dashboard'"
             :count="rows.length"
             :total="total"
             :page-length="pageLength"
@@ -720,6 +727,24 @@ const payload = () => ({
   // truthiness check would leave the last board field standing after a reset.
   view_settings: viewSettings.value,
 })
+
+
+/**
+ * What a dashboard is narrowed by, as a value that changes when the filters do.
+ *
+ * The same `payload()` the rows go through, so the charts and the list are
+ * answering one question — but only the parts that decide *which records*.
+ * Columns, widths and what a card carries are about drawing, and a chart that
+ * re-fetched when somebody widened a column would be re-fetching for nothing.
+ *
+ * A computed rather than a call, because the body watches it: a function
+ * returning a fresh object every render is a watcher that never settles.
+ */
+const dashboardAsked = computed(() => ({
+  filters: [...quickFilters.value, ...panelFilters.value],
+  order_by: order.value,
+  favourites: favourites.value,
+}))
 
 
 // --- screens ------------------------------------------------------------------

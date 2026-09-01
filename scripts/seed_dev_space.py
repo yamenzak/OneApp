@@ -95,10 +95,32 @@ SCREENS = [
 		# of the built ones, because a screen offering a list, a board and a
 		# grid is what the switcher, the gear and the two card layouts are
 		# there for.
-		"view_types": "list,board,grid",
+		"view_types": "list,board,grid,dashboard",
 		# Where a task stands, which is what the badge beside its name says.
 		# A fieldname and nothing else: the colours are ToDo's own.
 		"status_field": "status",
+		# The dashboard, declared and nothing more. Every widget here is an
+		# aggregate over the rows this screen already narrows to, so there is
+		# no query to write and no second permission model to keep in step —
+		# see `oneapp_core/dashboard.py`.
+		#
+		# Six of them, and deliberately one of each family: a reading, a ring,
+		# bars, a line down time, a funnel and a grid. A fixture with three bar
+		# charts proves the bar chart works and nothing else.
+		"view_settings": json.dumps({"dashboard": {"widgets": [
+			{"kind": "number", "label": "Open", "aggregate": "count",
+			 "filters": {"status": "Open"}, "width": 3},
+			{"kind": "number", "label": "Closed", "aggregate": "count",
+			 "filters": {"status": "Closed"}, "width": 3},
+			{"kind": "donut", "label": "By status", "group_by": "status",
+			 "width": 6},
+			{"kind": "bar", "label": "By priority", "group_by": "priority",
+			 "width": 6},
+			{"kind": "line", "label": "Raised over time", "group_by": "date",
+			 "grain": "month", "width": 6},
+			{"kind": "heatmap", "label": "Priority against status",
+			 "group_by": "priority", "series": "status", "width": 12},
+		]}}),
 	},
 	{
 		"screen": "notes", "label": "Notes", "icon": "lucide-book-open",
