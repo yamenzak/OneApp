@@ -85,6 +85,42 @@ test('the title is the keyboard way into a card', async ({ page }) => {
   ).toBeVisible()
 })
 
+test('a grid over records with pictures is a gallery', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+
+  // Contact declares an `image_field`, which is Frappe's own answer to "what
+  // does one of these look like". A screen over it is a screen worth looking
+  // at rather than reading, so every card leads with the picture.
+  await page.goto('/one/space/zzmock?screen=people&type=grid')
+  await page.locator(CARD).first().waitFor({ timeout: 15_000 })
+
+  const ada = page.locator(CARD, { hasText: 'Ada Sinclair' })
+  await expect(ada.locator('[data-slot="card-cover"] img')).toBeVisible()
+
+  // The picture is fetched because the doctype says which field it is, not
+  // because somebody listed that field as a column — this screen lists two,
+  // and neither is the image.
+  expect(await ada.locator('[data-slot="card-cover"] img').getAttribute('src'))
+    .toContain('bubble-tea')
+
+  // And a record with no picture keeps the frame: its initial, on the same
+  // square. A gallery whose empty cards collapse is a gallery that jumps every
+  // time somebody uploads a photograph.
+  const dev = page.locator(CARD, { hasText: 'Dev Okonjo' })
+  await expect(dev.locator('[data-slot="card-cover"]')).toBeVisible()
+  await expect(dev.locator('[data-slot="card-cover"] img')).toHaveCount(0)
+  await expect(dev.locator('[data-slot="card-cover"]')).toContainText('D')
+  expectNoRealErrors(errors)
+})
+
+test('a grid over records with no picture is not a gallery', async ({ page }) => {
+  // ToDo declares no image field, so there is no picture to make the subject
+  // and the grid stays the card it was. The alternative is a page of grey
+  // squares with a letter in them, which is a gallery of nothing.
+  await openGrid(page)
+  await expect(page.locator('[data-slot="card-cover"]')).toHaveCount(0)
+})
+
 test('the gear over a grid asks what is on a card', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'the settings gear is desktop chrome')
   const errors = collectConsoleErrors(page)

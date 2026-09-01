@@ -1264,6 +1264,38 @@ def test_a_card_is_the_same_card_on_a_board_and_on_a_grid(spaceview):
 	assert spaceview._cards(resolved)["card_fields"] == []
 
 
+def test_what_a_record_is_is_always_fetched(spaceview):
+	"""The title and the picture, whether or not anybody made them columns.
+
+	Both are the doctype's own answer to "what is one of these" — `title_field`
+	and `image_field` — and every surface draws them: the title cell, the chip
+	over a link, the card, the gallery. None of them is a column unless a
+	manifest happened to list one, and the failure is quiet in the worst way: a
+	doctype whose title field is also a column looks perfectly correct, so the
+	screens that were showing a page of ids were the ones nobody had opened.
+	"""
+	resolved = {
+		"view_type": "list",
+		"status_field": "",
+		"title_field": "full_name",
+		"image_field": "image",
+		"all_columns": spaceview._columns(CONTACT, ["first_name", "company"]),
+		"columns": spaceview._columns(CONTACT, ["first_name", "company"]),
+		"view_settings": {},
+	}
+	spaceview._resolve_views(resolved)
+
+	assert "full_name" in resolved["fields"]
+	assert "image" in resolved["fields"]
+
+	# A doctype with no picture asks for nothing extra — there is no column
+	# called "" and asking for one is a SQL error rather than an empty frame.
+	resolved["image_field"] = None
+	spaceview._resolve_views(resolved)
+	assert "" not in resolved["fields"]
+	assert None not in resolved["fields"]
+
+
 def test_a_card_field_is_fetched_even_where_nobody_looks_at_that_column(spaceview):
 	"""Choosing a card field has to reach the query, or the card renders blank.
 

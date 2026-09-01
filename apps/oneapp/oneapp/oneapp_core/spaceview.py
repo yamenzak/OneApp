@@ -3093,6 +3093,14 @@ def _resolve_views(resolved: dict) -> dict:
 		resolved["columns"],
 		resolved.get("status_field") or "",
 		resolved["board"]["column_field"],
+		# What a record *is*, which every surface draws and none of them asked
+		# for. The doctype's own `title_field` and `image_field`: the title cell
+		# reads one and the card reads the other, and neither is a column
+		# unless a manifest happened to list it. Missing, a screen shows a page
+		# of ids and a gallery of empty frames — which is what it did, quietly,
+		# because a doctype whose title field is also a column looks right.
+		resolved.get("title_field") or "",
+		resolved.get("image_field") or "",
 		*resolved["cards"]["card_fields"],
 	)
 	return resolved

@@ -14,6 +14,17 @@
     rather than as lines" — a screen of records with pictures, or one whose
     fields are too few to be worth a table. Grouping a grid would make it a
     board, so it does not.
+
+    And where the records *have* pictures, the grid is a gallery: the picture
+    across the top of the card and everything else as its caption. That is the
+    one place the two views deliberately differ, and it is decided by the
+    doctype rather than by a setting — `image_field` is Frappe's own answer to
+    "what does one of these look like", and a screen over a doctype that has
+    one is a screen worth looking at rather than reading.
+
+    A board does not do this, and that is not an oversight. A board column is
+    18rem wide and a card in one is a glance at where a record stands; a column
+    of squares is a board you scroll all afternoon.
   -->
   <div class="min-h-0 flex-1 overflow-y-auto p-3">
     <!--
@@ -45,6 +56,7 @@
           :fields="cardFields(row)"
           :links="row._links || {}"
           :states="spec.states || []"
+          :cover="!!spec.image_field"
           :meta="row._meta || null"
           :people="row._assigned || []"
           @open="emit('open', row)"

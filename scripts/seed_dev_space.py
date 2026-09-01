@@ -49,6 +49,17 @@ NOTE_FIELDS = "title,public,content"
 # is rows rather than a value and never a column — which is the point: they are
 # on the record, and only there.
 EVENT_FIELDS = "subject,event_type,status,starts_on"
+# No `image` here on purpose: the picture is not a column, it is what the
+# record *is*. A gallery that only works where somebody remembered to list the
+# image field in the manifest is a gallery that mostly does not work — the
+# doctype already says which field it is, and the resolver fetches it whether
+# or not anybody is looking at that column.
+#
+# And not the two fields the title is made of: Contact's `title_field` is
+# `full_name`, so a card listing `first_name` and `last_name` under "Ada
+# Sinclair" says her name three times. A caption is what the picture does not
+# already say.
+PEOPLE_FIELDS = "company_name,designation"
 
 # What the space grants. ToDo and Note are what its screens show; Role is a
 # link target, granted so the picker's Create row has somewhere to create —
@@ -65,6 +76,10 @@ DOCTYPES = [
 	# Inventing a doctype to ask those four questions would be inventing a
 	# doctype to test our own code with.
 	{"document_type": "Event", "access": "Manage", "if_owner": 0},
+	# The gallery fixture. Contact is the one core doctype that declares an
+	# `image_field` and a `title_field` that is not its id — which is exactly
+	# what a grid needs to be a gallery rather than a page of tiles.
+	{"document_type": "Contact", "access": "Manage", "if_owner": 0},
 ]
 
 SCREENS = [
@@ -92,6 +107,15 @@ SCREENS = [
 		"screen": "events", "label": "Events", "icon": "lucide-calendar",
 		"document_type": "Event", "fields": EVENT_FIELDS, "order_by": "creation asc",
 		"status_field": "status",
+	},
+	{
+		# Grid first, because that is what this screen is for: Contact declares
+		# an image field, so its grid is a gallery and the gallery is the point
+		# of opening it. The list is still there for the same records read as
+		# lines.
+		"screen": "people", "label": "People", "icon": "lucide-users",
+		"document_type": "Contact", "fields": PEOPLE_FIELDS,
+		"order_by": "first_name asc", "view_types": "grid,list",
 	},
 ]
 
@@ -174,6 +198,27 @@ EVENTS = [
 		"subject": "Van collection", "event_type": "Public", "status": "Open",
 		"starts_on": "2026-09-17 09:00:00",
 	},
+]
+
+# The gallery's records.
+#
+# The pictures are assets the framework itself ships, so the fixture needs no
+# upload and no bytes of its own — every Frappe site serves these paths. Two
+# contacts have none, deliberately: a gallery has to say "nobody has given this
+# one a picture" without collapsing the card, and that is only visible when
+# some cards have one and some do not.
+FACE = "/assets/frappe/images/ui/bubble-tea-%s.svg"
+CONTACTS = [
+	{"first_name": "Ada", "last_name": "Sinclair", "company_name": "Halloway & Co",
+	 "designation": "Operations", "image": FACE % "happy"},
+	{"first_name": "Bo", "last_name": "Ferreira", "company_name": "Halloway & Co",
+	 "designation": "Accounts", "image": FACE % "smile"},
+	{"first_name": "Cleo", "last_name": "Nakamura", "company_name": "Westbrook Vans",
+	 "designation": "Fleet", "image": FACE % "sorry"},
+	{"first_name": "Dev", "last_name": "Okonjo", "company_name": "Westbrook Vans",
+	 "designation": "Scheduling"},
+	{"first_name": "Esi", "last_name": "Adeyemi", "company_name": "Marlow Studio",
+	 "designation": "Design"},
 ]
 
 # The paging fixture. Everything else here is two or three records, which is
@@ -384,6 +429,15 @@ def seed_tenant():
 		if frappe.db.exists("Event", {"subject": row["subject"]}):
 			continue
 		frappe.get_doc({"doctype": "Event", **row}).insert(ignore_permissions=True)
+
+	for row in CONTACTS:
+		# Contact autonames from the name and the company, so the id is settled
+		# by the values rather than chosen here — matched on the same two.
+		if frappe.db.exists(
+			"Contact", {"first_name": row["first_name"], "last_name": row["last_name"]}
+		):
+			continue
+		frappe.get_doc({"doctype": "Contact", **row}).insert(ignore_permissions=True)
 
 	for n in range(1, BACKLOG + 1):
 		description = f"{BACKLOG_PREFIX} {n:02d}"

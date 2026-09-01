@@ -647,7 +647,37 @@ rather than as lines" — a screen of records with pictures, or one whose fields
 are too few to be worth a table. Grouping a grid would make it a board, so it
 does not group.
 
-Three consequences worth naming:
+### Where the records have pictures, the grid is a gallery
+
+The one place the two views deliberately differ. A doctype's `image_field` is
+Frappe's own answer to "what does one of these look like", and a screen over a
+doctype that has one is a screen worth *looking at* rather than reading — so
+the grid puts the picture across the top of the card, square and cropped, and
+everything else becomes its caption. The small face beside the title goes: it
+is the same picture said twice.
+
+Decided by the doctype, not by a setting. There is nothing to configure and
+nothing to get wrong: a screen over Contact is a gallery, a screen over ToDo is
+the card it was.
+
+* **Cropped, not fitted.** A gallery of mixed aspect ratios is a ragged edge
+  down every column, and the crop is the lesser loss.
+* **A record with no picture still gets a frame** — its initial, on the same
+  square. Its siblings have pictures, and a gallery whose empty cards collapse
+  to nothing jumps every time somebody uploads a photograph. "Nobody has given
+  this one a picture" is a fact worth showing rather than a gap.
+* **A board does not do this**, and that is not an oversight. A board column is
+  18rem wide and a card in one is a glance at where a record stands; a column
+  of squares is a board you scroll all afternoon.
+
+The picture is fetched because the doctype names the field, not because
+somebody listed it as a column — along with the `title_field`, for the same
+reason. Both are what a record *is*, every surface draws them, and neither was
+in the query until the gallery needed one: a doctype whose title field happens
+to also be a column looks perfectly correct, which is why the screens showing a
+page of ids were the ones nobody had opened.
+
+Three more consequences worth naming:
 
 * **A grid needs no field**, so it is offered wherever a screen declares it —
   unlike the board, which is nothing without something to column by.

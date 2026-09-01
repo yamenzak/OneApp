@@ -11,11 +11,15 @@
   -->
   <div class="flex min-w-0 items-center gap-2">
     <!--
-      Always, image or not: Avatar falls back to initials, and that is what the
-      title column already draws for a row with no picture. A face in one place
-      and a bare word in the other reads as two kinds of thing.
+      Image or not: Avatar falls back to initials, and that is what the title
+      column already draws for a row with no picture. A face in one place and a
+      bare word in the other reads as two kinds of thing.
+
+      The one exception is a caller that has already drawn the face itself —
+      see `avatar`.
     -->
     <Avatar
+      v-if="avatar"
       :image="record.image"
       :label="plainText(record.label) || String(record.value || '')"
       shape="square"
@@ -48,6 +52,12 @@ const props = defineProps({
   record: { type: Object, required: true },
   /** A list cell is one line tall; a menu row has more room. */
   compact: { type: Boolean, default: false },
+  /**
+   * Whether to draw the face. Off where the caller has already drawn it, and
+   * bigger — a gallery card puts the record's image across the top, and the
+   * same picture again at 20px beside the title is the picture said twice.
+   */
+  avatar: { type: Boolean, default: true },
 })
 
 const detail = computed(() =>

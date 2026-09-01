@@ -20,8 +20,41 @@
         Frappe CRM's kanban card is and it is right. Values stack one per line
         rather than wrapping into a paragraph: a card of five values run
         together is a sentence nobody wrote, and a column of five is a record.
+
+    A tile may also carry a **cover**: the record's own picture, square and
+    across the top, with everything else as its caption. That is what a grid is
+    for and what a board is not — see `CardsBody`.
   -->
   <div :class="frame">
+    <!--
+      The record's own picture, as the subject rather than as a 20px face
+      beside its name.
+
+      Square and cropped, because a gallery of mixed ratios is a ragged edge
+      down every column and the crop is the lesser loss. `-m-3` because the
+      cover belongs to the card rather than to its padding — the tile's own
+      corners are rounded, so the picture is clipped to them from the outside
+      rather than given a radius of its own that would sit a hair inside them.
+
+      A record with no picture still gets a frame: its initial, on the same
+      square. A gallery whose empty cards collapse to nothing is a gallery that
+      jumps every time somebody uploads a photograph — and "nobody has given
+      this one a picture" is a fact worth showing rather than a gap.
+    -->
+    <div
+      v-if="cover"
+      data-slot="card-cover"
+      class="-mx-3 -mt-3 flex aspect-square items-center justify-center overflow-hidden rounded-t-6 bg-surface-gray-2"
+    >
+      <img
+        v-if="record.image"
+        :src="record.image"
+        :alt="plainText(record.label) || String(record.value || '')"
+        class="size-full object-cover"
+      />
+      <span v-else class="text-2xl font-medium uppercase text-ink-gray-4">{{ initial }}</span>
+    </div>
+
     <!--
       Panel: not a control. Nothing on a hover card is pressable — it is what
       appears *because* you are already pointing at the link.
@@ -46,7 +79,7 @@
       class="flex min-w-0 text-left"
       @click.stop="emit('open')"
     >
-      <RecordChip :record="record" />
+      <RecordChip :record="record" :avatar="!cover" />
     </button>
 
     <Divider v-if="isPanel && (loading || fields.length)" />
@@ -119,6 +152,7 @@ import { Divider, LoadingText } from '@/ui'
 import FieldCell from './FieldCell.vue'
 import RecordChip from './RecordChip.vue'
 import RowMeta from './RowMeta.vue'
+import { plainText } from '../../lib/format'
 
 const props = defineProps({
   /** { value, label, id, image, description } — the shape the server returns. */
@@ -140,6 +174,16 @@ const props = defineProps({
   people: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
   shape: { type: String, default: 'panel' },
+  /**
+   * Whether the record's picture is the subject of this card.
+   *
+   * The caller's answer, not this component's: it depends on the *screen*
+   * rather than on the record. A grid over a doctype that declares an
+   * `image_field` is a gallery and every card gets a cover, the ones with no
+   * picture included — otherwise a page of contacts where two have photographs
+   * is two tall cards among twenty short ones.
+   */
+  cover: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['open', 'like'])
@@ -153,4 +197,11 @@ const isPanel = computed(() => props.shape === 'panel')
 // `gap-2.5` is the rhythm the hairlines sit in: the same space above and below
 // each one, which is what makes three bands read as three bands.
 const frame = computed(() => (isPanel.value ? '' : 'flex flex-col gap-2.5 p-3'))
+
+// What stands in for a picture there is not one. The first letter of what the
+// record is called, which is what Avatar itself falls back to — the same
+// answer, drawn at the size the cover asks for.
+const initial = computed(
+  () => (plainText(props.record.label) || String(props.record.value || '')).trim().charAt(0),
+)
 </script>
