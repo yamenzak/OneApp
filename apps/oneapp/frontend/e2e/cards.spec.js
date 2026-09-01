@@ -101,7 +101,20 @@ test('a grid over records with pictures is a gallery', async ({ page }) => {
   // because somebody listed that field as a column — this screen lists two,
   // and neither is the image.
   expect(await ada.locator('[data-slot="card-cover"] img').getAttribute('src'))
-    .toContain('bubble-tea')
+    .toContain('/files/zzmock-')
+
+  // The caption: the name, and the picked columns as pills over the picture
+  // rather than as the cells a list draws.
+  await expect(ada.getByRole('button', { name: 'Ada Sinclair' })).toBeVisible()
+  await expect(ada).toContainText('Halloway & Co')
+  await expect(ada).toContainText('Operations')
+
+  // Contact names its records after the person, so its id and its title are
+  // the same string and there is nothing to put under the name. A record named
+  // by a series has two things to say, and says both.
+  await expect(ada).not.toContainText('Ada Sinclair-')
+  const esi = page.locator(CARD, { hasText: 'Esi Adeyemi' })
+  await expect(esi).toContainText('CONTACT-ZZ-0001')
 
   // And a record with no picture keeps the frame: its initial, on the same
   // square. A gallery whose empty cards collapse is a gallery that jumps every

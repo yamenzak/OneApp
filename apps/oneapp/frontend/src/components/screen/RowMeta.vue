@@ -22,9 +22,16 @@
     row is a column of hearts and needs them all on one x; a card is one heart
     and needs it where a card's action goes.
   -->
+  <!--
+    `inverse` is the same three read over a photograph, where the ink this
+    product uses everywhere is a grey nobody can see. White, and a drop shadow
+    rather than a band behind it: a gallery card's picture goes to all four
+    edges, and a strip of chrome across the top of one is the thing that made
+    the first version of that card look like a stock template.
+  -->
   <div
-    class="flex w-full items-center gap-2 text-p-xs text-ink-gray-5"
-    :class="spread ? '' : 'justify-end'"
+    class="flex w-full items-center gap-2 text-p-xs"
+    :class="[spread ? '' : 'justify-end', inverse ? 'text-white drop-shadow' : 'text-ink-gray-5']"
   >
     <span class="whitespace-nowrap tabular-nums">{{ when }}</span>
 
@@ -72,6 +79,7 @@
       :label="likeLabel"
       :tooltip="likeLabel"
       :theme="meta.liked ? 'red' : 'gray'"
+      :class="inverse && !meta.liked ? '!text-white drop-shadow' : ''"
       @click.stop="emit('like')"
     />
   </div>
@@ -88,6 +96,8 @@ const props = defineProps({
   spread: { type: Boolean, default: false },
   /** `row._assigned` — `[{ value, label, image }]`, already resolved. */
   people: { type: Array, default: () => [] },
+  /** White, for a surface that is somebody's photograph rather than a card. */
+  inverse: { type: Boolean, default: false },
 })
 const emit = defineEmits(['like'])
 

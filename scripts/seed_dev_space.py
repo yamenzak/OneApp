@@ -24,6 +24,7 @@ Nothing here runs on Frappe Cloud, and nothing here is a fixture the apps ship.
 """
 
 import json
+from pathlib import Path
 
 import frappe
 
@@ -202,24 +203,65 @@ EVENTS = [
 
 # The gallery's records.
 #
-# The pictures are assets the framework itself ships, so the fixture needs no
-# upload and no bytes of its own — every Frappe site serves these paths. Two
-# contacts have none, deliberately: a gallery has to say "nobody has given this
-# one a picture" without collapsing the card, and that is only visible when
-# some cards have one and some do not.
-FACE = "/assets/frappe/images/ui/bubble-tea-%s.svg"
+# Two have no picture, deliberately: a gallery has to say "nobody has given
+# this one a picture" without collapsing the card, and that is only visible
+# when some cards have one and some do not.
+#
+# `name` on the last one is set rather than derived, and it is the other half
+# of the same idea. Contact names itself after the person, so its id and its
+# title are the same string and a card has nothing to put under the name —
+# which is right, and hides the case where a doctype names its records by a
+# series and the card has two things to say. One of each, in one gallery.
 CONTACTS = [
 	{"first_name": "Ada", "last_name": "Sinclair", "company_name": "Halloway & Co",
-	 "designation": "Operations", "image": FACE % "happy"},
+	 "designation": "Operations", "picture": "dusk"},
 	{"first_name": "Bo", "last_name": "Ferreira", "company_name": "Halloway & Co",
-	 "designation": "Accounts", "image": FACE % "smile"},
+	 "designation": "Accounts", "picture": "moss"},
 	{"first_name": "Cleo", "last_name": "Nakamura", "company_name": "Westbrook Vans",
-	 "designation": "Fleet", "image": FACE % "sorry"},
+	 "designation": "Fleet", "picture": "clay"},
 	{"first_name": "Dev", "last_name": "Okonjo", "company_name": "Westbrook Vans",
 	 "designation": "Scheduling"},
 	{"first_name": "Esi", "last_name": "Adeyemi", "company_name": "Marlow Studio",
-	 "designation": "Design"},
+	 "designation": "Design", "name": "CONTACT-ZZ-0001"},
 ]
+
+# The pictures, drawn rather than downloaded.
+#
+# A fixture that fetches photographs needs a network and inherits somebody
+# else's licence; one that ships them puts binaries in a repository that has
+# none. An SVG gradient is neither: a few hundred bytes of text written into
+# the site's own public files, the same on every machine, and dark enough to be
+# an honest test of white type over a picture — which is what the gallery card
+# actually has to survive.
+PICTURES = {
+	"dusk": ("#1f2937", "#7c3aed"),
+	"moss": ("#052e16", "#0891b2"),
+	"clay": ("#431407", "#dc2626"),
+}
+
+
+def _write_pictures():
+	"""The fixture's pictures, in the site's public files. Returns their paths."""
+	folder = Path(frappe.get_site_path("public", "files"))
+	folder.mkdir(parents=True, exist_ok=True)
+
+	paths = {}
+	for key, (dark, bright) in PICTURES.items():
+		svg = (
+			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">'
+			f'<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
+			f'<stop offset="0" stop-color="{bright}"/>'
+			f'<stop offset="1" stop-color="{dark}"/>'
+			"</linearGradient></defs>"
+			'<rect width="400" height="400" fill="url(#g)"/>'
+			f'<circle cx="300" cy="120" r="70" fill="{bright}" fill-opacity="0.35"/>'
+			f'<circle cx="110" cy="300" r="130" fill="{dark}" fill-opacity="0.45"/>'
+			"</svg>"
+		)
+		name = f"zzmock-{key}.svg"
+		(folder / name).write_text(svg)
+		paths[key] = f"/files/{name}"
+	return paths
 
 # The paging fixture. Everything else here is two or three records, which is
 # right for reading a screen and useless for testing what happens at the end of
@@ -430,14 +472,20 @@ def seed_tenant():
 			continue
 		frappe.get_doc({"doctype": "Event", **row}).insert(ignore_permissions=True)
 
+	pictures = _write_pictures()
 	for row in CONTACTS:
-		# Contact autonames from the name and the company, so the id is settled
-		# by the values rather than chosen here — matched on the same two.
+		# Matched on the person rather than on the id, because Contact names
+		# itself from the person — and one of these is named by hand instead.
 		if frappe.db.exists(
 			"Contact", {"first_name": row["first_name"], "last_name": row["last_name"]}
 		):
 			continue
-		frappe.get_doc({"doctype": "Contact", **row}).insert(ignore_permissions=True)
+		fields = {k: v for k, v in row.items() if k not in ("name", "picture")}
+		if row.get("picture"):
+			fields["image"] = pictures[row["picture"]]
+		frappe.get_doc({"doctype": "Contact", **fields}).insert(
+			ignore_permissions=True, set_name=row.get("name")
+		)
 
 	for n in range(1, BACKLOG + 1):
 		description = f"{BACKLOG_PREFIX} {n:02d}"

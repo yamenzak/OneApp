@@ -32,26 +32,26 @@
     six fields grows taller instead of clipping them, and the picture, being
     absolutely placed, still covers whatever height that turns out to be.
 
-    The two bands are the surface colour rather than a dark wash, and they are
-    solid under the words with a short fade into the picture above and below.
-    Both halves of that are deliberate:
+    Three decisions, all of them about the fact that the surface here is
+    somebody's photograph rather than a card:
 
-      * **The surface colour**, because it keeps every piece of this readable
-        without a single new one. A badge is still its own theme's badge, a
-        link is still a face and a name, and the ink is the ink this product
-        uses everywhere. White text on a dark wash would mean reinventing all
-        three, in a component that owns none of them.
-      * **Solid, not a gradient all the way through.** A gradient under the
-        words is legible over some pictures and not others, and which ones is
-        whatever somebody uploaded — the first thing this drew put a cartoon's
-        face through the middle of a contact's name. The fade is a strip above
-        the band rather than the band itself, so the picture softens into the
-        caption and the caption is always readable.
+      * **Dark, not light.** The caption sits in a gradient to black with white
+        type on it, which is how every product that puts words on a picture
+        does it — a white band across a photograph reads as chrome stuck on
+        top, and the first version of this looked exactly like that.
+      * **Nothing behind the top row.** Its three things are small, white and
+        shadowed; a second band up there would frame the picture out of its own
+        card.
+      * **The fields are pills**, not the cells a list draws. A cell's ink and
+        its chip belong to a light surface; over a photograph they are a grey
+        nobody can read. The *text* is the same text — `lib/cells.js` answers
+        that once for both — and a status keeps its colour by going solid,
+        which is the one badge variant that reads on anything.
   -->
   <div v-if="!isPanel && cover" class="relative overflow-hidden rounded-6">
     <div
       data-slot="card-cover"
-      class="absolute inset-0 flex items-center justify-center bg-surface-gray-2"
+      class="absolute inset-0 flex items-center justify-center bg-black/70"
     >
       <img
         v-if="record.image"
@@ -64,7 +64,12 @@
         Its siblings have pictures, and a gallery whose empty cards collapse to
         nothing jumps every time somebody uploads a photograph.
       -->
-      <span v-else class="text-4xl font-medium uppercase text-ink-gray-4">{{ initial }}</span>
+      <!--
+        Dark, like every other card in this gallery. The chrome over a picture
+        is white with a shadow; a light square under the same chrome is a card
+        whose date and heart have vanished, which is what a grey one did.
+      -->
+      <span v-else class="text-4xl font-medium uppercase text-white/40">{{ initial }}</span>
     </div>
 
     <div class="relative flex aspect-square flex-col justify-between">
@@ -73,43 +78,64 @@
         then how many have said something, who it is on, and whether this one
         is yours at the right. The same row the other tile ends with — one
         component, one set of rules about what a zero means and what the heart
-        is called.
+        is called — in white.
       -->
-      <div>
-        <div class="bg-surface-base px-3 pt-2">
-          <RowMeta spread :meta="meta || {}" :people="people" @like="emit('like')" />
-        </div>
-        <div class="h-8 bg-gradient-to-b from-surface-base to-transparent" />
+      <div class="p-3">
+        <RowMeta
+          spread
+          inverse
+          :meta="meta || {}"
+          :people="people"
+          @like="emit('like')"
+        />
       </div>
 
       <!--
         Who it is, and what it says, along the bottom — where a caption goes on
         a photograph, and out of the middle of the picture.
       -->
-      <div>
-        <div class="h-8 bg-gradient-to-t from-surface-base to-transparent" />
-        <div class="flex flex-col gap-1 bg-surface-base px-3 pb-3">
+      <div class="bg-gradient-to-t from-black/80 via-black/50 to-transparent px-3 pb-3 pt-10">
         <button
           type="button"
-          class="flex min-w-0 text-left"
+          class="block w-full min-w-0 text-left"
           @click.stop="emit('open')"
         >
-          <RecordChip :record="record" :avatar="false" />
+          <!-- The name, and the id under it where the name is not already the
+               id. A record that has no title of its own is named by its id, and
+               printing that twice is not more informative than once. -->
+          <span class="block truncate text-p-base font-semibold text-white">
+            {{ plainText(record.label) || record.value }}
+          </span>
+          <span v-if="subtitle" class="block truncate text-p-xs text-white/70">
+            {{ subtitle }}
+          </span>
         </button>
 
-        <div
-          v-for="field in fields"
-          :key="field.fieldname"
-          class="flex min-w-0 items-center"
-        >
-          <FieldCell
-            :column="field"
-            :value="field.value"
-            :states="states"
-            :links="links"
-            class="min-w-0"
-          />
-        </div>
+        <div v-if="fields.length" class="mt-2 flex flex-wrap items-center gap-1.5">
+          <template v-for="field in fields" :key="field.fieldname">
+            <!-- A status keeps the doctype's own colour. Solid rather than
+                 subtle, because a pastel badge on a photograph is a smudge. -->
+            <Badge
+              v-if="field.cell === 'badge'"
+              :theme="valueTheme(field.value, states)"
+              :label="String(field.value)"
+              variant="solid"
+            >
+              <template #prefix>
+                <Icon
+                  :name="valueIcon(field.value, states)"
+                  class="size-3"
+                  :aria-hidden="true"
+                />
+              </template>
+            </Badge>
+            <span
+              v-else
+              class="max-w-full truncate rounded-full bg-white/20 px-2 py-0.5 text-p-xs text-white backdrop-blur-sm"
+            >
+              {{ cellText(field, field.value, formats, links[field.fieldname]) }}
+            </span>
+          </template>
         </div>
       </div>
     </div>
@@ -209,11 +235,14 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Divider, LoadingText } from '@/ui'
+import { Badge, Divider, Icon, LoadingText } from '@/ui'
 import FieldCell from './FieldCell.vue'
 import RecordChip from './RecordChip.vue'
 import RowMeta from './RowMeta.vue'
 import { plainText } from '../../lib/format'
+import { cellText } from '../../lib/cells'
+import { valueIcon, valueTheme } from '../../lib/fields'
+import { session } from '../../lib/session'
 
 const props = defineProps({
   /** { value, label, id, image, description } — the shape the server returns. */
@@ -262,6 +291,16 @@ const frame = computed(() => (isPanel.value ? '' : 'flex flex-col gap-2.5 p-3'))
 // What stands in for a picture where there is not one. The first letter of what
 // the record is called, which is what Avatar itself falls back to — the same
 // answer, drawn at the size a gallery asks for.
+// The id, under the name, where the name is not already the id — the server
+// blanks it in exactly that case, so this is only asking whether there is a
+// second thing to say. A doctype with no `title_field` names its records by
+// their id, and a card printing that twice says nothing the once did not.
+const subtitle = computed(() => props.record.id || '')
+
+// How this site renders a number when the field does not say, for the pills —
+// the same answer `FieldCell` reads for the cells.
+const formats = computed(() => session.data?.formats || {})
+
 const initial = computed(
   () => (plainText(props.record.label) || String(props.record.value || '')).trim().charAt(0),
 )

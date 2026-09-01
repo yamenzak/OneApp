@@ -100,9 +100,9 @@ import { Badge, Icon, Avatar, Rating } from '@/ui'
 import RecordChip from './RecordChip.vue'
 import RecordPreview from './RecordPreview.vue'
 import { valueIcon, valueTheme } from '../../lib/fields'
-import { formatNumber, plainText } from '../../lib/format'
+import { cellText } from '../../lib/cells'
+import { plainText } from '../../lib/format'
 import { session } from '../../lib/session'
-import { dayjsLocal } from '@/ui'
 
 const props = defineProps({
   column: { type: Object, required: true },
@@ -144,49 +144,10 @@ const formats = computed(() => session.data?.formats || {})
 const NUMERIC = ['number', 'currency', 'percent', 'duration']
 const numeric = computed(() => NUMERIC.includes(props.column.cell))
 
-const formatted = computed(() => {
-  const raw = props.value
-  if (raw === null || raw === undefined || raw === '') return '—'
-
-  switch (props.column.cell) {
-    case 'date':
-      return dayjsLocal(raw).format('D MMM YYYY')
-    case 'datetime':
-      return dayjsLocal(raw).format('D MMM YYYY, HH:mm')
-    case 'percent':
-      return `${formatNumber(raw, props.column, formats.value)}%`
-    case 'number':
-    case 'currency':
-      return formatNumber(raw, props.column, formats.value)
-    case 'duration':
-      return humanDuration(Number(raw) || 0, props.column)
-    case 'html':
-      // The list is not the place to render markup: a cell is one line, and
-      // stripping is honest where interpreting would be a security decision.
-      return plainText(raw) || '—'
-    default:
-      return String(raw)
-  }
-})
-
-// Frappe's own two flags decide which parts of a duration are worth reading:
-// `hide_days` folds days into hours, `hide_seconds` drops the tail. A field
-// that sets neither reads the way it always did.
-function humanDuration(seconds, column) {
-  if (!seconds) return '—'
-  const days = column.hide_days ? 0 : Math.floor(seconds / 86400)
-  const hours = Math.floor((seconds - days * 86400) / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const rest = seconds % 60
-  return (
-    [
-      days && `${days}d`,
-      hours && `${hours}h`,
-      minutes && `${minutes}m`,
-      !column.hide_seconds && rest && `${rest}s`,
-    ]
-      .filter(Boolean)
-      .join(' ') || (column.hide_seconds ? '0m' : `${seconds}s`)
-  )
-}
+// What the value says, from the one place that answers that — a gallery card
+// draws the same values as pills over a photograph and must not have a second
+// opinion about what a Duration looks like. See `lib/cells.js`.
+const formatted = computed(() =>
+  cellText(props.column, props.value, formats.value, link.value),
+)
 </script>

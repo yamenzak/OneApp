@@ -657,13 +657,13 @@ sits over it:
 
 ```
 ┌──────────────────────────┐
-│ 2 days      💬 0  ⚇  ♥  │   how it is doing
+│ 2 days   💬 0  ⚇      ♥ │   white, shadowed, no band behind it
 │                          │
 │         (picture)        │
-│                          │
-│ Ada Sinclair             │   who it is
-│ Halloway & Co            │   and what it says
-│ Operations               │
+│      ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ │   a gradient to black
+│ Ada Sinclair             │   the name
+│ CONTACT-ZZ-0001          │   and the id, where it is not the name
+│ (Halloway & Co)(Operations)  the picked columns, as pills
 └──────────────────────────┘
 ```
 
@@ -671,25 +671,27 @@ Decided by the doctype, not by a setting. There is nothing to configure and
 nothing to get wrong: a screen over Contact is a gallery, a screen over ToDo is
 the card it was.
 
-* **The bands are the surface colour, not a dark wash.** That is what keeps
-  every piece of this readable without inventing a second palette: a badge is
-  still its own theme's badge, a link is still a face and a name, and the ink
-  is the ink used everywhere else. White text on a scrim would mean reinventing
-  all three inside a component that owns none of them.
-* **Solid under the words, with a fade above.** A gradient the whole way
-  through is legible over some pictures and not others, and which ones is
-  whatever somebody uploaded — the first version of this put a cartoon's face
-  through the middle of a contact's name.
+* **Dark, not light.** The caption sits in a gradient to black with white type
+  on it, which is how every product that puts words on a picture does it. A
+  light band across a photograph reads as chrome stuck on top — the first
+  version of this did exactly that and looked like a stock template.
+* **Nothing behind the top row.** Its three things are small, white and
+  shadowed. A second band up there would frame the picture out of its own card.
+* **The fields are pills, not the cells a list draws.** A cell's ink and its
+  chip belong to a light surface; over a photograph they are a grey nobody can
+  read. The *text* is the same text — `lib/cells.js` answers "what does this
+  value say" once, for the list cell and the pill both — and a status keeps the
+  doctype's colour by going solid, which is the one badge variant that reads on
+  anything.
+* **A record with no picture gets a dark square**, not a pale one: the chrome
+  over a picture is white, and a light tile under the same chrome is a card
+  whose date and heart have vanished.
 * **A square is the minimum, not a cage.** The ratio comes from `aspect-square`
   on the content, so a caption that runs to six fields makes the card taller
   rather than clipping them, and the picture — absolutely placed — covers
   whatever height that turns out to be.
 * **Cropped, not fitted.** A gallery of mixed aspect ratios is a ragged edge
   down every column, and the crop is the lesser loss.
-* **A record with no picture still gets a frame** — its initial, on the same
-  square. Its siblings have pictures, and a gallery whose empty cards collapse
-  to nothing jumps every time somebody uploads a photograph. "Nobody has given
-  this one a picture" is a fact worth showing rather than a gap.
 * **A board does not do this**, and that is not an oversight. A board column is
   18rem wide and a card in one is a glance at where a record stands; a column
   of squares is a board you scroll all afternoon.
