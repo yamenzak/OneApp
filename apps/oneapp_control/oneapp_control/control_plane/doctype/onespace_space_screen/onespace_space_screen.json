@@ -90,7 +90,7 @@
    "label": "View Types"
   },
   {
-   "description": "Per type, what that type needs: {\"board\": {\"column_field\": \"status\", \"card_fields\": [\"priority\"]}}. Nested by view type because one screen offers several. A key ending in `_field` is one fieldname and `_fields` is a list of them; both are checked against the doctype like a filter or a sort, and anything else is dropped. A board may name a Select or a Link here instead of the status field \u2014 and a reader may name another again in a saved view, which is where their own choice lives.",
+   "description": "Per type, what that type needs: {\"board\": {\"column_field\": \"status\", \"card_fields\": [\"priority\"]}}. Nested by view type because one screen offers several. A key ending in `_field` is one fieldname and `_fields` is a list of them; both are checked against the doctype like a filter or a sort, and anything else is dropped. A board may name a Select or a Link here instead of the status field \u2014 and a reader may name another again in a saved view, which is where their own choice lives. Each card-shaped type keeps its own `card_fields`: a board card sits under a heading naming the field it is bucketed by and a grid card does not.",
    "fieldname": "view_settings",
    "fieldtype": "Code",
    "label": "View Settings",

@@ -26,7 +26,12 @@ export const VIEW_TYPES = {
     body: () => import('../components/screen/BoardBody.vue'),
   },
   calendar: { label: 'Calendar', icon: 'lucide-calendar', built: false },
-  grid: { label: 'Grid', icon: 'lucide-layout-grid', built: false },
+  grid: {
+    label: 'Grid',
+    icon: 'lucide-layout-grid',
+    built: true,
+    body: () => import('../components/screen/CardsBody.vue'),
+  },
   map: { label: 'Map', icon: 'lucide-map', built: false },
 }
 
@@ -42,6 +47,18 @@ export const DEFAULT_VIEW_TYPE = 'list'
  * `spaceview._view_types` is the same rule on the server.
  */
 export const NEEDS_STATUS = ['board']
+
+/**
+ * The types that draw a record as a card rather than as a line.
+ *
+ * A board and a grid share the card and differ only in how the cards are laid
+ * out — see `lib/cards.js`. What they share here is the question the gear
+ * opens: not "which columns and how wide", which is meaningless without a
+ * table, but "what does a card say".
+ *
+ * `spaceview.CARD_VIEW_TYPES` is the same list.
+ */
+export const CARD_VIEW_TYPES = ['board', 'grid']
 
 /**
  * The types one screen offers, in order, filtered to what this build renders.

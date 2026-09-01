@@ -299,6 +299,7 @@
             :counted="counted"
             :group-by="groupedBy"
             :board="fetchedBoard || spec.board || {}"
+            :cards="fetchedCards || spec.cards || {}"
             @open="open"
             @like="like"
             @sort="sortBy"
@@ -395,12 +396,14 @@
     </template>
   </Dialog>
 
-  <BoardSettings
+  <CardSettings
     v-if="spec?.doctype"
-    v-model="showBoard"
+    v-model="showCards"
     :spec="spec"
+    :view-type="spec.view_type"
     :board="fetchedBoard || spec.board || {}"
-    @changed="boardChanged"
+    :cards="fetchedCards || spec.cards || {}"
+    @changed="cardsChanged"
   />
 
   <ColumnPicker
@@ -446,7 +449,7 @@ import RecordPane from '../components/screen/RecordPane.vue'
 import RecordView from '../components/screen/RecordView.vue'
 import FilterPanel from '../components/screen/FilterPanel.vue'
 import QuickFilters from '../components/screen/QuickFilters.vue'
-import BoardSettings from '../components/screen/BoardSettings.vue'
+import CardSettings from '../components/screen/CardSettings.vue'
 import ColumnPicker from '../components/screen/ColumnPicker.vue'
 import ListFooter from '../components/screen/ListFooter.vue'
 import SelectionBar from '../components/screen/SelectionBar.vue'
@@ -456,7 +459,7 @@ import { session } from '../lib/session'
 import { workspace } from '../lib/workspace'
 import { notifyError, notifySuccess } from '../lib/notify'
 import { screenComponent } from '../screens'
-import { DEFAULT_VIEW_TYPE, VIEW_TYPES, bodyFor } from '../lib/viewTypes'
+import { CARD_VIEW_TYPES, DEFAULT_VIEW_TYPE, VIEW_TYPES, bodyFor } from '../lib/viewTypes'
 import { onDoctypeChange } from '../lib/socket'
 import { valueTheme } from '../lib/fields'
 
@@ -475,22 +478,30 @@ const showCreate = ref(false)
 // New; a status for a board column's.
 const preset = ref({})
 const showColumns = ref(false)
-const showBoard = ref(false)
+const showCards = ref(false)
 
 // One gear, two dialogs. Which one is the body's question, not the footer's:
-// a board has no column widths and a list has no cards.
+// a card view has no column widths and a list has no cards.
 const openSettings = () => {
-  if (spec.value?.view_type === 'board') showBoard.value = true
+  if (CARD_VIEW_TYPES.includes(spec.value?.view_type)) showCards.value = true
   else showColumns.value = true
 }
 
-// What the reader has said about the board and not yet saved. Empty until they
-// touch it, so the screen's own answer stands — the same shape the filters and
-// the sort use, and it rides in the same payload.
-const boardSettings = ref({})
+// What the reader has said about a card view and not yet saved. Empty until
+// they touch it, so the screen's own answer stands — the same shape the
+// filters and the sort use, and it rides in the same payload.
+//
+// Keyed by view type, the shape the manifest and a saved view both store: a
+// board's card and a grid's card are separate answers, and switching between
+// the two views should not carry one over the other.
+const viewSettings = ref({})
 
-const boardChanged = (changes) => {
-  boardSettings.value = { ...boardSettings.value, ...changes }
+const cardsChanged = (changes) => {
+  const type = spec.value?.view_type || DEFAULT_VIEW_TYPE
+  viewSettings.value = {
+    ...viewSettings.value,
+    [type]: { ...(viewSettings.value[type] || {}), ...changes },
+  }
   changed()
 }
 // The record that is open, fetched. Null is "no record", which is also what
@@ -534,6 +545,10 @@ const groupedBy = ref('')
 // The board the last page came back for. Null until one has, which is when the
 // screen's own answer stands.
 const fetchedBoard = ref(null)
+// And what a card says, for the same reason: a chosen card field changes what
+// is fetched, so drawing the new card before its rows arrive is a card of
+// empty fields for as long as the request takes.
+const fetchedCards = ref(null)
 
 const space = computed(() =>
   (session.spaces || []).find((one) => one.space_code === props.spaceCode),
@@ -698,7 +713,7 @@ const payload = () => ({
   // Nested by view type, the same shape the manifest uses and the same shape a
   // saved view stores. Sent whole so that clearing a choice clears it: a
   // truthiness check would leave the last board field standing after a reset.
-  view_settings: { board: boardSettings.value },
+  view_settings: viewSettings.value,
 })
 
 
@@ -1057,6 +1072,7 @@ const loadRows = async () => {
     groupedBy.value = page?.group_by || ''
     // Same reason as the grouping above: the board the rows were fetched for.
     fetchedBoard.value = page?.board || null
+    fetchedCards.value = page?.cards || null
     hasMore.value = !!page?.has_more
     countRows()
   } catch (error) {
@@ -1192,6 +1208,11 @@ const load = async (openWith) => {
     // Seeded from what the screen resolved to, which already includes this
     // person's saved view.
     quickFilters.value = []
+    // Whatever was said about a card and not saved. Cleared with the rest of
+    // the unsaved state: it was said about the view that was open, and opening
+    // another one — a saved view, or a different type — is not a reason to
+    // keep overriding what that one resolved to.
+    viewSettings.value = {}
     panelFilters.value = (spec.value?.saved?.filters || []).map((filter) => [...filter])
     order.value = spec.value?.order_by || ''
     chosenColumns.value = (spec.value?.columns || []).map((c) => ({

@@ -36,8 +36,8 @@
       -->
       <!--
         One gear, and what it opens is whatever the body is: a list's columns,
-        a board's columns-of and card. Both are "what does this show" rather
-        than "which rows", which is the question this corner already answers.
+        a card view's card. Both are "what does this show" rather than "which
+        rows", which is the question this corner already answers.
       -->
       <Button
         icon="lucide-settings"
@@ -54,6 +54,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Button, TabButtons } from '@/ui'
+import { CARD_VIEW_TYPES } from '../../lib/viewTypes'
 
 const props = defineProps({
   count: { type: Number, default: 0 },
@@ -70,10 +71,12 @@ const props = defineProps({
 const emit = defineEmits(['more', 'page-length', 'columns'])
 
 // Named for what it opens. "Choose columns" over a board is a control that
-// says the wrong thing about itself.
-const settingsLabel = computed(() =>
-  props.viewType === 'board' ? 'Board settings' : 'Choose columns',
-)
+// says the wrong thing about itself — a board has no columns to choose, and a
+// grid has neither columns nor buckets.
+const settingsLabel = computed(() => {
+  if (props.viewType === 'board') return 'Board settings'
+  return CARD_VIEW_TYPES.includes(props.viewType) ? 'Card settings' : 'Choose columns'
+})
 
 const options = computed(() =>
   props.sizes.map((size) => ({ label: String(size), value: size })),

@@ -810,13 +810,7 @@ def _resolve(space_code: str, screen: str | None = None,
 	# board is resolved from them; a saved view narrows both again in
 	# `_apply_saved`.
 	resolved["view_settings"] = _view_settings(resolved, resolved.get("view_settings"))
-	resolved["board"] = _board(resolved)
-	resolved["fields"] = _fetch_fields(
-		resolved["columns"],
-		resolved["status_field"],
-		resolved["board"]["column_field"],
-	)
-	return resolved
+	return _resolve_views(resolved)
 
 
 # What the record form is laid out as, when the doctype says nothing: one tab,
@@ -918,7 +912,7 @@ def _status_field(screen: dict, offered: dict) -> str:
 # nothing. `apps/oneapp/frontend/src/lib/viewTypes.js` is the same list, and a
 # test fails when the two drift.
 VIEW_TYPES = ("list", "board", "calendar", "grid", "map")
-BUILT_VIEW_TYPES = ("list", "board")
+BUILT_VIEW_TYPES = ("list", "board", "grid")
 DEFAULT_VIEW_TYPE = "list"
 
 # View types that are a way of reading one field, and are nothing without it.
@@ -1085,6 +1079,10 @@ def rows(space_code: str, screen: str | None = None, limit: int = PAGE,
 		# board drawn from the spec while rows arrive for a different field is a
 		# board of empty columns for as long as the request takes.
 		"board": resolved.get("board") or {},
+		# And what a card says, for the same reason: choosing a card field
+		# changes what is fetched, so a card drawn from the spec before the
+		# rows arrive is a card of empty fields.
+		"cards": resolved.get("cards") or {},
 	}
 
 
@@ -2505,12 +2503,7 @@ def _apply_saved(resolved: dict, layout: str | None = None) -> dict:
 		for view_type, settings in kept_settings.items():
 			merged[view_type] = {**(merged.get(view_type) or {}), **settings}
 		resolved["view_settings"] = merged
-		resolved["board"] = _board(resolved)
-		resolved["fields"] = _fetch_fields(
-			resolved["columns"],
-			resolved.get("status_field") or "",
-			resolved["board"]["column_field"],
-		)
+		_resolve_views(resolved)
 	resolved["page_length"] = (
 		_page_length(saved.get("page_length")) or resolved.get("page_length") or PAGE
 	)
@@ -2804,12 +2797,7 @@ def _apply_overrides(resolved: dict, overrides) -> dict:
 		for view_type, settings in asked.items():
 			merged[view_type] = {**(merged.get(view_type) or {}), **settings}
 		resolved["view_settings"] = merged
-		resolved["board"] = _board(resolved)
-		resolved["fields"] = _fetch_fields(
-			resolved["columns"],
-			resolved.get("status_field") or "",
-			resolved["board"]["column_field"],
-		)
+		_resolve_views(resolved)
 
 	if overrides.get("order_by"):
 		resolved["order_by"] = _safe_order(resolved, overrides["order_by"])
@@ -2996,10 +2984,6 @@ def _board(resolved: dict) -> dict:
 
 	return {
 		"column_field": column,
-		# Which fields a card carries. Empty means the browser decides from the
-		# columns the reader is looking at, which is the right default and the
-		# one thing a manifest should not have to repeat.
-		"card_fields": list(settings.get("card_fields") or []),
 		# Every field a board could be columns of, so the picker offers them
 		# without asking the doctype a second question.
 		"fields": [
@@ -3008,6 +2992,72 @@ def _board(resolved: dict) -> dict:
 			if _boardable(c) and c.get("list_ok", True)
 		],
 	}
+
+
+# The view types that draw a record as a card rather than as a line.
+#
+# A board and a grid are the same card twice: an identity, then the few fields
+# worth reading without opening the record. What differs is the arrangement —
+# a board buckets its cards by a field and lets you drag one between buckets,
+# a grid lays the same cards out flat — and arrangement is not something a
+# card knows about. `apps/oneapp/frontend/src/lib/cards.js` is the browser's
+# half of exactly this.
+#
+# Each keeps its own list, because the two have different room and different
+# context: a board card sits in a column already labelled with the field it is
+# bucketed by, so repeating that field on it says nothing, and a grid card has
+# no such heading and often wants it.
+CARD_VIEW_TYPES = ("board", "grid")
+
+
+def _cards(resolved: dict) -> dict:
+	"""What a card says, on whichever card-shaped view this is.
+
+	Empty is not "nothing": it is "the browser decides", from the columns the
+	reader is already looking at. That is the right default and the one thing a
+	manifest should not have to repeat — a screen that lists four columns has
+	described its card by listing them.
+
+	`list_ok` is the same rule the column picker uses, and here it is also what
+	keeps the query valid: a child table and an attachment gallery are not
+	fields the database has, and a card field is fetched whether or not it is a
+	column somebody is looking at.
+	"""
+	view_type = resolved.get("view_type") or DEFAULT_VIEW_TYPE
+	if view_type not in CARD_VIEW_TYPES:
+		return {"card_fields": []}
+
+	settings = (resolved.get("view_settings") or {}).get(view_type) or {}
+	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or []}
+	chosen = [
+		one for one in settings.get("card_fields") or []
+		if one in offered and offered[one].get("list_ok", True)
+	]
+	return {"card_fields": chosen[:MAX_CARD_FIELDS]}
+
+
+def _resolve_views(resolved: dict) -> dict:
+	"""Settle what the view types need, and what has to be fetched for them.
+
+	Three callers — the screen's own settings, a saved view's, and a change
+	somebody has made and not saved — and all three change the same three
+	answers together, because they are one answer: which field a board is
+	columns of, what a card says, and therefore what the query asks for.
+
+	The fetch is the part that is easy to forget and silent when it is wrong.
+	A card field nobody has as a column is still a field the card draws, and
+	without it here every such card renders blank in exactly the case somebody
+	went to the trouble of choosing one.
+	"""
+	resolved["board"] = _board(resolved)
+	resolved["cards"] = _cards(resolved)
+	resolved["fields"] = _fetch_fields(
+		resolved["columns"],
+		resolved.get("status_field") or "",
+		resolved["board"]["column_field"],
+		*resolved["cards"]["card_fields"],
+	)
+	return resolved
 
 
 def _layout_doc(space_code: str, screen: str, layout: str | None, label: str | None):

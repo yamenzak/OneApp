@@ -36,8 +36,8 @@ document_type Sales Invoice       what the list shows
 fields        customer,status,grand_total
 filters       {"status": "Open"}  always applied
 order_by      modified desc
-view_types    list,board          how it may be looked at; the first is default
-view_settings {"board": {...}}    what a type needs beyond columns and filters
+view_types    list,board,grid     how it may be looked at; the first is default
+view_settings {"board": {...}}    per type, what it needs beyond columns/filters
 status_field  status              where a record stands — the badge, and the
                                   board's columns
 component                         escape hatch — see below
@@ -574,7 +574,8 @@ The rest is not configured, and that is deliberate:
   reader's: what they chose, or the columns they have on the list minus the
   title and the field the column itself is. Blank fields are left off, and a
   card carries six at most — past that it is a record rendered badly, and the
-  person who wants the seventh wants the record.
+  person who wants the seventh wants the record. The mapping from a row to
+  what is on its card is `lib/cards.js`, shared with the grid — see below.
 * **A value the field no longer offers still gets a column.** A card that
   vanishes because somebody edited the doctype is worse than an extra column.
 
@@ -596,6 +597,40 @@ while rows arrive for the new one is a board of empty columns.
 
 A phone shows the board and cannot drag on it: HTML5 drag and drop is a pointer
 gesture. A status changes there by opening the record, like every other field.
+
+## The grid is the same cards, not bucketed
+
+A board and a grid are one card twice. A board buckets its cards by a field and
+lets you drag one from bucket to bucket; the `grid` type lays the same cards out
+flat, in the order the list is sorted by, as many across as fit. That is the
+whole difference — so `lib/cards.js` owns what a card *says* (the identity, the
+fields, that a blank one is left off, the cap) and the two bodies are the two
+ways of putting those on a page. `spaceview._cards` is the server's half.
+`tests/test_frontend_guards.py::test_a_card_is_mapped_in_one_place` fails if
+either body starts answering the question itself.
+
+Which is also why a grid is not "a board with one column". A board answers
+"where does each of these stand"; a grid answers "show me these as things
+rather than as lines" — a screen of records with pictures, or one whose fields
+are too few to be worth a table. Grouping a grid would make it a board, so it
+does not group.
+
+Three consequences worth naming:
+
+* **A grid needs no field**, so it is offered wherever a screen declares it —
+  unlike the board, which is nothing without something to column by.
+* **Each card-shaped type keeps its own `card_fields`.** A board card sits under
+  a heading naming the field it is bucketed by, so it leaves that field off; a
+  grid card has no such heading and often wants it.
+* **A chosen card field is fetched** whether or not it is a column anybody is
+  looking at, the same way the board's column field and a Dynamic Link's
+  companion are. Without that the card silently drops the field in exactly the
+  case somebody went to the trouble of choosing one.
+
+The gear in the footer opens one dialog for both: **Card settings** over a grid,
+**Board settings** over a board, where the extra question — which field the
+buckets are — appears. Over a list it is still the column picker, because width
+and pinning are questions about a table.
 
 ## One radius language
 
@@ -674,10 +709,10 @@ is a second screen to navigate to. One form has neither problem.
 
 Worth knowing before designing around it:
 
-* **Two view types.** A screen may declare `list,board,calendar,grid,map`; the
-  list and the board are built, and a type nothing can draw is dropped rather
-  than refused — so a screen declaring a calendar renders as a list today and
-  gains the calendar without a manifest edit. See ADR-15 for why per-type row
+* **Three view types.** A screen may declare `list,board,calendar,grid,map`; the
+  list, the board and the grid are built, and a type nothing can draw is dropped
+  rather than refused — so a screen declaring a calendar renders as a list today
+  and gains the calendar without a manifest edit. See ADR-15 for why per-type row
   shaping is not written ahead of the view that needs it.
 * **No free-text search across the whole set.** Filters, the quick boxes and
   sort narrow a list; there is no "search everything" box.

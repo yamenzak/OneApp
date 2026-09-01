@@ -1033,6 +1033,50 @@ def test_the_screen_host_is_a_pane_at_both_ends():
 	)
 
 
+BOARD_BODY = ROOT / "apps/oneapp/frontend/src/components/screen/BoardBody.vue"
+CARDS_BODY = ROOT / "apps/oneapp/frontend/src/components/screen/CardsBody.vue"
+CARDS_LIB = ROOT / "apps/oneapp/frontend/src/lib/cards.js"
+
+
+def test_a_card_is_mapped_in_one_place():
+	"""The board and the grid draw one card, from one mapping.
+
+	The same lesson the table taught twice: chrome written once and copied into
+	the second caller drifts, quietly, and the drift shows up as one surface
+	being subtly wrong for months. What a card says has real rules in it — which
+	field is the title, that a blank field is left off entirely, that the cap
+	comes after the blanks are dropped — and a second copy of those rules is a
+	second set of answers to the same question.
+
+	The arrangement is deliberately not shared: a board buckets its cards and
+	lets you drag one between buckets, a grid lays them out flat. That is what
+	the two files are for.
+	"""
+	for path in (BOARD_BODY, CARDS_BODY):
+		source = re.sub(r"<!--.*?-->", "", path.read_text(), flags=re.S)
+		assert "lib/cards" in source, (
+			f"{path.name} no longer draws its card with the shared mapping"
+		)
+		for own in ("cardIdentity", "cardShown", "cardValues"):
+			assert f"const {own} =" not in source and f"function {own}" not in source, (
+				f"{path.name} defines its own {own} — one card, one mapping"
+			)
+		assert "RecordCard" in source, (
+			f"{path.name} no longer renders RecordCard, which is the card itself"
+		)
+
+	# And the mapping knows nothing about how the cards are laid out. A `bucket`
+	# or a `drag` in here is the board leaking into the thing the grid shares.
+	# (`column` is not one of these: the reader's list columns are where a card
+	# gets its fields from when nobody has chosen any.)
+	lib = re.sub(r"/\*.*?\*/|//[^\n]*", "", CARDS_LIB.read_text(), flags=re.S)
+	for arrangement in ("bucket", "drag", "board", "grid"):
+		assert arrangement not in lib.lower(), (
+			f"lib/cards.js mentions `{arrangement}` outside its comments — the "
+			"card is what a record says, not where it is put"
+		)
+
+
 def test_the_table_has_exactly_one_scroller():
 	"""Both axes on one element, or the header drifts.
 

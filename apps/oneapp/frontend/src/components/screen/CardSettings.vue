@@ -1,18 +1,28 @@
 <template>
   <!--
-    What a board is made of: which field its columns are, and what a card says.
+    What a card-shaped view is made of: what a card says, and — where the view
+    buckets its cards — which field it buckets them by.
 
-    Both are the reader's, not the manifest's. A screen declares which field a
-    board *opens* on — that is what makes it offerable at all — and from there
-    "show me this by assignee instead" is the same kind of question as "sort by
-    this column", answered the same way: changed here, kept in a saved view.
+    One dialog for the board and the grid because they are one card twice; the
+    difference between them is arrangement, and only the board has an
+    arrangement to ask about. See `lib/cards.js`.
 
-    Two questions rather than a settings blob with six switches, because there
-    are only two: what the columns are, and what is on a card.
+    Both answers are the reader's, not the manifest's. A screen declares which
+    field a board *opens* on — that is what makes it offerable at all — and
+    from there "show me this by assignee instead" is the same kind of question
+    as "sort by this column", answered the same way: changed here, kept in a
+    saved view.
   -->
-  <Dialog v-model="open" title="Board settings">
+  <Dialog v-model="open" :title="title">
     <div class="flex flex-col gap-5 p-1">
+      <!--
+        A grid has no columns to be of. Its cards are laid out flat, in the
+        order the list is sorted by — bucketing them by a field is what makes
+        a board, and offering the question here would offer two ways to ask
+        for the same view.
+      -->
       <Select
+        v-if="buckets"
         label="Columns of"
         description="A Select becomes its own options; a Link becomes whoever is on the page."
         :model-value="field"
@@ -62,6 +72,10 @@ const props = defineProps({
   spec: { type: Object, required: true },
   /** The board as the last page came back for it — see `BoardBody.board`. */
   board: { type: Object, default: () => ({}) },
+  /** What a card says, the same way — see `lib/cards.js`. */
+  cards: { type: Object, default: () => ({}) },
+  /** Which view is under the gear, because only one of them has buckets. */
+  viewType: { type: String, default: 'board' },
 })
 const emit = defineEmits(['update:modelValue', 'changed'])
 
@@ -73,6 +87,12 @@ const open = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value),
 })
+
+// Only a board arranges its cards by a field. Named for what it is rather
+// than checked against a string at each of the three places that ask.
+const buckets = computed(() => props.viewType === 'board')
+
+const title = computed(() => (buckets.value ? 'Board settings' : 'Card settings'))
 
 const board = computed(() => props.board || {})
 
@@ -93,7 +113,7 @@ const field = computed({
   set: (value) => emit('changed', { column_field: value }),
 })
 
-const cardFields = computed(() => board.value.card_fields || [])
+const cardFields = computed(() => props.cards?.card_fields || [])
 
 const full = computed(() => cardFields.value.length >= MAX_CARD_FIELDS)
 
@@ -102,7 +122,8 @@ const pickCards = (chosen) => {
 }
 
 // Back to what the screen says. Empty rather than the current values: the
-// board resolves its own default, and writing that default in as a choice
-// would freeze it against a manifest that later changes its mind.
-const reset = () => emit('changed', { column_field: '', card_fields: [] })
+// view resolves its own default, and writing that default in as a choice would
+// freeze it against a manifest that later changes its mind.
+const reset = () =>
+  emit('changed', buckets.value ? { column_field: '', card_fields: [] } : { card_fields: [] })
 </script>

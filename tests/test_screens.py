@@ -1231,6 +1231,74 @@ def test_a_board_falls_back_to_the_status_field_and_refuses_the_unboardable(spac
 	assert offered == {"status", "allocated_to"}
 
 
+def test_a_card_is_the_same_card_on_a_board_and_on_a_grid(spaceview):
+	"""Which fields a card carries, per card-shaped view type.
+
+	A board card and a grid card are the same card drawn twice — the difference
+	between the two views is arrangement, which a card knows nothing about — so
+	the fields are resolved by one function. What is *not* shared is the answer:
+	each view type keeps its own list, because a board card sits under a heading
+	naming the field it is bucketed by and a grid card does not.
+	"""
+	resolved = {
+		"view_type": "board",
+		"all_columns": spaceview._columns(TODO, ["status", "description"]),
+		"view_settings": {
+			"board": {"card_fields": ["status"]},
+			"grid": {"card_fields": ["description"]},
+		},
+	}
+	assert spaceview._cards(resolved)["card_fields"] == ["status"]
+
+	resolved["view_type"] = "grid"
+	assert spaceview._cards(resolved)["card_fields"] == ["description"]
+
+	# A list has no cards, whatever the settings say about the other two.
+	resolved["view_type"] = "list"
+	assert spaceview._cards(resolved)["card_fields"] == []
+
+	# Empty is not "nothing": it is "the browser decides", from the columns the
+	# reader is already looking at.
+	resolved["view_type"] = "board"
+	resolved["view_settings"] = {}
+	assert spaceview._cards(resolved)["card_fields"] == []
+
+
+def test_a_card_field_is_fetched_even_where_nobody_looks_at_that_column(spaceview):
+	"""Choosing a card field has to reach the query, or the card renders blank.
+
+	The failure this pins is the quiet one: a reader picks a field that is not
+	one of their columns, everything about the pick is stored and validated
+	correctly, the row comes back without that field on it, and the card drops
+	it as empty — in exactly the case somebody went to the trouble of choosing.
+	"""
+	resolved = {
+		"view_type": "grid",
+		"status_field": "",
+		"all_columns": spaceview._columns(TODO, ["status", "description", "priority"]),
+		"columns": spaceview._columns(TODO, ["description"]),
+		"view_settings": {"grid": {"card_fields": ["priority"]}},
+	}
+	spaceview._resolve_views(resolved)
+	assert "priority" in resolved["fields"]
+
+	# A child table is a column somebody may choose and not a field the database
+	# has, so asking for one by name is a SQL error rather than an empty card.
+	table = meta([
+		field("description", "Small Text", "Description"),
+		field("items", "Table", "Items", options="ToDo"),
+	])
+	resolved = {
+		"view_type": "grid",
+		"status_field": "",
+		"all_columns": spaceview._columns(table, ["description", "items"]),
+		"columns": spaceview._columns(table, ["description"]),
+		"view_settings": {"grid": {"card_fields": ["items"]}},
+	}
+	spaceview._resolve_views(resolved)
+	assert "items" not in resolved["fields"]
+
+
 # --------------------------------------------------------------------------- #
 # A link is a record
 #

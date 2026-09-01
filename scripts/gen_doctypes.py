@@ -493,7 +493,10 @@ doctype(
                       'like a filter or a sort, and anything else is dropped. '
                       'A board may name a Select or a Link here instead of the '
                       'status field — and a reader may name another again in a '
-                      'saved view, which is where their own choice lives.'),
+                      'saved view, which is where their own choice lives. Each '
+                      'card-shaped type keeps its own `card_fields`: a board '
+                      'card sits under a heading naming the field it is '
+                      'bucketed by and a grid card does not.'),
         # The override, and only an override. Every tab already gets a glyph
         # derived from its own label — Frappe has no icon property on a Tab
         # Break, and a doctype we do not own will never have a manifest entry —

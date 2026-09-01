@@ -112,8 +112,8 @@ import { computed, ref } from 'vue'
 import { Badge, Button, Icon } from '@/ui'
 import RecordCard from './RecordCard.vue'
 import RecordChip from './RecordChip.vue'
+import { cardIdentity, cardShown, cardValues } from '../../lib/cards'
 import { valueIcon, valueTheme } from '../../lib/fields'
-import { plainText } from '../../lib/format'
 
 const props = defineProps({
   /** The resolved screen: columns, title field, states, permissions. */
@@ -127,12 +127,14 @@ const props = defineProps({
   counted: { type: String, default: '' },
   groupBy: { type: String, default: '' },
   /**
-   * Which field the columns are and what a card says, as the last page came
-   * back for it. The shell owns this because it owns the request: the reader
-   * changes it, the rows are fetched again with the new field in them, and the
-   * board redraws when they arrive rather than before.
+   * Which field the columns are, as the last page came back for it. The shell
+   * owns this because it owns the request: the reader changes it, the rows are
+   * fetched again with the new field in them, and the board redraws when they
+   * arrive rather than before.
    */
   board: { type: Object, default: () => ({}) },
+  /** What a card says, the same way and for the same reason. */
+  cards: { type: Object, default: () => ({}) },
 })
 
 // Declared so the shell can bind one set of props to every body. A board does
@@ -212,70 +214,25 @@ const columns = computed(() =>
   })),
 )
 
-// What a card says about its record, which is the identity the chip everywhere
-// else draws: a face, the title, and the id under it when the title is not
-// already the id.
-const identity = (row) => {
-  const title = props.spec?.title_field
-  const label = (title && row[title]) || row.name
-  return {
-    value: row.name,
-    label: String(label),
-    id: plainText(String(label)) === row.name ? '' : row.name,
-    image: props.spec?.image_field ? row[props.spec.image_field] : null,
-  }
-}
-
-// The few fields under the title. The reader's own columns, minus the three
-// the card already shows in its own way — the title, the status the column
-// itself is, and the activity column, which is a row's meta and not a field.
-//
-// Capped, because a card is a glance. Somebody who wants the fifth field is
-// looking at a record rather than at a board.
-const META_FIELD = '__activity'
+// What a card says about its record, and what one is on it. Both from the
+// shared card, because a board card and a grid card are the same card — see
+// `lib/cards.js`. The board's only contribution is the field its columns are
+// made of, which the card would otherwise repeat under a heading that already
+// says it, and the cap: a column is 18rem wide and a card in one is a glance.
 const CARD_FIELDS = 4
 
-// What a card says, in order.
-//
-// The reader's own list where they have made one, and otherwise the columns
-// they are looking at minus the three the card already shows in its own way:
-// the title, the field the column itself is, and the activity column, which is
-// a row's meta rather than a field.
-//
-// Chosen fields are not filtered that way. Somebody who puts the status on the
-// card meant to put it there.
-const shown = computed(() => {
-  const chosen = board.value.card_fields || []
-  const offered = props.spec?.all_columns || props.columns || []
-  if (chosen.length) {
-    return chosen
-      .map((name) => offered.find((c) => c.fieldname === name))
-      .filter(Boolean)
-  }
-  return (props.columns || []).filter(
-    (c) =>
-      c.fieldname !== META_FIELD &&
-      c.fieldname !== field.value &&
-      c.fieldname !== (props.spec?.title_field || 'name') &&
-      c.fieldname !== 'name' &&
-      c.list_ok !== false,
-  )
-})
+const identity = (row) => cardIdentity(row, props.spec)
 
-// A blank field is not on the card at all.
-//
-// A list draws an em dash for an empty cell because the column above it says
-// what is missing; a card has no column headers, so the dash says only "there
-// is a field here and it is empty", four times over. Frappe's own kanban card
-// does the same — what is on it is what is filled in.
-//
-// Which is also why the cap comes after: capping first and then dropping
-// blanks gave one card four fields and the next one none, from the same list.
-const cardFields = (row) =>
-  shown.value
-    .map((c) => ({ ...c, value: row[c.fieldname] }))
-    .filter((c) => c.value !== null && c.value !== undefined && c.value !== '')
-    .slice(0, CARD_FIELDS)
+const shown = computed(() =>
+  cardShown({
+    spec: props.spec,
+    columns: props.columns,
+    chosen: props.cards?.card_fields || [],
+    exclude: [field.value],
+  }),
+)
+
+const cardFields = (row) => cardValues(row, shown.value, CARD_FIELDS)
 
 // --- moving a card ----------------------------------------------------------
 //

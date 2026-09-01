@@ -1,0 +1,85 @@
+// The grid: the same records as the list, each drawn as a card.
+//
+// A board and a grid are one card twice — the mapping from a row to what is on
+// its card is shared, and only the arrangement differs. What is checked here is
+// the half that would otherwise be believed rather than seen: that the grid
+// renders real records, that the gear over it asks the card question rather
+// than the column one, and that a field chosen for a grid card is fetched even
+// when it is not a column anybody is looking at.
+import { expect, test } from '@playwright/test'
+import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
+
+const CARD = '[data-oneapp-card]'
+
+const openGrid = async (page) => {
+  await page.goto('/one/space/zzmock?screen=tasks&type=grid')
+  await page.locator(CARD).first().waitFor({ timeout: 15_000 })
+}
+
+test.beforeEach(async ({ page, baseURL }) => {
+  await signIn(page, baseURL)
+})
+
+test('a grid draws one card per record', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await openGrid(page)
+
+  // A whole page of them, in the order the list is sorted by — a grid is the
+  // same rows arranged differently, not a different set of rows.
+  expect(await page.locator(CARD).count()).toBeGreaterThan(3)
+
+  const card = page.locator(CARD, { hasText: 'Book the van for Thursday' })
+  await expect(card).toBeVisible()
+
+  // A card is a link to its record, and clicking one opens it.
+  await card.click()
+  await expect(
+    page.locator('[data-slot="record-pane"]').getByText('Book the van for Thursday').first(),
+  ).toBeVisible()
+  expectNoRealErrors(errors)
+})
+
+test('the gear over a grid asks what is on a card', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the settings gear is desktop chrome')
+  const errors = collectConsoleErrors(page)
+  await openGrid(page)
+
+  await page.getByRole('button', { name: 'Card settings' }).click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+
+  // A grid has no buckets, so it is not asked which field to bucket by — that
+  // question is what makes a board.
+  await expect(page.getByLabel('Columns of')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'On each card' })).toBeVisible()
+  expectNoRealErrors(errors)
+})
+
+test('a field chosen for a card is fetched even where no column shows it', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'the settings gear is desktop chrome')
+  await openGrid(page)
+
+  const card = page.locator(CARD, { hasText: 'Book the van for Thursday' })
+  await expect(card).toBeVisible()
+
+  await page.getByRole('button', { name: 'Card settings' }).click()
+  await page.getByRole('button', { name: 'On each card' }).click()
+  await page.getByRole('option', { name: 'Due Date', exact: true }).click()
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+
+  // The one field chosen, and only it — not whatever the list happens to show.
+  await expect(card).toContainText('Aug')
+  await expect(card).not.toContainText('Medium')
+
+  // And the board keeps its own card: the two are separate answers, because a
+  // board card sits under a heading naming the field it is bucketed by.
+  await page.goto('/one/space/zzmock?screen=tasks&type=board')
+  await page.locator('[data-oneapp-column]').first().waitFor({ timeout: 15_000 })
+  await expect(
+    page.locator('[data-oneapp-column="Open"] article', {
+      hasText: 'Book the van for Thursday',
+    }),
+  ).toContainText('Medium')
+})

@@ -75,10 +75,11 @@ SCREENS = [
 		# and a long tail" than as forty numbered ones, and it makes the first
 		# row a stable thing for a browser test to point at.
 		"document_type": "ToDo", "fields": TASK_FIELDS, "order_by": "creation asc",
-		# More than one, so the sidebar has something to expand. `board` has no
-		# body yet and is dropped on the way out — which is the behaviour worth
-		# having in the fixture, not a mistake in it.
-		"view_types": "list,board",
+		# More than one, so the sidebar has something to expand — and all three
+		# of the built ones, because a screen offering a list, a board and a
+		# grid is what the switcher, the gear and the two card layouts are
+		# there for.
+		"view_types": "list,board,grid",
 		# Where a task stands, which is what the badge beside its name says.
 		# A fieldname and nothing else: the colours are ToDo's own.
 		"status_field": "status",
