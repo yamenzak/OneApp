@@ -823,6 +823,27 @@ export function tabIcon(label, declared = null) {
   return DEFAULT_TAB_ICON
 }
 
+/**
+ * The glyphs a timeline entry may carry, written as literals so Tailwind emits
+ * them.
+ *
+ * The fourth closed set. One timeline over a record means a comment and a
+ * field change sit in the same column, and a column of identical avatars makes
+ * two different events look like one.
+ */
+export const ACTIVITY_ICONS = {
+  "change": "lucide-pencil",
+  "comment": "lucide-message-circle",
+  "created": "lucide-circle-plus"
+}
+
+const DEFAULT_ACTIVITY_ICON = 'lucide-dot'
+
+/** The glyph for one kind of timeline entry. */
+export function activityIcon(kind) {
+  return ACTIVITY_ICONS[kind] || DEFAULT_ACTIVITY_ICON
+}
+
 // Named rather than counted. Stripping this with a hand-written offset is how
 // every FormControl type lost its first letter — "date" became "ate", which is
 // not in the union, and FormControl answers an unknown type with a plain text

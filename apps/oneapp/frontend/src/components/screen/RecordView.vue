@@ -128,7 +128,13 @@
             in the default slot, which replaces the label region, so the label
             and the icon had to be rebuilt by hand around it.
           -->
-          <TabTrigger value="comments" label="Comments" :icon-left="tabIcon('Comments')">
+          <!--
+            One tab, not two. "Who changed this" and "what did they say about
+            it" were separate places, and answering "what happened on Tuesday"
+            meant reading both and merging them by eye. The comment count still
+            rides here, because a comment is the entry somebody is waiting on.
+          -->
+          <TabTrigger value="activity" label="Activity" :icon-left="tabIcon('Activity')">
             <template #suffix>
               <Badge
                 v-if="commentCount"
@@ -138,12 +144,6 @@
               />
             </template>
           </TabTrigger>
-          <TabTrigger
-            v-if="trackChanges"
-            value="history"
-            label="History"
-            :icon-left="tabIcon('History')"
-          />
           <TabTrigger value="files" label="Files" :icon-left="tabIcon('Files')" />
         </TabList>
 
@@ -174,21 +174,19 @@
           </div>
         </TabPanel>
 
-        <TabPanel value="comments">
-          <RecordComments
+        <TabPanel value="activity">
+          <RecordActivity
             :space-code="spaceCode"
             :screen="screen"
             :name="record.name"
+            :record="record"
             :comments="comments"
+            :changes="changes"
             :count="commentCount"
             :more="moreComments"
             :loading="loadingTimeline"
             @added="loadTimeline"
           />
-        </TabPanel>
-
-        <TabPanel value="history">
-          <RecordHistory :changes="changes" :loading="loadingTimeline" />
         </TabPanel>
 
         <TabPanel value="files">
@@ -224,8 +222,7 @@ import AvatarStack from './AvatarStack.vue'
 import RecordChip from './RecordChip.vue'
 import ScreenActions from './ScreenActions.vue'
 import RecordForm from './RecordForm.vue'
-import RecordComments from './RecordComments.vue'
-import RecordHistory from './RecordHistory.vue'
+import RecordActivity from './RecordActivity.vue'
 import RecordFiles from './RecordFiles.vue'
 import RecordImage from './RecordImage.vue'
 import RecordMeta from './RecordMeta.vue'

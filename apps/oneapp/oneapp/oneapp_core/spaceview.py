@@ -1854,7 +1854,7 @@ def _change(row: dict, resolved: dict) -> dict:
 	gives a customer `grand_total: 120.0 → 140.0` for a field their screen calls
 	"Total"; the labels are already resolved on the columns, so use them.
 	"""
-	labels = {c["fieldname"]: c["label"] for c in resolved.get("columns") or []}
+	columns = {c["fieldname"]: c for c in resolved.get("columns") or []}
 
 	try:
 		data = frappe.parse_json(row.get("data") or "{}")
@@ -1863,11 +1863,16 @@ def _change(row: dict, resolved: dict) -> dict:
 
 	entries = []
 	for fieldname, before, after in (data.get("changed") or []):
-		if fieldname in HIDDEN or fieldname not in labels:
+		column = columns.get(fieldname)
+		if fieldname in HIDDEN or not column:
 			# Only what this screen shows. A change to a field the customer
 			# cannot see reads as noise about something that does not exist.
 			continue
-		entries.append({"label": labels[fieldname], "from": before, "to": after})
+		entries.append({
+			"label": column["label"],
+			"from": _said(column, before),
+			"to": _said(column, after),
+		})
 
 	return {
 		"name": row["name"],
@@ -1875,6 +1880,26 @@ def _change(row: dict, resolved: dict) -> dict:
 		"on": row["creation"],
 		"entries": entries,
 	}
+
+
+# The fieldtypes whose value is markup rather than words. A Version keeps what
+# was stored, so a Text Editor's history is a line of `<p>` tags — which is
+# what the record used to show on its timeline, tags and all.
+MARKUP_TYPES = ("Text Editor", "HTML Editor", "Markdown Editor", "HTML", "Code")
+
+
+def _said(column: dict, value) -> str:
+	"""One side of a change, as a person reads it.
+
+	Only the markup fieldtypes are stripped, and deliberately: a Data field
+	holding `a < b` is a Data field holding `a < b`, and running every value
+	through an HTML stripper to tidy one fieldtype is how that becomes `a `.
+	"""
+	if value is None:
+		return ""
+	if column.get("fieldtype") not in MARKUP_TYPES:
+		return value
+	return frappe.utils.strip_html(str(value)).strip()
 
 
 # What a File row carries that is worth showing. `file_size` in bytes, because

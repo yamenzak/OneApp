@@ -244,3 +244,30 @@ def tab_icon(label: str) -> str:
         if any(word in text for word in words):
             return icon
     return DEFAULT_TAB_ICON
+
+
+# --------------------------------------------------------------------------- #
+# Activity glyphs
+#
+# One timeline over a record, and every entry on it says what kind of thing it
+# is before it says anything else. A comment and a field change are different
+# events and a column of identical avatars makes them look like the same one.
+#
+# A fourth closed set, closed for the same build-time reason as the other
+# three: Tailwind emits CSS only for class names it finds as literals.
+# --------------------------------------------------------------------------- #
+
+ACTIVITY_ICONS = {
+    # The record itself, which is where every timeline starts. Without it the
+    # oldest thing on a record is whatever somebody happened to do to it next.
+    "created": "lucide-circle-plus",
+    "comment": "lucide-message-circle",
+    "change": "lucide-pencil",
+}
+
+DEFAULT_ACTIVITY_ICON = "lucide-dot"
+
+
+def activity_icon(kind: str) -> str:
+    """The glyph for one kind of timeline entry."""
+    return ACTIVITY_ICONS.get(kind or "", DEFAULT_ACTIVITY_ICON)

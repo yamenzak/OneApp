@@ -567,25 +567,31 @@ test('the record shows every field, not the columns someone chose', async ({ pag
   expectNoRealErrors(errors)
 })
 
-test('comments and history are there without an app asking for them', async ({ page }, info) => {
+test('one timeline holds what was said and what changed', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await openRecord(page)
 
   const dialog = page.locator('[data-slot="record-pane"]')
-  await dialog.getByRole('tab', { name: /^Comments/ }).click()
+  await dialog.getByRole('tab', { name: /^Activity/ }).click()
   await expect(dialog.getByPlaceholder('Add a comment')).toBeVisible()
-  // Either comments or the empty state; both are the tab working against real
-  // data. That the round trip works is the next test's job.
-  await expect(dialog.getByText(/No comments|[A-Za-z]/).first()).toBeVisible()
 
-  await info.attach(`comments-${info.project.name}`, {
+  // Every record has one entry whatever else happened to it: it was created.
+  // That is also what makes the timeline start somewhere rather than at
+  // whatever somebody happened to do next.
+  await expect(dialog.locator('[data-activity="created"]')).toBeVisible()
+
+  await info.attach(`activity-${info.project.name}`, {
     body: await page.screenshot(),
     contentType: 'image/png',
   })
 
-  await dialog.getByRole('tab', { name: 'History' }).click()
-  // Either recorded changes or the empty state; both are the tab working.
+  // The two halves are one column, narrowed rather than navigated to.
+  await dialog.getByRole('radio', { name: 'Changes', exact: true }).click()
   await expect(dialog.getByText(/No changes recorded|→/).first()).toBeVisible()
+  await expect(dialog.locator('[data-activity="created"]')).toHaveCount(0)
+
+  await dialog.getByRole('radio', { name: 'Comments', exact: true }).click()
+  await expect(dialog.getByText(/No comments|[A-Za-z]/).first()).toBeVisible()
   expectNoRealErrors(errors)
 })
 
@@ -594,7 +600,7 @@ test('a comment can be added and shows up in the count', async ({ page }) => {
   await openRecord(page)
 
   const dialog = page.locator('[data-slot="record-pane"]')
-  const tab = dialog.getByRole('tab', { name: /^Comments/ })
+  const tab = dialog.getByRole('tab', { name: /^Activity/ })
   const count = async () => Number((await tab.innerText()).replace(/\D/g, '') || 0)
   const before = await count()
 
@@ -604,6 +610,9 @@ test('a comment can be added and shows up in the count', async ({ page }) => {
   await dialog.getByRole('button', { name: 'Comment' }).click()
 
   await expect(dialog.getByText(note)).toBeVisible()
+  // And it lands in the timeline as a comment, beside the changes rather than
+  // in a tab of its own.
+  await expect(dialog.locator('[data-activity="comment"]').first()).toBeVisible()
   // The count is a badge beside the word, so the tab's text changes with it —
   // up to a hundred, where it stops. Frappe keeps the last hundred comments on
   // the document and the count is theirs, in the desk as here, so a record that

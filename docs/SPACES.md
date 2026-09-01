@@ -449,6 +449,37 @@ pulled out of the pane.
 the pane work. There is no header prop threaded through three components to
 remove.
 
+## One timeline, and every entry says what it is
+
+A record has three tabs: Details, Activity, Files. Activity is what was said
+about it, what changed on it, and when it started — in one column, newest
+first, narrowed by a filter rather than navigated to by a tab.
+
+It was two tabs. That meant "who changed this" and "what did they say about it"
+were separate places, and answering "what happened on Tuesday" was reading both
+and merging them by eye. The only thing that made them separate was that they
+come back from two queries; they are merged in the browser, because merging
+them on the server would mean paging them together and that is a much larger
+change than putting them in one column.
+
+Every entry carries a glyph from a closed set — `ACTIVITY_ICONS`, generated
+like the other three — because a column of identical avatars makes a comment
+and a field change look like the same event. A test fails on a fourth kind of
+entry added without one: `activityIcon` never returns nothing, and a fallback
+dot nobody notices is exactly how that would go unseen.
+
+Two smaller things the merge exposed:
+
+* **The record's creation is an entry.** No log holds it — a Version records a
+  change and there was nothing before the first one — so it is built from the
+  record's own `owner` and `creation`. Without it the oldest thing on a
+  timeline is whatever somebody happened to do next.
+* **A change to a markup field reads as words.** A Version keeps what was
+  stored, so a Text Editor's history was a line of `<p>` tags. Stripped on the
+  way out, and only for the fieldtypes that are markup: a Data field holding
+  `a < b` holds `a < b`, and running every value through an HTML stripper to
+  tidy one fieldtype turns that into `a `.
+
 ## Assignment is a thing you do to a record
 
 Frappe's own model, unchanged: `_assign` is a list of user ids on the document,

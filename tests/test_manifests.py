@@ -319,7 +319,7 @@ def test_every_tab_the_spa_names_earns_a_glyph():
 		for path in root.rglob("*.vue")
 		for match in re.finditer(r"tabIcon\('([^']+)'", path.read_text())
 	})
-	assert len(labels) >= 4, f"only found {labels} — the record's tabs have moved"
+	assert len(labels) >= 3, f"only found {labels} — the record's tabs have moved"
 
 	fell_through = {label: tab_icon(label) for label in labels}
 	unresolved = [f"{k} -> {v!r}" for k, v in fell_through.items() if v not in icons]
@@ -375,3 +375,54 @@ def test_a_declared_tab_icon_is_one_of_ours():
 		"these declared tab icons are outside the closed set, so the browser "
 		"quietly falls back to the derived one: " + ", ".join(offenders)
 	)
+
+
+# --------------------------------------------------------------------------- #
+# Activity glyphs
+#
+# One timeline over a record means a comment and a field change sit in the same
+# column, and a column of identical avatars makes two different events look
+# like one. So every kind of entry carries a glyph, from a closed set, for the
+# same build-time reason the other three sets are closed.
+# --------------------------------------------------------------------------- #
+
+
+def _activity_icons() -> tuple:
+	import sys
+
+	sys.path.insert(0, str(ROOT / "scripts"))
+	from app_icons import ACTIVITY_ICONS, DEFAULT_ACTIVITY_ICON
+
+	return ACTIVITY_ICONS, DEFAULT_ACTIVITY_ICON
+
+
+def test_every_kind_of_activity_the_spa_renders_has_a_glyph():
+	"""The kinds are written out in the component, as `kind: '<name>'`.
+
+	`activityIcon` never returns nothing — a fallback dot is better than a hole
+	in the column — which is exactly why this exists: without it the fourth
+	kind of entry would land on the dot and nobody would notice for a month.
+	"""
+	icons, default = _activity_icons()
+	source = (
+		ROOT / "apps/oneapp/frontend/src/components/screen/RecordActivity.vue"
+	).read_text()
+	kinds = set(re.findall(r"kind: '([\w-]+)'", source))
+	assert len(kinds) >= 3, f"only found {sorted(kinds)} — the timeline has moved"
+
+	missing = sorted(kinds - set(icons))
+	assert not missing, (
+		"these kinds of entry fall through to the neutral dot — declare a glyph "
+		"in `app_icons.ACTIVITY_ICONS`: " + ", ".join(missing)
+	)
+
+
+def test_the_activity_glyphs_reach_the_spa_as_literals():
+	"""Tailwind emits CSS only for class names it finds written out."""
+	icons, default = _activity_icons()
+	fields = (ROOT / "apps/oneapp/frontend/src/lib/fields.js").read_text()
+	block = fields[fields.index("export const ACTIVITY_ICONS"):]
+	block = block[: block.index("}")]
+	for icon in icons.values():
+		assert f'"{icon}"' in block, f"{icon} is not written into the SPA"
+	assert f"'{default}'" in fields

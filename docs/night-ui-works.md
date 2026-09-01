@@ -248,6 +248,26 @@ shell. Do not split desktop and mobile into two component trees.
 
 Each is independently shippable and independently revertable.
 
+**All twelve shipped**, over the night of 31 August. What follows is the plan
+as it was written; where the work turned out differently, the reason is in the
+commit and in `docs/SPACES.md` rather than rewritten here. Four things were not
+what the audit expected:
+
+* **Collapsible sections were already done.** `sectionCollapsed` has been
+  reading `collapsible` and `collapsible_depends_on` since the doctype-rules
+  work — item 6 was already in the product when it was written down.
+* **The teleported header was already done.** `DesktopShell` renders a
+  `PageHeaderTarget` and `ScreenHost` fills it with `<PageHeader>`. Half of
+  item 12 was a change with nothing to change.
+* **We carried no `_assign` at all.** The audit said we render it as text; it
+  is in `HIDDEN`, so it was never fetched. Item 8 was a server change as much
+  as a control.
+* **The child-table work had no fixture to run against.** The dev space was two
+  doctypes with no rows inside them, so the grid had shipped and never once
+  been opened by a test. Frappe's Event is the fixture now — two child tables,
+  a required column, an Int column, a status Select, and the only real Tab
+  Breaks on a bare bench.
+
 | # | Work | Why it is first |
 |---|------|-----------------|
 | 1 | `RecordCard`, shared by link preview and kanban | Unblocks 2 and 5; makes the hover card better on its own |

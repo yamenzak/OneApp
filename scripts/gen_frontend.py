@@ -2495,8 +2495,8 @@ def fields_js(app: str, spec: dict) -> str:
     _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import field_types
     from app_icons import (
-        DEFAULT_TAB_ICON, STATE_ICON_WORDS, STATE_ICONS, TAB_ICON_WORDS,
-        TAB_ICONS,
+        ACTIVITY_ICONS, DEFAULT_ACTIVITY_ICON, DEFAULT_TAB_ICON,
+        STATE_ICON_WORDS, STATE_ICONS, TAB_ICON_WORDS, TAB_ICONS,
     )
     from field_types import (
         DATA_OPTIONS, FIELD_TYPES, LAYOUT_TYPES, NUMERIC_CELLS, STATE_COLORS,
@@ -2628,6 +2628,23 @@ export function tabIcon(label, declared = null) {
     if (words.some((word) => text.includes(word))) return icon
   }
   return DEFAULT_TAB_ICON
+}
+
+/**
+ * The glyphs a timeline entry may carry, written as literals so Tailwind emits
+ * them.
+ *
+ * The fourth closed set. One timeline over a record means a comment and a
+ * field change sit in the same column, and a column of identical avatars makes
+ * two different events look like one.
+ */
+export const ACTIVITY_ICONS = %(activity_icons)s
+
+const DEFAULT_ACTIVITY_ICON = '%(default_activity_icon)s'
+
+/** The glyph for one kind of timeline entry. */
+export function activityIcon(kind) {
+  return ACTIVITY_ICONS[kind] || DEFAULT_ACTIVITY_ICON
 }
 
 // Named rather than counted. Stripping this with a hand-written offset is how
@@ -2802,6 +2819,8 @@ export function valueTheme(value, states = []) {
         "state_icon_words": _json.dumps(
             [[icon, list(words)] for icon, words in STATE_ICON_WORDS], indent=2),
         "tab_icons": _json.dumps(TAB_ICONS, indent=2),
+        "activity_icons": _json.dumps(ACTIVITY_ICONS, indent=2, sort_keys=True),
+        "default_activity_icon": DEFAULT_ACTIVITY_ICON,
         "tab_icon_words": _json.dumps(
             [[icon, list(words)] for icon, words in TAB_ICON_WORDS], indent=2),
         "default_tab_icon": DEFAULT_TAB_ICON,
