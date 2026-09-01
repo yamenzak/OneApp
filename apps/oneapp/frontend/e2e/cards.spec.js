@@ -110,6 +110,20 @@ test('a grid over records with pictures is a gallery', async ({ page }) => {
   await expect(dev.locator('[data-slot="card-cover"]')).toBeVisible()
   await expect(dev.locator('[data-slot="card-cover"] img')).toHaveCount(0)
   await expect(dev.locator('[data-slot="card-cover"]')).toContainText('D')
+
+  // The picture *is* the card, not a band on top of it: everything else sits
+  // over it. Measured rather than asserted from the markup, because the
+  // difference between the two designs is entirely a question of where the
+  // boxes end up.
+  const card = await ada.boundingBox()
+  const picture = await ada.locator('[data-slot="card-cover"]').boundingBox()
+  expect(picture.height).toBeCloseTo(card.height, 0)
+  expect(picture.width).toBeCloseTo(card.width, 0)
+
+  // And the name is inside the picture's box rather than below it.
+  const name = await ada.getByRole('button', { name: 'Ada Sinclair' }).boundingBox()
+  expect(name.y).toBeGreaterThan(picture.y)
+  expect(name.y).toBeLessThan(picture.y + picture.height)
   expectNoRealErrors(errors)
 })
 

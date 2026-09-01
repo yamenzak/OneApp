@@ -652,14 +652,38 @@ does not group.
 The one place the two views deliberately differ. A doctype's `image_field` is
 Frappe's own answer to "what does one of these look like", and a screen over a
 doctype that has one is a screen worth *looking at* rather than reading — so
-the grid puts the picture across the top of the card, square and cropped, and
-everything else becomes its caption. The small face beside the title goes: it
-is the same picture said twice.
+the picture is not a band on the card, it **is** the card, and everything else
+sits over it:
+
+```
+┌──────────────────────────┐
+│ 2 days      💬 0  ⚇  ♥  │   how it is doing
+│                          │
+│         (picture)        │
+│                          │
+│ Ada Sinclair             │   who it is
+│ Halloway & Co            │   and what it says
+│ Operations               │
+└──────────────────────────┘
+```
 
 Decided by the doctype, not by a setting. There is nothing to configure and
 nothing to get wrong: a screen over Contact is a gallery, a screen over ToDo is
 the card it was.
 
+* **The bands are the surface colour, not a dark wash.** That is what keeps
+  every piece of this readable without inventing a second palette: a badge is
+  still its own theme's badge, a link is still a face and a name, and the ink
+  is the ink used everywhere else. White text on a scrim would mean reinventing
+  all three inside a component that owns none of them.
+* **Solid under the words, with a fade above.** A gradient the whole way
+  through is legible over some pictures and not others, and which ones is
+  whatever somebody uploaded — the first version of this put a cartoon's face
+  through the middle of a contact's name.
+* **A square is the minimum, not a cage.** The ratio comes from `aspect-square`
+  on the content, so a caption that runs to six fields makes the card taller
+  rather than clipping them, and the picture — absolutely placed — covers
+  whatever height that turns out to be.
 * **Cropped, not fitted.** A gallery of mixed aspect ratios is a ragged edge
   down every column, and the crop is the lesser loss.
 * **A record with no picture still gets a frame** — its initial, on the same

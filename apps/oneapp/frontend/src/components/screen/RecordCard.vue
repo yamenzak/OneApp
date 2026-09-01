@@ -9,8 +9,7 @@
     same answer. That is what makes a board card good for free: a doctype whose
     author marked three fields worth previewing already described its card.
 
-    Two shapes rather than two components, because the difference is only how
-    much room there is:
+    Two shapes, and one of them has two layouts:
 
       * `panel` — a hover card. Labels in a narrow column of their own, because
         five stacked label/value pairs read as ten unrelated lines and the same
@@ -20,31 +19,39 @@
         Frappe CRM's kanban card is and it is right. Values stack one per line
         rather than wrapping into a paragraph: a card of five values run
         together is a sentence nobody wrote, and a column of five is a record.
-
-    A tile may also carry a **cover**: the record's own picture, square and
-    across the top, with everything else as its caption. That is what a grid is
-    for and what a board is not — see `CardsBody`.
+      * `tile` **with a cover** — a gallery card. The picture is not a band on
+        the card, it *is* the card: everything else sits over it, the way every
+        gallery of things with pictures has ever worked. See `cover`.
   -->
-  <div :class="frame">
-    <!--
-      The record's own picture, as the subject rather than as a 20px face
-      beside its name.
 
-      Square and cropped, because a gallery of mixed ratios is a ragged edge
-      down every column and the crop is the lesser loss. `-m-3` because the
-      cover belongs to the card rather than to its padding — the tile's own
-      corners are rounded, so the picture is clipped to them from the outside
-      rather than given a radius of its own that would sit a hair inside them.
+  <!--
+    A gallery card: the picture, and what is on it.
 
-      A record with no picture still gets a frame: its initial, on the same
-      square. A gallery whose empty cards collapse to nothing is a gallery that
-      jumps every time somebody uploads a photograph — and "nobody has given
-      this one a picture" is a fact worth showing rather than a gap.
-    -->
+    `aspect-square` on the content rather than a height on the card, because an
+    aspect ratio is a preference and not a cage — a card whose caption runs to
+    six fields grows taller instead of clipping them, and the picture, being
+    absolutely placed, still covers whatever height that turns out to be.
+
+    The two bands are the surface colour rather than a dark wash, and they are
+    solid under the words with a short fade into the picture above and below.
+    Both halves of that are deliberate:
+
+      * **The surface colour**, because it keeps every piece of this readable
+        without a single new one. A badge is still its own theme's badge, a
+        link is still a face and a name, and the ink is the ink this product
+        uses everywhere. White text on a dark wash would mean reinventing all
+        three, in a component that owns none of them.
+      * **Solid, not a gradient all the way through.** A gradient under the
+        words is legible over some pictures and not others, and which ones is
+        whatever somebody uploaded — the first thing this drew put a cartoon's
+        face through the middle of a contact's name. The fade is a strip above
+        the band rather than the band itself, so the picture softens into the
+        caption and the caption is always readable.
+  -->
+  <div v-if="!isPanel && cover" class="relative overflow-hidden rounded-6">
     <div
-      v-if="cover"
       data-slot="card-cover"
-      class="-mx-3 -mt-3 flex aspect-square items-center justify-center overflow-hidden rounded-t-6 bg-surface-gray-2"
+      class="absolute inset-0 flex items-center justify-center bg-surface-gray-2"
     >
       <img
         v-if="record.image"
@@ -52,9 +59,63 @@
         :alt="plainText(record.label) || String(record.value || '')"
         class="size-full object-cover"
       />
-      <span v-else class="text-2xl font-medium uppercase text-ink-gray-4">{{ initial }}</span>
+      <!--
+        No picture, and still a frame: the record's initial on the same square.
+        Its siblings have pictures, and a gallery whose empty cards collapse to
+        nothing jumps every time somebody uploads a photograph.
+      -->
+      <span v-else class="text-4xl font-medium uppercase text-ink-gray-4">{{ initial }}</span>
     </div>
 
+    <div class="relative flex aspect-square flex-col justify-between">
+      <!--
+        How the record is doing, along the top: when it last moved on the left,
+        then how many have said something, who it is on, and whether this one
+        is yours at the right. The same row the other tile ends with — one
+        component, one set of rules about what a zero means and what the heart
+        is called.
+      -->
+      <div>
+        <div class="bg-surface-base px-3 pt-2">
+          <RowMeta spread :meta="meta || {}" :people="people" @like="emit('like')" />
+        </div>
+        <div class="h-8 bg-gradient-to-b from-surface-base to-transparent" />
+      </div>
+
+      <!--
+        Who it is, and what it says, along the bottom — where a caption goes on
+        a photograph, and out of the middle of the picture.
+      -->
+      <div>
+        <div class="h-8 bg-gradient-to-t from-surface-base to-transparent" />
+        <div class="flex flex-col gap-1 bg-surface-base px-3 pb-3">
+        <button
+          type="button"
+          class="flex min-w-0 text-left"
+          @click.stop="emit('open')"
+        >
+          <RecordChip :record="record" :avatar="false" />
+        </button>
+
+        <div
+          v-for="field in fields"
+          :key="field.fieldname"
+          class="flex min-w-0 items-center"
+        >
+          <FieldCell
+            :column="field"
+            :value="field.value"
+            :states="states"
+            :links="links"
+            class="min-w-0"
+          />
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div v-else :class="frame">
     <!--
       Panel: not a control. Nothing on a hover card is pressable — it is what
       appears *because* you are already pointing at the link.
@@ -79,7 +140,7 @@
       class="flex min-w-0 text-left"
       @click.stop="emit('open')"
     >
-      <RecordChip :record="record" :avatar="!cover" />
+      <RecordChip :record="record" />
     </button>
 
     <Divider v-if="isPanel && (loading || fields.length)" />
@@ -131,10 +192,10 @@
 
     <!--
       How the record is doing: when it last moved, how many people have said
-      something, and whether this one is yours. The same three the list shows at
-      the end of every row — they cost nothing to carry, they are already on the
-      row, and a card that drops them is a card saying less than the list it
-      came from for no reason.
+      something, who it is on, and whether this one is yours. The same four the
+      list shows at the end of every row — they cost nothing to carry, they are
+      already on the row, and a card that drops them is a card saying less than
+      the list it came from for no reason.
 
       Only where the caller has them. A hover card is one record fetched on its
       own and has no row meta to show.
@@ -198,9 +259,9 @@ const isPanel = computed(() => props.shape === 'panel')
 // each one, which is what makes three bands read as three bands.
 const frame = computed(() => (isPanel.value ? '' : 'flex flex-col gap-2.5 p-3'))
 
-// What stands in for a picture there is not one. The first letter of what the
-// record is called, which is what Avatar itself falls back to — the same
-// answer, drawn at the size the cover asks for.
+// What stands in for a picture where there is not one. The first letter of what
+// the record is called, which is what Avatar itself falls back to — the same
+// answer, drawn at the size a gallery asks for.
 const initial = computed(
   () => (plainText(props.record.label) || String(props.record.value || '')).trim().charAt(0),
 )

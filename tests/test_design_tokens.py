@@ -260,10 +260,6 @@ RADIUS_ROLES = {
 	# control rather than as two that happen to touch.
 	"rounded-s-none": "the leading half of an input group",
 	"rounded-e-none": "the trailing half of an input group",
-	# The same idea vertically: a gallery card's picture fills the top of the
-	# panel edge to edge, so it is clipped to the panel's own corners rather
-	# than given a radius that would sit a hair inside them.
-	"rounded-t-6": "the top of a panel a picture fills — a gallery card's cover",
 }
 
 # The panel radius. An outlined block is a card whatever else it is.
