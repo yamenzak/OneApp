@@ -844,6 +844,27 @@ export function activityIcon(kind) {
   return ACTIVITY_ICONS[kind] || DEFAULT_ACTIVITY_ICON
 }
 
+/**
+ * The glyphs a notification may carry.
+ *
+ * Known rather than closed, unlike the four above: `Notification Type` is a
+ * doctype, so a site may add one, and a type nobody has drawn gets the bell.
+ */
+export const NOTIFICATION_ICONS = {
+  "Alert": "lucide-triangle-alert",
+  "Assignment": "lucide-user-check",
+  "Energy Point": "lucide-zap",
+  "Mention": "lucide-at-sign",
+  "Share": "lucide-share-2"
+}
+
+const DEFAULT_NOTIFICATION_ICON = 'lucide-bell'
+
+/** The glyph for one kind of notification. */
+export function notificationIcon(kind) {
+  return NOTIFICATION_ICONS[kind] || DEFAULT_NOTIFICATION_ICON
+}
+
 // Named rather than counted. Stripping this with a hand-written offset is how
 // every FormControl type lost its first letter — "date" became "ate", which is
 // not in the union, and FormControl answers an unknown type with a plain text

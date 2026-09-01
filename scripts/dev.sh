@@ -9,6 +9,7 @@
 # is live on the next request and an SPA edit is live before you look up.
 #
 #   scripts/dev.sh up        start MariaDB, Redis and the Frappe web server
+#   scripts/dev.sh worker    a background worker, for anything that enqueues
 #   scripts/dev.sh spa       Vite dev server for the admin SPA (hot reload)
 #   scripts/dev.sh shell     a Python REPL bound to the site
 #   scripts/dev.sh run FILE  execute a Python file against the site
@@ -154,6 +155,31 @@ frappe.app.serve(
 )
 PYEOF
     echo $! > "$PIDFILE"
+    ;;
+
+  worker)
+    require_bench
+    services
+    # A background worker, in the foreground of this shell.
+    #
+    # `dev.sh up` starts a web server and nothing else, which is right for
+    # almost everything: a request is served in the request. It is wrong for
+    # anything that reaches `frappe.enqueue`, and that is a longer list than it
+    # sounds — every notification the framework produces is enqueued, so on a
+    # bench with no worker a mention or an assignment writes nothing at all and
+    # the panel is empty for a reason that looks like our bug.
+    #
+    # RQ's own worker rather than `bench worker`: bench reads its config from
+    # the directory it is run in, and this script is deliberately runnable from
+    # anywhere.
+    exec "$PY" -c "
+import frappe
+from frappe.utils.background_jobs import start_worker
+
+frappe.init(site='$SITE', sites_path='$sites_path')
+print('Working the queues for $SITE. Ctrl-C to stop.')
+start_worker(queue='${2:-default}')
+"
     ;;
 
   spa)

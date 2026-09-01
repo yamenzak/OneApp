@@ -256,15 +256,43 @@ Push and the relay never ships.
 
 ## 6. The shape of the work, in order
 
-1. **Render what already exists.** A notification panel in the shell: the
-   framework's `get_notification_logs`, the `notification` realtime poke to
-   refetch, mark-as-read, mark-all. Assignment and mention light up on day one
-   with no producer written.
-2. **Route a notification to a screen** — Decision 2 — and make the panel's
-   rows the same identity rendering as everywhere else.
+1. ~~**Render what already exists.**~~ **Done.** `oneapp_core/notifications.py`
+   reads the feed; `NotificationList` draws it; the bell sits in the rail's
+   foot and the More sheet carries it on a phone. Assignment and mention lit up
+   with no producer written, which was the whole bet.
+2. ~~**Route a notification to a screen.**~~ **Done**, and derived — see
+   Decision 2.
 3. **Preferences in the settings dialog** we already have: the master switch,
    the email allow-list per type, and later the push toggle.
 4. **`Workspace` notices over the existing pull** — Decision 4. This is where
    over-quota, dunning and restore stop being email-only.
 5. **Push behind the seam** — Decision 5 — once 1–4 are being used and there is
    evidence about which notifications people actually want on a phone.
+
+## 7. Three things building step 1 turned up
+
+**Nobody but the Administrator was assignable.** `assignees()` copied Frappe's
+own filter, `user_type = "System User"`. On a desk site that separates a
+colleague from a portal customer. Here it separates nobody from everybody: our
+roles are created with `desk_access` off — that is what keeps a workspace out
+of `/app` (DECISIONS §7) — and Frappe recomputes `user_type` from exactly that
+flag, so **every member of every workspace is a Website User by design**. The
+picker had therefore offered the site admin and nobody else, on every real
+workspace, for as long as assignment has existed. It asks the question this
+product's own way now: who holds a role we granted.
+
+**Assigning to `Administrator` notifies nobody, on any Frappe site.**
+`_get_user_ids` filters recipients on `User.email`, and the Administrator's
+email is `admin@example.com` rather than `Administrator`. Every ordinary user
+has name == email and works. Not ours to fix, and worth knowing before an hour
+goes into it.
+
+**A notification is enqueued, so a bench with no worker writes none.** See
+DEVLOOP — `scripts/dev.sh worker` exists now, and the spec's failure message
+names it.
+
+One thing we accept rather than fix: the framework's producers write their
+sentence with markup in it (`<b class="subject-title">` around the record's
+title), and a panel row strips it. The desk shows the same sentence with the
+title bolded and ours reads flatter. Rendering producer HTML is not a trade
+worth making — a Notification rule's message is operator-authored Jinja.

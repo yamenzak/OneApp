@@ -27,6 +27,7 @@ the next request. Nothing here touches Frappe Cloud.
 
 ```bash
 scripts/dev.sh up          # MariaDB, Redis, and the site on :8000
+scripts/dev.sh worker      # a background worker, for anything that enqueues
 scripts/dev.sh spa         # Vite dev server for the admin SPA (hot reload)
 scripts/dev.sh restart     # after a Python edit
 scripts/dev.sh migrate     # after adding a doctype, or pulling frappe
@@ -64,6 +65,23 @@ which was stricter than the code — every erpnext import is deferred and gated 
 when it is absent. The hard requirement's only real effect was that OneSpace
 could not run on a development bench, which is why it went so long without being
 opened in a browser.
+
+### Anything that enqueues needs a worker
+
+`up` starts a web server and nothing else, which is right for almost everything
+— a request is served in the request. It is wrong for anything that reaches
+`frappe.enqueue`, and that list is longer than it sounds: **every notification
+the framework produces is enqueued**, so on a bench with no worker an
+assignment or a mention writes no Notification Log at all and the panel is
+empty for a reason that looks exactly like our bug. Provisioning, backups and
+the AI reconcile are the same.
+
+```bash
+ONEAPP_SITE=space.localhost ONEAPP_PORT=8001 scripts/dev.sh worker
+```
+
+Beside `up`, in its own shell. `e2e/notifications.spec.js` says so in its
+failure message, because that hour is otherwise spent twice.
 
 ### The browser pass
 

@@ -2165,9 +2165,23 @@ def _assignable(doctype: str, name: str):
 def assignees(space_code: str, screen: str, query: str = "") -> list[dict]:
 	"""Who this record could be assigned to.
 
-	Everybody who can sign in to this workspace. Not "everybody with a User
-	row": a disabled account and a website user are not colleagues, and Frappe's
-	own assignment dialog filters the same two out.
+	Everybody who can sign in to *this workspace*: an enabled account holding
+	one of the roles this app manages. Not "everybody with a User row" — a
+	disabled account is not a colleague — and not Frappe's own filter either,
+	which is the mistake this used to make.
+
+	Frappe's assignment dialog asks for `user_type = "System User"`, because on
+	a desk site that separates a colleague from a portal customer. Here it
+	separates nobody from everybody: our roles are created with `desk_access`
+	off — that is what keeps a workspace out of `/app`, DECISIONS §7 — and
+	Frappe recomputes `user_type` from exactly that flag, so **every member of
+	every workspace is a Website User by design**. Copying the desk's filter
+	therefore offered the Administrator and nobody else, on every real
+	workspace, for as long as assignment has existed.
+
+	So the question is asked the way this product answers every other version
+	of it: who holds a role we granted. `_granted_roles` is the same set the
+	permission sync reconciles against.
 
 	Bounded by the screen like every other read, so a space code somebody
 	guessed does not become a directory of the workspace.
@@ -2176,10 +2190,9 @@ def assignees(space_code: str, screen: str, query: str = "") -> list[dict]:
 	if not resolved.get("doctype"):
 		return []
 
-	filters = {"enabled": 1, "user_type": "System User"}
 	found = frappe.get_all(
 		"User",
-		filters=filters,
+		filters={"enabled": 1, "name": ["in", _colleagues()]},
 		or_filters=(
 			{"full_name": ["like", f"%{query}%"], "name": ["like", f"%{query}%"]}
 			if query else None
@@ -2193,6 +2206,26 @@ def assignees(space_code: str, screen: str, query: str = "") -> list[dict]:
 		 "image": row["user_image"]}
 		for row in found
 	]
+
+
+def _colleagues() -> list[str]:
+	"""Everybody on this workspace, by the only definition this site has.
+
+	A role this app granted. The owner and the members hold one; the
+	Administrator holds none of them and is added back, because it is the
+	account that sets a workspace up and the one a support session arrives as.
+
+	Guest is excluded by holding no such role, which is the right reason rather
+	than a name check.
+	"""
+	from oneapp.oneapp_core.sync import _granted_roles
+
+	roles = _granted_roles()
+	holders = set(
+		frappe.get_all("Has Role", filters={"role": ["in", list(roles)]}, pluck="parent")
+	) if roles else set()
+	holders.add("Administrator")
+	return sorted(holders)
 
 
 @frappe.whitelist(methods=["POST"])

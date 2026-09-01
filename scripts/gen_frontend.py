@@ -2495,7 +2495,8 @@ def fields_js(app: str, spec: dict) -> str:
     _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import field_types
     from app_icons import (
-        ACTIVITY_ICONS, DEFAULT_ACTIVITY_ICON, DEFAULT_TAB_ICON,
+        ACTIVITY_ICONS, DEFAULT_ACTIVITY_ICON, DEFAULT_NOTIFICATION_ICON,
+        DEFAULT_TAB_ICON, NOTIFICATION_ICONS,
         STATE_ICON_WORDS, STATE_ICONS, TAB_ICON_WORDS, TAB_ICONS,
     )
     from field_types import (
@@ -2645,6 +2646,21 @@ const DEFAULT_ACTIVITY_ICON = '%(default_activity_icon)s'
 /** The glyph for one kind of timeline entry. */
 export function activityIcon(kind) {
   return ACTIVITY_ICONS[kind] || DEFAULT_ACTIVITY_ICON
+}
+
+/**
+ * The glyphs a notification may carry.
+ *
+ * Known rather than closed, unlike the four above: `Notification Type` is a
+ * doctype, so a site may add one, and a type nobody has drawn gets the bell.
+ */
+export const NOTIFICATION_ICONS = %(notification_icons)s
+
+const DEFAULT_NOTIFICATION_ICON = '%(default_notification_icon)s'
+
+/** The glyph for one kind of notification. */
+export function notificationIcon(kind) {
+  return NOTIFICATION_ICONS[kind] || DEFAULT_NOTIFICATION_ICON
 }
 
 // Named rather than counted. Stripping this with a hand-written offset is how
@@ -2821,6 +2837,8 @@ export function valueTheme(value, states = []) {
         "tab_icons": _json.dumps(TAB_ICONS, indent=2),
         "activity_icons": _json.dumps(ACTIVITY_ICONS, indent=2, sort_keys=True),
         "default_activity_icon": DEFAULT_ACTIVITY_ICON,
+        "notification_icons": _json.dumps(NOTIFICATION_ICONS, indent=2, sort_keys=True),
+        "default_notification_icon": DEFAULT_NOTIFICATION_ICON,
         "tab_icon_words": _json.dumps(
             [[icon, list(words)] for icon, words in TAB_ICON_WORDS], indent=2),
         "default_tab_icon": DEFAULT_TAB_ICON,

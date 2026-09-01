@@ -271,3 +271,32 @@ DEFAULT_ACTIVITY_ICON = "lucide-dot"
 def activity_icon(kind: str) -> str:
     """The glyph for one kind of timeline entry."""
     return ACTIVITY_ICONS.get(kind or "", DEFAULT_ACTIVITY_ICON)
+
+
+# --------------------------------------------------------------------------- #
+# Notification glyphs
+#
+# Keyed by `Notification Type`, which is a doctype and therefore open: a space,
+# or a site, may add one. So this is a *known* set rather than a closed one —
+# a type nobody has drawn gets the default bell, which is the honest rendering
+# of "something happened that we have no picture for".
+#
+# Still literals, for the fifth time and the same build-time reason: Tailwind
+# emits CSS only for class names it can find in the source.
+# --------------------------------------------------------------------------- #
+
+NOTIFICATION_ICONS = {
+    # Frappe's own built-ins, seeded by the framework on every site.
+    "Mention": "lucide-at-sign",
+    "Assignment": "lucide-user-check",
+    "Share": "lucide-share-2",
+    "Alert": "lucide-triangle-alert",
+    "Energy Point": "lucide-zap",
+}
+
+DEFAULT_NOTIFICATION_ICON = "lucide-bell"
+
+
+def notification_icon(kind: str) -> str:
+    """The glyph for one kind of notification."""
+    return NOTIFICATION_ICONS.get(kind or "", DEFAULT_NOTIFICATION_ICON)

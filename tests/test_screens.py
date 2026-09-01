@@ -1392,6 +1392,53 @@ def test_a_card_field_is_fetched_even_where_nobody_looks_at_that_column(spacevie
 	assert "items" not in resolved["fields"]
 
 
+def test_a_colleague_is_somebody_holding_a_role_we_granted(spaceview, monkeypatch):
+	"""Not `user_type`, which on this product means "the Administrator".
+
+	Frappe's own assignment dialog asks for System Users, and copying it was the
+	bug: our roles are created with `desk_access` off — that is what keeps a
+	workspace out of the desk — and Frappe recomputes `user_type` from exactly
+	that flag, so every member of every workspace is a Website User. The picker
+	offered the site admin and nobody else, on every real workspace, for as long
+	as assignment existed.
+	"""
+	asked = []
+
+	def get_all(doctype, filters=None, pluck=None, **kw):
+		asked.append((doctype, filters))
+		if doctype == "Has Role":
+			return ["ada@example.com", "bo@example.com"]
+		return []
+
+	monkeypatch.setattr(spaceview.frappe, "get_all", get_all)
+	monkeypatch.setattr(
+		spaceview.frappe, "get_cached_value", lambda *a, **k: None, raising=False
+	)
+
+	import sys
+	import types as _types
+
+	# `_granted_roles` reads the roles this app made on the site. Stubbed to two
+	# of them, because what is under test is the question being asked and not
+	# how the site answers it.
+	sync = _types.ModuleType("oneapp.oneapp_core.sync")
+	sync._granted_roles = lambda: {"MockSpace Member", "MockSpace Owner"}
+	monkeypatch.setitem(sys.modules, "oneapp.oneapp_core.sync", sync)
+
+	who = spaceview._colleagues()
+
+	assert who == ["Administrator", "ada@example.com", "bo@example.com"]
+	# The Administrator holds none of our roles and is added back: it is the
+	# account that sets a workspace up and the one support arrives as.
+	assert "Administrator" in who
+	# And the question asked was about roles, not about a user type.
+	doctypes = [one[0] for one in asked]
+	assert "Has Role" in doctypes
+	assert not any(
+		isinstance(one[1], dict) and "user_type" in one[1] for one in asked
+	), "the desk's own filter is the thing this replaced"
+
+
 def test_who_a_page_is_assigned_to_is_one_lookup(spaceview, monkeypatch):
 	"""`_assign` on every row of a page, resolved into faces, in one query.
 
