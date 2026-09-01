@@ -1,211 +1,94 @@
 <template>
   <!--
-    The list: a fixed-height grid inside the screen's pane.
+    The list: a screen's records, drawn as a table.
 
     One of several bodies a screen can be looked at through — the shell above
     owns everything a body does not: the breadcrumbs, the saved views, the
-    filters, the selection bar and the footer. A body owns its own scrolling
-    and nothing else, which is what makes a board or a calendar a sibling of
-    this file rather than a rewrite of the screen.
+    filters, the selection bar and the footer.
+
+    The table itself is `RecordTable`, which the child grid inside a record
+    also uses. What is left here is what makes this a *list* rather than a
+    table: which cell draws what, what a row click means, the favourites heart
+    in the activity column's heading, and grouping runs of rows.
   -->
-  <div class="relative flex min-h-0 flex-1 flex-col">
+  <RecordTable
+    v-model:selection="chosen"
+    :columns="visible"
+    :rows="rows"
+    :row-height="52"
+    :order-by="orderBy"
+    :groups="groups"
+    :fill="spec.title_field"
+    :virtual-from="VIRTUAL_FROM"
+    selectable
+    band
+    sticky
+    fills
+    extra-class="pb-1"
+    @sort="emit('sort', $event)"
+    @row-click="emit('open', $event)"
+  >
     <!--
-      One scroller, both directions. That is the whole trick: with the
-      pane a fixed height, this element's horizontal scrollbar sits at
-      its own bottom edge — on screen, above the footer — instead of at
-      the bottom of a table you have to scroll down to reach. Sharing
-      one container with the rows is also what keeps the sticky header
-      aligned: a separate header would sit outside the vertical
-      scrollbar's gutter and be a scrollbar's width out of true.
+      How many, then favourites. The heart is last and the cell is end-aligned,
+      so it lands on exactly the x every row's heart lands on — the header and
+      the rows carry the same inset, so flush-right in both is the same pixel.
+      Packed from the start it was not, which is what made the column of hearts
+      look crooked.
+
+      The count goes in `#prefix` rather than the default slot because
+      `ListHeaderCell` wraps its default in a `truncate` span: `mr-auto` inside
+      that does nothing, since the span is not the flex row. That is why this
+      is a whole cell handed back rather than content handed in.
     -->
-    <div
-      ref="scroller"
-      class="min-h-0 flex-1 overflow-auto overscroll-x-contain"
-      @scroll.passive="measureEdges"
-    >
-      <List
-        v-model:selection="chosen"
-        :columns="tracks"
-        :row-height="52"
-        selectable
-        class="w-max min-w-full list-row-px-3 pb-1"
-        :class="CHROME"
-        divider="full"
-      >
-        <ListHeader class="sticky top-0 z-20">
-          <!--
-          Sorting lives on the headers, which is where everybody reaches
-          first and the only place a direction can sit beside the thing it
-          applies to. frappe-ui ships the cell for it — a real button, the
-          aria-sort, the arrow that appears on hover — so this wires state
-          to it rather than rebuilding it.
-        -->
-          <ListHeaderCellSort
-            v-for="c in sortableColumns"
-            :key="c.key"
-            :direction="directionFor(c)"
-            :class="c.pin && PINNED"
-            :style="stickyStyle(c)"
-            @click="emit('sort', c.column.fieldname)"
-          >
-            <template #prefix>
-              <Icon :name="c.column.icon" class="size-3.5 text-ink-gray-4" />
-            </template>
-            {{ c.header }}
-          </ListHeaderCellSort>
-
-          <!--
-          How many, then favourites. The heart is last and
-          the cell is end-aligned, so it lands on exactly the x every row's
-          heart lands on — the header and the rows carry the same inset, so
-          flush-right in both is the same pixel. Packed from the start it
-          was not, which is what made the column of hearts look crooked.
-
-          The count goes in `#prefix` rather than the default slot because
-          `ListHeaderCell` wraps its default in a `truncate` span: `mr-auto`
-          inside that does nothing, since the span is not the flex row.
-        -->
-          <ListHeaderCell
-            v-if="metaColumn"
-            class="justify-end"
-            :class="metaColumn.pin && PINNED"
-            :style="stickyStyle(metaColumn)"
-          >
-            <template #prefix>
-              <span class="whitespace-nowrap text-p-xs text-ink-gray-5">{{ counted }}</span>
-            </template>
-            <template #suffix>
-              <Button
-                icon="lucide-heart"
-                :variant="favourites ? 'subtle' : 'ghost'"
-                :theme="favourites ? 'red' : 'gray'"
-                label="Only my favourites"
-                tooltip="Only my favourites"
-                @click="emit('favourites')"
-              />
-            </template>
-          </ListHeaderCell>
-        </ListHeader>
-
-        <!--
-        One group per run of rows sharing a value. The server sorts by the
-        group column first, so a run is a group — which is why this is
-        chunking rather than bucketing, and why a group never appears twice.
-      -->
-        <template v-if="groups">
-          <ListGroup v-for="group in groups" :key="group.label" :label="group.label" sticky>
-            <ListRows :items="group.rows" row-key="name" v-slot="{ item: row, value }">
-              <ListRow :value="value">
-                <ListCell
-                  v-for="c in visible"
-                  :key="c.key"
-                  :class="c.pin && PINNED"
-                  :style="stickyStyle(c)"
-                  @click="openRow(row, $event)"
-                >
-                  <TitleCell
-                    v-if="c.cell === 'title'"
-                    :row="row"
-                    :title-field="spec.title_field"
-                    :image-field="spec.image_field"
-                    @open="emit('open', row)"
-                  />
-                  <RowMeta
-                    v-else-if="c.cell === 'meta'"
-                    :meta="row._meta || {}"
-                    @like="emit('like', row)"
-                  />
-                  <FieldCell
-                    v-else
-                    :column="c.column"
-                    :value="row[c.column.fieldname]"
-                    :row="row"
-                    :links="row._links || {}"
-                    :states="spec.states"
-                    :space-code="spec.space"
-                    :screen="spec.screen"
-                  />
-                </ListCell>
-              </ListRow>
-            </ListRows>
-          </ListGroup>
+    <template #header-__activity="{ pinned, style }">
+      <ListHeaderCell class="justify-end" :class="pinned" :style="style">
+        <template #prefix>
+          <span class="whitespace-nowrap text-p-xs text-ink-gray-5">{{ counted }}</span>
         </template>
+        <template #suffix>
+          <Button
+            icon="lucide-heart"
+            :variant="favourites ? 'subtle' : 'ghost'"
+            :theme="favourites ? 'red' : 'gray'"
+            label="Only my favourites"
+            tooltip="Only my favourites"
+            @click="emit('favourites')"
+          />
+        </template>
+      </ListHeaderCell>
+    </template>
 
-        <!--
-          Windowed past a few hundred. Load more appends, so a list someone
-          keeps loading reaches thousands of rows, and thousands of rows
-          each carrying an avatar, badges and two buttons is a slow page.
-          Below the threshold the plain path is simpler and behaves better
-          with a keyboard.
-        -->
-        <ListRows
-          v-else
-          :items="rows"
-          row-key="name"
-          :virtual="windowed"
-          v-slot="{ item: row, value }"
-        >
-          <ListRow :value="value">
-            <ListCell
-              v-for="c in visible"
-              :key="c.key"
-              :class="c.pin && PINNED"
-              :style="stickyStyle(c)"
-              @click="openRow(row, $event)"
-            >
-              <TitleCell
-                v-if="c.cell === 'title'"
-                :row="row"
-                :title-field="spec.title_field"
-                :image-field="spec.image_field"
-                @open="emit('open', row)"
-              />
-              <RowMeta
-                v-else-if="c.cell === 'meta'"
-                :meta="row._meta || {}"
-                @like="emit('like', row)"
-              />
-              <FieldCell
-                v-else
-                :column="c.column"
-                :value="row[c.column.fieldname]"
-                :row="row"
-                :links="row._links || {}"
-                :states="spec.states"
-                :space-code="spec.space"
-                :screen="spec.screen"
-              />
-            </ListCell>
-          </ListRow>
-        </ListRows>
-      </List>
-    </div>
-
-    <!--
-      A table wide enough to scroll has to say so. The scrollbar is on
-      screen now, but an overlay scrollbar fades and a full-bleed column
-      at the edge reads as the end of the table — so the edge with more
-      beyond it carries a rule, and it goes away when there is not.
-    -->
-    <div v-if="edges.left" aria-hidden="true" :class="[EDGE, 'left-0']" />
-    <div v-if="edges.right" aria-hidden="true" :class="[EDGE, 'right-0']" />
-  </div>
+    <template #cell="{ column, row }">
+      <TitleCell
+        v-if="column.cell === 'title'"
+        :row="row"
+        :title-field="spec.title_field"
+        :image-field="spec.image_field"
+        @open="emit('open', row)"
+      />
+      <RowMeta
+        v-else-if="column.cell === 'meta'"
+        :meta="row._meta || {}"
+        @like="emit('like', row)"
+      />
+      <FieldCell
+        v-else
+        :column="column.column"
+        :value="row[column.key]"
+        :row="row"
+        :links="row._links || {}"
+        :states="spec.states"
+        :space-code="spec.space"
+        :screen="spec.screen"
+      />
+    </template>
+  </RecordTable>
 </template>
 
 <script setup>
-import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
-import {
-  Button,
-  Icon,
-  List,
-  ListCell,
-  ListGroup,
-  ListHeader,
-  ListHeaderCell,
-  ListHeaderCellSort,
-  ListRow,
-  ListRows,
-} from '@/ui'
+import { computed } from 'vue'
+import { Button, ListHeaderCell } from '@/ui'
+import RecordTable from './RecordTable.vue'
 import FieldCell from './FieldCell.vue'
 import TitleCell from './TitleCell.vue'
 import RowMeta from './RowMeta.vue'
@@ -229,78 +112,12 @@ const props = defineProps({
 
 const emit = defineEmits(['open', 'like', 'sort', 'favourites'])
 
-// A row click opens the record; the checkbox selects.
-//
-// frappe-ui's own answer is the other way round — `selectable` is documented as
-// switching "row click from navigate to toggle", and `ListRow.onClick` returns
-// before the app's handler ever runs — so the only thing that opened a record
-// was the title text, and clicking anywhere else in the row silently ticked a
-// checkbox. That is not what a list of records does anywhere else, and it is
-// not what Frappe's desk does either.
-//
-// Handled on the cell rather than the row, because the cell is where the click
-// can still be caught: stopping it here means `ListRow` never sees it, so its
-// toggle never fires. The checkbox keeps working — `ListRowBase` renders it as
-// an absolutely-positioned sibling of the cells with its own `.stop` handler,
-// so it is not inside anything this intercepts.
-const INTERACTIVE = 'a[href], button, input, select, textarea, [role="checkbox"], [contenteditable="true"]'
-
-const openRow = (row, event) => {
-  // A control inside the cell owns its own click: the like heart, a link
-  // chip, the title button. Without this, liking a row would also open it.
-  if (event.target?.closest?.(INTERACTIVE)) return
-  event.stopPropagation()
-  emit('open', row)
-}
-
-const selection = defineModel('selection', { type: Array, default: () => [] })
-const chosen = selection
+const chosen = defineModel('selection', { type: Array, default: () => [] })
 
 const META_FIELD = '__activity'
 
-// A pinned column stops scrolling. Opaque, or the columns sliding under it read
-// through it — and the offset is an inline style rather than a class because it
-// is a computed pixel value, not a token.
-const PINNED = 'sticky z-10 bg-surface-base'
-
-// The edge affordance: a hairline at whichever side has more beyond it.
-//
-// It was a 40px gradient wash, which is the shape a phone app uses to fade
-// content out and reads as decoration on a data grid — it dimmed a strip of
-// real values to say something about scrolling. A rule says the same thing in
-// one pixel and hides nothing: it is drawn only on the side with more table,
-// and it goes away at the end, so its presence is the whole message.
-//
-// A border rather than a background, because the hairline wants the same token
-// the header band and the row dividers already draw — and that token is an
-// *outline* colour, so `bg-outline-gray-2` is not a class at all. It emitted no
-// CSS and the affordance was simply invisible; `test_every_class_emits_css`
-// caught it. Zero width plus a left border is the 1px line, once.
-//
-// Above the sticky header's z-index, or it stops at the first row.
-const EDGE = 'pointer-events-none absolute inset-y-0 z-30 w-0 border-l border-outline-gray-2'
-
 // How many rows before windowing them is worth the complexity it adds.
 const VIRTUAL_FROM = 200
-
-// The band behind the column headers, and the reason `ListHeader`'s own rule is
-// off: that rule is a grid child inset to the content box, so under a
-// full-width fill it stopped short at both ends. The band carries its own
-// full-width rule instead.
-const CHROME = [
-  '[&_[data-slot=list-header]]:h-9',
-  '[&_[data-slot=list-header]]:bg-surface-gray-1',
-  '[&_[data-slot=list-header]]:border-b',
-  '[&_[data-slot=list-header]]:border-outline-gray-2',
-  '[&_[data-slot=list-header-border]]:hidden',
-  // A group heading sticks *under* the column header rather than over it —
-  // ListGroup pins at `top-0`, which is where the header already is.
-  '[&_[data-slot=list-group-header]]:top-9',
-].join(' ')
-
-const scroller = ref(null)
-// Whether there is more table beyond each edge. Both false on a list that fits.
-const edges = ref({ left: false, right: false })
 
 // One model for every column. The title field renders with its avatar and id,
 // activity renders its own cell, everything else is a value — but all three are
@@ -312,93 +129,28 @@ const edges = ref({ left: false, right: false })
 // different question — so the phone gets the same columns and scrolls. Frappe
 // CRM does the same, and it is only possible because the columns are the
 // reader's to choose.
-// What a row spends on things that are not columns: the checkbox inset the
-// List adds for `selectable`, the row padding `list-row-px-3` sets at both
-// ends, and the column gap between every pair of tracks. Read off frappe-ui's
-// own `style.css` rather than guessed — the first version forgot the gaps and
-// left the table four pixels wider than the pane, which is a horizontal
-// scrollbar over nothing.
-const CHECKBOX = 32
-const ROW_PAD = 12 * 2
-const COLUMN_GAP = 8
-
-// Three columns in a wide pane is a small table in a pool of white space. The
-// leftover width goes to the title, because a name is the thing a wider list
-// should show more of — and it goes in as pixels rather than as an `fr` track,
-// so the pinning offsets and the edge measurement keep working off one set of
-// numbers.
-const widened = computed(() => {
-  const declared = props.columns || []
-  const fixed = declared.reduce((total, c) => total + c.width, 0)
-  const gaps = Math.max(declared.length - 1, 0) * COLUMN_GAP
-  const slack = paneWidth.value - CHECKBOX - ROW_PAD - gaps - fixed
-  if (slack <= 0) return declared
-
-  const title = props.spec?.title_field
-  const grows =
-    declared.find((c) => c.fieldname === title) || declared.find((c) => !c.pin) || declared[0]
-  return declared.map((c) => (c === grows ? { ...c, width: c.width + slack } : c))
-})
-
 const visible = computed(() => {
   const titleField = props.spec?.title_field
-  const declared = widened.value
-
-  // Where a pinned column starts, in pixels. A left pin sits past everything
-  // pinned left before it; a right pin past everything pinned right after it.
-  // Fixed widths are what make this computable at all.
-  let fromLeft = 0
-  const offsets = new Map()
-  for (const column of declared) {
-    if (column.pin !== 'left') continue
-    offsets.set(column.fieldname, fromLeft)
-    fromLeft += column.width
-  }
-  let fromRight = 0
-  for (const column of [...declared].reverse()) {
-    if (column.pin !== 'right') continue
-    offsets.set(column.fieldname, fromRight)
-    fromRight += column.width
-  }
-
-  return declared.map((column) => ({
+  return (props.columns || []).map((column) => ({
     key: column.fieldname,
-    header: column.label,
+    label: column.label,
+    icon: column.icon,
     track: `${column.width}px`,
+    width: column.width,
+    pin: column.pin,
+    sortable: column.fieldname !== META_FIELD,
     cell:
       column.fieldname === META_FIELD
         ? 'meta'
         : column.fieldname === titleField
           ? 'title'
           : column.cell,
-    sortable: column.fieldname !== META_FIELD,
-    pin: column.pin,
-    offset: offsets.get(column.fieldname) || 0,
     column,
   }))
 })
 
-const tracks = computed(() => visible.value.map((c) => c.track))
-const sortableColumns = computed(() => visible.value.filter((c) => c.cell !== 'meta'))
-const metaColumn = computed(() => visible.value.find((c) => c.cell === 'meta') || null)
-
-// A computed rather than an inline expression: a `>` inside a template
-// attribute ends the tag as far as any regex-shaped parser is concerned, which
-// is how the frappe-ui prop guard read `visible.length` as a prop name.
-const windowed = computed(() => props.rows.length > VIRTUAL_FROM)
-
-const stickyStyle = (c) => (c.pin ? { [c.pin]: `${c.offset}px` } : undefined)
-
-const sortField = computed(() => (props.orderBy || '').split(' ')[0])
-const ascending = computed(() => (props.orderBy || '').split(' ')[1] === 'asc')
-
-const directionFor = (c) => {
-  if (c.column.fieldname !== sortField.value) return undefined
-  return ascending.value ? 'asc' : 'desc'
-}
-
-// Null when nothing is grouped, so the template can tell "no grouping" from
-// "one group".
+// Null when nothing is grouped, so the table can tell "no grouping" from "one
+// group".
 const groups = computed(() => {
   const field = props.groupBy
   if (!field) return null
@@ -413,55 +165,4 @@ const groups = computed(() => {
   }
   return made
 })
-
-// How much room the pane has, which is what decides whether the tracks add up
-// to less than it. Measured by the same observer the edges use — there is one
-// question here, asked when the box changes.
-const paneWidth = ref(0)
-
-// Read rather than tracked: a scroll position is the DOM's own state, and
-// mirroring it into a ref that then has to be kept in step is how the two end
-// up disagreeing.
-const measureEdges = () => {
-  const el = scroller.value
-  if (!el) return
-  paneWidth.value = el.clientWidth
-  const room = el.scrollWidth - el.clientWidth
-  edges.value = {
-    left: el.scrollLeft > 1,
-    // A pixel of slack: a fractional layout width leaves half a pixel of
-    // scrollWidth that is not more table.
-    right: room > 1 && el.scrollLeft < room - 1,
-  }
-}
-
-// The scroll width changes without a scroll: rows arriving, a column resized or
-// added, the window narrowed. None of those fire `scroll`, and an edge shadow
-// left behind on a table that now fits is a lie about there being more.
-//
-// A ResizeObserver rather than a watcher and a nextTick. That is what the first
-// attempt was, and it measured a table that was not laid out yet — the shadow
-// only appeared once something else caused a scroll, so a list that opened too
-// wide said nothing at all. An observer fires when the box is real.
-const observer = new ResizeObserver(measureEdges)
-
-watch(
-  scroller,
-  (el) => {
-    observer.disconnect()
-    if (!el) return
-    // Both boxes: the viewport and the content. Only one of them changes when
-    // the window narrows, and only the other when a column is widened.
-    observer.observe(el)
-    if (el.firstElementChild) observer.observe(el.firstElementChild)
-    measureEdges()
-  },
-  { flush: 'post' },
-)
-
-// The content's own width changes when rows arrive without the container
-// resizing at all — an `auto` track sizing to a longer value.
-watch([visible, () => props.rows], () => nextTick(measureEdges), { flush: 'post' })
-
-onUnmounted(() => observer.disconnect())
 </script>

@@ -393,6 +393,35 @@ Rows are **windowed past two hundred** (frappe-ui's `ListRows virtual`), which
 is where Load more starts to make a page you can feel. Below that the plain
 path is simpler and behaves better with a keyboard.
 
+## One table, two surfaces
+
+`RecordTable` draws both the screen's list and the grid inside a record. It
+owns the tracks, the sticky header, the pinned columns, the one scroller that
+handles both axes, the edge that says there is more, and the windowing past a
+few hundred rows.
+
+It does not own what a cell contains, what a row click means, where the rows
+came from, or whether they can be sorted. Those differ completely between the
+two and are the consumer's, through a `#cell` slot and a handful of props.
+
+It exists because they used to differ about the chrome too. All of it was
+written in the list and none of it in the grid, so the grid had no widths, no
+pinning and no sticky header — and the one piece it did copy, the row inset, it
+copied wrongly along with ten other tables. One table means one place to be
+wrong, and two guards keep it that way: the scroller may exist in one file, and
+both bodies must go through it.
+
+Two things fall out of it that are worth naming:
+
+* **The row inset is derived, not passed.** `list-row-px-3` is right for a
+  selectable table and wrong for a static one; the table asks its own
+  `selectable` prop and picks. There is nothing left for a caller to get wrong.
+* **The child grid is selectable.** `ListRowBase` treats a row as interactive
+  when it is a link, a button, or in a selectable list — and only the first two
+  change its tag, so a selectable grid row stays a `div` and can still hold
+  form controls. That means frappe-ui draws the tick boxes and the select-all,
+  and the grid's own checkbox column is gone.
+
 ## A child table is a grid, not a second list
 
 A doctype with rows inside it renders them as a grid on the record: the child

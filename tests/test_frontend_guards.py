@@ -962,6 +962,8 @@ def test_something_waits_visibly_while_a_screen_loads(app):
 SCREEN_HOST = ROOT / "apps/oneapp/frontend/src/pages/ScreenHost.vue"
 # The shell renders a body per view type; the list is the one that draws a grid.
 LIST_BODY = ROOT / "apps/oneapp/frontend/src/components/screen/ListBody.vue"
+RECORD_TABLE = ROOT / "apps/oneapp/frontend/src/components/screen/RecordTable.vue"
+CHILD_TABLE = ROOT / "apps/oneapp/frontend/src/components/screen/ChildTable.vue"
 
 
 def test_the_screen_host_shows_the_same_columns_on_every_screen():
@@ -1031,21 +1033,38 @@ def test_the_screen_host_is_a_pane_at_both_ends():
 	)
 
 
-def test_the_grid_has_exactly_one_scroller():
+def test_the_table_has_exactly_one_scroller():
 	"""Both axes on one element, or the header drifts.
 
 	A separate horizontal wrapper around a vertical one is the obvious way to
 	build this and it is wrong: the header then sits outside the vertical
 	scrollbar's gutter and is a scrollbar's width out of true with the rows
 	under it. One element scrolling both ways has no gutter to disagree about.
+
+	One element, and one *place*: `RecordTable` owns the scroller for both the
+	list and the child grid, so this is the only file that may have one. A body
+	that grows its own is a body that has started rebuilding the table.
 	"""
-	body = LIST_BODY.read_text()
-	assert body.count("overflow-auto") == 1, "the grid should have one scroller"
-	# The two-wrapper shape, which is the one that drifts.
-	assert "overflow-x-auto" not in body, (
-		"a separate horizontal scroller puts the header outside the vertical "
-		"scrollbar's gutter — use one element scrolling both ways"
-	)
+	table = RECORD_TABLE.read_text()
+	assert table.count('ref="scroller"') == 1, "the table should have one scroller"
+	# Both classes appear once, in that element's own binding: `overflow-auto`
+	# where the table fills a pane, `overflow-x-auto` where it is as tall as its
+	# rows and only ever runs out of width.
+	assert table.count("overflow-auto") == 1
+	assert table.count("overflow-x-auto") == 1
+
+	# And the bodies delegate rather than wrapping it in one of their own.
+	for path in (LIST_BODY, CHILD_TABLE):
+		source = re.sub(r"<!--.*?-->", "", path.read_text(), flags=re.S)
+		assert "RecordTable" in source, (
+			f"{path.name} no longer draws itself with the shared table — the "
+			"chrome was written twice before and drifted both times"
+		)
+		assert "overflow-" not in source, (
+			f"{path.name} scrolls something itself — the table owns the scroller, "
+			"and a second one around it is the shape that drifts"
+		)
+
 	# The shell scrolls nothing itself. `overflow-y-auto` appears once: the
 	# escape hatch a screen a space wrote itself renders into, which cannot be
 	# assumed to fit a pane.

@@ -38,8 +38,8 @@ test('a child table draws the rows the record holds', async ({ page }, info) => 
   // Three notification rows, numbered from one — Frappe orders a child table
   // by `idx`, so the number is the row's position and it is worth showing.
   await expect(page.getByText('3 rows')).toBeVisible()
-  await expect(page.getByRole('checkbox', { name: 'Select row 3' })).toBeVisible()
-  await expect(page.getByRole('checkbox', { name: 'Select row 4' })).toHaveCount(0)
+  const panel = page.getByRole('tabpanel', { name: 'Notifications' })
+  await expect(panel.locator('[data-slot="list-row"]')).toHaveCount(3)
   expectNoRealErrors(errors)
 })
 
@@ -88,8 +88,13 @@ test('rows can be ticked and removed together', async ({ page }, info) => {
   await openEvent(page, 'Notifications')
 
   await expect(page.getByText('3 rows')).toBeVisible()
-  await page.getByRole('checkbox', { name: 'Select row 1' }).check()
-  await page.getByRole('checkbox', { name: 'Select row 2' }).check()
+  // The tick boxes are frappe-ui's own now, in the row's own padding rather
+  // than in a column of ours — the same ones, and the same selector, the list
+  // is ticked with.
+  const rows = page.getByRole('tabpanel', { name: 'Notifications' })
+    .locator('[data-slot="list-row"]')
+  await rows.nth(0).locator('[data-slot="list-row-checkbox"]').click()
+  await rows.nth(1).locator('[data-slot="list-row-checkbox"]').click()
 
   await page.getByRole('button', { name: 'Remove 2' }).click()
   await expect(page.getByText('1 row', { exact: true })).toBeVisible()
@@ -103,12 +108,14 @@ test('select-all ticks every row of the grid it is in', async ({ page }, info) =
   test.skip(info.project.name === 'mobile', 'the phone opens a record as a page')
   await openEvent(page, 'Notifications')
 
-  await page.getByRole('checkbox', { name: 'Select every row' }).check()
+  const all = page.getByRole('tabpanel', { name: 'Notifications' })
+    .getByRole('checkbox', { name: 'Select all' })
+  await all.check()
   await expect(page.getByRole('button', { name: 'Remove 3' })).toBeVisible()
 
   // And untick puts it back rather than leaving the header ticked over an
   // empty selection.
-  await page.getByRole('checkbox', { name: 'Select every row' }).uncheck()
+  await all.uncheck()
   // `Remove <n>` and not `Remove` — every row carries its own "Remove this
   // row", which is three more buttons whose name starts with the same word.
   await expect(page.getByRole('button', { name: /^Remove \d+$/ })).toHaveCount(0)

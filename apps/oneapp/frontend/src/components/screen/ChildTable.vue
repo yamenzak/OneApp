@@ -23,138 +23,86 @@
     </div>
 
     <!--
-      A grid, not the list.
+      The same table the list is drawn with.
 
-      `ListBody` carries virtualization, grouping, saved views, favourites, a
-      selection bar and a row click that navigates to a record route — none of
-      which a child table wants, and several of which would be actively wrong
-      inside a form. What is genuinely shared is the cell dispatch, and that is
-      `FieldControl` and `FieldCell`, which both are used here.
+      `RecordTable` owns the tracks, the header, the scroller, the pinning and
+      the edge that says there is more; what is left here is what makes this a
+      *grid* rather than a list — a control in every cell, a row you can drag,
+      a row you can open, and rows you can add and take away.
+
+      It used to own none of that and rebuild the little it had, which is how
+      the grid ended up with no widths, no sticky header, and a header inset
+      twelve pixels from the rows underneath it.
     -->
-    <!--
-      A child grid is wider than the pane it sits in more often than not — five
-      columns at their minimum is eight hundred pixels — so it scrolls, and it
-      says which side there is more on. Silently clipping three columns is how
-      a required field nobody could see failed a save.
-    -->
-    <FadedScroll
+    <RecordTable
       v-if="rows.length"
-      axis="x"
-      class="rounded-6 border border-outline-gray-2"
+      v-model:selection="chosen"
+      :columns="tracks"
+      :rows="rows"
+      :row-key="rowKey"
+      :row-height="44"
+      :selectable="editable"
+      :row-props="rowProps"
+      :virtual-from="VIRTUAL_FROM"
+      extra-class="rounded-6 border border-outline-gray-2"
     >
-      <!--
-        `px-3` on the List rather than `list-row-px-3`.
+      <template #cell="{ column, row, index }">
+        <!--
+          Frappe orders a child table by `idx`, so the number is the row's
+          position and worth showing: it is what a person means when they say
+          "the third line". It is also the handle — the number *is* the
+          position, so the thing you drag to change it is the thing that says
+          what it is, rather than a second grip column beside it.
+        -->
+        <span
+          v-if="column.key === GUTTER"
+          class="text-p-xs tabular-nums text-ink-gray-5"
+          :class="editable ? 'cursor-grab' : ''"
+          :draggable="editable"
+          @dragstart="dragging = index"
+          @dragend="endDrag"
+        >{{ index + 1 }}</span>
 
-        That class sets frappe-ui's public `--list-row-padding-x`, which the
-        header reads — but the rows read a private one that the library only
-        sets on rows marked `[data-interactive]`, and a child row has no click
-        handler so it is not one. The result was a header inset twelve pixels
-        and rows flush against the border under it, every column out of true
-        with its own heading. Padding the grid itself moves both together.
-      -->
-      <List :columns="tracks" :row-height="44" class="w-max min-w-full px-3">
-        <ListHeader>
-          <ListHeaderCell>
-            <div class="flex items-center gap-2">
-              <Checkbox
-                v-if="editable"
-                :model-value="allChosen"
-                :indeterminate="!!chosen.length && !allChosen"
-                aria-label="Select every row"
-                @update:model-value="chooseAll"
-              />
-              <span>#</span>
-            </div>
-          </ListHeaderCell>
-          <ListHeaderCell
-            v-for="column in columns"
-            :key="column.fieldname"
-            :class="isNumericCell(column.cell) ? 'justify-end' : ''"
-          >
-            {{ column.label }}
-            <!-- The child doctype's own `reqd`, said where the label is said.
-                 A grid cell has no room for a label, so without this the only
-                 warning that a column may not be left blank is the save
-                 failing. -->
-            <span v-if="column.reqd" class="text-ink-red-4" aria-hidden="true">*</span>
-          </ListHeaderCell>
-          <ListHeaderCell />
-        </ListHeader>
+        <div v-else-if="column.key === ACTIONS" class="flex w-full items-center justify-end gap-0.5">
+          <!-- The whole row, laid out the way the child doctype lays itself
+               out. A handful of columns fit across; a child doctype with
+               twenty fields is only usable this way. -->
+          <Button
+            icon="lucide-maximize-2"
+            variant="ghost"
+            label="Open this row"
+            tooltip="Open this row"
+            @click="open(index)"
+          />
+          <Button
+            v-if="editable"
+            icon="lucide-trash-2"
+            variant="ghost"
+            theme="red"
+            label="Remove this row"
+            tooltip="Remove this row"
+            @click="remove(index)"
+          />
+        </div>
 
-        <ListRows :items="rows" row-key="name" v-slot="{ item: row, value, index }">
-          <ListRow
-            :value="value"
-            :class="draggedTo === index && dragging !== null ? 'bg-surface-gray-2' : ''"
-            @dragover.prevent="draggedTo = index"
-            @drop.prevent="drop(index)"
-          >
-            <!-- Frappe orders a child table by `idx`, so the number is the
-                 row's position and worth showing: it is what a person means
-                 when they say "the third line". It is also the handle — the
-                 number *is* the position, so the thing you drag to change it
-                 is the thing that says what it is, rather than a second grip
-                 column beside it. -->
-            <ListCell>
-              <div class="flex w-full items-center gap-2">
-                <Checkbox
-                  v-if="editable"
-                  :model-value="chosen.includes(index)"
-                  :aria-label="`Select row ${index + 1}`"
-                  @update:model-value="choose(index, $event)"
-                />
-                <span
-                  class="text-p-xs tabular-nums text-ink-gray-5"
-                  :class="editable ? 'cursor-grab' : ''"
-                  :draggable="editable"
-                  @dragstart="dragging = index"
-                  @dragend="endDrag"
-                >{{ index + 1 }}</span>
-              </div>
-            </ListCell>
-            <ListCell
-              v-for="column in columns"
-              :key="column.fieldname"
-              :class="isNumericCell(column.cell) && !editable ? 'justify-end' : ''"
-            >
-              <FieldControl
-                v-if="editable && column.editable"
-                :model-value="row[column.fieldname]"
-                :field="bare(column)"
-                :space-code="spaceCode"
-                :screen="screen"
-                :doc="row"
-                class="w-full"
-                @update:model-value="patch(index, column.fieldname, $event)"
-              />
-              <FieldCell v-else :column="column" :value="row[column.fieldname]" :row="row" />
-            </ListCell>
-            <ListCell>
-              <div class="flex w-full items-center justify-end gap-0.5">
-                <!-- The whole row, laid out the way the child doctype lays
-                     itself out. A handful of columns fit across; a child
-                     doctype with twenty fields is only usable this way. -->
-                <Button
-                  icon="lucide-maximize-2"
-                  variant="ghost"
-                  label="Open this row"
-                  tooltip="Open this row"
-                  @click="open(index)"
-                />
-                <Button
-                  v-if="editable"
-                  icon="lucide-trash-2"
-                  variant="ghost"
-                  theme="red"
-                  label="Remove this row"
-                  tooltip="Remove this row"
-                  @click="remove(index)"
-                />
-              </div>
-            </ListCell>
-          </ListRow>
-        </ListRows>
-      </List>
-    </FadedScroll>
+        <FieldControl
+          v-else-if="editable && column.column.editable"
+          :model-value="row[column.key]"
+          :field="bare(column.column)"
+          :space-code="spaceCode"
+          :screen="screen"
+          :doc="row"
+          class="w-full"
+          @update:model-value="patch(index, column.key, $event)"
+        />
+        <FieldCell
+          v-else
+          :column="column.column"
+          :value="row[column.key]"
+          :row="row"
+        />
+      </template>
+    </RecordTable>
 
     <p v-else class="text-p-sm text-ink-gray-5">Nothing here yet.</p>
 
@@ -195,19 +143,8 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import {
-  Button,
-  Checkbox,
-  Dialog,
-  FormLabel,
-  List,
-  ListHeader,
-  ListHeaderCell,
-  ListRows,
-  ListRow,
-  ListCell,
-} from '@/ui'
-import FadedScroll from './FadedScroll.vue'
+import { Button, Dialog, FormLabel } from '@/ui'
+import RecordTable from './RecordTable.vue'
 import FieldCell from './FieldCell.vue'
 import FieldControl from './FieldControl.vue'
 import RecordForm from './RecordForm.vue'
@@ -248,24 +185,64 @@ const childSpec = computed(() => ({
  */
 const bare = (column) => ({ ...column, label: '', icon: null, description: null })
 
+// The two columns that are not fields. Named rather than positional, because
+// the cell slot dispatches on the key and `column.key === columns[0]` is a
+// thing that breaks the moment a column is added in front of it.
+const GUTTER = '__idx'
+const ACTIONS = '__actions'
+
+// A child doctype with four hundred lines is an invoice, not a mistake.
+const VIRTUAL_FROM = 200
+
 /**
- * Grid track sizes, in the shape `List` takes.
+ * The columns, in the shape `RecordTable` takes.
  *
  * A narrow one for the row number, a wide one for the actions, and the rest
  * shared — the doctype's own `columns` hint would be a nicer weighting, but a
  * child grid is already inside a form column and the honest answer at that
  * width is equal shares.
+ *
+ * No `width`, and so no pinning and no fill: those are arithmetic over pixels,
+ * and these tracks share whatever they are given. The table does the right
+ * thing with either.
  */
 const tracks = computed(() => [
-  gutter.value,
-  ...columns.value.map(() => 'minmax(8rem, 1fr)'),
-  '5rem',
+  { key: GUTTER, label: '#', track: '2rem' },
+  ...columns.value.map((column) => ({
+    key: column.fieldname,
+    label: column.label,
+    track: 'minmax(8rem, 1fr)',
+    required: !!column.reqd,
+    // A number belongs against the right edge of its column. Which cells are
+    // numbers is generated from the same fieldtype map that decides how a
+    // value is drawn, so this and the list cannot disagree about it.
+    align: isNumericCell(column.cell) ? 'end' : '',
+    column,
+  })),
+  { key: ACTIONS, label: '', track: '5rem' },
 ])
 
-// The first track holds the row number, and the tick box as well when the grid
-// is editable. 2rem fitted the number alone; with a checkbox beside it the two
-// were on top of each other.
-const gutter = computed(() => (editable.value ? '3.5rem' : '2rem'))
+// By position, not by key.
+//
+// A saved child row has a `name` and a new one does not — that is how Frappe
+// tells an update from an insert — so half the rows in an edited table have
+// nothing to key a selection on. Position is what a child table already is:
+// `idx` ordered, renumbered on save.
+const rowKey = (_row, index) => index
+
+// The drag handlers, bound onto each row. The table owns the row element; what
+// a row *does* is still ours.
+const rowProps = (_row, index) => ({
+  class: draggedTo.value === index && dragging.value !== null ? 'bg-surface-gray-2' : '',
+  onDragover: (event) => {
+    event.preventDefault()
+    draggedTo.value = index
+  },
+  onDrop: (event) => {
+    event.preventDefault()
+    drop(index)
+  },
+})
 
 const expanded = ref(false)
 const editingAt = ref(null)
@@ -305,33 +282,22 @@ const remove = (index) => {
 
 // --- selection ---------------------------------------------------------------
 //
-// By position, not by key. A saved child row has a `name` and a new one does
-// not — that is how Frappe tells an update from an insert — so half the rows in
-// an edited table have nothing to key a selection on. Position is what a child
-// table already is: `idx` ordered, renumbered on save.
+// frappe-ui's own now, keyed by position through `rowKey`. It draws the tick
+// box, the select-all in the header, and the row inset that goes with them —
+// all of which this used to hand-roll in a column of its own, and the inset it
+// got wrong.
 //
-// Which is also why every operation that moves a row clears the selection. A
-// selection held by position through a reorder is a selection of different
-// rows, and that is the kind of bug that deletes the wrong line.
+// Every operation that moves a row still clears it. A selection held by
+// position through a reorder is a selection of different rows, and that is the
+// kind of bug that deletes the wrong line.
 
 const chosen = ref([])
 
-const allChosen = computed(
-  () => rows.value.length > 0 && chosen.value.length === rows.value.length,
-)
-
-const choose = (index, ticked) => {
-  chosen.value = ticked
-    ? [...chosen.value, index]
-    : chosen.value.filter((at) => at !== index)
-}
-
-const chooseAll = (ticked) => {
-  chosen.value = ticked ? rows.value.map((_row, at) => at) : []
-}
-
 const removeChosen = () => {
-  const going = new Set(chosen.value)
+  // `Number`, because the selection comes back as frappe-ui stored it and a
+  // row's identity is typed as a string there — `new Set(['0']).has(0)` is
+  // false, and the first version of this ticked two rows and removed none.
+  const going = new Set(chosen.value.map(Number))
   rows.value = rows.value.filter((_row, at) => !going.has(at))
   if (editingAt.value !== null && going.has(editingAt.value)) expanded.value = false
   chosen.value = []

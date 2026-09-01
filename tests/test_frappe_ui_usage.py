@@ -510,9 +510,13 @@ def test_the_row_inset_is_only_used_on_lists_whose_rows_are_interactive():
 		root = ROOT / f"apps/{app}/frontend/src"
 		for path in sorted(root.rglob("*.vue")):
 			source = path.read_text()
-			# The comment in ChildTable explains the rule; it does not use it.
+			# Comments explain the rule; they do not use it.
 			body = re.sub(r"<!--.*?-->", "", source, flags=re.S)
 			if not ROW_PAD.search(body):
+				continue
+			# `RecordTable` derives the inset from its own `selectable` prop, so
+			# the two cannot disagree — which is the point of it being there.
+			if path.name == "RecordTable.vue" and "props.selectable" in body:
 				continue
 			if INTERACTIVE_ROW.search(body) or ACTIVATABLE.search(body):
 				continue
