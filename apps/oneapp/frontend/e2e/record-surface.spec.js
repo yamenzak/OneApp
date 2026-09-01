@@ -602,9 +602,14 @@ test('a comment can be added and shows up in the count', async ({ page }) => {
   const dialog = page.locator('[data-slot="record-pane"]')
   const tab = dialog.getByRole('tab', { name: /^Activity/ })
   const count = async () => Number((await tab.innerText()).replace(/\D/g, '') || 0)
-  const before = await count()
 
+  // Read *after* the timeline has arrived, not before. The badge is filled in
+  // by the same request that fills the tab, so a count taken on the way past
+  // is a count taken from a tab that has not loaded — zero — and then this
+  // waits forever for a total of one on a record with a dozen comments.
   await tab.click()
+  await expect(dialog.locator('[data-activity]').first()).toBeVisible()
+  const before = await count()
   const note = `From the browser pass ${Date.now()}`
   await dialog.getByPlaceholder('Add a comment').fill(note)
   await dialog.getByRole('button', { name: 'Comment' }).click()

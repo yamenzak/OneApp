@@ -19,6 +19,34 @@ Two loops. Use the first one that can answer your question.
 > bench is a bigger thing to own than the minutes it saved.
 
 ---
+## The browser pass takes eight minutes, and here is where it goes
+
+164 real tests against a real site, one at a time. Measured: no test is slow —
+the worst is 6.6 seconds and the median is under three — so there is nothing to
+optimise in any one of them. It is volume, serialised.
+
+Serialised on purpose. Every spec drives the same seeded space on the same
+site, and a dozen of them write to it: a comment count, an assignment, a
+rename, a saved view. Four workers finish in **2.6 minutes** and two specs fail
+on data another worker changed underneath them, which is a suite that is faster
+and no longer tells the truth.
+
+So, while you are working:
+
+    yarn e2e:fast e2e/thing.spec.js     one project, four workers, your specs
+    yarn e2e                            everything, serial — before a commit
+
+And when the whole pass is the thing that is slow, the fix is not a config
+flag: it is **a seeded space per worker**, keyed on `parallelIndex`, so there
+is nothing shared left to race on. That is a day's work and it takes the full
+pass under three minutes for good.
+
+Two smaller things are already done. Tracing is `on-first-retry` rather than
+`retain-on-failure` — recording every test and throwing away all but the
+failures is a tax on the ninety-nine that pass — and `retries: 1` means a flake
+is reported as flaky rather than as a failure, which is also how the comment-
+count test turned out to have been reading its badge before the tab had loaded.
+
 
 ## 1. Local bench — seconds
 

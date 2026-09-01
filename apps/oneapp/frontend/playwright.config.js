@@ -21,8 +21,25 @@ export default defineConfig({
   testDir: './e2e',
   // One worker: these drive a single shared site, and parallel logins race on
   // the same session.
-  workers: 1,
+  // One worker, and it is the fixture rather than the browser that decides.
+  // Every spec drives one seeded space on one site, and several of them write
+  // to the same record — a comment count, an assignment, a rename. Four
+  // workers finish in a little over half the time and two specs fail on data
+  // another worker changed underneath them, which is a suite that is faster
+  // and no longer tells the truth.
+  //
+  // Making it safely parallel means a seeded space per worker, keyed on
+  // `parallelIndex`. That is worth doing and it is not a config change.
+  //
+  // Meanwhile: `yarn e2e:fast` is the loop to develop against — one project,
+  // four workers, for the specs you are working on. Run `yarn e2e` before a
+  // commit.
+  workers: Number(process.env.ONEAPP_E2E_WORKERS || 1),
   reporter: [['list']],
+  // Retried once, and only the retry is traced. `retain-on-failure` records
+  // every test and throws away all but the failures, which is a tax on the
+  // ninety-nine that pass to keep the one that does not.
+  retries: 1,
   timeout: 45_000,
   use: {
     // The site by its own hostname, not `localhost`. Frappe's socketio server
@@ -33,7 +50,7 @@ export default defineConfig({
     // entry, and this is also how the site is addressed in production.
     baseURL: process.env.ONEAPP_BASE_URL || 'http://space.localhost:8001',
     screenshot: 'only-on-failure',
-    trace: 'retain-on-failure',
+    trace: 'on-first-retry',
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'], launchOptions } },
