@@ -314,6 +314,40 @@ export const workspace = {
     return `/api/method/oneapp.oneapp_core.spaceview.print_pdf?${asked}`
   },
 
+  // --- where a document stands ---------------------------------------------
+  //
+  // Submit, cancel and amend are three permissions rather than one verb, and a
+  // workflow transition is checked by the workflow — so four calls rather than
+  // one taking a string. See `oneapp_core/docflow.py`.
+
+  submit: (spaceCode, screen, name) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.submit',
+      { space_code: spaceCode, screen, name },
+      { successMessage: 'Submitted' },
+    ),
+
+  cancel: (spaceCode, screen, name) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.cancel',
+      { space_code: spaceCode, screen, name },
+      { successMessage: 'Cancelled' },
+    ),
+
+  amend: (spaceCode, screen, name) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.amend',
+      { space_code: spaceCode, screen, name },
+      { successMessage: 'Amended' },
+    ),
+
+  workflowAction: (spaceCode, screen, name, action) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.workflow_action',
+      { space_code: spaceCode, screen, name, action },
+      { successMessage: 'Done' },
+    ),
+
   // --- print formats and letter heads -------------------------------------
   //
   // What is drawn on the page, as against the paper it comes out on — the

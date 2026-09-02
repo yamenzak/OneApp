@@ -77,6 +77,23 @@
           that rather than this file guessing from a fieldtype.
         -->
         <!--
+          Submit, cancel, amend — or a workflow's own transitions, which is the
+          same row of buttons because the server hands back one list either
+          way. Absent on a doctype that is neither submittable nor governed by
+          a workflow, which is most of them.
+        -->
+        <DocActions
+          v-if="record._state"
+          :space-code="spaceCode"
+          :screen="screen"
+          :name="record.name"
+          :state="record._state"
+          :status-field="spec.status_field || ''"
+          :dirty="dirty"
+          @moved="emit('reload')"
+          @opened="emit('renamed', $event)"
+        />
+        <!--
           Print. Beside the bell rather than in a menu: printing a record is
           something people do often enough that hiding it behind three dots is
           hiding it. Only where the doctype allows it — Frappe's own `print`
@@ -288,6 +305,7 @@ import ScreenActions from './ScreenActions.vue'
 import RecordForm from './RecordForm.vue'
 import RecordActivity from './RecordActivity.vue'
 import RecordFiles from './RecordFiles.vue'
+import DocActions from './DocActions.vue'
 import PrintDialog from './PrintDialog.vue'
 import RecordMeta from './RecordMeta.vue'
 import { workspace } from '../../lib/workspace'
@@ -368,6 +386,20 @@ const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
 // — how the fields are laid out is the doctype's business, and RecordForm's.
 const fields = computed(() => props.spec?.all_columns || props.spec?.columns || [])
 const canWrite = computed(() => !!props.spec?.can_write)
+
+// Whether the form holds something the server has not seen. Read from the
+// record rather than tracked with a flag: a flag has to be cleared in every
+// path that saves, reloads or switches record, and the one that forgets it
+// leaves Submit disabled on a record with nothing wrong with it.
+//
+// It gates the document actions and nothing else. Submitting what is on the
+// server while the form holds something else is how a document gets submitted
+// that nobody has read.
+const dirty = computed(() =>
+  fields.value.some(
+    (field) => (form[field.fieldname] ?? '') !== (props.record?.[field.fieldname] ?? ''),
+  ),
+)
 const trackChanges = computed(() => !!props.spec?.track_changes)
 
 const identity = computed(() => {

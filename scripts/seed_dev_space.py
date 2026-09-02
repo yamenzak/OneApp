@@ -62,6 +62,43 @@ EVENT_FIELDS = "subject,event_type,status,starts_on"
 # already say.
 PEOPLE_FIELDS = "company_name,designation"
 
+# The submittable fixture, and the one thing here that is not a Frappe doctype.
+#
+# Core Frappe ships exactly one submittable doctype — `DuckDB Sync` — and a
+# sync job is not a thing to draw an approval on. ERPNext has a dozen and is not
+# installed on a development bench. So the fixture makes one: the smallest
+# document that has a docstatus and something to approve about it.
+#
+# It carries `workflow_state` because a workflow needs a field to keep its state
+# in, and Frappe adds one automatically only through the desk's workflow
+# builder, which this product does not have.
+APPROVAL_DOCTYPE = "zzApproval"
+APPROVAL_FIELDS = "title,amount,workflow_state"
+
+# The workflow over it. Two of the three states carry a `doc_status`, which is
+# the whole point of the fixture: approving is what *submits*, so the plain
+# Submit button is never beside these.
+#
+# `zzVoided` is separate from `zzRejected` for a reason Frappe enforces: a
+# transition may not go from a draft state straight to a cancelled one, the
+# same rule the bare docstatus has. Rejecting sends it back to a draft;
+# voiding is what cancels something already approved.
+WORKFLOW = "zzApproval Flow"
+WORKFLOW_STATES = [
+	("zzDraft", "0", "Primary", ROLE),
+	("zzPending", "0", "Warning", ROLE),
+	("zzApproved", "1", "Success", ROLE),
+	("zzRejected", "0", "Danger", ROLE),
+	("zzVoided", "2", "Inverse", ROLE),
+]
+WORKFLOW_TRANSITIONS = [
+	("zzDraft", "zzSend", "zzPending"),
+	("zzPending", "zzApprove", "zzApproved"),
+	("zzPending", "zzReject", "zzRejected"),
+	("zzRejected", "zzSend", "zzPending"),
+	("zzApproved", "zzVoid", "zzVoided"),
+]
+
 # What the space grants. ToDo and Note are what its screens show; Role is a
 # link target, granted so the picker's Create row has somewhere to create —
 # a link to a doctype the space did not grant is readable and never creatable,
@@ -81,6 +118,10 @@ DOCTYPES = [
 	# `image_field` and a `title_field` that is not its id — which is exactly
 	# what a grid needs to be a gallery rather than a page of tiles.
 	{"document_type": "Contact", "access": "Manage", "if_owner": 0},
+	# The docstatus fixture. `Manage` because that is the access level that
+	# carries submit, cancel and amend — Read and Write do not, which is
+	# itself worth having a fixture prove.
+	{"document_type": APPROVAL_DOCTYPE, "access": "Manage", "if_owner": 0},
 ]
 
 SCREENS = [
@@ -139,6 +180,19 @@ SCREENS = [
 		"screen": "people", "label": "People", "icon": "lucide-users",
 		"document_type": "Contact", "fields": PEOPLE_FIELDS,
 		"order_by": "first_name asc", "view_types": "grid,list",
+	},
+	{
+		# The docstatus and workflow fixture. Every other screen here is over a
+		# doctype Frappe ships; this one is over a doctype the seed makes,
+		# because core Frappe has exactly one submittable doctype and it is a
+		# sync job.
+		"screen": "approvals", "label": "Approvals", "icon": "lucide-shield",
+		"document_type": APPROVAL_DOCTYPE, "fields": APPROVAL_FIELDS,
+		"order_by": "creation desc", "view_types": "list",
+		# No `status_field`, deliberately. A workflow's state *is* where the
+		# record stands, and the record header already says it — pointing the
+		# screen's badge at the same field makes the header say it twice in two
+		# places. The list still shows the state, as an ordinary column.
 	},
 ]
 
@@ -322,6 +376,93 @@ PROPERTIES = [
 ]
 
 
+def _seed_approvals():
+	"""The submittable doctype, its workflow, and three records to move.
+
+	Made rather than borrowed, and made on the tenant only: it is a fixture for
+	the record header, and the control plane's own screens have no docstatus
+	between them.
+
+	Idempotent in the way a dev fixture has to be — the doctype is left alone if
+	it is there, and the workflow is replaced outright, because a workflow's
+	states and transitions are child tables and merging two versions of one by
+	hand is how a fixture starts lying about what it set up.
+	"""
+	if not frappe.db.exists("DocType", APPROVAL_DOCTYPE):
+		frappe.get_doc({
+			"doctype": "DocType", "name": APPROVAL_DOCTYPE, "module": "Core",
+			"custom": 1, "is_submittable": 1, "autoname": "ZZA-.#####",
+			"title_field": "title", "track_changes": 1, "allow_rename": 0,
+			"fields": [
+				{"fieldname": "title", "fieldtype": "Data", "label": "Title",
+				 "reqd": 1, "in_list_view": 1},
+				{"fieldname": "amount", "fieldtype": "Currency", "label": "Amount",
+				 "in_list_view": 1},
+				# A workflow keeps its state in a field on the document, and
+				# `read_only` because the workflow writes it — a Select somebody
+				# can set by hand is a way around every transition rule there is.
+				{"fieldname": "workflow_state", "fieldtype": "Link",
+				 "options": "Workflow State", "label": "State",
+				 "read_only": 1, "no_copy": 1, "in_list_view": 1},
+			],
+			"permissions": [{
+				"role": "System Manager", "read": 1, "write": 1, "create": 1,
+				"delete": 1, "submit": 1, "cancel": 1, "amend": 1,
+			}],
+		}).insert(ignore_permissions=True)
+
+	for state, _status, style, _role in WORKFLOW_STATES:
+		if not frappe.db.exists("Workflow State", state):
+			frappe.get_doc({
+				"doctype": "Workflow State", "workflow_state_name": state,
+				"style": style,
+			}).insert(ignore_permissions=True)
+
+	for _state, action, _next in WORKFLOW_TRANSITIONS:
+		if not frappe.db.exists("Workflow Action Master", action):
+			frappe.get_doc({
+				"doctype": "Workflow Action Master", "workflow_action_name": action,
+			}).insert(ignore_permissions=True)
+
+	if frappe.db.exists("Workflow", WORKFLOW):
+		frappe.delete_doc("Workflow", WORKFLOW, force=True, ignore_permissions=True)
+	frappe.get_doc({
+		"doctype": "Workflow", "workflow_name": WORKFLOW,
+		"document_type": APPROVAL_DOCTYPE, "is_active": 1,
+		"workflow_state_field": "workflow_state",
+		"states": [
+			{"state": state, "doc_status": status, "allow_edit": role}
+			for state, status, _style, role in WORKFLOW_STATES
+		],
+		"transitions": [
+			{
+				"state": state, "action": action, "next_state": next_state,
+				"allowed": ROLE,
+				# A dev fixture has one person in it, so self-approval has to be
+				# allowed or nothing can be moved at all. On a real workflow this
+				# is the flag that stops somebody approving their own invoice.
+				"allow_self_approval": 1,
+			}
+			for state, action, next_state in WORKFLOW_TRANSITIONS
+		],
+	}).insert(ignore_permissions=True)
+
+	made = 0
+	for title, amount in (("Office chairs", 1200), ("Server renewal", 4800),
+	                      ("Team offsite", 2600)):
+		if frappe.db.exists(APPROVAL_DOCTYPE, {"title": title}):
+			continue
+		frappe.get_doc({
+			"doctype": APPROVAL_DOCTYPE, "title": title, "amount": amount,
+		}).insert(ignore_permissions=True)
+		made += 1
+
+	# The cache keyed on doctype, which `get_workflow_name` reads. Without this
+	# the workflow is invisible until the next process starts.
+	frappe.clear_cache()
+	return made
+
+
 def seed_control():
 	"""The manifest itself. Only the control plane has OneSpace Space."""
 	for code in (CODE, *RETIRED):
@@ -349,6 +490,12 @@ def seed_tenant():
 	directly — the same shape `sync_from_control_plane` would have written.
 	"""
 	from oneapp.oneapp_core import sync
+
+	# Before the manifest is cached: the screen names a doctype, and a screen
+	# over a doctype the site does not have is skipped rather than fatal — so
+	# seeding in the other order leaves an Approvals item that quietly is not
+	# there.
+	approvals = _seed_approvals()
 
 	state = frappe.get_single("OneSpace Site State")
 	spaces = [
@@ -611,6 +758,7 @@ def seed_tenant():
 	print(
 		f"tenant: {CODE} cached — {len(TODOS)} todos, {len(NOTES)} notes, "
 		f"{BACKLOG} backlog rows, {len(LAYOUTS)} shared views, "
+		f"{approvals} approvals under {WORKFLOW}, "
 		f"and {COLLEAGUE} to share them with"
 	)
 

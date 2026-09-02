@@ -25,7 +25,7 @@ import json
 import frappe
 from frappe import _
 
-from oneapp.oneapp_core import collab, dashboard, fieldtypes, printing
+from oneapp.oneapp_core import collab, dashboard, docflow, fieldtypes, printing
 
 # Fetched on every screen and shown on none. `name` is how a record is opened
 # and saved, and on most doctypes it is a hash — "8eleplcmv6" as the first thing
@@ -1192,7 +1192,24 @@ def record(space_code: str, screen: str, name: str) -> dict:
 	_with_people(found)
 	_with_authors(found[0])
 	_with_children(resolved, found[0], name)
+	_with_state(resolved, found[0], name)
 	return found[0]
+
+
+def _with_state(resolved: dict, row: dict, name: str) -> None:
+	"""Where the record stands, and what may be done to it next.
+
+	On the record rather than in the spec, because it is a property of *this*
+	document and not of the screen: two purchase orders on one list are in two
+	workflow states, and one is the approver's to move while the other is not.
+
+	Costs a `get_doc` on a doctype that has a workflow or is submittable, and
+	nothing at all on one that is neither — which is most of them.
+	"""
+	meta = frappe.get_meta(resolved["doctype"])
+	if not getattr(meta, "is_submittable", 0) and not docflow.workflow_name(meta.name):
+		return
+	row["_state"] = docflow.state(frappe.get_doc(meta.name, name), meta)
 
 
 def _with_authors(row: dict) -> None:
@@ -1576,6 +1593,16 @@ def save(space_code: str, screen: str, values: str | dict, name: str | None = No
 	# rather than explained.
 	if name:
 		doc = frappe.get_doc(doctype, name)
+		# A workflow state can name the role that may edit in it — a purchase
+		# order in *Pending Approval* is the approver's and nobody else's. The
+		# desk enforces that in the browser alone, which means the API under it
+		# does not; ours is the only surface there is, so it is enforced where a
+		# write actually happens rather than only where a form is drawn.
+		if not docflow.editable(doc):
+			frappe.throw(
+				_("This is not yours to change while it is where it is."),
+				frappe.PermissionError,
+			)
 		doc.update(changes)
 		doc.save()
 	else:
@@ -2481,6 +2508,69 @@ def dashboard_data(space_code: str, screen: str | None = None,
 			for widget in widgets
 		]
 	}
+
+
+# --------------------------------------------------------------------------- #
+# Where a document stands
+#
+# `docflow` decides what may be done and does it; these four are the screen in
+# front of it. All go through `_reachable`, which resolves the screen *and*
+# re-reads the record through `record()` — so a row the screen would not list
+# cannot be submitted, cancelled, amended or moved through a workflow by id.
+#
+# Four rather than one endpoint taking a verb, because they are four different
+# things to be allowed to do: Frappe checks `submit` and `cancel` itself on the
+# docstatus transition, `amend` is ours to check, and a workflow transition is
+# checked by the workflow. A single endpoint would have to re-derive which of
+# those applied from a string the browser sent.
+# --------------------------------------------------------------------------- #
+
+
+@frappe.whitelist(methods=["POST"])
+def submit(space_code: str, screen: str, name: str) -> dict:
+	"""Draft to submitted, where no workflow owns the transition."""
+	doctype = _reachable(space_code, screen, name)
+	doc = frappe.get_doc(doctype, name)
+	docflow.submit(doc)
+	return {"name": doc.name, "state": docflow.state(doc)}
+
+
+@frappe.whitelist(methods=["POST"])
+def cancel(space_code: str, screen: str, name: str) -> dict:
+	"""Submitted to cancelled. The ledger this wrote is unwritten by Frappe."""
+	doctype = _reachable(space_code, screen, name)
+	doc = frappe.get_doc(doctype, name)
+	docflow.cancel(doc)
+	return {"name": doc.name, "state": docflow.state(doc)}
+
+
+@frappe.whitelist(methods=["POST"])
+def amend(space_code: str, screen: str, name: str) -> dict:
+	"""A fresh draft from a cancelled document, which the reader then opens.
+
+	The new name comes back rather than the old one, because the answer to
+	"amend this" is a different record and the pane has to follow.
+	"""
+	doctype = _reachable(space_code, screen, name)
+	made = docflow.amend(frappe.get_doc(doctype, name))
+	return {"name": made}
+
+
+@frappe.whitelist(methods=["POST"])
+def workflow_action(space_code: str, screen: str, name: str, action: str) -> dict:
+	"""One step through the workflow, whatever that step turns out to mean.
+
+	Approving may save, submit or cancel — the two states' `doc_status` decides
+	and `apply_workflow` does it. Nothing here knows which, deliberately: that
+	is the workflow's business and reading it twice is how two answers appear.
+	"""
+	doctype = _reachable(space_code, screen, name)
+	doc = frappe.get_doc(doctype, name)
+	docflow.apply(doc, action)
+	# Re-read: the transition may have submitted the document, run an update
+	# field, or fired a task that changed something else on it.
+	doc = frappe.get_doc(doctype, name)
+	return {"name": doc.name, "state": docflow.state(doc)}
 
 
 # --------------------------------------------------------------------------- #

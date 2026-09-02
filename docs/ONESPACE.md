@@ -323,6 +323,26 @@ right-aligned, required columns marked in the header. None of it is declared.
 **Two permission questions, not one.** A field above the read levels is not
 offered anywhere; a field above the write levels is shown and never editable.
 
+**Docstatus and workflow are one row of buttons.** They are one thing in
+Frappe — a `Workflow State` carries a `doc_status`, so approving something is
+what submits it — so the header asks the server one question, *what can be done
+to this now*, and renders the list that comes back without knowing which
+mechanism produced it. A submittable doctype with no workflow offers Submit,
+then Cancel, then Amend. A doctype with one offers that workflow's transitions
+instead, filtered by the reader's roles and each transition's own condition, and
+the plain Submit is not offered beside them: a workflow **owns** the transition,
+and two buttons that mean the same thing would disagree about who may press
+them. A step into a cancelling state asks first. Amend is `copy_doc` honouring
+`no_copy`, and the framework's own naming turns `amended_from` into `-1`.
+
+`Workflow Document State.allow_edit` is enforced on the way *in*, not only
+drawn: the desk enforces it in the browser, which means the API under it does
+not, and ours is the only surface there is.
+
+**There is no workflow builder.** A workflow is part of what an app *is*, like
+its doctypes and its print formats, so it is shipped by whoever owns the
+doctype. The runtime honours whatever it finds.
+
 **Realtime.** A list follows `list_update` (coalesced, because a bulk import
 publishes hundreds a second). A record joins Frappe's two rooms, so the header
 shows who else has it open, and when somebody else saves it the pane *says so*
@@ -538,10 +558,7 @@ guards compare against the version actually installed.
 
 Worth knowing before designing around it.
 
-* **Submit and cancel.** `is_submittable` and `docstatus` are read and the form
-  freezes a submitted record's fields — but nothing offers the action. Every
-  ERPNext transaction can be created and edited here and never submitted.
-* **Workflow.** No approval chains at all.
+* **A workflow builder.** Workflows run; there is no screen for drawing one.
 * **Notification rules and email templates.** The feed and the digest exist; the
   rules that would produce "email the owner when this goes overdue" do not.
 * **Data import and export.** No CSV either way.

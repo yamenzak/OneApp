@@ -24,8 +24,8 @@
       :options="options"
       :label="label"
       :description="description"
-      :placeholder="placeholder || 'Search…'"
       :disabled="disabled"
+      :placeholder="prompt"
       :required="required"
       :loading="loading"
       :filterable="false"
@@ -178,6 +178,17 @@ const spec = ref(null)
 const detail = (record) => [record.id, record.description].filter(Boolean).join(' · ')
 
 /**
+ * What the empty box says — and nothing, when nobody may write it.
+ *
+ * A disabled Combobox still draws its placeholder, so a `read_only` Link
+ * (`amended_from`, a workflow's own state field, anything a hook fills in) sat
+ * there saying "Search…" over a control that would not open. The greyed,
+ * genuinely empty box a read-only Data field shows is the honest one: this has
+ * no value and you are not the one who gives it one.
+ */
+const prompt = computed(() => (props.disabled ? '' : props.placeholder || 'Search…'))
+
+/**
  * `remember_last_selected_value` — a Link that reopens on your last choice.
  *
  * The doctype saying this is a field somebody sets to the same thing all day,
@@ -261,6 +272,15 @@ const emptyText = computed(() =>
 )
 
 const search = async () => {
+  // Nothing to search for a picker that cannot be opened. `resolveChosen` still
+  // runs, so the value the box shows is still the record's name rather than its
+  // id — this only drops the menu's twenty rows, which on a form with three
+  // read-only links is three requests nobody could ever have seen the answer
+  // to.
+  if (props.disabled) {
+    found.value = []
+    return
+  }
   loading.value = true
   try {
     found.value =

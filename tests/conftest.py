@@ -236,8 +236,24 @@ def _make_frappe():
 		r'data-id="([^"]+)"', str(txt or "")
 	)
 
+	# `frappe.model.workflow`. The whole workflow engine is the framework's —
+	# `apply_workflow` finds the transition, refuses a self-approval, writes the
+	# state, runs the tasks and calls save/submit/cancel — so what a stub needs
+	# to offer is the shape `docflow` imports, and the one exception it catches.
+	workflow = types.ModuleType("frappe.model.workflow")
+
+	class WorkflowStateError(ValidationError):
+		"""Raised for a record with no workflow state yet, which is ordinary on
+		one created before the workflow existed."""
+
+	workflow.WorkflowStateError = WorkflowStateError
+	workflow.get_workflow_name = lambda doctype: ""
+	workflow.get_workflow = lambda doctype: None
+	workflow.get_transitions = lambda doc, workflow=None, raise_exception=False: []
+	workflow.apply_workflow = lambda doc, action: doc
+
 	return frappe, model, document, utils, (
-		desk, desk_doctype, log_pkg, log, desk_notifications,
+		desk, desk_doctype, log_pkg, log, desk_notifications, workflow,
 	)
 
 
