@@ -77,7 +77,8 @@ day edited on the old system re-crosses only its own employees.
 """
 
 import json
-from urllib.parse import urlparse
+import re
+from urllib.parse import quote, urlparse
 
 import frappe
 from frappe import _
@@ -225,6 +226,22 @@ def fetch(source, doctype: str, filters: list, start: int, length: int) -> list[
 	}).get("data") or []
 
 
+def whole(source, doctype: str, name: str) -> dict:
+	"""One document with its child tables.
+
+	Frappe's list endpoint answers columns, and a child table is not a column —
+	`fields=["*"]` on a list of quotations returns every one of them without a
+	single line on it. So a step that maps child rows reads its rows twice: the
+	list for the page and the watermark, then the document for what is inside
+	it.
+
+	One request per row, which is why it happens only where a step says it
+	needs to: it is the difference between five quotations and twenty thousand
+	attendance records.
+	"""
+	return _get(source, f"resource/{doctype}/{quote(str(name))}", {}).get("data") or {}
+
+
 # --------------------------------------------------------------------------- #
 # Turning one row into another
 # --------------------------------------------------------------------------- #
@@ -259,6 +276,17 @@ def build(row: dict, field_map: dict, plan: str) -> dict:
 			values[target] = rule["const"]
 			continue
 
+		if "rows" in rule:
+			# A child table. The target's own rows, built out of a list on the
+			# source with a field map of their own — the same four rule shapes,
+			# because a line on an invoice is a record like any other and
+			# nothing about it wants a second vocabulary.
+			values[target] = [
+				build(one, rule.get("map") or {}, plan)
+				for one in (row.get(rule["rows"]) or [])
+			]
+			continue
+
 		if "when" in rule:
 			# The first of these fields that is true gives its value. For the
 			# columns a bespoke system keeps as three booleans where a real one
@@ -284,6 +312,13 @@ def build(row: dict, field_map: dict, plan: str) -> dict:
 			values[target] = found
 			continue
 
+		if rule.get("number"):
+			# What somebody typed, as a number. Their widths are strings —
+			# `"200.0 cm"` — because the old form had one box and no unit, and
+			# a system that keeps a measurement as prose cannot add two of
+			# them. Deliberately narrow: the leading number, or nothing.
+			said = _number(said)
+
 		if "values" in rule:
 			said = rule["values"].get(said, rule.get("default", said))
 
@@ -293,6 +328,24 @@ def build(row: dict, field_map: dict, plan: str) -> dict:
 		values[target] = said
 
 	return values
+
+
+def maps_children(field_map: dict) -> bool:
+	"""Whether anything in this map reads a child table."""
+	return any(
+		isinstance(rule, dict) and "rows" in rule
+		for rule in (field_map or {}).values()
+	)
+
+
+def _number(said):
+	"""The leading number in whatever this is, or None."""
+	if said in (None, ""):
+		return None
+	if isinstance(said, int | float):
+		return said
+	found = re.search(r"-?\d+(?:\.\d+)?", str(said))
+	return float(found.group()) if found else None
 
 
 def explode(row: dict, rule: dict | None) -> list[tuple[str, dict]]:
@@ -461,6 +514,7 @@ def _step(run, plan, source, step, row):
 
 	field_map = json.loads(step.field_map or "{}")
 	fan_out = json.loads(step.fan_out) if step.fan_out else None
+	deep = maps_children(field_map)
 	start = 0
 	newest = step.watermark
 
@@ -470,6 +524,19 @@ def _step(run, plan, source, step, row):
 			break
 
 		for said in page:
+			# A step that maps child rows reads its rows twice — see `whole`.
+			# Inside the row loop rather than around it so one document that
+			# will not load is one issue, not a dead page.
+			if deep:
+				try:
+					said = {**said, **whole(source, step.source_doctype, said.get("name"))}
+				except Exception as raised:
+					counts["seen"] += 1
+					counts["failed"] += 1
+					_issue(run, step, said, raised)
+					newest = max(filter(None, (newest, said.get("modified"))), default=newest)
+					continue
+
 			# `seen` counts source rows and not target ones: it is what the
 			# source has, and a number that grew twenty times faster than the
 			# thing being read would be unreadable as progress.
@@ -738,6 +805,11 @@ def issues(run: str, limit: int = 50) -> list[dict]:
 # a button.
 SAMPLE = 500
 
+# How many documents a check will read whole looking for one with lines on it.
+# Small on purpose: this is the difference between a check that takes a second
+# and one that re-reads the source.
+LOOK = 8
+
 
 @frappe.whitelist()
 def check(plan: str) -> dict:
@@ -794,6 +866,17 @@ def _check_step(source, plan, step, made: set, seen: dict | None = None) -> dict
 	theirs, rows = _their_fields(source, step.source_doctype, filters, problems)
 	ours = _our_fields(step.target_doctype, problems)
 
+	# One whole document, where the map reads child rows. The list endpoint
+	# does not answer them, so without this every `rows` rule would be checked
+	# against a row that cannot have them and reported missing — and the field
+	# names inside the lines would never be checked at all.
+	if rows and maps_children(field_map):
+		try:
+			rows[0] = _one_with_lines(source, step, rows, field_map)
+			theirs = set(rows[0])
+		except Exception as raised:
+			problems.append(f"could not read one whole {step.source_doctype}: {raised}")
+
 	# Two steps off one source doctype is ordinary — a party table holding both
 	# customers and suppliers is the usual reason — and fine while their
 	# filters are disjoint. Where they are not it is quietly wrong: `resolve`
@@ -826,6 +909,31 @@ def _check_step(source, plan, step, made: set, seen: dict | None = None) -> dict
 			problems.append(f"{step.target_doctype} has no field `{target}`")
 
 		if "const" in rule:
+			continue
+
+		if "rows" in rule:
+			# The list itself, and then the fields inside one of its lines.
+			# Checking only that the list is there would pass a map naming
+			# `unit_price` on a table whose column is `rate`, which is every
+			# line silently blank.
+			if theirs is not None and rule["rows"] not in theirs:
+				problems.append(f"`{target}` reads `{rule['rows']}`, which is not there")
+				continue
+			lines = (rows[0].get(rule["rows"]) if rows else None) or []
+			if not lines:
+				warnings.append(
+					f"`{target}` reads `{rule['rows']}`, and the row checked has no lines "
+					"in it — the fields inside are unchecked"
+				)
+				continue
+			for inner, said in (rule.get("map") or {}).items():
+				if isinstance(said, dict) and ("const" in said or "rows" in said):
+					continue
+				field = said.get("from") if isinstance(said, dict) else said
+				if field and field not in lines[0]:
+					problems.append(
+						f"`{target}.{inner}` reads `{field}`, which is not on a line"
+					)
 			continue
 
 		if "when" in rule:
@@ -871,6 +979,28 @@ def _check_step(source, plan, step, made: set, seen: dict | None = None) -> dict
 		"warnings": warnings,
 		"source_rows": len(rows) if rows is not None else None,
 	}
+
+
+def _one_with_lines(source, step, rows: list, field_map: dict) -> dict:
+	"""A whole document out of the sample, preferring one that has lines on it.
+
+	The first row is the obvious one to read and often the wrong one: their
+	oldest purchase order has no items on it at all, and checking against that
+	one says nothing about the map and warns about the data. So a few are tried
+	and the first with lines wins — `LOOK` of them, because this is a check and
+	not a second import.
+	"""
+	tables = [rule["rows"] for rule in field_map.values()
+	          if isinstance(rule, dict) and "rows" in rule]
+	first = None
+
+	for row in rows[:LOOK]:
+		found = {**row, **whole(source, step.source_doctype, row.get("name"))}
+		first = first if first is not None else found
+		if any(found.get(table) for table in tables):
+			return found
+
+	return first if first is not None else rows[0]
 
 
 def _check_fan_out(step, rows, theirs, problems: list):

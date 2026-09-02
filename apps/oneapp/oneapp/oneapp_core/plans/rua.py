@@ -70,6 +70,14 @@ PAYMENT_PARTIES = {
 
 PAYMENT_MODES = {"Pay: Petty Cash": "Cash"}
 
+# The two non-stock Items every line hangs off. Not one Item per line code:
+# their quotation codes (`CW01`) are per-project labels and their LPO codes are
+# suppliers' part numbers, and an Item master built out of either is a
+# catalogue nobody agreed to maintain. The code and the description travel on
+# the line, where a person reads them.
+FABRICATION = "RUA-FAB"
+MATERIAL = "RUA-MAT"
+
 PROJECT_STATUS = {
 	"Tender": "Open",
 	"Job in Hand": "Open",
@@ -77,6 +85,69 @@ PROJECT_STATUS = {
 	"Completed": "Completed",
 	"Cancelled": "Cancelled",
 }
+
+# --------------------------------------------------------------------------- #
+# What has to exist before the first row can land
+#
+# Nine of the field maps below name a `custom_` field, and a plan that names a
+# field nothing creates is a plan that cannot run: `check` reports it, which is
+# better than silence and still leaves somebody to make nine fields by hand.
+# So the plan declares them, and installing the plan makes them.
+#
+# Every one is a real distinction their old system kept and ERPNext has no
+# column for — a project's Tender/Job in Hand stage, an invoice's retention
+# percentage, their own per-project invoice serial. None is a field ERPNext
+# already has under another name; those are mapped rather than added.
+# --------------------------------------------------------------------------- #
+
+FIELDS = [
+	{"dt": "Project", "fieldname": "custom_stage", "label": "Stage", "fieldtype": "Select",
+	 "options": "\n" + "\n".join(PROJECT_STATUS), "insert_after": "status",
+	 "description": "Their own five states. Tender and Job in Hand are both "
+	                "Open to a project ledger and a real difference to a sales "
+	                "team."},
+	{"dt": "Project", "fieldname": "custom_location", "label": "Location", "fieldtype": "Data",
+	 "insert_after": "custom_stage"},
+	{"dt": "Employee", "fieldname": "custom_nationality", "label": "Nationality",
+	 "fieldtype": "Data", "insert_after": "date_of_birth"},
+	{"dt": "Quotation Item", "fieldname": "custom_width_cm", "label": "Width (cm)",
+	 "fieldtype": "Float", "insert_after": "qty"},
+	{"dt": "Quotation Item", "fieldname": "custom_height_cm", "label": "Height (cm)",
+	 "fieldtype": "Float", "insert_after": "custom_width_cm"},
+	{"dt": "Purchase Order", "fieldname": "custom_supplier_reference",
+	 "label": "Supplier reference", "fieldtype": "Data", "insert_after": "supplier_name",
+	 "description": "The number the supplier quotes back at you on the phone."},
+	{"dt": "Sales Invoice", "fieldname": "custom_retention_percentage",
+	 "label": "Retention %", "fieldtype": "Percent", "insert_after": "project",
+	 "description": "Held back until the defects period ends. ERPNext does not "
+	                "model retention — see docs/RUA.md §3."},
+	{"dt": "Sales Invoice", "fieldname": "custom_legacy_number", "label": "Old number",
+	 "fieldtype": "Data", "read_only": 1, "insert_after": "custom_retention_percentage",
+	 "description": "What this invoice was called in the system it came from. "
+	                "Somebody will look for it by that number for years."},
+	{"dt": "Sales Invoice", "fieldname": "custom_project_serial", "label": "Project serial",
+	 "fieldtype": "Int", "insert_after": "custom_legacy_number",
+	 "description": "Their per-project sequence for final tax invoices. Frappe's "
+	                "naming series is global, so this cannot be the id."},
+	{"dt": "Attendance", "fieldname": "custom_overtime_hours", "label": "Overtime hours",
+	 "fieldtype": "Float", "insert_after": "late_entry"},
+]
+
+# Records the plan writes against, made once. The two Items are the whole of
+# it: everything else — the Company, the customer and supplier groups, the
+# territory — is either already on an ERPNext site or is the company setup this
+# workspace does on its own.
+SEEDS = [
+	{"doctype": "Item", "item_code": FABRICATION,
+	 "item_name": "Fabrication and installation", "item_group": "Services",
+	 "stock_uom": "Nos", "is_stock_item": 0,
+	 "description": "Aluminium, glass and cladding work, priced per the line."},
+	{"doctype": "Item", "item_code": MATERIAL,
+	 "item_name": "Purchased material", "item_group": "Services",
+	 "stock_uom": "Nos", "is_stock_item": 0,
+	 "description": "Profiles, glass and hardware bought in. The supplier's own "
+	                "part number is on the line."},
+]
 
 STEPS = [
 	{
@@ -156,8 +227,7 @@ STEPS = [
 	{
 		"source": "RUA Quotation",
 		"target": "Quotation",
-		"why": "The header only. Items are a child table and need the fan-out "
-		       "the engine does not do yet — see docs/RUA.md.",
+		"why": "Priced by area, and every line of it comes across.",
 		"map": {
 			"party_name": {"from": "party", "link": "RUA Party"},
 			"quotation_to": {"const": "Customer"},
@@ -165,18 +235,60 @@ STEPS = [
 			"transaction_date": {"from": "date"},
 			"project": {"from": "project", "link": "RUA Project"},
 			"terms": {"from": "terms_and_conditions"},
+			# The lines. `amount` on their row is the price of one piece and
+			# `total` is the line — which is the opposite of what both words
+			# mean in ERPNext, where `rate` is per piece and `amount` is the
+			# line. Read the wrong way round it multiplies every quotation by
+			# its own quantities.
+			"items": {
+				"rows": "items",
+				"map": {
+					"item_code": {"const": FABRICATION},
+					"item_name": {"from": "item_name"},
+					"description": {"from": "description"},
+					"qty": {"from": "qty"},
+					"rate": {"from": "amount"},
+					# Their width and height are prose — `"200.0 cm"` — because
+					# the old form had one box and no unit. As numbers they can
+					# be added, and an area is a quotation's real quantity.
+					"custom_width_cm": {"from": "width", "number": True},
+					"custom_height_cm": {"from": "height", "number": True},
+				},
+			},
 		},
 	},
 	{
 		"source": "RUA LPO",
 		"target": "Purchase Order",
-		"why": "Their purchase order, under its real name.",
+		"why": "Their purchase order, under its real name — and with the "
+		       "supplier's own part numbers on it.",
 		"map": {
 			"supplier": {"from": "party", "link": "RUA Party"},
 			"company": {"const": COMPANY},
 			"transaction_date": {"from": "date"},
 			"project": {"from": "project", "link": "RUA Project"},
 			"custom_supplier_reference": {"from": "supplier_reference_number"},
+			# Required by ERPNext and absent from theirs — a purchase order
+			# with no date wanted is a purchase order nobody can chase. The
+			# order's own date is the honest stand-in: it is not a promise
+			# anybody made, and inventing a lead time would be.
+			"schedule_date": {"from": "date"},
+			# Real part numbers — `M70032-G3` is an Alumil profile — and they
+			# stay in `item_name` rather than becoming `item_code`: an Item per
+			# code is an item master, and building one out of purchase history
+			# invents a catalogue nobody agreed to. The code is on the line
+			# where a buyer reads it, and the master is a decision for later.
+			"items": {
+				"rows": "items",
+				"map": {
+					"item_code": {"const": MATERIAL},
+					"item_name": {"from": "item"},
+					"description": {"from": "item"},
+					"qty": {"from": "qty"},
+					"rate": {"from": "unit_price"},
+					"received_qty": {"from": "received_quantity"},
+				},
+			},
 		},
 	},
 	{

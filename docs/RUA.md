@@ -165,7 +165,7 @@ a link resolved against a later step files an issue per row. `importer.check`
 reads both schemas — the source's over the wire, this site's locally — and
 reports all four. It touches nothing, so it is free to press.
 
-The plan itself is `oneapp_core/plans/rua.py`: ten steps, declared as data.
+The plan itself is `oneapp_core/plans/rua.py`: eleven steps, declared as data.
 Checked against the live source, every step reads clean —
 
 | Step | Rows | |
@@ -174,8 +174,8 @@ Checked against the live source, every step reads clean —
 | `RUA Party` → **Supplier** | 22 | the same table, filtered the other way |
 | `RUA Project` → **Project** | 82 | |
 | `RUA Employee` → **Employee** | 71 | HRMS |
-| `RUA Quotation` → **Quotation** | 5 | header only; items need a fan-out |
-| `RUA LPO` → **Purchase Order** | 21 | |
+| `RUA Quotation` → **Quotation** | 5 | 89 lines, priced by area |
+| `RUA LPO` → **Purchase Order** | 21 | 105 lines, with the supplier's part numbers |
 | `RUA Invoice` → **Sales Invoice** | 45 | final tax invoices only |
 | `RUA Payment` → **Payment Entry** | 152 | submitted; petty cash included, drafts not |
 | `RUA Attendance` → **Attendance** | 307 → **20,229** | see below |
@@ -194,6 +194,45 @@ Three booleans (`present`, `late`, `absent`) become one `status` plus a
 `late_entry` flag, through a `when` rule: the answer is in none of them
 individually, and late is not a status in ERPNext — it is a flag on a day that
 was worked, which is what it means here too.
+
+**The lines are the other half.** A quotation without them is not a quotation,
+and Frappe's list endpoint does not answer a child table — `fields=["*"]` over
+five quotations returns all five with not one line on any of them. So a step
+whose map reads child rows reads each of its rows twice: the list for the page
+and the watermark, then the document for what is inside it. One request per
+row, which is why it happens only where a map says `rows`: it is the difference
+between five quotations and twenty thousand attendance records.
+
+Two things about their lines are worth knowing before reading the map.
+
+`amount` on a RUA quotation line is the price of *one piece* and `total` is the
+line — the opposite of what both words mean in ERPNext, where `rate` is per
+piece and `amount` is the line. Read the wrong way round it multiplies every
+quotation by its own quantities, and forty-five of the eighty-nine lines have a
+quantity above one.
+
+And their widths and heights are prose: `"200.0 cm"`, because the old form had
+one box and no unit. A system that keeps a measurement as a string cannot add
+two of them, so a rule may say `"number": true` and the leading number is what
+crosses — or nothing, where somebody typed "as drawn". Never zero: a width of
+zero is a real width and everything downstream would believe it.
+
+Neither quotation codes (`CW01`) nor LPO part numbers (`M70032-G3`) become
+Items. Their quotation codes are per-project labels and their part numbers are
+suppliers' own; an Item master built out of either is a catalogue nobody agreed
+to maintain. Two non-stock Items carry every line — `RUA-FAB` for fabrication
+and installation, `RUA-MAT` for material bought in — and the real code and
+description sit on the line, where a person reads them. A proper item master is
+a decision for later, and the data to build one from will still be there.
+
+**The plan makes what it assumes.** Nine of its maps name a `custom_` field and
+one names an Item, and a plan naming a field nothing creates is a plan that
+cannot run — `check` says so, which beats silence and still leaves somebody
+making nine fields by hand before the button does anything. So the module
+declares `FIELDS` and `SEEDS` beside the maps that use them, and installing the
+plan creates them. Where the target doctype is absent the field is skipped
+rather than fatal: this app installs on benches without ERPNext, and a plan
+that cannot be installed there is worse than one that cannot be run there.
 
 A Proforma does not cross: it is not a receivable, and posting one is how a set
 of books stops reconciling.

@@ -666,6 +666,137 @@ def test_when_reads_in_order(importer):
 	assert importer.build({"absent": False, "half": True}, rule, "P") == {"status": "Half Day"}
 
 
+# --------------------------------------------------------------------------- #
+# Child rows
+#
+# The other half of "one row over there, many rows here", and the commoner
+# half: a quotation without its lines is not a quotation. Distinct from a
+# fan-out, which makes several *records* — these are rows inside one.
+# --------------------------------------------------------------------------- #
+
+
+LINES = {
+	"items": {
+		"rows": "items",
+		"map": {
+			"item_code": {"const": "RUA-FAB"},
+			"description": {"from": "description"},
+			"qty": {"from": "qty"},
+			"rate": {"from": "amount"},
+			"custom_width_cm": {"from": "width", "number": True},
+		},
+	},
+}
+
+
+def test_a_child_table_is_built_out_of_a_list_on_the_source(importer):
+	said = {
+		"name": "RC-QTN-2500005",
+		"items": [
+			{"description": "Curtain wall", "qty": 2, "amount": 20160.0, "width": "200.0 cm"},
+			{"description": "Sliding door", "qty": 1, "amount": 4200.0, "width": "90 cm"},
+		],
+	}
+
+	made = importer.build(said, LINES, "P")
+
+	assert made["items"] == [
+		{"item_code": "RUA-FAB", "description": "Curtain wall", "qty": 2,
+		 "rate": 20160.0, "custom_width_cm": 200.0},
+		{"item_code": "RUA-FAB", "description": "Sliding door", "qty": 1,
+		 "rate": 4200.0, "custom_width_cm": 90.0},
+	]
+
+
+def test_a_document_with_no_lines_makes_an_empty_table_not_a_missing_one(importer):
+	"""An empty list and no key at all are the same answer.
+
+	Frappe reads a Table field's value as the rows; leaving it out of the
+	values would keep whatever the record already had, which on a second run
+	is the previous import's lines beside this one's.
+	"""
+	assert importer.build({"name": "Q-1"}, LINES, "P") == {"items": []}
+	assert importer.build({"name": "Q-1", "items": []}, LINES, "P") == {"items": []}
+
+
+def test_a_measurement_somebody_typed_becomes_a_number(importer):
+	"""Their widths are prose: `"200.0 cm"`, because the old form had one box
+	and no unit. A system that keeps a measurement as a string cannot add two
+	of them."""
+	rule = {"w": {"from": "width", "number": True}}
+
+	assert importer.build({"width": "200.0 cm"}, rule, "P") == {"w": 200.0}
+	assert importer.build({"width": "90"}, rule, "P") == {"w": 90.0}
+	assert importer.build({"width": 3.5}, rule, "P") == {"w": 3.5}
+	# Nothing rather than a guess: a width of zero is a real width and would
+	# be believed by everything downstream.
+	assert importer.build({"width": "as drawn"}, rule, "P") == {"w": None}
+	assert importer.build({"width": ""}, rule, "P") == {"w": None}
+
+
+def test_a_step_that_maps_child_rows_reads_whole_documents(importer, monkeypatch):
+	"""The list endpoint answers columns, and a child table is not a column.
+
+	Without the second read every quotation would import with no lines on it
+	and nothing would say so — the field map would be satisfied, the record
+	would insert, and the numbers would be wrong.
+	"""
+	assert importer.maps_children(LINES) is True
+	assert importer.maps_children({"customer_name": {"from": "party"}}) is False
+
+
+def test_a_field_map_naming_a_column_the_lines_do_not_have_is_a_problem(
+	importer, monkeypatch,
+):
+	"""The mistake this catches is silent: a line map naming `unit_price` on a
+	table whose column is `rate` builds a row of blanks, inserts it, and leaves
+	an invoice for nothing."""
+	monkeypatch.setattr(importer, "_their_fields",
+	                    lambda source, dt, filters, problems: ({"name", "items"},
+	                                                           [{"name": "Q-1"}]))
+	monkeypatch.setattr(importer, "whole", lambda source, dt, name: {
+		"name": "Q-1", "items": [{"description": "Curtain wall", "qty": 2, "amount": 1.0}],
+	})
+	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: {"items"})
+	step = Row(source_doctype="RUA Quotation", target_doctype="Quotation",
+	           field_map=__import__("json").dumps({
+	               "items": {"rows": "items", "map": {"rate": {"from": "unit_price"}}},
+	           }),
+	           fan_out=None, enabled=1, filters="[]")
+
+	found = importer._check_step(None, Row(name="P"), step, set())
+
+	assert any("`items.rate` reads `unit_price`" in p for p in found["problems"])
+
+
+def test_the_check_looks_past_a_row_with_no_lines_on_it(importer, monkeypatch):
+	"""Their oldest purchase order has no items at all.
+
+	Checking a line map against that one says nothing about the map and warns
+	about the data — so the check reads a few and takes the first with lines,
+	which is what somebody looking by hand would do.
+	"""
+	docs = {
+		"PO-1": {"name": "PO-1", "items": []},
+		"PO-2": {"name": "PO-2", "items": [{"item": "M70032-G3", "qty": 58}]},
+	}
+	monkeypatch.setattr(importer, "_their_fields",
+	                    lambda source, dt, filters, problems: (
+	                        {"name", "items"}, [{"name": "PO-1"}, {"name": "PO-2"}]))
+	monkeypatch.setattr(importer, "whole", lambda source, dt, name: docs[name])
+	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: {"items"})
+	step = Row(source_doctype="RUA LPO", target_doctype="Purchase Order",
+	           field_map=__import__("json").dumps({
+	               "items": {"rows": "items", "map": {"qty": {"from": "qty"}}},
+	           }),
+	           fan_out=None, enabled=1, filters="[]")
+
+	found = importer._check_step(None, Row(name="P"), step, set())
+
+	assert found["problems"] == []
+	assert found["warnings"] == []
+
+
 def test_a_fan_out_that_does_not_fit_is_a_problem_the_check_finds(importer, monkeypatch):
 	"""Whether a column holds the shape a rule claims cannot be known from a
 	schema, so the check explodes a real row to find out."""
