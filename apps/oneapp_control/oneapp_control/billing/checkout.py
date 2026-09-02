@@ -337,7 +337,7 @@ def set_addon_quantity(tenant: str, addon: str, quantity: int,
 
 	# Releasing storage a workspace is sitting on would take the quota below what
 	# it holds, which is the one thing overage policy says never to do — see
-	# DECISIONS §2. Refused with the resource named, the same shape a plan change
+	# docs/ONEADMIN.md, Overage. Refused with the resource named, the same shape a plan change
 	# refuses a plan that is too small.
 	_refuse_shrinking_below_use(tenant_doc, subscription, addon_doc, quantity, held)
 

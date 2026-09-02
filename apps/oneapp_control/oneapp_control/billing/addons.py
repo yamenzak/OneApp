@@ -5,7 +5,7 @@ subscription — a second recurring line on the same Stripe subscription, so the
 customer gets one invoice, one dunning cycle and one card.
 
 It is deliberately not a plan. Plans differ only in quotas and carry every
-feature (`DECISIONS.md` §3); an add-on adds to a quota without moving anybody
+feature (docs/ONEADMIN.md, Plans); an add-on adds to a quota without moving anybody
 between plans, which is the difference between "I have outgrown this tier" and
 "I need more room".
 

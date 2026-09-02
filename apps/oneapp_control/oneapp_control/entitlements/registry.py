@@ -211,7 +211,7 @@ def space_roles(space: dict) -> list[dict]:
 # let them read site_config, which carries the signing secret this site uses to
 # talk to us — enough to forge its own usage reports and credit commits. What
 # they actually need (inviting users, seats, custom roles) is whitelisted methods
-# we run elevated, not a Frappe admin role. See DECISIONS §8.
+# we run elevated, not a Frappe admin role. See docs/ONESPACE.md, Roles.
 OWNER_ROLE = "OneSpace Workspace Owner"
 
 # Held by everyone in the workspace, the owner included. It grants nothing —

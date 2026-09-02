@@ -4,7 +4,7 @@ A screen over a doctype gets a list, filters, a record and a form for free. Two
 things it does not get: a method that is not a field write, and a way through to
 a bespoke screen that belongs to one record. Both used to live in hand-written
 console pages, so retiring those without this would have left them doable only
-in the desk — which is the one place this product does not go (DECISIONS §7).
+in the desk — which is the one place this product does not go (docs/ONEADMIN.md, No desk).
 
 Declared in code, behind the `onespace_screen_actions` hook, and that is
 deliberate: an action names a method somebody can invoke, so the list of them is

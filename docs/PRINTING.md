@@ -11,6 +11,10 @@ goes through Frappe's own `Print Format`, `Letter Head`, `Print Settings` and
 `PrintFormatGenerator` and `frappe.get_print`. There is no HTML in
 `printing.py` and no SQL in `naming.py`.
 
+> A reference, not an explanation. The argument for all of this — why the
+> framework renders and we do not — is in `docs/ONESPACE.md`; this is the
+> schema and the rules a test reads back.
+
 ---
 
 ## Why not a renderer of our own

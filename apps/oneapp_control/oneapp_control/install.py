@@ -71,7 +71,7 @@ def create_default_settings():
 # Its doctype list is deliberately small: the transitive set ERPNext actually
 # touches on submit is not something that can be enumerated by reading, and
 # guessing it produces a workspace that works in a demo and breaks on the fifth
-# invoice. It grows from running the real flows. See DECISIONS §8.
+# invoice. It grows from running the real flows. See docs/ONESPACE.md, Roles.
 SEED_APPS = [
 	{
 		"space_code": "books",

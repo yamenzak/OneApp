@@ -330,7 +330,7 @@ def test_only_a_workspace_admin_is_shown_the_door():
 
 
 def test_the_admin_flag_is_not_system_manager():
-	"""The workspace owner deliberately is not one (DECISIONS §8), so that
+	"""The workspace owner deliberately is not one (docs/ONESPACE.md, Roles), so that
 	question answers about us rather than about them."""
 	api = (TENANT / "api.py").read_text()
 	assert "is_workspace_admin" in api

@@ -2,8 +2,10 @@
 
 A tenant site is a real Frappe site with ERPNext on it, so most of what a
 workspace needs to be *theirs* already exists — behind a desk the customer never
-sees (DECISIONS §7). This is the field-by-field record of what was moved into
-OneSpace, what stayed ours, and what was left alone.
+sees. This is the field-by-field record of what was moved into OneSpace, what
+stayed ours, and what was left alone — a reference table rather than an
+explanation, and one `tests/test_workspace_settings.py` reads back. The
+reasoning is in `docs/ONESPACE.md`.
 
 Three verdicts:
 

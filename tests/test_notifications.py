@@ -3,7 +3,7 @@
 The store is Frappe's own — Notification Log, Notification Settings,
 Notification Type — so what is pinned here is only the part that is ours: where
 a notification goes, who a workspace notice reaches, and the watermark that
-makes the control plane's half exactly-once. See `docs/NOTIFICATIONS.md`.
+makes the control plane's half exactly-once. See `docs/ONESPACE.md`.
 """
 
 import sys

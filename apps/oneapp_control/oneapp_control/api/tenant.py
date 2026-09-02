@@ -101,7 +101,7 @@ def sync(since: str | None = None):
 		# One row per (role, doctype). The tenant site writes DocPerms from this
 		# because our roles are ours: we use ERPNext for its logic, not for its
 		# idea of who an "Accounts Manager" is, so they start with no
-		# permissions at all. See DECISIONS §8.
+		# permissions at all. See docs/ONESPACE.md, Roles.
 		"permissions": registry.permission_manifest(tenant_name),
 		"owner_role": registry.OWNER_ROLE,
 		"member_role": registry.MEMBER_ROLE,

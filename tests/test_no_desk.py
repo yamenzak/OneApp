@@ -1,6 +1,6 @@
 """The desk is not part of this product, for anyone.
 
-DECISIONS §7 says so, and it is the kind of claim that decays quietly: a doctype
+docs/ONEADMIN.md, No desk says so, and it is the kind of claim that decays quietly: a doctype
 gains a field, the field is only editable in /app, and nobody notices until an
 operator is told to "just open the desk" — at which point running this requires
 knowing Frappe, which is the thing the claim was protecting against.

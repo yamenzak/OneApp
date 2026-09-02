@@ -22,7 +22,7 @@ app_license = "mit"
 # ---------------------------------------------------------------------------
 # The Vue router owns everything under /one. Without this rule Frappe resolves
 # only the exact route, so reloading any deep link serves a 404 before the router
-# ever runs. The desk at /app is left alone rather than used — see DECISIONS §7.
+# ever runs. The desk at /app is left alone rather than used — see docs/ONEADMIN.md, No desk.
 website_route_rules = [
 	{"from_route": "/one/<path:app_path>", "to_route": "one"},
 ]

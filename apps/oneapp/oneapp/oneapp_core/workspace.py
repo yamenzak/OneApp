@@ -3,7 +3,7 @@
 A tenant site is a real Frappe site, so most of what a workspace needs to be
 *theirs* already exists: the name and logo on the sign-in page, who may sign in
 and how, what a date looks like. All of it lives in singles an ordinary user
-cannot touch, behind a desk the customer never sees (DECISIONS §7).
+cannot touch, behind a desk the customer never sees (docs/ONEADMIN.md, No desk).
 
 So this is the bridge. Three rules make it safe to hand a customer:
 
@@ -13,7 +13,7 @@ So this is the bridge. Three rules make it safe to hand a customer:
     Settings alone carries the scheduler, the backup count and the API request
     log next to the date format.
 
-  * **The owner is not a System Manager** (DECISIONS §8), which is the point of
+  * **The owner is not a System Manager** (docs/ONESPACE.md, Roles), which is the point of
     the role and also why every write here is `ignore_permissions`. The check is
     the workspace role, once, at the top.
 

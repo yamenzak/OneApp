@@ -2348,7 +2348,7 @@ def assignees(space_code: str, screen: str, query: str = "") -> list[dict]:
 	Frappe's assignment dialog asks for `user_type = "System User"`, because on
 	a desk site that separates a colleague from a portal customer. Here it
 	separates nobody from everybody: our roles are created with `desk_access`
-	off — that is what keeps a workspace out of `/app`, DECISIONS §7 — and
+	off — that is what keeps a workspace out of `/app`, docs/ONEADMIN.md, No desk — and
 	Frappe recomputes `user_type` from exactly that flag, so **every member of
 	every workspace is a Website User by design**. Copying the desk's filter
 	therefore offered the Administrator and nobody else, on every real
@@ -2745,7 +2745,7 @@ def _can_share() -> bool:
 	"""Who may write a layout everyone on this workspace sees.
 
 	Frappe's rule is Administrator or System Manager. Ours is the same shape
-	with our own role in it: the workspace owner, whom DECISIONS §8 deliberately
+	with our own role in it: the workspace owner, whom docs/ONESPACE.md, Roles deliberately
 	does *not* make a System Manager, and support, who arrives as one.
 	"""
 	# Imported here rather than at the top: `workspace` reaches into Frappe's

@@ -31,10 +31,18 @@ see `.claude/skills/bro/`.
 
 ## Everything else
 
-The architecture, the decisions and the reasoning live in `docs/`:
-`ARCHITECTURE.md`, `DECISIONS.md`, `SPACES.md`, `NOTIFICATIONS.md`,
-`PRINTING.md`, `LIFECYCLE.md`, `AI.md`, `FRAPPE-UI.md`, `DEVLOOP.md`,
-`RUNBOOK.md`.
+Two documents, and they cover everything:
+
+* **`docs/ONESPACE.md`** — the product a customer uses. Spaces, screens, the
+  four view bodies, the record, roles, collaboration, printing, the UI rules,
+  and what is not built yet.
+* **`docs/ONEADMIN.md`** — the platform. Tenancy, shards, domains, the control
+  plane, the operator console, billing, credits, storage, the lifecycle,
+  configuration, bring-up, and how to work on this repo.
+
+Two reference tables sit beside them because tests read them:
+`docs/PRINTING.md` (the `format_data` schema) and `docs/WORKSPACE-SETTINGS.md`
+(what moved into workspace settings and what stayed ours).
 
 Two rules that are not in there:
 

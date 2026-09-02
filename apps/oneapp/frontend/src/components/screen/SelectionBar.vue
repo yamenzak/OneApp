@@ -42,7 +42,7 @@ const emit = defineEmits(['clear', 'all'])
 
 // The same shape frappe-ui's own select banner draws — an elevated pill, not a
 // panel — so it reads as floating over the list rather than as another band in
-// it. `rounded-6` is the panel radius; see `docs/SPACES.md` on the radius scale.
+// it. `rounded-6` is the panel radius; see `docs/ONESPACE.md` on the radius scale.
 //
 // `surface-elevation-2` rather than the `surface-base` frappe-ui's own banner
 // uses: a shadow is invisible against a dark background, so in dark mode the

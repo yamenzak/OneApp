@@ -97,7 +97,7 @@ doctype(
         f("accepts_new_tenants", "Check", default="1",
           description="Uncheck to stop the allocator placing new tenants here."),
         f("capacity_tenants", "Int", default="30",
-          description="Soft cap. MariaDB is the real ceiling; see docs/ARCHITECTURE.md."),
+          description="Soft cap. MariaDB is the real ceiling; see docs/ONEADMIN.md."),
         f("tenant_count", "Int", default="0", read_only=1, in_list_view=1),
         section("sec_press", "Frappe Cloud"),
         f("press_server", label="Press Server",
@@ -642,7 +642,7 @@ doctype(
 # We ignore the roles ERPNext, HRMS and Payments ship with: we use those apps for
 # the logic they implement, not for their idea of who an "Accounts Manager" is.
 # Our own roles therefore start with no permissions, and these rows are where
-# they come from. See DECISIONS §8.
+# they come from. See docs/ONESPACE.md, Roles.
 # --------------------------------------------------------------------------- #
 doctype(
     "OneSpace Space Doctype",
@@ -862,7 +862,7 @@ doctype(
         # them. `Suspended` still has its site on Frappe Cloud and comes back in
         # seconds; `Archived` does not, and comes back from the cold copy in
         # minutes; `Purged` has nothing left and is the one that cannot be
-        # undone. See `oneapp_control/lifecycle/` and docs/LIFECYCLE.md.
+        # undone. See `oneapp_control/lifecycle/` and docs/ONEADMIN.md.
         f("status", "Select",
           options="Draft\nProvisioning\nActive\nSuspended\nArchived\nPurged\nFailed",
           default="Draft", reqd=1, in_list_view=1, in_standard_filter=1),
@@ -957,7 +957,7 @@ doctype(
           description="When it last came back from cold."),
         # Over-quota is a grace window rather than an instant block, because the
         # usual way a workspace gets here is a line disappearing from its
-        # subscription rather than anything it uploaded. See DECISIONS §2b.
+        # subscription rather than anything it uploaded. See docs/ONEADMIN.md, Overage.
         f("over_quota_since", "Date", read_only=1,
           description="When what it holds first exceeded what it is allowed. "
                       "Enforcement bites after the overage grace window."),

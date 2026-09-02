@@ -84,7 +84,7 @@
   },
   {
    "default": "30",
-   "description": "Soft cap. MariaDB is the real ceiling; see docs/ARCHITECTURE.md.",
+   "description": "Soft cap. MariaDB is the real ceiling; see docs/ONEADMIN.md.",
    "fieldname": "capacity_tenants",
    "fieldtype": "Int",
    "label": "Capacity Tenants"

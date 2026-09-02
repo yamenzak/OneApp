@@ -10,7 +10,7 @@ So this is a reader, not a producer, and deliberately: the store is the
 framework's, per-user, permissioned to `for_user`, swept at 180 days, emailed by
 each person's own preferences and deduplicated on insert. Writing our own would
 have meant re-implementing all of that in order to stop receiving what we were
-already being sent. See `docs/NOTIFICATIONS.md`.
+already being sent. See `docs/ONESPACE.md`.
 
 Two things are ours, and they are the two the framework has no answer for:
 

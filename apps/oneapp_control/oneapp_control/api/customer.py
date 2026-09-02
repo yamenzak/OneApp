@@ -711,7 +711,7 @@ def plans(workspace: str | None = None) -> dict:
 	"""What this workspace is on, and what else it could be on.
 
 	Every plan carries every feature — they differ only in quotas, which is why
-	no feature flags exist anywhere in this codebase (DECISIONS §3). So the
+	no feature flags exist anywhere in this codebase (docs/ONEADMIN.md, Plans). So the
 	comparison is the numbers, and a plan that would not fit what the workspace
 	already uses is marked rather than merely listed: finding out a downgrade is
 	impossible *after* choosing it is the worst version of this page.

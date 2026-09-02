@@ -246,7 +246,7 @@ def test_an_add_on_needs_a_subscription_to_hang_from():
 
 
 def test_releasing_below_what_is_used_is_refused():
-	"""DECISIONS §2: never destroy data and never surprise-charge. Taking the
+	"""docs/ONEADMIN.md, Overage: never destroy data and never surprise-charge. Taking the
 	quota below what a workspace holds does the first."""
 	body = function(CHECKOUT, "_refuse_shrinking_below_use")
 	assert "quotas.blockers" in body

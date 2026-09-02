@@ -590,7 +590,7 @@ const custom = computed(() => {
 // column for a week.
 //
 // `rounded-6` is the panel radius — the same one every card on this surface
-// uses. See `docs/SPACES.md` for the scale.
+// uses. See `docs/ONESPACE.md` for the scale.
 const SURFACE =
   'flex min-h-0 flex-1 flex-col overflow-hidden rounded-6 border border-outline-gray-2 bg-surface-base'
 

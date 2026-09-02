@@ -132,7 +132,7 @@ def revoke_app(tenant: str, space_code: str):
 
 
 # Tenants per GB of RAM, and per GB of disk, taken from the sizing table in
-# docs/ARCHITECTURE.md §1 — the one that says MariaDB is the ceiling and a fresh
+# docs/ONEADMIN.md, Tenancy — the one that says MariaDB is the ceiling and a fresh
 # ERPNext site is ~150-250MB across ~1,200 tables. Its three rows work out at
 # roughly the same ratio each (4GB/80GB → ~30 tenants, 16/320 → ~115,
 # 32/640 → ~200), so the recommendation is the table, not a new opinion.
@@ -394,7 +394,7 @@ SHARD_EDITABLE = (
 def update_shard(shard: str, values: str | dict) -> dict:
 	"""Change a shard's operating settings.
 
-	Draining a server is `accepts_new_tenants = 0`, which docs/DECISIONS.md names
+	Draining a server is `accepts_new_tenants = 0`, which docs/ONEADMIN.md names
 	as the way to drain one — and which, until now, could only be done in the
 	desk. So could raising a soft cap on a machine that turned out to hold more.
 
@@ -762,7 +762,7 @@ def support_logins(tenant: str, limit: int = 20) -> list:
 # The rest of the control plane
 #
 # Everything below exists because the desk is not part of this product
-# (DECISIONS §7). A record an operator can only reach through /app is a record
+# (docs/ONEADMIN.md, No desk). A record an operator can only reach through /app is a record
 # only someone who knows Frappe can reach, and the whole point of the operator
 # console is that running this does not require that.
 # --------------------------------------------------------------------------- #
@@ -925,7 +925,7 @@ def grant_credits(tenant: str, credits: float, reason: str) -> dict:
 	purchased pack, and both are Stripe telling us something happened — so a
 	goodwill credit, a migration allowance or a demo top-up had no path at all
 	and would have meant opening the desk, which this product does not do
-	(DECISIONS §7).
+	(docs/ONEADMIN.md, No desk).
 
 	A reason is required and lands on the ledger row. The ledger is append-only
 	and an entry with no explanation is one nobody can audit six months later;
@@ -994,7 +994,7 @@ def set_tenant_plan(tenant: str, plan: str, interval: str = "Monthly") -> dict:
 # --------------------------------------------------------------------------- #
 # AI: the model catalogue, the feature registry, and what tenants spent
 #
-# All of it operable from the console. There is no desk (DECISIONS §7), so a model
+# All of it operable from the console. There is no desk (docs/ONEADMIN.md, No desk), so a model
 # that can only be re-priced by editing a doctype is a model nobody re-prices.
 # --------------------------------------------------------------------------- #
 
@@ -1498,7 +1498,7 @@ def advance_lifecycle_clock(tenant: str, days: int) -> dict:
 	Deliberately not a button in the console. A control that fast-forwards a
 	deletion has no business sitting in a row of ordinary actions where somebody
 	can reach it while meaning to click the one above; it is called from the
-	rehearsal in docs/RUNBOOK.md and nowhere else.
+	rehearsal in docs/ONEADMIN.md and nowhere else.
 	"""
 	_require_manager()
 	from frappe.utils import add_to_date, getdate

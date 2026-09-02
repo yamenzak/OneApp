@@ -27,7 +27,7 @@ def session():
 			"roles": sorted(roles),
 			# Two different questions, and the old single `is_admin` answered
 			# the wrong one for the SPA: it keyed on System Manager, which the
-			# workspace owner deliberately is not (DECISIONS §8). So the person
+			# workspace owner deliberately is not (docs/ONESPACE.md, Roles). So the person
 			# who actually administers the workspace read as not an admin, and
 			# our own support read as one.
 			"is_workspace_admin": bool(roles & {OWNER_ROLE, SUPPORT_ROLE}),

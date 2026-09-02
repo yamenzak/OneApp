@@ -3,8 +3,9 @@
 A single Frappe application presenting a unified SPA over multiple bespoke solutions, with
 ERPNext underneath. Customers never see Frappe or ERPNext — the SPA is their only access point.
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the decisions this is built on,
-and [`docs/ROADMAP.md`](docs/ROADMAP.md) for the phased build plan.
+Two documents cover it: [`docs/ONESPACE.md`](docs/ONESPACE.md) is the product a
+customer uses, and [`docs/ONEADMIN.md`](docs/ONEADMIN.md) is the platform behind
+it — tenancy, billing, the lifecycle, and how to work on this repo.
 
 ## Layout
 
@@ -14,9 +15,14 @@ This is a monorepo containing two Frappe apps.
 apps/
 ├── oneapp/            # installed on every tenant site
 └── oneapp_control/    # installed only on the control-plane site
-docs/
+docs/                  # ONESPACE.md, ONEADMIN.md, and two reference tables
+scripts/               # generators, and the local development loop
+tests/                 # ~1,580 tests, no bench required
 .github/workflows/     # mirror pipeline
 ```
+
+**OneApp is the repository name and is never product-facing.** The product is
+OneSpace; the operator console is OneAdmin.
 
 Frappe Cloud builds a bench group from `(repo URL, branch)` pairs and requires the repository
 root to be the app root, so each app is published to a standalone mirror repository by
@@ -36,11 +42,11 @@ canary bench group can track it.
 Symlink both apps into a bench rather than cloning the mirrors:
 
 ```bash
-git clone https://github.com/yamenzak/OneSpace ~/src/OneSpace
+git clone https://github.com/yamenzak/OneApp ~/src/OneApp
 
 cd ~/frappe-bench
-ln -s ~/src/OneSpace/apps/oneapp          apps/oneapp
-ln -s ~/src/OneSpace/apps/oneapp_control  apps/oneapp_control
+ln -s ~/src/OneApp/apps/oneapp          apps/oneapp
+ln -s ~/src/OneApp/apps/oneapp_control  apps/oneapp_control
 
 ./env/bin/pip install -e apps/oneapp -e apps/oneapp_control
 echo -e "oneapp\noneapp_control" >> sites/apps.txt
