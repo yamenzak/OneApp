@@ -449,6 +449,16 @@ doctype(
           description="Slug in the URL, e.g. `invoices`. Stable: it is what a "
                       "bookmark points at."),
         f("label", reqd=1, in_list_view=1, description="Shown in the app's navigation."),
+        # A screen's label is plural by convention — "Tasks", "Invoices" — and
+        # the heading over a create form wants one of these, not all of them.
+        # It is derived from the label ("Tasks" → "Task"), so this is only for
+        # the plurals a small rule gets wrong. It is never the doctype's own
+        # name: that is a Frappe word, and a customer clicking New on a screen
+        # called Tasks was reading "New ToDo".
+        f("singular", label="One of these is called",
+          description="Optional. The screen's label in the singular, where "
+                      "trimming an `s` gets it wrong — People, Series, a label "
+                      "that is already singular."),
         f("icon", "Select", options="\n".join(SPACE_ICONS),
           default="lucide-layout-grid"),
         column("cb_view_source"),

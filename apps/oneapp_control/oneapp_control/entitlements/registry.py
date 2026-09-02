@@ -64,7 +64,7 @@ def spaces_for_tenant(tenant: str) -> list[dict]:
 # one is silent: `status_field` was stored, edited in the console, and never
 # sent, so no screen anywhere ever showed a status badge and nothing said why.
 SCREEN_FIELDS = (
-	"screen", "label", "icon", "document_type", "fields", "component",
+	"screen", "label", "singular", "icon", "document_type", "fields", "component",
 	"filters", "order_by", "view_types", "view_settings", "status_field",
 	"hide_new", "tab_icons", "naming_series", "print_formats",
 )

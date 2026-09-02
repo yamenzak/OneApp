@@ -7,6 +7,7 @@
  "field_order": [
   "screen",
   "label",
+  "singular",
   "icon",
   "cb_view_source",
   "document_type",
@@ -42,6 +43,12 @@
    "in_list_view": 1,
    "label": "Label",
    "reqd": 1
+  },
+  {
+   "description": "Optional. The screen's label in the singular, where trimming an `s` gets it wrong \u2014 People, Series, a label that is already singular.",
+   "fieldname": "singular",
+   "fieldtype": "Data",
+   "label": "One of these is called"
   },
   {
    "default": "lucide-layout-grid",
