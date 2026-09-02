@@ -289,6 +289,13 @@ export const workspace = {
       { successMessage: 'Saved' },
     ),
 
+  installImportPlan: (plan, source) =>
+    callMethod(
+      'oneapp.oneapp_core.importer.install_plan',
+      { plan, source },
+      { successMessage: 'Set up' },
+    ),
+
   verifyImportSource: (source) =>
     callMethod('oneapp.oneapp_core.importer.verify', { source }, { silent: true }),
 

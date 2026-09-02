@@ -22,10 +22,10 @@
     <LoadingText v-if="loading" class="py-8" text="Loading" />
 
     <EmptyState
-      v-else-if="!plans.length"
+      v-else-if="!sources.length && !plans.length && !shipped.length"
       icon="lucide-import"
       title="Nothing to import"
-      description="No import plan has been set up for this workspace yet."
+      description="This workspace has nothing set up to import from."
     />
 
     <div v-else class="flex flex-col gap-6 py-4">
@@ -38,7 +38,7 @@
       <div v-for="one in sources" :key="one.name" class="flex flex-col gap-3">
         <div class="flex items-center gap-2">
           <span class="text-p-base font-medium text-ink-gray-8">{{ one.name }}</span>
-          <StateBadge :label="one.status" />
+          <StateBadge v-if="one.status" :label="one.status" />
           <span v-if="one.verified_as" class="text-p-sm text-ink-gray-5">
             as {{ one.verified_as }}
           </span>
@@ -74,6 +74,64 @@
             @click="check(one)"
           />
           <span v-if="one.last_error" class="text-p-sm text-ink-red-5">{{ one.last_error }}</span>
+        </div>
+      </div>
+
+      <!--
+        Adding the first one. Without this the panel's first state is a dead
+        end: nowhere to type an address, and a shipped plan that cannot be set
+        up because it has nothing to point at.
+      -->
+      <div>
+        <Button label="Add a connection" icon-left="plus" @click="add" />
+      </div>
+
+      <!--
+        What this app ships and this workspace has not set up. Pressing it
+        writes the plan, the custom fields its maps name and the records they
+        write against — which is the difference between a migration somebody
+        runs and a migration somebody first has to assemble.
+      -->
+      <div
+        v-for="one in shipped"
+        :key="one.key"
+        data-slot="import-offer"
+        class="flex flex-col gap-3 rounded-6 border border-dashed border-outline-gray-2 p-4"
+      >
+        <div class="flex items-center gap-2">
+          <span class="text-p-base font-medium text-ink-gray-8">{{ one.title }}</span>
+          <span class="ms-auto text-p-sm text-ink-gray-5">
+            {{ one.steps }} steps · {{ one.fields }} fields it adds
+          </span>
+        </div>
+        <p class="text-p-sm text-ink-gray-6">
+          Not set up yet. Setting it up writes the plan and the fields its steps
+          need; it reads nothing and moves nothing.
+        </p>
+        <ErrorMessage v-if="error && installing === one.key" :message="error" />
+        <div class="flex items-center gap-2">
+          <Button
+            data-slot="import-setup"
+            label="Set this up"
+            :loading="installing === one.key"
+            :disabled="!into[one.key]"
+            @click="setUp(one)"
+          />
+          <!--
+            One connection is the ordinary case and picking from a list of one
+            is a question with an answer already, so it is a sentence until
+            there is a second.
+          -->
+          <span v-if="sources.length < 2" class="text-p-sm text-ink-gray-5">
+            {{ into[one.key] ? `from ${into[one.key]}` : 'add a connection first' }}
+          </span>
+          <FormControl
+            v-else
+            v-model="into[one.key]"
+            type="select"
+            label="From"
+            :options="sources.map((s) => ({ label: s.name, value: s.name }))"
+          />
         </div>
       </div>
 
@@ -259,9 +317,15 @@ import { errorText } from '../../lib/errors'
 const loading = ref(true)
 const sources = ref([])
 const plans = ref([])
+const shipped = ref([])
 const draft = reactive({})
+// Which connection each offered plan would be set up against. A separate map
+// rather than a field on the offer, because the offer is the server's answer
+// and this is what somebody picked.
+const into = reactive({})
 const error = ref('')
 
+const installing = ref('')
 const saving = ref('')
 const checking = ref('')
 const starting = ref('')
@@ -288,6 +352,12 @@ const load = async () => {
     const found = await workspace.importConsole()
     sources.value = found?.sources || []
     plans.value = found?.plans || []
+    shipped.value = found?.shipped || []
+    for (const one of shipped.value) {
+      // The one connection there is, where there is only one: picking from a
+      // list of one is a question with an answer already.
+      into[one.key] = into[one.key] || sources.value[0]?.name || ''
+    }
     for (const one of sources.value) {
       draft[one.name] = {
         base_url: one.base_url || '',
@@ -299,6 +369,35 @@ const load = async () => {
     }
   } finally {
     loading.value = false
+  }
+}
+
+/**
+ * A blank card to fill in.
+ *
+ * Local until Save connection: the server names an Import Source after what
+ * somebody typed, so a row cannot exist before there is a name for it.
+ */
+const add = () => {
+  const taken = new Set(sources.value.map((one) => one.name))
+  let name = 'The old system'
+  for (let n = 2; taken.has(name); n += 1) name = `The old system ${n}`
+  // No status: the badge says what the last check found, and nothing has
+  // checked a card that has not been saved.
+  draft[name] = { base_url: '', api_key: '', api_secret: '' }
+  sources.value = [...sources.value, { name, status: '' }]
+}
+
+const setUp = async (one) => {
+  installing.value = one.key
+  error.value = ''
+  try {
+    await workspace.installImportPlan(one.key, into[one.key])
+    await load()
+  } catch (raised) {
+    error.value = errorText(raised)
+  } finally {
+    installing.value = ''
   }
 }
 

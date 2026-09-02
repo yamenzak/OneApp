@@ -69,3 +69,24 @@ test('the saved secret is never sent back to the box', async ({ page, baseURL },
 
   expectNoRealErrors(errors)
 })
+
+test('a workspace with nothing set up can add its first connection', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'settings tabs scroll on a phone; covered on desktop')
+  const errors = collectConsoleErrors(page)
+
+  await openImport(page, baseURL)
+
+  // The panel used to render an empty state and nothing else until somebody
+  // had installed a plan from a Python shell — which made "one button" a claim
+  // about a machine nobody outside this repo has.
+  const before = await page.getByRole('textbox', { name: 'Address' }).count()
+  await page.getByRole('button', { name: 'Add a connection' }).click()
+
+  const boxes = page.getByRole('textbox', { name: 'Address' })
+  await expect(boxes).toHaveCount(before + 1)
+  // Blank, and blank is the point: a card that arrived pre-filled would be
+  // guessing at somebody's own address.
+  await expect(boxes.last()).toHaveValue('')
+
+  expectNoRealErrors(errors)
+})

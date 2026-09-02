@@ -13,6 +13,25 @@ from oneapp.oneapp_core.plans import rua
 PLANS = {"rua": rua}
 
 
+def shipped() -> list[dict]:
+	"""Every plan this app carries, as the console offers them.
+
+	`key` and not the title is what `install` takes: a plan's title is the
+	customer's sentence about their own old system and may be edited, and the
+	module it came from may not.
+	"""
+	return [
+		{
+			"key": key,
+			"title": module.PLAN,
+			"space": module.SPACE,
+			"steps": len(module.STEPS),
+			"fields": len(getattr(module, "FIELDS", [])),
+		}
+		for key, module in PLANS.items()
+	]
+
+
 def install(name: str, source: str) -> str:
 	"""Write one shipped plan onto this site, pointed at a source.
 

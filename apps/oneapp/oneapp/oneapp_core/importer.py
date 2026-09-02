@@ -592,11 +592,8 @@ def _write(plan, step, key: str, said: dict, made: dict, dry_run: int) -> str:
 	existing = resolve(plan.name, step.source_doctype, key)
 
 	if dry_run:
-		# Built, resolved and validated — and then thrown away. `run_method`
-		# rather than `insert`: validation is what a rehearsal is for, and the
-		# rest of insert is what it must not do.
 		doc = frappe.get_doc({"doctype": step.target_doctype, **made})
-		doc.run_method("validate")
+		rehearse(doc)
 		return "updated" if existing else "created"
 
 	if existing and frappe.db.exists(step.target_doctype, existing):
@@ -609,6 +606,31 @@ def _write(plan, step, key: str, said: dict, made: dict, dry_run: int) -> str:
 	doc = frappe.get_doc({"doctype": step.target_doctype, **made}).insert()
 	_remember(plan, step, key, doc.name)
 	return "created"
+
+
+def rehearse(doc):
+	"""Everything `insert` does up to the write, and nothing after it.
+
+	The old version of this ran `validate` and called it a rehearsal, which
+	missed the failure that actually stops an import: a Link pointing at
+	something that is not there. Every employee naming a Designation nobody
+	created, every party naming a Territory that is one of seven emirates and
+	none of them a record — a rehearsal that says those are fine is a rehearsal
+	that says nothing.
+
+	So this is Frappe's own `Document.insert`, read down to `db_insert` and
+	stopped there: defaults, permission, links, `before_save`, `validate`, and
+	the mandatory and select checks inside `_validate`. Named steps rather than
+	a flag on insert, because there is no flag on insert for "do all of it
+	except the part that keeps it".
+	"""
+	doc._set_defaults()
+	doc.set_user_and_timestamp()
+	doc.set_docstatus()
+	doc.check_permission("create")
+	doc._validate_links()
+	doc.run_before_save_methods()
+	doc._validate()
 
 
 def _remember(plan, step, source_name: str, target_name: str):
@@ -743,7 +765,46 @@ def console() -> dict:
 			"carried": bool(doc.steps) and all(s.watermark for s in doc.steps),
 		})
 
-	return {"sources": sources, "plans": plans}
+	# What this app ships, this workspace has a space for, and nobody has set
+	# up yet. Without it the panel's first state is an empty one — nothing to
+	# import and no way to say otherwise — and the whole "one button" claim
+	# rests on somebody having installed a plan from a Python shell.
+	#
+	# Filtered by space, because a shipped plan is one customer's own migration
+	# and offering it to every workspace would be offering to fill their books
+	# with a stranger's.
+	from oneapp.oneapp_core import sync
+	from oneapp.oneapp_core.plans import shipped
+
+	installed = {plan["name"] for plan in plans}
+	here = {space.get("space_code") for space in sync.state().get("spaces") or []}
+	offered = [
+		one for one in shipped()
+		if one["title"] not in installed and one["space"] in here
+	]
+
+	return {"sources": sources, "plans": plans, "shipped": offered}
+
+
+@frappe.whitelist()
+def install_plan(plan: str, source: str) -> str:
+	"""Set up one of the plans this app ships, against a connection.
+
+	Its own endpoint rather than a step in `start`: installing writes custom
+	fields and seed records, and doing that as a side effect of pressing Run
+	would make the first run mean something the second one does not.
+	"""
+	if not frappe.has_permission("Import Plan", "create"):
+		frappe.throw(_("Not yours to set up."), frappe.PermissionError)
+
+	frappe.get_doc("Import Source", source).check_permission("read")
+
+	from oneapp.oneapp_core.plans import PLANS, install
+
+	if plan not in PLANS:
+		frappe.throw(_("There is no plan called {0}.").format(plan))
+
+	return install(plan, source)
 
 
 @frappe.whitelist()

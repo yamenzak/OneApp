@@ -127,6 +127,10 @@ class Doc(dict):
 		self.saved = 0
 		self.inserted = 0
 		self.validated = 0
+		# What a rehearsal did to it, in order. Named rather than counted:
+		# the property worth pinning is *which* of insert's checks ran, and
+		# the one that matters is the link check.
+		self.rehearsed = []
 
 	def insert(self, **k):
 		self.inserted += 1
@@ -141,6 +145,28 @@ class Doc(dict):
 
 	def run_method(self, method):
 		self.validated += 1
+
+	def _set_defaults(self):
+		self.rehearsed.append("defaults")
+
+	def set_user_and_timestamp(self):
+		self.rehearsed.append("stamped")
+
+	def set_docstatus(self):
+		self.rehearsed.append("docstatus")
+
+	def check_permission(self, what):
+		self.rehearsed.append(f"may {what}")
+
+	def _validate_links(self):
+		self.rehearsed.append("links")
+
+	def run_before_save_methods(self):
+		self.rehearsed.append("before save")
+		self.validated += 1
+
+	def _validate(self):
+		self.rehearsed.append("mandatory and selects")
 
 
 class Plan:
@@ -229,6 +255,24 @@ def test_a_rehearsal_validates_and_keeps_nothing(importer, written, monkeypatch)
 	assert written[0].validated == 1
 	assert written[0].inserted == 0
 	assert written[0].saved == 0
+
+
+def test_a_rehearsal_checks_the_links(importer, written, monkeypatch):
+	"""The failure that actually stops an import.
+
+	An earlier version ran `validate` and called that a rehearsal, which is the
+	one check that says nothing about a Link pointing at a record nobody made —
+	every employee naming a Designation that is not there, every party naming
+	an emirate that is not a Territory. Those are the rows a real run refuses,
+	so they are what a rehearsal has to refuse too.
+	"""
+	monkeypatch.setattr(importer, "resolve", lambda *a: None)
+	importer._write(Plan(), Step(), "H", {"name": "H"}, {"customer_name": "X"}, 1)
+
+	assert written[0].rehearsed == [
+		"defaults", "stamped", "docstatus", "may create", "links",
+		"before save", "mandatory and selects",
+	]
 
 
 # --------------------------------------------------------------------------- #
@@ -497,6 +541,35 @@ def test_a_shared_source_with_disjoint_filters_is_silent(importer, monkeypatch):
 # --------------------------------------------------------------------------- #
 # The plan this app ships
 # --------------------------------------------------------------------------- #
+
+
+def test_a_shipped_plan_is_offered_only_where_its_space_is(importer, stub_frappe, monkeypatch):
+	"""A shipped plan is one customer's own migration.
+
+	Offering it to every workspace would be offering to fill their books with a
+	stranger's — and the button that does it writes custom fields and seed
+	records before it reads a row.
+	"""
+	monkeypatch.setattr(stub_frappe, "has_permission", lambda *a, **k: True)
+	monkeypatch.setattr(stub_frappe, "get_all", lambda *a, **k: [])
+
+	import sys
+	import types
+
+	sync = types.ModuleType("oneapp.oneapp_core.sync")
+	sync.state = lambda: {"spaces": [{"space_code": "zzmock"}]}
+	monkeypatch.setitem(sys.modules, "oneapp.oneapp_core.sync", sync)
+
+	assert importer.console()["shipped"] == []
+
+	sync.state = lambda: {"spaces": [{"space_code": "rua"}, {"space_code": "zzmock"}]}
+	offered = importer.console()["shipped"]
+
+	assert [one["key"] for one in offered] == ["rua"]
+	# What the card says before anybody presses it: how much it will bring and
+	# how much it will add to this site's own schema to hold it.
+	assert offered[0]["steps"] == 11
+	assert offered[0]["fields"] > 0
 
 
 def test_the_rua_plan_resolves_every_link_backwards(stub_frappe):

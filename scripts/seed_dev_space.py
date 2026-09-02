@@ -714,10 +714,18 @@ def seed_tenant():
 		colleague.save(ignore_permissions=True)
 
 	for role in RETIRED_ROLES:
-		if frappe.db.exists("Role", role):
-			for perm in frappe.get_all("Custom DocPerm", filters={"role": role}, pluck="name"):
-				frappe.delete_doc("Custom DocPerm", perm, force=True, ignore_permissions=True)
-			frappe.delete_doc("Role", role, force=True, ignore_permissions=True)
+		if not frappe.db.exists("Role", role):
+			continue
+		for perm in frappe.get_all("Custom DocPerm", filters={"role": role}, pluck="name"):
+			frappe.delete_doc("Custom DocPerm", perm, force=True, ignore_permissions=True)
+		# The people who hold it, first. `force` skips the link check, so
+		# deleting the Role alone leaves a `Has Role` row pointing at nothing —
+		# and the next thing to save that User fails on it. Which is not a
+		# theoretical failure: installing ERPNext saves Administrator, and it
+		# died here with "Could not find Row #30: Role: OneSpace Tasks".
+		for held in frappe.get_all("Has Role", filters={"role": role}, pluck="name"):
+			frappe.delete_doc("Has Role", held, force=True, ignore_permissions=True)
+		frappe.delete_doc("Role", role, force=True, ignore_permissions=True)
 
 	for doctype, fieldname, prop, value, prop_type in PROPERTIES:
 		frappe.make_property_setter({
