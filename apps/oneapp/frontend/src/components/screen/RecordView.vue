@@ -14,12 +14,17 @@
     <header class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 px-4 py-3">
       <RecordChip v-if="phone" :record="identity" class="min-w-0 flex-1">
         <template #badge>
-          <Badge
+          <StateBadge
             v-if="statusValue"
             data-slot="record-status"
-            :label="String(statusValue)"
-            :theme="statusTheme"
-            variant="subtle"
+            :label="statusValue"
+            :states="spec?.states || []"
+          />
+          <StateBadge
+            v-if="docState"
+            data-slot="doc-state"
+            :label="docState.label"
+            :theme="docState.theme"
           />
         </template>
       </RecordChip>
@@ -88,7 +93,6 @@
           :screen="screen"
           :name="record.name"
           :state="record._state"
-          :status-field="spec.status_field || ''"
           :dirty="dirty"
           @moved="emit('reload')"
           @opened="emit('renamed', $event)"
@@ -310,10 +314,12 @@ import RecordForm from './RecordForm.vue'
 import RecordActivity from './RecordActivity.vue'
 import RecordFiles from './RecordFiles.vue'
 import DocActions from './DocActions.vue'
+import StateBadge from './StateBadge.vue'
 import PrintDialog from './PrintDialog.vue'
 import RecordMeta from './RecordMeta.vue'
 import { workspace } from '../../lib/workspace'
-import { tabIcon, valueTheme } from '../../lib/fields'
+import { docBadge } from '../../lib/docstate'
+import { tabIcon } from '../../lib/fields'
 import { onDocChange, onDocViewers } from '../../lib/socket'
 import { session } from '../../lib/session'
 
@@ -446,7 +452,12 @@ const statusValue = computed(() => {
   const field = props.spec?.status_field
   return (field && props.record?.[field]) || ''
 })
-const statusTheme = computed(() => valueTheme(statusValue.value, props.spec?.states || []))
+// Where the framework stands on it, beside the doctype's own status field and
+// de-duped against it. Only the phone draws this pair — on a desktop the trail
+// above the list is already saying who this record is, and says it there.
+const docState = computed(() =>
+  docBadge(props.record?._state, props.spec?.status_field || ''),
+)
 
 const loadTimeline = async () => {
   if (!props.record?.name) return

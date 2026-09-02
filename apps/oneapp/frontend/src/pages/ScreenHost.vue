@@ -40,16 +40,25 @@
         <span class="mx-0.5 text-base text-ink-gray-4" aria-hidden="true">/</span>
         <RecordChip :record="recordCrumb">
           <template #badge>
-            <!-- The colours are the doctype's own Document States — the same
-                 ones the cell in the list reads — so a status is not one
-                 colour here and another there. The manifest says which field;
-                 it does not repeat the palette. -->
-            <Badge
+            <!-- The colours and glyphs are the doctype's own Document States —
+                 the same ones the cell in the list reads — so a status is not
+                 one colour here and another there. The manifest says which
+                 field; it does not repeat the palette. -->
+            <StateBadge
               v-if="statusValue"
               data-slot="record-status"
-              :label="String(statusValue)"
-              :theme="statusTheme"
-              variant="subtle"
+              :label="statusValue"
+              :states="spec?.states || []"
+            />
+            <!-- And where the framework stands on it, which is a different
+                 question from the doctype's own status field and used to be
+                 answered a screen-width away among the buttons. Absent unless
+                 the doctype is submittable or runs on a workflow. -->
+            <StateBadge
+              v-if="docState"
+              data-slot="doc-state"
+              :label="docState.label"
+              :theme="docState.theme"
             />
           </template>
         </RecordChip>
@@ -441,7 +450,6 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   PageHeader,
   Breadcrumbs,
-  Badge,
   Icon,
   Tooltip,
   Button,
@@ -463,13 +471,14 @@ import ListFooter from '../components/screen/ListFooter.vue'
 import SelectionBar from '../components/screen/SelectionBar.vue'
 import ScreenActions from '../components/screen/ScreenActions.vue'
 import ViewSwitcher from '../components/screen/ViewSwitcher.vue'
+import StateBadge from '../components/screen/StateBadge.vue'
 import { session } from '../lib/session'
 import { workspace } from '../lib/workspace'
 import { notifyError, notifySuccess } from '../lib/notify'
 import { screenComponent } from '../screens'
 import { CARD_VIEW_TYPES, DEFAULT_VIEW_TYPE, VIEW_TYPES, bodyFor } from '../lib/viewTypes'
 import { onDoctypeChange } from '../lib/socket'
-import { valueTheme } from '../lib/fields'
+import { docBadge } from '../lib/docstate'
 
 const props = defineProps({ spaceCode: { type: String, required: true } })
 const route = useRoute()
@@ -689,7 +698,12 @@ const statusValue = computed(() => {
   return (field && shownRecord.value?.[field]) || ''
 })
 
-const statusTheme = computed(() => valueTheme(statusValue.value, spec.value?.states || []))
+// And where the framework stands on it: a workflow's state, or Draft /
+// Submitted / Cancelled. De-duped against the field above, because a screen
+// whose `status_field` *is* the workflow's state field is already saying it.
+const docState = computed(() =>
+  docBadge(shownRecord.value?._state, spec.value?.status_field || ''),
+)
 
 // --- sorting, from the headers ----------------------------------------------
 //

@@ -126,7 +126,11 @@ STATE_ICON_WORDS = [
     ("lucide-circle-check", ("active", "succeeded", "success", "completed",
                              "complete", "done", "paid", "ready", "available",
                              "processed", "committed", "claimed", "resumed",
-                             "cleared", "taken", "restored", "granted")),
+                             "cleared", "taken", "restored", "granted",
+                             # The framework's own word for docstatus 1. Without
+                             # it the one badge every submittable doctype in
+                             # ERPNext shows fell through to the neutral tag.
+                             "submitted")),
     ("lucide-circle-dot", ("open", "draft", "new")),
     ("lucide-arrow-down-left", ("grant", "purchase", "refund", "credit")),
     ("lucide-arrow-up-right", ("spend", "charge", "debit")),

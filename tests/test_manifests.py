@@ -259,14 +259,53 @@ def test_the_glyphs_reach_the_spa_as_literals():
 		assert f'"{icon}"' in block, f"{icon} is not written into the SPA"
 
 
+SCREEN = ROOT / "apps/oneapp/frontend/src/components/screen"
+
+# Every place a state is drawn as a badge. A status that carries a glyph in the
+# list and none in the trail is the bug this list exists to prevent — it is
+# exactly what shipped, and nobody reports it because each screen looks fine on
+# its own.
+BADGES = [
+	"FieldCell.vue",        # the list
+	"StateBadge.vue",       # the badge itself
+]
+
+
 def test_a_badge_and_its_select_draw_the_same_glyph():
 	"""One function, two callers. A value that looks one way being chosen and
 	another way once chosen is the kind of thing nobody reports and everybody
 	notices."""
-	cell = (ROOT / "apps/oneapp/frontend/src/components/screen/FieldCell.vue").read_text()
-	control = (ROOT / "apps/oneapp/frontend/src/components/screen/FieldControl.vue").read_text()
-	assert "valueIcon(value, states)" in cell
+	badge = (SCREEN / "StateBadge.vue").read_text()
+	control = (SCREEN / "FieldControl.vue").read_text()
+	assert "valueIcon(props.label, props.states)" in badge
 	assert "valueIcon(value, props.states)" in control
+
+
+def test_every_state_badge_is_the_same_badge():
+	"""Not a badge each. `StateBadge` is where a state's colour and glyph are
+	decided, so a place that renders its own is a place that will drift."""
+	for name in BADGES:
+		if name == "StateBadge.vue":
+			continue
+		assert "StateBadge" in (SCREEN / name).read_text(), f"{name} draws its own"
+
+	for path in ("apps/oneapp/frontend/src/pages/ScreenHost.vue",
+	             "apps/oneapp/frontend/src/components/screen/RecordView.vue"):
+		body = (ROOT / path).read_text()
+		# Both badges beside a record's name: the doctype's own status field,
+		# and where the framework stands on it.
+		assert 'data-slot="record-status"' in body, path
+		assert 'data-slot="doc-state"' in body, path
+		assert "docBadge" in body, path
+
+
+def test_the_docstatus_words_all_earn_a_glyph():
+	"""Draft, Submitted, Cancelled — the three words every submittable doctype
+	shows. Falling through to the neutral tag is what "Submitted" did."""
+	from app_icons import state_icon
+
+	for word in ("Draft", "Submitted", "Cancelled"):
+		assert state_icon(word) != "lucide-tag", word
 
 
 # --------------------------------------------------------------------------- #

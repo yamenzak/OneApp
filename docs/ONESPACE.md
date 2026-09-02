@@ -341,7 +341,7 @@ Three rules shape that row, and none of them names an action:
   red, and asks before it runs. Which is which comes off the next state's own
   `doc_status`, never the word on the button — "Reject" and "Return to draft"
   are the same word to a reader and different things to the ledger. So a
-  submitted document shows a badge and a menu: unwinding a ledger entry should
+  submitted document is a badge and a menu: unwinding a ledger entry should
   not sit one mis-click from the thing you came here to do.
 * **The first step forward is green.** It is what the record is waiting for.
 * **Save and the actions share one slot.** Save is offered only while the form
@@ -351,6 +351,15 @@ Three rules shape that row, and none of them names an action:
 
 A submitted record is editable only in the fields marked `allow_on_submit`; a
 cancelled one is not editable at all.
+
+**Where a record stands is beside its name**, not among the buttons — in the
+trail on a desktop, in the pane's own header on a phone, and as a badge either
+way. Up to two of them: the screen's `status_field`, which is the doctype's own
+word (*Overdue*, *Paid*), and the framework's, which is the workflow's state or
+Draft / Submitted / Cancelled. De-duped where they are the same field. Both
+carry a glyph derived from the words the same way the list cell's does, through
+one `StateBadge` — a status that has an icon in the list and none in the trail
+is a difference nobody reports and everybody notices.
 
 `Workflow Document State.allow_edit` is enforced on the way *in*, not only
 drawn: the desk enforces it in the browser, which means the API under it does

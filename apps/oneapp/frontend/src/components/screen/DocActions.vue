@@ -16,50 +16,46 @@
 
     * **A step forward is a button; a step that cancels is in the menu.** A
       submitted document's only plain action is Cancel, so a submitted document
-      shows a badge and three dots — which is the point: unwinding a ledger
+      is three dots and nothing else — which is the point: unwinding a ledger
       entry is not something to leave one mis-click away from the thing you
       came here to do.
-    * **The first step forward is the green one.** It is what the record is
-      waiting for. Anything else beside it is an alternative, and reads as one.
+    * **The first step forward is the green one**, and the only solid one. It
+      is what the record is waiting for; anything beside it is an alternative
+      and is drawn as one. Two solid buttons is two primaries, which is none.
     * **Nothing at all while the form is dirty.** Save is in this same place
       then. Submitting what is on the server while the form holds something
       else is how a document gets submitted that nobody has read, and a
       disabled button with an explanation is a worse way to say so than not
       offering the thing that is not the next step.
+
+    What is *not* here any more: the badge saying where the record stands. That
+    is not an action, and it was a screen-width from the record's name — the
+    place people already read a status. It sits beside the name now, with the
+    doctype's own status field, drawn by the same component.
   -->
-  <span v-if="stateLabel || actions.length" class="flex shrink-0 items-center gap-1">
-    <Badge
-      v-if="stateLabel"
-      data-slot="doc-state"
-      :label="stateLabel"
-      :theme="stateTheme"
-      variant="subtle"
+  <span v-if="actions.length && !dirty" class="flex shrink-0 items-center gap-1">
+    <Button
+      v-for="(one, at) in forward"
+      :key="one.action"
+      :data-slot="`doc-action-${one.kind}`"
+      :variant="at === 0 ? 'solid' : 'subtle'"
+      :theme="at === 0 ? 'green' : 'gray'"
+      :label="one.action"
+      :loading="running === one.action"
+      :disabled="Boolean(running)"
+      @click="ask(one)"
     />
 
-    <template v-if="!dirty">
+    <Dropdown v-if="undoing.length" :options="menu" align="end">
       <Button
-        v-for="(one, at) in forward"
-        :key="one.action"
-        :data-slot="`doc-action-${one.kind}`"
-        variant="solid"
-        :theme="at === 0 ? 'green' : 'gray'"
-        :label="one.action"
-        :loading="running === one.action"
-        :disabled="Boolean(running)"
-        @click="ask(one)"
+        data-slot="doc-more"
+        icon="lucide-more-vertical"
+        variant="ghost"
+        label="What else can be done to this"
+        tooltip="More"
+        :loading="Boolean(running) && !forward.some((one) => one.action === running)"
       />
-
-      <Dropdown v-if="undoing.length" :options="menu" align="end">
-        <Button
-          data-slot="doc-more"
-          icon="lucide-more-vertical"
-          variant="ghost"
-          label="What else can be done to this"
-          tooltip="More"
-          :loading="Boolean(running) && !forward.some((one) => one.action === running)"
-        />
-      </Dropdown>
-    </template>
+    </Dropdown>
   </span>
 
   <!--
@@ -82,7 +78,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { Badge, Button, Dialog, Dropdown } from '@/ui'
+import { Button, Dialog, Dropdown } from '@/ui'
 import { workspace } from '../../lib/workspace'
 import { notifyError } from '../../lib/notify'
 
@@ -94,11 +90,6 @@ const props = defineProps({
   // done next. Absent on a doctype that is neither submittable nor governed by
   // a workflow, which is most of them.
   state: { type: Object, default: null },
-  // Which field the screen already badges beside the record's name. A screen
-  // whose `status_field` *is* the workflow's state field is already saying
-  // where this stands, and saying it twice in two places is how a header
-  // starts to read as a debug view.
-  statusField: { type: String, default: '' },
   // Unsaved edits, which put Save in this slot instead.
   dirty: { type: Boolean, default: false },
 })
@@ -125,16 +116,6 @@ const menu = computed(() =>
     onClick: () => ask(one),
   })),
 )
-
-// The workflow's state where there is one, and the docstatus where there is
-// not. Never both: a workflow state carries the docstatus, so showing "Pending
-// Approval" beside "Draft" is saying one thing twice in two vocabularies.
-const stateLabel = computed(() => {
-  const flow = props.state?.workflow
-  if (flow) return flow.state_field === props.statusField ? '' : flow.state
-  return props.state?.status || ''
-})
-const stateTheme = computed(() => props.state?.workflow?.theme || 'gray')
 
 const warning = computed(() =>
   props.state?.workflow

@@ -483,7 +483,8 @@ const STATE_ICON_WORDS = [
       "cleared",
       "taken",
       "restored",
-      "granted"
+      "granted",
+      "submitted"
     ]
   ],
   [

@@ -18,16 +18,7 @@
     rather than something extra to read — it should sit inside the badge, not
     beside it.
   -->
-  <Badge
-    v-if="column.cell === 'badge' && value"
-    :theme="valueTheme(value, states)"
-    :label="String(value)"
-    variant="subtle"
-  >
-    <template #prefix>
-      <Icon :name="valueIcon(value, states)" class="size-3" :aria-hidden="true" />
-    </template>
-  </Badge>
+  <StateBadge v-if="column.cell === 'badge' && value" :label="value" :states="states" />
 
   <span v-else-if="column.cell === 'check'" class="text-ink-gray-7">
     <Icon
@@ -119,9 +110,9 @@
 <script setup>
 import { computed } from 'vue'
 import { Badge, Icon, Avatar, Rating, Tooltip } from '@/ui'
+import StateBadge from './StateBadge.vue'
 import RecordChip from './RecordChip.vue'
 import RecordPreview from './RecordPreview.vue'
-import { valueIcon, valueTheme } from '../../lib/fields'
 import { cellText, tagList } from '../../lib/cells'
 import { plainText } from '../../lib/format'
 import { session } from '../../lib/session'
