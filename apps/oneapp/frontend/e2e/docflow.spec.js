@@ -122,10 +122,14 @@ test('the step that cancels asks before it runs', async ({ page, baseURL }, info
   await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
   await expect(state(page)).toHaveText('zzApproved')
 
-  // `cancels` comes off the next state's own doc_status rather than off the
-  // word on the button — "zzVoid" says nothing about a ledger, and the state
-  // it leads to says everything.
-  await step(page, 'zzVoid').click()
+  // The voiding step is not a button. `cancels` comes off the next state's own
+  // doc_status rather than off the word on the button — "zzVoid" says nothing
+  // about a ledger, and the state it leads to says everything — and everything
+  // that cancels lives behind the three dots rather than beside the step the
+  // record is actually waiting for.
+  await expect(step(page, 'zzVoid')).toHaveCount(0)
+  await page.locator('[data-slot="doc-more"]').click()
+  await page.getByRole('menuitem', { name: 'zzVoid' }).click()
   await expect(page.getByText(/cancels it/)).toBeVisible()
   await page.getByRole('button', { name: 'Never mind' }).click()
   await expect(state(page)).toHaveText('zzApproved')

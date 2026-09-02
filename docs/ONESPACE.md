@@ -332,8 +332,25 @@ then Cancel, then Amend. A doctype with one offers that workflow's transitions
 instead, filtered by the reader's roles and each transition's own condition, and
 the plain Submit is not offered beside them: a workflow **owns** the transition,
 and two buttons that mean the same thing would disagree about who may press
-them. A step into a cancelling state asks first. Amend is `copy_doc` honouring
-`no_copy`, and the framework's own naming turns `amended_from` into `-1`.
+them. Amend is `copy_doc` honouring `no_copy`, and the framework's own naming
+turns `amended_from` into `-1`.
+
+Three rules shape that row, and none of them names an action:
+
+* **A step forward is a button; a step that cancels is behind three dots**, in
+  red, and asks before it runs. Which is which comes off the next state's own
+  `doc_status`, never the word on the button — "Reject" and "Return to draft"
+  are the same word to a reader and different things to the ledger. So a
+  submitted document shows a badge and a menu: unwinding a ledger entry should
+  not sit one mis-click from the thing you came here to do.
+* **The first step forward is green.** It is what the record is waiting for.
+* **Save and the actions share one slot.** Save is offered only while the form
+  holds something the server has not seen, the actions only while it does not.
+  Submitting what is on the server while the form holds something else is how a
+  document gets submitted that nobody has read.
+
+A submitted record is editable only in the fields marked `allow_on_submit`; a
+cancelled one is not editable at all.
 
 `Workflow Document State.allow_edit` is enforced on the way *in*, not only
 drawn: the desk enforces it in the browser, which means the API under it does

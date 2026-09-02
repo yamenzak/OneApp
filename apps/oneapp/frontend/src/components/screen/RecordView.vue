@@ -130,9 +130,13 @@
           sits — so saving twice in a row meant clicking through the
           confirmation of the first one. frappe-ui's ToastProvider hard-codes
           that position, so the button moved instead.
+
+          Only while there is something to save. It shares its place with the
+          document's own actions, which are offered only while there is not:
+          one slot, and whichever of the two is the real next step is in it.
         -->
         <Button
-          v-if="canWrite"
+          v-if="canWrite && dirty"
           variant="solid"
           label="Save"
           :loading="saving"
@@ -387,17 +391,42 @@ const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
 const fields = computed(() => props.spec?.all_columns || props.spec?.columns || [])
 const canWrite = computed(() => !!props.spec?.can_write)
 
+/**
+ * One value, flattened to a string that can be compared to another.
+ *
+ * `!==` is not enough for any of the three shapes a field actually holds. A
+ * child table is an array of row objects, so two identical grids are two
+ * different arrays and every doctype with a grid read as permanently unsaved.
+ * A Currency or Int arrives from the server as a number and comes back out of
+ * its control as a string, so `4200 !== '4200'` said the same thing about
+ * every numeric field. And empty is spelled three ways — `null` on a record,
+ * `undefined` in a form that has not touched the field, `''` in a cleared box.
+ *
+ * Keys are sorted so that a row rebuilt in another order is still the same
+ * row; everything else is compared as the text it would be saved as.
+ */
+const flat = (value) => {
+  if (Array.isArray(value)) return `[${value.map(flat).join(',')}]`
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map((key) => `${key}:${flat(value[key])}`).join(',')}}`
+  }
+  return value === null || value === undefined ? '' : String(value)
+}
+
 // Whether the form holds something the server has not seen. Read from the
 // record rather than tracked with a flag: a flag has to be cleared in every
 // path that saves, reloads or switches record, and the one that forgets it
 // leaves Submit disabled on a record with nothing wrong with it.
 //
-// It gates the document actions and nothing else. Submitting what is on the
-// server while the form holds something else is how a document gets submitted
-// that nobody has read.
+// The header turns on it in both directions — Save appears only while it is
+// true, the document's own actions only while it is false — because those are
+// two answers to one question. Submitting what is on the server while the form
+// holds something else is how a document gets submitted that nobody has read;
+// offering Save on a record nobody has touched is a button whose only effect is
+// to bump `modified`.
 const dirty = computed(() =>
   fields.value.some(
-    (field) => (form[field.fieldname] ?? '') !== (props.record?.[field.fieldname] ?? ''),
+    (field) => flat(form[field.fieldname]) !== flat(props.record?.[field.fieldname]),
   ),
 )
 const trackChanges = computed(() => !!props.spec?.track_changes)

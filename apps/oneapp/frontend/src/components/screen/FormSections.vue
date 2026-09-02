@@ -228,13 +228,19 @@ const wrote = async (field, next) => {
 // and the answer is made here.
 const locked = (field) => !!field.set_only_once && !props.isNew
 
-// A submitted record is editable only in the fields marked `allow_on_submit`.
+// A submitted record is editable only in the fields marked `allow_on_submit`,
+// and a cancelled one is not editable at all — Frappe refuses the save either
+// way, and a control that looks writable and is dropped is the worst of the
+// three possible answers because it is the one that looks like it worked.
+//
 // The docstatus is on the record rather than on the field, which is why this
 // reads the values rather than the spec — and why the record endpoint carries
-// `docstatus` even though it is never a column. Without it a submitted record
-// offers every field and has every save refused, which is the worst of the
-// three possible answers because it looks like it worked.
-const frozen = (field) => Number(values.value?.docstatus) === 1 && !field.allow_on_submit
+// `docstatus` even though it is never a column.
+const frozen = (field) => {
+  const status = Number(values.value?.docstatus)
+  if (status === 2) return true
+  return status === 1 && !field.allow_on_submit
+}
 
 // The doctype's own rules, against the record as it stands right now — so a
 // field appears the moment the field it depends on says so, rather than after

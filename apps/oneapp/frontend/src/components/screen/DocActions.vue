@@ -1,6 +1,6 @@
 <template>
   <!--
-    What can be done to this record now, as one row of buttons.
+    What can be done to this record now.
 
     The list arrives from the server already decided — `docflow.state` answers
     with a workflow's transitions or with Submit / Cancel / Amend, in the same
@@ -11,8 +11,23 @@
     Frappe's own rule underneath it: a workflow **owns** the transition, so the
     plain Submit is never offered beside one. Two buttons that both submit and
     disagree about who may press them is the failure that rule prevents.
+
+    Three rules shape the row, and none of them names an action:
+
+    * **A step forward is a button; a step that cancels is in the menu.** A
+      submitted document's only plain action is Cancel, so a submitted document
+      shows a badge and three dots — which is the point: unwinding a ledger
+      entry is not something to leave one mis-click away from the thing you
+      came here to do.
+    * **The first step forward is the green one.** It is what the record is
+      waiting for. Anything else beside it is an alternative, and reads as one.
+    * **Nothing at all while the form is dirty.** Save is in this same place
+      then. Submitting what is on the server while the form holds something
+      else is how a document gets submitted that nobody has read, and a
+      disabled button with an explanation is a worse way to say so than not
+      offering the thing that is not the next step.
   -->
-  <span v-if="actions.length" class="flex shrink-0 items-center gap-1">
+  <span v-if="stateLabel || actions.length" class="flex shrink-0 items-center gap-1">
     <Badge
       v-if="stateLabel"
       data-slot="doc-state"
@@ -20,18 +35,31 @@
       :theme="stateTheme"
       variant="subtle"
     />
-    <Button
-      v-for="one in actions"
-      :key="one.action"
-      :data-slot="`doc-action-${one.kind}`"
-      :variant="one.cancels ? 'subtle' : 'solid'"
-      :theme="one.cancels ? 'red' : 'gray'"
-      :label="one.action"
-      :loading="running === one.action"
-      :disabled="Boolean(running) || dirty"
-      :tooltip="dirty ? 'Save your changes first' : undefined"
-      @click="ask(one)"
-    />
+
+    <template v-if="!dirty">
+      <Button
+        v-for="(one, at) in forward"
+        :key="one.action"
+        :data-slot="`doc-action-${one.kind}`"
+        variant="solid"
+        :theme="at === 0 ? 'green' : 'gray'"
+        :label="one.action"
+        :loading="running === one.action"
+        :disabled="Boolean(running)"
+        @click="ask(one)"
+      />
+
+      <Dropdown v-if="undoing.length" :options="menu" align="end">
+        <Button
+          data-slot="doc-more"
+          icon="lucide-more-vertical"
+          variant="ghost"
+          label="What else can be done to this"
+          tooltip="More"
+          :loading="Boolean(running) && !forward.some((one) => one.action === running)"
+        />
+      </Dropdown>
+    </template>
   </span>
 
   <!--
@@ -54,7 +82,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { Badge, Button, Dialog } from '@/ui'
+import { Badge, Button, Dialog, Dropdown } from '@/ui'
 import { workspace } from '../../lib/workspace'
 import { notifyError } from '../../lib/notify'
 
@@ -71,8 +99,7 @@ const props = defineProps({
   // where this stands, and saying it twice in two places is how a header
   // starts to read as a debug view.
   statusField: { type: String, default: '' },
-  // Unsaved edits. Submitting what is on the server while the form holds
-  // something else is the one way to submit a document nobody has read.
+  // Unsaved edits, which put Save in this slot instead.
   dirty: { type: Boolean, default: false },
 })
 
@@ -83,6 +110,21 @@ const confirming = ref(false)
 const pending = ref(null)
 
 const actions = computed(() => props.state?.actions || [])
+
+// The split the whole row turns on, and it is the server's answer rather than
+// this file's reading of a label: `cancels` is true where the next state
+// carries docstatus 2.
+const forward = computed(() => actions.value.filter((one) => !one.cancels))
+const undoing = computed(() => actions.value.filter((one) => one.cancels))
+
+const menu = computed(() =>
+  undoing.value.map((one) => ({
+    label: one.action,
+    icon: 'lucide-undo-2',
+    theme: 'red',
+    onClick: () => ask(one),
+  })),
+)
 
 // The workflow's state where there is one, and the docstatus where there is
 // not. Never both: a workflow state carries the docstatus, so showing "Pending

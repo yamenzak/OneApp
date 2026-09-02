@@ -60,7 +60,9 @@ test('the bell subscribes, and an edit by somebody else turns up', async ({
   const pane = page.locator('[data-slot="record-pane"]')
   await pane.getByLabel('Content').fill(`Ring ahead. ${Date.now()}`)
   await page.getByRole('button', { name: 'Save', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled()
+  // Save is offered only while there is something to save, so it going away is
+  // how the header says the write landed.
+  await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0)
 
   // And Robin is told — by name, and about which field.
   await signIn(page, baseURL, COLLEAGUE)
