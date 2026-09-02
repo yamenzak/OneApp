@@ -44,10 +44,36 @@ top to bottom and it is the record you end up with. Each value is one of:
                                                          earlier step made of
                                                          that source row
     {"const": "RUA Contracting"}                         the same on every row
+    {"when": [["absent", "Absent"]], "default": "Present"}
+                                                         the first of these
+                                                         fields that is true
+                                                         gives its value
 
 A `link` that resolves to nothing is an issue on that row rather than a blank
 saved quietly, because a link that silently did not arrive is the failure people
 find months later in a report that is missing a third of its rows.
+
+## One row over there, many rows here
+
+The second most common shape a migration takes, after one-to-one. RUA keeps
+attendance as one row per *day* holding a JSON object keyed by employee — 307
+rows that have to become about twenty thousand — and a system that could only
+map one row to one row would leave it behind, which is exactly why nothing in
+that system can report on attendance.
+
+A step says so with `fan_out`:
+
+    {"from": "attendance_log", "shape": "map"}    an object: each key is a row
+    {"from": "items", "shape": "list"}            an array: each item is a row
+
+Each piece becomes its own target record, built from the parent's fields with
+the piece's own merged over them and `__key` holding the key it came in under —
+so the employee is `{"from": "__key", "link": "RUA Employee"}` and the day is
+still `{"from": "date"}` off the parent.
+
+Identity is `parent:key`, which keeps every promise the engine makes: a second
+run updates the twenty thousand rather than making twenty thousand more, and a
+day edited on the old system re-crosses only its own employees.
 """
 
 import json
@@ -233,6 +259,17 @@ def build(row: dict, field_map: dict, plan: str) -> dict:
 			values[target] = rule["const"]
 			continue
 
+		if "when" in rule:
+			# The first of these fields that is true gives its value. For the
+			# columns a bespoke system keeps as three booleans where a real one
+			# keeps a status — present, late, absent — which cannot be a `from`
+			# because the answer is not in any one of them.
+			values[target] = next(
+				(said for field, said in rule["when"] if row.get(field)),
+				rule.get("default"),
+			)
+			continue
+
 		said = row.get(rule.get("from"))
 
 		if rule.get("link"):
@@ -256,6 +293,48 @@ def build(row: dict, field_map: dict, plan: str) -> dict:
 		values[target] = said
 
 	return values
+
+
+def explode(row: dict, rule: dict | None) -> list[tuple[str, dict]]:
+	"""One source row as the several target rows it actually is.
+
+	Answers `[(key, row)]` either way, so the caller has one loop and not two:
+	a step with no `fan_out` is one piece keyed by the row's own name, which is
+	exactly the identity it had before this existed.
+
+	The piece's own fields are merged *over* the parent's rather than under
+	them. A day's row carries `name`, `date` and `modified`; an employee's entry
+	inside it carries `present` and `overtime`. Where both name something, the
+	inner one is the more specific and wins.
+	"""
+	if not rule:
+		return [(str(row.get("name")), row)]
+
+	held = row.get(rule.get("from"))
+	if held in (None, ""):
+		return []
+
+	held = frappe.parse_json(held)
+
+	if rule.get("shape") == "list":
+		if not isinstance(held, list):
+			raise ValueError(f"`{rule['from']}` is not a list")
+		# Keyed by position, because a list has no other stable name — and a
+		# stable name is what makes a second run an update.
+		return [
+			(str(at), {**row, **(one if isinstance(one, dict) else {"value": one}),
+			           "__key": str(at)})
+			for at, one in enumerate(held)
+		]
+
+	if not isinstance(held, dict):
+		raise ValueError(f"`{rule['from']}` is not an object")
+
+	return [
+		(str(key), {**row, **(one if isinstance(one, dict) else {"value": one}),
+		            "__key": str(key)})
+		for key, one in held.items()
+	]
 
 
 def resolve(plan: str, source_doctype: str, source_name: str) -> str:
@@ -381,6 +460,7 @@ def _step(run, plan, source, step, row):
 		filters = filters + [[step.source_doctype, "modified", ">=", str(step.watermark)]]
 
 	field_map = json.loads(step.field_map or "{}")
+	fan_out = json.loads(step.fan_out) if step.fan_out else None
 	start = 0
 	newest = step.watermark
 
@@ -390,14 +470,29 @@ def _step(run, plan, source, step, row):
 			break
 
 		for said in page:
+			# `seen` counts source rows and not target ones: it is what the
+			# source has, and a number that grew twenty times faster than the
+			# thing being read would be unreadable as progress.
 			counts["seen"] += 1
 			try:
-				made = build(said, field_map, plan.name)
-				what = _write(plan, step, said, made, run.dry_run)
-				counts[what] += 1
+				pieces = explode(said, fan_out)
 			except Exception as raised:
 				counts["failed"] += 1
 				_issue(run, step, said, raised)
+				pieces = []
+
+			for key, piece in pieces:
+				try:
+					made = build(piece, field_map, plan.name)
+					# `key` and not `piece["name"]`: every piece of one row
+					# shares the parent's name, and an identity keyed on that
+					# would have twenty thousand rows overwrite each other.
+					what = _write(plan, step, key, piece, made, run.dry_run)
+					counts[what] += 1
+				except Exception as raised:
+					counts["failed"] += 1
+					_issue(run, step, piece, raised)
+
 			newest = max(filter(None, (newest, said.get("modified"))), default=newest)
 
 		# Per page, not per run. This is what "resumable" means: a step killed
@@ -419,7 +514,7 @@ def _step(run, plan, source, step, row):
 	frappe.db.commit()
 
 
-def _write(plan, step, said: dict, made: dict, dry_run: int) -> str:
+def _write(plan, step, key: str, said: dict, made: dict, dry_run: int) -> str:
 	"""Insert or update the one record this source row is, and remember which.
 
 	Through `get_doc` and `save`, never a direct write: an imported Sales
@@ -427,7 +522,7 @@ def _write(plan, step, said: dict, made: dict, dry_run: int) -> str:
 	document, and the ledger behind it does not exist. A migration that beats
 	validation has imported the shape of the data and not the data.
 	"""
-	existing = resolve(plan.name, step.source_doctype, said["name"])
+	existing = resolve(plan.name, step.source_doctype, key)
 
 	if dry_run:
 		# Built, resolved and validated — and then thrown away. `run_method`
@@ -441,11 +536,11 @@ def _write(plan, step, said: dict, made: dict, dry_run: int) -> str:
 		doc = frappe.get_doc(step.target_doctype, existing)
 		doc.update(made)
 		doc.save()
-		_remember(plan, step, said["name"], doc.name)
+		_remember(plan, step, key, doc.name)
 		return "updated"
 
 	doc = frappe.get_doc({"doctype": step.target_doctype, **made}).insert()
-	_remember(plan, step, said["name"], doc.name)
+	_remember(plan, step, key, doc.name)
 	return "created"
 
 
@@ -677,6 +772,14 @@ def _check_step(source, plan, step, made: set) -> dict:
 	theirs, rows = _their_fields(source, step.source_doctype, problems)
 	ours = _our_fields(step.target_doctype, problems)
 
+	# A fan-out changes what the field map may name, so it is read first: the
+	# fields inside one piece are not fields of the source doctype, and
+	# checking the map against the parent's columns alone would report every
+	# one of them missing.
+	fan_out, pieces = _check_fan_out(step, rows, theirs, problems)
+	if fan_out and pieces:
+		theirs = set(pieces[0][1])
+
 	for target, rule in field_map.items():
 		if not isinstance(rule, dict):
 			rule = {"from": rule}
@@ -685,6 +788,12 @@ def _check_step(source, plan, step, made: set) -> dict:
 			problems.append(f"{step.target_doctype} has no field `{target}`")
 
 		if "const" in rule:
+			continue
+
+		if "when" in rule:
+			for field, _said in rule["when"]:
+				if theirs is not None and field not in theirs:
+					problems.append(f"`{target}` asks about `{field}`, which is not there")
 			continue
 
 		said = rule.get("from")
@@ -724,6 +833,41 @@ def _check_step(source, plan, step, made: set) -> dict:
 		"warnings": warnings,
 		"source_rows": len(rows) if rows is not None else None,
 	}
+
+
+def _check_fan_out(step, rows, theirs, problems: list):
+	"""The `fan_out` rule, and one real row put through it.
+
+	Exploding a sample is the only honest check: the rule names a field holding
+	JSON, and whether that JSON is the shape it claims cannot be known from a
+	schema. A step that says `map` over a column holding an array fails on every
+	row, and this is where that is cheap to find out.
+	"""
+	if not step.fan_out:
+		return None, None
+
+	try:
+		rule = json.loads(step.fan_out)
+	except ValueError as raised:
+		problems.append(f"the fan-out is not JSON: {raised}")
+		return None, None
+
+	if theirs is not None and rule.get("from") not in theirs:
+		problems.append(f"the fan-out reads `{rule.get('from')}`, which is not there")
+		return rule, None
+
+	if not rows:
+		return rule, None
+
+	try:
+		pieces = explode(rows[0], rule)
+	except Exception as raised:
+		problems.append(f"the fan-out does not fit the data: {raised}")
+		return rule, None
+
+	if not pieces:
+		problems.append(f"the first row's `{rule.get('from')}` is empty, so nothing fans out")
+	return rule, pieces
 
 
 def _their_fields(source, doctype: str, problems: list):

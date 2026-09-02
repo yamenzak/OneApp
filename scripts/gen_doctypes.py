@@ -2243,6 +2243,17 @@ doctype(
           description="Narrow what comes across, in Frappe's own filter shape. "
                       "Applied on the source site, so what is excluded is never "
                       "fetched."),
+        # One row over there being many rows here — the second most common
+        # shape a migration takes. A bespoke system that keeps a month of
+        # attendance as one row a day holding an object keyed by employee is
+        # not unusual; it is what a system with no reporting looks like from
+        # the inside.
+        f("fan_out", "Code", options="JSON",
+          description='Where one source row is several records. '
+                      '`{"from": "attendance_log", "shape": "map"}` makes one '
+                      'record per key; `"list"` makes one per item. Each gets '
+                      'the parent\'s fields with its own merged over them and '
+                      '`__key` holding what it came in under.'),
         section("sec_step_state", "Where it got to"),
         # The whole incremental story, in one field. Advanced only over rows
         # that committed, so a step that dies half way resumes rather than

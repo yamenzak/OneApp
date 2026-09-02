@@ -44,6 +44,7 @@ def install(name: str, source: str) -> str:
 			"target_doctype": step["target"],
 			"field_map": frappe.as_json(step["map"]),
 			"filters": frappe.as_json(step["filters"]) if step.get("filters") else None,
+			"fan_out": frappe.as_json(step["fan_out"]) if step.get("fan_out") else None,
 			"enabled": 1,
 			"notes": step.get("why", ""),
 		})

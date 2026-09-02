@@ -153,6 +153,7 @@ class Step:
 	target_doctype = "Customer"
 	field_map = '{"customer_name": "party"}'
 	filters = None
+	fan_out = None
 	watermark = None
 	enabled = 1
 
@@ -178,7 +179,7 @@ def written(importer, stub_frappe, monkeypatch):
 
 def test_a_row_nobody_has_seen_is_inserted(importer, written, monkeypatch):
 	monkeypatch.setattr(importer, "resolve", lambda *a: None)
-	what = importer._write(Plan(), Step(), {"name": "Halloway & Co"}, {"customer_name": "X"}, 0)
+	what = importer._write(Plan(), Step(), "Halloway & Co", {"name": "Halloway & Co"}, {"customer_name": "X"}, 0)
 	assert what == "created"
 	assert written[0].inserted == 1
 
@@ -188,7 +189,7 @@ def test_the_second_run_updates_rather_than_duplicating(importer, written, stub_
 	monkeypatch.setattr(importer, "resolve", lambda *a: "CUST-0007")
 	stub_frappe.db.records[("Customer", "CUST-0007")] = True
 
-	what = importer._write(Plan(), Step(), {"name": "Halloway & Co"}, {"customer_name": "X"}, 0)
+	what = importer._write(Plan(), Step(), "Halloway & Co", {"name": "Halloway & Co"}, {"customer_name": "X"}, 0)
 	assert what == "updated"
 	assert written[0].saved == 1
 	assert written[0].inserted == 0
@@ -200,13 +201,13 @@ def test_a_target_deleted_since_is_made_again(importer, written, stub_frappe, mo
 	monkeypatch.setattr(importer, "resolve", lambda *a: "CUST-0007")
 	stub_frappe.db.records[("Customer", "CUST-0007")] = None
 
-	assert importer._write(Plan(), Step(), {"name": "H"}, {"customer_name": "X"}, 0) == "created"
+	assert importer._write(Plan(), Step(), "H", {"name": "H"}, {"customer_name": "X"}, 0) == "created"
 
 
 def test_a_rehearsal_validates_and_keeps_nothing(importer, written, monkeypatch):
 	"""The counts a dry run reports are real; the records are not."""
 	monkeypatch.setattr(importer, "resolve", lambda *a: None)
-	what = importer._write(Plan(), Step(), {"name": "H"}, {"customer_name": "X"}, 1)
+	what = importer._write(Plan(), Step(), "H", {"name": "H"}, {"customer_name": "X"}, 1)
 
 	assert what == "created"
 	assert written[0].validated == 1
@@ -309,7 +310,7 @@ def test_a_row_that_will_not_save_is_kept_and_the_rest_go_on(importer, stepped, 
 		{"name": "bad", "modified": "2026-01-02 00:00:00"},
 	] if a[3] == 0 else [])
 
-	def write(plan, step, said, made, dry_run):
+	def write(plan, step, key, said, made, dry_run):
 		if said["name"] == "bad":
 			raise ValueError("Customer Group is required")
 		return "created"
@@ -356,7 +357,7 @@ def check_step(importer, monkeypatch, field_map, *, rows=None, ours=None, made=(
 	                    lambda source, dt, problems: (set(rows[0]) if rows else set(), rows))
 	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: ours)
 	step = Row(source_doctype="RUA Party", target_doctype="Customer",
-	           field_map=__import__("json").dumps(field_map), enabled=1)
+	           field_map=__import__("json").dumps(field_map), fan_out=None, enabled=1)
 	return importer._check_step(None, Row(name="P"), step, set(made))
 
 
@@ -414,7 +415,7 @@ def test_a_default_makes_the_unmapped_values_a_decision(importer, monkeypatch):
 
 def test_a_field_map_that_is_not_json_says_so_rather_than_raising(importer, monkeypatch):
 	step = Row(source_doctype="RUA Party", target_doctype="Customer",
-	           field_map="{not json", enabled=1)
+	           field_map="{not json", fan_out=None, enabled=1)
 	found = importer._check_step(None, Row(name="P"), step, set())
 	assert found["problems"] and "not JSON" in found["problems"][0]
 
@@ -460,3 +461,147 @@ def test_every_rua_step_says_what_it_is_for(stub_frappe):
 	for step in rua.STEPS:
 		assert len(step.get("why", "")) > 20, f"{step['source']} says nothing"
 		assert step["map"], f"{step['source']} maps nothing"
+
+
+# --------------------------------------------------------------------------- #
+# One row over there, many rows here
+#
+# RUA keeps a month of attendance as one row a day holding an object keyed by
+# employee: 307 rows that have to become about twenty thousand. What is checked
+# here is that the pieces keep every promise the engine makes about whole rows.
+# --------------------------------------------------------------------------- #
+
+
+DAY = {
+	"name": "RC-ATN-2026-09-01",
+	"date": "2026-09-01",
+	"modified": "2026-09-01 18:00:00",
+	"attendance_log": '{"RC-EMP-00001": {"present": true, "late": false, '
+	                  '"absent": false, "overtime": 0}, '
+	                  '"RC-EMP-00002": {"present": false, "late": false, '
+	                  '"absent": true, "overtime": 0}}',
+}
+
+FAN = {"from": "attendance_log", "shape": "map"}
+
+
+def test_no_fan_out_is_one_piece_keyed_by_the_row(importer):
+	"""So the caller has one loop and not two, and a plain step's identity is
+	exactly what it was before any of this existed."""
+	assert importer.explode({"name": "X"}, None) == [("X", {"name": "X"})]
+
+
+def test_a_map_fans_out_one_piece_per_key(importer):
+	pieces = importer.explode(DAY, FAN)
+	assert [key for key, _ in pieces] == ["RC-EMP-00001", "RC-EMP-00002"]
+
+
+def test_a_piece_carries_the_parent_and_its_own_key(importer):
+	"""The day is on the parent and the attendance is on the piece, and the
+	field map reads both without knowing which is which."""
+	_, piece = importer.explode(DAY, FAN)[0]
+	assert piece["date"] == "2026-09-01"
+	assert piece["__key"] == "RC-EMP-00001"
+	assert piece["present"] is True
+
+
+def test_the_piece_wins_where_both_name_something(importer):
+	"""The inner value is the more specific one."""
+	row = {"name": "P", "status": "parent", "rows": '{"a": {"status": "piece"}}'}
+	_, piece = importer.explode(row, {"from": "rows", "shape": "map"})[0]
+	assert piece["status"] == "piece"
+
+
+def test_a_list_fans_out_by_position(importer):
+	"""A list has no other stable name, and a stable name is what makes a second
+	run an update rather than a duplicate."""
+	row = {"name": "P", "items": '[{"item": "a"}, {"item": "b"}]'}
+	pieces = importer.explode(row, {"from": "items", "shape": "list"})
+	assert [key for key, _ in pieces] == ["0", "1"]
+	assert pieces[1][1]["item"] == "b"
+
+
+def test_an_empty_column_fans_out_to_nothing(importer):
+	"""A day nobody logged is not a failure."""
+	assert importer.explode({"name": "P", "attendance_log": ""}, FAN) == []
+
+
+def test_a_shape_that_does_not_fit_the_data_says_so(importer):
+	"""And it says so per row, as an issue, rather than ending the run."""
+	row = {"name": "P", "attendance_log": '["not", "an", "object"]'}
+	with pytest.raises(ValueError):
+		importer.explode(row, FAN)
+
+
+def test_every_piece_gets_its_own_identity(importer, stepped, monkeypatch):
+	"""The one that matters. Every piece of one row shares the parent's name, so
+	an identity keyed on that would have twenty thousand rows overwrite each
+	other and leave one."""
+	keys = []
+	monkeypatch.setattr(importer, "fetch", lambda *a: [DAY] if a[3] == 0 else [])
+	monkeypatch.setattr(importer, "_write",
+	                    lambda plan, step, key, said, made, dry: keys.append(key) or "created")
+
+	step = Step()
+	step.fan_out = __import__("json").dumps(FAN)
+	row = RunStep()
+	importer._step(Run(), Plan(), None, step, row)
+
+	assert keys == ["RC-EMP-00001", "RC-EMP-00002"]
+	# And `seen` counts what the source has, not what was written — a number
+	# growing twenty times faster than the thing being read is unreadable as
+	# progress.
+	assert row.marks["seen"] == 1
+	assert row.marks["created"] == 2
+
+
+def test_one_bad_piece_does_not_lose_the_others(importer, stepped, monkeypatch):
+	monkeypatch.setattr(importer, "fetch", lambda *a: [DAY] if a[3] == 0 else [])
+
+	def write(plan, step, key, said, made, dry):
+		if key.endswith("2"):
+			raise ValueError("Employee RC-EMP-00002 does not exist")
+		return "created"
+
+	monkeypatch.setattr(importer, "_write", write)
+	step = Step()
+	step.fan_out = __import__("json").dumps(FAN)
+	row = RunStep()
+	importer._step(Run(), Plan(), None, step, row)
+
+	assert row.marks["created"] == 1
+	assert row.marks["failed"] == 1
+	assert row.marks["status"] == "Done"
+
+
+# --- the `when` rule --------------------------------------------------------
+
+
+def test_the_first_true_field_gives_its_value(importer):
+	rule = {"status": {"when": [["absent", "Absent"]], "default": "Present"}}
+	assert importer.build({"absent": True}, rule, "P") == {"status": "Absent"}
+	assert importer.build({"absent": False}, rule, "P") == {"status": "Present"}
+
+
+def test_when_reads_in_order(importer):
+	"""Three booleans where a real system keeps one status: the answer is in
+	none of them individually, and which wins is the declaration's to say."""
+	rule = {"status": {"when": [["absent", "Absent"], ["half", "Half Day"]],
+	                   "default": "Present"}}
+	assert importer.build({"absent": True, "half": True}, rule, "P") == {"status": "Absent"}
+	assert importer.build({"absent": False, "half": True}, rule, "P") == {"status": "Half Day"}
+
+
+def test_a_fan_out_that_does_not_fit_is_a_problem_the_check_finds(importer, monkeypatch):
+	"""Whether a column holds the shape a rule claims cannot be known from a
+	schema, so the check explodes a real row to find out."""
+	monkeypatch.setattr(importer, "_their_fields",
+	                    lambda source, dt, problems: ({"attendance_log"},
+	                                                  [{"attendance_log": '["a"]'}]))
+	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: {"employee"})
+	step = Row(source_doctype="RUA Attendance", target_doctype="Attendance",
+	           field_map='{"employee": "__key"}',
+	           fan_out=__import__("json").dumps(FAN), enabled=1)
+
+	found = importer._check_step(None, Row(name="P"), step, set())
+	assert any("does not fit the data" in p for p in found["problems"])

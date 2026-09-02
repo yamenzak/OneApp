@@ -11,6 +11,7 @@
   "cb_step_shape",
   "field_map",
   "filters",
+  "fan_out",
   "sec_step_state",
   "watermark",
   "cb_step_state",
@@ -58,6 +59,13 @@
    "fieldname": "filters",
    "fieldtype": "Code",
    "label": "Filters",
+   "options": "JSON"
+  },
+  {
+   "description": "Where one source row is several records. `{\"from\": \"attendance_log\", \"shape\": \"map\"}` makes one record per key; `\"list\"` makes one per item. Each gets the parent's fields with its own merged over them and `__key` holding what it came in under.",
+   "fieldname": "fan_out",
+   "fieldtype": "Code",
+   "label": "Fan Out",
    "options": "JSON"
   },
   {

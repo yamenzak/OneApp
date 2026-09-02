@@ -11,9 +11,6 @@ half of it.
 
 ## What is deliberately not here
 
-* **`RUA Attendance`.** One row per *day*, holding a JSON blob keyed by
-  employee. It cannot be a field map: 307 rows have to become ~20,000, which is
-  a fan-out and not a mapping. It gets its own step when the engine grows one.
 * **`RUA Issue`, `RUA Remote Issue`, `RUA App Update`.** A developer's own bug
   tracker and changelog, not the customer's system.
 * **`RUA Inventory Item`, `RUA Payslip`.** Zero rows apiece. Never used, and
@@ -208,6 +205,32 @@ STEPS = [
 			"reference_date": {"from": "date"},
 			"project": {"from": "project", "link": "RUA Project"},
 			"remarks": {"from": "remarks"},
+		},
+	},
+	{
+		"source": "RUA Attendance",
+		"target": "Attendance",
+		"why": "307 rows becoming about twenty thousand. One row per day "
+		       "holding an object keyed by employee is what a system with no "
+		       "reporting looks like from the inside — nobody can ask how many "
+		       "days somebody worked in March, because the answer is inside "
+		       "thirty-one JSON blobs.",
+		# The fan-out. Each key of `attendance_log` is an employee id and each
+		# value is that employee's day, so one row becomes one Attendance per
+		# employee — which is the shape every report HRMS ships expects.
+		"fan_out": {"from": "attendance_log", "shape": "map"},
+		"map": {
+			"employee": {"from": "__key", "link": "RUA Employee"},
+			"attendance_date": {"from": "date"},
+			"company": {"const": COMPANY},
+			# Three booleans where a real system keeps one status, so the answer
+			# is in none of them individually. Absent wins where it is set;
+			# everything else is a day worked.
+			"status": {"when": [["absent", "Absent"]], "default": "Present"},
+			# And late is not a status in ERPNext — it is a flag on a day that
+			# was worked, which is exactly what it means here too.
+			"late_entry": {"from": "late"},
+			"custom_overtime_hours": {"from": "overtime"},
 		},
 	},
 	{
