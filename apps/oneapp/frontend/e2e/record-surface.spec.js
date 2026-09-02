@@ -269,18 +269,21 @@ test('a box per field, above the list', async ({ page }, info) => {
 
   if (info.project.name === 'mobile') {
     // Five boxes stacked is most of a phone screen before a single row shows,
-    // so the rest live in the Filter panel — which is Frappe's call too.
+    // so the rest are behind the chevron — which is Frappe's call too.
     await expect(page.getByPlaceholder('Description')).toBeHidden()
     expectNoRealErrors(errors)
     return
   }
 
   // Which fields get one is Frappe's own answer: `in_standard_filter` plus the
-  // title field.
-  await expect(page.getByPlaceholder('Description')).toBeVisible()
+  // title field. How many of them are *drawn* is the row measuring itself —
+  // the title box is the sixth here and does not fit, so it is behind the same
+  // chevron a phone has always used.
   expect(await page.locator('button[role="combobox"]').allInnerTexts()).toEqual(
     expect.arrayContaining(['Status', 'Priority']),
   )
+  await expect(page.getByPlaceholder('Description')).toBeHidden()
+  await page.getByRole('button', { name: 'More filters' }).click()
 
   await page.getByPlaceholder('Description').fill('van')
   await page.getByPlaceholder('Description').press('Enter')
@@ -822,20 +825,15 @@ test('the phone puts the box and its controls on one row', async ({ page }, info
   expectNoRealErrors(errors)
 })
 
-test('a phone can reach the quick filters it does not show', async ({ page }, info) => {
+test('the boxes that do not fit are one click away', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await openList(page)
 
-  if (info.project.name !== 'mobile') {
-    // Above the breakpoint they are all showing, so there is nothing to reveal.
-    await expect(page.getByRole('button', { name: /More filters/ })).toBeHidden()
-    expectNoRealErrors(errors)
-    return
-  }
-
-  // Five boxes stacked is most of a phone screen, so only the ID box stays —
-  // and Frappe's own mobile list puts the rest behind a chevron rather than
-  // hiding them outright, which is the half we were missing.
+  // The row shows what fits and reveals the rest, at every width — it measures
+  // itself rather than reading the viewport, because what decides whether five
+  // boxes fit is the pane, and opening a record halves it. On a phone that is
+  // one box; on this list it is five of six. Either way the chevron is there
+  // and the sixth is behind it, which is what Frappe's own mobile list does.
   await expect(page.getByPlaceholder('Description')).toBeHidden()
   await page.getByRole('button', { name: 'More filters' }).click()
   await expect(page.getByPlaceholder('Description')).toBeVisible()

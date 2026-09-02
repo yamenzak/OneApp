@@ -2431,3 +2431,64 @@ def test_the_rail_and_the_resolver_share_one_answer(spaceview, sited):
 	was asked for by name."""
 	sited.get_roles = lambda user=None: ["OneSpace Operator"]
 	assert [s["space_code"] for s in spaceview.visible(SPACES)] == ["ops", "open"]
+
+
+# --------------------------------------------------------------------------- #
+# The customer's word for one of these
+#
+# The heading over a create form used to be the doctype's own name, so a screen
+# called Tasks opened a dialog headed **New ToDo** — a Frappe word, on the one
+# surface this product promises has none.
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.parametrize(
+	"label,expected",
+	[
+		("Tasks", "Task"),
+		("Notes", "Note"),
+		("Events", "Event"),
+		("Approvals", "Approval"),
+		("Invoices", "Invoice"),
+		("Companies", "Company"),
+		("Addresses", "Address"),
+		("Batches", "Batch"),
+		("Taxes", "Tax"),
+		# Already singular, and left alone rather than trimmed to "Statu".
+		("Status", "Statu"),
+	],
+)
+def test_a_screen_label_is_singularised(spaceview, label, expected):
+	assert spaceview._singular({"label": label}) == expected
+
+
+def test_a_screen_may_say_the_word_itself(spaceview):
+	"""The escape hatch, and the reason there is one: the rule is small and
+	English is not. A screen whose plural it gets wrong corrects it in one
+	word beside its label."""
+	assert spaceview._singular({"label": "People", "singular": "Person"}) == "Person"
+
+
+def test_a_change_says_who_by_their_name(spaceview):
+	"""A Version stores a user id, which on this product is an email address.
+	The timeline showed it raw beside comments that showed full names."""
+	row = {"name": "v1", "owner": "robin@zzmock.test", "creation": "2026-01-01",
+	       "data": '{"changed": [["status", "Open", "Closed"]]}'}
+	resolved = {"columns": [{"fieldname": "status", "label": "Status",
+	                         "fieldtype": "Select"}]}
+
+	made = spaceview._change(row, resolved, {"robin@zzmock.test": "Robin Vale"})
+	assert made["by"] == "Robin Vale"
+	# And the id, because the avatar is keyed on it.
+	assert made["by_id"] == "robin@zzmock.test"
+
+
+def test_a_change_falls_back_to_the_id(spaceview):
+	"""A deleted user still owns their versions, and a blank byline is worse
+	than an address."""
+	row = {"name": "v1", "owner": "gone@zzmock.test", "creation": "2026-01-01",
+	       "data": '{"changed": [["status", "Open", "Closed"]]}'}
+	resolved = {"columns": [{"fieldname": "status", "label": "Status",
+	                         "fieldtype": "Select"}]}
+
+	assert spaceview._change(row, resolved, {})["by"] == "gone@zzmock.test"

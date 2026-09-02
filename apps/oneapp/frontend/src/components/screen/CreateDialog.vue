@@ -8,12 +8,13 @@
     Reading a record is not this — that is a pane beside the list, because a
     record you are reading is a record you are reading *against* the list.
   -->
-  <!-- The doctype's own word for one of these, not the screen's: a screen is
-       called "Tasks" and "New Tasks" is not a sentence. It is the same label
-       the link picker's quick-create uses. -->
+  <!-- The screen's own word for one of these, singular: a screen is called
+       "Tasks" and "New Tasks" is not a sentence. The screen's rather than the
+       doctype's, because the doctype's is a Frappe word — this used to read
+       **New ToDo** on a screen called Tasks. -->
   <FormDialog
     v-model="open"
-    :title="`New ${spec?.doctype_label || 'record'}`"
+    :title="`New ${spec?.singular || 'record'}`"
     size="3xl"
     :dismissible="!dirty"
     :close-label="dirty ? 'Discard and close' : 'Close'"
@@ -139,7 +140,7 @@ const save = async ({ another = false } = {}) => {
       // Stay, and say so: the dialog looks identical after a successful create
       // and an ignored click, so without the toast there is no way to tell
       // which one just happened.
-      notifySuccess(`${props.spec?.doctype_label || 'Record'} ${made?.name || ''} created`)
+      notifySuccess(`${props.spec?.singular || 'Record'} ${made?.name || ''} created`)
       blank()
       return
     }

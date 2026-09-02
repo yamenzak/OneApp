@@ -3,13 +3,23 @@
     What a row is, in one cell.
 
     Frappe's list leads with the subject and nothing else competes with it, so
-    this is the first column whatever else a person has chosen. The avatar comes
-    from the doctype's own image field where it declares one; where it does not,
-    Avatar draws initials from the id, which is still a more recognisable mark
-    than a blank square.
+    this is the first column whatever else a person has chosen.
+
+    The face is drawn only where the doctype declares an image field — where a
+    row is a person or a company and the picture is part of how you recognise
+    it. Everywhere else it was initials off the title, which on a screen of
+    "Backlog item 01" through "Backlog item 59" is fifty-nine identical grey
+    B's down the left of the list: a column of decoration that pushes every
+    title right and distinguishes nothing.
   -->
   <div class="flex min-w-0 items-center gap-2">
-    <Avatar :image="image" :label="plainText(title) || String(row.name)" shape="square" size="lg" />
+    <Avatar
+      v-if="imageField"
+      :image="image"
+      :label="plainText(title) || String(row.name)"
+      shape="square"
+      size="lg"
+    />
     <!--
       A Button, still, now that the whole row opens the record (see
       `ListBody.openRow`). The row is a `div` — frappe-ui only renders it as a

@@ -696,6 +696,8 @@ def _resolve(space_code: str, screen: str | None = None,
 		],
 		"screen": chosen["screen"],
 		"screen_label": chosen["label"],
+		# One of these, in the customer's words. See `_singular`.
+		"singular": _singular(chosen),
 		# How this screen may be looked at, and which of those we are rendering.
 		# The first is what it opens with; asking for one it does not offer gets
 		# that rather than an error, because a stale link is not a failure.
@@ -764,10 +766,10 @@ def _resolve(space_code: str, screen: str | None = None,
 
 	resolved.update({
 		"doctype": doctype,
-		# What the site calls one of these. The screen's own label is plural by
-		# convention — "Tasks", "Invoices" — and "New Tasks" is not a sentence;
-		# this is the word the desk and the link picker's quick-create already
-		# use, and it comes from the doctype rather than from the manifest.
+		# The doctype's own name, for the places that are about the doctype
+		# rather than about the screen — a print format belongs to `ToDo`
+		# whichever screen opened it. Never a heading a customer reads: see
+		# `_singular`.
 		"doctype_label": _(meta.get("name")),
 		"columns": columns,
 		# Everything the *record* may show, child tables included.
@@ -967,6 +969,45 @@ NEEDS_STATUS = ("board",)
 # empty page — so the type is dropped and the screen opens on its list, the
 # way a board is dropped where there is no field to make columns of.
 NEEDS_WIDGETS = ("dashboard",)
+
+
+# Plural endings, longest first, and their singular. Not a stemmer: this is
+# only ever applied to a screen's own label, which is a short noun phrase
+# somebody in this repo wrote, and a screen whose plural these get wrong says
+# so with `singular`.
+PLURALS = (
+	("ies", "y"),     # Companies, Currencies
+	("ches", "ch"),   # Batches
+	("shes", "sh"),   # Dishes
+	("sses", "ss"),   # Addresses
+	("xes", "x"),     # Taxes
+	("s", ""),        # Tasks, Notes, Invoices
+)
+
+
+def _singular(screen: dict) -> str:
+	"""One of these, in the words a customer reads.
+
+	The heading over a create form, and the noun in the toast after it saves. It
+	used to be the doctype's own name, which meant a customer clicking New on a
+	screen called Tasks got a dialog headed **New ToDo** — a Frappe word, on the
+	one surface where this product promises there are none.
+
+	So it comes from the screen instead, singularised: screen labels are plural
+	by convention, and "New Tasks" is not a sentence. The rule is deliberately
+	small and covers the labels this repo actually writes; anything it gets
+	wrong — People, Series, an already-singular label — says so by declaring
+	`singular` on the screen, which is one word beside the label it corrects.
+	"""
+	said = (screen.get("singular") or "").strip()
+	if said:
+		return _(said)
+
+	label = (screen.get("label") or "").strip()
+	for ending, instead in PLURALS:
+		if label.lower().endswith(ending) and len(label) > len(ending):
+			return _(label[: len(label) - len(ending)] + instead)
+	return _(label)
 
 
 def _view_types(screen: dict) -> list[str]:
@@ -2018,7 +2059,7 @@ def timeline(space_code: str, screen: str, name: str) -> dict:
 			order_by="creation desc",
 			limit_page_length=TIMELINE_PAGE,
 		)
-		changes = [_change(row, resolved) for row in changes]
+		changes = [_change(row, resolved, _names(changes)) for row in changes]
 		changes = [row for row in changes if row["entries"]]
 
 	liked = frappe.parse_json(doc.get("_liked_by") or "[]")
@@ -2049,7 +2090,27 @@ def timeline(space_code: str, screen: str, name: str) -> dict:
 	}
 
 
-def _change(row: dict, resolved: dict) -> dict:
+def _names(rows: list[dict]) -> dict:
+	"""Who wrote these versions, by their full names.
+
+	A Version stores `owner`, which is a user id and on this product an email
+	address. The timeline showed it raw, so a change read `robin@acme.test` two
+	lines under a comment by `Robin Vale` — the same person, named two ways, in
+	one column.
+
+	One query for the whole page rather than one per row: a timeline is twenty
+	entries and twenty `get_value` calls is twenty round trips for a column of
+	names.
+	"""
+	ids = sorted({row["owner"] for row in rows if row.get("owner")})
+	if not ids:
+		return {}
+	found = frappe.get_all("User", filters={"name": ("in", ids)},
+	                       fields=["name", "full_name"])
+	return {row["name"]: row["full_name"] or row["name"] for row in found}
+
+
+def _change(row: dict, resolved: dict, names: dict | None = None) -> dict:
 	"""One version, in the words of the screen rather than of the database.
 
 	Frappe stores a Version as raw field names and values. Rendering that as-is
@@ -2078,7 +2139,11 @@ def _change(row: dict, resolved: dict) -> dict:
 
 	return {
 		"name": row["name"],
-		"by": row["owner"],
+		"by": (names or {}).get(row["owner"]) or row["owner"],
+		# The id as well, because the avatar beside the name is drawn from it
+		# and a face keyed on "Robin Vale" is a face that changes when somebody
+		# corrects their own name.
+		"by_id": row["owner"],
 		"on": row["creation"],
 		"entries": entries,
 	}

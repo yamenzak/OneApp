@@ -176,9 +176,14 @@ existing.
   same colour here as in the desk.
 * **Comments, history and likes**, which Frappe keeps on every doctype.
 * **Quick filter boxes** for `in_standard_filter` fields plus the title field,
-  each with Frappe's `=` / `≈` toggle.
+  each with Frappe's `=` / `≈` toggle once there is something in it. The row
+  measures itself and draws what fits at a readable width; the rest are one
+  chevron away, because what decides whether five boxes fit is the pane, not
+  the viewport, and opening a record halves it.
 * **Sortable headers**, an ID box on every list, a row's age, its comment count
-  and a heart.
+  and a heart. A face on the title only where the doctype declares an image
+  field: initials off the title are fifty-nine identical grey B's down a screen
+  of "Backlog item 01".
 * **Assignment** — Frappe's `_assign` plus a ToDo, so the record turns up in
   that person's own list. Read permission is enough to assign: a reader who can
   see a record and cannot ask a colleague to look at it sends an email instead.
@@ -308,7 +313,10 @@ Four tabs:
 | **Meta** | The desk's sidebar: the face and name, then the four things you do to a record *about other people* — assign, attach, tag, share — then who made it and when, then its id. The only place assignment is offered; it was in the header too, which made it one control in two places. |
 
 **Making a record is a dialog**, the one place a modal is right: nothing behind
-it to refer to, a short decision, cancelling leaves nothing. It shows the whole
+it to refer to, a short decision, cancelling leaves nothing. Headed with the
+screen's own word for one of these, singularised — the doctype's name is a
+Frappe word, and a screen called Tasks used to open **New ToDo**. A screen
+whose plural the rule gets wrong says so with `singular`. It shows the whole
 form rather than Frappe's quick-entry subset — a dialog that asks for four
 fields and hides eleven leaves people to discover the rest later.
 

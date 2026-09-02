@@ -169,10 +169,15 @@
           class="min-w-0 flex-1"
           :spec="spec"
           @changed="onQuickFilters"
+          @overflow="quickOverflow = $event"
         />
         <div class="flex shrink-0 items-center gap-1">
+          <!-- Only when there is something to reveal, which the row works out
+               by measuring itself: five boxes fit across a full-width list and
+               two beside an open record, and the chevron is how the other
+               three are reached at either width. -->
           <Button
-            class="sm:hidden"
+            v-if="quickOverflow || quickExpanded"
             :icon="quickExpanded ? 'lucide-chevron-up' : 'lucide-chevron-down'"
             :label="quickExpanded ? 'Fewer filters' : 'More filters'"
             :tooltip="quickExpanded ? 'Fewer filters' : 'More filters'"
@@ -487,6 +492,9 @@ const router = useRouter()
 // Whether the phone is showing the quick boxes past the first. The toolbar
 // owns the control, the boxes own the rendering.
 const quickExpanded = ref(false)
+// Whether the row is holding boxes back, which only it can know: it measures
+// itself against the width the pane leaves it.
+const quickOverflow = ref(false)
 
 const spec = ref(null)
 const loading = ref(false)
