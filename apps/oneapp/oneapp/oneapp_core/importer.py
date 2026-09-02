@@ -546,11 +546,20 @@ def _write(plan, step, key: str, said: dict, made: dict, dry_run: int) -> str:
 
 def _remember(plan, step, source_name: str, target_name: str):
 	"""The identity row, written once and read by every link after it."""
-	existing = frappe.db.get_value(
+	existing, was = frappe.db.get_value(
 		"Import Identity",
 		{"plan": plan.name, "source_doctype": step.source_doctype, "source_name": source_name},
-		"name",
-	)
+		["name", "target_doctype"],
+	) or (None, None)
+	if existing and was and was != step.target_doctype:
+		# Two steps off one source doctype, both catching this row. Silently
+		# rewriting the identity would repoint every link that already resolved
+		# through it, so the row fails and the plan's filters get fixed.
+		frappe.throw(
+			f"{step.source_doctype} {source_name} is already {was} "
+			f"{frappe.db.get_value('Import Identity', existing, 'target_name')} in this plan — "
+			f"two steps claim it. Narrow one step's filters."
+		)
 	if existing:
 		frappe.db.set_value("Import Identity", existing,
 		                    {"target_name": target_name, "last_seen": now_datetime()},
@@ -741,13 +750,17 @@ def check(plan: str) -> dict:
 	# against it. Built as the steps are walked, in their declared order, which
 	# is exactly the order the run walks them in.
 	made = set()
+	# The names each source doctype's sample held, so a second step off the
+	# same doctype can be asked the only question worth asking about it: do
+	# these two steps claim the same rows?
+	seen: dict[str, set] = {}
 	found = []
 
 	for step in doc.steps:
 		if not step.enabled:
 			made.add(step.source_doctype)
 			continue
-		found.append(_check_step(source, doc, step, made))
+		found.append(_check_step(source, doc, step, made, seen))
 		made.add(step.source_doctype)
 
 	return {
@@ -758,7 +771,7 @@ def check(plan: str) -> dict:
 	}
 
 
-def _check_step(source, plan, step, made: set) -> dict:
+def _check_step(source, plan, step, made: set, seen: dict | None = None) -> dict:
 	"""One step, against the source's schema and this site's."""
 	problems, warnings = [], []
 
@@ -769,8 +782,33 @@ def _check_step(source, plan, step, made: set) -> dict:
 		        "problems": [f"the field map is not JSON: {raised}"], "warnings": [],
 		        "source_rows": None}
 
-	theirs, rows = _their_fields(source, step.source_doctype, problems)
+	seen = seen if seen is not None else {}
+
+	try:
+		filters = json.loads(step.filters or "[]")
+	except ValueError as raised:
+		return {"source_doctype": step.source_doctype, "target_doctype": step.target_doctype,
+		        "problems": [f"the filters are not JSON: {raised}"], "warnings": [],
+		        "source_rows": None}
+
+	theirs, rows = _their_fields(source, step.source_doctype, filters, problems)
 	ours = _our_fields(step.target_doctype, problems)
+
+	# Two steps off one source doctype is ordinary — a party table holding both
+	# customers and suppliers is the usual reason — and fine while their
+	# filters are disjoint. Where they are not it is quietly wrong: `resolve`
+	# is keyed on the source doctype alone, so a row caught by both resolves to
+	# whichever step ran last, and `_remember` then refuses the row mid-run.
+	# Which is why this asks the rows rather than the schema.
+	names = {row.get("name") for row in (rows or [])} - {None}
+	both = sorted(names & seen.get(step.source_doctype, set()))
+	if both:
+		warnings.append(
+			f"{len(both)} row(s) of {step.source_doctype} are claimed by an earlier step "
+			f"too — {', '.join(both[:3])}. Narrow one step's filters; a row cannot "
+			"become two things."
+		)
+	seen[step.source_doctype] = names | seen.get(step.source_doctype, set())
 
 	# A fan-out changes what the field map may name, so it is read first: the
 	# fields inside one piece are not fields of the source doctype, and
@@ -870,22 +908,26 @@ def _check_fan_out(step, rows, theirs, problems: list):
 	return rule, pieces
 
 
-def _their_fields(source, doctype: str, problems: list):
+def _their_fields(source, doctype: str, filters: list, problems: list):
 	"""The source's own column names, and a sample of its rows.
 
 	Read off the data rather than off `DocType`/`DocField`: an API user is not
 	always allowed to read the schema tables, and every row already carries
 	every fieldname. It also means what is checked is what will actually
 	arrive.
+
+	Sampled through the step's own filters, for the same reason: a value the
+	step excludes is not a value it has to map, and reporting it is how a check
+	teaches people to stop reading its output.
 	"""
 	try:
-		rows = fetch(source, doctype, [], 0, SAMPLE)
+		rows = fetch(source, doctype, filters, 0, SAMPLE)
 	except Exception as raised:
 		problems.append(f"could not read {doctype} from the source: {raised}")
 		return None, None
 
 	if not rows:
-		problems.append(f"{doctype} has no rows on the source")
+		problems.append(f"{doctype} has no rows on the source matching this step")
 		return None, []
 
 	return set(rows[0]), rows

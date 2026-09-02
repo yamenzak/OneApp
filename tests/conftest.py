@@ -81,7 +81,11 @@ def _make_frappe():
 			return self.records.get((doctype, name if isinstance(name, str) else None))
 
 		def get_value(self, doctype=None, filters=None, fieldname=None, *a, **k):
-			return self.values.get((doctype, fieldname))
+			# Frappe takes a list of fieldnames and answers a list of values.
+			# Keyed as a tuple so a test can say what a multi-field lookup
+			# returns without the list making the key unhashable.
+			key = tuple(fieldname) if isinstance(fieldname, list) else fieldname
+			return self.values.get((doctype, key))
 
 		def count(self, *a, **k):
 			return 0

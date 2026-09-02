@@ -52,6 +52,24 @@ SUPPLIER_GROUPS = {
 # both "not started" to a project ledger, and the difference between them is a
 # CRM stage rather than a project one — which is why it also travels as a
 # custom field rather than being thrown away.
+# Their payment types onto ERPNext's two directions. `Pay: Petty Cash` is a
+# supplier payment like any other — see `mode_of_payment` on the step — and
+# `Salary` never appears on the live site, so it is not invented here.
+PAYMENT_TYPES = {
+	"Receive": "Receive",
+	"Pay": "Pay",
+	"Pay: Petty Cash": "Pay",
+}
+
+# Which side of the ledger the party sits on, read off the same column.
+PAYMENT_PARTIES = {
+	"Receive": "Customer",
+	"Pay": "Supplier",
+	"Pay: Petty Cash": "Supplier",
+}
+
+PAYMENT_MODES = {"Pay: Petty Cash": "Cash"}
+
 PROJECT_STATUS = {
 	"Tender": "Open",
 	"Job in Hand": "Open",
@@ -191,11 +209,15 @@ STEPS = [
 		"why": "The change that buys them a ledger: today a payment is a row "
 		       "with an amount and nothing behind it.",
 		"filters": [["RUA Payment", "status", "=", "Submitted"],
-		            ["RUA Payment", "type", "in", ["Pay", "Receive"]]],
+		            ["RUA Payment", "type", "in", list(PAYMENT_TYPES)]],
 		"map": {
-			"payment_type": {"from": "type",
-			                 "values": {"Receive": "Receive", "Pay": "Pay"}},
-			"party_type": {"const": "Customer"},
+			"payment_type": {"from": "type", "values": PAYMENT_TYPES},
+			# Not a constant. Every Receive on the live site points at a client
+			# or a consultant and every Pay at a supplier, so the party's side
+			# of the ledger is what `type` has been saying all along — and a
+			# supplier payment posted against a customer is the kind of wrong
+			# that balances and still means nothing.
+			"party_type": {"from": "type", "values": PAYMENT_PARTIES},
 			"party": {"from": "party", "link": "RUA Party"},
 			"company": {"const": COMPANY},
 			"posting_date": {"from": "date"},
@@ -205,6 +227,12 @@ STEPS = [
 			"reference_date": {"from": "date"},
 			"project": {"from": "project", "link": "RUA Project"},
 			"remarks": {"from": "remarks"},
+			# Petty cash is not a different kind of transaction, whatever the
+			# old system's type list implies — it is a supplier payment that
+			# came out of the cash box. So it stays a Payment Entry and the
+			# cash box becomes the mode of payment, which is the field ERPNext
+			# keeps that answer in.
+			"mode_of_payment": {"from": "type", "values": PAYMENT_MODES, "default": ""},
 		},
 	},
 	{

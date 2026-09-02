@@ -487,6 +487,60 @@ def _seed_registers():
 	frappe.db.commit()
 
 
+def _seed_import():
+	"""A source and a plan, so the import console has something to render.
+
+	Fictional on purpose: the address is a name nobody owns and the secret is a
+	placeholder, so nothing here can reach anything. What it exercises is the
+	panel — the card, the steps in their declared order, the watermark reading
+	"not yet" before a first run, and the three buttons in the order they are
+	meant to be pressed in.
+
+	A real one lives in the app (`oneapp_core/plans/`) and is installed against
+	a customer's own credentials; this is the dev site's stand-in for it.
+	"""
+	SOURCE = "The old system"
+
+	if not frappe.db.exists("Import Source", SOURCE):
+		frappe.get_doc({
+			"doctype": "Import Source",
+			"source_name": SOURCE,
+			"base_url": "https://old.example.com",
+			"api_key": "not-a-real-key",
+			"api_secret": "not-a-real-secret",
+		}).insert(ignore_permissions=True)
+
+	PLAN = "Everything, from the old system"
+
+	if not frappe.db.exists("Import Plan", PLAN):
+		frappe.get_doc({
+			"doctype": "Import Plan",
+			"plan_name": PLAN,
+			"source": SOURCE,
+			"space_code": CODE,
+			"steps": [
+				{
+					"source_doctype": "Old Party",
+					"target_doctype": "Contact",
+					"field_map": json.dumps({"first_name": {"from": "party"}}),
+				},
+				{
+					"source_doctype": "Old Job",
+					"target_doctype": "ToDo",
+					# Second on purpose: a link resolved against a step that
+					# runs later finds nothing on every row, and the order of
+					# these rows is the order the run walks them in.
+					"field_map": json.dumps({
+						"description": {"from": "title"},
+						"reference_name": {"from": "party", "link": "Old Party"},
+					}),
+				},
+			],
+		}).insert(ignore_permissions=True)
+
+	frappe.db.commit()
+
+
 def _seed_approvals():
 	"""The submittable doctype, its workflow, and three records to move.
 
@@ -608,6 +662,7 @@ def seed_tenant():
 	# there.
 	approvals = _seed_approvals()
 	_seed_registers()
+	_seed_import()
 
 	state = frappe.get_single("OneSpace Site State")
 	spaces = [

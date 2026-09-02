@@ -204,6 +204,22 @@ def test_a_target_deleted_since_is_made_again(importer, written, stub_frappe, mo
 	assert importer._write(Plan(), Step(), "H", {"name": "H"}, {"customer_name": "X"}, 0) == "created"
 
 
+def test_an_identity_may_not_be_repointed_at_another_doctype(importer, stub_frappe):
+	"""One source row claimed by two steps.
+
+	Rewriting the identity would repoint every link that already resolved
+	through it — the payments of a party that became a Customer would silently
+	start naming the Supplier it became second. The row fails instead, and the
+	plan's filters are what gets fixed.
+	"""
+	stub_frappe.db.values[("Import Identity", ("name", "target_doctype"))] = (
+		"IMP-ID-1", "Supplier"
+	)
+
+	with pytest.raises(stub_frappe.ValidationError, match="two steps claim it"):
+		importer._remember(Plan(), Step(), "Halloway & Co", "CUST-0007")
+
+
 def test_a_rehearsal_validates_and_keeps_nothing(importer, written, monkeypatch):
 	"""The counts a dry run reports are real; the records are not."""
 	monkeypatch.setattr(importer, "resolve", lambda *a: None)
@@ -352,13 +368,16 @@ class Row:
 		self.__dict__.update(kw)
 
 
-def check_step(importer, monkeypatch, field_map, *, rows=None, ours=None, made=()):
+def check_step(importer, monkeypatch, field_map, *, rows=None, ours=None, made=(),
+               filters=None, seen=None):
 	monkeypatch.setattr(importer, "_their_fields",
-	                    lambda source, dt, problems: (set(rows[0]) if rows else set(), rows))
+	                    lambda source, dt, filters, problems: (
+	                        set(rows[0]) if rows else set(), rows))
 	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: ours)
 	step = Row(source_doctype="RUA Party", target_doctype="Customer",
-	           field_map=__import__("json").dumps(field_map), fan_out=None, enabled=1)
-	return importer._check_step(None, Row(name="P"), step, set(made))
+	           field_map=__import__("json").dumps(field_map), fan_out=None, enabled=1,
+	           filters=__import__("json").dumps(filters or []))
+	return importer._check_step(None, Row(name="P"), step, set(made), seen)
 
 
 def test_a_source_field_that_is_gone_is_a_problem(importer, monkeypatch):
@@ -415,9 +434,64 @@ def test_a_default_makes_the_unmapped_values_a_decision(importer, monkeypatch):
 
 def test_a_field_map_that_is_not_json_says_so_rather_than_raising(importer, monkeypatch):
 	step = Row(source_doctype="RUA Party", target_doctype="Customer",
-	           field_map="{not json", fan_out=None, enabled=1)
+	           field_map="{not json", fan_out=None, enabled=1, filters="[]")
 	found = importer._check_step(None, Row(name="P"), step, set())
 	assert found["problems"] and "not JSON" in found["problems"][0]
+
+
+def test_the_sample_is_taken_through_the_step_own_filters(importer, monkeypatch):
+	"""A step that excludes a value is not a step that has to map it.
+
+	The check reads what a column holds by reading rows, so which rows it reads
+	decides what it complains about. Sampling unfiltered means a step whose
+	filters already answer a value gets told to answer it again — and a check
+	that reports things that are not wrong is one people stop reading.
+	"""
+	asked = {}
+
+	def fetch(source, doctype, filters, start, length):
+		asked["filters"] = filters
+		return [{"type": "Client"}]
+
+	monkeypatch.setattr(importer, "fetch", fetch)
+	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: {"customer_group"})
+	step = Row(source_doctype="RUA Party", target_doctype="Customer",
+	           field_map='{"customer_group": {"from": "type", '
+	                     '"values": {"Client": "Commercial"}}}',
+	           fan_out=None, enabled=1,
+	           filters='[["RUA Party", "type", "in", ["Client"]]]')
+
+	found = importer._check_step(None, Row(name="P"), step, set())
+
+	assert asked["filters"] == [["RUA Party", "type", "in", ["Client"]]]
+	assert found["warnings"] == []
+
+
+def test_two_steps_claiming_one_row_of_a_shared_source_warn(importer, monkeypatch):
+	"""`resolve` is keyed on the source doctype, not the target.
+
+	A row caught by both steps resolves to whichever ran last, so every link
+	through it silently names the wrong record. The check asks the rows rather
+	than the schema, because the schema cannot answer it.
+	"""
+	found = check_step(importer, monkeypatch, {"customer_name": {"from": "party"}},
+	                   rows=[{"name": "P-1", "party": "X"}], ours={"customer_name"},
+	                   made=["RUA Party"], seen={"RUA Party": {"P-1"}})
+	assert any("claimed by an earlier step" in w for w in found["warnings"])
+	assert found["problems"] == []
+
+
+def test_a_shared_source_with_disjoint_filters_is_silent(importer, monkeypatch):
+	"""The ordinary case, and the reason the warning is not about the schema.
+
+	A party table split into customers and suppliers is two steps off one
+	doctype and entirely correct. Warning about it every run is how a check
+	teaches people to skim its output.
+	"""
+	found = check_step(importer, monkeypatch, {"customer_name": {"from": "party"}},
+	                   rows=[{"name": "P-2", "party": "X"}], ours={"customer_name"},
+	                   made=["RUA Party"], seen={"RUA Party": {"P-1"}})
+	assert found["warnings"] == []
 
 
 # --------------------------------------------------------------------------- #
@@ -596,12 +670,12 @@ def test_a_fan_out_that_does_not_fit_is_a_problem_the_check_finds(importer, monk
 	"""Whether a column holds the shape a rule claims cannot be known from a
 	schema, so the check explodes a real row to find out."""
 	monkeypatch.setattr(importer, "_their_fields",
-	                    lambda source, dt, problems: ({"attendance_log"},
-	                                                  [{"attendance_log": '["a"]'}]))
+	                    lambda source, dt, filters, problems: ({"attendance_log"},
+	                                                           [{"attendance_log": '["a"]'}]))
 	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: {"employee"})
 	step = Row(source_doctype="RUA Attendance", target_doctype="Attendance",
 	           field_map='{"employee": "__key"}',
-	           fan_out=__import__("json").dumps(FAN), enabled=1)
+	           fan_out=__import__("json").dumps(FAN), enabled=1, filters="[]")
 
 	found = importer._check_step(None, Row(name="P"), step, set())
 	assert any("does not fit the data" in p for p in found["problems"])

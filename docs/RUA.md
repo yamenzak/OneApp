@@ -41,7 +41,7 @@ HRMS already model it, with a general ledger and a VAT return underneath.
 | `RUA LPO` + items | **Purchase Order** | `received_quantity` / `pending_quantity` are ERPNext's own `received_qty`. |
 | `RUA Purchase Receipt` + items | **Purchase Receipt** | Same shape already. |
 | `RUA Invoice` | **Sales Invoice** (Proforma → a draft, or a Sales Order) | See §3: retention is the one thing ERPNext does not model. |
-| `RUA Payment` (Pay / Receive / Petty Cash / Salary) | **Payment Entry**, and a **Journal Entry** for petty cash | This is the change that buys them a ledger: today a payment is a row with an amount and nothing behind it. |
+| `RUA Payment` (Pay / Receive / Petty Cash) | **Payment Entry** | This is the change that buys them a ledger: today a payment is a row with an amount and nothing behind it. Petty cash is not a fourth kind of transaction — all eleven of them pay a supplier — so it is a Pay with `Cash` as the mode of payment, not a Journal Entry. |
 | `RUA Employee` | **Employee** (HRMS) | `basic` + `allowance` become a **Salary Structure**. |
 | `RUA Attendance` (one row per *day*, a JSON blob keyed by employee) | **Attendance**, one row per employee per day | 307 blobs become 20,229 rows. The blob is why nothing can report on it. |
 | `RUA Leave` | **Leave Application** + Leave Ledger | Gains balances, which they do not have. |
@@ -177,7 +177,7 @@ Checked against the live source, every step reads clean —
 | `RUA Quotation` → **Quotation** | 5 | header only; items need a fan-out |
 | `RUA LPO` → **Purchase Order** | 21 | |
 | `RUA Invoice` → **Sales Invoice** | 45 | final tax invoices only |
-| `RUA Payment` → **Payment Entry** | 142 | submitted pay and receive |
+| `RUA Payment` → **Payment Entry** | 152 | submitted; petty cash included, drafts not |
 | `RUA Attendance` → **Attendance** | 307 → **20,229** | see below |
 | `RUA Document` → **Compliance Document** | 408 | |
 | `RUA Letter` → **Correspondence** | 51 | |
