@@ -126,11 +126,41 @@ None of these is a reason to stop; they are the order to build in.
 
 ## 7. How to migrate
 
-Read-only, over the API, with the key in the scratchpad and never in this repo.
-`frappe.client.get_list` reads everything; nothing is written back to the old
-site. The order is dictated by the links: Parties → Projects → Employees →
-Quotations → RFQs → LPOs → Receipts → Invoices → Payments → Attendance → Leave →
-Documents → Letters.
+Not a script. `oneapp_core/importer.py` is an engine, and it is not
+RUA-specific: a plan is data — steps, field maps, value maps — so the next
+workspace arriving off its own Frappe site is a plan and no code at all.
+
+Five properties are what make it worth calling one:
+
+* **Idempotent.** Every source row's target is remembered in `Import Identity`,
+  so a second run updates the record the first made rather than making another.
+  That table is also link resolution: an invoice's `party` becomes the Customer
+  an earlier step made out of the same source row.
+* **Incremental.** Each step keeps a watermark — the newest `modified` it has
+  taken across — and asks the source only for rows at or after it. Rehearse a
+  month out, run it again the morning of the switch, and the second run carries
+  the night's work. That is the whole of "up to the last second".
+* **Resumable.** The watermark advances per committed batch, not per run.
+* **Answerable.** A row that will not save is kept whole — what the source said,
+  what we made of it, what refused it — so a bad import is a list to work
+  through rather than a log to read.
+* **Rehearsable.** A dry run fetches, maps, resolves and validates, and commits
+  nothing.
+
+It writes through `get_doc().save()`, never a direct SQL write: an imported
+Sales Invoice that skipped its own controller is a row in a table rather than a
+document, and the ledger behind it does not exist. It also runs as whoever
+pressed the button, so an import cannot create what its operator could not.
+
+The customer's half is one panel in workspace settings: their old site's
+address and API key, **Rehearse**, and then **Bring everything across** — which
+becomes **Bring across what has changed** once it has been over once.
+
+The order is dictated by the links: Parties → Projects → Employees → Quotations
+→ RFQs → LPOs → Receipts → Invoices → Payments → Attendance → Leave → Documents
+→ Letters. Order is the plan author's to get right; a step that resolves a link
+to something a later step creates says so as an issue on a real row rather than
+saving a blank.
 
 Two things to decide before the first row moves: what an opening balance looks
 like (63 invoices and 155 payments with no ledger behind them have to land as

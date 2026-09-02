@@ -64,6 +64,12 @@ def _make_frappe():
 			self.singles = {}
 			self.records = {}
 			self.commits = 0
+			# Keyed `(doctype, fieldname)` rather than by the filters as well:
+			# a test that wants one answer out of `get_value` wants it for the
+			# one lookup its code makes, and matching a filter dict exactly
+			# turns every such test into a transcription of the query.
+			self.values = {}
+			self.writes = []
 
 		def commit(self):
 			self.commits += 1
@@ -74,8 +80,8 @@ def _make_frappe():
 		def exists(self, doctype, name=None):
 			return self.records.get((doctype, name if isinstance(name, str) else None))
 
-		def get_value(self, *a, **k):
-			return None
+		def get_value(self, doctype=None, filters=None, fieldname=None, *a, **k):
+			return self.values.get((doctype, fieldname))
 
 		def count(self, *a, **k):
 			return 0
@@ -85,7 +91,8 @@ def _make_frappe():
 
 		sql_result = [[0]]
 
-		def set_value(self, *a, **k):
+		def set_value(self, doctype=None, name=None, field=None, value=None, **k):
+			self.writes.append((doctype, name, field, value))
 			return None
 
 	frappe.db = _DB()
@@ -177,6 +184,10 @@ def _make_frappe():
 	utils.getdate = getdate
 	utils.today = lambda: str(getdate())
 	utils.flt = float
+	# Frappe's own "an int, whatever this is" — an empty string, None and a
+	# string of digits all become a number, which is why every counter in the
+	# codebase goes through it rather than `int()`.
+	utils.cint = lambda v=0, default=0: int(float(v)) if str(v or "").strip() else default
 	utils.get_fullname = lambda u: u
 	# The real one drops tags and unescapes entities. A stub that only had to be
 	# *shaped* right would return the argument, and then every test of "a row

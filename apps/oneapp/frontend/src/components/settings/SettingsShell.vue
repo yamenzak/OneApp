@@ -52,6 +52,16 @@
           Naming
         </SettingsNavItem>
 
+        <!-- Beside the workspace's own settings rather than inside a space:
+             an import fills doctypes many spaces read, and it is a thing an
+             owner does to the workspace. -->
+        <SettingsNavItem value="import" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-import" class="size-4 text-ink-gray-7" />
+          </template>
+          Import
+        </SettingsNavItem>
+
         <SettingsNavItem value="ai" :class="TAB_ITEM">
           <template #prefix>
             <Icon name="lucide-sparkles" class="size-4 text-ink-gray-7" />
@@ -80,6 +90,8 @@
       <SettingsPanel value="print-formats"><PrintingSettings /></SettingsPanel>
 
       <SettingsPanel value="naming"><NamingSettings /></SettingsPanel>
+
+      <SettingsPanel value="import"><ImportSettings /></SettingsPanel>
 
       <SettingsPanel value="ai"><AiSettings /></SettingsPanel>
 
@@ -115,6 +127,7 @@ import BooksSettings from './BooksSettings.vue'
 import AiSettings from './AiSettings.vue'
 import NamingSettings from './NamingSettings.vue'
 import PrintingSettings from './PrintingSettings.vue'
+import ImportSettings from './ImportSettings.vue'
 import ThemeSetting from '../ThemeSetting.vue'
 import { PANEL_BODY, PANEL_HEADER, TAB_GROUP, TAB_ITEM, TAB_STRIP, PANEL_CONTENT } from './geometry'
 import { settings } from '../../lib/settings'

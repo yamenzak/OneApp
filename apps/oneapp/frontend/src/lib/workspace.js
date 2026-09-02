@@ -275,6 +275,33 @@ export const workspace = {
       { silent: true, method: 'GET' },
     ),
 
+  // --- bringing their data with them ------------------------------------
+  //
+  // See `oneapp_core/importer.py`. The panel is one read and two buttons; the
+  // rest of this is watching a job somebody else is running.
+  importConsole: () =>
+    callMethod('oneapp.oneapp_core.importer.console', {}, { silent: true, method: 'GET' }),
+
+  saveImportSource: (name, baseUrl, apiKey, apiSecret) =>
+    callMethod(
+      'oneapp.oneapp_core.importer.save_source',
+      { name, base_url: baseUrl, api_key: apiKey, api_secret: apiSecret },
+      { successMessage: 'Saved' },
+    ),
+
+  verifyImportSource: (source) =>
+    callMethod('oneapp.oneapp_core.importer.verify', { source }, { silent: true }),
+
+  startImport: (plan, dryRun) =>
+    callMethod('oneapp.oneapp_core.importer.start', { plan, dry_run: dryRun ? 1 : 0 }),
+
+  importProgress: (run) =>
+    callMethod('oneapp.oneapp_core.importer.progress', { run },
+               { silent: true, method: 'GET' }),
+
+  importIssues: (run) =>
+    callMethod('oneapp.oneapp_core.importer.issues', { run }, { silent: true, method: 'GET' }),
+
   // --- printing ---------------------------------------------------------
   //
   // Frappe renders the format and Frappe makes the PDF; these are the screen's
