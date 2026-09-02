@@ -713,8 +713,16 @@ def test_no_fan_out_is_one_piece_keyed_by_the_row(importer):
 
 
 def test_a_map_fans_out_one_piece_per_key(importer):
+	"""And the key is the row's name *and* the piece's.
+
+	Keyed on the piece alone, a month of attendance keyed by employee is one
+	record per employee overwritten once a day — 20,229 rows read and 71 kept,
+	which is what the first full rehearsal actually reported.
+	"""
 	pieces = importer.explode(DAY, FAN)
-	assert [key for key, _ in pieces] == ["RC-EMP-00001", "RC-EMP-00002"]
+	assert [key for key, _ in pieces] == [
+		"RC-ATN-2026-09-01:RC-EMP-00001", "RC-ATN-2026-09-01:RC-EMP-00002",
+	]
 
 
 def test_a_piece_carries_the_parent_and_its_own_key(importer):
@@ -738,7 +746,7 @@ def test_a_list_fans_out_by_position(importer):
 	run an update rather than a duplicate."""
 	row = {"name": "P", "items": '[{"item": "a"}, {"item": "b"}]'}
 	pieces = importer.explode(row, {"from": "items", "shape": "list"})
-	assert [key for key, _ in pieces] == ["0", "1"]
+	assert [key for key, _ in pieces] == ["P:0", "P:1"]
 	assert pieces[1][1]["item"] == "b"
 
 
@@ -768,7 +776,7 @@ def test_every_piece_gets_its_own_identity(importer, stepped, monkeypatch):
 	row = RunStep()
 	importer._step(Run(), Plan(), None, step, row)
 
-	assert keys == ["RC-EMP-00001", "RC-EMP-00002"]
+	assert keys == ["RC-ATN-2026-09-01:RC-EMP-00001", "RC-ATN-2026-09-01:RC-EMP-00002"]
 	# And `seen` counts what the source has, not what was written — a number
 	# growing twenty times faster than the thing being read is unreadable as
 	# progress.

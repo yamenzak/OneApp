@@ -72,8 +72,12 @@ test('a doctype that allows it can be renamed, and the URL follows', async ({
     await page.getByRole('button', { name: 'Rename', exact: true }).last().click()
 
     // The id on the page, and the id in the URL.
+    //
+    // A generous wait, and it earned it: renaming a Contact rewrites every
+    // link to it, and on a site with ERPNext installed — which every real
+    // tenant is — that is a great many more tables than this fixture has.
     await expect(page.locator('[data-slot="record-id"]')).toHaveText(now, {
-      timeout: 15_000,
+      timeout: 45_000,
     })
     await expect(page).toHaveURL(new RegExp(`record=${now}`))
   } finally {

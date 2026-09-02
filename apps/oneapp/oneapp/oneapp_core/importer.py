@@ -419,6 +419,12 @@ def explode(row: dict, rule: dict | None) -> list[tuple[str, dict]]:
 	a step with no `fan_out` is one piece keyed by the row's own name, which is
 	exactly the identity it had before this existed.
 
+	A piece's key is the row's name *and* the piece's own, because neither
+	alone identifies it. Keyed on the piece alone, a month of attendance keyed
+	by employee is one record per employee overwritten once a day: 20,229 rows
+	read and 71 kept, and the run reports twenty thousand updates as if that
+	were the point of them.
+
 	The piece's own fields are merged *over* the parent's rather than under
 	them. A day's row carries `name`, `date` and `modified`; an employee's entry
 	inside it carries `present` and `overtime`. Where both name something, the
@@ -439,8 +445,9 @@ def explode(row: dict, rule: dict | None) -> list[tuple[str, dict]]:
 		# Keyed by position, because a list has no other stable name — and a
 		# stable name is what makes a second run an update.
 		return [
-			(str(at), {**row, **(one if isinstance(one, dict) else {"value": one}),
-			           "__key": str(at)})
+			(f"{row.get('name')}:{at}",
+			 {**row, **(one if isinstance(one, dict) else {"value": one}),
+			  "__key": str(at)})
 			for at, one in enumerate(held)
 		]
 
@@ -448,8 +455,9 @@ def explode(row: dict, rule: dict | None) -> list[tuple[str, dict]]:
 		raise ValueError(f"`{rule['from']}` is not an object")
 
 	return [
-		(str(key), {**row, **(one if isinstance(one, dict) else {"value": one}),
-		            "__key": str(key)})
+		(f"{row.get('name')}:{key}",
+		 {**row, **(one if isinstance(one, dict) else {"value": one}),
+		  "__key": str(key)})
 		for key, one in held.items()
 	]
 

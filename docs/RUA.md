@@ -281,6 +281,14 @@ every one of them wrong in a way no amount of reading would have shown:
 What is left is four purchase orders with no lines on them in the source. An
 order with nothing on it is not an order, and ERPNext is right to refuse it.
 
+The full rehearsal — attendance included — then found the last one. A piece's
+identity was the piece's own key and nothing else, so a month of attendance
+keyed by employee was one record per employee overwritten once a day: 307 rows
+read, 20,229 pieces made, and 71 records kept. The run reported it as twenty
+thousand updates, which is what it was, and looked from the counters like
+progress. A piece is now keyed by the row's name *and* its own, because neither
+alone identifies it.
+
 A Proforma does not cross: it is not a receivable, and posting one is how a set
 of books stops reconciling.
 
