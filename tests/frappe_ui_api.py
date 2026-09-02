@@ -83,7 +83,10 @@ NOT_PROPS = re.compile(
     # `tabindex` and `draggable` belong with `role` and `aria-*`: plain HTML
     # attributes that fall through to the rendered element, and the two that
     # make a component rendering a div reachable from a keyboard and a drag.
-    r"|v-slot|key|ref|class|style|is|slot|role|tabindex|draggable|data-.*|aria-.*)$"
+    # `dir` joins them for the same reason: it is a plain HTML attribute that
+    # falls through to the rendered element, and it is how every text control
+    # in this product lays an Arabic value out from its own first character.
+    r"|v-slot|key|ref|class|style|is|slot|role|tabindex|draggable|dir|data-.*|aria-.*)$"
 )
 
 BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.S)

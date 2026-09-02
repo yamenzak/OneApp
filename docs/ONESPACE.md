@@ -505,7 +505,51 @@ what stayed ours. Everything else that used to be in `docs/` is here or in
 
 ---
 
-## 9. AI in a workspace
+## 9. Two registers OneSpace ships itself
+
+Every doctype a screen shows belongs to Frappe, to ERPNext, or to the app that
+declared it — with two exceptions, and both came out of reading a real
+customer's system rather than out of a design meeting.
+
+**Compliance Document** is a paper that expires: a trade licence, a residence
+visa, a vehicle registration, a site insurance policy. It hangs off anything
+through a Dynamic Link, because a visa belongs to an employee and a licence to
+the company and an insurance policy to a project, and a register that knew about
+only one of those would be four registers within a year. Its status — Expired,
+Expiring, No expiry, Valid — is **derived** from the expiry date and a per-row
+warning window, on save and once a day, never typed: a status somebody can set
+is a status that eventually reads Valid over a date in 2019.
+
+The daily sweep is the point of the whole thing. A document that crosses into
+Expiring notifies whoever it is assigned to, whoever follows it and its owner —
+Frappe's own assignment and following, so this adds no third idea of "people who
+care about this record" — and then says nothing more until it actually expires,
+which is different news. A register that warns every morning is a register
+people filter into a folder, and then the one that mattered is in the folder
+too.
+
+**Correspondence** is a bilingual letter and form register: English and Arabic
+side by side, neither the "real" one, with author and signee blocks in both,
+templates, and `LTR-` / `FRM-` / `MEM-` numbering. Nothing in Frappe does this,
+and a company writing to a municipality in Arabic and a consultant in English
+does both from the same screen on the same day.
+
+Both are ordinary records with no component anywhere: a space declares a screen
+over them and the generic engine draws the rest. That is checked rather than
+claimed — the dev seed declares a screen for each, so every browser run opens
+them.
+
+**And the whole product became bidi-correct on the way.** Every text control and
+every text cell carries `dir="auto"`, so the browser lays a value out from its
+own first strong character. An Arabic subject reads right-to-left in the box
+above an English one that does not, with nothing declared anywhere — Frappe has
+no direction property on a DocField and it would be the wrong place for one,
+because direction belongs to the value. Never `rtl`: a field forced
+right-to-left mangles the English that ends up in it just as thoroughly.
+
+---
+
+## 10. AI in a workspace
 
 The AI tab in workspace settings is **not written anywhere** — it is the feature
 registry rendered. Each `@ai_feature` an app declares becomes a row; its model
@@ -524,7 +568,7 @@ Credits, metering and markup are the platform's — `ONEADMIN.md` §7.
 
 ---
 
-## 10. Workspace settings
+## 11. Workspace settings
 
 A tenant site is a real Frappe site, so the name and logo on its sign-in page,
 who may sign in, and what a date looks like all already exist — behind a desk
@@ -554,7 +598,7 @@ on the platform's side appears in the spec.
 
 ---
 
-## 11. The UI rules
+## 12. The UI rules
 
 **The frappe-ui API is read, not remembered.** Every UI defect in this project
 so far was the same mistake: giving a component a prop, a slot or an option it
@@ -598,11 +642,13 @@ guards compare against the version actually installed.
 
 ---
 
-## 12. What the generic screen does not do yet
+## 13. What the generic screen does not do yet
 
 Worth knowing before designing around it.
 
 * **A workflow builder.** Workflows run; there is no screen for drawing one.
+* **Computed child-table columns.** A quotation line is width × height × qty ×
+  rate; the grid edits values and does not derive them.
 * **Notification rules and email templates.** The feed and the digest exist; the
   rules that would produce "email the owner when this goes overdue" do not.
 * **Data import and export.** No CSV either way.

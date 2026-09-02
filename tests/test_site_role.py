@@ -155,6 +155,11 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		"oneapp.oneapp_core.sync.report_usage_to_control_plane",
 		"oneapp.oneapp_core.backup.scheduled_backup",
 		"oneapp.oneapp_core.storage.quota.refresh_database_verdict",
+		# Correct on any site, and ungated on purpose: the control plane keeps
+		# no Compliance Documents, so the sweep reads an empty table and stops.
+		# Gating it would be a branch that exists to say "there is nothing here"
+		# where an empty query already says it.
+		"oneapp.oneapp_core.expiry.sweep",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "

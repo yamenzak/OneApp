@@ -99,6 +99,13 @@ scheduler_events = {
 		# effect in minutes, not hours.
 		"*/15 * * * *": ["oneapp.oneapp_core.sync.sync_from_control_plane"],
 	},
+	"daily": [
+		# The register of things that expire — licences, visas, insurance — and
+		# the warning before one does. Daily because a status derived on save
+		# goes stale the moment the date changes: a licence that was Valid last
+		# night is Expiring this morning and nobody saved it.
+		"oneapp.oneapp_core.expiry.sweep",
+	],
 	"hourly": [
 		"oneapp.oneapp_core.sync.report_usage_to_control_plane",
 		# Backups, into R2, on the frequency the plan bought. Hourly rather than

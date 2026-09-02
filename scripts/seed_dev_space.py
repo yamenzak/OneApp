@@ -122,7 +122,20 @@ DOCTYPES = [
 	# carries submit, cancel and amend — Read and Write do not, which is
 	# itself worth having a fixture prove.
 	{"document_type": APPROVAL_DOCTYPE, "access": "Manage", "if_owner": 0},
+	# The two registers OneSpace ships itself, and the reason they are in this
+	# fixture rather than in the customer space they came out of: they are
+	# ordinary records rendered by the generic engine, so a screen over each is
+	# what proves that claim on every browser run.
+	{"document_type": "Compliance Document", "access": "Manage", "if_owner": 0},
+	{"document_type": "Correspondence", "access": "Manage", "if_owner": 0},
 ]
+
+# Enough of each register to read as one. The compliance columns are the
+# question it answers — what expires, when, and whose — and the correspondence
+# ones are the pair of subjects, because a bilingual register that shows only
+# the English half is the register they already had.
+COMPLIANCE_FIELDS = "title,category,about,expiry_date,status"
+CORRESPONDENCE_FIELDS = "kind,subject,subject_ar,to_party,letter_date,status"
 
 SCREENS = [
 	{
@@ -193,6 +206,34 @@ SCREENS = [
 		# record stands, and the record header already says it — pointing the
 		# screen's badge at the same field makes the header say it twice in two
 		# places. The list still shows the state, as an ordinary column.
+	},
+	{
+		# The register of papers that expire. Grouped under one screen rather
+		# than one per category, because "what expires next" is the question
+		# and it does not care whether the answer is a visa or a licence.
+		"screen": "compliance", "label": "Compliance", "icon": "lucide-shield",
+		"document_type": "Compliance Document", "fields": COMPLIANCE_FIELDS,
+		# Most urgent first, and by status rather than by date: `expiry_date asc`
+		# puts the documents that never expire at the very top, because SQL
+		# sorts a null before every date. Sorting by status instead is what the
+		# register is actually for — and it works because the four statuses are
+		# *named* so that their alphabetical order is their urgency order
+		# (Expired, Expiring, No expiry, Valid). That is a real coupling, so
+		# `test_the_statuses_sort_into_urgency` pins it rather than leaving it
+		# to be discovered by whoever renames one.
+		"order_by": "status asc, expiry_date asc", "view_types": "list,board",
+		"status_field": "status",
+		"singular": "Document",
+	},
+	{
+		# Bilingual letters and forms. Newest first: correspondence is read
+		# from the top, unlike a register of dates.
+		"screen": "correspondence", "label": "Correspondence",
+		"icon": "lucide-mail",
+		"document_type": "Correspondence", "fields": CORRESPONDENCE_FIELDS,
+		"order_by": "creation desc", "view_types": "list",
+		"status_field": "status",
+		"singular": "Letter",
 	},
 ]
 
@@ -376,6 +417,76 @@ PROPERTIES = [
 ]
 
 
+# The two registers, with rows that read as real ones. Dates are relative to
+# the day the seed runs, so the register always has something expired, something
+# about to be and something fine — which is the only way to look at a screen
+# whose whole job is to sort by urgency.
+COMPLIANCE = [
+	("Trade Licence", "Licence", "CN-1109482", -12, 60,
+	 "Department of Economic Development", "Abu Dhabi"),
+	("Residence Visa — Ali Haddad", "Visa", "784-1990-2237841-6", 9, 60,
+	 "ICP", "Abu Dhabi"),
+	("Vehicle Registration — 14/52931", "Registration", "52931", 26, 30,
+	 "Abu Dhabi Police", "Abu Dhabi"),
+	("Workmen Compensation Policy", "Insurance", "WC-2026-04417", 121, 45,
+	 "Oman Insurance", "Dubai"),
+	("Chamber of Commerce Certificate", "Certificate", "ADCCI-77210", 240, 30,
+	 "ADCCI", "Abu Dhabi"),
+	# The one with no date, because "does not expire" has to be visibly a
+	# different thing from "expired".
+	("Memorandum of Association", "Contract", "MOA-2019-01", None, 30,
+	 "Notary Public", "Abu Dhabi"),
+]
+
+# Bilingual on purpose: this fixture is what proves `dir="auto"` puts an Arabic
+# subject to the right of its box and an English one to the left, in the same
+# list, without either being declared anywhere.
+CORRESPONDENCE = [
+	("Letter", "Request for extension of completion date",
+	 "طلب تمديد تاريخ الإنجاز", "Al-Ittihad Consultants", "الاتحاد للاستشارات",
+	 "Issued"),
+	("Letter", "Submission of revised shop drawings",
+	 "تقديم مخططات التنفيذ المعدلة", "National Engineering Bureau",
+	 "المكتب الوطني للهندسة", "Issued"),
+	("Form", "Material approval — 6mm tempered glass",
+	 "اعتماد مواد — زجاج مقسى ٦ ملم", "A.D.D. Consultants",
+	 "إيه دي دي للاستشارات", "Draft"),
+]
+
+
+def _seed_registers():
+	"""A few rows in each register, so the screens are worth opening."""
+	from frappe.utils import add_days, nowdate
+
+	for title, category, number, offset, warn, issuer, place in COMPLIANCE:
+		if frappe.db.exists("Compliance Document", {"title": title}):
+			continue
+		frappe.get_doc({
+			"doctype": "Compliance Document",
+			"title": title, "category": category, "document_number": number,
+			"expiry_date": add_days(nowdate(), offset) if offset is not None else None,
+			"issue_date": add_days(nowdate(), (offset or 0) - 365),
+			"remind_days": warn, "issued_by": issuer, "place_of_issue": place,
+		}).insert(ignore_permissions=True)
+
+	for kind, subject, subject_ar, to, to_ar, status in CORRESPONDENCE:
+		if frappe.db.exists("Correspondence", {"subject": subject}):
+			continue
+		frappe.get_doc({
+			"doctype": "Correspondence",
+			"naming_series": "LTR-.YY.-" if kind == "Letter" else "FRM-.YY.-",
+			"kind": kind, "subject": subject, "subject_ar": subject_ar,
+			"to_party": to, "to_party_ar": to_ar, "status": status,
+			"letter_date": nowdate(),
+			"body": "<p>Further to our meeting on site, we write to confirm…</p>",
+			"body_ar": "<p>إلحاقاً باجتماعنا في الموقع، نود أن نؤكد…</p>",
+			"signed_by": "Yamen Zakhour", "signed_by_title": "Managing Director",
+			"signed_by_ar": "يامن زخور", "signed_by_title_ar": "المدير العام",
+		}).insert(ignore_permissions=True)
+
+	frappe.db.commit()
+
+
 def _seed_approvals():
 	"""The submittable doctype, its workflow, and three records to move.
 
@@ -496,6 +607,7 @@ def seed_tenant():
 	# seeding in the other order leaves an Approvals item that quietly is not
 	# there.
 	approvals = _seed_approvals()
+	_seed_registers()
 
 	state = frappe.get_single("OneSpace Site State")
 	spaces = [

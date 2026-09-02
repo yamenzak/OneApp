@@ -230,7 +230,10 @@
             types into — so this is what gives the field a name for a screen
             reader, and the only way to reach it by its label.
           -->
-          <EditorContent :editor="editor" :aria-label="field.label" />
+          <!-- `dir="auto"` here too, for the same reason it is on every text
+               box: an Arabic letter body lays itself out from its own first
+               word, beside an English one, with nothing declared. -->
+          <EditorContent :editor="editor" :aria-label="field.label" dir="auto" />
         </template>
       </Editor>
     </div>
@@ -513,9 +516,33 @@ const selectOptions = computed(() => {
  * the one doctype that uses them. `min_value`/`max_value` of 0 are real bounds
  * and travel as 0 — only null means unset.
  */
+// Which control types hold words somebody types in a language. Everything else
+// — a date, a number, a select — is either not text or not free text, and a
+// direction on one of those would flip a currency symbol to the wrong side.
+// An array, and it is worth saying why: `('text', 'textarea', …)` in
+// JavaScript is the comma operator, so that expression is the *last* string and
+// nothing else — which is what this was, silently, and lint has no opinion
+// about it. `.includes` on a string then answers about substrings.
+const WORDS = ['text', 'textarea', 'email', 'password', 'url']
+
 const bounds = computed(() => {
   const field = props.field
   const found = {}
+  /**
+   * `dir="auto"`, on everything a person types words into.
+   *
+   * The browser reads the first strong character and lays the field out from
+   * it — so an Arabic subject line is right-to-left and the English one under
+   * it is not, in the same form, with nothing declared anywhere. Frappe has no
+   * direction property on a DocField and it would be the wrong place for one
+   * anyway: direction belongs to the *value*, not to the schema. A company
+   * writing to a municipality in Arabic and a consultant in English does both
+   * from the same field on the same day.
+   *
+   * `auto` and never `rtl`: a field forced right-to-left mangles the English
+   * that ends up in it just as thoroughly as the other way round.
+   */
+  if (WORDS.includes(controlType.value)) found.dir = 'auto'
   if (controlType.value === 'number') {
     if (field.non_negative) found.min = 0
     if (field.min_value !== null && field.min_value !== undefined) found.min = field.min_value

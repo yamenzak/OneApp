@@ -1,0 +1,226 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "kind",
+  "letter_date",
+  "cb_corr_state",
+  "status",
+  "is_template",
+  "cancellation_reason",
+  "sec_corr_en",
+  "subject",
+  "to_party",
+  "body",
+  "sec_corr_ar",
+  "subject_ar",
+  "to_party_ar",
+  "body_ar",
+  "sec_corr_about",
+  "about_doctype",
+  "about",
+  "cb_corr_sign",
+  "signed_by",
+  "signed_by_title",
+  "signed_by_ar",
+  "signed_by_title_ar",
+  "sec_corr_files",
+  "signature",
+  "issued_file"
+ ],
+ "fields": [
+  {
+   "default": "LTR-.YY.-",
+   "description": "A letter and a form are numbered in separate sequences, because that is what somebody quoting one on the phone expects.",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "LTR-.YY.-\nFRM-.YY.-\nMEM-.YY.-",
+   "reqd": 1
+  },
+  {
+   "default": "Letter",
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Kind",
+   "options": "Letter\nForm\nMemo\nNotice"
+  },
+  {
+   "fieldname": "letter_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date"
+  },
+  {
+   "fieldname": "cb_corr_state",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nIssued\nCancelled"
+  },
+  {
+   "default": "0",
+   "description": "A letter kept to start others from. Templates are not numbered against the real sequence.",
+   "fieldname": "is_template",
+   "fieldtype": "Check",
+   "label": "This is a template"
+  },
+  {
+   "depends_on": "eval:doc.status=='Cancelled'",
+   "fieldname": "cancellation_reason",
+   "fieldtype": "Small Text",
+   "label": "Cancellation Reason"
+  },
+  {
+   "fieldname": "sec_corr_en",
+   "fieldtype": "Section Break",
+   "label": "English"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Subject"
+  },
+  {
+   "fieldname": "to_party",
+   "fieldtype": "Data",
+   "label": "To"
+  },
+  {
+   "fieldname": "body",
+   "fieldtype": "Text Editor",
+   "label": "Body"
+  },
+  {
+   "fieldname": "sec_corr_ar",
+   "fieldtype": "Section Break",
+   "label": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629"
+  },
+  {
+   "fieldname": "subject_ar",
+   "fieldtype": "Data",
+   "label": "\u0627\u0644\u0645\u0648\u0636\u0648\u0639"
+  },
+  {
+   "fieldname": "to_party_ar",
+   "fieldtype": "Data",
+   "label": "\u0625\u0644\u0649"
+  },
+  {
+   "fieldname": "body_ar",
+   "fieldtype": "Text Editor",
+   "label": "\u0627\u0644\u0646\u0635"
+  },
+  {
+   "fieldname": "sec_corr_about",
+   "fieldtype": "Section Break",
+   "label": "What it is about"
+  },
+  {
+   "fieldname": "about_doctype",
+   "fieldtype": "Link",
+   "label": "About",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "about",
+   "fieldtype": "Dynamic Link",
+   "label": "Which one",
+   "options": "about_doctype"
+  },
+  {
+   "fieldname": "cb_corr_sign",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "signed_by",
+   "fieldtype": "Data",
+   "label": "Signed By"
+  },
+  {
+   "fieldname": "signed_by_title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "fieldname": "signed_by_ar",
+   "fieldtype": "Data",
+   "label": "\u0627\u0644\u062a\u0648\u0642\u064a\u0639"
+  },
+  {
+   "fieldname": "signed_by_title_ar",
+   "fieldtype": "Data",
+   "label": "\u0627\u0644\u0635\u0641\u0629"
+  },
+  {
+   "fieldname": "sec_corr_files",
+   "fieldtype": "Section Break",
+   "label": "Files"
+  },
+  {
+   "fieldname": "signature",
+   "fieldtype": "Attach Image",
+   "label": "Signature"
+  },
+  {
+   "description": "The one that was actually sent, scanned back in.",
+   "fieldname": "issued_file",
+   "fieldtype": "Attach",
+   "label": "Signed copy"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "Correspondence",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "subject,to_party",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Gray",
+   "title": "Draft"
+  },
+  {
+   "color": "Green",
+   "title": "Issued"
+  },
+  {
+   "color": "Red",
+   "title": "Cancelled"
+  }
+ ],
+ "title_field": "subject",
+ "track_changes": 1
+}

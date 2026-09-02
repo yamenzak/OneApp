@@ -183,6 +183,13 @@ def _make_frappe():
 
 	utils.getdate = getdate
 	utils.today = lambda: str(getdate())
+	# Real for the same reason `getdate` is: the compliance register's whole
+	# rule is "is this date inside a window of N days", and a stub that answered
+	# None would make every window empty and every test pass for nothing.
+	utils.add_days = lambda value, days: getdate(value) + __import__("datetime").timedelta(
+		days=int(days or 0)
+	)
+	utils.nowdate = lambda: str(getdate())
 	utils.flt = float
 	# Frappe's own "an int, whatever this is" — an empty string, None and a
 	# string of digits all become a number, which is why every counter in the

@@ -37,7 +37,9 @@
       @click.stop="emit('open')"
     >
       <div class="flex min-w-0 flex-col items-start">
-        <span class="truncate text-p-sm text-ink-gray-8">{{ plainText(title) || row.name }}</span>
+        <span dir="auto" class="truncate text-p-sm text-ink-gray-8">
+          {{ plainText(title) || row.name }}
+        </span>
         <!-- The id underneath, quietly: it is what a person quotes on the phone
              and never what they read first. Suppressed when the title is the
              id, which is most doctypes without a title field. -->

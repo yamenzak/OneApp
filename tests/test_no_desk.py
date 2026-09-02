@@ -186,6 +186,25 @@ TENANT_EXEMPT = {
 }
 
 
+# The doctypes whose surface is a *screen*, not a hand-written panel.
+#
+# A different thing from the exemptions above, and it deserves its own list.
+# These have no bespoke component anywhere because they do not need one: they
+# are ordinary records, a space declares a screen over them, and the generic
+# engine renders the list and the record from the tenant site's own metadata.
+# That is the whole product working — the desk is not the only way to see them,
+# the manifest is.
+#
+# Proved rather than asserted: `test_a_rendered_doctype_has_a_screen_somewhere`
+# below insists the dev seed declares a screen for each, so the browser suite
+# opens them on every run. An entry here with no screen is a claim nobody
+# checked.
+RENDERED_BY_MANIFEST = {
+	"Compliance Document": "a register of papers that expire; a list and a record",
+	"Correspondence": "bilingual letters and forms; a list and a record",
+}
+
+
 def _tenant_endpoints_by_doctype() -> dict[str, set[str]]:
 	"""Which whitelisted tenant methods name each doctype, as dotted paths.
 
@@ -235,7 +254,7 @@ def test_every_tenant_doctype_is_reachable_from_onespace():
 
 	missing = []
 	for name in doctypes(ROOT / "apps/oneapp/oneapp"):
-		if name in TENANT_EXEMPT or name in spa:
+		if name in TENANT_EXEMPT or name in RENDERED_BY_MANIFEST or name in spa:
 			continue
 		if any(path in spa for path in endpoints.get(name, ())):
 			continue
@@ -255,6 +274,21 @@ def test_the_exemptions_say_why():
 
 	for name, reason in TENANT_EXEMPT.items():
 		assert len(reason) > 20, f"{name} is exempt for no stated reason"
+
+	for name, reason in RENDERED_BY_MANIFEST.items():
+		assert len(reason) > 20, f"{name} says nothing about what its screen shows"
+
+
+def test_a_rendered_doctype_has_a_screen_somewhere():
+	"""The claim in `RENDERED_BY_MANIFEST`, checked against the dev seed.
+
+	Saying "a manifest renders it" and shipping no manifest that does is how a
+	doctype ends up reachable only from the desk while a list here says
+	otherwise. The seed is the one manifest this repo owns, so it is the one
+	that has to prove it."""
+	seed = (ROOT / "scripts/seed_dev_space.py").read_text()
+	for name in RENDERED_BY_MANIFEST:
+		assert f'"{name}"' in seed, f"nothing declares a screen over {name}"
 
 
 def test_the_exemption_list_has_no_stale_entries():

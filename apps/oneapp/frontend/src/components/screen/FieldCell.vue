@@ -98,8 +98,13 @@
     {{ formatted }}
   </span>
 
+  <!-- `dir="auto"`: a cell of Arabic reads right to left beside a cell of
+       English, which is what a column of bilingual correspondence is. Not on
+       the numeric cell above — a number laid out from its own first character
+       puts the currency symbol on the wrong side. -->
   <span
     v-else
+    dir="auto"
     class="truncate text-p-sm"
     :class="[emphasis, value ? 'text-ink-gray-8' : 'text-ink-gray-4']"
   >
