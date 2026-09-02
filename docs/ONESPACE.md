@@ -108,6 +108,19 @@ The manifest's `fields` used to narrow writes too and no longer does. A field
 you do not want a customer to edit needs `read_only` or a permlevel **on the
 doctype** — not merely absence from the manifest.
 
+**A space must grant every doctype its editable Links point at.** This is the
+first thing that bites when writing one. A Link renders a picker, the picker is
+`frappe.get_list` over the target *as the person asking*, and our roles hold
+only what the manifest granted — so a Link pointing outside it comes back
+empty. Not refused, not an error: an empty menu on a field the form may well
+mark required. A Sales Invoice screen needs Customer and Item in the manifest,
+at least to read, or the two fields somebody fills in first are both blank.
+
+It cannot be found by using the operator console, because an operator is a
+System Manager and reads everything. `tests/test_manifests.py` checks it
+against the declarations instead, with an exemption table naming the handful of
+framework doctypes that are reachable without a grant and why.
+
 ### A person may narrow a screen, never widen one
 
 A saved view hands the browser three things that reach the query layer. So:

@@ -426,3 +426,122 @@ def test_the_activity_glyphs_reach_the_spa_as_literals():
 	for icon in icons.values():
 		assert f'"{icon}"' in block, f"{icon} is not written into the SPA"
 	assert f"'{default}'" in fields
+
+
+# --------------------------------------------------------------------------- #
+# A Link points somewhere the reader can actually reach
+#
+# The failure this exists for is silent, and it is the first one a customer-
+# facing space will hit. A Link field renders a picker; the picker is
+# `frappe.get_list` over the target doctype, **as the person asking**. Our roles
+# carry DocPerms for exactly what a manifest granted and nothing else, so a Link
+# pointing outside the grant comes back empty — not refused, not an error, an
+# empty menu on a field the form may well mark required.
+#
+# It cannot be found by using the operator console, because an operator is a
+# System Manager and reads everything on the site. It appears only where the
+# reader is an ordinary workspace member, whose roles are `desk_access = 0` and
+# hold what we wrote them.
+#
+# So the rule, and it is the one to know before writing a space: **a space must
+# grant every doctype its editable Links point at.** A Sales Invoice screen
+# needs Customer and Item in the manifest, at least to read, or the two fields
+# somebody fills in first are both empty.
+# --------------------------------------------------------------------------- #
+
+# Targets outside the operator's grant, and why each is reachable anyway. Every
+# one is checked by hand against the doctype's own permissions in `frappe`,
+# because CI has no bench to read them from — which is the reason they are
+# written down rather than inferred.
+LINK_EXEMPTIONS = {
+	# Read by the `All` role, so a picker over it works for anybody, in any
+	# space. This is the only one of the four that generalises.
+	"Country": "granted to the All role by frappe",
+	# The three below are reachable *here* because the console's readers are
+	# System Managers. None generalises: a customer-facing space naming any of
+	# them has to grant it, or mark the field read_only.
+	"Currency": "frappe grants read to System Manager and ERPNext's desk roles",
+	"DocType": "names a table; System Manager only, and not a customer's to pick",
+	"Customer": "the Stripe customer on a Tenant; operator-only",
+}
+
+
+def link_fields(doctype: str) -> list[dict]:
+	"""Editable Links on one of our own doctypes."""
+	doc = DOCTYPES.get(doctype)
+	if not doc:
+		return []
+	return [
+		field
+		for field in doc.get("fields", [])
+		if field.get("fieldtype") == "Link"
+		and not field.get("read_only")
+		and field.get("options")
+	]
+
+
+def operator_grants() -> set[str]:
+	source = (CONTROL / "entitlements/operator.py").read_text()
+	block = source[source.index("DOCTYPES = ("):source.index("# screen, label")]
+	return {name for name in re.findall(r'"([^"]+)"', block)}
+
+
+def test_the_reader_found_the_grants():
+	"""A regex matching nothing turns the rule below into a pass."""
+	granted = operator_grants()
+	assert len(granted) > 15, f"only parsed {len(granted)} granted doctypes"
+	assert "Tenant" in granted
+
+
+def test_a_link_points_at_something_the_reader_can_read():
+	granted = operator_grants()
+	offenders = [
+		f"{doctype}.{field['fieldname']} → {field['options']}"
+		for doctype in sorted(granted)
+		for field in link_fields(doctype)
+		if field["options"] not in granted and field["options"] not in LINK_EXEMPTIONS
+	]
+	assert not offenders, (
+		"these Link fields point at doctypes the space does not grant, so their "
+		"picker is empty for any reader who is not a System Manager:\n  "
+		+ "\n  ".join(offenders)
+		+ "\n\nGrant the target in the manifest, mark the field `read_only` if "
+		"nobody should pick one, or add it to LINK_EXEMPTIONS with the reason "
+		"it is reachable anyway."
+	)
+
+
+def test_no_exemption_is_left_over():
+	"""An exemption for a link nobody has any more is a rule nobody is keeping.
+
+	It also matters more than the usual dead-entry tidiness: three of these say
+	"reachable because the reader is a System Manager", and the day one of those
+	doctypes turns up in a customer's space that sentence stops being true.
+	"""
+	granted = operator_grants()
+	used = {
+		field["options"]
+		for doctype in granted
+		for field in link_fields(doctype)
+	}
+	stale = sorted(set(LINK_EXEMPTIONS) - used)
+	assert not stale, f"nothing links to these any more: {stale}"
+
+
+def test_the_customer_space_grants_no_doctypes():
+	"""The tripwire for the rule above.
+
+	`entitlements/account.py` is the one customer-facing space that exists, and
+	it grants nothing: every screen is a component calling whitelisted methods,
+	so no Link on it is ever drawn from a manifest. That is why the exemptions
+	above can lean on System Manager today.
+
+	The day somebody gives it a doctype, this fails — and the reader lands on
+	the rule instead of on an empty picker three weeks later.
+	"""
+	source = (CONTROL / "entitlements/account.py").read_text()
+	assert '"doctypes": []' in source, (
+		"the customer's account space now grants doctypes. Every editable Link "
+		"on them has to be granted too, or its picker is empty — see the rule "
+		"at the top of this section, and docs/ONESPACE.md."
+	)
