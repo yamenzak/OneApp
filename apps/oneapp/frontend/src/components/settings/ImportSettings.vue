@@ -116,6 +116,20 @@
         <ErrorMessage v-if="error" :message="error" />
 
         <div class="flex items-center gap-2">
+          <!--
+            Before either of the other two, and it touches nothing at all: it
+            reads both schemas — the old system's over the wire, this site's
+            locally — and says what the plan gets wrong. A field renamed since
+            somebody wrote the map drops a column silently; a value map that
+            covers four of five values lets the fifth through untouched. Those
+            are found here or they are found in a report a week later.
+          -->
+          <Button
+            data-slot="import-check"
+            label="Check the plan"
+            :loading="checkingPlan === plan.name"
+            @click="checkPlan(plan)"
+          />
           <Button
             label="Rehearse"
             :loading="starting === `${plan.name}:dry`"
@@ -132,6 +146,36 @@
             :disabled="Boolean(running)"
             @click="run(plan, false)"
           />
+        </div>
+
+        <!--
+          What the check found, per step, until something else is pressed. Green
+          is worth saying out loud: a plan that reads clean against both ends is
+          the difference between running a migration and hoping.
+        -->
+        <div
+          v-if="checked[plan.name]"
+          data-slot="import-checked"
+          class="flex flex-col gap-2 rounded-6 border border-outline-gray-1 p-3"
+        >
+          <div class="flex items-center gap-2 text-p-sm">
+            <StateBadge :label="checked[plan.name].problems ? 'Problems' : 'Ready'" />
+            <span class="text-ink-gray-6">
+              {{ checked[plan.name].problems }} to fix ·
+              {{ checked[plan.name].warnings }} worth reading
+            </span>
+          </div>
+          <div
+            v-for="step in checked[plan.name].steps.filter((s) => s.problems.length || s.warnings.length)"
+            :key="step.source_doctype"
+            class="flex flex-col gap-0.5 text-p-sm"
+          >
+            <span class="text-ink-gray-8">
+              {{ step.source_doctype }} → {{ step.target_doctype }}
+            </span>
+            <span v-for="one in step.problems" :key="one" class="text-ink-red-5">{{ one }}</span>
+            <span v-for="one in step.warnings" :key="one" class="text-ink-amber-5">{{ one }}</span>
+          </div>
         </div>
 
         <!-- What is happening, or what happened last time. The same block
@@ -221,6 +265,8 @@ const error = ref('')
 const saving = ref('')
 const checking = ref('')
 const starting = ref('')
+const checkingPlan = ref('')
+const checked = reactive({})
 
 // The run being watched, and where its progress is kept. One at a time,
 // because `start` refuses a second run of a plan already going.
@@ -281,6 +327,18 @@ const check = async (one) => {
     error.value = errorText(raised)
   } finally {
     checking.value = ''
+  }
+}
+
+const checkPlan = async (plan) => {
+  checkingPlan.value = plan.name
+  error.value = ''
+  try {
+    checked[plan.name] = await workspace.checkImportPlan(plan.name)
+  } catch (raised) {
+    error.value = errorText(raised)
+  } finally {
+    checkingPlan.value = ''
   }
 }
 

@@ -334,3 +334,129 @@ def test_a_rehearsal_moves_no_watermark(importer, stepped, stub_frappe, monkeypa
 	importer._step(run, Plan(), None, Step(), RunStep())
 
 	assert not [w for w in stub_frappe.db.writes if w[2] == "watermark"]
+
+
+# --------------------------------------------------------------------------- #
+# Checking a plan before running it
+#
+# A fourteen-step field map is a document nobody can read for correctness, and
+# every mistake in one is quiet: a renamed source field drops a column, a link
+# resolved too early files an issue per row. These are the ones worth refusing
+# before a run rather than reporting after one.
+# --------------------------------------------------------------------------- #
+
+
+class Row:
+	def __init__(self, **kw):
+		self.__dict__.update(kw)
+
+
+def check_step(importer, monkeypatch, field_map, *, rows=None, ours=None, made=()):
+	monkeypatch.setattr(importer, "_their_fields",
+	                    lambda source, dt, problems: (set(rows[0]) if rows else set(), rows))
+	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: ours)
+	step = Row(source_doctype="RUA Party", target_doctype="Customer",
+	           field_map=__import__("json").dumps(field_map), enabled=1)
+	return importer._check_step(None, Row(name="P"), step, set(made))
+
+
+def test_a_source_field_that_is_gone_is_a_problem(importer, monkeypatch):
+	found = check_step(importer, monkeypatch, {"customer_name": {"from": "partyy"}},
+	                   rows=[{"party": "X"}], ours={"customer_name"})
+	assert any("no field `partyy`" in p for p in found["problems"])
+
+
+def test_a_target_field_that_does_not_exist_is_a_problem(importer, monkeypatch):
+	found = check_step(importer, monkeypatch, {"custmer_name": {"from": "party"}},
+	                   rows=[{"party": "X"}], ours={"customer_name"})
+	assert any("no field `custmer_name`" in p for p in found["problems"])
+
+
+def test_a_link_to_a_later_step_is_a_problem_not_a_warning(importer, monkeypatch):
+	"""It finds nothing on every row, and the run files one issue per record
+	rather than saying the plan is in the wrong order."""
+	found = check_step(importer, monkeypatch,
+	                   {"customer": {"from": "party", "link": "RUA Project"}},
+	                   rows=[{"party": "X"}], ours={"customer"}, made=())
+	assert any("runs later" in p for p in found["problems"])
+
+
+def test_a_link_to_an_earlier_step_is_fine(importer, monkeypatch):
+	found = check_step(importer, monkeypatch,
+	                   {"customer": {"from": "party", "link": "RUA Project"}},
+	                   rows=[{"party": "X"}], ours={"customer"}, made=("RUA Project",))
+	assert found["problems"] == []
+
+
+def test_a_value_map_that_misses_what_is_in_the_column_warns(importer, monkeypatch):
+	"""The quiet one: somebody maps the values they remember rather than the
+	values that are there, and the rest cross over as-is."""
+	found = check_step(
+		importer, monkeypatch,
+		{"customer_group": {"from": "type", "values": {"Client": "Commercial"}}},
+		rows=[{"type": "Client"}, {"type": "Consultant"}, {"type": "Supplier"}],
+		ours={"customer_group"},
+	)
+	assert found["problems"] == []
+	assert any("Consultant" in w and "Supplier" in w for w in found["warnings"])
+
+
+def test_a_default_makes_the_unmapped_values_a_decision(importer, monkeypatch):
+	found = check_step(
+		importer, monkeypatch,
+		{"customer_group": {"from": "type", "values": {"Client": "Commercial"},
+		                    "default": "All Customer Groups"}},
+		rows=[{"type": "Client"}, {"type": "Consultant"}],
+		ours={"customer_group"},
+	)
+	assert found["warnings"] == []
+
+
+def test_a_field_map_that_is_not_json_says_so_rather_than_raising(importer, monkeypatch):
+	step = Row(source_doctype="RUA Party", target_doctype="Customer",
+	           field_map="{not json", enabled=1)
+	found = importer._check_step(None, Row(name="P"), step, set())
+	assert found["problems"] and "not JSON" in found["problems"][0]
+
+
+# --------------------------------------------------------------------------- #
+# The plan this app ships
+# --------------------------------------------------------------------------- #
+
+
+def test_the_rua_plan_resolves_every_link_backwards(stub_frappe):
+	"""Checked without a network and without a bench, because the ordering is a
+	property of the declaration rather than of either site."""
+	import sys
+
+	for name in list(sys.modules):
+		if name.startswith("oneapp.oneapp_core"):
+			del sys.modules[name]
+
+	from oneapp.oneapp_core.plans import rua
+
+	made = set()
+	for step in rua.STEPS:
+		for target, rule in step["map"].items():
+			if isinstance(rule, dict) and rule.get("link"):
+				assert rule["link"] in made, (
+					f"{step['source']}.{target} resolves against {rule['link']}, "
+					"which the plan runs later"
+				)
+		made.add(step["source"])
+
+
+def test_every_rua_step_says_what_it_is_for(stub_frappe):
+	"""A field map is unreadable without one. The `why` is what somebody looking
+	at a fourteen-step plan a year from now has."""
+	import sys
+
+	for name in list(sys.modules):
+		if name.startswith("oneapp.oneapp_core"):
+			del sys.modules[name]
+
+	from oneapp.oneapp_core.plans import rua
+
+	for step in rua.STEPS:
+		assert len(step.get("why", "")) > 20, f"{step['source']} says nothing"
+		assert step["map"], f"{step['source']} maps nothing"

@@ -156,11 +156,39 @@ The customer's half is one panel in workspace settings: their old site's
 address and API key, **Rehearse**, and then **Bring everything across** — which
 becomes **Bring across what has changed** once it has been over once.
 
-The order is dictated by the links: Parties → Projects → Employees → Quotations
-→ RFQs → LPOs → Receipts → Invoices → Payments → Attendance → Leave → Documents
-→ Letters. Order is the plan author's to get right; a step that resolves a link
-to something a later step creates says so as an issue on a real row rather than
-saving a blank.
+**The plan is checked before it is run.** A fourteen-step field map is a
+document nobody can read for correctness, and every mistake in one is quiet: a
+source field renamed since somebody wrote the map drops a column, a target field
+that does not exist on this site's version drops another, a value map that
+covers four of the five values in a column lets the fifth through untouched, and
+a link resolved against a later step files an issue per row. `importer.check`
+reads both schemas — the source's over the wire, this site's locally — and
+reports all four. It touches nothing, so it is free to press.
+
+The plan itself is `oneapp_core/plans/rua.py`: ten steps, declared as data.
+Checked against the live source, every step reads clean —
+
+| Step | Rows | |
+| --- | --- | --- |
+| `RUA Party` → **Customer** | 75 | clients and consultants |
+| `RUA Party` → **Supplier** | 22 | the same table, filtered the other way |
+| `RUA Project` → **Project** | 82 | |
+| `RUA Employee` → **Employee** | 71 | HRMS |
+| `RUA Quotation` → **Quotation** | 5 | header only; items need a fan-out |
+| `RUA LPO` → **Purchase Order** | 21 | |
+| `RUA Invoice` → **Sales Invoice** | 45 | final tax invoices only |
+| `RUA Payment` → **Payment Entry** | 142 | submitted pay and receive |
+| `RUA Document` → **Compliance Document** | 408 | |
+| `RUA Letter` → **Correspondence** | 51 | |
+
+A Proforma does not cross: it is not a receivable, and posting one is how a set
+of books stops reconciling. Nor does `RUA Attendance` — 307 rows holding a JSON
+blob keyed by employee have to become ~20,000 Attendance rows, which is a
+fan-out and not a field map, and the engine does not do one yet.
+
+Order is the plan author's to get right; the check refuses a link that resolves
+against a step running later, rather than letting the run discover it one row at
+a time.
 
 Two things to decide before the first row moves: what an opening balance looks
 like (63 invoices and 155 payments with no ledger behind them have to land as

@@ -177,8 +177,8 @@
    "label": "Standby Target"
   },
   {
-   "default": "frappe,erpnext,oneapp",
-   "description": "Apps installed on sites created here, comma separated. Must all be present on the bench group.",
+   "default": "frappe,erpnext,hrms,oneapp",
+   "description": "Apps installed on sites created here, comma separated. Must all be present on the bench group. `hrms` is what makes attendance, leave balances and payroll real rather than a table of dates.",
    "fieldname": "site_apps",
    "fieldtype": "Data",
    "label": "Site Apps",

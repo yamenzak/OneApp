@@ -608,3 +608,152 @@ def issues(run: str, limit: int = 50) -> list[dict]:
 		order_by="creation desc",
 		limit_page_length=cint(limit),
 	)
+
+
+# --------------------------------------------------------------------------- #
+# Checking a plan before running it
+#
+# A fourteen-step field map is a document nobody can read for correctness, and
+# the mistakes in one are all quiet: a source field renamed since somebody wrote
+# the map, a target field that does not exist on this site's version, a value
+# map that covers four of the five values actually in the data, a link resolved
+# against a step that runs later.
+#
+# None of those fails loudly. The first three drop a column, the fourth files an
+# issue per row — and all of them are found after the run, in a report somebody
+# reads a week later and disbelieves.
+#
+# So the plan is checked against *both ends* before it is run: the source's own
+# metadata over the wire, and this site's own metadata locally. It reads
+# everything and writes nothing, which makes it free to run as often as anybody
+# likes — and it is what the Check button beside Rehearse does.
+# --------------------------------------------------------------------------- #
+
+# How many rows to look at when working out which values a value map has to
+# cover. Enough to meet the long tail of a real column, cheap enough to run on
+# a button.
+SAMPLE = 500
+
+
+@frappe.whitelist()
+def check(plan: str) -> dict:
+	"""Everything wrong with a plan that can be known without running it."""
+	doc = frappe.get_doc("Import Plan", plan)
+	doc.check_permission("read")
+	source = frappe.get_doc("Import Source", doc.source)
+
+	# What each step will have made by the time a later one resolves a link
+	# against it. Built as the steps are walked, in their declared order, which
+	# is exactly the order the run walks them in.
+	made = set()
+	found = []
+
+	for step in doc.steps:
+		if not step.enabled:
+			made.add(step.source_doctype)
+			continue
+		found.append(_check_step(source, doc, step, made))
+		made.add(step.source_doctype)
+
+	return {
+		"plan": plan,
+		"steps": found,
+		"problems": sum(len(s["problems"]) for s in found),
+		"warnings": sum(len(s["warnings"]) for s in found),
+	}
+
+
+def _check_step(source, plan, step, made: set) -> dict:
+	"""One step, against the source's schema and this site's."""
+	problems, warnings = [], []
+
+	try:
+		field_map = json.loads(step.field_map or "{}")
+	except ValueError as raised:
+		return {"source_doctype": step.source_doctype, "target_doctype": step.target_doctype,
+		        "problems": [f"the field map is not JSON: {raised}"], "warnings": [],
+		        "source_rows": None}
+
+	theirs, rows = _their_fields(source, step.source_doctype, problems)
+	ours = _our_fields(step.target_doctype, problems)
+
+	for target, rule in field_map.items():
+		if not isinstance(rule, dict):
+			rule = {"from": rule}
+
+		if ours is not None and target not in ours:
+			problems.append(f"{step.target_doctype} has no field `{target}`")
+
+		if "const" in rule:
+			continue
+
+		said = rule.get("from")
+		if not said:
+			problems.append(f"`{target}` names no source field and no constant")
+			continue
+		if theirs is not None and said not in theirs:
+			problems.append(f"{step.source_doctype} has no field `{said}`")
+
+		if rule.get("link") and rule["link"] not in made:
+			# Not a warning. A link resolved before its step has run finds
+			# nothing on every row, and the run files one issue per record
+			# rather than saying the plan is in the wrong order.
+			problems.append(
+				f"`{target}` resolves against {rule['link']}, which this plan "
+				"runs later or not at all"
+			)
+
+		# The quiet one: a value map that covers what somebody remembered rather
+		# than what is in the column. A warning and not a problem, because
+		# `default` may be exactly the intent.
+		if "values" in rule and rows:
+			unseen = sorted({
+				str(row.get(said)) for row in rows
+				if row.get(said) not in (None, "") and row.get(said) not in rule["values"]
+			})
+			if unseen and "default" not in rule:
+				warnings.append(
+					f"`{said}` also holds {', '.join(unseen[:6])} — "
+					"unmapped and with no default, so they cross over as-is"
+				)
+
+	return {
+		"source_doctype": step.source_doctype,
+		"target_doctype": step.target_doctype,
+		"problems": problems,
+		"warnings": warnings,
+		"source_rows": len(rows) if rows is not None else None,
+	}
+
+
+def _their_fields(source, doctype: str, problems: list):
+	"""The source's own column names, and a sample of its rows.
+
+	Read off the data rather than off `DocType`/`DocField`: an API user is not
+	always allowed to read the schema tables, and every row already carries
+	every fieldname. It also means what is checked is what will actually
+	arrive.
+	"""
+	try:
+		rows = fetch(source, doctype, [], 0, SAMPLE)
+	except Exception as raised:
+		problems.append(f"could not read {doctype} from the source: {raised}")
+		return None, None
+
+	if not rows:
+		problems.append(f"{doctype} has no rows on the source")
+		return None, []
+
+	return set(rows[0]), rows
+
+
+def _our_fields(doctype: str, problems: list):
+	"""This site's own column names for the target, or None if it is absent."""
+	if not frappe.db.exists("DocType", doctype):
+		problems.append(f"{doctype} is not installed on this site")
+		return None
+
+	meta = frappe.get_meta(doctype)
+	return {df.fieldname for df in meta.fields} | {
+		"name", "owner", "creation", "modified", "docstatus", "naming_series",
+	}

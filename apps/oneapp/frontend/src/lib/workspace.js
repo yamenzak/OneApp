@@ -292,6 +292,9 @@ export const workspace = {
   verifyImportSource: (source) =>
     callMethod('oneapp.oneapp_core.importer.verify', { source }, { silent: true }),
 
+  checkImportPlan: (plan) =>
+    callMethod('oneapp.oneapp_core.importer.check', { plan }, { silent: true }),
+
   startImport: (plan, dryRun) =>
     callMethod('oneapp.oneapp_core.importer.start', { plan, dry_run: dryRun ? 1 : 0 }),
 

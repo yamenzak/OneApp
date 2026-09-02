@@ -127,9 +127,11 @@ doctype(
         f("standby_target", "Int", default="0",
           description="Warm sites to keep ready here. Zero disables the pool for "
                       "this shard, and signup falls back to creating on demand."),
-        f("site_apps", default="frappe,erpnext,oneapp", reqd=1,
+        f("site_apps", default="frappe,erpnext,hrms,oneapp", reqd=1,
           description="Apps installed on sites created here, comma separated. Must "
-                      "all be present on the bench group."),
+                      "all be present on the bench group. `hrms` is what makes "
+                      "attendance, leave balances and payroll real rather than "
+                      "a table of dates."),
         section("sec_notes"),
         f("notes", "Small Text"),
     ],

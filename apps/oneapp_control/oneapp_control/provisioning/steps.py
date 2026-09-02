@@ -57,7 +57,7 @@ def site_apps(shard) -> list[str]:
 	tenant bench carries oneapp — and press rejects a site referencing an app the
 	bench does not have.
 	"""
-	raw = shard.site_apps or "frappe,erpnext,oneapp"
+	raw = shard.site_apps or "frappe,erpnext,hrms,oneapp"
 	apps = [a.strip() for a in raw.split(",") if a.strip()]
 
 	# frappe is implicit but press expects it listed first.

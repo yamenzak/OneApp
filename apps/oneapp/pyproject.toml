@@ -18,3 +18,8 @@ build-backend = "flit_core.buildapi"
 [tool.bench.frappe-dependencies]
 frappe = ">=15.0.0,<18.0.0"
 erpnext = ">=15.0.0,<18.0.0"
+# Payroll, leave balances and attendance. Declared as a *range* and not as a
+# `required_apps` for the same reason erpnext is not — see hooks.py: nothing
+# here imports it at module level, and a hard requirement would stop OneSpace
+# running on every bench that does not carry it, development ones included.
+hrms = ">=15.0.0,<18.0.0"
