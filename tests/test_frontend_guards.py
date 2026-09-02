@@ -912,9 +912,14 @@ def test_a_tooltip_is_frappe_uis_or_it_is_not_a_tooltip(app):
 
 	`title` on a *component* is left alone: it is a real prop on Alert, Dialog,
 	EmptyState and SettingsRow, and means the heading rather than a hover.
+
+	And on an `<iframe>`, where it is not a hover either: a frame's `title` is
+	its accessible name — the only one it can have — and a screen reader reads
+	the frame by it. Leaving it off to satisfy this rule would trade a tooltip
+	nobody sees for a document nobody can find.
 	"""
 	root = ROOT / f"apps/{app}/frontend/src"
-	html_title = re.compile(r"<[a-z][\w-]*\s[^>]*?\stitle=", re.S)
+	html_title = re.compile(r"<(?!iframe\b)[a-z][\w-]*\s[^>]*?\stitle=", re.S)
 	hover = re.compile(r"@mouse(enter|over|leave)|group-hover:")
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):

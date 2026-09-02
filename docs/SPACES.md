@@ -893,6 +893,14 @@ A share still cannot widen a screen. `record()` re-reads through the screen's
 own filters, so a record shared with somebody is reachable on a screen that
 lists it and nowhere else.
 
+## Printing and naming have their own document
+
+A screen may ship the series its doctype is named by and the print formats it
+comes with — `naming_series` and `print_formats` on a Space Screen, both
+applied once as fixtures rather than reconciled on every sync. The layout
+contract, the two gates, the builder and why none of it renders anything
+itself are in **`docs/PRINTING.md`**.
+
 ## A record has four tabs, and one of them is not about the fields
 
 Details, Activity, Files — and **Meta**.

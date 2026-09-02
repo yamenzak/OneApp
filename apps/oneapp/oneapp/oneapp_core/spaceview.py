@@ -25,7 +25,7 @@ import json
 import frappe
 from frappe import _
 
-from oneapp.oneapp_core import collab, dashboard, fieldtypes
+from oneapp.oneapp_core import collab, dashboard, fieldtypes, printing
 
 # Fetched on every screen and shown on none. `name` is how a record is opened
 # and saved, and on most doctypes it is a hash — "8eleplcmv6" as the first thing
@@ -829,6 +829,10 @@ def _resolve(space_code: str, screen: str | None = None,
 			and not int(chosen.get("hide_new") or 0)
 		),
 		"can_write": bool(frappe.has_permission(doctype, "write")),
+		# Frappe's own `print`, which is a permission like any other and which
+		# the manifest's Write and Manage levels both grant. A screen over a
+		# doctype nobody may print draws no printer.
+		"can_print": bool(frappe.has_permission(doctype, "print")),
 		"can_delete": bool(frappe.has_permission(doctype, "delete")),
 		# Frappe's own gate, and the whole of it: `allow_rename` on the doctype
 		# plus write on the document. A doctype that names its records by hash
@@ -2477,6 +2481,62 @@ def dashboard_data(space_code: str, screen: str | None = None,
 			for widget in widgets
 		]
 	}
+
+
+# --------------------------------------------------------------------------- #
+# Printing
+#
+# The rendering is Frappe's and so is the PDF; what is here is the screen.
+# Frappe's own print endpoints take a doctype and a name, and ours take a space
+# and a screen — so a record this screen would not list is not one it prints,
+# and a doctype the space never granted has no route here at all.
+#
+# See `oneapp_core.printing` for what each piece of the stack actually is.
+# --------------------------------------------------------------------------- #
+
+
+@frappe.whitelist(methods=["GET"])
+def print_options(space_code: str, screen: str, name: str) -> dict:
+	"""What this record can be printed as: formats, letter heads, defaults."""
+	doctype = _reachable(space_code, screen, name)
+	return {
+		"formats": printing.formats(doctype),
+		"letter_heads": printing.letter_heads(),
+		"settings": printing.settings(),
+	}
+
+
+@frappe.whitelist(methods=["GET"])
+def print_preview(space_code: str, screen: str, name: str, format: str = "",
+                  letterhead: str = "", language: str = "") -> dict:
+	"""The rendered format, as HTML and its stylesheet.
+
+	HTML back to a browser that will put it in an iframe, which is where the
+	`style` half matters: a print format's CSS is written to win against a
+	blank page, and dropping it into the app's own document would restyle the
+	app. See `PrintDialog`.
+	"""
+	doctype = _reachable(space_code, screen, name)
+	return printing.preview(doctype, name, format, letterhead, language)
+
+
+@frappe.whitelist(methods=["GET"])
+def print_pdf(space_code: str, screen: str, name: str, format: str = "",
+              letterhead: str = "", language: str = ""):
+	"""The same thing as a PDF, downloaded.
+
+	Written into the response rather than returned: a PDF is bytes, and an
+	endpoint that base64s them into JSON asks the browser to rebuild a file it
+	could have been handed.
+	"""
+	doctype = _reachable(space_code, screen, name)
+	content = printing.pdf(doctype, name, format, letterhead, language)
+
+	frappe.local.response.filename = "{0}.pdf".format(
+		str(name).replace(" ", "-").replace("/", "-")
+	)
+	frappe.local.response.filecontent = content
+	frappe.local.response.type = "pdf"
 
 
 # --------------------------------------------------------------------------- #

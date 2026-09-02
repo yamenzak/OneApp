@@ -513,6 +513,31 @@ doctype(
           description='Always applied, e.g. {"status": "Open"}.'),
         column("cb_view_sort"),
         f("order_by", default="modified desc"),
+        # --------------------------------------------------------------- #
+        # What a space brings with it besides the screen.
+        #
+        # Both of these are *fixtures*: applied on the tenant the first time
+        # the space is seen and never again, so an app ships a sensible start
+        # and the workspace still owns what it does with it. A sync that
+        # rewrote them every quarter hour would silently undo the format
+        # somebody spent an afternoon on.
+        # --------------------------------------------------------------- #
+        section("sec_screen_fixtures"),
+        f("naming_series", "Small Text",
+          description="Prefixes this screen's doctype offers, one per line — "
+                      "`ACME-INV-.YYYY.-.#####`. Applied once, when the space "
+                      "first arrives; the workspace edits its own afterwards "
+                      "under Settings, Naming. Ignored where the doctype has "
+                      "no `naming_series` field."),
+        column("cb_screen_print"),
+        f("print_formats", "Code", options="JSON",
+          description='Print formats to ship, as a list: [{"name": "ACME '
+                      'Invoice", "default": true, "layout": {...}, "setup": '
+                      '{...}}]. `layout` is Frappe\'s own `format_data` — draw '
+                      'it in the builder under Settings, Print formats and '
+                      'paste it here, so what an app ships and what a '
+                      'workspace draws are the same kind of thing. Created '
+                      'once, per format, if nothing of that name exists.'),
     ],
 )
 

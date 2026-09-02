@@ -66,7 +66,7 @@ def spaces_for_tenant(tenant: str) -> list[dict]:
 SCREEN_FIELDS = (
 	"screen", "label", "icon", "document_type", "fields", "component",
 	"filters", "order_by", "view_types", "view_settings", "status_field",
-	"hide_new", "tab_icons",
+	"hide_new", "tab_icons", "naming_series", "print_formats",
 )
 
 

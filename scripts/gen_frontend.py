@@ -2532,6 +2532,11 @@ export function expectNoRealErrors(errors) {
     // Logged by frappe-ui during a brief window before a resource resolves;
     // renders correctly and does not throw. Tracked, not silenced everywhere.
     /reading 'charAt'/,
+    // A print preview is rendered into a `sandbox=""` iframe on purpose: a
+    // print format is HTML somebody in the workspace wrote, and a preview is
+    // not a place to run it. Chromium says so once per script the format
+    // carries, which is the sandbox working rather than anything failing.
+    /Blocked script execution in 'about:/,
     // Realtime is proxied to the socketio port by nginx in production. The
     // development server serves the built SPA with no proxy in front of it, so
     // this 404s locally and only locally — and it did so on every page, which

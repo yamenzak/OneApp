@@ -33,7 +33,8 @@ see `.claude/skills/bro/`.
 
 The architecture, the decisions and the reasoning live in `docs/`:
 `ARCHITECTURE.md`, `DECISIONS.md`, `SPACES.md`, `NOTIFICATIONS.md`,
-`LIFECYCLE.md`, `AI.md`, `FRAPPE-UI.md`, `DEVLOOP.md`, `RUNBOOK.md`.
+`PRINTING.md`, `LIFECYCLE.md`, `AI.md`, `FRAPPE-UI.md`, `DEVLOOP.md`,
+`RUNBOOK.md`.
 
 Two rules that are not in there:
 

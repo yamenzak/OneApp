@@ -38,6 +38,20 @@
           Books
         </SettingsNavItem>
 
+        <SettingsNavItem value="print-formats" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-printer" class="size-4 text-ink-gray-7" />
+          </template>
+          Print formats
+        </SettingsNavItem>
+
+        <SettingsNavItem value="naming" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-hash" class="size-4 text-ink-gray-7" />
+          </template>
+          Naming
+        </SettingsNavItem>
+
         <SettingsNavItem value="ai" :class="TAB_ITEM">
           <template #prefix>
             <Icon name="lucide-sparkles" class="size-4 text-ink-gray-7" />
@@ -62,6 +76,10 @@
       </SettingsPanel>
 
       <SettingsPanel value="books"><BooksSettings /></SettingsPanel>
+
+      <SettingsPanel value="print-formats"><PrintingSettings /></SettingsPanel>
+
+      <SettingsPanel value="naming"><NamingSettings /></SettingsPanel>
 
       <SettingsPanel value="ai"><AiSettings /></SettingsPanel>
 
@@ -95,6 +113,8 @@ import {
 import SettingsFields from './SettingsFields.vue'
 import BooksSettings from './BooksSettings.vue'
 import AiSettings from './AiSettings.vue'
+import NamingSettings from './NamingSettings.vue'
+import PrintingSettings from './PrintingSettings.vue'
 import ThemeSetting from '../ThemeSetting.vue'
 import { PANEL_BODY, PANEL_HEADER, TAB_GROUP, TAB_ITEM, TAB_STRIP, PANEL_CONTENT } from './geometry'
 import { settings } from '../../lib/settings'

@@ -368,12 +368,23 @@ def followable(doctype: str) -> bool:
 	`track_changes` because a follow that reports nothing is a switch that lies,
 	and Frappe's log types because a log of what happened is not a thing that
 	happens.
+
+	And a `ref_doctype` that is not a doctype at all is not followable either.
+	`Version` is written against `Series` when a naming counter moves — Frappe's
+	own naming settings page does it, with `ignore_links` set precisely because
+	Series is not a real doctype — and a `get_meta` here that assumed otherwise
+	took the whole insert down with it. Which meant moving a counter failed on
+	any site this app is installed on, ours and the desk's alike.
 	"""
 	from frappe.model import log_types
 
 	if not doctype or doctype in NOT_FOLLOWABLE or doctype in log_types:
 		return False
-	return bool(frappe.get_meta(doctype).track_changes)
+	try:
+		return bool(frappe.get_meta(doctype).track_changes)
+	except frappe.DoesNotExistError:
+		frappe.clear_last_message()
+		return False
 
 
 def _followed(doctype: str, name: str) -> bool:

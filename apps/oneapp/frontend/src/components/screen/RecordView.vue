@@ -76,6 +76,21 @@
           never report anything is a switch that lies, and the server decides
           that rather than this file guessing from a fieldtype.
         -->
+        <!--
+          Print. Beside the bell rather than in a menu: printing a record is
+          something people do often enough that hiding it behind three dots is
+          hiding it. Only where the doctype allows it — Frappe's own `print`
+          permission, which is a permission like any other.
+        -->
+        <Button
+          v-if="spec.can_print"
+          data-slot="print"
+          icon="lucide-printer"
+          variant="ghost"
+          label="Print this record"
+          tooltip="Print"
+          @click="showPrint = true"
+        />
         <Button
           v-if="canFollow"
           data-slot="follow"
@@ -121,6 +136,13 @@
       reader may be halfway through typing, and replacing what is on screen
       with what is on the server is the one thing worse than being out of date.
     -->
+    <PrintDialog
+      v-model="showPrint"
+      :space-code="spaceCode"
+      :screen="screen"
+      :name="record.name"
+    />
+
     <Alert
       v-if="staleSince"
       class="mx-4 mt-3"
@@ -266,6 +288,7 @@ import ScreenActions from './ScreenActions.vue'
 import RecordForm from './RecordForm.vue'
 import RecordActivity from './RecordActivity.vue'
 import RecordFiles from './RecordFiles.vue'
+import PrintDialog from './PrintDialog.vue'
 import RecordMeta from './RecordMeta.vue'
 import { workspace } from '../../lib/workspace'
 import { tabIcon, valueTheme } from '../../lib/fields'
@@ -313,6 +336,7 @@ const shares = ref({})
 // on every record that is never asked about.
 const fileCount = ref(null)
 const collabLoaded = ref(false)
+const showPrint = ref(false)
 const following = ref(false)
 const canFollow = ref(false)
 const followBusy = ref(false)

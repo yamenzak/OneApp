@@ -28,11 +28,21 @@ class PermissionError_(Exception):
 	pass
 
 
+class DoesNotExistError(ValidationError):
+	"""Frappe's own, and a subclass of ValidationError there too.
+
+	Raised by `get_meta` for a name that is not a doctype — which happens in
+	ordinary use: a Version row is written against `Series` when a naming
+	counter moves, and Series is not a doctype.
+	"""
+
+
 def _make_frappe():
 	frappe = types.ModuleType("frappe")
 
 	frappe.ValidationError = ValidationError
 	frappe.PermissionError = PermissionError_
+	frappe.DoesNotExistError = DoesNotExistError
 
 	def throw(msg, exc=None, *args, **kwargs):
 		raise (exc or ValidationError)(str(msg))
@@ -118,6 +128,11 @@ def _make_frappe():
 	# lifecycle detail block, which would fail in the test and not in production.
 	frappe.as_json = lambda value, **k: __import__("json").dumps(value, default=str)
 	frappe.get_traceback = lambda *a, **k: ""
+	# Frappe's own: drop whatever it queued to show the user. Called where a
+	# raise was caught and answered rather than reported — a `get_meta` for a
+	# `ref_doctype` that is not a doctype, a series template that cannot be
+	# previewed without a document.
+	frappe.clear_last_message = lambda: None
 
 	def get_attr(path):
 		"""Frappe's own: import the module and take the last attribute."""

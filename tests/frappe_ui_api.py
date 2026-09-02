@@ -80,7 +80,10 @@ def _sources(suffix: str):
 # about, so the rest are checked like anything else.
 NOT_PROPS = re.compile(
     r"^(v-if|v-else|v-else-if|v-for|v-show|v-html|v-text|v-pre|v-once|v-cloak"
-    r"|v-slot|key|ref|class|style|is|slot|role|data-.*|aria-.*)$"
+    # `tabindex` and `draggable` belong with `role` and `aria-*`: plain HTML
+    # attributes that fall through to the rendered element, and the two that
+    # make a component rendering a div reachable from a keyboard and a drag.
+    r"|v-slot|key|ref|class|style|is|slot|role|tabindex|draggable|data-.*|aria-.*)$"
 )
 
 BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.S)

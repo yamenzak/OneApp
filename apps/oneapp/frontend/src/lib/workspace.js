@@ -246,6 +246,167 @@ export const workspace = {
       { silent: true, method: 'GET' },
     ),
 
+  // --- naming -----------------------------------------------------------
+  //
+  // Frappe's `Document Naming Settings`, gated to the doctypes this
+  // workspace's spaces granted. See `oneapp_core/naming.py`.
+
+  naming: () =>
+    callMethod('oneapp.oneapp_core.workspace.naming', {}, { silent: true, method: 'GET' }),
+
+  setNaming: (doctype, series) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.set_naming',
+      { doctype, series: JSON.stringify(series) },
+      { successMessage: 'Series saved' },
+    ),
+
+  setNamingCounter: (doctype, prefix, value) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.set_naming_counter',
+      { doctype, prefix, value },
+      { successMessage: 'Counter moved' },
+    ),
+
+  namingPreview: (doctype, prefix) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.naming_preview',
+      { doctype, prefix },
+      { silent: true, method: 'GET' },
+    ),
+
+  // --- printing ---------------------------------------------------------
+  //
+  // Frappe renders the format and Frappe makes the PDF; these are the screen's
+  // own gate over both. See `oneapp_core/printing.py`.
+
+  printOptions: (spaceCode, screen, name) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.print_options',
+      { space_code: spaceCode, screen, name },
+      { silent: true, method: 'GET' },
+    ),
+
+  printPreview: (spaceCode, screen, name, { format = '', letterhead = '', language = '' } = {}) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.print_preview',
+      { space_code: spaceCode, screen, name, format, letterhead, language },
+      { silent: true, method: 'GET' },
+    ),
+
+  /**
+   * A URL rather than a call.
+   *
+   * The PDF comes back as a download response with a filename on it, so the
+   * browser should be handed the address and left to do what it does with one
+   * — fetching the bytes and rebuilding a file loses the name and the
+   * progress bar both.
+   */
+  printPdfUrl: (spaceCode, screen, name, { format = '', letterhead = '', language = '' } = {}) => {
+    const asked = new URLSearchParams({
+      space_code: spaceCode,
+      screen,
+      name,
+      format,
+      letterhead,
+      language,
+    })
+    return `/api/method/oneapp.oneapp_core.spaceview.print_pdf?${asked}`
+  },
+
+  // --- print formats and letter heads -------------------------------------
+  //
+  // What is drawn on the page, as against the paper it comes out on — the
+  // paper is a settings group and lives in `SettingsFields`. A drawn format is
+  // a Frappe beta Print Format: our builder writes `format_data` and Frappe's
+  // own generator renders it, so the same format prints identically wherever
+  // it is opened. See `oneapp_core/printing.py`.
+
+  printFormats: (doctype = '') =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.print_formats',
+      { doctype },
+      { silent: true, method: 'GET' },
+    ),
+
+  printPalette: (doctype) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.print_palette',
+      { doctype },
+      { silent: true, method: 'GET' },
+    ),
+
+  printFormat: (name) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.print_format',
+      { name },
+      { silent: true, method: 'GET' },
+    ),
+
+  savePrintFormat: (doctype, label, layout, setup, name = '') =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.save_print_format',
+      {
+        doctype,
+        label,
+        layout: JSON.stringify(layout),
+        setup: JSON.stringify(setup || {}),
+        name,
+      },
+      { successMessage: 'Format saved' },
+    ),
+
+  deletePrintFormat: (name) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.delete_print_format',
+      { name },
+      { successMessage: 'Format deleted' },
+    ),
+
+  setDefaultPrintFormat: (doctype, name) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.set_default_print_format',
+      { doctype, name },
+      { successMessage: 'Default set' },
+    ),
+
+  printFormatPreview: (doctype, layout, setup, { name = '', letterhead = '' } = {}) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.print_format_preview',
+      {
+        doctype,
+        layout: JSON.stringify(layout),
+        setup: JSON.stringify(setup || {}),
+        name,
+        letterhead,
+      },
+      { silent: true },
+    ),
+
+  letterHeads: () =>
+    callMethod('oneapp.oneapp_core.workspace.letter_heads', {}, { silent: true, method: 'GET' }),
+
+  letterHead: (name) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.letter_head',
+      { name },
+      { silent: true, method: 'GET' },
+    ),
+
+  saveLetterHead: (label, values, name = '') =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.save_letter_head',
+      { label, values: JSON.stringify(values || {}), name },
+      { successMessage: 'Letter head saved' },
+    ),
+
+  deleteLetterHead: (name) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.delete_letter_head',
+      { name },
+      { successMessage: 'Letter head deleted' },
+    ),
+
   // --- tags and sharing ---------------------------------------------------
   //
   // Frappe's `_user_tags` and `DocShare`, screen-gated. See

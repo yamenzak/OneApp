@@ -134,7 +134,16 @@ def test_every_write_goes_through_the_spec():
 # `may_read` are the per-group version: two audiences share the control plane
 # now, so "may you open the dialog" and "may you see the Frappe Cloud
 # credentials" are different questions.
-ROLE_CHECKS = ("require_owner()", "require_group(", "may_read(")
+# `_naming_gate()` is the same door as `require_owner()` — the workspace's own
+# owners — under a name that says what it is guarding. A series is a decision
+# about every id the workspace will ever issue, so it is the owner's.
+ROLE_CHECKS = (
+	"require_owner()", "require_group(", "may_read(", "_naming_gate()",
+	# Printing has two doors: one for the settings themselves and one that also
+	# checks the doctype is on a screen this workspace shows. The second calls
+	# the first, so either satisfies this.
+	"_printing_gate()", "_printable_gate(",
+)
 
 
 def test_every_endpoint_checks_the_role_first():

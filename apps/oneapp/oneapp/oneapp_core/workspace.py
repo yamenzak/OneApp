@@ -222,6 +222,59 @@ GROUPS = [
 		],
 	},
 	{
+		"key": "printing",
+		"label": "Printing",
+		"icon": "lucide-printer",
+		"description": (
+			"How every printed document and PDF comes out — the paper, the type "
+			"and the engine. A print format decides what is on the page; this "
+			"decides what the page is."
+		),
+		"settings": [
+			Setting("pdf_page_size", "Page size", type="Select",
+			        targets=[("Print Settings", "pdf_page_size")],
+			        hint="Custom takes the two sizes below, in millimetres."),
+			Setting("pdf_page_width", "Custom width (mm)",
+			        targets=[("Print Settings", "pdf_page_width")]),
+			Setting("pdf_page_height", "Custom height (mm)",
+			        targets=[("Print Settings", "pdf_page_height")]),
+			# The typeface every format inherits unless it names its own. A
+			# Select rather than free text: it reaches a stylesheet the PDF
+			# engine has to have the font for, and a name nobody installed
+			# renders as the engine's fallback with nothing to say so.
+			Setting("font", "Font", type="Select",
+			        targets=[("Print Settings", "font")]),
+			Setting("font_size", "Font size", type="Int",
+			        targets=[("Print Settings", "font_size")],
+			        hint="In points. A format may still set its own."),
+			Setting("print_style", "Style", type="Link", options="Print Style",
+			        targets=[("Print Settings", "print_style")],
+			        hint="The typography and spacing a format is drawn in."),
+			# Chrome renders what a browser renders; wkhtmltopdf is an old
+			# WebKit and gets modern CSS wrong. They are not interchangeable
+			# and a format that looks right in one can look wrong in the other,
+			# which is why this is a workspace-wide decision rather than a
+			# per-print one.
+			Setting("pdf_generator", "PDF engine", type="Select",
+			        targets=[("Print Settings", "pdf_generator")],
+			        hint="Chrome renders modern CSS. wkhtmltopdf is faster to start."),
+			Setting("with_letterhead", "Print with the letter head", type="Check",
+			        targets=[("Print Settings", "with_letterhead")]),
+			Setting("repeat_header_footer", "Repeat the header and footer on every page",
+			        type="Check",
+			        targets=[("Print Settings", "repeat_header_footer")]),
+			Setting("allow_print_for_draft", "Allow drafts to be printed", type="Check",
+			        targets=[("Print Settings", "allow_print_for_draft")]),
+			Setting("allow_print_for_cancelled", "Allow cancelled documents to be printed",
+			        type="Check",
+			        targets=[("Print Settings", "allow_print_for_cancelled")]),
+			Setting("allow_page_break_inside_tables", "Let a table break across pages",
+			        type="Check",
+			        targets=[("Print Settings", "allow_page_break_inside_tables")],
+			        hint="Off keeps a table whole and may leave a page short."),
+		],
+	},
+	{
 		"key": "regional",
 		"label": "Regional",
 		"icon": "lucide-globe",
@@ -444,3 +497,221 @@ def joining() -> dict:
 			"the next sync."
 		),
 	}
+
+
+# --------------------------------------------------------------------------- #
+# Naming
+#
+# Not a settings *group*, because it is not a form: it is one doctype at a
+# time, with a list of prefixes and a counter under each. The mechanics are in
+# `oneapp_core.naming`, which is a gate and a shape over Frappe's own
+# `Document Naming Settings` — every write goes through it, because the
+# counter, the Property Setter on the field, the duplicate check across every
+# other doctype and the Version log are four things that have to happen
+# together and it already does all four.
+# --------------------------------------------------------------------------- #
+
+
+def _naming_gate() -> None:
+	"""Naming is the workspace's, so the workspace's own owners decide it.
+
+	The same door the settings dialog uses, and for the same reason: a series
+	is a decision about every id the workspace will ever issue.
+	"""
+	roles = set(frappe.get_roles())
+	if not roles & {OWNER_ROLE, SUPPORT_ROLE}:
+		frappe.throw(_("Only a workspace admin can change how records are named."),
+		             frappe.PermissionError)
+
+
+@frappe.whitelist(methods=["GET"])
+def naming() -> list[dict]:
+	"""Every doctype this workspace may set a series for, with its prefixes."""
+	from oneapp.oneapp_core import naming as module
+
+	_naming_gate()
+	return module.doctypes()
+
+
+@frappe.whitelist(methods=["POST"])
+def set_naming(doctype: str, series: str | list) -> list[dict]:
+	"""Replace the prefixes a doctype offers."""
+	from oneapp.oneapp_core import naming as module
+
+	_naming_gate()
+	wanted = frappe.parse_json(series) if isinstance(series, str) else series
+	return module.set_options(doctype, wanted or [])
+
+
+@frappe.whitelist(methods=["POST"])
+def set_naming_counter(doctype: str, prefix: str, value) -> list[dict]:
+	"""Move a series' counter, which is the one destructive thing here."""
+	from oneapp.oneapp_core import naming as module
+
+	_naming_gate()
+	return module.set_counter(doctype, prefix, value)
+
+
+@frappe.whitelist(methods=["GET"])
+def naming_preview(doctype: str, prefix: str) -> list[str]:
+	"""The next few ids a series would issue."""
+	from oneapp.oneapp_core import naming as module
+
+	_naming_gate()
+	return module.preview(doctype, prefix)
+
+
+# --------------------------------------------------------------------------- #
+# Printing
+#
+# The settings *group* above decides the paper — size, font, engine, margins.
+# This decides what is drawn on it: the formats themselves and the letter heads
+# they sit under. Both are documents rather than settings, so neither fits the
+# Setting/target shape, and both are the workspace's own decision rather than a
+# per-person one — which is why they share the settings gate.
+#
+# Every mechanic lives in `oneapp_core.printing`, over Frappe's own Print
+# Format, Letter Head and `PrintFormatGenerator`. Nothing here renders.
+# --------------------------------------------------------------------------- #
+
+
+def _printing_gate() -> None:
+	"""A format is what every printed document looks like, so it is an admin's.
+
+	The same door the settings dialog uses. It matters more here than most: a
+	drawn format may carry an HTML element, which the generator renders as a
+	Jinja template with the document in scope.
+	"""
+	roles = set(frappe.get_roles())
+	if not roles & {OWNER_ROLE, SUPPORT_ROLE}:
+		frappe.throw(_("Only a workspace admin can change print formats."),
+		             frappe.PermissionError)
+
+
+def _printable() -> set[str]:
+	"""Every doctype this workspace's own spaces put on a screen.
+
+	The same rule as naming, for the same reason: a format is drawn over a
+	doctype, and the ones worth drawing over are the ones somebody here can
+	open. `Error Log` is not one of them.
+	"""
+	from oneapp.oneapp_core import sync
+
+	return sync.granted_doctypes()
+
+
+def _printable_gate(doctype: str) -> None:
+	_printing_gate()
+	if doctype not in _printable():
+		frappe.throw(_("No screen in this workspace shows {0}.").format(doctype))
+
+
+@frappe.whitelist(methods=["GET"])
+def print_formats(doctype: str = "") -> dict:
+	"""The doctypes a format may be drawn over, and one doctype's formats."""
+	from oneapp.oneapp_core import printing
+
+	_printing_gate()
+	offered = sorted(one for one in _printable() if frappe.has_permission(one, "read"))
+	doctype = doctype if doctype in offered else (offered[0] if offered else "")
+	return {
+		"doctypes": [{"doctype": one, "label": _(one)} for one in offered],
+		"doctype": doctype,
+		"formats": printing.formats(doctype) if doctype else [],
+		"letter_heads": printing.letter_heads(),
+	}
+
+
+@frappe.whitelist(methods=["GET"])
+def print_palette(doctype: str) -> dict:
+	"""What the builder may put on the page, for one doctype."""
+	from oneapp.oneapp_core import printing
+
+	_printable_gate(doctype)
+	return printing.palette(doctype)
+
+
+@frappe.whitelist(methods=["GET"])
+def print_format(name: str) -> dict:
+	"""One drawn format, as the builder opens it."""
+	from oneapp.oneapp_core import printing
+
+	_printing_gate()
+	found = printing.format_of(name)
+	_printable_gate(found["doctype"])
+	return found
+
+
+@frappe.whitelist(methods=["POST"])
+def save_print_format(doctype: str, label: str, layout, setup=None,
+                      name: str = "") -> dict:
+	"""Create or replace a drawn format."""
+	from oneapp.oneapp_core import printing
+
+	_printable_gate(doctype)
+	return printing.save_format(doctype, label, layout, setup, name)
+
+
+@frappe.whitelist(methods=["POST"])
+def delete_print_format(name: str) -> dict:
+	"""Remove one, and the default that pointed at it."""
+	from oneapp.oneapp_core import printing
+
+	_printing_gate()
+	found = printing.format_of(name)
+	_printable_gate(found["doctype"])
+	printing.delete_format(name)
+	return {"formats": printing.formats(found["doctype"])}
+
+
+@frappe.whitelist(methods=["POST"])
+def set_default_print_format(doctype: str, name: str = "") -> list[dict]:
+	"""Which format a document prints with when nobody picks one."""
+	from oneapp.oneapp_core import printing
+
+	_printable_gate(doctype)
+	return printing.set_default(doctype, name)
+
+
+@frappe.whitelist(methods=["POST"])
+def print_format_preview(doctype: str, layout, setup=None, name: str = "",
+                         letterhead: str = "") -> dict:
+	"""Render a layout that has not been saved, against a real record."""
+	from oneapp.oneapp_core import printing
+
+	_printable_gate(doctype)
+	return printing.draft_preview(doctype, layout, setup, name, letterhead)
+
+
+@frappe.whitelist(methods=["GET"])
+def letter_heads() -> list[dict]:
+	from oneapp.oneapp_core import printing
+
+	_printing_gate()
+	return printing.letter_heads()
+
+
+@frappe.whitelist(methods=["GET"])
+def letter_head(name: str) -> dict:
+	from oneapp.oneapp_core import printing
+
+	_printing_gate()
+	return printing.letter_head(name)
+
+
+@frappe.whitelist(methods=["POST"])
+def save_letter_head(label: str, values=None, name: str = "") -> dict:
+	from oneapp.oneapp_core import printing
+
+	_printing_gate()
+	values = frappe.parse_json(values) if isinstance(values, str) else (values or {})
+	return printing.save_letter_head(label, values, name)
+
+
+@frappe.whitelist(methods=["POST"])
+def delete_letter_head(name: str) -> list[dict]:
+	from oneapp.oneapp_core import printing
+
+	_printing_gate()
+	printing.delete_letter_head(name)
+	return printing.letter_heads()
