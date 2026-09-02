@@ -2,52 +2,37 @@
 
 ## How to answer me
 
-Short. Plain. I am the only person reading this, and I already know what we
-are building.
+I am the only person reading this and I already know what we are building.
 
-* **Lead with the answer.** One or two sentences that would satisfy me if I
-  read nothing else. Detail goes after that, or nowhere.
-* **A normal reply is under 150 words.** A long one is under 300. If it is
-  going past that, something is being explained that I did not ask about.
-* **No headers, no bold-label lists, no tables** unless I asked for a
-  comparison or there are genuinely three-plus parallel items. Prose in short
-  paragraphs beats a formatted wall.
+* **Lead with the answer.** One or two sentences that would satisfy me if I read
+  nothing else.
+* **Under 150 words.** 300 if it is genuinely long.
+* **No headers, no bold-label lists, no tables** unless I asked for a comparison
+  or there are three-plus parallel items.
 * **Say the thing, not the shape of the thing.** "The bell writes a
-  `Document Follow` row" — not "**The control.** A bell beside the heart in
-  the record header, over `spaceview.toggle_follow`."
-* **One caveat, not five.** Pick the one that would actually change what I do.
-  The rest belongs in the commit message or the docs, which is where I go
-  looking for it.
-* **Do not restate the work I just watched you do.** A commit hash and one
-  line of what changed is a complete report.
+  `Document Follow` row" — not "**The control.** A bell beside the heart…".
+* **One caveat, not five.** The one that would change what I do.
+* **Do not restate work I just watched you do.** A commit hash and one line is a
+  complete report.
 * **Never re-explain a decision I already agreed to.**
 
-Long form belongs in commit messages, in `docs/`, and in code comments. Those
-are read once, deliberately, by somebody looking for them. A chat reply is
-read now, in a hurry, by me.
+Long form goes in commit messages, `docs/` and code comments. `/bro` means it
+did not land — re-explain it simply.
 
-If a reply did not land, I will type `/bro` and you re-explain it simply —
-see `.claude/skills/bro/`.
+## Where things are
 
-## Everything else
+* **`docs/ONESPACE.md`** — the product. Spaces, screens, the four view bodies,
+  the record, roles, collaboration, printing, the UI rules, what is not built.
+* **`docs/ONEADMIN.md`** — the platform. Tenancy, the control plane, the
+  operator console, billing, credits, storage, the lifecycle, configuration,
+  bring-up, and how to work on this repo.
+* `docs/PRINTING.md` and `docs/WORKSPACE-SETTINGS.md` are reference tables that
+  tests read back.
 
-Two documents, and they cover everything:
+## Two rules that are nowhere else
 
-* **`docs/ONESPACE.md`** — the product a customer uses. Spaces, screens, the
-  four view bodies, the record, roles, collaboration, printing, the UI rules,
-  and what is not built yet.
-* **`docs/ONEADMIN.md`** — the platform. Tenancy, shards, domains, the control
-  plane, the operator console, billing, credits, storage, the lifecycle,
-  configuration, bring-up, and how to work on this repo.
-
-Two reference tables sit beside them because tests read them:
-`docs/PRINTING.md` (the `format_data` schema) and `docs/WORKSPACE-SETTINGS.md`
-(what moved into workspace settings and what stayed ours).
-
-Two rules that are not in there:
-
-* **OneApp is the repository name and is never product-facing.** The product
-  is OneSpace.
-* **`frappe/central`, `frappe/atlas` and `frappe/crm` are AGPL-3.0 and this
-  repo is MIT.** Read them for patterns; never copy code. Anything that is
-  really a frappe-ui component comes from frappe-ui, which is MIT.
+* **OneApp is the repository name and is never product-facing.** The product is
+  OneSpace; the operator console is OneAdmin.
+* **`frappe/central`, `frappe/atlas` and `frappe/crm` are AGPL-3.0 and this repo
+  is MIT.** Read them for patterns, never copy code. Anything that is really a
+  frappe-ui component comes from frappe-ui, which is MIT.
