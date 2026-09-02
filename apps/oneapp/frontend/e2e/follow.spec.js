@@ -18,7 +18,24 @@ const COLLEAGUE = { user: 'robin@zzmock.test', password: 'Dev-Loop-2026!x' }
 // fixture that two people can both open, which is what following is about.
 const NOTE = 'Van hire terms'
 
-const bell = (page) => page.locator('[data-slot="follow"]')
+/**
+ * The follow switch, which is a menu item behind the three dots.
+ *
+ * It was a bell in the header, beside a heart, a printer, an assignment
+ * control and the document's own steps. Following a record is a standing
+ * statement you make once — the wrong kind of thing to spend a permanent
+ * button on.
+ */
+const more = (page) => page.locator('[data-slot="record-more"]')
+const bell = (page) => page.getByRole('menuitem', { name: /^(Follow|Stop following)$/ })
+
+/** What the switch says right now, with the menu opened and closed around it. */
+const followState = async (page) => {
+  await more(page).click()
+  const said = (await bell(page).innerText()).trim()
+  await page.keyboard.press('Escape')
+  return said
+}
 
 /** Open the notes screen and click through to one record. */
 const openNote = async (page, baseURL, who) => {
@@ -37,20 +54,19 @@ test('the bell subscribes, and an edit by somebody else turns up', async ({
 
   // Robin follows the note.
   await openNote(page, baseURL, COLLEAGUE)
-  await expect(bell(page)).toBeVisible()
   // Idempotent rather than a blind toggle: this fixture is shared, and a spec
   // that assumed "off" would unfollow on the second run and then wait out its
   // timeout for a notification nobody was subscribed to.
-  if ((await bell(page).getAttribute('aria-label')) !== 'Stop following this record') {
+  if ((await followState(page)) !== 'Stop following') {
+    await more(page).click()
     await bell(page).click()
   }
-  await expect(bell(page)).toHaveAttribute('aria-label', 'Stop following this record')
+  expect(await followState(page)).toBe('Stop following')
 
   // It is stored, not remembered.
   await page.reload()
-  await expect(bell(page)).toHaveAttribute('aria-label', 'Stop following this record', {
-    timeout: 15_000,
-  })
+  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  expect(await followState(page)).toBe('Stop following')
   expectNoRealErrors(errors)
 
   // Somebody else edits it. `Content` by label, and never the title: the title
@@ -77,8 +93,9 @@ test('the bell subscribes, and an edit by somebody else turns up', async ({
   // Put the fixture back, so the next run starts from "not following".
   await page.keyboard.press('Escape')
   await openNote(page, baseURL, COLLEAGUE)
+  await more(page).click()
   await bell(page).click()
-  await expect(bell(page)).toHaveAttribute('aria-label', 'Follow this record')
+  expect(await followState(page)).toBe('Follow')
 })
 
 test('a doctype that does not track its changes has no bell', async ({
@@ -96,7 +113,9 @@ test('a doctype that does not track its changes has no bell', async ({
   await page.locator('[data-slot="list-row"]').first().click()
   await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
 
-  // The heart is there, so the header rendered and this is not an empty pane.
-  await expect(page.getByRole('button', { name: /^\d+$/ }).first()).toBeVisible()
+  // The menu opens, so the header rendered and this is not an empty pane — and
+  // Like is in it, which is the entry every record has.
+  await more(page).click()
+  await expect(page.getByRole('menuitem', { name: /^Liked?( ·|$)/ })).toBeVisible()
   await expect(bell(page)).toHaveCount(0)
 })

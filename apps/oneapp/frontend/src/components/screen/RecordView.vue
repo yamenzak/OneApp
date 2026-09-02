@@ -51,81 +51,24 @@
           @ran="emit('reload')"
         />
         <!--
-          Who this is for. Beside the actions rather than in the form, because
-          assignment is not a field: it is not on the doctype, there is no
-          column for it, and it is a thing you do to a record.
-        -->
-        <AssignControl
-          :space-code="spaceCode"
-          :screen="screen"
-          :name="record.name"
-          :people="assigned"
-          @assigned="assigned = $event"
-        />
-        <!-- One icon, two themes: lucide ships no filled heart, so the colour
-             is what says whether this is yours. -->
-        <Button
-          icon-left="lucide-heart"
-          :label="String(likes.length || 0)"
-          :variant="liked ? 'subtle' : 'ghost'"
-          :theme="liked ? 'red' : 'gray'"
-          @click="like"
-        />
-        <!--
-          Tell me when this changes. Beside the heart because it is the same
-          kind of thing — a standing statement about one record, made by one
-          person, that no field carries — and the pair reads as "mine" and
-          "watch this" rather than as two unrelated controls.
+          The step this record is waiting for, and one menu holding everything
+          else you can do to it — print it, follow it, like it, and the steps
+          that unwind a submitted document.
 
-          Drawn only where the doctype tracks its changes: a follow that can
-          never report anything is a switch that lies, and the server decides
-          that rather than this file guessing from a fieldtype.
+          Not eight buttons in a row. Assignment is gone from here entirely:
+          the Meta tab offers it one tab away, so it was the same control
+          twice, and "who is this for" is a thing you set rather than a thing
+          you reach for.
         -->
-        <!--
-          Submit, cancel, amend — or a workflow's own transitions, which is the
-          same row of buttons because the server hands back one list either
-          way. Absent on a doctype that is neither submittable nor governed by
-          a workflow, which is most of them.
-        -->
-        <DocActions
-          v-if="record._state"
+        <RecordActions
           :space-code="spaceCode"
           :screen="screen"
           :name="record.name"
           :state="record._state"
+          :extras="extras"
           :dirty="dirty"
           @moved="emit('reload')"
           @opened="emit('renamed', $event)"
-        />
-        <!--
-          Print. Beside the bell rather than in a menu: printing a record is
-          something people do often enough that hiding it behind three dots is
-          hiding it. Only where the doctype allows it — Frappe's own `print`
-          permission, which is a permission like any other.
-        -->
-        <Button
-          v-if="spec.can_print"
-          data-slot="print"
-          icon="lucide-printer"
-          variant="ghost"
-          label="Print this record"
-          tooltip="Print"
-          @click="showPrint = true"
-        />
-        <Button
-          v-if="canFollow"
-          data-slot="follow"
-          icon="lucide-bell"
-          :variant="following ? 'subtle' : 'ghost'"
-          :theme="following ? 'blue' : 'gray'"
-          :label="following ? 'Stop following this record' : 'Follow this record'"
-          :tooltip="
-            following
-              ? 'Following — you are told when this changes'
-              : 'Follow, to be told when this changes'
-          "
-          :loading="followBusy"
-          @click="follow"
         />
         <!--
           Save lives up here rather than in a footer, and the reason is the
@@ -306,14 +249,13 @@ import {
   Tooltip,
   dayjsLocal,
 } from '@/ui'
-import AssignControl from './AssignControl.vue'
 import AvatarStack from './AvatarStack.vue'
 import RecordChip from './RecordChip.vue'
 import ScreenActions from './ScreenActions.vue'
 import RecordForm from './RecordForm.vue'
 import RecordActivity from './RecordActivity.vue'
 import RecordFiles from './RecordFiles.vue'
-import DocActions from './DocActions.vue'
+import RecordActions from './RecordActions.vue'
 import StateBadge from './StateBadge.vue'
 import PrintDialog from './PrintDialog.vue'
 import RecordMeta from './RecordMeta.vue'
@@ -367,7 +309,6 @@ const collabLoaded = ref(false)
 const showPrint = ref(false)
 const following = ref(false)
 const canFollow = ref(false)
-const followBusy = ref(false)
 // Everybody in the room but this reader — the desk does the same, because a
 // face saying "you are here" is a face saying nothing.
 const others = ref([])
@@ -504,18 +445,42 @@ const like = async () => {
 // refused — the record moved out of reach between opening it and pressing this
 // — would otherwise leave a bell lit over a subscription that does not exist.
 const follow = async () => {
-  followBusy.value = true
-  try {
-    const result = await workspace.toggleFollow(
-      props.spaceCode,
-      props.screen,
-      props.record.name,
-    )
-    following.value = !!result?.following
-  } finally {
-    followBusy.value = false
-  }
+  const result = await workspace.toggleFollow(props.spaceCode, props.screen, props.record.name)
+  following.value = !!result?.following
 }
+
+/**
+ * The verbs that are not the framework's, as menu entries.
+ *
+ * Print, follow, like — three things you do *to* a record rather than to one
+ * of its fields, and none of them a thing anybody does twice in a row. They
+ * were three buttons in the header, which is where they were competing with
+ * the one button that mattered.
+ *
+ * The like keeps its count, in the label. A number nobody can see is not a
+ * number, and the count is the only reason a like is on a record at all.
+ */
+const extras = computed(() => {
+  const found = []
+  if (props.spec?.can_print) {
+    found.push({ key: 'print', label: 'Print', icon: 'lucide-printer', onClick: () => (showPrint.value = true) })
+  }
+  if (canFollow.value) {
+    found.push({
+      key: 'follow',
+      label: following.value ? 'Stop following' : 'Follow',
+      icon: 'lucide-bell',
+      onClick: follow,
+    })
+  }
+  found.push({
+    key: 'like',
+    label: `${liked.value ? 'Liked' : 'Like'}${likes.value.length ? ` · ${likes.value.length}` : ''}`,
+    icon: 'lucide-heart',
+    onClick: like,
+  })
+  return found
+})
 
 const save = async () => {
   saving.value = true

@@ -8,15 +8,6 @@
     sent — so "48 of 1,240" is a fact rather than a guess.
   -->
   <div class="flex shrink-0 items-center gap-3 border-t border-outline-gray-2 px-3 py-2">
-    <!-- `options`, not `buttons`: frappe-ui's TabButtons renamed the prop, and
-         an unknown prop on a Vue component is silently an attribute. -->
-    <TabButtons
-      :model-value="pageLength"
-      :options="options"
-      size="sm"
-      @update:model-value="emit('page-length', $event)"
-    />
-
     <div class="ms-auto flex items-center gap-2">
       <Button
         v-if="hasMore"
@@ -24,9 +15,22 @@
         :loading="loading"
         @click="emit('more')"
       />
-      <span class="whitespace-nowrap text-p-xs tabular-nums text-ink-gray-5">
-        {{ shown }}
-      </span>
+      <!--
+        The count, and how many to fetch — one control, because they are one
+        question. Four page-size buttons used to hold the whole left half of
+        this row for a number a person sets once and then reads every time, so
+        the reading is the control now and the setting is inside it.
+      -->
+      <Dropdown :options="options" align="end">
+        <Button
+          data-slot="page-length"
+          variant="ghost"
+          size="sm"
+          icon-right="lucide-chevron-down"
+          :label="shown"
+          tooltip="How many rows to fetch"
+        />
+      </Dropdown>
       <!--
         Which columns, and how wide. It sat above the table with the filters,
         where it was a fourth control competing with the box people type in —
@@ -53,7 +57,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Button, TabButtons } from '@/ui'
+import { Button, Dropdown } from '@/ui'
 import { CARD_VIEW_TYPES } from '../../lib/viewTypes'
 
 const props = defineProps({
@@ -70,6 +74,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['more', 'page-length', 'columns'])
 
+const number = (value) => value.toLocaleString()
+
 // Named for what it opens. "Choose columns" over a board is a control that
 // says the wrong thing about itself — a board has no columns to choose, and a
 // grid has neither columns nor buckets.
@@ -78,11 +84,15 @@ const settingsLabel = computed(() => {
   return CARD_VIEW_TYPES.includes(props.viewType) ? 'Card settings' : 'Choose columns'
 })
 
+// A tick beside the one in force, and nothing beside the others: a menu of
+// four numbers with no mark says which are available and not which you are on.
 const options = computed(() =>
-  props.sizes.map((size) => ({ label: String(size), value: size })),
+  props.sizes.map((size) => ({
+    label: `${number(size)} rows`,
+    ...(size === props.pageLength ? { icon: 'lucide-check' } : {}),
+    onClick: () => emit('page-length', size),
+  })),
 )
-
-const number = (value) => value.toLocaleString()
 
 const shown = computed(() =>
   props.total === null || props.total === undefined

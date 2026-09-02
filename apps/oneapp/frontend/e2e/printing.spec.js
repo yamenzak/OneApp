@@ -90,7 +90,10 @@ test('the print dialog on a record offers what the workspace has', async ({ page
   await page.goto('/one/space/zzmock?screen=tasks&record=zzmock-q3')
   await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
 
-  await page.getByRole('button', { name: 'Print' }).click()
+  // Behind the three dots with the record's other verbs, rather than a
+  // permanent printer button beside the step the record is waiting for.
+  await page.locator('[data-slot="record-more"]').click()
+  await page.getByRole('menuitem', { name: 'Print' }).click()
   // Standard is Frappe's own fallback and is always there, so the picker has
   // something to offer even on a workspace that has drawn nothing.
   await expect(page.getByRole('combobox', { name: 'Format' })).toBeVisible()

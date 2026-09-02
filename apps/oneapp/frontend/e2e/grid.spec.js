@@ -104,13 +104,17 @@ test('the footer counts what matches, and load more appends', async ({ page }) =
 
   // The count is what matches, not what was sent — read it rather than pinning
   // a number, because the fixture is a real site and rows come and go.
-  const counter = page.getByText(/^\d+ of \d+$/)
+  // The count is the page-length control now, so it is found by its slot
+  // rather than by its shape — a bare "48 of 1,240" would also match the
+  // chevron's own button.
+  const counter = page.locator('[data-slot="page-length"]')
   const total = Number((await counter.innerText()).split(' of ')[1])
   expect(total).toBeGreaterThan(20)
 
-  // A smaller page, so there is a second one.
-  // A radio group, not buttons — TabButtons is a real single-choice control.
-  await page.getByRole('radio', { name: '20', exact: true }).click()
+  // A smaller page, so there is a second one. How many to fetch lives inside
+  // the count now — one control, because they are one question.
+  await page.locator('[data-slot="page-length"]').click()
+  await page.getByRole('menuitem', { name: '20 rows' }).click()
   await expect(rows()).toHaveCount(20)
   await expect(counter).toHaveText(`20 of ${total}`)
 

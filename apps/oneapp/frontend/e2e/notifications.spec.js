@@ -30,6 +30,10 @@ test('an assignment turns up in the panel, and opens the record', async ({
   // Assign, as a person would.
   await signIn(page, baseURL)
   await page.goto(`/one/space/zzmock?screen=tasks&record=${TASK}`)
+  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  // Assignment is on Meta now, with the other three things you do to a record
+  // about other people.
+  await page.getByRole('tab', { name: 'Meta' }).click()
   await page.locator('[data-slot="assign"]').waitFor({ timeout: 15_000 })
 
   // Start from nobody. The control is a *toggle*: on a record another spec
@@ -84,6 +88,10 @@ test('an assignment turns up in the panel, and opens the record', async ({
   // shares with every other spec.
   await signIn(page, baseURL)
   await page.goto(`/one/space/zzmock?screen=tasks&record=${TASK}`)
+  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  // Assignment is on Meta now, with the other three things you do to a record
+  // about other people.
+  await page.getByRole('tab', { name: 'Meta' }).click()
   await page.locator('[data-slot="assign"]').waitFor({ timeout: 15_000 })
   await page.locator('[data-slot="assign"]').click()
   await page.getByRole('option', { name: /robin/i }).click()

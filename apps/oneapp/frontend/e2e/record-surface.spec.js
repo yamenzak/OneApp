@@ -630,15 +630,23 @@ test('a record can be liked and unliked from the dialog', async ({ page }) => {
   const errors = collectConsoleErrors(page)
   await openRecord(page)
 
-  // By its icon, not by its text: the comment count beside it is also a bare
-  // number, and which of the two comes first is a layout detail.
-  const heart = page.locator('[data-slot="record-pane"] button:has(.lucide-heart)')
+  // Behind the three dots, with its count in the label. A like is a one-click
+  // thing nobody does twice in a row, and it was a button in the header
+  // competing with the one that mattered.
+  const menu = page.locator('[data-slot="record-more"]')
+  const heart = page.getByRole('menuitem', { name: /^Liked?( ·|$)/ })
+
+  await menu.click()
   const before = (await heart.innerText()).trim()
   await heart.click()
-  await expect.poll(async () => (await heart.innerText()).trim()).not.toBe(before)
 
+  await menu.click()
+  await expect.poll(async () => (await heart.innerText()).trim()).not.toBe(before)
   await heart.click()
+
+  await menu.click()
   await expect.poll(async () => (await heart.innerText()).trim()).toBe(before)
+  await page.keyboard.press('Escape')
   expectNoRealErrors(errors)
 })
 

@@ -128,7 +128,7 @@ test('the step that cancels asks before it runs', async ({ page, baseURL }, info
   // that cancels lives behind the three dots rather than beside the step the
   // record is actually waiting for.
   await expect(step(page, 'zzVoid')).toHaveCount(0)
-  await page.locator('[data-slot="doc-more"]').click()
+  await page.locator('[data-slot="record-more"]').click()
   await page.getByRole('menuitem', { name: 'zzVoid' }).click()
   await expect(page.getByText(/cancels it/)).toBeVisible()
   await page.getByRole('button', { name: 'Never mind' }).click()

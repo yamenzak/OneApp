@@ -223,8 +223,10 @@ One scroller, not two nested: a separate horizontal wrapper leaves the header a
 scrollbar's width out of true with its rows. A guard fails the build on the
 two-wrapper shape.
 
-Pinned columns, an edge wash that says there is more, a footer of page size /
-Load more / "48 of 1,240", and windowing past two hundred rows. The count is
+Pinned columns, an edge wash that says there is more, a footer of Load more and
+"48 of 1,240" — which is also the page-size control, because how many are shown
+and how many to fetch are one question — and windowing past two hundred rows.
+The count is
 **its own request**, never awaited with the rows: a `COUNT(*)` over an unindexed
 filter is a full scan, and folding it in would put that scan in front of every
 list. It goes through `get_list` so it sees the same permissions the rows did.
@@ -303,7 +305,7 @@ Four tabs:
 | **Details** | The doctype's own form. Tab, Section and Column Breaks read the way the desk reads them, collapsing below the breakpoint. |
 | **Activity** | One timeline: what was said, what changed, and when it started, newest first. Merged in the browser from two queries; every entry carries a glyph from a closed set, because a column of identical avatars makes a comment and a field change look alike. |
 | **Files** | Frappe's own File rows, so an Attach field's file and a dropped file are one list. |
-| **Meta** | The desk's sidebar: the face and name, then the four things you do to a record *about other people* — assign, attach, tag, share — then who made it and when, then its id. |
+| **Meta** | The desk's sidebar: the face and name, then the four things you do to a record *about other people* — assign, attach, tag, share — then who made it and when, then its id. The only place assignment is offered; it was in the header too, which made it one control in two places. |
 
 **Making a record is a dialog**, the one place a modal is right: nothing behind
 it to refer to, a short decision, cancelling leaves nothing. It shows the whole
@@ -319,6 +321,14 @@ longer exists. Renaming the *title* is not this — that is an ordinary save.
 **A child table is a grid**, using the child doctype's own `in_list_view`
 fields: edited in place, tickable, drag to reorder with `idx` rewritten, numbers
 right-aligned, required columns marked in the header. None of it is declared.
+
+**The header is one button and one menu.** It was eight controls in a row —
+screen actions, assign, like, the document's steps, print, follow, Save, close
+— each defensible alone and together a toolbar you read rather than use. Now:
+who else has it open, the step the record is waiting for, `⋯`, Save, close.
+The menu holds the record's other verbs (print, follow, like — with its count
+in the label) and, last and in red, the steps that unwind a submitted document.
+Save and the step swap places, never both.
 
 **Two permission questions, not one.** A field above the read levels is not
 offered anywhere; a field above the write levels is shown and never editable.
@@ -341,8 +351,8 @@ Three rules shape that row, and none of them names an action:
   red, and asks before it runs. Which is which comes off the next state's own
   `doc_status`, never the word on the button — "Reject" and "Return to draft"
   are the same word to a reader and different things to the ledger. So a
-  submitted document is a badge and a menu: unwinding a ledger entry should
-  not sit one mis-click from the thing you came here to do.
+  submitted document is three dots and nothing else: unwinding a ledger entry
+  should not sit where the eye has just learned to click.
 * **The first step forward is green.** It is what the record is waiting for.
 * **Save and the actions share one slot.** Save is offered only while the form
   holds something the server has not seen, the actions only while it does not.
