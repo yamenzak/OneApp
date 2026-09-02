@@ -43,7 +43,7 @@ HRMS already model it, with a general ledger and a VAT return underneath.
 | `RUA Invoice` | **Sales Invoice** (Proforma → a draft, or a Sales Order) | See §3: retention is the one thing ERPNext does not model. |
 | `RUA Payment` (Pay / Receive / Petty Cash / Salary) | **Payment Entry**, and a **Journal Entry** for petty cash | This is the change that buys them a ledger: today a payment is a row with an amount and nothing behind it. |
 | `RUA Employee` | **Employee** (HRMS) | `basic` + `allowance` become a **Salary Structure**. |
-| `RUA Attendance` (one row per *day*, a JSON blob keyed by employee) | **Attendance**, one row per employee per day | 307 blobs become ~20,000 rows. The blob is why nothing can report on it. |
+| `RUA Attendance` (one row per *day*, a JSON blob keyed by employee) | **Attendance**, one row per employee per day | 307 blobs become 20,229 rows. The blob is why nothing can report on it. |
 | `RUA Leave` | **Leave Application** + Leave Ledger | Gains balances, which they do not have. |
 | `RUA Payslip` (empty) | **Salary Slip** | Never used; ships as HRMS payroll. |
 | `RUA Inventory Item` (empty) | **Item** + Stock | Never used. Not in scope for v1. |
@@ -178,13 +178,25 @@ Checked against the live source, every step reads clean —
 | `RUA LPO` → **Purchase Order** | 21 | |
 | `RUA Invoice` → **Sales Invoice** | 45 | final tax invoices only |
 | `RUA Payment` → **Payment Entry** | 142 | submitted pay and receive |
+| `RUA Attendance` → **Attendance** | 307 → **20,229** | see below |
 | `RUA Document` → **Compliance Document** | 408 | |
 | `RUA Letter` → **Correspondence** | 51 | |
 
+**Attendance is the interesting one.** They keep a month of it as one row per
+*day* holding a JSON object keyed by employee, which is what a system with no
+reporting looks like from the inside: nobody can ask how many days somebody
+worked in March, because the answer is inside thirty-one blobs. So the engine
+grew a `fan_out` — one source row becoming several records, each with its own
+identity — and those 307 rows become 20,229 Attendance rows, which is the shape
+every report HRMS ships already expects.
+
+Three booleans (`present`, `late`, `absent`) become one `status` plus a
+`late_entry` flag, through a `when` rule: the answer is in none of them
+individually, and late is not a status in ERPNext — it is a flag on a day that
+was worked, which is what it means here too.
+
 A Proforma does not cross: it is not a receivable, and posting one is how a set
-of books stops reconciling. Nor does `RUA Attendance` — 307 rows holding a JSON
-blob keyed by employee have to become ~20,000 Attendance rows, which is a
-fan-out and not a field map, and the engine does not do one yet.
+of books stops reconciling.
 
 Order is the plan author's to get right; the check refuses a link that resolves
 against a step running later, rather than letting the run discover it one row at
