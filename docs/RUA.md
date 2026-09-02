@@ -225,6 +225,22 @@ and installation, `RUA-MAT` for material bought in — and the real code and
 description sit on the line, where a person reads them. A proper item master is
 a decision for later, and the data to build one from will still be there.
 
+**A rehearsal is the real run inside a transaction that is thrown away.** The
+first version validated each document in isolation and called that a rehearsal,
+which cannot answer the question that decides a migration: does this link point
+at something? Nothing an earlier step would have made exists to point at, so
+every step after the first reported failures only the rehearsal had. Now the
+dry run inserts exactly as the real one does — links resolve, controllers run,
+the ledger posts — and at the end it is rolled back, with the counts and the
+refused rows written again afterwards because the rollback would take those too.
+
+Two consequences worth knowing. A row that will not save is undone to its own
+savepoint rather than by rolling back the connection, which is what the code
+used to do — and that quietly discarded up to a hundred and ninety-nine records
+already counted as created. And a rehearsal cannot undo what happens outside
+the database: a controller that enqueues a background job or writes a file has
+done it, and the job will look for rows that no longer exist.
+
 **The plan makes what it assumes.** Nine of its maps name a `custom_` field and
 one names an Item, and a plan naming a field nothing creates is a plan that
 cannot run — `check` says so, which beats silence and still leaves somebody
@@ -233,6 +249,37 @@ declares `FIELDS` and `SEEDS` beside the maps that use them, and installing the
 plan creates them. Where the target doctype is absent the field is skipped
 rather than fatal: this app installs on benches without ERPNext, and a plan
 that cannot be installed there is worse than one that cannot be run there.
+
+**What the first rehearsal against a real ERPNext found.** Eleven steps, and
+every one of them wrong in a way no amount of reading would have shown:
+
+* Two steps read one source doctype, and `execute` paired the run's rows with
+  the plan's *by name* — so the Customer step never ran at all. Seventy-five
+  customers, reported Done.
+* Every party's emirate went into `territory`, and Abu Dhabi is not a Territory
+  on a new site. Every designation, gender and branch the same. They are small
+  closed vocabularies — fourteen job titles, two emirates, three branches — so
+  a rule may now say `"into": "Designation"` and the record is made where it is
+  missing. Deliberately per-rule: the same mechanism pointed at a quotation's
+  line codes would invent an item master out of a year of typing.
+* Company setup makes one Fiscal Year and their books start in 2023, so every
+  document outside the current year was refused — most of them.
+* ERPNext's Quotation has no `project`. A Sales Order has one, a Sales Invoice
+  has one, and a quotation is meant to reach one through the other; every
+  quotation these people write is against a project, so it gets a field.
+* Their invoice has no lines at all — a progress invoice is one number against
+  a contract — and ERPNext will not post one without them. A `rows` rule may
+  now say `__self` and build one line out of the header.
+* `taxes_and_charges` fills the tax table in the browser and not on the server,
+  so an invoice imported with only the template named carries no VAT. The 5%
+  row is a constant on the step.
+* A Payment Entry needs the two accounts it moves between, and the old system
+  records none — only an amount. They are the company's own defaults, which is
+  an assumption stated in the plan rather than a fact from the source, and the
+  one an accountant reclassifies from.
+
+What is left is four purchase orders with no lines on them in the source. An
+order with nothing on it is not an order, and ERPNext is right to refuse it.
 
 A Proforma does not cross: it is not a receivable, and posting one is how a set
 of books stops reconciling.

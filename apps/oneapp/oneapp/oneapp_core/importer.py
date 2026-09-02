@@ -78,6 +78,7 @@ day edited on the old system re-crosses only its own employees.
 
 import json
 import re
+from copy import deepcopy
 from urllib.parse import quote, urlparse
 
 import frappe
@@ -273,7 +274,12 @@ def build(row: dict, field_map: dict, plan: str) -> dict:
 			rule = {"from": rule}
 
 		if "const" in rule:
-			values[target] = rule["const"]
+			# Copied, not shared. A constant that is a list of child rows would
+			# otherwise be the same objects on every record the run makes, and
+			# whatever the first document's controller wrote into them would be
+			# what the second one started from.
+			said = rule["const"]
+			values[target] = deepcopy(said) if isinstance(said, list | dict) else said
 			continue
 
 		if "rows" in rule:
@@ -283,7 +289,7 @@ def build(row: dict, field_map: dict, plan: str) -> dict:
 			# nothing about it wants a second vocabulary.
 			values[target] = [
 				build(one, rule.get("map") or {}, plan)
-				for one in (row.get(rule["rows"]) or [])
+				for one in _lines(row, rule["rows"])
 			]
 			continue
 
@@ -322,18 +328,76 @@ def build(row: dict, field_map: dict, plan: str) -> dict:
 		if "values" in rule:
 			said = rule["values"].get(said, rule.get("default", said))
 
+		# A second field to try before giving up. For the columns a bespoke
+		# system left optional that this one requires: two of their employees
+		# have no joining date, and the date the record was made is wrong by
+		# however long the old system lagged and is the only date there is.
+		if said in (None, "") and "default_from" in rule:
+			said = row.get(rule["default_from"])
+
 		if said in (None, "") and "default" in rule:
 			said = rule["default"]
+
+		if rule.get("into"):
+			# A small closed vocabulary the old system kept as free text and
+			# this one keeps as records: fourteen job titles, two emirates,
+			# three branches. Deliberately per-rule and not a default — the
+			# same mechanism pointed at a quotation's line codes would invent
+			# an item master out of a year of typing.
+			if said in (None, ""):
+				continue
+			said = vocabulary(rule["into"], said, rule.get("with"))
 
 		values[target] = said
 
 	return values
 
 
+def vocabulary(doctype: str, said, extra: dict | None = None) -> str:
+	"""One record of a small vocabulary, made if it is not there.
+
+	Named by the field the doctype names itself after, which is what makes this
+	answerable at all: Designation is `field:designation_name`, Territory is
+	`field:territory_name`, and a doctype named any other way is not a
+	vocabulary and does not belong behind this rule.
+
+	Inserted as the operator, like everything else the engine writes: an import
+	that could create what its operator cannot is a way around every permission
+	on the site.
+	"""
+	if frappe.db.exists(doctype, said):
+		return said
+
+	named = frappe.get_meta(doctype).autoname or ""
+	if not named.startswith("field:"):
+		frappe.throw(_("{0} is not named after a field, so it cannot be filled in "
+		               "from a value.").format(doctype))
+
+	doc = frappe.get_doc({"doctype": doctype, **(extra or {}),
+	                      named.split(":", 1)[1]: said}).insert()
+	return doc.name
+
+
+# A `rows` rule that says this rather than a fieldname builds one child row out
+# of the parent. For a document whose amount is a header field because it was
+# never itemised — a progress invoice is one number against a contract — and
+# which the target doctype nonetheless requires a line for.
+SELF = "__self"
+
+
+def _lines(row: dict, rows: str) -> list[dict]:
+	return [row] if rows == SELF else (row.get(rows) or [])
+
+
 def maps_children(field_map: dict) -> bool:
-	"""Whether anything in this map reads a child table."""
+	"""Whether anything in this map reads a child table off the source.
+
+	`__self` is not one: it builds a row out of the parent, which the list
+	endpoint already answered, so a step that only does that does not need the
+	second read per row.
+	"""
 	return any(
-		isinstance(rule, dict) and "rows" in rule
+		isinstance(rule, dict) and rule.get("rows") not in (None, SELF)
 		for rule in (field_map or {}).values()
 	)
 
@@ -473,19 +537,52 @@ def execute(run: str, user: str | None = None):
 	doc.db_set({"status": "Running", "started_on": now_datetime()})
 	frappe.db.commit()
 
-	steps = {s.source_doctype: s for s in plan.steps}
+	# A rehearsal is the real run inside a transaction that is thrown away.
+	# Nothing else is a rehearsal: validating a document in isolation cannot
+	# resolve a link to a record an earlier step would have made, so every step
+	# after the first reported failures that only a rehearsal has. Issues are
+	# kept in memory instead of written, because the rollback would take them
+	# with everything else.
+	held: list | None = [] if doc.dry_run else None
+
+	# Paired by position, not by source doctype. Keyed by name, two steps off
+	# one source — a party table split into customers and suppliers, the
+	# ordinary reason to have two — collapse to whichever came last, and the
+	# other silently never runs: seventy-five customers that the run reports as
+	# done and never looked at. The run's rows are made from the plan's in
+	# order by `start`, so position is the identity; anything else means the
+	# plan was edited under the run, which is worth stopping for.
+	if len(doc.steps) != len(plan.steps):
+		frappe.throw(_("{0} changed since this run was queued.").format(plan.name))
+
 	try:
-		for row in doc.steps:
-			step = steps.get(row.source_doctype)
-			if not step or not step.enabled:
+		for row, step in zip(doc.steps, plan.steps, strict=True):
+			if (row.source_doctype, row.target_doctype) != (step.source_doctype,
+			                                                step.target_doctype):
+				frappe.throw(_("{0} changed since this run was queued.").format(plan.name))
+			if not step.enabled:
 				continue
-			_step(doc, plan, source, step, row)
+			_step(doc, plan, source, step, row, held)
 	except Exception:
 		doc.reload()
 		doc.db_set({"status": "Failed", "finished_on": now_datetime(),
 		            "error": frappe.get_traceback(with_context=False)[-500:]})
 		frappe.db.commit()
 		raise
+
+	counted = [(r.name, r.seen, r.created, r.updated, r.failed) for r in doc.steps]
+
+	if doc.dry_run:
+		# Everything the rehearsal wrote, undone — and then the only two things
+		# worth keeping written again: what it counted, and what it refused.
+		frappe.db.rollback()
+		for name, seen, created, updated, failed in counted:
+			frappe.db.set_value("Import Run Step", name, {
+				"status": "Done", "seen": seen, "created": created,
+				"updated": updated, "failed": failed,
+			}, update_modified=False)
+		for said in held:
+			frappe.get_doc(said).insert(ignore_permissions=True)
 
 	doc.reload()
 	doc.db_set({
@@ -499,7 +596,7 @@ def execute(run: str, user: str | None = None):
 	frappe.db.commit()
 
 
-def _step(run, plan, source, step, row):
+def _step(run, plan, source, step, row, held: list | None = None):
 	"""One doctype, a page at a time, from the watermark forward."""
 	counts = {"seen": 0, "created": 0, "updated": 0, "failed": 0}
 	_mark(row, {"status": "Running", "watermark_from": step.watermark})
@@ -549,16 +646,25 @@ def _step(run, plan, source, step, row):
 				pieces = []
 
 			for key, piece in pieces:
+				# One savepoint per row. A failed insert leaves the transaction
+				# dirty, and the blanket rollback this used to do took the rest
+				# of the page with it — up to a hundred and ninety-nine records
+				# already counted as created and then quietly discarded.
+				mark = f"imp{counts['seen']}_{counts['created']}"
+				frappe.db.savepoint(mark)
 				try:
 					made = build(piece, field_map, plan.name)
 					# `key` and not `piece["name"]`: every piece of one row
 					# shares the parent's name, and an identity keyed on that
 					# would have twenty thousand rows overwrite each other.
-					what = _write(plan, step, key, piece, made, run.dry_run)
-					counts[what] += 1
+					what = _write(plan, step, key, piece, made)
 				except Exception as raised:
+					frappe.db.rollback(save_point=mark)
 					counts["failed"] += 1
-					_issue(run, step, piece, raised)
+					_issue(run, step, piece, raised, held)
+				else:
+					frappe.db.release_savepoint(mark)
+					counts[what] += 1
 
 			newest = max(filter(None, (newest, said.get("modified"))), default=newest)
 
@@ -568,7 +674,8 @@ def _step(run, plan, source, step, row):
 			frappe.db.set_value("Import Step", step.name, "watermark", newest,
 			                    update_modified=False)
 		_mark(row, {**counts, "watermark_to": newest})
-		frappe.db.commit()
+		if not run.dry_run:
+			frappe.db.commit()
 
 		if len(page) < BATCH:
 			break
@@ -578,10 +685,11 @@ def _step(run, plan, source, step, row):
 		frappe.db.set_value("Import Step", step.name, "last_run", run.name,
 		                    update_modified=False)
 	_mark(row, {"status": "Done", **counts, "watermark_to": newest})
-	frappe.db.commit()
+	if not run.dry_run:
+		frappe.db.commit()
 
 
-def _write(plan, step, key: str, said: dict, made: dict, dry_run: int) -> str:
+def _write(plan, step, key: str, said: dict, made: dict) -> str:
 	"""Insert or update the one record this source row is, and remember which.
 
 	Through `get_doc` and `save`, never a direct write: an imported Sales
@@ -590,11 +698,6 @@ def _write(plan, step, key: str, said: dict, made: dict, dry_run: int) -> str:
 	validation has imported the shape of the data and not the data.
 	"""
 	existing = resolve(plan.name, step.source_doctype, key)
-
-	if dry_run:
-		doc = frappe.get_doc({"doctype": step.target_doctype, **made})
-		rehearse(doc)
-		return "updated" if existing else "created"
 
 	if existing and frappe.db.exists(step.target_doctype, existing):
 		doc = frappe.get_doc(step.target_doctype, existing)
@@ -606,31 +709,6 @@ def _write(plan, step, key: str, said: dict, made: dict, dry_run: int) -> str:
 	doc = frappe.get_doc({"doctype": step.target_doctype, **made}).insert()
 	_remember(plan, step, key, doc.name)
 	return "created"
-
-
-def rehearse(doc):
-	"""Everything `insert` does up to the write, and nothing after it.
-
-	The old version of this ran `validate` and called it a rehearsal, which
-	missed the failure that actually stops an import: a Link pointing at
-	something that is not there. Every employee naming a Designation nobody
-	created, every party naming a Territory that is one of seven emirates and
-	none of them a record — a rehearsal that says those are fine is a rehearsal
-	that says nothing.
-
-	So this is Frappe's own `Document.insert`, read down to `db_insert` and
-	stopped there: defaults, permission, links, `before_save`, `validate`, and
-	the mandatory and select checks inside `_validate`. Named steps rather than
-	a flag on insert, because there is no flag on insert for "do all of it
-	except the part that keeps it".
-	"""
-	doc._set_defaults()
-	doc.set_user_and_timestamp()
-	doc.set_docstatus()
-	doc.check_permission("create")
-	doc._validate_links()
-	doc.run_before_save_methods()
-	doc._validate()
 
 
 def _remember(plan, step, source_name: str, target_name: str):
@@ -666,23 +744,28 @@ def _remember(plan, step, source_name: str, target_name: str):
 	}).insert(ignore_permissions=True)
 
 
-def _issue(run, step, said: dict, raised: Exception):
+def _issue(run, step, said: dict, raised: Exception, held: list | None = None):
 	"""One row that would not import, kept whole.
 
 	The payload as well as the error, because the source site will have moved on
 	by the time anybody reads this and a message with no row attached is a
 	question nobody can answer.
+
+	`held` is a rehearsal: the run it belongs to is about to be rolled back, so
+	writing this now would throw it away with everything else.
 	"""
-	frappe.db.rollback()
-	frappe.get_doc({
+	issue = {
 		"doctype": "Import Issue",
 		"run": run.name,
 		"source_doctype": step.source_doctype,
 		"source_name": said.get("name"),
 		"error": f"{type(raised).__name__}: {raised}"[:500],
 		"payload": frappe.as_json(said),
-	}).insert(ignore_permissions=True)
-	frappe.db.commit()
+	}
+	if held is not None:
+		held.append(issue)
+		return
+	frappe.get_doc(issue).insert(ignore_permissions=True)
 
 
 def _mark(row, values: dict):
@@ -977,10 +1060,11 @@ def _check_step(source, plan, step, made: set, seen: dict | None = None) -> dict
 			# Checking only that the list is there would pass a map naming
 			# `unit_price` on a table whose column is `rate`, which is every
 			# line silently blank.
-			if theirs is not None and rule["rows"] not in theirs:
+			if (theirs is not None and rule["rows"] != SELF
+					and rule["rows"] not in theirs):
 				problems.append(f"`{target}` reads `{rule['rows']}`, which is not there")
 				continue
-			lines = (rows[0].get(rule["rows"]) if rows else None) or []
+			lines = _lines(rows[0], rule["rows"]) if rows else []
 			if not lines:
 				warnings.append(
 					f"`{target}` reads `{rule['rows']}`, and the row checked has no lines "
@@ -1052,7 +1136,7 @@ def _one_with_lines(source, step, rows: list, field_map: dict) -> dict:
 	not a second import.
 	"""
 	tables = [rule["rows"] for rule in field_map.values()
-	          if isinstance(rule, dict) and "rows" in rule]
+	          if isinstance(rule, dict) and rule.get("rows") not in (None, SELF)]
 	first = None
 
 	for row in rows[:LOOK]:

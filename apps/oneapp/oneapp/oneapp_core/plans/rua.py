@@ -78,6 +78,32 @@ PAYMENT_MODES = {"Pay: Petty Cash": "Cash"}
 FABRICATION = "RUA-FAB"
 MATERIAL = "RUA-MAT"
 
+# The accounts, by the names ERPNext's own UAE chart of accounts gives them
+# once a company with this abbreviation exists. Named here rather than looked
+# up because a field map is data: `books` makes the company, the chart makes
+# these, and the plan is checked against a site that has both.
+#
+# The old system records no account against a payment at all — only an amount —
+# so cash is an assumption and not a fact. It is the company's own default and
+# the one an accountant reclassifies from; the alternative is refusing every
+# payment for want of a field nobody ever filled in.
+ABBR = "RUA"
+CASH = f"1110 - Cash - {ABBR}"
+DEBTORS = f"1310 - Debtors - {ABBR}"
+CREDITORS = f"2110 - Creditors - {ABBR}"
+VAT = f"VAT 5% - {ABBR}"
+
+# 5% on the net, which is the UAE rate and what every one of their invoices
+# already works out by hand. As a constant row rather than a template name:
+# `taxes_and_charges` fills the table in the browser and not on the server, so
+# an invoice imported with only the template named carries no tax at all.
+VAT_ROW = [{
+	"charge_type": "On Net Total",
+	"account_head": VAT,
+	"description": "VAT 5%",
+	"rate": 5,
+}]
+
 PROJECT_STATUS = {
 	"Tender": "Open",
 	"Job in Hand": "Open",
@@ -110,6 +136,12 @@ FIELDS = [
 	 "insert_after": "custom_stage"},
 	{"dt": "Employee", "fieldname": "custom_nationality", "label": "Nationality",
 	 "fieldtype": "Data", "insert_after": "date_of_birth"},
+	# ERPNext's Quotation has no project — a Sales Order does, a Sales Invoice
+	# does, and a quotation is meant to reach one through the other. Every
+	# quotation these people write is against a project and they will look for
+	# it by that, so it gets one.
+	{"dt": "Quotation", "fieldname": "custom_project", "label": "Project",
+	 "fieldtype": "Link", "options": "Project", "insert_after": "party_name"},
 	{"dt": "Quotation Item", "fieldname": "custom_width_cm", "label": "Width (cm)",
 	 "fieldtype": "Float", "insert_after": "qty"},
 	{"dt": "Quotation Item", "fieldname": "custom_height_cm", "label": "Height (cm)",
@@ -138,6 +170,16 @@ FIELDS = [
 # territory — is either already on an ERPNext site or is the company setup this
 # workspace does on its own.
 SEEDS = [
+	# Their books start in 2023 and their newest purchase order is dated 2026.
+	# ERPNext refuses to post a document into a year it has no Fiscal Year for,
+	# and company setup makes exactly one — so without these, every invoice and
+	# every purchase order outside the current year is refused, which is most
+	# of them.
+	*(
+		{"doctype": "Fiscal Year", "year": str(year),
+		 "year_start_date": f"{year}-01-01", "year_end_date": f"{year}-12-31"}
+		for year in range(2023, 2027)
+	),
 	{"doctype": "Item", "item_code": FABRICATION,
 	 "item_name": "Fabrication and installation", "item_group": "Services",
 	 "stock_uom": "Nos", "is_stock_item": 0,
@@ -160,7 +202,13 @@ STEPS = [
 			"customer_type": {"const": "Company"},
 			"customer_group": {"from": "type", "values": CUSTOMER_GROUPS,
 			                   "default": "All Customer Groups"},
-			"territory": {"from": "emirate", "default": "All Territories"},
+			# The emirates are territories — seven of them, and this company
+			# works in two. `into` makes the record where it is missing rather
+			# than flattening every customer into "All Territories", which is
+			# what a sales report by region needs.
+			"territory": {"from": "emirate", "default": "All Territories",
+			              "into": "Territory",
+			              "with": {"parent_territory": "All Territories", "is_group": 0}},
 			# The TRN. ERPNext's own field for a tax registration number, which
 			# is what makes a compliant tax invoice possible at all.
 			"tax_id": {"from": "trn"},
@@ -214,10 +262,17 @@ STEPS = [
 			"employee_name": {"from": "employee_name"},
 			"first_name": {"from": "employee_name"},
 			"company": {"const": COMPANY},
-			"gender": {"from": "gender", "default": "Prefer not to say"},
+			"gender": {"from": "gender", "default": "Prefer not to say", "into": "Gender"},
 			"date_of_birth": {"from": "date_of_birth"},
-			"date_of_joining": {"from": "joining_date"},
-			"designation": {"from": "position"},
+			# Two of the seventy-one have none, and ERPNext requires one. The
+			# creation date is when the record was made rather than when the
+			# person started, which is wrong by however long the old system
+			# lagged — and is the only date the source has.
+			"date_of_joining": {"from": "joining_date", "default_from": "creation"},
+			# Fourteen job titles, kept as free text over there and as records
+			# here. Small and closed, which is the whole test for `into`.
+			"designation": {"from": "position", "into": "Designation"},
+			"branch": {"from": "branch", "into": "Branch"},
 			"cell_number": {"from": "phone"},
 			"personal_email": {"from": "email"},
 			"status": {"const": "Active"},
@@ -233,7 +288,7 @@ STEPS = [
 			"quotation_to": {"const": "Customer"},
 			"company": {"const": COMPANY},
 			"transaction_date": {"from": "date"},
-			"project": {"from": "project", "link": "RUA Project"},
+			"custom_project": {"from": "project", "link": "RUA Project"},
 			"terms": {"from": "terms_and_conditions"},
 			# The lines. `amount` on their row is the price of one piece and
 			# `total` is the line — which is the opposite of what both words
@@ -313,6 +368,20 @@ STEPS = [
 			# Their per-project sequence for final tax invoices. Frappe's naming
 			# series is global, so this cannot be the id and is kept beside it.
 			"custom_project_serial": {"from": "serial_number"},
+			# Their invoice has no lines at all — the amount is a header field,
+			# because a progress invoice is one number against a contract. So
+			# it becomes one line, and the description is what the invoice is
+			# for rather than a part number.
+			"items": {
+				"rows": "__self",
+				"map": {
+					"item_code": {"const": FABRICATION},
+					"description": {"const": "Work executed to date"},
+					"qty": {"const": 1},
+					"rate": {"from": "amount"},
+				},
+			},
+			"taxes": {"const": VAT_ROW},
 		},
 	},
 	{
@@ -345,6 +414,18 @@ STEPS = [
 			# cash box becomes the mode of payment, which is the field ERPNext
 			# keeps that answer in.
 			"mode_of_payment": {"from": "type", "values": PAYMENT_MODES, "default": ""},
+			# Which account each side moves. ERPNext fills these in the browser
+			# from the company's defaults and not on the server, so a payment
+			# imported without them is refused for want of an exchange rate it
+			# has no currency to look up.
+			"paid_from": {"from": "type", "values": {
+				"Receive": DEBTORS, "Pay": CASH, "Pay: Petty Cash": CASH}},
+			"paid_to": {"from": "type", "values": {
+				"Receive": CASH, "Pay": CREDITORS, "Pay: Petty Cash": CREDITORS}},
+			# One currency, so one rate. Said rather than left out: without it
+			# ERPNext asks, and there is nobody to ask.
+			"source_exchange_rate": {"const": 1},
+			"target_exchange_rate": {"const": 1},
 		},
 	},
 	{

@@ -11,6 +11,7 @@ is worth pinning is everything the rows are put through after it.
 """
 
 import json
+import types
 
 import pytest
 
@@ -131,6 +132,7 @@ class Doc(dict):
 		# the property worth pinning is *which* of insert's checks ran, and
 		# the one that matters is the link check.
 		self.rehearsed = []
+		self.flags = types.SimpleNamespace()
 
 	def insert(self, **k):
 		self.inserted += 1
@@ -144,7 +146,11 @@ class Doc(dict):
 		super().update(values)
 
 	def run_method(self, method):
+		self.rehearsed.append(method)
 		self.validated += 1
+
+	def set(self, key, value):
+		self[key] = value
 
 	def _set_defaults(self):
 		self.rehearsed.append("defaults")
@@ -157,6 +163,12 @@ class Doc(dict):
 
 	def check_permission(self, what):
 		self.rehearsed.append(f"may {what}")
+
+	def check_if_latest(self):
+		self.rehearsed.append("latest")
+
+	def validate_higher_perm_levels(self):
+		self.rehearsed.append("perm levels")
 
 	def _validate_links(self):
 		self.rehearsed.append("links")
@@ -205,7 +217,7 @@ def written(importer, stub_frappe, monkeypatch):
 
 def test_a_row_nobody_has_seen_is_inserted(importer, written, monkeypatch):
 	monkeypatch.setattr(importer, "resolve", lambda *a: None)
-	what = importer._write(Plan(), Step(), "Halloway & Co", {"name": "Halloway & Co"}, {"customer_name": "X"}, 0)
+	what = importer._write(Plan(), Step(), "Halloway & Co", {"name": "Halloway & Co"}, {"customer_name": "X"})
 	assert what == "created"
 	assert written[0].inserted == 1
 
@@ -215,7 +227,7 @@ def test_the_second_run_updates_rather_than_duplicating(importer, written, stub_
 	monkeypatch.setattr(importer, "resolve", lambda *a: "CUST-0007")
 	stub_frappe.db.records[("Customer", "CUST-0007")] = True
 
-	what = importer._write(Plan(), Step(), "Halloway & Co", {"name": "Halloway & Co"}, {"customer_name": "X"}, 0)
+	what = importer._write(Plan(), Step(), "Halloway & Co", {"name": "Halloway & Co"}, {"customer_name": "X"})
 	assert what == "updated"
 	assert written[0].saved == 1
 	assert written[0].inserted == 0
@@ -227,7 +239,50 @@ def test_a_target_deleted_since_is_made_again(importer, written, stub_frappe, mo
 	monkeypatch.setattr(importer, "resolve", lambda *a: "CUST-0007")
 	stub_frappe.db.records[("Customer", "CUST-0007")] = None
 
-	assert importer._write(Plan(), Step(), "H", {"name": "H"}, {"customer_name": "X"}, 0) == "created"
+	assert importer._write(Plan(), Step(), "H", {"name": "H"}, {"customer_name": "X"}) == "created"
+
+
+def test_two_steps_off_one_source_doctype_both_run(importer, stub_frappe, monkeypatch):
+	"""The run's rows pair with the plan's by position, not by name.
+
+	Keyed by source doctype, a party table split into customers and suppliers —
+	the ordinary reason to have two steps off one — collapses to whichever came
+	last, and the other never runs at all. The run says Done, the counts look
+	like numbers, and seventy-five customers were never looked at.
+	"""
+	ran = []
+	monkeypatch.setattr(importer, "_step",
+	                    lambda run, plan, source, step, row, held=None: ran.append(step.target_doctype))
+
+	def plan_steps():
+		return [
+			types.SimpleNamespace(source_doctype="RUA Party", target_doctype="Customer",
+			                      enabled=1),
+			types.SimpleNamespace(source_doctype="RUA Party", target_doctype="Supplier",
+			                      enabled=1),
+		]
+
+	run = types.SimpleNamespace(
+		name="IMP-1", plan="P", dry_run=0, steps=[
+			types.SimpleNamespace(name="RS-1", source_doctype="RUA Party",
+			                      target_doctype="Customer",
+			                      seen=0, created=0, updated=0, failed=0),
+			types.SimpleNamespace(name="RS-2", source_doctype="RUA Party",
+			                      target_doctype="Supplier",
+			                      seen=0, created=0, updated=0, failed=0),
+		],
+		db_set=lambda *a, **k: None, reload=lambda: None,
+	)
+	docs = {
+		"Import Run": run,
+		"Import Plan": types.SimpleNamespace(name="P", source="S", steps=plan_steps()),
+		"Import Source": types.SimpleNamespace(name="S"),
+	}
+	monkeypatch.setattr(stub_frappe, "get_doc", lambda what, name=None: docs[what])
+
+	importer.execute("IMP-1")
+
+	assert ran == ["Customer", "Supplier"]
 
 
 def test_an_identity_may_not_be_repointed_at_another_doctype(importer, stub_frappe):
@@ -246,33 +301,18 @@ def test_an_identity_may_not_be_repointed_at_another_doctype(importer, stub_frap
 		importer._remember(Plan(), Step(), "Halloway & Co", "CUST-0007")
 
 
-def test_a_rehearsal_validates_and_keeps_nothing(importer, written, monkeypatch):
-	"""The counts a dry run reports are real; the records are not."""
-	monkeypatch.setattr(importer, "resolve", lambda *a: None)
-	what = importer._write(Plan(), Step(), "H", {"name": "H"}, {"customer_name": "X"}, 1)
+def test_a_rehearsal_is_the_real_run_thrown_away(importer, written, stub_frappe, monkeypatch):
+	"""A dry run inserts exactly like a real one, and `execute` rolls it back.
 
-	assert what == "created"
-	assert written[0].validated == 1
-	assert written[0].inserted == 0
-	assert written[0].saved == 0
-
-
-def test_a_rehearsal_checks_the_links(importer, written, monkeypatch):
-	"""The failure that actually stops an import.
-
-	An earlier version ran `validate` and called that a rehearsal, which is the
-	one check that says nothing about a Link pointing at a record nobody made —
-	every employee naming a Designation that is not there, every party naming
-	an emirate that is not a Territory. Those are the rows a real run refuses,
-	so they are what a rehearsal has to refuse too.
+	Validating a document in isolation was the old rehearsal and it could not
+	answer the question that matters: a link to a record an earlier step would
+	have made. Every step after the first reported failures that only the
+	rehearsal had. So the rehearsal writes, resolves, and is thrown away.
 	"""
 	monkeypatch.setattr(importer, "resolve", lambda *a: None)
-	importer._write(Plan(), Step(), "H", {"name": "H"}, {"customer_name": "X"}, 1)
 
-	assert written[0].rehearsed == [
-		"defaults", "stamped", "docstatus", "may create", "links",
-		"before save", "mandatory and selects",
-	]
+	assert importer._write(Plan(), Step(), "H", {"name": "H"}, {"customer_name": "X"}) == "created"
+	assert written[0].inserted == 1
 
 
 # --------------------------------------------------------------------------- #
@@ -303,7 +343,8 @@ def stepped(importer, stub_frappe, monkeypatch):
 
 	monkeypatch.setattr(importer, "_write", lambda *a: "created")
 	monkeypatch.setattr(importer, "_issue",
-	                    lambda run, step, said, raised: seen["issues"].append(said["name"]))
+	                    lambda run, step, said, raised, held=None:
+	                        seen["issues"].append(said["name"]))
 	monkeypatch.setattr(importer, "_mark", lambda row, values: row.marks.update(values))
 	return seen
 
@@ -370,7 +411,7 @@ def test_a_row_that_will_not_save_is_kept_and_the_rest_go_on(importer, stepped, 
 		{"name": "bad", "modified": "2026-01-02 00:00:00"},
 	] if a[3] == 0 else [])
 
-	def write(plan, step, key, said, made, dry_run):
+	def write(plan, step, key, said, made):
 		if said["name"] == "bad":
 			raise ValueError("Customer Group is required")
 		return "created"
@@ -383,6 +424,39 @@ def test_a_row_that_will_not_save_is_kept_and_the_rest_go_on(importer, stepped, 
 	assert row.marks["created"] == 1
 	assert row.marks["failed"] == 1
 	assert row.marks["status"] == "Done"
+
+
+def test_a_row_that_will_not_save_is_undone_to_its_own_savepoint(importer, stepped,
+                                                                stub_frappe, monkeypatch):
+	"""What a failing row costs: itself, and nothing else.
+
+	`_issue` used to roll the connection back before writing, which threw away
+	every row written since the last commit — up to a hundred and ninety-nine
+	records already counted as created and then quietly gone. A savepoint per
+	row undoes the one that failed.
+	"""
+	monkeypatch.setattr(importer, "fetch", lambda *a: [
+		{"name": "good", "modified": "2026-01-01 00:00:00"},
+		{"name": "bad", "modified": "2026-01-02 00:00:00"},
+		{"name": "also good", "modified": "2026-01-03 00:00:00"},
+	] if a[3] == 0 else [])
+
+	def write(plan, step, key, said, made):
+		if key == "bad":
+			raise ValueError("no")
+		return "created"
+
+	monkeypatch.setattr(importer, "_write", write)
+	row = RunStep()
+	importer._step(Run(), Plan(), None, Step(), row)
+
+	assert row.marks["created"] == 2
+	assert row.marks["failed"] == 1
+	# One mark per row, and the failing one is what was rolled back to.
+	assert len(stub_frappe.db.savepoints) == 3
+	assert len(stub_frappe.db.rollbacks) == 1
+	assert stub_frappe.db.rollbacks[0] in stub_frappe.db.savepoints
+	assert len(stub_frappe.db.released) == 2
 
 
 def test_a_rehearsal_moves_no_watermark(importer, stepped, stub_frappe, monkeypatch):
@@ -687,7 +761,7 @@ def test_every_piece_gets_its_own_identity(importer, stepped, monkeypatch):
 	keys = []
 	monkeypatch.setattr(importer, "fetch", lambda *a: [DAY] if a[3] == 0 else [])
 	monkeypatch.setattr(importer, "_write",
-	                    lambda plan, step, key, said, made, dry: keys.append(key) or "created")
+	                    lambda plan, step, key, said, made: keys.append(key) or "created")
 
 	step = Step()
 	step.fan_out = __import__("json").dumps(FAN)
@@ -705,7 +779,7 @@ def test_every_piece_gets_its_own_identity(importer, stepped, monkeypatch):
 def test_one_bad_piece_does_not_lose_the_others(importer, stepped, monkeypatch):
 	monkeypatch.setattr(importer, "fetch", lambda *a: [DAY] if a[3] == 0 else [])
 
-	def write(plan, step, key, said, made, dry):
+	def write(plan, step, key, said, made):
 		if key.endswith("2"):
 			raise ValueError("Employee RC-EMP-00002 does not exist")
 		return "created"
@@ -805,6 +879,86 @@ def test_a_measurement_somebody_typed_becomes_a_number(importer):
 	# be believed by everything downstream.
 	assert importer.build({"width": "as drawn"}, rule, "P") == {"w": None}
 	assert importer.build({"width": ""}, rule, "P") == {"w": None}
+
+
+def test_one_line_can_be_built_out_of_the_header(importer):
+	"""A progress invoice is one number against a contract, so their invoice
+	has no lines at all — and ERPNext will not post one without them."""
+	rule = {"items": {"rows": "__self", "map": {
+		"item_code": {"const": "RUA-FAB"},
+		"qty": {"const": 1},
+		"rate": {"from": "amount"},
+	}}}
+
+	made = importer.build({"name": "INV-1", "amount": 899233.33}, rule, "P")
+
+	assert made == {"items": [{"item_code": "RUA-FAB", "qty": 1, "rate": 899233.33}]}
+	# And it needs no second read: the header is what the list endpoint already
+	# answered, so a step that only does this must not fetch a document a row.
+	assert importer.maps_children(rule) is False
+
+
+def test_a_constant_list_is_not_shared_between_records(importer):
+	"""A tax row is a constant and a child row is mutable.
+
+	Handed out by reference, whatever the first invoice's controller wrote into
+	its tax row would be what the second one started from — and a rate or an
+	amount computed once and reused is a set of books that does not add up.
+	"""
+	rule = {"taxes": {"const": [{"rate": 5}]}}
+
+	first = importer.build({}, rule, "P")
+	second = importer.build({}, rule, "P")
+	first["taxes"][0]["tax_amount"] = 44961.67
+
+	assert second["taxes"] == [{"rate": 5}]
+
+
+def test_a_second_field_is_tried_before_giving_up(importer):
+	"""Two of their seventy-one employees have no joining date and ERPNext
+	requires one. The creation date is wrong by however long the old system
+	lagged, and is the only date there is."""
+	rule = {"date_of_joining": {"from": "joining_date", "default_from": "creation"}}
+
+	assert importer.build({"joining_date": "2024-03-01", "creation": "2025-01-01"},
+	                      rule, "P") == {"date_of_joining": "2024-03-01"}
+	assert importer.build({"joining_date": None, "creation": "2025-01-01"},
+	                      rule, "P") == {"date_of_joining": "2025-01-01"}
+
+
+def test_a_vocabulary_value_is_made_where_it_is_missing(importer, stub_frappe, monkeypatch):
+	"""Fourteen job titles kept as free text over there and as records here.
+
+	Named by the field the doctype names itself after, which is the whole test
+	for whether something is a vocabulary at all.
+	"""
+	made = []
+	monkeypatch.setattr(stub_frappe.db, "exists", lambda dt, name=None: False)
+	monkeypatch.setattr(stub_frappe, "get_meta",
+	                    lambda dt: types.SimpleNamespace(autoname="field:designation_name"))
+	monkeypatch.setattr(stub_frappe, "get_doc",
+	                    lambda values: made.append(values) or Doc(values, name=values.get(
+	                        "designation_name")))
+
+	assert importer.build({"position": "Cutting Specialist"},
+	                      {"designation": {"from": "position", "into": "Designation"}},
+	                      "P") == {"designation": "Cutting Specialist"}
+	assert made == [{"doctype": "Designation", "designation_name": "Cutting Specialist"}]
+
+
+def test_a_doctype_not_named_after_a_field_is_not_a_vocabulary(importer, stub_frappe,
+                                                              monkeypatch):
+	"""The guard that keeps this from becoming "create anything I point at".
+
+	An Item is named by a series or a rule, not by a value, and filling one in
+	from a line's description would invent a catalogue nobody agreed to keep.
+	"""
+	monkeypatch.setattr(stub_frappe.db, "exists", lambda dt, name=None: False)
+	monkeypatch.setattr(stub_frappe, "get_meta",
+	                    lambda dt: types.SimpleNamespace(autoname="hash"))
+
+	with pytest.raises(stub_frappe.ValidationError, match="not named after a field"):
+		importer.vocabulary("Item", "CW01")
 
 
 def test_a_step_that_maps_child_rows_reads_whole_documents(importer, monkeypatch):

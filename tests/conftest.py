@@ -70,9 +70,25 @@ def _make_frappe():
 			# turns every such test into a transcription of the query.
 			self.values = {}
 			self.writes = []
+			self.rollbacks = []
+			self.savepoints = []
+			self.released = []
 
 		def commit(self):
 			self.commits += 1
+
+		def rollback(self, save_point=None):
+			self.rollbacks.append(save_point)
+
+		# Savepoints, as the engine uses them: one per row, so a row that will
+		# not save is undone without taking the page with it. Recorded rather
+		# than simulated — what a test wants to know is that the failing row
+		# was rolled back to its own mark and no further.
+		def savepoint(self, save_point):
+			self.savepoints.append(save_point)
+
+		def release_savepoint(self, save_point):
+			self.released.append(save_point)
 
 		def get_single_value(self, doctype, field):
 			return self.singles.get((doctype, field))
