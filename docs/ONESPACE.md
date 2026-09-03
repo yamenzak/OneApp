@@ -321,10 +321,13 @@ off it and five hundred documents filed against it — and drawing that as a for
 is technically a record page and practically a filing cabinet.
 
 So a screen may declare a **showcase** in its `view_settings`, and then opening
-one of its records looks like this: the photographs filed against it filling the
-top of the page and crossfading every six seconds, the name over them, a status
-badge, up to four numbers worth reading at a glance, a sideways row of cards for
-whatever hangs off this record, and a tab strip that carries the other screens
+one of its records looks like this: the photographs filed against it running the
+full height of the section and crossfading every six seconds, the name over
+them, a status badge, up to four numbers worth reading at a glance, a sideways
+row of cards for whatever hangs off this record *sitting on the artwork* rather
+than in a panel under it — one scrim over the whole section, solid black through
+the bottom quarter so the cards have a ground and gone by the top so the
+photograph is a photograph — and a tab strip that carries the other screens
 in the same space that point back at it — beside the record's own Details,
 Activity, Files and Meta. The record takes the whole content area rather than a
 pane, because a hero in a 480-pixel column is a thumbnail; the list behind it is

@@ -23,14 +23,19 @@
     class="relative -mx-4 -mt-4 mb-4 overflow-hidden bg-black"
   >
     <!--
-      The photographs, one at a time, crossfading.
+      The photographs, one at a time, crossfading, behind the whole of this.
 
-      Absolutely positioned and stacked rather than swapped, because swapping
-      the `src` of one <img> flashes white between two large images — and a
-      hero that blinks every six seconds is worse than a hero that does not
-      move at all.
+      Absolutely placed against the section rather than against a band at the
+      top of it, which is the difference between a hero and a banner: the
+      artwork runs the full height and the row of cards sits *on* it, fading
+      into black at the bottom the way every streaming service does it. It was
+      a fixed-height strip with a black panel under it, and the seam showed.
+
+      Stacked and crossfaded rather than swapping one <img>'s `src`, because
+      swapping flashes white between two large images — and a hero that blinks
+      every six seconds is worse than one that does not move.
     -->
-    <div class="relative h-64 w-full sm:h-80">
+    <div class="absolute inset-0">
       <img
         v-for="(image, at) in images"
         :key="image.file_url"
@@ -41,14 +46,6 @@
         :class="at === shown ? 'opacity-100' : 'opacity-0'"
       />
 
-      <!--
-        The scrim. Two gradients, not one: a vertical wash so the words at the
-        bottom sit on something dark whatever the photograph does there, and a
-        horizontal one so the left edge stays legible over a bright sky.
-      -->
-      <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
-      <div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent" />
-
       <!-- Nothing filed against it yet. The gradient alone, which reads as a
            deliberate cover rather than as a picture that failed to load. -->
       <div
@@ -56,50 +53,71 @@
         class="absolute inset-0 bg-gradient-to-br from-white/10 to-white/0"
       />
 
-      <div class="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 sm:p-6">
-        <div class="flex flex-wrap items-center gap-2">
-          <span
-            v-if="eyebrow"
-            data-slot="showcase-eyebrow"
-            class="truncate text-p-xs uppercase tracking-widest text-white/70"
-          >
-            {{ eyebrow }}
-          </span>
-        </div>
+      <!--
+        The scrim, and it is one gradient over the whole section rather than one
+        per band. Two of them met at the boundary between the words and the
+        cards, and a lighter wash starting directly under a darker one is a seam
+        across somebody's building.
 
+        The stops are placed rather than left at thirds, and that is the whole
+        of the tuning: solid black through the bottom quarter, where the cards
+        are and where a card row wants a ground, easing to nothing by the top,
+        where the photograph is meant to be a photograph. Left at thirds it was
+        a even wash — half the building dimmed and the cards still floating
+        over a lit facade.
+
+        Plus a horizontal one, so the left edge stays legible over a bright sky.
+      -->
+      <div class="absolute inset-0 bg-gradient-to-t from-black from-25% via-black/45 via-60% to-transparent" />
+      <div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent" />
+    </div>
+
+    <!--
+      And everything that is read, in normal flow over it — so the section is
+      as tall as its content and the artwork follows, rather than the content
+      being pinned inside a height somebody picked.
+    -->
+    <div class="relative flex h-64 flex-col justify-end gap-3 p-4 sm:h-80 sm:p-6">
+      <span
+        v-if="eyebrow"
+        data-slot="showcase-eyebrow"
+        class="truncate text-p-xs uppercase tracking-widest text-white/70"
+      >
+        {{ eyebrow }}
+      </span>
+
+      <!--
+        The name, at a size a photograph can carry. `text-wrap: balance` so a
+        two-line title breaks somewhere a person would break it rather than
+        leaving one word alone on the second line.
+      -->
+      <h1
+        data-slot="showcase-title"
+        dir="auto"
+        class="max-w-3xl text-balance text-2xl font-semibold leading-tight text-white sm:text-4xl"
+      >
+        {{ title }}
+      </h1>
+
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <StateBadge v-if="badge" :label="badge" :states="states" />
         <!--
-          The name, at a size a photograph can carry. `text-wrap: balance` so a
-          two-line title breaks somewhere a person would break it rather than
-          leaving one word alone on the second line.
+          The two or three numbers somebody opens the record to read, drawn
+          by the same formatter every list cell uses — so a contract value
+          reads the same here as it does in the column it came from.
         -->
-        <h1
-          data-slot="showcase-title"
-          dir="auto"
-          class="max-w-3xl text-balance text-2xl font-semibold leading-tight text-white sm:text-4xl"
+        <div
+          v-for="fact in facts"
+          :key="fact.field"
+          data-slot="showcase-fact"
+          class="flex flex-col"
         >
-          {{ title }}
-        </h1>
-
-        <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <StateBadge v-if="badge" :label="badge" :states="states" />
-          <!--
-            The two or three numbers somebody opens the record to read, drawn
-            by the same formatter every list cell uses — so a contract value
-            reads the same here as it does in the column it came from.
-          -->
-          <div
-            v-for="fact in facts"
-            :key="fact.field"
-            data-slot="showcase-fact"
-            class="flex flex-col"
-          >
-            <span class="text-p-xs uppercase tracking-wide text-white/60">
-              {{ fact.label }}
-            </span>
-            <span class="text-p-base font-medium tabular-nums text-white">
-              {{ fact.text || '—' }}
-            </span>
-          </div>
+          <span class="text-p-xs uppercase tracking-wide text-white/60">
+            {{ fact.label }}
+          </span>
+          <span class="text-p-base font-medium tabular-nums text-white">
+            {{ fact.text || '—' }}
+          </span>
         </div>
       </div>
 
@@ -107,10 +125,13 @@
         Which photograph, and a way to pick one. Dots rather than arrows: there
         are two or three of these, not twenty, and an arrow implies a sequence
         that matters.
+
+        Inside the words rather than at the foot of the section, which is now
+        the bottom of a row of cards — the dots belong to the picture.
       -->
       <div
         v-if="images.length > 1"
-        class="absolute bottom-4 right-4 flex items-center gap-1.5"
+        class="absolute bottom-4 right-4 flex items-center gap-1.5 sm:bottom-6 sm:right-6"
       >
         <!--
           An eight-pixel dot. `Button` is a control with a height, a padding
@@ -140,9 +161,14 @@
 
       Over the photograph rather than under it, the way a streaming service
       puts its rows over the artwork: the hero is the top of the page, not a
-      banner with a page after it.
+      banner with a page after it. `relative` so it sits above the artwork
+      layer, which runs behind it to the bottom edge of the section.
     -->
-    <div v-if="children.length" data-slot="showcase-children" class="px-4 pb-4 sm:px-6">
+    <div
+      v-if="children.length"
+      data-slot="showcase-children"
+      class="relative px-4 pb-4 sm:px-6"
+    >
       <div class="mb-2 flex items-center gap-2 pt-4">
         <Icon v-if="childIcon" :name="childIcon" class="size-4 text-white/70" />
         <span class="text-p-sm font-medium text-white/70">{{ childLabel }}</span>
