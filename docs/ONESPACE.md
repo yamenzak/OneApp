@@ -301,7 +301,8 @@ a chart's scale, not at a report's — which is why the cap is stated.
 **A pane beside the list on a desktop, a page on a phone.** It was a modal, and
 a modal is the wrong shape: a record is something you read *against* the list —
 mark this done, glance at the next, come back. The pane's width is dragged and
-remembered in the browser.
+remembered in the browser. A screen that declares a **showcase** gets a page on
+a desktop too — see below.
 
 Four tabs:
 
@@ -311,6 +312,54 @@ Four tabs:
 | **Activity** | One timeline: what was said, what changed, and when it started, newest first. Merged in the browser from two queries; every entry carries a glyph from a closed set, because a column of identical avatars makes a comment and a field change look alike. |
 | **Files** | Frappe's own File rows, so an Attach field's file and a dropped file are one list. |
 | **Meta** | The desk's sidebar: the face and name, then the four things you do to a record *about other people* — assign, attach, tag, share — then who made it and when, then its id. The only place assignment is offered; it was in the header too, which made it one control in two places. |
+
+### A record that is a place, not a form
+
+Some records are not a column of labelled inputs. A project is a photograph of a
+building, a contract value, a percentage done, thirteen variation orders hanging
+off it and five hundred documents filed against it — and drawing that as a form
+is technically a record page and practically a filing cabinet.
+
+So a screen may declare a **showcase** in its `view_settings`, and then opening
+one of its records looks like this: the photographs filed against it filling the
+top of the page and crossfading every six seconds, the name over them, a status
+badge, up to four numbers worth reading at a glance, a sideways row of cards for
+whatever hangs off this record, and a tab strip that carries the other screens
+in the same space that point back at it — beside the record's own Details,
+Activity, Files and Meta. The record takes the whole content area rather than a
+pane, because a hero in a 480-pixel column is a thumbnail; the list behind it is
+hidden rather than unmounted, so closing comes back to the same rows and the
+same scroll position.
+
+```json
+{"showcase": {
+  "images": true,
+  "eyebrow_field": "custom_location",
+  "badge_field": "custom_stage",
+  "facts": [{"field": "estimated_costing", "label": "Contract"}],
+  "children": {"screen": "projects", "field": "custom_parent_project",
+               "label": "Variations", "icon": "lucide-git-branch"},
+  "tabs": [{"screen": "invoices", "field": "project", "label": "Invoices"}]
+}}
+```
+
+**Nothing in it is about construction, and nothing in it is a query.** A tab
+names another screen in the same space and the field on it that points back
+here; the browser then asks that screen's own `rows` for that filter, which is
+where the space, the permissions, the columns and the filter are all checked —
+the same checks any other list goes through. `showcase.shape` drops what is
+structurally not a showcase and checks every fieldname against the screen's own
+columns, so a manifest with a typo renders a form rather than a broken page; it
+is a validator, not the security boundary. A related tab drops the column it
+filtered on, because on a project's Invoices tab that column is the project's
+own name written down six times.
+
+This is the answer to "manifests or bespoke UI": it is a *declaration*, not a
+registered component, so the space that wants a Netflix page writes eleven lines
+of JSON and a customer, a property or a case would declare the same shape and
+get the same page. The escape hatch in §2 is still there for a screen that is
+genuinely not a list of records; this is for the far more common thing, which is
+a record that deserves better than a form.
 
 **Making a record is a dialog**, the one place a modal is right: nothing behind
 it to refer to, a short decision, cancelling leaves nothing. Headed with the

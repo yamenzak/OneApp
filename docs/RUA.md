@@ -144,6 +144,28 @@ with a `type` on each, so a rule may now say
 Seventy-five of their eighty-two projects have a client; the other seven are
 variations that carry none.
 
+### The project page
+
+A project on the old app was a form. Here it is a page: the perspectives filed
+against the job filling the top of the screen and crossfading, the name over
+them, the stage, the contract value, how far along it is and who it is for, then
+a sideways row of cards for the variation orders under it, then a tab strip over
+Quotations, LPOs, Invoices and Payments beside the record's own Activity, Files
+and Meta. Fifty-one photographs across forty-one of their jobs, thirty-five
+variations under thirteen parents; it was all imported and none of it was
+visible.
+
+None of that is code written for RUA. It is eleven lines of `view_settings` on
+the projects screen — see **A record that is a place** in `docs/ONESPACE.md` —
+and every screen it names goes through the ordinary `rows` endpoint, so a person
+who may not open the invoices screen gets an empty Invoices tab for the same
+reason they get no Invoices in the rail.
+
+One thing it found, and again not RUA's: a percentage was rendering at the
+site's float precision, so a job 89.12% done read `89.120%` and one that had not
+started read `0.000%`. Frappe's own formatter takes the smaller of the field's
+precision and the number of decimals actually stored; ours did not.
+
 ## 4. What genuinely has no home
 
 Two things ERPNext and HRMS do not model, which the space must ship as its own

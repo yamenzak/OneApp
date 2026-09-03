@@ -111,7 +111,14 @@
     two hundred rows nobody finds it.
   -->
   <div class="flex h-full min-h-0">
-   <div class="flex min-w-0 flex-1 flex-col p-5">
+   <!--
+     `v-show` and not `v-if`: on a showcase screen the record takes the whole
+     area and the list goes away, but it goes away the way a covered thing does
+     — closing the record comes back to the same rows, the same scroll position
+     and the same unsaved filter, rather than to a screen that fetches itself
+     again.
+   -->
+   <div v-show="!asPage" class="flex min-w-0 flex-1 flex-col p-5">
     <div v-if="loading" class="grid place-items-center py-20">
       <LoadingIndicator class="size-5 text-ink-gray-5" />
     </div>
@@ -381,7 +388,7 @@
       accessibility tree with it. On a phone there is no room to keep both, so
       the pane draws itself as a page; it decides that, not this file.
     -->
-    <RecordPane v-if="shownRecord && spec?.doctype">
+    <RecordPane v-if="shownRecord && spec?.doctype" :page="asPage">
       <template #body="{ phone }">
         <RecordView
           :record="shownRecord"
@@ -393,6 +400,7 @@
           @reload="reloadRecord"
           @close="closeRecord"
           @renamed="recordRenamed"
+          @open="openElsewhere"
         />
       </template>
     </RecordPane>
@@ -640,6 +648,16 @@ const emptyBecause = computed(() => {
 // does not, and never reaches here: it is a dialog, and there is nothing to
 // name it with yet.
 const shownRecord = computed(() => editing.value)
+
+/**
+ * Whether the open record takes the page rather than a pane beside the list.
+ *
+ * The manifest's answer, read from the same declaration that draws the hero: a
+ * screen that says a record is a place gets the width a place needs, and every
+ * other screen keeps the pane it has always had. Nothing here asks the
+ * viewport — the phone's own answer is `RecordPane`'s, and it wins either way.
+ */
+const asPage = computed(() => !!shownRecord.value && !!spec.value?.view_settings?.showcase)
 
 // What the last crumb says when no view is saved: how this screen is being
 // drawn. "Tasks / Tasks" is one word twice; "Tasks / List" says where you are.
@@ -958,6 +976,24 @@ const toggleFavourites = () => {
 // would open an empty form nobody asked for.
 const open = (row) => {
   router.push({ query: { ...route.query, record: row.name } })
+}
+
+/**
+ * A record on another screen of this space, from inside the one open.
+ *
+ * The showcase's variations and its related tabs both come out here: a card or
+ * a row names a screen and an id, and opening it is the ordinary screen-and-
+ * record URL — so it is a place with a link, the back button returns to the
+ * project, and the pane redraws against that screen's own list rather than
+ * rendering an invoice through the projects screen's columns.
+ *
+ * The saved view and the view type are deliberately dropped: they belong to
+ * the screen being left, and carrying `layout=my-overdue` onto a different
+ * screen is asking it for a view that is not its.
+ */
+const openElsewhere = ({ screen, name }) => {
+  if (!name) return
+  router.push({ query: { screen: screen || route.query.screen, record: name } })
 }
 
 const create = () => {

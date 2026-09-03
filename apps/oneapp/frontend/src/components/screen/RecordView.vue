@@ -127,46 +127,98 @@
     </Alert>
 
     <div class="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+      <!--
+        The top of the record, where the screen says a record is a place rather
+        than a form: a photograph that fills the width, the name over it, the
+        two or three numbers worth reading, and what hangs off it.
+
+        Declared, not coded. `view_settings.showcase` in the manifest is the
+        whole of it — see `oneapp_core/showcase.py` — so a screen that says
+        nothing gets the form it always got, and any space that says it gets
+        this page.
+      -->
+      <RecordShowcase
+        v-if="showcase"
+        :space-code="spaceCode"
+        :screen="screen"
+        :record="record"
+        :spec="spec"
+        :showcase="showcase"
+        :title="identity.label"
+        @open="emit('open', $event)"
+      />
+
       <Tabs v-model="tab">
-        <TabList>
-          <!--
-            A glyph on every one of them, from the same derivation the
-            doctype's own tabs use — these four are labels like any other, and
-            a strip where the doctype's tabs carry icons and ours do not would
-            read as two different strips.
-          -->
-          <TabTrigger value="fields" label="Details" :icon-left="tabIcon('Details')" />
-          <!--
-            The count as a badge rather than inside the word: "Comments (3)"
-            reads as a label, a badge reads as a number. `#suffix` is the slot
-            TabTrigger ships for exactly this — the first version put the badge
-            in the default slot, which replaces the label region, so the label
-            and the icon had to be rebuilt by hand around it.
-          -->
-          <!--
-            One tab, not two. "Who changed this" and "what did they say about
-            it" were separate places, and answering "what happened on Tuesday"
-            meant reading both and merging them by eye. The comment count still
-            rides here, because a comment is the entry somebody is waiting on.
-          -->
-          <TabTrigger value="activity" label="Activity" :icon-left="tabIcon('Activity')">
-            <template #suffix>
-              <Badge
-                v-if="commentCount"
-                :label="String(commentCount)"
-                theme="gray"
-                variant="subtle"
-              />
-            </template>
-          </TabTrigger>
-          <TabTrigger value="files" label="Files" :icon-left="tabIcon('Files')" />
-          <!--
-            What the record *is*, as opposed to what it says: its id, its
-            picture and its provenance. Last, because it is the tab you go to
-            on purpose rather than the one you land on.
-          -->
-          <TabTrigger value="meta" label="Meta" :icon-left="tabIcon('Meta')" />
-        </TabList>
+        <!--
+          The strip stays put on a showcase screen. The hero is most of a
+          screenful, so switching from Invoices to Payments halfway down a list
+          otherwise means scrolling back up to a strip that is off the top of
+          the page — and on a page whose whole point is moving between the
+          things filed against one record, that is the one control that must
+          not go away.
+
+          A wrapper rather than a class on `TabList`: its own root is
+          `relative`, and two position utilities on one element is a fight
+          decided by which rule the stylesheet happens to emit last.
+        -->
+        <div :class="showcase ? 'sticky top-0 z-10 -mx-4 bg-surface-base px-4' : ''">
+          <TabList>
+            <!--
+              A glyph on every one of them, from the same derivation the
+              doctype's own tabs use — these four are labels like any other, and
+              a strip where the doctype's tabs carry icons and ours do not would
+              read as two different strips.
+            -->
+            <TabTrigger value="fields" label="Details" :icon-left="tabIcon('Details')" />
+            <!--
+              The other screens in this space that point back at this record —
+              a project's quotations, its purchase orders, its invoices, its
+              payments — as tabs beside the record's own.
+
+              Second, not last: on a screen that declares them these are what the
+              record is *for*, and Activity, Files and Meta are what every record
+              has. Each is another screen filtered to this one, so opening one is
+              the same list the rail opens with a narrower question asked of it.
+            -->
+            <TabTrigger
+              v-for="one in related"
+              :key="one.screen"
+              :value="`related:${one.screen}`"
+              :label="one.label || one.screen"
+              :icon-left="one.icon || tabIcon(one.label || '')"
+            />
+            <!--
+              The count as a badge rather than inside the word: "Comments (3)"
+              reads as a label, a badge reads as a number. `#suffix` is the slot
+              TabTrigger ships for exactly this — the first version put the badge
+              in the default slot, which replaces the label region, so the label
+              and the icon had to be rebuilt by hand around it.
+            -->
+            <!--
+              One tab, not two. "Who changed this" and "what did they say about
+              it" were separate places, and answering "what happened on Tuesday"
+              meant reading both and merging them by eye. The comment count still
+              rides here, because a comment is the entry somebody is waiting on.
+            -->
+            <TabTrigger value="activity" label="Activity" :icon-left="tabIcon('Activity')">
+              <template #suffix>
+                <Badge
+                  v-if="commentCount"
+                  :label="String(commentCount)"
+                  theme="gray"
+                  variant="subtle"
+                />
+              </template>
+            </TabTrigger>
+            <TabTrigger value="files" label="Files" :icon-left="tabIcon('Files')" />
+            <!--
+              What the record *is*, as opposed to what it says: its id, its
+              picture and its provenance. Last, because it is the tab you go to
+              on purpose rather than the one you land on.
+            -->
+            <TabTrigger value="meta" label="Meta" :icon-left="tabIcon('Meta')" />
+          </TabList>
+        </div>
 
         <TabPanel value="fields">
           <div class="flex flex-col gap-4 pt-4">
@@ -179,6 +231,26 @@
             />
             <ErrorMessage v-if="error" :message="error" />
           </div>
+        </TabPanel>
+
+        <!--
+          One per declared tab. A `TabPanel` mounts when it is chosen and
+          unmounts when it is not — reka's own default — so a project with six
+          related screens costs six requests only if somebody opens all six.
+        -->
+        <TabPanel
+          v-for="one in related"
+          :key="one.screen"
+          :value="`related:${one.screen}`"
+        >
+          <RelatedRows
+            :space-code="spaceCode"
+            :screen="one.screen"
+            :field="one.field"
+            :name="record.name"
+            :label="one.label || ''"
+            @open="emit('open', $event)"
+          />
         </TabPanel>
 
         <TabPanel value="activity">
@@ -256,6 +328,8 @@ import RecordForm from './RecordForm.vue'
 import RecordActivity from './RecordActivity.vue'
 import RecordFiles from './RecordFiles.vue'
 import RecordActions from './RecordActions.vue'
+import RecordShowcase from './RecordShowcase.vue'
+import RelatedRows from './RelatedRows.vue'
 import StateBadge from './StateBadge.vue'
 import PrintDialog from './PrintDialog.vue'
 import RecordMeta from './RecordMeta.vue'
@@ -273,9 +347,24 @@ const props = defineProps({
   /** Whether the pane is the page. The pane knows; this does not ask. */
   phone: { type: Boolean, default: false },
 })
-const emit = defineEmits(['saved', 'close', 'reload', 'renamed'])
+const emit = defineEmits(['saved', 'close', 'reload', 'renamed', 'open'])
 
 const tab = ref('fields')
+
+/**
+ * How this screen says a record should be drawn, where it says anything.
+ *
+ * Already checked server-side — `showcase.shape` drops what is structurally
+ * not one — so this is read, not validated. Null rather than an empty object,
+ * because "no showcase" is the answer for nearly every screen and `v-if` on a
+ * truthy object is the whole of the branch.
+ */
+const showcase = computed(() => props.spec?.view_settings?.showcase || null)
+
+// The screens that point back at this record, as tabs. Only where there is a
+// showcase: they are part of the same declaration, and a form with four
+// related-list tabs bolted onto it is a different page from the one this is.
+const related = computed(() => showcase.value?.tabs || [])
 
 // Read the panel's own two lists the first time somebody opens it, and not
 // again while they are on the same record — every write from inside it answers
