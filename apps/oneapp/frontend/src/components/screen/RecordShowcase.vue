@@ -76,158 +76,184 @@
       And everything that is read, in normal flow over it — so the section is
       as tall as its content and the artwork follows, rather than the content
       being pinned inside a height somebody picked.
-    -->
-    <div class="relative flex h-64 flex-col justify-end gap-3 p-4 sm:h-80 sm:p-6">
-      <span
-        v-if="eyebrow"
-        data-slot="showcase-eyebrow"
-        class="truncate text-p-xs uppercase tracking-widest text-white/70"
-      >
-        {{ eyebrow }}
-      </span>
 
-      <!--
-        The name, in the one face in this product that is not the interface
-        face, and in capitals with a little tracking — which is what a title
-        card is, and what the interface face at 36px is not. See the
-        `@font-face` rules in `src/index.css` for the two files behind it.
+      Two columns on a desktop: the name on the left with the whole left side to
+      itself, and what hangs off this record standing up the right. It was one
+      column with the cards in a row underneath, and the row pushed the name up
+      into the middle of the picture — the title of the thing you opened had the
+      least room of anything on the page. Bottom-aligned, both of them, because
+      that is where a caption sits on a photograph.
 
-        No weight class: the face has one weight and asking for semibold gets a
-        browser-synthesised bold, which on a heavy condensed grotesque is a
-        smear. `text-wrap: balance` so a two-line name breaks where a person
-        would break it rather than leaving one word alone on the second line,
-        and bigger than the interface face would be set: a condensed face at
-        36px reads smaller than the UI face at 36px, so matching the number
-        matches nothing. `max-w-5xl` for the same reason — the face is narrow
-        enough that the longest of their job names fits one line inside it.
-
-        `uppercase` is safe on every script here: Arabic has no case, so a
-        bilingual title is capitalised in the half that has capitals.
-      -->
-      <h1
-        data-slot="showcase-title"
-        dir="auto"
-        class="max-w-5xl text-balance font-display text-3xl uppercase leading-none tracking-wide text-white sm:text-5xl"
-      >
-        {{ title }}
-      </h1>
-
-      <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
-        <StateBadge v-if="badge" :label="badge" :states="states" />
-        <!--
-          The two or three numbers somebody opens the record to read, drawn
-          by the same formatter every list cell uses — so a contract value
-          reads the same here as it does in the column it came from.
-        -->
-        <div
-          v-for="fact in facts"
-          :key="fact.field"
-          data-slot="showcase-fact"
-          class="flex flex-col"
-        >
-          <span class="text-p-xs uppercase tracking-wide text-white/60">
-            {{ fact.label }}
-          </span>
-          <span class="text-p-base font-medium tabular-nums text-white">
-            {{ fact.text || '—' }}
-          </span>
-        </div>
-      </div>
-
-      <!--
-        Which photograph, and a way to pick one. Dots rather than arrows: there
-        are two or three of these, not twenty, and an arrow implies a sequence
-        that matters.
-
-        Inside the words rather than at the foot of the section, which is now
-        the bottom of a row of cards — the dots belong to the picture.
-      -->
-      <div
-        v-if="images.length > 1"
-        class="absolute bottom-4 right-4 flex items-center gap-1.5 sm:bottom-6 sm:right-6"
-      >
-        <!--
-          An eight-pixel dot. `Button` is a control with a height, a padding
-          and a label slot, and none of the three survives being shrunk to
-          this — the same exception the gallery card's caption takes, for the
-          same reason. It keeps the label: the dot says which photograph in the
-          only way a two-pixel target can, which is to a screen reader.
-        -->
-        <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
-        <button
-          v-for="(image, at) in images"
-          :key="image.file_url"
-          type="button"
-          data-slot="showcase-dot"
-          :aria-label="`Show ${image.file_name}`"
-          class="size-2 rounded-full transition-colors"
-          :class="at === shown ? 'bg-white' : 'bg-white/40'"
-          @click="pick(at)"
-        />
-      </div>
-    </div>
-
-    <!--
-      What hangs off this record. A row of cards that scrolls sideways, which
-      is the shape because there are three of these on one job and eleven on
-      another and neither should change the height of the page.
-
-      Over the photograph rather than under it, the way a streaming service
-      puts its rows over the artwork: the hero is the top of the page, not a
-      banner with a page after it. `relative` so it sits above the artwork
-      layer, which runs behind it to the bottom edge of the section.
+      One column below `sm`, and the rail keeps its shape rather than turning
+      back into a row: two layouts is two things to keep right, and a phone
+      scrolls down anyway.
     -->
     <div
-      v-if="children.length"
-      data-slot="showcase-children"
-      class="relative px-4 pb-4 sm:px-6"
+      class="relative flex min-h-64 flex-col gap-6 p-4 sm:min-h-96 sm:flex-row sm:items-end sm:gap-10 sm:p-6"
     >
-      <div class="mb-2 flex items-center gap-2 pt-4">
-        <Icon v-if="childIcon" :name="childIcon" class="size-4 text-white/70" />
-        <span class="text-p-sm font-medium text-white/70">{{ childLabel }}</span>
-        <span class="text-p-sm text-white/40">{{ children.length }}</span>
-      </div>
-      <!--
-        A plain sideways scroller, not `FadedScroll`. Its horizontal edge is a
-        hairline in `outline-gray-2`, which over a photograph is a pale line
-        drawn down the middle of somebody's building.
-      -->
-      <div class="-mx-1 overflow-x-auto overscroll-x-contain">
-        <div class="flex gap-2 px-1 pb-1">
+      <div class="flex min-w-0 flex-1 flex-col justify-end gap-3">
+        <span
+          v-if="eyebrow"
+          data-slot="showcase-eyebrow"
+          class="truncate text-p-xs uppercase tracking-widest text-white/70"
+        >
+          {{ eyebrow }}
+        </span>
+
+        <!--
+          The name, in the one face in this product that is not the interface
+          face, and in capitals with a little tracking — which is what a title
+          card is, and what the interface face at 36px is not. See the
+          `@font-face` rules in `src/index.css` for the two files behind it.
+
+          No weight class: the face has one weight and asking for semibold gets
+          a browser-synthesised bold, which on a heavy condensed grotesque is a
+          smear. `text-wrap: balance` so a two-line name breaks where a person
+          would break it rather than leaving one word alone on the second line,
+          and bigger than the interface face would be set: a condensed face at
+          36px reads smaller than the UI face at 36px, so matching the number
+          matches nothing.
+
+          `uppercase` is safe on every script here: Arabic has no case, so a
+          bilingual title is capitalised in the half that has capitals.
+        -->
+        <h1
+          data-slot="showcase-title"
+          dir="auto"
+          class="text-balance font-display text-3xl uppercase leading-none tracking-wide text-white sm:text-5xl"
+        >
+          {{ title }}
+        </h1>
+
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <StateBadge v-if="badge" :label="badge" :states="states" />
           <!--
-            The card is the control. `Button` would bring its own height,
-            padding and label layout to a thing that is a picture with two
-            lines under it — the same exception, and the same reason, as the
-            caption on a gallery card.
+            The two or three numbers somebody opens the record to read, drawn
+            by the same formatter every list cell uses — so a contract value
+            reads the same here as it does in the column it came from.
+          -->
+          <div
+            v-for="fact in facts"
+            :key="fact.field"
+            data-slot="showcase-fact"
+            class="flex flex-col"
+          >
+            <span class="text-p-xs uppercase tracking-wide text-white/60">
+              {{ fact.label }}
+            </span>
+            <span class="text-p-base font-medium tabular-nums text-white">
+              {{ fact.text || '—' }}
+            </span>
+          </div>
+        </div>
+
+        <!--
+          Which photograph, and a way to pick one. Dots rather than arrows:
+          there are two or three of these, not twenty, and an arrow implies a
+          sequence that matters. Under the words, where they belong to the
+          picture rather than to the rail beside it.
+        -->
+        <div v-if="images.length > 1" class="flex items-center gap-1.5 pt-1">
+          <!--
+            An eight-pixel dot. `Button` is a control with a height, a padding
+            and a label slot, and none of the three survives being shrunk to
+            this — the same exception the gallery card's caption takes, for the
+            same reason. It keeps the label: the dot says which photograph in
+            the only way a two-pixel target can, which is to a screen reader.
           -->
           <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
           <button
-            v-for="one in children"
-            :key="one.name"
+            v-for="(image, at) in images"
+            :key="image.file_url"
             type="button"
-            data-slot="showcase-child"
-            class="flex w-40 shrink-0 flex-col gap-2 rounded-6 border border-white/10 bg-white/5 p-2 text-left transition-colors hover:bg-white/10 sm:w-48"
-            @click="emit('open', { screen: childScreen, name: one.name })"
-          >
-            <div class="flex aspect-video items-center justify-center overflow-hidden rounded-4 bg-gradient-to-br from-white/10 to-white/0">
-              <img
-                v-if="one.image"
-                :src="one.image"
-                :alt="one.label"
-                class="size-full object-cover"
-              />
-              <span v-else class="text-2xl font-medium uppercase text-white/40">
-                {{ one.label.slice(0, 1) }}
+            data-slot="showcase-dot"
+            :aria-label="`Show ${image.file_name}`"
+            class="size-2 rounded-full transition-colors"
+            :class="at === shown ? 'bg-white' : 'bg-white/40'"
+            @click="pick(at)"
+          />
+        </div>
+      </div>
+
+      <!--
+        What hangs off this record, standing up the right-hand side.
+
+        One panel rather than a stack of floating rows. The scrim is weighted
+        to the bottom of the section — that is where the words are — so the top
+        of this column sits over an unscrimmed sky, and rows drawn as glass
+        over that were four grey shapes with white text on them. A single dark
+        panel gives the whole rail a ground wherever it lands on the picture.
+
+        Rows rather than the poster cards this used to be: a column of six
+        posters is a wall, and what somebody scanning a list of variation orders
+        reads is the name and where it stands, not a thumbnail of a building
+        they are already looking at. The monogram gives each row an anchor, and
+        carries a picture on a screen whose records have one.
+
+        Capped and scrolled rather than allowed to grow: three of these on one
+        job and eleven on another, and neither should decide how tall the top of
+        the page is.
+      -->
+      <div
+        v-if="children.length"
+        data-slot="showcase-children"
+        class="flex w-full shrink-0 flex-col gap-2 rounded-6 bg-black/50 p-3 backdrop-blur-sm sm:w-80"
+      >
+        <div class="flex items-center gap-2">
+          <Icon v-if="childIcon" :name="childIcon" class="size-4 text-white/70" />
+          <span class="text-p-sm font-medium text-white/70">{{ childLabel }}</span>
+          <span class="text-p-sm text-white/40">{{ children.length }}</span>
+        </div>
+
+        <!--
+          A plain scroller, not `FadedScroll`: its vertical edge is a wash from
+          `surface-base`, which over a dark panel is a pale band rather than a
+          fade. A half-row at the cut is the honest version of the same signal.
+        -->
+        <div class="-mx-1 max-h-56 overflow-y-auto overscroll-contain px-1">
+          <div class="flex flex-col">
+            <!--
+              The row is the control. `Button` would bring its own height,
+              padding and label layout to a thing that is a square and two
+              lines of type — the same exception, and the same reason, as the
+              caption on a gallery card.
+            -->
+            <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
+            <button
+              v-for="one in children"
+              :key="one.name"
+              type="button"
+              data-slot="showcase-child"
+              class="flex items-center gap-3 rounded-4 p-2 text-left transition-colors hover:bg-white/15"
+              @click="emit('open', { screen: childScreen, name: one.name })"
+            >
+              <span
+                class="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-4 bg-white/10"
+              >
+                <img
+                  v-if="one.image"
+                  :src="one.image"
+                  :alt="one.label"
+                  class="size-full object-cover"
+                />
+                <span v-else class="text-p-sm font-medium uppercase text-white/50">
+                  {{ one.label.slice(0, 1) }}
+                </span>
               </span>
-            </div>
-            <span dir="auto" class="truncate text-p-sm font-medium text-white">
-              {{ one.label }}
-            </span>
-            <span class="truncate text-p-xs text-white/50">{{ one.detail || one.name }}</span>
-          </button>
+              <span class="flex min-w-0 flex-col">
+                <span dir="auto" class="truncate text-p-sm font-medium text-white">
+                  {{ one.label }}
+                </span>
+                <span class="truncate text-p-xs text-white/50">
+                  {{ one.detail || one.name }}
+                </span>
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
+
   </section>
 </template>
 
