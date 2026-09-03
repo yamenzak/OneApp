@@ -497,7 +497,19 @@ def _shipped() -> list[dict]:
 				continue
 			named = getattr(node.targets[0], "id", "")
 			if named == "SPACE":
-				space = _ast.literal_eval(_ast.get_source_segment(source, node.value))
+				# Key by key, keeping only the ones that are literals. A space
+				# may declare its own look with a `json.dumps(...)`, which is a
+				# call and not a literal — and every key these rules ask about
+				# (`space_code`, `availability`) is a plain string beside it.
+				# Evaluating the whole dict raised on the first space to have a
+				# theme, which is a reader that stops working as soon as a
+				# manifest uses a feature it does not care about.
+				space = {}
+				for key, value in zip(node.value.keys, node.value.values):
+					try:
+						space[_ast.literal_eval(key)] = _ast.literal_eval(value)
+					except (TypeError, ValueError):
+						continue
 			elif named == "SCREENS":
 				# Counted rather than evaluated. A screen may carry a
 				# `json.dumps(...)` for its view settings, which is not a

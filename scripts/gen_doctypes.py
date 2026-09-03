@@ -606,6 +606,13 @@ doctype(
         f("sort_order", "Int", default="0"),
         section("sec_desc"),
         f("description", "Small Text"),
+        # A space's own look, as four words rather than a stylesheet: a mode, an
+        # accent, a ground and how sharp its corners are. Validated on the
+        # tenant by `oneapp_core/theming.py` and expanded into CSS variables by
+        # the browser, so a manifest declares an intent and never a token.
+        f("theme", "Small Text",
+          description='JSON. e.g. {"mode": "dark", "accent": "#E50914", '
+                      '"ground": "#0F0F10", "radius": "sharp"}'),
     ],
 )
 

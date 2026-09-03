@@ -148,10 +148,10 @@ variations that carry none.
 
 A project on the old app was a form. Here it is a page: the perspectives filed
 against the job filling the top of the screen and crossfading, the name over
-them, the stage, the contract value, how far along it is and who it is for, then
-a sideways row of cards for the variation orders under it, then a tab strip over
-Quotations, LPOs, Invoices and Payments beside the record's own Activity, Files
-and Meta. Fifty-one photographs across forty-one of their jobs, thirty-five
+them, the stage, the contract value, how far along it is and who it is for, a
+column of the variation orders under it standing on the artwork to the right,
+then a tab strip over Quotations, LPOs, Invoices and Payments beside the
+record's own Activity, Files and Meta. Fifty-one photographs across forty-one of their jobs, thirty-five
 variations under thirteen parents; it was all imported and none of it was
 visible.
 
@@ -165,6 +165,22 @@ One thing it found, and again not RUA's: a percentage was rendering at the
 site's float precision, so a job 89.12% done read `89.120%` and one that had not
 started read `0.000%`. Frappe's own formatter takes the smaller of the field's
 precision and the number of decimals actually stored; ours did not.
+
+### And the space is dark
+
+```json
+{"mode": "dark", "accent": "#e50914", "ground": "#0d0d0f", "radius": "sharp"}
+```
+
+Four words on RUA's registration — see **A space's own look** in
+`docs/ONESPACE.md`. They are the reason the page reads as a title card rather
+than as a form with a picture on it: a near-black ground for the artwork to sit
+in, a red on the solid buttons and under the screen you are on, and corners
+sharp enough that a poster looks like a poster. The display face was already
+there and does the other half.
+
+Nothing about it is RUA code. The next space to want a personality writes its
+own four words, and a space that wants none is drawn exactly as before.
 
 ## 4. What genuinely has no home
 

@@ -26,6 +26,25 @@ SPACE = {
 	"sort_order": 20,
 	"availability": "Restricted",
 	"description": "Projects, quotations, LPOs, invoices and the people on site.",
+	# What this space looks like, in four words. See `oneapp_core/theming.py`
+	# for the vocabulary and `lib/theme.js` for what each word moves.
+	#
+	# Dark, because the thing they open first is a photograph of a building and
+	# a hero over a white page is a picture in a frame rather than a place. Red,
+	# because that is the colour they paint on a hoarding and the one every
+	# other contractor's software is not. A ground of near-black rather than
+	# frappe-ui's own dark grey, so the hero has nowhere to end. And sharp
+	# corners: this is a company that makes aluminium and glass facades, and a
+	# 12-pixel radius is a greeting card.
+	#
+	# None of it is code. Any other space says four different words and gets its
+	# own personality out of the same components.
+	"theme": json.dumps({
+		"mode": "dark",
+		"accent": "#e50914",
+		"ground": "#0d0d0f",
+		"radius": "sharp",
+	}),
 }
 
 # What the space may reach. Three jobs off one list — the DocPerms written for

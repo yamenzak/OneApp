@@ -93,7 +93,14 @@ test('the edge says there is more to the right, and stops when there is not', as
     const box = el.getBoundingClientRect()
     return box.left + box.width / 2
   }, SCROLLER)
-  await expect.poll(async () => (await edges.first().boundingBox()).x).toBeLessThan(middle)
+  // `?? Infinity` rather than a bare `.x`, because the marker is two elements
+  // over this moment and not one: the right-hand one unmounts as the left-hand
+  // one mounts, and a `boundingBox()` that lands between them answers null.
+  // Thrown, that ends the poll on the first tick; answered as a number that
+  // cannot pass, it is simply another tick.
+  await expect
+    .poll(async () => (await edges.first().boundingBox())?.x ?? Infinity)
+    .toBeLessThan(middle)
 })
 
 test('the footer counts what matches, and load more appends', async ({ page }) => {

@@ -543,6 +543,7 @@ import { screenComponent } from '../screens'
 import { CARD_VIEW_TYPES, DEFAULT_VIEW_TYPE, VIEW_TYPES, bodyFor } from '../lib/viewTypes'
 import { onDoctypeChange } from '../lib/socket'
 import { docBadge } from '../lib/docstate'
+import { applyTheme, clearTheme } from '../lib/theme'
 import {
   DRAWER,
   MERGE_TARGET,
@@ -794,6 +795,28 @@ watch([peekName, peekScreen], loadPeek, { immediate: true })
  * otherwise, per screen, and then it is remembered. Nothing here asks the
  * viewport; the phone's own answer is `RecordPane`'s and it wins either way.
  */
+/**
+ * The space's own look, on the document while this space is open.
+ *
+ * Read from the session's own list of spaces rather than from `spec`, and that
+ * is deliberate: the session is already in hand when the route resolves, so a
+ * themed space arrives themed instead of painting one light frame and then
+ * turning dark. See `lib/theme.js` for what a declaration moves.
+ *
+ * Taken off on the way out. A space's personality is that space's — the
+ * launcher, the account area and the next space are not it.
+ */
+watch(
+  () => props.spaceCode,
+  (code) => {
+    const space = session.spaces.find((one) => one.space_code === code)
+    applyTheme(space?.theme)
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(clearTheme)
+
 const surface = ref(null)
 
 // Read when the screen changes rather than watched: `localStorage` fires no

@@ -18,7 +18,7 @@ import frappe
 # the local provider — so the two cannot drift into describing different things.
 SPACE_FIELDS = (
 	"name as space_code", "space_label", "module", "role_name", "icon",
-	"logo", "sort_order", "description",
+	"logo", "sort_order", "description", "theme",
 )
 
 
@@ -33,7 +33,7 @@ def spaces_for_tenant(tenant: str) -> list[dict]:
 	restricted = frappe.db.sql(
 		"""
 		SELECT a.name AS space_code, a.space_label, a.module, a.role_name, a.icon,
-		       a.logo, a.sort_order, a.description
+		       a.logo, a.sort_order, a.description, a.theme
 		FROM `tabOneSpace Space` a
 		INNER JOIN `tabSpace Entitlement` e ON e.app = a.name
 		WHERE a.is_active = 1

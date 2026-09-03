@@ -24,7 +24,8 @@
   "logo",
   "sort_order",
   "sec_desc",
-  "description"
+  "description",
+  "theme"
  ],
  "fields": [
   {
@@ -143,6 +144,12 @@
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
+  },
+  {
+   "description": "JSON. e.g. {\"mode\": \"dark\", \"accent\": \"#E50914\", \"ground\": \"#0F0F10\", \"radius\": \"sharp\"}",
+   "fieldname": "theme",
+   "fieldtype": "Small Text",
+   "label": "Theme"
   }
  ],
  "index_web_pages_for_search": 1,

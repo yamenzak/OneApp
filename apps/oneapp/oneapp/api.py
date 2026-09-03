@@ -106,8 +106,18 @@ def visible_spaces():
 	answered when its code was asked for by name.
 	"""
 	from oneapp.oneapp_core.spaceview import visible
+	from oneapp.oneapp_core import theming
 
-	return visible(sync.state().get("spaces", []))
+	spaces = visible(sync.state().get("spaces", []))
+
+	# The theme, checked here rather than where it is drawn. This is the answer
+	# the session is built from, so a space arrives already themed and the app
+	# never paints a light frame before turning dark — and a manifest with a
+	# typo in a hex renders the default look rather than a broken one.
+	return [
+		{**space, "theme": theming.shape(space.get("theme"))}
+		for space in spaces
+	]
 
 
 @frappe.whitelist()

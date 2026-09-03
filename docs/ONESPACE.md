@@ -54,6 +54,46 @@ registration plus its doctypes, with no OneSpace release.
 individually. A space with no screens is an entitlement with no interface — a
 real thing to be, since it still grants its roles and doctypes.
 
+### A space's own look
+
+Every space is drawn with the same components, and that is the right default: a
+person who learns one has learned the rest. But a space is somebody's
+*application* — a contractor's job book, a clinic's day, an operator's console —
+and eleven of them in one unchanging grey read as one program with a dropdown at
+the top rather than as the eleven things they are.
+
+So a space may declare a **theme**, on its registration, in four words:
+
+```json
+{"mode": "dark", "accent": "#e50914", "ground": "#0d0d0f", "radius": "sharp"}
+```
+
+| | What it moves |
+|---|---|
+| `mode` | `light` or `dark`, for the whole app while this space is open |
+| `accent` | The solid buttons, the tab indicator, the progress fill, the links |
+| `ground` | The page, the rail and sidebar, and the surfaces that step up from them |
+| `radius` | `sharp` or `soft` — the corner scale, not the components |
+
+Four, and no more, on purpose. The alternative — a manifest that may set any CSS
+variable — is a stylesheet in a database, and the first space to reach for one
+would put its own text colour on our own surface colour and ship a screen nobody
+can read. These are *intents*: `lib/theme.js` owns which variables each one
+moves, so the mapping is corrected in one place when frappe-ui renames a token,
+and the neutral scale that carries every row hover and hairline in the product
+is deliberately not on the list.
+
+A theme is checked where the session is built (`oneapp_core/theming.py`), field
+by field — a good accent and a bad radius keeps the accent — so a hex with a typo
+renders the default look rather than a broken one, and the space arrives already
+themed with no light frame flashing before it. It is put on `<html>` rather than
+on the screen's container, which is the only place that reaches a dropdown or a
+dialog teleported to `document.body`. Leaving the space puts the document back
+as it was found, the reader's own light-or-dark preference included: a theme
+overrules it for as long as it is on screen and never overwrites it.
+
+RUA's is the worked example — see `docs/RUA.md`.
+
 ### A screen
 
 ```
