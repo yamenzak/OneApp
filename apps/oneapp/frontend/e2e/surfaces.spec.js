@@ -79,6 +79,50 @@ test('a record says its own name once', async ({ page }, info) => {
   expectNoRealErrors(errors)
 })
 
+test('a record that fills the window has one header, not two', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'a phone covers the trail and draws its own')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/space/rua?screen=projects')
+  const missing = await page
+    .getByText('Nothing here', { exact: false })
+    .isVisible()
+    .catch(() => false)
+  test.skip(missing, 'this tenant has no ERPNext, so the space is not seeded')
+  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
+  await page.locator('[data-slot="list-row"]').first().click()
+  await page.locator('[data-slot="showcase"]').waitFor({ timeout: 25_000 })
+
+  // One row of controls, and it is on the trail's line rather than in a band of
+  // its own: it sits above the photograph, in the header the screen already had.
+  const controls = page.locator('[data-slot="record-controls"]')
+  await expect(controls).toHaveCount(1)
+  const bar = await controls.boundingBox()
+  const hero = await page.locator('[data-slot="showcase"]').boundingBox()
+  expect(bar.y + bar.height).toBeLessThanOrEqual(hero.y + 1)
+  // The trail is on that same line, which is what makes it one header and not
+  // a second one that happens to be thin.
+  const trail = await page.locator('[data-slot="breadcrumb"]').boundingBox()
+  expect(Math.abs(trail.y - bar.y)).toBeLessThan(24)
+
+  // And New stands down: the list it would add a row to is not on screen.
+  await expect(page.getByRole('button', { name: 'New' })).toBeHidden()
+
+  // A pane keeps its own band — it is a column beside a list whose header is
+  // the trail, so its controls are the pane's and sit below that line.
+  await page.waitForLoadState('networkidle')
+  await page.goto('/one/space/rua?screen=invoices')
+  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
+  await page.locator('[data-slot="list-row"]').first().click()
+  await page.locator('[data-slot="record-controls"]').waitFor({ timeout: 25_000 })
+  const inPane = await page.locator('[data-slot="record-controls"]').boundingBox()
+  const listTrail = await page.locator('[data-slot="breadcrumb"]').boundingBox()
+  expect(inPane.y).toBeGreaterThan(listTrail.y + listTrail.height)
+  await expect(page.getByRole('button', { name: 'New' })).toBeVisible()
+
+  expectNoRealErrors(errors)
+})
+
 test('a line opened from a project opens over it, not instead of it', async ({
   page,
 }, info) => {

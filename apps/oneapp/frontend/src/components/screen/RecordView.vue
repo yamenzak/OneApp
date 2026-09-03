@@ -1,15 +1,25 @@
 <template>
   <div class="flex h-full min-h-0 flex-col">
     <!--
-      Who this is, and the handful of things you do to a record rather than to
-      one of its fields.
+      Who this is, and what you can do to it.
 
-      The identity is drawn only where nothing else on the screen is already
-      drawing it, and which that is depends on the surface — see `names`. The
-      alternative is the same name in two sizes six pixels apart, which is how
-      a pane starts to read as a second page.
+      Where that row goes depends on the surface, and the deciding question is
+      whether there is already a header on screen. On a desktop there is: the
+      trail above the screen, which names the space, the screen and — while a
+      record is open — the record. A second band underneath it holding two
+      icons is a header that exists because a component has one, and on a
+      showcase page, where the identity is in the hero as well, it was fifty
+      pixels of empty white between the trail and the photograph.
+
+      So on a desktop page the controls go *onto* the trail's line and this band
+      does not render at all. A pane keeps its own: it is a column beside a list
+      that has its own header, and the pane's controls belong to the pane. A
+      drawer and a phone keep theirs because both cover the trail.
     -->
-    <header class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 px-4 py-3">
+    <header
+      v-if="!merged"
+      class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 px-4 py-3"
+    >
       <RecordChip
         v-if="names"
         data-slot="record-identity"
@@ -41,105 +51,59 @@
         <AvatarStack :people="watching" slot-name="viewer" />
       </div>
 
-      <div class="flex shrink-0 items-center gap-1" :class="!others.length && 'ms-auto'">
-        <!-- What this screen can do to this record beyond editing its fields.
-             Declared by the space and resolved server-side, so a screen that
-             declares none renders nothing here. -->
-        <ScreenActions
-          :actions="spec.actions || []"
-          scope="record"
-          :space-code="spaceCode"
-          :screen="screen"
-          :names="[record.name]"
-          @ran="emit('reload')"
-        />
-        <!--
-          The step this record is waiting for, and one menu holding everything
-          else you can do to it — print it, follow it, like it, and the steps
-          that unwind a submitted document.
-
-          Not eight buttons in a row. Assignment is gone from here entirely:
-          the Meta tab offers it one tab away, so it was the same control
-          twice, and "who is this for" is a thing you set rather than a thing
-          you reach for.
-        -->
-        <RecordActions
-          :space-code="spaceCode"
-          :screen="screen"
-          :name="record.name"
-          :state="record._state"
-          :extras="extras"
-          :dirty="dirty"
-          @moved="emit('reload')"
-          @opened="emit('renamed', $event)"
-        />
-        <!--
-          Save lives up here rather than in a footer, and the reason is the
-          corner: the toast that says a save worked is fixed to the bottom
-          right of the window, which is exactly where a pane's footer button
-          sits — so saving twice in a row meant clicking through the
-          confirmation of the first one. frappe-ui's ToastProvider hard-codes
-          that position, so the button moved instead.
-
-          Only while there is something to save. It shares its place with the
-          document's own actions, which are offered only while there is not:
-          one slot, and whichever of the two is the real next step is in it.
-        -->
-        <Button
-          v-if="canWrite && dirty"
-          variant="solid"
-          label="Save"
-          :loading="saving"
-          @click="save"
-        />
-        <!--
-          How much of the window this record gets. The manifest has an opinion
-          — a screen that draws a hero over a photograph is asking for the
-          width, a screen that draws a form is not — and this is the reader
-          overruling it, remembered per screen so it is a preference rather
-          than a click you make every time.
-
-          Not offered on a phone, where there is only ever one surface, and not
-          in the drawer, where the record is a thing you are peeking at from
-          another one and the width is that argument, not this one.
-        -->
-        <Button
-          v-if="canResize"
-          :icon="wide ? 'lucide-minimize-2' : 'lucide-maximize-2'"
-          variant="ghost"
-          :label="wide ? 'Show beside the list' : 'Fill the window'"
-          :tooltip="wide ? 'Show beside the list' : 'Fill the window'"
-          @click="emit('surface', wide ? 'pane' : 'page')"
-        />
-        <!--
-          A peek is not always enough. This is the way from one to the other:
-          the same record, on its own screen, with its list behind it — which
-          is where you go when the answer to "what is this line" turns out to
-          be a job of its own.
-        -->
-        <Button
-          v-if="drawer"
-          icon="lucide-arrow-up-right"
-          variant="ghost"
-          label="Open on its own screen"
-          tooltip="Open on its own screen"
-          @click="emit('expand')"
-        />
-        <!--
-          Out. What it means depends on where you are: in a drawer it puts the
-          record you came from back, everywhere else it goes back to the list —
-          and the tooltip should say which, because they are different enough
-          that guessing wrong loses your place.
-        -->
-        <Button
-          icon="lucide-x"
-          variant="ghost"
-          :label="drawer ? 'Close and go back' : 'Close the record'"
-          :tooltip="drawer ? 'Close and go back' : 'Close the record'"
-          @click="emit('close')"
-        />
-      </div>
+      <RecordControls
+        :class="!others.length && 'ms-auto'"
+        :record="record"
+        :spec="spec"
+        :space-code="spaceCode"
+        :screen="screen"
+        :extras="extras"
+        :can-write="canWrite"
+        :dirty="dirty"
+        :saving="saving"
+        :wide="wide"
+        :drawer="drawer"
+        :can-resize="canResize"
+        @save="save"
+        @close="emit('close')"
+        @reload="emit('reload')"
+        @renamed="emit('renamed', $event)"
+        @surface="emit('surface', $event)"
+        @expand="emit('expand')"
+      />
     </header>
+
+    <!--
+      The same row, on the page header's line. `defer` because the target is
+      rendered by the host in the same pass as this — frappe-ui's own
+      `PageHeaderBase` teleports the header itself the same way, for the same
+      reason.
+
+      Who else has it open goes with them: the faces belong beside the controls
+      wherever the controls are.
+    -->
+    <Teleport v-if="merged" defer :to="`#${MERGE_TARGET}`">
+      <AvatarStack v-if="others.length" :people="watching" slot-name="viewer" />
+      <RecordControls
+        :record="record"
+        :spec="spec"
+        :space-code="spaceCode"
+        :screen="screen"
+        :extras="extras"
+        :can-write="canWrite"
+        :dirty="dirty"
+        :saving="saving"
+        :wide="wide"
+        :drawer="drawer"
+        :can-resize="canResize"
+        @save="save"
+        @close="emit('close')"
+        @reload="emit('reload')"
+        @renamed="emit('renamed', $event)"
+        @surface="emit('surface', $event)"
+        @expand="emit('expand')"
+      />
+    </Teleport>
 
     <!--
       Somebody else saved it while this was open. Said rather than done: the
@@ -379,14 +343,14 @@ import ScreenActions from './ScreenActions.vue'
 import RecordForm from './RecordForm.vue'
 import RecordActivity from './RecordActivity.vue'
 import RecordFiles from './RecordFiles.vue'
-import RecordActions from './RecordActions.vue'
+import RecordControls from './RecordControls.vue'
 import RecordShowcase from './RecordShowcase.vue'
 import RelatedRows from './RelatedRows.vue'
 import StateBadge from './StateBadge.vue'
 import PrintDialog from './PrintDialog.vue'
 import RecordMeta from './RecordMeta.vue'
 import { workspace } from '../../lib/workspace'
-import { DRAWER, PAGE, PANE } from '../../lib/surfaces'
+import { DRAWER, MERGE_TARGET, PAGE, PANE } from '../../lib/surfaces'
 import { docBadge } from '../../lib/docstate'
 import { tabIcon } from '../../lib/fields'
 import { onDocChange, onDocViewers } from '../../lib/socket'
@@ -436,6 +400,18 @@ const names = computed(() => !showcase.value && (props.phone || drawer.value))
 // The reader may choose between the pane and the page, and only between those.
 // A phone has room for one surface and a drawer is not a width somebody picks.
 const canResize = computed(() => !props.phone && !drawer.value)
+
+/**
+ * Whether this record's controls belong on the page header's line rather than
+ * in a band of their own.
+ *
+ * Only the desktop page. It is the one surface where the trail above is both
+ * visible and about this record — so a second bar under it is chrome with
+ * nothing in it but two icons. The pane sits beside a list whose header is the
+ * trail, so its controls are the pane's; the drawer and the phone both cover
+ * the trail, so they have to draw one.
+ */
+const merged = computed(() => wide.value && !props.phone && !drawer.value)
 
 const tab = ref('fields')
 

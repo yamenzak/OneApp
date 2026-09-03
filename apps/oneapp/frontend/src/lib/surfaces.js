@@ -24,6 +24,21 @@ export const PANE = 'pane'
 export const PAGE = 'page'
 export const DRAWER = 'drawer'
 
+/**
+ * Where a record's controls go when it is a page.
+ *
+ * A page has no header of its own — the trail above the screen is already
+ * naming it — so the controls teleport onto that line instead of drawing a
+ * second bar under it. Named here rather than written twice, because the two
+ * halves are in different components and an id that agrees by coincidence
+ * agrees until somebody renames one of them.
+ *
+ * One target, and it can only ever have one occupant: the page is the record
+ * underneath, and the only other record on screen is in the drawer, which
+ * never merges.
+ */
+export const MERGE_TARGET = 'record-controls-on-the-trail'
+
 // Per screen, not per person-and-nothing-else. "A project is a page and a task
 // is a pane" is a coherent thing to want, and one global flag cannot hold it.
 const KEY = 'onespace.record-surface'

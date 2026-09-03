@@ -94,13 +94,28 @@
       not exist, rendering nowhere — `test_no_unknown_slots` now catches the
       shape that hid it.
     -->
-    <Button
-      v-if="spec?.can_create"
-      variant="solid"
-      icon-left="lucide-plus"
-      label="New"
-      @click="create"
-    />
+    <div class="flex shrink-0 items-center gap-2">
+      <!--
+        Where an open record's own controls land when it is a page — see
+        `merged` in `RecordView`. Empty the rest of the time, and an empty flex
+        child costs nothing; rendered unconditionally so the teleport always has
+        somewhere to go rather than racing the condition that creates it.
+      -->
+      <div :id="MERGE_TARGET" class="flex shrink-0 items-center gap-2" />
+
+      <!--
+        New stands down while a record fills the page. The list it would add a
+        row to is not on screen, so the button is offering to make a second
+        thing in a place that is showing exactly one.
+      -->
+      <Button
+        v-if="spec?.can_create && !asPage"
+        variant="solid"
+        icon-left="lucide-plus"
+        label="New"
+        @click="create"
+      />
+    </div>
   </PageHeader>
 
   <!--
@@ -520,7 +535,15 @@ import { screenComponent } from '../screens'
 import { CARD_VIEW_TYPES, DEFAULT_VIEW_TYPE, VIEW_TYPES, bodyFor } from '../lib/viewTypes'
 import { onDoctypeChange } from '../lib/socket'
 import { docBadge } from '../lib/docstate'
-import { DRAWER, PAGE, PANE, declared, remember, remembered } from '../lib/surfaces'
+import {
+  DRAWER,
+  MERGE_TARGET,
+  PAGE,
+  PANE,
+  declared,
+  remember,
+  remembered,
+} from '../lib/surfaces'
 
 const props = defineProps({ spaceCode: { type: String, required: true } })
 const route = useRoute()

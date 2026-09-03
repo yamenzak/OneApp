@@ -310,12 +310,21 @@ is why it was never a dialog.
 
 `lib/surfaces.js` holds the vocabulary and the remembered preference.
 
-**The header says the record's name once.** Which surface it is decides who
-says it: the trail above the screen already does on a desktop pane *and* page,
-and the hero does wherever there is a showcase — so the header draws the
-identity only on a phone, where the record covers the trail, and in the drawer,
-which covers it for the same reason. The drawer also offers the one thing the
-others do not: open this properly, on its own screen.
+**One header, and it says the record's name once.** A record used to draw its
+own bar under the screen's — two bands, and on a showcase page the second one
+held two icons and fifty pixels of white between the trail and the photograph.
+So on a desktop *page* the record has no bar: its controls teleport onto the
+trail's line, which is already naming the record, and New stands down there
+because the list it would add a row to is not on screen. A pane keeps its own
+bar — it is a column beside a list whose header is that trail — and the drawer
+and the phone keep theirs because both cover the trail. `RecordControls` is the
+row, drawn in whichever of the two places applies; `MERGE_TARGET` in
+`lib/surfaces.js` is the id the two halves agree on.
+
+The identity follows the same question: the trail says it on both desktop
+surfaces, the hero says it wherever there is a showcase, so the header draws it
+only on a phone and in the drawer. The drawer also offers the one control the
+others have no use for: open this properly, on its own screen.
 
 Four tabs:
 

@@ -148,33 +148,46 @@
             </span>
           </div>
         </div>
+      </div>
 
+      <!--
+        Which photograph, and a way to pick one. Dots rather than arrows: there
+        are two or three of these, not twenty, and an arrow implies a sequence
+        that matters.
+
+        The top right corner of the artwork, which is the one place on this
+        section that is only ever the picture: the words are bottom left, the
+        rail is bottom right — it is bottom-aligned and capped, so it cannot
+        reach up here — and a control that belongs to the photograph should not
+        sit inside either of them.
+
+        On its own dark pill, because the corner it has been given is the one
+        part of the section the scrim barely reaches: white dots at 40% over a
+        bright sky are three smudges and a fourth you cannot find. The same
+        answer the rail got, at the size this needs.
+      -->
+      <div
+        v-if="images.length > 1"
+        class="absolute right-4 top-4 z-10 flex items-center gap-1.5 rounded-full bg-black/40 px-2 py-1.5 backdrop-blur-sm sm:right-6 sm:top-6"
+      >
         <!--
-          Which photograph, and a way to pick one. Dots rather than arrows:
-          there are two or three of these, not twenty, and an arrow implies a
-          sequence that matters. Under the words, where they belong to the
-          picture rather than to the rail beside it.
+          An eight-pixel dot. `Button` is a control with a height, a padding
+          and a label slot, and none of the three survives being shrunk to
+          this — the same exception the gallery card's caption takes, for the
+          same reason. It keeps the label: the dot says which photograph in the
+          only way a two-pixel target can, which is to a screen reader.
         -->
-        <div v-if="images.length > 1" class="flex items-center gap-1.5 pt-1">
-          <!--
-            An eight-pixel dot. `Button` is a control with a height, a padding
-            and a label slot, and none of the three survives being shrunk to
-            this — the same exception the gallery card's caption takes, for the
-            same reason. It keeps the label: the dot says which photograph in
-            the only way a two-pixel target can, which is to a screen reader.
-          -->
-          <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
-          <button
-            v-for="(image, at) in images"
-            :key="image.file_url"
-            type="button"
-            data-slot="showcase-dot"
-            :aria-label="`Show ${image.file_name}`"
-            class="size-2 rounded-full transition-colors"
-            :class="at === shown ? 'bg-white' : 'bg-white/40'"
-            @click="pick(at)"
-          />
-        </div>
+        <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
+        <button
+          v-for="(image, at) in images"
+          :key="image.file_url"
+          type="button"
+          data-slot="showcase-dot"
+          :aria-label="`Show ${image.file_name}`"
+          class="size-2 rounded-full transition-colors"
+          :class="at === shown ? 'bg-white' : 'bg-white/40'"
+          @click="pick(at)"
+        />
       </div>
 
       <!--
