@@ -28,4 +28,10 @@ dump.rdb
 
 # Playwright output.
 apps/*/frontend/test-results/
+
+# Throwaway scripts that drive a browser against the dev site — a screenshot to
+# look at, a request counter, a probe. They belong beside the frontend because
+# that is where Playwright's node_modules is, and nowhere near a commit: one
+# rode in on a `git add -A` and had to be taken out again the next commit.
+apps/*/frontend/*.mjs
 apps/*/frontend/playwright-report/
