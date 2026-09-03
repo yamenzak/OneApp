@@ -74,6 +74,37 @@ test('the numbers worth reading are in the hero, formatted as the list formats t
   expectNoRealErrors(errors)
 })
 
+test('the name is set in the display face, and the face actually arrived', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'the same stylesheet on a narrower screen')
+  const errors = collectConsoleErrors(page)
+
+  await openFirstProject(page)
+  const title = page.locator('[data-slot="showcase-title"]')
+  await expect(title).toBeVisible()
+
+  // Asked for.
+  expect(await title.evaluate((el) => getComputedStyle(el).fontFamily)).toContain(
+    'OneSpace Display',
+  )
+
+  // And arrived. The two are different questions and only the second one
+  // matters: a family nobody shipped, a path that 404s and a truncated file all
+  // render the fallback, and a heading in the wrong font still looks like a
+  // heading. `document.fonts.load` resolves with the faces that matched, so an
+  // empty array is the failure.
+  const loaded = await page.evaluate(async () => {
+    await document.fonts.load('400 48px "OneSpace Display"', 'Business Center')
+    return [...document.fonts]
+      .filter((one) => one.family === 'OneSpace Display')
+      .map((one) => one.status)
+  })
+  expect(loaded).toContain('loaded')
+
+  expectNoRealErrors(errors)
+})
+
 test('the screens that point back at a project are tabs on it', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'the strip scrolls on a phone')
   const errors = collectConsoleErrors(page)

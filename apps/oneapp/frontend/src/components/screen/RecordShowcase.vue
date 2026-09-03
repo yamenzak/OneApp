@@ -87,14 +87,27 @@
       </span>
 
       <!--
-        The name, at a size a photograph can carry. `text-wrap: balance` so a
-        two-line title breaks somewhere a person would break it rather than
-        leaving one word alone on the second line.
+        The name, in the one face in this product that is not the interface
+        face, and in capitals with a little tracking — which is what a title
+        card is, and what the interface face at 36px is not. See the
+        `@font-face` rules in `src/index.css` for the two files behind it.
+
+        No weight class: the face has one weight and asking for semibold gets a
+        browser-synthesised bold, which on a heavy condensed grotesque is a
+        smear. `text-wrap: balance` so a two-line name breaks where a person
+        would break it rather than leaving one word alone on the second line,
+        and bigger than the interface face would be set: a condensed face at
+        36px reads smaller than the UI face at 36px, so matching the number
+        matches nothing. `max-w-5xl` for the same reason — the face is narrow
+        enough that the longest of their job names fits one line inside it.
+
+        `uppercase` is safe on every script here: Arabic has no case, so a
+        bilingual title is capitalised in the half that has capitals.
       -->
       <h1
         data-slot="showcase-title"
         dir="auto"
-        class="max-w-3xl text-balance text-2xl font-semibold leading-tight text-white sm:text-4xl"
+        class="max-w-5xl text-balance font-display text-3xl uppercase leading-none tracking-wide text-white sm:text-5xl"
       >
         {{ title }}
       </h1>

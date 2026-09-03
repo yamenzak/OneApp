@@ -346,6 +346,20 @@ same scroll position.
 }}
 ```
 
+**The name is set in the one face this product has that is not the interface
+face.** Anton for Latin, Reem Kufi for Arabic, under a single `OneSpace Display`
+family so the browser picks per glyph and a bilingual title is set in both
+without anything asking what language it is in; `unicode-range` on each so a
+page of Latin never fetches the Arabic file. Both are SIL OFL 1.1 and both are
+self-hosted — a tenant's browser asking Google for a stylesheet on every page
+load is a third-party request on somebody else's site, in whatever jurisdiction
+they are in, to render a font. `font-display` is the Tailwind token; the
+`@font-face` rules and the reasoning are in `src/index.css`, and
+`tests/test_display_font.py` plus one browser check keep the file, the rule, the
+licence and the actual download honest. Use it for a title somebody is meant to
+look at rather than read past. A display face used twice is a voice; used
+everywhere it is a costume.
+
 **Nothing in it is about construction, and nothing in it is a query.** A tab
 names another screen in the same space and the field on it that points back
 here; the browser then asks that screen's own `rows` for that filter, which is

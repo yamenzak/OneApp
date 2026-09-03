@@ -5,6 +5,56 @@
 @tailwind utilities;
 
 /*
+ * The display face: one family, two files, split by script.
+ *
+ * Everything in this product is set in the UI face, and that is right for a
+ * list, a form and a label — it is a face designed to disappear. A hero over
+ * somebody's photograph is the one place that is wrong: a project's name there
+ * is a title card, and a title card set in the interface font reads as a
+ * heading that has been made large.
+ *
+ * Anton for Latin — a heavy condensed grotesque, which is the shape a film
+ * logo has been for eighty years and, less romantically, the shape that fits
+ * "Roof Floor Gym Area: Mr. Ashraf Ali Private Villa" on one line where the UI
+ * face needs two. Reem Kufi for Arabic, because Anton has no Arabic and a
+ * bilingual product whose Arabic titles silently drop to the interface font is
+ * a product that looks finished in one language.
+ *
+ * One `font-family`, so the browser picks per glyph and a bilingual title is
+ * set in both without anything asking which language it is in. `unicode-range`
+ * on each, so a page of Latin never downloads the Arabic file and the other
+ * way round — and `swap`, so a slow network shows the name in the fallback
+ * rather than showing nothing.
+ *
+ * Self-hosted rather than linked from Google's CDN. A tenant's browser asking
+ * fonts.googleapis.com for a stylesheet on every page load is a third-party
+ * request on somebody else's site, made in whatever jurisdiction they are in,
+ * to render a font — which is not a trade this product gets to make on their
+ * behalf. Both faces are SIL OFL 1.1; the licences are beside the files.
+ */
+@font-face {
+  font-family: 'OneSpace Display';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/anton-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'OneSpace Display';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/reem-kufi-arabic.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1,
+    U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF,
+    U+FE70-FE74, U+FE76-FEFC;
+}
+
+/*
  * The settings dialog is full-screen on a phone; Dialog's own chrome is not.
  *
  * SettingsDialog sizes its TabsRoot `w-screen h-[100dvh]`, but the Dialog it

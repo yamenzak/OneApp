@@ -218,6 +218,27 @@ import preset, { content as frappeUIContent } from 'frappe-ui/tailwind'
 export default {
   presets: [preset],
   content: [...frappeUIContent, './index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      fontFamily: {
+        // The one face that is not the interface face. `font-display` is for a
+        // title somebody is meant to *look at* rather than read past — a
+        // record's name over its own photograph, and whatever else earns it
+        // later. Everything else in the product stays in the UI face, which is
+        // the point: a display face used twice is a voice, used everywhere it
+        // is a costume.
+        //
+        // The `@font-face` rules, the two files it is made of and the reason
+        // it is self-hosted are in `src/index.css`.
+        display: [
+          'OneSpace Display',
+          'ui-sans-serif',
+          'system-ui',
+          'sans-serif',
+        ],
+      },
+    },
+  },
 }
 """
 
