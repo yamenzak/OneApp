@@ -138,6 +138,11 @@ def _make_frappe():
 	frappe.get_doc = lambda *a, **k: None
 	frappe.get_single = lambda *a, **k: None
 	frappe.get_cached_doc = lambda *a, **k: None
+	# Frappe's own: one field off one document, cached. Answers nothing by
+	# default; the tests that are about a company's own settings say what it
+	# holds. A stub that read `frappe.db.values` would make every such test a
+	# transcription of the query rather than a statement about the answer.
+	frappe.get_cached_value = lambda *a, **k: None
 	frappe.log_error = lambda **k: None
 	frappe.get_roles = lambda *a: []
 	frappe.generate_hash = lambda length=10: "0" * length

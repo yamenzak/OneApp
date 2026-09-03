@@ -63,6 +63,13 @@ doc_events = {
 	# sources the framework's own digest reads, and a Version row exists only
 	# where `track_changes` is on, which is exactly the condition a document has
 	# to meet to be followable at all.
+	# Retention: the part of an invoice a construction customer keeps until the
+	# job is proved. Inert unless the invoice carries the field — see
+	# `oneapp_core/retention.py`, which is also the argument for why a
+	# subcontractor's books are wrong without it.
+	"Sales Invoice": {
+		"validate": "oneapp.oneapp_core.retention.apply",
+	},
 	"Version": {
 		"after_insert": "oneapp.oneapp_core.notifications.on_version",
 	},

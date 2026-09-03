@@ -151,8 +151,10 @@ FIELDS = [
 	 "description": "The number the supplier quotes back at you on the phone."},
 	{"dt": "Sales Invoice", "fieldname": "custom_retention_percentage",
 	 "label": "Retention %", "fieldtype": "Percent", "insert_after": "project",
-	 "description": "Held back until the defects period ends. ERPNext does not "
-	                "model retention — see docs/RUA.md §3."},
+	 "description": "Held back until the defects period ends. A percentage here "
+	                "deducts itself from the invoice and waits in Retention "
+	                "Receivable — see `oneapp_core/retention.py`. Zero on every "
+	                "invoice the old system ever issued."},
 	{"dt": "Sales Invoice", "fieldname": "custom_legacy_number", "label": "Old number",
 	 "fieldtype": "Data", "read_only": 1, "insert_after": "custom_retention_percentage",
 	 "description": "What this invoice was called in the system it came from. "
@@ -356,6 +358,13 @@ STEPS = [
 		"map": {
 			"customer": {"from": "party", "link": "RUA Party"},
 			"company": {"const": COMPANY},
+			# Without this ERPNext throws the posting date away and stamps
+			# today's — `set_posting_time` is the flag that says a date on this
+			# document was meant. Every invoice would have imported dated the
+			# day of the migration, and the only reason it was caught is that
+			# a document dated in the future needed a fiscal year that did not
+			# exist yet.
+			"set_posting_time": {"const": 1},
 			"posting_date": {"from": "date"},
 			"project": {"from": "project", "link": "RUA Project"},
 			"remarks": {"from": "remarks"},
@@ -401,6 +410,8 @@ STEPS = [
 			"party_type": {"from": "type", "values": PAYMENT_PARTIES},
 			"party": {"from": "party", "link": "RUA Party"},
 			"company": {"const": COMPANY},
+			# As on the invoice: without it the payment is dated today.
+			"set_posting_time": {"const": 1},
 			"posting_date": {"from": "date"},
 			"paid_amount": {"from": "amount"},
 			"received_amount": {"from": "amount"},

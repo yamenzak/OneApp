@@ -61,11 +61,46 @@ completion. ERPNext has no retention concept, and the old app stores it as three
 denormalised currency fields per invoice (`amount_after_retention`,
 `vat_after_retention`, `grand_total`) computed in the browser.
 
-The honest modelling is a **deduction row in Sales Taxes and Charges** against a
-*Retention Receivable* account, so the withheld money is on the balance sheet
-where it belongs and the release is an ordinary journal. That is the design to
-confirm with an accountant before writing it; everything else in §2 is
-mechanical.
+**And they have never once used it.** All sixty-three invoices carry
+`retention_percentage` 0. The field has been there for four years holding
+nothing, which means there is nothing for the import to carry across and the
+question is only what the new system does when they start.
+
+It is built, in `oneapp_core/retention.py`, and it is this. A percentage on the
+invoice puts a **negative row in Sales Taxes and Charges** against a
+*Retention Receivable* account, made once per company beside that company's own
+receivables. What lands in Debtors is then what the customer owes now, and what
+is held sits as an asset that can still be seen — so the ageing report stops
+saying a hundred thousand is due when ninety is collectible and ten is held.
+The release, a year later, is a Journal Entry: debit Debtors, credit Retention
+Receivable, and from that moment it ages and is chased like anything else.
+Nothing automates that, because releasing retention is a decision rather than a
+calculation.
+
+**VAT is charged on the whole supply, before the deduction.** Retention is when
+the customer pays, not what the customer buys, so the tax is due on the full
+value. Their old system worked its VAT out on the amount *after* retention,
+which under-declares output tax — it never withheld anything, so no invoice it
+issued is wrong, and the arithmetic does not come with us.
+
+The mechanism is dormant everywhere else: an invoice with no
+`custom_retention_percentage` field, or a zero in it, is left exactly as it is.
+The field is the switch, and the import plan that creates it is what throws it.
+
+Ten per cent on a hundred thousand, posted against a real ERPNext:
+
+| | debit | credit |
+| --- | --- | --- |
+| Debtors | 95,000 | | what the customer owes now |
+| Sales | | 100,000 | the whole value of the work |
+| VAT 5% | | 5,000 | output tax on the whole supply |
+| Retention Receivable | 10,000 | | earned, held, and on the balance sheet |
+
+And a finding from getting there. A document hook runs *after* the controller's
+own `validate`, so the invoice is already totalled by the time the retention row
+exists — the first attempt produced a row with an amount of zero and a grand
+total that still charged the customer for the retention. A wrong invoice that
+looks right. It totals again after the row goes on.
 
 Two smaller ones in the same file: `is_vat_inclusive` is ERPNext's inclusive tax
 on the item row, and `serial_number` — a per-project sequence for Final tax
