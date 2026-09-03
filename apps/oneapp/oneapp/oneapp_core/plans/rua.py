@@ -248,7 +248,18 @@ STEPS = [
 		# Fifty architectural perspectives across forty-one of their eighty-two
 		# projects. They are what a project *is* to the people who built it,
 		# and a project page without them is a form.
+		#
+		# Attached rather than put in a field: ERPNext's Project has no `image`,
+		# and the showcase draws its hero from what is filed against the record
+		# — which is the better answer anyway, because a building has more than
+		# one photograph of it.
 		"files": True,
+		# And the one the old form let somebody choose rather than upload, which
+		# is attached to nothing over there. Forty-one of the eighty-two carry
+		# their perspective this way, and ERPNext's Project has no image field
+		# to hold the path even if we kept it — so it is filed against the
+		# record, where the showcase looks for it.
+		"file_fields": ["image"],
 		"map": {
 			"project_name": {"from": "project_name"},
 			"company": {"const": COMPANY},
@@ -268,9 +279,6 @@ STEPS = [
 			# there and there is no other way to reach it.
 			"customer": {"from": "parties", "pick": {"type": "Client"},
 			             "take": "name", "link": "RUA Party"},
-			# The hero image, repointed at our copy: a URL on the site they are
-			# about to switch off is a broken picture the week after.
-			"image": {"from": "image", "file": True},
 		},
 	},
 	{

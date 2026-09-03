@@ -15,6 +15,8 @@ time they read it.
 workspace and appears in nobody else's launcher.
 """
 
+import json
+
 SPACE = {
 	"space_code": "rua",
 	"space_label": "RUA",
@@ -76,6 +78,40 @@ SCREENS = [
 		          "percent_complete,custom_location",
 		"order_by": "modified desc",
 		"view_types": "list,board,dashboard",
+		# Opening a project is not opening a form. It is a building, a contract
+		# value, a percentage done, the variation orders hanging off it and
+		# every quotation, LPO, invoice and payment written against it — see
+		# `oneapp_core/showcase.py`. The hero is what is filed against the
+		# record, which for these people is the architect's perspectives.
+		"view_settings": json.dumps({"showcase": {
+			"images": True,
+			"eyebrow_field": "custom_location",
+			"badge_field": "custom_stage",
+			"facts": [
+				{"field": "estimated_costing", "label": "Contract"},
+				{"field": "percent_complete", "label": "Complete"},
+				{"field": "customer", "label": "Client"},
+			],
+			# Their variation orders. Thirty-five of eighty-two projects are
+			# one, and until now the only way to see which belonged to what was
+			# to read the titles.
+			"children": {"screen": "projects", "field": "custom_parent_project",
+			             "label": "Variations", "icon": "lucide-git-branch"},
+			# Each names a screen in this space and the field on it pointing
+			# back here. The browser then asks the ordinary list endpoint with
+			# that filter, so the columns are the ones that screen already
+			# shows and the permissions are the ones it already checks.
+			"tabs": [
+				{"screen": "quotations", "field": "custom_project",
+				 "label": "Quotations", "icon": "lucide-file-text"},
+				{"screen": "lpos", "field": "project",
+				 "label": "LPOs", "icon": "lucide-shopping-cart"},
+				{"screen": "invoices", "field": "project",
+				 "label": "Invoices", "icon": "lucide-receipt"},
+				{"screen": "payments", "field": "project",
+				 "label": "Payments", "icon": "lucide-banknote"},
+			],
+		}}),
 		# Their own five words, not ERPNext's three. `custom_stage` is the
 		# distinction the people using this actually make — Tender and Job in
 		# Hand are both Open to a ledger and a world apart to a sales team.

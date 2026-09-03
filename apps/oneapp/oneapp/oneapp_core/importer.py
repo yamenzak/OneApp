@@ -821,14 +821,25 @@ def carry(source, step, said: dict, doc, field_map: dict) -> dict:
 	Answers what it copied, keyed by the path it had over there, so the rules
 	can be pointed at the new one.
 	"""
+	# Two ways a source field names a file. A *rule* with `"file": true` wants
+	# the field on this side to end up pointing at our copy; the step's own
+	# `carry_file_fields` wants the file and has nowhere to put the path —
+	# which is forty-one of their project perspectives, chosen rather than
+	# uploaded and so attached to nothing over there, on a doctype ERPNext
+	# gives no image field at all.
 	wanted = {
 		rule["from"] for rule in (field_map or {}).values()
 		if isinstance(rule, dict) and rule.get("file") and rule.get("from")
+	}
+	wanted |= {
+		one.strip() for one in
+		str(getattr(step, "carry_file_fields", "") or "").split(",") if one.strip()
 	}
 	named = {said.get(one) for one in wanted} - {None, ""}
 
 	if not cint(getattr(step, "carry_files", 0)) and not named:
 		return {}
+
 
 	# Already here, from a previous run. Matched on the name it had over there,
 	# which is what makes a second run a no-op rather than a second copy of
@@ -868,6 +879,22 @@ def carry(source, step, said: dict, doc, field_map: dict) -> dict:
 		file.insert(ignore_permissions=True)
 		made[one["file_url"]] = file.file_url
 
+	# A field naming a file that is not attached to anything. Which is the
+	# ordinary case for a picture chosen rather than uploaded: forty-one of
+	# their projects carry a perspective this way, and every one of them would
+	# have arrived as a path pointing at a site about to be switched off.
+	for path in named - set(made):
+		file = frappe.get_doc({
+			"doctype": "File",
+			"file_name": path.rsplit("/", 1)[-1],
+			"attached_to_doctype": doc.doctype,
+			"attached_to_name": doc.name,
+			"is_private": path.startswith("/private/"),
+			"content": download(source, path),
+		})
+		file.insert(ignore_permissions=True)
+		made[path] = file.file_url
+
 	return made
 
 
@@ -879,6 +906,11 @@ def _point_at_ours(doc, said: dict, field_map: dict, files: dict):
 	"""
 	for target, rule in (field_map or {}).items():
 		if not (isinstance(rule, dict) and rule.get("file")):
+			continue
+		if not doc.meta.has_field(target):
+			# `check` says so before a run; here it is one row's worth of
+			# nothing rather than a refusal, because the file itself did come
+			# across and is attached to the record either way.
 			continue
 		found = files.get(said.get(rule.get("from")))
 		if found and doc.get(target) != found:

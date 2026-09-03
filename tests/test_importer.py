@@ -126,6 +126,10 @@ class Doc(dict):
 		super().__init__(values or {})
 		self.name = name
 		self.doctype = doctype
+		# Thin: what the engine asks a document about itself is whether it has
+		# a field, and a plan naming one the target does not have is the one
+		# question that matters here.
+		self.meta = types.SimpleNamespace(has_field=lambda field: True)
 		self.saved = 0
 		self.inserted = 0
 		self.validated = 0
@@ -1022,6 +1026,50 @@ def test_a_named_file_field_is_repointed_at_our_copy(importer, stub_frappe, monk
 	doc.db_set = lambda field, value, **k: written.append((field, value))
 	importer._point_at_ours(doc, said, rule, found)
 	assert written == [("image", "/files/logo-ours.png")]
+
+
+def test_a_file_named_by_a_field_but_attached_to_nothing_still_comes(importer,
+                                                                    stub_frappe,
+                                                                    monkeypatch):
+	"""The ordinary case for a picture chosen rather than uploaded.
+
+	Forty-one of their projects carry a perspective this way — a path in a
+	field, attached to no record — and every one would have arrived pointing at
+	a site about to be switched off.
+	"""
+	monkeypatch.setattr(importer, "attachments", lambda source, dt, name: [])
+	monkeypatch.setattr(importer, "download", lambda source, url: b"...")
+	monkeypatch.setattr(stub_frappe, "get_all", lambda *a, **k: [])
+	seen = []
+	monkeypatch.setattr(stub_frappe, "get_doc", lambda values: seen.append(values) or
+	                    types.SimpleNamespace(insert=lambda **k: None,
+	                                          file_url="/files/ours.jpg"))
+
+	found = importer.carry(object(), Step(), {"name": "P-1", "image": "/files/p.jpg"},
+	                       Doc(), {"image": {"from": "image", "file": True}})
+
+	assert found == {"/files/p.jpg": "/files/ours.jpg"}
+	assert seen[0]["file_name"] == "p.jpg"
+
+
+def test_a_field_the_target_does_not_have_costs_the_file_nothing(importer, stub_frappe,
+                                                                 monkeypatch):
+	"""ERPNext's Project has no `image`, and the plan said it did.
+
+	One row's worth of nothing rather than a refusal: the file itself came
+	across and is attached to the record either way, and `check` says so before
+	a run rather than eighty-two times during one.
+	"""
+	doc = Doc()
+	doc.meta = types.SimpleNamespace(has_field=lambda field: False)
+	written = []
+	doc.db_set = lambda field, value, **k: written.append(field)
+
+	importer._point_at_ours(doc, {"image": "/files/p.jpg"},
+	                        {"image": {"from": "image", "file": True}},
+	                        {"/files/p.jpg": "/files/ours.jpg"})
+
+	assert written == []
 
 
 def test_a_file_already_here_is_not_downloaded_twice(importer, stub_frappe, monkeypatch):

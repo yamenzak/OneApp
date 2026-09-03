@@ -499,7 +499,11 @@ def _shipped() -> list[dict]:
 			if named == "SPACE":
 				space = _ast.literal_eval(_ast.get_source_segment(source, node.value))
 			elif named == "SCREENS":
-				screens = _ast.literal_eval(_ast.get_source_segment(source, node.value))
+				# Counted rather than evaluated. A screen may carry a
+				# `json.dumps(...)` for its view settings, which is not a
+				# literal — and what these rules ask is whether a space puts
+				# anything in front of anybody, not what.
+				screens = getattr(node.value, "elts", [])
 		assert space, f"{path.name} declares no SPACE"
 		found.append({**space, "screens": screens or [], "source": source})
 	return found

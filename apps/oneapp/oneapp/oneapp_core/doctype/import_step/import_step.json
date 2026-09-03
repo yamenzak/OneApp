@@ -12,6 +12,7 @@
   "field_map",
   "filters",
   "carry_files",
+  "carry_file_fields",
   "fan_out",
   "sec_step_state",
   "watermark",
@@ -68,6 +69,12 @@
    "fieldname": "carry_files",
    "fieldtype": "Check",
    "label": "Carry Files"
+  },
+  {
+   "description": "Source fields that hold a path to a file rather than a value, comma separated. The file is fetched and attached here \u2014 for the picture somebody chose rather than uploaded, which is attached to nothing over there.",
+   "fieldname": "carry_file_fields",
+   "fieldtype": "Small Text",
+   "label": "Carry File Fields"
   },
   {
    "description": "Where one source row is several records. `{\"from\": \"attendance_log\", \"shape\": \"map\"}` makes one record per key; `\"list\"` makes one per item. Each gets the parent's fields with its own merged over them and `__key` holding what it came in under.",

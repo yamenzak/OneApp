@@ -2256,6 +2256,11 @@ doctype(
           description="Bring across everything attached to each row and attach "
                       "it here. One request per row and one download per file, "
                       "so it is opt-in per step."),
+        f("carry_file_fields", "Small Text",
+          description="Source fields that hold a path to a file rather than a "
+                      "value, comma separated. The file is fetched and attached "
+                      "here — for the picture somebody chose rather than "
+                      "uploaded, which is attached to nothing over there."),
         f("fan_out", "Code", options="JSON",
           description='Where one source row is several records. '
                       '`{"from": "attendance_log", "shape": "map"}` makes one '

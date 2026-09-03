@@ -71,6 +71,7 @@ def install(name: str, source: str) -> str:
 			"filters": frappe.as_json(step["filters"]) if step.get("filters") else None,
 			"fan_out": frappe.as_json(step["fan_out"]) if step.get("fan_out") else None,
 			"carry_files": 1 if step.get("files") else 0,
+			"carry_file_fields": ",".join(step.get("file_fields") or []) or None,
 			"enabled": 1,
 			"notes": step.get("why", ""),
 		})
