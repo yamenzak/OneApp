@@ -1955,9 +1955,35 @@ def _link_column(resolved: dict, fieldname: str) -> dict:
 	a column says nothing about whether the record has the field — so checking
 	the narrower set refused a picker for a field sitting right there on the
 	form.
+
+	And inside its child tables, which is the same argument one level down and
+	was missing entirely: an invoice's lines are a grid of the child doctype's
+	own fields, `item_code` among them, and `item_code` is not a field on Sales
+	Invoice. So every Link inside every grid in the product answered 403 —
+	shipped, rendered, and never once able to open. The child fields come from
+	`_child`, so they have been through `_columns` like the parent's: permlevel,
+	bounds and `link_filters` all apply, and a field the child doctype hides is
+	not offered here either.
+
+	Parent first, then the tables in the order the screen offers them. Two child
+	tables on one doctype can share a fieldname — a Sales Invoice has
+	`item_code` on both `items` and `packed_items` — and the fix for that is the
+	browser saying which grid is asking. In ERPNext the two always point at the
+	same doctype, so the picker is right either way; `docs/ONESPACE.md` carries
+	it as the gap it is.
 	"""
 	offered = resolved.get("all_columns") or resolved.get("columns") or []
 	column = next((c for c in offered if c["fieldname"] == fieldname), None)
+	if not column:
+		for table in offered:
+			child = table.get("child")
+			if not child:
+				continue
+			column = next(
+				(c for c in child["fields"] if c["fieldname"] == fieldname), None
+			)
+			if column:
+				break
 	if not column:
 		frappe.throw(_("{0} is not on this screen.").format(fieldname),
 		             frappe.PermissionError)

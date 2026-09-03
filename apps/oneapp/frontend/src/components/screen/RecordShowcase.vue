@@ -89,7 +89,8 @@
       scrolls down anyway.
     -->
     <div
-      class="relative flex min-h-64 flex-col gap-6 p-4 sm:min-h-96 sm:flex-row sm:items-end sm:gap-10 sm:p-6"
+      class="relative flex flex-col gap-6 p-4 sm:flex-row sm:items-end sm:gap-10 sm:p-6"
+      :class="compact ? 'min-h-48' : 'min-h-64 sm:min-h-96'"
     >
       <div class="flex min-w-0 flex-1 flex-col justify-end gap-3">
         <span
@@ -120,7 +121,8 @@
         <h1
           data-slot="showcase-title"
           dir="auto"
-          class="text-balance font-display text-3xl uppercase leading-none tracking-wide text-white sm:text-5xl"
+          class="text-balance font-display uppercase leading-none tracking-wide text-white"
+          :class="compact ? 'text-3xl' : 'text-3xl sm:text-5xl'"
         >
           {{ title }}
         </h1>
@@ -195,7 +197,7 @@
         the page is.
       -->
       <div
-        v-if="children.length"
+        v-if="children.length && !compact"
         data-slot="showcase-children"
         class="flex w-full shrink-0 flex-col gap-2 rounded-6 bg-black/50 p-3 backdrop-blur-sm sm:w-80"
       >
@@ -253,7 +255,6 @@
         </div>
       </div>
     </div>
-
   </section>
 </template>
 
@@ -276,6 +277,15 @@ const props = defineProps({
   /** The declaration. See `oneapp_core/showcase.py`. */
   showcase: { type: Object, default: () => ({}) },
   title: { type: String, default: '' },
+  /**
+   * Whether this is the top of a page or the top of something opened over one.
+   *
+   * A hero is most of a screenful, and in a drawer that is most of the drawer —
+   * so a peeked record gets the same page, shorter, with the rail left out. The
+   * rail is what hangs off *this* record, and a reader one level down came here
+   * from a list of exactly that.
+   */
+  compact: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['open'])

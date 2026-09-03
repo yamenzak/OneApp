@@ -396,14 +396,41 @@
           :space-code="spaceCode"
           :screen="spec.screen"
           :phone="phone"
+          :surface="asPage ? PAGE : PANE"
           @saved="recordSaved"
           @reload="reloadRecord"
           @close="closeRecord"
           @renamed="recordRenamed"
           @open="openElsewhere"
+          @surface="setSurface"
         />
       </template>
     </RecordPane>
+
+    <!--
+      A record opened *from* the one on screen: a variation from the job it
+      hangs off, an invoice from the project it was raised against. Over the
+      page rather than instead of it, because the thing you came from is the
+      reason you are looking at this one.
+
+      Its own spec and its own record, because it is usually another screen —
+      an invoice drawn through the projects screen's columns is not an invoice.
+    -->
+    <RecordDrawer v-if="peeked && peekSpec?.doctype" @close="closePeek">
+      <RecordView
+        :record="peeked"
+        :spec="peekSpec"
+        :space-code="spaceCode"
+        :screen="peekSpec.screen"
+        :surface="DRAWER"
+        @saved="peekSaved"
+        @reload="loadPeek"
+        @close="closePeek"
+        @renamed="peekRenamed"
+        @open="openElsewhere"
+        @expand="expandPeek"
+      />
+    </RecordDrawer>
   </div>
 
   <!-- Deleting is the one thing on this screen that does not come back, so it
@@ -476,6 +503,7 @@ import RecordChip from '../components/screen/RecordChip.vue'
 import CreateDialog from '../components/screen/CreateDialog.vue'
 import RecordPane from '../components/screen/RecordPane.vue'
 import RecordView from '../components/screen/RecordView.vue'
+import RecordDrawer from '../components/screen/RecordDrawer.vue'
 import FilterPanel from '../components/screen/FilterPanel.vue'
 import QuickFilters from '../components/screen/QuickFilters.vue'
 import CardSettings from '../components/screen/CardSettings.vue'
@@ -492,6 +520,7 @@ import { screenComponent } from '../screens'
 import { CARD_VIEW_TYPES, DEFAULT_VIEW_TYPE, VIEW_TYPES, bodyFor } from '../lib/viewTypes'
 import { onDoctypeChange } from '../lib/socket'
 import { docBadge } from '../lib/docstate'
+import { DRAWER, PAGE, PANE, declared, remember, remembered } from '../lib/surfaces'
 
 const props = defineProps({ spaceCode: { type: String, required: true } })
 const route = useRoute()
@@ -649,15 +678,114 @@ const emptyBecause = computed(() => {
 // name it with yet.
 const shownRecord = computed(() => editing.value)
 
+// --- peeking ----------------------------------------------------------------
+//
+// A record opened from inside another one. Two query parameters rather than
+// one, because the thing being peeked at is usually on a different screen — a
+// project's invoices are the invoices screen — and a name with no screen is a
+// name this host would look up in the wrong place.
+const peeked = ref(null)
+const peekSpec = ref(null)
+
+const peekScreen = computed(() => String(route.query.peekScreen || spec.value?.screen || ''))
+const peekName = computed(() => String(route.query.peek || ''))
+
+/**
+ * The peeked record and the spec to draw it with.
+ *
+ * Both, and in parallel: the spec answers what a record of *that* screen looks
+ * like — its fields, its states, its own showcase — and reusing this screen's
+ * would render an invoice through the projects screen's columns.
+ *
+ * Cleared first, so switching from one peeked record to another does not show
+ * the last one's fields under the new one's name for as long as the request
+ * takes. A record that comes back empty — moved, deleted, or never visible to
+ * this reader — closes the drawer rather than leaving an empty one open.
+ */
+const loadPeek = async () => {
+  if (!peekName.value || !peekScreen.value) {
+    peeked.value = null
+    peekSpec.value = null
+    return
+  }
+  peeked.value = null
+  peekSpec.value = null
+  const [found, drawn] = await Promise.all([
+    workspace.screenRecord(props.spaceCode, peekScreen.value, peekName.value),
+    workspace.screenSpec(props.spaceCode, peekScreen.value),
+  ])
+  if (peekName.value !== String(route.query.peek || '')) return
+  if (!found?.name) {
+    closePeek()
+    return
+  }
+  peeked.value = found
+  peekSpec.value = drawn || null
+}
+
+// Back, in both senses: the record underneath is still there and the browser's
+// own back button does the same thing, because the drawer is in the URL.
+const closePeek = () => {
+  const query = { ...route.query }
+  delete query.peek
+  delete query.peekScreen
+  router.push({ query })
+}
+
+const peekSaved = async () => {
+  await loadPeek()
+  // The page underneath may be showing what just changed — a variation's stage
+  // in the rail, an invoice's total in a tab — so it is re-read too.
+  await loadRows()
+}
+
+// The peeked record, opened properly: its own screen, its own list behind it,
+// and the drawer gone. Pushed rather than replaced — the job you were reading
+// is a place you may well want the back button to return to.
+const expandPeek = () => {
+  if (!peekName.value) return
+  router.push({ query: { screen: peekScreen.value, record: peekName.value } })
+}
+
+const peekRenamed = (name) => {
+  if (!name) return
+  router.replace({ query: { ...route.query, peek: name } })
+}
+
+watch([peekName, peekScreen], loadPeek, { immediate: true })
+
 /**
  * Whether the open record takes the page rather than a pane beside the list.
  *
- * The manifest's answer, read from the same declaration that draws the hero: a
+ * The reader's answer where they have given one, the manifest's otherwise: a
  * screen that says a record is a place gets the width a place needs, and every
- * other screen keeps the pane it has always had. Nothing here asks the
- * viewport — the phone's own answer is `RecordPane`'s, and it wins either way.
+ * other screen keeps the pane it has always had — until somebody says
+ * otherwise, per screen, and then it is remembered. Nothing here asks the
+ * viewport; the phone's own answer is `RecordPane`'s and it wins either way.
  */
-const asPage = computed(() => !!shownRecord.value && !!spec.value?.view_settings?.showcase)
+const surface = ref(null)
+
+// Read when the screen changes rather than watched: `localStorage` fires no
+// events for its own tab, so there is nothing to subscribe to, and a screen is
+// the only thing that changes which answer applies.
+watch(
+  () => [props.spaceCode, spec.value?.screen],
+  ([space, screen]) => {
+    surface.value = remembered(space, screen)
+  },
+  { immediate: true },
+)
+
+const asPage = computed(
+  () => !!shownRecord.value && (surface.value || declared(spec.value)) === PAGE,
+)
+
+// Remembered as well as applied. The point of the control is that it is a
+// preference — clicking it on every project is the thing it exists to stop.
+const setSurface = (chose) => {
+  surface.value = chose
+  remember(props.spaceCode, spec.value?.screen, chose)
+}
 
 // What the last crumb says when no view is saved: how this screen is being
 // drawn. "Tasks / Tasks" is one word twice; "Tasks / List" says where you are.
@@ -979,21 +1107,30 @@ const open = (row) => {
 }
 
 /**
- * A record on another screen of this space, from inside the one open.
+ * A record opened from inside another one.
  *
- * The showcase's variations and its related tabs both come out here: a card or
- * a row names a screen and an id, and opening it is the ordinary screen-and-
- * record URL — so it is a place with a link, the back button returns to the
- * project, and the pane redraws against that screen's own list rather than
- * rendering an invoice through the projects screen's columns.
+ * The showcase's variations and its related tabs both come out here, and where
+ * it goes depends on what is underneath. On a page — a job filling the window,
+ * with its variations up the side and its invoices behind a tab — the answer is
+ * the drawer: you are reading the job, you glance at one of its lines, and the
+ * job is the reason you are looking. Replacing the page with the line is
+ * correct navigation and the wrong thing to do.
  *
- * The saved view and the view type are deliberately dropped: they belong to
- * the screen being left, and carrying `layout=my-overdue` onto a different
- * screen is asking it for a view that is not its.
+ * Everywhere else it is the ordinary screen-and-record URL. Either way it is in
+ * the URL, so it is a place with a link and the back button undoes it.
+ *
+ * The saved view and the view type are deliberately dropped when navigating:
+ * they belong to the screen being left, and carrying `layout=my-overdue` onto a
+ * different screen is asking it for a view that is not its.
  */
 const openElsewhere = ({ screen, name }) => {
   if (!name) return
-  router.push({ query: { screen: screen || route.query.screen, record: name } })
+  const where = screen || route.query.screen
+  if (asPage.value) {
+    router.push({ query: { ...route.query, peek: name, peekScreen: where } })
+    return
+  }
+  router.push({ query: { screen: where, record: name } })
 }
 
 const create = () => {

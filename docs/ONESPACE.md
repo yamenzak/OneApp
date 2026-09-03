@@ -298,11 +298,24 @@ a chart's scale, not at a report's — which is why the cap is stated.
 
 ## 6. The record
 
-**A pane beside the list on a desktop, a page on a phone.** It was a modal, and
-a modal is the wrong shape: a record is something you read *against* the list —
-mark this done, glance at the next, come back. The pane's width is dragged and
-remembered in the browser. A screen that declares a **showcase** gets a page on
-a desktop too — see below.
+**Three surfaces, and only one of them is a modal.** A record is something you
+read *against* the list — mark this done, glance at the next, come back — which
+is why it was never a dialog.
+
+| | |
+|---|---|
+| **pane** | The resizable column beside the list. The desktop default; its width is dragged and remembered. |
+| **page** | The whole content area. Always on a phone; on a desktop where the screen declares a showcase, or where the reader pressed the expand control — which is remembered per screen, so "a project is a page and a task is a pane" is a thing a person can have. The list is hidden rather than unmounted, so closing comes back to the same rows and the same scroll position. |
+| **drawer** | An overlay over a page, for a record opened *from* another one: a variation from its job, an invoice from the project it was raised against. In the URL as `peek` + `peekScreen`, so it is linkable and the back button and Escape both close it. It is the one record surface that takes Escape, because it is the one that is modal. |
+
+`lib/surfaces.js` holds the vocabulary and the remembered preference.
+
+**The header says the record's name once.** Which surface it is decides who
+says it: the trail above the screen already does on a desktop pane *and* page,
+and the hero does wherever there is a showcase — so the header draws the
+identity only on a phone, where the record covers the trail, and in the drawer,
+which covers it for the same reason. The drawer also offers the one thing the
+others do not: open this properly, on its own screen.
 
 Four tabs:
 
@@ -395,6 +408,20 @@ longer exists. Renaming the *title* is not this — that is an ordinary save.
 **A child table is a grid**, using the child doctype's own `in_list_view`
 fields: edited in place, tickable, drag to reorder with `idx` rewritten, numbers
 right-aligned, required columns marked in the header. None of it is declared.
+
+A Link *inside* one reaches its picker through the same check as a Link on the
+parent — the field has to be one the screen offers — and for a long time it did
+not: `_link_column` looked only at the parent doctype's fields, so `item_code`
+on an invoice line was "not on this screen" and every picker in every grid in
+the product answered 403. It looked like a disabled control. Two smaller things
+came out of fixing it. A picker used to fetch its first page of options and its
+create-spec on mount, which is fine for the two on a form and ruinous in a grid
+— one invoice fired thirty-eight requests before anybody clicked anything — so
+it now fetches on first touch. What is left is one request per filled Link field
+to resolve the label the closed box shows; resolving child-row links server-side
+in `_with_children`, the way `_with_links` already does for list rows, would
+remove those too. And where two child tables on one doctype share a fieldname,
+the first is used: the browser should say which grid is asking, and does not.
 
 **The header is one button and one menu.** It was eight controls in a row —
 screen actions, assign, like, the document's steps, print, follow, Save, close

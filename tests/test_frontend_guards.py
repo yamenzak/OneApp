@@ -424,7 +424,18 @@ def test_no_local_component_shadows_a_frappe_ui_one():
 # `FadedScroll.vue` is the third: a scroll box and two gradients. There is no
 # scroller in the barrel that fades its own edges, and what it does — measuring
 # whether there is content past each edge — is behaviour rather than markup.
-LAYOUT_ONLY = frozenset({"RecordPane.vue", "Resizer.vue", "FadedScroll.vue"})
+# `RecordDrawer.vue` is the fourth: a scrim and a panel that slides in from the
+# right, with a slot in it. `Dialog` is the near miss and it is the wrong one —
+# a dialog is centred, sized to its content and closed by its own header, and
+# what this is is the pane's argument one level in: the thing behind it stays
+# where it was. Everything drawn inside it comes from the barrel, through
+# `RecordView`.
+LAYOUT_ONLY = frozenset({
+	"RecordPane.vue",
+	"Resizer.vue",
+	"FadedScroll.vue",
+	"RecordDrawer.vue",
+})
 
 
 def test_local_components_compose_the_vocabulary():

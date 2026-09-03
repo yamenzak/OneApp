@@ -17,7 +17,13 @@
     * Create is an option in the menu, not a separate button, and it only
       appears when the server says this person may create one here.
   -->
-  <div>
+  <!--
+    Nothing is fetched until somebody touches this. See `prime` — `focusin`
+    because that is what precedes every way of opening the menu, and
+    `pointerdown` because a mouse on the chevron is the one that does not
+    always focus the input first.
+  -->
+  <div @focusin="prime" @pointerdown="prime">
     <Combobox
       :model-value="modelValue"
       v-model:query="query"
@@ -345,13 +351,43 @@ const loadSpec = async () => {
   spec.value = await workspace.linkNewSpec(props.spaceCode, props.screen, props.fieldname, props.target)
 }
 
+/**
+ * The first page of options, and whether Create is offered — on first touch,
+ * not on mount.
+ *
+ * A picker used to fetch both the moment it rendered, which is fine for the two
+ * on a form and ruinous in a grid: six invoice lines with two Link columns is
+ * twelve of these, and opening one invoice fired thirty-eight requests before
+ * anybody had clicked anything. Nobody noticed for a long time because every
+ * one of them was refused — a Link inside a child table was not a field this
+ * screen offered, so the picker 403'd instead of working. Fixing that made the
+ * waste real, and this is the other half of the fix.
+ *
+ * The value's own label is still resolved eagerly, and has to be: that is what
+ * the closed box *shows*, and a box reading `ACC-SINV-2026-00015` where every
+ * other surface reads the customer's name is the thing this control exists to
+ * stop. One request per filled field rather than three per field.
+ */
+const primed = ref(false)
+
+const prime = () => {
+  if (primed.value || props.disabled) return
+  primed.value = true
+  search()
+  loadSpec()
+}
+
 watch(query, search)
 watch(() => props.modelValue, resolveChosen, { immediate: true })
 watch(
   () => [props.spaceCode, props.screen, props.fieldname],
   () => {
-    search()
-    loadSpec()
+    // A different field is a different set of options and a different answer
+    // about creating one, so what was fetched is dropped and the next touch
+    // fetches again.
+    found.value = []
+    spec.value = null
+    primed.value = false
   },
   { immediate: true },
 )

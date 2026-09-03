@@ -4,15 +4,18 @@
       Who this is, and the handful of things you do to a record rather than to
       one of its fields.
 
-      The identity is drawn only where the trail is not already drawing it: on
-      a desktop the breadcrumb above the list says which record this is, and
-      saying it twice in two different sizes is how a pane starts to read as a
-      second page. On a phone the pane *is* the page, so it says it here — and
-      on a desktop the row is the controls alone rather than the word "Record",
-      which is a label that says nothing and takes a line to say it.
+      The identity is drawn only where nothing else on the screen is already
+      drawing it, and which that is depends on the surface — see `names`. The
+      alternative is the same name in two sizes six pixels apart, which is how
+      a pane starts to read as a second page.
     -->
     <header class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 px-4 py-3">
-      <RecordChip v-if="phone" :record="identity" class="min-w-0 flex-1">
+      <RecordChip
+        v-if="names"
+        data-slot="record-identity"
+        :record="identity"
+        class="min-w-0 flex-1"
+      >
         <template #badge>
           <StateBadge
             v-if="statusValue"
@@ -89,11 +92,50 @@
           :loading="saving"
           @click="save"
         />
+        <!--
+          How much of the window this record gets. The manifest has an opinion
+          — a screen that draws a hero over a photograph is asking for the
+          width, a screen that draws a form is not — and this is the reader
+          overruling it, remembered per screen so it is a preference rather
+          than a click you make every time.
+
+          Not offered on a phone, where there is only ever one surface, and not
+          in the drawer, where the record is a thing you are peeking at from
+          another one and the width is that argument, not this one.
+        -->
+        <Button
+          v-if="canResize"
+          :icon="wide ? 'lucide-minimize-2' : 'lucide-maximize-2'"
+          variant="ghost"
+          :label="wide ? 'Show beside the list' : 'Fill the window'"
+          :tooltip="wide ? 'Show beside the list' : 'Fill the window'"
+          @click="emit('surface', wide ? 'pane' : 'page')"
+        />
+        <!--
+          A peek is not always enough. This is the way from one to the other:
+          the same record, on its own screen, with its list behind it — which
+          is where you go when the answer to "what is this line" turns out to
+          be a job of its own.
+        -->
+        <Button
+          v-if="drawer"
+          icon="lucide-arrow-up-right"
+          variant="ghost"
+          label="Open on its own screen"
+          tooltip="Open on its own screen"
+          @click="emit('expand')"
+        />
+        <!--
+          Out. What it means depends on where you are: in a drawer it puts the
+          record you came from back, everywhere else it goes back to the list —
+          and the tooltip should say which, because they are different enough
+          that guessing wrong loses your place.
+        -->
         <Button
           icon="lucide-x"
           variant="ghost"
-          label="Close the record"
-          tooltip="Close the record"
+          :label="drawer ? 'Close and go back' : 'Close the record'"
+          :tooltip="drawer ? 'Close and go back' : 'Close the record'"
           @click="emit('close')"
         />
       </div>
@@ -145,6 +187,7 @@
         :spec="spec"
         :showcase="showcase"
         :title="identity.label"
+        :compact="drawer"
         @open="emit('open', $event)"
       />
 
@@ -161,7 +204,16 @@
           `relative`, and two position utilities on one element is a fight
           decided by which rule the stylesheet happens to emit last.
         -->
-        <div :class="showcase ? 'sticky top-0 z-10 -mx-4 bg-surface-base px-4' : ''">
+        <!--
+          And it scrolls sideways rather than squeezing. Eight tabs is what a
+          showcase screen with four related ones comes to, and in a drawer that
+          is narrower than the page they came from the last two were off the
+          edge with nothing to say so.
+        -->
+        <div
+          class="-mx-4 overflow-x-auto px-4"
+          :class="showcase ? 'sticky top-0 z-10 bg-surface-base' : ''"
+        >
           <TabList>
             <!--
               A glyph on every one of them, from the same derivation the
@@ -334,6 +386,7 @@ import StateBadge from './StateBadge.vue'
 import PrintDialog from './PrintDialog.vue'
 import RecordMeta from './RecordMeta.vue'
 import { workspace } from '../../lib/workspace'
+import { DRAWER, PAGE, PANE } from '../../lib/surfaces'
 import { docBadge } from '../../lib/docstate'
 import { tabIcon } from '../../lib/fields'
 import { onDocChange, onDocViewers } from '../../lib/socket'
@@ -346,8 +399,43 @@ const props = defineProps({
   screen: { type: String, required: true },
   /** Whether the pane is the page. The pane knows; this does not ask. */
   phone: { type: Boolean, default: false },
+  /**
+   * Which of the three surfaces this is being drawn on — `pane`, `page` or
+   * `drawer`. See `lib/surfaces.js`.
+   *
+   * Passed rather than worked out here: the host owns the decision, because it
+   * is the one that knows whether a list is beside this and whether another
+   * record is underneath it.
+   */
+  surface: { type: String, default: PANE },
 })
-const emit = defineEmits(['saved', 'close', 'reload', 'renamed', 'open'])
+const emit = defineEmits([
+  'saved', 'close', 'reload', 'renamed', 'open', 'surface', 'expand',
+])
+
+const drawer = computed(() => props.surface === DRAWER)
+const wide = computed(() => props.surface === PAGE)
+
+/**
+ * Whether the header says who this record is.
+ *
+ * Once each, never twice. Two things already say it somewhere else:
+ *
+ *   * the trail above the screen, on any desktop surface that does not cover
+ *     it — which is the pane and the page both, and was the bug in the first
+ *     version of this: a record filling the window said its own name twice,
+ *     six pixels apart, in two sizes;
+ *   * the hero, wherever there is a showcase, in 48px an inch below this.
+ *
+ * What is left is a phone, where the record is a fixed overlay and the trail is
+ * behind it, and the drawer, which covers the trail for the same reason. Those
+ * two say it here.
+ */
+const names = computed(() => !showcase.value && (props.phone || drawer.value))
+
+// The reader may choose between the pane and the page, and only between those.
+// A phone has room for one surface and a drawer is not a width somebody picks.
+const canResize = computed(() => !props.phone && !drawer.value)
 
 const tab = ref('fields')
 

@@ -174,14 +174,25 @@ test('a variation opens from the strip under the photograph', async ({ page }, i
   }
   test.skip(!found, 'none of the last twenty jobs on this list has a variation under it')
 
+  const job = await page.locator('[data-slot="showcase-title"]').first().textContent()
   const was = new URL(page.url()).searchParams.get('record')
   await found.click()
-  await expect
-    .poll(() => new URL(page.url()).searchParams.get('record'), { timeout: 15_000 })
-    .not.toBe(was)
 
-  // The variation is a project too, so it is drawn the same way.
-  await expect(page.locator('[data-slot="showcase-title"]')).toBeVisible()
+  // Over the job, not instead of it: `record` still names the job and `peek`
+  // names the variation. Opening a line of the thing you are reading should not
+  // take the thing you are reading away — see `surfaces.spec.js` for the rest
+  // of that argument.
+  await page.locator('[data-slot="record-drawer"]').waitFor({ timeout: 20_000 })
+  const now = new URL(page.url())
+  expect(now.searchParams.get('record')).toBe(was)
+  expect(now.searchParams.get('peek')).toBeTruthy()
+  expect(now.searchParams.get('peek')).not.toBe(was)
+
+  // The variation is a project too, so it is drawn the same way — its own hero,
+  // shorter, inside the drawer. Two showcase titles on screen now: the job's,
+  // underneath, and the variation's.
+  await expect(page.locator('[data-slot="showcase-title"]')).toHaveCount(2)
+  await expect(page.locator('[data-slot="showcase-title"]').first()).toHaveText(job)
 
   expectNoRealErrors(errors)
 })

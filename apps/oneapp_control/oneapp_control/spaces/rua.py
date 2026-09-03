@@ -51,6 +51,11 @@ DOCTYPES = [
 	# Read only, and every one of them is something a screen resolves rather
 	# than something a person edits here.
 	("Item", "Read", 0),
+	# On every invoice and LPO line, because ERPNext puts it there. Read only —
+	# nobody in this company is moving stock — but without it the line's own
+	# picker is refused and the field reads as broken on a document they open
+	# every day.
+	("Warehouse", "Read", 0),
 	("Company", "Read", 0),
 	("Territory", "Read", 0),
 	("Customer Group", "Read", 0),
