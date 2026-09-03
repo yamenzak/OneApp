@@ -46,10 +46,14 @@ def install(name: str, source: str) -> str:
 
 	prepare(module)
 
+	# Keyed by position and not by source doctype: a plan may read one doctype
+	# twice — a second pass for a link that points at something the first pass
+	# is still making — and keyed by name those two collapse into one, which
+	# silently hands the second pass the first one's watermark.
 	kept = {}
 	if frappe.db.exists("Import Plan", title):
 		doc = frappe.get_doc("Import Plan", title)
-		kept = {s.source_doctype: (s.watermark, s.last_run) for s in doc.steps}
+		kept = {at: (s.watermark, s.last_run) for at, s in enumerate(doc.steps)}
 		doc.steps = []
 	else:
 		doc = frappe.new_doc("Import Plan")
@@ -59,18 +63,23 @@ def install(name: str, source: str) -> str:
 	doc.space_code = module.SPACE
 	doc.is_active = 1
 
-	for step in module.STEPS:
+	for at, step in enumerate(module.STEPS):
 		row = doc.append("steps", {
 			"source_doctype": step["source"],
 			"target_doctype": step["target"],
 			"field_map": frappe.as_json(step["map"]),
 			"filters": frappe.as_json(step["filters"]) if step.get("filters") else None,
 			"fan_out": frappe.as_json(step["fan_out"]) if step.get("fan_out") else None,
+			"carry_files": 1 if step.get("files") else 0,
 			"enabled": 1,
 			"notes": step.get("why", ""),
 		})
-		was = kept.get(step["source"])
-		if was:
+		# Only where the step at that position is still the same step. A plan
+		# that gained a step in the middle would otherwise hand every step
+		# after it somebody else's watermark, and skip everything before it.
+		was = kept.get(at)
+		if was and doc.steps[at].source_doctype == step["source"] \
+				and doc.steps[at].target_doctype == step["target"]:
 			row.watermark, row.last_run = was
 
 	doc.save()

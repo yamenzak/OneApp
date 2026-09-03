@@ -25,7 +25,7 @@ import json
 import frappe
 from frappe import _
 
-from oneapp.oneapp_core import collab, dashboard, docflow, fieldtypes, printing
+from oneapp.oneapp_core import collab, dashboard, docflow, fieldtypes, printing, showcase
 
 # Fetched on every screen and shown on none. `name` is how a record is opened
 # and saved, and on most doctypes it is a hash — "8eleplcmv6" as the first thing
@@ -3522,6 +3522,10 @@ def save_layout(space_code: str, screen: str, filters: str | list | dict | None 
 	return {"ok": True, "layout": doc.name}
 
 
+# The settings key that is not a view type: how a screen draws one record.
+SHOWCASE = "showcase"
+
+
 def _view_settings(resolved: dict, asked) -> dict:
 	"""What a view type needs that columns and filters do not carry.
 
@@ -3549,6 +3553,16 @@ def _view_settings(resolved: dict, asked) -> dict:
 	offered = {c["fieldname"] for c in resolved.get("all_columns") or []}
 	kept: dict[str, dict] = {}
 	for view_type, settings in asked.items():
+		# `showcase` is the one key here that is not a view type. It is how the
+		# screen draws *one* record rather than a page of them — the view every
+		# screen has and the only one that was never named — and it lives here
+		# because it is the same kind of thing: what a way of looking needs
+		# that columns and filters do not carry. See `oneapp_core/showcase.py`.
+		if view_type == SHOWCASE:
+			found = showcase.shape(settings, offered)
+			if found:
+				kept[SHOWCASE] = found
+			continue
 		if view_type not in VIEW_TYPES or not isinstance(settings, dict):
 			continue
 		for key, value in settings.items():

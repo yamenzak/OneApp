@@ -2248,6 +2248,14 @@ doctype(
         # attendance as one row a day holding an object keyed by employee is
         # not unusual; it is what a system with no reporting looks like from
         # the inside.
+        # Files, which is the half of a migration people notice and nobody
+        # writes down. A project's photographs, a party's logo, the scan behind
+        # every compliance document — a system that arrives without them is a
+        # database rather than the company's records.
+        f("carry_files", "Check", default="0",
+          description="Bring across everything attached to each row and attach "
+                      "it here. One request per row and one download per file, "
+                      "so it is opt-in per step."),
         f("fan_out", "Code", options="JSON",
           description='Where one source row is several records. '
                       '`{"from": "attendance_log", "shape": "map"}` makes one '

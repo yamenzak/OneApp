@@ -227,6 +227,46 @@ def fetch(source, doctype: str, filters: list, start: int, length: int) -> list[
 	}).get("data") or []
 
 
+def attachments(source, doctype: str, name: str) -> list[dict]:
+	"""What is attached to one record on the source.
+
+	The half of a migration that gets forgotten and is the half people notice.
+	Their eighty-two projects carry fifty architectural perspectives between
+	them, their parties carry logos, their employees carry photographs and
+	every compliance document is a scan of the paper — nine hundred and sixty
+	files, and a system that arrives without them is a database rather than the
+	company's records.
+	"""
+	return _get(source, "resource/File", {
+		"fields": '["name","file_name","file_url","is_private"]',
+		"filters": json.dumps([
+			["attached_to_doctype", "=", doctype],
+			["attached_to_name", "=", name],
+		]),
+		"limit_page_length": 0,
+	}).get("data") or []
+
+
+def download(source, file_url: str) -> bytes:
+	"""One file's content, as the token's own user over there.
+
+	A private file is only readable with the key, which is the whole reason
+	this goes through the API rather than fetching the URL: half of what these
+	people keep — passports, trade licences, signed invoices — is private, and
+	an import that silently brought across only the public half would be worse
+	than one that brought none.
+	"""
+	import requests
+
+	answer = requests.get(
+		f"{_endpoint(source)}{file_url}",
+		headers={"Authorization": f"token {source.api_key}:{source.get_password('api_secret')}"},
+		timeout=120,
+	)
+	answer.raise_for_status()
+	return answer.content
+
+
 def whole(source, doctype: str, name: str) -> dict:
 	"""One document with its child tables.
 
@@ -703,7 +743,7 @@ def _step(run, plan, source, step, row, held: list | None = None):
 					# `key` and not `piece["name"]`: every piece of one row
 					# shares the parent's name, and an identity keyed on that
 					# would have twenty thousand rows overwrite each other.
-					what = _write(plan, step, key, piece, made)
+					what = _write(plan, step, key, piece, made, source, field_map)
 				except Exception as raised:
 					frappe.db.rollback(save_point=mark)
 					counts["failed"] += 1
@@ -735,7 +775,8 @@ def _step(run, plan, source, step, row, held: list | None = None):
 		frappe.db.commit()
 
 
-def _write(plan, step, key: str, said: dict, made: dict) -> str:
+def _write(plan, step, key: str, said: dict, made: dict, source=None,
+           field_map: dict | None = None) -> str:
 	"""Insert or update the one record this source row is, and remember which.
 
 	Through `get_doc` and `save`, never a direct write: an imported Sales
@@ -750,11 +791,98 @@ def _write(plan, step, key: str, said: dict, made: dict) -> str:
 		doc.update(made)
 		doc.save()
 		_remember(plan, step, key, doc.name)
+		_attach(source, step, said, doc, field_map)
 		return "updated"
 
 	doc = frappe.get_doc({"doctype": step.target_doctype, **made}).insert()
 	_remember(plan, step, key, doc.name)
+	# After the insert, not before: a File names the record it hangs on, and
+	# the record has no name until it exists.
+	_attach(source, step, said, doc, field_map)
 	return "created"
+
+
+def _attach(source, step, said: dict, doc, field_map: dict | None):
+	if source is None:
+		return
+	_point_at_ours(doc, said, field_map or {}, carry(source, step, said, doc, field_map or {}))
+
+
+def carry(source, step, said: dict, doc, field_map: dict) -> dict:
+	"""Bring one row's files across and hang them on the record we made.
+
+	Two ways to ask, because there are two kinds. A step saying `carry_files`
+	wants everything attached over there attached here — the perspectives on a
+	project, the scan behind a compliance document. A *rule* saying `"file":
+	true` wants one named field that holds a path rather than a value: a party's
+	logo, an employee's photograph, and the field has to end up pointing at our
+	copy rather than at a URL on a site the customer is about to switch off.
+
+	Answers what it copied, keyed by the path it had over there, so the rules
+	can be pointed at the new one.
+	"""
+	wanted = {
+		rule["from"] for rule in (field_map or {}).values()
+		if isinstance(rule, dict) and rule.get("file") and rule.get("from")
+	}
+	named = {said.get(one) for one in wanted} - {None, ""}
+
+	if not cint(getattr(step, "carry_files", 0)) and not named:
+		return {}
+
+	# Already here, from a previous run. Matched on the name it had over there,
+	# which is what makes a second run a no-op rather than a second copy of
+	# every photograph in the company.
+	here = {
+		row.file_name
+		for row in frappe.get_all("File",
+		                          filters={"attached_to_doctype": doc.doctype,
+		                                   "attached_to_name": doc.name},
+		                          fields=["file_name"])
+	}
+
+	made = {}
+	for one in attachments(source, step.source_doctype, said.get("name")):
+		if not cint(getattr(step, "carry_files", 0)) and one["file_url"] not in named:
+			continue
+		if one["file_name"] in here:
+			# Still worth answering: a rule pointing at it needs our URL even
+			# on a run that copied nothing.
+			made[one["file_url"]] = frappe.db.get_value(
+				"File", {"attached_to_doctype": doc.doctype,
+				         "attached_to_name": doc.name,
+				         "file_name": one["file_name"]}, "file_url")
+			continue
+
+		# Assigned and then inserted, rather than reading what `insert` hands
+		# back: what this needs is the URL Frappe gave the copy, and that is on
+		# the document either way.
+		file = frappe.get_doc({
+			"doctype": "File",
+			"file_name": one["file_name"],
+			"attached_to_doctype": doc.doctype,
+			"attached_to_name": doc.name,
+			"is_private": cint(one.get("is_private")),
+			"content": download(source, one["file_url"]),
+		})
+		file.insert(ignore_permissions=True)
+		made[one["file_url"]] = file.file_url
+
+	return made
+
+
+def _point_at_ours(doc, said: dict, field_map: dict, files: dict):
+	"""Repoint the fields that hold a path at the copy we just made.
+
+	A logo whose URL is on the site the customer is switching off is a broken
+	image the week after the migration, and nobody looks at a logo until then.
+	"""
+	for target, rule in (field_map or {}).items():
+		if not (isinstance(rule, dict) and rule.get("file")):
+			continue
+		found = files.get(said.get(rule.get("from")))
+		if found and doc.get(target) != found:
+			doc.db_set(target, found, update_modified=False)
 
 
 def _remember(plan, step, source_name: str, target_name: str):
@@ -1073,15 +1201,21 @@ def _check_step(source, plan, step, made: set, seen: dict | None = None) -> dict
 	# is keyed on the source doctype alone, so a row caught by both resolves to
 	# whichever step ran last, and `_remember` then refuses the row mid-run.
 	# Which is why this asks the rows rather than the schema.
+	#
+	# Keyed by target as well, because two steps into the *same* target are a
+	# second pass rather than an ambiguity: a project's parent is another
+	# project, so the link cannot resolve until every project exists, and the
+	# only honest way to write that is to go round twice.
 	names = {row.get("name") for row in (rows or [])} - {None}
-	both = sorted(names & seen.get(step.source_doctype, set()))
+	both = sorted(names & seen.get((step.source_doctype, step.target_doctype), set()))
 	if both:
 		warnings.append(
 			f"{len(both)} row(s) of {step.source_doctype} are claimed by an earlier step "
 			f"too — {', '.join(both[:3])}. Narrow one step's filters; a row cannot "
 			"become two things."
 		)
-	seen[step.source_doctype] = names | seen.get(step.source_doctype, set())
+	key = (step.source_doctype, step.target_doctype)
+	seen[key] = names | seen.get(key, set())
 
 	# A fan-out changes what the field map may name, so it is read first: the
 	# fields inside one piece are not fields of the source doctype, and

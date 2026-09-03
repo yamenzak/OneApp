@@ -11,6 +11,7 @@
   "cb_step_shape",
   "field_map",
   "filters",
+  "carry_files",
   "fan_out",
   "sec_step_state",
   "watermark",
@@ -60,6 +61,13 @@
    "fieldtype": "Code",
    "label": "Filters",
    "options": "JSON"
+  },
+  {
+   "default": "0",
+   "description": "Bring across everything attached to each row and attach it here. One request per row and one download per file, so it is opt-in per step.",
+   "fieldname": "carry_files",
+   "fieldtype": "Check",
+   "label": "Carry Files"
   },
   {
    "description": "Where one source row is several records. `{\"from\": \"attendance_log\", \"shape\": \"map\"}` makes one record per key; `\"list\"` makes one per item. Each gets the parent's fields with its own merged over them and `__key` holding what it came in under.",

@@ -134,6 +134,10 @@ FIELDS = [
 	                "team."},
 	{"dt": "Project", "fieldname": "custom_location", "label": "Location", "fieldtype": "Data",
 	 "insert_after": "custom_stage"},
+	{"dt": "Project", "fieldname": "custom_parent_project", "label": "Variation of",
+	 "fieldtype": "Link", "options": "Project", "insert_after": "custom_location",
+	 "description": "The job this one is a variation order on. Thirty-five of "
+	                "theirs are, under thirteen parents."},
 	{"dt": "Employee", "fieldname": "custom_nationality", "label": "Nationality",
 	 "fieldtype": "Data", "insert_after": "date_of_birth"},
 	# ERPNext's Quotation has no project — a Sales Order does, a Sales Invoice
@@ -216,6 +220,7 @@ STEPS = [
 			"tax_id": {"from": "trn"},
 			"mobile_no": {"from": "phone"},
 			"email_id": {"from": "email"},
+			"image": {"from": "image", "file": True},
 		},
 	},
 	{
@@ -240,6 +245,10 @@ STEPS = [
 		"target": "Project",
 		"why": "Contract value and the parent/child pair, which is a variation "
 		       "order rather than a flag.",
+		# Fifty architectural perspectives across forty-one of their eighty-two
+		# projects. They are what a project *is* to the people who built it,
+		# and a project page without them is a form.
+		"files": True,
 		"map": {
 			"project_name": {"from": "project_name"},
 			"company": {"const": COMPANY},
@@ -259,6 +268,25 @@ STEPS = [
 			# there and there is no other way to reach it.
 			"customer": {"from": "parties", "pick": {"type": "Client"},
 			             "take": "name", "link": "RUA Party"},
+			# The hero image, repointed at our copy: a URL on the site they are
+			# about to switch off is a broken picture the week after.
+			"image": {"from": "image", "file": True},
+		},
+	},
+	{
+		# The second pass, and the only reason there is one: a project's parent
+		# is another project, so the link cannot resolve until every project
+		# exists. Going round twice is the honest way to write that — the
+		# alternative is a first run that files thirty-five issues and a second
+		# run that quietly fixes them, which is a migration you have to know a
+		# trick about.
+		"source": "RUA Project",
+		"target": "Project",
+		"why": "Second pass: which job each variation order hangs off. Thirty-"
+		       "five of their eighty-two are variations, under thirteen parents.",
+		"filters": [["RUA Project", "is_child", "=", 1]],
+		"map": {
+			"custom_parent_project": {"from": "parent1", "link": "RUA Project"},
 		},
 	},
 	{
@@ -285,6 +313,9 @@ STEPS = [
 			"personal_email": {"from": "email"},
 			"status": {"const": "Active"},
 			"custom_nationality": {"from": "nationality"},
+			# The wall of faces. An employee list without photographs is a list
+			# nobody uses to find the man on site.
+			"image": {"from": "image", "file": True},
 		},
 	},
 	{
@@ -357,6 +388,9 @@ STEPS = [
 	{
 		"source": "RUA Invoice",
 		"target": "Sales Invoice",
+		# The signed PDF they actually sent. Ninety-five of them, and it is the
+		# only evidence of what the customer received.
+		"files": True,
 		"why": "Tax invoices only. A Proforma is not a receivable and posting "
 		       "one to the ledger is how a set of books stops reconciling.",
 		"filters": [["RUA Invoice", "type", "=", "Tax Invoice"],
@@ -474,6 +508,9 @@ STEPS = [
 	{
 		"source": "RUA Document",
 		"target": "Compliance Document",
+		# The scan is the document. A register of expiry dates with no paper
+		# behind it is a reminder service.
+		"files": True,
 		"why": "The register OneSpace ships. 408 rows of visas, licences and "
 		       "insurance that have never warned anybody about anything.",
 		"map": {

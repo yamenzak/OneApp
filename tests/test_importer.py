@@ -122,9 +122,10 @@ def test_an_ordinary_site_is_fine(importer):
 class Doc(dict):
 	"""Just enough of a Frappe document to be inserted or saved."""
 
-	def __init__(self, values=None, name="NEW-1"):
+	def __init__(self, values=None, name="NEW-1", doctype="Customer"):
 		super().__init__(values or {})
 		self.name = name
+		self.doctype = doctype
 		self.saved = 0
 		self.inserted = 0
 		self.validated = 0
@@ -411,7 +412,7 @@ def test_a_row_that_will_not_save_is_kept_and_the_rest_go_on(importer, stepped, 
 		{"name": "bad", "modified": "2026-01-02 00:00:00"},
 	] if a[3] == 0 else [])
 
-	def write(plan, step, key, said, made):
+	def write(plan, step, key, said, made, *a, **k):
 		if said["name"] == "bad":
 			raise ValueError("Customer Group is required")
 		return "created"
@@ -441,7 +442,7 @@ def test_a_row_that_will_not_save_is_undone_to_its_own_savepoint(importer, stepp
 		{"name": "also good", "modified": "2026-01-03 00:00:00"},
 	] if a[3] == 0 else [])
 
-	def write(plan, step, key, said, made):
+	def write(plan, step, key, said, made, *a, **k):
 		if key == "bad":
 			raise ValueError("no")
 		return "created"
@@ -618,7 +619,7 @@ def test_two_steps_claiming_one_row_of_a_shared_source_warn(importer, monkeypatc
 	"""
 	found = check_step(importer, monkeypatch, {"customer_name": {"from": "party"}},
 	                   rows=[{"name": "P-1", "party": "X"}], ours={"customer_name"},
-	                   made=["RUA Party"], seen={"RUA Party": {"P-1"}})
+	                   made=["RUA Party"], seen={("RUA Party", "Customer"): {"P-1"}})
 	assert any("claimed by an earlier step" in w for w in found["warnings"])
 	assert found["problems"] == []
 
@@ -632,7 +633,7 @@ def test_a_shared_source_with_disjoint_filters_is_silent(importer, monkeypatch):
 	"""
 	found = check_step(importer, monkeypatch, {"customer_name": {"from": "party"}},
 	                   rows=[{"name": "P-2", "party": "X"}], ours={"customer_name"},
-	                   made=["RUA Party"], seen={"RUA Party": {"P-1"}})
+	                   made=["RUA Party"], seen={("RUA Party", "Customer"): {"P-2 elsewhere"}})
 	assert found["warnings"] == []
 
 
@@ -666,7 +667,7 @@ def test_a_shipped_plan_is_offered_only_where_its_space_is(importer, stub_frappe
 	assert [one["key"] for one in offered] == ["rua"]
 	# What the card says before anybody presses it: how much it will bring and
 	# how much it will add to this site's own schema to hold it.
-	assert offered[0]["steps"] == 11
+	assert offered[0]["steps"] == 12
 	assert offered[0]["fields"] > 0
 
 
@@ -793,7 +794,7 @@ def test_every_piece_gets_its_own_identity(importer, stepped, monkeypatch):
 	keys = []
 	monkeypatch.setattr(importer, "fetch", lambda *a: [DAY] if a[3] == 0 else [])
 	monkeypatch.setattr(importer, "_write",
-	                    lambda plan, step, key, said, made: keys.append(key) or "created")
+	                    lambda plan, step, key, said, made, *a, **k: keys.append(key) or "created")
 
 	step = Step()
 	step.fan_out = __import__("json").dumps(FAN)
@@ -811,7 +812,7 @@ def test_every_piece_gets_its_own_identity(importer, stepped, monkeypatch):
 def test_one_bad_piece_does_not_lose_the_others(importer, stepped, monkeypatch):
 	monkeypatch.setattr(importer, "fetch", lambda *a: [DAY] if a[3] == 0 else [])
 
-	def write(plan, step, key, said, made):
+	def write(plan, step, key, said, made, *a, **k):
 		if key.endswith("2"):
 			raise ValueError("Employee RC-EMP-00002 does not exist")
 		return "created"
@@ -980,6 +981,68 @@ def test_picking_out_of_something_that_is_not_a_list_says_so(importer):
 
 	with pytest.raises(ValueError, match="needs a list"):
 		importer.build({"parties": '{"type": "Client"}'}, rule, "P")
+
+
+def test_a_step_only_carries_files_where_it_says_to(importer, stub_frappe, monkeypatch):
+	"""One request per row and one download per file, so it is opt-in.
+
+	Twenty thousand attendance records asking their source what is attached to
+	them is twenty thousand round trips for nothing.
+	"""
+	asked = []
+	monkeypatch.setattr(importer, "attachments",
+	                    lambda source, dt, name: asked.append(name) or [])
+
+	quiet = Step()
+	assert importer.carry(object(), quiet, {"name": "P-1"}, Doc(), {}) == {}
+	assert asked == []
+
+
+def test_a_named_file_field_is_repointed_at_our_copy(importer, stub_frappe, monkeypatch):
+	"""A logo whose URL is on the site the customer is switching off is a
+	broken image the week after the migration, and nobody looks at a logo until
+	then."""
+	monkeypatch.setattr(importer, "attachments", lambda source, dt, name: [
+		{"file_name": "logo.png", "file_url": "/files/logo.png", "is_private": 0},
+	])
+	monkeypatch.setattr(importer, "download", lambda source, url: b"...")
+	monkeypatch.setattr(stub_frappe, "get_all", lambda *a, **k: [])
+	monkeypatch.setattr(stub_frappe, "get_doc", lambda values: types.SimpleNamespace(
+		insert=lambda **k: None, file_url="/files/logo-ours.png"))
+
+	step = Step()
+	rule = {"image": {"from": "image", "file": True}}
+	said = {"name": "P-1", "image": "/files/logo.png"}
+
+	found = importer.carry(object(), step, said, Doc(), rule)
+	assert found == {"/files/logo.png": "/files/logo-ours.png"}
+
+	doc = Doc()
+	written = []
+	doc.db_set = lambda field, value, **k: written.append((field, value))
+	importer._point_at_ours(doc, said, rule, found)
+	assert written == [("image", "/files/logo-ours.png")]
+
+
+def test_a_file_already_here_is_not_downloaded_twice(importer, stub_frappe, monkeypatch):
+	"""Matched on the name it had over there, which is what makes a second run
+	a no-op rather than a second copy of every photograph in the company."""
+	downloads = []
+	monkeypatch.setattr(importer, "attachments", lambda source, dt, name: [
+		{"file_name": "perspective.jpg", "file_url": "/files/p.jpg", "is_private": 0},
+	])
+	monkeypatch.setattr(importer, "download",
+	                    lambda source, url: downloads.append(url) or b"")
+	monkeypatch.setattr(stub_frappe, "get_all",
+	                    lambda *a, **k: [types.SimpleNamespace(file_name="perspective.jpg")])
+	stub_frappe.db.values[("File", "file_url")] = "/files/perspective-ours.jpg"
+
+	step = Step()
+	step.carry_files = 1
+	found = importer.carry(object(), step, {"name": "P-1"}, Doc(), {})
+
+	assert downloads == []
+	assert found == {"/files/p.jpg": "/files/perspective-ours.jpg"}
 
 
 def test_a_second_field_is_tried_before_giving_up(importer):
