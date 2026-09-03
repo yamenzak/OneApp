@@ -412,12 +412,14 @@
           :screen="spec.screen"
           :phone="phone"
           :surface="asPage ? PAGE : PANE"
+          :revision="childRevision"
           @saved="recordSaved"
           @reload="reloadRecord"
           @close="closeRecord"
           @renamed="recordRenamed"
           @open="openElsewhere"
           @surface="setSurface"
+          @add="addChild"
         />
       </template>
     </RecordPane>
@@ -488,12 +490,18 @@
     @update:group-by="onGroupBy"
   />
 
+  <!--
+    Making a record. Usually this screen's, and sometimes another's: the plus on
+    a showcase's rail makes what hangs off the record being read, and what hangs
+    off a record can be a different screen entirely — so the dialog is given
+    whichever spec it is filling in. See `onto`.
+  -->
   <CreateDialog
-    v-if="spec?.doctype"
+    v-if="createSpec?.doctype"
     v-model="showCreate"
-    :spec="spec"
+    :spec="createSpec"
     :space-code="spaceCode"
-    :screen="spec.screen"
+    :screen="createScreen"
     :preset="preset"
     @created="created"
   />
@@ -1158,8 +1166,55 @@ const openElsewhere = ({ screen, name }) => {
 
 const create = () => {
   preset.value = {}
+  onto.value = null
+  intoRail.value = false
   showCreate.value = true
 }
+
+/**
+ * Which screen the create dialog is filling in, and how it describes itself.
+ *
+ * Nearly always this one. The exception is the plus on a showcase's rail: what
+ * hangs off a record may be a different screen — a job's variations happen to
+ * be projects, but a property's inspections would not be — and a dialog drawn
+ * from this screen's spec would ask for the wrong fields entirely.
+ */
+const onto = ref(null)
+
+const createSpec = computed(() => onto.value || spec.value)
+const createScreen = computed(() => onto.value?.screen || spec.value?.screen || '')
+
+/**
+ * A new record that hangs off the one open, from the rail on its hero.
+ *
+ * The only place in the product that knows which record a new one belongs to,
+ * which is the whole reason it exists: the alternative is creating it from its
+ * own list and remembering to set the parent by hand.
+ *
+ * The parent goes in as a preset — an ordinary value in an ordinary control,
+ * which the person can still change before saving — the same way a board's New
+ * seeds the column it was pressed in.
+ */
+const addChild = async ({ screen, field, value }) => {
+  if (!screen || !field || !value) return
+  preset.value = { [field]: value }
+  intoRail.value = true
+  onto.value =
+    screen === spec.value?.screen
+      ? null
+      : await workspace.screenSpec(props.spaceCode, screen)
+  showCreate.value = true
+}
+
+// What the showcase's rail has been told to re-read. Bumped rather than
+// reloaded directly: the rail is inside two components and a number travelling
+// down as a prop is less machinery than a handle travelling up.
+const childRevision = ref(0)
+
+// Whether the dialog that is open was opened by the rail's plus. A flag rather
+// than something inferred from the preset: a board column's New sets one too,
+// and the two want opposite things when the record is made.
+const intoRail = ref(false)
 
 // New, from somewhere that already knows part of the answer. A board's column
 // header is the one today: pressing New inside "In Progress" means a record
@@ -1167,6 +1222,8 @@ const create = () => {
 // is the kind of small stupidity that makes a board not worth using.
 const newWith = (values) => {
   preset.value = values || {}
+  onto.value = null
+  intoRail.value = false
   showCreate.value = true
 }
 
@@ -1201,11 +1258,24 @@ const recordRenamed = async (name) => {
   await loadRows()
 }
 
-// A record that was just made is a record you want to be in — so the dialog
-// closes onto it rather than onto the list, which would leave the person
-// hunting for the row they created.
+/**
+ * A record that was just made is a record you want to be in — so the dialog
+ * closes onto it rather than onto the list, which would leave the person
+ * hunting for the row they created.
+ *
+ * Unless it was made from a record's own rail, and then the opposite: you were
+ * reading a job and you added a variation to it, so the job is where you still
+ * want to be. The rail re-reads itself and the new one is in it.
+ */
 const created = async (name) => {
+  const fromRail = intoRail.value
+  intoRail.value = false
+  onto.value = null
   await loadRows()
+  if (fromRail) {
+    childRevision.value += 1
+    return
+  }
   if (name) router.push({ query: { ...route.query, record: name } })
 }
 

@@ -15,6 +15,43 @@ test.beforeEach(async ({ page, baseURL }) => {
   await signIn(page, baseURL)
 })
 
+/**
+ * Open a job that has variations under it, and answer with its id.
+ *
+ * Thirteen of their eighty-two jobs have any, and the list is in `modified`
+ * order — which puts the *children* first, because the pass that linked each
+ * variation to its parent touched the child. So this scans from the far end,
+ * where the jobs nobody has touched since the first import are, and stops at
+ * the first one with cards under its photograph.
+ *
+ * Opened and closed rather than reloaded per candidate: on a showcase screen
+ * the open record takes the page, so there is no row to click while one is
+ * open — and twenty full page loads against a single-threaded dev server is a
+ * test that times out for a reason that has nothing to do with the rail.
+ */
+async function openJobWithVariations(page) {
+  await page.goto('/one/space/rua?screen=projects')
+  const missing = await page
+    .getByText('Nothing here', { exact: false })
+    .isVisible()
+    .catch(() => false)
+  test.skip(missing, 'this tenant has no ERPNext, so the space is not seeded')
+  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
+
+  const rows = page.locator('[data-slot="list-row"]')
+  const last = await rows.count()
+  for (let at = last - 1; at >= Math.max(0, last - 20); at -= 1) {
+    await rows.nth(at).scrollIntoViewIfNeeded()
+    await rows.nth(at).click()
+    await page.locator('[data-slot="showcase"]').waitFor({ timeout: 25_000 })
+    const cards = page.locator('[data-slot="showcase-child"]')
+    await cards.first().waitFor({ timeout: 4_000 }).catch(() => {})
+    if (await cards.count()) return new URL(page.url()).searchParams.get('record')
+    await page.getByRole('button', { name: 'Close the record' }).click()
+  }
+  return null
+}
+
 async function openFirstProject(page) {
   await page.goto('/one/space/rua?screen=projects')
   const missing = await page
@@ -135,6 +172,59 @@ test('the screens that point back at a project are tabs on it', async ({ page },
   expectNoRealErrors(errors)
 })
 
+test('a variation is added from the rail it will appear in', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'one viewport is enough for the rail')
+  test.setTimeout(120_000)
+  const errors = collectConsoleErrors(page)
+
+  const job = await openJobWithVariations(page)
+  test.skip(!job, 'none of the last twenty jobs on this list has a variation under it')
+
+  const rail = page.locator('[data-slot="showcase-child"]')
+  const before = await rail.count()
+
+  // The plus is in the rail's own corner. Which record a new one hangs off is
+  // known here and nowhere else — the alternative is making it from the list
+  // and remembering to set the parent by hand.
+  await page.locator('[data-slot="showcase-add-child"]').click()
+
+  const parent = await page.locator('[data-slot="showcase-title"]').first().textContent()
+  await expect(page.getByRole('dialog')).toBeVisible()
+
+  // That the parent arrives already filled in is not asserted here but below:
+  // the control holds it as an input value rather than as text, and the fact
+  // worth pinning is the consequence — the record comes out in *this* job's
+  // rail, which it cannot do unless the preset landed.
+
+  const made = `ZZ Rail probe ${Date.now()}`
+  await page.getByRole('textbox', { name: 'Project Name' }).first().fill(made)
+  await page.getByRole('button', { name: 'Create', exact: true }).click()
+
+  // Still on the job. You added a variation *to* it, so it is where you want to
+  // be — and the rail has re-read itself rather than waiting for a reload.
+  await expect
+    .poll(() => rail.count(), { timeout: 20_000 })
+    .toBe(before + 1)
+  await expect(page.locator('[data-slot="showcase-title"]').first()).toHaveText(parent)
+  expect(new URL(page.url()).searchParams.get('record')).toBe(job)
+
+  // Taken away again. A spec that leaves a record behind is a spec that makes
+  // the next one's first page longer, and eventually somebody else's fixture
+  // falls off the end of it.
+  const name = await rail
+    .filter({ hasText: made })
+    .first()
+    .getAttribute('data-name')
+  await page.request.post(`${baseURL}/api/method/oneapp.oneapp_core.spaceview.remove`, {
+    form: { space_code: 'rua', screen: 'projects', name: JSON.stringify([name]) },
+  })
+
+  expectNoRealErrors(errors)
+})
+
 test('a variation opens from the strip under the photograph', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'one viewport is enough for a card row')
   // Longer than the suite's default, because finding a job with variations
@@ -142,37 +232,9 @@ test('a variation opens from the strip under the photograph', async ({ page }, i
   test.setTimeout(120_000)
   const errors = collectConsoleErrors(page)
 
-  await page.goto('/one/space/rua?screen=projects')
-  const missing = await page
-    .getByText('Nothing here', { exact: false })
-    .isVisible()
-    .catch(() => false)
-  test.skip(missing, 'this tenant has no ERPNext, so the space is not seeded')
-  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
-
-  // Thirteen of their eighty-two jobs have variations under them, and the list
-  // is in `modified` order — which puts the *children* first, because the pass
-  // that linked each variation to its parent touched the child. So this scans
-  // from the far end, where the jobs nobody has touched since the first import
-  // are, and stops at the first one with cards under its photograph.
-  //
-  // Opened and closed rather than reloaded per candidate: on a showcase screen
-  // the open record takes the page, so there is no row to click while one is
-  // open — and twenty full page loads against a single-threaded dev server is
-  // a test that times out for a reason that has nothing to do with the card.
-  const rows = page.locator('[data-slot="list-row"]')
-  const last = await rows.count()
-  let found = null
-  for (let at = last - 1; at >= Math.max(0, last - 20) && !found; at -= 1) {
-    await rows.nth(at).scrollIntoViewIfNeeded()
-    await rows.nth(at).click()
-    await page.locator('[data-slot="showcase"]').waitFor({ timeout: 25_000 })
-    const cards = page.locator('[data-slot="showcase-child"]')
-    await cards.first().waitFor({ timeout: 4_000 }).catch(() => {})
-    if (await cards.count()) found = cards.first()
-    else await page.getByRole('button', { name: 'Close the record' }).click()
-  }
-  test.skip(!found, 'none of the last twenty jobs on this list has a variation under it')
+  const opened = await openJobWithVariations(page)
+  test.skip(!opened, 'none of the last twenty jobs on this list has a variation under it')
+  const found = page.locator('[data-slot="showcase-child"]').first()
 
   const job = await page.locator('[data-slot="showcase-title"]').first().textContent()
   const was = new URL(page.url()).searchParams.get('record')

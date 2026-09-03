@@ -382,6 +382,18 @@ licence and the actual download honest. Use it for a title somebody is meant to
 look at rather than read past. A display face used twice is a voice; used
 everywhere it is a costume.
 
+**The rail can add one.** A plus in its corner opens the ordinary create dialog
+for the child screen with the linking field already filled in — the parent as a
+preset, an ordinary value in an ordinary control that the person can change
+before saving, the same way a board's New seeds the column it was pressed in.
+Offered only where *that* screen says this person may create one, which is its
+own `can_create` and not the screen being read. Creating from here stays on the
+parent and re-reads the rail: you were reading a job and you added a variation
+to it, so the job is where you still want to be. It is also the only place that
+knows which record a new one hangs off — the alternative is making it from its
+own list and remembering to set the parent by hand, which is where every orphan
+comes from.
+
 **Nothing in it is about construction, and nothing in it is a query.** A tab
 names another screen in the same space and the field on it that points back
 here; the browser then asks that screen's own `rows` for that filter, which is

@@ -218,6 +218,30 @@
           <Icon v-if="childIcon" :name="childIcon" class="size-4 text-white/70" />
           <span class="text-p-sm font-medium text-white/70">{{ childLabel }}</span>
           <span class="text-p-sm text-white/40">{{ children.length }}</span>
+          <!--
+            Add one. In the rail's own corner, because this is the only place in
+            the product that knows which record a new one hangs off — the
+            alternative is making it from the list and remembering to set the
+            parent by hand, which is where every orphaned variation comes from.
+
+            `Button` here rather than the bare element the cards use: it is a
+            control of the ordinary size and shape, and the only thing unusual
+            about it is that it is white on a dark panel.
+          -->
+          <Button
+            v-if="canAddChild"
+            class="ms-auto !text-white hover:!bg-white/15"
+            data-slot="showcase-add-child"
+            icon="lucide-plus"
+            variant="ghost"
+            :label="`Add a ${singularChild.toLowerCase()}`"
+            :tooltip="`Add a ${singularChild.toLowerCase()}`"
+            @click="emit('add', {
+              screen: childScreen,
+              field: showcase.children.field,
+              value: record.name,
+            })"
+          />
         </div>
 
         <!--
@@ -239,6 +263,7 @@
               :key="one.name"
               type="button"
               data-slot="showcase-child"
+              :data-name="one.name"
               class="flex items-center gap-3 rounded-4 p-2 text-left transition-colors hover:bg-white/15"
               @click="emit('open', { screen: childScreen, name: one.name })"
             >
@@ -274,7 +299,7 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
-import { Icon } from '@/ui'
+import { Button, Icon } from '@/ui'
 import StateBadge from './StateBadge.vue'
 import { cellText } from '../../lib/cells'
 import { session } from '../../lib/session'
@@ -299,9 +324,16 @@ const props = defineProps({
    * from a list of exactly that.
    */
   compact: { type: Boolean, default: false },
+  /**
+   * Bumped by the host when something was added to the rail.
+   *
+   * The rail is a list this component fetched, and a record created into it
+   * from outside is a row it has no other way to hear about.
+   */
+  revision: { type: Number, default: 0 },
 })
 
-const emit = defineEmits(['open'])
+const emit = defineEmits(['open', 'add'])
 
 // How long one photograph holds before the next. Six seconds: long enough to
 // look at a building, short enough that somebody waiting sees it change.
@@ -318,6 +350,9 @@ const KEPT = 24
 
 const images = ref([])
 const children = ref([])
+// The child screen as it describes itself — its title field, its picture, and
+// whether this person may add one. Null until the rail has loaded.
+const childSpec = ref(null)
 const shown = ref(0)
 let turning = null
 
@@ -359,25 +394,47 @@ const childLabel = computed(() => props.showcase?.children?.label || 'Related')
 const childIcon = computed(() => props.showcase?.children?.icon || '')
 const childScreen = computed(() => props.showcase?.children?.screen || props.screen)
 
+// Whether this person may add one, as that screen answered it — not as this
+// screen did. A reader who may open a job and not create one gets the rail and
+// no plus, which is the same answer its own list would give them.
+const canAddChild = computed(() => !!childSpec.value?.can_create)
+
+// One of them, in the words the child screen uses. `singular` is the manifest's
+// own answer where a screen gives one — "Variation" for a label of
+// "Variations" — and the label with its s taken off where it does not, which is
+// right far more often than it is wrong.
+const singularChild = computed(
+  () => childSpec.value?.singular || childLabel.value.replace(/s$/i, ''),
+)
+
 /** The photographs, and what hangs off this record. */
-const load = async () => {
+/**
+ * The photographs. Keyed on which record this is and nothing else.
+ *
+ * Separate from the children below, and that separation is the point: adding a
+ * variation reloads the rail, and if the two shared a loader it would blank the
+ * hero and fetch the same three photographs again to do it.
+ */
+const loadImages = async () => {
   images.value = []
-  children.value = []
   shown.value = 0
-  if (!props.record?.name) return
+  if (!props.record?.name || !props.showcase?.images) return
 
   // Newest last, so a job reads in the order it was built rather than in the
   // order somebody uploaded the folder.
-  if (props.showcase?.images) {
-    const found = await workspace.attachments(props.spaceCode, props.screen, props.record.name)
-    images.value = (found?.files || [])
-      .filter((one) => /\.(png|jpe?g|webp|gif|avif)$/i.test(one.file_name || ''))
-      .slice(0, MOST)
-      .reverse()
-  }
+  const found = await workspace.attachments(props.spaceCode, props.screen, props.record.name)
+  images.value = (found?.files || [])
+    .filter((one) => /\.(png|jpe?g|webp|gif|avif)$/i.test(one.file_name || ''))
+    .slice(0, MOST)
+    .reverse()
+}
 
+/** What hangs off this record, and what a row of it looks like. */
+const loadChildren = async () => {
+  children.value = []
+  childSpec.value = null
   const asked = props.showcase?.children
-  if (!asked?.screen || !asked?.field) return
+  if (!props.record?.name || !asked?.screen || !asked?.field) return
 
   // The ordinary list endpoint with a narrowing filter. Which is the whole
   // point of declaring this as a screen and a field rather than as a query:
@@ -385,9 +442,10 @@ const load = async () => {
   // list checks them.
   //
   // The other screen's spec beside it, because a card here says what a row of
-  // *that* screen says — its title field and its picture. Reading them off this
-  // screen's spec is right only while a record's children are the same doctype
-  // as the record, which is true of a variation order and of nothing else.
+  // *that* screen says — its title field, its picture, and whether this person
+  // may add one. Reading them off this screen's spec is right only while a
+  // record's children are the same doctype as the record, which is true of a
+  // variation order and of nothing else.
   const [spec, found] = await Promise.all([
     workspace.screenSpec(props.spaceCode, asked.screen),
     workspace.screenRows(
@@ -399,6 +457,7 @@ const load = async () => {
     ),
   ])
 
+  childSpec.value = spec || null
   const rows = found?.rows || []
   const titleField = spec?.title_field || 'name'
   const imageField = spec?.image_field || ''
@@ -433,9 +492,17 @@ const turn = () => {
 watch(images, turn)
 watch(
   () => [props.record?.name, props.showcase],
-  () => load(),
+  () => {
+    loadImages()
+    loadChildren()
+  },
   { immediate: true },
 )
+
+// And the rail on its own, when the host says something was added to it. A
+// number rather than a signal, because "it changed" is all this needs to know
+// and a number is the smallest thing that can say it.
+watch(() => props.revision, loadChildren)
 
 onBeforeUnmount(() => clearInterval(turning))
 </script>

@@ -152,7 +152,9 @@
         :showcase="showcase"
         :title="identity.label"
         :compact="drawer"
+        :revision="revision"
         @open="emit('open', $event)"
+        @add="emit('add', $event)"
       />
 
       <Tabs v-model="tab">
@@ -372,9 +374,14 @@ const props = defineProps({
    * record is underneath it.
    */
   surface: { type: String, default: PANE },
+  /**
+   * Bumped by the host when something was added to the showcase's rail, so the
+   * rail re-reads itself. Passed through; nothing here reads it.
+   */
+  revision: { type: Number, default: 0 },
 })
 const emit = defineEmits([
-  'saved', 'close', 'reload', 'renamed', 'open', 'surface', 'expand',
+  'saved', 'close', 'reload', 'renamed', 'open', 'surface', 'expand', 'add',
 ])
 
 const drawer = computed(() => props.surface === DRAWER)
