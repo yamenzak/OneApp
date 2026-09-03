@@ -330,7 +330,7 @@ Four tabs:
 
 | | |
 |---|---|
-| **Details** | The doctype's own form. Tab, Section and Column Breaks read the way the desk reads them, collapsing below the breakpoint. |
+| **Details** | The doctype's own form. Tab, Section and Column Breaks read the way the desk reads them, collapsing below the breakpoint. Its tabs are a **pill track**, not a second underlined strip: the two sit an inch apart and both open with the word Details, and drawn alike they read as one strip split in half. They are not siblings — the record's strip moves between the record and everything filed against it, the form's moves inside one of those. |
 | **Activity** | One timeline: what was said, what changed, and when it started, newest first. Merged in the browser from two queries; every entry carries a glyph from a closed set, because a column of identical avatars makes a comment and a field change look alike. |
 | **Files** | Frappe's own File rows, so an Attach field's file and a dropped file are one list. |
 | **Meta** | The desk's sidebar: the face and name, then the four things you do to a record *about other people* — assign, attach, tag, share — then who made it and when, then its id. The only place assignment is offered; it was in the header too, which made it one control in two places. |
