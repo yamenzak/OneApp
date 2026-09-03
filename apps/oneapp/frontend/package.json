@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "e2e": "playwright test",
-    "e2e:fast": "ONEAPP_E2E_WORKERS=4 playwright test --project=desktop"
+    "e2e:fast": "ONEAPP_E2E_WORKERS=4 playwright test --project=desktop",
+    "shot": "node shot.mjs"
   },
   "dependencies": {
     "frappe-ui": "^1.0.0-beta.55",

@@ -19,6 +19,38 @@ I am the only person reading this and I already know what we are building.
 Long form goes in commit messages, `docs/` and code comments. `/bro` means it
 did not land — re-explain it simply.
 
+## How fast a change should be
+
+A one-line change should cost seconds, not a coffee. When it does not, it is
+almost always one of these four, in this order of how much they cost:
+
+* **Waiting on a background task by asking whether it is done.** Every check is
+  a full round trip, and forty of them cost more than the thing being waited
+  for. Start it in the background and *stop* — the harness sends a notification
+  when it exits. Never poll a loop that greps for its own command line either:
+  `pgrep -f "vite build"` matches the shell running the `pgrep`.
+* **Running the whole browser suite for a change that touched three files.**
+  `yarn e2e` is nine and a half minutes and it is a pre-commit gate, not a
+  feedback loop. While iterating run the specs you are changing:
+  `npx playwright test theme.spec.js --project=desktop`, which is seconds.
+* **Building to look at something.** `scripts/dev.sh watch oneapp &` once, and
+  every edit is rebuilt into `public/frontend` — thirteen seconds against
+  twenty-two for a cold `vite build`, and no step to remember. Only pay it when
+  frontend source actually changed; a manifest or a Python edit does not.
+* **Writing a Playwright script to take a screenshot.** There is a command:
+  `cd apps/oneapp/frontend && yarn shot '/one/space/rua?screen=projects'`.
+  About four seconds, and `--wait=SELECTOR` is the flag worth knowing.
+
+The loop, then: `dev.sh watch` in the background, edit, `yarn shot`, look. For a
+manifest, a screen or a theme, `dev.sh seed --manifest` between the edit and the
+look — one second rather than the full fixture's three.
+
+Two things that are **not** the problem, measured rather than assumed: the
+fixture (`dev.sh seed` is three seconds end to end) and the seeder's sweeps. And
+one that cannot be fixed by trying harder: this box has four cores and the web
+server is one GIL-bound Python process, so four Playwright workers buy about
+1.4x, not 4x. Parallelism is not where the time is.
+
 ## Where things are
 
 * **`docs/ONESPACE.md`** — the product. Spaces, screens, the four view bodies,

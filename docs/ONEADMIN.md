@@ -667,9 +667,12 @@ every site on the bench.
 ```bash
 scripts/dev.sh up          # MariaDB, Redis, the site on :8000
 scripts/dev.sh worker      # a background worker, for anything that enqueues
-scripts/dev.sh spa         # Vite dev server, hot reload
+scripts/dev.sh watch APP   # rebuild the bundle into public/ as you edit it
+scripts/dev.sh spa APP     # Vite dev server on its own port, hot reload
+scripts/dev.sh seed        # the dev fixture (--manifest for the fast half)
 scripts/dev.sh migrate     # after adding a doctype
 scripts/dev.sh shell       # a REPL bound to the site
+scripts/dev.sh run F [ARG] # a Python file against the site
 scripts/dev.sh down
 ```
 
@@ -685,6 +688,35 @@ needed** — every erpnext import is deferred and gated, and the hard requiremen
 only real effect was that OneSpace could not run on a development bench, which
 is why it went so long without being opened in a browser.
 
+### The loop
+
+Leave this running once, and a change costs seconds:
+
+```bash
+scripts/dev.sh watch oneapp &                 # rebuilds into public/ as you edit (~13s)
+cd apps/oneapp/frontend
+yarn shot '/one/space/rua?screen=projects' rua.png --wait='[data-slot="list-row"]'
+```
+
+`yarn shot` signs in through the same `e2e/auth.js` every spec uses, drives the
+app to a path, and writes a PNG — about four seconds. `--wait=SELECTOR` waits
+for the thing you are actually looking at rather than for the network to go
+quiet, `--phone` uses the suite's phone viewport, `--full` is the whole page.
+It exists because the alternative was twenty lines of Playwright written from
+scratch each time somebody wanted to see a screen, and got slightly wrong each
+time.
+
+For a manifest, a screen or a theme, put `scripts/dev.sh seed --manifest`
+between the edit and the look. It re-declares the spaces, their roles and their
+permissions and stops — a second, against three for the whole fixture. The two
+halves are *what a space is* and *what is in it*; only a browser pass needs the
+second, because only a browser pass dirties it.
+
+What actually costs time here, in order: waiting on a background job by asking
+whether it has finished yet, running all 260 browser tests for a three-file
+change, and a cold `vite build` to look at one screen. None of them is the
+stack being slow. The fixture is three seconds; the box has four cores.
+
 ### Four things that cost an hour each, once
 
 * **`up` runs Werkzeug without the reloader**, so a Python edit is *not* live on
@@ -698,7 +730,13 @@ is why it went so long without being opened in a browser.
   most recently owns realtime. The symptom is the realtime specs failing alone,
   with no error anywhere.
 * **`yarn build` before a Playwright pass.** The browser suite runs the built
-  bundle, not Vite.
+  bundle, not Vite. Leave `scripts/dev.sh watch oneapp` running in the
+  background and this stops being a step: an edit is rebuilt into
+  `public/frontend` in about thirteen seconds against twenty-two cold, and
+  everything that reads the site — a spec, a screenshot, curl, a browser —
+  sees it at the same URL with the same session. Thirteen and not one:
+  `vite build --watch` re-bundles rather than hot-swapping, so it saves the
+  cold start and nothing else.
 
 ### The test suites
 
@@ -706,13 +744,29 @@ is why it went so long without being opened in a browser.
 verification, slug rules, retry backoff, filter shaping, every guard. It runs on
 every push and needs no bench.
 
-`npx playwright test` is ~110 browser tests against a real site (OneSpace's
+`npx playwright test` is ~260 browser tests against a real site (OneSpace's
 suite; OneAdmin has one spec, because its screens are the same engine), at
 desktop and phone widths — because the bugs worth catching here, an empty list
 or a dialog that will not open or a panel a third of which is off-screen, all
-render without throwing. It is serialised on purpose: every spec drives the same seeded
-space, and four workers finish in 2.6 minutes with two specs failing on data
-another worker changed. The real fix is a seeded space per worker.
+render without throwing. It is nine and a half minutes, and it is a pre-commit
+gate rather than a feedback loop: while iterating, run the specs you are
+changing (`npx playwright test theme.spec.js --project=desktop`), which is
+seconds.
+
+It is serialised, and the reason is worth writing down because it looks like a
+setting somebody forgot to change. Two things are true at once. Every spec
+drives the *same* seeded space and several write the same record, so at four
+workers six specs fail on data another worker moved — `child-table`, `follow`,
+`import`, `realtime`, `record-surface` and `space`, which is a suite that is
+faster and no longer tells the truth. And the speed is not there anyway: this
+machine has four cores and the web server is one GIL-bound Python process, so
+four workers return about 1.4x, not 4x. Measured, not assumed — 24 concurrent
+API calls plateau at 1.9x by two-way concurrency and gain nothing after.
+
+So the fix is not a config change, and it is not `workers: 4`. It is a seeded
+space per worker keyed on `parallelIndex`, and even that buys under 2x here.
+Parallelism is not where the time is; the time is in running the whole suite
+when three specs would have done.
 
 The guards are the point of the suite, not a side effect. They exist because
 each one caught something that had already shipped: a manifest naming a doctype

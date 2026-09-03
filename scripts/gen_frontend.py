@@ -297,6 +297,9 @@ def package_json(app: str, spec: dict) -> str:
                 "e2e:fast": (
                     "ONEAPP_E2E_WORKERS=4 playwright test --project=desktop"
                 ),
+                # Look at a screen without writing a script to look at it.
+                # See the header of shot.mjs.
+                "shot": "node shot.mjs",
             },
             "dependencies": DEPENDENCIES,
             "devDependencies": DEV_DEPENDENCIES,
@@ -2450,21 +2453,29 @@ const launchOptions = { executablePath: CHROMIUM }
 
 export default defineConfig({
   testDir: './e2e',
-  // One worker: these drive a single shared site, and parallel logins race on
-  // the same session.
-  // One worker, and it is the fixture rather than the browser that decides.
-  // Every spec drives one seeded space on one site, and several of them write
-  // to the same record — a comment count, an assignment, a rename. Four
-  // workers finish in a little over half the time and two specs fail on data
-  // another worker changed underneath them, which is a suite that is faster
-  // and no longer tells the truth.
+  // One worker, for two reasons that are easy to mistake for one.
   //
-  // Making it safely parallel means a seeded space per worker, keyed on
-  // `parallelIndex`. That is worth doing and it is not a config change.
+  // The first is correctness. Every spec drives the *same* seeded space and
+  // several write the same record — a comment count, an assignment, a rename,
+  // a heart. At four workers six specs fail on data another worker moved:
+  // child-table, follow, import, realtime, record-surface and space. That is a
+  // suite that is faster and no longer tells the truth.
   //
-  // Meanwhile: `yarn e2e:fast` is the loop to develop against — one project,
-  // four workers, for the specs you are working on. Run `yarn e2e` before a
-  // commit.
+  // The second is that the speed is not there anyway. This machine has four
+  // cores and the site is one GIL-bound Python process, so the browsers and
+  // the server contend for the same four. Measured rather than assumed: the
+  // desktop project is 3.5 minutes at four workers against about 4.75 at one,
+  // and concurrent API calls plateau at 1.9x by two-way concurrency.
+  //
+  // So the honest fix is a seeded space per worker keyed on `parallelIndex`,
+  // and even that returns under 2x here. It is not a config change and it is
+  // not the biggest win available — that one is not running all 260 of these
+  // for a change that touched three files.
+  //
+  // While iterating, run the specs you are changing:
+  //   npx playwright test theme.spec.js --project=desktop
+  // `yarn e2e:fast` is the same idea with the parallelism turned up, for a
+  // handful of read-only specs. `yarn e2e` before a commit.
   workers: Number(process.env.ONEAPP_E2E_WORKERS || 1),
   reporter: [['list']],
   // Retried once, and only the retry is traced. `retain-on-failure` records
@@ -2491,6 +2502,116 @@ export default defineConfig({
   ],
 })
 """ % {"site": spec["site"], "port": spec["port"]}
+
+
+SHOT_MJS = BANNER + r"""
+/**
+ * One screen, as a PNG. `yarn shot <path> [file.png]`.
+ *
+ * Looking at a change is the shortest question you can ask this product, and it
+ * used to be one of the most expensive: sign in, drive the app to the screen,
+ * wait for the rows, screenshot — twenty lines written from scratch every time
+ * somebody wanted to see something, and got slightly wrong every time. The
+ * login form rather than the endpoint. A fixed sleep rather than a wait. A
+ * browser Playwright then tried to download.
+ *
+ *   yarn shot '/one/space/rua?screen=projects'
+ *   yarn shot '/one/space/rua?screen=projects' rua.png --phone
+ *   yarn shot '/one/space/rua?screen=projects' --wait='[data-slot="list-row"]'
+ *
+ * `--wait` is the flag worth knowing: a selector to wait for before the
+ * shutter. Without one this waits for the network to go quiet, which is right
+ * for most screens and wrong for any that keeps a socket open. Give it the
+ * thing you are actually looking at.
+ *
+ * The rest: `--phone` for the suite's phone viewport, `--full` for the whole
+ * scrollable page, `--retina` when the detail is the point, `--settle=MS` for
+ * an animation this does not know about.
+ *
+ * Nothing here builds. `scripts/dev.sh watch` keeps the bundle current, so the
+ * loop is edit, look — not edit, build, look.
+ */
+import { chromium } from '@playwright/test'
+import { signIn } from './e2e/auth.js'
+// The site, and the browser to open it with, read from the suite's own config
+// rather than restated here. Both are things this environment gets wrong in a
+// way that wastes an afternoon — the image ships one Chromium build and the
+// runner expects another — and having the answer in two places is how one of
+// them goes stale without anybody noticing.
+import config from './playwright.config.js'
+
+const args = process.argv.slice(2)
+const flag = (name, fallback) => {
+  const found = args.find((one) => one.startsWith(`--${name}=`))
+  return found === undefined ? fallback : found.slice(name.length + 3)
+}
+const has = (name) => args.includes(`--${name}`)
+const positional = args.filter((one) => !one.startsWith('--'))
+
+const path = positional[0]
+if (!path) {
+  console.error(
+    'usage: yarn shot <path> [out.png] ' +
+      '[--wait=SELECTOR] [--phone] [--full] [--retina] [--settle=MS]',
+  )
+  process.exit(1)
+}
+const out = positional[1] || 'shot.png'
+const base = process.env.ONEAPP_BASE_URL || config.use.baseURL
+
+// The project whose viewport this is, so what you look at is what the tests
+// look at rather than a size chosen here.
+const named = has('phone') ? 'mobile' : 'desktop'
+const project = config.projects.find((one) => one.name === named) || config.projects[0]
+const viewport = flag('width')
+  ? { width: Number(flag('width')), height: Number(flag('height', 900)) }
+  : project.use.viewport
+
+const browser = await chromium.launch(project.use.launchOptions)
+const context = await browser.newContext({
+  viewport,
+  // 1x by default: these get looked at and sent around, and a retina PNG is
+  // four times the bytes for something somebody will glance at.
+  deviceScaleFactor: has('retina') ? 2 : 1,
+})
+const page = await context.newPage()
+
+// Said out loud afterwards, because a screenshot of a broken screen is not
+// obviously a screenshot of a broken screen — it is usually just empty.
+const complaints = []
+page.on('pageerror', (e) => complaints.push(String(e)))
+page.on('response', (r) => {
+  if (r.status() >= 400) complaints.push(`${r.status()} ${r.url()}`)
+})
+
+try {
+  await signIn(page, base)
+  await page.goto(base + path)
+  const wait = flag('wait')
+  if (wait) await page.locator(wait).first().waitFor({ timeout: 40_000 })
+  else await page.waitForLoadState('networkidle').catch(() => {})
+  // A beat for the last transition to land. Short, because `--wait` is the
+  // right answer whenever it actually matters.
+  await page.waitForTimeout(Number(flag('settle', 600)))
+  await page.screenshot({ path: out, fullPage: has('full') })
+  console.log(out)
+  if (complaints.length) {
+    console.log('---')
+    for (const one of [...new Set(complaints)].slice(0, 10)) console.log(one)
+  }
+} finally {
+  await browser.close()
+}
+"""
+
+
+def shot_mjs(app: str, spec: dict) -> str:
+    """`yarn shot` for this bundle.
+
+    Takes no substitution: the site and the browser come from
+    `playwright.config.js`, which this bundle also generates.
+    """
+    return SHOT_MJS
 
 
 E2E_AUTH_JS = BANNER + r"""
@@ -2963,6 +3084,7 @@ FILES = {
     "src/lib/brand.js": lambda app, spec: BRAND_JS,
     "playwright.config.js": playwright_config,
     "e2e/auth.js": lambda app, spec: E2E_AUTH_JS,
+    "shot.mjs": shot_mjs,
 }
 
 # What a bundle needs only if it renders the shell: a rail, a bottom bar, an

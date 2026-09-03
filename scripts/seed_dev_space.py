@@ -685,21 +685,40 @@ def seed_control():
 	print(f"control plane: {CODE} with {len(SCREENS)} screens")
 
 
-def seed_tenant():
+def seed_tenant(manifest_only=False):
 	"""The tenant's cached copy, plus records to look at.
 
 	A dev site is not linked to a control plane, so the cache is written here
 	directly — the same shape `sync_from_control_plane` would have written.
+
+	`manifest_only` writes the first half and stops. The two halves are not an
+	arbitrary split: the first is *what a space is* — its screens, its theme,
+	the doctypes its role may touch — and the second is *what is in it*, plus
+	the sweeps that put a fixture back the way a browser pass found it.
+
+	Editing a manifest is the loop this exists for, and it is the loop that was
+	paying for the other half. A screen declaration, a `view_settings`, a theme
+	— none of them can be looked at without the cache being rewritten, and none
+	of them care whether the fixture has thirteen ToDos or fourteen. Records
+	are created idempotently and swept only after something has dirtied them,
+	so skipping both is not a shortcut past correctness: it is not doing work
+	whose answer has not changed.
+
+	Run the whole thing before a browser pass; run this while iterating.
 	"""
 	from oneapp.oneapp_core import sync
 
-	# Before the manifest is cached: the screen names a doctype, and a screen
-	# over a doctype the site does not have is skipped rather than fatal — so
-	# seeding in the other order leaves an Approvals item that quietly is not
-	# there.
-	approvals = _seed_approvals()
-	_seed_registers()
-	_seed_import()
+	approvals = 0
+	if not manifest_only:
+		# Before the manifest is cached: the screen names a doctype, and a
+		# screen over a doctype the site does not have is skipped rather than
+		# fatal — so seeding in the other order leaves an Approvals item that
+		# quietly is not there. In `manifest_only` the doctype is already
+		# there from the last full run, which is the assumption the whole mode
+		# rests on.
+		approvals = _seed_approvals()
+		_seed_registers()
+		_seed_import()
 
 	state = frappe.get_single("OneSpace Site State")
 	spaces = [
@@ -754,6 +773,14 @@ def seed_tenant():
 	if ROLE not in {r.role for r in colleague.roles}:
 		colleague.append("roles", {"role": ROLE})
 		colleague.save(ignore_permissions=True)
+
+	if manifest_only:
+		# The same last-call-wins reason the full run ends with one: everything
+		# above reads the site state, and any one of those reads repopulates
+		# the cache from a document this process had already loaded.
+		sync.invalidate()
+		print(f"tenant: {CODE} and rua re-declared — manifest, roles and permissions only")
+		return
 
 	for role in RETIRED_ROLES:
 		if not frappe.db.exists("Role", role):
@@ -995,11 +1022,21 @@ def seed_tenant():
 
 
 if __name__ == "__main__":
+	import sys
+
+	# `--manifest` is the iteration loop: re-declare the space and stop, which
+	# is everything a screen, a `view_settings` or a theme edit needs and about
+	# a tenth of the work. The full run is what a browser pass wants, because
+	# only the full run sweeps up after the last one.
+	manifest_only = "--manifest" in sys.argv[1:]
+
 	# Which site this is, by what it has: only the control plane defines the
 	# manifest doctype, and only a tenant has the cached copy.
 	if frappe.db.exists("DocType", "OneSpace Space"):
+		# The control plane *is* the manifest, so there is no half of it to
+		# skip and the flag is simply not its business.
 		seed_control()
 	elif frappe.db.exists("DocType", "OneSpace Site State"):
-		seed_tenant()
+		seed_tenant(manifest_only=manifest_only)
 	else:
 		raise SystemExit("neither a control-plane nor a tenant site")

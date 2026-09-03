@@ -53,8 +53,10 @@ bench --site tenant.localhost  install-app oneapp
 bench --site control.localhost install-app oneapp_control
 ```
 
-Then `scripts/dev.sh up` — the loop, and the four things that cost an hour each,
-are in `docs/ONEADMIN.md`.
+Then `scripts/dev.sh up`. The loop is `scripts/dev.sh watch oneapp &` in the
+background and `yarn shot '<path>'` to look at a screen — a few seconds each,
+no build step. That, and the four things that cost an hour each, are in
+`docs/ONEADMIN.md`.
 
 ## Mirrors, first time only
 

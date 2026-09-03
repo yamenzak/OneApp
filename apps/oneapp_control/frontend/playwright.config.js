@@ -19,21 +19,29 @@ const launchOptions = { executablePath: CHROMIUM }
 
 export default defineConfig({
   testDir: './e2e',
-  // One worker: these drive a single shared site, and parallel logins race on
-  // the same session.
-  // One worker, and it is the fixture rather than the browser that decides.
-  // Every spec drives one seeded space on one site, and several of them write
-  // to the same record — a comment count, an assignment, a rename. Four
-  // workers finish in a little over half the time and two specs fail on data
-  // another worker changed underneath them, which is a suite that is faster
-  // and no longer tells the truth.
+  // One worker, for two reasons that are easy to mistake for one.
   //
-  // Making it safely parallel means a seeded space per worker, keyed on
-  // `parallelIndex`. That is worth doing and it is not a config change.
+  // The first is correctness. Every spec drives the *same* seeded space and
+  // several write the same record — a comment count, an assignment, a rename,
+  // a heart. At four workers six specs fail on data another worker moved:
+  // child-table, follow, import, realtime, record-surface and space. That is a
+  // suite that is faster and no longer tells the truth.
   //
-  // Meanwhile: `yarn e2e:fast` is the loop to develop against — one project,
-  // four workers, for the specs you are working on. Run `yarn e2e` before a
-  // commit.
+  // The second is that the speed is not there anyway. This machine has four
+  // cores and the site is one GIL-bound Python process, so the browsers and
+  // the server contend for the same four. Measured rather than assumed: the
+  // desktop project is 3.5 minutes at four workers against about 4.75 at one,
+  // and concurrent API calls plateau at 1.9x by two-way concurrency.
+  //
+  // So the honest fix is a seeded space per worker keyed on `parallelIndex`,
+  // and even that returns under 2x here. It is not a config change and it is
+  // not the biggest win available — that one is not running all 260 of these
+  // for a change that touched three files.
+  //
+  // While iterating, run the specs you are changing:
+  //   npx playwright test theme.spec.js --project=desktop
+  // `yarn e2e:fast` is the same idea with the parallelism turned up, for a
+  // handful of read-only specs. `yarn e2e` before a commit.
   workers: Number(process.env.ONEAPP_E2E_WORKERS || 1),
   reporter: [['list']],
   // Retried once, and only the retry is traced. `retain-on-failure` records

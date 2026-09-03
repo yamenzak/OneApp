@@ -10,9 +10,11 @@
 #
 #   scripts/dev.sh up        start MariaDB, Redis and the Frappe web server
 #   scripts/dev.sh worker    a background worker, for anything that enqueues
-#   scripts/dev.sh spa       Vite dev server for the admin SPA (hot reload)
+#   scripts/dev.sh spa       Vite dev server for an SPA (hot reload, own port)
+#   scripts/dev.sh watch     rebuild an SPA into public/ as you edit it
 #   scripts/dev.sh shell     a Python REPL bound to the site
 #   scripts/dev.sh run FILE  execute a Python file against the site
+#   scripts/dev.sh seed      the dev fixture (--manifest for the fast half)
 #   scripts/dev.sh down      stop the web server
 #
 # There are two SPAs and therefore two sites. ONEAPP_SITE and ONEAPP_PORT pick
@@ -190,6 +192,28 @@ start_worker(queue='${2:-default}')
     exec npx vite --host
     ;;
 
+  watch)
+    # The bundle, rebuilt into the app's public/ as you edit it.
+    #
+    # Thirteen seconds per rebuild against twenty-two for a cold `vite build`,
+    # measured. Not the second-or-two an HMR server gives: `vite build --watch`
+    # is Rollup re-bundling, so it walks the whole graph again and only saves
+    # the cold start. It is still the right tool here, because it writes to the
+    # same `public/frontend` the bench already serves — so a screenshot, a spec
+    # and curl all see the change at the same URL, with the same session.
+    #
+    # `spa` above is the sub-second loop and does not currently reach the
+    # OneSpace site: frappe-ui's plugin finds the bench through
+    # `common_site_config.json` relative to the frontend, and this repo is
+    # symlinked *into* the bench rather than sitting under it, so it falls back
+    # to port 8000 and proxies to the wrong site. Worth fixing; not fixed.
+    #
+    #   scripts/dev.sh watch oneapp     &   # once, in the background
+    #   cd apps/oneapp/frontend && yarn shot '/one/space/rua'
+    cd "$(dirname "$0")/../apps/${2:-oneapp}/frontend"
+    exec npx vite build --watch
+    ;;
+
   shell)
     require_bench
     services
@@ -202,18 +226,25 @@ print('Bound to $SITE. frappe.db is live; nothing commits until frappe.db.commit
     ;;
 
   run)
-    [ -n "${2:-}" ] || { echo "usage: dev.sh run FILE" >&2; exit 1; }
+    [ -n "${2:-}" ] || { echo "usage: dev.sh run FILE [ARG...]" >&2; exit 1; }
     # Resolved before require_bench, which cds to the sites directory: a
     # relative path handed in from the repo would otherwise not exist by the
     # time python opens it, and the error names the file rather than the cd.
     script="$(cd "$(dirname "$2")" && pwd)/$(basename "$2")"
     require_bench
     services
-    "$PY" - "$sites_path" "$SITE" "$script" <<'PYEOF'
+    # Anything after the file is the script's own, and it arrives as the
+    # script's `sys.argv` rather than as this wrapper's. Without that a script
+    # reading a flag sees `["-", sites_path, site, path]` — every flag it looks
+    # for missing, and every one it does not look for possibly present.
+    "$PY" - "$sites_path" "$SITE" "$script" "${@:3}" <<'PYEOF'
 import sys
 import frappe
 
 sites_path, site, path = sys.argv[1], sys.argv[2], sys.argv[3]
+# argv[0] is the script, as it would be if python had been handed the file, so
+# `sys.argv[1:]` inside it means what it means everywhere else.
+sys.argv = [path, *sys.argv[4:]]
 frappe.init(site=site, sites_path=sites_path)
 frappe.connect()
 try:
@@ -224,6 +255,20 @@ finally:
     frappe.db.commit()
     frappe.destroy()
 PYEOF
+    ;;
+
+  seed)
+    # The fixture, by name rather than by path — it is run often enough that
+    # remembering where it lives is friction nobody needs.
+    #
+    #   dev.sh seed              everything, and sweep up after the last pass
+    #   dev.sh seed --manifest   re-declare the spaces, and stop
+    #
+    # The second is the one to reach for while iterating on a screen or a
+    # theme: it writes the half a manifest edit changes and skips the half it
+    # does not, which is seconds rather than minutes. Run the full one before
+    # a browser pass, because only the full one sweeps up after the last.
+    exec "$0" run "$(dirname "$0")/seed_dev_space.py" "${@:2}"
     ;;
 
   build)

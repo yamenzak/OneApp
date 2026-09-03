@@ -29,9 +29,14 @@ dump.rdb
 # Playwright output.
 apps/*/frontend/test-results/
 
-# Throwaway scripts that drive a browser against the dev site — a screenshot to
-# look at, a request counter, a probe. They belong beside the frontend because
-# that is where Playwright's node_modules is, and nowhere near a commit: one
-# rode in on a `git add -A` and had to be taken out again the next commit.
+# Throwaway scripts that drive a browser against the dev site — a request
+# counter, a probe. They belong beside the frontend because that is where
+# Playwright's node_modules is, and nowhere near a commit: one rode in on a
+# `git add -A` and had to be taken out again the next commit.
+#
+# `shot.mjs` is the exception and is the reason there are fewer of these: the
+# most common throwaway by far was "take a screenshot of this screen", written
+# from scratch every time. It is generated now, so it is committed.
 apps/*/frontend/*.mjs
+!apps/*/frontend/shot.mjs
 apps/*/frontend/playwright-report/
