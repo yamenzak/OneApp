@@ -949,6 +949,20 @@ def seed_tenant():
 		# as a cache, and refreshing it must not move `modified`.
 		frappe.db.sql(f"update `tab{doctype}` set `_comments` = '[]'")
 
+	# And the hearts, for the same reason one step further on. Several specs
+	# press one and press it again to put it back; a run that fails between the
+	# two leaves the record favourited, and the next run's first attempt then
+	# looks for "Add to favourites" on a control that now says "Remove from
+	# favourites". It fails, retries, and the retry passes because the retry
+	# toggled it — which reads as flakiness and is bookkeeping. Ten of those in
+	# one pass is what sent me looking.
+	#
+	# `_liked_by` is a cache column beside the document like `_comments`, so it
+	# is written the same way and must not move `modified` either.
+	for doctype in ("ToDo", "Note", "Event", "Contact"):
+		if frappe.db.exists("DocType", doctype):
+			frappe.db.sql(f"update `tab{doctype}` set `_liked_by` = NULL")
+
 	for layout in LAYOUTS:
 		where = {"space_code": CODE, "screen": layout["screen"], "label": layout["label"]}
 		found = frappe.db.exists("OneSpace Saved View", where)
