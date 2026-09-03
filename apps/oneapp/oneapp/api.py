@@ -58,13 +58,37 @@ def session():
 
 
 def number_formats() -> dict:
+	"""How many decimals a number gets, and where the separators go.
+
+	`float_precision` and `currency_precision` are two different settings about
+	two different things, and this used to read the first when the second was
+	unset. It is not a fallback Frappe makes: money follows the *number format*
+	— `#,###.##` is two places — and `currency_precision` overrides that where
+	somebody set it. `float_precision` is for Float fields and nothing else.
+
+	The symptom was every money column in the product reading `1,115,646.000`,
+	which is a contract value with a thousandth of a dirham on the end. Frappe's
+	own desk showed the same figure as `1,115,646.00` on the same site.
+	"""
+	from frappe.utils.number_format import NumberFormat
+
 	settings = frappe.get_cached_doc("System Settings")
+	format_string = settings.number_format or "#,###.##"
+	try:
+		shape = NumberFormat.from_string(format_string)
+	except KeyError:
+		# A format Frappe does not know is a setting nobody can have chosen
+		# through the UI. Two places, which is what every format it ships but
+		# one uses.
+		shape = NumberFormat.from_string("#,###.##")
+
 	return {
 		"float_precision": int(settings.float_precision or 3),
-		# Frappe leaves this unset to mean "follow the float precision", which
-		# is a different thing from zero decimal places.
-		"currency_precision": int(settings.currency_precision or 0)
-		or int(settings.float_precision or 3),
+		"currency_precision": int(settings.currency_precision or 0) or shape.precision,
+		# Sent so the browser can group the thousands the way this site does.
+		# Read by nothing yet; declared because the two above are meaningless
+		# without knowing which separator each one is.
+		"number_format": shape.string,
 	}
 
 

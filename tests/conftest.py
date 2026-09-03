@@ -279,6 +279,37 @@ def _make_frappe():
 		r'data-id="([^"]+)"', str(txt or "")
 	)
 
+	# `frappe.utils.number_format`. Frappe's own table of what each number
+	# format means — `#,###.##` is two decimals, a dot and a comma — with the
+	# three formats a UAE site could plausibly be on. Real values, because the
+	# thing being tested is that money follows this table and not the float
+	# precision, and a made-up table would prove neither.
+	number_format = types.ModuleType("frappe.utils.number_format")
+
+	class NumberFormat:
+		def __init__(self, precision, decimal_separator, thousands_separator, string):
+			self.precision = precision
+			self.decimal_separator = decimal_separator
+			self.thousands_separator = thousands_separator
+			self.string = string
+
+		@classmethod
+		def from_string(cls, said):
+			decimal, thousands, precision = number_format.NUMBER_FORMAT_MAP[said]
+			return cls(precision, decimal, thousands, said)
+
+	number_format.NUMBER_FORMAT_MAP = {
+		"#,###.##": (".", ",", 2),
+		"#.###,##": (",", ".", 2),
+		"# ###.##": (".", " ", 2),
+		"#,##,###.##": (".", ",", 2),
+		"#,###.###": (".", ",", 3),
+		"#,###": ("", ",", 0),
+		"#.###": ("", ".", 0),
+	}
+	number_format.NumberFormat = NumberFormat
+	utils.number_format = number_format
+
 	# `frappe.model.workflow`. The whole workflow engine is the framework's —
 	# `apply_workflow` finds the transition, refuses a self-approval, writes the
 	# state, runs the tasks and calls save/submit/cancel — so what a stub needs
@@ -297,6 +328,7 @@ def _make_frappe():
 
 	return frappe, model, document, utils, (
 		desk, desk_doctype, log_pkg, log, desk_notifications, workflow,
+		number_format,
 	)
 
 

@@ -474,52 +474,75 @@ def test_no_spa_sends_anyone_into_the_desk(src):
 # one field: General availability puts a row in every customer's launcher.
 # --------------------------------------------------------------------------- #
 
-INSTALL = CONTROL / "install.py"
+SPACES = CONTROL / "spaces"
 
 
-def _seed_specs() -> list[dict]:
+def _shipped() -> list[dict]:
+	"""Every space this repository ships, read out of its module.
+
+	Read rather than imported, because the modules are declarations and this
+	question does not need a Frappe.
+	"""
 	import ast as _ast
 
-	source = INSTALL.read_text()
-	tree = _ast.parse(source)
-	for node in _ast.walk(tree):
-		if isinstance(node, _ast.Assign) and getattr(node.targets[0], "id", "") == "SEED_APPS":
-			return _ast.literal_eval(_ast.get_source_segment(source, node.value))
-	raise AssertionError("SEED_APPS is gone")
+	found = []
+	for path in sorted(SPACES.glob("*.py")):
+		if path.name == "__init__.py":
+			continue
+		source = path.read_text()
+		tree = _ast.parse(source)
+		space = screens = None
+		for node in _ast.walk(tree):
+			if not isinstance(node, _ast.Assign):
+				continue
+			named = getattr(node.targets[0], "id", "")
+			if named == "SPACE":
+				space = _ast.literal_eval(_ast.get_source_segment(source, node.value))
+			elif named == "SCREENS":
+				screens = _ast.literal_eval(_ast.get_source_segment(source, node.value))
+		assert space, f"{path.name} declares no SPACE"
+		found.append({**space, "screens": screens or [], "source": source})
+	return found
 
 
-def test_a_seeded_app_is_not_offered_to_customers():
-	"""Nobody decided to build these. A seed reaching a launcher is a promise of
-	software that does not exist, made to someone paying for it — and, for an app
-	naming ERPNext doctypes, write access to them over the REST API."""
+def test_the_reader_found_the_shipped_spaces():
+	"""A reader that silently finds nothing turns every rule below into a pass."""
+	codes = {one["space_code"] for one in _shipped()}
+	assert {"books", "rua"} <= codes, codes
+
+
+def test_a_shipped_space_is_not_offered_to_every_customer():
+	"""A space reaching every launcher is a promise made to everybody paying —
+	and, for one naming ERPNext doctypes, write access to them over the REST
+	API. It is one company's system or it is a decision somebody took."""
 	offenders = [
-		spec["space_code"]
-		for spec in _seed_specs()
-		if spec.get("availability") != "Restricted"
+		one["space_code"] for one in _shipped()
+		if one.get("availability") != "Restricted"
 	]
 	assert not offenders, (
-		"seeded apps must be Restricted until someone decides to build them: "
+		"shipped spaces must be Restricted until somebody decides otherwise: "
 		+ ", ".join(offenders)
 	)
 
 
-def test_restricted_is_the_default_a_seed_gets_by_saying_nothing():
+def test_restricted_is_what_a_space_gets_by_saying_nothing():
 	"""Reaching every customer should be opted into, not arrived at by
 	forgetting to say."""
-	body = INSTALL.read_text()
-	seeder = body[body.index("def seed_apps"):]
-	assert '"availability": "Restricted"' in seeder
+	body = (SPACES / "__init__.py").read_text()
+	assert 'module.SPACE.get("availability", "Restricted")' in body
 
 
-def test_the_seed_says_what_it_is_for():
-	"""This one was introduced inside a commit about a generator bug, described
-	as "seeds a first app", and read afterwards as a product decision."""
-	body = INSTALL.read_text()
-	header = body[: body.index("SEED_APPS = [")]
-	assert "not a product" in header.lower()
-
-	for spec in _seed_specs():
-		assert "no interface" in (spec.get("description") or "").lower(), spec["space_code"]
+def test_a_space_with_no_screens_says_it_has_none():
+	"""The failure this exists for: a reference entitlement was introduced
+	inside a commit about a generator bug, described as "seeds a first app",
+	and read afterwards as a product decision. An entitlement with no interface
+	is a real thing to be — it just has to say so."""
+	for one in _shipped():
+		if one["screens"]:
+			continue
+		said = (one.get("description") or "").lower() + one["source"].lower()
+		assert "no interface" in said, one["space_code"]
+		assert "not a product" in said, one["space_code"]
 
 
 def test_existing_installs_are_corrected_without_taking_anything_away():

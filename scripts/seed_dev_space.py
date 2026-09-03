@@ -487,6 +487,43 @@ def _seed_registers():
 	frappe.db.commit()
 
 
+def _seed_rua():
+	"""The RUA space on the dev tenant, from the module that ships it.
+
+	Read out of `oneapp_control.spaces.rua` rather than restated here: there is
+	one declaration of what that space is, and a fixture that kept its own copy
+	would drift from it inside a week.
+
+	Only where ERPNext is installed. Every screen but two is over an ERPNext or
+	HRMS doctype, and a space whose screens are all skipped is a rail item that
+	opens onto nothing.
+	"""
+	from oneapp.oneapp_core import sync
+	from oneapp_control.spaces import rua
+
+	if not frappe.db.exists("DocType", "Sales Invoice"):
+		return None
+
+	sync.ensure_role(rua.SPACE["role_name"])
+
+	me = frappe.get_doc("User", "Administrator")
+	if rua.SPACE["role_name"] not in {one.role for one in me.roles}:
+		me.append("roles", {"role": rua.SPACE["role_name"]})
+		me.save(ignore_permissions=True)
+
+	# The grants go back to the caller rather than being written here.
+	# `sync_permissions` *reconciles*: it removes what is not in the list it is
+	# given, so two calls leave whichever ran last and silently take the other
+	# space's permissions away — which is a space on the rail that redirects to
+	# the sign-in page, and reads like a session bug.
+	return (
+		{**rua.SPACE, "screens": [dict(one, component=None) for one in rua.SCREENS]},
+		[{"role": rua.SPACE["role_name"], "doctype": document_type,
+		  "access": access, "if_owner": if_owner}
+		 for document_type, access, if_owner in rua.DOCTYPES],
+	)
+
+
 def _seed_import():
 	"""A source and a plan, so the import console has something to render.
 
@@ -669,6 +706,11 @@ def seed_tenant():
 		one for one in json.loads(state.spaces_json or "[]")
 		if one.get("space_code") not in (CODE, *RETIRED)
 	]
+	spaces = [one for one in spaces if one.get("space_code") != "rua"]
+	rua, rua_grants = _seed_rua() or (None, [])
+	if rua:
+		spaces.append(rua)
+
 	spaces.append({
 		"space_code": CODE, "space_label": LABEL, "module": "Mock",
 		"role_name": ROLE, "icon": "lucide-briefcase", "sort_order": 5,
@@ -692,7 +734,7 @@ def seed_tenant():
 		{"role": ROLE, "doctype": grant["document_type"],
 		 "access": grant["access"], "if_owner": grant["if_owner"]}
 		for grant in DOCTYPES
-	])
+	] + rua_grants)
 	user = frappe.get_doc("User", frappe.session.user)
 	if ROLE not in {r.role for r in user.roles}:
 		user.append("roles", {"role": ROLE})

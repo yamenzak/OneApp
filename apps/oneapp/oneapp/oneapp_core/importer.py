@@ -306,6 +306,14 @@ def build(row: dict, field_map: dict, plan: str) -> dict:
 
 		said = row.get(rule.get("from"))
 
+		if "pick" in rule:
+			# One entry out of a list the old system denormalised onto the row.
+			# Their project carries every party on it — client, consultant, four
+			# suppliers — as JSON with a `type` on each, and the customer is
+			# whichever one says Client. Without this the field is unreachable:
+			# it is not a column and it is not a child table.
+			said = _pick(said, rule["pick"], rule.get("take"))
+
 		if rule.get("link"):
 			if said in (None, ""):
 				continue
@@ -400,6 +408,31 @@ def maps_children(field_map: dict) -> bool:
 		isinstance(rule, dict) and rule.get("rows") not in (None, SELF)
 		for rule in (field_map or {}).values()
 	)
+
+
+def _pick(said, matching: dict, take: str | None):
+	"""The first item of a list that matches, or nothing.
+
+	Nothing rather than the first item: a project with no consultant on it has
+	no consultant, and handing back whoever happened to be listed first is how
+	a migration invents relationships.
+	"""
+	if said in (None, ""):
+		return None
+
+	held = frappe.parse_json(said)
+	if not isinstance(held, list):
+		raise ValueError("`pick` needs a list, and this is not one")
+
+	found = next(
+		(one for one in held
+		 if isinstance(one, dict)
+		 and all(one.get(key) == value for key, value in (matching or {}).items())),
+		None,
+	)
+	if found is None:
+		return None
+	return found.get(take) if take else found
 
 
 def _number(said):
@@ -621,7 +654,12 @@ def _step(run, plan, source, step, row, held: list | None = None):
 	fan_out = json.loads(step.fan_out) if step.fan_out else None
 	deep = maps_children(field_map)
 	start = 0
-	newest = step.watermark
+	# A string, always. The watermark comes back out of the database as a
+	# datetime and a row's `modified` arrives from the API as text, and `max`
+	# over the two raises — so the *first* run worked, every time, and the
+	# second one died before it read a row. Which is the run that matters:
+	# incremental is the whole promise.
+	newest = str(step.watermark) if step.watermark else None
 
 	while True:
 		page = fetch(source, step.source_doctype, filters, start, BATCH)

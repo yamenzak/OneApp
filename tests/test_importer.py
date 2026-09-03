@@ -459,6 +459,30 @@ def test_a_row_that_will_not_save_is_undone_to_its_own_savepoint(importer, stepp
 	assert len(stub_frappe.db.released) == 2
 
 
+def test_a_second_run_compares_the_watermark_with_what_arrives(importer, stepped,
+                                                              monkeypatch):
+	"""The run that matters, and the one that had never happened.
+
+	A watermark comes back out of the database as a datetime and a row's
+	`modified` arrives from the API as text. `max` over the two raises, so the
+	first run worked every time and the second died before it read a row.
+	"""
+	import datetime
+
+	monkeypatch.setattr(importer, "fetch", lambda *a: [
+		{"name": "a", "modified": "2026-03-09 12:00:00"},
+	] if a[3] == 0 else [])
+
+	step = Step()
+	step.watermark = datetime.datetime(2026, 1, 1)
+	row = RunStep()
+
+	importer._step(Run(), Plan(), None, step, row)
+
+	assert row.marks["watermark_to"] == "2026-03-09 12:00:00"
+	assert row.marks["created"] == 1
+
+
 def test_a_rehearsal_moves_no_watermark(importer, stepped, stub_frappe, monkeypatch):
 	"""Otherwise a dry run would make the real one skip everything it read."""
 	monkeypatch.setattr(importer, "fetch", lambda *a: [
@@ -920,6 +944,42 @@ def test_a_constant_list_is_not_shared_between_records(importer):
 	first["taxes"][0]["tax_amount"] = 44961.67
 
 	assert second["taxes"] == [{"rate": 5}]
+
+
+PARTIES = json.dumps([
+	{"name": "Alumil Middle East", "type": "Supplier: Aluminum"},
+	{"name": "MSJ General Contracting", "type": "Client"},
+	{"name": "Bayaty Architects", "type": "Consultant"},
+])
+
+
+def test_one_entry_is_picked_out_of_a_denormalised_list(importer):
+	"""Their project carries every party on it as JSON — client, consultant,
+	four suppliers — and the customer is whichever one says Client. It is not a
+	column over there and it is not a child table, so without this the field is
+	unreachable."""
+	rule = {"customer": {"from": "parties", "pick": {"type": "Client"},
+	                     "take": "name"}}
+
+	assert importer.build({"parties": PARTIES}, rule, "P") == {
+		"customer": "MSJ General Contracting"}
+
+
+def test_a_list_with_nothing_matching_gives_nothing(importer):
+	"""Nothing, and not the first item. A project with no consultant on it has
+	no consultant, and handing back whoever was listed first is how a migration
+	invents relationships."""
+	rule = {"x": {"from": "parties", "pick": {"type": "Architect"}, "take": "name"}}
+
+	assert importer.build({"parties": PARTIES}, rule, "P") == {"x": None}
+	assert importer.build({"parties": None}, rule, "P") == {"x": None}
+
+
+def test_picking_out_of_something_that_is_not_a_list_says_so(importer):
+	rule = {"x": {"from": "parties", "pick": {"type": "Client"}}}
+
+	with pytest.raises(ValueError, match="needs a list"):
+		importer.build({"parties": '{"type": "Client"}'}, rule, "P")
 
 
 def test_a_second_field_is_tried_before_giving_up(importer):

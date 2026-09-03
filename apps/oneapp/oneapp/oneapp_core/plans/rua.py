@@ -253,6 +253,12 @@ STEPS = [
 			# for it. A custom field on Project, not a second status.
 			"custom_stage": {"from": "status"},
 			"custom_location": {"from": "location"},
+			# The client, out of the party list the old system denormalises
+			# onto every project — seven of them on a typical job, each with a
+			# `type`, and exactly one saying Client. It is not a column over
+			# there and there is no other way to reach it.
+			"customer": {"from": "parties", "pick": {"type": "Client"},
+			             "take": "name", "link": "RUA Party"},
 		},
 	},
 	{

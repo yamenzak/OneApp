@@ -29,8 +29,13 @@ export function precisionFor(column, formats = {}) {
   const own = Number(column?.precision)
   if (own) return own
 
+  // Money and floats are two different settings about two different things.
+  // Reading the float precision when the currency one is absent is not a
+  // fallback Frappe makes, and it rendered every contract value in the product
+  // with a thousandth of a dirham on the end. The server answers this from the
+  // site's number format; two is what every format Frappe ships but one uses.
   if (column?.cell === 'currency') {
-    return Number(formats.currency_precision ?? formats.float_precision ?? 2)
+    return Number(formats.currency_precision ?? 2)
   }
   return Number(formats.float_precision ?? 3)
 }

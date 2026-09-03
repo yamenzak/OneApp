@@ -106,6 +106,44 @@ Two smaller ones in the same file: `is_vat_inclusive` is ERPNext's inclusive tax
 on the item row, and `serial_number` — a per-project sequence for Final tax
 invoices — is a custom field, because Frappe's naming series is global.
 
+## 3a. The space
+
+`oneapp_control/spaces/rua.py`, beside the plan that fills it. Eleven screens,
+every one over a doctype ERPNext, HRMS or OneSpace already ships — which is the
+whole point of the move: twenty-six bespoke doctypes stop being anybody's code.
+
+What *is* bespoke is the vocabulary. They say LPO and not Purchase Order, Client
+and not Customer, Team and not Employee, and a screen that calls it the other
+thing is one they translate every time they read it. A project leads with
+`custom_stage` rather than `status` for the same reason: Tender and Job in Hand
+are both Open to a project ledger and a world apart to the people selling.
+
+Spaces are declared as data and reinstalled on every migration, exactly like
+plans — so changing a screen is an edit and a `bench migrate` rather than an
+edit and somebody retyping it into the operator console.
+
+Three things the first browser pass found, none of them RUA's:
+
+* `sync_permissions` **reconciles** — it removes what is not in the list it is
+  given — so two spaces seeded with two calls left whichever ran last and
+  silently took the other's permissions away. Which presents as a space on the
+  rail that redirects to the sign-in page, and reads like a session bug.
+* Money read the **float** precision where no currency precision was set. That
+  is not a fallback Frappe makes: money follows the number format, and
+  `#,###.##` is two places. Every contract value in the product came out as
+  `1,115,646.000` while Frappe's own desk showed `1,115,646.00` on the same site.
+* The **second** run of an import died before reading a row. A watermark comes
+  back out of the database as a datetime and a row's `modified` arrives from the
+  API as text, and `max` over the two raises — so the first run worked every
+  time and the incremental one, which is the entire promise, had never happened.
+
+And one about their data: a project's client is not a column. Every party on a
+job — client, consultant, four suppliers — is denormalised into one JSON list
+with a `type` on each, so a rule may now say
+`{"pick": {"type": "Client"}, "take": "name"}` and take the one it wants.
+Seventy-five of their eighty-two projects have a client; the other seven are
+variations that carry none.
+
 ## 4. What genuinely has no home
 
 Two things ERPNext and HRMS do not model, which the space must ship as its own
