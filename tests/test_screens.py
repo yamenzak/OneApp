@@ -15,6 +15,7 @@ import types
 from pathlib import Path
 
 import pytest
+import spaceview_source
 
 
 @pytest.fixture
@@ -400,7 +401,7 @@ import ast as _ast  # noqa: E402
 import re as _re  # noqa: E402
 from pathlib import Path as _Path  # noqa: E402
 
-APPVIEW = _Path(__file__).resolve().parents[1] / "apps/oneapp/oneapp/oneapp_core/spaceview.py"
+SPACEVIEW = _Path(__file__).resolve().parents[1] / "apps/oneapp/oneapp/oneapp_core/spaceview"
 
 # The parameters the SPA sends as JSON rather than as a query-string value, and
 # the shapes it sends them in. Keyed by `method.param` where the shape belongs
@@ -418,7 +419,7 @@ STRUCTURED = {
 
 def whitelisted():
 	"""Every `@frappe.whitelist` function in spaceview, with its annotations."""
-	tree = _ast.parse(APPVIEW.read_text())
+	tree = spaceview_source.tree()
 	found = {}
 	for node in tree.body:
 		if not isinstance(node, _ast.FunctionDef):
@@ -1008,7 +1009,7 @@ def test_a_bookmark_to_a_deleted_layout_falls_back(spaceview):
 	assert spaceview._chosen_layout([], "gone") is None
 
 
-def test_only_one_layout_is_marked_as_the_one_that_opens(spaceview, monkeypatch):
+def test_only_one_layout_is_marked_as_the_one_that_opens(spaceview, monkeypatch, stub_spaceview):
 	"""Two rows can both be `is_default`; only one of them opens the screen.
 
 	One personal and one shared is a legitimate state, and a menu that pins
@@ -1016,8 +1017,8 @@ def test_only_one_layout_is_marked_as_the_one_that_opens(spaceview, monkeypatch)
 	"""
 	rows = [layout("shared", "House", user="", is_default=1),
 	        layout("mine", "Mine", is_default=1)]
-	monkeypatch.setattr(spaceview, "_layouts", lambda *a, **kw: rows)
-	monkeypatch.setattr(spaceview, "_can_share", lambda: False)
+	stub_spaceview("_layouts", lambda *a, **kw: rows)
+	stub_spaceview("_can_share", lambda: False)
 	resolved = spaceview._apply_saved({"space": "a", "screen": "v"})
 	assert [l["opens"] for l in resolved["layouts"]] == [False, True]
 	assert sum(l["is_default"] for l in resolved["layouts"]) == 2
@@ -1030,16 +1031,16 @@ class _Doc(dict):
 		self[key] = value
 
 
-def test_a_shared_layout_needs_the_workspaces_own_admin_rights(spaceview, stub_frappe, monkeypatch):
-	monkeypatch.setattr(spaceview, "_can_share", lambda: False)
+def test_a_shared_layout_needs_the_workspaces_own_admin_rights(spaceview, stub_frappe, monkeypatch, stub_spaceview):
+	stub_spaceview("_can_share", lambda: False)
 	with pytest.raises(stub_frappe.PermissionError):
 		spaceview._may_write(_Doc(user=""))
-	monkeypatch.setattr(spaceview, "_can_share", lambda: True)
+	stub_spaceview("_can_share", lambda: True)
 	spaceview._may_write(_Doc(user=""))
 
 
-def test_a_personal_layout_belongs_to_one_person(spaceview, stub_frappe, monkeypatch):
-	monkeypatch.setattr(spaceview, "_can_share", lambda: True)
+def test_a_personal_layout_belongs_to_one_person(spaceview, stub_frappe, monkeypatch, stub_spaceview):
+	stub_spaceview("_can_share", lambda: True)
 	stub_frappe.session.user = "me@x"
 	spaceview._may_write(_Doc(user="me@x"))
 	# Even a workspace admin does not edit somebody else's private screen: sharing
@@ -1048,7 +1049,7 @@ def test_a_personal_layout_belongs_to_one_person(spaceview, stub_frappe, monkeyp
 		spaceview._may_write(_Doc(user="someone@else"))
 
 
-def test_a_shared_layout_still_only_reaches_what_the_screen_offers(spaceview, monkeypatch):
+def test_a_shared_layout_still_only_reaches_what_the_screen_offers(spaceview, monkeypatch, stub_spaceview):
 	"""Sharing does not widen a layout.
 
 	The row is a doctype an operator could write directly, so what it carries is
@@ -1057,8 +1058,8 @@ def test_a_shared_layout_still_only_reaches_what_the_screen_offers(spaceview, mo
 	"""
 	rows = [dict(layout("shared", "House", user="", is_default=1),
 	             filters='[["_liked_by", "like", "%someone@else%"]]')]
-	monkeypatch.setattr(spaceview, "_layouts", lambda *a, **kw: rows)
-	monkeypatch.setattr(spaceview, "_can_share", lambda: True)
+	stub_spaceview("_layouts", lambda *a, **kw: rows)
+	stub_spaceview("_can_share", lambda: True)
 	resolved = spaceview._apply_saved({
 		"space": "a", "screen": "v", "doctype": "ToDo",
 		"columns": spaceview._columns(TODO, ["description"]),
@@ -1097,10 +1098,10 @@ def test_the_page_size_ceiling_is_the_largest_the_footer_offers(spaceview):
 	assert spaceview.PAGE in spaceview.PAGE_SIZES
 
 
-def test_a_saved_page_size_survives_and_a_junk_one_does_not(spaceview, monkeypatch):
+def test_a_saved_page_size_survives_and_a_junk_one_does_not(spaceview, monkeypatch, stub_spaceview):
 	rows = [dict(layout("mine", "Mine", is_default=1), page_length=20)]
-	monkeypatch.setattr(spaceview, "_layouts", lambda *a, **kw: rows)
-	monkeypatch.setattr(spaceview, "_can_share", lambda: False)
+	stub_spaceview("_layouts", lambda *a, **kw: rows)
+	stub_spaceview("_can_share", lambda: False)
 	resolved = spaceview._apply_saved({
 		"space": "a", "screen": "v", "doctype": "ToDo", "page_length": spaceview.PAGE,
 		"columns": spaceview._columns(TODO, ["description"]),
@@ -1126,7 +1127,7 @@ def test_the_count_goes_through_the_same_permissions_as_the_rows(spaceview):
 	larger than the list it labels — and "12 of 400" over twelve rows is worse
 	than no count at all.
 	"""
-	source = APPVIEW.read_text()
+	source = spaceview_source.source()
 	body = source[source.index("def _total("):]
 	body = body[: body.index("\n\n\n")]
 	# Code only — the docstring names `db.count` to say why it is not used.
@@ -1696,7 +1697,7 @@ def test_a_record_carries_every_field_it_shows_not_the_listed_columns(spaceview)
 	"""The dialog renders the doctype's whole field list. It used to seed itself
 	from the list row, so a field nobody put on the list opened blank on a
 	record that has a value for it."""
-	source = Path(spaceview.__file__).read_text() if spaceview.__file__ else ""
+	source = spaceview_source.source()
 	body = source.split("def record(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert "all_columns" in body, "record() must fetch what the record shows"
 	assert 'resolved["fields"]' not in body, (
@@ -1709,7 +1710,7 @@ def test_a_record_is_bounded_by_the_screen_and_not_by_a_saved_view(spaceview):
 	"""You can arrive at a record from one view and open it under another, and
 	a personal filter is not a rule about what exists. The screen's own filters
 	still are."""
-	source = Path(spaceview.__file__).read_text()
+	source = spaceview_source.source()
 	body = source.split("def record(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert "_apply_saved" not in body
 	assert "_all_filters(resolved, [])" in body
@@ -1767,7 +1768,7 @@ def test_the_icon_set_is_the_one_the_spa_can_draw(spaceview):
 	renders as a blank square."""
 	import re as _re
 
-	icons = APPVIEW.parents[2] / "frontend/src/lib/icons.js"
+	icons = SPACEVIEW.parents[2] / "frontend/src/lib/icons.js"
 	source = icons.read_text()
 	block = _re.search(r"export const SPACE_ICONS = \[(.*?)\]", source, _re.S).group(1)
 	assert tuple(_re.findall(r"'([^']+)'", block)) == spaceview.VIEW_ICONS
@@ -1781,14 +1782,14 @@ def test_the_icon_set_is_the_one_the_spa_can_draw(spaceview):
 # hiding is never offered as deleting: somebody else may be living in it.
 # --------------------------------------------------------------------------- #
 
-def test_a_screen_says_how_many_views_are_hidden_so_they_can_come_back(spaceview, monkeypatch):
+def test_a_screen_says_how_many_views_are_hidden_so_they_can_come_back(spaceview, monkeypatch, stub_spaceview):
 	"""A hidden view is not in the menu, which is the wrong place to pick one
 	out of — so the menu offers all of them back at once, and needs to know
 	there are any."""
 	rows = [dict(layout("shared", "House", user=""), hidden=True),
 	        dict(layout("mine", "Mine"), hidden=False)]
-	monkeypatch.setattr(spaceview, "_layouts", lambda *a, **kw: rows)
-	monkeypatch.setattr(spaceview, "_can_share", lambda: False)
+	stub_spaceview("_layouts", lambda *a, **kw: rows)
+	stub_spaceview("_can_share", lambda: False)
 
 	resolved = spaceview._apply_saved({"space": "a", "screen": "v"})
 	assert resolved["hidden"] == 1
@@ -1818,7 +1819,7 @@ def test_hiding_a_view_from_another_screen_is_refused(spaceview, monkeypatch):
 def test_deleting_a_view_stops_anybody_hiding_it(spaceview):
 	"""A hidden row pointing at nothing would be counted as a view waiting to
 	come back, and bringing it back would produce nothing."""
-	source = APPVIEW.read_text()
+	source = spaceview_source.source()
 	body = source.split("def delete_layout(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert 'frappe.db.delete("OneSpace Hidden View"' in body
 
@@ -1850,7 +1851,7 @@ def test_the_manifest_never_carries_the_colours(spaceview):
 	"""They are the doctype's own Document States, which `presentation` already
 	reads — so a status is one colour in the list, in the badge and in the desk
 	rather than three."""
-	source = APPVIEW.read_text()
+	source = spaceview_source.source()
 	body = source.split("def _status_field(", 1)[1].split("\ndef ", 1)[0]
 	assert "color" not in body and "theme" not in body
 
@@ -1941,7 +1942,7 @@ def test_the_form_carries_fieldnames_and_not_the_columns_again(spaceview):
 
 def test_reading_the_record_is_what_lets_you_see_its_files(spaceview):
 	"""What is filed against a record is no less private than the record."""
-	source = APPVIEW.read_text()
+	source = spaceview_source.source()
 	body = source.split("def _attachable(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert 'check_permission("read")' in body
 
@@ -1949,7 +1950,7 @@ def test_reading_the_record_is_what_lets_you_see_its_files(spaceview):
 def test_removing_a_file_needs_the_record_to_be_writable(spaceview):
 	"""Removing what is filed against something is a change to it, even though
 	the row being deleted is a File."""
-	source = APPVIEW.read_text()
+	source = spaceview_source.source()
 	body = source.split("def remove_attachment(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert 'check_permission("write")' in body
 
@@ -1958,7 +1959,7 @@ def test_a_file_from_another_record_is_refused(spaceview):
 	"""A File name arriving in the payload is a File name somebody sent. It has
 	to be attached to *this* record, and the check is against the row rather
 	than against what was asked for."""
-	source = APPVIEW.read_text()
+	source = spaceview_source.source()
 	body = source.split("def remove_attachment(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert "attached_to_doctype" in body and "not on this record" in body
 
@@ -2072,11 +2073,11 @@ DYNAMIC = meta(
 
 
 @pytest.fixture
-def dynamic(spaceview, stub_frappe, monkeypatch):
+def dynamic(spaceview, stub_frappe, monkeypatch, stub_spaceview):
 	"""A resolved screen over the two fields above, with the space granting
 	ToDo and Contact and nothing else."""
-	monkeypatch.setattr(spaceview, "_space", lambda code: {"role_name": "R", "space_label": "S"})
-	monkeypatch.setattr(spaceview, "_granted_doctypes", lambda space: {"ToDo", "Contact"})
+	stub_spaceview("_space", lambda code: {"role_name": "R", "space_label": "S"})
+	stub_spaceview("_granted_doctypes", lambda space: {"ToDo", "Contact"})
 	stub_frappe.db.exists = lambda dt, name=None: name in ("ToDo", "Contact", "User")
 	stub_frappe.has_permission = lambda dt, ptype=None, **kw: dt != "Contact"
 	return {"space": "s", "all_columns": spaceview._columns(DYNAMIC, ["reference_type", "reference_name"])}
@@ -2205,30 +2206,30 @@ def test_a_gallery_is_never_editable(spaceview):
 	assert column["editable"] is False
 
 
-def test_a_gallery_narrows_by_the_docfields_own_filters(spaceview, monkeypatch):
+def test_a_gallery_narrows_by_the_docfields_own_filters(spaceview, monkeypatch, stub_spaceview):
 	resolved = _gallery(spaceview, '[["File", "is_private", "=", 0]]')
-	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **kw: resolved)
+	stub_spaceview("_resolve", lambda *a, **kw: resolved)
 
 	assert spaceview._gallery_filters("s", "screen", "photos") == {"is_private": ["=", 0]}
 
 
-def test_a_filter_that_is_not_about_files_is_refused(spaceview, monkeypatch, stub_frappe):
+def test_a_filter_that_is_not_about_files_is_refused(spaceview, monkeypatch, stub_frappe, stub_spaceview):
 	"""The same refusal Frappe's own `get_filtered_attachments` makes, and for
 	the same reason: a filter naming another doctype is a join nobody asked
 	for."""
 	resolved = _gallery(spaceview, '[["ToDo", "status", "=", "Open"]]')
-	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **kw: resolved)
+	stub_spaceview("_resolve", lambda *a, **kw: resolved)
 
 	with pytest.raises(Exception):
 		spaceview._gallery_filters("s", "screen", "photos")
 
 
-def test_an_expression_filter_is_dropped_rather_than_run(spaceview, monkeypatch):
+def test_an_expression_filter_is_dropped_rather_than_run(spaceview, monkeypatch, stub_spaceview):
 	"""`eval:` in a filter value is the desk running JavaScript against the
 	record. We do not run expressions — see `lib/rules.js` — so a filter we
 	cannot evaluate narrows nothing instead of being guessed at."""
 	resolved = _gallery(spaceview, '[["File", "file_name", "like", "eval:doc.name"]]')
-	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **kw: resolved)
+	stub_spaceview("_resolve", lambda *a, **kw: resolved)
 
 	assert spaceview._gallery_filters("s", "screen", "photos") == {}
 
@@ -2239,12 +2240,12 @@ def test_no_fieldname_narrows_nothing(spaceview):
 	assert spaceview._gallery_filters("s", "screen", "") == {}
 
 
-def test_a_field_that_is_not_a_gallery_narrows_nothing(spaceview, monkeypatch):
+def test_a_field_that_is_not_a_gallery_narrows_nothing(spaceview, monkeypatch, stub_spaceview):
 	"""Silently. A doctype that renamed a field should show all its attachments
 	rather than fail to open."""
 	fields = [field("notes", "Data", "Notes", link_filters='[["File", "is_private", "=", 0]]')]
 	resolved = {"space": "s", "all_columns": spaceview._columns(meta(fields), ["notes"])}
-	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **kw: resolved)
+	stub_spaceview("_resolve", lambda *a, **kw: resolved)
 
 	assert spaceview._gallery_filters("s", "screen", "notes") == {}
 	assert spaceview._gallery_filters("s", "screen", "missing") == {}

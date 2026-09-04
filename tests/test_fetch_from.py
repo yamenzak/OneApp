@@ -14,13 +14,13 @@ doctype on the site.
 """
 
 from pathlib import Path
+import spaceview_source
 
 ROOT = Path(__file__).resolve().parent.parent
-SPACEVIEW = ROOT / "apps/oneapp/oneapp/oneapp_core/spaceview.py"
 
 
 def body() -> str:
-	source = SPACEVIEW.read_text()
+	source = spaceview_source.source()
 	start = source.index("def fetched(")
 	return source[start:]
 

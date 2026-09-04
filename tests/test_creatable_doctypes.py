@@ -124,7 +124,12 @@ def test_the_override_reaches_a_tenant_site():
 
 
 def test_can_create_asks_all_three():
-	spaceview = (ROOT / "apps/oneapp/oneapp/oneapp_core/spaceview.py").read_text()
+	import spaceview_source
+
+	# The resolve layer, named rather than found by searching all of them: the
+	# link picker builds a `can_create` of its own, and whichever module sorted
+	# first would decide which one this read.
+	spaceview = spaceview_source.module("resolve")
 	block = spaceview[spaceview.index('"can_create"'):]
 	block = block[: block.index("),") + 2]
 	for needed in ('has_permission', 'in_create', 'hide_new'):

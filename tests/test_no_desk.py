@@ -22,6 +22,7 @@ import re
 from pathlib import Path
 
 import pytest
+from reachable import paths as reachable_paths
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTROL = ROOT / "apps/oneapp_control/oneapp_control"
@@ -237,7 +238,8 @@ def _tenant_endpoints_by_doctype() -> dict[str, set[str]]:
 			if not any("whitelist" in ast.unparse(d) for d in node.decorator_list):
 				continue
 			for name in named:
-				found.setdefault(name, set()).add(f"{dotted}.{node.name}")
+				for path_to in reachable_paths(path, dotted, node.name):
+					found.setdefault(name, set()).add(path_to)
 
 	return found
 
@@ -388,7 +390,9 @@ def test_a_declared_action_is_the_only_method_the_runner_will_call():
 	refuses anything else, so a method name in a request body reaches nothing
 	that was not shipped as a declaration.
 	"""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/spaceview.py").read_text()
+	import spaceview_source
+
+	source = spaceview_source.source()
 	runner = source[source.index("def run_action("):]
 	assert "declared.get(action)" in runner, "the action is not looked up in the declaration"
 	assert "frappe.PermissionError" in runner, "an undeclared action does not refuse"

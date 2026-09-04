@@ -123,27 +123,27 @@ def test_actions_are_keyed_to_one_screen(spaceview, stub_frappe):
 # What the runner will call
 # --------------------------------------------------------------------------- #
 
-def test_the_runner_refuses_a_method_no_screen_declares(spaceview, stub_frappe, monkeypatch):
+def test_the_runner_refuses_a_method_no_screen_declares(spaceview, stub_frappe, monkeypatch, stub_spaceview):
 	"""The point of the seam. Without this it is a way to POST any whitelisted
 	method name on the site and have it run."""
 	declare(stub_frappe, {"s/screen": [{"key": "ok", "label": "OK", "method": "a.b"}]})
-	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **k: {"screen": "screen"})
+	stub_spaceview("_resolve", lambda *a, **k: {"screen": "screen"})
 
 	with pytest.raises(Exception, match="not an action"):
 		spaceview.run_action("s", "screen", "oneapp_control.api.admin.suspend", "T-1")
 
 
-def test_the_runner_refuses_a_screen_action(spaceview, stub_frappe, monkeypatch):
+def test_the_runner_refuses_a_screen_action(spaceview, stub_frappe, monkeypatch, stub_spaceview):
 	"""Navigation is the frontend's half. A screen action carries no method, so
 	asking the server to run one is asking it to call nothing."""
 	declare(stub_frappe, {"s/screen": [{"key": "open", "label": "Open", "screen": "other"}]})
-	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **k: {"screen": "screen"})
+	stub_spaceview("_resolve", lambda *a, **k: {"screen": "screen"})
 
 	with pytest.raises(Exception, match="not an action"):
 		spaceview.run_action("s", "screen", "open", "T-1")
 
 
-def test_the_runner_asks_frappe_before_it_calls_anything(spaceview, stub_frappe, monkeypatch):
+def test_the_runner_asks_frappe_before_it_calls_anything(spaceview, stub_frappe, monkeypatch, stub_spaceview):
 	"""The same permission the save path asks for. The method guards itself as
 	well — every one of these was reachable directly before this existed — so
 	this narrows what may be called rather than becoming the thing that decides.
@@ -159,8 +159,7 @@ def test_the_runner_asks_frappe_before_it_calls_anything(spaceview, stub_frappe,
 	declare(stub_frappe, {"s/screen": [
 		{"key": "go", "label": "Go", "method": "fake_endpoint.run"},
 	]})
-	monkeypatch.setattr(
-		spaceview, "_resolve", lambda *a, **k: {"screen": "screen", "doctype": "Thing"}
+	stub_spaceview("_resolve", lambda *a, **k: {"screen": "screen", "doctype": "Thing"}
 	)
 	stub_frappe.has_permission = lambda *a, **k: False
 
@@ -169,7 +168,7 @@ def test_the_runner_asks_frappe_before_it_calls_anything(spaceview, stub_frappe,
 	assert not called, "the method ran before the permission was checked"
 
 
-def test_a_selection_runs_the_method_once_per_record(spaceview, stub_frappe, monkeypatch):
+def test_a_selection_runs_the_method_once_per_record(spaceview, stub_frappe, monkeypatch, stub_spaceview):
 	"""A failed batch is the usual case — a handler was broken for an hour — so
 	the selection scope exists. Each row is its own call, so one refusal does not
 	take the rest with it silently."""
@@ -184,8 +183,7 @@ def test_a_selection_runs_the_method_once_per_record(spaceview, stub_frappe, mon
 	declare(stub_frappe, {"s/screen": [
 		{"key": "go", "label": "Go", "scope": "selection", "method": "fake_endpoint2.run"},
 	]})
-	monkeypatch.setattr(
-		spaceview, "_resolve", lambda *a, **k: {"screen": "screen", "doctype": "Thing"}
+	stub_spaceview("_resolve", lambda *a, **k: {"screen": "screen", "doctype": "Thing"}
 	)
 
 	result = spaceview.run_action("s", "screen", "go", ["a", "b"])

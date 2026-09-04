@@ -449,3 +449,39 @@ def stub_frappe(monkeypatch):
 	for name in list(sys.modules):
 		if name.startswith(("oneapp_control", "oneapp.")):
 			del sys.modules[name]
+
+
+@pytest.fixture
+def stub_spaceview(monkeypatch):
+	"""Replace a name everywhere in the screen package that uses it.
+
+	`spaceview` is a package of layered modules, and each one imports the
+	helpers it needs *by name* — so `monkeypatch.setattr(spaceview, "_resolve")`
+	rebinds the re-export and reaches nobody: `records.rows` goes on calling the
+	real one, and the test passes for the wrong reason or fails for a confusing
+	one.
+
+	This walks the submodules and replaces the name in each that has it, so a
+	test says what it means — "wherever the screen layer resolves a screen,
+	it resolves to this" — and keeps meaning it the next time the layering
+	moves.
+	"""
+	from types import ModuleType
+
+	from oneapp.oneapp_core import spaceview
+
+	def stub(name, value):
+		found = 0
+		for holder in [spaceview, *vars(spaceview).values()]:
+			if holder is not spaceview and not (
+				isinstance(holder, ModuleType)
+				and getattr(holder, "__name__", "").startswith(spaceview.__name__ + ".")
+			):
+				continue
+			if hasattr(holder, name):
+				monkeypatch.setattr(holder, name, value)
+				found += 1
+		assert found, f"nothing in the screen package is called {name!r}"
+		return value
+
+	return stub
