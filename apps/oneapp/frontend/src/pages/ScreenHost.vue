@@ -539,12 +539,14 @@ import StateBadge from '../components/screen/StateBadge.vue'
 import { session } from '../lib/session'
 import { workspace } from '../lib/workspace'
 import { useCrumbs } from '../composables/useCrumbs'
+import { useListFollow } from '../composables/useListFollow'
 import { usePeek } from '../composables/usePeek'
+import { useRows } from '../composables/useRows'
+import { useSavedViews } from '../composables/useSavedViews'
 import { useSorting } from '../composables/useSorting'
 import { notifyError, notifySuccess } from '../lib/notify'
 import { screenComponent } from '../screens'
 import { CARD_VIEW_TYPES, DEFAULT_VIEW_TYPE, bodyFor } from '../lib/viewTypes'
-import { onDoctypeChange } from '../lib/socket'
 import { applyTheme, clearTheme } from '../lib/theme'
 import {
   DRAWER,
@@ -604,27 +606,14 @@ const cardsChanged = (changes) => {
 // closing one means — there is no second flag, because two of them is how a
 // pane ends up open over nothing.
 const editing = ref(null)
-const rows = ref([])
-const columns = ref([])
-const hasMore = ref(false)
-const rowsLoading = ref(false)
-const loadingMore = ref(false)
-const rowsError = ref('')
 // Why the screen would not resolve at all — a different failure from a list
 // that would not load, and the one that used to read as "no screens".
 const specError = ref('')
-// How many match, which the server counts once when a list opens. Null until
-// it has: "48 of 0" while the answer is in flight is worse than "48".
-const total = ref(null)
-const pageLength = ref(100)
 const saving = ref(false)
 const resetting = ref(false)
 const dirty = ref(false)
 const deleting = ref(false)
 const confirmDelete = ref(false)
-// What is ticked. Cleared whenever the list is re-resolved, because a selection
-// that outlives the rows it named is a selection of nothing.
-const selection = ref([])
 
 // The two filter surfaces are separate lists that are asked together, which is
 // what Frappe does: the boxes above answer the common question and the panel
@@ -635,16 +624,6 @@ const order = ref('')
 const chosenColumns = ref([])
 const favourites = ref(false)
 const groupBy = ref('')
-// The same question, answered by the last page that arrived rather than by the
-// control. See `loadRows`.
-const groupedBy = ref('')
-// The board the last page came back for. Null until one has, which is when the
-// screen's own answer stands.
-const fetchedBoard = ref(null)
-// And what a card says, for the same reason: a chosen card field changes what
-// is fetched, so drawing the new card before its rows arrive is a card of
-// empty fields for as long as the request takes.
-const fetchedCards = ref(null)
 
 const space = computed(() =>
   (session.spaces || []).find((one) => one.space_code === props.spaceCode),
@@ -828,7 +807,22 @@ const dashboardAsked = computed(() => ({
 // is the shape Frappe's own `List Filter` doctype settles on. Which one is open
 // lives in the URL, so a screen is a link somebody can send.
 
-const layout = computed(() => route.query.layout || '')
+// Saved views — `composables/useSavedViews.js`.
+const {
+  layout, openLayout, saveAs, renameLayout, shareLayout, saveIntoLayout,
+  defaultLayout, deleteLayout, hideLayout, showLayouts,
+} = useSavedViews({
+  spaceCode: props.spaceCode,
+  spec,
+  route,
+  router,
+  saving,
+  dirty,
+  // Thunks: both are defined below this call.
+  payload: () => payload(),
+  reload: (into) => load(into),
+})
+
 
 // Which way this screen is being looked at, from the URL. Empty means the
 // screen's own first type, which is what the server falls back to — so a link
@@ -844,140 +838,13 @@ const { viewLabel, crumbs, recordCrumb, statusValue, docState } = useCrumbs({
   viewType,
 })
 
-const openLayout = (name) => {
-  router.push({ query: { ...route.query, layout: name || undefined } })
-}
-
-const withView = async (work) => {
-  saving.value = true
-  try {
-    const result = await work()
-    await load(result?.layout)
-    return result
-  } finally {
-    saving.value = false
-  }
-}
-
-// Saved under a name, and opened straight away: the point of naming it is to
-// be in it.
-const saveAs = ({ label, icon, shared }) =>
-  withView(async () => {
-    const result = await workspace.saveLayout(props.spaceCode, spec.value.screen, {
-      ...payload(),
-      label,
-      icon,
-      shared,
-    })
-    dirty.value = false
-    if (result?.layout) openLayout(result.layout)
-    return result
-  })
-
-// Every one of these names the view it acts on rather than assuming the one on
-// screen: the menu manages all of them now, so "rename" can mean a view this
-// person is not looking at.
-//
-// What is on screen goes with a write only when it is meant to. Renaming the
-// view you are looking at carries it, because the alternative is a rename that
-// silently discards an unsaved change; renaming some *other* view must not,
-// because that would put this screen's filters into a view nobody was editing.
-// Saving into a view carries it either way — that is what saving into it is.
-const intoLayout = (name, extra, carry = name === spec.value.layout) =>
-  withView(() =>
-    workspace.saveLayout(props.spaceCode, spec.value.screen, {
-      ...(carry ? payload() : {}),
-      layout: name,
-      ...extra,
-    }),
-  )
-
-const renameLayout = ({ layout: name, label, icon, shared }) =>
-  intoLayout(name, { label, icon, shared })
-
-const shareLayout = ({ layout: name, shared }) => intoLayout(name, { shared })
-
-// The other half of Save: put what is on screen into a view that already
-// exists rather than into a new one. Only offered for a view you may write.
-const saveIntoLayout = async (name) => {
-  await intoLayout(name, {}, true)
-  dirty.value = false
-  if (name !== spec.value.layout) openLayout(name)
-}
-
-const defaultLayout = (name) =>
-  withView(() => workspace.defaultLayout(props.spaceCode, spec.value.screen, name))
-
-const deleteLayout = async (name) => {
-  saving.value = true
-  try {
-    await workspace.deleteLayout(props.spaceCode, spec.value.screen, name)
-  } finally {
-    saving.value = false
-  }
-  // Back to the screen's own declaration rather than to another screen: which
-  // one would we pick? Only when the deleted one is what is open.
-  if (layout.value === name) openLayout('')
-  else await load()
-}
-
-// Hiding is not deleting, and the difference matters: the view stays where it
-// is for everybody else. If it is the one open, the screen goes back to its own
-// declaration — staying in a view you just took out of your menu reads as a
-// button that did nothing.
-const hideLayout = async (name) => {
-  saving.value = true
-  try {
-    await workspace.hideLayout(props.spaceCode, spec.value.screen, name)
-  } finally {
-    saving.value = false
-  }
-  if (layout.value === name) openLayout('')
-  else await load()
-}
-
-const showLayouts = () =>
-  withView(() => workspace.showLayouts(props.spaceCode, spec.value.screen))
-
 const changed = async () => {
   dirty.value = true
   await loadRows()
 }
 
-// --- the list follows the site ----------------------------------------------
-//
-// Frappe publishes `list_update` for every document that changes, so a list
-// left open on a second screen stops being a photograph of when it was opened.
-//
-// Coalesced, and deliberately: a bulk import or a background job can publish
-// hundreds of these in a second, and one refetch per event is a list that
-// spends its afternoon reloading. A short wait after the last one is what a
-// person experiences as "it just updated".
-let pending = null
-let watching = null
-
-const follow = (doctype) => {
-  if (watching === doctype) return
-  if (unfollow) unfollow()
-  unfollow = null
-  watching = doctype
-  if (!doctype) return
-  unfollow = onDoctypeChange(doctype, () => {
-    // Not while something is unsaved: refetching would replace the rows under
-    // a filter somebody is still choosing, and the Save button would then be
-    // offering to save a screen they are no longer looking at.
-    if (dirty.value) return
-    clearTimeout(pending)
-    pending = setTimeout(() => loadRows(), 400)
-  })
-}
-
-let unfollow = null
-
-onBeforeUnmount(() => {
-  clearTimeout(pending)
-  if (unfollow) unfollow()
-})
+// The list follows the site — `composables/useListFollow.js`.
+const { follow } = useListFollow({ paused: dirty, reload: () => loadRows() })
 
 const onQuickFilters = (filters) => {
   quickFilters.value = filters
@@ -1248,104 +1115,18 @@ const removeSelected = async () => {
   }
 }
 
-const fetchPage = (start) =>
-  workspace.screenRows(
-    props.spaceCode,
-    spec.value.screen,
-    payload(),
-    spec.value.layout || '',
-    { start, limit: pageLength.value },
-    spec.value.view_type,
-  )
-
-const loadRows = async () => {
-  if (!spec.value?.doctype) {
-    rows.value = []
-    columns.value = spec.value?.columns || []
-    return
-  }
-  rowsLoading.value = true
-  rowsError.value = ''
-  try {
-    const page = await fetchPage(0)
-    rows.value = page?.rows || []
-    selection.value = []
-    // The columns the rows were actually fetched with, which is not always the
-    // screen's: an unsaved change to the column list narrows the fetch, and a
-    // header list that does not follow leaves a column standing over empty
-    // cells.
-    columns.value = page?.columns || spec.value.columns || []
-    // What the rows actually came back grouped by, which is not always what
-    // the picker says: pressing Done sets the local answer immediately, and
-    // the list would group the rows it still has — in the old order — into
-    // headings that repeat, for as long as the request takes. The server sorts
-    // by the group column, so the heading appears when the rows sorted for it
-    // do.
-    groupedBy.value = page?.group_by || ''
-    // Same reason as the grouping above: the board the rows were fetched for.
-    fetchedBoard.value = page?.board || null
-    fetchedCards.value = page?.cards || null
-    hasMore.value = !!page?.has_more
-    countRows()
-  } catch (error) {
-    // A read that fails is not an empty list, and this one is asked quietly —
-    // so without this a server error renders as "nothing here yet", which is
-    // the most confidently wrong thing a screen can say. It cost an afternoon
-    // once: a count query Frappe refused, shown as an empty backlog.
-    rows.value = []
-    total.value = null
-    hasMore.value = false
-    rowsError.value = error?.message || String(error)
-  } finally {
-    rowsLoading.value = false
-  }
-}
-
-// Asked after the rows and never awaited with them: the footer says how many
-// are loaded until this answers, and then how many there are.
-let counting = 0
-const countRows = async () => {
-  const asked = ++counting
-  total.value = null
-  try {
-    const answer = await workspace.screenRowCount(
-      props.spaceCode,
-      spec.value.screen,
-      payload(),
-      spec.value.layout || '',
-    )
-    // A count that arrives after the question changed is an answer to the old
-    // question, and putting it in the footer is worse than leaving it blank.
-    if (asked === counting) total.value = answer?.total ?? null
-  } catch {
-    // The rows are already on screen. A count that could not be taken leaves
-    // the footer saying how many are loaded, which is true and is enough —
-    // it is not a reason to shout at somebody reading a list.
-  }
-}
-
-// Appends rather than replaces, and keeps the selection: someone who ticked
-// four rows and then asked for more has not changed their mind about the four.
-const loadMore = async () => {
-  if (loadingMore.value || !hasMore.value) return
-  loadingMore.value = true
-  try {
-    const page = await fetchPage(rows.value.length)
-    const seen = new Set(rows.value.map((row) => row.name))
-    rows.value = [...rows.value, ...(page?.rows || []).filter((row) => !seen.has(row.name))]
-    hasMore.value = !!page?.has_more
-  } finally {
-    loadingMore.value = false
-  }
-}
-
-// A page size is part of the screen, so changing it is a change to save like any
-// other — and it starts the list again rather than truncating what is loaded.
-const setPageLength = (size) => {
-  if (!size || size === pageLength.value) return
-  pageLength.value = size
-  changed()
-}
+// The records this screen lists — `composables/useRows.js`.
+const {
+  rows, columns, selection, total, hasMore, rowsLoading, loadingMore,
+  rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards,
+  loadRows, loadMore, setPageLength,
+} = useRows({
+  spaceCode: props.spaceCode,
+  spec,
+  // Thunks: both are defined below this call.
+  payload: () => payload(),
+  onChange: () => changed(),
+})
 
 // Where an unsaved change goes when you say to keep it, which depends on where
 // you are. In a named view you may write, it goes into that view; anywhere

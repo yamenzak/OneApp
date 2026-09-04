@@ -75,7 +75,7 @@ disagree.
 | `lib/workspace/` | Hand-written, and the one place a server call is named: `settings`, `screen`, `record`, `layouts`, `mail`, `importing`, `printing`, assembled into one `workspace` object because every caller says `workspace.screenRows(...)`. |
 | `pages/` | One per route. `ScreenHost` is the big one — it resolves a screen and hosts whichever body the view type asks for. |
 | `components/screen/` | The bodies and the record surface: `ListBody`, `BoardBody`, `CardsBody`, `DashboardBody`, `RecordView`, `FieldControl`. |
-| `composables/` | State pulled out of a page: `usePeek`, `useCrumbs`, `useSorting`. A composable called at the top of `<script setup>` runs *immediately*, so everything it reads must be declared above the call — `tests/test_composables.py` enforces exactly that, after an extraction that did not left every spec timing out. |
+| `composables/` | State pulled out of a page. `useRows` owns the records a screen lists and everything about having fetched them; `useSavedViews` the named layouts; `usePeek` a record opened from inside another; `useListFollow` the realtime refetch; `useCrumbs` and `useSorting` the header's derived state. A composable called at the top of `<script setup>` runs *immediately*, so everything it reads must be declared above the call — `tests/test_composables.py` enforces exactly that, after an extraction that did not left every spec timing out at once. |
 | `screens/` | Bespoke screens a manifest names by component, rather than rendering from metadata. |
 | `ui.js` | The barrel. Every frappe-ui component comes through it, so what is allowed is one reviewable list. |
 
