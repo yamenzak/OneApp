@@ -50,6 +50,12 @@ The single modules, roughly by how often they are touched:
   because Frappe evaluates it as code.
 * `jobs.py`, `backup.py`, `expiry.py`, `retention.py`, `site.py` — the scheduled
   half. Every job here is accounted for by `tests/test_site_role.py`.
+* `drive/` — every file in the workspace, over Frappe's own `File` table. Four
+  layers: `kinds` (what a file is, decided on insert), `query` (the places in
+  the rail, as filters), `reading`, `writing`. A file attached to a record has
+  `attached_to_doctype` and a file in a folder has `folder`; it can have both,
+  which is why the Drive and a record's Files tab are two queries and not two
+  stores.
 * `ai/`, `storage/`, `plans/` — the metered gateway, R2, and the one bespoke
   migration plan.
 
