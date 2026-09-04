@@ -28,6 +28,7 @@
 import { computed } from 'vue'
 import { Avatar, Button, Dropdown } from '@/ui'
 import { useAppearance } from '@/lib/appearance'
+import { signOut } from '@/lib/user'
 
 const props = defineProps({
   name: { type: String, default: '' },
@@ -56,11 +57,7 @@ const options = computed(() => [
   {
     label: 'Log out',
     icon: 'lucide-log-out',
-    // Frappe's own logout clears the session cookie server-side; a client-side
-    // redirect alone would leave the session valid.
-    onClick: () => {
-      window.location.href = '/api/method/logout'
-    },
+    onClick: signOut,
   },
 ])
 </script>

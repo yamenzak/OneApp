@@ -91,6 +91,7 @@ def suggest(email_id: str) -> dict:
 
 @frappe.whitelist(methods=["GET"])
 def suggestion(email_id: str) -> dict:
+	"""The IMAP and SMTP hosts a provider is known to use, from the address alone."""
 	return suggest(email_id)
 
 

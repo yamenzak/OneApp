@@ -1,4 +1,11 @@
-"""Who a record is assigned to."""
+"""Who a record is assigned to.
+
+Frappe's own model, unchanged: `_assign` is a JSON list of user ids on the
+document, and `frappe.desk.form.assign_to` keeps a ToDo beside each one so the
+person sees it in their own list. Both halves matter — writing `_assign`
+directly would put a face on the record and no task in anybody's day — so the
+framework's functions do the writing here and this only decides who may ask.
+"""
 
 import frappe
 from frappe import _

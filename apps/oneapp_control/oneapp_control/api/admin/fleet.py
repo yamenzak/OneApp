@@ -10,6 +10,7 @@ from .press import _degrade, _site_plans
 
 @frappe.whitelist()
 def shards() -> list:
+	"""Every shard, for the picker that puts a new tenant on one."""
 	_require_manager()
 	return capacity_report()
 

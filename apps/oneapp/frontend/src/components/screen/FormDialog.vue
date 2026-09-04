@@ -74,7 +74,6 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { Button, Dialog } from '@/ui'
 
 // The same treatment the settings panels' footer carries — pinned, ruled off,
@@ -88,7 +87,7 @@ const FOOTER = [
   'px-4 py-3 sm:px-6',
 ].join(' ')
 
-const props = defineProps({
+defineProps({
   title: { type: String, required: true },
   size: { type: String, default: '3xl' },
   /**

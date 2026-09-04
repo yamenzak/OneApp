@@ -685,6 +685,7 @@ def print_format_preview(doctype: str, layout, setup=None, name: str = "",
 
 @frappe.whitelist(methods=["GET"])
 def letter_heads() -> list[dict]:
+	"""Every letter head the workspace has."""
 	from oneapp.oneapp_core import printing
 
 	_printing_gate()
@@ -693,6 +694,7 @@ def letter_heads() -> list[dict]:
 
 @frappe.whitelist(methods=["GET"])
 def letter_head(name: str) -> dict:
+	"""One letter head, with its content."""
 	from oneapp.oneapp_core import printing
 
 	_printing_gate()
@@ -701,6 +703,7 @@ def letter_head(name: str) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def save_letter_head(label: str, values=None, name: str = "") -> dict:
+	"""Write a letter head, new or existing."""
 	from oneapp.oneapp_core import printing
 
 	_printing_gate()
@@ -710,6 +713,7 @@ def save_letter_head(label: str, values=None, name: str = "") -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def delete_letter_head(name: str) -> list[dict]:
+	"""Remove a letter head."""
 	from oneapp.oneapp_core import printing
 
 	_printing_gate()

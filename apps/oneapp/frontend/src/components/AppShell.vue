@@ -220,7 +220,7 @@
           theme="red"
           label="Log out"
           tooltip="Log out"
-          @click="logout"
+          @click="signOut"
         />
       </div>
     </div>
@@ -249,6 +249,7 @@ import {
 } from '@/ui'
 import { useAppearance } from '@/lib/appearance'
 import { useIsMobile } from '@/lib/screen'
+import { signOut } from '@/lib/user'
 
 const props = defineProps({
   /**
@@ -380,9 +381,5 @@ function run(item) {
   item.onClick?.()
 }
 
-// Frappe's own logout clears the session cookie server-side; a client-side
-// redirect alone would leave the session valid.
-function logout() {
-  window.location.href = '/api/method/logout'
-}
+
 </script>

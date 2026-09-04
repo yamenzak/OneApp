@@ -1,4 +1,10 @@
-"""What one person has read and starred, which a shared address cannot store."""
+"""What one person has read and starred, which a shared address cannot store.
+
+Per person, because a shared address is read by several and `Communication.seen`
+is one flag for the document. Kept as a user setting rather than a doctype: it
+is a list of ids nobody queries across users, and a doctype would be a table
+with a row per person per message for a question only that person ever asks.
+"""
 
 import frappe
 

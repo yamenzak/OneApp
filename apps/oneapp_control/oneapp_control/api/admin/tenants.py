@@ -1,4 +1,10 @@
-"""Creating a workspace, suspending it, and what it is entitled to."""
+"""Creating a workspace, suspending it, and what it is entitled to.
+
+Everything below exists because the desk is not part of this product
+(docs/ONEADMIN.md, No desk). A record an operator can only reach through /app is a record
+only someone who knows Frappe can reach, and the whole point of the operator
+console is that running this does not require that.
+"""
 
 import frappe
 from oneapp_control.entitlements import registry
@@ -9,12 +15,14 @@ from .guard import _require_manager
 
 @frappe.whitelist()
 def check_slug(slug: str) -> dict:
+	"""Whether a slug is free, asked as somebody types it."""
 	return {"slug": slug, "available": is_available(slug)}
 
 
 @frappe.whitelist()
 def create_tenant(tenant_slug: str, tenant_name: str, owner_email: str,
                   plan: str | None = None, provision: bool = True) -> dict:
+	"""Create a workspace. Provisioning is a separate step, so this one is cheap."""
 	_require_manager()
 
 	tenant = frappe.get_doc(
@@ -37,12 +45,14 @@ def create_tenant(tenant_slug: str, tenant_name: str, owner_email: str,
 
 @frappe.whitelist()
 def provision(tenant: str) -> str:
+	"""Start provisioning a workspace that has been created."""
 	_require_manager()
 	return runner.provision_tenant(tenant).name
 
 
 @frappe.whitelist()
 def suspend(tenant: str, reason: str = "Suspended by operator") -> str:
+	"""Suspend a workspace. Its people keep their data and lose their access."""
 	_require_manager()
 	return runner.enqueue(
 		tenant, "Suspend Site", {"reason": reason}, idempotency_key=f"suspend:{tenant}:{frappe.generate_hash(length=8)}"
@@ -51,6 +61,7 @@ def suspend(tenant: str, reason: str = "Suspended by operator") -> str:
 
 @frappe.whitelist()
 def resume(tenant: str) -> str:
+	"""Lift a suspension, and let the workspace back in."""
 	_require_manager()
 	return runner.enqueue(
 		tenant, "Resume Site", idempotency_key=f"resume:{tenant}:{frappe.generate_hash(length=8)}"
@@ -59,6 +70,7 @@ def resume(tenant: str) -> str:
 
 @frappe.whitelist()
 def add_custom_domain(tenant: str, domain: str) -> str:
+	"""Point a customer's own domain at their site."""
 	_require_manager()
 	return runner.enqueue(
 		tenant, "Add Domain", {"domain": domain}, idempotency_key=f"domain:{tenant}:{domain}"
@@ -67,6 +79,7 @@ def add_custom_domain(tenant: str, domain: str) -> str:
 
 @frappe.whitelist()
 def tenant_apps(tenant: str) -> list:
+	"""Which spaces a workspace is entitled to, and which it is not."""
 	_require_manager()
 	return registry.spaces_for_tenant(tenant)
 
@@ -105,12 +118,14 @@ def tenant_app_access(tenant: str) -> list:
 
 @frappe.whitelist()
 def grant_app(tenant: str, space_code: str, note: str | None = None) -> str:
+	"""Entitle a workspace to a space."""
 	_require_manager()
 	return registry.grant(tenant, space_code, note)
 
 
 @frappe.whitelist()
 def revoke_app(tenant: str, space_code: str):
+	"""Take a space away from a workspace."""
 	_require_manager()
 	registry.revoke(tenant, space_code)
 	return {"ok": True}

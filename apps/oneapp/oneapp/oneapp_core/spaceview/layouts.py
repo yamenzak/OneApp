@@ -1,4 +1,21 @@
-"""Writing a saved view: creating, renaming, hiding, resetting."""
+"""Writing a saved view: creating, renaming, hiding, resetting.
+
+Frappe's own answer to this is the `List Filter` doctype, and it is worth
+following rather than approximating: a layout has a name, it belongs to one
+person or to everybody (`for_user` empty means global), and the filters, the
+sort and the columns travel together as one saved thing. Frappe CRM built its
+own before the framework had one; the framework's is the one to follow.
+
+What we keep from ours: it is per screen rather than per doctype, because two
+screens over one doctype are two questions.
+
+A layout narrows; it never widens. Its columns are intersected with the
+screen's, and its filters are applied on top of the screen's rather than
+instead of them — so a person cannot save their way to a column the space did
+not offer or a row the screen filtered out. That holds for a shared layout
+too: sharing does not raise what a layout may reach, and every filter in one
+is re-checked against the screen on the way out, not only when it was saved.
+"""
 
 import frappe
 import json

@@ -328,7 +328,6 @@
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import {
   Alert,
-  Avatar,
   Badge,
   Button,
   ErrorMessage,
@@ -336,12 +335,10 @@ import {
   TabList,
   TabTrigger,
   TabPanel,
-  Tooltip,
   dayjsLocal,
 } from '@/ui'
 import AvatarStack from './AvatarStack.vue'
 import RecordChip from './RecordChip.vue'
-import ScreenActions from './ScreenActions.vue'
 import RecordForm from './RecordForm.vue'
 import RecordActivity from './RecordActivity.vue'
 import RecordFiles from './RecordFiles.vue'
@@ -536,7 +533,6 @@ const dirty = computed(() =>
     (field) => flat(form[field.fieldname]) !== flat(props.record?.[field.fieldname]),
   ),
 )
-const trackChanges = computed(() => !!props.spec?.track_changes)
 
 const identity = computed(() => {
   const field = props.spec?.title_field

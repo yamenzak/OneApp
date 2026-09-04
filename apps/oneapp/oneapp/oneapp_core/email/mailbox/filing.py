@@ -1,4 +1,8 @@
-"""Moving a conversation: to the bin, to the archive, to a folder."""
+"""Moving a conversation: to the bin, to the archive, to a folder.
+
+The whitelisted half. `folders.py` does the IMAP; this decides whose mailbox
+is being changed, which is the part that has to be right.
+"""
 
 import frappe
 from oneapp.oneapp_core.email import folders as folder_ops

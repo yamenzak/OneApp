@@ -222,6 +222,7 @@ def save(values: str | dict) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def drop(name: str) -> dict:
+	"""Remove a filing rule. Checked against the address it is on, not the caller's list."""
 	doc = frappe.get_doc("Mail Rule", name)
 	_mine(doc.address)
 	frappe.delete_doc("Mail Rule", name, ignore_permissions=True)

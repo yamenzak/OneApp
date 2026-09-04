@@ -119,7 +119,6 @@ import StateBadge from './StateBadge.vue'
 import RecordChip from './RecordChip.vue'
 import RecordPreview from './RecordPreview.vue'
 import { cellText, tagList } from '../../lib/cells'
-import { plainText } from '../../lib/format'
 import { session } from '../../lib/session'
 
 const props = defineProps({

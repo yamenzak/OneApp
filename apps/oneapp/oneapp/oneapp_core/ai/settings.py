@@ -291,6 +291,7 @@ def save(values: dict) -> dict:
 
 @frappe.whitelist(methods=["GET"])
 def get() -> dict:
+	"""What the workspace's AI tab renders: the feature registry, as rows."""
 	from oneapp.oneapp_core.workspace import require_owner
 
 	require_owner()
@@ -299,6 +300,7 @@ def get() -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def update(values: str | dict) -> dict:
+	"""Write the workspace's own AI settings. Owners only, like the rest of the tab."""
 	from oneapp.oneapp_core.workspace import require_owner
 
 	require_owner()

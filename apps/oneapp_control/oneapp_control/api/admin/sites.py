@@ -168,6 +168,7 @@ def set_primary_domain(tenant: str, domain: str) -> str:
 
 @frappe.whitelist(methods=["POST"])
 def remove_domain(tenant: str, domain: str) -> str:
+	"""Take a custom domain off a tenant's site."""
 	_require_manager()
 	doc, site = _site_of(tenant)
 	if not site:

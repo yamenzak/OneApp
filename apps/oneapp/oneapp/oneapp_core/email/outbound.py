@@ -263,6 +263,10 @@ def _drop_suppressed(doc):
 
 @frappe.whitelist(methods=["GET"])
 def usage() -> dict:
+	"""What the workspace has sent against what it may send.
+
+	Read by the settings panel, which is the only place a limit being close is
+	visible before it is hit."""
 	c = config()
 	return {
 		"sent_this_hour": sent_this_hour(),

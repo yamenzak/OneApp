@@ -710,7 +710,10 @@ def test_the_bottom_bar_leaves_a_slot_for_everything_else():
 	# surface has, not only the ones the bar had no room for. A list that
 	# silently omits the four you can already see is a list you cannot trust to
 	# be complete — and it went empty on a space whose screens all fit.
-	for reachable in ("navItems", "entryOptions", "menuItems", "iconOptions", "logout"):
+	# `signOut` rather than `logout`: signing out is one function in `lib/user`
+	# now, and was three copies of one line with three copies of the paragraph
+	# explaining it.
+	for reachable in ("navItems", "entryOptions", "menuItems", "iconOptions", "signOut"):
 		assert reachable in shell, f"the More sheet cannot reach {reachable}"
 
 

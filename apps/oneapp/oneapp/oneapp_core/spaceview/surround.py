@@ -1,4 +1,8 @@
-"""What surrounds a record: its timeline, files, comments, likes."""
+"""What surrounds a record: its timeline, files, comments, likes.
+
+Comments, the change log, who liked it. All of it is Frappe's own, on every
+doctype, and none of it needs a space to ask for it.
+"""
 
 import frappe
 from frappe import _
@@ -259,6 +263,7 @@ def remove_attachment(space_code: str, screen: str, name: str, file: str) -> dic
 
 @frappe.whitelist(methods=["POST"])
 def comment(space_code: str, screen: str, name: str, content: str) -> dict:
+	"""Add a comment to a record, through the screen that may reach it."""
 	resolved = _resolve(space_code, screen)
 	doctype = resolved.get("doctype")
 	if not doctype:

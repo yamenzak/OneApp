@@ -1,4 +1,8 @@
-"""The model catalogue, the feature registry, and what tenants spent."""
+"""The model catalogue, the feature registry, and what tenants spent.
+
+All of it operable from the console. There is no desk (docs/ONEADMIN.md, No desk), so a model
+that can only be re-priced by editing a doctype is a model nobody re-prices.
+"""
 
 import frappe
 from frappe import _
@@ -12,6 +16,7 @@ AI_MODEL_EDITABLE = ("status", "capability", "is_recommended", "markup_override"
 @frappe.whitelist(methods=["GET"])
 def ai_models(capability: str | None = None, provider: str | None = None,
               status: str | None = None) -> list:
+	"""The model catalogue, with each model's current price."""
 	_require_manager()
 
 	filters = {}

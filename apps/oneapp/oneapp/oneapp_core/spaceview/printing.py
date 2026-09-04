@@ -1,4 +1,12 @@
-"""Print formats, reached from a record."""
+"""Print formats, reached from a record.
+
+The rendering is Frappe's and so is the PDF; what is here is the screen.
+Frappe's own print endpoints take a doctype and a name, and ours take a space
+and a screen — so a record this screen would not list is not one it prints,
+and a doctype the space never granted has no route here at all.
+
+See `oneapp_core.printing` for what each piece of the stack actually is.
+"""
 
 import frappe
 from oneapp.oneapp_core import collab, dashboard, docflow, fieldtypes, printing, showcase

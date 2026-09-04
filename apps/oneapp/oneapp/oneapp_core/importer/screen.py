@@ -1,4 +1,9 @@
-"""What the import screen shows and the buttons on it."""
+"""What the import screen shows and the buttons on it.
+
+What the person leaving their old system sees: where it is, what will come
+across, and two buttons — rehearse it, then do it. One request rather than
+five, because the panel is one picture and five requests is five spinners.
+"""
 
 import frappe
 from frappe import _

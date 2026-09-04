@@ -1,4 +1,10 @@
-"""Holding what somebody typed, so closing the composer does not lose it."""
+"""Holding what somebody typed, so closing the composer does not lose it.
+
+A `Communication` with `sent_or_received = "Sent"` and no queue row behind it,
+marked by a status the framework already has. Not a doctype of our own: a
+draft becomes the message when it is sent, and two models for one thing means
+copying between them and losing the attachments on the way.
+"""
 
 import frappe
 
@@ -34,11 +40,13 @@ def keep(values: str | dict) -> dict:
 
 @frappe.whitelist(methods=["GET"])
 def kept() -> dict:
+	"""The draft this person left behind, or nothing."""
 	raw = frappe.defaults.get_user_default(DRAFT_KEY, frappe.session.user)
 	return frappe.parse_json(raw) if raw else {}
 
 
 @frappe.whitelist(methods=["POST"])
 def forget() -> dict:
+	"""Throw the draft away, once its message has been sent."""
 	frappe.defaults.set_user_default(DRAFT_KEY, "", frappe.session.user)
 	return {"ok": True, "forgotten": True}

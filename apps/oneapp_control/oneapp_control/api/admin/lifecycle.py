@@ -1,4 +1,11 @@
-"""The dunning ladder, cold storage, and the clock that drives them."""
+"""The dunning ladder, cold storage, and the clock that drives them.
+
+The ladder runs on a timer and destroys data at the end of it, so an operator
+needs four things it cannot get from editing a field: a way to stop it, a way
+to run it now on one workspace, a way to take a copy on demand, and a way to
+bring one back. All four are here rather than on a form, because each is a
+decision with a consequence and the confirmation text is part of it.
+"""
 
 import frappe
 from frappe import _

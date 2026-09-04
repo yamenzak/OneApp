@@ -538,11 +538,13 @@ import ViewSwitcher from '../components/screen/ViewSwitcher.vue'
 import StateBadge from '../components/screen/StateBadge.vue'
 import { session } from '../lib/session'
 import { workspace } from '../lib/workspace'
+import { useCrumbs } from '../composables/useCrumbs'
+import { usePeek } from '../composables/usePeek'
+import { useSorting } from '../composables/useSorting'
 import { notifyError, notifySuccess } from '../lib/notify'
 import { screenComponent } from '../screens'
-import { CARD_VIEW_TYPES, DEFAULT_VIEW_TYPE, VIEW_TYPES, bodyFor } from '../lib/viewTypes'
+import { CARD_VIEW_TYPES, DEFAULT_VIEW_TYPE, bodyFor } from '../lib/viewTypes'
 import { onDoctypeChange } from '../lib/socket'
-import { docBadge } from '../lib/docstate'
 import { applyTheme, clearTheme } from '../lib/theme'
 import {
   DRAWER,
@@ -710,81 +712,18 @@ const emptyBecause = computed(() => {
 // name it with yet.
 const shownRecord = computed(() => editing.value)
 
-// --- peeking ----------------------------------------------------------------
-//
-// A record opened from inside another one. Two query parameters rather than
-// one, because the thing being peeked at is usually on a different screen — a
-// project's invoices are the invoices screen — and a name with no screen is a
-// name this host would look up in the wrong place.
-const peeked = ref(null)
-const peekSpec = ref(null)
-
-const peekScreen = computed(() => String(route.query.peekScreen || spec.value?.screen || ''))
-const peekName = computed(() => String(route.query.peek || ''))
-
-/**
- * The peeked record and the spec to draw it with.
- *
- * Both, and in parallel: the spec answers what a record of *that* screen looks
- * like — its fields, its states, its own showcase — and reusing this screen's
- * would render an invoice through the projects screen's columns.
- *
- * Cleared first, so switching from one peeked record to another does not show
- * the last one's fields under the new one's name for as long as the request
- * takes. A record that comes back empty — moved, deleted, or never visible to
- * this reader — closes the drawer rather than leaving an empty one open.
- */
-const loadPeek = async () => {
-  if (!peekName.value || !peekScreen.value) {
-    peeked.value = null
-    peekSpec.value = null
-    return
-  }
-  peeked.value = null
-  peekSpec.value = null
-  const [found, drawn] = await Promise.all([
-    workspace.screenRecord(props.spaceCode, peekScreen.value, peekName.value),
-    workspace.screenSpec(props.spaceCode, peekScreen.value),
-  ])
-  if (peekName.value !== String(route.query.peek || '')) return
-  if (!found?.name) {
-    closePeek()
-    return
-  }
-  peeked.value = found
-  peekSpec.value = drawn || null
-}
-
-// Back, in both senses: the record underneath is still there and the browser's
-// own back button does the same thing, because the drawer is in the URL.
-const closePeek = () => {
-  const query = { ...route.query }
-  delete query.peek
-  delete query.peekScreen
-  router.push({ query })
-}
-
-const peekSaved = async () => {
-  await loadPeek()
-  // The page underneath may be showing what just changed — a variation's stage
-  // in the rail, an invoice's total in a tab — so it is re-read too.
-  await loadRows()
-}
-
-// The peeked record, opened properly: its own screen, its own list behind it,
-// and the drawer gone. Pushed rather than replaced — the job you were reading
-// is a place you may well want the back button to return to.
-const expandPeek = () => {
-  if (!peekName.value) return
-  router.push({ query: { screen: peekScreen.value, record: peekName.value } })
-}
-
-const peekRenamed = (name) => {
-  if (!name) return
-  router.replace({ query: { ...route.query, peek: name } })
-}
-
-watch([peekName, peekScreen], loadPeek, { immediate: true })
+// A record opened from inside another one, in `composables/usePeek.js`.
+const {
+  peeked, peekSpec,
+  closePeek, peekSaved, expandPeek, peekRenamed,
+} = usePeek({
+  spaceCode: props.spaceCode,
+  spec,
+  route,
+  router,
+  // A thunk: `loadRows` is defined below this call.
+  reloadList: () => loadRows(),
+})
 
 /**
  * Whether the open record takes the page rather than a pane beside the list.
@@ -841,95 +780,9 @@ const setSurface = (chose) => {
   remember(props.spaceCode, spec.value?.screen, chose)
 }
 
-// What the last crumb says when no view is saved: how this screen is being
-// drawn. "Tasks / Tasks" is one word twice; "Tasks / List" says where you are.
-const viewLabel = computed(() => {
-  const type = spec.value?.view_type || DEFAULT_VIEW_TYPE
-  return VIEW_TYPES[type]?.label || 'List'
-})
 
-// The space's first screen, which is what the house goes to. A space home is a
-// page of its own one day; until it is, the first thing in the navigation is
-// the nearest true thing.
-const homeRoute = computed(() => {
-  const first = spec.value?.screens?.[0]
-  return {
-    name: 'Screen',
-    params: { spaceCode: props.spaceCode },
-    ...(first ? { query: { screen: first.screen } } : {}),
-  }
-})
-
-const crumbs = computed(() => {
-  if (!space.value) return []
-  const trail = [{ label: '', home: true, space: space.value.space_label, route: homeRoute.value }]
-  if (spec.value?.screen_label) {
-    trail.push({
-      label: spec.value.screen_label,
-      route: {
-        name: 'Screen',
-        params: { spaceCode: props.spaceCode },
-        query: { screen: spec.value.screen },
-      },
-    })
-  }
-  return trail
-})
-
-// The record, when one is open. It is where you are, so it takes the last
-// place from the view.
-//
-// Worth being honest about what this is not yet: the record opens as a modal
-// dialog, and a modal takes the rest of the page out of the accessibility
-// tree, so while it is open this can be read by eye and not by a screen
-// reader. What it does buy today is the URL — a record is a link somebody can
-// send — and it is the trail a record *page* will want when there is one.
-const recordCrumb = computed(() => {
-  const open = shownRecord.value
-  if (!open) return null
-  const title = spec.value?.title_field
-  const label = (title && open[title]) || open.name
-  return {
-    value: open.name,
-    label: String(label),
-    // The id, and only where the name is not already it.
-    id: label === open.name ? '' : open.name,
-    image: spec.value?.image_field ? open[spec.value.image_field] : null,
-  }
-})
-
-// Where the record stands. Which field that is comes from the manifest and is
-// checked against the doctype on the way out; what colour it is comes from the
-// doctype's own states, the same way the list cell reads it.
-const statusValue = computed(() => {
-  const field = spec.value?.status_field
-  return (field && shownRecord.value?.[field]) || ''
-})
-
-// And where the framework stands on it: a workflow's state, or Draft /
-// Submitted / Cancelled. De-duped against the field above, because a screen
-// whose `status_field` *is* the workflow's state field is already saying it.
-const docState = computed(() =>
-  docBadge(shownRecord.value?._state, spec.value?.status_field || ''),
-)
-
-// --- sorting, from the headers ----------------------------------------------
-//
-// The order belongs to the screen rather than to the body: it is saved with the
-// view, it goes into every request, and a board sorts its cards by the same
-// answer a list sorts its rows by. The body only says which column was clicked.
-
-const sorted = computed(() => (order.value || spec.value?.order_by || '').split(' '))
-const sortField = computed(() => sorted.value[0])
-const ascending = computed(() => sorted.value[1] === 'asc')
-
-// Clicking the column already sorted flips it; clicking another starts on
-// descending, which is what "show me the newest" means for most columns.
-const sortBy = (fieldname) => {
-  const flip = fieldname === sortField.value && !ascending.value
-  order.value = `${fieldname} ${flip ? 'asc' : 'desc'}`
-  changed()
-}
+// The order the list is in — `composables/useSorting.js`.
+const { sortBy } = useSorting({ order, spec, onChange: () => changed() })
 
 // --- what the list is being asked -------------------------------------------
 
@@ -981,6 +834,15 @@ const layout = computed(() => route.query.layout || '')
 // screen's own first type, which is what the server falls back to — so a link
 // without one is a link to the default rather than to nothing.
 const viewType = computed(() => route.query.type || '')
+
+// Where the reader is, as the header draws it — `composables/useCrumbs.js`.
+const { viewLabel, crumbs, recordCrumb, statusValue, docState } = useCrumbs({
+  spaceCode: props.spaceCode,
+  spec,
+  space,
+  shownRecord,
+  viewType,
+})
 
 const openLayout = (name) => {
   router.push({ query: { ...route.query, layout: name || undefined } })

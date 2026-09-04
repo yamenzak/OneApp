@@ -1,4 +1,14 @@
-"""Tags and shares, as Frappe models them."""
+"""Tags and shares, as Frappe models them.
+
+Both are Frappe's — see `oneapp_core.collab` for what each one actually is
+and why neither was worth inventing. What is here is the screen: which
+doctype, and whether this reader may reach this record at all.
+
+`record()` rather than `get_doc` for the reach check, in every one of these.
+A record this screen would not list is not a record this screen may tag or
+share, and `record()` is the one path that applies the screen's own filters
+and this person's User Permissions together.
+"""
 
 import frappe
 from frappe import _

@@ -1,4 +1,20 @@
-"""What a plan would do, before it does any of it."""
+"""What a plan would do, before it does any of it.
+
+A fourteen-step field map is a document nobody can read for correctness, and
+the mistakes in one are all quiet: a source field renamed since somebody wrote
+the map, a target field that does not exist on this site's version, a value
+map that covers four of the five values actually in the data, a link resolved
+against a step that runs later.
+
+None of those fails loudly. The first three drop a column, the fourth files an
+issue per row — and all of them are found after the run, in a report somebody
+reads a week later and disbelieves.
+
+So the plan is checked against *both ends* before it is run: the source's own
+metadata over the wire, and this site's own metadata locally. It reads
+everything and writes nothing, which makes it free to run as often as anybody
+likes — and it is what the Check button beside Rehearse does.
+"""
 
 import frappe
 import json

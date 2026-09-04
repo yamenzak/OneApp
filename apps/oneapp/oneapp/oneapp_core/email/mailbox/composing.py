@@ -1,4 +1,11 @@
-"""Opening the composer already filled in: a reply, or a forward."""
+"""Opening the composer already filled in: a reply, or a forward.
+
+Both are the same shape — a new message carrying an old one — and both are
+built on the server rather than in the browser, for one reason: the quoted
+body is the *stored* HTML, and the stored HTML is what Frappe sanitised on
+the way in. Quoting from what the reader is looking at would quote the copy
+with its images held back, and send somebody a reply full of empty `<img>`.
+"""
 
 import frappe
 from frappe import _

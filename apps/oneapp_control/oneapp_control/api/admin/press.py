@@ -1,4 +1,14 @@
-"""Talking to Frappe Cloud, and degrading rather than failing when it is down."""
+"""Talking to Frappe Cloud, and degrading rather than failing when it is down.
+
+The control plane holds intent — the plan, the quotas, who owns it. Press
+holds what is actually running. When those disagree the answer is nearly
+always in press, so the tenant page reads it live rather than caching a copy
+that can be wrong in a way nobody notices.
+
+Every one of these degrades rather than raising: press being unreachable
+should grey out a panel, not take down the page that would tell an operator
+why the site is unhappy.
+"""
 
 import frappe
 

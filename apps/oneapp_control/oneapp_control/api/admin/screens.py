@@ -1,4 +1,10 @@
-"""Which screens a space offers, edited from the console."""
+"""Which screens a space offers, edited from the console.
+
+An app is configuration before it is code: a screen names a doctype and the
+fields worth showing, and OneSpace renders it from the tenant site's own
+metadata. So this is where an app gets built, and it has to be reachable
+without the desk like everything else.
+"""
 
 import frappe
 from frappe import _
@@ -11,6 +17,7 @@ APP_VIEW_FIELDS = ("screen", "label", "icon", "document_type", "fields",
 
 @frappe.whitelist(methods=["GET"])
 def app_views(app: str) -> list:
+	"""Which screens a space offers, as the console edits them."""
 	_require_manager()
 
 	return frappe.get_all(

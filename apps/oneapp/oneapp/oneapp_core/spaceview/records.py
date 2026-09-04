@@ -1,4 +1,12 @@
-"""Reading and writing the records a screen is over."""
+"""Reading and writing the records a screen is over.
+
+Reads and writes go through the screen rather than through a generic document
+API, and that is the point rather than a formality: the screen says which
+doctype and which fields, so a screen cannot be used to read a doctype the
+entitlement did not include or to write a field it does not show. Frappe's own
+permissions still decide whether any of it is allowed — this only bounds what
+is asked for.
+"""
 
 import frappe
 from frappe import _
@@ -14,6 +22,10 @@ from .links import _link_row, _link_shape, _link_target
 @frappe.whitelist(methods=["GET"])
 def spec(space_code: str, screen: str | None = None, layout: str | None = None,
          view_type: str | None = None) -> dict:
+	"""One screen, resolved and with the saved layout folded in.
+
+	The first call every screen makes: it answers what the columns are, what may
+	be written, and which views this screen offers, before a single row is read."""
 	return _apply_saved(_resolve(space_code, screen, view_type), layout)
 
 

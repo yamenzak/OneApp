@@ -1,4 +1,9 @@
-"""Link fields: searching a target doctype, and creating into one."""
+"""Link fields: searching a target doctype, and creating into one.
+
+A Link is a foreign key, and a text box over one asks a customer to know a
+record's name. frappe-ui ships a Combobox; what it needs is something to
+search, and that has to be bounded the same way everything else here is.
+"""
 
 import frappe
 from frappe import _

@@ -58,6 +58,8 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 
 ## Where things are
 
+* **`docs/ARCHITECTURE.md`** — the map. Which directory owns what, where a
+  change goes, and the rules the tests keep. Read this one first.
 * **`docs/ONESPACE.md`** — the product. Spaces, screens, the four view bodies,
   the record, roles, collaboration, printing, the UI rules, what is not built.
 * **`docs/ONEADMIN.md`** — the platform. Tenancy, the control plane, the

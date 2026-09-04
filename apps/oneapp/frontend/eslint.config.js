@@ -46,6 +46,13 @@ export default [
       // the page is blank. Nothing but a browser saw it — 1939 Python tests
       // and a clean `yarn lint` both passed over it.
       'no-undef': 'error',
+
+      // The other half of the same rule: a name nothing *uses*. An import left
+      // behind by a refactor is dead weight the bundler still resolves and,
+      // worse, reads as evidence that a file still does something it no longer
+      // does. Arguments are exempt — a handler often takes what it ignores.
+      'no-unused-vars': ['error', { args: 'none' }],
+
     },
   },
   {

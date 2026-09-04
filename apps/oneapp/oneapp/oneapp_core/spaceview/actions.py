@@ -1,4 +1,16 @@
-"""Actions a space declares for one of its screens."""
+"""Actions a space declares for one of its screens.
+
+A screen can list, open and edit. What it could not do is *act* — replay a
+webhook, adopt a plan's terms, open the bespoke screen that belongs to this
+record — and every one of those used to live in a hand-written console page.
+Retiring those pages without this would have left a handful of things doable
+only in the desk, which is the one place this product does not go.
+
+Declared in code rather than stored on the Space, and the difference matters:
+an action names a method somebody can invoke, so the list of them is not
+something an operator should be able to extend by editing a row. A provider
+is a Python function behind a hook, shipped by an app, reviewed like code.
+"""
 
 import frappe
 

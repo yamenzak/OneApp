@@ -289,14 +289,22 @@ def test_every_state_badge_is_the_same_badge():
 			continue
 		assert "StateBadge" in (SCREEN / name).read_text(), f"{name} draws its own"
 
-	for path in ("apps/oneapp/frontend/src/pages/ScreenHost.vue",
-	             "apps/oneapp/frontend/src/components/screen/RecordView.vue"):
+	# The host draws the badges; where it *computes* them is the second path in
+	# each pair. `ScreenHost` moved its derived header state into a composable,
+	# and a guard that only read the template would have stopped checking that
+	# the value still comes from `docBadge`.
+	for path, computes in (
+		("apps/oneapp/frontend/src/pages/ScreenHost.vue",
+		 "apps/oneapp/frontend/src/composables/useCrumbs.js"),
+		("apps/oneapp/frontend/src/components/screen/RecordView.vue",
+		 "apps/oneapp/frontend/src/components/screen/RecordView.vue"),
+	):
 		body = (ROOT / path).read_text()
 		# Both badges beside a record's name: the doctype's own status field,
 		# and where the framework stands on it.
 		assert 'data-slot="record-status"' in body, path
 		assert 'data-slot="doc-state"' in body, path
-		assert "docBadge" in body, path
+		assert "docBadge" in (ROOT / computes).read_text(), computes
 
 
 def test_the_docstatus_words_all_earn_a_glyph():

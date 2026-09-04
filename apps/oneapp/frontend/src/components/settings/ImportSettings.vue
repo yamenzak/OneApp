@@ -296,7 +296,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import { onBeforeUnmount, reactive, ref } from 'vue'
 import {
   Button,
   Dialog,

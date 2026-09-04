@@ -1,4 +1,16 @@
-"""Submit, cancel, amend, and the workflow transitions."""
+"""Submit, cancel, amend, and the workflow transitions.
+
+`docflow` decides what may be done and does it; these four are the screen in
+front of it. All go through `_reachable`, which resolves the screen *and*
+re-reads the record through `record()` — so a row the screen would not list
+cannot be submitted, cancelled, amended or moved through a workflow by id.
+
+Four rather than one endpoint taking a verb, because they are four different
+things to be allowed to do: Frappe checks `submit` and `cancel` itself on the
+docstatus transition, `amend` is ours to check, and a workflow transition is
+checked by the workflow. A single endpoint would have to re-derive which of
+those applied from a string the browser sent.
+"""
 
 import frappe
 from oneapp.oneapp_core import collab, dashboard, docflow, fieldtypes, printing, showcase

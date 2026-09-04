@@ -50,7 +50,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import EmptyState from '../EmptyState.vue'
 import DashboardWidget from './DashboardWidget.vue'
 import { workspace } from '../../lib/workspace'

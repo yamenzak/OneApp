@@ -1,4 +1,6 @@
-"""Everything the operator console can do, as whitelisted endpoints.
+"""Operator-facing endpoints. Session-authenticated, System Manager only.
+
+Everything the operator console can do, as whitelisted endpoints.
 
 One 1,500-line module answering sixty-nine calls, split by subject. The layers,
 in import order — a module may use the ones above it, never below:

@@ -59,6 +59,11 @@ def _verify() -> dict:
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def receive():
+	"""One inbound message, POSTed by the Cloudflare Worker.
+
+	Guest-callable by necessity — the Worker holds no session — so the signature
+	is the whole of the authentication, and a message already stored is answered
+	as a duplicate rather than filed twice."""
 	payload = _verify()
 
 	message_id = payload.get("message_id")

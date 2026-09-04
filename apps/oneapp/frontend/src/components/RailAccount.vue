@@ -32,6 +32,7 @@
 </template>
 
 <script setup>
+import { signOut } from '../lib/user'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Avatar, Dropdown } from '@/ui'
@@ -65,11 +66,7 @@ const options = computed(() => [
   {
     label: 'Log out',
     icon: 'lucide-log-out',
-    // Frappe's own logout clears the session cookie server-side; a client-side
-    // redirect alone would leave the session valid.
-    onClick: () => {
-      window.location.href = '/api/method/logout'
-    },
+    onClick: signOut,
   },
 ])
 </script>
