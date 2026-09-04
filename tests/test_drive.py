@@ -515,3 +515,23 @@ def test_opening_a_file_survives_the_request_that_recorded_it():
 	source = (DRIVE / "reading.py").read_text()
 	opening = source[source.index("def details("):source.index("def storage(")]
 	assert "flags.commit = True" in opening
+
+
+def test_a_failed_presign_does_not_leave_half_a_redirect():
+	"""`presigned_url` can raise, and assigning the response type before calling
+	it leaves `type=redirect` with no location behind — which Werkzeug answers as
+	`Location: None`, a 500 saying nothing about what actually failed."""
+	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/r2.py").read_text()
+	serving = source[source.index("def serve("):source.index("def sync_backup_to_r2(")]
+	built = serving.index("presigned_url(")
+	assigned = serving.index('response["type"] = "redirect"')
+	assert built < assigned
+
+
+def test_a_stored_key_is_not_a_working_bucket():
+	"""A row keeps its `r2_key` through a site being reconfigured, and
+	presigning needs the client and the credentials rather than the key. Serving
+	on the key alone is a redirect nothing can build."""
+	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/r2.py").read_text()
+	serving = source[source.index("def serve("):source.index("def sync_backup_to_r2(")]
+	assert "if is_configured():" in serving

@@ -176,10 +176,19 @@ def serve(doc):
 	read the file, and a share link asks nothing at all because the secret in the
 	URL was the whole of the authentication.
 	"""
-	key = doc.get("r2_key")
-	if key or is_configured():
+	# `is_configured()` and not "does this row have a key". A key is where the
+	# object *would* be; presigning it needs the client and the credentials, and
+	# a site that has the row but not the keys cannot serve from R2 at all. A
+	# row keeps its key through a site being reconfigured, so the two questions
+	# come apart in practice.
+	if is_configured():
+		# Built before anything is assigned. `presigned_url` can raise, and
+		# setting the type first leaves a half-made redirect behind — which
+		# Werkzeug then answers as `Location: None`, a 500 that says nothing
+		# about what actually failed.
+		location = presigned_url(doc.get("r2_key") or object_key(doc))
 		frappe.local.response["type"] = "redirect"
-		frappe.local.response["location"] = presigned_url(key or object_key(doc))
+		frappe.local.response["location"] = location
 		return
 
 	frappe.local.response.filename = doc.file_name

@@ -231,6 +231,11 @@ def open_link(secret: str):
 
     link.db_set("opened", (link.opened or 0) + 1, update_modified=False)
     link.db_set("last_opened", now_datetime(), update_modified=False)
+    # Kept, which takes saying so: Frappe commits a request only when its HTTP
+    # method changes server state, and this one is a `GET` because following a
+    # link is. Without this the count and the date are rolled back at the end of
+    # every request — and the count *is* the audit trail this row exists for.
+    frappe.local.flags.commit = True
 
     # Not `r2.download`: that route checks whether *the reader* may read the
     # file, and the reader here is a guest with no account. The secret was the
