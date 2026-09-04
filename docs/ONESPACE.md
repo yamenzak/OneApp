@@ -714,6 +714,50 @@ the server's: paging, body search, drafts, an Undo that is really
 `Email Queue.send_after` rather than a countdown a closed tab defeats, and rules
 that are four words — look at this field, for this text, file it there.
 
+### Files
+
+**It is `File`, not a new model.** Frappe already has one file table and every
+attachment in the workspace is in it; the Drive adds four columns and no second
+store. A file attached to a record has `attached_to_doctype`, a file in a folder
+has `folder`, and it can have both — so `/one/files` and a record's Files tab are
+two `where` clauses over one table, drawn by one component. `docs/DRIVE.md` is
+the argument and the stages.
+
+The five things worth knowing here:
+
+**The rail is five filters over one column each.** All files, Recent,
+Favourites, Shared with me, Bin. Recent is `custom_opened`, stamped when
+somebody opens a file; Favourites is `_liked_by`, which the framework keeps on
+every doctype and this product already draws as a heart; Shared is "reachable
+and not mine", where what makes it reachable is a `DocShare` `get_list` has
+already applied. A sixth place would be a filter rather than a feature.
+
+**The bin is a promise with a date on it.** Deleting used to remove the row and
+the object together, so the only undo was a backup — which is not an undo, it is
+a support ticket. Trashing sets a column; a scheduled sweep empties what has
+been there thirty days and deletes the object then. Taking a file off a record
+goes the same way.
+
+**Every read is `get_list`.** That one word is the whole access model. `get_all`
+ignores permissions, and a file manager built on it would hand every reader
+every file on the site — most of which are attachments on records they cannot
+open.
+
+**Attaching is one control everywhere.** `FilePicker` has two tabs, Upload and
+Choose from files, and upload writes into the Drive and then picks the result —
+so there is one path and one place files end up. It replaced five separate
+uploaders that could not see each other's work, which is how the same drawing
+came to exist four times under four names. Picking a file that is already
+attached somewhere writes a second row over the same object rather than moving
+the first.
+
+**A link outlives a session, and only that.** Sharing with a colleague is a
+`DocShare`; sharing with a consultant who has no account here is a `File Link` —
+a secret in the URL, an expiry, and a revoked flag. It refuses a folder, refuses
+no expiry, and every refusal on the way in says the same sentence, because a
+message that distinguished expired from wrong would tell a stranger whether the
+secret was right.
+
 ---
 
 ## 8. Printing and naming
