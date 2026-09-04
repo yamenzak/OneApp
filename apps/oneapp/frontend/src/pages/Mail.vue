@@ -19,10 +19,18 @@
       <span class="px-2 pb-1 text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
         Mail
       </span>
+      <!--
+        An address, and under it the folders that mailbox actually has. Somebody
+        who has spent nine years sorting into Applicants and Suppliers has a
+        filing system, and pouring it into one flat list takes that away and
+        calls it a feature. The names come off the server itself — see
+        `oneapp_core/email/folders.py`.
+      -->
       <RouterLink
-        v-for="one in folders"
+        v-for="one in shown"
         :key="one.key"
         :to="{ name: 'Mail', query: { folder: one.key } }"
+        :class="one.depth ? 'ps-3' : ''"
         data-slot="mail-folder"
       >
         <Button
@@ -33,13 +41,41 @@
         />
       </RouterLink>
 
-      <div class="mt-auto pt-3">
+      <!-- Deleted mail, spam and drafts. Mirrored, because a mirror that
+           silently omits folders is one nobody can trust, and behind a click,
+           because a rail that opens on somebody's junk is a rail nobody
+           wants. -->
+      <Button
+        v-if="quiet.length"
+        variant="ghost"
+        class="!justify-start"
+        :icon-left="showQuiet ? 'lucide-chevron-down' : 'lucide-chevron-right'"
+        :label="showQuiet ? 'Fewer folders' : 'More folders'"
+        data-slot="mail-more-folders"
+        @click="showQuiet = !showQuiet"
+      />
+
+      <div class="mt-auto flex flex-col gap-1 pt-3">
         <Button
           variant="ghost"
           class="!justify-start"
           icon-left="lucide-pencil"
           label="Write"
           @click="compose()"
+        />
+        <!-- A folder made in Outlook this morning is one this site has never
+             heard of, and IMAP has no folder-change notification worth relying
+             on. So it is a button rather than a nightly job that re-lists every
+             mailbox on the site to catch the once-a-month case. -->
+        <Button
+          v-if="mailboxes.length"
+          variant="ghost"
+          class="!justify-start"
+          icon-left="lucide-refresh-cw"
+          label="Refresh folders"
+          :loading="refreshing"
+          data-slot="mail-refresh-folders"
+          @click="refresh()"
         />
       </div>
     </div>
@@ -203,6 +239,17 @@ const route = useRoute()
 
 const folders = ref([])
 const addresses = ref([])
+const mailboxes = ref([])
+const showQuiet = ref(false)
+const refreshing = ref(false)
+
+// The rail, with the quiet folders folded away unless asked for — or unless
+// one of them is the folder currently open, because collapsing the row
+// somebody is standing on is how a rail loses them.
+const shown = computed(() =>
+  folders.value.filter((one) => !one.quiet || showQuiet.value || folder.value === one.key),
+)
+const quiet = computed(() => folders.value.filter((one) => one.quiet))
 const threads = ref([])
 const search = ref('')
 const messages = ref([])
@@ -223,11 +270,27 @@ const draft = reactive({ sender: '', to: '', subject: '', content: '', in_reply_
 const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
 
 async function boot() {
-  const found = await workspace.mailFolders()
+  const [found, connected] = await Promise.all([
+    workspace.mailFolders(),
+    workspace.mailConnected(),
+  ])
   folders.value = found.folders || []
   addresses.value = found.addresses || []
+  mailboxes.value = connected || []
   draft.sender = addresses.value[0] || ''
   await load()
+}
+
+/** Ask each connected mailbox what folders it has now, and redraw the rail. */
+async function refresh() {
+  refreshing.value = true
+  try {
+    for (const box of mailboxes.value) await workspace.mailRefreshFolders(box.name)
+    const found = await workspace.mailFolders()
+    folders.value = found.folders || []
+  } finally {
+    refreshing.value = false
+  }
 }
 
 async function load() {

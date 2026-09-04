@@ -39,6 +39,13 @@ home_page = "one"
 # keys still works instead of failing every upload.
 override_doctype_class = {
 	"File": "oneapp.oneapp_core.storage.file.OneSpaceFile",
+	# Mail arrives folder by folder and the framework throws the folder away —
+	# `InboundMail` is handed it and nothing on the Communication records where
+	# the message was filed, so somebody's Applicants folder lands in one flat
+	# list. One method is overridden to carry it through, and one guard is
+	# relaxed inside a Sent folder so sent mail is not skipped as "your own mail
+	# in your own inbox". See `oneapp_core/email/folders.py`.
+	"Email Account": "oneapp.oneapp_core.email.folders.OneSpaceEmailAccount",
 }
 
 # ---------------------------------------------------------------------------
@@ -136,7 +143,12 @@ after_install = "oneapp.install.after_install"
 # Our own Notification Type, seeded the way the framework seeds its five: in
 # code, idempotently, on install and on every migrate. A type is a doctype row,
 # so an app adds one rather than forking an enum.
-after_migrate = "oneapp.oneapp_core.notifications.install_types"
+after_migrate = [
+	"oneapp.oneapp_core.notifications.install_types",
+	# The custom fields, for a site installed before one of them existed. Both
+	# are idempotent and both are cheap; the alternative is a patch per field.
+	"oneapp.install.create_custom_fields",
+]
 
 # `Workspace` never sends its own email.
 #

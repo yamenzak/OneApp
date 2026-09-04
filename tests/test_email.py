@@ -9,6 +9,8 @@ access — is Frappe's own and belongs in a runner with a database. What is here
 is the reasoning around it.
 """
 
+import types
+
 import pytest
 
 
@@ -424,6 +426,42 @@ def test_sent_is_scoped_by_who_sent_it(mailbox, holding):
 	assert or_filters is None
 
 
+def test_one_folder_of_one_mailbox(mailbox, holding, monkeypatch):
+	"""Scoped by the address as well as the folder name. Folder names are not
+	unique across mailboxes — two people on this site can both have an
+	`Applicants` — so a filter on the name alone hands one of them the other's.
+	"""
+	holding("me@gmail.com")
+	monkeypatch.setattr(mailbox, "_accounts_for", lambda address: ["Gmail"])
+
+	filters, or_filters = mailbox._filters("me@gmail.com::Applicants")
+	assert filters[mailbox.FOLDER_FIELD] == "Applicants"
+	assert filters["email_account"] == ("in", ["Gmail"])
+	assert or_filters is None
+
+
+def test_a_folder_of_an_address_you_do_not_hold_is_refused(mailbox, holding):
+	holding("me@gmail.com")
+	with pytest.raises(Exception):
+		mailbox._filters("someone-else@gmail.com::Applicants")
+
+
+def test_a_folder_query_never_gets_an_empty_account_list(mailbox, monkeypatch):
+	"""An empty `in` matches nothing in some engines and everything in others,
+	and this is the filter standing between one person and the site's mail."""
+	monkeypatch.setattr(mailbox.frappe, "get_all", lambda *a, **k: [])
+	assert mailbox._accounts_for("me@gmail.com") == [""]
+
+
+def test_a_folder_is_not_forced_to_be_received(mailbox, holding, monkeypatch):
+	"""A Sent folder holds sent mail. A folder filter that also said
+	"Received" would mirror the folder and then show it empty."""
+	holding("me@gmail.com")
+	monkeypatch.setattr(mailbox, "_accounts_for", lambda address: ["Gmail"])
+	filters, _ = mailbox._filters("me@gmail.com::Sent Items")
+	assert "sent_or_received" not in filters
+
+
 def test_a_preview_is_text_and_is_bounded(mailbox):
 	assert mailbox._preview("<p>Hello <b>there</b></p>") == "Hello there"
 	assert mailbox._preview(None) == ""
@@ -538,10 +576,164 @@ def test_a_connected_mailbox_names_a_folder(connect):
 	assert '"INBOX"' in source
 
 
-def test_only_what_arrives_from_now_on(connect):
+def test_the_first_sync_is_bounded(connect):
 	"""Nine years of somebody's mail pulled into a workspace their colleagues
-	can be granted access to is a privacy incident, not a slow first sync."""
+	can be granted access to is a privacy incident, not a slow first sync.
+
+	`ALL` rather than `UNSEEN` is what makes the folder mirror worth having —
+	an Applicants folder somebody read years ago is empty under `UNSEEN` — and
+	it is only safe because `initial_sync_count` bounds the first pass, per
+	folder, off that folder's own UIDNEXT."""
 	import inspect
 
 	source = inspect.getsource(connect.connect)
-	assert '"email_sync_option": "UNSEEN"' in source
+	assert '"email_sync_option": "ALL"' in source
+	assert '"initial_sync_count": 100' in source
+
+
+# --------------------------------------------------------------------------- #
+# The folders somebody already has
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def folders():
+	from oneapp.oneapp_core.email import folders as module
+
+	return module
+
+
+# Real `LIST` lines. Gmail, Outlook, a Dovecot server with a dotted hierarchy,
+# and a German one — transcribed rather than invented, because the whole point
+# of parsing this is that every server writes it slightly differently.
+LIST_ROWS = [
+	rb'(\HasNoChildren) "/" "INBOX"',
+	rb'(\HasNoChildren \Sent) "/" "[Gmail]/Sent Mail"',
+	rb'(\HasNoChildren \Junk) "/" "[Gmail]/Spam"',
+	rb'(\Noselect \HasChildren) "/" "[Gmail]"',
+	rb'(\HasNoChildren) "/" "Applicants"',
+	rb'(\HasNoChildren) "." "INBOX.Clients.Rua"',
+	rb'(\HasNoChildren \Sent) "/" "Gesendete Elemente"',
+	rb'(\HasNoChildren) "/" Unquoted',
+]
+
+
+def test_a_container_is_not_a_folder(folders):
+	"""`[Gmail]` holds folders and is not one — selecting it fails, so it is
+	dropped here rather than discovered later as a sync error."""
+	names = [one["name"] for one in folders.parse_list(LIST_ROWS)]
+	assert "[Gmail]" not in names
+	assert "[Gmail]/Sent Mail" in names
+
+
+def test_a_name_without_quotes_is_still_a_name(folders):
+	assert "Unquoted" in [one["name"] for one in folders.parse_list(LIST_ROWS)]
+
+
+def test_a_hierarchy_separator_can_be_a_dot(folders):
+	assert "INBOX.Clients.Rua" in [one["name"] for one in folders.parse_list(LIST_ROWS)]
+
+
+def test_the_server_says_which_folder_is_sent(folders):
+	"""RFC 6154, and the reason this needs no table of every language's word
+	for Sent: `Gesendete Elemente` is flagged, so it is not guessed at."""
+	found = {one["name"]: one["kind"] for one in folders.parse_list(LIST_ROWS)}
+	assert found["[Gmail]/Sent Mail"] == "sent"
+	assert found["Gesendete Elemente"] == "sent"
+	assert found["[Gmail]/Spam"] == "junk"
+	assert found["Applicants"] == ""
+
+
+@pytest.mark.parametrize(
+	"name,kind",
+	[
+		("Sent Items", "sent"),
+		("INBOX.Sent", "sent"),
+		("Deleted Items", "trash"),
+		("Junk E-mail", "junk"),
+		("Archive", "archive"),
+		("Applicants", ""),
+		("Documents", ""),
+	],
+)
+def test_a_server_that_flags_nothing_is_guessed_at_by_name(folders, name, kind):
+	assert folders.classify(name, "") == kind
+
+
+def test_a_folder_named_like_a_special_one_is_still_flagged_first(folders):
+	"""Flags beat names. A folder somebody called `Archive` that the server
+	flags `\\Junk` is junk, whatever it says on it."""
+	assert folders.classify("Archive", r"\HasNoChildren \Junk") == "junk"
+
+
+def test_the_bookmarks_survive_a_refresh(folders):
+	"""`uidvalidity` and `uidnext` are where the sync left off in that folder.
+	Dropping them on a refresh re-downloads the mailbox."""
+	rows = [
+		types.SimpleNamespace(folder_name="INBOX", uidvalidity="9", uidnext="450"),
+		types.SimpleNamespace(folder_name="Gone", uidvalidity="1", uidnext="2"),
+	]
+	account = _FakeAccount(rows)
+	folders.apply(account, [{"name": "INBOX", "kind": "inbox"}, {"name": "New", "kind": ""}])
+
+	written = {row["folder_name"]: row for row in account.imap_folder}
+	assert written["INBOX"]["uidvalidity"] == "9"
+	assert written["INBOX"]["uidnext"] == "450"
+	# A folder somebody deleted on the server goes; a new one starts with no
+	# bookmark, which is what makes its first sync the bounded backfill.
+	assert "Gone" not in written
+	assert written["New"]["uidvalidity"] is None
+
+
+def test_every_mirrored_folder_files_into_communication(folders):
+	"""Turning Applicants into Job Applicant documents is an `append_to` away
+	and is a rule somebody has to choose. A mirror must not invent one."""
+	account = _FakeAccount([])
+	folders.apply(account, [{"name": "Applicants", "kind": ""}])
+	assert account.imap_folder[0]["append_to"] == "Communication"
+
+
+class _FakeAccount:
+	"""Enough of an Email Account for `apply` — a child table and `append`."""
+
+	def __init__(self, rows):
+		self.imap_folder = list(rows)
+
+	def set(self, field, value):
+		setattr(self, field, value)
+
+	def append(self, field, row):
+		getattr(self, field).append(row)
+
+
+def test_sent_mail_in_a_sent_folder_is_sent(folders):
+	"""Frappe stores everything it pulls as Received, and refuses outright to
+	import a message whose sender is the account itself — right for an inbox,
+	and it empties the Sent folder."""
+	mail = folders.OneSpaceInboundMail(
+		"raw", object(), "12", None, "Communication", folder="Sent Items", sent=True
+	)
+	assert mail.is_sender_same_as_receiver() is False
+
+	data = mail.as_dict()
+	assert data["sent_or_received"] == "Sent"
+	assert data[folders.FOLDER_FIELD] == "Sent Items"
+	# Sent mail is not unread mail. Without this every count is wrong the
+	# moment somebody connects a mailbox with a Sent folder in it.
+	assert data["seen"] == 1
+
+
+def test_the_guard_still_holds_in_an_inbox(folders):
+	"""It exists for a reason: an inbox that imported your own copies would
+	double every conversation."""
+	mail = folders.OneSpaceInboundMail(
+		"raw", object(), "12", None, "Communication", folder="INBOX", sent=False
+	)
+	assert mail.is_sender_same_as_receiver() is True
+	assert mail.as_dict()["sent_or_received"] == "Received"
+
+
+def test_every_message_remembers_where_it_was_filed(folders):
+	mail = folders.OneSpaceInboundMail(
+		"raw", object(), "12", None, "Communication", folder="Applicants"
+	)
+	assert mail.as_dict()[folders.FOLDER_FIELD] == "Applicants"

@@ -23,12 +23,25 @@ def install_notification_types():
 
 
 def create_custom_fields():
-	"""Track the R2 object key alongside each File.
+	"""Two things the framework does not store and this product needs.
 
-	Derivable from the document, but storing it means a rename or a change to the
-	key scheme cannot orphan objects we can no longer find to delete.
+	**`File.r2_key`** — the R2 object key. Derivable from the document, but
+	storing it means a rename or a change to the key scheme cannot orphan
+	objects we can no longer find to delete.
+
+	**The mail folder pair** — `Communication.custom_imap_folder` and
+	`Email Account.custom_folder_kinds`. Frappe syncs a mailbox folder by
+	folder and then throws the folder away: `InboundMail` is handed it and
+	nothing on the Communication records where the message was filed. So
+	somebody's Applicants folder arrives as part of one flat list and their
+	filing is gone. See `oneapp_core/email/folders.py`, which fills both in.
+
+	Also on `after_migrate`, because a site installed before these existed has
+	to get them too.
 	"""
 	from frappe.custom.doctype.custom_field.custom_field import create_custom_fields as make
+
+	from oneapp.oneapp_core.email.folders import FOLDER_FIELD
 
 	make(
 		{
@@ -41,7 +54,31 @@ def create_custom_fields():
 					"hidden": 1,
 					"no_copy": 1,
 				}
-			]
+			],
+			"Communication": [
+				{
+					"fieldname": FOLDER_FIELD,
+					"label": "IMAP Folder",
+					"fieldtype": "Data",
+					"read_only": 1,
+					"no_copy": 1,
+					# Indexed, because it is the filter behind every folder in
+					# the rail — a mail list is "this address, this folder,
+					# newest first" and without the index that is a scan of the
+					# whole correspondence table on every click.
+					"search_index": 1,
+				}
+			],
+			"Email Account": [
+				{
+					"fieldname": "custom_folder_kinds",
+					"label": "Folder Kinds",
+					"fieldtype": "Small Text",
+					"read_only": 1,
+					"hidden": 1,
+					"no_copy": 1,
+				}
+			],
 		},
 		ignore_validate=True,
 	)

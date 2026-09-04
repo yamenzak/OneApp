@@ -30,6 +30,8 @@ import re
 import frappe
 from frappe import _
 
+from oneapp.oneapp_core.email.folders import FOLDER_FIELD, QUIET
+
 # `Re:`, `Fwd:`, `FW:`, `RE :`, and the same again nested five deep, which is
 # what a thread looks like after two people and a phone. Stripped repeatedly
 # rather than once, because "Re: Fwd: Re: quote" is one conversation.
@@ -72,21 +74,127 @@ def _like(text: str) -> str:
 	return (text or "").replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+# A folder key is an address, or an address and one of its folders. `::` because
+# neither half can contain it: a local part may not, and IMAP folder names use
+# `/` or `.` as their separator.
+SPLIT = "::"
+
+# What each kind of folder is drawn as. Named rather than guessed from the
+# folder's own name, because "Gesendet" and "Sent Items" are the same thing and
+# the server already told us which — see `folders.classify`.
+ICONS = {
+	"inbox": "lucide-inbox",
+	"sent": "lucide-send",
+	"drafts": "lucide-file-pen",
+	"trash": "lucide-trash-2",
+	"junk": "lucide-shield-alert",
+	"archive": "lucide-archive",
+	"all": "lucide-layers",
+	"flagged": "lucide-flag",
+}
+
+
+def _accounts() -> dict:
+	"""Every address held, with the account behind it and that account's folders.
+
+	One query for the grants and one for the accounts, rather than a document
+	load each: this runs on every page of the rail and on the bell's poll.
+	"""
+	rows = frappe.get_all(
+		"User Email",
+		filters={"parent": frappe.session.user},
+		fields=["email_id", "email_account"],
+		distinct=True,
+	)
+	names = sorted({row.email_account for row in rows if row.email_account})
+	if not names:
+		return {row.email_id: {"account": "", "folders": [], "kinds": {}} for row in rows}
+
+	kinds = {
+		row.name: frappe.parse_json(row.custom_folder_kinds or "{}")
+		for row in frappe.get_all(
+			"Email Account",
+			filters={"name": ("in", names)},
+			fields=["name", "custom_folder_kinds"],
+		)
+	}
+	listing: dict[str, list[str]] = {}
+	for row in frappe.get_all(
+		"IMAP Folder",
+		filters={"parent": ("in", names)},
+		fields=["parent", "folder_name"],
+		order_by="idx asc",
+	):
+		listing.setdefault(row.parent, []).append(row.folder_name)
+
+	return {
+		row.email_id: {
+			"account": row.email_account,
+			"folders": listing.get(row.email_account, []),
+			"kinds": kinds.get(row.email_account, {}),
+		}
+		for row in rows
+	}
+
+
 @frappe.whitelist(methods=["GET"])
 def folders() -> dict:
-	"""What the rail shows: every address held, and the two pseudo-folders.
+	"""What the rail shows.
 
-	`All` first where there is more than one, because somebody with three
-	addresses mostly wants the union and only occasionally wants one of them —
-	the same order Frappe's own inbox uses, and for the same reason.
+	Every address held, and under an address that is a connected mailbox, the
+	folders that mailbox actually has — Applicants, Suppliers, whatever somebody
+	spent years sorting into. Read off the `IMAP Folder` rows, which
+	`connect.refresh` fills from the server itself.
+
+	`All` first where there is more than one address, because somebody with
+	three of them mostly wants the union and only occasionally wants one — the
+	same order Frappe's own inbox uses, and for the same reason. Deleted mail,
+	spam and drafts come last and marked `quiet`: they are mirrored, because a
+	mirror that silently omits folders is one nobody can trust, and they are not
+	what a rail should open on.
 	"""
-	held = _held()
+	held = _accounts()
 	rows = []
 	if len(held) > 1:
-		rows.append({"key": "all", "label": "All mail", "address": "", "icon": "lucide-inbox"})
-	for one in sorted(held):
-		rows.append({"key": one, "label": one, "address": one, "icon": "lucide-at-sign"})
-	rows.append({"key": "sent", "label": "Sent", "address": "", "icon": "lucide-send"})
+		rows.append({
+			"key": "all", "label": "All mail", "address": "", "folder": "",
+			"icon": "lucide-inbox", "kind": "", "quiet": False, "depth": 0,
+		})
+
+	for address in sorted(held):
+		info = held[address]
+		rows.append({
+			"key": address, "label": address, "address": address, "folder": "",
+			"icon": "lucide-at-sign", "kind": "", "quiet": False, "depth": 0,
+		})
+		for name in info["folders"]:
+			kind = info["kinds"].get(name, "")
+			if kind == "inbox":
+				# The address itself already *is* the inbox. A second row
+				# saying INBOX under it would be the same list twice.
+				continue
+			rows.append({
+				"key": f"{address}{SPLIT}{name}",
+				# The last segment, so `[Gmail]/Sent Mail` reads as `Sent Mail`
+				# and `INBOX.Clients.Rua` as `Rua`. The full path is still the
+				# key, so two folders with the same leaf are still two folders.
+				"label": re.split(r"[/.]", name)[-1] or name,
+				"address": address,
+				"folder": name,
+				"icon": ICONS.get(kind, "lucide-folder"),
+				"kind": kind,
+				"quiet": kind in QUIET,
+				"depth": 1,
+			})
+
+	rows.append({
+		# Mail sent *from here*. Distinct from a connected mailbox's own Sent
+		# folder, which is that mailbox's and appears under it: this is the
+		# workspace's outgoing, including from addresses that have no mailbox
+		# behind them at all.
+		"key": "sent", "label": "Sent from here", "address": "", "folder": "",
+		"icon": "lucide-send", "kind": "sent", "quiet": False, "depth": 0,
+	})
 	return {"folders": rows, "addresses": sorted(held)}
 
 
@@ -112,6 +220,24 @@ def _filters(folder: str) -> tuple[dict, list | None]:
 	if folder == "sent":
 		return {**base, "sent_or_received": "Sent", "sender": ("in", held)}, None
 
+	address, _, name = folder.partition(SPLIT) if folder else ("", "", "")
+
+	if name:
+		# One folder of one mailbox. Scoped by the address *as well as* the
+		# folder name, because folder names are not unique across mailboxes —
+		# two people on this site can both have an `Applicants`, and a filter on
+		# the name alone would hand one of them the other's.
+		if address not in held:
+			frappe.throw(_("That is not one of your addresses."), frappe.PermissionError)
+		return (
+			{
+				**base,
+				FOLDER_FIELD: name,
+				"email_account": ("in", _accounts_for(address)),
+			},
+			None,
+		)
+
 	base["sent_or_received"] = "Received"
 	if folder and folder != "all":
 		if folder not in held:
@@ -124,6 +250,22 @@ def _filters(folder: str) -> tuple[dict, list | None]:
 		return base, None
 
 	return base, [["recipients", "like", f"%{_like(one)}%"] for one in held]
+
+
+def _accounts_for(address: str) -> list[str]:
+	"""The Email Accounts behind one address this person holds.
+
+	A list rather than a value, and never empty: an empty `in` matches nothing
+	in some engines and everything in others, and this is the filter standing
+	between one person and the whole site's mail.
+	"""
+	names = frappe.get_all(
+		"User Email",
+		filters={"parent": frappe.session.user, "email_id": address},
+		pluck="email_account",
+		distinct=True,
+	)
+	return [one for one in names if one] or [""]
 
 
 @frappe.whitelist(methods=["GET"])

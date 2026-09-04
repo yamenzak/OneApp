@@ -29,6 +29,7 @@ four, and everything else takes the default that works.
 import frappe
 from frappe import _
 
+from oneapp.oneapp_core.email import folders
 from oneapp.oneapp_core.workspace import OWNER_ROLE, SUPPORT_ROLE
 
 # The hosts worth knowing by name. A person who types their address is telling
@@ -145,23 +146,28 @@ def connect(email_id: str, password: str, email_server: str = "", smtp_server: s
 			# would otherwise pull all of it into this site on first sync —
 			# minutes of work, a storage bill, and nine years of somebody's
 			# private mail in a workspace their colleagues can be granted.
-			"email_sync_option": "UNSEEN",
+			# `ALL`, not `UNSEEN`, and the difference is the whole feature.
+			#
+			# `UNSEEN` fetches unread mail, which for a mailbox somebody has
+			# been using for years is almost nothing: their Applicants folder
+			# is a hundred messages they have all read, and syncing it under
+			# `UNSEEN` mirrors an empty folder. `ALL` takes the last
+			# `initial_sync_count` UIDs *per folder* on the first pass — see
+			# `check_imap_uidvalidity`, which sets the range from the folder's
+			# own UIDNEXT — and everything new after that. Bounded, and bounded
+			# per folder rather than per mailbox.
+			"email_sync_option": "ALL",
 			"initial_sync_count": 100,
-			# INBOX, and only INBOX.
+			# INBOX to start with, and replaced a line below by whatever the
+			# server actually offers.
 			#
-			# Not a default — a requirement. Frappe refuses to save an IMAP
-			# account with no folder row ("You need to set one IMAP folder"),
-			# and the row that everybody has is added by the *desk's*
-			# JavaScript, which this product never runs. So an account created
-			# from here without this line does not fail at first sync; it fails
-			# at insert, and the person connecting their mailbox is told
-			# something about IMAP folders that means nothing to them.
-			#
-			# One folder is also the honest limit of what is built: the folders
-			# somebody has made in Gmail — Applicants, Documents, whatever —
-			# are not read, and neither are Spam, Junk or Archive. See
-			# `mailbox.folders()`, which offers the addresses a person holds and
-			# two pseudo-folders and nothing else.
+			# It has to be here rather than only there: Frappe refuses to save
+			# an IMAP account with no folder row ("You need to set one IMAP
+			# folder"), and the row everybody has is added by the *desk's*
+			# JavaScript, which this product never runs. Without it the account
+			# does not fail at first sync — it fails at insert, and the person
+			# connecting their mailbox is told something about IMAP folders
+			# that means nothing to them.
 			"imap_folder": [{"folder_name": "INBOX", "append_to": "Communication"}],
 			"create_contact": 0,
 			"always_use_account_email_id_as_sender": 1,
@@ -173,6 +179,12 @@ def connect(email_id: str, password: str, email_server: str = "", smtp_server: s
 	except Exception as e:
 		frappe.throw(_reason(e, guess))
 
+	# The folders they already have. Only now, because it needs a saved account
+	# to open a connection with, and it is deliberately not fatal: a mailbox
+	# that connects and mirrors only its inbox is a working mailbox, and one
+	# that refuses to connect because the folder listing timed out is not.
+	found = _mirror(account)
+
 	person = frappe.get_doc("User", frappe.session.user)
 	person.append(
 		"user_emails",
@@ -180,7 +192,42 @@ def connect(email_id: str, password: str, email_server: str = "", smtp_server: s
 	)
 	person.save(ignore_permissions=True)
 
-	return {"ok": True, "name": account.name, "email_id": email_id}
+	return {"ok": True, "name": account.name, "email_id": email_id, "folders": found}
+
+
+def _mirror(account) -> int:
+	"""Ask the server what folders exist and write a row for each."""
+	try:
+		found = folders.discover(account)
+	except Exception:
+		frappe.log_error(title=f"Could not list folders for {account.email_id}")
+		return 1
+
+	if not found:
+		return 1
+
+	folders.apply(account, found)
+	account.db_set(
+		"custom_folder_kinds",
+		frappe.as_json({one["name"]: one["kind"] for one in found}),
+		update_modified=False,
+	)
+	account.save(ignore_permissions=True)
+	return len(found)
+
+
+@frappe.whitelist(methods=["POST"])
+def refresh(name: str) -> dict:
+	"""Re-read the folder list.
+
+	A folder made in Outlook this morning is a folder this site has never heard
+	of, and nothing tells us — IMAP has no folder-change notification worth
+	relying on. So it is a button, and the alternative was a nightly job that
+	re-lists every mailbox on the site to find the once-a-month case.
+	"""
+	_require_mine_or_admin(name)
+	account = frappe.get_doc("Email Account", name)
+	return {"ok": True, "folders": _mirror(account)}
 
 
 def _reason(error: Exception, guess: dict) -> str:

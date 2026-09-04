@@ -80,6 +80,43 @@ test('the rail lists the addresses this person holds', async ({ page, baseURL },
   expectNoRealErrors(errors)
 })
 
+test('the folders a mailbox already has come across, Sent included', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+
+  const rail = page.locator('[data-slot="mail-folder"]')
+
+  // Somebody's own filing, not a flat list. `INBOX` is deliberately absent —
+  // the address row above it already is the inbox.
+  await expect(rail.filter({ hasText: 'Applicants' })).toHaveCount(1)
+  await expect(rail.filter({ hasText: 'Documents' })).toHaveCount(1)
+  await expect(rail.filter({ hasText: 'INBOX' })).toHaveCount(0)
+
+  // Junk is mirrored and folded away, because a rail that opens on somebody's
+  // spam is a rail nobody wants.
+  await expect(rail.filter({ hasText: 'Junk' })).toHaveCount(0)
+  await page.locator('[data-slot="mail-more-folders"]').click()
+  await expect(rail.filter({ hasText: 'Junk' })).toHaveCount(1)
+
+  // A folder somebody made holds what they filed in it, and nothing else.
+  await rail.filter({ hasText: 'Applicants' }).click()
+  await expect(threads(page)).toHaveCount(1)
+  await expect(threads(page).first()).toContainText('Fabricator')
+
+  // And the Sent folder is not empty, which is the whole reason the framework's
+  // "your own mail in your own inbox" guard is off inside one.
+  await rail.filter({ hasText: 'Sent Items' }).click()
+  await expect(threads(page).first()).toContainText('revised elevations')
+
+  expectNoRealErrors(errors)
+})
+
 test('anybody may connect the mailbox they already have', async ({ page, baseURL }, info) => {
   test.skip(info.project.name === 'mobile', 'the settings dialog has its own spec')
   const errors = collectConsoleErrors(page)

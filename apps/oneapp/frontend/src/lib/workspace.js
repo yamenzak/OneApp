@@ -378,6 +378,13 @@ export const workspace = {
       successMessage: 'Mailbox connected',
     }),
 
+  mailRefreshFolders: (name) =>
+    callMethod(
+      'oneapp.oneapp_core.email.connect.refresh',
+      { name },
+      { successMessage: 'Folders refreshed' },
+    ),
+
   mailDisconnect: (name) =>
     callMethod(
       'oneapp.oneapp_core.email.connect.disconnect',

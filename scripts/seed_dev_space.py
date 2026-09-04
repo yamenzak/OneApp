@@ -559,25 +559,56 @@ def _seed_mail(user):
 		holder.append("user_emails", {"email_account": account, "email_id": address})
 		holder.save(ignore_permissions=True)
 
-	messages = [
-		("Quotation for the Al Reem tower",
-		 "<p>Could you send the revised cladding quote before Thursday?</p>"),
-		("Re: Quotation for the Al Reem tower",
-		 "<p>Attached — the glazing line moved, everything else holds.</p>"),
+	# The folders a connected mailbox would have brought with it, and the kinds
+	# the server would have flagged. Written here rather than discovered,
+	# because discovering them needs an IMAP server and what this fixture is
+	# for is the rail that draws them.
+	from oneapp.oneapp_core.email import folders as folder_lib
+
+	mirrored = [
+		{"name": "INBOX", "kind": "inbox"},
+		{"name": "Applicants", "kind": ""},
+		{"name": "Documents", "kind": ""},
+		{"name": "Sent Items", "kind": "sent"},
+		{"name": "Junk", "kind": "junk"},
 	]
-	for subject, content in messages:
+	doc = frappe.get_doc("Email Account", account)
+	folder_lib.apply(doc, mirrored)
+	doc.db_set(
+		"custom_folder_kinds",
+		frappe.as_json({one["name"]: one["kind"] for one in mirrored}),
+		update_modified=False,
+	)
+	doc.save(ignore_permissions=True)
+
+	messages = [
+		("Quotation for the Al Reem tower", "INBOX", "Received",
+		 "<p>Could you send the revised cladding quote before Thursday?</p>"),
+		("Re: Quotation for the Al Reem tower", "INBOX", "Received",
+		 "<p>Attached — the glazing line moved, everything else holds.</p>"),
+		# One in a folder somebody made, which is the whole point of mirroring
+		# them, and one in Sent — stored as Sent rather than Received, which is
+		# what `OneSpaceInboundMail` does to a message out of a Sent folder.
+		("Fabricator — CV and trade test", "Applicants", "Received",
+		 "<p>Six years on curtain wall, available from the 12th.</p>"),
+		("Al Reem — revised elevations", "Sent Items", "Sent",
+		 "<p>Revised sheets attached, superseding revision B.</p>"),
+	]
+	for subject, folder, direction, content in messages:
 		if frappe.db.exists("Communication", {"subject": subject, "recipients": address}):
 			continue
 		frappe.get_doc({
 			"doctype": "Communication",
 			"communication_type": "Communication",
 			"communication_medium": "Email",
-			"sent_or_received": "Received",
+			"sent_or_received": direction,
 			"subject": subject,
 			"content": content,
-			"sender": "hala@client.test",
-			"sender_full_name": "Hala Nasser",
-			"recipients": address,
+			"sender": address if direction == "Sent" else "hala@client.test",
+			"sender_full_name": "Sales" if direction == "Sent" else "Hala Nasser",
+			"recipients": "hala@client.test" if direction == "Sent" else address,
+			"email_account": account,
+			folder_lib.FOLDER_FIELD: folder,
 		}).insert(ignore_permissions=True)
 	return address
 

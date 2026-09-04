@@ -360,9 +360,49 @@ def _make_frappe():
 	workflow.get_transitions = lambda doc, workflow=None, raise_exception=False: []
 	workflow.apply_workflow = lambda doc, action: doc
 
+	# `frappe.email` — the two classes `oneapp_core/email/folders.py` subclasses
+	# so a connected mailbox's folders survive the sync. Stubs with no behaviour
+	# on purpose: what is ours in that file is which folder a message came from
+	# and whether a Sent folder is exempt from the sender check, and both are
+	# testable without an IMAP session. The MIME parsing underneath is the
+	# framework's and is not what these tests are about.
+	email_pkg = types.ModuleType("frappe.email")
+	receive = types.ModuleType("frappe.email.receive")
+
+	class InboundMail:
+		def __init__(self, content, email_account, uid=None, seen_status=None, append_to=None):
+			self.content = content
+			self.email_account = email_account
+			self.uid = uid
+			self.seen_status = seen_status
+			self.append_to = append_to
+			# Frappe's own: an inbox must not import your own sent mail back.
+			# True by default here so the override that turns it off inside a
+			# Sent folder is testing something.
+			self.same = True
+
+		def is_sender_same_as_receiver(self):
+			return self.same
+
+		def as_dict(self):
+			return {"sent_or_received": "Received", "seen": self.seen_status or 0}
+
+	receive.InboundMail = InboundMail
+	email_pkg.receive = receive
+
+	email_doctype = types.ModuleType("frappe.email.doctype")
+	account_pkg = types.ModuleType("frappe.email.doctype.email_account")
+	account_mod = types.ModuleType("frappe.email.doctype.email_account.email_account")
+
+	class EmailAccount:
+		def get_inbound_mails(self):
+			return []
+
+	account_mod.EmailAccount = EmailAccount
+
 	return frappe, model, document, utils, (
 		desk, desk_doctype, log_pkg, log, desk_notifications, workflow,
-		number_format,
+		number_format, email_pkg, receive, email_doctype, account_pkg, account_mod,
 	)
 
 
