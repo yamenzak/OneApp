@@ -36,12 +36,20 @@ def create_custom_fields():
 	somebody's Applicants folder arrives as part of one flat list and their
 	filing is gone. See `oneapp_core/email/folders.py`, which fills both in.
 
+	**`Communication Link.custom_linked_by`** — how a link between a message and
+	a record was made: the thread it inherited from, an id somebody wrote, a
+	person, or later a model. The framework's link row
+	says only that a link exists. A link that cannot say where it came from
+	cannot be reviewed, and a link nobody reviews is one nobody will trust on an
+	invoice. See `oneapp_core/email/linking.py`.
+
 	Also on `after_migrate`, because a site installed before these existed has
 	to get them too.
 	"""
 	from frappe.custom.doctype.custom_field.custom_field import create_custom_fields as make
 
 	from oneapp.oneapp_core.email.folders import FOLDER_FIELD
+	from oneapp.oneapp_core.email.linking import LINK_BY
 	from oneapp.oneapp_core.email.threading import THREAD_FIELD
 
 	make(
@@ -85,6 +93,15 @@ def create_custom_fields():
 					# newest first" and without the index that is a scan of the
 					# whole correspondence table on every click.
 					"search_index": 1,
+				}
+			],
+			"Communication Link": [
+				{
+					"fieldname": LINK_BY,
+					"label": "Linked By",
+					"fieldtype": "Data",
+					"read_only": 1,
+					"no_copy": 1,
 				}
 			],
 			"Email Account": [

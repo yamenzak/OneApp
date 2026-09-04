@@ -206,6 +206,46 @@ export const record = {
       { successMessage: 'Done' },
     ),
 
+  // --- the mail about a record --------------------------------------------
+  //
+  // Correspondence is a `Communication` linked to the document, and the link is
+  // made by `oneapp_core/email/linking.py` — inherited down a thread, or found
+  // as an id this site issues written in the subject or body. What comes back
+  // is what *this reader* may already see, never everything linked: a link is
+  // not a grant, or filing a message against a project would publish it to
+  // everybody who can open the project.
+  recordMail: (spaceCode, screen, name) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.correspondence',
+      { space_code: spaceCode, screen, name },
+      { silent: true, method: 'GET' },
+    ),
+
+  // Sending from a record is the one path where the filing needs no working
+  // out at all — the person was looking at the record when they wrote it.
+  recordMailSend: (spaceCode, screen, name, values) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.write',
+      { space_code: spaceCode, screen, name, ...values },
+      { successMessage: 'Sent' },
+    ),
+
+  // The way out of every case the automatic filing did not get, and the way
+  // back from every one it got wrong.
+  recordMailAttach: (spaceCode, screen, name, message) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.attach',
+      { space_code: spaceCode, screen, name, message },
+      { successMessage: 'Filed here' },
+    ),
+
+  recordMailDetach: (spaceCode, screen, name, message) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.detach',
+      { space_code: spaceCode, screen, name, message },
+      { successMessage: 'Unfiled' },
+    ),
+
   // --- print formats and letter heads -------------------------------------
   //
   // What is drawn on the page, as against the paper it comes out on — the

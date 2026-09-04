@@ -115,6 +115,17 @@ import { workspace } from '../../lib/workspace'
 const props = defineProps({
   /** The addresses this person may send from. The first is the default. */
   addresses: { type: Array, default: () => [] },
+  /**
+   * What this message is about, when it is written from a record rather than
+   * from the Mail screen: `{ spaceCode, screen, name }`.
+   *
+   * Sending through the record's own endpoint is what files the message
+   * against it — and that is the one filing in this product that needs no
+   * working out at all, because the person was looking at the record when they
+   * wrote it. Everything else about the composer is the same either way, which
+   * is why this is a prop and not a second composer.
+   */
+  about: { type: Object, default: null },
 })
 const open = defineModel({ type: Boolean, default: false })
 const emit = defineEmits(['sent'])
@@ -191,12 +202,17 @@ async function post() {
   error.value = ''
   sending.value = true
   try {
-    const done = await workspace.mailSend({
+    const values = {
       ...draft,
       // Names, not the files. They are already on the site; sending the bytes
       // back through this call would be a second upload of what we hold.
       attachments: JSON.stringify(draft.attachments.map((one) => one.name)),
-    })
+    }
+    const done = props.about
+      ? await workspace.recordMailSend(
+          props.about.spaceCode, props.about.screen, props.about.name, values,
+        )
+      : await workspace.mailSend(values)
     open.value = false
     await workspace.mailForget()
     emit('sent', done)

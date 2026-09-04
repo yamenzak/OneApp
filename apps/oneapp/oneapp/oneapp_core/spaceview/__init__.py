@@ -38,6 +38,7 @@ is what stops it becoming one module again.
     records     reading and writing the records a screen is over
     guard       the one check every record-scoped endpoint makes first
     surround    a record's timeline, files, comments, likes
+    mail        the correspondence about a record, and writing more
     assign      who a record is assigned to
     sharing     tags and shares
     docstate    submit, cancel, amend, workflow
@@ -203,6 +204,17 @@ from .surround import (
 	toggle_follow,
 	toggle_like,
 )
+from .mail import (
+	PAGE,
+	_addresses,
+	_by,
+	_linked,
+	attach,
+	correspondence,
+	detach,
+	screen_doctype,
+	write,
+)
 from .assign import ASSIGNEE_PAGE, _assignable, _colleagues, assign, assignees
 from .sharing import set_share, set_tag, shareable, shares, tag_options, tags, unshare
 from .docstate import amend, cancel, submit, workflow_action
@@ -262,6 +274,7 @@ __all__ = [
 	"VIEW_ICONS",
 	"VIEW_TYPES",
 	"_action",
+	"_addresses",
 	"_all_filters",
 	"_apply_overrides",
 	"_apply_saved",
@@ -272,6 +285,7 @@ __all__ = [
 	"_attachable",
 	"_board",
 	"_boardable",
+	"_by",
 	"_can_share",
 	"_cards",
 	"_change",
@@ -306,6 +320,7 @@ __all__ = [
 	"_link_row",
 	"_link_shape",
 	"_link_target",
+	"_linked",
 	"_may_write",
 	"_meta_column",
 	"_names",
@@ -349,13 +364,16 @@ __all__ = [
 	"amend",
 	"assign",
 	"assignees",
+	"attach",
 	"attachments",
 	"cancel",
 	"comment",
+	"correspondence",
 	"count",
 	"dashboard_data",
 	"default_layout",
 	"delete_layout",
+	"detach",
 	"fetched",
 	"hide_layout",
 	"link_new",
@@ -375,6 +393,7 @@ __all__ = [
 	"run_action",
 	"save",
 	"save_layout",
+	"screen_doctype",
 	"set_share",
 	"set_tag",
 	"shareable",
@@ -391,4 +410,5 @@ __all__ = [
 	"unshare",
 	"visible",
 	"workflow_action",
+	"write",
 ]

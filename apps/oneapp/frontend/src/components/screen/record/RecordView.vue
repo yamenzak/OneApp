@@ -228,6 +228,14 @@
                 />
               </template>
             </TabTrigger>
+            <!--
+              The mail about this record. Beside Activity rather than inside it:
+              a comment is something a colleague said in here, a message is
+              something somebody said from outside, and merging the two would
+              lose the distinction that matters most about correspondence — it
+              left the building.
+            -->
+            <TabTrigger value="mail" label="Mail" :icon-left="tabIcon('Mail')" />
             <TabTrigger value="files" label="Files" :icon-left="tabIcon('Files')" />
             <!--
               What the record *is*, as opposed to what it says: its id, its
@@ -286,6 +294,10 @@
           />
         </TabPanel>
 
+        <TabPanel value="mail">
+          <RecordMail :space-code="spaceCode" :screen="screen" :name="record.name" />
+        </TabPanel>
+
         <TabPanel value="files">
           <RecordFiles
             :space-code="spaceCode"
@@ -342,6 +354,7 @@ import RecordChip from './RecordChip.vue'
 import RecordForm from './RecordForm.vue'
 import RecordActivity from './RecordActivity.vue'
 import RecordFiles from './RecordFiles.vue'
+import RecordMail from './RecordMail.vue'
 import RecordControls from './RecordControls.vue'
 import RecordShowcase from './RecordShowcase.vue'
 import RelatedRows from './RelatedRows.vue'

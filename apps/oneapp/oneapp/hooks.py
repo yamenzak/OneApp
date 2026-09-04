@@ -93,7 +93,22 @@ doc_events = {
 		# `oneapp_core/email/threading.py`. `before_insert`, because the value
 		# belongs to the row being written and setting it afterwards would be a
 		# second version row on a doctype people already find noisy.
-		"before_insert": "oneapp.oneapp_core.email.threading.on_insert",
+		# Two, and the order is the point: linking reads the thread key that
+		# threading writes. Frappe runs a list of handlers in order, so this is
+		# a sequence and not two independent hooks that happen to both fire.
+		"before_insert": [
+			"oneapp.oneapp_core.email.threading.on_insert",
+			# Which records this message is about — see
+			# `oneapp_core/email/linking.py`. Same `before_insert` argument as
+			# above, and one more: `timeline_links` is a child table, and a
+			# child row appended after the parent is saved is a second write.
+			"oneapp.oneapp_core.email.linking.on_insert",
+		],
+		# And how each link was made, after the framework has stopped rewriting
+		# the rows it was written on — `deduplicate_timeline_links` rebuilds
+		# every one of them from its doctype and name alone. See
+		# `linking.stamp`, which is the whole reason this is two hooks.
+		"after_insert": "oneapp.oneapp_core.email.linking.stamp",
 	},
 	# Inserts are what grow a database, so they are what pauses when a workspace
 	# is over its allowance. Updates and deletes keep working, so deleting

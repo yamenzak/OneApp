@@ -4,10 +4,14 @@
 the other half — the mail that belongs to a *record*, and what an AI lane can
 honestly do about it that Frappe's own linking cannot.
 
-Written as a study, not a plan. §1–3 are what is actually in the code and in the
-framework, checked rather than remembered. §4 is where the ceiling is. §5–7 are
-the proposal, ordered by value rather than by novelty, and §5 is deliberately
-first because most of the win is not AI.
+Written as a study and kept as one. §1–3 are what was in the code and in the
+framework when it was written, checked rather than remembered. §4 is where the
+ceiling is. §5–7 are the proposal, ordered by value rather than by novelty, and
+§5 is deliberately first because most of the win is not AI.
+
+**A1–A4 are built.** §5 says what each one turned into; §1 is left as it was,
+because a study whose starting position has been edited to match its outcome is
+no longer a record of anything.
 
 ---
 
@@ -127,42 +131,48 @@ has ever issued.
 The common shape: the answer is **in the prose**, and every mechanism the
 framework has stops at the envelope.
 
-## 5. The half that is not AI, and should come first
+## 5. The half that is not AI, and came first
 
 Four changes, none of which spends a credit, and all of which are prerequisites
 rather than alternatives — a model cannot link a message to a record on a product
 with nowhere to show the link, and cannot be evaluated on a site with no linked
-mail to compare against.
+mail to compare against. All four are built; what each says is what is in the
+code.
 
-**A1 — a thread inherits its link.** When a message joins a `custom_thread` that
-already has a reference, take it. One query on insert, exact, and it covers every
-reply in a conversation that was placed once. This is where the two nulls copied
-by `mailbox/sending.py` start being two values.
+**A1 — a thread inherits its link.** `linking.from_thread`. A message joining a
+`custom_thread` that already has a reference takes it: one query, exact, and it
+covers every reply in a conversation that was placed once. It reads the thread
+key rather than `in_reply_to`, so it still finds the answer where a reply arrived
+with its headers stripped and was threaded on the subject instead. This is where
+the two nulls copied by `mailbox/sending.py` started being two values.
 
-**A2 — `timeline_links` becomes the storage.** Many links per message, with
-`reference_doctype`/`reference_name` kept in step as "the primary one" so the
-desk, the framework's own timeline and `append_to` all keep working. A link row
-should also carry **how it was made** — `by: reply | subject | address | manual |
-model` — because a link nobody can explain is a link nobody will trust, and
-because the model's own links have to be distinguishable to be reviewable and
-undoable.
+**A2 — `timeline_links` is the storage.** `linking.add`. Many links per message,
+with `reference_doctype`/`reference_name` kept as the primary — the first link —
+so the desk, the framework's own timeline and `append_to` all keep working. Each
+row carries **how it was made** in `custom_linked_by`: `thread`, `text` or
+`manual` today, and a fourth for a model when there is one. A link nobody can
+explain is a link nobody will trust, and the ones made without a person are
+exactly the ones that have to be distinguishable to be reviewable.
 
-**A3 — the record's correspondence.** A reader in `spaceview/surround` that
-queries `Communication` by its links, and a tab beside Activity that draws it
-with the composer we already have. **Sending from a record sets the link on the
-way out**, which needs no inference of any kind and is what makes a corpus of
-correctly-linked mail exist in the first place.
+**A3 — the record's correspondence.** `spaceview/mail.py` and `RecordMail.vue`,
+a tab beside Activity rather than inside it: a comment is something a colleague
+said in here and a message is something somebody said from outside, and merging
+them loses the distinction that matters most about correspondence. **Sending
+from a record files the message against it** with no inference at all, through
+the composer that already existed — one `about` prop, not a second composer.
 
-**A4 — deterministic extraction, which Frappe does not do.** The site knows every
-naming series it issues — `gen_doctypes` declares them all, `PINV-.YYYY.-`,
-`LTR-.YY.-`, `MR-{#####}` and the rest. Turning those into patterns and scanning
-the subject and body for them is high-precision, costs nothing, and catches the
-"invoice 4471 against PO-2025-0088" case whenever the id is written the way we
-issue it. Frappe only ever looks for `#(...)` in a subject.
+**A4 — deterministic extraction, which Frappe does not do.** `linking.from_text`.
+The site knows every naming series it issues, so the prefixes are a small exact
+vocabulary: `PINV-`, `LTR-`, `MR-`. Every candidate is then checked against the
+database, because a prefix match is a guess and `db.exists` is not — and the
+scope is `sync.granted_doctypes()`, so a stranger writing a plausible id cannot
+file their message against the platform's own bookkeeping. The quoted history of
+a reply is cut off before scanning: those ids were found when those messages
+arrived, and reading them again links a one-line reply to everything the
+conversation ever mentioned.
 
-My honest estimate is that A1–A4 place the large majority of mail that can be
-placed, and that they are weeks rather than months. Everything in §6 should be
-measured against them as the baseline, not against today's nothing.
+Frappe reaches none of these four. Its subject scan looks only inside `#(...)`,
+which is a token we put there and a stranger never will.
 
 ## 6. What the AI lane is actually for
 
