@@ -680,6 +680,13 @@ scripts/dev.sh run F [ARG] # a Python file against the site
 scripts/dev.sh down
 ```
 
+`dev.sh build` is **not** in that list on purpose, and it is the one name here
+that misleads: it rebuilds *Frappe's* own web assets — the login page and
+anything server-rendered — and touches neither SPA. An SPA is built by `watch`,
+by `spa`, or by `yarn build` in its own `frontend/`. Reaching for `dev.sh build`
+to see a change is a clean-looking eleven seconds that changes nothing, followed
+by a page that is exactly as stale as it was.
+
 Two SPAs want two sites; both run at once, the pid file named after the port:
 
 ```bash

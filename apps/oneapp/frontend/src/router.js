@@ -16,6 +16,18 @@ const routes = [
   },
   { path: '/account', name: 'Account', component: () => import('./pages/Account.vue') },
   {
+    // Mail belongs to the workspace rather than to any one space — the
+    // addresses a person holds do not change when they switch space — so it is
+    // a route beside the account page rather than a screen inside a space.
+    path: '/mail',
+    name: 'Mail',
+    component: () => import('./pages/Mail.vue'),
+    // Two columns and a reading pane, each with its own scroller. Same reason
+    // as the screen host: without this the shell scrolls the page and the list
+    // never keeps its header.
+    meta: { pane: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('./pages/NotFound.vue'),

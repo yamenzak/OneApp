@@ -129,6 +129,92 @@
         </div>
       </div>
 
+      <!--
+        The other half, and for most people the half that matters: the address
+        they have used for nine years, which they are not giving up because a
+        new product would prefer it. Not gated on `canManage` — a mailbox
+        somebody connects with their own password is theirs, and an owner has no
+        more business connecting it than a colleague does.
+      -->
+      <div class="flex flex-col gap-2 border-t border-outline-gray-1 pt-4">
+        <span class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
+          Your own mailboxes
+        </span>
+
+        <div
+          v-for="box in connected"
+          :key="box.name"
+          class="flex items-center justify-between gap-3 rounded-6 border border-outline-gray-2 p-3"
+          data-slot="mail-connected"
+        >
+          <div class="flex min-w-0 flex-col">
+            <span class="truncate text-base font-medium text-ink-gray-8">
+              {{ box.email_id }}
+            </span>
+            <span class="truncate text-p-xs text-ink-gray-5">{{ box.server }}</span>
+          </div>
+          <div class="flex shrink-0 items-center gap-2">
+            <!-- Frappe's own consecutive-failure count. Surfaced because the
+                 alternative is a mailbox that quietly stopped three weeks ago
+                 and nobody finding out until they wonder why it is silent. -->
+            <Badge
+              v-if="box.awaiting_password || box.failures"
+              theme="red"
+              label="Not connecting"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="lucide-unplug"
+              label="Disconnect this mailbox"
+              tooltip="Disconnect this mailbox"
+              @click="disconnect(box)"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <div class="flex items-end gap-2">
+            <FormControl
+              v-model="mailbox.email_id"
+              class="flex-1"
+              label="Mailbox address"
+              placeholder="you@gmail.com"
+            />
+            <FormControl
+              v-model="mailbox.password"
+              class="flex-1"
+              type="password"
+              label="Password"
+              :description="guess.note"
+            />
+          </div>
+
+          <!-- Hidden until asked for. Four fields is a form somebody fills in;
+               six with two hostnames in them is a form they abandon. -->
+          <div v-if="advanced" class="flex items-end gap-2">
+            <FormControl v-model="mailbox.email_server" class="flex-1" label="Incoming (IMAP)" />
+            <FormControl v-model="mailbox.smtp_server" class="flex-1" label="Outgoing (SMTP)" />
+          </div>
+
+          <div class="flex items-center justify-between gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              :label="advanced ? 'Hide servers' : 'Change the servers'"
+              @click="advanced = !advanced"
+            />
+            <Button
+              variant="solid"
+              label="Connect"
+              :loading="connecting"
+              @click="connect"
+            />
+          </div>
+          <ErrorMessage v-if="connectError" :message="connectError" />
+        </div>
+      </div>
+
       <div v-if="canManage" class="flex flex-col gap-2 border-t border-outline-gray-1 pt-4">
         <span class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
           Add an address
@@ -150,18 +236,18 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import {
   Badge,
   Button,
   Checkbox,
-  EmptyState,
   ErrorMessage,
   FormControl,
   LoadingText,
   SettingsBody,
   SettingsHeader,
 } from '@/ui'
+import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { session } from '../../lib/session'
@@ -177,6 +263,13 @@ const members = ref([])
 const domain = ref('')
 const canManage = ref(false)
 const usage = ref({})
+
+const connected = ref([])
+const connecting = ref(false)
+const connectError = ref('')
+const advanced = ref(false)
+const guess = ref({})
+const mailbox = ref({ email_id: '', password: '', email_server: '', smtp_server: '' })
 
 const user = computed(() => session.user?.name || '')
 
@@ -197,12 +290,17 @@ const sendingFrom = computed(() => {
 async function load() {
   loading.value = true
   try {
-    const [mail, sending] = await Promise.all([workspace.mail(), workspace.mailUsage()])
+    const [mail, sending, boxes] = await Promise.all([
+      workspace.mail(),
+      workspace.mailUsage(),
+      workspace.mailConnected(),
+    ])
     addresses.value = mail.addresses || []
     members.value = mail.members || []
     domain.value = mail.domain || ''
     canManage.value = !!mail.can_manage
     usage.value = sending || {}
+    connected.value = boxes || []
   } finally {
     loading.value = false
   }
@@ -237,6 +335,58 @@ async function setDefault(row) {
 async function toggle(row, person, wanted) {
   if (wanted) await workspace.mailGrant(row.name, person)
   else await workspace.mailRevoke(row.name, person)
+  await load()
+}
+
+// Watched rather than hung off a `change` event: `change` fires on blur, so
+// somebody who types their address and goes straight for the password field
+// sees the servers appear under their cursor a moment late — or not at all, if
+// they never leave the field.
+watch(
+  () => mailbox.value.email_id,
+  () => describe(),
+)
+
+/**
+ * Fill in what the address already told us.
+ *
+ * Somebody typing `you@gmail.com` has said where their mail lives, and asking
+ * them for `imap.gmail.com` afterwards is asking them to look up something we
+ * know. The note comes back with it — for Gmail and Outlook that note is "this
+ * needs an app password", which is the single commonest reason a connection
+ * fails, said before it fails rather than after.
+ */
+async function describe() {
+  const address = (mailbox.value.email_id || '').trim().toLowerCase()
+  if (!address.includes('@')) return
+  guess.value = (await workspace.mailSuggestion(address)) || {}
+  mailbox.value.email_server = guess.value.email_server || ''
+  mailbox.value.smtp_server = guess.value.smtp_server || ''
+}
+
+async function connect() {
+  connectError.value = ''
+  connecting.value = true
+  try {
+    await workspace.mailConnect({
+      email_id: (mailbox.value.email_id || '').trim().toLowerCase(),
+      password: mailbox.value.password,
+      email_server: mailbox.value.email_server,
+      smtp_server: mailbox.value.smtp_server,
+    })
+    mailbox.value = { email_id: '', password: '', email_server: '', smtp_server: '' }
+    guess.value = {}
+    advanced.value = false
+    await load()
+  } catch (e) {
+    connectError.value = e.message || String(e)
+  } finally {
+    connecting.value = false
+  }
+}
+
+async function disconnect(box) {
+  await workspace.mailDisconnect(box.name)
   await load()
 }
 

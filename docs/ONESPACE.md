@@ -673,6 +673,37 @@ Push is a seam (`push.send`) and not a feature. It stays that way until the
 EU-jurisdiction question is settled — Web Push with VAPID keys we own is the
 answer when it is.
 
+### Mail
+
+An address in OneSpace is a **delivery point, not a mailbox**. Cloudflare gives
+us sending and inbound routing and deliberately not storage, so there is no IMAP
+server behind `sales@acme.4dl.app` — mail addressed to it arrives at the site as
+a `Communication`, which is a document, which means it is already listed,
+permissioned, searchable, attachable and printable. The whole feature is
+therefore small: `docs/EMAIL.md` is the argument and the seven stages.
+
+The three things worth knowing here:
+
+**The tenant's slug is a subdomain.** `sales@acme.4dl.app` and
+`sales@rua.4dl.app` are different addresses, so the namespace is per workspace
+and nothing central allocates anything. A workspace may also send as its own
+domain, and does not until SPF and DKIM verify — sending as a domain that has
+not authorised us is how a shared IP gets listed.
+
+**An address held by one person and an address a team shares differ only in how
+many names are against them.** Both are an `Email Account` plus `User Email`
+rows, which is Frappe's own model and not a parallel one, so a grant is a row
+and revoking it is deleting the row. Settings → Email is the one list; a person
+may edit the signature on any address they hold, and connect a mailbox they
+already have — Gmail, Outlook, anything with IMAP — without being an owner,
+because that mailbox is theirs.
+
+**Reading is a filtered `Communication` list.** The Mail page's three columns
+are the shape every mail client has had for thirty years; a conversation is the
+subject with `Re:` stripped, and it lives in the URL so the back button closes
+it. Unread is per person rather than Frappe's per-document `seen` flag, because
+two people on `sales@` each need their own idea of what they have read.
+
 ---
 
 ## 8. Printing and naming

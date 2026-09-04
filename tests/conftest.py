@@ -73,6 +73,7 @@ def _make_frappe():
 			self.rollbacks = []
 			self.savepoints = []
 			self.released = []
+			self.defaults = {}
 
 		def commit(self):
 			self.commits += 1
@@ -111,11 +112,36 @@ def _make_frappe():
 
 		sql_result = [[0]]
 
+		# Frappe's user defaults: a `DefaultValue` row per key, read on every
+		# request. Real here rather than stubbed to None, because the thing
+		# using them — the mail read-receipt list — is about what happens to a
+		# value that keeps growing, and a store that forgets proves nothing.
+		def get_default(self, key, parent=None):
+			return self.defaults.get(key)
+
+		def set_default(self, key, value, parent=None, parenttype=None):
+			self.defaults[key] = value
+
 		def set_value(self, doctype=None, name=None, field=None, value=None, **k):
 			self.writes.append((doctype, name, field, value))
 			return None
 
 	frappe.db = _DB()
+
+	# `frappe.defaults` — the per-user half of the same store. Real rather than
+	# stubbed to None for the reason the db defaults are: what uses it is a list
+	# that grows, and a store that forgets what was written proves nothing.
+	class _Defaults:
+		def __init__(self):
+			self.store = {}
+
+		def get_user_default(self, key, user=None):
+			return self.store.get((key, user))
+
+		def set_user_default(self, key, value, user=None, parenttype=None):
+			self.store[(key, user)] = value
+
+	frappe.defaults = _Defaults()
 	frappe.sql = frappe.db.sql
 
 	class _Cache:

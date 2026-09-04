@@ -1209,3 +1209,61 @@ def test_every_tab_carries_an_icon(app):
 		"these tabs carry no icon — give them one, or `tabIcon(label)` where "
 		"the label is the doctype's: " + ", ".join(offenders)
 	)
+
+
+# --------------------------------------------------------------------------- #
+# Everything imported from the barrel is in the barrel
+# --------------------------------------------------------------------------- #
+
+SPA_SOURCE = {
+	"oneapp": ROOT / "apps" / "oneapp" / "frontend" / "src",
+	"oneapp_control": ROOT / "apps" / "oneapp_control" / "frontend" / "src",
+}
+
+# `import { A, B } from '@/ui'` — the multi-line form, which is how every file
+# with more than three imports writes it.
+UI_IMPORT = re.compile(r"import\s*\{([^}]*)\}\s*from\s*'@/ui'", re.S)
+
+
+@pytest.mark.parametrize("app", sorted(SPA_SOURCE))
+def test_every_name_taken_from_the_barrel_is_one_the_barrel_has(app):
+	"""A name the barrel does not export is a build that does not build.
+
+	Not a style rule — a Rollup error, and one that surfaces at `vite build`
+	rather than at `eslint`, so it can be committed, pass every guard, pass the
+	whole Python suite, and still leave the SPA unbuildable. Which is exactly
+	what happened: `EmptyState` is *our* component under `components/`, was
+	imported from `@/ui` in two files, and nothing said so until a build was
+	run by hand.
+
+	The barrel is generated, so what it exports is read from the generated
+	source rather than from disk — the same text `check_frontend` asserts is
+	what is committed.
+	"""
+	barrel = render(app, APPS[app])["frontend/src/ui.js"]
+	# Every name inside an `export { … }` block, plus the named declarations.
+	# The barrel is a re-export list, so the blocks are nearly all of it.
+	exported = {
+		name
+		for block in re.findall(r"export\s*\{([^}]*)\}", barrel, re.S)
+		for name in re.findall(r"[A-Za-z0-9_]+", block)
+	}
+	exported |= set(re.findall(r"export\s+(?:const|function|class)\s+([A-Za-z0-9_]+)", barrel))
+
+	root = SPA_SOURCE[app]
+	if not root.exists():
+		pytest.skip(f"{app} has no frontend checked out")
+
+	missing = []
+	for path in sorted(root.rglob("*.vue")) + sorted(root.rglob("*.js")):
+		if path.name == "ui.js":
+			continue
+		for block in UI_IMPORT.findall(path.read_text()):
+			for name in re.findall(r"[A-Za-z0-9_]+", block):
+				if name not in exported:
+					missing.append(f"{path.relative_to(root)}: {name}")
+
+	assert not missing, (
+		"imported from '@/ui' and not exported by it — this is a build failure:\n"
+		+ "\n".join(missing)
+	)

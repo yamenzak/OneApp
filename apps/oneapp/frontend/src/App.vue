@@ -15,6 +15,7 @@
       </template>
 
       <template #rail-footer>
+        <MailBell />
         <NotificationBell />
         <RailAccount />
       </template>
@@ -74,6 +75,7 @@ import AppShell from './components/AppShell.vue'
 import SpaceSidebar from './components/SpaceSidebar.vue'
 import RailAccount from './components/RailAccount.vue'
 import NotificationBell from './components/NotificationBell.vue'
+import MailBell from './components/MailBell.vue'
 import NotificationList from './components/NotificationList.vue'
 import SettingsShell from './components/settings/SettingsShell.vue'
 import { useNav } from './lib/nav'

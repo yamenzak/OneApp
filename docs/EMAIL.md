@@ -1,8 +1,11 @@
 # Email
 
-What OneSpace does with mail, what it deliberately does not, and the order the
-rest gets built in. Companion to §8 of `docs/ONEADMIN.md`, which describes the
-transport; this describes the product.
+What OneSpace does with mail and what it deliberately does not. Companion to §8
+of `docs/ONEADMIN.md`, which describes the transport; this describes the product.
+
+Written as a plan and kept as one: §4 is the position it was written from and §5
+the seven stages it proposed. All seven are built, so each stage now says what is
+in the code — including the one place the plan was wrong, which is Stage 2.
 
 ---
 
@@ -93,7 +96,10 @@ Three of its ideas are worth taking as ideas:
 * **The UI** — a folder rail, a thread pane, and a compose dock that floats over
   the list rather than replacing it. Worth copying as a *layout*; write our own.
 
-## 4. Where we are today
+## 4. Where we were when this was written
+
+Kept as it was, because §5 is written against it and a plan whose starting
+position has been edited to match its outcome is no longer a record of anything.
 
 * **Outbound** is Cloudflare Email Service over SMTP
   (`smtps://smtp.mx.cloudflare.net:465`, user `api_token`), one sending identity
@@ -107,11 +113,13 @@ Three of its ideas are worth taking as ideas:
   bounce customer mail.
 * **Rate limiting** is per tenant per hour on `Email Queue` insert.
 
-So notifications and OTP already leave from our own address. That box is ticked.
+So notifications and OTP already left from our own address. That box was ticked
+before any of the seven stages started.
 
-## 5. The plan
+## 5. The seven stages
 
-Seven stages. Each is shippable on its own and none of them needs the next.
+Each was shippable on its own and none of them needed the next. All are built;
+what each says is what is in the code, not what was intended.
 
 ### Stage 1 — The workspace's own sending address
 
@@ -133,18 +141,28 @@ reputation being spent.
 
 ### Stage 2 — An internal address for every person
 
-`<user>.<slug>@4dl.app`, allocated when a member is added.
+`<local>@<slug>.4dl.app` — the tenant's slug is a **subdomain**, not part of the
+local part.
 
-The local-part space is **global and the tenants are not**, so allocation
-belongs to the control plane and needs its own registry — one `OneSpace Address`
-row per address, unique on the local part, pointing at a tenant and a user. A
-tenant that could mint `sales@4dl.app` for itself would be minting it for
-everyone.
+That one choice deletes a whole subsystem, and the first draft of this document
+got it wrong, so it is worth saying plainly. On `<user>.<slug>@4dl.app` the
+local-part space is global and the tenants are not, so allocation would belong
+to the control plane and would need a registry — one row per address, unique
+across every workspace on the platform — or a tenant minting `sales@4dl.app`
+would be minting it for everybody. Put the slug in the domain and the namespace
+is already per tenant: `sales@acme.4dl.app` and `sales@rua.4dl.app` are two
+addresses, uniqueness is the site's own `Email Account` uniqueness, and there is
+nothing central to allocate, nothing to keep in step, and nothing to migrate
+when a workspace is renamed.
 
-Inbound needs no new mechanism: the Worker already parses the recipient and
-already finds the tenant. It gains one more case — a local part that resolves to
-a person rather than to a function — and the site files the `Communication`
-against that user rather than against a document.
+So this is not a registry. It is a local part, validated against
+`addresses.LOCAL_PART`, refused if it is in `addresses.RESERVED`, and inserted
+on the tenant's own site.
+
+Inbound needs no new mechanism either: the Worker already parses the recipient
+and already finds the tenant from the subdomain. It gains one more case — a
+local part that resolves to a person rather than to a function — and the site
+files the `Communication` against that user rather than against a document.
 
 Outbound sends through the same Cloudflare identity with the person's address as
 the From.
@@ -174,23 +192,71 @@ somebody notices is missing, and it is one field.
 
 ### Stage 5 — Bring your own mailbox
 
-A person connects the mailbox they already have: Gmail or Outlook by OAuth
-(Frappe ships the connected-app flow), or plain IMAP/SMTP for anyone else.
+A person connects the mailbox they already have. `oneapp_core/email/connect.py`,
+and a panel under Settings → Email that is deliberately not gated on being a
+manager: a mailbox somebody connects with their own password is theirs, and an
+owner has no more business connecting it than a colleague does.
 
 Here `enable_incoming` **is** right — there is a real IMAP server to poll — so
 this is the one place the framework's own receiving machinery runs unmodified.
-It is also the stage that makes the product useful to somebody who will never
-give up their address, which is most people.
+Nothing reimplements `frappe/email/receive.py`; what is ours is the shape of the
+question and the refusals:
+
+* **Four fields, not forty.** Address and password, with the servers filled in
+  from the address — `KNOWN` covers Gmail, Outlook, Yahoo, iCloud and Zoho, and
+  everything else gets `imap.`/`smtp.` in front of the domain and is told it is
+  a guess. The two hostnames are hidden until asked for.
+* **The app-password problem, said before it happens.** Google and Microsoft
+  stopped accepting account passwords years ago, so `AUTHENTICATIONFAILED` is
+  by far the commonest outcome and is useless to somebody who typed the right
+  password. `_reason()` turns it into the sentence that fixes it.
+* **`UNSEEN` and nothing older.** A mailbox with nine years in it would
+  otherwise pull all of it into the site on first sync — minutes of work, a
+  storage bill, and nine years of somebody's private mail in a workspace their
+  colleagues can be granted access to.
+* **Disconnecting stops the polling and keeps the mail.** Somebody disconnecting
+  Gmail is saying "stop reading my mailbox", not "delete six months of my work".
+
+OAuth is the better path where an operator has registered a `Connected App`, and
+is not built: the password path works for every provider and the OAuth path
+works for two.
 
 ### Stage 6 — The Mail screen
 
 Only now, and only because by now there is something to look at.
+`oneapp_core/email/mailbox.py` and `pages/Mail.vue`.
 
-A screen over `Communication`, which means the four view bodies we already have
-draw most of it. What is genuinely new is the reading layout — a folder rail,
-a thread, a compose dock — and it is bespoke enough to be a
-`component:` screen rather than a declared one. Frappe Mail's layout is the
-reference for the shape; the code is ours.
+Thin on purpose. Mail in this product is already a document — inbound writes a
+`Communication`, Frappe's IMAP sync writes a `Communication`, replying writes
+one — so there is no mail store to build, only a list to filter and an ordering
+to get right. Three things the framework does not answer and this does:
+
+* **Which addresses may I see?** `User Email`, and it is the same answer the
+  settings screen writes. The filter is on the query and never on the render,
+  and both halves of it — the `filters` dict and the `or_filters` list that
+  carries the union of several addresses — come back from `_filters()` together,
+  because a caller that took one half would be asking for every `Communication`
+  on the site.
+* **Threads, not messages.** `Communication` has no thread key, so the subject
+  with its `Re:` and `Fwd:` stripped is the grouping — what mail clients did for
+  twenty years before message-id threading, and right often enough that being
+  cleverer would cost more than it returns.
+* **Unread, per person.** `Communication.seen` is one flag for the document,
+  which is wrong for an address two people share. So a read receipt is a bounded
+  list of ids under the person's own user defaults — not a doctype, because it
+  is a question only that person ever asks, and bounded because it is loaded on
+  every request they make.
+
+The layout is the one every mail client has had for thirty years — a rail of
+addresses, a list of conversations, the conversation — and the reason to keep it
+is that nobody has to learn it. A conversation is in the URL, so the back button
+closes it, a reload keeps it open, and "look at this one" is something you can
+send to a colleague. Frappe Mail's layout was the reference for the shape; the
+code is ours.
+
+What is deliberately not here: folders somebody makes, labels, rules, drag and
+drop. Mail files itself against the record it belongs to, and a parallel filing
+system beside that would be two places to look for the same message.
 
 ### Stage 7 — What we owe the platform regardless
 
@@ -230,10 +296,21 @@ product we have not been asked for.
 
 ## 7. Order, and why
 
-Stage 1 first because it is small, it is what a manager asks for on day one, and
-it makes every later address a variation on one that already works. Stage 2
-before 3 because the allocation registry that per-person addresses need is the
-same one shared addresses need, and building it once for the harder case is
-cheaper. Stage 5 could come at any point and probably should come early if the
-first customers already live in Gmail. Stage 6 last, always: a mail *reader*
-with nothing to read is the most expensive way to discover the model was wrong.
+All seven are built. The order they were built in was still the argument above,
+and one part of that argument turned out to be wrong in a way worth keeping on
+the record: stages 2 and 3 were ordered that way because per-person addresses
+supposedly needed an allocation registry that shared addresses would need too,
+and building it once for the harder case was cheaper. There was no registry to
+build — see Stage 2 — so 2 and 3 collapsed into one list, one validator and one
+`create()`, and the ordering bought nothing. The rest held: Stage 1 made every
+later address a variation on one that already worked, and Stage 6 came last
+because a mail *reader* with nothing to read is the most expensive way to
+discover the model was wrong.
+
+Two things named here and not built, both deliberately:
+
+* **OAuth for Gmail and Outlook.** Frappe ships `Connected App`; the password
+  path works for every provider and this works for two, so it waits for an
+  operator to want it.
+* **`Notification` and `Email Template`** — rule, template, recipient. Still the
+  biggest single win in the table above, and still deferred.

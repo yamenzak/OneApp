@@ -291,3 +291,246 @@ def test_dns_that_will_not_answer_reads_as_unpublished(verify, monkeypatch):
 	assert result == {
 		"domain": "x.com", "spf": False, "dkim": False, "dmarc": False, "verified": False
 	}
+
+
+# --------------------------------------------------------------------------- #
+# Reading: what a person is allowed to see
+# --------------------------------------------------------------------------- #
+#
+# The one genuinely dangerous thing in the mail feature. Every list, thread and
+# count is `Communication` — the site's whole correspondence, including the mail
+# of people who are not this person — narrowed by a filter. There is no second
+# gate behind it, so the filter is the gate.
+
+
+@pytest.fixture
+def mailbox():
+	from oneapp.oneapp_core.email import mailbox as module
+
+	return module
+
+
+@pytest.fixture
+def holding(mailbox, monkeypatch):
+	"""Say which addresses the caller holds."""
+
+	def set(*addresses):
+		monkeypatch.setattr(mailbox, "_held", lambda: list(addresses))
+
+	return set
+
+
+@pytest.mark.parametrize(
+	"subject,expected",
+	[
+		("Quote for Al Reem", "quote for al reem"),
+		("Re: Quote for Al Reem", "quote for al reem"),
+		("RE: Quote for Al Reem", "quote for al reem"),
+		("Fwd: Re: Quote for Al Reem", "quote for al reem"),
+		("Re: Fwd: RE: Quote for Al Reem", "quote for al reem"),
+		("Re[2]: Quote for Al Reem", "quote for al reem"),
+		("  Re:   Quote for Al Reem  ", "quote for al reem"),
+		("AW: Quote for Al Reem", "quote for al reem"),  # a German mail client
+		("", "(no subject)"),
+		("Re:", "(no subject)"),
+	],
+)
+def test_a_conversation_is_its_subject_without_the_ceremony(mailbox, subject, expected):
+	assert mailbox.normalise(subject) == expected
+
+
+def test_the_conversation_keeps_its_own_name_and_its_own_case(mailbox):
+	"""Rows arrive newest first, so a conversation titled from `row.subject`
+	would be called "Re: …" the moment somebody answered it."""
+	assert mailbox.strip_prefixes("Re: Quotation for the Al Reem tower") == (
+		"Quotation for the Al Reem tower"
+	)
+	assert mailbox.strip_prefixes("") == ""
+
+
+def test_a_subject_that_merely_starts_with_those_letters_is_not_a_reply(mailbox):
+	"""`Reminder` begins with `re` and is not `Re:`. The colon is the prefix."""
+	assert mailbox.normalise("Reminder: site visit") == "reminder: site visit"
+	assert mailbox.normalise("Fwding the drawings") == "fwding the drawings"
+
+
+def test_a_wildcard_in_a_subject_is_a_character_and_not_a_wildcard(mailbox):
+	"""`50% off` is one conversation, not every conversation starting `50`."""
+	assert mailbox._like("50% off") == r"50\% off"
+	assert mailbox._like("first_last@x.com") == r"first\_last@x.com"
+	assert mailbox._like(r"a\b") == "a\\\\b"
+
+
+def test_somebody_with_no_address_gets_a_filter_nothing_matches(mailbox, holding):
+	"""Not an empty filter. An empty one reads as "every Communication"."""
+	holding()
+	filters, or_filters = mailbox._filters("all")
+	assert filters == {"name": ("=", "")}
+	assert or_filters is None
+
+
+def test_the_two_halves_of_the_filter_are_returned_together(mailbox, holding):
+	"""The union of two addresses lives in `or_filters`, because `recipients` is
+	a comma-joined string and two of them is a LIKE each. A caller that took the
+	`filters` half alone would be asking for every received email on the site,
+	so there is no way to take it alone."""
+	holding("sales@acme.4dl.app", "ap@acme.4dl.app")
+	filters, or_filters = mailbox._filters("all")
+	assert "recipients" not in filters
+	assert or_filters == [
+		["recipients", "like", "%sales@acme.4dl.app%"],
+		["recipients", "like", "%ap@acme.4dl.app%"],
+	]
+
+
+def test_every_query_takes_both_halves(mailbox):
+	"""The guard for the bug above, read off the source rather than exercised:
+	each `_filters` call unpacks the pair, and each `get_all` under it passes
+	`or_filters`. A query that forgets is the leak."""
+	import inspect
+	import re as regex
+
+	source = inspect.getsource(mailbox)
+	body = source.split("def _filters", 1)[1].split("\n\n\n", 1)[1]
+
+	lonely = regex.search(r"^\s*\w+ = _filters\(", body, regex.M)
+	assert not lonely, f"a caller took only the filters half: {lonely.group().strip()}"
+	assert body.count("_filters(") == body.count("or_filters = _filters(")
+
+	for call in regex.findall(r"frappe\.get_all\(\s*\n\s*\"Communication\".*?\n\t\)", body,
+	                          regex.S):
+		assert "or_filters=or_filters" in call, call
+
+
+def test_one_address_needs_no_or_filter(mailbox, holding):
+	holding("sales@acme.4dl.app")
+	filters, or_filters = mailbox._filters("all")
+	assert filters["recipients"] == ("like", "%sales@acme.4dl.app%")
+	assert or_filters is None
+
+
+def test_a_folder_is_refused_unless_it_is_one_of_yours(mailbox, holding):
+	holding("sales@acme.4dl.app")
+	mailbox._filters("sales@acme.4dl.app")  # fine
+	with pytest.raises(Exception):
+		mailbox._filters("ceo@acme.4dl.app")
+
+
+def test_sent_is_scoped_by_who_sent_it(mailbox, holding):
+	holding("sales@acme.4dl.app", "ap@acme.4dl.app")
+	filters, or_filters = mailbox._filters("sent")
+	assert filters["sent_or_received"] == "Sent"
+	assert filters["sender"] == ("in", ["sales@acme.4dl.app", "ap@acme.4dl.app"])
+	assert or_filters is None
+
+
+def test_a_preview_is_text_and_is_bounded(mailbox):
+	assert mailbox._preview("<p>Hello <b>there</b></p>") == "Hello there"
+	assert mailbox._preview(None) == ""
+	assert len(mailbox._preview("<p>" + "x" * 500 + "</p>")) == 160
+
+
+def test_you_cannot_send_as_an_address_you_do_not_hold(mailbox, holding):
+	holding("sales@acme.4dl.app")
+	with pytest.raises(Exception):
+		mailbox.send(to="x@y.com", subject="hi", content="hi", sender="ceo@acme.4dl.app")
+
+
+def test_holding_nothing_means_sending_nothing(mailbox, holding):
+	holding()
+	with pytest.raises(Exception):
+		mailbox.send(to="x@y.com", subject="hi", content="hi")
+
+
+def test_the_seen_list_is_bounded(mailbox, monkeypatch):
+	"""It is a user default, which every request loads. Unbounded it becomes a
+	string megabytes long that the whole session pays for."""
+	monkeypatch.setattr(mailbox, "_seen_set", lambda: set())
+	result = mailbox.mark_read([f"m{n}" for n in range(mailbox.SEEN_LIMIT + 500)])
+	assert result["seen"] == mailbox.SEEN_LIMIT
+	written = mailbox.frappe.defaults.get_user_default(mailbox.SEEN_KEY, "Administrator")
+	# The oldest fall off, not the newest — a recent message must not come back
+	# as unread the moment somebody has a busy month.
+	assert written.split(",")[-1] == f"m{mailbox.SEEN_LIMIT + 499}"
+
+
+def test_read_receipts_are_stored_under_the_person_they_belong_to(mailbox):
+	"""Not in the global defaults, which every session on the site loads whole."""
+	import inspect
+
+	code = "\n".join(
+		line for line in inspect.getsource(mailbox).splitlines()
+		if not line.strip().startswith("#")
+	)
+	assert "frappe.db.get_default" not in code
+	assert "frappe.db.set_default" not in code
+	assert "frappe.defaults.get_user_default" in code
+
+
+# --------------------------------------------------------------------------- #
+# Connecting a mailbox somebody already has
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def connect():
+	from oneapp.oneapp_core.email import connect as module
+
+	return module
+
+
+@pytest.mark.parametrize(
+	"email_id,server",
+	[
+		("someone@gmail.com", "imap.gmail.com"),
+		("someone@googlemail.com", "imap.gmail.com"),
+		("someone@outlook.com", "outlook.office365.com"),
+		("someone@hotmail.com", "outlook.office365.com"),
+		("someone@icloud.com", "imap.mail.me.com"),
+	],
+)
+def test_a_host_we_know_is_not_a_question_we_ask(connect, email_id, server):
+	guess = connect.suggest(email_id)
+	assert guess["known"] is True
+	assert guess["email_server"] == server
+
+
+def test_a_host_we_do_not_know_gets_a_guess_that_says_it_is_one(connect):
+	guess = connect.suggest("someone@mail.rua.ae")
+	assert guess["known"] is False
+	assert guess["email_server"] == "imap.mail.rua.ae"
+	assert guess["smtp_server"] == "smtp.mail.rua.ae"
+	assert "guessed" in guess["note"]
+
+
+def test_every_known_host_answers_both_halves(connect):
+	"""A host with an IMAP server and no SMTP server connects, syncs, and fails
+	at the first reply — the worst shape a mailbox can be in."""
+	for domain, known in connect.KNOWN.items():
+		assert known["email_server"], domain
+		assert known["smtp_server"], domain
+		assert known["label"], domain
+
+
+def test_a_refused_password_is_explained_as_the_thing_it_usually_is(connect):
+	"""`AUTHENTICATIONFAILED` is true and useless to somebody who typed the
+	right password and does not know Google stopped accepting it."""
+	reason = connect._reason(
+		Exception("b'[AUTHENTICATIONFAILED] Invalid credentials'"),
+		connect.suggest("someone@gmail.com"),
+	)
+	assert "app password" in reason
+
+
+def test_a_hostname_that_does_not_resolve_names_the_hostname(connect):
+	guess = connect.suggest("someone@typo.example")
+	reason = connect._reason(Exception("[Errno -2] Name or service not known"), guess)
+	assert "imap.typo.example" in reason
+
+
+def test_only_what_arrives_from_now_on(connect):
+	"""Nine years of somebody's mail pulled into a workspace their colleagues
+	can be granted access to is a privacy incident, not a slow first sync."""
+	import inspect
+
+	source = inspect.getsource(connect.connect)
+	assert '"email_sync_option": "UNSEEN"' in source

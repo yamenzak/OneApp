@@ -524,6 +524,64 @@ def _seed_rua():
 	)
 
 
+def _seed_mail(user):
+	"""An address this person holds, and one conversation on it.
+
+	Two messages with the same subject and a `Re:` in front of the second,
+	because that is the whole of what threading is here and a fixture with one
+	message proves nothing about it.
+
+	`enable_incoming` is off and there is no server: an address in this product
+	is a delivery point, not a mailbox, and mail arrives by the Worker POSTing
+	it. A fixture that set an IMAP host would have Frappe try to reach one.
+	"""
+	from oneapp.oneapp_core.email import addresses
+
+	# The workspace's own domain, asked for rather than spelled out: a fixture
+	# that hard-coded `4dl.app` would seed an address the product then badges
+	# as somebody else's domain, and the panel would be lying about the one
+	# address it has.
+	address = f"sales@{addresses.domain()}"
+	if not frappe.db.exists("Email Account", {"email_id": address}):
+		frappe.get_doc({
+			"doctype": "Email Account",
+			"email_account_name": address,
+			"email_id": address,
+			"enable_incoming": 0,
+			"enable_outgoing": 0,
+			"signature": "Sales — MockSpace",
+			"add_signature": 1,
+		}).insert(ignore_permissions=True)
+
+	account = frappe.db.get_value("Email Account", {"email_id": address}, "name")
+	holder = frappe.get_doc("User", user)
+	if address not in {row.email_id for row in holder.user_emails}:
+		holder.append("user_emails", {"email_account": account, "email_id": address})
+		holder.save(ignore_permissions=True)
+
+	messages = [
+		("Quotation for the Al Reem tower",
+		 "<p>Could you send the revised cladding quote before Thursday?</p>"),
+		("Re: Quotation for the Al Reem tower",
+		 "<p>Attached — the glazing line moved, everything else holds.</p>"),
+	]
+	for subject, content in messages:
+		if frappe.db.exists("Communication", {"subject": subject, "recipients": address}):
+			continue
+		frappe.get_doc({
+			"doctype": "Communication",
+			"communication_type": "Communication",
+			"communication_medium": "Email",
+			"sent_or_received": "Received",
+			"subject": subject,
+			"content": content,
+			"sender": "hala@client.test",
+			"sender_full_name": "Hala Nasser",
+			"recipients": address,
+		}).insert(ignore_permissions=True)
+	return address
+
+
 def _seed_import():
 	"""A source and a plan, so the import console has something to render.
 
@@ -709,6 +767,7 @@ def seed_tenant(manifest_only=False):
 	from oneapp.oneapp_core import sync
 
 	approvals = 0
+	mailbox = ""
 	if not manifest_only:
 		# Before the manifest is cached: the screen names a doctype, and a
 		# screen over a doctype the site does not have is skipped rather than
@@ -719,6 +778,7 @@ def seed_tenant(manifest_only=False):
 		approvals = _seed_approvals()
 		_seed_registers()
 		_seed_import()
+		mailbox = _seed_mail(frappe.session.user)
 
 	state = frappe.get_single("OneSpace Site State")
 	spaces = [
@@ -1017,6 +1077,7 @@ def seed_tenant(manifest_only=False):
 		f"tenant: {CODE} cached — {len(TODOS)} todos, {len(NOTES)} notes, "
 		f"{BACKLOG} backlog rows, {len(LAYOUTS)} shared views, "
 		f"{approvals} approvals under {WORKFLOW}, "
+		f"a conversation on {mailbox}, "
 		f"and {COLLEAGUE} to share them with"
 	)
 

@@ -320,6 +320,71 @@ export const workspace = {
       { successMessage: 'Sending to that address again' },
     ),
 
+  // --- the mailbox --------------------------------------------------------
+  // Reading is a Communication list asked the right questions — see
+  // `oneapp_core/email/mailbox.py`. Which addresses a person may read is the
+  // query's filter, not the render's.
+  mailFolders: () =>
+    callMethod('oneapp.oneapp_core.email.mailbox.folders', {}, {
+      silent: true, method: 'GET',
+    }),
+
+  mailThreads: (folder, start = 0, search = '') =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.threads',
+      { folder, start, search },
+      { silent: true, method: 'GET' },
+    ),
+
+  mailThread: (key, folder) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.thread',
+      { key, folder },
+      { silent: true, method: 'GET' },
+    ),
+
+  mailUnread: () =>
+    callMethod('oneapp.oneapp_core.email.mailbox.unread', {}, {
+      silent: true, method: 'GET',
+    }),
+
+  mailMarkRead: (names) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.mark_read',
+      { names: JSON.stringify(names) },
+      { silent: true },
+    ),
+
+  mailSend: (values) =>
+    callMethod('oneapp.oneapp_core.email.mailbox.send', values, {
+      successMessage: 'Sent',
+    }),
+
+  // --- connecting a mailbox somebody already has ---------------------------
+  mailConnected: () =>
+    callMethod('oneapp.oneapp_core.email.connect.mine', {}, {
+      silent: true, method: 'GET',
+    }),
+
+  mailSuggestion: (emailId) =>
+    callMethod(
+      'oneapp.oneapp_core.email.connect.suggestion',
+      { email_id: emailId },
+      { silent: true, method: 'GET' },
+    ),
+
+  mailConnect: (values) =>
+    callMethod('oneapp.oneapp_core.email.connect.connect', values, {
+      successMessage: 'Mailbox connected',
+    }),
+
+  mailDisconnect: (name) =>
+    callMethod(
+      'oneapp.oneapp_core.email.connect.disconnect',
+      { name },
+      { successMessage: 'Mailbox disconnected' },
+    ),
+
   // --- naming -----------------------------------------------------------
   //
   // Frappe's `Document Naming Settings`, gated to the doctypes this
