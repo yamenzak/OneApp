@@ -621,7 +621,18 @@ def _seed_mail(user):
 	contact.save(ignore_permissions=True)
 
 	for subject, folder, direction, content in messages:
-		if frappe.db.exists("Communication", {"subject": subject, "recipients": address}):
+		existing = frappe.db.get_value(
+			"Communication", {"subject": subject, "recipients": address}, "name"
+		)
+		if existing:
+			# Put the folder back. The fixture is what a browser pass starts
+			# from, and that pass *files* things — a seed that only inserted
+			# would leave every conversation wherever the last run dropped it,
+			# and the next run would fail on a count nobody changed.
+			frappe.db.set_value(
+				"Communication", existing, folder_lib.FOLDER_FIELD, folder,
+				update_modified=False,
+			)
 			continue
 		frappe.get_doc({
 			"doctype": "Communication",

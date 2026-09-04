@@ -110,8 +110,9 @@ test('the folders a mailbox already has come across, Sent included', async ({
 
   // A folder somebody made holds what they filed in it, and nothing else.
   await rail.filter({ hasText: 'Applicants' }).click()
-  await expect(threads(page)).toHaveCount(1)
-  await expect(threads(page).first()).toContainText('Fabricator')
+  // What is in it, not how many: a browser pass files things, so a count here
+  // is an assertion about every other spec in the file.
+  await expect(threads(page).filter({ hasText: 'Fabricator' })).toHaveCount(1)
 
   // And the Sent folder is not empty, which is the whole reason the framework's
   // "your own mail in your own inbox" guard is off inside one.
@@ -165,9 +166,9 @@ test('a conversation can be filed into a folder', async ({ page, baseURL }, info
   await filed.click()
   await expect(messages(page)).toHaveCount(2)
 
-  // Put it back, so the fixture is as the next run found it.
-  await page.locator('[data-slot="mail-move"]').click()
-  await page.getByRole('menuitem', { name: 'Applicants' }).click()
+  // Not put back here: the inbox is the address row, not a folder, so there is
+  // nothing in this menu to move it to. `_seed_mail` restores the folder on
+  // every run, which is the fixture's job rather than a spec's.
 
   expectNoRealErrors(errors)
 })
