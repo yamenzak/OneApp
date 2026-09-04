@@ -246,6 +246,80 @@ export const workspace = {
       { silent: true, method: 'GET' },
     ),
 
+  // --- mail ---------------------------------------------------------------
+  // Addresses, who holds each, and what they sign with. See
+  // `oneapp_core/email/addresses.py` — the model is Frappe's Email Account and
+  // User Email, so none of this is a parallel permission system.
+  mail: () =>
+    callMethod('oneapp.oneapp_core.email.addresses.listing', {}, {
+      silent: true, method: 'GET',
+    }),
+
+  mailCreate: (localPart, label, grantTo) =>
+    callMethod(
+      'oneapp.oneapp_core.email.addresses.create',
+      { local_part: localPart, label, grant_to: JSON.stringify(grantTo || []) },
+      { successMessage: 'Address created' },
+    ),
+
+  mailUpdate: (name, values) =>
+    callMethod(
+      'oneapp.oneapp_core.email.addresses.update',
+      { name, ...values },
+      { successMessage: 'Saved' },
+    ),
+
+  mailRemove: (name) =>
+    callMethod(
+      'oneapp.oneapp_core.email.addresses.remove',
+      { name },
+      { successMessage: 'Address removed' },
+    ),
+
+  mailGrant: (name, user) =>
+    callMethod('oneapp.oneapp_core.email.addresses.grant', { name, user }),
+
+  mailRevoke: (name, user) =>
+    callMethod('oneapp.oneapp_core.email.addresses.revoke', { name, user }),
+
+  mailSetDefault: (name) =>
+    callMethod(
+      'oneapp.oneapp_core.email.addresses.set_default',
+      { name },
+      { successMessage: 'Sending address set' },
+    ),
+
+  mailUsage: () =>
+    callMethod('oneapp.oneapp_core.email.outbound.usage', {}, {
+      silent: true, method: 'GET',
+    }),
+
+  mailDomain: (domain) =>
+    callMethod(
+      'oneapp.oneapp_core.email.verify.status',
+      { domain },
+      { silent: true, method: 'GET' },
+    ),
+
+  mailDomainConfirm: (domain) =>
+    callMethod(
+      'oneapp.oneapp_core.email.verify.confirm',
+      { domain },
+      { successMessage: 'Domain verified' },
+    ),
+
+  mailSuppressed: () =>
+    callMethod('oneapp.oneapp_core.email.suppression.listing', {}, {
+      silent: true, method: 'GET',
+    }),
+
+  mailRelease: (email) =>
+    callMethod(
+      'oneapp.oneapp_core.email.suppression.release',
+      { email },
+      { successMessage: 'Sending to that address again' },
+    ),
+
   // --- naming -----------------------------------------------------------
   //
   // Frappe's `Document Naming Settings`, gated to the doctypes this

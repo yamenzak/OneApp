@@ -62,6 +62,13 @@
           Import
         </SettingsNavItem>
 
+        <SettingsNavItem value="mail" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-mail" class="size-4 text-ink-gray-7" />
+          </template>
+          Email
+        </SettingsNavItem>
+
         <SettingsNavItem value="ai" :class="TAB_ITEM">
           <template #prefix>
             <Icon name="lucide-sparkles" class="size-4 text-ink-gray-7" />
@@ -92,6 +99,8 @@
       <SettingsPanel value="naming"><NamingSettings /></SettingsPanel>
 
       <SettingsPanel value="import"><ImportSettings /></SettingsPanel>
+
+      <SettingsPanel value="mail"><MailSettings /></SettingsPanel>
 
       <SettingsPanel value="ai"><AiSettings /></SettingsPanel>
 
@@ -128,6 +137,7 @@ import AiSettings from './AiSettings.vue'
 import NamingSettings from './NamingSettings.vue'
 import PrintingSettings from './PrintingSettings.vue'
 import ImportSettings from './ImportSettings.vue'
+import MailSettings from './MailSettings.vue'
 import ThemeSetting from '../ThemeSetting.vue'
 import { PANEL_BODY, PANEL_HEADER, TAB_GROUP, TAB_ITEM, TAB_STRIP, PANEL_CONTENT } from './geometry'
 import { settings } from '../../lib/settings'

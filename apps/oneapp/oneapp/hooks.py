@@ -54,6 +54,10 @@ doc_events = {
 		# Frappe queues one document per send, so counting them measures what
 		# actually leaves the site.
 		"before_insert": "oneapp.oneapp_core.email.outbound.enforce_send_rate",
+		# A permanent failure names an address that will fail again. Read it
+		# here rather than waiting for a provider webhook: an address that does
+		# not exist is refused at SMTP time and the reason is already on the row.
+		"on_update": "oneapp.oneapp_core.email.suppression.on_queue_failure",
 	},
 	# Following a document. Frappe stores the follow and then only ever emails a
 	# digest about it, so these two are the in-app half — see

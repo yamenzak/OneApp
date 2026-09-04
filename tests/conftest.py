@@ -189,6 +189,14 @@ def _make_frappe():
 	frappe.whitelist = whitelist
 
 	utils = types.ModuleType("frappe.utils")
+	# `frappe.utils` is a real package in the framework and a plain module here,
+	# so a submodule import — `from frappe.utils.momentjs import …`, which
+	# `oneapp_core/workspace.py` does for the timezone list — fails with "not a
+	# package" unless it is given a module of its own.
+	momentjs = types.ModuleType("frappe.utils.momentjs")
+	momentjs.get_all_timezones = lambda: ["UTC", "Asia/Dubai"]
+	utils.momentjs = momentjs
+
 	utils.now_datetime = lambda: None
 	utils.add_to_date = lambda *a, **k: None
 	utils.get_datetime = lambda x: x
@@ -339,6 +347,7 @@ def stub_frappe(monkeypatch):
 	monkeypatch.setitem(sys.modules, "frappe.model", model)
 	monkeypatch.setitem(sys.modules, "frappe.model.document", document)
 	monkeypatch.setitem(sys.modules, "frappe.utils", utils)
+	monkeypatch.setitem(sys.modules, "frappe.utils.momentjs", utils.momentjs)
 	for module in desk:
 		monkeypatch.setitem(sys.modules, module.__name__, module)
 	yield frappe
