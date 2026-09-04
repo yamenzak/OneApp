@@ -5,7 +5,7 @@ workspace keeps because the business keeps them, not because the platform needs
 them.
 """
 
-from .spec import column, doctype, f, section
+from .spec import READONLY_PERMS, column, doctype, f, section
 
 
 # --------------------------------------------------------------------------- #
@@ -196,5 +196,48 @@ doctype(
           description="For the rules that file things nobody needs to look at."),
         f("star", "Check", default="0",
           description="And for the ones that file things somebody does."),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# A link that outlives a session
+#
+# The one thing the framework genuinely does not have. `is_private` is a
+# site-wide flag with no expiry and no audit; "send this drawing to the
+# consultant until Friday" is the actual request, and it needs a row.
+#
+# Frappe Drive calls this a `Drive Token` and the idea is worth taking: a file,
+# a secret, and a date. What is not taken is its permission model — see §3 of
+# `docs/DRIVE.md`.
+# --------------------------------------------------------------------------- #
+doctype(
+    "File Link",
+    app="tenant",
+    autoname="hash",
+    title_field="label",
+    search_fields="label,file",
+    perms=READONLY_PERMS,
+    fields=[
+        f("file", "Link", options="File", reqd=1, in_list_view=1,
+          description="The one file this link hands over. A folder is not "
+                      "offered: a link to a folder is a link to everything "
+                      "somebody puts in it afterwards."),
+        f("label", "Data", in_list_view=1,
+          description="What it was made for, in the words of whoever made it."),
+        f("secret", "Data", reqd=1, unique=1, read_only=1,
+          description="What is in the URL. Long enough not to be guessed, and "
+                      "the only thing standing between the link and the file."),
+        column("cb_link_when"),
+        f("expires_on", "Datetime", in_list_view=1,
+          description="After this the link is gone and the file is not. Empty "
+                      "is refused on purpose: a link with no end is a file "
+                      "published for ever by somebody who has left."),
+        f("revoked", "Check", default="0", in_list_view=1,
+          description="Taken back early. Kept rather than deleted, so 'who "
+                      "shared this and when did it stop' has an answer."),
+        f("opened", "Int", default="0", read_only=1,
+          description="How many times it was followed."),
+        f("last_opened", "Datetime", read_only=1),
     ],
 )

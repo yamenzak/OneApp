@@ -117,9 +117,8 @@
   </MultiSelect>
 
   <!--
-    Attach and Attach Image. FileUploader takes a callback rather than a
-    v-model — it hands back the File document, and what belongs in the field is
-    its URL.
+    Attach and Attach Image. The picker hands back the File document, and what
+    belongs in the field is its URL.
   -->
   <div v-else-if="component === 'FileUploader'" class="flex flex-col gap-1">
     <div class="flex items-center gap-1.5">
@@ -130,23 +129,26 @@
             :aria-hidden="true" />
       <FormLabel :label="field.label" :required="!!field.reqd" />
     </div>
-    <FileUploader
-      :file-types="field.fieldtype === 'Attach Image' ? 'image/*' : undefined"
-      @success="(file) => emit('update:modelValue', file.file_url)"
-    >
-      <template #default="{ openFileSelector }">
-        <div class="flex items-center gap-2">
-          <Button
-            :label="modelValue ? 'Replace' : 'Upload'"
-            :disabled="disabled"
-            @click="openFileSelector"
-          />
-          <span v-if="modelValue" class="truncate text-p-sm text-ink-gray-6">
-            {{ modelValue }}
-          </span>
-        </div>
-      </template>
-    </FileUploader>
+    <div class="flex items-center gap-2">
+      <Button
+        :label="modelValue ? 'Replace' : 'Attach'"
+        :disabled="disabled"
+        @click="picking = true"
+      />
+      <span v-if="modelValue" class="truncate text-p-sm text-ink-gray-6">
+        {{ modelValue }}
+      </span>
+    </div>
+    <!--
+      One picker, not an uploader. An Attach field used to be able to upload and
+      not to choose, so the drawing already on the record was uploaded again to
+      put it in a second field. See `components/drive/FilePicker.vue`.
+    -->
+    <FilePicker
+      v-model="picking"
+      :kind="field.fieldtype === 'Attach Image' ? 'Image' : ''"
+      @picked="(file) => emit('update:modelValue', file.file_url)"
+    />
   </div>
 
   <!--
@@ -368,7 +370,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
   Icon,
   FormControl,
@@ -378,7 +380,6 @@ import {
   Password,
   Duration,
   MultiSelect,
-  FileUploader,
   Button,
   Editor,
   EditorContent,
@@ -390,6 +391,7 @@ import {
   upload,
 } from '@/ui'
 import FieldLabel from './FieldLabel.vue'
+import FilePicker from '../../drive/FilePicker.vue'
 import LinkPicker from './LinkPicker.vue'
 import AttachmentGallery from '../record/AttachmentGallery.vue'
 import ChildTable from '../record/ChildTable.vue'
@@ -454,6 +456,10 @@ const props = defineProps({
   doc: { type: Object, default: () => ({}) },
 })
 const emit = defineEmits(['update:modelValue'])
+
+// Whether the attach picker is open. One per control, so two Attach fields
+// on one form do not share a dialog.
+const picking = ref(false)
 
 const component = computed(() => controlComponent(props.field))
 

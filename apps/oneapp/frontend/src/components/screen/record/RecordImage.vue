@@ -10,35 +10,31 @@
   -->
   <div class="flex items-center gap-3">
     <Avatar :image="value" :label="label" shape="square" size="3xl" />
-    <FileUploader
-      v-if="canWrite"
-      file-types="image/*"
-      :doctype="doctype"
-      :docname="name"
-      :fieldname="field"
-      @success="(file) => emit('update:value', file.file_url)"
-    >
-      <template #default="{ openFileSelector, uploading }">
-        <div class="flex flex-col items-start gap-1">
-          <Button
-            :label="value ? 'Replace the image' : 'Add an image'"
-            :loading="uploading"
-            @click="openFileSelector"
-          />
-          <Button
-            v-if="value"
-            variant="ghost"
-            label="Remove it"
-            @click="emit('update:value', '')"
-          />
-        </div>
-      </template>
-    </FileUploader>
+    <div v-if="canWrite" class="flex flex-col items-start gap-1">
+      <Button
+        :label="value ? 'Replace the image' : 'Add an image'"
+        @click="picking = true"
+      />
+      <Button
+        v-if="value"
+        variant="ghost"
+        label="Remove it"
+        @click="emit('update:value', '')"
+      />
+    </div>
+    <FilePicker
+      v-model="picking"
+      kind="Image"
+      :attached-to="{ doctype, docname: name, fieldname: field }"
+      @picked="(file) => emit('update:value', file.file_url)"
+    />
   </div>
 </template>
 
 <script setup>
-import { Avatar, Button, FileUploader } from '@/ui'
+import { ref } from 'vue'
+import { Avatar, Button } from '@/ui'
+import FilePicker from '../../drive/FilePicker.vue'
 
 defineProps({
   /** The current image URL, which is what the field holds. */
@@ -50,4 +46,7 @@ defineProps({
   canWrite: { type: Boolean, default: false },
 })
 const emit = defineEmits(['update:value'])
+
+// Whether the picker is open.
+const picking = ref(false)
 </script>

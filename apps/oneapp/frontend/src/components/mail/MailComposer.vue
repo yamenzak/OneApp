@@ -71,17 +71,19 @@
         </span>
       </div>
 
-      <FileUploader :private="true" @success="attach">
-        <template #default="{ openFileSelector, uploading }">
-          <Button
-            variant="subtle"
-            icon-left="lucide-paperclip"
-            :label="uploading ? 'Attaching…' : 'Attach a file'"
-            data-slot="mail-attach"
-            @click="openFileSelector()"
-          />
-        </template>
-      </FileUploader>
+      <!--
+        Upload one, or send one the workspace already has. Before the picker
+        this was upload-only, so attaching last week's drawing to a second
+        email meant uploading it a second time and paying for it twice.
+      -->
+      <Button
+        variant="subtle"
+        icon-left="lucide-paperclip"
+        label="Attach a file"
+        data-slot="mail-attach"
+        @click="picking = true"
+      />
+      <FilePicker v-model="picking" @picked="attach" />
 
       <ErrorMessage v-if="error" :message="error" />
     </div>
@@ -101,7 +103,6 @@ import {
   EditorContent,
   EditorFixedMenu,
   ErrorMessage,
-  FileUploader,
   FormControl,
   Icon,
   RichTextKit,
@@ -110,6 +111,7 @@ import {
   upload,
 } from '@/ui'
 import RecipientField from './RecipientField.vue'
+import FilePicker from '../drive/FilePicker.vue'
 import { workspace } from '../../lib/workspace'
 
 const props = defineProps({
@@ -137,6 +139,8 @@ const draft = reactive({
 // Behind a toggle, because most messages have neither Cc nor Bcc and two empty
 // boxes above every one of them is two boxes to skip.
 const copies = ref(false)
+// Whether the attach picker is open.
+const picking = ref(false)
 const sending = ref(false)
 const error = ref('')
 const title = ref('New message')

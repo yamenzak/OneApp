@@ -142,27 +142,49 @@ def guess_content_type(filename: str) -> str:
 
 @frappe.whitelist()
 def download(file: str):
-	"""Serve a private file after checking permission on its attached document.
+	"""Serve a private file after checking the reader may have it.
 
 	The permission check is the whole point: without it, a presigned URL endpoint
 	is an open door to every file in the bucket.
+
+	The check is Frappe's own and not ours. `File.has_permission` is a hook the
+	framework registers, and it already answers all four cases — a public file,
+	the owner, a `DocShare`, and delegation to the document the file hangs off.
+	This used to hand-roll three of those and miss the share, which was fine
+	while every file was an attachment and became a bug the moment the Drive
+	gave a file a life of its own: a folder somebody shared with a colleague
+	opened for them and every file in it refused to download.
 	"""
 	doc = frappe.get_doc("File", file)
 
-	if doc.is_private:
-		# Frappe's own rule: access follows the document the file is attached to.
-		if doc.attached_to_doctype and doc.attached_to_name:
-			if not frappe.has_permission(
-				doc.attached_to_doctype, "read", doc.attached_to_name
-			):
-				frappe.throw(_("Not permitted."), frappe.PermissionError)
-		elif doc.owner != frappe.session.user and "System Manager" not in frappe.get_roles():
-			frappe.throw(_("Not permitted."), frappe.PermissionError)
+	if not frappe.has_permission("File", "read", doc=doc):
+		frappe.throw(_("Not permitted."), frappe.PermissionError)
 
-	key = doc.get("r2_key") or object_key(doc)
+	serve(doc)
 
-	frappe.local.response["type"] = "redirect"
-	frappe.local.response["location"] = presigned_url(key)
+
+def serve(doc):
+	"""Hand over one file's bytes, from wherever this site keeps them.
+
+	Two places, because a site with no R2 keys is a real configuration and not a
+	broken one — development runs that way, and so does anybody self-hosting
+	before they have a bucket. There the object is on local disk and there is
+	nothing to presign, so the response carries the content.
+
+	Nothing here checks a permission. Every caller has already checked one, and
+	they check different ones: the download route asks whether the reader may
+	read the file, and a share link asks nothing at all because the secret in the
+	URL was the whole of the authentication.
+	"""
+	key = doc.get("r2_key")
+	if key or is_configured():
+		frappe.local.response["type"] = "redirect"
+		frappe.local.response["location"] = presigned_url(key or object_key(doc))
+		return
+
+	frappe.local.response.filename = doc.file_name
+	frappe.local.response.filecontent = doc.get_content()
+	frappe.local.response.type = "download"
 
 
 # --------------------------------------------------------------------------- #

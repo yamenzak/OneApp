@@ -129,6 +129,57 @@ def _upward(folder: str) -> list[str]:
 
 
 @frappe.whitelist(methods=["POST"])
+def attach(file: str, doctype: str, docname: str, fieldname: str = "") -> dict:
+    """Attach a file that already exists to a record.
+
+    The other half of the picker: uploading writes a new `File`, and choosing
+    one has to end in the same place.
+
+    A *second row* pointing at the same object, not a move. The file being
+    picked is very often already attached to something else — that is why it is
+    worth picking — and setting `attached_to_doctype` on it would take it off
+    the record it came from. Frappe's own `add_attachments` works this way and
+    so does the mail composer's forward: the bytes stay in R2 and a 40 MB
+    drawing set costs one row.
+    """
+    source = frappe.get_doc("File", file)
+    if not frappe.has_permission("File", "read", doc=source):
+        frappe.throw(_("That file is not yours to attach."), frappe.PermissionError)
+    if source.is_folder:
+        frappe.throw(_("A folder cannot be attached to a record."))
+
+    # Write on the *target*, because attaching is a change to the record and
+    # not to the file. A person with read on a drawing and no write on the
+    # project must not be able to put one on the other.
+    if not frappe.has_permission(doctype, "write", doc=docname):
+        frappe.throw(_("You cannot change that record."), frappe.PermissionError)
+
+    doc = frappe.get_doc({
+        "doctype": "File",
+        "file_url": source.file_url,
+        "file_name": source.file_name,
+        "is_private": source.is_private,
+        "attached_to_doctype": doctype,
+        "attached_to_name": docname,
+        "attached_to_field": fieldname or None,
+        "folder": source.folder,
+        # The same object, not a copy of it. Without the key the new row has
+        # none, `r2.serve` derives one from the *new* row's name, and the
+        # download points at nothing.
+        "r2_key": source.get("r2_key"),
+        # And the hash, because on a site with no bucket the object is a file on
+        # disk and Frappe's own delete only spares it when another row has the
+        # same `content_hash` *and* `file_url`. Without this, deleting the
+        # original takes the bytes out from under every copy of it.
+        "content_hash": source.content_hash,
+        KIND_FIELD: source.get(KIND_FIELD),
+        STATUS_FIELD: ACTIVE,
+    }).insert()
+
+    return {"ok": True, "name": doc.name, "file_url": doc.file_url}
+
+
+@frappe.whitelist(methods=["POST"])
 def trash(names: str | list) -> dict:
     """Throw files away, reversibly.
 

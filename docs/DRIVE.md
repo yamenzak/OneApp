@@ -168,6 +168,36 @@ Against Drive, and in the order a person would notice:
 Seven stages. Each is shippable and none needs the next; the order is what makes
 the next one cheaper, and the first two are what everything else is a view onto.
 
+**Stages 1 to 4 are built.** What the stages below said, and what the building of
+them changed:
+
+* The picker asks for a place that is not in the rail. `place=all` is every file
+  the reader can see, flat, with no folder clause — because almost every file in
+  a workspace is an attachment living in `Home/Attachments`, and a picker over
+  the root folder shows an empty drive. The rail keeps its five places, where
+  folders are what makes the drive legible; the picker is the opposite case.
+* Picking a file that is already attached somewhere writes a **second** `File`
+  row pointing at the same object, rather than moving the first. The file being
+  picked is usually already attached to something else, which is generally why it
+  was worth picking.
+* The link is `File Link` — a secret, an expiry, a revoked flag and a count.
+  Guest-callable, so the secret is the whole of the authentication: every refusal
+  says the same sentence, because a message that distinguished expired from wrong
+  would tell a stranger whether the secret was right. Revoking marks rather than
+  deletes, and the sweep drops rows thirty days *after* they expire, because "it
+  stopped working last Tuesday" is asked in the week after it stops working.
+* Sharing replaces the preview rather than stacking on it. Two open modals nest
+  and the outer goes `aria-hidden` under the inner.
+* Both the preview and the link go through **one** function, `r2.serve`. Serving
+  a presigned redirect unconditionally is correct only on a site that has a
+  bucket, and on one that does not — development, and anybody self-hosting before
+  they buy storage — the preview fetched the download route and rendered the
+  error page as the file's contents. A `.txt` whose preview reads
+  "Redirecting..." is what that looked like.
+
+Stage 4 is built except for one half of one bullet: `RecordFiles.vue`'s uploader
+is the picker, but its *rendering* is still its own list rather than the Drive's.
+
 ### Stage 1 — A file is somewhere, not just attached to something
 
 Folders, on `File`'s own `folder` field, which the framework already has and

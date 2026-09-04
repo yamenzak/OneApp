@@ -22,36 +22,32 @@
         <p v-if="record.name !== label" class="truncate font-mono text-p-xs text-ink-gray-5">
           {{ record.name }}
         </p>
-        <FileUploader
-          v-if="imageField && canWrite"
-          class="mt-1"
-          file-types="image/*"
-          :doctype="doctype"
-          :docname="record.name"
-          :fieldname="imageField"
-          @success="(file) => emit('update:image', file.file_url)"
-        >
-          <template #default="{ openFileSelector, uploading }">
-            <div class="-ml-2 flex items-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                :label="image ? 'Change picture' : 'Add a picture'"
-                :loading="uploading"
-                @click="openFileSelector"
-              />
-              <Button
-                v-if="image"
-                variant="ghost"
-                size="sm"
-                icon="lucide-trash-2"
-                label="Remove the picture"
-                tooltip="Remove the picture"
-                @click="emit('update:image', '')"
-              />
-            </div>
-          </template>
-        </FileUploader>
+        <div v-if="imageField && canWrite" class="-ml-2 mt-1 flex items-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            :label="image ? 'Change picture' : 'Add a picture'"
+            @click="picking = true"
+          />
+          <Button
+            v-if="image"
+            variant="ghost"
+            size="sm"
+            icon="lucide-trash-2"
+            label="Remove the picture"
+            tooltip="Remove the picture"
+            @click="emit('update:image', '')"
+          />
+        </div>
+        <!-- A picture the workspace already has is the commonest case here —
+             a logo, a site photo taken last week — and before the picker the
+             only way to reuse one was to upload it again. -->
+        <FilePicker
+          v-model="picking"
+          kind="Image"
+          :attached-to="{ doctype, docname: record.name, fieldname: imageField }"
+          @picked="(file) => emit('update:image', file.file_url)"
+        />
       </div>
     </div>
 
@@ -206,12 +202,12 @@ import {
   Button,
   Dialog,
   ErrorMessage,
-  FileUploader,
   FormControl,
   Icon,
   Tooltip,
   dayjsLocal,
 } from '@/ui'
+import FilePicker from '../../drive/FilePicker.vue'
 import AssignControl from '../fields/AssignControl.vue'
 import ShareControl from '../fields/ShareControl.vue'
 import TagControl from '../fields/TagControl.vue'
@@ -271,6 +267,8 @@ const history = computed(() => {
   return found
 })
 
+// Whether the picture picker is open.
+const picking = ref(false)
 const renaming = ref(false)
 const saving = ref(false)
 const wanted = ref('')

@@ -89,6 +89,8 @@
     </div>
   </div>
 
+  <FilePreview v-model="previewing" :file="looking" />
+
   <Dialog v-model="naming" title="New folder">
     <template #default>
       <FormControl v-model="folderName" label="Name" @keyup.enter="makeFolder" />
@@ -114,6 +116,7 @@ import {
   Skeleton,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
+import FilePreview from '../components/drive/FilePreview.vue'
 import FileRow from '../components/drive/FileRow.vue'
 import { workspace } from '../lib/workspace'
 
@@ -128,6 +131,10 @@ const EMPTY = {
   favourites: { title: 'No favourites', description: 'Heart a file to keep it here.' },
   shared: { title: 'Nothing shared with you', description: 'Files other people share appear here.' },
   trash: { title: 'The bin is empty', description: 'Deleted files wait here for thirty days.' },
+  // Not in the rail. `?place=all` is the flat view of everything this person
+  // can see — what the file picker asks for, and a URL worth being able to
+  // type when you know the file exists and not where it is.
+  all: { title: 'No files yet', description: 'Upload a file to start.' },
 }
 
 const route = useRoute()
@@ -141,10 +148,16 @@ const naming = ref(false)
 const folderName = ref('')
 const folderError = ref('')
 const making = ref(false)
+const previewing = ref(false)
+const looking = ref(null)
 
 // The place and the folder are in the URL, so a folder is somewhere you can
 // send a colleague and the back button walks back up the tree.
-const place = computed(() => route.query.place || 'home')
+// A place that is not one of these is a typo, and a typo must not be a blank
+// page: `EMPTY[place]` is read unconditionally by the template.
+const place = computed(() =>
+  Object.hasOwn(EMPTY, route.query.place) ? route.query.place : 'home',
+)
 const folder = computed(() => route.query.folder || '')
 
 const path = ref([])
@@ -199,12 +212,12 @@ async function load({ append = false } = {}) {
 
 // A folder is a link and navigates itself; this is only ever a file.
 //
-// Until the preview lands, opening one is downloading it — which is what the
-// whole product did with an attachment before any of this, so nothing here is
-// worse than what it replaces.
+// Opening one looks at it rather than downloading it — the download is still
+// there, one button further in, which is the right way round: the common case
+// is wanting to see the thing.
 function open(file) {
-  const url = `/api/method/oneapp.oneapp_core.storage.r2.download?file=${encodeURIComponent(file.name)}`
-  window.open(url, '_blank')
+  looking.value = file
+  previewing.value = true
 }
 
 let typing = null

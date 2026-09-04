@@ -39,6 +39,8 @@ The layers, in import order:
     query     the places — home, recents, favourites, shared, trash — as filters
     reading   listing a place, the path to a folder, one file's details
     writing   folders, renaming, moving, trashing, restoring, emptying
+    sharing   a link that outlives a session, which is the one thing
+              `DocShare` cannot be
 """
 
 import frappe
@@ -47,16 +49,22 @@ from .kinds import (
     KIND_FIELD, KINDS, OPENED_FIELD, STATUS_FIELD, TRASHED_FIELD,
     ACTIVE, TRASHED, kind_of, on_insert,
 )
-from .query import PLACES, _place_filters, _visible
+from .query import ALL, PLACES, _place_filters, _visible
 from .reading import PAGE, listing, path, storage
 from .writing import (
-    empty_trash, make_folder, move, rename, restore, sweep_trash, trash,
+    attach, empty_trash, make_folder, move, rename, restore, sweep_trash, trash,
+)
+from .sharing import (
+    DEFAULT_DAYS, MAX_DAYS, SECRET_BYTES, links, make_link, open_link, revoke,
+    sweep_links,
 )
 
 __all__ = [
     "ACTIVE",
+    "DEFAULT_DAYS",
     "KINDS",
     "KIND_FIELD",
+    "MAX_DAYS",
     "OPENED_FIELD",
     "PAGE",
     "PLACES",
@@ -65,16 +73,24 @@ __all__ = [
     "TRASHED_FIELD",
     "_place_filters",
     "_visible",
+    "attach",
     "empty_trash",
     "kind_of",
+    "links",
     "listing",
     "make_folder",
+    "make_link",
     "move",
     "on_insert",
+    "ALL",
+    "SECRET_BYTES",
+    "open_link",
     "path",
     "rename",
     "restore",
+    "revoke",
     "storage",
+    "sweep_links",
     "sweep_trash",
     "trash",
 ]

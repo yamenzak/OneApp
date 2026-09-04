@@ -170,6 +170,9 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# what has been trashed thirty days comes back empty — which is the
 		# answer, not a case to branch on.
 		"oneapp.oneapp_core.drive.sweep_trash",
+		# Same again: the control plane holds no share links, so this reads an
+		# empty table and says so by coming back with nothing.
+		"oneapp.oneapp_core.drive.sweep_links",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "

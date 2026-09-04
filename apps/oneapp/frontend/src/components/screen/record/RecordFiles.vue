@@ -6,23 +6,18 @@
       is no second call to make and no window where a file exists but belongs
       to nothing.
     -->
-    <FileUploader
+    <Button
       v-if="canWrite"
-      :doctype="doctype"
-      :docname="name"
-      @success="reload"
-      @failure="failed"
-    >
-      <template #default="{ openFileSelector, uploading, progress }">
-        <Button
-          class="w-full"
-          icon-left="lucide-paperclip"
-          :label="uploading ? `Uploading ${progress}%` : 'Attach a file'"
-          :loading="uploading"
-          @click="openFileSelector"
-        />
-      </template>
-    </FileUploader>
+      class="w-full"
+      icon-left="lucide-paperclip"
+      label="Attach a file"
+      @click="picking = true"
+    />
+    <FilePicker
+      v-model="picking"
+      :attached-to="{ doctype, docname: name }"
+      @picked="reload"
+    />
 
     <LoadingText v-if="loading" text="Loading files" />
 
@@ -71,11 +66,11 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { Button, FileUploader, Icon, LoadingText } from '@/ui'
+import { Button, Icon, LoadingText } from '@/ui'
+import FilePicker from '../../drive/FilePicker.vue'
 import EmptyState from '../../EmptyState.vue'
 import { workspace } from '../../../lib/workspace'
 import { humanSize as size, iconFor } from '../../../lib/files'
-import { notifyError } from '../../../lib/notify'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -107,7 +102,8 @@ const reload = async () => {
   }
 }
 
-const failed = (error) => notifyError(error?.message || String(error))
+// Whether the picker is open.
+const picking = ref(false)
 
 const remove = async (file) => {
   await workspace.removeAttachment(props.spaceCode, props.screen, props.name, file.name)

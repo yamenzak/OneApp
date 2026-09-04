@@ -1,0 +1,101 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "file",
+  "label",
+  "secret",
+  "cb_link_when",
+  "expires_on",
+  "revoked",
+  "opened",
+  "last_opened"
+ ],
+ "fields": [
+  {
+   "description": "The one file this link hands over. A folder is not offered: a link to a folder is a link to everything somebody puts in it afterwards.",
+   "fieldname": "file",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "File",
+   "options": "File",
+   "reqd": 1
+  },
+  {
+   "description": "What it was made for, in the words of whoever made it.",
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Label"
+  },
+  {
+   "description": "What is in the URL. Long enough not to be guessed, and the only thing standing between the link and the file.",
+   "fieldname": "secret",
+   "fieldtype": "Data",
+   "label": "Secret",
+   "read_only": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "cb_link_when",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "After this the link is gone and the file is not. Empty is refused on purpose: a link with no end is a file published for ever by somebody who has left.",
+   "fieldname": "expires_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Expires On"
+  },
+  {
+   "default": "0",
+   "description": "Taken back early. Kept rather than deleted, so 'who shared this and when did it stop' has an answer.",
+   "fieldname": "revoked",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Revoked"
+  },
+  {
+   "default": "0",
+   "description": "How many times it was followed.",
+   "fieldname": "opened",
+   "fieldtype": "Int",
+   "label": "Opened",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_opened",
+   "fieldtype": "Datetime",
+   "label": "Last Opened",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "File Link",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "search_fields": "label,file",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "label",
+ "track_changes": 1
+}

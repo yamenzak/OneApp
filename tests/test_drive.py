@@ -227,3 +227,148 @@ def test_restoring_puts_things_back_where_they_were():
 	source = (DRIVE / "writing.py").read_text()
 	restoring = source[source.index("def restore("):source.index("def _subtree(")]
 	assert '"Home"' in restoring
+
+
+# --------------------------------------------------------------------------- #
+# The link that outlives a session
+# --------------------------------------------------------------------------- #
+
+def test_every_link_ends(drive):
+	"""A link with no expiry is a file published for ever by somebody who has
+	since left, and there is no control anywhere that would find it again."""
+	source = (DRIVE / "sharing.py").read_text()
+	making = source[source.index("def make_link("):source.index("def links(")]
+	assert "expires_on" in making
+	assert "1 <= days <= MAX_DAYS" in making
+
+
+def test_a_link_cannot_outlast_the_person_who_made_it(drive):
+	assert 30 <= drive.MAX_DAYS <= 365
+	assert drive.DEFAULT_DAYS <= drive.MAX_DAYS
+
+
+def test_a_folder_cannot_be_linked():
+	"""It would be a link to everything anybody puts in it afterwards, which is
+	not what the person sharing agreed to."""
+	source = (DRIVE / "sharing.py").read_text()
+	making = source[source.index("def make_link("):source.index("def links(")]
+	assert "is_folder" in making
+
+
+def test_making_a_link_needs_the_share_permission_and_not_read():
+	"""Opening a file and publishing it to the internet are different things,
+	and Frappe already has both permissions."""
+	source = (DRIVE / "sharing.py").read_text()
+	for name in ("def make_link(", "def links(", "def revoke("):
+		body = source[source.index(name):]
+		body = body[:body.index("\n\n\n")]
+		assert '"share"' in body, name
+
+
+def test_the_secret_is_random_and_not_derived(drive):
+	"""A secret that is a hash of the file name is a secret anybody who knows
+	the file name already has."""
+	source = (DRIVE / "sharing.py").read_text()
+	assert "import secrets" in source
+	assert "token_urlsafe(SECRET_BYTES)" in source
+	assert drive.SECRET_BYTES >= 16
+
+
+def test_a_guest_is_told_nothing_about_why_a_link_failed():
+	"""Different messages for revoked, expired and wrong would tell a stranger
+	whether the secret they guessed was right."""
+	source = (DRIVE / "sharing.py").read_text()
+	opening = source[source.index("def open_link("):source.index("def sweep_links(")]
+	assert opening.count('_("This link is not available.")') == 2
+	# And nothing else — no other message can leak out of that function.
+	assert "frappe.throw" in opening
+	assert opening.count("frappe.throw") == 2
+
+
+def test_revoking_marks_rather_than_deletes():
+	"""'Who shared this, and when did it stop' is a question somebody asks
+	after something has gone wrong, and a deleted row answers with silence."""
+	source = (DRIVE / "sharing.py").read_text()
+	revoking = source[source.index("def revoke("):source.index("def _shape(")]
+	assert 'db_set("revoked", 1' in revoking
+	assert "delete_doc" not in revoking
+
+
+def test_a_link_works_on_a_site_with_no_bucket():
+	"""Development runs without R2 keys and so does anybody self-hosting before
+	they have a bucket. There the object is on local disk, there is nothing to
+	presign, and the bytes have to come back in the response instead.
+
+	One function, in `r2`, because a preview that only worked on a site with a
+	bucket was exactly this bug on the other route: it fetched the download
+	endpoint and rendered the error page as the file's contents.
+	"""
+	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/r2.py").read_text()
+	serving = source[source.index("def serve("):source.index("def sync_backup_to_r2(")]
+	assert "is_configured()" in serving
+	assert "filecontent" in serving
+	assert "r2.serve(" in (DRIVE / "sharing.py").read_text()
+
+
+def test_the_audit_trail_outlives_the_link():
+	"""'This stopped working last Tuesday' is the answer somebody needs in the
+	week after it stops working."""
+	source = (DRIVE / "sharing.py").read_text()
+	sweeping = source[source.index("def sweep_links("):]
+	assert "-30" in sweeping
+
+
+# --------------------------------------------------------------------------- #
+# The picker
+# --------------------------------------------------------------------------- #
+
+def test_the_picker_looks_at_every_file_and_not_the_root(drive):
+	"""Almost every file in a workspace is an attachment and lives in
+	`Home/Attachments`, so a picker over the root folder is an empty picker."""
+	filters, _or = drive._place_filters(drive.ALL)
+	assert "folder" not in filters
+	assert filters["name"] == ["!=", "Home"]
+
+
+def test_attaching_writes_a_second_row_rather_than_moving_the_file():
+	"""The file being picked is usually already attached to something else —
+	which is generally why it was worth picking."""
+	source = (DRIVE / "writing.py").read_text()
+	attaching = source[source.index("def attach("):source.index("def trash(")]
+	assert "file_url" in attaching
+	assert "attached_to_doctype" in attaching
+	# And it points at the *same* bytes, in both storage worlds: the R2 key so
+	# the download resolves, and the content hash so Frappe's own delete spares
+	# the file on disk while a second row still names it.
+	assert '"r2_key"' in attaching
+	assert "content_hash" in attaching
+
+
+def test_a_second_row_over_one_object_is_not_uploaded_twice():
+	"""`File.after_insert` moves content to R2. The row a pick writes has no
+	content of its own — reading it back would mean fetching our own download
+	route, and uploading it again would bill the workspace twice for one file."""
+	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/file.py").read_text()
+	inserting = source[source.index("def after_insert("):source.index("def move_to_r2(")]
+	assert 'self.get("r2_key")' in inserting
+
+
+def test_deleting_one_attachment_does_not_empty_the_other():
+	"""Two rows can point at one object, which is what picking a file that is
+	already attached somewhere writes. Deleting the object because one of them
+	went would empty the original, from a record nobody was looking at."""
+	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/file.py").read_text()
+	trashing = source[source.index("def on_trash("):]
+	assert "shared_object(key)" in trashing
+
+
+def test_sharing_a_file_does_not_make_it_undeletable():
+	"""Frappe refuses to delete anything another document links to, and a
+	`File Link` is a link. Without the hook, sharing a drawing once makes that
+	drawing permanent — with an error naming a doctype nobody has heard of."""
+	hooks = (ROOT / "apps/oneapp/oneapp/hooks.py").read_text()
+	assert 'ignore_links_on_delete = ["File Link"]' in hooks
+	# And the links go rather than being orphaned: an orphan answers a
+	# stranger's request with a stack trace instead of the one sentence.
+	trashing = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/file.py").read_text()
+	assert '"File Link"' in trashing[trashing.index("def on_trash("):]

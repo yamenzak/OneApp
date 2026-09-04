@@ -51,6 +51,12 @@ override_doctype_class = {
 # ---------------------------------------------------------------------------
 # Document hooks
 # ---------------------------------------------------------------------------
+# A share link names a file, and Frappe refuses to delete anything another
+# document links to. Without this, sharing a drawing once makes that drawing
+# undeletable for ever — with an error naming a doctype the person has never
+# heard of. The links go with the file instead; `storage.file` deletes them.
+ignore_links_on_delete = ["File Link"]
+
 doc_events = {
 	"File": {
 		# Storage quota is enforced at upload time. Discovering you are 3 GB over
@@ -160,6 +166,10 @@ scheduler_events = {
 		# the row and the R2 object go together. Without this the promise is
 		# that we keep everything anybody ever deleted, and bill for it.
 		"oneapp.oneapp_core.drive.sweep_trash",
+		# And the share links that expired a month ago. Not the moment they
+		# expire: the row is the audit trail, and "this stopped working last
+		# Tuesday" is a question asked in the week after it stops.
+		"oneapp.oneapp_core.drive.sweep_links",
 	],
 	"hourly": [
 		"oneapp.oneapp_core.sync.report_usage_to_control_plane",

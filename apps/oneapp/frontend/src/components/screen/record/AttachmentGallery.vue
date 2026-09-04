@@ -112,24 +112,18 @@
         narrows them, and the only thing that makes two galleries on one record
         mean anything.
       -->
-      <FileUploader
+      <Button
         v-if="!disabled"
-        :doctype="doctype"
-        :docname="docname"
-        :fieldname="field.fieldname"
-        @success="reload"
-        @failure="failed"
-      >
-        <template #default="{ openFileSelector, uploading, progress }">
-          <Button
-            class="w-full"
-            icon-left="lucide-plus"
-            :label="uploading ? `Uploading ${progress}%` : 'Add a file'"
-            :loading="uploading"
-            @click="openFileSelector"
-          />
-        </template>
-      </FileUploader>
+        class="w-full"
+        icon-left="lucide-plus"
+        label="Add a file"
+        @click="picking = true"
+      />
+      <FilePicker
+        v-model="picking"
+        :attached-to="{ doctype, docname, fieldname: field.fieldname }"
+        @picked="reload"
+      />
     </template>
 
     <p v-if="note" class="text-p-xs text-ink-gray-5">{{ note }}</p>
@@ -138,9 +132,9 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Button, FileUploader, FormLabel, Icon, LoadingText } from '@/ui'
+import { Button, FormLabel, Icon, LoadingText } from '@/ui'
+import FilePicker from '../../drive/FilePicker.vue'
 import { workspace } from '../../../lib/workspace'
-import { notifyError } from '../../../lib/notify'
 import { humanSize, iconFor, isImage } from '../../../lib/files'
 
 const props = defineProps({
@@ -189,7 +183,9 @@ const reload = async () => {
   }
 }
 
-const failed = (error) => notifyError(error?.message || String(error))
+// Whether the picker is open. One per gallery, so two galleries on one
+// record do not share a dialog.
+const picking = ref(false)
 
 const remove = async (file) => {
   await workspace.removeAttachment(props.spaceCode, props.screen, props.docname, file.name)

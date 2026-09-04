@@ -28,6 +28,30 @@ export const drive = {
       silent: true, method: 'GET',
     }),
 
+  // Attach a file that already exists to a record. A second row pointing at
+  // the same object, not a move — see `drive/writing.attach`.
+  driveAttach: (file, { doctype, docname, fieldname } = {}) =>
+    callMethod(
+      'oneapp.oneapp_core.drive.attach',
+      { file, doctype, docname, fieldname: fieldname || '' },
+      { successMessage: 'Attached' },
+    ),
+
+  // A link somebody without an account can follow, until a date. The one thing
+  // `DocShare` cannot do — see `drive/sharing`.
+  driveMakeLink: (file, days) =>
+    callMethod('oneapp.oneapp_core.drive.make_link', { file, days }),
+
+  driveLinks: (file) =>
+    callMethod('oneapp.oneapp_core.drive.links', { file }, {
+      silent: true, method: 'GET',
+    }),
+
+  driveRevokeLink: (name) =>
+    callMethod('oneapp.oneapp_core.drive.revoke', { name }, {
+      successMessage: 'That link no longer works',
+    }),
+
   driveNewFolder: (fileName, folder) =>
     callMethod(
       'oneapp.oneapp_core.drive.make_folder',

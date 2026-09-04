@@ -23,7 +23,16 @@ FAVOURITES = "favourites"
 SHARED = "shared"
 TRASH = "trash"
 
-PLACES = (HOME, RECENTS, FAVOURITES, SHARED, TRASH)
+# Not in the rail. Every file this person can see, wherever it sits — which is
+# what a picker wants and what the rail never should: a flat list of a
+# workspace's files is a list of its attachments, and the folders are the only
+# thing that makes the drive legible. The picker is the opposite case. It is
+# already scoped to one field on one record, the person knows what they are
+# looking for, and making them walk into `Home/Attachments` to find the file
+# they uploaded yesterday is a folder tree used as an obstacle.
+ALL = "all"
+
+PLACES = (HOME, RECENTS, FAVOURITES, SHARED, TRASH, ALL)
 
 # Where each place looks and how it is ordered. `order` is the reader's default;
 # a column header still overrides it.
@@ -33,6 +42,7 @@ ORDER = {
     FAVOURITES: "modified desc",
     SHARED: "modified desc",
     TRASH: "custom_trashed_on desc",
+    ALL: "modified desc",
 }
 
 
@@ -80,6 +90,10 @@ def _place_filters(place: str, folder: str = "", kind: str = "") -> tuple[dict, 
         filters["owner"] = ["!=", frappe.session.user]
     elif place == RECENTS:
         filters[OPENED_FIELD] = ["is", "set"]
+    elif place == ALL:
+        # No folder clause at all. The only thing excluded is the root itself,
+        # for the same reason Home excludes it: it is the drive, not a file.
+        filters["name"] = ["!=", ROOT]
 
     if kind:
         filters[KIND_FIELD] = kind
