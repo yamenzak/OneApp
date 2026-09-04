@@ -55,7 +55,13 @@ doc_events = {
 	"File": {
 		# Storage quota is enforced at upload time. Discovering you are 3 GB over
 		# after the fact is a worse experience than a clear rejection now.
-		"before_insert": "oneapp.oneapp_core.storage.quota.enforce_quota",
+		#
+		# And what the file is, so the Drive can filter on a column rather than
+		# walking a mime map per row per page — see `oneapp_core/drive`.
+		"before_insert": [
+			"oneapp.oneapp_core.storage.quota.enforce_quota",
+			"oneapp.oneapp_core.drive.on_insert",
+		],
 	},
 	"Email Queue": {
 		# Frappe queues one document per send, so counting them measures what
@@ -150,6 +156,10 @@ scheduler_events = {
 		# whose last day has passed. Without something acting on the date, the
 		# date is a note to self.
 		"oneapp.oneapp_core.email.rules.expire_away",
+		# And the bin, which is a promise with a date on it: thirty days, then
+		# the row and the R2 object go together. Without this the promise is
+		# that we keep everything anybody ever deleted, and bill for it.
+		"oneapp.oneapp_core.drive.sweep_trash",
 	],
 	"hourly": [
 		"oneapp.oneapp_core.sync.report_usage_to_control_plane",

@@ -29,6 +29,10 @@ def create_custom_fields():
 	storing it means a rename or a change to the key scheme cannot orphan
 	objects we can no longer find to delete.
 
+	**The four Drive columns.** A file manager needs to filter by what a file
+	is, hide what was thrown away, and order by what was opened — and none of
+	those is a question `File` can answer. See `oneapp_core/drive.py`.
+
 	**The mail folder pair** — `Communication.custom_imap_folder` and
 	`Email Account.custom_folder_kinds`. Frappe syncs a mailbox folder by
 	folder and then throws the folder away: `InboundMail` is handed it and
@@ -48,6 +52,7 @@ def create_custom_fields():
 	"""
 	from frappe.custom.doctype.custom_field.custom_field import create_custom_fields as make
 
+	from oneapp.oneapp_core.drive import KIND_FIELD, OPENED_FIELD, STATUS_FIELD, TRASHED_FIELD
 	from oneapp.oneapp_core.email.folders import FOLDER_FIELD
 	from oneapp.oneapp_core.email.linking import LINK_BY
 	from oneapp.oneapp_core.email.threading import THREAD_FIELD
@@ -62,7 +67,50 @@ def create_custom_fields():
 					"read_only": 1,
 					"hidden": 1,
 					"no_copy": 1,
-				}
+				},
+				{
+					# What this file is, derived from its mime type once on
+					# insert. A column rather than a computation, for the
+					# reason every list in this product stores its grouping
+					# key: "show me the drawings" over four thousand files
+					# cannot be a Python walk over a mime map.
+					"fieldname": KIND_FIELD,
+					"label": "Kind",
+					"fieldtype": "Data",
+					"read_only": 1,
+					"no_copy": 1,
+					"search_index": 1,
+				},
+				{
+					# Thrown away, but not yet gone. Frappe deletes a File and
+					# its object together, so without this the only undo for a
+					# misplaced click is a backup.
+					"fieldname": STATUS_FIELD,
+					"label": "Status",
+					"fieldtype": "Select",
+					"options": "Active\nTrashed",
+					"default": "Active",
+					"read_only": 1,
+					"no_copy": 1,
+					"search_index": 1,
+				},
+				{
+					"fieldname": TRASHED_FIELD,
+					"label": "Trashed On",
+					"fieldtype": "Datetime",
+					"read_only": 1,
+					"no_copy": 1,
+				},
+				{
+					# Recents, without a row per person per file. A workspace's
+					# file list does not need per-person recency badly enough
+					# to pay for a doctype that grows with every open.
+					"fieldname": OPENED_FIELD,
+					"label": "Last Opened",
+					"fieldtype": "Datetime",
+					"read_only": 1,
+					"no_copy": 1,
+				},
 			],
 			"Communication": [
 				{

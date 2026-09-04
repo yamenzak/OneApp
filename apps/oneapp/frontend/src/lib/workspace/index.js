@@ -14,6 +14,7 @@
 import { settings } from './settings'
 import { screen } from './screen'
 import { record } from './record'
+import { drive } from './drive'
 import { layouts } from './layouts'
 import { mail } from './mail'
 import { importing } from './importing'
@@ -23,6 +24,7 @@ export const workspace = {
   ...settings,
   ...screen,
   ...record,
+  ...drive,
   ...layouts,
   ...mail,
   ...importing,

@@ -28,6 +28,18 @@ const routes = [
     meta: { pane: true },
   },
   {
+    // Files belong to the workspace rather than to any one space — an
+    // attachment on a project and a drawing nobody has filed are the same row
+    // in the same table — so this is a route beside Mail rather than a screen
+    // inside a space.
+    path: '/files',
+    name: 'Drive',
+    component: () => import('./pages/Drive.vue'),
+    // A rail, a list and its own scroller, same as the screen host: without
+    // this the shell scrolls the page and the list loses its header.
+    meta: { pane: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('./pages/NotFound.vue'),

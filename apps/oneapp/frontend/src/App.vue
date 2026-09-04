@@ -18,6 +18,13 @@
           into a third column beside a workspace list nobody asked for.
         -->
         <MailSidebar v-if="$route.name === 'Mail'" />
+        <!-- Files are not inside a space either: an attachment on a project
+             and a drawing nobody has filed are the same row in the same
+             table. -->
+        <DriveSidebar
+          v-else-if="$route.name === 'Drive'"
+          :place="$route.query.place || 'home'"
+        />
         <SpaceSidebar v-else />
       </template>
 
@@ -81,6 +88,7 @@ import { FrappeUIProvider, Button, Dialog, LoadingIndicator, usePageMeta } from 
 import AppShell from './components/AppShell.vue'
 import SpaceSidebar from './components/SpaceSidebar.vue'
 import MailSidebar from './components/mail/MailSidebar.vue'
+import DriveSidebar from './components/drive/DriveSidebar.vue'
 import RailAccount from './components/RailAccount.vue'
 import NotificationBell from './components/notifications/NotificationBell.vue'
 import MailBell from './components/mail/MailBell.vue'

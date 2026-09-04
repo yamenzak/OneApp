@@ -165,6 +165,11 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# reads an empty table. A branch to say so would say less than the
 		# empty query already does.
 		"oneapp.oneapp_core.email.rules.expire_away",
+		# And the same again for the bin. The control plane's own files are the
+		# operator console's, nobody throws one away there, and a query for
+		# what has been trashed thirty days comes back empty — which is the
+		# answer, not a case to branch on.
+		"oneapp.oneapp_core.drive.sweep_trash",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "
