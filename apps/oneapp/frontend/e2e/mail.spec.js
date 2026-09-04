@@ -172,6 +172,58 @@ test('a conversation can be filed into a folder', async ({ page, baseURL }, info
   expectNoRealErrors(errors)
 })
 
+test('a folder is made in the mailbox it belongs to', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+
+  // The button is on the address, not at the foot of the rail with a dropdown
+  // asking which mailbox — a folder belongs to a mailbox.
+  const address = page.locator('[data-slot="mail-folder"]').filter({ hasText: ADDRESS }).first()
+  await address.hover()
+  await address.locator('[data-slot="mail-new-folder"]').click()
+
+  // And the dialog says which of the two kinds of folder this will be, before
+  // it is made rather than after.
+  await expect(page.getByText(/no mailbox server|other mail apps/)).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  expectNoRealErrors(errors)
+})
+
+test('a tracking pixel does not load itself', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  // If the browser asks for it, the sender learns the message was opened, by
+  // whom and from where. So: refuse the request, and prove it by watching.
+  const reached = []
+  await page.route('**://tracker.invalid/**', (route) => {
+    reached.push(route.request().url())
+    return route.abort()
+  })
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await threads(page).filter({ hasText: 'Fabricator' }).click()
+
+  const notice = page.locator('[data-slot="mail-blocked-images"]')
+  await expect(notice).toContainText('1 image not loaded')
+  expect(reached).toEqual([])
+
+  // And asking for them puts them back — at which point the request is made,
+  // because that is what the reader just chose.
+  await notice.getByRole('button', { name: 'Show images' }).click()
+  await expect(notice).toHaveCount(0)
+  await expect
+    .poll(() => reached.length, { timeout: 5_000 })
+    .toBeGreaterThan(0)
+
+  expectNoRealErrors(errors)
+})
+
 test('anybody may connect the mailbox they already have', async ({ page, baseURL }, info) => {
   test.skip(info.project.name === 'mobile', 'the settings dialog has its own spec')
   const errors = collectConsoleErrors(page)

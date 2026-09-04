@@ -123,8 +123,29 @@
           </div>
           <span class="mt-0.5 block text-p-xs text-ink-gray-5">to {{ one.recipients }}</span>
 
+          <!--
+            Remote images held back until asked for. Frappe strips the
+            dangerous half of inbound HTML on save — a `<script>` and an
+            `onerror` never reach the database — so what is left is the
+            privacy half, and nothing strips that: a 1×1 image on somebody
+            else's server reports the moment a message was opened, by whom,
+            from where.
+          -->
+          <div
+            v-if="one.held"
+            class="mt-3 flex items-center gap-2 rounded-6 bg-surface-gray-2 px-3 py-2"
+            data-slot="mail-blocked-images"
+          >
+            <Icon name="lucide-image-off" class="size-3.5 text-ink-gray-5" :aria-hidden="true" />
+            <span class="flex-1 text-p-xs text-ink-gray-6">
+              {{ one.held }} image{{ one.held > 1 ? 's' : '' }} not loaded, so the
+              sender is not told you opened this.
+            </span>
+            <Button variant="ghost" size="sm" label="Show images" @click="reveal(one)" />
+          </div>
+
           <!-- eslint-disable-next-line vue/no-v-html -->
-          <div class="prose-sm mt-3 max-w-none text-ink-gray-8" v-html="one.content" />
+          <div class="prose-sm mt-3 max-w-none text-ink-gray-8" v-html="one.body" />
 
           <div v-if="one.attachments?.length" class="mt-3 flex flex-wrap gap-2">
             <a
@@ -199,7 +220,7 @@ import {
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import SenderChip from '../components/SenderChip.vue'
-import { loadMail, mail } from '../lib/mail'
+import { holdImages, loadMail, mail, showImages } from '../lib/mail'
 import { workspace } from '../lib/workspace'
 
 const loading = ref(true)
@@ -284,12 +305,24 @@ async function load() {
  * to preview, and marking on the server would do it for everybody who shares
  * the address.
  */
+/** Put one message's remote images back, for this reading only. */
+function reveal(one) {
+  one.body = showImages(one.body)
+  one.held = 0
+}
+
 async function read() {
   if (!chosen.value) {
     messages.value = []
     return
   }
-  messages.value = await workspace.mailThread(chosen.value, folder.value)
+  // Held here rather than server-side: the message stays whole in the
+  // database, which is what makes "show images" a swap in the browser instead
+  // of another round trip, and what keeps a forward or a print correct.
+  messages.value = (await workspace.mailThread(chosen.value, folder.value)).map((one) => {
+    const { body, held } = holdImages(one.content)
+    return { ...one, body, held }
+  })
 
   const names = messages.value.map((one) => one.name)
   if (names.length) {

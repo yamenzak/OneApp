@@ -589,8 +589,12 @@ def _seed_mail(user):
 		# One in a folder somebody made, which is the whole point of mirroring
 		# them, and one in Sent — stored as Sent rather than Received, which is
 		# what `OneSpaceInboundMail` does to a message out of a Sent folder.
+		# With a remote image in it, which is what a tracking pixel is: the
+		# host is `.invalid`, reserved by RFC 2606 so it can never resolve, and
+		# the spec watches for the request rather than for a reply.
 		("Fabricator — CV and trade test", "Applicants", "Received",
-		 "<p>Six years on curtain wall, available from the 12th.</p>"),
+		 "<p>Six years on curtain wall, available from the 12th.</p>"
+		 '<img src="https://tracker.invalid/open.gif" width="1" height="1">'),
 		("Al Reem — revised elevations", "Sent Items", "Sent",
 		 "<p>Revised sheets attached, superseding revision B.</p>"),
 	]
