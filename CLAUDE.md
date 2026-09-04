@@ -29,6 +29,11 @@ almost always one of these four, in this order of how much they cost:
   for. Start it in the background and *stop* — the harness sends a notification
   when it exits. Never poll a loop that greps for its own command line either:
   `pgrep -f "vite build"` matches the shell running the `pgrep`.
+* **Believing a command that has not exited is still working.** It may have
+  finished and be holding the pipe open for a child it accidentally adopted —
+  which is what `dev.sh migrate` did for an hour after running the migration in
+  ninety seconds. Before waiting any longer, look: `cat /proc/PID/wchan`. If it
+  says `do_wait` the work is over and something else is keeping it alive.
 * **Running the whole browser suite for a change that touched three files.**
   `yarn e2e` is nine and a half minutes and it is a pre-commit gate, not a
   feedback loop. While iterating run the specs you are changing:

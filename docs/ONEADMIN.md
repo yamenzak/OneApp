@@ -736,6 +736,13 @@ stack being slow. The fixture is three seconds; the box has four cores.
 * **Anything that enqueues needs a worker.** Every notification the framework
   produces is enqueued, so on a bench with no worker an assignment writes no
   Notification Log at all — and the empty panel looks exactly like our bug.
+* **A command that has not exited may have finished.** `services` starts the
+  socketio server, and a process started with `( … & )` is re-parented straight
+  back to the script — so bash sits in `wait4` for it and the command holds the
+  terminal after doing its work. `dev.sh migrate` ran a full migration in ninety
+  seconds and then hung for an hour, which reads exactly like a migration still
+  going. `setsid` in `services` fixes it; `cat /proc/PID/wchan` diagnoses it,
+  and `do_wait` means the work is over.
 * **Start the site you are about to test last.** `webserver_port` is one
   bench-wide setting that socketio reads at startup, so whichever site started
   most recently owns realtime. The symptom is the realtime specs failing alone,

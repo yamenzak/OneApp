@@ -68,8 +68,20 @@ services() {
   # Checked by port, not by pgrep: `pgrep -f socketio.js` also matches the
   # shell command that contains the string, so it reports the server running
   # when nothing is.
+  #
+  # `setsid`, and it is not decoration. `( … & )` leaves the node process a
+  # child of this script — it is orphaned by the subshell and immediately
+  # re-parented back — so bash sits in `wait4` for it and the script never
+  # exits. Every command that calls `services` and is not itself a server then
+  # hangs forever *after doing its work*: `dev.sh migrate` ran the whole
+  # migration in ninety seconds and then held the terminal for an hour, which
+  # reads exactly like a migration that is still going.
+  #
+  # `setsid` puts it in a session of its own, where it cannot be waited on.
   if ! (exec 3<>/dev/tcp/127.0.0.1/9000) 2>/dev/null; then
-    ( cd "$BENCH" && nohup node apps/frappe/socketio.js >"$BENCH/logs/socketio.log" 2>&1 & )
+    setsid nohup node "$BENCH/apps/frappe/socketio.js" \
+      >"$BENCH/logs/socketio.log" 2>&1 < /dev/null &
+    disown 2>/dev/null || true
     sleep 2
   fi
 }
