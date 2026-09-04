@@ -44,6 +44,10 @@ The single modules, roughly by how often they are touched:
   thin wrappers over something Frappe already has. The rule throughout: use the
   framework's model, add the surface.
 * `notifications.py` — the feed, and the follow machinery Frappe half has.
+* `alerts.py` — rules that tell somebody when a record changes. Frappe's own
+  `Notification`, gated to the workspace's doctypes and narrowed to one
+  sentence; the condition is compiled from three controls rather than typed,
+  because Frappe evaluates it as code.
 * `jobs.py`, `backup.py`, `expiry.py`, `retention.py`, `site.py` — the scheduled
   half. Every job here is accounted for by `tests/test_site_role.py`.
 * `ai/`, `storage/`, `plans/` — the metered gateway, R2, and the one bespoke

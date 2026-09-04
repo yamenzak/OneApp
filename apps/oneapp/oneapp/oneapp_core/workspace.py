@@ -524,6 +524,63 @@ def _naming_gate() -> None:
 		             frappe.PermissionError)
 
 
+# --------------------------------------------------------------------------- #
+# Alerts
+#
+# Frappe's own `Notification`, gated to this workspace's doctypes and narrowed
+# to the sentence somebody would say out loud. See `oneapp_core/alerts.py`.
+# --------------------------------------------------------------------------- #
+
+def _alerts_gate() -> None:
+	"""Alerts are the workspace's, so the workspace's own owners decide them.
+
+	The same door as naming, and for a sharper reason: a rule mails people on
+	the workspace's behalf and can name a role rather than a person, so writing
+	one is deciding what a group of colleagues receives.
+	"""
+	roles = set(frappe.get_roles())
+	if not roles & {OWNER_ROLE, SUPPORT_ROLE}:
+		frappe.throw(_("Only a workspace admin can change alerts."),
+		             frappe.PermissionError)
+
+
+@frappe.whitelist(methods=["GET"])
+def alerts() -> dict:
+	"""Every rule this workspace made, and what a new one may be about."""
+	from oneapp.oneapp_core import alerts as module
+
+	_alerts_gate()
+	return {"rules": module.listing(), "doctypes": module.doctypes(),
+	        "roles": module.roles()}
+
+
+@frappe.whitelist(methods=["POST"])
+def save_alert(values: str | dict) -> dict:
+	"""Write one rule, new or edited, and hand back what was stored."""
+	from oneapp.oneapp_core import alerts as module
+
+	_alerts_gate()
+	return module.save(values)
+
+
+@frappe.whitelist(methods=["POST"])
+def set_alert_enabled(name: str, enabled: int | bool) -> dict:
+	"""Pause a rule, or start it again, without losing what it says."""
+	from oneapp.oneapp_core import alerts as module
+
+	_alerts_gate()
+	return module.set_enabled(name, bool(int(enabled)))
+
+
+@frappe.whitelist(methods=["POST"])
+def remove_alert(name: str) -> dict:
+	"""Delete a rule this workspace made. An app's own rules are refused."""
+	from oneapp.oneapp_core import alerts as module
+
+	_alerts_gate()
+	return module.remove(name)
+
+
 @frappe.whitelist(methods=["GET"])
 def naming() -> list[dict]:
 	"""Every doctype this workspace may set a series for, with its prefixes."""

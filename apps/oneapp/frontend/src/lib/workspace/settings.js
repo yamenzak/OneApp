@@ -66,6 +66,35 @@ export const settings = {
       successMessage: 'Books are ready',
     }),
 
+  // --- alerts ---------------------------------------------------------------
+  //
+  // "Tell the accounts role when an invoice is three days past due." Frappe's
+  // own `Notification`, gated to this workspace's doctypes and narrowed to the
+  // sentence somebody would say out loud — see `oneapp_core/alerts.py`.
+  alerts: () =>
+    callMethod('oneapp.oneapp_core.workspace.alerts', {}, { silent: true, method: 'GET' }),
+
+  saveAlert: (values) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.save_alert',
+      { values: JSON.stringify(values) },
+      { successMessage: 'Alert saved' },
+    ),
+
+  setAlertEnabled: (name, enabled) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.set_alert_enabled',
+      { name, enabled: enabled ? 1 : 0 },
+      { silent: true },
+    ),
+
+  removeAlert: (name) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.remove_alert',
+      { name },
+      { successMessage: 'Alert removed' },
+    ),
+
   naming: () =>
     callMethod('oneapp.oneapp_core.workspace.naming', {}, { silent: true, method: 'GET' }),
 

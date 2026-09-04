@@ -95,6 +95,21 @@ def create_custom_fields():
 					"search_index": 1,
 				}
 			],
+			# A rule this workspace wrote, as against one an app shipped or one
+			# the framework ships itself — Frappe has two non-standard
+			# Notifications of its own on every site, and a customer's settings
+			# page is not where the platform's error alerts belong. See
+			# `oneapp_core/alerts.py`.
+			"Notification": [
+				{
+					"fieldname": "custom_onespace",
+					"label": "Made in OneSpace",
+					"fieldtype": "Check",
+					"read_only": 1,
+					"no_copy": 1,
+					"search_index": 1,
+				}
+			],
 			"Communication Link": [
 				{
 					"fieldname": LINK_BY,

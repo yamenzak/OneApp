@@ -69,6 +69,13 @@
           Email
         </SettingsNavItem>
 
+        <SettingsNavItem value="alerts" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-bell" class="size-4 text-ink-gray-7" />
+          </template>
+          Alerts
+        </SettingsNavItem>
+
         <SettingsNavItem value="ai" :class="TAB_ITEM">
           <template #prefix>
             <Icon name="lucide-sparkles" class="size-4 text-ink-gray-7" />
@@ -102,6 +109,8 @@
 
       <SettingsPanel value="mail"><MailSettings /></SettingsPanel>
 
+      <SettingsPanel value="alerts"><AlertSettings /></SettingsPanel>
+
       <SettingsPanel value="ai"><AiSettings /></SettingsPanel>
 
       <SettingsPanel value="appearance">
@@ -134,6 +143,7 @@ import {
 import SettingsFields from './SettingsFields.vue'
 import BooksSettings from './BooksSettings.vue'
 import AiSettings from './AiSettings.vue'
+import AlertSettings from './AlertSettings.vue'
 import NamingSettings from './NamingSettings.vue'
 import PrintingSettings from './PrintingSettings.vue'
 import ImportSettings from './ImportSettings.vue'

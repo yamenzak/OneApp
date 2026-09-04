@@ -311,6 +311,32 @@ about *our* filing and wrong about everybody else's: somebody arriving with ten
 years of Outlook arrives with their folders, and a reader that cannot show them
 is a reader they cannot move to. Stage 8 is what that turned into.
 
+### Stage 9 — Telling somebody when something happens
+
+`Notification` is the framework's own rule → recipients → message on a document
+event, with a scheduler for the date-relative ones and a `System Notification`
+channel that writes the same `Notification Log` the bell already reads. None of
+that is reimplemented. What is ours is `oneapp_core/alerts.py`: the gate, the
+scope, and a much smaller shape.
+
+A rule is one sentence — *when a Project is past due by 3 days, tell the
+accounts role, and say this* — and the settings panel is that sentence. Frappe's
+own form offers eight events, four channels, a filters JSON, a property to set
+afterwards and a Slack webhook; this offers five events, two channels, and
+recipients that are a role or a field on the document.
+
+**The condition is compiled, never typed**, and that is the whole reason the
+module is shaped this way. `Notification.condition` is `frappe.safe_eval`'d with
+the document in scope, so a text box would be a text box that runs code. A
+field, an operator and a value go in; `_condition` builds the expression and
+`_decompile` reads it back so the form can reopen on it. The string stays the
+only copy, because two places holding one fact is two places to disagree.
+
+Ours are marked with `Notification.custom_onespace`. `is_standard` was the
+obvious flag and is the wrong one: Frappe ships two non-standard Notifications
+of its own on every site, and the platform's error alerts in a customer's
+settings page is a bug the first customer would report.
+
 ### Stage 8 — The rest of a mail client
 
 Stage 6 was a reader. This is the difference between a reader and something
@@ -428,15 +454,13 @@ discover the model was wrong.
 
 Three things named here and not built:
 
-* **`Notification` and `Email Template`** — rule, template, recipient. Still the
-  biggest single win in the table above, still deferred, and the only one of the
-  three that is a gap rather than a decision: nothing in `oneapp_core` mentions
-  either doctype, so a workspace that wants "email me when an invoice is
-  overdue" has nowhere to say so.
 * **OAuth for Gmail and Outlook.** Frappe ships `Connected App`; the password
   path works for every provider and this works for two, so it waits for an
   operator to want it.
 * **DMARC records**, per Stage 7.
+* **`Email Template`.** A rule carries its own subject and message, which is
+  what somebody writing one wants; a library of reusable bodies is a second
+  screen nobody has asked for yet.
 
 And one that is a different document: mail against a *record* — what links a
 message to a document, and where an AI lane earns its cost — is

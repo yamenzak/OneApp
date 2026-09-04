@@ -143,6 +143,9 @@ ROLE_CHECKS = (
 	# checks the doctype is on a screen this workspace shows. The second calls
 	# the first, so either satisfies this.
 	"_printing_gate()", "_printable_gate(",
+	# Alerts, for the sharper version of the same reason: a rule mails people
+	# on the workspace's behalf and can name a role rather than a person.
+	"_alerts_gate()",
 )
 
 
