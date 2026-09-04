@@ -278,130 +278,34 @@
       <Button variant="ghost" size="sm" label="Undo" @click="unsend()" />
     </div>
 
-    <Dialog v-model="writing" :title="writingTitle" size="xl">
-      <div class="flex flex-col gap-3">
-        <Select
-          v-if="addresses.length > 1"
-          v-model="draft.sender"
-          label="From"
-          :options="addresses.map((one) => ({ label: one, value: one }))"
-        />
-        <!-- Stacked on a phone. Side by side, the toggle takes a third of the
-             line and leaves the recipients a box too narrow to read one
-             address in, which is the field that matters most on the screen
-             with the least room. -->
-        <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
-          <RecipientField v-model="draft.to" class="flex-1" label="To" />
-          <!-- Behind a toggle, because most messages have neither and two
-               empty boxes above every one of them is two boxes to skip. -->
-          <Button
-            variant="ghost"
-            class="self-start sm:self-auto"
-            :label="copies ? 'Hide Cc and Bcc' : 'Cc and Bcc'"
-            data-slot="mail-copies"
-            @click="copies = !copies"
-          />
-        </div>
-        <RecipientField v-if="copies" v-model="draft.cc" label="Cc" placeholder="Also to" />
-        <RecipientField v-if="copies" v-model="draft.bcc" label="Bcc" placeholder="Privately to" />
-        <FormControl v-model="draft.subject" label="Subject" />
-
-        <!--
-          The same editor a Text Editor field gets, with the same extensions:
-          mail is prose, and a textarea sends a paragraph of plain text to
-          somebody whose client will render it as one long line. `Editor` is
-          renderless — it owns the model, the upload and the placeholder and
-          draws nothing — so the toolbar is a choice made here.
-        -->
-        <div class="rounded-6 border border-outline-gray-2 bg-surface-base px-3 py-2">
-          <Editor
-            v-model="draft.content"
-            :extensions="EXTENSIONS"
-            format="html"
-            placeholder="Write your message"
-            :upload-function="uploadInline"
-          >
-            <template #default="{ editor }">
-              <EditorFixedMenu :editor="editor" :items="articleToolbar" class="mb-2" />
-              <EditorContent :editor="editor" aria-label="Message" dir="auto" />
-            </template>
-          </Editor>
-        </div>
-
-        <!-- What is going with it. A forward arrives here already carrying the
-             original's files; anything else is added below. -->
-        <div v-if="draft.attachments.length" class="flex flex-wrap gap-2">
-          <span
-            v-for="one in draft.attachments"
-            :key="one.name"
-            class="flex items-center gap-1.5 rounded-6 border border-outline-gray-2 px-2 py-1 text-p-xs text-ink-gray-7"
-            data-slot="mail-attachment"
-          >
-            <Icon name="lucide-paperclip" class="size-3" :aria-hidden="true" />
-            {{ one.file_name }}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon="lucide-x"
-              :label="`Remove ${one.file_name}`"
-              :tooltip="`Remove ${one.file_name}`"
-              @click="unattach(one)"
-            />
-          </span>
-        </div>
-
-        <FileUploader :private="true" @success="attach">
-          <template #default="{ openFileSelector, uploading }">
-            <Button
-              variant="subtle"
-              icon-left="lucide-paperclip"
-              :label="uploading ? 'Attaching…' : 'Attach a file'"
-              data-slot="mail-attach"
-              @click="openFileSelector()"
-            />
-          </template>
-        </FileUploader>
-
-        <ErrorMessage v-if="error" :message="error" />
-      </div>
-      <template #actions>
-        <Button variant="solid" label="Send" :loading="sending" @click="post" />
-      </template>
-    </Dialog>
+    <MailComposer
+      ref="composer"
+      v-model="writing"
+      :addresses="addresses"
+      @sent="afterSend"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
   Button,
-  Dialog,
   Dropdown,
-  Editor,
-  EditorContent,
-  EditorFixedMenu,
-  ErrorMessage,
-  FileUploader,
   FormControl,
   Icon,
   LoadingText,
-  RichTextKit,
-  Select,
-  articleToolbar,
   dayjsLocal,
-  upload,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import SenderChip from '../components/SenderChip.vue'
-import RecipientField from '../components/RecipientField.vue'
+import MailComposer from '../components/MailComposer.vue'
 import { onDoctypeChange } from '../lib/socket'
 import { holdImages, loadMail, mail, showImages } from '../lib/mail'
 import { workspace } from '../lib/workspace'
 
 const loading = ref(true)
-const sending = ref(false)
-const error = ref('')
 
 const route = useRoute()
 const router = useRouter()
@@ -518,19 +422,8 @@ async function moveTo(address, into) {
 }
 
 const writing = ref(false)
-const copies = ref(false)
-const draft = reactive({
-  sender: '', to: '', cc: '', bcc: '', subject: '', content: '',
-  in_reply_to: '', attachments: [],
-})
-const writingTitle = ref('New message')
 
-// The same extensions a Text Editor field gets. Mail is the long-form case, so
-// it wants the article bundle rather than the comment one.
-const EXTENSIONS = [RichTextKit]
 
-/** Where an image pasted into the body goes: a private File, like any other. */
-const uploadInline = (file) => upload(file, { private: true })
 
 // The same relative wording the record timeline uses, from the same helper.
 const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
@@ -541,7 +434,6 @@ async function boot() {
   // draw the rail and the compose box's From list a beat apart.
   const found = await loadMail()
   addresses.value = found.addresses || []
-  draft.sender = addresses.value[0] || ''
   await load()
 }
 
@@ -564,22 +456,7 @@ async function load({ append = false } = {}) {
   }
 }
 
-/**
- * Open whatever the URL says is open.
- *
- * Marked read here, which is the moment a person actually looked at it —
- * marking on fetch would clear the unread flag for a thread the list happened
- * to preview, and marking on the server would do it for everybody who shares
- * the address.
- */
-/** A file finished uploading — remember it for the send. */
-function attach(file) {
-  draft.attachments.push({ name: file.name, file_name: file.file_name || file.name })
-}
 
-function unattach(one) {
-  draft.attachments = draft.attachments.filter((row) => row.name !== one.name)
-}
 
 /** Put one message's remote images back, for this reading only. */
 function reveal(one) {
@@ -608,105 +485,38 @@ async function read() {
   }
 }
 
-const TITLES = { reply: 'Reply', reply_all: 'Reply to all', forward: 'Forward' }
 
-/**
- * Open the composer, blank or carrying a message.
- *
- * The carrying case is built on the server — see `mailbox.draft`. Quoting in
- * the browser would quote the copy the reader is looking at, which has had its
- * remote images held back, and send somebody a reply full of empty `<img>`.
- */
-async function compose(from, kind = 'reply') {
-  error.value = ''
-  copies.value = false
-  Object.assign(draft, {
-    to: '', cc: '', bcc: '', subject: '', content: '', in_reply_to: '', attachments: [],
-  })
-  writingTitle.value = 'New message'
 
-  if (from) {
-    writingTitle.value = TITLES[kind] || 'Reply'
-    const opening = await workspace.mailDraft(from.name, kind)
-    Object.assign(draft, opening, { bcc: '' })
-    draft.attachments = opening.attachments || []
-    copies.value = !!opening.cc
-  } else {
-    // A blank composer opens on whatever was left behind, if anything was.
-    const opening = await workspace.mailKept()
-    if (opening && Object.keys(opening).length) {
-      Object.assign(draft, opening)
-      copies.value = !!(opening.cc || opening.bcc)
-    }
-    if (!draft.sender) draft.sender = addresses.value[0] || ''
-  }
-  writing.value = true
-}
 
-async function post() {
-  error.value = ''
-  sending.value = true
-  try {
-    const done = await workspace.mailSend({
-      ...draft,
-      // Names, not the files. They are already on the site; sending the bytes
-      // back through this call would be a second upload of what we hold.
-      attachments: JSON.stringify(draft.attachments.map((one) => one.name)),
-    })
-    writing.value = false
-    await workspace.mailForget()
-    // The undo bar lives exactly as long as the server is holding the message.
-    justSent.value = done?.name || ''
-    clearTimeout(undoTimer)
-    undoTimer = setTimeout(
-      () => { justSent.value = '' },
-      (done?.undo_seconds || 15) * 1000,
-    )
-    await load()
-  } catch (e) {
-    error.value = e.message || String(e)
-  } finally {
-    sending.value = false
-  }
-}
+const composer = ref(null)
+
+/** Open the composer, blank or carrying a message. */
+const compose = (from, kind) => composer.value?.compose(from, kind)
 
 const justSent = ref('')
 let undoTimer = null
+
+// The undo bar lives exactly as long as the server is holding the message.
+async function afterSend(done) {
+  justSent.value = done?.name || ''
+  clearTimeout(undoTimer)
+  undoTimer = setTimeout(() => { justSent.value = '' }, (done?.undo_seconds || 15) * 1000)
+  await load()
+}
 
 async function unsend() {
   const name = justSent.value
   justSent.value = ''
   clearTimeout(undoTimer)
   const done = await workspace.mailUnsend(name)
-  if (done?.ok) {
-    // Straight back into the composer with what was sent, because "undo" that
-    // discards the message is not undo.
-    const opening = await workspace.mailKept()
-    Object.assign(draft, opening)
-    writing.value = true
-  }
+  // Straight back into the composer with what was sent, because "undo" that
+  // discards the message is not undo.
+  if (done?.ok) await composer.value?.reopen()
   await load()
 }
 
 boot()
 
-// The list follows the folder; the reading pane follows the thread. Separately,
-// because changing folder should not refetch a thread and opening a thread
-// should not refetch the list.
-// --- keeping what was typed --------------------------------------------------
-//
-// Closing the composer by accident and losing a written message is the failure
-// people remember. Held server-side rather than in this browser, so it survives
-// the tab as well as the dialog.
-let keeping = null
-watch(
-  () => [draft.to, draft.cc, draft.bcc, draft.subject, draft.content].join('\u0000'),
-  () => {
-    if (!writing.value) return
-    clearTimeout(keeping)
-    keeping = setTimeout(() => workspace.mailKeep({ ...draft }), 800)
-  },
-)
 
 watch(folder, () => load())
 watch(search, () => load())
