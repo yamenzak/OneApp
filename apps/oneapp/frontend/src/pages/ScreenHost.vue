@@ -1,122 +1,18 @@
 <template>
-  <PageHeader>
-    <!--
-      Frappe CRM's trail, and its shape is the argument: a house for the space,
-      the screen, and then the thing you are actually looking at — which is the
-      view, or the record when one is open. The space's name is the house's
-      tooltip rather than a word in the line, because the rail already says
-      which space this is and the trail has one line to spend.
-    -->
-    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
-      <Breadcrumbs :items="crumbs">
-        <template #prefix="{ item }">
-          <!--
-            The name is a span, not the icon's `aria-label`: frappe-ui's Icon
-            hard-codes `aria-hidden` after the attrs it forwards, which is the
-            right call — an icon is decoration — and it leaves a link whose
-            only content is one with no accessible name at all.
-          -->
-          <Tooltip v-if="item.home" :text="`${item.space} home`">
-            <span class="flex items-center">
-              <Icon name="lucide-house" class="size-4 text-ink-gray-5" />
-              <span class="sr-only">{{ item.space }} home</span>
-            </span>
-          </Tooltip>
-        </template>
-      </Breadcrumbs>
-
-      <!--
-        A record is a record wherever it is shown: the same face, name and id
-        the list cell and the link picker draw, from the same component — with
-        the status beside the name, because "where does this stand" is the
-        second thing anybody asks about a record and the first thing they look
-        for.
-
-        Its own element rather than a crumb, for the same reason the view
-        switcher is one: a crumb is a line of text, and this is a block two
-        lines tall.
-      -->
-      <div v-if="recordCrumb" class="flex min-w-0 items-center">
-        <span class="mx-0.5 text-base text-ink-gray-4" aria-hidden="true">/</span>
-        <RecordChip :record="recordCrumb">
-          <template #badge>
-            <!-- The colours and glyphs are the doctype's own Document States —
-                 the same ones the cell in the list reads — so a status is not
-                 one colour here and another there. The manifest says which
-                 field; it does not repeat the palette. -->
-            <StateBadge
-              v-if="statusValue"
-              data-slot="record-status"
-              :label="statusValue"
-              :states="spec?.states || []"
-            />
-            <!-- And where the framework stands on it, which is a different
-                 question from the doctype's own status field and used to be
-                 answered a screen-width away among the buttons. Absent unless
-                 the doctype is submittable or runs on a workflow. -->
-            <StateBadge
-              v-if="docState"
-              data-slot="doc-state"
-              :label="docState.label"
-              :theme="docState.theme"
-            />
-          </template>
-        </RecordChip>
-      </div>
-
-      <!-- The last crumb, when no record is open: which view of the screen
-           this is, and every other view of it. -->
-      <ViewSwitcher
-        v-if="spec?.doctype && !shownRecord"
-        :layouts="spec.layouts || []"
-        :active="spec.layout || ''"
-        :view-label="viewLabel"
-        :can-share="!!spec.can_share"
-        :dirty="dirty"
-        :hidden="spec.hidden || 0"
-        :busy="saving"
-        @open="openLayout"
-        @save-as="saveAs"
-        @save-into="saveIntoLayout"
-        @rename="renameLayout"
-        @share="shareLayout"
-        @default="defaultLayout"
-        @remove="deleteLayout"
-        @hide="hideLayout"
-        @show="showLayouts"
-      />
-    </nav>
-
-    <!--
-      In the default slot, not a `#right` one: PageHeader has exactly one slot
-      and lays it out as a `justify-between` row, so the trail goes left and
-      this goes right by being second. It spent this long in a slot that does
-      not exist, rendering nowhere — `test_no_unknown_slots` now catches the
-      shape that hid it.
-    -->
-    <div class="flex shrink-0 items-center gap-2">
-      <!--
-        Where an open record's own controls land when it is a page — see
-        `merged` in `RecordView`. Empty the rest of the time, and an empty flex
-        child costs nothing; rendered unconditionally so the teleport always has
-        somewhere to go rather than racing the condition that creates it.
-      -->
-      <div :id="MERGE_TARGET" class="flex shrink-0 items-center gap-2" />
-
-      <!--
-        New stands down while a record fills the page. The list it would add a
-        row to is not on screen, so the button is offering to make a second
-        thing in a place that is showing exactly one.
-      -->
-      <Button
-        v-if="spec?.can_create && !asPage"
-        variant="solid"
-        icon-left="lucide-plus"
-        label="New"
-        @click="create"
-      />
-    </div>
-  </PageHeader>
+  <ScreenHeader
+    :spec="spec"
+    :crumbs="crumbs"
+    :record-crumb="recordCrumb"
+    :view-label="viewLabel"
+    :status-value="statusValue"
+    :doc-state="docState"
+    :record="shownRecord"
+    :page="asPage"
+    :dirty="dirty"
+    :saving="saving"
+    :views="views"
+    @create="create"
+  />
 
   <!--
     A pane, not a page. The route turns the shell's own scrolling off, so this
@@ -511,10 +407,6 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  PageHeader,
-  Breadcrumbs,
-  Icon,
-  Tooltip,
   Button,
   Alert,
   Skeleton,
@@ -522,7 +414,7 @@ import {
   Dialog,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
-import RecordChip from '../components/screen/RecordChip.vue'
+import ScreenHeader from '../components/screen/ScreenHeader.vue'
 import CreateDialog from '../components/screen/CreateDialog.vue'
 import RecordPane from '../components/screen/RecordPane.vue'
 import RecordView from '../components/screen/RecordView.vue'
@@ -534,13 +426,13 @@ import ColumnPicker from '../components/screen/ColumnPicker.vue'
 import ListFooter from '../components/screen/ListFooter.vue'
 import SelectionBar from '../components/screen/SelectionBar.vue'
 import ScreenActions from '../components/screen/ScreenActions.vue'
-import ViewSwitcher from '../components/screen/ViewSwitcher.vue'
-import StateBadge from '../components/screen/StateBadge.vue'
 import { session } from '../lib/session'
 import { workspace } from '../lib/workspace'
+import { useCreating } from '../composables/useCreating'
 import { useCrumbs } from '../composables/useCrumbs'
 import { useListFollow } from '../composables/useListFollow'
 import { usePeek } from '../composables/usePeek'
+import { useRecordSurface } from '../composables/useRecordSurface'
 import { useRows } from '../composables/useRows'
 import { useSavedViews } from '../composables/useSavedViews'
 import { useSorting } from '../composables/useSorting'
@@ -548,15 +440,7 @@ import { notifyError, notifySuccess } from '../lib/notify'
 import { screenComponent } from '../screens'
 import { CARD_VIEW_TYPES, DEFAULT_VIEW_TYPE, bodyFor } from '../lib/viewTypes'
 import { applyTheme, clearTheme } from '../lib/theme'
-import {
-  DRAWER,
-  MERGE_TARGET,
-  PAGE,
-  PANE,
-  declared,
-  remember,
-  remembered,
-} from '../lib/surfaces'
+import { DRAWER, PAGE, PANE } from '../lib/surfaces'
 
 const props = defineProps({ spaceCode: { type: String, required: true } })
 const route = useRoute()
@@ -570,11 +454,35 @@ const quickExpanded = ref(false)
 const quickOverflow = ref(false)
 
 const spec = ref(null)
+
+// Making a record — `composables/useCreating.js`. `reloadList` is a thunk
+// because `loadRows` comes from `useRows`, further down.
+const {
+  showCreate, preset, childRevision, createSpec, createScreen,
+  create, newWith, addChild, created,
+} = useCreating({
+  spaceCode: props.spaceCode,
+  spec,
+  route,
+  router,
+  reloadList: () => loadRows(),
+})
+
+// The record this screen has open, and whether it is a pane or the page —
+// `composables/useRecordSurface.js`. Above `usePeek` and `useCrumbs` because
+// both read `shownRecord`.
+const {
+  shownRecord, asPage, setSurface,
+  open, openElsewhere, openRecord, closeRecord,
+  reloadRecord, recordSaved, recordRenamed,
+} = useRecordSurface({
+  spaceCode: props.spaceCode,
+  spec,
+  route,
+  router,
+  reloadList: () => loadRows(),
+})
 const loading = ref(false)
-const showCreate = ref(false)
-// What the create dialog opens with already filled in. Empty for the toolbar's
-// New; a status for a board column's.
-const preset = ref({})
 const showColumns = ref(false)
 const showCards = ref(false)
 
@@ -602,10 +510,6 @@ const cardsChanged = (changes) => {
   }
   changed()
 }
-// The record that is open, fetched. Null is "no record", which is also what
-// closing one means — there is no second flag, because two of them is how a
-// pane ends up open over nothing.
-const editing = ref(null)
 // Why the screen would not resolve at all — a different failure from a list
 // that would not load, and the one that used to read as "no screens".
 const specError = ref('')
@@ -686,11 +590,6 @@ const emptyBecause = computed(() => {
     : 'Nothing here so far.'
 })
 
-// A record that exists takes the last place in the trail. A record being made
-// does not, and never reaches here: it is a dialog, and there is nothing to
-// name it with yet.
-const shownRecord = computed(() => editing.value)
-
 // A record opened from inside another one, in `composables/usePeek.js`.
 const {
   peeked, peekSpec,
@@ -704,15 +603,6 @@ const {
   reloadList: () => loadRows(),
 })
 
-/**
- * Whether the open record takes the page rather than a pane beside the list.
- *
- * The reader's answer where they have given one, the manifest's otherwise: a
- * screen that says a record is a place gets the width a place needs, and every
- * other screen keeps the pane it has always had — until somebody says
- * otherwise, per screen, and then it is remembered. Nothing here asks the
- * viewport; the phone's own answer is `RecordPane`'s and it wins either way.
- */
 /**
  * The space's own look, on the document while this space is open.
  *
@@ -734,30 +624,6 @@ watch(
 )
 
 onBeforeUnmount(clearTheme)
-
-const surface = ref(null)
-
-// Read when the screen changes rather than watched: `localStorage` fires no
-// events for its own tab, so there is nothing to subscribe to, and a screen is
-// the only thing that changes which answer applies.
-watch(
-  () => [props.spaceCode, spec.value?.screen],
-  ([space, screen]) => {
-    surface.value = remembered(space, screen)
-  },
-  { immediate: true },
-)
-
-const asPage = computed(
-  () => !!shownRecord.value && (surface.value || declared(spec.value)) === PAGE,
-)
-
-// Remembered as well as applied. The point of the control is that it is a
-// preference — clicking it on every project is the thing it exists to stop.
-const setSurface = (chose) => {
-  surface.value = chose
-  remember(props.spaceCode, spec.value?.screen, chose)
-}
 
 
 // The order the list is in — `composables/useSorting.js`.
@@ -807,11 +673,11 @@ const dashboardAsked = computed(() => ({
 // is the shape Frappe's own `List Filter` doctype settles on. Which one is open
 // lives in the URL, so a screen is a link somebody can send.
 
-// Saved views — `composables/useSavedViews.js`.
-const {
-  layout, openLayout, saveAs, renameLayout, shareLayout, saveIntoLayout,
-  defaultLayout, deleteLayout, hideLayout, showLayouts,
-} = useSavedViews({
+// Saved views — `composables/useSavedViews.js`. Kept whole as well as
+// destructured: `ScreenHeader` takes the object, because the switcher's menu
+// is exactly this composable and forwarding its nine verbs one event at a time
+// says nothing that `:views="views"` does not.
+const views = useSavedViews({
   spaceCode: props.spaceCode,
   spec,
   route,
@@ -822,6 +688,7 @@ const {
   payload: () => payload(),
   reload: (into) => load(into),
 })
+const { layout } = views
 
 
 // Which way this screen is being looked at, from the URL. Empty means the
@@ -881,104 +748,6 @@ const toggleFavourites = () => {
 
 // --- records ----------------------------------------------------------------
 
-// A record is in the URL, so it is a link somebody can send and a place a
-// reload comes back to. What is *not* in the URL is a record that does not
-// exist yet: there is nothing to link to, and a stale "new" in a bookmark
-// would open an empty form nobody asked for.
-const open = (row) => {
-  router.push({ query: { ...route.query, record: row.name } })
-}
-
-/**
- * A record opened from inside another one.
- *
- * The showcase's variations and its related tabs both come out here, and where
- * it goes depends on what is underneath. On a page — a job filling the window,
- * with its variations up the side and its invoices behind a tab — the answer is
- * the drawer: you are reading the job, you glance at one of its lines, and the
- * job is the reason you are looking. Replacing the page with the line is
- * correct navigation and the wrong thing to do.
- *
- * Everywhere else it is the ordinary screen-and-record URL. Either way it is in
- * the URL, so it is a place with a link and the back button undoes it.
- *
- * The saved view and the view type are deliberately dropped when navigating:
- * they belong to the screen being left, and carrying `layout=my-overdue` onto a
- * different screen is asking it for a view that is not its.
- */
-const openElsewhere = ({ screen, name }) => {
-  if (!name) return
-  const where = screen || route.query.screen
-  if (asPage.value) {
-    router.push({ query: { ...route.query, peek: name, peekScreen: where } })
-    return
-  }
-  router.push({ query: { screen: where, record: name } })
-}
-
-const create = () => {
-  preset.value = {}
-  onto.value = null
-  intoRail.value = false
-  showCreate.value = true
-}
-
-/**
- * Which screen the create dialog is filling in, and how it describes itself.
- *
- * Nearly always this one. The exception is the plus on a showcase's rail: what
- * hangs off a record may be a different screen — a job's variations happen to
- * be projects, but a property's inspections would not be — and a dialog drawn
- * from this screen's spec would ask for the wrong fields entirely.
- */
-const onto = ref(null)
-
-const createSpec = computed(() => onto.value || spec.value)
-const createScreen = computed(() => onto.value?.screen || spec.value?.screen || '')
-
-/**
- * A new record that hangs off the one open, from the rail on its hero.
- *
- * The only place in the product that knows which record a new one belongs to,
- * which is the whole reason it exists: the alternative is creating it from its
- * own list and remembering to set the parent by hand.
- *
- * The parent goes in as a preset — an ordinary value in an ordinary control,
- * which the person can still change before saving — the same way a board's New
- * seeds the column it was pressed in.
- */
-const addChild = async ({ screen, field, value }) => {
-  if (!screen || !field || !value) return
-  preset.value = { [field]: value }
-  intoRail.value = true
-  onto.value =
-    screen === spec.value?.screen
-      ? null
-      : await workspace.screenSpec(props.spaceCode, screen)
-  showCreate.value = true
-}
-
-// What the showcase's rail has been told to re-read. Bumped rather than
-// reloaded directly: the rail is inside two components and a number travelling
-// down as a prop is less machinery than a handle travelling up.
-const childRevision = ref(0)
-
-// Whether the dialog that is open was opened by the rail's plus. A flag rather
-// than something inferred from the preset: a board column's New sets one too,
-// and the two want opposite things when the record is made.
-const intoRail = ref(false)
-
-// New, from somewhere that already knows part of the answer. A board's column
-// header is the one today: pressing New inside "In Progress" means a record
-// that is in progress, and making the person pick the status they just pressed
-// is the kind of small stupidity that makes a board not worth using.
-const newWith = (values) => {
-  preset.value = values || {}
-  onto.value = null
-  intoRail.value = false
-  showCreate.value = true
-}
-
 // One field, written from a body, without opening the record.
 //
 // A board's whole reason to exist: dragging a card between columns is a save
@@ -999,85 +768,6 @@ const writeField = async ({ row, field, value }) => {
     return
   }
   await loadRows()
-}
-
-// The record's id changed, so the URL is now pointing at something that no
-// longer exists. Replaced rather than pushed: the old id is not a place to go
-// back to, and leaving it in the history is leaving a 404 in it.
-const recordRenamed = async (name) => {
-  if (!name) return
-  await router.replace({ query: { ...route.query, record: name } })
-  await loadRows()
-}
-
-/**
- * A record that was just made is a record you want to be in — so the dialog
- * closes onto it rather than onto the list, which would leave the person
- * hunting for the row they created.
- *
- * Unless it was made from a record's own rail, and then the opposite: you were
- * reading a job and you added a variation to it, so the job is where you still
- * want to be. The rail re-reads itself and the new one is in it.
- */
-const created = async (name) => {
-  const fromRail = intoRail.value
-  intoRail.value = false
-  onto.value = null
-  await loadRows()
-  if (fromRail) {
-    childRevision.value += 1
-    return
-  }
-  if (name) router.push({ query: { ...route.query, record: name } })
-}
-
-// Somebody else saved it while this was open, and the reader asked for their
-// version. The same re-read a save does, without the save.
-const reloadRecord = async () => {
-  const name = editing.value?.name
-  if (!name) return
-  editing.value = null
-  await openRecord(name)
-  await loadRows()
-}
-
-// Saving from the pane refreshes the list under it — a title or a status that
-// changed is a row that now reads differently — and re-reads the record, so
-// what the pane shows is what the server has rather than what was typed.
-const recordSaved = async () => {
-  await loadRows()
-  const name = editing.value?.name
-  if (!name) return
-  editing.value = null
-  await openRecord(name)
-}
-
-// Opening it is a fetch rather than a read of the row: the list carries the
-// columns somebody chose to see, and the record shows the doctype's whole
-// field list. Seeding the form from the row left every unlisted field blank on
-// a record that has a value for it.
-const openRecord = async (name) => {
-  if (!name) {
-    editing.value = null
-    return
-  }
-  if (editing.value && editing.value.name === name) return
-  const found = await workspace.screenRecord(props.spaceCode, spec.value?.screen || '', name)
-  if (!found?.name) {
-    // A link to something that is gone, or that this screen does not list.
-    // Drop it from the URL rather than leaving a pane that never opens.
-    closeRecord()
-    return
-  }
-  editing.value = found
-}
-
-const closeRecord = () => {
-  editing.value = null
-  if (!route.query.record) return
-  const query = { ...route.query }
-  delete query.record
-  router.replace({ query })
 }
 
 const like = async (row) => {

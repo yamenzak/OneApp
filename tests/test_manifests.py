@@ -289,12 +289,13 @@ def test_every_state_badge_is_the_same_badge():
 			continue
 		assert "StateBadge" in (SCREEN / name).read_text(), f"{name} draws its own"
 
-	# The host draws the badges; where it *computes* them is the second path in
-	# each pair. `ScreenHost` moved its derived header state into a composable,
-	# and a guard that only read the template would have stopped checking that
-	# the value still comes from `docBadge`.
+	# Where the badges are *drawn* is the first path in each pair and where they
+	# are *computed* is the second, because on a screen those are two files: the
+	# header renders the trail, `useCrumbs` derives what goes in it. A guard that
+	# only read one of them would stop checking half of the pair the next time
+	# either moves.
 	for path, computes in (
-		("apps/oneapp/frontend/src/pages/ScreenHost.vue",
+		("apps/oneapp/frontend/src/components/screen/ScreenHeader.vue",
 		 "apps/oneapp/frontend/src/composables/useCrumbs.js"),
 		("apps/oneapp/frontend/src/components/screen/RecordView.vue",
 		 "apps/oneapp/frontend/src/components/screen/RecordView.vue"),
