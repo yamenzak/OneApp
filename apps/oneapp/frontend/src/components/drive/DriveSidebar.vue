@@ -41,15 +41,8 @@
 import { onMounted, ref } from 'vue'
 import { SidebarItem } from '@/ui'
 import UsageBar from '../UsageBar.vue'
+import { PLACES } from './places'
 import { workspace } from '../../lib/workspace'
-
-const PLACES = [
-  { value: 'home', label: 'All files', icon: 'lucide-folder' },
-  { value: 'recents', label: 'Recent', icon: 'lucide-clock' },
-  { value: 'favourites', label: 'Favourites', icon: 'lucide-heart' },
-  { value: 'shared', label: 'Shared with me', icon: 'lucide-users' },
-  { value: 'trash', label: 'Bin', icon: 'lucide-trash-2' },
-]
 
 defineProps({
   place: { type: String, default: 'home' },

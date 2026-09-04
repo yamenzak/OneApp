@@ -8,7 +8,20 @@
     rows, the same ones an attachment is, so nothing here is a second store.
   -->
   <PageHeader>
-    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
+    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center gap-1">
+      <!--
+        The rail, on a phone. The shell draws a sidebar only on a desktop, so
+        without this Recents, Favourites and the bin have no route to them at
+        all — the same list, from the same module, so the two cannot drift.
+      -->
+      <Dropdown v-if="isMobile" :options="placeOptions">
+        <Button
+          data-slot="drive-places"
+          icon-right="lucide-chevron-down"
+          variant="ghost"
+          :label="placeName"
+        />
+      </Dropdown>
       <Breadcrumbs :items="crumbs" />
     </nav>
 
@@ -17,7 +30,7 @@
         v-model="drive.search.value"
         type="text"
         placeholder="Search files"
-        class="w-48"
+        class="w-28 sm:w-48"
         @input="onSearch"
       />
       <!-- List or grid, remembered. The same preference the record surface
@@ -30,18 +43,29 @@
         variant="ghost"
         @click="setGrid(!grid)"
       />
+      <!--
+        Icon-only on a phone, where the header is already a place, a search box
+        and two buttons in 412px. `icon` rather than `icon-left` is what makes
+        a Button icon-only; the label stays either way, because it is also the
+        accessible name and an unnamed button is a button a screen reader reads
+        as "button".
+      -->
       <Button
         v-if="place === 'trash'"
-        icon-left="lucide-trash-2"
+        :icon="isMobile ? 'lucide-trash-2' : undefined"
+        :icon-left="isMobile ? undefined : 'lucide-trash-2'"
         theme="red"
         label="Empty the bin"
+        tooltip="Empty the bin"
         :disabled="!drive.files.value.length || drive.busy.value"
         @click="emptying = true"
       />
       <Button
         v-else
-        icon-left="lucide-folder-plus"
+        :icon="isMobile ? 'lucide-folder-plus' : undefined"
+        :icon-left="isMobile ? undefined : 'lucide-folder-plus'"
         label="New folder"
+        tooltip="New folder"
         @click="naming = true"
       />
     </div>
@@ -149,23 +173,28 @@
   <div
     v-if="drive.anySelected.value"
     data-slot="drive-selection"
-    class="pointer-events-none fixed inset-x-0 bottom-6 z-10 flex justify-center px-4"
+    class="pointer-events-none fixed inset-x-0 bottom-24 z-10 flex justify-center px-4 sm:bottom-6"
   >
     <div
-      class="pointer-events-auto flex items-center gap-2 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-3 py-2 shadow-lg"
+      class="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-3 py-2 shadow-lg"
     >
-      <span class="px-1 text-p-sm text-ink-gray-7">{{ chosen }}</span>
+      <!-- Not on a phone: the row above the list already says "2 of 50
+           chosen", and repeating it is what pushes the buttons onto a second
+           line. -->
+      <span v-if="!isMobile" class="px-1 text-p-sm text-ink-gray-7">{{ chosen }}</span>
       <template v-if="place === 'trash'">
         <Button
           icon-left="lucide-rotate-ccw"
           label="Put back"
+          tooltip="Put back"
           :loading="drive.busy.value"
           @click="drive.restore(drive.selected.value)"
         />
         <Button
           icon-left="lucide-trash-2"
           theme="red"
-          label="Delete for good"
+          :label="isMobile ? 'Delete' : 'Delete for good'"
+          tooltip="Delete for good"
           :loading="drive.busy.value"
           @click="drive.destroy(drive.selected.value)"
         />
@@ -180,7 +209,8 @@
         <Button
           icon-left="lucide-trash-2"
           theme="red"
-          label="Move to the bin"
+          :label="isMobile ? 'Bin' : 'Move to the bin'"
+          tooltip="Move to the bin"
           :loading="drive.busy.value"
           @click="drive.trash(drive.selected.value)"
         />
@@ -260,6 +290,7 @@ import {
   Button,
   Checkbox,
   Dialog,
+  Dropdown,
   FormControl,
   PageHeader,
   Skeleton,
@@ -270,6 +301,8 @@ import FileRow from '../components/drive/FileRow.vue'
 import FileShare from '../components/drive/FileShare.vue'
 import FolderPicker from '../components/drive/FolderPicker.vue'
 import { useDrive } from '../composables/useDrive'
+import { useIsMobile } from '@/lib/screen'
+import { PLACES, labelOf } from '../components/drive/places'
 
 const GRID_KEY = 'onespace:drive:grid'
 
@@ -288,6 +321,10 @@ const EMPTY = {
 }
 
 const route = useRoute()
+// The header is a breadcrumb, a search box and two buttons. On a phone that is
+// more than 412px holds, so the buttons lose their words and keep their
+// tooltips.
+const isMobile = useIsMobile()
 
 // The place and the folder are in the URL, so a folder is somewhere you can
 // send a colleague and the back button walks back up the tree.
@@ -301,8 +338,21 @@ const folder = computed(() => route.query.folder || '')
 
 const drive = useDrive({ place, folder })
 
+const placeName = computed(() => labelOf(place.value))
+const placeOptions = computed(() =>
+  PLACES.map((one) => ({
+    label: one.label,
+    icon: one.icon,
+    route: { name: 'Drive', query: { place: one.value } },
+  })),
+)
+
 const crumbs = computed(() => [
-  { label: 'Files', route: { name: 'Drive', query: { place: place.value } } },
+  // On a phone the dropdown beside this already names the place, and a trail
+  // reading "Files / Files / Drawings" is one crumb too many in 412px.
+  ...(isMobile.value
+    ? []
+    : [{ label: 'Files', route: { name: 'Drive', query: { place: place.value } } }]),
   ...drive.path.value.map((one) => ({
     label: one.label,
     route: { name: 'Drive', query: { place: 'home', folder: one.name } },

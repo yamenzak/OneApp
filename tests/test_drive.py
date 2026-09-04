@@ -16,6 +16,7 @@ every reader every file on the site, most of which are attachments on records
 they cannot open.
 """
 
+import re
 import types
 from pathlib import Path
 
@@ -464,3 +465,20 @@ def test_the_storage_screen_says_what_it_cannot_see():
 	that leaked what it could not show, so the screen says they differ."""
 	source = (ROOT / "apps/oneapp/frontend/src/components/settings/StorageSettings.vue").read_text()
 	assert "cannot open" in source
+
+
+def test_the_rail_and_the_phone_offer_the_same_places(drive):
+	"""The shell draws a sidebar only on a desktop, so the phone reaches the
+	places through a dropdown. Two hand-kept lists is how one of them ends up
+	without the bin."""
+	source = (ROOT / "apps/oneapp/frontend/src/components/drive/places.js").read_text()
+	offered = set(re.findall(r"value: '(\w+)'", source))
+	# `all` and `record` are not in the rail on purpose — one is the picker's
+	# flat view and the other is a record's Files tab.
+	assert offered == set(drive.PLACES) - {drive.ALL, "record"}
+
+	# And one list rather than two copies of it.
+	rail = (ROOT / "apps/oneapp/frontend/src/components/drive/DriveSidebar.vue").read_text()
+	page = (ROOT / "apps/oneapp/frontend/src/pages/Drive.vue").read_text()
+	assert "from './places'" in rail
+	assert "drive/places'" in page

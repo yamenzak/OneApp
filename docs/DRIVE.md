@@ -168,7 +168,7 @@ Against Drive, and in the order a person would notice:
 Seven stages. Each is shippable and none needs the next; the order is what makes
 the next one cheaper, and the first two are what everything else is a view onto.
 
-**Stages 1 to 4 are built.** What the stages below said, and what the building of
+**Stages 1 to 6 are built.** What the stages below said, and what the building of
 them changed:
 
 * The picker asks for a place that is not in the rail. `place=all` is every file
@@ -194,9 +194,33 @@ them changed:
   they buy storage — the preview fetched the download route and rendered the
   error page as the file's contents. A `.txt` whose preview reads
   "Redirecting..." is what that looked like.
+* A record's Files tab is the Drive filtered to one record — the same `FileRow`
+  over the same query with `attached_to_doctype` set, which is what §6 said it
+  should be and the proof that the two surfaces are one. Taking a file off a
+  record now goes to the bin rather than deleting the row: a misplaced click on
+  the wrong record's tab was previously unrecoverable, and the bin exists so
+  that it is not.
+* The share dialog's body is one component, `SharePanel`, rendered by both the
+  record surface and the Drive. A record and a file are shared by the same three
+  questions; two copies would be two places to fix "can edit" in. What differs
+  is three calls, and they arrive as functions.
+* Sharing a file with somebody outside the workspace is refused by the same
+  bound the assignment picker uses. It matters more on a `File` than on a
+  record, because a file is the thing people actually send.
+* A settings panel is a flex item sized by its content, and `min-w-0` only says
+  it *may* shrink. Nothing stopped one growing past the dialog, which then
+  clipped the right of every line in it — header included. `w-0` on the panel
+  makes the free space its whole width. Latent for every panel wide enough to
+  hit it; the storage screen was the first.
 
-Stage 4 is built except for one half of one bullet: `RecordFiles.vue`'s uploader
-is the picker, but its *rendering* is still its own list rather than the Drive's.
+Two shapes the reader had to change to hold Stage 5:
+
+* `FileRow` put the whole row inside a `Button`. A button inside a button is
+  neither valid nor reachable by a keyboard, so nothing could be added beside
+  the name until the row became a container with the name inside it.
+* Its controls are drawn always rather than on hover. A phone has no hover, so a
+  heart that appears on `group-hover` does not exist on half the devices this
+  runs on.
 
 ### Stage 1 — A file is somewhere, not just attached to something
 

@@ -18,6 +18,26 @@ test.beforeEach(async ({ page, baseURL }) => {
   await signIn(page, baseURL)
 })
 
+/** Whether this run has the shell's sidebar, which only a desktop draws. */
+const onDesktop = (page) => (page.viewportSize()?.width || 0) >= 768
+
+/**
+ * Go to a place by its name, the way somebody would.
+ *
+ * Two controls for one list: the rail on a desktop, and a dropdown beside the
+ * breadcrumb on a phone — which has no rail, and without which the bin has no
+ * route to it at all. Both are worth walking, which is why this is a helper
+ * rather than a skip.
+ */
+async function goToPlace(page, label) {
+  if (onDesktop(page)) {
+    await page.getByRole('link', { name: label }).click()
+    return
+  }
+  await page.locator('[data-slot="drive-places"]').click()
+  await page.getByRole('menuitem', { name: label }).click()
+}
+
 test('the drive lists the workspace files, and every place in the rail loads', async ({
   page,
 }) => {
@@ -29,11 +49,8 @@ test('the drive lists the workspace files, and every place in the rail loads', a
   // Each place is its own query and each one has its own empty state, so the
   // pass is "it settled on something", not "it found rows". A place that never
   // settles is the failure worth catching: it means the filter threw.
-  const places = page.locator('[data-slot="drive-place"]')
-  const count = await places.count()
-  expect(count).toBe(5)
-  for (let index = 0; index < count; index += 1) {
-    await places.nth(index).click()
+  for (const label of ['Recent', 'Favourites', 'Shared with me', 'Bin', 'All files']) {
+    await goToPlace(page, label)
     await expect(
       page.locator('[data-slot="drive-file"], [data-slot="empty-state"]').first(),
     ).toBeVisible({ timeout: 15_000 })
@@ -120,7 +137,7 @@ test('a file can be hearted, and the heart is what Favourites lists', async ({ p
   await expect(file.getByRole('button', { name: /Remove .* from favourites/ }))
     .toBeVisible({ timeout: 10_000 })
 
-  await page.getByRole('link', { name: 'Favourites' }).click()
+  await goToPlace(page, 'Favourites')
   const there = page.locator('[data-slot="drive-file"]').first()
   await expect(there).toContainText(named.split('\n')[0])
 
@@ -144,8 +161,12 @@ test('choosing files offers what can be done to all of them at once', async ({ p
   await page.locator('[data-slot="drive-file"] input[type=checkbox]').nth(1).check()
 
   const bar = page.locator('[data-slot="drive-selection"]')
-  await expect(bar).toContainText('2 things chosen')
   await expect(bar.getByRole('button', { name: 'Move', exact: true })).toBeVisible()
+  // The count is above the list on a phone, where repeating it in the bar is
+  // what pushes the buttons onto a second line.
+  await expect(page.locator('body')).toContainText(
+    onDesktop(page) ? '2 things chosen' : '2 of',
+  )
 
   await bar.getByRole('button', { name: 'Clear the selection' }).click()
   await expect(bar).toHaveCount(0)
@@ -168,7 +189,7 @@ test('a file can be shared with a colleague, and the bin says what it promises',
 
   // Thirty days is the promise the sweep keeps, and a bin whose terms are only
   // in the code is a bin nobody trusts.
-  await page.getByRole('link', { name: 'Bin' }).click()
+  await goToPlace(page, 'Bin')
   await expect(page.getByRole('button', { name: 'Empty the bin' })).toBeVisible()
 
   expectNoRealErrors(errors)
@@ -198,6 +219,10 @@ test("a record's files are the Drive's own rows", async ({ page }) => {
 })
 
 test('the storage screen says which file and not only which kind', async ({ page }) => {
+  test.skip(
+    !onDesktop(page),
+    'the settings dialog is opened from the shell, and its phone route is the shell\'s own spec',
+  )
   const errors = collectConsoleErrors(page)
   await page.goto('/one/files')
 

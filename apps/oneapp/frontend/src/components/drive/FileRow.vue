@@ -89,14 +89,22 @@
         @click="emit('favourite', file)"
       />
 
+      <!--
+        Who and when, on a screen with room for them. On a phone they are the
+        first two things to go: the size and the age are already under the
+        name, and a 412px row spent on an avatar is a row with no name left.
+      -->
       <template v-if="!grid">
         <Avatar
           v-if="file.owner_person?.label"
+          class="hidden sm:flex"
           size="sm"
           :label="file.owner_person.label"
           :image="file.owner_person.image"
         />
-        <span class="w-24 shrink-0 text-p-xs text-ink-gray-5">{{ when }}</span>
+        <span class="hidden w-24 shrink-0 text-p-xs text-ink-gray-5 sm:block">
+          {{ when }}
+        </span>
       </template>
 
       <Dropdown v-if="menu.length" :options="menu" align="end">
