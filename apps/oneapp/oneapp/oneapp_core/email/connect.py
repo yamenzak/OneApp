@@ -147,6 +147,22 @@ def connect(email_id: str, password: str, email_server: str = "", smtp_server: s
 			# private mail in a workspace their colleagues can be granted.
 			"email_sync_option": "UNSEEN",
 			"initial_sync_count": 100,
+			# INBOX, and only INBOX.
+			#
+			# Not a default — a requirement. Frappe refuses to save an IMAP
+			# account with no folder row ("You need to set one IMAP folder"),
+			# and the row that everybody has is added by the *desk's*
+			# JavaScript, which this product never runs. So an account created
+			# from here without this line does not fail at first sync; it fails
+			# at insert, and the person connecting their mailbox is told
+			# something about IMAP folders that means nothing to them.
+			#
+			# One folder is also the honest limit of what is built: the folders
+			# somebody has made in Gmail — Applicants, Documents, whatever —
+			# are not read, and neither are Spam, Junk or Archive. See
+			# `mailbox.folders()`, which offers the addresses a person holds and
+			# two pseudo-folders and nothing else.
+			"imap_folder": [{"folder_name": "INBOX", "append_to": "Communication"}],
 			"create_contact": 0,
 			"always_use_account_email_id_as_sender": 1,
 		}

@@ -217,6 +217,18 @@ question and the refusals:
 * **Disconnecting stops the polling and keeps the mail.** Somebody disconnecting
   Gmail is saying "stop reading my mailbox", not "delete six months of my work".
 
+**INBOX, and only INBOX.** The folders somebody has made in their own mail —
+Applicants, Documents, whatever they sort by — are not read, and neither are
+Spam, Junk, Drafts or Archive. Frappe's `Email Account` has an `IMAP Folder`
+child table that could carry them, one row per folder with its own `append_to`,
+and the sync already walks it; what is missing is the half above that: asking
+the server what folders exist, letting somebody pick, and deciding what a folder
+*means* here. It cannot be a OneSpace folder, because there are none — mail
+files itself against the record it belongs to. So a folder would have to become
+either a filter over a flat list or an `append_to` rule that turns Applicants
+into Job Applicant documents, and those are different products. Until that is
+settled, one folder and no pretending.
+
 OAuth is the better path where an operator has registered a `Connected App`, and
 is not built: the password path works for every provider and the OAuth path
 works for two.

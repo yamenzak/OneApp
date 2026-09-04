@@ -527,6 +527,17 @@ def test_a_hostname_that_does_not_resolve_names_the_hostname(connect):
 	assert "imap.typo.example" in reason
 
 
+def test_a_connected_mailbox_names_a_folder(connect):
+	"""Frappe refuses an IMAP account with no folder row, and the row everybody
+	has is added by the desk's JavaScript — which this product never runs. So an
+	account made from here without it fails at insert, not at first sync."""
+	import inspect
+
+	source = inspect.getsource(connect.connect)
+	assert '"imap_folder"' in source
+	assert '"INBOX"' in source
+
+
 def test_only_what_arrives_from_now_on(connect):
 	"""Nine years of somebody's mail pulled into a workspace their colleagues
 	can be granted access to is a privacy incident, not a slow first sync."""
