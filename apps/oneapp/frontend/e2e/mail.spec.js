@@ -116,8 +116,13 @@ test('the folders a mailbox already has come across, Sent included', async ({
 
   // And the Sent folder is not empty, which is the whole reason the framework's
   // "your own mail in your own inbox" guard is off inside one.
+  //
+  // That it is *there*, not that it is first — the same reason the Applicants
+  // check counts nothing. A browser pass sends mail: `record-mail.spec.js`
+  // writes from a record, and its messages are newer than the fixture's, so an
+  // assertion on the first row was an assertion about which spec ran last.
   await rail.filter({ hasText: 'Sent' }).click()
-  await expect(threads(page).first()).toContainText('revised elevations')
+  await expect(threads(page).filter({ hasText: 'revised elevations' })).toHaveCount(1)
 
   expectNoRealErrors(errors)
 })
