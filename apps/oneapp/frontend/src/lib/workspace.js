@@ -381,6 +381,13 @@ export const workspace = {
       { successMessage: 'Filed' },
     ),
 
+  mailDraft: (message, kind) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.draft',
+      { message, kind },
+      { silent: true, method: 'GET' },
+    ),
+
   mailProfile: (email) =>
     callMethod(
       'oneapp.oneapp_core.email.people.profile',

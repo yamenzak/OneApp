@@ -29,6 +29,7 @@ import re
 
 import frappe
 from frappe import _
+from frappe.utils import escape_html
 
 # `folder_ops`, not `folders`: this module has its own `folders()` — the rail
 # endpoint — and importing the module under its own name binds the function over
@@ -488,7 +489,8 @@ def unread() -> int:
 
 @frappe.whitelist(methods=["POST"])
 def send(to: str, subject: str, content: str, sender: str = "",
-         in_reply_to: str = "", cc: str = "") -> dict:
+         in_reply_to: str = "", cc: str = "", bcc: str = "",
+         attachments: str | list = "") -> dict:
 	"""Send, through the framework's queue like everything else.
 
 	`sender` must be an address this person holds — checked here rather than
@@ -497,6 +499,11 @@ def send(to: str, subject: str, content: str, sender: str = "",
 
 	The rate limit, the suppression list and the suspension gate all apply: they
 	are hooks on `Email Queue`, and this puts a row in `Email Queue`.
+
+	`attachments` are File names already on the site — uploaded by the composer,
+	or carried over from the message being forwarded. Names rather than content:
+	the file is in R2 already and sending a copy of the bytes through this
+	endpoint would be a second upload of something we are holding.
 	"""
 	held = _held()
 	if not held:
@@ -525,12 +532,57 @@ def send(to: str, subject: str, content: str, sender: str = "",
 			"sender": sender,
 			"recipients": to,
 			"cc": cc,
+			"bcc": bcc,
 			**reference,
 		}
 	).insert(ignore_permissions=True)
 
+	# Attached before the send, because `send_email` reads the File rows off the
+	# document to build the message — see `Communication.mail_attachments`.
+	# Attaching afterwards produces a sent message with nothing on it and an
+	# attachment nobody receives.
+	names = _names(attachments)
+	if names:
+		_carry(doc.name, names)
+
 	doc.send_email()
-	return {"ok": True, "name": doc.name}
+	return {"ok": True, "name": doc.name, "attached": len(names)}
+
+
+def _names(value) -> list[str]:
+	"""A list of File names out of whatever the request sent."""
+	if isinstance(value, str):
+		value = frappe.parse_json(value) if value.startswith("[") else ([value] if value else [])
+	return [one for one in (value or []) if one]
+
+
+def _carry(onto: str, files: list[str]):
+	"""Attach existing Files to a Communication, by reference.
+
+	A new `File` row pointing at the same `file_url`, which is what Frappe's own
+	`add_attachments` does: the bytes stay where they are in R2 and a forward of
+	a 40 MB drawing set copies a row rather than the drawings.
+
+	Only files this person can already reach. The names come from the browser,
+	so without this the endpoint would attach any file on the site to a message
+	going anywhere.
+	"""
+	for name in files:
+		if not frappe.has_permission("File", "read", doc=name):
+			frappe.throw(_("That attachment is not yours to send."), frappe.PermissionError)
+
+		source = frappe.get_doc("File", name)
+		frappe.get_doc(
+			{
+				"doctype": "File",
+				"file_url": source.file_url,
+				"file_name": source.file_name,
+				"is_private": source.is_private,
+				"attached_to_doctype": "Communication",
+				"attached_to_name": onto,
+				"folder": "Home/Attachments",
+			}
+		).insert(ignore_permissions=True)
 
 
 # --------------------------------------------------------------------------- #
@@ -601,3 +653,108 @@ def file_thread(key: str, address: str, folder: str, from_folder: str = "all") -
 		folder_ops.file(account, row["name"], folder)
 		filed.append(row["name"])
 	return {"ok": True, "filed": len(filed), "folder": folder}
+
+
+# --------------------------------------------------------------------------- #
+# Answering and passing on
+# --------------------------------------------------------------------------- #
+#
+# Both are the same shape — a new message carrying an old one — and both are
+# built on the server rather than in the browser, for one reason: the quoted
+# body is the *stored* HTML, and the stored HTML is what Frappe sanitised on
+# the way in. Quoting from what the reader is looking at would quote the copy
+# with its images held back, and send somebody a reply full of empty `<img>`.
+
+
+@frappe.whitelist(methods=["GET"])
+def draft(message: str, kind: str = "reply") -> dict:
+	"""What the composer opens with, for a reply, a reply-all or a forward.
+
+	Built here and not in the browser so the three differ in one place. They are
+	nearly the same message: the difference is who it goes to and whether the
+	attachments come along.
+	"""
+	if kind not in ("reply", "reply_all", "forward"):
+		frappe.throw(_("Not something a message can be turned into."))
+
+	held = _held()
+	original = frappe.get_doc("Communication", message)
+
+	# The same gate every list goes through. A draft is a way of reading a
+	# message, so it has to be one this person could already read.
+	mine = [one for one in held if one in (original.recipients or "")
+	        or one == (original.sender or "").lower()]
+	if not mine:
+		frappe.throw(_("That is not your message."), frappe.PermissionError)
+
+	subject = strip_prefixes(original.subject)
+	prefix = "Fwd: " if kind == "forward" else "Re: "
+
+	if kind == "forward":
+		to, cc = "", ""
+	else:
+		# Reply goes to whoever wrote it. Reply-all adds everyone else who was
+		# on it, minus this person's own addresses — answering yourself is the
+		# oldest bug in mail.
+		to = original.sender
+		cc = ""
+		if kind == "reply_all":
+			others = _addresses(original.recipients) + _addresses(original.cc)
+			cc = ", ".join(
+				one for one in dict.fromkeys(others)
+				if one.lower() not in held and one.lower() != (original.sender or "").lower()
+			)
+
+	return {
+		"to": to,
+		"cc": cc,
+		"subject": f"{prefix}{subject}" if subject else prefix.strip(),
+		"content": _quote(original),
+		# A forward carries the attachments — a forwarded invoice without the
+		# invoice is the reason people go back to Outlook. A reply does not:
+		# the person being replied to sent them.
+		"attachments": (
+			[
+				{"name": row.name, "file_name": row.file_name, "file_size": row.file_size}
+				for row in frappe.get_all(
+					"File",
+					filters={"attached_to_doctype": "Communication",
+					         "attached_to_name": original.name},
+					fields=["name", "file_name", "file_size"],
+				)
+			]
+			if kind == "forward" else []
+		),
+		"in_reply_to": original.name,
+		# The address it arrived at is the one to answer from. Replying to mail
+		# that reached `sales@` from a personal address is how a customer finds
+		# out a shared mailbox is not shared.
+		"sender": mine[0],
+	}
+
+
+def _addresses(value: str) -> list[str]:
+	"""The addresses out of a header, dropping the display names.
+
+	`"Hala Nasser" <hala@x.test>, ap@y.test` is two addresses, and the quoted
+	comma inside the first is why this is not `value.split(",")`.
+	"""
+	found = re.findall(r"<([^>]+)>|([^\s,;<>\"]+@[^\s,;<>\"]+)", value or "")
+	return [(angled or bare).strip() for angled, bare in found if (angled or bare).strip()]
+
+
+def _quote(original) -> str:
+	"""The original, under an attribution line, the way every client does it.
+
+	A blockquote and not a `>` prefix: the body is HTML, and prefixing lines of
+	HTML with a character produces neither quoted text nor valid markup.
+	"""
+	when = original.communication_date or ""
+	who = escape_html(original.sender_full_name or original.sender or "")
+	return (
+		"<p><br></p>"
+		f"<p>On {escape_html(str(when))}, {who} wrote:</p>"
+		'<blockquote style="margin:0 0 0 .8ex;border-left:2px solid #ccc;padding-left:1ex">'
+		f"{original.content or ''}"
+		"</blockquote>"
+	)

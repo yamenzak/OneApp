@@ -966,3 +966,208 @@ def test_filing_a_conversation_files_every_message_in_it(mailbox, holding, monke
 	result = mailbox.file_thread("a quote", "me@gmail.com", "Applicants")
 	assert result["filed"] == 2
 	assert moved == [("C-1", "Applicants"), ("C-2", "Applicants")]
+
+
+# --------------------------------------------------------------------------- #
+# Answering and passing on
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize(
+	"header,expected",
+	[
+		("hala@x.test", ["hala@x.test"]),
+		("a@x.test, b@y.test", ["a@x.test", "b@y.test"]),
+		('"Nasser, Hala" <hala@x.test>', ["hala@x.test"]),
+		('"Nasser, Hala" <hala@x.test>, ap@y.test', ["hala@x.test", "ap@y.test"]),
+		("Hala Nasser <hala@x.test>", ["hala@x.test"]),
+		("", []),
+	],
+)
+def test_a_header_is_addresses_not_commas(mailbox, header, expected):
+	"""`"Nasser, Hala" <hala@x.test>` is one address with a comma inside the
+	display name, which is why this is not `value.split(",")`."""
+	assert mailbox._addresses(header) == expected
+
+
+def test_replying_to_all_does_not_reply_to_yourself(mailbox, holding, monkeypatch):
+	"""The oldest bug in mail. Every other recipient goes on the Cc; the
+	addresses this person holds do not, and neither does the sender, who is
+	already on the To."""
+	holding("sales@acme.4dl.app")
+	monkeypatch.setattr(
+		mailbox.frappe, "get_doc",
+		lambda *a, **k: types.SimpleNamespace(
+			name="C-1", subject="Re: Quote", sender="hala@client.test",
+			sender_full_name="Hala Nasser", content="<p>body</p>",
+			recipients="sales@acme.4dl.app, ops@client.test",
+			cc="hala@client.test, boss@client.test", communication_date="2026-09-04",
+		),
+	)
+	opening = mailbox.draft("C-1", "reply_all")
+	assert opening["to"] == "hala@client.test"
+	assert "sales@acme.4dl.app" not in opening["cc"]
+	assert "hala@client.test" not in opening["cc"]
+	assert opening["cc"] == "ops@client.test, boss@client.test"
+
+
+def test_a_reply_answers_from_the_address_it_reached(mailbox, holding, monkeypatch):
+	"""Answering mail that came to `sales@` from a personal address is how a
+	customer finds out a shared mailbox is not shared."""
+	holding("sales@acme.4dl.app", "me@acme.4dl.app")
+	monkeypatch.setattr(
+		mailbox.frappe, "get_doc",
+		lambda *a, **k: types.SimpleNamespace(
+			name="C-1", subject="Quote", sender="hala@client.test", sender_full_name="",
+			content="", recipients="sales@acme.4dl.app", cc="",
+			communication_date="2026-09-04",
+		),
+	)
+	assert mailbox.draft("C-1", "reply")["sender"] == "sales@acme.4dl.app"
+
+
+def test_a_forward_carries_the_files_and_a_reply_does_not(mailbox, holding, monkeypatch):
+	"""A forwarded invoice without the invoice is why people go back to
+	Outlook. A reply does not need them: the person being replied to sent them.
+	"""
+	holding("sales@acme.4dl.app")
+	monkeypatch.setattr(
+		mailbox.frappe, "get_doc",
+		lambda *a, **k: types.SimpleNamespace(
+			name="C-1", subject="Quote", sender="hala@client.test", sender_full_name="",
+			content="", recipients="sales@acme.4dl.app", cc="",
+			communication_date="2026-09-04",
+		),
+	)
+	monkeypatch.setattr(
+		mailbox.frappe, "get_all",
+		lambda *a, **k: [
+			mailbox.frappe._dict({"name": "F-1", "file_name": "quote.pdf", "file_size": 10})
+		],
+	)
+	assert mailbox.draft("C-1", "forward")["attachments"] == [
+		{"name": "F-1", "file_name": "quote.pdf", "file_size": 10}
+	]
+	assert mailbox.draft("C-1", "reply")["attachments"] == []
+
+
+def test_a_forward_starts_with_nobody_on_it(mailbox, holding, monkeypatch):
+	holding("sales@acme.4dl.app")
+	monkeypatch.setattr(
+		mailbox.frappe, "get_doc",
+		lambda *a, **k: types.SimpleNamespace(
+			name="C-1", subject="Quote", sender="hala@client.test", sender_full_name="",
+			content="", recipients="sales@acme.4dl.app", cc="boss@client.test",
+			communication_date="2026-09-04",
+		),
+	)
+	opening = mailbox.draft("C-1", "forward")
+	assert opening["to"] == ""
+	assert opening["cc"] == ""
+	assert opening["subject"] == "Fwd: Quote"
+
+
+def test_a_subject_does_not_collect_prefixes(mailbox, holding, monkeypatch):
+	"""`Re: Re: Re: Quote` is what a client that appends rather than replaces
+	produces after three rounds."""
+	holding("sales@acme.4dl.app")
+	monkeypatch.setattr(
+		mailbox.frappe, "get_doc",
+		lambda *a, **k: types.SimpleNamespace(
+			name="C-1", subject="Re: Fwd: Quote", sender="a@x.test", sender_full_name="",
+			content="", recipients="sales@acme.4dl.app", cc="",
+			communication_date="2026-09-04",
+		),
+	)
+	assert mailbox.draft("C-1", "reply")["subject"] == "Re: Quote"
+
+
+def test_you_cannot_draft_from_somebody_elses_message(mailbox, holding, monkeypatch):
+	"""A draft is a way of reading a message — it hands back the whole body —
+	so it has to be one this person could already open."""
+	holding("sales@acme.4dl.app")
+	monkeypatch.setattr(
+		mailbox.frappe, "get_doc",
+		lambda *a, **k: types.SimpleNamespace(
+			name="C-1", subject="Private", sender="a@x.test", sender_full_name="",
+			content="", recipients="someone-else@acme.4dl.app", cc="",
+			communication_date="2026-09-04",
+		),
+	)
+	with pytest.raises(Exception):
+		mailbox.draft("C-1", "reply")
+
+
+def test_an_unknown_kind_is_refused(mailbox):
+	with pytest.raises(Exception):
+		mailbox.draft("C-1", "delete-everything")
+
+
+def test_the_quote_is_a_blockquote_and_the_name_is_escaped(mailbox):
+	"""A `>` prefix on lines of HTML produces neither quoted text nor valid
+	markup. And a display name is somebody else's text."""
+	quoted = mailbox._quote(
+		types.SimpleNamespace(
+			communication_date="2026-09-04",
+			sender_full_name='Hala <script>alert(1)</script>',
+			sender="hala@x.test",
+			content="<p>the original</p>",
+		)
+	)
+	assert "<blockquote" in quoted
+	assert "<p>the original</p>" in quoted
+	assert "<script>" not in quoted
+	assert "&lt;script&gt;" in quoted
+
+
+def test_the_quoted_body_is_the_stored_one(mailbox):
+	"""Not the copy the reader is looking at, which has had its remote images
+	held back — quoting that sends somebody a reply full of empty `<img>`."""
+	import inspect
+
+	source = inspect.getsource(mailbox.draft)
+	assert "_quote(original)" in source
+
+
+# --------------------------------------------------------------------------- #
+# Sending with something attached
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize(
+	"sent,expected",
+	[
+		('["F-1", "F-2"]', ["F-1", "F-2"]),
+		("F-1", ["F-1"]),
+		("", []),
+		([], []),
+		(["F-1", "", None], ["F-1"]),
+	],
+)
+def test_attachment_names_out_of_whatever_the_request_sent(mailbox, sent, expected):
+	assert mailbox._names(sent) == expected
+
+
+def test_you_cannot_attach_a_file_you_cannot_read(mailbox, monkeypatch):
+	"""The names come from the browser. Without this the endpoint would attach
+	any file on the site to a message going anywhere."""
+	monkeypatch.setattr(mailbox.frappe, "has_permission", lambda *a, **k: False)
+	with pytest.raises(Exception):
+		mailbox._carry("C-1", ["F-1"])
+
+
+def test_an_attachment_is_carried_by_reference(mailbox):
+	"""A new File row pointing at the same `file_url`. A forward of a 40 MB
+	drawing set copies a row, not the drawings."""
+	import inspect
+
+	source = inspect.getsource(mailbox._carry)
+	assert '"file_url": source.file_url' in source
+	assert "content" not in source.split('"doctype": "File"')[1].split("}")[0]
+
+
+def test_attachments_are_on_the_message_before_it_is_sent(mailbox):
+	"""`send_email` reads the File rows off the document to build the message.
+	Attaching afterwards produces a sent message with nothing on it."""
+	import inspect
+
+	source = inspect.getsource(mailbox.send)
+	assert source.index("_carry(doc.name") < source.index("doc.send_email()")

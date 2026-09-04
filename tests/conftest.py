@@ -126,6 +126,22 @@ def _make_frappe():
 			self.writes.append((doctype, name, field, value))
 			return None
 
+	# Frappe's own `_dict`: a dict that also answers to attribute access, which
+	# is what every `get_all` row is. Real here because the code under test
+	# reads rows as `row.name`, and a stub handing back plain dicts would fail
+	# on correct code and pass on code that reads them the wrong way.
+	class _Dict(dict):
+		def __getattr__(self, key):
+			try:
+				return self[key]
+			except KeyError:
+				return None
+
+		def __setattr__(self, key, value):
+			self[key] = value
+
+	frappe._dict = _Dict
+
 	frappe.db = _DB()
 
 	# `frappe.defaults` — the per-user half of the same store. Real rather than
@@ -255,6 +271,17 @@ def _make_frappe():
 	# codebase goes through it rather than `int()`.
 	utils.cint = lambda v=0, default=0: int(float(v)) if str(v or "").strip() else default
 	utils.get_fullname = lambda u: u
+	# Frappe's own. Real rather than a passthrough: what uses it is the
+	# attribution line above a quoted reply, and a stub that returned its
+	# argument would let a sender's display name close the paragraph it sits in.
+	utils.escape_html = lambda text: (
+		str(text or "")
+		.replace("&", "&amp;")
+		.replace("<", "&lt;")
+		.replace(">", "&gt;")
+		.replace('"', "&quot;")
+		.replace("'", "&#39;")
+	)
 	# The real one drops tags and unescapes entities. A stub that only had to be
 	# *shaped* right would return the argument, and then every test of "a row
 	# says its sentence without markup" would pass on markup.
