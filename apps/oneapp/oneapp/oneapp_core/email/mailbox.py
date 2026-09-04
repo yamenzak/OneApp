@@ -30,7 +30,12 @@ import re
 import frappe
 from frappe import _
 
-from oneapp.oneapp_core.email import folders, people
+# `folder_ops`, not `folders`: this module has its own `folders()` — the rail
+# endpoint — and importing the module under its own name binds the function over
+# it. Python is happy, and the first call reaching for `folders.file` gets
+# "'function' object has no attribute 'file'" at runtime.
+from oneapp.oneapp_core.email import people
+from oneapp.oneapp_core.email import folders as folder_ops
 from oneapp.oneapp_core.email.folders import FOLDER_FIELD, QUIET
 
 # `Re:`, `Fwd:`, `FW:`, `RE :`, and the same again nested five deep, which is
@@ -253,13 +258,23 @@ def _filters(folder: str) -> tuple[dict, list | None]:
 			# they have in common; the folder is not.
 			return {**base, "sent_or_received": "Sent", "sender": address}, None
 
+		# Scoped by the *address*, not by the Email Account behind it.
+		#
+		# `email_account` is only set on mail that came through an account —
+		# Frappe's IMAP sync sets it, and the Worker that delivers our own
+		# routed mail does not, because there is no account to name. Scoping on
+		# it therefore did the wrong thing in the one case the whole product is
+		# built around: a message on `sales@acme.4dl.app` could be filed into a
+		# folder and then was in no folder anybody could open. Address it is,
+		# which is what identifies a mailbox anyway.
 		return (
-			{
-				**base,
-				FOLDER_FIELD: name,
-				"email_account": ("in", _accounts_for(address)),
-			},
-			None,
+			{**base, FOLDER_FIELD: name},
+			[
+				["recipients", "like", f"%{_like(address)}%"],
+				# A folder can hold both halves of a correspondence. `sender`
+				# catches the sent ones, which is what an Archive is full of.
+				["sender", "=", address],
+			],
 		)
 
 	base["sent_or_received"] = "Received"
@@ -274,22 +289,6 @@ def _filters(folder: str) -> tuple[dict, list | None]:
 		return base, None
 
 	return base, [["recipients", "like", f"%{_like(one)}%"] for one in held]
-
-
-def _accounts_for(address: str) -> list[str]:
-	"""The Email Accounts behind one address this person holds.
-
-	A list rather than a value, and never empty: an empty `in` matches nothing
-	in some engines and everything in others, and this is the filter standing
-	between one person and the whole site's mail.
-	"""
-	names = frappe.get_all(
-		"User Email",
-		filters={"parent": frappe.session.user, "email_id": address},
-		pluck="email_account",
-		distinct=True,
-	)
-	return [one for one in names if one] or [""]
 
 
 @frappe.whitelist(methods=["GET"])
@@ -566,7 +565,7 @@ def add_folder(address: str, name: str) -> dict:
 	showing that address to disagree with.
 	"""
 	account = _account_of(address)
-	return folders.create(account, name)
+	return folder_ops.create(account, name)
 
 
 @frappe.whitelist(methods=["POST"])
@@ -578,7 +577,7 @@ def drop_folder(address: str, name: str) -> dict:
 	inbox first and what is deleted is empty.
 	"""
 	account = _account_of(address)
-	return folders.remove(account, name)
+	return folder_ops.remove(account, name)
 
 
 @frappe.whitelist(methods=["POST"])
@@ -599,6 +598,6 @@ def file_thread(key: str, address: str, folder: str, from_folder: str = "all") -
 			# A conversation can span two addresses. Only the half that belongs
 			# to this mailbox moves; the other half is not this server's to file.
 			continue
-		folders.file(account, row["name"], folder)
+		folder_ops.file(account, row["name"], folder)
 		filed.append(row["name"])
 	return {"ok": True, "filed": len(filed), "folder": folder}

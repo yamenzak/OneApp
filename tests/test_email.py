@@ -426,18 +426,29 @@ def test_sent_is_scoped_by_who_sent_it(mailbox, holding):
 	assert or_filters is None
 
 
-def test_one_folder_of_one_mailbox(mailbox, holding, monkeypatch):
+def test_one_folder_of_one_mailbox(mailbox, holding):
 	"""Scoped by the address as well as the folder name. Folder names are not
 	unique across mailboxes — two people on this site can both have an
 	`Applicants` — so a filter on the name alone hands one of them the other's.
 	"""
 	holding("me@gmail.com")
-	monkeypatch.setattr(mailbox, "_accounts_for", lambda address: ["Gmail"])
 
 	filters, or_filters = mailbox._filters("me@gmail.com::Applicants")
 	assert filters[mailbox.FOLDER_FIELD] == "Applicants"
-	assert filters["email_account"] == ("in", ["Gmail"])
-	assert or_filters is None
+	assert or_filters == [
+		["recipients", "like", "%me@gmail.com%"],
+		["sender", "=", "me@gmail.com"],
+	]
+
+
+def test_a_folder_is_scoped_by_address_and_not_by_account(mailbox, holding):
+	"""`email_account` is set on mail that came through an account and is not
+	set on the mail our own Worker delivers — there is no account to name. A
+	folder scoped on it therefore hid exactly the mail this product is built
+	around: filed, and then in no folder anybody could open."""
+	holding("sales@acme.4dl.app")
+	filters, _ = mailbox._filters("sales@acme.4dl.app::Applicants")
+	assert "email_account" not in filters
 
 
 def test_a_folder_of_an_address_you_do_not_hold_is_refused(mailbox, holding):
@@ -446,18 +457,10 @@ def test_a_folder_of_an_address_you_do_not_hold_is_refused(mailbox, holding):
 		mailbox._filters("someone-else@gmail.com::Applicants")
 
 
-def test_a_folder_query_never_gets_an_empty_account_list(mailbox, monkeypatch):
-	"""An empty `in` matches nothing in some engines and everything in others,
-	and this is the filter standing between one person and the site's mail."""
-	monkeypatch.setattr(mailbox.frappe, "get_all", lambda *a, **k: [])
-	assert mailbox._accounts_for("me@gmail.com") == [""]
-
-
-def test_a_folder_is_not_forced_to_be_received(mailbox, holding, monkeypatch):
+def test_a_folder_is_not_forced_to_be_received(mailbox, holding):
 	"""A Sent folder holds sent mail. A folder filter that also said
 	"Received" would mirror the folder and then show it empty."""
 	holding("me@gmail.com")
-	monkeypatch.setattr(mailbox, "_accounts_for", lambda address: ["Gmail"])
 	filters, _ = mailbox._filters("me@gmail.com::Applicants")
 	assert "sent_or_received" not in filters
 
@@ -920,3 +923,46 @@ def inspect_source(fn):
 	import inspect
 
 	return inspect.getsource(fn)
+
+
+def test_the_folder_module_is_not_shadowed_by_the_folder_endpoint(mailbox):
+	"""`mailbox.folders()` is the rail endpoint and `folders` is the module that
+	does the IMAP. Imported under its own name the function wins, Python says
+	nothing, and the first call reaching for `folders.file` dies at runtime with
+	"'function' object has no attribute 'file'" — which is exactly what
+	happened, and only in a browser."""
+	import types as typemod
+
+	assert isinstance(mailbox.folder_ops, typemod.ModuleType)
+	assert callable(mailbox.folders)
+	for name in ("create", "remove", "file"):
+		assert hasattr(mailbox.folder_ops, name), name
+
+
+def test_filing_a_conversation_files_every_message_in_it(mailbox, holding, monkeypatch):
+	"""The conversation and not the message: filing the reply and leaving the
+	original in the inbox is what every mail client got complained about."""
+	holding("me@gmail.com")
+	monkeypatch.setattr(
+		mailbox.frappe.db, "get_value", lambda *a, **k: "Gmail"
+	)
+	monkeypatch.setattr(mailbox.frappe, "get_doc", lambda *a, **k: types.SimpleNamespace(name="Gmail"))
+	monkeypatch.setattr(
+		mailbox, "thread",
+		lambda key, folder: [
+			{"name": "C-1", "email_account": "Gmail"},
+			{"name": "C-2", "email_account": "Gmail"},
+			# A conversation can span two addresses. The other mailbox's half is
+			# not this server's to move.
+			{"name": "C-3", "email_account": "Outlook"},
+		],
+	)
+	moved = []
+	monkeypatch.setattr(
+		mailbox.folder_ops, "file",
+		lambda account, message, name: moved.append((message, name)),
+	)
+
+	result = mailbox.file_thread("a quote", "me@gmail.com", "Applicants")
+	assert result["filed"] == 2
+	assert moved == [("C-1", "Applicants"), ("C-2", "Applicants")]
