@@ -58,6 +58,9 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 * **`docs/ONEADMIN.md`** — the platform. Tenancy, the control plane, the
   operator console, billing, credits, storage, the lifecycle, configuration,
   bring-up, and how to work on this repo.
+* **`docs/EMAIL.md`** — mail. What Cloudflare gives us and what it does not, what
+  the framework already ships, why Frappe Mail is not the answer, and the seven
+  stages.
 * `docs/PRINTING.md` and `docs/WORKSPACE-SETTINGS.md` are reference tables that
   tests read back.
 

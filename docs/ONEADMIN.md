@@ -514,7 +514,11 @@ whose site is suspended or gone.
 **Email is Cloudflare in both directions.** Inbound: catch-all → Worker → parse
 recipient → HMAC POST to the right tenant, giving per-tenant functional
 addresses (`ap@` for supplier invoice ingestion, `support@`, `leads@`).
-Per-user mailboxes are out of scope — that is a mailbox product, not a feature.
+Per-user and shared addresses are planned on top of this and change none of it:
+an address is somewhere mail *arrives*, not somewhere it sits, so the Worker
+already does the work and a catch-all costs one routing rule however many
+addresses exist. See `docs/EMAIL.md`. What stays out of scope is a mailbox
+*server* — storage, IMAP, folders — which is what Frappe Mail runs Stalwart for.
 
 Outbound goes through Cloudflare Email Service over SMTP
 (`smtps://smtp.mx.cloudflare.net:465`, username `api_token`), so Frappe's own
