@@ -101,6 +101,9 @@ def write(space_code: str, screen: str, name: str, to: str, subject: str,
 	doc = frappe.get_doc("Communication", sent["name"])
 	if linking.add(doc, doctype, name, linking.BY_MANUAL):
 		doc.save(ignore_permissions=True)
+		# After the save, because the save is what destroys it — see
+		# `linking.remember`.
+		linking.remember(doc.name, doctype, name, linking.BY_MANUAL)
 
 	return {**sent, "about": {"doctype": doctype, "name": name}}
 
@@ -124,6 +127,7 @@ def attach(space_code: str, screen: str, name: str, message: str) -> dict:
 		return {"ok": True, "already": True}
 
 	doc.save(ignore_permissions=True)
+	linking.remember(doc.name, doctype, name, linking.BY_MANUAL)
 	return {"ok": True, "linked": message}
 
 

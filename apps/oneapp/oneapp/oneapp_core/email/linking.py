@@ -301,33 +301,42 @@ def on_insert(doc, method=None):
 		frappe.log_error(title="Mail linking failed", message=frappe.get_traceback())
 
 
+def remember(message: str, doctype: str, name: str, by: str):
+	"""Write how one link was made, after the document has been saved.
+
+	`Communication.deduplicate_timeline_links` runs in `validate` — on every
+	save, not only the first — and rebuilds every link row from
+	`(link_doctype, link_name)` alone: it iterates a set of those pairs and
+	calls `add_link` for each, so anything else the row carried is dropped.
+	Setting provenance on the row therefore writes it and then watches the
+	framework throw it away, silently, with the link itself intact.
+
+	So it is written afterwards, straight onto the child row. `db.set_value`
+	rather than another save, because another save would run the validation
+	that just destroyed it.
+	"""
+	frappe.db.set_value(
+		"Communication Link",
+		{"parent": message, "link_doctype": doctype, "link_name": name,
+		 "parenttype": "Communication"},
+		LINK_BY,
+		by,
+		update_modified=False,
+	)
+
+
 def stamp(doc, method=None):
 	"""Write how each link was made, once the framework has stopped rewriting them.
 
-	`Communication.deduplicate_timeline_links` runs in `validate` and rebuilds
-	every row from `(link_doctype, link_name)` alone — it iterates a set of
-	those pairs and calls `add_link` for each, so any other field on the row is
-	dropped. Setting provenance in `before_insert` therefore writes it and then
-	watches the framework throw it away, silently, with the link itself intact.
-
-	So it is written afterwards, straight onto the child rows, for the links
-	this module made and no others. `db.set_value` rather than a save: the
-	parent is finished, and re-saving a Communication to annotate a child row
-	would run the whole validation again and produce a second version.
+	For the links *this* made and no others — the contact links the framework
+	adds are the framework's. See `remember` for why it is a second write.
 	"""
 	made = getattr(doc, "_onespace_links", None)
 	if not made:
 		return
 	try:
 		for link in made:
-			frappe.db.set_value(
-				"Communication Link",
-				{"parent": doc.name, "link_doctype": link["doctype"],
-				 "link_name": link["name"], "parenttype": "Communication"},
-				LINK_BY,
-				link["by"],
-				update_modified=False,
-			)
+			remember(doc.name, link["doctype"], link["name"], link["by"])
 	except Exception:
 		frappe.log_error(title="Mail link provenance failed",
 		                 message=frappe.get_traceback())
