@@ -23,6 +23,8 @@ from pathlib import Path
 
 import pytest
 from reachable import paths as reachable_paths
+import pathlib
+import sources
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTROL = ROOT / "apps/oneapp_control/oneapp_control"
@@ -109,21 +111,25 @@ def _endpoints_by_doctype(module: Path) -> dict[str, set[str]]:
 	"""
 	import ast
 
-	source = module.read_text()
-	tree = ast.parse(source)
+	# A directory, when the module has been split into one. `admin` is nine
+	# modules now, and the endpoint name is what the SPA calls by, so the
+	# filename it lives in does not matter here.
+	files = (
+		sorted(p for p in module.glob("*.py") if p.name != "__init__.py")
+		if module.is_dir() else [module]
+	)
 	found: dict[str, set[str]] = {}
 
-	for node in ast.walk(tree):
-		if not isinstance(node, ast.FunctionDef):
-			continue
-		decorated = any(
-			"whitelist" in ast.unparse(d) for d in node.decorator_list
-		)
-		if not decorated:
-			continue
-		body = ast.get_source_segment(source, node) or ""
-		for name in re.findall(r'"([A-Z][A-Za-z ]+)"', body):
-			found.setdefault(name, set()).add(node.name)
+	for path in files:
+		source = path.read_text()
+		for node in ast.walk(ast.parse(source)):
+			if not isinstance(node, ast.FunctionDef):
+				continue
+			if not any("whitelist" in ast.unparse(d) for d in node.decorator_list):
+				continue
+			body = ast.get_source_segment(source, node) or ""
+			for name in re.findall(r'"([A-Z][A-Za-z ]+)"', body):
+				found.setdefault(name, set()).add(node.name)
 	return found
 
 
@@ -145,7 +151,7 @@ def settings_targets() -> set[str]:
 
 def test_every_control_doctype_is_reachable_from_the_operator_console():
 	spa = _spa_source(TENANT_SRC)
-	endpoints = _endpoints_by_doctype(CONTROL / "api/admin.py")
+	endpoints = _endpoints_by_doctype(CONTROL / "api/admin")
 	screens = operator_screens()
 	settings = settings_targets()
 
@@ -224,22 +230,34 @@ def _tenant_endpoints_by_doctype() -> dict[str, set[str]]:
 	tenant = ROOT / "apps/oneapp/oneapp"
 	found: dict[str, set[str]] = {}
 
+	# Grouped by the unit that owns a subject, which for a package is the
+	# package and not the file. `importer` is six modules now: the endpoints are
+	# in `screen`, and `Import Identity` is named in `writing`, so a file-scoped
+	# read declares it desk-only while the screen that manages it is right
+	# there.
+	units: dict[pathlib.Path, list[pathlib.Path]] = {}
 	for path in sorted(tenant.rglob("*.py")):
-		source = path.read_text()
-		if "whitelist" not in source:
-			continue
+		unit = path.parent if (path.parent / "__init__.py").exists() else path
+		units.setdefault(unit, []).append(path)
 
-		dotted = path.relative_to(tenant.parent).with_suffix("").as_posix().replace("/", ".")
-		named = set(re.findall(r'"([A-Z][A-Za-z ]+)"', source))
+	for unit, paths in units.items():
+		named: set[str] = set()
+		endpoints: set[str] = set()
+		for path in paths:
+			source = path.read_text()
+			named |= set(re.findall(r'"([A-Z][A-Za-z ]+)"', source))
+			if "whitelist" not in source:
+				continue
+			dotted = path.relative_to(tenant.parent).with_suffix("").as_posix().replace("/", ".")
+			for node in ast.walk(ast.parse(source)):
+				if not isinstance(node, ast.FunctionDef):
+					continue
+				if not any("whitelist" in ast.unparse(d) for d in node.decorator_list):
+					continue
+				endpoints |= set(reachable_paths(path, dotted, node.name))
 
-		for node in ast.walk(ast.parse(source)):
-			if not isinstance(node, ast.FunctionDef):
-				continue
-			if not any("whitelist" in ast.unparse(d) for d in node.decorator_list):
-				continue
-			for name in named:
-				for path_to in reachable_paths(path, dotted, node.name):
-					found.setdefault(name, set()).add(path_to)
+		for name in named:
+			found.setdefault(name, set()).update(endpoints)
 
 	return found
 
@@ -309,7 +327,7 @@ def test_the_exemption_list_has_no_stale_entries():
 # still be unchangeable. These name the specific actions that were desk-only.
 # --------------------------------------------------------------------------- #
 
-ADMIN_API = (CONTROL / "api/admin.py").read_text()
+ADMIN_API = sources.text(CONTROL / "api/admin.py")
 
 
 # Nine things `/admin` could do that a doctype list alone cannot express. Each

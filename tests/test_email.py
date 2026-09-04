@@ -23,9 +23,21 @@ def code_of(thing) -> str:
 	text search over the source therefore fails on correct code.
 	"""
 	import inspect
+	import pathlib
 	import re as regex
 
-	source = regex.sub(r'"""(?:.|\n)*?"""', "", inspect.getsource(thing))
+	# A package's own source is its `__init__`, which here is re-exports and
+	# nothing else — so `code_of(mailbox)` would search a list of names for
+	# code that lives in the modules beside it.
+	if getattr(thing, "__path__", None):
+		whole = "\n".join(
+			p.read_text()
+			for p in sorted(pathlib.Path(thing.__path__[0]).glob("*.py"))
+			if p.name != "__init__.py"
+		)
+	else:
+		whole = inspect.getsource(thing)
+	source = regex.sub(r'"""(?:.|\n)*?"""', "", whole)
 	return "\n".join(
 		line for line in source.splitlines() if not line.strip().startswith("#")
 	)
@@ -331,11 +343,11 @@ def mailbox():
 
 
 @pytest.fixture
-def holding(mailbox, monkeypatch):
+def holding(mailbox, monkeypatch, stub_mailbox):
 	"""Say which addresses the caller holds."""
 
 	def set(*addresses):
-		monkeypatch.setattr(mailbox, "_held", lambda: list(addresses))
+		stub_mailbox("_held", lambda: list(addresses))
 
 	return set
 
@@ -407,10 +419,9 @@ def test_every_query_takes_both_halves(mailbox):
 	"""The guard for the bug above, read off the source rather than exercised:
 	each `_filters` call unpacks the pair, and each `get_all` under it passes
 	`or_filters`. A query that forgets is the leak."""
-	import inspect
 	import re as regex
 
-	source = inspect.getsource(mailbox)
+	source = code_of(mailbox)
 	body = source.split("def _filters", 1)[1].split("\n\n\n", 1)[1]
 
 	lonely = regex.search(r"^\s*\w+ = _filters\(", body, regex.M)
@@ -421,8 +432,10 @@ def test_every_query_takes_both_halves(mailbox):
 	# rather than by shape — `unread` also plucks names and is scoped, and an
 	# exemption written as "queries that pluck names" would have stopped
 	# guarding it. What makes these two safe is asserted separately below.
+	# Cut with `code_of` too: `body` has had its prose stripped, and raw source
+	# would no longer match a word of it.
 	for unscoped in (mailbox._matching, mailbox._in_thread):
-		body = body.replace(inspect.getsource(unscoped), "")
+		body = body.replace(code_of(unscoped), "")
 
 	for call in regex.findall(r"frappe\.get_all\(\s*\n\s*\"Communication\".*?\n\t\)", body,
 	                          regex.S):
@@ -541,10 +554,10 @@ def test_holding_nothing_means_sending_nothing(mailbox, holding):
 		mailbox.send(to="x@y.com", subject="hi", content="hi")
 
 
-def test_the_seen_list_is_bounded(mailbox, monkeypatch):
+def test_the_seen_list_is_bounded(mailbox, monkeypatch, stub_mailbox):
 	"""It is a user default, which every request loads. Unbounded it becomes a
 	string megabytes long that the whole session pays for."""
-	monkeypatch.setattr(mailbox, "_seen_set", lambda: set())
+	stub_mailbox("_seen_set", lambda: set())
 	result = mailbox.mark_read([f"m{n}" for n in range(mailbox.SEEN_LIMIT + 500)])
 	assert result["seen"] == mailbox.SEEN_LIMIT
 	written = mailbox.frappe.defaults.get_user_default(mailbox.SEEN_KEY, "Administrator")
@@ -967,7 +980,7 @@ def test_the_folder_module_is_not_shadowed_by_the_folder_endpoint(mailbox):
 		assert hasattr(mailbox.folder_ops, name), name
 
 
-def test_filing_a_conversation_files_every_message_in_it(mailbox, holding, monkeypatch):
+def test_filing_a_conversation_files_every_message_in_it(mailbox, holding, monkeypatch, stub_mailbox):
 	"""The conversation and not the message: filing the reply and leaving the
 	original in the inbox is what every mail client got complained about."""
 	holding("me@gmail.com")
@@ -975,9 +988,7 @@ def test_filing_a_conversation_files_every_message_in_it(mailbox, holding, monke
 		mailbox.frappe.db, "get_value", lambda *a, **k: "Gmail"
 	)
 	monkeypatch.setattr(mailbox.frappe, "get_doc", lambda *a, **k: types.SimpleNamespace(name="Gmail"))
-	monkeypatch.setattr(
-		mailbox, "thread",
-		lambda key, folder: [
+	stub_mailbox("thread", lambda key, folder: [
 			{"name": "C-1", "email_account": "Gmail"},
 			{"name": "C-2", "email_account": "Gmail"},
 			# A conversation can span two addresses. The other mailbox's half is
@@ -1205,7 +1216,7 @@ def test_attachments_are_on_the_message_before_it_is_sent(mailbox):
 # A list that does not stop at fifty
 # --------------------------------------------------------------------------- #
 
-def test_the_next_page_starts_where_the_messages_ended(mailbox, holding, monkeypatch):
+def test_the_next_page_starts_where_the_messages_ended(mailbox, holding, monkeypatch, stub_mailbox):
 	"""Messages consumed, not conversations returned. Fifty messages can be
 	twelve conversations, and paging by what came back re-reads the same rows
 	forever."""
@@ -1221,7 +1232,7 @@ def test_the_next_page_starts_where_the_messages_ended(mailbox, holding, monkeyp
 		for n in range(10)
 	]
 	monkeypatch.setattr(mailbox.frappe, "get_all", lambda *a, **k: rows)
-	monkeypatch.setattr(mailbox, "_seen_set", lambda: set())
+	stub_mailbox("_seen_set", lambda: set())
 	monkeypatch.setattr(mailbox.people, "profiles", lambda senders: {})
 
 	page = mailbox.threads("all", start=0)
@@ -1300,9 +1311,7 @@ def test_a_mailbox_with_no_trash_gets_one(mailbox):
 def test_a_star_belongs_to_a_person(mailbox):
 	"""Two people on `sales@` star different things, for the same reason they
 	have different ideas of what they have read."""
-	import inspect
-
-	source = inspect.getsource(mailbox)
+	source = code_of(mailbox)
 	assert "STARRED_KEY" in source
 	assert "frappe.defaults.set_user_default(\n\t\tSTARRED_KEY" in source
 

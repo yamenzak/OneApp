@@ -16,6 +16,7 @@ import re
 from pathlib import Path
 
 import pytest
+import sources
 
 ROOT = Path(__file__).resolve().parents[1]
 ADMIN = ROOT / "apps/oneapp_control/oneapp_control/api/admin.py"
@@ -33,10 +34,12 @@ PAGE = OPS / "Tenant.vue"
 
 
 def function(path: Path, name: str) -> str:
-    source = path.read_text()
-    for node in ast.walk(ast.parse(source)):
-        if isinstance(node, ast.FunctionDef) and node.name == name:
-            return ast.get_source_segment(source, node)
+    """One function's source, from a module or from the package it became."""
+    for one in sources.files(path):
+        source = one.read_text()
+        for node in ast.walk(ast.parse(source)):
+            if isinstance(node, ast.FunctionDef) and node.name == name:
+                return ast.get_source_segment(source, node)
     raise AssertionError(f"{name} is missing from {path.name}")
 
 
@@ -201,7 +204,7 @@ def test_support_lands_in_the_workspace_not_the_desk():
 
 
 def test_every_press_endpoint_is_operator_only():
-    source = ADMIN.read_text()
+    source = sources.text(ADMIN)
     for name in READ_ENDPOINTS + ("take_backup", "backup_download", "set_primary_domain",
                                   "remove_domain", "support_login", "support_logins"):
         assert "_require_manager()" in function(ADMIN, name), name

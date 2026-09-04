@@ -451,37 +451,57 @@ def stub_frappe(monkeypatch):
 			del sys.modules[name]
 
 
-@pytest.fixture
-def stub_spaceview(monkeypatch):
-	"""Replace a name everywhere in the screen package that uses it.
+def _package_stubber(monkeypatch, package):
+	"""Replace a name in every module of a layered package that uses it.
 
-	`spaceview` is a package of layered modules, and each one imports the
-	helpers it needs *by name* — so `monkeypatch.setattr(spaceview, "_resolve")`
-	rebinds the re-export and reaches nobody: `records.rows` goes on calling the
+	These packages are layered modules, and each imports the helpers it needs
+	*by name* — so `monkeypatch.setattr(package, "_resolve")` rebinds the
+	re-export and reaches nobody: the layer that uses it goes on calling the
 	real one, and the test passes for the wrong reason or fails for a confusing
 	one.
 
 	This walks the submodules and replaces the name in each that has it, so a
-	test says what it means — "wherever the screen layer resolves a screen,
-	it resolves to this" — and keeps meaning it the next time the layering
+	test says what it means and keeps meaning it the next time the layering
 	moves.
 	"""
 	from types import ModuleType
 
-	from oneapp.oneapp_core import spaceview
-
 	def stub(name, value):
 		found = 0
-		for holder in [spaceview, *vars(spaceview).values()]:
-			if holder is not spaceview and not (
+		for holder in [package, *vars(package).values()]:
+			if holder is not package and not (
 				isinstance(holder, ModuleType)
-				and getattr(holder, "__name__", "").startswith(spaceview.__name__ + ".")
+				and getattr(holder, "__name__", "").startswith(package.__name__ + ".")
 			):
 				continue
 			if hasattr(holder, name):
 				monkeypatch.setattr(holder, name, value)
 				found += 1
-		assert found, f"nothing in the screen package is called {name!r}"
+		assert found, f"nothing in {package.__name__} is called {name!r}"
 		return value
 
 	return stub
+
+
+@pytest.fixture
+def stub_spaceview(monkeypatch):
+	"""Stub a name across the screen package. See `_package_stubber`."""
+	from oneapp.oneapp_core import spaceview
+
+	return _package_stubber(monkeypatch, spaceview)
+
+
+@pytest.fixture
+def stub_mailbox(monkeypatch):
+	"""Stub a name across the mail package. See `_package_stubber`."""
+	from oneapp.oneapp_core.email import mailbox
+
+	return _package_stubber(monkeypatch, mailbox)
+
+
+@pytest.fixture
+def stub_importer(monkeypatch):
+	"""Stub a name across the import package. See `_package_stubber`."""
+	from oneapp.oneapp_core import importer
+
+	return _package_stubber(monkeypatch, importer)

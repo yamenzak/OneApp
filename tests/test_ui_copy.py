@@ -57,7 +57,7 @@ BANNED = {
 # thing they are deciding whether to send again — and softening it there would
 # make the console vaguer without making anything friendlier.
 OPERATOR = (
-	"apps/oneapp_control/oneapp_control/api/admin.py",
+	"apps/oneapp_control/oneapp_control/api/admin",
 	"apps/oneapp_control/oneapp_control/billing/",
 	"screens/ops/",
 )

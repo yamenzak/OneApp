@@ -15,6 +15,7 @@ import ast
 from pathlib import Path
 
 import pytest
+import sources
 
 ROOT = Path(__file__).resolve().parents[1]
 ACTIONS = ROOT / "apps/oneapp_control/oneapp_control/entitlements/actions.py"
@@ -220,7 +221,7 @@ def operator_screen_names() -> set[str]:
 def test_every_declared_method_exists(declared):
 	"""A dotted path is a string until something calls it, and the thing that
 	calls it is a button an operator presses at the worst moment."""
-	admin = (ROOT / "apps/oneapp_control/oneapp_control/api/admin.py").read_text()
+	admin = sources.text(ROOT / "apps/oneapp_control/oneapp_control/api/admin.py")
 	for rows in declared.values():
 		for row in rows:
 			if not row.get("method"):
@@ -232,7 +233,7 @@ def test_every_declared_method_exists(declared):
 def test_every_declared_method_takes_one_record(declared):
 	"""The runner calls `method(name)`. Anything needing a second argument is a
 	form, not an action, and belongs on a screen that can ask for it."""
-	admin = (ROOT / "apps/oneapp_control/oneapp_control/api/admin.py").read_text()
+	admin = sources.text(ROOT / "apps/oneapp_control/oneapp_control/api/admin.py")
 	tree = ast.parse(admin)
 	for rows in declared.values():
 		for row in rows:

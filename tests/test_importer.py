@@ -202,7 +202,7 @@ class Step:
 
 
 @pytest.fixture
-def written(importer, stub_frappe, monkeypatch):
+def written(importer, stub_frappe, monkeypatch, stub_importer):
 	"""Records `_write` made, with identity writing stubbed out."""
 	made = []
 
@@ -216,20 +216,20 @@ def written(importer, stub_frappe, monkeypatch):
 		return doc
 
 	monkeypatch.setattr(stub_frappe, "get_doc", get_doc)
-	monkeypatch.setattr(importer, "_remember", lambda *a: None)
+	stub_importer("_remember", lambda *a: None)
 	return made
 
 
-def test_a_row_nobody_has_seen_is_inserted(importer, written, monkeypatch):
-	monkeypatch.setattr(importer, "resolve", lambda *a: None)
+def test_a_row_nobody_has_seen_is_inserted(importer, written, monkeypatch, stub_importer):
+	stub_importer("resolve", lambda *a: None)
 	what = importer._write(Plan(), Step(), "Halloway & Co", {"name": "Halloway & Co"}, {"customer_name": "X"})
 	assert what == "created"
 	assert written[0].inserted == 1
 
 
-def test_the_second_run_updates_rather_than_duplicating(importer, written, stub_frappe, monkeypatch):
+def test_the_second_run_updates_rather_than_duplicating(importer, written, stub_frappe, monkeypatch, stub_importer):
 	"""The property the whole identity table exists for."""
-	monkeypatch.setattr(importer, "resolve", lambda *a: "CUST-0007")
+	stub_importer("resolve", lambda *a: "CUST-0007")
 	stub_frappe.db.records[("Customer", "CUST-0007")] = True
 
 	what = importer._write(Plan(), Step(), "Halloway & Co", {"name": "Halloway & Co"}, {"customer_name": "X"})
@@ -238,16 +238,16 @@ def test_the_second_run_updates_rather_than_duplicating(importer, written, stub_
 	assert written[0].inserted == 0
 
 
-def test_a_target_deleted_since_is_made_again(importer, written, stub_frappe, monkeypatch):
+def test_a_target_deleted_since_is_made_again(importer, written, stub_frappe, monkeypatch, stub_importer):
 	"""An identity pointing at a record somebody removed here. Making it again
 	beats saving onto a name that is not there."""
-	monkeypatch.setattr(importer, "resolve", lambda *a: "CUST-0007")
+	stub_importer("resolve", lambda *a: "CUST-0007")
 	stub_frappe.db.records[("Customer", "CUST-0007")] = None
 
 	assert importer._write(Plan(), Step(), "H", {"name": "H"}, {"customer_name": "X"}) == "created"
 
 
-def test_two_steps_off_one_source_doctype_both_run(importer, stub_frappe, monkeypatch):
+def test_two_steps_off_one_source_doctype_both_run(importer, stub_frappe, monkeypatch, stub_importer):
 	"""The run's rows pair with the plan's by position, not by name.
 
 	Keyed by source doctype, a party table split into customers and suppliers —
@@ -256,8 +256,7 @@ def test_two_steps_off_one_source_doctype_both_run(importer, stub_frappe, monkey
 	like numbers, and seventy-five customers were never looked at.
 	"""
 	ran = []
-	monkeypatch.setattr(importer, "_step",
-	                    lambda run, plan, source, step, row, held=None: ran.append(step.target_doctype))
+	stub_importer("_step", lambda run, plan, source, step, row, held=None: ran.append(step.target_doctype))
 
 	def plan_steps():
 		return [
@@ -306,7 +305,7 @@ def test_an_identity_may_not_be_repointed_at_another_doctype(importer, stub_frap
 		importer._remember(Plan(), Step(), "Halloway & Co", "CUST-0007")
 
 
-def test_a_rehearsal_is_the_real_run_thrown_away(importer, written, stub_frappe, monkeypatch):
+def test_a_rehearsal_is_the_real_run_thrown_away(importer, written, stub_frappe, monkeypatch, stub_importer):
 	"""A dry run inserts exactly like a real one, and `execute` rolls it back.
 
 	Validating a document in isolation was the old rehearsal and it could not
@@ -314,7 +313,7 @@ def test_a_rehearsal_is_the_real_run_thrown_away(importer, written, stub_frappe,
 	have made. Every step after the first reported failures that only the
 	rehearsal had. So the rehearsal writes, resolves, and is thrown away.
 	"""
-	monkeypatch.setattr(importer, "resolve", lambda *a: None)
+	stub_importer("resolve", lambda *a: None)
 
 	assert importer._write(Plan(), Step(), "H", {"name": "H"}, {"customer_name": "X"}) == "created"
 	assert written[0].inserted == 1
@@ -341,20 +340,19 @@ class RunStep:
 
 
 @pytest.fixture
-def stepped(importer, stub_frappe, monkeypatch):
+def stepped(importer, stub_frappe, monkeypatch, stub_importer):
 	"""`_step` with the network and the writes replaced, so what is left to
 	watch is the paging, the counting and the watermark."""
 	seen = {"fetched": [], "wrote": [], "issues": []}
 
-	monkeypatch.setattr(importer, "_write", lambda *a: "created")
-	monkeypatch.setattr(importer, "_issue",
-	                    lambda run, step, said, raised, held=None:
+	stub_importer("_write", lambda *a: "created")
+	stub_importer("_issue", lambda run, step, said, raised, held=None:
 	                        seen["issues"].append(said["name"]))
-	monkeypatch.setattr(importer, "_mark", lambda row, values: row.marks.update(values))
+	stub_importer("_mark", lambda row, values: row.marks.update(values))
 	return seen
 
 
-def test_a_step_walks_every_page(importer, stepped, monkeypatch):
+def test_a_step_walks_every_page(importer, stepped, monkeypatch, stub_importer):
 	"""Two full pages and a short one. The short page is what ends it — asking
 	again after it is a request for nothing."""
 	pages = [[{"name": f"r{i}", "modified": "2026-01-01 00:00:00"} for i in range(importer.BATCH)],
@@ -366,7 +364,7 @@ def test_a_step_walks_every_page(importer, stepped, monkeypatch):
 		calls.append(start)
 		return pages.pop(0) if pages else []
 
-	monkeypatch.setattr(importer, "fetch", fetch)
+	stub_importer("fetch", fetch)
 	row = RunStep()
 	importer._step(Run(), Plan(), None, Step(), row)
 
@@ -376,8 +374,8 @@ def test_a_step_walks_every_page(importer, stepped, monkeypatch):
 	assert row.marks["status"] == "Done"
 
 
-def test_the_watermark_ends_at_the_newest_row_seen(importer, stepped, stub_frappe, monkeypatch):
-	monkeypatch.setattr(importer, "fetch", lambda *a: [
+def test_the_watermark_ends_at_the_newest_row_seen(importer, stepped, stub_frappe, monkeypatch, stub_importer):
+	stub_importer("fetch", lambda *a: [
 		{"name": "a", "modified": "2026-01-01 00:00:00"},
 		{"name": "b", "modified": "2026-03-09 12:00:00"},
 	] if a[3] == 0 else [])
@@ -391,7 +389,7 @@ def test_the_watermark_ends_at_the_newest_row_seen(importer, stepped, stub_frapp
 	assert ("Import Step", "STEP-1", "watermark", "2026-03-09 12:00:00") in stub_frappe.db.writes
 
 
-def test_a_second_run_asks_only_for_what_changed(importer, stepped, monkeypatch):
+def test_a_second_run_asks_only_for_what_changed(importer, stepped, monkeypatch, stub_importer):
 	"""And asks with `>=`, not `>`. Rows sharing the boundary's exact `modified`
 	would otherwise be dropped — a second of records lost at a page edge, with
 	nothing to say so. Re-reading them costs an update apiece."""
@@ -401,7 +399,7 @@ def test_a_second_run_asks_only_for_what_changed(importer, stepped, monkeypatch)
 		asked["filters"] = filters
 		return []
 
-	monkeypatch.setattr(importer, "fetch", fetch)
+	stub_importer("fetch", fetch)
 	step = Step()
 	step.watermark = "2026-03-09 12:00:00"
 	importer._step(Run(), Plan(), None, step, RunStep())
@@ -409,9 +407,9 @@ def test_a_second_run_asks_only_for_what_changed(importer, stepped, monkeypatch)
 	assert asked["filters"] == [["RUA Party", "modified", ">=", "2026-03-09 12:00:00"]]
 
 
-def test_a_row_that_will_not_save_is_kept_and_the_rest_go_on(importer, stepped, monkeypatch):
+def test_a_row_that_will_not_save_is_kept_and_the_rest_go_on(importer, stepped, monkeypatch, stub_importer):
 	"""One bad row is a row to work through later, not the end of the run."""
-	monkeypatch.setattr(importer, "fetch", lambda *a: [
+	stub_importer("fetch", lambda *a: [
 		{"name": "good", "modified": "2026-01-01 00:00:00"},
 		{"name": "bad", "modified": "2026-01-02 00:00:00"},
 	] if a[3] == 0 else [])
@@ -421,7 +419,7 @@ def test_a_row_that_will_not_save_is_kept_and_the_rest_go_on(importer, stepped, 
 			raise ValueError("Customer Group is required")
 		return "created"
 
-	monkeypatch.setattr(importer, "_write", write)
+	stub_importer("_write", write)
 	row = RunStep()
 	importer._step(Run(), Plan(), None, Step(), row)
 
@@ -432,7 +430,7 @@ def test_a_row_that_will_not_save_is_kept_and_the_rest_go_on(importer, stepped, 
 
 
 def test_a_row_that_will_not_save_is_undone_to_its_own_savepoint(importer, stepped,
-                                                                stub_frappe, monkeypatch):
+                                                                stub_frappe, monkeypatch, stub_importer):
 	"""What a failing row costs: itself, and nothing else.
 
 	`_issue` used to roll the connection back before writing, which threw away
@@ -440,7 +438,7 @@ def test_a_row_that_will_not_save_is_undone_to_its_own_savepoint(importer, stepp
 	records already counted as created and then quietly gone. A savepoint per
 	row undoes the one that failed.
 	"""
-	monkeypatch.setattr(importer, "fetch", lambda *a: [
+	stub_importer("fetch", lambda *a: [
 		{"name": "good", "modified": "2026-01-01 00:00:00"},
 		{"name": "bad", "modified": "2026-01-02 00:00:00"},
 		{"name": "also good", "modified": "2026-01-03 00:00:00"},
@@ -451,7 +449,7 @@ def test_a_row_that_will_not_save_is_undone_to_its_own_savepoint(importer, stepp
 			raise ValueError("no")
 		return "created"
 
-	monkeypatch.setattr(importer, "_write", write)
+	stub_importer("_write", write)
 	row = RunStep()
 	importer._step(Run(), Plan(), None, Step(), row)
 
@@ -465,7 +463,7 @@ def test_a_row_that_will_not_save_is_undone_to_its_own_savepoint(importer, stepp
 
 
 def test_a_second_run_compares_the_watermark_with_what_arrives(importer, stepped,
-                                                              monkeypatch):
+                                                              monkeypatch, stub_importer):
 	"""The run that matters, and the one that had never happened.
 
 	A watermark comes back out of the database as a datetime and a row's
@@ -474,7 +472,7 @@ def test_a_second_run_compares_the_watermark_with_what_arrives(importer, stepped
 	"""
 	import datetime
 
-	monkeypatch.setattr(importer, "fetch", lambda *a: [
+	stub_importer("fetch", lambda *a: [
 		{"name": "a", "modified": "2026-03-09 12:00:00"},
 	] if a[3] == 0 else [])
 
@@ -488,9 +486,9 @@ def test_a_second_run_compares_the_watermark_with_what_arrives(importer, stepped
 	assert row.marks["created"] == 1
 
 
-def test_a_rehearsal_moves_no_watermark(importer, stepped, stub_frappe, monkeypatch):
+def test_a_rehearsal_moves_no_watermark(importer, stepped, stub_frappe, monkeypatch, stub_importer):
 	"""Otherwise a dry run would make the real one skip everything it read."""
-	monkeypatch.setattr(importer, "fetch", lambda *a: [
+	stub_importer("fetch", lambda *a: [
 		{"name": "a", "modified": "2026-01-01 00:00:00"}] if a[3] == 0 else [])
 
 	run = Run()
@@ -515,51 +513,50 @@ class Row:
 		self.__dict__.update(kw)
 
 
-def check_step(importer, monkeypatch, field_map, *, rows=None, ours=None, made=(),
+def check_step(importer, stub_importer, field_map, *, rows=None, ours=None, made=(),
                filters=None, seen=None):
-	monkeypatch.setattr(importer, "_their_fields",
-	                    lambda source, dt, filters, problems: (
+	stub_importer("_their_fields", lambda source, dt, filters, problems: (
 	                        set(rows[0]) if rows else set(), rows))
-	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: ours)
+	stub_importer("_our_fields", lambda dt, problems: ours)
 	step = Row(source_doctype="RUA Party", target_doctype="Customer",
 	           field_map=__import__("json").dumps(field_map), fan_out=None, enabled=1,
 	           filters=__import__("json").dumps(filters or []))
 	return importer._check_step(None, Row(name="P"), step, set(made), seen)
 
 
-def test_a_source_field_that_is_gone_is_a_problem(importer, monkeypatch):
-	found = check_step(importer, monkeypatch, {"customer_name": {"from": "partyy"}},
+def test_a_source_field_that_is_gone_is_a_problem(importer, stub_importer):
+	found = check_step(importer, stub_importer, {"customer_name": {"from": "partyy"}},
 	                   rows=[{"party": "X"}], ours={"customer_name"})
 	assert any("no field `partyy`" in p for p in found["problems"])
 
 
-def test_a_target_field_that_does_not_exist_is_a_problem(importer, monkeypatch):
-	found = check_step(importer, monkeypatch, {"custmer_name": {"from": "party"}},
+def test_a_target_field_that_does_not_exist_is_a_problem(importer, stub_importer):
+	found = check_step(importer, stub_importer, {"custmer_name": {"from": "party"}},
 	                   rows=[{"party": "X"}], ours={"customer_name"})
 	assert any("no field `custmer_name`" in p for p in found["problems"])
 
 
-def test_a_link_to_a_later_step_is_a_problem_not_a_warning(importer, monkeypatch):
+def test_a_link_to_a_later_step_is_a_problem_not_a_warning(importer, stub_importer):
 	"""It finds nothing on every row, and the run files one issue per record
 	rather than saying the plan is in the wrong order."""
-	found = check_step(importer, monkeypatch,
+	found = check_step(importer, stub_importer,
 	                   {"customer": {"from": "party", "link": "RUA Project"}},
 	                   rows=[{"party": "X"}], ours={"customer"}, made=())
 	assert any("runs later" in p for p in found["problems"])
 
 
-def test_a_link_to_an_earlier_step_is_fine(importer, monkeypatch):
-	found = check_step(importer, monkeypatch,
+def test_a_link_to_an_earlier_step_is_fine(importer, stub_importer):
+	found = check_step(importer, stub_importer,
 	                   {"customer": {"from": "party", "link": "RUA Project"}},
 	                   rows=[{"party": "X"}], ours={"customer"}, made=("RUA Project",))
 	assert found["problems"] == []
 
 
-def test_a_value_map_that_misses_what_is_in_the_column_warns(importer, monkeypatch):
+def test_a_value_map_that_misses_what_is_in_the_column_warns(importer, stub_importer):
 	"""The quiet one: somebody maps the values they remember rather than the
 	values that are there, and the rest cross over as-is."""
 	found = check_step(
-		importer, monkeypatch,
+		importer, stub_importer,
 		{"customer_group": {"from": "type", "values": {"Client": "Commercial"}}},
 		rows=[{"type": "Client"}, {"type": "Consultant"}, {"type": "Supplier"}],
 		ours={"customer_group"},
@@ -568,9 +565,9 @@ def test_a_value_map_that_misses_what_is_in_the_column_warns(importer, monkeypat
 	assert any("Consultant" in w and "Supplier" in w for w in found["warnings"])
 
 
-def test_a_default_makes_the_unmapped_values_a_decision(importer, monkeypatch):
+def test_a_default_makes_the_unmapped_values_a_decision(importer, stub_importer):
 	found = check_step(
-		importer, monkeypatch,
+		importer, stub_importer,
 		{"customer_group": {"from": "type", "values": {"Client": "Commercial"},
 		                    "default": "All Customer Groups"}},
 		rows=[{"type": "Client"}, {"type": "Consultant"}],
@@ -586,7 +583,7 @@ def test_a_field_map_that_is_not_json_says_so_rather_than_raising(importer, monk
 	assert found["problems"] and "not JSON" in found["problems"][0]
 
 
-def test_the_sample_is_taken_through_the_step_own_filters(importer, monkeypatch):
+def test_the_sample_is_taken_through_the_step_own_filters(importer, monkeypatch, stub_importer):
 	"""A step that excludes a value is not a step that has to map it.
 
 	The check reads what a column holds by reading rows, so which rows it reads
@@ -600,8 +597,8 @@ def test_the_sample_is_taken_through_the_step_own_filters(importer, monkeypatch)
 		asked["filters"] = filters
 		return [{"type": "Client"}]
 
-	monkeypatch.setattr(importer, "fetch", fetch)
-	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: {"customer_group"})
+	stub_importer("fetch", fetch)
+	stub_importer("_our_fields", lambda dt, problems: {"customer_group"})
 	step = Row(source_doctype="RUA Party", target_doctype="Customer",
 	           field_map='{"customer_group": {"from": "type", '
 	                     '"values": {"Client": "Commercial"}}}',
@@ -614,28 +611,28 @@ def test_the_sample_is_taken_through_the_step_own_filters(importer, monkeypatch)
 	assert found["warnings"] == []
 
 
-def test_two_steps_claiming_one_row_of_a_shared_source_warn(importer, monkeypatch):
+def test_two_steps_claiming_one_row_of_a_shared_source_warn(importer, stub_importer):
 	"""`resolve` is keyed on the source doctype, not the target.
 
 	A row caught by both steps resolves to whichever ran last, so every link
 	through it silently names the wrong record. The check asks the rows rather
 	than the schema, because the schema cannot answer it.
 	"""
-	found = check_step(importer, monkeypatch, {"customer_name": {"from": "party"}},
+	found = check_step(importer, stub_importer, {"customer_name": {"from": "party"}},
 	                   rows=[{"name": "P-1", "party": "X"}], ours={"customer_name"},
 	                   made=["RUA Party"], seen={("RUA Party", "Customer"): {"P-1"}})
 	assert any("claimed by an earlier step" in w for w in found["warnings"])
 	assert found["problems"] == []
 
 
-def test_a_shared_source_with_disjoint_filters_is_silent(importer, monkeypatch):
+def test_a_shared_source_with_disjoint_filters_is_silent(importer, stub_importer):
 	"""The ordinary case, and the reason the warning is not about the schema.
 
 	A party table split into customers and suppliers is two steps off one
 	doctype and entirely correct. Warning about it every run is how a check
 	teaches people to skim its output.
 	"""
-	found = check_step(importer, monkeypatch, {"customer_name": {"from": "party"}},
+	found = check_step(importer, stub_importer, {"customer_name": {"from": "party"}},
 	                   rows=[{"name": "P-2", "party": "X"}], ours={"customer_name"},
 	                   made=["RUA Party"], seen={("RUA Party", "Customer"): {"P-2 elsewhere"}})
 	assert found["warnings"] == []
@@ -791,14 +788,13 @@ def test_a_shape_that_does_not_fit_the_data_says_so(importer):
 		importer.explode(row, FAN)
 
 
-def test_every_piece_gets_its_own_identity(importer, stepped, monkeypatch):
+def test_every_piece_gets_its_own_identity(importer, stepped, monkeypatch, stub_importer):
 	"""The one that matters. Every piece of one row shares the parent's name, so
 	an identity keyed on that would have twenty thousand rows overwrite each
 	other and leave one."""
 	keys = []
-	monkeypatch.setattr(importer, "fetch", lambda *a: [DAY] if a[3] == 0 else [])
-	monkeypatch.setattr(importer, "_write",
-	                    lambda plan, step, key, said, made, *a, **k: keys.append(key) or "created")
+	stub_importer("fetch", lambda *a: [DAY] if a[3] == 0 else [])
+	stub_importer("_write", lambda plan, step, key, said, made, *a, **k: keys.append(key) or "created")
 
 	step = Step()
 	step.fan_out = __import__("json").dumps(FAN)
@@ -813,15 +809,15 @@ def test_every_piece_gets_its_own_identity(importer, stepped, monkeypatch):
 	assert row.marks["created"] == 2
 
 
-def test_one_bad_piece_does_not_lose_the_others(importer, stepped, monkeypatch):
-	monkeypatch.setattr(importer, "fetch", lambda *a: [DAY] if a[3] == 0 else [])
+def test_one_bad_piece_does_not_lose_the_others(importer, stepped, monkeypatch, stub_importer):
+	stub_importer("fetch", lambda *a: [DAY] if a[3] == 0 else [])
 
 	def write(plan, step, key, said, made, *a, **k):
 		if key.endswith("2"):
 			raise ValueError("Employee RC-EMP-00002 does not exist")
 		return "created"
 
-	monkeypatch.setattr(importer, "_write", write)
+	stub_importer("_write", write)
 	step = Step()
 	step.fan_out = __import__("json").dumps(FAN)
 	row = RunStep()
@@ -987,29 +983,28 @@ def test_picking_out_of_something_that_is_not_a_list_says_so(importer):
 		importer.build({"parties": '{"type": "Client"}'}, rule, "P")
 
 
-def test_a_step_only_carries_files_where_it_says_to(importer, stub_frappe, monkeypatch):
+def test_a_step_only_carries_files_where_it_says_to(importer, stub_frappe, monkeypatch, stub_importer):
 	"""One request per row and one download per file, so it is opt-in.
 
 	Twenty thousand attendance records asking their source what is attached to
 	them is twenty thousand round trips for nothing.
 	"""
 	asked = []
-	monkeypatch.setattr(importer, "attachments",
-	                    lambda source, dt, name: asked.append(name) or [])
+	stub_importer("attachments", lambda source, dt, name: asked.append(name) or [])
 
 	quiet = Step()
 	assert importer.carry(object(), quiet, {"name": "P-1"}, Doc(), {}) == {}
 	assert asked == []
 
 
-def test_a_named_file_field_is_repointed_at_our_copy(importer, stub_frappe, monkeypatch):
+def test_a_named_file_field_is_repointed_at_our_copy(importer, stub_frappe, monkeypatch, stub_importer):
 	"""A logo whose URL is on the site the customer is switching off is a
 	broken image the week after the migration, and nobody looks at a logo until
 	then."""
-	monkeypatch.setattr(importer, "attachments", lambda source, dt, name: [
+	stub_importer("attachments", lambda source, dt, name: [
 		{"file_name": "logo.png", "file_url": "/files/logo.png", "is_private": 0},
 	])
-	monkeypatch.setattr(importer, "download", lambda source, url: b"...")
+	stub_importer("download", lambda source, url: b"...")
 	monkeypatch.setattr(stub_frappe, "get_all", lambda *a, **k: [])
 	monkeypatch.setattr(stub_frappe, "get_doc", lambda values: types.SimpleNamespace(
 		insert=lambda **k: None, file_url="/files/logo-ours.png"))
@@ -1030,15 +1025,15 @@ def test_a_named_file_field_is_repointed_at_our_copy(importer, stub_frappe, monk
 
 def test_a_file_named_by_a_field_but_attached_to_nothing_still_comes(importer,
                                                                     stub_frappe,
-                                                                    monkeypatch):
+                                                                    monkeypatch, stub_importer):
 	"""The ordinary case for a picture chosen rather than uploaded.
 
 	Forty-one of their projects carry a perspective this way — a path in a
 	field, attached to no record — and every one would have arrived pointing at
 	a site about to be switched off.
 	"""
-	monkeypatch.setattr(importer, "attachments", lambda source, dt, name: [])
-	monkeypatch.setattr(importer, "download", lambda source, url: b"...")
+	stub_importer("attachments", lambda source, dt, name: [])
+	stub_importer("download", lambda source, url: b"...")
 	monkeypatch.setattr(stub_frappe, "get_all", lambda *a, **k: [])
 	seen = []
 	monkeypatch.setattr(stub_frappe, "get_doc", lambda values: seen.append(values) or
@@ -1072,15 +1067,14 @@ def test_a_field_the_target_does_not_have_costs_the_file_nothing(importer, stub_
 	assert written == []
 
 
-def test_a_file_already_here_is_not_downloaded_twice(importer, stub_frappe, monkeypatch):
+def test_a_file_already_here_is_not_downloaded_twice(importer, stub_frappe, monkeypatch, stub_importer):
 	"""Matched on the name it had over there, which is what makes a second run
 	a no-op rather than a second copy of every photograph in the company."""
 	downloads = []
-	monkeypatch.setattr(importer, "attachments", lambda source, dt, name: [
+	stub_importer("attachments", lambda source, dt, name: [
 		{"file_name": "perspective.jpg", "file_url": "/files/p.jpg", "is_private": 0},
 	])
-	monkeypatch.setattr(importer, "download",
-	                    lambda source, url: downloads.append(url) or b"")
+	stub_importer("download", lambda source, url: downloads.append(url) or b"")
 	monkeypatch.setattr(stub_frappe, "get_all",
 	                    lambda *a, **k: [types.SimpleNamespace(file_name="perspective.jpg")])
 	stub_frappe.db.values[("File", "file_url")] = "/files/perspective-ours.jpg"
@@ -1152,18 +1146,17 @@ def test_a_step_that_maps_child_rows_reads_whole_documents(importer, monkeypatch
 
 
 def test_a_field_map_naming_a_column_the_lines_do_not_have_is_a_problem(
-	importer, monkeypatch,
+	importer, monkeypatch, stub_importer
 ):
 	"""The mistake this catches is silent: a line map naming `unit_price` on a
 	table whose column is `rate` builds a row of blanks, inserts it, and leaves
 	an invoice for nothing."""
-	monkeypatch.setattr(importer, "_their_fields",
-	                    lambda source, dt, filters, problems: ({"name", "items"},
+	stub_importer("_their_fields", lambda source, dt, filters, problems: ({"name", "items"},
 	                                                           [{"name": "Q-1"}]))
-	monkeypatch.setattr(importer, "whole", lambda source, dt, name: {
+	stub_importer("whole", lambda source, dt, name: {
 		"name": "Q-1", "items": [{"description": "Curtain wall", "qty": 2, "amount": 1.0}],
 	})
-	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: {"items"})
+	stub_importer("_our_fields", lambda dt, problems: {"items"})
 	step = Row(source_doctype="RUA Quotation", target_doctype="Quotation",
 	           field_map=__import__("json").dumps({
 	               "items": {"rows": "items", "map": {"rate": {"from": "unit_price"}}},
@@ -1175,7 +1168,7 @@ def test_a_field_map_naming_a_column_the_lines_do_not_have_is_a_problem(
 	assert any("`items.rate` reads `unit_price`" in p for p in found["problems"])
 
 
-def test_the_check_looks_past_a_row_with_no_lines_on_it(importer, monkeypatch):
+def test_the_check_looks_past_a_row_with_no_lines_on_it(importer, monkeypatch, stub_importer):
 	"""Their oldest purchase order has no items at all.
 
 	Checking a line map against that one says nothing about the map and warns
@@ -1186,11 +1179,10 @@ def test_the_check_looks_past_a_row_with_no_lines_on_it(importer, monkeypatch):
 		"PO-1": {"name": "PO-1", "items": []},
 		"PO-2": {"name": "PO-2", "items": [{"item": "M70032-G3", "qty": 58}]},
 	}
-	monkeypatch.setattr(importer, "_their_fields",
-	                    lambda source, dt, filters, problems: (
+	stub_importer("_their_fields", lambda source, dt, filters, problems: (
 	                        {"name", "items"}, [{"name": "PO-1"}, {"name": "PO-2"}]))
-	monkeypatch.setattr(importer, "whole", lambda source, dt, name: docs[name])
-	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: {"items"})
+	stub_importer("whole", lambda source, dt, name: docs[name])
+	stub_importer("_our_fields", lambda dt, problems: {"items"})
 	step = Row(source_doctype="RUA LPO", target_doctype="Purchase Order",
 	           field_map=__import__("json").dumps({
 	               "items": {"rows": "items", "map": {"qty": {"from": "qty"}}},
@@ -1203,13 +1195,12 @@ def test_the_check_looks_past_a_row_with_no_lines_on_it(importer, monkeypatch):
 	assert found["warnings"] == []
 
 
-def test_a_fan_out_that_does_not_fit_is_a_problem_the_check_finds(importer, monkeypatch):
+def test_a_fan_out_that_does_not_fit_is_a_problem_the_check_finds(importer, monkeypatch, stub_importer):
 	"""Whether a column holds the shape a rule claims cannot be known from a
 	schema, so the check explodes a real row to find out."""
-	monkeypatch.setattr(importer, "_their_fields",
-	                    lambda source, dt, filters, problems: ({"attendance_log"},
+	stub_importer("_their_fields", lambda source, dt, filters, problems: ({"attendance_log"},
 	                                                           [{"attendance_log": '["a"]'}]))
-	monkeypatch.setattr(importer, "_our_fields", lambda dt, problems: {"employee"})
+	stub_importer("_our_fields", lambda dt, problems: {"employee"})
 	step = Row(source_doctype="RUA Attendance", target_doctype="Attendance",
 	           field_map='{"employee": "__key"}',
 	           fan_out=__import__("json").dumps(FAN), enabled=1, filters="[]")
