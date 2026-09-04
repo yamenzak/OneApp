@@ -594,6 +594,28 @@ def _seed_mail(user):
 		("Al Reem — revised elevations", "Sent Items", "Sent",
 		 "<p>Revised sheets attached, superseding revision B.</p>"),
 	]
+	# A Contact for the person who writes in, so the sender chip has a face and
+	# a firm to show rather than only initials — which is the difference the
+	# whole of `people.py` exists to make, and a fixture without one proves
+	# nothing about it.
+	# Filled in rather than only created. Frappe makes a Contact of its own the
+	# first time mail arrives from an address, with a first name and nothing
+	# else — so a fixture that skipped when one existed would leave the thin
+	# auto-made row in place and prove nothing about a resolved sender.
+	person = frappe.db.get_value("Contact", {"email_id": "hala@client.test"}, "name")
+	contact = frappe.get_doc("Contact", person) if person else frappe.new_doc("Contact")
+	contact.update({
+		"first_name": "Hala",
+		"last_name": "Nasser",
+		"email_id": "hala@client.test",
+		"company_name": "Al Reem Consultants",
+		"designation": "Project Manager",
+		"mobile_no": "+971 50 000 0000",
+	})
+	if not any(row.email_id == "hala@client.test" for row in contact.email_ids or []):
+		contact.append("email_ids", {"email_id": "hala@client.test", "is_primary": 1})
+	contact.save(ignore_permissions=True)
+
 	for subject, folder, direction, content in messages:
 		if frappe.db.exists("Communication", {"subject": subject, "recipients": address}):
 			continue

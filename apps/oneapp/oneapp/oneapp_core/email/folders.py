@@ -266,3 +266,185 @@ class OneSpaceEmailAccount(EmailAccount):
 			return []
 
 		return mails
+
+
+# --------------------------------------------------------------------------- #
+# Making and using folders
+# --------------------------------------------------------------------------- #
+#
+# Two kinds of address and one screen, and the difference is not a compromise.
+#
+# A **connected mailbox** has a real IMAP server. A folder made here is an IMAP
+# `CREATE` on that server, so it appears in Outlook and on their phone; filing a
+# message is an IMAP `MOVE`, and the message is in that folder everywhere. This
+# is the whole reason to go through IMAP rather than keep our own labels: the
+# customer's other clients are not going away, and a folder that exists only
+# here would be a folder that disagrees with the one place they actually read
+# their mail.
+#
+# An address **we route** — `sales@acme.4dl.app` — has no server, because
+# Cloudflare gives routing and not storage. A folder there is a row and a value
+# on the Communication, and nothing to disagree with: there is no Outlook
+# showing that address. It is not a lesser folder, it is the only kind that can
+# exist, and a product that refused to offer one would be refusing to organise
+# the mail it owns outright.
+
+
+def has_server(account) -> bool:
+	"""Whether this account is a mailbox we can talk IMAP to."""
+	return bool(account.enable_incoming and account.use_imap and account.email_server)
+
+
+def _session(account):
+	"""A logged-in IMAP connection, or `None` for an address we route."""
+	if not has_server(account):
+		return None
+	return account.get_incoming_server(in_receive=False)
+
+
+def create(account, name: str) -> dict:
+	"""Make a folder, on the server where there is one.
+
+	The IMAP call first and the row second, deliberately: a row written before
+	a `CREATE` that fails is a folder in our rail that exists nowhere else, and
+	the next sync would quietly skip it forever.
+	"""
+	name = (name or "").strip().strip("/")
+	if not name:
+		frappe.throw(_("A folder needs a name."))
+	if any(row.folder_name.lower() == name.lower() for row in account.imap_folder or []):
+		frappe.throw(_("{0} already exists.").format(name))
+
+	server = _session(account)
+	if server:
+		try:
+			status, detail = server.imap.create(_quote(name))
+			if status != "OK":
+				frappe.throw(_("The mail server refused that name: {0}").format(_say(detail)))
+			# Subscribed as well as created: an unsubscribed folder exists and
+			# is hidden by most clients, which is a folder somebody made here
+			# and cannot find in Outlook.
+			server.imap.subscribe(_quote(name))
+		finally:
+			try:
+				server.logout()
+			except Exception:
+				pass
+
+	account.append("imap_folder", {"folder_name": name, "append_to": "Communication"})
+	account.save(ignore_permissions=True)
+	_remember(account, name, "")
+	return {"ok": True, "folder": name, "on_server": bool(server)}
+
+
+def remove(account, name: str) -> dict:
+	"""Take a folder away, and leave the mail.
+
+	`DELETE` on the server removes the folder *and* everything in it, which is
+	not what "remove this folder" means to anybody who has used a mail client
+	with a Trash in it. So the messages move out first, back to INBOX, and what
+	is deleted is an empty folder.
+	"""
+	rows = [row for row in (account.imap_folder or []) if row.folder_name == name]
+	if not rows:
+		frappe.throw(_("There is no folder called {0}.").format(name))
+	if kinds(account.name).get(name) in ("inbox", "sent"):
+		frappe.throw(_("{0} is not a folder you can remove.").format(name))
+
+	server = _session(account)
+	if server:
+		try:
+			_empty(server, name)
+			status, detail = server.imap.delete(_quote(name))
+			if status != "OK":
+				frappe.throw(_("The mail server refused: {0}").format(_say(detail)))
+		finally:
+			try:
+				server.logout()
+			except Exception:
+				pass
+
+	frappe.db.set_value(
+		"Communication",
+		{"email_account": account.name, FOLDER_FIELD: name},
+		FOLDER_FIELD,
+		"INBOX",
+		update_modified=False,
+	)
+	account.set(
+		"imap_folder", [row for row in account.imap_folder if row.folder_name != name]
+	)
+	account.save(ignore_permissions=True)
+	_remember(account, name, None)
+	return {"ok": True, "removed": name}
+
+
+def _empty(server, name: str):
+	"""Move everything out of a folder before deleting it."""
+	if not server.select_imap_folder(name):
+		return
+	_status, data = server.imap.uid("search", None, "ALL")
+	uids = (data[0] or b"").split()
+	if uids:
+		server.imap.uid("MOVE", b",".join(uids), _quote("INBOX"))
+
+
+def file(account, message: str, name: str) -> dict:
+	"""Put one message in a folder, everywhere it is read.
+
+	`MOVE` where the server has it (RFC 6851, and every host worth connecting
+	to), falling back to the copy-and-flag pair it replaced. The UID changes on
+	arrival, so the row's `uid` is cleared rather than left pointing at a
+	message id that now means something else in a different folder.
+	"""
+	doc = frappe.get_doc("Communication", message)
+	server = _session(account)
+	if server:
+		try:
+			source = doc.get(FOLDER_FIELD) or "INBOX"
+			if server.select_imap_folder(source) and doc.uid and int(doc.uid) > 0:
+				uid = str(doc.uid).encode()
+				status, detail = server.imap.uid("MOVE", uid, _quote(name))
+				if status != "OK":
+					status, detail = server.imap.uid("COPY", uid, _quote(name))
+					if status != "OK":
+						frappe.throw(_("The mail server refused: {0}").format(_say(detail)))
+					server.imap.uid("STORE", uid, "+FLAGS", "(\\Deleted)")
+					server.imap.expunge()
+		finally:
+			try:
+				server.logout()
+			except Exception:
+				pass
+
+	doc.db_set(FOLDER_FIELD, name, update_modified=False)
+	doc.db_set("uid", -1, update_modified=False)
+	return {"ok": True, "filed": message, "folder": name}
+
+
+def _quote(name: str) -> str:
+	"""IMAP folder names are quoted, and a quote inside one is escaped."""
+	return '"' + (name or "").replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def _say(detail) -> str:
+	"""Whatever the server said, as something printable."""
+	if isinstance(detail, list) and detail:
+		detail = detail[0]
+	if isinstance(detail, bytes):
+		detail = detail.decode("utf-8", "replace")
+	return str(detail)[:200]
+
+
+def _remember(account, name: str, kind):
+	"""Keep the cached folder-kind map in step with the rows.
+
+	`None` forgets one. A map that still names a folder nobody has is a rail
+	that draws a Sent icon beside a folder that is gone.
+	"""
+	known = kinds(account.name)
+	if kind is None:
+		known.pop(name, None)
+	else:
+		known[name] = kind
+	account.db_set("custom_folder_kinds", frappe.as_json(known), update_modified=False)

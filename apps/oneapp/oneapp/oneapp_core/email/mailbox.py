@@ -30,6 +30,7 @@ import re
 import frappe
 from frappe import _
 
+from oneapp.oneapp_core.email import folders, people
 from oneapp.oneapp_core.email.folders import FOLDER_FIELD, QUIET
 
 # `Re:`, `Fwd:`, `FW:`, `RE :`, and the same again nested five deep, which is
@@ -327,6 +328,10 @@ def threads(folder: str = "all", start: int = 0, search: str = "") -> dict:
 	rows = rows[:PAGE]
 
 	seen = _seen_set()
+	# Senders resolved once for the page, not once per row: fifty lookups to
+	# draw one list is how a list that was fast stops being one.
+	who = people.profiles([(row.sender, row.sender_full_name) for row in rows])
+
 	grouped: dict[str, dict] = {}
 	for row in rows:
 		key = normalise(row.subject)
@@ -341,6 +346,7 @@ def threads(folder: str = "all", start: int = 0, search: str = "") -> dict:
 				"subject": strip_prefixes(row.subject) or "(no subject)",
 				"from": row.sender_full_name or row.sender,
 				"sender": row.sender,
+				"who": who.get((row.sender or "").lower(), {}),
 				"at": row.communication_date,
 				"count": 0,
 				"unread": 0,
@@ -390,13 +396,19 @@ def thread(key: str, folder: str = "all") -> list[dict]:
 			"name", "subject", "sender", "sender_full_name", "recipients", "cc",
 			"communication_date", "sent_or_received", "content",
 			"reference_doctype", "reference_name",
+			# Which mailbox it is in, so filing knows whose server to talk to —
+			# a conversation can span two addresses and only one half of it is
+			# any given server's to move.
+			"email_account", FOLDER_FIELD,
 		],
 		order_by="communication_date asc",
 		limit_page_length=200,
 	)
 
 	wanted = [row for row in rows if normalise(row.subject) == key]
+	who = people.profiles([(row.sender, row.sender_full_name) for row in wanted])
 	for row in wanted:
+		row["who"] = who.get((row.sender or "").lower(), {})
 		row["attachments"] = frappe.get_all(
 			"File",
 			filters={"attached_to_doctype": "Communication", "attached_to_name": row.name},
@@ -520,3 +532,73 @@ def send(to: str, subject: str, content: str, sender: str = "",
 
 	doc.send_email()
 	return {"ok": True, "name": doc.name}
+
+
+# --------------------------------------------------------------------------- #
+# Making and using folders
+# --------------------------------------------------------------------------- #
+#
+# The whitelisted half. `folders.py` does the IMAP; this decides whose mailbox
+# is being changed, which is the part that has to be right.
+
+
+def _account_of(address: str):
+	"""The Email Account behind an address this person holds, or a refusal."""
+	address = (address or "").strip().lower()
+	if address not in _held():
+		frappe.throw(_("That is not one of your addresses."), frappe.PermissionError)
+
+	name = frappe.db.get_value(
+		"User Email", {"parent": frappe.session.user, "email_id": address}, "email_account"
+	)
+	if not name:
+		frappe.throw(_("That address has no mailbox behind it."))
+	return frappe.get_doc("Email Account", name)
+
+
+@frappe.whitelist(methods=["POST"])
+def add_folder(address: str, name: str) -> dict:
+	"""Make a folder on one of this person's addresses.
+
+	On a connected mailbox it is made on the server, so it turns up in Outlook.
+	On an address we route there is no server to make it on and the folder is
+	ours — which is not a lesser folder, because there is no other client
+	showing that address to disagree with.
+	"""
+	account = _account_of(address)
+	return folders.create(account, name)
+
+
+@frappe.whitelist(methods=["POST"])
+def drop_folder(address: str, name: str) -> dict:
+	"""Take a folder away and keep what was in it.
+
+	Deleting a folder on an IMAP server deletes the mail in it, which is not
+	what anybody means by removing a folder — so its messages go back to the
+	inbox first and what is deleted is empty.
+	"""
+	account = _account_of(address)
+	return folders.remove(account, name)
+
+
+@frappe.whitelist(methods=["POST"])
+def file_thread(key: str, address: str, folder: str, from_folder: str = "all") -> dict:
+	"""File a whole conversation.
+
+	The conversation and not the message, because that is the unit somebody is
+	looking at: filing the reply and leaving the original in the inbox is the
+	behaviour every mail client got complained about until it stopped.
+
+	Which messages those are is `thread()`'s answer, so a person can only file
+	mail they can already read.
+	"""
+	account = _account_of(address)
+	filed = []
+	for row in thread(key, from_folder):
+		if row.get("email_account") and row["email_account"] != account.name:
+			# A conversation can span two addresses. Only the half that belongs
+			# to this mailbox moves; the other half is not this server's to file.
+			continue
+		folders.file(account, row["name"], folder)
+		filed.append(row["name"])
+	return {"ok": True, "filed": len(filed), "folder": folder}

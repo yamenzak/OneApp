@@ -66,6 +66,22 @@
           the addresses the workspace itself owns — one screen for "which
           addresses exist and who may use them", not two.
         -->
+        <!--
+          A folder somebody makes here. On a connected mailbox it is an IMAP
+          CREATE, so it turns up in Outlook and on their phone; on an address
+          we route there is no server to make it on and the folder is ours,
+          which is not a lesser folder because there is no other client showing
+          that address to disagree with.
+        -->
+        <SidebarItem
+          v-if="!collapsed && mail.addresses.length"
+          icon="lucide-folder-plus"
+          :active="false"
+          data-slot="mail-new-folder"
+          @click="making = true"
+        >
+          <span class="flex-1 truncate text-sm text-ink-gray-6">New folder</span>
+        </SidebarItem>
         <SidebarItem
           v-if="!collapsed"
           icon="lucide-plus"
@@ -91,6 +107,26 @@
     </div>
   </Sidebar>
 
+  <Dialog v-model="making" title="New folder">
+    <div class="flex flex-col gap-3">
+      <Select
+        v-if="mail.addresses.length > 1"
+        v-model="draft.address"
+        label="In"
+        :options="mail.addresses.map((one) => ({ label: one, value: one }))"
+      />
+      <FormControl v-model="draft.name" label="Name" placeholder="Applicants" />
+      <!-- Said before it happens rather than discovered afterwards: whether
+           this folder will exist in their other mail client depends on whether
+           there is a server behind the address. -->
+      <p class="text-p-xs text-ink-gray-5">{{ where }}</p>
+      <ErrorMessage v-if="error" :message="error" />
+    </div>
+    <template #actions>
+      <Button variant="solid" label="Make it" :loading="saving" @click="make()" />
+    </template>
+  </Dialog>
+
   <Resizer
     v-if="!collapsed"
     v-model="width"
@@ -105,11 +141,16 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   Badge,
+  Button,
+  Dialog,
+  ErrorMessage,
+  FormControl,
   ScrollArea,
+  Select,
   Sidebar,
   SidebarCollapseToggle,
   SidebarHeader,
@@ -117,6 +158,7 @@ import {
 } from '@/ui'
 import Resizer from './screen/Resizer.vue'
 import { loadMail, mail, refreshMail } from '../lib/mail'
+import { workspace } from '../lib/workspace'
 import { session } from '../lib/session'
 import { openSettings, settings } from '../lib/settings'
 
@@ -126,6 +168,36 @@ const route = useRoute()
 const folder = computed(() => String(route.query.folder || 'all'))
 
 const showQuiet = ref(false)
+
+const making = ref(false)
+const saving = ref(false)
+const error = ref('')
+const draft = reactive({ address: '', name: '' })
+
+// Whether the address being added to has a server behind it — which decides
+// whether this folder exists anywhere but here.
+const where = computed(() => {
+  const address = draft.address || mail.addresses[0] || ''
+  const connected = mail.mailboxes.some((one) => one.email_id === address)
+  return connected
+    ? `Made on the mail server, so it appears in your other mail apps too.`
+    : `${address} has no mailbox server, so this folder lives in OneSpace.`
+})
+
+async function make() {
+  error.value = ''
+  saving.value = true
+  try {
+    await workspace.mailAddFolder(draft.address || mail.addresses[0], draft.name.trim())
+    draft.name = ''
+    making.value = false
+    await loadMail({ reload: true })
+  } catch (e) {
+    error.value = e.message || String(e)
+  } finally {
+    saving.value = false
+  }
+}
 
 // The quiet folders stay folded unless asked for — or unless one of them is
 // the folder currently open, because collapsing the row somebody is standing

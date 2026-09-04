@@ -217,17 +217,52 @@ question and the refusals:
 * **Disconnecting stops the polling and keeps the mail.** Somebody disconnecting
   Gmail is saying "stop reading my mailbox", not "delete six months of my work".
 
-**INBOX, and only INBOX.** The folders somebody has made in their own mail —
-Applicants, Documents, whatever they sort by — are not read, and neither are
-Spam, Junk, Drafts or Archive. Frappe's `Email Account` has an `IMAP Folder`
-child table that could carry them, one row per folder with its own `append_to`,
-and the sync already walks it; what is missing is the half above that: asking
-the server what folders exist, letting somebody pick, and deciding what a folder
-*means* here. It cannot be a OneSpace folder, because there are none — mail
-files itself against the record it belongs to. So a folder would have to become
-either a filter over a flat list or an `append_to` rule that turns Applicants
-into Job Applicant documents, and those are different products. Until that is
-settled, one folder and no pretending.
+**The folders come across, and go back.** `folders.py`. `discover()` runs the
+IMAP `LIST` and reads the SPECIAL-USE flags, so the server says which folder is
+Sent rather than us keeping a table of every language's word for it; every
+folder gets an `IMAP Folder` row with its own UID bookmark, and
+`Communication.custom_imap_folder` remembers where each message was filed —
+which the framework does not, because `InboundMail` is handed the folder and
+drops it.
+
+Two subclasses do the carrying, and they are deliberately small: three methods
+on `InboundMail` and one on `Email Account`, which is the single place the
+framework holds the folder and the message at the same time. One of the three
+is why the Sent folder is not empty — Frappe refuses to import a message whose
+sender is the account itself, which is right for an inbox and wrong inside a
+Sent folder.
+
+`email_sync_option` is `ALL` rather than `UNSEEN`, and that is what makes the
+mirror worth having: an Applicants folder somebody read years ago is empty
+under `UNSEEN`. It is safe because `initial_sync_count` bounds the first pass
+per folder, off that folder's own UIDNEXT.
+
+It goes the other way too. A folder made here is an IMAP `CREATE` and a
+`SUBSCRIBE` — unsubscribed folders are hidden by most clients, which would be a
+folder somebody made here and cannot find in Outlook — and filing a
+conversation is an IMAP `MOVE`. So the organising is not ours alone; it is
+theirs, in every client they use.
+
+**A folder on an address we route is ours, and that is not a compromise.**
+`sales@acme.4dl.app` has no IMAP server, so a folder there is a row and a value
+on the Communication. There is no second client showing that address to
+disagree with it — that is the whole point of §1 — so it is not a lesser folder,
+it is the only kind that can exist. Refusing to offer one would mean refusing to
+organise the mail we own outright while organising the mail we borrow.
+
+Deleting a folder moves its mail back to the inbox first. IMAP `DELETE` removes
+the folder *and* everything in it, which is not what "remove this folder" means
+to anybody who has used a mail client with a Trash in it.
+
+**Senders are people.** `people.py`. A list that says
+`h.nasser@alreem-consultants.ae` and a list that says **Hala Nasser** with her
+face beside it are the same data and not the same product. `Contact` and
+`Contact Email` already hold the person, so resolving one is a lookup we get for
+free; what is ours is doing it in a batch for the whole page rather than per
+row, falling back to initials taken off the address's own separators, and never
+reaching a third party. No Gravatar: those work by sending a hash of every
+correspondent's address to a company the customer has never heard of, once per
+message in the list.
 
 OAuth is the better path where an operator has registered a `Connected App`, and
 is not built: the password path works for every provider and the OAuth path

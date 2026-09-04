@@ -65,12 +65,16 @@
           data-slot="mail-thread"
         >
           <div class="flex items-center gap-2">
-            <span
-              class="min-w-0 flex-1 truncate text-p-sm"
-              :class="one.unread ? 'font-semibold text-ink-gray-9' : 'text-ink-gray-7'"
-            >
-              {{ one.from }}
-            </span>
+            <!-- No hover card in the list: fifty of them is fifty listeners
+                 and a card that opens while somebody is scanning down. The
+                 face and the name are the point here; the card is on the
+                 message. -->
+            <SenderChip
+              class="min-w-0 flex-1 text-p-sm"
+              :sender="one.sender"
+              :who="one.who"
+              :name-class="one.unread ? 'font-semibold text-ink-gray-9' : 'text-ink-gray-7'"
+            />
             <span class="shrink-0 text-p-xs tabular-nums text-ink-gray-5">
               {{ when(one.at) }}
             </span>
@@ -105,13 +109,19 @@
           class="mt-4 rounded-6 border border-outline-gray-2 p-4"
           data-slot="mail-message"
         >
-          <div class="flex items-baseline justify-between gap-3">
-            <span class="text-p-sm font-medium text-ink-gray-8">
-              {{ one.sender_full_name || one.sender }}
+          <div class="flex items-start justify-between gap-3">
+            <SenderChip
+              card
+              class="text-p-sm"
+              :sender="one.sender"
+              :who="one.who"
+              name-class="font-medium text-ink-gray-8"
+            />
+            <span class="shrink-0 text-p-xs text-ink-gray-5">
+              {{ when(one.communication_date) }}
             </span>
-            <span class="text-p-xs text-ink-gray-5">{{ when(one.communication_date) }}</span>
           </div>
-          <span class="text-p-xs text-ink-gray-5">to {{ one.recipients }}</span>
+          <span class="mt-0.5 block text-p-xs text-ink-gray-5">to {{ one.recipients }}</span>
 
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div class="prose-sm mt-3 max-w-none text-ink-gray-8" v-html="one.content" />
@@ -129,13 +139,27 @@
           </div>
         </article>
 
-        <Button
-          class="mt-4"
-          variant="subtle"
-          icon-left="lucide-reply"
-          label="Reply"
-          @click="compose(messages[messages.length - 1])"
-        />
+        <div class="mt-4 flex items-center gap-2">
+          <Button
+            variant="subtle"
+            icon-left="lucide-reply"
+            label="Reply"
+            @click="compose(messages[messages.length - 1])"
+          />
+          <!--
+            Filing the conversation, not the message. Filing a reply and
+            leaving the original in the inbox is the behaviour every mail
+            client got complained about until it stopped.
+          -->
+          <Dropdown v-if="fileable.length" :options="fileable">
+            <Button
+              variant="ghost"
+              icon-left="lucide-folder-input"
+              label="Move to"
+              data-slot="mail-move"
+            />
+          </Dropdown>
+        </div>
       </div>
     </div>
 
@@ -165,6 +189,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import {
   Button,
   Dialog,
+  Dropdown,
   ErrorMessage,
   FormControl,
   Icon,
@@ -173,7 +198,8 @@ import {
   dayjsLocal,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
-import { loadMail } from '../lib/mail'
+import SenderChip from '../components/SenderChip.vue'
+import { loadMail, mail } from '../lib/mail'
 import { workspace } from '../lib/workspace'
 
 const loading = ref(true)
@@ -195,6 +221,34 @@ const chosen = computed(() => String(route.query.thread || ''))
 const openSubject = computed(
   () => threads.value.find((one) => one.key === chosen.value)?.subject || '',
 )
+
+// Where this conversation can go: the folders of the address it is in. An
+// address it is not in has folders on a server that has never seen it.
+const fileable = computed(() => {
+  const here = messages.value[0]
+  const address = mail.folders.find((one) => one.key === folder.value)?.address
+    || (here?.recipients || '').split(',').map((one) => one.trim()).find((one) =>
+      mail.addresses.includes(one),
+    )
+  if (!address) return []
+  return mail.folders
+    .filter((one) => one.address === address && one.folder && one.folder !== SENT_KEY)
+    .map((one) => ({
+      label: one.label,
+      icon: one.icon,
+      onClick: () => moveTo(address, one.folder),
+    }))
+})
+
+// The one folder name that is not a folder — see `mailbox.SENT`. A conversation
+// cannot be filed into it, because it is a question about the sender.
+const SENT_KEY = '__sent'
+
+async function moveTo(address, into) {
+  await workspace.mailFileThread(chosen.value, address, into, folder.value)
+  await load()
+  await read()
+}
 
 const writing = ref(false)
 const draft = reactive({ sender: '', to: '', subject: '', content: '', in_reply_to: '' })

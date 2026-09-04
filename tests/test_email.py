@@ -755,3 +755,168 @@ def test_every_message_remembers_where_it_was_filed(folders):
 		"raw", object(), "12", None, "Communication", folder="Applicants"
 	)
 	assert mail.as_dict()[folders.FOLDER_FIELD] == "Applicants"
+
+
+# --------------------------------------------------------------------------- #
+# Who wrote this
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def people():
+	from oneapp.oneapp_core.email import people as module
+
+	return module
+
+
+@pytest.mark.parametrize(
+	"name,expected",
+	[
+		("Hala Nasser", "HN"),
+		("hala", "HA"),
+		("Hala bint Ahmed Nasser", "HN"),
+		("h.nasser@alreem.ae", "HN"),
+		("accounts@alreem.ae", "AC"),
+		("first_last@x.com", "FL"),
+		("", "?"),
+	],
+)
+def test_two_letters_for_a_face_we_do_not_have(people, name, expected):
+	"""Most senders are not Contacts and never will be. Their initials come off
+	the address, using its own separators as word boundaries — `h.nasser` is HN
+	and not HN-the-first-two-characters-of-h."""
+	assert people.initials(name) == expected
+
+
+def test_a_sender_we_do_not_know_still_has_a_name(people, monkeypatch):
+	"""A page that made a Contact for everyone who wrote in would turn an inbox
+	into a directory of strangers."""
+	monkeypatch.setattr(people, "_contacts", lambda addresses: {})
+	found = people.profiles([("hala@client.test", "Hala Nasser")])
+	assert found["hala@client.test"]["label"] == "Hala Nasser"
+	assert found["hala@client.test"]["initials"] == "HN"
+	assert found["hala@client.test"]["contact"] == ""
+
+
+def test_a_contact_beats_the_header(people, monkeypatch):
+	"""The header is whatever the sender's own client put there. A Contact is
+	what this workspace decided the person is called."""
+	monkeypatch.setattr(
+		people, "_contacts",
+		lambda addresses: {"hala@client.test": {
+			"name": "CT-001", "full_name": "Hala Nasser", "image": "/files/h.png",
+			"company_name": "Al Reem Consultants", "designation": "Project Manager",
+			"mobile_no": "+971 50 000 0000", "phone": "",
+		}},
+	)
+	one = people.profiles([("hala@client.test", "h.nasser")])["hala@client.test"]
+	assert one["label"] == "Hala Nasser"
+	assert one["company"] == "Al Reem Consultants"
+	assert one["image"] == "/files/h.png"
+
+
+def test_the_same_sender_is_resolved_once(people, monkeypatch):
+	asked = []
+	monkeypatch.setattr(
+		people, "_contacts", lambda addresses: asked.append(addresses) or {}
+	)
+	people.profiles([("a@x.com", "A"), ("a@x.com", "A"), ("b@x.com", "B")])
+	# Deduplicated before the query, not after: a page of fifty rows from one
+	# busy sender must not be fifty entries in an `in` clause.
+	assert asked == [["a@x.com", "a@x.com", "b@x.com"]]
+
+
+def test_nothing_about_a_sender_leaves_the_site(people):
+	"""Avatar services work by sending a hash of every correspondent's address
+	to a third party, once per message in the list."""
+	import inspect
+	import re as regex
+
+	source = inspect.getsource(people)
+	# Prose out, code only — the docstrings here *name* the thing they refuse
+	# to do, which is the point of them and would fail a plain text search.
+	code = regex.sub(r'"""(?:.|\n)*?"""', "", source)
+	code = "\n".join(
+		line for line in code.splitlines() if not line.strip().startswith("#")
+	).lower()
+	assert "gravatar" not in code
+	assert "http" not in code
+
+
+# --------------------------------------------------------------------------- #
+# Folders somebody makes
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize(
+	"name,quoted",
+	[
+		("Applicants", '"Applicants"'),
+		("Al Reem 2026", '"Al Reem 2026"'),
+		('He said "no"', '"He said \\"no\\""'),
+		("back\\slash", '"back\\\\slash"'),
+	],
+)
+def test_a_folder_name_is_quoted_for_imap(folders, name, quoted):
+	"""Folder names have spaces in them, which is the whole reason IMAP quotes
+	them — and a quote inside one has to be escaped or the command ends early."""
+	assert folders._quote(name) == quoted
+
+
+def test_removing_a_folder_moves_its_mail_out_first(folders):
+	"""IMAP `DELETE` removes the folder *and* everything in it, which is not
+	what "remove this folder" means to anybody who has used a mail client."""
+	import inspect
+
+	source = inspect.getsource(folders.remove)
+	assert "_empty(server" in source
+	assert source.index("_empty(server") < source.index("server.imap.delete")
+
+
+def test_the_folder_is_made_on_the_server_before_the_row(folders):
+	"""A row written before a CREATE that failed is a folder in our rail that
+	exists nowhere else, and the next sync skips it forever."""
+	import inspect
+
+	source = inspect.getsource(folders.create)
+	assert source.index("server.imap.create") < source.index('account.append("imap_folder"')
+
+
+def test_a_new_folder_is_subscribed_as_well_as_created(folders):
+	"""An unsubscribed folder exists and is hidden by most clients — which is a
+	folder somebody made here and cannot find in Outlook."""
+	assert "subscribe" in inspect_source(folders.create)
+
+
+def test_you_cannot_remove_the_inbox_or_the_sent_folder(folders, monkeypatch):
+	monkeypatch.setattr(folders, "kinds", lambda name: {"INBOX": "inbox"})
+	account = _FakeAccount([types.SimpleNamespace(folder_name="INBOX", uidvalidity=None,
+	                                              uidnext=None)])
+	account.name = "Gmail"
+	with pytest.raises(Exception):
+		folders.remove(account, "INBOX")
+
+
+def test_a_filed_message_forgets_its_uid(folders):
+	"""A UID belongs to a folder. After a MOVE the same number means a
+	different message, so keeping it points the next sync at the wrong mail."""
+	import inspect
+
+	source = inspect.getsource(folders.file)
+	assert 'db_set("uid", -1' in source
+
+
+def test_an_address_we_route_still_gets_folders(folders):
+	"""No server to make it on, and nothing to disagree with either: there is no
+	Outlook showing `sales@acme.4dl.app`. Refusing to organise the mail we own
+	outright would be the worse answer."""
+	import inspect
+
+	source = inspect.getsource(folders.create)
+	# The IMAP half is conditional; the row is not.
+	assert "if server:" in source
+	assert source.rindex('account.append("imap_folder"') > source.index("if server:")
+
+
+def inspect_source(fn):
+	import inspect
+
+	return inspect.getsource(fn)

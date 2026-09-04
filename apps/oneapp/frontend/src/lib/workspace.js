@@ -360,6 +360,34 @@ export const workspace = {
       successMessage: 'Sent',
     }),
 
+  mailAddFolder: (address, name) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.add_folder',
+      { address, name },
+      { successMessage: 'Folder made' },
+    ),
+
+  mailDropFolder: (address, name) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.drop_folder',
+      { address, name },
+      { successMessage: 'Folder removed' },
+    ),
+
+  mailFileThread: (key, address, folder, fromFolder) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.file_thread',
+      { key, address, folder, from_folder: fromFolder },
+      { successMessage: 'Filed' },
+    ),
+
+  mailProfile: (email) =>
+    callMethod(
+      'oneapp.oneapp_core.email.people.profile',
+      { email },
+      { silent: true, method: 'GET' },
+    ),
+
   // --- connecting a mailbox somebody already has ---------------------------
   mailConnected: () =>
     callMethod('oneapp.oneapp_core.email.connect.mine', {}, {

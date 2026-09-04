@@ -121,6 +121,57 @@ test('the folders a mailbox already has come across, Sent included', async ({
   expectNoRealErrors(errors)
 })
 
+test('a sender is a person, with a card behind the name', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+
+  // The Contact's name, not the raw address and not the header — a Contact is
+  // what this workspace decided the person is called.
+  const row = threads(page).filter({ hasText: SUBJECT })
+  await expect(row.locator('[data-slot="mail-sender"]')).toContainText('Hala Nasser')
+  await expect(row).not.toContainText('hala@client.test')
+
+  await row.click()
+  // Hovering a name in a message opens the card; the list does not have one,
+  // because fifty of them is a card that opens while somebody is scanning.
+  await messages(page).first().locator('[data-slot="mail-sender"]').hover()
+  await expect(page.getByText('Al Reem Consultants')).toBeVisible()
+  await expect(page.getByText('hala@client.test')).toBeVisible()
+
+  expectNoRealErrors(errors)
+})
+
+test('a conversation can be filed into a folder', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+
+  const rail = page.locator('[data-slot="mail-folder"]')
+  await threads(page).filter({ hasText: SUBJECT }).click()
+
+  // The conversation, not the message: filing a reply and leaving the
+  // original in the inbox is the behaviour every client got complained about.
+  await page.locator('[data-slot="mail-move"]').click()
+  await page.getByRole('menuitem', { name: 'Documents' }).click()
+
+  await rail.filter({ hasText: 'Documents' }).click()
+  const filed = threads(page).filter({ hasText: SUBJECT })
+  await expect(filed).toHaveCount(1)
+  await filed.click()
+  await expect(messages(page)).toHaveCount(2)
+
+  // Put it back, so the fixture is as the next run found it.
+  await page.locator('[data-slot="mail-move"]').click()
+  await page.getByRole('menuitem', { name: 'Applicants' }).click()
+
+  expectNoRealErrors(errors)
+})
+
 test('anybody may connect the mailbox they already have', async ({ page, baseURL }, info) => {
   test.skip(info.project.name === 'mobile', 'the settings dialog has its own spec')
   const errors = collectConsoleErrors(page)
