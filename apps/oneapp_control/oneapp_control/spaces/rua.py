@@ -30,20 +30,34 @@ SPACE = {
 	# for the vocabulary and `lib/theme.js` for what each word moves.
 	#
 	# Dark, because the thing they open first is a photograph of a building and
-	# a hero over a white page is a picture in a frame rather than a place. Red,
-	# because that is the colour they paint on a hoarding and the one every
-	# other contractor's software is not. A ground of near-black rather than
-	# frappe-ui's own dark grey, so the hero has nowhere to end. And sharp
-	# corners: this is a company that makes aluminium and glass facades, and a
-	# 12-pixel radius is a greeting card.
+	# a hero over a white page is a picture in a frame rather than a place. A
+	# ground of near-black rather than frappe-ui's own dark grey, so the hero
+	# has nowhere to end.
+	#
+	# The accent is **Caterpillar yellow**, and it is the right one for a reason
+	# better than taste: it is the colour of the plant on their own sites, so it
+	# is already what "this is ours" looks like to the people who will use this.
+	# Red was a placeholder borrowed from a streaming service and read as one.
+	#
+	# Yellow is also the colour that proved the accent needed to carry its own
+	# ink. `--surface-gray-10` is the solid button and frappe-ui puts
+	# `--ink-base` on it, which in dark mode is near-black — right on red, and a
+	# label you cannot read on `#ffcd11`. The browser now decides that from the
+	# accent's luminance rather than a space declaring it, so the next space to
+	# pick a bright colour does not discover this the way we did.
+	#
+	# Soft rather than sharp. The first pass reasoned from the product — glass
+	# and aluminium facades, so hard corners — and that is a nice sentence about
+	# a screen nobody enjoyed using: a hundred square-cornered boxes on black is
+	# a spreadsheet, not a place. The photographs carry the hardness.
 	#
 	# None of it is code. Any other space says four different words and gets its
 	# own personality out of the same components.
 	"theme": json.dumps({
 		"mode": "dark",
-		"accent": "#e50914",
+		"accent": "#ffcd11",
 		"ground": "#0d0d0f",
-		"radius": "sharp",
+		"radius": "soft",
 	}),
 }
 

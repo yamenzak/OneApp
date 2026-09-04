@@ -1,10 +1,24 @@
 <template>
-  <div class="flex flex-col gap-5">
+  <!--
+    Spacing, which on a form is not decoration.
+
+    A doctype like Project has fifty-odd fields and Frappe puts them in three or
+    four sections, so what a person meets is a wall. At `gap-4` between fields
+    and `gap-5` between sections the two gaps were within a few pixels of each
+    other, and nothing on the screen said where one group ended — the eye had to
+    read every label to find the one it wanted.
+
+    So the steps are now separated rather than merely present: 24px between
+    fields, 40px between sections, and the rule that starts a section sits 40px
+    off the one above. It is the same information and it costs a screenful of
+    height on the longest doctypes; a form somebody can scan is worth the scroll.
+  -->
+  <div class="flex flex-col gap-10">
     <section
       v-for="(section, index) in sections"
       :key="index"
-      class="flex flex-col gap-4"
-      :class="index && !section.hide_border ? 'border-t border-outline-gray-1 pt-5' : ''"
+      class="flex flex-col gap-5"
+      :class="index && !section.hide_border ? 'border-t border-outline-gray-1 pt-10' : ''"
     >
       <!-- A heading only where the doctype wrote one. Frappe's own forms leave
            the first section unlabelled more often than not, and "Details" over
@@ -55,7 +69,7 @@
            there the moment somebody folded it. -->
       <div
         v-show="!folded(index, section)"
-        class="grid gap-x-4 gap-y-4"
+        class="grid gap-x-8 gap-y-6"
         :class="GRID[Math.min(section.columns.length, 3)]"
       >
         <!--
@@ -69,7 +83,7 @@
         <div
           v-for="(column, at) in section.columns"
           :key="at"
-          class="flex min-w-0 flex-col gap-4"
+          class="flex min-w-0 flex-col gap-6"
         >
           <!--
             The field's own icon, in a gutter beside the control rather than

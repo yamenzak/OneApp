@@ -94,6 +94,20 @@ def test_a_theme_cannot_name_a_variable():
 	assert kept == {"mode": "dark"}
 
 
+def _moved() -> set:
+	"""Every variable `lib/theme.js` writes, however it writes it.
+
+	Both forms, because it uses both: the tables are `'--token': amount` and the
+	one-off is `out['--token'] = ...`. Reading only the first is a guard that
+	stops seeing anything the day somebody adds a variable the other way, which
+	is the same day it stops being a guard.
+	"""
+	source = THEME_JS.read_text()
+	return set(re.findall(r"'(--[a-z0-9-]+)':", source)) | set(
+		re.findall(r"\['(--[a-z0-9-]+)'\]\s*=", source)
+	)
+
+
 def test_the_browser_moves_no_neutral_ink():
 	"""An accent may not repaint the scale every row hover in the product uses.
 
@@ -101,12 +115,56 @@ def test_the_browser_moves_no_neutral_ink():
 	screen. A theme that moved either would be a theme that made the product
 	unreadable in exchange for a brand colour.
 	"""
-	source = THEME_JS.read_text()
-	moved = set(re.findall(r"'(--[a-z0-9-]+)':", source))
+	moved = _moved()
 	assert moved, "theme.js names no variables — the mapping moved"
 	forbidden = [one for one in moved if one.startswith("--ink-gray")]
 	forbidden += [one for one in moved if re.fullmatch(r"--surface-gray-[1-7]", one)]
 	assert not forbidden, f"a theme must not move the neutral scale: {sorted(forbidden)}"
+
+
+def test_the_only_ink_a_theme_moves_is_the_one_on_its_own_accent():
+	"""`--ink-base` is allowed, and it is allowed because of what it is.
+
+	frappe-ui puts it on solid buttons and on nothing else, so it is the ink
+	*on* a filled surface rather than text on a page — and a filled surface
+	whose colour a space chose needs an ink that space did not have to choose.
+	White on Caterpillar yellow is the failure this prevents.
+
+	The list is spelled out rather than pattern-matched: an ink token is exactly
+	the kind of thing that gets added to a table without anybody weighing what
+	it paints, and the next one should have to argue for itself here.
+	"""
+	inks = {one for one in _moved() if one.startswith("--ink-")}
+	assert inks == {"--ink-base", "--ink-blue-link", "--ink-blue-2", "--ink-blue-3"}, (
+		f"theme.js moves an ink nobody wrote down: {sorted(inks)}"
+	)
+
+
+def test_the_hairlines_follow_the_ground():
+	"""Borders come off the ground, and only the three that are hairlines.
+
+	`--outline-gray-8` is the tab indicator and belongs to the accent; 1 to 3
+	are the rules and edges, and they are the ones that read as heavy when a
+	space declares a ground much darker than the one frappe-ui measured them
+	against.
+	"""
+	source = THEME_JS.read_text()
+	ground = source.split("GROUND_VARIABLES")[1].split("}")[0]
+	outlines = source.split("OUTLINE_VARIABLES")[1].split("}")[0]
+	assert "--surface-sidebar" in ground, "the ground stops at the navigation again"
+	moved = set(re.findall(r"'(--outline-gray-\d)':", outlines))
+	assert moved == {"--outline-gray-1", "--outline-gray-2", "--outline-gray-3"}
+
+
+def test_a_bright_accent_takes_dark_ink_and_a_dark_one_takes_light():
+	"""The rule itself, read off the source rather than run.
+
+	A browser check lives in `e2e/theme.spec.js`; this one is here so that
+	deleting the rule fails a suite that needs no bench.
+	"""
+	source = THEME_JS.read_text()
+	assert "luminance(accent)" in source, "the accent no longer decides its own ink"
+	assert "0.2126" in source, "luminance is not luminance any more"
 
 
 def test_the_browser_writes_only_variables():

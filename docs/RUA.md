@@ -169,15 +169,29 @@ precision and the number of decimals actually stored; ours did not.
 ### And the space is dark
 
 ```json
-{"mode": "dark", "accent": "#e50914", "ground": "#0d0d0f", "radius": "sharp"}
+{"mode": "dark", "accent": "#ffcd11", "ground": "#0d0d0f", "radius": "soft"}
 ```
 
 Four words on RUA's registration — see **A space's own look** in
-`docs/ONESPACE.md`. They are the reason the page reads as a title card rather
-than as a form with a picture on it: a near-black ground for the artwork to sit
-in, a red on the solid buttons and under the screen you are on, and corners
-sharp enough that a poster looks like a poster. The display face was already
-there and does the other half.
+`docs/ONESPACE.md`. A near-black ground for the artwork to sit in, and
+**Caterpillar yellow** on the solid buttons and under the screen you are on:
+it is the colour of the plant on their own sites, so it is already what "this
+is ours" looks like to the people who will use it. The display face does the
+other half, and the page reads as a title card rather than as a form with a
+picture on it.
+
+Two of those words were different first, and both were changed for the same
+reason — the argument was better than the screen.
+
+* The accent was a Netflix red, borrowed from the reference the showcase was
+  built against, and read as borrowed. It also could not have shipped: white
+  text on it was legible only because red is dark, and the yellow that replaced
+  it is what forced the accent to carry its own ink.
+* The corners were `sharp`, reasoned from the product — a company that makes
+  aluminium and glass facades, so a twelve-pixel radius is a greeting card.
+  That is a nice sentence about a screen nobody enjoyed using: a hundred
+  square-cornered boxes on black is a spreadsheet. The photographs carry the
+  hardness; the chrome does not need to.
 
 Nothing about it is RUA code. The next space to want a personality writes its
 own four words, and a space that wants none is drawn exactly as before.

@@ -2528,6 +2528,12 @@ SHOT_MJS = BANNER + r"""
  * scrollable page, `--retina` when the detail is the point, `--settle=MS` for
  * an animation this does not know about.
  *
+ * `--tokens=--a,--b` prints those CSS custom properties as the page resolves
+ * them, which is the only way to check a *declared* look actually arrived: a
+ * one-pixel tab indicator is a token you can read and a colour you cannot see
+ * in a screenshot, and the difference between "the theme is wrong" and "the
+ * line is thin" is otherwise an afternoon.
+ *
  * Nothing here builds. `scripts/dev.sh watch` keeps the bundle current, so the
  * loop is edit, look — not edit, build, look.
  */
@@ -2552,7 +2558,8 @@ const path = positional[0]
 if (!path) {
   console.error(
     'usage: yarn shot <path> [out.png] ' +
-      '[--wait=SELECTOR] [--phone] [--full] [--retina] [--settle=MS]',
+      '[--wait=SELECTOR] [--phone] [--full] [--retina] [--settle=MS] ' +
+      '[--tokens=--a,--b]',
   )
   process.exit(1)
 }
@@ -2595,6 +2602,15 @@ try {
   await page.waitForTimeout(Number(flag('settle', 600)))
   await page.screenshot({ path: out, fullPage: has('full') })
   console.log(out)
+
+  const asked = flag('tokens')
+  if (asked) {
+    const values = await page.evaluate((names) => {
+      const style = getComputedStyle(document.documentElement)
+      return names.map((one) => [one, style.getPropertyValue(one).trim()])
+    }, asked.split(',').map((one) => one.trim()).filter(Boolean))
+    for (const [name, value] of values) console.log(`${name}: ${value || '(unset)'}`)
+  }
   if (complaints.length) {
     console.log('---')
     for (const one of [...new Set(complaints)].slice(0, 10)) console.log(one)

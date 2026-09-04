@@ -49,6 +49,25 @@ const ACCENT_VARIABLES = {
 }
 
 /**
+ * The hairlines, taken from the ground rather than left at frappe-ui's.
+ *
+ * These are the borders: a card's edge, the rule between two sections, the
+ * line under a table header. frappe-ui's own are a fixed step from *its* dark
+ * grey, and a space that declares a much darker ground gets them at full
+ * strength against a page they were never measured on — which is a screen
+ * ruled into boxes when it should read as one surface.
+ *
+ * Small numbers on purpose: a hairline exists to be found when you look for
+ * it, not to divide the page. The three are the same three frappe-ui uses in
+ * that order — a rule, a border, and a border that wants to be noticed.
+ */
+const OUTLINE_VARIABLES = {
+  '--outline-gray-1': 0.08,
+  '--outline-gray-2': 0.13,
+  '--outline-gray-3': 0.2,
+}
+
+/**
  * The ground, and the two surfaces that step up from it.
  *
  * A panel over a page has to be *visible* as a panel, and in dark mode that is
@@ -61,10 +80,15 @@ const GROUND_VARIABLES = {
   '--surface-base': 0,
   // The rail and the sidebar, which are the frame around every screen. Left
   // out, a declared ground painted the page and stopped at the navigation —
-  // frappe-ui's own grey on three sides of somebody's black. It takes the
-  // ground itself rather than a step off it: the frame is the ground, and the
-  // panels are what rise out of it.
-  '--surface-sidebar': 0,
+  // frappe-ui's own grey on three sides of somebody's black.
+  //
+  // A *step* off the ground rather than the ground itself, and the smallest one
+  // here. Set equal, the navigation and the page it navigates were the same
+  // black and the whole window read as one flat sheet with some text on it;
+  // frappe-ui's own light theme makes the same distinction the same way, with
+  // the sidebar a shade off the page. Small, because this is the frame telling
+  // you it is the frame, not a panel asking for attention.
+  '--surface-sidebar': 0.04,
   '--surface-elevation-1': 0.05,
   '--surface-elevation-2': 0.09,
   '--surface-elevation-3': 0.14,
@@ -91,6 +115,11 @@ function parse(hex) {
   return [0, 2, 4].map((at) => parseInt(full.slice(at, at + 2), 16))
 }
 
+/** Three 0-255 numbers as `#rrggbb`. */
+function hex(rgb) {
+  return `#${rgb.map((one) => Math.round(one).toString(16).padStart(2, '0')).join('')}`
+}
+
 /**
  * A colour moved toward white by `amount` (0 leaves it alone, 1 is white).
  *
@@ -101,10 +130,39 @@ function parse(hex) {
  * a shade off white is how every light interface draws one.
  */
 function lift(rgb, amount) {
-  return `#${rgb
-    .map((one) => Math.round(one + (255 - one) * amount))
-    .map((one) => one.toString(16).padStart(2, '0'))
-    .join('')}`
+  return hex(rgb.map((one) => one + (255 - one) * amount))
+}
+
+/**
+ * How bright a colour reads, 0 to 1. WCAG's relative luminance.
+ *
+ * Not the average of the channels, and the difference is the whole reason this
+ * exists: green carries most of the perceived brightness and blue almost none,
+ * so `#ffcd11` and `#1100ff` have similar arithmetic means and are a light
+ * colour and a dark one. Getting that wrong puts white text on yellow.
+ */
+function luminance(rgb) {
+  const [r, g, b] = rgb.map((one) => {
+    const channel = one / 255
+    return channel <= 0.03928
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+/**
+ * A colour moved *away* from its own brightness — up if it is dark, down if it
+ * is light.
+ *
+ * `lift` is wrong for anything that has to stay visible **on** the colour it is
+ * derived from. A hairline lifted toward white is a hairline on a dark page and
+ * nothing at all on a white one, and a theme whose borders vanish in light mode
+ * is a theme that only works in the mode it was written in.
+ */
+function step(rgb, amount) {
+  const away = luminance(rgb) < 0.5 ? 255 : 0
+  return hex(rgb.map((one) => one + (away - one) * amount))
 }
 
 /**
@@ -123,12 +181,25 @@ export function variables(theme) {
     for (const [token, amount] of Object.entries(ACCENT_VARIABLES)) {
       out[token] = lift(accent, amount)
     }
+    // The ink that goes *on* the accent, decided by the accent rather than
+    // declared beside it. `--ink-base` is what frappe-ui puts on every solid
+    // button and nothing else, so this is that one question and not a licence
+    // to repaint text: a dark accent takes white, a bright one takes near-black.
+    //
+    // Without it an accent is only usable if it happens to be dark. Netflix red
+    // is; Caterpillar yellow is not, and white on `#ffcd11` is a button whose
+    // label you cannot read — which is exactly the failure a space would blame
+    // on the product rather than on its own manifest.
+    out['--ink-base'] = luminance(accent) > 0.45 ? '#1c1c1c' : '#ffffff'
   }
 
   const ground = parse(theme.ground)
   if (ground) {
     for (const [token, amount] of Object.entries(GROUND_VARIABLES)) {
       out[token] = lift(ground, amount)
+    }
+    for (const [token, amount] of Object.entries(OUTLINE_VARIABLES)) {
+      out[token] = step(ground, amount)
     }
   }
 

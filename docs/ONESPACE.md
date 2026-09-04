@@ -71,9 +71,26 @@ So a space may declare a **theme**, on its registration, in four words:
 | | What it moves |
 |---|---|
 | `mode` | `light` or `dark`, for the whole app while this space is open |
-| `accent` | The solid buttons, the tab indicator, the progress fill, the links |
-| `ground` | The page, the rail and sidebar, and the surfaces that step up from them |
+| `accent` | The solid buttons, the tab indicator, the progress fill, the links — and the ink that goes on them |
+| `ground` | The page, the rail and sidebar, the surfaces that step up from it, and the hairlines |
 | `radius` | `sharp` or `soft` — the corner scale, not the components |
+
+Two of those do a little more than they look like they do, and both are there
+because the first version did not.
+
+**An accent brings its own ink.** frappe-ui puts `--ink-base` on every solid
+button, and in dark mode that is a near-black — right under a deep red, and an
+unreadable label on Caterpillar yellow. So the browser decides it from the
+accent's own luminance rather than a space declaring it: bright takes near-black,
+dark takes white. It is the only ink a theme moves, and it is allowed because it
+is the ink *on* a colour the space chose rather than text on a page.
+
+**A ground owns its hairlines.** frappe-ui's `--outline-gray-1` to `-3` are a
+fixed step off *its* dark grey. A space declaring a much darker ground got them
+at full strength against a page they were never measured on, which is a screen
+ruled into boxes when it should read as one surface. They are derived from the
+ground now, and *away* from it — lighter on a dark ground, darker on a light one,
+because a border lifted toward white is a border that vanishes in light mode.
 
 Four, and no more, on purpose. The alternative — a manifest that may set any CSS
 variable — is a stylesheet in a database, and the first space to reach for one
@@ -91,6 +108,14 @@ on the screen's container, which is the only place that reaches a dropdown or a
 dialog teleported to `document.body`. Leaving the space puts the document back
 as it was found, the reader's own light-or-dark preference included: a theme
 overrules it for as long as it is on screen and never overwrites it.
+
+What a theme **cannot** do is redesign a component. The rail and the sidebar
+follow it — their surface is the ground's own step, the active item is an
+elevation, the corners are the radius scale — so a themed space's navigation
+looks like that space. Where the rail sits, how tall an item is and what is in
+it are the shell's, and changing those changes them for everybody. The line is
+between a component's *palette*, which a space owns, and its *shape*, which the
+product does.
 
 RUA's is the worked example — see `docs/RUA.md`.
 
