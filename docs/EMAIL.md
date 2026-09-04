@@ -369,17 +369,24 @@ which is the row still open in §6.
 
 ### Stage 7 — What we owe the platform regardless
 
-None of this is optional and none of it is visible:
+None of this is visible and all but one of it is built. `enforce_send_rate` on
+`Email Queue` is where three of the four live, cheapest gate first:
 
-* **Bounces and complaints.** A shared sending identity means one tenant's bad
-  list degrades delivery for everyone. We need the feedback loop wired to
-  suppression, and a suppression list that outlives the tenant.
-* **DMARC** on our own domains, and alignment for anyone sending as theirs.
-* **Rate limits per tenant** — partly done, per hour on the queue; needs a daily
-  ceiling and a per-recipient one.
-* **Suspension.** A suspended workspace must stop sending before it stops
-  everything else, and its inbound must be rejected at the Worker rather than
-  accepted and dropped.
+* **Suspension.** `_suspended()` reads the synced status, and a suspended,
+  cold or archived workspace stops sending before it stops anything else —
+  sending is what spends the platform's reputation and the one thing a
+  suspended customer must not keep doing.
+* **Rate limits per tenant** — per hour, per day and per recipient, counted on
+  `Email Queue` inserts because Frappe queues one document per send.
+* **Bounces and complaints.** `suppression.py`, wired both ways: a permanent
+  SMTP failure is read off the queue row by `on_queue_failure`, and a delivery
+  report or an abuse report arrives at the Worker and never becomes
+  correspondence. `_drop_suppressed` takes suppressed addresses off a message
+  rather than refusing the whole thing — one bad address in forty must not lose
+  the other thirty-nine.
+
+**DMARC** is the one still outstanding, and it is DNS rather than code: records
+on our own domains, and alignment for anyone sending as theirs.
 
 ## 6. What we take from Frappe's mail settings
 
@@ -419,10 +426,18 @@ later address a variation on one that already worked, and Stage 6 came last
 because a mail *reader* with nothing to read is the most expensive way to
 discover the model was wrong.
 
-Two things named here and not built, both deliberately:
+Three things named here and not built:
 
+* **`Notification` and `Email Template`** — rule, template, recipient. Still the
+  biggest single win in the table above, still deferred, and the only one of the
+  three that is a gap rather than a decision: nothing in `oneapp_core` mentions
+  either doctype, so a workspace that wants "email me when an invoice is
+  overdue" has nowhere to say so.
 * **OAuth for Gmail and Outlook.** Frappe ships `Connected App`; the password
   path works for every provider and this works for two, so it waits for an
   operator to want it.
-* **`Notification` and `Email Template`** — rule, template, recipient. Still the
-  biggest single win in the table above, and still deferred.
+* **DMARC records**, per Stage 7.
+
+And one that is a different document: mail against a *record* — what links a
+message to a document, and where an AI lane earns its cost — is
+`docs/DOCUMENT-MAIL.md`. Its deterministic half is built; its model half is not.
