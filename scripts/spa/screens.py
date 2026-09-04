@@ -191,7 +191,16 @@ export const PANEL_HEADER = 'max-sm:!px-4 max-sm:!pt-5'
  * Applied to SettingsContent and reaching its panels, so it is one class in one
  * place rather than a prop every panel has to remember.
  */
-export const PANEL_CONTENT = '[&>[role=tabpanel]]:min-w-0'
+export const PANEL_CONTENT = [
+  '[&>[role=tabpanel]]:min-w-0',
+  // And a *maximum*, which `min-w-0` is not. A panel is a flex item of
+  // SettingsContent and is sized by its content, so `min-w-0` only says it may
+  // shrink when squeezed — nothing stops it growing past the dialog when its
+  // widest row wants more room, and then the dialog clips the right of every
+  // line in it, header and all. `w-0` with the flex-grow the panel already has
+  // makes the free space the whole of its width, so wide content scrolls.
+  '[&>[role=tabpanel]]:w-0',
+].join(' ')
 
 /**
  * A panel's scrolling body. The padding lives on the ScrollArea viewport, which

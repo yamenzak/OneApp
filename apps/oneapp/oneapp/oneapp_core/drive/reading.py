@@ -12,7 +12,7 @@ from frappe import _
 from oneapp.oneapp_core.email import people
 
 from .kinds import KIND_FIELD, KINDS, OPENED_FIELD, STATUS_FIELD, TRASHED_FIELD
-from .query import HOME, ORDER, PLACES, ROOT, TRASH, _place_filters, _visible
+from .query import HOME, ORDER, PLACES, RECORD, ROOT, TRASH, _place_filters, _visible
 
 PAGE = 50
 
@@ -26,6 +26,10 @@ FIELDS = [
     KIND_FIELD, STATUS_FIELD, TRASHED_FIELD, OPENED_FIELD,
 ]
 
+# How many rows the storage screen shows in each of its two "where is it"
+# lists. Enough to find the thing that is costing money, short enough to read.
+BIGGEST = 10
+
 # How deep a breadcrumb walks before giving up. `File.folder` is a Link and
 # Frappe does not stop you pointing one at its own descendant.
 DEPTH = 20
@@ -34,13 +38,13 @@ DEPTH = 20
 @frappe.whitelist(methods=["GET"])
 def listing(place: str = HOME, folder: str = "", kind: str = "",
             search: str = "", start: int = 0, limit: int = PAGE,
-            order_by: str = "") -> dict:
+            order_by: str = "", doctype: str = "", docname: str = "") -> dict:
     """One page of one place."""
     place = place if place in PLACES else HOME
     if kind and kind not in KINDS:
         kind = ""
 
-    filters, or_filters = _place_filters(place, folder, kind)
+    filters, or_filters = _place_filters(place, folder, kind, (doctype, docname))
     if search:
         filters["file_name"] = ["like", f"%{search}%"]
 
@@ -68,6 +72,9 @@ def listing(place: str = HOME, folder: str = "", kind: str = "",
         "folder": folder,
         "path": path(folder) if folder else [],
         "can_write": place != TRASH,
+        # What the caller asked for, echoed so a tab that scopes itself can
+        # tell its own answer from a stale one that arrived after it moved on.
+        "attached_to": {"doctype": doctype, "docname": docname} if place == RECORD else None,
     }
 
 
@@ -151,19 +158,44 @@ def storage() -> dict:
     rows = frappe.get_list(
         "File",
         filters={"is_folder": 0, **_visible()},
-        fields=["file_size", KIND_FIELD],
+        fields=["name", "file_name", "file_size", "folder", KIND_FIELD],
         limit_page_length=0,
     )
 
-    by_kind = {}
+    by_kind, by_folder = {}, {}
     for row in rows:
-        kind = row.get(KIND_FIELD) or "Other"
-        by_kind[kind] = by_kind.get(kind, 0) + (row.get("file_size") or 0)
+        size = row.get("file_size") or 0
+        by_kind[row.get(KIND_FIELD) or "Other"] = (
+            by_kind.get(row.get(KIND_FIELD) or "Other", 0) + size
+        )
+        # `Home/Attachments` reads as "Attachments" here. The breakdown is a
+        # question about where the weight is, and the answer is a place a
+        # person recognises rather than a path.
+        where = (row.get("folder") or ROOT).rsplit("/", 1)[-1]
+        by_folder[where] = by_folder.get(where, 0) + size
 
     return {
         "by_kind": [
             {"kind": kind, "bytes": size, "label": quota.format_bytes(size)}
             for kind, size in sorted(by_kind.items(), key=lambda pair: -pair[1])
+        ],
+        "by_folder": [
+            {"folder": where, "bytes": size, "label": quota.format_bytes(size)}
+            for where, size in sorted(by_folder.items(), key=lambda pair: -pair[1])[:BIGGEST]
+        ],
+        # The other half of "why am I out of room". A breakdown by kind says
+        # "photographs"; this says which photograph, which is the one somebody
+        # can actually act on.
+        "biggest": [
+            {
+                "name": row["name"],
+                "file_name": row.get("file_name") or row["name"],
+                "bytes": row.get("file_size") or 0,
+                "label": quota.format_bytes(row.get("file_size") or 0),
+                "kind": row.get(KIND_FIELD) or "Other",
+                "folder": (row.get("folder") or ROOT).rsplit("/", 1)[-1],
+            }
+            for row in sorted(rows, key=lambda one: -(one.get("file_size") or 0))[:BIGGEST]
         ],
         "visible": sum(by_kind.values()),
         "files": len(rows),

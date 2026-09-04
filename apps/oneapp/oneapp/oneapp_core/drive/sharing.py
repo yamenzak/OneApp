@@ -1,4 +1,14 @@
-"""A link that outlives a session.
+"""Giving a file to somebody: a colleague, or a stranger with a link.
+
+Two mechanisms because they answer two questions, and neither substitutes for
+the other. A colleague gets a `DocShare` — the same row the record surface
+writes, read back by the same `get_list` every other reader here uses, revoked
+by removing it. That is the whole of the in-workspace access model and there is
+nothing of ours in it.
+
+The rest of this file is the other one.
+
+## A link that outlives a session
 
 The one thing the framework genuinely does not have. `File.is_private` is a
 site-wide flag with no expiry and no audit; a `DocShare` needs the other person
@@ -36,6 +46,99 @@ DEFAULT_DAYS = 7
 # is unguessable and still short enough to paste into an email.
 SECRET_BYTES = 32
 
+
+# --------------------------------------------------------------------------- #
+# A colleague
+# --------------------------------------------------------------------------- #
+
+@frappe.whitelist(methods=["GET"])
+def people(file: str) -> dict:
+    """Who this file has been given to, and how far."""
+    doc = frappe.get_doc("File", file)
+    doc.check_permission("read")
+
+    from oneapp.oneapp_core import collab
+
+    return {
+        **collab.shares_of("File", file),
+        # Asked rather than assumed, so the control that is drawn and the write
+        # that is allowed read the same flag at the same moment.
+        "can_share": bool(frappe.has_permission("File", "share", doc=doc)),
+    }
+
+
+@frappe.whitelist(methods=["GET"])
+def colleagues(query: str = "") -> list[dict]:
+    """Who a file can be shared with.
+
+    The same people the assignment picker offers, asked without a screen: a
+    file is not on a space, so there is no screen to bound it by. What bounds
+    it instead is the only definition of "colleague" this site has — an enabled
+    account holding a role this app granted.
+    """
+    from oneapp.oneapp_core.spaceview.assign import ASSIGNEE_PAGE, _colleagues
+
+    found = frappe.get_all(
+        "User",
+        filters={"enabled": 1, "name": ["in", _colleagues()]},
+        or_filters=(
+            {"full_name": ["like", f"%{query}%"], "name": ["like", f"%{query}%"]}
+            if query else None
+        ),
+        fields=["name", "full_name", "user_image"],
+        limit_page_length=ASSIGNEE_PAGE,
+        order_by="full_name asc",
+    )
+    return [
+        {"value": row["name"], "label": row["full_name"] or row["name"],
+         "image": row["user_image"]}
+        for row in found
+    ]
+
+
+@frappe.whitelist(methods=["POST"])
+def share_with(file: str, user: str | None = None, everyone: str | int = 0,
+               level: str = "read") -> dict:
+    """Give it to a colleague, or change how far their share goes.
+
+    Bounded to the workspace by the same list the assignment picker offers. A
+    share with an account that holds no role on any space this workspace was
+    granted is a hole rather than a feature — and on `File` it is a worse one
+    than on a record, because a file is the thing people actually send.
+    """
+    doc = frappe.get_doc("File", file)
+    doc.check_permission("share")
+
+    from oneapp.oneapp_core import collab
+    from oneapp.oneapp_core.spaceview.assign import _colleagues
+
+    if user and user not in _colleagues():
+        frappe.throw(_("{0} is not on this workspace.").format(user))
+
+    return {
+        **collab.share("File", file, user=user, everyone=everyone, level=level),
+        "can_share": True,
+    }
+
+
+@frappe.whitelist(methods=["POST"])
+def unshare_with(file: str, user: str | None = None,
+                 everyone: str | int = 0) -> dict:
+    """Take a colleague's share back."""
+    doc = frappe.get_doc("File", file)
+    doc.check_permission("share")
+
+    from oneapp.oneapp_core import collab
+
+    return {
+        **collab.unshare("File", file, user=user, everyone=everyone),
+        "can_share": True,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# A stranger
+# --------------------------------------------------------------------------- #
 
 @frappe.whitelist(methods=["POST"])
 def make_link(file: str, days: int = DEFAULT_DAYS, label: str = "") -> dict:

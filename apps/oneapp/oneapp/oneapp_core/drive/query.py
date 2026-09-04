@@ -11,6 +11,7 @@ a filter on `owner` over a query that was already permission-scoped.
 """
 
 import frappe
+from frappe import _
 
 from .kinds import ACTIVE, KIND_FIELD, OPENED_FIELD, STATUS_FIELD, TRASHED
 
@@ -32,7 +33,13 @@ TRASH = "trash"
 # they uploaded yesterday is a folder tree used as an obstacle.
 ALL = "all"
 
-PLACES = (HOME, RECENTS, FAVOURITES, SHARED, TRASH, ALL)
+# Also not in the rail, and the one that proves the whole design: what a record
+# has filed against it is this same query with `attached_to_doctype` set. The
+# Drive and a record's Files tab are two `where` clauses over one table, so the
+# tab draws the Drive's own rows rather than a second list that looks like them.
+RECORD = "record"
+
+PLACES = (HOME, RECENTS, FAVOURITES, SHARED, TRASH, ALL, RECORD)
 
 # Where each place looks and how it is ordered. `order` is the reader's default;
 # a column header still overrides it.
@@ -43,6 +50,7 @@ ORDER = {
     SHARED: "modified desc",
     TRASH: "custom_trashed_on desc",
     ALL: "modified desc",
+    RECORD: "creation desc",
 }
 
 
@@ -58,7 +66,8 @@ def _visible() -> dict:
     return {STATUS_FIELD: ["in", [ACTIVE, "", None]]}
 
 
-def _place_filters(place: str, folder: str = "", kind: str = "") -> tuple[dict, list]:
+def _place_filters(place: str, folder: str = "", kind: str = "",
+                   attached_to: tuple[str, str] = ("", "")) -> tuple[dict, list]:
     """One place, as `(filters, or_filters)`.
 
     Both halves come back together and a caller may not take one: `or_filters`
@@ -94,6 +103,16 @@ def _place_filters(place: str, folder: str = "", kind: str = "") -> tuple[dict, 
         # No folder clause at all. The only thing excluded is the root itself,
         # for the same reason Home excludes it: it is the drive, not a file.
         filters["name"] = ["!=", ROOT]
+    elif place == RECORD:
+        doctype, docname = attached_to
+        # An unaddressed record place would be every attachment on the site,
+        # which is the one way this filter could be dangerous. `get_list` would
+        # still scope it to what the reader may see; that is not a reason to
+        # ask a question this broad by accident.
+        if not doctype or not docname:
+            frappe.throw(_("Which record's files?"))
+        filters["attached_to_doctype"] = doctype
+        filters["attached_to_name"] = docname
 
     if kind:
         filters[KIND_FIELD] = kind

@@ -52,6 +52,42 @@ export const drive = {
       successMessage: 'That link no longer works',
     }),
 
+  // Who this file has been given to inside the workspace. `DocShare`, the same
+  // rows the record surface writes — there is nothing of ours in it.
+  drivePeople: (file) =>
+    callMethod('oneapp.oneapp_core.drive.people', { file }, {
+      silent: true, method: 'GET',
+    }),
+
+  // Who a file can be shared with: the workspace, asked without a screen —
+  // a file is not on a space, so there is no screen to bound it by.
+  driveColleagues: (query = '') =>
+    callMethod('oneapp.oneapp_core.drive.colleagues', { query }, {
+      silent: true, method: 'GET',
+    }),
+
+  driveShare: (file, { user, everyone, level } = {}) =>
+    callMethod(
+      'oneapp.oneapp_core.drive.share_with',
+      { file, user: user || '', everyone: everyone ? 1 : 0, level: level || 'read' },
+      { successMessage: 'Shared' },
+    ),
+
+  driveUnshare: (file, { user, everyone } = {}) =>
+    callMethod(
+      'oneapp.oneapp_core.drive.unshare_with',
+      { file, user: user || '', everyone: everyone ? 1 : 0 },
+      { successMessage: 'Share removed' },
+    ),
+
+  // `_liked_by`, which is why Favourites is a filter and not a table.
+  driveFavourite: (name, on) =>
+    callMethod(
+      'oneapp.oneapp_core.drive.set_favourite',
+      { name, on: on ? 1 : 0 },
+      { silent: true },
+    ),
+
   driveNewFolder: (fileName, folder) =>
     callMethod(
       'oneapp.oneapp_core.drive.make_folder',

@@ -47,8 +47,9 @@ test('opening a file opens a preview, and the preview offers a link', async ({ p
   await page.goto('/one/files?place=all')
 
   // A folder is a link and navigates; only a file opens a preview, and the
-  // difference is the element rather than a class.
-  const file = page.locator('button[data-slot="drive-file"]')
+  // difference is the element rather than a class. The row is the container;
+  // the thing you press is inside it.
+  const file = page.locator('button[data-slot="drive-open"]')
   await file.first().waitFor({ timeout: 20_000 })
   await file.first().click()
 
@@ -101,6 +102,120 @@ test('the picker on a record offers files the workspace already has', async ({ p
   await expect(
     picker.locator('[data-slot="drive-file"], [data-slot="empty-state"]').first(),
   ).toBeVisible({ timeout: 15_000 })
+
+  expectNoRealErrors(errors)
+})
+
+test('a file can be hearted, and the heart is what Favourites lists', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/files?place=all')
+
+  const file = page.locator('[data-slot="drive-file"]').first()
+  await file.waitFor({ timeout: 20_000 })
+  const named = await file.locator('[data-slot="drive-open"]').innerText()
+
+  await file.getByRole('button', { name: /Add .* to favourites/ }).click()
+  // The row re-reads from the server, so the heart flipping is the server
+  // agreeing rather than the client asserting.
+  await expect(file.getByRole('button', { name: /Remove .* from favourites/ }))
+    .toBeVisible({ timeout: 10_000 })
+
+  await page.getByRole('link', { name: 'Favourites' }).click()
+  const there = page.locator('[data-slot="drive-file"]').first()
+  await expect(there).toContainText(named.split('\n')[0])
+
+  // Put it back, so the next run starts where this one did.
+  await there.getByRole('button', { name: /Remove .* from favourites/ }).click()
+  await expect(page.locator('[data-slot="empty-state"]')).toBeVisible({ timeout: 10_000 })
+
+  expectNoRealErrors(errors)
+})
+
+test('choosing files offers what can be done to all of them at once', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/files?place=all')
+  await page.locator('[data-slot="drive-file"]').first().waitFor({ timeout: 20_000 })
+
+  // Nothing chosen, no bar: a control for an empty selection is a control
+  // that does nothing.
+  await expect(page.locator('[data-slot="drive-selection"]')).toHaveCount(0)
+
+  await page.locator('[data-slot="drive-file"] input[type=checkbox]').first().check()
+  await page.locator('[data-slot="drive-file"] input[type=checkbox]').nth(1).check()
+
+  const bar = page.locator('[data-slot="drive-selection"]')
+  await expect(bar).toContainText('2 things chosen')
+  await expect(bar.getByRole('button', { name: 'Move', exact: true })).toBeVisible()
+
+  await bar.getByRole('button', { name: 'Clear the selection' }).click()
+  await expect(bar).toHaveCount(0)
+
+  expectNoRealErrors(errors)
+})
+
+test('a file can be shared with a colleague, and the bin says what it promises', async ({
+  page,
+}) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/files?place=all')
+  await page.locator('[data-slot="drive-file"]').first().waitFor({ timeout: 20_000 })
+
+  await page.locator('[data-slot="drive-more"]').first().click()
+  await page.getByRole('menuitem', { name: 'Share' }).click()
+  const share = page.getByRole('dialog')
+  await expect(share.getByText('Everyone on this workspace')).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  // Thirty days is the promise the sweep keeps, and a bin whose terms are only
+  // in the code is a bin nobody trusts.
+  await page.getByRole('link', { name: 'Bin' }).click()
+  await expect(page.getByRole('button', { name: 'Empty the bin' })).toBeVisible()
+
+  expectNoRealErrors(errors)
+})
+
+test("a record's files are the Drive's own rows", async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/rua?screen=projects')
+
+  const missing = await page
+    .getByText('Nothing here', { exact: false })
+    .isVisible()
+    .catch(() => false)
+  test.skip(missing, 'this tenant has no ERPNext, so the space is not seeded')
+
+  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
+  await page.locator('[data-slot="list-row"]').first().click()
+  await page.getByRole('tab', { name: 'Files' }).click()
+
+  // Either the Drive's row or the Drive's empty state — never a third list
+  // shaped like them, which is the whole point of the tab being a filter.
+  await expect(
+    page.locator('[data-slot="drive-file"], [data-slot="empty-state"]').first(),
+  ).toBeVisible({ timeout: 15_000 })
+
+  expectNoRealErrors(errors)
+})
+
+test('the storage screen says which file and not only which kind', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/files')
+
+  await page.getByRole('button', { name: 'Administrator' }).click()
+  await page.getByRole('menuitem', { name: 'Settings' }).click()
+  await page.getByRole('tab', { name: 'Storage' }).click()
+
+  await expect(page.getByText('By kind')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText('The biggest')).toBeVisible()
+
+  // The panel must not be wider than the dialog that holds it, or every number
+  // in it is clipped off the right edge.
+  const fits = await page.evaluate(() => {
+    const panel = document.querySelector('[role=tabpanel]:not([hidden])')
+    const dialog = panel.closest('[role=dialog]')
+    return panel.getBoundingClientRect().right <= dialog.getBoundingClientRect().right + 1
+  })
+  expect(fits).toBe(true)
 
   expectNoRealErrors(errors)
 })

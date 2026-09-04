@@ -69,6 +69,13 @@
           Email
         </SettingsNavItem>
 
+        <SettingsNavItem value="storage" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-hard-drive" class="size-4 text-ink-gray-7" />
+          </template>
+          Storage
+        </SettingsNavItem>
+
         <SettingsNavItem value="alerts" :class="TAB_ITEM">
           <template #prefix>
             <Icon name="lucide-bell" class="size-4 text-ink-gray-7" />
@@ -109,6 +116,8 @@
 
       <SettingsPanel value="mail"><MailSettings /></SettingsPanel>
 
+      <SettingsPanel value="storage"><StorageSettings /></SettingsPanel>
+
       <SettingsPanel value="alerts"><AlertSettings /></SettingsPanel>
 
       <SettingsPanel value="ai"><AiSettings /></SettingsPanel>
@@ -144,6 +153,7 @@ import SettingsFields from './SettingsFields.vue'
 import BooksSettings from './BooksSettings.vue'
 import AiSettings from './AiSettings.vue'
 import AlertSettings from './AlertSettings.vue'
+import StorageSettings from './StorageSettings.vue'
 import NamingSettings from './NamingSettings.vue'
 import PrintingSettings from './PrintingSettings.vue'
 import ImportSettings from './ImportSettings.vue'

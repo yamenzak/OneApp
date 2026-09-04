@@ -201,12 +201,19 @@ def attachments(space_code: str, screen: str, name: str,
 	filters = {"attached_to_doctype": doctype, "attached_to_name": name}
 	filters.update(_gallery_filters(space_code, screen, fieldname))
 
+	# The Drive's fields and the Drive's shaping, because a record's Files tab
+	# is the Drive filtered to one record — see `docs/DRIVE.md`. Two lists that
+	# looked alike would be two places to add a column to, and the tab would be
+	# the one that never got it.
+	from oneapp.oneapp_core.drive import reading
+
 	found = frappe.get_all(
 		"File",
 		filters=filters,
-		fields=list(FILE_FIELDS),
+		fields=sorted(set(FILE_FIELDS) | set(reading.FIELDS)),
 		order_by="creation desc",
 	)
+	reading._shape(found)
 	return {"files": found, "doctype": doctype}
 
 

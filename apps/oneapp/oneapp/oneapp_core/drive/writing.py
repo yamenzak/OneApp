@@ -180,6 +180,32 @@ def attach(file: str, doctype: str, docname: str, fieldname: str = "") -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
+def set_favourite(name: str, on: str | int = 1) -> dict:
+    """Heart a file, or take the heart off.
+
+    `_liked_by`, which the framework keeps on every doctype and this product
+    already draws as a heart on a record. Favourites is therefore a filter and
+    not a table — the whole reason the rail is five queries over one column
+    each.
+
+    `read` and not `write`: a file somebody shared with you read-only is a file
+    you may want to find again, and marking your own copy of that intention
+    changes nothing about the file.
+    """
+    doc = frappe.get_doc("File", name)
+    doc.check_permission("read")
+
+    from frappe.desk.like import toggle_like
+
+    toggle_like("File", name, add="Yes" if frappe.utils.sbool(on) else "No")
+
+    # Re-read rather than report what we asked for. A toggle that answers with
+    # its own intention is a toggle that goes out of step with its own icon.
+    after = frappe.parse_json(frappe.db.get_value("File", name, "_liked_by") or "[]")
+    return {"name": name, "liked": frappe.session.user in after}
+
+
+@frappe.whitelist(methods=["POST"])
 def trash(names: str | list) -> dict:
     """Throw files away, reversibly.
 

@@ -95,16 +95,21 @@ def test_a_new_file_is_stamped_on_the_way_in(drive):
 # The places
 # --------------------------------------------------------------------------- #
 
+def _filters(drive, place):
+	"""One place's filters. `record` is the only one that needs an address."""
+	return drive._place_filters(place, attached_to=("ToDo", "abc"))
+
+
 def test_every_place_is_a_filter_over_one_table(drive):
 	"""There is no second store behind the rail, which is why it is cheap."""
 	for place in drive.PLACES:
-		filters, _or = drive._place_filters(place)
+		filters, _or = _filters(drive, place)
 		assert isinstance(filters, dict)
 
 
 def test_the_bin_is_the_only_place_that_shows_trashed_files(drive):
 	for place in drive.PLACES:
-		filters, _or = drive._place_filters(place)
+		filters, _or = _filters(drive, place)
 		if place == "trash":
 			assert filters[drive.STATUS_FIELD] == drive.TRASHED
 		else:
@@ -372,3 +377,90 @@ def test_sharing_a_file_does_not_make_it_undeletable():
 	# stranger's request with a stack trace instead of the one sentence.
 	trashing = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/file.py").read_text()
 	assert '"File Link"' in trashing[trashing.index("def on_trash("):]
+
+
+def test_a_records_files_are_the_same_query_with_one_more_clause(drive):
+	"""Which is the whole design: the Drive and a record's Files tab are two
+	`where` clauses over one table, so the tab draws the Drive's own rows."""
+	filters, _or = drive._place_filters("record", attached_to=("Project", "P-1"))
+	assert filters["attached_to_doctype"] == "Project"
+	assert filters["attached_to_name"] == "P-1"
+	# And it is still the visible-files filter underneath, so a record's
+	# attachment that somebody binned does not reappear on the record.
+	assert filters[drive.STATUS_FIELD] == ["in", [drive.ACTIVE, "", None]]
+
+
+def test_a_records_files_needs_a_record(drive):
+	"""Unaddressed, it would be every attachment on the site. `get_list` would
+	still scope it to what the reader may see; that is not a reason to ask a
+	question that broad by accident."""
+	import frappe
+
+	with pytest.raises(frappe.ValidationError):
+		drive._place_filters("record")
+
+
+def test_the_storage_screen_says_which_file_and_not_only_which_kind(drive):
+	"""'Photographs' is not something a person can act on. 'This 400 MB video'
+	is."""
+	source = (DRIVE / "reading.py").read_text()
+	storing = source[source.index("def storage("):]
+	for key in ('"by_kind"', '"by_folder"', '"biggest"'):
+		assert key in storing
+
+
+def test_a_favourite_needs_only_read(drive):
+	"""A file somebody shared with you read-only is a file you may want to find
+	again, and your own intention about it changes nothing about the file."""
+	source = (DRIVE / "writing.py").read_text()
+	faving = source[source.index("def set_favourite("):source.index("def trash(")]
+	assert 'check_permission("read")' in faving
+	assert 'check_permission("write")' not in faving
+
+
+def test_a_colleague_share_is_docshare_and_nothing_of_ours(drive):
+	"""The same row the record surface writes, read back by the same
+	`get_list`, revoked by removing it."""
+	source = (DRIVE / "sharing.py").read_text()
+	sharing = source[source.index("def share_with("):source.index("def unshare_with(")]
+	assert "collab.share(" in sharing
+	assert "DocShare" not in sharing
+
+
+def test_a_file_cannot_be_shared_outside_the_workspace(drive):
+	"""Worse on a `File` than on a record: a file is the thing people send."""
+	source = (DRIVE / "sharing.py").read_text()
+	sharing = source[source.index("def share_with("):source.index("def unshare_with(")]
+	assert "_colleagues()" in sharing
+
+
+# --------------------------------------------------------------------------- #
+# The record's Files tab
+# --------------------------------------------------------------------------- #
+
+def test_a_records_files_are_the_drives_own_rows():
+	"""Two lists that looked alike would be two places to add a column to, and
+	the tab would be the one that never got it."""
+	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/spaceview/surround.py").read_text()
+	listing = source[source.index("def attachments("):source.index("def _gallery_filters(")]
+	assert "reading.FIELDS" in listing
+	assert "reading._shape(" in listing
+
+
+def test_taking_a_file_off_a_record_is_reversible():
+	"""It used to remove the row outright, so a misplaced click on the wrong
+	record's Files tab could not be undone — which is what the bin is for."""
+	source = (ROOT / "apps/oneapp/frontend/src/components/screen/record/RecordFiles.vue").read_text()
+	assert "driveTrash" in source
+
+
+# --------------------------------------------------------------------------- #
+# The storage screen
+# --------------------------------------------------------------------------- #
+
+def test_the_storage_screen_says_what_it_cannot_see():
+	"""The meter is the workspace's real usage and the breakdown is what this
+	reader may see. A breakdown that summed to the meter would be a breakdown
+	that leaked what it could not show, so the screen says they differ."""
+	source = (ROOT / "apps/oneapp/frontend/src/components/settings/StorageSettings.vue").read_text()
+	assert "cannot open" in source
