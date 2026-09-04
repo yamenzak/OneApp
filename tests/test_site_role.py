@@ -160,6 +160,11 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# Gating it would be a branch that exists to say "there is nothing here"
 		# where an empty query already says it.
 		"oneapp.oneapp_core.expiry.sweep",
+		# Same shape as the sweep and ungated for the same reason: the control
+		# plane holds no Email Accounts with an away date on them, so this
+		# reads an empty table. A branch to say so would say less than the
+		# empty query already does.
+		"oneapp.oneapp_core.email.rules.expire_away",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "

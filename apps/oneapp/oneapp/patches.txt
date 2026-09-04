@@ -2,3 +2,4 @@
 oneapp.patches.rename_to_onespace
 
 [post_model_sync]
+oneapp.patches.fill_mail_threads

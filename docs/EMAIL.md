@@ -4,7 +4,8 @@ What OneSpace does with mail and what it deliberately does not. Companion to §8
 of `docs/ONEADMIN.md`, which describes the transport; this describes the product.
 
 Written as a plan and kept as one: §4 is the position it was written from and §5
-the seven stages it proposed. All seven are built, so each stage now says what is
+the seven stages it proposed. All seven are built, and an eighth was added
+afterwards — so each stage now says what is
 in the code — including the one place the plan was wrong, which is Stage 2.
 
 ---
@@ -114,9 +115,9 @@ position has been edited to match its outcome is no longer a record of anything.
 * **Rate limiting** is per tenant per hour on `Email Queue` insert.
 
 So notifications and OTP already left from our own address. That box was ticked
-before any of the seven stages started.
+before any of the stages started.
 
-## 5. The seven stages
+## 5. The stages
 
 Each was shippable on its own and none of them needed the next. All are built;
 what each says is what is in the code, not what was intended.
@@ -284,10 +285,13 @@ to get right. Three things the framework does not answer and this does:
   carries the union of several addresses — come back from `_filters()` together,
   because a caller that took one half would be asking for every `Communication`
   on the site.
-* **Threads, not messages.** `Communication` has no thread key, so the subject
-  with its `Re:` and `Fwd:` stripped is the grouping — what mail clients did for
-  twenty years before message-id threading, and right often enough that being
-  cleverer would cost more than it returns.
+* **Threads, not messages.** `Communication` has no thread key, so we gave it
+  one: `custom_thread`, written on insert by `email/threading.py`, which walks
+  `in_reply_to` and inherits the parent's key. Where the headers are there that
+  is real message-id threading; where they are not it falls back to the subject
+  with its `Re:` and `Fwd:` stripped, which is what mail clients did for twenty
+  years before. Both grouping keys are read on the way out, because one thread
+  can hold messages from either side of the upgrade.
 * **Unread, per person.** `Communication.seen` is one flag for the document,
   which is wrong for an address two people share. So a read receipt is a bounded
   list of ids under the person's own user defaults — not a doctype, because it
@@ -301,9 +305,67 @@ closes it, a reload keeps it open, and "look at this one" is something you can
 send to a colleague. Frappe Mail's layout was the reference for the shape; the
 code is ours.
 
-What is deliberately not here: folders somebody makes, labels, rules, drag and
-drop. Mail files itself against the record it belongs to, and a parallel filing
-system beside that would be two places to look for the same message.
+That paragraph used to end by ruling out folders, labels and rules on the
+grounds that mail files itself against the record it belongs to. That was right
+about *our* filing and wrong about everybody else's: somebody arriving with ten
+years of Outlook arrives with their folders, and a reader that cannot show them
+is a reader they cannot move to. Stage 8 is what that turned into.
+
+### Stage 8 — The rest of a mail client
+
+Stage 6 was a reader. This is the difference between a reader and something
+somebody moves to, and it was built in five batches after the question "what is
+left for a fully functional email client?" turned out to have a ten-item answer.
+
+**A list that does not stop at fifty.** Fifty conversations a page, a Load more
+under them, and a search that reads the body rather than the subject — a mail
+search that cannot find a phone number somebody sent you is not a search. Body
+search is two queries because it has to be: `_matching()` finds names by content
+without an address scope and hands them to the scoped query as an `in`, so the
+unscoped half can only ever answer with ids. New mail arriving lands through the
+same socket the lists use, so a reader left open is a reader that is current.
+
+**Acting on a conversation.** Delete, archive, mark unread, star. Star is a user
+default like the read receipts, and for the same reason: it is a question only
+the person asking ever asks, and an address two people share must not have one
+person's stars on it. Delete and archive both go out over IMAP where there is a
+server — `MOVE` if the server has RFC 6851 and `COPY` plus `STORE \Deleted` if
+it does not — so a conversation binned here is binned in Outlook.
+
+**Writing.** A composer with rich text (the same `Editor` a Text Editor field
+gets, because mail is prose and a textarea sends one long line), Cc and Bcc
+behind a toggle, attachments out as well as in, forward carrying the original's
+files, and replies quoting what they answer. Recipients are people rather than a
+comma-separated string: `people.suggest()` searches `Contact` and everybody the
+workspace has corresponded with, which is an address book that needed no
+building and syncs with nothing.
+
+Two of the three composer promises are kept on the server rather than in the
+browser. A draft is held under the person's own user defaults and restored when
+the composer reopens, so closing it by accident is not a decision. And Undo is
+`Email Queue.send_after` set fifteen seconds out — the message really is held,
+the queue's picker really does refuse it, and `unsend()` refuses to promise
+anything once any row has left `Not Sent`. A countdown in the browser that a
+closed tab defeats would have been a lie about the one thing the button exists
+to promise.
+
+**A phone.** The list and the conversation are one column that swaps, not two
+columns squeezed. The rail became the shell's own sidebar, which is where a
+phone already looks for navigation.
+
+**Threading, out of office, and rules.** `Communication.custom_thread`, written
+on insert by walking `in_reply_to` — real message-id threading where the headers
+are there, the stripped subject where they are not. Out of office is
+`Email Account`'s own `auto_reply` with a date we clear on a daily job, so
+"until Monday" ends on Monday without anybody remembering. And a rule is four
+words — look at this field, for this text, file it there — because somebody
+sorting their own mail is not asking for a query builder. `Mail Rule` is ours;
+Frappe's `Email Rule` is an allow/block list on an address and answers a
+different question.
+
+What is still not here, both deliberate: **push notifications**, which wait on
+the EU-jurisdiction question, and **`Notification` plus `Email Template`**,
+which is the row still open in §6.
 
 ### Stage 7 — What we owe the platform regardless
 
@@ -343,7 +405,10 @@ product we have not been asked for.
 
 ## 7. Order, and why
 
-All seven are built. The order they were built in was still the argument above,
+All eight are built. Stage 8 was not in the original seven — it is what the
+question "what is left for a fully functional email client?" turned into, asked
+once the first seven were done and there was something real to answer it about.
+The order the seven were built in was still the argument above,
 and one part of that argument turned out to be wrong in a way worth keeping on
 the record: stages 2 and 3 were ordered that way because per-person addresses
 supposedly needed an allocation registry that shared addresses would need too,

@@ -14,8 +14,18 @@
     message.
   -->
   <div class="flex h-full min-h-0">
-    <!-- What has arrived -->
-    <div class="flex w-96 shrink-0 flex-col border-r border-outline-gray-1">
+    <!--
+      What has arrived.
+
+      On a phone the two panes are one screen at a time: the list until a
+      conversation is open, the conversation after. Which is the same thing the
+      URL already says — `?thread=` — so this is a class and not a second state
+      to keep in step, and the back button still closes a conversation.
+    -->
+    <div
+      class="flex w-full shrink-0 flex-col border-r border-outline-gray-1 sm:w-96"
+      :class="chosen ? 'hidden sm:flex' : 'flex'"
+    >
       <div class="flex items-center gap-2 border-b border-outline-gray-1 p-2">
         <FormControl
           v-model="search"
@@ -117,7 +127,7 @@
     </div>
 
     <!-- What it says -->
-    <div class="flex min-w-0 flex-1 flex-col">
+    <div class="flex min-w-0 flex-1 flex-col" :class="chosen ? 'flex' : 'hidden sm:flex'">
       <EmptyState
         v-if="!chosen"
         icon="lucide-mail-open"
@@ -126,7 +136,16 @@
       />
 
       <div v-else class="min-h-0 flex-1 overflow-y-auto p-5">
-        <h2 class="text-lg font-semibold text-ink-gray-9">{{ openSubject }}</h2>
+        <!-- The phone has no second column to go back to, so it needs a way
+             out. `sm:hidden` because on a desktop the list never left. -->
+        <RouterLink
+          class="sm:hidden"
+          :to="{ name: 'Mail', query: { folder } }"
+          data-slot="mail-back"
+        >
+          <Button variant="ghost" icon-left="lucide-arrow-left" label="All conversations" />
+        </RouterLink>
+        <h2 class="mt-2 text-lg font-semibold text-ink-gray-9 sm:mt-0">{{ openSubject }}</h2>
 
         <article
           v-for="one in messages"
@@ -185,7 +204,7 @@
           </div>
         </article>
 
-        <div class="mt-4 flex items-center gap-2">
+        <div class="mt-4 flex flex-wrap items-center gap-2">
           <Button
             variant="subtle"
             icon-left="lucide-reply"
@@ -244,6 +263,21 @@
       </div>
     </div>
 
+    <!--
+      The window in which "Sent" can be taken back. Not a countdown in the
+      browser that a closed tab defeats: the message really is held, by the
+      framework's own `send_after`, and the queue refuses to pick it up until
+      the window passes.
+    -->
+    <div
+      v-if="justSent"
+      class="fixed bottom-8 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-4 py-2 shadow-xl"
+      data-slot="mail-undo"
+    >
+      <span class="text-p-sm text-ink-gray-8">Sent</span>
+      <Button variant="ghost" size="sm" label="Undo" @click="unsend()" />
+    </div>
+
     <Dialog v-model="writing" :title="writingTitle" size="xl">
       <div class="flex flex-col gap-3">
         <Select
@@ -253,12 +287,7 @@
           :options="addresses.map((one) => ({ label: one, value: one }))"
         />
         <div class="flex items-end gap-2">
-          <FormControl
-            v-model="draft.to"
-            class="flex-1"
-            label="To"
-            placeholder="somebody@example.com"
-          />
+          <RecipientField v-model="draft.to" class="flex-1" label="To" />
           <!-- Behind a toggle, because most messages have neither and two
                empty boxes above every one of them is two boxes to skip. -->
           <Button
@@ -268,8 +297,8 @@
             @click="copies = !copies"
           />
         </div>
-        <FormControl v-if="copies" v-model="draft.cc" label="Cc" />
-        <FormControl v-if="copies" v-model="draft.bcc" label="Bcc" />
+        <RecipientField v-if="copies" v-model="draft.cc" label="Cc" placeholder="Also to" />
+        <RecipientField v-if="copies" v-model="draft.bcc" label="Bcc" placeholder="Privately to" />
         <FormControl v-model="draft.subject" label="Subject" />
 
         <!--
@@ -360,6 +389,8 @@ import {
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import SenderChip from '../components/SenderChip.vue'
+import RecipientField from '../components/RecipientField.vue'
+import { onDoctypeChange } from '../lib/socket'
 import { holdImages, loadMail, mail, showImages } from '../lib/mail'
 import { workspace } from '../lib/workspace'
 
@@ -595,8 +626,14 @@ async function compose(from, kind = 'reply') {
     Object.assign(draft, opening, { bcc: '' })
     draft.attachments = opening.attachments || []
     copies.value = !!opening.cc
-  } else if (!draft.sender) {
-    draft.sender = addresses.value[0] || ''
+  } else {
+    // A blank composer opens on whatever was left behind, if anything was.
+    const opening = await workspace.mailKept()
+    if (opening && Object.keys(opening).length) {
+      Object.assign(draft, opening)
+      copies.value = !!(opening.cc || opening.bcc)
+    }
+    if (!draft.sender) draft.sender = addresses.value[0] || ''
   }
   writing.value = true
 }
@@ -605,13 +642,21 @@ async function post() {
   error.value = ''
   sending.value = true
   try {
-    await workspace.mailSend({
+    const done = await workspace.mailSend({
       ...draft,
       // Names, not the files. They are already on the site; sending the bytes
       // back through this call would be a second upload of what we hold.
       attachments: JSON.stringify(draft.attachments.map((one) => one.name)),
     })
     writing.value = false
+    await workspace.mailForget()
+    // The undo bar lives exactly as long as the server is holding the message.
+    justSent.value = done?.name || ''
+    clearTimeout(undoTimer)
+    undoTimer = setTimeout(
+      () => { justSent.value = '' },
+      (done?.undo_seconds || 15) * 1000,
+    )
     await load()
   } catch (e) {
     error.value = e.message || String(e)
@@ -620,11 +665,44 @@ async function post() {
   }
 }
 
+const justSent = ref('')
+let undoTimer = null
+
+async function unsend() {
+  const name = justSent.value
+  justSent.value = ''
+  clearTimeout(undoTimer)
+  const done = await workspace.mailUnsend(name)
+  if (done?.ok) {
+    // Straight back into the composer with what was sent, because "undo" that
+    // discards the message is not undo.
+    const opening = await workspace.mailKept()
+    Object.assign(draft, opening)
+    writing.value = true
+  }
+  await load()
+}
+
 boot()
 
 // The list follows the folder; the reading pane follows the thread. Separately,
 // because changing folder should not refetch a thread and opening a thread
 // should not refetch the list.
+// --- keeping what was typed --------------------------------------------------
+//
+// Closing the composer by accident and losing a written message is the failure
+// people remember. Held server-side rather than in this browser, so it survives
+// the tab as well as the dialog.
+let keeping = null
+watch(
+  () => [draft.to, draft.cc, draft.bcc, draft.subject, draft.content].join('\u0000'),
+  () => {
+    if (!writing.value) return
+    clearTimeout(keeping)
+    keeping = setTimeout(() => workspace.mailKeep({ ...draft }), 800)
+  },
+)
+
 watch(folder, () => load())
 watch(search, () => load())
 watch([chosen, folder], read, { immediate: true })

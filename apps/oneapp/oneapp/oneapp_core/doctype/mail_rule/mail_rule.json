@@ -1,0 +1,128 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:MR-{#####}",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "address",
+  "enabled",
+  "priority",
+  "field",
+  "operator",
+  "matches",
+  "into",
+  "mark_read",
+  "star"
+ ],
+ "fields": [
+  {
+   "description": "What this rule is for, in the words of whoever wrote it.",
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "description": "The mailbox it applies to. A rule belongs to an address, not to a workspace: `sales@` and `ap@` sort differently.",
+   "fieldname": "address",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Address",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "default": "10",
+   "description": "Lower runs first. The first rule that matches wins.",
+   "fieldname": "priority",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Priority"
+  },
+  {
+   "default": "Sender",
+   "description": "What is looked at.",
+   "fieldname": "field",
+   "fieldtype": "Select",
+   "label": "Field",
+   "options": "Sender\nSubject\nRecipient\nBody",
+   "reqd": 1
+  },
+  {
+   "default": "Contains",
+   "fieldname": "operator",
+   "fieldtype": "Select",
+   "label": "Operator",
+   "options": "Contains\nIs\nStarts with\nEnds with",
+   "reqd": 1
+  },
+  {
+   "description": "The text to look for. Case is ignored, because nobody means it when they type an address.",
+   "fieldname": "matches",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Matches",
+   "reqd": 1
+  },
+  {
+   "description": "The folder to file it in. Made on the mailbox if it is not there yet.",
+   "fieldname": "into",
+   "fieldtype": "Data",
+   "label": "Into"
+  },
+  {
+   "default": "0",
+   "description": "For the rules that file things nobody needs to look at.",
+   "fieldname": "mark_read",
+   "fieldtype": "Check",
+   "label": "Mark Read"
+  },
+  {
+   "default": "0",
+   "description": "And for the ones that file things somebody does.",
+   "fieldname": "star",
+   "fieldtype": "Check",
+   "label": "Star"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "Mail Rule",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "title,address,matches",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}

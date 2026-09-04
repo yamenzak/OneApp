@@ -417,27 +417,31 @@ def test_every_query_takes_both_halves(mailbox):
 	assert not lonely, f"a caller took only the filters half: {lonely.group().strip()}"
 	assert body.count("_filters(") == body.count("or_filters = _filters(")
 
-	# `_matching` is the one deliberately unscoped query, and it is exempted by
-	# *name* rather than by shape — `unread` also plucks names and is scoped,
-	# and an exemption written as "queries that pluck names" would have stopped
-	# guarding it. What makes `_matching` safe is asserted separately below.
-	searching = inspect.getsource(mailbox._matching)
-	body = body.replace(searching, "")
+	# Two queries are deliberately unscoped, and both are exempted by *name*
+	# rather than by shape — `unread` also plucks names and is scoped, and an
+	# exemption written as "queries that pluck names" would have stopped
+	# guarding it. What makes these two safe is asserted separately below.
+	for unscoped in (mailbox._matching, mailbox._in_thread):
+		body = body.replace(inspect.getsource(unscoped), "")
 
 	for call in regex.findall(r"frappe\.get_all\(\s*\n\s*\"Communication\".*?\n\t\)", body,
 	                          regex.S):
 		assert "or_filters=or_filters" in call, call
 
 
-def test_the_one_unscoped_query_can_only_answer_ids(mailbox):
-	"""`_matching` runs before the gate rather than behind it, so what makes it
-	safe is that nothing but names comes out: the real query then filters those
-	names by who may see them. A `fields=` here would be a leak."""
+@pytest.mark.parametrize("which", ["_matching", "_in_thread"])
+def test_an_unscoped_query_can_only_answer_ids(mailbox, which):
+	"""Both run before the gate rather than behind it — two OR groups cannot go
+	in one `get_all`, and the address scope already owns the one they need. So
+	what makes them safe is that nothing but names comes out: the real query
+	then filters those names by who may see them. A `fields=` here is the leak.
+	"""
 	import inspect
 
-	source = inspect.getsource(mailbox._matching)
+	source = inspect.getsource(getattr(mailbox, which))
 	assert 'pluck="name"' in source
 	assert "fields=" not in source
+	assert "or [\"\"]" in source, "an empty `in` matches everything in some engines"
 
 
 def test_one_address_needs_no_or_filter(mailbox, holding):
@@ -1343,3 +1347,141 @@ def test_a_conversation_is_starred_if_any_message_in_it_is(mailbox):
 
 	source = inspect.getsource(mailbox.threads)
 	assert 'thread["starred"] = True' in source
+
+
+# --------------------------------------------------------------------------- #
+# Which conversation a message belongs to
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def threading():
+	from oneapp.oneapp_core.email import threading as module
+
+	return module
+
+
+def test_a_message_that_answers_nothing_starts_a_conversation(threading):
+	doc = {"subject": "Re: Quotation for the tower", "in_reply_to": None}
+	assert threading.key_for(doc) == "quotation for the tower"
+
+
+def test_a_reply_takes_its_parent_key_however_the_subject_drifts(threading, monkeypatch):
+	"""Which is the whole point: a thread that wanders onto another topic and
+	gets renamed is still the same thread."""
+	monkeypatch.setattr(
+		threading.frappe.db, "get_value",
+		lambda *a, **k: {threading.THREAD_FIELD: "the original", "in_reply_to": None},
+	)
+	doc = {"subject": "Completely different now", "in_reply_to": "C-1"}
+	assert threading.key_for(doc) == "the original"
+
+
+def test_two_strangers_writing_invoice_are_two_conversations(threading):
+	"""The subject grouping's other failure, and the commoner one. `Invoice` is
+	the most-written subject line there is."""
+	one = threading.key_for({"subject": "Invoice", "in_reply_to": None})
+	assert one == "invoice"
+	# Nothing here merges them — they are only one conversation if one answers
+	# the other, which is what `in_reply_to` says and a subject cannot.
+
+
+def test_a_chain_gives_up_rather_than_looping(threading, monkeypatch):
+	"""`In-Reply-To` is a header the sender writes, so a cycle is something
+	somebody can send us rather than something that cannot happen."""
+	monkeypatch.setattr(
+		threading.frappe.db, "get_value",
+		lambda *a, **k: {threading.THREAD_FIELD: "", "in_reply_to": "C-1"},
+	)
+	# Terminates, and falls back to the subject rather than hanging.
+	assert threading.key_for({"subject": "Loop", "in_reply_to": "C-1"}) == "loop"
+
+
+def test_only_email_gets_a_conversation_key(threading):
+	"""A Comment and a phone call are Communications too, and neither threads."""
+	doc = types.SimpleNamespace(
+		_values={}, get=lambda key, default=None: {"communication_medium": "Phone"}.get(key),
+		set=lambda key, value: doc._values.__setitem__(key, value),
+	)
+	threading.on_insert(doc)
+	assert doc._values == {}
+
+
+# --------------------------------------------------------------------------- #
+# Rules, and the out-of-office
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def rules():
+	from oneapp.oneapp_core.email import rules as module
+
+	return module
+
+
+@pytest.mark.parametrize(
+	"operator,haystack,needle,hit",
+	[
+		("Contains", "Hala Nasser <hala@x.test>", "hala@x.test", True),
+		("Contains", "somebody@y.test", "hala@x.test", False),
+		("Is", " hala@x.test ", "HALA@X.TEST", True),
+		("Is", "hala@x.test extra", "hala@x.test", False),
+		("Starts with", "LPO 4432 for Al Reem", "lpo", True),
+		("Ends with", "quote.pdf", ".PDF", True),
+		# An empty needle would match everything, which is a rule that files
+		# the whole mailbox somewhere.
+		("Contains", "anything", "", False),
+	],
+)
+def test_a_condition_ignores_case_and_never_matches_nothing(
+	rules, operator, haystack, needle, hit
+):
+	assert rules._hit(operator, haystack, needle) is hit
+
+
+def test_the_first_matching_rule_wins(rules):
+	"""Ordered, and the first match acts. Two rules that both matched and both
+	acted would be a coin toss dressed as a feature."""
+	import inspect
+
+	source = inspect.getsource(rules.matching)
+	assert 'order_by="priority asc, creation asc"' in source
+	assert "return rule" in source
+
+
+def test_rules_run_after_the_message_is_stored(rules):
+	"""A rule that threw while the message was half-written would lose the
+	message, and losing mail to a filing rule is the worst trade there is."""
+	from oneapp.oneapp_core.email import inbound
+
+	source = code_of(inbound.handle_address)
+	assert source.index("_communication(payload") < source.index("rules.apply_to")
+	assert "except Exception:" in source
+
+
+def test_a_rule_only_touches_an_address_you_hold(rules, monkeypatch):
+	monkeypatch.setattr(
+		"oneapp.oneapp_core.email.mailbox._held", lambda: ["mine@x.test"]
+	)
+	assert rules._mine("MINE@x.test") == "mine@x.test"
+	with pytest.raises(Exception):
+		rules._mine("someone-else@x.test")
+
+
+def test_an_away_message_needs_something_to_say(rules, monkeypatch):
+	monkeypatch.setattr(rules, "_account_of", lambda address: None, raising=False)
+	monkeypatch.setattr(
+		"oneapp.oneapp_core.email.mailbox._account_of",
+		lambda address: types.SimpleNamespace(db_set=lambda *a, **k: None),
+	)
+	with pytest.raises(Exception):
+		rules.set_away("mine@x.test", enabled=1, message="   ")
+
+
+def test_an_away_message_switches_itself_off(rules):
+	"""The part Frappe does not have and the part that matters: one somebody
+	forgot to turn off answers their mail for a month, telling everybody they
+	are away when they are back."""
+	import inspect
+
+	source = inspect.getsource(rules.expire_away)
+	assert '"custom_away_until": ("<", nowdate())' in source
+	assert '"enable_auto_reply", 0' in source

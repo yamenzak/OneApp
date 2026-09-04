@@ -87,6 +87,14 @@ doc_events = {
 	"Comment": {
 		"after_insert": "oneapp.oneapp_core.notifications.on_comment",
 	},
+	"Communication": {
+		# Which conversation this message belongs to, taken from the one it
+		# answers rather than from its subject line — see
+		# `oneapp_core/email/threading.py`. `before_insert`, because the value
+		# belongs to the row being written and setting it afterwards would be a
+		# second version row on a doctype people already find noisy.
+		"before_insert": "oneapp.oneapp_core.email.threading.on_insert",
+	},
 	# Inserts are what grow a database, so they are what pauses when a workspace
 	# is over its allowance. Updates and deletes keep working, so deleting
 	# something is always a way back. The check reads a cached verdict — the
@@ -123,6 +131,10 @@ scheduler_events = {
 		# goes stale the moment the date changes: a licence that was Valid last
 		# night is Expiring this morning and nobody saved it.
 		"oneapp.oneapp_core.expiry.sweep",
+		# And the other thing with an end date on it: an out-of-office reply
+		# whose last day has passed. Without something acting on the date, the
+		# date is a note to self.
+		"oneapp.oneapp_core.email.rules.expire_away",
 	],
 	"hourly": [
 		"oneapp.oneapp_core.sync.report_usage_to_control_plane",

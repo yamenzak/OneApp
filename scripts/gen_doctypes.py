@@ -2860,6 +2860,55 @@ def write_capabilities():
         fh.write(body)
 
 
+# --------------------------------------------------------------------------- #
+# Mail Rule — "put anything from the architect in Al Reem".
+#
+# Frappe has an `Email Rule` and it is not this: two fields, an address and a
+# spam flag. What people mean by a rule is a filing instruction, and every mail
+# client has had one for thirty years — without it a shared inbox is sorted by
+# hand, every morning, forever.
+#
+# Deliberately small. One condition, not a boolean tree: the rules people
+# actually write are "from this person" or "with this word in the subject", and
+# a builder that can express `(A or B) and not C` is a builder nobody uses to
+# express anything. Two rules are the answer to two conditions.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Mail Rule",
+    app="tenant",
+    autoname="format:MR-{#####}",
+    title_field="title",
+    search_fields="title,address,matches",
+    fields=[
+        f("title", reqd=1, in_list_view=1,
+          description="What this rule is for, in the words of whoever wrote it."),
+        f("address", "Data", reqd=1, in_list_view=1, in_standard_filter=1,
+          description="The mailbox it applies to. A rule belongs to an address, "
+                      "not to a workspace: `sales@` and `ap@` sort differently."),
+        f("enabled", "Check", default="1", in_list_view=1),
+        # Order matters, and the first match wins — which is what makes a rule
+        # list readable. Without it two rules that both match are a coin toss.
+        f("priority", "Int", default="10", in_list_view=1,
+          description="Lower runs first. The first rule that matches wins."),
+        f("field", "Select", options="Sender\nSubject\nRecipient\nBody",
+          default="Sender", reqd=1,
+          description="What is looked at."),
+        f("operator", "Select", options="Contains\nIs\nStarts with\nEnds with",
+          default="Contains", reqd=1),
+        f("matches", "Data", reqd=1, in_list_view=1,
+          description="The text to look for. Case is ignored, because nobody "
+                      "means it when they type an address."),
+        f("into", "Data",
+          description="The folder to file it in. Made on the mailbox if it is "
+                      "not there yet."),
+        f("mark_read", "Check", default="0",
+          description="For the rules that file things nobody needs to look at."),
+        f("star", "Check", default="0",
+          description="And for the ones that file things somebody does."),
+    ],
+)
+
+
 def main():
     write_capabilities()
     write_fieldtypes()

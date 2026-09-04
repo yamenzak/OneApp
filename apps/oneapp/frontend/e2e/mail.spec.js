@@ -237,16 +237,24 @@ test('a forward carries the message, its files and nobody on the To', async ({
   await threads(page).filter({ hasText: SUBJECT }).click()
   await page.locator('[data-slot="mail-forward"]').click()
 
-  // Scoped to the dialog and by role: `getByLabel('To')` also finds "Reply to
-  // all" and "Move to" behind it, which is a lesson about aria-labels rather
-  // than about mail.
+  // Scoped to the dialog: `getByLabel('To')` also finds "Reply to all" and
+  // "Move to" behind it, which is a lesson about aria-labels rather than about
+  // mail. Recipients are addressed by their own slot because they are a
+  // `MultiSelect` — a trigger showing who is on the field, not an input with a
+  // value.
   const compose = page.getByRole('dialog')
 
   // Built on the server — quoting in the browser would quote the copy with its
   // remote images held back and send somebody a reply full of empty `<img>`.
   await expect(compose.getByRole('textbox', { name: 'Subject' }))
     .toHaveValue(`Fwd: ${SUBJECT}`)
-  await expect(compose.getByRole('textbox', { name: 'To' })).toHaveValue('')
+  // A forward goes to nobody until somebody says who, which is what stops the
+  // reflex reply-to-all from becoming a reflex forward-to-all. Empty here is
+  // the trigger still showing its placeholder — asserting "no @ anywhere"
+  // would only be asserting that the placeholder is not an address.
+  const to = compose.locator('[data-slot="mail-recipients-to"]')
+  await expect(to).toContainText('somebody@example.com')
+  await expect(to).not.toContainText('client.test')
   await expect(compose).toContainText('wrote:')
   // The message being forwarded is the newest one in the thread, which is the
   // one on screen — not the one that started it.
@@ -269,15 +277,15 @@ test('a reply goes to the sender, and carries Cc when it is to all', async ({
 
   await page.locator('[data-slot="mail-reply-all"]').click()
   const compose = page.getByRole('dialog')
-  await expect(compose.getByRole('textbox', { name: 'To' }))
-    .toHaveValue('hala@client.test')
+  await expect(compose.locator('[data-slot="mail-recipients-to"]'))
+    .toContainText('hala@client.test')
   // Cc and Bcc are behind a toggle, opened here because reply-to-all filled
   // one in — a field with something in it must not be hidden.
-  const cc = compose.getByRole('textbox', { name: 'Cc', exact: true })
+  const cc = compose.locator('[data-slot="mail-recipients-cc"]')
   await expect(cc).toBeVisible()
   // And never back to an address this person holds: answering yourself is the
   // oldest bug in mail.
-  await expect(cc).not.toHaveValue(new RegExp(ADDRESS))
+  await expect(cc).not.toContainText(ADDRESS)
 
   await page.keyboard.press('Escape')
   expectNoRealErrors(errors)
@@ -334,6 +342,154 @@ test('anybody may connect the mailbox they already have', async ({ page, baseURL
   await page.getByRole('button', { name: 'Change the servers' }).click()
   await expect(page.getByLabel('Incoming (IMAP)')).toHaveValue('imap.gmail.com')
   await expect(page.getByLabel('Outgoing (SMTP)')).toHaveValue('smtp.gmail.com')
+
+  expectNoRealErrors(errors)
+})
+
+test('what you typed survives closing the composer', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'the composer is the same dialog on both')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await threads(page).first().waitFor({ timeout: 15_000 })
+
+  await page.getByRole('button', { name: 'Write' }).click()
+  const compose = page.getByRole('dialog')
+  await compose.getByLabel('Subject').fill('Half a thought')
+
+  // Closing a composer is not a decision to throw the message away — it is
+  // usually a misclick, and the one thing that must not happen is losing it.
+  // The keep is debounced, so this waits for it rather than racing it.
+  await page.waitForTimeout(1200)
+  await page.keyboard.press('Escape')
+  await expect(compose).toBeHidden()
+
+  await page.getByRole('button', { name: 'Write' }).click()
+  await expect(page.getByRole('dialog').getByLabel('Subject')).toHaveValue('Half a thought')
+
+  await page.keyboard.press('Escape')
+  expectNoRealErrors(errors)
+})
+
+test('a sent message can be taken back, and the taking back is real', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'the composer is the same dialog on both')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await threads(page).first().waitFor({ timeout: 15_000 })
+  const before = await threads(page).count()
+
+  await page.getByRole('button', { name: 'Write' }).click()
+  const compose = page.getByRole('dialog')
+  await compose.locator('[data-slot="mail-recipients-to"] [data-slot="trigger"]').click()
+  await page.getByRole('combobox').fill('nobody@client.test')
+  // A typed address that matches nobody is still an address — most mail goes to
+  // people who are in no directory.
+  await page.getByRole('option', { name: /nobody@client\.test/i }).first().click()
+  await page.keyboard.press('Escape')
+  await compose.getByLabel('Subject').fill('Sent by mistake')
+  await compose.getByRole('button', { name: 'Send' }).click()
+
+  // The window opens on the send, not on a timer the browser owns: the message
+  // is really held by `send_after`, which is why undo can promise anything.
+  const undo = page.locator('[data-slot="mail-undo"]')
+  await expect(undo).toBeVisible()
+  await undo.getByRole('button', { name: 'Undo' }).click()
+  await expect(undo).toBeHidden()
+
+  // And the proof that it was more than a toast: the message is not in the
+  // list, and a reload cannot bring it back.
+  //
+  // Let the refresh the unsend kicked off finish first. Reloading over an
+  // in-flight request aborts it, and an aborted fetch reaches the console as
+  // "Failed to fetch" — which the error check cannot tell from a real one.
+  await page.waitForLoadState('networkidle')
+  await page.reload()
+  await threads(page).first().waitFor({ timeout: 15_000 })
+  await expect(page.getByText('Sent by mistake')).toHaveCount(0)
+  expect(await threads(page).count()).toBe(before)
+
+  expectNoRealErrors(errors)
+})
+
+test('a recipient is a person the site already knows', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'the composer is the same dialog on both')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await threads(page).first().waitFor({ timeout: 15_000 })
+
+  await page.getByRole('button', { name: 'Write' }).click()
+  const compose = page.getByRole('dialog')
+  // The fixture's contact. Typing part of a name has to reach an address —
+  // nobody remembers `hala@client.test`, and everybody remembers Hala.
+  await compose.locator('[data-slot="mail-recipients-to"] [data-slot="trigger"]').click()
+  await page.getByRole('combobox').fill('Hala')
+  await expect(page.getByRole('option', { name: /hala@client\.test/i }).first()).toBeVisible({
+    timeout: 10_000,
+  })
+
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+  expectNoRealErrors(errors)
+})
+
+test('a rule files mail, and away answers it', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'the settings dialog has its own spec')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/space/zzmock?screen=tasks')
+  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
+
+  await page.getByRole('button', { name: 'Administrator' }).click()
+  await page.getByRole('menuitem', { name: 'Workspace settings' }).click()
+  await page.getByRole('tab', { name: 'Email' }).click()
+
+  // A rule is four words: look at this field, for this text, and file it there.
+  // Anything more is a query builder, which is not what somebody sorting their
+  // own mail is asking for.
+  //
+  // Named for this run and removed at the end. A rule is state somebody keeps,
+  // so a spec that counted the whole list would pass once and then fail
+  // against its own leavings — and it would race the list's first load, where
+  // the count is briefly zero.
+  const title = `Applicants ${Date.now()}`
+  const mine = page.locator('[data-slot="mail-rule"]').filter({ hasText: title })
+  await page.getByLabel('Rule', { exact: true }).fill(title)
+  await page.getByLabel('This', { exact: true }).fill('applying')
+  await page.getByLabel('File into').fill('Applicants')
+  await page.getByRole('button', { name: 'Add rule' }).click()
+  await expect(mine).toHaveCount(1)
+
+  // It survives the round trip, which is the half a list in memory would fake.
+  await page.reload()
+  await page.getByRole('button', { name: 'Administrator' }).click()
+  await page.getByRole('menuitem', { name: 'Workspace settings' }).click()
+  await page.getByRole('tab', { name: 'Email' }).click()
+  await expect(mine).toHaveCount(1)
+
+  await mine.getByRole('button', { name: `Remove ${title}` }).click()
+  await expect(mine).toHaveCount(0)
+
+  // Away is a switch and a message, not a rule: it answers, it does not file.
+  // By role rather than by slot: `Checkbox` puts the attribute on its wrapper
+  // and on the input inside it, so the slot matches two things.
+  await page.getByRole('checkbox', { name: /Reply automatically/ }).check()
+  await page.getByLabel('What it says').fill('Back on Monday.')
+  await page.locator('[data-slot="mail-save-away"]').click()
+
+  await page.reload()
+  await page.getByRole('button', { name: 'Administrator' }).click()
+  await page.getByRole('menuitem', { name: 'Workspace settings' }).click()
+  await page.getByRole('tab', { name: 'Email' }).click()
+  await expect(page.getByLabel('What it says')).toHaveValue('Back on Monday.')
 
   expectNoRealErrors(errors)
 })

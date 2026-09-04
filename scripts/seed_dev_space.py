@@ -581,6 +581,17 @@ def _seed_mail(user):
 	)
 	doc.save(ignore_permissions=True)
 
+	# Filing rules and the away message are state a person sets, so the fixture
+	# owns them the way it owns the folders: cleared, not merged. A spec that
+	# adds a rule and asserts the count would otherwise pass once and fail on
+	# every run after it, which reads as a broken feature rather than as a
+	# fixture that remembers.
+	for name in frappe.get_all("Mail Rule", pluck="name"):
+		frappe.delete_doc("Mail Rule", name, force=True, ignore_permissions=True)
+	doc.db_set("enable_auto_reply", 0, update_modified=False)
+	doc.db_set("auto_reply_message", "", update_modified=False)
+	doc.db_set("custom_away_until", None, update_modified=False)
+
 	# A second recipient on the conversation, so a reply-to-all has somebody to
 	# copy. Without one the fixture cannot tell "no Cc because the code is
 	# wrong" from "no Cc because there was nobody else on it".

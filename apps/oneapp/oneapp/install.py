@@ -42,6 +42,7 @@ def create_custom_fields():
 	from frappe.custom.doctype.custom_field.custom_field import create_custom_fields as make
 
 	from oneapp.oneapp_core.email.folders import FOLDER_FIELD
+	from oneapp.oneapp_core.email.threading import THREAD_FIELD
 
 	make(
 		{
@@ -57,6 +58,23 @@ def create_custom_fields():
 			],
 			"Communication": [
 				{
+					# Which conversation a message belongs to.
+					#
+					# The subject with its `Re:` stripped is what mail clients
+					# threaded on for twenty years, and it is wrong twice: two
+					# people who both write "Invoice" are one conversation, and
+					# a reply somebody renamed is a new one. This inherits the
+					# parent's key through `in_reply_to` instead, so the chain
+					# holds however the subject drifts — see
+					# `oneapp_core/email/threading.py`.
+					"fieldname": THREAD_FIELD,
+					"label": "Conversation",
+					"fieldtype": "Data",
+					"read_only": 1,
+					"no_copy": 1,
+					"search_index": 1,
+				},
+				{
 					"fieldname": FOLDER_FIELD,
 					"label": "IMAP Folder",
 					"fieldtype": "Data",
@@ -70,6 +88,17 @@ def create_custom_fields():
 				}
 			],
 			"Email Account": [
+				{
+					# The day an out-of-office stops. Frappe has the reply and
+					# the switch and no end date, which is the part that
+					# matters: one somebody forgot to turn off answers their
+					# mail for a month, telling everybody they are away when
+					# they are back. `rules.expire_away` acts on this daily.
+					"fieldname": "custom_away_until",
+					"label": "Away Until",
+					"fieldtype": "Date",
+					"no_copy": 1,
+				},
 				{
 					"fieldname": "custom_folder_kinds",
 					"label": "Folder Kinds",

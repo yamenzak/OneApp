@@ -158,3 +158,61 @@ def profile(email: str) -> dict:
 		)
 	]
 	return person
+
+
+@frappe.whitelist(methods=["GET"])
+def suggest(text: str, limit: int = 8) -> list[dict]:
+	"""Addresses to complete a To field with.
+
+	Contacts first and people written to second. A Contact is somebody the
+	workspace decided to keep; a correspondent is somebody who happened to be on
+	a message, and there are hundreds of those. Both are already on this site —
+	no address book to build, no directory to sync.
+
+	Deduplicated on the address, keeping the first: a Contact's name beats the
+	display name off a header, for the same reason it does in the list.
+	"""
+	text = (text or "").strip()
+	if len(text) < 2:
+		return []
+
+	like = f"%{text}%"
+	out: dict[str, dict] = {}
+
+	for row in frappe.get_all(
+		"Contact",
+		or_filters=[["email_id", "like", like], ["first_name", "like", like],
+		            ["last_name", "like", like], ["company_name", "like", like]],
+		fields=["full_name", "email_id", "company_name"],
+		limit_page_length=int(limit),
+	):
+		if row.email_id:
+			out[row.email_id.lower()] = {
+				"email": row.email_id,
+				"label": row.full_name or row.email_id,
+				"company": row.company_name or "",
+			}
+
+	# Then anybody this person has actually corresponded with, which is what
+	# makes the field useful on the second day rather than only once somebody
+	# has built a contact list.
+	from oneapp.oneapp_core.email import mailbox
+
+	filters, or_filters = mailbox._filters("all")
+	for row in frappe.get_all(
+		"Communication",
+		filters={**filters, "sender": ("like", like)},
+		or_filters=or_filters,
+		fields=["sender", "sender_full_name"],
+		order_by="communication_date desc",
+		limit_page_length=int(limit) * 4,
+	):
+		key = (row.sender or "").lower()
+		if key and key not in out:
+			out[key] = {
+				"email": row.sender,
+				"label": row.sender_full_name or row.sender,
+				"company": "",
+			}
+
+	return list(out.values())[: int(limit)]

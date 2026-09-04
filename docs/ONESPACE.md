@@ -680,9 +680,9 @@ us sending and inbound routing and deliberately not storage, so there is no IMAP
 server behind `sales@acme.4dl.app` — mail addressed to it arrives at the site as
 a `Communication`, which is a document, which means it is already listed,
 permissioned, searchable, attachable and printable. The whole feature is
-therefore small: `docs/EMAIL.md` is the argument and the seven stages.
+therefore small: `docs/EMAIL.md` is the argument and the stages.
 
-The three things worth knowing here:
+The four things worth knowing here:
 
 **The tenant's slug is a subdomain.** `sales@acme.4dl.app` and
 `sales@rua.4dl.app` are different addresses, so the namespace is per workspace
@@ -699,10 +699,20 @@ already have — Gmail, Outlook, anything with IMAP — without being an owner,
 because that mailbox is theirs.
 
 **Reading is a filtered `Communication` list.** The Mail page's three columns
-are the shape every mail client has had for thirty years; a conversation is the
-subject with `Re:` stripped, and it lives in the URL so the back button closes
+are the shape every mail client has had for thirty years; a conversation is
+`custom_thread` — walked from `in_reply_to` on insert, falling back to the
+subject with `Re:` stripped — and it lives in the URL so the back button closes
 it. Unread is per person rather than Frappe's per-document `seen` flag, because
-two people on `sales@` each need their own idea of what they have read.
+two people on `sales@` each need their own idea of what they have read, and star
+and draft are per person for the same reason.
+
+**A mailbox somebody connects stays theirs, both ways.** Their folders come
+across, including the ones they made, and a folder made here is an IMAP `CREATE`
+that Outlook shows. Filing, archiving and deleting go back out over IMAP, so the
+same conversation is in the same place in both clients. What is ours rather than
+the server's: paging, body search, drafts, an Undo that is really
+`Email Queue.send_after` rather than a countdown a closed tab defeats, and rules
+that are four words — look at this field, for this text, file it there.
 
 ---
 

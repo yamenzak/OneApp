@@ -17,6 +17,8 @@ import json
 import frappe
 from frappe import _
 
+from oneapp.oneapp_core.email import rules
+
 from oneapp.oneapp_core import control_client
 
 MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024
@@ -121,7 +123,22 @@ def handle_address(payload: dict, account) -> dict:
 	for user in holders:
 		_share(name, user)
 
-	return {"communication": name, "account": account.name, "shared_with": len(holders)}
+	# And then whatever this address's owner decided should happen to mail like
+	# this. After it is stored and shared, never before: a rule that threw while
+	# the message was half-written would lose the message, and losing mail to a
+	# filing rule is the worst trade there is.
+	filed = {}
+	try:
+		filed = rules.apply_to(frappe.get_doc("Communication", name), account.email_id)
+	except Exception:
+		frappe.log_error(title=f"A mail rule failed on {account.email_id}")
+
+	return {
+		"communication": name,
+		"account": account.name,
+		"shared_with": len(holders),
+		**filed,
+	}
 
 
 def _share(communication: str, user: str):

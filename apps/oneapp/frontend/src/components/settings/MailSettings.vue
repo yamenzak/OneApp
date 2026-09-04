@@ -130,6 +130,102 @@
       </div>
 
       <!--
+        Rules and the out-of-office, for one address at a time.
+
+        Both belong to a mailbox rather than to a workspace: `sales@` and `ap@`
+        sort differently and go away separately, so a picker rather than a
+        single form. Frappe has the auto-reply already — what it does not have
+        is a date, and one somebody forgot to switch off answers their mail for
+        a month.
+      -->
+      <div v-if="addresses.length" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-4">
+        <div class="flex items-end gap-2">
+          <span class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
+            Rules and away message
+          </span>
+          <Select
+            v-if="addresses.length > 1"
+            v-model="chosen"
+            class="ms-auto"
+            :options="addresses.map((one) => ({ label: one.email_id, value: one.email_id }))"
+          />
+        </div>
+
+        <div class="flex flex-col gap-2 rounded-6 border border-outline-gray-2 p-3">
+          <Checkbox
+            v-model="awayState.enabled"
+            label="Reply automatically while I am away"
+            data-slot="mail-away"
+          />
+          <template v-if="awayState.enabled">
+            <FormControl
+              v-model="awayState.message"
+              type="textarea"
+              label="What it says"
+              :rows="3"
+            />
+            <FormControl
+              v-model="awayState.until"
+              type="date"
+              label="Until"
+              description="It switches itself off the day after this."
+            />
+          </template>
+          <!-- Named for what it saves, not "Save". This panel holds four
+               independent forms — a signature, a mailbox, rules, this — and a
+               bare Save in the middle of them says nothing about which. -->
+          <Button
+            class="self-start"
+            variant="subtle"
+            label="Save away message"
+            data-slot="mail-save-away"
+            @click="saveAway"
+          />
+        </div>
+
+        <div
+          v-for="one in rules"
+          :key="one.name"
+          class="flex items-center gap-2 rounded-6 border border-outline-gray-2 p-3"
+          data-slot="mail-rule"
+        >
+          <div class="flex min-w-0 flex-1 flex-col">
+            <span class="truncate text-base font-medium text-ink-gray-8">{{ one.title }}</span>
+            <span class="truncate text-p-xs text-ink-gray-5">
+              {{ one.field }} {{ one.operator.toLowerCase() }} “{{ one.matches }}”
+              <template v-if="one.into">→ {{ one.into }}</template>
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            icon="lucide-trash-2"
+            :label="`Remove ${one.title}`"
+            :tooltip="`Remove ${one.title}`"
+            @click="dropRule(one)"
+          />
+        </div>
+
+        <div class="flex flex-wrap items-end gap-2">
+          <FormControl v-model="rule.title" class="flex-1" label="Rule" placeholder="Applicants" />
+          <Select
+            v-model="rule.field"
+            label="Look at"
+            :options="['Sender', 'Subject', 'Recipient', 'Body']"
+          />
+          <Select
+            v-model="rule.operator"
+            label="That"
+            :options="['Contains', 'Is', 'Starts with', 'Ends with']"
+          />
+          <FormControl v-model="rule.matches" class="flex-1" label="This" />
+          <FormControl v-model="rule.into" class="flex-1" label="File into" />
+          <Button variant="solid" label="Add rule" @click="addRule" />
+        </div>
+        <ErrorMessage v-if="ruleError" :message="ruleError" />
+      </div>
+
+      <!--
         The other half, and for most people the half that matters: the address
         they have used for nine years, which they are not giving up because a
         new product would prefer it. Not gated on `canManage` — a mailbox
@@ -236,7 +332,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import {
   Badge,
   Button,
@@ -244,6 +340,7 @@ import {
   ErrorMessage,
   FormControl,
   LoadingText,
+  Select,
   SettingsBody,
   SettingsHeader,
 } from '@/ui'
@@ -273,6 +370,46 @@ const mailbox = ref({ email_id: '', password: '', email_server: '', smtp_server:
 
 const user = computed(() => session.user?.name || '')
 
+// --- rules and the away message ---------------------------------------------
+const chosen = ref('')
+const rules = ref([])
+const ruleError = ref('')
+const awayState = reactive({ enabled: false, message: '', until: '' })
+const rule = reactive({
+  title: '', field: 'Sender', operator: 'Contains', matches: '', into: '',
+})
+
+watch(chosen, async (address) => {
+  if (!address) return
+  rules.value = (await workspace.mailRules(address)) || []
+  Object.assign(awayState, await workspace.mailAway(address))
+})
+
+async function addRule() {
+  ruleError.value = ''
+  try {
+    await workspace.mailSaveRule({ ...rule, address: chosen.value, enabled: 1 })
+    Object.assign(rule, { title: '', matches: '', into: '' })
+    rules.value = (await workspace.mailRules(chosen.value)) || []
+  } catch (e) {
+    ruleError.value = e.message || String(e)
+  }
+}
+
+async function dropRule(one) {
+  await workspace.mailDropRule(one.name)
+  rules.value = (await workspace.mailRules(chosen.value)) || []
+}
+
+async function saveAway() {
+  await workspace.mailSetAway({
+    address: chosen.value,
+    enabled: awayState.enabled ? 1 : 0,
+    message: awayState.message,
+    until: awayState.until,
+  })
+}
+
 /**
  * Which address the workspace's own mail actually leaves from.
  *
@@ -301,6 +438,9 @@ async function load() {
     canManage.value = !!mail.can_manage
     usage.value = sending || {}
     connected.value = boxes || []
+    // The address whose rules are shown. First one held, because a picker that
+    // opens on nothing makes somebody choose before they can look.
+    chosen.value = addresses.value[0]?.email_id || ''
   } finally {
     loading.value = false
   }
