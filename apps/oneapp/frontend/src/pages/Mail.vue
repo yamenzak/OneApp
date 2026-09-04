@@ -78,6 +78,18 @@
             <span class="shrink-0 text-p-xs tabular-nums text-ink-gray-5">
               {{ when(one.at) }}
             </span>
+            <!-- `.prevent` because the whole row is a link: without it, starring
+                 also opens the conversation. -->
+            <Button
+              variant="ghost"
+              size="sm"
+              :icon="one.starred ? 'lucide-star' : 'lucide-star-off'"
+              :label="one.starred ? 'Unstar' : 'Star'"
+              :tooltip="one.starred ? 'Unstar' : 'Star'"
+              :class="one.starred ? 'text-ink-amber-3' : ''"
+              data-slot="mail-star"
+              @click.prevent.stop="toggleStar(one)"
+            />
           </div>
           <span
             class="truncate text-p-sm"
@@ -88,6 +100,19 @@
           </span>
           <span class="truncate text-p-xs text-ink-gray-5">{{ one.preview }}</span>
         </RouterLink>
+
+        <!-- The list held the first fifty messages and stopped, which on a real
+             mailbox is not a limit but a broken screen. -->
+        <div v-if="more" class="p-2">
+          <Button
+            class="w-full"
+            variant="subtle"
+            :label="loadingMore ? 'Loading…' : 'Older conversations'"
+            :loading="loadingMore"
+            data-slot="mail-more"
+            @click="loadMore()"
+          />
+        </div>
       </div>
     </div>
 
@@ -186,6 +211,27 @@
             leaving the original in the inbox is the behaviour every mail
             client got complained about until it stopped.
           -->
+          <Button
+            variant="ghost"
+            icon-left="lucide-archive"
+            label="Archive"
+            data-slot="mail-archive"
+            @click="act('archive')"
+          />
+          <Button
+            variant="ghost"
+            icon-left="lucide-trash-2"
+            label="Delete"
+            data-slot="mail-delete"
+            @click="act('bin')"
+          />
+          <Button
+            variant="ghost"
+            icon-left="lucide-mail"
+            label="Mark unread"
+            data-slot="mail-unread"
+            @click="act('unread')"
+          />
           <Dropdown v-if="fileable.length" :options="fileable">
             <Button
               variant="ghost"
@@ -292,8 +338,8 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { computed, onUnmounted, reactive, ref, watch } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
   Button,
   Dialog,
@@ -322,9 +368,37 @@ const sending = ref(false)
 const error = ref('')
 
 const route = useRoute()
+const router = useRouter()
 
 const threads = ref([])
 const addresses = ref([])
+const cursor = ref(0)
+const more = ref(false)
+const loadingMore = ref(false)
+
+/** Two pages of conversations as one list, the older half folded into the newer. */
+function merge(have, next) {
+  const by = new Map(have.map((one) => [one.key, one]))
+  for (const one of next) {
+    const already = by.get(one.key)
+    if (!already) {
+      by.set(one.key, one)
+      continue
+    }
+    already.count += one.count
+    already.unread += one.unread
+  }
+  return [...by.values()]
+}
+
+async function loadMore() {
+  loadingMore.value = true
+  try {
+    await load({ append: true })
+  } finally {
+    loadingMore.value = false
+  }
+}
 const search = ref('')
 const messages = ref([])
 
@@ -343,11 +417,7 @@ const openSubject = computed(
 // Where this conversation can go: the folders of the address it is in. An
 // address it is not in has folders on a server that has never seen it.
 const fileable = computed(() => {
-  const here = messages.value[0]
-  const address = mail.folders.find((one) => one.key === folder.value)?.address
-    || (here?.recipients || '').split(',').map((one) => one.trim()).find((one) =>
-      mail.addresses.includes(one),
-    )
+  const address = owner.value
   if (!address) return []
   return mail.folders
     .filter((one) => one.address === address && one.folder && one.folder !== SENT_KEY)
@@ -361,6 +431,49 @@ const fileable = computed(() => {
 // The one folder name that is not a folder — see `mailbox.SENT`. A conversation
 // cannot be filed into it, because it is a question about the sender.
 const SENT_KEY = '__sent'
+
+/** Which of this person's addresses the open conversation belongs to. */
+const owner = computed(() => {
+  const here = messages.value[0]
+  return (
+    mail.folders.find((one) => one.key === folder.value)?.address ||
+    (here?.recipients || '')
+      .split(',')
+      .map((one) => one.trim())
+      .find((one) => mail.addresses.includes(one)) ||
+    mail.addresses[0] ||
+    ''
+  )
+})
+
+async function toggleStar(one) {
+  one.starred = !one.starred
+  await workspace.mailStar(one.key, folder.value, one.starred)
+}
+
+/**
+ * Archive, delete, or put back to unread.
+ *
+ * Delete is a move to Trash and not `delete_doc`: removing the document would
+ * take the message off the record it is filed against and away from everybody
+ * else who holds the address, permanently, on a click every mail client has
+ * taught people is reversible.
+ */
+async function act(what) {
+  const address = owner.value
+  if (what === 'unread') {
+    await workspace.mailMarkUnread(chosen.value, folder.value)
+  } else if (what === 'archive') {
+    await workspace.mailArchive(chosen.value, address, folder.value)
+  } else {
+    await workspace.mailBin(chosen.value, address, folder.value)
+  }
+  // Back to the list: the conversation somebody just filed away is not the
+  // thing they want still open in front of them.
+  router.push({ name: 'Mail', query: { folder: folder.value } })
+  await load()
+  await loadMail({ reload: true })
+}
 
 async function moveTo(address, into) {
   await workspace.mailFileThread(chosen.value, address, into, folder.value)
@@ -396,11 +509,20 @@ async function boot() {
   await load()
 }
 
-async function load() {
-  loading.value = true
+async function load({ append = false } = {}) {
+  if (!append) loading.value = true
   try {
-    const found = await workspace.mailThreads(folder.value, 0, search.value)
-    threads.value = found.threads || []
+    const found = await workspace.mailThreads(
+      folder.value,
+      append ? cursor.value : 0,
+      search.value,
+    )
+    // Merged by key rather than concatenated. A conversation can straddle two
+    // pages — the grouping happens per page of *messages* — and appending
+    // blindly would show it twice with half its messages in each.
+    threads.value = append ? merge(threads.value, found.threads || []) : (found.threads || [])
+    cursor.value = found.next || 0
+    more.value = !!found.more
   } finally {
     loading.value = false
   }
@@ -503,6 +625,35 @@ boot()
 // The list follows the folder; the reading pane follows the thread. Separately,
 // because changing folder should not refetch a thread and opening a thread
 // should not refetch the list.
-watch(folder, load)
+watch(folder, () => load())
+watch(search, () => load())
 watch([chosen, folder], read, { immediate: true })
+
+// --- mail arriving ----------------------------------------------------------
+//
+// A list left open stops being a photograph of when it was opened. Frappe
+// publishes `list_update` for every document that changes and inbound mail is a
+// `Communication`, so this is the same seam the record lists already use — the
+// bell's one-minute poll is for the rail, not for the screen somebody is
+// looking at.
+//
+// Coalesced: an IMAP sync that pulls forty messages publishes forty of these in
+// a second, and one refetch each is a list that spends its afternoon reloading.
+let pending = null
+const arrived = onDoctypeChange('Communication', () => {
+  clearTimeout(pending)
+  pending = setTimeout(() => {
+    // Only the first page. Somebody who has paged back four screens and is
+    // reading does not want the list to collapse under them because a
+    // newsletter arrived.
+    if (cursor.value <= PAGE_ONE) load()
+  }, 400)
+})
+
+const PAGE_ONE = 50
+
+onUnmounted(() => {
+  clearTimeout(pending)
+  if (arrived) arrived()
+})
 </script>

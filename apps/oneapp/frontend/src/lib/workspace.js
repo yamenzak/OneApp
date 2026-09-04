@@ -381,6 +381,34 @@ export const workspace = {
       { successMessage: 'Filed' },
     ),
 
+  mailStar: (key, folder, on) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.star',
+      { key, folder, on: on ? 1 : 0 },
+      { silent: true },
+    ),
+
+  mailMarkUnread: (key, folder) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.mark_unread',
+      { key, folder },
+      { successMessage: 'Marked unread' },
+    ),
+
+  mailBin: (key, address, folder) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.bin',
+      { key, address, folder },
+      { successMessage: 'Moved to Trash' },
+    ),
+
+  mailArchive: (key, address, folder) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.archive',
+      { key, address, folder },
+      { successMessage: 'Archived' },
+    ),
+
   mailDraft: (message, kind) =>
     callMethod(
       'oneapp.oneapp_core.email.mailbox.draft',

@@ -14,6 +14,24 @@ import types
 import pytest
 
 
+def code_of(thing) -> str:
+	"""Source with the prose taken out.
+
+	Several of these guards assert that a piece of code does *not* do
+	something — and the docstring right above it is usually the sentence
+	explaining why not, which names the very thing being searched for. A plain
+	text search over the source therefore fails on correct code.
+	"""
+	import inspect
+	import re as regex
+
+	source = regex.sub(r'"""(?:.|\n)*?"""', "", inspect.getsource(thing))
+	return "\n".join(
+		line for line in source.splitlines() if not line.strip().startswith("#")
+	)
+
+
+
 # Imported inside fixtures, not at module scope: `frappe` is stubbed by an
 # autouse fixture in conftest, so a module-level import runs before the stub
 # exists and fails on the real package being absent.
@@ -399,9 +417,27 @@ def test_every_query_takes_both_halves(mailbox):
 	assert not lonely, f"a caller took only the filters half: {lonely.group().strip()}"
 	assert body.count("_filters(") == body.count("or_filters = _filters(")
 
+	# `_matching` is the one deliberately unscoped query, and it is exempted by
+	# *name* rather than by shape — `unread` also plucks names and is scoped,
+	# and an exemption written as "queries that pluck names" would have stopped
+	# guarding it. What makes `_matching` safe is asserted separately below.
+	searching = inspect.getsource(mailbox._matching)
+	body = body.replace(searching, "")
+
 	for call in regex.findall(r"frappe\.get_all\(\s*\n\s*\"Communication\".*?\n\t\)", body,
 	                          regex.S):
 		assert "or_filters=or_filters" in call, call
+
+
+def test_the_one_unscoped_query_can_only_answer_ids(mailbox):
+	"""`_matching` runs before the gate rather than behind it, so what makes it
+	safe is that nothing but names comes out: the real query then filters those
+	names by who may see them. A `fields=` here would be a leak."""
+	import inspect
+
+	source = inspect.getsource(mailbox._matching)
+	assert 'pluck="name"' in source
+	assert "fields=" not in source
 
 
 def test_one_address_needs_no_or_filter(mailbox, holding):
@@ -517,10 +553,7 @@ def test_read_receipts_are_stored_under_the_person_they_belong_to(mailbox):
 	"""Not in the global defaults, which every session on the site loads whole."""
 	import inspect
 
-	code = "\n".join(
-		line for line in inspect.getsource(mailbox).splitlines()
-		if not line.strip().startswith("#")
-	)
+	code = code_of(mailbox)
 	assert "frappe.db.get_default" not in code
 	assert "frappe.db.set_default" not in code
 	assert "frappe.defaults.get_user_default" in code
@@ -831,16 +864,7 @@ def test_the_same_sender_is_resolved_once(people, monkeypatch):
 def test_nothing_about_a_sender_leaves_the_site(people):
 	"""Avatar services work by sending a hash of every correspondent's address
 	to a third party, once per message in the list."""
-	import inspect
-	import re as regex
-
-	source = inspect.getsource(people)
-	# Prose out, code only — the docstrings here *name* the thing they refuse
-	# to do, which is the point of them and would fail a plain text search.
-	code = regex.sub(r'"""(?:.|\n)*?"""', "", source)
-	code = "\n".join(
-		line for line in code.splitlines() if not line.strip().startswith("#")
-	).lower()
+	code = code_of(people).lower()
 	assert "gravatar" not in code
 	assert "http" not in code
 
@@ -1171,3 +1195,151 @@ def test_attachments_are_on_the_message_before_it_is_sent(mailbox):
 
 	source = inspect.getsource(mailbox.send)
 	assert source.index("_carry(doc.name") < source.index("doc.send_email()")
+
+
+# --------------------------------------------------------------------------- #
+# A list that does not stop at fifty
+# --------------------------------------------------------------------------- #
+
+def test_the_next_page_starts_where_the_messages_ended(mailbox, holding, monkeypatch):
+	"""Messages consumed, not conversations returned. Fifty messages can be
+	twelve conversations, and paging by what came back re-reads the same rows
+	forever."""
+	holding("me@x.test")
+	rows = [
+		mailbox.frappe._dict({
+			"name": f"C-{n}", "subject": "One conversation", "sender": "a@x.test",
+			"sender_full_name": "A", "recipients": "me@x.test",
+			"communication_date": "2026-09-04", "sent_or_received": "Received",
+			"seen": 0, "reference_doctype": None, "reference_name": None,
+			"content": "<p>hi</p>",
+		})
+		for n in range(10)
+	]
+	monkeypatch.setattr(mailbox.frappe, "get_all", lambda *a, **k: rows)
+	monkeypatch.setattr(mailbox, "_seen_set", lambda: set())
+	monkeypatch.setattr(mailbox.people, "profiles", lambda senders: {})
+
+	page = mailbox.threads("all", start=0)
+	assert len(page["threads"]) == 1
+	assert page["next"] == 10
+
+
+def test_a_search_is_names_first_and_the_gate_second(mailbox):
+	"""Two OR groups cannot go in one `get_all`: the address scope is already
+	an `or_filters`, and a second would replace it rather than add to it —
+	which is the mistake that turns a search into everybody's mail."""
+	import inspect
+
+	source = inspect.getsource(mailbox.threads)
+	assert 'filters["name"] = ("in", _matching(search))' in source
+	# And the scope is still the one every other query uses.
+	assert "filters, or_filters = _filters(folder)" in source
+
+
+def test_a_search_matches_the_body_too(mailbox):
+	import inspect
+
+	source = inspect.getsource(mailbox._matching)
+	assert '["subject", "like", like]' in source
+	assert '["content", "like", like]' in source
+
+
+def test_a_search_that_finds_nothing_matches_nothing(mailbox, monkeypatch):
+	"""An `in` on an empty list matches nothing in some engines and everything
+	in others, and this one stands in front of the whole site."""
+	monkeypatch.setattr(mailbox.frappe, "get_all", lambda *a, **k: [])
+	assert mailbox._matching("nothing at all") == [""]
+
+
+def test_a_search_is_bounded(mailbox):
+	"""A search for "the" on a busy site should not build a list of every
+	message ever written."""
+	import inspect
+
+	assert "limit_page_length=SEARCH_CEILING" in inspect.getsource(mailbox._matching)
+
+
+# --------------------------------------------------------------------------- #
+# Acting on a conversation
+# --------------------------------------------------------------------------- #
+
+def test_deleting_is_a_move_to_trash_and_not_a_deletion(mailbox):
+	"""Removing the document would take the message off the record it is filed
+	against and away from everybody else who holds the address, permanently, on
+	a click every mail client has taught people is reversible."""
+	source = code_of(mailbox.bin)
+	assert "delete_doc" not in source
+	assert '"trash"' in source
+
+
+def test_trash_and_archive_use_the_mailbox_own_name_for_them(mailbox):
+	"""`[Gmail]/Bin`, `Deleted Items`, `Papierkorb`. The server said which
+	folder plays the role — see `folders.classify` — so nothing here guesses at
+	a name."""
+	import inspect
+
+	source = inspect.getsource(mailbox._into)
+	assert "folder_ops.kinds(account.name)" in source
+	assert "role == kind" in source
+
+
+def test_a_mailbox_with_no_trash_gets_one(mailbox):
+	"""A routed address has no server and so no Trash, and refusing to delete
+	on the addresses we own outright would be the wrong way round."""
+	import inspect
+
+	source = inspect.getsource(mailbox._into)
+	assert "folder_ops.create(account, name)" in source
+
+
+def test_a_star_belongs_to_a_person(mailbox):
+	"""Two people on `sales@` star different things, for the same reason they
+	have different ideas of what they have read."""
+	import inspect
+
+	source = inspect.getsource(mailbox)
+	assert "STARRED_KEY" in source
+	assert "frappe.defaults.set_user_default(\n\t\tSTARRED_KEY" in source
+
+
+def test_a_star_reaches_the_server_too(mailbox):
+	"""So it is the same star in Outlook."""
+	import inspect
+
+	assert "folder_ops.flag(names" in inspect.getsource(mailbox.star)
+
+
+def test_a_starred_list_is_bounded_like_the_seen_one(mailbox):
+	import inspect
+
+	assert "SEEN_LIMIT" in inspect.getsource(mailbox.star)
+
+
+def test_flagging_groups_by_mailbox_and_folder(folders):
+	"""IMAP is stateful: a STORE applies to whichever folder is selected, and
+	one connection per message would be one login per star."""
+	import inspect
+
+	source = inspect.getsource(folders.flag)
+	assert "by_account.setdefault" in source
+	assert "select_imap_folder(folder_name)" in source
+
+
+def test_a_star_that_cannot_reach_the_server_is_still_a_star(folders):
+	"""The next sync corrects it. A star that threw is a button that looks
+	broken."""
+	import inspect
+
+	source = inspect.getsource(folders.flag)
+	assert "except Exception:" in source
+	assert "frappe.log_error" in source
+
+
+def test_a_conversation_is_starred_if_any_message_in_it_is(mailbox):
+	"""Somebody stars the thread. Which message they had open when they did is
+	not something they should have to remember."""
+	import inspect
+
+	source = inspect.getsource(mailbox.threads)
+	assert 'thread["starred"] = True' in source

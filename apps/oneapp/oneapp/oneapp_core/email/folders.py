@@ -448,3 +448,43 @@ def _remember(account, name: str, kind):
 	else:
 		known[name] = kind
 	account.db_set("custom_folder_kinds", frappe.as_json(known), update_modified=False)
+
+
+def flag(messages: list[str], on: bool = True):
+	"""Set or clear IMAP's `\\Flagged` on some messages, so a star is the same
+	star in every client.
+
+	Grouped by mailbox and by folder, because IMAP is a stateful protocol: each
+	`STORE` applies to whatever folder is currently selected, and one connection
+	per message would be one login per star.
+
+	Never fatal. A star that did not reach the server is a star the next sync
+	corrects; a star that threw is a button that looks broken.
+	"""
+	rows = frappe.get_all(
+		"Communication",
+		filters={"name": ("in", messages or [""])},
+		fields=["name", "uid", "email_account", FOLDER_FIELD],
+	)
+	by_account: dict[str, dict[str, list]] = {}
+	for row in rows:
+		if not row.email_account or not row.uid or int(row.uid) < 1:
+			continue
+		by_account.setdefault(row.email_account, {}).setdefault(
+			row.get(FOLDER_FIELD) or "INBOX", []
+		).append(str(row.uid))
+
+	for name, folders_ in by_account.items():
+		account = frappe.get_doc("Email Account", name)
+		if not has_server(account):
+			continue
+		try:
+			server = _session(account)
+			for folder_name, uids in folders_.items():
+				if server.select_imap_folder(folder_name):
+					server.imap.uid(
+						"STORE", ",".join(uids), "+FLAGS" if on else "-FLAGS", "(\\Flagged)"
+					)
+			server.logout()
+		except Exception:
+			frappe.log_error(title=f"Could not flag mail on {account.email_id}")
