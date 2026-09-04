@@ -74,7 +74,8 @@ two disagree.
 | `lib/` | Generated: the runtime. `resource` (every call), `fields` (every fieldtype), `icons`, `socket`, `notify`, `theme`. |
 | `lib/workspace/` | Hand-written, and the one place a server call is named: `settings`, `screen`, `record`, `layouts`, `mail`, `importing`, `printing`, assembled into one `workspace` object because every caller says `workspace.screenRows(...)`. |
 | `pages/` | One per route. `ScreenHost` is the big one — it resolves a screen and hosts whichever body the view type asks for. |
-| `components/screen/` | The bodies and the record surface: `ListBody`, `BoardBody`, `CardsBody`, `DashboardBody`, `RecordView`, `FieldControl`. `ScreenHeader` is the trail and the two controls beside it — the one part of a screen with no state of its own. |
+| `components/screen/` | Everything a screen draws, in four families. `bodies/` is how the rows are shown — `ListBody`, `BoardBody`, `CardsBody`, `DashboardBody` and the cells, footer and selection bar they share. `record/` is one record open — `RecordView`, its pane, drawer, showcase, tabs and dialogs. `fields/` is one value drawn or edited — `FieldControl`, `LinkPicker`, `StateBadge`, the pickers. `views/` is which screen and how it is filtered — `ScreenHeader`, the filters, the column picker, the switcher. |
+| `components/mail/`, `components/notifications/` | The two surfaces that are not screens. Everything left at the root of `components/` is the shell — the rail, the bottom bar, the account menu — or a primitive both sides use, which today is `Resizer` and `FadedScroll`. |
 | `composables/` | State pulled out of a page. `useRows` owns the records a screen lists and everything about having fetched them; `useRecordSurface` the one that is open and whether it is a pane or the page; `useCreating` the three doors that make a new one; `useSavedViews` the named layouts; `usePeek` a record opened from inside another; `useListFollow` the realtime refetch; `useCrumbs` and `useSorting` the header's derived state. A composable called at the top of `<script setup>` runs *immediately*, so everything it reads must be declared above the call — `tests/test_composables.py` enforces exactly that — written after one extraction read a `const` declared below its call, which is a `ReferenceError`, a blank page, and 152 specs timing out at once. |
 | `screens/` | Bespoke screens a manifest names by component, rather than rendering from metadata. |
 | `ui.js` | The barrel. Every frappe-ui component comes through it, so what is allowed is one reviewable list. |
@@ -122,3 +123,6 @@ Worth knowing before you fight one:
 * **Generated files are generated.** Edit the generator.
 * **A package's layers point one way.** `spaceview`, `mailbox`, `importer` and
   `admin` each fail the suite on an import from below.
+* **A guard finds a component by name, not by path.** `tests/components.py`
+  resolves `RecordView.vue` wherever it has been grouped — a guard that cannot
+  open its file stops checking rather than failing.

@@ -24,6 +24,7 @@ from pathlib import Path
 import pytest
 
 from doctype_paths import slug as doctype_slug
+import components
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTROL = ROOT / "apps/oneapp_control/oneapp_control"
@@ -259,7 +260,7 @@ def test_the_glyphs_reach_the_spa_as_literals():
 		assert f'"{icon}"' in block, f"{icon} is not written into the SPA"
 
 
-SCREEN = ROOT / "apps/oneapp/frontend/src/components/screen"
+
 
 # Every place a state is drawn as a badge. A status that carries a glyph in the
 # list and none in the trail is the bug this list exists to prevent — it is
@@ -275,8 +276,8 @@ def test_a_badge_and_its_select_draw_the_same_glyph():
 	"""One function, two callers. A value that looks one way being chosen and
 	another way once chosen is the kind of thing nobody reports and everybody
 	notices."""
-	badge = (SCREEN / "StateBadge.vue").read_text()
-	control = (SCREEN / "FieldControl.vue").read_text()
+	badge = components.source("StateBadge.vue")
+	control = components.source("FieldControl.vue")
 	assert "valueIcon(props.label, props.states)" in badge
 	assert "valueIcon(value, props.states)" in control
 
@@ -287,7 +288,7 @@ def test_every_state_badge_is_the_same_badge():
 	for name in BADGES:
 		if name == "StateBadge.vue":
 			continue
-		assert "StateBadge" in (SCREEN / name).read_text(), f"{name} draws its own"
+		assert "StateBadge" in components.source(name), f"{name} draws its own"
 
 	# Where the badges are *drawn* is the first path in each pair and where they
 	# are *computed* is the second, because on a screen those are two files: the
@@ -295,17 +296,16 @@ def test_every_state_badge_is_the_same_badge():
 	# only read one of them would stop checking half of the pair the next time
 	# either moves.
 	for path, computes in (
-		("apps/oneapp/frontend/src/components/screen/ScreenHeader.vue",
-		 "apps/oneapp/frontend/src/composables/useCrumbs.js"),
-		("apps/oneapp/frontend/src/components/screen/RecordView.vue",
-		 "apps/oneapp/frontend/src/components/screen/RecordView.vue"),
+		(components.path("ScreenHeader.vue"),
+		 ROOT / "apps/oneapp/frontend/src/composables/useCrumbs.js"),
+		(components.path("RecordView.vue"), components.path("RecordView.vue")),
 	):
-		body = (ROOT / path).read_text()
+		body = path.read_text()
 		# Both badges beside a record's name: the doctype's own status field,
 		# and where the framework stands on it.
 		assert 'data-slot="record-status"' in body, path
 		assert 'data-slot="doc-state"' in body, path
-		assert "docBadge" in (ROOT / computes).read_text(), computes
+		assert "docBadge" in computes.read_text(), computes
 
 
 def test_the_docstatus_words_all_earn_a_glyph():
@@ -453,7 +453,7 @@ def test_every_kind_of_activity_the_spa_renders_has_a_glyph():
 	"""
 	icons, default = _activity_icons()
 	source = (
-		ROOT / "apps/oneapp/frontend/src/components/screen/RecordActivity.vue"
+		components.path("RecordActivity.vue")
 	).read_text()
 	kinds = set(re.findall(r"kind: '([\w-]+)'", source))
 	assert len(kinds) >= 3, f"only found {sorted(kinds)} — the timeline has moved"

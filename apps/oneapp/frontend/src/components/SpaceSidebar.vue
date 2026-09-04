@@ -128,7 +128,7 @@ import {
   SidebarItem,
   SidebarLabel,
 } from '@/ui'
-import Resizer from './screen/Resizer.vue'
+import Resizer from './Resizer.vue'
 import QuotaMeter from './QuotaMeter.vue'
 import { useNav } from '../lib/nav'
 import { session } from '../lib/session'

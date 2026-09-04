@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from gen_frontend import APPS, render  # noqa: E402
+import components
 
 
 @pytest.fixture
@@ -999,9 +1000,9 @@ def test_something_waits_visibly_while_a_screen_loads(app):
 
 SCREEN_HOST = ROOT / "apps/oneapp/frontend/src/pages/ScreenHost.vue"
 # The shell renders a body per view type; the list is the one that draws a grid.
-LIST_BODY = ROOT / "apps/oneapp/frontend/src/components/screen/ListBody.vue"
-RECORD_TABLE = ROOT / "apps/oneapp/frontend/src/components/screen/RecordTable.vue"
-CHILD_TABLE = ROOT / "apps/oneapp/frontend/src/components/screen/ChildTable.vue"
+LIST_BODY = components.path("ListBody.vue")
+RECORD_TABLE = components.path("RecordTable.vue")
+CHILD_TABLE = components.path("ChildTable.vue")
 
 
 def test_the_screen_host_shows_the_same_columns_on_every_screen():
@@ -1071,8 +1072,8 @@ def test_the_screen_host_is_a_pane_at_both_ends():
 	)
 
 
-BOARD_BODY = ROOT / "apps/oneapp/frontend/src/components/screen/BoardBody.vue"
-CARDS_BODY = ROOT / "apps/oneapp/frontend/src/components/screen/CardsBody.vue"
+BOARD_BODY = components.path("BoardBody.vue")
+CARDS_BODY = components.path("CardsBody.vue")
 CARDS_LIB = ROOT / "apps/oneapp/frontend/src/lib/cards.js"
 
 

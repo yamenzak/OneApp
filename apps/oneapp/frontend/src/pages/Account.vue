@@ -55,7 +55,7 @@ import { computed } from 'vue'
 import { PageHeader, LoadingIndicator } from '@/ui'
 import UsageBar from '../components/UsageBar.vue'
 import ThemeSetting from '../components/ThemeSetting.vue'
-import NotificationSettings from '../components/NotificationSettings.vue'
+import NotificationSettings from '../components/notifications/NotificationSettings.vue'
 import { TENANT_APP } from '../lib/brand'
 import { session } from '../lib/session'
 

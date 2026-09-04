@@ -15,6 +15,7 @@ import pathlib
 import re
 
 import pytest
+import components
 
 
 @pytest.fixture
@@ -222,7 +223,7 @@ def test_the_browser_can_draw_every_kind_the_server_offers():
 	widget does not import is one the server will happily name."""
 	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/dashboard.py").read_text()
 	named = set(re.findall(r'"component": "(\w+)"', source))
-	widget = (SPA / "components/screen/DashboardWidget.vue").read_text()
+	widget = components.source("DashboardWidget.vue")
 	lookup = widget.split("const COMPONENTS = {")[1].split("}")[0]
 	known = set(re.findall(r"^\s*(\w+),", lookup, re.M))
 
@@ -239,7 +240,7 @@ def test_every_width_the_server_allows_has_a_class_the_browser_emits():
 	widths = re.search(r"WIDTHS = \(([\d, ]+)\)", source).group(1)
 	allowed = {int(one) for one in widths.replace(" ", "").strip(",").split(",")}
 
-	body = (SPA / "components/screen/DashboardBody.vue").read_text()
+	body = components.source("DashboardBody.vue")
 	written = {int(one) for one in re.findall(r"^\s*(\d+): 'md:col-span-\d+',", body, re.M)}
 
 	assert allowed == written, (

@@ -299,8 +299,8 @@ import {
   dayjsLocal,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
-import SenderChip from '../components/SenderChip.vue'
-import MailComposer from '../components/MailComposer.vue'
+import SenderChip from '../components/mail/SenderChip.vue'
+import MailComposer from '../components/mail/MailComposer.vue'
 import { onDoctypeChange } from '../lib/socket'
 import { holdImages, loadMail, mail, showImages } from '../lib/mail'
 import { workspace } from '../lib/workspace'
