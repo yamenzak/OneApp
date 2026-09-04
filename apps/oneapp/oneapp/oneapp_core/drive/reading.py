@@ -130,6 +130,12 @@ def details(name: str) -> dict:
     doc.check_permission("read")
 
     doc.db_set(OPENED_FIELD, frappe.utils.now_datetime(), update_modified=False)
+    # And kept. Frappe commits a request only when its HTTP method is one that
+    # changes server state — `frappe/app.py` — so a write inside a `GET` is
+    # rolled back at the end of it and nothing says so. `flags.commit` is the
+    # framework's own way to say this one does write, and without it Recents
+    # was permanently empty on a route that answered 200 every time.
+    frappe.local.flags.commit = True
 
     row = {field: doc.get(field) for field in FIELDS if field != "_liked_by"}
     liked = frappe.parse_json(doc.get("_liked_by") or "[]")

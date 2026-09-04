@@ -59,6 +59,7 @@
 import { computed, ref, watch } from 'vue'
 import { Button, Dialog, Icon } from '@/ui'
 import ShareLink from './ShareLink.vue'
+import { workspace } from '../../lib/workspace'
 
 const props = defineProps({
   file: { type: Object, default: null },
@@ -83,7 +84,15 @@ const text = ref(null)
 // forty text files must not be forty requests for content nobody looked at.
 watch([open, () => props.file?.name], async ([showing]) => {
   text.value = null
-  if (!showing || kind.value !== 'Document') return
+  if (!showing) return
+
+  // Opening a file is what makes it recent, and this is where opening happens.
+  // The server stamps `custom_opened` on `details`, which nothing called — so
+  // the rail's second place could never fill and was empty on every site.
+  // Fired and not awaited: the preview must not wait on bookkeeping.
+  workspace.driveFile(props.file.name).catch(() => {})
+
+  if (kind.value !== 'Document') return
 
   const extension = (props.file.file_name || '').split('.').pop().toLowerCase()
   if (!READABLE.includes(extension)) return

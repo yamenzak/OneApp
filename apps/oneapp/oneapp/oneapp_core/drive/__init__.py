@@ -50,7 +50,7 @@ from .kinds import (
     ACTIVE, TRASHED, kind_of, on_insert,
 )
 from .query import ALL, PLACES, RECORD, _place_filters, _visible
-from .reading import PAGE, listing, path, storage
+from .reading import PAGE, details, listing, path, storage
 from .writing import (
     attach, empty_trash, make_folder, move, rename, restore, set_favourite,
     sweep_trash, trash,
@@ -66,6 +66,7 @@ __all__ = [
     "attach",
     "colleagues",
     "DEFAULT_DAYS",
+    "details",
     "empty_trash",
     "KIND_FIELD",
     "kind_of",

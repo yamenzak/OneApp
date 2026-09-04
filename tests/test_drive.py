@@ -482,3 +482,36 @@ def test_the_rail_and_the_phone_offer_the_same_places(drive):
 	page = (ROOT / "apps/oneapp/frontend/src/pages/Drive.vue").read_text()
 	assert "from './places'" in rail
 	assert "drive/places'" in page
+
+
+def test_every_endpoint_in_the_package_is_reachable(drive):
+	"""A `@frappe.whitelist` the package does not re-export is a 404.
+
+	`details` was one for three stages. It is what stamps `custom_opened`, so
+	the rail's Recents could never fill and read as a place nobody used — a
+	whole feature absent because of a missing name in an import line, with
+	nothing failing anywhere to say so.
+	"""
+	import re
+
+	missing = []
+	for module in ("kinds.py", "query.py", "reading.py", "writing.py", "sharing.py"):
+		source = (DRIVE / module).read_text()
+		for name in re.findall(r"@frappe\.whitelist\([^)]*\)\ndef (\w+)", source):
+			if not hasattr(drive, name):
+				missing.append(f"{module}:{name}")
+
+	assert not missing, (
+		"whitelisted and not re-exported, so the client's call 404s: "
+		+ ", ".join(missing)
+	)
+
+
+def test_opening_a_file_survives_the_request_that_recorded_it():
+	"""Frappe commits a request only when its HTTP method changes server state,
+	so a write inside a `GET` is rolled back at the end of it — silently, on a
+	route that answers 200. That is how Recents stayed empty while every
+	ingredient of it worked in isolation."""
+	source = (DRIVE / "reading.py").read_text()
+	opening = source[source.index("def details("):source.index("def storage(")]
+	assert "flags.commit = True" in opening

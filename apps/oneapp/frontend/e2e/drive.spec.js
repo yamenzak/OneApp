@@ -80,6 +80,19 @@ test('opening a file opens a preview, and the preview offers a link', async ({ p
   await expect(preview.locator('pre, img, iframe, video, audio').first()).toBeVisible()
   await expect(preview.getByText('Redirecting')).toHaveCount(0)
 
+  // Opening it is what makes it recent, so Recents has something in it now.
+  // Nothing called the endpoint that stamps this, so the rail's second place
+  // was empty on every site and looked like a place nobody used.
+  await page.keyboard.press('Escape')
+  await goToPlace(page, 'Recent')
+  await expect(page.locator('[data-slot="drive-file"]').first()).toBeVisible({
+    timeout: 15_000,
+  })
+
+  // Back to the preview, for the rest of what it offers.
+  await page.goBack()
+  await file.first().click()
+
   // Sharing replaces the preview rather than stacking on it, because two open
   // modals nest and the outer one goes `aria-hidden` under the inner. What
   // makes a link different from a copy of the file is that it ends, so the
