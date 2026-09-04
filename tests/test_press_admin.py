@@ -71,12 +71,19 @@ def test_the_readiness_page_checks_the_host_separately():
 
 
 def test_every_default_points_at_the_canonical_host():
-    for path in (
+    # The doctype declarations are a directory, so this globs rather than
+    # naming a file: moving the default into a sibling module must not make
+    # the check pass by finding no host to check.
+    paths = [
         ROOT / "apps/oneapp_control/oneapp_control/install.py",
         ROOT / "apps/oneapp_control/oneapp_control/press/client.py",
         ROOT / "scripts/bootstrap_site.py",
-        ROOT / "scripts/gen_doctypes.py",
-    ):
+    ] + sorted((ROOT / "scripts/doctypes").glob("*.py"))
+    assert any("cloud.frappe.io" in p.read_text() for p in paths), (
+        "no file names the press host any more — this guard has gone blind"
+    )
+
+    for path in paths:
         text = path.read_text()
         if "frappe.io" not in text and "frappecloud" not in text:
             continue
