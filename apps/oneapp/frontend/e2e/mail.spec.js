@@ -237,12 +237,18 @@ test('a forward carries the message, its files and nobody on the To', async ({
   await threads(page).filter({ hasText: SUBJECT }).click()
   await page.locator('[data-slot="mail-forward"]').click()
 
+  // Scoped to the dialog and by role: `getByLabel('To')` also finds "Reply to
+  // all" and "Move to" behind it, which is a lesson about aria-labels rather
+  // than about mail.
+  const compose = page.getByRole('dialog')
+
   // Built on the server — quoting in the browser would quote the copy with its
   // remote images held back and send somebody a reply full of empty `<img>`.
-  await expect(page.getByLabel('Subject')).toHaveValue(`Fwd: ${SUBJECT}`)
-  await expect(page.getByLabel('To')).toHaveValue('')
-  await expect(page.getByRole('dialog')).toContainText('wrote:')
-  await expect(page.getByRole('dialog')).toContainText('revised cladding quote')
+  await expect(compose.getByRole('textbox', { name: 'Subject' }))
+    .toHaveValue(`Fwd: ${SUBJECT}`)
+  await expect(compose.getByRole('textbox', { name: 'To' })).toHaveValue('')
+  await expect(compose).toContainText('wrote:')
+  await expect(compose).toContainText('revised cladding quote')
 
   await page.keyboard.press('Escape')
   expectNoRealErrors(errors)
@@ -260,13 +266,16 @@ test('a reply goes to the sender, and carries Cc when it is to all', async ({
   await threads(page).filter({ hasText: SUBJECT }).click()
 
   await page.locator('[data-slot="mail-reply-all"]').click()
-  await expect(page.getByLabel('To')).toHaveValue('hala@client.test')
+  const compose = page.getByRole('dialog')
+  await expect(compose.getByRole('textbox', { name: 'To' }))
+    .toHaveValue('hala@client.test')
   // Cc and Bcc are behind a toggle, opened here because reply-to-all filled
   // one in — a field with something in it must not be hidden.
-  await expect(page.getByLabel('Cc')).toBeVisible()
+  const cc = compose.getByRole('textbox', { name: 'Cc', exact: true })
+  await expect(cc).toBeVisible()
   // And never back to an address this person holds: answering yourself is the
   // oldest bug in mail.
-  await expect(page.getByLabel('Cc')).not.toHaveValue(new RegExp(ADDRESS))
+  await expect(cc).not.toHaveValue(new RegExp(ADDRESS))
 
   await page.keyboard.press('Escape')
   expectNoRealErrors(errors)
