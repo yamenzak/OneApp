@@ -257,3 +257,57 @@ test('the storage screen says which file and not only which kind', async ({ page
 
   expectNoRealErrors(errors)
 })
+
+test('a link made here is a link a stranger can follow', async ({ page, browser }) => {
+  test.skip(!onDesktop(page), 'one viewport is enough: this is a server path, not a layout')
+
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/files?place=all')
+
+  const file = page.locator('button[data-slot="drive-open"]')
+  await file.first().waitFor({ timeout: 20_000 })
+  await file.first().click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Share a link' }).click()
+
+  // Links this file already has, from earlier runs. The dialog draws them
+  // before the new one exists, so waiting for "a row" would read whichever was
+  // already on screen — and reading a revoked one is a 403 that looks like a
+  // broken guest route rather than a racing test.
+  const rows = page.locator('[data-slot="file-link"]')
+  const before = await rows.count()
+  await page.getByRole('button', { name: 'Make a link' }).click()
+  await expect(rows).toHaveCount(before + 1, { timeout: 15_000 })
+
+  const made = rows.first()
+  const url = (await made.locator('p').first().innerText()).trim()
+  expect(url).toContain('open_link?secret=')
+
+  // A context with no cookies, because the whole claim is that the secret is
+  // the authentication. Following it while signed in would prove nothing —
+  // and this path answered 500 to everybody for as long as it existed.
+  const stranger = await browser.newContext()
+  try {
+    const answer = await stranger.request.get(url)
+    expect(answer.status()).toBe(200)
+    expect((await answer.body()).length).toBeGreaterThan(0)
+  } finally {
+    await stranger.close()
+  }
+
+  // Revoking re-reads the list, so this is also where the count shows up —
+  // the row on screen was drawn before the stranger followed anything, and a
+  // dialog nobody reloaded is correctly stale.
+  await page.getByRole('button', { name: 'Stop this link working' }).first().click()
+  await expect(made).toContainText('Revoked', { timeout: 15_000 })
+  // Counted, which is the reason a revoked link is kept rather than deleted.
+  await expect(made).toContainText('opened 1 time')
+
+  const after = await browser.newContext()
+  try {
+    expect((await after.request.get(url)).status()).not.toBe(200)
+  } finally {
+    await after.close()
+  }
+
+  expectNoRealErrors(errors)
+})

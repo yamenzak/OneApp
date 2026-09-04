@@ -50,10 +50,17 @@
                 {{ row.opened === 1 ? 'time' : 'times' }}
               </p>
             </div>
+            <!--
+              `label` as well as `tooltip`. An icon-only Button takes its
+              accessible name from the label, and a tooltip is not one: without
+              this a screen reader announces both of these as "button", and the
+              destructive one is indistinguishable from the harmless one.
+            -->
             <Button
               v-if="!row.revoked"
               icon="lucide-copy"
               variant="ghost"
+              label="Copy the link"
               tooltip="Copy the link"
               @click="copy(row)"
             />
@@ -62,6 +69,7 @@
               icon="lucide-x"
               variant="ghost"
               theme="red"
+              label="Stop this link working"
               tooltip="Stop this link working"
               @click="revoke(row)"
             />

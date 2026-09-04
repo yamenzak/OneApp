@@ -61,12 +61,14 @@
             <Button
               v-if="one.built"
               icon="lucide-pencil"
+              label="Open in the builder"
               tooltip="Open in the builder"
               @click="draw(one.name)"
             />
             <Button
               v-if="one.built && !one.standard"
               icon="lucide-trash-2"
+              label="Delete this format"
               tooltip="Delete this format"
               :loading="working === one.name"
               @click="remove(one)"
@@ -97,9 +99,15 @@
           >
             <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-8">{{ one.name }}</span>
             <Badge v-if="one.default" label="Default" theme="blue" variant="subtle" />
-            <Button icon="lucide-pencil" tooltip="Edit this letter head" @click="head(one.name)" />
+            <Button
+              icon="lucide-pencil"
+              label="Edit this letter head"
+              tooltip="Edit this letter head"
+              @click="head(one.name)"
+            />
             <Button
               icon="lucide-trash-2"
+              label="Delete this letter head"
               tooltip="Delete this letter head"
               :loading="working === one.name"
               @click="removeHead(one)"

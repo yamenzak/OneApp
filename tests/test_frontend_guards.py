@@ -1283,3 +1283,40 @@ def test_every_name_taken_from_the_barrel_is_one_the_barrel_has(app):
 		"imported from '@/ui' and not exported by it — this is a build failure:\n"
 		+ "\n".join(missing)
 	)
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_an_icon_only_button_says_what_it_does(app):
+	"""A Button with an `icon` and no `label` has no accessible name.
+
+	frappe-ui's Button renders `label` as its text when there is room for text
+	and as the button's name when there is not — so an icon-only one without a
+	label is announced as "button", and a destructive control is
+	indistinguishable from a harmless one beside it.
+
+	A `tooltip` is not a name. It is a hover, it never appears on a touch
+	screen, and it is not what a screen reader reads.
+
+	Found by a browser test that could not click a revoke button because
+	nothing could address it — which is the same reason nobody using a screen
+	reader could have pressed it either.
+	"""
+	root = SPA_SOURCE[app]
+	if not root.exists():
+		pytest.skip(f"{app} has no frontend checked out")
+
+	tags = re.compile(r"<Button\b[^>]*?/>|<Button\b.*?</Button>", re.S)
+	named = re.compile(r"\blabel\s*=|:label\s*=|aria-label")
+	icon = re.compile(r"\bicon\s*=|:icon\s*=")
+
+	unnamed = []
+	for path in sorted(root.rglob("*.vue")):
+		for tag in tags.findall(path.read_text()):
+			if named.search(tag) or not icon.search(tag):
+				continue
+			unnamed.append(f"{path.relative_to(root)}: {tag.strip().splitlines()[0][:60]}")
+
+	assert not unnamed, (
+		"an icon-only Button with no `label`, so it has no accessible name:\n"
+		+ "\n".join(unnamed)
+	)

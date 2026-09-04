@@ -26,6 +26,7 @@
       <Button
         v-if="removable"
         icon="lucide-trash-2"
+        label="Remove this section"
         tooltip="Remove this section"
         @click="emit('remove')"
       />
@@ -64,12 +65,14 @@
         <div class="flex items-center gap-1">
           <Button
             icon="lucide-minus"
+            label="Remove this column"
             tooltip="Remove this column"
             :disabled="section.columns.length <= 1"
             @click="removeColumn(at)"
           />
           <Button
             icon="lucide-move-horizontal"
+            label="Make this column wider"
             tooltip="Make this column wider"
             @click="widen(at)"
           />
