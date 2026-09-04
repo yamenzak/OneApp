@@ -40,6 +40,15 @@ PIDFILE="$BENCH/.oneapp-dev-$PORT.pid"
 
 sites_path="$BENCH/sites"
 
+# The dev bench's two sites and the port each serves on, in the order a seed
+# wants them: the manifest is written on the control plane and cached by the
+# tenant. One list, because three commands needed it and each having its own
+# idea is how `migrate`, `seed` and `restart` all came to quietly do half the
+# work — a doctype on one site and not the other, a fixture that reset one
+# site's state, a server restarted while the one being tested went on answering
+# from old code.
+SITES="${ONEAPP_SITES:-control.localhost:8000 space.localhost:8001}"
+
 require_bench() {
   [ -x "$PY" ] || { echo "No python at $PY. Is ONEAPP_BENCH right?" >&2; exit 1; }
   [ -d "$sites_path/$SITE" ] || { echo "No site $SITE under $sites_path." >&2; exit 1; }
@@ -287,7 +296,15 @@ PYEOF
     # theme: it writes the half a manifest edit changes and skips the half it
     # does not, which is seconds rather than minutes. Run the full one before
     # a browser pass, because only the full one sweeps up after the last.
-    exec "$0" run "$(dirname "$0")/seed_dev_space.py" "${@:2}"
+    #
+    # Both sites, in order. The seeder's own docstring has always said to run
+    # it twice; leaving that to whoever typed it meant the tenant — the site
+    # the browser suite actually talks to — kept last week's fixture.
+    for pair in $SITES; do
+      echo "=== ${pair%%:*} ==="
+      ONEAPP_SITE="${pair%%:*}" ONEAPP_PORT="${pair##*:}" \
+        "$0" run "$(dirname "$0")/seed_dev_space.py" "${@:2}"
+    done
     ;;
 
   build)
@@ -322,19 +339,40 @@ PYEOF
     # Frappe's develop branch moves its own schema, so a site left alone for a
     # week fails with "DocType X not found" on a page that has nothing to do
     # with X. Run this after pulling frappe, or after adding a doctype here.
-    "$PY" - "$sites_path" "$SITE" <<'PYEOF'
+    #
+    # Every site, not `$SITE`. This bench has a control plane and a tenant, a
+    # new doctype usually belongs to one of them, and migrating only the
+    # default one is a failure that does not look like one: the suite is green,
+    # the console is quiet, and the browser says the method is not whitelisted
+    # — because on *that* site the doctype behind it does not exist. Name sites
+    # explicitly to narrow it: `dev.sh migrate space.localhost`.
+    "$PY" - "$sites_path" "${@:2}" <<'PYEOF'
+import os
 import sys
+
 import frappe
 from frappe.migrate import SiteMigration
 
-sites_path, site = sys.argv[1], sys.argv[2]
-frappe.init(site=site, sites_path=sites_path)
-SiteMigration(skip_failing=False).run(site=site)
+sites_path, named = sys.argv[1], sys.argv[2:]
+# A site is a directory holding a site_config.json. Everything else in there —
+# `assets`, `apps.txt`, a redis dump — is not.
+sites = named or sorted(
+    one for one in os.listdir(sites_path)
+    if os.path.exists(os.path.join(sites_path, one, "site_config.json"))
+)
+for site in sites:
+    print(f"\n=== {site} ===", flush=True)
+    frappe.init(site=site, sites_path=sites_path)
+    SiteMigration(skip_failing=False).run(site=site)
+    frappe.destroy()
 PYEOF
     ;;
 
   restart)
-    "$0" down >/dev/null 2>&1 || true
+    # Its own port only. A bare `down` stops every dev server, which is right
+    # for `down` and wrong here — `up` brings back one, so restarting through
+    # the bare form would stop two servers and start one.
+    "$0" down "$PORT" >/dev/null 2>&1 || true
     exec "$0" up
     ;;
 
@@ -347,6 +385,16 @@ PYEOF
     # is answered by the *old* code. That failure costs an hour every time,
     # because everything looks fine and only the behaviour is old. So ask the
     # port who has it.
+    #
+    # And ask about *every* port this script uses, not just `$PORT`. Two sites
+    # means two servers on two ports, `$PORT` defaults to the control plane's,
+    # and `dev.sh restart` from a shell that had not exported `ONEAPP_PORT`
+    # therefore restarted the control server and reported success while the
+    # tenant's went on answering from code an hour old. Same failure as above,
+    # arrived at from the other direction — so `down` stops them all unless a
+    # port is named: `dev.sh down 8001`.
+    for PORT in ${2:-${ONEAPP_PORT:-$(for p in $SITES; do printf '%s ' "${p##*:}"; done)}}; do
+    PIDFILE="$BENCH/.oneapp-dev-$PORT.pid"
     stopped=""
     if [ -f "$PIDFILE" ] && kill "$(cat "$PIDFILE")" 2>/dev/null; then
       stopped="yes"
@@ -356,7 +404,8 @@ PYEOF
     if [ -n "$holder" ] && kill "$holder" 2>/dev/null; then
       stopped="yes"
     fi
-    [ -n "$stopped" ] && echo "stopped" || echo "not running"
+    [ -n "$stopped" ] && echo "stopped :$PORT" || echo "not running on :$PORT"
+    done
     ;;
 
   *)

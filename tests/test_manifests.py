@@ -584,3 +584,56 @@ def test_the_customer_space_grants_no_doctypes():
 		"on them has to be granted too, or its picker is empty — see the rule "
 		"at the top of this section, and docs/ONESPACE.md."
 	)
+
+
+# --------------------------------------------------------------------------- #
+# Icons a space declares
+# --------------------------------------------------------------------------- #
+#
+# `lucide-hard-hat` is the name that made this necessary. It is a real Lucide
+# glyph and an obvious one for a contractor, so nobody looking at the RUA
+# manifest saw anything wrong with it — but Tailwind only emits CSS for class
+# names it can find as literals, and that name is in no source file. It drew an
+# empty box for as long as it was there.
+#
+# Two guards already keep the closed set honest: `test_design_tokens` checks the
+# doctype's Select and `lib/icons.js` against `app_icons.SPACE_ICONS`, and
+# `test_screens` checks `spaceview.VIEW_ICONS` against the same. Neither reads a
+# *manifest*, so a name outside the set travelled all the way to `bench migrate`
+# — where the doctype's own Select rejected it, hours of unrelated work later.
+
+
+def space_icons() -> list[tuple[str, str]]:
+	"""Every `"icon": "…"` a space manifest declares, with the file it is in.
+
+	Read out of the source rather than imported: these modules pull in Frappe at
+	the top, and a rule about literals is better checked against the literals.
+	"""
+	found = []
+	for path in sorted((CONTROL / "spaces").glob("*.py")):
+		for icon in re.findall(r'"icon":\s*"([^"]+)"', path.read_text()):
+			found.append((path.name, icon))
+	return found
+
+
+def test_the_reader_found_the_icons():
+	found = space_icons()
+	assert len(found) > 3, f"only parsed {len(found)} icons out of the spaces"
+
+
+@pytest.mark.parametrize(
+	"where,icon", space_icons(), ids=lambda value: str(value)
+)
+def test_every_icon_a_space_declares_is_one_that_draws(where, icon):
+	import sys
+
+	sys.path.insert(0, str(ROOT / "scripts"))
+	from app_icons import SPACE_ICONS
+
+	assert icon in SPACE_ICONS, (
+		f"{where} names {icon!r}, which is not in the curated set. Tailwind "
+		f"emits no CSS for it, so it renders as an empty box — and the "
+		f"OneSpace Space doctype refuses it outright, which is a failed "
+		f"`bench migrate`. Pick from scripts/app_icons.py, or add it there "
+		f"and regenerate."
+	)

@@ -674,7 +674,7 @@ scripts/dev.sh worker      # a background worker, for anything that enqueues
 scripts/dev.sh watch APP   # rebuild the bundle into public/ as you edit it
 scripts/dev.sh spa APP     # Vite dev server on its own port, hot reload
 scripts/dev.sh seed        # the dev fixture (--manifest for the fast half)
-scripts/dev.sh migrate     # after adding a doctype
+scripts/dev.sh migrate     # every site; name one to narrow it
 scripts/dev.sh shell       # a REPL bound to the site
 scripts/dev.sh run F [ARG] # a Python file against the site
 scripts/dev.sh down

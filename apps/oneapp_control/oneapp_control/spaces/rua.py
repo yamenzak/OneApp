@@ -22,7 +22,7 @@ SPACE = {
 	"space_label": "RUA",
 	"module": "Rua",
 	"role_name": "OneSpace Rua",
-	"icon": "lucide-hard-hat",
+	"icon": "lucide-briefcase",
 	"sort_order": 20,
 	"availability": "Restricted",
 	"description": "Projects, quotations, LPOs, invoices and the people on site.",
@@ -111,7 +111,7 @@ SCREENS = [
 		# The spine. Everything else in this space hangs off a project, and it
 		# is the first thing anybody opens.
 		"screen": "projects", "label": "Projects", "singular": "Project",
-		"icon": "lucide-hard-hat", "document_type": "Project",
+		"icon": "lucide-briefcase", "document_type": "Project",
 		"fields": "project_name,custom_stage,customer,estimated_costing,"
 		          "percent_complete,custom_location",
 		"order_by": "modified desc",
@@ -134,7 +134,7 @@ SCREENS = [
 			# one, and until now the only way to see which belonged to what was
 			# to read the titles.
 			"children": {"screen": "projects", "field": "custom_parent_project",
-			             "label": "Variations", "icon": "lucide-git-branch"},
+			             "label": "Variations", "icon": "lucide-wrench"},
 			# Each names a screen in this space and the field on it pointing
 			# back here. The browser then asks the ordinary list endpoint with
 			# that filter, so the columns are the ones that screen already
@@ -147,7 +147,7 @@ SCREENS = [
 				{"screen": "invoices", "field": "project",
 				 "label": "Invoices", "icon": "lucide-receipt"},
 				{"screen": "payments", "field": "project",
-				 "label": "Payments", "icon": "lucide-banknote"},
+				 "label": "Payments", "icon": "lucide-wallet"},
 			],
 		}}),
 		# Their own five words, not ERPNext's three. `custom_stage` is the
@@ -185,7 +185,7 @@ SCREENS = [
 	},
 	{
 		"screen": "payments", "label": "Payments", "singular": "Payment",
-		"icon": "lucide-banknote", "document_type": "Payment Entry",
+		"icon": "lucide-wallet", "document_type": "Payment Entry",
 		"fields": "party,payment_type,posting_date,paid_amount,reference_no,project",
 		"order_by": "posting_date desc",
 		"view_types": "list,dashboard",
@@ -195,7 +195,7 @@ SCREENS = [
 		# Clients and consultants both — a consultant is a customer nobody
 		# invoices, which is a group and not a doctype.
 		"screen": "clients", "label": "Clients", "singular": "Client",
-		"icon": "lucide-building-2", "document_type": "Customer",
+		"icon": "lucide-users", "document_type": "Customer",
 		"fields": "customer_name,customer_group,territory,mobile_no,tax_id",
 		"order_by": "customer_name asc",
 		"view_types": "list",
@@ -209,7 +209,7 @@ SCREENS = [
 	},
 	{
 		"screen": "team", "label": "Team", "singular": "Employee",
-		"icon": "lucide-users", "document_type": "Employee",
+		"icon": "lucide-user-round", "document_type": "Employee",
 		"fields": "employee_name,designation,branch,custom_nationality,"
 		          "date_of_joining,status",
 		"order_by": "employee_name asc",
@@ -223,7 +223,7 @@ SCREENS = [
 		# screen: in the system this replaces the answer to "how many days did
 		# he work in March" was inside thirty-one JSON blobs.
 		"screen": "attendance", "label": "Attendance", "singular": "Day",
-		"icon": "lucide-calendar-check", "document_type": "Attendance",
+		"icon": "lucide-clock", "document_type": "Attendance",
 		"fields": "employee_name,attendance_date,status,late_entry,"
 		          "custom_overtime_hours",
 		"order_by": "attendance_date desc",

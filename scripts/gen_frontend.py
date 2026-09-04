@@ -44,6 +44,10 @@ DEV_DEPENDENCIES = {
     "autoprefixer": "^10.4.20",
     "eslint": "^9.17.0",
     "eslint-plugin-vue": "^9.32.0",
+    # What `no-undef` is told a browser already has. It arrives under eslint
+    # anyway, but a rule that fails open — every `window` an error — should not
+    # depend on somebody else's dependency tree.
+    "globals": "^13.24.0",
     "postcss": "^8.5.0",
     "tailwindcss": "^3.4.17",
     "vite": "^7.0.0",
@@ -310,6 +314,7 @@ def package_json(app: str, spec: dict) -> str:
 
 def eslint_config(app: str) -> str:
     return BANNER + """
+import globals from 'globals'
 import pluginVue from 'eslint-plugin-vue'
 
 // The guard. Every native control here has a frappe-ui equivalent, and using the
@@ -329,6 +334,34 @@ const BANNED = [
 
 export default [
   ...pluginVue.configs['flat/recommended'],
+  {
+    // What `no-undef` is allowed to already know about. Browser globals
+    // because this is a browser, and Vue's compiler macros because they are
+    // not imports — `defineProps` is compiled away, so to a linter reading the
+    // source it is a name nothing defines.
+    files: ['src/**/*.{js,vue}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        defineProps: 'readonly',
+        defineEmits: 'readonly',
+        defineExpose: 'readonly',
+        defineModel: 'readonly',
+        defineOptions: 'readonly',
+        defineSlots: 'readonly',
+        withDefaults: 'readonly',
+      },
+    },
+    rules: {
+      // A name nothing defines. Off by default in flat config, which is how
+      // `pages/Mail.vue` called `onDoctypeChange` for a whole batch without
+      // importing it: `vite build` compiles an undefined identifier happily,
+      // the SFC renders down to a `setup` that throws on its first line, and
+      // the page is blank. Nothing but a browser saw it — 1939 Python tests
+      // and a clean `yarn lint` both passed over it.
+      'no-undef': 'error',
+    },
+  },
   {
     files: ['src/**/*.vue'],
     rules: {
@@ -2701,6 +2734,13 @@ export function expectNoRealErrors(errors) {
     // meant this whole check was passing nothing. Realtime is therefore not
     // covered by the browser pass; it is exercised on a real site.
     /\/socket\.io\//,
+    // A request the browser cancelled, which is what `fetch` reports when the
+    // page navigates out from under one. The Mail screen refetches on a
+    // realtime event, so any spec that reloads shortly after acting on a
+    // message can lose that refetch mid-flight — and losing it is correct
+    // behaviour, not a failure. A server that really fails answers with a
+    // status, which the response listener above still catches.
+    /TypeError: Failed to fetch/,
   ]
   const real = errors.filter((e) => !ignorable.some((p) => p.test(e)))
   if (real.length) {
