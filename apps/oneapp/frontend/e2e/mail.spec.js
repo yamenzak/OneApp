@@ -248,7 +248,9 @@ test('a forward carries the message, its files and nobody on the To', async ({
     .toHaveValue(`Fwd: ${SUBJECT}`)
   await expect(compose.getByRole('textbox', { name: 'To' })).toHaveValue('')
   await expect(compose).toContainText('wrote:')
-  await expect(compose).toContainText('revised cladding quote')
+  // The message being forwarded is the newest one in the thread, which is the
+  // one on screen — not the one that started it.
+  await expect(compose).toContainText('glazing line moved')
 
   await page.keyboard.press('Escape')
   expectNoRealErrors(errors)

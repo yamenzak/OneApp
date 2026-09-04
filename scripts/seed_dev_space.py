@@ -581,11 +581,16 @@ def _seed_mail(user):
 	)
 	doc.save(ignore_permissions=True)
 
+	# A second recipient on the conversation, so a reply-to-all has somebody to
+	# copy. Without one the fixture cannot tell "no Cc because the code is
+	# wrong" from "no Cc because there was nobody else on it".
+	both = f"{address}, ops@client.test"
+
 	messages = [
 		("Quotation for the Al Reem tower", "INBOX", "Received",
-		 "<p>Could you send the revised cladding quote before Thursday?</p>"),
+		 "<p>Could you send the revised cladding quote before Thursday?</p>", both),
 		("Re: Quotation for the Al Reem tower", "INBOX", "Received",
-		 "<p>Attached — the glazing line moved, everything else holds.</p>"),
+		 "<p>Attached — the glazing line moved, everything else holds.</p>", both),
 		# One in a folder somebody made, which is the whole point of mirroring
 		# them, and one in Sent — stored as Sent rather than Received, which is
 		# what `OneSpaceInboundMail` does to a message out of a Sent folder.
@@ -594,9 +599,9 @@ def _seed_mail(user):
 		# the spec watches for the request rather than for a reply.
 		("Fabricator — CV and trade test", "Applicants", "Received",
 		 "<p>Six years on curtain wall, available from the 12th.</p>"
-		 '<img src="https://tracker.invalid/open.gif" width="1" height="1">'),
+		 '<img src="https://tracker.invalid/open.gif" width="1" height="1">', address),
 		("Al Reem — revised elevations", "Sent Items", "Sent",
-		 "<p>Revised sheets attached, superseding revision B.</p>"),
+		 "<p>Revised sheets attached, superseding revision B.</p>", "hala@client.test"),
 	]
 	# A Contact for the person who writes in, so the sender chip has a face and
 	# a firm to show rather than only initials — which is the difference the
@@ -620,11 +625,15 @@ def _seed_mail(user):
 		contact.append("email_ids", {"email_id": "hala@client.test", "is_primary": 1})
 	contact.save(ignore_permissions=True)
 
-	for subject, folder, direction, content in messages:
-		existing = frappe.db.get_value(
-			"Communication", {"subject": subject, "recipients": address}, "name"
-		)
+	for subject, folder, direction, content, recipients in messages:
+		existing = frappe.db.get_value("Communication", {"subject": subject}, "name")
 		if existing:
+			# Recipients too, for the same reason the folder is reset: a fixture
+			# row written by an older version of this file is a row that no
+			# longer says what the specs read off it.
+			frappe.db.set_value(
+				"Communication", existing, "recipients", recipients, update_modified=False
+			)
 			# Put the folder back. The fixture is what a browser pass starts
 			# from, and that pass *files* things — a seed that only inserted
 			# would leave every conversation wherever the last run dropped it,
@@ -643,7 +652,7 @@ def _seed_mail(user):
 			"content": content,
 			"sender": address if direction == "Sent" else "hala@client.test",
 			"sender_full_name": "Sales" if direction == "Sent" else "Hala Nasser",
-			"recipients": "hala@client.test" if direction == "Sent" else address,
+			"recipients": recipients,
 			"email_account": account,
 			folder_lib.FOLDER_FIELD: folder,
 		}).insert(ignore_permissions=True)
