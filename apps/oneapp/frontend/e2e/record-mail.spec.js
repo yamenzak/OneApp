@@ -49,16 +49,19 @@ test('a record has its own correspondence, and writing one files it there', asyn
 
   await signIn(page, baseURL)
   await openMail(page)
-  const before = await messages(page).count()
 
   const subject = `Cladding schedule ${Date.now()}`
   await write(page, subject)
 
   // It comes back on the record rather than only in the Mail screen, which is
   // the whole point: the link is made by the sending.
+  //
+  // The subject carries a timestamp and the assertion is on that, not on a
+  // count: this record keeps every message any run ever wrote to it, so a
+  // count is a fixture assumption rather than a fact about the feature — and
+  // it failed once for exactly that reason.
   const message = messages(page).filter({ hasText: subject })
   await expect(message).toBeVisible({ timeout: 20_000 })
-  await expect(messages(page)).toHaveCount(before + 1)
 
   // And it says how it got here. A link nobody can explain is a link nobody
   // will trust, and this one was made by a person.
