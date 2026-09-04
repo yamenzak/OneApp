@@ -31,7 +31,7 @@
           v-model="search"
           class="flex-1"
           type="text"
-          placeholder="Search subjects"
+          placeholder="Search mail"
           @keyup.enter="load()"
         />
         <!-- Write sits over the list rather than in the rail: the rail is the
@@ -93,7 +93,7 @@
             <Button
               variant="ghost"
               size="sm"
-              :icon="one.starred ? 'lucide-star' : 'lucide-star-off'"
+              icon="lucide-star"
               :label="one.starred ? 'Unstar' : 'Star'"
               :tooltip="one.starred ? 'Unstar' : 'Star'"
               :class="one.starred ? 'text-ink-amber-3' : ''"
@@ -286,12 +286,17 @@
           label="From"
           :options="addresses.map((one) => ({ label: one, value: one }))"
         />
-        <div class="flex items-end gap-2">
+        <!-- Stacked on a phone. Side by side, the toggle takes a third of the
+             line and leaves the recipients a box too narrow to read one
+             address in, which is the field that matters most on the screen
+             with the least room. -->
+        <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
           <RecipientField v-model="draft.to" class="flex-1" label="To" />
           <!-- Behind a toggle, because most messages have neither and two
                empty boxes above every one of them is two boxes to skip. -->
           <Button
             variant="ghost"
+            class="self-start sm:self-auto"
             :label="copies ? 'Hide Cc and Bcc' : 'Cc and Bcc'"
             data-slot="mail-copies"
             @click="copies = !copies"
