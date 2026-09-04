@@ -79,6 +79,11 @@ def _like(text: str) -> str:
 # `/` or `.` as their separator.
 SPLIT = "::"
 
+# The one folder name that is not a folder on anybody's server. Prefixed so it
+# cannot collide with a real one: IMAP names are ordinary text and somebody may
+# genuinely have a folder called `Sent`, which is exactly the one this replaces.
+SENT = "__sent"
+
 # What each kind of folder is drawn as. Named rather than guessed from the
 # folder's own name, because "Gesendet" and "Sent Items" are the same thing and
 # the server already told us which — see `folders.classify`.
@@ -167,11 +172,26 @@ def folders() -> dict:
 			"key": address, "label": address, "address": address, "folder": "",
 			"icon": "lucide-at-sign", "kind": "", "quiet": False, "depth": 0,
 		})
+		# Sent, and one of them per address rather than one for the workspace.
+		#
+		# An address has *one* outbox and two things end up in it: a reply
+		# written here, and whatever the connected mailbox's own Sent folder
+		# already held. Both are stored with `sent_or_received = "Sent"` and
+		# this address as the sender, so one row covers both — which is why the
+		# server's own Sent folder is skipped below, the same way INBOX is.
+		# A separate top-level "Sent from here" read as a fourth mailbox
+		# sitting beside somebody's real ones.
+		rows.append({
+			"key": f"{address}{SPLIT}{SENT}", "label": "Sent", "address": address,
+			"folder": SENT, "icon": "lucide-send", "kind": "sent",
+			"quiet": False, "depth": 1,
+		})
 		for name in info["folders"]:
 			kind = info["kinds"].get(name, "")
-			if kind == "inbox":
-				# The address itself already *is* the inbox. A second row
-				# saying INBOX under it would be the same list twice.
+			if kind in ("inbox", "sent"):
+				# The address itself already *is* the inbox, and the row above
+				# already is its Sent. A second of either would be the same
+				# list twice under a different name.
 				continue
 			rows.append({
 				"key": f"{address}{SPLIT}{name}",
@@ -187,14 +207,6 @@ def folders() -> dict:
 				"depth": 1,
 			})
 
-	rows.append({
-		# Mail sent *from here*. Distinct from a connected mailbox's own Sent
-		# folder, which is that mailbox's and appears under it: this is the
-		# workspace's outgoing, including from addresses that have no mailbox
-		# behind them at all.
-		"key": "sent", "label": "Sent from here", "address": "", "folder": "",
-		"icon": "lucide-send", "kind": "sent", "quiet": False, "depth": 0,
-	})
 	return {"folders": rows, "addresses": sorted(held)}
 
 
@@ -218,6 +230,10 @@ def _filters(folder: str) -> tuple[dict, list | None]:
 	base = {"communication_type": "Communication", "communication_medium": "Email"}
 
 	if folder == "sent":
+		# Everything this person has sent, from any of their addresses. No
+		# longer in the rail — Sent belongs to an address, not to the
+		# workspace — but kept, because it is one honest query and a link
+		# somebody saved should not stop working.
 		return {**base, "sent_or_received": "Sent", "sender": ("in", held)}, None
 
 	address, _, name = folder.partition(SPLIT) if folder else ("", "", "")
@@ -229,6 +245,13 @@ def _filters(folder: str) -> tuple[dict, list | None]:
 		# the name alone would hand one of them the other's.
 		if address not in held:
 			frappe.throw(_("That is not one of your addresses."), frappe.PermissionError)
+
+		if name == SENT:
+			# One address's outbox, whether the message was written here or
+			# came out of that mailbox's own Sent folder. The sender is what
+			# they have in common; the folder is not.
+			return {**base, "sent_or_received": "Sent", "sender": address}, None
+
 		return (
 			{
 				**base,

@@ -73,9 +73,10 @@ test('the rail lists the addresses this person holds', async ({ page, baseURL },
 
   const folders = page.locator('[data-slot="mail-folder"]')
   await expect(folders.filter({ hasText: ADDRESS })).toHaveCount(1)
-  // Sent is a pseudo-folder and is always last, because it is the one thing in
-  // the rail that is not an address.
-  await expect(folders.last()).toContainText('Sent')
+  // Sent belongs to an address rather than to the workspace: one outbox per
+  // address, holding both what was written here and what the mailbox's own
+  // Sent folder already had.
+  await expect(folders.filter({ hasText: 'Sent' })).toHaveCount(1)
 
   expectNoRealErrors(errors)
 })
@@ -96,7 +97,10 @@ test('the folders a mailbox already has come across, Sent included', async ({
   // the address row above it already is the inbox.
   await expect(rail.filter({ hasText: 'Applicants' })).toHaveCount(1)
   await expect(rail.filter({ hasText: 'Documents' })).toHaveCount(1)
+  // Neither INBOX nor the server's own Sent folder gets a row of its own: the
+  // address is the inbox, and the Sent row above already is that outbox.
   await expect(rail.filter({ hasText: 'INBOX' })).toHaveCount(0)
+  await expect(rail.filter({ hasText: 'Sent Items' })).toHaveCount(0)
 
   // Junk is mirrored and folded away, because a rail that opens on somebody's
   // spam is a rail nobody wants.
@@ -111,7 +115,7 @@ test('the folders a mailbox already has come across, Sent included', async ({
 
   // And the Sent folder is not empty, which is the whole reason the framework's
   // "your own mail in your own inbox" guard is off inside one.
-  await rail.filter({ hasText: 'Sent Items' }).click()
+  await rail.filter({ hasText: 'Sent' }).click()
   await expect(threads(page).first()).toContainText('revised elevations')
 
   expectNoRealErrors(errors)

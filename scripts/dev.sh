@@ -12,6 +12,7 @@
 #   scripts/dev.sh worker    a background worker, for anything that enqueues
 #   scripts/dev.sh spa       Vite dev server for an SPA (hot reload, own port)
 #   scripts/dev.sh watch     rebuild an SPA into public/ as you edit it
+#   scripts/dev.sh restart   after a Python edit — the server does not reload
 #   scripts/dev.sh shell     a Python REPL bound to the site
 #   scripts/dev.sh run FILE  execute a Python file against the site
 #   scripts/dev.sh seed      the dev fixture (--manifest for the fast half)
@@ -141,7 +142,13 @@ PYEOF
     services
     mkdir -p "$BENCH/logs"
     echo "Serving $SITE on http://$SITE:$PORT"
-    "$PY" - "$sites_path" "$SITE" "$PORT" <<'PYEOF' &
+    echo "Log: $BENCH/logs/web-$PORT.log"
+    # Into a log, not onto this shell's stdout.
+    #
+    # A background child inherits the pipe, so `dev.sh up | tail` never ends:
+    # `tail` waits for an EOF that arrives when the *server* stops. The command
+    # has done its work and looks hung, which is the same trap `services` had.
+    "$PY" - "$sites_path" "$SITE" "$PORT" >"$BENCH/logs/web-$PORT.log" 2>&1 <<'PYEOF' &
 import sys
 
 import frappe.app

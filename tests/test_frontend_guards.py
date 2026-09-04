@@ -680,7 +680,19 @@ def test_both_renderings_read_that_one_list(app):
 	sidebars = [p for p in root.rglob("*Sidebar.vue")]
 	assert sidebars, f"{app} has no sidebar"
 	for path in sidebars:
-		assert "useNav" in path.read_text(), f"{path.name} declares its own navigation"
+		source = path.read_text()
+		# `useNav`, or nothing of its own to declare.
+		#
+		# The rule this enforces is that the *product's* navigation — spaces,
+		# screens, the workspace pages — is written down once, so the sidebar
+		# and the phone's bottom bar cannot drift into two different names for
+		# the same page. A sidebar whose entire list comes back from the server
+		# is not a second copy of that list: `MailSidebar` draws the addresses
+		# somebody holds and the folders their mailbox has, and there is
+		# nothing for `nav.js` to say about either. The check that it declares
+		# no entries of its own is the test above, which runs over every file.
+		if _declares_a_nav_item(source):
+			assert "useNav" in source, f"{path.name} declares its own navigation"
 
 
 def test_the_bottom_bar_leaves_a_slot_for_everything_else():

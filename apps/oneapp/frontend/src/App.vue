@@ -11,7 +11,14 @@
       :user="identity"
     >
       <template #sidebar>
-        <SpaceSidebar />
+        <!--
+          Mail is not inside a space — the addresses somebody holds do not
+          change when they switch space — so on that route the sidebar has
+          nothing space-shaped to show, and the mailboxes go here rather than
+          into a third column beside a workspace list nobody asked for.
+        -->
+        <MailSidebar v-if="$route.name === 'Mail'" />
+        <SpaceSidebar v-else />
       </template>
 
       <template #rail-footer>
@@ -73,6 +80,7 @@ import { useRoute } from 'vue-router'
 import { FrappeUIProvider, Button, Dialog, LoadingIndicator, usePageMeta } from '@/ui'
 import AppShell from './components/AppShell.vue'
 import SpaceSidebar from './components/SpaceSidebar.vue'
+import MailSidebar from './components/MailSidebar.vue'
 import RailAccount from './components/RailAccount.vue'
 import NotificationBell from './components/NotificationBell.vue'
 import MailBell from './components/MailBell.vue'

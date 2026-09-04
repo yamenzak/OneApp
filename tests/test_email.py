@@ -458,8 +458,26 @@ def test_a_folder_is_not_forced_to_be_received(mailbox, holding, monkeypatch):
 	"Received" would mirror the folder and then show it empty."""
 	holding("me@gmail.com")
 	monkeypatch.setattr(mailbox, "_accounts_for", lambda address: ["Gmail"])
-	filters, _ = mailbox._filters("me@gmail.com::Sent Items")
+	filters, _ = mailbox._filters("me@gmail.com::Applicants")
 	assert "sent_or_received" not in filters
+
+
+def test_an_address_has_one_outbox(mailbox, holding):
+	"""A reply written here and whatever the mailbox's own Sent folder already
+	held are the same outbox. The sender is what they have in common; the
+	folder is not, so the filter is on the sender."""
+	holding("me@gmail.com")
+	filters, or_filters = mailbox._filters(f"me@gmail.com::{mailbox.SENT}")
+	assert filters["sent_or_received"] == "Sent"
+	assert filters["sender"] == "me@gmail.com"
+	assert mailbox.FOLDER_FIELD not in filters
+	assert or_filters is None
+
+
+def test_the_sent_key_cannot_be_a_real_folder(mailbox):
+	"""IMAP names are ordinary text and somebody may genuinely have a folder
+	called `Sent` — which is exactly the one this replaces."""
+	assert mailbox.SENT.startswith("__")
 
 
 def test_a_preview_is_text_and_is_bounded(mailbox):
