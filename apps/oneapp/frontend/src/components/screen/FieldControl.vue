@@ -26,6 +26,7 @@
     :is-new="isNew"
     :target="target"
     allow-create
+    allow-open
     @update:model-value="emit('update:modelValue', $event)"
   >
     <!--

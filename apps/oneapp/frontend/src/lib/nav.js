@@ -135,3 +135,29 @@ export function useNav() {
 
   return { nav, activeSpace }
 }
+
+/**
+ * Which screen in a space shows a given doctype, if any.
+ *
+ * A Link field holds a doctype and an id, and that is not enough to open
+ * anything: this product has no route for a doctype, only for a *screen*, and
+ * one space may show Project on a screen the next space does not show at all.
+ * So the answer is per space, and it comes out of the session's own manifest
+ * rather than from a request — every screen a person may open is already in
+ * hand before the first field renders.
+ *
+ * Empty for a doctype no screen covers, which is the common case and not a
+ * failure: a Link to Currency or UOM points at a master nobody browses, and the
+ * honest answer is that there is nowhere to go.
+ *
+ * The first match wins where a space shows one doctype twice. That is a real
+ * shape — a screen filtered to open invoices beside one showing all of them —
+ * and the manifest's order is the space's own preference, which is a better
+ * answer than refusing to choose.
+ */
+export function screenFor(spaceCode, doctype) {
+  if (!spaceCode || !doctype) return ''
+  const space = session.spaces.find((one) => one.space_code === spaceCode)
+  const found = (space?.screens || []).find((one) => one.document_type === doctype)
+  return found?.screen || ''
+}

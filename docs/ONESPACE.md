@@ -400,6 +400,31 @@ Four tabs:
 | **Files** | Frappe's own File rows, so an Attach field's file and a dropped file are one list. |
 | **Meta** | The desk's sidebar: the face and name, then the four things you do to a record *about other people* — assign, attach, tag, share — then who made it and when, then its id. The only place assignment is offered; it was in the header too, which made it one control in two places. |
 
+### A link is a record, so it opens like one
+
+A Link field holds another record, and for a long time the form let you change
+which one and never let you look at it. Two buttons on the field's label row,
+where the field has a value and the space has somewhere to take it:
+
+| | |
+|---|---|
+| **Open beside this** | The record in the drawer, over the one you are on. `peek` and `peekScreen` in the URL — the same pair a showcase's rail uses, so the back button closes it. |
+| **Open** | Its own screen, its own list behind it. The view type and any saved view are dropped: they belonged to the screen being left. |
+
+Both are absent more often than they are present, and that is the interesting
+part. A Link holds a *doctype*; this product has routes for *screens*; which
+screen shows a doctype is a question only the space's own manifest answers, and
+for most links the answer is none. Currency, UOM, Warehouse and Territory are
+all on an invoice and none of them is a screen anybody browses — a button
+offering to open one would be a door onto a wall. So the buttons appear when
+the space shows that doctype somewhere, and the resolution happens against the
+session's own manifest rather than over the wire, which is why a form with
+nineteen links makes no extra requests to find out.
+
+A filter's picker never offers them: somebody narrowing a list by customer is
+not asking to leave for that customer, and a control inside a popover that
+navigates out from under itself loses what was being typed.
+
 ### A record that is a place, not a form
 
 Some records are not a column of labelled inputs. A project is a photograph of a

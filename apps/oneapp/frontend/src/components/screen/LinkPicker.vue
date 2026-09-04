@@ -49,7 +49,44 @@
            handed to a component that has no default slot. The order is free in
            Vue and not free here. -->
       <template #label="slotProps" v-if="$slots.label">
-        <slot name="label" v-bind="slotProps" />
+        <div class="flex min-w-0 items-center justify-between gap-2">
+          <slot name="label" v-bind="slotProps" />
+
+          <!--
+            Where this link goes, offered as the two things a person actually
+            wants: read it beside what I am doing, or go and work on it.
+            Hidden until there is a value and somewhere to take it — see
+            `destination`.
+
+            On the label's row rather than inside the box. The box is a
+            Combobox, and its right-hand side is the chevron that opens the
+            menu: putting these there means overriding the `suffix` slot, and
+            the slot's default is the trigger, so the chevron would stop being
+            a way to open the picker. A row beside the input instead would have
+            to guess how tall the label and the description above it are, and
+            gets it wrong on every field that has one.
+          -->
+          <span v-if="destination" class="flex shrink-0 items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="lucide-panel-right"
+              :label="`Open ${named} beside this`"
+              :tooltip="`Open ${named} beside this`"
+              data-slot="link-peek"
+              @click="peek"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="lucide-arrow-up-right"
+              :label="`Open ${named}`"
+              :tooltip="`Open ${named}`"
+              data-slot="link-open"
+              @click="open"
+            />
+          </span>
+        </div>
       </template>
 
       <!-- The chosen record's face, in the box itself. -->
@@ -126,8 +163,10 @@
 
 <script setup>
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Combobox, Avatar, Icon, Dialog, Button, ErrorMessage } from '@/ui'
 import { workspace } from '../../lib/workspace'
+import { screenFor } from '../../lib/nav'
 
 // The quick-create form renders whatever the target doctype asks for, and one
 // of those fields can itself be a Link — so this component and FieldControl
@@ -152,6 +191,15 @@ const props = defineProps({
    */
   allowCreate: { type: Boolean, default: false },
   /**
+   * Whether this link offers to open what it points at.
+   *
+   * A form does; a filter row does not — somebody narrowing a list by customer
+   * is not asking to leave for that customer, and a control inside a popover
+   * that navigates out from under itself is a control that loses what was
+   * being typed.
+   */
+  allowOpen: { type: Boolean, default: false },
+  /**
    * The docfield, for the handful of its properties this picker reads —
    * `remember_last_selected_value` today. Optional: a filter row builds a
    * picker without one and should not have to invent a docfield to do it.
@@ -175,6 +223,66 @@ const props = defineProps({
   target: { type: String, default: '' },
 })
 const emit = defineEmits(['update:modelValue'])
+
+const route = useRoute()
+const router = useRouter()
+
+/**
+ * The screen this link's target lives on in this space, or nothing.
+ *
+ * `options` on a Link docfield is the doctype it points at; `target` is the
+ * same answer for a Dynamic Link, where it lives on another field and only the
+ * form knows it. Either way the doctype alone opens nothing — a screen is what
+ * this product has routes for — so the space's own manifest decides, out of the
+ * session rather than over the wire.
+ *
+ * Nothing, and therefore no buttons, in three ordinary cases: an empty field, a
+ * filter's picker, and a link to a master no screen shows. The last is most of
+ * them — Currency, UOM, Warehouse — and a control that offered to open one
+ * would be offering a door onto a wall.
+ */
+const destination = computed(() => {
+  if (!props.allowOpen || !props.modelValue) return ''
+  return screenFor(props.spaceCode, props.target || props.field?.options || '')
+})
+
+/**
+ * Open it beside this one, in the drawer.
+ *
+ * Written into the URL rather than into a ref, because that is where every
+ * other peek in this product lives: it makes the drawer a place with a link,
+ * the back button closes it, and the same two query parameters already drive
+ * the one a showcase's rail opens. Nothing new is being invented here — the
+ * host is already watching `peek` and `peekScreen`.
+ */
+/**
+ * What to call the thing these two open.
+ *
+ * The record's name where it has been resolved, and its id until then — which
+ * is the same fallback the box itself uses, so the tooltip never says "Open
+ * undefined" during the moment before `resolveChosen` answers.
+ */
+const named = computed(() => chosen.value?.label || props.modelValue || 'this')
+
+const peek = () => {
+  if (!destination.value) return
+  router.push({
+    query: { ...route.query, peek: String(props.modelValue), peekScreen: destination.value },
+  })
+}
+
+/**
+ * Go to it, on its own screen, with its own list behind it.
+ *
+ * The view type and any saved view are deliberately dropped: they belong to the
+ * screen being left, and carrying `layout=my-overdue` onto a different screen
+ * is asking it for a view that is not its. The same reasoning as
+ * `openElsewhere` in the host, and the same shape of URL.
+ */
+const open = () => {
+  if (!destination.value) return
+  router.push({ query: { screen: destination.value, record: String(props.modelValue) } })
+}
 
 const query = ref('')
 const found = ref([])
