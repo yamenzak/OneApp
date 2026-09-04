@@ -68,6 +68,9 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 * **`docs/EMAIL.md`** — mail. What Cloudflare gives us and what it does not, what
   the framework already ships, why Frappe Mail is not the answer, and the seven
   stages.
+* **`docs/DOCUMENT-MAIL.md`** — the mail that belongs to a *record*. What links a
+  message to a document today (almost nothing), what Frappe's own linking can and
+  cannot reach, and where the AI lane earns its cost.
 * `docs/PRINTING.md` and `docs/WORKSPACE-SETTINGS.md` are reference tables that
   tests read back.
 
