@@ -191,6 +191,32 @@ export const mail = {
       { successMessage: 'Put back' },
     ),
 
+  // The workspace's own message templates. Read by anybody who holds an
+  // address, because using one is answering an email; writing one is an admin's
+  // and lives in settings.
+  mailTemplates: () =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.mail_templates',
+      {},
+      { silent: true, method: 'GET' },
+    ),
+
+  // Filled in — against a record where the composer was opened from one, and as
+  // written where it was not.
+  mailTemplate: (name) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.render_mail_template',
+      { name },
+      { silent: true, method: 'GET' },
+    ),
+
+  recordMailTemplate: (spaceCode, screen, record, name) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.template',
+      { space_code: spaceCode, screen, name: record, template: name },
+      { silent: true, method: 'GET' },
+    ),
+
   mailDraft: (message, kind) =>
     callMethod(
       'oneapp.oneapp_core.email.mailbox.draft',

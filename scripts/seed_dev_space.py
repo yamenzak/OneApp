@@ -690,6 +690,7 @@ def _seed_mail(user):
 		}).insert(ignore_permissions=True)
 
 	_seed_attachment()
+	_seed_template()
 	_seed_read_state(user)
 	return address
 
@@ -772,6 +773,44 @@ def _seed_attachment():
 			"Zone 3 glazing line moved 400mm east. Everything else holds.\n"
 		),
 	}).insert(ignore_permissions=True)
+
+
+#: The template the composer offers, so the picker has something in it.
+TEMPLATE = "Delivery update"
+
+
+def _seed_template():
+	"""One message written once and sent often.
+
+	The picker only appears where there is something to pick, so a fixture
+	without a template is a fixture where that button does not exist — and the
+	browser pass would be checking that an absent control is absent.
+	"""
+	from oneapp.oneapp_core.email.templates import MARK
+
+	# Sweep first, for the reason the mailbox sweep exists: a browser pass writes
+	# one to prove the settings panel writes one, and sixty runs later the picker
+	# is a list of timestamps. Only ours — the six ERPNext and HRMS ship are not
+	# this fixture's to delete.
+	for stale in frappe.get_all("Email Template", filters={MARK: 1}, pluck="name"):
+		if stale != TEMPLATE:
+			frappe.delete_doc("Email Template", stale, force=True, ignore_permissions=True)
+
+	if frappe.db.exists("Email Template", TEMPLATE):
+		return
+
+	doc = frappe.new_doc("Email Template")
+	doc.update({
+		"subject": "Your order is on its way",
+		"response": (
+			"<p>Good morning,</p>"
+			"<p>The order left us this morning and is with the courier.</p>"
+		),
+		"use_html": 0,
+		MARK: 1,
+	})
+	doc.name = TEMPLATE
+	doc.insert(ignore_permissions=True)
 
 
 def _seed_read_state(user):

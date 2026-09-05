@@ -76,13 +76,30 @@
         this was upload-only, so attaching last week's drawing to a second
         email meant uploading it a second time and paying for it twice.
       -->
-      <Button
-        variant="subtle"
-        icon-left="lucide-paperclip"
-        label="Attach a file"
-        data-slot="mail-attach"
-        @click="picking = true"
-      />
+      <div class="flex flex-wrap gap-2">
+        <Button
+          variant="subtle"
+          icon-left="lucide-paperclip"
+          label="Attach a file"
+          data-slot="mail-attach"
+          @click="picking = true"
+        />
+        <!--
+          A message written once and sent often. A shared address answers the
+          same five questions all week, and typing the answer again each time is
+          both slow and inconsistent — which is the half a customer notices.
+          Only where there is one to use: a button that opens an empty menu is
+          a button that teaches people not to press it.
+        -->
+        <Dropdown v-if="templates.length" :options="templateOptions">
+          <Button
+            variant="subtle"
+            icon-left="lucide-file-text"
+            label="Use a template"
+            data-slot="mail-templates"
+          />
+        </Dropdown>
+      </div>
       <FilePicker v-model="picking" multiple @picked="attach" />
 
       <ErrorMessage v-if="error" :message="error" />
@@ -94,11 +111,12 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 import {
   Button,
   Dialog,
+  Dropdown,
   Editor,
   EditorContent,
   EditorFixedMenu,
@@ -146,6 +164,40 @@ const picking = ref(false)
 const sending = ref(false)
 const error = ref('')
 const title = ref('New message')
+
+/** The workspace's templates, read once per composer opening. */
+const templates = ref([])
+
+const templateOptions = computed(() =>
+  templates.value.map((one) => ({
+    // The name *is* the title: `Email Template` is named by prompt, so two
+    // called "Delivery update" would be two rows nobody could tell apart.
+    label: one.name,
+    // The record a template is for, where it names one: "Quotation" beside a
+    // template written for quotations is the difference between picking the
+    // right one and reading four.
+    description: one.doctype || '',
+    onClick: () => use(one),
+  })),
+)
+
+/**
+ * Put a template into the message.
+ *
+ * The subject is replaced; the body is written *above* whatever is there,
+ * because what is there is a quote, a signature, or both — and a template that
+ * ate somebody's signature would be a template nobody used twice.
+ */
+async function use(one) {
+  const filled = props.about
+    ? await workspace.recordMailTemplate(
+        props.about.spaceCode, props.about.screen, props.about.name, one.name,
+      )
+    : await workspace.mailTemplate(one.name)
+
+  if (filled?.subject) draft.subject = filled.subject
+  draft.content = `${filled?.message || ''}${draft.content || ''}`
+}
 
 const EXTENSIONS = [RichTextKit]
 const uploadInline = (file) => upload(file, { private: true })
@@ -197,6 +249,11 @@ async function compose(from, kind = 'reply') {
   copies.value = false
   blank()
   title.value = 'New message'
+
+  // Read on opening rather than held: a template written a minute ago should be
+  // in the list, and this is one small request against a dialog somebody is
+  // about to spend a minute in.
+  workspace.mailTemplates().then((found) => { templates.value = found || [] })
 
   if (from) {
     title.value = TITLES[kind] || 'Reply'

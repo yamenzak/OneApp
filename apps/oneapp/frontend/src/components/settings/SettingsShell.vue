@@ -83,6 +83,13 @@
           Alerts
         </SettingsNavItem>
 
+        <SettingsNavItem value="templates" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-file-text" class="size-4 text-ink-gray-7" />
+          </template>
+          Templates
+        </SettingsNavItem>
+
         <SettingsNavItem value="ai" :class="TAB_ITEM">
           <template #prefix>
             <Icon name="lucide-sparkles" class="size-4 text-ink-gray-7" />
@@ -120,6 +127,8 @@
 
       <SettingsPanel value="alerts"><AlertSettings /></SettingsPanel>
 
+      <SettingsPanel value="templates"><TemplateSettings /></SettingsPanel>
+
       <SettingsPanel value="ai"><AiSettings /></SettingsPanel>
 
       <SettingsPanel value="appearance">
@@ -153,6 +162,7 @@ import SettingsFields from './SettingsFields.vue'
 import BooksSettings from './BooksSettings.vue'
 import AiSettings from './AiSettings.vue'
 import AlertSettings from './AlertSettings.vue'
+import TemplateSettings from './TemplateSettings.vue'
 import StorageSettings from './StorageSettings.vue'
 import NamingSettings from './NamingSettings.vue'
 import PrintingSettings from './PrintingSettings.vue'

@@ -434,7 +434,7 @@ def test_every_query_takes_both_halves(mailbox):
 	# guarding it. What makes these two safe is asserted separately below.
 	# Cut with `code_of` too: `body` has had its prose stripped, and raw source
 	# would no longer match a word of it.
-	for unscoped in (mailbox._matching, mailbox._in_thread):
+	for unscoped in (mailbox._matching, mailbox._in_thread, mailbox._ids):
 		body = body.replace(code_of(unscoped), "")
 
 	for call in regex.findall(r"frappe\.get_all\(\s*\n\s*\"Communication\".*?\n\t\)", body,
@@ -1331,8 +1331,18 @@ def test_a_search_is_names_first_and_the_gate_second(mailbox):
 	which is the mistake that turns a search into everybody's mail."""
 	import inspect
 
+	import re as regex
+
 	source = inspect.getsource(mailbox.threads)
-	assert 'filters["name"] = ("in", _matching(search))' in source
+	assert "filters = narrow(search, filters)" in source
+
+	# And what `narrow` is allowed to touch. The operators — `from:`, `to:`,
+	# `has:attachment` — each ask a question the address scope also asks with,
+	# so one written as a filter on `recipients` or as a second `or_filters`
+	# would *replace* the gate. They all answer with ids instead.
+	folding = inspect.getsource(mailbox.narrow)
+	written = set(regex.findall(r'filters\[["\'](\w+)["\']\]\s*=', folding))
+	assert written <= {"name", "sent_or_received"}, written
 	# And the scope is still the one every other query uses.
 	assert "filters, or_filters = _filters(folder)" in source
 
@@ -1925,3 +1935,285 @@ def test_a_draft_that_parses_to_something_that_is_not_a_draft_is_also_nothing(
 	from oneapp.oneapp_core.email.mailbox import drafts
 
 	assert drafts.kept() == {}
+
+
+# --------------------------------------------------------------------------- #
+#
+# A search box that takes operators.
+
+
+@pytest.mark.parametrize(
+	"typed,expected",
+	[
+		("hala", {"words": "hala"}),
+		("from:hala", {"words": "", "from": "hala"}),
+		("from:hala cladding", {"words": "cladding", "from": "hala"}),
+		("cladding from:hala", {"words": "cladding", "from": "hala"}),
+		('from:"Hala Nasser"', {"words": "", "from": "Hala Nasser"}),
+		("FROM:hala", {"words": "", "from": "hala"}),
+		("has:attachment", {"words": "", "has": {"attachment"}}),
+		("is:unread is:starred", {"words": "", "is": {"unread", "starred"}}),
+		("to:ops@client.test", {"words": "", "to": "ops@client.test"}),
+		("subject:quotation", {"words": "", "subject": "quotation"}),
+		# A word that merely looks like one. "note:" is not an operator, so it
+		# stays in the text somebody typed and is searched for.
+		("note: revised", {"words": "note: revised"}),
+		# Corrected mid-typing: the last one is the one meant.
+		("from:hala from:omar", {"words": "", "from": "omar"}),
+		("", {"words": ""}),
+	],
+)
+def test_a_search_is_read_the_way_it_was_typed(mailbox, typed, expected):
+	asked = mailbox.parse(typed)
+	for key, value in expected.items():
+		assert asked[key] == value, (key, asked)
+
+
+def test_an_operator_needs_its_colon_against_a_word(mailbox):
+	"""`from:` mid-word is part of a word — an address contains one."""
+	assert mailbox.parse("reply-from:hala")["from"] == "hala"
+	assert mailbox.parse("info@from.example")["from"] == ""
+
+
+@pytest.fixture
+def searching(mailbox, stub_mailbox):
+	"""`narrow`, over a mailbox whose every question answers with known ids."""
+	answers = {
+		"words": ["m-words"],
+		"sender": ["m-from"],
+		"recipients": ["m-to"],
+		"subject": ["m-subject"],
+		"files": ["m-file"],
+		"starred": {"m-star"},
+		"seen": {"m-read"},
+	}
+
+	stub_mailbox("_matching", lambda text: answers["words"])
+	stub_mailbox(
+		"_ids",
+		lambda **filters: answers[next(iter(filters))],
+	)
+	stub_mailbox("_with_attachments", lambda: answers["files"])
+	stub_mailbox("_starred_set", lambda: answers["starred"])
+	stub_mailbox("_seen_set", lambda: answers["seen"])
+	return mailbox, answers
+
+
+def test_one_operator_narrows_by_ids_and_nothing_else(searching):
+	module, _ = searching
+	filters = module.narrow("from:hala", {"communication_type": "Communication"})
+
+	assert filters["name"] == ("in", ["m-from"])
+	# The address scope's own keys are untouched, which is the whole reason
+	# every operator answers with ids.
+	assert "recipients" not in filters
+	assert "sender" not in filters
+
+
+def test_two_operators_are_an_and_not_an_or(searching):
+	"""`from:hala has:attachment` is the drawing Hala sent, not everything Hala
+	sent plus everything with a file on it."""
+	module, answers = searching
+	answers["files"] = ["m-from", "m-other"]
+
+	filters = module.narrow("from:hala has:attachment", {})
+	assert filters["name"] == ("in", ["m-from"])
+
+
+def test_an_impossible_search_asks_for_nothing_rather_than_everything(searching):
+	"""An `in` on an empty list matches nothing in some engines and everything
+	in others, and this one stands in front of the whole site."""
+	module, answers = searching
+	answers["files"] = ["m-elsewhere"]
+
+	filters = module.narrow("from:hala has:attachment", {})
+	assert filters["name"] == ("in", [""])
+
+
+def test_unread_on_its_own_is_a_complement_not_a_list(searching):
+	"""There is no set of "every message except the ones read" worth building —
+	it is the whole mailbox."""
+	module, _ = searching
+	filters = module.narrow("is:unread", {})
+
+	assert filters["name"] == ("not in", ["m-read"])
+	# And it is about mail that arrived: nobody has unread messages they wrote.
+	assert filters["sent_or_received"] == "Received"
+
+
+def test_unread_beside_something_else_subtracts_from_it(searching):
+	module, answers = searching
+	answers["sender"] = ["m-from", "m-read"]
+
+	filters = module.narrow("from:hala is:unread", {})
+	assert filters["name"] == ("in", ["m-from"])
+
+
+def test_a_search_with_no_operators_is_the_search_it_always_was(searching):
+	module, _ = searching
+	assert module.narrow("cladding", {})["name"] == ("in", ["m-words"])
+
+
+def test_a_search_that_asks_nothing_narrows_nothing(searching):
+	"""An empty box is not a filter that matches nothing."""
+	module, _ = searching
+	assert module.narrow("", {"communication_type": "Communication"}) == {
+		"communication_type": "Communication"
+	}
+
+
+# --------------------------------------------------------------------------- #
+#
+# A message written once and sent often.
+
+
+@pytest.fixture
+def written(stub_frappe, monkeypatch):
+	"""`templates`, over a site holding one of ours and one of ERPNext's."""
+	import types
+
+	from oneapp.oneapp_core.email import templates as module
+
+	saved = {}
+	rows = [
+		{"name": "Delivery update", "subject": "On its way", "reference_doctype": None,
+		 "response": "<p>Soon</p>", "modified": "2026-01-01"},
+		{"name": "Quote follow-up", "subject": "Still interested?",
+		 "reference_doctype": "Quotation", "response": "<p>Hello</p>",
+		 "modified": "2026-01-02"},
+	]
+
+	stub_frappe.get_all = lambda doctype, **k: _rows(rows)
+	monkeypatch.setattr(module.sync, "granted_doctypes", lambda: {"Quotation"})
+
+	def new_doc(doctype):
+		doc = types.SimpleNamespace(
+			name="", doctype=doctype,
+			update=lambda values: saved.update(values),
+			insert=lambda **k: saved.update(inserted=True),
+			save=lambda **k: saved.update(saved=True),
+		)
+		return doc
+
+	stub_frappe.new_doc = new_doc
+	return module, saved, rows
+
+
+def test_a_template_list_is_this_workspaces_own(written):
+	module, _, _ = written
+	asked = {}
+	module.frappe.get_all = lambda doctype, **k: asked.update(k) or []
+
+	module.listing()
+	assert asked["filters"]["custom_onespace"] == 1
+
+
+def test_asking_for_one_records_templates_offers_the_general_ones_too(written):
+	"""A template that names no record fits every record. Only the ones written
+	for a *different* one are out of the way."""
+	module, _, _ = written
+	asked = {}
+	module.frappe.get_all = lambda doctype, **k: asked.update(k) or []
+
+	module.listing("Quotation")
+	assert asked["filters"]["reference_doctype"] == ("in", ["", "Quotation"])
+
+
+def test_a_template_for_a_record_the_workspace_lost_says_so(written):
+	module, _, rows = written
+	rows[1]["reference_doctype"] = "Sales Order"
+
+	found = {row["name"]: row for row in module.listing()}
+	assert found["Quote follow-up"]["orphaned"] is True
+	assert found["Delivery update"]["orphaned"] is False
+
+
+@pytest.mark.parametrize(
+	"missing", [{"title": ""}, {"subject": ""}, {"body": "   "}]
+)
+def test_a_template_needs_a_name_a_subject_and_something_to_say(written, missing):
+	module, _, _ = written
+	values = {"title": "Delivery update", "subject": "On its way", "body": "<p>Soon</p>"}
+	with pytest.raises(Exception):
+		module.save({**values, **missing})
+
+
+def test_a_template_can_only_be_about_this_workspaces_records(written):
+	module, _, _ = written
+	with pytest.raises(Exception):
+		module.save({
+			"title": "Payroll", "subject": "Payslip", "body": "<p>x</p>",
+			"doctype": "Salary Slip",
+		})
+
+
+def test_a_new_template_is_marked_as_ours_and_named_for_what_it_is(written):
+	module, saved, _ = written
+	module.save({"title": "Delivery update", "subject": "On its way", "body": "<p>Soon</p>"})
+
+	assert saved["custom_onespace"] == 1
+	assert saved["response"] == "<p>Soon</p>"
+	# `use_html` off, so there is one field holding the body rather than two
+	# with the framework choosing between them.
+	assert saved["use_html"] == 0
+	assert saved.get("inserted") is True
+
+
+def test_an_app_s_own_template_is_not_ours_to_edit(stub_frappe, monkeypatch):
+	"""ERPNext and HRMS ship six on every site, and a settings screen that could
+	edit those could edit the reminder somebody's leave approval depends on."""
+	from oneapp.oneapp_core.email import templates as module
+
+	monkeypatch.setattr(stub_frappe.db, "exists", lambda *a, **k: None)
+	with pytest.raises(Exception):
+		module.remove("Interview Reminder")
+
+
+def test_a_template_with_no_record_is_offered_as_written(stub_frappe, monkeypatch):
+	"""Placeholders and all, which is better than a body full of "None"."""
+	import types
+
+	from oneapp.oneapp_core.email import templates as module
+
+	monkeypatch.setattr(stub_frappe.db, "exists", lambda *a, **k: "Delivery update")
+	monkeypatch.setattr(
+		stub_frappe,
+		"get_doc",
+		lambda *a, **k: types.SimpleNamespace(
+			name="Delivery update", subject="On its way", response="<p>{{ doc.customer }}</p>"
+		),
+	)
+
+	assert module.render("Delivery update") == {
+		"subject": "On its way",
+		"message": "<p>{{ doc.customer }}</p>",
+	}
+
+
+def test_rendering_against_a_record_checks_the_record_first(stub_frappe, monkeypatch):
+	"""A template is Jinja with the document in scope, so rendering one against
+	a record is reading it."""
+	import types
+
+	from oneapp.oneapp_core.email import templates as module
+
+	asked = []
+	monkeypatch.setattr(stub_frappe.db, "exists", lambda *a, **k: "Delivery update")
+
+	def get_doc(doctype, name=None, *rest):
+		if doctype == "Email Template":
+			return types.SimpleNamespace(name=name, subject="s", response="r")
+		return types.SimpleNamespace(
+			as_dict=lambda: {"name": name},
+			check_permission=lambda what: asked.append(what),
+		)
+
+	monkeypatch.setattr(stub_frappe, "get_doc", get_doc)
+	monkeypatch.setattr(
+		"frappe.email.doctype.email_template.email_template.get_email_template",
+		lambda name, doc: {"subject": "filled", "message": "<p>filled</p>"},
+		raising=False,
+	)
+
+	assert module.render("Delivery update", "Quotation", "QTN-1")["subject"] == "filled"
+	assert asked == ["read"]

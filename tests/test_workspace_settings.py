@@ -146,6 +146,11 @@ ROLE_CHECKS = (
 	# Alerts, for the sharper version of the same reason: a rule mails people
 	# on the workspace's behalf and can name a role rather than a person.
 	"_alerts_gate()",
+	# Message templates have two doors, because they have two audiences.
+	# Writing one is deciding what the workspace says to a customer, which is
+	# an admin's; using one is answering an email, which is anybody who holds
+	# an address — the same question every other mail endpoint asks.
+	"_templates_gate()", "_mail_gate()",
 )
 
 

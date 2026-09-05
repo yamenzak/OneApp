@@ -213,6 +213,7 @@ from .mail import (
 	correspondence,
 	detach,
 	screen_doctype,
+	template,
 	write,
 )
 from .assign import ASSIGNEE_PAGE, _assignable, _colleagues, assign, assignees
@@ -410,5 +411,6 @@ __all__ = [
 	"unshare",
 	"visible",
 	"workflow_action",
+	"template",
 	"write",
 ]

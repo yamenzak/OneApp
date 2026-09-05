@@ -135,6 +135,42 @@ def _filters(folder: str) -> tuple[dict, list | None]:
 SEARCH_CEILING = 2000
 
 
+# The words that mean something other than themselves in a search box.
+#
+# Gmail's, because Frappe Mail does not have them and every person who has used
+# mail has used these: `from:hala has:attachment` is what somebody types when
+# they are looking for the drawing Hala sent. Anything not recognised is left in
+# the free text, so a search for "note: revised" still searches for those words.
+OPERATORS = ("from", "to", "subject", "has", "is")
+
+TOKEN = re.compile(
+	r"\b(?P<key>" + "|".join(OPERATORS) + r"):(?P<value>\"[^\"]*\"|\S+)", re.IGNORECASE
+)
+
+
+def parse(search: str) -> dict:
+	"""A search box's contents, split into what it asks for.
+
+	Returns the free text under `words` and each operator under its own name;
+	`has` and `is` collect, because "is:unread is:starred" is two questions.
+	"""
+	asked = {"words": "", "from": "", "to": "", "subject": "", "has": set(), "is": set()}
+
+	def take(match):
+		key = match.group("key").lower()
+		value = match.group("value").strip('"')
+		if key in ("has", "is"):
+			asked[key].add(value.lower())
+		else:
+			# The last one wins, which is what somebody correcting a typed
+			# search expects — they retype the operator rather than delete it.
+			asked[key] = value
+		return " "
+
+	asked["words"] = TOKEN.sub(take, search or "").strip()
+	return asked
+
+
 def _matching(text: str) -> list[str]:
 	"""The names of messages whose subject *or* body matches.
 
@@ -157,6 +193,100 @@ def _matching(text: str) -> list[str]:
 	# Never empty: an `in` on an empty list matches nothing in some engines and
 	# everything in others, and this one stands in front of the whole site.
 	return found or [""]
+
+
+#: What a message has to be, to be a message at all. Every names-only query
+#: below starts here.
+EMAIL = {"communication_type": "Communication", "communication_medium": "Email"}
+
+
+def _ids(**filters) -> list[str]:
+	"""Names of messages matching one narrow question, unscoped.
+
+	`_ids` and not `_names`, which is what it was called for ten minutes:
+	`sending._names` already exists and the package re-exports both, so the
+	second one silently won and a guard that reads the source of "the unscoped
+	queries" was reading the wrong function's.
+
+	Unscoped for the same reason `_matching` is, and safe for the same reason:
+	nothing but ids comes out, and the caller intersects them into a query that
+	*is* scoped. See `_matching`.
+	"""
+	return frappe.get_all(
+		"Communication",
+		filters={**EMAIL, **filters},
+		pluck="name",
+		order_by="communication_date desc",
+		limit_page_length=SEARCH_CEILING,
+	)
+
+
+def _with_attachments() -> list[str]:
+	"""Messages that carry a file. `has:attachment`, which is how somebody
+	looks for the drawing rather than for the sentence about the drawing."""
+	return frappe.get_all(
+		"File",
+		filters={"attached_to_doctype": "Communication", "attached_to_name": ("!=", "")},
+		pluck="attached_to_name",
+		limit_page_length=SEARCH_CEILING,
+	)
+
+
+def narrow(search: str, filters: dict) -> dict:
+	"""Fold a search — words and operators — into a query's filters.
+
+	One mutation, always `name`, and that is deliberate: the address scope owns
+	`recipients` and `or_filters`, so an operator writing either of those
+	directly would replace the gate rather than narrow it. Everything here
+	answers with ids instead, and ids are intersected.
+
+	`is:unread` is the one that cannot be a set of its own — it is a complement,
+	and materialising "every message except the ones read" is the whole mailbox.
+	So it subtracts where there is something to subtract from, and becomes a
+	`not in` where it is the only thing asked.
+	"""
+	from .flags import _seen_set, _starred_set
+
+	asked = parse(search)
+	wanted = None
+
+	def keep(names):
+		nonlocal wanted
+		found = set(names or [])
+		wanted = found if wanted is None else (wanted & found)
+
+	if asked["words"]:
+		keep(_matching(asked["words"]))
+	if asked["from"]:
+		keep(_ids(sender=("like", f"%{_like(asked['from'])}%")))
+	if asked["to"]:
+		keep(_ids(recipients=("like", f"%{_like(asked['to'])}%")))
+	if asked["subject"]:
+		keep(_ids(subject=("like", f"%{_like(asked['subject'])}%")))
+	if "attachment" in asked["has"]:
+		keep(_with_attachments())
+	if "starred" in asked["is"]:
+		keep(_starred_set())
+
+	unread = "unread" in asked["is"]
+	if unread and wanted is None:
+		# Nothing else was asked, so this is the whole inbox minus what has been
+		# read. Bounded: the read receipt list is capped at `SEEN_LIMIT`.
+		filters["name"] = ("not in", list(_seen_set()) or [""])
+		filters["sent_or_received"] = "Received"
+		return filters
+
+	if unread:
+		wanted = wanted - _seen_set()
+		filters["sent_or_received"] = "Received"
+
+	if wanted is not None:
+		# Never empty: an `in` on an empty list matches nothing in some engines
+		# and everything in others, and this one stands in front of the whole
+		# site.
+		filters["name"] = ("in", sorted(wanted) or [""])
+
+	return filters
 
 
 def _in_thread(key: str) -> list[str]:

@@ -246,6 +246,24 @@ def _make_frappe():
 	password.get_encryption_key = lambda: "test-encryption-key"
 	utils.password = password
 
+	# The one framework module our own code borrows a renderer from: a template
+	# is Jinja with the document in scope, and `get_email_template` is where
+	# that contract lives. Stubbed as a module so a test can replace the
+	# function; the real one needs a database.
+	email = types.ModuleType("frappe.email")
+	doctype = types.ModuleType("frappe.email.doctype")
+	holder = types.ModuleType("frappe.email.doctype.email_template")
+	rendering = types.ModuleType("frappe.email.doctype.email_template.email_template")
+	rendering.get_email_template = lambda name, doc: {"subject": "", "message": ""}
+	holder.email_template = rendering
+	doctype.email_template = holder
+	email.doctype = doctype
+	frappe.email = email
+	sys.modules["frappe.email"] = email
+	sys.modules["frappe.email.doctype"] = doctype
+	sys.modules["frappe.email.doctype.email_template"] = holder
+	sys.modules["frappe.email.doctype.email_template.email_template"] = rendering
+
 	utils.now_datetime = lambda: None
 	utils.add_to_date = lambda *a, **k: None
 	utils.get_datetime = lambda x: x

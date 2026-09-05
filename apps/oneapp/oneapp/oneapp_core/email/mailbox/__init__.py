@@ -69,7 +69,20 @@ from .scope import (
 	strip_prefixes,
 )
 from .flags import SEEN_KEY, SEEN_LIMIT, STARRED_KEY, _seen_set, _starred_set
-from .query import EVERYWHERE, PUT_AWAY, SEARCH_CEILING, _filters, _in_thread, _matching, _preview
+from .query import (
+	EVERYWHERE,
+	OPERATORS,
+	PUT_AWAY,
+	SEARCH_CEILING,
+	_filters,
+	_ids,
+	_in_thread,
+	_matching,
+	_preview,
+	_with_attachments,
+	narrow,
+	parse,
+)
 from .reading import folders, mark_read, mark_unread, star, thread, threads, unread
 from .filing import _into, add_folder, archive, bin, drop_folder, file_thread
 from .selections import ACTIONS, MOVES, bulk, restore
@@ -80,6 +93,7 @@ from .composing import _quote, draft
 __all__ = [
 	"ACTIONS",
 	"EVERYWHERE",
+	"OPERATORS",
 	"DRAFT_KEY",
 	"ICONS",
 	"MOVES",
@@ -102,9 +116,11 @@ __all__ = [
 	"_in_thread",
 	"_into",
 	"_like",
+	"_ids",
 	"_matching",
 	"_names",
 	"_preview",
+	"_with_attachments",
 	"_quote",
 	"_seen_set",
 	"_starred_set",
@@ -121,7 +137,9 @@ __all__ = [
 	"kept",
 	"mark_read",
 	"mark_unread",
+	"narrow",
 	"normalise",
+	"parse",
 	"restore",
 	"send",
 	"star",

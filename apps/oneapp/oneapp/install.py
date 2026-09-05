@@ -169,6 +169,21 @@ def create_custom_fields():
 					"search_index": 1,
 				}
 			],
+			# A message template this workspace wrote. ERPNext and HRMS ship six
+			# between them on every site — "Exit Questionnaire Notification",
+			# "Interview Reminder" — and a workspace's own list is not where
+			# those belong. Same field and same argument as the Notification
+			# above. See `oneapp_core/email/templates.py`.
+			"Email Template": [
+				{
+					"fieldname": "custom_onespace",
+					"label": "Made in OneSpace",
+					"fieldtype": "Check",
+					"read_only": 1,
+					"no_copy": 1,
+					"search_index": 1,
+				}
+			],
 			"Communication Link": [
 				{
 					"fieldname": LINK_BY,

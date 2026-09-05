@@ -95,6 +95,22 @@ export const settings = {
       { successMessage: 'Alert removed' },
     ),
 
+  // Message templates: written here, used in the composer. The listing is the
+  // same endpoint the composer reads — one list, not an admin copy of it.
+  saveMailTemplate: (values) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.save_mail_template',
+      { values: JSON.stringify(values) },
+      { successMessage: 'Template saved' },
+    ),
+
+  removeMailTemplate: (name) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.remove_mail_template',
+      { name },
+      { successMessage: 'Template removed' },
+    ),
+
   naming: () =>
     callMethod('oneapp.oneapp_core.workspace.naming', {}, { silent: true, method: 'GET' }),
 

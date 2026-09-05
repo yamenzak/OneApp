@@ -108,6 +108,23 @@ def write(space_code: str, screen: str, name: str, to: str, subject: str,
 	return {**sent, "about": {"doctype": doctype, "name": name}}
 
 
+@frappe.whitelist(methods=["GET"])
+def template(space_code: str, screen: str, name: str, template: str) -> dict:
+	"""A message template, filled in from this record.
+
+	Here rather than beside the other template endpoints because this is the one
+	that needs a *record*, and the question "may this person open that record"
+	already has an answer on this side: `_reachable`, the same gate the write
+	below goes through. A template is Jinja with the document in scope, so
+	rendering one is reading the document.
+	"""
+	doctype = _reachable(space_code, screen, name)
+
+	from oneapp.oneapp_core.email import templates as module
+
+	return module.render(template, doctype, name)
+
+
 @frappe.whitelist(methods=["POST"])
 def attach(space_code: str, screen: str, name: str, message: str) -> dict:
 	"""File a message that already exists against this record.

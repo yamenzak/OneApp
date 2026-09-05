@@ -581,6 +581,73 @@ def remove_alert(name: str) -> dict:
 	return module.remove(name)
 
 
+def _mail_gate() -> None:
+	"""Holding an address, which is what "may use a template" means.
+
+	Not the admin door: writing a template is deciding what the workspace says
+	to a customer, using one is answering an email. But not *no* door either —
+	a template is the workspace's own words, and the question every other mail
+	endpoint asks is this one.
+	"""
+	from oneapp.oneapp_core.email import mailbox
+
+	if not mailbox._held():
+		frappe.throw(_("You have no address to write from."), frappe.PermissionError)
+
+
+def _templates_gate() -> None:
+	"""Writing a template is deciding what the workspace says to a customer.
+
+	The same door as alerts, and a different sentence: somebody refused here is
+	being told which thing they cannot change.
+	"""
+	roles = set(frappe.get_roles())
+	if not roles & {OWNER_ROLE, SUPPORT_ROLE}:
+		frappe.throw(_("Only a workspace admin can change message templates."),
+		             frappe.PermissionError)
+
+
+@frappe.whitelist(methods=["GET"])
+def mail_templates(for_doctype: str = "") -> list[dict]:
+	"""The workspace's message templates.
+
+	No admin gate on the read, and that is the point of the feature: writing a
+	template is deciding what the workspace says, using one is answering an
+	email. Everybody who can write mail can pick one.
+	"""
+	from oneapp.oneapp_core.email import templates as module
+
+	_mail_gate()
+	return module.listing(for_doctype)
+
+
+@frappe.whitelist(methods=["GET"])
+def render_mail_template(name: str, doctype: str = "", docname: str = "") -> dict:
+	"""One template, filled in from a record the caller may read."""
+	from oneapp.oneapp_core.email import templates as module
+
+	_mail_gate()
+	return module.render(name, doctype, docname)
+
+
+@frappe.whitelist(methods=["POST"])
+def save_mail_template(values: str | dict) -> dict:
+	"""Write one template, new or edited."""
+	from oneapp.oneapp_core.email import templates as module
+
+	_templates_gate()
+	return module.save(values)
+
+
+@frappe.whitelist(methods=["POST"])
+def remove_mail_template(name: str) -> dict:
+	"""Delete a template this workspace wrote. An app's own are refused."""
+	from oneapp.oneapp_core.email import templates as module
+
+	_templates_gate()
+	return module.remove(name)
+
+
 @frappe.whitelist(methods=["GET"])
 def naming() -> list[dict]:
 	"""Every doctype this workspace may set a series for, with its prefixes."""

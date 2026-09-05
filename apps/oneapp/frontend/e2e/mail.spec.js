@@ -850,3 +850,81 @@ test('a message says who else was copied on it', async ({ page, baseURL }, info)
 
   expectNoRealErrors(errors)
 })
+
+/**
+ * A message written once and sent often.
+ *
+ * A shared address answers the same five questions all week, and typing the
+ * answer again each time is slow and inconsistent — which is the half a
+ * customer notices. `Email Template` is Frappe's own doctype; what is ours is
+ * the gate (ERPNext and HRMS ship six templates on every site and none of them
+ * is this workspace's) and the two places it shows up.
+ */
+test('a template writes the message, and the signature survives it', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await expect(threads(page).first()).toBeVisible()
+
+  await page.keyboard.press('c')
+  const composer = page.getByRole('dialog')
+  await composer.locator('[data-slot="mail-templates"]').click()
+  await page.getByRole('menuitem', { name: 'Delivery update' }).click()
+
+  await expect(composer.getByLabel('Subject')).toHaveValue('Your order is on its way')
+  const body = composer.locator('.ProseMirror')
+  await expect(body).toContainText('with the courier')
+  // Above what was already there, because what is already there is the
+  // signature — a template that ate it would be one nobody used twice.
+  const written = await body.innerText()
+  expect(written.indexOf('courier')).toBeLessThan(written.indexOf('Sales — MockSpace'))
+
+  expectNoRealErrors(errors)
+})
+
+/**
+ * A search box that takes operators.
+ *
+ * Gmail's, because everybody who has used mail has used these: `from:hala
+ * has:attachment` is what somebody types when they are looking for the drawing
+ * Hala sent, and before this it was a full-text search for the literal string
+ * "from:hala" — which matches nothing, in a box that had just been told exactly
+ * what was wanted.
+ */
+test('search takes from: and has:attachment, and means them', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  const box = page.locator('[data-slot="mail-search"]')
+  await expect(threads(page).first()).toBeVisible()
+
+  // Everything Hala sent — which on this fixture is everything received.
+  await box.fill('from:hala')
+  await expect(threads(page).filter({ hasText: SUBJECT })).toHaveCount(1)
+
+  // And nobody else's.
+  await box.fill('from:nobody@example.com')
+  await expect(threads(page)).toHaveCount(0)
+
+  // The one with a file on it, which is a different question from the one with
+  // the word "attached" in it.
+  await box.fill('has:attachment')
+  await expect(threads(page)).toHaveCount(1)
+  await expect(threads(page).first()).toContainText(SUBJECT)
+
+  // An operator and a word together are an AND, not an OR.
+  await box.fill('has:attachment fabricator')
+  await expect(threads(page)).toHaveCount(0)
+
+  expectNoRealErrors(errors)
+})

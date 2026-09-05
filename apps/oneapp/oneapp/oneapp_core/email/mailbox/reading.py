@@ -12,7 +12,7 @@ from oneapp.oneapp_core.email.folders import FOLDER_FIELD, QUIET
 from oneapp.oneapp_core.email.threading import THREAD_FIELD
 from .scope import ICONS, PAGE, SENT, SPLIT, _accounts, _held, normalise, strip_prefixes
 from .flags import SEEN_KEY, SEEN_LIMIT, STARRED_KEY, _seen_set, _starred_set
-from .query import _filters, _in_thread, _matching, _preview
+from .query import _filters, _in_thread, _matching, _preview, narrow
 
 
 @frappe.whitelist(methods=["GET"])
@@ -106,7 +106,11 @@ def threads(folder: str = "all", start: int = 0, search: str = "") -> dict:
 	filters, or_filters = _filters(folder)
 
 	if search:
-		filters["name"] = ("in", _matching(search))
+		# Words, and the operators somebody types beside them: `from:`, `to:`,
+		# `subject:`, `has:attachment`, `is:starred`, `is:unread`. See
+		# `query.narrow`, which folds all of it into one `name in (…)` so the
+		# address scope keeps the filter it owns.
+		filters = narrow(search, filters)
 
 	rows = frappe.get_all(
 		"Communication",

@@ -767,6 +767,20 @@ const SHORTCUTS = [
     ],
   },
   {
+    // Not keys, but the same question — "what can I type here?" — and the same
+    // place people look for the answer. A search box that quietly understands
+    // `from:` and says so nowhere is a search box nobody uses that way.
+    title: 'Searching',
+    keys: [
+      [['from:'], 'Who it is from'],
+      [['to:'], 'Who it went to'],
+      [['subject:'], 'The subject line only'],
+      [['has:attachment'], 'Carries a file'],
+      [['is:unread'], 'Not read yet'],
+      [['is:starred'], 'Starred'],
+    ],
+  },
+  {
     title: 'Selecting',
     keys: [
       [['X'], 'Tick this conversation'],

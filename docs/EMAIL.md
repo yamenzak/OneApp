@@ -391,9 +391,9 @@ sorting their own mail is not asking for a query builder. `Mail Rule` is ours;
 Frappe's `Email Rule` is an allow/block list on an address and answers a
 different question.
 
-What is still not here, both deliberate: **push notifications**, which wait on
-the EU-jurisdiction question, and **`Notification` plus `Email Template`**,
-which is the row still open in §6.
+What is still not here: **push notifications**, which wait on the
+EU-jurisdiction question. `Notification` and `Email Template`, the rows §6 left
+open, are Stages 9 and 10.
 
 ### Stage 10 — Frappe Mail's client, taken where it is better than ours
 
@@ -463,6 +463,26 @@ parse is a draft that is gone rather than an error. The other: the reply
 attribution line read "On 2026-09-04 20:48:15.232563, Hala Nasser wrote:",
 microseconds and all, in a message going to a customer.
 
+**A message written once, and a search box that takes operators.** The last row
+open in §6 was `Email Template`, and it is Frappe's own doctype: what is ours is
+the gate and the two places it shows up. Ours are marked `custom_onespace`, the
+same field and the same argument as the alerts — ERPNext and HRMS ship six
+templates between them on every site, and a workspace's own list is not where
+"Exit Questionnaire Notification" belongs. Writing one is a settings panel and an
+admin's; using one is a picker in the composer and anybody's who holds an
+address. A template may name a record, and where the composer was opened from
+one, `{{ doc.customer }}` means it — rendered through `get_email_template`, the
+framework's own, against a document `check_permission` says the caller may read.
+
+Search grew the operators everybody already knows: `from:`, `to:`, `subject:`,
+`has:attachment`, `is:unread`, `is:starred`, beside the words. They fold into one
+`name in (…)` in `query.narrow`, and that is not tidiness — the address scope
+owns `recipients` and the `or_filters`, so an operator written as a filter on
+either would replace the gate rather than narrow it. `is:unread` is the exception
+that proves the shape: it is a complement, so it subtracts where there is
+something to subtract from and becomes a `not in` where it is the only thing
+asked.
+
 The one thing that had to change underneath: **an inbox no longer holds what has
 been put away**. The inbox view was every received message on an address and did
 not care what folder it was in, so Archive filed the conversation and left it
@@ -508,8 +528,8 @@ Into the workspace's Settings, as OneSpace settings rather than desk forms:
 | `Email Account.auto_reply`, `enable_auto_reply` | Out of office, cheap and expected |
 | `Email Account.create_contact` | Whether inbound creates Contacts |
 | `Email Account.append_to`, `Email Rule` | Which doctype an address files into — this is what makes `ap@` work today, and a manager should be able to add their own |
-| `Notification` | Rule → template → recipient. The biggest single win, and deferred earlier |
-| `Email Template` | Bodies for the above |
+| `Notification` | Rule → template → recipient. Built — see Stage 9 |
+| `Email Template` | Message templates. Built — see Stage 10 |
 
 Left in the framework: `Email Domain`, `IMAP Folder`, `Auto Email Report`,
 `Newsletter` and `Email Group`. The first two are plumbing for Stage 5 and
@@ -532,15 +552,18 @@ later address a variation on one that already worked, and Stage 6 came last
 because a mail *reader* with nothing to read is the most expensive way to
 discover the model was wrong.
 
-Three things named here and not built:
+Two things named here and not built:
 
 * **OAuth for Gmail and Outlook.** Frappe ships `Connected App`; the password
   path works for every provider and this works for two, so it waits for an
   operator to want it.
 * **DMARC records**, per Stage 7.
-* **`Email Template`.** A rule carries its own subject and message, which is
-  what somebody writing one wants; a library of reusable bodies is a second
-  screen nobody has asked for yet.
+
+`Email Template` was the third and is Stage 10. The argument for leaving it —
+"a rule carries its own subject and message" — held for alerts and not for the
+composer: a shared address answers the same five questions all week, which is
+where a library of bodies earns itself. Alerts still carry their own message;
+nothing was taken away from them.
 
 And one that is a different document: mail against a *record* — what links a
 message to a document, and where an AI lane earns its cost — is
