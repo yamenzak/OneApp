@@ -13,6 +13,7 @@ import { workspace } from './workspace'
 export const mail = reactive({
   folders: [],
   addresses: [],
+  signatures: {},
   mailboxes: [],
   loaded: false,
   refreshing: false,
@@ -67,6 +68,10 @@ export async function loadMail({ reload = false } = {}) {
   ])
   mail.folders = found?.folders || []
   mail.addresses = found?.addresses || []
+  // What each address signs with, keyed by address. The composer needs it the
+  // moment it opens and it rides along with the rail rather than costing a call
+  // of its own.
+  mail.signatures = found?.signatures || {}
   mail.mailboxes = connected || []
   mail.loaded = true
   return mail

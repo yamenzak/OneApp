@@ -98,6 +98,31 @@ def _people(account: str) -> list[str]:
 	)
 
 
+def signatures(held: list[str]) -> dict:
+	"""What each of these addresses signs with, where it signs with anything.
+
+	The signature is `Email Account.signature`, which is Frappe's own field and
+	the one the settings screen already writes. What is *not* Frappe's is which
+	signature a message gets: the framework appends the sender's `User` signature
+	or, failing that, whatever the site's default outgoing account signs with —
+	so on a workspace whose notifications leave from `hello@`, a reply somebody
+	sent from `sales@` was signed by `hello@`. An address here is a mailbox
+	several people share, and the signature belongs to the address.
+
+	One query for the page rather than one per address: the composer asks for
+	this every time it opens.
+	"""
+	if not held:
+		return {}
+
+	rows = frappe.get_all(
+		"Email Account",
+		filters={"email_id": ("in", held), "add_signature": 1},
+		fields=["email_id", "signature"],
+	)
+	return {row.email_id: row.signature for row in rows if (row.signature or "").strip()}
+
+
 def _as_row(doc) -> dict:
 	return {
 		"name": doc.name,

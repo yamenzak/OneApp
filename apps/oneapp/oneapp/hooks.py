@@ -126,6 +126,11 @@ doc_events = {
 		# every one of them from its doctype and name alone. See
 		# `linking.stamp`, which is the whole reason this is two hooks.
 		"after_insert": "oneapp.oneapp_core.email.linking.stamp",
+		# Whose signature goes on a message is a question the framework answers
+		# wrongly here — the site's default outgoing account signs everything,
+		# whichever address it was actually sent from. Ours goes on in the
+		# composer, where somebody can see it. See `email/signatures.py`.
+		"before_save": "oneapp.oneapp_core.email.signatures.hold_the_frameworks_signature",
 	},
 	# Inserts are what grow a database, so they are what pauses when a workspace
 	# is over its allowance. Updates and deletes keep working, so deleting

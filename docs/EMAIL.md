@@ -440,6 +440,29 @@ Gmail's and so are Outlook's: `j` `k` to move, `e` to archive, `#` to bin, `u`,
 `s`, `c`, `r`, `/`, and `?` for the list of them. Two rules keep them safe, in
 `lib/shortcuts.js`: never while somebody is typing, and never over a dialog.
 
+**The composer signs, and the reader says who else was on it.** Two things the
+product had and used neither of. The signature people typed into settings was
+stored on the address and never inserted — while Frappe's own rule appended the
+*default outgoing* account's signature to everything, after the message left the
+composer, where nobody could see it happen; on a workspace whose notifications
+leave from `hello@`, a reply from `sales@` went out signed by `hello@`. The
+framework's rule is held off entirely now (`email/signatures.py`, a `before_save`
+hook) and the address's own signature goes in when the composer opens, above the
+quoted history, editable like the rest of the message — and it changes when the
+From does. And `cc`, fetched on every message and rendered on none, is on the
+message header: who else saw this decides whether a reply goes to one person or
+to six.
+
+Two bugs fell out of building it, both older than it. A draft is held in a user
+default, and Frappe stores those through its own HTML sanitiser — so a draft
+containing any quoted attribute (`class="x"`, or a link, or an inline image)
+came back with `&quot;` where the quotes were, which is no longer JSON, and
+*every* composer opening after that was a 500 for that person until somebody
+cleared the value by hand. Drafts are base64 now, and a draft that will not
+parse is a draft that is gone rather than an error. The other: the reply
+attribution line read "On 2026-09-04 20:48:15.232563, Hala Nasser wrote:",
+microseconds and all, in a message going to a customer.
+
 The one thing that had to change underneath: **an inbox no longer holds what has
 been put away**. The inbox view was every received message on an address and did
 not care what folder it was in, so Archive filed the conversation and left it

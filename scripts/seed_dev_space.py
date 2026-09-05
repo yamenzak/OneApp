@@ -605,9 +605,13 @@ def _seed_mail(user):
 	# statements about *which message is last* — so the fixture says.
 	messages = [
 		("Quotation for the Al Reem tower", "INBOX", "Received",
-		 "<p>Could you send the revised cladding quote before Thursday?</p>", both, 26),
+		 "<p>Could you send the revised cladding quote before Thursday?</p>", both, 26, ""),
+		# The one with a Cc, because the reader draws one and nothing here had
+		# one to draw: `cc` has always been fetched and was never rendered, so
+		# who else saw a message was a question the screen could not answer.
 		("Re: Quotation for the Al Reem tower", "INBOX", "Received",
-		 "<p>Attached — the glazing line moved, everything else holds.</p>", both, 25),
+		 "<p>Attached — the glazing line moved, everything else holds.</p>", both, 25,
+		 "qs@alreem-consultants.ae"),
 		# One in a folder somebody made, which is the whole point of mirroring
 		# them, and one in Sent — stored as Sent rather than Received, which is
 		# what `OneSpaceInboundMail` does to a message out of a Sent folder.
@@ -616,9 +620,9 @@ def _seed_mail(user):
 		# the spec watches for the request rather than for a reply.
 		("Fabricator — CV and trade test", "Applicants", "Received",
 		 "<p>Six years on curtain wall, available from the 12th.</p>"
-		 '<img src="https://tracker.invalid/open.gif" width="1" height="1">', address, 30),
+		 '<img src="https://tracker.invalid/open.gif" width="1" height="1">', address, 30, ""),
 		("Al Reem — revised elevations", "Sent Items", "Sent",
-		 "<p>Revised sheets attached, superseding revision B.</p>", "hala@client.test", 20),
+		 "<p>Revised sheets attached, superseding revision B.</p>", "hala@client.test", 20, ""),
 	]
 	# A Contact for the person who writes in, so the sender chip has a face and
 	# a firm to show rather than only initials — which is the difference the
@@ -644,7 +648,7 @@ def _seed_mail(user):
 
 	_sweep_mail({subject for subject, *_ in messages})
 
-	for subject, folder, direction, content, recipients, hours in messages:
+	for subject, folder, direction, content, recipients, hours, copied in messages:
 		arrived = add_to_date(now_datetime(), hours=-hours)
 		existing = frappe.db.get_value("Communication", {"subject": subject}, "name")
 		if existing:
@@ -656,6 +660,9 @@ def _seed_mail(user):
 			# longer says what the specs read off it.
 			frappe.db.set_value(
 				"Communication", existing, "recipients", recipients, update_modified=False
+			)
+			frappe.db.set_value(
+				"Communication", existing, "cc", copied, update_modified=False
 			)
 			# Put the folder back. The fixture is what a browser pass starts
 			# from, and that pass *files* things — a seed that only inserted
@@ -676,6 +683,7 @@ def _seed_mail(user):
 			"sender": address if direction == "Sent" else "hala@client.test",
 			"sender_full_name": "Sales" if direction == "Sent" else "Hala Nasser",
 			"recipients": recipients,
+			"cc": copied,
 			"email_account": account,
 			"communication_date": arrived,
 			folder_lib.FOLDER_FIELD: folder,

@@ -7,7 +7,7 @@
 from oneapp.oneapp_core.email import people
 import frappe
 import re
-from oneapp.oneapp_core.email import folders as folder_ops
+from oneapp.oneapp_core.email import addresses, folders as folder_ops
 from oneapp.oneapp_core.email.folders import FOLDER_FIELD, QUIET
 from oneapp.oneapp_core.email.threading import THREAD_FIELD
 from .scope import ICONS, PAGE, SENT, SPLIT, _accounts, _held, normalise, strip_prefixes
@@ -80,7 +80,14 @@ def folders() -> dict:
 				"depth": 1,
 			})
 
-	return {"folders": rows, "addresses": sorted(held)}
+	# The signature each address signs with, here rather than behind a call of
+	# its own: the composer needs it the moment it opens, and the rail is
+	# already being fetched.
+	return {
+		"folders": rows,
+		"addresses": sorted(held),
+		"signatures": addresses.signatures(sorted(held)),
+	}
 
 
 @frappe.whitelist(methods=["GET"])

@@ -334,9 +334,13 @@ test('the composer writes prose, not a textarea', async ({ page, baseURL }, info
   // line, which is what a textarea sends.
   const body = page.getByRole('dialog').locator('.ProseMirror')
   await expect(body).toBeVisible()
-  await body.click()
+  // The first paragraph, which is the empty one above the signature: clicking
+  // the middle of the box lands in the sign-off, and so would the typing.
+  await body.locator('p').first().click()
   await page.keyboard.type('Bold this')
-  await page.keyboard.press('Control+A')
+  // And the line just typed, not the whole body — Ctrl+A would take the
+  // signature with it.
+  await page.keyboard.press('Shift+Home')
   await page.getByRole('dialog').getByRole('button', { name: /bold/i }).first().click()
   await expect(body.locator('strong')).toHaveText('Bold this')
 
@@ -777,6 +781,72 @@ test('a shortcut does not fire while somebody is typing', async ({
   await page.locator('[data-slot="mail-search"]').fill('quotation')
   await expect(page.locator('[data-slot="mail-search"]')).toHaveValue('quotation')
   await expect(page.locator('[data-slot="mail-undo"]')).toHaveCount(0)
+
+  expectNoRealErrors(errors)
+})
+
+/**
+ * The signature, and who else saw the message.
+ *
+ * Two things the product had and never used. The signature people type into
+ * settings was stored on the address and never inserted — while Frappe's own
+ * rule appended the *default outgoing* account's signature to everything,
+ * after the message left the composer where nobody could see it happen. And
+ * `cc` was fetched on every message and rendered on none, so "who else is on
+ * this" was a question the reader could not answer.
+ */
+test('a message is signed by the address it is from, before it is sent', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await expect(threads(page).first()).toBeVisible()
+
+  // `c` writes. The signature is in the box before a word is typed.
+  await page.keyboard.press('c')
+  const composer = page.getByRole('dialog')
+  await expect(composer).toContainText('Sales — MockSpace')
+
+  expectNoRealErrors(errors)
+})
+
+test('a reply is signed above the quoted history, not under it', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await threads(page).filter({ hasText: SUBJECT }).click()
+  await page.getByRole('button', { name: 'Reply', exact: true }).click()
+
+  const composer = page.getByRole('dialog')
+  await expect(composer).toContainText('Sales — MockSpace')
+  // Above the attribution line: a signature under three screens of quoted mail
+  // is a signature nobody reads.
+  const body = await composer.locator('[contenteditable="true"]').innerText()
+  expect(body.indexOf('Sales — MockSpace')).toBeLessThan(body.indexOf('wrote:'))
+  // And the attribution reads like a date rather than like a timestamp.
+  expect(body).not.toMatch(/\d{2}:\d{2}:\d{2}\.\d+/)
+
+  expectNoRealErrors(errors)
+})
+
+test('a message says who else was copied on it', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await threads(page).filter({ hasText: SUBJECT }).click()
+
+  await expect(page.locator('[data-slot="mail-cc"]')).toContainText('qs@alreem-consultants.ae')
 
   expectNoRealErrors(errors)
 })

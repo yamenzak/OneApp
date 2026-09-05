@@ -80,7 +80,14 @@
         </p>
 
         <template v-else>
-          <span class="mt-0.5 block text-p-xs text-ink-gray-5">to {{ one.recipients }}</span>
+          <span class="mt-0.5 block text-p-xs text-ink-gray-5">
+            to {{ one.recipients }}
+            <!-- Cc, which the server has always sent and the reader never drew.
+                 Who else saw a message decides whether a reply goes to one
+                 person or to six, and reading it off a forwarded copy later is
+                 not an answer. -->
+            <span v-if="one.cc" data-slot="mail-cc">· cc {{ one.cc }}</span>
+          </span>
 
           <!--
             The body, in a document of its own — Frappe's reader, vendored:

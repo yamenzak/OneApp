@@ -111,6 +111,8 @@ import {
   upload,
 } from '@/ui'
 import RecipientField from './RecipientField.vue'
+import { withSignature } from './signature'
+import { mail } from '../../lib/mail'
 import FilePicker from '../drive/FilePicker.vue'
 import { workspace } from '../../lib/workspace'
 
@@ -159,6 +161,24 @@ function unattach(one) {
 
 const TITLES = { reply: 'Reply', reply_all: 'Reply to all', forward: 'Forward' }
 
+/**
+ * Sign the message with whatever the From address signs with.
+ *
+ * The signature belongs to the address rather than to the person, because an
+ * address here is a mailbox several people share — so changing From changes the
+ * sign-off, and it changes in front of somebody rather than on the way out.
+ * That was the bug this closes: the signature people typed into settings was
+ * never used at all, and the framework's own rule appended the *default
+ * outgoing* account's one to everything. See `email/signatures.py`.
+ */
+const sign = (was = '') => {
+  draft.content = withSignature(
+    draft.content,
+    mail.signatures[draft.sender] || '',
+    mail.signatures[was] || '',
+  )
+}
+
 const blank = () => {
   Object.assign(draft, {
     to: '', cc: '', bcc: '', subject: '', content: '', in_reply_to: '', attachments: [],
@@ -184,6 +204,7 @@ async function compose(from, kind = 'reply') {
     Object.assign(draft, opening, { bcc: '' })
     draft.attachments = opening.attachments || []
     copies.value = !!opening.cc
+    sign()
   } else {
     // A blank composer opens on whatever was left behind, if anything was.
     const opening = await workspace.mailKept()
@@ -192,9 +213,20 @@ async function compose(from, kind = 'reply') {
       copies.value = !!(opening.cc || opening.bcc)
     }
     if (!draft.sender) draft.sender = props.addresses[0] || ''
+    // Only for a message that has not been started. What was kept was kept with
+    // its signature in it, and signing it again would be signing what somebody
+    // may have deliberately deleted.
+    if (!draft.content) sign()
   }
   open.value = true
 }
+
+// Changing who it is from changes what signs it — and only that. `sign()`
+// swaps the block it owns and leaves everything else where it is, which is
+// what makes this safe to run over a half-written message.
+watch(() => draft.sender, (address, was) => {
+  if (open.value && was && address !== was) sign(was)
+})
 
 /** Back into the composer with what was just unsent, held server-side. */
 async function reopen() {
@@ -227,6 +259,20 @@ async function post() {
   }
 }
 
+/**
+ * Whether there is a message here, as opposed to a composer that was opened.
+ *
+ * The signature does not count. It is put in before anybody types a word, so
+ * without this every opened-and-closed composer left a draft behind it — and
+ * the next blank message opened carrying a sign-off, a subject and a recipient
+ * from a message somebody had decided not to write.
+ */
+const written = () => {
+  if (draft.to || draft.cc || draft.bcc || draft.subject) return true
+  const bare = withSignature(draft.content, '', mail.signatures[draft.sender] || '')
+  return new DOMParser().parseFromString(bare, 'text/html').body.textContent.trim() !== ''
+}
+
 // Closing the composer by accident and losing a written message is the failure
 // people remember. Held server-side rather than in this browser, so it survives
 // the tab as well as the dialog.
@@ -236,7 +282,9 @@ watch(
   () => {
     if (!open.value) return
     clearTimeout(keeping)
-    keeping = setTimeout(() => workspace.mailKeep({ ...draft }), 800)
+    keeping = setTimeout(() => {
+      if (written()) workspace.mailKeep({ ...draft })
+    }, 800)
   },
 )
 

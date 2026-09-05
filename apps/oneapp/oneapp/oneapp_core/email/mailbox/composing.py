@@ -9,7 +9,7 @@ with its images held back, and send somebody a reply full of empty `<img>`.
 
 import frappe
 from frappe import _
-from frappe.utils import add_to_date, escape_html, now_datetime
+from frappe.utils import add_to_date, escape_html, format_datetime, now_datetime
 from .scope import _addresses, _held, strip_prefixes
 
 
@@ -86,11 +86,15 @@ def _quote(original) -> str:
 	A blockquote and not a `>` prefix: the body is HTML, and prefixing lines of
 	HTML with a character produces neither quoted text nor valid markup.
 	"""
-	when = original.communication_date or ""
+	# Written the way a person writes a date, not the way a database stores one:
+	# the attribution line said "On 2026-09-04 20:48:15.232563, Hala wrote:",
+	# microseconds and all, in a message going to a customer.
+	when = original.communication_date
+	said = format_datetime(when, "EEE, d MMM yyyy 'at' HH:mm") if when else ""
 	who = escape_html(original.sender_full_name or original.sender or "")
 	return (
 		"<p><br></p>"
-		f"<p>On {escape_html(str(when))}, {who} wrote:</p>"
+		f"<p>On {escape_html(said)}, {who} wrote:</p>"
 		'<blockquote style="margin:0 0 0 .8ex;border-left:2px solid #ccc;padding-left:1ex">'
 		f"{original.content or ''}"
 		"</blockquote>"

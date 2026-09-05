@@ -249,6 +249,9 @@ def _make_frappe():
 	utils.now_datetime = lambda: None
 	utils.add_to_date = lambda *a, **k: None
 	utils.get_datetime = lambda x: x
+	# Enough of a date to be told apart from a timestamp with microseconds in it,
+	# which is the whole point of the caller: a reply's attribution line.
+	utils.format_datetime = lambda value, fmt=None: str(value)
 	# Real, not a stub returning None: the AI pricer picks between two rows by
 	# comparing today against a rate's effective window, and a getdate that
 	# answers None makes every dated rate look current.

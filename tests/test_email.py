@@ -1781,3 +1781,147 @@ def test_everywhere_is_not_a_folder_somebody_can_ask_for(mailbox, filed):
 	before that check it would be a refusal, not a leak."""
 	filed(**{"Archive": "archive"})
 	assert mailbox.EVERYWHERE not in mailbox._held()
+
+
+# --------------------------------------------------------------------------- #
+#
+# Whose signature goes on a message.
+
+
+@pytest.fixture
+def signing(stub_frappe):
+	from oneapp.oneapp_core.email import addresses
+
+	return addresses
+
+
+def _rows(dicts):
+	"""What `frappe.get_all` answers with: attribute access, not keys."""
+	import frappe
+
+	return [frappe._dict(row) for row in dicts]
+
+
+def test_an_address_signs_with_its_own_signature(signing, stub_frappe):
+	rows = [
+		{"email_id": "sales@x.test", "signature": "Sales — Acme"},
+		{"email_id": "hello@x.test", "signature": "Acme"},
+	]
+	stub_frappe.get_all = lambda *a, **k: _rows(rows)
+
+	assert signing.signatures(["sales@x.test", "hello@x.test"]) == {
+		"sales@x.test": "Sales — Acme",
+		"hello@x.test": "Acme",
+	}
+
+
+def test_an_address_with_nothing_to_sign_with_is_left_out(signing, stub_frappe):
+	"""Not an empty string in the map: the composer reads a missing key as "this
+	address signs with nothing" and an empty one the same way, and one of the two
+	is a signature block containing a blank line."""
+	stub_frappe.get_all = lambda *a, **k: _rows([
+		{"email_id": "sales@x.test", "signature": "   "},
+		{"email_id": "ops@x.test", "signature": None},
+	])
+	assert signing.signatures(["sales@x.test", "ops@x.test"]) == {}
+
+
+def test_asking_about_no_addresses_asks_the_database_nothing(signing, stub_frappe):
+	asked = []
+	stub_frappe.get_all = lambda *a, **k: asked.append(a) or []
+	assert signing.signatures([]) == {}
+	assert asked == []
+
+
+def test_only_an_address_that_asked_to_sign_does(signing, stub_frappe):
+	"""`add_signature` is the switch beside the box in settings, and a signature
+	somebody typed and then turned off is not one they want on their mail."""
+	seen = {}
+	stub_frappe.get_all = lambda doctype, **k: seen.update(k) or []
+	signing.signatures(["sales@x.test"])
+	assert seen["filters"]["add_signature"] == 1
+
+
+def _flags():
+	import frappe
+
+	return frappe._dict()
+
+
+def test_the_frameworks_own_signature_is_held_off_every_email(stub_frappe):
+	"""Frappe signs a Communication in `before_save` with the *default outgoing*
+	account's signature — so on a workspace whose notifications leave from
+	`hello@`, a reply sent from `sales@` came out signed by `hello@`, appended
+	after it left the composer where nobody could see it happen."""
+	import types
+
+	from oneapp.oneapp_core.email import signatures
+
+	doc = types.SimpleNamespace(communication_medium="Email", flags=_flags())
+	signatures.hold_the_frameworks_signature(doc)
+	assert doc.flags.skip_add_signature is True
+
+
+def test_a_chat_or_a_phone_call_is_left_alone(stub_frappe):
+	"""The hook is on `Communication`, which is also how a phone call and a chat
+	message are recorded. Neither is sent, so neither is signed."""
+	import types
+
+	from oneapp.oneapp_core.email import signatures
+
+	doc = types.SimpleNamespace(communication_medium="Phone", flags=_flags())
+	signatures.hold_the_frameworks_signature(doc)
+	assert not doc.flags.get("skip_add_signature")
+
+
+def test_the_hook_is_registered_where_frappe_will_find_it():
+	"""A hook nothing calls is a comment. `before_save`, because that is when
+	`set_signature_in_email_content` runs."""
+	from oneapp import hooks
+
+	assert (
+		hooks.doc_events["Communication"]["before_save"]
+		== "oneapp.oneapp_core.email.signatures.hold_the_frameworks_signature"
+	)
+
+
+def test_an_attribution_line_is_written_the_way_a_person_writes_a_date(mailbox):
+	"""It said "On 2026-09-04 20:48:15.232563, Hala Nasser wrote:" — microseconds
+	and all, in a message going to a customer."""
+	import inspect
+
+	source = inspect.getsource(mailbox._quote)
+	assert "format_datetime" in source
+	assert "communication_date" in source
+
+
+def test_a_draft_that_will_not_parse_is_a_draft_that_is_gone(mailbox, stub_frappe, monkeypatch):
+	"""Read every time the composer opens, so one malformed value is a 500 on
+	every attempt to write a message — for that person, until somebody clears a
+	user default by hand. We wrote one: an attribute the rich editor mangled came
+	back with a stray backslash in it, and the stored draft stopped parsing."""
+	from oneapp.oneapp_core.email.mailbox import drafts
+
+	stored = {"value": '{"content": "<div a=\\&quot;1\\&quot;>"}'}
+	monkeypatch.setattr(
+		stub_frappe.defaults, "get_user_default", lambda *a, **k: stored["value"]
+	)
+	monkeypatch.setattr(
+		stub_frappe.defaults,
+		"set_user_default",
+		lambda key, value, user=None: stored.update(value=value),
+	)
+	stub_frappe.log_error = lambda *a, **k: None
+
+	assert drafts.kept() == {}
+	# And thrown away rather than left to fail again on the next open.
+	assert stored["value"] == ""
+
+
+def test_a_draft_that_parses_to_something_that_is_not_a_draft_is_also_nothing(
+	mailbox, stub_frappe, monkeypatch
+):
+	monkeypatch.setattr(stub_frappe.defaults, "get_user_default", lambda *a, **k: "[1, 2]")
+	from oneapp.oneapp_core.email.mailbox import drafts
+
+	assert drafts.kept() == {}
