@@ -24,11 +24,11 @@ of them has a browser. `docs/SHEETS.md` §1 and §3 are the argument.
 """
 
 from .refs import (
-    MAX_CELLS, BadRef, cells_in, column_letters, column_number, format,
+    MAX_CELLS, BadRef, canonical, cells_in, column_letters, column_number, format,
     format_range, grid, parse, parse_range, within,
 )
 from .reading import open_sheet, ranges, read_range, tabs
-from .export import ROUTE, download, url_for
+from .export import ROUTE, download, to_response, url_for
 from .writing import (
     add_tab, copy_into, make, on_trash, remove_range, remove_tab, rename_tab,
     set_range, set_tab_geometry, write_cells,
@@ -39,6 +39,7 @@ from .feed import header, number, preview, pull
 __all__ = [
     "add_tab",
     "BadRef",
+    "canonical",
     "cells_in",
     "column_letters",
     "column_number",
@@ -69,6 +70,7 @@ __all__ = [
     "set_tab_geometry",
     "set_template",
     "tabs",
+    "to_response",
     "TEMPLATE_FIELD",
     "url_for",
     "within",

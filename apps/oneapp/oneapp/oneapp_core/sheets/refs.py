@@ -75,6 +75,18 @@ def parse(ref: str) -> tuple[int, int]:
     return row, column
 
 
+def canonical(ref: str) -> str:
+    """`$A$1` → `A1`. The form a cell is *stored* as.
+
+    Excel writes an absolute reference with dollars and people paste them, so
+    they are accepted — but only one spelling may reach the table. Two rows for
+    `A1` and `$A$1` is a cell with two values, and every lookup here is by the
+    stored string.
+    """
+    row, column = parse(ref)
+    return format(row, column)
+
+
 def format(row: int, column: int) -> str:
     """`(3, 2)` → `B3`."""
     if row < 1:

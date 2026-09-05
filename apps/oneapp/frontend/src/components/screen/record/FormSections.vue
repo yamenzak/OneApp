@@ -114,13 +114,14 @@
             <FieldControl
               :model-value="values[field.fieldname]"
               @update:model-value="wrote(field, $event)"
+              @reload="emit('reload')"
               :field="shaped(field)"
               :space-code="spaceCode"
               :screen="screen"
               :is-new="isNew"
               :states="states"
               :doctype="doctype"
-              :docname="values.name || ''"
+              :docname="docname || values.name || ''"
               :doc="values"
               :disabled="
                 disabled ||
@@ -191,6 +192,9 @@ const props = defineProps({
   isNew: { type: Boolean, default: false },
   /** What the record is, for the fields that attach files to it. */
   doctype: { type: String, default: '' },
+  /** Its id. Not `values.name` — the draft holds docfields, and `name` is not
+      one of them. */
+  docname: { type: String, default: '' },
   /** The doctype's Document States, so a Select's options carry their glyph. */
   states: { type: Array, default: () => [] },
 })
@@ -198,6 +202,8 @@ const props = defineProps({
 // The draft, written into per field. A model rather than a prop: the object is
 // the caller's and every control edits one key of it, so passing it down as a
 // prop and writing to it is the mutation eslint is right to refuse.
+const emit = defineEmits(['reload'])
+
 const values = defineModel('values', { type: Object, required: true })
 
 /**

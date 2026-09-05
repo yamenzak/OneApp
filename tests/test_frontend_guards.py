@@ -944,6 +944,11 @@ def test_a_tooltip_is_frappe_uis_or_it_is_not_a_tooltip(app):
 	its accessible name — the only one it can have — and a screen reader reads
 	the frame by it. Leaving it off to satisfy this rule would trade a tooltip
 	nobody sees for a document nobody can find.
+
+	A mouse handler that is not a hover card at all — dragging a selection
+	across a grid is the case — says so in the file with `not-a-tooltip:` and a
+	reason. Written in the source rather than in a list here, so the exemption
+	is beside the code it excuses and cannot outlive it.
 	"""
 	root = ROOT / f"apps/{app}/frontend/src"
 	html_title = re.compile(r"<(?!iframe\b)[a-z][\w-]*\s[^>]*?\stitle=", re.S)
@@ -951,6 +956,8 @@ def test_a_tooltip_is_frappe_uis_or_it_is_not_a_tooltip(app):
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):
 		source = path.read_text()
+		if "not-a-tooltip:" in source:
+			continue
 		if html_title.search(source) or hover.search(source):
 			offenders.append(str(path.relative_to(root)))
 	assert not offenders, (

@@ -63,6 +63,15 @@ test('opening a file opens a preview, and the preview offers a link', async ({ p
   const errors = collectConsoleErrors(page)
   await page.goto('/one/files?place=all')
 
+  // Narrowed to the fixture's own pictures rather than "whatever is newest".
+  // A sheet is a file too and it does not preview — it opens its grid — so
+  // "the first row in All files" stopped being a file with bytes the moment
+  // Sheets landed.
+  await page.getByPlaceholder('Search files').fill('zzmock')
+  // The search is debounced, so the list on screen is still the unfiltered one
+  // for a moment — and clicking its first row is clicking whatever was newest.
+  await expect(page.locator('[data-slot="drive-file"]').first()).toContainText('zzmock')
+
   // A folder is a link and navigates; only a file opens a preview, and the
   // difference is the element rather than a class. The row is the container;
   // the thing you press is inside it.
@@ -263,6 +272,11 @@ test('a link made here is a link a stranger can follow', async ({ page, browser 
 
   const errors = collectConsoleErrors(page)
   await page.goto('/one/files?place=all')
+
+  // The fixture's own pictures, for the same reason as the preview test above:
+  // a sheet is a file and clicking one opens its grid rather than a dialog.
+  await page.getByPlaceholder('Search files').fill('zzmock')
+  await expect(page.locator('[data-slot="drive-file"]').first()).toContainText('zzmock')
 
   const file = page.locator('button[data-slot="drive-open"]')
   await file.first().waitFor({ timeout: 20_000 })

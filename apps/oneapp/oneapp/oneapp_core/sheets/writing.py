@@ -90,8 +90,9 @@ def write_cells(sheet: str, cells: str | list) -> dict:
     wanted = {}
     for row in rows:
         tab = (row.get("tab") or "Sheet1").strip()
-        ref = (row.get("ref") or "").strip().upper()
-        refs.parse(ref)          # refuses anything that is not a cell
+        # Canonical, not as typed: `$A$1` and `A1` are the same cell, and two
+        # rows for one cell is a cell with two values.
+        ref = refs.canonical(row.get("ref") or "")
         wanted[(tab, ref)] = row
 
     existing = {

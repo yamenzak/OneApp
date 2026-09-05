@@ -3,6 +3,23 @@
     <div class="flex items-center justify-between gap-2">
       <FormLabel :label="field.label" />
       <div class="flex items-center gap-2">
+        <!--
+          Read these rows off a spreadsheet. Here rather than in the record's
+          action menu because this is where somebody with a priced estimate in
+          front of them is already looking — and because what it replaces is
+          exactly these rows and nothing else on the document.
+
+          Only on a saved record: a pull writes through the server, and there
+          is nothing to write to until the document exists.
+        -->
+        <FillFromSheet
+          v-if="editable && docname"
+          :doctype="doctype"
+          :docname="docname"
+          :into="field.fieldname"
+          :fields="child.fields || []"
+          @filled="emit('reload')"
+        />
         <!-- What is ticked, and the one thing worth doing to it. Beside the
              count rather than in a floating bar: a child table is a few rows
              inside a form, and a bar over the form to delete two lines of it
@@ -148,6 +165,7 @@ import RecordTable from '../bodies/RecordTable.vue'
 import FieldCell from '../bodies/FieldCell.vue'
 import FieldControl from '../fields/FieldControl.vue'
 import RecordForm from './RecordForm.vue'
+import FillFromSheet from '../../sheets/FillFromSheet.vue'
 import { isNumericCell } from '../../../lib/fields'
 
 const props = defineProps({
@@ -156,7 +174,12 @@ const props = defineProps({
   spaceCode: { type: String, required: true },
   screen: { type: String, required: true },
   disabled: { type: Boolean, default: false },
+  /** The record these rows hang off, where it has been saved. */
+  doctype: { type: String, default: '' },
+  docname: { type: String, default: '' },
 })
+
+const emit = defineEmits(['reload'])
 
 /** The rows, as the record holds them. Assigned whole, as Frappe stores them. */
 const rows = defineModel('rows', { type: Array, default: () => [] })

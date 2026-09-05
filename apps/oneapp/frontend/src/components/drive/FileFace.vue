@@ -60,6 +60,7 @@ const ICONS = {
   Video: 'lucide-video',
   Audio: 'lucide-music',
   Document: 'lucide-file',
+  Sheet: 'lucide-table-2',
   Other: 'lucide-file-question',
 }
 

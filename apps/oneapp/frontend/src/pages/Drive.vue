@@ -60,14 +60,36 @@
         :disabled="!drive.files.value.length || drive.busy.value"
         @click="emptying = true"
       />
-      <Button
-        v-else
-        :icon="isMobile ? 'lucide-folder-plus' : undefined"
-        :icon-left="isMobile ? undefined : 'lucide-folder-plus'"
-        label="New folder"
-        tooltip="New folder"
-        @click="naming = true"
-      />
+      <template v-else>
+        <Button
+          :icon="isMobile ? 'lucide-folder-plus' : undefined"
+          :icon-left="isMobile ? undefined : 'lucide-folder-plus'"
+          label="New folder"
+          tooltip="New folder"
+          @click="naming = true"
+        />
+        <!--
+          The only thing in this product that is made rather than uploaded,
+          which is why it is a control here and not an item in the upload menu:
+          a sheet starts empty, or from one somebody already built.
+
+          A dropdown rather than a button, because a workspace that has an
+          estimator template wants to start from it far more often than from a
+          blank grid — and "New sheet" then finding the template in a file list
+          is two steps for the common case.
+        -->
+        <Dropdown :options="sheetOptions">
+          <Button
+            :icon="isMobile ? 'lucide-table-2' : undefined"
+            :icon-left="isMobile ? undefined : 'lucide-table-2'"
+            :icon-right="isMobile ? undefined : 'lucide-chevron-down'"
+            variant="solid"
+            label="New sheet"
+            tooltip="New sheet"
+            :loading="making"
+          />
+        </Dropdown>
+      </template>
     </div>
   </PageHeader>
 
@@ -283,7 +305,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   Alert,
   Breadcrumbs,
@@ -301,6 +323,7 @@ import FileRow from '../components/drive/FileRow.vue'
 import FileShare from '../components/drive/FileShare.vue'
 import FolderPicker from '../components/drive/FolderPicker.vue'
 import { useDrive } from '../composables/useDrive'
+import { workspace } from '../lib/workspace'
 import { useIsMobile } from '@/lib/screen'
 import { PLACES, labelOf } from '../components/drive/places'
 
@@ -321,6 +344,7 @@ const EMPTY = {
 }
 
 const route = useRoute()
+const router = useRouter()
 // The header is a breadcrumb, a search box and two buttons. On a phone that is
 // more than 412px holds, so the buttons lose their words and keep their
 // tooltips.
@@ -402,6 +426,8 @@ const emptying = ref(false)
 const folderName = ref('')
 const newName = ref('')
 const toMove = ref([])
+const making = ref(false)
+const templates = ref([])
 
 // A folder is a link and navigates itself; this is only ever a file.
 //
@@ -409,9 +435,45 @@ const toMove = ref([])
 // there, one button further in, which is the right way round: the common case
 // is wanting to see the thing.
 function open(file) {
+  // A sheet is not a thing to preview. Its bytes are a CSV somebody exports;
+  // what a person clicking it wants is the grid.
+  if (file.custom_kind === 'Sheet') {
+    router.push({ name: 'Sheet', params: { name: file.name } })
+    return
+  }
   looking.value = file
   previewing.value = true
 }
+
+// A sheet is made and then opened, in one click. The alternative — make it,
+// then find it in the list — is two steps for something whose whole point is
+// that you have somewhere to type.
+async function newSheet(template = '') {
+  making.value = true
+  try {
+    const made = await workspace.sheetMake({
+      folder: folder.value || '',
+      title: template ? `${labelOfTemplate(template)} copy` : '',
+      template,
+    })
+    router.push({ name: 'Sheet', params: { name: made.name } })
+  } finally {
+    making.value = false
+  }
+}
+
+function labelOfTemplate(name) {
+  return templates.value.find((one) => one.name === name)?.file_name || 'Sheet'
+}
+
+const sheetOptions = computed(() => [
+  { label: 'Blank sheet', icon: 'lucide-file-plus-2', onClick: () => newSheet() },
+  ...templates.value.map((one) => ({
+    label: one.file_name,
+    icon: 'lucide-table-2',
+    onClick: () => newSheet(one.name),
+  })),
+])
 
 function startShare(file) {
   looking.value = file
@@ -462,7 +524,16 @@ function onSearch() {
   typing = setTimeout(() => drive.load(), 300)
 }
 
-onMounted(() => drive.load())
+onMounted(() => {
+  drive.load()
+  // The templates the New sheet menu offers. One small query alongside the
+  // list rather than one when the menu opens, because a menu that takes a
+  // round trip to fill is a menu that appears empty and then jumps.
+  workspace
+    .sheetTemplates()
+    .then((found) => { templates.value = found || [] })
+    .catch(() => { templates.value = [] })
+})
 watch([place, folder], () => {
   drive.clear()
   drive.load()

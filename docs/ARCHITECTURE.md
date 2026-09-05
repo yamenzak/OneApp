@@ -58,6 +58,16 @@ The single modules, roughly by how often they are touched:
   `attached_to_doctype` and a file in a folder has `folder`; it can have both,
   which is why the Drive and a record's Files tab are two queries and not two
   stores.
+* `sheets/` — spreadsheets, over that same `File` table. A sheet *is* a File
+  with `custom_kind = 'Sheet'`, so its name, owner, folder, share, bin and
+  binding to a record are the Drive's and are not written twice; what is
+  written here is the grid, which a File cannot hold. Six layers: `refs` (A1
+  notation, no Frappe), `reading`, `writing`, `templates`, `export` (one tab as
+  CSV, and the URL a sheet's `file_url` honestly points at) and `feed` — the
+  read-back, where a named rectangle fills a document's child table. `Sheet
+  Cell` stores `raw` beside `value` and nothing on this side reads `raw`: the
+  browser evaluates formulas, the server stores what it computed. See
+  `docs/SHEETS.md`.
 * `ai/`, `storage/`, `plans/` — the metered gateway, R2, and the one bespoke
   migration plan.
 
@@ -84,11 +94,12 @@ two disagree.
 | | |
 |---|---|
 | `lib/` | Generated: the runtime. `resource` (every call), `fields` (every fieldtype), `icons`, `socket`, `notify`, `theme`. |
-| `lib/workspace/` | Hand-written, and the one place a server call is named: `settings`, `screen`, `record`, `layouts`, `mail`, `importing`, `printing`, assembled into one `workspace` object because every caller says `workspace.screenRows(...)`. |
+| `lib/workspace/` | Hand-written, and the one place a server call is named: `settings`, `screen`, `record`, `layouts`, `mail`, `drive`, `sheets`, `importing`, `printing`, assembled into one `workspace` object because every caller says `workspace.screenRows(...)`. |
+| `lib/sheets/` | The half of a spreadsheet the server does not do: `refs` (A1 notation, a second implementation of `oneapp_core/sheets/refs.py` because a grid names a cell on every keystroke and cannot ask — `tests/test_sheets.py` reads the limits out of both), `engine` (values, the dependency graph, recalculation order, cycles) and `display` (what a cell looks like, through Excel's own number-format grammar). |
 | `pages/` | One per route. `ScreenHost` is the big one — it resolves a screen and hosts whichever body the view type asks for. |
 | `components/screen/` | Everything a screen draws, in four families. `bodies/` is how the rows are shown — `ListBody`, `BoardBody`, `CardsBody`, `DashboardBody` and the cells, footer and selection bar they share. `record/` is one record open — `RecordView`, its pane, drawer, showcase, tabs and dialogs. `fields/` is one value drawn or edited — `FieldControl`, `LinkPicker`, `StateBadge`, the pickers. `views/` is which screen and how it is filtered — `ScreenHeader`, the filters, the column picker, the switcher. |
-| `components/mail/`, `components/notifications/`, `components/drive/` | The three surfaces that are not screens. `drive/` is the file manager and the picker every attach surface opens; its `FileRow` is also what a record's Files tab draws, because the two are one query apart. Everything left at the root of `components/` is the shell — the rail, the bottom bar, the account menu — or a primitive more than one side uses: `Resizer`, `FadedScroll`, `EmptyState`, `UsageBar`, and `SharePanel`, which is the body of the share dialog for a record and for a file alike. |
-| `composables/` | State pulled out of a page. `useRows` owns the records a screen lists and everything about having fetched them; `useRecordSurface` the one that is open and whether it is a pane or the page; `useCreating` the three doors that make a new one; `useSavedViews` the named layouts; `usePeek` a record opened from inside another; `useListFollow` the realtime refetch; `useDrive` the file list, its selection and the eight things that change it; `useCrumbs` and `useSorting` the header's derived state. A composable called at the top of `<script setup>` runs *immediately*, so everything it reads must be declared above the call — `tests/test_composables.py` enforces exactly that — written after one extraction read a `const` declared below its call, which is a `ReferenceError`, a blank page, and 152 specs timing out at once. |
+| `components/mail/`, `components/notifications/`, `components/drive/`, `components/sheets/` | The four surfaces that are not screens. `drive/` is the file manager and the picker every attach surface opens; its `FileRow` is also what a record's Files tab draws, because the two are one query apart. `sheets/` is the grid — `SheetGrid`, its toolbar and its tab strip — plus `FillFromSheet`, which is the one piece of it that appears somewhere else: a control on every editable child table, because a spreadsheet that cannot feed a document is a spreadsheet. Everything left at the root of `components/` is the shell — the rail, the bottom bar, the account menu — or a primitive more than one side uses: `Resizer`, `FadedScroll`, `EmptyState`, `UsageBar`, and `SharePanel`, which is the body of the share dialog for a record and for a file alike. |
+| `composables/` | State pulled out of a page. `useRows` owns the records a screen lists and everything about having fetched them; `useRecordSurface` the one that is open and whether it is a pane or the page; `useCreating` the three doors that make a new one; `useSavedViews` the named layouts; `usePeek` a record opened from inside another; `useListFollow` the realtime refetch; `useDrive` the file list, its selection and the eight things that change it; `useSheet` one open workbook — the engine, the selection, the write queue and the tabs; `useCrumbs` and `useSorting` the header's derived state. A composable called at the top of `<script setup>` runs *immediately*, so everything it reads must be declared above the call — `tests/test_composables.py` enforces exactly that — written after one extraction read a `const` declared below its call, which is a `ReferenceError`, a blank page, and 152 specs timing out at once. |
 | `screens/` | Bespoke screens a manifest names by component, rather than rendering from metadata. |
 | `ui.js` | The barrel. Every frappe-ui component comes through it, so what is allowed is one reviewable list. |
 

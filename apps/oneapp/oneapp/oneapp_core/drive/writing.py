@@ -73,6 +73,10 @@ def rename(name: str, file_name: str) -> dict:
     The kind is re-derived, because renaming `notes` to `notes.pdf` is somebody
     saying what the file is — and a kind that only ever reflected the name at
     upload time would be a filter that quietly lies after the first rename.
+
+    Except where the kind was declared rather than derived: a sheet stays a
+    sheet, because nothing about its name ever said it was one. See
+    `kinds.DECLARED`.
     """
     title = (file_name or "").strip()
     if not title:
@@ -80,7 +84,7 @@ def rename(name: str, file_name: str) -> dict:
 
     doc = _mine(name)
     doc.file_name = title
-    doc.set(KIND_FIELD, kind_of(title, doc.is_folder))
+    doc.set(KIND_FIELD, kind_of(title, doc.is_folder, doc.get(KIND_FIELD)))
     doc.save()
     return {"ok": True, "name": doc.name, "label": doc.file_name,
             "kind": doc.get(KIND_FIELD)}

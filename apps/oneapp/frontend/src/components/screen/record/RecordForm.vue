@@ -48,7 +48,12 @@
     </div>
     <TabPanel v-for="one in tabs" :key="one.key" :value="one.key">
       <div class="pt-4">
-        <FormSections v-model:values="values" :sections="one.sections" v-bind="passthrough" />
+        <FormSections
+          v-model:values="values"
+          :sections="one.sections"
+          v-bind="passthrough"
+          @reload="emit('reload')"
+        />
       </div>
     </TabPanel>
   </Tabs>
@@ -60,6 +65,7 @@
     v-model:values="values"
     :sections="tabs[0]?.sections || []"
     v-bind="passthrough"
+    @reload="emit('reload')"
   />
 </template>
 
@@ -78,9 +84,21 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   /** A record being made rather than edited: `set_only_once` is not yet spent. */
   isNew: { type: Boolean, default: false },
+  /**
+   * The record's id, where it has one.
+   *
+   * Passed in rather than read off `values.name`, which is empty: the draft
+   * holds one key per docfield and `name` is not a docfield. The controls that
+   * write through the server rather than through the form — attaching a file,
+   * filling a child table from a sheet — need the id of the thing they are
+   * writing to.
+   */
+  docname: { type: String, default: '' },
 })
 
 /** The values being edited, keyed by fieldname. */
+const emit = defineEmits(['reload'])
+
 const values = defineModel('values', { type: Object, required: true })
 
 const tab = ref('t0')
@@ -121,6 +139,7 @@ const passthrough = computed(() => ({
   // is over, and threading it through every caller would be one more thing to
   // forget on the next form that renders this.
   doctype: props.spec?.doctype || '',
+  docname: props.docname,
   // Same argument: the spec carries the doctype's Document States, so a
   // Select's options draw the glyph their badge will draw once chosen.
   states: props.spec?.states || [],

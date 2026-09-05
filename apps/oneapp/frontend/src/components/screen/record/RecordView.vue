@@ -254,6 +254,8 @@
               :space-code="spaceCode"
               :screen="screen"
               :disabled="!canWrite"
+              :docname="record?.name || ''"
+              @reload="emit('reload')"
             />
             <ErrorMessage v-if="error" :message="error" />
           </div>

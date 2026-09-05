@@ -40,3 +40,4 @@ apps/*/frontend/test-results/
 apps/*/frontend/*.mjs
 !apps/*/frontend/shot.mjs
 apps/*/frontend/playwright-report/
+apps/*/frontend/shot.png

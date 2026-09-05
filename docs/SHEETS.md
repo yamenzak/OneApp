@@ -201,7 +201,12 @@ handling are solved problems in this repo.
 Seven stages. The first three are a spreadsheet; the fourth is the one the
 request is actually about; the rest are what makes it pleasant.
 
-### Stage 1 — A sheet is a file
+**Where this has got to.** Stages 1 to 5 are built and live. Stage 6 has export
+as CSV only — no xlsx either way, and no print format yet. Stage 7 is still
+deliberately absent. What follows is the plan as written, with what actually happened noted
+where the two differ, because the differences are the interesting part.
+
+### Stage 1 — A sheet is a file  ✅
 
 **`Sheet` is not a new place.** It is a `File` with `custom_kind = 'Sheet'`, and
 its cells live in their own table keyed by that File's name.
@@ -213,10 +218,21 @@ picker, and the ability to hang off a record — none of it written twice.
 
 Where it strains, said plainly: a `File` is a row that names some bytes, and a
 sheet's bytes do not exist until somebody exports it. So `file_url` points at
-our own viewer route rather than at an object, `r2_key` stays empty, and
-`file_size` is the cell count's stand-in until an export is taken. The
-alternative — a `Sheet` doctype that reimplements placement, sharing and the bin
-— is three hundred lines of machinery to avoid one honest exception.
+our own route rather than at an object, `r2_key` stays empty, and `file_size` is
+the cell count's stand-in until an export is taken. The alternative — a `Sheet`
+doctype that reimplements placement, sharing and the bin — is three hundred
+lines of machinery to avoid one honest exception.
+
+**What the exception turned out to be, exactly.** `File.validate` refuses a row
+whose `file_url` names nothing: it must be under `/files/`, `/private/files/`,
+or one of `URL_PREFIXES = ("http://", "https://", "/api/method/")` — and the
+last of those is the framework's own hatch for a file whose bytes are produced
+rather than stored. So the URL is not the viewer route after all; it is
+`sheets.download`, the exporter. That is the better answer as well as the
+working one: follow a sheet's `file_url` and you get the file the row claims to
+be. Pointing it at `/one/sheets/<name>` inserted fine and then threw on the next
+save of the row — a rename, a move, a trash — which is the sort of bug that
+appears a week later on somebody else's screen.
 
     Sheet Cell     sheet (Link → File), tab, ref, raw, value, format
     Sheet Tab      sheet, name, position, frozen_rows, frozen_columns
@@ -232,7 +248,7 @@ The reason is the read-back: `Sheet Range` names a rectangle, and pulling it has
 to be a query rather than loading a megabyte of JSON and walking it. It also
 makes a cell's history Frappe's own version history instead of a second one.
 
-### Stage 2 — The engine, in the browser
+### Stage 2 — The engine, in the browser  ✅
 
 `fast-formula-parser` behind a thin module of ours, so the dependency is
 replaceable and the guards can see it.
@@ -260,7 +276,7 @@ when met later:
 What is ours rather than the library's: the dependency graph (which cells to
 recompute when one changes), cycle detection, and the recalculation order.
 
-### Stage 3 — The grid
+### Stage 3 — The grid  ✅
 
 A screen at `/one/sheets/<name>`, and the sheet's own body: a formula bar, a
 column and row header, selection, a fill handle, and cells.
@@ -269,7 +285,23 @@ Not `ListBody`. The two look alike and are not: a list draws rows of a doctype
 with typed columns, and a sheet draws an unbounded lattice of untyped cells.
 Sharing a component would be sharing the scroller and nothing else.
 
-### Stage 4 — A sheet feeds a document
+Three things were learned building it, all of them about the editor rather than
+about the grid. There is **one** `<input>`, moved to whichever cell is being
+typed in — twenty thousand form controls is a page that never finishes opening.
+It is rendered with `v-show` and not `v-if`, because typing a character has to
+start an edit *and* focus the input in the same tick: with `v-if` the element
+does not exist yet, focus waits for the next tick, and every keystroke before
+then lands on a grid that already believes it is editing. And `v-show`'s own
+`display: none` has to be cleared imperatively at the same moment, because a
+hidden element cannot take focus either. `=A1*A2` typed at speed arrived as
+`=`, twice, for two different reasons.
+
+The fill handle named above is not built. Everything else is: selection by
+click and by drag, shift-arrows, tab and enter, copy, cut and paste as
+tab-separated text (which is what Excel puts on the clipboard), bold, italic,
+underline, wrap, alignment, Excel's own number formats, and tabs.
+
+### Stage 4 — A sheet feeds a document  ✅
 
 **The stage the request is about.** Everything before it is a spreadsheet;
 this is what makes it part of the product.
@@ -285,9 +317,12 @@ this is what makes it part of the product.
   `importer.py` is an engine and not a script.
 * **Pull is idempotent and repeatable until it is locked.** Locking is what
   RUA's lock did: after it, the document is the record and the sheet is
-  history.
+  history. Repeatable is built — a pull replaces the child table rather than
+  appending to it, so pressing it twice cannot double a quotation. Locking is
+  not, and is the next thing this wants.
 
-The manifest declares the binding, so a space brings it rather than a developer:
+**The manifest declaration was dropped, on purpose.** The plan had a space
+declare which screen may be filled from which range:
 
     { "screen": "quotations",
       "sheet": { "template": "Quotation Estimator",
@@ -295,7 +330,20 @@ The manifest declares the binding, so a space brings it rather than a developer:
                  "into": "items",
                  "map": { "Item Name": "item_name", "Qty": "qty" } } }
 
-### Stage 5 — Templates
+What is built instead is a control on *every* editable child table on every
+saved record. The declaration is the more disciplined design and it is the
+wrong one here: it means a person cannot price a job in a grid and feed it into
+a doctype nobody thought of in advance, which is exactly the thing being asked
+for. The mapping it would have carried is not needed either — a header matches
+a field by fieldname or by label, so a template written to match the doctype
+needs no map at all, and one that does not says so in the dialog before the
+pull rather than silently dropping a column.
+
+`mapping` is still a parameter on `sheets.pull`, and nothing sends one yet. It
+is where a manifest entry would attach if a space ever does want to fix the
+binding.
+
+### Stage 5 — Templates  ✅
 
 A sheet with `is_template` on it. "New from template" copies its cells, which is
 an insert rather than RUA's Drive `files.copy` against somebody else's API.
@@ -303,7 +351,17 @@ an insert rather than RUA's Drive `files.copy` against somebody else's API.
 A workspace's templates are a folder in the Drive, so managing them is managing
 files — no second screen, no second permission model.
 
-### Stage 6 — Import, export, print
+Two controls, and no third: **Use as a template** in the sheet's own menu, and
+**New sheet** in the Drive is a menu whose first item is a blank grid and whose
+rest are the templates. A workspace that has an estimator template starts from
+it far more often than from an empty sheet, so making that the same click is
+most of the feature.
+
+There is still no template *gallery* — a screen of thumbnails and categories —
+and there should not be until a workspace has enough templates for a menu to be
+the wrong shape.
+
+### Stage 6 — Import, export, print  ◐
 
 `xlsx` (MIT) both ways: an estimator with a spreadsheet already has one, and a
 sheet nobody can get out of is a sheet nobody will trust. Print is a print

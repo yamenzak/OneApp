@@ -44,7 +44,20 @@ def download(name: str, tab: str = "") -> None:
     missing, and every reader of an exported sheet wants the numbers. `raw` is
     for the grid and stays there.
     """
-    doc = _mine(name, "read")
+    to_response(_mine(name, "read"), tab)
+
+
+def to_response(doc, tab: str = "") -> None:
+    """The same CSV, for a caller that has already settled the permission.
+
+    Two entry points because there are two kinds of reader. This one is
+    `storage.r2.serve`, which is the single funnel every download and every
+    expiring share link goes through — and which, before this existed, asked a
+    sheet for bytes it does not have and answered 500. A shared sheet is a
+    shared spreadsheet; what a stranger following the link should get is the
+    file, which is this.
+    """
+    name = doc.name
     grid, used = _grid(name, tab)
 
     buffer = io.StringIO()

@@ -758,6 +758,39 @@ no expiry, and every refusal on the way in says the same sentence, because a
 message that distinguished expired from wrong would tell a stranger whether the
 secret was right.
 
+### Spreadsheets
+
+**A sheet is a File too**, with `custom_kind = 'Sheet'` — so it arrived already
+able to sit in a folder, be shared, be thrown in the bin, be handed to a
+stranger on an expiring link, and hang off a quotation. `docs/SHEETS.md` is the
+argument and the stages. Four things carry the weight:
+
+**The browser evaluates; the server stores what it computed.** `Sheet Cell`
+keeps `raw` (`=C2*D2*E2*F2/1000000`) beside `value` (`6480`), and nothing on the
+server ever reads `raw`. A print format, a report and the read-back all want the
+number and none of them has a browser — which is why there is no formula engine
+in Python here, and why there does not need to be.
+
+**A named range is a contract.** Select a rectangle, give it a name, and a
+record can fill a child table from it: the first row names the columns, a
+heading may carry its unit in brackets (`Width [mm]`), and a heading matches a
+field by fieldname or by label. Everything outside the named range is the
+estimator's working — lookup tables, scratch columns, a note to themselves — and
+none of it is anybody else's business. That is what makes a spreadsheet usable
+as a spreadsheet rather than as a form with grid lines.
+
+**A pull replaces, never appends.** The preview is the confirmation, and it runs
+the same code the pull does, so what it shows is what lands. Pressing it twice
+cannot double a quotation.
+
+**The control is on every editable child table**, not on the ones a manifest
+named. Declaring the binding is the more disciplined design and the wrong one:
+it would mean nobody can price a job in a grid and feed it into a doctype
+nobody thought of in advance, which is the thing spreadsheets are for.
+
+Not built yet, and deliberately: two people in one sheet at once, charts,
+pivots, and locking a pulled range so the document becomes the record.
+
 ---
 
 ## 8. Printing and naming

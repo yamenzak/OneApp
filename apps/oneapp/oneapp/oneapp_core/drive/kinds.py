@@ -51,12 +51,25 @@ BY_EXTENSION = (
 )
 
 
-def kind_of(file_name: str, is_folder=False) -> str:
-    """The kind of one file, from its name.
+#: Kinds no filename can say. A sheet is a sheet because `sheets.make` said so
+#: — "Padel Pro estimator" has no extension and nothing about it is a
+#: spreadsheet — so a kind derived from the name would quietly demote every
+#: sheet the first time anybody renamed one.
+DECLARED = (SHEET,)
+
+
+def kind_of(file_name: str, is_folder=False, current: str = "") -> str:
+    """The kind of one file, from its name — unless it was declared.
 
     A folder is a kind rather than a flag on the side, because every list this
     draws sorts folders first and a sort has to have something to sort on.
+
+    `current` is what the row already says. Passed by `rename`, which otherwise
+    re-derives the kind from the new name and turns a sheet into `Other` — with
+    the visible symptom, a rename later, being "That file is not a sheet."
     """
+    if current in DECLARED:
+        return current
     if is_folder:
         return FOLDER
 

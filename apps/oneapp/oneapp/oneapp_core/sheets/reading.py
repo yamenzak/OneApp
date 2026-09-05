@@ -60,6 +60,7 @@ def open_sheet(sheet: str) -> dict:
         # Asked rather than assumed, so a control that is drawn and a write
         # that is allowed read the same flag at the same moment.
         "can_write": bool(frappe.has_permission("File", "write", doc=doc)),
+        "is_template": bool(doc.get("custom_is_template")),
         "tabs": tabs(sheet),
         "cells": cells,
         "ranges": ranges(sheet),

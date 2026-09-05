@@ -162,7 +162,10 @@
     :space-code="spaceCode"
     :screen="screen"
     :disabled="disabled"
+    :doctype="doctype"
+    :docname="docname"
     @update:rows="emit('update:modelValue', $event)"
+    @reload="emit('reload')"
   />
 
   <!--
@@ -455,7 +458,11 @@ const props = defineProps({
    */
   doc: { type: Object, default: () => ({}) },
 })
-const emit = defineEmits(['update:modelValue'])
+// `reload` is for the controls that write through the server rather than
+// through the record — filling a child table from a sheet is the one today.
+// The record they changed is stale afterwards, including its `modified`, so
+// the surface has to fetch it again rather than be handed a patch.
+const emit = defineEmits(['update:modelValue', 'reload'])
 
 // Whether the attach picker is open. One per control, so two Attach fields
 // on one form do not share a dialog.

@@ -40,6 +40,18 @@ const routes = [
     meta: { pane: true },
   },
   {
+    // A sheet is a File, so this is not a second kind of thing with a second
+    // kind of address: `:name` is the File row, the same id the Drive lists
+    // and the same one `File.file_url` points its exporter at.
+    path: '/sheets/:name',
+    name: 'Sheet',
+    component: () => import('./pages/Sheet.vue'),
+    props: true,
+    // A grid owns both its scrollbars. Same reason as the screen host: without
+    // this the shell scrolls the page and the column headers scroll away.
+    meta: { pane: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('./pages/NotFound.vue'),

@@ -18,7 +18,10 @@ export const MAX_ROW = 100_000
 /** Rows times columns, over the whole workbook. `docs/SHEETS.md` §7. */
 export const MAX_CELLS = 20_000
 
-const CELL = /^([A-Z]{1,3})([0-9]{1,7})$/
+// `$` accepted and thrown away: Excel writes an absolute reference with
+// dollars and people paste them. `canonical` below is what makes sure only one
+// spelling ever reaches the table.
+const CELL = /^\$?([A-Z]{1,3})\$?([0-9]{1,7})$/
 
 export class BadRef extends Error {}
 
@@ -53,6 +56,12 @@ export function parse(ref) {
   if (!row || row > MAX_ROW) throw new BadRef(`Row ${match[2]} is out of range.`)
   if (column > MAX_COLUMN) throw new BadRef(`Column ${match[1]} is out of range.`)
   return { row, column }
+}
+
+/** `'$A$1'` → `'A1'`. The form a cell is stored as. */
+export function canonical(ref) {
+  const at = parse(ref)
+  return format(at.row, at.column)
 }
 
 /** `(3, 2)` → `'B3'`. */
