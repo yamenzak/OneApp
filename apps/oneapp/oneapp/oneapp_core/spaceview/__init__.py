@@ -193,6 +193,7 @@ from .records import (
 	TALLY_VALUES,
 	_child_changes,
 	_link_groups,
+	_group_totals,
 	_summable,
 	_summed,
 	_total,
@@ -255,10 +256,21 @@ from .mail import (
 	write,
 )
 from .assign import ASSIGNEE_PAGE, _assignable, _colleagues, assign, assignees
-from .bulk import _each, _names, _people, _quietly, _said, bulk_assign, bulk_set
+from .bulk import (
+	_each,
+	_names,
+	_people,
+	_quietly,
+	_said,
+	_stated,
+	bulk_assign,
+	bulk_cancel,
+	bulk_set,
+	bulk_submit,
+)
 from .sharing import set_share, set_tag, shareable, shares, tag_options, tags, unshare
 from .docstate import amend, cancel, submit, workflow_action
-from .printing import print_options, print_pdf, print_preview
+from .printing import print_many, print_options, print_pdf, print_preview
 from .layouts import (
 	_layout_doc,
 	_may_write,
@@ -348,7 +360,9 @@ __all__ = [
 	"_names",
 	"_people",
 	"bulk_assign",
+	"bulk_cancel",
 	"bulk_set",
+	"bulk_submit",
 	"_gantt",
 	"_tree",
 	"_nests",
@@ -460,6 +474,7 @@ __all__ = [
 	"link_preview",
 	"presentation",
 	"print_options",
+	"print_many",
 	"print_pdf",
 	"print_preview",
 	"record",

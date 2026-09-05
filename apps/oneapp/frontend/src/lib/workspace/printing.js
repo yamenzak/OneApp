@@ -38,6 +38,26 @@ export const printing = {
     return `/api/method/oneapp.oneapp_core.spaceview.print_pdf?${asked}`
   },
 
+  /**
+   * The same, for a whole selection: one PDF with a page break between each.
+   *
+   * A URL for the same reason — the response is a download with a filename on
+   * it. The ids go in the query string, which is what bounds this at fifty on
+   * the server as well as here: a hundred invoices is a URL nothing will
+   * accept and a PDF nothing will finish building.
+   */
+  printManyUrl: (spaceCode, screen, names, { format = '', letterhead = '', language = '' } = {}) => {
+    const asked = new URLSearchParams({
+      space_code: spaceCode,
+      screen,
+      names: JSON.stringify(names || []),
+      format,
+      letterhead,
+      language,
+    })
+    return `/api/method/oneapp.oneapp_core.spaceview.print_many?${asked}`
+  },
+
   // --- where a document stands ---------------------------------------------
   //
   // Submit, cancel and amend are three permissions rather than one verb, and a

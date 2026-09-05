@@ -28,6 +28,7 @@ import re
 import frappe
 from frappe import _
 
+from oneapp.oneapp_core import docflow
 from .filters import MAX_DELETE
 from .resolve import _resolve
 from .records import _writable
@@ -82,6 +83,70 @@ def bulk_assign(space_code: str, screen: str, names: str | list,
 		except Exception as exc:
 			refused.append({"name": one, "reason": str(exc)})
 	return {"ok": not refused, "done": found, "refused": refused}
+
+
+@frappe.whitelist(methods=["POST"])
+def bulk_submit(space_code: str, screen: str, names: str | list) -> dict:
+	"""Submit every record in a selection that will take it.
+
+	The desk's own bulk submit, and the same shape as every other operation
+	here: one call, one savepoint per record, and what refused named. A batch
+	of forty purchase orders is the case — approving them one pane at a time is
+	the afternoon this replaces.
+
+	`docflow.submit` rather than `doc.submit()`, so a doctype whose transition a
+	workflow owns is refused *by the workflow* with its own words, rather than
+	being submitted around it.
+	"""
+	return _stated(_resolve(space_code, screen), names, docflow.submit)
+
+
+@frappe.whitelist(methods=["POST"])
+def bulk_cancel(space_code: str, screen: str, names: str | list) -> dict:
+	"""Cancel every record in a selection that will take it.
+
+	Cancelling unwrites a ledger, so this is the one bulk operation the browser
+	asks about before it runs — which is a rule about the button rather than
+	about this: the endpoint refuses nothing it would refuse for one record, and
+	Frappe's own linked-document checks are what stop a cancel that would leave
+	something dangling.
+	"""
+	return _stated(_resolve(space_code, screen), names, docflow.cancel)
+
+
+def _stated(resolved: dict, names, move) -> dict:
+	"""One docstatus move, applied across a selection.
+
+	Not through `_each`, which saves: submitting is not a save, and a `save()`
+	after a `submit()` is a second write that Frappe refuses on a document that
+	has just become submitted. The bookkeeping around it — the savepoint, the
+	message log, the status code — is the same and is worth having for the same
+	reasons.
+
+	Takes the resolved screen rather than resolving it, so the `_resolve` that
+	establishes which space this is in sits in the whitelisted function where
+	`test_every_endpoint_establishes_which_space_it_is_in` can see it. That
+	guard reads direct calls and does not follow helpers, which is the right
+	side to be strict on.
+	"""
+	doctype = resolved.get("doctype")
+	if not doctype:
+		frappe.throw(_("This screen has nothing to move."))
+
+	if not int(getattr(frappe.get_meta(doctype), "is_submittable", 0) or 0):
+		frappe.throw(_("{0} is not a document that is submitted.").format(doctype))
+
+	done, refused = [], []
+	for one in _names(names):
+		frappe.db.savepoint("oneapp_bulk")
+		try:
+			move(frappe.get_doc(doctype, one))
+			done.append(one)
+		except Exception as exc:
+			frappe.db.rollback(save_point="oneapp_bulk")
+			refused.append({"name": one, "reason": _said(exc)})
+			_quietly()
+	return {"ok": not refused, "done": done, "refused": refused}
 
 
 def _names(names) -> list[str]:

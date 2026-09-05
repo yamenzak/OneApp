@@ -90,6 +90,23 @@ export const screen = {
       users: JSON.stringify(users || []),
     }),
 
+  // A whole selection moved one step of its docstatus. Not `bulk_set`: a
+  // submit is not a save, and `docflow` is what a workflow's own transition
+  // goes through.
+  screenBulkSubmit: (spaceCode, screen, names) =>
+    callMethod('oneapp.oneapp_core.spaceview.bulk_submit', {
+      space_code: spaceCode,
+      screen,
+      names: JSON.stringify(names || []),
+    }),
+
+  screenBulkCancel: (spaceCode, screen, names) =>
+    callMethod('oneapp.oneapp_core.spaceview.bulk_cancel', {
+      space_code: spaceCode,
+      screen,
+      names: JSON.stringify(names || []),
+    }),
+
   // What the money columns add up to. Its own request for the reason the count
   // is one: an aggregate over the whole filter, which nothing should wait for.
   screenTotals: (spaceCode, screen, overrides, layout, viewType) =>

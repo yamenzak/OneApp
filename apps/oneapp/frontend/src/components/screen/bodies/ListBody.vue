@@ -155,6 +155,12 @@ const props = defineProps({
    * fieldname. Empty on a plain list, which does not ask for them.
    */
   totals: { type: Object, default: () => ({}) },
+  /**
+   * The same sums per group, keyed by the group's value. Empty unless the rows
+   * are grouped *and* this is a report — a subtotal is the reason to group a
+   * report and is noise on a list.
+   */
+  groupTotals: { type: Object, default: () => ({}) },
 })
 
 const emit = defineEmits(['open', 'like', 'sort', 'favourites', 'change'])
@@ -236,8 +242,31 @@ const groups = computed(() => {
     const label = value === null || value === undefined || value === '' ? '—' : String(value)
     const last = made[made.length - 1]
     if (last && last.label === label) last.rows.push(row)
-    else made.push({ label, rows: [row] })
+    else made.push({ label, rows: [row], key: String(value ?? '') })
   }
+  // What each group adds up to, over every row that matches rather than over
+  // the ones on this page — the same rule the Total row follows, and the only
+  // thing that makes a subtotal worth reading under a footer saying "100 of
+  // 1,240".
+  for (const group of made) group.note = subtotal(group.key)
   return made
 })
+
+/**
+ * One group's sums, as the line beside its heading.
+ *
+ * Every summable column, in the order the columns are in, each labelled — a
+ * heading reading "Al-Ittihad · 412,500.00" beside another reading
+ * "Halloway · 88,000.00" is two numbers with nothing saying what they are the
+ * moment a second money column appears.
+ */
+const subtotal = (key) => {
+  if (!report.value) return ''
+  const sums = props.groupTotals?.[key]
+  if (!sums) return ''
+  return visible.value
+    .filter((column) => sums[column.key] !== undefined)
+    .map((column) => `${column.label} ${money(sums[column.key], column.column)}`)
+    .join(' · ')
+}
 </script>

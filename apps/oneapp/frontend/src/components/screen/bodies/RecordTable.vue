@@ -116,6 +116,18 @@
         -->
         <template v-if="groups">
           <ListGroup v-for="group in groups" :key="group.label" :label="group.label" sticky>
+            <!--
+              What the group adds up to, where the caller worked it out. On the
+              heading rather than a row of its own: a subtotal under a run of
+              rows reads as another row, and the reader is scanning the
+              headings to find their group in the first place.
+            -->
+            <template v-if="group.note" #header>
+              <span class="flex w-full items-baseline gap-2 pe-2">
+                <span>{{ group.label }}</span>
+                <span class="ms-auto tabular-nums text-ink-gray-6">{{ group.note }}</span>
+              </span>
+            </template>
             <ListRows
               :items="group.rows"
               :row-key="rowKey"
@@ -246,7 +258,7 @@ const props = defineProps({
   divider: { type: String, default: 'full' },
   /** `field asc|desc`, so a sortable header can show which way it is sorted. */
   orderBy: { type: String, default: '' },
-  /** `[{ label, rows }]`, or null when nothing is grouped. */
+  /** `[{ label, rows, note }]`, or null when nothing is grouped. */
   groups: { type: Array, default: null },
   /** Rows past which they are windowed. 0 never windows them. */
   virtualFrom: { type: Number, default: 0 },

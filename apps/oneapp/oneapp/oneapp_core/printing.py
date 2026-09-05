@@ -163,6 +163,49 @@ def pdf(doctype: str, name: str, format: str = "", letterhead: str = "",
 		)
 
 
+# How many records one bundle may hold.
+#
+# A PDF is built synchronously, in the request, and every record in it is a
+# full render of a print format. Fifty invoices is already a few seconds; two
+# hundred is a request that times out and leaves nobody with anything.
+MAX_BUNDLE = 50
+
+
+def bundle(doctype: str, names: list[str], format: str = "", letterhead: str = "",
+           language: str = "") -> bytes:
+	"""A selection, as one PDF with a page break between each.
+
+	Frappe's desk does this with `download_multi_pdf`, which writes into the
+	response and takes the request over — the same reason `pdf` does not use
+	`download_pdf`. So the HTML is rendered per record and joined here, and the
+	engine is handed one document.
+
+	One page break element rather than a CSS rule on the wrapper: wkhtmltopdf
+	and Chrome disagree about almost everything else, and both honour
+	`page-break-before` on a block.
+
+	Permission per record, not once for the doctype: a selection is a list of
+	ids and the reader may have been shown some of them and not others.
+	"""
+	from frappe.utils.pdf import get_pdf
+	from frappe.www.printview import validate_print_permission
+
+	pages = []
+	with _language(language):
+		for at, name in enumerate(names[:MAX_BUNDLE]):
+			document = frappe.get_doc(doctype, name)
+			validate_print_permission(document)
+			html = frappe.get_print(
+				doctype, name, format or None, doc=document,
+				letterhead=letterhead or None,
+				no_letterhead=0 if letterhead else None,
+			)
+			gap = ' style="page-break-before: always"' if at else ""
+			pages.append(f"<div{gap}>{html}</div>")
+
+	return get_pdf("".join(pages))
+
+
 def _language(language: str):
 	"""Frappe's own print-language context, or nothing.
 

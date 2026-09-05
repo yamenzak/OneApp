@@ -238,6 +238,16 @@ def _resolve(space_code: str, screen: str | None = None,
 			and not int(chosen.get("hide_new") or 0)
 		),
 		"can_write": bool(frappe.has_permission(doctype, "write")),
+		# Whether these records have a docstatus, and whether a workflow owns
+		# the moving of it. Two facts about the *doctype*, so they belong on
+		# the screen rather than on every row — a list of forty carries them
+		# forty times otherwise, and `_with_state` costs a `get_doc` each.
+		#
+		# The pair rather than one: a bulk Submit is refused outright where a
+		# workflow governs (`docflow._no_workflow`), and a button that fails on
+		# every record is worse than no button.
+		"submittable": bool(int(getattr(meta, "is_submittable", 0) or 0)),
+		"workflow": docflow.workflow_name(doctype) or "",
 		# Frappe's own `print`, which is a permission like any other and which
 		# the manifest's Write and Manage levels both grant. A screen over a
 		# doctype nobody may print draws no printer.

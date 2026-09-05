@@ -333,7 +333,8 @@ numbers that do not match the screen. Clicking a value writes an ordinary
 a list narrowed by something invisible is a list that looks broken. Twenty
 values, and it says so when there are more.
 
-**Bulk operations.** A selection can be changed, assigned, exported or deleted.
+**Bulk operations.** A selection can be changed, assigned, submitted, cancelled,
+printed, exported or deleted.
 The change is one field to one value — Frappe's own shape, and the right one: a
 dialog offering several fields at once is a record form applied to forty
 records, and what makes a bulk change safe is that it is small and legible.
@@ -348,6 +349,22 @@ a row this person may read and not write — all facts about that record, and a
 bulk change that silently skipped nine of forty would be worse than one that
 failed. Capped at the same hundred a bulk delete is: past that this is a script
 somebody should be writing rather than a button. `spaceview/bulk.py`.
+
+**Submit and cancel** move a whole selection one step of its docstatus, and go
+through `docflow` rather than through a save — a `save()` after a `submit()` is
+a second write Frappe refuses on the document that has just become submitted.
+They are offered only where the doctype has a docstatus *and* no workflow owns
+the transition: `docflow` refuses a plain submit under a workflow on purpose,
+and a button that fails on every record is worse than no button. Cancel is the
+one bulk operation that asks first, because cancelling unwrites a ledger and
+forty of them is forty ledgers.
+
+**Print** hands back one PDF with a page break between each, capped at fifty —
+a PDF is built inside the request and every record in it is a full render of a
+format. No dialog: printing one record is a choice of format and letter head,
+and printing forty is "give me the paperwork". Permission is checked per
+document rather than once for the doctype, because a selection is a list of ids
+and the reader may have been shown some of them and not others.
 
 The file is built on the server (`spaceview/export.py`) rather than joined
 together in the browser, for one reason: quoting. A subject with a comma in it
@@ -389,6 +406,14 @@ everybody would read as the total. Currency and Float only — a sum of
 percentages is a number with a percent sign on it, and an Int column is as often
 an id or a priority as it is a count. No switch: the row appears where it means
 something and nowhere else, which is why the plain list pays nothing for it.
+
+**And a subtotal per group**, where the rows are grouped, beside each heading
+rather than as a row of its own — a subtotal under a run of rows reads as
+another row, and the reader is scanning the headings to find their group in the
+first place. Same query shape as the Total and the same rule: over every row
+that matches rather than the ones on this page, and one more query only where
+there is a group to total. Capped at a hundred groups, because a report grouped
+by a field with four hundred values is grouped by the wrong field.
 
 ### Board — the same list, drawn as columns
 

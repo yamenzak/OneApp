@@ -33,6 +33,7 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
   // What the money columns add up to over every row that matches. Empty except
   // in a report, which is the only view that asks — see `loadTotals`.
   const totals = ref({})
+  const groupTotals = ref({})
   const fetchedBoard = ref(null)
   const fetchedCards = ref(null)
   const fetchedCalendar = ref(null)
@@ -87,6 +88,7 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
   const loadTotals = async () => {
     const asked = ++totalling
     totals.value = {}
+    groupTotals.value = {}
     if (spec.value?.view_type !== 'report') return
     try {
       const answer = await workspace.screenTotals(
@@ -96,7 +98,11 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
         spec.value.layout || '',
         spec.value.view_type,
       )
-      if (asked === totalling) totals.value = answer?.totals || {}
+      if (asked !== totalling) return
+      totals.value = answer?.totals || {}
+      // The same sums per group, where the rows are grouped. One request, so a
+      // report that is grouped costs nothing more than one that is not.
+      groupTotals.value = answer?.groups || {}
     } catch {
       // The rows are on screen and readable without a total under them. A
       // failed aggregate leaves the row off rather than shouting.
@@ -170,6 +176,7 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
     rows, columns, selection, total, hasMore, rowsLoading, loadingMore,
     rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards, fetchedCalendar,
     totals,
+    groupTotals,
     loadRows, countRows, loadMore, setPageLength,
   }
 }

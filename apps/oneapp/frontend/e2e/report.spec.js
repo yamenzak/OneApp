@@ -152,3 +152,36 @@ test('a list is still a list: its rows open and its cells do not', async ({ page
 
   expectNoRealErrors(errors)
 })
+
+test('a grouped report says what each group adds up to', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the column dialog is a desktop surface')
+  const errors = collectConsoleErrors(page)
+
+  await page.goto(APPROVALS)
+  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 20_000 })
+
+  // Grouping is a question about the columns, so it is asked where the columns
+  // are — see `ColumnPicker`.
+  await page.getByRole('button', { name: 'Choose columns' }).click()
+  const dialog = page.getByRole('dialog')
+  // frappe-ui's `Select` is a combobox button rather than a native `<select>`,
+  // so the option is chosen by opening it and clicking.
+  await dialog.getByLabel('Group rows by').click()
+  await page.getByRole('option', { name: 'State', exact: true }).click()
+  await page.getByRole('button', { name: 'Done' }).click()
+
+  // A subtotal beside each heading, over every row that matches rather than
+  // the ones on this page — the same rule the Total row follows, and the only
+  // thing that makes it worth reading under a footer that says "12 of 40".
+  const heading = page.locator('[data-slot="list-group-header"]').first()
+  await expect(heading).toContainText('Amount', { timeout: 20_000 })
+
+  // Put it back, so the next run starts where this one did.
+  await page.getByRole('button', { name: 'Choose columns' }).click()
+  await dialog.getByLabel('Group rows by').click()
+  await page.getByRole('option', { name: 'Nothing', exact: true }).click()
+  await page.getByRole('button', { name: 'Done' }).click()
+  await expect(page.locator('[data-slot="list-group-header"]')).toHaveCount(0)
+
+  expectNoRealErrors(errors)
+})

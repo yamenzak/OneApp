@@ -9,6 +9,7 @@ See `oneapp_core.printing` for what each piece of the stack actually is.
 """
 
 import frappe
+from frappe import _
 from oneapp.oneapp_core import collab, dashboard, docflow, fieldtypes, printing, showcase
 from .guard import _reachable
 
@@ -52,6 +53,39 @@ def print_pdf(space_code: str, screen: str, name: str, format: str = "",
 
 	frappe.local.response.filename = "{0}.pdf".format(
 		str(name).replace(" ", "-").replace("/", "-")
+	)
+	frappe.local.response.filecontent = content
+	frappe.local.response.type = "pdf"
+
+
+@frappe.whitelist(methods=["GET"])
+def print_many(space_code: str, screen: str, names: str | list, format: str = "",
+               letterhead: str = "", language: str = ""):
+	"""A selection, as one PDF.
+
+	The desk's bulk print, bounded the way everything here is: every record is
+	re-read through `_reachable`, so a row this screen would not list is not one
+	it prints — a selection is a list of ids from the browser, and ids are the
+	one thing a browser can invent.
+
+	`GET` because it reads: a print writes nothing, and a download is a
+	navigation rather than a fetch.
+	"""
+	wanted = frappe.parse_json(names) if isinstance(names, str) else names
+	wanted = [str(one) for one in (wanted or []) if str(one or "").strip()]
+	if not wanted:
+		frappe.throw(_("Nothing was selected to print."))
+
+	doctype = ""
+	for name in wanted[:printing.MAX_BUNDLE]:
+		doctype = _reachable(space_code, screen, name)
+
+	content = printing.bundle(
+		doctype, wanted[:printing.MAX_BUNDLE], format, letterhead, language,
+	)
+
+	frappe.local.response.filename = "{0}.pdf".format(
+		str(screen or doctype).replace(" ", "-").replace("/", "-")
 	)
 	frappe.local.response.filecontent = content
 	frappe.local.response.type = "pdf"

@@ -258,6 +258,7 @@
             :gantt="spec.gantt || {}"
             :tree="spec.tree || {}"
             :totals="totals"
+            :group-totals="groupTotals"
             :space-code="spaceCode"
             :layout="spec.layout || ''"
             :overrides="dashboardAsked"
@@ -321,6 +322,37 @@
             icon-left="lucide-user-plus"
             label="Assign"
             @click="bulkAssigning = true"
+          />
+          <!--
+            The desk's bulk submit and cancel. Only where the doctype has a
+            docstatus at all — a screen over a Note draws neither — and only
+            where this person may write: a submit that comes back refused forty
+            times is a button that should not have been there.
+
+            Cancel asks first, and it is the only one that does: cancelling
+            unwrites a ledger, and forty of them is forty ledgers.
+          -->
+          <template v-if="submittable && spec.can_write">
+            <Button
+              icon-left="lucide-check"
+              label="Submit"
+              :loading="bulking"
+              @click="bulkSubmit"
+            />
+            <Button
+              theme="red"
+              variant="subtle"
+              icon-left="lucide-undo-2"
+              label="Cancel"
+              :loading="bulking"
+              @click="confirmBulkCancel = true"
+            />
+          </template>
+          <Button
+            v-if="spec.can_print"
+            icon-left="lucide-printer"
+            label="Print"
+            @click="printSelected"
           />
           <Button
             icon-left="lucide-download"
@@ -418,6 +450,27 @@
       />
     </RecordDrawer>
   </div>
+
+  <!-- Cancelling unwrites what submitting wrote, and forty of them is forty
+       ledgers. The one other bulk operation that asks. -->
+  <Dialog
+    v-model="confirmBulkCancel"
+    :title="`Cancel ${selection.length} ${selection.length === 1 ? 'document' : 'documents'}?`"
+  >
+    <p class="text-p-base text-ink-gray-7">
+      This unwinds what submitting them wrote. Anything that will not cancel is
+      named rather than skipped.
+    </p>
+    <template #actions>
+      <Button
+        theme="red"
+        variant="solid"
+        :loading="bulking"
+        label="Cancel them"
+        @click="bulkCancel"
+      />
+    </template>
+  </Dialog>
 
   <!-- Deleting is the one thing on this screen that does not come back, so it
        asks — and says how many, because a selection is easy to lose track of. -->
@@ -994,6 +1047,52 @@ const bulkAssign = (users) =>
     bulkAssigning,
   )
 
+// Whether these records are submitted by *this* button.
+//
+// Two facts about the doctype, off the screen rather than off the rows: a list
+// does not carry `_state` (that costs a `get_doc` per record and the record
+// endpoint is where it is worth paying). And not where a workflow owns the
+// transition — `docflow` refuses a plain submit there on purpose, so the
+// button would fail on every record. The single-record header follows the same
+// rule: it offers the workflow's transitions and never Submit beside them.
+const submittable = computed(() => !!spec.value?.submittable && !spec.value?.workflow)
+
+const confirmBulkCancel = ref(false)
+
+const bulkSubmit = () =>
+  bulkThrough(
+    () => workspace.screenBulkSubmit(props.spaceCode, spec.value.screen, selection.value),
+    'Submitted',
+    bulkEditing,
+  )
+
+const bulkCancel = () =>
+  bulkThrough(
+    () => workspace.screenBulkCancel(props.spaceCode, spec.value.screen, selection.value),
+    'Cancelled',
+    confirmBulkCancel,
+  )
+
+/**
+ * The selection as one PDF.
+ *
+ * A window rather than fetch-and-blob, for the reason the record's own print
+ * download is: the response is a real download with a filename on it, and
+ * rebuilding the file in JavaScript loses the name and the progress bar both.
+ *
+ * No dialog. Printing *one* record is a choice of format and letter head, and
+ * printing forty is "give me the paperwork" — the defaults are what somebody
+ * pressing this means, and the record's own dialog is where the other question
+ * gets asked.
+ */
+const printSelected = () => {
+  window.open(
+    workspace.printManyUrl(props.spaceCode, spec.value.screen, selection.value),
+    '_blank',
+    'noopener',
+  )
+}
+
 const removeSelected = async () => {
   deleting.value = true
   try {
@@ -1019,6 +1118,7 @@ const removeSelected = async () => {
 const {
   rows, columns, selection, total, hasMore, rowsLoading, loadingMore,
   rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards, fetchedCalendar, totals,
+  groupTotals,
   loadRows, loadMore, setPageLength,
 } = useRows({
   spaceCode: props.spaceCode,

@@ -208,7 +208,46 @@ def totals(space_code: str, screen: str | None = None,
 		limit_page_length=1,
 	)
 	answer = found[0] if found else {}
-	return {"totals": {name: _summed(answer.get(name)) for name in summed}}
+	return {
+		"totals": {name: _summed(answer.get(name)) for name in summed},
+		"groups": _group_totals(resolved, summed, filters),
+	}
+
+
+# How many groups carry their own subtotal.
+#
+# A report grouped by a field with four hundred values is a report grouped by
+# the wrong field, and the subtotals are not what makes it unreadable. Bounded
+# anyway: this is one query and its result travels with every totals request.
+GROUP_TOTALS = 100
+
+
+def _group_totals(resolved: dict, summed: list[str], filters: list) -> dict:
+	"""The same sums, per group, where the reader has grouped the rows.
+
+	A report with a Total row and no subtotals is a report somebody adds up by
+	hand with a finger on the screen — grouping by customer and then wanting
+	each customer's line is the whole reason to group a report at all.
+
+	One more query, and only where there is a group: `group_by` on `get_list`,
+	so it is the same permissions and the same filters the rows and the total
+	went through rather than a second opinion about which rows count.
+	"""
+	field = resolved.get("group_by") or ""
+	if not field or not summed:
+		return {}
+
+	rows = frappe.get_list(
+		resolved["doctype"],
+		fields=[field, *({"SUM": name, "as": name} for name in summed)],
+		filters=filters,
+		group_by=field,
+		limit_page_length=GROUP_TOTALS,
+	)
+	return {
+		str(row.get(field) or ""): {name: _summed(row.get(name)) for name in summed}
+		for row in rows
+	}
 
 
 def _summable(resolved: dict) -> list[str]:
