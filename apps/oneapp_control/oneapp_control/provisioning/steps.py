@@ -15,7 +15,11 @@ and raises ``PressPermanentError`` to fail the job outright.
 import frappe
 from frappe.utils import now_datetime
 
-from oneapp_control.press.client import PressPermanentError, get_client
+from oneapp_control.press.client import (
+	PressPermanentError,
+	PressTransientError,
+	get_client,
+)
 
 WAIT = "WAIT"
 

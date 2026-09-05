@@ -18,7 +18,10 @@ const EVENT = 'Quarterly review'
 // The record's own tab strip is nested inside the pane's, so both have a
 // "Details". The inner one is the doctype's.
 const openEvent = async (page, tab) => {
-  await page.goto('/one/space/zzmock?screen=events')
+  // `type=list` because the fixture's events screen opens on its calendar,
+  // and this is a test about a record rather than about a list — the list is
+  // only how it gets there.
+  await page.goto('/one/space/zzmock?screen=events&type=list')
   const row = page.locator('[data-slot="list-row"]').filter({ hasText: EVENT })
   await row.first().waitFor({ timeout: 15_000 })
   await row.first().locator('[data-slot="list-cell"]').nth(1).click()

@@ -32,6 +32,7 @@ framework's, because it is the part that is hard and already works.
 import re
 
 import frappe
+from frappe import _
 from frappe.email.doctype.email_account.email_account import EmailAccount
 from frappe.email.receive import InboundMail
 

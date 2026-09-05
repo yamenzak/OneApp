@@ -174,7 +174,9 @@ async function saved(page) {
  * when it does — so a click that lands in that window is quietly undone.
  */
 async function openParticipants(page) {
-  await page.goto('/one/space/zzmock?screen=events')
+  // `type=list`: the events screen opens on its calendar, and a row is how
+  // this reaches the record.
+  await page.goto('/one/space/zzmock?screen=events&type=list')
   const row = page.locator('[data-slot="list-row"]').filter({ hasText: 'Quarterly review' })
   await row.first().waitFor({ timeout: 20_000 })
   await row.first().locator('[data-slot="list-cell"]').nth(1).click()

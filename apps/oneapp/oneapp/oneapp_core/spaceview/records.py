@@ -523,7 +523,13 @@ def dashboard_data(space_code: str, screen: str | None = None,
 	# The screen's own filters plus whatever is unsaved above it — the same
 	# `_all_filters` the rows go through, so the charts and the list are
 	# answering the same question.
-	filters = _all_filters(resolved, resolved.get("asked") or []) + _window(resolved, since, until)
+	#
+	# And no `_window`: a dashboard has no visible range to narrow to. It
+	# measures every row that matches, which is why the footer's page sizes and
+	# Load more are hidden on it. This carried the calendar's window for one
+	# commit and raised a `NameError` on every dashboard, because there are no
+	# `since` and `until` here to carry.
+	filters = _all_filters(resolved, resolved.get("asked") or [])
 	precision = None
 
 	return {
