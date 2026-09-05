@@ -320,6 +320,7 @@ import {
   LoadingText,
   PageHeader,
   dayjsLocal,
+  debounce,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import SenderChip from '../components/mail/SenderChip.vue'
@@ -594,7 +595,16 @@ boot()
 
 
 watch(folder, () => load())
-watch(search, () => load())
+
+/**
+ * Search, once the typing stops.
+ *
+ * This was `watch(search, () => load())` — a full-text query over subject *and*
+ * body on every keystroke, so "quotation" was nine searches and the answer you
+ * saw was whichever raced home last. 300ms is the same pause the Drive's
+ * picker uses.
+ */
+watch(search, debounce(() => load(), 300))
 watch([chosen, folder], read, { immediate: true })
 
 // --- mail arriving ----------------------------------------------------------

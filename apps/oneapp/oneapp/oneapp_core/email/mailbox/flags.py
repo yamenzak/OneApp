@@ -32,5 +32,15 @@ STARRED_KEY = "oneapp_mail_starred"
 
 
 def _starred_set() -> set:
-	raw = frappe.defaults.get_user_default(STARRED_KEY, frappe.session.user) or ""
+	return _starred_of(frappe.session.user)
+
+
+def _starred_of(person: str) -> set:
+	"""What one *named* person has starred.
+
+	Split out from `_starred_set` for the one caller that is not a request: a
+	filing rule stars during inbound delivery, where there is no session user
+	to read — it stars for whoever holds the address. See `rules.apply_to`.
+	"""
+	raw = frappe.defaults.get_user_default(STARRED_KEY, person) or ""
 	return set(filter(None, raw.split(",")))

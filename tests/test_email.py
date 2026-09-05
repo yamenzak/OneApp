@@ -1466,6 +1466,49 @@ def test_rules_run_after_the_message_is_stored(rules):
 	assert "except Exception:" in source
 
 
+def test_a_rule_that_says_star_actually_stars(rules, monkeypatch, stub_frappe):
+	"""Stored, listed, fetched — and acted on nowhere, from the day rules shipped.
+
+	`star` was in the doctype, in the settings form's field list and in the row
+	`matching()` returns, and `apply_to` handled only `into` and `mark_read`. A
+	rule with Star ticked filed the message and left it unstarred, which is the
+	failure nobody reports because it looks like forgetting to tick the box.
+	"""
+	from oneapp.oneapp_core.email import folders as folder_ops
+
+	monkeypatch.setattr(
+		rules, "matching",
+		lambda doc, address: stub_frappe._dict({
+			"name": "R1", "into": "", "mark_read": 0, "star": 1,
+		}),
+	)
+
+	# Two people share `sales@`, which is the case the per-person star exists
+	# for: a rule is the *address* saying these matter, so both get it.
+	monkeypatch.setattr(
+		stub_frappe, "get_all", lambda *a, **k: ["hala@x.test", "omar@x.test"]
+	)
+
+	flagged = []
+	monkeypatch.setattr(
+		folder_ops, "flag", lambda names, on: flagged.append((tuple(names), on))
+	)
+
+	doc = stub_frappe._dict({"name": "COMM-1"})
+	doc.db_set = lambda *a, **k: None
+
+	assert rules.apply_to(doc, "sales@x.test")["filed"] is True
+
+	# Both holders, each under their own key.
+	starred = {
+		person: stub_frappe.defaults.get_user_default("oneapp_mail_starred", person)
+		for person in ("hala@x.test", "omar@x.test")
+	}
+	assert starred == {"hala@x.test": "COMM-1", "omar@x.test": "COMM-1"}
+	# And the IMAP flag, so the star is the same star in Outlook.
+	assert flagged == [(("COMM-1",), True)]
+
+
 def test_a_rule_only_touches_an_address_you_hold(rules, monkeypatch):
 	monkeypatch.setattr(
 		"oneapp.oneapp_core.email.mailbox._held", lambda: ["mine@x.test"]

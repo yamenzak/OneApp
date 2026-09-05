@@ -98,7 +98,49 @@ def apply_to(doc, address: str) -> dict:
 		# statement from one person having looked.
 		doc.db_set("seen", 1, update_modified=False)
 
+	if rule.star:
+		_star_for_everyone(doc, address)
+
 	return {"filed": True, "rule": rule.name, "into": rule.into or ""}
+
+
+def _star_for_everyone(doc, address: str):
+	"""A rule's star, which has no session user to hang off.
+
+	Starring is per person — two people on `sales@` star different things — and
+	`mailbox.reading.star` writes the user default of whoever pressed the
+	button. A rule fires during inbound delivery, where there is nobody
+	pressing anything, so it stars for every person who currently holds the
+	address. That is what the rule means: *this* address's owner wanted these
+	marked, and an address is held by one person or by a team.
+
+	The IMAP flag goes on as well, so the star is the same star in Outlook —
+	the same pairing `reading.star` makes.
+
+	The column was stored, listed and fetched from the day rules shipped and
+	acted on nowhere: a rule with Star ticked filed the message and left it
+	unstarred, which is the failure mode nobody reports because it looks like
+	forgetting to tick the box.
+	"""
+	from .folders import flag
+	from .mailbox.flags import STARRED_KEY, SEEN_LIMIT, _starred_of
+
+	holders = frappe.get_all(
+		"User Email",
+		filters={"email_id": address},
+		pluck="parent",
+		distinct=True,
+	)
+
+	for person in holders:
+		starred = _starred_of(person) | {doc.name}
+		if len(starred) > SEEN_LIMIT:
+			starred = set(sorted(starred)[-SEEN_LIMIT:])
+		frappe.defaults.set_user_default(STARRED_KEY, ",".join(sorted(starred)), person)
+
+	# Never fatal, for the reason `folders.flag` gives: a star that did not
+	# reach the server is one the next sync corrects.
+	flag([doc.name], True)
 
 
 # --------------------------------------------------------------------------- #

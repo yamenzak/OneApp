@@ -222,6 +222,16 @@
           <FormControl v-model="rule.into" class="flex-1" label="File into" />
           <Button variant="solid" label="Add rule" @click="addRule" />
         </div>
+
+        <!--
+          The two the rule could always do and the form never offered. `star`
+          in particular was stored, listed and fetched from the day rules
+          shipped and acted on nowhere — see `rules.apply_to`.
+        -->
+        <div class="flex flex-wrap items-center gap-4">
+          <Checkbox v-model="rule.mark_read" label="Mark it read" />
+          <Checkbox v-model="rule.star" label="Star it" />
+        </div>
         <ErrorMessage v-if="ruleError" :message="ruleError" />
       </div>
 
@@ -377,6 +387,7 @@ const ruleError = ref('')
 const awayState = reactive({ enabled: false, message: '', until: '' })
 const rule = reactive({
   title: '', field: 'Sender', operator: 'Contains', matches: '', into: '',
+  mark_read: false, star: false,
 })
 
 watch(chosen, async (address) => {
@@ -388,8 +399,15 @@ watch(chosen, async (address) => {
 async function addRule() {
   ruleError.value = ''
   try {
-    await workspace.mailSaveRule({ ...rule, address: chosen.value, enabled: 1 })
-    Object.assign(rule, { title: '', matches: '', into: '' })
+    await workspace.mailSaveRule({
+      ...rule,
+      address: chosen.value,
+      enabled: 1,
+      // The doctype's fields are Check, which is 0/1 and not a boolean.
+      mark_read: rule.mark_read ? 1 : 0,
+      star: rule.star ? 1 : 0,
+    })
+    Object.assign(rule, { title: '', matches: '', into: '', mark_read: false, star: false })
     rules.value = (await workspace.mailRules(chosen.value)) || []
   } catch (e) {
     ruleError.value = e.message || String(e)
