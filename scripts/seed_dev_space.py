@@ -245,8 +245,17 @@ SCREENS = [
 		# `renewed_by` are both Links to Compliance Document and only one of
 		# them nests — which is the case that made the parent field something a
 		# manifest declares rather than something the server infers.
-		"view_types": "list,board,tree",
-		"view_settings": '{"tree": {"parent_field": "renews"}}',
+		# And a Gantt over the same lineage, because a register of papers that
+		# expire is a register of *lengths*: a licence runs from its issue date
+		# to its expiry, and the renewal that replaces it is the bar after it.
+		# `renews` is both the tree's parent and the chart's dependency, which
+		# is the same statement drawn two ways — under it, and after it.
+		"view_types": "list,board,tree,gantt",
+		"view_settings": (
+			'{"tree": {"parent_field": "renews"},'
+			' "gantt": {"start_field": "issue_date", "end_field": "expiry_date",'
+			' "depends_field": "renews"}}'
+		),
 		"status_field": "status",
 		"singular": "Document",
 	},

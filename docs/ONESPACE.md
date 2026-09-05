@@ -406,6 +406,31 @@ Moving a card writes one field through the same `save` a form uses, so
 permissions, `read_only` and `fetch_from` all apply. The list is re-read
 afterwards rather than trusted.
 
+**The arrangement is a view, not a doctype.** Which column sits where, what
+colour it is, whether it is archived, and the order of the cards inside it are
+four facts about how *this reader* works — and Frappe keeps them on a Kanban
+Board doctype. Here they go in `view_settings.board.arrangement`, beside the
+field the board is columns of, saved by the same button as the filters and
+switchable with the view. `oneapp_core/board.py` bounds them: everything is
+keyed by a column's **value** — `Open`, `HR-EMP-00042` — which is a string the
+server cannot check against anything, so it checks lengths, counts and a closed
+set of nine colours instead.
+
+Two rules make the arrangement survive a doctype that changes its mind. A column
+nobody placed sits after the ones that were, so a Select that gains an option
+shows it rather than hiding it behind an order written before it existed; and a
+card not in a column's remembered order sorts after the ones that are, so a
+column somebody arranged three records of does not lose the other forty.
+Archived is archived, not deleted: the records are untouched, the value is still
+a value, and the columns are listed beside the board with a way back.
+
+**A card without a dialog.** The foot of each column takes a name and Enter. A
+board is for moving work along and putting work on it, and a modal with the
+doctype's whole form is the wrong weight for "and then call the glazier" —
+everything else about the record is one click away. Only where the screen has a
+writable title field: a doctype named by a series has nothing one box could fill
+in.
+
 ### Grid — the same cards, not bucketed
 
 `lib/cards.js` owns what a card *says*; the two bodies are two ways of putting
@@ -476,6 +501,32 @@ Suite's own calendar draws with. Read-only here: it can drag, resize and create,
 and every one of those writes a field that this screen already writes properly
 through the record. Clicking an event opens that record.
 
+**A record can happen again.** Naming `repeat_field` (a Select) and
+`until_field` (a Date) draws the occurrences inside the window on screen:
+
+```json
+"view_settings": {"calendar": {
+  "start_field": "starts_on", "repeat_field": "repeat_on", "until_field": "repeat_till"
+}}
+```
+
+That is Frappe's own Event model — Daily, Weekly, Monthly, Yearly beside a
+`repeat_till` — rather than an RRULE dialect nothing else on the site reads.
+Nothing is written and nothing is expanded on the server: one record with a rule
+stays one record, the occurrences exist for as long as the month showing them
+does, and clicking any of them opens the one record. Which is what makes
+deleting a series possible at all — there is no series, there is a record.
+`lib/recurrence.js` decides, capped at 400 occurrences so a daily rule drawn
+over a year is not a wall.
+
+Two things a calendar could carry and does not. **Participants** are the
+record's assignees, which every other surface already shows and which the grid
+has nowhere to put — its event shape is a title and two dates, and the one slot
+it offers is a popover that competes with "click opens the record". **Reminders**
+are a scheduled job and a notification rather than a drawing, and belong with
+the notification work rather than here; the compliance register has its own,
+because a licence expiring is a fact about the licence.
+
 ### Gantt — the same two dates, drawn as lengths
 
 ```json
@@ -499,6 +550,20 @@ dependency rather than a port — one of the few places where the answer to "tak
 it or write it" is neither. It is MIT and it is on npm; the parts of the
 library that would have been ours to write (the time scale, the week and month
 modes, the header that follows the scroll) are the whole of what it does.
+
+**`depends_field` draws the arrows**, and it goes through the tree's check
+rather than the calendar's: a Link *at this screen's own doctype*, because "this
+comes after that" and "this sits under that" are the same shape of statement
+about two records of one kind. One field rather than Frappe's child table of
+them — a Task's `depends_on` is a grid, and a grid is a second query per row on
+a chart already fetching a page. Bounded to the page as well: the chart resolves
+a dependency by looking the id up in the list it was handed, so an arrow to a
+record on page two would appear and disappear as somebody pressed Load more.
+
+The compliance register is the example, and it is not a contrivance: a licence
+runs from its issue date to its expiry, `renews` names the one it replaces, and
+the same field is the tree's parent and the chart's dependency — the same
+statement drawn under it and after it.
 
 Read-only, for the calendar's reason: dragging a bar writes two fields on a
 record, and a handle that moves and springs back is worse than one that does
@@ -532,6 +597,24 @@ either reason is one that disagrees with the count in its own footer. Load more
 re-nests it. Two records naming each other are both left at the top, which is
 the only drawing of a circle that terminates. `lib/tree.js` owns all of that,
 and is where its tests are.
+
+**Dragging reparents**, which is the one thing a tree can do that a list cannot.
+It writes the parent field through the same `save` a form uses — the same door
+the board's card move goes through, so permissions, `read_only` and the
+doctype's own rules all apply, and the list is re-read rather than trusted. The
+component refuses a drop on the node itself and inside its own descendants; what
+is ours is `is_group`. Where the doctype has that field — Frappe's nested sets
+all do, and a screen may name another — a record may only go under one that may
+hold records, and a group with nothing in it draws as a folder rather than a
+leaf, so an empty cost centre reads as somewhere to put something. Where the
+doctype has no such field, every record may hold others, which is what a plain
+Link means. A drop *beside* a node reparents to that node's own parent: this
+view has no position to record, because the parent field holds one id and the
+rows arrive in the screen's own order.
+
+The drag is off where the parent field is not writable — a nested set the
+framework maintains itself is a tree to read, and a drag that always fails is
+worse than no drag.
 
 Clicking a record's *name* opens it; clicking the rest of the row expands it,
 which is what the desk's tree does too. One limit worth stating: a node with no
@@ -1300,12 +1383,19 @@ Worth knowing before designing around it.
   rate; the grid edits values and does not derive them.
 * **Notification rules and email templates.** The feed and the digest exist; the
   rules that would produce "email the owner when this goes overdue" do not.
-* **Data import and export.** No CSV either way.
+* **Data import.** Export is a button on every list; there is no CSV going the
+  other way, and the importer is a declared plan rather than a file somebody
+  drops.
 * **Customize Form.** We write Property Setters for naming and default print
-  formats; there is no UI for adding a field or relabelling one.
+  formats, and a space declares the Custom Fields its screens read
+  (docs/APPS-AND-SPACES.md); there is no UI for adding a field or relabelling
+  one.
 * **User Permission.** Enforced on every path, and there is nowhere to grant
   one.
-* **Bulk edit.** Selection does delete and declared actions only.
+* **Reminders.** A calendar draws what is there; "tell me the morning before"
+  is a scheduled job and a notification rather than a drawing, and belongs with
+  the notification rules above. The compliance register has its own, because a
+  licence expiring is a fact about the licence rather than about a view.
 * **The map view**, which a manifest may already declare — a type nothing can
   draw is dropped rather than refused, so the screen renders as a list and
   gains the map without a manifest edit. The calendar shipped and is below.

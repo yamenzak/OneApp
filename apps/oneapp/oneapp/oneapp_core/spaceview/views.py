@@ -3,7 +3,7 @@
 import re
 
 import frappe
-from oneapp.oneapp_core import collab, dashboard, docflow, fieldtypes, printing, showcase
+from oneapp.oneapp_core import board, collab, dashboard, docflow, fieldtypes, printing, showcase
 from .meta import _fetch_fields
 from .viewtypes import DEFAULT_VIEW_TYPE, VIEW_TYPES
 
@@ -54,7 +54,21 @@ def _view_settings(resolved: dict, asked) -> dict:
 		for key, value in settings.items():
 			if not isinstance(key, str):
 				continue
-			if key == "widgets" and view_type == "dashboard":
+			if key == "arrangement" and view_type == "board" and isinstance(value, dict):
+				# How the board is arranged, as opposed to what it is made of:
+				# the order of its columns, their colours, which are archived,
+				# and the order of the cards inside them. Keyed by *value* — a
+				# Select option, a Link id — so it cannot be checked against
+				# the screen's fields the way every other key here is, and is
+				# bounded instead. See `oneapp_core/board.py`.
+				#
+				# Kept whenever the payload *mentions* it, empty included —
+				# the same rule filters follow, and for the same reason:
+				# unarchiving the last hidden column sends an empty list, and
+				# a truthiness check here would leave the saved one standing
+				# and the column would never come back.
+				kept.setdefault(view_type, {})["arrangement"] = board.shape(value)
+			elif key == "widgets" and view_type == "dashboard":
 				# The one key that is a list of objects rather than a field or
 				# a list of them. Still a validator and not a passthrough:
 				# `dashboard.shape` drops a widget whose kind, aggregate or
@@ -125,6 +139,10 @@ def _board(resolved: dict) -> dict:
 
 	return {
 		"column_field": column,
+		# What this reader has done to the board itself. Validated on the way
+		# in by `board.shape`; applied in the browser, because every one of
+		# these is about drawing rather than about which rows come back.
+		"arrangement": settings.get("arrangement") or {},
 		# Every field a board could be columns of, so the picker offers them
 		# without asking the doctype a second question.
 		"fields": [
@@ -175,9 +193,25 @@ def _calendar(resolved: dict) -> dict:
 	# a span, and drawing it from the end backwards would be inventing one.
 	end = end if start and _dateable(offered.get(end)) else ""
 
+	# How often it happens again, and until when.
+	#
+	# Frappe's own Event carries `repeat_on` — a Select of Daily, Weekly,
+	# Monthly, Yearly — beside a `repeat_till`, and that is the model this
+	# follows rather than inventing an RRULE dialect nothing else on the site
+	# reads. A screen names the two fields; the browser draws the occurrences
+	# inside the window it is showing. Nothing is written: one record with a
+	# rule stays one record, which is what makes deleting a series possible.
+	repeat = settings.get("repeat_field") or ""
+	repeat = repeat if start and offered.get(repeat, {}).get("fieldtype") == "Select" else ""
+
+	until = settings.get("until_field") or ""
+	until = until if repeat and _dateable(offered.get(until)) else ""
+
 	return {
 		"start_field": start,
 		"end_field": end,
+		"repeat_field": repeat,
+		"until_field": until,
 		# Every field a calendar could be drawn by, so the picker offers them
 		# without asking the doctype a second question. Same shape as the
 		# board's, and for the same reason.
@@ -218,10 +252,24 @@ def _gantt(resolved: dict) -> dict:
 	if not (start and offered.get(measure, {}).get("fieldtype") in MEASURED):
 		measure = ""
 
+	# What this bar waits on. The same check the tree's parent field goes
+	# through — a Link *at this doctype* — because "depends on" and "sits
+	# under" are the same shape of statement about two records of one kind, and
+	# a Link at something else is a relation rather than a sequence.
+	#
+	# One field rather than Frappe's child table of them. A Task's `depends_on`
+	# is a grid, and a grid is a second query per row on a chart that is already
+	# fetching a page; one Link says "this comes after that", which is what a
+	# schedule drawn from a page of records can honestly show.
+	depends = said.get("depends_field") or ""
+	if not (start and _nests(offered.get(depends), resolved.get("doctype") or "")):
+		depends = ""
+
 	return {
 		"start_field": start,
 		"end_field": end,
 		"progress_field": measure,
+		"depends_field": depends,
 		"fields": [
 			{"fieldname": c["fieldname"], "label": c["label"], "fieldtype": c["fieldtype"]}
 			for c in resolved.get("all_columns") or []
@@ -251,6 +299,17 @@ def _tree(resolved: dict) -> dict:
 
 	return {
 		"parent_field": parent,
+		# Which records may hold others. Frappe's nested-set doctypes carry
+		# `is_group` and the desk refuses a child under a leaf; a doctype that
+		# nests through an ordinary Link — which is what this view is for — may
+		# or may not have one. So: the field a screen names, else Frappe's own
+		# name where the doctype has it, else nothing and every node may hold
+		# children, which is what a plain Link means.
+		#
+		# The difference it makes is visible: a group with nothing in it is a
+		# folder rather than a leaf, so an empty cost centre reads as somewhere
+		# to put something.
+		"group_field": _grouping(offered, said.get("group_field")),
 		# Every field that could be one, so a picker needs no second question.
 		"fields": [
 			{"fieldname": c["fieldname"], "label": c["label"], "fieldtype": c["fieldtype"]}
@@ -258,6 +317,19 @@ def _tree(resolved: dict) -> dict:
 			if _nests(c, doctype)
 		],
 	}
+
+
+# What Frappe calls it on every nested-set doctype it ships.
+GROUP_FIELD = "is_group"
+
+
+def _grouping(offered: dict, asked: str | None) -> str:
+	"""The Check field saying a record may hold others, if there is one."""
+	for name in (asked or "", GROUP_FIELD):
+		column = offered.get(name)
+		if column and column.get("fieldtype") == "Check":
+			return name
+	return ""
 
 
 def _nests(column: dict | None, doctype: str) -> bool:

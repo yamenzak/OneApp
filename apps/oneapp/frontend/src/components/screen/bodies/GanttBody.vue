@@ -62,6 +62,7 @@ let chart = null
 const field = computed(() => props.gantt?.start_field || '')
 const endField = computed(() => props.gantt?.end_field || '')
 const measure = computed(() => props.gantt?.progress_field || '')
+const depends = computed(() => props.gantt?.depends_field || '')
 
 /** What a record is called, from the doctype's own title field. */
 const nameOf = (row) => {
@@ -71,6 +72,26 @@ const nameOf = (row) => {
 
 /** The day part of a Date or a Datetime. See `CalendarBody`. */
 const day = (value) => String(value || '').trim().split(' ')[0]
+
+/**
+ * The bar this one comes after, where the screen names a field for it.
+ *
+ * A schedule is a set of bars and the arrows between them, and until now this
+ * drew only the bars — so a chart of a fit-out showed six lengths and nothing
+ * about which of them was waiting on which, which is most of what a plan is.
+ *
+ * Bounded to the page. The chart resolves a dependency by looking the id up in
+ * the list it was handed, so an id that is not there draws nothing at best; and
+ * a record whose predecessor is on page two is a record whose arrow would
+ * appear and disappear as somebody pressed Load more.
+ */
+const onPage = computed(() => new Set(props.rows.map((row) => row.name)))
+
+const waiting = (row) => {
+  if (!depends.value) return []
+  const after = String(row[depends.value] || '')
+  return after && after !== row.name && onPage.value.has(after) ? [after] : []
+}
 
 const bars = computed(() => {
   if (!field.value || !endField.value) return []
@@ -89,6 +110,11 @@ const bars = computed(() => {
         // shape to draw: shown as a single day, which is what it is.
         end: to < from ? from : to,
         progress: measure.value ? Number(row[measure.value]) || 0 : 0,
+        // What this one waits on, as the arrow the chart draws between two
+        // bars. Only where the bar it names is on this page: `frappe-gantt`
+        // looks the id up in the list it was given and an arrow to nothing is
+        // a line into the margin.
+        dependencies: waiting(row),
       }
     })
     .filter(Boolean)

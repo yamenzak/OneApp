@@ -271,7 +271,11 @@ def test_no_unknown_slots(app):
 
 # Everything that is not the default slot: named-slot templates, comments, and
 # the `v-if`/`v-for` a wrapper element might carry.
-SLOT_OPEN = re.compile(r"<template\s+(?:#|v-slot:)[^>]*>")
+# The slot name need not be the first attribute: `<template v-if="x" #item>` is
+# ordinary Vue for a slot that is only sometimes filled, and reading only the
+# first attribute reported the whole of it as default-slot content — the second
+# time this regex was wrong about the same file for the same kind of reason.
+SLOT_OPEN = re.compile(r"<template\s+[^>]*?(?:#|v-slot:)[^>]*>")
 TEMPLATE_TAG = re.compile(r"<template\b[^>]*>|</template>")
 COMMENT = re.compile(r"<!--.*?-->", re.S)
 

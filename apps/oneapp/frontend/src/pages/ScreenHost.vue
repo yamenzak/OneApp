@@ -266,6 +266,8 @@
             @sort="sortBy"
             @favourites="toggleFavourites"
             @change="writeField"
+            @changed="cardsChanged"
+            @quick="quickCreate"
             @new="newWith"
             @range="showDays"
           />
@@ -862,6 +864,28 @@ const writeField = async ({ row, field, value }) => {
     return
   }
   await loadRows()
+}
+
+/**
+ * A record made from inside a body, without the dialog.
+ *
+ * The board's column foot: a name, Enter, and a card. Here rather than in the
+ * body because the list is the shell's — the body has no way to reload it, and
+ * a card that appears only after somebody switches screens is worse than the
+ * dialog it replaced.
+ *
+ * The promise is the body's: it keeps what was typed until this resolves, and
+ * puts it back where it was if the save is refused.
+ */
+const quickCreate = async ({ values, done, fail }) => {
+  try {
+    await workspace.saveRecord(props.spaceCode, spec.value.screen, values, null)
+    await loadRows()
+    done?.()
+  } catch (e) {
+    notifyError(e.message || String(e))
+    fail?.(e)
+  }
 }
 
 const like = async (row) => {

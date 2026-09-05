@@ -19,7 +19,7 @@ import { cardIdentity } from './cards'
  * Order is the page's, at every level. A tree is still a screen's rows in the
  * screen's order — nesting them is not a reason to sort them again.
  */
-export function forestOf(rows, field, spec) {
+export function forestOf(rows, field, spec, groupField = '') {
   if (!field) return []
 
   const nodes = new Map()
@@ -29,6 +29,11 @@ export function forestOf(rows, field, spec) {
       label: cardIdentity(row, spec).label,
       row,
       orphan: false,
+      // Whether this record may hold others. Frappe's nested-set doctypes say
+      // so with `is_group` and the desk refuses a child under a leaf; a
+      // doctype nesting through a plain Link may have no such field, and then
+      // every node is a group — which is what a plain Link means.
+      group: !groupField || !!Number(row[groupField] || 0),
       children: [],
     })
   }

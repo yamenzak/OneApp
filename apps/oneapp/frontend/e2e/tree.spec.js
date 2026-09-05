@@ -9,6 +9,8 @@ import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 
 const LINEAGE = ['Trade Licence — 2024', 'Trade Licence', 'Trade Licence — 2027']
 
+const TREE = '/one/space/zzmock?screen=compliance&type=tree'
+
 test('a screen can be read as a tree, and a renewal sits under what it renewed', async ({
   page,
   baseURL,
@@ -55,5 +57,45 @@ test('a name in the tree opens the record it is', async ({ page, baseURL }) => {
   await page.locator('[data-slot="record-controls"]').waitFor({ timeout: 15_000 })
   await expect(page).toHaveURL(/record=/)
 
+  expectNoRealErrors(errors)
+})
+
+test('a record can be dragged under another, and back out', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'a drag needs a pointer')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto(TREE)
+
+  const visa = () => page.getByRole('treeitem', { name: /Residence Visa/ }).first()
+  // The *row*, not the treeitem: an `<li>` contains its whole subtree, so its
+  // centre — which is where `dragTo` aims — is over one of its descendants.
+  // The first version of this dropped two levels down and said so.
+  const row = (title) => page.getByRole('button', { name: title, exact: true }).first()
+
+  /** Put it back at the root, wherever the last run left it. */
+  const toRoot = async () => {
+    if ((await visa().getAttribute('aria-level')) === '1') return
+    // The top edge of the first row is "before" it, at that row's own level,
+    // and it is the only way back out of a hierarchy by dragging.
+    await visa().dragTo(page.getByRole('treeitem').first(), {
+      targetPosition: { x: 40, y: 2 },
+    })
+    await expect(visa()).toHaveAttribute('aria-level', '1', { timeout: 20_000 })
+  }
+
+  await visa().waitFor({ timeout: 20_000 })
+  await toRoot()
+
+  // Dropped on the middle of a row, which is what "inside" means to the
+  // component — the top and bottom thirds are before and after.
+  await visa().dragTo(row('Trade Licence — 2024'))
+
+  // One field written, through the same `save` a form uses. The list is
+  // re-read afterwards, so what comes back is the server's answer rather than
+  // the browser's guess.
+  await expect(visa()).toHaveAttribute('aria-level', '2', { timeout: 20_000 })
+
+  await toRoot()
   expectNoRealErrors(errors)
 })

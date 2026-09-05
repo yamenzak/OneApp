@@ -31,8 +31,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Calendar } from '@/ui'
+import { occurrencesOf } from '../../../lib/recurrence'
 import EmptyState from '../../EmptyState.vue'
 
 const props = defineProps({
@@ -65,6 +66,17 @@ const CONFIG = { isEditMode: false, defaultMode: 'Month' }
 
 const field = computed(() => props.calendar?.start_field || '')
 const endField = computed(() => props.calendar?.end_field || '')
+const repeatField = computed(() => props.calendar?.repeat_field || '')
+const untilField = computed(() => props.calendar?.until_field || '')
+
+/**
+ * The days on screen, as the grid last reported them.
+ *
+ * The shell fetches by this range and so does the repeating: an occurrence
+ * only exists for as long as the month showing it does, which is what makes a
+ * rule a *drawing* rather than four hundred rows nobody can delete.
+ */
+const shown = ref({})
 
 /** What a record is called, from the doctype's own title field. */
 const titleOf = (row) => {
@@ -86,30 +98,68 @@ const split = (value) => {
   return { date, time: time.slice(0, 5) }
 }
 
+/** How many days a record covers, so a repeat of it covers the same. */
+const daysBetween = (from, to) => {
+  const one = new Date(`${from}T00:00:00`)
+  const other = new Date(`${to}T00:00:00`)
+  const apart = Math.round((other - one) / 86_400_000)
+  return Number.isFinite(apart) && apart > 0 ? apart : 0
+}
+
+const shift = (date, days) => {
+  if (!days) return date
+  const made = new Date(`${date}T00:00:00`)
+  made.setDate(made.getDate() + days)
+  const pad = (one) => String(one).padStart(2, '0')
+  return `${made.getFullYear()}-${pad(made.getMonth() + 1)}-${pad(made.getDate())}`
+}
+
 const events = computed(() => {
   if (!field.value) return []
-  return props.rows
-    .map((row) => {
-      const from = split(row[field.value])
-      if (!from) return null
-      const to = endField.value ? split(row[endField.value]) : null
-      return {
-        id: row.name,
+  const found = []
+  for (const row of props.rows) {
+    const from = split(row[field.value])
+    if (!from) continue
+    const to = endField.value ? split(row[endField.value]) : null
+    // A record with no end is a moment on its own day rather than a span
+    // running to whenever the next one happens to be.
+    const covers = daysBetween(from.date, to?.date || from.date)
+
+    // Every day this record falls on. One, unless the screen names a rule
+    // field and the record carries a value in it — see `lib/recurrence.js`.
+    const on = repeatField.value
+      ? occurrencesOf(
+          from.date,
+          row[repeatField.value],
+          untilField.value ? row[untilField.value] : '',
+          shown.value,
+        )
+      : [from.date]
+
+    for (const day of on) {
+      found.push({
+        // The record's id for the first, and the day appended after that: the
+        // grid keys events by id, and four Tuesdays sharing one would draw
+        // one Tuesday. `open` reads the record's half back.
+        id: day === from.date ? row.name : `${row.name}@${day}`,
         title: titleOf(row),
-        fromDate: from.date,
-        // A record with no end is a moment on its own day rather than a span
-        // running to whenever the next one happens to be.
-        toDate: to?.date || from.date,
+        fromDate: day,
+        toDate: shift(day, covers),
         fromTime: from.time || undefined,
         toTime: to?.time || from.time || undefined,
         isFullDay: !from.time,
-      }
-    })
-    .filter(Boolean)
+      })
+    }
+  }
+  return found
 })
 
 const open = (event) => {
-  const row = props.rows.find((one) => one.name === event?.id)
+  // An occurrence opens the record it is an occurrence of. There is only one
+  // record: a rule is a drawing, and the Tuesday you clicked is a day rather
+  // than a document.
+  const id = String(event?.id || '').split('@')[0]
+  const row = props.rows.find((one) => one.name === id)
   if (row) emit('open', row)
 }
 
@@ -121,6 +171,8 @@ const open = (event) => {
  * month you are in until the grid says.
  */
 const moved = ({ startDate, endDate }) => {
-  if (startDate && endDate) emit('range', { since: startDate, until: endDate })
+  if (!startDate || !endDate) return
+  shown.value = { since: startDate, until: endDate }
+  emit('range', { since: startDate, until: endDate })
 }
 </script>

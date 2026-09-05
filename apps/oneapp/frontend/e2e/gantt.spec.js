@@ -48,3 +48,24 @@ test('a bar opens the record it is', async ({ page, baseURL }) => {
 
   expectNoRealErrors(errors)
 })
+
+test('a bar that waits on another has an arrow to it', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'the chart is a desktop surface')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+
+  // The compliance register, which is a register of *lengths*: a licence runs
+  // from its issue date to its expiry, and the renewal that replaces it is the
+  // bar after it. `renews` is the tree's parent and the chart's dependency —
+  // the same statement drawn two ways, under it and after it.
+  await page.goto('/one/space/zzmock?screen=compliance&type=gantt')
+  await page.locator('[data-slot="gantt"] svg').waitFor({ timeout: 20_000 })
+
+  // Two renewals in the fixture, so at least one arrow. Drawn by the chart
+  // from `dependencies`, which is the whole of what this had to hand it.
+  const arrows = page.locator('[data-slot="gantt"] g.arrow path')
+  await expect(arrows.first()).toBeVisible({ timeout: 20_000 })
+
+  expectNoRealErrors(errors)
+})
