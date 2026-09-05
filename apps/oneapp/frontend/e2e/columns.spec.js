@@ -16,7 +16,9 @@ const align = async (page, label, choice) => {
     .locator('[data-slot="column-row"]')
     .filter({ hasText: label })
     .first()
-  await row.getByRole('button', { name: choice }).click()
+  // A radio, not a button: `TabButtons` is a radio group, which is the right
+  // role for one answer out of a few and is why it was reached for here.
+  await row.getByRole('radio', { name: choice }).click()
   await page.getByRole('button', { name: 'Done' }).click()
 }
 
@@ -44,7 +46,8 @@ test('a column can be aligned, and its header goes with it', async ({ page }, in
     .locator('[data-slot="list-row"]')
     .first()
     .locator('[data-slot="list-cell"]')
-    .nth(2)
+    // Title, Amount, State, Activity — the checkbox is not a cell.
+    .nth(1)
   await expect(cell).toHaveClass(/justify-center/)
 
   // And back to automatic, which is not the same as "start": the fieldtype

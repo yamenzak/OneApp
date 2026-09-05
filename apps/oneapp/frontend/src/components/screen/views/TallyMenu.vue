@@ -68,6 +68,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { Button, LoadingText, Popover, Select } from '@/ui'
+import { useIsMobile } from '@/lib/screen'
 import { workspace } from '../../../lib/workspace'
 
 const props = defineProps({
@@ -80,10 +81,16 @@ const props = defineProps({
   layout: { type: String, default: '' },
   /** The filters and sort as they stand, so the counts match the list. */
   overrides: { type: Object, default: () => ({}) },
-  compact: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['narrow'])
+
+// Icon-only on a phone, the way the filter beside it is. The toolbar there is
+// one row holding the box people type in, its operator menu and these two, and
+// a labelled button pushed the operator's chevron under the next control —
+// which is a button nobody could press, and a browser test that could not
+// press it.
+const compact = useIsMobile()
 
 const open = ref(false)
 const field = ref('')

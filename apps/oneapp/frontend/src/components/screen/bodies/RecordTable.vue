@@ -68,10 +68,16 @@
               aria-sort, the arrow on hover — so this wires state to it rather
               than rebuilding it.
             -->
+            <!--
+              `aligned` here too, and it was missing: only the plain header cell
+              carried it, so every *sortable* column — which is nearly all of
+              them — sat left over right-aligned numbers. A heading out of true
+              with its own column reads as two columns.
+            -->
             <ListHeaderCellSort
               v-else-if="c.sortable"
               :direction="directionFor(c)"
-              :class="c.pin && PINNED"
+              :class="[c.pin && PINNED, aligned(c)]"
               :style="stickyStyle(c)"
               @click="emit('sort', c.key)"
             >
