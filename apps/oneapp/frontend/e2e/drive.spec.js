@@ -207,12 +207,19 @@ test('a file can be hearted, and the heart is what Favourites lists', async ({ p
     .toBeVisible({ timeout: 10_000 })
 
   await goToPlace(page, 'Favourites')
-  const there = page.locator('[data-slot="drive-file"]').first()
-  await expect(there).toContainText(named.split('\n')[0])
+  // By name and never by position, and not because Favourites might be sorted
+  // differently: a heart is durable, so a run that fails between hearting and
+  // un-hearting leaves one behind, and the *next* run would un-heart that stray
+  // instead of its own file and leave two. Asserting on this file rather than
+  // on an empty page is what stops that accumulating.
+  const there = page
+    .locator('[data-slot="drive-file"]')
+    .filter({ hasText: named.split('\n')[0] })
+  await expect(there).toHaveCount(1, { timeout: 10_000 })
 
   // Put it back, so the next run starts where this one did.
   await there.getByRole('button', { name: /Remove .* from favourites/ }).click()
-  await expect(page.locator('[data-slot="empty-state"]')).toBeVisible({ timeout: 10_000 })
+  await expect(there).toHaveCount(0, { timeout: 10_000 })
 
   expectNoRealErrors(errors)
 })
