@@ -156,7 +156,7 @@
 
 <script setup>
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
-import { Select } from 'frappe-ui'
+import { Button, Dialog, FormControl, Icon, Select } from 'frappe-ui'
 // Lazy-load — same rationale as in ChartOverlay.
 const ChartView = defineAsyncComponent(() => import('./ChartView.vue'))
 import { CHART_TYPES } from '@/lib/sheets/engine/charts.js'

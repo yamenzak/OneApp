@@ -29,15 +29,25 @@ import { packSheet, packSheetChunked, unpackSheet, boundsOf } from './utils/shee
 const GET = 'oneapp.oneapp_core.sheets.get_sheet'
 const SAVE = 'oneapp.oneapp_core.sheets.save_sheet'
 
-/** One request to Frappe. `keepalive` for the save that outlives the page. */
-async function call(method, args = {}, { keepalive = false } = {}) {
-  const res = await fetch(`/api/method/${method}`, {
-    method: 'POST',
+/**
+ * One request to Frappe. `keepalive` for the save that outlives the page.
+ *
+ * A read goes as a GET and a write as a POST, because that is what the
+ * endpoints declare: `get_sheet` is `methods=["GET"]`, and a POST to it is a
+ * 403 rather than a 405 — which reads, from inside the editor, exactly like a
+ * sheet somebody is not allowed to open.
+ */
+async function call(method, args = {}, { keepalive = false, get = false } = {}) {
+  const url = get
+    ? `/api/method/${method}?${new URLSearchParams(args)}`
+    : `/api/method/${method}`
+  const res = await fetch(url, {
+    method: get ? 'GET' : 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Frappe-CSRF-Token': window.csrf_token ?? '',
     },
-    body: JSON.stringify(args),
+    ...(get ? {} : { body: JSON.stringify(args) }),
     keepalive,
   })
   const json = await res.json().catch(() => ({}))
@@ -72,7 +82,7 @@ function serverMessage(json) {
  */
 export async function loadWorkbook(name, engines) {
   const canGz = isDecompressionSupported()
-  const doc = await call(GET, { name, compressed: canGz ? 1 : 0 })
+  const doc = await call(GET, { name, compressed: canGz ? 1 : 0 }, { get: true })
   const plain = canGz ? await decodeFromDownload(doc.sheets_data) : doc.sheets_data
 
   let saved = {}

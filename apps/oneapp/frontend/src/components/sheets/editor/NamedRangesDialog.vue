@@ -79,6 +79,7 @@
 
 <script setup>
 import { computed, ref, reactive, watch } from 'vue'
+import { Button, Dialog, FormControl } from 'frappe-ui'
 
 const props = defineProps({
   modelValue:    { type: Boolean, default: false },

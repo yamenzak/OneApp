@@ -156,6 +156,7 @@
 import { ref, computed, watch } from 'vue'
 import { AGG_OPTIONS, computePivot } from '@/lib/sheets/engine/pivot.js'
 import PivotFieldPicker from './PivotFieldPicker.vue'
+import { Button, Dialog, Dropdown, FormControl, Icon } from 'frappe-ui'
 
 const props = defineProps({
   modelValue:     { type: Boolean, default: false },

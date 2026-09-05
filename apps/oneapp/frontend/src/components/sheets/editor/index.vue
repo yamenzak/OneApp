@@ -121,12 +121,12 @@
                   @click="toggleNotesPanel" />
           <span v-if="allNotes.length" class="sn-notes-badge">{{ allNotes.length > 9 ? '9+' : allNotes.length }}</span>
         </span>
-        <!-- Variant flips to "subtle" while the panel is open so the trigger
-             reads as toggled, matching Frappe UI's standard toggle pattern. -->
-        <Button :variant="vhOpen ? 'subtle' : 'ghost'"
-                size="sm" icon="lucide-clock"
-                tooltip="Version history"
-                @click="vhOpen ? closeVersionHistory() : (notesPanel.open = false, openVersionHistory())" />
+        <!-- Version history's trigger was here. The panel behind it reads an
+             operation log this repository has not ported, so it would open on
+             an empty list and explain nothing — see
+             `lib/sheets/services/versions.js`. The panel and its plumbing stay
+             wired; only the way in is gone, so restoring the feature is
+             restoring one button. -->
         <Button variant="ghost" size="sm" icon="lucide-help-circle" tooltip="Keyboard shortcuts" @click="showShortcutsHelp = true" />
         <span class="sn-topbar-divider" aria-hidden="true" />
         <!-- Presence avatars — other users currently in the workbook.
@@ -151,14 +151,8 @@
             :title="`${presentUsers.length - 3} more people`"
           >+{{ presentUsers.length - 3 }}</span>
         </div>
-        <span v-if="!readOnly" class="sn-topbar-divider" aria-hidden="true" />
-        <Avatar
-          :label="userInitial"
-          :image="userImage || undefined"
-          size="sm"
-          :tooltip="userFullName || userEmail"
-          class="sn-user-avatar"
-        />
+        <!-- The signed-in person is the shell's, bottom left of every screen
+             in the product. A second avatar here would say it twice. -->
       </div>
     </div>
 
@@ -1261,10 +1255,7 @@ import { getFunctionNames }    from '@/lib/sheets/engine/formula.js'
 import NamedRangesDialog       from './NamedRangesDialog.vue'
 import { useSmartFill }        from './useSmartFill.js'
 import * as versionsApi        from '@/lib/sheets/services/versions.js'
-import {
-  Checkbox, KeyboardShortcut, KeyboardShortcutsDialog, TextInput, Tooltip,
-  useKeyboardShortcut,
-} from 'frappe-ui'
+import { Avatar, Badge, Button, Checkbox, Dialog, Dropdown, FormControl, Icon, KeyboardShortcut, KeyboardShortcutsDialog, Spinner, TextInput, Tooltip, useKeyboardShortcut } from 'frappe-ui'
 import {
   CommandPalette, CommandPaletteEmpty, CommandPaletteGroup, CommandPaletteInput,
   CommandPaletteItem, CommandPaletteList,
