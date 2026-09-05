@@ -65,6 +65,9 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 * **`docs/ONEADMIN.md`** — the platform. Tenancy, the control plane, the
   operator console, billing, credits, storage, the lifecycle, configuration,
   bring-up, and how to work on this repo.
+* **`docs/APPS-AND-SPACES.md`** — which Frappe apps a site carries, what a
+  Space declares, and why per-customer schema is safe. Read it before touching
+  provisioning or the space manifest.
 * **`docs/EMAIL.md`** — mail. What Cloudflare gives us and what it does not, what
   the framework already ships, why Frappe Mail is not the answer, and the seven
   stages.
