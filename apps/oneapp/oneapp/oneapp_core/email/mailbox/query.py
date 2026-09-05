@@ -4,7 +4,44 @@ import frappe
 import re
 from oneapp.oneapp_core.email.folders import FOLDER_FIELD, QUIET
 from oneapp.oneapp_core.email.threading import THREAD_FIELD
-from .scope import SENT, SPLIT, _held, _like
+from .scope import SENT, SPLIT, _accounts, _held, _like
+
+
+# What "put away" means, and therefore what an inbox is not: the three quiet
+# folders plus the archive.
+#
+# Archiving used to be a button that did nothing anybody could see. The inbox
+# view is every *received* message on an address, and it did not care what
+# folder the message was in — so "Archived" filed the conversation and left it
+# exactly where it was in the list, and so did "Moved to Trash". Which is worse
+# than not offering the action: the mail is gone from where somebody would look
+# for it and still in front of them.
+PUT_AWAY = QUIET | {"archive"}
+
+# The scope that means "every message in this conversation I am allowed to
+# read, wherever it is". Not a folder somebody can open — a word `file_thread`
+# passes when it is *moving* mail rather than listing it.
+#
+# Undo is what needed it. `restore` puts an archived conversation back, and to
+# move a conversation it first has to find it: through the inbox scope, which
+# now excludes the archive, it found nothing and put nothing back.
+EVERYWHERE = "everywhere"
+
+
+def _put_away() -> list[str]:
+	"""The folder names that mean "not in the inbox", across every address held.
+
+	Names, not kinds, because that is what is on the message: `classify` read
+	the kind off the server's SPECIAL-USE flags, so one person's archive is
+	`Archive` and another's is `[Gmail]/All Mail`. Both are excluded here and
+	both are one click away in the rail.
+	"""
+	names = set()
+	for held in _accounts().values():
+		for name, kind in (held.get("kinds") or {}).items():
+			if kind in PUT_AWAY:
+				names.add(name)
+	return sorted(names)
 
 
 def _filters(folder: str) -> tuple[dict, list | None]:
@@ -69,7 +106,16 @@ def _filters(folder: str) -> tuple[dict, list | None]:
 		)
 
 	base["sent_or_received"] = "Received"
-	if folder and folder != "all":
+
+	# Everything below this line is an inbox — one address's, or all of them —
+	# so everything put away is out of it. `not in` is safe over a message with
+	# no folder at all, which is what routed mail arrives as: Frappe writes the
+	# condition as `IFNULL(folder, '') NOT IN (…)`.
+	away = [] if folder == EVERYWHERE else _put_away()
+	if away:
+		base[FOLDER_FIELD] = ("not in", away)
+
+	if folder and folder not in ("all", EVERYWHERE):
 		if folder not in held:
 			frappe.throw(_("That is not one of your addresses."), frappe.PermissionError)
 		base["recipients"] = ("like", f"%{_like(folder)}%")

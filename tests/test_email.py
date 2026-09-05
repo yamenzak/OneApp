@@ -464,6 +464,91 @@ def test_one_address_needs_no_or_filter(mailbox, holding):
 	assert or_filters is None
 
 
+@pytest.fixture
+def filed(mailbox, stub_mailbox, holding):
+	"""One address whose server has the four folders that mean "put away"."""
+
+	def set(**kinds):
+		holding("sales@acme.4dl.app")
+		stub_mailbox(
+			"_accounts",
+			lambda: {
+				"sales@acme.4dl.app": {
+					"account": "ACC",
+					"folders": list(kinds),
+					"kinds": kinds,
+				}
+			},
+		)
+
+	return set
+
+
+def test_an_inbox_does_not_hold_what_has_been_put_away(mailbox, filed):
+	"""The bug this exists for: Archive filed the conversation and left it in the
+	list, because the inbox view is every *received* message on an address and it
+	did not care what folder the message was in. Which is worse than not having
+	the button — the mail is gone from where somebody would look for it and still
+	in front of them."""
+	filed(**{"Archive": "archive", "Deleted Items": "trash", "Junk": "junk", "Drafts": "drafts"})
+
+	filters, _ = mailbox._filters("all")
+	# Sorted, so the query is the same query run to run and a cache of it means
+	# something.
+	assert filters["custom_imap_folder"] == (
+		"not in",
+		["Archive", "Deleted Items", "Drafts", "Junk"],
+	)
+
+
+def test_the_same_holds_for_one_address_as_for_all_of_them(mailbox, filed):
+	filed(**{"Archive": "archive"})
+	assert mailbox._filters("sales@acme.4dl.app")[0]["custom_imap_folder"] == (
+		"not in",
+		["Archive"],
+	)
+
+
+def test_an_ordinary_folder_is_not_put_away(mailbox, filed):
+	"""`Applicants` is somebody's own filing and belongs in their inbox view as
+	much as anything else does."""
+	filed(**{"Applicants": "", "Archive": "archive"})
+	assert mailbox._filters("all")[0]["custom_imap_folder"] == ("not in", ["Archive"])
+
+
+def test_opening_the_archive_shows_the_archive(mailbox, filed):
+	"""The exclusion is what an inbox means, not what a query means. A folder
+	asked for by name is asked for."""
+	filed(**{"Archive": "archive"})
+	filters, _ = mailbox._filters(f"sales@acme.4dl.app{mailbox.SPLIT}Archive")
+	assert filters["custom_imap_folder"] == "Archive"
+
+
+def test_sent_is_not_an_inbox_and_is_not_narrowed(mailbox, filed):
+	filed(**{"Archive": "archive"})
+	assert "custom_imap_folder" not in mailbox._filters("sent")[0]
+
+
+def test_a_mailbox_with_no_folders_gets_no_clause_at_all(mailbox, filed):
+	"""A routed address has no server and so no folders. An empty `not in` is a
+	condition that matches nothing in some engines, and this is one of the two
+	places where that would mean "no mail at all"."""
+	filed()
+	assert "custom_imap_folder" not in mailbox._filters("all")[0]
+
+
+def test_the_exclusion_survives_a_message_with_no_folder(mailbox):
+	"""Routed mail arrives in no folder, and `NULL NOT IN (…)` is NULL — which
+	is to say the whole inbox would have been empty. Frappe writes the condition
+	as `IFNULL(field, '')`, and this is the assertion that says we are relying
+	on that."""
+	import inspect
+
+	source = inspect.getsource(mailbox._filters)
+	assert '("not in", away)' in source
+	assert "IFNULL" in source or "no folder at all" in source
+
+
 def test_a_folder_is_refused_unless_it_is_one_of_yours(mailbox, holding):
 	holding("sales@acme.4dl.app")
 	mailbox._filters("sales@acme.4dl.app")  # fine
@@ -1537,3 +1622,162 @@ def test_an_away_message_switches_itself_off(rules):
 	source = inspect.getsource(rules.expire_away)
 	assert '"custom_away_until": ("<", nowdate())' in source
 	assert '"enable_auto_reply", 0' in source
+
+
+# --------------------------------------------------------------------------- #
+#
+# A selection, and the way back from one.
+#
+# Bulk is where somebody loses a morning: a mis-shift-click takes forty
+# conversations rather than four, and "Archived 40" with no way back is not an
+# outcome anybody chose. So what `bulk` records on the way past is as much the
+# feature as what it moves.
+
+
+@pytest.fixture
+def selection(mailbox, stub_mailbox):
+	"""`bulk`, with everything under it replaced by a note of what was asked."""
+	# By path: `selections` is the module, `bulk` is the whitelisted function it
+	# exports, and the two cannot share a name — see the module's own docstring.
+	import importlib
+
+	module = importlib.import_module("oneapp.oneapp_core.email.mailbox.selections")
+
+	log = []
+	rows = {
+		"one": [{"name": "C1", "custom_imap_folder": "INBOX"}],
+		# Two messages, in two folders — so which one the note takes is a
+		# decision this can see rather than a coincidence.
+		"two": [
+			{"name": "C2", "custom_imap_folder": "Applicants"},
+			{"name": "C3", "custom_imap_folder": "INBOX"},
+		],
+		# A conversation this person cannot read comes back empty, exactly as a
+		# missing one does.
+		"gone": [],
+	}
+
+	stub_mailbox("thread", lambda key, folder="all": rows.get(key, []))
+	for name in ("archive", "bin", "file_thread"):
+		stub_mailbox(name, (lambda name: lambda *a, **k: log.append((name, a)))(name))
+	stub_mailbox("mark_read", lambda names: log.append(("read", tuple(names))))
+	stub_mailbox("mark_unread", lambda key, folder="all": log.append(("unread", (key,))))
+	stub_mailbox("star", lambda key, folder, on: log.append(("star", (key, on))))
+
+	# The column the note is read off, spelled out in the rows above: if it is
+	# ever renamed, this is where that shows.
+	assert module.FOLDER_FIELD == "custom_imap_folder"
+	return module, log
+
+
+@pytest.mark.parametrize(
+	"action,expected",
+	[
+		("archive", ["archive", "archive"]),
+		("bin", ["bin", "bin"]),
+		("read", ["read", "read"]),
+		("unread", ["unread", "unread"]),
+		("star", ["star", "star"]),
+		("unstar", ["star", "star"]),
+	],
+)
+def test_a_selection_does_one_thing_to_every_conversation_in_it(selection, action, expected):
+	module, log = selection
+	done = module.bulk(action, ["one", "two"], address="me@x.test")
+
+	assert [entry[0] for entry in log] == expected
+	assert done["done"] == 2
+
+
+def test_starring_and_unstarring_are_the_same_call_with_a_different_answer(selection):
+	module, log = selection
+	module.bulk("unstar", ["one"], address="me@x.test")
+	assert log == [("star", ("one", 0))]
+
+
+def test_a_selection_cannot_be_told_to_do_something_that_is_not_a_thing(selection):
+	module, _ = selection
+	with pytest.raises(Exception):
+		module.bulk("shred", ["one"], address="me@x.test")
+
+
+def test_the_keys_arrive_as_json_because_that_is_how_a_post_sends_a_list(selection):
+	module, log = selection
+	module.bulk("archive", '["one", "two"]', address="me@x.test")
+	assert len(log) == 2
+
+
+def test_a_conversation_that_is_not_there_is_skipped_rather_than_counted(selection):
+	module, log = selection
+	done = module.bulk("archive", ["one", "gone"], address="me@x.test")
+	assert done["done"] == 1
+	assert len(log) == 1
+
+
+def test_archiving_records_where_each_conversation_was(selection):
+	"""The note undo reads. Without it, Undo has nowhere to put anything."""
+	module, _ = selection
+	done = module.bulk("archive", ["one", "two"], address="me@x.test")
+
+	# The newest message's folder, which is the last row: a conversation whose
+	# messages sit in two folders goes back to one place, and the place it goes
+	# is where the person was looking at it.
+	assert done["was"] == [
+		{"key": "one", "folder": "INBOX"},
+		{"key": "two", "folder": "INBOX"},
+	]
+
+
+def test_a_flag_records_nothing_to_undo_because_pressing_it_again_is_the_undo(selection):
+	module, _ = selection
+	assert module.bulk("unread", ["one"], address="me@x.test")["was"] == []
+
+
+def test_undo_files_every_conversation_back_where_it_was(selection):
+	module, log = selection
+	was = module.bulk("archive", ["one", "two"], address="me@x.test")["was"]
+	log.clear()
+
+	assert module.restore(was, address="me@x.test")["restored"] == 2
+	# `everywhere` rather than the folder somebody was looking at: an archived
+	# conversation is not in any inbox scope, so looking for it through one
+	# found nothing and put nothing back — which is how Undo silently did not.
+	assert log == [
+		("file_thread", ("one", "me@x.test", "INBOX", "everywhere")),
+		("file_thread", ("two", "me@x.test", "INBOX", "everywhere")),
+	]
+
+
+def test_undo_takes_the_note_back_as_json_too(selection):
+	module, log = selection
+	module.restore('[{"key": "one", "folder": "INBOX"}]', address="me@x.test")
+	assert len(log) == 1
+
+
+def test_a_conversation_with_no_folder_recorded_is_left_alone(selection):
+	"""A routed address has no folders, so there is nowhere to put it back to —
+	and inventing an INBOX it never had would file mail somewhere new under the
+	word Undo."""
+	module, log = selection
+	assert module.restore([{"key": "one", "folder": ""}], address="me@x.test")["restored"] == 0
+	assert log == []
+
+
+def test_everywhere_is_every_folder_and_still_only_your_mail(mailbox, filed):
+	"""The scope that moves mail rather than lists it. It drops the inbox's
+	exclusion and keeps every part of the gate: this is one word away from being
+	the query that hands somebody the site's whole correspondence."""
+	filed(**{"Archive": "archive"})
+
+	filters, _ = mailbox._filters(mailbox.EVERYWHERE)
+	assert "custom_imap_folder" not in filters
+	assert filters["recipients"] == ("like", "%sales@acme.4dl.app%")
+	assert filters["sent_or_received"] == "Received"
+
+
+def test_everywhere_is_not_a_folder_somebody_can_ask_for(mailbox, filed):
+	"""It reads as a folder name in the URL, and a folder name is checked
+	against the addresses somebody holds — so if this ever stopped being handled
+	before that check it would be a refusal, not a leak."""
+	filed(**{"Archive": "archive"})
+	assert mailbox.EVERYWHERE not in mailbox._held()

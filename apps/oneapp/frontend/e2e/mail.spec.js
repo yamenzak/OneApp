@@ -684,3 +684,99 @@ test('a message already read is one row, and the new mail is marked', async ({
 
   expectNoRealErrors(errors)
 })
+
+/**
+ * A selection, acted on together, and taken back.
+ *
+ * The screen could only ever do one thing to one conversation. A morning's post
+ * is the same three actions forty times, and forty round trips through the
+ * archive button is the whole reason people keep a mail client open in another
+ * tab.
+ *
+ * Undo is the half worth a browser: `bulk` hands back a note saying where each
+ * conversation was, and Undo is that note going the other way. A mis-aimed
+ * shift-click takes forty rather than four, and "Archived 40" with no way back
+ * is somebody's morning.
+ */
+test('conversations are archived together, and Undo puts them back', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  const row = threads(page).filter({ hasText: SUBJECT })
+  await expect(row).toHaveCount(1)
+
+  // Ticking is not opening: the row is a link, and the click stops at the box.
+  // `input[...]` because frappe-ui's Checkbox puts a fallthrough attribute on
+  // both its wrapper and the control inside it.
+  await row.locator('input[data-slot="mail-pick"]').click()
+  await expect(page).not.toHaveURL(/thread=/)
+  await expect(page.getByText('1 selected')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Archive' }).click()
+  await expect(threads(page).filter({ hasText: SUBJECT })).toHaveCount(0)
+
+  const undo = page.locator('[data-slot="mail-undo"]')
+  await expect(undo).toContainText('Archived')
+  await undo.getByRole('button', { name: 'Undo' }).click()
+
+  // Back in the inbox it came from, which is the note doing its work.
+  await expect(threads(page).filter({ hasText: SUBJECT })).toHaveCount(1)
+
+  expectNoRealErrors(errors)
+})
+
+test('the keyboard opens a conversation, ticks it, and says what it can do', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'a phone has no keyboard to speak of')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await expect(threads(page).first()).toBeVisible()
+
+  // `j` walks the list, and walking it opens what it lands on: this is a
+  // two-pane reader, so "go to the next conversation" and "show it" are one.
+  await page.keyboard.press('j')
+  await expect(page).toHaveURL(/thread=/)
+
+  // `x` ticks what is open.
+  await page.keyboard.press('x')
+  await expect(page.getByText('1 selected')).toBeVisible()
+
+  // Escape gives it back.
+  await page.keyboard.press('Escape')
+  await expect(page.getByText('1 selected')).toHaveCount(0)
+
+  // And `?` is where somebody finds all of this.
+  await page.keyboard.press('?')
+  await expect(page.locator('[data-slot="mail-shortcuts"]')).toContainText('Archive')
+
+  expectNoRealErrors(errors)
+})
+
+test('a shortcut does not fire while somebody is typing', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'a phone has no keyboard to speak of')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await expect(threads(page).first()).toBeVisible()
+
+  // `e` is archive. Typed into the search box it is a letter, and a mail
+  // reader that files the conversation you are looking for is not one.
+  await page.locator('[data-slot="mail-search"]').fill('quotation')
+  await expect(page.locator('[data-slot="mail-search"]')).toHaveValue('quotation')
+  await expect(page.locator('[data-slot="mail-undo"]')).toHaveCount(0)
+
+  expectNoRealErrors(errors)
+})

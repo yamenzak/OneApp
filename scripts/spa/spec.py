@@ -103,7 +103,7 @@ APPS = {
         # browser pass cannot reach: whether a tracking pixel loads is a
         # question about eight shapes of HTML, not about a screen.
         "dev_packages": {"vitest": "^2.1.0", "happy-dom": "^20.10.2"},
-        "unit_tests": "src/{lib/sheets,components/sheets/editor,components/mail}/**/*.test.js",
+        "unit_tests": "src/{lib,components/sheets/editor,components/mail}/**/*.test.js",
     },
     # Signing up, and nothing else.
     #

@@ -395,6 +395,61 @@ What is still not here, both deliberate: **push notifications**, which wait on
 the EU-jurisdiction question, and **`Notification` plus `Email Template`**,
 which is the row still open in §6.
 
+### Stage 10 — Frappe Mail's client, taken where it is better than ours
+
+`frappe/mail` is AGPL-3.0 and so are we, so the question stopped being whether
+we could copy it and became which parts are worth copying. Four were, and the
+criterion each time was the same: take what has no framework under it, and
+reseam the layer that fetches.
+
+**The reader is theirs, vendored.** Ours rendered a stranger's HTML with `v-html`
+into our own document, and held remote images back with a regex over the raw
+markup. Measured against six ordinary shapes — a `srcset`, a CSS background, a
+`<style>` block — that regex held two and leaked four while the banner above it
+said the images were blocked. Theirs is DOMPurify, then a DOM pass that stashes
+each remote `src` on `data-blocked-src`, then a `srcdoc` iframe that grows to
+its own height. See `components/mail/reader/VENDORED.md`; the measurement that
+made us take it is `assets.test.js`, which is ours.
+
+**An attachment says how big it is.** It was an anchor with a paperclip: no
+size, though the server always sent one, and no way to look without downloading
+first. It is a control now — kind icon, name, size — and clicking opens the
+Drive's own previewer, because a mail attachment *is* a Drive file: the same
+`File` row, the same object, the same permission check on the way to the bytes.
+The one part of their shape not taken is the hover-to-download swap, which is
+unreachable on a touch screen.
+
+**A conversation opens where the new mail is.** Every message used to be drawn
+open, oldest first, which on a thread of fifteen is a wall. Now a message
+already read is one row — who, the first line, when — a run of four or more
+read messages folds behind "N earlier messages", and a line marks where the
+unread begins. Ours differs from theirs in one place, in `components/mail/
+thread.js`: their fold collects every read message in the thread, so it can
+swallow one *below* the new-mail mark and the count then describes messages in
+two places; ours folds one contiguous run and it is the run above the line.
+Whether a message counts as read is the server's answer, computed before the
+browser marks the thread read a moment later.
+
+**A selection, and the way back from one.** Reading a morning's post is the same
+three actions forty times. Rows tick, shift takes a run, and the bar over the
+list archives, bins, unreads or stars all of them in one request —
+`mailbox/selections.py`, which is a loop on the server rather than forty round
+trips from the browser. It keeps a note of where every conversation was, and
+that note is what Undo reads. The keys are Gmail's, because Frappe Mail's are
+Gmail's and so are Outlook's: `j` `k` to move, `e` to archive, `#` to bin, `u`,
+`s`, `c`, `r`, `/`, and `?` for the list of them. Two rules keep them safe, in
+`lib/shortcuts.js`: never while somebody is typing, and never over a dialog.
+
+The one thing that had to change underneath: **an inbox no longer holds what has
+been put away**. The inbox view was every received message on an address and did
+not care what folder it was in, so Archive filed the conversation and left it
+exactly where it was in the list — and so did Move to Trash. `PUT_AWAY` in
+`mailbox/query.py` is the three quiet folders plus the archive, excluded by
+folder *name* because one mailbox's archive is `Archive` and another's is
+`[Gmail]/All Mail`. Filing still needs to reach mail wherever it is, so moving a
+conversation asks for the `EVERYWHERE` scope instead — which is how Undo came to
+work at all.
+
 ### Stage 7 — What we owe the platform regardless
 
 None of this is visible and all but one of it is built. `enforce_send_rate` on

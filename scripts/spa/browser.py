@@ -102,6 +102,11 @@ SHOT_MJS = BANNER + r"""
  * for most screens and wrong for any that keeps a socket open. Give it the
  * thing you are actually looking at.
  *
+ * `--press=KEY` types a key instead of clicking one — `--press=?` for a
+ * shortcut sheet, `--press=j,j` for two. The same reason as `--click`: a screen
+ * only a keyboard can reach was a screen only a throwaway script could
+ * photograph.
+ *
  * `--click` is the other one: a selector to press after the page loads, before
  * the shutter. Half of what is worth photographing is a row deep — a mail
  * thread, an open record, a dialog — and without it the only way to reach any
@@ -141,7 +146,8 @@ const path = positional[0]
 if (!path) {
   console.error(
     'usage: yarn shot <path> [out.png] ' +
-      '[--wait=SELECTOR] [--click=SELECTOR] [--phone] [--full] [--retina] [--settle=MS] ' +
+      '[--wait=SELECTOR] [--click=SELECTOR] [--press=KEY] [--phone] [--full] ' +
+      '[--retina] [--settle=MS] ' +
       '[--tokens=--a,--b]',
   )
   process.exit(1)
@@ -179,6 +185,13 @@ try {
   await page.goto(base + path)
   const click = flag('click')
   if (click) await page.locator(click).first().click({ timeout: 40_000 })
+  const keys = (flag('press', '') || '').split(',').filter(Boolean)
+  if (keys.length) {
+    // A key pressed at a page that has not finished loading is a key nothing is
+    // listening for: the screen binds its shortcuts when it mounts.
+    await page.waitForLoadState('networkidle').catch(() => {})
+    for (const key of keys) await page.keyboard.press(key)
+  }
   const wait = flag('wait')
   if (wait) await page.locator(wait).first().waitFor({ timeout: 40_000 })
   else await page.waitForLoadState('networkidle').catch(() => {})

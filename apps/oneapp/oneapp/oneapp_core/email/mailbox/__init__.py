@@ -36,6 +36,7 @@ In import order. A module may use the ones above it, never below:. A module may 
     query       a folder and a search term, as a query
     reading     the rail, the conversations, one conversation
     filing      moving a conversation
+    selections  the same, over a selection, and the way back
     sending     sending, and unsending
     drafts      what somebody typed and did not send
     composing   the composer, already filled in
@@ -68,17 +69,22 @@ from .scope import (
 	strip_prefixes,
 )
 from .flags import SEEN_KEY, SEEN_LIMIT, STARRED_KEY, _seen_set, _starred_set
-from .query import SEARCH_CEILING, _filters, _in_thread, _matching, _preview
+from .query import EVERYWHERE, PUT_AWAY, SEARCH_CEILING, _filters, _in_thread, _matching, _preview
 from .reading import folders, mark_read, mark_unread, star, thread, threads, unread
 from .filing import _into, add_folder, archive, bin, drop_folder, file_thread
+from .selections import ACTIONS, MOVES, bulk, restore
 from .sending import UNDO_SECONDS, _carry, _names, send, unsend
 from .drafts import DRAFT_KEY, forget, keep, kept
 from .composing import _quote, draft
 
 __all__ = [
+	"ACTIONS",
+	"EVERYWHERE",
 	"DRAFT_KEY",
 	"ICONS",
+	"MOVES",
 	"PAGE",
+	"PUT_AWAY",
 	"PREFIX",
 	"SEARCH_CEILING",
 	"SEEN_KEY",
@@ -105,6 +111,7 @@ __all__ = [
 	"add_folder",
 	"archive",
 	"bin",
+	"bulk",
 	"draft",
 	"drop_folder",
 	"file_thread",
@@ -115,6 +122,7 @@ __all__ = [
 	"mark_read",
 	"mark_unread",
 	"normalise",
+	"restore",
 	"send",
 	"star",
 	"strip_prefixes",

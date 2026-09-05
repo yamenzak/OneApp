@@ -48,7 +48,7 @@
       to keep in step, and the back button still closes a conversation.
     -->
     <div
-      class="flex w-full shrink-0 flex-col border-r border-outline-gray-1 sm:w-96"
+      class="relative flex w-full shrink-0 flex-col border-r border-outline-gray-1 sm:w-96"
       :class="chosen ? 'hidden sm:flex' : 'flex'"
     >
       <div class="flex items-center gap-2 border-b border-outline-gray-1 p-2">
@@ -57,6 +57,7 @@
           class="flex-1"
           type="text"
           placeholder="Search mail"
+          data-slot="mail-search"
           @keyup.enter="load()"
         />
         <!-- Write sits over the list rather than in the rail: the rail is the
@@ -100,6 +101,32 @@
           data-slot="mail-thread"
         >
           <div class="flex items-center gap-2">
+            <!--
+              The tick, on a span that stops the click.
+
+              `.stop` and not `.prevent`, which took a while to be sure of: the
+              whole row is a link, and stopping the click short of the anchor is
+              what keeps selecting a conversation from also opening it. Adding
+              `.prevent` looks equivalent and is not — the browser undoes a
+              cancelled checkbox's own toggle *after* Vue has already patched
+              the input from our state, so the box ends up unticked while the
+              selection says otherwise. Measured, not reasoned: the bar appeared
+              saying "1 selected" over a box with nothing in it.
+
+              Shift is read off the event: shift-clicking a second tick takes
+              everything between, which is the one thing that makes a list of
+              fifty selectable by hand.
+            -->
+            <span
+              class="flex shrink-0 items-center"
+              @click.stop="pick(one, $event)"
+            >
+              <Checkbox
+                :model-value="picked.has(one.key)"
+                data-slot="mail-pick"
+                :aria-label="`Select ${one.subject}`"
+              />
+            </span>
             <!-- No hover card in the list: fifty of them is fifty listeners
                  and a card that opens while somebody is scanning down. The
                  face and the name are the point here; the card is on the
@@ -149,6 +176,28 @@
           />
         </div>
       </div>
+
+      <!--
+        What a selection is for. The same bar the record lists draw, in the same
+        place, because "several things are ticked and here is what you can do
+        with them" is one idea and this product should have one of it.
+      -->
+      <SelectionBar
+        v-if="picked.size"
+        :count="picked.size"
+        :total="threads.length"
+        @clear="picked.clear()"
+        @all="pickAll"
+      >
+        <!-- Icons, not labels: the list column is 384px and four labelled
+             buttons plus a count and Select all do not fit in it — the count
+             was pushed off the left edge, which is the one thing on the bar
+             somebody actually has to read. -->
+        <Button variant="ghost" icon="lucide-archive" label="Archive" tooltip="Archive" @click="act('archive')" />
+        <Button variant="ghost" icon="lucide-trash-2" label="Delete" tooltip="Move to Trash" @click="act('bin')" />
+        <Button variant="ghost" icon="lucide-mail" label="Unread" tooltip="Mark unread" @click="act('unread')" />
+        <Button variant="ghost" icon="lucide-star" label="Star" tooltip="Star" @click="act('star')" />
+      </SelectionBar>
     </div>
 
     <!-- What it says -->
@@ -240,19 +289,29 @@
     </div>
 
     <!--
-      The window in which "Sent" can be taken back. Not a countdown in the
-      browser that a closed tab defeats: the message really is held, by the
-      framework's own `send_after`, and the queue refuses to pick it up until
-      the window passes.
+      What just happened, and the window in which it can be taken back.
+
+      One bar for two things that are the same thing. "Sent" is not a countdown
+      in the browser that a closed tab defeats — the message really is held, by
+      the framework's own `send_after`, and the queue refuses to pick it up
+      until the window passes. "Archived 11" is the note `bulk` handed back,
+      which `restore` reads to put every one of them where it was.
     -->
     <div
-      v-if="justSent"
+      v-if="note"
       class="fixed bottom-8 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-4 py-2 shadow-xl"
       data-slot="mail-undo"
     >
-      <span class="text-p-sm text-ink-gray-8">Sent</span>
-      <Button variant="ghost" size="sm" label="Undo" @click="unsend()" />
+      <span class="text-p-sm text-ink-gray-8">{{ note.text }}</span>
+      <!-- Only where there is something to undo. A message that arrived on a
+           routed address was in no folder to begin with, so there is nowhere to
+           put it back to — and an Undo that does nothing is worse than none. -->
+      <Button v-if="note.run" variant="ghost" size="sm" label="Undo" @click="undo()" />
     </div>
+
+    <!-- Every shortcut this screen answers to, because one nobody can find is
+         one nobody uses. `?` opens it, which is itself in the list. -->
+    <ShortcutsDialog v-model="showingKeys" :groups="SHORTCUTS" />
 
     <!--
       An attachment opens in the Drive's own previewer, because a mail
@@ -276,6 +335,7 @@ import { computed, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
   Button,
+  Checkbox,
   Dropdown,
   FormControl,
   LoadingText,
@@ -284,11 +344,14 @@ import {
   debounce,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
+import SelectionBar from '../components/screen/bodies/SelectionBar.vue'
+import ShortcutsDialog from '../components/mail/ShortcutsDialog.vue'
 import SenderChip from '../components/mail/SenderChip.vue'
 import MailComposer from '../components/mail/MailComposer.vue'
 import Thread from '../components/mail/Thread.vue'
 import FilePreview from '../components/drive/FilePreview.vue'
 import { onDoctypeChange } from '../lib/socket'
+import { MOD, useShortcuts } from '../lib/shortcuts'
 import { useIsMobile } from '../lib/screen'
 import { loadMail, mail } from '../lib/mail'
 import { workspace } from '../lib/workspace'
@@ -445,8 +508,64 @@ async function toggleStar(one) {
   await workspace.mailStar(one.key, folder.value, one.starred)
 }
 
+// --- a selection ------------------------------------------------------------
+//
+// Reading a morning's post is the same three actions forty times. Doing them
+// one conversation at a time is the whole cost of a mail reader, which is why
+// every one of them lets you tick a row.
+
+/** The conversations ticked, by key. */
+const picked = ref(new Set())
+
+/** The last one ticked, so shift can take everything between. */
+let anchor = ''
+
+function pick(one, event) {
+  const keys = threads.value.map((row) => row.key)
+  const at = keys.indexOf(one.key)
+
+  // Shift takes the run. Not a nicety: without it a list of fifty is fifty
+  // clicks, and the reason people fall back to the mouse and the menu.
+  if (event?.shiftKey && anchor && keys.includes(anchor)) {
+    const from = keys.indexOf(anchor)
+    const [start, end] = from < at ? [from, at] : [at, from]
+    keys.slice(start, end + 1).forEach((key) => picked.value.add(key))
+  } else if (picked.value.has(one.key)) {
+    picked.value.delete(one.key)
+  } else {
+    picked.value.add(one.key)
+  }
+
+  anchor = one.key
+}
+
+const pickAll = () => threads.value.forEach((row) => picked.value.add(row.key))
+
+/** What the bar says afterwards, and what pressing it again would mean. */
+const WORDS = {
+  archive: 'Archived',
+  bin: 'Moved to Trash',
+  unread: 'Marked unread',
+  read: 'Marked read',
+  star: 'Starred',
+  unstar: 'Unstarred',
+}
+
+/** For the flags, undo is the opposite flag: nothing moved, so nothing to put back. */
+const OPPOSITE = { unread: 'read', read: 'unread', star: 'unstar', unstar: 'star' }
+
+/** The two that move mail, and so the two Undo has to put back. Matches `MOVES`
+ *  in `mailbox/selections.py`, which is what decides whether a note comes back. */
+const MOVES = ['archive', 'bin']
+
 /**
- * Archive, delete, or put back to unread.
+ * Do one thing to the selection — or, when nothing is ticked, to the open
+ * conversation.
+ *
+ * One path for both, because they are one action with two ways of saying which
+ * mail. It is also what gives the header's own Archive an Undo, which it did
+ * not have: filing away a conversation somebody is reading is exactly as easy
+ * to do by mistake as filing eleven.
  *
  * Delete is a move to Trash and not `delete_doc`: removing the document would
  * take the message off the record it is filed against and away from everybody
@@ -454,19 +573,51 @@ async function toggleStar(one) {
  * taught people is reversible.
  */
 async function act(what) {
+  const keys = picked.value.size ? [...picked.value] : chosen.value ? [chosen.value] : []
+  if (!keys.length) return false
+
   const address = owner.value
-  if (what === 'unread') {
-    await workspace.mailMarkUnread(chosen.value, folder.value)
-  } else if (what === 'archive') {
-    await workspace.mailArchive(chosen.value, address, folder.value)
+  const done = await workspace.mailBulk(what, keys, address, folder.value)
+  picked.value.clear()
+
+  const count = done?.done || keys.length
+  const said = keys.length > 1 ? `${WORDS[what]} ${count}` : WORDS[what]
+
+  // Conversations whose folder the server actually recorded. Mail that arrived
+  // on a routed address was in no folder at all, and inventing an INBOX it
+  // never had would file it somewhere new under the word Undo.
+  const back = (done?.was || []).filter((row) => row.folder)
+
+  if (MOVES.includes(what)) {
+    announce(
+      said,
+      back.length
+        ? async () => {
+            await workspace.mailUndoBulk(back, address, folder.value)
+            await load()
+            await loadMail({ reload: true })
+          }
+        : null,
+    )
   } else {
-    await workspace.mailBin(chosen.value, address, folder.value)
+    // Nothing moved, so there is nothing to put back — the way back from a flag
+    // is the opposite flag.
+    announce(said, async () => {
+      await workspace.mailBulk(OPPOSITE[what], keys, address, folder.value)
+      await load()
+      await loadMail({ reload: true })
+    })
   }
-  // Back to the list: the conversation somebody just filed away is not the
-  // thing they want still open in front of them.
-  router.push({ name: 'Mail', query: { folder: folder.value } })
+
+  // Back to the list, but only if the conversation in front of somebody is one
+  // of the ones that just moved. Marking three others unread should not close
+  // what they are reading.
+  if (chosen.value && keys.includes(chosen.value) && MOVES.includes(what)) {
+    router.push({ name: 'Mail', query: { folder: folder.value } })
+  }
   await load()
   await loadMail({ reload: true })
+  return true
 }
 
 async function moveTo(address, into) {
@@ -539,27 +690,135 @@ const composer = ref(null)
 /** Open the composer, blank or carrying a message. */
 const compose = (from, kind) => composer.value?.compose(from, kind)
 
-const justSent = ref('')
+/**
+ * The one thing that can be taken back, and for how long.
+ *
+ * `{ text, undo }`, and there is only ever one: two floating bars stacked on
+ * each other is a screen apologising twice. Sending sets it for exactly as long
+ * as the server holds the message; a bulk action sets it for fifteen seconds,
+ * which is long enough to notice forty conversations vanish.
+ */
+const note = ref(null)
 let undoTimer = null
 
-// The undo bar lives exactly as long as the server is holding the message.
-async function afterSend(done) {
-  justSent.value = done?.name || ''
+function announce(text, run, seconds = 15) {
   clearTimeout(undoTimer)
-  undoTimer = setTimeout(() => { justSent.value = '' }, (done?.undo_seconds || 15) * 1000)
+  note.value = { text, run }
+  undoTimer = setTimeout(() => { note.value = null }, seconds * 1000)
+}
+
+async function undo() {
+  const run = note.value?.run
+  note.value = null
+  clearTimeout(undoTimer)
+  await run?.()
+}
+
+async function afterSend(done) {
+  announce('Sent', () => unsend(done?.name || ''), done?.undo_seconds || 15)
   await load()
 }
 
-async function unsend() {
-  const name = justSent.value
-  justSent.value = ''
-  clearTimeout(undoTimer)
+async function unsend(name) {
   const done = await workspace.mailUnsend(name)
   // Straight back into the composer with what was sent, because "undo" that
   // discards the message is not undo.
   if (done?.ok) await composer.value?.reopen()
   await load()
 }
+
+// --- the keyboard -----------------------------------------------------------
+//
+// Gmail's letters, because Frappe Mail uses them, Outlook and Superhuman use
+// them, and a product that picks different ones is asking people to learn
+// something for nothing. See `lib/shortcuts.js` for the two rules that keep
+// them from firing while somebody is typing.
+
+const showingKeys = ref(false)
+
+/** The list, in the shape the dialog draws — and the source of the bindings. */
+const SHORTCUTS = [
+  {
+    title: 'Moving about',
+    keys: [
+      [['J'], 'Next conversation'],
+      [['K'], 'Previous conversation'],
+      [['/'], 'Search'],
+      [['Esc'], 'Clear the selection, or close the conversation'],
+      [['?'], 'This list'],
+    ],
+  },
+  {
+    title: 'Writing',
+    keys: [
+      [['C'], 'Write'],
+      [['R'], 'Reply'],
+      [['Shift', 'R'], 'Reply to all'],
+      [['F'], 'Forward'],
+    ],
+  },
+  {
+    title: 'Filing',
+    keys: [
+      [['E'], 'Archive'],
+      [['#'], 'Move to Trash'],
+      [['U'], 'Mark unread'],
+      [['S'], 'Star'],
+    ],
+  },
+  {
+    title: 'Selecting',
+    keys: [
+      [['X'], 'Tick this conversation'],
+      [[MOD, 'A'], 'Tick everything on this page'],
+      [[MOD, 'Z'], 'Undo the last thing'],
+    ],
+  },
+]
+
+/** Open the conversation `by` rows away from the one open now. */
+function step(by) {
+  const keys = threads.value.map((row) => row.key)
+  if (!keys.length) return false
+  const at = keys.indexOf(chosen.value)
+  const next = keys[Math.min(Math.max(at + by, 0), keys.length - 1)]
+  router.push({ name: 'Mail', query: { folder: folder.value, thread: next } })
+}
+
+function escape() {
+  if (picked.value.size) picked.value.clear()
+  else if (chosen.value) router.push({ name: 'Mail', query: { folder: folder.value } })
+  else return false
+}
+
+useShortcuts({
+  j: () => step(1),
+  k: () => step(-1),
+  // The search box is found rather than held in a ref: `FormControl` renders
+  // the control it is told to and the attribute rides down to it, so this asks
+  // the document for the thing somebody would have clicked.
+  '/': () => document.querySelector('[data-slot="mail-search"]')?.focus(),
+  escape,
+  '?': () => { showingKeys.value = true },
+
+  c: () => compose(),
+  r: () => compose(last.value, 'reply'),
+  'shift+r': () => compose(last.value, 'reply_all'),
+  f: () => compose(last.value, 'forward'),
+
+  e: () => act('archive'),
+  '#': () => act('bin'),
+  u: () => act('unread'),
+  s: () => act('star'),
+
+  x: () => {
+    const row = threads.value.find((one) => one.key === chosen.value)
+    if (!row) return false
+    pick(row)
+  },
+  'mod+a': pickAll,
+  'mod+z': () => (note.value ? undo() : false),
+})
 
 boot()
 

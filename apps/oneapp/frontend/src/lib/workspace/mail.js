@@ -171,6 +171,26 @@ export const mail = {
       { successMessage: 'Archived' },
     ),
 
+  // One request for a whole selection, and the note that request hands back —
+  // where each conversation was — passed straight to `mailUndoBulk` if somebody
+  // presses Undo. The browser carries a note, not a model of the mailbox.
+  //
+  // Silent because the bar that offered the action says what happened, with an
+  // Undo beside it; a toast on top of that is the same sentence twice.
+  mailBulk: (action, keys, address, folder) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.bulk',
+      { action, keys: JSON.stringify(keys), address, folder },
+      { silent: true },
+    ),
+
+  mailUndoBulk: (was, address, folder) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.restore',
+      { was: JSON.stringify(was), address, folder },
+      { successMessage: 'Put back' },
+    ),
+
   mailDraft: (message, kind) =>
     callMethod(
       'oneapp.oneapp_core.email.mailbox.draft',
