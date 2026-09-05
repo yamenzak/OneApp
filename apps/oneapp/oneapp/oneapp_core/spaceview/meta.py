@@ -776,7 +776,14 @@ PAGE_SIZES = (20, 50, 100, 500)
 # card can show a record's tags without the reader having gone to the picker
 # first. Frappe's `db_query` drops it from the field list on a doctype whose
 # table has no such column, so asking for it is always safe.
-META_FIELDS = ("modified", "_comments", "_liked_by", "_assign", "_user_tags")
+# `docstatus` rides along for the reason `RECORD_META` carries it below, one
+# surface over: a report's cells are typed into in place, and a table that does
+# not know a row is submitted offers an edit the server will refuse. It is
+# fetched and never a column — `HIDDEN` keeps it out of the picker, because a
+# customer reading a docstatus is always an accident.
+META_FIELDS = (
+	"modified", "_comments", "_liked_by", "_assign", "_user_tags", "docstatus",
+)
 
 
 # Read for a record and never for a row. Who made it and who last touched it is

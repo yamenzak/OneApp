@@ -58,46 +58,79 @@ test('the total follows the filter, not the page', async ({ page }, info) => {
   // assertion the whole design turns on: the sum is an aggregate over the
   // filter, taken separately from the rows, rather than an addition of what
   // happens to be loaded.
+  // Enter, because a quick-filter box applies on Enter or a blur rather than
+  // on every keystroke.
   await page.getByPlaceholder('Title').fill('Server renewal')
+  await page.getByPlaceholder('Title').press('Enter')
   await expect(page.locator('[data-slot="list-row"]')).toHaveCount(1, { timeout: 15_000 })
   await expect(totals).toContainText('4,800.00', { timeout: 15_000 })
 
   expectNoRealErrors(errors)
 })
 
-test('a cell can be typed into, and the record keeps it', async ({ page }, info) => {
+/** Type `amount` into a row and commit it. */
+const setAmount = async (page, title, value) => {
+  const row = rowFor(page, title).first()
+  await row.locator('[data-slot="editable"]').first().click()
+  const box = row.locator('input[type=number]').first()
+  await box.fill(String(value))
+  await box.press('Enter')
+}
+
+test('a cell can be typed into, and the total follows it', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'a table cell is not a phone control')
   const errors = collectConsoleErrors(page)
 
   await page.goto(APPROVALS)
-  const row = rowFor(page, 'Office chairs')
-  await row.first().waitFor({ timeout: 20_000 })
+  await rowFor(page, 'Server renewal').first().waitFor({ timeout: 20_000 })
+  const totals = page.locator('[data-slot="list-header"]').last()
+  await expect(totals).toContainText('Total', { timeout: 15_000 })
 
-  // A click takes the cursor rather than opening the record: that difference is
-  // the whole reason a report is its own view type.
-  await row.first().locator('[data-slot="editable"]').first().click()
+  // Read the total rather than hard-code it: what else is in this register is
+  // the fixture's business, and the claim being tested is that the sum *moves
+  // by the difference*.
+  const asNumber = async () =>
+    Number((await totals.innerText()).replace(/[^\d.]/g, ''))
+  const before = await asNumber()
+  expect(before).toBeGreaterThan(0)
+
+  await setAmount(page, 'Server renewal', 5100)
+
+  // Two things at once, and both are the point. The row shows what the record
+  // kept — the list re-reads after a write, so a figure that stays is the
+  // server's and not the browser's — and the total is an aggregate taken again,
+  // so it moves by exactly the three hundred.
+  await expect(rowFor(page, 'Server renewal').first()).toContainText('5,100.00', {
+    timeout: 15_000,
+  })
+  await expect(async () => expect(await asNumber()).toBe(before + 300)).toPass({
+    timeout: 15_000,
+  })
+
+  // And it survives a reload, which is the only proof it reached the database.
+  await page.reload()
+  await expect(rowFor(page, 'Server renewal').first()).toContainText('5,100.00', {
+    timeout: 20_000,
+  })
+
+  // A click takes the cursor rather than opening the record, which is the whole
+  // reason a report is its own view type.
   await expect(page.locator('[data-slot="record-controls"]')).toHaveCount(0)
 
-  const box = row.first().locator('input').first()
-  await box.fill('Office chairs (revised)')
-  await box.press('Enter')
-
-  // Back from the server, not from the browser: the list re-reads after a
-  // write, so a title that stays is one the record kept.
-  await expect(rowFor(page, 'Office chairs (revised)')).toHaveCount(1, { timeout: 15_000 })
-  await page.reload()
-  await expect(rowFor(page, 'Office chairs (revised)')).toHaveCount(1, { timeout: 20_000 })
+  // And a submitted record has no editable cell at all. Office chairs is
+  // approved, which on this fixture's workflow is a docstatus of 1: Frappe
+  // refuses the write, and a table that offered it anyway would be offering an
+  // edit that can only ever fail. It cost this test one round to find out.
+  await expect(
+    rowFor(page, 'Office chairs').first().locator('[data-slot="editable"]'),
+  ).toHaveCount(0)
 
   // Put it back, so the next run starts where this one did.
-  await rowFor(page, 'Office chairs (revised)')
-    .first()
-    .locator('[data-slot="editable"]')
-    .first()
-    .click()
-  const again = rowFor(page, 'Office chairs (revised)').first().locator('input').first()
-  await again.fill('Office chairs')
-  await again.press('Enter')
-  await expect(rowFor(page, 'Office chairs (revised)')).toHaveCount(0, { timeout: 15_000 })
+  await setAmount(page, 'Server renewal', 4800)
+  await expect(rowFor(page, 'Server renewal').first()).toContainText('4,800.00', {
+    timeout: 15_000,
+  })
+  await expect(async () => expect(await asNumber()).toBe(before)).toPass({ timeout: 15_000 })
 
   expectNoRealErrors(errors)
 })

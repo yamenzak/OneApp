@@ -521,8 +521,11 @@ CORRESPONDENCE = [
 	("Letter", "Request for extension of completion date",
 	 "طلب تمديد تاريخ الإنجاز", "Al-Ittihad Consultants", "الاتحاد للاستشارات",
 	 "Issued"),
-	("Letter", "Submission of revised shop drawings",
-	 "تقديم مخططات التنفيذ المعدلة", "National Engineering Bureau",
+	# The comma is the point of this one. A register with no comma anywhere in
+	# it cannot show whether an export quotes properly, and a subject that
+	# becomes two columns takes every row after it out of true.
+	("Letter", "Submission of revised shop drawings, revisions A to C",
+	 "تقديم مخططات التنفيذ المعدلة، المراجعات أ إلى ج", "National Engineering Bureau",
 	 "المكتب الوطني للهندسة", "Issued"),
 	("Form", "Material approval — 6mm tempered glass",
 	 "اعتماد مواد — زجاج مقسى ٦ ملم", "A.D.D. Consultants",
@@ -555,6 +558,12 @@ def _seed_registers():
 			continue
 		one.renews = older
 		one.save(ignore_permissions=True)
+
+	# A subject this fixture used to carry. The rows above are seeded by subject
+	# and skipped where one exists, so editing the text of one leaves the old row
+	# behind beside the new — which is a register with a duplicate in it and a
+	# filter test that matches two things.
+	frappe.db.delete("Correspondence", {"subject": "Submission of revised shop drawings"})
 
 	for kind, subject, subject_ar, to, to_ar, status in CORRESPONDENCE:
 		if frappe.db.exists("Correspondence", {"subject": subject}):

@@ -47,8 +47,9 @@ test('a list exports as the columns on screen, quoted properly', async ({ page }
   expect(header).toContain('Subject')
   expect(lines.length).toBeGreaterThanOrEqual(3)
 
-  // The comma inside a subject stayed inside one cell.
-  expect(file.text).toContain('"Material approval — 6mm tempered glass"')
+  // The comma inside a subject stayed inside one cell, quoted — the failure
+  // that would otherwise take every row after it out of true.
+  expect(file.text).toContain('"Submission of revised shop drawings, revisions A to C"')
   // And the Arabic came through as Arabic.
   expect(file.text).toContain('تقديم مخططات التنفيذ المعدلة')
 
@@ -67,7 +68,10 @@ test('a filter narrows the file the same way it narrows the list', async ({ page
   // the same `overrides` the rows do, which is the whole point: a file that
   // ignored the filter above it would be a file that disagrees with the screen
   // it came from.
+  // Enter, because a quick-filter box applies on Enter or a blur — a request
+  // per keystroke is not a quick filter.
   await page.getByPlaceholder('Subject').fill('shop drawings')
+  await page.getByPlaceholder('Subject').press('Enter')
   await expect(page.locator('[data-slot="list-row"]')).toHaveCount(1, { timeout: 15_000 })
   expect(before).toBeGreaterThan(1)
 
@@ -86,8 +90,11 @@ test('a selection exports exactly what was ticked', async ({ page }, info) => {
   await page.goto('/one/space/zzmock?screen=compliance&type=list')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 20_000 })
 
-  await page.locator('[data-slot="list-row"] input[type=checkbox]').first().check()
-  await page.locator('[data-slot="list-row"] input[type=checkbox]').nth(1).check()
+  // The wrapper is the control; the input inside it is presentational and
+  // `pointer-events-none`. See frappe-ui's `ListRowBase`.
+  const tick = page.locator('[data-slot="list-row-checkbox"]')
+  await tick.nth(0).click()
+  await tick.nth(1).click()
 
   const bar = page.locator('[data-slot="selection-bar"]')
   const file = await exported(page, () =>
