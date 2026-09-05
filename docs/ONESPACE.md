@@ -735,6 +735,24 @@ longer exists. Renaming the *title* is not this — that is an ordinary save.
 fields: edited in place, tickable, drag to reorder with `idx` rewritten, numbers
 right-aligned, required columns marked in the header. None of it is declared.
 
+Two things the doctype's answer is only a starting point for. **Which columns**
+is a gear beside the count — `in_list_view` is a reasonable guess and it is a
+guess, because an invoice line has fifteen fields, four fit across a form
+column, and which four matter depends on whether you are pricing the job or
+checking what was delivered. The choice is the browser's, keyed by child doctype
+and parent fieldname (`lib/childColumns.js`), like the pane's width and the
+sidebar's fold: a child table is not a screen, it has no layouts, and inventing
+a second storage model for one grid would be a doctype nobody would ever look
+at. Turning every column off puts the doctype's answer back, because a table
+with no columns is a list of row numbers.
+
+**How many rows**, fifty at a time, with a button for the next fifty and one for
+all of them. Not about rendering — the grid virtualises past two hundred rows
+already — but about the form: a four-hundred-line invoice with every line drawn
+buries every other section on the record, and the person who opened it wanted
+the total. Adding a row past the fold shows it; filling three hundred from a
+sheet does not.
+
 A Link *inside* one reaches its picker through the same check as a Link on the
 parent — the field has to be one the screen offers — and for a long time it did
 not: `_link_column` looked only at the parent doctype's fields, so `item_code`

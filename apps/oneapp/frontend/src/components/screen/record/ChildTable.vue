@@ -34,6 +34,53 @@
           :label="`Remove ${chosen.length}`"
           @click="removeChosen"
         />
+        <!--
+          Which of the child's fields are across. The doctype's `in_list_view`
+          is the default and it is only a guess: an invoice line has fifteen
+          fields, four fit across a form column, and which four matter depends
+          on whether you are pricing the job or checking what was delivered.
+
+          A gear rather than a dialog. The list's picker is a dialog because a
+          column there also carries an order, a width, an edge and a pin; here
+          a column carries nothing but whether it is on.
+        -->
+        <Popover v-model:open="picking">
+          <template #trigger>
+            <Button
+              icon="lucide-settings-2"
+              variant="ghost"
+              size="sm"
+              data-slot="child-columns"
+              label="Which columns"
+              tooltip="Which columns"
+            />
+          </template>
+          <template #default>
+            <div class="flex w-64 flex-col gap-2 p-2">
+              <div class="flex items-baseline justify-between">
+                <span class="text-p-sm font-medium text-ink-gray-8">Columns</span>
+                <Button
+                  v-if="picked"
+                  variant="ghost"
+                  size="sm"
+                  label="Reset"
+                  @click="resetColumns"
+                />
+              </div>
+              <FadedScroll class="max-h-72">
+                <div class="flex flex-col gap-1.5 pe-1">
+                  <Checkbox
+                    v-for="one in offered"
+                    :key="one.fieldname"
+                    :model-value="shows(one.fieldname)"
+                    :label="one.label || one.fieldname"
+                    @update:model-value="toggleColumn(one.fieldname, $event)"
+                  />
+                </div>
+              </FadedScroll>
+            </div>
+          </template>
+        </Popover>
         <span class="text-p-xs tabular-nums text-ink-gray-5">
           {{ rows.length }} {{ rows.length === 1 ? 'row' : 'rows' }}
         </span>
@@ -66,7 +113,7 @@
       v-if="rows.length"
       v-model:selection="chosen"
       :columns="tracks"
-      :rows="rows"
+      :rows="shown"
       :row-key="rowKey"
       :row-height="44"
       :selectable="editable"
@@ -134,6 +181,26 @@
 
     <p v-else class="text-p-sm text-ink-gray-5">Nothing here yet.</p>
 
+    <!--
+      A page at a time, the way Frappe's own grid does it. The table
+      virtualises past two hundred rows, so this is not about rendering cost —
+      it is about a form. A four-hundred-line invoice with every line drawn is
+      a section that buries every other section on the record, and the person
+      who opened it wanted the total.
+    -->
+    <div v-if="rows.length > shown.length" class="flex items-center gap-2">
+      <Button
+        data-slot="child-more"
+        :label="`Show ${Math.min(PAGE, rows.length - shown.length)} more`"
+        @click="showing += PAGE"
+      />
+      <Button
+        variant="ghost"
+        :label="`Show all ${rows.length}`"
+        @click="showing = rows.length"
+      />
+    </div>
+
     <Button
       v-if="editable"
       class="self-start"
@@ -171,7 +238,8 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { Button, Dialog, FormLabel } from '@/ui'
+import { Button, Checkbox, Dialog, FormLabel, Popover } from '@/ui'
+import FadedScroll from '../../FadedScroll.vue'
 import RecordTable from '../bodies/RecordTable.vue'
 import FieldCell from '../bodies/FieldCell.vue'
 import FieldControl from '../fields/FieldControl.vue'
@@ -180,6 +248,7 @@ import FillFromSheet from '../../sheets/FillFromSheet.vue'
 import FeedNote from '../../sheets/FeedNote.vue'
 import { workspace } from '../../../lib/workspace'
 import { isNumericCell } from '../../../lib/fields'
+import { remember, remembered } from '../../../lib/childColumns'
 
 const props = defineProps({
   /** The parent's docfield, whose `child` carries the child doctype's shape. */
@@ -232,7 +301,56 @@ watch(() => [props.doctype, props.docname, props.field.fieldname], readFeed)
 const rows = defineModel('rows', { type: Array, default: () => [] })
 
 const child = computed(() => props.field.child || { columns: [], fields: [], form: [] })
-const columns = computed(() => child.value.columns || [])
+
+/**
+ * Which columns are across, and who decided.
+ *
+ * `null` while nobody has chosen, which is not the same as "chose none": the
+ * doctype's own `in_list_view` answer stands until somebody disagrees with it,
+ * and a table nobody has touched should follow a doctype that changes its mind.
+ */
+const picking = ref(false)
+const picked = ref(null)
+
+const offered = computed(() => child.value.fields || [])
+
+const columns = computed(() => {
+  if (!picked.value) return child.value.columns || []
+  const by = Object.fromEntries(offered.value.map((one) => [one.fieldname, one]))
+  // In the child doctype's own field order rather than the order they were
+  // ticked in: a grid is read left to right and the author of the doctype
+  // already decided what that order is.
+  return offered.value.filter((one) => picked.value.includes(one.fieldname)).map(
+    (one) => by[one.fieldname],
+  )
+})
+
+const shows = (fieldname) =>
+  picked.value
+    ? picked.value.includes(fieldname)
+    : (child.value.columns || []).some((one) => one.fieldname === fieldname)
+
+const toggleColumn = (fieldname, on) => {
+  const now = offered.value
+    .map((one) => one.fieldname)
+    .filter((name) => (name === fieldname ? on : shows(name)))
+  // Every column off is not a table, it is a list of row numbers. Refused by
+  // putting the doctype's answer back, which is also what Reset does.
+  picked.value = now.length ? now : null
+  remember(child.value.doctype, props.field.fieldname, picked.value)
+}
+
+const resetColumns = () => {
+  picked.value = null
+  remember(child.value.doctype, props.field.fieldname, null)
+}
+
+const readColumns = () => {
+  picked.value = remembered(child.value.doctype, props.field.fieldname)
+}
+
+onMounted(readColumns)
+watch(() => [child.value.doctype, props.field.fieldname], readColumns)
 const editable = computed(() => !props.disabled && !!child.value.editable && !!props.field.editable)
 
 // `RecordForm` reads `form` for the layout and `all_columns` for the fields —
@@ -263,6 +381,27 @@ const ACTIONS = '__actions'
 
 // A child doctype with four hundred lines is an invoice, not a mistake.
 const VIRTUAL_FROM = 200
+
+// How many rows are across before somebody asks for more. Frappe's own grid
+// pages at fifty and it is the right number for the same reason: it is more
+// than any real document has and less than a section that buries the rest of
+// the form.
+const PAGE = 50
+
+const showing = ref(PAGE)
+const shown = computed(() => rows.value.slice(0, showing.value))
+
+// Back to one page whenever the table is for something else — a different
+// record, or a different table on the same one. Somebody who expanded four
+// hundred lines on the last invoice did not ask for four hundred on this one.
+watch(() => [props.docname, props.field.fieldname], () => { showing.value = PAGE })
+
+// A row added past the fold has to be visible, or Add row appears to do
+// nothing. One row, deliberately: filling three hundred from a sheet is not a
+// reason to draw three hundred.
+watch(() => rows.value.length, (many, was) => {
+  if (many === was + 1 && many > showing.value) showing.value = many
+})
 
 /**
  * The columns, in the shape `RecordTable` takes.
