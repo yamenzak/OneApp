@@ -1,0 +1,96 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sheet",
+  "tab",
+  "ref",
+  "cb_cell_value",
+  "raw",
+  "value",
+  "kind",
+  "format_json"
+ ],
+ "fields": [
+  {
+   "fieldname": "sheet",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sheet",
+   "options": "File",
+   "reqd": 1
+  },
+  {
+   "description": "By name and not by link. A tab is renamed often and a cell must follow it without a thousand rows being rewritten \u2014 the rename updates this column in one statement.",
+   "fieldname": "tab",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tab",
+   "reqd": 1
+  },
+  {
+   "description": "A1 notation, upper case. The column letter and the row number, which is what a person types and what a formula carries.",
+   "fieldname": "ref",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Ref",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_cell_value",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "What was typed. `=A2*B2*C2` for a formula, the literal otherwise.",
+   "fieldname": "raw",
+   "fieldtype": "Long Text",
+   "label": "Raw"
+  },
+  {
+   "description": "What that came to, worked out in the browser and stored here. The server never evaluates a formula \u2014 it reads this. A print format, a report and a read-back all use it, and none of them has a browser.",
+   "fieldname": "value",
+   "fieldtype": "Long Text",
+   "label": "Value"
+  },
+  {
+   "description": "What `value` is, decided when it was computed. Saves every reader guessing from a string, and is what lets a read-back put a number in a Currency field.",
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "label": "Kind",
+   "options": "\nnumber\ntext\ndate\nbool\nerror"
+  },
+  {
+   "description": "Bold, alignment, number format, fill. JSON because it is a bag of presentation and none of it is queried.",
+   "fieldname": "format_json",
+   "fieldtype": "Long Text",
+   "label": "Format Json"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "Sheet Cell",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "search_fields": "sheet,ref",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "ref",
+ "track_changes": 1
+}

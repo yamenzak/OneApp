@@ -74,8 +74,10 @@ upgrade.
 
 ## 3. What Frappe Mail is, and why we are not using it
 
-`frappe/suite` is **AGPL-3.0**. This repository is MIT. Read it for patterns;
-paste nothing. The frappe-ui components it draws with are MIT and come from
+`frappe/suite` is **AGPL-3.0**, and so is this repository — but it was MIT when
+this was written, so the mail that shipped is ours and nothing in it is derived.
+The prohibition has lifted; this paragraph is why the code looks the way it
+does. The frappe-ui components it draws with are MIT and come from
 frappe-ui directly — that part is fair game, and it is the only part that is.
 
 More to the point: Frappe Mail *is* the mailbox product we said we were not

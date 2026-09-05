@@ -5,9 +5,14 @@ be a column. Deriving it from the mime type at read time would be a Python walk
 over a mime map for every row of every page; deriving it on insert is one
 comparison, once, ever.
 
-Seven kinds and no more. The point of a kind is the filter chip and the icon —
+Eight kinds and no more. The point of a kind is the filter chip and the icon —
 a reader scanning for the site photos does not want twelve buckets, and the
 mime type is still on the row for anything that needs to be exact.
+
+`Sheet` is the one that is not derived from a name. A sheet is a `File` whose
+grid lives in `Sheet Cell` rows and whose bytes do not exist until somebody
+exports it — see `docs/SHEETS.md` — so nothing about its filename says what it
+is, and `sheets.make` sets the kind itself.
 """
 
 import frappe
@@ -26,9 +31,10 @@ PDF = "PDF"
 VIDEO = "Video"
 AUDIO = "Audio"
 DOCUMENT = "Document"
+SHEET = "Sheet"
 OTHER = "Other"
 
-KINDS = (FOLDER, IMAGE, PDF, VIDEO, AUDIO, DOCUMENT, OTHER)
+KINDS = (FOLDER, IMAGE, PDF, VIDEO, AUDIO, DOCUMENT, SHEET, OTHER)
 
 # Matched in order, on the extension rather than on a mime type: Frappe stores
 # no mime type on `File`, and the browser's guess for an upload is famously the

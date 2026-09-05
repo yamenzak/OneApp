@@ -17,8 +17,11 @@ read out of the repository. §5 is what we already have. §6 is the plan.
 ## 1. What we may take, and what we may not
 
 **`frappe/drive` is AGPL-3.0.** Its `LICENSE` is the GNU Affero General Public
-License v3, and this repository is MIT. The standing rule in `CLAUDE.md` holds
-without exception here: read it for patterns, paste nothing.
+License v3. **This was written while this repository was MIT**, and the rule
+then was to read Drive for patterns and paste nothing — which is what the Drive
+that shipped did, and why none of it is derived. The repository is AGPL-3.0 now
+(see `docs/SHEETS.md` §1), so the prohibition has lifted; what is below is the
+history of a decision, not a live constraint.
 
 That rule is easy to get wrong on this particular job, because Drive is built
 with frappe-ui and the request was to "move the UI". Two different things wear

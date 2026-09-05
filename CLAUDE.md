@@ -84,6 +84,12 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 
 * **OneApp is the repository name and is never product-facing.** The product is
   OneSpace; the operator console is OneAdmin.
-* **`frappe/central`, `frappe/atlas` and `frappe/crm` are AGPL-3.0 and this repo
-  is MIT.** Read them for patterns, never copy code. Anything that is really a
-  frappe-ui component comes from frappe-ui, which is MIT.
+* **This repo is AGPL-3.0, and so are `frappe/central`, `frappe/atlas`,
+  `frappe/crm`, `frappe/drive` and `frappe/sheets`.** So code may be taken from
+  them — the licences match — and taking it carries three obligations that are
+  not optional: keep Frappe's copyright notice, say at the top of the file what
+  it was derived from, and never move that file back to a permissive licence.
+  Prefer writing it ourselves where ours would be better; take theirs where
+  theirs is a solved problem we would only be re-solving. Anything that is
+  really a frappe-ui component still comes from frappe-ui, which is MIT and
+  which we already depend on.

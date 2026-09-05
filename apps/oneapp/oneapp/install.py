@@ -53,6 +53,7 @@ def create_custom_fields():
 	from frappe.custom.doctype.custom_field.custom_field import create_custom_fields as make
 
 	from oneapp.oneapp_core.drive import KIND_FIELD, OPENED_FIELD, STATUS_FIELD, TRASHED_FIELD
+	from oneapp.oneapp_core.sheets import TEMPLATE_FIELD
 	from oneapp.oneapp_core.email.folders import FOLDER_FIELD
 	from oneapp.oneapp_core.email.linking import LINK_BY
 	from oneapp.oneapp_core.email.threading import THREAD_FIELD
@@ -110,6 +111,16 @@ def create_custom_fields():
 					"fieldtype": "Datetime",
 					"read_only": 1,
 					"no_copy": 1,
+				},
+				{
+					# A sheet somebody starts from. On `File` and not on a
+					# doctype of its own, because a template is a sheet and a
+					# sheet is a File — so a workspace's templates are a folder
+					# in the Drive, managed by managing files.
+					"fieldname": TEMPLATE_FIELD,
+					"label": "Is Template",
+					"fieldtype": "Check",
+					"default": "0",
 				},
 			],
 			"Communication": [

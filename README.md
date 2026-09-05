@@ -66,4 +66,13 @@ no build step. That, and the four things that cost an hour each, are in
 3. Push, or run the **Mirror apps** workflow by hand, to seed both.
 4. Point the Frappe Cloud bench groups at them.
 
-MIT.
+AGPL-3.0.
+
+Up to and including commit `763f11a` this was MIT, and that grant is not
+revoked — anything taken from those releases stays MIT for whoever took it.
+From there on it is AGPL-3.0, because it incorporates work published by Frappe
+Technologies under that licence, which cannot be relicensed.
+
+Note what AGPL §13 asks of a *service*: anybody who runs a modified copy of
+this over a network has to offer its source to the people using it. That
+includes us.

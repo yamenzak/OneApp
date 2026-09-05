@@ -3,7 +3,7 @@ app_title = "OneSpace"
 app_publisher = "Four Degree Labs"
 app_description = "Unified application surface for Four Degree Labs tenants."
 app_email = "hello@fourdegreelabs.com"
-app_license = "mit"
+app_license = "agpl-3.0"
 
 # Deliberately not `required_apps = ["erpnext"]`.
 #
@@ -68,6 +68,11 @@ doc_events = {
 			"oneapp.oneapp_core.storage.quota.enforce_quota",
 			"oneapp.oneapp_core.drive.on_insert",
 		],
+		# A sheet's grid is `Sheet Cell` rows, and the File being deleted is
+		# the only thing that knows they exist. Without this the bin's
+		# thirty-day sweep leaves behind the cells of every sheet anybody
+		# ever threw away — see `oneapp_core/sheets`.
+		"on_trash": "oneapp.oneapp_core.sheets.on_trash",
 	},
 	"Email Queue": {
 		# Frappe queues one document per send, so counting them measures what

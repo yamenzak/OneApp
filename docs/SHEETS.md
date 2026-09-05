@@ -14,19 +14,27 @@ document", and the shape it found is worth taking. §4 is what we already have.
 
 ---
 
-## 1. What we may take, and what we may not
+## 1. What we may take, and what it costs
 
-**`frappe/sheets` is AGPL-3.0** and this repository is MIT. The standing rule in
-`CLAUDE.md` holds: read it for patterns, paste nothing. Its formula engine alone
-is 1,400 lines with a 36 KB test file, and `frontend/src/engine/` is 11,154
-lines including tests — a great deal of work that we may look at and may not
-have.
+**This repository moved to AGPL-3.0 so that it could take from
+`frappe/sheets`.** That was a decision, not a technicality: `frontend/src/engine/`
+is 11,154 lines including tests, `formula.js` alone is around 1,400 with a 36 KB
+test file, and re-deriving a formula engine, a dependency graph and array spill
+semantics is months of work with no product in it.
 
-The second half of the licence position is the one that decides the design, and
-it is about what we can *depend on* rather than what we may copy.
+What the licence asks in return is real and worth stating once. Every file taken
+keeps Frappe's copyright notice and says at its top what it came from; nothing
+taken can ever move back to a permissive licence; and AGPL §13 binds a *service*
+— anybody running a modified copy of this over a network owes its source to the
+people using it, and that includes us.
 
-**Every spreadsheet formula engine for Python is copyleft.** Measured, not
-assumed:
+The other half of the licence position is unchanged, because it is about what we
+*depend on* rather than what we copy, and it is what decides the architecture.
+
+**Every spreadsheet formula engine for Python is copyleft**, and now that we are
+AGPL that is no longer a licence problem — it is a dependency problem, since
+GPL-3.0 and EUPL are still not AGPL-3.0 and would each need their own analysis.
+Measured, not assumed:
 
 | Package | Licence |
 |---|---|
@@ -42,10 +50,12 @@ GPL-3.0-only and is therefore out despite being the best-known option;
 it is a whole spreadsheet, engine and grid and toolbar together, with its own
 design system that is not ours.
 
-So: **a formula can be evaluated in the browser and cannot be evaluated on our
-server** without taking a licence we do not want or running a Node sidecar.
-
-That sounds like a constraint and is actually the design. See §3.
+So: **a formula is evaluated in the browser, and the server reads what the
+browser worked out.** That was forced by licensing when this was written and is
+now a choice — and it is still the right one, because §3 shows it is exactly
+what RUA's integration did for two years without anybody noticing a limitation.
+A server that evaluated formulas would be a second engine to keep in step with
+the first, which is the actual cost and it does not go away with the licence.
 
 ---
 
