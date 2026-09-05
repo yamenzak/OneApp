@@ -28,7 +28,7 @@ above it and never below — and each has a test that keeps it that way.
 
 | | |
 |---|---|
-| `spaceview/` | One screen and everything a reader can do on it. Nineteen modules from `meta` (what a doctype's metadata says a screen may show) down to `run` (running a declared action). The whitelisted paths the SPA calls are re-exported from the package, so they are `spaceview.rows` and not `spaceview.records.rows`. |
+| `spaceview/` | One screen and everything a reader can do on it. Twenty-odd modules from `meta` (what a doctype's metadata says a screen may show) down to `run` (running a declared action) — the package docstring is the map, and `tests/test_spaceview_layers.py` reads it back and holds the import order to it. The whitelisted paths the SPA calls are re-exported from the package, so they are `spaceview.rows` and not `spaceview.records.rows`. |
 | `email/mailbox/` | Reading and writing one person's mail. `scope` → `flags` → `query` → `reading` → `filing` → `sending` → `drafts` → `composing`. |
 | `importer/` | Bringing another Frappe site's records across. `source` → `mapping` → `writing` → `running` → `checking` → `screen`. |
 | `email/` (the rest) | `addresses`, `connect`, `folders`, `inbound`, `outbound`, `people`, `rules`, `threading`. Inbound arrives from a Cloudflare Worker; there is no IMAP server behind an address we route. |
@@ -40,9 +40,12 @@ The single modules, roughly by how often they are touched:
 * `sync.py` — the manifest the control plane sends, cached and applied. What a
   space *is*, on this site.
 * `printing.py`, `naming.py`, `docflow.py`, `collab.py`, `showcase.py`,
-  `dashboard.py`, `fieldtypes.py`, `theming.py` — one subject each, all of them
-  thin wrappers over something Frappe already has. The rule throughout: use the
-  framework's model, add the surface.
+  `dashboard.py`, `board.py`, `fieldtypes.py`, `theming.py` — one subject each,
+  all of them thin wrappers over something Frappe already has. The rule
+  throughout: use the framework's model, add the surface. `board.py` is the
+  newest and the clearest example: Frappe keeps a board's arrangement on a
+  Kanban Board doctype, and here the same four facts are a *view*, because a
+  view is what this product already had for "how one person looks at a screen".
 * `notifications.py` — the feed, and the follow machinery Frappe half has.
 * `alerts.py` — rules that tell somebody when a record changes. Frappe's own
   `Notification`, gated to the workspace's doctypes and narrowed to one
