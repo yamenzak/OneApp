@@ -315,6 +315,15 @@ class PressClient:
 			"press.api.site.update", name=site, skip_failing_patches=skip_failing_patches
 		)
 
+	def install_app(self, site: str, app: str):
+		"""Add one app to a running site.
+
+		A schema migration on a live database rather than a config change: press
+		installs the app onto the site and runs its patches, which takes minutes
+		and can fail. Returns an agent job to wait on, like every other write.
+		"""
+		return self.call("press.api.site.install_app", name=site, app=app)
+
 	def migrate(self, site: str, skip_failing_patches: bool = False):
 		return self.call(
 			"press.api.site.migrate", name=site, skip_failing_patches=skip_failing_patches

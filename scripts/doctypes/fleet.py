@@ -237,6 +237,14 @@ doctype(
         f("site_name", read_only=1, in_list_view=1,
           description="Permanent internal address. Never the custom domain."),
         f("press_site", label="Press Site", read_only=1),
+        # What press actually installed, rather than what the bench carries.
+        # Written by provisioning and kept equal to the union of what the
+        # workspace's granted spaces need; an Install App job closes the gap
+        # when a space is bought onto a site that has been running for a year.
+        f("site_apps", read_only=1,
+          description="The Frappe apps press installed on this site, comma "
+                      "separated. Written by provisioning; kept equal to the "
+                      "union of what the workspace's granted spaces need."),
         f("primary_domain", description="Customer-owned domain, once verified."),
         section("sec_plan", "Plan and billing"),
         f("plan", "Link", options="Plan", in_standard_filter=1),
@@ -378,6 +386,7 @@ doctype(
           options=("Create Site\nSuspend Site\nResume Site\nBackup Site\nArchive Site\n"
                    "Restore Site\nPurge Tenant\n"
                    "Add Domain\nSet Primary Domain\nChange Plan\nMigrate Site\n"
+                   "Install App\n"
                    "Create Standby Site\nClaim Standby Site"),
           reqd=1, in_list_view=1, in_standard_filter=1),
         f("state", "Select",

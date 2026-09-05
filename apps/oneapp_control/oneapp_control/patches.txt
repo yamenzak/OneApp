@@ -7,3 +7,4 @@ oneapp_control.patches.capture_plan_terms
 oneapp_control.patches.restrict_seeded_books
 oneapp_control.patches.seed_lifecycle_windows
 oneapp_control.patches.seed_backup_terms
+oneapp_control.patches.record_existing_site_apps

@@ -22,6 +22,12 @@ SPACE = {
 	"space_label": "RUA",
 	"module": "Rua",
 	"role_name": "OneSpace Rua",
+	# Every doctype below is ERPNext's or HRMS's — a project, a quotation, an
+	# LPO, an attendance row — so a site without them is a site where this
+	# space's every screen is empty. Declared, so a grant onto a bench that
+	# cannot carry them is refused with the app named rather than succeeding
+	# into that.
+	"requires_apps": "erpnext,hrms",
 	"icon": "lucide-briefcase",
 	"sort_order": 20,
 	"availability": "Restricted",
@@ -104,6 +110,83 @@ DOCTYPES = [
 	("Fiscal Year", "Read", 0),
 	("Address", "Write", 0),
 	("Contact", "Write", 0),
+]
+
+
+# --------------------------------------------------------------------------- #
+# The schema its screens read
+#
+# Every one is a real distinction their old system kept and ERPNext has no
+# column for — a project's Tender/Job in Hand stage, an invoice's retention
+# percentage, their own per-project invoice serial. None is a field ERPNext
+# already has under another name; those are mapped rather than added.
+#
+# Declared here rather than in the import plan, which is where they lived until
+# now. A field the screens read is part of what the space *is*: a workspace
+# granted RUA who never imports anything still opens a project and still needs
+# somewhere for its stage to be. The tenant sync applies these the first time it
+# sees them and never again, exactly as it does a naming series — a Custom Field
+# is the same kind of thing, something we give a workspace somewhere to start
+# and then stop touching.
+#
+# `oneapp/oneapp_core/plans/rua.py` maps into them and creates none of them.
+# --------------------------------------------------------------------------- #
+
+# Their five project states, in their words. `PROJECT_STATUS` in the plan maps
+# these onto ERPNext's three, and `tests/test_manifests.py` holds the two lists
+# to each other — they are one vocabulary in two apps and there is no import
+# that can join them.
+STAGES = [
+	"Tender",
+	"Job in Hand",
+	"In Progress",
+	"Completed",
+	"Cancelled",
+]
+
+CUSTOM_FIELDS = [
+	{"dt": "Project", "fieldname": "custom_stage", "label": "Stage", "fieldtype": "Select",
+	 "options": "\n" + "\n".join(STAGES), "insert_after": "status",
+	 "description": "Their own five states. Tender and Job in Hand are both "
+	                "Open to a project ledger and a real difference to a sales "
+	                "team."},
+	{"dt": "Project", "fieldname": "custom_location", "label": "Location", "fieldtype": "Data",
+	 "insert_after": "custom_stage"},
+	{"dt": "Project", "fieldname": "custom_parent_project", "label": "Variation of",
+	 "fieldtype": "Link", "options": "Project", "insert_after": "custom_location",
+	 "description": "The job this one is a variation order on. Thirty-five of "
+	                "theirs are, under thirteen parents."},
+	{"dt": "Employee", "fieldname": "custom_nationality", "label": "Nationality",
+	 "fieldtype": "Data", "insert_after": "date_of_birth"},
+	# ERPNext's Quotation has no project — a Sales Order does, a Sales Invoice
+	# does, and a quotation is meant to reach one through the other. Every
+	# quotation these people write is against a project and they will look for
+	# it by that, so it gets one.
+	{"dt": "Quotation", "fieldname": "custom_project", "label": "Project",
+	 "fieldtype": "Link", "options": "Project", "insert_after": "party_name"},
+	{"dt": "Quotation Item", "fieldname": "custom_width_cm", "label": "Width (cm)",
+	 "fieldtype": "Float", "insert_after": "qty"},
+	{"dt": "Quotation Item", "fieldname": "custom_height_cm", "label": "Height (cm)",
+	 "fieldtype": "Float", "insert_after": "custom_width_cm"},
+	{"dt": "Purchase Order", "fieldname": "custom_supplier_reference",
+	 "label": "Supplier reference", "fieldtype": "Data", "insert_after": "supplier_name",
+	 "description": "The number the supplier quotes back at you on the phone."},
+	{"dt": "Sales Invoice", "fieldname": "custom_retention_percentage",
+	 "label": "Retention %", "fieldtype": "Percent", "insert_after": "project",
+	 "description": "Held back until the defects period ends. A percentage here "
+	                "deducts itself from the invoice and waits in Retention "
+	                "Receivable — see `oneapp_core/retention.py`. Zero on every "
+	                "invoice the old system ever issued."},
+	{"dt": "Sales Invoice", "fieldname": "custom_legacy_number", "label": "Old number",
+	 "fieldtype": "Data", "read_only": 1, "insert_after": "custom_retention_percentage",
+	 "description": "What this invoice was called in the system it came from. "
+	                "Somebody will look for it by that number for years."},
+	{"dt": "Sales Invoice", "fieldname": "custom_project_serial", "label": "Project serial",
+	 "fieldtype": "Int", "insert_after": "custom_legacy_number",
+	 "description": "Their per-project sequence for final tax invoices. Frappe's "
+	                "naming series is global, so this cannot be the id."},
+	{"dt": "Attendance", "fieldname": "custom_overtime_hours", "label": "Overtime hours",
+	 "fieldtype": "Float", "insert_after": "late_entry"},
 ]
 
 SCREENS = [

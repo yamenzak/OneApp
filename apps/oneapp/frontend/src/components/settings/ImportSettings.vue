@@ -88,9 +88,10 @@
 
       <!--
         What this app ships and this workspace has not set up. Pressing it
-        writes the plan, the custom fields its maps name and the records they
-        write against — which is the difference between a migration somebody
-        runs and a migration somebody first has to assemble.
+        writes the plan and the records its maps write against — which is the
+        difference between a migration somebody runs and a migration somebody
+        first has to assemble. The `custom_` fields its maps name are not here:
+        those belong to the space and arrive with the entitlement.
       -->
       <div
         v-for="one in shipped"
@@ -105,8 +106,8 @@
           </span>
         </div>
         <p class="text-p-sm text-ink-gray-6">
-          Not set up yet. Setting it up writes the plan and the fields its steps
-          need; it reads nothing and moves nothing.
+          Not set up yet. Setting it up writes the plan and the records its steps
+          write against; it reads nothing and moves nothing.
         </p>
         <ErrorMessage v-if="error && installing === one.key" :message="error" />
         <div class="flex items-center gap-2">

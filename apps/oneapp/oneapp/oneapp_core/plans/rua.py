@@ -116,60 +116,19 @@ PROJECT_STATUS = {
 # What has to exist before the first row can land
 #
 # Nine of the field maps below name a `custom_` field, and a plan that names a
-# field nothing creates is a plan that cannot run: `check` reports it, which is
-# better than silence and still leaves somebody to make nine fields by hand.
-# So the plan declares them, and installing the plan makes them.
+# field nothing creates is a plan that cannot run — `check` reports it, which is
+# better than silence and still leaves somebody making nine fields by hand.
 #
-# Every one is a real distinction their old system kept and ERPNext has no
-# column for — a project's Tender/Job in Hand stage, an invoice's retention
-# percentage, their own per-project invoice serial. None is a field ERPNext
-# already has under another name; those are mapped rather than added.
+# The plan used to declare them and `install` used to make them, which put the
+# schema behind a data migration: a workspace granted RUA who never imported
+# anything got RUA's screens without RUA's fields, and nothing anywhere said so.
+# They belong to the **space** now — `oneapp_control/spaces/rua.py`,
+# `CUSTOM_FIELDS` — and arrive with the entitlement, through the same fixture
+# path as a naming series. This file assumes them and creates nothing.
+#
+# `SEEDS` below stayed, because a Fiscal Year and two Items are records the
+# import writes against rather than schema its screens read.
 # --------------------------------------------------------------------------- #
-
-FIELDS = [
-	{"dt": "Project", "fieldname": "custom_stage", "label": "Stage", "fieldtype": "Select",
-	 "options": "\n" + "\n".join(PROJECT_STATUS), "insert_after": "status",
-	 "description": "Their own five states. Tender and Job in Hand are both "
-	                "Open to a project ledger and a real difference to a sales "
-	                "team."},
-	{"dt": "Project", "fieldname": "custom_location", "label": "Location", "fieldtype": "Data",
-	 "insert_after": "custom_stage"},
-	{"dt": "Project", "fieldname": "custom_parent_project", "label": "Variation of",
-	 "fieldtype": "Link", "options": "Project", "insert_after": "custom_location",
-	 "description": "The job this one is a variation order on. Thirty-five of "
-	                "theirs are, under thirteen parents."},
-	{"dt": "Employee", "fieldname": "custom_nationality", "label": "Nationality",
-	 "fieldtype": "Data", "insert_after": "date_of_birth"},
-	# ERPNext's Quotation has no project — a Sales Order does, a Sales Invoice
-	# does, and a quotation is meant to reach one through the other. Every
-	# quotation these people write is against a project and they will look for
-	# it by that, so it gets one.
-	{"dt": "Quotation", "fieldname": "custom_project", "label": "Project",
-	 "fieldtype": "Link", "options": "Project", "insert_after": "party_name"},
-	{"dt": "Quotation Item", "fieldname": "custom_width_cm", "label": "Width (cm)",
-	 "fieldtype": "Float", "insert_after": "qty"},
-	{"dt": "Quotation Item", "fieldname": "custom_height_cm", "label": "Height (cm)",
-	 "fieldtype": "Float", "insert_after": "custom_width_cm"},
-	{"dt": "Purchase Order", "fieldname": "custom_supplier_reference",
-	 "label": "Supplier reference", "fieldtype": "Data", "insert_after": "supplier_name",
-	 "description": "The number the supplier quotes back at you on the phone."},
-	{"dt": "Sales Invoice", "fieldname": "custom_retention_percentage",
-	 "label": "Retention %", "fieldtype": "Percent", "insert_after": "project",
-	 "description": "Held back until the defects period ends. A percentage here "
-	                "deducts itself from the invoice and waits in Retention "
-	                "Receivable — see `oneapp_core/retention.py`. Zero on every "
-	                "invoice the old system ever issued."},
-	{"dt": "Sales Invoice", "fieldname": "custom_legacy_number", "label": "Old number",
-	 "fieldtype": "Data", "read_only": 1, "insert_after": "custom_retention_percentage",
-	 "description": "What this invoice was called in the system it came from. "
-	                "Somebody will look for it by that number for years."},
-	{"dt": "Sales Invoice", "fieldname": "custom_project_serial", "label": "Project serial",
-	 "fieldtype": "Int", "insert_after": "custom_legacy_number",
-	 "description": "Their per-project sequence for final tax invoices. Frappe's "
-	                "naming series is global, so this cannot be the id."},
-	{"dt": "Attendance", "fieldname": "custom_overtime_hours", "label": "Overtime hours",
-	 "fieldtype": "Float", "insert_after": "late_entry"},
-]
 
 # Records the plan writes against, made once. The two Items are the whole of
 # it: everything else — the Company, the customer and supplier groups, the

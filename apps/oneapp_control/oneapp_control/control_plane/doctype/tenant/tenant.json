@@ -20,6 +20,7 @@
   "storage_jurisdiction",
   "site_name",
   "press_site",
+  "site_apps",
   "primary_domain",
   "sec_plan",
   "plan",
@@ -165,6 +166,13 @@
    "fieldname": "press_site",
    "fieldtype": "Data",
    "label": "Press Site",
+   "read_only": 1
+  },
+  {
+   "description": "The Frappe apps press installed on this site, comma separated. Written by provisioning; kept equal to the union of what the workspace's granted spaces need.",
+   "fieldname": "site_apps",
+   "fieldtype": "Data",
+   "label": "Site Apps",
    "read_only": 1
   },
   {

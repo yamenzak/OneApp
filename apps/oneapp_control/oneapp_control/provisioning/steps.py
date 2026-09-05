@@ -71,6 +71,32 @@ def site_apps(shard) -> list[str]:
 	return apps
 
 
+def apps_for_site(tenant, shard) -> list[str]:
+	"""What one tenant's site installs, which is less than the bench carries.
+
+	The union of what its granted spaces are written against, plus the base
+	every site has. A workspace that bought nothing using ERPNext does not get
+	ERPNext: fifteen hundred doctypes, their tables, their patches on every
+	migrate and their weight in every backup, for code nobody on that site runs.
+
+	Ordered as the bench orders them rather than alphabetically — press resolves
+	app sources in list order and expects frappe first.
+	"""
+	from oneapp_control.entitlements import apps as tenant_apps
+
+	carried = site_apps(shard)
+	wanted = set(tenant_apps.wanted_for(tenant.name))
+
+	missing = sorted(wanted - set(carried))
+	if missing:
+		raise PressPermanentError(
+			f"Tenant {tenant.name} is entitled to spaces needing {', '.join(missing)}, "
+			f"which the bench on shard {shard.name} does not carry."
+		)
+
+	return [app for app in carried if app in wanted]
+
+
 def check_availability(job):
 	"""Fail early rather than after a half-built site."""
 	tenant = frappe.get_doc("Tenant", job.tenant)
@@ -106,7 +132,7 @@ def create_site(job):
 		subdomain=tenant.tenant_slug,
 		domain=creation_domain(shard),
 		release_group=shard.press_release_group,
-		apps=site_apps(shard),
+		apps=apps_for_site(tenant, shard),
 		plan=plan,
 		server=shard.press_server or None,
 		cluster=shard.press_cluster or None,
@@ -367,8 +393,21 @@ def deregister_mail_routing(job):
 def finalise_creation(job):
 	from oneapp_control.provisioning import signup
 
+	from oneapp_control.entitlements import apps
+
 	tenant = frappe.get_doc("Tenant", job.tenant)
 	tenant.mark_active(press_site=job.press_site)
+
+	# What the site now carries. A claimed standby was built before anybody
+	# knew whose it would be, so it holds the bench's whole list rather than
+	# this tenant's subset — which is the price of a site that is ready in
+	# seconds, and is recorded honestly rather than assumed away.
+	shard = frappe.get_doc("Shard", tenant.shard) if tenant.shard else None
+	apps.record_installed(
+		tenant,
+		site_apps(shard) if job.action == "Claim Standby Site" and shard
+		else apps.wanted_for(tenant.name),
+	)
 
 	# Closes out the Account Request and emails the owner their invite. Only
 	# does anything when this tenant came from a signup.
@@ -528,6 +567,45 @@ def finalise_restore(job):
 	return None
 
 
+# --------------------------------------------------------------------------- #
+# Install App
+#
+# A grant that needs an app the site has not got. New sites install the union of
+# what their spaces need in one go — cheap, because the site does not exist yet
+# — and this is the other half: a workspace that buys a space a year later, on
+# a site that has been running all along.
+#
+# Its own job with its own state because it is a real operation. Installing an
+# app runs its patches against a live database; it takes minutes, it can fail,
+# and a failure has to be visible as a failed job with a step and an error
+# rather than as a space that quietly never arrived.
+# --------------------------------------------------------------------------- #
+
+def install_app(job):
+	from oneapp_control.entitlements import apps
+
+	payload = job.parsed_payload()
+	app = (payload.get("app") or "").strip()
+	if not app:
+		raise PressPermanentError("Install App requires an app in the payload.")
+
+	# Two grants can want the same app, and a lost response looks exactly like a
+	# call that never landed. Both are answered by asking what the site has.
+	if app in apps.installed_on(job.tenant):
+		return None
+
+	result = get_client().install_app(_site_for(job), app)
+	_capture_job_id(job, result)
+	return None
+
+
+def finalise_install(job):
+	from oneapp_control.entitlements import apps
+
+	apps.record_installed(job.tenant, [job.parsed_payload().get("app")])
+	return None
+
+
 def migrate_site(job):
 	result = get_client().migrate(_site_for(job))
 	_capture_job_id(job, result)
@@ -602,6 +680,8 @@ def create_standby_site(job):
 		subdomain=payload["subdomain"],
 		domain=creation_domain(shard),
 		release_group=shard.press_release_group,
+		# The bench's whole list, not a tenant's subset: nobody knows yet whose
+		# site this is, so there are no grants to compute one from.
 		apps=site_apps(shard),
 		plan=shard.press_site_plan or None,
 		server=shard.press_server or None,
@@ -732,6 +812,11 @@ PIPELINES = {
 		("promote_domain", promote_domain),
 		("register_mail_routing", register_mail_routing),
 		("finalise_restore", finalise_restore),
+	],
+	"Install App": [
+		("install_app", install_app),
+		("await_agent", await_agent),
+		("finalise_install", finalise_install),
 	],
 	"Migrate Site": [
 		("migrate_site", migrate_site),

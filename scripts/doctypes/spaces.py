@@ -149,6 +149,16 @@ doctype(
         f("space_label", reqd=1, in_list_view=1),
         f("module", reqd=1, in_list_view=1,
           description="Frappe module inside the oneapp app that implements this."),
+        # What the site under this space has to be carrying. A tenant's site is
+        # the union of what its granted spaces need, so a space that names
+        # nothing costs nothing — and a grant onto a site whose bench cannot
+        # carry the app is refused with the app named, rather than succeeding
+        # into screens that are silently empty.
+        f("requires_apps", label="Requires Apps",
+          description="Frappe apps this space's screens are written against, "
+                      "comma separated — e.g. erpnext,hrms. A tenant's site is "
+                      "the union of what its granted spaces need, so a space "
+                      "that names none adds nothing to it."),
         f("is_active", "Check", default="1"),
         column("cb_app"),
         f("availability", "Select", options="General\nRestricted", default="General",
@@ -174,6 +184,18 @@ doctype(
                       "grants, and the allowlist a customer's custom role may "
                       "draw from. A doctype in no manifest is reachable by "
                       "nobody, without anyone having to remember to exclude it."),
+        # The schema its screens read that the doctype does not ship. Declared
+        # beside the screens that read it, because the alternative is where
+        # RUA's ten fields lived until now — in its *import plan*, so a tenant
+        # granted the space who never imported anything got the screens without
+        # the fields, and nothing anywhere said so.
+        f("custom_fields", "Code", options="JSON",
+          description='JSON list of Custom Field rows this space\'s screens '
+                      'read but the doctype does not ship, e.g. [{"dt": "Sales '
+                      'Invoice", "fieldname": "custom_retention_percentage", '
+                      '"fieldtype": "Percent", "label": "Retention %"}]. '
+                      'Applied by the tenant sync the first time it sees them, '
+                      'and never again.'),
         # A Select, not free text: an icon name that exists only in the
         # database is in no source file, so Tailwind's JIT emits no CSS
         # for it and the launcher renders an empty box. The options come

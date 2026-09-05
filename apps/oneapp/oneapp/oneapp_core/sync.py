@@ -203,10 +203,11 @@ def sync_from_control_plane() -> dict:
 # What a space brings with it besides its screens
 #
 # A screen may declare the series its doctype is named by and the print formats
-# it ships. Both are *fixtures*: applied the first time they are seen and never
-# again. That is the whole design, and it is the opposite of everything else in
-# this module — roles, permissions and members are reconciled every sync,
-# because the control plane owns them.
+# it ships; a space may declare the Custom Fields its screens read. All three
+# are *fixtures*: applied the first time they are seen and never again. That is
+# the whole design, and it is the opposite of everything else in this module —
+# roles, permissions and members are reconciled every sync, because the control
+# plane owns them.
 #
 # These it does not. A series prefix and a print format are things a workspace
 # edits, under Settings, once the app has given it somewhere to start. Applying
@@ -217,14 +218,15 @@ def sync_from_control_plane() -> dict:
 
 
 def sync_screen_fixtures(spaces: list) -> dict:
-	"""Apply the naming series and print formats the manifest's screens declare.
+	"""Apply the fixtures a space brings: custom fields, series, print formats.
 
 	Nothing here is fatal. A space that names a doctype this site does not have
 	is a space whose app is not installed yet, which is ordinary; a format whose
 	layout will not parse is one bad row rather than a failed sync.
 	"""
-	series = formats = 0
+	series = formats = fields = 0
 	for space in spaces or []:
+		fields += _seed_custom_fields(space.get("custom_fields"))
 		for screen in space.get("screens") or []:
 			doctype = (screen.get("document_type") or "").strip()
 			if not doctype or not frappe.db.exists("DocType", doctype):
@@ -232,9 +234,47 @@ def sync_screen_fixtures(spaces: list) -> dict:
 			series += _seed_series(doctype, screen.get("naming_series"))
 			formats += _seed_formats(doctype, screen.get("print_formats"),
 			                         space.get("module"))
-	if series or formats:
+	if series or formats or fields:
 		frappe.db.commit()
-	return {"series": series, "formats": formats}
+	return {"series": series, "formats": formats, "fields": fields}
+
+
+def _seed_custom_fields(declared) -> int:
+	"""The fields a space's screens read that the doctype does not ship.
+
+	Made once each and then left alone, which is the same rule as everything
+	else here and matters more: a workspace widens a field, adds a description,
+	moves it up the form or hides it, and every one of those is a Custom Field
+	edit that reapplying would undo.
+
+	Skipped rather than fatal where the doctype is absent. A space is only
+	granted onto a site whose bench carries what it needs — `requires_apps` on
+	the control plane refuses the rest — but an app can be installing while this
+	runs, and the next sync is fifteen minutes away.
+	"""
+	rows = frappe.parse_json(declared) if isinstance(declared, str) else declared
+	if not isinstance(rows, list):
+		return 0
+
+	made = 0
+	for row in rows:
+		if not isinstance(row, dict):
+			continue
+		doctype = str(row.get("dt") or "").strip()
+		fieldname = str(row.get("fieldname") or "").strip()
+		if not doctype or not fieldname or not frappe.db.exists("DocType", doctype):
+			continue
+		if frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": fieldname}):
+			continue
+		try:
+			frappe.get_doc({"doctype": "Custom Field", **row}).insert(ignore_permissions=True)
+		except Exception as raised:
+			frappe.clear_last_message()
+			frappe.log_error(title=f"OneSpace: custom field {doctype}.{fieldname}",
+			                 message=str(raised))
+			continue
+		made += 1
+	return made
 
 
 def _seed_series(doctype: str, declared) -> int:

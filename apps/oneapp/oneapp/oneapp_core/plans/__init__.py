@@ -26,7 +26,7 @@ def shipped() -> list[dict]:
 			"title": module.PLAN,
 			"space": module.SPACE,
 			"steps": len(module.STEPS),
-			"fields": len(getattr(module, "FIELDS", [])),
+			"records": len(getattr(module, "SEEDS", [])),
 		}
 		for key, module in PLANS.items()
 	]
@@ -89,29 +89,19 @@ def install(name: str, source: str) -> str:
 
 
 def prepare(module) -> dict:
-	"""The fields and records a plan's maps assume, made before it runs.
+	"""The records a plan's maps write against, made before it runs.
 
-	A field map naming `custom_retention_percentage` on a site where nothing
-	created it is a plan that cannot run — `check` says so, which is better
-	than silence and still leaves somebody making nine fields by hand before
-	the button does anything. Declaring them beside the maps that use them is
-	the only place they cannot drift from.
+	Records and not schema. The `custom_` fields a plan's maps name belong to
+	the *space*, and arrive with the entitlement rather than with a data
+	migration — see `oneapp_control/spaces/rua.py`, `CUSTOM_FIELDS`. A plan
+	that made them was a plan a workspace had to run before its screens were
+	whole, which is backwards.
 
 	Skipped rather than fatal where the target doctype is absent: this app
 	installs on benches without ERPNext, and a plan that cannot be *installed*
 	there is worse than one that cannot be run there.
 	"""
-	made = {"fields": 0, "records": 0, "skipped": 0}
-
-	for field in getattr(module, "FIELDS", []):
-		if not frappe.db.exists("DocType", field["dt"]):
-			made["skipped"] += 1
-			continue
-		if frappe.db.exists("Custom Field", {"dt": field["dt"],
-		                                     "fieldname": field["fieldname"]}):
-			continue
-		frappe.get_doc({"doctype": "Custom Field", **field}).insert(ignore_permissions=True)
-		made["fields"] += 1
+	made = {"records": 0, "skipped": 0}
 
 	for seed in getattr(module, "SEEDS", []):
 		doctype = seed["doctype"]

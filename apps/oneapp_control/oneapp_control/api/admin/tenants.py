@@ -7,6 +7,7 @@ console is that running this does not require that.
 """
 
 import frappe
+from oneapp_control.entitlements import apps as space_apps
 from oneapp_control.entitlements import registry
 from oneapp_control.provisioning import runner
 from oneapp_control.utils.slug import is_available
@@ -102,18 +103,28 @@ def tenant_app_access(tenant: str) -> list:
 		)
 	}
 
-	apps = frappe.get_all(
+	spaces = frappe.get_all(
 		"OneSpace Space",
 		filters={"is_active": 1},
 		fields=["name as space_code", "space_label", "module", "availability", "icon",
-		        "sort_order", "description"],
+		        "sort_order", "description", "requires_apps"],
 		order_by="sort_order asc, space_label asc",
 	)
-	for app in apps:
-		app["entitled"] = (
-			app.availability != "Restricted" or app.space_code in entitled
+
+	# What the workspace's bench can carry, so a space it cannot is greyed out
+	# with the reason rather than offered and then refused. The bench and not
+	# the site: an app the bench has and the site has not is installed by the
+	# grant, which takes minutes and is not a reason to withhold the button.
+	carried = set(space_apps.bench_apps(tenant))
+
+	for space in spaces:
+		needs = space_apps.required_by(space)
+		space["requires"] = needs
+		space["blocked_by"] = sorted(app for app in needs if app not in carried)
+		space["entitled"] = (
+			space.availability != "Restricted" or space.space_code in entitled
 		)
-	return apps
+	return spaces
 
 
 @frappe.whitelist()

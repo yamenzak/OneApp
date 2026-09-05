@@ -667,9 +667,10 @@ def test_a_shipped_plan_is_offered_only_where_its_space_is(importer, stub_frappe
 
 	assert [one["key"] for one in offered] == ["rua"]
 	# What the card says before anybody presses it: how much it will bring and
-	# how much it will add to this site's own schema to hold it.
+	# how many records it makes to write against. Not schema — the `custom_`
+	# fields its maps name belong to the space and arrive with the entitlement.
 	assert offered[0]["steps"] == 12
-	assert offered[0]["fields"] > 0
+	assert offered[0]["records"] > 0
 
 
 def test_the_rua_plan_resolves_every_link_backwards(stub_frappe):

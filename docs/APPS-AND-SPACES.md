@@ -151,13 +151,37 @@ silence.
 
 ## 4. What was built
 
-**A and B.** A space declares `requires_apps` and `custom_fields`; the
-entitlement refuses a grant the site cannot support and says which app is
-missing; the sync applies a space's fields once, as a fixture; RUA's ten fields
-moved from its import plan to its space, and the plan now assumes rather than
-creates them.
+All three, A, B and C.
 
-**C is designed and not built.** Installing an app onto a live site is a
-migration, and the failure mode of getting it wrong unattended is a tenant
-whose site is half-migrated. The refusal in A is the honest interim: it names
-the app, and an operator moves the tenant or installs it deliberately.
+**A. A space declares `requires_apps`.** RUA says `erpnext,hrms`; Books says
+`erpnext`. A grant onto a workspace whose bench cannot carry that is refused
+with the app named, and OneAdmin greys the Grant button out and says which app
+and where to fix it. The bench is the ceiling now rather than the answer:
+`Shard.site_apps` says what may be installed, and `apps_for_site` computes what
+*is*.
+
+**B. A space declares `custom_fields`.** RUA's twelve moved out of its import
+plan and into `oneapp_control/spaces/rua.py`; the plan maps into them and
+creates none of them. The tenant sync applies them the first time it sees them
+and never again — the same fixture path as a naming series and a print format,
+for the same reason: a workspace edits these afterwards, and reapplying every
+fifteen minutes would undo an afternoon's work with nothing anywhere saying why.
+
+**C. `Tenant.site_apps`, and an Install App job.** A new site installs the union
+of what its granted spaces need rather than everything on the bench — a
+workspace that bought nothing using ERPNext no longer carries fifteen hundred
+doctypes, their tables, their patches on every migrate and their weight in every
+backup. A space bought a year later, onto a site that has been running all
+along, queues an `Install App` job per missing app: `install_app`,
+`await_agent`, `finalise_install`, with its own state and its own error, because
+installing an app runs its patches against a live database and can fail.
+
+Two edges worth knowing. A **claimed standby site** carries the bench's whole
+list, because it was built before anybody knew whose it would be — that is the
+price of a site that is ready in seconds, and `finalise_creation` records it
+honestly rather than assuming the tenant's subset. And a **site provisioned
+before this** has its shard's list written down by
+`patches/record_existing_site_apps`, because an empty `site_apps` does not mean
+"nothing installed", it means nobody wrote it down — and left that way the first
+grant on an old workspace would queue an install of ERPNext onto a site that has
+had ERPNext all along.

@@ -300,7 +300,7 @@ def test_a_bad_fixture_row_costs_one_row_rather_than_the_sync(sync, stub_frappe,
 	found = sync.sync_screen_fixtures(
 		[screen(print_formats='[{"name": "Broken", "layout": "nonsense"}]')]
 	)
-	assert found == {"series": 0, "formats": 0}
+	assert found == {"series": 0, "formats": 0, "fields": 0}
 
 
 def test_a_series_a_workspace_has_already_set_is_never_replaced(sync, stub_frappe,

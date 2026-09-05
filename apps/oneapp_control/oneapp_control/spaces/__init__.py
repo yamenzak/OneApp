@@ -14,6 +14,8 @@ Idempotent, and re-run on every migration — so changing a screen is an edit an
 a `bench migrate`, not an edit and a person remembering to press something.
 """
 
+import json
+
 import frappe
 
 from oneapp_control.spaces import books, rua
@@ -55,6 +57,12 @@ def install(name: str) -> str:
 
 	for screen in getattr(module, "SCREENS", []):
 		doc.append("screens", dict(screen))
+
+	# The schema its screens read. A module attribute rather than a key in
+	# SPACE, for the same reason DOCTYPES and SCREENS are: it is a list, and a
+	# list belongs beside the other lists rather than inside the dictionary of
+	# scalars at the top of the file.
+	doc.custom_fields = json.dumps(getattr(module, "CUSTOM_FIELDS", None) or [], indent=1)
 
 	doc.insert(ignore_permissions=True) if not known else doc.save(ignore_permissions=True)
 	return doc.name

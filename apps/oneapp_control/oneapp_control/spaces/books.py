@@ -24,6 +24,9 @@ SPACE = {
 	"space_label": "Books",
 	"module": "Books",
 	"role_name": "OneSpace Books",
+	# Eight ERPNext doctypes and nothing else. Nobody has built the interface,
+	# but the entitlement is real and so is what it assumes of the site.
+	"requires_apps": "erpnext",
 	"icon": "lucide-book-open",
 	"sort_order": 10,
 	"availability": "Restricted",

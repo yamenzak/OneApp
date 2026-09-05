@@ -10,6 +10,7 @@
   "space_code",
   "space_label",
   "module",
+  "requires_apps",
   "is_active",
   "cb_app",
   "availability",
@@ -20,6 +21,7 @@
   "roles",
   "sec_manifest",
   "doctypes",
+  "custom_fields",
   "icon",
   "logo",
   "sort_order",
@@ -50,6 +52,12 @@
    "in_list_view": 1,
    "label": "Module",
    "reqd": 1
+  },
+  {
+   "description": "Frappe apps this space's screens are written against, comma separated \u2014 e.g. erpnext,hrms. A tenant's site is the union of what its granted spaces need, so a space that names none adds nothing to it.",
+   "fieldname": "requires_apps",
+   "fieldtype": "Data",
+   "label": "Requires Apps"
   },
   {
    "default": "1",
@@ -114,6 +122,13 @@
    "fieldtype": "Table",
    "label": "Doctypes",
    "options": "OneSpace Space Doctype"
+  },
+  {
+   "description": "JSON list of Custom Field rows this space's screens read but the doctype does not ship, e.g. [{\"dt\": \"Sales Invoice\", \"fieldname\": \"custom_retention_percentage\", \"fieldtype\": \"Percent\", \"label\": \"Retention %\"}]. Applied by the tenant sync the first time it sees them, and never again.",
+   "fieldname": "custom_fields",
+   "fieldtype": "Code",
+   "label": "Custom Fields",
+   "options": "JSON"
   },
   {
    "default": "lucide-layout-grid",
