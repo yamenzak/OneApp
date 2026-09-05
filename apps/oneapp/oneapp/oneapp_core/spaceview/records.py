@@ -96,6 +96,66 @@ def rows(space_code: str, screen: str | None = None, limit: int = PAGE,
 	}
 
 
+# How many values one tally offers.
+#
+# Frappe's sidebar shows a handful and hides the rest behind "Edit filters",
+# which is the right instinct: a list of four hundred customers with a count
+# beside each is a second list, and the reader wanted a shortcut. Past this the
+# menu says so and the filter panel is where the rest is.
+TALLY_VALUES = 20
+
+
+# The fieldtypes a tally means something for.
+#
+# A closed set of values, or something that resolves to one: a Select is the
+# obvious case and a Link is the useful one — "how many are on each project"
+# is the question this answers. Not Data, which has as many values as rows, and
+# not a date, which has more.
+TALLIED = ("Select", "Link", "Check")
+
+
+@frappe.whitelist(methods=["GET"])
+def tally(space_code: str, screen: str | None = None, field: str = "",
+          overrides: str | dict | None = None, layout: str | None = None) -> dict:
+	"""How many records there are for each value of one field.
+
+	Frappe's list sidebar, which this product has nowhere to put — the sidebar
+	is the space's navigation — so it is a menu instead: pick a field, see its
+	values with counts, click one to narrow the list to it. The same shortcut,
+	one control over.
+
+	Under the filters that are already on, which is the half that makes it a
+	shortcut rather than a second opinion: a tally of everything, shown above a
+	list of twelve, is a menu of numbers that do not match what is on screen.
+	"""
+	resolved = _apply_overrides(
+		_apply_saved(_resolve(space_code, screen), layout), overrides
+	)
+	doctype = resolved.get("doctype")
+	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or []}
+	column = offered.get(field) or {}
+	if not doctype or column.get("fieldtype") not in TALLIED:
+		return {"values": []}
+
+	rows = frappe.get_list(
+		doctype,
+		fields=[field, {"COUNT": "name", "as": "tally"}],
+		filters=_all_filters(resolved, resolved.get("asked") or []),
+		group_by=field,
+		order_by="tally desc",
+		limit_page_length=TALLY_VALUES + 1,
+	)
+	return {
+		"values": [
+			{"value": row.get(field), "count": int(row.get("tally") or 0)}
+			for row in rows[:TALLY_VALUES]
+		],
+		# Said out loud, because a menu that quietly stops at twenty is a menu
+		# somebody reads as "these are all of them".
+		"more": len(rows) > TALLY_VALUES,
+	}
+
+
 # Which fieldtypes a totals row adds up.
 #
 # Money and quantities, and deliberately not Int or Percent. A sum of

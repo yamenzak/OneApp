@@ -311,6 +311,18 @@ and by whatever is unsaved above it — and a selection exports exactly the rows
 that were ticked. The same `_resolve` → saved view → overrides chain the rows go
 through, so an export can never reach further than the list it came from.
 
+**How many of each.** Frappe's list sidebar, as a menu — this product's sidebar
+is the space's own navigation, and a second one beside the list would undo the
+thing that makes every screen here read the same. Pick a field, see its values
+with counts, click one to narrow to it. Only a Select, a Link or a Check: a
+Data field has as many values as rows and a date has more. Counted **under the
+filters already on**, which is what makes it a shortcut rather than a second
+opinion — a tally of everything shown over a list of twelve is a menu of
+numbers that do not match the screen. Clicking a value writes an ordinary
+`[field, =, value]` into the filter panel, where it can be seen and removed:
+a list narrowed by something invisible is a list that looks broken. Twenty
+values, and it says so when there are more.
+
 **Bulk operations.** A selection can be changed, assigned, exported or deleted.
 The change is one field to one value — Frappe's own shape, and the right one: a
 dialog offering several fields at once is a record form applied to forty

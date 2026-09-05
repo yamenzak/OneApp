@@ -105,6 +105,22 @@ export const screen = {
       { silent: true, method: 'GET' },
     ),
 
+  // How many records there are for each value of one field — Frappe's list
+  // sidebar, as a menu. Under the same filters the rows are, so the numbers
+  // match what is on screen.
+  screenTally: (spaceCode, screen, field, overrides, layout) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.tally',
+      {
+        space_code: spaceCode,
+        screen,
+        field,
+        layout,
+        overrides: overrides ? JSON.stringify(overrides) : null,
+      },
+      { silent: true, method: 'GET' },
+    ),
+
   // The same rows, as a file. Its own endpoint rather than a page size of five
   // thousand: an export is the whole answer, it is built as a CSV on the server
   // where the quoting is testable, and `names` narrows it to a selection so

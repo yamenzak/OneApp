@@ -116,6 +116,21 @@
             @changed="onPanelFilters"
           />
           <!--
+            How many of each, beside the control that narrows: Frappe puts this
+            in its list sidebar and this product's sidebar is the space's own
+            navigation, so it is a menu here. Clicking a value adds the filter
+            the sidebar's link would have applied.
+          -->
+          <TallyMenu
+            :columns="spec.all_columns || []"
+            :status-field="spec.status_field || ''"
+            :space-code="spaceCode"
+            :screen="spec.screen"
+            :layout="spec.layout || ''"
+            :overrides="payload()"
+            @narrow="narrowTo"
+          />
+          <!--
             The heart is the exception, and stays in the activity header where
             it lines up with the one on every row — "filter by the ones I
             liked", directly above the likes. It comes here only when that
@@ -477,6 +492,7 @@ import RecordPane from '../components/screen/record/RecordPane.vue'
 import RecordView from '../components/screen/record/RecordView.vue'
 import RecordDrawer from '../components/screen/record/RecordDrawer.vue'
 import FilterPanel from '../components/screen/views/FilterPanel.vue'
+import TallyMenu from '../components/screen/views/TallyMenu.vue'
 import QuickFilters from '../components/screen/views/QuickFilters.vue'
 import CardSettings from '../components/screen/views/CardSettings.vue'
 import ColumnPicker from '../components/screen/views/ColumnPicker.vue'
@@ -780,6 +796,24 @@ const onQuickFilters = (filters) => {
 
 const onPanelFilters = (filters) => {
   panelFilters.value = filters
+  changed()
+}
+
+/**
+ * Narrow to one value of one field, from the tally.
+ *
+ * Into the panel's filters rather than the quick row: this is the same
+ * `[field, =, value]` a person would have added there by hand, and putting it
+ * where they can see and remove it is what stops a list being narrowed by
+ * something invisible. Replaces any filter already on that field — two
+ * equalities on one column match nothing, which reads as the tally lying.
+ */
+const narrowTo = ({ field, value }) => {
+  if (!field) return
+  panelFilters.value = [
+    ...panelFilters.value.filter((one) => one[0] !== field),
+    [field, '=', value ?? ''],
+  ]
   changed()
 }
 

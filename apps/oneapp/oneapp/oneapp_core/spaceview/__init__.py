@@ -186,6 +186,8 @@ from .links import (
 )
 from .records import (
 	SUMMABLE,
+	TALLIED,
+	TALLY_VALUES,
 	_child_changes,
 	_link_groups,
 	_summable,
@@ -204,6 +206,7 @@ from .records import (
 	rows,
 	save,
 	spec,
+	tally,
 	totals,
 )
 from .export import (
@@ -411,6 +414,9 @@ __all__ = [
 	"_status_field",
 	"_tags_column",
 	"SUMMABLE",
+	"TALLIED",
+	"TALLY_VALUES",
+	"tally",
 	"_summable",
 	"_summed",
 	"totals",
