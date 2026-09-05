@@ -117,6 +117,29 @@
       :name="record.name"
     />
 
+    <!--
+      A copy, as a draft. Frappe's Duplicate opens an unsaved form rather than
+      inserting a second document, and that is the right shape: an invoice
+      copied from last month's is one somebody is about to change the date on.
+      The ordinary create dialog, seeded — same validation, same button, and
+      cancelling leaves nothing behind.
+    -->
+    <!--
+      Mounted rather than `v-if`-ed into existence. The dialog fills its form
+      from `preset` in a watcher on *opening*, and a component that appears
+      already open never sees that transition — so the first version of this
+      opened a blank form over a record it had just copied.
+    -->
+    <CreateDialog
+      v-if="spec?.can_create"
+      v-model="copying"
+      :spec="spec"
+      :space-code="spaceCode"
+      :screen="screen"
+      :preset="copy"
+      @created="emit('open', { screen, name: $event })"
+    />
+
     <Alert
       v-if="staleSince"
       class="mx-4 mt-3"
@@ -275,6 +298,7 @@
             :space-code="spaceCode"
             :screen="one.screen"
             :field="one.field"
+            :where="one.where || []"
             :name="record.name"
             :label="one.label || ''"
             @open="emit('open', $event)"
@@ -362,8 +386,10 @@ import RecordShowcase from './RecordShowcase.vue'
 import RelatedRows from './RelatedRows.vue'
 import StateBadge from '../fields/StateBadge.vue'
 import PrintDialog from './PrintDialog.vue'
+import CreateDialog from './CreateDialog.vue'
 import RecordMeta from './RecordMeta.vue'
 import { workspace } from '../../../lib/workspace'
+import { notifyError, notifySuccess } from '../../../lib/notify'
 import { DRAWER, MERGE_TARGET, PAGE, PANE } from '../../../lib/surfaces'
 import { docBadge } from '../../../lib/docstate'
 import { tabIcon } from '../../../lib/fields'
@@ -444,10 +470,24 @@ const tab = ref('fields')
  */
 const showcase = computed(() => props.spec?.view_settings?.showcase || null)
 
-// The screens that point back at this record, as tabs. Only where there is a
-// showcase: they are part of the same declaration, and a form with four
-// related-list tabs bolted onto it is a different page from the one this is.
-const related = computed(() => showcase.value?.tabs || [])
+/**
+ * The screens that point back at this record, as tabs.
+ *
+ * Two sources, in this order. A showcase declares its own — RUA's project page
+ * names four, in its own words and its own order — and those come first because
+ * somebody chose them. Everything after is derived: every other screen in this
+ * space whose doctype carries a Link field pointing at this one, which is the
+ * desk's Connections and is what every record gets without anybody declaring
+ * anything. See `spaceview/connections.py`.
+ *
+ * This used to be the declared half alone, so a project had four tabs and every
+ * other record in the product had none — including the invoice that knows
+ * perfectly well which payments were made against it.
+ */
+const related = computed(() => [
+  ...(showcase.value?.tabs || []),
+  ...(props.spec?.connections || []),
+])
 
 // Read the panel's own two lists the first time somebody opens it, and not
 // again while they are on the same record — every write from inside it answers
@@ -631,6 +671,43 @@ const follow = async () => {
  * The like keeps its count, in the label. A number nobody can see is not a
  * number, and the count is the only reason a like is on a record at all.
  */
+/**
+ * A copy of this record, as values, and the dialog holding them.
+ *
+ * Fetched on the click rather than with the record: nobody duplicates most of
+ * what they open, and `copy_doc` on a Sales Invoice with forty lines is not a
+ * cost to pay on every read.
+ */
+const copying = ref(false)
+const copy = ref({})
+
+const startCopy = async () => {
+  try {
+    copy.value = (await workspace.duplicateRecord(props.spaceCode, props.screen, props.record.name)) || {}
+  } catch {
+    copy.value = {}
+  }
+  copying.value = true
+}
+
+/**
+ * The address of what is on screen, for somebody to paste into a message.
+ *
+ * A record is in the URL — that is what makes it a link at all — so this is the
+ * URL. `clipboard` is unavailable over plain HTTP and in a few browsers'
+ * private modes, and there is no useful fallback: a prompt holding the text is
+ * a worse version of the address bar. So it says it could not rather than
+ * pretending it did.
+ */
+const copyLink = async () => {
+  try {
+    await navigator.clipboard.writeText(window.location.href)
+    notifySuccess('Link copied')
+  } catch {
+    notifyError('This browser would not let the page copy to the clipboard.')
+  }
+}
+
 const extras = computed(() => {
   const found = []
   if (props.spec?.can_print) {
@@ -649,6 +726,28 @@ const extras = computed(() => {
     label: `${liked.value ? 'Liked' : 'Like'}${likes.value.length ? ` · ${likes.value.length}` : ''}`,
     icon: 'lucide-heart',
     onClick: like,
+  })
+  // The three the desk has had forever and this did not. Last, because they
+  // are the ones somebody goes looking for rather than the ones they came for.
+  if (props.spec?.can_create) {
+    found.push({
+      key: 'duplicate',
+      label: 'Duplicate',
+      icon: 'lucide-copy-plus',
+      onClick: startCopy,
+    })
+  }
+  found.push({
+    key: 'link',
+    label: 'Copy link',
+    icon: 'lucide-link',
+    onClick: copyLink,
+  })
+  found.push({
+    key: 'reload',
+    label: 'Reload',
+    icon: 'lucide-refresh-cw',
+    onClick: () => emit('reload'),
   })
   return found
 })

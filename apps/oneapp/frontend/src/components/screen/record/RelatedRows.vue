@@ -20,7 +20,31 @@
       <span v-if="more" class="text-p-xs text-ink-gray-5">
         showing the first {{ rows.length }}
       </span>
+      <!--
+        Frappe's "New linked document", where it belongs: on the tab that is
+        already about the link. The field this tab filtered on arrives filled
+        in, so making an invoice against a project is one button rather than a
+        trip to the invoices screen and a picker.
+      -->
+      <Button
+        v-if="spec.can_create"
+        class="ms-auto"
+        data-slot="related-new"
+        icon-left="lucide-plus"
+        :label="`New ${spec.singular || 'record'}`"
+        @click="creating = true"
+      />
     </div>
+
+    <CreateDialog
+      v-if="spec.can_create"
+      v-model="creating"
+      :spec="spec"
+      :space-code="spaceCode"
+      :screen="screen"
+      :preset="preset"
+      @created="made"
+    />
 
     <RecordTable
       v-if="rows.length"
@@ -70,7 +94,8 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { LoadingText } from '@/ui'
+import { Button, LoadingText } from '@/ui'
+import CreateDialog from './CreateDialog.vue'
 import RecordTable from '../bodies/RecordTable.vue'
 import FieldCell from '../bodies/FieldCell.vue'
 import TitleCell from '../bodies/TitleCell.vue'
@@ -83,6 +108,15 @@ const props = defineProps({
   screen: { type: String, required: true },
   /** The field on that screen pointing back at the record being read. */
   field: { type: String, required: true },
+  /**
+   * What else has to be true, which for a Dynamic Link is the doctype.
+   *
+   * `about` on a Correspondence holds an id and `about_doctype` holds what kind
+   * of thing it is, and filtering on the id alone would put a licence's letters
+   * on a project that happens to share its name. Empty for a plain Link, which
+   * is most of them.
+   */
+  where: { type: Array, default: () => [] },
   /** The record being read, by id. */
   name: { type: String, required: true },
   /** What they are called, for the count and the empty line. */
@@ -99,6 +133,17 @@ const PAGE = 50
 // — it is here so the two tables cannot disagree about the number.
 const VIRTUAL_FROM = 200
 
+// What a new one starts with: the link back, and for a Dynamic Link the
+// doctype beside it — without which the row would be about a name and nothing
+// else, and would not come back to this tab.
+const preset = computed(() =>
+  Object.fromEntries([
+    [props.field, props.name],
+    ...(props.where || []).map(([field, , value]) => [field, value]),
+  ]),
+)
+
+const creating = ref(false)
 const spec = ref({})
 const rows = ref([])
 const columns = ref([])
@@ -160,7 +205,7 @@ const load = async () => {
       workspace.screenRows(
         props.spaceCode,
         props.screen,
-        { filters: [[props.field, '=', props.name]] },
+        { filters: [[props.field, '=', props.name], ...(props.where || [])] },
         '',
         { start: 0, limit: PAGE },
       ),
@@ -176,5 +221,13 @@ const load = async () => {
   }
 }
 
-watch(() => [props.screen, props.field, props.name], load, { immediate: true })
+// Opened rather than only listed: somebody who just made an invoice against
+// this project means to be in it, and a tab that silently grew a row leaves
+// them hunting for the one they made.
+const made = (name) => {
+  load()
+  if (name) emit('open', { screen: props.screen, name })
+}
+
+watch(() => [props.screen, props.field, props.name, props.where], load, { immediate: true })
 </script>

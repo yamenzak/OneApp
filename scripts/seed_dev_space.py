@@ -517,19 +517,28 @@ RENEWALS = [
 # Bilingual on purpose: this fixture is what proves `dir="auto"` puts an Arabic
 # subject to the right of its box and an English one to the left, in the same
 # list, without either being declared anywhere.
+# The last element is the Compliance Document this letter is *about*, by title,
+# or None. Correspondence carries a Dynamic Link — `about_doctype` beside
+# `about`, which is how Frappe writes "about anything" — and that is what makes
+# a Correspondence tab appear on a licence without anybody declaring one. It is
+# also the fixture behind `e2e/connections.spec.js`: a register with no letter
+# filed against anything cannot show that the tab found the right rows.
 CORRESPONDENCE = [
 	("Letter", "Request for extension of completion date",
 	 "طلب تمديد تاريخ الإنجاز", "Al-Ittihad Consultants", "الاتحاد للاستشارات",
-	 "Issued"),
+	 "Issued", None),
 	# The comma is the point of this one. A register with no comma anywhere in
 	# it cannot show whether an export quotes properly, and a subject that
 	# becomes two columns takes every row after it out of true.
 	("Letter", "Submission of revised shop drawings, revisions A to C",
 	 "تقديم مخططات التنفيذ المعدلة، المراجعات أ إلى ج", "National Engineering Bureau",
-	 "المكتب الوطني للهندسة", "Issued"),
+	 "المكتب الوطني للهندسة", "Issued", None),
 	("Form", "Material approval — 6mm tempered glass",
 	 "اعتماد مواد — زجاج مقسى ٦ ملم", "A.D.D. Consultants",
-	 "إيه دي دي للاستشارات", "Draft"),
+	 "إيه دي دي للاستشارات", "Draft", None),
+	("Letter", "Renewal of trade licence CN-1109482",
+	 "تجديد الرخصة التجارية", "Department of Economic Development",
+	 "دائرة التنمية الاقتصادية", "Issued", "Trade Licence — 2024"),
 ]
 
 
@@ -565,7 +574,7 @@ def _seed_registers():
 	# filter test that matches two things.
 	frappe.db.delete("Correspondence", {"subject": "Submission of revised shop drawings"})
 
-	for kind, subject, subject_ar, to, to_ar, status in CORRESPONDENCE:
+	for kind, subject, subject_ar, to, to_ar, status, _about in CORRESPONDENCE:
 		if frappe.db.exists("Correspondence", {"subject": subject}):
 			continue
 		frappe.get_doc({
@@ -579,6 +588,19 @@ def _seed_registers():
 			"signed_by": "Yamen Zakhour", "signed_by_title": "Managing Director",
 			"signed_by_ar": "يامن زخور", "signed_by_title_ar": "المدير العام",
 		}).insert(ignore_permissions=True)
+
+	# What each letter is filed against, applied after the inserts and on every
+	# run — the rows above are skipped where the subject already exists, so a
+	# link added to the fixture later would never reach the letter that was
+	# seeded before it.
+	for _kind, subject, *_rest, about in CORRESPONDENCE:
+		letter = frappe.db.get_value("Correspondence", {"subject": subject}, "name")
+		filed = frappe.db.get_value("Compliance Document", {"title": about}, "name") if about else None
+		if not letter or not filed:
+			continue
+		frappe.db.set_value("Correspondence", letter, {
+			"about_doctype": "Compliance Document", "about": filed,
+		}, update_modified=False)
 
 	frappe.db.commit()
 

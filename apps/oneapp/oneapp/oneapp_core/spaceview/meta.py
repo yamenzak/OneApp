@@ -647,6 +647,7 @@ def _form(meta, offered: dict) -> list[dict]:
 	"""
 	tabs: list[dict] = []
 	section: dict | None = None
+	notes = 0
 
 	def start_tab(label: str) -> None:
 		nonlocal section
@@ -678,6 +679,38 @@ def _form(meta, offered: dict) -> list[dict]:
 			start_section("")
 		section["columns"].append([])
 
+	def note(kind: str, df, **rest) -> None:
+		"""A Heading or an HTML block — layout that says something.
+
+		Both were dropped until now: they are in `LAYOUT_TYPES` because they
+		carry no value, and this loop only kept a field it could find in
+		`offered`. Which is right about the value and wrong about the form —
+		a Heading is the doctype's author writing a subtitle over the next four
+		fields, and an HTML block is usually the sentence explaining why they
+		are being asked for. A form that silently drops both is a form missing
+		its author's own annotations.
+
+		An entry here is an object where a field is a string, so nothing
+		downstream has to change for the fields; `RecordForm` resolves the
+		strings against the columns and passes these through.
+		"""
+		nonlocal notes
+		if section is None:
+			start_section("")
+		notes += 1
+		section["columns"][-1].append({
+			# Not a fieldname — an HTML block usually has none, and two of them
+			# on one doctype have the same one. Synthetic so the browser has a
+			# stable key, and prefixed so it cannot collide with a field.
+			"fieldname": f"__note{notes}",
+			"note": kind,
+			# The doctype's own rule for showing it, read by the same evaluator
+			# the fields use: a heading over a section that hides should hide
+			# with it.
+			"depends_on": getattr(df, "depends_on", None) or None,
+			**rest,
+		})
+
 	for df in meta.fields:
 		if df.fieldtype == "Tab Break":
 			start_tab(_(df.label) if df.label else DEFAULT_TAB)
@@ -691,6 +724,15 @@ def _form(meta, offered: dict) -> list[dict]:
 			# to drop — so a doctype whose author put four fields in two
 			# columns got one tall column of four.
 			start_column()
+		elif df.fieldtype == "Heading" and df.label:
+			note("heading", df, label=_(df.label))
+		elif df.fieldtype == "HTML" and (df.options or "").strip():
+			# `options` is where Frappe keeps an HTML field's markup. Sanitised
+			# in the browser before it is drawn — it comes from a doctype
+			# definition rather than from a customer, but "trusted because of
+			# where it came from" is the sentence before every stored-XSS
+			# write-up, and the reader is already a dependency.
+			note("html", df, html=(df.options or "").strip())
 		elif df.fieldname in offered:
 			if section is None:
 				start_section("")
@@ -703,7 +745,12 @@ def _form(meta, offered: dict) -> list[dict]:
 	# on a doctype whose last fields are read-only would draw.
 	for tab in tabs:
 		for one in tab["sections"]:
-			one["columns"] = [column for column in one["columns"] if column]
+			# A column of nothing but headings is a heading over nothing, so
+			# "has content" means it has at least one actual field.
+			one["columns"] = [
+				column for column in one["columns"]
+				if any(isinstance(entry, str) for entry in column)
+			]
 		tab["sections"] = [one for one in tab["sections"] if one["columns"]]
 	return [tab for tab in tabs if tab["sections"]]
 

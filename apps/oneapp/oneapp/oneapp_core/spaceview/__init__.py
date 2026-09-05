@@ -27,6 +27,7 @@ is what stops it becoming one module again.
 
     meta        what a doctype's metadata says a screen may show
     viewtypes   the ways a screen can be looked at, and what each needs
+    connections what else in this space is about one record
     actions     the actions a space declares for a screen
     filters     what a reader asked for, as a query the framework accepts
     saved       reading saved layouts, and picking which one applies
@@ -169,6 +170,7 @@ from .views import (
 	_widgets,
 )
 from .applied import _apply_overrides, _apply_saved
+from .connections import CONNECTIONS, connections, points_back
 from .resolve import _granted_doctypes, _resolve, _space, visible
 from .people import _ids, _people, _users, _with_people
 from .links import (
@@ -202,6 +204,7 @@ from .records import (
 	_writable,
 	count,
 	dashboard_data,
+	duplicate,
 	record,
 	remove,
 	rows,

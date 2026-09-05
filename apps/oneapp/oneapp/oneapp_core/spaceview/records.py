@@ -599,6 +599,70 @@ def save(space_code: str, screen: str, values: str | dict, name: str | None = No
 	return {"name": doc.name}
 
 
+@frappe.whitelist(methods=["GET"])
+def duplicate(space_code: str, screen: str, name: str) -> dict:
+	"""What a copy of this record would start with.
+
+	Values, not a record. Frappe's desk Duplicate opens an unsaved form holding
+	the copy, and that is the honest shape: a purchase order copied from last
+	month's is a draft somebody is about to change the date on, not a document
+	that has been raised. So this answers with the values and the create dialog
+	opens on them — the same dialog, the same validation, the same Create
+	button, and cancelling leaves nothing behind.
+
+	`frappe.copy_doc` does the deciding, which is what makes this correct rather
+	than a dictionary comprehension: it is the framework's own copy, so
+	`no_copy` fields are dropped, the amended-from chain is not carried, and a
+	child row arrives without the identity of the row it was copied from.
+
+	Bounded like every other read here — the record has to be one this screen
+	would list — and narrowed on the way out to the fields this screen may
+	write, so a duplicate cannot seed a field an edit could not.
+	"""
+	resolved = _resolve(space_code, screen)
+	doctype = resolved.get("doctype")
+	if not doctype:
+		return {}
+
+	found = frappe.get_list(
+		doctype,
+		fields=["name"],
+		filters=_all_filters(resolved, []) + [["name", "=", name]],
+		limit_page_length=1,
+	)
+	if not found:
+		return {}
+
+	copy = frappe.copy_doc(frappe.get_doc(doctype, name))
+	allowed = _writable(resolved)
+	tables = {
+		c["fieldname"]: c for c in resolved.get("all_columns") or []
+		if c.get("child") and c["child"]["editable"] and c.get("editable")
+	}
+
+	values = {}
+	for fieldname in allowed:
+		if fieldname in tables:
+			continue
+		value = copy.get(fieldname)
+		if value not in (None, ""):
+			values[fieldname] = value
+
+	for fieldname, column in tables.items():
+		offered = [c["fieldname"] for c in column["child"]["fields"] if c.get("editable")]
+		rows = [
+			{key: child.get(key) for key in offered if child.get(key) not in (None, "")}
+			for child in (copy.get(fieldname) or [])
+		]
+		# The lines are most of why anybody duplicates an invoice, so an empty
+		# table is left out rather than sent as an empty list — the dialog
+		# treats a key it was given as a value somebody chose.
+		if rows:
+			values[fieldname] = rows
+
+	return values
+
+
 @frappe.whitelist(methods=["POST"])
 def remove(space_code: str, screen: str, name: str | list) -> dict:
 	"""Delete one record, or a selection of them.

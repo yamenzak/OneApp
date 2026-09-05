@@ -21,6 +21,8 @@
   "issued_by",
   "place_of_issue",
   "sec_cd_warning",
+  "h_cd_warning",
+  "note_cd_warning",
   "remind_days",
   "reminded_on",
   "cb_cd_renewal",
@@ -116,6 +118,17 @@
    "fieldname": "sec_cd_warning",
    "fieldtype": "Section Break",
    "label": "Warning"
+  },
+  {
+   "fieldname": "h_cd_warning",
+   "fieldtype": "Heading",
+   "label": "Before it lapses"
+  },
+  {
+   "fieldname": "note_cd_warning",
+   "fieldtype": "HTML",
+   "label": "",
+   "options": "<p>The warning goes to whoever is <b>following</b> this document, once \u2014 not every morning until somebody acts, which is how people learn to ignore it.</p>"
   },
   {
    "default": "30",

@@ -155,6 +155,17 @@ export const screen = {
       { silent: true, method: 'GET' },
     ),
 
+  // What a copy of one record would start with. Values rather than a record:
+  // the create dialog opens on them, so a duplicate is a draft somebody is
+  // about to change rather than a document that has been raised. `copy_doc` on
+  // the server decides what carries over.
+  duplicateRecord: (spaceCode, screen, name) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.duplicate',
+      { space_code: spaceCode, screen, name },
+      { silent: true, method: 'GET' },
+    ),
+
   saveRecord: (spaceCode, screen, values, name) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.save',

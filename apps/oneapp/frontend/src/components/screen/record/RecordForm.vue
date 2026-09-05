@@ -122,8 +122,16 @@ const tabs = computed(() =>
         .map((section) => ({
           ...section,
           columns: section.columns
-            .map((column) => column.map((name) => columns.value[name]).filter(Boolean))
-            .filter((column) => column.length),
+            .map((column) =>
+              column
+                // A string is a fieldname to resolve; an object is a Heading or
+                // an HTML block the doctype wrote, which has nothing to resolve
+                // against. See `_form` in `spaceview/meta.py`.
+                .map((entry) => (typeof entry === 'string' ? columns.value[entry] : entry))
+                .filter(Boolean),
+            )
+            // A column of nothing but headings is a heading over nothing.
+            .filter((column) => column.some((entry) => !entry.note)),
         }))
         .filter((section) => section.columns.length),
     }))

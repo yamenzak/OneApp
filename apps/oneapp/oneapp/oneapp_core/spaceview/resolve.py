@@ -22,6 +22,7 @@ from .meta import (
 	_tags_column,
 	presentation,
 )
+from .connections import connections
 from .viewtypes import _singular, _view_types
 from .actions import actions
 from .views import _resolve_views, _view_settings
@@ -258,4 +259,15 @@ def _resolve(space_code: str, screen: str | None = None,
 	# board is resolved from them; a saved view narrows both again in
 	# `_apply_saved`.
 	resolved["view_settings"] = _view_settings(resolved, resolved.get("view_settings"))
+
+	# What else in this space is about one of these. Derived from the schema
+	# rather than declared, and computed here because it needs the settings
+	# above it: a screen the showcase already names as a tab is not repeated.
+	resolved["connections"] = connections(
+		space,
+		chosen["screen"],
+		doctype,
+		_granted_doctypes(space),
+		(resolved["view_settings"].get("showcase") or {}).get("tabs") or [],
+	)
 	return _resolve_views(resolved)

@@ -77,6 +77,16 @@ doctype(
         f("issued_by", description="The authority that issued it."),
         f("place_of_issue"),
         section("sec_cd_warning", "Warning"),
+        # A Heading and an HTML block: the doctype's author annotating their own
+        # form. Both are layout fields, so neither carries a value and neither
+        # is ever a column — and both were silently dropped by the record form
+        # until it learned to draw them. Here as much as anywhere else because
+        # this is the fixture that proves it: `e2e/form-notes.spec.js`.
+        f("h_cd_warning", "Heading", "Before it lapses"),
+        f("note_cd_warning", "HTML", "",
+          options="<p>The warning goes to whoever is <b>following</b> this "
+                  "document, once — not every morning until somebody acts, "
+                  "which is how people learn to ignore it.</p>"),
         f("remind_days", "Int", default="30", label="Warn this many days ahead",
           description="How long before the expiry this starts saying so. Thirty "
                       "days is a month to renew a licence; a visa wants more."),

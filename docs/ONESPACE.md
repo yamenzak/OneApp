@@ -570,14 +570,50 @@ surfaces, the hero says it wherever there is a showcase, so the header draws it
 only on a phone and in the drawer. The drawer also offers the one control the
 others have no use for: open this properly, on its own screen.
 
-Four tabs:
+The tabs:
 
 | | |
 |---|---|
-| **Details** | The doctype's own form. Tab, Section and Column Breaks read the way the desk reads them, collapsing below the breakpoint. Its tabs are a **pill track**, not a second underlined strip: the two sit an inch apart and both open with the word Details, and drawn alike they read as one strip split in half. They are not siblings — the record's strip moves between the record and everything filed against it, the form's moves inside one of those. |
+| **Details** | The doctype's own form. Tab, Section and Column Breaks read the way the desk reads them, collapsing below the breakpoint. **Heading** and **HTML** fields are drawn too — both carry no value, which is why they are layout fields and why the form dropped them for years, and both are the author of the doctype annotating their own form. An HTML block's markup goes through DOMPurify before it is drawn. Its tabs are a **pill track**, not a second underlined strip: the two sit an inch apart and both open with the word Details, and drawn alike they read as one strip split in half. They are not siblings — the record's strip moves between the record and everything filed against it, the form's moves inside one of those. |
+| **Connections** | One tab per other screen in this space that points back at this record — a project's quotations, its purchase orders, its invoices, a licence's letters. See below. |
 | **Activity** | One timeline: what was said, what changed, and when it started, newest first. Merged in the browser from two queries; every entry carries a glyph from a closed set, because a column of identical avatars makes a comment and a field change look alike. |
 | **Files** | Frappe's own File rows, so an Attach field's file and a dropped file are one list. |
 | **Meta** | The desk's sidebar: the face and name, then the four things you do to a record *about other people* — assign, attach, tag, share — then who made it and when, then its id. The only place assignment is offered; it was in the header too, which made it one control in two places. |
+
+Behind the three dots, beside print, follow and like: **Duplicate**, **Copy
+link** and **Reload**. Duplicate is Frappe's own — `copy_doc` on the server, so
+`no_copy` fields are dropped and the amended-from chain is not carried, and the
+values open in the ordinary create dialog rather than being inserted. A copy is
+a draft somebody is about to change the date on, not a document that has been
+raised, and cancelling it leaves nothing behind.
+
+### Connections, derived rather than declared
+
+Every screen in this space whose doctype carries a link back at this one becomes
+a tab, and opening it is that screen filtered to this record — the same columns,
+the same widths, the same title field, because it *is* that screen. There is a
+New on it with the link already filled in, which is Frappe's "New linked
+document" on the tab that is already about the link.
+
+Two shapes count as pointing back. A **Link** field naming this doctype, which
+is a screen saying "this is always about a project" — where a doctype has more
+than one, the field named after the doctype wins, because a Sales Invoice
+carries both `project` and `cost_center`. And a **Dynamic Link**, the pair of
+fields Frappe uses for "about anything" — a letter about a licence, a task
+against a project — where the tab filters on the doctype as well as the id, or a
+licence's letters would turn up on a project that shares its name. Named links
+are offered first: both are worth having and only one of them is a statement
+about *this* doctype.
+
+Bounded by the space, not by the schema. Frappe's own `get_linked_doctypes`
+answers over the whole site and half of what it returns is a doctype this
+workspace has no screen for and no permission on — and a connection that opens
+nothing is worse than no connection. So only screens the space already has, and
+at most six. A showcase that declares its own tabs keeps them, first and in its
+own words; the derived ones follow, minus any it already named.
+
+`spaceview/connections.py` decides; `RelatedRows` draws it, and drew the
+declared half already.
 
 ### A link is a record, so it opens like one
 

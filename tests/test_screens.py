@@ -2153,6 +2153,54 @@ def test_the_form_carries_fieldnames_and_not_the_columns_again(spaceview):
 	assert form[0]["sections"][0]["columns"] == [["description"]]
 
 
+def test_a_heading_and_an_html_block_are_layout_that_says_something(spaceview):
+	"""Both are in `LAYOUT_TYPES` — they carry no value — and both were dropped
+	for exactly that reason, so a form arrived without the annotations its
+	author wrote into it."""
+	fields = [
+		field("a", "Data", "A"),
+		field("h", "Heading", "Where to send it"),
+		field("note", "HTML", "", options="<p>Ask the consultant first.</p>"),
+		field("b", "Data", "B"),
+	]
+	form = spaceview._form(meta(fields), {"a": {}, "b": {}})
+	column = form[0]["sections"][0]["columns"][0]
+
+	assert column[0] == "a"
+	assert column[1]["note"] == "heading"
+	assert column[1]["label"] == "Where to send it"
+	assert column[2]["note"] == "html"
+	assert column[2]["html"] == "<p>Ask the consultant first.</p>"
+	assert column[3] == "b"
+
+	# A synthetic name, because an HTML block usually has none and two of them
+	# on one doctype have the same one.
+	assert column[1]["fieldname"] != column[2]["fieldname"]
+
+
+def test_a_heading_over_nothing_is_not_a_heading(spaceview):
+	"""A tab of nothing but annotations is a tab nobody can do anything on.
+	`Layout with nothing in it is not layout` has to mean fields, or a
+	permlevel this reader cannot see leaves a heading floating over it."""
+	fields = [
+		field("a", "Data", "A"),
+		field("tab_two", "Tab Break", "Extras"),
+		field("h", "Heading", "Nothing under this"),
+		field("secret", "Data", "Secret", permlevel=1),
+	]
+	form = spaceview._form(meta(fields), {"a": {}})
+	assert [tab["label"] for tab in form] == ["Details"]
+
+
+def test_an_html_block_with_no_markup_draws_nothing(spaceview):
+	"""Frappe's own doctypes carry HTML fields whose `options` is empty — they
+	are placeholders the desk fills in with script. There is no script here, so
+	an empty one is an empty div in the middle of a form."""
+	fields = [field("a", "Data", "A"), field("note", "HTML", "", options="")]
+	form = spaceview._form(meta(fields), {"a": {}})
+	assert form[0]["sections"][0]["columns"] == [["a"]]
+
+
 # --------------------------------------------------------------------------- #
 # Attachments
 #

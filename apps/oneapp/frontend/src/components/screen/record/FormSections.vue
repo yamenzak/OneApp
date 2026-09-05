@@ -98,12 +98,43 @@
             what was typed into it the moment the rule flips. The desk keeps it
             mounted too.
           -->
-          <div
-            v-for="field in column"
-            v-show="!rules(field).hidden"
-            :key="field.fieldname"
-            class="flex gap-2"
-          >
+          <!--
+            What the doctype's author wrote between the fields. A Heading is a
+            subtitle over the next few; an HTML block is usually the sentence
+            explaining why they are being asked for. Both were dropped until
+            now — they are layout fields, and the form only kept what it could
+            find a column for — so a form was missing exactly the annotations
+            its author added to make it readable.
+          -->
+          <template v-for="field in column" :key="field.fieldname">
+            <h4
+              v-if="field.note === 'heading'"
+              v-show="!rules(field).hidden"
+              data-slot="form-heading"
+              class="text-p-base font-medium text-ink-gray-8"
+            >
+              {{ field.label }}
+            </h4>
+            <!--
+              Sanitised before it is drawn. It comes from a doctype definition
+              rather than from a customer, and "trusted because of where it
+              came from" is the sentence before every stored-XSS write-up. The
+              reader already carries DOMPurify for mail.
+            -->
+            <!-- eslint-disable vue/no-v-html -->
+            <div
+              v-else-if="field.note === 'html'"
+              v-show="!rules(field).hidden"
+              data-slot="form-html"
+              class="text-p-sm text-ink-gray-6 [&_a]:underline [&_p]:mb-2"
+              v-html="safe(field.html)"
+            />
+            <!-- eslint-enable vue/no-v-html -->
+            <div
+              v-else
+              v-show="!rules(field).hidden"
+              class="flex gap-2"
+            >
             <!--
               No icon gutter here any more. The field's type icon goes inside
               its label — see FieldLabel — because a gutter is a column: it
@@ -164,7 +195,8 @@
             >
               <Icon name="lucide-circle-help" class="size-3.5" :aria-hidden="true" />
             </a>
-          </div>
+            </div>
+          </template>
         </div>
       </div>
     </section>
@@ -173,6 +205,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import DOMPurify from 'dompurify'
 import { Button, Icon, Tooltip } from '@/ui'
 import FieldControl from '../fields/FieldControl.vue'
 import { fieldRules, sectionCollapsed } from '../../../lib/rules'
@@ -268,6 +301,11 @@ const frozen = (field) => {
 // means; the evaluator is a few dozen comparisons and the alternative is a
 // watcher per field per rule.
 const rules = (field) => fieldRules(field, values.value)
+
+// An HTML block's markup, with anything that can run stripped out. The default
+// profile: this is a paragraph of explanation, not a document, so nothing here
+// wants an iframe or a form.
+const safe = (html) => DOMPurify.sanitize(String(html || ''))
 
 /**
  * Which sections this reader has opened or closed by hand.
