@@ -13,6 +13,31 @@
     parallel filing system beside that would be two places to look for the same
     message.
   -->
+  <!--
+    The folder list, on a phone.
+
+    The shell draws a sidebar only on a desktop — `MobileShell` has no such
+    slot — so without this every mailbox, every folder and the bin were
+    unreachable from a phone: the page opened on `folder=all` and offered no
+    way out of it. Drive answers the same problem the same way (`Drive.vue`,
+    the places dropdown), off the same list the sidebar draws, so the two
+    cannot drift.
+
+    Only on a phone. On a desktop it would be a second control saying what the
+    sidebar beside it already says. Write is not here either — it is over the
+    list already, on both layouts.
+  -->
+  <PageHeader v-if="isMobile">
+    <Dropdown :options="folderOptions">
+      <Button
+        data-slot="mail-folders"
+        icon-right="lucide-chevron-down"
+        variant="ghost"
+        :label="folderName"
+      />
+    </Dropdown>
+  </PageHeader>
+
   <div class="flex h-full min-h-0">
     <!--
       What has arrived.
@@ -296,12 +321,14 @@ import {
   FormControl,
   Icon,
   LoadingText,
+  PageHeader,
   dayjsLocal,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import SenderChip from '../components/mail/SenderChip.vue'
 import MailComposer from '../components/mail/MailComposer.vue'
 import { onDoctypeChange } from '../lib/socket'
+import { useIsMobile } from '../lib/screen'
 import { holdImages, loadMail, mail, showImages } from '../lib/mail'
 import { workspace } from '../lib/workspace'
 
@@ -346,6 +373,64 @@ const messages = ref([])
 // pasted into the address bar opens exactly what the person who sent it saw.
 const folder = computed(() => String(route.query.folder || 'all'))
 const chosen = computed(() => String(route.query.thread || ''))
+
+const isMobile = useIsMobile()
+
+/**
+ * Every folder the sidebar draws, as dropdown options.
+ *
+ * Off `mail.folders` — the same list `MailSidebar` reads — rather than a copy,
+ * so a mailbox connected on a desktop appears on the phone without a second
+ * place to remember. Quiet folders (spam, drafts, the bin) are in, because on
+ * a phone this dropdown is the *only* way to any of them.
+ *
+ * Grouped by address rather than indented, because a folder belongs to a
+ * mailbox: two people's Archives are two folders, and a flat list that loses
+ * which is which is a list you cannot act on. `depth: 0` rows are the mailboxes
+ * themselves and become the headings.
+ */
+const folderOptions = computed(() => {
+  const groups = []
+  const into = (option) => {
+    if (groups.length) groups[groups.length - 1].options.push(option)
+    else groups.push({ group: '', hideLabel: true, options: [option] })
+  }
+
+  for (const one of mail.folders) {
+    const option = {
+      label: one.label,
+      icon: one.icon,
+      onClick: () => router.push({ name: 'Mail', query: { folder: one.key } }),
+    }
+
+    // "All mail" belongs to no address — it is the union — so it sits above the
+    // groups rather than starting one.
+    if (!one.address) into(option)
+    else if (one.depth) into(option)
+    else {
+      // The address heads its own group, and the row under it is that
+      // mailbox's inbox: `reading.py` says the address *is* the inbox, and
+      // repeating "sales@4dl.app" under the heading "sales@4dl.app" says
+      // nothing twice.
+      groups.push({
+        group: one.label,
+        options: [{ ...option, label: 'Inbox', icon: 'lucide-inbox' }],
+      })
+    }
+  }
+  return groups
+})
+
+/**
+ * What the button says.
+ *
+ * `All mail` is the fallback and not a bug: the server only lists that row when
+ * there is more than one mailbox (see `mailbox/reading.py`), and with one
+ * mailbox `?folder=all` is still the state the page opens in.
+ */
+const folderName = computed(
+  () => mail.folders.find((one) => one.key === folder.value)?.label || 'All mail',
+)
 
 /** The message a reply or a forward is built from: the last one in the thread. */
 const last = computed(() => messages.value[messages.value.length - 1] || null)

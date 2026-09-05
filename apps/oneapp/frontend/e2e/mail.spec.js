@@ -498,3 +498,37 @@ test('a rule files mail, and away answers it', async ({ page, baseURL }, info) =
 
   expectNoRealErrors(errors)
 })
+
+/**
+ * Every folder is reachable from a phone.
+ *
+ * It was not. `MobileShell` renders no sidebar slot, so `MailSidebar` — the
+ * only control for mailboxes, folders, Sent and the bin — never mounted on a
+ * phone, and Mail had no `PageHeader` to put anything in its place. The page
+ * opened on `?folder=all` and offered no way out of it. Drive answers the same
+ * problem the same way, so this checks the same thing its spec does.
+ */
+test('a phone can reach every mail folder', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name !== 'mobile', 'the sidebar answers this on a desktop')
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+
+  const picker = page.locator('[data-slot="mail-folders"]')
+  await expect(picker).toBeVisible({ timeout: 20_000 })
+  // The union is what the page opens on, and it says so.
+  await expect(picker).toHaveText(/All mail/)
+
+  await picker.click()
+
+  // Grouped by address, because a folder belongs to a mailbox: the heading is
+  // the address and the row under it is that mailbox's inbox.
+  const inbox = page.getByRole('menuitem', { name: 'Inbox' })
+  await expect(inbox).toBeVisible()
+  await expect(page.getByRole('menuitem', { name: 'Sent' })).toBeVisible()
+
+  // And choosing one actually goes there.
+  await page.getByRole('menuitem', { name: 'Sent' }).click()
+  await expect(page).toHaveURL(/folder=.*Sent|folder=.*__sent/)
+  await expect(picker).toHaveText(/Sent/)
+})
