@@ -210,14 +210,42 @@ def thread(key: str, folder: str = "all") -> list[dict]:
 		if (row.get(THREAD_FIELD) or normalise(row.subject)) == key
 	]
 	who = people.profiles([(row.sender, row.sender_full_name) for row in wanted])
+	held = _attachments([row.name for row in wanted])
 	for row in wanted:
 		row["who"] = who.get((row.sender or "").lower(), {})
-		row["attachments"] = frappe.get_all(
-			"File",
-			filters={"attached_to_doctype": "Communication", "attached_to_name": row.name},
-			fields=["name", "file_name", "file_size", "file_url"],
-		)
+		row["attachments"] = held.get(row.name, [])
 	return wanted
+
+
+def _attachments(messages: list[str]) -> dict:
+	"""Every message's files, in one query.
+
+	This was a query per message inside the loop — twenty messages in a
+	conversation, twenty round trips for a list most of them do not have.
+
+	`custom_kind` comes back because the reader opens an attachment in the
+	Drive's own previewer (`components/drive/FilePreview.vue`), and that is the
+	column it reads to decide between an `<img>`, the browser's PDF viewer, a
+	`<video>` and a text fetch. A mail attachment *is* a Drive file — same row,
+	same object, same permission — so it previews the same way rather than
+	through a second viewer that would drift.
+	"""
+	if not messages:
+		return {}
+
+	rows = frappe.get_all(
+		"File",
+		filters={
+			"attached_to_doctype": "Communication",
+			"attached_to_name": ("in", messages),
+		},
+		fields=["name", "file_name", "file_size", "file_url", "custom_kind", "attached_to_name"],
+	)
+
+	held = {}
+	for row in rows:
+		held.setdefault(row.pop("attached_to_name"), []).append(row)
+	return held
 
 
 @frappe.whitelist(methods=["POST"])

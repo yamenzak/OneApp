@@ -554,3 +554,41 @@ test('a phone can reach every mail folder', async ({ page, baseURL }, info) => {
   await expect(page).toHaveURL(/folder=.*Sent|folder=.*__sent/)
   await expect(picker).toHaveText(/Sent/)
 })
+
+/**
+ * An attachment is a Drive file, and opens like one.
+ *
+ * It used to be a bare anchor: a paperclip, a filename, no size — though the
+ * server had always sent one — and clicking it downloaded. Deciding whether to
+ * open a 40 MB drawing on a phone needs the size, and most of the time what
+ * somebody wants is to look rather than to keep.
+ *
+ * The fixture had no attachments at all until this test needed one, so the
+ * code drawing them had never been exercised by a browser pass.
+ */
+test('an attachment shows its size and opens in the previewer', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await threads(page).filter({ hasText: 'Quotation for the Al Reem' }).click()
+
+  const chip = page.locator('[data-slot="mail-attachment"]')
+  await expect(chip).toHaveCount(1)
+  await expect(chip).toContainText('Al Reem cladding schedule.txt')
+  // The size the server always sent and the old anchor never rendered.
+  await expect(chip).toContainText('130 B')
+
+  // The Drive's own previewer, not a second one: a mail attachment is the same
+  // `File` row, so it reads text inline and offers the same Share and Download.
+  await chip.click()
+  const preview = page.getByRole('dialog')
+  await expect(preview).toContainText('Zone 3 glazing line moved')
+  await expect(preview.getByRole('button', { name: 'Share a link' })).toBeVisible()
+
+  expectNoRealErrors(errors)
+})

@@ -214,15 +214,12 @@
           </div>
 
           <div v-if="one.attachments?.length" class="mt-3 flex flex-wrap gap-2">
-            <a
+            <AttachmentChip
               v-for="file in one.attachments"
               :key="file.name"
-              :href="file.file_url"
-              class="flex items-center gap-1.5 rounded-6 border border-outline-gray-2 px-2 py-1 text-p-xs text-ink-gray-7 hover:bg-surface-gray-2"
-            >
-              <Icon name="lucide-paperclip" class="size-3" :aria-hidden="true" />
-              {{ file.file_name }}
-            </a>
+              :file="file"
+              @open="previewing = file"
+            />
           </div>
         </article>
 
@@ -300,6 +297,14 @@
       <Button variant="ghost" size="sm" label="Undo" @click="unsend()" />
     </div>
 
+    <!--
+      An attachment opens in the Drive's own previewer, because a mail
+      attachment *is* a Drive file — the same `File` row, the same object, the
+      same permission check on the way to the bytes. A second viewer here would
+      be a second thing to keep in step with the first.
+    -->
+    <FilePreview v-model="preview" :file="previewing" />
+
     <MailComposer
       ref="composer"
       v-model="writing"
@@ -316,7 +321,6 @@ import {
   Button,
   Dropdown,
   FormControl,
-  Icon,
   LoadingText,
   PageHeader,
   dayjsLocal,
@@ -326,6 +330,8 @@ import EmptyState from '../components/EmptyState.vue'
 import SenderChip from '../components/mail/SenderChip.vue'
 import MailComposer from '../components/mail/MailComposer.vue'
 import EmailContent from '../components/mail/reader/EmailContent.vue'
+import AttachmentChip from '../components/mail/AttachmentChip.vue'
+import FilePreview from '../components/drive/FilePreview.vue'
 import { onDoctypeChange } from '../lib/socket'
 import { useIsMobile } from '../lib/screen'
 import { loadMail, mail } from '../lib/mail'
@@ -372,6 +378,14 @@ const messages = ref([])
 // pasted into the address bar opens exactly what the person who sent it saw.
 const folder = computed(() => String(route.query.folder || 'all'))
 const chosen = computed(() => String(route.query.thread || ''))
+
+// Which attachment is being looked at, and therefore whether the previewer is
+// open at all — one ref rather than two kept in step by hand.
+const previewing = ref(null)
+const preview = computed({
+  get: () => !!previewing.value,
+  set: (showing) => { if (!showing) previewing.value = null },
+})
 
 const isMobile = useIsMobile()
 

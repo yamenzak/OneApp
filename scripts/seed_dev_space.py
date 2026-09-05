@@ -667,7 +667,52 @@ def _seed_mail(user):
 			"email_account": account,
 			folder_lib.FOLDER_FIELD: folder,
 		}).insert(ignore_permissions=True)
+
+	_seed_attachment()
 	return address
+
+
+#: What the attached message is called, so a spec can name it.
+ATTACHED = "Quotation for the Al Reem tower"
+ATTACHMENT = "Al Reem cladding schedule.txt"
+
+
+def _seed_attachment():
+	"""A real file on a real message.
+
+	There were none. Every mail fixture was body text — one of them says
+	"Attached — the glazing line moved" and had nothing attached — so the
+	reader's attachment list rendered zero rows on every run, and the code that
+	drew them was never once exercised by the browser pass. It was a bare
+	anchor with no size and no preview for exactly as long as that was true.
+
+	A `.txt` and not a PDF: the Drive's previewer reads text inline, so this
+	fixture proves the whole path — chip, size, click, preview with content —
+	without a binary in the repository.
+	"""
+	message = frappe.db.get_value("Communication", {"subject": ("like", f"{ATTACHED}%")}, "name")
+	if not message:
+		return
+
+	if frappe.db.exists("File", {
+		"attached_to_doctype": "Communication",
+		"attached_to_name": message,
+		"file_name": ATTACHMENT,
+	}):
+		return
+
+	frappe.get_doc({
+		"doctype": "File",
+		"file_name": ATTACHMENT,
+		"attached_to_doctype": "Communication",
+		"attached_to_name": message,
+		"is_private": 1,
+		"content": (
+			"Al Reem tower — cladding schedule\n"
+			"=================================\n\n"
+			"Zone 3 glazing line moved 400mm east. Everything else holds.\n"
+		),
+	}).insert(ignore_permissions=True)
 
 
 def _seed_import():
