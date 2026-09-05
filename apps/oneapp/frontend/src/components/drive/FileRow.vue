@@ -19,12 +19,21 @@
     data-slot="drive-file"
     :data-kind="file.custom_kind || 'Other'"
     :data-selected="selected ? 'true' : undefined"
+    :draggable="movable"
     :class="[
       grid
         ? 'flex flex-col gap-2 rounded-6 border border-outline-gray-1 p-3'
         : 'flex items-center gap-2 rounded-4 pr-2',
       selected ? 'bg-surface-gray-2' : 'hover:bg-surface-gray-2',
+      over ? 'ring-2 ring-outline-gray-3' : '',
+      lifted ? 'opacity-50' : '',
     ]"
+    @contextmenu="emit('menu', menu)"
+    @dragstart="onDragStart"
+    @dragend="lifted = false"
+    @dragover="onDragOver"
+    @dragleave="over = false"
+    @drop="onDrop"
   >
     <!--
       Selection is opt-in per surface: the picker offers one file and a
@@ -121,7 +130,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Avatar, Button, Checkbox, Dropdown, dayjsLocal } from '@/ui'
 import FileFace from './FileFace.vue'
 
@@ -137,10 +146,15 @@ const props = defineProps({
   // What the bin offers instead, because everything else there is a no-op.
   trashed: { type: Boolean, default: false },
   canWrite: { type: Boolean, default: true },
+  // Dragging is the Drive's alone. In the picker there is nowhere to drag to,
+  // and a row that lifts under the cursor in a dialog is a row that looks
+  // broken.
+  movable: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
-  'open', 'select', 'favourite', 'share', 'rename', 'move', 'trash', 'restore', 'destroy',
+  'open', 'select', 'favourite', 'share', 'rename', 'move', 'trash', 'restore',
+  'destroy', 'menu', 'move-into',
 ])
 
 const menu = computed(() => {
@@ -165,5 +179,45 @@ const menu = computed(() => {
 const when = computed(() =>
   props.file.modified ? dayjsLocal(props.file.modified).fromNow() : '',
 )
+
+// --------------------------------------------------------------------------
+// Dragging a row onto a folder
+// --------------------------------------------------------------------------
+
+// Our own MIME type, and not `text/plain`: a row dragged into a text field
+// somewhere else in the app would otherwise paste a row id, and a file dragged
+// in from the desktop would look to us like one of ours.
+const MOVING = 'application/x-onespace-file'
+
+const lifted = ref(false)
+const over = ref(false)
+
+function onDragStart(event) {
+  if (!props.movable) return
+  lifted.value = true
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData(MOVING, props.file.name)
+}
+
+function onDragOver(event) {
+  // Only a folder is a destination, and only for one of ours. A file dragged
+  // from the desktop falls through to the page's own drop zone, which uploads
+  // it — which is what somebody dragging a file at a folder row means.
+  if (!props.file.is_folder || !event.dataTransfer.types.includes(MOVING)) return
+  event.preventDefault()
+  event.stopPropagation()
+  event.dataTransfer.dropEffect = 'move'
+  over.value = true
+}
+
+function onDrop(event) {
+  over.value = false
+  if (!props.file.is_folder) return
+  const moving = event.dataTransfer.getData(MOVING)
+  if (!moving || moving === props.file.name) return
+  event.preventDefault()
+  event.stopPropagation()
+  emit('move-into', props.file, [moving])
+}
 
 </script>

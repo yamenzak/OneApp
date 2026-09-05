@@ -325,3 +325,113 @@ test('a link made here is a link a stranger can follow', async ({ page, browser 
 
   expectNoRealErrors(errors)
 })
+
+/**
+ * Getting files in, which until now there was no control for.
+ *
+ * The empty state has always said "Upload a file or make a folder to start"
+ * beside a toolbar that offered only the folder: the only ways a file could
+ * reach a workspace were a record's attach field and the picker's upload tab,
+ * both of which put it somewhere else. So the thing under test is not the
+ * uploader — it is Frappe's — but that the Drive now has a way in at all, and
+ * that four files dropped at once report themselves rather than vanishing into
+ * a spinner.
+ */
+test('files chosen from the toolbar upload, and the tray says what happened', async ({
+  page,
+}) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/files')
+  await expect(page.locator('[data-slot="drive-dropzone"]')).toBeVisible()
+
+  const stamp = Date.now()
+  await page.locator('input[name="drive-upload"]').setInputFiles([
+    { name: `probe-${stamp}-a.txt`, mimeType: 'text/plain', buffer: Buffer.from('a') },
+    { name: `probe-${stamp}-b.txt`, mimeType: 'text/plain', buffer: Buffer.from('b') },
+  ])
+
+  const tray = page.locator('[data-slot="upload-tray"]')
+  await expect(tray).toBeVisible()
+  await expect(tray).toContainText(`probe-${stamp}-a.txt`)
+  // One at a time and in order, which is why the second is still queued while
+  // the first is on the wire.
+  await expect(tray).toContainText('2 files uploaded', { timeout: 30_000 })
+
+  // And they are in the workspace, not only in the tray.
+  await page.getByPlaceholder('Search files').fill(`probe-${stamp}`)
+  await expect(page.locator('[data-slot="drive-file"]')).toHaveCount(2, { timeout: 20_000 })
+
+  expectNoRealErrors(errors)
+})
+
+test('dropping files on the list uploads them into the folder you are in', async ({
+  page,
+}) => {
+  await page.goto('/one/files')
+  const zone = page.locator('[data-slot="drive-dropzone"]')
+  await expect(zone).toBeVisible()
+
+  const stamp = Date.now()
+  // A real `DataTransfer` with a real `File` on it. `setInputFiles` exercises
+  // the button; only this exercises the drop, and the drop is the half that
+  // has its own event plumbing to get wrong.
+  await zone.dispatchEvent('drop', {
+    dataTransfer: await page.evaluateHandle((name) => {
+      const data = new DataTransfer()
+      data.items.add(new File(['dropped'], name, { type: 'text/plain' }))
+      return data
+    }, `dropped-${stamp}.txt`),
+  })
+
+  await expect(page.locator('[data-slot="upload-tray"]'))
+    .toContainText('1 file uploaded', { timeout: 30_000 })
+  await page.getByPlaceholder('Search files').fill(`dropped-${stamp}`)
+  await expect(page.locator('[data-slot="drive-file"]').first())
+    .toContainText(`dropped-${stamp}.txt`, { timeout: 20_000 })
+})
+
+test('right-clicking a row offers what its menu offers', async ({ page }) => {
+  await page.goto('/one/files')
+  const row = page.locator('[data-slot="drive-file"]').first()
+  await row.waitFor({ timeout: 20_000 })
+
+  // One menu for the whole list, filled by whichever row was right-clicked —
+  // so the check that matters is that it is filled at all, and with this row's
+  // actions rather than an empty array.
+  await row.click({ button: 'right' })
+  await expect(page.getByRole('menuitem', { name: 'Rename' })).toBeVisible()
+  await expect(page.getByRole('menuitem', { name: 'Move to the bin' })).toBeVisible()
+})
+
+test('a file dragged onto a folder ends up inside it', async ({ page }) => {
+  const stamp = Date.now()
+  const folder = `Landing ${stamp}`
+
+  await page.goto('/one/files')
+  await page.getByRole('button', { name: 'New folder' }).click()
+  await page.getByRole('textbox', { name: 'Name' }).fill(folder)
+  await page.getByRole('button', { name: 'Make it', exact: true }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+
+  await page.locator('input[name="drive-upload"]').setInputFiles([
+    { name: `mover-${stamp}.txt`, mimeType: 'text/plain', buffer: Buffer.from('m') },
+  ])
+  await expect(page.locator('[data-slot="upload-tray"]'))
+    .toContainText('1 file uploaded', { timeout: 30_000 })
+
+  // Both rows on screen at once, which a search for the shared stamp gives.
+  await page.getByPlaceholder('Search files').fill(String(stamp))
+  const file = page.locator('[data-slot="drive-file"]').filter({ hasText: `mover-${stamp}.txt` })
+  const target = page.locator('[data-slot="drive-file"]').filter({ hasText: folder })
+  await expect(file).toHaveCount(1, { timeout: 20_000 })
+  await expect(target).toHaveCount(1)
+
+  await file.dragTo(target)
+
+  // The proof is inside the folder, not the row disappearing from this list —
+  // a filtered list drops rows for several reasons and only one of them is a
+  // move that worked.
+  await target.locator('[data-slot="drive-open"]').click()
+  await expect(page.locator('[data-slot="drive-file"]').first())
+    .toContainText(`mover-${stamp}.txt`, { timeout: 20_000 })
+})

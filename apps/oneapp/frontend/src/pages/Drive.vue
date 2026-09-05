@@ -61,6 +61,35 @@
         @click="emptying = true"
       />
       <template v-else>
+        <!--
+          Upload. There was no such control until now — the empty state has
+          always said "Upload a file or make a folder to start" beside a
+          toolbar that offered only the folder, and the only ways a file could
+          reach this workspace were a record's attach field and the picker's
+          upload tab, both of which put it somewhere else.
+
+          A plain input rather than `FileUploader`: the queue is
+          `useUploads`, which outlives this page, and a component that owns
+          reactive upload state would end where the page does.
+        -->
+        <!-- A hidden file input is the file picker itself; `FormControl`
+             draws a labelled control and there is nothing here to label. -->
+        <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
+        <input
+          ref="chooser"
+          name="drive-upload"
+          type="file"
+          multiple
+          class="hidden"
+          @change="chosenFiles"
+        >
+        <Button
+          :icon="isMobile ? 'lucide-upload' : undefined"
+          :icon-left="isMobile ? undefined : 'lucide-upload'"
+          label="Upload"
+          tooltip="Upload files"
+          @click="chooser?.click()"
+        />
         <Button
           :icon="isMobile ? 'lucide-folder-plus' : undefined"
           :icon-left="isMobile ? undefined : 'lucide-folder-plus'"
@@ -99,7 +128,24 @@
     the first version of this was.
   -->
   <div class="flex h-full min-h-0">
-    <div class="flex min-w-0 flex-1 flex-col p-5">
+    <!--
+      Drop anywhere in the pane, not only on the list: a person dragging four
+      files at an empty folder aims at the empty state, and a drop zone that
+      is only the rows is a drop zone that misses exactly when it is needed.
+
+      `dragenter`/`dragleave` are counted rather than paired. Both fire for
+      every child element the pointer crosses, so a naive pair turns the
+      highlight off the moment the cursor passes over a row.
+    -->
+    <div
+      class="flex min-w-0 flex-1 flex-col p-5"
+      data-slot="drive-dropzone"
+      :class="dragging ? 'rounded-6 ring-2 ring-inset ring-outline-gray-3' : ''"
+      @dragenter.prevent="onDragEnter"
+      @dragover.prevent
+      @dragleave="onDragLeave"
+      @drop.prevent="onDrop"
+    >
       <!--
         What the bin is, said where somebody deciding whether to empty it is
         looking. Thirty days is the promise the sweep keeps, and a bin whose
@@ -148,6 +194,7 @@
           <span>{{ counted }}</span>
         </div>
 
+        <ContextMenu :options="rowMenu">
         <div
           :class="
             grid
@@ -162,8 +209,11 @@
             :grid="grid"
             selectable
             actions
+            movable
             :selected="drive.picked.value.has(file.name)"
             :trashed="place === 'trash'"
+            @menu="(options) => (rowMenu = options)"
+            @move-into="moveInto"
             @open="open"
             @select="drive.toggle"
             @favourite="drive.favourite"
@@ -175,6 +225,7 @@
             @destroy="(one) => drive.destroy(one)"
           />
         </div>
+        </ContextMenu>
 
         <Button
           v-if="drive.more.value"
@@ -247,6 +298,8 @@
     </div>
   </div>
 
+  <UploadTray />
+
   <FilePreview v-model="previewing" :file="looking" />
   <FileShare v-model="sharing" :file="looking" />
   <ImportSheet v-model="importing" :folder="folder" />
@@ -313,6 +366,7 @@ import {
   Breadcrumbs,
   Button,
   Checkbox,
+  ContextMenu,
   Dialog,
   Dropdown,
   FormControl,
@@ -324,8 +378,10 @@ import FilePreview from '../components/drive/FilePreview.vue'
 import FileRow from '../components/drive/FileRow.vue'
 import FileShare from '../components/drive/FileShare.vue'
 import FolderPicker from '../components/drive/FolderPicker.vue'
+import UploadTray from '../components/drive/UploadTray.vue'
 import ImportSheet from '../components/sheets/ImportSheet.vue'
 import { useDrive } from '../composables/useDrive'
+import { useUploads } from '../composables/useUploads'
 import { workspace } from '../lib/workspace'
 import { useIsMobile } from '@/lib/screen'
 import { PLACES, labelOf } from '../components/drive/places'
@@ -364,6 +420,62 @@ const place = computed(() =>
 const folder = computed(() => route.query.folder || '')
 
 const drive = useDrive({ place, folder })
+
+// --------------------------------------------------------------------------
+// Getting files in
+// --------------------------------------------------------------------------
+
+const uploads = useUploads()
+const chooser = ref(null)
+
+// A finished upload lands in a folder somebody may be looking at. Re-reading
+// the place rather than pushing a row in: the server decided the name, the
+// size and whether the quota allowed it at all.
+uploads.onFinished((one) => {
+  if (one.folder === (folder.value || 'Home')) drive.load()
+})
+
+function chosenFiles(event) {
+  uploads.add([...(event.target.files || [])], folder.value || 'Home')
+  // Reset, so choosing the same file twice fires twice.
+  event.target.value = ''
+}
+
+// Counted, not paired: `dragenter` and `dragleave` both fire for every child
+// the pointer crosses, so decrementing on each leave is the only way the
+// highlight survives the cursor passing over a row.
+const dragDepth = ref(0)
+const dragging = computed(() => dragDepth.value > 0)
+
+function onDragEnter(event) {
+  if (!event.dataTransfer?.types?.includes('Files')) return
+  dragDepth.value += 1
+}
+
+function onDragLeave() {
+  dragDepth.value = Math.max(0, dragDepth.value - 1)
+}
+
+function onDrop(event) {
+  dragDepth.value = 0
+  const files = [...(event.dataTransfer?.files || [])]
+  // A row dragged onto empty space, not a file from the desktop. The row's own
+  // drop handler covers the case that means something.
+  if (!files.length) return
+  if (place.value === 'trash') return
+  uploads.add(files, folder.value || 'Home')
+}
+
+/** A row dropped on a folder row. */
+function moveInto(target, names) {
+  const moving = drive.files.value.filter((one) => names.includes(one.name))
+  if (moving.length) drive.move(moving, target.name)
+}
+
+// One menu for the whole list, filled by whichever row was right-clicked —
+// frappe-ui's own pattern for this, and the reason there is not a menu
+// instance per row.
+const rowMenu = ref([])
 
 const placeName = computed(() => labelOf(place.value))
 const placeOptions = computed(() =>
