@@ -282,6 +282,44 @@ def test_a_locked_table_refuses_a_pull(sheets):
 	assert "LOCKED" in block[:block.index("read_range(")]
 
 
+def test_a_feed_says_whether_the_sheet_has_moved_on(sheets):
+	"""Nothing pushes, so the only thing left is finding out.
+
+	A sheet does not update a document — somebody presses Fill again — and that
+	is the design rather than a gap: a spreadsheet that could reprice a
+	quotation after it was sent would make locking the thing you must remember
+	rather than the thing you choose. What is owed instead is a signal, and it
+	costs one comparison and no new storage.
+	"""
+	source = (SHEETS / "feed.py").read_text()
+	block = source[source.index("def _with_freshness("):]
+	head = block[:block.index("\ndef ", 1) if "\ndef " in block[1:] else len(block)]
+
+	# `File.modified`, which `writing._touch` stamps on every cell written.
+	assert '"File"' in head and "modified" in head
+	assert '"stale"' in head and '"sheet_gone"' in head
+
+	# Both sides normalised: one of them is a string when the row was just
+	# written, and comparing a datetime with a string raises.
+	assert head.count("get_datetime") >= 2
+
+
+def test_nothing_re_pulls_on_its_own(sheets):
+	"""A cell write must not reach into a document.
+
+	Stated as a test because "make it live" is the obvious next feature and the
+	wrong one — and the place it would be written is `write_cells`.
+	"""
+	# Comments stripped: `on_trash` explains in prose that `Sheet Feed`
+	# deliberately survives a sheet being deleted, and saying so is not doing
+	# it.
+	source = re.sub(r"#[^\n]*", "", (SHEETS / "writing.py").read_text())
+	for reaching in ("pull(", "Sheet Feed", "reference_doctype"):
+		assert reaching not in source, (
+			f"writing.py reaches for {reaching} — a sheet does not update a document"
+		)
+
+
 def test_the_one_download_funnel_knows_about_sheets(sheets):
 	"""Every download and every share link goes through `r2.serve`.
 

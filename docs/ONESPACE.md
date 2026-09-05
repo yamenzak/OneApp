@@ -790,6 +790,13 @@ the server refuses a pull rather than the control merely disappearing. The
 record survives the sheet being deleted, because that is the moment it is worth
 most.
 
+**Nothing pushes.** Editing the sheet never touches the document; somebody
+presses Fill again. What the note does instead is say *the sheet has changed
+since* — so you find out, with the control that would act on it right there,
+and nothing moves behind you. A spreadsheet that could reprice a quotation
+after it was sent would make locking the thing you must remember rather than
+the thing you choose.
+
 **The control is on every editable child table**, not on the ones a manifest
 named. Declaring the binding is the more disciplined design and the wrong one:
 it would mean nobody can price a job in a grid and feed it into a doctype

@@ -340,6 +340,25 @@ this is what makes it part of the product.
   the person entitled to make it is the one who may write it — often not the
   estimator whose sheet fed it.
 
+* **Nothing pushes, and that is the design.** Editing the sheet does not touch
+  the document; somebody presses Fill again. The obvious next feature is to
+  make it live — change a rate, and every quotation following that range
+  updates — and it is the wrong one. A quotation is a commitment rather than a
+  view, so the interesting question stops being technical the moment the
+  document has been sent: you would have to know its docstatus, and whether
+  anybody is looking at it, and get it wrong once and a number a customer
+  agreed to has moved. Locking exists so a person decides that moment, and a
+  push would make locking the thing you must remember rather than the thing
+  you choose.
+
+  What was owed instead is **finding out**, which is one comparison and no new
+  storage: `File.modified` — stamped by `writing._touch` on every cell written
+  — against `pulled_on`. When the sheet has moved on, the note says so and the
+  control that would act on it is already beside it. Renaming or moving a sheet
+  moves that timestamp too, so it occasionally says "changed" when only the
+  name did; that is the safe direction to be wrong in, and the alternative is a
+  column on `File` to say what its own `modified` already nearly says.
+
 **The manifest declaration was dropped, on purpose.** The plan had a space
 declare which screen may be filled from which range:
 

@@ -200,9 +200,9 @@ def _remember(standing, values: dict) -> dict:
     """Write the feed row, replacing the one that was there."""
     if standing:
         frappe.db.set_value("Sheet Feed", standing.name, values, update_modified=True)
-        return {**dict(standing), **values}
+        return _with_freshness({**dict(standing), **values})
     made = frappe.get_doc({"doctype": "Sheet Feed", **values}).insert(ignore_permissions=True)
-    return {field: made.get(field) for field in FEED_FIELDS}
+    return _with_freshness({field: made.get(field) for field in FEED_FIELDS})
 
 
 @frappe.whitelist(methods=["GET"])
@@ -216,11 +216,50 @@ def feeds(doctype: str, docname: str) -> list[dict]:
     if not frappe.has_permission(doctype, "read", doc=docname):
         frappe.throw(_("You cannot read that record."), frappe.PermissionError)
 
-    return frappe.get_all(
+    found = frappe.get_all(
         "Sheet Feed",
         filters={"reference_doctype": doctype, "reference_name": docname},
         fields=FEED_FIELDS, order_by="into asc", limit_page_length=50,
     )
+    return [_with_freshness(row) for row in found]
+
+
+def _with_freshness(row: dict) -> dict:
+    """Whether the sheet has moved on since these rows were taken from it.
+
+    Nothing pushes. A sheet does not update a document — somebody presses Fill
+    again — and that is the design rather than a gap: a quotation is a
+    commitment, and a spreadsheet that could reprice one after it was sent
+    would make locking the thing you must remember rather than the thing you
+    choose. What was missing was only *finding out*, which is this.
+
+    One comparison and no new storage: `File.modified`, which `writing._touch`
+    stamps on every cell written, against when the pull was taken. Renaming or
+    moving the sheet moves that timestamp too, so this occasionally says
+    "changed" when only the name did. That is the safe direction to be wrong
+    in — it sends somebody to look — and the alternative is a column on `File`
+    to say what its own `modified` already nearly says.
+    """
+    when = frappe.db.get_value("File", row.get("sheet"), "modified")
+    taken = row.get("pulled_on")
+
+    # Both sides through `get_datetime`, because one of these is a string and
+    # the other is not depending on where the row came from — the database
+    # hands back a datetime, and a row just written carries the `now()` string
+    # that wrote it. Comparing the two raises rather than answering wrongly,
+    # which is at least the good kind of bug to have had.
+    fresh = False
+    if when and taken:
+        fresh = frappe.utils.get_datetime(when) > frappe.utils.get_datetime(taken)
+
+    return {
+        **row,
+        # The sheet is gone. Worth saying rather than showing an "as of" that
+        # can never change again — and the row deliberately outlives it.
+        "sheet_gone": not when,
+        "sheet_modified": when,
+        "stale": fresh,
+    }
 
 
 @frappe.whitelist(methods=["POST"])
@@ -257,7 +296,7 @@ def _set_status(doctype: str, docname: str, into: str, status: str) -> dict:
         values["locked_by"] = None
 
     frappe.db.set_value("Sheet Feed", standing.name, values, update_modified=True)
-    return {**dict(standing), **values}
+    return _with_freshness({**dict(standing), **values})
 
 
 def _columns(head: list, child_doctype: str, wanted: dict) -> list[dict]:

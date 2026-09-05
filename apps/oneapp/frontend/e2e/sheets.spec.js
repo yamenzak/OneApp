@@ -456,4 +456,22 @@ test('a filled table says where its rows came from, and can be locked', async ({
   await note.getByRole('button', { name: 'Follow the sheet again' }).click()
   await expect(page.getByRole('tabpanel', { name: 'Participants' })
     .getByRole('button', { name: 'Fill again' })).toBeVisible()
+
+  // Nothing pushes. Typing in the sheet does not touch the document — what it
+  // does is make the note say so, with the control that would act on it
+  // already beside it.
+  await expect(note).not.toContainText('has changed')
+  await page.goto(`/one/sheets/${id}`)
+
+  // Waiting for the request rather than for the word "Saved": the header says
+  // Saved before anything has been typed too, so it is true immediately and
+  // proves nothing.
+  const written = page.waitForResponse((one) => one.url().includes('write_cells'))
+  await type(page, 'B2', 'Guest')
+  await written
+
+  await openParticipants(page)
+  await expect(page.locator('[data-slot="sheet-feed"]')).toContainText('has changed')
+  // And the rows are still what they were until somebody presses it.
+  await expect(page.getByRole('row', { name: /Administrator/ }).first()).toBeVisible()
 })

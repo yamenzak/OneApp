@@ -9,6 +9,12 @@
     Locking is RUA's lock. After it the document is the record and the sheet is
     history — a pull is refused rather than quietly overwriting a quotation
     somebody has since corrected by hand.
+
+    Nothing pushes, and that is the design. What this adds is *finding out*:
+    when the sheet has moved on since these rows were taken, the note says so
+    and the control beside it is already the one that would fix it. A sheet
+    that could reprice a quotation after it was sent would make locking the
+    thing you must remember rather than the thing you choose.
   -->
   <div
     data-slot="sheet-feed"
@@ -21,6 +27,23 @@
     </span>
 
     <Badge v-if="locked" theme="gray" variant="subtle" size="sm" label="Locked" />
+
+    <!-- The whole of "following": you are told, and the button that acts on it
+         is the next thing along. -->
+    <Badge
+      v-if="feed.stale"
+      theme="amber"
+      variant="subtle"
+      size="sm"
+      label="The sheet has changed since"
+    />
+    <Badge
+      v-else-if="feed.sheet_gone"
+      theme="gray"
+      variant="subtle"
+      size="sm"
+      label="That sheet is gone"
+    />
 
     <!-- The one thing worth doing about it, and only for somebody who may
          change the record. Reading who filled it is not the same right as
