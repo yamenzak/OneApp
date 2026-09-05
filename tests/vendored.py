@@ -26,6 +26,10 @@ from pathlib import Path
 VENDORED = (
     "frontend/src/lib/sheets/",
     "frontend/src/components/sheets/editor/",
+    # The message reader — DOMPurify, the sandboxed iframe, and remote-asset
+    # blocking that parses the document rather than pattern-matching it. From
+    # frappe/mail; see components/mail/reader/VENDORED.md.
+    "frontend/src/components/mail/reader/",
 )
 
 

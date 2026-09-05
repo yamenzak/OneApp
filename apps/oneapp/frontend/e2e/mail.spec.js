@@ -25,6 +25,16 @@ const ADDRESS = 'sales@'
 const threads = (page) => page.locator('[data-slot="mail-thread"]')
 const messages = (page) => page.locator('[data-slot="mail-message"]')
 
+/**
+ * One message's body, inside its own iframe.
+ *
+ * `EmailContent` renders into a `srcdoc` frame so a sender's CSS cannot reach
+ * the app — which also means Playwright has to be told to step into it. See
+ * `components/mail/reader/VENDORED.md`.
+ */
+const messageBody = (page, at) =>
+  messages(page).nth(at).frameLocator('iframe').locator('body')
+
 test('a conversation is one row, and opening it is a place you can link to', async ({
   page,
   baseURL,
@@ -49,8 +59,12 @@ test('a conversation is one row, and opening it is a place you can link to', asy
 
   // Oldest first — the order it happened, which is the only order a reply
   // makes sense read in.
-  await expect(messages(page).first()).toContainText('revised cladding quote')
-  await expect(messages(page).last()).toContainText('glazing line moved')
+  //
+  // Read through the frame, because the body is in a document of its own now:
+  // that is the whole point of the vendored reader, and `toContainText` on the
+  // article stops at the iframe boundary.
+  await expect(messageBody(page, 0)).toContainText('revised cladding quote')
+  await expect(messageBody(page, 1)).toContainText('glazing line moved')
 
   // A reload keeps it open, because the URL is the state.
   await page.reload()
@@ -215,13 +229,21 @@ test('a tracking pixel does not load itself', async ({ page, baseURL }, info) =>
   await page.goto('/one/mail')
   await threads(page).filter({ hasText: 'Fabricator' }).click()
 
-  const notice = page.locator('[data-slot="mail-blocked-images"]')
-  await expect(notice).toContainText('1 image not loaded')
+  // The banner is the vendored reader's own — see
+  // `components/mail/reader/VENDORED.md` — so it is found by what it says
+  // rather than by a slot we would have to patch into somebody else's file.
+  const notice = page.getByText('remote image hidden to protect your privacy')
+  await expect(notice).toBeVisible()
   expect(reached).toEqual([])
+
+  // The body is in an iframe now, and that is the point: the request the
+  // sender is waiting for is made from inside it, and `page.route` still sees
+  // it. Nothing reached the tracker while the images were held.
+  await expect(page.locator('[data-slot="mail-body"] iframe')).toHaveCount(1)
 
   // And asking for them puts them back — at which point the request is made,
   // because that is what the reader just chose.
-  await notice.getByRole('button', { name: 'Show images' }).click()
+  await page.getByRole('button', { name: 'Show images' }).click()
   await expect(notice).toHaveCount(0)
   await expect
     .poll(() => reached.length, { timeout: 5_000 })

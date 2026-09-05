@@ -68,7 +68,7 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    include: ['src/{lib/sheets,components/sheets/editor}/**/*.test.js'],
+    include: ['src/{lib/sheets,components/sheets/editor,components/mail/reader}/**/*.test.js'],
     environment: 'node',
   },
 })

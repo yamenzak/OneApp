@@ -16,6 +16,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@iframe-resizer/child": "5.5.9",
+    "@iframe-resizer/vue": "5.5.9",
+    "dompurify": "^3.2.6",
     "echarts": "^6.0.0",
     "exceljs": "^4.4.0",
     "fast-formula-parser": "^1.0.19",

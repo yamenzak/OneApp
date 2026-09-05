@@ -33,6 +33,7 @@ const BANNED = [
 const VENDORED = [
   'src/lib/sheets/**',
   'src/components/sheets/editor/**',
+  'src/components/mail/reader/**',
 ]
 
 export default [

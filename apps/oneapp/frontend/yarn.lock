@@ -638,6 +638,28 @@
     "@iconify/types" "^2.0.0"
     import-meta-resolve "^4.2.0"
 
+"@iframe-resizer/child@5.5.9":
+  version "5.5.9"
+  resolved "https://registry.yarnpkg.com/@iframe-resizer/child/-/child-5.5.9.tgz#f6fc556ba8424d75cf1fb1a6af0406e4a52337c8"
+  integrity sha512-kX4GeGvlfu9S0XfDgSEy+O36q6qFz17kslLYdBT1evBTCK7Q3ETYtZMzVnHlB5PKc9co699kWEZbmpUGtE9IQw==
+  dependencies:
+    auto-console-group "1.3.0"
+
+"@iframe-resizer/core@5.5.9":
+  version "5.5.9"
+  resolved "https://registry.yarnpkg.com/@iframe-resizer/core/-/core-5.5.9.tgz#bcc6fca02bd4071b3c36f421c853bf06f20469db"
+  integrity sha512-HacDQx81pgHlmY48tRogcX02TOXfvjllJzI+xfVYmvEXhxoViyi9yEobhNQEt8Mq6NmrH1vHhz6FRfQ9uBTsjQ==
+  dependencies:
+    auto-console-group "1.3.0"
+
+"@iframe-resizer/vue@5.5.9":
+  version "5.5.9"
+  resolved "https://registry.yarnpkg.com/@iframe-resizer/vue/-/vue-5.5.9.tgz#2bd293f147ecb3a36e9cc2c6b6902fc542d2c021"
+  integrity sha512-MHz7jCccfGN/+1XjwTwyytn8byKx5Znex3f8dSJnoaodjvTEaTC/pJiYTfWgx/z4X2Ng2gP3Dhci0q8Nn9/z7g==
+  dependencies:
+    "@iframe-resizer/core" "5.5.9"
+    auto-console-group "1.3.0"
+
 "@internationalized/date@^3.5.0":
   version "3.12.3"
   resolved "https://registry.yarnpkg.com/@internationalized/date/-/date-3.12.3.tgz#e11d14dbf12bf45057dd5996bac77f7c2f89ff9c"
@@ -1608,6 +1630,11 @@ async@^3.2.4:
   resolved "https://registry.yarnpkg.com/async/-/async-3.2.6.tgz#1b0728e14929d51b85b449b7f06e27c1145e38ce"
   integrity sha512-htCUDlxyyCLMgaM3xXg0C0LW2xqfuQ6p05pCEIsXuyQ+a1koYKTuBMzRNwmybfLgvJDMd0r1LTn4+E0Ti6C2AA==
 
+auto-console-group@1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/auto-console-group/-/auto-console-group-1.3.0.tgz#21870bad097192b5950f10a3bdf6054c74971934"
+  integrity sha512-W/G5jy1ZPeVYPyqOVGND7EjbzrsLgRD3s+1QegXfJ7bYlphFxjqG60rviFXWw0d2YCj0Clc7hU5/nTqrBEhBIw==
+
 autoprefixer@^10.4.20:
   version "10.5.4"
   resolved "https://registry.yarnpkg.com/autoprefixer/-/autoprefixer-10.5.4.tgz#3b7dd848b4155514a95ad1f6ce598844bea09697"
@@ -1994,7 +2021,7 @@ dlv@^1.1.3:
   resolved "https://registry.yarnpkg.com/dlv/-/dlv-1.1.3.tgz#5c198a8a11453596e751494d49874bc7732f2e79"
   integrity sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA==
 
-dompurify@^3.4.0:
+dompurify@^3.2.6, dompurify@^3.4.0:
   version "3.4.14"
   resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.4.14.tgz#a789edb2c7bcdb69a93713a34edb7e0a5245d8c9"
   integrity sha512-dVoH9z+MY+C9IilgGCk3YfFqjLi3fChm2OiKJMzh6axrJ5qwxqWaZamgmHrpv22CN/KdbZJuGEGgfQoL00LTdg==

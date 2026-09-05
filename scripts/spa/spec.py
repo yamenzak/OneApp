@@ -86,13 +86,24 @@ APPS = {
             # by the person who inserts one.
             "echarts": "^6.0.0",
             "vue-echarts": "^8.0.1",
+            # Reading somebody else's mail safely. A message body is HTML
+            # written by a stranger, and the two things that must happen to it
+            # before it reaches a screen are not things to hand-roll: DOMPurify
+            # strips what should never run, and the iframe-resizer pair lets the
+            # body live in its own document — its `<style>` cannot reach our app
+            # — while still growing the frame to its own height. See
+            # `components/mail/reader/VENDORED.md`.
+            "dompurify": "^3.2.6",
+            "@iframe-resizer/child": "5.5.9",
+            "@iframe-resizer/vue": "5.5.9",
         },
         # The spreadsheet engine and its canvas renderer are Frappe's, vendored
         # whole (see src/lib/sheets/VENDORED.md) — and their unit suite came
-        # with them. It is the only thing in either bundle that a browser pass
-        # cannot reach: a formula evaluator's edge cases are not a screen.
+        # with them. The mail reader's asset blocking is the second thing here a
+        # browser pass cannot reach: whether a tracking pixel loads is a
+        # question about eight shapes of HTML, not about a screen.
         "dev_packages": {"vitest": "^2.1.0", "happy-dom": "^20.10.2"},
-        "unit_tests": "src/{lib/sheets,components/sheets/editor}/**/*.test.js",
+        "unit_tests": "src/{lib/sheets,components/sheets/editor,components/mail/reader}/**/*.test.js",
     },
     # Signing up, and nothing else.
     #

@@ -77,6 +77,10 @@ VENDORED = (
     # `sn-*` CSS in the same file, so `sn-topbar` is defined two hundred lines
     # below where it is used and has never been a Tailwind utility.
     "components/sheets/editor/",
+    # The message reader. Its classes are Frappe's own and its `<style>` block
+    # is written into an iframe's `srcdoc`, so auditing it against our Tailwind
+    # build asks a question with no right answer.
+    "components/mail/reader/",
 )
 
 # Files that write a *whole* HTML document — their own `<style>` included — and
