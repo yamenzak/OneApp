@@ -226,6 +226,15 @@ We have one. Quotation items are a child table with computed columns; the output
 is a print format. Nothing about a spreadsheet survives the port, and saying so
 now is what stops it being ported by habit.
 
+**Amended.** That is right about the *service* and wrong about the *capability*.
+Nothing of Google survives — no service account, no `files.copy`, no 582 lines
+of `google_sheets.py` — but a child table with three derived columns does not
+replace a surface where an estimator writes `=IF(C7>50, D7*0.9, D7)` without
+asking a developer. What the old integration found and got right is the shape:
+a sheet is the calculator, a **named range** is the contract, and the doctype
+is the record once it is locked. `docs/SHEETS.md` takes that shape and drops
+the service.
+
 Same for `prints.py` (670 lines of hand-built HTML): print formats, built in the
 builder.
 
