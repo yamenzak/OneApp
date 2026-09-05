@@ -36,6 +36,14 @@ export const screen = {
         // in the footer and the server bounds again.
         start: page.start || 0,
         limit: page.limit || undefined,
+        // The days a calendar has on screen. The server applies them to the
+        // screen's own date field, so these two are the whole of it — a range
+        // that cannot name a column.
+        //
+        // Spread rather than set to `undefined`: the key is serialised either
+        // way, and `since=undefined` reaches the server as the four-letter
+        // string, which is a date to nobody.
+        ...(page.since && page.until ? { since: page.since, until: page.until } : {}),
         overrides: overrides ? JSON.stringify(overrides) : null,
       },
       { silent: true, method: 'GET' },

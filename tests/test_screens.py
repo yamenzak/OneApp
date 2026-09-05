@@ -1185,14 +1185,103 @@ def test_the_two_halves_agree_on_what_a_view_type_is(spaceview):
 def test_a_screen_offers_what_it_declares_and_nothing_it_cannot_draw(spaceview):
 	assert spaceview._view_types({"view_types": "list"}) == ["list"]
 	# Unbuilt types are dropped rather than refused: a manifest naming one gets
-	# a list today and the real thing the day it ships.
-	assert spaceview._view_types({"view_types": "list,calendar"}) == ["list"]
-	assert spaceview._view_types({"view_types": "calendar"}) == ["list"]
+	# a list today and the real thing the day it ships. `map` is the one still
+	# unbuilt — the calendar shipped and is tested below.
+	assert spaceview._view_types({"view_types": "list,map"}) == ["list"]
+	assert spaceview._view_types({"view_types": "map"}) == ["list"]
 	# Order is the manifest's, duplicates collapse, and nothing declared is
 	# still a list.
 	assert spaceview._view_types({"view_types": "list, list"}) == ["list"]
 	assert spaceview._view_types({}) == ["list"]
 	assert spaceview._view_types({"view_types": ""}) == ["list"]
+
+
+def test_a_calendar_is_only_offered_where_there_is_a_date_to_place_it_by(spaceview):
+	"""The same rule as the board's, one field over.
+
+	A calendar is a way of reading one date. There is no screen-level date
+	field to fall back to — `status_field` is on the screen because a badge
+	reads it too, and nothing but the calendar reads this — so `view_settings`
+	is the only declaration, the way the dashboard's widgets are.
+	"""
+	said = {
+		"view_types": "list,calendar",
+		"view_settings": '{"calendar": {"start_field": "starts_on"}}',
+	}
+	assert spaceview._view_types(said) == ["list", "calendar"]
+	assert spaceview._view_types({**said, "view_settings": "{}"}) == ["list"]
+	assert spaceview._view_types({"view_types": "calendar"}) == ["list"]
+	# An end without a start is not a declaration: a span whose beginning
+	# nothing knows is not a span.
+	assert spaceview._view_types({
+		"view_types": "calendar",
+		"view_settings": '{"calendar": {"end_field": "ends_on"}}',
+	}) == ["list"]
+
+
+def test_a_calendar_reads_dates_and_refuses_everything_else(spaceview):
+	"""Which pair of fields the grid places a record by.
+
+	The fieldtype is checked here rather than at declaration time for the same
+	reason the board's is: this is where the columns are. A start that is not a
+	date drops the calendar; an end that is not one drops the span and keeps
+	the calendar, because a record with a date on it is still a record with a
+	date on it.
+	"""
+	columns = [
+		{"fieldname": "starts_on", "label": "Starts on", "fieldtype": "Datetime"},
+		{"fieldname": "ends_on", "label": "Ends on", "fieldtype": "Datetime"},
+		{"fieldname": "due", "label": "Due", "fieldtype": "Date"},
+		{"fieldname": "subject", "label": "Subject", "fieldtype": "Data"},
+	]
+	resolved = {
+		"doctype": "Event",
+		"all_columns": columns,
+		"view_settings": {"calendar": {"start_field": "starts_on", "end_field": "ends_on"}},
+	}
+	found = spaceview._calendar(resolved)
+	assert found["start_field"] == "starts_on"
+	assert found["end_field"] == "ends_on"
+	# Every date this screen has, so a picker needs no second question.
+	assert [one["fieldname"] for one in found["fields"]] == ["starts_on", "ends_on", "due"]
+
+	# A Data field is not a date, whoever typed it into the manifest.
+	said = {**resolved, "view_settings": {"calendar": {"start_field": "subject"}}}
+	assert spaceview._calendar(said)["start_field"] == ""
+
+	# The end alone is dropped, and the calendar stands.
+	said = {**resolved, "view_settings": {
+		"calendar": {"start_field": "due", "end_field": "subject"},
+	}}
+	found = spaceview._calendar(said)
+	assert found["start_field"] == "due"
+	assert found["end_field"] == ""
+
+
+def test_the_days_on_screen_are_a_filter_and_never_a_saved_one(spaceview):
+	"""The visible range reaches the query, and only as a shape it recognises.
+
+	A calendar is not a page: the desk asks for the range it is showing and
+	ignores pagination, because a month drawn from whichever hundred rows
+	sorted first has holes in it. The browser sends two dates and cannot name a
+	column — the field is the screen's own, resolved before this is asked.
+	"""
+	resolved = {"doctype": "Event", "calendar": {"start_field": "starts_on"}}
+	assert spaceview._window(resolved, "2026-09-01", "2026-09-30") == [
+		["Event", "starts_on", "between", ["2026-09-01", "2026-09-30"]]
+	]
+	# Times are a date too — a week view asks for moments.
+	assert spaceview._window(resolved, "2026-09-01 00:00:00", "2026-09-07 23:59:59")
+
+	# Nothing at all where there is no calendar, no range, or half a range.
+	assert spaceview._window({"doctype": "Event", "calendar": {}}, "2026-09-01", "2026-09-30") == []
+	assert spaceview._window(resolved, "", "2026-09-30") == []
+	assert spaceview._window(resolved, "2026-09-01", "") == []
+	# And nothing for anything that is not a date. It has carried the string
+	# "undefined" once, from a query parameter set to the value undefined.
+	assert spaceview._window(resolved, "undefined", "undefined") == []
+	assert spaceview._window(resolved, "2026-09-01", "next Tuesday") == []
+	assert spaceview._window(resolved, ["2026-09-01"], "2026-09-30") == []
 
 
 def test_a_board_is_only_offered_where_there_is_a_status_to_column_it_by(spaceview):

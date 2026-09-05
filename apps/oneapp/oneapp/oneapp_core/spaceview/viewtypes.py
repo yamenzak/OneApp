@@ -12,7 +12,7 @@ from .meta import _json
 VIEW_TYPES = ("list", "board", "calendar", "dashboard", "grid", "map")
 
 
-BUILT_VIEW_TYPES = ("list", "board", "grid", "dashboard")
+BUILT_VIEW_TYPES = ("list", "board", "grid", "dashboard", "calendar")
 
 
 DEFAULT_VIEW_TYPE = "list"
@@ -24,6 +24,15 @@ DEFAULT_VIEW_TYPE = "list"
 # `status_field` is caught by the manifest check; this is the runtime half of
 # the same rule, because a manifest is not the only way a screen is written.
 NEEDS_STATUS = ("board",)
+
+
+# And a calendar is a way of reading one date, so the same rule again: a
+# screen that offers one and names no date field has nothing to put on a grid
+# of days. The field is named in `view_settings.calendar`, the way the
+# dashboard's widgets are, rather than on the screen itself — a date field is
+# read by the calendar and by nothing else, where `status_field` is also the
+# badge on a record and earns its place on the screen.
+NEEDS_DATES = ("calendar",)
 
 
 # And the same rule for the dashboard, which is nothing without something to
@@ -83,6 +92,8 @@ def _view_types(screen: dict) -> list[str]:
 		declared = [one for one in declared if one not in NEEDS_STATUS]
 	if not _has_widgets(screen):
 		declared = [one for one in declared if one not in NEEDS_WIDGETS]
+	if not _has_date_field(screen):
+		declared = [one for one in declared if one not in NEEDS_DATES]
 	return list(dict.fromkeys(declared)) or [DEFAULT_VIEW_TYPE]
 
 
@@ -96,6 +107,18 @@ def _has_widgets(screen: dict) -> bool:
 	settings = _json(screen.get("view_settings"))
 	found = settings.get("dashboard") if isinstance(settings, dict) else None
 	return bool(isinstance(found, dict) and found.get("widgets"))
+
+
+def _has_date_field(screen: dict) -> bool:
+	"""Whether this screen names a field a calendar could place a record by.
+
+	A declaration check, like the two above: whether the field is one a
+	calendar can *read* is a question about the fieldtype, and it is asked in
+	`_calendar`, where the columns are.
+	"""
+	settings = _json(screen.get("view_settings"))
+	found = settings.get("calendar") if isinstance(settings, dict) else None
+	return bool(isinstance(found, dict) and (found.get("start_field") or "").strip())
 
 
 def _has_column_field(screen: dict) -> bool:

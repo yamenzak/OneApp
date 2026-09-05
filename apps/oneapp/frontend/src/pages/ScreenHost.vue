@@ -174,8 +174,15 @@
         with nothing liked is exactly when you need the button that turns it
         off again.
       -->
+      <!--
+        Every view but the calendar. A month with nothing in it is not an empty
+        screen — it is a month, and the grid is what you move through to reach
+        one that has something in it. Replacing it with "No events yet" takes
+        away the only control that would get you back, which is what it did:
+        one click into last month and the calendar was gone.
+      -->
       <EmptyState
-        v-else-if="!rows.length"
+        v-else-if="!rows.length && spec.view_type !== 'calendar'"
         icon="lucide-inbox"
         :title="favourites ? 'Nothing here yet' : `No ${spec.screen_label.toLowerCase()} yet`"
         :description="emptyBecause"
@@ -232,6 +239,7 @@
             :group-by="groupedBy"
             :board="fetchedBoard || spec.board || {}"
             :cards="fetchedCards || spec.cards || {}"
+            :calendar="fetchedCalendar || spec.calendar || {}"
             :space-code="spaceCode"
             :layout="spec.layout || ''"
             :overrides="dashboardAsked"
@@ -241,6 +249,7 @@
             @favourites="toggleFavourites"
             @change="writeField"
             @new="newWith"
+            @range="showDays"
           />
 
           <!-- A dashboard measures every row that matches rather than drawing
@@ -373,6 +382,7 @@
     :view-type="spec.view_type"
     :board="fetchedBoard || spec.board || {}"
     :cards="fetchedCards || spec.cards || {}"
+    :calendar="fetchedCalendar || spec.calendar || {}"
     @changed="cardsChanged"
   />
 
@@ -808,15 +818,32 @@ const removeSelected = async () => {
 // The records this screen lists — `composables/useRows.js`.
 const {
   rows, columns, selection, total, hasMore, rowsLoading, loadingMore,
-  rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards,
+  rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards, fetchedCalendar,
   loadRows, loadMore, setPageLength,
 } = useRows({
   spaceCode: props.spaceCode,
   spec,
   // Thunks: both are defined below this call.
   payload: () => payload(),
+  range: () => days.value,
   onChange: () => changed(),
 })
+
+/**
+ * The days a calendar has on screen, and the one thing that refetches without
+ * anything having been changed.
+ *
+ * Not in `payload`: that is what a saved view is made of, and a view carrying
+ * "March" in its filters is a view that shows nothing in April. Nothing else
+ * reads it — every other body draws the page it was given.
+ */
+const days = ref(null)
+
+const showDays = (asked) => {
+  if (days.value?.since === asked?.since && days.value?.until === asked?.until) return
+  days.value = asked
+  loadRows()
+}
 
 // Where an unsaved change goes when you say to keep it, which depends on where
 // you are. In a named view you may write, it goes into that view; anywhere

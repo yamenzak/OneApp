@@ -17,6 +17,7 @@ from .applied import _apply_overrides, _apply_saved
 from .resolve import _resolve
 from .people import _users, _with_people
 from .links import _link_row, _link_shape, _link_target
+from .views import _window
 
 
 @frappe.whitelist(methods=["GET"])
@@ -32,12 +33,20 @@ def spec(space_code: str, screen: str | None = None, layout: str | None = None,
 @frappe.whitelist(methods=["GET"])
 def rows(space_code: str, screen: str | None = None, limit: int = PAGE,
          start: int = 0, overrides: str | dict | None = None,
-         layout: str | None = None, view_type: str | None = None) -> dict:
+         layout: str | None = None, view_type: str | None = None,
+         since: str | None = None, until: str | None = None) -> dict:
 	"""The records a screen lists, and whether there are more of them.
 
 	`overrides` is a filter or sort someone has changed but not saved. Folded in
 	the same way a saved view is — narrowing only, and through the same checks —
 	so an unsaved change cannot reach further than a saved one.
+
+	`since` and `until` are the days a calendar has on screen. They belong here
+	rather than in `overrides` because they are a property of the request, not
+	of the view: a saved view that carried "March" in its filters would be one
+	that shows nothing in April. Ignored on every other view type — see
+	`_window`, which reads the field off the resolved screen so the browser
+	never names a column.
 	"""
 	# Through the saved view as well, or the columns and the rows disagree about
 	# which fields exist and every cell reads empty.
@@ -47,7 +56,7 @@ def rows(space_code: str, screen: str | None = None, limit: int = PAGE,
 		return {"rows": [], "has_more": False, "columns": [], "order_by": ""}
 
 	limit = min(int(limit or PAGE), MAX_PAGE)
-	filters = _all_filters(resolved, resolved.get("asked") or [])
+	filters = _all_filters(resolved, resolved.get("asked") or []) + _window(resolved, since, until)
 
 	# One more than asked for, so "there are more" needs no second count query.
 	found = frappe.get_list(
@@ -80,6 +89,10 @@ def rows(space_code: str, screen: str | None = None, limit: int = PAGE,
 		# changes what is fetched, so a card drawn from the spec before the
 		# rows arrive is a card of empty fields.
 		"cards": resolved.get("cards") or {},
+		# And which dates a calendar places a record by, for the same reason
+		# again: the fields fetched follow the pair, so a calendar drawn from
+		# the spec while rows arrive for another is a month of nothing.
+		"calendar": resolved.get("calendar") or {},
 	}
 
 
@@ -510,7 +523,7 @@ def dashboard_data(space_code: str, screen: str | None = None,
 	# The screen's own filters plus whatever is unsaved above it — the same
 	# `_all_filters` the rows go through, so the charts and the list are
 	# answering the same question.
-	filters = _all_filters(resolved, resolved.get("asked") or [])
+	filters = _all_filters(resolved, resolved.get("asked") or []) + _window(resolved, since, until)
 	precision = None
 
 	return {

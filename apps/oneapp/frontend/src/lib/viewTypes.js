@@ -25,7 +25,12 @@ export const VIEW_TYPES = {
     built: true,
     body: () => import('../components/screen/bodies/BoardBody.vue'),
   },
-  calendar: { label: 'Calendar', icon: 'lucide-calendar', built: false },
+  calendar: {
+    label: 'Calendar',
+    icon: 'lucide-calendar',
+    built: true,
+    body: () => import('../components/screen/bodies/CalendarBody.vue'),
+  },
   dashboard: {
     label: 'Dashboard',
     icon: 'lucide-chart-column',
@@ -53,6 +58,16 @@ export const DEFAULT_VIEW_TYPE = 'list'
  * `spaceview._view_types` is the same rule on the server.
  */
 export const NEEDS_STATUS = ['board']
+
+/**
+ * And the same for the calendar, which is a way of reading one date.
+ *
+ * The field is named in `view_settings.calendar` rather than on the screen
+ * itself: a date field is read by the calendar and by nothing else, where
+ * `status_field` is also the badge on a record. `viewtypes.NEEDS_DATES` is the
+ * same rule on the server.
+ */
+export const NEEDS_DATES = ['calendar']
 
 /**
  * View types that are nothing without something declared for them to draw.
@@ -89,6 +104,7 @@ export function viewTypesOf(screen) {
     .map((type) => type.trim().toLowerCase())
     .filter((type) => VIEW_TYPES[type]?.built)
     .filter((type) => hasColumnField(screen) || !NEEDS_STATUS.includes(type))
+    .filter((type) => hasDateField(screen) || !NEEDS_DATES.includes(type))
   return declared.length ? [...new Set(declared)] : [DEFAULT_VIEW_TYPE]
 }
 
@@ -106,15 +122,29 @@ export function viewTypesOf(screen) {
  */
 function hasColumnField(screen) {
   if (String(screen?.status_field || '').trim()) return true
-  let settings = screen?.view_settings
-  if (typeof settings === 'string') {
-    try {
-      settings = JSON.parse(settings || 'null')
-    } catch {
-      return false
-    }
+  return !!String(settingsOf(screen)?.board?.column_field || '').trim()
+}
+
+/** A screen's `view_settings`, whether it arrived as an object or as JSON. */
+function settingsOf(screen) {
+  const settings = screen?.view_settings
+  if (typeof settings !== 'string') return settings || null
+  try {
+    return JSON.parse(settings || 'null')
+  } catch {
+    return null
   }
-  return !!String(settings?.board?.column_field || '').trim()
+}
+
+/**
+ * Whether a screen names a field a calendar could place a record by.
+ *
+ * Only `view_settings`, because there is no screen-level date field to fall
+ * back to — `spaceview._has_date_field` is the same rule, and the fieldtype is
+ * checked on the server the same way a board's is.
+ */
+function hasDateField(screen) {
+  return !!String(settingsOf(screen)?.calendar?.start_field || '').trim()
 }
 
 /**

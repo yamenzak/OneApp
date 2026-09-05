@@ -129,7 +129,7 @@ document_type Sales Invoice       what the list shows
 fields        customer,status,grand_total
 filters       {"status": "Open"}  always applied
 order_by      modified desc
-view_types    list,board,grid,dashboard    the first is the default
+view_types    list,board,grid,dashboard,calendar    the first is the default
 view_settings {"board": {...}}    per type, what it needs beyond columns
 status_field  status              the badge, and the board's columns
 naming_series ACME-INV-.YYYY.-.#####       a fixture, applied once
@@ -358,6 +358,37 @@ A bad widget is dropped **whole**, never narrowed to its valid parts: a chart of
 One real limit: Frappe refuses a SQL function in `group_by`, so a widget grouped
 down a date column fetches and buckets in Python, capped at 5,000 rows. Fine at
 a chart's scale, not at a report's — which is why the cap is stated.
+
+### Calendar — the first that is not a page
+
+```json
+"view_settings": {"calendar": {"start_field": "starts_on", "end_field": "ends_on"}}
+```
+
+`start_field` is the whole declaration; `end_field` is optional and is what
+makes a record a span rather than a moment. Both must be a Date or a Datetime,
+checked against the doctype like a board's column field is, and a start that is
+not drops the calendar the way a missing status drops a board. There is no
+screen-level date field to fall back on: `status_field` is on the screen
+because a badge reads it too, and nothing but this reads a date.
+
+The Date-versus-Datetime distinction is the one thing a manifest does not have
+to say — a Date has no time and is therefore a whole day, which the fieldtype
+already settled.
+
+**The range is the request, not a page.** Every other body draws the page it
+was handed; a calendar says which days it is showing and the shell fetches
+those (`since`/`until` beside `start` and `limit`, applied to the screen's own
+field — the browser sends two dates and cannot name a column). A month drawn
+from whichever hundred rows sorted first has holes in it, and the holes move as
+you page. It is deliberately not part of a saved view either: a view carrying
+"March" is a view that shows nothing in April.
+
+The grid is frappe-ui's `experimental/Calendar` — month, week and day, with the
+event spans, the popover and the keyboard already in it, and it is what Frappe
+Suite's own calendar draws with. Read-only here: it can drag, resize and create,
+and every one of those writes a field that this screen already writes properly
+through the record. Clicking an event opens that record.
 
 ---
 
@@ -714,6 +745,43 @@ the server's: paging, body search, drafts, an Undo that is really
 `Email Queue.send_after` rather than a countdown a closed tab defeats, and rules
 that are four words — look at this field, for this text, file it there.
 
+### Calendar
+
+Beside Mail and Files on the rail, and the same argument for being there: a week
+does not belong to one space. `/one/calendar` is a **merge**, not a store —
+nothing on it is written here, every entry belongs to a record somewhere else,
+says which, and opens it.
+
+Two sources, both already permissioned, in `oneapp_core/diary.py` (named
+`diary` because a module called `calendar` inside a package is one import from
+shadowing the standard library's):
+
+* **Every screen the reader can open that declares a calendar**, resolved
+  through `_resolve` — the same path the screen's own calendar uses, so a
+  record absent there is absent here for the same reason.
+* **The reader's own `Event` rows** — owned by them, or naming them among the
+  participants. An events *screen* is what the workspace has; this is what is
+  theirs.
+
+**One record, one entry.** A workspace with an events screen reaches Tuesday's
+review twice, and a calendar that draws it twice is one nobody trusts about
+Wednesday. De-duplicated on `(doctype, name)`, and the screen's copy wins
+because it knows where the record lives.
+
+The rail lists the sources with the colour their entries carry, and switching
+one off is a filter in the browser rather than a second request. The colours
+are frappe-ui's seven, taken in source order, so the dot and the entries are
+one fact rather than a legend to learn.
+
+Read-only, and more firmly than the screen calendar: every entry belongs to a
+different doctype under a different screen's rules, and dragging one would be
+writing a field this surface knows nothing about.
+
+Not built yet: owning events. Frappe Suite's `Calendar Event` is
+JMAP/JSCalendar-shaped — participants, alerts, recurrence rules, an exchange
+layer for CalDAV — and that is what to adopt when invites and RSVP are wanted.
+It is AGPL-3.0, the same as this repo.
+
 ### Files
 
 **It is `File`, not a new model.** Frappe already has one file table and every
@@ -1022,9 +1090,9 @@ Worth knowing before designing around it.
 * **User Permission.** Enforced on every path, and there is nowhere to grant
   one.
 * **Bulk edit.** Selection does delete and declared actions only.
-* **Calendar and map views**, which a manifest may already declare — a type
-  nothing can draw is dropped rather than refused, so the screen renders as a
-  list and gains the calendar without a manifest edit.
+* **The map view**, which a manifest may already declare — a type nothing can
+  draw is dropped rather than refused, so the screen renders as a list and
+  gains the map without a manifest edit. The calendar shipped and is below.
 * **Free-text search across a whole doctype**, drag-to-resize a column, and
   filtering on a child table (Frappe needs a four-part filter there and a
   three-part one names a column that is not present).

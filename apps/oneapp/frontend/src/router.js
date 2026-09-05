@@ -40,6 +40,17 @@ const routes = [
     meta: { pane: true },
   },
   {
+    // The diary: everything the reader has with a date on it, from every
+    // calendar this workspace has. A route beside Mail and Files for the same
+    // reason those are — a week does not belong to one space — and the merge
+    // itself is the server's, in `oneapp_core/diary.py`.
+    path: '/calendar',
+    name: 'Calendar',
+    component: () => import('./pages/Diary.vue'),
+    // A rail, a grid and its own scroller: the shell must not add a second.
+    meta: { pane: true },
+  },
+  {
     // A sheet is a File, so this is not a second kind of thing with a second
     // kind of address: `:name` is the File row, the same id the Drive lists
     // and the same one `File.file_url` points its exporter at.

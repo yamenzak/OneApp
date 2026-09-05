@@ -150,6 +150,9 @@ export function useNav() {
    */
   const surfaces = computed(() => [
     { key: 'files', label: 'Files', icon: 'lucide-folder', to: { name: 'Drive' } },
+    // Always here, unlike Mail: everybody has days, and a diary with nothing
+    // in it is an empty week rather than a page nobody can use.
+    { key: 'calendar', label: 'Calendar', icon: 'lucide-calendar', to: { name: 'Calendar' } },
     // Absent for somebody who holds no address, which is most people until
     // somebody sets one up. An icon that opens an empty page is worse than no
     // icon. `count` is the badge in the rail and the number in the sheet's

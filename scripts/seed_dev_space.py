@@ -185,6 +185,17 @@ SCREENS = [
 		"screen": "events", "label": "Events", "icon": "lucide-calendar",
 		"document_type": "Event", "fields": EVENT_FIELDS, "order_by": "creation asc",
 		"status_field": "status",
+		# The calendar fixture, and the screen it belongs on: an Event is the
+		# one core doctype that is *about* a span of time. Calendar first,
+		# because a list of two events sorted by creation is not how anybody
+		# reads a diary.
+		"view_types": "calendar,list",
+		# `ends_on` is not in `EVENT_FIELDS` on purpose — the resolver fetches
+		# the dates a calendar places a record by whether or not anybody made
+		# them columns, and a fixture that listed them would not prove it.
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "starts_on", "end_field": "ends_on"},
+		}),
 	},
 	{
 		# Grid first, because that is what this screen is for: Contact declares
@@ -297,10 +308,25 @@ NOTES = [
 #
 # `starts_on` is a fixed date rather than "today": a fixture whose values move
 # is a fixture a test cannot assert against.
+def _this_month(day: int, at: str) -> str:
+	"""A day in the month being looked at, rather than a date in 2026.
+
+	The calendar opens on today's month, so a fixture pinned to a fixed date is
+	a fixture that is on screen until that month passes and invisible after —
+	and a browser test that reads "there is an event on the grid" would start
+	failing on the first of some month with nobody having touched the calendar.
+	The 10th and the 12th, because both are in every month.
+	"""
+	return f"{now_datetime().strftime('%Y-%m')}-{day:02d} {at}"
+
+
 EVENTS = [
 	{
 		"subject": "Quarterly review", "event_type": "Private", "status": "Open",
-		"starts_on": "2026-09-15 10:00:00",
+		# A span: it starts at ten and ends at half eleven, which is what makes
+		# the calendar draw a block rather than a dot.
+		"starts_on": _this_month(10, "10:00:00"),
+		"ends_on": _this_month(10, "11:30:00"),
 		"event_participants": [
 			{"reference_doctype": "User", "reference_docname": "Administrator",
 			 "attending": "Yes"},
@@ -314,8 +340,9 @@ EVENTS = [
 		],
 	},
 	{
+		# And one with no end, which is a moment rather than a span.
 		"subject": "Van collection", "event_type": "Public", "status": "Open",
-		"starts_on": "2026-09-17 09:00:00",
+		"starts_on": _this_month(12, "09:00:00"),
 	},
 ]
 
@@ -1195,7 +1222,17 @@ def seed_tenant(manifest_only=False):
 		frappe.get_doc({"doctype": "Note", **row}).insert(ignore_permissions=True)
 
 	for row in EVENTS:
-		if frappe.db.exists("Event", {"subject": row["subject"]}):
+		found = frappe.db.exists("Event", {"subject": row["subject"]})
+		if found:
+			# The dates and nothing else. These move with the month — the
+			# calendar opens on today's and a fixture pinned to whenever it was
+			# first seeded is one that drifts off the grid — and a site seeded
+			# in a previous month would otherwise keep the old ones forever,
+			# because "it exists" used to be the end of it.
+			doc = frappe.get_doc("Event", found)
+			doc.starts_on = row["starts_on"]
+			doc.ends_on = row.get("ends_on")
+			doc.save(ignore_permissions=True)
 			continue
 		frappe.get_doc({"doctype": "Event", **row}).insert(ignore_permissions=True)
 

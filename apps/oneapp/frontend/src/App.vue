@@ -25,6 +25,8 @@
           v-else-if="$route.name === 'Drive'"
           :place="$route.query.place || 'home'"
         />
+        <!-- And the diary's, which is the list of calendars it merges. -->
+        <DiarySidebar v-else-if="$route.name === 'Calendar'" />
         <SpaceSidebar v-else />
       </template>
 
@@ -93,6 +95,7 @@ import { FrappeUIProvider, Button, Dialog, LoadingIndicator, usePageMeta } from 
 import AppShell from './components/AppShell.vue'
 import SpaceSidebar from './components/SpaceSidebar.vue'
 import MailSidebar from './components/mail/MailSidebar.vue'
+import DiarySidebar from './components/diary/DiarySidebar.vue'
 import DriveSidebar from './components/drive/DriveSidebar.vue'
 import RailAccount from './components/RailAccount.vue'
 import NotificationBell from './components/notifications/NotificationBell.vue'

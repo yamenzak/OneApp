@@ -291,7 +291,7 @@ def _resolve_named_type(name: str, script: str, directory: Path, seen=None) -> d
     )
 
     for text in _declarations(name, script, directory):
-        m = decl.search(text)
+        m = next((one for one in decl.finditer(text) if not _a_specifier(one)), None)
         if not m:
             continue
         found = {}
@@ -310,6 +310,31 @@ def _resolve_named_type(name: str, script: str, directory: Path, seen=None) -> d
         if found:
             return found
     return {}
+
+
+def _a_specifier(match: re.Match) -> bool:
+    """Whether this "declaration" is really a name inside a multi-line import.
+
+    The anchor on `decl` was meant to stop `import { type AlertSlots } from …`
+    matching, and it does — on one line. Written over several, which is what
+    prettier does past a few names,
+
+        import {
+          type CalendarPublicProps,
+        } from './types'
+
+    the specifier is at the start of its own line and reads exactly like a
+    declaration. The next `{` after it is then whatever the file does next:
+    for Calendar that is the defaults object of `withDefaults(...)`, so the
+    component came back as taking `events` and `config` and nothing else — and
+    the guard argued that correct markup passed a prop that does not exist,
+    which is the failure mode worse than missing a bug.
+
+    A specifier is followed by a comma or by the closing brace of the import;
+    a declaration is followed by `{`, `extends` or `=`.
+    """
+    tail = (match.group(1) or "").lstrip()
+    return tail.startswith(",") or tail.startswith("}")
 
 
 # A union made only of quoted string literals: 'gray' | 'blue' | 'red'.

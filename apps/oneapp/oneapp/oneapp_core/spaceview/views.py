@@ -1,5 +1,7 @@
 """Per-view-type shaping: the board's columns, the cards, the widgets."""
 
+import re
+
 import frappe
 from oneapp.oneapp_core import collab, dashboard, docflow, fieldtypes, printing, showcase
 from .meta import _fetch_fields
@@ -133,6 +135,89 @@ def _board(resolved: dict) -> dict:
 	}
 
 
+# What a calendar may place a record by.
+#
+# A Date has no time and is therefore a whole day; a Datetime is a moment. Both
+# work and the calendar draws them differently, which is the one thing a
+# manifest does not have to say — the fieldtype already does.
+#
+# Nothing else. A Data field holding "next Tuesday" is not a date to a database
+# and a Duration is a length rather than a place, so a screen that names one
+# gets no calendar rather than a grid of days with everything on the first.
+DATEABLE = ("Date", "Datetime")
+
+
+def _dateable(column: dict | None) -> bool:
+	return bool(column) and column.get("fieldtype") in DATEABLE
+
+
+def _calendar(resolved: dict) -> dict:
+	"""Where a calendar puts a record, and how long it sits there.
+
+	`start_field` is the one answer a screen has to give. `end_field` is
+	optional and means what it says — a record with a start and no end is a
+	moment on a day rather than a span across several — and naming a field that
+	is not a date drops it rather than the whole calendar, because a span that
+	cannot be read is still a record with a date on it.
+
+	The pair is settled here rather than read straight off the screen for the
+	same reason the board's column field is: a saved view may name another, and
+	the reader's answer is the narrowest one.
+	"""
+	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or []}
+	settings = (resolved.get("view_settings") or {}).get("calendar") or {}
+
+	start = settings.get("start_field") or ""
+	start = start if _dateable(offered.get(start)) else ""
+
+	end = settings.get("end_field") or ""
+	# Never an end without a start: a span whose beginning nothing knows is not
+	# a span, and drawing it from the end backwards would be inventing one.
+	end = end if start and _dateable(offered.get(end)) else ""
+
+	return {
+		"start_field": start,
+		"end_field": end,
+		# Every field a calendar could be drawn by, so the picker offers them
+		# without asking the doctype a second question. Same shape as the
+		# board's, and for the same reason.
+		"fields": [
+			{"fieldname": c["fieldname"], "label": c["label"], "fieldtype": c["fieldtype"]}
+			for c in resolved.get("all_columns") or []
+			if _dateable(c) and c.get("list_ok", True)
+		],
+	}
+
+
+def _window(resolved: dict, since: str, until: str) -> list:
+	"""The days on screen, as a filter, or nothing.
+
+	A calendar is not a page. The desk's own calendar asks for the visible
+	range and ignores pagination, and it is right to: a month drawn from
+	whichever hundred rows sorted first is a month with holes in it, and the
+	holes move as you page.
+
+	So the range is a property of the *request*, like `start` and `limit`, and
+	never of the view: a saved view that quietly carried "March" would be a
+	saved view that shows nothing in April. The field is the screen's own,
+	resolved above — the browser sends two dates and cannot name a column.
+	"""
+	field = (resolved.get("calendar") or {}).get("start_field") or ""
+	if not field or not _a_date(since) or not _a_date(until):
+		return []
+	return [[resolved["doctype"], field, "between", [since, until]]]
+
+
+# `YYYY-MM-DD`, and optionally a time after it. Not a parse — a shape check, so
+# that whatever a query string carries reaches the database as a date or not at
+# all. It has already carried the string "undefined" once.
+A_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}([ T]\d{2}:\d{2}(:\d{2})?)?$")
+
+
+def _a_date(value) -> bool:
+	return bool(isinstance(value, str) and A_DATE.match(value.strip()))
+
+
 # The view types that draw a record as a card rather than as a line.
 #
 # A board and a grid are the same card twice: an identity, then the few fields
@@ -208,12 +293,19 @@ def _resolve_views(resolved: dict) -> dict:
 	went to the trouble of choosing one.
 	"""
 	resolved["board"] = _board(resolved)
+	resolved["calendar"] = _calendar(resolved)
 	resolved["cards"] = _cards(resolved)
 	resolved["widgets"] = _widgets(resolved)
 	resolved["fields"] = _fetch_fields(
 		resolved["columns"],
 		resolved.get("status_field") or "",
 		resolved["board"]["column_field"],
+		# The dates the calendar places a record by. Fetched for the same
+		# reason a card field is: the calendar draws them whether or not
+		# anybody made them columns, and without this every event lands on
+		# nothing at all.
+		resolved["calendar"]["start_field"],
+		resolved["calendar"]["end_field"],
 		# What a record *is*, which every surface draws and none of them asked
 		# for. The doctype's own `title_field` and `image_field`: the title cell
 		# reads one and the card reads the other, and neither is a column

@@ -10,10 +10,10 @@ import { workspace } from '../lib/workspace'
  * failed, has more, or is counting. The host reads them and so does the
  * template; nothing outside needs to know how a page is asked for.
  *
- * `payload` and `onChange` are thunks — the host builds its request and decides
- * what an unsaved change means below this call.
+ * `payload`, `range` and `onChange` are thunks — the host builds its request
+ * and decides what an unsaved change means below this call.
  */
-export function useRows({ spaceCode, spec, payload, onChange }) {
+export function useRows({ spaceCode, spec, payload, range, onChange }) {
   const rows = ref([])
   const columns = ref([])
   const selection = ref([])
@@ -32,6 +32,7 @@ export function useRows({ spaceCode, spec, payload, onChange }) {
   const groupedBy = ref('')
   const fetchedBoard = ref(null)
   const fetchedCards = ref(null)
+  const fetchedCalendar = ref(null)
 
   const fetchPage = (start) =>
     workspace.screenRows(
@@ -39,7 +40,11 @@ export function useRows({ spaceCode, spec, payload, onChange }) {
       spec.value.screen,
       payload(),
       spec.value.layout || '',
-      { start, limit: pageLength.value },
+      // The days a calendar has on screen travel beside `start` and `limit`
+      // rather than in the payload: they are a property of this request, and
+      // a saved view that carried a month would be one that shows nothing in
+      // the next. Empty on every other view type, and ignored there anyway.
+      { start, limit: pageLength.value, ...(range?.() || {}) },
       spec.value.view_type,
     )
 
@@ -87,6 +92,7 @@ export function useRows({ spaceCode, spec, payload, onChange }) {
       groupedBy.value = page?.group_by || ''
       fetchedBoard.value = page?.board || null
       fetchedCards.value = page?.cards || null
+      fetchedCalendar.value = page?.calendar || null
       hasMore.value = !!page?.has_more
       countRows()
     } catch (error) {
@@ -130,7 +136,7 @@ export function useRows({ spaceCode, spec, payload, onChange }) {
 
   return {
     rows, columns, selection, total, hasMore, rowsLoading, loadingMore,
-    rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards,
+    rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards, fetchedCalendar,
     loadRows, countRows, loadMore, setPageLength,
   }
 }
