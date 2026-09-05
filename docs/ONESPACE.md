@@ -304,6 +304,25 @@ list. It goes through `get_list` so it sees the same permissions the rows did.
 `RecordTable` draws both this and the grid inside a record — one place to be
 wrong about tracks, sticky headers, pinning and windowing.
 
+**Export.** Beside the count, because it is a question about the same thing:
+how much of this am I looking at, and can I have it. What comes out is what is
+on screen — this reader's columns in their order, narrowed by the saved view
+and by whatever is unsaved above it — and a selection exports exactly the rows
+that were ticked. The same `_resolve` → saved view → overrides chain the rows go
+through, so an export can never reach further than the list it came from.
+
+The file is built on the server (`spaceview/export.py`) rather than joined
+together in the browser, for one reason: quoting. A subject with a comma in it
+becomes two columns and every row after it is off by one, silently, and this
+product's own correspondence register is full of them. Python's `csv` has been
+right about that for twenty years. Values are the ones **stored** rather than
+the ones drawn — a CSV is data, and a Link cell drawn as "Ada Sinclair" has to
+come back as the id for the file to be worth anything downstream. It carries a
+byte-order mark, without which Excel on Windows reads UTF-8 as the system
+codepage and turns every Arabic subject into mojibake. Capped at 5,000 rows, and
+the toast says so when it bites: a spreadsheet that quietly stops is the worst
+thing to hand somebody who is about to add it up.
+
 ### Board — the same list, drawn as columns
 
 Same rows, same filters, same order, placed in the column a field names. Which

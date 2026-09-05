@@ -32,13 +32,32 @@
         />
       </Dropdown>
       <!--
+        The rows, as a file. Beside the count rather than in a menu behind it:
+        "send me that as a spreadsheet" is how a register reaches an accountant
+        or a bank, and it was the one thing every list here could not do.
+
+        What comes out is what is on screen — this reader's columns, in their
+        order, narrowed by whatever the filters say — which is why it belongs in
+        the corner that already answers "how much of this am I looking at".
+      -->
+      <Button
+        data-slot="export"
+        icon="lucide-download"
+        variant="ghost"
+        size="sm"
+        :loading="exporting"
+        label="Export as CSV"
+        tooltip="Export as CSV"
+        @click="emit('export')"
+      />
+
+      <!--
         Which columns, and how wide. It sat above the table with the filters,
         where it was a fourth control competing with the box people type in —
         and it is not a question about the rows, it is a question about the
         table. Here it is beside the other one of those: how many of them
         there are, and how many to fetch.
-      -->
-      <!--
+
         One gear, and what it opens is whatever the body is: a list's columns,
         a card view's card. Both are "what does this show" rather than "which
         rows", which is the question this corner already answers.
@@ -71,8 +90,10 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   /** Which body is under it, because the gear opens that body's settings. */
   viewType: { type: String, default: 'list' },
+  /** Whether a file is being built, so the button says so rather than nothing. */
+  exporting: { type: Boolean, default: false },
 })
-const emit = defineEmits(['more', 'page-length', 'columns'])
+const emit = defineEmits(['more', 'page-length', 'columns', 'export'])
 
 const number = (value) => value.toLocaleString()
 

@@ -13,7 +13,7 @@
     strip would eat clicks on the rows beneath it.
   -->
   <div class="pointer-events-none absolute inset-x-0 bottom-16 z-20 flex justify-center px-2">
-    <div class="pointer-events-auto" :class="BAR">
+    <div data-slot="selection-bar" class="pointer-events-auto" :class="BAR">
       <span class="whitespace-nowrap text-p-base text-ink-gray-8"> {{ count }} selected </span>
 
       <div class="ms-2 flex items-center gap-1 border-s border-outline-gray-2 ps-3">

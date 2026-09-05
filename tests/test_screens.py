@@ -2714,3 +2714,73 @@ def test_a_change_falls_back_to_the_id(spaceview):
 	                         "fieldtype": "Select"}]}
 
 	assert spaceview._change(row, resolved, {})["by"] == "gone@zzmock.test"
+
+
+def test_an_export_is_the_columns_you_chose_quoted_properly(spaceview):
+	"""The part of an export that goes wrong, and goes wrong silently.
+
+	A value with a comma in it becomes two columns and every row after it is
+	off by one — which is why the file is built in Python by `csv` rather than
+	joined together in a browser. The correspondence register is full of exactly
+	those: subjects with commas, and Arabic that needs the byte-order mark.
+	"""
+	columns = [
+		{"fieldname": "subject", "label": "Subject"},
+		{"fieldname": "to_party", "label": "To"},
+		{"fieldname": "is_final", "label": "Final"},
+		{"fieldname": "letter_date", "label": "Date"},
+	]
+	rows = [
+		{"subject": 'Material approval, "6mm" glass', "to_party": "A.D.D.",
+		 "is_final": True, "letter_date": "2026-09-01"},
+		# A newline inside a cell, which is what a pasted address is.
+		{"subject": "Request\nfor extension", "to_party": None,
+		 "is_final": False, "letter_date": None},
+	]
+	found = spaceview._export_csv(columns, rows)
+
+	assert found.startswith(spaceview.EXCEL_BOM), (
+		"without the mark Excel on Windows reads UTF-8 as the system codepage, "
+		"which turns every Arabic subject in the register into mojibake"
+	)
+	body = found[len(spaceview.EXCEL_BOM):]
+	assert body.startswith("Subject,To,Final,Date\r\n")
+	# Quoted, and the inner quotes doubled — the standard library's job, and the
+	# whole reason this is not four lines of `join`.
+	assert '"Material approval, ""6mm"" glass"' in body
+	assert '"Request\nfor extension"' in body
+	# A Check reads back as the thing it was, and nothing reads back as "None".
+	assert body.rstrip().endswith('"Request\nfor extension",,0,')
+	assert "None" not in body
+
+
+def test_an_export_cell_is_never_the_word_none(spaceview):
+	assert spaceview._export_cell(None) == ""
+	assert spaceview._export_cell(True) == "1"
+	assert spaceview._export_cell(False) == "0"
+	assert spaceview._export_cell(0) == "0"
+	assert spaceview._export_cell("Ada") == "Ada"
+
+
+def test_an_export_drops_the_column_that_is_not_a_field(spaceview):
+	"""Activity is four facts rendered as one cell and there is no such cell in
+	a spreadsheet, so it is the one column an export leaves behind."""
+	resolved = {"columns": [
+		{"fieldname": "title", "label": "Title"},
+		{"fieldname": spaceview.META_COLUMN, "label": "Activity"},
+		{"fieldname": "status", "label": "Status"},
+	]}
+	assert [one["fieldname"] for one in spaceview._export_columns(resolved)] == [
+		"title", "status",
+	]
+
+
+def test_a_selection_reaches_an_export_as_ids_and_nothing_else(spaceview):
+	"""`names` is a query parameter, so it arrives as text and is never trusted
+	as a filter — the same rule every other list of ids in here follows."""
+	assert spaceview._export_names('["CD-1", "CD-2"]') == ["CD-1", "CD-2"]
+	assert spaceview._export_names(["CD-1", ""]) == ["CD-1"]
+	assert spaceview._export_names('{"name": "CD-1"}') == []
+	assert spaceview._export_names("not json") == []
+	assert spaceview._export_names(None) == []
+	assert spaceview._export_names([{"name": "CD-1"}, 7]) == []

@@ -268,7 +268,9 @@
             @more="loadMore"
             @page-length="setPageLength"
             :view-type="spec.view_type"
+            :exporting="exporting"
             @columns="openSettings"
+            @export="exportRows()"
           />
         </div>
 
@@ -289,6 +291,12 @@
             :screen="spec.screen"
             :names="selection"
             @ran="loadRows"
+          />
+          <Button
+            icon-left="lucide-download"
+            label="Export"
+            :loading="exporting"
+            @click="exportRows(selection)"
           />
           <Button
             v-if="spec.can_delete"
@@ -449,6 +457,7 @@ import { useRows } from '../composables/useRows'
 import { useSavedViews } from '../composables/useSavedViews'
 import { useSorting } from '../composables/useSorting'
 import { notifyError, notifySuccess } from '../lib/notify'
+import { saveCsv } from '../lib/download'
 import { screenComponent } from '../screens'
 import { CARD_VIEW_TYPES, DEFAULT_VIEW_TYPE, bodyFor } from '../lib/viewTypes'
 import { applyTheme, clearTheme } from '../lib/theme'
@@ -794,6 +803,48 @@ const like = async (row) => {
   // Unless the like is what the list is filtered by, in which case a row that
   // is no longer a favourite has no business still being in it.
   if (favourites.value) await loadRows()
+}
+
+/**
+ * The rows, as a file.
+ *
+ * `names` is the selection where there is one and nothing where there is not,
+ * and the server reads that difference — so the button in the footer and the
+ * one in the selection bar are the same call.
+ *
+ * The whole thing arrives as text and is turned into a download here rather
+ * than being fetched from a URL: an export URL would have to carry the screen,
+ * the saved view, the unsaved filters and the selection as query parameters,
+ * and would be a second way into the data. See `lib/download.js`.
+ */
+const exporting = ref(false)
+const exportRows = async (names) => {
+  if (exporting.value) return
+  exporting.value = true
+  try {
+    const file = await workspace.screenExport(
+      props.spaceCode,
+      spec.value.screen,
+      payload(),
+      spec.value.layout || '',
+      spec.value.view_type,
+      names,
+    )
+    saveCsv(file?.filename, file?.csv || '')
+    // The cap is said out loud or not at all. A spreadsheet that quietly stops
+    // at five thousand rows is the worst thing to hand somebody who is about to
+    // add it up.
+    notifySuccess(
+      file?.capped
+        ? `The first ${file.rows.toLocaleString()} rows — this screen has more than ` +
+          `${file.limit.toLocaleString()}, which is the most one file carries.`
+        : `${(file?.rows || 0).toLocaleString()} rows exported`,
+    )
+  } catch (e) {
+    notifyError(e.message || String(e))
+  } finally {
+    exporting.value = false
+  }
 }
 
 const removeSelected = async () => {
