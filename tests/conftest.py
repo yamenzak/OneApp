@@ -239,6 +239,13 @@ def _make_frappe():
 	momentjs.get_all_timezones = lambda: ["UTC", "Asia/Dubai"]
 	utils.momentjs = momentjs
 
+	# The site's own secret, used here for the HMAC that binds a direct upload
+	# to the person who started it. A fixed value rather than a random one, so a
+	# test can say what a forged token does not match.
+	password = types.ModuleType("frappe.utils.password")
+	password.get_encryption_key = lambda: "test-encryption-key"
+	utils.password = password
+
 	utils.now_datetime = lambda: None
 	utils.add_to_date = lambda *a, **k: None
 	utils.get_datetime = lambda x: x
@@ -286,6 +293,7 @@ def _make_frappe():
 	# *shaped* right would return the argument, and then every test of "a row
 	# says its sentence without markup" would pass on markup.
 	utils.strip_html = lambda v: re.sub(r"<[^>]*>", "", str(v or ""))
+	utils.get_url = lambda *a, **k: "https://space.localhost"
 	frappe.utils = utils
 
 	model = types.ModuleType("frappe.model")
@@ -441,6 +449,7 @@ def stub_frappe(monkeypatch):
 	monkeypatch.setitem(sys.modules, "frappe.model.document", document)
 	monkeypatch.setitem(sys.modules, "frappe.utils", utils)
 	monkeypatch.setitem(sys.modules, "frappe.utils.momentjs", utils.momentjs)
+	monkeypatch.setitem(sys.modules, "frappe.utils.password", utils.password)
 	for module in desk:
 		monkeypatch.setitem(sys.modules, module.__name__, module)
 	yield frappe

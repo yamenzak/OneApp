@@ -342,3 +342,56 @@ cheaper answer, and the one that matches everything else here, is that a file
 belongs to the workspace and `DocShare` narrows it — which makes "my files" a
 filter on `owner` rather than a second tree. Everything in §6 assumes the second
 answer; the first would add a stage and a doctype.
+
+## 8. Getting the bytes in
+
+Written after the stages above were built, because the way in turned out to be
+the part nobody had specified. Two paths, and which one a file takes is decided
+by its size alone.
+
+**Under 8 MB** it is one `multipart/form-data` POST to Frappe's own upload
+endpoint, exactly as before: the request handler holds it in memory, writes it
+to disk, inserts a `File`, and `storage/file.py` then reads it back and pushes
+it to R2. Four copies of the bytes, which for a photograph nobody notices.
+
+**Over 8 MB** it never comes here at all. The browser asks
+`storage/direct.begin` for somewhere to put it, gets presigned URLs for an R2
+multipart upload, PUTs the parts straight at Cloudflare three at a time, and
+calls `storage/direct.finish`, which completes the upload and makes the `File`
+row with `r2_key` already set. Frappe Drive proxies every byte through Python
+and we deliberately do not: a two-gigabyte video through a worker meets the
+request-body limit, the gunicorn timeout or the proxy's own ceiling, whichever
+comes first, and none of the three fails in a way anybody can act on.
+
+Four things the direct path has to get right, and all four are in
+`storage/direct.py` with the reasoning beside them: the quota is checked before
+anything is signed, so a full workspace is a refusal in the browser rather than
+an upload thrown away at the end; an HMAC over the key, the upload id and the
+session user means nobody can finish somebody else's upload; a row the quota
+hook refuses takes its object with it, so a refused upload is never a billed
+one; and the size written on the row is what R2 says it holds, not what the
+browser claimed.
+
+`begin` answers `{"direct": false}` — rather than throwing — whenever the path
+does not apply: no bucket, no boto3, the control plane, a small file. The
+browser reads that as "post it the ordinary way", so a development site with no
+R2 keys works exactly as it did.
+
+### The one configuration line that has to exist
+
+**The bucket's CORS policy must expose `ETag`.** A multipart upload is completed
+by sending each part's ETag back, and a response header the browser cannot read
+does not exist as far as JavaScript is concerned — so without it every byte
+uploads correctly and the upload fails on the last call, which is the most
+expensive way a missing config line can fail. `r2.ensure_cors()` writes the
+policy; it is a bucket-level operation, not a per-site one, so it is run once per
+shard rather than on a schedule. See `docs/ONEADMIN.md`.
+
+### What still goes the ordinary way
+
+The Drive's upload queue takes the direct path; the attach field, the picker's
+upload tab and an image pasted into a rich-text field do not — they go through
+frappe-ui's `FileUploader`, which posts. That is the right split for now: a
+large file belongs in the Drive, and attaching one to a record is then a pick
+rather than a second upload. Moving the picker onto the same path is a small
+change to `directUpload.js`'s caller and nothing else.

@@ -123,7 +123,21 @@ def database_used_bytes() -> int:
 
 
 def enforce_quota(doc, method=None):
-	"""before_insert on File.
+	"""before_insert on File."""
+	check_room(int(doc.file_size or 0))
+
+
+def check_room(incoming: int):
+	"""Refuse `incoming` bytes if this workspace has no room for them.
+
+	Two callers, and the second is why this is not simply the hook body. The
+	hook runs at `before_insert`, which for a direct-to-R2 upload is *after* two
+	gigabytes have already crossed the customer's connection — see
+	`storage/direct.py`. That call asks the same question before it signs
+	anything, so a full workspace is a refusal in the browser rather than an
+	upload that is thrown away at the end. The hook still runs, and is still the
+	authoritative one: it sees the object's real size rather than what the
+	browser claimed.
 
 	A quota of zero means unconfigured, not "no storage allowed" — refusing every
 	upload because a sync failed would be worse than briefly allowing overage.
@@ -132,7 +146,7 @@ def enforce_quota(doc, method=None):
 	if not quota:
 		return
 
-	incoming = int(doc.file_size or 0)
+	incoming = int(incoming or 0)
 	if not incoming:
 		return
 

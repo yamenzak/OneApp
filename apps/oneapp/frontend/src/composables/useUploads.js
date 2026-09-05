@@ -26,10 +26,17 @@
  * endpoint — so `storage/file.py` still moves the bytes to R2 and
  * `storage/quota.py` still refuses the one that would go over. Nothing about
  * where a file ends up is decided here.
+ *
+ * Except in size. A file over eight megabytes is offered to `directUpload`
+ * first, which sends it to R2 without it passing through Python at all; that
+ * returns `null` on a site with no bucket and the POST happens as before. The
+ * queue does not care which of the two ran — a row that reaches 100 is a file
+ * in the Drive either way.
  */
 import { computed, reactive, readonly } from 'vue'
 import { upload } from '@/ui'
 
+import { directUpload } from '../lib/directUpload'
 import { errorText } from '../lib/errors'
 
 /** Where a file is in its life. `queued → sending → done | failed`. */
@@ -129,14 +136,21 @@ async function drain() {
 async function send(one) {
   one.state = SENDING
   one.progress = 0
+  const track = ({ percent }) => { one.progress = percent }
   try {
-    await upload(one.file, {
+    // Private, always, on both paths. A workspace's files are not
+    // world-readable, and `r2.download` is the only way to the bytes — see
+    // `storage/r2.py`.
+    const direct = await directUpload(one.file, {
       folder: one.folder,
-      // Private, always. A workspace's files are not world-readable, and
-      // `r2.download` is the only way to the bytes — see `storage/r2.py`.
       private: true,
-      onProgress: ({ percent }) => { one.progress = percent },
+      onProgress: track,
     })
+
+    if (!direct) {
+      await upload(one.file, { folder: one.folder, private: true, onProgress: track })
+    }
+
     one.state = DONE
     one.progress = 100
     onFinished?.(one)

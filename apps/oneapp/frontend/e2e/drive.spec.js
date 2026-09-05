@@ -390,6 +390,62 @@ test('dropping files on the list uploads them into the folder you are in', async
     .toContainText(`dropped-${stamp}.txt`, { timeout: 20_000 })
 })
 
+/**
+ * The direct path, on a bench with no bucket.
+ *
+ * The interesting half — presigned PUTs at Cloudflare — cannot run here and is
+ * covered by `tests/test_direct_upload.py`. What can only be checked in a
+ * browser is that the wiring is *live*: that a file over the threshold asks
+ * `direct.begin` before anything else, that a file under it does not ask at
+ * all, and that a site answering `{"direct": false}` still lands the file. Each
+ * of those is silent at build time and each of them has a failure that looks
+ * exactly like the old behaviour.
+ */
+test('a large file asks for a direct upload first, and falls back when there is no bucket', async ({
+  page,
+}) => {
+  const errors = collectConsoleErrors(page)
+  const asked = []
+  page.on('request', (request) => {
+    const url = request.url()
+    if (url.includes('storage.direct.')) asked.push(url.split('storage.direct.')[1].split('?')[0])
+  })
+
+  await page.goto('/one/files')
+  await expect(page.locator('[data-slot="drive-dropzone"]')).toBeVisible()
+
+  const stamp = Date.now()
+  // Over the 8 MB threshold, which is the only thing that decides the path.
+  await page.locator('input[name="drive-upload"]').setInputFiles([
+    {
+      name: `big-${stamp}.bin`,
+      mimeType: 'application/octet-stream',
+      buffer: Buffer.alloc(9 * 1024 * 1024, 7),
+    },
+  ])
+
+  await expect(page.locator('[data-slot="upload-tray"]'))
+    .toContainText('1 file uploaded', { timeout: 60_000 })
+
+  expect(asked).toEqual(['begin'])
+
+  await page.getByPlaceholder('Search files').fill(`big-${stamp}`)
+  await expect(page.locator('[data-slot="drive-file"]').first())
+    .toContainText(`big-${stamp}.bin`, { timeout: 20_000 })
+
+  // And a small one never asks — three round trips to save a second is not a
+  // saving, and every ordinary upload has to keep costing what it cost.
+  asked.length = 0
+  await page.locator('input[name="drive-upload"]').setInputFiles([
+    { name: `small-${stamp}.txt`, mimeType: 'text/plain', buffer: Buffer.from('small') },
+  ])
+  await expect(page.locator('[data-slot="upload-tray"]'))
+    .toContainText('uploaded', { timeout: 30_000 })
+  expect(asked).toEqual([])
+
+  expectNoRealErrors(errors)
+})
+
 test('right-clicking a row offers what its menu offers', async ({ page }) => {
   await page.goto('/one/files')
   const row = page.locator('[data-slot="drive-file"]').first()

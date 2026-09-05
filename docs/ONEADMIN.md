@@ -496,6 +496,20 @@ expensive per insert, so it runs hourly and only the verdict is read. An absent
 verdict reads as *not over*, so a stopped scheduler unblocks rather than
 freezes.
 
+**A file over 8 MB never passes through Python.** The browser gets presigned
+URLs and PUTs the parts straight at R2; see `docs/DRIVE.md` §8 and
+`storage/direct.py`. This puts one requirement on the bucket that nothing else
+does: **its CORS policy must allow the tenant origins to `PUT` and must expose
+`ETag`.** A multipart upload is completed from its parts' ETags, and a header
+the browser is not allowed to read does not exist as far as the page is
+concerned — so a bucket without it uploads every byte correctly and then fails
+on the last call. `r2.ensure_cors(origins)` writes the policy. It is a
+bucket-level operation, so it is run once per bucket when the bucket is made,
+not per site and not on a schedule:
+
+    bench --site <any site on the shard> execute \
+      oneapp.oneapp_core.storage.r2.ensure_cors --kwargs "{'origins': ['https://*.4dl.app']}"
+
 **Buckets are rotated at a cap.** A `Storage Bucket` tracks jurisdiction, tenant
 count and bytes; at the cap it is marked Full and a fresh one is created.
 Customers choose Global or EU jurisdiction. The reason is blast radius: one

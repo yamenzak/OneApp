@@ -17,6 +17,7 @@ import os
 
 import frappe
 from frappe import _
+from frappe.utils import get_url
 
 PRESIGN_TTL = 300
 
@@ -128,6 +129,50 @@ def presigned_url(key: str, ttl: int = PRESIGN_TTL) -> str:
 		Params={"Bucket": config()["bucket"], "Key": key},
 		ExpiresIn=ttl,
 	)
+
+
+# --------------------------------------------------------------------------- #
+# CORS
+# --------------------------------------------------------------------------- #
+
+#: The bucket must allow the browser to PUT at it and, crucially, must *expose*
+#: `ETag`. A multipart upload is completed by sending back each part's ETag, and
+#: a response header the browser cannot read does not exist as far as JavaScript
+#: is concerned — so without this line every direct upload uploads every byte
+#: correctly and then fails on the last call, which is the most expensive way a
+#: missing config line can fail.
+CORS_EXPOSE = ["ETag"]
+CORS_METHODS = ["GET", "PUT", "HEAD"]
+
+
+def cors_rules(origins: list[str]) -> list[dict]:
+	return [
+		{
+			"AllowedOrigins": origins,
+			"AllowedMethods": CORS_METHODS,
+			"AllowedHeaders": ["*"],
+			"ExposeHeaders": CORS_EXPOSE,
+			"MaxAgeSeconds": 3600,
+		}
+	]
+
+
+def ensure_cors(origins: list[str] | None = None) -> dict:
+	"""Put the CORS policy the browser needs onto the bucket.
+
+	Idempotent, and safe to run from `bench execute`. Called by hand rather than
+	on a schedule: the bucket is shared by every tenant on a shard, so this is a
+	bucket-level operation and not a per-site one — see `docs/ONEADMIN.md`.
+	"""
+	if not is_configured():
+		raise R2NotConfigured("R2 keys are missing from site_config.json.")
+
+	origins = origins or [get_url()]
+	rules = cors_rules(origins)
+	client().put_bucket_cors(
+		Bucket=config()["bucket"], CORSConfiguration={"CORSRules": rules}
+	)
+	return {"ok": True, "origins": origins}
 
 
 def guess_content_type(filename: str) -> str:
