@@ -22,21 +22,14 @@
  * gone before the ninth finishes. A row that stays red with a Retry beside it
  * is the only version of this that a person can act on.
  *
- * The upload itself is frappe-ui's `upload`, which posts to Frappe's own
- * endpoint — so `storage/file.py` still moves the bytes to R2 and
- * `storage/quota.py` still refuses the one that would go over. Nothing about
- * where a file ends up is decided here.
- *
- * Except in size. A file over eight megabytes is offered to `directUpload`
- * first, which sends it to R2 without it passing through Python at all; that
- * returns `null` on a site with no bucket and the POST happens as before. The
- * queue does not care which of the two ran — a row that reaches 100 is a file
- * in the Drive either way.
+ * The upload itself is `lib/attach.js`, which every attach surface in the
+ * product goes through — so `storage/quota.py` still refuses the one that
+ * would go over, and a large file takes the same presigned route here as it
+ * does from a record. Nothing about where a file ends up is decided here.
  */
 import { computed, reactive, readonly } from 'vue'
-import { upload } from '@/ui'
 
-import { directUpload } from '../lib/directUpload'
+import { putFile } from '../lib/attach'
 import { errorText } from '../lib/errors'
 
 /** Where a file is in its life. `queued → sending → done | failed`. */
@@ -136,20 +129,13 @@ async function drain() {
 async function send(one) {
   one.state = SENDING
   one.progress = 0
-  const track = ({ percent }) => { one.progress = percent }
   try {
-    // Private, always, on both paths. A workspace's files are not
-    // world-readable, and `r2.download` is the only way to the bytes — see
-    // `storage/r2.py`.
-    const direct = await directUpload(one.file, {
+    // `putFile` decides between the direct path and the ordinary POST. Which
+    // one ran is not this queue's business — see `lib/attach.js`.
+    await putFile(one.file, {
       folder: one.folder,
-      private: true,
-      onProgress: track,
+      onProgress: ({ percent }) => { one.progress = percent },
     })
-
-    if (!direct) {
-      await upload(one.file, { folder: one.folder, private: true, onProgress: track })
-    }
 
     one.state = DONE
     one.progress = 100

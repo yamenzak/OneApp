@@ -143,10 +143,18 @@
       One picker, not an uploader. An Attach field used to be able to upload and
       not to choose, so the drawing already on the record was uploaded again to
       put it in a second field. See `components/drive/FilePicker.vue`.
+
+      `attached-to` is what makes the file *belong* to the record rather than
+      only be named by it. Without it — which is how this shipped — a file
+      attached to an Attach field landed loose in the Drive, missing from the
+      record's own Files tab and from its attachment count, and orphaned the
+      moment somebody cleared the field. Every other caller of this picker
+      passed it; this one did not, and the field is the one people use most.
     -->
     <FilePicker
       v-model="picking"
       :kind="field.fieldtype === 'Attach Image' ? 'Image' : ''"
+      :attached-to="attachTarget"
       @picked="(file) => emit('update:modelValue', file.file_url)"
     />
   </div>
@@ -416,6 +424,22 @@ const EXTENSIONS = [RichTextKit]
  * attach to until it has an id, and Frappe's own form says the same thing.
  * The editor then simply offers no upload.
  */
+/**
+ * Where a file attached through this field belongs.
+ *
+ * `undefined` until the record has an id, which is the honest answer: there is
+ * nothing to attach to yet, and the picker then files it in the Drive and the
+ * field still gets its URL. Frappe's own form behaves the same way.
+ */
+const attachTarget = computed(() => {
+  if (!props.doctype || !props.docname) return null
+  return {
+    doctype: props.doctype,
+    docname: props.docname,
+    fieldname: props.field.fieldname,
+  }
+})
+
 const uploadInto = computed(() => {
   const doctype = props.doctype
   const docname = props.docname

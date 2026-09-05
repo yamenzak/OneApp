@@ -50,6 +50,33 @@
         including files on records you cannot open.
       </p>
 
+      <!--
+        The one thing a storage meter has to say and almost never does. Deleting
+        a gigabyte and watching the number stay put is correct — the object
+        survives so the delete can be undone — and is indistinguishable from a
+        bug unless the screen says it out loud, with the way to act on it
+        beside it.
+      -->
+      <p
+        v-if="storage.bin?.files"
+        data-slot="storage-bin"
+        class="text-p-xs text-ink-gray-5"
+      >
+        The bin is holding {{ storage.bin.label }} across
+        {{ storage.bin.files }}
+        {{ storage.bin.files === 1 ? 'file' : 'files' }}, which still counts.
+        Each is removed for good {{ storage.bin.days }} days after it went
+        there.
+      </p>
+      <router-link
+        v-if="storage.bin?.files"
+        :to="{ name: 'Drive', query: { place: 'trash' } }"
+        class="text-p-xs text-ink-gray-6 underline underline-offset-2 hover:text-ink-gray-8"
+        @click="settings.open = false"
+      >
+        Empty the bin to get that back now
+      </router-link>
+
       <section v-if="storage.by_kind?.length" class="flex min-w-0 flex-col gap-2">
         <h3 class="text-p-sm font-medium text-ink-gray-8">By kind</h3>
         <div
@@ -182,6 +209,7 @@ const toDrive = () => {
   settings.open = false
   router.push({ name: 'Drive' })
 }
+
 
 onMounted(async () => {
   try {

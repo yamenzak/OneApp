@@ -387,11 +387,68 @@ expensive way a missing config line can fail. `r2.ensure_cors()` writes the
 policy; it is a bucket-level operation, not a per-site one, so it is run once per
 shard rather than on a schedule. See `docs/ONEADMIN.md`.
 
-### What still goes the ordinary way
+### Every attach surface takes the same route
 
-The Drive's upload queue takes the direct path; the attach field, the picker's
-upload tab and an image pasted into a rich-text field do not — they go through
-frappe-ui's `FileUploader`, which posts. That is the right split for now: a
-large file belongs in the Drive, and attaching one to a record is then a pick
-rather than a second upload. Moving the picker onto the same path is a small
-change to `directUpload.js`'s caller and nothing else.
+`lib/attach.js` is one function — `putFile(file, {attachTo, folder})` — that
+tries the direct path and falls back to the POST. The Drive's queue calls it and
+so does the picker, which is what makes a large file attachable to a record and
+not only droppable into the Drive. Before that the picker used frappe-ui's
+`FileUploader`, which posts the whole body, so a 200 MB video went into the
+Drive fine and failed the moment somebody attached one to a quotation.
+
+The one surface still posting is an image pasted into a rich-text field, which
+goes through the editor's own upload hook. A pasted image is a screenshot, and
+the threshold is eight megabytes.
+
+## 9. The one dialog
+
+`FilePicker` is every attach surface in the product: the Attach and Attach Image
+fieldtypes, the attachment gallery, a record's Files tab, its identity image,
+the mail composer, and the sheet importer. Three sources, and the reasoning for
+which three is in the component's own header — it is Frappe's own dialog minus
+Link and Google Drive.
+
+* **Library** — every file this person can see, flat and searchable, `place=all`
+  rather than the root folder because almost every file in a workspace is an
+  attachment living in `Home/Attachments`. First, because the file somebody
+  wants is usually one that is already here.
+* **This device** — a drop zone and a chooser, through `lib/attach.js`.
+* **Camera** — `getUserMedia` with a live preview, a shutter and a front/back
+  toggle, falling back to a `capture` input when the page is not on a secure
+  origin or permission is refused. Frappe's desk has had this since
+  `frappe/public/js/frappe/ui/capture.js`; every surface we built to replace the
+  desk quietly did not.
+
+Two props narrow it. `kind` is the Drive's own taxonomy, which is what an Attach
+Image field wants. `extensions` is narrower and sometimes the only useful
+filter — a spreadsheet and a Word document are both `Document`, and only one of
+them can be imported as a sheet.
+
+**`attached-to` is what makes a file belong to the record.** Omit it and the
+file is made, the field gets its URL, and the row is loose in the Drive: absent
+from the record's Files tab, absent from its attachment count, orphaned the
+moment somebody clears the field. That is exactly how the Attach fieldtype
+shipped — every other caller passed it and the one people use most did not — and
+`test_frontend_guards.py::test_a_picker_on_a_record_attaches_to_it` now refuses
+a picker on a record that omits it.
+
+## 10. What the storage meter counts
+
+`quota.current_usage` is the number every refusal and every meter reads, and it
+counts **objects, not rows**.
+
+The distinction is the whole of it. Attaching a file the workspace already has
+does not upload it again — `File.create_attachment_copy` writes a second row
+over the same object, which is what the picker's Library tab does and what an
+attachment on a second record is. Summing `file_size` over rows billed that
+drawing once per record it appeared on. Rows are grouped by `r2_key`, or by
+`file_url` where the file is on local disk and Frappe's own duplicate check
+already reuses the path.
+
+Two other things now weigh what they weigh. A **sheet** carries its stored
+workbook's size on its `File` row, written when it saves; before that every
+sheet was zero bytes in a list whose job is to say how big things are. And the
+**bin** is reported on the storage screen — how much it holds, and that each
+file leaves for good thirty days after it went there — because a binned file
+correctly still counts, and deleting a gigabyte while the meter does not move is
+indistinguishable from a bug unless something says so.

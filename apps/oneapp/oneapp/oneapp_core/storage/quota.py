@@ -46,9 +46,39 @@ DB_EXEMPT_DOCTYPES = {
 }
 
 
+#: How the same bytes are recognised in two `File` rows. `r2_key` where there is
+#: an object, `file_url` where the file is on disk — Frappe's own duplicate
+#: check reuses a `file_url` rather than writing a second copy, so two local
+#: rows sharing one are two names for one file. `name` is the fallback, which
+#: makes a row that shares nothing count for itself.
+OBJECT = "COALESCE(NULLIF(r2_key, ''), NULLIF(file_url, ''), name)"
+
+
 def current_usage() -> int:
-	"""Bytes currently stored by this site."""
-	return int(frappe.db.sql("SELECT COALESCE(SUM(file_size), 0) FROM `tabFile`")[0][0] or 0)
+	"""Bytes currently stored by this site, counting each object once.
+
+	The distinct part is the whole of it. Attaching a drawing the workspace
+	already has does not upload it again — `File.create_attachment_copy` writes a
+	second row over the same object, which is what the picker does and what an
+	attachment on a second record is. Summing `file_size` over rows billed that
+	drawing once per record it appeared on, so a workspace storing four
+	megabytes could be refused at forty.
+
+	Counted here and not by asking R2, which exposes no per-prefix usage metric.
+	"""
+	return int(
+		frappe.db.sql(
+			f"""
+			SELECT COALESCE(SUM(bytes), 0) FROM (
+				SELECT MAX(file_size) AS bytes
+				FROM `tabFile`
+				WHERE is_folder = 0
+				GROUP BY {OBJECT}
+			) AS objects
+			"""
+		)[0][0]
+		or 0
+	)
 
 
 def quota_bytes() -> int:

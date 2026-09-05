@@ -442,7 +442,12 @@ test('a sheet exports to Excel and comes back with its formulas', async ({ page 
   await page.goto('/one/files')
   await page.getByRole('button', { name: 'New sheet' }).click()
   await page.getByRole('menuitem', { name: 'Import a spreadsheet' }).click()
-  await page.locator('input[type="file"]').setInputFiles({
+  // Scoped to the dialog, not `input[type=file]` on the page: the Drive's own
+  // Upload button is a second one, and a bare selector matched both the day
+  // that button was added.
+  const dialog = page.getByRole('dialog', { name: 'Import a spreadsheet' })
+  await dialog.getByRole('tab', { name: 'This device' }).click()
+  await dialog.locator('input[name="picker-upload"]').setInputFiles({
     name: download.suggestedFilename(),
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     buffer: readFileSync(path),

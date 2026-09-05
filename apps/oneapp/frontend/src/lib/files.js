@@ -48,3 +48,26 @@ export function humanSize(file) {
   const value = bytes / 1024 ** step
   return `${value.toLocaleString(undefined, { maximumFractionDigits: step ? 1 : 0 })} ${units[step]}`
 }
+
+/**
+ * A stored file, back in the browser as a `File`.
+ *
+ * The Drive holds bytes; some things — importing a spreadsheet, reading a CSV
+ * — need them in hand rather than on a server. `file_url` is either our own
+ * download route, which checks the permission and redirects to a presigned R2
+ * URL, or a public CDN path; `fetch` follows either.
+ *
+ * `credentials: 'include'` because the download route is a permission check and
+ * a fetch without the session cookie is an anonymous one, which it correctly
+ * refuses.
+ */
+export async function fetchFile(row) {
+  const url = row?.file_url
+  if (!url) throw new Error('That file has nowhere to be read from.')
+
+  const answer = await fetch(url, { credentials: 'include' })
+  if (!answer.ok) throw new Error(`That file could not be read (${answer.status}).`)
+
+  const blob = await answer.blob()
+  return new File([blob], row.file_name || row.name || 'file', { type: blob.type })
+}

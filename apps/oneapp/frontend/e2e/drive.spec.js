@@ -132,17 +132,64 @@ test('the picker on a record offers files the workspace already has', async ({ p
   const picker = page.getByRole('dialog')
   await expect(picker).toBeVisible()
 
-  // Upload first, because that is what every one of these surfaces used to be.
-  await expect(picker.getByRole('button', { name: 'Choose a file' })).toBeVisible()
-
-  // And then the half that is new: the drive, flat, with a search over it.
-  await picker.getByRole('tab', { name: 'Choose from files' }).click()
+  // The library first, and it opens there: the file somebody wants is usually
+  // one the workspace already has, and a dialog that opens on an upload button
+  // teaches everyone to upload it again.
   await expect(picker.getByPlaceholder('Search files')).toBeVisible()
   await expect(
     picker.locator('[data-slot="drive-file"], [data-slot="empty-state"]').first(),
   ).toBeVisible({ timeout: 15_000 })
 
+  // Three sources, which is Frappe's own dialog minus Link and Google Drive.
+  await picker.getByRole('tab', { name: 'This device' }).click()
+  await expect(picker.locator('[data-slot="picker-dropzone"]')).toBeVisible()
+  await expect(picker.getByRole('button', { name: 'Choose a file' })).toBeVisible()
+
+  await picker.getByRole('tab', { name: 'Camera' }).click()
+  // `getUserMedia` needs a secure context and headless Chromium has no camera,
+  // so what is checked is that the offer is there and that the way out of a
+  // refused camera is offered beside it — not that a photograph can be taken.
+  await expect(picker.getByRole('button', { name: "Use the phone's camera" })).toBeVisible()
+
   expectNoRealErrors(errors)
+})
+
+/**
+ * A file uploaded on a record ends up *on* the record.
+ *
+ * Not a given: the picker's upload now goes through `lib/attach.js` rather than
+ * frappe-ui's uploader, and the thing that could quietly go missing in that
+ * swap is the `attached_to` triple. The record's own Files tab is
+ * `attached_to_name = this record`, so a row appearing in it is the link
+ * existing. (The Attach *field* had exactly this bug and could not be reached
+ * from a seeded screen — `test_frontend_guards.py` holds that one.)
+ */
+test('a file uploaded on a record belongs to the record', async ({ page }) => {
+  await page.goto('/one/space/rua?screen=projects')
+
+  const missing = await page
+    .getByText('Nothing here', { exact: false })
+    .isVisible()
+    .catch(() => false)
+  test.skip(missing, 'this tenant has no ERPNext, so the space is not seeded')
+
+  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
+  await page.locator('[data-slot="list-row"]').first().click()
+
+  const before = await page.getByRole('tab', { name: 'Files' }).textContent()
+  await page.getByRole('tab', { name: 'Files' }).click()
+  await page.getByRole('button', { name: 'Attach a file' }).click()
+
+  const picker = page.getByRole('dialog')
+  await picker.getByRole('tab', { name: 'This device' }).click()
+
+  const stamp = Date.now()
+  await picker.locator('input[name="picker-upload"]').setInputFiles([
+    { name: `field-${stamp}.txt`, mimeType: 'text/plain', buffer: Buffer.from('field') },
+  ])
+
+  await expect(page.getByText(`field-${stamp}.txt`)).toBeVisible({ timeout: 30_000 })
+  expect(before).toBeTruthy()
 })
 
 test('a file can be hearted, and the heart is what Favourites lists', async ({ page }) => {

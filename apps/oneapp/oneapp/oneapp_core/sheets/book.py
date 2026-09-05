@@ -64,6 +64,13 @@ def store(sheet: str, payload: str) -> int:
             "doctype": "Sheet Book", "sheet": sheet, "payload": payload,
             "byte_size": size, "head_seq": head,
         }).insert(ignore_permissions=True)
+
+    # Onto the File too, because a sheet is a file and every place a file's
+    # weight is read reads it there: the Drive's list, the storage screen, the
+    # meter. Without this a workspace of five hundred sheets shows a column of
+    # blanks and a total that says none of them exist.
+    frappe.db.set_value("File", sheet, "file_size", size, update_modified=False)
+
     return head
 
 

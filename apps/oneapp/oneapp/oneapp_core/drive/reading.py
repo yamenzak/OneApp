@@ -11,7 +11,8 @@ from frappe import _
 
 from oneapp.oneapp_core.email import people
 
-from .kinds import KIND_FIELD, KINDS, OPENED_FIELD, STATUS_FIELD, TRASHED_FIELD
+from .kinds import KIND_FIELD, KINDS, OPENED_FIELD, STATUS_FIELD, TRASHED, TRASHED_FIELD
+from .writing import KEEP_DAYS
 from .query import HOME, ORDER, PLACES, RECORD, ROOT, TRASH, _place_filters, _visible
 
 PAGE = 50
@@ -180,7 +181,24 @@ def storage() -> dict:
         where = (row.get("folder") or ROOT).rsplit("/", 1)[-1]
         by_folder[where] = by_folder.get(where, 0) + size
 
+    # What the bin is still holding. The single most confusing thing about a
+    # storage meter is deleting a gigabyte and watching the number not move —
+    # which is correct, because the object survives thirty days so the delete
+    # can be undone, and is indistinguishable from a bug unless it is said.
+    binned = frappe.get_list(
+        "File",
+        filters={"is_folder": 0, STATUS_FIELD: TRASHED},
+        fields=["file_size"],
+        limit_page_length=0,
+    )
+
     return {
+        "bin": {
+            "files": len(binned),
+            "bytes": sum(row.get("file_size") or 0 for row in binned),
+            "label": quota.format_bytes(sum(row.get("file_size") or 0 for row in binned)),
+            "days": KEEP_DAYS,
+        },
         "by_kind": [
             {"kind": kind, "bytes": size, "label": quota.format_bytes(size)}
             for kind, size in sorted(by_kind.items(), key=lambda pair: -pair[1])

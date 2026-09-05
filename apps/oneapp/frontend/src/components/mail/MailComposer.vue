@@ -83,7 +83,7 @@
         data-slot="mail-attach"
         @click="picking = true"
       />
-      <FilePicker v-model="picking" @picked="attach" />
+      <FilePicker v-model="picking" multiple @picked="attach" />
 
       <ErrorMessage v-if="error" :message="error" />
     </div>

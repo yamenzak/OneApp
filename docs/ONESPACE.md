@@ -736,20 +736,49 @@ already applied. A sixth place would be a filter rather than a feature.
 the object together, so the only undo was a backup — which is not an undo, it is
 a support ticket. Trashing sets a column; a scheduled sweep empties what has
 been there thirty days and deletes the object then. Taking a file off a record
-goes the same way.
+goes the same way. Which means a binned file still counts against the storage
+quota, correctly and confusingly — so the storage screen says how much the bin
+is holding and offers to empty it, because deleting a gigabyte and watching the
+meter not move is indistinguishable from a bug unless something says otherwise.
+
+**A file counts once, however many records it is on.** Attaching a drawing the
+workspace already has writes a second `File` row over the same object; summing
+`file_size` over rows billed it once per record it appeared on, so a workspace
+storing four megabytes could be refused at forty. `quota.current_usage` groups
+by the object — `r2_key`, or `file_url` where the file is on local disk — and
+takes each one once. A sheet weighs what its stored workbook weighs, stamped
+onto the `File` when it saves; before that every sheet showed as zero bytes in a
+file list whose whole job is to say how big things are.
 
 **Every read is `get_list`.** That one word is the whole access model. `get_all`
 ignores permissions, and a file manager built on it would hand every reader
 every file on the site — most of which are attachments on records they cannot
 open.
 
-**Attaching is one control everywhere.** `FilePicker` has two tabs, Upload and
-Choose from files, and upload writes into the Drive and then picks the result —
-so there is one path and one place files end up. It replaced five separate
-uploaders that could not see each other's work, which is how the same drawing
-came to exist four times under four names. Picking a file that is already
-attached somewhere writes a second row over the same object rather than moving
-the first.
+**Attaching is one control everywhere, with three sources.** `FilePicker` opens
+on **Library** — every file this person can see, flat, searchable — with **This
+device** and **Camera** beside it. Upload writes into the Drive and then picks
+the result, so there is one path and one place files end up. It replaced five
+separate uploaders that could not see each other's work, which is how the same
+drawing came to exist four times under four names. Picking a file that is
+already attached somewhere writes a second row over the same object rather than
+moving the first.
+
+Three, not five: Frappe's desk offers Library, Link, Camera and Google Drive. A
+Link is a `File` row pointing at somebody else's server — an attachment that
+breaks when they tidy up, indistinguishable from one that does not until
+somebody needs it — and Google Drive is a second cloud beside the one we run.
+
+The library is first on purpose. The file somebody wants is usually one the
+workspace already has, and a dialog that opens on an upload button teaches
+everyone to upload it again. Sheet import is the same dialog, narrowed to the
+three extensions it can read, so a spreadsheet attached to a quotation last
+March imports without being downloaded and uploaded first.
+
+The upload goes through `lib/attach.js`, which every attach surface shares, so a
+large file attaches to a record by the same presigned route it takes into the
+Drive — see `docs/DRIVE.md` §8. It used to post through Frappe here, and a large
+attachment simply failed.
 
 **A link outlives a session, and only that.** Sharing with a colleague is a
 `DocShare`; sharing with a consultant who has no account here is a `File Link` —

@@ -18,6 +18,7 @@
     />
     <FilePicker
       v-model="picking"
+      multiple
       :attached-to="{ doctype, docname: name }"
       @picked="reload"
     />

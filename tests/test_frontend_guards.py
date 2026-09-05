@@ -1352,3 +1352,57 @@ def test_an_icon_only_button_says_what_it_does(app):
 		"an icon-only Button with no `label`, so it has no accessible name:\n"
 		+ "\n".join(unnamed)
 	)
+
+
+# --------------------------------------------------------------------------- #
+# Attaching
+#
+# `FilePicker` writes a `File` row. Where that row *belongs* is `attached-to`,
+# and a picker on a record that omits it produces a file loose in the Drive:
+# missing from the record's own Files tab, missing from its attachment count,
+# and orphaned the moment somebody clears the field. That is exactly how the
+# Attach fieldtype shipped — every other caller passed it and the one people use
+# most did not — and it is invisible at every level except this one, because a
+# file *is* created and the field *does* get its URL.
+# --------------------------------------------------------------------------- #
+
+def _picker_tags(source: str) -> list[str]:
+	"""Every `<FilePicker …/>` in a file, whole.
+
+	Split rather than matched, and that is not fussiness: a tag body contains
+	`>` — `@picked="(file) => emit(…)"` is one — so the obvious `<FilePicker[^>]*/>`
+	stops at the arrow and matches nothing. Which is what the first version of
+	this guard did, and it passed cleanly against the very bug it was written
+	for.
+	"""
+	tags = []
+	for chunk in source.split("<FilePicker")[1:]:
+		end = chunk.find("/>")
+		tags.append(chunk[: end if end >= 0 else len(chunk)])
+	return tags
+
+
+@pytest.mark.parametrize("app", APPS)
+def test_a_picker_on_a_record_attaches_to_it(app):
+	root = ROOT / f"apps/{app}/frontend/src"
+	if not root.exists():
+		return
+
+	offenders = []
+	for path in sorted(root.rglob("*.vue")):
+		source = path.read_text()
+		# A component that knows a doctype and a docname is on a record. One
+		# that does not — the mail composer, the sheet importer — is filing into
+		# the Drive and correctly says nothing about a record.
+		on_a_record = re.search(r"\bdoctype\b", source) and re.search(r"\bdocname\b", source)
+		if not on_a_record:
+			continue
+
+		for tag in _picker_tags(source):
+			if "attached-to" not in tag:
+				offenders.append(str(path.relative_to(root)))
+
+	assert not offenders, (
+		"a picker on a record must pass `:attached-to`, or the file it makes "
+		"belongs to nothing: " + ", ".join(sorted(set(offenders)))
+	)

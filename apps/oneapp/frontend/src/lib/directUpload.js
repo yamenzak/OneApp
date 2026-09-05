@@ -46,8 +46,8 @@ export async function directUpload(file, options = {}) {
   const target = {
     folder,
     attached_to_doctype: attachTo?.doctype || '',
-    attached_to_name: attachTo?.name || '',
-    attached_to_field: attachTo?.field || '',
+    attached_to_name: attachTo?.docname || '',
+    attached_to_field: attachTo?.fieldname || '',
     is_private: isPrivate ? 1 : 0,
   }
 
