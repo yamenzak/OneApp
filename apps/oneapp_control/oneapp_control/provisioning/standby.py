@@ -174,6 +174,7 @@ def release(standby_name: str, reason: str = ""):
 
 @frappe.whitelist()
 def status_report() -> list[dict]:
+	"""How many sites are warm and waiting, per shard."""
 	if "System Manager" not in frappe.get_roles():
 		frappe.throw(_("Not permitted."), frappe.PermissionError)
 	return pool_status()

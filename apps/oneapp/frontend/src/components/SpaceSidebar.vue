@@ -4,11 +4,18 @@
     :width="`${width}px`"
     class="border-r border-outline-gray-1"
   >
-    <!-- No logo: the rail already shows the active space's tile, so a header
-         logo beside it would say the same thing twice. -->
+    <!--
+      No logo: the rail already shows the active space's tile, so a header logo
+      beside it would say the same thing twice.
+
+      Where you are on top, the workspace underneath — the same two lines the
+      mail and Drive rails carry. It used to put the workspace on top and the
+      plan below when no space was open, so off a space the header was one line
+      where everywhere else it is two, and the whole rail sat 20px higher.
+    -->
     <SidebarHeader
-      :title="activeSpace?.space_label || session.tenant?.name || TENANT_APP"
-      :subtitle="activeSpace ? session.tenant?.name : session.tenant?.plan"
+      :title="activeSpace?.space_label || 'Spaces'"
+      :subtitle="session.tenant?.name || TENANT_APP"
       :show-logo="false"
     />
 
@@ -117,7 +124,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue'
+import { reactive, watch } from 'vue'
 import { TENANT_APP } from '../lib/brand'
 import {
   Button,
@@ -128,10 +135,11 @@ import {
   SidebarItem,
   SidebarLabel,
 } from '@/ui'
-import Resizer from './screen/Resizer.vue'
+import Resizer from './Resizer.vue'
 import QuotaMeter from './QuotaMeter.vue'
 import { useNav } from '../lib/nav'
 import { session } from '../lib/session'
+import { DEFAULT, MAX, MIN, useSidebar } from '../lib/sidebar'
 
 // The destinations themselves live in lib/nav.js: the phone's bottom bar
 // renders the same list, and two declarations of it drift into two different
@@ -146,45 +154,15 @@ const { nav, activeSpace } = useNav()
 // frappe-ui's route inference, which would fill it anyway.
 const SUB_ACTIVE = ['text-ink-gray-6', 'font-medium text-ink-gray-8']
 
-// Shut or open, remembered in this browser.
+// Shut or open, and how wide when it is open — shared with every other rail
+// that fills this slot, in `lib/sidebar.js`.
 //
 // The clearest shell win there is: on a laptop running a data grid, a fixed
 // 224px of chrome sits between the reader and their columns with no way to
 // take it back. frappe-ui's Sidebar already knows how to do this — SidebarItem
 // shrinks to its icon on its own — so what was missing is the state and the
 // toggle, not a layout.
-//
-// Explicitly boolean rather than left null: unset, Sidebar collapses itself
-// below the `sm` breakpoint, and below that breakpoint this component is not
-// rendered at all — the shell has switched to the phone's bar.
-const REMEMBERED = 'onespace.sidebar-collapsed'
-
-const stored = () => {
-  try {
-    return window.localStorage.getItem(REMEMBERED) === '1'
-  } catch {
-    // A private window, or site data turned off. Open is a fine answer.
-    return false
-  }
-}
-
-const collapsed = ref(stored())
-
-watch(collapsed, (shut) => {
-  try {
-    window.localStorage.setItem(REMEMBERED, shut ? '1' : '0')
-  } catch {
-    // Nothing to do about it, and nothing worth saying.
-  }
-})
-
-// How wide when it is open. Narrow enough that a screen name still fits, wide
-// enough that "Provisioning queue" is not three lines.
-const MIN = 176
-const DEFAULT = 224
-const MAX = 420
-
-const width = ref(DEFAULT)
+const { collapsed, width } = useSidebar()
 
 // Which screens are showing their view types. Not persisted: it is a glance,
 // not a preference, and a sidebar that remembers what you opened last week is

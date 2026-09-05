@@ -9,8 +9,18 @@
 import { expect, test } from '@playwright/test'
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 
+/**
+ * Open the fixture and go to the tab assignment lives on.
+ *
+ * One place, not two: the header used to carry the same control, which made it
+ * the eighth button in a row beside the one that mattered. "Who is this for" is
+ * a thing you set, so it sits with the other three of those — attach, tag,
+ * share — on Meta.
+ */
 const openTask = async (page) => {
   await page.goto('/one/space/zzmock?screen=tasks&record=zzmock-halloway')
+  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  await page.getByRole('tab', { name: 'Meta' }).click()
   await page.locator('[data-slot="assign"]').waitFor({ timeout: 15_000 })
 }
 
@@ -40,6 +50,8 @@ test('a record can be assigned, and says so in faces', async ({ page }, info) =>
   // this component.
   await page.keyboard.press('Escape')
   await page.reload()
+  await page.locator('[data-slot="record-pane"]').waitFor({ timeout: 15_000 })
+  await page.getByRole('tab', { name: 'Meta' }).click()
   await page.locator('[data-slot="assign"]').waitFor({ timeout: 15_000 })
   await expect(
     page.locator('[data-slot="assign"]').locator('.lucide-user-round-plus'),

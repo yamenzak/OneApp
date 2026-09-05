@@ -211,6 +211,23 @@ export {
 export { CodeEditor, CodePreview, loadLanguage } from 'frappe-ui/experimental'
 
 /**
+ * The calendar, from the same unstable entry point and on the same terms.
+ *
+ * Month, week and day over a list of events, with the drag, the resize and the
+ * click-a-cell-to-create already in it. It was in the root export before 1.0
+ * and moved here as "parked" — exempt from the deprecation policy until a
+ * redesigned calendar replaces it — which is the honest reason to take it: the
+ * alternative is FullCalendar, a second date library and a second set of theme
+ * rules, to end up with what is already installed. It is what Frappe Suite's
+ * own calendar draws with.
+ *
+ * `CalendarColorMap` comes with it because an event's colour is a name from a
+ * fixed set — amber, violet, pink, cyan, blue, orange, green — and anything
+ * offering a choice of one needs the same list rather than a second copy.
+ */
+export { Calendar, CalendarColorMap } from 'frappe-ui/experimental'
+
+/**
  * Charts, from frappe-ui's own entry point.
  *
  * Nine plots and four pieces of chrome, all echarts-backed. They are a separate

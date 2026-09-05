@@ -17,6 +17,7 @@ import os
 
 import frappe
 from frappe import _
+from frappe.utils import get_url
 
 PRESIGN_TTL = 300
 
@@ -130,6 +131,50 @@ def presigned_url(key: str, ttl: int = PRESIGN_TTL) -> str:
 	)
 
 
+# --------------------------------------------------------------------------- #
+# CORS
+# --------------------------------------------------------------------------- #
+
+#: The bucket must allow the browser to PUT at it and, crucially, must *expose*
+#: `ETag`. A multipart upload is completed by sending back each part's ETag, and
+#: a response header the browser cannot read does not exist as far as JavaScript
+#: is concerned — so without this line every direct upload uploads every byte
+#: correctly and then fails on the last call, which is the most expensive way a
+#: missing config line can fail.
+CORS_EXPOSE = ["ETag"]
+CORS_METHODS = ["GET", "PUT", "HEAD"]
+
+
+def cors_rules(origins: list[str]) -> list[dict]:
+	return [
+		{
+			"AllowedOrigins": origins,
+			"AllowedMethods": CORS_METHODS,
+			"AllowedHeaders": ["*"],
+			"ExposeHeaders": CORS_EXPOSE,
+			"MaxAgeSeconds": 3600,
+		}
+	]
+
+
+def ensure_cors(origins: list[str] | None = None) -> dict:
+	"""Put the CORS policy the browser needs onto the bucket.
+
+	Idempotent, and safe to run from `bench execute`. Called by hand rather than
+	on a schedule: the bucket is shared by every tenant on a shard, so this is a
+	bucket-level operation and not a per-site one — see `docs/ONEADMIN.md`.
+	"""
+	if not is_configured():
+		raise R2NotConfigured("R2 keys are missing from site_config.json.")
+
+	origins = origins or [get_url()]
+	rules = cors_rules(origins)
+	client().put_bucket_cors(
+		Bucket=config()["bucket"], CORSConfiguration={"CORSRules": rules}
+	)
+	return {"ok": True, "origins": origins}
+
+
 def guess_content_type(filename: str) -> str:
 	import mimetypes
 
@@ -142,27 +187,67 @@ def guess_content_type(filename: str) -> str:
 
 @frappe.whitelist()
 def download(file: str):
-	"""Serve a private file after checking permission on its attached document.
+	"""Serve a private file after checking the reader may have it.
 
 	The permission check is the whole point: without it, a presigned URL endpoint
 	is an open door to every file in the bucket.
+
+	The check is Frappe's own and not ours. `File.has_permission` is a hook the
+	framework registers, and it already answers all four cases — a public file,
+	the owner, a `DocShare`, and delegation to the document the file hangs off.
+	This used to hand-roll three of those and miss the share, which was fine
+	while every file was an attachment and became a bug the moment the Drive
+	gave a file a life of its own: a folder somebody shared with a colleague
+	opened for them and every file in it refused to download.
 	"""
 	doc = frappe.get_doc("File", file)
 
-	if doc.is_private:
-		# Frappe's own rule: access follows the document the file is attached to.
-		if doc.attached_to_doctype and doc.attached_to_name:
-			if not frappe.has_permission(
-				doc.attached_to_doctype, "read", doc.attached_to_name
-			):
-				frappe.throw(_("Not permitted."), frappe.PermissionError)
-		elif doc.owner != frappe.session.user and "System Manager" not in frappe.get_roles():
-			frappe.throw(_("Not permitted."), frappe.PermissionError)
+	if not frappe.has_permission("File", "read", doc=doc):
+		frappe.throw(_("Not permitted."), frappe.PermissionError)
 
-	key = doc.get("r2_key") or object_key(doc)
+	serve(doc)
 
-	frappe.local.response["type"] = "redirect"
-	frappe.local.response["location"] = presigned_url(key)
+
+def serve(doc):
+	"""Hand over one file's bytes, from wherever this site keeps them.
+
+	Two places, because a site with no R2 keys is a real configuration and not a
+	broken one — development runs that way, and so does anybody self-hosting
+	before they have a bucket. There the object is on local disk and there is
+	nothing to presign, so the response carries the content.
+
+	Nothing here checks a permission. Every caller has already checked one, and
+	they check different ones: the download route asks whether the reader may
+	read the file, and a share link asks nothing at all because the secret in the
+	URL was the whole of the authentication.
+	"""
+	# A sheet has no object anywhere. Its bytes are produced on the way out —
+	# see `sheets/export.py` — and asking `get_content()` for them answered 500
+	# on every download of a sheet and every share link to one.
+	if doc.get("custom_kind") == "Sheet":
+		from oneapp.oneapp_core.sheets import export
+
+		export.to_response(doc)
+		return
+
+	# `is_configured()` and not "does this row have a key". A key is where the
+	# object *would* be; presigning it needs the client and the credentials, and
+	# a site that has the row but not the keys cannot serve from R2 at all. A
+	# row keeps its key through a site being reconfigured, so the two questions
+	# come apart in practice.
+	if is_configured():
+		# Built before anything is assigned. `presigned_url` can raise, and
+		# setting the type first leaves a half-made redirect behind — which
+		# Werkzeug then answers as `Location: None`, a 500 that says nothing
+		# about what actually failed.
+		location = presigned_url(doc.get("r2_key") or object_key(doc))
+		frappe.local.response["type"] = "redirect"
+		frappe.local.response["location"] = location
+		return
+
+	frappe.local.response.filename = doc.file_name
+	frappe.local.response.filecontent = doc.get_content()
+	frappe.local.response.type = "download"
 
 
 # --------------------------------------------------------------------------- #

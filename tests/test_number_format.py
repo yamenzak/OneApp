@@ -70,10 +70,16 @@ def test_money_follows_the_sites_currency_precision():
 	assert run([[1234.5, {"cell": "currency"}, SITE]]) == ["1,234.50"]
 
 
-def test_currency_falls_back_to_the_float_precision():
-	"""Frappe leaves `currency_precision` unset to mean "follow the float
-	precision", which is a different thing from zero decimal places."""
-	assert run([[1234.5, {"cell": "currency"}, {"float_precision": 3}]]) == ["1,234.500"]
+def test_money_does_not_follow_the_float_precision():
+	"""They are two settings about two different things.
+
+	The browser used to read the float precision when the site sent no currency
+	one, which is not a fallback Frappe makes — money follows the *number
+	format*, and `#,###.##` is two places. Every contract value in the product
+	rendered with a thousandth of a dirham on the end, and Frappe's own desk
+	showed the same figure correctly on the same site.
+	"""
+	assert run([[1234.5, {"cell": "currency"}, {"float_precision": 3}]]) == ["1,234.50"]
 
 
 def test_a_count_carries_no_decimals():
@@ -156,3 +162,54 @@ def test_plain_text_is_returned_untouched():
 def test_a_stray_angle_bracket_is_not_markup():
 	"""`5 < 6` is a title somebody wrote, not a tag."""
 	assert strip(["5 < 6"]) == ["5 < 6"]
+
+
+# --------------------------------------------------------------------------- #
+# The site's answer, which is the server's to give
+# --------------------------------------------------------------------------- #
+
+
+def _formats(stub_frappe, monkeypatch, **settings):
+	import sys
+	import types
+
+	said = {"float_precision": "", "currency_precision": "", "number_format": "",
+	        **settings}
+	monkeypatch.setattr(stub_frappe, "get_cached_doc",
+	                    lambda *a, **k: types.SimpleNamespace(**said))
+	# The package as well as its modules. `from oneapp import api` takes the
+	# attribute off a cached `oneapp` package in preference to importing, so
+	# dropping only the submodule hands back the copy that closed over the
+	# previous test's stub — which passes alone and fails in a suite.
+	for name in list(sys.modules):
+		if name == "oneapp" or name.startswith("oneapp."):
+			del sys.modules[name]
+	from oneapp import api
+
+	return api.number_formats()
+
+
+def test_money_takes_its_decimals_from_the_number_format(stub_frappe, monkeypatch):
+	"""Not from `float_precision`. `#,###.##` is two places and `#,###` is
+	none, and neither has anything to do with how a Float renders."""
+	assert _formats(stub_frappe, monkeypatch,
+	                number_format="#,###.##", float_precision="3"
+	                )["currency_precision"] == 2
+	assert _formats(stub_frappe, monkeypatch,
+	                number_format="#,###", float_precision="3"
+	                )["currency_precision"] == 0
+
+
+def test_a_site_that_set_the_currency_precision_gets_what_it_asked_for(stub_frappe,
+                                                                      monkeypatch):
+	assert _formats(stub_frappe, monkeypatch, number_format="#,###.##",
+	                currency_precision="4")["currency_precision"] == 4
+
+
+def test_a_number_format_nobody_could_have_chosen_still_answers(stub_frappe,
+                                                                monkeypatch):
+	"""A format Frappe does not know is a setting nobody reached through the
+	UI — and a boot request that raises is a workspace that will not open."""
+	found = _formats(stub_frappe, monkeypatch, number_format="wat")
+	assert found["currency_precision"] == 2
+	assert found["number_format"] == "#,###.##"

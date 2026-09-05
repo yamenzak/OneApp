@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router'
 // An icon name that only exists in the database emits no CSS, so anything
 // outside the generated set falls back to one that does.
 import { spaceIcon } from './icons'
+import { mail } from './mail'
 import { session } from './session'
 import { workspace } from './workspace'
 import { VIEW_TYPES, viewTypesOf } from './viewTypes'
@@ -133,5 +134,67 @@ export function useNav() {
     }),
   )
 
-  return { nav, activeSpace }
+  /**
+   * The destinations that are not inside a space, declared once.
+   *
+   * Mail and Files are peers: the addresses somebody holds do not change when
+   * they switch space, and neither does the workspace's file table. So they
+   * live in the rail's footer beside the notification bell rather than in any
+   * space's navigation — and, because a phone draws no rail at all, they need
+   * a row in the More sheet too.
+   *
+   * Here rather than in App.vue for the reason this module exists: two
+   * renderings of one list, not two lists. Declared in the shell, the rail had
+   * Mail and the sheet did not, and on a phone the only way to it was typing
+   * the URL.
+   */
+  const surfaces = computed(() => [
+    { key: 'files', label: 'Files', icon: 'lucide-folder', to: { name: 'Drive' } },
+    // Always here, unlike Mail: everybody has days, and a diary with nothing
+    // in it is an empty week rather than a page nobody can use.
+    { key: 'calendar', label: 'Calendar', icon: 'lucide-calendar', to: { name: 'Calendar' } },
+    // Absent for somebody who holds no address, which is most people until
+    // somebody sets one up. An icon that opens an empty page is worse than no
+    // icon. `count` is the badge in the rail and the number in the sheet's
+    // label — one figure, said twice, because a phone has only the second.
+    ...(mail.held
+      ? [
+          {
+            key: 'mail',
+            label: 'Mail',
+            icon: 'lucide-mail',
+            to: { name: 'Mail' },
+            count: mail.unread,
+          },
+        ]
+      : []),
+  ])
+
+  return { nav, surfaces, activeSpace }
+}
+
+/**
+ * Which screen in a space shows a given doctype, if any.
+ *
+ * A Link field holds a doctype and an id, and that is not enough to open
+ * anything: this product has no route for a doctype, only for a *screen*, and
+ * one space may show Project on a screen the next space does not show at all.
+ * So the answer is per space, and it comes out of the session's own manifest
+ * rather than from a request — every screen a person may open is already in
+ * hand before the first field renders.
+ *
+ * Empty for a doctype no screen covers, which is the common case and not a
+ * failure: a Link to Currency or UOM points at a master nobody browses, and the
+ * honest answer is that there is nowhere to go.
+ *
+ * The first match wins where a space shows one doctype twice. That is a real
+ * shape — a screen filtered to open invoices beside one showing all of them —
+ * and the manifest's order is the space's own preference, which is a better
+ * answer than refusing to choose.
+ */
+export function screenFor(spaceCode, doctype) {
+  if (!spaceCode || !doctype) return ''
+  const space = session.spaces.find((one) => one.space_code === spaceCode)
+  const found = (space?.screens || []).find((one) => one.document_type === doctype)
+  return found?.screen || ''
 }

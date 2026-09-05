@@ -154,7 +154,7 @@ import {
   LoadingIndicator, Select,
 } from '@/ui'
 import EmptyState from '../../components/EmptyState.vue'
-import FormDialog from '../../components/screen/FormDialog.vue'
+import FormDialog from '../../components/screen/record/FormDialog.vue'
 import WorkspaceBar from './WorkspaceBar.vue'
 import { deleteRole, saveRole, useRoles } from './customer'
 import { useWorkspace } from './workspace'

@@ -17,9 +17,9 @@ import ast
 from pathlib import Path
 
 import pytest
+import spaceview_source
 
 ROOT = Path(__file__).resolve().parent.parent
-APPVIEW = ROOT / "apps/oneapp/oneapp/oneapp_core/spaceview.py"
 
 # Ours. Rows in these belong to the workspace's own bookkeeping — a saved view,
 # a hidden one — and are already scoped by `user` and `space_code` in the
@@ -55,7 +55,7 @@ REACHES = {
 
 @pytest.fixture(scope="module")
 def tree():
-	return ast.parse(APPVIEW.read_text())
+	return spaceview_source.tree()
 
 
 def _whitelisted(tree):

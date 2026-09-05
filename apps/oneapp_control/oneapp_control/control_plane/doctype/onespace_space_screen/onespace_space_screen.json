@@ -7,6 +7,7 @@
  "field_order": [
   "screen",
   "label",
+  "singular",
   "icon",
   "cb_view_source",
   "document_type",
@@ -20,7 +21,11 @@
   "sec_view_query",
   "filters",
   "cb_view_sort",
-  "order_by"
+  "order_by",
+  "sec_screen_fixtures",
+  "naming_series",
+  "cb_screen_print",
+  "print_formats"
  ],
  "fields": [
   {
@@ -38,6 +43,12 @@
    "in_list_view": 1,
    "label": "Label",
    "reqd": 1
+  },
+  {
+   "description": "Optional. The screen's label in the singular, where trimming an `s` gets it wrong \u2014 People, Series, a label that is already singular.",
+   "fieldname": "singular",
+   "fieldtype": "Data",
+   "label": "One of these is called"
   },
   {
    "default": "lucide-layout-grid",
@@ -124,6 +135,28 @@
    "fieldname": "order_by",
    "fieldtype": "Data",
    "label": "Order By"
+  },
+  {
+   "fieldname": "sec_screen_fixtures",
+   "fieldtype": "Section Break",
+   "label": ""
+  },
+  {
+   "description": "Prefixes this screen's doctype offers, one per line \u2014 `ACME-INV-.YYYY.-.#####`. Applied once, when the space first arrives; the workspace edits its own afterwards under Settings, Naming. Ignored where the doctype has no `naming_series` field.",
+   "fieldname": "naming_series",
+   "fieldtype": "Small Text",
+   "label": "Naming Series"
+  },
+  {
+   "fieldname": "cb_screen_print",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Print formats to ship, as a list: [{\"name\": \"ACME Invoice\", \"default\": true, \"layout\": {...}, \"setup\": {...}}]. `layout` is Frappe's own `format_data` \u2014 draw it in the builder under Settings, Print formats and paste it here, so what an app ships and what a workspace draws are the same kind of thing. Created once, per format, if nothing of that name exists.",
+   "fieldname": "print_formats",
+   "fieldtype": "Code",
+   "label": "Print Formats",
+   "options": "JSON"
   }
  ],
  "index_web_pages_for_search": 1,

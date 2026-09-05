@@ -3,7 +3,7 @@ app_title = "OneAdmin"
 app_publisher = "Four Degree Labs"
 app_description = "OneSpace control plane: tenants, shards, plans, credits and provisioning."
 app_email = "hello@fourdegreelabs.com"
-app_license = "mit"
+app_license = "agpl-3.0"
 
 # ---------------------------------------------------------------------------
 # SPA

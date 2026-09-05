@@ -59,12 +59,24 @@ export function expectNoRealErrors(errors) {
     // Logged by frappe-ui during a brief window before a resource resolves;
     // renders correctly and does not throw. Tracked, not silenced everywhere.
     /reading 'charAt'/,
+    // A print preview is rendered into a `sandbox=""` iframe on purpose: a
+    // print format is HTML somebody in the workspace wrote, and a preview is
+    // not a place to run it. Chromium says so once per script the format
+    // carries, which is the sandbox working rather than anything failing.
+    /Blocked script execution in 'about:/,
     // Realtime is proxied to the socketio port by nginx in production. The
     // development server serves the built SPA with no proxy in front of it, so
     // this 404s locally and only locally — and it did so on every page, which
     // meant this whole check was passing nothing. Realtime is therefore not
     // covered by the browser pass; it is exercised on a real site.
     /\/socket\.io\//,
+    // A request the browser cancelled, which is what `fetch` reports when the
+    // page navigates out from under one. The Mail screen refetches on a
+    // realtime event, so any spec that reloads shortly after acting on a
+    // message can lose that refetch mid-flight — and losing it is correct
+    // behaviour, not a failure. A server that really fails answers with a
+    // status, which the response listener above still catches.
+    /TypeError: Failed to fetch/,
   ]
   const real = errors.filter((e) => !ignorable.some((p) => p.test(e)))
   if (real.length) {

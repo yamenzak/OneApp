@@ -18,8 +18,24 @@ import frappe
 # the local provider — so the two cannot drift into describing different things.
 SPACE_FIELDS = (
 	"name as space_code", "space_label", "module", "role_name", "icon",
-	"logo", "sort_order", "description",
+	"logo", "sort_order", "description", "theme", "requires_apps",
+	"custom_fields",
 )
+
+# The same list as SQL, derived rather than restated. The restricted half of
+# `spaces_for_tenant` is a join and cannot use `get_all`, and for a while it was
+# a hand-written column list beside this one — which is a drift waiting to
+# happen: a field added above and forgotten below reaches every General space
+# and no Restricted one, and the Restricted ones are the bespoke work.
+SPACE_COLUMNS = ", ".join(
+	f"a.{field.split(' as ')[0]} AS {field.split(' as ')[-1]}" if " as " in field
+	else f"a.{field}"
+	for field in SPACE_FIELDS
+)
+
+# What every site has whatever it was granted. `frappe` because there is no
+# site without it, `oneapp` because it is the product.
+BASE_APPS = ("frappe", "oneapp")
 
 
 def spaces_for_tenant(tenant: str) -> list[dict]:
@@ -31,9 +47,8 @@ def spaces_for_tenant(tenant: str) -> list[dict]:
 	)
 
 	restricted = frappe.db.sql(
-		"""
-		SELECT a.name AS space_code, a.space_label, a.module, a.role_name, a.icon,
-		       a.logo, a.sort_order, a.description
+		f"""
+		SELECT {SPACE_COLUMNS}
 		FROM `tabOneSpace Space` a
 		INNER JOIN `tabSpace Entitlement` e ON e.app = a.name
 		WHERE a.is_active = 1
@@ -64,9 +79,9 @@ def spaces_for_tenant(tenant: str) -> list[dict]:
 # one is silent: `status_field` was stored, edited in the console, and never
 # sent, so no screen anywhere ever showed a status badge and nothing said why.
 SCREEN_FIELDS = (
-	"screen", "label", "icon", "document_type", "fields", "component",
+	"screen", "label", "singular", "icon", "document_type", "fields", "component",
 	"filters", "order_by", "view_types", "view_settings", "status_field",
-	"hide_new", "tab_icons",
+	"hide_new", "tab_icons", "naming_series", "print_formats",
 )
 
 
@@ -211,7 +226,7 @@ def space_roles(space: dict) -> list[dict]:
 # let them read site_config, which carries the signing secret this site uses to
 # talk to us — enough to forge its own usage reports and credit commits. What
 # they actually need (inviting users, seats, custom roles) is whitelisted methods
-# we run elevated, not a Frappe admin role. See DECISIONS §8.
+# we run elevated, not a Frappe admin role. See docs/ONESPACE.md, Roles.
 OWNER_ROLE = "OneSpace Workspace Owner"
 
 # Held by everyone in the workspace, the owner included. It grants nothing —
@@ -370,22 +385,37 @@ def allowed_doctypes(tenant: str) -> list[str]:
 
 
 def grant(tenant: str, space_code: str, note: str | None = None):
-	if frappe.db.exists("Space Entitlement", {"tenant": tenant, "app": space_code}):
-		name = frappe.db.get_value(
-			"Space Entitlement", {"tenant": tenant, "app": space_code}, "name"
-		)
-		frappe.db.set_value("Space Entitlement", name, "enabled", 1)
-		return name
+	"""Entitle a workspace to a space, and put its app on the site.
 
-	return frappe.get_doc(
-		{
-			"doctype": "Space Entitlement",
-			"tenant": tenant,
-			"app": space_code,
-			"enabled": 1,
-			"note": note,
-		}
-	).insert(ignore_permissions=True).name
+	Refused outright where the tenant's bench cannot carry what the space is
+	written against — an entitlement onto a site without ERPNext is a space
+	whose every screen is empty and nothing anywhere saying why, which is the
+	worst of the three possible outcomes. Where the bench can and the site has
+	not got there yet, an Install App job is queued and the space arrives a few
+	minutes later rather than never.
+	"""
+	from oneapp_control.entitlements import apps
+
+	apps.assert_can_carry(tenant, space_code)
+
+	name = frappe.db.get_value(
+		"Space Entitlement", {"tenant": tenant, "app": space_code}, "name"
+	)
+	if name:
+		frappe.db.set_value("Space Entitlement", name, "enabled", 1)
+	else:
+		name = frappe.get_doc(
+			{
+				"doctype": "Space Entitlement",
+				"tenant": tenant,
+				"app": space_code,
+				"enabled": 1,
+				"note": note,
+			}
+		).insert(ignore_permissions=True).name
+
+	apps.reconcile(tenant)
+	return name
 
 
 def revoke(tenant: str, space_code: str):

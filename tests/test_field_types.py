@@ -12,6 +12,7 @@ import re
 from pathlib import Path
 
 import pytest
+import components
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -182,7 +183,7 @@ def test_a_named_control_is_in_the_barrel(spec):
     # name has to resolve to something that actually renders.
     ours = {
         path.stem
-        for path in (ROOT / "apps/oneapp/frontend/src/components/screen").glob("*.vue")
+        for path in components.screen()
     }
 
     missing = [
@@ -326,7 +327,7 @@ def test_the_generated_helpers_return_real_control_types(spec):
             assert editor_format is None
             ours = {
                 path.stem
-                for path in (ROOT / "apps/oneapp/frontend/src/components/screen").glob("*.vue")
+                for path in components.screen()
             }
             assert component in exported | ours, f"{fieldtype} resolves to {component!r}"
 

@@ -14,13 +14,14 @@ doctype on the site.
 """
 
 from pathlib import Path
+import spaceview_source
+import components
 
 ROOT = Path(__file__).resolve().parent.parent
-SPACEVIEW = ROOT / "apps/oneapp/oneapp/oneapp_core/spaceview.py"
 
 
 def body() -> str:
-	source = SPACEVIEW.read_text()
+	source = spaceview_source.source()
 	start = source.index("def fetched(")
 	return source[start:]
 
@@ -75,7 +76,7 @@ def test_fetch_if_empty_travels_with_the_value():
 	somebody just corrected by hand."""
 	assert '"only_if_empty": bool(one.get("fetch_if_empty"))' in body()
 
-	form = (ROOT / "apps/oneapp/frontend/src/components/screen/FormSections.vue").read_text()
+	form = components.source("FormSections.vue")
 	assert "if (spec.only_if_empty && values.value[name]) continue" in form
 
 
@@ -83,7 +84,7 @@ def test_a_failed_lookup_leaves_the_form_alone():
 	"""It is a convenience. If it fails the field stays as it was and the save
 	still fills it — which is exactly the behaviour that existed before this
 	call did, so there is nothing here worth interrupting somebody for."""
-	form = (ROOT / "apps/oneapp/frontend/src/components/screen/FormSections.vue").read_text()
+	form = components.source("FormSections.vue")
 	fn = form[form.index("const wrote ="):]
 	fn = fn[: fn.index("\n}\n")]
 	assert "catch {" in fn, "a failed lookup now propagates out of the form"

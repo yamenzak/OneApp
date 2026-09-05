@@ -2,8 +2,10 @@
 
 A tenant site is a real Frappe site with ERPNext on it, so most of what a
 workspace needs to be *theirs* already exists — behind a desk the customer never
-sees (DECISIONS §7). This is the field-by-field record of what was moved into
-OneSpace, what stayed ours, and what was left alone.
+sees. This is the field-by-field record of what was moved into OneSpace, what
+stayed ours, and what was left alone — a reference table rather than an
+explanation, and one `tests/test_workspace_settings.py` reads back. The
+reasoning is in `docs/ONESPACE.md`.
 
 Three verdicts:
 
@@ -146,6 +148,27 @@ The shape that *would* work, if a customer asks for self-service joining, is
 requests to join, and the request creates a member upstream — where the seat is
 counted — rather than a User here. That needs a tenant→control write endpoint
 that does not exist yet.
+
+## Print Settings
+
+Printing is a workspace-wide decision and a per-document one, and these are the
+first kind: a print format decides what is on the page, and this decides what
+the page *is*. Every one of them is on Frappe's own `Print Settings` single,
+and the desk's version of this page is the same eleven fields with three more
+about a printer nobody in a browser has.
+
+| Field | Verdict | Why |
+| --- | --- | --- |
+| `pdf_page_size`, `pdf_page_width`, `pdf_page_height` | Customer | The paper. Custom takes the two sizes in millimetres. |
+| `font`, `font_size` | Customer | The typeface every format inherits unless it names its own. A Select, because it reaches a stylesheet the PDF engine must have the font for. |
+| `print_style` | Customer | The typography and spacing a format is drawn in. |
+| `pdf_generator` | Customer | Chrome renders modern CSS; wkhtmltopdf is an old WebKit and gets it wrong. Not interchangeable, which is why it is decided once for the workspace. |
+| `with_letterhead` | Customer | Whether the letter head is on by default. |
+| `repeat_header_footer` | Customer | Header and footer on every page rather than the first. |
+| `allow_print_for_draft`, `allow_print_for_cancelled` | Customer | Whether an unsubmitted or cancelled document may leave the building. |
+| `allow_page_break_inside_tables` | Customer | Off keeps a table whole and may leave a page short. |
+| `enable_print_server`, `server_printer`, `enable_raw_printing` | **Withheld** | A network printer on the site's own LAN, and ESC/POS command strings. Neither means anything to a workspace reached over the internet, and `raw_commands` is a template that runs. |
+| `send_print_as_pdf`, `view_link_in_email`, `add_draft_heading` | **Withheld** | Email composition, which belongs with email rather than with paper. |
 
 ## ERPNext
 

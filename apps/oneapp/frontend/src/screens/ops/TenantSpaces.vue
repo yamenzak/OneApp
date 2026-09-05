@@ -22,7 +22,7 @@
             <div class="ml-3 min-w-0">
               <p class="truncate text-base text-ink-gray-8">{{ app.space_label }}</p>
               <p class="truncate text-xs text-ink-gray-5">
-                {{ app.availability === 'Restricted' ? 'By entitlement only' : 'On every plan' }}
+                {{ said(app) }}
               </p>
             </div>
           </ListCell>
@@ -49,6 +49,8 @@
               :theme="app.entitled ? 'red' : 'gray'"
               variant="subtle"
               :loading="busy === app.space_code"
+              :disabled="!app.entitled && !!app.blocked_by?.length"
+              :tooltip="blocked(app)"
               @click="toggle(app)"
             />
           </ListCell>
@@ -71,6 +73,21 @@ import { useListColumns } from '../../lib/list'
 import { admin } from './admin'
 
 const props = defineProps({ tenant: { type: String, required: true } })
+
+// The line under the label. What a space needs of the site is the thing an
+// operator wants to know before pressing Grant, and it beats "By entitlement
+// only" — which they already knew, since that is the whole of this screen.
+const said = (app) => {
+  if (app.blocked_by?.length) return `Needs ${app.blocked_by.join(', ')} — not on this bench`
+  if (app.requires?.length) return `Needs ${app.requires.join(', ')}`
+  return app.availability === 'Restricted' ? 'By entitlement only' : 'On every plan'
+}
+
+const blocked = (app) =>
+  app.entitled || !app.blocked_by?.length
+    ? undefined
+    : `The bench this workspace sits on does not carry ${app.blocked_by.join(', ')}. `
+      + 'Move it to a shard whose bench has it, or add it to this one.'
 
 const rows = ref([])
 const loading = ref(false)

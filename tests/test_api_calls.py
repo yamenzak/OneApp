@@ -23,6 +23,7 @@ from pathlib import Path
 import pytest
 
 from frappe_ui_api import ROOT
+from reachable import paths as reachable_paths
 
 APPS = ("oneapp", "oneapp_control")
 HELPER_VERB = {"useResource": "GET", "useAction": "POST", "callMethod": "POST"}
@@ -59,10 +60,12 @@ def whitelisted() -> dict[str, dict]:
             verbs = re.search(r"methods=\[([^\]]*)\]", args)
             module = path.as_posix().split("apps/", 1)[1].split("/", 1)[1]
             dotted = module[:-3].replace("/", ".")
-            found[f"{dotted}.{name}"] = {
+            entry = {
                 "verbs": set(re.findall(r"\w+", verbs.group(1))) if verbs else {"GET", "POST"},
                 "guest": "allow_guest=True" in args,
             }
+            for reachable in reachable_paths(path, dotted, name):
+                found[reachable] = entry
     return found
 
 

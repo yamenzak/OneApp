@@ -382,7 +382,7 @@ import { usePress } from './press'
 // desktop shows is simply gone.
 // A label/value list: the label track is fixed so the values line up, and a
 // desktop-width label column leaves a phone about 130px for the value.
-const { visible: fieldCols, columns: fieldTracks, shows: fieldShows } =
+const { columns: fieldTracks } =
   useListColumns([
   { key: 'label', header: '', track: '12rem', mobile: '8rem' },
   { key: 'value', header: '', track: 'minmax(0,1fr)' },
@@ -410,7 +410,7 @@ const { visible: jobCols, columns: jobTracks, shows: jobShows } =
   { key: 'when', header: 'When', track: '11rem', mobile: false },
 ])
 
-const { visible: loginCols, columns: loginTracks, shows: loginShows } =
+const { columns: loginTracks } =
   useListColumns([
   { key: 'operator', header: 'Operator', track: '14rem', mobile: 'minmax(0,1fr)' },
   { key: 'reason', header: 'Reason', track: 'minmax(0,1fr)', mobile: false },

@@ -210,6 +210,13 @@ test('a record opens and saves', async ({ page }, info) => {
   await dialog.getByLabel('Description').fill(changed)
   await dialog.getByRole('button', { name: 'Save' }).click()
 
+  // Save going away is the round trip landing: it is offered only while the
+  // form holds something the server has not seen. Waited for rather than
+  // assumed, because the second edit below would otherwise race the refetch —
+  // type into the form, have the arriving record overwrite it, and press a
+  // button that is no longer there.
+  await expect(dialog.getByRole('button', { name: 'Save' })).toHaveCount(0)
+
   // The pane stays open — a record you just saved is a record you are still
   // reading — and what it shows is what came back from the server rather than
   // what was typed into it.
@@ -221,6 +228,7 @@ test('a record opens and saves', async ({ page }, info) => {
   // Put it back, so the next run starts where this one did.
   await dialog.getByLabel('Description').fill(SEEDED)
   await dialog.getByRole('button', { name: 'Save' }).click()
+  await expect(dialog.getByRole('button', { name: 'Save' })).toHaveCount(0)
   await expect(dialog.getByLabel('Description')).toContainText(SEEDED)
   expectNoRealErrors(errors)
 })

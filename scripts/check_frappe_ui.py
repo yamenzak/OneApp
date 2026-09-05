@@ -56,7 +56,7 @@ def main() -> int:
     if behind:
         print(
             "\nA newer beta is out. To take it:\n"
-            "  1. bump the pin in scripts/gen_frontend.py and regenerate\n"
+            "  1. bump the pin in scripts/spa/spec.py and regenerate\n"
             "  2. npm install in both frontends\n"
             "  3. run the suite — the guards read the installed package, so a\n"
             "     renamed prop, a retired token or a changed slot fails there\n"

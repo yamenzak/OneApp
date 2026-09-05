@@ -3,7 +3,7 @@ app_title = "OneSpace"
 app_publisher = "Four Degree Labs"
 app_description = "Unified application surface for Four Degree Labs tenants."
 app_email = "hello@fourdegreelabs.com"
-app_license = "mit"
+app_license = "agpl-3.0"
 
 # Deliberately not `required_apps = ["erpnext"]`.
 #
@@ -22,7 +22,7 @@ app_license = "mit"
 # ---------------------------------------------------------------------------
 # The Vue router owns everything under /one. Without this rule Frappe resolves
 # only the exact route, so reloading any deep link serves a 404 before the router
-# ever runs. The desk at /app is left alone rather than used — see DECISIONS §7.
+# ever runs. The desk at /app is left alone rather than used — see docs/ONEADMIN.md, No desk.
 website_route_rules = [
 	{"from_route": "/one/<path:app_path>", "to_route": "one"},
 ]
@@ -39,21 +39,49 @@ home_page = "one"
 # keys still works instead of failing every upload.
 override_doctype_class = {
 	"File": "oneapp.oneapp_core.storage.file.OneSpaceFile",
+	# Mail arrives folder by folder and the framework throws the folder away —
+	# `InboundMail` is handed it and nothing on the Communication records where
+	# the message was filed, so somebody's Applicants folder lands in one flat
+	# list. One method is overridden to carry it through, and one guard is
+	# relaxed inside a Sent folder so sent mail is not skipped as "your own mail
+	# in your own inbox". See `oneapp_core/email/folders.py`.
+	"Email Account": "oneapp.oneapp_core.email.folders.OneSpaceEmailAccount",
 }
 
 # ---------------------------------------------------------------------------
 # Document hooks
 # ---------------------------------------------------------------------------
+# A share link names a file, and Frappe refuses to delete anything another
+# document links to. Without this, sharing a drawing once makes that drawing
+# undeletable for ever — with an error naming a doctype the person has never
+# heard of. The links go with the file instead; `storage.file` deletes them.
+ignore_links_on_delete = ["File Link"]
+
 doc_events = {
 	"File": {
 		# Storage quota is enforced at upload time. Discovering you are 3 GB over
 		# after the fact is a worse experience than a clear rejection now.
-		"before_insert": "oneapp.oneapp_core.storage.quota.enforce_quota",
+		#
+		# And what the file is, so the Drive can filter on a column rather than
+		# walking a mime map per row per page — see `oneapp_core/drive`.
+		"before_insert": [
+			"oneapp.oneapp_core.storage.quota.enforce_quota",
+			"oneapp.oneapp_core.drive.on_insert",
+		],
+		# A sheet's grid is a `Sheet Book` row, and the File being deleted is
+		# the only thing that knows they exist. Without this the bin's
+		# thirty-day sweep leaves behind the workbook of every sheet anybody
+		# ever threw away — see `oneapp_core/sheets`.
+		"on_trash": "oneapp.oneapp_core.sheets.on_trash",
 	},
 	"Email Queue": {
 		# Frappe queues one document per send, so counting them measures what
 		# actually leaves the site.
 		"before_insert": "oneapp.oneapp_core.email.outbound.enforce_send_rate",
+		# A permanent failure names an address that will fail again. Read it
+		# here rather than waiting for a provider webhook: an address that does
+		# not exist is refused at SMTP time and the reason is already on the row.
+		"on_update": "oneapp.oneapp_core.email.suppression.on_queue_failure",
 	},
 	# Following a document. Frappe stores the follow and then only ever emails a
 	# digest about it, so these two are the in-app half — see
@@ -63,11 +91,46 @@ doc_events = {
 	# sources the framework's own digest reads, and a Version row exists only
 	# where `track_changes` is on, which is exactly the condition a document has
 	# to meet to be followable at all.
+	# Retention: the part of an invoice a construction customer keeps until the
+	# job is proved. Inert unless the invoice carries the field — see
+	# `oneapp_core/retention.py`, which is also the argument for why a
+	# subcontractor's books are wrong without it.
+	"Sales Invoice": {
+		"validate": "oneapp.oneapp_core.retention.apply",
+	},
 	"Version": {
 		"after_insert": "oneapp.oneapp_core.notifications.on_version",
 	},
 	"Comment": {
 		"after_insert": "oneapp.oneapp_core.notifications.on_comment",
+	},
+	"Communication": {
+		# Which conversation this message belongs to, taken from the one it
+		# answers rather than from its subject line — see
+		# `oneapp_core/email/threading.py`. `before_insert`, because the value
+		# belongs to the row being written and setting it afterwards would be a
+		# second version row on a doctype people already find noisy.
+		# Two, and the order is the point: linking reads the thread key that
+		# threading writes. Frappe runs a list of handlers in order, so this is
+		# a sequence and not two independent hooks that happen to both fire.
+		"before_insert": [
+			"oneapp.oneapp_core.email.threading.on_insert",
+			# Which records this message is about — see
+			# `oneapp_core/email/linking.py`. Same `before_insert` argument as
+			# above, and one more: `timeline_links` is a child table, and a
+			# child row appended after the parent is saved is a second write.
+			"oneapp.oneapp_core.email.linking.on_insert",
+		],
+		# And how each link was made, after the framework has stopped rewriting
+		# the rows it was written on — `deduplicate_timeline_links` rebuilds
+		# every one of them from its doctype and name alone. See
+		# `linking.stamp`, which is the whole reason this is two hooks.
+		"after_insert": "oneapp.oneapp_core.email.linking.stamp",
+		# Whose signature goes on a message is a question the framework answers
+		# wrongly here — the site's default outgoing account signs everything,
+		# whichever address it was actually sent from. Ours goes on in the
+		# composer, where somebody can see it. See `email/signatures.py`.
+		"before_save": "oneapp.oneapp_core.email.signatures.hold_the_frameworks_signature",
 	},
 	# Inserts are what grow a database, so they are what pauses when a workspace
 	# is over its allowance. Updates and deletes keep working, so deleting
@@ -99,6 +162,25 @@ scheduler_events = {
 		# effect in minutes, not hours.
 		"*/15 * * * *": ["oneapp.oneapp_core.sync.sync_from_control_plane"],
 	},
+	"daily": [
+		# The register of things that expire — licences, visas, insurance — and
+		# the warning before one does. Daily because a status derived on save
+		# goes stale the moment the date changes: a licence that was Valid last
+		# night is Expiring this morning and nobody saved it.
+		"oneapp.oneapp_core.expiry.sweep",
+		# And the other thing with an end date on it: an out-of-office reply
+		# whose last day has passed. Without something acting on the date, the
+		# date is a note to self.
+		"oneapp.oneapp_core.email.rules.expire_away",
+		# And the bin, which is a promise with a date on it: thirty days, then
+		# the row and the R2 object go together. Without this the promise is
+		# that we keep everything anybody ever deleted, and bill for it.
+		"oneapp.oneapp_core.drive.sweep_trash",
+		# And the share links that expired a month ago. Not the moment they
+		# expire: the row is the audit trail, and "this stopped working last
+		# Tuesday" is a question asked in the week after it stops.
+		"oneapp.oneapp_core.drive.sweep_links",
+	],
 	"hourly": [
 		"oneapp.oneapp_core.sync.report_usage_to_control_plane",
 		# Backups, into R2, on the frequency the plan bought. Hourly rather than
@@ -118,7 +200,12 @@ after_install = "oneapp.install.after_install"
 # Our own Notification Type, seeded the way the framework seeds its five: in
 # code, idempotently, on install and on every migrate. A type is a doctype row,
 # so an app adds one rather than forking an enum.
-after_migrate = "oneapp.oneapp_core.notifications.install_types"
+after_migrate = [
+	"oneapp.oneapp_core.notifications.install_types",
+	# The custom fields, for a site installed before one of them existed. Both
+	# are idempotent and both are cheap; the alternative is a patch per field.
+	"oneapp.install.create_custom_fields",
+]
 
 # `Workspace` never sends its own email.
 #

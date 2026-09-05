@@ -1,6 +1,6 @@
 """The desk is not part of this product, for anyone.
 
-DECISIONS §7 says so, and it is the kind of claim that decays quietly: a doctype
+docs/ONEADMIN.md, No desk says so, and it is the kind of claim that decays quietly: a doctype
 gains a field, the field is only editable in /app, and nobody notices until an
 operator is told to "just open the desk" — at which point running this requires
 knowing Frappe, which is the thing the claim was protecting against.
@@ -22,6 +22,9 @@ import re
 from pathlib import Path
 
 import pytest
+from reachable import paths as reachable_paths
+import pathlib
+import sources
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTROL = ROOT / "apps/oneapp_control/oneapp_control"
@@ -108,21 +111,25 @@ def _endpoints_by_doctype(module: Path) -> dict[str, set[str]]:
 	"""
 	import ast
 
-	source = module.read_text()
-	tree = ast.parse(source)
+	# A directory, when the module has been split into one. `admin` is nine
+	# modules now, and the endpoint name is what the SPA calls by, so the
+	# filename it lives in does not matter here.
+	files = (
+		sorted(p for p in module.glob("*.py") if p.name != "__init__.py")
+		if module.is_dir() else [module]
+	)
 	found: dict[str, set[str]] = {}
 
-	for node in ast.walk(tree):
-		if not isinstance(node, ast.FunctionDef):
-			continue
-		decorated = any(
-			"whitelist" in ast.unparse(d) for d in node.decorator_list
-		)
-		if not decorated:
-			continue
-		body = ast.get_source_segment(source, node) or ""
-		for name in re.findall(r'"([A-Z][A-Za-z ]+)"', body):
-			found.setdefault(name, set()).add(node.name)
+	for path in files:
+		source = path.read_text()
+		for node in ast.walk(ast.parse(source)):
+			if not isinstance(node, ast.FunctionDef):
+				continue
+			if not any("whitelist" in ast.unparse(d) for d in node.decorator_list):
+				continue
+			body = ast.get_source_segment(source, node) or ""
+			for name in re.findall(r'"([A-Z][A-Za-z ]+)"', body):
+				found.setdefault(name, set()).add(node.name)
 	return found
 
 
@@ -144,7 +151,7 @@ def settings_targets() -> set[str]:
 
 def test_every_control_doctype_is_reachable_from_the_operator_console():
 	spa = _spa_source(TENANT_SRC)
-	endpoints = _endpoints_by_doctype(CONTROL / "api/admin.py")
+	endpoints = _endpoints_by_doctype(CONTROL / "api/admin")
 	screens = operator_screens()
 	settings = settings_targets()
 
@@ -186,6 +193,25 @@ TENANT_EXEMPT = {
 }
 
 
+# The doctypes whose surface is a *screen*, not a hand-written panel.
+#
+# A different thing from the exemptions above, and it deserves its own list.
+# These have no bespoke component anywhere because they do not need one: they
+# are ordinary records, a space declares a screen over them, and the generic
+# engine renders the list and the record from the tenant site's own metadata.
+# That is the whole product working — the desk is not the only way to see them,
+# the manifest is.
+#
+# Proved rather than asserted: `test_a_rendered_doctype_has_a_screen_somewhere`
+# below insists the dev seed declares a screen for each, so the browser suite
+# opens them on every run. An entry here with no screen is a claim nobody
+# checked.
+RENDERED_BY_MANIFEST = {
+	"Compliance Document": "a register of papers that expire; a list and a record",
+	"Correspondence": "bilingual letters and forms; a list and a record",
+}
+
+
 def _tenant_endpoints_by_doctype() -> dict[str, set[str]]:
 	"""Which whitelisted tenant methods name each doctype, as dotted paths.
 
@@ -204,21 +230,34 @@ def _tenant_endpoints_by_doctype() -> dict[str, set[str]]:
 	tenant = ROOT / "apps/oneapp/oneapp"
 	found: dict[str, set[str]] = {}
 
+	# Grouped by the unit that owns a subject, which for a package is the
+	# package and not the file. `importer` is six modules now: the endpoints are
+	# in `screen`, and `Import Identity` is named in `writing`, so a file-scoped
+	# read declares it desk-only while the screen that manages it is right
+	# there.
+	units: dict[pathlib.Path, list[pathlib.Path]] = {}
 	for path in sorted(tenant.rglob("*.py")):
-		source = path.read_text()
-		if "whitelist" not in source:
-			continue
+		unit = path.parent if (path.parent / "__init__.py").exists() else path
+		units.setdefault(unit, []).append(path)
 
-		dotted = path.relative_to(tenant.parent).with_suffix("").as_posix().replace("/", ".")
-		named = set(re.findall(r'"([A-Z][A-Za-z ]+)"', source))
+	for unit, paths in units.items():
+		named: set[str] = set()
+		endpoints: set[str] = set()
+		for path in paths:
+			source = path.read_text()
+			named |= set(re.findall(r'"([A-Z][A-Za-z ]+)"', source))
+			if "whitelist" not in source:
+				continue
+			dotted = path.relative_to(tenant.parent).with_suffix("").as_posix().replace("/", ".")
+			for node in ast.walk(ast.parse(source)):
+				if not isinstance(node, ast.FunctionDef):
+					continue
+				if not any("whitelist" in ast.unparse(d) for d in node.decorator_list):
+					continue
+				endpoints |= set(reachable_paths(path, dotted, node.name))
 
-		for node in ast.walk(ast.parse(source)):
-			if not isinstance(node, ast.FunctionDef):
-				continue
-			if not any("whitelist" in ast.unparse(d) for d in node.decorator_list):
-				continue
-			for name in named:
-				found.setdefault(name, set()).add(f"{dotted}.{node.name}")
+		for name in named:
+			found.setdefault(name, set()).update(endpoints)
 
 	return found
 
@@ -235,7 +274,7 @@ def test_every_tenant_doctype_is_reachable_from_onespace():
 
 	missing = []
 	for name in doctypes(ROOT / "apps/oneapp/oneapp"):
-		if name in TENANT_EXEMPT or name in spa:
+		if name in TENANT_EXEMPT or name in RENDERED_BY_MANIFEST or name in spa:
 			continue
 		if any(path in spa for path in endpoints.get(name, ())):
 			continue
@@ -256,6 +295,21 @@ def test_the_exemptions_say_why():
 	for name, reason in TENANT_EXEMPT.items():
 		assert len(reason) > 20, f"{name} is exempt for no stated reason"
 
+	for name, reason in RENDERED_BY_MANIFEST.items():
+		assert len(reason) > 20, f"{name} says nothing about what its screen shows"
+
+
+def test_a_rendered_doctype_has_a_screen_somewhere():
+	"""The claim in `RENDERED_BY_MANIFEST`, checked against the dev seed.
+
+	Saying "a manifest renders it" and shipping no manifest that does is how a
+	doctype ends up reachable only from the desk while a list here says
+	otherwise. The seed is the one manifest this repo owns, so it is the one
+	that has to prove it."""
+	seed = (ROOT / "scripts/seed_dev_space.py").read_text()
+	for name in RENDERED_BY_MANIFEST:
+		assert f'"{name}"' in seed, f"nothing declares a screen over {name}"
+
 
 def test_the_exemption_list_has_no_stale_entries():
 	"""A doctype that has since gone should not leave a rule behind."""
@@ -273,7 +327,7 @@ def test_the_exemption_list_has_no_stale_entries():
 # still be unchangeable. These name the specific actions that were desk-only.
 # --------------------------------------------------------------------------- #
 
-ADMIN_API = (CONTROL / "api/admin.py").read_text()
+ADMIN_API = sources.text(CONTROL / "api/admin.py")
 
 
 # Nine things `/admin` could do that a doctype list alone cannot express. Each
@@ -354,7 +408,9 @@ def test_a_declared_action_is_the_only_method_the_runner_will_call():
 	refuses anything else, so a method name in a request body reaches nothing
 	that was not shipped as a declaration.
 	"""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/spaceview.py").read_text()
+	import spaceview_source
+
+	source = spaceview_source.source()
 	runner = source[source.index("def run_action("):]
 	assert "declared.get(action)" in runner, "the action is not looked up in the declaration"
 	assert "frappe.PermissionError" in runner, "an undeclared action does not refuse"
@@ -440,52 +496,91 @@ def test_no_spa_sends_anyone_into_the_desk(src):
 # one field: General availability puts a row in every customer's launcher.
 # --------------------------------------------------------------------------- #
 
-INSTALL = CONTROL / "install.py"
+SPACES = CONTROL / "spaces"
 
 
-def _seed_specs() -> list[dict]:
+def _shipped() -> list[dict]:
+	"""Every space this repository ships, read out of its module.
+
+	Read rather than imported, because the modules are declarations and this
+	question does not need a Frappe.
+	"""
 	import ast as _ast
 
-	source = INSTALL.read_text()
-	tree = _ast.parse(source)
-	for node in _ast.walk(tree):
-		if isinstance(node, _ast.Assign) and getattr(node.targets[0], "id", "") == "SEED_APPS":
-			return _ast.literal_eval(_ast.get_source_segment(source, node.value))
-	raise AssertionError("SEED_APPS is gone")
+	found = []
+	for path in sorted(SPACES.glob("*.py")):
+		if path.name == "__init__.py":
+			continue
+		source = path.read_text()
+		tree = _ast.parse(source)
+		space = screens = None
+		for node in _ast.walk(tree):
+			if not isinstance(node, _ast.Assign):
+				continue
+			named = getattr(node.targets[0], "id", "")
+			if named == "SPACE":
+				# Key by key, keeping only the ones that are literals. A space
+				# may declare its own look with a `json.dumps(...)`, which is a
+				# call and not a literal — and every key these rules ask about
+				# (`space_code`, `availability`) is a plain string beside it.
+				# Evaluating the whole dict raised on the first space to have a
+				# theme, which is a reader that stops working as soon as a
+				# manifest uses a feature it does not care about.
+				space = {}
+				for key, value in zip(node.value.keys, node.value.values):
+					try:
+						space[_ast.literal_eval(key)] = _ast.literal_eval(value)
+					except (TypeError, ValueError):
+						continue
+			elif named == "SCREENS":
+				# Counted rather than evaluated. A screen may carry a
+				# `json.dumps(...)` for its view settings, which is not a
+				# literal — and what these rules ask is whether a space puts
+				# anything in front of anybody, not what.
+				screens = getattr(node.value, "elts", [])
+		assert space, f"{path.name} declares no SPACE"
+		found.append({**space, "screens": screens or [], "source": source})
+	return found
 
 
-def test_a_seeded_app_is_not_offered_to_customers():
-	"""Nobody decided to build these. A seed reaching a launcher is a promise of
-	software that does not exist, made to someone paying for it — and, for an app
-	naming ERPNext doctypes, write access to them over the REST API."""
+def test_the_reader_found_the_shipped_spaces():
+	"""A reader that silently finds nothing turns every rule below into a pass."""
+	codes = {one["space_code"] for one in _shipped()}
+	assert {"books", "rua"} <= codes, codes
+
+
+def test_a_shipped_space_is_not_offered_to_every_customer():
+	"""A space reaching every launcher is a promise made to everybody paying —
+	and, for one naming ERPNext doctypes, write access to them over the REST
+	API. It is one company's system or it is a decision somebody took."""
 	offenders = [
-		spec["space_code"]
-		for spec in _seed_specs()
-		if spec.get("availability") != "Restricted"
+		one["space_code"] for one in _shipped()
+		if one.get("availability") != "Restricted"
 	]
 	assert not offenders, (
-		"seeded apps must be Restricted until someone decides to build them: "
+		"shipped spaces must be Restricted until somebody decides otherwise: "
 		+ ", ".join(offenders)
 	)
 
 
-def test_restricted_is_the_default_a_seed_gets_by_saying_nothing():
+def test_restricted_is_what_a_space_gets_by_saying_nothing():
 	"""Reaching every customer should be opted into, not arrived at by
 	forgetting to say."""
-	body = INSTALL.read_text()
-	seeder = body[body.index("def seed_apps"):]
-	assert '"availability": "Restricted"' in seeder
+	body = (SPACES / "__init__.py").read_text()
+	assert 'module.SPACE.get("availability", "Restricted")' in body
 
 
-def test_the_seed_says_what_it_is_for():
-	"""This one was introduced inside a commit about a generator bug, described
-	as "seeds a first app", and read afterwards as a product decision."""
-	body = INSTALL.read_text()
-	header = body[: body.index("SEED_APPS = [")]
-	assert "not a product" in header.lower()
-
-	for spec in _seed_specs():
-		assert "no interface" in (spec.get("description") or "").lower(), spec["space_code"]
+def test_a_space_with_no_screens_says_it_has_none():
+	"""The failure this exists for: a reference entitlement was introduced
+	inside a commit about a generator bug, described as "seeds a first app",
+	and read afterwards as a product decision. An entitlement with no interface
+	is a real thing to be — it just has to say so."""
+	for one in _shipped():
+		if one["screens"]:
+			continue
+		said = (one.get("description") or "").lower() + one["source"].lower()
+		assert "no interface" in said, one["space_code"]
+		assert "not a product" in said, one["space_code"]
 
 
 def test_existing_installs_are_corrected_without_taking_anything_away():

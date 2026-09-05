@@ -1,0 +1,158 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_doctype",
+  "reference_name",
+  "into",
+  "source",
+  "sheet",
+  "sheet_title",
+  "label",
+  "outcome",
+  "filled",
+  "skipped",
+  "state",
+  "status",
+  "pulled_on",
+  "pulled_by",
+  "locked_on",
+  "locked_by"
+ ],
+ "fields": [
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Reference Doctype",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Reference Name",
+   "options": "reference_doctype",
+   "reqd": 1
+  },
+  {
+   "description": "The fieldname of the table these rows landed in. One feed per table: a second pull into the same table replaces the rows, so it replaces this too.",
+   "fieldname": "into",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Child Table",
+   "reqd": 1
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Section Break",
+   "label": "Where it came from"
+  },
+  {
+   "description": "The File this was pulled from, by name. Data rather than a Link so the record outlives the sheet.",
+   "fieldname": "sheet",
+   "fieldtype": "Data",
+   "label": "Sheet",
+   "reqd": 1
+  },
+  {
+   "description": "What that sheet was called when the rows were pulled.",
+   "fieldname": "sheet_title",
+   "fieldtype": "Data",
+   "label": "Sheet Title"
+  },
+  {
+   "description": "The named range. The contract between a sheet and the document it fills.",
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "label": "Label",
+   "reqd": 1
+  },
+  {
+   "fieldname": "outcome",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Rows written.",
+   "fieldname": "filled",
+   "fieldtype": "Int",
+   "label": "Filled",
+   "read_only": 1
+  },
+  {
+   "description": "Headings with no matching field, which were left out.",
+   "fieldname": "skipped",
+   "fieldtype": "Small Text",
+   "label": "Skipped",
+   "read_only": 1
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Section Break",
+   "label": "Where it stands"
+  },
+  {
+   "default": "Following",
+   "description": "Following: filling again replaces these rows. Locked: the document is the record now and the sheet is history, so a pull is refused until somebody unlocks it.",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Following\nLocked"
+  },
+  {
+   "fieldname": "pulled_on",
+   "fieldtype": "Datetime",
+   "label": "Pulled On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pulled_by",
+   "fieldtype": "Link",
+   "label": "Pulled By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "locked_on",
+   "fieldtype": "Datetime",
+   "label": "Locked On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "locked_by",
+   "fieldtype": "Link",
+   "label": "Locked By",
+   "options": "User",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "Sheet Feed",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "search_fields": "reference_doctype,reference_name,sheet_title",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "sheet_title",
+ "track_changes": 1
+}

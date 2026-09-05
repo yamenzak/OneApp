@@ -17,28 +17,60 @@ export const VIEW_TYPES = {
     label: 'List',
     icon: 'lucide-list',
     built: true,
-    body: () => import('../components/screen/ListBody.vue'),
+    body: () => import('../components/screen/bodies/ListBody.vue'),
   },
   board: {
     label: 'Board',
     icon: 'lucide-columns-3',
     built: true,
-    body: () => import('../components/screen/BoardBody.vue'),
+    body: () => import('../components/screen/bodies/BoardBody.vue'),
   },
-  calendar: { label: 'Calendar', icon: 'lucide-calendar', built: false },
+  calendar: {
+    label: 'Calendar',
+    icon: 'lucide-calendar',
+    built: true,
+    body: () => import('../components/screen/bodies/CalendarBody.vue'),
+  },
   dashboard: {
     label: 'Dashboard',
     icon: 'lucide-chart-column',
     built: true,
-    body: () => import('../components/screen/DashboardBody.vue'),
+    body: () => import('../components/screen/bodies/DashboardBody.vue'),
+  },
+  gantt: {
+    label: 'Gantt',
+    icon: 'lucide-chart-no-axes-gantt',
+    built: true,
+    body: () => import('../components/screen/bodies/GanttBody.vue'),
   },
   grid: {
     label: 'Grid',
     icon: 'lucide-layout-grid',
     built: true,
-    body: () => import('../components/screen/CardsBody.vue'),
+    body: () => import('../components/screen/bodies/CardsBody.vue'),
   },
   map: { label: 'Map', icon: 'lucide-map', built: false },
+  /**
+   * The same table, opened as a worksheet rather than as a way in.
+   *
+   * `ListBody` again and not a body of its own: a report *is* the list, plus
+   * two things — cells you can type into and a row of totals under them. What
+   * makes them a separate view type rather than a switch on the list is the
+   * click. A list row opens the record; a report cell takes the cursor. One
+   * click cannot mean both, and Frappe answered it the same way.
+   */
+  report: {
+    label: 'Report',
+    icon: 'lucide-table',
+    built: true,
+    body: () => import('../components/screen/bodies/ListBody.vue'),
+  },
+  tree: {
+    label: 'Tree',
+    icon: 'lucide-list-tree',
+    built: true,
+    body: () => import('../components/screen/bodies/TreeBody.vue'),
+  },
 }
 
 export const DEFAULT_VIEW_TYPE = 'list'
@@ -53,6 +85,34 @@ export const DEFAULT_VIEW_TYPE = 'list'
  * `spaceview._view_types` is the same rule on the server.
  */
 export const NEEDS_STATUS = ['board']
+
+/**
+ * And the same for the calendar, which is a way of reading one date.
+ *
+ * The field is named in `view_settings.calendar` rather than on the screen
+ * itself: a date field is read by the calendar and by nothing else, where
+ * `status_field` is also the badge on a record. `viewtypes.NEEDS_DATES` is the
+ * same rule on the server.
+ */
+export const NEEDS_DATES = ['calendar']
+
+/**
+ * And a Gantt needs both ends of a bar.
+ *
+ * Declared under `gantt`, falling back to the calendar's pair: a screen
+ * offering both is placing its records by the same two dates, and saying so
+ * twice is how the two drift. `viewtypes.NEEDS_SPANS` is the same rule.
+ */
+export const NEEDS_SPANS = ['gantt']
+
+/**
+ * And a tree needs the field that points a record at the one above it.
+ *
+ * Declared and never inferred, which is the one place this differs from the
+ * desk: a doctype can have several Links to itself and only one of them is a
+ * hierarchy. `viewtypes.NEEDS_PARENT` is the same rule.
+ */
+export const NEEDS_PARENT = ['tree']
 
 /**
  * View types that are nothing without something declared for them to draw.
@@ -89,6 +149,9 @@ export function viewTypesOf(screen) {
     .map((type) => type.trim().toLowerCase())
     .filter((type) => VIEW_TYPES[type]?.built)
     .filter((type) => hasColumnField(screen) || !NEEDS_STATUS.includes(type))
+    .filter((type) => hasDateField(screen) || !NEEDS_DATES.includes(type))
+    .filter((type) => hasSpan(screen) || !NEEDS_SPANS.includes(type))
+    .filter((type) => hasParentField(screen) || !NEEDS_PARENT.includes(type))
   return declared.length ? [...new Set(declared)] : [DEFAULT_VIEW_TYPE]
 }
 
@@ -106,15 +169,43 @@ export function viewTypesOf(screen) {
  */
 function hasColumnField(screen) {
   if (String(screen?.status_field || '').trim()) return true
-  let settings = screen?.view_settings
-  if (typeof settings === 'string') {
-    try {
-      settings = JSON.parse(settings || 'null')
-    } catch {
-      return false
-    }
+  return !!String(settingsOf(screen)?.board?.column_field || '').trim()
+}
+
+/** A screen's `view_settings`, whether it arrived as an object or as JSON. */
+function settingsOf(screen) {
+  const settings = screen?.view_settings
+  if (typeof settings !== 'string') return settings || null
+  try {
+    return JSON.parse(settings || 'null')
+  } catch {
+    return null
   }
-  return !!String(settings?.board?.column_field || '').trim()
+}
+
+/**
+ * Whether a screen names a field a calendar could place a record by.
+ *
+ * Only `view_settings`, because there is no screen-level date field to fall
+ * back to — `spaceview._has_date_field` is the same rule, and the fieldtype is
+ * checked on the server the same way a board's is.
+ */
+function hasDateField(screen) {
+  return !!String(settingsOf(screen)?.calendar?.start_field || '').trim()
+}
+
+/** Whether this screen names the field a tree nests by. `_has_parent_field`. */
+function hasParentField(screen) {
+  return !!String(settingsOf(screen)?.tree?.parent_field || '').trim()
+}
+
+/** Whether this screen names both ends of a bar. `spaceview._has_span`. */
+function hasSpan(screen) {
+  const settings = settingsOf(screen)
+  return ['gantt', 'calendar'].some((key) => {
+    const found = settings?.[key]
+    return !!(String(found?.start_field || '').trim() && String(found?.end_field || '').trim())
+  })
 }
 
 /**

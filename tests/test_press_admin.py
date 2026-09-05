@@ -16,6 +16,7 @@ import re
 from pathlib import Path
 
 import pytest
+import sources
 
 ROOT = Path(__file__).resolve().parents[1]
 ADMIN = ROOT / "apps/oneapp_control/oneapp_control/api/admin.py"
@@ -33,10 +34,12 @@ PAGE = OPS / "Tenant.vue"
 
 
 def function(path: Path, name: str) -> str:
-    source = path.read_text()
-    for node in ast.walk(ast.parse(source)):
-        if isinstance(node, ast.FunctionDef) and node.name == name:
-            return ast.get_source_segment(source, node)
+    """One function's source, from a module or from the package it became."""
+    for one in sources.files(path):
+        source = one.read_text()
+        for node in ast.walk(ast.parse(source)):
+            if isinstance(node, ast.FunctionDef) and node.name == name:
+                return ast.get_source_segment(source, node)
     raise AssertionError(f"{name} is missing from {path.name}")
 
 
@@ -68,12 +71,19 @@ def test_the_readiness_page_checks_the_host_separately():
 
 
 def test_every_default_points_at_the_canonical_host():
-    for path in (
+    # The doctype declarations are a directory, so this globs rather than
+    # naming a file: moving the default into a sibling module must not make
+    # the check pass by finding no host to check.
+    paths = [
         ROOT / "apps/oneapp_control/oneapp_control/install.py",
         ROOT / "apps/oneapp_control/oneapp_control/press/client.py",
         ROOT / "scripts/bootstrap_site.py",
-        ROOT / "scripts/gen_doctypes.py",
-    ):
+    ] + sorted((ROOT / "scripts/doctypes").glob("*.py"))
+    assert any("cloud.frappe.io" in p.read_text() for p in paths), (
+        "no file names the press host any more — this guard has gone blind"
+    )
+
+    for path in paths:
         text = path.read_text()
         if "frappe.io" not in text and "frappecloud" not in text:
             continue
@@ -201,7 +211,7 @@ def test_support_lands_in_the_workspace_not_the_desk():
 
 
 def test_every_press_endpoint_is_operator_only():
-    source = ADMIN.read_text()
+    source = sources.text(ADMIN)
     for name in READ_ENDPOINTS + ("take_backup", "backup_download", "set_primary_domain",
                                   "remove_domain", "support_login", "support_logins"):
         assert "_require_manager()" in function(ADMIN, name), name

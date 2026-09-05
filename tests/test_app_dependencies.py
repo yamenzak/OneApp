@@ -42,6 +42,38 @@ def test_range_admits_supported_versions(app, version):
 	)
 
 
+def test_oneapp_declares_hrms_too():
+	"""Payroll, leave balances and attendance come from HRMS, and a tenant bench
+	that carries it has to be admitted by the range or press refuses the build.
+
+	Not `required_apps`, for the same reason erpnext is not one — see hooks.py.
+	A range says "this works with"; a requirement says "this will not start
+	without", and the second is false.
+	"""
+	assert "hrms" in deps("oneapp")
+
+	spec = SpecifierSet(deps("oneapp")["hrms"])
+	for version in SUPPORTED:
+		assert spec.contains(Version(version), prereleases=True), (
+			f"oneapp would be refused on hrms {version}: {spec}"
+		)
+
+
+def test_a_new_tenant_site_gets_hrms():
+	"""The default a shard is created with, and the fallback in `site_apps`.
+
+	Two places, and they have to agree: a shard whose field is empty falls back
+	to the string in the provisioning step, and one created today takes the
+	doctype's default. A tenant that came up without HRMS has no payroll and
+	nothing says why."""
+	steps = (ROOT / "apps/oneapp_control/oneapp_control/provisioning/steps.py").read_text()
+	schema = (ROOT / "apps/oneapp_control/oneapp_control/control_plane/doctype/"
+	          "shard/shard.json").read_text()
+
+	assert '"frappe,erpnext,hrms,oneapp"' in steps
+	assert '"frappe,erpnext,hrms,oneapp"' in schema
+
+
 def test_oneapp_requires_erpnext():
 	"""oneapp declares required_apps = ['erpnext'], so the range must exist too."""
 	assert "erpnext" in deps("oneapp")

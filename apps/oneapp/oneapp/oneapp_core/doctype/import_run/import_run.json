@@ -1,0 +1,171 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:IMP-{YY}{MM}-{#####}",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "plan",
+  "status",
+  "cb_run_mode",
+  "dry_run",
+  "started_on",
+  "finished_on",
+  "sec_run_steps",
+  "steps",
+  "sec_run_totals",
+  "total_seen",
+  "total_created",
+  "cb_run_totals",
+  "total_updated",
+  "total_failed",
+  "error"
+ ],
+ "fields": [
+  {
+   "fieldname": "plan",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Plan",
+   "options": "Import Plan",
+   "reqd": 1
+  },
+  {
+   "default": "Queued",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Queued\nRunning\nDone\nFailed\nCancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_run_mode",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Map everything and write nothing. The counts and the issues are real; the records are not.",
+   "fieldname": "dry_run",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Dry Run"
+  },
+  {
+   "fieldname": "started_on",
+   "fieldtype": "Datetime",
+   "label": "Started On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "finished_on",
+   "fieldtype": "Datetime",
+   "label": "Finished On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_run_steps",
+   "fieldtype": "Section Break",
+   "label": "Steps"
+  },
+  {
+   "fieldname": "steps",
+   "fieldtype": "Table",
+   "label": "Steps",
+   "options": "Import Run Step",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_run_totals",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_seen",
+   "fieldtype": "Int",
+   "label": "Total Seen",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "total_created",
+   "fieldtype": "Int",
+   "label": "Total Created",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_run_totals",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_updated",
+   "fieldtype": "Int",
+   "label": "Total Updated",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "total_failed",
+   "fieldtype": "Int",
+   "label": "Total Failed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Small Text",
+   "label": "Error",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "Import Run",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "plan,status",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Gray",
+   "title": "Queued"
+  },
+  {
+   "color": "Blue",
+   "title": "Running"
+  },
+  {
+   "color": "Green",
+   "title": "Done"
+  },
+  {
+   "color": "Red",
+   "title": "Failed"
+  },
+  {
+   "color": "Gray",
+   "title": "Cancelled"
+  }
+ ],
+ "track_changes": 1
+}

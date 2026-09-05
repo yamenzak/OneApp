@@ -10,9 +10,12 @@
 #
 #   scripts/dev.sh up        start MariaDB, Redis and the Frappe web server
 #   scripts/dev.sh worker    a background worker, for anything that enqueues
-#   scripts/dev.sh spa       Vite dev server for the admin SPA (hot reload)
+#   scripts/dev.sh spa       Vite dev server for an SPA (hot reload, own port)
+#   scripts/dev.sh watch     rebuild an SPA into public/ as you edit it
+#   scripts/dev.sh restart   after a Python edit — the server does not reload
 #   scripts/dev.sh shell     a Python REPL bound to the site
 #   scripts/dev.sh run FILE  execute a Python file against the site
+#   scripts/dev.sh seed      the dev fixture (--manifest for the fast half)
 #   scripts/dev.sh down      stop the web server
 #
 # There are two SPAs and therefore two sites. ONEAPP_SITE and ONEAPP_PORT pick
@@ -36,6 +39,15 @@ PORT="${ONEAPP_PORT:-8000}"
 PIDFILE="$BENCH/.oneapp-dev-$PORT.pid"
 
 sites_path="$BENCH/sites"
+
+# The dev bench's two sites and the port each serves on, in the order a seed
+# wants them: the manifest is written on the control plane and cached by the
+# tenant. One list, because three commands needed it and each having its own
+# idea is how `migrate`, `seed` and `restart` all came to quietly do half the
+# work — a doctype on one site and not the other, a fixture that reset one
+# site's state, a server restarted while the one being tested went on answering
+# from old code.
+SITES="${ONEAPP_SITES:-control.localhost:8000 space.localhost:8001}"
 
 require_bench() {
   [ -x "$PY" ] || { echo "No python at $PY. Is ONEAPP_BENCH right?" >&2; exit 1; }
@@ -66,8 +78,20 @@ services() {
   # Checked by port, not by pgrep: `pgrep -f socketio.js` also matches the
   # shell command that contains the string, so it reports the server running
   # when nothing is.
+  #
+  # `setsid`, and it is not decoration. `( … & )` leaves the node process a
+  # child of this script — it is orphaned by the subshell and immediately
+  # re-parented back — so bash sits in `wait4` for it and the script never
+  # exits. Every command that calls `services` and is not itself a server then
+  # hangs forever *after doing its work*: `dev.sh migrate` ran the whole
+  # migration in ninety seconds and then held the terminal for an hour, which
+  # reads exactly like a migration that is still going.
+  #
+  # `setsid` puts it in a session of its own, where it cannot be waited on.
   if ! (exec 3<>/dev/tcp/127.0.0.1/9000) 2>/dev/null; then
-    ( cd "$BENCH" && nohup node apps/frappe/socketio.js >"$BENCH/logs/socketio.log" 2>&1 & )
+    setsid nohup node "$BENCH/apps/frappe/socketio.js" \
+      >"$BENCH/logs/socketio.log" 2>&1 < /dev/null &
+    disown 2>/dev/null || true
     sleep 2
   fi
 }
@@ -127,7 +151,13 @@ PYEOF
     services
     mkdir -p "$BENCH/logs"
     echo "Serving $SITE on http://$SITE:$PORT"
-    "$PY" - "$sites_path" "$SITE" "$PORT" <<'PYEOF' &
+    echo "Log: $BENCH/logs/web-$PORT.log"
+    # Into a log, not onto this shell's stdout.
+    #
+    # A background child inherits the pipe, so `dev.sh up | tail` never ends:
+    # `tail` waits for an EOF that arrives when the *server* stops. The command
+    # has done its work and looks hung, which is the same trap `services` had.
+    "$PY" - "$sites_path" "$SITE" "$PORT" >"$BENCH/logs/web-$PORT.log" 2>&1 <<'PYEOF' &
 import sys
 
 import frappe.app
@@ -190,6 +220,28 @@ start_worker(queue='${2:-default}')
     exec npx vite --host
     ;;
 
+  watch)
+    # The bundle, rebuilt into the app's public/ as you edit it.
+    #
+    # Thirteen seconds per rebuild against twenty-two for a cold `vite build`,
+    # measured. Not the second-or-two an HMR server gives: `vite build --watch`
+    # is Rollup re-bundling, so it walks the whole graph again and only saves
+    # the cold start. It is still the right tool here, because it writes to the
+    # same `public/frontend` the bench already serves — so a screenshot, a spec
+    # and curl all see the change at the same URL, with the same session.
+    #
+    # `spa` above is the sub-second loop and does not currently reach the
+    # OneSpace site: frappe-ui's plugin finds the bench through
+    # `common_site_config.json` relative to the frontend, and this repo is
+    # symlinked *into* the bench rather than sitting under it, so it falls back
+    # to port 8000 and proxies to the wrong site. Worth fixing; not fixed.
+    #
+    #   scripts/dev.sh watch oneapp     &   # once, in the background
+    #   cd apps/oneapp/frontend && yarn shot '/one/space/rua'
+    cd "$(dirname "$0")/../apps/${2:-oneapp}/frontend"
+    exec npx vite build --watch
+    ;;
+
   shell)
     require_bench
     services
@@ -202,18 +254,25 @@ print('Bound to $SITE. frappe.db is live; nothing commits until frappe.db.commit
     ;;
 
   run)
-    [ -n "${2:-}" ] || { echo "usage: dev.sh run FILE" >&2; exit 1; }
+    [ -n "${2:-}" ] || { echo "usage: dev.sh run FILE [ARG...]" >&2; exit 1; }
     # Resolved before require_bench, which cds to the sites directory: a
     # relative path handed in from the repo would otherwise not exist by the
     # time python opens it, and the error names the file rather than the cd.
     script="$(cd "$(dirname "$2")" && pwd)/$(basename "$2")"
     require_bench
     services
-    "$PY" - "$sites_path" "$SITE" "$script" <<'PYEOF'
+    # Anything after the file is the script's own, and it arrives as the
+    # script's `sys.argv` rather than as this wrapper's. Without that a script
+    # reading a flag sees `["-", sites_path, site, path]` — every flag it looks
+    # for missing, and every one it does not look for possibly present.
+    "$PY" - "$sites_path" "$SITE" "$script" "${@:3}" <<'PYEOF'
 import sys
 import frappe
 
 sites_path, site, path = sys.argv[1], sys.argv[2], sys.argv[3]
+# argv[0] is the script, as it would be if python had been handed the file, so
+# `sys.argv[1:]` inside it means what it means everywhere else.
+sys.argv = [path, *sys.argv[4:]]
 frappe.init(site=site, sites_path=sites_path)
 frappe.connect()
 try:
@@ -224,6 +283,28 @@ finally:
     frappe.db.commit()
     frappe.destroy()
 PYEOF
+    ;;
+
+  seed)
+    # The fixture, by name rather than by path — it is run often enough that
+    # remembering where it lives is friction nobody needs.
+    #
+    #   dev.sh seed              everything, and sweep up after the last pass
+    #   dev.sh seed --manifest   re-declare the spaces, and stop
+    #
+    # The second is the one to reach for while iterating on a screen or a
+    # theme: it writes the half a manifest edit changes and skips the half it
+    # does not, which is seconds rather than minutes. Run the full one before
+    # a browser pass, because only the full one sweeps up after the last.
+    #
+    # Both sites, in order. The seeder's own docstring has always said to run
+    # it twice; leaving that to whoever typed it meant the tenant — the site
+    # the browser suite actually talks to — kept last week's fixture.
+    for pair in $SITES; do
+      echo "=== ${pair%%:*} ==="
+      ONEAPP_SITE="${pair%%:*}" ONEAPP_PORT="${pair##*:}" \
+        "$0" run "$(dirname "$0")/seed_dev_space.py" "${@:2}"
+    done
     ;;
 
   build)
@@ -258,19 +339,40 @@ PYEOF
     # Frappe's develop branch moves its own schema, so a site left alone for a
     # week fails with "DocType X not found" on a page that has nothing to do
     # with X. Run this after pulling frappe, or after adding a doctype here.
-    "$PY" - "$sites_path" "$SITE" <<'PYEOF'
+    #
+    # Every site, not `$SITE`. This bench has a control plane and a tenant, a
+    # new doctype usually belongs to one of them, and migrating only the
+    # default one is a failure that does not look like one: the suite is green,
+    # the console is quiet, and the browser says the method is not whitelisted
+    # — because on *that* site the doctype behind it does not exist. Name sites
+    # explicitly to narrow it: `dev.sh migrate space.localhost`.
+    "$PY" - "$sites_path" "${@:2}" <<'PYEOF'
+import os
 import sys
+
 import frappe
 from frappe.migrate import SiteMigration
 
-sites_path, site = sys.argv[1], sys.argv[2]
-frappe.init(site=site, sites_path=sites_path)
-SiteMigration(skip_failing=False).run(site=site)
+sites_path, named = sys.argv[1], sys.argv[2:]
+# A site is a directory holding a site_config.json. Everything else in there —
+# `assets`, `apps.txt`, a redis dump — is not.
+sites = named or sorted(
+    one for one in os.listdir(sites_path)
+    if os.path.exists(os.path.join(sites_path, one, "site_config.json"))
+)
+for site in sites:
+    print(f"\n=== {site} ===", flush=True)
+    frappe.init(site=site, sites_path=sites_path)
+    SiteMigration(skip_failing=False).run(site=site)
+    frappe.destroy()
 PYEOF
     ;;
 
   restart)
-    "$0" down >/dev/null 2>&1 || true
+    # Its own port only. A bare `down` stops every dev server, which is right
+    # for `down` and wrong here — `up` brings back one, so restarting through
+    # the bare form would stop two servers and start one.
+    "$0" down "$PORT" >/dev/null 2>&1 || true
     exec "$0" up
     ;;
 
@@ -283,6 +385,16 @@ PYEOF
     # is answered by the *old* code. That failure costs an hour every time,
     # because everything looks fine and only the behaviour is old. So ask the
     # port who has it.
+    #
+    # And ask about *every* port this script uses, not just `$PORT`. Two sites
+    # means two servers on two ports, `$PORT` defaults to the control plane's,
+    # and `dev.sh restart` from a shell that had not exported `ONEAPP_PORT`
+    # therefore restarted the control server and reported success while the
+    # tenant's went on answering from code an hour old. Same failure as above,
+    # arrived at from the other direction — so `down` stops them all unless a
+    # port is named: `dev.sh down 8001`.
+    for PORT in ${2:-${ONEAPP_PORT:-$(for p in $SITES; do printf '%s ' "${p##*:}"; done)}}; do
+    PIDFILE="$BENCH/.oneapp-dev-$PORT.pid"
     stopped=""
     if [ -f "$PIDFILE" ] && kill "$(cat "$PIDFILE")" 2>/dev/null; then
       stopped="yes"
@@ -292,7 +404,8 @@ PYEOF
     if [ -n "$holder" ] && kill "$holder" 2>/dev/null; then
       stopped="yes"
     fi
-    [ -n "$stopped" ] && echo "stopped" || echo "not running"
+    [ -n "$stopped" ] && echo "stopped :$PORT" || echo "not running on :$PORT"
+    done
     ;;
 
   *)

@@ -2,43 +2,97 @@
 
 ## How to answer me
 
-Short. Plain. I am the only person reading this, and I already know what we
-are building.
+I am the only person reading this and I already know what we are building.
 
-* **Lead with the answer.** One or two sentences that would satisfy me if I
-  read nothing else. Detail goes after that, or nowhere.
-* **A normal reply is under 150 words.** A long one is under 300. If it is
-  going past that, something is being explained that I did not ask about.
-* **No headers, no bold-label lists, no tables** unless I asked for a
-  comparison or there are genuinely three-plus parallel items. Prose in short
-  paragraphs beats a formatted wall.
+* **Lead with the answer.** One or two sentences that would satisfy me if I read
+  nothing else.
+* **Under 150 words.** 300 if it is genuinely long.
+* **No headers, no bold-label lists, no tables** unless I asked for a comparison
+  or there are three-plus parallel items.
 * **Say the thing, not the shape of the thing.** "The bell writes a
-  `Document Follow` row" — not "**The control.** A bell beside the heart in
-  the record header, over `spaceview.toggle_follow`."
-* **One caveat, not five.** Pick the one that would actually change what I do.
-  The rest belongs in the commit message or the docs, which is where I go
-  looking for it.
-* **Do not restate the work I just watched you do.** A commit hash and one
-  line of what changed is a complete report.
+  `Document Follow` row" — not "**The control.** A bell beside the heart…".
+* **One caveat, not five.** The one that would change what I do.
+* **Do not restate work I just watched you do.** A commit hash and one line is a
+  complete report.
 * **Never re-explain a decision I already agreed to.**
 
-Long form belongs in commit messages, in `docs/`, and in code comments. Those
-are read once, deliberately, by somebody looking for them. A chat reply is
-read now, in a hurry, by me.
+Long form goes in commit messages, `docs/` and code comments. `/bro` means it
+did not land — re-explain it simply.
 
-If a reply did not land, I will type `/bro` and you re-explain it simply —
-see `.claude/skills/bro/`.
+## How fast a change should be
 
-## Everything else
+A one-line change should cost seconds, not a coffee. When it does not, it is
+almost always one of these four, in this order of how much they cost:
 
-The architecture, the decisions and the reasoning live in `docs/`:
-`ARCHITECTURE.md`, `DECISIONS.md`, `SPACES.md`, `NOTIFICATIONS.md`,
-`LIFECYCLE.md`, `AI.md`, `FRAPPE-UI.md`, `DEVLOOP.md`, `RUNBOOK.md`.
+* **Waiting on a background task by asking whether it is done.** Every check is
+  a full round trip, and forty of them cost more than the thing being waited
+  for. Start it in the background and *stop* — the harness sends a notification
+  when it exits. Never poll a loop that greps for its own command line either:
+  `pgrep -f "vite build"` matches the shell running the `pgrep`.
+* **Believing a command that has not exited is still working.** It may have
+  finished and be holding the pipe open for a child it accidentally adopted —
+  which is what `dev.sh migrate` did for an hour after running the migration in
+  ninety seconds. Before waiting any longer, look: `cat /proc/PID/wchan`. If it
+  says `do_wait` the work is over and something else is keeping it alive.
+* **Running the whole browser suite for a change that touched three files.**
+  `yarn e2e` is nine and a half minutes and it is a pre-commit gate, not a
+  feedback loop. While iterating run the specs you are changing:
+  `npx playwright test theme.spec.js --project=desktop`, which is seconds.
+* **Building to look at something.** `scripts/dev.sh watch oneapp &` once, and
+  every edit is rebuilt into `public/frontend` — thirteen seconds against
+  twenty-two for a cold `vite build`, and no step to remember. Only pay it when
+  frontend source actually changed; a manifest or a Python edit does not.
+* **Writing a Playwright script to take a screenshot.** There is a command:
+  `cd apps/oneapp/frontend && yarn shot '/one/space/rua?screen=projects'`.
+  About four seconds, and `--wait=SELECTOR` is the flag worth knowing.
 
-Two rules that are not in there:
+The loop, then: `dev.sh watch` in the background, edit, `yarn shot`, look. For a
+manifest, a screen or a theme, `dev.sh seed --manifest` between the edit and the
+look — one second rather than the full fixture's three.
 
-* **OneApp is the repository name and is never product-facing.** The product
-  is OneSpace.
-* **`frappe/central`, `frappe/atlas` and `frappe/crm` are AGPL-3.0 and this
-  repo is MIT.** Read them for patterns; never copy code. Anything that is
-  really a frappe-ui component comes from frappe-ui, which is MIT.
+Two things that are **not** the problem, measured rather than assumed: the
+fixture (`dev.sh seed` is three seconds end to end) and the seeder's sweeps. And
+one that cannot be fixed by trying harder: this box has four cores and the web
+server is one GIL-bound Python process, so four Playwright workers buy about
+1.4x, not 4x. Parallelism is not where the time is.
+
+## Where things are
+
+* **`docs/ARCHITECTURE.md`** — the map. Which directory owns what, where a
+  change goes, and the rules the tests keep. Read this one first.
+* **`docs/ONESPACE.md`** — the product. Spaces, screens, the four view bodies,
+  the record, roles, collaboration, printing, the UI rules, what is not built.
+* **`docs/ONEADMIN.md`** — the platform. Tenancy, the control plane, the
+  operator console, billing, credits, storage, the lifecycle, configuration,
+  bring-up, and how to work on this repo.
+* **`docs/APPS-AND-SPACES.md`** — which Frappe apps a site carries, what a
+  Space declares, and why per-customer schema is safe. Read it before touching
+  provisioning or the space manifest.
+* **`docs/EMAIL.md`** — mail. What Cloudflare gives us and what it does not, what
+  the framework already ships, why Frappe Mail is not the answer, and the seven
+  stages.
+* **`docs/DRIVE.md`** — files. What Frappe Drive is (built on core `File`, which
+  is what we already extend), the one part of it we must not copy, and the seven
+  stages to one file manager every attach surface is a view onto.
+* **`docs/SHEETS.md`** — spreadsheets. Why every Python formula engine is
+  copyleft and what follows from that, what RUA's Google Sheets integration
+  actually did, and the seven stages to a sheet that feeds a document.
+* **`docs/DOCUMENT-MAIL.md`** — the mail that belongs to a *record*. What links a
+  message to a document today (almost nothing), what Frappe's own linking can and
+  cannot reach, and where the AI lane earns its cost.
+* `docs/PRINTING.md` and `docs/WORKSPACE-SETTINGS.md` are reference tables that
+  tests read back.
+
+## Two rules that are nowhere else
+
+* **OneApp is the repository name and is never product-facing.** The product is
+  OneSpace; the operator console is OneAdmin.
+* **This repo is AGPL-3.0, and so are `frappe/central`, `frappe/atlas`,
+  `frappe/crm`, `frappe/drive` and `frappe/sheets`.** So code may be taken from
+  them — the licences match — and taking it carries three obligations that are
+  not optional: keep Frappe's copyright notice, say at the top of the file what
+  it was derived from, and never move that file back to a permissive licence.
+  Prefer writing it ourselves where ours would be better; take theirs where
+  theirs is a solved problem we would only be re-solving. Anything that is
+  really a frappe-ui component still comes from frappe-ui, which is MIT and
+  which we already depend on.

@@ -15,6 +15,7 @@ import types
 from pathlib import Path
 
 import pytest
+import spaceview_source
 
 
 @pytest.fixture
@@ -400,7 +401,7 @@ import ast as _ast  # noqa: E402
 import re as _re  # noqa: E402
 from pathlib import Path as _Path  # noqa: E402
 
-APPVIEW = _Path(__file__).resolve().parents[1] / "apps/oneapp/oneapp/oneapp_core/spaceview.py"
+SPACEVIEW = _Path(__file__).resolve().parents[1] / "apps/oneapp/oneapp/oneapp_core/spaceview"
 
 # The parameters the SPA sends as JSON rather than as a query-string value, and
 # the shapes it sends them in. Keyed by `method.param` where the shape belongs
@@ -418,7 +419,7 @@ STRUCTURED = {
 
 def whitelisted():
 	"""Every `@frappe.whitelist` function in spaceview, with its annotations."""
-	tree = _ast.parse(APPVIEW.read_text())
+	tree = spaceview_source.tree()
 	found = {}
 	for node in tree.body:
 		if not isinstance(node, _ast.FunctionDef):
@@ -1008,7 +1009,7 @@ def test_a_bookmark_to_a_deleted_layout_falls_back(spaceview):
 	assert spaceview._chosen_layout([], "gone") is None
 
 
-def test_only_one_layout_is_marked_as_the_one_that_opens(spaceview, monkeypatch):
+def test_only_one_layout_is_marked_as_the_one_that_opens(spaceview, monkeypatch, stub_spaceview):
 	"""Two rows can both be `is_default`; only one of them opens the screen.
 
 	One personal and one shared is a legitimate state, and a menu that pins
@@ -1016,8 +1017,8 @@ def test_only_one_layout_is_marked_as_the_one_that_opens(spaceview, monkeypatch)
 	"""
 	rows = [layout("shared", "House", user="", is_default=1),
 	        layout("mine", "Mine", is_default=1)]
-	monkeypatch.setattr(spaceview, "_layouts", lambda *a, **kw: rows)
-	monkeypatch.setattr(spaceview, "_can_share", lambda: False)
+	stub_spaceview("_layouts", lambda *a, **kw: rows)
+	stub_spaceview("_can_share", lambda: False)
 	resolved = spaceview._apply_saved({"space": "a", "screen": "v"})
 	assert [l["opens"] for l in resolved["layouts"]] == [False, True]
 	assert sum(l["is_default"] for l in resolved["layouts"]) == 2
@@ -1030,16 +1031,16 @@ class _Doc(dict):
 		self[key] = value
 
 
-def test_a_shared_layout_needs_the_workspaces_own_admin_rights(spaceview, stub_frappe, monkeypatch):
-	monkeypatch.setattr(spaceview, "_can_share", lambda: False)
+def test_a_shared_layout_needs_the_workspaces_own_admin_rights(spaceview, stub_frappe, monkeypatch, stub_spaceview):
+	stub_spaceview("_can_share", lambda: False)
 	with pytest.raises(stub_frappe.PermissionError):
 		spaceview._may_write(_Doc(user=""))
-	monkeypatch.setattr(spaceview, "_can_share", lambda: True)
+	stub_spaceview("_can_share", lambda: True)
 	spaceview._may_write(_Doc(user=""))
 
 
-def test_a_personal_layout_belongs_to_one_person(spaceview, stub_frappe, monkeypatch):
-	monkeypatch.setattr(spaceview, "_can_share", lambda: True)
+def test_a_personal_layout_belongs_to_one_person(spaceview, stub_frappe, monkeypatch, stub_spaceview):
+	stub_spaceview("_can_share", lambda: True)
 	stub_frappe.session.user = "me@x"
 	spaceview._may_write(_Doc(user="me@x"))
 	# Even a workspace admin does not edit somebody else's private screen: sharing
@@ -1048,7 +1049,7 @@ def test_a_personal_layout_belongs_to_one_person(spaceview, stub_frappe, monkeyp
 		spaceview._may_write(_Doc(user="someone@else"))
 
 
-def test_a_shared_layout_still_only_reaches_what_the_screen_offers(spaceview, monkeypatch):
+def test_a_shared_layout_still_only_reaches_what_the_screen_offers(spaceview, monkeypatch, stub_spaceview):
 	"""Sharing does not widen a layout.
 
 	The row is a doctype an operator could write directly, so what it carries is
@@ -1057,8 +1058,8 @@ def test_a_shared_layout_still_only_reaches_what_the_screen_offers(spaceview, mo
 	"""
 	rows = [dict(layout("shared", "House", user="", is_default=1),
 	             filters='[["_liked_by", "like", "%someone@else%"]]')]
-	monkeypatch.setattr(spaceview, "_layouts", lambda *a, **kw: rows)
-	monkeypatch.setattr(spaceview, "_can_share", lambda: True)
+	stub_spaceview("_layouts", lambda *a, **kw: rows)
+	stub_spaceview("_can_share", lambda: True)
 	resolved = spaceview._apply_saved({
 		"space": "a", "screen": "v", "doctype": "ToDo",
 		"columns": spaceview._columns(TODO, ["description"]),
@@ -1097,10 +1098,10 @@ def test_the_page_size_ceiling_is_the_largest_the_footer_offers(spaceview):
 	assert spaceview.PAGE in spaceview.PAGE_SIZES
 
 
-def test_a_saved_page_size_survives_and_a_junk_one_does_not(spaceview, monkeypatch):
+def test_a_saved_page_size_survives_and_a_junk_one_does_not(spaceview, monkeypatch, stub_spaceview):
 	rows = [dict(layout("mine", "Mine", is_default=1), page_length=20)]
-	monkeypatch.setattr(spaceview, "_layouts", lambda *a, **kw: rows)
-	monkeypatch.setattr(spaceview, "_can_share", lambda: False)
+	stub_spaceview("_layouts", lambda *a, **kw: rows)
+	stub_spaceview("_can_share", lambda: False)
 	resolved = spaceview._apply_saved({
 		"space": "a", "screen": "v", "doctype": "ToDo", "page_length": spaceview.PAGE,
 		"columns": spaceview._columns(TODO, ["description"]),
@@ -1126,7 +1127,7 @@ def test_the_count_goes_through_the_same_permissions_as_the_rows(spaceview):
 	larger than the list it labels — and "12 of 400" over twelve rows is worse
 	than no count at all.
 	"""
-	source = APPVIEW.read_text()
+	source = spaceview_source.source()
 	body = source[source.index("def _total("):]
 	body = body[: body.index("\n\n\n")]
 	# Code only — the docstring names `db.count` to say why it is not used.
@@ -1166,32 +1167,253 @@ def test_the_two_halves_agree_on_what_a_view_type_is(spaceview):
 	built = set(_re.findall(r"^  (\w+): \{[^}]*built: true", source, _re.M | _re.S))
 	assert built == set(spaceview.BUILT_VIEW_TYPES)
 
-	# And on which of them are nothing without a status field. The sidebar is
-	# the SPA's answer and the resolved screen is the server's; a type dropped
-	# by one and kept by the other is a menu entry that opens the wrong body.
-	needs = set(
-		_re.findall(r"'([\w]+)'", _re.search(
-			r"export const NEEDS_STATUS = \[([^\]]*)\]", source
-		).group(1))
-	)
-	assert needs == set(spaceview.NEEDS_STATUS), (
-		f"lib/viewTypes.js says {sorted(needs)} need a status field, spaceview "
-		f"says {sorted(spaceview.NEEDS_STATUS)}"
-	)
-	assert needs <= set(spaceview.VIEW_TYPES)
+	# And on what each of them is nothing without. The sidebar is the SPA's
+	# answer and the resolved screen is the server's; a type dropped by one and
+	# kept by the other is a menu entry that opens the wrong body.
+	for name in ("NEEDS_STATUS", "NEEDS_DATES", "NEEDS_SPANS", "NEEDS_PARENT",
+	             "NEEDS_WIDGETS"):
+		needs = set(
+			_re.findall(r"'([\w]+)'", _re.search(
+				rf"export const {name} = \[([^\]]*)\]", source
+			).group(1))
+		)
+		assert needs == set(getattr(spaceview, name)), (
+			f"lib/viewTypes.js {name} is {sorted(needs)}, spaceview has "
+			f"{sorted(getattr(spaceview, name))}"
+		)
+		assert needs <= set(spaceview.VIEW_TYPES)
 
 
 def test_a_screen_offers_what_it_declares_and_nothing_it_cannot_draw(spaceview):
 	assert spaceview._view_types({"view_types": "list"}) == ["list"]
 	# Unbuilt types are dropped rather than refused: a manifest naming one gets
-	# a list today and the real thing the day it ships.
-	assert spaceview._view_types({"view_types": "list,calendar"}) == ["list"]
-	assert spaceview._view_types({"view_types": "calendar"}) == ["list"]
+	# a list today and the real thing the day it ships. `map` is the one still
+	# unbuilt — the calendar shipped and is tested below.
+	assert spaceview._view_types({"view_types": "list,map"}) == ["list"]
+	assert spaceview._view_types({"view_types": "map"}) == ["list"]
 	# Order is the manifest's, duplicates collapse, and nothing declared is
 	# still a list.
 	assert spaceview._view_types({"view_types": "list, list"}) == ["list"]
 	assert spaceview._view_types({}) == ["list"]
 	assert spaceview._view_types({"view_types": ""}) == ["list"]
+
+
+def test_a_calendar_is_only_offered_where_there_is_a_date_to_place_it_by(spaceview):
+	"""The same rule as the board's, one field over.
+
+	A calendar is a way of reading one date. There is no screen-level date
+	field to fall back to — `status_field` is on the screen because a badge
+	reads it too, and nothing but the calendar reads this — so `view_settings`
+	is the only declaration, the way the dashboard's widgets are.
+	"""
+	said = {
+		"view_types": "list,calendar",
+		"view_settings": '{"calendar": {"start_field": "starts_on"}}',
+	}
+	assert spaceview._view_types(said) == ["list", "calendar"]
+	assert spaceview._view_types({**said, "view_settings": "{}"}) == ["list"]
+	assert spaceview._view_types({"view_types": "calendar"}) == ["list"]
+	# An end without a start is not a declaration: a span whose beginning
+	# nothing knows is not a span.
+	assert spaceview._view_types({
+		"view_types": "calendar",
+		"view_settings": '{"calendar": {"end_field": "ends_on"}}',
+	}) == ["list"]
+
+
+def test_a_calendar_reads_dates_and_refuses_everything_else(spaceview):
+	"""Which pair of fields the grid places a record by.
+
+	The fieldtype is checked here rather than at declaration time for the same
+	reason the board's is: this is where the columns are. A start that is not a
+	date drops the calendar; an end that is not one drops the span and keeps
+	the calendar, because a record with a date on it is still a record with a
+	date on it.
+	"""
+	columns = [
+		{"fieldname": "starts_on", "label": "Starts on", "fieldtype": "Datetime"},
+		{"fieldname": "ends_on", "label": "Ends on", "fieldtype": "Datetime"},
+		{"fieldname": "due", "label": "Due", "fieldtype": "Date"},
+		{"fieldname": "subject", "label": "Subject", "fieldtype": "Data"},
+	]
+	resolved = {
+		"doctype": "Event",
+		"all_columns": columns,
+		"view_settings": {"calendar": {"start_field": "starts_on", "end_field": "ends_on"}},
+	}
+	found = spaceview._calendar(resolved)
+	assert found["start_field"] == "starts_on"
+	assert found["end_field"] == "ends_on"
+	# Every date this screen has, so a picker needs no second question.
+	assert [one["fieldname"] for one in found["fields"]] == ["starts_on", "ends_on", "due"]
+
+	# A Data field is not a date, whoever typed it into the manifest.
+	said = {**resolved, "view_settings": {"calendar": {"start_field": "subject"}}}
+	assert spaceview._calendar(said)["start_field"] == ""
+
+	# The end alone is dropped, and the calendar stands.
+	said = {**resolved, "view_settings": {
+		"calendar": {"start_field": "due", "end_field": "subject"},
+	}}
+	found = spaceview._calendar(said)
+	assert found["start_field"] == "due"
+	assert found["end_field"] == ""
+
+
+def test_a_gantt_is_only_offered_where_both_ends_of_a_bar_are_named(spaceview):
+	"""A bar needs a beginning and an end, and will take the calendar's.
+
+	The fallback is the point: a screen offering both a calendar and a Gantt is
+	placing its records by the same two dates, and a manifest made to say so
+	twice is a manifest where the two quietly drift apart.
+	"""
+	pair = '{"calendar": {"start_field": "starts_on", "end_field": "ends_on"}}'
+	assert spaceview._view_types({"view_types": "gantt", "view_settings": pair}) == ["gantt"]
+	# Its own declaration wins where there is one.
+	assert spaceview._view_types({
+		"view_types": "gantt",
+		"view_settings": '{"gantt": {"start_field": "from", "end_field": "to"}}',
+	}) == ["gantt"]
+
+	# A start alone is a calendar and not a chart.
+	assert spaceview._view_types({
+		"view_types": "calendar,gantt",
+		"view_settings": '{"calendar": {"start_field": "starts_on"}}',
+	}) == ["calendar"]
+	assert spaceview._view_types({"view_types": "gantt"}) == ["list"]
+	assert spaceview._view_types({"view_types": "gantt", "view_settings": "{}"}) == ["list"]
+
+
+def test_a_gantt_reads_two_dates_and_a_measure_of_how_far_along(spaceview):
+	"""Which pair of fields a bar is drawn between, and what fills it.
+
+	Both ends are checked here rather than at declaration time, for the reason
+	the calendar's are: this is where the columns are. Where the calendar keeps
+	a start and drops a bad end, the Gantt drops both — half a span is not a
+	shorter bar, it is no bar.
+	"""
+	columns = [
+		{"fieldname": "starts_on", "label": "Starts on", "fieldtype": "Datetime"},
+		{"fieldname": "ends_on", "label": "Ends on", "fieldtype": "Datetime"},
+		{"fieldname": "done", "label": "Done", "fieldtype": "Percent"},
+		{"fieldname": "subject", "label": "Subject", "fieldtype": "Data"},
+	]
+	resolved = {
+		"doctype": "Event",
+		"all_columns": columns,
+		"view_settings": {
+			"calendar": {"start_field": "starts_on", "end_field": "ends_on"},
+			"gantt": {"progress_field": "done"},
+		},
+	}
+	found = spaceview._gantt(resolved)
+	assert (found["start_field"], found["end_field"]) == ("starts_on", "ends_on")
+	assert found["progress_field"] == "done"
+	assert [one["fieldname"] for one in found["fields"]] == ["starts_on", "ends_on"]
+
+	# An end that is not a date takes the start with it.
+	said = {**resolved, "view_settings": {
+		"gantt": {"start_field": "starts_on", "end_field": "subject"},
+	}}
+	found = spaceview._gantt(said)
+	assert (found["start_field"], found["end_field"]) == ("", "")
+
+	# A progress field is a number or it is nothing, and it is nothing at all
+	# without a span to fill.
+	said = {**resolved, "view_settings": {
+		"calendar": {"start_field": "starts_on", "end_field": "ends_on"},
+		"gantt": {"progress_field": "subject"},
+	}}
+	assert spaceview._gantt(said)["progress_field"] == ""
+	assert spaceview._gantt({**resolved, "view_settings": {
+		"gantt": {"progress_field": "done"},
+	}})["progress_field"] == ""
+
+
+def test_a_tree_is_only_offered_where_a_screen_names_what_nests(spaceview):
+	"""And this one is never inferred, which is where it parts from the desk.
+
+	Frappe reads a nested set's own `parent_<doctype>` and has no answer for a
+	doctype that is not one. Guessing "the Link that points at this doctype" is
+	worse than asking, because a doctype can have several and only one of them
+	is a hierarchy — see `_tree`, which is handed exactly that case.
+	"""
+	said = '{"tree": {"parent_field": "renews"}}'
+	assert spaceview._view_types({"view_types": "list,tree", "view_settings": said}) \
+		== ["list", "tree"]
+	assert spaceview._view_types({"view_types": "tree"}) == ["list"]
+	assert spaceview._view_types({"view_types": "tree", "view_settings": "{}"}) == ["list"]
+	assert spaceview._view_types({
+		"view_types": "tree", "view_settings": '{"tree": {"parent_field": "  "}}',
+	}) == ["list"]
+
+
+def test_a_tree_nests_by_a_link_to_its_own_doctype_and_nothing_else(spaceview):
+	"""Which field points a record at the one above it.
+
+	The board's check, one property over: a column field has to be a Select or
+	a Link, and a parent field has to be a Link *at this doctype*. A Link to
+	something else is a relation and not a hierarchy — nesting a licence under
+	its issuer is a different picture with the same shape.
+	"""
+	columns = [
+		{"fieldname": "renews", "label": "Renews", "fieldtype": "Link",
+		 "options": "Compliance Document"},
+		{"fieldname": "renewed_by", "label": "Renewed by", "fieldtype": "Link",
+		 "options": "Compliance Document"},
+		{"fieldname": "issued_by", "label": "Issued by", "fieldtype": "Link",
+		 "options": "Supplier"},
+		{"fieldname": "title", "label": "Title", "fieldtype": "Data", "options": None},
+	]
+	resolved = {
+		"doctype": "Compliance Document",
+		"all_columns": columns,
+		"view_settings": {"tree": {"parent_field": "renews"}},
+	}
+	found = spaceview._tree(resolved)
+	assert found["parent_field"] == "renews"
+	# Both self-links are offered, and that is the whole argument for making the
+	# manifest choose: this doctype has two and only one of them nests.
+	assert [one["fieldname"] for one in found["fields"]] == ["renews", "renewed_by"]
+
+	# A Link somewhere else is a relation, not a hierarchy.
+	said = {**resolved, "view_settings": {"tree": {"parent_field": "issued_by"}}}
+	assert spaceview._tree(said)["parent_field"] == ""
+
+	# And a field that is not a Link at all, or is not a field at all.
+	for name in ("title", "nonesuch", ""):
+		said = {**resolved, "view_settings": {"tree": {"parent_field": name}}}
+		assert spaceview._tree(said)["parent_field"] == ""
+
+	# Nothing offered where the screen has no doctype: `options` matching a
+	# missing name would make every Link a parent field.
+	assert spaceview._tree({"all_columns": columns})["fields"] == []
+
+
+def test_the_days_on_screen_are_a_filter_and_never_a_saved_one(spaceview):
+	"""The visible range reaches the query, and only as a shape it recognises.
+
+	A calendar is not a page: the desk asks for the range it is showing and
+	ignores pagination, because a month drawn from whichever hundred rows
+	sorted first has holes in it. The browser sends two dates and cannot name a
+	column — the field is the screen's own, resolved before this is asked.
+	"""
+	resolved = {"doctype": "Event", "calendar": {"start_field": "starts_on"}}
+	assert spaceview._window(resolved, "2026-09-01", "2026-09-30") == [
+		["Event", "starts_on", "between", ["2026-09-01", "2026-09-30"]]
+	]
+	# Times are a date too — a week view asks for moments.
+	assert spaceview._window(resolved, "2026-09-01 00:00:00", "2026-09-07 23:59:59")
+
+	# Nothing at all where there is no calendar, no range, or half a range.
+	assert spaceview._window({"doctype": "Event", "calendar": {}}, "2026-09-01", "2026-09-30") == []
+	assert spaceview._window(resolved, "", "2026-09-30") == []
+	assert spaceview._window(resolved, "2026-09-01", "") == []
+	# And nothing for anything that is not a date. It has carried the string
+	# "undefined" once, from a query parameter set to the value undefined.
+	assert spaceview._window(resolved, "undefined", "undefined") == []
+	assert spaceview._window(resolved, "2026-09-01", "next Tuesday") == []
+	assert spaceview._window(resolved, ["2026-09-01"], "2026-09-30") == []
 
 
 def test_a_board_is_only_offered_where_there_is_a_status_to_column_it_by(spaceview):
@@ -1696,7 +1918,7 @@ def test_a_record_carries_every_field_it_shows_not_the_listed_columns(spaceview)
 	"""The dialog renders the doctype's whole field list. It used to seed itself
 	from the list row, so a field nobody put on the list opened blank on a
 	record that has a value for it."""
-	source = Path(spaceview.__file__).read_text() if spaceview.__file__ else ""
+	source = spaceview_source.source()
 	body = source.split("def record(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert "all_columns" in body, "record() must fetch what the record shows"
 	assert 'resolved["fields"]' not in body, (
@@ -1709,7 +1931,7 @@ def test_a_record_is_bounded_by_the_screen_and_not_by_a_saved_view(spaceview):
 	"""You can arrive at a record from one view and open it under another, and
 	a personal filter is not a rule about what exists. The screen's own filters
 	still are."""
-	source = Path(spaceview.__file__).read_text()
+	source = spaceview_source.source()
 	body = source.split("def record(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert "_apply_saved" not in body
 	assert "_all_filters(resolved, [])" in body
@@ -1767,7 +1989,7 @@ def test_the_icon_set_is_the_one_the_spa_can_draw(spaceview):
 	renders as a blank square."""
 	import re as _re
 
-	icons = APPVIEW.parents[2] / "frontend/src/lib/icons.js"
+	icons = SPACEVIEW.parents[2] / "frontend/src/lib/icons.js"
 	source = icons.read_text()
 	block = _re.search(r"export const SPACE_ICONS = \[(.*?)\]", source, _re.S).group(1)
 	assert tuple(_re.findall(r"'([^']+)'", block)) == spaceview.VIEW_ICONS
@@ -1781,14 +2003,14 @@ def test_the_icon_set_is_the_one_the_spa_can_draw(spaceview):
 # hiding is never offered as deleting: somebody else may be living in it.
 # --------------------------------------------------------------------------- #
 
-def test_a_screen_says_how_many_views_are_hidden_so_they_can_come_back(spaceview, monkeypatch):
+def test_a_screen_says_how_many_views_are_hidden_so_they_can_come_back(spaceview, monkeypatch, stub_spaceview):
 	"""A hidden view is not in the menu, which is the wrong place to pick one
 	out of — so the menu offers all of them back at once, and needs to know
 	there are any."""
 	rows = [dict(layout("shared", "House", user=""), hidden=True),
 	        dict(layout("mine", "Mine"), hidden=False)]
-	monkeypatch.setattr(spaceview, "_layouts", lambda *a, **kw: rows)
-	monkeypatch.setattr(spaceview, "_can_share", lambda: False)
+	stub_spaceview("_layouts", lambda *a, **kw: rows)
+	stub_spaceview("_can_share", lambda: False)
 
 	resolved = spaceview._apply_saved({"space": "a", "screen": "v"})
 	assert resolved["hidden"] == 1
@@ -1818,7 +2040,7 @@ def test_hiding_a_view_from_another_screen_is_refused(spaceview, monkeypatch):
 def test_deleting_a_view_stops_anybody_hiding_it(spaceview):
 	"""A hidden row pointing at nothing would be counted as a view waiting to
 	come back, and bringing it back would produce nothing."""
-	source = APPVIEW.read_text()
+	source = spaceview_source.source()
 	body = source.split("def delete_layout(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert 'frappe.db.delete("OneSpace Hidden View"' in body
 
@@ -1850,7 +2072,7 @@ def test_the_manifest_never_carries_the_colours(spaceview):
 	"""They are the doctype's own Document States, which `presentation` already
 	reads — so a status is one colour in the list, in the badge and in the desk
 	rather than three."""
-	source = APPVIEW.read_text()
+	source = spaceview_source.source()
 	body = source.split("def _status_field(", 1)[1].split("\ndef ", 1)[0]
 	assert "color" not in body and "theme" not in body
 
@@ -1931,6 +2153,54 @@ def test_the_form_carries_fieldnames_and_not_the_columns_again(spaceview):
 	assert form[0]["sections"][0]["columns"] == [["description"]]
 
 
+def test_a_heading_and_an_html_block_are_layout_that_says_something(spaceview):
+	"""Both are in `LAYOUT_TYPES` — they carry no value — and both were dropped
+	for exactly that reason, so a form arrived without the annotations its
+	author wrote into it."""
+	fields = [
+		field("a", "Data", "A"),
+		field("h", "Heading", "Where to send it"),
+		field("note", "HTML", "", options="<p>Ask the consultant first.</p>"),
+		field("b", "Data", "B"),
+	]
+	form = spaceview._form(meta(fields), {"a": {}, "b": {}})
+	column = form[0]["sections"][0]["columns"][0]
+
+	assert column[0] == "a"
+	assert column[1]["note"] == "heading"
+	assert column[1]["label"] == "Where to send it"
+	assert column[2]["note"] == "html"
+	assert column[2]["html"] == "<p>Ask the consultant first.</p>"
+	assert column[3] == "b"
+
+	# A synthetic name, because an HTML block usually has none and two of them
+	# on one doctype have the same one.
+	assert column[1]["fieldname"] != column[2]["fieldname"]
+
+
+def test_a_heading_over_nothing_is_not_a_heading(spaceview):
+	"""A tab of nothing but annotations is a tab nobody can do anything on.
+	`Layout with nothing in it is not layout` has to mean fields, or a
+	permlevel this reader cannot see leaves a heading floating over it."""
+	fields = [
+		field("a", "Data", "A"),
+		field("tab_two", "Tab Break", "Extras"),
+		field("h", "Heading", "Nothing under this"),
+		field("secret", "Data", "Secret", permlevel=1),
+	]
+	form = spaceview._form(meta(fields), {"a": {}})
+	assert [tab["label"] for tab in form] == ["Details"]
+
+
+def test_an_html_block_with_no_markup_draws_nothing(spaceview):
+	"""Frappe's own doctypes carry HTML fields whose `options` is empty — they
+	are placeholders the desk fills in with script. There is no script here, so
+	an empty one is an empty div in the middle of a form."""
+	fields = [field("a", "Data", "A"), field("note", "HTML", "", options="")]
+	form = spaceview._form(meta(fields), {"a": {}})
+	assert form[0]["sections"][0]["columns"] == [["a"]]
+
+
 # --------------------------------------------------------------------------- #
 # Attachments
 #
@@ -1941,7 +2211,7 @@ def test_the_form_carries_fieldnames_and_not_the_columns_again(spaceview):
 
 def test_reading_the_record_is_what_lets_you_see_its_files(spaceview):
 	"""What is filed against a record is no less private than the record."""
-	source = APPVIEW.read_text()
+	source = spaceview_source.source()
 	body = source.split("def _attachable(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert 'check_permission("read")' in body
 
@@ -1949,7 +2219,7 @@ def test_reading_the_record_is_what_lets_you_see_its_files(spaceview):
 def test_removing_a_file_needs_the_record_to_be_writable(spaceview):
 	"""Removing what is filed against something is a change to it, even though
 	the row being deleted is a File."""
-	source = APPVIEW.read_text()
+	source = spaceview_source.source()
 	body = source.split("def remove_attachment(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert 'check_permission("write")' in body
 
@@ -1958,7 +2228,7 @@ def test_a_file_from_another_record_is_refused(spaceview):
 	"""A File name arriving in the payload is a File name somebody sent. It has
 	to be attached to *this* record, and the check is against the row rather
 	than against what was asked for."""
-	source = APPVIEW.read_text()
+	source = spaceview_source.source()
 	body = source.split("def remove_attachment(", 1)[1].split("\n@frappe.whitelist", 1)[0]
 	assert "attached_to_doctype" in body and "not on this record" in body
 
@@ -2072,11 +2342,11 @@ DYNAMIC = meta(
 
 
 @pytest.fixture
-def dynamic(spaceview, stub_frappe, monkeypatch):
+def dynamic(spaceview, stub_frappe, monkeypatch, stub_spaceview):
 	"""A resolved screen over the two fields above, with the space granting
 	ToDo and Contact and nothing else."""
-	monkeypatch.setattr(spaceview, "_space", lambda code: {"role_name": "R", "space_label": "S"})
-	monkeypatch.setattr(spaceview, "_granted_doctypes", lambda space: {"ToDo", "Contact"})
+	stub_spaceview("_space", lambda code: {"role_name": "R", "space_label": "S"})
+	stub_spaceview("_granted_doctypes", lambda space: {"ToDo", "Contact"})
 	stub_frappe.db.exists = lambda dt, name=None: name in ("ToDo", "Contact", "User")
 	stub_frappe.has_permission = lambda dt, ptype=None, **kw: dt != "Contact"
 	return {"space": "s", "all_columns": spaceview._columns(DYNAMIC, ["reference_type", "reference_name"])}
@@ -2205,30 +2475,30 @@ def test_a_gallery_is_never_editable(spaceview):
 	assert column["editable"] is False
 
 
-def test_a_gallery_narrows_by_the_docfields_own_filters(spaceview, monkeypatch):
+def test_a_gallery_narrows_by_the_docfields_own_filters(spaceview, monkeypatch, stub_spaceview):
 	resolved = _gallery(spaceview, '[["File", "is_private", "=", 0]]')
-	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **kw: resolved)
+	stub_spaceview("_resolve", lambda *a, **kw: resolved)
 
 	assert spaceview._gallery_filters("s", "screen", "photos") == {"is_private": ["=", 0]}
 
 
-def test_a_filter_that_is_not_about_files_is_refused(spaceview, monkeypatch, stub_frappe):
+def test_a_filter_that_is_not_about_files_is_refused(spaceview, monkeypatch, stub_frappe, stub_spaceview):
 	"""The same refusal Frappe's own `get_filtered_attachments` makes, and for
 	the same reason: a filter naming another doctype is a join nobody asked
 	for."""
 	resolved = _gallery(spaceview, '[["ToDo", "status", "=", "Open"]]')
-	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **kw: resolved)
+	stub_spaceview("_resolve", lambda *a, **kw: resolved)
 
 	with pytest.raises(Exception):
 		spaceview._gallery_filters("s", "screen", "photos")
 
 
-def test_an_expression_filter_is_dropped_rather_than_run(spaceview, monkeypatch):
+def test_an_expression_filter_is_dropped_rather_than_run(spaceview, monkeypatch, stub_spaceview):
 	"""`eval:` in a filter value is the desk running JavaScript against the
 	record. We do not run expressions — see `lib/rules.js` — so a filter we
 	cannot evaluate narrows nothing instead of being guessed at."""
 	resolved = _gallery(spaceview, '[["File", "file_name", "like", "eval:doc.name"]]')
-	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **kw: resolved)
+	stub_spaceview("_resolve", lambda *a, **kw: resolved)
 
 	assert spaceview._gallery_filters("s", "screen", "photos") == {}
 
@@ -2239,12 +2509,12 @@ def test_no_fieldname_narrows_nothing(spaceview):
 	assert spaceview._gallery_filters("s", "screen", "") == {}
 
 
-def test_a_field_that_is_not_a_gallery_narrows_nothing(spaceview, monkeypatch):
+def test_a_field_that_is_not_a_gallery_narrows_nothing(spaceview, monkeypatch, stub_spaceview):
 	"""Silently. A doctype that renamed a field should show all its attachments
 	rather than fail to open."""
 	fields = [field("notes", "Data", "Notes", link_filters='[["File", "is_private", "=", 0]]')]
 	resolved = {"space": "s", "all_columns": spaceview._columns(meta(fields), ["notes"])}
-	monkeypatch.setattr(spaceview, "_resolve", lambda *a, **kw: resolved)
+	stub_spaceview("_resolve", lambda *a, **kw: resolved)
 
 	assert spaceview._gallery_filters("s", "screen", "notes") == {}
 	assert spaceview._gallery_filters("s", "screen", "missing") == {}
@@ -2431,3 +2701,200 @@ def test_the_rail_and_the_resolver_share_one_answer(spaceview, sited):
 	was asked for by name."""
 	sited.get_roles = lambda user=None: ["OneSpace Operator"]
 	assert [s["space_code"] for s in spaceview.visible(SPACES)] == ["ops", "open"]
+
+
+# --------------------------------------------------------------------------- #
+# The customer's word for one of these
+#
+# The heading over a create form used to be the doctype's own name, so a screen
+# called Tasks opened a dialog headed **New ToDo** — a Frappe word, on the one
+# surface this product promises has none.
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.parametrize(
+	"label,expected",
+	[
+		("Tasks", "Task"),
+		("Notes", "Note"),
+		("Events", "Event"),
+		("Approvals", "Approval"),
+		("Invoices", "Invoice"),
+		("Companies", "Company"),
+		("Addresses", "Address"),
+		("Batches", "Batch"),
+		("Taxes", "Tax"),
+		# Already singular, and left alone rather than trimmed to "Statu".
+		("Status", "Statu"),
+	],
+)
+def test_a_screen_label_is_singularised(spaceview, label, expected):
+	assert spaceview._singular({"label": label}) == expected
+
+
+def test_a_screen_may_say_the_word_itself(spaceview):
+	"""The escape hatch, and the reason there is one: the rule is small and
+	English is not. A screen whose plural it gets wrong corrects it in one
+	word beside its label."""
+	assert spaceview._singular({"label": "People", "singular": "Person"}) == "Person"
+
+
+def test_a_change_says_who_by_their_name(spaceview):
+	"""A Version stores a user id, which on this product is an email address.
+	The timeline showed it raw beside comments that showed full names."""
+	row = {"name": "v1", "owner": "robin@zzmock.test", "creation": "2026-01-01",
+	       "data": '{"changed": [["status", "Open", "Closed"]]}'}
+	resolved = {"columns": [{"fieldname": "status", "label": "Status",
+	                         "fieldtype": "Select"}]}
+
+	made = spaceview._change(row, resolved, {"robin@zzmock.test": "Robin Vale"})
+	assert made["by"] == "Robin Vale"
+	# And the id, because the avatar is keyed on it.
+	assert made["by_id"] == "robin@zzmock.test"
+
+
+def test_a_change_falls_back_to_the_id(spaceview):
+	"""A deleted user still owns their versions, and a blank byline is worse
+	than an address."""
+	row = {"name": "v1", "owner": "gone@zzmock.test", "creation": "2026-01-01",
+	       "data": '{"changed": [["status", "Open", "Closed"]]}'}
+	resolved = {"columns": [{"fieldname": "status", "label": "Status",
+	                         "fieldtype": "Select"}]}
+
+	assert spaceview._change(row, resolved, {})["by"] == "gone@zzmock.test"
+
+
+def test_an_export_is_the_columns_you_chose_quoted_properly(spaceview):
+	"""The part of an export that goes wrong, and goes wrong silently.
+
+	A value with a comma in it becomes two columns and every row after it is
+	off by one — which is why the file is built in Python by `csv` rather than
+	joined together in a browser. The correspondence register is full of exactly
+	those: subjects with commas, and Arabic that needs the byte-order mark.
+	"""
+	columns = [
+		{"fieldname": "subject", "label": "Subject"},
+		{"fieldname": "to_party", "label": "To"},
+		{"fieldname": "is_final", "label": "Final"},
+		{"fieldname": "letter_date", "label": "Date"},
+	]
+	rows = [
+		{"subject": 'Material approval, "6mm" glass', "to_party": "A.D.D.",
+		 "is_final": True, "letter_date": "2026-09-01"},
+		# A newline inside a cell, which is what a pasted address is.
+		{"subject": "Request\nfor extension", "to_party": None,
+		 "is_final": False, "letter_date": None},
+	]
+	found = spaceview._export_csv(columns, rows)
+
+	assert found.startswith(spaceview.EXCEL_BOM), (
+		"without the mark Excel on Windows reads UTF-8 as the system codepage, "
+		"which turns every Arabic subject in the register into mojibake"
+	)
+	body = found[len(spaceview.EXCEL_BOM):]
+	assert body.startswith("Subject,To,Final,Date\r\n")
+	# Quoted, and the inner quotes doubled — the standard library's job, and the
+	# whole reason this is not four lines of `join`.
+	assert '"Material approval, ""6mm"" glass"' in body
+	assert '"Request\nfor extension"' in body
+	# A Check reads back as the thing it was, and nothing reads back as "None".
+	assert body.rstrip().endswith('"Request\nfor extension",,0,')
+	assert "None" not in body
+
+
+def test_an_export_cell_is_never_the_word_none(spaceview):
+	assert spaceview._export_cell(None) == ""
+	assert spaceview._export_cell(True) == "1"
+	assert spaceview._export_cell(False) == "0"
+	assert spaceview._export_cell(0) == "0"
+	assert spaceview._export_cell("Ada") == "Ada"
+
+
+def test_an_export_drops_the_column_that_is_not_a_field(spaceview):
+	"""Activity is four facts rendered as one cell and there is no such cell in
+	a spreadsheet, so it is the one column an export leaves behind."""
+	resolved = {"columns": [
+		{"fieldname": "title", "label": "Title"},
+		{"fieldname": spaceview.META_COLUMN, "label": "Activity"},
+		{"fieldname": "status", "label": "Status"},
+	]}
+	assert [one["fieldname"] for one in spaceview._export_columns(resolved)] == [
+		"title", "status",
+	]
+
+
+def test_a_selection_reaches_an_export_as_ids_and_nothing_else(spaceview):
+	"""`names` is a query parameter, so it arrives as text and is never trusted
+	as a filter — the same rule every other list of ids in here follows."""
+	assert spaceview._export_names('["CD-1", "CD-2"]') == ["CD-1", "CD-2"]
+	assert spaceview._export_names(["CD-1", ""]) == ["CD-1"]
+	assert spaceview._export_names('{"name": "CD-1"}') == []
+	assert spaceview._export_names("not json") == []
+	assert spaceview._export_names(None) == []
+	assert spaceview._export_names([{"name": "CD-1"}, 7]) == []
+
+
+def test_a_totals_row_adds_up_money_and_leaves_everything_else_alone(spaceview):
+	"""Which columns a total means something under.
+
+	Currency and Float, and deliberately not Int or Percent. A sum of
+	percentages is a number with a percent sign on it, which is worse than no
+	number; and an Int column is as often an id, a priority or a "remind me this
+	many days before" as it is a count. Frappe's report view totals both — and
+	also has a switch to turn the row off. This one appears on its own, so it
+	only appears where it means something.
+	"""
+	resolved = {"columns": [
+		{"fieldname": "title", "fieldtype": "Data"},
+		{"fieldname": "amount", "fieldtype": "Currency"},
+		{"fieldname": "hours", "fieldtype": "Float"},
+		{"fieldname": "remind_days", "fieldtype": "Int"},
+		{"fieldname": "done", "fieldtype": "Percent"},
+	]}
+	assert spaceview._summable(resolved) == ["amount", "hours"]
+
+	# The reader's own columns, not the doctype's fields: a total under a column
+	# nobody is looking at is a query for nothing.
+	assert spaceview._summable({"columns": []}) == []
+	assert spaceview._summable({}) == []
+
+
+def test_a_sum_survives_the_trip_as_a_number(spaceview):
+	"""`SUM` over no rows is None and over a Decimal column is a Decimal, and
+	neither is a number by the time it reaches a browser."""
+	from decimal import Decimal
+
+	assert spaceview._summed(None) == 0.0
+	assert spaceview._summed(Decimal("8600.50")) == 8600.5
+	assert spaceview._summed(0) == 0.0
+	assert isinstance(spaceview._summed(Decimal("1")), float)
+
+
+def test_a_column_carries_which_edge_its_values_sit_against(spaceview):
+	"""Alignment is the reader's, saved beside the width and the pin.
+
+	Logical rather than physical — `start` and `end` rather than left and right
+	— because this product draws Arabic beside English in one list, and a column
+	aligned "left" in a right-to-left screen is aligned to the wrong side of the
+	words in it.
+	"""
+	offered = {
+		"title": {"fieldname": "title", "label": "Title", "fieldtype": "Data"},
+		"amount": {"fieldname": "amount", "label": "Amount", "fieldtype": "Currency"},
+	}
+	placed = spaceview._placed(offered, [
+		{"fieldname": "title", "align": "center"},
+		{"fieldname": "amount", "align": "start"},
+	])
+	assert [one["align"] for one in placed] == ["center", "start"]
+
+	# The empty string is the fourth value and the default: the fieldtype
+	# decides, which is a rule the browser owns beside its cell map.
+	for said in (None, "", "middle", "left", 7, ["end"]):
+		placed = spaceview._placed(offered, [{"fieldname": "title", "align": said}])
+		assert placed[0]["align"] == "", said
+
+	# And a view saved before alignment existed has none, which is that same
+	# default rather than a missing key.
+	assert spaceview._placed(offered, "title,amount")[0]["align"] == ""
+	assert spaceview._placed(offered, [{"fieldname": "title"}])[0]["align"] == ""

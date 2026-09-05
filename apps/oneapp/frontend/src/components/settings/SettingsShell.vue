@@ -38,6 +38,58 @@
           Books
         </SettingsNavItem>
 
+        <SettingsNavItem value="print-formats" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-printer" class="size-4 text-ink-gray-7" />
+          </template>
+          Print formats
+        </SettingsNavItem>
+
+        <SettingsNavItem value="naming" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-hash" class="size-4 text-ink-gray-7" />
+          </template>
+          Naming
+        </SettingsNavItem>
+
+        <!-- Beside the workspace's own settings rather than inside a space:
+             an import fills doctypes many spaces read, and it is a thing an
+             owner does to the workspace. -->
+        <SettingsNavItem value="import" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-import" class="size-4 text-ink-gray-7" />
+          </template>
+          Import
+        </SettingsNavItem>
+
+        <SettingsNavItem value="mail" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-mail" class="size-4 text-ink-gray-7" />
+          </template>
+          Email
+        </SettingsNavItem>
+
+        <SettingsNavItem value="storage" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-hard-drive" class="size-4 text-ink-gray-7" />
+          </template>
+          Storage
+        </SettingsNavItem>
+
+        <SettingsNavItem value="alerts" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-bell" class="size-4 text-ink-gray-7" />
+          </template>
+          Alerts
+        </SettingsNavItem>
+
+        <SettingsNavItem value="templates" :class="TAB_ITEM">
+          <template #prefix>
+            <Icon name="lucide-file-text" class="size-4 text-ink-gray-7" />
+          </template>
+          Templates
+        </SettingsNavItem>
+
         <SettingsNavItem value="ai" :class="TAB_ITEM">
           <template #prefix>
             <Icon name="lucide-sparkles" class="size-4 text-ink-gray-7" />
@@ -62,6 +114,20 @@
       </SettingsPanel>
 
       <SettingsPanel value="books"><BooksSettings /></SettingsPanel>
+
+      <SettingsPanel value="print-formats"><PrintingSettings /></SettingsPanel>
+
+      <SettingsPanel value="naming"><NamingSettings /></SettingsPanel>
+
+      <SettingsPanel value="import"><ImportSettings /></SettingsPanel>
+
+      <SettingsPanel value="mail"><MailSettings /></SettingsPanel>
+
+      <SettingsPanel value="storage"><StorageSettings /></SettingsPanel>
+
+      <SettingsPanel value="alerts"><AlertSettings /></SettingsPanel>
+
+      <SettingsPanel value="templates"><TemplateSettings /></SettingsPanel>
 
       <SettingsPanel value="ai"><AiSettings /></SettingsPanel>
 
@@ -95,6 +161,13 @@ import {
 import SettingsFields from './SettingsFields.vue'
 import BooksSettings from './BooksSettings.vue'
 import AiSettings from './AiSettings.vue'
+import AlertSettings from './AlertSettings.vue'
+import TemplateSettings from './TemplateSettings.vue'
+import StorageSettings from './StorageSettings.vue'
+import NamingSettings from './NamingSettings.vue'
+import PrintingSettings from './PrintingSettings.vue'
+import ImportSettings from './ImportSettings.vue'
+import MailSettings from './MailSettings.vue'
 import ThemeSetting from '../ThemeSetting.vue'
 import { PANEL_BODY, PANEL_HEADER, TAB_GROUP, TAB_ITEM, TAB_STRIP, PANEL_CONTENT } from './geometry'
 import { settings } from '../../lib/settings'

@@ -50,6 +50,7 @@ STRIPE_STATUS_MAP = {
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def stripe():
+	"""Stripe's own callbacks, verified by signature before anything is read."""
 	raw = frappe.request.get_data(as_text=True) or ""
 	signature = frappe.request.headers.get("Stripe-Signature")
 

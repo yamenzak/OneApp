@@ -16,6 +16,53 @@ const routes = [
   },
   { path: '/account', name: 'Account', component: () => import('./pages/Account.vue') },
   {
+    // Mail belongs to the workspace rather than to any one space — the
+    // addresses a person holds do not change when they switch space — so it is
+    // a route beside the account page rather than a screen inside a space.
+    path: '/mail',
+    name: 'Mail',
+    component: () => import('./pages/Mail.vue'),
+    // Two columns and a reading pane, each with its own scroller. Same reason
+    // as the screen host: without this the shell scrolls the page and the list
+    // never keeps its header.
+    meta: { pane: true },
+  },
+  {
+    // Files belong to the workspace rather than to any one space — an
+    // attachment on a project and a drawing nobody has filed are the same row
+    // in the same table — so this is a route beside Mail rather than a screen
+    // inside a space.
+    path: '/files',
+    name: 'Drive',
+    component: () => import('./pages/Drive.vue'),
+    // A rail, a list and its own scroller, same as the screen host: without
+    // this the shell scrolls the page and the list loses its header.
+    meta: { pane: true },
+  },
+  {
+    // The diary: everything the reader has with a date on it, from every
+    // calendar this workspace has. A route beside Mail and Files for the same
+    // reason those are — a week does not belong to one space — and the merge
+    // itself is the server's, in `oneapp_core/diary.py`.
+    path: '/calendar',
+    name: 'Calendar',
+    component: () => import('./pages/Diary.vue'),
+    // A rail, a grid and its own scroller: the shell must not add a second.
+    meta: { pane: true },
+  },
+  {
+    // A sheet is a File, so this is not a second kind of thing with a second
+    // kind of address: `:name` is the File row, the same id the Drive lists
+    // and the same one `File.file_url` points its exporter at.
+    path: '/sheets/:name',
+    name: 'Sheet',
+    component: () => import('./pages/Sheet.vue'),
+    props: true,
+    // A grid owns both its scrollbars. Same reason as the screen host: without
+    // this the shell scrolls the page and the column headers scroll away.
+    meta: { pane: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('./pages/NotFound.vue'),

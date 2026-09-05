@@ -140,7 +140,7 @@
 </template>
 
 <script setup>
-import { computed, toRef } from 'vue'
+import { computed } from 'vue'
 import { Alert, LoadingIndicator, List, ListRows, ListRow, ListCell, dayjsLocal } from '@/ui'
 import WorkspaceBar from './WorkspaceBar.vue'
 import { useWorkspace } from './workspace'

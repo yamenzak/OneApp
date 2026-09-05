@@ -1,0 +1,122 @@
+"""Import plans this app ships.
+
+A plan is data — steps, field maps, value maps — so a customer arriving off
+their own Frappe site is a module in here and no engine code at all. `install`
+writes one onto a tenant as `Import Plan` rows; the engine in `importer.py`
+reads them and knows nothing about any of it.
+"""
+
+import frappe
+
+from oneapp.oneapp_core.plans import rua
+
+PLANS = {"rua": rua}
+
+
+def shipped() -> list[dict]:
+	"""Every plan this app carries, as the console offers them.
+
+	`key` and not the title is what `install` takes: a plan's title is the
+	customer's sentence about their own old system and may be edited, and the
+	module it came from may not.
+	"""
+	return [
+		{
+			"key": key,
+			"title": module.PLAN,
+			"space": module.SPACE,
+			"steps": len(module.STEPS),
+			"records": len(getattr(module, "SEEDS", [])),
+		}
+		for key, module in PLANS.items()
+	]
+
+
+def install(name: str, source: str) -> str:
+	"""Write one shipped plan onto this site, pointed at a source.
+
+	Idempotent: the plan is rewritten from the module every time, **except** the
+	watermarks, which belong to what has already crossed over rather than to the
+	declaration. Losing them would turn the next incremental run back into a
+	full one — so a one-word fix to a field map would silently re-import
+	everything.
+	"""
+	module = PLANS[name]
+	title = module.PLAN
+
+	prepare(module)
+
+	# Keyed by position and not by source doctype: a plan may read one doctype
+	# twice — a second pass for a link that points at something the first pass
+	# is still making — and keyed by name those two collapse into one, which
+	# silently hands the second pass the first one's watermark.
+	kept = {}
+	if frappe.db.exists("Import Plan", title):
+		doc = frappe.get_doc("Import Plan", title)
+		kept = {at: (s.watermark, s.last_run) for at, s in enumerate(doc.steps)}
+		doc.steps = []
+	else:
+		doc = frappe.new_doc("Import Plan")
+		doc.plan_name = title
+
+	doc.source = source
+	doc.space_code = module.SPACE
+	doc.is_active = 1
+
+	for at, step in enumerate(module.STEPS):
+		row = doc.append("steps", {
+			"source_doctype": step["source"],
+			"target_doctype": step["target"],
+			"field_map": frappe.as_json(step["map"]),
+			"filters": frappe.as_json(step["filters"]) if step.get("filters") else None,
+			"fan_out": frappe.as_json(step["fan_out"]) if step.get("fan_out") else None,
+			"carry_files": 1 if step.get("files") else 0,
+			"carry_file_fields": ",".join(step.get("file_fields") or []) or None,
+			"enabled": 1,
+			"notes": step.get("why", ""),
+		})
+		# Only where the step at that position is still the same step. A plan
+		# that gained a step in the middle would otherwise hand every step
+		# after it somebody else's watermark, and skip everything before it.
+		was = kept.get(at)
+		if was and doc.steps[at].source_doctype == step["source"] \
+				and doc.steps[at].target_doctype == step["target"]:
+			row.watermark, row.last_run = was
+
+	doc.save()
+	frappe.db.commit()
+	return doc.name
+
+
+def prepare(module) -> dict:
+	"""The records a plan's maps write against, made before it runs.
+
+	Records and not schema. The `custom_` fields a plan's maps name belong to
+	the *space*, and arrive with the entitlement rather than with a data
+	migration — see `oneapp_control/spaces/rua.py`, `CUSTOM_FIELDS`. A plan
+	that made them was a plan a workspace had to run before its screens were
+	whole, which is backwards.
+
+	Skipped rather than fatal where the target doctype is absent: this app
+	installs on benches without ERPNext, and a plan that cannot be *installed*
+	there is worse than one that cannot be run there.
+	"""
+	made = {"records": 0, "skipped": 0}
+
+	for seed in getattr(module, "SEEDS", []):
+		doctype = seed["doctype"]
+		if not frappe.db.exists("DocType", doctype):
+			made["skipped"] += 1
+			continue
+		# By the field its doctype is named after, because a seed is written
+		# before it has a name — and `autoname` on Item is `item_code`, which
+		# is what makes this answerable at all.
+		named = frappe.get_meta(doctype).autoname or ""
+		key = named.split(":", 1)[1] if named.startswith("field:") else "name"
+		if frappe.db.exists(doctype, seed.get(key)):
+			continue
+		frappe.get_doc(dict(seed)).insert(ignore_permissions=True)
+		made["records"] += 1
+
+	frappe.db.commit()
+	return made

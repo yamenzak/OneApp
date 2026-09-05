@@ -215,3 +215,31 @@ def test_an_unreadable_verdict_does_not_stop_the_site_accepting_writes(
 	monkeypatch.setattr(module, "database_quota_bytes", lambda: 2 * GB)
 	with pytest.raises(module.DatabaseQuotaExceeded):
 		module.enforce_database_quota(FakeDoc("Sales Invoice"))
+
+
+# --------------------------------------------------------------------------- #
+# One object, counted once
+# --------------------------------------------------------------------------- #
+# Attaching a file the workspace already has does not upload it again — Frappe
+# writes a second `File` row over the same object, which is what the picker
+# does and what an attachment on a second record is. Summing `file_size` over
+# rows billed that drawing once per record it appeared on.
+
+def test_usage_groups_rows_that_share_one_object(quota, stub_frappe):
+	rows = []
+
+	def sql(query, *a, **k):
+		rows.append(" ".join(query.split()))
+		return [[0]]
+
+	stub_frappe.db.sql = sql
+	quota.current_usage()
+
+	query = rows[0]
+	assert "GROUP BY" in query
+	# `r2_key` first, `file_url` behind it: an R2 site groups by the object, a
+	# site on local disk by the path Frappe's own duplicate check reuses.
+	assert quota.OBJECT in query
+	assert "MAX(file_size)" in query
+	# Folders weigh nothing and would only add rows to the grouping.
+	assert "is_folder = 0" in query

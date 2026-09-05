@@ -1,0 +1,118 @@
+{
+ "actions": [],
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "source_doctype",
+  "target_doctype",
+  "status",
+  "cb_run_step_counts",
+  "seen",
+  "created",
+  "updated",
+  "failed",
+  "cb_run_step_marks",
+  "watermark_from",
+  "watermark_to",
+  "error"
+ ],
+ "fields": [
+  {
+   "fieldname": "source_doctype",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Source Doctype",
+   "read_only": 1
+  },
+  {
+   "fieldname": "target_doctype",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Target Doctype",
+   "read_only": 1
+  },
+  {
+   "default": "Queued",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Queued\nRunning\nDone\nFailed\nSkipped",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_run_step_counts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "seen",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Seen",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "created",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Created",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "updated",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Updated",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "failed",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Failed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_run_step_marks",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Where this step started reading. Empty is everything.",
+   "fieldname": "watermark_from",
+   "fieldtype": "Datetime",
+   "label": "Watermark From",
+   "read_only": 1
+  },
+  {
+   "fieldname": "watermark_to",
+   "fieldtype": "Datetime",
+   "label": "Watermark To",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Small Text",
+   "label": "Error",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "Import Run Step",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

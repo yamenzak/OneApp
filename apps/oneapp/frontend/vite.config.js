@@ -64,6 +64,21 @@ export default defineConfig({
     extraShells(),
   ],
   resolve: {
-    alias: { '@': path.resolve(__dirname, 'src') },
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+      // frappe-gantt ships its stylesheet beside its build and then publishes
+      // an `exports` map with no subpath for it, so `frappe-gantt/dist/...css`
+      // is unresolvable and the chart draws as unstyled boxes. Aliased here
+      // rather than copied into our own CSS: a copy is a stylesheet to keep in
+      // step with a package we do not own.
+      'frappe-gantt/style.css': path.resolve(
+        __dirname, 'node_modules/frappe-gantt/dist/frappe-gantt.css',
+      ),
+    },
+  },
+  test: {
+    globals: true,
+    include: ['src/{lib,components/sheets/editor,components/mail}/**/*.test.js'],
+    environment: 'node',
   },
 })

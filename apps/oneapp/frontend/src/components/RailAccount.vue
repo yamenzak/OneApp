@@ -1,24 +1,41 @@
 <template>
-  <!-- `side` + `align`, not `placement`: frappe-ui removed `placement` in 1.0
-       and warns about it in dev, so the menu was never positioned. -->
+  <!--
+    The account menu at the foot of the rail.
+
+    The trigger goes in the **default** slot. frappe-ui's Dropdown has no
+    `trigger` slot — it renders whatever its default slot holds and attaches the
+    menu to that — so a `<template #trigger>` renders nothing, attaches to
+    nothing, and the menu never opens. It looked right the whole time, because
+    the avatar is drawn by the slot's fallback: settings, appearance and sign
+    out were simply unreachable from here.
+
+    `side` + `align`, not `placement`: frappe-ui removed `placement` in 1.0 and
+    warns about it in dev, so the menu was never positioned either.
+  -->
   <Dropdown :options="options" side="right" align="end">
-    <template #trigger>
-      <Tooltip :text="fullName || 'Account'" side="right">
-        <Avatar
-          :label="fullName || '?'"
-          :image="userImage"
-          size="lg"
-          class="size-7 cursor-pointer transition hover:opacity-90"
-        />
-      </Tooltip>
-    </template>
+    <!--
+      An Avatar renders a div, so without these the one control that reaches
+      settings had no name and no way in from a keyboard. `role` and `tabindex`
+      are what a div acting as a control needs; the label is what a screen
+      reader reads and what names it on hover.
+    -->
+    <Avatar
+      :label="fullName || '?'"
+      :image="userImage"
+      size="lg"
+      role="button"
+      tabindex="0"
+      :aria-label="fullName || 'Account'"
+      class="size-7 cursor-pointer transition hover:opacity-90"
+    />
   </Dropdown>
 </template>
 
 <script setup>
+import { signOut } from '../lib/user'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Avatar, Dropdown, Tooltip } from '@/ui'
+import { Avatar, Dropdown } from '@/ui'
 import { useAppearance } from '../lib/appearance'
 import { openSettings } from '../lib/settings'
 import { session } from '../lib/session'
@@ -49,11 +66,7 @@ const options = computed(() => [
   {
     label: 'Log out',
     icon: 'lucide-log-out',
-    // Frappe's own logout clears the session cookie server-side; a client-side
-    // redirect alone would leave the session valid.
-    onClick: () => {
-      window.location.href = '/api/method/logout'
-    },
+    onClick: signOut,
   },
 ])
 </script>

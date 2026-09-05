@@ -27,6 +27,7 @@ import json
 from pathlib import Path
 
 import frappe
+from frappe.utils import add_to_date, now_datetime
 
 CODE = "zzmock"
 LABEL = "MockSpace"
@@ -62,6 +63,43 @@ EVENT_FIELDS = "subject,event_type,status,starts_on"
 # already say.
 PEOPLE_FIELDS = "company_name,designation"
 
+# The submittable fixture, and the one thing here that is not a Frappe doctype.
+#
+# Core Frappe ships exactly one submittable doctype — `DuckDB Sync` — and a
+# sync job is not a thing to draw an approval on. ERPNext has a dozen and is not
+# installed on a development bench. So the fixture makes one: the smallest
+# document that has a docstatus and something to approve about it.
+#
+# It carries `workflow_state` because a workflow needs a field to keep its state
+# in, and Frappe adds one automatically only through the desk's workflow
+# builder, which this product does not have.
+APPROVAL_DOCTYPE = "zzApproval"
+APPROVAL_FIELDS = "title,amount,workflow_state"
+
+# The workflow over it. Two of the three states carry a `doc_status`, which is
+# the whole point of the fixture: approving is what *submits*, so the plain
+# Submit button is never beside these.
+#
+# `zzVoided` is separate from `zzRejected` for a reason Frappe enforces: a
+# transition may not go from a draft state straight to a cancelled one, the
+# same rule the bare docstatus has. Rejecting sends it back to a draft;
+# voiding is what cancels something already approved.
+WORKFLOW = "zzApproval Flow"
+WORKFLOW_STATES = [
+	("zzDraft", "0", "Primary", ROLE),
+	("zzPending", "0", "Warning", ROLE),
+	("zzApproved", "1", "Success", ROLE),
+	("zzRejected", "0", "Danger", ROLE),
+	("zzVoided", "2", "Inverse", ROLE),
+]
+WORKFLOW_TRANSITIONS = [
+	("zzDraft", "zzSend", "zzPending"),
+	("zzPending", "zzApprove", "zzApproved"),
+	("zzPending", "zzReject", "zzRejected"),
+	("zzRejected", "zzSend", "zzPending"),
+	("zzApproved", "zzVoid", "zzVoided"),
+]
+
 # What the space grants. ToDo and Note are what its screens show; Role is a
 # link target, granted so the picker's Create row has somewhere to create —
 # a link to a doctype the space did not grant is readable and never creatable,
@@ -81,7 +119,24 @@ DOCTYPES = [
 	# `image_field` and a `title_field` that is not its id — which is exactly
 	# what a grid needs to be a gallery rather than a page of tiles.
 	{"document_type": "Contact", "access": "Manage", "if_owner": 0},
+	# The docstatus fixture. `Manage` because that is the access level that
+	# carries submit, cancel and amend — Read and Write do not, which is
+	# itself worth having a fixture prove.
+	{"document_type": APPROVAL_DOCTYPE, "access": "Manage", "if_owner": 0},
+	# The two registers OneSpace ships itself, and the reason they are in this
+	# fixture rather than in the customer space they came out of: they are
+	# ordinary records rendered by the generic engine, so a screen over each is
+	# what proves that claim on every browser run.
+	{"document_type": "Compliance Document", "access": "Manage", "if_owner": 0},
+	{"document_type": "Correspondence", "access": "Manage", "if_owner": 0},
 ]
+
+# Enough of each register to read as one. The compliance columns are the
+# question it answers — what expires, when, and whose — and the correspondence
+# ones are the pair of subjects, because a bilingual register that shows only
+# the English half is the register they already had.
+COMPLIANCE_FIELDS = "title,category,about,expiry_date,status"
+CORRESPONDENCE_FIELDS = "kind,subject,subject_ar,to_party,letter_date,status"
 
 SCREENS = [
 	{
@@ -130,6 +185,20 @@ SCREENS = [
 		"screen": "events", "label": "Events", "icon": "lucide-calendar",
 		"document_type": "Event", "fields": EVENT_FIELDS, "order_by": "creation asc",
 		"status_field": "status",
+		# The calendar fixture, and the screen it belongs on: an Event is the
+		# one core doctype that is *about* a span of time. Calendar first,
+		# because a list of two events sorted by creation is not how anybody
+		# reads a diary.
+		"view_types": "calendar,gantt,list",
+		# `ends_on` is not in `EVENT_FIELDS` on purpose — the resolver fetches
+		# the dates a calendar places a record by whether or not anybody made
+		# them columns, and a fixture that listed them would not prove it.
+		# The Gantt reads the same pair — it declares nothing of its own, which
+		# is the fallback working: a screen placing its records by two dates
+		# should not have to say so twice.
+		"view_settings": json.dumps({
+			"calendar": {"start_field": "starts_on", "end_field": "ends_on"},
+		}),
 	},
 	{
 		# Grid first, because that is what this screen is for: Contact declares
@@ -139,6 +208,57 @@ SCREENS = [
 		"screen": "people", "label": "People", "icon": "lucide-users",
 		"document_type": "Contact", "fields": PEOPLE_FIELDS,
 		"order_by": "first_name asc", "view_types": "grid,list",
+	},
+	{
+		# The docstatus and workflow fixture. Every other screen here is over a
+		# doctype Frappe ships; this one is over a doctype the seed makes,
+		# because core Frappe has exactly one submittable doctype and it is a
+		# sync job.
+		"screen": "approvals", "label": "Approvals", "icon": "lucide-shield",
+		"document_type": APPROVAL_DOCTYPE, "fields": APPROVAL_FIELDS,
+		# And a report, because this is the screen with money on it: `amount` is
+		# a Currency, so the totals row has something to add up, and an approval
+		# whose figure was typed wrong is exactly the thing somebody wants to fix
+		# without opening the record.
+		"order_by": "creation desc", "view_types": "list,report",
+		# No `status_field`, deliberately. A workflow's state *is* where the
+		# record stands, and the record header already says it — pointing the
+		# screen's badge at the same field makes the header say it twice in two
+		# places. The list still shows the state, as an ordinary column.
+	},
+	{
+		# The register of papers that expire. Grouped under one screen rather
+		# than one per category, because "what expires next" is the question
+		# and it does not care whether the answer is a visa or a licence.
+		"screen": "compliance", "label": "Compliance", "icon": "lucide-shield",
+		"document_type": "Compliance Document", "fields": COMPLIANCE_FIELDS,
+		# Most urgent first, and by status rather than by date: `expiry_date asc`
+		# puts the documents that never expire at the very top, because SQL
+		# sorts a null before every date. Sorting by status instead is what the
+		# register is actually for — and it works because the four statuses are
+		# *named* so that their alphabetical order is their urgency order
+		# (Expired, Expiring, No expiry, Valid). That is a real coupling, so
+		# `test_the_statuses_sort_into_urgency` pins it rather than leaving it
+		# to be discovered by whoever renames one.
+		"order_by": "status asc, expiry_date asc",
+		# And a tree, over the register's own renewal lineage. `renews` and
+		# `renewed_by` are both Links to Compliance Document and only one of
+		# them nests — which is the case that made the parent field something a
+		# manifest declares rather than something the server infers.
+		"view_types": "list,board,tree",
+		"view_settings": '{"tree": {"parent_field": "renews"}}',
+		"status_field": "status",
+		"singular": "Document",
+	},
+	{
+		# Bilingual letters and forms. Newest first: correspondence is read
+		# from the top, unlike a register of dates.
+		"screen": "correspondence", "label": "Correspondence",
+		"icon": "lucide-mail",
+		"document_type": "Correspondence", "fields": CORRESPONDENCE_FIELDS,
+		"order_by": "creation desc", "view_types": "list",
+		"status_field": "status",
+		"singular": "Letter",
 	},
 ]
 
@@ -201,10 +321,25 @@ NOTES = [
 #
 # `starts_on` is a fixed date rather than "today": a fixture whose values move
 # is a fixture a test cannot assert against.
+def _this_month(day: int, at: str) -> str:
+	"""A day in the month being looked at, rather than a date in 2026.
+
+	The calendar opens on today's month, so a fixture pinned to a fixed date is
+	a fixture that is on screen until that month passes and invisible after —
+	and a browser test that reads "there is an event on the grid" would start
+	failing on the first of some month with nobody having touched the calendar.
+	The 10th and the 12th, because both are in every month.
+	"""
+	return f"{now_datetime().strftime('%Y-%m')}-{day:02d} {at}"
+
+
 EVENTS = [
 	{
 		"subject": "Quarterly review", "event_type": "Private", "status": "Open",
-		"starts_on": "2026-09-15 10:00:00",
+		# A span: it starts at ten and ends at half eleven, which is what makes
+		# the calendar draw a block rather than a dot.
+		"starts_on": _this_month(10, "10:00:00"),
+		"ends_on": _this_month(10, "11:30:00"),
 		"event_participants": [
 			{"reference_doctype": "User", "reference_docname": "Administrator",
 			 "attending": "Yes"},
@@ -218,8 +353,26 @@ EVENTS = [
 		],
 	},
 	{
+		# And one with no end on the day it starts — a moment on the calendar,
+		# and deliberately absent from the Gantt, which is a chart of lengths
+		# and has nothing to draw for a record with one date.
+		#
+		# Somebody else's, too: the diary opens an event you own in its own
+		# dialog and a record you do not on the screen it belongs to, and a
+		# fixture where every event is yours can only ever show one of those.
+		# `owner` is set after the insert — it is a system field.
 		"subject": "Van collection", "event_type": "Public", "status": "Open",
-		"starts_on": "2026-09-17 09:00:00",
+		"starts_on": _this_month(12, "09:00:00"),
+		"__owner": COLLEAGUE,
+	},
+	{
+		# And one that runs for days rather than hours. A two-hour meeting is a
+		# sliver on a chart whose column is a week, so a fixture of nothing but
+		# meetings shows a Gantt that is technically right and demonstrates
+		# nothing — this is the record that makes the view look like the view.
+		"subject": "Fit-out week", "event_type": "Private", "status": "Open",
+		"starts_on": _this_month(15, "09:00:00"),
+		"ends_on": _this_month(19, "17:00:00"),
 	},
 ]
 
@@ -322,6 +475,646 @@ PROPERTIES = [
 ]
 
 
+# The two registers, with rows that read as real ones. Dates are relative to
+# the day the seed runs, so the register always has something expired, something
+# about to be and something fine — which is the only way to look at a screen
+# whose whole job is to sort by urgency.
+COMPLIANCE = [
+	# Three years of one licence, so the register has a shape and not just a
+	# length: `renews` points each at the one it replaced, which is what the
+	# tree view nests by. The same document number all the way down, because
+	# that is what renewing a licence does to it.
+	("Trade Licence — 2024", "Licence", "CN-1109482", -377, 60,
+	 "Department of Economic Development", "Abu Dhabi"),
+	("Trade Licence", "Licence", "CN-1109482", -12, 60,
+	 "Department of Economic Development", "Abu Dhabi"),
+	("Trade Licence — 2027", "Licence", "CN-1109482", 353, 60,
+	 "Department of Economic Development", "Abu Dhabi"),
+	("Residence Visa — Ali Haddad", "Visa", "784-1990-2237841-6", 9, 60,
+	 "ICP", "Abu Dhabi"),
+	("Vehicle Registration — 14/52931", "Registration", "52931", 26, 30,
+	 "Abu Dhabi Police", "Abu Dhabi"),
+	("Workmen Compensation Policy", "Insurance", "WC-2026-04417", 121, 45,
+	 "Oman Insurance", "Dubai"),
+	("Chamber of Commerce Certificate", "Certificate", "ADCCI-77210", 240, 30,
+	 "ADCCI", "Abu Dhabi"),
+	# The one with no date, because "does not expire" has to be visibly a
+	# different thing from "expired".
+	("Memorandum of Association", "Contract", "MOA-2019-01", None, 30,
+	 "Notary Public", "Abu Dhabi"),
+]
+
+# Which of them replaced which, by title: `renews` holds an id, and a fixture
+# written in ids would be a fixture nobody can read. Applied after the inserts
+# rather than during, because the older document has to exist first — and
+# through `save` rather than `db.set_value`, so the doctype's own rule writes
+# `renewed_by` back on the other side of the pair.
+RENEWALS = [
+	("Trade Licence", "Trade Licence — 2024"),
+	("Trade Licence — 2027", "Trade Licence"),
+]
+
+# Bilingual on purpose: this fixture is what proves `dir="auto"` puts an Arabic
+# subject to the right of its box and an English one to the left, in the same
+# list, without either being declared anywhere.
+# The last element is the Compliance Document this letter is *about*, by title,
+# or None. Correspondence carries a Dynamic Link — `about_doctype` beside
+# `about`, which is how Frappe writes "about anything" — and that is what makes
+# a Correspondence tab appear on a licence without anybody declaring one. It is
+# also the fixture behind `e2e/connections.spec.js`: a register with no letter
+# filed against anything cannot show that the tab found the right rows.
+CORRESPONDENCE = [
+	("Letter", "Request for extension of completion date",
+	 "طلب تمديد تاريخ الإنجاز", "Al-Ittihad Consultants", "الاتحاد للاستشارات",
+	 "Issued", None),
+	# The comma is the point of this one. A register with no comma anywhere in
+	# it cannot show whether an export quotes properly, and a subject that
+	# becomes two columns takes every row after it out of true.
+	("Letter", "Submission of revised shop drawings, revisions A to C",
+	 "تقديم مخططات التنفيذ المعدلة، المراجعات أ إلى ج", "National Engineering Bureau",
+	 "المكتب الوطني للهندسة", "Issued", None),
+	("Form", "Material approval — 6mm tempered glass",
+	 "اعتماد مواد — زجاج مقسى ٦ ملم", "A.D.D. Consultants",
+	 "إيه دي دي للاستشارات", "Draft", None),
+	("Letter", "Renewal of trade licence CN-1109482",
+	 "تجديد الرخصة التجارية", "Department of Economic Development",
+	 "دائرة التنمية الاقتصادية", "Issued", "Trade Licence — 2024"),
+]
+
+
+def _seed_registers():
+	"""A few rows in each register, so the screens are worth opening."""
+	from frappe.utils import add_days, nowdate
+
+	for title, category, number, offset, warn, issuer, place in COMPLIANCE:
+		if frappe.db.exists("Compliance Document", {"title": title}):
+			continue
+		frappe.get_doc({
+			"doctype": "Compliance Document",
+			"title": title, "category": category, "document_number": number,
+			"expiry_date": add_days(nowdate(), offset) if offset is not None else None,
+			"issue_date": add_days(nowdate(), (offset or 0) - 365),
+			"remind_days": warn, "issued_by": issuer, "place_of_issue": place,
+		}).insert(ignore_permissions=True)
+
+	for title, renews in RENEWALS:
+		found = frappe.db.get_value("Compliance Document", {"title": title}, "name")
+		older = frappe.db.get_value("Compliance Document", {"title": renews}, "name")
+		if not (found and older):
+			continue
+		one = frappe.get_doc("Compliance Document", found)
+		if one.renews == older:
+			continue
+		one.renews = older
+		one.save(ignore_permissions=True)
+
+	# A subject this fixture used to carry. The rows above are seeded by subject
+	# and skipped where one exists, so editing the text of one leaves the old row
+	# behind beside the new — which is a register with a duplicate in it and a
+	# filter test that matches two things.
+	frappe.db.delete("Correspondence", {"subject": "Submission of revised shop drawings"})
+
+	for kind, subject, subject_ar, to, to_ar, status, _about in CORRESPONDENCE:
+		if frappe.db.exists("Correspondence", {"subject": subject}):
+			continue
+		frappe.get_doc({
+			"doctype": "Correspondence",
+			"naming_series": "LTR-.YY.-" if kind == "Letter" else "FRM-.YY.-",
+			"kind": kind, "subject": subject, "subject_ar": subject_ar,
+			"to_party": to, "to_party_ar": to_ar, "status": status,
+			"letter_date": nowdate(),
+			"body": "<p>Further to our meeting on site, we write to confirm…</p>",
+			"body_ar": "<p>إلحاقاً باجتماعنا في الموقع، نود أن نؤكد…</p>",
+			"signed_by": "Yamen Zakhour", "signed_by_title": "Managing Director",
+			"signed_by_ar": "يامن زخور", "signed_by_title_ar": "المدير العام",
+		}).insert(ignore_permissions=True)
+
+	# What each letter is filed against, applied after the inserts and on every
+	# run — the rows above are skipped where the subject already exists, so a
+	# link added to the fixture later would never reach the letter that was
+	# seeded before it.
+	for _kind, subject, *_rest, about in CORRESPONDENCE:
+		letter = frappe.db.get_value("Correspondence", {"subject": subject}, "name")
+		filed = frappe.db.get_value("Compliance Document", {"title": about}, "name") if about else None
+		if not letter or not filed:
+			continue
+		frappe.db.set_value("Correspondence", letter, {
+			"about_doctype": "Compliance Document", "about": filed,
+		}, update_modified=False)
+
+	frappe.db.commit()
+
+
+def _seed_rua():
+	"""The RUA space on the dev tenant, from the module that ships it.
+
+	Read out of `oneapp_control.spaces.rua` rather than restated here: there is
+	one declaration of what that space is, and a fixture that kept its own copy
+	would drift from it inside a week.
+
+	Only where ERPNext is installed. Every screen but two is over an ERPNext or
+	HRMS doctype, and a space whose screens are all skipped is a rail item that
+	opens onto nothing.
+	"""
+	from oneapp.oneapp_core import sync
+	from oneapp_control.spaces import rua
+
+	if not frappe.db.exists("DocType", "Sales Invoice"):
+		return None
+
+	sync.ensure_role(rua.SPACE["role_name"])
+
+	me = frappe.get_doc("User", "Administrator")
+	if rua.SPACE["role_name"] not in {one.role for one in me.roles}:
+		me.append("roles", {"role": rua.SPACE["role_name"]})
+		me.save(ignore_permissions=True)
+
+	# The grants go back to the caller rather than being written here.
+	# `sync_permissions` *reconciles*: it removes what is not in the list it is
+	# given, so two calls leave whichever ran last and silently take the other
+	# space's permissions away — which is a space on the rail that redirects to
+	# the sign-in page, and reads like a session bug.
+	return (
+		{**rua.SPACE, "screens": [dict(one, component=None) for one in rua.SCREENS]},
+		[{"role": rua.SPACE["role_name"], "doctype": document_type,
+		  "access": access, "if_owner": if_owner}
+		 for document_type, access, if_owner in rua.DOCTYPES],
+	)
+
+
+def _seed_mail(user):
+	"""An address this person holds, and one conversation on it.
+
+	Two messages with the same subject and a `Re:` in front of the second,
+	because that is the whole of what threading is here and a fixture with one
+	message proves nothing about it.
+
+	`enable_incoming` is off and there is no server: an address in this product
+	is a delivery point, not a mailbox, and mail arrives by the Worker POSTing
+	it. A fixture that set an IMAP host would have Frappe try to reach one.
+	"""
+	from oneapp.oneapp_core.email import addresses
+
+	# The workspace's own domain, asked for rather than spelled out: a fixture
+	# that hard-coded `4dl.app` would seed an address the product then badges
+	# as somebody else's domain, and the panel would be lying about the one
+	# address it has.
+	address = f"sales@{addresses.domain()}"
+	if not frappe.db.exists("Email Account", {"email_id": address}):
+		frappe.get_doc({
+			"doctype": "Email Account",
+			"email_account_name": address,
+			"email_id": address,
+			"enable_incoming": 0,
+			"enable_outgoing": 0,
+			"signature": "Sales — MockSpace",
+			"add_signature": 1,
+		}).insert(ignore_permissions=True)
+
+	account = frappe.db.get_value("Email Account", {"email_id": address}, "name")
+	holder = frappe.get_doc("User", user)
+	if address not in {row.email_id for row in holder.user_emails}:
+		holder.append("user_emails", {"email_account": account, "email_id": address})
+		holder.save(ignore_permissions=True)
+
+	# The folders a connected mailbox would have brought with it, and the kinds
+	# the server would have flagged. Written here rather than discovered,
+	# because discovering them needs an IMAP server and what this fixture is
+	# for is the rail that draws them.
+	from oneapp.oneapp_core.email import folders as folder_lib
+
+	mirrored = [
+		{"name": "INBOX", "kind": "inbox"},
+		{"name": "Applicants", "kind": ""},
+		{"name": "Documents", "kind": ""},
+		{"name": "Sent Items", "kind": "sent"},
+		{"name": "Junk", "kind": "junk"},
+	]
+	doc = frappe.get_doc("Email Account", account)
+	folder_lib.apply(doc, mirrored)
+	doc.db_set(
+		"custom_folder_kinds",
+		frappe.as_json({one["name"]: one["kind"] for one in mirrored}),
+		update_modified=False,
+	)
+	doc.save(ignore_permissions=True)
+
+	# Filing rules and the away message are state a person sets, so the fixture
+	# owns them the way it owns the folders: cleared, not merged. A spec that
+	# adds a rule and asserts the count would otherwise pass once and fail on
+	# every run after it, which reads as a broken feature rather than as a
+	# fixture that remembers.
+	for name in frappe.get_all("Mail Rule", pluck="name"):
+		frappe.delete_doc("Mail Rule", name, force=True, ignore_permissions=True)
+	doc.db_set("enable_auto_reply", 0, update_modified=False)
+	doc.db_set("auto_reply_message", "", update_modified=False)
+	doc.db_set("custom_away_until", None, update_modified=False)
+
+	# A second recipient on the conversation, so a reply-to-all has somebody to
+	# copy. Without one the fixture cannot tell "no Cc because the code is
+	# wrong" from "no Cc because there was nobody else on it".
+	both = f"{address}, ops@client.test"
+
+	# The last number is how many hours ago it arrived, and it is not decoration:
+	# a thread is ordered by `communication_date`, and four rows inserted in the
+	# same millisecond leave that order to the database. The reader now collapses
+	# what has been read and marks where the new mail starts, both of which are
+	# statements about *which message is last* — so the fixture says.
+	messages = [
+		("Quotation for the Al Reem tower", "INBOX", "Received",
+		 "<p>Could you send the revised cladding quote before Thursday?</p>", both, 26, ""),
+		# The one with a Cc, because the reader draws one and nothing here had
+		# one to draw: `cc` has always been fetched and was never rendered, so
+		# who else saw a message was a question the screen could not answer.
+		("Re: Quotation for the Al Reem tower", "INBOX", "Received",
+		 "<p>Attached — the glazing line moved, everything else holds.</p>", both, 25,
+		 "qs@alreem-consultants.ae"),
+		# One in a folder somebody made, which is the whole point of mirroring
+		# them, and one in Sent — stored as Sent rather than Received, which is
+		# what `OneSpaceInboundMail` does to a message out of a Sent folder.
+		# With a remote image in it, which is what a tracking pixel is: the
+		# host is `.invalid`, reserved by RFC 2606 so it can never resolve, and
+		# the spec watches for the request rather than for a reply.
+		("Fabricator — CV and trade test", "Applicants", "Received",
+		 "<p>Six years on curtain wall, available from the 12th.</p>"
+		 '<img src="https://tracker.invalid/open.gif" width="1" height="1">', address, 30, ""),
+		("Al Reem — revised elevations", "Sent Items", "Sent",
+		 "<p>Revised sheets attached, superseding revision B.</p>", "hala@client.test", 20, ""),
+	]
+	# A Contact for the person who writes in, so the sender chip has a face and
+	# a firm to show rather than only initials — which is the difference the
+	# whole of `people.py` exists to make, and a fixture without one proves
+	# nothing about it.
+	# Filled in rather than only created. Frappe makes a Contact of its own the
+	# first time mail arrives from an address, with a first name and nothing
+	# else — so a fixture that skipped when one existed would leave the thin
+	# auto-made row in place and prove nothing about a resolved sender.
+	person = frappe.db.get_value("Contact", {"email_id": "hala@client.test"}, "name")
+	contact = frappe.get_doc("Contact", person) if person else frappe.new_doc("Contact")
+	contact.update({
+		"first_name": "Hala",
+		"last_name": "Nasser",
+		"email_id": "hala@client.test",
+		"company_name": "Al Reem Consultants",
+		"designation": "Project Manager",
+		"mobile_no": "+971 50 000 0000",
+	})
+	if not any(row.email_id == "hala@client.test" for row in contact.email_ids or []):
+		contact.append("email_ids", {"email_id": "hala@client.test", "is_primary": 1})
+	contact.save(ignore_permissions=True)
+
+	_sweep_mail({subject for subject, *_ in messages})
+
+	for subject, folder, direction, content, recipients, hours, copied in messages:
+		arrived = add_to_date(now_datetime(), hours=-hours)
+		existing = frappe.db.get_value("Communication", {"subject": subject}, "name")
+		if existing:
+			frappe.db.set_value(
+				"Communication", existing, "communication_date", arrived, update_modified=False
+			)
+			# Recipients too, for the same reason the folder is reset: a fixture
+			# row written by an older version of this file is a row that no
+			# longer says what the specs read off it.
+			frappe.db.set_value(
+				"Communication", existing, "recipients", recipients, update_modified=False
+			)
+			frappe.db.set_value(
+				"Communication", existing, "cc", copied, update_modified=False
+			)
+			# Put the folder back. The fixture is what a browser pass starts
+			# from, and that pass *files* things — a seed that only inserted
+			# would leave every conversation wherever the last run dropped it,
+			# and the next run would fail on a count nobody changed.
+			frappe.db.set_value(
+				"Communication", existing, folder_lib.FOLDER_FIELD, folder,
+				update_modified=False,
+			)
+			continue
+		frappe.get_doc({
+			"doctype": "Communication",
+			"communication_type": "Communication",
+			"communication_medium": "Email",
+			"sent_or_received": direction,
+			"subject": subject,
+			"content": content,
+			"sender": address if direction == "Sent" else "hala@client.test",
+			"sender_full_name": "Sales" if direction == "Sent" else "Hala Nasser",
+			"recipients": recipients,
+			"cc": copied,
+			"email_account": account,
+			"communication_date": arrived,
+			folder_lib.FOLDER_FIELD: folder,
+		}).insert(ignore_permissions=True)
+
+	_seed_attachment()
+	_seed_template()
+	_seed_read_state(user)
+	return address
+
+
+def _sweep_mail(fixture: set):
+	"""Everything in the mailbox that is not this fixture's four messages.
+
+	The same litter the ToDo sweep above exists for, one doctype over and never
+	swept: every browser pass sends mail, and none of it was ever removed. Sixty
+	runs later the Sent folder held sixty "Cladding schedule" rows, all newer
+	than the fixture's own, and the spec that asks whether Sent contains the
+	fixture's message failed — not because Sent was broken but because the
+	message had been pushed off the first page by the specs that ran before it.
+
+	It also removes the *duplicates* of the fixture's own subjects. Those came
+	from the same place: the insert below skips when a row with that subject
+	exists, so a run that found none inserted one, and three sat side by side
+	being grouped into one thread that quietly held three copies of everything.
+
+	Every message on a dev site is this fixture's or a test's, which is the same
+	assumption the ToDo sweep already makes.
+	"""
+	seen = set()
+	for row in frappe.get_all(
+		"Communication", fields=["name", "subject"], order_by="creation asc"
+	):
+		if row.subject in fixture and row.subject not in seen:
+			seen.add(row.subject)
+			continue
+		frappe.delete_doc("Communication", row.name, ignore_permissions=True, force=True)
+
+
+#: What the attached message is called, so a spec can name it. The *reply* —
+#: it is the one whose body says "Attached", and it is the one the reader leaves
+#: open, the earlier message in the thread being already read.
+ATTACHED = "Re: Quotation for the Al Reem tower"
+ATTACHMENT = "Al Reem cladding schedule.txt"
+
+
+def _seed_attachment():
+	"""A real file on a real message.
+
+	There were none. Every mail fixture was body text — one of them says
+	"Attached — the glazing line moved" and had nothing attached — so the
+	reader's attachment list rendered zero rows on every run, and the code that
+	drew them was never once exercised by the browser pass. It was a bare
+	anchor with no size and no preview for exactly as long as that was true.
+
+	A `.txt` and not a PDF: the Drive's previewer reads text inline, so this
+	fixture proves the whole path — chip, size, click, preview with content —
+	without a binary in the repository.
+	"""
+	message = frappe.db.get_value("Communication", {"subject": ATTACHED}, "name")
+	if not message:
+		return
+
+	# Off any message but this one. The file used to hang on the first message
+	# in the thread, which the reader now collapses — so it was attached to the
+	# one row nobody can see. Moving it in the fixture without clearing the old
+	# one would leave two.
+	for stale in frappe.get_all(
+		"File",
+		filters={"attached_to_doctype": "Communication", "file_name": ATTACHMENT},
+		pluck="name",
+	):
+		doc = frappe.get_doc("File", stale)
+		if doc.attached_to_name == message:
+			return
+		doc.delete(ignore_permissions=True)
+
+	frappe.get_doc({
+		"doctype": "File",
+		"file_name": ATTACHMENT,
+		"attached_to_doctype": "Communication",
+		"attached_to_name": message,
+		"is_private": 1,
+		"content": (
+			"Al Reem tower — cladding schedule\n"
+			"=================================\n\n"
+			"Zone 3 glazing line moved 400mm east. Everything else holds.\n"
+		),
+	}).insert(ignore_permissions=True)
+
+
+#: The template the composer offers, so the picker has something in it.
+TEMPLATE = "Delivery update"
+
+
+def _seed_template():
+	"""One message written once and sent often.
+
+	The picker only appears where there is something to pick, so a fixture
+	without a template is a fixture where that button does not exist — and the
+	browser pass would be checking that an absent control is absent.
+	"""
+	from oneapp.oneapp_core.email.templates import MARK
+
+	# Sweep first, for the reason the mailbox sweep exists: a browser pass writes
+	# one to prove the settings panel writes one, and sixty runs later the picker
+	# is a list of timestamps. Only ours — the six ERPNext and HRMS ship are not
+	# this fixture's to delete.
+	for stale in frappe.get_all("Email Template", filters={MARK: 1}, pluck="name"):
+		if stale != TEMPLATE:
+			frappe.delete_doc("Email Template", stale, force=True, ignore_permissions=True)
+
+	if frappe.db.exists("Email Template", TEMPLATE):
+		return
+
+	doc = frappe.new_doc("Email Template")
+	doc.update({
+		"subject": "Your order is on its way",
+		"response": (
+			"<p>Good morning,</p>"
+			"<p>The order left us this morning and is with the courier.</p>"
+		),
+		"use_html": 0,
+		MARK: 1,
+	})
+	doc.name = TEMPLATE
+	doc.insert(ignore_permissions=True)
+
+
+def _seed_read_state(user):
+	"""What this person has already read: the first message and nothing else.
+
+	Read state is a user default, so it survived every previous browser pass —
+	the fixture said nothing about it and each run inherited whatever the last
+	one had opened. That was harmless while the reader drew every message the
+	same way. It is not now: a read message collapses to a row and a line marks
+	where the new mail begins, so "which of these have I read" decides what the
+	screen looks like, and a fixture that leaves it to history is a fixture that
+	makes the same test pass and fail on alternate runs.
+
+	One read message out of a thread of two, deliberately: it is the only shape
+	that shows both halves at once — something collapsed above, and a marker
+	saying the rest is new.
+	"""
+	from oneapp.oneapp_core.email.mailbox.flags import SEEN_KEY
+
+	first = frappe.db.get_value(
+		"Communication", {"subject": "Quotation for the Al Reem tower"}, "name"
+	)
+	frappe.defaults.set_user_default(SEEN_KEY, first or "", user)
+
+
+def _seed_import():
+	"""A source and a plan, so the import console has something to render.
+
+	Fictional on purpose: the address is a name nobody owns and the secret is a
+	placeholder, so nothing here can reach anything. What it exercises is the
+	panel — the card, the steps in their declared order, the watermark reading
+	"not yet" before a first run, and the three buttons in the order they are
+	meant to be pressed in.
+
+	A real one lives in the app (`oneapp_core/plans/`) and is installed against
+	a customer's own credentials; this is the dev site's stand-in for it.
+	"""
+	SOURCE = "The old system"
+
+	if not frappe.db.exists("Import Source", SOURCE):
+		frappe.get_doc({
+			"doctype": "Import Source",
+			"source_name": SOURCE,
+			"base_url": "https://old.example.com",
+			"api_key": "not-a-real-key",
+			"api_secret": "not-a-real-secret",
+		}).insert(ignore_permissions=True)
+
+	PLAN = "Everything, from the old system"
+
+	if not frappe.db.exists("Import Plan", PLAN):
+		frappe.get_doc({
+			"doctype": "Import Plan",
+			"plan_name": PLAN,
+			"source": SOURCE,
+			"space_code": CODE,
+			"steps": [
+				{
+					"source_doctype": "Old Party",
+					"target_doctype": "Contact",
+					"field_map": json.dumps({"first_name": {"from": "party"}}),
+				},
+				{
+					"source_doctype": "Old Job",
+					"target_doctype": "ToDo",
+					# Second on purpose: a link resolved against a step that
+					# runs later finds nothing on every row, and the order of
+					# these rows is the order the run walks them in.
+					"field_map": json.dumps({
+						"description": {"from": "title"},
+						"reference_name": {"from": "party", "link": "Old Party"},
+					}),
+				},
+			],
+		}).insert(ignore_permissions=True)
+
+	frappe.db.commit()
+
+
+def _seed_approvals():
+	"""The submittable doctype, its workflow, and three records to move.
+
+	Made rather than borrowed, and made on the tenant only: it is a fixture for
+	the record header, and the control plane's own screens have no docstatus
+	between them.
+
+	Idempotent in the way a dev fixture has to be — the doctype is left alone if
+	it is there, and the workflow is replaced outright, because a workflow's
+	states and transitions are child tables and merging two versions of one by
+	hand is how a fixture starts lying about what it set up.
+	"""
+	if not frappe.db.exists("DocType", APPROVAL_DOCTYPE):
+		frappe.get_doc({
+			"doctype": "DocType", "name": APPROVAL_DOCTYPE, "module": "Core",
+			"custom": 1, "is_submittable": 1, "autoname": "ZZA-.#####",
+			"title_field": "title", "track_changes": 1, "allow_rename": 0,
+			"fields": [
+				{"fieldname": "title", "fieldtype": "Data", "label": "Title",
+				 "reqd": 1, "in_list_view": 1},
+				{"fieldname": "amount", "fieldtype": "Currency", "label": "Amount",
+				 "in_list_view": 1},
+				# A workflow keeps its state in a field on the document, and
+				# `read_only` because the workflow writes it — a Select somebody
+				# can set by hand is a way around every transition rule there is.
+				{"fieldname": "workflow_state", "fieldtype": "Link",
+				 "options": "Workflow State", "label": "State",
+				 "read_only": 1, "no_copy": 1, "in_list_view": 1},
+			],
+			"permissions": [{
+				"role": "System Manager", "read": 1, "write": 1, "create": 1,
+				"delete": 1, "submit": 1, "cancel": 1, "amend": 1,
+			}],
+		}).insert(ignore_permissions=True)
+
+	for state, _status, style, _role in WORKFLOW_STATES:
+		if not frappe.db.exists("Workflow State", state):
+			frappe.get_doc({
+				"doctype": "Workflow State", "workflow_state_name": state,
+				"style": style,
+			}).insert(ignore_permissions=True)
+
+	for _state, action, _next in WORKFLOW_TRANSITIONS:
+		if not frappe.db.exists("Workflow Action Master", action):
+			frappe.get_doc({
+				"doctype": "Workflow Action Master", "workflow_action_name": action,
+			}).insert(ignore_permissions=True)
+
+	if frappe.db.exists("Workflow", WORKFLOW):
+		frappe.delete_doc("Workflow", WORKFLOW, force=True, ignore_permissions=True)
+	frappe.get_doc({
+		"doctype": "Workflow", "workflow_name": WORKFLOW,
+		"document_type": APPROVAL_DOCTYPE, "is_active": 1,
+		"workflow_state_field": "workflow_state",
+		"states": [
+			{"state": state, "doc_status": status, "allow_edit": role}
+			for state, status, _style, role in WORKFLOW_STATES
+		],
+		"transitions": [
+			{
+				"state": state, "action": action, "next_state": next_state,
+				"allowed": ROLE,
+				# A dev fixture has one person in it, so self-approval has to be
+				# allowed or nothing can be moved at all. On a real workflow this
+				# is the flag that stops somebody approving their own invoice.
+				"allow_self_approval": 1,
+			}
+			for state, action, next_state in WORKFLOW_TRANSITIONS
+		],
+	}).insert(ignore_permissions=True)
+
+	# The three, and their figures put back where they belong.
+	#
+	# `amount` is not a value a fixture can leave to drift: it is what a report's
+	# totals row adds up and what a bulk change is tested on, and both of those
+	# write to it. A row skipped because it exists is a row still carrying
+	# whatever the last test that failed halfway left in it — which is a total
+	# nobody can predict and an assertion that reads as a bug in the sum.
+	KEEP = (("Office chairs", 1200), ("Server renewal", 4800), ("Team offsite", 2600))
+	made = 0
+	for title, amount in KEEP:
+		found = frappe.db.get_value(APPROVAL_DOCTYPE, {"title": title}, "name")
+		if found:
+			frappe.db.set_value(APPROVAL_DOCTYPE, found, "amount", amount,
+			                    update_modified=False)
+			continue
+		frappe.get_doc({
+			"doctype": APPROVAL_DOCTYPE, "title": title, "amount": amount,
+		}).insert(ignore_permissions=True)
+		made += 1
+
+	# And anything else, which is a test's leftover whatever it was called.
+	# The docflow tests submit and cancel records to prove a workflow moves,
+	# and every one of those stayed — showing up in a report's totals as an
+	# amount nobody in the fixture wrote. `force` is what carries a submitted
+	# document out.
+	kept = {title for title, _ in KEEP}
+	for row in frappe.get_all(APPROVAL_DOCTYPE, fields=["name", "title"]):
+		if row["title"] not in kept:
+			frappe.delete_doc(APPROVAL_DOCTYPE, row["name"],
+			                  ignore_permissions=True, force=True)
+
+	# The cache keyed on doctype, which `get_workflow_name` reads. Without this
+	# the workflow is invisible until the next process starts.
+	frappe.clear_cache()
+	return made
+
+
 def seed_control():
 	"""The manifest itself. Only the control plane has OneSpace Space."""
 	for code in (CODE, *RETIRED):
@@ -342,19 +1135,53 @@ def seed_control():
 	print(f"control plane: {CODE} with {len(SCREENS)} screens")
 
 
-def seed_tenant():
+def seed_tenant(manifest_only=False):
 	"""The tenant's cached copy, plus records to look at.
 
 	A dev site is not linked to a control plane, so the cache is written here
 	directly — the same shape `sync_from_control_plane` would have written.
+
+	`manifest_only` writes the first half and stops. The two halves are not an
+	arbitrary split: the first is *what a space is* — its screens, its theme,
+	the doctypes its role may touch — and the second is *what is in it*, plus
+	the sweeps that put a fixture back the way a browser pass found it.
+
+	Editing a manifest is the loop this exists for, and it is the loop that was
+	paying for the other half. A screen declaration, a `view_settings`, a theme
+	— none of them can be looked at without the cache being rewritten, and none
+	of them care whether the fixture has thirteen ToDos or fourteen. Records
+	are created idempotently and swept only after something has dirtied them,
+	so skipping both is not a shortcut past correctness: it is not doing work
+	whose answer has not changed.
+
+	Run the whole thing before a browser pass; run this while iterating.
 	"""
 	from oneapp.oneapp_core import sync
+
+	approvals = 0
+	mailbox = ""
+	if not manifest_only:
+		# Before the manifest is cached: the screen names a doctype, and a
+		# screen over a doctype the site does not have is skipped rather than
+		# fatal — so seeding in the other order leaves an Approvals item that
+		# quietly is not there. In `manifest_only` the doctype is already
+		# there from the last full run, which is the assumption the whole mode
+		# rests on.
+		approvals = _seed_approvals()
+		_seed_registers()
+		_seed_import()
+		mailbox = _seed_mail(frappe.session.user)
 
 	state = frappe.get_single("OneSpace Site State")
 	spaces = [
 		one for one in json.loads(state.spaces_json or "[]")
 		if one.get("space_code") not in (CODE, *RETIRED)
 	]
+	spaces = [one for one in spaces if one.get("space_code") != "rua"]
+	rua, rua_grants = _seed_rua() or (None, [])
+	if rua:
+		spaces.append(rua)
+
 	spaces.append({
 		"space_code": CODE, "space_label": LABEL, "module": "Mock",
 		"role_name": ROLE, "icon": "lucide-briefcase", "sort_order": 5,
@@ -378,7 +1205,7 @@ def seed_tenant():
 		{"role": ROLE, "doctype": grant["document_type"],
 		 "access": grant["access"], "if_owner": grant["if_owner"]}
 		for grant in DOCTYPES
-	])
+	] + rua_grants)
 	user = frappe.get_doc("User", frappe.session.user)
 	if ROLE not in {r.role for r in user.roles}:
 		user.append("roles", {"role": ROLE})
@@ -399,11 +1226,27 @@ def seed_tenant():
 		colleague.append("roles", {"role": ROLE})
 		colleague.save(ignore_permissions=True)
 
+	if manifest_only:
+		# The same last-call-wins reason the full run ends with one: everything
+		# above reads the site state, and any one of those reads repopulates
+		# the cache from a document this process had already loaded.
+		sync.invalidate()
+		print(f"tenant: {CODE} and rua re-declared — manifest, roles and permissions only")
+		return
+
 	for role in RETIRED_ROLES:
-		if frappe.db.exists("Role", role):
-			for perm in frappe.get_all("Custom DocPerm", filters={"role": role}, pluck="name"):
-				frappe.delete_doc("Custom DocPerm", perm, force=True, ignore_permissions=True)
-			frappe.delete_doc("Role", role, force=True, ignore_permissions=True)
+		if not frappe.db.exists("Role", role):
+			continue
+		for perm in frappe.get_all("Custom DocPerm", filters={"role": role}, pluck="name"):
+			frappe.delete_doc("Custom DocPerm", perm, force=True, ignore_permissions=True)
+		# The people who hold it, first. `force` skips the link check, so
+		# deleting the Role alone leaves a `Has Role` row pointing at nothing —
+		# and the next thing to save that User fails on it. Which is not a
+		# theoretical failure: installing ERPNext saves Administrator, and it
+		# died here with "Could not find Row #30: Role: OneSpace Tasks".
+		for held in frappe.get_all("Has Role", filters={"role": role}, pluck="name"):
+			frappe.delete_doc("Has Role", held, force=True, ignore_permissions=True)
+		frappe.delete_doc("Role", role, force=True, ignore_permissions=True)
 
 	for doctype, fieldname, prop, value, prop_type in PROPERTIES:
 		frappe.make_property_setter({
@@ -490,9 +1333,25 @@ def seed_tenant():
 		frappe.get_doc({"doctype": "Note", **row}).insert(ignore_permissions=True)
 
 	for row in EVENTS:
-		if frappe.db.exists("Event", {"subject": row["subject"]}):
+		row, owner = {k: v for k, v in row.items() if k != "__owner"}, row.get("__owner")
+		found = frappe.db.exists("Event", {"subject": row["subject"]})
+		if found:
+			# The dates and nothing else. These move with the month — the
+			# calendar opens on today's and a fixture pinned to whenever it was
+			# first seeded is one that drifts off the grid — and a site seeded
+			# in a previous month would otherwise keep the old ones forever,
+			# because "it exists" used to be the end of it.
+			doc = frappe.get_doc("Event", found)
+			doc.starts_on = row["starts_on"]
+			doc.ends_on = row.get("ends_on")
+			doc.save(ignore_permissions=True)
+			if owner:
+				frappe.db.set_value("Event", found, "owner", owner)
 			continue
-		frappe.get_doc({"doctype": "Event", **row}).insert(ignore_permissions=True)
+		made = frappe.get_doc({"doctype": "Event", **row})
+		made.insert(ignore_permissions=True)
+		if owner:
+			frappe.db.set_value("Event", made.name, "owner", owner)
 
 	pictures = _write_pictures()
 	for row in CONTACTS:
@@ -585,6 +1444,20 @@ def seed_tenant():
 		# as a cache, and refreshing it must not move `modified`.
 		frappe.db.sql(f"update `tab{doctype}` set `_comments` = '[]'")
 
+	# And the hearts, for the same reason one step further on. Several specs
+	# press one and press it again to put it back; a run that fails between the
+	# two leaves the record favourited, and the next run's first attempt then
+	# looks for "Add to favourites" on a control that now says "Remove from
+	# favourites". It fails, retries, and the retry passes because the retry
+	# toggled it — which reads as flakiness and is bookkeeping. Ten of those in
+	# one pass is what sent me looking.
+	#
+	# `_liked_by` is a cache column beside the document like `_comments`, so it
+	# is written the same way and must not move `modified` either.
+	for doctype in ("ToDo", "Note", "Event", "Contact"):
+		if frappe.db.exists("DocType", doctype):
+			frappe.db.sql(f"update `tab{doctype}` set `_liked_by` = NULL")
+
 	for layout in LAYOUTS:
 		where = {"space_code": CODE, "screen": layout["screen"], "label": layout["label"]}
 		found = frappe.db.exists("OneSpace Saved View", where)
@@ -611,16 +1484,28 @@ def seed_tenant():
 	print(
 		f"tenant: {CODE} cached — {len(TODOS)} todos, {len(NOTES)} notes, "
 		f"{BACKLOG} backlog rows, {len(LAYOUTS)} shared views, "
+		f"{approvals} approvals under {WORKFLOW}, "
+		f"a conversation on {mailbox}, "
 		f"and {COLLEAGUE} to share them with"
 	)
 
 
 if __name__ == "__main__":
+	import sys
+
+	# `--manifest` is the iteration loop: re-declare the space and stop, which
+	# is everything a screen, a `view_settings` or a theme edit needs and about
+	# a tenth of the work. The full run is what a browser pass wants, because
+	# only the full run sweeps up after the last one.
+	manifest_only = "--manifest" in sys.argv[1:]
+
 	# Which site this is, by what it has: only the control plane defines the
 	# manifest doctype, and only a tenant has the cached copy.
 	if frappe.db.exists("DocType", "OneSpace Space"):
+		# The control plane *is* the manifest, so there is no half of it to
+		# skip and the flag is simply not its business.
 		seed_control()
 	elif frappe.db.exists("DocType", "OneSpace Site State"):
-		seed_tenant()
+		seed_tenant(manifest_only=manifest_only)
 	else:
 		raise SystemExit("neither a control-plane nor a tenant site")

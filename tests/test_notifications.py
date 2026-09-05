@@ -3,7 +3,7 @@
 The store is Frappe's own — Notification Log, Notification Settings,
 Notification Type — so what is pinned here is only the part that is ours: where
 a notification goes, who a workspace notice reaches, and the watermark that
-makes the control plane's half exactly-once. See `docs/NOTIFICATIONS.md`.
+makes the control plane's half exactly-once. See `docs/ONESPACE.md`.
 """
 
 import sys
@@ -214,6 +214,25 @@ def test_only_a_doctype_that_reports_its_changes_can_be_followed(notifications, 
 	# A log of what happened is not a thing that happens.
 	assert not notifications.followable("Error Log")
 	assert not notifications.followable("")
+
+
+def test_a_ref_doctype_that_is_not_a_doctype_is_answered_rather_than_raised(
+	notifications, stub_frappe, monkeypatch
+):
+	"""`Version` is written against `Series` when a naming counter moves.
+
+	Frappe's own naming settings page does it, with `ignore_links` set exactly
+	because Series is not a real doctype — so the `after_insert` hook this
+	module registers runs with a `ref_doctype` that `get_meta` cannot resolve.
+	Letting that raise took the whole insert down with it, which meant moving a
+	series counter failed on every site this app is installed on.
+	"""
+	def missing(doctype):
+		raise stub_frappe.DoesNotExistError(f"DocType {doctype} not found")
+
+	monkeypatch.setattr(stub_frappe, "get_meta", missing)
+
+	assert not notifications.followable("Series")
 
 
 def test_followers_are_resolved_to_emails_and_rechecked_against_the_record(

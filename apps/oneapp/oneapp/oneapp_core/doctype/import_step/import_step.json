@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "source_doctype",
+  "target_doctype",
+  "enabled",
+  "cb_step_shape",
+  "field_map",
+  "filters",
+  "carry_files",
+  "carry_file_fields",
+  "fan_out",
+  "sec_step_state",
+  "watermark",
+  "cb_step_state",
+  "last_run",
+  "notes"
+ ],
+ "fields": [
+  {
+   "description": "What to read on the source site.",
+   "fieldname": "source_doctype",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Source Doctype",
+   "reqd": 1
+  },
+  {
+   "description": "What to write here. Usually an ERPNext or HRMS doctype: the point of the move is that it stops being bespoke.",
+   "fieldname": "target_doctype",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Target Doctype",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "cb_step_shape",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "What each target field is made of, keyed by target fieldname. See `oneapp_core/importer.py`.",
+   "fieldname": "field_map",
+   "fieldtype": "Code",
+   "label": "Field Map",
+   "options": "JSON",
+   "reqd": 1
+  },
+  {
+   "description": "Narrow what comes across, in Frappe's own filter shape. Applied on the source site, so what is excluded is never fetched.",
+   "fieldname": "filters",
+   "fieldtype": "Code",
+   "label": "Filters",
+   "options": "JSON"
+  },
+  {
+   "default": "0",
+   "description": "Bring across everything attached to each row and attach it here. One request per row and one download per file, so it is opt-in per step.",
+   "fieldname": "carry_files",
+   "fieldtype": "Check",
+   "label": "Carry Files"
+  },
+  {
+   "description": "Source fields that hold a path to a file rather than a value, comma separated. The file is fetched and attached here \u2014 for the picture somebody chose rather than uploaded, which is attached to nothing over there.",
+   "fieldname": "carry_file_fields",
+   "fieldtype": "Small Text",
+   "label": "Carry File Fields"
+  },
+  {
+   "description": "Where one source row is several records. `{\"from\": \"attendance_log\", \"shape\": \"map\"}` makes one record per key; `\"list\"` makes one per item. Each gets the parent's fields with its own merged over them and `__key` holding what it came in under.",
+   "fieldname": "fan_out",
+   "fieldtype": "Code",
+   "label": "Fan Out",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "sec_step_state",
+   "fieldtype": "Section Break",
+   "label": "Where it got to"
+  },
+  {
+   "description": "The newest `modified` this step has taken across. The next run asks the source only for what changed after it. Clear it to import everything again.",
+   "fieldname": "watermark",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Watermark",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_step_state",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_run",
+   "fieldtype": "Link",
+   "label": "Last Run",
+   "options": "Import Run",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "Import Step",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -3,7 +3,7 @@
 The store is Frappe's in both cases — `_user_tags` plus `Tag Link` for one,
 `DocShare` for the other — so what is pinned here is the shaping, the bounds
 and the two refusals that would otherwise have made a control that does
-nothing. See `docs/SPACES.md`, "Tags and sharing".
+nothing. See `docs/ONESPACE.md`, "Tags and sharing".
 """
 
 import types

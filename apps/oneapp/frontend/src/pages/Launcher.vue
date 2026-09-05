@@ -1,11 +1,14 @@
 <template>
+  <!--
+    A trail of one, which is the same thing every other surface's header is:
+    the workspace name it used to carry as a second line is in the rail's own
+    header now, and two lines here made this the one page whose content
+    started lower than the rest.
+  -->
   <PageHeader>
-    <div>
-      <span class="text-base-medium text-ink-gray-8">Your spaces</span>
-      <p class="text-p-sm text-ink-gray-5">
-        Everything enabled for {{ session.tenant?.name || 'this workspace' }}.
-      </p>
-    </div>
+    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
+      <Breadcrumbs :items="[{ label: 'Spaces', route: { name: 'Launcher' } }]" />
+    </nav>
   </PageHeader>
 
   <div class="p-5">
@@ -45,7 +48,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { PageHeader, Avatar, LoadingIndicator } from '@/ui'
+import { Breadcrumbs, PageHeader, Avatar, LoadingIndicator } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import { session } from '../lib/session'
 

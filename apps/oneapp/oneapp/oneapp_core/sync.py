@@ -56,6 +56,24 @@ def state() -> dict:
 	return data
 
 
+def granted_doctypes() -> set[str]:
+	"""Every doctype this workspace's own screens show.
+
+	The one answer to "what may this workspace reach", read off the manifest
+	the rail is built from — so a space enabled today brings its doctypes with
+	it and one revoked takes them away. Naming and printing both ask it, and
+	both mean the same thing by it: a settings page that offered every doctype
+	on the site would be offering the platform's own bookkeeping to break.
+	"""
+	found = set()
+	for space in state().get("spaces") or []:
+		for screen in space.get("screens") or []:
+			name = (screen.get("document_type") or "").strip()
+			if name:
+				found.add(name)
+	return found
+
+
 def local_spaces() -> list:
 	"""Spaces this site provides itself, rather than being told about.
 
@@ -167,9 +185,11 @@ def sync_from_control_plane() -> dict:
 	books = sync_books(payload.get("books"))
 	sync_ai(payload.get("ai") or {}, credits)
 	notices = sync_notices(payload.get("notices") or [], payload.get("owner_role"))
+	fixtures = sync_screen_fixtures(_spaces(payload))
 
 	return {
 		"ok": True,
+		"fixtures": fixtures,
 		"spaces": len(_spaces(payload)),
 		"owner_created": created,
 		"members_created": people["created"],
@@ -177,6 +197,150 @@ def sync_from_control_plane() -> dict:
 		"books": books,
 		"notices": notices,
 	}
+
+
+# --------------------------------------------------------------------------- #
+# What a space brings with it besides its screens
+#
+# A screen may declare the series its doctype is named by and the print formats
+# it ships; a space may declare the Custom Fields its screens read. All three
+# are *fixtures*: applied the first time they are seen and never again. That is
+# the whole design, and it is the opposite of everything else in this module —
+# roles, permissions and members are reconciled every sync, because the control
+# plane owns them.
+#
+# These it does not. A series prefix and a print format are things a workspace
+# edits, under Settings, once the app has given it somewhere to start. Applying
+# them on every sync would silently undo an afternoon's work every fifteen
+# minutes, and a customer whose invoice format keeps reverting has no way at all
+# of finding out why.
+# --------------------------------------------------------------------------- #
+
+
+def sync_screen_fixtures(spaces: list) -> dict:
+	"""Apply the fixtures a space brings: custom fields, series, print formats.
+
+	Nothing here is fatal. A space that names a doctype this site does not have
+	is a space whose app is not installed yet, which is ordinary; a format whose
+	layout will not parse is one bad row rather than a failed sync.
+	"""
+	series = formats = fields = 0
+	for space in spaces or []:
+		fields += _seed_custom_fields(space.get("custom_fields"))
+		for screen in space.get("screens") or []:
+			doctype = (screen.get("document_type") or "").strip()
+			if not doctype or not frappe.db.exists("DocType", doctype):
+				continue
+			series += _seed_series(doctype, screen.get("naming_series"))
+			formats += _seed_formats(doctype, screen.get("print_formats"),
+			                         space.get("module"))
+	if series or formats or fields:
+		frappe.db.commit()
+	return {"series": series, "formats": formats, "fields": fields}
+
+
+def _seed_custom_fields(declared) -> int:
+	"""The fields a space's screens read that the doctype does not ship.
+
+	Made once each and then left alone, which is the same rule as everything
+	else here and matters more: a workspace widens a field, adds a description,
+	moves it up the form or hides it, and every one of those is a Custom Field
+	edit that reapplying would undo.
+
+	Skipped rather than fatal where the doctype is absent. A space is only
+	granted onto a site whose bench carries what it needs — `requires_apps` on
+	the control plane refuses the rest — but an app can be installing while this
+	runs, and the next sync is fifteen minutes away.
+	"""
+	rows = frappe.parse_json(declared) if isinstance(declared, str) else declared
+	if not isinstance(rows, list):
+		return 0
+
+	made = 0
+	for row in rows:
+		if not isinstance(row, dict):
+			continue
+		doctype = str(row.get("dt") or "").strip()
+		fieldname = str(row.get("fieldname") or "").strip()
+		if not doctype or not fieldname or not frappe.db.exists("DocType", doctype):
+			continue
+		if frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": fieldname}):
+			continue
+		try:
+			frappe.get_doc({"doctype": "Custom Field", **row}).insert(ignore_permissions=True)
+		except Exception as raised:
+			frappe.clear_last_message()
+			frappe.log_error(title=f"OneSpace: custom field {doctype}.{fieldname}",
+			                 message=str(raised))
+			continue
+		made += 1
+	return made
+
+
+def _seed_series(doctype: str, declared) -> int:
+	"""The prefixes a doctype is named by, if nobody has set any yet.
+
+	"Yet" is read off the field's own options rather than off a marker of ours:
+	a `naming_series` field arrives from its app with whatever that app put
+	there, and a workspace that has since chosen its own has a Property Setter
+	saying so. Either way there is something to compare against, and neither is
+	ours to overwrite.
+	"""
+	wanted = [one.strip() for one in str(declared or "").split("\n") if one.strip()]
+	if not wanted:
+		return 0
+
+	meta = frappe.get_meta(doctype)
+	if not meta.get_field("naming_series"):
+		return 0
+	if frappe.db.exists("Property Setter", {
+		"doc_type": doctype, "field_name": "naming_series", "property": "options",
+	}):
+		return 0
+
+	try:
+		settings = frappe.get_doc("Document Naming Settings")
+		settings.transaction_type = doctype
+		settings.naming_series_options = "\n".join(wanted)
+		settings.update_series()
+	except Exception as raised:
+		frappe.clear_last_message()
+		frappe.log_error(title=f"OneSpace: naming series for {doctype}",
+		                 message=str(raised))
+		return 0
+	return 1
+
+
+def _seed_formats(doctype: str, declared, module: str | None) -> int:
+	"""The print formats a space ships, each created once if it is missing."""
+	from oneapp.oneapp_core import printing
+
+	rows = frappe.parse_json(declared) if isinstance(declared, str) else declared
+	if not isinstance(rows, list):
+		return 0
+
+	made = 0
+	for row in rows[:printing.FORMATS]:
+		if not isinstance(row, dict):
+			continue
+		name = str(row.get("name") or "").strip()[:140]
+		if not name or frappe.db.exists("Print Format", name):
+			continue
+		try:
+			printing.save_format(doctype, name, row.get("layout") or {},
+			                     row.get("setup") or {})
+			if module and frappe.db.exists("Module Def", module):
+				frappe.db.set_value("Print Format", name, "module", module,
+				                    update_modified=False)
+			if row.get("default"):
+				printing.set_default(doctype, name)
+		except Exception as raised:
+			frappe.clear_last_message()
+			frappe.log_error(title=f"OneSpace: print format {name}",
+			                 message=str(raised))
+			continue
+		made += 1
+	return made
 
 
 def sync_notices(notices: list, owner_role: str | None) -> int:

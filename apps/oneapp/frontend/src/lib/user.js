@@ -35,3 +35,15 @@ export const user = computed(() => currentUser.data || {})
 export const fullName = computed(() => user.value.full_name || user.value.name || '')
 export const userImage = computed(() => user.value.user_image || '')
 export const email = computed(() => user.value.name || '')
+
+/**
+ * Sign out, through Frappe rather than around it.
+ *
+ * A client-side redirect leaves the session cookie valid, so the next request
+ * from that browser is still signed in — which is why this is a location change
+ * to the framework's own endpoint and not a router push. Three components had
+ * their own copy of this line, each with its own copy of this paragraph.
+ */
+export function signOut() {
+  window.location.href = '/api/method/logout'
+}

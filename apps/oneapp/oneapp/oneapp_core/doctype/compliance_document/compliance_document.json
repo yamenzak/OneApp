@@ -1,0 +1,227 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:CD-{YY}-{#####}",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "category",
+  "document_number",
+  "cb_doc_dates",
+  "issue_date",
+  "expiry_date",
+  "status",
+  "sec_cd_about",
+  "about_doctype",
+  "about",
+  "cb_cd_issue",
+  "issued_by",
+  "place_of_issue",
+  "sec_cd_warning",
+  "h_cd_warning",
+  "note_cd_warning",
+  "remind_days",
+  "reminded_on",
+  "cb_cd_renewal",
+  "renews",
+  "renewed_by",
+  "sec_cd_file",
+  "file",
+  "notes"
+ ],
+ "fields": [
+  {
+   "description": "What the paper is called: Trade Licence, Residence Visa.",
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Category",
+   "options": "\nLicence\nVisa\nPermit\nRegistration\nInsurance\nCertificate\nContract\nIdentity\nOther"
+  },
+  {
+   "fieldname": "document_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Document Number"
+  },
+  {
+   "fieldname": "cb_doc_dates",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "issue_date",
+   "fieldtype": "Date",
+   "label": "Issue Date"
+  },
+  {
+   "description": "Empty is a document that does not expire \u2014 an academic certificate, a deed. It is not the same as unknown, and the status says so.",
+   "fieldname": "expiry_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Expiry Date"
+  },
+  {
+   "default": "No expiry",
+   "description": "Worked out from the expiry date and the warning window, on save and once a day. Never typed: a status somebody can set is a status that disagrees with the date beside it.",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Expired\nExpiring\nNo expiry\nValid",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_cd_about",
+   "fieldtype": "Section Break",
+   "label": "What it belongs to"
+  },
+  {
+   "description": "Anything on this site: an employee, a company, a vehicle, a project.",
+   "fieldname": "about_doctype",
+   "fieldtype": "Link",
+   "label": "Belongs to",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "about",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Which one",
+   "options": "about_doctype"
+  },
+  {
+   "fieldname": "cb_cd_issue",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The authority that issued it.",
+   "fieldname": "issued_by",
+   "fieldtype": "Data",
+   "label": "Issued By"
+  },
+  {
+   "fieldname": "place_of_issue",
+   "fieldtype": "Data",
+   "label": "Place Of Issue"
+  },
+  {
+   "fieldname": "sec_cd_warning",
+   "fieldtype": "Section Break",
+   "label": "Warning"
+  },
+  {
+   "fieldname": "h_cd_warning",
+   "fieldtype": "Heading",
+   "label": "Before it lapses"
+  },
+  {
+   "fieldname": "note_cd_warning",
+   "fieldtype": "HTML",
+   "label": "",
+   "options": "<p>The warning goes to whoever is <b>following</b> this document, once \u2014 not every morning until somebody acts, which is how people learn to ignore it.</p>"
+  },
+  {
+   "default": "30",
+   "description": "How long before the expiry this starts saying so. Thirty days is a month to renew a licence; a visa wants more.",
+   "fieldname": "remind_days",
+   "fieldtype": "Int",
+   "label": "Warn this many days ahead"
+  },
+  {
+   "description": "When the last warning went out. Kept so a daily job warns once and not every morning until somebody acts, which is how people learn to ignore it.",
+   "fieldname": "reminded_on",
+   "fieldtype": "Date",
+   "label": "Reminded On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_cd_renewal",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The document this one replaces. The old one is kept: an expired licence is still what you were trading under last year.",
+   "fieldname": "renews",
+   "fieldtype": "Link",
+   "label": "Renews",
+   "options": "Compliance Document"
+  },
+  {
+   "description": "Filled in on the old document when a new one names it.",
+   "fieldname": "renewed_by",
+   "fieldtype": "Link",
+   "label": "Renewed By",
+   "options": "Compliance Document",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_cd_file",
+   "fieldtype": "Section Break",
+   "label": "The document itself"
+  },
+  {
+   "fieldname": "file",
+   "fieldtype": "Attach",
+   "label": "Scan"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "Compliance Document",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "title,document_number,about",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Red",
+   "title": "Expired"
+  },
+  {
+   "color": "Orange",
+   "title": "Expiring"
+  },
+  {
+   "color": "Gray",
+   "title": "No expiry"
+  },
+  {
+   "color": "Green",
+   "title": "Valid"
+  }
+ ],
+ "title_field": "title",
+ "track_changes": 1
+}

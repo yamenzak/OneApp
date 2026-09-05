@@ -230,6 +230,7 @@ def refresh_usage():
 
 @frappe.whitelist()
 def bucket_report() -> list[dict]:
+	"""What each tenant's bucket holds, for the console's storage panel."""
 	if "System Manager" not in frappe.get_roles():
 		frappe.throw(_("Not permitted."), frappe.PermissionError)
 

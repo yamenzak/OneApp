@@ -155,6 +155,24 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		"oneapp.oneapp_core.sync.report_usage_to_control_plane",
 		"oneapp.oneapp_core.backup.scheduled_backup",
 		"oneapp.oneapp_core.storage.quota.refresh_database_verdict",
+		# Correct on any site, and ungated on purpose: the control plane keeps
+		# no Compliance Documents, so the sweep reads an empty table and stops.
+		# Gating it would be a branch that exists to say "there is nothing here"
+		# where an empty query already says it.
+		"oneapp.oneapp_core.expiry.sweep",
+		# Same shape as the sweep and ungated for the same reason: the control
+		# plane holds no Email Accounts with an away date on them, so this
+		# reads an empty table. A branch to say so would say less than the
+		# empty query already does.
+		"oneapp.oneapp_core.email.rules.expire_away",
+		# And the same again for the bin. The control plane's own files are the
+		# operator console's, nobody throws one away there, and a query for
+		# what has been trashed thirty days comes back empty — which is the
+		# answer, not a case to branch on.
+		"oneapp.oneapp_core.drive.sweep_trash",
+		# Same again: the control plane holds no share links, so this reads an
+		# empty table and says so by coming back with nothing.
+		"oneapp.oneapp_core.drive.sweep_links",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "

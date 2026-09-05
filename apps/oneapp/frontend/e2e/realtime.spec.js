@@ -95,9 +95,18 @@ test.describe('realtime', () => {
 
     // And a save in the other browser says so here rather than doing anything
     // about it: the reader may be halfway through typing.
+    //
+    // The value is the one it is *not* on, because Save is offered only while
+    // there is something to save. Picking a fixed value meant the second run of
+    // this test set Priority to what it already was, made no change, and waited
+    // for a button that had nothing to do.
     const pane = secondPage.locator('[data-slot="record-pane"]')
-    await pane.getByLabel('Priority', { exact: true }).click()
-    await secondPage.getByRole('option', { name: 'Low', exact: true }).click()
+    const priority = pane.getByLabel('Priority', { exact: true })
+    const now = (await priority.textContent())?.trim()
+    await priority.click()
+    await secondPage
+      .getByRole('option', { name: now === 'Low' ? 'Medium' : 'Low', exact: true })
+      .click()
     await pane.getByRole('button', { name: 'Save' }).click()
 
     await expect(

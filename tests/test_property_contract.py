@@ -30,9 +30,9 @@ import re
 from pathlib import Path
 
 import pytest
+import spaceview_source
 
 ROOT = Path(__file__).resolve().parent.parent
-SPACEVIEW = ROOT / "apps/oneapp/oneapp/oneapp_core/spaceview.py"
 
 # Set by at least one doctype of ours, and therefore exercised whenever the
 # operator console renders. These are the ones a regression would show up in.
@@ -93,7 +93,7 @@ DOCTYPE_THEIRS = {
 
 
 def read(pattern: str) -> set:
-	source = SPACEVIEW.read_text()
+	source = spaceview_source.source()
 	return set(re.findall(pattern, source))
 
 

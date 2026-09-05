@@ -47,7 +47,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Avatar, Button, LoadingIndicator } from '@/ui'
+import { Avatar, LoadingIndicator } from '@/ui'
 import WorkspaceBar from './WorkspaceBar.vue'
 import { useWorkspace } from './workspace'
 import EmptyState from '../../components/EmptyState.vue'
@@ -65,5 +65,4 @@ const workspace = useWorkspace()
 const resource = useApps(workspace)
 const data = computed(() => resource.data)
 
-const open = () => window.open(data.value.workspace_url, '_blank', 'noopener')
 </script>

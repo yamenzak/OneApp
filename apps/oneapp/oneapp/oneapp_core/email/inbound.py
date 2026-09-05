@@ -17,6 +17,8 @@ import json
 import frappe
 from frappe import _
 
+from oneapp.oneapp_core.email import rules
+
 from oneapp.oneapp_core import control_client
 
 MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024
@@ -57,6 +59,11 @@ def _verify() -> dict:
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def receive():
+	"""One inbound message, POSTed by the Cloudflare Worker.
+
+	Guest-callable by necessity — the Worker holds no session — so the signature
+	is the whole of the authentication, and a message already stored is answered
+	as a duplicate rather than filed twice."""
 	payload = _verify()
 
 	message_id = payload.get("message_id")
@@ -68,10 +75,91 @@ def receive():
 	to = (payload.get("to") or "").lower()
 	local_part = to.split("@")[0] if "@" in to else to
 
+	# A workspace's own address wins over the built-in handlers, and that order
+	# matters: `sales@` is a lead handler here and is also the first shared
+	# address every workspace makes. Somebody who created it and granted it to
+	# three people means "put it where those three can read it", not "guess".
+	account = _account_for(to)
+	if account:
+		return {"ok": True, "local_part": local_part, **handle_address(payload, account)}
+
 	handler = HANDLERS.get(local_part, handle_generic)
 	result = handler(payload)
 
 	return {"ok": True, "local_part": local_part, **(result or {})}
+
+
+def _account_for(to: str):
+	"""The workspace address this was sent to, if it is one.
+
+	Matched on the whole address rather than the local part: the domain carries
+	the tenant slug, so a message that reached this site is already known to be
+	for this workspace, and comparing the whole thing costs nothing and cannot
+	be fooled by a Worker bug into filing `sales@other.4dl.app` here.
+	"""
+	if not to:
+		return None
+	name = frappe.db.get_value("Email Account", {"email_id": to}, "name")
+	return frappe.get_doc("Email Account", name) if name else None
+
+
+def handle_address(payload: dict, account) -> dict:
+	"""Mail to an address somebody in this workspace holds.
+
+	Two things happen that the function handlers do not do.
+
+	It files against whatever the address says to file against. `append_to` is
+	Frappe's own field for this and it is what makes `ap@` land on a Purchase
+	Invoice rather than nowhere — an address a manager made can say the same
+	thing without a line of code.
+
+    And it is *shared* with whoever holds the address. A Communication is an
+	ordinary document with ordinary permissions, so without this the mail
+	arrives and only an administrator can read it. `DocShare` is the framework's
+	own answer and the one the timeline, the search and the list all already
+	respect; a permission system of our own beside it would be two systems
+	disagreeing about the same row.
+	"""
+	name = _communication(payload, reference_doctype=account.append_to or None)
+
+	holders = frappe.get_all(
+		"User Email", filters={"email_account": account.name}, pluck="parent", distinct=True
+	)
+	for user in holders:
+		_share(name, user)
+
+	# And then whatever this address's owner decided should happen to mail like
+	# this. After it is stored and shared, never before: a rule that threw while
+	# the message was half-written would lose the message, and losing mail to a
+	# filing rule is the worst trade there is.
+	filed = {}
+	try:
+		filed = rules.apply_to(frappe.get_doc("Communication", name), account.email_id)
+	except Exception:
+		frappe.log_error(title=f"A mail rule failed on {account.email_id}")
+
+	return {
+		"communication": name,
+		"account": account.name,
+		"shared_with": len(holders),
+		**filed,
+	}
+
+
+def _share(communication: str, user: str):
+	"""Let one person read one message.
+
+	Read and not write: mail that arrived is a record of what arrived, and an
+	inbox is not a place to edit what somebody sent you.
+	"""
+	try:
+		frappe.share.add(
+			"Communication", communication, user, read=1, write=0, share=0, flags={"ignore_share_permission": True}
+		)
+	except Exception:
+		# One person's share failing must not lose the message for everybody
+		# else — and the most likely cause is a User row that has gone.
+		frappe.log_error(title="Inbound share failed", message=frappe.get_traceback())
 
 
 def _communication(payload: dict, reference_doctype=None, reference_name=None) -> str:
@@ -151,6 +239,19 @@ def handle_generic(payload: dict) -> dict:
 	return {"communication": _communication(payload), "queue": "generic"}
 
 
+def handle_bounce(payload: dict) -> dict:
+	"""A delivery report. Never filed as correspondence — see `suppression`."""
+	from oneapp.oneapp_core.email import suppression
+
+	return {"queue": "bounce", **suppression.handle_bounce(payload)}
+
+
+def handle_complaint(payload: dict) -> dict:
+	from oneapp.oneapp_core.email import suppression
+
+	return {"queue": "complaint", **suppression.handle_complaint(payload)}
+
+
 HANDLERS = {
 	"ap": handle_supplier_invoice,
 	"invoices": handle_supplier_invoice,
@@ -158,6 +259,13 @@ HANDLERS = {
 	"help": handle_support,
 	"leads": handle_lead,
 	"sales": handle_lead,
+	# The two that are machinery rather than mail. A bounce filed as a
+	# Communication is a customer opening their inbox to find a delivery report
+	# from a mail server, which reads as a bug in our product and is one.
+	"bounce": handle_bounce,
+	"bounces": handle_bounce,
+	"abuse-report": handle_complaint,
+	"complaints": handle_complaint,
 }
 
 
