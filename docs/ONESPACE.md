@@ -293,6 +293,16 @@ One scroller, not two nested: a separate horizontal wrapper leaves the header a
 scrollbar's width out of true with its rows. A guard fails the build on the
 two-wrapper shape.
 
+A column carries four answers, all the reader's and all saved with the view:
+where it sits, which edge it sticks to, **which edge its values sit against**,
+and how wide. Alignment is logical — `start` and `end`, never left and right —
+because this product draws Arabic beside English in one list, and a column
+aligned "left" in a right-to-left screen is aligned to the wrong side of the
+words in it. The default is a fourth value rather than a fifth option: *the
+fieldtype decides*, which is a number against the end and everything else at
+the start. The header takes the alignment with the cells; a right-aligned
+column under a left-aligned heading reads as two columns.
+
 Pinned columns, an edge wash that says there is more, a footer of Load more and
 "48 of 1,240" — which is also the page-size control, because how many are shown
 and how many to fetch are one question — and windowing past two hundred rows.

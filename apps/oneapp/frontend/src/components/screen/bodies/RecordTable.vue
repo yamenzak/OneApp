@@ -294,7 +294,11 @@ const rowInset = computed(() => (props.selectable ? 'list-row-px-3' : 'px-3'))
 // utility, so `align === 'end' ? …` offered it `end` as a class name and it
 // rightly said that emits no CSS.
 const RIGHT = 'justify-end'
-const aligned = (c) => (c.align === 'end' ? RIGHT : '')
+// Logical, so a column of Arabic aligns to the side its words start on. The
+// header takes the same class as the cells: a right-aligned column with a
+// left-aligned heading reads as two columns.
+const ALIGNED = { end: RIGHT, center: 'justify-center text-center' }
+const aligned = (c) => ALIGNED[c.align] || ''
 
 const PINNED = 'sticky z-10 bg-surface-base'
 

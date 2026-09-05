@@ -196,10 +196,12 @@ const visible = computed(() => {
     width: column.width,
     pin: column.pin,
     sortable: column.fieldname !== META_FIELD,
-    // A number belongs against the right edge of its column, and a total
-    // belongs under the numbers it adds up. `ChildTable` has done this since it
-    // was written and said in a comment that the list did too; it did not.
-    align: isNumericCell(column.cell) ? 'end' : '',
+    // Where the values sit. The reader's own answer where they gave one, and
+    // otherwise the fieldtype's: a number belongs against the end of its
+    // column, and a total belongs under the numbers it adds up. The default
+    // lives here rather than on the server because this is where the cell map
+    // that knows which fieldtypes are numbers already is.
+    align: column.align || (isNumericCell(column.cell) ? 'end' : ''),
     cell:
       column.fieldname === META_FIELD
         ? 'meta'

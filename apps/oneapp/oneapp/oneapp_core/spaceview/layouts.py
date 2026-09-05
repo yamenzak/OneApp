@@ -110,11 +110,14 @@ def save_layout(space_code: str, screen: str, filters: str | list | dict | None 
 		"screen": screen,
 		"filters": json.dumps(filters),
 		"order_by": _safe_order(resolved, order_by or "") if order_by else "",
-		# JSON now: a column carries a width and a pin, and a comma-separated
-		# list of fieldnames has nowhere to put either. The old shape is still
-		# read — see `_placed` — because views saved then are still on disk.
+		# JSON now: a column carries a width, a pin and which edge its values
+		# sit against, and a comma-separated list of fieldnames has nowhere to
+		# put any of them. The old shape is still read — see `_placed` —
+		# because views saved then are still on disk, and a view saved before
+		# alignment existed simply has none, which is the default.
 		"columns": json.dumps([
-			{"fieldname": c["fieldname"], "width": c["width"], "pin": c["pin"]}
+			{"fieldname": c["fieldname"], "width": c["width"], "pin": c["pin"],
+			 "align": c.get("align") or ""}
 			for c in columns
 		]),
 		"page_length": _page_length(page_length),

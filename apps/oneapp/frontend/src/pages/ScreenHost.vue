@@ -1130,6 +1130,9 @@ const load = async (openWith, carry = null) => {
       fieldname: c.fieldname,
       width: c.width,
       pin: c.pin,
+      // Empty where nobody has said, which means the fieldtype decides. See
+      // `ListBody`'s `visible`.
+      align: c.align || '',
     }))
     favourites.value = !!spec.value?.saved?.favourites
     groupBy.value = spec.value?.saved?.group_by || ''

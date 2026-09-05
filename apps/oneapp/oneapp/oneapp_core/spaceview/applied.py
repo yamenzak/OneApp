@@ -91,7 +91,8 @@ def _apply_saved(resolved: dict, layout: str | None = None) -> dict:
 		"view_settings": kept_settings,
 		"order_by": saved.get("order_by") or "",
 		"columns": [
-			{"fieldname": c["fieldname"], "width": c["width"], "pin": c["pin"]}
+			{"fieldname": c["fieldname"], "width": c["width"], "pin": c["pin"],
+			 "align": c.get("align") or ""}
 			for c in kept
 		],
 		"page_length": saved.get("page_length") or 0,

@@ -380,6 +380,21 @@ MAX_WIDTH = 800
 PINS = ("left", "right")
 
 
+# Which edge a column's values sit against, where the reader has said.
+#
+# Logical rather than physical — `start` and `end` rather than left and right —
+# because this product renders Arabic beside English in the same list, and a
+# column pinned to "left" in a right-to-left screen is a column pinned to the
+# wrong side of the words in it. CSS has had `text-align: start` for years and
+# it is the only correct answer here.
+#
+# The empty string is the fourth value and the default: it means *the fieldtype
+# decides*, which is a number against the end and everything else at the start.
+# That rule lives in the browser beside the cell map that already knows which
+# fieldtypes are numbers, and this is only the override on top of it.
+ALIGNMENTS = ("start", "center", "end")
+
+
 # The other column that is not a field. `_user_tags` is a real column on the
 # doctype's own table — Frappe adds it the first time anything on that doctype
 # is tagged — so once it exists it filters, sorts and pages like any other, and
@@ -505,11 +520,16 @@ def _placed(offered: dict, wanted) -> list[dict]:
 		except (TypeError, ValueError):
 			width = _default_width(column)
 		pin = entry.get("pin")
+		align = entry.get("align")
 
 		placed.append({
 			**column,
 			"width": max(MIN_WIDTH, min(width or _default_width(column), MAX_WIDTH)),
 			"pin": pin if pin in PINS else None,
+			# Empty rather than None: this reaches a saved view as JSON and
+			# comes back as a value the browser compares against, and "" is one
+			# answer where `null` and missing are two.
+			"align": align if align in ALIGNMENTS else "",
 		})
 	return placed
 

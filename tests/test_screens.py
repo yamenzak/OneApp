@@ -2820,3 +2820,33 @@ def test_a_sum_survives_the_trip_as_a_number(spaceview):
 	assert spaceview._summed(Decimal("8600.50")) == 8600.5
 	assert spaceview._summed(0) == 0.0
 	assert isinstance(spaceview._summed(Decimal("1")), float)
+
+
+def test_a_column_carries_which_edge_its_values_sit_against(spaceview):
+	"""Alignment is the reader's, saved beside the width and the pin.
+
+	Logical rather than physical — `start` and `end` rather than left and right
+	— because this product draws Arabic beside English in one list, and a column
+	aligned "left" in a right-to-left screen is aligned to the wrong side of the
+	words in it.
+	"""
+	offered = {
+		"title": {"fieldname": "title", "label": "Title", "fieldtype": "Data"},
+		"amount": {"fieldname": "amount", "label": "Amount", "fieldtype": "Currency"},
+	}
+	placed = spaceview._placed(offered, [
+		{"fieldname": "title", "align": "center"},
+		{"fieldname": "amount", "align": "start"},
+	])
+	assert [one["align"] for one in placed] == ["center", "start"]
+
+	# The empty string is the fourth value and the default: the fieldtype
+	# decides, which is a rule the browser owns beside its cell map.
+	for said in (None, "", "middle", "left", 7, ["end"]):
+		placed = spaceview._placed(offered, [{"fieldname": "title", "align": said}])
+		assert placed[0]["align"] == "", said
+
+	# And a view saved before alignment existed has none, which is that same
+	# default rather than a missing key.
+	assert spaceview._placed(offered, "title,amount")[0]["align"] == ""
+	assert spaceview._placed(offered, [{"fieldname": "title"}])[0]["align"] == ""
