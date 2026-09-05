@@ -1,7 +1,9 @@
 <template>
   <PageHeader>
-    <span class="text-base-medium text-ink-gray-8">Account</span>
-</PageHeader>
+    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
+      <Breadcrumbs :items="[{ label: 'Account', route: { name: 'Account' } }]" />
+    </nav>
+  </PageHeader>
 
   <div class="mx-auto max-w-2xl p-5">
     <div v-if="!session.loaded" class="grid place-items-center py-20">
@@ -52,7 +54,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { PageHeader, LoadingIndicator } from '@/ui'
+import { Breadcrumbs, PageHeader, LoadingIndicator } from '@/ui'
 import UsageBar from '../components/UsageBar.vue'
 import ThemeSetting from '../components/ThemeSetting.vue'
 import NotificationSettings from '../components/notifications/NotificationSettings.vue'

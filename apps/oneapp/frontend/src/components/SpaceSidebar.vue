@@ -4,11 +4,18 @@
     :width="`${width}px`"
     class="border-r border-outline-gray-1"
   >
-    <!-- No logo: the rail already shows the active space's tile, so a header
-         logo beside it would say the same thing twice. -->
+    <!--
+      No logo: the rail already shows the active space's tile, so a header logo
+      beside it would say the same thing twice.
+
+      Where you are on top, the workspace underneath — the same two lines the
+      mail and Drive rails carry. It used to put the workspace on top and the
+      plan below when no space was open, so off a space the header was one line
+      where everywhere else it is two, and the whole rail sat 20px higher.
+    -->
     <SidebarHeader
-      :title="activeSpace?.space_label || session.tenant?.name || TENANT_APP"
-      :subtitle="activeSpace ? session.tenant?.name : session.tenant?.plan"
+      :title="activeSpace?.space_label || 'Spaces'"
+      :subtitle="session.tenant?.name || TENANT_APP"
       :show-logo="false"
     />
 

@@ -50,5 +50,24 @@ test('a template written in settings is one the composer offers', async ({
     'Two weeks from order',
   )
 
+  // And it takes its own template away again.
+  //
+  // Not tidiness: the count above is the assertion that this list is the
+  // workspace's own and not ERPNext's six, and a template written by a run and
+  // left behind makes the *next* run see two. The fixture sweeps these, but a
+  // suite run twice without a re-seed does not get one — so the spec that
+  // writes the row is the thing that has to remove it. Which is also the last
+  // half of the feature: a template is deleted from the same panel.
+  await page.keyboard.press('Escape')
+  await page.goto('/one/space/zzmock?screen=tasks')
+  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
+  await page.getByRole('button', { name: 'Administrator' }).click()
+  await page.getByRole('menuitem', { name: 'Workspace settings' }).click()
+  await page.getByRole('tab', { name: 'Templates' }).click()
+
+  const mine = page.locator('[data-slot="mail-template"]').filter({ hasText: title })
+  await mine.getByRole('button', { name: 'Remove' }).click()
+  await expect(page.locator('[data-slot="mail-template"]')).toHaveCount(1)
+
   expectNoRealErrors(errors)
 })

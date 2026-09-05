@@ -23,19 +23,26 @@
     the places dropdown), off the same list the sidebar draws, so the two
     cannot drift.
 
-    Only on a phone. On a desktop it would be a second control saying what the
-    sidebar beside it already says. Write is not here either — it is over the
-    list already, on both layouts.
+    Where you are, on the same line every other surface puts it. Write is not
+    here — it is over the list already, on both layouts.
   -->
-  <PageHeader v-if="isMobile">
-    <Dropdown :options="folderOptions">
-      <Button
-        data-slot="mail-folders"
-        icon-right="lucide-chevron-down"
-        variant="ghost"
-        :label="folderName"
-      />
-    </Dropdown>
+  <PageHeader>
+    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center gap-1">
+      <!--
+        The folder, and how you change it. On a phone that is a dropdown,
+        because there is no rail to pick from; on a desktop the rail is already
+        the picker, so this says where you are and nothing more.
+      -->
+      <Dropdown v-if="isMobile" :options="folderOptions">
+        <Button
+          data-slot="mail-folders"
+          icon-right="lucide-chevron-down"
+          variant="ghost"
+          :label="folderName"
+        />
+      </Dropdown>
+      <Breadcrumbs v-else :items="crumbs" />
+    </nav>
   </PageHeader>
 
   <div class="flex h-full min-h-0">
@@ -334,6 +341,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
+  Breadcrumbs,
   Button,
   Checkbox,
   Dropdown,
@@ -463,6 +471,19 @@ const folderOptions = computed(() => {
 const folderName = computed(
   () => mail.folders.find((one) => one.key === folder.value)?.label || 'All mail',
 )
+
+/**
+ * The trail. `All mail` is the root and a folder is under it, which is what
+ * the rail beside it shows — one level, because a mail folder tree is one
+ * level here (see `mailbox/reading.py`).
+ */
+const crumbs = computed(() => [
+  { label: 'Mail', route: { name: 'Mail' } },
+  ...(folder.value === 'all' ? [] : [{
+    label: folderName.value,
+    route: { name: 'Mail', query: { folder: folder.value } },
+  }]),
+])
 
 /** The message a reply or a forward is built from: the last one in the thread. */
 const last = computed(() => messages.value[messages.value.length - 1] || null)

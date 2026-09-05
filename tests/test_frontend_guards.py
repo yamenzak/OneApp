@@ -701,6 +701,52 @@ def test_both_renderings_read_that_one_list(app):
 			assert "useNav" in source, f"{path.name} declares its own navigation"
 
 
+# Every page opens the same way: a header band whose left side is the trail
+# saying where you are. It is the one piece of chrome a reader sees on every
+# route, so a page that draws its own title instead — or none at all, as Mail
+# did on a desktop — is the page where the content starts at a different height
+# and the shell looks broken rather than the page looking different.
+#
+# The exception is named rather than inferred: the sheet editor is vendored
+# whole and brings four rows of its own chrome, so a fifth would only crowd it.
+# Named here so that adding a second exception is a decision somebody writes
+# down, which is exactly what did not happen the first three times.
+HEADERLESS_PAGES = {"Sheet.vue"}
+
+TRAIL = 'data-slot="breadcrumb"'
+
+
+@pytest.mark.parametrize("app", SHELL_APPS)
+def test_every_page_opens_with_the_same_header(app):
+	"""A `PageHeader` holding a `Breadcrumbs` trail, on every route."""
+	root = ROOT / f"apps/{app}/frontend/src"
+
+	# Which components draw a trail, so a page that delegates its header to one
+	# — as the screen host does to `ScreenHeader` — counts as drawing it.
+	drawn = {
+		path.stem
+		for path in root.rglob("*.vue")
+		if TRAIL in path.read_text() and "Breadcrumbs" in path.read_text()
+	}
+
+	pages = sorted((root / "pages").glob("*.vue"))
+	assert pages, f"{app} has no pages"
+
+	for path in pages:
+		if path.name in HEADERLESS_PAGES:
+			continue
+		source = path.read_text()
+		if TRAIL in source:
+			assert "<PageHeader" in source, f"{path.name} draws a trail outside a PageHeader"
+			assert "Breadcrumbs" in source, f"{path.name}'s trail is not Breadcrumbs"
+			continue
+		# Delegated. The component it hands the header to has to be one that
+		# actually draws it.
+		assert any(f"<{name}" in source for name in drawn), (
+			f"{path.name} has no page header — every route opens with the trail"
+		)
+
+
 # One column, three fillings. Which component sits in the shell's `#sidebar`
 # slot depends on where you are; that it is a `Sidebar` with a header, a
 # collapse toggle and the shared width does not. The Drive's rail was a plain
