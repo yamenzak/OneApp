@@ -22,6 +22,7 @@ import re
 from pathlib import Path
 
 import pytest
+from vendored import is_vendored
 
 ROOT = Path(__file__).resolve().parent.parent
 SPAS = sorted(ROOT.glob("apps/*/frontend/src"))
@@ -32,6 +33,8 @@ def scripts() -> list[tuple[Path, str]]:
 	found = []
 	for src in SPAS:
 		for path in sorted(src.rglob("*.vue")):
+			if is_vendored(path):
+				continue
 			body = path.read_text()
 			if "<script setup>" not in body:
 				continue

@@ -69,7 +69,15 @@ NOT_CLASS_LISTS = ("lib/sheets/display.js",)
 # against our Tailwind build asks a question with no right answer, and the
 # alternative — editing their files to please our linter — is exactly what
 # vendoring is meant to avoid.
-VENDORED = ("lib/sheets/engine/", "lib/sheets/canvas/", "lib/sheets/utils/")
+VENDORED = (
+    "lib/sheets/engine/",
+    "lib/sheets/canvas/",
+    "lib/sheets/utils/",
+    # The editor above them. It paints itself: four hundred lines of its own
+    # `sn-*` CSS in the same file, so `sn-topbar` is defined two hundred lines
+    # below where it is used and has never been a Tailwind utility.
+    "components/sheets/editor/",
+)
 
 # Files that write a *whole* HTML document — their own `<style>` included — and
 # hand it to an iframe. The class names in one of those are defined by the

@@ -97,31 +97,28 @@ def test_within_answers_for_the_rectangle_not_the_row(sheets):
 
 
 # --------------------------------------------------------------------------- #
-# The two implementations
+# A1, on both sides
 # --------------------------------------------------------------------------- #
 
-def _js_number(name: str) -> int:
-	"""A `const NAME = 123` or `123_456` out of the browser's refs module."""
-	source = (FRONTEND / "refs.js").read_text()
-	found = re.search(rf"export const {name} = ([\d_]+)", source)
-	assert found, f"lib/sheets/refs.js has no {name}"
-	return int(found.group(1).replace("_", ""))
+def test_the_browsers_a1_and_ours_agree_about_a_cell(sheets):
+	"""One notation, parsed in two languages, and they must not drift.
 
-
-@pytest.mark.parametrize("name", ["MAX_COLUMN", "MAX_ROW", "MAX_CELLS"])
-def test_both_implementations_of_a1_agree_about_the_limits(sheets, name):
-	"""The browser and the server refuse the same references.
-
-	Two implementations, because the grid names a cell on every keystroke and
-	cannot ask the server what `AA10` means. Two implementations drift — the
-	failure being guarded against is a browser that happily writes `A200000`
-	into a sheet the server will refuse to store.
+	There is no shared numeric cap to compare any more — the browser's A1 is
+	Frappe's `utils/cells.js`, which parses and formats and imposes no limits,
+	because the grid names a cell on every keystroke and cannot ask the server
+	what `AA10` means. What can still drift is the arithmetic, and that is what
+	this checks: the same twenty labels, column-to-number and back, in both.
 	"""
-	assert _js_number(name) == getattr(sheets, name, None) or _js_number(name) == {
-		"MAX_COLUMN": sheets.refs.MAX_COLUMN,
-		"MAX_ROW": sheets.refs.MAX_ROW,
-		"MAX_CELLS": sheets.refs.MAX_CELLS,
-	}[name]
+	source = (FRONTEND / "utils/cells.js").read_text()
+	assert "export function colLabel" in source and "export function parseCellId" in source
+
+	# `colLabel` is 0-based and ours is 1-based; that offset is the whole of
+	# the difference, and a test that did not state it would be testing the
+	# offset rather than the agreement.
+	for index, label in enumerate(["A", "B", "Z", "AA", "AB", "AZ", "BA", "ZZ", "AAA"]):
+		assert sheets.column_letters(sheets.column_number(label)) == label
+	assert sheets.column_number("A") == 1
+	assert sheets.column_number("ZZ") == 702
 
 
 # --------------------------------------------------------------------------- #
@@ -169,13 +166,14 @@ def test_a_formatted_number_is_still_a_number(sheets, value, expected):
 def test_every_entry_point_goes_through_the_file(sheets):
 	"""A sheet's permission is its File's, and there is no second answer.
 
-	`Sheet Cell` is granted to System Manager only and has no rules of its own,
+	`Sheet Book` is granted to System Manager only and has no rules of its own,
 	so a whitelisted function that reached the cells without asking the File
 	first would hand every reader every sheet on the site.
 	"""
 	source = "\n".join(
 		(SHEETS / name).read_text()
-		for name in ("reading.py", "writing.py", "export.py", "feed.py", "templates.py")
+		for name in ("book.py", "reading.py", "writing.py", "export.py", "feed.py",
+		             "templates.py")
 	)
 	entries = re.findall(r"@frappe\.whitelist\([^)]*\)\ndef (\w+)\(", source)
 	assert entries, "no whitelisted functions found — the scan is broken"
@@ -215,24 +213,30 @@ def test_the_cells_are_never_read_with_get_all_without_a_file_check(sheets):
 	thrown if the reader cannot have the File. Stated as a test because the
 	next person adding a function will copy an existing one.
 	"""
-	for name in ("reading.py", "writing.py", "export.py", "feed.py"):
+	for name in ("book.py", "reading.py", "writing.py", "export.py", "feed.py"):
 		source = (SHEETS / name).read_text()
 		if "get_all(" not in source:
 			continue
 		assert "_mine(" in source or "check_permission" in source, (
-			f"{name} reads cells with get_all and never checks the File"
+			f"{name} reads a workbook with get_all and never checks the File"
 		)
 
 
-def test_the_server_hands_back_value_and_never_raw(sheets):
-	"""A print format wants `6480`, not `=C2*D2*E2*F2/1000000`."""
-	source = (SHEETS / "reading.py").read_text()
-	block = source[source.index("def read_range"):]
-	assert '"value"' in block
-	assert '"raw"' not in block
+def test_the_server_reads_what_was_computed_and_never_what_was_typed(sheets):
+	"""A print format wants `6480`, not `=C2*D2*E2*F2/1000000`.
 
-	export = (SHEETS / "export.py").read_text()
-	assert '"value"' in export and '"raw"' not in export
+	The saved workbook carries both — `sheet` is what was typed, `values` is
+	what it came to — and every reader on this side takes the second. The one
+	function that reads the first is `codec.raw_map`, which exists for a
+	migration or a debugging session and is called by nothing.
+	"""
+	for name in ("reading.py", "export.py", "feed.py"):
+		source = (SHEETS / name).read_text()
+		assert "raw_map(" not in source, f"{name} reads what was typed"
+
+	block = (SHEETS / "reading.py").read_text()
+	assert "values_map(" in block[block.index("def _read("):]
+	assert "values_map(" in (SHEETS / "export.py").read_text()
 
 
 def test_a_pull_replaces_rather_than_appends(sheets):
@@ -279,7 +283,7 @@ def test_a_locked_table_refuses_a_pull(sheets):
 	source = (SHEETS / "feed.py").read_text()
 	block = source[source.index("def pull("):]
 	# The refusal comes before anything is read out of the sheet.
-	assert "LOCKED" in block[:block.index("read_range(")]
+	assert "LOCKED" in block[:block.index("_read(")]
 
 
 def test_a_feed_says_whether_the_sheet_has_moved_on(sheets):
@@ -295,7 +299,7 @@ def test_a_feed_says_whether_the_sheet_has_moved_on(sheets):
 	block = source[source.index("def _with_freshness("):]
 	head = block[:block.index("\ndef ", 1) if "\ndef " in block[1:] else len(block)]
 
-	# `File.modified`, which `writing._touch` stamps on every cell written.
+	# `File.modified`, which `book.save_sheet` stamps on every save.
 	assert '"File"' in head and "modified" in head
 	assert '"stale"' in head and '"sheet_gone"' in head
 

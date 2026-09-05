@@ -38,16 +38,7 @@
       <Alert v-if="error" class="mt-4" theme="red" title="This could not be imported">
         <template #description>{{ error }}</template>
       </Alert>
-
-      <!-- What was left out, said before anybody goes looking for it. A
-           quotation missing its last four lines is worse than an import that
-           refused, so the number is on screen rather than in a log. -->
-      <Alert v-else-if="skipped" class="mt-4" theme="amber" :title="`${skipped} cells were left out`">
-        <template #description>
-          A sheet holds {{ MAX_CELLS.toLocaleString() }} cells. What fitted is here.
-        </template>
-      </Alert>
-    </template>
+</template>
   </Dialog>
 </template>
 
@@ -56,13 +47,10 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Alert, Button, Dialog, FileUploader, Icon } from '@/ui'
 
-import { ACCEPTS, fromFile } from '../../lib/sheets/xlsx'
-import { MAX_CELLS } from '../../lib/sheets/refs'
+import { ACCEPTS, workbookFromFile } from '../../lib/sheets/headless'
+import { saveWorkbook } from '../../lib/sheets/store'
 import { workspace } from '../../lib/workspace'
 import { errorText } from '../../lib/errors'
-
-/** Cells per request. Twenty thousand in one body is a two-megabyte POST. */
-const BATCH = 2000
 
 const props = defineProps({
   /** Where the uploaded file goes, so an import inside a folder stays there. */
@@ -75,7 +63,6 @@ const router = useRouter()
 const chosen = ref(null)
 const busy = ref(false)
 const error = ref('')
-const skipped = ref(0)
 const step = ref('')
 
 function state(uploading, progress) {
@@ -92,7 +79,6 @@ function state(uploading, progress) {
  */
 function keep(file) {
   error.value = ''
-  skipped.value = 0
   if (!/\.(xlsx|xlsm|csv)$/i.test(file.name)) {
     return new Error('Only .xlsx, .xlsm and .csv files can be imported.')
   }
@@ -105,11 +91,13 @@ async function parse(uploaded) {
   busy.value = true
   error.value = ''
   try {
+    // Read, and build the whole workbook in memory before anything is created.
+    // A save is the workbook entire — there is no cell endpoint to dribble it
+    // through — so a file that turns out to be unreadable leaves no half-built
+    // sheet behind in the Drive.
     step.value = 'Reading…'
-    const read = await fromFile(chosen.value)
-    skipped.value = read.skipped
-
-    if (!read.cells.length) {
+    const read = await workbookFromFile(chosen.value)
+    if (!read.cells) {
       error.value = 'There is nothing in that file to import.'
       return
     }
@@ -118,17 +106,8 @@ async function parse(uploaded) {
     const title = (uploaded?.file_name || chosen.value.name).replace(/\.[^.]+$/, '')
     const made = await workspace.sheetMake({ title, folder: props.folder || '' })
 
-    // The new sheet has one tab called Sheet1. The first imported tab is that
-    // one renamed; the rest are added. Renaming rather than adding-and-deleting
-    // keeps a sheet from ever having a tab nobody asked for.
-    const [first, ...rest] = read.tabs
-    if (first.tab_name !== 'Sheet1') await workspace.sheetRenameTab(made.name, 'Sheet1', first.tab_name)
-    for (const tab of rest) await workspace.sheetAddTab(made.name, tab.tab_name)
-
-    for (let at = 0; at < read.cells.length; at += BATCH) {
-      step.value = `Writing ${Math.min(at + BATCH, read.cells.length).toLocaleString()} of ${read.cells.length.toLocaleString()} cells…`
-      await workspace.sheetWrite(made.name, read.cells.slice(at, at + BATCH))
-    }
+    step.value = `Saving ${read.cells.toLocaleString()} cells…`
+    await saveWorkbook(made.name, title, read.payload)
 
     open.value = false
     router.push({ name: 'Sheet', params: { name: made.name } })

@@ -1,9 +1,9 @@
 """A sheet as bytes, for the one moment it has to be a file.
 
-Everywhere else a sheet is rows: the grid reads `Sheet Cell`, the read-back
-reads a named rectangle, a print format reads `value`. Nobody needs bytes until
-somebody wants to mail one, and then they want a spreadsheet rather than our
-table.
+Everywhere else a sheet is a workbook: the grid loads it whole, the read-back
+reads a named rectangle out of it, a print format reads a value. Nobody needs
+bytes until somebody wants to mail one, and then they want a spreadsheet rather
+than our column.
 
 CSV, and one tab at a time, because that is what a CSV is. Workbook-shaped
 export — every tab, formats, formulas — is xlsx and is Stage 6.
@@ -23,8 +23,8 @@ import io
 
 import frappe
 
-from . import refs
-from .reading import _mine
+from . import book, codec
+from .book import _mine
 
 #: The endpoint every sheet's `File.file_url` points at. Bare, because the row
 #: is inserted before it has a name — `writing.make` appends `?name=…` the
@@ -41,8 +41,8 @@ def download(name: str, tab: str = "") -> None:
     """Send one tab as a CSV.
 
     Values and not formulas: a CSV holding `=A2*B2` is a CSV whose numbers are
-    missing, and every reader of an exported sheet wants the numbers. `raw` is
-    for the grid and stays there.
+    missing, and every reader of an exported sheet wants the numbers. What was
+    typed is the grid's business and stays there.
     """
     to_response(_mine(name, "read"), tab)
 
@@ -84,25 +84,15 @@ def _grid(sheet: str, tab: str = "") -> tuple[dict, tuple[int, int]]:
     a sheet used down to row 40 exports forty rows however far the grid on
     screen scrolls.
     """
+    loaded = book.load(sheet)
     if not tab:
-        first = frappe.get_all(
-            "Sheet Tab", filters={"sheet": sheet}, fields=["tab_name"],
-            order_by="position asc", limit=1,
-        )
-        tab = first[0]["tab_name"] if first else "Sheet1"
+        tab = codec.current_tab(loaded)
 
-    cells = frappe.get_all(
-        "Sheet Cell", filters={"sheet": sheet, "tab": tab},
-        fields=["ref", "value"], limit_page_length=0,
-    )
+    cells = codec.values_map(loaded, tab)
+    grid = {}
+    for ref, value in cells.items():
+        row, column = codec._parse(ref)
+        if row:
+            grid[(row, column)] = value if value is not None else ""
 
-    grid, rows, columns = {}, 0, 0
-    for cell in cells:
-        try:
-            row, column = refs.parse(cell["ref"])
-        except refs.BadRef:
-            continue
-        grid[(row, column)] = cell["value"] or ""
-        rows, columns = max(rows, row), max(columns, column)
-
-    return grid, (rows, columns)
+    return grid, codec.extent(cells)

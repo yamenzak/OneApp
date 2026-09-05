@@ -68,9 +68,9 @@ doc_events = {
 			"oneapp.oneapp_core.storage.quota.enforce_quota",
 			"oneapp.oneapp_core.drive.on_insert",
 		],
-		# A sheet's grid is `Sheet Cell` rows, and the File being deleted is
+		# A sheet's grid is a `Sheet Book` row, and the File being deleted is
 		# the only thing that knows they exist. Without this the bin's
-		# thirty-day sweep leaves behind the cells of every sheet anybody
+		# thirty-day sweep leaves behind the workbook of every sheet anybody
 		# ever threw away — see `oneapp_core/sheets`.
 		"on_trash": "oneapp.oneapp_core.sheets.on_trash",
 	},

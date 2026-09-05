@@ -249,106 +249,43 @@ doctype(
 # A sheet is a `File` — see §5 Stage 1 of `docs/SHEETS.md`. That is why there is
 # no `Sheet` doctype here: the File row is the sheet's identity, its name, its
 # owner, its folder, its share, its place in the bin and its binding to a
-# record. What these three add is the only thing a File cannot hold, which is a
-# grid.
+# record. What this adds is the only thing a File cannot hold, which is a grid.
 #
-# A row per cell rather than one JSON blob per workbook, which is where this
-# parts company with Frappe Sheets. The reason is the read-back: a named range
-# names a rectangle, and pulling it into a document's child table has to be a
-# query rather than a megabyte of JSON walked in Python. It also makes a cell's
-# history Frappe's own rather than a second history of our own devising.
+# One row per workbook and not one per cell, which is a reversal. The first
+# build stored a `Sheet Cell` per cell so a read-back could be a query, and it
+# was a defensible shape for a grid we had written ourselves. The grid is
+# Frappe's now (`apps/oneapp/frontend/src/lib/sheets/VENDORED.md`): it holds the
+# whole workbook in memory, saves it whole and loads it whole, and a second
+# store the browser never reads would be a second thing to keep in step with no
+# reader to justify it. Python reads the blob through
+# `oneapp_core/sheets/codec.py`, which is where the argument is written out.
 # --------------------------------------------------------------------------- #
 doctype(
-    "Sheet Tab",
+    "Sheet Book",
     app="tenant",
-    autoname="hash",
-    title_field="tab_name",
-    search_fields="sheet,tab_name",
+    autoname="field:sheet",
+    title_field="sheet",
+    search_fields="sheet",
     perms=READONLY_PERMS,
     fields=[
-        f("sheet", "Link", options="File", reqd=1, in_list_view=1,
-          description="The File this tab belongs to. A sheet with no tab row "
-                      "has one tab called Sheet1, because a workbook always "
-                      "has at least one and storing that fact would be storing "
-                      "a default."),
-        f("tab_name", "Data", reqd=1, in_list_view=1,
-          description="What the tab is called, and what a formula in another "
-                      "tab refers to it by."),
-        f("position", "Int", default="0", in_list_view=1,
-          description="Left to right. Not the creation order: tabs are "
-                      "dragged."),
-        column("cb_tab_frozen"),
-        f("frozen_rows", "Int", default="0",
-          description="How many rows stay put when the grid scrolls."),
-        f("frozen_columns", "Int", default="0"),
-        f("column_widths", "Long Text",
-          description="A JSON map of column letter to pixels, for the ones "
-                      "somebody has resized. Absent means the default, so a "
-                      "fresh sheet stores nothing."),
-        f("row_heights", "Long Text"),
-    ],
-)
-
-
-doctype(
-    "Sheet Cell",
-    app="tenant",
-    autoname="hash",
-    title_field="ref",
-    search_fields="sheet,ref",
-    perms=READONLY_PERMS,
-    fields=[
-        f("sheet", "Link", options="File", reqd=1, in_list_view=1),
-        f("tab", "Data", reqd=1, in_list_view=1,
-          description="By name and not by link. A tab is renamed often and a "
-                      "cell must follow it without a thousand rows being "
-                      "rewritten — the rename updates this column in one "
-                      "statement."),
-        f("ref", "Data", reqd=1, in_list_view=1,
-          description="A1 notation, upper case. The column letter and the row "
-                      "number, which is what a person types and what a formula "
-                      "carries."),
-        column("cb_cell_value"),
-        # The two-column heart of the whole design. See §3 and §5 Stage 1 of
-        # `docs/SHEETS.md`: every formula engine for Python is copyleft, so the
-        # server never evaluates anything — it reads what the browser worked
-        # out. A print format, a report and the read-back all want `value`.
-        f("raw", "Long Text",
-          description="What was typed. `=A2*B2*C2` for a formula, the literal "
-                      "otherwise."),
-        f("value", "Long Text",
-          description="What that came to, worked out in the browser and stored "
-                      "here. The server never evaluates a formula — it reads "
-                      "this. A print format, a report and a read-back all use "
-                      "it, and none of them has a browser."),
-        f("kind", "Select", options="\n".join(["", "number", "text", "date", "bool", "error"]),
-          description="What `value` is, decided when it was computed. Saves "
-                      "every reader guessing from a string, and is what lets a "
-                      "read-back put a number in a Currency field."),
-        f("format_json", "Long Text",
-          description="Bold, alignment, number format, fill. JSON because it "
-                      "is a bag of presentation and none of it is queried."),
-    ],
-)
-
-
-doctype(
-    "Sheet Range",
-    app="tenant",
-    autoname="hash",
-    title_field="label",
-    search_fields="sheet,label",
-    perms=READONLY_PERMS,
-    fields=[
-        f("sheet", "Link", options="File", reqd=1, in_list_view=1),
-        f("label", "Data", reqd=1, in_list_view=1,
-          description="What the range is called. A formula may use it, and the "
-                      "read-back names it — this is the contract between a "
-                      "sheet and the document it feeds."),
-        f("tab", "Data", reqd=1),
-        f("ref", "Data", reqd=1, in_list_view=1,
-          description="`A1:G40`. The rectangle, in the same notation a cell "
-                      "uses."),
+        f("sheet", "Data", reqd=1, unique=1, in_list_view=1,
+          description="The File this workbook belongs to, by name. Data and "
+                      "unique rather than a Link so the row is addressable as "
+                      "`Sheet Book/<file>` — one statement to load, no filter."),
+        f("payload", "Long Text",
+          description="The workbook: every tab, cell, formula, format, merge, "
+                      "named range, pivot and chart, as the gzipped envelope "
+                      "`codec.py` reads. Never edited here — a save replaces "
+                      "it whole, which is what the editor does."),
+        column("cb_book_size"),
+        f("byte_size", "Int", read_only=1,
+          description="Uncompressed size of the payload. The number a size cap "
+                      "has to be measured against, since the compressed one "
+                      "says nothing about what opening it costs."),
+        f("head_seq", "Long Int", default="0", read_only=1,
+          description="How many saves this workbook has had. Version history "
+                      "is not built; this is the counter it would hang off, "
+                      "and it costs nothing to keep."),
     ],
 )
 
@@ -391,7 +328,8 @@ doctype(
         f("sheet_title", "Data",
           description="What that sheet was called when the rows were pulled."),
         f("label", "Data", reqd=1,
-          description="The named range. The contract — see `Sheet Range`."),
+          description="The named range. The contract between a sheet and the "
+                      "document it fills."),
         column("outcome"),
         f("filled", "Int", read_only=1, description="Rows written."),
         f("skipped", "Small Text", read_only=1,

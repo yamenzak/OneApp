@@ -18,7 +18,25 @@ const BANNED = [
   { element: 'table', message: 'Use <ListView> from frappe-ui/list.' },
 ]
 
+// Somebody else's code, kept as somebody else's. The spreadsheet — its engine,
+// its canvas renderer and the editor above them — is Frappe's, vendored whole
+// (see src/lib/sheets/VENDORED.md). It was written against its own eslintrc and
+// its own frappe-ui, and every rule below would report against it: a `<button>`
+// inside a canvas toolbar, an unused catch binding, a `_` placeholder. Editing
+// their files to satisfy our linter is exactly what vendoring exists to avoid,
+// and the alternative — a disable comment on every line — says nothing a reader
+// could not already tell from the header block on the file.
+//
+// Our own seams inside that tree (store.js, headless.js, xlsx-file.js,
+// usePersistence.js, useCollaboration.js, shortcutRegistry.js) sit under the
+// same ignore, which is the one real cost. They are small and they are read.
+const VENDORED = [
+  'src/lib/sheets/**',
+  'src/components/sheets/editor/**',
+]
+
 export default [
+  { ignores: VENDORED },
   ...pluginVue.configs['flat/recommended'],
   {
     // What `no-undef` is allowed to already know about. Browser globals

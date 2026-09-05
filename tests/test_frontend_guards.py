@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from gen_frontend import APPS, render  # noqa: E402
 import components
+from vendored import is_vendored
 
 
 @pytest.fixture
@@ -450,6 +451,8 @@ def test_local_components_compose_the_vocabulary():
 	raw = []
 	for app, paths in _local_components().items():
 		for path in paths:
+			if is_vendored(path):
+				continue
 			source = path.read_text()
 			if path.name in LAYOUT_ONLY:
 				continue
@@ -547,6 +550,8 @@ def test_stored_datetimes_are_converted_from_the_site_timezone():
 		assert "setConfig('systemTimezone'" in main, f"{app}: main.js never configures it"
 
 		for path in sorted(root.rglob("*.vue")):
+			if is_vendored(path):
+				continue
 			source = path.read_text()
 			bare = re.findall(r"(?<![\w.])dayjs\(", source)
 			assert not bare, (
@@ -764,6 +769,8 @@ def test_lists_wider_than_a_phone_declare_what_they_drop(app):
 	root = ROOT / f"apps/{app}/frontend/src"
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):
+		if is_vendored(path):
+			continue
 		rel = path.relative_to(root).as_posix()
 		for tracks in COLUMNS_BINDING.findall(path.read_text()):
 			total = _fixed_rems(tracks)
@@ -788,6 +795,8 @@ def test_a_dropped_column_takes_its_cell_with_it(app):
 	root = ROOT / f"apps/{app}/frontend/src"
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):
+		if is_vendored(path):
+			continue
 		source = path.read_text()
 		dropped = re.findall(r"\{\s*key:\s*'([^']+)'[^}]*mobile:\s*false", source)
 		for key in dropped:
@@ -824,6 +833,8 @@ def test_a_column_set_is_destructured_not_held_as_an_object(app):
 	root = ROOT / f"apps/{app}/frontend/src"
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):
+		if is_vendored(path):
+			continue
 		held = _column_helper_results(path.read_text())
 		if held:
 			offenders.append(f"{path.relative_to(root)}: {held}")
@@ -845,6 +856,8 @@ def test_no_computed_ref_is_bound_straight_into_a_template(app):
 	root = ROOT / f"apps/{app}/frontend/src"
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):
+		if is_vendored(path):
+			continue
 		source = path.read_text()
 		names = re.findall(r"const\s+(\w+)\s*=\s*useListColumns\(", source)
 		for name in names:
@@ -910,6 +923,8 @@ def test_an_icon_only_control_says_what_it_does(app):
 	root = ROOT / f"apps/{app}/frontend/src"
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):
+		if is_vendored(path):
+			continue
 		source = path.read_text()
 		for match in BUTTON.finditer(source):
 			tag = match.group(0)
@@ -955,6 +970,8 @@ def test_a_tooltip_is_frappe_uis_or_it_is_not_a_tooltip(app):
 	hover = re.compile(r"@mouse(enter|over|leave)|group-hover:")
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):
+		if is_vendored(path):
+			continue
 		source = path.read_text()
 		if "not-a-tooltip:" in source:
 			continue
@@ -983,6 +1000,8 @@ def test_something_waits_visibly_while_a_screen_loads(app):
 	)
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):
+		if is_vendored(path):
+			continue
 		source = path.read_text()
 		if re.search(r"const (loading|\w*Loading) = ref\(", source) and not waiting.search(source):
 			offenders.append(str(path.relative_to(root)))
@@ -1045,6 +1064,8 @@ def test_a_filled_list_header_hides_the_rule_it_covers(app):
 	root = ROOT / f"apps/{app}/frontend/src"
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):
+		if is_vendored(path):
+			continue
 		source = path.read_text()
 		if BAND in source and OWN_RULE not in source:
 			offenders.append(str(path.relative_to(root)))
@@ -1222,6 +1243,8 @@ def test_every_tab_carries_an_icon(app):
 	root = ROOT / f"apps/{app}/frontend/src"
 	offenders = []
 	for path in sorted(root.rglob("*.vue")):
+		if is_vendored(path):
+			continue
 		source = path.read_text()
 		for match in TAB_TRIGGER.finditer(source):
 			if TAB_ICON.search(match.group(0)):
@@ -1318,6 +1341,8 @@ def test_an_icon_only_button_says_what_it_does(app):
 
 	unnamed = []
 	for path in sorted(root.rglob("*.vue")):
+		if is_vendored(path):
+			continue
 		for tag in tags.findall(path.read_text()):
 			if named.search(tag) or not icon.search(tag):
 				continue

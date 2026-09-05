@@ -22,6 +22,7 @@ import pathlib
 import re
 
 import pytest
+from vendored import is_vendored
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -85,6 +86,8 @@ def visible() -> list[tuple[str, str]]:
 	for spa in SPAS:
 		base = ROOT / spa
 		for path in sorted(base.rglob("*.vue")) + sorted(base.rglob("*.js")):
+			if is_vendored(path):
+				continue
 			raw = strip_comments(path.read_text())
 			where = f"{spa}/{path.relative_to(base)}"
 			for attr in ATTRS:

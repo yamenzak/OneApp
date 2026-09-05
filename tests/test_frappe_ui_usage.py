@@ -22,6 +22,7 @@ from pathlib import Path
 import pytest
 
 from frappe_ui_api import needs_frappe_ui, NOT_PROPS, ROOT, UI_SRC, component_api
+from vendored import is_vendored
 
 # Nothing here can be checked without the library it reads.
 pytestmark = needs_frappe_ui()
@@ -95,7 +96,11 @@ def written_values(attr: str, raw: str | None) -> set[str]:
 
 def sources(app: str):
     root = ROOT / f"apps/{app}/frontend/src"
-    return {p.relative_to(root).as_posix(): p.read_text() for p in root.rglob("*.vue")}
+    return {
+        p.relative_to(root).as_posix(): p.read_text()
+        for p in root.rglob("*.vue")
+        if not is_vendored(p)
+    }
 
 
 def normalise(attr: str) -> str | None:
@@ -494,6 +499,8 @@ def test_shadows_pair_with_an_elevation_surface():
     for app in APPS:
         root = ROOT / f"apps/{app}/frontend/src"
         for path in sorted(root.rglob("*.vue")):
+            if is_vendored(path):
+                continue
             for line in path.read_text().split("\n"):
                 if shadow.search(line) and "surface-elevation" not in line:
                     if re.search(r"\bbg-surface-(?!elevation)", line):
@@ -538,6 +545,8 @@ def test_the_row_inset_is_only_used_on_lists_whose_rows_are_interactive():
 	for app in APPS:
 		root = ROOT / f"apps/{app}/frontend/src"
 		for path in sorted(root.rglob("*.vue")):
+			if is_vendored(path):
+				continue
 			source = path.read_text()
 			# Comments explain the rule; they do not use it.
 			body = re.sub(r"<!--.*?-->", "", source, flags=re.S)

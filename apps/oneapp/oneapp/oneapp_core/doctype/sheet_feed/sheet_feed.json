@@ -68,7 +68,7 @@
    "label": "Sheet Title"
   },
   {
-   "description": "The named range. The contract \u2014 see `Sheet Range`.",
+   "description": "The named range. The contract between a sheet and the document it fills.",
    "fieldname": "label",
    "fieldtype": "Data",
    "label": "Label",

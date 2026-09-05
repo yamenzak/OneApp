@@ -1,0 +1,74 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:sheet",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sheet",
+  "payload",
+  "cb_book_size",
+  "byte_size",
+  "head_seq"
+ ],
+ "fields": [
+  {
+   "description": "The File this workbook belongs to, by name. Data and unique rather than a Link so the row is addressable as `Sheet Book/<file>` \u2014 one statement to load, no filter.",
+   "fieldname": "sheet",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Sheet",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "The workbook: every tab, cell, formula, format, merge, named range, pivot and chart, as the gzipped envelope `codec.py` reads. Never edited here \u2014 a save replaces it whole, which is what the editor does.",
+   "fieldname": "payload",
+   "fieldtype": "Long Text",
+   "label": "Payload"
+  },
+  {
+   "fieldname": "cb_book_size",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Uncompressed size of the payload. The number a size cap has to be measured against, since the compressed one says nothing about what opening it costs.",
+   "fieldname": "byte_size",
+   "fieldtype": "Int",
+   "label": "Byte Size",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "How many saves this workbook has had. Version history is not built; this is the counter it would hang off, and it costs nothing to keep.",
+   "fieldname": "head_seq",
+   "fieldtype": "Long Int",
+   "label": "Head Seq",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "Sheet Book",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "search_fields": "sheet",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "sheet",
+ "track_changes": 1
+}

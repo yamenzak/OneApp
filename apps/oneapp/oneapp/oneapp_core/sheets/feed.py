@@ -12,9 +12,9 @@ scratch columns, a note to themselves — and none of it is anybody else's
 business. That is what makes a spreadsheet usable as a spreadsheet rather than
 as a form with grid lines.
 
-`value` and never `raw`, throughout. The server does not evaluate formulas
-(`docs/SHEETS.md` §1); the browser wrote down what each one came to, and a
-number is what a child row wants anyway.
+Values and never formulas, throughout. The server does not evaluate anything
+(`docs/SHEETS.md` §1); the browser wrote down what each one came to, in the
+workbook's `values` slice, and a number is what a child row wants anyway.
 """
 
 import re
@@ -22,7 +22,9 @@ import re
 import frappe
 from frappe import _
 
-from .reading import _mine, read_range
+from . import book
+from .book import _mine
+from .reading import _read
 
 # `Width [mm]` → the field is `Width` and every value gains ` mm`.
 #
@@ -72,7 +74,7 @@ def preview(sheet: str, label: str) -> dict:
     pull, so the preview cannot be right while the pull is wrong.
     """
     _mine(sheet)
-    block = read_range(sheet, label=label)
+    block = _read(book.load(sheet), label=label)
     rows = block["values"]
     if not rows:
         return {"headers": [], "rows": [], "count": 0}
@@ -126,7 +128,7 @@ def pull(sheet: str, label: str, doctype: str, docname: str, into: str,
     if not field or field.fieldtype not in ("Table", "Table MultiSelect"):
         frappe.throw(_("A {0} has no rows called {1} to fill.").format(doctype, into))
 
-    block = read_range(sheet, label=label)
+    block = _read(book.load(sheet), label=label)
     rows = block["values"]
     if not rows:
         frappe.throw(_("The range {0} is empty.").format(label))

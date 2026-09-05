@@ -85,6 +85,7 @@ APPS = {
             # Charts on a sheet. Same deal: behind a dynamic import, paid for
             # by the person who inserts one.
             "echarts": "^6.0.0",
+            "vue-echarts": "^8.0.1",
         },
         # The spreadsheet engine and its canvas renderer are Frappe's, vendored
         # whole (see src/lib/sheets/VENDORED.md) — and their unit suite came
