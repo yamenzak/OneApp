@@ -773,11 +773,25 @@ one off is a filter in the browser rather than a second request. The colours
 are frappe-ui's seven, taken in source order, so the dot and the entries are
 one fact rather than a legend to learn.
 
-Read-only, and more firmly than the screen calendar: every entry belongs to a
-different doctype under a different screen's rules, and dragging one would be
-writing a field this surface knows nothing about.
+**Yours opens here; everything else opens where it lives.** The de-duplication
+hands a screen the win for *reading* a record — that is where the doctype's own
+form and rules are — but ownership is carried separately, because a workspace
+with an events screen would otherwise let somebody press New here, write an
+event, and never edit it from the diary they wrote it in.
 
-Not built yet: owning events. Frappe Suite's `Calendar Event` is
+New, edit and delete are the one thing this surface stores, and they are core
+`Event` rows — the framework's own doctype, the same one the diary already
+reads. Four fields: a name, when, whether it is a whole day, and notes.
+`ignore_permissions` behind this module's own gate, and the gate is *ownership*:
+"you may put something in your own week" is not a thing an admin should have to
+enable per workspace, and a row you do not own is a row `_mine` will not fetch.
+Events are Private, not a choice on the form — sharing one is naming who is in
+it, which is the next piece rather than a dropdown.
+
+The grid stays read-only: it can drag, resize and create, and every one of
+those writes a field that the record dialog already writes properly.
+
+Not built yet: participants, reminders, recurrence. Frappe Suite's `Calendar Event` is
 JMAP/JSCalendar-shaped — participants, alerts, recurrence rules, an exchange
 layer for CalDAV — and that is what to adopt when invites and RSVP are wanted.
 It is AGPL-3.0, the same as this repo.

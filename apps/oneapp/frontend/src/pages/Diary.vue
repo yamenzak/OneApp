@@ -16,6 +16,16 @@
     <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
       <Breadcrumbs :items="[{ label: 'Calendar', route: { name: 'Calendar' } }]" />
     </nav>
+
+    <!-- The one thing this surface writes. Everything else on the grid is a
+         record under a screen's rules, and New there means New *there*. -->
+    <Button
+      variant="solid"
+      icon-left="lucide-plus"
+      label="New event"
+      data-slot="diary-new"
+      @click="start()"
+    />
   </PageHeader>
 
   <div class="min-h-0 flex-1 overflow-auto p-3" data-slot="diary">
@@ -28,15 +38,24 @@
       :events="events"
       :config="CONFIG"
       :on-click="({ calendarEvent }) => open(calendarEvent)"
+      :on-cell-click="({ date }) => start(date)"
       @range-change="moved"
     />
   </div>
+
+  <EventDialog
+    v-model="writing"
+    :editing="editing"
+    :on="startingOn"
+    @saved="reload()"
+  />
 </template>
 
 <script setup>
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Alert, Breadcrumbs, Calendar, PageHeader } from '@/ui'
+import { Alert, Breadcrumbs, Button, Calendar, PageHeader } from '@/ui'
+import EventDialog from '../components/diary/EventDialog.vue'
 import { workspace } from '../lib/workspace'
 import { errorText } from '../lib/errors'
 import { diary, diaryEvents, showing } from '../lib/diary'
@@ -63,12 +82,29 @@ const events = computed(() => diaryEvents(showing(rows.value), diary.sources))
 /** Where an entry came from, so a click can go back to it. */
 const source = (id) => rows.value.find((one) => one.id === id) || null
 
+const writing = ref(false)
+const editing = ref('')
+const startingOn = ref('')
+
+/** New, on a day if the reader picked one by clicking a cell. */
+function start(on = '') {
+  editing.value = ''
+  startingOn.value = String(on || '')
+  writing.value = true
+}
+
 function open(event) {
   const found = source(event?.id)
-  // A personal event has no screen behind it — there is nowhere to go, and the
-  // grid's own popover has already said what it is. Stage two of this is the
-  // event surface that makes it a record like any other.
-  if (!found?.screen) return
+  if (!found) return
+  // Yours opens here, and everything else opens where it lives. A workspace
+  // with an events screen would otherwise let somebody write an event in this
+  // diary and never edit it from the diary they wrote it in.
+  if (found.mine || !found.screen) {
+    editing.value = found.record
+    startingOn.value = ''
+    writing.value = true
+    return
+  }
   router.push({
     name: 'Screen',
     params: { spaceCode: found.space },
@@ -83,8 +119,15 @@ function open(event) {
  * load on open — the grid says which month it is showing and that is the
  * request.
  */
+// The days last asked for, so a save can ask for them again. The grid does not
+// re-emit its range when nothing about it moved.
+const days = ref(null)
+
+const reload = () => (days.value ? moved(days.value) : null)
+
 async function moved({ startDate, endDate }) {
   if (!startDate || !endDate) return
+  days.value = { startDate, endDate }
   error.value = ''
   try {
     const answer = await workspace.agenda(startDate, endDate)

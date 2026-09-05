@@ -341,8 +341,14 @@ EVENTS = [
 	},
 	{
 		# And one with no end, which is a moment rather than a span.
+		#
+		# Somebody else's, too: the diary opens an event you own in its own
+		# dialog and a record you do not on the screen it belongs to, and a
+		# fixture where every event is yours can only ever show one of those.
+		# `owner` is set after the insert — it is a system field.
 		"subject": "Van collection", "event_type": "Public", "status": "Open",
 		"starts_on": _this_month(12, "09:00:00"),
+		"__owner": COLLEAGUE,
 	},
 ]
 
@@ -1222,6 +1228,7 @@ def seed_tenant(manifest_only=False):
 		frappe.get_doc({"doctype": "Note", **row}).insert(ignore_permissions=True)
 
 	for row in EVENTS:
+		row, owner = {k: v for k, v in row.items() if k != "__owner"}, row.get("__owner")
 		found = frappe.db.exists("Event", {"subject": row["subject"]})
 		if found:
 			# The dates and nothing else. These move with the month — the
@@ -1233,8 +1240,13 @@ def seed_tenant(manifest_only=False):
 			doc.starts_on = row["starts_on"]
 			doc.ends_on = row.get("ends_on")
 			doc.save(ignore_permissions=True)
+			if owner:
+				frappe.db.set_value("Event", found, "owner", owner)
 			continue
-		frappe.get_doc({"doctype": "Event", **row}).insert(ignore_permissions=True)
+		made = frappe.get_doc({"doctype": "Event", **row})
+		made.insert(ignore_permissions=True)
+		if owner:
+			frappe.db.set_value("Event", made.name, "owner", owner)
 
 	pictures = _write_pictures()
 	for row in CONTACTS:

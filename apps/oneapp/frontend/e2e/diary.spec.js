@@ -79,11 +79,52 @@ test('an entry opens the record it belongs to, on its own screen', async ({
   await page.goto('/one/calendar')
   await page.locator('[data-slot="diary"]').waitFor({ timeout: 25_000 })
 
-  // Nothing on this page is stored here: an entry is a record somewhere else,
-  // and clicking it goes there rather than opening a copy.
-  await page.getByText('Quarterly review').click()
+  // An entry that is not the reader's own is a record somewhere else, and
+  // clicking it goes there rather than opening a copy. The fixture's second
+  // event belongs to the workspace rather than to this person.
+  await page.getByText('Van collection').click()
   await expect(page).toHaveURL(/space\/zzmock/)
   await expect(page).toHaveURL(/record=/)
+
+  expectNoRealErrors(errors)
+})
+
+test('an event of your own is written, edited and taken away again', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'covered on desktop')
+  const errors = collectConsoleErrors(page)
+  // `ZZ ` because that is what the fixture's sweep looks for: a run that fails
+  // between writing this and removing it leaves a row behind, and the next
+  // seed is what takes it away.
+  const subject = `ZZ Site visit ${Date.now()}`
+
+  await signIn(page, baseURL)
+  await page.goto('/one/calendar')
+  await page.locator('[data-slot="diary"]').waitFor({ timeout: 25_000 })
+
+  // The one thing this surface stores rather than merges. A whole day, because
+  // that is the shape with no time picker in it — the pickers are frappe-ui's
+  // and driving one is not what this test is about.
+  await page.locator('[data-slot="diary-new"]').click()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByLabel('Name').fill(subject)
+  await dialog.getByLabel('All day').click()
+  await dialog.getByLabel('Starts').click()
+  await page.getByRole('button', { name: 'Today' }).last().click()
+  await dialog.getByRole('button', { name: 'Save' }).click()
+
+  // On the grid, in the reader's own diary rather than under any screen.
+  await expect(page.getByText(subject)).toBeVisible({ timeout: 15_000 })
+
+  // And it opens here rather than navigating away: an entry with no screen
+  // behind it has nowhere else to be edited.
+  await page.getByText(subject).click()
+  await expect(page.getByRole('dialog').getByText('Edit event')).toBeVisible()
+
+  await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click()
+  await expect(page.getByText(subject)).toBeHidden({ timeout: 15_000 })
 
   expectNoRealErrors(errors)
 })

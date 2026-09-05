@@ -3,8 +3,10 @@
 The calendar a screen offers reads one doctype. This one reads all of them: the
 week you actually have is a quotation due on Tuesday, a site visit on Wednesday
 and the review somebody put in your diary, and no single screen holds those
-three. So this is a *merge* rather than a store — nothing here writes anything,
-and every entry on it belongs somewhere else and says where.
+three. So this is a *merge* first — most of what is on it belongs somewhere else and
+says where — and a small store second: the events that are the reader's own
+have nowhere else to live, and `Event` is where the framework already puts
+them.
 
 Two sources, and both are already permissioned:
 
@@ -50,11 +52,32 @@ def agenda(since: str | None = None, until: str | None = None) -> dict:
 	take somebody's whole week away.
 	"""
 	spaces = visible(sync.state().get("spaces") or [])
-	found = _once(_from_screens(spaces, since, until) + _own_events(since, until))
+	mine = _own_events(since, until)
+	found = _once(_from_screens(spaces, since, until) + mine)
+	_theirs(found, mine)
 	# By when they start, so the merge reads as one diary rather than as its
 	# sources laid end to end. The grid sorts within a day itself.
 	found.sort(key=lambda one: (one.get("start") or "", one.get("title") or ""))
 	return {"events": found, "sources": _sources(spaces)}
+
+
+def _theirs(found: list[dict], mine: list[dict]) -> None:
+	"""Mark the entries that are the reader's own event, screen or no screen.
+
+	The de-duplication above hands a shared workspace's events screen the win,
+	which is right for opening a *record*: the screen is where the doctype's
+	own form and rules are. It is wrong for the one thing this surface writes.
+	A workspace with an events screen would otherwise let somebody press New
+	here, write an event, and then never be able to edit it from the diary they
+	wrote it in — the entry would open the screen instead.
+
+	So ownership is carried separately from where the entry came from. The
+	surface reads it as "yours opens here", and everything else opens where it
+	lives.
+	"""
+	owned = {one["record"] for one in mine}
+	for one in found:
+		one["mine"] = one.get("doctype") == EVENT and one.get("record") in owned
 
 
 def _once(found: list[dict]) -> list[dict]:
@@ -227,3 +250,90 @@ def _sources(spaces: list) -> list[dict]:
 				"screen": screen.get("screen"),
 			})
 	return found
+
+
+# --------------------------------------------------------------------------- #
+# The reader's own events, which are the one thing this surface stores.
+
+
+@frappe.whitelist(methods=["POST"])
+def save_event(values: str | dict) -> dict:
+	"""Write one event of the reader's own — new, or one they already own.
+
+	`ignore_permissions` behind this module's own gate, and the gate is
+	ownership rather than the workspace's doctype grants. Those grants are how
+	a *space* decides who may read its records; a diary is not a space, and
+	"you may put something in your own week" is not a thing an admin should
+	have to enable per workspace. `_mine` is the whole of it: a row you do not
+	own is a row this endpoint will not fetch.
+	"""
+	values = frappe.parse_json(values) if isinstance(values, str) else dict(values or {})
+
+	subject = (values.get("subject") or "").strip()
+	if not subject:
+		frappe.throw(_("Give it a name."))
+
+	starts_on = (values.get("starts_on") or "").strip()
+	if not starts_on:
+		frappe.throw(_("Say when it starts."))
+
+	ends_on = (values.get("ends_on") or "").strip()
+	# An end before the start is a typo every calendar makes possible and none
+	# should store: the grid would draw a span running backwards.
+	if ends_on and ends_on < starts_on:
+		frappe.throw(_("It cannot end before it starts."))
+
+	name = (values.get("name") or "").strip()
+	doc = _mine(name) if name else frappe.new_doc(EVENT)
+	doc.update({
+		"subject": subject,
+		"starts_on": starts_on,
+		"ends_on": ends_on or None,
+		"all_day": 1 if values.get("all_day") else 0,
+		"description": values.get("description") or "",
+		# Private, and not a choice on the form. A public Event is one the
+		# whole site sees, and a diary is the last place to offer that by
+		# accident — sharing an event is naming who is in it, which is the next
+		# piece of this rather than a dropdown here.
+		"event_type": "Private",
+	})
+
+	if name:
+		doc.save(ignore_permissions=True)
+	else:
+		doc.insert(ignore_permissions=True)
+	return {"ok": True, "name": doc.name}
+
+
+@frappe.whitelist(methods=["POST"])
+def remove_event(name: str) -> dict:
+	"""Delete one of the reader's own events."""
+	doc = _mine(name)
+	frappe.delete_doc(EVENT, doc.name, ignore_permissions=True)
+	return {"ok": True, "removed": name}
+
+
+@frappe.whitelist(methods=["GET"])
+def event(name: str) -> dict:
+	"""One of the reader's own events, to edit."""
+	doc = _mine(name)
+	return {
+		"name": doc.name,
+		"subject": doc.subject or "",
+		"starts_on": str(doc.starts_on or ""),
+		"ends_on": str(doc.ends_on or ""),
+		"all_day": int(doc.all_day or 0),
+		"description": doc.description or "",
+	}
+
+
+def _mine(name: str):
+	"""One event this person owns, or a refusal.
+
+	Owner and not participant: being invited to something is not permission to
+	rewrite it. Reading one is `agenda`, which already includes the events
+	somebody was named in.
+	"""
+	if not name or not frappe.db.exists(EVENT, {"name": name, "owner": frappe.session.user}):
+		frappe.throw(_("That is not one of your events."), frappe.PermissionError)
+	return frappe.get_doc(EVENT, name)
