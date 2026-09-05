@@ -241,6 +241,7 @@
             :cards="fetchedCards || spec.cards || {}"
             :calendar="fetchedCalendar || spec.calendar || {}"
             :gantt="spec.gantt || {}"
+            :tree="spec.tree || {}"
             :space-code="spaceCode"
             :layout="spec.layout || ''"
             :overrides="dashboardAsked"

@@ -50,6 +50,12 @@ export const VIEW_TYPES = {
     body: () => import('../components/screen/bodies/CardsBody.vue'),
   },
   map: { label: 'Map', icon: 'lucide-map', built: false },
+  tree: {
+    label: 'Tree',
+    icon: 'lucide-list-tree',
+    built: true,
+    body: () => import('../components/screen/bodies/TreeBody.vue'),
+  },
 }
 
 export const DEFAULT_VIEW_TYPE = 'list'
@@ -83,6 +89,15 @@ export const NEEDS_DATES = ['calendar']
  * twice is how the two drift. `viewtypes.NEEDS_SPANS` is the same rule.
  */
 export const NEEDS_SPANS = ['gantt']
+
+/**
+ * And a tree needs the field that points a record at the one above it.
+ *
+ * Declared and never inferred, which is the one place this differs from the
+ * desk: a doctype can have several Links to itself and only one of them is a
+ * hierarchy. `viewtypes.NEEDS_PARENT` is the same rule.
+ */
+export const NEEDS_PARENT = ['tree']
 
 /**
  * View types that are nothing without something declared for them to draw.
@@ -121,6 +136,7 @@ export function viewTypesOf(screen) {
     .filter((type) => hasColumnField(screen) || !NEEDS_STATUS.includes(type))
     .filter((type) => hasDateField(screen) || !NEEDS_DATES.includes(type))
     .filter((type) => hasSpan(screen) || !NEEDS_SPANS.includes(type))
+    .filter((type) => hasParentField(screen) || !NEEDS_PARENT.includes(type))
   return declared.length ? [...new Set(declared)] : [DEFAULT_VIEW_TYPE]
 }
 
@@ -161,6 +177,11 @@ function settingsOf(screen) {
  */
 function hasDateField(screen) {
   return !!String(settingsOf(screen)?.calendar?.start_field || '').trim()
+}
+
+/** Whether this screen names the field a tree nests by. `_has_parent_field`. */
+function hasParentField(screen) {
+  return !!String(settingsOf(screen)?.tree?.parent_field || '').trim()
 }
 
 /** Whether this screen names both ends of a bar. `spaceview._has_span`. */

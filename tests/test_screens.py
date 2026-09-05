@@ -1170,7 +1170,8 @@ def test_the_two_halves_agree_on_what_a_view_type_is(spaceview):
 	# And on what each of them is nothing without. The sidebar is the SPA's
 	# answer and the resolved screen is the server's; a type dropped by one and
 	# kept by the other is a menu entry that opens the wrong body.
-	for name in ("NEEDS_STATUS", "NEEDS_DATES", "NEEDS_SPANS", "NEEDS_WIDGETS"):
+	for name in ("NEEDS_STATUS", "NEEDS_DATES", "NEEDS_SPANS", "NEEDS_PARENT",
+	             "NEEDS_WIDGETS"):
 		needs = set(
 			_re.findall(r"'([\w]+)'", _re.search(
 				rf"export const {name} = \[([^\]]*)\]", source
@@ -1327,6 +1328,66 @@ def test_a_gantt_reads_two_dates_and_a_measure_of_how_far_along(spaceview):
 	assert spaceview._gantt({**resolved, "view_settings": {
 		"gantt": {"progress_field": "done"},
 	}})["progress_field"] == ""
+
+
+def test_a_tree_is_only_offered_where_a_screen_names_what_nests(spaceview):
+	"""And this one is never inferred, which is where it parts from the desk.
+
+	Frappe reads a nested set's own `parent_<doctype>` and has no answer for a
+	doctype that is not one. Guessing "the Link that points at this doctype" is
+	worse than asking, because a doctype can have several and only one of them
+	is a hierarchy — see `_tree`, which is handed exactly that case.
+	"""
+	said = '{"tree": {"parent_field": "renews"}}'
+	assert spaceview._view_types({"view_types": "list,tree", "view_settings": said}) \
+		== ["list", "tree"]
+	assert spaceview._view_types({"view_types": "tree"}) == ["list"]
+	assert spaceview._view_types({"view_types": "tree", "view_settings": "{}"}) == ["list"]
+	assert spaceview._view_types({
+		"view_types": "tree", "view_settings": '{"tree": {"parent_field": "  "}}',
+	}) == ["list"]
+
+
+def test_a_tree_nests_by_a_link_to_its_own_doctype_and_nothing_else(spaceview):
+	"""Which field points a record at the one above it.
+
+	The board's check, one property over: a column field has to be a Select or
+	a Link, and a parent field has to be a Link *at this doctype*. A Link to
+	something else is a relation and not a hierarchy — nesting a licence under
+	its issuer is a different picture with the same shape.
+	"""
+	columns = [
+		{"fieldname": "renews", "label": "Renews", "fieldtype": "Link",
+		 "options": "Compliance Document"},
+		{"fieldname": "renewed_by", "label": "Renewed by", "fieldtype": "Link",
+		 "options": "Compliance Document"},
+		{"fieldname": "issued_by", "label": "Issued by", "fieldtype": "Link",
+		 "options": "Supplier"},
+		{"fieldname": "title", "label": "Title", "fieldtype": "Data", "options": None},
+	]
+	resolved = {
+		"doctype": "Compliance Document",
+		"all_columns": columns,
+		"view_settings": {"tree": {"parent_field": "renews"}},
+	}
+	found = spaceview._tree(resolved)
+	assert found["parent_field"] == "renews"
+	# Both self-links are offered, and that is the whole argument for making the
+	# manifest choose: this doctype has two and only one of them nests.
+	assert [one["fieldname"] for one in found["fields"]] == ["renews", "renewed_by"]
+
+	# A Link somewhere else is a relation, not a hierarchy.
+	said = {**resolved, "view_settings": {"tree": {"parent_field": "issued_by"}}}
+	assert spaceview._tree(said)["parent_field"] == ""
+
+	# And a field that is not a Link at all, or is not a field at all.
+	for name in ("title", "nonesuch", ""):
+		said = {**resolved, "view_settings": {"tree": {"parent_field": name}}}
+		assert spaceview._tree(said)["parent_field"] == ""
+
+	# Nothing offered where the screen has no doctype: `options` matching a
+	# missing name would make every Link a parent field.
+	assert spaceview._tree({"all_columns": columns})["fields"] == []
 
 
 def test_the_days_on_screen_are_a_filter_and_never_a_saved_one(spaceview):

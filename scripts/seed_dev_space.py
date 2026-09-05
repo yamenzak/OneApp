@@ -236,7 +236,13 @@ SCREENS = [
 		# (Expired, Expiring, No expiry, Valid). That is a real coupling, so
 		# `test_the_statuses_sort_into_urgency` pins it rather than leaving it
 		# to be discovered by whoever renames one.
-		"order_by": "status asc, expiry_date asc", "view_types": "list,board",
+		"order_by": "status asc, expiry_date asc",
+		# And a tree, over the register's own renewal lineage. `renews` and
+		# `renewed_by` are both Links to Compliance Document and only one of
+		# them nests — which is the case that made the parent field something a
+		# manifest declares rather than something the server infers.
+		"view_types": "list,board,tree",
+		"view_settings": '{"tree": {"parent_field": "renews"}}',
 		"status_field": "status",
 		"singular": "Document",
 	},
@@ -470,7 +476,15 @@ PROPERTIES = [
 # about to be and something fine — which is the only way to look at a screen
 # whose whole job is to sort by urgency.
 COMPLIANCE = [
+	# Three years of one licence, so the register has a shape and not just a
+	# length: `renews` points each at the one it replaced, which is what the
+	# tree view nests by. The same document number all the way down, because
+	# that is what renewing a licence does to it.
+	("Trade Licence — 2024", "Licence", "CN-1109482", -377, 60,
+	 "Department of Economic Development", "Abu Dhabi"),
 	("Trade Licence", "Licence", "CN-1109482", -12, 60,
+	 "Department of Economic Development", "Abu Dhabi"),
+	("Trade Licence — 2027", "Licence", "CN-1109482", 353, 60,
 	 "Department of Economic Development", "Abu Dhabi"),
 	("Residence Visa — Ali Haddad", "Visa", "784-1990-2237841-6", 9, 60,
 	 "ICP", "Abu Dhabi"),
@@ -484,6 +498,16 @@ COMPLIANCE = [
 	# different thing from "expired".
 	("Memorandum of Association", "Contract", "MOA-2019-01", None, 30,
 	 "Notary Public", "Abu Dhabi"),
+]
+
+# Which of them replaced which, by title: `renews` holds an id, and a fixture
+# written in ids would be a fixture nobody can read. Applied after the inserts
+# rather than during, because the older document has to exist first — and
+# through `save` rather than `db.set_value`, so the doctype's own rule writes
+# `renewed_by` back on the other side of the pair.
+RENEWALS = [
+	("Trade Licence", "Trade Licence — 2024"),
+	("Trade Licence — 2027", "Trade Licence"),
 ]
 
 # Bilingual on purpose: this fixture is what proves `dir="auto"` puts an Arabic
@@ -516,6 +540,17 @@ def _seed_registers():
 			"issue_date": add_days(nowdate(), (offset or 0) - 365),
 			"remind_days": warn, "issued_by": issuer, "place_of_issue": place,
 		}).insert(ignore_permissions=True)
+
+	for title, renews in RENEWALS:
+		found = frappe.db.get_value("Compliance Document", {"title": title}, "name")
+		older = frappe.db.get_value("Compliance Document", {"title": renews}, "name")
+		if not (found and older):
+			continue
+		one = frappe.get_doc("Compliance Document", found)
+		if one.renews == older:
+			continue
+		one.renews = older
+		one.save(ignore_permissions=True)
 
 	for kind, subject, subject_ar, to, to_ar, status in CORRESPONDENCE:
 		if frappe.db.exists("Correspondence", {"subject": subject}):

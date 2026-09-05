@@ -9,10 +9,10 @@ from .meta import _json
 # drops what is not built, so such a screen opens as a list rather than as
 # nothing. `apps/oneapp/frontend/src/lib/viewTypes.js` is the same list, and a
 # test fails when the two drift.
-VIEW_TYPES = ("list", "board", "calendar", "dashboard", "gantt", "grid", "map")
+VIEW_TYPES = ("list", "board", "calendar", "dashboard", "gantt", "grid", "map", "tree")
 
 
-BUILT_VIEW_TYPES = ("list", "board", "grid", "dashboard", "calendar", "gantt")
+BUILT_VIEW_TYPES = ("list", "board", "grid", "dashboard", "calendar", "gantt", "tree")
 
 
 DEFAULT_VIEW_TYPE = "list"
@@ -42,6 +42,18 @@ NEEDS_DATES = ("calendar",)
 # screen offering both is placing its records by the same two dates, and making
 # it say so twice is how the two drift.
 NEEDS_SPANS = ("gantt",)
+
+
+# And a tree needs the field that points a record at the one above it.
+#
+# Declared, never inferred, and that is the one place this differs from the
+# desk: Frappe reads a nested set's own `parent_<doctype>` convention, and a
+# doctype that is not a nested set has no answer at all. Guessing "the Link
+# that points at this doctype" is worse than asking, because a doctype can have
+# several — our own Compliance Document has `renews` and `renewed_by`, and only
+# one of those two is a hierarchy. A nested set's field is still the obvious
+# thing to name; the manifest just has to name it.
+NEEDS_PARENT = ("tree",)
 
 
 # And the same rule for the dashboard, which is nothing without something to
@@ -105,6 +117,8 @@ def _view_types(screen: dict) -> list[str]:
 		declared = [one for one in declared if one not in NEEDS_DATES]
 	if not _has_span(screen):
 		declared = [one for one in declared if one not in NEEDS_SPANS]
+	if not _has_parent_field(screen):
+		declared = [one for one in declared if one not in NEEDS_PARENT]
 	return list(dict.fromkeys(declared)) or [DEFAULT_VIEW_TYPE]
 
 
@@ -147,6 +161,17 @@ def _has_span(screen: dict) -> bool:
 		if (found.get("start_field") or "").strip() and (found.get("end_field") or "").strip():
 			return True
 	return False
+
+
+def _has_parent_field(screen: dict) -> bool:
+	"""Whether this screen names the field a tree nests by.
+
+	A declaration check like the others; whether the field is a Link pointing
+	at this screen's own doctype is asked in `_tree`, where the columns are.
+	"""
+	settings = _json(screen.get("view_settings"))
+	found = settings.get("tree") if isinstance(settings, dict) else None
+	return bool(isinstance(found, dict) and (found.get("parent_field") or "").strip())
 
 
 def _has_column_field(screen: dict) -> bool:

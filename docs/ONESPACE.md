@@ -129,7 +129,7 @@ document_type Sales Invoice       what the list shows
 fields        customer,status,grand_total
 filters       {"status": "Open"}  always applied
 order_by      modified desc
-view_types    list,board,grid,dashboard,calendar,gantt   the first is the default
+view_types    list,board,grid,dashboard,calendar,gantt,tree  the first is the default
 view_settings {"board": {...}}    per type, what it needs beyond columns
 status_field  status              the badge, and the board's columns
 naming_series ACME-INV-.YYYY.-.#####       a fixture, applied once
@@ -419,6 +419,38 @@ record, and a handle that moves and springs back is worse than one that does
 not move. Clicking a bar opens the record.
 
 [gantt]: https://github.com/frappe/gantt
+
+### Tree — a register that has a shape
+
+```json
+"view_settings": {"tree": {"parent_field": "renews"}}
+```
+
+The field has to be a **Link at this screen's own doctype**. A Link somewhere
+else is a relation and not a hierarchy: nesting a licence under its issuer is a
+different picture with the same shape.
+
+**Declared, never inferred**, and that is the one place this parts from the
+desk. Frappe reads a nested set's own `parent_<doctype>` and has no answer at
+all for a doctype that is not one. Guessing "the Link that points at this
+doctype" is worse than asking, because a doctype can have several — our own
+Compliance Document has `renews` *and* `renewed_by`, and only one of the two is
+a hierarchy. Where a doctype is a nested set, `parent_<doctype>` is still the
+obvious thing to name; the manifest just has to name it.
+
+The nesting is built from **the page**, not from a second query per node, which
+leaves one question: what happens to a record whose parent is not there. It is
+drawn as a root, muted, and never dropped — the parent may have been filtered
+out, or be on a page nobody has loaded yet, and a tree that hides a record for
+either reason is one that disagrees with the count in its own footer. Load more
+re-nests it. Two records naming each other are both left at the top, which is
+the only drawing of a circle that terminates. `lib/tree.js` owns all of that,
+and is where its tests are.
+
+Clicking a record's *name* opens it; clicking the rest of the row expands it,
+which is what the desk's tree does too. One limit worth stating: a node with no
+children is drawn as a leaf whether or not the doctype would call it a group, so
+an empty group and a leaf look alike.
 
 ---
 

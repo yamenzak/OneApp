@@ -230,6 +230,46 @@ def _gantt(resolved: dict) -> dict:
 	}
 
 
+def _tree(resolved: dict) -> dict:
+	"""Which field points a record at the one above it.
+
+	The check is the board's, one property over: a board's column field has to
+	be a Select or a Link, and a tree's parent field has to be a Link *at this
+	doctype*. A Link to something else is a relation and not a hierarchy, and
+	drawing it as one would nest a licence under its issuer.
+
+	No fallback to a nested set's `parent_<doctype>`, unlike the desk. See
+	`viewtypes.NEEDS_PARENT` for why the manifest is made to say it.
+	"""
+	doctype = resolved.get("doctype") or ""
+	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or []}
+	said = (resolved.get("view_settings") or {}).get("tree") or {}
+
+	parent = said.get("parent_field") or ""
+	if not _nests(offered.get(parent), doctype):
+		parent = ""
+
+	return {
+		"parent_field": parent,
+		# Every field that could be one, so a picker needs no second question.
+		"fields": [
+			{"fieldname": c["fieldname"], "label": c["label"], "fieldtype": c["fieldtype"]}
+			for c in resolved.get("all_columns") or []
+			if _nests(c, doctype)
+		],
+	}
+
+
+def _nests(column: dict | None, doctype: str) -> bool:
+	"""Whether one column points a record at another of its own kind."""
+	return bool(
+		column
+		and doctype
+		and column.get("fieldtype") == "Link"
+		and column.get("options") == doctype
+	)
+
+
 def _window(resolved: dict, since: str, until: str) -> list:
 	"""The days on screen, as a filter, or nothing.
 
@@ -336,6 +376,7 @@ def _resolve_views(resolved: dict) -> dict:
 	resolved["board"] = _board(resolved)
 	resolved["calendar"] = _calendar(resolved)
 	resolved["gantt"] = _gantt(resolved)
+	resolved["tree"] = _tree(resolved)
 	resolved["cards"] = _cards(resolved)
 	resolved["widgets"] = _widgets(resolved)
 	resolved["fields"] = _fetch_fields(
@@ -352,6 +393,11 @@ def _resolve_views(resolved: dict) -> dict:
 		resolved["gantt"]["start_field"],
 		resolved["gantt"]["end_field"],
 		resolved["gantt"]["progress_field"],
+		# And the field a tree nests by, which is almost never a column: a
+		# register's parent link is bookkeeping until somebody looks at the
+		# hierarchy, and without this every record comes back with an empty
+		# parent and the tree is one flat list of roots.
+		resolved["tree"]["parent_field"],
 		# What a record *is*, which every surface draws and none of them asked
 		# for. The doctype's own `title_field` and `image_field`: the title cell
 		# reads one and the card reads the other, and neither is a column
