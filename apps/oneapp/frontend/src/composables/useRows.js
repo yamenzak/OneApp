@@ -30,6 +30,9 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
   // the old order — into headings that repeat, for as long as the request
   // takes.
   const groupedBy = ref('')
+  // What the money columns add up to over every row that matches. Empty except
+  // in a report, which is the only view that asks — see `loadTotals`.
+  const totals = ref({})
   const fetchedBoard = ref(null)
   const fetchedCards = ref(null)
   const fetchedCalendar = ref(null)
@@ -72,6 +75,34 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
     }
   }
 
+  /**
+   * The totals row, asked for the way the count is: on its own, after the rows.
+   *
+   * Over the whole filter rather than the page, which is the only thing that
+   * makes it worth showing — a total of the hundred rows that happen to be
+   * loaded, under a footer saying "100 of 1,240", is a number nobody can use
+   * and everybody would read as the total.
+   */
+  let totalling = 0
+  const loadTotals = async () => {
+    const asked = ++totalling
+    totals.value = {}
+    if (spec.value?.view_type !== 'report') return
+    try {
+      const answer = await workspace.screenTotals(
+        spaceCode,
+        spec.value.screen,
+        payload(),
+        spec.value.layout || '',
+        spec.value.view_type,
+      )
+      if (asked === totalling) totals.value = answer?.totals || {}
+    } catch {
+      // The rows are on screen and readable without a total under them. A
+      // failed aggregate leaves the row off rather than shouting.
+    }
+  }
+
   const loadRows = async () => {
     if (!spec.value?.doctype) {
       rows.value = []
@@ -95,6 +126,7 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
       fetchedCalendar.value = page?.calendar || null
       hasMore.value = !!page?.has_more
       countRows()
+      loadTotals()
     } catch (error) {
       // A read that fails is not an empty list, and this one is asked quietly
       // — so without this a server error renders as "nothing here yet", which
@@ -137,6 +169,7 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
   return {
     rows, columns, selection, total, hasMore, rowsLoading, loadingMore,
     rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards, fetchedCalendar,
+    totals,
     loadRows, countRows, loadMore, setPageLength,
   }
 }

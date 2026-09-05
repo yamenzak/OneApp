@@ -96,6 +96,84 @@ def rows(space_code: str, screen: str | None = None, limit: int = PAGE,
 	}
 
 
+# Which fieldtypes a totals row adds up.
+#
+# Money and quantities, and deliberately not Int or Percent. A sum of
+# percentages is not a percentage — it is a number with a percent sign on it,
+# which is worse than no number — and an Int column is as often an id, a
+# priority or a "remind me this many days before" as it is a count. Frappe's
+# report view totals both, but it also has a switch to turn the row off; this
+# one appears on its own, so it only appears where it means something.
+SUMMABLE = ("Currency", "Float")
+
+
+@frappe.whitelist(methods=["GET"])
+def totals(space_code: str, screen: str | None = None,
+           overrides: str | dict | None = None, layout: str | None = None,
+           view_type: str | None = None) -> dict:
+	"""What the money columns add up to, over every row that matches.
+
+	Its own request for the reason the count is: this is an aggregate over the
+	whole filter and the rows must not wait for it. And over the *whole* filter
+	rather than the page, which is the only thing that makes it worth showing —
+	a total of the hundred rows that happen to be loaded, under a footer saying
+	"100 of 1,240", is a number nobody can use and everybody would read as the
+	total.
+
+	Through `get_list` with an aggregate in `fields`, the way the dashboard's
+	widgets are: no raw SQL, and the same permissions the rows went through.
+	"""
+	resolved = _apply_overrides(
+		_apply_saved(_resolve(space_code, screen, view_type), layout), overrides
+	)
+	if not resolved.get("doctype"):
+		return {"totals": {}}
+
+	summed = _summable(resolved)
+	if not summed:
+		return {"totals": {}}
+
+	filters = _all_filters(resolved, resolved.get("asked") or [])
+	# One row back, with one aggregate per column: a totals row is one query
+	# however many money columns are on screen.
+	#
+	# `SUM` in capitals, because Frappe's `FUNCTION_MAPPING` is keyed that way
+	# and its check is case-sensitive — a lowercase key falls through to the
+	# child-table branch and throws about a list, which is a long way from
+	# saying "that is not a function I know".
+	found = frappe.get_list(
+		resolved["doctype"],
+		fields=[{"SUM": name, "as": name} for name in summed],
+		filters=filters,
+		limit_page_length=1,
+	)
+	answer = found[0] if found else {}
+	return {"totals": {name: _summed(answer.get(name)) for name in summed}}
+
+
+def _summable(resolved: dict) -> list[str]:
+	"""The columns on screen that a total means something for.
+
+	The reader's own columns rather than the doctype's fields: a total under a
+	column nobody is looking at is a query for nothing.
+	"""
+	return [
+		one["fieldname"] for one in resolved.get("columns") or []
+		if one.get("fieldtype") in SUMMABLE
+	]
+
+
+def _summed(value):
+	"""A sum, as a number rather than as whatever the driver handed back.
+
+	`SUM` over no rows is `None` and over a Decimal column is a `Decimal`, and
+	neither survives JSON as a number. Not the `_number` in `meta`, which is a
+	different question entirely — that one turns a *bound* of zero into no
+	bound.
+	"""
+	return float(value or 0)
+
+
 @frappe.whitelist(methods=["GET"])
 def record(space_code: str, screen: str, name: str) -> dict:
 	"""One row, fetched by id rather than found on a page.

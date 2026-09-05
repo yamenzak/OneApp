@@ -242,6 +242,7 @@
             :calendar="fetchedCalendar || spec.calendar || {}"
             :gantt="spec.gantt || {}"
             :tree="spec.tree || {}"
+            :totals="totals"
             :space-code="spaceCode"
             :layout="spec.layout || ''"
             :overrides="dashboardAsked"
@@ -871,7 +872,7 @@ const removeSelected = async () => {
 // The records this screen lists — `composables/useRows.js`.
 const {
   rows, columns, selection, total, hasMore, rowsLoading, loadingMore,
-  rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards, fetchedCalendar,
+  rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards, fetchedCalendar, totals,
   loadRows, loadMore, setPageLength,
 } = useRows({
   spaceCode: props.spaceCode,

@@ -155,6 +155,44 @@
             </ListCell>
           </ListRow>
         </ListRows>
+
+        <!--
+          A row of totals, under the rows and stuck to the bottom edge.
+
+          A `ListHeader` rather than a `ListRow`, which is what it structurally
+          is: the same tracks, the same band, the same pinning arithmetic, and
+          none of a row's selection or click behaviour. A total is not a record
+          and ticking it would be meaningless.
+
+          What goes in each cell is the consumer's — this table still knows
+          nothing about what a column contains.
+        -->
+        <!--
+          The select-all is hidden rather than absent: `ListHeader` draws one
+          whenever the list is selectable and offers no way to say otherwise,
+          and a checkbox beside a total is a control that would do nothing.
+          `invisible` rather than `hidden` so the cell keeps its width and the
+          totals stay under their own columns.
+
+          Mounted with the table rather than with the numbers, deliberately:
+          `ListHeader` sets the flag that puts the whole list into table
+          semantics and clears it on unmount, so a totals row that came and went
+          as an aggregate arrived would take `role="table"` with it.
+        -->
+        <ListHeader
+          v-if="$slots.total"
+          class="sticky bottom-0 z-20 border-t border-outline-gray-2
+                 [&_[data-slot=list-header-checkbox]]:invisible"
+        >
+          <ListHeaderCell
+            v-for="c in placed"
+            :key="c.key"
+            :class="[c.pin && PINNED, aligned(c)]"
+            :style="stickyStyle(c)"
+          >
+            <slot name="total" :column="c" />
+          </ListHeaderCell>
+        </ListHeader>
       </List>
     </div>
 

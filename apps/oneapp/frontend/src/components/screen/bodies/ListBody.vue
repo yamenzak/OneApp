@@ -26,7 +26,7 @@
     fills
     extra-class="pb-1"
     @sort="emit('sort', $event)"
-    @row-click="emit('open', $event)"
+    @row-click="report || emit('open', $event)"
   >
     <!--
       How many, then favourites. The heart is last and the cell is end-aligned,
@@ -71,16 +71,54 @@
         :meta="row._meta || {}"
         @like="emit('like', row)"
       />
-      <FieldCell
+      <!--
+        Everything else is a value, and in a report it is a value you can type
+        into. `EditableCell` decides whether this particular one may be — the
+        server already said which fields are writable — and draws the cell
+        unchanged where it may not.
+      -->
+      <EditableCell
         v-else
-        :column="column.column"
-        :value="row[column.key]"
+        :column="column"
         :row="row"
-        :links="row._links || {}"
-        :states="spec.states"
-        :space-code="spec.space"
-        :screen="spec.screen"
-      />
+        :spec="spec"
+        :enabled="report"
+        @change="emit('change', $event)"
+      >
+        <FieldCell
+          :column="column.column"
+          :value="row[column.key]"
+          :row="row"
+          :links="row._links || {}"
+          :states="spec.states"
+          :space-code="spec.space"
+          :screen="spec.screen"
+        />
+      </EditableCell>
+    </template>
+
+    <!--
+      The totals, where there are any. Only in a report: an extra aggregate
+      query on every list anybody opens is a price the plain list should not
+      pay, and Frappe puts its own totals behind a switch for the same reason.
+
+      Under the money columns and nowhere else — `_summable` on the server
+      decides which those are, and the word "Total" goes in the first column so
+      the row says what it is rather than being a mystery number in a band.
+    -->
+    <template v-if="report" #total="{ column }">
+      <span
+        v-if="column.key === first && hasTotals"
+        class="text-p-sm font-medium text-ink-gray-7"
+      >
+        Total
+      </span>
+      <span
+        v-else-if="totals[column.key] !== undefined"
+        class="tabular-nums text-p-sm font-medium text-ink-gray-8"
+      >
+        {{ money(totals[column.key], column.column) }}
+      </span>
     </template>
   </RecordTable>
 </template>
@@ -89,9 +127,13 @@
 import { computed } from 'vue'
 import { Button, ListHeaderCell } from '@/ui'
 import RecordTable from './RecordTable.vue'
+import EditableCell from './EditableCell.vue'
 import FieldCell from './FieldCell.vue'
 import TitleCell from './TitleCell.vue'
 import RowMeta from './RowMeta.vue'
+import { formatNumber } from '../../../lib/format'
+import { isNumericCell } from '../../../lib/fields'
+import { session } from '../../../lib/session'
 
 const props = defineProps({
   /** The resolved screen: columns, title field, states, permissions. */
@@ -108,9 +150,24 @@ const props = defineProps({
   counted: { type: String, default: '' },
   /** Which column the rows are grouped under, or empty. */
   groupBy: { type: String, default: '' },
+  /**
+   * What the money columns add up to over every row that matches, keyed by
+   * fieldname. Empty on a plain list, which does not ask for them.
+   */
+  totals: { type: Object, default: () => ({}) },
 })
 
-const emit = defineEmits(['open', 'like', 'sort', 'favourites'])
+const emit = defineEmits(['open', 'like', 'sort', 'favourites', 'change'])
+
+/**
+ * A report rather than a list: cells you can type into, a row of totals, and a
+ * row click that takes the cursor instead of opening the record.
+ *
+ * One body for both, because a report *is* the list plus those two things —
+ * and the click is why they are separate view types rather than a switch. See
+ * `lib/viewTypes.js`.
+ */
+const report = computed(() => props.spec?.view_type === 'report')
 
 const chosen = defineModel('selection', { type: Array, default: () => [] })
 
@@ -139,6 +196,10 @@ const visible = computed(() => {
     width: column.width,
     pin: column.pin,
     sortable: column.fieldname !== META_FIELD,
+    // A number belongs against the right edge of its column, and a total
+    // belongs under the numbers it adds up. `ChildTable` has done this since it
+    // was written and said in a comment that the list did too; it did not.
+    align: isNumericCell(column.cell) ? 'end' : '',
     cell:
       column.fieldname === META_FIELD
         ? 'meta'
@@ -148,6 +209,18 @@ const visible = computed(() => {
     column,
   }))
 })
+
+// The first column, which is where the word "Total" goes: a band of numbers
+// with nothing saying what they are is a mystery row.
+const first = computed(() => visible.value[0]?.key || '')
+
+const hasTotals = computed(() => Object.keys(props.totals || {}).length > 0)
+
+// The site's own number settings, so a total reads the way the values above it
+// do — same separators, same decimals. `lib/format.js` takes them as an
+// argument rather than importing them, which is why they are read here.
+const money = (value, column) =>
+  formatNumber(value, column, session.data?.formats || {})
 
 // Null when nothing is grouped, so the table can tell "no grouping" from "one
 // group".

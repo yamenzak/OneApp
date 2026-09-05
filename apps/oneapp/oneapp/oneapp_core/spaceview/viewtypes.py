@@ -9,10 +9,15 @@ from .meta import _json
 # drops what is not built, so such a screen opens as a list rather than as
 # nothing. `apps/oneapp/frontend/src/lib/viewTypes.js` is the same list, and a
 # test fails when the two drift.
-VIEW_TYPES = ("list", "board", "calendar", "dashboard", "gantt", "grid", "map", "tree")
+VIEW_TYPES = (
+	"list", "board", "calendar", "dashboard", "gantt", "grid", "map", "report",
+	"tree",
+)
 
 
-BUILT_VIEW_TYPES = ("list", "board", "grid", "dashboard", "calendar", "gantt", "tree")
+BUILT_VIEW_TYPES = (
+	"list", "board", "grid", "dashboard", "calendar", "gantt", "report", "tree",
+)
 
 
 DEFAULT_VIEW_TYPE = "list"

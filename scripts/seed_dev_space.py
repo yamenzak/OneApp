@@ -216,7 +216,11 @@ SCREENS = [
 		# sync job.
 		"screen": "approvals", "label": "Approvals", "icon": "lucide-shield",
 		"document_type": APPROVAL_DOCTYPE, "fields": APPROVAL_FIELDS,
-		"order_by": "creation desc", "view_types": "list",
+		# And a report, because this is the screen with money on it: `amount` is
+		# a Currency, so the totals row has something to add up, and an approval
+		# whose figure was typed wrong is exactly the thing somebody wants to fix
+		# without opening the record.
+		"order_by": "creation desc", "view_types": "list,report",
 		# No `status_field`, deliberately. A workflow's state *is* where the
 		# record stands, and the record header already says it — pointing the
 		# screen's badge at the same field makes the header say it twice in two

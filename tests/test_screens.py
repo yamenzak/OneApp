@@ -2784,3 +2784,39 @@ def test_a_selection_reaches_an_export_as_ids_and_nothing_else(spaceview):
 	assert spaceview._export_names("not json") == []
 	assert spaceview._export_names(None) == []
 	assert spaceview._export_names([{"name": "CD-1"}, 7]) == []
+
+
+def test_a_totals_row_adds_up_money_and_leaves_everything_else_alone(spaceview):
+	"""Which columns a total means something under.
+
+	Currency and Float, and deliberately not Int or Percent. A sum of
+	percentages is a number with a percent sign on it, which is worse than no
+	number; and an Int column is as often an id, a priority or a "remind me this
+	many days before" as it is a count. Frappe's report view totals both — and
+	also has a switch to turn the row off. This one appears on its own, so it
+	only appears where it means something.
+	"""
+	resolved = {"columns": [
+		{"fieldname": "title", "fieldtype": "Data"},
+		{"fieldname": "amount", "fieldtype": "Currency"},
+		{"fieldname": "hours", "fieldtype": "Float"},
+		{"fieldname": "remind_days", "fieldtype": "Int"},
+		{"fieldname": "done", "fieldtype": "Percent"},
+	]}
+	assert spaceview._summable(resolved) == ["amount", "hours"]
+
+	# The reader's own columns, not the doctype's fields: a total under a column
+	# nobody is looking at is a query for nothing.
+	assert spaceview._summable({"columns": []}) == []
+	assert spaceview._summable({}) == []
+
+
+def test_a_sum_survives_the_trip_as_a_number(spaceview):
+	"""`SUM` over no rows is None and over a Decimal column is a Decimal, and
+	neither is a number by the time it reaches a browser."""
+	from decimal import Decimal
+
+	assert spaceview._summed(None) == 0.0
+	assert spaceview._summed(Decimal("8600.50")) == 8600.5
+	assert spaceview._summed(0) == 0.0
+	assert isinstance(spaceview._summed(Decimal("1")), float)

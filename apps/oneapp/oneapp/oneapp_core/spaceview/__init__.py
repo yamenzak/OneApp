@@ -184,8 +184,11 @@ from .links import (
 	link_preview,
 )
 from .records import (
+	SUMMABLE,
 	_child_changes,
 	_link_groups,
+	_summable,
+	_summed,
 	_total,
 	_with_authors,
 	_with_children,
@@ -200,6 +203,7 @@ from .records import (
 	rows,
 	save,
 	spec,
+	totals,
 )
 from .export import (
 	EXCEL_BOM,
@@ -397,6 +401,10 @@ __all__ = [
 	"_space",
 	"_status_field",
 	"_tags_column",
+	"SUMMABLE",
+	"_summable",
+	"_summed",
+	"totals",
 	"_total",
 	"_users",
 	"_view_icon",

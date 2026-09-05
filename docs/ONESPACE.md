@@ -129,7 +129,7 @@ document_type Sales Invoice       what the list shows
 fields        customer,status,grand_total
 filters       {"status": "Open"}  always applied
 order_by      modified desc
-view_types    list,board,grid,dashboard,calendar,gantt,tree  the first is the default
+view_types    list,report,board,grid,dashboard,calendar,gantt,tree   the first is the default
 view_settings {"board": {...}}    per type, what it needs beyond columns
 status_field  status              the badge, and the board's columns
 naming_series ACME-INV-.YYYY.-.#####       a fixture, applied once
@@ -269,7 +269,7 @@ Deliberately not honoured: `in_global_search`, `search_index`, `unique`,
 
 ---
 
-## 5. The four bodies
+## 5. The bodies
 
 A view type is *how you look*; a saved view is *which slice*. Both are in the
 URL (`type` and `layout`) and **every saved view is filed under the type it was
@@ -322,6 +322,35 @@ byte-order mark, without which Excel on Windows reads UTF-8 as the system
 codepage and turns every Arabic subject into mojibake. Capped at 5,000 rows, and
 the toast says so when it bites: a spreadsheet that quietly stops is the worst
 thing to hand somebody who is about to add it up.
+
+### Report — the same list, opened as a worksheet
+
+A report *is* the list, plus two things: cells you can type into, and a row of
+totals under them.
+
+They are a separate view type rather than a switch on the list because of the
+**click**. A list row opens the record; a report cell takes the cursor. One
+click cannot mean both, and Frappe answered it the same way. `ListBody` draws
+them both — a report is a mode of the list, not a second table — and the title
+cell still opens the record, which is the way back.
+
+**Inline edit** is `FieldControl`, the same control the record form draws, and
+the write is the same `saveRecord` — so the doctype's rules, its permissions and
+its `fetch_from` all still happen, and the list re-reads afterwards because the
+save may have changed more than was sent. A cell is editable where the server
+already said the field is (`editable` carries fieldtype, `read_only` and
+permlevel) and the row is not submitted. Escape abandons; Enter and leaving the
+cell commit; a value that did not change sends nothing, because a version on a
+record saying nothing happened is worse than no version.
+
+**The totals** are an aggregate over the whole filter, asked for separately from
+the rows the way the count is. Over the filter and not the page is the only
+thing that makes them worth showing: a total of the hundred rows that happen to
+be loaded, under a footer reading "100 of 1,240", is a number nobody can use and
+everybody would read as the total. Currency and Float only — a sum of
+percentages is a number with a percent sign on it, and an Int column is as often
+an id or a priority as it is a count. No switch: the row appears where it means
+something and nowhere else, which is why the plain list pays nothing for it.
 
 ### Board — the same list, drawn as columns
 

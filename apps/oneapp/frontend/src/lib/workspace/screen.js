@@ -69,6 +69,21 @@ export const screen = {
       { silent: true, method: 'GET' },
     ),
 
+  // What the money columns add up to. Its own request for the reason the count
+  // is one: an aggregate over the whole filter, which nothing should wait for.
+  screenTotals: (spaceCode, screen, overrides, layout, viewType) =>
+    callMethod(
+      'oneapp.oneapp_core.spaceview.totals',
+      {
+        space_code: spaceCode,
+        screen,
+        layout,
+        view_type: viewType,
+        overrides: overrides ? JSON.stringify(overrides) : null,
+      },
+      { silent: true, method: 'GET' },
+    ),
+
   // The same rows, as a file. Its own endpoint rather than a page size of five
   // thousand: an export is the whole answer, it is built as a CSV on the server
   // where the quoting is testable, and `names` narrows it to a selection so

@@ -50,6 +50,21 @@ export const VIEW_TYPES = {
     body: () => import('../components/screen/bodies/CardsBody.vue'),
   },
   map: { label: 'Map', icon: 'lucide-map', built: false },
+  /**
+   * The same table, opened as a worksheet rather than as a way in.
+   *
+   * `ListBody` again and not a body of its own: a report *is* the list, plus
+   * two things — cells you can type into and a row of totals under them. What
+   * makes them a separate view type rather than a switch on the list is the
+   * click. A list row opens the record; a report cell takes the cursor. One
+   * click cannot mean both, and Frappe answered it the same way.
+   */
+  report: {
+    label: 'Report',
+    icon: 'lucide-table',
+    built: true,
+    body: () => import('../components/screen/bodies/ListBody.vue'),
+  },
   tree: {
     label: 'Tree',
     icon: 'lucide-list-tree',
