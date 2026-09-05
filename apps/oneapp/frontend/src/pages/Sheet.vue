@@ -41,7 +41,7 @@ workspace
 
 const hostMenu = computed(() => [{
   group: 'This sheet',
-  items: [
+  options: [
     {
       // A template is a sheet with a flag on it, so this is the whole feature
       // — see `oneapp_core/sheets/templates.py`.

@@ -6,10 +6,10 @@
 <template>
   <Dialog
     v-model="show"
-    :options="{ title: pivotId ? 'Edit pivot table' : 'Create pivot table', size: 'lg' }"
+    :title="pivotId ? 'Edit pivot table' : 'Create pivot table'" size="lg"
     :disable-outside-click-to-close="pickerOpenCount > 0"
   >
-    <template #body-content>
+    <template #default>
 
       <!-- ── Source range ─────────────────────────────────────────────────── -->
       <div class="pv-section">
@@ -90,7 +90,7 @@
             <div v-for="v in valueFields" :key="v.field" class="pv-chip pv-chip--value">
               <Dropdown
                 :options="aggOpts(v)"
-                placement="bottom-start"
+                side="bottom" align="start"
                 @update:open="onAggDropdownToggle"
               >
                 <template #default="{ open }">

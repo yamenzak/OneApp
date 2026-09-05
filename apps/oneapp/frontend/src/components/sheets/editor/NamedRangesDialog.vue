@@ -4,8 +4,8 @@
   and modified for OneSpace — see lib/sheets/VENDORED.md.
 -->
 <template>
-  <Dialog v-model="show" :options="{ title: 'Named ranges', size: 'lg' }">
-    <template #body-content>
+  <Dialog v-model="show" title="Named ranges" size="lg">
+    <template #default>
 
       <!-- ── Add new ────────────────────────────────────────────────────── -->
       <div class="nr-section">

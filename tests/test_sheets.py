@@ -374,3 +374,76 @@ def test_the_package_re_exports_everything_it_whitelists(sheets):
 		assert hasattr(sheets, name), (
 			f"sheets.{name} is whitelisted but not re-exported — it would 404"
 		)
+
+
+# --------------------------------------------------------------------------- #
+# The licence, kept
+# --------------------------------------------------------------------------- #
+
+VENDORED_TREES = (
+	"lib/sheets/engine",
+	"lib/sheets/canvas",
+	"lib/sheets/utils",
+	"components/sheets/editor",
+)
+
+# Ours, inside a vendored tree, and listed as ours in VENDORED.md.
+OURS_INSIDE = {
+	"components/sheets/editor/usePersistence.js",
+	"components/sheets/editor/useCollaboration.js",
+	"components/sheets/editor/shortcutRegistry.js",
+}
+
+
+def _vendored_files():
+	root = ROOT / "apps/oneapp/frontend/src"
+	found = []
+	for tree in VENDORED_TREES:
+		for path in sorted((root / tree).rglob("*")):
+			if path.suffix in (".js", ".vue"):
+				found.append((path.relative_to(root).as_posix(), path))
+	return found
+
+
+def test_every_vendored_file_says_where_it_came_from(sheets):
+	"""AGPL asks three things, and this is the one a new file can break.
+
+	Frappe's copyright notice stays, the upstream path it came from is written
+	down, and neither may be dropped by somebody adding a file to one of these
+	directories and copying the one beside it. The other two obligations —
+	never relicensing, and writing down what we changed — cannot be checked by
+	a test; `VENDORED.md` is where they live.
+	"""
+	missing = [
+		where
+		for where, path in _vendored_files()
+		if where not in OURS_INSIDE
+		and "Copyright (c) Frappe Technologies" not in path.read_text()
+	]
+	assert not missing, (
+		"these are in a vendored tree and carry no provenance header: "
+		+ ", ".join(missing)
+	)
+
+
+def test_the_vendored_trees_are_the_ones_the_guards_skip(sheets):
+	"""One list, or the guards and the licence disagree about what is theirs.
+
+	`tests/vendored.py` is what every frontend guard reads; the eslint config
+	and the token audit hold the same paths. A tree added here and not there is
+	a guard reporting style rules against somebody else's file, which is the
+	failure this whole arrangement exists to avoid.
+	"""
+	from vendored import VENDORED as SKIPPED
+
+	skipped = {part.replace("frontend/src/", "").rstrip("/") for part in SKIPPED}
+	# `lib/sheets` covers all three of its subtrees.
+	assert "lib/sheets" in skipped
+	assert "components/sheets/editor" in skipped
+
+	eslint = (ROOT / "scripts/spa/build.py").read_text()
+	assert "'src/lib/sheets/**'" in eslint
+	assert "'src/components/sheets/editor/**'" in eslint
+
+	audit = (ROOT / "scripts/token_audit.py").read_text()
+	assert '"components/sheets/editor/"' in audit

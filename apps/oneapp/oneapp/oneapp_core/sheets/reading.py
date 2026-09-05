@@ -26,6 +26,19 @@ def tabs(sheet: str) -> list[str]:
     return codec.tab_names(book.load(sheet))
 
 
+@frappe.whitelist(methods=["GET"])
+def named_ranges(sheet: str) -> list[dict]:
+    """The ranges a document could be filled from.
+
+    Its own endpoint rather than a slice of `get_sheet`, because the caller is
+    the fill control on a record — it wants the contract and not the workbook,
+    and handing it twenty megabytes to read four labels would be the wrong
+    shape however cheap the query is.
+    """
+    _mine(sheet)
+    return ranges(sheet)
+
+
 def ranges(sheet: str) -> list[dict]:
     """The named ranges, as `[{label, tab, ref}, …]`, alphabetically.
 

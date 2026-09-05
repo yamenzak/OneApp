@@ -40,7 +40,7 @@ from .refs import (
 )
 from .codec import MAX_BYTES
 from .book import get_sheet, save_sheet
-from .reading import ranges, read_range, tabs
+from .reading import named_ranges, ranges, read_range, tabs
 from .export import ROUTE, download, to_response, url_for
 from .writing import copy_of, make, on_trash
 from .templates import TEMPLATE_FIELD, listing, set_template
@@ -68,6 +68,7 @@ __all__ = [
     "make",
     "MAX_BYTES",
     "MAX_CELLS",
+    "named_ranges",
     "number",
     "on_trash",
     "parse",

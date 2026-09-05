@@ -104,7 +104,7 @@
         <Badge v-if="protectionNotice" theme="gray" variant="subtle" size="sm" :label="protectionNotice" :tooltip="protectionNotice" />
       </div>
       <div class="sn-topbar-right">
-        <Dropdown :options="fileDropdownOptions" placement="right">
+        <Dropdown :options="fileDropdownOptions" align="end">
           <template #default="{ open }">
             <Button :variant="open ? 'subtle' : 'ghost'" size="sm" iconLeft="lucide-file-text" iconRight="lucide-chevron-down" label="File" tooltip="Import / export" />
           </template>
@@ -164,12 +164,12 @@
          :aria-disabled="readOnly || undefined">
 
       <!-- Number format -->
-      <Dropdown :options="numberFormatDropdownOptions" placement="left" class="sn-numfmt">
+      <Dropdown :options="numberFormatDropdownOptions" align="start" class="sn-numfmt">
         <template #default="{ open }">
           <Button :variant="open ? 'subtle' : 'ghost'" size="sm" iconRight="lucide-chevron-down" :label="numberFormatLabel" tooltip="Number format" />
         </template>
       </Dropdown>
-      <Dropdown :options="currencyDropdownOptions" placement="left" class="sn-currency">
+      <Dropdown :options="currencyDropdownOptions" align="start" class="sn-currency">
         <template #default="{ open }">
           <Button :variant="activeNumberFormatType === 'currency' ? 'subtle' : (open ? 'subtle' : 'ghost')" size="sm" :label="activeCurrencySymbol" tooltip="Currency" />
         </template>
@@ -184,7 +184,7 @@
       <div class="sn-vr" />
 
       <!-- Font -->
-      <Dropdown :options="fontFamilyDropdownOptions" placement="left" class="sn-font-family">
+      <Dropdown :options="fontFamilyDropdownOptions" align="start" class="sn-font-family">
         <template #default="{ open }">
           <Button :variant="open ? 'subtle' : 'ghost'" size="sm" iconRight="lucide-chevron-down" :label="activeFontFamilyLabel" tooltip="Font family" />
         </template>
@@ -206,7 +206,7 @@
       <div class="sn-vr" />
 
       <!-- Align + Color -->
-      <Dropdown :options="alignDropdownOptions" placement="bottom">
+      <Dropdown :options="alignDropdownOptions" align="center">
         <template #default="{ open }">
           <Button :variant="open ? 'subtle' : 'ghost'" size="sm" :icon="hAlignIcon" tooltip="Alignment" />
         </template>
@@ -249,7 +249,7 @@
         <div class="sn-vr" />
         <Button :variant="showSortFilter ? 'subtle' : 'ghost'"   size="sm" icon="lucide-filter"               tooltip="Toggle filter"              @click="showSortFilter = !showSortFilter" />
         <div class="sn-vr" />
-        <Dropdown :options="textWrapDropdownOptions" placement="bottom">
+        <Dropdown :options="textWrapDropdownOptions" align="center">
           <template #default="{ open }">
             <Button :variant="open ? 'subtle' : 'ghost'" size="sm" :icon="textWrapIcon" tooltip="Text wrapping" />
           </template>
@@ -258,7 +258,7 @@
         <Button variant="ghost" size="sm" icon="lucide-blend"    tooltip="Conditional formatting"      @click="openCfDialog(null)" />
         <Button variant="ghost" size="sm" icon="lucide-link"     tooltip="Insert hyperlink (Ctrl+L)"   @click="openHyperlinkDialog" />
         <div class="sn-vr" />
-        <Dropdown :options="borderDropdownOptions" placement="bottom">
+        <Dropdown :options="borderDropdownOptions" align="center">
           <template #default="{ open }">
             <Button :variant="open ? 'subtle' : 'ghost'" size="sm" icon="lucide-layout-grid" tooltip="Borders" />
           </template>
@@ -284,7 +284,9 @@
 
       <!-- More -->
       <div class="sn-tool-more">
-        <Dropdown :options="moreToolbarOptions" placement="left">
+        <!-- `end`, not `start`: More is the last control on the bar, so a menu
+             that grew rightwards from its left edge would open off-screen. -->
+        <Dropdown :options="moreToolbarOptions" align="end">
           <template #default="{ open }">
             <Button :variant="open ? 'subtle' : 'ghost'" size="sm" icon="lucide-more-horizontal" tooltip="More" />
           </template>
@@ -506,7 +508,7 @@
       />
 
       <!-- Pivot FAB — floats below the Grand Total row, like Google Sheets -->
-      <Dropdown v-if="activePivotConfig && pivotFabStyle" :options="pivotBannerMenuOptions" placement="top-start">
+      <Dropdown v-if="activePivotConfig && pivotFabStyle" :options="pivotBannerMenuOptions" side="top" align="start">
         <template #default="{ open }">
           <button class="sn-pivot-fab" :class="{ open }" :style="pivotFabStyle" title="Pivot table options">
             <Icon name="lucide-edit-2" class="sn-pivot-fab-icon" />
@@ -708,8 +710,8 @@
     </div>
 
     <!-- Rename sheet dialog -->
-    <Dialog v-model="showRenameDialog" :options="{ title: 'Rename sheet', size: 'sm' }">
-      <template #body-content>
+    <Dialog v-model="showRenameDialog" title="Rename sheet" size="sm">
+      <template #default>
         <FormControl ref="renameInputRef" v-model="renameValue" label="New name" placeholder="Sheet name" @keydown.enter="confirmRename" />
         <p v-if="renameError" class="sn-rename-err">{{ renameError }}</p>
       </template>
@@ -857,8 +859,8 @@
     </CommandPalette>
 
     <!-- Hyperlink dialog (Ctrl+L) — stores fmt.hyperlink on the active cell -->
-    <Dialog v-model="showHyperlinkDialog" :options="{ title: 'Insert hyperlink', size: 'sm' }">
-      <template #body-content>
+    <Dialog v-model="showHyperlinkDialog" title="Insert hyperlink" size="sm">
+      <template #default>
         <div class="sn-form-stack">
           <FormControl v-model="hyperlinkText" label="Display text" placeholder="Click here" />
           <FormControl v-model="hyperlinkUrl"  label="Link URL" placeholder="https://example.com" @keydown.enter="confirmHyperlink" />
@@ -874,8 +876,8 @@
     </Dialog>
 
     <!-- Data validation dialog -->
-    <Dialog v-model="validationDialog.open" :options="{ title: 'Data validation', size: 'sm' }">
-      <template #body-content>
+    <Dialog v-model="validationDialog.open" title="Data validation" size="sm">
+      <template #default>
         <div class="sn-form-stack">
           <!-- Type -->
           <FormControl type="select" label="Type" v-model="validationDialog.type"
@@ -951,8 +953,8 @@
     </Dialog>
 
     <!-- Insert N rows / columns dialog -->
-    <Dialog v-model="showInsertManyDialog" :options="{ title: insertMany.kind === 'row' ? 'Insert rows' : 'Insert columns', size: 'sm' }">
-      <template #body-content>
+    <Dialog v-model="showInsertManyDialog" :title="insertMany.kind === 'row' ? 'Insert rows' : 'Insert columns'" size="sm">
+      <template #default>
         <FormControl
           v-model.number="insertMany.count"
           type="number"
@@ -971,8 +973,8 @@
     </Dialog>
 
     <!-- Custom number-format dialog -->
-    <Dialog v-model="customFormatDialog.open" :options="{ title: 'Custom number format', size: 'sm' }">
-      <template #body-content>
+    <Dialog v-model="customFormatDialog.open" title="Custom number format" size="sm">
+      <template #default>
         <div class="sn-form-stack">
           <FormControl
             v-model="customFormatDialog.pattern"
@@ -1007,7 +1009,7 @@
     <div v-for="sl in activeSlicers" :key="sl.id" class="sn-slicer"
          :style="{ left: sl.x + 'px', top: sl.y + 'px' }">
       <div class="sn-slicer-head" @mousedown="startSlicerDrag(sl, $event)">
-        <Dropdown :options="slicerColMenu(sl)" placement="bottom-start" class="sn-slicer-colsel">
+        <Dropdown :options="slicerColMenu(sl)" side="bottom" align="start" class="sn-slicer-colsel">
           <template #default="{ open }">
             <Button :variant="open ? 'subtle' : 'ghost'" size="sm" iconRight="lucide-chevron-down"
                     :label="sl.label" tooltip="Filter column"
@@ -1087,8 +1089,8 @@
     </div>
 
     <!-- Conditional formatting dialog -->
-    <Dialog v-model="cfDialog.open" :options="{ title: 'Conditional formatting', size: 'sm' }">
-      <template #body-content>
+    <Dialog v-model="cfDialog.open" title="Conditional formatting" size="sm">
+      <template #default>
         <div class="sn-form-stack">
           <!-- Existing rules — click to edit, ✕ to delete. Only shown when
                the active sheet has any rules; otherwise we jump straight to
@@ -1685,23 +1687,23 @@ const FONT_FAMILY_STACK = {
 // Flat list driving the dropdown — groups give the menu its sectioned layout.
 // Each entry is a stored format string; clicking applies it as-is.
 const NUMBER_FORMAT_GROUPS = [
-  { group: 'General', items: [
+  { group: 'General', options: [
     { label: 'General',         value: ''            },
     { label: 'Plain text',      value: 'text'        },
   ]},
-  { group: 'Number', items: [
+  { group: 'Number', options: [
     { label: 'Decimal',         value: 'number'      },
     { label: 'Decimal — Indian (1,23,456)', value: 'number:in' },
     { label: 'Percent',         value: 'percentage'  },
   ]},
-  { group: 'Currency', items: [
+  { group: 'Currency', options: [
     { label: 'USD ($)',         value: 'currency:USD:2' },
     { label: 'EUR (€)',         value: 'currency:EUR:2' },
     { label: 'GBP (£)',         value: 'currency:GBP:2' },
     { label: 'INR (₹)',         value: 'currency:INR:2' },
     { label: 'JPY (¥)',         value: 'currency:JPY:0' },
   ]},
-  { group: 'Date', items: [
+  { group: 'Date', options: [
     { label: 'Auto (locale)',           value: 'date'         },
     { label: 'DD/MM/YYYY',              value: 'date:dmy'     },
     { label: 'MM/DD/YYYY',              value: 'date:mdy'     },
@@ -1709,13 +1711,13 @@ const NUMBER_FORMAT_GROUPS = [
     { label: '15 Jan 2025',             value: 'date:long'    },
     { label: 'Mon, 15 Jan 2025',        value: 'date:full'    },
   ]},
-  { group: 'Time', items: [
+  { group: 'Time', options: [
     { label: '15:30',           value: 'time:hm'     },
     { label: '15:30:45',        value: 'time:hms'    },
     { label: '3:30 PM',         value: 'time:hm12'   },
     { label: '3:30:45 PM',      value: 'time:hms12'  },
   ]},
-  { group: 'Date + Time', items: [
+  { group: 'Date + Time', options: [
     { label: '15/01/2025, 3:30 PM',     value: 'datetime:dmy_hm12'  },
     { label: '15 Jan 2025, 3:30 PM',    value: 'datetime:long_hm12' },
     { label: '2025-01-15, 15:30:00',    value: 'datetime:ymd_hms'   },
@@ -1781,13 +1783,13 @@ const FILTER_OPERATOR_OPTIONS = [
 ]
 
 const fileDropdownOptions = computed(() => [
-  { group: 'Export', items: [
+  { group: 'Export', options: [
     { label: 'Export as CSV',  icon: 'lucide-download',  onClick: () => exportCSV() },
     { label: 'Export as XLSX', icon: 'lucide-download',  onClick: () => exportXLSX() },
     { label: 'Export as PDF',  icon: 'lucide-printer',   onClick: () => exportPDF() },
   ]},
   // Import writes cells — hide it for viewers (export/read stays available).
-  ...(readOnly.value ? [] : [{ group: 'Import', items: [
+  ...(readOnly.value ? [] : [{ group: 'Import', options: [
     { label: 'Import CSV',  icon: 'lucide-upload', onClick: () => csvInputRef.value?.click() },
     { label: 'Import XLSX', icon: 'lucide-upload', onClick: () => xlsxInputRef.value?.click() },
   ]}]),
@@ -2063,7 +2065,7 @@ const fontFamilyDropdownOptions = computed(() =>
 // the user bumped decimals on a currency format).
 const _FORMAT_LABELS = (() => {
   const m = new Map()
-  for (const g of NUMBER_FORMAT_GROUPS) for (const it of g.items) m.set(it.value, it.label)
+  for (const g of NUMBER_FORMAT_GROUPS) for (const it of g.options) m.set(it.value, it.label)
   return m
 })()
 
@@ -2108,12 +2110,12 @@ const numberFormatLabel = computed(() => {
 const numberFormatDropdownOptions = computed(() => [
   ...NUMBER_FORMAT_GROUPS.map(g => ({
     group: g.group,
-    items: g.items.map(it => ({
+    options: g.options.map(it => ({
       label: it.label,
       onClick: () => onNumberFormatChange(activeNumberFormat.value === it.value ? '' : it.value),
     })),
   })),
-  { group: 'Custom', items: [
+  { group: 'Custom', options: [
     { label: 'Custom format…', onClick: () => openCustomFormatDialog() },
   ]},
 ])

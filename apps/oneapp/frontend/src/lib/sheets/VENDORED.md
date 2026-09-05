@@ -26,18 +26,41 @@ imports anything outside this tree — is the only way to have them.
 
 ## What we changed
 
-Nothing inside `engine/`, `canvas/` or `utils/` except the header block. That is
-deliberate: their own test suite comes with them and runs unmodified (`yarn
-test`), so an upstream fix can be pulled in by re-copying a file rather than by
-re-deriving a patch.
+**Nothing inside `engine/`, `canvas/` or `utils/` except the header block.**
+That is deliberate: their own unit suite comes with them and runs unmodified
+(`yarn test`), so an upstream fix can be pulled in by re-copying a file rather
+than by re-deriving a patch.
 
-Everything OneSpace-shaped lives *outside* these three directories:
+**The editor is modified**, and every change is one of three kinds.
 
-* `../../components/sheets/` and `../../pages/Sheet.vue` — our chrome, our
-  routes, our theme tokens.
-* `store.js` here — the save payload and the load, against
-  `oneapp.oneapp_core.sheets` rather than `sheets.api`, because a sheet of ours
-  is a `File` in the Drive and not a `Sheet` doctype.
+*Seams* — files that were theirs and are now ours, each with its reason at the
+top of it:
+
+| File | Why |
+|---|---|
+| `store.js` | Their `usePersistence`, against `oneapp.oneapp_core.sheets` rather than `sheets.api`, because a sheet of ours is a `File` in the Drive. Adds a `values` slice their payload has no reason to carry. |
+| `headless.js` | A workbook built with no grid on screen, for the Drive's import. |
+| `xlsx-file.js` | ExcelJS where upstream calls SheetJS. Their pure `engine/xlsx-io.js` mapper is untouched behind it. |
+| `services/versions.js`, `services/linkPreview.js` | Two features whose server halves are not ported, shaped so they can be. |
+| `../../components/sheets/editor/usePersistence.js` | The five refs and five functions `index.vue` expects, over `store.js`. |
+| `../../components/sheets/editor/useCollaboration.js` | Inert. Yjs wants a second Node process. |
+| `../../components/sheets/editor/shortcutRegistry.js` | frappe-ui 1.0 replaced `{key, ctrl}` with `'Mod+S'`. |
+
+*Version differences* — the editor targets frappe-ui `1.0.0-beta.3` and this
+repository is on `beta.55`. Thirteen components they register globally are
+imported per file here; `FeatherIcon` is `Icon` with `lucide-*` names;
+`Autocomplete` is `Select`; the command palette is the seven-part family that
+replaced it; `{group, items}` is `{group, options}`; `Dialog`'s `:options` are
+props with the body in the default slot; `Popover`'s `#target`/`#body` are
+`#trigger`/default; `placement` is `side` and `align`. None of these is an
+error at build time — a renamed prop is a menu that opens on "No options" and a
+dialog that opens empty.
+
+*Removals* — the share dialog (a sheet is a `File`, and two share models for
+one object is the bug), AI Assist, the version-history trigger, Frappe's brand
+mark, and a second copy of the signed-in person's avatar.
+
+`docs/SHEETS.md` §8 is the long form.
 
 ## What we did not take
 

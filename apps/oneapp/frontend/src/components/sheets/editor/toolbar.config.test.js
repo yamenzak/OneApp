@@ -15,20 +15,20 @@ describe('buildAlignOptions', () => {
 
   it('horizontal group has 3 items', () => {
     const opts = buildAlignOptions({ setAlign: vi.fn(), setValign: vi.fn() })
-    expect(opts[0].items).toHaveLength(3)
+    expect(opts[0].options).toHaveLength(3)
   })
 
   it('clicking Left calls setAlign("left")', () => {
     const setAlign = vi.fn()
     const opts = buildAlignOptions({ setAlign, setValign: vi.fn() })
-    opts[0].items[0].onClick()
+    opts[0].options[0].onClick()
     expect(setAlign).toHaveBeenCalledWith('left')
   })
 
   it('clicking Middle calls setValign("middle")', () => {
     const setValign = vi.fn()
     const opts = buildAlignOptions({ setAlign: vi.fn(), setValign })
-    opts[1].items[1].onClick()
+    opts[1].options[1].onClick()
     expect(setValign).toHaveBeenCalledWith('middle')
   })
 })
@@ -42,20 +42,20 @@ describe('buildBorderOptions', () => {
   it('clicking All borders calls applyBorder("all")', () => {
     const applyBorder = vi.fn()
     const opts = buildBorderOptions({ applyBorder })
-    opts[0].items[0].onClick()
+    opts[0].options[0].onClick()
     expect(applyBorder).toHaveBeenCalledWith('all')
   })
 
   it('No border item has red theme', () => {
     const opts = buildBorderOptions({ applyBorder: vi.fn() })
-    const noBorder = opts[2].items[0]
+    const noBorder = opts[2].options[0]
     expect(noBorder.theme).toBe('red')
   })
 
   it('clicking No border calls applyBorder("none")', () => {
     const applyBorder = vi.fn()
     const opts = buildBorderOptions({ applyBorder })
-    opts[2].items[0].onClick()
+    opts[2].options[0].onClick()
     expect(applyBorder).toHaveBeenCalledWith('none')
   })
 })
@@ -81,14 +81,14 @@ describe('buildMoreToolbarOptions', () => {
   it('Strikethrough calls toggleFmt("strikethrough")', () => {
     const h = makeHandlers()
     const opts = buildMoreToolbarOptions(h)
-    opts[0].items[0].onClick()
+    opts[0].options[0].onClick()
     expect(h.toggleFmt).toHaveBeenCalledWith('strikethrough')
   })
 
   it('Toggle filter calls toggleSortFilter', () => {
     const h = makeHandlers()
     const opts = buildMoreToolbarOptions(h)
-    const filterItem = opts[2].items.find(i => i.label === 'Toggle filter')
+    const filterItem = opts[2].options.find(i => i.label === 'Toggle filter')
     filterItem.onClick()
     expect(h.toggleSortFilter).toHaveBeenCalled()
   })
@@ -96,7 +96,7 @@ describe('buildMoreToolbarOptions', () => {
   it('Zoom in calls zoomBy(+0.1)', () => {
     const h = makeHandlers()
     const opts = buildMoreToolbarOptions(h)
-    const zoomIn = opts[4].items.find(i => i.label === 'Zoom in')
+    const zoomIn = opts[4].options.find(i => i.label === 'Zoom in')
     zoomIn.onClick()
     expect(h.zoomBy).toHaveBeenCalledWith(+0.1)
   })
@@ -104,7 +104,7 @@ describe('buildMoreToolbarOptions', () => {
   it('Pivot table calls openPivotDialog', () => {
     const h = makeHandlers()
     const opts = buildMoreToolbarOptions(h)
-    const pivot = opts[5].items[0]
+    const pivot = opts[5].options[0]
     pivot.onClick()
     expect(h.openPivotDialog).toHaveBeenCalled()
   })

@@ -92,7 +92,7 @@ APPS = {
         # with them. It is the only thing in either bundle that a browser pass
         # cannot reach: a formula evaluator's edge cases are not a screen.
         "dev_packages": {"vitest": "^2.1.0", "happy-dom": "^20.10.2"},
-        "unit_tests": "src/lib/sheets/**/*.test.js",
+        "unit_tests": "src/{lib/sheets,components/sheets/editor}/**/*.test.js",
     },
     # Signing up, and nothing else.
     #

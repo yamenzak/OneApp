@@ -23,6 +23,13 @@ export const sheets = {
       success: 'Sheet created',
     }),
 
+  // The contract, and nothing else about the sheet. A record's fill control
+  // wants four labels, not the workbook.
+  sheetRanges: (name) =>
+    callMethod('oneapp.oneapp_core.sheets.named_ranges', { sheet: name }, {
+      silent: true, method: 'GET',
+    }),
+
   sheetTemplates: () =>
     callMethod('oneapp.oneapp_core.sheets.listing', {}, { silent: true, method: 'GET' }),
 

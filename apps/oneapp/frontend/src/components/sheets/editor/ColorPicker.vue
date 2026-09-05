@@ -17,15 +17,15 @@
   own (the toolbar uses its glyph + underline button).
 -->
 <template>
-  <Popover :placement="placement">
-    <template #target="{ togglePopover, isOpen }">
-      <slot name="trigger" :toggle="togglePopover" :open="isOpen" :color="modelValue">
-        <button type="button" class="sn-cp-trigger" :class="{ open: isOpen }" :title="title" @click="togglePopover()">
+  <Popover :side="side" :align="align">
+    <template #trigger="{ toggle, open: isOpen }">
+      <slot name="trigger" :toggle="toggle" :open="isOpen" :color="modelValue">
+        <button type="button" class="sn-cp-trigger" :class="{ open: isOpen }" :title="title" @click="toggle()">
           <span class="sn-cp-trigger-sw" :style="{ background: isHex(modelValue) ? modelValue : 'transparent' }" />
         </button>
       </slot>
     </template>
-    <template #body="{ close }">
+    <template #default="{ close }">
       <div class="sn-cp-pop">
         <div class="sn-cp-grid">
           <button v-for="c in COLORS" :key="c" type="button" class="sn-cp-sw"
@@ -78,7 +78,10 @@ const props = defineProps({
   defaultValue: { type: String, default: '' },
   defaultLabel: { type: String, default: 'Default' },
   title:        { type: String, default: 'Colour' },
-  placement:    { type: String, default: 'bottom-start' },
+  // frappe-ui 1.0 split the old `placement` in two: which edge of the trigger
+  // the panel sits on, and where along that edge it lines up.
+  side:         { type: String, default: 'bottom' },
+  align:        { type: String, default: 'start' },
   // The native picker needs a literal hex even when modelValue is unset.
   fallback:     { type: String, default: '#000000' },
 })

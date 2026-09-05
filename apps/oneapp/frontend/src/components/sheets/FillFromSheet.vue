@@ -272,8 +272,7 @@ watch(picked, async (name) => {
   error.value = ''
   if (!name) return
   try {
-    const found = await workspace.sheetOpen(name)
-    ranges.value = found?.ranges || []
+    ranges.value = (await workspace.sheetRanges(name)) || []
     const standing = props.from && ranges.value.find((one) => one.label === props.from.label)
     label.value = (standing || ranges.value[0])?.label || ''
   } catch (raised) {

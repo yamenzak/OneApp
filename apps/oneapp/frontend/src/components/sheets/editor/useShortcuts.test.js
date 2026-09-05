@@ -8,8 +8,13 @@ import { ref } from 'vue'
 // frappe-ui's barrel drags in resources that don't resolve under vitest, and we
 // only care that the right shortcut *configs* get registered — so mock
 // `useShortcut` to capture every config it's handed.
+//
+// Mocked at `./shortcutRegistry.js` rather than at `frappe-ui`: frappe-ui 1.0
+// has no `useShortcut`, and the adapter that translates `{key, ctrl}` into its
+// `'Mod+S'` combo grammar is what this file's subject now calls. The configs
+// captured are still the ones `useShortcuts` writes, which is what is asserted.
 const { registered } = vi.hoisted(() => ({ registered: [] }))
-vi.mock('frappe-ui', () => ({
+vi.mock('./shortcutRegistry.js', () => ({
   useShortcut: (configs) => registered.push(...(Array.isArray(configs) ? configs : [configs])),
 }))
 

@@ -94,3 +94,24 @@
     border-radius: 0;
   }
 }
+
+/*
+ * A menu never grows past the screen it opens on.
+ *
+ * frappe-ui's `Menu` content has no height cap. That is fine for a menu of six
+ * items and wrong for the spreadsheet's More menu, which has seven groups and
+ * comes to 848px — 128px taller than a 720p viewport, with the last two groups
+ * simply unreachable: not clipped, not scrollable, drawn off the bottom of the
+ * document. Playwright's word for it was "element is outside of the viewport",
+ * and a person's would be "the menu has no Workbook section".
+ *
+ * Keyed to `.menu-content`, which is a named hook in frappe-ui's own markup
+ * rather than a utility class, and to reka's own popper variable — which is
+ * already the distance from the trigger to the edge of the screen, so the cap
+ * is exactly right on every side and every viewport rather than a guess at
+ * `80vh`. A menu that fits is untouched.
+ */
+.menu-content {
+  max-height: var(--reka-popper-available-height, 100vh);
+  overflow-y: auto;
+}

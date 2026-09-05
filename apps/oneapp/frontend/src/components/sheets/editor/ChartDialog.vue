@@ -4,8 +4,8 @@
   and modified for OneSpace — see lib/sheets/VENDORED.md.
 -->
 <template>
-  <Dialog v-model="show" :options="{ title: chartId ? 'Edit chart' : 'Insert chart', size: '4xl' }">
-    <template #body-content>
+  <Dialog v-model="show" :title="chartId ? 'Edit chart' : 'Insert chart'" size="4xl">
+    <template #default>
 
       <!-- ── Source range ─────────────────────────────────────────────── -->
       <div class="cd-section">

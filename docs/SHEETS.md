@@ -4,6 +4,13 @@ A spreadsheet you can put anywhere: on its own, in a folder, or bound to a
 record so the numbers a person works out in a grid become the lines on a
 quotation.
 
+**Read §8 first if you only read one section.** Everything before it is the
+study written before any of this existed, and the build it describes shipped —
+but a second build replaced its two central decisions: the grid is Frappe's now
+rather than ours, and a workbook is one blob rather than a row per cell. The
+earlier sections are kept because the arguments in them are still the arguments,
+and because §8 only makes sense against what it changed.
+
 Written as a study before any of it is built. §1 is the licence position,
 because on this job it decides the architecture and not merely what may be
 copied. §2 is what Frappe Sheets actually is, read out of the repository. §3 is
@@ -472,3 +479,93 @@ permission boundary inside a cell, and because it is the one thing that would
 force server-side evaluation and therefore §1's licence problem. Not in the
 first four stages. Worth designing before Stage 3 fixes the cell model in a way
 that forbids it.
+
+
+---
+
+## 8. The second build: take theirs
+
+The first build wrote its own grid. It worked — a windowed table of DOM rows
+over a formula engine on `fast-formula-parser`, about five thousand lines with
+a browser suite and a Python suite around it. It was also a few thousand lines
+against Frappe's forty-four thousand, and everything it did not do was
+something somebody had already done under a licence we had already taken.
+
+So the second build takes theirs. `frappe/sheets` at `3f9e37b5776f`:
+
+* `frontend/src/engine/` and `frontend/src/canvas/` come across **whole and
+  unmodified** into `apps/oneapp/frontend/src/lib/sheets/`. Neither imports
+  anything outside that tree — no Vue, no Frappe, no DOM beyond the canvas
+  element — which is the fact that makes taking them possible without taking
+  their app. Their unit suite comes with them and runs unchanged: 931 tests in
+  four seconds, `yarn test`.
+* `frontend/src/pages/SheetEditor/` comes across into
+  `src/components/sheets/editor/` and **is** modified, at seven named seams
+  listed in `lib/sheets/VENDORED.md`.
+
+### What the seams are, and why each one exists
+
+| Seam | Why |
+|---|---|
+| `lib/sheets/store.js` | Their `usePersistence`, against our endpoints. Adds the `values` slice — see below. |
+| `editor/usePersistence.js` | The five refs and five functions `index.vue` expects, over `store.js`. |
+| `editor/useCollaboration.js` | Inert. Yjs needs a second Node process; §2 and Stage 7 are the argument, and it has not changed. |
+| `lib/sheets/services/versions.js` | The op log is not ported. The panel is wired and its button is gone. |
+| `lib/sheets/services/linkPreview.js` | An outbound fetch to a URL somebody typed into a cell wants a policy before it wants code. |
+| `editor/shortcutRegistry.js` | frappe-ui 1.0 replaced `{key, ctrl}` with `'Mod+S'`. |
+| `lib/sheets/xlsx-file.js` | ExcelJS where upstream calls SheetJS, for the reason in §1's neighbourhood: SheetJS's newest npm release still carries two advisories fixed only on its own CDN. Their pure `xlsx-io.js` mapper is untouched behind it. |
+
+Dropped rather than seamed: the share dialog (a sheet is a `File`, and two
+share models for one object is the bug), AI Assist (we have our own metered
+gateway; wiring it is its own piece of work), and Frappe's brand mark.
+
+### The reversal: one blob, not a row per cell
+
+§7 asked "how big may a sheet be?" and the first build answered with a cap and
+a row per cell, so the read-back could be a query. The second build stores the
+workbook as one gzipped blob in a single `Sheet Book` row, because the grid is
+no longer ours to shape the store around: it loads the workbook entire and
+saves it entire, and a second store the browser never reads would be a second
+thing to keep in step with no reader to justify it.
+
+`oneapp_core/sheets/codec.py` is how Python reads it. The cap moved with the
+shape — 40 MB uncompressed, measured after a bounded gunzip so a small envelope
+cannot expand into a large allocation.
+
+One slice of the saved payload is ours and not upstream's: **`values`, beside
+`sheet`.** Their server never needs a number, so their payload carries only
+what was typed. Ours needs one — the read-back into a child table, the CSV a
+share link serves, any print format — and none of those has a browser to work
+out `=A2*B2`. So §1's bargain survives the reversal intact, under a different
+name: the browser evaluates, and the server stores what it computed.
+
+### What the frappe-ui gap cost
+
+Their editor targets frappe-ui `1.0.0-beta.3` and this repository is on
+`beta.55`. Six differences, every one of them silent at build time and visible
+only by opening the page:
+
+* Thirteen components they register globally in `main.js` and we do not, so
+  every `<Dropdown>` was an unknown element and its slot was never called.
+* `FeatherIcon` is gone; `Icon` takes a `lucide-*` name.
+* `useShortcut` is `useKeyboardShortcut`, with a combo string.
+* `Autocomplete` is `Select`, which speaks values rather than option objects.
+* `CommandPalette` became a seven-part family that composes.
+* `{group, items}` became `{group, options}`, `Dialog`'s `:options` became
+  props with the body in the default slot, `Popover`'s `#target`/`#body` became
+  `#trigger`/default, and `placement` split into `side` and `align`.
+
+The last group is the one worth remembering: a renamed prop is not an error in
+a JS build. A dropdown whose group still said `items` opened on "No options",
+and a dialog whose body still said `#body-content` opened as an empty card with
+a Done button. Both looked like features that had never been written.
+
+### What is still not built
+
+Live collaboration, version history, link previews, AI. The first three have
+seams waiting for them and the fourth has a gateway. Everything else Frappe
+Sheets does — pivots, charts, conditional formats, data validation, merges,
+spills, fill series, smart fill, sort and filter, protection, comments, the
+fill handle, draggable columns, frozen panes, the command palette, find and
+replace, split text, slicers, sparklines — is here, because it came with the
+engine.
