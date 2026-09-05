@@ -783,13 +783,20 @@ as a spreadsheet rather than as a form with grid lines.
 the same code the pull does, so what it shows is what lands. Pressing it twice
 cannot double a quotation.
 
+**A filled table says where it came from, and can be locked.** Under the rows:
+"Filled from Padel Pro estimator · LineItems, five minutes ago". Locking is
+RUA's lock — after it the document is the record and the sheet is history, and
+the server refuses a pull rather than the control merely disappearing. The
+record survives the sheet being deleted, because that is the moment it is worth
+most.
+
 **The control is on every editable child table**, not on the ones a manifest
 named. Declaring the binding is the more disciplined design and the wrong one:
 it would mean nobody can price a job in a grid and feed it into a doctype
 nobody thought of in advance, which is the thing spreadsheets are for.
 
 Not built yet, and deliberately: two people in one sheet at once, charts,
-pivots, and locking a pulled range so the document becomes the record.
+pivots, and cell protection.
 
 ---
 

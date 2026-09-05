@@ -378,3 +378,7 @@ def on_trash(doc, method=None):
         return
     for table in ("Sheet Cell", "Sheet Tab", "Sheet Range"):
         frappe.db.delete(table, {"sheet": doc.name})
+
+    # `Sheet Feed` deliberately survives. "These lines came off Padel Pro
+    # estimator on the 3rd" is worth keeping precisely when the estimator is
+    # not — which is why `Sheet Feed.sheet` is `Data` rather than a `Link`.

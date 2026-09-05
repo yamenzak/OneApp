@@ -13,12 +13,13 @@
           is nothing to write to until the document exists.
         -->
         <FillFromSheet
-          v-if="editable && docname"
+          v-if="editable && docname && !locked"
           :doctype="doctype"
           :docname="docname"
           :into="field.fieldname"
           :fields="child.fields || []"
-          @filled="emit('reload')"
+          :from="feed"
+          @filled="filled"
         />
         <!-- What is ticked, and the one thing worth doing to it. Beside the
              count rather than in a floating bar: a child table is a few rows
@@ -38,6 +39,16 @@
         </span>
       </div>
     </div>
+
+    <!-- Where these rows came from, when they came from a sheet. Under the
+         label rather than beside it: it is a sentence, and a sentence in a row
+         of controls is the thing that pushes them onto a second line. -->
+    <FeedNote
+      v-if="feed"
+      :feed="feed"
+      :editable="editable"
+      @changed="(one) => { feed = one }"
+    />
 
     <!--
       The same table the list is drawn with.
@@ -159,13 +170,15 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { Button, Dialog, FormLabel } from '@/ui'
 import RecordTable from '../bodies/RecordTable.vue'
 import FieldCell from '../bodies/FieldCell.vue'
 import FieldControl from '../fields/FieldControl.vue'
 import RecordForm from './RecordForm.vue'
 import FillFromSheet from '../../sheets/FillFromSheet.vue'
+import FeedNote from '../../sheets/FeedNote.vue'
+import { workspace } from '../../../lib/workspace'
 import { isNumericCell } from '../../../lib/fields'
 
 const props = defineProps({
@@ -180,6 +193,40 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['reload'])
+
+/**
+ * The standing feed for this table, when there is one.
+ *
+ * Fetched here rather than handed down, because the record surface has no
+ * reason to know about sheets and a table that was never filled from one
+ * should cost nothing — which is what `docname` being empty on a new record
+ * makes true.
+ */
+const feed = ref(null)
+const locked = computed(() => feed.value?.status === 'Locked')
+
+async function readFeed() {
+  if (!props.docname) {
+    feed.value = null
+    return
+  }
+  try {
+    const found = await workspace.sheetFeeds(props.doctype, props.docname)
+    feed.value = (found || []).find((one) => one.into === props.field.fieldname) || null
+  } catch {
+    // A record whose feeds cannot be read still draws its rows. This line is
+    // provenance, not content.
+    feed.value = null
+  }
+}
+
+function filled(done) {
+  if (done?.feed) feed.value = done.feed
+  emit('reload')
+}
+
+onMounted(readFeed)
+watch(() => [props.doctype, props.docname, props.field.fieldname], readFeed)
 
 /** The rows, as the record holds them. Assigned whole, as Frappe stores them. */
 const rows = defineModel('rows', { type: Array, default: () => [] })

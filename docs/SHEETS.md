@@ -314,11 +314,31 @@ this is what makes it part of the product.
   one template then serves millimetres and metres. The mapping — which header
   fills which field — is a stored mapping and not code, for the same reason
   `importer.py` is an engine and not a script.
-* **Pull is idempotent and repeatable until it is locked.** Locking is what
-  RUA's lock did: after it, the document is the record and the sheet is
-  history. Repeatable is built — a pull replaces the child table rather than
-  appending to it, so pressing it twice cannot double a quotation. Locking is
-  not, and is the next thing this wants.
+* **Pull is idempotent and repeatable until it is locked.** A pull replaces
+  the child table rather than appending to it, so pressing it twice cannot
+  double a quotation. Locking is what RUA's lock did: after it, the document is
+  the record and the sheet is history, and a pull is refused rather than
+  quietly overwriting lines somebody has since corrected by hand.
+
+  What makes locking possible is that a pull now leaves a `Sheet Feed` row —
+  one per (document, child table), replaced when the table is filled again. It
+  holds which sheet, which range, how many rows, which headings were left out,
+  when, and by whom. Until it existed a quotation had no memory of where its
+  prices came from; a month later nobody could say which estimator those were.
+
+  Two decisions in that row are worth stating. `sheet` is `Data` and not a
+  `Link`, because the moment the provenance matters most is when the sheet is
+  gone — "these lines came off Padel Pro estimator on the 3rd" is worth keeping
+  when the estimator is not, and a link would either block the delete or take
+  the record with it. And it is its own doctype rather than columns on the
+  document, because the document is somebody else's doctype and this product
+  does not add fields to Frappe's Quotation to say where it was filled from.
+
+  The permission on a feed row is the **document's**, not the sheet's. A row
+  saying "this quotation was filled from that estimator" is as private as the
+  quotation, and no more; and locking is a statement about the quotation, so
+  the person entitled to make it is the one who may write it — often not the
+  estimator whose sheet fed it.
 
 **The manifest declaration was dropped, on purpose.** The plan had a space
 declare which screen may be filled from which range:

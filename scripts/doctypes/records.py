@@ -351,3 +351,61 @@ doctype(
                       "uses."),
     ],
 )
+
+
+# --------------------------------------------------------------------------- #
+# What a document was filled from
+#
+# A quotation whose line items came off a spreadsheet has, until now, no memory
+# of that: `pull` writes the rows and returns a count, and a month later nobody
+# can say which sheet those prices were. That is the whole of what this row is
+# for — one per (document, child table), replaced when it is filled again.
+#
+# `sheet` is `Data` and not a `Link`, deliberately. A link would block deleting
+# the sheet and would take this row with it if the block were lifted, and the
+# one moment this matters most is when the sheet is gone: "these lines came off
+# Padel Pro estimator on the 3rd" is worth keeping when the estimator is not.
+# --------------------------------------------------------------------------- #
+
+doctype(
+    "Sheet Feed",
+    app="tenant",
+    autoname="hash",
+    title_field="sheet_title",
+    search_fields="reference_doctype,reference_name,sheet_title",
+    perms=READONLY_PERMS,
+    track_changes=1,
+    fields=[
+        f("reference_doctype", "Link", options="DocType", reqd=1, in_list_view=1),
+        f("reference_name", "Dynamic Link", options="reference_doctype", reqd=1,
+          in_list_view=1),
+        f("into", "Data", reqd=1, in_list_view=1,
+          label="Child Table",
+          description="The fieldname of the table these rows landed in. One "
+                      "feed per table: a second pull into the same table "
+                      "replaces the rows, so it replaces this too."),
+        section("source", "Where it came from"),
+        f("sheet", "Data", reqd=1,
+          description="The File this was pulled from, by name. Data rather "
+                      "than a Link so the record outlives the sheet."),
+        f("sheet_title", "Data",
+          description="What that sheet was called when the rows were pulled."),
+        f("label", "Data", reqd=1,
+          description="The named range. The contract — see `Sheet Range`."),
+        column("outcome"),
+        f("filled", "Int", read_only=1, description="Rows written."),
+        f("skipped", "Small Text", read_only=1,
+          description="Headings with no matching field, which were left out."),
+        section("state", "Where it stands"),
+        f("status", "Select", options="Following\nLocked", default="Following",
+          in_list_view=1,
+          description="Following: filling again replaces these rows. Locked: "
+                      "the document is the record now and the sheet is "
+                      "history, so a pull is refused until somebody unlocks "
+                      "it."),
+        f("pulled_on", "Datetime", read_only=1),
+        f("pulled_by", "Link", options="User", read_only=1),
+        f("locked_on", "Datetime", read_only=1),
+        f("locked_by", "Link", options="User", read_only=1),
+    ],
+)

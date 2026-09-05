@@ -186,11 +186,19 @@ def test_every_entry_point_goes_through_the_file(sheets):
 	# record being attached to.
 	MAKES = {"make"}
 
+	# And these three are not about a sheet at all. `Sheet Feed` records that a
+	# document's rows came off a spreadsheet, and the permission that governs
+	# it is the *document's* — a row saying "this quotation was filled from
+	# that estimator" is as private as the quotation, and no more. Each checks
+	# `frappe.has_permission` on the reference, which the sweep below cannot
+	# tell apart from checking nothing.
+	ABOUT_A_DOCUMENT = {"feeds", "lock", "unlock"}
+
 	bodies = re.split(r"@frappe\.whitelist\([^)]*\)\ndef ", source)[1:]
 	unguarded = [
 		body.split("(")[0]
 		for body in bodies
-		if body.split("(")[0] not in MAKES
+		if body.split("(")[0] not in MAKES | ABOUT_A_DOCUMENT
 		and "_mine(" not in body
 		and "check_permission" not in body
 		and "get_list" not in body
@@ -246,6 +254,32 @@ def test_a_sheets_file_url_is_a_url_the_framework_accepts(sheets):
 	assert sheets.ROUTE.startswith("/api/method/")
 	assert sheets.url_for("abc123").startswith("/api/method/")
 	assert "abc123" in sheets.url_for("abc123")
+
+
+def test_the_feed_endpoints_ask_the_document(sheets):
+	"""The three that do not ask a File must ask the document instead.
+
+	Exempting them from the sweep above is only safe if something says what
+	they do ask, which is this.
+	"""
+	source = (SHEETS / "feed.py").read_text()
+	for name in ("def feeds(", "def _set_status("):
+		block = source[source.index(name):]
+		head = block[:block.index("frappe.get_all") if "frappe.get_all" in block[:900] else 900]
+		assert "has_permission" in head, f"{name.strip('def (')} does not check the document"
+
+
+def test_a_locked_table_refuses_a_pull(sheets):
+	"""What locking is for: after it, the document is the record.
+
+	A pull that went through anyway would be a spreadsheet quietly overwriting
+	a quotation somebody has since corrected by hand — which is the failure
+	RUA's lock existed to prevent.
+	"""
+	source = (SHEETS / "feed.py").read_text()
+	block = source[source.index("def pull("):]
+	# The refusal comes before anything is read out of the sheet.
+	assert "LOCKED" in block[:block.index("read_range(")]
 
 
 def test_the_one_download_funnel_knows_about_sheets(sheets):

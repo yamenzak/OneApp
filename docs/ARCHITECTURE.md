@@ -64,7 +64,10 @@ The single modules, roughly by how often they are touched:
   written here is the grid, which a File cannot hold. Six layers: `refs` (A1
   notation, no Frappe), `reading`, `writing`, `templates`, `export` (one tab as
   CSV, and the URL a sheet's `file_url` honestly points at) and `feed` — the
-  read-back, where a named rectangle fills a document's child table. `Sheet
+  read-back, where a named rectangle fills a document's child table, and the
+  `Sheet Feed` row that remembers it did. That row's permission is the
+  *document's*, which is the one place in this package the guarding question is
+  not "may you have this File". `Sheet
   Cell` stores `raw` beside `value` and nothing on this side reads `raw`: the
   browser evaluates formulas, the server stores what it computed. See
   `docs/SHEETS.md`.

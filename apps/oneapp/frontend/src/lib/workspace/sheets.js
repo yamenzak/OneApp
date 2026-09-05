@@ -74,6 +74,24 @@ export const sheets = {
       silent: true, method: 'GET',
     }),
 
+  // Where a document's rows came from. Its own call rather than a field on the
+  // record, because `Sheet Feed` is ours and the document is somebody else's
+  // doctype — this product does not add columns to Frappe's Quotation.
+  sheetFeeds: (doctype, docname) =>
+    callMethod('oneapp.oneapp_core.sheets.feeds', { doctype, docname }, {
+      silent: true, method: 'GET',
+    }),
+
+  sheetLock: (doctype, docname, into) =>
+    callMethod('oneapp.oneapp_core.sheets.lock', { doctype, docname, into }, {
+      success: 'These rows are locked',
+    }),
+
+  sheetUnlock: (doctype, docname, into) =>
+    callMethod('oneapp.oneapp_core.sheets.unlock', { doctype, docname, into }, {
+      success: 'Following the sheet again',
+    }),
+
   sheetPull: (name, params) =>
     callMethod('oneapp.oneapp_core.sheets.pull', { sheet: name, ...params }, {
       success: 'Filled from the sheet',

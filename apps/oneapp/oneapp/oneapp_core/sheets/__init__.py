@@ -34,7 +34,7 @@ from .writing import (
     set_range, set_tab_geometry, write_cells,
 )
 from .templates import TEMPLATE_FIELD, listing, set_template
-from .feed import header, number, preview, pull
+from .feed import FOLLOWING, LOCKED, feeds, header, lock, number, preview, pull, unlock
 
 __all__ = [
     "add_tab",
@@ -46,11 +46,15 @@ __all__ = [
     "copy_into",
     "download",
     "feed",
+    "feeds",
+    "FOLLOWING",
     "format",
     "format_range",
     "grid",
     "header",
     "listing",
+    "lock",
+    "LOCKED",
     "make",
     "MAX_CELLS",
     "number",
@@ -72,6 +76,7 @@ __all__ = [
     "tabs",
     "to_response",
     "TEMPLATE_FIELD",
+    "unlock",
     "url_for",
     "within",
     "write_cells",

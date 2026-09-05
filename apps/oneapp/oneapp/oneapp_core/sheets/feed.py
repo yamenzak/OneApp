@@ -103,11 +103,24 @@ def pull(sheet: str, label: str, doctype: str, docname: str, into: str,
     that wants this is a manifest entry, not a module. A header with no mapping
     falls back to the field whose label or fieldname it matches, so a template
     written to match the doctype needs no mapping at all.
+
+    Refused once the table is locked. `lock` is what RUA's lock did: after it,
+    the document is the record and the sheet is history, and a pull that went
+    through anyway would be the sheet quietly overwriting a quotation somebody
+    has since corrected by hand.
     """
-    _mine(sheet)
+    doc = _mine(sheet)
 
     target = frappe.get_doc(doctype, docname)
     target.check_permission("write")
+
+    standing = _feed(doctype, docname, into)
+    if standing and standing.status == LOCKED:
+        frappe.throw(
+            _("These rows are locked. Unlock them first if the sheet should "
+              "replace them again."),
+            frappe.ValidationError,
+        )
 
     field = target.meta.get_field(into)
     if not field or field.fieldtype not in ("Table", "Table MultiSelect"):
@@ -129,12 +142,122 @@ def pull(sheet: str, label: str, doctype: str, docname: str, into: str,
 
     target.save()
 
+    left_out = [c["header"] for c in columns if not c["fieldname"]]
+    record = _remember(standing, {
+        "reference_doctype": doctype,
+        "reference_name": docname,
+        "into": into,
+        "sheet": sheet,
+        "sheet_title": doc.file_name,
+        "label": label,
+        "filled": len(body),
+        "skipped": ", ".join(left_out),
+        "status": FOLLOWING,
+        "pulled_on": frappe.utils.now(),
+        "pulled_by": frappe.session.user,
+    })
+
     return {
         "filled": len(body),
         "into": into,
         "columns": [c for c in columns if c["fieldname"]],
-        "skipped": [c["header"] for c in columns if not c["fieldname"]],
+        "skipped": left_out,
+        "feed": record,
     }
+
+
+# --------------------------------------------------------------------------- #
+# Where a document's rows came from
+#
+# One row per (document, child table), because a table is fed by one range at a
+# time and a second pull replaces its rows — so it replaces the record of them
+# too. Kept as its own doctype rather than columns on the document, because the
+# document is somebody else's doctype and this product does not add fields to
+# Frappe's Quotation to say where it was filled from.
+# --------------------------------------------------------------------------- #
+
+FOLLOWING = "Following"
+LOCKED = "Locked"
+
+FEED_FIELDS = [
+    "name", "reference_doctype", "reference_name", "into", "sheet",
+    "sheet_title", "label", "filled", "skipped", "status",
+    "pulled_on", "pulled_by", "locked_on", "locked_by",
+]
+
+
+def _feed(doctype: str, docname: str, into: str):
+    """The standing feed for one table, or nothing."""
+    found = frappe.get_all(
+        "Sheet Feed",
+        filters={"reference_doctype": doctype, "reference_name": docname, "into": into},
+        fields=FEED_FIELDS, limit_page_length=1,
+    )
+    return frappe._dict(found[0]) if found else None
+
+
+def _remember(standing, values: dict) -> dict:
+    """Write the feed row, replacing the one that was there."""
+    if standing:
+        frappe.db.set_value("Sheet Feed", standing.name, values, update_modified=True)
+        return {**dict(standing), **values}
+    made = frappe.get_doc({"doctype": "Sheet Feed", **values}).insert(ignore_permissions=True)
+    return {field: made.get(field) for field in FEED_FIELDS}
+
+
+@frappe.whitelist(methods=["GET"])
+def feeds(doctype: str, docname: str) -> list[dict]:
+    """Every table on this document that was filled from a sheet.
+
+    Permission is the *document's*, asked once. `Sheet Feed` has no rules of
+    its own and must never be asked for any: a row saying "this quotation was
+    filled from that estimator" is as private as the quotation.
+    """
+    if not frappe.has_permission(doctype, "read", doc=docname):
+        frappe.throw(_("You cannot read that record."), frappe.PermissionError)
+
+    return frappe.get_all(
+        "Sheet Feed",
+        filters={"reference_doctype": doctype, "reference_name": docname},
+        fields=FEED_FIELDS, order_by="into asc", limit_page_length=50,
+    )
+
+
+@frappe.whitelist(methods=["POST"])
+def lock(doctype: str, docname: str, into: str) -> dict:
+    """The document is the record now, and the sheet is history.
+
+    `write` on the document and not on the sheet: locking is a statement about
+    the quotation, and the person who owns the quotation is the one entitled to
+    make it — often not the estimator whose sheet fed it.
+    """
+    return _set_status(doctype, docname, into, LOCKED)
+
+
+@frappe.whitelist(methods=["POST"])
+def unlock(doctype: str, docname: str, into: str) -> dict:
+    """Follow the sheet again."""
+    return _set_status(doctype, docname, into, FOLLOWING)
+
+
+def _set_status(doctype: str, docname: str, into: str, status: str) -> dict:
+    if not frappe.has_permission(doctype, "write", doc=docname):
+        frappe.throw(_("You cannot change that record."), frappe.PermissionError)
+
+    standing = _feed(doctype, docname, into)
+    if not standing:
+        frappe.throw(_("Those rows were not filled from a sheet."))
+
+    values = {"status": status}
+    if status == LOCKED:
+        values["locked_on"] = frappe.utils.now()
+        values["locked_by"] = frappe.session.user
+    else:
+        values["locked_on"] = None
+        values["locked_by"] = None
+
+    frappe.db.set_value("Sheet Feed", standing.name, values, update_modified=True)
+    return {**dict(standing), **values}
 
 
 def _columns(head: list, child_doctype: str, wanted: dict) -> list[dict]:

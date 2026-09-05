@@ -15,7 +15,7 @@
     icon-left="lucide-table-2"
     variant="ghost"
     size="sm"
-    label="Fill from a sheet"
+    :label="props.from ? 'Fill again' : 'Fill from a sheet'"
     tooltip="Fill these rows from a spreadsheet"
     @click="start"
   />
@@ -167,6 +167,14 @@ const props = defineProps({
   // nowhere to go can be said before the pull rather than discovered after.
   into: { type: String, required: true },
   fields: { type: Array, default: () => [] },
+  /**
+   * The feed already standing on this table, when there is one.
+   *
+   * Opening the dialog then lands on the same sheet and the same range, which
+   * is what somebody pressing it a second time means: fill it again from where
+   * it came from.
+   */
+  from: { type: Object, default: null },
 })
 
 const emit = defineEmits(['filled'])
@@ -241,10 +249,12 @@ async function start() {
     // attachments folder, and the root would show none of them.
     const found = await workspace.driveList({ place: 'all', kind: 'Sheet', limit: 50 })
     sheets.value = found?.files || []
-    // The record's own sheet first, when it has one — which is the sheet
-    // somebody pressing this almost always means.
+    // Where these rows already come from, if they come from anywhere; then
+    // the record's own sheet; then whatever is newest. Each is a better guess
+    // than the one after it about what a person pressing this meant.
+    const again = props.from && sheets.value.find((one) => one.name === props.from.sheet)
     const mine = sheets.value.find((one) => one.attached_to_name === props.docname)
-    picked.value = (mine || sheets.value[0])?.name || ''
+    picked.value = (again || mine || sheets.value[0])?.name || ''
   } catch (raised) {
     error.value = errorText(raised)
   } finally {
@@ -264,7 +274,8 @@ watch(picked, async (name) => {
   try {
     const found = await workspace.sheetOpen(name)
     ranges.value = found?.ranges || []
-    label.value = ranges.value[0]?.label || ''
+    const standing = props.from && ranges.value.find((one) => one.label === props.from.label)
+    label.value = (standing || ranges.value[0])?.label || ''
   } catch (raised) {
     error.value = errorText(raised)
   }

@@ -41,6 +41,27 @@ async function newSheet(page) {
   return page.url().split('/one/sheets/')[1]
 }
 
+/**
+ * Open the fixture Event and land on its Participants tab.
+ *
+ * The tab is clicked and then *waited for*, because the record's spec arrives
+ * after the first render and `RecordForm` sends the strip back to its first tab
+ * when it does — so a click that lands in that window is quietly undone.
+ */
+async function openParticipants(page) {
+  await page.goto('/one/space/zzmock?screen=events')
+  const row = page.locator('[data-slot="list-row"]').filter({ hasText: 'Quarterly review' })
+  await row.first().waitFor({ timeout: 20_000 })
+  await row.first().locator('[data-slot="list-cell"]').nth(1).click()
+
+  const tab = page.getByRole('tab', { name: 'Participants' })
+  await tab.waitFor({ timeout: 20_000 })
+  await expect(async () => {
+    await tab.click()
+    await expect(page.getByRole('tabpanel', { name: 'Participants' })).toBeVisible({ timeout: 2000 })
+  }).toPass({ timeout: 20_000 })
+}
+
 /** Type into a cell the way a person does: click it, type, press Enter. */
 async function type(page, ref, text) {
   await cell(page, ref).click()
@@ -229,13 +250,10 @@ test('a named range fills a record\'s child table', async ({ page }) => {
   // the browser rather than the read-back.
   await expect(page.getByText('Saved', { exact: true })).toBeVisible()
 
-  await page.goto('/one/space/zzmock?screen=events')
-  const row = page.locator('[data-slot="list-row"]').filter({ hasText: 'Quarterly review' })
-  await row.first().waitFor({ timeout: 20_000 })
-  await row.first().locator('[data-slot="list-cell"]').nth(1).click()
-  await page.getByRole('tab', { name: 'Participants' }).click()
+  await openParticipants(page)
 
-  await page.getByRole('button', { name: 'Fill from a sheet' }).first().click()
+  await page.getByRole('tabpanel', { name: 'Participants' })
+    .getByRole('button', { name: /^Fill/ }).click()
 
   // frappe-ui's Select is reka-ui's, not a native `<select>` — a combobox that
   // opens a listbox. `selectOption` throws on one.
@@ -255,7 +273,7 @@ test('a named range fills a record\'s child table', async ({ page }) => {
   // sends the form back to its first tab. Coming back to Participants is also
   // the stronger check: what is asserted is the row that landed, not a count
   // beside it.
-  await page.getByRole('tab', { name: 'Participants' }).click()
+  await openParticipants(page)
   // By the row rather than by text: what landed is the *value* of a Link
   // control, and a combobox's value is not text content for `hasText` to find.
   await expect(page.getByRole('row', { name: /Administrator/ }).first())
@@ -354,4 +372,88 @@ test('printing builds its own document rather than the windowed grid', async ({ 
   await expect(printed.locator('h1')).toContainText('Untitled sheet')
   await expect(printed.locator('table')).toContainText('Item')
   await expect(printed.locator('table')).toContainText('42')
+})
+
+/**
+ * Where a document's rows came from, and locking so the sheet stops feeding it.
+ *
+ * The thing being checked is not the two buttons — it is that the refusal is
+ * the *server's*. A lock that only hid a control would be a lock, right up
+ * until somebody with the endpoint replaced a quotation that had been
+ * corrected by hand.
+ */
+test('a filled table says where its rows came from, and can be locked', async ({ page }) => {
+  const title = `Locked ${Date.now()}`
+  const table = { doctype: 'Event', docname: 'EV00001', into: 'event_participants' }
+
+  // The fixture is shared and this test locks it. A run that failed after the
+  // lock would leave the next one with nothing to press, so the state is
+  // normalised first rather than assumed.
+  await page.goto('/one/files')
+  const csrf = await page.evaluate(() => window.csrf_token)
+  const signed = { 'X-Frappe-CSRF-Token': csrf }
+  await page.request.post('/api/method/oneapp.oneapp_core.sheets.unlock', {
+    form: table, headers: signed,
+  })
+
+  const id = await newSheet(page)
+  await page.getByRole('button', { name: 'Rename this sheet' }).click()
+  await page.getByRole('textbox', { name: 'Name' }).fill(title)
+  await page.getByRole('button', { name: 'Rename', exact: true }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+
+  await type(page, 'A1', 'Reference Document Type')
+  await type(page, 'B1', 'Reference Docname')
+  await type(page, 'A2', 'User')
+  await type(page, 'B2', 'Administrator')
+
+  await cell(page, 'A1').click()
+  await page.keyboard.down('Shift')
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.up('Shift')
+  await page.getByRole('button', { name: 'Name this range' }).click()
+  await page.getByRole('textbox', { name: 'Name' }).fill('Attendees')
+  await page.getByRole('button', { name: 'Name it' }).click()
+  await expect(page.getByRole('button', { name: /Attendees/ })).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByText('Saved', { exact: true })).toBeVisible()
+
+  await openParticipants(page)
+
+  // Scoped to this table's panel: an Event has two child tables and the other
+  // one has a Fill control of its own.
+  const panel = page.getByRole('tabpanel', { name: 'Participants' })
+  await panel.getByRole('button', { name: /^Fill/ }).click()
+  await page.getByLabel('Sheet', { exact: true }).click()
+  await page.getByRole('option', { name: title, exact: true }).click()
+  await page.getByLabel('Named range').click()
+  await page.getByRole('option', { name: 'Attendees — Sheet1!A1:B2', exact: true }).click()
+  await page.getByRole('button', { name: 'Replace these rows with 1' }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+
+  await openParticipants(page)
+  const note = page.locator('[data-slot="sheet-feed"]')
+  await expect(note).toContainText(title)
+  await expect(note).toContainText('Attendees')
+
+  // Locked: the control that would replace them is gone, and so is the right.
+  await note.getByRole('button', { name: 'Lock these rows' }).click()
+  await expect(note).toContainText('Locked')
+  await expect(page.getByRole('tabpanel', { name: 'Participants' })
+    .getByRole('button', { name: /^Fill/ })).toHaveCount(0)
+
+  // The real sheet and the real range, signed. A made-up sheet name would be
+  // refused for not existing, and an unsigned POST for being unsigned — either
+  // would "pass" this without the lock existing at all.
+  const refused = await page.request.post('/api/method/oneapp.oneapp_core.sheets.pull', {
+    form: { sheet: id, label: 'Attendees', ...table },
+    headers: signed,
+  })
+  expect(refused.ok()).toBe(false)
+  expect(await refused.text()).toContain('locked')
+
+  await note.getByRole('button', { name: 'Follow the sheet again' }).click()
+  await expect(page.getByRole('tabpanel', { name: 'Participants' })
+    .getByRole('button', { name: 'Fill again' })).toBeVisible()
 })
