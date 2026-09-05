@@ -53,6 +53,14 @@ UTILITY = re.compile(r"""^[-!]?[a-z\[][\w\[\]&=!*>+~:.,%#/()'"$-]*$""")
 # here is opting in to being read as a class list.
 CLASS_MODULES = ("components/settings/geometry.js",)
 
+# The opposite exemption: files whose string literals are a formal language of
+# somebody else's, which the loose heuristic below cannot tell from a class
+# list. Excel number-format codes are the case that forced this —
+# `'dd-mmm-yyyy hh:mm'` is two tokens, both lowercase, both carrying a `-` or a
+# `:`, which is exactly the shape of `sticky right-0`. Only the heuristic is
+# skipped: a real `class="…"` in one of these files is still read.
+NOT_CLASS_LISTS = ("lib/sheets/display.js",)
+
 # Referenced but never emitted for reasons that are not drift.
 ALLOWED_MISSING = {
     # Ours, defined in index.css or by frappe-ui's own component CSS.
@@ -118,8 +126,9 @@ def class_lists(app: str) -> list[tuple[str, str]]:
             # `const STUCK = 'sticky right-0 z-10 bg-surface-white'` is how a
             # retired token got past this and rendered a transparent column over
             # the one beside it.
-            for blob in loose_class_lists(script):
-                record(blob, path)
+            if path.relative_to(root).as_posix() not in NOT_CLASS_LISTS:
+                for blob in loose_class_lists(script):
+                    record(blob, path)
     return found
 
 

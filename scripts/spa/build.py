@@ -216,7 +216,7 @@ def package_json(app: str, spec: dict) -> str:
                 # See the header of shot.mjs.
                 "shot": "node shot.mjs",
             },
-            "dependencies": DEPENDENCIES,
+            "dependencies": dict(sorted({**DEPENDENCIES, **spec.get("packages", {})}.items())),
             "devDependencies": DEV_DEPENDENCIES,
         },
         indent=2,

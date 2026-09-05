@@ -23,6 +23,11 @@ DEPENDENCIES = {
 }
 
 
+# A package only one bundle needs is declared as `packages` on its entry below.
+# Shared pins stay above; something one product uses does not belong in a list
+# whose point is that the two apps agree.
+
+
 DEV_DEPENDENCIES = {
     # The browser pass. Both SPAs get one: the bugs it catches — an empty list,
     # a dialog that will not open, a panel unreachable at one viewport — all
@@ -67,6 +72,9 @@ APPS = {
         # settings dialog. Every signed-in surface either audience has is a
         # Space in here, so this is the only bundle that renders one.
         "shell": True,
+        # Spreadsheets. MIT, and the only formula engine in either language
+        # that is — see `docs/SHEETS.md` §1. The signup bundle has no grid.
+        "packages": {"fast-formula-parser": "^1.0.19"},
     },
     # Signing up, and nothing else.
     #

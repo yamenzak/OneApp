@@ -19,6 +19,7 @@ import { layouts } from './layouts'
 import { mail } from './mail'
 import { importing } from './importing'
 import { printing } from './printing'
+import { sheets } from './sheets'
 
 export const workspace = {
   ...settings,
@@ -29,4 +30,5 @@ export const workspace = {
   ...mail,
   ...importing,
   ...printing,
+  ...sheets,
 }
