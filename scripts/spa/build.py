@@ -15,6 +15,20 @@ def vite_config(app: str, spec: dict) -> str:
     types = json.dumps(spec["types"], indent=2).replace('"', "'")
     html_name = spec["route"].lstrip("/")
     shells = json.dumps(spec.get("shells", []))
+    # Vitest reads this same config. Only bundles that declare unit tests get
+    # the block, so the other one has no reason to install a runner.
+    unit = ""
+    if spec.get("unit_tests"):
+        unit = (
+            "\n  test: {\n"
+            "    globals: true,\n"
+            f"    include: ['{spec['unit_tests']}'],\n"
+            # `node`, matching upstream: nearly a thousand engine tests have no
+            # use for a DOM, and the handful that do opt in per file with a
+            # `// @vitest-environment happy-dom` header.
+            "    environment: 'node',\n"
+            "  },"
+        )
     return BANNER + f"""
 import {{ defineConfig }} from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -77,7 +91,7 @@ export default defineConfig({{
   ],
   resolve: {{
     alias: {{ '@': path.resolve(__dirname, 'src') }},
-  }},
+  }},{unit}
 }})
 """
 
@@ -215,9 +229,16 @@ def package_json(app: str, spec: dict) -> str:
                 # Look at a screen without writing a script to look at it.
                 # See the header of shot.mjs.
                 "shot": "node shot.mjs",
+                # Only where a bundle declares `unit_tests`. Seconds, not the
+                # nine and a half minutes the browser pass costs, so this is
+                # the one that belongs in an edit loop.
+                **({"test": "vitest run"} if spec.get("unit_tests") else {}),
+                **({"test:watch": "vitest"} if spec.get("unit_tests") else {}),
             },
             "dependencies": dict(sorted({**DEPENDENCIES, **spec.get("packages", {})}.items())),
-            "devDependencies": DEV_DEPENDENCIES,
+            "devDependencies": dict(
+                sorted({**DEV_DEPENDENCIES, **spec.get("dev_packages", {})}.items())
+            ),
         },
         indent=2,
     ) + "\n"

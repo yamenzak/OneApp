@@ -61,6 +61,16 @@ CLASS_MODULES = ("components/settings/geometry.js",)
 # skipped: a real `class="…"` in one of these files is still read.
 NOT_CLASS_LISTS = ("lib/sheets/display.js",)
 
+# Whole subtrees that are somebody else's code and do not use Tailwind at all.
+# The spreadsheet engine and its canvas renderer are Frappe's, vendored as-is
+# (see apps/oneapp/frontend/src/lib/sheets/VENDORED.md); a canvas has no class
+# attribute, and what class-shaped strings they do hold are their own — the
+# scrollbar's `sn-sb`, a `describe()` title, an Excel format code. Auditing them
+# against our Tailwind build asks a question with no right answer, and the
+# alternative — editing their files to please our linter — is exactly what
+# vendoring is meant to avoid.
+VENDORED = ("lib/sheets/engine/", "lib/sheets/canvas/", "lib/sheets/utils/")
+
 # Files that write a *whole* HTML document — their own `<style>` included — and
 # hand it to an iframe. The class names in one of those are defined by the
 # stylesheet in the same string, so measuring them against the app's Tailwind
@@ -106,6 +116,9 @@ def class_lists(app: str) -> list[tuple[str, str]]:
 
     for path in sorted(root.rglob("*")):
         if path.suffix not in (".vue", ".js"):
+            continue
+        rel = path.relative_to(root).as_posix()
+        if rel.startswith(VENDORED):
             continue
         source = path.read_text()
         if path.relative_to(root).as_posix() in CLASS_MODULES:

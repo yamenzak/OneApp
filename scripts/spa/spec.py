@@ -72,9 +72,9 @@ APPS = {
         # settings dialog. Every signed-in surface either audience has is a
         # Space in here, so this is the only bundle that renders one.
         "shell": True,
-        # Spreadsheets. MIT, and the only formula engine in either language
-        # that is — see `docs/SHEETS.md` §1. The signup bundle has no grid.
         "packages": {
+            # Still here for the grid this vendoring replaces; it goes when
+            # that grid does.
             "fast-formula-parser": "^1.0.19",
             # Reading and writing real spreadsheet files. Loaded with a dynamic
             # `import` and nowhere else, so its 900KB is paid by the person who
@@ -82,7 +82,16 @@ APPS = {
             # obvious pick and is not: the newest release on npm is 0.18.5 and
             # carries two advisories fixed only on the project's own CDN.
             "exceljs": "^4.4.0",
+            # Charts on a sheet. Same deal: behind a dynamic import, paid for
+            # by the person who inserts one.
+            "echarts": "^6.0.0",
         },
+        # The spreadsheet engine and its canvas renderer are Frappe's, vendored
+        # whole (see src/lib/sheets/VENDORED.md) — and their unit suite came
+        # with them. It is the only thing in either bundle that a browser pass
+        # cannot reach: a formula evaluator's edge cases are not a screen.
+        "dev_packages": {"vitest": "^2.1.0", "happy-dom": "^20.10.2"},
+        "unit_tests": "src/lib/sheets/**/*.test.js",
     },
     # Signing up, and nothing else.
     #
