@@ -9,10 +9,10 @@ from .meta import _json
 # drops what is not built, so such a screen opens as a list rather than as
 # nothing. `apps/oneapp/frontend/src/lib/viewTypes.js` is the same list, and a
 # test fails when the two drift.
-VIEW_TYPES = ("list", "board", "calendar", "dashboard", "grid", "map")
+VIEW_TYPES = ("list", "board", "calendar", "dashboard", "gantt", "grid", "map")
 
 
-BUILT_VIEW_TYPES = ("list", "board", "grid", "dashboard", "calendar")
+BUILT_VIEW_TYPES = ("list", "board", "grid", "dashboard", "calendar", "gantt")
 
 
 DEFAULT_VIEW_TYPE = "list"
@@ -33,6 +33,15 @@ NEEDS_STATUS = ("board",)
 # read by the calendar and by nothing else, where `status_field` is also the
 # badge on a record and earns its place on the screen.
 NEEDS_DATES = ("calendar",)
+
+
+# And a Gantt is a bar down time, so it needs both ends of one. A record with a
+# start and no end is a moment, and a chart of moments is a column of dots.
+#
+# Its fields are declared under `gantt`, falling back to the calendar's: a
+# screen offering both is placing its records by the same two dates, and making
+# it say so twice is how the two drift.
+NEEDS_SPANS = ("gantt",)
 
 
 # And the same rule for the dashboard, which is nothing without something to
@@ -94,6 +103,8 @@ def _view_types(screen: dict) -> list[str]:
 		declared = [one for one in declared if one not in NEEDS_WIDGETS]
 	if not _has_date_field(screen):
 		declared = [one for one in declared if one not in NEEDS_DATES]
+	if not _has_span(screen):
+		declared = [one for one in declared if one not in NEEDS_SPANS]
 	return list(dict.fromkeys(declared)) or [DEFAULT_VIEW_TYPE]
 
 
@@ -119,6 +130,23 @@ def _has_date_field(screen: dict) -> bool:
 	settings = _json(screen.get("view_settings"))
 	found = settings.get("calendar") if isinstance(settings, dict) else None
 	return bool(isinstance(found, dict) and (found.get("start_field") or "").strip())
+
+
+def _has_span(screen: dict) -> bool:
+	"""Whether this screen names both ends of a bar.
+
+	A declaration check like the others; the fieldtypes are checked in `_gantt`.
+	"""
+	settings = _json(screen.get("view_settings"))
+	if not isinstance(settings, dict):
+		return False
+	for key in ("gantt", "calendar"):
+		found = settings.get(key)
+		if not isinstance(found, dict):
+			continue
+		if (found.get("start_field") or "").strip() and (found.get("end_field") or "").strip():
+			return True
+	return False
 
 
 def _has_column_field(screen: dict) -> bool:

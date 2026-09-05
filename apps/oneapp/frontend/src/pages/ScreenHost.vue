@@ -240,6 +240,7 @@
             :board="fetchedBoard || spec.board || {}"
             :cards="fetchedCards || spec.cards || {}"
             :calendar="fetchedCalendar || spec.calendar || {}"
+            :gantt="spec.gantt || {}"
             :space-code="spaceCode"
             :layout="spec.layout || ''"
             :overrides="dashboardAsked"

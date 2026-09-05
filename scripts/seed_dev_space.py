@@ -189,10 +189,13 @@ SCREENS = [
 		# one core doctype that is *about* a span of time. Calendar first,
 		# because a list of two events sorted by creation is not how anybody
 		# reads a diary.
-		"view_types": "calendar,list",
+		"view_types": "calendar,gantt,list",
 		# `ends_on` is not in `EVENT_FIELDS` on purpose — the resolver fetches
 		# the dates a calendar places a record by whether or not anybody made
 		# them columns, and a fixture that listed them would not prove it.
+		# The Gantt reads the same pair — it declares nothing of its own, which
+		# is the fallback working: a screen placing its records by two dates
+		# should not have to say so twice.
 		"view_settings": json.dumps({
 			"calendar": {"start_field": "starts_on", "end_field": "ends_on"},
 		}),
@@ -340,7 +343,9 @@ EVENTS = [
 		],
 	},
 	{
-		# And one with no end, which is a moment rather than a span.
+		# And one with no end on the day it starts — a moment on the calendar,
+		# and deliberately absent from the Gantt, which is a chart of lengths
+		# and has nothing to draw for a record with one date.
 		#
 		# Somebody else's, too: the diary opens an event you own in its own
 		# dialog and a record you do not on the screen it belongs to, and a
@@ -349,6 +354,15 @@ EVENTS = [
 		"subject": "Van collection", "event_type": "Public", "status": "Open",
 		"starts_on": _this_month(12, "09:00:00"),
 		"__owner": COLLEAGUE,
+	},
+	{
+		# And one that runs for days rather than hours. A two-hour meeting is a
+		# sliver on a chart whose column is a week, so a fixture of nothing but
+		# meetings shows a Gantt that is technically right and demonstrates
+		# nothing — this is the record that makes the view look like the view.
+		"subject": "Fit-out week", "event_type": "Private", "status": "Open",
+		"starts_on": _this_month(15, "09:00:00"),
+		"ends_on": _this_month(19, "17:00:00"),
 	},
 ]
 

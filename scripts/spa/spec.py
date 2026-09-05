@@ -93,6 +93,14 @@ APPS = {
             # body live in its own document — its `<style>` cannot reach our app
             # — while still growing the frame to its own height. See
             # `components/mail/reader/VENDORED.md`.
+            # A bar chart down time, which is what a Gantt is. Frappe's own
+            # package and MIT, so this is a dependency rather than a vendoring
+            # — the AGPL obligations that come with taking code from
+            # `frappe/*` do not apply to something published on npm under a
+            # permissive licence. It draws into a plain element and takes a
+            # list of {id, name, start, end, progress}, so the mapping is ours
+            # and small: `components/screen/bodies/GanttBody.vue`.
+            "frappe-gantt": "^1.2.2",
             "dompurify": "^3.2.6",
             "@iframe-resizer/child": "5.5.9",
             "@iframe-resizer/vue": "5.5.9",

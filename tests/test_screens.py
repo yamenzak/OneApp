@@ -1167,19 +1167,20 @@ def test_the_two_halves_agree_on_what_a_view_type_is(spaceview):
 	built = set(_re.findall(r"^  (\w+): \{[^}]*built: true", source, _re.M | _re.S))
 	assert built == set(spaceview.BUILT_VIEW_TYPES)
 
-	# And on which of them are nothing without a status field. The sidebar is
-	# the SPA's answer and the resolved screen is the server's; a type dropped
-	# by one and kept by the other is a menu entry that opens the wrong body.
-	needs = set(
-		_re.findall(r"'([\w]+)'", _re.search(
-			r"export const NEEDS_STATUS = \[([^\]]*)\]", source
-		).group(1))
-	)
-	assert needs == set(spaceview.NEEDS_STATUS), (
-		f"lib/viewTypes.js says {sorted(needs)} need a status field, spaceview "
-		f"says {sorted(spaceview.NEEDS_STATUS)}"
-	)
-	assert needs <= set(spaceview.VIEW_TYPES)
+	# And on what each of them is nothing without. The sidebar is the SPA's
+	# answer and the resolved screen is the server's; a type dropped by one and
+	# kept by the other is a menu entry that opens the wrong body.
+	for name in ("NEEDS_STATUS", "NEEDS_DATES", "NEEDS_SPANS", "NEEDS_WIDGETS"):
+		needs = set(
+			_re.findall(r"'([\w]+)'", _re.search(
+				rf"export const {name} = \[([^\]]*)\]", source
+			).group(1))
+		)
+		assert needs == set(getattr(spaceview, name)), (
+			f"lib/viewTypes.js {name} is {sorted(needs)}, spaceview has "
+			f"{sorted(getattr(spaceview, name))}"
+		)
+		assert needs <= set(spaceview.VIEW_TYPES)
 
 
 def test_a_screen_offers_what_it_declares_and_nothing_it_cannot_draw(spaceview):
@@ -1256,6 +1257,76 @@ def test_a_calendar_reads_dates_and_refuses_everything_else(spaceview):
 	found = spaceview._calendar(said)
 	assert found["start_field"] == "due"
 	assert found["end_field"] == ""
+
+
+def test_a_gantt_is_only_offered_where_both_ends_of_a_bar_are_named(spaceview):
+	"""A bar needs a beginning and an end, and will take the calendar's.
+
+	The fallback is the point: a screen offering both a calendar and a Gantt is
+	placing its records by the same two dates, and a manifest made to say so
+	twice is a manifest where the two quietly drift apart.
+	"""
+	pair = '{"calendar": {"start_field": "starts_on", "end_field": "ends_on"}}'
+	assert spaceview._view_types({"view_types": "gantt", "view_settings": pair}) == ["gantt"]
+	# Its own declaration wins where there is one.
+	assert spaceview._view_types({
+		"view_types": "gantt",
+		"view_settings": '{"gantt": {"start_field": "from", "end_field": "to"}}',
+	}) == ["gantt"]
+
+	# A start alone is a calendar and not a chart.
+	assert spaceview._view_types({
+		"view_types": "calendar,gantt",
+		"view_settings": '{"calendar": {"start_field": "starts_on"}}',
+	}) == ["calendar"]
+	assert spaceview._view_types({"view_types": "gantt"}) == ["list"]
+	assert spaceview._view_types({"view_types": "gantt", "view_settings": "{}"}) == ["list"]
+
+
+def test_a_gantt_reads_two_dates_and_a_measure_of_how_far_along(spaceview):
+	"""Which pair of fields a bar is drawn between, and what fills it.
+
+	Both ends are checked here rather than at declaration time, for the reason
+	the calendar's are: this is where the columns are. Where the calendar keeps
+	a start and drops a bad end, the Gantt drops both — half a span is not a
+	shorter bar, it is no bar.
+	"""
+	columns = [
+		{"fieldname": "starts_on", "label": "Starts on", "fieldtype": "Datetime"},
+		{"fieldname": "ends_on", "label": "Ends on", "fieldtype": "Datetime"},
+		{"fieldname": "done", "label": "Done", "fieldtype": "Percent"},
+		{"fieldname": "subject", "label": "Subject", "fieldtype": "Data"},
+	]
+	resolved = {
+		"doctype": "Event",
+		"all_columns": columns,
+		"view_settings": {
+			"calendar": {"start_field": "starts_on", "end_field": "ends_on"},
+			"gantt": {"progress_field": "done"},
+		},
+	}
+	found = spaceview._gantt(resolved)
+	assert (found["start_field"], found["end_field"]) == ("starts_on", "ends_on")
+	assert found["progress_field"] == "done"
+	assert [one["fieldname"] for one in found["fields"]] == ["starts_on", "ends_on"]
+
+	# An end that is not a date takes the start with it.
+	said = {**resolved, "view_settings": {
+		"gantt": {"start_field": "starts_on", "end_field": "subject"},
+	}}
+	found = spaceview._gantt(said)
+	assert (found["start_field"], found["end_field"]) == ("", "")
+
+	# A progress field is a number or it is nothing, and it is nothing at all
+	# without a span to fill.
+	said = {**resolved, "view_settings": {
+		"calendar": {"start_field": "starts_on", "end_field": "ends_on"},
+		"gantt": {"progress_field": "subject"},
+	}}
+	assert spaceview._gantt(said)["progress_field"] == ""
+	assert spaceview._gantt({**resolved, "view_settings": {
+		"gantt": {"progress_field": "done"},
+	}})["progress_field"] == ""
 
 
 def test_the_days_on_screen_are_a_filter_and_never_a_saved_one(spaceview):

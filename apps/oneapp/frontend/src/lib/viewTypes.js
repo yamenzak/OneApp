@@ -37,6 +37,12 @@ export const VIEW_TYPES = {
     built: true,
     body: () => import('../components/screen/bodies/DashboardBody.vue'),
   },
+  gantt: {
+    label: 'Gantt',
+    icon: 'lucide-chart-no-axes-gantt',
+    built: true,
+    body: () => import('../components/screen/bodies/GanttBody.vue'),
+  },
   grid: {
     label: 'Grid',
     icon: 'lucide-layout-grid',
@@ -68,6 +74,15 @@ export const NEEDS_STATUS = ['board']
  * same rule on the server.
  */
 export const NEEDS_DATES = ['calendar']
+
+/**
+ * And a Gantt needs both ends of a bar.
+ *
+ * Declared under `gantt`, falling back to the calendar's pair: a screen
+ * offering both is placing its records by the same two dates, and saying so
+ * twice is how the two drift. `viewtypes.NEEDS_SPANS` is the same rule.
+ */
+export const NEEDS_SPANS = ['gantt']
 
 /**
  * View types that are nothing without something declared for them to draw.
@@ -105,6 +120,7 @@ export function viewTypesOf(screen) {
     .filter((type) => VIEW_TYPES[type]?.built)
     .filter((type) => hasColumnField(screen) || !NEEDS_STATUS.includes(type))
     .filter((type) => hasDateField(screen) || !NEEDS_DATES.includes(type))
+    .filter((type) => hasSpan(screen) || !NEEDS_SPANS.includes(type))
   return declared.length ? [...new Set(declared)] : [DEFAULT_VIEW_TYPE]
 }
 
@@ -145,6 +161,15 @@ function settingsOf(screen) {
  */
 function hasDateField(screen) {
   return !!String(settingsOf(screen)?.calendar?.start_field || '').trim()
+}
+
+/** Whether this screen names both ends of a bar. `spaceview._has_span`. */
+function hasSpan(screen) {
+  const settings = settingsOf(screen)
+  return ['gantt', 'calendar'].some((key) => {
+    const found = settings?.[key]
+    return !!(String(found?.start_field || '').trim() && String(found?.end_field || '').trim())
+  })
 }
 
 /**

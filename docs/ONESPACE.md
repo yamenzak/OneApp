@@ -129,7 +129,7 @@ document_type Sales Invoice       what the list shows
 fields        customer,status,grand_total
 filters       {"status": "Open"}  always applied
 order_by      modified desc
-view_types    list,board,grid,dashboard,calendar    the first is the default
+view_types    list,board,grid,dashboard,calendar,gantt   the first is the default
 view_settings {"board": {...}}    per type, what it needs beyond columns
 status_field  status              the badge, and the board's columns
 naming_series ACME-INV-.YYYY.-.#####       a fixture, applied once
@@ -389,6 +389,36 @@ event spans, the popover and the keyboard already in it, and it is what Frappe
 Suite's own calendar draws with. Read-only here: it can drag, resize and create,
 and every one of those writes a field that this screen already writes properly
 through the record. Clicking an event opens that record.
+
+### Gantt — the same two dates, drawn as lengths
+
+```json
+"view_settings": {"gantt": {"progress_field": "percent_complete"}}
+```
+
+The declaration is the calendar's, and that is deliberate: `gantt` falls back
+to `view_settings.calendar` for its pair, so a screen offering both is placing
+its records by the same two dates and is never made to say so twice. Name
+`start_field` and `end_field` under `gantt` only where the two genuinely
+differ.
+
+What changes is that **both ends are compulsory here**. A record with a start
+and no end is a moment, and a chart of moments is a column of dots — so a
+screen with no `end_field` is offered a calendar and not a Gantt, and a record
+missing one date is simply absent from the chart while its neighbours draw.
+`progress_field` is optional, is a Percent, Int or Float, and fills the bar.
+
+The chart is [`frappe-gantt`][gantt], Frappe's own package, so this is a
+dependency rather than a port — one of the few places where the answer to "take
+it or write it" is neither. It is MIT and it is on npm; the parts of the
+library that would have been ours to write (the time scale, the week and month
+modes, the header that follows the scroll) are the whole of what it does.
+
+Read-only, for the calendar's reason: dragging a bar writes two fields on a
+record, and a handle that moves and springs back is worse than one that does
+not move. Clicking a bar opens the record.
+
+[gantt]: https://github.com/frappe/gantt
 
 ---
 

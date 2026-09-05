@@ -189,6 +189,47 @@ def _calendar(resolved: dict) -> dict:
 	}
 
 
+# What a bar's progress may be read from. A Percent is the obvious one; an Int
+# or a Float is the same number where somebody stored it without the fieldtype.
+# Nothing else: a Select called "Status" is a state rather than a fraction, and
+# guessing which of its options means half done is not a mapping to invent.
+MEASURED = ("Percent", "Int", "Float")
+
+
+def _gantt(resolved: dict) -> dict:
+	"""Both ends of a bar, and how full it is.
+
+	Falls back to the calendar's pair, because a screen that offers both is
+	placing its records by the same two dates and saying so twice is how the
+	two drift. `end_field` is required here where the calendar merely likes it:
+	a record with no end is a moment, and a chart of moments is a column of
+	dots.
+	"""
+	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or []}
+	settings = resolved.get("view_settings") or {}
+	said = {**(settings.get("calendar") or {}), **(settings.get("gantt") or {})}
+
+	start = said.get("start_field") or ""
+	end = said.get("end_field") or ""
+	if not (_dateable(offered.get(start)) and _dateable(offered.get(end))):
+		start = end = ""
+
+	measure = said.get("progress_field") or ""
+	if not (start and offered.get(measure, {}).get("fieldtype") in MEASURED):
+		measure = ""
+
+	return {
+		"start_field": start,
+		"end_field": end,
+		"progress_field": measure,
+		"fields": [
+			{"fieldname": c["fieldname"], "label": c["label"], "fieldtype": c["fieldtype"]}
+			for c in resolved.get("all_columns") or []
+			if _dateable(c) and c.get("list_ok", True)
+		],
+	}
+
+
 def _window(resolved: dict, since: str, until: str) -> list:
 	"""The days on screen, as a filter, or nothing.
 
@@ -294,6 +335,7 @@ def _resolve_views(resolved: dict) -> dict:
 	"""
 	resolved["board"] = _board(resolved)
 	resolved["calendar"] = _calendar(resolved)
+	resolved["gantt"] = _gantt(resolved)
 	resolved["cards"] = _cards(resolved)
 	resolved["widgets"] = _widgets(resolved)
 	resolved["fields"] = _fetch_fields(
@@ -306,6 +348,10 @@ def _resolve_views(resolved: dict) -> dict:
 		# nothing at all.
 		resolved["calendar"]["start_field"],
 		resolved["calendar"]["end_field"],
+		# And the Gantt's, which are usually the same two and need not be.
+		resolved["gantt"]["start_field"],
+		resolved["gantt"]["end_field"],
+		resolved["gantt"]["progress_field"],
 		# What a record *is*, which every surface draws and none of them asked
 		# for. The doctype's own `title_field` and `image_field`: the title cell
 		# reads one and the card reads the other, and neither is a column
