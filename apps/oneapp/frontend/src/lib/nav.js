@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router'
 // An icon name that only exists in the database emits no CSS, so anything
 // outside the generated set falls back to one that does.
 import { spaceIcon } from './icons'
+import { mail } from './mail'
 import { session } from './session'
 import { workspace } from './workspace'
 import { VIEW_TYPES, viewTypesOf } from './viewTypes'
@@ -133,7 +134,40 @@ export function useNav() {
     }),
   )
 
-  return { nav, activeSpace }
+  /**
+   * The destinations that are not inside a space, declared once.
+   *
+   * Mail and Files are peers: the addresses somebody holds do not change when
+   * they switch space, and neither does the workspace's file table. So they
+   * live in the rail's footer beside the notification bell rather than in any
+   * space's navigation — and, because a phone draws no rail at all, they need
+   * a row in the More sheet too.
+   *
+   * Here rather than in App.vue for the reason this module exists: two
+   * renderings of one list, not two lists. Declared in the shell, the rail had
+   * Mail and the sheet did not, and on a phone the only way to it was typing
+   * the URL.
+   */
+  const surfaces = computed(() => [
+    { key: 'files', label: 'Files', icon: 'lucide-folder', to: { name: 'Drive' } },
+    // Absent for somebody who holds no address, which is most people until
+    // somebody sets one up. An icon that opens an empty page is worse than no
+    // icon. `count` is the badge in the rail and the number in the sheet's
+    // label — one figure, said twice, because a phone has only the second.
+    ...(mail.held
+      ? [
+          {
+            key: 'mail',
+            label: 'Mail',
+            icon: 'lucide-mail',
+            to: { name: 'Mail' },
+            count: mail.unread,
+          },
+        ]
+      : []),
+  ])
+
+  return { nav, surfaces, activeSpace }
 }
 
 /**

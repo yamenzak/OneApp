@@ -377,17 +377,31 @@ const entryOptions = computed(() => {
   return groups
 })
 
-// The first menu item shares the drawer's settings row with the appearance
-// control — on both surfaces today that is "Workspace settings", and a word
-// beside three icons is what the row is for. Anything after it keeps a row of
-// its own rather than being dropped.
-const settingsItem = computed(() => props.menuItems[0] || null)
-const otherMenuItems = computed(() => props.menuItems.slice(1))
+// One menu item shares the drawer's settings row with the appearance control —
+// a word beside three icons is what that row is for. Anything else keeps a row
+// of its own rather than being dropped.
+//
+// Named by the item rather than taken from position 0. Positional, it was
+// whatever happened to be first: the settings row is admin-only, so for
+// everybody else the appearance row silently adopted the next thing in the
+// list, and adding anything to the front moved a control somewhere nobody
+// meant it to go.
+const settingsItem = computed(() => props.menuItems.find((one) => one.settings) || null)
+const otherMenuItems = computed(() => props.menuItems.filter((one) => !one.settings))
 
 const { scheme, iconOptions } = useAppearance()
 
+/**
+ * A menu item either goes somewhere or does something.
+ *
+ * `onClick` was the only half handled, so an item carrying a route was a row
+ * that closed the sheet and left you where you were. Both, because the two
+ * kinds sit in one list: Files and Mail are places, and Notifications and
+ * settings are things that open over what you are looking at.
+ */
 function run(item) {
   showMenu.value = false
+  if (item.to) router.push(item.to)
   item.onClick?.()
 }
 

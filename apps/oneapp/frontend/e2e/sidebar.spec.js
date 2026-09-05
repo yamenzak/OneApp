@@ -66,3 +66,37 @@ test('the sidebar can be resized, and the handle goes when it shuts', async ({
   // And the width it was dragged to is still the width it is.
   await expect.poll(async () => (await sidebar.boundingBox()).width).toBeGreaterThan(before)
 })
+
+
+/**
+ * The rail's foot, and the phone's only way to it.
+ *
+ * Mail and Files are surfaces that are not inside a space, so neither has a
+ * place in the space navigation — they live in the rail's footer beside the
+ * notification bell. A phone draws no rail at all, which is why the shell's
+ * rule is that everything in that footer has a row in the More sheet. It was
+ * not true: Mail sat in the rail and nowhere else, and Files arrived the same
+ * way, so on a phone the only way to either was typing the URL.
+ */
+test('files and mail are reachable from the rail, and from the sheet on a phone', async ({
+  page,
+}, info) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/zzmock')
+
+  if (info.project.name === 'mobile') {
+    await page.getByRole('button', { name: 'More' }).click()
+    await page.getByRole('button', { name: 'Files', exact: true }).click()
+    await expect(page).toHaveURL(/\/one\/files/)
+    return
+  }
+
+  await page.locator('[data-slot="files-link"]').click()
+  await expect(page).toHaveURL(/\/one\/files/)
+
+  // And the two sit together, because they are the same kind of thing: the
+  // bell is between them and the account, not between them.
+  await expect(page.locator('[data-slot="files-link"]')).toBeVisible()
+
+  expectNoRealErrors(errors)
+})

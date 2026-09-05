@@ -16,7 +16,47 @@ export const mail = reactive({
   mailboxes: [],
   loaded: false,
   refreshing: false,
+  // Whether this person holds an address at all, and how much of it is unread.
+  // Here rather than in the bell that draws them, because a phone never renders
+  // the rail — so a bell that owned the polling meant a phone that never knew
+  // there was any mail, and no Mail row in the sheet that is its only way in.
+  held: false,
+  unread: 0,
 })
+
+// A minute, which is slow for a mail client and right for this. The Mail page
+// refreshes on open; this only decides whether a number in the rail is stale,
+// and polling it faster would be a request a minute per open tab for a badge
+// most people are not looking at.
+const EVERY = 60_000
+let ticking = null
+
+/**
+ * Keep `held` and `unread` current for as long as there is a session.
+ *
+ * Started by the app the way notifications are, and for the same reason: the
+ * things that decide what the shell offers cannot be owned by the parts of the
+ * shell they decide about.
+ */
+export function followMail() {
+  const look = async () => {
+    try {
+      const folders = await workspace.mailFolders()
+      mail.held = (folders?.addresses || []).length > 0
+      mail.unread = mail.held ? await workspace.mailUnread() : 0
+    } catch {
+      // A workspace with no mail set up answers with a refusal rather than a
+      // zero, and a shell that toasted about it once a minute would be worse
+      // than one that quietly offers nothing.
+      mail.held = false
+      mail.unread = 0
+    }
+  }
+
+  clearInterval(ticking)
+  look()
+  ticking = setInterval(look, EVERY)
+}
 
 /** Fetch the rail once. Repeat calls are free; `reload` forces it. */
 export async function loadMail({ reload = false } = {}) {

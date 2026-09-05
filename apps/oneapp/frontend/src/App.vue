@@ -28,8 +28,13 @@
         <SpaceSidebar v-else />
       </template>
 
+      <!--
+        The surfaces that are not spaces, then the alert, then you. Everything
+        here has a row in the More sheet below, because a phone draws no rail
+        and the sheet is its only way to any of them.
+      -->
       <template #rail-footer>
-        <MailBell />
+        <RailSurface v-for="one in surfaces" :key="one.key" :surface="one" />
         <NotificationBell />
         <RailAccount />
       </template>
@@ -91,7 +96,7 @@ import MailSidebar from './components/mail/MailSidebar.vue'
 import DriveSidebar from './components/drive/DriveSidebar.vue'
 import RailAccount from './components/RailAccount.vue'
 import NotificationBell from './components/notifications/NotificationBell.vue'
-import MailBell from './components/mail/MailBell.vue'
+import RailSurface from './components/RailSurface.vue'
 import NotificationList from './components/notifications/NotificationList.vue'
 import SettingsShell from './components/settings/SettingsShell.vue'
 import { useNav } from './lib/nav'
@@ -99,6 +104,7 @@ import { followNotifications, notifications } from './lib/notifications'
 import { openSettings } from './lib/settings'
 import { session, sessionResource } from './lib/session'
 import { fullName, email, userImage } from './lib/user'
+import { followMail } from './lib/mail'
 
 const route = useRoute()
 
@@ -122,16 +128,38 @@ const activeSpaceCode = computed(() => route.params.spaceCode || '')
 // More sheet on a phone. Declared in lib/nav.js so the two cannot drift — and
 // a space that declares more screens than the bar has slots keeps the rest
 // reachable in the sheet rather than losing them.
-const { nav } = useNav()
+const { nav, surfaces } = useNav()
 
 // A phone has no rail, so the account menu's entries have to reach the More
 // sheet instead — the same gap the console hit with its own settings.
 const showNotifications = ref(false)
 
+/**
+ * The More sheet: everything the rail's footer offers, for a phone that has no
+ * rail. That was already the rule this shell claimed to follow and was not —
+ * Mail sat in the rail's foot and nowhere else, so on a phone the only way to
+ * it was typing the URL. Files arrived the same way.
+ */
 const menuItems = computed(() => [
   ...(session.isAdmin
-    ? [{ label: 'Workspace settings', icon: 'lucide-settings', onClick: () => openSettings() }]
+    ? [
+        {
+          label: 'Workspace settings',
+          icon: 'lucide-settings',
+          // Which row of the drawer this is, said rather than inferred from
+          // being first — see AppShell's `settingsItem`.
+          settings: true,
+          onClick: () => openSettings(),
+        },
+      ]
     : []),
+  // The rail footer's own destinations, from the one place navigation is
+  // declared. Named with their count for the same reason Notifications is: on
+  // a phone this row is the only thing that says there is anything here.
+  ...surfaces.value.map((one) => ({
+    ...one,
+    label: one.count ? `${one.label} (${one.count})` : one.label,
+  })),
   {
     // Named with its count for the same reason the bell's tooltip is: this row
     // is the only thing a phone has to tell somebody there is anything here.
@@ -151,6 +179,14 @@ const menuItems = computed(() => [
 watch(
   () => session.isLoggedIn,
   (yes) => yes && followNotifications(),
+  { immediate: true },
+)
+
+// The same shape, for the same reason: what the shell offers cannot be decided
+// by a part of the shell that a phone never draws. See `lib/mail`.
+watch(
+  () => session.isLoggedIn,
+  (yes) => yes && followMail(),
   { immediate: true },
 )
 
