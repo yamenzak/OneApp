@@ -157,6 +157,7 @@ import { loadMail, mail, refreshMail } from '../../lib/mail'
 import { workspace } from '../../lib/workspace'
 import { session } from '../../lib/session'
 import { openSettings, settings } from '../../lib/settings'
+import { DEFAULT, MAX, MIN, useSidebar } from '../../lib/sidebar'
 
 const SUB = 'text-ink-gray-6'
 
@@ -222,14 +223,8 @@ watch(
   },
 )
 
-// The same width, collapse state and storage key as the space sidebar: it is
-// the same column, and a rail that changed width when you opened mail would
-// read as the page jumping.
-const MIN = 180
-const DEFAULT = 224
-const MAX = 360
-const REMEMBERED = 'onespace.sidebar-collapsed'
-const width = ref(DEFAULT)
-const collapsed = ref(localStorage.getItem(REMEMBERED) === '1')
-watch(collapsed, (shut) => localStorage.setItem(REMEMBERED, shut ? '1' : '0'))
+// The same width and collapse state as every other rail, because it is the
+// same column: a rail that changed width when you opened mail would read as
+// the page jumping. See `lib/sidebar.js`.
+const { collapsed, width } = useSidebar()
 </script>

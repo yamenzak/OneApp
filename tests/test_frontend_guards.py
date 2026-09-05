@@ -701,6 +701,33 @@ def test_both_renderings_read_that_one_list(app):
 			assert "useNav" in source, f"{path.name} declares its own navigation"
 
 
+# One column, three fillings. Which component sits in the shell's `#sidebar`
+# slot depends on where you are; that it is a `Sidebar` with a header, a
+# collapse toggle and the shared width does not. The Drive's rail was a plain
+# `<div>` for a while, which is how you get one surface with no header, no
+# collapse and no resize handle — a difference nobody chose and everybody sees.
+SIDEBAR_STATE = "lib/sidebar"
+
+
+@pytest.mark.parametrize("app", SHELL_APPS)
+def test_every_sidebar_is_the_same_sidebar(app):
+	"""The rail is one column. A filling that draws its own is a second shape
+	for one idea, and reads as a bug because it is one."""
+	root = ROOT / f"apps/{app}/frontend/src"
+
+	for path in root.rglob("*Sidebar.vue"):
+		source = path.read_text()
+		for component in ("Sidebar", "SidebarHeader", "SidebarCollapseToggle"):
+			assert f"<{component}" in source, f"{path.name} does not render {component}"
+
+		# And the state is the shared one, not a fourth copy of it. Two of the
+		# three had their own and disagreed about the minimum and the maximum,
+		# which a reader meets as the page jumping when they open mail.
+		assert SIDEBAR_STATE in source, f"{path.name} keeps its own width and collapse state"
+		assert "useSidebar()" in source, f"{path.name} does not use the shared sidebar state"
+		assert "<Resizer" in source, f"{path.name} cannot be resized"
+
+
 def test_the_bottom_bar_leaves_a_slot_for_everything_else():
 	"""A grid bar of equal columns stops being readable past five on a phone,
 	and a sidebar can hold twenty entries. The last slot is always the account,
