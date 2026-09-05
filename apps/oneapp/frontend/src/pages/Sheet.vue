@@ -34,6 +34,9 @@
       <Tooltip v-if="sheet.saveError.value" :text="sheet.saveError.value">
         <Badge theme="red" variant="subtle" label="Not saved" />
       </Tooltip>
+      <Tooltip v-if="downloadError" :text="downloadError">
+        <Badge theme="red" variant="subtle" label="Download failed" />
+      </Tooltip>
       <span v-else-if="sheet.dirty.value || sheet.saving.value" class="text-p-xs text-ink-gray-5">
         Saving…
       </span>
@@ -48,13 +51,16 @@
         variant="subtle"
         label="Template"
       />
-      <Button
-        icon-left="lucide-download"
-        label="Download as CSV"
-        tooltip="Download as CSV"
-        variant="ghost"
-        @click="download"
-      />
+      <Dropdown :options="downloads">
+        <Button
+          icon-left="lucide-download"
+          icon-right="lucide-chevron-down"
+          label="Download"
+          tooltip="Download"
+          variant="ghost"
+          :loading="exporting"
+        />
+      </Dropdown>
       <Dropdown :options="menu">
         <Button icon="lucide-more-horizontal" label="More" tooltip="More" variant="ghost" />
       </Dropdown>
@@ -86,6 +92,19 @@
       </Alert>
 
       <SheetGrid ref="grid" :sheet="sheet" />
+
+      <!--
+        The printer's copy, built rather than captured. The grid windows its
+        rows, so printing the page itself prints whichever forty are in the
+        DOM — this is the used range as a plain table, in an iframe, which is
+        the same shape `PrintDialog` uses for a record's print format.
+      -->
+      <iframe
+        ref="printer"
+        title="Print preview"
+        class="pointer-events-none fixed h-0 w-0 border-0 opacity-0"
+        aria-hidden="true"
+      />
 
       <TabStrip
         :sheet="sheet"
@@ -164,7 +183,9 @@ import SheetToolbar from '../components/sheets/SheetToolbar.vue'
 import TabStrip from '../components/sheets/TabStrip.vue'
 import { useSheet } from '../composables/useSheet'
 import { workspace } from '../lib/workspace'
+import { errorText } from '../lib/errors'
 import { formatRange } from '../lib/sheets/refs'
+import { toHtml } from '../lib/sheets/printing'
 
 const props = defineProps({
   name: { type: String, required: true },
@@ -173,11 +194,14 @@ const props = defineProps({
 const router = useRouter()
 const sheet = useSheet(props.name)
 const grid = ref(null)
+const printer = ref(null)
 const naming = ref(false)
 const renaming = ref(false)
 const newName = ref('')
 const label = ref('')
 const busy = ref(false)
+const exporting = ref(false)
+const downloadError = ref('')
 
 sheet.load()
 
@@ -201,6 +225,7 @@ async function nameIt() {
 }
 
 const menu = computed(() => [
+  { label: 'Print this tab', icon: 'lucide-printer', onClick: print },
   ...(sheet.canWrite.value
     ? [{
         // A template is a sheet with a flag on it, so this is the whole
@@ -220,6 +245,26 @@ const menu = computed(() => [
     onClick: () => router.push({ name: 'Drive' }),
   },
 ])
+
+/**
+ * Print the tab on screen.
+ *
+ * The document is written into the iframe and printed from there, so nothing
+ * about the app's own stylesheet or the shell's chrome can reach it.
+ */
+function print() {
+  const frame = printer.value
+  if (!frame) return
+  frame.srcdoc = toHtml({
+    cells: [...sheet.book.value.cells.values()],
+    tab: sheet.active.value,
+    title: sheet.title.value,
+  })
+  frame.onload = () => {
+    frame.contentWindow?.focus()
+    frame.contentWindow?.print()
+  }
+}
 
 function startRename() {
   newName.value = sheet.title.value
@@ -247,10 +292,47 @@ function goTo(range) {
   naming.value = false
 }
 
-function download() {
+const downloads = computed(() => [
+  { label: 'Excel workbook (.xlsx)', icon: 'lucide-table-2', onClick: asExcel },
+  { label: 'This tab as CSV', icon: 'lucide-file-text', onClick: asCsv },
+])
+
+/**
+ * The CSV is the server's — one tab, values, no formats, and the same bytes a
+ * share link hands a stranger. Nothing here has to build it.
+ */
+function asCsv() {
   window.location.href =
     `/api/method/oneapp.oneapp_core.sheets.download?name=${encodeURIComponent(props.name)}` +
     `&tab=${encodeURIComponent(sheet.active.value)}`
+}
+
+/**
+ * The workbook is the browser's, because the browser is the only side that has
+ * the formulas and the formats — the server stores `raw` and never reads it.
+ * `exceljs` is a 900KB dependency and is imported here, on the press, so a
+ * grid that nobody exports never loads it.
+ */
+async function asExcel() {
+  exporting.value = true
+  try {
+    const { toBlob } = await import('../lib/sheets/xlsx')
+    const blob = await toBlob({
+      cells: [...sheet.book.value.cells.values()],
+      tabs: sheet.tabs.value,
+      title: sheet.title.value,
+    })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${sheet.title.value || 'sheet'}.xlsx`
+    link.click()
+    URL.revokeObjectURL(url)
+  } catch (raised) {
+    downloadError.value = errorText(raised)
+  } finally {
+    exporting.value = false
+  }
 }
 
 // What is typed and not yet sent must not be lost by a click on a link. The

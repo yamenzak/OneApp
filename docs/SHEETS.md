@@ -201,8 +201,7 @@ handling are solved problems in this repo.
 Seven stages. The first three are a spreadsheet; the fourth is the one the
 request is actually about; the rest are what makes it pleasant.
 
-**Where this has got to.** Stages 1 to 5 are built and live. Stage 6 has export
-as CSV only — no xlsx either way, and no print format yet. Stage 7 is still
+**Where this has got to.** Stages 1 to 6 are built and live. Stage 7 is still
 deliberately absent. What follows is the plan as written, with what actually happened noted
 where the two differ, because the differences are the interesting part.
 
@@ -361,11 +360,35 @@ There is still no template *gallery* — a screen of thumbnails and categories �
 and there should not be until a workspace has enough templates for a menu to be
 the wrong shape.
 
-### Stage 6 — Import, export, print  ◐
+### Stage 6 — Import, export, print  ✅
 
-`xlsx` (MIT) both ways: an estimator with a spreadsheet already has one, and a
-sheet nobody can get out of is a sheet nobody will trust. Print is a print
-format over the stored `value`s, which needs nothing new.
+Both ways, and the library is `exceljs` (MIT) rather than the `xlsx` this
+planned. SheetJS is the obvious pick and the newest release on npm is 0.18.5,
+which carries two advisories fixed only in releases published on the project's
+own CDN — an unusual dependency source to take on for a file format `exceljs`
+also handles. It is loaded with a dynamic `import` and nowhere else, so the
+900KB is paid by whoever presses Import or Download as Excel and by nobody who
+merely opens a grid.
+
+What survives a round trip: values, **formulas**, number formats, bold, italic,
+underline, alignment, colour, fill, and the tab each cell is on. A shared
+formula — Excel's own compression, where `B4:B20` all point at `B3` — comes
+back translated per row, which is the one part of reading xlsx that is not
+obvious. What does not survive: merged cells, column widths, charts,
+validation, conditional formats, images. Those are things this product does not
+have, and inventing storage for them on the way through would be storing what
+nothing reads.
+
+Importing keeps the original file in the Drive as well as making the sheet,
+because for the first few weeks the `.xlsx` is the thing its owner still
+trusts. The bytes parsed are the ones already in the browser rather than the
+ones just uploaded — `validateFile` is where frappe-ui's uploader hands the
+file over, so there is no second round trip.
+
+Print is not a print format. The grid windows its rows, so printing the page
+prints whichever forty are in the DOM; printing builds its own document — the
+used range as a plain table with each cell's format on it — and hands it to an
+iframe, which is the shape `PrintDialog` already uses for a record.
 
 ### Stage 7 — What we deliberately do not take, yet
 

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+
 import { expect, test } from '@playwright/test'
 
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
@@ -290,4 +292,66 @@ test('a sheet can be made a template, and a new sheet starts from it', async ({ 
   await page.waitForURL(/\/one\/sheets\//)
   await expect(cell(page, 'A1')).toHaveText('Rate card')
   await expect(cell(page, 'B1')).toHaveText('250')
+})
+
+/**
+ * Excel, both ways, as one round trip.
+ *
+ * No committed `.xlsx` fixture: the test exports one and imports what it
+ * exported, which checks both halves against each other and cannot drift from
+ * a binary nobody can read in a diff. What it is really asking is whether a
+ * formula survives — a spreadsheet that exports numbers and imports numbers is
+ * a CSV with more steps.
+ */
+test('a sheet exports to Excel and comes back with its formulas', async ({ page }) => {
+  await newSheet(page)
+  await type(page, 'A1', 'Rate')
+  await type(page, 'A2', '120')
+  await type(page, 'B2', '=A2*3')
+  await expect(cell(page, 'B2')).toHaveText('360')
+  await expect(page.getByText('Saved', { exact: true })).toBeVisible()
+
+  const coming = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download' }).click()
+  await page.getByRole('menuitem', { name: /Excel workbook/ }).click()
+  const download = await coming
+  const path = await download.path()
+  expect(download.suggestedFilename()).toMatch(/\.xlsx$/)
+
+  await page.goto('/one/files')
+  await page.getByRole('button', { name: 'New sheet' }).click()
+  await page.getByRole('menuitem', { name: 'Import a spreadsheet' }).click()
+  await page.locator('input[type="file"]').setInputFiles({
+    name: download.suggestedFilename(),
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: readFileSync(path),
+  })
+
+  await page.waitForURL(/\/one\/sheets\//, { timeout: 60_000 })
+  await expect(cell(page, 'A2')).toHaveText('120')
+  await expect(cell(page, 'B2')).toHaveText('360')
+
+  // The formula, not the number it came to. This is the whole point.
+  await cell(page, 'B2').click()
+  await expect(page.getByRole('textbox', { name: 'Formula bar' })).toHaveValue('=A2*3')
+})
+
+test('printing builds its own document rather than the windowed grid', async ({ page }) => {
+  await newSheet(page)
+  await type(page, 'A1', 'Item')
+  await type(page, 'B1', '42')
+
+  await page.getByRole('button', { name: 'More', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Print this tab' }).click()
+
+  // The iframe is written and then printed from; asserting the document it was
+  // given is the only half a headless browser can see, and it is the half that
+  // breaks — the grid windows its rows, so printing the page prints whichever
+  // forty are in the DOM.
+  // Not `toBeVisible`: the frame is a zero-sized, transparent one — it exists
+  // to be printed from, not to be looked at.
+  const printed = page.frameLocator('iframe[title="Print preview"]')
+  await expect(printed.locator('h1')).toContainText('Untitled sheet')
+  await expect(printed.locator('table')).toContainText('Item')
+  await expect(printed.locator('table')).toContainText('42')
 })

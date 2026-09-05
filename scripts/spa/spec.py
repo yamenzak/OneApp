@@ -74,7 +74,15 @@ APPS = {
         "shell": True,
         # Spreadsheets. MIT, and the only formula engine in either language
         # that is — see `docs/SHEETS.md` §1. The signup bundle has no grid.
-        "packages": {"fast-formula-parser": "^1.0.19"},
+        "packages": {
+            "fast-formula-parser": "^1.0.19",
+            # Reading and writing real spreadsheet files. Loaded with a dynamic
+            # `import` and nowhere else, so its 900KB is paid by the person who
+            # presses Import or Download as Excel. SheetJS would have been the
+            # obvious pick and is not: the newest release on npm is 0.18.5 and
+            # carries two advisories fixed only on the project's own CDN.
+            "exceljs": "^4.4.0",
+        },
     },
     # Signing up, and nothing else.
     #

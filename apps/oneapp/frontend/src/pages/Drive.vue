@@ -249,6 +249,8 @@
 
   <FilePreview v-model="previewing" :file="looking" />
   <FileShare v-model="sharing" :file="looking" />
+  <ImportSheet v-model="importing" :folder="folder" />
+
   <FolderPicker v-model="moving" :moving="toMove" @chosen="intoFolder" />
 
   <Dialog v-model="naming" title="New folder">
@@ -322,6 +324,7 @@ import FilePreview from '../components/drive/FilePreview.vue'
 import FileRow from '../components/drive/FileRow.vue'
 import FileShare from '../components/drive/FileShare.vue'
 import FolderPicker from '../components/drive/FolderPicker.vue'
+import ImportSheet from '../components/sheets/ImportSheet.vue'
 import { useDrive } from '../composables/useDrive'
 import { workspace } from '../lib/workspace'
 import { useIsMobile } from '@/lib/screen'
@@ -428,6 +431,7 @@ const newName = ref('')
 const toMove = ref([])
 const making = ref(false)
 const templates = ref([])
+const importing = ref(false)
 
 // A folder is a link and navigates itself; this is only ever a file.
 //
@@ -468,6 +472,11 @@ function labelOfTemplate(name) {
 
 const sheetOptions = computed(() => [
   { label: 'Blank sheet', icon: 'lucide-file-plus-2', onClick: () => newSheet() },
+  {
+    label: 'Import a spreadsheet',
+    icon: 'lucide-file-up',
+    onClick: () => { importing.value = true },
+  },
   ...templates.value.map((one) => ({
     label: one.file_name,
     icon: 'lucide-table-2',

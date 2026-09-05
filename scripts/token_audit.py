@@ -61,6 +61,13 @@ CLASS_MODULES = ("components/settings/geometry.js",)
 # skipped: a real `class="…"` in one of these files is still read.
 NOT_CLASS_LISTS = ("lib/sheets/display.js",)
 
+# Files that write a *whole* HTML document — their own `<style>` included — and
+# hand it to an iframe. The class names in one of those are defined by the
+# stylesheet in the same string, so measuring them against the app's Tailwind
+# build asks the wrong question: they emit no utility CSS because they are not
+# utilities. `lib/sheets/printing.js` builds the printer's copy of a tab.
+SELF_CONTAINED = ("lib/sheets/printing.js",)
+
 # Referenced but never emitted for reasons that are not drift.
 ALLOWED_MISSING = {
     # Ours, defined in index.css or by frappe-ui's own component CSS.
@@ -108,6 +115,8 @@ def class_lists(app: str) -> list[tuple[str, str]]:
             code = re.sub(r"//[^\n]*", "", code)
             for single, double in STRING_IN_EXPR.findall(code):
                 record(single or double, path)
+            continue
+        if path.relative_to(root).as_posix() in SELF_CONTAINED:
             continue
         for match in CLASS_ATTR.finditer(source):
             blob = match.group("value")
