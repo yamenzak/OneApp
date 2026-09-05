@@ -311,6 +311,22 @@ and by whatever is unsaved above it — and a selection exports exactly the rows
 that were ticked. The same `_resolve` → saved view → overrides chain the rows go
 through, so an export can never reach further than the list it came from.
 
+**Bulk operations.** A selection can be changed, assigned, exported or deleted.
+The change is one field to one value — Frappe's own shape, and the right one: a
+dialog offering several fields at once is a record form applied to forty
+records, and what makes a bulk change safe is that it is small and legible.
+Assignment is separate because `_assign` is not a field, and it *adds* rather
+than replacing: one record's assignment is a list somebody is looking at and
+editing whole, a selection's is not on screen at all, and replacing forty with
+one name takes work off thirty-nine people by accident.
+
+Each record is saved on its own, inside its own savepoint, and what could not
+take the change comes back **named**. A submitted document, a validation rule,
+a row this person may read and not write — all facts about that record, and a
+bulk change that silently skipped nine of forty would be worse than one that
+failed. Capped at the same hundred a bulk delete is: past that this is a script
+somebody should be writing rather than a button. `spaceview/bulk.py`.
+
 The file is built on the server (`spaceview/export.py`) rather than joined
 together in the browser, for one reason: quoting. A subject with a comma in it
 becomes two columns and every row after it is off by one, silently, and this

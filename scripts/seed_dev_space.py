@@ -1056,15 +1056,36 @@ def _seed_approvals():
 		],
 	}).insert(ignore_permissions=True)
 
+	# The three, and their figures put back where they belong.
+	#
+	# `amount` is not a value a fixture can leave to drift: it is what a report's
+	# totals row adds up and what a bulk change is tested on, and both of those
+	# write to it. A row skipped because it exists is a row still carrying
+	# whatever the last test that failed halfway left in it — which is a total
+	# nobody can predict and an assertion that reads as a bug in the sum.
+	KEEP = (("Office chairs", 1200), ("Server renewal", 4800), ("Team offsite", 2600))
 	made = 0
-	for title, amount in (("Office chairs", 1200), ("Server renewal", 4800),
-	                      ("Team offsite", 2600)):
-		if frappe.db.exists(APPROVAL_DOCTYPE, {"title": title}):
+	for title, amount in KEEP:
+		found = frappe.db.get_value(APPROVAL_DOCTYPE, {"title": title}, "name")
+		if found:
+			frappe.db.set_value(APPROVAL_DOCTYPE, found, "amount", amount,
+			                    update_modified=False)
 			continue
 		frappe.get_doc({
 			"doctype": APPROVAL_DOCTYPE, "title": title, "amount": amount,
 		}).insert(ignore_permissions=True)
 		made += 1
+
+	# And anything else, which is a test's leftover whatever it was called.
+	# The docflow tests submit and cancel records to prove a workflow moves,
+	# and every one of those stayed — showing up in a report's totals as an
+	# amount nobody in the fixture wrote. `force` is what carries a submitted
+	# document out.
+	kept = {title for title, _ in KEEP}
+	for row in frappe.get_all(APPROVAL_DOCTYPE, fields=["name", "title"]):
+		if row["title"] not in kept:
+			frappe.delete_doc(APPROVAL_DOCTYPE, row["name"],
+			                  ignore_permissions=True, force=True)
 
 	# The cache keyed on doctype, which `get_workflow_name` reads. Without this
 	# the workflow is invisible until the next process starts.

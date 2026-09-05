@@ -69,6 +69,27 @@ export const screen = {
       { silent: true, method: 'GET' },
     ),
 
+  // One change to a whole selection. POST because it writes, and each record
+  // is saved on its own so what could not be saved comes back named.
+  screenBulkSet: (spaceCode, screen, names, field, value) =>
+    callMethod('oneapp.oneapp_core.spaceview.bulk_set', {
+      space_code: spaceCode,
+      screen,
+      names: JSON.stringify(names || []),
+      field,
+      value,
+    }),
+
+  // People added to the assignment on every record in a selection. Added and
+  // never replaced — see `bulk_assign`.
+  screenBulkAssign: (spaceCode, screen, names, users) =>
+    callMethod('oneapp.oneapp_core.spaceview.bulk_assign', {
+      space_code: spaceCode,
+      screen,
+      names: JSON.stringify(names || []),
+      users: JSON.stringify(users || []),
+    }),
+
   // What the money columns add up to. Its own request for the reason the count
   // is one: an aggregate over the whole filter, which nothing should wait for.
   screenTotals: (spaceCode, screen, overrides, layout, viewType) =>

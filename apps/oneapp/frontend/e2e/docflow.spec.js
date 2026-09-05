@@ -75,7 +75,7 @@ test('a workflow owns the transition, and approving is what submits', async ({
   test.skip(info.project.name === 'mobile', 'the record header collapses on a phone')
   const errors = collectConsoleErrors(page)
 
-  const name = await make(page, baseURL, `zzflow one ${Date.now()}`)
+  const name = await make(page, baseURL, `ZZ flow one ${Date.now()}`)
 
   // The workflow's own state, not the framework's word for the docstatus —
   // and said once. The screen names no `status_field`, because a workflow's
@@ -115,7 +115,7 @@ test('the step that cancels asks before it runs', async ({ page, baseURL }, info
   test.skip(info.project.name === 'mobile', 'the record header collapses on a phone')
   const errors = collectConsoleErrors(page)
 
-  const name = await make(page, baseURL, `zzflow two ${Date.now()}`)
+  const name = await make(page, baseURL, `ZZ flow two ${Date.now()}`)
   await call(page, 'workflow_action', { name, action: 'zzSend' })
   await call(page, 'workflow_action', { name, action: 'zzApprove' })
   await page.reload()

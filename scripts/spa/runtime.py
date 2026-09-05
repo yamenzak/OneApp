@@ -106,6 +106,23 @@ function lastTracebackLine(exception) {
 export function normalizeError(error) {
   if (!error) return { title: 'Something went wrong', message: '', detail: null }
 
+  // A string is its own message. Callers hand one over whenever the detail is
+  // theirs rather than the server's — a bulk change naming the four records
+  // that refused it, say — and without this every one of those rendered as
+  // "Something went wrong / No further detail was returned", which is the
+  // most confidently useless pair of sentences in the product. It had been
+  // doing that on a refused bulk delete since that was written.
+  if (typeof error === 'string') {
+    return {
+      title: 'Something went wrong',
+      message: error,
+      extra: [],
+      indicator: 'red',
+      detail: null,
+      raw: error,
+    }
+  }
+
   const messages = parseServerMessages(
     error.messages || error._server_messages || error.response?._server_messages,
   )

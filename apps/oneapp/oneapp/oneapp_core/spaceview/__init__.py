@@ -41,6 +41,7 @@ is what stops it becoming one module again.
     surround    a record's timeline, files, comments, likes
     mail        the correspondence about a record, and writing more
     assign      who a record is assigned to
+    bulk        one change, applied to a selection
     sharing     tags and shares
     docstate    submit, cancel, amend, workflow
     printing    print formats, reached from a record
@@ -247,6 +248,7 @@ from .mail import (
 	write,
 )
 from .assign import ASSIGNEE_PAGE, _assignable, _colleagues, assign, assignees
+from .bulk import _each, _names, _people, _quietly, _said, bulk_assign, bulk_set
 from .sharing import set_share, set_tag, shareable, shares, tag_options, tags, unshare
 from .docstate import amend, cancel, submit, workflow_action
 from .printing import print_options, print_pdf, print_preview
@@ -332,6 +334,13 @@ __all__ = [
 	"_export_filename",
 	"_export_names",
 	"export_rows",
+	"_each",
+	"_quietly",
+	"_said",
+	"_names",
+	"_people",
+	"bulk_assign",
+	"bulk_set",
 	"_gantt",
 	"_tree",
 	"_nests",

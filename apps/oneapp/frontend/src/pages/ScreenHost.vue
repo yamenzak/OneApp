@@ -294,6 +294,18 @@
             @ran="loadRows"
           />
           <Button
+            v-if="spec.can_write"
+            icon-left="lucide-pencil"
+            label="Edit"
+            @click="bulkEditing = true"
+          />
+          <Button
+            v-if="spec.can_write"
+            icon-left="lucide-user-plus"
+            label="Assign"
+            @click="bulkAssigning = true"
+          />
+          <Button
             icon-left="lucide-download"
             label="Export"
             :loading="exporting"
@@ -319,6 +331,30 @@
       accessibility tree with it. On a phone there is no room to keep both, so
       the pane draws itself as a page; it decides that, not this file.
     -->
+    <!-- One change to a whole selection, and the people to give it to. Both
+         are dialogs rather than menu items: a bulk change has no undo and no
+         per-record confirmation, so it says the number before it happens. -->
+    <BulkEditDialog
+      v-if="spec?.doctype"
+      v-model="bulkEditing"
+      :columns="spec.all_columns || []"
+      :count="selection.length"
+      :space-code="spaceCode"
+      :screen="spec.screen"
+      :states="spec.states || []"
+      :working="bulking"
+      @apply="bulkSet"
+    />
+    <BulkAssignDialog
+      v-if="spec?.doctype"
+      v-model="bulkAssigning"
+      :count="selection.length"
+      :space-code="spaceCode"
+      :screen="spec.screen"
+      :working="bulking"
+      @apply="bulkAssign"
+    />
+
     <RecordPane v-if="shownRecord && spec?.doctype" :page="asPage">
       <template #body="{ phone }">
         <RecordView
@@ -447,6 +483,8 @@ import ColumnPicker from '../components/screen/views/ColumnPicker.vue'
 import ListFooter from '../components/screen/bodies/ListFooter.vue'
 import SelectionBar from '../components/screen/bodies/SelectionBar.vue'
 import ScreenActions from '../components/screen/views/ScreenActions.vue'
+import BulkEditDialog from '../components/screen/views/BulkEditDialog.vue'
+import BulkAssignDialog from '../components/screen/views/BulkAssignDialog.vue'
 import { session } from '../lib/session'
 import { workspace } from '../lib/workspace'
 import { useCreating } from '../composables/useCreating'
@@ -847,6 +885,56 @@ const exportRows = async (names) => {
     exporting.value = false
   }
 }
+
+/**
+ * One change to everything that is ticked.
+ *
+ * Each record is saved on its own on the server, so what could not take the
+ * change comes back named — a submitted document, a rule the value breaks, a
+ * row this person may read and not write. Said out loud rather than swallowed:
+ * a bulk change that silently skipped nine of forty is worse than one that
+ * failed.
+ */
+const bulkEditing = ref(false)
+const bulkAssigning = ref(false)
+const bulking = ref(false)
+
+const bulkRan = (result, said) => {
+  if (result?.refused?.length) {
+    notifyError(result.refused.map((row) => `${row.name}: ${row.reason}`).join('\n'))
+  }
+  if (result?.done?.length) notifySuccess(`${said} ${result.done.length}`)
+}
+
+const bulkThrough = async (work, said, close) => {
+  bulking.value = true
+  try {
+    bulkRan(await work(), said)
+    close.value = false
+    selection.value = []
+    await loadRows()
+  } catch (e) {
+    notifyError(e.message || String(e))
+  } finally {
+    bulking.value = false
+  }
+}
+
+const bulkSet = ({ field, value }) =>
+  bulkThrough(
+    () =>
+      workspace.screenBulkSet(props.spaceCode, spec.value.screen, selection.value, field, value),
+    'Changed',
+    bulkEditing,
+  )
+
+const bulkAssign = (users) =>
+  bulkThrough(
+    () =>
+      workspace.screenBulkAssign(props.spaceCode, spec.value.screen, selection.value, users),
+    'Assigned',
+    bulkAssigning,
+  )
 
 const removeSelected = async () => {
   deleting.value = true
