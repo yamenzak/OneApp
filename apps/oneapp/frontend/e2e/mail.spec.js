@@ -60,9 +60,12 @@ test('a conversation is one row, and opening it is a place you can link to', asy
   // Oldest first — the order it happened, which is the only order a reply
   // makes sense read in.
   //
-  // Read through the frame, because the body is in a document of its own now:
-  // that is the whole point of the vendored reader, and `toContainText` on the
-  // article stops at the iframe boundary.
+  // The first message has been read, so it opens closed and its body is pressed
+  // for rather than drawn; the rule itself is tested below. Read through the
+  // frame, because the body is in a document of its own now: that is the whole
+  // point of the vendored reader, and `toContainText` on the article stops at
+  // the iframe boundary.
+  await messages(page).nth(0).locator('[data-slot="mail-sender"]').click()
   await expect(messageBody(page, 0)).toContainText('revised cladding quote')
   await expect(messageBody(page, 1)).toContainText('glazing line moved')
 
@@ -589,6 +592,95 @@ test('an attachment shows its size and opens in the previewer', async ({
   const preview = page.getByRole('dialog')
   await expect(preview).toContainText('Zone 3 glazing line moved')
   await expect(preview.getByRole('button', { name: 'Share a link' })).toBeVisible()
+
+  expectNoRealErrors(errors)
+})
+
+const MAILBOX = 'oneapp.oneapp_core.email.mailbox.reading'
+// The thread key is the subject, lowercased with the `Re:` off — the whole of
+// what threading is here. Written out because this spec sets read state
+// straight through the API and needs to name the conversation before it has a
+// row to click.
+const KEY = 'quotation for the al reem tower'
+
+/**
+ * Read the first `count` messages of a conversation and unread the rest.
+ *
+ * Whichever test opens this thread first marks every message in it read, and
+ * read state is one list per person for the whole site — so a test about what
+ * *unread* looks like cannot take the fixture's word for it. This puts the
+ * state exactly where the test needs it, through the same two endpoints the UI
+ * uses.
+ */
+async function readThrough(page, baseURL, count) {
+  // After the list has drawn, because the token comes with the app's own page
+  // and a POST without it is refused — quietly, as far as this helper is
+  // concerned, which is why both writes are checked below.
+  await expect(threads(page).first()).toBeVisible()
+  const csrf = await page.evaluate(() => window.csrf_token)
+  const headers = { 'X-Frappe-CSRF-Token': csrf }
+
+  const got = await page.request.get(
+    `${baseURL}/api/method/${MAILBOX}.thread?key=${encodeURIComponent(KEY)}`,
+  )
+  const rows = (await got.json()).message
+
+  const cleared = await page.request.post(`${baseURL}/api/method/${MAILBOX}.mark_unread`, {
+    headers,
+    form: { key: KEY },
+  })
+  expect(cleared.ok(), await cleared.text()).toBeTruthy()
+
+  const read = await page.request.post(`${baseURL}/api/method/${MAILBOX}.mark_read`, {
+    headers,
+    form: { names: JSON.stringify(rows.slice(0, count).map((one) => one.name)) },
+  })
+  expect(read.ok(), await read.text()).toBeTruthy()
+  return rows
+}
+
+/**
+ * A conversation opens where the new mail is.
+ *
+ * Every message used to be drawn open, all of it, oldest first — which on a
+ * thread of two is right and on a thread of fifteen is a wall with the reply
+ * somebody came for at the bottom of it.
+ *
+ * The fixture seeds one read message and one new one, deliberately: it is the
+ * smallest thread that shows both halves of the rule at once. Folding — a run
+ * of four read messages behind one line — needs a thread the fixture would have
+ * to grow four messages to reach, so that rule is tested in
+ * `components/mail/thread.test.js` instead.
+ */
+test('a message already read is one row, and the new mail is marked', async ({
+  page,
+  baseURL,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'three columns are a desktop layout')
+  const errors = collectConsoleErrors(page)
+
+  await signIn(page, baseURL)
+  await page.goto('/one/mail')
+  await readThrough(page, baseURL, 1)
+  await threads(page).filter({ hasText: SUBJECT }).click()
+
+  await expect(messages(page)).toHaveCount(2)
+  const read = messages(page).nth(0)
+  await expect(read).toHaveAttribute('data-open', 'no')
+  // The first line of it, which is what makes a closed row worth having.
+  await expect(read.locator('[data-slot="mail-snippet"]')).toContainText(
+    'Could you send the revised cladding quote',
+  )
+  // Closed means closed: the body is not merely hidden by CSS.
+  await expect(read.locator('iframe')).toHaveCount(0)
+
+  await expect(page.locator('[data-slot="mail-unread-mark"]')).toContainText('1 new message')
+  await expect(messages(page).nth(1)).toHaveAttribute('data-open', 'yes')
+
+  // Pressing the row opens it, and the body arrives in its own frame.
+  await read.locator('[data-slot="mail-sender"]').click()
+  await expect(read).toHaveAttribute('data-open', 'yes')
+  await expect(messageBody(page, 0)).toContainText('revised cladding quote before Thursday')
 
   expectNoRealErrors(errors)
 })

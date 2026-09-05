@@ -211,9 +211,20 @@ def thread(key: str, folder: str = "all") -> list[dict]:
 	]
 	who = people.profiles([(row.sender, row.sender_full_name) for row in wanted])
 	held = _attachments([row.name for row in wanted])
+	# Read *before* the browser marks the thread read, which it does the moment
+	# this returns. It is what lets the reader collapse the part of a long
+	# conversation somebody has already been through and say where the new mail
+	# starts — a distinction that stops existing one request later.
+	seen = _seen_set()
 	for row in wanted:
 		row["who"] = who.get((row.sender or "").lower(), {})
 		row["attachments"] = held.get(row.name, [])
+		# Own sent mail counts as read, the same rule the list uses: nobody has
+		# unread messages they wrote themselves.
+		row["seen"] = row.name in seen or row.sent_or_received != "Received"
+		# One line of the body, for the collapsed row. The same helper the list
+		# uses, so a message reads the same in both places.
+		row["preview"] = _preview(row.content)
 	return wanted
 
 

@@ -13,13 +13,17 @@
  *   yarn shot '/one/space/rua?screen=projects'
  *   yarn shot '/one/space/rua?screen=projects' rua.png --phone
  *   yarn shot '/one/space/rua?screen=projects' --wait='[data-slot="list-row"]'
- *
- *   yarn shot '/one/mail' --click='text=Quotation' --wait='[data-slot="mail-attachment"]'
+ *   yarn shot '/one/mail' --click='text=Quotation' --wait='[data-slot="mail-body"]'
  *
  * `--wait` is the flag worth knowing: a selector to wait for before the
  * shutter. Without one this waits for the network to go quiet, which is right
  * for most screens and wrong for any that keeps a socket open. Give it the
  * thing you are actually looking at.
+ *
+ * `--click` is the other one: a selector to press after the page loads, before
+ * the shutter. Half of what is worth photographing is a row deep — a mail
+ * thread, an open record, a dialog — and without it the only way to reach any
+ * of those was a throwaway Playwright script.
  *
  * The rest: `--phone` for the suite's phone viewport, `--full` for the whole
  * scrollable page, `--retina` when the detail is the point, `--settle=MS` for
@@ -91,9 +95,6 @@ page.on('response', (r) => {
 try {
   await signIn(page, base)
   await page.goto(base + path)
-  // One click before the shot, because plenty of what is worth looking at is a
-  // row deep: a mail thread, an open record, a dialog. Without it the only way
-  // to photograph those was a throwaway Playwright script.
   const click = flag('click')
   if (click) await page.locator(click).first().click({ timeout: 40_000 })
   const wait = flag('wait')

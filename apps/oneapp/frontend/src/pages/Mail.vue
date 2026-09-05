@@ -172,56 +172,13 @@
         </RouterLink>
         <h2 class="mt-2 text-lg font-semibold text-ink-gray-9 sm:mt-0">{{ openSubject }}</h2>
 
-        <article
-          v-for="one in messages"
-          :key="one.name"
-          class="mt-4 rounded-6 border border-outline-gray-2 p-4"
-          data-slot="mail-message"
-        >
-          <div class="flex items-start justify-between gap-3">
-            <SenderChip
-              card
-              class="text-p-sm"
-              :sender="one.sender"
-              :who="one.who"
-              name-class="font-medium text-ink-gray-8"
-            />
-            <span class="shrink-0 text-p-xs text-ink-gray-5">
-              {{ when(one.communication_date) }}
-            </span>
-          </div>
-          <span class="mt-0.5 block text-p-xs text-ink-gray-5">to {{ one.recipients }}</span>
-
-          <!--
-            The body, in a document of its own.
-
-            This was a `v-html` div with a regex holding the images back, and
-            both halves were wrong. The div meant a sender's `<style>` block
-            applied to *our* application; the regex held two of six ordinary
-            tracking-pixel shapes and leaked the rest — `<img src = "…">` with
-            spaces, `srcset`, `style="background:url(…)"`,
-            `<picture><source>`. The banner said "hidden to protect your
-            privacy" while a CSS background pixel loaded.
-
-            This is Frappe's reader, vendored: DOMPurify, then a DOM pass that
-            blanks remote `<img>`, inline `[style]` and `<style>` alike, then a
-            `srcdoc` iframe that grows to its own height. It draws its own
-            "images hidden" banner, so ours is gone with the regex behind it.
-            See `components/mail/reader/VENDORED.md`.
-          -->
-          <div class="mt-3" data-slot="mail-body">
-            <EmailContent :content="one.content" block-images />
-          </div>
-
-          <div v-if="one.attachments?.length" class="mt-3 flex flex-wrap gap-2">
-            <AttachmentChip
-              v-for="file in one.attachments"
-              :key="file.name"
-              :file="file"
-              @open="previewing = file"
-            />
-          </div>
-        </article>
+        <!--
+          The conversation itself: read messages closed to a row, a long read
+          run folded, and a line where the new mail starts. See
+          `components/mail/Thread.vue` — it is enough rules to be worth its own
+          file, and this page was long enough already.
+        -->
+        <Thread class="mt-4" :messages="messages" @preview="previewing = $event" />
 
         <div class="mt-4 flex flex-wrap items-center gap-2">
           <Button
@@ -329,8 +286,7 @@ import {
 import EmptyState from '../components/EmptyState.vue'
 import SenderChip from '../components/mail/SenderChip.vue'
 import MailComposer from '../components/mail/MailComposer.vue'
-import EmailContent from '../components/mail/reader/EmailContent.vue'
-import AttachmentChip from '../components/mail/AttachmentChip.vue'
+import Thread from '../components/mail/Thread.vue'
 import FilePreview from '../components/drive/FilePreview.vue'
 import { onDoctypeChange } from '../lib/socket'
 import { useIsMobile } from '../lib/screen'

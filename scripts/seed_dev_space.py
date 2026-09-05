@@ -27,6 +27,7 @@ import json
 from pathlib import Path
 
 import frappe
+from frappe.utils import add_to_date, now_datetime
 
 CODE = "zzmock"
 LABEL = "MockSpace"
@@ -597,11 +598,16 @@ def _seed_mail(user):
 	# wrong" from "no Cc because there was nobody else on it".
 	both = f"{address}, ops@client.test"
 
+	# The last number is how many hours ago it arrived, and it is not decoration:
+	# a thread is ordered by `communication_date`, and four rows inserted in the
+	# same millisecond leave that order to the database. The reader now collapses
+	# what has been read and marks where the new mail starts, both of which are
+	# statements about *which message is last* — so the fixture says.
 	messages = [
 		("Quotation for the Al Reem tower", "INBOX", "Received",
-		 "<p>Could you send the revised cladding quote before Thursday?</p>", both),
+		 "<p>Could you send the revised cladding quote before Thursday?</p>", both, 26),
 		("Re: Quotation for the Al Reem tower", "INBOX", "Received",
-		 "<p>Attached — the glazing line moved, everything else holds.</p>", both),
+		 "<p>Attached — the glazing line moved, everything else holds.</p>", both, 25),
 		# One in a folder somebody made, which is the whole point of mirroring
 		# them, and one in Sent — stored as Sent rather than Received, which is
 		# what `OneSpaceInboundMail` does to a message out of a Sent folder.
@@ -610,9 +616,9 @@ def _seed_mail(user):
 		# the spec watches for the request rather than for a reply.
 		("Fabricator — CV and trade test", "Applicants", "Received",
 		 "<p>Six years on curtain wall, available from the 12th.</p>"
-		 '<img src="https://tracker.invalid/open.gif" width="1" height="1">', address),
+		 '<img src="https://tracker.invalid/open.gif" width="1" height="1">', address, 30),
 		("Al Reem — revised elevations", "Sent Items", "Sent",
-		 "<p>Revised sheets attached, superseding revision B.</p>", "hala@client.test"),
+		 "<p>Revised sheets attached, superseding revision B.</p>", "hala@client.test", 20),
 	]
 	# A Contact for the person who writes in, so the sender chip has a face and
 	# a firm to show rather than only initials — which is the difference the
@@ -636,9 +642,15 @@ def _seed_mail(user):
 		contact.append("email_ids", {"email_id": "hala@client.test", "is_primary": 1})
 	contact.save(ignore_permissions=True)
 
-	for subject, folder, direction, content, recipients in messages:
+	_sweep_mail({subject for subject, *_ in messages})
+
+	for subject, folder, direction, content, recipients, hours in messages:
+		arrived = add_to_date(now_datetime(), hours=-hours)
 		existing = frappe.db.get_value("Communication", {"subject": subject}, "name")
 		if existing:
+			frappe.db.set_value(
+				"Communication", existing, "communication_date", arrived, update_modified=False
+			)
 			# Recipients too, for the same reason the folder is reset: a fixture
 			# row written by an older version of this file is a row that no
 			# longer says what the specs read off it.
@@ -665,15 +677,47 @@ def _seed_mail(user):
 			"sender_full_name": "Sales" if direction == "Sent" else "Hala Nasser",
 			"recipients": recipients,
 			"email_account": account,
+			"communication_date": arrived,
 			folder_lib.FOLDER_FIELD: folder,
 		}).insert(ignore_permissions=True)
 
 	_seed_attachment()
+	_seed_read_state(user)
 	return address
 
 
-#: What the attached message is called, so a spec can name it.
-ATTACHED = "Quotation for the Al Reem tower"
+def _sweep_mail(fixture: set):
+	"""Everything in the mailbox that is not this fixture's four messages.
+
+	The same litter the ToDo sweep above exists for, one doctype over and never
+	swept: every browser pass sends mail, and none of it was ever removed. Sixty
+	runs later the Sent folder held sixty "Cladding schedule" rows, all newer
+	than the fixture's own, and the spec that asks whether Sent contains the
+	fixture's message failed — not because Sent was broken but because the
+	message had been pushed off the first page by the specs that ran before it.
+
+	It also removes the *duplicates* of the fixture's own subjects. Those came
+	from the same place: the insert below skips when a row with that subject
+	exists, so a run that found none inserted one, and three sat side by side
+	being grouped into one thread that quietly held three copies of everything.
+
+	Every message on a dev site is this fixture's or a test's, which is the same
+	assumption the ToDo sweep already makes.
+	"""
+	seen = set()
+	for row in frappe.get_all(
+		"Communication", fields=["name", "subject"], order_by="creation asc"
+	):
+		if row.subject in fixture and row.subject not in seen:
+			seen.add(row.subject)
+			continue
+		frappe.delete_doc("Communication", row.name, ignore_permissions=True, force=True)
+
+
+#: What the attached message is called, so a spec can name it. The *reply* —
+#: it is the one whose body says "Attached", and it is the one the reader leaves
+#: open, the earlier message in the thread being already read.
+ATTACHED = "Re: Quotation for the Al Reem tower"
 ATTACHMENT = "Al Reem cladding schedule.txt"
 
 
@@ -690,16 +734,23 @@ def _seed_attachment():
 	fixture proves the whole path — chip, size, click, preview with content —
 	without a binary in the repository.
 	"""
-	message = frappe.db.get_value("Communication", {"subject": ("like", f"{ATTACHED}%")}, "name")
+	message = frappe.db.get_value("Communication", {"subject": ATTACHED}, "name")
 	if not message:
 		return
 
-	if frappe.db.exists("File", {
-		"attached_to_doctype": "Communication",
-		"attached_to_name": message,
-		"file_name": ATTACHMENT,
-	}):
-		return
+	# Off any message but this one. The file used to hang on the first message
+	# in the thread, which the reader now collapses — so it was attached to the
+	# one row nobody can see. Moving it in the fixture without clearing the old
+	# one would leave two.
+	for stale in frappe.get_all(
+		"File",
+		filters={"attached_to_doctype": "Communication", "file_name": ATTACHMENT},
+		pluck="name",
+	):
+		doc = frappe.get_doc("File", stale)
+		if doc.attached_to_name == message:
+			return
+		doc.delete(ignore_permissions=True)
 
 	frappe.get_doc({
 		"doctype": "File",
@@ -713,6 +764,29 @@ def _seed_attachment():
 			"Zone 3 glazing line moved 400mm east. Everything else holds.\n"
 		),
 	}).insert(ignore_permissions=True)
+
+
+def _seed_read_state(user):
+	"""What this person has already read: the first message and nothing else.
+
+	Read state is a user default, so it survived every previous browser pass —
+	the fixture said nothing about it and each run inherited whatever the last
+	one had opened. That was harmless while the reader drew every message the
+	same way. It is not now: a read message collapses to a row and a line marks
+	where the new mail begins, so "which of these have I read" decides what the
+	screen looks like, and a fixture that leaves it to history is a fixture that
+	makes the same test pass and fail on alternate runs.
+
+	One read message out of a thread of two, deliberately: it is the only shape
+	that shows both halves at once — something collapsed above, and a marker
+	saying the rest is new.
+	"""
+	from oneapp.oneapp_core.email.mailbox.flags import SEEN_KEY
+
+	first = frappe.db.get_value(
+		"Communication", {"subject": "Quotation for the Al Reem tower"}, "name"
+	)
+	frappe.defaults.set_user_default(SEEN_KEY, first or "", user)
 
 
 def _seed_import():
