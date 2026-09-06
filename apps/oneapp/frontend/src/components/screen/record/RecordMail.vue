@@ -161,7 +161,7 @@ const PAGE = 50
 // "thread" and explains nothing is a badge that raises a question.
 const REASONS = {
   thread: __('Inherited from the conversation this message belongs to'),
-  text: __('This record’s id was written in the subject or the message'),
+  text: __("This record's id was written in the subject or the message"),
   manual: __('Filed here by somebody'),
 }
 

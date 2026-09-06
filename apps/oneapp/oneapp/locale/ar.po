@@ -35,7 +35,7 @@ msgstr "طول CSS — 40mm، 120px، 50%. اتركه فارغًا ليلائم 
 msgid "A Select becomes its own options; a Link becomes whoever is on the page."
 msgstr "حقل الاختيار يصبح خياراته، وحقل الربط يصبح من على الصفحة."
 
-msgid "A camera needs a secure connection. Use the phone’s camera instead."
+msgid "A camera needs a secure connection. Use the phone's camera instead."
 msgstr "الكاميرا تحتاج اتصالاً آمناً. استخدم كاميرا الهاتف بدلاً من ذلك."
 
 msgid "A colon after every label"
@@ -3916,7 +3916,7 @@ msgstr "هذا يفتح الشاشة الآن"
 msgid "This record is no longer in the workspace"
 msgstr "هذا السجل لم يعد في مساحة العمل"
 
-msgid "This record’s id was written in the subject or the message"
+msgid "This record's id was written in the subject or the message"
 msgstr "كُتب معرّف هذا السجل في الموضوع أو في الرسالة"
 
 msgid "This screen did not open"
@@ -4260,7 +4260,7 @@ msgstr "استخدام كقالب"
 msgid "Use the camera to take a photograph."
 msgstr "استخدم الكاميرا لالتقاط صورة."
 
-msgid "Use the phone’s camera"
+msgid "Use the phone's camera"
 msgstr "استخدم كاميرا الهاتف"
 
 msgid "Use this one by default"

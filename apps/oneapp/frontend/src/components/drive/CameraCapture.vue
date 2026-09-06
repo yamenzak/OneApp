@@ -73,7 +73,7 @@
           class="hidden"
           @change="fromNative"
         >
-        <Button :label="__('Use the phone’s camera')" @click="native?.click()" />
+        <Button :label="NATIVE" @click="native?.click()" />
       </div>
     </div>
 
@@ -102,6 +102,11 @@
 import { onBeforeUnmount, ref, watch } from 'vue'
 import { Button, ErrorMessage, Icon } from '@/ui'
 import { __ } from '@/lib/runtime/translate'
+
+// A `const` rather than a call in the template: the apostrophe has to be a
+// straight one, which means the msgid needs double quotes, which cannot be
+// nested inside a double-quoted attribute.
+const NATIVE = __("Use the phone's camera")
 
 const props = defineProps({
   /** Whether the camera tab is the one being looked at. */
@@ -133,7 +138,7 @@ function reason(raised) {
   if (!navigator.mediaDevices?.getUserMedia) {
     return window.isSecureContext
       ? __('This browser has no camera support.')
-      : __('A camera needs a secure connection. Use the phone’s camera instead.')
+      : __("A camera needs a secure connection. Use the phone's camera instead.")
   }
   const name = raised?.name || ''
   if (name === 'NotAllowedError') return __('Permission for the camera was refused.')

@@ -38,7 +38,7 @@ msgstr ""
 "Ein Auswahlfeld wird zu seinen eigenen Optionen; ein Verknüpfungsfeld "
 "wird zu den Personen auf der Seite."
 
-msgid "A camera needs a secure connection. Use the phone’s camera instead."
+msgid "A camera needs a secure connection. Use the phone's camera instead."
 msgstr ""
 "Eine Kamera benötigt eine sichere Verbindung. Verwenden Sie stattdessen "
 "die Kamera des Telefons."
@@ -4094,7 +4094,7 @@ msgstr "Dies öffnet die Ansicht jetzt"
 msgid "This record is no longer in the workspace"
 msgstr "Dieser Datensatz ist nicht mehr im Arbeitsbereich"
 
-msgid "This record’s id was written in the subject or the message"
+msgid "This record's id was written in the subject or the message"
 msgstr "Die ID dieses Datensatzes stand im Betreff oder in der Nachricht"
 
 msgid "This screen did not open"
@@ -4460,7 +4460,7 @@ msgstr "Als Vorlage verwenden"
 msgid "Use the camera to take a photograph."
 msgstr "Verwenden Sie die Kamera, um ein Foto aufzunehmen."
 
-msgid "Use the phone’s camera"
+msgid "Use the phone's camera"
 msgstr "Kamera des Telefons verwenden"
 
 msgid "Use this one by default"

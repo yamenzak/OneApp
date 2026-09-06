@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-06 23:32+0000\n"
-"PO-Revision-Date: 2026-09-06 23:32+0000\n"
+"POT-Creation-Date: 2026-09-06 23:48+0000\n"
+"PO-Revision-Date: 2026-09-06 23:48+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -49,7 +49,7 @@ msgid "A Select becomes its own options; a Link becomes whoever is on the page."
 msgstr ""
 
 #: frontend/src/components/drive/CameraCapture.vue:136
-msgid "A camera needs a secure connection. Use the phone’s camera instead."
+msgid "A camera needs a secure connection. Use the phone's camera instead."
 msgstr ""
 
 #: frontend/src/components/settings/printing/BuilderInspector.vue:144
@@ -6914,7 +6914,7 @@ msgid "This record is no longer in the workspace"
 msgstr ""
 
 #: frontend/src/components/screen/record/RecordMail.vue:164
-msgid "This record’s id was written in the subject or the message"
+msgid "This record's id was written in the subject or the message"
 msgstr ""
 
 #: frontend/src/pages/ScreenHost.vue:53
@@ -7401,7 +7401,7 @@ msgid "Use the camera to take a photograph."
 msgstr ""
 
 #: frontend/src/components/drive/CameraCapture.vue:76
-msgid "Use the phone’s camera"
+msgid "Use the phone's camera"
 msgstr ""
 
 #: frontend/src/components/settings/printing/LetterHeadDialog.vue:74

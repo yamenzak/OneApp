@@ -39,6 +39,25 @@ def test_every_sentence_a_customer_reads_is_translatable():
 	)
 
 
+def test_an_apostrophe_is_the_one_on_the_keyboard():
+	"""`'` and not `\u2019`.
+
+	The curly one is better typography and it is the wrong call here: it is
+	invisible in a diff, it is not what anybody types into a search box, and it
+	arrived in the first place because a straight apostrophe inside `__('…')`
+	has to be escaped and swapping the character looked like the easy way out.
+	The easy way out is `__("…")`, which is what these use.
+	"""
+	guilty = [
+		f"{where}: {text}"
+		for where, text in visible()
+		if "\u2019" in text
+	]
+	assert not guilty, "use a straight apostrophe, in a double-quoted call:\n  " + "\n  ".join(
+		guilty
+	)
+
+
 def test_a_file_that_translates_says_so_at_the_top():
 	"""`__` is imported per file rather than made global, so that a file which
 	puts words on screen is a file whose imports say it does."""
