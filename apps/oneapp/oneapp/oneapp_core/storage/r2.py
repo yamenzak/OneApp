@@ -221,13 +221,20 @@ def serve(doc):
 	read the file, and a share link asks nothing at all because the secret in the
 	URL was the whole of the authentication.
 	"""
-	# A sheet has no object anywhere. Its bytes are produced on the way out —
-	# see `sheets/export.py` — and asking `get_content()` for them answered 500
-	# on every download of a sheet and every share link to one.
+	# A sheet and a document have no object anywhere. Their bytes are produced
+	# on the way out — see `sheets/export.py` and `docs/export.py` — and asking
+	# `get_content()` for them answered 500 on every download of a sheet and
+	# every share link to one.
 	if doc.get("custom_kind") == "Sheet":
 		from oneapp.oneapp_core.sheets import export
 
 		export.to_response(doc)
+		return
+
+	if doc.get("custom_kind") == "Doc":
+		from oneapp.oneapp_core.docs import export as doc_export
+
+		doc_export.to_response(doc)
 		return
 
 	# `is_configured()` and not "does this row have a key". A key is where the

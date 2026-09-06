@@ -72,7 +72,15 @@ doc_events = {
 		# the only thing that knows they exist. Without this the bin's
 		# thirty-day sweep leaves behind the workbook of every sheet anybody
 		# ever threw away — see `oneapp_core/sheets`.
-		"on_trash": "oneapp.oneapp_core.sheets.on_trash",
+		# A sheet's grid, a document's prose and either one's earlier drafts are
+		# rows keyed by the File, and the File being deleted is the only thing
+		# that knows they exist. See `oneapp_core/sheets`, `oneapp_core/docs`
+		# and `oneapp_core/versions.py`.
+		"on_trash": [
+			"oneapp.oneapp_core.sheets.on_trash",
+			"oneapp.oneapp_core.docs.on_trash",
+			"oneapp.oneapp_core.versions.on_trash",
+		],
 	},
 	"Email Queue": {
 		# Frappe queues one document per send, so counting them measures what
@@ -180,6 +188,10 @@ scheduler_events = {
 		# expire: the row is the audit trail, and "this stopped working last
 		# Tuesday" is a question asked in the week after it stops.
 		"oneapp.oneapp_core.drive.sweep_links",
+		# And the automatic versions of a sheet or a document that are now too
+		# dense to be worth their bytes. Named versions are not in its reach —
+		# see `oneapp_core/versions.py`.
+		"oneapp.oneapp_core.versions.thin",
 	],
 	"hourly": [
 		"oneapp.oneapp_core.sync.report_usage_to_control_plane",

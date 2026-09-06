@@ -74,6 +74,35 @@ def store(sheet: str, payload: str) -> int:
     return head
 
 
+# --------------------------------------------------------------------------- #
+# What `versions.py` needs from a store
+#
+# Four functions, the same four `docs/body.py` answers, so one version module
+# serves a workbook and a document without knowing which it has.
+# --------------------------------------------------------------------------- #
+
+def head_of(sheet: str) -> dict:
+    """The stored workbook and how many saves it has had."""
+    row = frappe.db.get_value(
+        "Sheet Book", sheet, ["payload", "head_seq"], as_dict=True
+    )
+    return {"payload": (row or {}).get("payload") or "",
+            "head_seq": (row or {}).get("head_seq") or 0}
+
+
+def may_read(sheet: str) -> None:
+    _mine(sheet)
+
+
+def may_write(sheet: str) -> None:
+    _mine(sheet, "write")
+
+
+def put(sheet: str, payload: str) -> int:
+    """Write a workbook back wholesale. What restoring a version calls."""
+    return store(sheet, payload)
+
+
 @frappe.whitelist(methods=["GET"])
 def get_sheet(name: str, compressed: int = 0) -> dict:
     """Everything the editor needs to draw a workbook, in one request.

@@ -357,3 +357,121 @@ doctype(
         f("locked_by", "Link", options="User", read_only=1),
     ],
 )
+
+
+# --------------------------------------------------------------------------- #
+# Documents
+#
+# A document is a `File`, the same way a sheet is — see `docs/WRITER.md`. The
+# File row is its name, owner, folder, share, place in the bin and binding to a
+# record; this holds the only thing a File cannot, which is the prose.
+#
+# Two representations of one document, and both are needed. `content` is the
+# ProseMirror JSON the editor round-trips and is the source of truth. `html` is
+# what that JSON renders to, written on every save, and it is what search, the
+# preview, print, export and a mail body all read — none of which should be
+# made to load an editor to find out what a document says.
+#
+# Reseamed from `frappe/writer`'s `Writer Document` (AGPL-3.0, © Frappe
+# Technologies Pvt. Ltd.). Theirs stores a base64 Yjs update because its editing
+# model is peer-to-peer CRDT over `wss://signal.frappe.cloud`; ours is a whole
+# document saved by one writer at a time, for the reason `docs/SHEETS.md` gives
+# about not adding a second runtime to a shard. So the columns are the same
+# minus the CRDT ones, and the version table below replaces `Writer Version`.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Doc Body",
+    app="tenant",
+    autoname="field:doc",
+    title_field="doc",
+    search_fields="doc",
+    perms=READONLY_PERMS,
+    fields=[
+        f("doc", "Data", reqd=1, unique=1, in_list_view=1,
+          description="The File this prose belongs to, by name. Data and "
+                      "unique rather than a Link so the row is addressable as "
+                      "`Doc Body/<file>` — one statement to load, no filter."),
+        f("content", "Long Text",
+          description="The document as ProseMirror JSON: the source of truth, "
+                      "and the only representation the editor reads back. "
+                      "Replaced whole on every save."),
+        f("html", "Long Text",
+          description="What that JSON renders to, written on the same save. "
+                      "Everything that is not the editor reads this one — "
+                      "search, the preview, print, export, a mail body — so "
+                      "none of them has to load an editor to find out what the "
+                      "document says."),
+        column("cb_body_size"),
+        f("settings", "JSON",
+          description="How the page is set: width, typeface, line spacing, and "
+                      "whether it is locked against accidental typing. The "
+                      "reader's choices about one document, not the "
+                      "workspace's about all of them."),
+        f("byte_size", "Int", read_only=1,
+          description="Bytes of content plus html. What the storage meter "
+                      "counts for a document, since it has no object behind "
+                      "it."),
+        f("head_seq", "Long Int", default="0", read_only=1,
+          description="How many saves this document has had. `File Version` "
+                      "rows point at it, which is how the history panel knows "
+                      "whether what it is showing is the current text."),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# Versions, for both of them
+#
+# One doctype and not two, because a version of a sheet and a version of a
+# document are the same row: a blob, whose file it belongs to, when it was
+# taken, by whom, and whether a person named it. The two stores differ — a
+# workbook is `codec.py`'s gzipped envelope, a document is ProseMirror JSON —
+# and neither this row nor the module over it has to care, because restoring is
+# handing the blob back to the store it came from.
+#
+# The policy over these rows is taken from `frappe/sheets`'
+# `sheets/versioning/` (AGPL-3.0, © Frappe Technologies Pvt. Ltd.): snapshot on
+# the first save, on N saves, or after T seconds of work; never prune what
+# somebody named; thin the automatic ones on a tiered schedule so a year of
+# editing is not a year of blobs. What was not taken is their op log, which
+# exists because their save is incremental and ours is total.
+# --------------------------------------------------------------------------- #
+doctype(
+    "File Version",
+    app="tenant",
+    autoname="hash",
+    title_field="title",
+    search_fields="file,title",
+    perms=READONLY_PERMS,
+    fields=[
+        f("file", "Data", reqd=1, in_list_view=1,
+          description="The File this is a version of, by name. Data rather "
+                      "than a Link for the same reason the bodies are: the row "
+                      "is written and read by name, and a Link would make "
+                      "deleting the file a cascade nobody asked for."),
+        f("kind", "Select", options="Sheet\nDoc", reqd=1, in_list_view=1,
+          description="Which store the payload goes back to. On the row rather "
+                      "than derived from the File, so a version is readable on "
+                      "its own — including after the file it came from is "
+                      "gone."),
+        f("title", "Data", in_list_view=1,
+          description="What to call this version in the panel. A timestamp for "
+                      "an automatic one; whatever somebody typed for a named "
+                      "one."),
+        f("manual", "Check", default="0", in_list_view=1,
+          description="Somebody asked for this version by name. Never pruned, "
+                      "and sorted above the automatic ones."),
+        column("cb_version_body"),
+        f("payload", "Long Text",
+          description="The whole body as it stood, in whatever shape its store "
+                      "reads. Restoring writes this back unchanged."),
+        f("byte_size", "Int", read_only=1),
+        f("at_seq", "Long Int", default="0", read_only=1,
+          description="The `head_seq` of the body when this was taken. What "
+                      "the panel compares against to say which version is the "
+                      "one on screen."),
+        f("saves", "Int", default="0", read_only=1,
+          description="Saves between this version and the one before it. The "
+                      "panel says '3 changes' rather than nothing at all."),
+    ],
+)

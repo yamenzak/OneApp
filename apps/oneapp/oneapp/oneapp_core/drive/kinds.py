@@ -5,14 +5,21 @@ be a column. Deriving it from the mime type at read time would be a Python walk
 over a mime map for every row of every page; deriving it on insert is one
 comparison, once, ever.
 
-Eight kinds and no more. The point of a kind is the filter chip and the icon —
+Nine kinds and no more. The point of a kind is the filter chip and the icon —
 a reader scanning for the site photos does not want twelve buckets, and the
 mime type is still on the row for anything that needs to be exact.
 
-`Sheet` is the one that is not derived from a name. A sheet is a `File` whose
-grid lives in `Sheet Cell` rows and whose bytes do not exist until somebody
-exports it — see `docs/SHEETS.md` — so nothing about its filename says what it
-is, and `sheets.make` sets the kind itself.
+`Sheet` and `Doc` are the two that are not derived from a name. Both are a
+`File` whose content lives in a column and whose bytes do not exist until
+somebody exports it — see `docs/SHEETS.md` and `docs/WRITER.md` — so nothing
+about "Padel Pro estimator" or "Scope of works" says what it is, and
+`sheets.make` and `docs.make` set the kind themselves.
+
+`Doc` sits beside `Document` rather than inside it, and the near-collision is
+deliberate: a `.docx` somebody uploaded and a document somebody wrote here are
+different things to open, to weigh and to search, and one bucket holding both
+would mean every reader of a kind asking a second question afterwards. The same
+asymmetry already exists for `Sheet` beside a `.xlsx`.
 """
 
 import frappe
@@ -32,9 +39,10 @@ VIDEO = "Video"
 AUDIO = "Audio"
 DOCUMENT = "Document"
 SHEET = "Sheet"
+DOC = "Doc"
 OTHER = "Other"
 
-KINDS = (FOLDER, IMAGE, PDF, VIDEO, AUDIO, DOCUMENT, SHEET, OTHER)
+KINDS = (FOLDER, IMAGE, PDF, VIDEO, AUDIO, DOCUMENT, SHEET, DOC, OTHER)
 
 # Matched in order, on the extension rather than on a mime type: Frappe stores
 # no mime type on `File`, and the browser's guess for an upload is famously the
@@ -54,8 +62,8 @@ BY_EXTENSION = (
 #: Kinds no filename can say. A sheet is a sheet because `sheets.make` said so
 #: — "Padel Pro estimator" has no extension and nothing about it is a
 #: spreadsheet — so a kind derived from the name would quietly demote every
-#: sheet the first time anybody renamed one.
-DECLARED = (SHEET,)
+#: sheet the first time anybody renamed one. A document is the same.
+DECLARED = (SHEET, DOC)
 
 
 def kind_of(file_name: str, is_folder=False, current: str = "") -> str:

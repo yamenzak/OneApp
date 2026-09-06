@@ -118,3 +118,36 @@ def _place_filters(place: str, folder: str = "", kind: str = "",
         filters[KIND_FIELD] = kind
 
     return filters, or_filters
+
+
+def _searching(search: str, filters: dict, or_filters: list):
+    """Narrow a place to what matches — by name, and by what a document says.
+
+    A file manager searches filenames because a filename is all it has. A
+    document has more: `Doc Body.html` is what the editor rendered, written on
+    every save, so "the one where we agreed retention was five per cent" is a
+    question this can answer without an index, an extension or a second store.
+
+    `get_all` here and `get_list` in the caller, deliberately. This query only
+    produces candidate names; the reader's own permission is applied by the
+    `File` query those names go into, which is the only place it could be
+    applied correctly — `Doc Body` is a body, and who may read a body is
+    settled by the file it belongs to.
+
+    Both halves go in as `or_filters` rather than as a second query, because
+    one file can match on its name and on its text, and merging two paged
+    result sets is how a list starts skipping rows.
+    """
+    like = f"%{search}%"
+    hits = frappe.get_all(
+        "Doc Body", filters={"html": ["like", like]}, pluck="doc", limit=200
+    )
+    if not hits:
+        filters["file_name"] = ["like", like]
+        return or_filters
+
+    # A dict rather than the `[doctype, field, op, value]` list form. The list
+    # form makes Frappe join the doctype in again, and a file that matches on
+    # both its name and its text then comes back twice — which the caller pages
+    # and the reader sees as the same document listed under itself.
+    return {"file_name": ["like", like], "name": ["in", hits]}

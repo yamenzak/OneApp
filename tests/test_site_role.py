@@ -173,6 +173,10 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# Same again: the control plane holds no share links, so this reads an
 		# empty table and says so by coming back with nothing.
 		"oneapp.oneapp_core.drive.sweep_links",
+		# And once more for the version pruner. Nobody writes a sheet or a
+		# document on the control plane, so `File Version` is empty there and
+		# the nightly thinning has nothing to walk.
+		"oneapp.oneapp_core.versions.thin",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "

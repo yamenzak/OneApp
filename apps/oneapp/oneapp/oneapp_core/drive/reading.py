@@ -13,7 +13,9 @@ from oneapp.oneapp_core.email import people
 
 from .kinds import KIND_FIELD, KINDS, OPENED_FIELD, STATUS_FIELD, TRASHED, TRASHED_FIELD
 from .writing import KEEP_DAYS
-from .query import HOME, ORDER, PLACES, RECORD, ROOT, TRASH, _place_filters, _visible
+from .query import (
+    HOME, ORDER, PLACES, RECORD, ROOT, TRASH, _place_filters, _searching, _visible,
+)
 
 PAGE = 50
 
@@ -47,7 +49,7 @@ def listing(place: str = HOME, folder: str = "", kind: str = "",
 
     filters, or_filters = _place_filters(place, folder, kind, (doctype, docname))
     if search:
-        filters["file_name"] = ["like", f"%{search}%"]
+        or_filters = _searching(search, filters, or_filters)
 
     limit = max(1, min(int(limit or PAGE), PAGE))
     start = max(0, int(start or 0))
