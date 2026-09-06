@@ -49,8 +49,9 @@ const routes = [
     name: 'Sheet',
     component: () => import('./pages/Sheet.vue'),
     props: true,
-    // A grid owns both its scrollbars.
-    meta: { pane: true },
+    // A grid owns both its scrollbars, and it gets the window: see `chrome` on
+    // `AppShell` for why an editor draws no rail and no sidebar.
+    meta: { pane: true, focused: true },
   },
   {
     // A document is a File too, so this is the same kind of address a sheet
@@ -61,8 +62,9 @@ const routes = [
     component: () => import('./pages/Doc.vue'),
     props: true,
     // The editor owns its own scroller, and a page scroll under it would put
-    // the toolbar off screen the moment anybody typed past the fold.
-    meta: { pane: true },
+    // the toolbar off screen the moment anybody typed past the fold. It gets
+    // the window too — same reason a sheet does.
+    meta: { pane: true, focused: true },
   },
   {
     path: '/:pathMatch(.*)*',

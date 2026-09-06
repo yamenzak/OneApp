@@ -17,6 +17,7 @@
       <!-- Grouping belongs here rather than in a control of its own: it is a
            question about the columns. -->
       <FormControl
+        v-if="has('group')"
         type="select"
         label="Group rows by"
         :model-value="groupBy"
@@ -27,7 +28,7 @@
 
       <div class="flex flex-col gap-2">
         <div class="flex items-baseline justify-between">
-          <h3 class="text-p-sm font-medium text-ink-gray-8">On this list</h3>
+          <h3 class="text-p-sm font-medium text-ink-gray-8">{{ here }}</h3>
           <p class="text-p-xs text-ink-gray-5">
             Drag to reorder, or use the arrows
           </p>
@@ -99,7 +100,7 @@
                 toggles, because every one of these is one answer out of a few.
               -->
               <div class="flex flex-wrap items-center gap-x-4 gap-y-2 ps-6">
-                <div class="flex items-center gap-1.5">
+                <div v-if="has('align')" class="flex items-center gap-1.5">
                   <span class="text-p-xs text-ink-gray-5">Align</span>
                   <TabButtons
                     :model-value="column.align || ''"
@@ -109,7 +110,7 @@
                   />
                 </div>
 
-                <div class="flex items-center gap-1.5">
+                <div v-if="has('pin')" class="flex items-center gap-1.5">
                   <span class="text-p-xs text-ink-gray-5">Pin</span>
                   <TabButtons
                     :model-value="column.pin || ''"
@@ -119,7 +120,7 @@
                   />
                 </div>
 
-                <div class="flex items-center gap-1.5">
+                <div v-if="has('width')" class="flex items-center gap-1.5">
                   <span class="text-p-xs text-ink-gray-5">Width</span>
                   <!-- `aria-label` rather than `label`: FormControl renders a
                        label visibly above the field, which in a row this dense
@@ -143,8 +144,7 @@
         <div class="flex items-baseline justify-between">
           <h3 class="text-p-sm font-medium text-ink-gray-8">Add a column</h3>
           <p class="text-p-xs text-ink-gray-5">
-            {{ unused.length }} left — everything this record has, whether or not
-            the app put it on the list
+            {{ unused.length }} left — {{ everything }}
           </p>
         </div>
         <FormControl v-model="search" type="search" placeholder="Find a field" />
@@ -185,6 +185,17 @@ const props = defineProps({
   chosen: { type: Array, required: true },
   offered: { type: Array, required: true },
   groupBy: { type: String, default: '' },
+  /**
+   * Which answers a column carries here.
+   *
+   * A list's columns carry four; a child grid's carry two. Its tracks share
+   * whatever width the pane gives them, so there is nothing to pin against and
+   * no pixel width to type — and grouping the rows *inside* a quotation is not
+   * a thing anybody wants. Passing the set rather than a boolean because the
+   * next surface will want its own combination and a second boolean is how a
+   * component ends up with `simple`, `compact` and `mini`.
+   */
+  offers: { type: Array, default: () => ['align', 'pin', 'width', 'group'] },
 })
 const emit = defineEmits(['update:modelValue', 'update:chosen', 'update:groupBy'])
 
@@ -222,6 +233,16 @@ const PIN = [
   { value: 'left', label: 'Pin to the left edge', icon: 'lucide-arrow-left-to-line' },
   { value: 'right', label: 'Pin to the right edge', icon: 'lucide-arrow-right-to-line' },
 ]
+
+const has = (one) => props.offers.includes(one)
+
+// The same dialog over two different things, so it says which. A child grid is
+// not "this list" — the list is the screen behind it, and a heading that names
+// the wrong one is worse than no heading.
+const here = computed(() => (has('group') ? 'On this list' : 'In this table'))
+const everything = computed(() => (has('group')
+  ? 'everything this record has, whether or not the app put it on the list'
+  : 'every field these rows have, whether or not the doctype put it in the grid'))
 
 const dragging = ref(null)
 const search = ref('')

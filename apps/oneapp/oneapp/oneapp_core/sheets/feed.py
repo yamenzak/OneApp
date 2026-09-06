@@ -419,7 +419,19 @@ TAB = "Sheet1"
 
 @frappe.whitelist(methods=["POST"])
 def start_from(doctype: str, docname: str, into: str, title: str = "") -> dict:
-    """A sheet holding what this child table holds now, ready to be pulled back.
+    """The sheet for this child table: the one already bound to it, or a new one.
+
+    **One sheet per table, not one per press.** The first version made a fresh
+    sheet every time somebody pressed the button, which after an afternoon of
+    pricing left a Drive full of "Quotation — Items" and no way to tell which
+    one anybody had been working in. A child table has one estimator the way a
+    document has one draft.
+
+    The binding is the `Sheet Feed` row, which already existed and already
+    keyed on exactly this — (document, table) — but was only written when
+    somebody pulled. Writing it here makes it what its name says: which sheet
+    feeds which table, from the moment the sheet exists rather than from the
+    first time it was read back.
 
     The named range is drawn here rather than left to the person, because it is
     the contract and a contract nobody drew is a pull that finds nothing. It
@@ -428,6 +440,20 @@ def start_from(doctype: str, docname: str, into: str, title: str = "") -> dict:
     """
     target = frappe.get_doc(doctype, docname)
     target.check_permission("read")
+
+    # The one already bound, if its file is still there. A sheet somebody threw
+    # away is not a reason to refuse; it is a reason to make another.
+    standing = _feed(doctype, docname, into)
+    if standing and standing.sheet and frappe.db.exists("File", standing.sheet):
+        row = frappe.get_doc("File", standing.sheet)
+        if row.get("custom_status") != "Trashed":
+            return {
+                "name": row.name,
+                "title": row.file_name,
+                "url": f"/one/sheets/{row.name}",
+                "label": standing.label,
+                "existing": True,
+            }
 
     field = target.meta.get_field(into)
     if not field or field.fieldtype not in ("Table", "Table MultiSelect"):
@@ -444,7 +470,59 @@ def start_from(doctype: str, docname: str, into: str, title: str = "") -> dict:
 
     label = _label_for(field)
     made = _make_sheet(target, field, title, columns, rows, label)
-    return {**made, "label": label, "columns": len(columns), "rows": len(rows)}
+
+    # And the binding, so pressing the button again opens this one.
+    _remember(standing, {
+        "reference_doctype": doctype,
+        "reference_name": docname,
+        "into": into,
+        "status": FOLLOWING,
+        "sheet": made["name"],
+        "sheet_title": made["title"],
+        "label": label,
+    })
+
+    return {
+        **made, "label": label, "columns": len(columns), "rows": len(rows),
+        "existing": False,
+    }
+
+
+@frappe.whitelist(methods=["GET"])
+def bound_to(sheet: str) -> dict:
+    """The record and table this sheet feeds, or `{}` for a sheet that feeds none.
+
+    Read by the sheet's own page, so the estimator can send its rows back
+    without walking to the record to press a button there. Answering `{}` is
+    the ordinary case: most sheets are just sheets.
+    """
+    _mine(sheet)
+
+    found = frappe.get_all(
+        "Sheet Feed",
+        filters={"sheet": sheet},
+        fields=FEED_FIELDS, order_by="modified desc", limit_page_length=1,
+    )
+    if not found:
+        return {}
+
+    row = found[0]
+    # The document's permission, not the sheet's: the sentence this returns is
+    # about the quotation, and naming a quotation to somebody who may not read
+    # it is a leak whichever object the question arrived through.
+    if not frappe.has_permission(row["reference_doctype"], "read", doc=row["reference_name"]):
+        return {}
+
+    title = frappe.db.get_value(
+        row["reference_doctype"], row["reference_name"],
+        frappe.get_meta(row["reference_doctype"]).get_title_field() or "name",
+    )
+    return {
+        **_with_freshness(row),
+        "title": title or row["reference_name"],
+        "may_write": bool(frappe.has_permission(
+            row["reference_doctype"], "write", doc=row["reference_name"])),
+    }
 
 
 def _label_for(field) -> str:

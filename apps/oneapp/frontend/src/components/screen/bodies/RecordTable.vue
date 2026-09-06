@@ -31,8 +31,12 @@
         :row-height="rowHeight"
         :selectable="selectable"
         :divider="divider"
-        class="w-max min-w-full"
-        :class="[rowInset, extraClass, band ? BAND : '']"
+        :class="[
+          shares ? 'w-full' : 'w-max min-w-full',
+          rowInset,
+          extraClass,
+          band ? BAND : '',
+        ]"
       >
         <ListHeader :class="sticky ? 'sticky top-0 z-20' : ''">
           <template v-for="c in placed" :key="c.key">
@@ -355,6 +359,23 @@ const placed = computed(() => {
 })
 
 const tracks = computed(() => placed.value.map((c) => c.track))
+
+/**
+ * Whether the tracks share the room they are given rather than each taking
+ * what its content wants.
+ *
+ * `w-max` is right for the list: its columns are pixel widths a reader chose,
+ * pinning is arithmetic over them, and a column narrower than its content is a
+ * column somebody has to widen back. It is wrong for a child grid, where every
+ * track is `minmax(_, 1fr)` and `1fr` against `max-content` resolves to the
+ * content's width — a five-column grid of Selects came out 1250px wide inside a
+ * 460px pane, and the three columns past the second, headers included, were
+ * only reachable by scrolling.
+ *
+ * Read off the columns rather than passed: a set with no pixel widths is
+ * exactly the set that has nothing to pin and nothing to fill.
+ */
+const shares = computed(() => (props.columns || []).every((c) => !c.width))
 
 // A computed rather than an inline expression: a `>` inside a template
 // attribute ends the tag as far as any regex-shaped parser is concerned.

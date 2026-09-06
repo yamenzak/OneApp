@@ -1357,6 +1357,30 @@ on the platform's side appears in the spec.
 
 ## 12. The UI rules
 
+**Five surfaces, and which one a thing gets is not a taste question.** It was
+becoming one — a document opened as a page, a child row as a dialog, a peeked
+record as a drawer, and nothing said why — so:
+
+* **Page** — something with its own address that you *go to*: a screen, a
+  sheet, a document, Mail, Files, the calendar. Also a record whose screen
+  declares a showcase, or that the reader has chosen to open this way.
+* **Pane** — a record read *against* its list: mark this one done, glance at
+  the next, come back. The desktop default, and resizable.
+* **Drawer** — a record reached *from* another record, where losing your place
+  is the whole cost.
+* **Dialog** — an interruption that returns you where you were: making a
+  record, renaming one, sharing, printing, picking columns, editing one child
+  row, a long field given the room a document gets.
+* **Panel** — a strip inside a page you toggle and that keeps its state: the
+  version history, the document outline, a record's connections.
+
+Two consequences worth stating, because both were wrong until they were named.
+A page reached *from* a record carries that record in its URL, so its trail
+reads `Quarterly review / Notifications` and closing it comes back to the
+record and the tab you left — `lib/screen/returnTo.js`. And a phone has one
+surface: every pane and every drawer is a page there, and `RecordPane` decides
+that itself rather than each caller asking the viewport.
+
 **The frappe-ui API is read, not remembered.** Every UI defect in this project
 so far was the same mistake: giving a component a prop, a slot or an option it
 does not declare. Vue turns an unknown prop into a fallthrough attribute and

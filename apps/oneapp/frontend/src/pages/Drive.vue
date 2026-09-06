@@ -177,6 +177,7 @@
             v-for="file in drive.files.value"
             :key="file.name"
             :file="file"
+            :link="routeFor(file)"
             :grid="grid"
             selectable
             actions
@@ -324,7 +325,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import {
   Alert,
   Breadcrumbs,
@@ -367,7 +368,6 @@ const EMPTY = {
 }
 
 const route = useRoute()
-const router = useRouter()
 // The header is a breadcrumb, a search box and two buttons. On a phone that is
 // more than 412px holds, so the buttons lose their words and keep their
 // tooltips.
@@ -503,16 +503,11 @@ const newName = ref('')
 const toMove = ref([])
 const importing = ref(false)
 
-// A folder is a link and navigates itself; this is only ever a file. Opening
-// one looks at it rather than downloading it — the download is one button
-// further in, which is the right way round. Where "looking at it" means an
-// editor rather than the previewer, `routeFor` says so.
+// Anything with an address is a link and navigates itself — a folder, a sheet,
+// a document, a text file. What is left is the files that are looked at rather
+// than opened, and looking is what this does: the download is one button
+// further in, which is the right way round.
 function open(file) {
-  const route = routeFor(file)
-  if (route) {
-    router.push(route)
-    return
-  }
   looking.value = file
   previewing.value = true
 }

@@ -13,13 +13,24 @@
  * started in creates files in the wrong place.
  */
 
-import { computed, ref } from 'vue'
+import { computed, inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { workspace } from '@/lib/workspace'
+import { RETURN_TO, returnQuery } from '@/lib/screen/returnTo'
+
+//: How many templates a menu offers before it stops being a menu. Six is about
+//: what fits under "Blank sheet" without pushing the group below it off the
+//: screen; past that the list is a place to browse rather than a list to read,
+//: and the Drive's Templates rail entry is that place.
+const MOST = 6
 
 export function useNewFile(where, extras = () => []) {
   const router = useRouter()
+
+  // Null in the Drive, where a new file belongs to the folder you are in and
+  // there is nothing to come back to.
+  const came = inject(RETURN_TO, null)
 
   const making = ref(false)
   const docTemplates = ref([])
@@ -43,7 +54,11 @@ export function useNewFile(where, extras = () => []) {
     making.value = true
     try {
       const made = await work()
-      router.push({ name: route, params: { name: made.name } })
+      router.push({
+        name: route,
+        params: { name: made.name },
+        query: returnQuery(came?.value),
+      })
       return made
     } finally {
       making.value = false
@@ -61,6 +76,30 @@ export function useNewFile(where, extras = () => []) {
 
   const copyName = (row, fallback) => `${row?.file_name || fallback} copy`
 
+  /**
+   * The templates a menu can hold, and a way to the rest.
+   *
+   * Uncapped, this grew to fourteen entries against three real ones — every
+   * estimator anybody had ever flagged, in one flat list, with "Document" and
+   * "Blank sheet" scrolled off the top. A menu is for the handful you reach for
+   * daily.
+   */
+  const offered = (rows, icon, start) => {
+    const entries = rows.slice(0, MOST).map((one) => ({
+      label: one.file_name,
+      icon,
+      onClick: () => start(one.name, copyName(one, 'Copy')),
+    }))
+    if (rows.length > MOST) {
+      entries.push({
+        label: `All ${rows.length} templates…`,
+        icon: 'lucide-bookmark',
+        onClick: () => router.push({ name: 'Drive', query: { place: 'templates' } }),
+      })
+    }
+    return entries
+  }
+
   // Grouped rather than listed flat, because a workspace with four estimator
   // templates otherwise gets a menu where "Document" is below the fold.
   const options = computed(() => [
@@ -70,11 +109,7 @@ export function useNewFile(where, extras = () => []) {
         { label: 'Document', icon: 'lucide-file-signature', onClick: () => newDoc() },
         { label: 'Text file', icon: 'lucide-file-text', onClick: () => newText('txt') },
         { label: 'Markdown file', icon: 'lucide-file-code', onClick: () => newText('md') },
-        ...docTemplates.value.map((one) => ({
-          label: one.file_name,
-          icon: 'lucide-file-signature',
-          onClick: () => newDoc(one.name, copyName(one, 'Document')),
-        })),
+        ...offered(docTemplates.value, 'lucide-file-signature', newDoc),
       ],
     },
     {
@@ -82,11 +117,7 @@ export function useNewFile(where, extras = () => []) {
       options: [
         { label: 'Blank sheet', icon: 'lucide-table-2', onClick: () => newSheet() },
         ...extras(),
-        ...sheetTemplates.value.map((one) => ({
-          label: one.file_name,
-          icon: 'lucide-table-2',
-          onClick: () => newSheet(one.name, copyName(one, 'Sheet')),
-        })),
+        ...offered(sheetTemplates.value, 'lucide-table-2', newSheet),
       ],
     },
   ])

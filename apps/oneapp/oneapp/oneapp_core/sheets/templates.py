@@ -2,9 +2,10 @@
 
 A template is a sheet with a flag on it, and "new from template" copies its
 rows. That is the whole feature, and it is small because a sheet is a `File`:
-a workspace's templates are a folder in the Drive, so managing them is managing
-files — no second screen, no second permission model, and a template shared with
-a colleague is `DocShare` like everything else.
+managing them is managing files — no second screen, no second permission model,
+and a template shared with a colleague is `DocShare` like everything else. The
+Drive's Templates rail entry is that same flag read as a place, so a template
+stays wherever its owner filed it rather than being moved to a folder.
 
 RUA did this against somebody else's API — `create_sheet_from_template` was a
 Google Drive `files.copy` with polling and a permissions grant afterwards, and
@@ -15,12 +16,12 @@ Ours is an insert.
 import frappe
 from frappe import _
 
-TEMPLATE_FIELD = "custom_is_template"
+from ..drive import kinds
 
-# Where a workspace keeps them. A folder and not a flag on a folder: the Drive
-# already lists, shares and bins folders, and "the templates folder" is a thing
-# a person can find without being taught.
-FOLDER = "Templates"
+#: One name for the flag, in `drive/kinds.py` beside the other columns this
+#: product adds to `File` — a sheet template and a document template are the
+#: same column and the Drive's Templates place reads it too.
+TEMPLATE_FIELD = kinds.TEMPLATE_FIELD
 
 
 @frappe.whitelist(methods=["GET"])
@@ -33,7 +34,7 @@ def listing() -> list[dict]:
     return frappe.get_list(
         "File",
         filters={
-            "custom_kind": "Sheet",
+            kinds.KIND_FIELD: kinds.SHEET,
             TEMPLATE_FIELD: 1,
             "custom_status": ["in", ["Active", "", None]],
         },

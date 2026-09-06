@@ -6,8 +6,9 @@
  * Favourites and the bin have no route to them at all.
  *
  * Every one of them is the same query with a different `where`; there is no
- * second store behind any. That is why the rail is cheap and why a sixth would
- * be a filter rather than a feature. `oneapp_core/drive/query.py` holds the
+ * second store behind any. That is why the rail is cheap, and why Templates
+ * — the sixth — is a `where` on the flag rather than a folder somebody has to
+ * be taught to file things into. `oneapp_core/drive/query.py` holds the
  * other half of this list, and a test keeps them in step.
  */
 export const PLACES = [
@@ -15,6 +16,7 @@ export const PLACES = [
   { value: 'recents', label: 'Recent', icon: 'lucide-clock' },
   { value: 'favourites', label: 'Favourites', icon: 'lucide-heart' },
   { value: 'shared', label: 'Shared with me', icon: 'lucide-users' },
+  { value: 'templates', label: 'Templates', icon: 'lucide-bookmark' },
   { value: 'trash', label: 'Bin', icon: 'lucide-trash-2' },
 ]
 

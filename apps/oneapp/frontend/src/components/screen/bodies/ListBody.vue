@@ -21,6 +21,7 @@
     sticky
     fills
     extra-class="pb-1"
+    :row-props="rowProps"
     @sort="emit('sort', $event)"
     @row-click="report || emit('open', $event)"
   >
@@ -140,6 +141,8 @@ const props = defineProps({
   counted: { type: String, default: '' },
   /** Which column the rows are grouped under, or empty. */
   groupBy: { type: String, default: '' },
+  /** The record open in the pane beside this list, if one is. */
+  openRecord: { type: String, default: '' },
   /** What the money columns add up to over every row that matches, keyed by
    *  fieldname. Empty on a plain list, which does not ask for them. */
   totals: { type: Object, default: () => ({}) },
@@ -158,6 +161,22 @@ const emit = defineEmits(['open', 'like', 'sort', 'favourites', 'change'])
 const report = computed(() => props.spec?.view_type === 'report')
 
 const chosen = defineModel('selection', { type: Array, default: () => [] })
+
+/**
+ * The row the pane beside the list is showing.
+ *
+ * A record read against its list is the whole argument for the pane — mark
+ * this one done, glance at the next, come back — and until now nothing said
+ * which row you were reading. Scroll twenty rows and the pane belonged to
+ * nobody.
+ *
+ * A tint rather than the selection's checkbox: ticking rows is a different
+ * statement, and a person acting on four ticked rows while a fifth is open
+ * must be able to tell the two apart at a glance.
+ */
+const rowProps = (row) => (row?.name && row.name === props.openRecord
+  ? { class: 'bg-surface-gray-2', 'aria-current': 'true' }
+  : {})
 
 const META_FIELD = '__activity'
 

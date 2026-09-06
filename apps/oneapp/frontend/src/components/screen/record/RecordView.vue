@@ -292,7 +292,8 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, provide, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   Alert,
   Badge,
@@ -320,6 +321,7 @@ import RecordMeta from './RecordMeta.vue'
 import { workspace } from '../../../lib/workspace'
 import { notifyError, notifySuccess } from '@/lib/runtime/notify'
 import { DRAWER, MERGE_TARGET, PAGE, PANE } from '@/lib/screen/surfaces'
+import { RETURN_TO } from '@/lib/screen/returnTo'
 import { docBadge } from '@/lib/screen/docstate'
 import { tabIcon } from '@/lib/screen/fields'
 import { onDocChange, onDocViewers } from '@/lib/runtime/socket'
@@ -342,6 +344,8 @@ const props = defineProps({
    *  through; nothing here reads it. */
   revision: { type: Number, default: 0 },
 })
+const route = useRoute()
+
 const emit = defineEmits([
   'saved', 'close', 'reload', 'renamed', 'open', 'surface', 'expand', 'add',
 ])
@@ -480,6 +484,14 @@ const identity = computed(() => {
     image: props.spec?.image_field ? props.record?.[props.spec.image_field] : null,
   }
 })
+
+// The way back, for the editors this record can open. A sheet or a document
+// opened from here is still a page — see `lib/screen/returnTo.js` — but it
+// carries the record's name and address so closing it comes back.
+provide(RETURN_TO, computed(() => ({
+  label: identity.value.label || identity.value.value || '',
+  path: route.fullPath,
+})))
 
 const statusValue = computed(() => {
   const field = props.spec?.status_field

@@ -1,10 +1,10 @@
 """A document somebody starts from.
 
 The same feature `sheets/templates.py` is, in the same shape and for the same
-reason: a template is a file with a flag on it, so a workspace's templates are
-a folder in the Drive. Managing them is managing files — no second screen, no
-second permission model, and a template shared with a colleague is `DocShare`
-like everything else.
+reason: a template is a file with a flag on it. Managing them is managing files
+— no second screen, no second permission model, and a template shared with a
+colleague is `DocShare` like everything else. The Drive's Templates rail entry
+is that same flag read as a place.
 
 One shape rather than two is the point. A person who has made a sheet template
 already knows how to make a document one, and the Drive's New menu offers both
@@ -16,7 +16,10 @@ from frappe import _
 
 from ..drive import kinds
 
-TEMPLATE_FIELD = "custom_is_template"
+#: One name for the flag, in `drive/kinds.py` beside the other columns this
+#: product adds to `File` — a sheet template and a document template are the
+#: same column and the Drive's Templates place reads it too.
+TEMPLATE_FIELD = kinds.TEMPLATE_FIELD
 
 
 @frappe.whitelist(methods=["GET"])

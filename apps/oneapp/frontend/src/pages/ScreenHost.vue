@@ -252,6 +252,7 @@
             :favourites="favourites"
             :counted="counted"
             :group-by="groupedBy"
+            :open-record="shownRecord?.name || ''"
             :board="fetchedBoard || spec.board || {}"
             :cards="fetchedCards || spec.cards || {}"
             :calendar="fetchedCalendar || spec.calendar || {}"

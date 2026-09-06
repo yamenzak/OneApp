@@ -42,10 +42,14 @@
 
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
 import { Breadcrumbs, Button, CodeEditor, PageHeader, dayjsLocal } from '@/ui'
+import { cameFrom } from '@/lib/screen/returnTo'
 import FadedScroll from '../FadedScroll.vue'
 import { workspace } from '@/lib/workspace'
+
+const route = useRoute()
 
 const props = defineProps({
   name: { type: String, required: true },
@@ -69,8 +73,14 @@ const savedAt = ref(props.doc.modified || '')
 
 let timer = null
 
+// The record it was opened from, when it was — same rule the document editor
+// follows, in `lib/screen/returnTo.js`.
+const back = computed(() => cameFrom(route))
+
 const crumbs = computed(() => [
-  { label: 'Files', route: { name: 'Drive' } },
+  back.value
+    ? { label: back.value.label, route: back.value.path }
+    : { label: 'Files', route: { name: 'Drive' } },
   { label: title.value || 'Untitled' },
 ])
 

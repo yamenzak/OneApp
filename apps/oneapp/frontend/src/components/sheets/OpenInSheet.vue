@@ -21,11 +21,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { Button } from '@/ui'
 import { workspace } from '@/lib/workspace'
+import { RETURN_TO, returnQuery } from '@/lib/screen/returnTo'
 
 const props = defineProps({
   doctype: { type: String, required: true },
@@ -36,6 +37,10 @@ const props = defineProps({
 const router = useRouter()
 const making = ref(false)
 
+// The record this was pressed on, so closing the sheet comes back to it rather
+// than to the Drive's root.
+const came = inject(RETURN_TO, null)
+
 async function open() {
   making.value = true
   try {
@@ -44,7 +49,11 @@ async function open() {
       docname: props.docname,
       into: props.into,
     })
-    router.push({ name: 'Sheet', params: { name: made.name } })
+    router.push({
+      name: 'Sheet',
+      params: { name: made.name },
+      query: returnQuery(came?.value),
+    })
   } finally {
     making.value = false
   }

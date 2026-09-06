@@ -66,7 +66,7 @@
   </MobileShell>
 
   <DesktopShell v-else :scroll="scroll">
-    <template v-if="entries.length" #rail>
+    <template v-if="chrome && entries.length" #rail>
       <Rail class="border-r border-outline-gray-1">
         <RailItem
           v-for="entry in entries"
@@ -87,7 +87,7 @@
       </Rail>
     </template>
 
-    <template v-if="$slots.sidebar" #sidebar>
+    <template v-if="chrome && $slots.sidebar" #sidebar>
       <slot name="sidebar" />
     </template>
 
@@ -289,6 +289,17 @@ const props = defineProps({
   user: { type: Object, default: () => ({}) },
   /** false when inner panes own their scroll — a list/detail split, say. */
   scroll: { type: Boolean, default: true },
+  /**
+   * Whether this surface gets the workspace's furniture — the rail of spaces
+   * and the sidebar — or the window to itself.
+   *
+   * False for the editors. A sheet and a document belong to the *workspace*
+   * rather than to any space, so the sidebar beside them was the space list
+   * with no space chosen: a column of navigation to somewhere you were not
+   * going, next to the thing you opened to concentrate on. The rail goes with
+   * it, because a rail with no sidebar is a stripe.
+   */
+  chrome: { type: Boolean, default: true },
 })
 
 defineEmits(['select-entry'])

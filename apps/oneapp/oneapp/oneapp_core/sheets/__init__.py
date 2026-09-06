@@ -45,7 +45,8 @@ from .export import ROUTE, download, to_response, url_for
 from .writing import copy_of, make, on_trash
 from .templates import TEMPLATE_FIELD, listing, set_template
 from .feed import (
-    FOLLOWING, LOCKED, feeds, header, lock, number, preview, pull, start_from, unlock,
+    FOLLOWING, LOCKED, bound_to, feeds, header, lock, number, preview, pull,
+    start_from, unlock,
 )
 
 __all__ = [
@@ -82,6 +83,7 @@ __all__ = [
     "ROUTE",
     "save_sheet",
     "set_template",
+    "bound_to",
     "start_from",
     "tabs",
     "to_response",

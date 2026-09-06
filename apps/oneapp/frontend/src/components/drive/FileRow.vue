@@ -42,16 +42,26 @@
     />
 
     <!--
-      A folder is a link and a file is a button. A folder is a place with a URL,
-      so middle-click, copy-link and the back button all work without a line of
-      ours. A file is not a place; opening one is an action.
+      Anything with an address is a link; everything else is a button.
+
+      A folder always was: it is a place, so middle-click, copy-link and the
+      back button work without a line of ours. What changed is that a sheet, a
+      document and a text file are places too now — `routeFor` gives each one a
+      URL — and while they were buttons the only way to keep a quotation open
+      while pricing it was a window manager we would have had to write. A
+      cmd-click is that window manager, and every browser already ships it.
+
+      A `.zip` is still not a place. Opening one is an action, and it stays a
+      button.
     -->
     <router-link
-      v-if="file.is_folder"
+      v-if="file.is_folder || link"
       data-slot="drive-open"
       class="flex min-w-0 flex-1 rounded-4 px-2 py-2"
       :class="grid ? '!px-0 !py-0' : ''"
-      :to="{ name: 'Drive', query: { place: 'home', folder: file.name } }"
+      :to="file.is_folder
+        ? { name: 'Drive', query: { place: 'home', folder: file.name } }
+        : link"
     >
       <FileFace :file="file" :grid="grid" />
     </router-link>
@@ -126,6 +136,15 @@ const props = defineProps({
   // Off in the picker too: a rename control behind an Attach field is a control
   // in the wrong place.
   actions: { type: Boolean, default: false },
+  /**
+   * Where clicking this file goes, when it goes anywhere: a route location
+   * from `routeFor`, or null for a file that is looked at rather than opened.
+   *
+   * Passed rather than computed here because the caller is the one that knows
+   * what to come back to — a record's Files tab sends the record along so the
+   * editor's trail leads home.
+   */
+  link: { type: Object, default: null },
   // What the bin offers instead, because everything else there is a no-op.
   trashed: { type: Boolean, default: false },
   canWrite: { type: Boolean, default: true },

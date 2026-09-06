@@ -3,6 +3,7 @@
     <AppShell
       v-if="session.loaded && session.isLoggedIn"
       :scroll="!$route.meta.pane"
+      :chrome="!$route.meta.focused"
       :entries="railSpaces"
       :active-entry="activeSpaceCode"
       :entries-to="{ name: 'Launcher' }"

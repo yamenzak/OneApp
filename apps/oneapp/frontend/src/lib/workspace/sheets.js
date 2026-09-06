@@ -64,10 +64,16 @@ export const sheets = {
     }),
 
   // The outward leg: these rows become a sheet, headings and named range and
-  // all, so pulling them back needs nothing set up by hand.
+  // all, so pulling them back needs nothing set up by hand. Pressing it again
+  // opens the same sheet — one estimator per table, not one per press.
   sheetFromTable: (params) =>
-    callMethod('oneapp.oneapp_core.sheets.start_from', params, {
-      success: 'Opened in a sheet',
+    callMethod('oneapp.oneapp_core.sheets.start_from', params, { silent: true }),
+
+  // Which record and table this sheet feeds, so the estimator can send the
+  // rows back without walking to the record to press a button there.
+  sheetBoundTo: (name) =>
+    callMethod('oneapp.oneapp_core.sheets.bound_to', { sheet: name }, {
+      silent: true, method: 'GET',
     }),
 
   sheetPull: (name, params) =>

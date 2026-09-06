@@ -29,6 +29,12 @@ STATUS_FIELD = "custom_status"
 TRASHED_FIELD = "custom_trashed_on"
 OPENED_FIELD = "custom_opened"
 
+#: Whether this file is one to start from. Declared here, with the other
+#: columns this product adds to `File`, rather than in either templates module:
+#: a sheet template and a document template are the same flag, and the name was
+#: written out in three places before the Drive grew a rail entry for them.
+TEMPLATE_FIELD = "custom_is_template"
+
 ACTIVE = "Active"
 TRASHED = "Trashed"
 

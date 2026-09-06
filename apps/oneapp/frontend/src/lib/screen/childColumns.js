@@ -16,6 +16,13 @@
  * Keyed by the child doctype and the parent's fieldname together: Quotation
  * Item under `items` and under `packed_items` are the same doctype answering
  * two different questions.
+ *
+ * Stored as `[{ fieldname, align }]` in the order they go across. It used to be
+ * a list of fieldnames re-sorted into the doctype's own field order, on the
+ * argument that its author had already decided — which is true of the default
+ * and not of a choice somebody made afterwards. A person who drags Rate in
+ * front of Quantity means it. Bare strings still read, so an older preference
+ * survives.
  */
 
 const PREFIX = 'onespace:child-columns'
@@ -28,7 +35,9 @@ export function remembered(doctype, fieldname) {
   try {
     const found = JSON.parse(window.localStorage.getItem(slot(doctype, fieldname)) || 'null')
     if (!Array.isArray(found) || !found.length) return null
-    return found.filter((one) => typeof one === 'string' && one)
+    return found
+      .map((one) => (typeof one === 'string' ? { fieldname: one, align: '' } : one))
+      .filter((one) => one && typeof one.fieldname === 'string' && one.fieldname)
   } catch {
     // Private browsing, a blocked origin, a quota, or something that is not
     // JSON. A preference nobody can read is a preference nobody set.
@@ -37,11 +46,12 @@ export function remembered(doctype, fieldname) {
 }
 
 /** Remember them, or forget them — `null` puts the table back on the doctype. */
-export function remember(doctype, fieldname, names) {
+export function remember(doctype, fieldname, columns) {
   if (!doctype || !fieldname) return
   try {
-    if (names && names.length) {
-      window.localStorage.setItem(slot(doctype, fieldname), JSON.stringify(names))
+    if (columns && columns.length) {
+      const kept = columns.map((one) => ({ fieldname: one.fieldname, align: one.align || '' }))
+      window.localStorage.setItem(slot(doctype, fieldname), JSON.stringify(kept))
     } else {
       window.localStorage.removeItem(slot(doctype, fieldname))
     }

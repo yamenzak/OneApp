@@ -1,8 +1,8 @@
 """The places in the rail, as filters on one table.
 
-Home, Recents, Favourites, Shared, Trash. Every one of them is the same query
-with a different `where` and a different order — there is no second store behind
-any of them, which is the whole reason the rail is cheap.
+Home, Recents, Favourites, Shared, Templates, Trash. Every one of them is the
+same query with a different `where` and a different order — there is no second
+store behind any of them, which is the whole reason the rail is cheap.
 
 The one that is not a filter is Shared, and it is worth saying why: a file is
 shared with somebody through `DocShare`, and `get_list` already joins that in
@@ -13,7 +13,7 @@ a filter on `owner` over a query that was already permission-scoped.
 import frappe
 from frappe import _
 
-from .kinds import ACTIVE, KIND_FIELD, OPENED_FIELD, STATUS_FIELD, TRASHED
+from .kinds import ACTIVE, KIND_FIELD, OPENED_FIELD, STATUS_FIELD, TEMPLATE_FIELD, TRASHED
 
 # Frappe's own root folder. Every file is somewhere under it.
 ROOT = "Home"
@@ -22,6 +22,13 @@ HOME = "home"
 RECENTS = "recents"
 FAVOURITES = "favourites"
 SHARED = "shared"
+
+# Everything flagged as one to start from, of either kind. A rail entry rather
+# than a folder: a template is a flag on a file and the file stays wherever its
+# owner put it, so "the templates" is a filter and a folder would be a second
+# place to keep them in step with.
+TEMPLATES = "templates"
+
 TRASH = "trash"
 
 # Not in the rail. Every file this person can see, wherever it sits — which is
@@ -39,7 +46,7 @@ ALL = "all"
 # tab draws the Drive's own rows rather than a second list that looks like them.
 RECORD = "record"
 
-PLACES = (HOME, RECENTS, FAVOURITES, SHARED, TRASH, ALL, RECORD)
+PLACES = (HOME, RECENTS, FAVOURITES, SHARED, TEMPLATES, TRASH, ALL, RECORD)
 
 # Where each place looks and how it is ordered. `order` is the reader's default;
 # a column header still overrides it.
@@ -48,6 +55,7 @@ ORDER = {
     RECENTS: f"{OPENED_FIELD} desc",
     FAVOURITES: "modified desc",
     SHARED: "modified desc",
+    TEMPLATES: "file_name asc",
     TRASH: "custom_trashed_on desc",
     ALL: "modified desc",
     RECORD: "creation desc",
@@ -99,6 +107,8 @@ def _place_filters(place: str, folder: str = "", kind: str = "",
         filters["owner"] = ["!=", frappe.session.user]
     elif place == RECENTS:
         filters[OPENED_FIELD] = ["is", "set"]
+    elif place == TEMPLATES:
+        filters[TEMPLATE_FIELD] = 1
     elif place == ALL:
         # No folder clause at all. The only thing excluded is the root itself,
         # for the same reason Home excludes it: it is the drive, not a file.

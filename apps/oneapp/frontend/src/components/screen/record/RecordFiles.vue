@@ -47,6 +47,7 @@
         v-for="file in files"
         :key="file.name"
         :file="file"
+        :link="linkFor(file)"
         actions
         :can-write="canWrite"
         @open="look"
@@ -74,8 +75,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { inject, ref, watch } from 'vue'
 import { Button, Dialog, Dropdown, ErrorMessage, FormControl, LoadingText } from '@/ui'
 import FilePicker from '../../drive/FilePicker.vue'
 import FilePreview from '../../drive/FilePreview.vue'
@@ -86,6 +86,7 @@ import { workspace } from '../../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
 import { routeFor } from '@/lib/files/files'
 import { useNewFile } from '@/composables/useNewFile'
+import { RETURN_TO, returnQuery } from '@/lib/screen/returnTo'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -118,7 +119,8 @@ const reload = async () => {
   }
 }
 
-const router = useRouter()
+// The record this tab belongs to, so an editor opened from here can come back.
+const came = inject(RETURN_TO, null)
 
 // A file made here belongs to the record rather than to a folder. `doctype` is
 // filled by the reload below, so this reads it rather than closing over it.
@@ -134,14 +136,19 @@ const renaming = ref(false)
 const chosen = ref(null)
 const newName = ref('')
 
-// A sheet, a document or a text file opens in its editor; everything else is
-// looked at where it is. Same rule as the Drive, out of the same function.
-const look = (file) => {
+/**
+ * A sheet, a document or a text file opens in its editor; everything else is
+ * looked at where it is. Same rule as the Drive, out of the same function —
+ * and with the record on it, so the editor's trail leads back here.
+ */
+const linkFor = (file) => {
   const route = routeFor(file)
-  if (route) {
-    router.push(route)
-    return
-  }
+  return route ? { ...route, query: returnQuery(came?.value) } : null
+}
+
+// The row is a link where there is somewhere to go, so this only ever runs for
+// the files that are looked at rather than opened.
+const look = (file) => {
   chosen.value = file
   previewing.value = true
 }

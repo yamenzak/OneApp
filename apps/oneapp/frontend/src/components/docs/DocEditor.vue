@@ -166,6 +166,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
 import {
   Button,
@@ -191,6 +192,9 @@ import { documentToolbar, pageClasses } from './toolbar'
 import { useOutline } from '@/composables/useOutline'
 import { putFile } from '@/lib/files/attach'
 import { workspace } from '@/lib/workspace'
+import { cameFrom } from '@/lib/screen/returnTo'
+
+const route = useRoute()
 
 const props = defineProps({
   name: { type: String, required: true },
@@ -328,8 +332,16 @@ function reopen() {
   emit('reload')
 }
 
+// The trail says where this document sits. Usually that is the Drive; when it
+// was opened from a record it is that record, so the crumb is a way back to
+// what you were reading rather than a way to a folder you never visited —
+// `lib/screen/returnTo.js`.
+const back = computed(() => cameFrom(route))
+
 const crumbs = computed(() => [
-  { label: 'Files', route: { name: 'Drive' } },
+  back.value
+    ? { label: back.value.label, route: back.value.path }
+    : { label: 'Files', route: { name: 'Drive' } },
   { label: title.value || 'Untitled document' },
 ])
 

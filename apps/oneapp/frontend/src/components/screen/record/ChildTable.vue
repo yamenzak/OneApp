@@ -38,50 +38,25 @@
           @click="removeChosen"
         />
         <!--
-          Which of the child's fields are across. The doctype's `in_list_view`
-          is the default and only a guess: which four of fifteen matter depends
-          on whether you are pricing the job or checking what was delivered.
+          Which of the child's fields are across, in what order, and how each
+          one sits. The doctype's `in_list_view` is the default and only a
+          guess: which four of fifteen matter depends on whether you are
+          pricing the job or checking what was delivered.
 
-          A gear rather than a dialog: the list's picker is a dialog because a
-          column there also carries an order, a width and a pin.
+          The list's own dialog, minus the three answers a child grid has no
+          use for. It was a popover of checkboxes on the argument that only the
+          list's columns carry an order — which was never true of the reader,
+          only of what we had built.
         -->
-        <Popover v-model:open="picking">
-          <template #trigger>
-            <Button
-              icon="lucide-settings-2"
-              variant="ghost"
-              size="sm"
-              data-slot="child-columns"
-              label="Which columns"
-              tooltip="Which columns"
-            />
-          </template>
-          <template #default>
-            <div class="flex w-64 flex-col gap-2 p-2">
-              <div class="flex items-baseline justify-between">
-                <span class="text-p-sm font-medium text-ink-gray-8">Columns</span>
-                <Button
-                  v-if="picked"
-                  variant="ghost"
-                  size="sm"
-                  label="Reset"
-                  @click="resetColumns"
-                />
-              </div>
-              <FadedScroll class="max-h-72">
-                <div class="flex flex-col gap-1.5 pe-1">
-                  <Checkbox
-                    v-for="one in offered"
-                    :key="one.fieldname"
-                    :model-value="shows(one.fieldname)"
-                    :label="one.label || one.fieldname"
-                    @update:model-value="toggleColumn(one.fieldname, $event)"
-                  />
-                </div>
-              </FadedScroll>
-            </div>
-          </template>
-        </Popover>
+        <Button
+          icon="lucide-settings-2"
+          variant="ghost"
+          size="sm"
+          data-slot="child-columns"
+          label="Which columns"
+          tooltip="Which columns"
+          @click="picking = true"
+        />
         <span class="text-p-xs tabular-nums text-ink-gray-5">
           {{ rows.length }} {{ rows.length === 1 ? 'row' : 'rows' }}
         </span>
@@ -205,6 +180,14 @@
       layout engine, so a child row gets the child doctype's own tabs, section
       breaks, `depends_on` and every field property, with nothing written twice.
     -->
+    <ColumnPicker
+      v-model="picking"
+      :chosen="chosenColumns"
+      :offered="offered"
+      :offers="GRID_OFFERS"
+      @update:chosen="setColumns"
+    />
+
     <Dialog v-model="expanded" :title="`${child.label} ${(editingAt ?? 0) + 1}`" size="3xl">
       <div v-if="editing" class="p-1">
         <RecordForm
@@ -225,8 +208,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { Button, Checkbox, Dialog, FormLabel, Popover } from '@/ui'
-import FadedScroll from '../../FadedScroll.vue'
+import { Button, Dialog, FormLabel } from '@/ui'
 import RecordTable from '../bodies/RecordTable.vue'
 import FieldCell from '../bodies/FieldCell.vue'
 import FieldControl from '../fields/FieldControl.vue'
@@ -234,6 +216,7 @@ import RecordForm from './RecordForm.vue'
 import FillFromSheet from '../../sheets/FillFromSheet.vue'
 import OpenInSheet from '../../sheets/OpenInSheet.vue'
 import FeedNote from '../../sheets/FeedNote.vue'
+import ColumnPicker from '../views/ColumnPicker.vue'
 import { workspace } from '../../../lib/workspace'
 import { isNumericCell } from '@/lib/screen/fields'
 import { remember, remembered } from '@/lib/screen/childColumns'
@@ -297,35 +280,36 @@ const picked = ref(null)
 
 const offered = computed(() => child.value.fields || [])
 
+//: What a column carries in a grid. No width and no pin — the tracks share
+//: whatever the pane gives them — and no grouping, which is a question about a
+//: list of records rather than about the lines of one quotation.
+const GRID_OFFERS = ['align']
+
+/**
+ * The columns across, as the doctype shaped them, with the reader's order and
+ * alignment over the top.
+ */
 const columns = computed(() => {
-  if (!picked.value) return child.value.columns || []
   const by = Object.fromEntries(offered.value.map((one) => [one.fieldname, one]))
-  // In the child doctype's own field order rather than the order they were
-  // ticked in: the author of the doctype already decided what that order is.
-  return offered.value.filter((one) => picked.value.includes(one.fieldname)).map(
-    (one) => by[one.fieldname],
-  )
+  if (!picked.value) return child.value.columns || []
+  return picked.value
+    .filter((one) => by[one.fieldname])
+    .map((one) => ({ ...by[one.fieldname], align: one.align || '' }))
 })
 
-const shows = (fieldname) =>
-  picked.value
-    ? picked.value.includes(fieldname)
-    : (child.value.columns || []).some((one) => one.fieldname === fieldname)
+/** The same list in the shape `ColumnPicker` reads and writes. */
+const chosenColumns = computed(() =>
+  columns.value.map((one) => ({ fieldname: one.fieldname, align: one.align || '' })),
+)
 
-const toggleColumn = (fieldname, on) => {
-  const now = offered.value
-    .map((one) => one.fieldname)
-    .filter((name) => (name === fieldname ? on : shows(name)))
+const setColumns = (next) => {
   // Every column off is not a table, it is a list of row numbers. Refused by
-  // putting the doctype's answer back, which is what Reset does.
-  picked.value = now.length ? now : null
+  // putting the doctype's answer back, which is what Reset does — and the
+  // dialog already refuses to remove the last one.
+  picked.value = next && next.length ? next : null
   remember(child.value.doctype, props.field.fieldname, picked.value)
 }
 
-const resetColumns = () => {
-  picked.value = null
-  remember(child.value.doctype, props.field.fieldname, null)
-}
 
 const readColumns = () => {
   picked.value = remembered(child.value.doctype, props.field.fieldname)
@@ -380,6 +364,13 @@ watch(() => rows.value.length, (many, was) => {
   if (many === was + 1 && many > showing.value) showing.value = many
 })
 
+//: The narrowest a child column is allowed to be. A grid lives inside a record
+//: pane, which is about 460px, and at the 8rem this used to be a five-column
+//: table was 1250px wide — two columns visible and the other three, headers
+//: included, scrolled off the right. 5rem fits four, which is what the pane is
+//: for; anything wider still scrolls, which is what the scroller is for.
+const NARROWEST = '6.5rem'
+
 /**
  * The columns, in the shape `RecordTable` takes: a narrow one for the row
  * number, a wide one for the actions, the rest shared.
@@ -392,12 +383,12 @@ const tracks = computed(() => [
   ...columns.value.map((column) => ({
     key: column.fieldname,
     label: column.label,
-    track: 'minmax(8rem, 1fr)',
+    track: `minmax(${NARROWEST}, 1fr)`,
     required: !!column.reqd,
     // A number belongs against the right edge of its column. Which cells are
     // numbers is generated from the same fieldtype map that decides how a value
     // is drawn, so this and the list cannot disagree.
-    align: isNumericCell(column.cell) ? 'end' : '',
+    align: column.align || (isNumericCell(column.cell) ? 'end' : ''),
     column,
   })),
   { key: ACTIONS, label: '', track: '5rem' },
