@@ -94,6 +94,9 @@ def _make_frappe():
 		def get_single_value(self, doctype, field):
 			return self.singles.get((doctype, field))
 
+		def set_single_value(self, doctype, field, value):
+			self.singles[(doctype, field)] = value
+
 		def exists(self, doctype, name=None):
 			return self.records.get((doctype, name if isinstance(name, str) else None))
 

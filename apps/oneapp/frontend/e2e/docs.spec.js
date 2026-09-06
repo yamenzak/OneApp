@@ -86,9 +86,19 @@ test('a heading shows up in the outline and the count counts', async ({ page }) 
   await page.keyboard.press('Enter')
   await page.keyboard.type('Eight weeks.')
 
-  const outline = page.getByRole('navigation', { name: 'Outline' })
-  await expect(outline).toContainText('Scope of works')
-  await expect(outline).toContainText('Programme')
+  // A rail on a laptop, a dropdown on a phone — the same headings either way,
+  // from one composable. Which one is on screen is the viewport's business, so
+  // the test asks whichever is showing.
+  const rail = page.getByRole('navigation', { name: 'Outline' })
+  if (await rail.isVisible()) {
+    await expect(rail).toContainText('Scope of works')
+    await expect(rail).toContainText('Programme')
+  } else {
+    await page.getByRole('button', { name: 'Outline' }).click()
+    await expect(page.getByRole('menuitem', { name: 'Scope of works' })).toBeVisible()
+    await expect(page.getByRole('menuitem', { name: 'Programme' })).toBeVisible()
+    await page.keyboard.press('Escape')
+  }
   await expect(page.getByText(/\d+ words/)).toBeVisible()
 })
 

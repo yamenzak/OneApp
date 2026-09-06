@@ -25,17 +25,54 @@
         </template>
       </Alert>
 
-      <!-- An icon, not the word "Re-check": `label` stays as the accessible
-           name and the tooltip. -->
-      <Button
-        variant="ghost"
-        icon="lucide-refresh-cw"
-        label="Re-check"
-        tooltip="Re-check"
-        :loading="readiness.loading"
-        @click="readiness.load()"
-      />
+      <div class="flex shrink-0 items-center gap-2">
+        <!--
+          The one thing on this page that *changes* something. Everything else
+          here reads state; this creates the KV namespace, uploads the inbound
+          worker, turns Email Routing on and points the catch-all at it. Safe
+          to press again — every step finds what is already there — which is
+          why it is a button beside a checklist rather than a wizard.
+        -->
+        <Button
+          icon-left="lucide-mail-check"
+          label="Bring up mail"
+          tooltip="Create the KV namespace, deploy the inbound worker, and turn Email Routing on"
+          :loading="bringingUp"
+          @click="bringUp"
+        />
+        <!-- An icon, not the word "Re-check": `label` stays as the accessible
+             name and the tooltip. -->
+        <Button
+          variant="ghost"
+          icon="lucide-refresh-cw"
+          label="Re-check"
+          tooltip="Re-check"
+          :loading="readiness.loading"
+          @click="readiness.load()"
+        />
+      </div>
     </div>
+
+    <!-- What the bring-up did, step by step. Kept on screen rather than
+         thrown as a toast: four steps with one cross in the middle is a thing
+         to read, not a thing to catch. -->
+    <section v-if="steps.length" class="mb-8">
+      <h2 class="mb-2 text-base-medium text-ink-gray-8">Mail bring-up</h2>
+      <List :columns="['minmax(0,1fr)', '5.5rem']" divider="full">
+        <ListRows :items="steps" row-key="label" v-slot="{ item: step, value }">
+          <ListRow :value="value" class="py-3">
+            <ListCell>
+              <p class="text-p-base text-ink-gray-8">{{ step.label }}</p>
+              <p class="text-p-sm text-ink-gray-5">{{ step.detail }}</p>
+            </ListCell>
+            <ListCell>
+              <Badge :theme="step.ok ? 'green' : 'amber'"
+                     :label="step.ok ? 'Done' : 'Left'" />
+            </ListCell>
+          </ListRow>
+        </ListRows>
+      </List>
+    </section>
 
     <section v-for="group in GROUPS" :key="group.key" class="mb-8">
       <div class="mb-1 flex items-baseline justify-between">
@@ -84,8 +121,10 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
+
 import { Alert, Badge, Button, List, ListRows, ListRow, ListCell } from '@/ui'
+import { callMethod } from '@/lib/runtime/resource'
 import { readiness } from './readiness'
 
 // Every screen component takes these, whether or not it reads them.
@@ -93,6 +132,26 @@ defineProps({
   spaceCode: { type: String, default: '' },
   screen: { type: String, default: '' },
 })
+
+// The bring-up, and what it did. `steps` stays on screen until somebody
+// presses it again — a checklist that appeared and vanished would be the one
+// thing on this page nobody could read twice.
+const bringingUp = ref(false)
+const steps = ref([])
+
+async function bringUp() {
+  bringingUp.value = true
+  try {
+    const answer = await callMethod('oneapp_control.api.admin.bring_up', {}, {
+      success: 'Mail brought up',
+    })
+    steps.value = answer?.steps || []
+  } finally {
+    bringingUp.value = false
+    // The checks read the same state the steps just changed.
+    readiness.load()
+  }
+}
 
 const GROUPS = [
   {

@@ -400,6 +400,21 @@ doctype(
         # Control-plane only. Deliberately NOT pushed to bench groups: a token
         # that can rewrite the tenant routing map has no business sitting in
         # config that every tenant site can read.
+        # ------------------------------------------------------------------ #
+        # The one token the automation runs on.
+        #
+        # Account-wide, and control-plane only. It creates the KV namespace,
+        # uploads the inbound worker, enables Email Routing and writes DNS —
+        # which also means it can rewrite the routing map for every tenant on
+        # the platform, so it is never pushed to a bench. The narrow tokens
+        # below still win where an operator has scoped them.
+        # ------------------------------------------------------------------ #
+        section("sec_cfadmin", "Cloudflare (control plane only)"),
+        f("cf_admin_token", "Password", label="Cloudflare Account Token",
+          description="Needs Workers Scripts: Edit, Workers KV Storage: Edit, "
+                      "Email Routing Rules: Edit, Zone: Read and DNS: Edit. "
+                      "Never pushed to a bench — it can rewrite every tenant's "
+                      "mail routing."),
         section("sec_cfkv", "Cloudflare KV (control plane only)"),
         f("cf_kv_namespace_id", label="KV Namespace ID",
           description="Namespace the email worker reads to route inbound mail."),

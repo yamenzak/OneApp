@@ -14,6 +14,8 @@ in import order — a module may use the ones above it, never below:
     ai          models, features, spend
     screens     which screens a space offers
     lifecycle   the dunning ladder, cold storage, and the clock
+    mail        bringing Cloudflare's mail up from a token, and saying what is
+                still missing
 
 Only `guard` and `press` are shared; the subject modules do not reach across to
 each other, which is what makes them separable at all.
@@ -23,6 +25,7 @@ each other, which is what makes them separable at all.
 import frappe
 
 from .guard import _require_manager
+from .mail import bring_up, readiness as mail_readiness
 from .press import _degrade, _press, _site_of, _site_plans
 from .tenants import (
 	add_custom_domain,
@@ -115,6 +118,8 @@ __all__ = [
 	"_site_plans",
 	"_tally",
 	"add_custom_domain",
+	"bring_up",
+	"mail_readiness",
 	"adopt_plan_terms",
 	"advance_lifecycle_clock",
 	"ai_features",

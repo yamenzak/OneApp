@@ -18,6 +18,8 @@
   "sec_stripe",
   "stripe_webhook_secret",
   "cb_stripe_set",
+  "sec_cfadmin",
+  "cf_admin_token",
   "sec_cfkv",
   "cf_kv_namespace_id",
   "cf_kv_token",
@@ -135,6 +137,17 @@
   {
    "fieldname": "cb_stripe_set",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sec_cfadmin",
+   "fieldtype": "Section Break",
+   "label": "Cloudflare (control plane only)"
+  },
+  {
+   "description": "Needs Workers Scripts: Edit, Workers KV Storage: Edit, Email Routing Rules: Edit, Zone: Read and DNS: Edit. Never pushed to a bench \u2014 it can rewrite every tenant's mail routing.",
+   "fieldname": "cf_admin_token",
+   "fieldtype": "Password",
+   "label": "Cloudflare Account Token"
   },
   {
    "fieldname": "sec_cfkv",

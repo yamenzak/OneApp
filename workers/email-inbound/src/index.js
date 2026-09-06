@@ -5,10 +5,13 @@
  * out which tenant a recipient belongs to, parse the MIME, and HMAC-POST it to
  * that tenant's site.
  *
- * Addresses are <local>@<tenant>.t.4dl.app, so the tenant is in the hostname and
- * a message can be routed without touching the control plane. The tenant map
- * lives in KV for the same reason: a control-plane outage should not bounce
- * customer mail.
+ * Addresses are <tenant>.<local>@<mail domain> — the tenant is in the local
+ * part, not the hostname, because Cloudflare caps a zone at 30 domains
+ * configured for Email Routing or Sending and there is no wildcard. One domain
+ * for the whole platform, one catch-all rule, and `routing.js` says the rest.
+ *
+ * The tenant map lives in KV so a message can be routed without touching the
+ * control plane: an outage there should not bounce customer mail.
  */
 
 import PostalMime from 'postal-mime'
@@ -47,6 +50,9 @@ export default {
       from: message.from,
       to: recipient,
       local_part: routing.localPart,
+      // A bounce for something this tenant sent, rather than a message
+      // somebody addressed to them. The site files the two differently.
+      bounce: routing.bounce,
       subject: parsed.subject || '',
       text: parsed.text || '',
       html: parsed.html || '',

@@ -24,16 +24,33 @@ Written by the control plane when a tenant is provisioned. KV rather than a
 lookup call to the control plane on purpose: a control-plane outage should not
 bounce customer mail.
 
-Addresses are `<local>@<tenant>.t.4dl.app`, so routing is decided from the
-hostname alone. `src/routing.js` is kept dependency-free so that decision is
+Addresses are `<tenant>.<local>@<mail domain>` — the tenant is in the local
+part, not the hostname, because a zone may have at most 30 domains configured
+for Email Routing or Sending and there is no wildcard. `docs/EMAIL.md` §1a is
+the whole argument. `src/routing.js` is kept dependency-free so that decision is
 testable in plain node:
 
 ```bash
 node --test workers/email-inbound/test/routing.test.mjs
 ```
 
-## Setup
+## Deploying
 
-1. `wrangler kv namespace create TENANTS`, then put the id in `wrangler.toml`.
-2. Point Email Routing's catch-all for `t.4dl.app` at `oneapp-email-inbound`.
-3. `npm install && npm run deploy`.
+Normally you do not. The control plane does it — **Bring up mail** on the
+readiness screen creates the KV namespace, uploads this worker with its
+bindings, enables Email Routing and points the catch-all at it, all from one
+account token. See `oneapp_control/api/admin/mail.py`.
+
+What that uploads is the bundle, not this directory: Cloudflare's script API
+takes one file, `postal-mime` is an import, and a deployed control plane has no
+`workers/` on disk. So after changing anything here:
+
+```bash
+cd workers/email-inbound && npm install && npm run build
+```
+
+which writes `apps/oneapp_control/oneapp_control/cloudflare/worker/`.
+`tests/test_worker_bundle.py` fails if you forget.
+
+`wrangler deploy` still works for local iteration — fill in the namespace id in
+`wrangler.toml` first — but it is not how production gets its worker.

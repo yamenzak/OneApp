@@ -10,60 +10,85 @@ import assert from 'node:assert/strict'
 
 import { parseRecipient } from '../src/routing.js'
 
-const DOMAIN = 't.4dl.app'
+const DOMAIN = '4dl.app'
 
 test('routes a normal address', () => {
-  assert.deepEqual(parseRecipient('ap@acme.t.4dl.app', DOMAIN), {
+  assert.deepEqual(parseRecipient('acme.ap@4dl.app', DOMAIN), {
     tenant: 'acme',
     localPart: 'ap',
+    bounce: false,
   })
 })
 
 test('is case insensitive', () => {
-  assert.deepEqual(parseRecipient('AP@ACME.T.4DL.APP', DOMAIN), {
+  assert.deepEqual(parseRecipient('ACME.AP@4DL.APP', DOMAIN), {
     tenant: 'acme',
     localPart: 'ap',
+    bounce: false,
   })
 })
 
 test('accepts hyphenated tenants', () => {
-  assert.equal(parseRecipient('support@acme-corp.t.4dl.app', DOMAIN).tenant, 'acme-corp')
+  assert.equal(parseRecipient('acme-corp.support@4dl.app', DOMAIN).tenant, 'acme-corp')
+})
+
+test('a local part may hold further dots', () => {
+  // `acme.first.last` is the workspace `acme` and the person `first.last`.
+  assert.deepEqual(parseRecipient('acme.first.last@4dl.app', DOMAIN), {
+    tenant: 'acme',
+    localPart: 'first.last',
+    bounce: false,
+  })
+})
+
+test('a bounce comes back to the tenant that sent it', () => {
+  assert.deepEqual(parseRecipient('t-acme@4dl.app', DOMAIN), {
+    tenant: 'acme',
+    localPart: '',
+    bounce: true,
+  })
 })
 
 test('rejects a different domain', () => {
-  assert.equal(parseRecipient('ap@acme.evil.com', DOMAIN), null)
+  assert.equal(parseRecipient('acme.ap@evil.com', DOMAIN), null)
 })
 
 test('rejects a domain that merely ends with ours', () => {
-  // notatt.4dl.app must not be read as tenant "nota"
-  assert.equal(parseRecipient('ap@acme.nott.4dl.app', DOMAIN)?.tenant, undefined)
+  assert.equal(parseRecipient('acme.ap@not4dl.app', DOMAIN), null)
 })
 
-test('rejects multi-label tenants', () => {
-  // "a.b" is not a slug we ever issued
-  assert.equal(parseRecipient('ap@a.b.t.4dl.app', DOMAIN), null)
+test('rejects a subdomain of ours', () => {
+  // We onboard exactly one domain; anything under it was never issued here.
+  assert.equal(parseRecipient('acme.ap@mail.4dl.app', DOMAIN), null)
 })
 
-test('rejects the bare mail domain', () => {
-  assert.equal(parseRecipient('ap@t.4dl.app', DOMAIN), null)
+test('rejects an address with no tenant on the front', () => {
+  assert.equal(parseRecipient('ap@4dl.app', DOMAIN), null)
+})
+
+test('rejects an empty local part after the tenant', () => {
+  assert.equal(parseRecipient('acme.@4dl.app', DOMAIN), null)
 })
 
 test('rejects slugs the control plane would never issue', () => {
   for (const bad of ['-acme', 'acme-', 'ac--me', 'a', 'ac_me']) {
-    assert.equal(parseRecipient(`ap@${bad}.t.4dl.app`, DOMAIN), null, bad)
+    assert.equal(parseRecipient(`${bad}.ap@4dl.app`, DOMAIN), null, bad)
+  }
+  for (const bad of ['-acme', 'ac--me', 'a']) {
+    assert.equal(parseRecipient(`t-${bad}@4dl.app`, DOMAIN), null, bad)
   }
 })
 
 test('rejects malformed input', () => {
-  for (const bad of ['', null, undefined, 'noatsign', '@acme.t.4dl.app', 42]) {
+  for (const bad of ['', null, undefined, 'noatsign', '@4dl.app', 42]) {
     assert.equal(parseRecipient(bad, DOMAIN), null)
   }
 })
 
 test('rejects when no mail domain is configured', () => {
-  assert.equal(parseRecipient('ap@acme.t.4dl.app', ''), null)
+  assert.equal(parseRecipient('acme.ap@4dl.app', ''), null)
 })
 
 test('keeps plus addressing in the local part', () => {
-  assert.equal(parseRecipient('ap+xyz@acme.t.4dl.app', DOMAIN).localPart, 'ap+xyz')
+  assert.equal(parseRecipient('acme.ap+xyz@4dl.app', DOMAIN).localPart, 'ap+xyz')
 })

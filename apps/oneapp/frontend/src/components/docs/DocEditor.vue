@@ -26,6 +26,17 @@
       </nav>
 
       <div class="flex shrink-0 items-center gap-2">
+        <!-- The outline, on a phone. There is no room for a rail, and a reader
+             thirty pages into a contract needs it more there than anywhere. -->
+        <Dropdown v-if="worthShowing" :options="outlineOptions" class="lg:hidden">
+          <Button
+            variant="ghost"
+            icon="lucide-list"
+            label="Outline"
+            tooltip="Outline"
+          />
+        </Dropdown>
+
         <span class="text-p-xs text-ink-gray-5">{{ state }}</span>
         <Button
           variant="ghost"
@@ -177,6 +188,7 @@ import DocSettings from './DocSettings.vue'
 import Outline from './Outline.vue'
 import VersionPanel from '../versions/VersionPanel.vue'
 import { documentToolbar, pageClasses } from './toolbar'
+import { useOutline } from '@/composables/useOutline'
 import { putFile } from '@/lib/files/attach'
 import { workspace } from '@/lib/workspace'
 
@@ -229,6 +241,18 @@ function hold(instance) {
 function onTransaction() {
   revision.value += 1
 }
+
+// The same headings the rail draws, for the phone's dropdown. One computation,
+// two surfaces.
+const { headings, worthShowing, go } = useOutline(editor, revision)
+
+const outlineOptions = computed(() =>
+  headings.value.map((one) => ({
+    label: one.text,
+    icon: one.level > 2 ? 'minus' : 'hash',
+    onClick: () => go(one),
+  })),
+)
 
 function onChange() {
   if (!props.doc.can_write) return

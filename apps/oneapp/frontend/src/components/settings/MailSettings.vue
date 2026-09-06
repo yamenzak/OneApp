@@ -321,7 +321,7 @@
             class="flex-1"
             label="Address"
             :placeholder="`sales`"
-            :description="`Becomes name@${domain}`"
+            :description="`Becomes ${prefix ? prefix + '.' : ''}name@${domain}`"
           />
           <Button variant="solid" label="Add" :loading="saving" @click="create" />
         </div>
@@ -358,6 +358,9 @@ const opened = ref('')
 const addresses = ref([])
 const members = ref([])
 const domain = ref('')
+// Every address this workspace issues carries its label on the front — one
+// domain serves the whole platform, see `oneapp_core/email/addresses.py`.
+const prefix = ref('')
 const canManage = ref(false)
 const usage = ref({})
 
@@ -441,6 +444,7 @@ async function load() {
     addresses.value = mail.addresses || []
     members.value = mail.members || []
     domain.value = mail.domain || ''
+    prefix.value = mail.prefix || ''
     canManage.value = !!mail.can_manage
     usage.value = sending || {}
     connected.value = boxes || []

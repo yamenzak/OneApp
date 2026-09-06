@@ -73,6 +73,20 @@ def find_record(name: str) -> dict | None:
 	return records[0] if records else None
 
 
+def has_record(name: str, kind: str = "CNAME") -> bool:
+	"""Whether the zone carries a record of this name and type.
+
+	Used to read back what somebody else wrote — Cloudflare's own Email
+	Routing and Email Sending onboarding write records we never create, and
+	their presence is how the readiness screen knows the onboarding happened.
+	"""
+	try:
+		result = _request("GET", "dns_records", params={"name": name, "type": kind})
+	except DNSError:
+		return False
+	return bool(result.get("result"))
+
+
 def upsert_cname(name: str, target: str) -> dict:
 	"""Point a tenant hostname at its Frappe Cloud site. Idempotent."""
 	payload = {

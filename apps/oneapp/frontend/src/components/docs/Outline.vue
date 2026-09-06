@@ -1,16 +1,9 @@
 <template>
-  <!--
-    Where you are in a long document.
-
-    Derived from the editor's own document on every transaction rather than
-    from a table-of-contents extension. frappe-ui ships one, and it inserts a
-    ToC *into* the page — which is a block somebody puts in a report, not a
-    rail that follows the cursor. Reading the headings is a walk over the top
-    level of the doc, which is cheap enough to do on every keystroke and always
-    describes the text that is actually there.
-  -->
+  <!-- Where you are in a long document, on a screen with room for a rail. The
+       phone gets the same list from the same composable, as a dropdown in the
+       header — see `DocEditor`. -->
   <nav
-    v-if="headings.length > 1"
+    v-if="worthShowing"
     aria-label="Outline"
     class="hidden w-56 shrink-0 border-e border-outline-gray-1 lg:block"
   >
@@ -41,44 +34,20 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { toRef } from 'vue'
 
 import { Button } from '@/ui'
 import FadedScroll from '../FadedScroll.vue'
+import { useOutline } from '@/composables/useOutline'
 
 const props = defineProps({
   editor: { type: Object, default: null },
-  // Bumped by the host on every transaction. A ref to the editor is not
-  // reactive in itself — ProseMirror mutates its own state in place — so
-  // something outside has to say "it changed", and the host is already told.
+  // Bumped by the host on every transaction.
   revision: { type: Number, default: 0 },
 })
 
-const active = ref('')
-
-const headings = computed(() => {
-  // Read so the computed re-runs when the host says the document moved.
-  void props.revision
-  const doc = props.editor?.state?.doc
-  if (!doc) return []
-
-  const found = []
-  doc.descendants((node, pos) => {
-    if (node.type.name !== 'heading') return
-    const text = node.textContent.trim()
-    if (text) found.push({ id: node.attrs.id || `h-${pos}`, pos, level: node.attrs.level, text })
-  })
-  return found
-})
-
-function go(one) {
-  active.value = one.id
-  const editor = props.editor
-  if (!editor) return
-
-  // Through the editor rather than through `getElementById`: a heading has an
-  // id only where frappe-ui's HeadingIds extension gave it one, and the
-  // position is what the editor itself uses to scroll.
-  editor.chain().focus().setTextSelection(one.pos + 1).scrollIntoView().run()
-}
+const { headings, worthShowing, active, go } = useOutline(
+  toRef(props, 'editor'),
+  toRef(props, 'revision'),
+)
 </script>

@@ -141,20 +141,48 @@ def test_every_reserved_name_is_a_name_that_could_be_asked_for(addresses):
 # Whose domain it is
 # --------------------------------------------------------------------------- #
 
-def test_ours_is_decided_by_the_whole_domain(addresses, monkeypatch):
-	"""Not by a suffix, because a suffix is how somebody else becomes us.
+def test_ours_is_the_whole_domain_and_our_own_prefix(addresses, monkeypatch):
+	"""Every workspace is on one domain now, so the domain alone decides nothing.
 
-	`evil-acme.4dl.app` ends with `4dl.app`. What decides is the whole domain
-	matching the workspace's own, which carries its slug.
+	Cloudflare caps a zone at 30 domains configured for Email Routing or
+	Sending, so a subdomain per workspace would cap the platform at about
+	twenty-nine. The workspace moved into the local part instead, which means
+	"is this ours" is two questions: our domain, and our label on the front.
+
+	The suffix trap is still here and still matters: `not4dl.app` ends with
+	`4dl.app`, and `globex.sales@4dl.app` is somebody else's.
 	"""
-	monkeypatch.setattr(addresses, "domain", lambda: "acme.4dl.app")
+	monkeypatch.setattr(addresses, "domain", lambda: "4dl.app")
+	monkeypatch.setattr(addresses, "prefix", lambda: "acme")
 
-	assert addresses.is_ours("sales@acme.4dl.app")
-	assert not addresses.is_ours("sales@globex.4dl.app")
-	assert not addresses.is_ours("sales@notacme.4dl.app")
-	assert not addresses.is_ours("sales@acme.4dl.app.evil.com")
+	assert addresses.is_ours("acme.sales@4dl.app")
+	assert addresses.is_ours("ACME.SALES@4DL.APP")
+	assert not addresses.is_ours("globex.sales@4dl.app")
+	assert not addresses.is_ours("sales@4dl.app")
+	# `acmex` starts with `acme` and is not us — the dot is what separates.
+	assert not addresses.is_ours("acmex.sales@4dl.app")
+	assert not addresses.is_ours("acme.sales@not4dl.app")
+	assert not addresses.is_ours("acme.sales@4dl.app.evil.com")
 	assert not addresses.is_ours("billing@theircompany.com")
 	assert not addresses.is_ours("")
+
+
+def test_an_address_is_the_workspace_then_the_name(addresses, monkeypatch):
+	monkeypatch.setattr(addresses, "domain", lambda: "4dl.app")
+	monkeypatch.setattr(addresses, "prefix", lambda: "acme")
+
+	assert addresses.address_for("sales") == "acme.sales@4dl.app"
+	# A person's own address may hold a dot; only the first one separates.
+	assert addresses.address_for("first.last") == "acme.first.last@4dl.app"
+
+
+def test_a_site_with_no_slug_still_issues_addresses(addresses, monkeypatch):
+	"""A development site has no tenant. It should not mint `.sales@`."""
+	monkeypatch.setattr(addresses, "domain", lambda: "4dl.app")
+	monkeypatch.setattr(addresses, "prefix", lambda: "")
+
+	assert addresses.address_for("sales") == "sales@4dl.app"
+	assert addresses.is_ours("sales@4dl.app")
 
 
 # --------------------------------------------------------------------------- #

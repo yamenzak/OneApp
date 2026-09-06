@@ -395,12 +395,32 @@ def checks() -> list[dict]:
 			"where": "Settings → Cloudflare",
 		},
 		{
+			"key": "cf_account_token",
+			"group": OPTIONAL,
+			"label": "Cloudflare account token",
+			"ok": bool(_secret(s, "cf_admin_token")),
+			"detail": (
+				"The one token the mail bring-up runs on: it creates the KV "
+				"namespace, uploads the inbound worker, turns Email Routing on "
+				"and points the catch-all at it. Without it every step below "
+				"is manual."
+			),
+			"needs": (
+				"A token with Workers Scripts → Edit, Workers KV Storage → "
+				"Edit, Email Routing Rules → Edit, Zone → Read and DNS → Edit. "
+				"It never leaves the control plane."
+			),
+			"where": "Settings → Cloudflare (control plane only)",
+		},
+		{
 			"key": "email_inbound",
 			"group": OPTIONAL,
 			"label": "Inbound email routing",
-			"ok": bool(s.cf_kv_namespace_id) and _secret(s, "cf_kv_token"),
+			"ok": bool(s.cf_kv_namespace_id) and bool(
+				_secret(s, "cf_kv_token") or _secret(s, "cf_admin_token")
+			),
 			"detail": "Tenants provisioned before this exists are missing from the routing map; cloudflare.kv.resync_all backfills them.",
-			"needs": "A Workers KV namespace ID, and a token with Account → Workers KV Storage → Edit.",
+			"needs": "Press Bring up mail, which creates the namespace and deploys the worker.",
 			"where": "Settings → Cloudflare",
 		},
 		{

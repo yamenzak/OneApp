@@ -34,12 +34,70 @@ scope, that is a mailbox product, not a feature" — and the reversal is narrowe
 than it looks. We are still not running a mail server. We are giving a person an
 address that files into the record they already work in.
 
+## 1a. One domain, and why the workspace is in the local part
+
+The first build gave every workspace a subdomain: `ap@acme.4dl.app`, with the
+tenant in the hostname so the Worker could route on the host alone. That is the
+obvious shape and it does not scale, for a reason that is a hard number rather
+than a matter of taste.
+
+**A zone may have at most 30 domains configured for Email Routing or Email
+Sending, combined, including the apex** — and there is no wildcard: each
+subdomain is onboarded one at a time and Cloudflare writes its own MX, SPF and
+DKIM records for it. A subdomain per workspace therefore caps the platform at
+about twenty-nine workspaces. Not a rate limit, not a plan tier: a ceiling.
+
+So the workspace moved into the local part:
+
+    acme.ap@4dl.app        an address the workspace `acme` issued
+    acme.first.last@4dl.app  a person's own — only the *first* dot separates
+    t-acme@4dl.app         the envelope sender outbound uses, so bounces land
+
+One domain onboarded, one catch-all rule, unlimited workspaces. The two rules
+that make it safe are both in `workers/email-inbound/src/routing.js`: the host
+must be the mail domain *exactly* (`not4dl.app` ends with `4dl.app` and is not
+ours), and the tenant must be a slug the control plane would actually have
+issued.
+
+The outbound half already worked this way — `t-<tenant>@<mail domain>`, one
+sending identity for every tenant, tenant in the local part — so this made the
+two halves agree rather than inventing anything.
+
+What is given up: the address does not *look* like the workspace owns a domain.
+The answer to a customer who minds is their own domain, which is §5 Stage 7 and
+a different mechanism entirely.
+
 The 200-limits do **not** bind us, and it is worth being clear why: they count
 *forwarding rules* and *verified destinations*. A catch-all to a Worker is one
 rule for the whole domain, and we forward to nobody. A thousand people on a
 hundred tenants cost one rule and zero destinations.
 
-[cf-limits]: https://developers.cloudflare.com/email-routing/limits/
+[cf-limits]: https://developers.cloudflare.com/email-service/platform/limits/
+
+## 1b. Bringing it up
+
+One operator action, on the readiness screen, and it is safe to press whenever
+somebody is unsure — every step finds what is already there:
+
+| | |
+|---|---|
+| KV namespace | the tenant map the Worker reads, created if absent |
+| Inbound worker | the bundle uploaded with its bindings — `TENANTS`, `MAIL_DOMAIN` |
+| Email Routing | enabled on the zone, which is also what writes and locks the MX and SPF records |
+| Catch-all | pointed at the worker: one rule, for ever |
+
+It runs on **one token**, `cf_admin_token`, which is account-wide and never
+pushed to a bench — it can rewrite the routing map for every tenant, and
+anything in bench config is readable by every tenant site. The narrow tokens
+(`cf_kv_token`, `cf_dns_token`) still win where an operator has scoped them.
+
+**The one step that is not automated**, because Cloudflare exposes no API for
+it: onboarding the domain for **Email Sending**. Their SMTP refuses a `MAIL
+FROM` on a domain that has not been onboarded, and onboarding is
+`Compute → Email Service → Email Sending → Onboard Domain` in the dashboard. The
+readiness screen says so and keeps saying so until the `cf-bounce` records
+Cloudflare writes are visible in the zone. One click, once, for the life of the
+platform.
 
 ## 2. What the framework already gives us
 

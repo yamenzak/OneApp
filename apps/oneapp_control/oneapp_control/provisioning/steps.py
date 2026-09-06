@@ -189,6 +189,10 @@ def push_site_config(job):
 
 	config = {
 		"oneapp_tenant": tenant.name,
+		# The label on the front of every address this workspace issues, and the
+		# key the email worker looks the tenant up by. The Tenant's *name* is
+		# not it — a slug taken twice gets a suffix — so both are sent.
+		"oneapp_tenant_slug": tenant.tenant_slug,
 		"oneapp_control_url": settings.control_plane_url,
 		"oneapp_hmac_secret": tenant.signing_secret(),
 		"oneapp_site_name": tenant.site_name,

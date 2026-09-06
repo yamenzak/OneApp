@@ -48,6 +48,7 @@ def built(bench_config, stub_frappe):
 # Anything that grants authority over *other* tenants, or over the control plane
 # itself, is forbidden in bench config.
 FORBIDDEN = [
+	"cf_admin_token",       # brings the whole platform up, so it can take it down
 	"cf_kv_token",          # could rewrite every tenant's mail routing
 	"cf_kv_namespace_id",
 	"press_api_secret",     # could create or destroy any site

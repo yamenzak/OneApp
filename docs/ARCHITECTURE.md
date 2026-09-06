@@ -102,7 +102,8 @@ The single modules, roughly by how often they are touched:
 | `provisioning/` | Creating a site: the steps, and the standby pool that makes it feel instant. |
 | `billing/`, `credits/` | Stripe, the ledger, and what a call costs. |
 | `lifecycle/` | The dunning ladder, cold storage, and the sweep that drives them. |
-| `press/`, `cloudflare/` | Frappe Cloud and Cloudflare. Both degrade rather than raise: an unreachable dependency greys out a panel, it does not take down the page that would explain why. |
+| `cloudflare/` | `api` is the one client and the one place a token is chosen — an account-wide `cf_admin_token` that never leaves the control plane, with the narrow ones winning where they are set. Then `dns`, `kv`, `r2`, `workers` (the inbound email worker and its KV namespace) and `email` (Email Routing on the zone, and the catch-all). `worker/` holds the bundle the control plane uploads, generated from `workers/email-inbound/` and guarded by `tests/test_worker_bundle.py`. |
+| `press/`, `cloudflare/` (the rest) | Frappe Cloud and Cloudflare. Both degrade rather than raise: an unreachable dependency greys out a panel, it does not take down the page that would explain why. |
 | `spaces/` | The space manifests themselves — `rua`, `books`. Data, read by the sync. |
 
 ## The SPAs, `apps/*/frontend/src`

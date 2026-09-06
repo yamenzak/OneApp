@@ -70,21 +70,45 @@ def _require_admin():
 
 
 def domain() -> str:
-	"""The workspace's own subdomain of the platform's mail domain.
+	"""The one domain the platform routes. Every workspace shares it.
 
-	`<slug>.4dl.app`, which is the same host the site answers on — so an address
-	is readable as belonging to this workspace and the inbound Worker resolves
-	the tenant from the domain without a lookup table of addresses.
+	Not a subdomain per workspace, and the reason is a hard limit rather than a
+	preference: Cloudflare allows a zone 30 domains configured for Email
+	Routing or Email Sending *combined*, including the apex, and there is no
+	wildcard — each one is onboarded individually. A subdomain per workspace
+	would cap the platform at about twenty-nine of them.
+
+	So the workspace is in the local part instead — `acme.ap@4dl.app` — which
+	costs one onboarding and one catch-all rule for ever. See `docs/EMAIL.md`
+	and `workers/email-inbound/src/routing.js`, which is the other half of this
+	decision.
 	"""
+	return frappe.conf.get("oneapp_mail_domain") or "4dl.app"
+
+
+def prefix() -> str:
+	"""This workspace's label on the front of every address it issues."""
 	conf = frappe.conf
-	slug = conf.get("oneapp_tenant_slug") or conf.get("oneapp_tenant") or ""
-	root = conf.get("oneapp_tenant_domain") or "4dl.app"
-	return f"{slug}.{root}" if slug else root
+	return conf.get("oneapp_tenant_slug") or conf.get("oneapp_tenant") or ""
+
+
+def address_for(local_part: str) -> str:
+	"""The address a person actually gives out, from the part they chose."""
+	slug = prefix()
+	return f"{slug}.{local_part}@{domain()}" if slug else f"{local_part}@{domain()}"
 
 
 def is_ours(email_id: str) -> bool:
-	"""Whether an address is on the domain we route, rather than a customer's."""
-	return (email_id or "").lower().endswith("@" + domain())
+	"""Whether an address is one this workspace issued.
+
+	The domain alone is not enough any more — every workspace is on it — so
+	this asks the whole question: our domain, and our prefix on the front.
+	"""
+	email_id = (email_id or "").lower()
+	if not email_id.endswith("@" + domain()):
+		return False
+	slug = prefix()
+	return email_id.startswith(f"{slug}.") if slug else True
 
 
 # --------------------------------------------------------------------------- #
@@ -161,6 +185,10 @@ def listing() -> dict:
 	return {
 		"addresses": sorted(rows, key=lambda r: r["email_id"]),
 		"domain": domain(),
+		# The workspace's label. Every address it issues carries it, so the
+		# screen that offers a local part has to show what the whole address
+		# will come out as.
+		"prefix": prefix(),
 		"reserved": sorted(RESERVED),
 		"can_manage": bool(roles & {OWNER_ROLE, SUPPORT_ROLE}),
 		"members": _members(),
@@ -208,7 +236,7 @@ def create(local_part: str, label: str = "", grant_to: str | list | None = None)
 	_require_admin()
 
 	local_part = validate_local_part(local_part)
-	email_id = f"{local_part}@{domain()}"
+	email_id = address_for(local_part)
 
 	if frappe.db.exists("Email Account", {"email_id": email_id}):
 		frappe.throw(_("{0} already exists.").format(email_id))
