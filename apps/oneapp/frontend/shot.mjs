@@ -32,6 +32,10 @@
  * thread, an open record, a dialog — and without it the only way to reach any
  * of those was a throwaway Playwright script.
  *
+ * `--scroll=PX` scrolls *inside* whatever is under the pointer before the
+ * shutter — a dialog scrolls in itself, so `--full` does not reach the bottom
+ * of a long settings panel. `--over=X,Y` moves the pointer first.
+ *
  * The rest: `--phone` for the suite's phone viewport, `--full` for the whole
  * scrollable page, `--retina` when the detail is the point, `--settle=MS` for
  * an animation this does not know about.
@@ -125,6 +129,17 @@ try {
   // A beat for the last transition to land. Short, because `--wait` is the
   // right answer whenever it actually matters.
   await page.waitForTimeout(Number(flag('settle', 600)))
+
+  // Down the panel, not down the page. `--full` photographs the document, and
+  // a dialog scrolls inside itself — so the second half of a long settings
+  // panel was reachable only by writing a throwaway script, which is the thing
+  // this command exists to stop.
+  const down = Number(flag('scroll', 0))
+  if (down) {
+    await page.mouse.move(...(flag('over', '700,450').split(',').map(Number)))
+    await page.mouse.wheel(0, down)
+    await page.waitForTimeout(400)
+  }
   await page.screenshot({ path: out, fullPage: has('full') })
   console.log(out)
 

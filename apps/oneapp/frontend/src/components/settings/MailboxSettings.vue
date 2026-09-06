@@ -61,11 +61,11 @@
         date, and one somebody forgot to switch off answers their mail for a
         month.
       -->
-      <div v-if="held.length" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-4">
-        <div class="flex items-end gap-2">
-          <span class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
-            Rules and away message
-          </span>
+      <section v-if="held.length" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
+        <div class="flex items-center gap-2">
+          <h3 class="text-base-medium text-ink-gray-8">While you are away</h3>
+          <!-- Which address these two sections are about. Only when there is
+               more than one to be about. -->
           <Select
             v-if="held.length > 1"
             v-model="chosen"
@@ -74,7 +74,7 @@
           />
         </div>
 
-        <div class="flex flex-col gap-2 rounded-6 border border-outline-gray-2 p-3">
+        <div class="flex flex-col gap-2">
           <Checkbox
             v-model="awayState.enabled"
             label="Reply automatically while I am away"
@@ -104,6 +104,11 @@
             @click="saveAway"
           />
         </div>
+
+        <h3 class="mt-2 text-base-medium text-ink-gray-8">Rules</h3>
+        <p class="-mt-2 text-p-sm text-ink-gray-5">
+          Where mail that matches goes, before you see it.
+        </p>
 
         <div
           v-for="one in rules"
@@ -153,17 +158,18 @@
           <Checkbox v-model="rule.star" label="Star it" />
         </div>
         <ErrorMessage v-if="ruleError" :message="ruleError" />
-      </div>
+      </section>
 
       <!--
         And for most people the half that matters: the address they have used
         for nine years. Never gated on a role — a mailbox somebody connects
         with their own password is theirs.
       -->
-      <div class="flex flex-col gap-2 border-t border-outline-gray-1 pt-4">
-        <span class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
-          Your own mailboxes
-        </span>
+      <section class="flex flex-col gap-2 border-t border-outline-gray-1 pt-5">
+        <h3 class="text-base-medium text-ink-gray-8">Your own mailboxes</h3>
+        <p class="text-p-sm text-ink-gray-5">
+          The address you already had. Read and answer it here.
+        </p>
 
         <div
           v-for="box in connected"
@@ -237,7 +243,7 @@
           </div>
           <ErrorMessage v-if="connectError" :message="connectError" />
         </div>
-      </div>
+      </section>
     </div>
   </SettingsBody>
 </template>
