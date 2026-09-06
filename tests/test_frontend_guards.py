@@ -1488,3 +1488,72 @@ def test_a_picker_on_a_record_attaches_to_it(app):
 		"a picker on a record must pass `:attached-to`, or the file it makes "
 		"belongs to nothing: " + ", ".join(sorted(set(offenders)))
 	)
+
+# --------------------------------------------------------------------------- #
+# A component used is a component imported
+# --------------------------------------------------------------------------- #
+
+#: Tags Vue resolves for itself. Everything else in PascalCase has to come from
+#: an import, or it renders as nothing at all.
+BUILT_IN_TAGS = {
+	"Transition", "TransitionGroup", "KeepAlive", "Teleport", "Suspense",
+	"Component", "Fragment",
+}
+
+
+def _tags_used(source: str) -> set:
+	"""The PascalCase tags a single-file component opens in its template.
+
+	Read off `<Foo` rather than parsed: the alternative is a Vue template parser,
+	and the question here is only whether a word appears as a tag.
+
+	Comments come out first, and they are not an edge case — this file's own
+	house style explains a choice by naming the component it did *not* use
+	("the Button's own `tooltip` rather than a `<Tooltip>` around it"), and
+	three of those were the first thing this guard found.
+	"""
+	template = re.sub(r"<!--.*?-->", "", source.split("<script", 1)[0], flags=re.S)
+	return {
+		one for one in re.findall(r"<([A-Z][A-Za-z0-9]*)", template)
+		if one not in BUILT_IN_TAGS
+	}
+
+
+def _names_bound(source: str) -> set:
+	"""Every local name the script half binds, however it came to be bound."""
+	script = source.split("<script", 1)[-1]
+	names = set()
+	for one in re.findall(r"^\s*import\s+([A-Za-z_$][\w$]*)", script, re.M):
+		names.add(one)
+	for block in re.findall(r"import\s*\{([^}]*)\}\s*from", script):
+		for piece in block.split(","):
+			piece = piece.strip()
+			if piece:
+				names.add(piece.split(" as ")[-1].strip())
+	# `const Foo = defineAsyncComponent(...)` and friends.
+	for one in re.findall(r"^\s*(?:const|let|var)\s+([A-Z][\w$]*)\s*=", script, re.M):
+		names.add(one)
+	return names
+
+
+def test_every_component_a_template_uses_is_one_the_script_imported():
+	"""Vue renders an unknown tag as nothing. Nothing throws and nothing logs.
+
+	The defect class `docs/ONESPACE.md` §12 opens with, from the one direction
+	the other guards do not cover: they read the props and slots of components
+	we *did* import. A `<Dropdown>` whose script never imported one is a menu
+	that opens empty — which is how a child table's settings menu shipped with
+	no items in it, past eslint, past every frappe-ui guard, and cost an
+	eight-minute browser run to find.
+	"""
+	missing = []
+	for app, paths in _local_components().items():
+		for path in paths:
+			if is_vendored(path):
+				continue
+			source = path.read_text()
+			bound = _names_bound(source)
+			for tag in sorted(_tags_used(source) - bound):
+				missing.append(f"{app}/{path.name}: <{tag}> is used and never imported")
+	assert not missing, "\n".join(missing)
+

@@ -54,6 +54,18 @@ export function collectConsoleErrors(page) {
  */
 const NL = String.fromCharCode(10)
 
+/**
+ * The name of the file an editor URL is showing.
+ *
+ * The trailing `?back=…` is the trail an editor opened from a record carries
+ * home, and it is not part of the name — passing the whole tail to an endpoint
+ * asks the server for a document called `abc123?back=/one/space/…`, which it
+ * quite correctly does not have.
+ */
+export function nameInUrl(page, prefix) {
+  return page.url().split(prefix)[1].split('?')[0]
+}
+
 export function expectNoRealErrors(errors) {
   const ignorable = [
     // Logged by frappe-ui during a brief window before a resource resolves;

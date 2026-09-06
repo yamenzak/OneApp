@@ -165,9 +165,13 @@ test('which columns are across is the reader\'s to change', async ({ page }, inf
   // Event Notification is the two that fit.
   await expect(panel.getByRole('columnheader', { name: 'Before' })).toBeVisible()
 
+  // The list's own dialog, minus the answers a shared-width grid has no use
+  // for. It was a popover of checkboxes until a column here carried an order.
   await panel.locator('[data-slot="child-columns"]').click()
-  await page.getByRole('checkbox', { name: 'Before' }).click()
-  await page.keyboard.press('Escape')
+  await page.getByRole('menuitem', { name: 'Which columns…' }).click()
+  const columns = page.getByRole('dialog').filter({ hasText: 'Columns' })
+  await columns.getByRole('button', { name: 'Remove Before' }).click()
+  await columns.getByRole('button', { name: 'Done' }).click()
 
   await expect(panel.getByRole('columnheader', { name: 'Before' })).toHaveCount(0)
 
@@ -179,8 +183,7 @@ test('which columns are across is the reader\'s to change', async ({ page }, inf
 
   // Put it back, so the next run starts where this one did.
   await panel.locator('[data-slot="child-columns"]').click()
-  await page.getByRole('button', { name: 'Reset' }).click()
-  await page.keyboard.press('Escape')
+  await page.getByRole('menuitem', { name: 'Reset the columns' }).click()
   await expect(panel.getByRole('columnheader', { name: 'Before' })).toBeVisible()
 
   expectNoRealErrors(errors)

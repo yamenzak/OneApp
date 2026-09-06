@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { expect, test } from '@playwright/test'
 
-import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
+import { collectConsoleErrors, expectNoRealErrors, nameInUrl, signIn } from './auth.js'
 
 /**
  * The grid, in a browser.
@@ -115,7 +115,7 @@ async function newSheet(page) {
   await page.waitForURL(/\/one\/sheets\//)
   await ready(page)
   await expect(active(page)).toHaveText('A1')
-  return page.url().split('/one/sheets/')[1]
+  return nameInUrl(page, '/one/sheets/')
 }
 
 /**
@@ -215,8 +215,11 @@ test('a sheet in the file list opens its grid rather than a preview', async ({ p
   // unfiltered list had first.
   await expect(page.locator('[data-slot="drive-file"]').first())
     .toContainText('Untitled sheet')
-  const row = page.locator('button[data-slot="drive-open"]').first()
+  // An anchor, not a button: a sheet is a place now, so cmd-click opens it in
+  // a tab like any other link. That is the whole claim of this test.
+  const row = page.locator('[data-slot="drive-open"]').first()
   await row.waitFor({ timeout: 20_000 })
+  await expect(row).toHaveJSProperty('tagName', 'A')
   await row.click()
 
   await page.waitForURL(/\/one\/sheets\//)
@@ -360,7 +363,8 @@ test('a named range fills a record\'s child table', async ({ page }) => {
   await openParticipants(page)
 
   await page.getByRole('tabpanel', { name: 'Participants' })
-    .getByRole('button', { name: /^Fill/ }).click()
+    .getByRole('button', { name: 'Settings for these rows' }).click()
+  await page.getByRole('menuitem', { name: 'Use a different sheet…' }).click()
 
   // frappe-ui's Select is reka-ui's, not a native `<select>` — a combobox that
   // opens a listbox. `selectOption` throws on one.
@@ -457,7 +461,7 @@ test('a sheet exports to Excel and comes back with its formulas', async ({ page 
 
   await page.waitForURL(/\/one\/sheets\//, { timeout: 60_000 })
   await ready(page)
-  const imported = page.url().split('/one/sheets/')[1]
+  const imported = nameInUrl(page, '/one/sheets/')
   await select(page, 'A2')
   await expect(formulaBar(page)).toHaveValue('120')
 
@@ -498,7 +502,8 @@ test('a filled table says where its rows came from, and can be locked', async ({
   // Scoped to this table's panel: an Event has two child tables and the other
   // one has a Fill control of its own.
   const panel = page.getByRole('tabpanel', { name: 'Participants' })
-  await panel.getByRole('button', { name: /^Fill/ }).click()
+  await panel.getByRole('button', { name: 'Settings for these rows' }).click()
+  await page.getByRole('menuitem', { name: 'Use a different sheet…' }).click()
   await page.getByLabel('Sheet', { exact: true }).click()
   await page.getByRole('option', { name: title, exact: true }).click()
   await page.getByLabel('Named range').click()
@@ -514,8 +519,10 @@ test('a filled table says where its rows came from, and can be locked', async ({
   // Locked: the control that would replace them is gone, and so is the right.
   await note.getByRole('button', { name: 'Lock these rows' }).click()
   await expect(note).toContainText('Locked')
-  await expect(page.getByRole('tabpanel', { name: 'Participants' })
-    .getByRole('button', { name: /^Fill/ })).toHaveCount(0)
+  await page.getByRole('tabpanel', { name: 'Participants' })
+    .getByRole('button', { name: 'Settings for these rows' }).click()
+  await expect(page.getByRole('menuitem', { name: 'Use a different sheet…' })).toHaveCount(0)
+  await page.keyboard.press('Escape')
 
   // The real sheet and the real range, signed. A made-up sheet name would be
   // refused for not existing, and an unsigned POST for being unsigned — either
@@ -528,8 +535,10 @@ test('a filled table says where its rows came from, and can be locked', async ({
   expect(await refused.text()).toContain('locked')
 
   await note.getByRole('button', { name: 'Follow the sheet again' }).click()
-  await expect(page.getByRole('tabpanel', { name: 'Participants' })
-    .getByRole('button', { name: 'Fill again' })).toBeVisible()
+  await page.getByRole('tabpanel', { name: 'Participants' })
+    .getByRole('button', { name: 'Settings for these rows' }).click()
+  await expect(page.getByRole('menuitem', { name: 'Use a different sheet…' })).toBeVisible()
+  await page.keyboard.press('Escape')
 
   // Nothing pushes. Typing in the sheet does not touch the document — what it
   // does is make the note say so, with the control that would act on it
@@ -546,7 +555,11 @@ test('a filled table says where its rows came from, and can be locked', async ({
   await written
 
   await openParticipants(page)
-  await expect(page.locator('[data-slot="sheet-feed"]')).toContainText('has changed')
+  const changed = page.locator('[data-slot="sheet-feed"]')
+  await expect(changed).toContainText('has changed')
+  // Beside the sentence, and not two rows up in the header where it used to
+  // be: you are told here, so the thing to press is here.
+  await expect(changed.getByRole('button', { name: 'Fill again' })).toBeVisible()
   // And the rows are still what they were until somebody presses it.
   await expect(page.getByRole('row', { name: /Administrator/ }).first()).toBeVisible()
 })

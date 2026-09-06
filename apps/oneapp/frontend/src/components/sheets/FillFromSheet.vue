@@ -1,24 +1,21 @@
 <template>
   <!--
-    Fill these rows from a spreadsheet.
+    Point these rows at a sheet somebody already made.
 
     The stage the whole of Sheets exists for: somebody prices a job in a grid,
-    names the rectangle that is the answer, and presses this. What lands is line
-    items on a document; what stays behind is their working.
+    names the rectangle that is the answer, and it lands as line items on a
+    document while their working stays behind.
+
+    A picker rather than a button now, and in the overflow rather than the
+    header, because a table has one sheet — `sheets/feed.py` binds it — and the
+    ordinary path is Open, price, send. This is the other case: the estimator
+    was made last week, in the Drive, before anybody opened the quotation. It
+    is a once-per-table act and it rebinds.
 
     Replace, never append. The confirmation is the preview: a pull rewrites
     these rows, and pressing it twice must not double the quotation.
   -->
-  <Button
-    icon-left="lucide-table-2"
-    variant="ghost"
-    size="sm"
-    :label="props.from ? 'Fill again' : 'Fill from a sheet'"
-    tooltip="Fill these rows from a spreadsheet"
-    @click="start"
-  />
-
-  <Dialog v-model="open" title="Fill from a sheet">
+  <Dialog v-model="open" title="Use a different sheet">
     <template #default>
       <div class="flex flex-col gap-4">
         <!--
@@ -163,7 +160,9 @@ const props = defineProps({
 
 const emit = defineEmits(['filled'])
 
-const open = ref(false)
+// Owned by the parent: the trigger is a menu item in the child table's
+// overflow now, so what opens this is not in this file.
+const open = defineModel({ type: Boolean, default: false })
 const { saving: loading, error, attempt: attemptLoad } = useSaving()
 const { saving: filling, attempt: attemptFill } = useSaving(error)
 const sheets = ref([])
@@ -222,8 +221,13 @@ const sample = computed(() =>
     return out
   }))
 
+// The sheets to choose from, read when the dialog opens rather than on mount:
+// most of these tables are never pointed at a different sheet.
+watch(open, (showing) => {
+  if (showing) start()
+})
+
 async function start() {
-  open.value = true
   if (sheets.value.length) return
   await attemptLoad(async () => {
     // `all` and not `home`: a sheet made against this record lives in the

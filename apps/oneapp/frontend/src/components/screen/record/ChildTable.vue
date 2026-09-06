@@ -4,26 +4,16 @@
       <FormLabel :label="field.label" />
       <div class="flex items-center gap-2">
         <!--
-          Read these rows off a spreadsheet. Here rather than in the record's
-          action menu because what it replaces is exactly these rows. Only on a
-          saved record: a pull writes through the server.
+          The sheet these rows are priced in. One control, because a table has
+          one sheet: `sheets/feed.py` binds it and reopens it. Only on a saved
+          record — a pull writes through the server.
         -->
-        <!-- The two halves of one round trip, in the order somebody does
-             them: price it in a grid, then read it back. -->
         <OpenInSheet
           v-if="docname"
           :doctype="doctype"
           :docname="docname"
           :into="field.fieldname"
-        />
-        <FillFromSheet
-          v-if="editable && docname && !locked"
-          :doctype="doctype"
-          :docname="docname"
-          :into="field.fieldname"
-          :fields="child.fields || []"
           :from="feed"
-          @filled="filled"
         />
         <!-- What is ticked, and the one thing worth doing to it. Beside the
              count rather than in a floating bar: a bar over the form to delete
@@ -48,15 +38,21 @@
           list's columns carry an order — which was never true of the reader,
           only of what we had built.
         -->
-        <Button
-          icon="lucide-settings-2"
-          variant="ghost"
-          size="sm"
-          data-slot="child-columns"
-          label="Which columns"
-          tooltip="Which columns"
-          @click="picking = true"
-        />
+        <!--
+          Everything else this table can be told, in one place. Two of them and
+          neither is daily: which fields go across, and pointing the rows at a
+          sheet somebody made before the record existed.
+        -->
+        <Dropdown :options="tableMenu">
+          <Button
+            icon="lucide-settings-2"
+            variant="ghost"
+            size="sm"
+            data-slot="child-columns"
+            label="Settings for these rows"
+            tooltip="Settings for these rows"
+          />
+        </Dropdown>
         <span class="text-p-xs tabular-nums text-ink-gray-5">
           {{ rows.length }} {{ rows.length === 1 ? 'row' : 'rows' }}
         </span>
@@ -71,6 +67,7 @@
       :feed="feed"
       :editable="editable"
       @changed="(one) => { feed = one }"
+      @filled="filled"
     />
 
     <!--
@@ -180,6 +177,17 @@
       layout engine, so a child row gets the child doctype's own tabs, section
       breaks, `depends_on` and every field property, with nothing written twice.
     -->
+    <FillFromSheet
+      v-if="docname"
+      v-model="repointing"
+      :doctype="doctype"
+      :docname="docname"
+      :into="field.fieldname"
+      :fields="child.fields || []"
+      :from="feed"
+      @filled="filled"
+    />
+
     <ColumnPicker
       v-model="picking"
       :chosen="chosenColumns"
@@ -208,7 +216,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { Button, Dialog, FormLabel } from '@/ui'
+import { Button, Dialog, Dropdown, FormLabel } from '@/ui'
 import RecordTable from '../bodies/RecordTable.vue'
 import FieldCell from '../bodies/FieldCell.vue'
 import FieldControl from '../fields/FieldControl.vue'
@@ -276,6 +284,7 @@ const child = computed(() => props.field.child || { columns: [], fields: [], for
  * answer stands until somebody disagrees with it.
  */
 const picking = ref(false)
+const repointing = ref(false)
 const picked = ref(null)
 
 const offered = computed(() => child.value.fields || [])
@@ -301,6 +310,37 @@ const columns = computed(() => {
 const chosenColumns = computed(() =>
   columns.value.map((one) => ({ fieldname: one.fieldname, align: one.align || '' })),
 )
+
+/**
+ * What the gear offers. Columns always; the sheet only where these rows can
+ * still be replaced — after a lock the document is the record, and offering to
+ * repoint it would be offering something that is then refused.
+ */
+const tableMenu = computed(() => [
+  {
+    label: 'Which columns…',
+    icon: 'settings-2',
+    onClick: () => { picking.value = true },
+  },
+  // Only once somebody has disagreed with the shipped set: "reset" against a table
+  // nobody has changed is an offer to do nothing.
+  ...(picked.value
+    ? [{
+      label: 'Reset the columns',
+      icon: 'rotate-ccw',
+      onClick: () => resetColumns(),
+    }]
+    : []),
+  ...(editable.value && props.docname && !locked.value
+    ? [{
+      label: 'Use a different sheet…',
+      icon: 'table-2',
+      onClick: () => { repointing.value = true },
+    }]
+    : []),
+])
+
+const resetColumns = () => setColumns(null)
 
 const setColumns = (next) => {
   // Every column off is not a table, it is a list of row numbers. Refused by

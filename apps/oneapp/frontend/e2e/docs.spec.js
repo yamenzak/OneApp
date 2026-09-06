@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
+import { collectConsoleErrors, expectNoRealErrors, nameInUrl, signIn } from './auth.js'
 
 /**
  * Documents, in a browser.
@@ -37,7 +37,7 @@ async function newDocument(page) {
   await page.getByRole('menuitem', { name: 'Document' }).click()
   await page.waitForURL(/\/one\/docs\//)
   await expect(prose(page)).toBeVisible()
-  return page.url().split('/one/docs/')[1]
+  return nameInUrl(page, '/one/docs/')
 }
 
 test('a document is made from the Drive and opens in an editor', async ({ page }) => {
@@ -142,7 +142,7 @@ test('a markdown file is made, edited as text, and downloads as itself', async (
   await page.getByRole('menuitem', { name: 'Markdown file' }).click()
   await page.waitForURL(/\/one\/docs\//)
 
-  const name = page.url().split('/one/docs/')[1]
+  const name = nameInUrl(page, '/one/docs/')
 
   // A text file is a text editor, not the prose one: the bytes are the file.
   await expect(page.locator('.cm-content')).toBeVisible()

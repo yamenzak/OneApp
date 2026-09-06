@@ -7,7 +7,7 @@
 // thing you are already looking at opens into.
 import { expect, test } from '@playwright/test'
 
-import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
+import { collectConsoleErrors, expectNoRealErrors, nameInUrl, signIn } from './auth.js'
 
 const EVENT = 'Quarterly review'
 
@@ -37,10 +37,12 @@ test('a child table opens in a sheet, headings and all', async ({ page }, info) 
   const errors = collectConsoleErrors(page)
   const panel = await openEvent(page, 'Notifications')
 
-  await panel.getByRole('button', { name: 'Open in a sheet' }).click()
+  // By slot, not by name: the button is named after the sheet once the table
+  // has one, and every row in the grid also has an "Open this row".
+  await panel.locator('[data-slot="open-in-sheet"]').click()
   await page.waitForURL(/\/one\/sheets\//, { timeout: 30_000 })
 
-  const name = page.url().split('/one/sheets/')[1]
+  const name = nameInUrl(page, '/one/sheets/')
 
   // The contract the pull reads: a named range drawn round the block, starting
   // at row one so the headings are inside it. Nobody typed either.
@@ -90,7 +92,7 @@ test("a record's Files tab makes a document of its own", async ({ page }, info) 
   await page.getByRole('menuitem', { name: 'Document', exact: true }).click()
   await page.waitForURL(/\/one\/docs\//, { timeout: 30_000 })
 
-  const name = page.url().split('/one/docs/')[1]
+  const name = nameInUrl(page, '/one/docs/')
   const res = await page.request.get(
     `/api/method/oneapp.oneapp_core.docs.get_doc?name=${name}`,
   )

@@ -39,7 +39,10 @@ def listing() -> list[dict]:
             "custom_status": ["in", ["Active", "", None]],
         },
         fields=["name", "file_name", "folder", "modified", "owner"],
-        order_by="file_name asc",
+        # Newest first, because the New menu shows six of these and
+        # alphabetical order hides the one somebody just made behind five
+        # they have not touched in a year.
+        order_by="modified desc",
         limit_page_length=100,
     )
 

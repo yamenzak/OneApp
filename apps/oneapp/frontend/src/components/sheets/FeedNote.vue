@@ -45,6 +45,26 @@
       label="That sheet is gone"
     />
 
+    <!--
+      The control that acts on the sentence, beside the sentence. It used to be
+      a button in the header two rows up — you were told the sheet had changed
+      here and the thing to press about it was somewhere else.
+
+      No picker: the table is bound to one sheet and one range, so "again"
+      names them both. It is still a press, because a quotation is a commitment
+      and a rate edited at six o'clock must not move a number a customer agreed
+      to.
+    -->
+    <Button
+      v-if="editable && !locked && feed.stale"
+      size="sm"
+      variant="subtle"
+      icon-left="lucide-refresh-cw"
+      label="Fill again"
+      :loading="filling"
+      @click="fillAgain"
+    />
+
     <!-- The one thing worth doing about it, and only for somebody who may
          change the record. Reading who filled it is not the same right as
          deciding the sheet no longer feeds it. -->
@@ -75,7 +95,30 @@ const props = defineProps({
   editable: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['changed'])
+const emit = defineEmits(['changed', 'filled'])
+
+const filling = ref(false)
+
+/**
+ * Take the rows again, from the sheet and range this table is already bound
+ * to. `pull` replaces rather than appends, so pressing it twice cannot double
+ * a quotation — and it refuses outright once the table is locked, which is why
+ * the button is not drawn then.
+ */
+async function fillAgain() {
+  filling.value = true
+  try {
+    const done = await workspace.sheetPull(props.feed.sheet, {
+      label: props.feed.label,
+      doctype: props.feed.reference_doctype,
+      docname: props.feed.reference_name,
+      into: props.feed.into,
+    })
+    emit('filled', done)
+  } finally {
+    filling.value = false
+  }
+}
 
 const busy = ref(false)
 
