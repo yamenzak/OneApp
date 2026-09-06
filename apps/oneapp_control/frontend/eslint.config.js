@@ -104,11 +104,11 @@ export default [
             name: 'frappe-ui',
             // Two separate reasons, both load-bearing:
             //  - components: '@/ui' is the one reviewable list of what is allowed
-            //  - data/notify: '@/lib/resource' and '@/lib/notify' are what apply
+            //  - data/notify: '@/lib/runtime/resource' and '@/lib/runtime/notify' are what apply
             //    response unwrapping, Frappe error parsing, toasts and sound
             message:
-              "Import components from '@/ui', data helpers from '@/lib/resource', " +
-              "and toasts from '@/lib/notify'. Going direct skips error parsing, " +
+              "Import components from '@/ui', data helpers from '@/lib/runtime/resource', " +
+              "and toasts from '@/lib/runtime/notify'. Going direct skips error parsing, " +
               'response unwrapping and notification sound.',
           },
           {
@@ -138,7 +138,7 @@ export default [
           },
           {
             name: 'socket.io-client',
-            message: "Use onDoctypeChange from '@/lib/socket' — one shared, " +
+            message: "Use onDoctypeChange from '@/lib/runtime/socket' — one shared, " +
               'reference-counted socket per app.',
           },
         ],

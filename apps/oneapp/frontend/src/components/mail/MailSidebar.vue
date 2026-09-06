@@ -153,11 +153,11 @@ import {
   SidebarItem,
 } from '@/ui'
 import Resizer from '../Resizer.vue'
-import { loadMail, mail, refreshMail } from '../../lib/mail'
+import { loadMail, mail, refreshMail } from '@/lib/shell/mail'
 import { workspace } from '../../lib/workspace'
-import { session } from '../../lib/session'
-import { openSettings, settings } from '../../lib/settings'
-import { DEFAULT, MAX, MIN, useSidebar } from '../../lib/sidebar'
+import { session } from '@/lib/shell/session'
+import { openSettings, settings } from '@/lib/shell/settings'
+import { DEFAULT, MAX, MIN, useSidebar } from '@/lib/shell/sidebar'
 
 const SUB = 'text-ink-gray-6'
 

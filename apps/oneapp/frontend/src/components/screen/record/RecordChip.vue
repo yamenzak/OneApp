@@ -43,7 +43,7 @@
 </template>
 
 <script setup>
-import { plainText } from '../../../lib/format'
+import { plainText } from '@/lib/screen/format'
 import { computed } from 'vue'
 import { Avatar } from '@/ui'
 

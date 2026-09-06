@@ -208,7 +208,7 @@ import { ref } from 'vue'
 import DOMPurify from 'dompurify'
 import { Button, Icon, Tooltip } from '@/ui'
 import FieldControl from '../fields/FieldControl.vue'
-import { fieldRules, sectionCollapsed } from '../../../lib/rules'
+import { fieldRules, sectionCollapsed } from '@/lib/screen/rules'
 import { workspace } from '../../../lib/workspace'
 
 // Indexed by how many columns the section has, because Tailwind needs the

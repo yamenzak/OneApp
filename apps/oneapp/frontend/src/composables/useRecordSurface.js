@@ -12,7 +12,7 @@
 import { computed, ref, watch } from 'vue'
 
 import { workspace } from '../lib/workspace'
-import { PAGE, declared, remember, remembered } from '../lib/surfaces'
+import { PAGE, declared, remember, remembered } from '@/lib/screen/surfaces'
 
 export function useRecordSurface({ spaceCode, spec, route, router, reloadList }) {
   const editing = ref(null)

@@ -68,8 +68,8 @@ import {
 } from '@/ui'
 // An icon name that only exists in the database emits no CSS, so anything
 // outside the generated set falls back to one that does.
-import { spaceIcon } from '../../lib/icons'
-import { useListColumns } from '../../lib/list'
+import { spaceIcon } from '@/lib/shell/icons'
+import { useListColumns } from '@/lib/screen/list'
 import { admin } from './admin'
 
 const props = defineProps({ tenant: { type: String, required: true } })

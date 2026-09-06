@@ -269,10 +269,10 @@ import { Badge, Divider, Icon, LoadingText } from '@/ui'
 import FieldCell from './FieldCell.vue'
 import RecordChip from '../record/RecordChip.vue'
 import RowMeta from './RowMeta.vue'
-import { plainText } from '../../../lib/format'
-import { cellText } from '../../../lib/cells'
-import { valueIcon, valueTheme } from '../../../lib/fields'
-import { session } from '../../../lib/session'
+import { plainText } from '@/lib/screen/format'
+import { cellText } from '@/lib/screen/cells'
+import { valueIcon, valueTheme } from '@/lib/screen/fields'
+import { session } from '@/lib/shell/session'
 
 const props = defineProps({
   /** { value, label, id, image, description } — the shape the server returns. */

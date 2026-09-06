@@ -70,7 +70,7 @@
 <script setup>
 import { computed } from 'vue'
 import RecordCard from './RecordCard.vue'
-import { cardIdentity, cardShown, cardValues } from '../../../lib/cards'
+import { cardIdentity, cardShown, cardValues } from '@/lib/screen/cards'
 
 const props = defineProps({
   /** The resolved screen: columns, title field, states, permissions. */

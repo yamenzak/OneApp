@@ -6,7 +6,7 @@
 // none of them archived anything.
 import { describe, expect, it } from 'vitest'
 
-import { isTyping, pressed } from './shortcuts'
+import { isTyping, pressed } from '@/lib/shell/shortcuts'
 
 const press = (key, held = {}) => pressed({ key, ...held })
 

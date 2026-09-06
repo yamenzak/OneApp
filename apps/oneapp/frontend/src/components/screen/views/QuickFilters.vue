@@ -68,7 +68,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { Button, Dropdown, FormControl, Select } from '@/ui'
-import { defaultOperator, operatorsFor } from '../../../lib/fields'
+import { defaultOperator, operatorsFor } from '@/lib/screen/fields'
 
 const props = defineProps({
   spec: { type: Object, required: true },

@@ -247,9 +247,9 @@ import {
   RailItem,
   TabButtons,
 } from '@/ui'
-import { useAppearance } from '@/lib/appearance'
-import { useIsMobile } from '@/lib/screen'
-import { signOut } from '@/lib/user'
+import { useAppearance } from '@/lib/shell/appearance'
+import { useIsMobile } from '@/lib/shell/breakpoint'
+import { signOut } from '@/lib/shell/user'
 
 const props = defineProps({
   /**

@@ -63,7 +63,7 @@ import { computed, ref } from 'vue'
 import { Avatar, Button, Icon, MultiSelect } from '@/ui'
 import AvatarStack from './AvatarStack.vue'
 import { workspace } from '../../../lib/workspace'
-import { notifyError } from '../../../lib/notify'
+import { notifyError } from '@/lib/runtime/notify'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },

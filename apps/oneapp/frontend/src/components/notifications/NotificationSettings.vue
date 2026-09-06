@@ -58,7 +58,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { Skeleton, Switch } from '@/ui'
 
-import { loadPreferences, savePreferences } from '../../lib/notifications'
+import { loadPreferences, savePreferences } from '@/lib/shell/notifications'
 
 const loading = ref(true)
 const prefs = reactive({ enabled: true, email: true, types: [] })

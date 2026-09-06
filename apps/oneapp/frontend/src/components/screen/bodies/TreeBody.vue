@@ -90,7 +90,7 @@
 import { computed } from 'vue'
 import { Icon, Tree } from '@/ui'
 import EmptyState from '../../EmptyState.vue'
-import { forestOf } from '../../../lib/tree'
+import { forestOf } from '@/lib/screen/tree'
 
 const props = defineProps({
   /** The resolved screen: columns, title field, states, permissions. */

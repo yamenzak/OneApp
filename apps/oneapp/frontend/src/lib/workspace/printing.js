@@ -1,6 +1,6 @@
 /** Print formats and letter heads, and rendering one. */
 
-import { callMethod } from '../resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 export const printing = {
   printOptions: (spaceCode, screen, name) =>

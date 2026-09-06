@@ -20,7 +20,7 @@ import pytest
 from oneapp.oneapp_core import theming
 
 ROOT = Path(__file__).resolve().parent.parent
-THEME_JS = ROOT / "apps/oneapp/frontend/src/lib/theme.js"
+THEME_JS = ROOT / "apps/oneapp/frontend/src/lib/shell/theme.js"
 
 
 def test_a_whole_theme_survives():

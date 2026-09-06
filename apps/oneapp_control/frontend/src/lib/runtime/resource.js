@@ -25,8 +25,8 @@ import {
   frappeRequest,
 } from 'frappe-ui'
 
-import { notifyError, notifySuccess } from './notify'
-import { onDoctypeChange } from './socket'
+import { notifyError, notifySuccess } from '@/lib/runtime/notify'
+import { onDoctypeChange } from '@/lib/runtime/socket'
 
 /**
  * Unwrap Frappe's envelope.

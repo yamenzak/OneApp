@@ -77,7 +77,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Button, Dropdown } from '@/ui'
-import { CARD_VIEW_TYPES } from '../../../lib/viewTypes'
+import { CARD_VIEW_TYPES } from '@/lib/screen/viewTypes'
 
 const props = defineProps({
   count: { type: Number, default: 0 },

@@ -45,7 +45,7 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { Avatar, Button, LoadingIndicator } from '@/ui'
-import { callMethod } from '../../lib/resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 const route = useRoute()
 const status = ref(null)

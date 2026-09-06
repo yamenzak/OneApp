@@ -1,8 +1,8 @@
 import { reactive } from 'vue'
 
-import { getSocket } from './socket'
-import { callMethod } from './resource'
-import { session } from './session'
+import { getSocket } from '@/lib/runtime/socket'
+import { callMethod } from '@/lib/runtime/resource'
+import { session } from '@/lib/shell/session'
 
 /**
  * The notification feed.

@@ -125,7 +125,7 @@ import {
 import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
-import { errorText } from '../../lib/errors'
+import { errorText } from '@/lib/runtime/errors'
 
 // Said under the textarea. Two sentences rather than one, because the second
 // case is the one people will not expect and the first is the one they will.

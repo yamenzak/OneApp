@@ -7,7 +7,7 @@
  * chances to disagree. See `oneapp_core/diary.py`.
  */
 
-import { callMethod } from '../resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 export const diary = {
   // `since` and `until` are the days on screen. A diary is not a page: it

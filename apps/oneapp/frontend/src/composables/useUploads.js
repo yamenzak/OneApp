@@ -29,8 +29,8 @@
  */
 import { computed, reactive, readonly } from 'vue'
 
-import { putFile } from '../lib/attach'
-import { errorText } from '../lib/errors'
+import { putFile } from '@/lib/files/attach'
+import { errorText } from '@/lib/runtime/errors'
 
 /** Where a file is in its life. `queued → sending → done | failed`. */
 const QUEUED = 'queued'

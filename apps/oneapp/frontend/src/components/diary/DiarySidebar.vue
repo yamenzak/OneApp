@@ -75,9 +75,9 @@ import {
   SidebarItem,
 } from '@/ui'
 import Resizer from '../Resizer.vue'
-import { session } from '../../lib/session'
-import { DEFAULT, MAX, MIN, useSidebar } from '../../lib/sidebar'
-import { colourFor, diary, isOn, toggle } from '../../lib/diary'
+import { session } from '@/lib/shell/session'
+import { DEFAULT, MAX, MIN, useSidebar } from '@/lib/shell/sidebar'
+import { colourFor, diary, isOn, toggle } from '@/lib/screen/diary'
 
 const { collapsed, width } = useSidebar()
 

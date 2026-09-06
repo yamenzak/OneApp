@@ -264,8 +264,8 @@ NOTIFY_JS = BANNER + """
 
 import { toast } from 'frappe-ui'
 
-import { normalizeError } from './errors'
-import { playSound } from './sound'
+import { normalizeError } from '@/lib/runtime/errors'
+import { playSound } from '@/lib/runtime/sound'
 
 export function notifySuccess(message, options = {}) {
   playSound('success')
@@ -310,7 +310,7 @@ SOCKET_JS = BANNER + """
 import { io } from 'socket.io-client'
 import { onScopeDispose, getCurrentScope } from 'vue'
 
-import { siteName, socketioPort, devServer } from './boot'
+import { siteName, socketioPort, devServer } from '@/lib/runtime/boot'
 
 let socket = null
 const subscribers = new Map()
@@ -501,8 +501,8 @@ import {
   frappeRequest,
 } from 'frappe-ui'
 
-import { notifyError, notifySuccess } from './notify'
-import { onDoctypeChange } from './socket'
+import { notifyError, notifySuccess } from '@/lib/runtime/notify'
+import { onDoctypeChange } from '@/lib/runtime/socket'
 
 /**
  * Unwrap Frappe's envelope.

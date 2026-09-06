@@ -2,11 +2,11 @@ import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 // An icon name that only exists in the database emits no CSS, so anything
 // outside the generated set falls back to one that does.
-import { spaceIcon } from './icons'
-import { mail } from './mail'
-import { session } from './session'
-import { workspace } from './workspace'
-import { VIEW_TYPES, viewTypesOf } from './viewTypes'
+import { spaceIcon } from '@/lib/shell/icons'
+import { mail } from '@/lib/shell/mail'
+import { session } from '@/lib/shell/session'
+import { workspace } from '@/lib/workspace'
+import { VIEW_TYPES, viewTypesOf } from '@/lib/screen/viewTypes'
 
 /**
  * Every destination, declared once.

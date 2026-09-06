@@ -1,6 +1,6 @@
 /** Saved views: reading them, writing them, hiding them. */
 
-import { callMethod } from '../resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 export const layouts = {
   // Every named layout in a space, keyed by screen. The sidebar's question:

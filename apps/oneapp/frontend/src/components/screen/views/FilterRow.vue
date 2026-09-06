@@ -117,7 +117,7 @@ import {
   operatorLabel,
   operatorsFor,
   valueShape,
-} from '../../../lib/fields'
+} from '@/lib/screen/fields'
 import LinkPicker from '../fields/LinkPicker.vue'
 
 const props = defineProps({

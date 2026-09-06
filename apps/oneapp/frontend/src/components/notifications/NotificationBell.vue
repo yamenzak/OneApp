@@ -60,7 +60,7 @@ import { computed, ref, watch } from 'vue'
 import { Button, Popover } from '@/ui'
 
 import NotificationList from './NotificationList.vue'
-import { loadNotifications, notifications } from '../../lib/notifications'
+import { loadNotifications, notifications } from '@/lib/shell/notifications'
 
 const open = ref(false)
 

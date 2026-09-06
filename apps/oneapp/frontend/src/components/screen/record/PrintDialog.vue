@@ -77,8 +77,8 @@
 import { computed, ref, watch } from 'vue'
 import { Button, Dialog, ErrorMessage, LoadingText, Select } from '@/ui'
 import { workspace } from '../../../lib/workspace'
-import { errorText } from '../../../lib/errors'
-import { notifyError } from '../../../lib/notify'
+import { errorText } from '@/lib/runtime/errors'
+import { notifyError } from '@/lib/runtime/notify'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },

@@ -184,7 +184,7 @@ import {
 import RolePicker from './RolePicker.vue'
 import WorkspaceBar from './WorkspaceBar.vue'
 import { useWorkspace } from './workspace'
-import { useListColumns } from '../../lib/list'
+import { useListColumns } from '@/lib/screen/list'
 import { useMembers, inviteMember, removeMember, setMemberRoles } from './customer'
 
 const { columns: memberColumns } = useListColumns([

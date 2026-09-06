@@ -8,7 +8,7 @@
  * it twice would draw two rails a beat apart.
  */
 import { reactive } from 'vue'
-import { workspace } from './workspace'
+import { workspace } from '@/lib/workspace'
 
 export const mail = reactive({
   folders: [],

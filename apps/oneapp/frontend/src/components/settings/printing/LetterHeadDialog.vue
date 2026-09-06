@@ -90,7 +90,7 @@
 import { reactive, ref, watch } from 'vue'
 import { Button, Dialog, ErrorMessage, FormControl, Select, Switch } from '@/ui'
 import { workspace } from '../../../lib/workspace'
-import { errorText } from '../../../lib/errors'
+import { errorText } from '@/lib/runtime/errors'
 
 const ALIGNMENTS = ['Left', 'Center', 'Right'].map((one) => ({ label: one, value: one }))
 

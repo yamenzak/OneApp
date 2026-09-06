@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { session, sessionReady } from './lib/session'
+import { session, sessionReady } from '@/lib/shell/session'
 
 const routes = [
   { path: '/', name: 'Launcher', component: () => import('./pages/Launcher.vue') },

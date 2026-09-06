@@ -68,7 +68,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { Button, LoadingText, Popover, Select } from '@/ui'
-import { useIsMobile } from '@/lib/screen'
+import { useIsMobile } from '@/lib/shell/breakpoint'
 import { workspace } from '../../../lib/workspace'
 
 const props = defineProps({

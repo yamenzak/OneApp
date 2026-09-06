@@ -10,7 +10,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Progress, Tooltip } from '@/ui'
-import { session } from '../lib/session'
+import { session } from '@/lib/shell/session'
 
 // The server sends labels alongside the numbers so byte formatting is done in
 // one place rather than reimplemented per component.

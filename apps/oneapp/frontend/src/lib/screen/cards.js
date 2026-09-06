@@ -1,4 +1,4 @@
-import { plainText } from './format'
+import { plainText } from '@/lib/screen/format'
 
 /**
  * A record, drawn as a card.

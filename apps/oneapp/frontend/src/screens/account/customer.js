@@ -13,7 +13,7 @@
 
 import { computed, reactive } from 'vue'
 
-import { callMethod, useResource } from '../../lib/resource'
+import { callMethod, useResource } from '@/lib/runtime/resource'
 
 const method = (name) => `oneapp_control.api.customer.${name}`
 

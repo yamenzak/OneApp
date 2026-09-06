@@ -158,7 +158,7 @@ import { computed, ref, watch } from 'vue'
 import { Alert, Badge, Button, Dialog, FormLabel, Select } from '@/ui'
 
 import { workspace } from '../../lib/workspace'
-import { errorText } from '../../lib/errors'
+import { errorText } from '@/lib/runtime/errors'
 
 const props = defineProps({
   doctype: { type: String, required: true },

@@ -73,7 +73,7 @@
 import { computed, ref, watch } from 'vue'
 import { Tabs, TabList, TabTrigger, TabPanel } from '@/ui'
 import FormSections from './FormSections.vue'
-import { tabIcon } from '../../../lib/fields'
+import { tabIcon } from '@/lib/screen/fields'
 
 const props = defineProps({
   /** The screen spec: `form` for the layout, `all_columns` for the fields. */

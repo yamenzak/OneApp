@@ -33,7 +33,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { Calendar } from '@/ui'
-import { occurrencesOf } from '../../../lib/recurrence'
+import { occurrencesOf } from '@/lib/screen/recurrence'
 import EmptyState from '../../EmptyState.vue'
 
 const props = defineProps({

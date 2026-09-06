@@ -15,7 +15,7 @@
  * page being closed and `useCall` cannot do `keepalive`.
  */
 
-import { callMethod } from '../resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 export const sheets = {
   sheetMake: (params) =>

@@ -130,7 +130,7 @@ import {
 } from '@/ui'
 import RecipientField from './RecipientField.vue'
 import { withSignature } from './signature'
-import { mail } from '../../lib/mail'
+import { mail } from '@/lib/shell/mail'
 import FilePicker from '../drive/FilePicker.vue'
 import { workspace } from '../../lib/workspace'
 

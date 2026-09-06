@@ -1,6 +1,6 @@
 /** Addresses, the mailboxes behind them, and everything the Mail screen does. */
 
-import { callMethod } from '../resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 export const mail = {
   // --- mail ---------------------------------------------------------------

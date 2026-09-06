@@ -27,8 +27,8 @@
 <script setup>
 import { computed } from 'vue'
 import { Avatar, Button, Dropdown } from '@/ui'
-import { useAppearance } from '@/lib/appearance'
-import { signOut } from '@/lib/user'
+import { useAppearance } from '@/lib/shell/appearance'
+import { signOut } from '@/lib/shell/user'
 
 const props = defineProps({
   name: { type: String, default: '' },

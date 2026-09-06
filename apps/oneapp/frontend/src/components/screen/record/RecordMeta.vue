@@ -212,7 +212,7 @@ import AssignControl from '../fields/AssignControl.vue'
 import ShareControl from '../fields/ShareControl.vue'
 import TagControl from '../fields/TagControl.vue'
 import { workspace } from '../../../lib/workspace'
-import { errorText } from '../../../lib/errors'
+import { errorText } from '@/lib/runtime/errors'
 
 const props = defineProps({
   record: { type: Object, required: true },

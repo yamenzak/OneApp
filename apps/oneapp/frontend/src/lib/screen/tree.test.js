@@ -5,7 +5,7 @@
 // page, and two records that name each other.
 import { describe, expect, it } from 'vitest'
 
-import { forestOf } from './tree'
+import { forestOf } from '@/lib/screen/tree'
 
 const SPEC = { title_field: 'title' }
 

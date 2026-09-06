@@ -24,7 +24,7 @@ from pathlib import Path
 import pytest
 
 from doctype_paths import slug as doctype_slug
-import components
+import where
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTROL = ROOT / "apps/oneapp_control/oneapp_control"
@@ -157,7 +157,7 @@ def test_a_declared_state_is_a_real_option_in_a_real_colour(name):
 
 def test_the_ui_maps_every_colour_frappe_offers():
 	"""A colour the doctype may hold and the SPA cannot read renders gray."""
-	fields = (ROOT / "apps/oneapp/frontend/src/lib/fields.js").read_text()
+	fields = (ROOT / "apps/oneapp/frontend/src/lib/screen/fields.js").read_text()
 	block = fields[fields.index("export const STATE_COLORS"):]
 	block = block[: block.index("}")]
 	for color in COLORS:
@@ -253,7 +253,7 @@ def test_the_glyphs_reach_the_spa_as_literals():
 	"""The closed-set argument, again. Tailwind emits CSS only for class names
 	it finds written out in the source, so a glyph that exists only in Python
 	draws nothing."""
-	fields = (ROOT / "apps/oneapp/frontend/src/lib/fields.js").read_text()
+	fields = (ROOT / "apps/oneapp/frontend/src/lib/screen/fields.js").read_text()
 	block = fields[fields.index("export const STATE_ICONS"):]
 	block = block[: block.index("]")]
 	for icon in _state_icons():
@@ -276,8 +276,8 @@ def test_a_badge_and_its_select_draw_the_same_glyph():
 	"""One function, two callers. A value that looks one way being chosen and
 	another way once chosen is the kind of thing nobody reports and everybody
 	notices."""
-	badge = components.source("StateBadge.vue")
-	control = components.source("FieldControl.vue")
+	badge = where.source("StateBadge.vue")
+	control = where.source("FieldControl.vue")
 	assert "valueIcon(props.label, props.states)" in badge
 	assert "valueIcon(value, props.states)" in control
 
@@ -288,7 +288,7 @@ def test_every_state_badge_is_the_same_badge():
 	for name in BADGES:
 		if name == "StateBadge.vue":
 			continue
-		assert "StateBadge" in components.source(name), f"{name} draws its own"
+		assert "StateBadge" in where.source(name), f"{name} draws its own"
 
 	# Where the badges are *drawn* is the first path in each pair and where they
 	# are *computed* is the second, because on a screen those are two files: the
@@ -296,9 +296,9 @@ def test_every_state_badge_is_the_same_badge():
 	# only read one of them would stop checking half of the pair the next time
 	# either moves.
 	for path, computes in (
-		(components.path("ScreenHeader.vue"),
+		(where.path("ScreenHeader.vue"),
 		 ROOT / "apps/oneapp/frontend/src/composables/useCrumbs.js"),
-		(components.path("RecordView.vue"), components.path("RecordView.vue")),
+		(where.path("RecordView.vue"), where.path("RecordView.vue")),
 	):
 		body = path.read_text()
 		# Both badges beside a record's name: the doctype's own status field,
@@ -389,7 +389,7 @@ def test_the_tab_glyphs_reach_the_spa_as_literals():
 	"""The closed-set argument, again. Tailwind emits CSS only for class names
 	it finds written out in the source."""
 	_, icons, _, _ = _tab_icons()
-	fields = (ROOT / "apps/oneapp/frontend/src/lib/fields.js").read_text()
+	fields = (ROOT / "apps/oneapp/frontend/src/lib/screen/fields.js").read_text()
 	block = fields[fields.index("export const TAB_ICONS"):]
 	block = block[: block.index("]")]
 	for icon in icons:
@@ -453,7 +453,7 @@ def test_every_kind_of_activity_the_spa_renders_has_a_glyph():
 	"""
 	icons, default = _activity_icons()
 	source = (
-		components.path("RecordActivity.vue")
+		where.path("RecordActivity.vue")
 	).read_text()
 	kinds = set(re.findall(r"kind: '([\w-]+)'", source))
 	assert len(kinds) >= 3, f"only found {sorted(kinds)} — the timeline has moved"
@@ -468,7 +468,7 @@ def test_every_kind_of_activity_the_spa_renders_has_a_glyph():
 def test_the_activity_glyphs_reach_the_spa_as_literals():
 	"""Tailwind emits CSS only for class names it finds written out."""
 	icons, default = _activity_icons()
-	fields = (ROOT / "apps/oneapp/frontend/src/lib/fields.js").read_text()
+	fields = (ROOT / "apps/oneapp/frontend/src/lib/screen/fields.js").read_text()
 	block = fields[fields.index("export const ACTIVITY_ICONS"):]
 	block = block[: block.index("}")]
 	for icon in icons.values():

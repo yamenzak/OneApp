@@ -2,8 +2,8 @@
 
 import { computed } from 'vue'
 
-import { sessionUser } from './boot'
-import { useResource } from './resource'
+import { sessionUser } from '@/lib/runtime/boot'
+import { useResource } from '@/lib/runtime/resource'
 
 /**
  * The signed-in user.

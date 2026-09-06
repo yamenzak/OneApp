@@ -88,7 +88,7 @@
 </template>
 
 <script setup>
-import { TENANT_APP } from './lib/brand'
+import { TENANT_APP } from '@/lib/runtime/brand'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { FrappeUIProvider, Button, Dialog, LoadingIndicator, usePageMeta } from '@/ui'
@@ -102,12 +102,12 @@ import NotificationBell from './components/notifications/NotificationBell.vue'
 import RailSurface from './components/RailSurface.vue'
 import NotificationList from './components/notifications/NotificationList.vue'
 import SettingsShell from './components/settings/SettingsShell.vue'
-import { useNav } from './lib/nav'
-import { followNotifications, notifications } from './lib/notifications'
-import { openSettings } from './lib/settings'
-import { session, sessionResource } from './lib/session'
-import { fullName, email, userImage } from './lib/user'
-import { followMail } from './lib/mail'
+import { useNav } from '@/lib/shell/nav'
+import { followNotifications, notifications } from '@/lib/shell/notifications'
+import { openSettings } from '@/lib/shell/settings'
+import { session, sessionResource } from '@/lib/shell/session'
+import { fullName, email, userImage } from '@/lib/shell/user'
+import { followMail } from '@/lib/shell/mail'
 
 const route = useRoute()
 

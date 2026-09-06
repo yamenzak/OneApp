@@ -227,8 +227,8 @@ import {
   List, ListRows, ListRow, ListCell, dayjsLocal,
 } from '@/ui'
 import EmptyState from '../../components/EmptyState.vue'
-import { useListColumns } from '../../lib/list'
-import { useDocList } from '../../lib/resource'
+import { useListColumns } from '@/lib/screen/list'
+import { useDocList } from '@/lib/runtime/resource'
 import { admin } from './admin'
 
 const props = defineProps({ tenant: { type: String, required: true } })

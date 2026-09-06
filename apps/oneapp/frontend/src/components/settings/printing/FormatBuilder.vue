@@ -185,7 +185,7 @@ import {
   stripped,
 } from './layout'
 import { workspace } from '../../../lib/workspace'
-import { errorText } from '../../../lib/errors'
+import { errorText } from '@/lib/runtime/errors'
 
 const props = defineProps({
   doctype: { type: String, required: true },

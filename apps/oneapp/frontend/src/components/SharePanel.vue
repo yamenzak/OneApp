@@ -120,7 +120,7 @@ import {
   Switch,
 } from '@/ui'
 import EmptyState from './EmptyState.vue'
-import { errorText } from '../lib/errors'
+import { errorText } from '@/lib/runtime/errors'
 
 // In the order they give things away, which is the order to read them in.
 const LEVELS = [

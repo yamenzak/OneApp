@@ -68,7 +68,7 @@
 import { computed, ref } from 'vue'
 import { Badge, Button, Icon, MultiSelect } from '@/ui'
 import { workspace } from '../../../lib/workspace'
-import { notifyError } from '../../../lib/notify'
+import { notifyError } from '@/lib/runtime/notify'
 
 // How many fit beside a label before the rest become a count. The row is one
 // line high and the label owns the left of it.

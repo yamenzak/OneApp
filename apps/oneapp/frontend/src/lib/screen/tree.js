@@ -1,4 +1,4 @@
-import { cardIdentity } from './cards'
+import { cardIdentity } from '@/lib/screen/cards'
 
 /**
  * A flat page of records, as the forest a tree draws.

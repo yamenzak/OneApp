@@ -383,7 +383,7 @@ import ImportSheet from '../components/sheets/ImportSheet.vue'
 import { useDrive } from '../composables/useDrive'
 import { useUploads } from '../composables/useUploads'
 import { workspace } from '../lib/workspace'
-import { useIsMobile } from '@/lib/screen'
+import { useIsMobile } from '@/lib/shell/breakpoint'
 import { PLACES, labelOf } from '../components/drive/places'
 
 const GRID_KEY = 'onespace:drive:grid'

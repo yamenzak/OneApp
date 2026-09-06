@@ -144,7 +144,7 @@ import {
 import EmptyState from '../../EmptyState.vue'
 import MailComposer from '../../mail/MailComposer.vue'
 import { workspace } from '../../../lib/workspace'
-import { plainText } from '../../../lib/format'
+import { plainText } from '@/lib/screen/format'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },

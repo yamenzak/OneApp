@@ -153,7 +153,7 @@ import FormatBuilder from './printing/FormatBuilder.vue'
 import LetterHeadDialog from './printing/LetterHeadDialog.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
-import { errorText } from '../../lib/errors'
+import { errorText } from '@/lib/runtime/errors'
 
 const doctypes = ref([])
 const doctype = ref('')

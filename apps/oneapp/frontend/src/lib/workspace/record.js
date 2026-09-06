@@ -1,6 +1,6 @@
 /** What surrounds a record — its timeline, people, files, tags and state. */
 
-import { callMethod } from '../resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 export const record = {
   // Comments and the change log. Frappe keeps both on every doctype, so no app

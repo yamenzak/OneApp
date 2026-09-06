@@ -118,8 +118,8 @@ import { Badge, Icon, Avatar, Rating, Tooltip } from '@/ui'
 import StateBadge from '../fields/StateBadge.vue'
 import RecordChip from '../record/RecordChip.vue'
 import RecordPreview from './RecordPreview.vue'
-import { cellText, tagList } from '../../../lib/cells'
-import { session } from '../../../lib/session'
+import { cellText, tagList } from '@/lib/screen/cells'
+import { session } from '@/lib/shell/session'
 
 const props = defineProps({
   column: { type: Object, required: true },

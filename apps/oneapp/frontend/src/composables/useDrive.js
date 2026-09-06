@@ -14,7 +14,7 @@
 import { computed, ref } from 'vue'
 
 import { workspace } from '../lib/workspace'
-import { errorText } from '../lib/errors'
+import { errorText } from '@/lib/runtime/errors'
 
 export const PAGE = 50
 

@@ -131,9 +131,9 @@ import EditableCell from './EditableCell.vue'
 import FieldCell from './FieldCell.vue'
 import TitleCell from './TitleCell.vue'
 import RowMeta from './RowMeta.vue'
-import { formatNumber } from '../../../lib/format'
-import { isNumericCell } from '../../../lib/fields'
-import { session } from '../../../lib/session'
+import { formatNumber } from '@/lib/screen/format'
+import { isNumericCell } from '@/lib/screen/fields'
+import { session } from '@/lib/shell/session'
 
 const props = defineProps({
   /** The resolved screen: columns, title field, states, permissions. */

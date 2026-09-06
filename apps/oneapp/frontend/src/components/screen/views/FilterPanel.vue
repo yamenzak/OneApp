@@ -62,10 +62,10 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useIsMobile } from '@/lib/screen'
+import { useIsMobile } from '@/lib/shell/breakpoint'
 import { Badge, Button, Popover } from '@/ui'
 import FilterRow from './FilterRow.vue'
-import { defaultOperator, operatorsFor, valueShape } from '../../../lib/fields'
+import { defaultOperator, operatorsFor, valueShape } from '@/lib/screen/fields'
 
 const props = defineProps({
   // Applied filters, as the screen resolved them.

@@ -11,7 +11,7 @@
 
 <script setup>
 import { FrappeUIProvider, usePageMeta } from '@/ui'
-import { TENANT_APP } from './lib/brand'
+import { TENANT_APP } from '@/lib/runtime/brand'
 
 // The product's name, not the app's. Somebody signing up has never heard of
 // either repository and is about to get a OneSpace workspace.

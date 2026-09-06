@@ -166,7 +166,7 @@ import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from 
 import { useRoute, useRouter } from 'vue-router'
 import { Combobox, Avatar, Icon, Dialog, Button, ErrorMessage } from '@/ui'
 import { workspace } from '../../../lib/workspace'
-import { screenFor } from '../../../lib/nav'
+import { screenFor } from '@/lib/shell/nav'
 
 // The quick-create form renders whatever the target doctype asks for, and one
 // of those fields can itself be a Link — so this component and FieldControl

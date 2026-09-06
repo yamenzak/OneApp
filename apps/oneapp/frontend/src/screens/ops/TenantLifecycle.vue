@@ -118,7 +118,7 @@ import {
   List, ListHeader, ListHeaderCell, ListRows, ListRow, ListCell, dayjsLocal,
 } from '@/ui'
 import EmptyState from '../../components/EmptyState.vue'
-import { useListColumns } from '../../lib/list'
+import { useListColumns } from '@/lib/screen/list'
 import { admin } from './admin'
 
 const props = defineProps({

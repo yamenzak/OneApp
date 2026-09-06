@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { MOST, occurrencesOf } from './recurrence'
+import { MOST, occurrencesOf } from '@/lib/screen/recurrence'
 
 const WINDOW = { since: '2026-03-01', until: '2026-03-31' }
 

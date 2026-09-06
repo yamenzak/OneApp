@@ -25,7 +25,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Badge, Icon } from '@/ui'
-import { valueIcon, valueTheme } from '../../../lib/fields'
+import { valueIcon, valueTheme } from '@/lib/screen/fields'
 
 const props = defineProps({
   /** The words on the badge. Also what the glyph and the colour are read from. */

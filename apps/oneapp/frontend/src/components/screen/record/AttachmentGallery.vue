@@ -136,7 +136,7 @@ import { computed, ref, watch } from 'vue'
 import { Button, FormLabel, Icon, LoadingText } from '@/ui'
 import FilePicker from '../../drive/FilePicker.vue'
 import { workspace } from '../../../lib/workspace'
-import { humanSize, iconFor, isImage } from '../../../lib/files'
+import { humanSize, iconFor, isImage } from '@/lib/files/files'
 
 const props = defineProps({
   /** The docfield. Read for its label, its name and its description. */

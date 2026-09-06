@@ -14,7 +14,7 @@
  */
 import { upload } from '@/ui'
 
-import { directUpload } from './directUpload'
+import { directUpload } from '@/lib/files/directUpload'
 
 /**
  * One file in, one `File` row out.

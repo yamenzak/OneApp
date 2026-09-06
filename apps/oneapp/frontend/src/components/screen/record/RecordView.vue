@@ -389,12 +389,12 @@ import PrintDialog from './PrintDialog.vue'
 import CreateDialog from './CreateDialog.vue'
 import RecordMeta from './RecordMeta.vue'
 import { workspace } from '../../../lib/workspace'
-import { notifyError, notifySuccess } from '../../../lib/notify'
-import { DRAWER, MERGE_TARGET, PAGE, PANE } from '../../../lib/surfaces'
-import { docBadge } from '../../../lib/docstate'
-import { tabIcon } from '../../../lib/fields'
-import { onDocChange, onDocViewers } from '../../../lib/socket'
-import { session } from '../../../lib/session'
+import { notifyError, notifySuccess } from '@/lib/runtime/notify'
+import { DRAWER, MERGE_TARGET, PAGE, PANE } from '@/lib/screen/surfaces'
+import { docBadge } from '@/lib/screen/docstate'
+import { tabIcon } from '@/lib/screen/fields'
+import { onDocChange, onDocViewers } from '@/lib/runtime/socket'
+import { session } from '@/lib/shell/session'
 
 const props = defineProps({
   record: { type: Object, required: true },

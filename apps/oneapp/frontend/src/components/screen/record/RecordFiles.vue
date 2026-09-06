@@ -73,7 +73,7 @@ import FileRow from '../../drive/FileRow.vue'
 import FileShare from '../../drive/FileShare.vue'
 import EmptyState from '../../EmptyState.vue'
 import { workspace } from '../../../lib/workspace'
-import { errorText } from '../../../lib/errors'
+import { errorText } from '@/lib/runtime/errors'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },

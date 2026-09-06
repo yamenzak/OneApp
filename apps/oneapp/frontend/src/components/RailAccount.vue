@@ -32,14 +32,14 @@
 </template>
 
 <script setup>
-import { signOut } from '../lib/user'
+import { signOut } from '@/lib/shell/user'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Avatar, Dropdown } from '@/ui'
-import { useAppearance } from '../lib/appearance'
-import { openSettings } from '../lib/settings'
-import { session } from '../lib/session'
-import { fullName, userImage } from '../lib/user'
+import { useAppearance } from '@/lib/shell/appearance'
+import { openSettings } from '@/lib/shell/settings'
+import { session } from '@/lib/shell/session'
+import { fullName, userImage } from '@/lib/shell/user'
 
 // The rail's foot, matching where every frappe-ui shell puts the account. The
 // trigger is an Avatar rather than a Button so it reads as a person, not an

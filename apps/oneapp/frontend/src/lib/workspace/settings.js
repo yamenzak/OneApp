@@ -1,6 +1,6 @@
 /** The parts of Frappe a workspace owns: its own settings, its books, its naming. */
 
-import { callMethod } from '../resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 export const settings = {
   settings: () =>

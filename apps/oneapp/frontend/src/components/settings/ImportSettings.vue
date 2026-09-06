@@ -313,7 +313,7 @@ import EmptyState from '../EmptyState.vue'
 import StateBadge from '../screen/fields/StateBadge.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
-import { errorText } from '../../lib/errors'
+import { errorText } from '@/lib/runtime/errors'
 
 const loading = ref(true)
 const sources = ref([])

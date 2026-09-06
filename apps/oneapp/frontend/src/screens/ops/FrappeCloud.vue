@@ -82,7 +82,7 @@
 import { onMounted, ref } from 'vue'
 import { Alert, Button, List, ListRows, ListRow, ListCell, LoadingIndicator } from '@/ui'
 import EmptyState from '../../components/EmptyState.vue'
-import { callMethod } from '../../lib/resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 defineProps({
   spaceCode: { type: String, default: '' },

@@ -301,8 +301,8 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import { Button, Icon } from '@/ui'
 import StateBadge from '../fields/StateBadge.vue'
-import { cellText } from '../../../lib/cells'
-import { session } from '../../../lib/session'
+import { cellText } from '@/lib/screen/cells'
+import { session } from '@/lib/shell/session'
 import { workspace } from '../../../lib/workspace'
 
 const props = defineProps({

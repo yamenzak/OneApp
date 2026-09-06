@@ -77,7 +77,7 @@ import {
   Textarea,
 } from '@/ui'
 import { workspace } from '../../lib/workspace'
-import { errorText } from '../../lib/errors'
+import { errorText } from '@/lib/runtime/errors'
 
 const props = defineProps({
   /** The event being edited, or a date to start a new one on. */

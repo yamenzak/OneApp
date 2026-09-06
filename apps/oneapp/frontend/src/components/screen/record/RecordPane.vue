@@ -77,7 +77,7 @@
 <script setup>
 import { ref } from 'vue'
 import Resizer from '../../Resizer.vue'
-import { useIsMobile } from '@/lib/screen'
+import { useIsMobile } from '@/lib/shell/breakpoint'
 
 defineProps({
   /** How wide the pane may get, as a share of the window. */

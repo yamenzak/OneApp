@@ -64,7 +64,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import { Button, ErrorMessage } from '@/ui'
 import FormDialog from './FormDialog.vue'
 import RecordForm from './RecordForm.vue'
-import { notifySuccess } from '../../../lib/notify'
+import { notifySuccess } from '@/lib/runtime/notify'
 import { workspace } from '../../../lib/workspace'
 
 const props = defineProps({

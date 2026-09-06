@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 
-import { docBadge } from '../lib/docstate'
-import { VIEW_TYPES } from '../lib/viewTypes'
+import { docBadge } from '@/lib/screen/docstate'
+import { VIEW_TYPES } from '@/lib/screen/viewTypes'
 
 /**
  * Where the reader is, as the header draws it.

@@ -406,7 +406,7 @@ import FilePicker from '../../drive/FilePicker.vue'
 import LinkPicker from './LinkPicker.vue'
 import AttachmentGallery from '../record/AttachmentGallery.vue'
 import ChildTable from '../record/ChildTable.vue'
-import { controlComponent, editorFormat, formControlType, valueIcon } from '../../../lib/fields'
+import { controlComponent, editorFormat, formControlType, valueIcon } from '@/lib/screen/fields'
 
 // Built once for the module rather than per field: the kit is a static
 // extension list, and a form with six rich-text fields should not assemble six

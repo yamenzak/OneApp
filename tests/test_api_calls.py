@@ -152,7 +152,7 @@ CLIENT_METHODS = re.compile(r"frappe\.client\.(get_list|get|set_value|insert|del
 
 # Where the wrappers themselves live. They are the one place allowed to know
 # about the transport.
-DATA_LAYER = ("lib/resource.js", "lib/api.js")
+DATA_LAYER = ("lib/runtime/resource.js", "lib/api.js")
 
 
 @pytest.mark.parametrize("app", APPS)
@@ -175,7 +175,7 @@ def test_documents_go_through_the_document_layer(app):
         if path.suffix not in (".vue", ".js"):
             continue
         rel = path.relative_to(root).as_posix()
-        if rel in DATA_LAYER or rel == "lib/user.js":
+        if rel in DATA_LAYER or rel == "lib/shell/user.js":
             continue
         for method in set(CLIENT_METHODS.findall(path.read_text())):
             problems.append(
@@ -187,7 +187,7 @@ def test_documents_go_through_the_document_layer(app):
 
 def test_the_document_layer_wraps_the_recommended_composables():
     """And is the only place that imports them."""
-    resource = (ROOT / "apps/oneapp/frontend/src/lib/resource.js").read_text()
+    resource = (ROOT / "apps/oneapp/frontend/src/lib/runtime/resource.js").read_text()
     for composable in ("useList", "useDoc", "useDoctype"):
         assert f"  {composable},\n" in resource, f"{composable} is not wrapped"
     for wrapper in ("useDocList", "useDocument", "useDocWrites"):

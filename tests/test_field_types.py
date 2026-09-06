@@ -12,7 +12,7 @@ import re
 from pathlib import Path
 
 import pytest
-import components
+import where
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -183,7 +183,7 @@ def test_a_named_control_is_in_the_barrel(spec):
     # name has to resolve to something that actually renders.
     ours = {
         path.stem
-        for path in components.screen()
+        for path in where.screen()
     }
 
     missing = [
@@ -275,7 +275,7 @@ needs_node = pytest.mark.skipif(NODE is None, reason="no node to run the generat
 
 def run_fields_js(body: str):
     """Evaluate an expression against the generated fields.js and read it back."""
-    module = ROOT / "apps/oneapp/frontend/src/lib/fields.js"
+    module = ROOT / "apps/oneapp/frontend/src/lib/screen/fields.js"
     script = (
         f"import * as fields from {json.dumps(str(module))}\n"
         f"console.log(JSON.stringify({body}))\n"
@@ -327,7 +327,7 @@ def test_the_generated_helpers_return_real_control_types(spec):
             assert editor_format is None
             ours = {
                 path.stem
-                for path in components.screen()
+                for path in where.screen()
             }
             assert component in exported | ours, f"{fieldtype} resolves to {component!r}"
 

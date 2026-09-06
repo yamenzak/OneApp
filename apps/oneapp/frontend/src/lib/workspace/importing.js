@@ -1,6 +1,6 @@
 /** Bringing another Frappe site's records across. */
 
-import { callMethod } from '../resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 export const importing = {
   // --- bringing their data with them ------------------------------------

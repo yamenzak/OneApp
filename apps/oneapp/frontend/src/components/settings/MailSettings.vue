@@ -357,7 +357,7 @@ import {
 import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
-import { session } from '../../lib/session'
+import { session } from '@/lib/shell/session'
 
 const loading = ref(true)
 const saving = ref(false)

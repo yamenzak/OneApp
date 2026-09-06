@@ -5,7 +5,7 @@
 // colour a source takes once there are more sources than colours.
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { COLOURS, colourFor, diary, diaryEvents, isOn, keyOf, showing, split, toggle } from './diary'
+import { COLOURS, colourFor, diary, diaryEvents, isOn, keyOf, showing, split, toggle } from '@/lib/screen/diary'
 
 const SOURCES = [
   { key: 'event', label: 'Your diary' },

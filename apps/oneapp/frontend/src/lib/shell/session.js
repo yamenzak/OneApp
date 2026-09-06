@@ -1,6 +1,6 @@
 import { watch } from 'vue'
 
-import { useResource } from './resource'
+import { useResource } from '@/lib/runtime/resource'
 
 /**
  * One round trip on boot gives the shell everything it needs: who the user is,

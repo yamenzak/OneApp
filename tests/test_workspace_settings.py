@@ -344,7 +344,7 @@ def test_the_admin_flag_is_not_system_manager():
 	assert "is_workspace_admin" in api
 	assert '"is_admin": "System Manager" in' not in api
 
-	session = (SPA / "lib/session.js").read_text()
+	session = (SPA / "lib/shell/session.js").read_text()
 	assert "is_workspace_admin" in session
 
 

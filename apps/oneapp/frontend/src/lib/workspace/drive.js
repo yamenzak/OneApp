@@ -6,7 +6,7 @@
  * rather than two stores. See `oneapp_core/drive`.
  */
 
-import { callMethod } from '../resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 export const drive = {
   // A place is a filter: home, recents, favourites, shared, trash.

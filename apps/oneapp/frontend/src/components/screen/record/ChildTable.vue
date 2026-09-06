@@ -247,8 +247,8 @@ import RecordForm from './RecordForm.vue'
 import FillFromSheet from '../../sheets/FillFromSheet.vue'
 import FeedNote from '../../sheets/FeedNote.vue'
 import { workspace } from '../../../lib/workspace'
-import { isNumericCell } from '../../../lib/fields'
-import { remember, remembered } from '../../../lib/childColumns'
+import { isNumericCell } from '@/lib/screen/fields'
+import { remember, remembered } from '@/lib/screen/childColumns'
 
 const props = defineProps({
   /** The parent's docfield, whose `child` carries the child doctype's shape. */

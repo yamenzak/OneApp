@@ -115,8 +115,8 @@ import { Avatar, Badge, Button, Icon, Skeleton, dayjsLocal } from '@/ui'
 
 import EmptyState from '../EmptyState.vue'
 
-import { notificationIcon } from '../../lib/fields'
-import { markRead, notifications } from '../../lib/notifications'
+import { notificationIcon } from '@/lib/screen/fields'
+import { markRead, notifications } from '@/lib/shell/notifications'
 
 const emit = defineEmits(['opened'])
 const router = useRouter()

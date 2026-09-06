@@ -1,6 +1,6 @@
 import { onBeforeUnmount } from 'vue'
 
-import { onDoctypeChange } from '../lib/socket'
+import { onDoctypeChange } from '@/lib/runtime/socket'
 
 // Long enough that a burst settles, short enough that a person reads it as
 // "it just updated".

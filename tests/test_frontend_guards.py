@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from gen_frontend import APPS, render  # noqa: E402
-import components
+import where
 from vendored import is_vendored
 
 
@@ -40,8 +40,9 @@ def test_generated_copies_are_on_disk_and_unmodified():
 
 @pytest.mark.parametrize(
 	"filename",
-	["frontend/src/ui.js", "frontend/src/lib/resource.js", "frontend/src/lib/notify.js",
-	 "frontend/src/lib/errors.js", "frontend/src/lib/socket.js", "frontend/src/lib/sound.js"],
+	["frontend/src/ui.js", "frontend/src/lib/runtime/resource.js",
+	 "frontend/src/lib/runtime/notify.js", "frontend/src/lib/runtime/errors.js",
+	 "frontend/src/lib/runtime/socket.js", "frontend/src/lib/runtime/sound.js"],
 )
 def test_shared_runtime_is_byte_identical(generated, filename):
 	"""Not merely present in both — the same file."""
@@ -543,7 +544,7 @@ def test_stored_datetimes_are_converted_from_the_site_timezone():
 	for app in APPS:
 		root = ROOT / f"apps/{app}/frontend/src"
 
-		boot = (root / "lib/boot.js").read_text()
+		boot = (root / "lib/runtime/boot.js").read_text()
 		assert "system_timezone" in boot, f"{app}: boot.js does not read the timezone"
 
 		main = (root / "main.js").read_text()
@@ -621,7 +622,7 @@ def test_we_are_on_the_v1_line():
 # dialog's.
 # --------------------------------------------------------------------------- #
 
-NAV_MODULE = "lib/nav.js"
+NAV_MODULE = "lib/shell/nav.js"
 def _declares_a_nav_item(source: str) -> bool:
 	"""Does this file contain an object literal with both an icon and a route?
 
@@ -752,7 +753,7 @@ def test_every_page_opens_with_the_same_header(app):
 # collapse toggle and the shared width does not. The Drive's rail was a plain
 # `<div>` for a while, which is how you get one surface with no header, no
 # collapse and no resize handle — a difference nobody chose and everybody sees.
-SIDEBAR_STATE = "lib/sidebar"
+SIDEBAR_STATE = "sidebar"
 
 
 @pytest.mark.parametrize("app", SHELL_APPS)
@@ -769,7 +770,9 @@ def test_every_sidebar_is_the_same_sidebar(app):
 		# And the state is the shared one, not a fourth copy of it. Two of the
 		# three had their own and disagreed about the minimum and the maximum,
 		# which a reader meets as the page jumping when they open mail.
-		assert SIDEBAR_STATE in source, f"{path.name} keeps its own width and collapse state"
+		assert where.imports(source, SIDEBAR_STATE), (
+			f"{path.name} keeps its own width and collapse state"
+		)
 		assert "useSidebar()" in source, f"{path.name} does not use the shared sidebar state"
 		assert "<Resizer" in source, f"{path.name} cannot be resized"
 
@@ -801,7 +804,7 @@ def test_appearance_is_reachable_without_opening_settings(app):
 	"""It is the preference people change most often; behind a dialog is the
 	slow path. Three options, not a toggle — see test_no_binary_theme_toggle."""
 	root = ROOT / f"apps/{app}/frontend/src"
-	assert (root / "lib/appearance.js").exists(), f"{app} has no appearance module"
+	assert (root / "lib/shell/appearance.js").exists(), f"{app} has no appearance module"
 
 	# The account menu, wherever this surface puts it, and the phone's sheet.
 	menus = [p for p in root.rglob("*.vue") if "Dropdown" in p.read_text() and "Avatar" in p.read_text()]
@@ -1103,9 +1106,9 @@ def test_something_waits_visibly_while_a_screen_loads(app):
 
 SCREEN_HOST = ROOT / "apps/oneapp/frontend/src/pages/ScreenHost.vue"
 # The shell renders a body per view type; the list is the one that draws a grid.
-LIST_BODY = components.path("ListBody.vue")
-RECORD_TABLE = components.path("RecordTable.vue")
-CHILD_TABLE = components.path("ChildTable.vue")
+LIST_BODY = where.path("ListBody.vue")
+RECORD_TABLE = where.path("RecordTable.vue")
+CHILD_TABLE = where.path("ChildTable.vue")
 
 
 def test_the_screen_host_shows_the_same_columns_on_every_screen():
@@ -1177,9 +1180,9 @@ def test_the_screen_host_is_a_pane_at_both_ends():
 	)
 
 
-BOARD_BODY = components.path("BoardBody.vue")
-CARDS_BODY = components.path("CardsBody.vue")
-CARDS_LIB = ROOT / "apps/oneapp/frontend/src/lib/cards.js"
+BOARD_BODY = where.path("BoardBody.vue")
+CARDS_BODY = where.path("CardsBody.vue")
+CARDS_LIB = where.module("cards.js")
 
 
 def test_a_card_is_mapped_in_one_place():
@@ -1198,7 +1201,7 @@ def test_a_card_is_mapped_in_one_place():
 	"""
 	for path in (BOARD_BODY, CARDS_BODY):
 		source = re.sub(r"<!--.*?-->", "", path.read_text(), flags=re.S)
-		assert "lib/cards" in source, (
+		assert where.imports(source, "cards"), (
 			f"{path.name} no longer draws its card with the shared mapping"
 		)
 		for own in ("cardIdentity", "cardShown", "cardValues"):

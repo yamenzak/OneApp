@@ -125,7 +125,7 @@
 
 <script setup>
 import { reactive, watch } from 'vue'
-import { TENANT_APP } from '../lib/brand'
+import { TENANT_APP } from '@/lib/runtime/brand'
 import {
   Button,
   ScrollArea,
@@ -137,9 +137,9 @@ import {
 } from '@/ui'
 import Resizer from './Resizer.vue'
 import QuotaMeter from './QuotaMeter.vue'
-import { useNav } from '../lib/nav'
-import { session } from '../lib/session'
-import { DEFAULT, MAX, MIN, useSidebar } from '../lib/sidebar'
+import { useNav } from '@/lib/shell/nav'
+import { session } from '@/lib/shell/session'
+import { DEFAULT, MAX, MIN, useSidebar } from '@/lib/shell/sidebar'
 
 // The destinations themselves live in lib/nav.js: the phone's bottom bar
 // renders the same list, and two declarations of it drift into two different

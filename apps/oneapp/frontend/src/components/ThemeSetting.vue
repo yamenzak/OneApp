@@ -17,7 +17,7 @@
 
 <script setup>
 import { Select, SettingsRow } from '@/ui'
-import { useAppearance } from '@/lib/appearance'
+import { useAppearance } from '@/lib/shell/appearance'
 
 // Three states, not a toggle. A binary switch cannot express 'follow the
 // system', so a user who wants that has to keep changing it by hand twice a day.

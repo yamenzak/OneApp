@@ -170,7 +170,7 @@ import ImportSettings from './ImportSettings.vue'
 import MailSettings from './MailSettings.vue'
 import ThemeSetting from '../ThemeSetting.vue'
 import { PANEL_BODY, PANEL_HEADER, TAB_GROUP, TAB_ITEM, TAB_STRIP, PANEL_CONTENT } from './geometry'
-import { settings } from '../../lib/settings'
+import { settings } from '@/lib/shell/settings'
 import { workspace } from '../../lib/workspace'
 
 const data = ref(null)

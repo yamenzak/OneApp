@@ -103,7 +103,7 @@
 import { computed, ref, watch } from 'vue'
 import { Button, FormControl, Icon, Popover } from '@/ui'
 import FadedScroll from '../../FadedScroll.vue'
-import { SPACE_ICONS, findSpaceIcons } from '../../../lib/icons'
+import { SPACE_ICONS, findSpaceIcons } from '@/lib/shell/icons'
 
 const chosen = defineModel({ type: String, default: '' })
 const open = ref(false)

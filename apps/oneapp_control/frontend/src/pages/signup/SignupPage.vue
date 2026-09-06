@@ -92,10 +92,10 @@
 </template>
 
 <script setup>
-import { TENANT_APP } from '../../lib/brand'
+import { TENANT_APP } from '@/lib/runtime/brand'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { Alert, Avatar, Button, ErrorMessage, FormControl, LoadingIndicator, debounce } from '@/ui'
-import { callMethod } from '../../lib/resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 const JURISDICTIONS = [
   { label: 'Global network', value: 'Global' },

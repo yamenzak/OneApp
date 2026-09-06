@@ -15,7 +15,7 @@
 import { io } from 'socket.io-client'
 import { onScopeDispose, getCurrentScope } from 'vue'
 
-import { siteName, socketioPort, devServer } from './boot'
+import { siteName, socketioPort, devServer } from '@/lib/runtime/boot'
 
 let socket = null
 const subscribers = new Map()

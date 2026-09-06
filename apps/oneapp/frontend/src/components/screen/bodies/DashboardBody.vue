@@ -54,7 +54,7 @@ import { ref, watch } from 'vue'
 import EmptyState from '../../EmptyState.vue'
 import DashboardWidget from './DashboardWidget.vue'
 import { workspace } from '../../../lib/workspace'
-import { notifyError } from '../../../lib/notify'
+import { notifyError } from '@/lib/runtime/notify'
 
 // Written out rather than built, because Tailwind only emits CSS for class
 // names it can see: `md:col-span-${n}` compiles to nothing at all, and the

@@ -33,7 +33,7 @@
 import { computed } from 'vue'
 import { Button } from '@/ui'
 
-import { humanSize, iconFor } from '../../lib/files'
+import { humanSize, iconFor } from '@/lib/files/files'
 
 const props = defineProps({
   /** A `File` row: `name`, `file_name`, `file_size`, `custom_kind`. */

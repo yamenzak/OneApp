@@ -13,8 +13,8 @@
 
 import { toast } from 'frappe-ui'
 
-import { normalizeError } from './errors'
-import { playSound } from './sound'
+import { normalizeError } from '@/lib/runtime/errors'
+import { playSound } from '@/lib/runtime/sound'
 
 export function notifySuccess(message, options = {}) {
   playSound('success')

@@ -1,5 +1,5 @@
 import { dayjsLocal } from '@/ui'
-import { formatNumber, plainText } from './format'
+import { formatNumber, plainText } from '@/lib/screen/format'
 
 /**
  * What one cell's value *says*, as text.

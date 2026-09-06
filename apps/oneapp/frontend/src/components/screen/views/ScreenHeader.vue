@@ -129,7 +129,7 @@ import { PageHeader, Breadcrumbs, Icon, Tooltip, Button } from '@/ui'
 import RecordChip from '../record/RecordChip.vue'
 import StateBadge from '../fields/StateBadge.vue'
 import ViewSwitcher from './ViewSwitcher.vue'
-import { MERGE_TARGET } from '../../../lib/surfaces'
+import { MERGE_TARGET } from '@/lib/screen/surfaces'
 
 defineProps({
   // The screen, for what the switcher offers and whether New is allowed.

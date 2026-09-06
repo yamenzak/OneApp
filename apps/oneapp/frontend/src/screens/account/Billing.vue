@@ -169,9 +169,9 @@ import { useWorkspace } from './workspace'
 import PackCard from './PackCard.vue'
 import AddonRow from './AddonRow.vue'
 import EmptyState from '../../components/EmptyState.vue'
-import { useListColumns } from '../../lib/list'
+import { useListColumns } from '@/lib/screen/list'
 import { customer, useOverview } from './customer'
-import { notifyInfo, notifySuccess } from '../../lib/notify'
+import { notifyInfo, notifySuccess } from '@/lib/runtime/notify'
 
 const { columns: invoiceColumns } = useListColumns([
   { key: 'date', header: 'Date', track: 'minmax(0,1fr)' },

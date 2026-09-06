@@ -58,8 +58,8 @@ import { Breadcrumbs, PageHeader, LoadingIndicator } from '@/ui'
 import UsageBar from '../components/UsageBar.vue'
 import ThemeSetting from '../components/ThemeSetting.vue'
 import NotificationSettings from '../components/notifications/NotificationSettings.vue'
-import { TENANT_APP } from '../lib/brand'
-import { session } from '../lib/session'
+import { TENANT_APP } from '@/lib/runtime/brand'
+import { session } from '@/lib/shell/session'
 
 const quota = computed(() => session.quota || {})
 

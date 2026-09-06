@@ -106,7 +106,10 @@ two disagree.
 
 | | |
 |---|---|
-| `lib/` | Generated: the runtime. `resource` (every call), `fields` (every fieldtype), `icons`, `socket`, `notify`, `theme`. |
+| `lib/runtime/` | The layer under everything, and the only part both SPAs share byte for byte: `resource` (every call), `errors`, `notify`, `socket`, `sound`, `boot`, `brand`. Generated. |
+| `lib/shell/` | What the chrome knows: `session` and `user`, `nav` and `sidebar`, `breakpoint`, `theme` and `appearance`, `icons`, `shortcuts`, `notifications`, `settings` (the dialog's open state) and `mail` (the rail's folders). |
+| `lib/screen/` | What a screen's rows and fields *mean*: `fields` (every fieldtype), `cells`, `cards`, `format`, `list`, `rules`, `docstate`, `viewTypes`, `surfaces`, `tree`, `recurrence`, `diary`, `childColumns`. |
+| `lib/files/` | One file into the workspace: `attach` (the one door), `directUpload` (the big ones, straight at R2), `files` (what a `File` row is) and `download`. |
 | `lib/workspace/` | Hand-written, and the one place a server call is named: `settings`, `screen`, `record`, `layouts`, `mail`, `drive`, `sheets`, `importing`, `printing`, assembled into one `workspace` object because every caller says `workspace.screenRows(...)`. |
 | `lib/sheets/` | The spreadsheet itself, and mostly **not ours**. `engine/`, `canvas/` and `utils/` are Frappe's, vendored whole from `frappe/sheets` and unmodified — the formula evaluator and its dependency graph, number formats, fill series, merges, spills, validation, conditional formats, pivots, charts, sort and filter, the clipboard, named ranges, the undo stack, and the canvas renderer that draws all of it. `VENDORED.md` is the licence position and the list of what we changed; `tests/vendored.py` is what the guards read. Ours in that tree: `store.js` (loading and saving, against `oneapp_core/sheets`, and the `values` slice their payload has no reason to carry), `headless.js` (a workbook built with no grid on screen, for the Drive's import), `xlsx-file.js` (ExcelJS behind their SheetJS-shaped mapper) and `services/` (the two features whose server halves are not ported, shaped so they can be). |
 | `pages/` | One per route. `ScreenHost` is the big one — it resolves a screen and hosts whichever body the view type asks for. |
@@ -159,6 +162,6 @@ Worth knowing before you fight one:
 * **Generated files are generated.** Edit the generator.
 * **A package's layers point one way.** `spaceview`, `mailbox`, `importer` and
   `admin` each fail the suite on an import from below.
-* **A guard finds a component by name, not by path.** `tests/components.py`
-  resolves `RecordView.vue` wherever it has been grouped — a guard that cannot
-  open its file stops checking rather than failing.
+* **A guard finds a file by name, not by path.** `tests/where.py` resolves
+  `RecordView.vue` or `lib/cards.js` wherever it has been grouped — a guard that
+  cannot open its file stops checking rather than failing.

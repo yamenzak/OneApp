@@ -80,8 +80,8 @@ import Resizer from '../Resizer.vue'
 import UsageBar from '../UsageBar.vue'
 import { PLACES } from './places'
 import { workspace } from '../../lib/workspace'
-import { session } from '../../lib/session'
-import { DEFAULT, MAX, MIN, useSidebar } from '../../lib/sidebar'
+import { session } from '@/lib/shell/session'
+import { DEFAULT, MAX, MIN, useSidebar } from '@/lib/shell/sidebar'
 
 defineProps({
   place: { type: String, default: 'home' },

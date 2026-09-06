@@ -52,7 +52,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, Dialog, Dropdown } from '@/ui'
-import { callMethod } from '../../../lib/resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 const props = defineProps({
   /** The screen's declared actions, as the resolver returned them. */

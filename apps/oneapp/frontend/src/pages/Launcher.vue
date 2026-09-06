@@ -50,7 +50,7 @@
 import { computed } from 'vue'
 import { Breadcrumbs, PageHeader, Avatar, LoadingIndicator } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
-import { session } from '../lib/session'
+import { session } from '@/lib/shell/session'
 
 const spaces = computed(() => session.spaces)
 </script>

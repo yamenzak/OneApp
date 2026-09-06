@@ -1,6 +1,6 @@
 /** One screen: its spec, its rows, one record, and the link fields on it. */
 
-import { callMethod } from '../resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 export const screen = {
   // One screen, resolved against this site's own metadata: what each field is

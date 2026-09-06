@@ -168,8 +168,8 @@ import EmptyState from '../EmptyState.vue'
 import UsageBar from '../UsageBar.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
-import { settings } from '../../lib/settings'
-import { errorText } from '../../lib/errors'
+import { settings } from '@/lib/shell/settings'
+import { errorText } from '@/lib/runtime/errors'
 
 // The same glyphs the Drive draws, because they are the same kinds.
 const ICONS = {

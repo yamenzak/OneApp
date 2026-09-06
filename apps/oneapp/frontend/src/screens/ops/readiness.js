@@ -12,8 +12,8 @@
 
 import { reactive } from 'vue'
 
-import { callMethod } from '../../lib/resource'
-import { notifyError } from '../../lib/notify'
+import { callMethod } from '@/lib/runtime/resource'
+import { notifyError } from '@/lib/runtime/notify'
 
 export const readiness = reactive({
   loading: true,

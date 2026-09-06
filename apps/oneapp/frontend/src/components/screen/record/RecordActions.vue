@@ -87,7 +87,7 @@
 import { computed, ref } from 'vue'
 import { Button, Dialog, Dropdown } from '@/ui'
 import { workspace } from '../../../lib/workspace'
-import { notifyError } from '../../../lib/notify'
+import { notifyError } from '@/lib/runtime/notify'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },

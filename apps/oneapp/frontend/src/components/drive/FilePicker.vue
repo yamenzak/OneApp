@@ -150,8 +150,8 @@ import {
 import CameraCapture from './CameraCapture.vue'
 import EmptyState from '../EmptyState.vue'
 import FileRow from './FileRow.vue'
-import { putFile } from '../../lib/attach'
-import { errorText } from '../../lib/errors'
+import { putFile } from '@/lib/files/attach'
+import { errorText } from '@/lib/runtime/errors'
 import { workspace } from '../../lib/workspace'
 
 // The library first, which is the whole argument for this dialog existing: the

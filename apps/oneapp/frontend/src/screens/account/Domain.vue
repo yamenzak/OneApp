@@ -97,7 +97,7 @@ import { Alert, Badge, Button, FormControl, LoadingIndicator } from '@/ui'
 import WorkspaceBar from './WorkspaceBar.vue'
 import { useWorkspace } from './workspace'
 import { customer } from './customer'
-import { notifySuccess } from '../../lib/notify'
+import { notifySuccess } from '@/lib/runtime/notify'
 
 defineProps({ spaceCode: { type: String, default: '' }, screen: { type: String, default: '' } })
 const workspace = useWorkspace()

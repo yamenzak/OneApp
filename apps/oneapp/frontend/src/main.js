@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { setConfig, frappeRequest } from '@/ui'
-import { systemTimezone } from './lib/boot'
+import { systemTimezone } from '@/lib/runtime/boot'
 
 import App from './App.vue'
 import router from './router'

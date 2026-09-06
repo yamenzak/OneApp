@@ -11,7 +11,7 @@
  * them.
  */
 
-import { callMethod } from '../../lib/resource'
+import { callMethod } from '@/lib/runtime/resource'
 
 const method = (name) => `oneapp_control.api.admin.${name}`
 

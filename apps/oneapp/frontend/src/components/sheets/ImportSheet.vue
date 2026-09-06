@@ -49,9 +49,9 @@ import { Alert, Dialog, LoadingIndicator } from '@/ui'
 import FilePicker from '../drive/FilePicker.vue'
 import { workbookFromFile } from '../../lib/sheets/headless'
 import { saveWorkbook } from '../../lib/sheets/store'
-import { fetchFile } from '../../lib/files'
+import { fetchFile } from '@/lib/files/files'
 import { workspace } from '../../lib/workspace'
-import { errorText } from '../../lib/errors'
+import { errorText } from '@/lib/runtime/errors'
 
 /** What `headless.js` can actually read, as the picker wants them. */
 const EXTENSIONS = ['xlsx', 'xlsm', 'csv']

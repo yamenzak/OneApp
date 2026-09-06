@@ -242,8 +242,8 @@ import { computed, reactive, ref } from 'vue'
 import { Badge, Button, Icon, Popover, TextInput } from '@/ui'
 import RecordCard from './RecordCard.vue'
 import RecordChip from '../record/RecordChip.vue'
-import { cardIdentity, cardShown, cardValues } from '../../../lib/cards'
-import { valueIcon, valueTheme } from '../../../lib/fields'
+import { cardIdentity, cardShown, cardValues } from '@/lib/screen/cards'
+import { valueIcon, valueTheme } from '@/lib/screen/fields'
 
 const props = defineProps({
   /** The resolved screen: columns, title field, states, permissions. */

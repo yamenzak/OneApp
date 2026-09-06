@@ -114,7 +114,7 @@ import {
 import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
-import { settings } from '../../lib/settings'
+import { settings } from '@/lib/shell/settings'
 
 const data = ref(null)
 const loading = ref(false)

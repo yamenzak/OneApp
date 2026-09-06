@@ -120,7 +120,7 @@
 import { computed, ref } from 'vue'
 import { Button, Icon, LoadingText, TabButtons, Textarea, dayjsLocal } from '@/ui'
 import EmptyState from '../../EmptyState.vue'
-import { activityIcon } from '../../../lib/fields'
+import { activityIcon } from '@/lib/screen/fields'
 import { workspace } from '../../../lib/workspace'
 
 const props = defineProps({

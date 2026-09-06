@@ -57,8 +57,8 @@ import { useRouter } from 'vue-router'
 import { Alert, Breadcrumbs, Button, Calendar, PageHeader } from '@/ui'
 import EventDialog from '../components/diary/EventDialog.vue'
 import { workspace } from '../lib/workspace'
-import { errorText } from '../lib/errors'
-import { diary, diaryEvents, showing } from '../lib/diary'
+import { errorText } from '@/lib/runtime/errors'
+import { diary, diaryEvents, showing } from '@/lib/screen/diary'
 
 /**
  * Read-only, and more firmly than the screen calendar is.
