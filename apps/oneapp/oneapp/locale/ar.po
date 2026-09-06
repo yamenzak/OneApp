@@ -10,3039 +10,3158 @@ msgstr ""
 "Language: ar\n"
 
 msgid "0 follows the screen."
-msgstr ""
+msgstr "0 يتبع الشاشة."
 
 msgid "1 thing"
-msgstr ""
+msgstr "عنصر واحد"
 
 msgid "1 thing chosen"
-msgstr ""
+msgstr "عنصر واحد محدد"
 
 msgid "1 thing, more below"
-msgstr ""
+msgstr "عنصر واحد، والمزيد أدناه"
 
 msgid ""
 "<p>The warning goes to whoever is <b>following</b> this document, once — "
 "not every morning until somebody acts, which is how people learn to "
 "ignore it.</p>"
 msgstr ""
+"<p>يصل التنبيه إلى كل من <b>يتابع</b> هذا المستند، مرة واحدة — لا كل "
+"صباح حتى يتحرك أحد، فهكذا يتعلم الناس تجاهله.</p>"
 
 msgid "A CSS length — 40mm, 120px, 50%. Empty fits the column."
-msgstr ""
+msgstr "طول CSS — 40mm، 120px، 50%. اتركه فارغًا ليلائم العمود."
 
 msgid "A Select becomes its own options; a Link becomes whoever is on the page."
-msgstr ""
+msgstr "حقل الاختيار يصبح خياراته، وحقل الربط يصبح من على الصفحة."
 
 msgid "A camera needs a secure connection. Use the phone’s camera instead."
-msgstr ""
+msgstr "الكاميرا تحتاج اتصالاً آمناً. استخدم كاميرا الهاتف بدلاً من ذلك."
 
 msgid "A colon after every label"
-msgstr ""
+msgstr "نقطتان بعد كل تسمية"
 
 msgid "A comment needs something in it."
-msgstr ""
+msgstr "التعليق يحتاج إلى محتوى."
 
 msgid "A counter cannot go below zero."
-msgstr ""
+msgstr "لا يمكن أن ينزل العداد تحت الصفر."
 
 msgid "A counter is a whole number."
-msgstr ""
+msgstr "العداد رقم صحيح."
 
 msgid "A disabled letter head cannot be the default one."
-msgstr ""
+msgstr "لا يمكن أن تكون ترويسة معطّلة هي الافتراضية."
 
 msgid "A document cannot renew itself."
-msgstr ""
+msgstr "لا يمكن للمستند أن يجدّد نفسه."
 
 msgid ""
 "A file path or URL. Referenced from the header above, or used on its "
 "own."
-msgstr ""
+msgstr "مسار ملف أو رابط. يُشار إليه من الرأس أعلاه، أو يُستخدم بمفرده."
 
 msgid "A filter on {0} may only narrow {0}."
-msgstr ""
+msgstr "المرشّح على {0} لا يمكنه إلا تضييق {0}."
 
 msgid "A folder cannot be attached to a record."
-msgstr ""
+msgstr "لا يمكن إرفاق مجلد بسجل."
 
 msgid "A folder cannot be moved inside itself."
-msgstr ""
+msgstr "لا يمكن نقل مجلد داخل نفسه."
 
 msgid ""
 "A folder cannot be shared as a link — it would include whatever is put "
 "in it later."
-msgstr ""
+msgstr "لا يمكن مشاركة مجلد كرابط — سيشمل كل ما يوضع فيه لاحقًا."
 
 msgid "A folder name cannot contain a slash."
-msgstr ""
+msgstr "لا يمكن أن يحتوي اسم المجلد على شرطة مائلة."
 
 msgid "A folder needs a name."
-msgstr ""
+msgstr "المجلد يحتاج إلى اسم."
 
 msgid "A format called {0} already exists."
-msgstr ""
+msgstr "يوجد بالفعل نموذج باسم {0}."
 
 msgid "A format is drawn over the records an app in this workspace shows."
-msgstr ""
+msgstr "يُرسم النموذج فوق السجلات التي يعرضها تطبيق في مساحة العمل هذه."
 
 msgid "A format needs a name."
-msgstr ""
+msgstr "النموذج يحتاج إلى اسم."
 
 msgid ""
 "A letter and a form are numbered in separate sequences, because that is "
 "what somebody quoting one on the phone expects."
 msgstr ""
+"الخطاب والنموذج يُرقَّمان في تسلسلين منفصلين، لأن هذا ما يتوقعه من يذكر "
+"رقم أحدهما على الهاتف."
 
 msgid "A letter head called {0} already exists."
-msgstr ""
+msgstr "توجد بالفعل ترويسة باسم {0}."
 
 msgid "A letter head needs a name."
-msgstr ""
+msgstr "الترويسة تحتاج إلى اسم."
 
 msgid ""
 "A letter kept to start others from. Templates are not numbered against "
 "the real sequence."
-msgstr ""
+msgstr "خطاب محفوظ لبدء خطابات أخرى منه. القوالب لا تُرقَّم ضمن التسلسل الحقيقي."
 
 msgid "A link can last between 1 and {0} days."
-msgstr ""
+msgstr "يمكن أن يدوم الرابط بين يوم واحد و{0} يومًا."
 
 msgid ""
 "A lucide name from the offered set, or an emoji. Anything else is "
 "dropped on the way in — a lucide name reaches the DOM as a class."
 msgstr ""
+"اسم lucide من المجموعة المعروضة، أو رمز تعبيري. أي شيء آخر يُسقَط عند "
+"الإدخال — اسم lucide يصل إلى DOM كفئة."
 
 msgid "A mailbox the team shares"
-msgstr ""
+msgstr "صندوق بريد يشترك فيه الفريق"
 
 msgid "A name cannot be empty."
-msgstr ""
+msgstr "لا يمكن أن يكون الاسم فارغًا."
 
 msgid ""
 "A named version is never thinned out. The automatic ones are, once they "
 "are old enough to be too many."
 msgstr ""
+"النسخة المسماة لا تُختصر أبداً. أما النسخ التلقائية فتُختصر متى قدُمت "
+"وزاد عددها."
 
 msgid "A new {0} file is not something this can make."
-msgstr ""
+msgstr "لا يمكن لهذا إنشاء ملف {0} جديد."
 
 msgid "A record can be shared with {0} people. Use a role beyond that."
-msgstr ""
+msgstr "يمكن مشاركة السجل مع {0} أشخاص. استخدم دورًا لما بعد ذلك."
 
 msgid "A record can carry {0} tags. Take one off first."
-msgstr ""
+msgstr "يمكن أن يحمل السجل {0} وسوم. أزل واحدًا أولًا."
 
 msgid "A record needs an id."
-msgstr ""
+msgstr "السجل يحتاج إلى معرّف."
 
 msgid "A record needs at least one series to be named by."
-msgstr ""
+msgstr "السجل يحتاج إلى تسلسل واحد على الأقل ليُسمّى به."
 
 msgid "A reply written once, ready to send again."
-msgstr ""
+msgstr "رد يُكتب مرة واحدة، جاهز للإرسال مجددًا."
 
 msgid ""
 "A role of your own can reach anything your apps expose, and nothing "
 "else."
-msgstr ""
+msgstr "الدور الذي تنشئه بنفسك يصل إلى كل ما تتيحه تطبيقاتك، ولا شيء غير ذلك."
 
 msgid "A source has to be https. Credentials travel to it."
-msgstr ""
+msgstr "يجب أن يكون المصدر https. بيانات الاعتماد تنتقل إليه."
 
 msgid "A source is a host and nothing else, like https://old.example.com."
-msgstr ""
+msgstr "المصدر مضيف ولا شيء غيره، مثل https://old.example.com."
 
 msgid "A source is named by hostname, not by address."
-msgstr ""
+msgstr "المصدر يُسمّى باسم المضيف، لا بالعنوان."
 
 msgid ""
 "A starting structure for your country. Accounts can be added later; the "
 "shape is hard to change once entries exist."
 msgstr ""
+"هيكل بداية لبلدك. يمكن إضافة الحسابات لاحقًا؛ ويصعب تغيير الشكل بعد وجود "
+"القيود."
 
 msgid "A tag needs a name."
-msgstr ""
+msgstr "الوسم يحتاج إلى اسم."
 
 msgid ""
 "A template is a subject and a message somebody can send without writing "
 "it again."
-msgstr ""
+msgstr "القالب هو موضوع ورسالة يمكن لأحدهم إرسالهما دون كتابتهما من جديد."
 
 msgid "A template with nothing in it is not a template."
-msgstr ""
+msgstr "قالب لا شيء فيه ليس قالبًا."
 
 msgid "A template written for a record can say {{ doc.customer }} and mean it."
-msgstr ""
+msgstr "القالب المكتوب لسجل يمكن أن يذكر {{ doc.customer }} ويقصده فعلًا."
 
 msgid "A workspace owner can turn it on under Settings, AI."
-msgstr ""
+msgstr "يمكن لمالك مساحة العمل تفعيله من الإعدادات، الذكاء الاصطناعي."
 
 msgid "A {0} has no rows called {1} to fill."
-msgstr ""
+msgstr "لا يحتوي {0} على صفوف باسم {1} لتعبئتها."
 
 msgid "AI"
-msgstr ""
+msgstr "الذكاء الاصطناعي"
 
 msgid "AI credits"
-msgstr ""
+msgstr "أرصدة الذكاء الاصطناعي"
 
 msgid "API key"
-msgstr ""
+msgstr "مفتاح API"
 
 msgid "API secret"
-msgstr ""
+msgstr "سر API"
 
 msgid "Access"
-msgstr ""
+msgstr "الوصول"
 
 msgid "Add a column"
-msgstr ""
+msgstr "إضافة عمود"
 
 msgid "Add a connection"
-msgstr ""
+msgstr "إضافة اتصال"
 
 msgid "Add a file"
-msgstr ""
+msgstr "إضافة ملف"
 
 msgid "Add a mailbox"
-msgstr ""
+msgstr "إضافة صندوق بريد"
 
 msgid "Add a picture"
-msgstr ""
+msgstr "إضافة صورة"
 
 msgid "Add a section"
-msgstr ""
+msgstr "إضافة قسم"
 
 msgid "Add a tag"
-msgstr ""
+msgstr "إضافة وسم"
 
 msgid "Add a test"
-msgstr ""
+msgstr "إضافة اختبار"
 
 msgid "Add an address"
-msgstr ""
+msgstr "إضافة عنوان"
 
 msgid "Add an image"
-msgstr ""
+msgstr "إضافة صورة"
 
 msgid "Add domain"
-msgstr ""
+msgstr "إضافة نطاق"
 
 msgid "Add filter"
-msgstr ""
+msgstr "إضافة مرشّح"
 
 msgid "Add one on {0} and mail to it arrives here."
-msgstr ""
+msgstr "أضف واحدًا على {0} ليصل البريد الموجّه إليه هنا."
 
 msgid "Add rule"
-msgstr ""
+msgstr "إضافة قاعدة"
 
 msgid "Add to favourites"
-msgstr ""
+msgstr "إضافة إلى المفضلة"
 
 msgid "Add {0} to favourites"
-msgstr ""
+msgstr "إضافة {0} إلى المفضلة"
 
 msgid "Add-ons"
-msgstr ""
+msgstr "الإضافات"
 
 msgid "Added to the bottom of mail sent from this address."
-msgstr ""
+msgstr "يُضاف إلى أسفل البريد المرسل من هذا العنوان."
 
 msgid ""
 "Added to the instructions this feature already has. Use it for your "
 "preferences, not for changing what the feature does."
 msgstr ""
+"يُضاف إلى التعليمات الموجودة لهذه الميزة. استخدمه لتفضيلاتك، لا لتغيير "
+"ما تفعله الميزة."
 
 msgid "Added — checking your DNS now"
-msgstr ""
+msgstr "تمت الإضافة — يجري الآن فحص DNS"
 
 msgid "Added — it is on your next invoice"
-msgstr ""
+msgstr "تمت الإضافة — ستظهر في فاتورتك التالية"
 
 msgid "Address created"
-msgstr ""
+msgstr "تم إنشاء العنوان"
 
 msgid "Address removed"
-msgstr ""
+msgstr "تمت إزالة العنوان"
 
 msgid ""
 "After this the link is gone and the file is not. Empty is refused on "
 "purpose: a link with no end is a file published for ever by somebody who "
 "has left."
 msgstr ""
+"بعد هذا يختفي الرابط ويبقى الملف. الفراغ مرفوض عن قصد: رابط بلا نهاية هو "
+"ملف نشره إلى الأبد شخص غادر."
 
 msgid "Ai Enabled"
-msgstr ""
+msgstr "الذكاء الاصطناعي مفعّل"
 
 msgid "Alert removed"
-msgstr ""
+msgstr "تمت إزالة التنبيه"
 
 msgid "Alert saved"
-msgstr ""
+msgstr "تم حفظ التنبيه"
 
 msgid "Alerts"
-msgstr ""
+msgstr "التنبيهات"
 
 msgid "Alerts could not be loaded"
-msgstr ""
+msgstr "تعذّر تحميل التنبيهات"
 
 msgid "Alex Rivera"
-msgstr ""
+msgstr "أليكس ريفيرا"
 
 msgid "Align labels right"
-msgstr ""
+msgstr "محاذاة التسميات إلى اليمين"
 
 msgid "Align to the centre"
-msgstr ""
+msgstr "محاذاة إلى الوسط"
 
 msgid "Align to the end"
-msgstr ""
+msgstr "محاذاة إلى النهاية"
 
 msgid "Align to the start"
-msgstr ""
+msgstr "محاذاة إلى البداية"
 
 msgid "All conversations"
-msgstr ""
+msgstr "كل المحادثات"
 
 msgid "All day"
-msgstr ""
+msgstr "طوال اليوم"
 
 msgid "All files"
-msgstr ""
+msgstr "كل الملفات"
 
 msgid "All mail"
-msgstr ""
+msgstr "كل البريد"
 
 msgid "All {0}"
-msgstr ""
+msgstr "كل {0}"
 
 msgid "All {0} templates…"
-msgstr ""
+msgstr "كل قوالب {0}…"
 
 msgid "Allowed domains"
-msgstr ""
+msgstr "النطاقات المسموح بها"
 
 msgid "Also to"
-msgstr ""
+msgstr "نسخة إلى"
 
 msgid "Always on"
-msgstr ""
+msgstr "مفعّل دائمًا"
 
 msgid "Amended"
-msgstr ""
+msgstr "معدّل"
 
 msgid ""
 "An add-on goes on the same invoice as your plan, so there has to be a "
 "plan first."
-msgstr ""
+msgstr "تُدرج الإضافة في نفس فاتورة خطتك، لذا يجب أن تكون هناك خطة أولاً."
 
 msgid ""
 "An address may use letters, numbers, dots, dashes and underscores, and "
 "must start and end with a letter or number."
 msgstr ""
+"يمكن أن يستخدم العنوان حروفًا وأرقامًا ونقاطًا وشرطات وشرطات سفلية، ويجب "
+"أن يبدأ وينتهي بحرف أو رقم."
 
 msgid "An admin gives you one, or connect the mailbox you already have below."
-msgstr ""
+msgstr "يمنحك المسؤول واحدًا، أو اربط صندوق البريد الذي لديك بالأسفل."
 
 msgid "An alert needs a subject — it is the line people see."
-msgstr ""
+msgstr "التنبيه يحتاج إلى موضوع — هو السطر الذي يراه الناس."
 
 msgid "An alert watches one kind of record and tells somebody when it changes."
-msgstr ""
+msgstr "يراقب التنبيه نوعًا واحدًا من السجلات ويُخبر شخصًا عند تغيّره."
 
 msgid "An app password where the provider needs one."
-msgstr ""
+msgstr "كلمة مرور تطبيق إن كان المزوّد يطلبها."
 
 msgid "An earlier version"
-msgstr ""
+msgstr "نسخة سابقة"
 
 msgid ""
 "An invited person gets a welcome email within a few minutes. Removing "
 "someone stops them signing in; the work they created stays in the "
 "workspace."
 msgstr ""
+"يصل الشخص المدعو بريد ترحيب خلال دقائق قليلة. إزالة شخص تمنعه من تسجيل "
+"الدخول؛ أما العمل الذي أنشأه فيبقى في مساحة العمل."
 
 msgid "An out-of-office reply needs something to say."
-msgstr ""
+msgstr "رد الغياب عن المكتب يحتاج إلى نص."
 
 msgid "And for the ones that file things somebody does."
-msgstr ""
+msgstr "وللقواعد التي تُصنّف أشياء يحتاج أحدهم إلى الاطلاع عليها."
 
 msgid "Any record"
-msgstr ""
+msgstr "أي سجل"
 
 msgid ""
 "Any record that refuses the change — a submitted one, or a value a rule "
 "forbids — is left alone and named."
 msgstr ""
+"أي سجل يرفض التغيير — سجل مُرسَل، أو قيمة تمنعها قاعدة — يُترك كما هو "
+"ويُذكر اسمه."
 
 msgid "Anybody"
-msgstr ""
+msgstr "أي شخص"
 
 msgid "Anybody who can sign in here, whatever their role reaches."
-msgstr ""
+msgstr "أي شخص يمكنه تسجيل الدخول هنا، مهما كان مدى وصول دوره."
 
 msgid "Anything it should keep in mind"
-msgstr ""
+msgstr "أي شيء ينبغي أن يأخذه في الحسبان"
 
 msgid "Anything on this site: an employee, a company, a vehicle, a project."
-msgstr ""
+msgstr "أي شيء على هذا الموقع: موظف، شركة، مركبة، مشروع."
 
 msgid "Api Key"
-msgstr ""
+msgstr "مفتاح API"
 
 msgid "Api Secret"
-msgstr ""
+msgstr "سرّ API"
 
 msgid "Appearance"
-msgstr ""
+msgstr "المظهر"
 
 msgid "Appears on account names, e.g. Debtors - ACME."
-msgstr ""
+msgstr "يظهر في أسماء الحسابات، مثل المدينون - ACME."
 
 msgid ""
 "Appended to our instructions. The model receives both; this field never "
 "contains ours."
 msgstr ""
+"يُضاف إلى تعليماتنا. يتلقى النموذج الاثنين؛ هذا الحقل لا يحتوي أبدًا على "
+"تعليماتنا."
 
 msgid "Applicants"
-msgstr ""
+msgstr "المتقدمون"
 
 msgid "Approaching the limit."
-msgstr ""
+msgstr "تقترب من الحد."
 
 msgid "Archive this column"
-msgstr ""
+msgstr "أرشفة هذا العمود"
 
 msgid "Archived {0}"
-msgstr ""
+msgstr "تمت أرشفة {0}"
 
 msgid "Arrange {0}"
-msgstr ""
+msgstr "ترتيب {0}"
 
 msgid ""
 "Ask about anything in this workspace — the records on your screens, your "
 "files, what a document says. Only what you can already open."
 msgstr ""
+"اسأل عن أي شيء في مساحة العمل هذه — السجلات على شاشاتك، وملفاتك، وما "
+"يقوله مستند. فقط ما يمكنك فتحه أصلاً."
 
 msgid "Ask about this workspace"
-msgstr ""
+msgstr "اسأل عن مساحة العمل هذه"
 
 msgid "Ask about {0}"
-msgstr ""
+msgstr "اسأل عن {0}"
 
 msgid "Ask something first."
-msgstr ""
+msgstr "اطرح سؤالًا أولًا."
 
 msgid "Assign to"
-msgstr ""
+msgstr "إسناد إلى"
 
 msgid "Assign {0} record"
-msgstr ""
+msgstr "إسناد {0} سجل"
 
 msgid "Assign {0} records"
-msgstr ""
+msgstr "إسناد {0} سجلات"
 
 msgid "Assigned to"
-msgstr ""
+msgstr "مُسنَد إلى"
 
 msgid "Assignments, mentions and alerts turn up here."
-msgstr ""
+msgstr "تظهر هنا الإسنادات والإشارات والتنبيهات."
 
 msgid "Assignments, mentions and workspace notices, in the app."
-msgstr ""
+msgstr "الإسنادات والإشارات وإشعارات مساحة العمل، داخل التطبيق."
 
 msgid "Assistant"
-msgstr ""
+msgstr "المساعد"
 
 msgid "At Seq"
-msgstr ""
+msgstr "عند التسلسل"
 
 msgid "At the limit for {0}"
-msgstr ""
+msgstr "بلغت الحد لـ {0}"
 
 msgid "At the limit. Free some space or add more."
-msgstr ""
+msgstr "بلغت الحد. أفرغ بعض المساحة أو أضف المزيد."
 
 msgid "Attach a file"
-msgstr ""
+msgstr "إرفاق ملف"
 
 msgid "Attached"
-msgstr ""
+msgstr "تم الإرفاق"
 
 msgid "Back to the canvas"
-msgstr ""
+msgstr "العودة إلى اللوحة"
 
 msgid "Back to the default screen"
-msgstr ""
+msgstr "العودة إلى الشاشة الافتراضية"
 
 msgid "Back to your spaces"
 msgstr "العودة إلى مساحاتك"
 
 msgid "Back to {0}"
-msgstr ""
+msgstr "العودة إلى {0}"
 
 msgid "Background jobs"
-msgstr ""
+msgstr "المهام في الخلفية"
 
 msgid "Backups Per Day"
-msgstr ""
+msgstr "النسخ الاحتياطية يوميًا"
 
 msgid "Base Url"
-msgstr ""
+msgstr "الرابط الأساسي"
 
 msgid "Bcc"
-msgstr ""
+msgstr "نسخة مخفية"
 
 msgid "Becomes {0}"
-msgstr ""
+msgstr "يصبح {0}"
 
 msgid "Before it lapses"
-msgstr ""
+msgstr "قبل انقضائه"
 
 msgid "Before restoring “{0}”"
-msgstr ""
+msgstr "قبل استعادة „{0}“"
 
 msgid "Belongs to"
-msgstr ""
+msgstr "ينتمي إلى"
 
 msgid "Between 0 and {0} days."
-msgstr ""
+msgstr "بين 0 و{0} يومًا."
 
 msgid "Billing, storage add-ons and your plan are in your {0} account."
-msgstr ""
+msgstr "الفوترة وإضافات التخزين وخطتك في حساب {0} الخاص بك."
 
 msgid "Blank sheet"
-msgstr ""
+msgstr "جدول بيانات فارغ"
 
 msgid "Board"
-msgstr ""
+msgstr "لوحة"
 
 msgid "Board settings"
-msgstr ""
+msgstr "إعدادات اللوحة"
 
 msgid "Body"
-msgstr ""
+msgstr "النص"
 
 msgid "Bookkeeper"
-msgstr ""
+msgstr "محاسب"
 
 msgid "Books"
-msgstr ""
+msgstr "الدفاتر"
 
 msgid "Books are ready"
-msgstr ""
+msgstr "الدفاتر جاهزة"
 
 msgid "Books are set up"
-msgstr ""
+msgstr "تم إعداد الدفاتر"
 
 msgid "Books cleared"
-msgstr ""
+msgstr "تم مسح الدفاتر"
 
 msgid "Both the current and the new password are needed."
-msgstr ""
+msgstr "كلمة المرور الحالية والجديدة مطلوبتان."
 
 msgid "Bottom (mm)"
-msgstr ""
+msgstr "أسفل (مم)"
 
 msgid "Brand colour as hex"
-msgstr ""
+msgstr "لون العلامة التجارية كقيمة ست عشرية"
 
 msgid "Breadcrumb"
-msgstr ""
+msgstr "مسار التنقل"
 
 msgid ""
 "Bring across everything attached to each row and attach it here. One "
 "request per row and one download per file, so it is opt-in per step."
 msgstr ""
+"انقل كل ما هو مرفق بكل صف وأرفقه هنا. طلب واحد لكل صف وتنزيل واحد لكل "
+"ملف، لذا فهو اختياري في كل خطوة."
 
 msgid "Bring across what has changed"
-msgstr ""
+msgstr "نقل ما تغيّر"
 
 msgid "Bring everything across"
-msgstr ""
+msgstr "نقل كل شيء"
 
 msgid ""
 "Bring your records over from the system you are leaving — as often as "
 "you like."
-msgstr ""
+msgstr "انقل سجلاتك من النظام الذي تتركه — بالمرات التي تشاء."
 
 msgid "Build one when the roles your apps came with are not the shape you need."
 msgstr ""
+"أنشئ دوراً عندما لا تكون الأدوار التي جاءت مع تطبيقاتك بالشكل الذي "
+"تحتاجه."
 
 msgid "By email"
-msgstr ""
+msgstr "بالبريد"
 
 msgid "By folder"
-msgstr ""
+msgstr "حسب المجلد"
 
 msgid "By kind"
-msgstr ""
+msgstr "حسب النوع"
 
 msgid "Byte Size"
-msgstr ""
+msgstr "الحجم بالبايت"
 
 msgid ""
 "Bytes of content plus html. What the storage meter counts for a "
 "document, since it has no object behind it."
 msgstr ""
+"بايتات المحتوى إضافة إلى html. هذا ما يحسبه عدّاد التخزين للمستند، إذ لا "
+"يوجد كائن خلفه."
 
 msgid "Cached from the control plane"
-msgstr ""
+msgstr "مخزَّن مؤقتًا من مستوى التحكم"
 
 msgid "Cached manifest"
-msgstr ""
+msgstr "بيان مخزَّن مؤقتًا"
 
 msgid "Calculate"
-msgstr ""
+msgstr "احسب"
 
 msgid "Can edit"
-msgstr ""
+msgstr "يمكنه التعديل"
 
 msgid "Can manage the workspace as well as use the apps."
-msgstr ""
+msgstr "يمكنه إدارة مساحة العمل واستخدام التطبيقات."
 
 msgid "Can share"
-msgstr ""
+msgstr "يمكنه المشاركة"
 
 msgid "Can use the apps in this workspace."
-msgstr ""
+msgstr "يمكنه استخدام التطبيقات في مساحة العمل هذه."
 
 msgid "Can view"
-msgstr ""
+msgstr "يمكنه العرض"
 
 msgid "Cancel it"
-msgstr ""
+msgstr "ألغِه"
 
 msgid "Cancel them"
-msgstr ""
+msgstr "ألغِها"
 
 msgid "Cancel this record"
-msgstr ""
+msgstr "إلغاء هذا السجل"
 
 msgid "Cancel this record?"
-msgstr ""
+msgstr "إلغاء هذا السجل؟"
 
 msgid "Cancel {0} records?"
-msgstr ""
+msgstr "إلغاء {0} سجلات؟"
 
 msgid "Cancellation Reason"
-msgstr ""
+msgstr "سبب الإلغاء"
 
 msgid "Cancelled. Nothing was charged."
-msgstr ""
+msgstr "تم الإلغاء. لم يُخصم أي مبلغ."
 
 msgid "Cancelling unwinds what submitting this wrote. It cannot be undone."
-msgstr ""
+msgstr "الإلغاء يتراجع عمّا كتبه إرسال هذا السجل. ولا يمكن التراجع عنه."
 
 msgid ""
 "Cancelling unwinds what submitting wrote. Anything that will not cancel "
 "is named."
-msgstr ""
+msgstr "الإلغاء يتراجع عما كتبه الاعتماد. وكل ما لا يمكن إلغاؤه يُذكر بالاسم."
 
 msgid "Cancels at the end of this period"
-msgstr ""
+msgstr "يُلغى في نهاية هذه الفترة"
 
 msgid "Card settings"
-msgstr ""
+msgstr "إعدادات البطاقة"
 
 msgid "Carried across"
-msgstr ""
+msgstr "تم نقله"
 
 msgid "Carries a file"
-msgstr ""
+msgstr "يحتوي على ملف"
 
 msgid "Carry File Fields"
-msgstr ""
+msgstr "نقل حقول الملفات"
 
 msgid "Carry Files"
-msgstr ""
+msgstr "نقل الملفات"
 
 msgid "Catalogue Json"
-msgstr ""
+msgstr "JSON الكتالوج"
 
 msgid "Cc"
-msgstr ""
+msgstr "نسخة"
 
 msgid "Cc and Bcc"
-msgstr ""
+msgstr "نسخة ونسخة مخفية"
 
 msgid "Centre"
-msgstr ""
+msgstr "توسيط"
 
 msgid "Centred"
-msgstr ""
+msgstr "موسَّط"
 
 msgid "Change password"
-msgstr ""
+msgstr "تغيير كلمة المرور"
 
 msgid "Change picture"
-msgstr ""
+msgstr "تغيير الصورة"
 
 msgid "Change plan"
-msgstr ""
+msgstr "تغيير الخطة"
 
 msgid "Change the icon"
-msgstr ""
+msgstr "تغيير الأيقونة"
 
 msgid "Change the servers"
-msgstr ""
+msgstr "تغيير الخوادم"
 
 msgid "Change them"
-msgstr ""
+msgstr "تغييرها"
 
 msgid "Change to this plan"
-msgstr ""
+msgstr "التغيير إلى هذه الخطة"
 
 msgid "Change to {0}?"
-msgstr ""
+msgstr "التغيير إلى {0}؟"
 
 msgid "Change what they can do"
-msgstr ""
+msgstr "تغيير ما يمكن لهذا الشخص فعله"
 
 msgid "Change your card, download an invoice or cancel from there."
-msgstr ""
+msgstr "غيّر بطاقتك أو نزّل فاتورة أو ألغِ من هناك."
 
 msgid "Change your password"
-msgstr ""
+msgstr "تغيير كلمة مرورك"
 
 msgid "Change {0} record"
-msgstr ""
+msgstr "تغيير {0} سجل"
 
 msgid "Change {0} records"
-msgstr ""
+msgstr "تغيير {0} سجلات"
 
 msgid "Chart of accounts"
-msgstr ""
+msgstr "دليل الحسابات"
 
 msgid "Check DNS"
-msgstr ""
+msgstr "فحص DNS"
 
 msgid "Check the connection"
-msgstr ""
+msgstr "فحص الاتصال"
 
 msgid "Check the plan"
-msgstr ""
+msgstr "مراجعة الخطة"
 
 msgid "Check your connection, then try again."
-msgstr ""
+msgstr "تحقق من اتصالك، ثم حاول مرة أخرى."
 
 msgid "Checked"
-msgstr ""
+msgstr "محدد"
 
 msgid "Checking your DNS"
-msgstr ""
+msgstr "جارٍ فحص DNS"
 
 msgid "Child Table"
-msgstr ""
+msgstr "جدول فرعي"
 
 msgid "Choose"
-msgstr ""
+msgstr "اختر"
 
 msgid "Choose a file"
-msgstr ""
+msgstr "اختر ملفاً"
 
 msgid "Choose columns"
-msgstr ""
+msgstr "اختيار الأعمدة"
 
 msgid "Choose {0}"
-msgstr ""
+msgstr "اختر {0}"
 
 msgid "Claim it"
-msgstr ""
+msgstr "طالب به"
 
 msgid "Clear all"
-msgstr ""
+msgstr "مسح الكل"
 
 msgid "Clear the filters"
-msgstr ""
+msgstr "مسح عوامل التصفية"
 
 msgid "Clear the selection"
-msgstr ""
+msgstr "إلغاء التحديد"
 
 msgid "Clear the selection, or close the conversation"
-msgstr ""
+msgstr "امسح التحديد، أو أغلق المحادثة"
 
 msgid "Close and go back"
-msgstr ""
+msgstr "إغلاق وعودة"
 
 msgid "Close history"
-msgstr ""
+msgstr "إغلاق المحفوظات"
 
 msgid "Close settings"
-msgstr ""
+msgstr "إغلاق الإعدادات"
 
 msgid "Close the assistant"
-msgstr ""
+msgstr "إغلاق المساعد"
 
 msgid "Close the record"
-msgstr ""
+msgstr "إغلاق السجل"
 
 msgid "Collapse uploads"
-msgstr ""
+msgstr "طي عمليات الرفع"
 
 msgid "Colour {0} {1}"
-msgstr ""
+msgstr "تلوين {0} {1}"
 
 msgid "Columns of"
-msgstr ""
+msgstr "أعمدة من"
 
 msgid "Comma separated. A mailbox on anything else is refused."
-msgstr ""
+msgstr "مفصولة بفواصل. يُرفض أي صندوق بريد على غيرها."
 
 msgid "Company name"
-msgstr ""
+msgstr "اسم الشركة"
 
 msgid "Compliance Document"
-msgstr ""
+msgstr "مستند امتثال"
 
 msgid "Concurrent background jobs this workspace may run."
-msgstr ""
+msgstr "المهام الخلفية المتزامنة التي يمكن لمساحة العمل تشغيلها."
 
 msgid "Connect"
-msgstr ""
+msgstr "اربط"
 
 msgid ""
 "Connect one the company already has, then grant it below like any other "
 "address. Everyone who holds it reads the same inbox — and the same sent "
 "mail."
 msgstr ""
+"اربط واحدًا تملكه الشركة بالفعل، ثم امنحه بالأسفل كأي عنوان آخر. كل من "
+"يحمله يقرأ صندوق الوارد نفسه — والبريد المرسل نفسه."
 
 msgid "Connected mailbox"
-msgstr ""
+msgstr "صندوق بريد متصل"
 
 msgid "Contains"
-msgstr ""
+msgstr "يحتوي على"
 
 msgid "Contains…"
-msgstr ""
+msgstr "يحتوي…"
 
 msgid "Copied"
-msgstr ""
+msgstr "تم النسخ"
 
 msgid "Copy"
-msgstr ""
+msgstr "نسخ"
 
 msgid "Copy as Markdown"
-msgstr ""
+msgstr "نسخ بصيغة Markdown"
 
 msgid "Copy link"
-msgstr ""
+msgstr "نسخ الرابط"
 
 msgid "Copy the link"
-msgstr ""
+msgstr "نسخ الرابط"
 
 msgid "Correspondence"
-msgstr ""
+msgstr "المراسلات"
 
 msgid "Could not save"
-msgstr ""
+msgstr "تعذّر الحفظ"
 
 msgid "Count by"
-msgstr ""
+msgstr "العد حسب"
 
 msgid "Counter moved"
-msgstr ""
+msgstr "تم نقل العداد"
 
 msgid "Counting"
-msgstr ""
+msgstr "جارٍ العد"
 
 msgid "Counting from"
-msgstr ""
+msgstr "بدء العد من"
 
 msgid "Create \"{0}\""
-msgstr ""
+msgstr "إنشاء \"{0}\""
 
 msgid "Create another"
-msgstr ""
+msgstr "إنشاء آخر"
 
 msgid "Created by"
-msgstr ""
+msgstr "أنشأه"
 
 msgid "Created this record."
-msgstr ""
+msgstr "أنشأ هذا السجل."
 
 msgid "Credits"
-msgstr ""
+msgstr "أرصدة"
 
 msgid "Current password"
-msgstr ""
+msgstr "كلمة المرور الحالية"
 
 msgid "Custom domain"
-msgstr ""
+msgstr "نطاق مخصص"
 
 msgid "Data location"
-msgstr ""
+msgstr "موقع البيانات"
 
 msgid ""
 "Data, not a Link: `Tenant` is a control-plane doctype and does not exist "
 "on this site."
 msgstr ""
+"Data وليس Link: `Tenant` نوع مستند في مستوى التحكم ولا يوجد على هذا "
+"الموقع."
 
 msgid "Database Quota Bytes"
-msgstr ""
+msgstr "حصة قاعدة البيانات بالبايت"
 
 msgid "Database Used Bytes"
-msgstr ""
+msgstr "المستخدَم من قاعدة البيانات بالبايت"
 
 msgid ""
 "Database limit reached ({0}). Nothing has been deleted and your data is "
 "intact, but new records are paused until you free space or upgrade."
 msgstr ""
+"تم بلوغ حد قاعدة البيانات ({0}). لم يُحذف شيء وبياناتك سليمة، لكن إنشاء "
+"سجلات جديدة متوقف حتى تحرّر مساحة أو ترفع خطتك."
 
 msgid "Default set"
-msgstr ""
+msgstr "تم تعيين الافتراضي"
 
 msgid "Delete for good"
-msgstr ""
+msgstr "حذف نهائي"
 
 msgid "Delete it"
-msgstr ""
+msgstr "حذفه"
 
 msgid "Delete it all"
-msgstr ""
+msgstr "حذف الكل"
 
 msgid "Delete role"
-msgstr ""
+msgstr "حذف الدور"
 
 msgid "Delete this alert"
-msgstr ""
+msgstr "حذف هذا التنبيه"
 
 msgid "Delete this conversation"
-msgstr ""
+msgstr "حذف هذه المحادثة"
 
 msgid "Delete this format"
-msgstr ""
+msgstr "حذف هذا النموذج"
 
 msgid "Delete this letter head"
-msgstr ""
+msgstr "حذف هذه الترويسة"
 
 msgid "Delete this record?"
-msgstr ""
+msgstr "حذف هذا السجل؟"
 
 msgid "Delete {0}"
-msgstr ""
+msgstr "حذف {0}"
 
 msgid "Delete {0} records?"
-msgstr ""
+msgstr "حذف {0} سجلات؟"
 
 msgid "Deleted files wait here for thirty days."
-msgstr ""
+msgstr "تبقى الملفات المحذوفة هنا ثلاثين يوماً."
 
 msgid "Deleted for good"
-msgstr ""
+msgstr "تم الحذف نهائياً"
 
 msgid "Delivery update"
-msgstr ""
+msgstr "تحديث التسليم"
 
 msgid "Discard and close"
-msgstr ""
+msgstr "تجاهل وإغلاق"
 
 msgid "Disconnect this mailbox"
-msgstr ""
+msgstr "فصل صندوق البريد هذا"
 
 msgid "Dismiss uploads"
-msgstr ""
+msgstr "إخفاء عمليات الرفع"
 
 msgid "Do not upload {0}"
-msgstr ""
+msgstr "لا ترفع {0}"
 
 msgid "Doc"
-msgstr ""
+msgstr "مستند"
 
 msgid "Doc Body"
-msgstr ""
+msgstr "متن المستند"
 
 msgid "Document Number"
-msgstr ""
+msgstr "رقم المستند"
 
 msgid "Domain verified"
-msgstr ""
+msgstr "تم التحقق من النطاق"
 
 msgid "Download as HTML"
-msgstr ""
+msgstr "تنزيل بصيغة HTML"
 
 msgid "Drag to reorder, or use the arrows"
-msgstr ""
+msgstr "اسحب لإعادة الترتيب، أو استخدم الأسهم"
 
 msgid ""
 "Drop a file here, or choose one from this device. It goes into your "
 "files and gets used here."
 msgstr ""
+"أفلت ملفاً هنا، أو اختر واحداً من هذا الجهاز. سيُحفظ في ملفاتك ويُستخدم "
+"هنا."
 
 msgid ""
 "Drop files here, or choose them from this device. They go into your "
 "files and get used here."
-msgstr ""
+msgstr "أفلت ملفات هنا، أو اخترها من هذا الجهاز. ستُحفظ في ملفاتك وتُستخدم هنا."
 
 msgid "Drop here"
-msgstr ""
+msgstr "أفلِت هنا"
 
 msgid "Dry Run"
-msgstr ""
+msgstr "تشغيل تجريبي"
 
 msgid "Edit alert"
-msgstr ""
+msgstr "تعديل التنبيه"
 
 msgid "Edit event"
-msgstr ""
+msgstr "تعديل الحدث"
 
 msgid "Edit role"
-msgstr ""
+msgstr "تعديل الدور"
 
 msgid "Edit template"
-msgstr ""
+msgstr "تعديل القالب"
 
 msgid "Edit this alert"
-msgstr ""
+msgstr "تعديل هذا التنبيه"
 
 msgid "Edit this letter head"
-msgstr ""
+msgstr "تعديل هذه الترويسة"
 
 msgid "Elements"
-msgstr ""
+msgstr "عناصر"
 
 msgid "Email me as well"
-msgstr ""
+msgstr "راسلني بالبريد أيضاً"
 
 msgid ""
 "Empty is a document that does not expire — an academic certificate, a "
 "deed. It is not the same as unknown, and the status says so."
 msgstr ""
+"الفراغ يعني مستندًا لا تنتهي صلاحيته — شهادة أكاديمية، سند ملكية. وهذا "
+"ليس كالمجهول، والحالة تقول ذلك."
 
 msgid ""
 "Empty means whatever the platform recommends for this capability, which "
 "is also what tracks a better model arriving without anyone changing a "
 "setting."
 msgstr ""
+"الفراغ يعني ما توصي به المنصة لهذه القدرة، وهو أيضًا ما يواكب وصول نموذج "
+"أفضل دون أن يغيّر أحد أي إعداد."
 
 msgid "Empty the bin"
-msgstr ""
+msgstr "إفراغ المحذوفات"
 
 msgid "Empty the bin to get that back now"
-msgstr ""
+msgstr "أفرغ المحذوفات لاستعادتها الآن"
 
 msgid "Encode field"
-msgstr ""
+msgstr "ترميز الحقل"
 
 msgid "Ends"
-msgstr ""
+msgstr "ينتهي"
 
 msgid "Ends with"
-msgstr ""
+msgstr "ينتهي بـ"
 
 msgid "English"
-msgstr ""
+msgstr "الإنجليزية"
 
 msgid ""
 "Entries have been posted, so the chart of accounts can no longer be "
 "replaced here. Ask support if it needs to change."
 msgstr ""
+"تم ترحيل قيود، لذلك لم يعد بالإمكان استبدال دليل الحسابات هنا. تواصل مع "
+"الدعم إن كان يجب تغييره."
 
 msgid "Entry"
-msgstr ""
+msgstr "إدخال"
 
 msgid ""
 "Every app here is already part of your workspace. Plans differ in how "
 "much you can store and how many people you can invite, never in which "
 "apps you get."
 msgstr ""
+"كل تطبيق هنا هو أصلاً جزء من مساحة عملك. تختلف الخطط في حجم ما يمكنك "
+"تخزينه وعدد من يمكنك دعوتهم، لا في التطبيقات التي تحصل عليها."
 
 msgid ""
 "Every plan includes every app. They differ in how much you can store and "
 "how many people you can invite."
 msgstr ""
+"كل خطة تشمل كل التطبيقات. وتختلف في حجم ما يمكنك تخزينه وعدد من يمكنك "
+"دعوتهم."
 
 msgid "Every recipient of this message has bounced or reported it as spam."
-msgstr ""
+msgstr "كل مستلمي هذه الرسالة ارتدّت رسائلهم أو أبلغوا عنها كبريد مزعج."
 
 msgid "Every row came across."
-msgstr ""
+msgstr "انتقل كل صف."
 
 msgid "Every seat is in use"
-msgstr ""
+msgstr "كل المقاعد مشغولة"
 
 msgid "Every seat is taken. Change plan to invite more people."
-msgstr ""
+msgstr "كل المقاعد مشغولة. غيّر الخطة لدعوة المزيد من الأشخاص."
 
 msgid ""
 "Everybody chosen is added to these records. Nobody already on them comes "
 "off."
-msgstr ""
+msgstr "كل من تختاره يُضاف إلى هذه السجلات. ولا يُزال أحد ممن هم عليها."
 
 msgid ""
 "Everyone gets the basics of each app this workspace has. Tick anything "
 "more this person needs."
 msgstr ""
+"يحصل الجميع على أساسيات كل تطبيق في مساحة العمل هذه. حدّد أي شيء إضافي "
+"يحتاجه هذا الشخص."
 
 msgid "Everyone here is invited"
-msgstr ""
+msgstr "الجميع هنا مدعوّون"
 
 msgid "Everyone in this workspace has this"
-msgstr ""
+msgstr "هذا متاح لكل من في مساحة العمل هذه"
 
 msgid "Everyone on this workspace"
-msgstr ""
+msgstr "كل من في مساحة العمل هذه"
 
 msgid "Everyone on this workspace can use it"
-msgstr ""
+msgstr "كل من في مساحة العمل يمكنه استخدامه"
 
 msgid "Everything here is deleted after thirty days"
-msgstr ""
+msgstr "يُحذف كل ما هنا بعد ثلاثين يوماً"
 
 msgid "Everything in the bin is deleted for good. This cannot be undone."
-msgstr ""
+msgstr "يُحذف كل ما في المحذوفات نهائياً. لا يمكن التراجع عن ذلك."
 
 msgid "Everything that points at this record keeps working. The old id stops."
-msgstr ""
+msgstr "كل ما يشير إلى هذا السجل يظل يعمل. أما المعرّف القديم فيتوقف."
 
 msgid "Expand uploads"
-msgstr ""
+msgstr "توسيع عمليات الرفع"
 
 msgid "Expiring"
-msgstr ""
+msgstr "على وشك الانتهاء"
 
 msgid "Export as CSV"
-msgstr ""
+msgstr "تصدير كملف CSV"
 
 msgid ""
 "Extra room, billed with your plan and charged from the day you add it. "
 "It is not paid for with AI credits."
 msgstr ""
+"مساحة إضافية، تُفوتر مع خطتك وتُحتسب من يوم إضافتها. ولا تُدفع من أرصدة "
+"الذكاء الاصطناعي."
 
 msgid "Extra storage appears here when it is available."
-msgstr ""
+msgstr "تظهر المساحة الإضافية هنا عندما تتوفر."
 
 msgid "Fan Out"
-msgstr ""
+msgstr "توزيع"
 
 msgid "Favourites"
-msgstr ""
+msgstr "المفضلة"
 
 msgid "Feature Key"
-msgstr ""
+msgstr "مفتاح الميزة"
 
 msgid "Features"
-msgstr ""
+msgstr "الميزات"
 
 msgid ""
 "Features appear here as the apps in your workspace add them. There is "
 "nothing to set up in advance."
 msgstr ""
+"تظهر الميزات هنا كلما أضافتها التطبيقات في مساحة العمل. لا شيء يحتاج "
+"إعدادًا مسبقًا."
 
 msgid "Fewer filters"
-msgstr ""
+msgstr "عوامل تصفية أقل"
 
 msgid "Fewer folders"
-msgstr ""
+msgstr "مجلدات أقل"
 
 msgid "Field Map"
-msgstr ""
+msgstr "خريطة الحقول"
 
 msgid "File Link"
-msgstr ""
+msgstr "رابط الملف"
 
 msgid "File Version"
-msgstr ""
+msgstr "إصدار الملف"
 
 msgid "File into"
-msgstr ""
+msgstr "حفظ في"
 
 msgid "File removed"
-msgstr ""
+msgstr "تمت إزالة الملف"
 
 msgid "Filed"
-msgstr ""
+msgstr "مُصنَّف"
 
 msgid "Filed here"
-msgstr ""
+msgstr "مُصنَّف هنا"
 
 msgid "Filed here by somebody"
-msgstr ""
+msgstr "أرشفه أحدهم هنا"
 
 msgid "Files other people share with you appear here."
-msgstr ""
+msgstr "تظهر هنا الملفات التي يشاركها معك الآخرون."
 
 msgid "Files uploaded anywhere in this workspace show up here."
-msgstr ""
+msgstr "الملفات المرفوعة في أي مكان داخل مساحة العمل هذه تظهر هنا."
 
 msgid "Files you open show up here."
-msgstr ""
+msgstr "تظهر هنا الملفات التي تفتحها."
 
 msgid "Filing"
-msgstr ""
+msgstr "التصنيف"
 
 msgid "Fill"
-msgstr ""
+msgstr "تعبئة"
 
 msgid "Fill again"
-msgstr ""
+msgstr "تعبئة مرة أخرى"
 
 msgid "Fill the row"
-msgstr ""
+msgstr "تعبئة الصف"
 
 msgid "Fill the window"
-msgstr ""
+msgstr "ملء النافذة"
 
 msgid "Filled"
-msgstr ""
+msgstr "مُعبَّأ"
 
 msgid "Filled from {0}"
-msgstr ""
+msgstr "مُعبّأ من {0}"
 
 msgid "Filled in on the old document when a new one names it."
-msgstr ""
+msgstr "يُعبَّأ في المستند القديم عندما يسمّيه مستند جديد."
 
 msgid "Financial year"
-msgstr ""
+msgstr "السنة المالية"
 
 msgid "Financial year ends"
-msgstr ""
+msgstr "نهاية السنة المالية"
 
 msgid "Financial year starts"
-msgstr ""
+msgstr "بداية السنة المالية"
 
 msgid "Find a field"
-msgstr ""
+msgstr "البحث عن حقل"
 
 msgid "Finished On"
-msgstr ""
+msgstr "انتهى في"
 
 msgid "Folder made"
-msgstr ""
+msgstr "تم إنشاء المجلد"
 
 msgid "Folder removed"
-msgstr ""
+msgstr "تمت إزالة المجلد"
 
 msgid "Folders refreshed"
-msgstr ""
+msgstr "تم تحديث المجلدات"
 
 msgid "Follow the sheet again"
-msgstr ""
+msgstr "متابعة جدول البيانات مرة أخرى"
 
 msgid "Follow the workspace"
-msgstr ""
+msgstr "متابعة مساحة العمل"
 
 msgid "Following"
-msgstr ""
+msgstr "متابعة"
 
 msgid ""
 "Following: filling again replaces these rows. Locked: the document is "
 "the record now and the sheet is history, so a pull is refused until "
 "somebody unlocks it."
 msgstr ""
+"متابعة: إعادة التعبئة تستبدل هذه الصفوف. مقفل: المستند هو السجل الآن "
+"وجدول البيانات صار تاريخًا، لذا يُرفض السحب حتى يفكّ أحد القفل."
 
 msgid "Font size (pt)"
-msgstr ""
+msgstr "حجم الخط (نقطة)"
 
 msgid "Footer align"
-msgstr ""
+msgstr "محاذاة التذييل"
 
 msgid "For a record"
-msgstr ""
+msgstr "لسجل"
 
 msgid "For the rules that file things nobody needs to look at."
-msgstr ""
+msgstr "للقواعد التي تُصنّف أشياء لا يحتاج أحد إلى الاطلاع عليها."
 
 msgid "For {0}"
-msgstr ""
+msgstr "لـ {0}"
 
 msgid "Format deleted"
-msgstr ""
+msgstr "تم حذف النموذج"
 
 msgid "Format saved"
-msgstr ""
+msgstr "تم حفظ النموذج"
 
 msgid "Format: {0}"
-msgstr ""
+msgstr "الصيغة: {0}"
 
 msgid ""
 "Frappe has no opinion here; these are the roles a provider accepts, and "
 "`ai/transcript.py` maps them on."
 msgstr ""
+"لا رأي لـ Frappe هنا؛ هذه هي الأدوار التي يقبلها المزوّد، "
+"و`ai/transcript.py` يطابقها عليها."
 
 msgid "Free some space or remove people first, and this plan becomes available."
-msgstr ""
+msgstr "أفرغ بعض المساحة أو أزل بعض الأشخاص أولاً، فتصبح هذه الخطة متاحة."
 
 msgid "From field"
-msgstr ""
+msgstr "من حقل"
 
 msgid "From the source site's own user."
-msgstr ""
+msgstr "من مستخدم الموقع المصدر نفسه."
 
 msgid "From {0}"
-msgstr ""
+msgstr "من {0}"
 
 msgid "From {0} if left blank"
-msgstr ""
+msgstr "من {0} إذا تُرك فارغًا"
 
 msgid "Full width"
-msgstr ""
+msgstr "عرض كامل"
 
 msgid "Give it a name."
-msgstr ""
+msgstr "أعطه اسمًا."
 
 msgid "Give the template a name."
-msgstr ""
+msgstr "أعطِ القالب اسمًا."
 
 msgid "Give the template a subject line."
-msgstr ""
+msgstr "أعطِ القالب سطر موضوع."
 
 msgid "Global"
-msgstr ""
+msgstr "عام"
 
 msgid "Google needs an app password, not your account password."
-msgstr ""
+msgstr "تحتاج Google إلى كلمة مرور تطبيق، لا كلمة مرور حسابك."
 
 msgid "Grid"
-msgstr ""
+msgstr "شبكة"
 
 msgid "Group rows by"
-msgstr ""
+msgstr "تجميع الصفوف حسب"
 
 msgid "HTML, rendered as a template with the document in scope."
-msgstr ""
+msgstr "HTML، يُعرض كقالب مع المستند ضمن السياق."
 
 msgid "Head Seq"
-msgstr ""
+msgstr "تسلسل الرأس"
 
 msgid "Headings with no matching field, which were left out."
-msgstr ""
+msgstr "عناوين بلا حقل مطابق، تُركت خارجًا."
 
 msgid "Heart a file to keep it here."
-msgstr ""
+msgstr "اضغط القلب على ملف لإبقائه هنا."
 
 msgid "Height (px)"
-msgstr ""
+msgstr "ارتفاع (بكسل)"
 
 msgid "Hidden from your menu"
-msgstr ""
+msgstr "مخفي من قائمتك"
 
 msgid "Hidden views are back"
-msgstr ""
+msgstr "عادت العروض المخفية"
 
 msgid "Hide Cc and Bcc"
-msgstr ""
+msgstr "إخفاء النسخة والنسخة المخفية"
 
 msgid "Hide it from my menu"
-msgstr ""
+msgstr "إخفاؤه من قائمتي"
 
 msgid "Hide servers"
-msgstr ""
+msgstr "إخفاء الخوادم"
 
 msgid "How OneSpace looks, on this browser."
-msgstr ""
+msgstr "شكل OneSpace على هذا المتصفح."
 
 msgid ""
 "How long before the expiry this starts saying so. Thirty days is a month "
 "to renew a licence; a visa wants more."
 msgstr ""
+"كم من الوقت قبل انتهاء الصلاحية يبدأ التنبيه بذلك. ثلاثون يومًا شهر "
+"لتجديد رخصة؛ التأشيرة تحتاج أكثر."
 
 msgid "How many"
-msgstr ""
+msgstr "كم العدد"
 
 msgid "How many of each"
-msgstr ""
+msgstr "كم من كل نوع"
 
 msgid "How many rows to fetch"
-msgstr ""
+msgstr "كم صفًا يُجلب"
 
 msgid ""
 "How many saves this document has had. `File Version` rows point at it, "
 "which is how the history panel knows whether what it is showing is the "
 "current text."
 msgstr ""
+"كم مرة حُفظ هذا المستند. صفوف `File Version` تشير إليه، وبذلك تعرف لوحة "
+"السجل ما إذا كان ما تعرضه هو النص الحالي."
 
 msgid ""
 "How many saves this workbook has had. Version history is not built; this "
 "is the counter it would hang off, and it costs nothing to keep."
 msgstr ""
+"كم مرة حُفظ هذا المصنَّف. سجل الإصدارات غير مبني؛ هذا هو العدّاد الذي "
+"سيرتكز عليه، والاحتفاظ به لا يكلّف شيئًا."
 
 msgid ""
 "How many times a day this workspace copies itself into R2. A plan term, "
 "so the schedule is a decision the control plane makes and this site "
 "carries out."
 msgstr ""
+"كم مرة في اليوم تنسخ مساحة العمل نفسها إلى R2. بند في الخطة، فالجدولة "
+"قرار يتخذه مستوى التحكم وينفّذه هذا الموقع."
 
 msgid "How many times it was followed."
-msgstr ""
+msgstr "كم مرة تمت متابعته."
 
 msgid ""
 "How the page is set: width, typeface, line spacing, and whether it is "
 "locked against accidental typing. The reader's choices about one "
 "document, not the workspace's about all of them."
 msgstr ""
+"كيف تُضبط الصفحة: العرض، ونوع الخط، وتباعد الأسطر، وما إذا كانت مقفلة ضد "
+"الكتابة العرضية. خيارات القارئ لمستند واحد، لا خيارات مساحة العمل لكل "
+"المستندات."
 
 msgid "How {0} matches"
-msgstr ""
+msgstr "كيف يطابق {0}"
 
 msgid "Html"
-msgstr ""
+msgstr "HTML"
 
 msgid "I have published them"
-msgstr ""
+msgstr "لقد نشرتها"
 
 msgid "Identity"
-msgstr ""
+msgstr "الهوية"
 
 msgid ""
 "If you already have an SPF record, add the include to it rather than "
 "publishing a second one — two SPF records is the same as none."
 msgstr ""
+"إذا كان لديك سجل SPF بالفعل، فأضف الإدراج إليه بدل نشر سجل ثانٍ — وجود "
+"سجلَّي SPF كعدم وجود أي منهما."
 
 msgid "Image height (px)"
-msgstr ""
+msgstr "ارتفاع الصورة (بكسل)"
 
 msgid "Image width (px)"
-msgstr ""
+msgstr "عرض الصورة (بكسل)"
 
 msgid "Import Identity"
-msgstr ""
+msgstr "هوية الاستيراد"
 
 msgid "Import Issue"
-msgstr ""
+msgstr "مشكلة استيراد"
 
 msgid "Import Plan"
-msgstr ""
+msgstr "خطة الاستيراد"
 
 msgid "Import Run"
-msgstr ""
+msgstr "تشغيل الاستيراد"
 
 msgid "Import Run Step"
-msgstr ""
+msgstr "خطوة تشغيل الاستيراد"
 
 msgid "Import Source"
-msgstr ""
+msgstr "مصدر الاستيراد"
 
 msgid "Import Step"
-msgstr ""
+msgstr "خطوة الاستيراد"
 
 msgid "Import a spreadsheet"
-msgstr ""
+msgstr "استيراد جدول بيانات"
 
 msgid "Importing"
-msgstr ""
+msgstr "جارٍ الاستيراد"
 
 msgid "In All files"
-msgstr ""
+msgstr "في كل الملفات"
 
 msgid "In app"
-msgstr ""
+msgstr "داخل التطبيق"
 
 msgid ""
 "In dependency order — parties before the invoices that link to them. A "
 "link that points at a step not yet run is an issue on the row, not a "
 "silent blank."
 msgstr ""
+"بترتيب التبعية — الأطراف قبل الفواتير التي ترتبط بها. الرابط الذي يشير "
+"إلى خطوة لم تُنفَّذ بعد يُسجَّل كمشكلة على الصف، لا كفراغ صامت."
 
 msgid "In the app"
-msgstr ""
+msgstr "داخل التطبيق"
 
 msgid "In this table"
-msgstr ""
+msgstr "في هذا الجدول"
 
 msgid "In {0}"
-msgstr ""
+msgstr "في {0}"
 
 msgid "Included with every plan"
-msgstr ""
+msgstr "مشمول في كل خطة"
 
 msgid "Incoming (IMAP)"
-msgstr ""
+msgstr "الوارد (IMAP)"
 
 msgid "Inherited from the conversation this message belongs to"
-msgstr ""
+msgstr "موروث من المحادثة التي تنتمي إليها هذه الرسالة"
 
 msgid "Into"
-msgstr ""
+msgstr "إلى"
 
 msgid "Invalid signature."
-msgstr ""
+msgstr "توقيع غير صالح."
 
 msgid "Invite someone"
-msgstr ""
+msgstr "دعوة شخص"
 
 msgid "Invited — they can sign in shortly"
-msgstr ""
+msgstr "تمت الدعوة — يمكنه تسجيل الدخول قريباً"
 
 msgid "Issued By"
-msgstr ""
+msgstr "صادر عن"
 
 msgid "It cannot end before it starts."
-msgstr ""
+msgstr "لا يمكن أن ينتهي قبل أن يبدأ."
 
 msgid ""
 "It is not part of your workspace, or nobody has given you access to it. "
 "An admin can change that."
 msgstr ""
+"إنه ليس جزءاً من مساحة عملك، أو لم يمنحك أحد صلاحية الوصول إليه. يمكن "
+"للمسؤول تغيير ذلك."
 
 msgid "It stops working after"
-msgstr ""
+msgstr "يتوقف عن العمل بعد"
 
 msgid "It switches itself off the day after this."
-msgstr ""
+msgstr "يتوقف تلقائيًا في اليوم التالي لهذا التاريخ."
 
 msgid ""
 "It was saved {0}. Reloading takes what is on the server; anything typed "
 "here and not saved goes with it."
 msgstr ""
+"حُفظ {0}. إعادة التحميل تأخذ ما على الخادم؛ وكل ما كُتب هنا ولم يُحفظ "
+"يضيع معها."
 
 msgid "Keep this one"
-msgstr ""
+msgstr "الاحتفاظ بهذه"
 
 msgid "Kept encrypted. Leave blank to keep the one already saved."
-msgstr ""
+msgstr "يُحفظ مشفّرًا. اتركه فارغًا للإبقاء على المحفوظ حاليًا."
 
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "اختصارات لوحة المفاتيح"
 
 msgid "Kind"
-msgstr ""
+msgstr "النوع"
 
 msgid "Last Error"
-msgstr ""
+msgstr "آخر خطأ"
 
 msgid "Last Message On"
-msgstr ""
+msgstr "آخر رسالة في"
 
 msgid "Last Notice"
-msgstr ""
+msgstr "آخر إشعار"
 
 msgid "Last Opened"
-msgstr ""
+msgstr "آخر فتح"
 
 msgid "Last Seen"
-msgstr ""
+msgstr "آخر ظهور"
 
 msgid "Last Sync"
-msgstr ""
+msgstr "آخر مزامنة"
 
 msgid "Last Sync Error"
-msgstr ""
+msgstr "خطأ آخر مزامنة"
 
 msgid "Last checked"
-msgstr ""
+msgstr "آخر فحص"
 
 msgid "Last edited by"
-msgstr ""
+msgstr "آخر تعديل بواسطة"
 
 msgid "Last used {0}"
-msgstr ""
+msgstr "آخر استخدام {0}"
 
 msgid "Layout"
-msgstr ""
+msgstr "التخطيط"
 
 msgid "Leave it empty for a moment rather than a span."
-msgstr ""
+msgstr "اتركه فارغاً إذا كان لحظة لا مدة."
 
 msgid "Leave it empty to send the subject on its own."
-msgstr ""
+msgstr "اتركه فارغًا لإرسال الموضوع وحده."
 
 msgid "Left (mm)"
-msgstr ""
+msgstr "يسار (مم)"
 
 msgid "Letter head"
-msgstr ""
+msgstr "ترويسة"
 
 msgid "Letter head deleted"
-msgstr ""
+msgstr "تم حذف الترويسة"
 
 msgid "Letter head saved"
-msgstr ""
+msgstr "تم حفظ الترويسة"
 
 msgid "Letter head: {0}"
-msgstr ""
+msgstr "ترويسة: {0}"
 
 msgid "Letter heads"
-msgstr ""
+msgstr "الترويسات"
 
 msgid "Licence"
-msgstr ""
+msgstr "رخصة"
 
 msgid "Light, dark, or matching your system."
-msgstr ""
+msgstr "فاتح أو داكن أو مطابق لنظامك."
 
 msgid "Line spacing"
-msgstr ""
+msgstr "تباعد الأسطر"
 
 msgid "Link copied"
-msgstr ""
+msgstr "تم نسخ الرابط"
 
 msgid "Link made"
-msgstr ""
+msgstr "تم إنشاء الرابط"
 
 msgid "Live and serving your workspace."
-msgstr ""
+msgstr "نشط ويخدم مساحة عملك."
 
 msgid "Loading activity"
-msgstr ""
+msgstr "جارٍ تحميل النشاط"
 
 msgid "Loading files"
-msgstr ""
+msgstr "جارٍ تحميل الملفات"
 
 msgid "Lock against typing"
-msgstr ""
+msgstr "قفل لمنع الكتابة"
 
 msgid "Lock these rows"
-msgstr ""
+msgstr "قفل هذه الصفوف"
 
 msgid "Locked By"
-msgstr ""
+msgstr "مقفل بواسطة"
 
 msgid "Locked On"
-msgstr ""
+msgstr "مقفل في"
 
 msgid "Locked — unlock it from the menu to type"
-msgstr ""
+msgstr "مقفل — ألغِ القفل من القائمة لتتمكن من الكتابة"
 
 msgid "Look at"
-msgstr ""
+msgstr "راقب"
 
 msgid "Look at {0}"
-msgstr ""
+msgstr "انظر إلى {0}"
 
 msgid "Looking at {0}."
-msgstr ""
+msgstr "يجري النظر في {0}."
 
 msgid "Looking…"
-msgstr ""
+msgstr "جارٍ البحث…"
 
 msgid "Loose"
-msgstr ""
+msgstr "متباعد"
 
 msgid "Lower runs first. The first rule that matches wins."
-msgstr ""
+msgstr "الأقل يُنفَّذ أولًا. أول قاعدة تطابق هي التي تفوز."
 
 msgid "Made on the mail server, so it appears in your other mail apps too."
-msgstr ""
+msgstr "يُنشأ على خادم البريد، فيظهر في تطبيقات البريد الأخرى لديك أيضاً."
 
 msgid "Mail"
-msgstr ""
+msgstr "بريد"
 
 msgid "Mail Rule"
-msgstr ""
+msgstr "قاعدة بريد"
 
 msgid "Mail is not set up for this workspace yet."
-msgstr ""
+msgstr "البريد غير مُعدّ لمساحة العمل هذه بعد."
 
 msgid "Mailbox"
-msgstr ""
+msgstr "صندوق بريد"
 
 msgid "Mailbox address"
-msgstr ""
+msgstr "عنوان صندوق البريد"
 
 msgid "Mailbox connected"
-msgstr ""
+msgstr "تم ربط صندوق البريد"
 
 msgid "Mailbox disconnected"
-msgstr ""
+msgstr "تم فصل صندوق البريد"
 
 msgid "Make a link"
-msgstr ""
+msgstr "إنشاء رابط"
 
 msgid "Make default"
-msgstr ""
+msgstr "اجعله الافتراضي"
 
 msgid "Make it"
-msgstr ""
+msgstr "إنشاء"
 
 msgid "Make it mine alone"
-msgstr ""
+msgstr "جعله لي وحدي"
 
 msgid "Make one from the header, then move things into it."
-msgstr ""
+msgstr "أنشئ واحداً من الشريط العلوي، ثم انقل الأشياء إليه."
 
 msgid ""
 "Make one in Files, price the job in it, then name the rows you want "
 "back."
 msgstr ""
+"أنشئ واحدًا في الملفات، وسعّر العمل فيه، ثم سمِّ الصفوف التي تريد "
+"استرجاعها."
 
 msgid "Make the tag “{0}”"
-msgstr ""
+msgstr "إنشاء الوسم “{0}”"
 
 msgid "Make this column wider"
-msgstr ""
+msgstr "توسيع هذا العمود"
 
 msgid "Making the sheet…"
-msgstr ""
+msgstr "جارٍ إنشاء جدول البيانات…"
 
 msgid "Malformed signature."
-msgstr ""
+msgstr "توقيع مشوَّه."
 
 msgid "Manage billing"
-msgstr ""
+msgstr "إدارة الفوترة"
 
 msgid "Manage people"
-msgstr ""
+msgstr "إدارة الأشخاص"
 
 msgid "Manage templates…"
-msgstr ""
+msgstr "إدارة القوالب…"
 
 msgid ""
 "Map everything and write nothing. The counts and the issues are real; "
 "the records are not."
-msgstr ""
+msgstr "طابق كل شيء ولا تكتب شيئًا. الأعداد والمشكلات حقيقية؛ السجلات ليست كذلك."
 
 msgid "Mapped"
-msgstr ""
+msgstr "مطابَق"
 
 msgid "Mark Read"
-msgstr ""
+msgstr "تحديد كمقروء"
 
 msgid "Mark all read"
-msgstr ""
+msgstr "تعليم الكل كمقروء"
 
 msgid "Mark it read"
-msgstr ""
+msgstr "علّمه كمقروء"
 
 msgid "Mark unread"
-msgstr ""
+msgstr "تعليم كغير مقروء"
 
 msgid "Markdown file"
-msgstr ""
+msgstr "ملف Markdown"
 
 msgid "Marked read"
-msgstr ""
+msgstr "تم التعليم كمقروء"
 
 msgid "Marked unread"
-msgstr ""
+msgstr "تم التعليم كغير مقروء"
 
 msgid "Marked {0} read"
-msgstr ""
+msgstr "تم تعليم {0} كمقروء"
 
 msgid "Marked {0} unread"
-msgstr ""
+msgstr "تم تعليم {0} كغير مقروء"
 
 msgid "Matches"
-msgstr ""
+msgstr "يطابق"
 
 msgid "Max Users"
-msgstr ""
+msgstr "الحد الأقصى للمستخدمين"
 
 msgid "Memo"
-msgstr ""
+msgstr "مذكرة"
 
 msgid "Message Count"
-msgstr ""
+msgstr "عدد الرسائل"
 
 msgid "Message templates"
-msgstr ""
+msgstr "قوالب الرسائل"
 
 msgid ""
 "Messages that mention this record file themselves here. You can also "
 "write one."
 msgstr ""
+"الرسائل التي تذكر هذا السجل تُحفظ هنا من تلقاء نفسها. ويمكنك كتابة رسالة "
+"أيضًا."
 
 msgid "Microsoft needs an app password where two-factor is on."
-msgstr ""
+msgstr "تحتاج Microsoft إلى كلمة مرور تطبيق حيث تكون المصادقة الثنائية مفعّلة."
 
 msgid "Mine"
-msgstr ""
+msgstr "لي"
 
 msgid "Missing signature."
-msgstr ""
+msgstr "التوقيع مفقود."
 
 msgid "Model"
-msgstr ""
+msgstr "النموذج"
 
 msgid "Models the workspace may choose, with prices."
-msgstr ""
+msgstr "النماذج التي يمكن لمساحة العمل اختيارها، مع الأسعار."
 
 msgid "More filters"
-msgstr ""
+msgstr "عوامل تصفية أكثر"
 
 msgid "More folders"
-msgstr ""
+msgstr "مجلدات أكثر"
 
 msgid "More for this record"
-msgstr ""
+msgstr "المزيد لهذا السجل"
 
 msgid "More for {0}"
-msgstr ""
+msgstr "المزيد لـ {0}"
 
 msgid "More than and less than need a number."
-msgstr ""
+msgstr "أكبر من وأصغر من يحتاجان إلى رقم."
 
 msgid "Move left"
-msgstr ""
+msgstr "تحريك لليسار"
 
 msgid "Move right"
-msgstr ""
+msgstr "تحريك لليمين"
 
 msgid "Move to"
-msgstr ""
+msgstr "نقل إلى"
 
 msgid "Move to Trash"
-msgstr ""
+msgstr "نقل إلى المحذوفات"
 
 msgid "Move to a folder"
-msgstr ""
+msgstr "نقل إلى مجلد"
 
 msgid "Move to the bin"
-msgstr ""
+msgstr "نقل إلى المحذوفات"
 
 msgid "Move {0} down"
-msgstr ""
+msgstr "تحريك {0} لأسفل"
 
 msgid "Move {0} up"
-msgstr ""
+msgstr "تحريك {0} لأعلى"
 
 msgid "Moved"
-msgstr ""
+msgstr "تم النقل"
 
 msgid "Moved to Trash"
-msgstr ""
+msgstr "تم النقل إلى المحذوفات"
 
 msgid "Moved to the bin"
-msgstr ""
+msgstr "تم النقل إلى المحذوفات"
 
 msgid "Moved {0} to Trash"
-msgstr ""
+msgstr "تم نقل {0} إلى المحذوفات"
 
 msgid ""
 "Moving a counter backwards will re-issue ids that already exist. The "
 "change is recorded against the series."
 msgstr ""
+"إرجاع العدّاد إلى الوراء سيُعيد إصدار معرّفات موجودة بالفعل. يُسجَّل "
+"التغيير على السلسلة."
 
 msgid "Moving about"
-msgstr ""
+msgstr "التنقل"
 
 msgid "Moving {0} things."
-msgstr ""
+msgstr "جارٍ نقل {0} عنصر."
 
 msgid "Moving {0}."
-msgstr ""
+msgstr "جارٍ نقل {0}."
 
 msgid "Must be unique"
-msgstr ""
+msgstr "يجب أن يكون فريدًا"
 
 msgid "Name somebody to share this with."
-msgstr ""
+msgstr "حدّد شخصًا لمشاركة هذا معه."
 
 msgid "Name this version"
-msgstr ""
+msgstr "تسمية هذه النسخة"
 
 msgid "Named range"
-msgstr ""
+msgstr "نطاق مُسمّى"
 
 msgid ""
 "Narrow what comes across, in Frappe's own filter shape. Applied on the "
 "source site, so what is excluded is never fetched."
 msgstr ""
+"ضيّق ما يُنقل، بصيغة مرشّحات Frappe نفسها. يُطبَّق على الموقع المصدر، "
+"فما يُستبعد لا يُجلب أبدًا."
 
 msgid "Never mind"
-msgstr ""
+msgstr "لا داعي"
 
 msgid "Never verified"
-msgstr ""
+msgstr "لم يُتحقَّق منه قط"
 
 msgid "New alert"
-msgstr ""
+msgstr "تنبيه جديد"
 
 msgid "New chat"
-msgstr ""
+msgstr "محادثة جديدة"
 
 msgid "New event"
-msgstr ""
+msgstr "حدث جديد"
 
 msgid "New file"
-msgstr ""
+msgstr "ملف جديد"
 
 msgid "New folder"
-msgstr ""
+msgstr "مجلد جديد"
 
 msgid "New folder in {0}"
-msgstr ""
+msgstr "مجلد جديد في {0}"
 
 msgid "New format"
-msgstr ""
+msgstr "نموذج جديد"
 
 msgid "New id"
-msgstr ""
+msgstr "معرّف جديد"
 
 msgid "New in {0}"
-msgstr ""
+msgstr "جديد في {0}"
 
 msgid "New letter head"
-msgstr ""
+msgstr "ترويسة جديدة"
 
 msgid "New mail for this address arrives here."
-msgstr ""
+msgstr "يصل البريد الجديد لهذا العنوان هنا."
 
 msgid "New message"
-msgstr ""
+msgstr "رسالة جديدة"
 
 msgid "New password"
-msgstr ""
+msgstr "كلمة مرور جديدة"
 
 msgid "New print format"
-msgstr ""
+msgstr "نموذج طباعة جديد"
 
 msgid "New records are paused. Nothing is lost — delete something, or upgrade."
-msgstr ""
+msgstr "إنشاء السجلات الجديدة متوقف. لم يُفقد شيء — احذف شيئاً أو ارتقِ بخطتك."
 
 msgid "New role"
-msgstr ""
+msgstr "دور جديد"
 
 msgid "New template"
-msgstr ""
+msgstr "قالب جديد"
 
 msgid "Next conversation"
-msgstr ""
+msgstr "المحادثة التالية"
 
 msgid "No accounting app"
-msgstr ""
+msgstr "لا يوجد تطبيق محاسبة"
 
 msgid "No address yet"
-msgstr ""
+msgstr "لا يوجد عنوان بعد"
 
 msgid "No addresses yet"
-msgstr ""
+msgstr "لا توجد عناوين بعد"
 
 msgid "No alerts yet"
-msgstr ""
+msgstr "لا توجد تنبيهات بعد"
 
 msgid "No app in this workspace names its records by a series."
-msgstr ""
+msgstr "لا يوجد تطبيق في مساحة العمل هذه يسمّي سجلاته بسلسلة."
 
 msgid "No apps yet"
-msgstr ""
+msgstr "لا توجد تطبيقات بعد"
 
 msgid "No camera was found on this device."
-msgstr ""
+msgstr "لم يُعثر على كاميرا في هذا الجهاز."
 
 msgid "No changes recorded"
-msgstr ""
+msgstr "لا تغييرات مسجلة"
 
 msgid "No comments"
-msgstr ""
+msgstr "لا تعليقات"
 
 msgid "No date to draw"
-msgstr ""
+msgstr "لا تاريخ للرسم"
 
 msgid "No dates to draw"
-msgstr ""
+msgstr "لا تواريخ للرسم"
 
 msgid "No earlier versions yet"
-msgstr ""
+msgstr "لا توجد نسخ سابقة بعد"
 
 msgid "No expiry"
-msgstr ""
+msgstr "بلا انتهاء صلاحية"
 
 msgid "No favourites"
-msgstr ""
+msgstr "لا مفضلة"
 
 msgid "No field"
-msgstr ""
+msgstr "بدون حقل"
 
 msgid "No field by that name"
-msgstr ""
+msgstr "لا حقل بهذا الاسم"
 
 msgid "No files"
-msgstr ""
+msgstr "لا ملفات"
 
 msgid "No files here yet — upload one instead."
-msgstr ""
+msgstr "لا ملفات هنا بعد — ارفع ملفاً بدلاً من ذلك."
 
 msgid "No files yet"
-msgstr ""
+msgstr "لا ملفات بعد"
 
 msgid "No filters yet. Add one to narrow the list."
-msgstr ""
+msgstr "لا مرشّحات بعد. أضف واحدًا لتضييق القائمة."
 
 msgid "No folders"
-msgstr ""
+msgstr "لا مجلدات"
 
 msgid "No further detail was returned."
-msgstr ""
+msgstr "لم تُرجَع تفاصيل إضافية."
 
 msgid "No icon"
-msgstr ""
+msgstr "لا أيقونة"
 
 msgid "No icon by that name"
-msgstr ""
+msgstr "لا أيقونة بهذا الاسم"
 
 msgid "No mail about this yet"
-msgstr ""
+msgstr "لا بريد عن هذا بعد"
 
 msgid "No mail yet"
-msgstr ""
+msgstr "لا بريد بعد"
 
 msgid "No plan running yet"
-msgstr ""
+msgstr "لا توجد خطة سارية بعد"
 
 msgid "No plan yet"
-msgstr ""
+msgstr "لا توجد خطة بعد"
 
 msgid "No roles of your own yet"
-msgstr ""
+msgstr "لا توجد أدوار خاصة بك بعد"
 
 msgid "No screen in this workspace shows {0}."
-msgstr ""
+msgstr "لا توجد شاشة في مساحة العمل هذه تعرض {0}."
 
 msgid "No space named {0} is enabled here."
-msgstr ""
+msgstr "لا توجد مساحة باسم {0} مفعّلة هنا."
 
 msgid "No spaces yet"
-msgstr ""
+msgstr "لا توجد مساحات بعد"
 
 msgid "No such address."
-msgstr ""
+msgstr "لا يوجد عنوان بهذا الاسم."
 
 msgid "No such person."
-msgstr ""
+msgstr "لا يوجد شخص بهذا الاسم."
 
 msgid "No templates yet"
-msgstr ""
+msgstr "لا توجد قوالب بعد"
 
 msgid "No {0} against this yet."
-msgstr ""
+msgstr "لا {0} على هذا بعد."
 
 msgid "No {0} files here yet — upload one instead."
-msgstr ""
+msgstr "لا ملفات {0} هنا بعد — ارفع ملفاً بدلاً من ذلك."
 
 msgid "No {0} to nest."
-msgstr ""
+msgstr "لا {0} للتداخل."
 
 msgid "No {0} yet"
-msgstr ""
+msgstr "لا يوجد {0} بعد"
 
 msgid "Nobody"
-msgstr ""
+msgstr "لا أحد"
 
 msgid "Nobody by role"
-msgstr ""
+msgstr "لا أحد حسب الدور"
 
 msgid "Nobody by that name"
-msgstr ""
+msgstr "لا أحد بهذا الاسم"
 
 msgid "Nobody has given you an address yet. An admin can add one in Settings."
-msgstr ""
+msgstr "لم يمنحك أحد عنواناً بعد. يمكن للمسؤول إضافة عنوان من الإعدادات."
 
 msgid "Nobody to assign it to."
-msgstr ""
+msgstr "لا أحد لإسناده إليه."
 
 msgid "Nobody yet"
-msgstr ""
+msgstr "لا أحد بعد"
 
 msgid "None of these records has both a start and an end."
-msgstr ""
+msgstr "لا سجل من هذه السجلات له بداية ونهاية معًا."
 
 msgid ""
 "None yet. A letter head is the band above and below every printed page — "
 "a logo, an address, a footer — and one format can use another's."
 msgstr ""
+"لا شيء بعد. الترويسة هي الشريط أعلى وأسفل كل صفحة مطبوعة — شعار، عنوان، "
+"تذييل — ويمكن لنموذج طباعة أن يستخدم ترويسة نموذج آخر."
 
 msgid "Normal"
-msgstr ""
+msgstr "عادي"
 
 msgid "Not about this record"
-msgstr ""
+msgstr "ليس عن هذا السجل"
 
 msgid "Not available yet — the platform has no signing key configured."
-msgstr ""
+msgstr "غير متاح بعد — لا يوجد مفتاح توقيع مُعدّ على المنصة."
 
 msgid "Not connecting"
-msgstr ""
+msgstr "لا يتصل"
 
 msgid "Not on this plan"
-msgstr ""
+msgstr "غير متاح في هذه الخطة"
 
 msgid "Not permitted."
-msgstr ""
+msgstr "غير مسموح."
 
 msgid "Not pinned"
-msgstr ""
+msgstr "غير مثبّت"
 
 msgid "Not read yet"
-msgstr ""
+msgstr "غير مقروء بعد"
 
 msgid "Not set"
-msgstr ""
+msgstr "غير محدد"
 
 msgid ""
 "Not set up yet. Setting it up writes the plan and the records its steps "
 "write against; it reads nothing and moves nothing."
 msgstr ""
+"لم يُعد بعد. إعداده يكتب الخطة والسجلات التي تكتب خطواته عليها؛ ولا يقرأ "
+"شيئًا ولا ينقل شيئًا."
 
 msgid "Not shared"
-msgstr ""
+msgstr "غير مشارَك"
 
 msgid "Not something a message can be turned into."
-msgstr ""
+msgstr "ليس شيئًا يمكن تحويل رسالة إليه."
 
 msgid "Not verified yet"
-msgstr ""
+msgstr "لم يُتحقق منه بعد"
 
 msgid "Not yours to see."
-msgstr ""
+msgstr "ليس من حقك الاطلاع عليه."
 
 msgid "Not yours to set up."
-msgstr ""
+msgstr "ليس من حقك إعداده."
 
 msgid "Nothing"
-msgstr ""
+msgstr "لا شيء"
 
 msgid "Nothing at this address"
-msgstr "لا يوجد شيء على هذا العنوان"
+msgstr "لا شيء على هذا العنوان"
 
 msgid "Nothing can be created for {0} here."
-msgstr ""
+msgstr "لا يمكن إنشاء أي شيء لـ {0} هنا."
 
 msgid ""
 "Nothing can be invoiced or paid until this exists. It is four answers, "
 "and it runs the same setup the accounting app would have asked for."
 msgstr ""
+"لا يمكن إصدار فواتير أو دفعات قبل وجود هذا. أربع إجابات فقط، وهو يشغّل "
+"الإعداد نفسه الذي كان تطبيق المحاسبة سيطلبه."
 
 msgid "Nothing else to show."
-msgstr ""
+msgstr "لا شيء آخر لعرضه."
 
 msgid ""
 "Nothing has been added to your workspace. An admin can add a space, and "
 "it appears here."
-msgstr ""
+msgstr "لم يُضف شيء إلى مساحة عملك. يمكن للمسؤول إضافة مساحة، فتظهر هنا."
 
 msgid ""
 "Nothing has been deleted. Free some space, or add more below — new "
 "uploads resume as soon as there is room."
 msgstr ""
+"لم يُحذف شيء. أفرغ بعض المساحة أو أضف المزيد أدناه — وتستأنف عمليات "
+"الرفع الجديدة فور توفر مكان."
 
 msgid "Nothing has been said about this one yet."
-msgstr ""
+msgstr "لم يُقل شيء عن هذا بعد."
 
 msgid ""
 "Nothing has been turned on for this workspace yet. Get in touch and we "
 "will sort it out."
-msgstr ""
+msgstr "لم يُفعَّل أي شيء لمساحة العمل هذه بعد. تواصل معنا وسنتولى الأمر."
 
 msgid ""
 "Nothing has changed yet and your workspace works normally. Pay by {0} or "
 "it is switched off until you do."
 msgstr ""
+"لم يتغير شيء بعد ومساحة عملك تعمل كالمعتاد. ادفع قبل {0} وإلا فستُوقَف "
+"حتى تدفع."
 
 msgid "Nothing has happened to this one yet."
-msgstr ""
+msgstr "لم يحدث شيء لهذا بعد."
 
 msgid "Nothing here"
-msgstr ""
+msgstr "لا شيء هنا"
 
 msgid "Nothing here runs on a workflow."
-msgstr ""
+msgstr "لا شيء هنا يعمل بسير عمل."
 
 msgid "Nothing here so far."
-msgstr ""
+msgstr "لا شيء هنا حتى الآن."
 
 msgid "Nothing here so far. New starts the first one."
-msgstr ""
+msgstr "لا شيء هنا حتى الآن. «جديد» يبدأ الأول."
 
 msgid "Nothing here yet"
-msgstr ""
+msgstr "لا شيء هنا بعد"
 
 msgid "Nothing here yet."
-msgstr ""
+msgstr "لا شيء هنا بعد."
 
 msgid ""
 "Nothing is blocked and nothing has been deleted. Until {0} the workspace "
 "works normally, except that it cannot grow past where it is now. After "
 "that, new uploads stop until there is room."
 msgstr ""
+"لا شيء محظور ولم يُحذف شيء. حتى {0} تعمل مساحة العمل كالمعتاد، إلا أنها "
+"لا يمكن أن تتجاوز حجمها الحالي. بعد ذلك تتوقف عمليات الرفع الجديدة حتى "
+"يتوفر مكان."
 
 msgid "Nothing is filed against this one yet."
-msgstr ""
+msgstr "لم يُحفظ شيء على هذا بعد."
 
 msgid "Nothing matches the filters. Clear one to widen the list."
-msgstr ""
+msgstr "لا شيء يطابق عوامل التصفية. امسح أحدها لتوسيع القائمة."
 
 msgid "Nothing matches “{0}”"
-msgstr ""
+msgstr "لا شيء يطابق “{0}”"
 
 msgid "Nothing matches “{0}”."
-msgstr ""
+msgstr "لا شيء يطابق “{0}”."
 
 msgid "Nothing on offer yet"
-msgstr ""
+msgstr "لا توجد عروض بعد"
 
 msgid "Nothing on this record has changed since it was created."
-msgstr ""
+msgstr "لم يتغير شيء في هذا السجل منذ إنشائه."
 
 msgid "Nothing on this screen can be changed."
-msgstr ""
+msgstr "لا يمكن تغيير أي شيء في هذه الشاشة."
 
 msgid "Nothing open"
-msgstr ""
+msgstr "لا شيء مفتوح"
 
 msgid "Nothing opened yet"
-msgstr ""
+msgstr "لم يُفتح شيء بعد"
 
 msgid "Nothing selected"
-msgstr ""
+msgstr "لا شيء محدد"
 
 msgid "Nothing shared with you"
-msgstr ""
+msgstr "لا شيء مشارَك معك"
 
 msgid "Nothing stored yet"
-msgstr ""
+msgstr "لا شيء مخزّن بعد"
 
 msgid "Nothing to alert on"
-msgstr ""
+msgstr "لا شيء للتنبيه عليه"
 
 msgid "Nothing to choose from"
-msgstr ""
+msgstr "لا شيء للاختيار منه"
 
 msgid "Nothing to count — every record here leaves this field empty."
-msgstr ""
+msgstr "لا شيء للعد — كل سجل هنا يترك هذا الحقل فارغًا."
 
 msgid "Nothing to import"
-msgstr ""
+msgstr "لا شيء للاستيراد"
 
 msgid "Nothing to measure"
-msgstr ""
+msgstr "لا شيء للقياس"
 
 msgid "Nothing to name"
-msgstr ""
+msgstr "لا شيء لتسميته"
 
 msgid "Nothing to nest by"
-msgstr ""
+msgstr "لا شيء للتداخل حسبه"
 
 msgid "Nothing to plot"
-msgstr ""
+msgstr "لا شيء للرسم"
 
 msgid "Nothing to print yet"
-msgstr ""
+msgstr "لا شيء للطباعة بعد"
 
 msgid "Nothing to show yet"
-msgstr ""
+msgstr "لا شيء لعرضه بعد"
 
 msgid "Nothing uses AI yet"
-msgstr ""
+msgstr "لا شيء يستخدم الذكاء الاصطناعي بعد"
 
 msgid "Nothing was refused"
-msgstr ""
+msgstr "لم يُرفض شيء"
 
 msgid "Nothing was selected to print."
-msgstr ""
+msgstr "لم يُحدَّد شيء للطباعة."
 
 msgid "Nothing was selected."
-msgstr ""
+msgstr "لم يتم تحديد شيء."
 
 msgid "Nothing yet"
-msgstr ""
+msgstr "لا شيء بعد"
 
 msgid "Nothing yet."
-msgstr ""
+msgstr "لا شيء بعد."
 
 msgid "Nothing you have liked is on this screen."
-msgstr ""
+msgstr "لا شيء من مفضلاتك على هذه الشاشة."
 
 msgid "Notice"
-msgstr ""
+msgstr "إشعار"
 
 msgid "Notifications ({0})"
-msgstr ""
+msgstr "الإشعارات ({0})"
 
 msgid "Notifications leave from"
-msgstr ""
+msgstr "تُرسل الإشعارات من"
 
 msgid "Off means the app only, whatever is ticked below."
-msgstr ""
+msgstr "الإيقاف يعني التطبيق فقط، أياً كان المحدد أدناه."
 
 msgid ""
 "Off stops every feature a workspace is allowed to stop. Features "
 "declared as critical keep running — they are the process, not an "
 "assistant beside it."
 msgstr ""
+"الإيقاف يوقف كل ميزة يُسمح لمساحة العمل بإيقافها. الميزات المعلنة حرجة "
+"تستمر في العمل — فهي العملية نفسها، لا مساعداً بجانبها."
 
 msgid "Older conversations"
-msgstr ""
+msgstr "المحادثات الأقدم"
 
 msgid "On"
-msgstr ""
+msgstr "مفعّل"
 
 msgid "On each card"
-msgstr ""
+msgstr "على كل بطاقة"
 
 msgid "On this list"
-msgstr ""
+msgstr "في هذه القائمة"
 
 msgid ""
 "On {0} everything held for this workspace is deleted for good — the "
 "database, every file and every backup. Paying before then restores it in "
 "full."
 msgstr ""
+"في {0} يُحذف نهائياً كل ما هو محفوظ لمساحة العمل هذه — قاعدة البيانات "
+"وكل ملف وكل نسخة احتياطية. والدفع قبل ذلك يستعيد كل شيء بالكامل."
 
 msgid ""
 "One is kept the first time this is saved, and every few minutes of work "
 "after that."
-msgstr ""
+msgstr "تُحفظ نسخة عند أول حفظ، ثم كل بضع دقائق من العمل بعد ذلك."
 
 msgid ""
 "One per line. The first is what new records use. `#` is a digit, so "
 "ACME-.YYYY.-.##### counts up within the year."
 msgstr ""
+"واحد في كل سطر. الأول هو ما تستخدمه السجلات الجديدة. `#` رقم، لذا فإن "
+"ACME-.YYYY.-.##### يتصاعد داخل السنة."
 
 msgid "One permission"
-msgstr ""
+msgstr "صلاحية واحدة"
 
 msgid "One person"
-msgstr ""
+msgstr "شخص واحد"
 
 msgid "One record will have {0} set to this."
-msgstr ""
+msgstr "سجل واحد ستُضبط فيه قيمة {0} على هذا."
 
 msgid "One seat"
-msgstr ""
+msgstr "مقعد واحد"
 
 msgid "One seat used"
-msgstr ""
+msgstr "مقعد واحد مستخدم"
 
 msgid "One, two, three"
-msgstr ""
+msgstr "واحد، اثنان، ثلاثة"
 
 msgid "OneSpace AI Feature Setting"
-msgstr ""
+msgstr "إعداد ميزة الذكاء الاصطناعي في OneSpace"
 
 msgid "OneSpace AI Settings"
-msgstr ""
+msgstr "إعدادات الذكاء الاصطناعي في OneSpace"
 
 msgid "OneSpace Chat Message"
-msgstr ""
+msgstr "رسالة محادثة OneSpace"
 
 msgid "OneSpace Chat Session"
-msgstr ""
+msgstr "جلسة محادثة OneSpace"
 
 msgid "OneSpace Hidden View"
-msgstr ""
+msgstr "عرض مخفي في OneSpace"
 
 msgid "OneSpace Saved View"
-msgstr ""
+msgstr "عرض محفوظ في OneSpace"
 
 msgid "OneSpace Site State"
-msgstr ""
+msgstr "حالة موقع OneSpace"
 
 msgid "Only a cancelled document can be amended."
-msgstr ""
+msgstr "لا يمكن تعديل إلا مستند ملغى."
 
 msgid "Only a draft can be submitted."
-msgstr ""
+msgstr "لا يمكن اعتماد إلا مسودة."
 
 msgid "Only a submitted document can be cancelled."
-msgstr ""
+msgstr "لا يمكن إلغاء إلا مستند معتمد."
 
 msgid "Only a workspace admin can change a shared screen."
-msgstr ""
+msgstr "تغيير شاشة مشتركة متاح لمسؤول مساحة العمل فقط."
 
 msgid "Only a workspace admin can change alerts."
-msgstr ""
+msgstr "تغيير التنبيهات متاح لمسؤول مساحة العمل فقط."
 
 msgid "Only a workspace admin can change how records are named."
-msgstr ""
+msgstr "تغيير طريقة تسمية السجلات متاح لمسؤول مساحة العمل فقط."
 
 msgid "Only a workspace admin can change message templates."
-msgstr ""
+msgstr "تغيير قوالب الرسائل متاح لمسؤول مساحة العمل فقط."
 
 msgid "Only a workspace admin can change print formats."
-msgstr ""
+msgstr "تغيير نماذج الطباعة متاح لمسؤول مساحة العمل فقط."
 
 msgid "Only a workspace admin can change these settings."
-msgstr ""
+msgstr "تغيير هذه الإعدادات متاح لمسؤول مساحة العمل فقط."
 
 msgid "Only a workspace admin can connect a mailbox for other people."
-msgstr ""
+msgstr "ربط صندوق بريد لأشخاص آخرين متاح لمسؤول مساحة العمل فقط."
 
 msgid "Only a workspace admin can do that."
-msgstr ""
+msgstr "هذا الإجراء متاح لمسؤول مساحة العمل فقط."
 
 msgid "Only a workspace admin can manage addresses."
-msgstr ""
+msgstr "إدارة العناوين متاحة لمسؤول مساحة العمل فقط."
 
 msgid "Only a workspace admin can see this."
-msgstr ""
+msgstr "لا يرى هذا إلا مسؤول مساحة العمل."
 
 msgid "Only a workspace admin can verify a domain."
-msgstr ""
+msgstr "توثيق نطاق متاح لمسؤول مساحة العمل فقط."
 
 msgid "Only here."
-msgstr ""
+msgstr "هنا فقط."
 
 msgid "Only models that can do this job are listed."
-msgstr ""
+msgstr "تُعرض فقط النماذج القادرة على هذه المهمة."
 
 msgid "Only my favourites"
-msgstr ""
+msgstr "مفضلاتي فقط"
 
 msgid "Only people whose role already reaches this can see it."
-msgstr ""
+msgstr "لا يراه إلا من يصل دوره إليه أصلاً."
 
 msgid "Only people whose role already reaches this record can see it."
-msgstr ""
+msgstr "لا يراه إلا من يصل دوره إلى هذا السجل أصلًا."
 
 msgid ""
 "Only rows this person liked. A flag rather than a filter on _liked_by: "
 "that column holds user ids, so a filter naming it could ask what a "
 "colleague liked."
 msgstr ""
+"الصفوف التي أعجبت هذا الشخص فقط. علَم بدلاً من مرشِّح على _liked_by: ذلك "
+"العمود يحمل معرّفات المستخدمين، فمرشِّح يذكره قد يسأل عمّا أعجب زميلاً."
 
 msgid "Only some domains"
-msgstr ""
+msgstr "نطاقات محددة فقط"
 
 msgid "Only when"
-msgstr ""
+msgstr "فقط عندما"
 
 msgid "Open as a page"
-msgstr ""
+msgstr "فتح كصفحة"
 
 msgid "Open in the builder"
-msgstr ""
+msgstr "فتح في المصمم"
 
 msgid "Open in the editor"
-msgstr ""
+msgstr "فتح في المحرر"
 
 msgid "Open it"
-msgstr ""
+msgstr "فتحه"
 
 msgid ""
 "Open it, select the rows including their headings, and choose Name this "
 "range."
-msgstr ""
+msgstr "افتحه، وحدّد الصفوف بما فيها عناوينها، ثم اختر «تسمية هذا النطاق»."
 
 msgid "Open on its own screen"
-msgstr ""
+msgstr "فتح في شاشة خاصة به"
 
 msgid "Open the files"
-msgstr ""
+msgstr "فتح الملفات"
 
 msgid "Open this row"
-msgstr ""
+msgstr "فتح هذا الصف"
 
 msgid "Open this screen with it"
-msgstr ""
+msgstr "فتح هذه الشاشة به"
 
 msgid "Open {0} beside this"
-msgstr ""
+msgstr "فتح {0} بجانب هذا"
 
 msgid "Open {0} in the editor"
-msgstr ""
+msgstr "فتح {0} في المحرر"
 
 msgid "Opens this screen for whoever this screen belongs to."
-msgstr ""
+msgstr "يفتح هذه الشاشة لمن تعود إليه."
 
 msgid "Or a fixed image URL"
-msgstr ""
+msgstr "أو رابط صورة ثابت"
 
 msgid "Or an emoji"
-msgstr ""
+msgstr "أو رمز تعبيري"
 
 msgid "Or whoever is in"
-msgstr ""
+msgstr "أو من هو في"
 
 msgid ""
 "Order within the session. Not creation time: a turn and the tool results "
 "that answer it are written in one request and can share a timestamp."
 msgstr ""
+"الترتيب داخل الجلسة. ليس وقت الإنشاء: الدور ونتائج الأدوات التي تجيب "
+"عليه تُكتب في طلب واحد وقد تتشارك الطابع الزمني نفسه."
 
 msgid ""
 "Otherwise it is yours alone. Sharing does not widen what the view can "
 "reach."
-msgstr ""
+msgstr "وإلا فهو لك وحدك. والمشاركة لا توسّع ما يصل إليه العرض."
 
 msgid "Outgoing (SMTP)"
-msgstr ""
+msgstr "الصادر (SMTP)"
 
 msgid "Outline"
-msgstr ""
+msgstr "مخطط المستند"
 
 msgid "Outside mailboxes"
-msgstr ""
+msgstr "صناديق بريد خارجية"
 
 msgid "Over the limit for {0}"
-msgstr ""
+msgstr "تجاوزت الحد لـ {0}"
 
 msgid "Over the limit, but not blocked until {0}."
-msgstr ""
+msgstr "تجاوزت الحد، لكن دون حظر حتى {0}."
 
 msgid "Overdue and mine"
-msgstr ""
+msgstr "متأخر وخاص بي"
 
 msgid "Page Length"
-msgstr ""
+msgstr "طول الصفحة"
 
 msgid "Page number"
-msgstr ""
+msgstr "رقم الصفحة"
 
 msgid "Page setup"
-msgstr ""
+msgstr "إعداد الصفحة"
 
 msgid "Password changed"
-msgstr ""
+msgstr "تم تغيير كلمة المرور"
 
 msgid "Payload"
-msgstr ""
+msgstr "الحمولة"
 
 msgid "Payment received — your balance updates in a moment"
-msgstr ""
+msgstr "تم استلام الدفعة — يتحدث رصيدك بعد لحظات"
 
 msgid "People"
-msgstr ""
+msgstr "الأشخاص"
 
 msgid "Permission for the camera was refused."
-msgstr ""
+msgstr "تم رفض إذن الكاميرا."
 
 msgid "Permit"
-msgstr ""
+msgstr "تصريح"
 
 msgid "Person"
-msgstr ""
+msgstr "شخص"
 
 msgid "Photo {0}.jpg"
-msgstr ""
+msgstr "صورة {0}.jpg"
 
 msgid "Pick a conversation from the list."
-msgstr ""
+msgstr "اختر محادثة من القائمة."
 
 msgid "Pick an icon"
-msgstr ""
+msgstr "اختيار أيقونة"
 
 msgid "Pick something on the page to change what it says."
-msgstr ""
+msgstr "اختر عنصرًا في الصفحة لتغيير نصه."
 
 msgid "Pick the date to count from."
-msgstr ""
+msgstr "اختر التاريخ الذي يبدأ العد منه."
 
 msgid "Pick two dates"
-msgstr ""
+msgstr "اختيار تاريخين"
 
 msgid "Pin"
-msgstr ""
+msgstr "تثبيت"
 
 msgid "Pin to the left edge"
-msgstr ""
+msgstr "تثبيت على الحافة اليسرى"
 
 msgid "Pin to the right edge"
-msgstr ""
+msgstr "تثبيت على الحافة اليمنى"
 
 msgid "Place Of Issue"
-msgstr ""
+msgstr "مكان الإصدار"
 
 msgid "Plan Code"
-msgstr ""
+msgstr "رمز الخطة"
 
 msgid "Plan changed"
-msgstr ""
+msgstr "تم تغيير الخطة"
 
 msgid ""
 "Platform policy per feature: what may be disabled, what model is pinned, "
 "what the ceiling is."
 msgstr ""
+"سياسة المنصة لكل ميزة: ما الذي يمكن تعطيله، وأي نموذج مثبَّت، وما الحد "
+"الأقصى."
 
 msgid "Preferences"
-msgstr ""
+msgstr "التفضيلات"
 
 msgid "Previous conversation"
-msgstr ""
+msgstr "المحادثة السابقة"
 
 msgid "Print formats"
-msgstr ""
+msgstr "نماذج الطباعة"
 
 msgid "Print preview"
-msgstr ""
+msgstr "معاينة الطباعة"
 
 msgid ""
 "Printing with a letter head is on under Printing, but none of these is "
 "the default — so nothing is added to the page. Make one default."
 msgstr ""
+"الطباعة بترويسة مفعّلة ضمن الطباعة، لكن لا شيء من هذه هو الافتراضي — فلا "
+"يُضاف شيء إلى الصفحة. اجعل واحدًا افتراضيًا."
 
 msgid "Privately to"
-msgstr ""
+msgstr "نسخة مخفية إلى"
 
 msgid "Problems"
-msgstr ""
+msgstr "مشكلات"
 
 msgid "Profile saved"
-msgstr ""
+msgstr "تم حفظ الملف الشخصي"
 
 msgid "Prompt Addendum"
-msgstr ""
+msgstr "ملحق التعليمات"
 
 msgid "Pulled By"
-msgstr ""
+msgstr "سُحب بواسطة"
 
 msgid "Pulled On"
-msgstr ""
+msgstr "تاريخ السحب"
 
 msgid "Push"
-msgstr ""
+msgstr "إشعارات فورية"
 
 msgid "Push notifications are not available yet"
-msgstr ""
+msgstr "الإشعارات الفورية غير متاحة بعد"
 
 msgid "Push notifications are not available yet."
-msgstr ""
+msgstr "إخطارات الدفع غير متاحة بعد."
 
 msgid "Put back"
-msgstr ""
+msgstr "استعادة"
 
 msgid "Put it back"
-msgstr ""
+msgstr "أعده إلى مكانه"
 
 msgid "Quarterly review"
-msgstr ""
+msgstr "مراجعة ربع سنوية"
 
 msgid "Quota Enforcement"
-msgstr ""
+msgstr "تطبيق الحصة"
 
 msgid "Read everything, change nothing, and say what would happen"
-msgstr ""
+msgstr "قراءة كل شيء دون تغيير أي شيء، وبيان ما سيحدث"
 
 msgid "Reading…"
-msgstr ""
+msgstr "جارٍ القراءة…"
 
 msgid "Reads invoices and contacts, edits neither."
-msgstr ""
+msgstr "يقرأ الفواتير وجهات الاتصال، ولا يعدّل أياً منهما."
 
 msgid "Ready"
-msgstr ""
+msgstr "جاهز"
 
 msgid "Recent"
-msgstr ""
+msgstr "الأخيرة"
 
 msgid "Recommended"
-msgstr ""
+msgstr "موصى به"
 
 msgid "Refresh folders"
-msgstr ""
+msgstr "تحديث المجلدات"
 
 msgid "Refreshing…"
-msgstr ""
+msgstr "جارٍ التحديث…"
 
 msgid "Refused"
-msgstr ""
+msgstr "مرفوض"
 
 msgid "Region"
-msgstr ""
+msgstr "المنطقة"
 
 msgid "Registration"
-msgstr ""
+msgstr "التسجيل"
 
 msgid "Registry Json"
-msgstr ""
+msgstr "JSON الفهرس"
 
 msgid "Rehearse"
-msgstr ""
+msgstr "تجربة"
 
 msgid "Released"
-msgstr ""
+msgstr "تم الإصدار"
 
 msgid "Reload it"
-msgstr ""
+msgstr "إعادة تحميله"
 
 msgid "Reminded On"
-msgstr ""
+msgstr "تاريخ التذكير"
 
 msgid "Remove from favourites"
-msgstr ""
+msgstr "إزالة من المفضلة"
 
 msgid "Remove it"
-msgstr ""
+msgstr "إزالته"
 
 msgid "Remove the picture"
-msgstr ""
+msgstr "إزالة الصورة"
 
 msgid "Remove the test"
-msgstr ""
+msgstr "إزالة الاختبار"
 
 msgid "Remove this address"
-msgstr ""
+msgstr "إزالة هذا العنوان"
 
 msgid "Remove this column"
-msgstr ""
+msgstr "إزالة هذا العمود"
 
 msgid "Remove this filter"
-msgstr ""
+msgstr "إزالة هذا المرشّح"
 
 msgid "Remove this row"
-msgstr ""
+msgstr "إزالة هذا الصف"
 
 msgid "Remove this section"
-msgstr ""
+msgstr "إزالة هذا القسم"
 
 msgid "Remove {0}"
-msgstr ""
+msgstr "إزالة {0}"
 
 msgid "Remove {0} from favourites"
-msgstr ""
+msgstr "إزالة {0} من المفضلة"
 
 msgid "Rename this record"
-msgstr ""
+msgstr "إعادة تسمية هذا السجل"
 
 msgid "Rename this view"
-msgstr ""
+msgstr "إعادة تسمية هذا العرض"
 
 msgid "Renamed"
-msgstr ""
+msgstr "تمت إعادة التسمية"
 
 msgid ""
 "Rendered as a template with the document in scope, so {{ doc.customer }} "
 "works."
-msgstr ""
+msgstr "يُعرض كقالب مع المستند ضمن السياق، لذا يعمل {{ doc.customer }}."
 
 msgid "Rendering"
-msgstr ""
+msgstr "جارٍ الرسم"
 
 msgid "Renewed By"
-msgstr ""
+msgstr "جُدد بواسطة"
 
 msgid "Renews"
-msgstr ""
+msgstr "التجديد"
 
 msgid "Repeats at the bottom of every page."
-msgstr ""
+msgstr "يتكرر أسفل كل صفحة."
 
 msgid "Repeats at the top of every page."
-msgstr ""
+msgstr "يتكرر أعلى كل صفحة."
 
 msgid "Replace the image"
-msgstr ""
+msgstr "استبدال الصورة"
 
 msgid "Replace these rows with {0}"
-msgstr ""
+msgstr "استبدال هذه الصفوف بـ {0}"
 
 msgid "Reply automatically while I am away"
-msgstr ""
+msgstr "الرد تلقائيًا أثناء غيابي"
 
 msgid "Reply to all"
-msgstr ""
+msgstr "رد على الكل"
 
 msgid "Request failed"
-msgstr ""
+msgstr "فشل الطلب"
 
 msgid "Reset the columns"
-msgstr ""
+msgstr "إعادة ضبط الأعمدة"
 
 msgid "Restore this version"
-msgstr ""
+msgstr "استعادة هذه النسخة"
 
 msgid "Retention is a percentage of the invoice, between 0 and 100."
-msgstr ""
+msgstr "الاحتجاز نسبة مئوية من الفاتورة، بين 0 و100."
 
 msgid "Retired"
-msgstr ""
+msgstr "موقوف"
 
 msgid "Right (mm)"
-msgstr ""
+msgstr "يمين (مم)"
 
 msgid "Roles JSON"
-msgstr ""
+msgstr "JSON الأدوار"
 
 msgid "Roles appear here once this workspace has an app."
-msgstr ""
+msgstr "تظهر الأدوار هنا بمجرد أن يصبح لمساحة العمل هذه تطبيق."
 
 msgid "Roles you built"
-msgstr ""
+msgstr "الأدوار التي أنشأتها"
 
 msgid "Roles your apps came with"
-msgstr ""
+msgstr "الأدوار التي جاءت مع تطبيقاتك"
 
 msgid "Rows are sorted by this first, so each group arrives whole."
-msgstr ""
+msgstr "تُرتَّب الصفوف بهذا أولًا، فتصل كل مجموعة كاملة."
 
 msgid "Rows that were refused"
-msgstr ""
+msgstr "الصفوف المرفوضة"
 
 msgid "Rows written."
-msgstr ""
+msgstr "الصفوف المكتوبة."
 
 msgid "Rule removed"
-msgstr ""
+msgstr "تمت إزالة القاعدة"
 
 msgid "Rule saved"
-msgstr ""
+msgstr "تم حفظ القاعدة"
 
 msgid "Run"
-msgstr ""
+msgstr "تشغيل"
 
 msgid "Save as a new view"
-msgstr ""
+msgstr "حفظ كعرض جديد"
 
 msgid "Save away message"
-msgstr ""
+msgstr "حفظ رسالة الغياب"
 
 msgid "Save connection"
-msgstr ""
+msgstr "حفظ الاتصال"
 
 msgid "Save role"
-msgstr ""
+msgstr "حفظ الدور"
 
 msgid "Save series"
-msgstr ""
+msgstr "حفظ التسلسل"
 
 msgid "Save the changes here"
-msgstr ""
+msgstr "حفظ التغييرات هنا"
 
 msgid "Save this first, and you can attach files to it."
-msgstr ""
+msgstr "احفظ هذا أولًا، ثم يمكنك إرفاق ملفات به."
 
 msgid "Save this version"
-msgstr ""
+msgstr "حفظ هذه النسخة"
 
 msgid "Saved views"
-msgstr ""
+msgstr "العروض المحفوظة"
 
 msgid "Saved {0}"
-msgstr ""
+msgstr "حُفظ {0}"
 
 msgid "Saved — it takes effect shortly"
-msgstr ""
+msgstr "تم الحفظ — يسري قريباً"
 
 msgid "Saves"
-msgstr ""
+msgstr "عمليات الحفظ"
 
 msgid ""
 "Saves between this version and the one before it. The panel says '3 "
 "changes' rather than nothing at all."
 msgstr ""
+"عمليات الحفظ بين هذه النسخة والتي قبلها. تعرض اللوحة '3 تغييرات' بدلاً "
+"من لا شيء إطلاقاً."
 
 msgid "Saving {0} cells…"
-msgstr ""
+msgstr "جارٍ حفظ {0} خلية…"
 
 msgid "Saving…"
-msgstr ""
+msgstr "جارٍ الحفظ…"
 
 msgid "Say when it starts."
-msgstr ""
+msgstr "حدّد وقت البدء."
 
 msgid "Say when the alert should go out."
-msgstr ""
+msgstr "حدّد وقت إرسال التنبيه."
 
 msgid "Say who the alert goes to."
-msgstr ""
+msgstr "حدّد من يتلقى التنبيه."
 
 msgid "Screen"
-msgstr ""
+msgstr "شاشة"
 
 msgid "Search files"
-msgstr ""
+msgstr "البحث في الملفات"
 
 msgid "Search folders"
-msgstr ""
+msgstr "البحث في المجلدات"
 
 msgid "Search icons"
-msgstr ""
+msgstr "البحث في الأيقونات"
 
 msgid "Search mail"
-msgstr ""
+msgstr "البحث في البريد"
 
 msgid "Searching"
-msgstr ""
+msgstr "البحث"
 
 msgid "Search…"
-msgstr ""
+msgstr "بحث…"
 
 msgid "Secret"
-msgstr ""
+msgstr "سر"
 
 msgid "Section {0}"
-msgstr ""
+msgstr "القسم {0}"
 
 msgid "Security"
-msgstr ""
+msgstr "الأمان"
 
 msgid "See plans"
-msgstr ""
+msgstr "عرض الخطط"
 
 msgid "See what was refused"
-msgstr ""
+msgstr "عرض ما رُفض"
 
 msgid "Select all"
-msgstr ""
+msgstr "تحديد الكل"
 
 msgid "Select everything here"
-msgstr ""
+msgstr "تحديد كل ما هنا"
 
 msgid "Selecting"
-msgstr ""
+msgstr "التحديد"
 
 msgid ""
 "Send as you@yourcompany.com rather than on ours. Mail to that domain "
 "still goes wherever its MX points — connect those mailboxes under your "
 "own Mailbox tab to read them here."
 msgstr ""
+"أرسل باسم you@yourcompany.com بدلًا من نطاقنا. البريد إلى ذلك النطاق يظل "
+"يذهب إلى حيث يشير سجل MX الخاص به — اربط تلك الصناديق من تبويب صندوق "
+"البريد الخاص بك لقراءتها هنا."
 
 msgid "Send invite"
-msgstr ""
+msgstr "إرسال الدعوة"
 
 msgid "Send it"
-msgstr ""
+msgstr "إرساله"
 
 msgid "Send notifications from this"
-msgstr ""
+msgstr "إرسال الإشعارات من هذا"
 
 msgid "Send these rows to {0}"
-msgstr ""
+msgstr "إرسال هذه الصفوف إلى {0}"
 
 msgid "Sending address set"
-msgstr ""
+msgstr "تم تعيين عنوان الإرسال"
 
 msgid "Sending to that address again"
-msgstr ""
+msgstr "جارٍ الإرسال إلى ذلك العنوان مرة أخرى"
 
 msgid "Sends notifications"
-msgstr ""
+msgstr "يُرسل الإشعارات"
 
 msgid "Sent this hour"
-msgstr ""
+msgstr "أُرسلت هذه الساعة"
 
 msgid "Seq"
-msgstr ""
+msgstr "تسلسل"
 
 msgid "Series saved"
-msgstr ""
+msgstr "تم حفظ التسلسل"
 
 msgid "Serif"
-msgstr ""
+msgstr "سيريف"
 
 msgid "Session"
-msgstr ""
+msgstr "جلسة"
 
 msgid "Set this up"
-msgstr ""
+msgstr "إعداد هذا"
 
 msgid "Set up"
-msgstr ""
+msgstr "الإعداد"
 
 msgid "Set up books"
-msgstr ""
+msgstr "إعداد الدفاتر"
 
 msgid "Set up from your signup answers"
-msgstr ""
+msgstr "الإعداد من إجابات تسجيلك"
 
 msgid "Settings for these rows"
-msgstr ""
+msgstr "إعدادات هذه الصفوف"
 
 msgid "Share a link"
-msgstr ""
+msgstr "مشاركة رابط"
 
 msgid "Share removed"
-msgstr ""
+msgstr "تمت إزالة المشاركة"
 
 msgid "Share this record"
-msgstr ""
+msgstr "مشاركة هذا السجل"
 
 msgid "Share with the workspace"
-msgstr ""
+msgstr "مشاركة مع مساحة العمل"
 
 msgid "Shared with"
-msgstr ""
+msgstr "مشارَك مع"
 
 msgid "Shared with everyone on this workspace"
-msgstr ""
+msgstr "مشارَك مع كل من في مساحة العمل"
 
 msgid "Shared with me"
-msgstr ""
+msgstr "المشارَك معي"
 
 msgid "Shared with {0}"
-msgstr ""
+msgstr "مشارَك مع {0}"
 
 msgid "Sheet"
-msgstr ""
+msgstr "جدول بيانات"
 
 msgid "Sheet Book"
-msgstr ""
+msgstr "دفتر جدول البيانات"
 
 msgid "Sheet Feed"
-msgstr ""
+msgstr "تغذية جدول البيانات"
 
 msgid "Sheet Title"
-msgstr ""
+msgstr "عنوان جدول البيانات"
 
 msgid "Ships with the app"
-msgstr ""
+msgstr "يأتي مع التطبيق"
 
 msgid "Show all {0}"
-msgstr ""
+msgstr "عرض كل {0}"
 
 msgid "Show as a grid"
-msgstr ""
+msgstr "عرض كشبكة"
 
 msgid "Show as a list"
-msgstr ""
+msgstr "عرض كقائمة"
 
 msgid "Show beside the list"
-msgstr ""
+msgstr "عرض بجانب القائمة"
 
 msgid "Show everything"
-msgstr ""
+msgstr "إظهار كل شيء"
 
 msgid "Show in Files"
-msgstr ""
+msgstr "عرض في الملفات"
 
 msgid "Show the hidden view"
-msgstr ""
+msgstr "إظهار العرض المخفي"
 
 msgid "Show the label"
-msgstr ""
+msgstr "إظهار التسمية"
 
 msgid "Show {0} hidden views"
-msgstr ""
+msgstr "إظهار {0} عروض مخفية"
 
 msgid "Show {0} more"
-msgstr ""
+msgstr "عرض {0} أخرى"
 
 msgid "Showing the {0} most recent comments of {1}."
-msgstr ""
+msgstr "عرض أحدث {0} تعليقات من أصل {1}."
 
 msgid "Sign out everywhere else"
-msgstr ""
+msgstr "تسجيل الخروج من كل مكان آخر"
 
 msgid "Signature and away"
-msgstr ""
+msgstr "التوقيع والرد التلقائي"
 
 msgid "Signature expired."
-msgstr ""
+msgstr "انتهت صلاحية التوقيع."
 
 msgid "Signed By"
-msgstr ""
+msgstr "وقّعه"
 
 msgid "Signed copy"
-msgstr ""
+msgstr "نسخة موقّعة"
 
 msgid "Signed in as"
-msgstr ""
+msgstr "مسجل الدخول باسم"
 
 msgid "Signed off by the client"
-msgstr ""
+msgstr "اعتمده العميل"
 
 msgid "Signed out everywhere else"
-msgstr ""
+msgstr "تم تسجيل الخروج من كل مكان آخر"
 
 msgid "Site Name"
-msgstr ""
+msgstr "اسم الموقع"
 
 msgid "Site is not provisioned."
-msgstr ""
+msgstr "الموقع غير مُهيأ."
 
 msgid "Solid button"
-msgstr ""
+msgstr "زر ممتلئ"
 
 msgid ""
 "Somebody asked for this version by name. Never pruned, and sorted above "
 "the automatic ones."
 msgstr ""
+"طلب أحدهم هذه النسخة بالاسم. لا تُحذف أبداً، وتُرتَّب فوق النسخ "
+"التلقائية."
 
 msgid "Somebody on this workspace"
-msgstr ""
+msgstr "شخص في مساحة العمل هذه"
 
 msgid "Someone else changed this"
-msgstr ""
+msgstr "غيّر هذا شخص آخر"
 
 msgid "Something else is already using the camera."
-msgstr ""
+msgstr "هناك تطبيق آخر يستخدم الكاميرا بالفعل."
 
 msgid "Something happened"
-msgstr ""
+msgstr "حدث شيء ما"
 
 msgid "Source Doctype"
-msgstr ""
+msgstr "DocType المصدر"
 
 msgid ""
 "Source fields that hold a path to a file rather than a value, comma "
@@ -3050,436 +3169,484 @@ msgid ""
 "somebody chose rather than uploaded, which is attached to nothing over "
 "there."
 msgstr ""
+"حقول المصدر التي تحمل مساراً إلى ملف بدلاً من قيمة، مفصولة بفواصل. يُجلب "
+"الملف ويُرفق هنا — للصورة التي اختارها أحدهم بدلاً من رفعها، وهي غير "
+"مرفقة بشيء هناك."
 
 msgid "Space Code"
-msgstr ""
+msgstr "رمز المساحة"
 
 msgid "Spaces"
-msgstr ""
+msgstr "المساحات"
 
 msgid "Spaces JSON"
-msgstr ""
+msgstr "JSON المساحات"
 
 msgid "Spread apart"
-msgstr ""
+msgstr "متباعد إلى الطرفين"
 
 msgid "Spread evenly"
-msgstr ""
+msgstr "موزع بالتساوي"
 
 msgid ""
 "Standard is the fallback: every field of the record, in the order the "
 "form declares them. A format written as a template rather than drawn "
 "still prints, and opens wherever it was written."
 msgstr ""
+"القياسي هو البديل: كل حقل في السجل، بالترتيب الذي يعلنه النموذج. ونموذج "
+"مكتوب كقالب بدل رسمه يُطبع أيضًا، ويُفتح حيث كُتب."
 
 msgid "Star"
-msgstr ""
+msgstr "تمييز بنجمة"
 
 msgid "Star it"
-msgstr ""
+msgstr "تمييزه بنجمة"
 
 msgid "Starred"
-msgstr ""
+msgstr "مميز بنجمة"
 
 msgid "Starred {0}"
-msgstr ""
+msgstr "تم تمييز {0} بنجمة"
 
 msgid ""
 "Start at p=none so nothing is rejected while you watch the reports, then "
 "tighten to quarantine and reject."
 msgstr ""
+"ابدأ بـ p=none حتى لا يُرفض شيء بينما تراقب التقارير، ثم شدّد إلى "
+"quarantine ثم reject."
 
 msgid "Start over"
-msgstr ""
+msgstr "البدء من جديد"
 
 msgid "Start writing…"
-msgstr ""
+msgstr "ابدأ الكتابة…"
 
 msgid "Started On"
-msgstr ""
+msgstr "تاريخ البدء"
 
 msgid "Starts"
-msgstr ""
+msgstr "يبدأ"
 
 msgid "Starts with"
-msgstr ""
+msgstr "يبدأ بـ"
 
 msgid "Stop following"
-msgstr ""
+msgstr "إيقاف المتابعة"
 
 msgid "Stop sharing with {0}"
-msgstr ""
+msgstr "إيقاف المشاركة مع {0}"
 
 msgid "Stop the camera"
-msgstr ""
+msgstr "إيقاف الكاميرا"
 
 msgid "Stop this link working"
-msgstr ""
+msgstr "إيقاف عمل هذا الرابط"
 
 msgid "Stop using as a template"
-msgstr ""
+msgstr "إيقاف الاستخدام كقالب"
 
 msgid "Stopped sharing"
-msgstr ""
+msgstr "تم إيقاف المشاركة"
 
 msgid "Storage"
-msgstr ""
+msgstr "التخزين"
 
 msgid "Storage Quota Bytes"
-msgstr ""
+msgstr "حصة التخزين بالبايت"
 
 msgid "Storage Used Bytes"
-msgstr ""
+msgstr "التخزين المستخدم بالبايت"
 
 msgid "Storage could not be measured"
-msgstr ""
+msgstr "تعذّر قياس التخزين"
 
 msgid ""
 "Storage limit reached. This file needs {0} but only {1} of {2} remains. "
 "Delete some files or upgrade your plan."
 msgstr ""
+"بلغت حد التخزين. يحتاج هذا الملف إلى {0} ولم يتبقَ سوى {1} من {2}. احذف "
+"بعض الملفات أو ارفع خطتك."
 
 msgid "Switch camera"
-msgstr ""
+msgstr "تبديل الكاميرا"
 
 msgid "Switch workspace"
-msgstr ""
+msgstr "تبديل مساحة العمل"
 
 msgid "Synced from the plan. Zero means unconfigured, not zero allowed."
-msgstr ""
+msgstr "مُزامَن من الخطة. الصفر يعني غير مُهيأ، لا صفراً مسموحاً به."
 
 msgid "Tables"
-msgstr ""
+msgstr "جداول"
 
 msgid "Tag this"
-msgstr ""
+msgstr "وسم هذا"
 
 msgid "Tags: {0}"
-msgstr ""
+msgstr "الوسوم: {0}"
 
 msgid "Take another"
-msgstr ""
+msgstr "التقاط أخرى"
 
 msgid "Take photo"
-msgstr ""
+msgstr "التقاط صورة"
 
 msgid "Take your address"
-msgstr ""
+msgstr "احصل على عنوانك"
 
 msgid ""
 "Taken back early. Kept rather than deleted, so 'who shared this and when "
 "did it stop' has an answer."
 msgstr ""
+"سُحب مبكراً. يُحتفظ به بدلاً من حذفه، حتى يكون لسؤال 'من شارك هذا ومتى "
+"توقف' جواب."
 
 msgid "Target Doctype"
-msgstr ""
+msgstr "DocType الهدف"
 
 msgid "Target Name"
-msgstr ""
+msgstr "اسم الهدف"
 
 msgid "Tell somebody when something happens to a record."
-msgstr ""
+msgstr "أبلغ شخصًا عندما يحدث شيء لسجل."
 
 msgid "Tell this role"
-msgstr ""
+msgstr "إبلاغ هذا الدور"
 
 msgid "Template removed"
-msgstr ""
+msgstr "تمت إزالة القالب"
 
 msgid "Template saved"
-msgstr ""
+msgstr "تم حفظ القالب"
 
 msgid "Templates could not be loaded"
-msgstr ""
+msgstr "تعذّر تحميل القوالب"
 
 msgid "Tenant"
-msgstr ""
+msgstr "المستأجر"
 
 msgid "Test"
-msgstr ""
+msgstr "اختبار"
 
 msgid "Text file"
-msgstr ""
+msgstr "ملف نصي"
 
 msgid "That"
-msgstr ""
+msgstr "ذلك"
 
 msgid "That address has no mailbox behind it."
-msgstr ""
+msgstr "لا يوجد صندوق بريد خلف هذا العنوان."
 
 msgid "That address is inside this network."
-msgstr ""
+msgstr "هذا العنوان داخل هذه الشبكة."
 
 msgid "That address is not yours."
-msgstr ""
+msgstr "هذا العنوان ليس لك."
 
 msgid "That address is yours"
-msgstr ""
+msgstr "ذلك العنوان لك"
 
 msgid "That alert was not made here and cannot be changed here."
-msgstr ""
+msgstr "لم يُنشأ هذا التنبيه هنا ولا يمكن تغييره هنا."
 
 msgid "That attachment is not yours to send."
-msgstr ""
+msgstr "هذا المرفق ليس لك لترسله."
 
 msgid "That conversation is not yours."
-msgstr ""
+msgstr "هذه المحادثة ليست لك."
 
 msgid "That date has already passed."
-msgstr ""
+msgstr "هذا التاريخ قد مضى."
 
 msgid "That document did not open"
-msgstr ""
+msgstr "لم يُفتح ذلك المستند"
 
 msgid "That document is too big to save. Split it in two."
-msgstr ""
+msgstr "هذا المستند أكبر من أن يُحفظ. قسّمه إلى اثنين."
 
 msgid "That file has no name."
-msgstr ""
+msgstr "هذا الملف بلا اسم."
 
 msgid "That file is not a document."
-msgstr ""
+msgstr "هذا الملف ليس مستنداً."
 
 msgid "That file is not a sheet."
-msgstr ""
+msgstr "هذا الملف ليس جدول بيانات."
 
 msgid "That file is not on this record."
-msgstr ""
+msgstr "هذا الملف ليس على هذا السجل."
 
 msgid "That file is not text this can show."
-msgstr ""
+msgstr "هذا الملف ليس نصاً يمكن عرضه هنا."
 
 msgid "That file is not text."
-msgstr ""
+msgstr "هذا الملف ليس نصاً."
 
 msgid "That file is not yours to attach."
-msgstr ""
+msgstr "هذا الملف ليس لك لترفقه."
 
 msgid "That file is too big to open here. Download it instead."
-msgstr ""
+msgstr "هذا الملف أكبر من أن يُفتح هنا. نزّله بدلاً من ذلك."
 
 msgid "That is as many as a card carries."
-msgstr ""
+msgstr "هذا أقصى ما تحمله البطاقة."
 
 msgid "That is as many letter heads as one workspace can hold."
-msgstr ""
+msgstr "هذا أقصى عدد ترويسات يمكن أن تحمله مساحة عمل واحدة."
 
 msgid "That is more text than this file can hold."
-msgstr ""
+msgstr "هذا نص أكثر مما يمكن أن يحمله هذا الملف."
 
 msgid "That is not a field on {0}."
-msgstr ""
+msgstr "ليس هذا حقلاً في {0}."
 
 msgid "That is not a field to test."
-msgstr ""
+msgstr "ليس هذا حقلاً يمكن اختباره."
 
 msgid "That is not a test this can make."
-msgstr ""
+msgstr "ليس هذا اختباراً يمكن إجراؤه هنا."
 
 msgid "That is not an email address."
-msgstr ""
+msgstr "هذا ليس عنوان بريد."
 
 msgid "That is not one of this workspace's records."
-msgstr ""
+msgstr "ليس هذا من سجلات مساحة العمل هذه."
 
 msgid "That is not one of this workspace's templates."
-msgstr ""
+msgstr "ليس هذا من قوالب مساحة العمل هذه."
 
 msgid "That is not one of your addresses."
-msgstr ""
+msgstr "ليس هذا من عناوينك."
 
 msgid "That is not one of your events."
-msgstr ""
+msgstr "ليس هذا من أحداثك."
 
 msgid "That is not your current password."
-msgstr ""
+msgstr "هذه ليست كلمة مرورك الحالية."
 
 msgid "That is not your message."
-msgstr ""
+msgstr "هذه ليست رسالتك."
 
 msgid "That is not yours to revoke."
-msgstr ""
+msgstr "ليس هذا لك لتلغيه."
 
 msgid "That letter head is not one a document can be printed with."
-msgstr ""
+msgstr "هذه الترويسة ليست مما يمكن طباعة مستند بها."
 
 msgid "That link no longer works"
-msgstr ""
+msgstr "ذلك الرابط لم يعد يعمل"
 
 msgid "That mailbox is not yours."
-msgstr ""
+msgstr "صندوق البريد هذا ليس لك."
 
 msgid ""
 "That password was refused. Many providers need an app password rather "
 "than the one you sign in with."
 msgstr ""
+"رُفضت كلمة المرور هذه. كثير من المزودين يطلبون كلمة مرور للتطبيق بدلاً "
+"من التي تسجّل الدخول بها."
 
 msgid "That plan is switched off."
-msgstr ""
+msgstr "هذه الخطة موقوفة."
 
 msgid "That record is not on this screen."
-msgstr ""
+msgstr "هذا السجل ليس على هذه الشاشة."
 
 msgid "That screen belongs to someone else."
-msgstr ""
+msgstr "هذه الشاشة تخص شخصاً آخر."
 
 msgid "That series would not generate a name"
-msgstr ""
+msgstr "هذه السلسلة لن تولّد اسماً"
 
 msgid "That sheet is gone"
-msgstr ""
+msgstr "ذلك الجدول لم يعد موجودًا"
 
 msgid "That upload sent no parts."
-msgstr ""
+msgstr "لم يرسل هذا الرفع أي أجزاء."
 
 msgid "That view belongs to a different screen."
-msgstr ""
+msgstr "هذا العرض يخص شاشة أخرى."
 
 msgid "That view is yours — delete it rather than hiding it."
-msgstr ""
+msgstr "هذا العرض لك — احذفه بدلاً من إخفائه."
 
 msgid ""
 "The File this is a version of, by name. Data rather than a Link for the "
 "same reason the bodies are: the row is written and read by name, and a "
 "Link would make deleting the file a cascade nobody asked for."
 msgstr ""
+"الملف الذي هذه نسخة منه، بالاسم. حقل Data وليس Link للسبب نفسه الذي جعل "
+"المحتويات كذلك: يُكتب الصف ويُقرأ بالاسم، وLink سيجعل حذف الملف تسلسل "
+"حذف لم يطلبه أحد."
 
 msgid ""
 "The File this prose belongs to, by name. Data and unique rather than a "
 "Link so the row is addressable as `Doc Body/<file>` — one statement to "
 "load, no filter."
 msgstr ""
+"الملف الذي ينتمي إليه هذا النص، بالاسم. Data وفريد بدلاً من Link ليكون "
+"الصف قابلاً للعنونة بصيغة `Doc Body/<file>` — عبارة واحدة للتحميل، بلا "
+"مرشِّح."
 
 msgid ""
 "The File this was pulled from, by name. Data rather than a Link so the "
 "record outlives the sheet."
 msgstr ""
+"الملف الذي سُحب منه هذا، بالاسم. Data بدلاً من Link ليبقى السجل بعد زوال "
+"جدول البيانات."
 
 msgid ""
 "The File this workbook belongs to, by name. Data and unique rather than "
 "a Link so the row is addressable as `Sheet Book/<file>` — one statement "
 "to load, no filter."
 msgstr ""
+"الملف الذي ينتمي إليه هذا المصنف، بالاسم. Data وفريد بدلاً من Link ليكون "
+"الصف قابلاً للعنونة بصيغة `Sheet Book/<file>` — عبارة واحدة للتحميل، بلا "
+"مرشِّح."
 
 msgid ""
 "The OneSpace Saved View this hides. Data rather than a Link so deleting "
 "the view cannot fail on a row that only says somebody stopped looking at "
 "it — the delete sweeps these up itself."
 msgstr ""
+"العرض المحفوظ في OneSpace الذي يخفيه هذا. Data بدلاً من Link حتى لا يفشل "
+"حذف العرض بسبب صف يقول فقط إن أحدهم توقف عن النظر إليه — الحذف يكنس هذه "
+"الصفوف بنفسه."
 
 msgid ""
 "The `head_seq` of the body when this was taken. What the panel compares "
 "against to say which version is the one on screen."
 msgstr ""
+"قيمة `head_seq` للمحتوى وقت أخذ هذه النسخة. وهي ما تقارن به اللوحة لتقول "
+"أي نسخة هي المعروضة."
 
 msgid "The address you already had. Read and answer it here."
-msgstr ""
+msgstr "العنوان الذي لديك بالفعل. اقرأه وأجب عنه هنا."
 
 msgid "The addresses this workspace sends from, and who may use each."
-msgstr ""
+msgstr "العناوين التي ترسل منها مساحة العمل هذه، ومن يجوز له استخدام كل منها."
 
 msgid "The assistant is not switched on here"
-msgstr ""
+msgstr "المساعد غير مفعّل هنا"
 
 msgid "The authority that issued it."
-msgstr ""
+msgstr "الجهة التي أصدرته."
 
 msgid "The biggest"
-msgstr ""
+msgstr "الأكبر"
 
 msgid "The bin is empty"
-msgstr ""
+msgstr "المحذوفات فارغة"
 
 msgid ""
 "The bin is holding {0} across one file, which still counts. It is "
 "removed for good {1} days after it went there."
 msgstr ""
+"المحذوفات تحتفظ بـ {0} في ملف واحد، وهو لا يزال محسوبًا. يُحذف نهائيًا "
+"بعد {1} يومًا من وصوله إليها."
 
 msgid ""
 "The bin is holding {0} across {1} files, which still counts. Each is "
 "removed for good {2} days after it went there."
 msgstr ""
+"المحذوفات تحتفظ بـ {0} في {1} ملفًا، وهي لا تزال محسوبة. يُحذف كل ملف "
+"نهائيًا بعد {2} يومًا من وصوله إليها."
 
 msgid ""
 "The breakdown below covers the one file you can see, which is {0}. The "
 "meter above is the whole workspace, including files on records you "
 "cannot open."
 msgstr ""
+"التفصيل أدناه يشمل الملف الوحيد الذي يمكنك رؤيته، وحجمه {0}. أما المقياس "
+"أعلاه فيشمل مساحة العمل كاملة، بما فيها ملفات على سجلات لا يمكنك فتحها."
 
 msgid ""
 "The breakdown below covers the {0} files you can see, which is {1}. The "
 "meter above is the whole workspace, including files on records you "
 "cannot open."
 msgstr ""
+"التفصيل أدناه يشمل الملفات التي يمكنك رؤيتها وعددها {0}، وحجمها {1}. أما "
+"المقياس أعلاه فيشمل مساحة العمل كاملة، بما فيها ملفات على سجلات لا يمكنك "
+"فتحها."
 
 msgid "The camera could not be opened."
-msgstr ""
+msgstr "تعذر فتح الكاميرا."
 
 msgid "The camera is not ready yet."
-msgstr ""
+msgstr "الكاميرا ليست جاهزة بعد."
 
 msgid "The columns on the list"
-msgstr ""
+msgstr "الأعمدة في القائمة"
 
 msgid "The default"
-msgstr ""
+msgstr "الافتراضي"
 
 msgid ""
 "The difference is credited against your next invoice, and the new limits "
 "apply straight away."
-msgstr ""
+msgstr "يُضاف الفرق كرصيد إلى فاتورتك التالية، وتسري الحدود الجديدة فوراً."
 
 msgid ""
 "The document as ProseMirror JSON: the source of truth, and the only "
 "representation the editor reads back. Replaced whole on every save."
 msgstr ""
+"المستند بصيغة ProseMirror JSON: مصدر الحقيقة، والتمثيل الوحيد الذي يقرؤه "
+"المحرر. يُستبدل كاملاً عند كل حفظ."
 
 msgid "The document itself"
-msgstr ""
+msgstr "المستند نفسه"
 
 msgid ""
 "The document this one replaces. The old one is kept: an expired licence "
 "is still what you were trading under last year."
 msgstr ""
+"المستند الذي يحل هذا محله. يُحتفظ بالقديم: الرخصة المنتهية تبقى ما كنت "
+"تعمل بموجبه العام الماضي."
 
 msgid ""
 "The fieldname of the table these rows landed in. One feed per table: a "
 "second pull into the same table replaces the rows, so it replaces this "
 "too."
 msgstr ""
+"اسم حقل الجدول الذي حطّت فيه هذه الصفوف. تغذية واحدة لكل جدول: سحب ثانٍ "
+"إلى الجدول نفسه يستبدل الصفوف، فيستبدل هذا أيضاً."
 
 msgid ""
 "The first row of a range is its headings; there is nothing under them to "
 "bring in."
-msgstr ""
+msgstr "الصف الأول من النطاق هو عناوينه؛ ولا يوجد تحتها ما يمكن جلبه."
 
 msgid ""
 "The first thing that was asked, trimmed. Named from the question rather "
 "than by the model: naming a thread is a second call, and it would be "
 "charged for."
 msgstr ""
+"أول ما سُئل، مقتطعاً. يُسمّى من السؤال لا بواسطة النموذج: تسمية المحادثة "
+"نداء ثانٍ، وستُحتسب تكلفته."
 
 msgid "The folder to file it in. Made on the mailbox if it is not there yet."
-msgstr ""
+msgstr "المجلد الذي يُحفظ فيه. يُنشأ على صندوق البريد إن لم يكن موجوداً بعد."
 
 msgid "The mail did not load"
-msgstr ""
+msgstr "لم يُحمَّل البريد"
 
 msgid ""
 "The mail server did not answer. It may be blocking us, or the port may "
 "be wrong."
-msgstr ""
+msgstr "لم يجب خادم البريد. قد يكون يحجبنا، أو قد يكون المنفذ خاطئاً."
 
 msgid "The mail server refused that name: {0}"
-msgstr ""
+msgstr "رفض خادم البريد هذا الاسم: {0}"
 
 msgid "The mail server refused: {0}"
-msgstr ""
+msgstr "رفض خادم البريد: {0}"
 
 msgid ""
 "The mailbox it applies to. A rule belongs to an address, not to a "
 "workspace: `sales@` and `ap@` sort differently."
 msgstr ""
+"صندوق البريد الذي تنطبق عليه. القاعدة تخص عنواناً لا مساحة عمل: `sales@` "
+"و`ap@` يُفرزان بشكل مختلف."
 
 msgid ""
 "The most recent workspace notice this site has already turned into a "
@@ -3487,113 +3654,131 @@ msgid ""
 "plane is asked for what happened after it, so nothing is sent twice and "
 "nothing in between is missed."
 msgstr ""
+"أحدث إشعار لمساحة العمل حوّله هذا الموقع بالفعل إلى إخطار. علامة مائية "
+"لا مفتاح لمنع التكرار: يُسأل مستوى التحكم عمّا حدث بعده، فلا يُرسل شيء "
+"مرتين ولا يفوت شيء بينهما."
 
 msgid "The named range. The contract between a sheet and the document it fills."
-msgstr ""
+msgstr "النطاق المسمّى. العقد بين جدول البيانات والمستند الذي يملؤه."
 
 msgid ""
 "The newest `modified` this step has taken across. The next run asks the "
 "source only for what changed after it. Clear it to import everything "
 "again."
 msgstr ""
+"أحدث `modified` نقلته هذه الخطوة. التشغيل التالي يسأل المصدر فقط عمّا "
+"تغيّر بعده. امسحه لاستيراد كل شيء من جديد."
 
 msgid ""
 "The one file this link hands over. A folder is not offered: a link to a "
 "folder is a link to everything somebody puts in it afterwards."
 msgstr ""
+"الملف الوحيد الذي يسلّمه هذا الرابط. لا يُعرض مجلد: الرابط إلى مجلد رابط "
+"إلى كل ما يضعه أحدهم فيه لاحقاً."
 
 msgid "The one that was actually sent, scanned back in."
-msgstr ""
+msgstr "النسخة التي أُرسلت فعلاً، ممسوحة ضوئياً ومُعادة."
 
 msgid "The page"
-msgstr ""
+msgstr "الصفحة"
 
 msgid "The photograph could not be saved."
-msgstr ""
+msgstr "تعذر حفظ الصورة."
 
 msgid "The photograph just taken"
-msgstr ""
+msgstr "الصورة الملتقطة للتو"
 
 msgid "The platform's own address cannot be changed here."
-msgstr ""
+msgstr "لا يمكن تغيير عنوان المنصة نفسه هنا."
 
 msgid "The range {0} is empty."
-msgstr ""
+msgstr "النطاق {0} فارغ."
 
 msgid "The row"
-msgstr ""
+msgstr "الصف"
 
 msgid ""
 "The screen's name. Empty is the person's own unnamed default for this "
 "screen — what Save writes."
 msgstr ""
+"اسم الشاشة. الفارغ هو الافتراضي غير المسمّى الخاص بالشخص لهذه الشاشة — "
+"وهو ما يكتبه الحفظ."
 
 msgid ""
 "The screen's slug, so two screens over one doctype keep their own "
 "answers."
-msgstr ""
+msgstr "المعرّف النصي للشاشة، حتى تحتفظ شاشتان فوق DocType واحد بإجاباتهما."
 
 msgid "The sheet has changed since"
-msgstr ""
+msgstr "تغيّر جدول البيانات منذ ذلك الحين"
 
 msgid ""
 "The site to read from, e.g. `https://old.example.com`. No trailing slash "
 "and no path."
 msgstr ""
+"الموقع الذي يُقرأ منه، مثل `https://old.example.com`. بلا شرطة مائلة في "
+"النهاية وبلا مسار."
 
 msgid "The source refused the key. Check it is still valid over there."
-msgstr ""
+msgstr "رفض المصدر المفتاح. تحقق من أنه ما زال صالحاً هناك."
 
 msgid "The subject line only"
-msgstr ""
+msgstr "سطر الموضوع فقط"
 
 msgid ""
 "The text to look for. Case is ignored, because nobody means it when they "
 "type an address."
 msgstr ""
+"النص المطلوب البحث عنه. حالة الأحرف مُتجاهَلة، لأن لا أحد يقصدها حين "
+"يكتب عنواناً."
 
 msgid ""
 "The whole body as it stood, in whatever shape its store reads. Restoring "
 "writes this back unchanged."
 msgstr ""
+"المحتوى كاملاً كما كان، بأي شكل يقرؤه مخزنه. الاستعادة تعيد كتابته دون "
+"تغيير."
 
 msgid ""
 "The workbook: every tab, cell, formula, format, merge, named range, "
 "pivot and chart, as the gzipped envelope `codec.py` reads. Never edited "
 "here — a save replaces it whole, which is what the editor does."
 msgstr ""
+"المصنف: كل تبويب وخلية وصيغة وتنسيق ودمج ونطاق مسمّى وجدول محوري ورسم "
+"بياني، في الغلاف المضغوط بـ gzip الذي يقرؤه `codec.py`. لا يُحرَّر هنا "
+"أبداً — الحفظ يستبدله كاملاً، وهو ما يفعله المحرر."
 
 msgid "The {0} most common. Use Filter for the rest."
-msgstr ""
+msgstr "أكثر {0} شيوعًا. استخدم المرشّح للبقية."
 
 msgid "Then add it here"
-msgstr ""
+msgstr "ثم أضفه هنا"
 
 msgid "There are no records on this screen."
-msgstr ""
+msgstr "لا توجد سجلات على هذه الشاشة."
 
 msgid "There are no sheets here yet"
-msgstr ""
+msgstr "لا توجد جداول بيانات هنا بعد"
 
 msgid "There is already a folder called “{0}” here."
-msgstr ""
+msgstr "يوجد بالفعل مجلد باسم “{0}” هنا."
 
 msgid ""
 "There is already an alert called “{0}”. Give this one a different "
 "subject."
-msgstr ""
+msgstr "يوجد بالفعل تنبيه باسم “{0}”. أعطِ هذا موضوعاً مختلفاً."
 
 msgid "There is no folder called {0}."
-msgstr ""
+msgstr "لا يوجد مجلد باسم {0}."
 
 msgid "There is no plan called {0}."
-msgstr ""
+msgstr "لا توجد خطة باسم {0}."
 
 msgid "There is no preview for this kind of file."
-msgstr ""
+msgstr "لا توجد معاينة لهذا النوع من الملفات."
 
 msgid "There is no record of this kind yet to draw the preview over."
-msgstr ""
+msgstr "لا يوجد سجل من هذا النوع بعد لرسم المعاينة عليه."
 
 msgid ""
 "There is no sign-up form, on purpose: an account made on this site is "
@@ -3601,536 +3786,568 @@ msgid ""
 "People are added to your workspace from your account, which is also "
 "where seats are counted."
 msgstr ""
+"لا يوجد نموذج تسجيل، وهذا مقصود: الحساب الذي يُنشأ على هذا الموقع لا "
+"يُحتسب من مقاعدك ويُعطَّل مجدداً عند المزامنة التالية. يُضاف الأشخاص إلى "
+"مساحة عملك من حسابك، وهو أيضاً حيث تُحتسب المقاعد."
 
 msgid "There is no such thing as a {0} version."
-msgstr ""
+msgstr "لا وجود لنسخة من نوع {0}."
 
 msgid "There is no such version."
-msgstr ""
+msgstr "لا توجد نسخة كهذه."
 
 msgid "There is nothing here to open in a sheet."
-msgstr ""
+msgstr "لا شيء هنا يمكن فتحه في جدول بيانات."
 
 msgid "There is nothing in that file to import."
-msgstr ""
+msgstr "لا يوجد في ذلك الملف ما يمكن استيراده."
 
 msgid "There is nothing to assign here."
-msgstr ""
+msgstr "لا شيء هنا لإسناده."
 
 msgid "There is nothing to comment on here."
-msgstr ""
+msgstr "لا شيء هنا للتعليق عليه."
 
 msgid "There is nothing to follow here."
-msgstr ""
+msgstr "لا شيء هنا لمتابعته."
 
 msgid "There is nothing to like here."
-msgstr ""
+msgstr "لا شيء هنا للإعجاب به."
 
 msgid "There is nothing to rename here."
-msgstr ""
+msgstr "لا شيء هنا لإعادة تسميته."
 
 msgid "There is nothing to save a view for here."
-msgstr ""
+msgstr "لا شيء هنا يمكن حفظ عرض له."
 
 msgid ""
 "These arrive with the apps this workspace has. Hand them out on the "
 "People screen."
 msgstr ""
+"تأتي هذه مع التطبيقات الموجودة في مساحة العمل هذه. وزّعها من شاشة "
+"الأشخاص."
 
 msgid ""
 "These rows are locked. Unlock them first if the sheet should replace "
 "them again."
 msgstr ""
+"هذه الصفوف مقفلة. ألغِ قفلها أولًا إذا كان جدول البيانات سيستبدلها مرة "
+"أخرى."
 
 msgid "These rows have no columns a sheet could hold."
-msgstr ""
+msgstr "هذه الصفوف ليس فيها أعمدة يمكن لجدول بيانات أن يحملها."
 
 msgid "This"
-msgstr ""
+msgstr "هذا"
 
 msgid ""
 "This app names its own records. The series is part of what it is, so it "
 "is shown rather than set — the counter under it can still be moved."
 msgstr ""
+"هذا التطبيق يسمّي سجلاته بنفسه. التسلسل جزء من طبيعته، لذا يُعرض ولا "
+"يُضبط — أما العدّاد أسفله فيمكن تحريكه."
 
 msgid "This browser"
-msgstr ""
+msgstr "هذا المتصفح"
 
 msgid "This browser has no camera support."
-msgstr ""
+msgstr "هذا المتصفح لا يدعم الكاميرا."
 
 msgid "This browser would not let the page copy to the clipboard."
-msgstr ""
+msgstr "لم يسمح هذا المتصفح للصفحة بالنسخ إلى الحافظة."
 
 msgid ""
 "This cannot be undone. Anything still linked to elsewhere is kept, and "
 "named."
 msgstr ""
+"لا يمكن التراجع عن هذا. وكل ما لا يزال مرتبطاً بمكان آخر يُحفظ ويُذكر "
+"بالاسم."
 
 msgid "This company's chart of accounts has nowhere to put retention."
-msgstr ""
+msgstr "شجرة حسابات هذه الشركة ليس فيها مكان للمحتجزات."
 
 msgid "This could not be imported"
-msgstr ""
+msgstr "تعذّر استيراد هذا"
 
 msgid "This could not be read"
-msgstr ""
+msgstr "تعذّرت قراءة هذا"
 
 msgid "This device"
-msgstr ""
+msgstr "هذا الجهاز"
 
 msgid "This has already been amended."
-msgstr ""
+msgstr "تم تعديل هذا بالفعل."
 
 msgid "This is a template"
-msgstr ""
+msgstr "هذا نموذج"
 
 msgid "This is not yours to change while it is where it is."
-msgstr ""
+msgstr "ليس لك تغيير هذا ما دام في مكانه الحالي."
 
 msgid "This is the workspace's sending address. Choose another one first."
-msgstr ""
+msgstr "هذا عنوان الإرسال لمساحة العمل. اختر عنوانًا آخر أولًا."
 
 msgid "This kind of chart is not built."
-msgstr ""
+msgstr "هذا النوع من الرسوم البيانية غير مبني."
 
 msgid "This kind of record does not report its changes."
-msgstr ""
+msgstr "هذا النوع من السجلات لا يبلّغ عن تغييراته."
 
 msgid "This link is not available."
-msgstr ""
+msgstr "هذا الرابط غير متاح."
 
 msgid "This list"
-msgstr ""
+msgstr "هذه القائمة"
 
 msgid "This list did not load"
-msgstr ""
+msgstr "لم تُحمَّل هذه القائمة"
 
 msgid "This one is emailed for you rather than by you"
-msgstr ""
+msgstr "هذا يُرسل بالبريد نيابةً عنك لا منك"
 
 msgid ""
 "This one is paused for everyone at the moment. Nothing you change here "
 "is lost."
-msgstr ""
+msgstr "هذا متوقف مؤقتًا للجميع في الوقت الحالي. لا يضيع أي تغيير تجريه هنا."
 
 msgid "This opens the screen now"
-msgstr ""
+msgstr "هذا يفتح الشاشة الآن"
 
 msgid "This record is no longer in the workspace"
-msgstr ""
+msgstr "هذا السجل لم يعد في مساحة العمل"
 
 msgid "This record’s id was written in the subject or the message"
-msgstr ""
+msgstr "كُتب معرّف هذا السجل في الموضوع أو في الرسالة"
 
 msgid "This screen did not open"
-msgstr ""
+msgstr "لم تُفتح هذه الشاشة"
 
 msgid "This screen has no records to attach anything to."
-msgstr ""
+msgstr "هذه الشاشة ليس فيها سجلات لإرفاق أي شيء بها."
 
 msgid "This screen has nothing to assign."
-msgstr ""
+msgstr "هذه الشاشة ليس فيها ما يُسنَد."
 
 msgid "This screen has nothing to change."
-msgstr ""
+msgstr "هذه الشاشة ليس فيها ما يُغيَّر."
 
 msgid "This screen has nothing to delete."
-msgstr ""
+msgstr "هذه الشاشة ليس فيها ما يُحذف."
 
 msgid "This screen has nothing to export."
-msgstr ""
+msgstr "هذه الشاشة ليس فيها ما يُصدَّر."
 
 msgid "This screen has nothing to move."
-msgstr ""
+msgstr "هذه الشاشة ليس فيها ما يُنقل."
 
 msgid "This screen has nothing to save."
-msgstr ""
+msgstr "هذه الشاشة ليس فيها ما يُحفظ."
 
 msgid "This screen has nothing to show yet."
-msgstr ""
+msgstr "لا شيء لتعرضه هذه الشاشة بعد."
 
 msgid ""
 "This screen shows a Gantt, but no fields on it say when a record starts "
 "and ends."
 msgstr ""
+"هذه الشاشة تعرض مخطط Gantt، لكن لا حقول فيها تقول متى يبدأ السجل ومتى "
+"ينتهي."
 
 msgid ""
 "This screen shows a calendar, but no field on it says when a record "
 "happens."
-msgstr ""
+msgstr "هذه الشاشة تعرض تقويمًا، لكن لا حقل فيها يقول متى يقع السجل."
 
 msgid ""
 "This screen shows a dashboard, but nothing has been added to it to "
 "count."
-msgstr ""
+msgstr "هذه الشاشة تعرض لوحة معلومات، لكن لم يُضف إليها شيء لعدّه."
 
 msgid ""
 "This screen shows a tree, but no field on it points one record at "
 "another."
-msgstr ""
+msgstr "هذه الشاشة تعرض شجرة، لكن لا حقل فيها يشير من سجل إلى آخر."
 
 msgid "This sheet"
-msgstr ""
+msgstr "جدول البيانات هذا"
 
 msgid "This sheet has no range called {0}."
-msgstr ""
+msgstr "لا يوجد في جدول البيانات هذا نطاق باسم {0}."
 
 msgid "This sheet has nothing named yet"
-msgstr ""
+msgstr "لا شيء مُسمّى في جدول البيانات هذا بعد"
 
 msgid "This sheet's stored data is not readable."
-msgstr ""
+msgstr "بيانات جدول البيانات هذا المخزَّنة غير قابلة للقراءة."
 
 msgid "This space is not open to you"
-msgstr ""
+msgstr "هذه المساحة غير متاحة لك"
 
 msgid ""
 "This spreadsheet is too large to save (over {0} MB). That is usually "
 "formatting applied across a very large range rather than data — clear "
 "what you do not need, or split it across tabs."
 msgstr ""
+"جدول البيانات هذا أكبر من أن يُحفظ (أكثر من {0} ميغابايت). السبب عادةً "
+"تنسيق مطبَّق على نطاق واسع جدًا وليس بيانات — امسح ما لا تحتاجه، أو "
+"وزّعه على عدة أوراق."
 
 msgid "This takes a few seconds."
-msgstr ""
+msgstr "يستغرق هذا بضع ثوانٍ."
 
 msgid "This upload is not yours to finish."
-msgstr ""
+msgstr "ليس لك إنهاء هذا الرفع."
 
 msgid ""
 "This usually takes a minute or two. If it takes longer, the cause is "
 "almost always a proxied record — see step two below."
 msgstr ""
+"يستغرق هذا عادةً دقيقة أو دقيقتين. وإذا طال أكثر، فالسبب غالباً سجل DNS "
+"يمر عبر وسيط — راجع الخطوة الثانية أدناه."
 
 msgid "This workspace already has a company."
-msgstr ""
+msgstr "مساحة العمل هذه لديها شركة بالفعل."
 
 msgid "This workspace also asks for a second factor when you sign in."
-msgstr ""
+msgstr "تطلب مساحة العمل هذه أيضًا عاملًا ثانيًا عند تسجيل الدخول."
 
 msgid "This workspace does not allow connecting outside mailboxes."
-msgstr ""
+msgstr "لا تسمح مساحة العمل هذه بربط صناديق بريد خارجية."
 
 msgid "This workspace has no accounting app."
-msgstr ""
+msgstr "مساحة العمل هذه ليس فيها تطبيق محاسبة."
 
 msgid "This workspace has no apps yet, so there is nothing to hand out."
-msgstr ""
+msgstr "مساحة العمل هذه ليس فيها تطبيقات بعد، فليس هناك ما يُوزَّع."
 
 msgid "This workspace has no records an alert could watch yet."
-msgstr ""
+msgstr "لا تحتوي مساحة العمل هذه بعد على سجلات يمكن لتنبيه مراقبتها."
 
 msgid "This workspace has nothing set up to import from."
-msgstr ""
+msgstr "لا يوجد في مساحة العمل هذه أي مصدر مُعد للاستيراد منه."
 
 msgid ""
 "This workspace has posted entries, so its chart of accounts can no "
 "longer be replaced here. Ask support."
 msgstr ""
+"مساحة العمل هذه فيها قيود مرحَّلة، لذا لم يعد بالإمكان استبدال شجرة "
+"حساباتها هنا. راسل الدعم."
 
 msgid "This workspace has reached its limit of {0} emails per day."
-msgstr ""
+msgstr "بلغت مساحة العمل هذه حدّها البالغ {0} رسالة بريد في اليوم."
 
 msgid ""
 "This workspace has reached its limit of {0} emails per hour. Queued "
 "messages will resume shortly."
 msgstr ""
+"بلغت مساحة العمل هذه حدّها البالغ {0} رسالة بريد في الساعة. ستُستأنف "
+"الرسائل المنتظرة قريبًا."
 
 msgid "This workspace is not entitled to Books, so there is nothing to set up."
-msgstr ""
+msgstr "مساحة العمل هذه غير مخوّلة لاستخدام Books، فلا شيء لإعداده."
 
 msgid ""
 "This workspace is over its storage limit and cannot grow further. "
 "Nothing has been deleted — free some space, or add storage from your "
 "account, and uploads resume."
 msgstr ""
+"تجاوزت مساحة العمل هذه حدّ التخزين ولا يمكنها النمو أكثر. لم يُحذف شيء — "
+"فرّغ بعض المساحة، أو أضف تخزينًا من حسابك، وستُستأنف عمليات الرفع."
 
 msgid "This workspace is scheduled for deletion"
-msgstr ""
+msgstr "مساحة العمل هذه مجدولة للحذف"
 
 msgid "This workspace is suspended and cannot send email."
-msgstr ""
+msgstr "مساحة العمل هذه موقوفة ولا يمكنها إرسال بريد."
 
 msgid "This workspace is suspended and is not sending email."
-msgstr ""
+msgstr "مساحة العمل هذه موقوفة ولا ترسل بريدًا."
 
 msgid "This workspace is switched off"
-msgstr ""
+msgstr "مساحة العمل هذه موقوفة"
 
 msgid "This workspace only allows mailboxes on: {0}"
-msgstr ""
+msgstr "لا تسمح مساحة العمل هذه إلا بصناديق بريد على: {0}"
 
 msgid "Those changes could not be read."
-msgstr ""
+msgstr "تعذّرت قراءة تلك التغييرات."
 
 msgid "Those details could not be read."
-msgstr ""
+msgstr "تعذّرت قراءة تلك التفاصيل."
 
 msgid "Those rows were not filled from a sheet."
-msgstr ""
+msgstr "لم تُملأ تلك الصفوف من جدول بيانات."
 
 msgid "Those settings could not be read."
-msgstr ""
+msgstr "تعذّرت قراءة تلك الإعدادات."
 
 msgid "Tick everything on this page"
-msgstr ""
+msgstr "تأشير كل ما في هذه الصفحة"
 
 msgid "Tick this conversation"
-msgstr ""
+msgstr "تأشير هذه المحادثة"
 
 msgid "Tight"
-msgstr ""
+msgstr "ضيق"
 
 msgid "To the right"
-msgstr ""
+msgstr "إلى اليمين"
 
 msgid "Too many at once. Choose {0} or fewer."
-msgstr ""
+msgstr "كثير دفعة واحدة. اختر {0} أو أقل."
 
 msgid "Too many at once. Delete {0} or fewer."
-msgstr ""
+msgstr "كثير دفعة واحدة. احذف {0} أو أقل."
 
 msgid "Tool Call Id"
-msgstr ""
+msgstr "معرّف استدعاء الأداة"
 
 msgid "Tool Calls"
-msgstr ""
+msgstr "استدعاءات الأداة"
 
 msgid "Tool Name"
-msgstr ""
+msgstr "اسم الأداة"
 
 msgid "Top margin (mm)"
-msgstr ""
+msgstr "الهامش العلوي (مم)"
 
 msgid "Total Created"
-msgstr ""
+msgstr "إجمالي المُنشأ"
 
 msgid "Total Failed"
-msgstr ""
+msgstr "إجمالي الفاشل"
 
 msgid "Total Seen"
-msgstr ""
+msgstr "إجمالي المرصود"
 
 msgid "Total Updated"
-msgstr ""
+msgstr "إجمالي المحدَّث"
 
 msgid "Try again"
-msgstr ""
+msgstr "حاول مرة أخرى"
 
 msgid "Try {0} again"
-msgstr ""
+msgstr "أعد محاولة {0}"
 
 msgid "Turn on “Email me as well” first"
-msgstr ""
+msgstr "فعّل «راسلني بالبريد أيضاً» أولاً"
 
 msgid "Turn the camera on"
-msgstr ""
+msgstr "تشغيل الكاميرا"
 
 msgid "Turned on for your workspace"
-msgstr ""
+msgstr "مفعّل لمساحة عملك"
 
 msgid "Type to make a tag"
-msgstr ""
+msgstr "اكتب لإنشاء وسم"
 
 msgid "Typeface"
-msgstr ""
+msgstr "نوع الخط"
 
 msgid ""
 "Uncompressed size of the payload. The number a size cap has to be "
 "measured against, since the compressed one says nothing about what "
 "opening it costs."
 msgstr ""
+"حجم الحمولة غير مضغوطة. هذا هو الرقم الذي يُقاس عليه حدّ الحجم، لأن "
+"الحجم المضغوط لا يقول شيئًا عن كلفة فتحها."
 
 msgid ""
 "Under the title, in this order. Nothing chosen shows the columns you "
 "have on the list."
 msgstr ""
+"تحت العنوان، بهذا الترتيب. إن لم تختر شيئًا ظهرت الأعمدة التي لديك في "
+"القائمة."
 
 msgid "Undo the last thing"
-msgstr ""
+msgstr "التراجع عن آخر إجراء"
 
 msgid "Unfiled"
-msgstr ""
+msgstr "غير مُصنَّف"
 
 msgid "Unknown settings group {0}."
-msgstr ""
+msgstr "مجموعة إعدادات غير معروفة {0}."
 
 msgid "Unknown settings tab {0}."
-msgstr ""
+msgstr "علامة تبويب إعدادات غير معروفة {0}."
 
 msgid ""
 "Unless you are replying, or writing on a record that already has "
 "correspondence."
-msgstr ""
+msgstr "إلا إذا كنت ترد، أو تكتب على سجل له مراسلات بالفعل."
 
 msgid "Unlock"
-msgstr ""
+msgstr "إلغاء القفل"
 
 msgid "Unsaved"
-msgstr ""
+msgstr "غير محفوظ"
 
 msgid "Unsaved changes"
-msgstr ""
+msgstr "تغييرات غير محفوظة"
 
 msgid "Unsent"
-msgstr ""
+msgstr "غير مُرسَل"
 
 msgid "Unstar"
-msgstr ""
+msgstr "إزالة النجمة"
 
 msgid "Unstarred"
-msgstr ""
+msgstr "تمت إزالة النجمة"
 
 msgid "Unstarred {0}"
-msgstr ""
+msgstr "تمت إزالة النجمة من {0}"
 
 msgid "Until"
-msgstr ""
+msgstr "حتى"
 
 msgid "Until then it can be put back exactly where it was."
-msgstr ""
+msgstr "حتى ذلك الحين يمكن استعادته إلى مكانه تماماً."
 
 msgid "Until {0}"
-msgstr ""
+msgstr "حتى {0}"
 
 msgid "Untitled"
-msgstr ""
+msgstr "بلا عنوان"
 
 msgid "Untitled document"
-msgstr ""
+msgstr "مستند بلا عنوان"
 
 msgid "Untitled view"
-msgstr ""
+msgstr "عرض بلا عنوان"
 
 msgid "Upload a file to start."
-msgstr ""
+msgstr "ارفع ملفاً للبدء."
 
 msgid "Upload a file, or make a folder to put files in."
-msgstr ""
+msgstr "ارفع ملفاً، أو أنشئ مجلداً لوضع الملفات فيه."
 
 msgid "Upload files"
-msgstr ""
+msgstr "رفع ملفات"
 
 msgid "Uploading {0} file"
-msgstr ""
+msgstr "جارٍ رفع {0} ملف"
 
 msgid "Uploading {0} files"
-msgstr ""
+msgstr "جارٍ رفع {0} ملفات"
 
 msgid "Uploading {0}%"
-msgstr ""
+msgstr "جارٍ الرفع {0}%"
 
 msgid "Uploads are paused. Delete some files, or buy more storage."
-msgstr ""
+msgstr "عمليات الرفع متوقفة. احذف بعض الملفات أو اشترِ مساحة تخزين إضافية."
 
 msgid "Usage"
-msgstr ""
+msgstr "الاستخدام"
 
 msgid "Use AI in this workspace"
-msgstr ""
+msgstr "استخدام الذكاء الاصطناعي في مساحة العمل هذه"
 
 msgid "Use a different domain"
-msgstr ""
+msgstr "استخدام نطاق آخر"
 
 msgid "Use a different sheet"
-msgstr ""
+msgstr "استخدام جدول بيانات آخر"
 
 msgid "Use a different sheet…"
-msgstr ""
+msgstr "استخدام جدول بيانات آخر…"
 
 msgid "Use a template"
-msgstr ""
+msgstr "استخدام قالب"
 
 msgid "Use as a template"
-msgstr ""
+msgstr "استخدام كقالب"
 
 msgid "Use the camera to take a photograph."
-msgstr ""
+msgstr "استخدم الكاميرا لالتقاط صورة."
 
 msgid "Use the phone’s camera"
-msgstr ""
+msgstr "استخدم كاميرا الهاتف"
 
 msgid "Use this one by default"
-msgstr ""
+msgstr "استخدام هذا افتراضيًا"
 
 msgid "Use this photo"
-msgstr ""
+msgstr "استخدام هذه الصورة"
 
 msgid "Use your own domain"
-msgstr ""
+msgstr "استخدام نطاقك الخاص"
 
 msgid "Verified As"
-msgstr ""
+msgstr "تم التحقق بصفة"
 
 msgid "Verified On"
-msgstr ""
+msgstr "تاريخ التحقق"
 
 msgid "Version history"
-msgstr ""
+msgstr "سجل الإصدارات"
 
 msgid "View deleted"
-msgstr ""
+msgstr "تم حذف العرض"
 
 msgid "View saved"
-msgstr ""
+msgstr "تم حفظ العرض"
 
 msgid "Visa"
-msgstr ""
+msgstr "تأشيرة"
 
 msgid "Warn this many days ahead"
-msgstr ""
+msgstr "التحذير قبل هذا العدد من الأيام"
 
 msgid "Watermark"
-msgstr ""
+msgstr "علامة مائية"
 
 msgid "Watermark From"
-msgstr ""
+msgstr "العلامة المائية من"
 
 msgid "Watermark To"
-msgstr ""
+msgstr "العلامة المائية إلى"
 
 msgid "We could not connect: {0}"
-msgstr ""
+msgstr "تعذّر الاتصال: {0}"
 
 msgid "We could not reach {0}. Check the server name."
-msgstr ""
+msgstr "تعذّر الوصول إلى {0}. تحقق من اسم الخادم."
 
 msgid "We guessed these from your address. Change them if your host differs."
-msgstr ""
+msgstr "خمّنّا هذه من عنوانك. غيّرها إذا كان مزوّدك مختلفًا."
 
 msgid "What a printed document looks like, and the letter head it sits under."
-msgstr ""
+msgstr "شكل المستند المطبوع، والترويسة التي يظهر تحتها."
 
 msgid ""
 "What each target field is made of, keyed by target fieldname. See "
 "`oneapp_core/importer.py`."
 msgstr ""
+"ممّ يتكوّن كل حقل هدف، مفهرسًا باسم الحقل الهدف. راجع "
+"`oneapp_core/importer.py`."
 
 msgid ""
 "What is in the URL. Long enough not to be guessed, and the only thing "
 "standing between the link and the file."
 msgstr ""
+"ما يوجد في الرابط. طويل بما يكفي ألا يُخمَّن، وهو الشيء الوحيد الفاصل "
+"بين الرابط والملف."
 
 msgid "What is looked at."
-msgstr ""
+msgstr "ما يُنظر إليه."
 
 msgid "What it belongs to"
-msgstr ""
+msgstr "إلامَ ينتمي"
 
 msgid "What it is about"
-msgstr ""
+msgstr "عمَّ يدور"
 
 msgid "What it is called in the picker."
-msgstr ""
+msgstr "اسمه في قائمة الاختيار."
 
 msgid "What it is for"
-msgstr ""
+msgstr "ما الغرض منه"
 
 msgid "What it says"
-msgstr ""
+msgstr "ما يقوله"
 
 msgid "What it was made for, in the words of whoever made it."
-msgstr ""
+msgstr "لماذا أُنشئ، بكلمات من أنشأه."
 
 msgid ""
 "What that JSON renders to, written on the same save. Everything that is "
@@ -4138,101 +4355,114 @@ msgid ""
 "mail body — so none of them has to load an editor to find out what the "
 "document says."
 msgstr ""
+"ما يُنتجه ذلك الـ JSON عند العرض، ويُكتب في الحفظ نفسه. كل ما عدا المحرر "
+"يقرأ هذا — البحث والمعاينة والطباعة والتصدير ومتن البريد — حتى لا يضطر "
+"أي منها إلى تحميل محرر ليعرف ما يقوله المستند."
 
 msgid "What that sheet was called when the rows were pulled."
-msgstr ""
+msgstr "ما كان اسم جدول البيانات ذاك حين سُحبت الصفوف."
 
 msgid ""
 "What the call that produced this turn settled at. Zero on anything a "
 "person typed."
 msgstr ""
+"ما استقرت عليه كلفة الاستدعاء الذي أنتج هذا الدور. صفر في كل ما يكتبه "
+"شخص."
 
 msgid ""
 "What the model asked to run, when this turn asked for anything. The "
 "arguments as sent, so a transcript says which records were read."
 msgstr ""
+"ما طلب النموذج تشغيله، إن طلب هذا الدور شيئًا. الوسائط كما أُرسلت، حتى "
+"يقول السجل أي السجلات قُرئت."
 
 msgid "What the paper is called: Trade Licence, Residence Visa."
-msgstr ""
+msgstr "اسم الورقة: رخصة تجارية، تأشيرة إقامة."
 
 msgid "What the source said, as it said it."
-msgstr ""
+msgstr "ما قاله المصدر، كما قاله."
 
 msgid "What they can do"
-msgstr ""
+msgstr "ما يمكنه فعله"
 
 msgid "What this rule is for, in the words of whoever wrote it."
-msgstr ""
+msgstr "لماذا هذه القاعدة، بكلمات من كتبها."
 
 msgid "What this system is called to the people leaving it."
-msgstr ""
+msgstr "اسم هذا النظام كما يعرفه من يغادرونه."
 
 msgid "What this version is"
-msgstr ""
+msgstr "ما هذه النسخة"
 
 msgid "What this view type needs that columns and filters do not carry."
-msgstr ""
+msgstr "ما يحتاجه نوع العرض هذا مما لا تحمله الأعمدة والمرشّحات."
 
 msgid "What this whole conversation has cost, summed as each turn settles."
-msgstr ""
+msgstr "كم كلّفت هذه المحادثة كلها، مجموعةً مع استقرار كل دور."
 
 msgid "What this workspace is keeping, and how much room is left."
-msgstr ""
+msgstr "ما تحتفظ به مساحة العمل هذه، وكم بقي من مساحة."
 
 msgid ""
 "What to call this version in the panel. A timestamp for an automatic "
 "one; whatever somebody typed for a named one."
 msgstr ""
+"بماذا تُسمّى هذه النسخة في اللوحة. طابع زمني للنسخة التلقائية؛ وما كتبه "
+"أحدهم للنسخة المسمّاة."
 
 msgid "What to do with this document"
-msgstr ""
+msgstr "ما الذي تريد فعله بهذا المستند"
 
 msgid "What to do with this version"
-msgstr ""
+msgstr "ما العمل بهذه النسخة"
 
 msgid "What to read on the source site."
-msgstr ""
+msgstr "ما يُقرأ على الموقع المصدر."
 
 msgid ""
 "What to write here. Usually an ERPNext or HRMS doctype: the point of the "
 "move is that it stops being bespoke."
 msgstr ""
+"ما يُكتب هنا. عادةً نوع مستند في ERPNext أو HRMS: الغاية من النقل أن "
+"يتوقف عن كونه مخصَّصًا."
 
 msgid "What we made of it before it was refused."
-msgstr ""
+msgstr "ما فهمناه منه قبل أن يُرفض."
 
 msgid "What you are told about, and how."
-msgstr ""
+msgstr "ما تُبلَّغ به، وكيف."
 
 msgid "When"
-msgstr ""
+msgstr "متى"
 
 msgid ""
 "When the last warning went out. Kept so a daily job warns once and not "
 "every morning until somebody acts, which is how people learn to ignore "
 "it."
 msgstr ""
+"متى خرج آخر تحذير. يُحفظ حتى تحذّر المهمة اليومية مرة واحدة لا كل صباح "
+"إلى أن يتحرك أحد، فهكذا يتعلم الناس تجاهلها."
 
 msgid "When this record"
-msgstr ""
+msgstr "عندما يكون هذا السجل"
 
 msgid "When {0} is {1} by {2} days, tell {3}"
-msgstr ""
+msgstr "عندما يكون {0} {1} بـ {2} يومًا، أبلغ {3}"
 
 msgid "When {0} is {1}, tell {2}"
-msgstr ""
+msgstr "عندما يكون {0} {1}، أبلغ {2}"
 
 msgid "Where it came from"
-msgstr ""
+msgstr "من أين جاء"
 
 msgid "Where it got to"
-msgstr ""
+msgstr "إلى أين وصل"
 
 msgid "Where it stands"
-msgstr ""
+msgstr "ما حالته الآن"
 
 msgid "Where mail that matches goes, before you see it."
-msgstr ""
+msgstr "إلى أين يذهب البريد المطابق قبل أن تراه."
 
 msgid ""
 "Where one source row is several records. `{\"from\": \"attendance_log\", "
@@ -4240,752 +4470,802 @@ msgid ""
 "item. Each gets the parent's fields with its own merged over them and "
 "`__key` holding what it came in under."
 msgstr ""
+"حيث يكون صف المصدر الواحد عدة سجلات. `{\"from\": \"attendance_log\", "
+"\"shape\": \"map\"}` يُنشئ سجلًا لكل مفتاح؛ و`\"list\"` يُنشئ سجلًا لكل "
+"عنصر. ويأخذ كل منها حقول الأصل مع حقوله هو مدموجة فوقها، و`__key` يحمل "
+"ما ورد تحته."
 
 msgid "Where this step started reading. Empty is everything."
-msgstr ""
+msgstr "من أين بدأت هذه الخطوة القراءة. الفراغ يعني كل شيء."
 
 msgid "Where you are signed in"
-msgstr ""
+msgstr "أين سجّلت الدخول"
 
 msgid ""
 "Whether members may connect a mailbox they already have, such as Gmail "
 "or the company's own server."
 msgstr ""
+"ما إذا كان للأعضاء ربط صندوق بريد لديهم بالفعل، مثل Gmail أو خادم الشركة "
+"نفسها."
 
 msgid ""
 "Whether to enforce quotas at all, and until when if not. A workspace "
 "over its limit because a line left its subscription is given a window "
 "rather than a wall."
 msgstr ""
+"هل تُفرض الحصص أصلًا، وإلى متى إن لم تُفرض. مساحة العمل التي تجاوزت "
+"حدّها لأن بندًا خرج من اشتراكها تُمنح مهلة لا جدارًا."
 
 msgid "Which call a `tool` row answers."
-msgstr ""
+msgstr "أي استدعاء يجيب عنه صف `tool`."
 
 msgid "Which column the rows are grouped under. Empty is no grouping."
-msgstr ""
+msgstr "تحت أي عمود تُجمَّع الصفوف. الفراغ يعني لا تجميع."
 
 msgid ""
 "Which columns, in order, each with a width and an optional left/right "
 "pin. Empty follows the screen. The comma-separated fieldnames this used "
 "to hold still read."
 msgstr ""
+"أي الأعمدة، بالترتيب، ولكل منها عرض وتثبيت اختياري إلى اليمين أو اليسار. "
+"الفراغ يتبع الشاشة. وأسماء الحقول المفصولة بفواصل التي كان هذا يحملها "
+"سابقًا لا تزال تُقرأ."
 
 msgid "Which columns…"
-msgstr ""
+msgstr "أي أعمدة…"
 
 msgid "Which day rather than what time."
-msgstr ""
+msgstr "أي يوم لا أي وقت."
 
 msgid "Which domain?"
-msgstr ""
+msgstr "أي نطاق؟"
 
 msgid ""
 "Which features use a model, which model they use, and anything you want "
 "it to keep in mind."
 msgstr ""
+"أي الميزات تستخدم نموذجًا، وأي نموذج تستخدمه، وأي شيء تريد منه أخذه في "
+"الحسبان."
 
 msgid "Which field"
-msgstr ""
+msgstr "أي حقل"
 
 msgid ""
 "Which of the screen's view types this view is of. Empty is the screen's "
 "first."
-msgstr ""
+msgstr "لأي من أنواع عرض الشاشة يعود هذا العرض. الفراغ يعني الأول في الشاشة."
 
 msgid "Which one"
-msgstr ""
+msgstr "أيّها"
 
 msgid "Which range?"
-msgstr ""
+msgstr "أي نطاق خلايا؟"
 
 msgid "Which record's files?"
-msgstr ""
+msgstr "ملفات أي سجل؟"
 
 msgid ""
 "Which space this fills. For the record: the import writes doctypes, not "
 "screens."
-msgstr ""
+msgstr "أي مساحة يملأ هذا. للعلم: الاستيراد يكتب أنواع مستندات لا شاشات."
 
 msgid ""
 "Which store the payload goes back to. On the row rather than derived "
 "from the File, so a version is readable on its own — including after the "
 "file it came from is gone."
 msgstr ""
+"إلى أي مخزن تعود الحمولة. على الصف نفسه لا مشتقًا من الملف، حتى تكون "
+"النسخة قابلة للقراءة وحدها — حتى بعد زوال الملف الذي جاءت منه."
 
 msgid "While you are away"
-msgstr ""
+msgstr "أثناء غيابك"
 
 msgid "Who"
-msgstr ""
+msgstr "من"
 
 msgid "Who it is from"
-msgstr ""
+msgstr "المُرسِل"
 
 msgid "Who it went to"
-msgstr ""
+msgstr "المُرسَل إليه"
 
 msgid "Who may use this"
-msgstr ""
+msgstr "من يجوز له استخدام هذا"
 
 msgid ""
 "Who the source site said we were. Worth reading: an import runs as this "
 "user over there, and a key made from an account with half the "
 "permissions imports half the data without failing."
 msgstr ""
+"من قال الموقع المصدر إننا كنا. يستحق القراءة: الاستيراد يعمل بصفة هذا "
+"المستخدم هناك، والمفتاح المصنوع من حساب بنصف الصلاحيات يستورد نصف "
+"البيانات دون أن يفشل."
 
 msgid ""
 "Whose screen this is. Empty is a screen everyone on the workspace sees — "
 "Frappe's `for_user` empty, on List Filter."
 msgstr ""
+"لمن هذه الشاشة. الفراغ يعني شاشة يراها كل من في مساحة العمل — أي "
+"`for_user` فارغ في Frappe، على List Filter."
 
 msgid ""
 "Why the loop ended on this turn: answered, turns_spent or budget_spent. "
 "Empty on a person's own message."
 msgstr ""
+"لماذا انتهت الحلقة عند هذا الدور: answered أو turns_spent أو "
+"budget_spent. فارغ في رسالة الشخص نفسه."
 
 msgid "Wide"
-msgstr ""
+msgstr "واسع"
 
 msgid "Width of {0} in pixels"
-msgstr ""
+msgstr "عرض {0} بالبكسل"
 
 msgid ""
 "Worked out from the expiry date and the warning window, on save and once "
 "a day. Never typed: a status somebody can set is a status that disagrees "
 "with the date beside it."
 msgstr ""
+"يُحتسب من تاريخ الانتهاء ومهلة التحذير، عند الحفظ ومرة في اليوم. لا "
+"يُكتب أبدًا: الحالة التي يستطيع أحد ضبطها هي حالة تخالف التاريخ المجاور "
+"لها."
 
 msgid "Write from"
-msgstr ""
+msgstr "الكتابة من"
 
 msgid "Write in British English. Never quote a delivery date."
-msgstr ""
+msgstr "اكتب بالإنجليزية البريطانية. لا تذكر تاريخ تسليم أبدًا."
 
 msgid "Write the message"
-msgstr ""
+msgstr "كتابة الرسالة"
 
 msgid "Write your message"
-msgstr ""
+msgstr "اكتب رسالتك"
 
 msgid "Writing"
-msgstr ""
+msgstr "الكتابة"
 
 msgid "Yahoo needs an app password."
-msgstr ""
+msgstr "يتطلب Yahoo كلمة مرور تطبيق."
 
 msgid "You already have an address here."
-msgstr ""
+msgstr "لديك عنوان هنا بالفعل."
 
 msgid ""
 "You already have {0} background jobs running, which is the limit on your "
 "plan. Wait for one to finish, or upgrade for more."
 msgstr ""
+"لديك بالفعل {0} مهمة خلفية قيد التشغيل، وهو الحد المسموح في خطتك. انتظر "
+"انتهاء إحداها، أو ارفع الخطة للمزيد."
 
 msgid "You cannot amend this."
-msgstr ""
+msgstr "لا يمكنك تعديل هذا."
 
 msgid "You cannot change how {0} is named."
-msgstr ""
+msgstr "لا يمكنك تغيير طريقة تسمية {0}."
 
 msgid "You cannot change that record."
-msgstr ""
+msgstr "لا يمكنك تغيير ذلك السجل."
 
 msgid "You cannot change {0}."
-msgstr ""
+msgstr "لا يمكنك تغيير {0}."
 
 msgid "You cannot open {0}."
-msgstr ""
+msgstr "لا يمكنك فتح {0}."
 
 msgid "You cannot read that record."
-msgstr ""
+msgstr "لا يمكنك قراءة ذلك السجل."
 
 msgid "You cannot read {0}."
-msgstr ""
+msgstr "لا يمكنك قراءة {0}."
 
 msgid "You cannot see that file's links."
-msgstr ""
+msgstr "لا يمكنك رؤية روابط ذلك الملف."
 
 msgid "You cannot share that file."
-msgstr ""
+msgstr "لا يمكنك مشاركة ذلك الملف."
 
 msgid "You have no address to send from."
-msgstr ""
+msgstr "ليس لديك عنوان للإرسال منه."
 
 msgid "You have no address to write from."
-msgstr ""
+msgstr "ليس لديك عنوان للكتابة منه."
 
 msgid "Your CNAME should point at:"
-msgstr ""
+msgstr "يجب أن يشير CNAME إلى:"
 
 msgid "Your account"
-msgstr ""
+msgstr "حسابك"
 
 msgid "Your calendar did not load"
-msgstr ""
+msgstr "لم يُحمَّل تقويمك"
 
 msgid ""
 "Your card is charged the difference for the rest of this billing period, "
 "and the new limits apply straight away."
 msgstr ""
+"تُخصم من بطاقتك قيمة الفرق لبقية فترة الفوترة هذه، وتسري الحدود الجديدة "
+"فوراً."
 
 msgid ""
 "Your company, its financial year, and the accounts everything is posted "
 "to. Answered once."
 msgstr ""
+"شركتك، وسنتها المالية، والحسابات التي يُرحَّل إليها كل شيء. تُجاب مرة "
+"واحدة."
 
 msgid ""
 "Your country and currency are what you chose. The chart of accounts and "
 "financial year below are the usual ones for {0} — check them before you "
 "invoice anything, because they are only easy to change until then."
 msgstr ""
+"بلدك وعملتك هما ما اخترته. ودليل الحسابات والسنة المالية أدناه هما "
+"المعتادان في {0} — راجعهما قبل إصدار أي فاتورة، فتغييرهما سهل حتى تلك "
+"اللحظة فقط."
 
 msgid ""
 "Your currency and chart of accounts cannot change once entries exist. "
 "Ask support if you need them changed."
 msgstr ""
+"لا يمكن تغيير عملتك ودليل حساباتك بعد وجود قيود. تواصل مع الدعم إذا "
+"احتجت إلى تغييرهما."
 
 msgid "Your diary"
-msgstr ""
+msgstr "يومياتك"
 
 msgid "Your domain"
-msgstr ""
+msgstr "نطاقك"
 
 msgid "Your files did not load"
-msgstr ""
+msgstr "لم تُحمَّل ملفاتك"
 
 msgid "Your last payment did not go through"
-msgstr ""
+msgstr "لم تنجح دفعتك الأخيرة"
 
 msgid "Your name and how you are reached."
-msgstr ""
+msgstr "اسمك وكيف يمكن الوصول إليك."
 
 msgid "Your order is on its way"
-msgstr ""
+msgstr "طلبك في الطريق"
 
 msgid "Your original terms"
-msgstr ""
+msgstr "شروطك الأصلية"
 
 msgid "Your own domain"
-msgstr ""
+msgstr "نطاقك الخاص"
 
 msgid "Your own mailboxes"
-msgstr ""
+msgstr "صناديق بريدك الخاصة"
 
 msgid "Your own roles"
-msgstr ""
+msgstr "أدوارك الخاصة"
 
 msgid "Your password, and where you are signed in."
-msgstr ""
+msgstr "كلمة مرورك، وأين سجّلت الدخول."
 
 msgid ""
 "Your plan adds credits every month and they do not carry over. Credits "
 "you buy never expire."
 msgstr ""
+"تضيف خطتك أرصدة كل شهر ولا تُرحَّل. أما الأرصدة التي تشتريها فلا تنتهي "
+"أبداً."
 
 msgid ""
 "Your plan adds credits every month and they expire at the end of it. "
 "Credits you buy roll over and are spent last."
 msgstr ""
+"تضيف خطتك أرصدة كل شهر وتنتهي في نهايته. أما الأرصدة التي تشتريها "
+"فتُرحَّل وتُستهلك أخيراً."
 
 msgid ""
 "Your plan includes one seat. Change plan to invite more people, or "
 "remove someone who no longer needs access."
 msgstr ""
+"تشمل خطتك مقعداً واحداً. غيّر الخطة لدعوة المزيد من الأشخاص، أو أزل "
+"شخصاً لم يعد يحتاج الوصول."
 
 msgid ""
 "Your plan includes {0} seats. Change plan to invite more people, or "
 "remove someone who no longer needs access."
 msgstr ""
+"تشمل خطتك {0} مقاعد. غيّر الخطة لدعوة المزيد من الأشخاص، أو أزل شخصاً لم "
+"يعد يحتاج الوصول."
 
 msgid "Your signature, your away message, and where your mail files itself."
-msgstr ""
+msgstr "توقيعك، ورسالة غيابك، وأين يُصنَّف بريدك تلقائيًا."
 
 msgid "Your spaces are all still where you left them."
-msgstr ""
+msgstr "كل مساحاتك لا تزال حيث تركتها."
 
 msgid ""
 "Your work has not been touched, and paying brings it back within a "
 "minute. If it is still unpaid on {0}, the workspace comes down and only "
 "a backup is kept."
 msgstr ""
+"لم يُمَس عملك، والدفع يعيده خلال دقيقة. وإذا بقي غير مدفوع في {0}، "
+"تُوقَف مساحة العمل ولا يُحتفظ إلا بنسخة احتياطية."
 
 msgid "Your workspace already works at {0}. A custom domain is optional."
-msgstr ""
+msgstr "مساحة عملك تعمل أصلاً على {0}. النطاق المخصص اختياري."
 
 msgid "Your workspace did not load"
-msgstr ""
+msgstr "لم تُحمَّل مساحة عملك"
 
 msgid "Your workspace is past the {0} limit on this plan"
-msgstr ""
+msgstr "تجاوزت مساحة عملك حد {0} في هذه الخطة"
 
 msgid "a day"
-msgstr ""
+msgstr "يوم"
 
 msgid "a month"
-msgstr ""
+msgstr "شهر"
 
 msgid "a week"
-msgstr ""
+msgstr "أسبوع"
 
 msgid "add a connection first"
-msgstr ""
+msgstr "أضف اتصالًا أولًا"
 
 msgid "and {0} more."
-msgstr ""
+msgstr "و{0} أخرى."
 
 msgid "app.yourcompany.com"
-msgstr ""
+msgstr "app.sharikatuk.com"
 
 msgid "as {0}"
-msgstr ""
+msgstr "كـ {0}"
 
 msgid "assistant"
-msgstr ""
+msgstr "المساعد"
 
 msgid "available"
-msgstr ""
+msgstr "متاح"
 
 msgid "cancelled"
-msgstr ""
+msgstr "ملغى"
 
 msgid "changed"
-msgstr ""
+msgstr "تغيّر"
 
 msgid "colleague@acme.test"
-msgstr ""
+msgstr "zameel@acme.test"
 
 msgid "coming up"
-msgstr ""
+msgstr "قادم"
 
 msgid "database"
-msgstr ""
+msgstr "قاعدة بيانات"
 
 msgid "files"
-msgstr ""
+msgstr "ملفات"
 
 msgid "found"
-msgstr ""
+msgstr "موجود"
 
 msgid "from {0}"
-msgstr ""
+msgstr "من {0}"
 
 msgid "https://old.example.com"
-msgstr ""
+msgstr "https://old.example.com"
 
 msgid "iCloud needs an app-specific password."
-msgstr ""
+msgstr "يتطلب iCloud كلمة مرور خاصة بالتطبيق."
 
 msgid "is"
-msgstr ""
+msgstr "هو"
 
 msgid "is empty"
-msgstr ""
+msgstr "فارغ"
 
 msgid "is filled in"
-msgstr ""
+msgstr "مملوء"
 
 msgid "is not"
-msgstr ""
+msgstr "ليس"
 
 msgid "is over"
-msgstr ""
+msgstr "أكثر من"
 
 msgid "is under"
-msgstr ""
+msgstr "أقل من"
 
 msgid "made"
-msgstr ""
+msgstr "أُنشئ"
 
 msgid "missing"
-msgstr ""
+msgstr "مفقود"
 
 msgid "nobody"
-msgstr ""
+msgstr "لا أحد"
 
 msgid "not yet"
-msgstr ""
+msgstr "ليس بعد"
 
 msgid "nothing yet"
-msgstr ""
+msgstr "لا شيء بعد"
 
 msgid "opened {0} time"
-msgstr ""
+msgstr "فُتح {0} مرة"
 
 msgid "opened {0} times"
-msgstr ""
+msgstr "فُتح {0} مرات"
 
 msgid "past due"
-msgstr ""
+msgstr "متأخر"
 
 msgid "people"
-msgstr ""
+msgstr "أشخاص"
 
 msgid "per month"
-msgstr ""
+msgstr "شهرياً"
 
 msgid "record"
-msgstr ""
+msgstr "سجل"
 
 msgid "rehearsal"
-msgstr ""
+msgstr "تجربة"
 
 msgid "sales"
-msgstr ""
+msgstr "sales"
 
 msgid "sales@yourcompany.com"
-msgstr ""
+msgstr "sales@yourcompany.com"
 
 msgid "showing the first {0}"
-msgstr ""
+msgstr "عرض أول {0}"
 
 msgid "submitted"
-msgstr ""
+msgstr "مُعتمد"
 
 msgid "the next state"
-msgstr ""
+msgstr "الحالة التالية"
 
 msgid "the platform address"
-msgstr ""
+msgstr "عنوان المنصة"
 
 msgid "the record"
-msgstr ""
+msgstr "السجل"
 
 msgid "the sidebar"
-msgstr ""
+msgstr "الشريط الجانبي"
 
 msgid "this"
-msgstr ""
+msgstr "هذا"
 
 msgid "three months"
-msgstr ""
+msgstr "ثلاثة أشهر"
 
 msgid "tool"
-msgstr ""
+msgstr "أداة"
 
 msgid "up to {0}"
-msgstr ""
+msgstr "حتى {0}"
 
 msgid "user"
-msgstr ""
+msgstr "مستخدم"
 
 msgid "you@gmail.com"
-msgstr ""
+msgstr "you@gmail.com"
 
 msgid "yourcompany.com"
-msgstr ""
+msgstr "yourcompany.com"
 
 msgid "yourcompany.com, gmail.com"
-msgstr ""
+msgstr "yourcompany.com, gmail.com"
 
 msgid "{0} (default)"
-msgstr ""
+msgstr "{0} (افتراضي)"
 
 msgid "{0} Currently {1}."
-msgstr ""
+msgstr "{0} حاليًا {1}."
 
 msgid "{0} GB database"
-msgstr ""
+msgstr "{0} غيغابايت قاعدة بيانات"
 
 msgid "{0} GB files"
-msgstr ""
+msgstr "{0} غيغابايت ملفات"
 
 msgid "{0} a month, from now on."
-msgstr ""
+msgstr "{0} شهرياً، من الآن فصاعداً."
 
 msgid "{0} already exists."
-msgstr ""
+msgstr "{0} موجود بالفعل."
 
 msgid "{0} available"
-msgstr ""
+msgstr "{0} متاح"
 
 msgid "{0} cannot be used for {1}."
-msgstr ""
+msgstr "لا يمكن استخدام {0} لـ {1}."
 
 msgid "{0} changed since this run was queued."
-msgstr ""
+msgstr "تغيّر {0} منذ إدراج هذا التشغيل في الطابور."
 
 msgid "{0} changes"
-msgstr ""
+msgstr "{0} تغييرات"
 
 msgid "{0} commented on {1} {2}"
-msgstr ""
+msgstr "علّق {0} على {1} {2}"
 
 msgid "{0} copy"
-msgstr ""
+msgstr "نسخة من {0}"
 
 msgid "{0} credits"
-msgstr ""
+msgstr "{0} أرصدة"
 
 msgid "{0} credits a month"
-msgstr ""
+msgstr "{0} أرصدة شهرياً"
 
 msgid "{0} credits left. Each feature is charged for what it actually uses."
-msgstr ""
+msgstr "بقي {0} من الأرصدة. تُحتسب على كل ميزة تكلفة ما تستهلكه فعليًا."
 
 msgid "{0} does not print {1}."
-msgstr ""
+msgstr "{0} لا يطبع {1}."
 
 msgid "{0} file did not upload"
-msgstr ""
+msgstr "لم يُرفع {0} ملف"
 
 msgid "{0} file uploaded"
-msgstr ""
+msgstr "تم رفع {0} ملف"
 
 msgid "{0} files did not upload"
-msgstr ""
+msgstr "لم تُرفع {0} ملفات"
 
 msgid "{0} files uploaded"
-msgstr ""
+msgstr "تم رفع {0} ملفات"
 
 msgid "{0} had no matching field and was left out."
-msgstr ""
+msgstr "{0} لم يكن له حقل مطابق فتُرك جانبًا."
 
 msgid "{0} had no matching field and were left out."
-msgstr ""
+msgstr "{0} لم تكن لها حقول مطابقة فتُركت جانبًا."
 
 msgid "{0} has no field called {1}."
-msgstr ""
+msgstr "لا يوجد في {0} حقل باسم {1}."
 
 msgid "{0} has no mailbox server, so this folder lives in OneSpace."
-msgstr ""
+msgstr "لا يوجد خادم صندوق بريد لـ {0}، لذا يوجد هذا المجلد في OneSpace."
 
 msgid "{0} has no matching field here and will be left out."
-msgstr ""
+msgstr "{0} ليس له حقل مطابق هنا وسيُترك جانبًا."
 
 msgid "{0} have no matching field here and will be left out."
-msgstr ""
+msgstr "{0} ليست لها حقول مطابقة هنا وستُترك جانبًا."
 
 msgid "{0} home"
-msgstr ""
+msgstr "{0} الرئيسية"
 
 msgid "{0} is already connected."
-msgstr ""
+msgstr "{0} متصل بالفعل."
 
 msgid "{0} is already running."
-msgstr ""
+msgstr "{0} قيد التشغيل بالفعل."
 
 msgid ""
 "{0} is named by its own scheme, which is part of the app rather than a "
 "setting. Its counter can still be moved."
 msgstr ""
+"يُسمّى {0} بمخططه الخاص، وهو جزء من التطبيق لا إعداد. ومع ذلك يمكن تحريك "
+"عدّاده."
 
 msgid "{0} is not a PDF engine."
-msgstr ""
+msgstr "{0} ليس محرك PDF."
 
 msgid "{0} is not a declared notification kind."
-msgstr ""
+msgstr "{0} ليس نوع إشعار معلَنًا."
 
 msgid "{0} is not a document that is submitted."
-msgstr ""
+msgstr "{0} ليس مستندًا يُعتمد."
 
 msgid "{0} is not a field this screen may change."
-msgstr ""
+msgstr "{0} ليس حقلًا يجوز لهذه الشاشة تغييره."
 
 msgid "{0} is not a folder you can remove."
-msgstr ""
+msgstr "{0} ليس مجلدًا يمكنك إزالته."
 
 msgid "{0} is not a level of access."
-msgstr ""
+msgstr "{0} ليس مستوى وصول."
 
 msgid "{0} is not a link."
-msgstr ""
+msgstr "{0} ليس رابطًا."
 
 msgid "{0} is not a notification you can set."
-msgstr ""
+msgstr "{0} ليس إشعارًا يمكنك ضبطه."
 
 msgid "{0} is not a page size."
-msgstr ""
+msgstr "{0} ليس مقاس صفحة."
 
 msgid "{0} is not a print style."
-msgstr ""
+msgstr "{0} ليس نمط طباعة."
 
 msgid "{0} is not a series on {1}."
-msgstr ""
+msgstr "{0} ليس تسلسلًا على {1}."
 
 msgid "{0} is not a way to be notified."
-msgstr ""
+msgstr "{0} ليس طريقة للإشعار."
 
 msgid "{0} is not a workspace setting."
-msgstr ""
+msgstr "{0} ليس إعدادًا لمساحة العمل."
 
 msgid "{0} is not an action of this screen."
-msgstr ""
+msgstr "{0} ليس إجراءً في هذه الشاشة."
 
 msgid "{0} is not installed on this workspace."
-msgstr ""
+msgstr "{0} غير مثبَّت على مساحة العمل هذه."
 
 msgid "{0} is not named after a field, so it cannot be filled in from a value."
-msgstr ""
+msgstr "{0} ليس مسمّى باسم حقل، لذا لا يمكن ملؤه من قيمة."
 
 msgid "{0} is not named by a series here."
-msgstr ""
+msgstr "{0} لا يُسمّى بتسلسل هنا."
 
 msgid "{0} is not on this screen."
-msgstr ""
+msgstr "{0} ليس على هذه الشاشة."
 
 msgid "{0} is not on this workspace."
-msgstr ""
+msgstr "{0} ليس على مساحة العمل هذه."
 
 msgid "{0} is not one of the choices."
-msgstr ""
+msgstr "{0} ليس من الخيارات."
 
 msgid "{0} is not part of {1}."
-msgstr ""
+msgstr "{0} ليس جزءًا من {1}."
 
 msgid "{0} is not set up to send."
-msgstr ""
+msgstr "{0} غير مهيّأ للإرسال."
 
 msgid "{0} is not something you can change here."
-msgstr ""
+msgstr "{0} ليس مما يمكنك تغييره هنا."
 
 msgid "{0} is not submitted, so it cannot be submitted or cancelled."
-msgstr ""
+msgstr "{0} غير معتمد، لذا لا يمكن اعتماده أو إلغاؤه."
 
 msgid "{0} is not verified yet. SPF: {1}. DKIM: {2}."
-msgstr ""
+msgstr "{0} لم يُتحقق منه بعد. SPF: {1}. DKIM: {2}."
 
 msgid ""
 "{0} is on a domain we have not verified yet. Publish the DNS records "
 "first."
-msgstr ""
+msgstr "{0} على نطاق لم نتحقق منه بعد. انشر سجلات DNS أولًا."
 
 msgid "{0} is part of your workspace but has no screens in it yet."
-msgstr ""
+msgstr "{0} جزء من مساحة عملك لكن ليس فيه شاشات بعد."
 
 msgid "{0} is taken."
-msgstr ""
+msgstr "{0} محجوز."
 
 msgid "{0} message about this record"
-msgstr ""
+msgstr "{0} رسالة عن هذا السجل"
 
 msgid "{0} messages about this record"
-msgstr ""
+msgstr "{0} رسائل عن هذا السجل"
 
 msgid "{0} of {1} chosen"
-msgstr ""
+msgstr "{0} من {1} محدد"
 
 msgid "{0} of {1} seats used"
-msgstr ""
+msgstr "{0} من {1} مقاعد مستخدمة"
 
 msgid "{0} of {1} today"
-msgstr ""
+msgstr "{0} من {1} اليوم"
 
 msgid "{0} once"
-msgstr ""
+msgstr "{0} مرة واحدة"
 
 msgid "{0} permissions"
-msgstr ""
+msgstr "{0} صلاحيات"
 
 msgid "{0} records will have {1} set to this."
-msgstr ""
+msgstr "{0} سجلات ستُضبط فيها قيمة {1} على هذا."
 
 msgid "{0} row"
-msgstr ""
+msgstr "{0} صف"
 
 msgid "{0} row, from {1}!{2}"
-msgstr ""
+msgstr "{0} صف، من {1}!{2}"
 
 msgid "{0} rows"
-msgstr ""
+msgstr "{0} صفوف"
 
 msgid "{0} rows, from {1}!{2}"
-msgstr ""
+msgstr "{0} صفوف، من {1}!{2}"
 
 msgid "{0} runs on a workflow, so it is {1} by taking the next step in it."
-msgstr ""
+msgstr "{0} يعمل بسير عمل، لذا يصبح {1} باتخاذ الخطوة التالية فيه."
 
 msgid "{0} seats"
-msgstr ""
+msgstr "{0} مقاعد"
 
 msgid "{0} seats used"
-msgstr ""
+msgstr "{0} مقاعد مستخدمة"
 
 msgid "{0} selected"
-msgstr ""
+msgstr "{0} محدد"
 
 msgid ""
 "{0} ships with the app that defines it, so it is read-only here. "
 "Duplicate it to make it yours."
-msgstr ""
+msgstr "{0} يأتي مع التطبيق الذي يعرّفه، لذا هو للقراءة فقط هنا. انسخه ليصبح لك."
 
 msgid "{0} ships with the app that defines it."
-msgstr ""
+msgstr "{0} يأتي مع التطبيق الذي يعرّفه."
 
 msgid "{0} steps"
-msgstr ""
+msgstr "{0} خطوة"
 
 msgid "{0} steps · {1} fields it adds"
-msgstr ""
+msgstr "{0} خطوة · {1} حقلًا تضيفها"
 
 msgid "{0} things"
-msgstr ""
+msgstr "{0} عنصر"
 
 msgid "{0} things chosen"
-msgstr ""
+msgstr "{0} عنصر محدد"
 
 msgid "{0} things, more below"
-msgstr ""
+msgstr "{0} عنصر، والمزيد أدناه"
 
 msgid "{0} times a day"
-msgstr ""
+msgstr "{0} مرات يومياً"
 
 msgid "{0} to fix · {1} worth reading"
-msgstr ""
+msgstr "{0} للإصلاح · {1} جدير بالقراءة"
 
 msgid "{0} updated {1} {2}"
-msgstr ""
+msgstr "حدّث {0} {1} {2}"
 
 msgid ""
 "{0} was written as a template rather than drawn, so it cannot be opened "
 "here. It still prints."
-msgstr ""
+msgstr "كُتب {0} كنموذج بدل أن يُرسم، لذا لا يمكن فتحه هنا. وما زال يُطبع."
 
 msgid "{0} word"
-msgstr ""
+msgstr "{0} كلمة"
 
 msgid "{0} words"
-msgstr ""
+msgstr "{0} كلمات"
 
 msgid ""
 "{0} {1} is already {2} {3} in this plan — two steps claim it. Narrow one "
 "step's filters."
 msgstr ""
+"{0} {1} هو أصلًا {2} {3} في هذه الخطة — خطوتان تطالبان به. ضيّق مرشّحات "
+"إحدى الخطوتين."
 
 msgid "{0} — last {1}"
-msgstr ""
+msgstr "{0} — آخر {1}"
 
 msgid "{0} — none yet"
-msgstr ""
+msgstr "{0} — لا شيء بعد"
 
 msgid "{0} — yours, on this workspace's domain."
-msgstr ""
+msgstr "{0} — عنوانك، على نطاق مساحة العمل هذه."
 
 msgid "{0} — {1}"
-msgstr ""
+msgstr "{0} — {1}"
 
 msgid "{0}, kept {1} days"
-msgstr ""
+msgstr "{0}، تُحفظ {1} أيام"
 
 msgid "إلى"
-msgstr ""
+msgstr "إلى"
 
 msgid "التوقيع"
-msgstr ""
+msgstr "التوقيع"
 
 msgid "الصفة"
-msgstr ""
+msgstr "الصفة"
 
 msgid "العربية"
-msgstr ""
+msgstr "العربية"
 
 msgid "الموضوع"
-msgstr ""
+msgstr "الموضوع"
 
 msgid "النص"
-msgstr ""
+msgstr "النص"
 
 msgid "— which this workspace no longer has"
-msgstr ""
+msgstr "— وهو ما لم يعد لدى مساحة العمل هذه"
 
 msgid "“{0}” is reserved."
-msgstr ""
+msgstr "“{0}” محجوز."

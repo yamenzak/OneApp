@@ -16,6 +16,8 @@ sentence, which is why this guard can read the sentence out of the call and
 hand it to `test_ui_copy` unchanged.
 """
 
+import re
+
 import pytest
 from copy_reader import ROOT, sources, unwrapped, visible
 
@@ -210,3 +212,73 @@ def test_both_apps_extract_their_own_messages():
 	for app in ("oneapp", "oneapp_control"):
 		rows = (ROOT / "apps" / app / "babel_extractors.csv").read_text().splitlines()
 		assert "**/hooks.py,frappe.gettext.extractors.python.extract" in rows
+
+
+# --------------------------------------------------------------------------- #
+# The catalogues themselves
+# --------------------------------------------------------------------------- #
+
+import sys  # noqa: E402
+
+sys.path.insert(0, str(ROOT / "scripts"))
+import i18n as catalogue  # noqa: E402
+
+PLACEHOLDER = re.compile(r"\{[^}]*\}")
+TAG = re.compile(r"</?\w+>")
+
+
+@pytest.mark.parametrize("lang", catalogue.LANGUAGES)
+def test_nothing_a_customer_reads_is_still_in_english(lang):
+	"""Every msgid we own has a translation.
+
+	"We own" is the interesting half and is `scripts/i18n.py`'s answer: what the
+	extractor found, minus the strings only an operator sees, minus everything
+	Frappe or ERPNext already translates. The last subtraction is why this
+	number is a fifth of what it looks like it should be.
+	"""
+	mine = catalogue.po("oneapp", lang)
+	owed = sorted(
+		msgid for (msgid, ctx) in catalogue.ours("oneapp", lang) if not mine.get((msgid, ctx))
+	)
+	assert not owed, (
+		f"{len(owed)} strings have no {lang}: run `python3 scripts/i18n.py gap {lang}`\n  "
+		+ "\n  ".join(one[:70] for one in owed[:12])
+	)
+
+
+@pytest.mark.parametrize("lang", catalogue.LANGUAGES)
+def test_a_translation_carries_the_same_placeholders(lang):
+	"""`{0}` is not a word and does not get translated.
+
+	A dropped one is a sentence with a hole where the file name was; an invented
+	one is a `KeyError` in front of a customer. Same for the inline tags: a
+	`<b>` that lost its `</b>` bolds the rest of the page.
+	"""
+	guilty = []
+	for (msgid, _ctx), msgstr in sorted(catalogue.po("oneapp", lang).items()):
+		if not msgstr:
+			continue
+		if sorted(PLACEHOLDER.findall(msgid)) != sorted(PLACEHOLDER.findall(msgstr)):
+			guilty.append(f"placeholders: {msgid[:60]}")
+		if sorted(TAG.findall(msgid)) != sorted(TAG.findall(msgstr)):
+			guilty.append(f"tags: {msgid[:60]}")
+	assert not guilty, f"{lang}.po:\n  " + "\n  ".join(guilty[:12])
+
+
+@pytest.mark.parametrize("lang", catalogue.LANGUAGES)
+def test_we_do_not_shadow_a_translation_somebody_maintains(lang):
+	"""A msgid Frappe or ERPNext translates must not be in our file.
+
+	The framework merges every installed app's catalogue with ours last, so
+	carrying our own Arabic for `Save` would silently replace forty languages'
+	worth of maintained work with one line nobody reviews again.
+	"""
+	if not (catalogue.BENCH / "frappe/frappe/locale" / f"{lang}.po").exists():
+		pytest.skip("no bench to compare against")
+
+	covered = catalogue.upstream(lang)
+	ours = sorted(msgid for msgid, _ctx in catalogue.po("oneapp", lang) if msgid in covered)
+	assert not ours, (
+		f"{lang}.po repeats what upstream already says — `python3 scripts/i18n.py sync` "
+		f"drops these:\n  " + "\n  ".join(one[:70] for one in ours[:12])
+	)
