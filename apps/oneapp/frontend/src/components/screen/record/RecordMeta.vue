@@ -205,7 +205,7 @@ import AssignControl from '../fields/AssignControl.vue'
 import ShareControl from '../fields/ShareControl.vue'
 import TagControl from '../fields/TagControl.vue'
 import { workspace } from '../../../lib/workspace'
-import { errorText } from '@/lib/runtime/errors'
+import { useSaving } from '@/composables/useSaving'
 
 const props = defineProps({
   record: { type: Object, required: true },
@@ -262,9 +262,8 @@ const history = computed(() => {
 // Whether the picture picker is open.
 const picking = ref(false)
 const renaming = ref(false)
-const saving = ref(false)
+const { saving: saving, error, attempt } = useSaving()
 const wanted = ref('')
-const error = ref('')
 
 const open = () => {
   wanted.value = props.record.name || ''
@@ -277,9 +276,7 @@ const open = () => {
 // pointing at an id that was never created.
 const commit = async () => {
   if (saving.value) return
-  saving.value = true
-  error.value = ''
-  try {
+  await attempt(async () => {
     const result = await workspace.rename(
       props.spaceCode,
       props.screen,
@@ -288,10 +285,6 @@ const commit = async () => {
     )
     renaming.value = false
     emit('renamed', result?.name || wanted.value.trim())
-  } catch (raised) {
-    error.value = errorText(raised)
-  } finally {
-    saving.value = false
-  }
+  })
 }
 </script>

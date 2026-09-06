@@ -91,6 +91,7 @@ import { reactive, ref, watch } from 'vue'
 import { Button, Dialog, ErrorMessage, FormControl, Select, Switch } from '@/ui'
 import { workspace } from '../../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
+import { useSaving } from '@/composables/useSaving'
 
 const ALIGNMENTS = ['Left', 'Center', 'Right'].map((one) => ({ label: one, value: one }))
 
@@ -115,8 +116,7 @@ const showing = defineModel({ type: Boolean, default: false })
 
 const label = ref('')
 const values = reactive({ ...EMPTY })
-const saving = ref(false)
-const error = ref('')
+const { saving, error, attempt } = useSaving()
 
 watch(
   () => [showing.value, props.name],
@@ -140,16 +140,10 @@ watch(
 )
 
 const save = async () => {
-  saving.value = true
-  error.value = ''
-  try {
+  await attempt(async () => {
     await workspace.saveLetterHead(label.value.trim(), { ...values }, props.name)
     emit('saved')
     showing.value = false
-  } catch (raised) {
-    error.value = errorText(raised)
-  } finally {
-    saving.value = false
-  }
+  })
 }
 </script>

@@ -145,6 +145,7 @@ import { Alert, Badge, Button, Dialog, FormLabel, Select } from '@/ui'
 
 import { workspace } from '../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
+import { useSaving } from '@/composables/useSaving'
 
 const props = defineProps({
   doctype: { type: String, required: true },
@@ -163,14 +164,13 @@ const props = defineProps({
 const emit = defineEmits(['filled'])
 
 const open = ref(false)
-const loading = ref(false)
+const { saving: loading, error, attemptLoad } = useSaving()
+const { saving: filling, attemptFill } = useSaving(error)
 const sheets = ref([])
 const picked = ref('')
 const ranges = ref([])
 const label = ref('')
 const shape = ref(null)
-const error = ref('')
-const filling = ref(false)
 
 const options = computed(() =>
   sheets.value.map((one) => ({ label: one.file_name, value: one.name })))
@@ -225,9 +225,7 @@ const sample = computed(() =>
 async function start() {
   open.value = true
   if (sheets.value.length) return
-  loading.value = true
-  error.value = ''
-  try {
+  await attemptLoad(async () => {
     // `all` and not `home`: a sheet made against this record lives in the
     // attachments folder, and the root would show none of them.
     const found = await workspace.driveList({ place: 'all', kind: 'Sheet', limit: 50 })
@@ -237,11 +235,7 @@ async function start() {
     const again = props.from && sheets.value.find((one) => one.name === props.from.sheet)
     const mine = sheets.value.find((one) => one.attached_to_name === props.docname)
     picked.value = (again || mine || sheets.value[0])?.name || ''
-  } catch (raised) {
-    error.value = errorText(raised)
-  } finally {
-    loading.value = false
-  }
+  })
 }
 
 // Choosing a sheet loads its named ranges and nothing else: a workbook is a
@@ -275,9 +269,7 @@ watch(label, async (wanted) => {
 })
 
 async function fill() {
-  filling.value = true
-  error.value = ''
-  try {
+  await attemptFill(async () => {
     const done = await workspace.sheetPull(picked.value, {
       label: label.value,
       doctype: props.doctype,
@@ -286,10 +278,6 @@ async function fill() {
     })
     open.value = false
     emit('filled', done)
-  } catch (raised) {
-    error.value = errorText(raised)
-  } finally {
-    filling.value = false
-  }
+  })
 }
 </script>

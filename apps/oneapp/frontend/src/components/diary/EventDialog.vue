@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue'
+import { reactive, watch } from 'vue'
 import {
   Button,
   DatePicker,
@@ -78,6 +78,7 @@ import {
 } from '@/ui'
 import { workspace } from '../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
+import { useSaving } from '@/composables/useSaving'
 
 const props = defineProps({
   /** The event being edited, or a date to start a new one on. */
@@ -91,9 +92,9 @@ const emit = defineEmits(['saved'])
 const BLANK = { name: '', subject: '', starts_on: '', ends_on: '', all_day: false, description: '' }
 
 const draft = reactive({ ...BLANK })
-const error = ref('')
-const saving = ref(false)
-const removing = ref(false)
+
+const { saving: saving, error, attempt } = useSaving()
+const { saving: removing, attemptRemove } = useSaving(error)
 
 /**
  * Filled when the dialog opens, not when the props change.
@@ -121,30 +122,18 @@ watch(open, async (showing) => {
 })
 
 async function save() {
-  saving.value = true
-  error.value = ''
-  try {
+  await attempt(async () => {
     await workspace.saveDiaryEvent({ ...draft })
     open.value = false
     emit('saved')
-  } catch (raised) {
-    error.value = errorText(raised)
-  } finally {
-    saving.value = false
-  }
+  })
 }
 
 async function remove() {
-  removing.value = true
-  error.value = ''
-  try {
+  await attemptRemove(async () => {
     await workspace.removeDiaryEvent(draft.name)
     open.value = false
     emit('saved')
-  } catch (raised) {
-    error.value = errorText(raised)
-  } finally {
-    removing.value = false
-  }
+  })
 }
 </script>

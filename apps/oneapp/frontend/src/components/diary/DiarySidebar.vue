@@ -52,17 +52,7 @@
     </div>
   </Sidebar>
 
-  <Resizer
-    v-if="!collapsed"
-    v-model="width"
-    :min="MIN"
-    :default-size="DEFAULT"
-    :max="MAX"
-    side="right"
-    label="the sidebar"
-    remember="onespace.sidebar"
-    slot-name="sidebar-resizer"
-  />
+  <SidebarResizer />
 </template>
 
 <script setup>
@@ -74,9 +64,9 @@ import {
   SidebarHeader,
   SidebarItem,
 } from '@/ui'
-import Resizer from '../Resizer.vue'
+import SidebarResizer from '../SidebarResizer.vue'
 import { session } from '@/lib/shell/session'
-import { DEFAULT, MAX, MIN, useSidebar } from '@/lib/shell/sidebar'
+import { useSidebar } from '@/lib/shell/sidebar'
 import { colourFor, diary, isOn, toggle } from '@/lib/screen/diary'
 
 const { collapsed, width } = useSidebar()

@@ -126,6 +126,7 @@ import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
+import { useSaving } from '@/composables/useSaving'
 
 // Said under the textarea. Two sentences rather than one, because the second
 // case is the one people will not expect and the first is the one they will.
@@ -141,10 +142,10 @@ const sample = ref([])
 const counters = reactive({})
 
 const loading = ref(false)
-const saving = ref(false)
-const previewing = ref(false)
+const { saving: saving, error, attempt } = useSaving()
+const { saving: previewing, attemptPreview } = useSaving(error)
+
 const moving = ref('')
-const error = ref('')
 
 const current = computed(() => rows.value.find((row) => row.doctype === chosen.value) || null)
 
@@ -178,33 +179,21 @@ const settle = (series) => {
 }
 
 const save = async () => {
-  saving.value = true
-  error.value = ''
-  try {
+  await attempt(async () => {
     settle(
       await workspace.setNaming(
         chosen.value,
         draft.value.split('\n').map((one) => one.trim()).filter(Boolean),
       ),
     )
-  } catch (raised) {
-    error.value = errorText(raised)
-  } finally {
-    saving.value = false
-  }
+  })
 }
 
 const look = async () => {
-  previewing.value = true
-  error.value = ''
-  try {
+  await attemptPreview(async () => {
     const first = draft.value.split('\n').map((one) => one.trim()).filter(Boolean)[0]
     sample.value = first ? await workspace.namingPreview(chosen.value, first) : []
-  } catch (raised) {
-    error.value = errorText(raised)
-  } finally {
-    previewing.value = false
-  }
+  })
 }
 
 const move = async (one) => {

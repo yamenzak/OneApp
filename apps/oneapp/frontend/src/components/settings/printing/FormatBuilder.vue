@@ -186,6 +186,7 @@ import {
 } from './layout'
 import { workspace } from '../../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
+import { useSaving } from '@/composables/useSaving'
 
 const props = defineProps({
   doctype: { type: String, required: true },
@@ -220,8 +221,7 @@ const selected = ref('')
 
 const preview = ref(false)
 const rendering = ref(false)
-const saving = ref(false)
-const error = ref('')
+const { saving, error, attempt } = useSaving()
 const frame = ref(null)
 const letterhead = ref('')
 
@@ -432,9 +432,7 @@ const draw = async (html) => {
 }
 
 const save = async () => {
-  saving.value = true
-  error.value = ''
-  try {
+  await attempt(async () => {
     const found = await workspace.savePrintFormat(
       props.doctype,
       label.value.trim(),
@@ -444,10 +442,6 @@ const save = async () => {
     )
     emit('saved', found)
     showing.value = false
-  } catch (raised) {
-    error.value = errorText(raised)
-  } finally {
-    saving.value = false
-  }
+  })
 }
 </script>

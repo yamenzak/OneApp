@@ -112,7 +112,7 @@ import {
   Switch,
 } from '@/ui'
 import EmptyState from './EmptyState.vue'
-import { errorText } from '@/lib/runtime/errors'
+import { useSaving } from '@/composables/useSaving'
 
 // In the order they give things away, which is the order to read them in.
 const LEVELS = [
@@ -141,9 +141,9 @@ const props = defineProps({
 
 const emit = defineEmits(['shared'])
 
-const saving = ref(false)
+const { saving: saving, error, attempt } = useSaving()
 const looking = ref(false)
-const error = ref('')
+
 const query = ref('')
 const picked = ref(null)
 const level = ref('read')
@@ -161,17 +161,11 @@ const opened = async (isOpen) => {
 
 /** Every write answers with the shares as they stand, re-read on the server. */
 const run = async (work) => {
-  saving.value = true
-  error.value = ''
-  try {
+  await attempt(async () => {
     emit('shared', await work())
     picked.value = null
     query.value = ''
-  } catch (raised) {
-    error.value = errorText(raised)
-  } finally {
-    saving.value = false
-  }
+  })
 }
 
 const add = () =>

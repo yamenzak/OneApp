@@ -14,19 +14,18 @@
 import { computed, ref } from 'vue'
 
 import { workspace } from '../lib/workspace'
-import { errorText } from '@/lib/runtime/errors'
+import { useSaving } from './useSaving'
 
 export const PAGE = 50
 
 export function useDrive({ place, folder }) {
   const files = ref([])
   const more = ref(false)
-  const loading = ref(false)
-  const error = ref('')
+  const { saving: loading, error, attemptLoad } = useSaving()
+  const { saving: busy, attemptBusy } = useSaving(error)
   const search = ref('')
   const path = ref([])
   const picked = ref(new Set())
-  const busy = ref(false)
 
   const selected = computed(() => files.value.filter((one) => picked.value.has(one.name)))
   const anySelected = computed(() => picked.value.size > 0)
@@ -35,9 +34,7 @@ export function useDrive({ place, folder }) {
   )
 
   async function load({ append = false } = {}) {
-    loading.value = true
-    error.value = ''
-    try {
+    await attemptLoad(async () => {
       const found = await workspace.driveList({
         place: place.value,
         folder: folder.value,
@@ -52,11 +49,7 @@ export function useDrive({ place, folder }) {
       // files leaves a selection bar claiming four are chosen.
       const here = new Set(files.value.map((one) => one.name))
       picked.value = new Set([...picked.value].filter((name) => here.has(name)))
-    } catch (raised) {
-      error.value = errorText(raised)
-    } finally {
-      loading.value = false
-    }
+    })
   }
 
   function toggle(file) {
@@ -82,16 +75,10 @@ export function useDrive({ place, folder }) {
    * and a re-read at the end.
    */
   async function act(work) {
-    busy.value = true
-    error.value = ''
-    try {
+    await attemptBusy(async () => {
       await work()
       await load()
-    } catch (raised) {
-      error.value = errorText(raised)
-    } finally {
-      busy.value = false
-    }
+    })
   }
 
   const names = (of) => (Array.isArray(of) ? of : [of]).map((one) => one.name || one)

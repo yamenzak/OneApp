@@ -116,17 +116,7 @@
     </template>
   </Dialog>
 
-  <Resizer
-    v-if="!collapsed"
-    v-model="width"
-    :min="MIN"
-    :default-size="DEFAULT"
-    :max="MAX"
-    side="right"
-    label="the sidebar"
-    remember="onespace.sidebar"
-    slot-name="sidebar-resizer"
-  />
+  <SidebarResizer />
 </template>
 
 <script setup>
@@ -144,12 +134,12 @@ import {
   SidebarHeader,
   SidebarItem,
 } from '@/ui'
-import Resizer from '../Resizer.vue'
+import SidebarResizer from '../SidebarResizer.vue'
 import { loadMail, mail, refreshMail } from '@/lib/shell/mail'
 import { workspace } from '../../lib/workspace'
 import { session } from '@/lib/shell/session'
 import { openSettings, settings } from '@/lib/shell/settings'
-import { DEFAULT, MAX, MIN, useSidebar } from '@/lib/shell/sidebar'
+import { useSidebar } from '@/lib/shell/sidebar'
 
 const SUB = 'text-ink-gray-6'
 

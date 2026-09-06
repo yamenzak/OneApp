@@ -774,7 +774,9 @@ def test_every_sidebar_is_the_same_sidebar(app):
 			f"{path.name} keeps its own width and collapse state"
 		)
 		assert "useSidebar()" in source, f"{path.name} does not use the shared sidebar state"
-		assert "<Resizer" in source, f"{path.name} cannot be resized"
+		# One handle, not four: `SidebarResizer` owns the floor, the ceiling
+		# and the key the width is remembered under.
+		assert "<SidebarResizer" in source, f"{path.name} cannot be resized"
 
 
 def test_the_bottom_bar_leaves_a_slot_for_everything_else():

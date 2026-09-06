@@ -95,22 +95,9 @@
     </div>
   </Sidebar>
 
-  <!--
-    And how wide it is when it is open. Two roots rather than a wrapper: the
-    shell lays its sidebar out as a flex child. Hidden while collapsed — a
-    handle that resizes something to a size it will not take does nothing.
-  -->
-  <Resizer
-    v-if="!collapsed"
-    v-model="width"
-    :min="MIN"
-    :default-size="DEFAULT"
-    :max="MAX"
-    side="right"
-    label="the sidebar"
-    remember="onespace.sidebar"
-    slot-name="sidebar-resizer"
-  />
+  <!-- Two roots rather than a wrapper: the shell lays its sidebar out as a
+       flex child, so the handle is the next one along. -->
+  <SidebarResizer />
 </template>
 
 <script setup>
@@ -125,11 +112,11 @@ import {
   SidebarItem,
   SidebarLabel,
 } from '@/ui'
-import Resizer from './Resizer.vue'
+import SidebarResizer from './SidebarResizer.vue'
 import QuotaMeter from './QuotaMeter.vue'
 import { useNav } from '@/lib/shell/nav'
 import { session } from '@/lib/shell/session'
-import { DEFAULT, MAX, MIN, useSidebar } from '@/lib/shell/sidebar'
+import { useSidebar } from '@/lib/shell/sidebar'
 
 // The destinations live in `lib/shell/nav.js`: the phone's bottom bar renders
 // the same list, and two declarations of it drift into two names for one page.
