@@ -2,16 +2,11 @@
   <!--
     Making a record. A dialog, which is the one place a modal is the right
     answer: there is nothing behind it to refer to yet, the decision is short,
-    and cancelling leaves nothing behind. Frappe CRM moved every creation into
-    one for the same reason.
-
-    Reading a record is not this — that is a pane beside the list, because a
-    record you are reading is a record you are reading *against* the list.
+    and cancelling leaves nothing behind. Reading a record is not this.
   -->
   <!-- The screen's own word for one of these, singular: a screen is called
        "Tasks" and "New Tasks" is not a sentence. The screen's rather than the
-       doctype's, because the doctype's is a Frappe word — this used to read
-       **New ToDo** on a screen called Tasks. -->
+       doctype's — this used to read **New ToDo** on a screen called Tasks. -->
   <FormDialog
     v-model="open"
     :title="`New ${spec?.singular || 'record'}`"
@@ -33,13 +28,9 @@
 
     <template #actions>
       <!--
-        Two ways to finish, because one of them is a different intent. Seeding
-        a catalogue — four plans, three regions, a handful of add-ons — is a
-        loop, and a dialog that closes and navigates into the record after each
-        one turns that into open, fill, save, go back, press New.
-
-        Frappe's own quick entry has had this for years, and it is the same
-        button: create, keep the dialog, empty the form.
+        Two ways to finish, because one of them is a different intent. Seeding a
+        catalogue is a loop, and a dialog that navigates into the record after
+        each one turns that into open, fill, save, go back, press New.
       -->
       <Button
         v-if="spec?.can_create"
@@ -73,12 +64,9 @@ const props = defineProps({
   spaceCode: { type: String, required: true },
   screen: { type: String, required: true },
   /**
-   * Fields the form opens with already filled in, keyed by fieldname.
-   *
-   * The board's New sits inside a column and means "a new one, here" — the
-   * status it lands in is the column it was pressed in, not whatever the
-   * doctype defaults to. Seeded rather than forced: it is an ordinary value in
-   * an ordinary control and the person can change it before saving.
+   * Fields the form opens with already filled in. The board's New sits inside a
+   * column and means "a new one, here". Seeded rather than forced: an ordinary
+   * value in an ordinary control.
    */
   preset: { type: Object, default: () => ({}) },
 })
@@ -97,17 +85,13 @@ const saving = ref('')
 
 // What was actually filled in, and nothing else.
 //
-// Two things go wrong when a create posts every field it drew. A null date or
-// a blank Select is a value the column will not take, and the answer comes
-// back as an OperationalError with nothing a person can act on. And a
-// doctype's `default` is often not a value at all — ToDo's date field defaults
-// to the string `Today`, and `__user` and `Now` are the same kind of thing —
-// so seeding the form with them and posting them back writes the word rather
-// than the date.
+// A null date or a blank Select is a value the column will not take, and comes
+// back as an OperationalError with nothing a person can act on. And a doctype's
+// `default` is often not a value at all — ToDo's date field defaults to the
+// string `Today` — so posting it back writes the word rather than the date.
 //
 // Both disappear by leaving the field out: Frappe applies its own defaults, on
-// the server, where the words mean something. It is what the desk's quick
-// entry does too.
+// the server, where the words mean something.
 const filled = () => {
   const values = {}
   for (const [key, value] of Object.entries(form)) {
@@ -117,11 +101,8 @@ const filled = () => {
   return values
 }
 
-// Whether there is anything here worth not losing.
-//
-// This is what stops the dialog vanishing on a stray Escape or a click that
-// landed outside it. Empty, it closes as freely as it ever did — a dialog you
-// opened by mistake should not argue with you.
+// Whether there is anything here worth not losing — what stops the dialog
+// vanishing on a stray Escape. Empty, it closes as freely as it ever did.
 const dirty = computed(() => Object.keys(filled()).length > 0)
 
 const blank = () => {
@@ -138,16 +119,13 @@ const save = async ({ another = false } = {}) => {
     const made = await workspace.saveRecord(props.spaceCode, props.screen, filled(), null)
     if (another) {
       // Stay, and say so: the dialog looks identical after a successful create
-      // and an ignored click, so without the toast there is no way to tell
-      // which one just happened.
+      // and an ignored click.
       notifySuccess(`${props.spec?.singular || 'Record'} ${made?.name || ''} created`)
       blank()
       return
     }
     open.value = false
-    // Opened straight away: the point of making one is to be in it, and a
-    // dialog that closes onto a list leaves the person hunting for the row
-    // they just created.
+    // Opened straight away: the point of making one is to be in it.
     emit('created', made?.name || '')
   } catch (e) {
     error.value = e.message || String(e)
@@ -157,8 +135,7 @@ const save = async ({ another = false } = {}) => {
 }
 
 // A blank form every time it opens — blank being the preset, where there is
-// one. A dialog that remembers the last attempt is a dialog that quietly
-// creates a second copy of it.
+// one. A dialog that remembers the last attempt quietly creates a second copy.
 watch(open, (showing) => {
   if (showing) blank()
 })

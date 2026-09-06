@@ -2,21 +2,14 @@
   <!--
     An icon for a view. Two kinds, and the reason for both is the build:
 
-    * **A lucide icon from an offered set.** Tailwind's lucide plugin only
-      emits CSS for the class names it can see in the source, so a name chosen
-      at runtime renders as nothing at all. The set is `SPACE_ICONS` — the same
-      one the rail offers — which is what makes it safe to store.
+    * **A lucide icon from an offered set.** Tailwind's lucide plugin only emits
+      CSS for class names it can see in the source, so a name chosen at runtime
+      renders as nothing at all. The set is `SPACE_ICONS`, which is what makes
+      it safe to store.
     * **Any emoji.** An emoji is text, so it needs no build step and cannot be
-      the one that fails to draw. Frappe CRM tolerates an emoji here for legacy
-      reasons; for us it is the more capable of the two, which is why it gets a
-      box rather than a migration path.
+      the one that fails to draw.
 
-    The server checks the same two rules on the way in — a lucide name reaches
-    the DOM as a class.
-
-    A square button rather than a row of its own, so it can sit against the
-    name box the way CRM's does: an icon is one glyph, and a full-width control
-    saying "Icon chosen" is a sentence where a picture would do.
+    The server checks the same two rules on the way in.
   -->
   <Popover v-model:open="open">
     <template #trigger>
@@ -36,13 +29,11 @@
 
     <template #default>
       <div class="flex w-[17.5rem] flex-col gap-3 p-3">
-        <!-- Type to narrow. Twenty-six glyphs is a wall to scan and a second
-             to search, and the words each icon answers to were already
-             written down — they were comments, which made them exactly as
-             useful as no words at all. -->
-        <!-- `aria-label` rather than `label`: FormControl's label is a
-             visible one above the box, and a menu three inches wide does not
-             need the word "Search" written twice. -->
+        <!-- Type to narrow: twenty-six glyphs is a wall to scan, and the words
+             each icon answers to were already written down as comments, which
+             made them exactly as useful as no words at all. -->
+        <!-- `aria-label` rather than `label`: FormControl's label is a visible
+             one above the box. -->
         <FormControl
           type="text"
           size="sm"
@@ -110,7 +101,7 @@ const open = ref(false)
 const query = ref('')
 
 // Filtered in group order. The matching is the library's, so the picker and
-// anything else that ever offers these agree about what a word finds.
+// anything else that offers these agree about what a word finds.
 const groups = computed(() => findSpaceIcons(query.value))
 
 const labelFor = (name) => name.replace('lucide-', '').replace(/-/g, ' ')
@@ -119,13 +110,11 @@ const labelFor = (name) => name.replace('lucide-', '').replace(/-/g, ' ')
 const emoji = computed(() => (SPACE_ICONS.includes(chosen.value) ? '' : chosen.value))
 
 // Eight code points at most. A single emoji can be several — a flag is two, a
-// skin tone adds one, a family joined by zero-width joiners is seven — so a
-// bound of one or two would reject emoji people actually use. Eight is short
-// enough that nobody pastes a sentence into a menu row.
+// family joined by zero-width joiners is seven — so a bound of one or two would
+// reject emoji people actually use.
 //
-// Trimmed here so the box cannot show more than will be stored: the server
-// applies the same bound, and a control that accepts what is about to be
-// thrown away is a control that lies.
+// Trimmed here so the box cannot show more than will be stored: a control that
+// accepts what is about to be thrown away is a control that lies.
 const MAX_EMOJI = 8
 
 const pick = (value) => {
@@ -135,7 +124,7 @@ const pick = (value) => {
   if (SPACE_ICONS.includes(value) || !value) open.value = false
 }
 
-// A fresh search every time it opens. A picker that remembers the last thing
+// A fresh search every time it opens: a picker that remembers the last thing
 // somebody typed opens showing four of twenty-six icons and no reason why.
 watch(open, (showing) => {
   if (showing) query.value = ''

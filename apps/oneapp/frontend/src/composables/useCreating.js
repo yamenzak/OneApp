@@ -3,11 +3,9 @@
  *
  * Three doors lead here and they want different things afterwards. The header's
  * New makes one of this screen's records and lands you in it. A board column's
- * New does the same with the column's own status already filled in, because
- * making somebody choose the status they just pressed is the kind of small
- * stupidity that makes a board not worth using. And the plus on a showcase's
- * rail makes something that hangs off the record being read — possibly of a
- * different screen entirely — and must leave you where you were.
+ * New does the same with the column's status already filled in. And the plus on
+ * a showcase's rail makes something that hangs off the record being read —
+ * possibly of a different screen entirely — and must leave you where you were.
  *
  * Which is why `intoRail` is a flag rather than something inferred from the
  * preset: a board's New sets a preset too, and the two want opposite endings.
@@ -23,17 +21,14 @@ export function useCreating({ spaceCode, spec, route, router, reloadList }) {
   // Whether the dialog that is open was opened by the rail's plus.
   const intoRail = ref(false)
   // What the showcase's rail has been told to re-read. Bumped rather than
-  // reloaded directly: the rail is inside two components and a number
-  // travelling down as a prop is less machinery than a handle travelling up.
+  // reloaded directly: a number travelling down as a prop is less machinery
+  // than a handle travelling up.
   const childRevision = ref(0)
 
   /**
-   * Which screen the dialog is filling in, and how it describes itself.
-   *
-   * Nearly always this one. The exception is the rail: what hangs off a record
-   * may be a different screen — a job's variations happen to be projects, but a
-   * property's inspections would not be — and a dialog drawn from this screen's
-   * spec would ask for the wrong fields entirely.
+   * Which screen the dialog is filling in. Nearly always this one; the
+   * exception is the rail, where what hangs off a record may be a different
+   * screen and a dialog drawn from this spec would ask for the wrong fields.
    */
   const onto = ref(null)
 
@@ -57,14 +52,9 @@ export function useCreating({ spaceCode, spec, route, router, reloadList }) {
   }
 
   /**
-   * A new record that hangs off the one open, from the rail on its hero.
-   *
-   * The only place in the product that knows which record a new one belongs to,
-   * which is the whole reason it exists: the alternative is creating it from
-   * its own list and remembering to set the parent by hand.
-   *
-   * The parent goes in as a preset — an ordinary value in an ordinary control,
-   * which the person can still change before saving.
+   * A new record that hangs off the one open, from the rail on its hero. The
+   * only place in the product that knows which record a new one belongs to; the
+   * parent goes in as a preset, which the person can still change.
    */
   const addChild = async ({ screen, field, value }) => {
     if (!screen || !field || !value) return
@@ -77,12 +67,10 @@ export function useCreating({ spaceCode, spec, route, router, reloadList }) {
 
   /**
    * A record that was just made is a record you want to be in — so the dialog
-   * closes onto it rather than onto the list, which would leave the person
-   * hunting for the row they created.
+   * closes onto it rather than onto the list.
    *
    * Unless it was made from a record's own rail, and then the opposite: you
-   * were reading a job and you added a variation to it, so the job is where you
-   * still want to be. The rail re-reads itself and the new one is in it.
+   * were reading a job and you added a variation to it.
    */
   const created = async (name) => {
     const fromRail = intoRail.value

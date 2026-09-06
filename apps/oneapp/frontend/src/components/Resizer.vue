@@ -7,8 +7,7 @@
 
     Everything about resizing lives here — the floor and the ceiling, the
     keyboard, the width remembered per browser, the re-clamp when the window
-    shrinks — so a second thing that resizes is a `<Resizer>` rather than a
-    second copy of all of it. The pane was the first; the sidebar is the next.
+    shrinks — so a second thing that resizes is a `<Resizer>`.
   -->
   <div
     :data-slot="slotName"
@@ -35,24 +34,19 @@ const props = defineProps({
   /** Widest, absolute. Combined with `maxShare`; the smaller of the two wins. */
   max: { type: Number, default: Infinity },
   /**
-   * Widest, as a share of the window. A pane may take six tenths of the screen
-   * and no more — which is a rule about the *window*, so it is re-applied when
-   * the window changes rather than only while dragging.
+   * Widest, as a share of the window — a rule about the *window*, so it is
+   * re-applied when the window changes rather than only while dragging.
    */
   maxShare: { type: Number, default: 0 },
-  /**
-   * Which edge the handle is on, and so which way a drag grows the thing.
-   * `left` is a pane on the right of the screen: dragging left widens it.
-   */
+  /** Which edge the handle is on, and so which way a drag grows the thing.
+   *  `left` is a pane on the right of the screen: dragging left widens it. */
   side: { type: String, default: 'left' },
   /** What the separator says it resizes, for a screen reader. */
   label: { type: String, default: 'this panel' },
   /**
-   * A localStorage key, or empty for a size that lasts one visit.
-   *
-   * Per browser and never on the server: how wide somebody likes a pane is a
-   * property of the screen they are sitting at, and syncing it would make a
-   * laptop and a monitor argue.
+   * A localStorage key, or empty for a size that lasts one visit. Per browser
+   * and never on the server: how wide somebody likes a pane is a property of
+   * the screen they are sitting at.
    */
   remember: { type: String, default: '' },
   /** For a test to point at. */
@@ -64,9 +58,8 @@ const size = defineModel({ type: Number, required: true })
 const dragging = defineModel('dragging', { type: Boolean, default: false })
 
 // Computed rather than a ternary in the binding: `test_every_class_emits_css`
-// reads the string literals out of a `:class` and checks each is a real
-// utility, so `side === 'left' ? …` offered it `left` as a class name and it
-// rightly said that emits no CSS.
+// reads the string literals out of a `:class`, and `side === 'left' ? …`
+// offered it `left` as a class name.
 const IDLE = 'border-outline-gray-2 hover:border-outline-gray-3'
 const edge = computed(() => (props.side === 'left' ? 'border-l' : 'border-r'))
 
@@ -76,12 +69,8 @@ const ceiling = computed(() => {
 })
 
 // Returns what it settled on rather than leaving the caller to read it back.
-//
 // `defineModel` is not a plain ref: its getter returns `props.modelValue`, so a
 // read straight after a write is the *old* value until the parent re-renders.
-// The first version of this stored `size.value` inside `keep()` immediately
-// after `put()`, which wrote the width the pane had before the nudge — the
-// handle moved, the pane resized, and a reload put it back where it started.
 const put = (next) => {
   const settled = Math.min(Math.max(next, props.min), ceiling.value)
   size.value = settled
@@ -135,9 +124,8 @@ const grab = (event) => {
   window.addEventListener('pointerup', release)
 }
 
-// The same handle from the keyboard, because a drag is not something everybody
-// can do. A separator with a tabindex and no keys is a promise the page does
-// not keep.
+// The same handle from the keyboard: a separator with a tabindex and no keys is
+// a promise the page does not keep.
 const nudge = (event) => {
   const step = event.shiftKey ? 64 : 16
   const grows = props.side === 'left' ? 'ArrowLeft' : 'ArrowRight'

@@ -3,23 +3,18 @@
     What a card-shaped view is made of: what a card says, and — where the view
     buckets its cards — which field it buckets them by.
 
-    One dialog for the board and the grid because they are one card twice; the
-    difference between them is arrangement, and only the board has an
-    arrangement to ask about. See `lib/cards.js`.
-
-    Both answers are the reader's, not the manifest's. A screen declares which
-    field a board *opens* on — that is what makes it offerable at all — and
-    from there "show me this by assignee instead" is the same kind of question
-    as "sort by this column", answered the same way: changed here, kept in a
-    saved view.
+    One dialog for the board and the grid because they are one card twice, and
+    only the board has an arrangement to ask about. Both answers are the
+    reader's, not the manifest's: a screen declares which field a board *opens*
+    on, and from there "show me this by assignee instead" is the same kind of
+    question as "sort by this column".
   -->
   <Dialog v-model="open" :title="title">
     <div class="flex flex-col gap-5 p-1">
       <!--
-        A grid has no columns to be of. Its cards are laid out flat, in the
-        order the list is sorted by — bucketing them by a field is what makes
-        a board, and offering the question here would offer two ways to ask
-        for the same view.
+        A grid has no columns to be of: bucketing its cards by a field is what
+        makes a board, and offering the question here would offer two ways to
+        ask for the same view.
       -->
       <Select
         v-if="buckets"
@@ -32,13 +27,12 @@
 
       <div class="flex flex-col gap-2">
         <!--
-          The component's own label and description rather than a FormLabel and
-          a paragraph beside it: the label is what names the trigger, and a
-          hand-built one leaves the control called after its placeholder.
+          The component's own label and description rather than a FormLabel
+          beside it: the label is what names the trigger, and a hand-built one
+          leaves the control called after its placeholder.
 
-          Bounded, and the server bounds it again. A card is a glance: past half
-          a dozen fields it is a record rendered badly, and the person who wants
-          the seventh wants the record.
+          Bounded, and the server bounds it again: past half a dozen fields a
+          card is a record rendered badly.
         -->
         <MultiSelect
           label="On each card"
@@ -88,8 +82,8 @@ const open = computed({
   set: (value) => emit('update:modelValue', value),
 })
 
-// Only a board arranges its cards by a field. Named for what it is rather
-// than checked against a string at each of the three places that ask.
+// Only a board arranges its cards by a field. Named for what it is rather than
+// checked against a string at each of the three places that ask.
 const buckets = computed(() => props.viewType === 'board')
 
 const title = computed(() => (buckets.value ? 'Board settings' : 'Card settings'))
@@ -121,9 +115,9 @@ const pickCards = (chosen) => {
   emit('changed', { card_fields: (chosen || []).slice(0, MAX_CARD_FIELDS) })
 }
 
-// Back to what the screen says. Empty rather than the current values: the
-// view resolves its own default, and writing that default in as a choice would
-// freeze it against a manifest that later changes its mind.
+// Back to what the screen says. Empty rather than the current values: writing
+// the resolved default in as a choice would freeze it against a manifest that
+// later changes its mind.
 const reset = () =>
   emit('changed', buckets.value ? { column_field: '', card_fields: [] } : { card_fields: [] })
 </script>

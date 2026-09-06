@@ -10,40 +10,32 @@ const routes = [
     props: true,
     // The app host is a pane, not a page: its list is a fixed-height grid that
     // owns both scrollbars, so the horizontal one sits at the bottom of the
-    // screen instead of at the bottom of a table somebody has to scroll to
-    // find. `pane` turns the shell's own page scroll off for this route.
+    // screen. `pane` turns the shell's own page scroll off for this route.
     meta: { pane: true },
   },
   { path: '/account', name: 'Account', component: () => import('./pages/Account.vue') },
   {
     // Mail belongs to the workspace rather than to any one space — the
-    // addresses a person holds do not change when they switch space — so it is
-    // a route beside the account page rather than a screen inside a space.
+    // addresses a person holds do not change when they switch space.
     path: '/mail',
     name: 'Mail',
     component: () => import('./pages/Mail.vue'),
-    // Two columns and a reading pane, each with its own scroller. Same reason
-    // as the screen host: without this the shell scrolls the page and the list
-    // never keeps its header.
+    // Two columns and a reading pane, each with its own scroller.
     meta: { pane: true },
   },
   {
-    // Files belong to the workspace rather than to any one space — an
-    // attachment on a project and a drawing nobody has filed are the same row
-    // in the same table — so this is a route beside Mail rather than a screen
-    // inside a space.
+    // Files belong to the workspace too: an attachment on a project and a
+    // drawing nobody has filed are the same row in the same table.
     path: '/files',
     name: 'Drive',
     component: () => import('./pages/Drive.vue'),
-    // A rail, a list and its own scroller, same as the screen host: without
-    // this the shell scrolls the page and the list loses its header.
+    // A rail, a list and its own scroller, same as the screen host.
     meta: { pane: true },
   },
   {
     // The diary: everything the reader has with a date on it, from every
-    // calendar this workspace has. A route beside Mail and Files for the same
-    // reason those are — a week does not belong to one space — and the merge
-    // itself is the server's, in `oneapp_core/diary.py`.
+    // calendar this workspace has. The merge is the server's, in
+    // `oneapp_core/diary.py`.
     path: '/calendar',
     name: 'Calendar',
     component: () => import('./pages/Diary.vue'),
@@ -52,14 +44,12 @@ const routes = [
   },
   {
     // A sheet is a File, so this is not a second kind of thing with a second
-    // kind of address: `:name` is the File row, the same id the Drive lists
-    // and the same one `File.file_url` points its exporter at.
+    // kind of address: `:name` is the File row.
     path: '/sheets/:name',
     name: 'Sheet',
     component: () => import('./pages/Sheet.vue'),
     props: true,
-    // A grid owns both its scrollbars. Same reason as the screen host: without
-    // this the shell scrolls the page and the column headers scroll away.
+    // A grid owns both its scrollbars.
     meta: { pane: true },
   },
   {

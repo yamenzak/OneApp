@@ -3,23 +3,19 @@
     Which columns, in what order, and how each one sits.
 
     Frappe's list settings, in a dialog: the chosen columns as an ordered list
-    with a grip to drag, and an add menu for everything else. What "everything
-    else" means changed — it is the doctype's own fields now rather than the
-    ones a manifest named, so wanting the due date on your list is a choice
-    rather than a deploy.
+    with a grip to drag, and an add menu for everything else — the doctype's own
+    fields now rather than the ones a manifest named, so wanting the due date on
+    your list is a choice rather than a deploy.
 
-    Laid out as two rows per column rather than one, which is the whole of the
-    redesign. A column carries four answers now — where it sits, which edge it
-    sticks to, which edge its values sit against, and how wide — and nine
-    controls on one line was already the most crowded row in the product before
-    alignment needed three more. The name and the destructive controls are the
-    line you read; the settings are the quieter line under it, each behind a
-    word rather than a bare icon.
+    Two rows per column rather than one: a column carries four answers now, and
+    nine controls on one line was already the most crowded row in the product.
+    The name and the destructive controls are the line you read; the settings
+    are the quieter line under it.
   -->
   <Dialog v-model="open" title="Columns" size="2xl">
     <div class="flex flex-col gap-5">
       <!-- Grouping belongs here rather than in a control of its own: it is a
-           question about the columns, and this is where the columns are. -->
+           question about the columns. -->
       <FormControl
         type="select"
         label="Group rows by"
@@ -37,8 +33,8 @@
           </p>
         </div>
 
-        <!-- Scrolls rather than growing: a doctype with twenty columns on the
-             list would otherwise push the add box off the bottom of a laptop. -->
+        <!-- Scrolls rather than growing: a doctype with twenty columns would
+             otherwise push the add box off the bottom of a laptop. -->
         <FadedScroll class="max-h-[26rem]">
           <ul class="flex flex-col gap-1.5 pe-1">
             <li
@@ -98,13 +94,9 @@
               </div>
 
               <!--
-                And how it sits. Three settings, each labelled: an unlabelled
-                row of eight icons is a puzzle, and this one had two glyphs for
-                pinning that most people read as "move to the edge".
-
-                `TabButtons` rather than pairs of toggles, because every one of
-                these is one answer out of a few — and a segmented control says
-                that where two buttons that turn each other off do not.
+                And how it sits. Three settings, each labelled: an unlabelled row
+                of eight icons is a puzzle. `TabButtons` rather than pairs of
+                toggles, because every one of these is one answer out of a few.
               -->
               <div class="flex flex-wrap items-center gap-x-4 gap-y-2 ps-6">
                 <div class="flex items-center gap-1.5">
@@ -129,11 +121,9 @@
 
                 <div class="flex items-center gap-1.5">
                   <span class="text-p-xs text-ink-gray-5">Width</span>
-                  <!--
-                    `aria-label` rather than `label`: FormControl renders a
-                    label visibly above the field, which in a row this dense
-                    wraps and pushes everything else out of shape.
-                  -->
+                  <!-- `aria-label` rather than `label`: FormControl renders a
+                       label visibly above the field, which in a row this dense
+                       wraps and pushes everything else out of shape. -->
                   <FormControl
                     type="number"
                     size="sm"
@@ -158,8 +148,8 @@
           </p>
         </div>
         <FormControl v-model="search" type="search" placeholder="Find a field" />
-        <!-- Faded rather than clipped: a field name cut in half by a hard
-             edge reads as a rendering fault, not as "there is more below". -->
+        <!-- Faded rather than clipped: a field name cut in half by a hard edge
+             reads as a rendering fault. -->
         <FadedScroll class="max-h-56">
           <div class="flex flex-col gap-1 pe-1">
             <Button
@@ -208,14 +198,12 @@ const META_FIELD = '__activity'
 /**
  * Which edge the values sit against, and the header with them.
  *
- * Logical rather than physical — `start` and `end` rather than left and right —
- * because this product draws Arabic beside English in one list, and a column
- * aligned "left" in a right-to-left screen is aligned to the wrong side of the
- * words in it. The glyphs follow the reading direction for the same reason.
+ * Logical rather than physical — this product draws Arabic beside English in
+ * one list, and a column aligned "left" in a right-to-left screen is aligned to
+ * the wrong side of the words in it.
  *
- * Empty is the default and the first option: it means the fieldtype decides,
- * which is a number against the end and everything else at the start.
- * `spaceview.ALIGNMENTS` is the same set on the server.
+ * Empty is the default: the fieldtype decides. `spaceview.ALIGNMENTS` is the
+ * same set on the server.
  */
 const ALIGN = [
   { value: '', label: 'Automatic', icon: 'lucide-wand-sparkles' },
@@ -225,13 +213,9 @@ const ALIGN = [
 ]
 
 /**
- * Which edge it sticks to while the table scrolls sideways.
- *
- * Nothing is pinned by default: which column you want to keep on screen depends
- * on what you are doing with the list, not on what the column is. Three
- * options rather than two toggles, because "not pinned" is an answer — a pair
- * of buttons where clicking the lit one turns it off is a control that has to
- * be discovered.
+ * Which edge it sticks to while the table scrolls sideways. Nothing is pinned
+ * by default. Three options rather than two toggles, because "not pinned" is an
+ * answer.
  */
 const PIN = [
   { value: '', label: 'Not pinned', icon: 'lucide-minus' },

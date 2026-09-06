@@ -6,12 +6,11 @@ import { workspace } from '../lib/workspace'
  * The records a screen lists, and everything about having fetched them.
  *
  * This owns its state rather than being handed it: the rows, what they were
- * fetched *with*, and the four flags a list needs to say whether it is loading,
- * failed, has more, or is counting. The host reads them and so does the
- * template; nothing outside needs to know how a page is asked for.
+ * fetched *with*, and the flags a list needs to say whether it is loading,
+ * failed, has more, or is counting.
  *
  * `payload`, `range` and `onChange` are thunks — the host builds its request
- * and decides what an unsaved change means below this call.
+ * below this call.
  */
 export function useRows({ spaceCode, spec, payload, range, onChange }) {
   const rows = ref([])
@@ -25,13 +24,12 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
   const pageLength = ref(100)
 
   // What the rows actually came back *as*, which is not always what the
-  // controls currently say. Pressing Done sets the local answer immediately,
-  // and a list that redrew from it would regroup the rows it still has — in
-  // the old order — into headings that repeat, for as long as the request
-  // takes.
+  // controls currently say: pressing Done sets the local answer immediately,
+  // and a list that redrew from it would regroup the rows it still has into
+  // headings that repeat.
   const groupedBy = ref('')
   // What the money columns add up to over every row that matches. Empty except
-  // in a report, which is the only view that asks — see `loadTotals`.
+  // in a report, which is the only view that asks.
   const totals = ref({})
   const groupTotals = ref({})
   const fetchedBoard = ref(null)
@@ -45,15 +43,14 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
       payload(),
       spec.value.layout || '',
       // The days a calendar has on screen travel beside `start` and `limit`
-      // rather than in the payload: they are a property of this request, and
-      // a saved view that carried a month would be one that shows nothing in
-      // the next. Empty on every other view type, and ignored there anyway.
+      // rather than in the payload: a saved view that carried a month would be
+      // one that shows nothing in the next.
       { start, limit: pageLength.value, ...(range?.() || {}) },
       spec.value.view_type,
     )
 
   // Asked after the rows and never awaited with them: the footer says how many
-  // are loaded until this answers, and then how many there are.
+  // are loaded until this answers.
   let counting = 0
   const countRows = async () => {
     const asked = ++counting
@@ -65,25 +62,21 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
         payload(),
         spec.value.layout || '',
       )
-      // A count that arrives after the question changed is an answer to the
-      // old question, and putting it in the footer is worse than leaving it
-      // blank.
+      // A count that arrives after the question changed is an answer to the old
+      // question.
       if (asked === counting) total.value = answer?.total ?? null
     } catch {
-      // The rows are already on screen. A count that could not be taken leaves
-      // the footer saying how many are loaded, which is true and is enough —
-      // it is not a reason to shout at somebody reading a list.
+      // The rows are already on screen: a count that could not be taken leaves
+      // the footer saying how many are loaded, which is true and is enough.
     }
   }
 
-  /**
-   * The totals row, asked for the way the count is: on its own, after the rows.
-   *
-   * Over the whole filter rather than the page, which is the only thing that
-   * makes it worth showing — a total of the hundred rows that happen to be
-   * loaded, under a footer saying "100 of 1,240", is a number nobody can use
-   * and everybody would read as the total.
-   */
+/**
+ * The totals row, asked for the way the count is: on its own, after the rows.
+ * Over the whole filter rather than the page — a total of the hundred rows that
+ * happen to be loaded, under a footer saying "100 of 1,240", is a number
+ * everybody would read as the total.
+ */
   let totalling = 0
   const loadTotals = async () => {
     const asked = ++totalling
@@ -100,12 +93,11 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
       )
       if (asked !== totalling) return
       totals.value = answer?.totals || {}
-      // The same sums per group, where the rows are grouped. One request, so a
-      // report that is grouped costs nothing more than one that is not.
+      // The same sums per group, where the rows are grouped. One request.
       groupTotals.value = answer?.groups || {}
     } catch {
-      // The rows are on screen and readable without a total under them. A
-      // failed aggregate leaves the row off rather than shouting.
+      // The rows are readable without a total under them, so a failed aggregate
+      // leaves the row off rather than shouting.
     }
   }
 
@@ -122,9 +114,8 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
       rows.value = page?.rows || []
       selection.value = []
       // The columns the rows were actually fetched with, which is not always
-      // the screen's: an unsaved change to the column list narrows the fetch,
-      // and a header list that does not follow leaves a column standing over
-      // empty cells.
+      // the screen's: an unsaved change narrows the fetch, and a header list
+      // that does not follow leaves a column over empty cells.
       columns.value = page?.columns || spec.value.columns || []
       groupedBy.value = page?.group_by || ''
       fetchedBoard.value = page?.board || null
@@ -134,11 +125,9 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
       countRows()
       loadTotals()
     } catch (error) {
-      // A read that fails is not an empty list, and this one is asked quietly
-      // — so without this a server error renders as "nothing here yet", which
-      // is the most confidently wrong thing a screen can say. It cost an
-      // afternoon once: a count query Frappe refused, shown as an empty
-      // backlog.
+      // A read that fails is not an empty list, and this one is asked quietly —
+      // so without this a server error renders as "nothing here yet", which is
+      // the most confidently wrong thing a screen can say.
       rows.value = []
       total.value = null
       hasMore.value = false
@@ -149,7 +138,7 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
   }
 
   // Appends rather than replaces, and keeps the selection: someone who ticked
-  // four rows and then asked for more has not changed their mind about the four.
+  // four rows and asked for more has not changed their mind about the four.
   const loadMore = async () => {
     if (loadingMore.value || !hasMore.value) return
     loadingMore.value = true
@@ -164,8 +153,7 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
   }
 
   // A page size is part of the screen, so changing it is a change to save like
-  // any other — and it starts the list again rather than truncating what is
-  // loaded.
+  // any other — and it starts the list again rather than truncating it.
   const setPageLength = (size) => {
     if (!size || size === pageLength.value) return
     pageLength.value = size

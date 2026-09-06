@@ -1,29 +1,23 @@
 <template>
   <!--
-    A list cell you can type into.
+    A list cell you can type into — the report view's whole reason for being:
+    forty records whose status is wrong are forty round trips through a record
+    pane.
 
-    The report view's whole reason for being: forty records whose status is
-    wrong are forty round trips through a record pane, and the person fixing
-    them is doing data entry with a form in the way.
-
-    Not a second editor. The control is `FieldControl` — the same one the
-    record form draws, with the same fieldtype mapping, the same Link picker
-    and the same Select options — and the write is the same `saveRecord` a form
-    does, so the doctype's rules, its permissions and its `fetch_from` all
-    still happen. What is here is only *when* the control appears.
+    Not a second editor. The control is `FieldControl` and the write is the same
+    `saveRecord` a form does, so the doctype's rules, permissions and
+    `fetch_from` all still happen. What is here is only *when* the control
+    appears.
   -->
   <div v-if="!editable" class="contents">
     <slot />
   </div>
 
-  <!-- Not editing: the cell as every other view draws it, with an affordance
-       on hover. `w-full` so the whole cell is the target and not just the text
-       in it — a five-character status is otherwise a five-character target. -->
-  <!--
-    A raw button, the same exception `RecordCard` takes: what is pressed is a
-    value inside somebody else's cell, and a `<Button>` would draw a control
-    where the design asks for a value.
-  -->
+  <!-- Not editing: the cell as every other view draws it. `w-full` so the whole
+       cell is the target — a five-character status is otherwise a
+       five-character target. -->
+  <!-- A raw button, the same exception `RecordCard` takes: what is pressed is a
+       value inside somebody else's cell. -->
   <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
   <button
     v-else-if="!editing"
@@ -37,9 +31,9 @@
   </button>
 
   <!-- Editing. `focusout` rather than `blur`: the Link picker and the Select
-       put their menu in a portal, so the input loses focus to something that
-       is logically inside this cell — `relatedTarget` is how a wrapper tells
-       "moved within" from "left". -->
+       put their menu in a portal, so the input loses focus to something
+       logically inside this cell — `relatedTarget` tells "moved within" from
+       "left". -->
   <div v-else class="w-full min-w-0" @focusout="leaving" @keydown.esc.stop="cancel">
     <FieldControl
       ref="control"
@@ -77,13 +71,9 @@ const draft = ref(null)
 const control = ref(null)
 
 /**
- * Whether this cell may be typed into.
- *
- * `editable` is the server's answer and already carries the three questions
- * worth asking — is the fieldtype one a control writes, is the field read-only,
- * and is its permlevel one this person may write. What is added here is the
- * row: a submitted or cancelled document is not edited in a table, whatever its
- * fields say.
+ * Whether this cell may be typed into. `editable` is the server's answer and
+ * carries the three questions worth asking; what is added here is the row — a
+ * submitted or cancelled document is not edited in a table.
  */
 const editable = computed(
   () =>
@@ -111,9 +101,9 @@ const cancel = () => {
 
 const commit = () => {
   editing.value = false
-  // Nothing sent where nothing changed. A cell somebody clicked into and out of
-  // is not an edit, and writing it anyway puts a version on the record and a
-  // line in its timeline saying nothing happened.
+  // Nothing sent where nothing changed: a cell somebody clicked into and out of
+  // is not an edit, and writing it puts a line in the record's timeline saying
+  // nothing happened.
   if (draft.value === props.row[props.column.key]) return
   emit('change', { row: props.row, field: props.column.key, value: draft.value })
 }
