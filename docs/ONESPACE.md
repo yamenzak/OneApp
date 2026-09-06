@@ -1010,6 +1010,18 @@ notices ride the sync that already runs every fifteen minutes, keyed so a
 re-drain cannot duplicate. The honest cost: a billing notice can be up to
 fifteen minutes late in-app. The email is immediate.
 
+**A kind, a channel, and one control for each.** The panel is a row per kind
+with a button per channel — In app, Email, Push — because "notify me" and
+"where" are different questions, and one switch per kind could only answer the
+second one for email. In app is ours: Frappe has a master switch and a per-kind
+*email* allow-list and nothing per-kind for the app itself, so a mute is a user
+default (`onespace_muted_kinds`) that hides the kind from the feed and the
+count. Hides rather than refuses to write, deliberately — the framework's
+producer is what sends the email, so a row that is never written is an email
+that never goes either, and "in app off, email on" has to keep working. Push is
+offered and refused until the EU-jurisdiction question is settled: a disabled
+button that says why beats a control nobody can find.
+
 **Every kind is declared where it is sent.** `notifications.KINDS` is one list
 — `kind("Expiring", "A document whose expiry date is coming up.")` — and three
 things read it: `install_types` creates the `Notification Type` rows,

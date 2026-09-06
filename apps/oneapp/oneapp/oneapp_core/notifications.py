@@ -53,7 +53,7 @@ def feed(limit: int = PAGE) -> dict:
 
 	rows = frappe.get_list(
 		"Notification Log",
-		filters={"for_user": frappe.session.user},
+		filters=_mine(),
 		fields=[
 			"name", "type", "title", "subject", "description",
 			"document_type", "document_name", "link", "from_user",
@@ -76,9 +76,20 @@ def feed(limit: int = PAGE) -> dict:
 def unread() -> int:
 	"""How many are unread. Its own call because the bell needs it without the
 	panel being open, and a count is one query rather than twenty rows."""
-	return frappe.db.count(
-		"Notification Log", {"for_user": frappe.session.user, "read": 0}
-	)
+	return frappe.db.count("Notification Log", {**_mine(), "read": 0})
+
+
+def _mine() -> dict:
+	"""This person's notifications, minus the kinds they muted in the app.
+
+	Filtered on the way out rather than on the way in — see `MUTED_KEY`. The
+	count uses the same filter as the list, because a bell that says three over
+	a panel showing two is worse than either number alone.
+	"""
+	filters: dict = {"for_user": frappe.session.user}
+	if muted := _muted():
+		filters["type"] = ["not in", sorted(muted)]
+	return filters
 
 
 @frappe.whitelist(methods=["POST"])
@@ -319,6 +330,34 @@ def notify(kind_name: str, users, message: dict, dedupe_on: list | None = None) 
 # --------------------------------------------------------------------------- #
 
 
+#: The three ways a notification can reach somebody, as the panel names them.
+#:
+#: Only two of them are real. Push is a seam (`push.send`) and stays one until
+#: the EU-jurisdiction question is settled — it is offered and refused rather
+#: than hidden, because "we do not do this yet" is a more useful answer than a
+#: control that is silently missing.
+IN_APP, EMAIL, PUSH = "in_app", "email", "push"
+
+#: Kinds this person does not want in the app, as a user default.
+#:
+#: Frappe's `Notification Settings` has a master switch and a per-kind *email*
+#: allow-list, and nothing per-kind for the app itself — so somebody who wanted
+#: assignments but not every change to a document they follow had one control
+#: for both. The same shape mail's stars use, for the same reason: a per-person
+#: preference with no doctype worth making.
+#:
+#: A mute hides the kind from the feed and the count rather than stopping the
+#: row being written, and deliberately: the framework's producer is what sends
+#: the email, so a row that is never written is an email that never goes either.
+#: In app off with Email on has to keep working, and this is what makes it.
+MUTED_KEY = "onespace_muted_kinds"
+
+
+def _muted(user: str | None = None) -> set[str]:
+	raw = frappe.defaults.get_user_default(MUTED_KEY, user or frappe.session.user)
+	return {one.strip() for one in (raw or "").split(",") if one.strip()}
+
+
 def _settings():
 	"""This person's settings row, made if this is the first time they asked.
 
@@ -356,19 +395,35 @@ def preferences() -> dict:
 	wanted = {row.notification_type for row in doc.email_notification_types}
 	skip = get_skip_email_types()
 
+	muted = _muted()
+
+	# One row per kind and a state per channel, rather than one switch that
+	# meant email and nothing else. A kind the framework will not email — its
+	# email is owned elsewhere, `notification_skip_email_types` — still gets a
+	# row here, because the app half of it is a real choice; what it does not
+	# get is an email control that could never do anything.
+	types = []
+	for name in frappe.get_all(
+		"Notification Type", filters={"enabled": 1}, pluck="name", order_by="name asc"
+	):
+		if name not in known:
+			continue
+		types.append({
+			"name": name,
+			"about": known[name]["about"],
+			"in_app": name not in muted,
+			"email": name in wanted and name not in skip,
+			# What the panel may offer, as opposed to what is on. Push is
+			# nobody's yet; email is not every kind's.
+			"can_email": name not in skip,
+			"push": False,
+			"can_push": False,
+		})
+
 	return {
 		"enabled": bool(doc.enabled),
 		"email": bool(doc.enable_email_notifications),
-		# Only the types that *can* email. A type in `notification_skip_email_
-		# types` never does — something else owns its email — and a switch that
-		# changes nothing is a switch somebody flips once and stops trusting.
-		"types": [
-			{"name": name, "email": name in wanted, "about": known[name]["about"]}
-			for name in frappe.get_all(
-				"Notification Type", filters={"enabled": 1}, pluck="name", order_by="name asc"
-			)
-			if name not in skip and name in known
-		],
+		"types": types,
 	}
 
 
@@ -403,6 +458,48 @@ def set_preferences(enabled=None, email=None, types: str | list | None = None) -
 	doc.save(ignore_permissions=True)
 	frappe.db.commit()
 	return preferences()
+
+
+@frappe.whitelist(methods=["POST"])
+def set_channel(kind: str, channel: str, on: int | bool | str) -> dict:
+	"""Turn one channel on or off for one kind.
+
+	The panel's control, and the reason the two halves are written differently:
+	email is the framework's allow-list on `Notification Settings`, and the app
+	is ours, because the framework has no per-kind switch for it at all.
+	"""
+	known = declared()
+	if kind not in known:
+		frappe.throw(_("{0} is not a notification you can set.").format(kind))
+
+	on = bool(frappe.utils.sbool(on))
+
+	if channel == PUSH:
+		# Offered and refused. See `IN_APP, EMAIL, PUSH`.
+		frappe.throw(_("Push notifications are not available yet."))
+
+	if channel == IN_APP:
+		muted = _muted()
+		muted.discard(kind) if on else muted.add(kind)
+		frappe.defaults.set_user_default(
+			MUTED_KEY, ",".join(sorted(muted)), frappe.session.user)
+		frappe.db.commit()
+		return preferences()
+
+	if channel == EMAIL:
+		doc = _settings()
+		wanted = {row.notification_type for row in doc.email_notification_types}
+		wanted.add(kind) if on else wanted.discard(kind)
+		offered = set(frappe.get_all(
+			"Notification Type", filters={"enabled": 1}, pluck="name"))
+		doc.email_notification_types = []
+		for name in sorted(wanted & offered):
+			doc.append("email_notification_types", {"notification_type": name})
+		doc.save(ignore_permissions=True)
+		frappe.db.commit()
+		return preferences()
+
+	frappe.throw(_("{0} is not a way to be notified.").format(channel))
 
 
 # --------------------------------------------------------------------------- #

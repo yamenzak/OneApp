@@ -95,3 +95,23 @@ export async function savePreferences(changes) {
   countNotifications()
   return answer
 }
+
+/**
+ * One channel, for one kind. The panel's own control.
+ *
+ * Its own call rather than a shape passed through `savePreferences`: the two
+ * halves are stored in different places — email is the framework's allow-list,
+ * the app is ours — and one endpoint pretending otherwise would be a lie the
+ * next person has to unpick.
+ */
+export async function setChannel(kind, channel, on) {
+  const answer = await callMethod(
+    `${METHOD}.set_channel`,
+    { kind, channel, on: on ? 1 : 0 },
+    { successMessage: 'Saved' },
+  )
+  // Muting a kind hides what is already in the feed, so the bell is wrong
+  // until something asks again.
+  countNotifications()
+  return answer
+}

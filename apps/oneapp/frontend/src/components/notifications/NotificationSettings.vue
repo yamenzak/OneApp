@@ -1,14 +1,16 @@
 <template>
   <!--
-    Whether to be notified, and what to be emailed about.
+    Whether to be notified, and where each kind of notification arrives.
 
-    On the account page rather than in workspace settings, because it is a
-    person's own answer and not the workspace's — the settings dialog is the
-    admin's, and half of a workspace cannot open it at all.
+    Two masters and then a row per kind, because "notify me" and "how" are
+    different questions: somebody wants assignments in the app and by email,
+    and changes to a document they follow in the app only. One switch per kind
+    could not say that — it meant email, and the app half was a single switch
+    for everything.
 
-    Frappe's own `Notification Settings` underneath, unchanged: one row per
-    user, its own permission rule, and the same email allow-list the desk
-    writes. What is ours is that it is legible.
+    The kinds come from the server's registry (`oneapp_core/notifications.py`),
+    so a notification declared anywhere in the product appears here without an
+    edit to this file.
   -->
   <div class="flex flex-col gap-4">
     <div v-if="loading" class="flex flex-col gap-3">
@@ -25,31 +27,45 @@
 
       <Switch
         label="Email me as well"
-        description="For the kinds ticked below. Off means the app only."
+        description="Off means the app only, whatever is ticked below."
         :model-value="prefs.email"
         :disabled="!prefs.enabled"
         @update:model-value="save({ email: $event })"
       />
 
-      <!--
-        An allow-list, drawn as switches rather than as a picker. The framework
-        treats an empty table as "email me about nothing", and an empty picker
-        reads as "not set up yet" — which is the opposite of what it means.
-
-        Only the kinds that can email. A type whose email something else owns —
-        a workspace notice, which the control plane sends itself — never sends
-        one from here, and a switch that changes nothing is a switch somebody
-        flips once and stops trusting.
-      -->
-      <div v-if="prefs.email && prefs.enabled" class="flex flex-col gap-3 pl-1">
-        <Switch
+      <div v-if="prefs.enabled" class="flex flex-col gap-3">
+        <div
           v-for="kind in prefs.types"
           :key="kind.name"
-          :label="kind.name"
-          :description="kind.about"
-          :model-value="kind.email"
-          @update:model-value="toggle(kind, $event)"
-        />
+          class="flex flex-wrap items-center justify-between gap-3"
+          data-slot="notification-kind"
+        >
+          <div class="min-w-0 flex-1">
+            <p class="text-base text-ink-gray-8">{{ kind.name }}</p>
+            <p class="text-p-sm text-ink-gray-5">{{ kind.about }}</p>
+          </div>
+
+          <!--
+            A button each, not a Select and not one switch: the channels are
+            independent, and a control that reads "In app, Email" at a glance
+            is the answer to "where does this reach me" without opening
+            anything. Solid is on; a channel that cannot be offered is disabled
+            with the reason on it, because a missing control explains nothing.
+          -->
+          <div class="flex shrink-0 items-center gap-1">
+            <Button
+              v-for="channel in CHANNELS"
+              :key="channel.key"
+              size="sm"
+              :variant="kind[channel.key] ? 'solid' : 'subtle'"
+              :label="channel.label"
+              :disabled="!offered(kind, channel)"
+              :tooltip="reason(kind, channel)"
+              :data-slot="`channel-${kind.name}-${channel.key}`"
+              @click="flip(kind, channel)"
+            />
+          </div>
+        </div>
       </div>
     </template>
   </div>
@@ -57,9 +73,16 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { Skeleton, Switch } from '@/ui'
+import { Button, Skeleton, Switch } from '@/ui'
 
-import { loadPreferences, savePreferences } from '@/lib/shell/notifications'
+import { loadPreferences, savePreferences, setChannel } from '@/lib/shell/notifications'
+
+/** The three the panel names. Push is offered and refused — see `reason`. */
+const CHANNELS = [
+  { key: 'in_app', label: 'In app' },
+  { key: 'email', label: 'Email' },
+  { key: 'push', label: 'Push' },
+]
 
 const loading = ref(true)
 const prefs = reactive({ enabled: true, email: true, types: [] })
@@ -82,12 +105,25 @@ const save = async (changes) => {
   apply(await savePreferences(changes))
 }
 
-// The whole list every time, because the server stores a list and not a set of
-// flags: sending one name would be sending "email me about only this".
-const toggle = (kind, on) => {
-  const wanted = prefs.types
-    .filter((one) => (one.name === kind.name ? on : one.email))
-    .map((one) => one.name)
-  save({ types: JSON.stringify(wanted) })
+/** Whether this channel can be pressed at all for this kind. */
+const offered = (kind, channel) => {
+  if (channel.key === 'in_app') return true
+  if (channel.key === 'email') return prefs.email && kind.can_email
+  return kind.can_push
+}
+
+/**
+ * Why not, when not. Said on the control rather than by hiding it: "we do not
+ * do this yet" is a more useful answer than a button nobody can find.
+ */
+const reason = (kind, channel) => {
+  if (offered(kind, channel)) return ''
+  if (channel.key === 'push') return 'Push notifications are not available yet'
+  if (!prefs.email) return 'Turn on “Email me as well” first'
+  return 'This one is emailed for you rather than by you'
+}
+
+const flip = async (kind, channel) => {
+  apply(await setChannel(kind.name, channel.key, !kind[channel.key]))
 }
 </script>

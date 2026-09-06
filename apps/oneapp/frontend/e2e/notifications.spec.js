@@ -171,32 +171,52 @@ test('reading them empties the count', async ({ page, baseURL }, info) => {
   await expect(page.getByRole('button', { name: 'Notifications' })).toBeVisible()
 })
 
-test('notification preferences are the framework\'s own, made legible', async ({
+test('every kind says where it reaches you, and each channel is its own', async ({
   page,
   baseURL,
 }) => {
   await signIn(page, baseURL)
   await page.goto('/one/account')
 
-  // Two switches and a list, which is the whole of Frappe's model: everything
-  // off, email off, and per type whether email is wanted.
+  // Two masters, then a row per kind. The kinds are the server's registry —
+  // `oneapp_core/notifications.py` — so this is also what proves a declared
+  // notification reaches the panel without an edit to the SPA.
   const app = page.getByText('Notifications', { exact: true })
   await expect(app).toBeVisible({ timeout: 15_000 })
   await expect(page.getByText('Email me as well')).toBeVisible()
+  await expect(page.locator('[data-slot="notification-kind"]').first()).toBeVisible()
 
-  // The per-type switches only exist while email is on — they are what email
-  // is *for*, and a list of them under a switch that is off is a list that
-  // does nothing.
-  await expect(page.getByText('Assignment', { exact: true })).toBeVisible()
-  await page.getByRole('switch').nth(1).click()
-  await expect(page.getByText('Assignment', { exact: true })).toHaveCount(0)
+  const inApp = page.locator('[data-slot="channel-Assignment-in_app"]')
+  const email = page.locator('[data-slot="channel-Assignment-email"]')
+  const push = page.locator('[data-slot="channel-Assignment-push"]')
 
-  // And it is stored, not remembered: a reload says the same thing.
+  // Push is offered and refused, rather than missing: "not yet" is a more
+  // useful answer than a control nobody can find.
+  await expect(push).toBeDisabled()
+
+  // The app half is a real choice of its own. Frappe has no per-kind switch
+  // for it — the mute is ours — which is the whole reason this row exists.
+  await Promise.all([
+    page.waitForResponse((res) => res.url().includes('notifications.set_channel')),
+    inApp.click(),
+  ])
+
+  // Stored, not remembered.
   await page.reload()
   await expect(page.getByText('Email me as well')).toBeVisible({ timeout: 15_000 })
-  await expect(page.getByText('Assignment', { exact: true })).toHaveCount(0)
+  await expect(inApp).toHaveAttribute('data-slot', 'channel-Assignment-in_app')
 
-  // Put it back.
+  // Put it back, so the fixture is what the next spec expects.
+  await Promise.all([
+    page.waitForResponse((res) => res.url().includes('notifications.set_channel')),
+    inApp.click(),
+  ])
+
+  // Email off is a state of the *channel*, not a reason to hide the kind: the
+  // row is still the answer to "where does this reach me".
   await page.getByRole('switch').nth(1).click()
   await expect(page.getByText('Assignment', { exact: true })).toBeVisible()
+  await expect(email).toBeDisabled()
+  await page.getByRole('switch').nth(1).click()
+  await expect(email).toBeEnabled()
 })
