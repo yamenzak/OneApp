@@ -18,10 +18,16 @@ no longer a record of anything.
 ## 1. Where we actually are
 
 Mail in this product is already a `Communication`, and the reader around it is
-finished. What is missing is one thing, and it is the thing this document is
-about: **nothing links a message to a document.**
+finished.
 
-Four findings, each verifiable:
+**This section describes where we were when this was written, and the
+deterministic half of §5 has since been built** — a message can be filed
+against a document, the provenance of that link is recorded, a series number in
+a subject line is extracted, and a record has a Mail tab that reads it back.
+What is still open is §6, the model half. The four findings below are kept
+because they are why the shape is what it is, not because they are still true.
+
+Four findings, each verifiable at the time:
 
 * **Inbound files against a doctype and never a document.**
   `inbound.handle_address` calls `_communication(payload,

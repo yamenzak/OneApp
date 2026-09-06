@@ -74,6 +74,9 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 * **`docs/DRIVE.md`** — files. What Frappe Drive is (built on core `File`, which
   is what we already extend), the one part of it we must not copy, and the seven
   stages to one file manager every attach surface is a view onto.
+* **`docs/WRITER.md`** — documents. Why a document is a `File` like a sheet is,
+  what `frappe/writer` gave us and what its collaboration would cost, and why a
+  version of a workbook and a version of a document are one doctype.
 * **`docs/SHEETS.md`** — spreadsheets. Why every Python formula engine is
   copyleft and what follows from that, what RUA's Google Sheets integration
   actually did, and the seven stages to a sheet that feeds a document.

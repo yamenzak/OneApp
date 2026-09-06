@@ -442,8 +442,8 @@ iframe, which is the shape `PrintDialog` already uses for a record.
   can have without it is what the record surface already has: presence, and a
   last-writer-wins cell with a realtime nudge. Worth revisiting when somebody
   actually collides; not worth changing what a shard is on day one.
-* **Charts and pivots.** `echarts` is already in the SPA for dashboards. A
-  pivot is a feature, not a stage; it can wait for somebody to ask.
+* **Charts and pivots.** Written before the second build. Both came with the
+  vendored engine and are here — see §8.
 * **The AI half.** `sheets/ai/` is a whole surface of its own, and our AI lane
   is metered and declared per feature. "Explain this formula" is a good feature
   and it is not what makes a sheet useful.
@@ -562,8 +562,12 @@ a Done button. Both looked like features that had never been written.
 
 ### What is still not built
 
-Live collaboration, version history, link previews, AI. The first three have
-seams waiting for them and the fourth has a gateway. Everything else Frappe
+Live collaboration and AI. Version history and link previews were on this list
+and are built: both were seams in `lib/sheets/services/`, and filling them in
+cost one service module each — version history because
+`oneapp_core/versions.py` already answered the same questions for a document
+(`docs/WRITER.md` §5), and link previews because Frappe's endpoint is taken
+whole for its SSRF guards, off unless an operator turns it on. Everything else Frappe
 Sheets does — pivots, charts, conditional formats, data validation, merges,
 spills, fill series, smart fill, sort and filter, protection, comments, the
 fill handle, draggable columns, frozen panes, the command palette, find and

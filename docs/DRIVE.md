@@ -321,9 +321,11 @@ by kind, by biggest, by folder, and what the plan allows — reading
 
 ### Stage 7 — What we deliberately do not take
 
-* **Drive's own editors.** `Documents` and `Slides` are a word processor and a
-  presentation tool. That is a product, not a feature, and the same argument
-  `docs/EMAIL.md` makes about Frappe Mail applies unchanged.
+* **`Slides`.** A presentation tool is a product, not a feature, and the same
+  argument `docs/EMAIL.md` makes about Frappe Mail applies unchanged.
+  `Documents` was on this line too and is built — see `docs/WRITER.md`, which
+  also explains why the word processor turned out to be cheap and the
+  presentation tool did not.
 * **Teams.** `Drive Team` is Drive's answer to multi-tenancy and we have one: the
   workspace *is* the team, and a second container inside it is a second
   hierarchy for somebody to get lost in.

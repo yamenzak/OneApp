@@ -1406,11 +1406,6 @@ Worth knowing before designing around it.
 * **A workflow builder.** Workflows run; there is no screen for drawing one.
 * **Computed child-table columns.** A quotation line is width × height × qty ×
   rate; the grid edits values and does not derive them.
-* **Notification rules and email templates.** The feed and the digest exist; the
-  rules that would produce "email the owner when this goes overdue" do not.
-* **Data import.** Export is a button on every list; there is no CSV going the
-  other way, and the importer is a declared plan rather than a file somebody
-  drops.
 * **Customize Form.** We write Property Setters for naming and default print
   formats, and a space declares the Custom Fields its screens read
   (docs/APPS-AND-SPACES.md); there is no UI for adding a field or relabelling
@@ -1418,15 +1413,23 @@ Worth knowing before designing around it.
 * **User Permission.** Enforced on every path, and there is nowhere to grant
   one.
 * **Reminders.** A calendar draws what is there; "tell me the morning before"
-  is a scheduled job and a notification rather than a drawing, and belongs with
-  the notification rules above. The compliance register has its own, because a
-  licence expiring is a fact about the licence rather than about a view.
+  is a scheduled job and a notification rather than a drawing. The alert rules
+  are the machinery it would hang off, and nothing points them at a date field
+  yet. The compliance register has its own, because a licence expiring is a
+  fact about the licence rather than about a view.
 * **The map view**, which a manifest may already declare — a type nothing can
   draw is dropped rather than refused, so the screen renders as a list and
   gains the map without a manifest edit. The calendar shipped and is below.
 * **Free-text search across a whole doctype**, drag-to-resize a column, and
   filtering on a child table (Frappe needs a four-part filter there and a
   three-part one names a column that is not present).
+
+Two things were on this list and are built, and they are named here because
+designing around their absence would now be designing around nothing:
+**notification rules and email templates** (`alerts.py` with its settings
+panel, and `email/templates.py` with its own) and **data import**
+(`oneapp_core/importer/`, which maps another site's records across with a plan,
+a dry run and a report).
 
 Also, deliberately: **Assignment is not shown in the list.** The activity column
 is a fixed 176px track already holding an age, a count and a heart. If

@@ -102,7 +102,7 @@ async function type(page, ref, text) {
 /**
  * Make an empty sheet from the Drive and land in it. Returns its id.
  *
- * Two clicks, not one: New sheet is a menu, because a workspace with an
+ * Two clicks, not one: New is a menu, because a workspace with an
  * estimator template starts from it far more often than from a blank grid.
  *
  * Waits for the toolbar *and* the canvas: the toolbar mounts before the grid
@@ -110,7 +110,7 @@ async function type(page, ref, text) {
  */
 async function newSheet(page) {
   await page.goto('/one/files')
-  await page.getByRole('button', { name: 'New sheet' }).click()
+  await page.getByRole('button', { name: 'New', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Blank sheet' }).click()
   await page.waitForURL(/\/one\/sheets\//)
   await ready(page)
@@ -390,7 +390,7 @@ test('a named range fills a record\'s child table', async ({ page }) => {
 /**
  * A template is a sheet with a flag on it, and starting from one copies its
  * workbook. What is worth checking in a browser is the loop rather than the
- * copy: marking one, finding it in the New sheet menu, and landing in a grid
+ * copy: marking one, finding it in the New menu, and landing in a grid
  * that already has the template's cells in it.
  */
 test('a sheet can be made a template, and a new sheet starts from it', async ({ page }) => {
@@ -406,7 +406,7 @@ test('a sheet can be made a template, and a new sheet starts from it', async ({ 
   await page.getByRole('menuitem', { name: 'Use as a template' }).click()
 
   await page.goto('/one/files')
-  await page.getByRole('button', { name: 'New sheet' }).click()
+  await page.getByRole('button', { name: 'New', exact: true }).click()
   await page.getByRole('menuitem', { name: title, exact: true }).click()
 
   await page.waitForURL(/\/one\/sheets\//)
@@ -442,7 +442,7 @@ test('a sheet exports to Excel and comes back with its formulas', async ({ page 
   expect(download.suggestedFilename()).toMatch(/\.xlsx$/)
 
   await page.goto('/one/files')
-  await page.getByRole('button', { name: 'New sheet' }).click()
+  await page.getByRole('button', { name: 'New', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Import a spreadsheet' }).click()
   // Scoped to the dialog, not `input[type=file]` on the page: the Drive's own
   // Upload button is a second one, and a bare selector matched both the day
