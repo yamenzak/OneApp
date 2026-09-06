@@ -21,8 +21,8 @@ export const PAGE = 50
 export function useDrive({ place, folder }) {
   const files = ref([])
   const more = ref(false)
-  const { saving: loading, error, attemptLoad } = useSaving()
-  const { saving: busy, attemptBusy } = useSaving(error)
+  const { saving: loading, error, attempt: attemptLoad } = useSaving()
+  const { saving: busy, attempt: attemptBusy } = useSaving(error)
   const search = ref('')
   const path = ref([])
   const picked = ref(new Set())

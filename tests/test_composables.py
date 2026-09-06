@@ -106,3 +106,106 @@ def test_a_composable_only_reads_state_declared_above_it(path, block):
 					f"ReferenceError and a blank page — move the call down, or "
 					f"pass a thunk the way the loaders are passed."
 				)
+
+
+"""A destructure only takes keys the composable actually returns.
+
+The second bug this file exists for: `useSaving` returns `{saving, error,
+attempt}`, and nine files asked it for `attemptLoad`, `attemptBusy`,
+`attemptPreview`, `attemptRemove` and `attemptFill`. Destructuring a key an
+object does not have is legal JavaScript — the binding is `undefined` — so the
+SFC compiles, `no-undef` is satisfied because the name *is* declared, and every
+unit test passes. What fails is the browser, on the line that calls it, with
+`TypeError: c is not a function` from a minified bundle. Thirty-five specs, one
+missing key.
+"""
+
+
+def top_level_keys(literal: str) -> set[str] | None:
+	"""The keys of an object literal's own level. `None` if it spreads."""
+	literal = re.sub(r"/\*.*?\*/", "", literal, flags=re.S)
+	literal = re.sub(r"//[^\n]*", "", literal)
+	keys, depth, part = set(), 0, ""
+	for ch in literal:
+		if ch in "([{":
+			depth += 1
+		elif ch in ")]}":
+			depth -= 1
+		if ch == "," and depth == 0:
+			keys.add(part)
+			part = ""
+		else:
+			part += ch
+	keys.add(part)
+	named = set()
+	for key in keys:
+		key = key.strip().split(":")[0].strip()
+		if key.startswith("..."):
+			return None
+		if key:
+			named.add(key)
+	return named or None
+
+
+def returned_keys(src: Path) -> dict[str, set[str] | None]:
+	"""Every `use*` this SPA defines, and the keys its return names.
+
+	`None` where the return spreads something, is not one object literal, or is
+	written more than one way — an unknown shape is not a shape to check.
+	"""
+	shapes: dict[str, set[str] | None] = {}
+	for path in sorted(src.rglob("*.js")):
+		if is_vendored(path):
+			continue
+		body = path.read_text()
+		for m in re.finditer(r"^export function (use[A-Z]\w*)\(", body, re.M):
+			name = m.group(1)
+			rest = body[m.end():]
+			nxt = re.search(r"^export ", rest, re.M)
+			fn = rest[: nxt.start()] if nxt else rest
+			# Two spaces of indent is the function's own top level; a `return {`
+			# deeper than that belongs to a closure inside it.
+			at = [r.end() for r in re.finditer(r"^  return \{", fn, re.M)]
+			if len(at) != 1 or name in shapes:
+				shapes[name] = None
+				continue
+			depth, end = 1, at[0]
+			while end < len(fn) and depth:
+				if fn[end] in "([{":
+					depth += 1
+				elif fn[end] in ")]}":
+					depth -= 1
+				end += 1
+			shapes[name] = top_level_keys(fn[at[0]:end - 1])
+	return shapes
+
+
+def destructures(src: Path) -> list[tuple[Path, str, str]]:
+	"""`(file, composable, keys)` for every `const {...} = useX(` in this SPA."""
+	found = []
+	for path in sorted(list(src.rglob("*.vue")) + list(src.rglob("*.js"))):
+		if is_vendored(path):
+			continue
+		body = path.read_text()
+		for m in re.finditer(r"const \{([^}]*)\} = (use[A-Z]\w*)\(", body):
+			found.append((path, m.group(2), m.group(1)))
+	return found
+
+
+@pytest.mark.parametrize("src", SPAS, ids=lambda p: p.parts[-3])
+def test_a_destructure_only_takes_keys_the_composable_returns(src):
+	shapes = returned_keys(src)
+	assert shapes, f"{src}: no composable defines a return — has the pattern moved?"
+	for path, name, asked in destructures(src):
+		keys = shapes.get(name)
+		if not keys:
+			continue
+		for part in asked.split(","):
+			key = part.split(":")[0].split("=")[0].strip()
+			if key and key not in keys:
+				pytest.fail(
+					f"{path.name}: `{name}` does not return `{key}`, so the "
+					f"binding is `undefined` and calling it is a TypeError in "
+					f"the browser and nowhere else. It returns "
+					f"{', '.join(sorted(keys))}."
+				)

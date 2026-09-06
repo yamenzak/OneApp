@@ -93,8 +93,8 @@ const BLANK = { name: '', subject: '', starts_on: '', ends_on: '', all_day: fals
 
 const draft = reactive({ ...BLANK })
 
-const { saving: saving, error, attempt } = useSaving()
-const { saving: removing, attemptRemove } = useSaving(error)
+const { saving, error, attempt } = useSaving()
+const { saving: removing, attempt: attemptRemove } = useSaving(error)
 
 /**
  * Filled when the dialog opens, not when the props change.

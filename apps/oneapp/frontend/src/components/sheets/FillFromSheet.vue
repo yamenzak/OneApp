@@ -164,8 +164,8 @@ const props = defineProps({
 const emit = defineEmits(['filled'])
 
 const open = ref(false)
-const { saving: loading, error, attemptLoad } = useSaving()
-const { saving: filling, attemptFill } = useSaving(error)
+const { saving: loading, error, attempt: attemptLoad } = useSaving()
+const { saving: filling, attempt: attemptFill } = useSaving(error)
 const sheets = ref([])
 const picked = ref('')
 const ranges = ref([])

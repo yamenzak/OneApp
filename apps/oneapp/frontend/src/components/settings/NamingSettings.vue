@@ -142,8 +142,8 @@ const sample = ref([])
 const counters = reactive({})
 
 const loading = ref(false)
-const { saving: saving, error, attempt } = useSaving()
-const { saving: previewing, attemptPreview } = useSaving(error)
+const { saving, error, attempt } = useSaving()
+const { saving: previewing, attempt: attemptPreview } = useSaving(error)
 
 const moving = ref('')
 

@@ -262,7 +262,7 @@ const history = computed(() => {
 // Whether the picture picker is open.
 const picking = ref(false)
 const renaming = ref(false)
-const { saving: saving, error, attempt } = useSaving()
+const { saving, error, attempt } = useSaving()
 const wanted = ref('')
 
 const open = () => {

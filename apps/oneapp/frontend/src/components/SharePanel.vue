@@ -141,7 +141,7 @@ const props = defineProps({
 
 const emit = defineEmits(['shared'])
 
-const { saving: saving, error, attempt } = useSaving()
+const { saving, error, attempt } = useSaving()
 const looking = ref(false)
 
 const query = ref('')
