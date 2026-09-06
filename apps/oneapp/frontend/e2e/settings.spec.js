@@ -51,12 +51,19 @@ async function openSettings(page, who) {
 }
 
 test('the gear is in the rail for everybody, not only an admin',
-  async ({ page, baseURL }) => {
+  async ({ page, baseURL }, info) => {
     await signIn(page, baseURL, MEMBER)
     await page.goto('/one/files')
-    // The rail is the one declaration both shells are built from, so this is
-    // also what puts settings in the phone's More sheet.
-    await expect(page.locator('[data-slot="settings-link"]')).toBeVisible()
+    // Both shells, from the one declaration in `lib/shell/nav.js`: the rail's
+    // footer on a desktop, and a row in the More sheet on a phone, which draws
+    // no rail. Same slot on both, which is the point.
+    if (info.project.name === 'mobile') {
+      await page.getByRole('button', { name: 'More' }).click()
+    }
+    // Generously: the rail is drawn from the session's spaces, so on a cold
+    // start this is waiting for a fetch rather than for a render.
+    await expect(page.locator('[data-slot="settings-link"]'))
+      .toBeVisible({ timeout: 15_000 })
   })
 
 test('a member sees their own settings and none of the workspace it',

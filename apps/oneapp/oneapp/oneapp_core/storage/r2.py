@@ -114,6 +114,49 @@ def upload(file_doc, content: bytes) -> str:
 	return f"/api/method/oneapp.oneapp_core.storage.r2.download?file={file_doc.name}"
 
 
+def make_public(file_doc) -> str:
+	"""Move an object into the public half of the bucket, and say where it went.
+
+	The scope is part of the key — `tenants/<t>/private/...` against
+	`tenants/<t>/public/...` — so flipping `is_private` is a copy and a delete
+	rather than a flag. Copied first: a delete that runs before the copy lands
+	loses the file, and an orphan in the private half costs pennies.
+
+	The caller writes `is_private`, `r2_key` and `file_url` on the row. This
+	only moves the bytes.
+	"""
+	c = config()
+	old = file_doc.get("r2_key") or object_key(file_doc)
+
+	file_doc.is_private = 0
+	key = object_key(file_doc)
+	if key == old:
+		return key
+
+	client().copy_object(
+		Bucket=c["bucket"],
+		CopySource={"Bucket": c["bucket"], "Key": old},
+		Key=key,
+	)
+	delete(old)
+	return key
+
+
+def public_url(file_doc, key: str) -> str:
+	"""Where a public object is read from, which is the CDN when there is one.
+
+	Without `public_base` there is nowhere to serve it from but our own route,
+	and that route checks a session — so a workspace with no public bucket URL
+	has a logo its sign-in page cannot draw. Configuration, not a code path:
+	said here so the next person reads it in one place rather than deducing it
+	from a broken image.
+	"""
+	base = config()["public_base"]
+	return f"{base}/{key}" if base else (
+		f"/api/method/oneapp.oneapp_core.storage.r2.download?file={file_doc.name}"
+	)
+
+
 def delete(key: str):
 	try:
 		client().delete_object(Bucket=config()["bucket"], Key=key)

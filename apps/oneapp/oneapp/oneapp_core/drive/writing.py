@@ -330,3 +330,60 @@ def sweep_trash():
             frappe.log_error(title=f"Drive: could not empty {name}")
 
     return len(stale)
+
+
+# --------------------------------------------------------------------------- #
+# Public files
+# --------------------------------------------------------------------------- #
+
+def publish(url: str) -> str:
+    """Make one file readable without a session, and hand back its new URL.
+
+    Everything the picker uploads is private — `lib/files/attach.js` passes
+    `private: true` on both paths — and that is right for a workspace's files:
+    the bytes are reachable only through `storage/r2.download`, which checks
+    who is asking. It is wrong for the handful of images whose whole job is to
+    be seen by somebody who is not signed in or is not you: the logo and the
+    favicon on the sign-in page, the splash while the app loads, and a
+    colleague's profile picture.
+
+    Left private those render as a broken image for everyone except the person
+    who uploaded them, and nothing says why — the request 403s inside an `img`
+    tag. So the two endpoints that write an image setting publish it first:
+    `workspace.save` for the branding images, `me.save_profile` for the
+    picture. Nothing else here makes a file public.
+
+    A URL that names no file is returned untouched, which covers the two cases
+    that are not ours: an address somebody typed, and an image on another site.
+    """
+    if not url:
+        return url
+
+    name = frappe.db.get_value("File", {"file_url": url}, "name")
+    if not name:
+        return url
+
+    doc = frappe.get_doc("File", name)
+    if not doc.is_private:
+        return doc.file_url
+
+    from oneapp.oneapp_core.storage import r2
+
+    if r2.is_configured():
+        # The scope is part of the object key, so this moves the object as well
+        # as the row. Frappe's own `handle_is_private_changed` does not: it
+        # moves files on disk and skips anything whose URL is remote.
+        key = r2.make_public(doc)
+        fresh = r2.public_url(doc, key)
+        frappe.db.set_value("File", doc.name, {
+            "is_private": 0,
+            "r2_key": key,
+            "file_url": fresh,
+        }, update_modified=False)
+        return fresh
+
+    # On disk, the framework does it: `is_private` changing moves the file
+    # between `private/files` and `public/files` and rewrites `file_url`.
+    doc.is_private = 0
+    doc.save(ignore_permissions=True)
+    return doc.file_url

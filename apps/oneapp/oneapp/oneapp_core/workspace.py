@@ -459,8 +459,18 @@ def save(group: str, values: str | dict) -> dict:
 	if rejected:
 		frappe.throw(_("{0} is not a workspace setting.").format(", ".join(rejected)))
 
+	# Imported here rather than at the top: `drive` reads this module for the
+	# workspace's own defaults, and a module-level import would close the loop.
+	from oneapp.oneapp_core.drive.writing import publish
+
 	for key, value in values.items():
-		known[key].write(value)
+		setting = known[key]
+		# The branding images are shown to somebody with no session at all —
+		# the sign-in page draws the logo and the tab draws the favicon — and
+		# everything the picker uploads is private. See `drive.writing.publish`.
+		if setting.type in ("Attach", "Attach Image"):
+			value = publish(value)
+		setting.write(value)
 
 	# The one-time password issuer is what an authenticator app shows beside the
 	# code. Left at Frappe's default it names software the customer has never

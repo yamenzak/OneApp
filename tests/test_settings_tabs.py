@@ -209,6 +209,23 @@ def test_the_renderer_draws_every_type_that_is_declared():
 		assert f"{kind}:" in fields, f"{kind} no longer has a control"
 
 
+def test_an_image_setting_is_published_before_it_is_stored():
+	"""A private file in an `img` tag is a broken image, and it says nothing.
+
+	Everything the picker uploads is private — `lib/files/attach.js` passes
+	`private: true` on both paths — so a logo chosen that way 403s for the one
+	reader it exists for, somebody who is not signed in, and a profile picture
+	403s for every colleague. Both writers publish first; see
+	`drive.writing.publish`.
+	"""
+	for path in (WORKSPACE, ME):
+		source = path.read_text()
+		assert "publish(value)" in source, (
+			f"{path.name} stores an image setting without publishing the file, "
+			"so it draws for the person who uploaded it and nobody else"
+		)
+
+
 def test_a_numeric_setting_is_saved_as_a_number():
 	"""`type="number"` hands back a string; the column is a Float or an Int."""
 	fields = (ROOT / "apps/oneapp/frontend/src/components/settings/SettingsFields.vue"

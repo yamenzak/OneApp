@@ -55,6 +55,18 @@ rule off for exactly that reason — so an admin sets it as the person who manag
 the address, and its holder sets it as the person whose name is at the bottom of
 the mail.
 
+**Every image setting is published on the way in.** Everything the file picker
+uploads is private, which is right for a workspace's files and wrong for the
+four images whose job is to be seen by somebody who is not you: the logo and
+favicon on the sign-in page, the splash, and a profile picture. Left private
+they 403 inside an `img` tag, which draws as nothing and explains nothing. So
+`workspace.save` and `me.save_profile` both run the value through
+`drive.writing.publish` first, which moves the file into the public half —
+`public/files` on disk, the public prefix of the bucket on R2 — and stores the
+URL that comes back. A picture is also attached to its own `User` row, the way
+the desk does it, so deleting the file clears the field instead of leaving every
+avatar pointing at a 404.
+
 ## What a person may change about themselves
 
 `oneapp_core/me.py`, on the same two rules as `workspace.py`: the spec is the
@@ -62,7 +74,7 @@ allowlist, and every write names `frappe.session.user` rather than taking one.
 
 | Field | Verdict | Why |
 | --- | --- | --- |
-| `User.first_name`, `last_name`, `user_image`, `mobile_no` | Theirs | Their name and how they are reached. |
+| `User.first_name`, `last_name`, `user_image`, `mobile_no` | Theirs | Their name and how they are reached. The picture is the field every avatar in the product reads — the rail, the timeline, an assignment, a mail thread — so there is one image and not a second copy of it. |
 | `User.language`, `User.time_zone` | Theirs | Per-person *overrides* of the workspace's regional settings, so a colleague in another country reads their own dates without changing anybody else's. Empty follows the workspace, and the panel says what that currently is. |
 | `User.name` (the email) | **Neither** | The account's identity, and the seat is counted against it upstream — changing it is a control-plane act. Shown on the panel rather than hidden, because a profile with no address on it looks like it forgot. |
 | `User.enabled`, `roles`, `role_profile_name`, `user_type`, `api_key`, `api_secret`, `username` | **Ours** | Administration. An endpoint that took a fieldname would be an endpoint that grants roles; `MINE` is a fixed set and `NEVER` names these again. |

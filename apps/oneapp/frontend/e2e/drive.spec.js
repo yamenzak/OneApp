@@ -302,8 +302,7 @@ test('the storage screen says which file and not only which kind', async ({ page
   const errors = collectConsoleErrors(page)
   await page.goto('/one/files')
 
-  await page.getByRole('button', { name: 'Administrator' }).click()
-  await page.getByRole('menuitem', { name: 'Settings' }).click()
+  await page.locator('[data-slot="settings-link"]').click()
   await page.getByRole('tab', { name: 'Storage' }).click()
 
   await expect(page.getByText('By kind')).toBeVisible({ timeout: 15_000 })

@@ -171,6 +171,7 @@
           class="!h-11 w-full !justify-start !px-2"
           :icon-left="item.icon"
           :label="item.label"
+          :data-slot="item.key ? `${item.key}-link` : undefined"
           @click="run(item)"
         />
       </section>
@@ -184,12 +185,16 @@
         settings list already has.
       -->
       <div class="flex items-center justify-between gap-3 pl-2">
+        <!-- The same `data-slot` the rail's own row carries: a phone reaches
+             settings through this sheet and a desktop through the rail, and
+             one handle over both is what keeps the two from drifting. -->
         <Button
           v-if="settingsItem"
           variant="ghost"
           class="!px-0 hover:!bg-transparent"
           :icon-left="settingsItem.icon"
           :label="settingsItem.label"
+          :data-slot="settingsItem.key ? `${settingsItem.key}-link` : undefined"
           @click="run(settingsItem)"
         />
         <span v-else class="text-base text-ink-gray-7">Appearance</span>

@@ -36,7 +36,7 @@ from frappe import _
 MINE = {
 	"first_name": {"label": "First name", "type": "Data"},
 	"last_name": {"label": "Last name", "type": "Data"},
-	"user_image": {"label": "Photograph", "type": "Attach Image"},
+	"user_image": {"label": "Profile picture", "type": "Attach Image"},
 	"mobile_no": {"label": "Mobile", "type": "Data"},
 	"language": {"label": "Language", "type": "Select",
 	             "hint": "Yours only. Empty follows the workspace."},
@@ -119,14 +119,64 @@ def save_profile(values: str | dict) -> dict:
 		frappe.throw(_("{0} is not something you can change here.").format(
 			", ".join(rejected)))
 
+	# Imported here for the reason `workspace.save` gives: the Drive reads the
+	# workspace's settings, so a module-level import closes the loop.
+	from oneapp.oneapp_core.drive.writing import publish
+
 	me = _me()
 	for key, value in values.items():
 		if key in NEVER:  # unreachable through MINE, and cheap to keep true
 			continue
+		if MINE[key]["type"] in ("Attach", "Attach Image"):
+			# A picture only you can see is not a profile picture. Everything
+			# the picker uploads is private; this is the one file of yours that
+			# every colleague's avatar has to be able to draw.
+			value = publish(value)
 		me.set(key, value)
 	me.save(ignore_permissions=True)
+	_keep_the_picture(me.user_image)
 	frappe.db.commit()
 	return profile()
+
+
+def _keep_the_picture(url: str):
+	"""Link the chosen file to this person's own row, the way the desk does.
+
+	`user_image` is a URL on `User` and the file is a `File`, and the two are
+	only connected by that string unless something says so. Frappe's own upload
+	sets `attached_to_doctype`, `attached_to_name` and `attached_to_field` on
+	the row, and two useful things follow: deleting the picture clears the field
+	rather than leaving every avatar pointing at a 404, and deleting the person
+	takes their picture with them.
+
+	It stays a Drive file — `Home` lists by folder, not by what a file is
+	attached to — so the picture somebody uploaded is still in their Drive.
+
+	Two limits, both deliberate. A file already attached to something is left
+	alone: the same image can be a record's logo and somebody's picture, and the
+	first claim is the true one — which is also why `drive.attach` writes a
+	second row rather than moving one. And only a file this person owns is
+	claimed at all, because `user_image` is a string anybody can send and
+	re-parenting somebody else's file on the strength of a URL is not something
+	a profile editor should be able to do.
+	"""
+	if not url:
+		return
+
+	row = frappe.db.get_value(
+		"File",
+		{"file_url": url, "owner": frappe.session.user},
+		["name", "attached_to_doctype"],
+		as_dict=True,
+	)
+	if not row or row.attached_to_doctype:
+		return
+
+	frappe.db.set_value("File", row.name, {
+		"attached_to_doctype": "User",
+		"attached_to_name": frappe.session.user,
+		"attached_to_field": "user_image",
+	}, update_modified=False)
 
 
 # --------------------------------------------------------------------------- #
