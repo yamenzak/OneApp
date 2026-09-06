@@ -49,7 +49,7 @@ class Setting:
 
 	def __init__(self, key, label, type="Data", targets=(), default_key="",
 	             options=None, options_from=None, hint="", invert=False,
-	             placeholder=""):
+	             placeholder="", depends_on=""):
 		self.key = key
 		self.label = label
 		self.type = type
@@ -70,6 +70,12 @@ class Setting:
 		# not "is the disabling of this off".
 		self.invert = invert
 		self.placeholder = placeholder
+		# Another setting in the same group, by key. This one is drawn only when
+		# that one is on. Frappe's own `depends_on` is an expression evaluated as
+		# code; this is a key, because the only question worth asking here is
+		# "is its parent switched on" and an expression language is a way for a
+		# settings form to acquire a bug.
+		self.depends_on = depends_on
 
 	def read(self):
 		if self.default_key:
@@ -105,6 +111,7 @@ class Setting:
 			"options": self.options,
 			"hint": self.hint,
 			"placeholder": self.placeholder,
+			"depends_on": self.depends_on,
 		}
 
 
@@ -171,10 +178,10 @@ GROUPS = [
 		"key": "signin",
 		"label": "Sign in",
 		"icon": "lucide-key-round",
-		"description": (
-			"How people get in. Everyone in a workspace is invited — see "
-			"`joining` below for why that is not a setting."
-		),
+		"description": "How people prove who they are, and how long that lasts.",
+		# Who may have an account here at all — which is not a setting, and the
+		# panel says so where somebody would otherwise go looking for the switch.
+		"note": lambda: joining(),
 		"settings": [
 			Setting(
 				"allow_password_login",
@@ -195,6 +202,7 @@ GROUPS = [
 				"login_with_email_link_expiry",
 				"Link expires after (minutes)",
 				type="Int",
+				depends_on="login_with_email_link",
 				targets=[("System Settings", "login_with_email_link_expiry")],
 			),
 			Setting(
@@ -207,6 +215,7 @@ GROUPS = [
 			Setting(
 				"two_factor_method",
 				"Second factor",
+				depends_on="enable_two_factor_auth",
 				type="Select",
 				# Frappe also offers SMS, which needs an SMS gateway this platform
 				# does not run. Offering it would fail at the moment someone is
@@ -238,6 +247,7 @@ GROUPS = [
 				"minimum_password_score",
 				"Minimum strength",
 				type="Select",
+				depends_on="enable_password_policy",
 				options=["1", "2", "3", "4"],
 				targets=[("System Settings", "minimum_password_score")],
 				hint="2 is 'good', 4 is 'excellent'.",
@@ -453,27 +463,29 @@ def get() -> dict:
 			entry["options"] = _options_for(setting)
 			entry["value"] = setting.read()
 			fields.append(entry)
+		note = group.get("note")
 		groups.append(
 			{
 				"key": group["key"],
 				"label": group["label"],
 				"icon": group["icon"],
 				"description": group["description"],
+				# Something true about this group that is not a field — today
+				# only "who may have an account here", which is a question with
+				# an answer rather than a switch. Computed here rather than
+				# written above, because the answer reads the site.
+				"note": note() if note else None,
 				"fields": fields,
 			}
 		)
 
-	# The sign-in rules are the workspace's own, so they travel with it and not
-	# with a control-plane group somebody happens to be able to see.
-	joins = joining() if any(g["key"] == "signin" for g in groups) else None
-
-	# And which tabs to draw at all, including the ones the SPA renders itself.
+	# Which tabs to draw at all, including the ones the SPA renders itself.
 	# The shell used to hold that list and drew every one of them for everybody,
 	# which is why this dialog was only ever offered to admins — see
 	# `oneapp_core/tabs.py`.
 	from oneapp.oneapp_core import tabs
 
-	return {"groups": groups, "joining": joins, "tabs": tabs.mine()}
+	return {"groups": groups, "tabs": tabs.mine()}
 
 
 @frappe.whitelist(methods=["POST"])
@@ -546,19 +558,29 @@ def joining() -> dict:
 	    is disabled again on the next sync — so open signup would not even work,
 	    it would produce accounts that stop working within the hour.
 
-	So people are invited, from the workspace's own People page, which adds them
-	upstream where the seat is counted and lets the sync create the account.
+	So people are invited, and they are invited *upstream* — on the control
+	plane, where the seat is counted and where the sync that creates the account
+	here reads its member list from. There is no People page on a tenant site
+	and there should not be one: an account made here is an account the billing
+	side never saw.
+
+	Which is why this is a note on the Sign in panel rather than a docstring.
+	Somebody looking for the signup switch finds the answer where they looked,
+	and a link to the place the answer points at.
 	"""
 	return {
-		"mode": "invite",
-		"signup_disabled": bool(
-			frappe.db.get_single_value("Website Settings", "disable_signup")
+		"title": _("Everyone here is invited"),
+		"body": _(
+			"There is no sign-up form, on purpose: an account made on this site is "
+			"not counted against your seats and is disabled again on the next sync. "
+			"People are added to your workspace from your account, which is also "
+			"where seats are counted."
 		),
-		"reason": _(
-			"People are invited from your workspace's People page. Accounts created "
-			"any other way are not counted against your seats and are disabled on "
-			"the next sync."
-		),
+		# Where that is. Empty on a site with no control plane — a development
+		# bench — and the panel then says the sentence without offering a link
+		# that would go nowhere.
+		"link": (frappe.conf.get("oneapp_control_url") or "").rstrip("/"),
+		"link_label": _("Manage people"),
 	}
 
 

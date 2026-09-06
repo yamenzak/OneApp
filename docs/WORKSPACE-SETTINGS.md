@@ -182,6 +182,23 @@ workspace read as not an admin, and our support read as one.
 | `robots_txt`, `subdomain` | Neither | ditto. |
 | `website_theme` | **Ours** | The obvious home for a brand colour, and not one: `Website Theme.primary_color` is a Link to a bootstrap colour name, compiled into SCSS for the portal — a build step in the middle of a settings form, on a surface this product does not serve. The colour is a site default instead; see below. |
 
+## A control that is not offered, and one that is not drawn
+
+Two seams the settings spec grew from looking at the Sign in panel rather than
+at the code:
+
+* **A note.** A group may carry one — a fact about the group that is not a
+  field. Sign in has the only one; see Joining below.
+* **`depends_on`.** A setting may name another *in its own group* as the switch
+  it hangs off, and is drawn only when that one is on. A second factor offered
+  while two-factor is off is a choice with no effect, and a minimum password
+  strength under a policy that is off is a number nobody reads. It is a key and
+  not an expression on purpose: Frappe's own `depends_on` is evaluated as code,
+  and the only question worth asking here is whether the parent is switched on.
+
+Both are checked by `tests/test_workspace_settings.py` — a dependency has to
+name a real key in its own group, and a declared note has to be rendered.
+
 ## The one setting with no Frappe field
 
 **Brand colour.** One accent, under Branding, and the only thing in the dialog
@@ -242,9 +259,19 @@ is deliberately not offered. Three reasons, and any one of them is enough:
    sync**. Open signup would not merely be unwise; it would produce accounts that
    stop working within the hour.
 
-So people are invited from the workspace's People page, which adds them upstream
-where the seat is counted and lets the sync create the account. `sync_branding`
-re-asserts `disable_signup` every sync.
+So people are invited **upstream**, on the control plane, where the seat is
+counted and where the sync that creates the account here reads its member list
+from. There is deliberately no People page on a tenant site: an account made
+here is an account the billing side never saw. `sync_branding` re-asserts
+`disable_signup` every sync.
+
+And the panel says so. `joining()` returns a *note* the Sign in tab renders at
+the top — a title, a sentence, and a link to the control plane when
+`site_config.json` names one — because the place somebody goes looking for the
+signup switch is the place the answer belongs. It was computed and dropped for
+as long as it existed: the group's description told the reader to "see `joining`
+below", which was a source comment rendered as customer copy, pointing at
+something no component drew.
 
 The shape that *would* work, if a customer asks for self-service joining, is
 **domain-verified self-join**: someone with an address at a verified domain

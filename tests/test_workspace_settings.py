@@ -416,6 +416,59 @@ def test_the_admin_flag_is_not_system_manager():
 
 
 # --------------------------------------------------------------------------- #
+# A control that does nothing
+#
+# Two shapes of it, both found by looking at the Sign in panel rather than at
+# the code. A second factor offered while two-factor is off is a choice with no
+# effect; and a group whose description told the reader to see something
+# "below" that was never rendered is worse — it is a promise the panel does not
+# keep, in the one place somebody goes looking for a switch that deliberately
+# does not exist.
+# --------------------------------------------------------------------------- #
+
+def test_a_dependent_setting_hangs_off_one_in_its_own_group():
+	"""`depends_on` is a key, not an expression — so it has to be a real key."""
+	from oneapp.oneapp_core import workspace
+
+	for group in workspace.GROUPS:
+		keys = {s.key for s in group["settings"]}
+		for setting in group["settings"]:
+			if not setting.depends_on:
+				continue
+			assert setting.depends_on in keys, (
+				f"{group['key']}.{setting.key} hangs off {setting.depends_on}, "
+				"which is not in its group"
+			)
+
+
+def test_the_spa_draws_only_the_fields_whose_parent_is_on():
+	fields = source(SPA / "components/settings/SettingsFields.vue")
+	assert "depends_on" in fields, "the server declares it and nothing reads it"
+
+
+def test_a_group_note_is_rendered_where_it_is_declared():
+	"""It used to be computed, returned, and dropped on the floor: `joining()`
+	answered "who may have an account here" and no component read it, while the
+	Sign in description told the reader to see it."""
+	from oneapp.oneapp_core import workspace
+
+	noted = [g["key"] for g in workspace.GROUPS if g.get("note")]
+	assert noted, "no group carries a note; the seam is decoration"
+
+	fields = source(SPA / "components/settings/SettingsFields.vue")
+	assert "group.note" in fields
+
+
+def test_no_group_description_names_something_only_the_source_has():
+	"""A description is customer copy. Backticks in it are a comment that
+	escaped into the product."""
+	from oneapp.oneapp_core import workspace
+
+	for group in workspace.GROUPS:
+		assert "`" not in group["description"], group["key"]
+
+
+# --------------------------------------------------------------------------- #
 # The audit is the record
 # --------------------------------------------------------------------------- #
 

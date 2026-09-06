@@ -9,7 +9,29 @@
       server-side appears without a second edit.
     -->
     <div class="flex max-w-xl flex-col gap-6 pt-6">
-      <template v-for="field in group.fields" :key="field.key">
+      <!--
+        Something true about this group that is not a field. Sign in has the
+        only one: there is no sign-up switch, and this is where somebody looks
+        for it. A note rather than a disabled control, because the answer is not
+        "off" — it is that accounts are made somewhere else.
+      -->
+      <div
+        v-if="group.note"
+        class="flex flex-col gap-1 rounded-6 border border-outline-gray-2 bg-surface-gray-1 p-3"
+        data-slot="settings-note"
+      >
+        <p class="text-base-medium text-ink-gray-8">{{ group.note.title }}</p>
+        <p class="text-p-sm text-ink-gray-6">{{ group.note.body }}</p>
+        <a
+          v-if="group.note.link"
+          :href="group.note.link"
+          target="_blank"
+          rel="noopener"
+          class="mt-1 text-p-sm text-ink-blue-link hover:underline"
+        >{{ group.note.link_label }}</a>
+      </div>
+
+      <template v-for="field in shown" :key="field.key">
         <Switch
           v-if="field.type === 'Check'"
           v-model="form[field.key]"
@@ -84,6 +106,18 @@ const control = (field) =>
   ({ Select: 'select', Int: 'number', Float: 'number' })[field.type] || 'text'
 
 const numeric = (field) => field.type === 'Int' || field.type === 'Float'
+
+/**
+ * The fields to draw, which is not all of them: a setting may name another in
+ * the same group as the switch it hangs off, and a second factor nobody can
+ * reach is a control that does nothing.
+ *
+ * Read off `form` and not off the server's values, so turning the parent on
+ * reveals the child immediately rather than after a save and a reload.
+ */
+const shown = computed(() =>
+  props.group.fields.filter((f) => !f.depends_on || form[f.depends_on]),
+)
 
 const dirty = computed(() =>
   props.group.fields.some((f) => form[f.key] !== original.value[f.key]),
