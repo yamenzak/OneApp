@@ -305,6 +305,18 @@ def test_books_refuses_to_run_twice():
 	assert '"skipped": "already set up"' in body
 
 
+def test_a_workspace_holds_exactly_one_company():
+	"""A branch that wants its own ledger is its own workspace, on its own
+	subscription — see docs/WORKSPACE-SETTINGS.md, One company per workspace.
+	Two things hold it: setup refuses a second, and no space offers a screen
+	over Company, so there is no other way to make one."""
+	assert 'frappe.get_all("Company", limit=1)' in function(BOOKS, "_run")
+
+	books_space = ROOT / "apps/oneapp_control/oneapp_control/spaces/books.py"
+	declared = books_space.read_text()
+	assert '"Company"' not in declared, "a Company screen would be a second company"
+
+
 def test_a_workspace_set_up_before_the_regional_fix_is_repaired():
 	"""ERPNext's `setup_complete` never wrote System Settings, so every
 	workspace so far has books that know their country and a Regional tab that

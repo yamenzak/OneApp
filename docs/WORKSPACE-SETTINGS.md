@@ -214,6 +214,31 @@ at the code:
 Both are checked by `tests/test_workspace_settings.py` — a dependency has to
 name a real key in its own group, and a declared note has to be rendered.
 
+## One company per workspace
+
+Decided, not deferred. A workspace has exactly one Company and there is no
+surface for a second: `books._run` throws if one exists, `status()` reads
+`limit=1`, and the Books space declares no Company screen — the only way to
+create one is the setup form, which refuses once there is a company.
+
+The reason is pricing, and it is the same shape as the seat rule. A branch that
+wants its own ledger is its own workspace, on its own subscription; a customer
+who could hold five companies in one workspace would pay once for five
+businesses. Multi-company is also where ERPNext gets expensive to support:
+inter-company invoices, per-company permissions on every doctype, consolidated
+reports, and a company selector on every screen in the product.
+
+What "set once" actually means, per field, because it is not uniform:
+
+| Field | Changeable? |
+| --- | --- |
+| Chart of accounts | Until the first entry is posted. "Start over" is offered for exactly that long — `books.reset` refuses once anything is in the ledger, because after that the chart is structure the whole ledger hangs off. |
+| Currency | ERPNext refuses once transactions exist (`Company.validate_currency`). Before that it would be changeable; OneSpace offers no control for it, so in practice it is answered once. |
+| Country | ERPNext blocks nothing, but the chart of accounts and the tax templates were chosen from it. No control is offered. |
+| Company name | ERPNext allows a rename (`allow_rename`). No control is offered — worth one if a customer asks. |
+| Abbreviation | On every account name in the ledger, and nothing rewrites those. Effectively permanent. |
+| Financial year | **Not** set once, and needs nothing: a Fiscal Year is one row per year, and ERPNext's own `auto_create_fiscal_year` makes the next one three days before the current ends. It runs under `daily_maintenance`, which is why the scheduler is the platform's and not a switch a workspace can reach. |
+
 ## The half of the wizard ERPNext does not run
 
 `erpnext.setup_wizard.setup_complete` is three stages — fixtures, company,
