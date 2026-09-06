@@ -399,7 +399,13 @@ GROUPS = [
 			Setting("currency", "Currency", type="Select",
 			        options_from=lambda: reference("Currency"),
 			        targets=[("System Settings", "currency")],
-			        hint="The default for new documents. Each one can still say otherwise."),
+			        # Not the company's currency, which is the ledger's and lives
+			        # under Books. This is Frappe's display fallback — what
+			        # `formatters.get_default("currency")` draws a money amount
+			        # in when nothing on the field or the document says. The old
+			        # hint described the other one.
+			        hint="What an amount is shown in when nothing else says. Your books' "
+			             "own currency is the company's, under Books."),
 			Setting("float_precision", "Decimal places", type="Select",
 			        targets=[("System Settings", "float_precision")]),
 			Setting("currency_precision", "Decimal places on money", type="Select",
