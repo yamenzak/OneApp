@@ -4,22 +4,13 @@
 
     A list inside a menu or a panel is clipped by its container, and a row cut
     in half by a hard edge reads as a rendering fault rather than as "there is
-    more below". A soft fade at whichever edge has content past it says the
-    second thing.
-
-    Not the wash the list used to have across its left and right edges. That
-    one dimmed *data* — a column of values, greyed for no reason a reader could
-    name — and it was rightly called childish. This fades three-quarters of an
-    inch of empty container above and below a bounded panel, and it disappears
-    the moment there is nothing past the edge, which is what makes it
-    information rather than decoration.
+    more below". This fades empty container above and below the panel, and
+    disappears the moment there is nothing past the edge — which is what makes
+    it information rather than decoration.
 
     Measured with a `ResizeObserver` as well as on scroll: the content of a
-    filtered list changes without anybody scrolling, and the first version of
-    the list's own edges measured before layout and said nothing until
-    something else moved.
-
-    Sideways it draws a hairline rather than a wash — see `axis`.
+    filtered list changes without anybody scrolling. Sideways it draws a
+    hairline rather than a wash — see `axis`.
   -->
   <div class="relative min-h-0" :class="sideways ? 'min-w-0' : ''">
     <!--
@@ -27,12 +18,8 @@
 
       Callers bind the panel by putting a `max-h-*` on the component, which
       lands on the wrapper above. A `height: 100%` child of a box that has only
-      a *max* height resolves to `auto` — so the scroller grew to its content,
-      `overflow-y-auto` had nothing to scroll, and the rows spilled out of the
-      wrapper and drew over whatever came after it. On a phone that was the
-      column dialog painting its own second half across its first, with Done
-      underneath and unclickable. Inheriting the max height puts the bound on
-      the box that scrolls, which is where it has to be.
+      a *max* height resolves to `auto`, so the scroller grew to its content and
+      the rows spilled out of the wrapper over whatever came after it.
     -->
     <div
       ref="scroller"
@@ -55,12 +42,9 @@ const props = defineProps({
   /**
    * Which way it scrolls, and so which edges say there is more.
    *
-   * `y` fades: a bounded panel of rows ends in a soft edge and the fade is over
-   * empty container, not over data. `x` draws a hairline instead — the same
-   * answer the list came to. A wash down the side of a table dims the values in
-   * the column under it to talk about scrolling, which is the "childish glow"
-   * that came off the list; a rule is the honest version and it is what the
-   * grid already uses.
+   * `y` fades over empty container. `x` draws a hairline instead: a wash down
+   * the side of a table dims the values in the column under it to talk about
+   * scrolling.
    */
   axis: { type: String, default: 'y' },
 })
@@ -87,9 +71,8 @@ const scroller = ref(null)
 const before = ref(false)
 const after = ref(false)
 
-// A pixel of slack at each end. A scroller sitting exactly at its end can
-// report a fractional difference on a display with a scale factor, and an edge
-// that never quite goes away is worse than one that never appears.
+// A pixel of slack at each end: a scroller sitting exactly at its end can
+// report a fractional difference on a scaled display.
 const SLACK = 1
 
 const measure = () => {
@@ -108,8 +91,8 @@ onMounted(() => {
   measure()
   if (scroller.value) {
     observer.observe(scroller.value)
-    // The content, not only the box: a filtered list is the same box with
-    // fewer rows in it, and only the child's size changes.
+    // The content, not only the box: a filtered list is the same box with fewer
+    // rows in it.
     if (scroller.value.firstElementChild) observer.observe(scroller.value.firstElementChild)
   }
 })

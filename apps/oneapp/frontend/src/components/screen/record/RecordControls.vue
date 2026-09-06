@@ -2,19 +2,17 @@
   <!--
     The things you do to a record rather than to one of its fields.
 
-    Its own component because it is drawn in two places and must be the same
-    row in both: in the record's own header, where the record has one — a pane
-    beside the list, a drawer over a page, a phone — and on the page header's
-    line, where it does not. See `merged` in `RecordView`.
+    Its own component because it is drawn in two places and must be the same row
+    in both: in the record's own header, where the record has one, and on the
+    page header's line, where it does not. See `merged` in `RecordView`.
 
-    Not eight buttons in a row. The record's other verbs — print, follow,
-    like — are inside `RecordActions`' menu, and assignment is not here at all:
-    the Meta tab offers it one tab away, so it was the same control twice.
+    The record's other verbs — print, follow, like — are inside `RecordActions`'
+    menu, and assignment is not here at all: the Meta tab offers it one tab
+    away.
   -->
   <div data-slot="record-controls" class="flex shrink-0 items-center gap-1">
     <!-- What this screen can do to this record beyond editing its fields.
-         Declared by the space and resolved server-side, so a screen that
-         declares none renders nothing here. -->
+         Declared by the space and resolved server-side. -->
     <ScreenActions
       :actions="spec.actions || []"
       scope="record"
@@ -23,11 +21,8 @@
       :names="[record.name]"
       @ran="emit('reload')"
     />
-    <!--
-      The step this record is waiting for, and one menu holding everything else
-      you can do to it — print it, follow it, like it, and the steps that unwind
-      a submitted document.
-    -->
+    <!-- The step this record is waiting for, and one menu holding everything
+         else. -->
     <RecordActions
       :space-code="spaceCode"
       :screen="screen"
@@ -39,16 +34,14 @@
       @opened="emit('renamed', $event)"
     />
     <!--
-      Save lives up here rather than in a footer, and the reason is the corner:
-      the toast that says a save worked is fixed to the bottom right of the
-      window, which is exactly where a pane's footer button sits — so saving
-      twice in a row meant clicking through the confirmation of the first one.
-      frappe-ui's ToastProvider hard-codes that position, so the button moved
-      instead.
+      Save lives up here rather than in a footer because of the corner: the toast
+      that says a save worked is fixed to the bottom right, which is exactly
+      where a pane's footer button sits, so saving twice meant clicking through
+      the first confirmation. frappe-ui's ToastProvider hard-codes that
+      position.
 
       Only while there is something to save. It shares its place with the
-      document's own actions, which are offered only while there is not: one
-      slot, and whichever of the two is the real next step is in it.
+      document's own actions, which are offered only while there is not.
     -->
     <Button
       v-if="canWrite && dirty"
@@ -58,15 +51,11 @@
       @click="emit('save')"
     />
     <!--
-      How much of the window this record gets. The manifest has an opinion — a
-      screen that draws a hero over a photograph is asking for the width, a
-      screen that draws a form is not — and this is the reader overruling it,
-      remembered per screen so it is a preference rather than a click you make
-      every time.
+      How much of the window this record gets: the manifest has an opinion and
+      this is the reader overruling it, remembered per screen.
 
       Not on a phone, where there is only ever one surface, and not in the
-      drawer, where the record is a thing you are peeking at from another one
-      and the width is that argument, not this one.
+      drawer, where the width is the peek's argument rather than this one.
     -->
     <Button
       v-if="canResize"
@@ -76,12 +65,8 @@
       :tooltip="wide ? 'Show beside the list' : 'Fill the window'"
       @click="emit('surface', wide ? 'pane' : 'page')"
     />
-    <!--
-      A peek is not always enough. This is the way from one to the other: the
-      same record, on its own screen, with its list behind it — which is where
-      you go when the answer to "what is this line" turns out to be a job of its
-      own.
-    -->
+    <!-- A peek is not always enough. The way from one to the other: the same
+         record, on its own screen, with its list behind it. -->
     <Button
       v-if="drawer"
       icon="lucide-arrow-up-right"
@@ -91,10 +76,9 @@
       @click="emit('expand')"
     />
     <!--
-      Out. What it means depends on where you are: in a drawer it puts the
+      Out. What it means depends on where you are — in a drawer it puts the
       record you came from back, everywhere else it goes back to the list — and
-      the tooltip should say which, because they are different enough that
-      guessing wrong loses your place.
+      the tooltip says which, because guessing wrong loses your place.
     -->
     <Button
       icon="lucide-x"
