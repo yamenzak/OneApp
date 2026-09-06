@@ -191,6 +191,33 @@ export {
   // buttons are not in the loaded extension list is a row of controls that do
   // nothing, so the pair is chosen together rather than separately.
   articleToolbar,
+  // And the items those presets are built from, for the one surface that is
+  // not a field: a whole document, where the toolbar is the only chrome and a
+  // reader expects alignment, colour, a rule and an undo — see
+  // `components/docs/toolbar.js`, which composes them into one row.
+  Separator,
+  HeadingGroup,
+  Bold,
+  Italic,
+  Strike,
+  InlineCode,
+  BulletList,
+  OrderedList,
+  Blockquote,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  FontColor,
+  FontHighlight,
+  InsertLink,
+  InsertImage,
+  InsertTable,
+  HorizontalRule,
+  Undo,
+  Redo,
+  // The contextual menu a table brings with it. Without it a table can be
+  // inserted and never given a row.
+  EditorTableMenu,
 } from 'frappe-ui/editor'
 
 /**

@@ -31,7 +31,7 @@
     />
     <Icon
       v-else
-      :name="ICONS[file.custom_kind] || ICONS.Other"
+      :name="iconForKind(file.custom_kind)"
       :class="grid ? 'size-8' : 'size-4'"
     />
   </span>
@@ -50,19 +50,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Icon, dayjsLocal } from '@/ui'
-
-// One glyph per kind. The set is the server's `KINDS` and a value it does not
-// know falls through to the same icon an unknown file gets.
-const ICONS = {
-  Folder: 'lucide-folder',
-  Image: 'lucide-image',
-  PDF: 'lucide-file-text',
-  Video: 'lucide-video',
-  Audio: 'lucide-music',
-  Document: 'lucide-file',
-  Sheet: 'lucide-table-2',
-  Other: 'lucide-file-question',
-}
+import { iconForKind } from '@/lib/files/files'
 
 const props = defineProps({
   file: { type: Object, required: true },

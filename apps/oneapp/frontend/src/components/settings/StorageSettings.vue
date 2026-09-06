@@ -85,7 +85,7 @@
           data-slot="storage-kind"
           class="flex min-w-0 items-center gap-3"
         >
-          <Icon :name="ICONS[row.kind] || ICONS.Other" class="size-4 shrink-0 text-ink-gray-5" />
+          <Icon :name="iconForKind(row.kind)" class="size-4 shrink-0 text-ink-gray-5" />
           <span class="w-24 shrink-0 text-p-sm text-ink-gray-7">{{ row.kind }}</span>
           <!--
             Against the largest kind and not against the quota: the shape worth
@@ -131,7 +131,7 @@
           data-slot="storage-biggest"
           class="flex min-w-0 items-center gap-3"
         >
-          <Icon :name="ICONS[row.kind] || ICONS.Other" class="size-4 shrink-0 text-ink-gray-5" />
+          <Icon :name="iconForKind(row.kind)" class="size-4 shrink-0 text-ink-gray-5" />
           <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-7">
             {{ row.file_name }}
           </span>
@@ -170,17 +170,9 @@ import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { settings } from '@/lib/shell/settings'
 import { errorText } from '@/lib/runtime/errors'
-
 // The same glyphs the Drive draws, because they are the same kinds.
-const ICONS = {
-  Folder: 'lucide-folder',
-  Image: 'lucide-image',
-  PDF: 'lucide-file-text',
-  Video: 'lucide-video',
-  Audio: 'lucide-music',
-  Document: 'lucide-file',
-  Other: 'lucide-file-question',
-}
+import { iconForKind } from '@/lib/files/files'
+
 
 const router = useRouter()
 

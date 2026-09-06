@@ -87,14 +87,14 @@
           dropdown rather than a button, because a workspace with an estimator
           template starts from it far more often than from a blank grid.
         -->
-        <Dropdown :options="sheetOptions">
+        <Dropdown :options="newOptions">
           <Button
-            :icon="isMobile ? 'lucide-table-2' : undefined"
-            :icon-left="isMobile ? undefined : 'lucide-table-2'"
+            :icon="isMobile ? 'lucide-plus' : undefined"
+            :icon-left="isMobile ? undefined : 'lucide-plus'"
             :icon-right="isMobile ? undefined : 'lucide-chevron-down'"
             variant="solid"
-            label="New sheet"
-            tooltip="New sheet"
+            label="New"
+            tooltip="New file"
             :loading="making"
           />
         </Dropdown>
@@ -514,9 +514,23 @@ function open(file) {
     router.push({ name: 'Sheet', params: { name: file.name } })
     return
   }
+  // The same argument for a document, and for the text files beside it: a
+  // `.md` previewed is a `<pre>` of somebody's notes with no way to fix the
+  // typo they opened it to fix.
+  if (file.custom_kind === 'Doc' || isText(file.file_name)) {
+    router.push({ name: 'Doc', params: { name: file.name } })
+    return
+  }
   looking.value = file
   previewing.value = true
 }
+
+//: What opens in the text editor rather than the previewer. The server's
+//: `docs/text.py` holds the same list; it is short, and a file that is not on
+//: it is only ever previewed, so the two drifting costs a preview rather than
+//: a broken save.
+const TEXT = /\.(txt|md|markdown|csv|log|json|ya?ml)$/i
+const isText = (name) => TEXT.test(name || '')
 
 // A sheet is made and then opened, in one click.
 async function newSheet(template = '') {
@@ -537,19 +551,56 @@ function labelOfTemplate(name) {
   return templates.value.find((one) => one.name === name)?.file_name || 'Sheet'
 }
 
-const sheetOptions = computed(() => [
-  { label: 'Blank sheet', icon: 'lucide-file-plus-2', onClick: () => newSheet() },
+// The only things in this product that are made rather than uploaded. Grouped
+// rather than listed flat, because a workspace with four estimator templates
+// otherwise gets a menu where "Document" is below the fold.
+const newOptions = computed(() => [
   {
-    label: 'Import a spreadsheet',
-    icon: 'lucide-file-up',
-    onClick: () => { importing.value = true },
+    group: 'Write',
+    options: [
+      { label: 'Document', icon: 'lucide-file-signature', onClick: () => newDoc() },
+      { label: 'Text file', icon: 'lucide-file-text', onClick: () => newText('txt') },
+      { label: 'Markdown file', icon: 'lucide-file-code', onClick: () => newText('md') },
+    ],
   },
-  ...templates.value.map((one) => ({
-    label: one.file_name,
-    icon: 'lucide-table-2',
-    onClick: () => newSheet(one.name),
-  })),
+  {
+    group: 'Calculate',
+    options: [
+      { label: 'Blank sheet', icon: 'lucide-table-2', onClick: () => newSheet() },
+      {
+        label: 'Import a spreadsheet',
+        icon: 'lucide-file-up',
+        onClick: () => { importing.value = true },
+      },
+      ...templates.value.map((one) => ({
+        label: one.file_name,
+        icon: 'lucide-table-2',
+        onClick: () => newSheet(one.name),
+      })),
+    ],
+  },
 ])
+
+// Made and then opened, in one click — the same shape a new sheet has.
+async function newDoc() {
+  making.value = true
+  try {
+    const made = await workspace.docMake({ folder: folder.value || '' })
+    router.push({ name: 'Doc', params: { name: made.name } })
+  } finally {
+    making.value = false
+  }
+}
+
+async function newText(kind) {
+  making.value = true
+  try {
+    const made = await workspace.docMakeText({ kind, folder: folder.value || '' })
+    router.push({ name: 'Doc', params: { name: made.name } })
+  } finally {
+    making.value = false
+  }
+}
 
 function startShare(file) {
   looking.value = file

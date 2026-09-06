@@ -1,0 +1,75 @@
+<template>
+  <!--
+    One document, or one text file, open.
+
+    A page rather than a screen inside a Space, for the same reason Sheets,
+    Mail and Files are: a document belongs to the workspace's file table, not
+    to any one Space. It is reached from the Drive, from an attachment on a
+    record, or from a link somebody sent — and none of those knows which Space
+    you were in.
+
+    Two editors behind one address, because there is one thing here: a `File`.
+    Which editor opens is what the file *is* — prose in a `Doc Body` row, or
+    bytes in R2 — and that is the server's answer, not a route parameter.
+  -->
+  <div v-if="failed" class="p-8">
+    <EmptyState
+      icon="lucide-file-question"
+      title="This document could not be opened"
+      :description="failed"
+    />
+  </div>
+
+  <div v-else-if="!doc" class="flex h-full flex-col gap-3 p-8">
+    <Skeleton class="h-8 w-64" />
+    <Skeleton class="h-4 w-full" />
+    <Skeleton class="h-4 w-5/6" />
+    <Skeleton class="h-4 w-2/3" />
+  </div>
+
+  <PlainText v-else-if="doc.language" :name="name" :doc="doc" @renamed="onRenamed" />
+
+  <DocEditor v-else :name="name" :doc="doc" @renamed="onRenamed" @reload="load" />
+</template>
+
+<script setup>
+import { ref, watch } from 'vue'
+
+import { Skeleton } from '@/ui'
+import DocEditor from '../components/docs/DocEditor.vue'
+import EmptyState from '../components/EmptyState.vue'
+import PlainText from '../components/docs/PlainText.vue'
+import { errorText } from '@/lib/runtime/errors'
+import { workspace } from '@/lib/workspace'
+
+const props = defineProps({
+  name: { type: String, required: true },
+})
+
+const doc = ref(null)
+const failed = ref('')
+
+async function load() {
+  doc.value = null
+  failed.value = ''
+  try {
+    // The document first, because that is what this address usually is. A
+    // `.md` answers "that file is not a document", and the text call is the
+    // second question rather than a third route.
+    doc.value = await workspace.docOpen(props.name)
+  } catch {
+    try {
+      doc.value = await workspace.textOpen(props.name)
+    } catch (raised) {
+      failed.value = errorText(raised)
+    }
+  }
+}
+
+// The tab, so a person with four documents open can tell them apart.
+const onRenamed = (title) => {
+  if (title) document.title = title
+}
+
+watch(() => props.name, load, { immediate: true })
+</script>

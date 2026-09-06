@@ -16,6 +16,28 @@ const ICONS = [
 
 const IMAGE = ICONS[0][0]
 
+/**
+ * One glyph per kind, for the surfaces that have a kind to draw.
+ *
+ * The set is the server's `drive/kinds.py` and a value it does not know falls
+ * through to the same icon an unknown file gets. Two copies of this list —
+ * the Drive's and the storage screen's — is exactly the pair that drifts, and
+ * did: the storage screen never learnt what a sheet was.
+ */
+export const KIND_ICONS = {
+  Folder: 'lucide-folder',
+  Image: 'lucide-image',
+  PDF: 'lucide-file-text',
+  Video: 'lucide-video',
+  Audio: 'lucide-music',
+  Document: 'lucide-file',
+  Sheet: 'lucide-table-2',
+  Doc: 'lucide-file-signature',
+  Other: 'lucide-file-question',
+}
+
+export const iconForKind = (kind) => KIND_ICONS[kind] || KIND_ICONS.Other
+
 export function iconFor(file) {
   const found = ICONS.find(([pattern]) => pattern.test(file?.file_name || file?.file_url || ''))
   return found ? found[1] : 'lucide-file'

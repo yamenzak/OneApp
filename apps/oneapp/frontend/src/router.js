@@ -53,6 +53,18 @@ const routes = [
     meta: { pane: true },
   },
   {
+    // A document is a File too, so this is the same kind of address a sheet
+    // has. What opens behind it — the prose editor or the plain-text one — is
+    // what the file is, which only the server knows.
+    path: '/docs/:name',
+    name: 'Doc',
+    component: () => import('./pages/Doc.vue'),
+    props: true,
+    // The editor owns its own scroller, and a page scroll under it would put
+    // the toolbar off screen the moment anybody typed past the fold.
+    meta: { pane: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('./pages/NotFound.vue'),
