@@ -2,7 +2,7 @@
   <FrappeUIProvider>
     <AppShell
       v-if="session.loaded && session.isLoggedIn"
-      :scroll="!$route.meta.pane"
+      :scroll="false"
       :chrome="!$route.meta.focused"
       :entries="railSpaces"
       :active-entry="activeSpaceCode"
@@ -40,11 +40,29 @@
       </template>
 
       <!--
-        Keyed on the path, not the full path. A screen, a view type, a saved view
-        and an open record are all query parameters, and keying on the query
-        tore the page down and rebuilt it to open a dialog.
+        The page, and the assistant beside it.
+
+        The shell's own scroll region is switched off (`:scroll="false"`) and
+        this column owns it instead, because a panel inside a scrolling region
+        scrolls away with the page. One path rather than two: a pane route's
+        inner panes own their scrollers and this column simply does not
+        overflow, which is what the shell was doing for them anyway.
       -->
-      <router-view :key="$route.path" />
+      <div class="flex h-full min-h-0">
+        <div
+          class="flex min-h-0 min-w-0 flex-1 flex-col"
+          :class="$route.meta.pane ? '' : 'overflow-auto'"
+        >
+          <!--
+            Keyed on the path, not the full path. A screen, a view type, a saved
+            view and an open record are all query parameters, and keying on the
+            query tore the page down and rebuilt it to open a dialog.
+          -->
+          <router-view :key="$route.path" />
+        </div>
+
+        <AssistantPanel />
+      </div>
     </AppShell>
 
     <!-- Outside the shell so it survives a layout swap, and a dialog rather
@@ -88,6 +106,7 @@ import SpaceSidebar from './components/SpaceSidebar.vue'
 import MailSidebar from './components/mail/MailSidebar.vue'
 import DiarySidebar from './components/diary/DiarySidebar.vue'
 import ChatSidebar from './components/chat/ChatSidebar.vue'
+import AssistantPanel from './components/chat/AssistantPanel.vue'
 import DriveSidebar from './components/drive/DriveSidebar.vue'
 import RailAccount from './components/RailAccount.vue'
 import NotificationBell from './components/notifications/NotificationBell.vue'

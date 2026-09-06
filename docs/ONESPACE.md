@@ -1325,8 +1325,8 @@ Credits, metering and markup are the platform's — `ONEADMIN.md` §7.
 
 ### The workspace assistant
 
-The first feature shipped under that decorator is a chat, at `/one/chat`. It is
-declared exactly like any other — `@ai_feature("chat.workspace")` — so it has a
+The first feature shipped under that decorator is a chat. It is declared exactly
+like any other — `@ai_feature("chat.workspace")` — so it has a
 settings row, a model picker, an off switch, an addendum a workspace may write
 and may never read, and a credit hold before every call. **There is no second AI
 path and no configuration surface of its own.** A chat that could name a
@@ -1357,6 +1357,31 @@ previous turns actually settled at.
 Transcripts are stored per person, not per workspace. Two people asking the same
 question get different answers under their own roles, so a shared thread would
 be one whose rows mean different things to different readers.
+
+**It is a panel, and the page is the overflow.** §12's vocabulary decides it: a
+panel is a strip inside a page you toggle and that keeps its state, which is
+what the assistant is for — you ask about the quotation you are looking at, and
+a page would make you leave it to do so. Not a popover, and the difference is
+the reason: an answer here can be eight calls and forty seconds, and a popover
+dismisses on the outside click somebody makes to go and check the record they
+asked about. `/one/chat` still exists, reached from the panel's own menu or a
+link, and is where a conversation goes when it is the work rather than a check —
+a column of text instead of 384px, and its own address.
+
+**Where it was opened from narrows it, two ways.** The **space** is bound onto
+every tool that takes one: `Tool.bind` fills it in and removes it from the
+schema, so the model has no word for anywhere else. The **screen and record**
+are told, not bound — one sentence appended to the system prompt naming them in
+the workspace's own words, so "is this priced above the last one?" resolves.
+
+The screen was bound too, briefly, and it was wrong: pinning it reads as safety
+and is not — permissions are the boundary, and a bound argument only decides
+what the model can *name* — while it cost real answers, because "is there a
+quotation for this project?" is an ordinary question a pinned screen makes
+unanswerable. Context arrives from a browser, so `chat/context.py` resolves
+every part of it through the resolver a click goes through: a space this reader
+cannot open is refused, and a record that is not on the screen it claims to be
+on is dropped.
 
 ---
 
@@ -1407,7 +1432,7 @@ record as a drawer, and nothing said why — so:
   record, renaming one, sharing, printing, picking columns, editing one child
   row, a long field given the room a document gets.
 * **Panel** — a strip inside a page you toggle and that keeps its state: the
-  version history, the document outline, a record's connections.
+  version history, the document outline, a record's connections, the assistant.
 
 Two consequences worth stating, because both were wrong until they were named.
 A page reached *from* a record carries that record in its URL, so its trail

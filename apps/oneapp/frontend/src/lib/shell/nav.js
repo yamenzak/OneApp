@@ -3,11 +3,46 @@ import { useRoute } from 'vue-router'
 // An icon name that only exists in the database emits no CSS, so anything
 // outside the generated set falls back to one that does.
 import { spaceIcon } from '@/lib/shell/icons'
-import { assistant } from '@/lib/shell/assistant'
+import { assistant, openAssistant } from '@/lib/shell/assistant'
 import { mail } from '@/lib/shell/mail'
 import { session } from '@/lib/shell/session'
 import { workspace } from '@/lib/workspace'
 import { VIEW_TYPES, viewTypesOf } from '@/lib/screen/viewTypes'
+
+/**
+ * What the reader has open, for the assistant to be scoped to.
+ *
+ * Read off the route rather than passed down, because the rail is not inside
+ * the page and the panel is not inside either of them. Only three facts, and
+ * only the label is for the browser — the server resolves the space, the screen
+ * and the record through the same checks a click goes through, so a stale URL
+ * narrows to nothing rather than widening anything.
+ *
+ * Null outside a space. Mail, the Drive and the calendar are not screens, and
+ * an assistant told it is "on Files" would be told something its tools cannot
+ * act on.
+ */
+export function openContext(route, spaces = session.spaces) {
+  const code = route?.params?.spaceCode
+  const screen = route?.query?.screen
+  if (!code || !screen) return null
+
+  const space = spaces.find((one) => one.space_code === code)
+  const found = (space?.screens || []).find((one) => one.screen === screen)
+  if (!found) return null
+
+  const record = route.query.record || ''
+  return {
+    space: code,
+    screen,
+    ...(record ? { docname: record } : {}),
+    // Said to the reader, not to the model: the panel puts it under its own
+    // title so what the answers will be about is legible before the first
+    // question rather than inferred from the first answer.
+    label: record ? `${found.label} · ${record}` : found.label,
+  }
+}
+
 
 /**
  * Every destination, declared once.
@@ -142,12 +177,16 @@ export function useNav() {
     // Absent until the server says the workspace has one — AI can be switched
     // off, unconfigured, or suspended by an operator, and a rail entry that
     // leads to "not switched on here" is worse than no entry.
+    // `act` and not `to`: this one opens a panel over the page rather than
+    // navigating to one. Going somewhere to ask about the thing you were
+    // looking at is the shape this exists to avoid.
     ...(assistant.available
       ? [{
         key: 'chat',
         label: 'Assistant',
         icon: 'lucide-sparkles',
         to: { name: 'Chat' },
+        act: () => openAssistant(openContext(route)),
       }]
       : []),
     // Always here, unlike Mail: everybody has days.

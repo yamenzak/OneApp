@@ -22,7 +22,7 @@ from frappe import _
 
 from oneapp.oneapp_core.ai import conversation
 from oneapp.oneapp_core.ai.features import ai_feature
-from oneapp.oneapp_core.chat import session as store
+from oneapp.oneapp_core.chat import context, session as store
 from oneapp.oneapp_core.chat.toolbox import tools
 
 SYSTEM = """You are the assistant inside a OneSpace workspace. You help the \
@@ -67,11 +67,18 @@ workspace it can be done."""
 	max_input_tokens=120_000,
 	max_output_tokens=2_000,
 )
-def ask(ai, session: str, question: str) -> dict:
-	"""Answer one question in a stored conversation, using the workspace's data."""
+def ask(ai, session: str, question: str, on: dict | None = None) -> dict:
+	"""Answer one question in a stored conversation, using the workspace's data.
+
+	`on` is what the reader has open, already checked by `context.read`. It
+	narrows the tools to that space and puts one sentence in front of the model
+	saying which screen and which record — so "is this priced above the last
+	one?" works in the panel beside a quotation and means nothing from the rail.
+	"""
+	on = on or {}
 	spoken = store.transcript(session) + [{"role": "user", "content": question}]
 
-	run = conversation.run(ai, spoken, tools())
+	run = conversation.run(ai, spoken, context.bound(tools(), on), context.note(on))
 
 	# Only what this ask added. `run.messages` is the whole transcript because
 	# the loop needs it; storing it whole would write every earlier turn again.
@@ -147,13 +154,17 @@ def messages(session: str) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def send(question: str, session: str = "") -> dict:
+def send(question: str, session: str = "", on: str | dict | None = None) -> dict:
 	"""Ask. Opens a thread if there is not one yet, and returns the whole reply.
 
 	Not streamed. A streaming answer would have to hold a worker open for the
 	length of a loop that may make eight provider calls, and a chat is not worth
 	a request that can occupy a worker for two minutes. What arrives instead is
 	the finished answer with the tools it used beside it.
+
+	`on` is where the question was asked from — `{space, screen, docname}`, as
+	the panel knows it. It arrives from a browser, so `context.read` resolves it
+	through the same checks a click goes through and drops what does not hold.
 	"""
 	from oneapp.oneapp_core.ai import features, gateway
 
@@ -165,7 +176,7 @@ def send(question: str, session: str = "") -> dict:
 	store.mine(session, "write")
 
 	try:
-		run = ask(session, question)
+		run = ask(session, question, context.read(on))
 	except gateway.OutOfCredits as e:
 		return {"session": session, "ok": False, "reason": "insufficient_credits",
 		        "message": str(e)}

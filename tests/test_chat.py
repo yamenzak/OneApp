@@ -30,10 +30,11 @@ def chat(stub_frappe, monkeypatch):
 	stub_frappe.log_error = lambda **kw: None
 	stub_frappe.get_traceback = lambda: ""
 
-	from oneapp.oneapp_core.chat import session, toolbox
+	from oneapp.oneapp_core.chat import context, session, toolbox
 
 	return types.SimpleNamespace(
-		session=session, toolbox=toolbox, frappe=stub_frappe, monkeypatch=monkeypatch,
+		context=context, session=session, toolbox=toolbox,
+		frappe=stub_frappe, monkeypatch=monkeypatch,
 	)
 
 
@@ -214,3 +215,113 @@ def test_a_very_long_first_question_is_trimmed_to_a_title(chat):
 	chat.frappe.get_doc = lambda values: (held.update(values) or Doc(values))
 	chat.session.start("word " * 200)
 	assert len(held["title"]) <= chat.session.TITLE_LENGTH
+
+
+# --------------------------------------------------------------------------- #
+# Where the question was asked from
+# --------------------------------------------------------------------------- #
+
+def screens(chat, resolved):
+	"""Stand in for `spaceview.resolve._resolve` and `records.record`."""
+	import types
+
+	resolve = types.ModuleType("oneapp.oneapp_core.spaceview.resolve")
+	resolve._resolve = lambda space, screen=None, view_type=None: (
+		resolved.get((space, screen)) or _refuse(space)
+	)
+	chat.monkeypatch.setitem(
+		sys.modules, "oneapp.oneapp_core.spaceview.resolve", resolve)
+
+	records = types.ModuleType("oneapp.oneapp_core.spaceview.records")
+	records.record = lambda space_code, screen, name: (
+		{"name": name, "project_name": "Marina tower"} if name == "PROJ-1" else {}
+	)
+	chat.monkeypatch.setitem(
+		sys.modules, "oneapp.oneapp_core.spaceview.records", records)
+
+
+def _refuse(space):
+	import frappe
+
+	frappe.throw(f"No space named {space} is enabled here.", frappe.PermissionError)
+
+
+RUA = {
+	("rua", "projects"): {
+		"space": "rua", "label": "RUA", "screen": "projects",
+		"screen_label": "Projects", "singular": "Project",
+		"doctype": "Project", "title_field": "project_name",
+	},
+}
+
+
+def test_a_space_the_reader_cannot_open_is_refused_rather_than_ignored(chat):
+	"""Silently widening is the failure mode worth ruling out.
+
+	A context that does not resolve could be dropped, which would leave the
+	assistant answering about the whole workspace instead of refusing. It
+	throws, which is what the browser gets for the same click.
+	"""
+	screens(chat, RUA)
+	with pytest.raises(Exception, match="No space named"):
+		chat.context.read({"space": "someone-elses", "screen": "projects"})
+
+
+def test_a_record_that_is_not_on_that_screen_is_dropped(chat):
+	"""Checked through the screen rather than by `get_doc`: a record the screen
+	would not list is not one the assistant may be told it is looking at."""
+	screens(chat, RUA)
+	on = chat.context.read(
+		{"space": "rua", "screen": "projects", "docname": "PROJ-NOPE"})
+	assert on["screen"] == "projects"
+	assert "docname" not in on and "title" not in on
+
+
+def test_the_space_is_bound_out_of_every_schema_that_takes_one(chat):
+	"""The narrowing that is enforced rather than told.
+
+	An argument the model can still name is one it can still choose, so a bound
+	space has to leave the schema — not merely be overwritten on the way in.
+	"""
+	screens(chat, RUA)
+	on = chat.context.read({"space": "rua", "screen": "projects"})
+	narrowed = chat.context.bound(chat.toolbox.TOOLBOX, on)
+
+	for one in narrowed:
+		assert "space" not in (one.parameters.get("properties") or {}), one.name
+		if one.bound:
+			assert one.bound["space"] == "rua"
+
+	# And the screen is *not* bound: "is there a quotation for this project?" is
+	# an ordinary question, and pinning the screen makes it unanswerable while
+	# buying nothing — permissions are the boundary, not the schema.
+	asked = next(t for t in narrowed if t.name == "find_records")
+	assert "screen" in asked.parameters["properties"]
+
+
+def test_listing_spaces_goes_once_one_is_bound(chat):
+	"""A tool that lists places its caller cannot then reach is a wasted turn."""
+	screens(chat, RUA)
+	on = chat.context.read({"space": "rua", "screen": "projects"})
+	named = [one.name for one in chat.context.bound(chat.toolbox.TOOLBOX, on)]
+	assert "list_spaces" not in named
+	assert "list_screens" in named
+
+
+def test_the_note_names_the_record_in_the_workspaces_own_words(chat):
+	screens(chat, RUA)
+	on = chat.context.read(
+		{"space": "rua", "screen": "projects", "docname": "PROJ-1"})
+
+	said = chat.context.note(on)
+	assert "Marina tower (PROJ-1)" in said
+	assert "Projects screen of RUA" in said
+	# The words the reader sees, not the codes the tools take.
+	assert "rua" not in said.replace("RUA", "")
+
+
+def test_no_context_is_no_narrowing_and_no_note(chat):
+	"""The rail's case, and it must not accidentally scope anything."""
+	assert chat.context.read(None) == {}
+	assert chat.context.note({}) == ""
+	assert chat.context.bound(chat.toolbox.TOOLBOX, {}) is chat.toolbox.TOOLBOX

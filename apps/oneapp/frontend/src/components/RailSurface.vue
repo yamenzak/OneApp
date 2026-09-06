@@ -16,14 +16,19 @@
     The badge is Mail's and would be wrong on Files. A count of files is not
     news: nothing there is waiting for you, which is the difference between a
     place you keep things and a place things arrive.
+
+    One surface does not navigate. The assistant is a *panel* over whatever you
+    are looking at, so its row toggles rather than goes — going would be leaving
+    the thing you wanted to ask about. `surface.act` is how an entry says so.
   -->
-  <RouterLink :to="surface.to" class="relative">
+  <component :is="surface.act ? 'div' : RouterLink" :to="surface.to" class="relative">
     <Button
       variant="ghost"
       :icon="surface.icon"
       :label="surface.label"
       :tooltip="surface.label"
       :data-slot="`${surface.key}-link`"
+      @click="surface.act?.()"
     />
     <Badge
       v-if="surface.count"
@@ -31,7 +36,7 @@
       :label="String(surface.count > 99 ? '99+' : surface.count)"
       class="pointer-events-none absolute -right-1 -top-1"
     />
-  </RouterLink>
+  </component>
 </template>
 
 <script setup>

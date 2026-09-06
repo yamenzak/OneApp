@@ -1163,10 +1163,16 @@ def test_a_filled_list_header_hides_the_rule_it_covers(app):
 #
 # The list is a fixed-height grid so its horizontal scrollbar lands at the
 # bottom of the window rather than at the bottom of the table. That needs the
-# shell's own page scrolling off for the route — and the two halves live in
-# different files, so either one can go without the other and the failure is
-# quiet: with only the route flag the pane has no height to fill; with only the
-# shell change the page stops scrolling for screens that need it.
+# page scroll off for the route — and the two halves live in different files,
+# so either one can go without the other and the failure is quiet: with only the
+# route flag the pane has no height to fill; with only the shell change the page
+# stops scrolling for screens that need it.
+#
+# The shell used to own the second half (`:scroll="!$route.meta.pane"`). It does
+# not any more: the assistant panel is a sibling of the page, and a panel inside
+# a scrolling region scrolls away with it, so the shell's own scroll is off
+# always and the column beside the panel scrolls instead. Same two halves, one
+# of them moved.
 # --------------------------------------------------------------------------- #
 
 def test_the_screen_host_is_a_pane_at_both_ends():
@@ -1177,8 +1183,15 @@ def test_the_screen_host_is_a_pane_at_both_ends():
 	assert re.search(r"ScreenHost\.vue'\),[\s\S]{0,900}?meta:\s*\{[^}]*pane:\s*true", router), (
 		"router.js no longer marks the screen host's route as a pane"
 	)
-	assert 'scroll="!$route.meta.pane"' in app, (
-		"App.vue no longer turns the shell's page scroll off for a pane route"
+	assert 'scroll="false"' in app, (
+		"App.vue no longer turns the shell's own page scroll off — with it on, "
+		"the assistant panel scrolls away with the page beside it"
+	)
+	assert re.search(
+		r"\$route\.meta\.pane \? '' : 'overflow-auto'", app
+	), (
+		"App.vue no longer scrolls the page column off a pane route, so either "
+		"a pane has two scrollbars or an ordinary page has none"
 	)
 
 

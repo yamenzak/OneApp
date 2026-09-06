@@ -15,6 +15,12 @@ import { reactive } from 'vue'
 import { workspace } from '@/lib/workspace'
 
 export const assistant = reactive({
+  // The panel, and what it is looking at. Here rather than on the panel itself
+  // because the thing that opens it is somewhere else every time — the rail, a
+  // record's controls, a keyboard shortcut — and none of them is its parent.
+  showing: false,
+  on: null,
+  session: '',
   // False until we know. The rail draws nothing while it is false, which is
   // the right way round: an entry that appears and then disappears is worse
   // than one that appears a beat late.
@@ -22,6 +28,32 @@ export const assistant = reactive({
   sessions: [],
   loaded: false,
 })
+
+/**
+ * Open the panel, against what the caller is looking at.
+ *
+ * `on` is `{space, screen, docname, label}` or nothing. Only the label is for
+ * the browser; the rest goes to the server, which resolves every part of it
+ * through the same checks a click goes through — so a context this reader
+ * cannot reach narrows to nothing rather than widening anything.
+ *
+ * Changing what it is looking at starts a new thread. A conversation that was
+ * about a quotation and is now about a project is two conversations, and
+ * carrying the first one forward would leave the model answering "this one"
+ * from a note that no longer applies.
+ */
+export function openAssistant(on = null) {
+  if (JSON.stringify(on || null) !== JSON.stringify(assistant.on || null)) {
+    assistant.on = on || null
+    assistant.session = ''
+  }
+  assistant.showing = true
+  loadAssistant()
+}
+
+export function closeAssistant() {
+  assistant.showing = false
+}
 
 /** Ask the server once whether the assistant is on, and for the thread list. */
 export async function loadAssistant({ reload = false } = {}) {

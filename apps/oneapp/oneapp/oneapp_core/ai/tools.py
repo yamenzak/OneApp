@@ -53,9 +53,33 @@ class Tool:
 		return self.func(**{**coerce(self.parameters, kwargs), **self.bound})
 
 	def bind(self, **bound) -> "Tool":
-		"""The same tool with context filled in. Used per request, not per site."""
-		return Tool(self.name, self.description, self.parameters, self.func,
-		            {**self.bound, **bound})
+		"""The same tool with context filled in. Per request, not per site.
+
+		A bound argument leaves the schema. That is the point rather than a
+		tidiness: an argument the model can still see is an argument it can
+		still choose, so a tool bound to the screen somebody has open would
+		otherwise be a tool that can be talked into another one. Once it is
+		gone from the schema the model has no word for it, and `__call__`
+		applies the bound values last, over anything that arrives anyway.
+		"""
+		taken = {**self.bound, **bound}
+		narrowed = {
+			**self.parameters,
+			"properties": {k: v for k, v in (self.parameters.get("properties") or {}).items()
+			               if k not in taken},
+		}
+		left = [one for one in (self.parameters.get("required") or []) if one not in taken]
+		if left:
+			narrowed["required"] = left
+		else:
+			narrowed.pop("required", None)
+
+		return Tool(self.name, self.description, narrowed, self.func, taken)
+
+	def takes(self, name: str) -> bool:
+		"""Whether this tool has such an argument at all. Binding one it does
+		not take is a TypeError at call time, one turn after the mistake."""
+		return name in (self.parameters.get("properties") or {})
 
 	def declare(self) -> dict:
 		return {

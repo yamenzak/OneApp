@@ -142,3 +142,74 @@ test('the assistant appears in the rail only where it is switched on',
     const available = (await said.json()).message.available
     await expect(page.locator('[data-slot="chat-link"]')).toHaveCount(available ? 1 : 0)
   })
+
+test('the assistant opens as a panel over the page, not by leaving it',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the phone has one surface')
+    const errors = collectConsoleErrors(page)
+
+    await page.goto('/one/space/rua?screen=projects&type=list&record=PROJ-0121')
+    // For the record, not for the rail: the panel names what it is scoped to
+    // out of the space's own manifest, so clicking the moment the rail appears
+    // can beat the screen it is meant to be describing.
+    await page.getByRole('tab', { name: 'Details' }).first().waitFor({ timeout: 20_000 })
+    await page.locator('[data-slot="chat-link"]').click()
+
+    // The whole reason it is a panel: the record is still there. A page would
+    // have made you leave the thing you wanted to ask about.
+    const panel = page.locator('[data-slot="assistant-panel"]')
+    await expect(panel).toBeVisible()
+    await expect(page).toHaveURL(new RegExp('record=PROJ-0121'))
+
+    // And it says what it is scoped to before anybody asks anything, rather
+    // than leaving it to be inferred from an answer that turned out narrow.
+    await expect(panel).toContainText('Projects · PROJ-0121')
+    await expect(panel.locator('[data-slot="chat-input"]'))
+      .toHaveAttribute('placeholder', 'Ask about Projects · PROJ-0121')
+
+    expectNoRealErrors(errors)
+  })
+
+test('closing the panel leaves the page where it was', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone has one surface')
+  await page.goto('/one/space/rua?screen=projects&type=list')
+  await page.locator('[data-slot="chat-link"]').click()
+  await expect(page.locator('[data-slot="assistant-panel"]')).toBeVisible()
+
+  await page.locator('[data-slot="assistant-close"]').click()
+  await expect(page.locator('[data-slot="assistant-panel"]')).toHaveCount(0)
+  await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
+})
+
+test('the panel hands its conversation to the page', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone has one surface')
+  const session = await thread(page, [ASKED, REPLY])
+
+  await page.goto('/one/space/rua?screen=projects&type=list')
+  await page.locator('[data-slot="chat-link"]').click()
+
+  // Opened from the rail with a thread already chosen is not a state the rail
+  // reaches, so this drives the panel's own menu from the thread it starts on:
+  // a fresh one, then Open as a page.
+  await page.locator('[data-slot="assistant-panel"]')
+    .getByRole('button', { name: 'More' }).click()
+  await page.getByRole('menuitem', { name: 'Open as a page' }).click()
+
+  await expect(page).toHaveURL(/\/one\/chat/)
+  await expect(page.locator('[data-slot="assistant-panel"]')).toHaveCount(0)
+  expect(session).toBeTruthy()
+})
+
+test('a panel opened on a record is scoped to it, server side', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone has one surface')
+
+  // The claim the panel rests on, asked of the server directly: what the
+  // browser sends is an answer to be verified, so a space this reader cannot
+  // open is refused rather than quietly widened to the whole workspace.
+  const refused = await page.request.post(
+    '/api/method/oneapp.oneapp_core.chat.send',
+    { data: { question: 'anything', on: JSON.stringify({
+      space: 'not-a-space', screen: 'projects' }) } },
+  )
+  expect(refused.ok()).toBe(false)
+})

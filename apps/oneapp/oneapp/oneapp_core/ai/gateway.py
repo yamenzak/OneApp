@@ -325,6 +325,16 @@ def call(feature: features.Feature, prompt: str = "", **request) -> Result:
 	limits = settings.limits(feature)
 	system = settings.system_prompt(feature)
 
+	# A fact about this call, from the feature's own code — which screen the
+	# reader has open, which record. Appended last because it qualifies nothing:
+	# our instructions come first, the workspace's addendum after them, and this
+	# is neither an instruction nor the workspace's. `ask()` is the only endpoint
+	# that reaches a feature from a browser and it does not take one, so nothing
+	# a customer types can arrive here.
+	note = (request.get("note") or "").strip()
+	if note:
+		system = f"{system}\n\n{note}" if system else note
+
 	held = control_client.call("ai_reserve", {
 		"feature": feature.key, "model": model_key, "limits": limits,
 	})

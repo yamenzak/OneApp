@@ -27,8 +27,12 @@ export const assistant = {
       silent: true, method: 'GET',
     }),
 
-  askAssistant: (question, session = '') =>
-    callMethod('oneapp.oneapp_core.chat.send', { question, session }),
+  // `on` is what the reader has open — `{space, screen, docname}`. Sent as an
+  // answer to be verified rather than a premise: `chat/context.py` resolves
+  // every part of it through the same checks a click goes through, so a stale
+  // one narrows to nothing rather than widening anything.
+  askAssistant: (question, session = '', on = null) =>
+    callMethod('oneapp.oneapp_core.chat.send', { question, session, on }),
 
   forgetChat: (session) =>
     callMethod('oneapp.oneapp_core.chat.forget', { session }, {

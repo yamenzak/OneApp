@@ -100,6 +100,9 @@ The single modules, roughly by how often they are touched:
 * `chat/` — the workspace assistant, which is one `@ai_feature` that loops.
   `toolbox` (what it may read, every tool a wrapper over an endpoint the SPA
   already calls, so the assistant sees exactly what its asker could click to) →
+  `context` (where the question was asked from: the space bound onto the tools
+  and out of their schemas, the screen and record said once in the system
+  prompt, both resolved through the same checks a click goes through) →
   `session` (a conversation on disk, and as the transcript a provider is sent) →
   `assistant` (the declaration, the system prompt, and four endpoints). Nothing
   here can write. See `docs/ONESPACE.md` §10.

@@ -13,6 +13,7 @@ summary does not is a loop and a set of tools, and both of those live in
 So this package is small on purpose:
 
     toolbox     what the assistant may read, all of it through existing endpoints
+    context     where the question was asked from, and what that may narrow
     session     a conversation on disk, and as the transcript a provider is sent
     assistant   the declaration, the system prompt, and four endpoints
 
@@ -24,12 +25,14 @@ that needs three lookups is charged as four; `max_turns` and `max_run_credits`
 on the declaration are what stop that being open-ended.
 """
 
+from . import context
 from .assistant import SYSTEM, ask, forget, messages, send, sessions
 from .session import MESSAGE, SESSION, WINDOW
 from .toolbox import MAX_ROWS, MAX_TEXT, TOOLBOX, tools
 
 __all__ = [
     "ask",
+    "context",
     "forget",
     "MAX_ROWS",
     "MAX_TEXT",

@@ -43,7 +43,8 @@ class Run(dict):
 			raise AttributeError(name) from e
 
 
-def run(ai, messages: list[dict], toolbox: list[tooling.Tool] | None = None) -> Run:
+def run(ai, messages: list[dict], toolbox: list[tooling.Tool] | None = None,
+        note: str = "") -> Run:
 	"""Ask until the model stops asking for things, or until the budget says stop.
 
 	`ai` is what the decorator injected — it carries the feature, so the turn
@@ -52,6 +53,11 @@ def run(ai, messages: list[dict], toolbox: list[tooling.Tool] | None = None) -> 
 
 	`messages` is the transcript so far and is not mutated: a caller holding a
 	stored session should get its rows back unchanged if this raises.
+
+	`note` is a fact about this run — the screen the reader has open, say —
+	appended to the system prompt on every turn of it. Not stored with the
+	transcript: it describes where the question was asked from, and reopening
+	the thread tomorrow from somewhere else must not re-assert it.
 	"""
 	from oneapp.oneapp_core.ai import settings
 
@@ -77,7 +83,7 @@ def run(ai, messages: list[dict], toolbox: list[tooling.Tool] | None = None) -> 
 			return Run(messages=transcript, reply="", credits=spent, turns=turn - 1,
 			           tool_calls=used_tools, stopped=BUDGET_SPENT)
 
-		answer = ai(messages=transcript, tools=declared)
+		answer = ai(messages=transcript, tools=declared, note=note)
 		spent += float(answer.get("credits") or 0)
 
 		calls = answer.get("tool_calls") or []
