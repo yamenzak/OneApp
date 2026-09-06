@@ -179,7 +179,12 @@ ME = ROOT / "apps/oneapp/oneapp/oneapp_core/me.py"
 #: Whether a declared type *matches the column it writes* is the other half, and
 #: it needs a doctype's meta — so it is `scripts/check_settings.py`, run against
 #: a bench. This half needs nothing and catches the same class one step earlier.
-DRAWN = {"Data", "Check", "Select", "Int", "Float", "Link", "Attach", "Attach Image"}
+DRAWN = {
+	"Data", "Check", "Select", "Int", "Float", "Link", "Attach", "Attach Image",
+	# Not a Frappe fieldtype at all — `SettingsColour.vue`, for the one
+	# setting with no doctype behind it. See `oneapp_core/branding.py`.
+	"Color",
+}
 
 
 def declared_types(path: pathlib.Path) -> set[str]:

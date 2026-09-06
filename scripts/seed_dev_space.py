@@ -45,6 +45,13 @@ RETIRED_ROLES = ("OneSpace Tasks",)
 COLLEAGUE = "robin@zzmock.test"
 COLLEAGUE_PASSWORD = "Dev-Loop-2026!x"
 
+# The workspace's own colour, which is what everything outside a space is drawn
+# in. Deliberately not RUA's yellow: half of what `e2e/theme.spec.js` checks is
+# that a space's accent beats the workspace's and that leaving the space lands
+# back on the workspace rather than on frappe-ui's grey, and neither half is
+# checkable on a fixture with no colour set.
+BRAND_ACCENT = "#0f62fe"
+
 TASK_FIELDS = "description,status,priority,allocated_to,role,date,color"
 NOTE_FIELDS = "title,public,content"
 # Event's own list fields. The child tables are not among them — a child table
@@ -1165,7 +1172,12 @@ def seed_tenant(manifest_only=False):
 
 	Run the whole thing before a browser pass; run this while iterating.
 	"""
-	from oneapp.oneapp_core import sync
+	from oneapp.oneapp_core import branding, sync
+
+	# Cheap, and in the manifest half on purpose: it is part of what the
+	# workspace *looks like*, which is the thing `manifest_only` exists to let
+	# you iterate on.
+	branding.set_accent(BRAND_ACCENT)
 
 	approvals = 0
 	mailbox = ""

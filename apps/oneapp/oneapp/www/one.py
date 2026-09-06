@@ -1,6 +1,8 @@
 import frappe
 from frappe.utils import get_system_timezone
 
+from oneapp.oneapp_core import branding
+
 # The SPA owns routing under /one, so every path below it serves the same shell
 # rather than 404ing on a deep link.
 no_cache = 1
@@ -31,6 +33,12 @@ def get_context(context):
 		# call Frappe's own desk client makes from `window.dev_server`.
 		"dev_server": 1 if frappe.conf.developer_mode else 0,
 		"csrf_token": frappe.sessions.get_csrf_token(),
+		# What this workspace looks like, before anything is fetched: the accent
+		# a solid button is, the tab icon, and the image shown while the session
+		# loads. Here rather than on the session resource because all three are
+		# wanted before first paint — a favicon that arrives after a round trip
+		# is a tab that visibly changes. See `oneapp_core/branding.py`.
+		"brand": branding.boot(),
 	}
 	context.no_cache = 1
 	return context

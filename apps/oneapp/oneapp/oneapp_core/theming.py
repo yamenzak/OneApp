@@ -60,6 +60,19 @@ MODES = ("light", "dark")
 RADII = ("sharp", "soft")
 
 
+def colour(value) -> str:
+	"""One validated `#rrggbb`, lowercased — or nothing.
+
+	Exported rather than inlined into `shape` because the workspace's own brand
+	accent (`oneapp_core/branding.py`) is the same kind of value declared in a
+	different place, and two colour validators is one too many.
+	"""
+	if not isinstance(value, str):
+		return ""
+	value = value.strip().lower()
+	return value if COLOUR.match(value) else ""
+
+
 def shape(asked) -> dict:
 	"""One space's theme, or nothing.
 
@@ -85,9 +98,8 @@ def shape(asked) -> dict:
 		kept["mode"] = mode
 
 	for key in ("accent", "ground"):
-		value = asked.get(key)
-		if isinstance(value, str) and COLOUR.match(value.strip()):
-			kept[key] = value.strip().lower()
+		if value := colour(asked.get(key)):
+			kept[key] = value
 
 	radius = asked.get("radius")
 	if radius in RADII:

@@ -36,6 +36,14 @@ print("=== workspace settings ===")
 bad = []
 for group in workspace.GROUPS:
     for s in group["settings"]:
+        if not s.targets:
+            # A setting with no Frappe field behind it — the brand accent, kept
+            # as a site default. There is no fieldtype to disagree with, so
+            # there is nothing here to check; say so rather than skip in
+            # silence, which is how a setting with a *lost* target would hide.
+            print(f"   {group['key']}.{s.key:28} ours={s.type:14} "
+                  f"default={s.default_key}")
+            continue
         for doctype, field in s.targets:
             if not frappe.db.exists("DocType", doctype):
                 bad.append(f"{group['key']}.{s.key}: no doctype {doctype}")

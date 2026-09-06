@@ -64,6 +64,12 @@ The single modules, roughly by how often they are touched:
   newest and the clearest example: Frappe keeps a board's arrangement on a
   Kanban Board doctype, and here the same four facts are a *view*, because a
   view is what this product already had for "how one person looks at a screen".
+* `branding.py` — the workspace's own colour, and the two places a colour has to
+  land. The only setting with no Frappe field behind it, and the only thing here
+  that writes CSS: the app gets the accent in the boot payload, and the pages the
+  framework renders for itself get it as a `<style>` block in
+  `Website Settings.head_html`, because espresso and frappe-ui read the same
+  tokens. `theming.py` validates the value; `lib/shell/theme.js` expands it.
 * `notifications.py` — the feed, and the follow machinery Frappe half has.
 * `alerts.py` — rules that tell somebody when a record changes. Frappe's own
   `Notification`, gated to the workspace's doctypes and narrowed to one
@@ -182,7 +188,10 @@ three-thousand-line one.
 * **A new setting a workspace owns** → `oneapp_core/workspace.py`, then the tab
   in `oneapp_core/tabs.py`'s list and the panel in `components/settings/`. Three
   files, and `tests/test_settings_tabs.py` holds them together: a tab with no
-  panel draws nothing, and an icon named only in Python draws nothing either.
+  panel draws nothing, an icon named only in Python draws nothing either, and a
+  declared `type` no control can draw falls through to a text box in silence.
+  A setting with no Frappe field to write takes `default_key=` instead of
+  `targets=`; `branding.py`'s accent is the one that does.
 * **A new thing that is a person's own rather than the workspace's** →
   `oneapp_core/me.py`, whose spec is the allowlist and whose every write names
   `frappe.session.user`.

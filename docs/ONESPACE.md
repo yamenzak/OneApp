@@ -100,6 +100,17 @@ moves, so the mapping is corrected in one place when frappe-ui renames a token,
 and the neutral scale that carries every row hover and hairline in the product
 is deliberately not on the list.
 
+**Under all of that, the workspace has a colour of its own.** One accent, set in
+the Branding settings tab, and the floor every space theme stands on: a space
+that declares nothing is the workspace's colour rather than our grey, a space
+that declares an accent still wins inside itself, and leaving a themed space
+lands back on the workspace rather than on the default. It is deliberately one
+word and not four — a workspace is not an application, it is the frame around
+several, and a workspace-wide `ground` or `mode` would be the reader's
+light-or-dark preference taken away from them. It reaches the pages Frappe
+renders for itself as well, which is how the sign-in page ends up the same
+colour as the workspace behind it; `oneapp_core/branding.py` is both halves.
+
 A theme is checked where the session is built (`oneapp_core/theming.py`), field
 by field — a good accent and a bad radius keeps the accent — so a hex with a typo
 renders the default look rather than a broken one, and the space arrives already
@@ -1436,7 +1447,7 @@ address" is what decides who may write a signature.
 | Notifications | Everyone | What they are told about, and whether it reaches their inbox |
 | Appearance | Everyone | The theme, kept in the browser |
 | Mailbox | Holds an address | Their own address to claim, which of theirs they write from, the signature, the away message, the filing rules, and the mailbox they already had |
-| Branding | Admin | Name, logo, favicon, the sign-in page |
+| Branding | Admin | Name, logo, favicon, splash, and the workspace's own colour — in the app and on the sign-in page |
 | Email | Admin | The workspace's addresses, who holds each, which one notifications leave from |
 | Sign in | Admin | Which methods, session policy, password strength, invite-only |
 | Printing | Admin | Page size, font, PDF engine, margins, letter head on or off |

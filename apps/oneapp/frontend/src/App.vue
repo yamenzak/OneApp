@@ -80,8 +80,20 @@
       </div>
     </div>
 
+    <!-- The wait before there is anything to show. A workspace that set a
+         splash image gets its own mark here rather than our spinner alone —
+         which is the whole of what `Website Settings.splash_image` was for, and
+         until now nothing read it. -->
     <div v-else class="grid h-screen place-items-center">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <div class="flex flex-col items-center gap-5">
+        <img
+          v-if="brand.splash"
+          :src="brand.splash"
+          :alt="session.tenant?.name || TENANT_APP"
+          class="max-h-24 max-w-64 object-contain"
+        />
+        <LoadingIndicator class="size-5 text-ink-gray-5" />
+      </div>
     </div>
 
     <!--
@@ -98,6 +110,7 @@
 
 <script setup>
 import { TENANT_APP } from '@/lib/runtime/brand'
+import { brand } from '@/lib/runtime/boot'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { FrappeUIProvider, Button, Dialog, LoadingIndicator, usePageMeta } from '@/ui'
@@ -211,5 +224,12 @@ const identity = computed(() => ({
   subtitle: session.tenant?.name || '',
 }))
 
-usePageMeta(() => ({ title: session.tenant?.name || TENANT_APP }))
+// The tab: what this workspace is called, and its own icon. The favicon was a
+// literal in `index.html` — ours — so a workspace that had chosen one saw it on
+// the sign-in page and then ours on every page after it. `icon` is frappe-ui's
+// own hook for exactly this; undefined leaves the built-in in place.
+usePageMeta(() => ({
+  title: session.tenant?.name || TENANT_APP,
+  icon: brand.favicon || undefined,
+}))
 </script>

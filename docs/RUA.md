@@ -194,7 +194,11 @@ reason — the argument was better than the screen.
   hardness; the chrome does not need to.
 
 Nothing about it is RUA code. The next space to want a personality writes its
-own four words, and a space that wants none is drawn exactly as before.
+own four words, and a space that wants none is drawn in the *workspace's* own
+colour — which is the setting that arrived after this one and is the thing RUA's
+manifest was quietly standing in for. A workspace accent is one word, set under
+Branding, and it is the floor: RUA's yellow still wins inside RUA, and leaving
+RUA lands on the workspace rather than on frappe-ui's grey.
 
 ## 4. What genuinely has no home
 

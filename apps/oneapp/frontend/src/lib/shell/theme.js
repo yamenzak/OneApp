@@ -11,9 +11,15 @@
  * container would skin the list and leave every menu over it in the other
  * palette.
  *
- * `clear()` puts the document back exactly as it was found, including the
- * reader's own light-or-dark preference, which a theme overrules for as long as
- * it is on screen and never overwrites.
+ * `clearTheme()` puts back the reader's own light-or-dark preference, which a
+ * theme overrules for as long as it is on screen and never overwrites.
+ *
+ * Two layers, not one. The *workspace* has a colour of its own — one accent, set
+ * in the Branding settings tab and carried in the boot payload
+ * (`oneapp_core/branding.py`) — and `setBrand` makes it the floor every space
+ * theme stands on. So a space that declares nothing is the workspace's colour
+ * rather than our grey, a space that declares an accent still wins, and clearing
+ * a space's theme goes back to the workspace rather than to bare default.
  */
 
 // frappe-ui's own attribute and storage key: apps target `[data-theme='dark']`
@@ -183,11 +189,53 @@ export function variables(theme) {
 let applied = null
 let previousMode = null
 
+// The workspace's own look, under whatever space is open, and the space that is
+// open over it. Both are held here so that setting either one re-renders the
+// pair: the brand arrives at boot and a space theme arrives on navigation, in
+// whichever order.
+let brand = null
+let space = null
+
+/** One theme over the other, field by field — the space's word wins. */
+function stacked() {
+  if (!brand) return space
+  return { ...brand, ...(space || {}) }
+}
+
 /**
- * Put a theme on the document, replacing whichever one is there. Called with
- * nothing it clears, so the caller can hand it whatever the current space says.
+ * The workspace's own theme — today one accent, from the boot payload.
+ *
+ * Called once, before the app mounts. Applied immediately rather than waiting
+ * for a space, because the launcher, the mailbox and the drive are all outside
+ * any space and are the workspace's colour too.
+ */
+export function setBrand(theme) {
+  // Empty fields dropped rather than carried: a workspace with no colour set
+  // must stack as *nothing*, or every space theme is spread over an `accent: ''`
+  // that beats no accent at all.
+  const kept = Object.fromEntries(Object.entries(theme || {}).filter(([, one]) => one))
+  brand = Object.keys(kept).length ? kept : null
+  paint()
+}
+
+/**
+ * Put a space's theme on the document, replacing whichever one is there. Called
+ * with nothing it drops back to the workspace's own, so the caller can hand it
+ * whatever the current space says.
  */
 export function applyTheme(theme) {
+  space = theme || null
+  paint()
+}
+
+/** Everything back the way it was found — which is the workspace, not nothing. */
+export function clearTheme() {
+  space = null
+  paint()
+}
+
+function paint() {
+  const theme = stacked()
   const wanted = variables(theme)
   const root = document.documentElement
 
@@ -211,14 +259,6 @@ export function applyTheme(theme) {
   } else {
     restoreMode(root)
   }
-}
-
-/** Everything back the way it was found. */
-export function clearTheme() {
-  const root = document.documentElement
-  for (const token of Object.keys(applied || {})) root.style.removeProperty(token)
-  applied = null
-  restoreMode(root)
 }
 
 function restoreMode(root) {

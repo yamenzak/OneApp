@@ -65,7 +65,8 @@ the mail.
 **Every image setting is published on the way in.** Everything the file picker
 uploads is private, which is right for a workspace's files and wrong for the
 four images whose job is to be seen by somebody who is not you: the logo and
-favicon on the sign-in page, the splash, and a profile picture. Left private
+favicon on the sign-in page and in the app's own tab, the splash, and a profile
+picture. Left private
 they 403 inside an `img` tag, which draws as nothing and explains nothing. So
 `workspace.save` and `me.save_profile` both run the value through
 `drive.writing.publish` first, which moves the file into the public half —
@@ -170,14 +171,40 @@ workspace read as not an admin, and our support read as one.
 | `app_name` | Customer | The name on the sign-in page. Read before System Settings'. |
 | `app_logo` | Customer | The logo on the sign-in page. Written to Navbar Settings too, so support seeing the desk sees the same one. |
 | `favicon` | Customer | Browser tab. |
-| `splash_image` | Customer | Shown while the workspace loads. |
+| `splash_image` | Customer | Shown while the workspace loads — by the app, now that something reads it. |
 | `disable_signup` | **Ours, forced on** | See Joining. |
-| `footer_powered`, `copyright`, `banner_html`, `head_html` | Ours | White-label surface, and `head_html` is script injection on a shared fleet. |
+| `footer_powered`, `copyright`, `banner_html` | Ours | White-label surface. |
+| `head_html` | Ours, and we write to it | Never offered as a field — it is script injection on a shared fleet. But it is the only way a value reaches the pages Frappe renders for itself, so `oneapp_core/branding.py` writes the brand colour into it as a `<style>` block between markers, and leaves whatever else is in there alone. |
 | `home_page`, `route_redirects`, `top_bar_items`, `footer_items`, `navbar_template`, `footer_template` | Neither | The public website is not a product surface; a tenant site serves the SPA. |
 | `google_analytics_id`, `enable_google_indexing`, `enable_view_tracking` | Neither | No public site to measure. Indexing a tenant workspace would be actively wrong. |
 | `hide_login`, `show_footer_on_login` | Neither | The sign-in page is ours to lay out; two half-controls of it are worse than none. |
 | `show_account_deletion_link`, `auto_account_deletion` | Ours | Deleting an account here does not cancel a subscription or free a seat — deletion is a control-plane concern. |
-| `robots_txt`, `subdomain`, `website_theme` | Neither | ditto. |
+| `robots_txt`, `subdomain` | Neither | ditto. |
+| `website_theme` | **Ours** | The obvious home for a brand colour, and not one: `Website Theme.primary_color` is a Link to a bootstrap colour name, compiled into SCSS for the portal — a build step in the middle of a settings form, on a surface this product does not serve. The colour is a site default instead; see below. |
+
+## The one setting with no Frappe field
+
+**Brand colour.** One accent, under Branding, and the only thing in the dialog
+that no doctype holds: it is `frappe.db.set_default("onespace_brand_accent")`,
+for the reason in the Website Theme row above. It is an *intent* in the sense
+`oneapp_core/theming.py` means it — the same validator, the same expansion into
+CSS variables — and it lands in two places because a workspace is two
+applications:
+
+* the app gets it in the boot payload `www/one.py` builds, applied before first
+  paint by `lib/shell/theme.js` as the floor a space's own theme stands on;
+* the framework's own pages get it as a `<style>` block in `head_html`, because
+  the sign-in page's Continue button is an espresso `.es-button` and espresso
+  reads `--surface-gray-10` and `--ink-base` — the same two tokens the accent
+  moves in the app.
+
+So the sign-in page, an error page and the workspace behind them are one colour,
+and a space that declares an accent of its own still wins inside itself. What is
+**not** built: PWA assets. There is no web app manifest, no maskable icon set and
+no service worker, so "add to home screen" gets the browser's own default. The
+favicon is the workspace's now; a 192px and a 512px PNG are what a manifest would
+additionally need, and neither the settings tab nor the storage layer generates
+them yet.
 
 ## Navbar Settings
 

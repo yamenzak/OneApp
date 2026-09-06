@@ -32,6 +32,12 @@ export const systemTimezone = read('system_timezone', '')
 // "not covered locally" for as long as it was.
 export const isDev = import.meta.env.DEV
 export const devServer = !!read('dev_server', 0) || import.meta.env.DEV
+// What this workspace looks like: `{ accent, favicon, splash }`, built by
+// `oneapp_core/branding.py`. All three are wanted before the first paint — the
+// accent so no button is drawn in the default colour and then repainted, the
+// favicon so the tab does not visibly change — which is why they ride the boot
+// payload rather than the session resource.
+export const brand = read('brand', {})
 
 export default {
   siteName,
@@ -41,4 +47,5 @@ export default {
   systemTimezone,
   isDev,
   devServer,
+  brand,
 }

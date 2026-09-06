@@ -144,3 +144,36 @@ test('the ground owns the hairlines and the navigation', async ({ page }) => {
   expect(sidebar).not.toBe(base)
   expect(brightness(sidebar)).toBeGreaterThan(brightness(base))
 })
+
+test('the workspace has a colour of its own, and a space beats it', async ({ page }) => {
+  // The pair, in one pass, because each half is only meaningful against the
+  // other: a workspace accent that a space could not override would repaint
+  // every application in the product one colour, and a space theme that left
+  // nothing behind would put the launcher, the mailbox and the drive back in
+  // frappe-ui's grey the moment you left a space.
+  await page.goto('/one/')
+  const workspace = await page.evaluate(() => window.brand?.accent || '')
+  test.skip(!workspace, 'this workspace has set no colour of its own')
+
+  // Outside every space — the launcher is nobody's application — the solid
+  // button is the workspace's.
+  await expect.poll(() => token(page, '--surface-gray-10')).toBe(workspace)
+
+  await page.goto('/one/space/rua?screen=projects')
+  const missing = await page
+    .getByText('Nothing here', { exact: false })
+    .isVisible()
+    .catch(() => false)
+  test.skip(missing, 'this tenant has no ERPNext, so the space is not seeded')
+  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
+
+  // Inside RUA, RUA's.
+  expect(await token(page, '--surface-gray-10')).toBe(ACCENT)
+
+  // And back out again — the workspace's, not the default, which is the half
+  // that could only ever have been wrong in a browser.
+  await page.goto('/one/')
+  await expect.poll(() => token(page, '--surface-gray-10'), { timeout: 10_000 }).toBe(
+    workspace,
+  )
+})

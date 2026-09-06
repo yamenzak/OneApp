@@ -31,6 +31,16 @@
           :hint="field.hint"
           :image="field.type === 'Attach Image'"
         />
+        <!--
+          A colour, which frappe-ui has no control for. See SettingsColour.vue
+          for why the workspace gets one accent and not a theme editor.
+        -->
+        <SettingsColour
+          v-else-if="field.type === 'Color'"
+          v-model="form[field.key]"
+          :label="field.label"
+          :hint="field.hint"
+        />
         <FormControl
           v-else
           v-model="form[field.key]"
@@ -54,7 +64,9 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { Button, FormControl, SettingsHeader, SettingsBody, Switch } from '@/ui'
 import SettingsAttach from './SettingsAttach.vue'
+import SettingsColour from './SettingsColour.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
+import { setBrand } from '../../lib/shell/theme'
 import { workspace } from '../../lib/workspace'
 
 const props = defineProps({ group: { type: Object, required: true } })
@@ -103,6 +115,13 @@ async function save() {
     if (!Object.keys(changed).length) return
     await workspace.save(props.group.key, changed)
     Object.assign(original.value, changed)
+
+    // The one setting that changes the page it was set on. Repainted here
+    // rather than on every keystroke in the picker, so abandoning the dialog
+    // leaves the workspace the colour it actually is.
+    const colour = props.group.fields.find((f) => f.type === 'Color' && f.key in changed)
+    if (colour) setBrand({ accent: changed[colour.key] })
+
     emit('saved')
   } finally {
     saving.value = false

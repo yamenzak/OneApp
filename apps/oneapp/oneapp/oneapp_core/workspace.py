@@ -28,6 +28,8 @@ import frappe
 from frappe import _
 from frappe.utils.momentjs import get_all_timezones
 
+from oneapp.oneapp_core import branding, theming
+
 # Set by the control plane's sync. An Admin member holds it too — see
 # oneapp_core/sync.py, which is deliberately the only thing that grants it.
 OWNER_ROLE = "OneSpace Workspace Owner"
@@ -45,12 +47,18 @@ class Setting:
 	one and not the other is how a workspace ends up called two things.
 	"""
 
-	def __init__(self, key, label, type="Data", targets=(), options=None,
-	             options_from=None, hint="", invert=False, placeholder=""):
+	def __init__(self, key, label, type="Data", targets=(), default_key="",
+	             options=None, options_from=None, hint="", invert=False,
+	             placeholder=""):
 		self.key = key
 		self.label = label
 		self.type = type
 		self.targets = targets
+		# The other kind of target: a workspace-wide value with no Frappe field
+		# behind it, kept where the framework keeps its own defaults. The brand
+		# accent is the first — `oneapp_core/branding.py` says why there is no
+		# single to write it to.
+		self.default_key = default_key
 		self.options = options
 		# A few of Frappe's Selects are filled in at runtime rather than in the
 		# doctype — the time zone list is built from the tz database — so the
@@ -64,6 +72,8 @@ class Setting:
 		self.placeholder = placeholder
 
 	def read(self):
+		if self.default_key:
+			return frappe.db.get_default(self.default_key) or ""
 		doctype, field = self.targets[0]
 		value = frappe.db.get_single_value(doctype, field)
 		if self.type == "Check":
@@ -72,6 +82,14 @@ class Setting:
 		return value
 
 	def write(self, value):
+		if self.type == "Color":
+			# Validated here rather than at the caller, so there is one door: a
+			# hex with a typo becomes "no colour set" and the workspace renders
+			# in the default look instead of a broken one.
+			value = theming.colour(value)
+		if self.default_key:
+			frappe.db.set_default(self.default_key, value)
+			return
 		if self.type == "Check":
 			value = 1 if value else 0
 			if self.invert:
@@ -96,8 +114,9 @@ GROUPS = [
 		"label": "Branding",
 		"icon": "lucide-palette",
 		"description": (
-			"What people see before they are signed in. Set at provisioning so a "
-			"workspace is never branded as something else on its first visit."
+			"What a workspace is called and what colour it is — on the sign-in "
+			"page, in the browser tab and everywhere inside. Set at provisioning "
+			"so a workspace is never branded as something else on its first visit."
 		),
 		"settings": [
 			Setting(
@@ -132,6 +151,19 @@ GROUPS = [
 				type="Attach Image",
 				targets=[("Website Settings", "splash_image")],
 				hint="Shown while the workspace loads.",
+			),
+			Setting(
+				"accent",
+				"Brand colour",
+				type="Color",
+				# No `targets`: Frappe has no field for this. See
+				# `oneapp_core/branding.py` for why Website Theme's own
+				# primary_color is not it, and where this value lands instead.
+				default_key=branding.ACCENT_KEY,
+				hint=(
+					"The colour of a solid button, in the app and on the sign-in "
+					"page. A space with a look of its own still overrides it."
+				),
 			),
 		],
 	},
@@ -479,6 +511,14 @@ def save(group: str, values: str | dict) -> dict:
 		name = frappe.db.get_single_value("Website Settings", "app_name")
 		if name:
 			frappe.db.set_single_value("System Settings", "otp_issuer_name", name)
+
+	# And the accent reaches the framework's own pages as CSS, which is a write
+	# to a second field — see `oneapp_core/branding.py`. Unconditional within
+	# the group rather than gated on the accent having changed: the block is
+	# rebuilt from the stored value either way, so a `head_html` somebody
+	# emptied by hand comes back on the next save.
+	if group == "branding":
+		branding.refresh()
 
 	frappe.clear_cache()
 	return {"ok": True}
