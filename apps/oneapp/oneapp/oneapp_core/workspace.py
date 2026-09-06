@@ -119,7 +119,10 @@ GROUPS = [
 			Setting(
 				"favicon",
 				"Favicon",
-				type="Attach Image",
+				# `Attach` and not `Attach Image`, which is what Frappe's own
+				# field is: a favicon is often an `.ico`, and an image control
+				# that cannot preview one is a control that looks broken.
+				type="Attach",
 				targets=[("Website Settings", "favicon")],
 				hint="The browser tab icon.",
 			),
@@ -234,9 +237,12 @@ GROUPS = [
 			Setting("pdf_page_size", "Page size", type="Select",
 			        targets=[("Print Settings", "pdf_page_size")],
 			        hint="Custom takes the two sizes below, in millimetres."),
-			Setting("pdf_page_width", "Custom width (mm)",
+			# Floats, because that is what the columns are. Left at the
+			# default `Data` they were text boxes over numeric columns, so a
+			# page size could be typed as a word and reach the database as one.
+			Setting("pdf_page_width", "Custom width (mm)", type="Float",
 			        targets=[("Print Settings", "pdf_page_width")]),
-			Setting("pdf_page_height", "Custom height (mm)",
+			Setting("pdf_page_height", "Custom height (mm)", type="Float",
 			        targets=[("Print Settings", "pdf_page_height")]),
 			# The typeface every format inherits unless it names its own. A
 			# Select rather than free text: it reaches a stylesheet the PDF
@@ -244,7 +250,7 @@ GROUPS = [
 			# renders as the engine's fallback with nothing to say so.
 			Setting("font", "Font", type="Select",
 			        targets=[("Print Settings", "font")]),
-			Setting("font_size", "Font size", type="Int",
+			Setting("font_size", "Font size", type="Float",
 			        targets=[("Print Settings", "font_size")],
 			        hint="In points. A format may still set its own."),
 			Setting("print_style", "Style", type="Link", options="Print Style",
@@ -428,7 +434,14 @@ def get() -> dict:
 	# The sign-in rules are the workspace's own, so they travel with it and not
 	# with a control-plane group somebody happens to be able to see.
 	joins = joining() if any(g["key"] == "signin" for g in groups) else None
-	return {"groups": groups, "joining": joins}
+
+	# And which tabs to draw at all, including the ones the SPA renders itself.
+	# The shell used to hold that list and drew every one of them for everybody,
+	# which is why this dialog was only ever offered to admins — see
+	# `oneapp_core/tabs.py`.
+	from oneapp.oneapp_core import tabs
+
+	return {"groups": groups, "joining": joins, "tabs": tabs.mine()}
 
 
 @frappe.whitelist(methods=["POST"])

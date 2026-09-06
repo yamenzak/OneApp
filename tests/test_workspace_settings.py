@@ -22,6 +22,7 @@ WORKSPACE = TENANT / "oneapp_core/workspace.py"
 BOOKS = TENANT / "oneapp_core/books.py"
 SYNC = TENANT / "oneapp_core/sync.py"
 AUDIT = ROOT / "docs/WORKSPACE-SETTINGS.md"
+TABS = TENANT / "oneapp_core/tabs.py"
 SPA = ROOT / "apps/oneapp/frontend/src"
 
 
@@ -324,17 +325,71 @@ def test_the_spa_does_not_keep_its_own_copy_of_the_fields():
 
 
 def test_settings_are_reachable_from_both_shells():
-	"""A phone has no rail, so the account menu's entries have to reach the More
-	sheet — the same gap the console hit with its own settings."""
-	assert "openSettings" in source(SPA / "components/RailAccount.vue")
-	assert "menu-items" in source(SPA / "App.vue")
+	"""A phone has no rail, so whatever the rail offers has to reach the More
+	sheet — the same gap the console hit with its own settings.
+
+	It used to be a row in the account menu and is a rail surface now, which is
+	what makes both true at once: `useNav().surfaces` is the one declaration the
+	rail and the drawer are both built from, and App.vue maps it into
+	`menu-items`. Written in two places they drift, which is how one page came
+	to be called "Readiness" in the rail and "Setup" in the bar.
+	"""
+	nav = source(SPA / "lib/shell/nav.js")
+	assert "openSettings" in nav, "the rail no longer offers settings"
+	assert "key: 'settings'" in nav
+
+	app = source(SPA / "App.vue")
+	assert "menu-items" in app
+	# A surface that opens something over the page has no route to push, so the
+	# drawer has to run its `act` — without this the phone's settings row is a
+	# row that does nothing.
+	assert "one.act" in app, "App.vue no longer runs a surface's own action"
 
 
-def test_only_a_workspace_admin_is_shown_the_door():
-	"""A member who opens a dialog every field of which refuses them has been
-	shown a door that does not open."""
-	for path in ("components/RailAccount.vue", "App.vue"):
-		assert "session.isAdmin" in source(SPA / path), path
+def test_nobody_is_shown_a_tab_that_refuses_them():
+	"""The rule that replaced "only an admin is shown the door".
+
+	Settings used to be offered to admins alone, because the dialog's tabs were
+	written into `SettingsShell.vue` and drawn for everybody — a member opening
+	it would have found ten tabs and been refused by all of them. The tabs are
+	declared server-side with an audience each now, so the dialog is offered to
+	everybody and shows each person only what they can open.
+
+	Which means the shell must not hard-code a tab list again. Checked by its
+	absence: a `SettingsNavItem` with a literal `value` is a tab nobody gated.
+	"""
+	shell = source(SPA / "components/settings/SettingsShell.vue")
+
+	assert 'v-for="tab in section.tabs"' in shell, (
+		"SettingsShell no longer renders the tabs the server sent"
+	)
+	hard_coded = re.findall(r'<SettingsNavItem\s+value="([\w-]+)"', shell)
+	assert not hard_coded, (
+		"these tabs are written into the shell rather than declared in "
+		f"oneapp_core/tabs.py, so nothing gates them: {hard_coded}"
+	)
+
+
+def test_every_panel_tab_has_a_component_and_every_component_a_tab():
+	"""The two halves of one contract, which Vue will not complain about.
+
+	`tabs.py` says a tab exists; `SettingsShell.vue`'s `PANELS` says what draws
+	it. A key on one side with nothing on the other renders as an empty panel —
+	silently, because an unknown component is nothing at all.
+	"""
+	declared = {
+		key for key, kind in re.findall(
+			r'"key": "([\w-]+)".*?"kind": (\w+)', TABS.read_text(), re.S)
+		if kind == "PANEL"
+	}
+	drawn = set(re.findall(
+		r"^\s+'?([\w-]+)'?: \w+Settings\w*,",
+		source(SPA / "components/settings/SettingsShell.vue"), re.M))
+
+	assert declared == drawn, (
+		f"declared with no component: {sorted(declared - drawn)}; "
+		f"a component with no tab: {sorted(drawn - declared)}"
+	)
 
 
 def test_the_admin_flag_is_not_system_manager():

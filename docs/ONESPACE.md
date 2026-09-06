@@ -1395,17 +1395,32 @@ its owner never sees. Those are the customer's.
 renders and the allowlist the write path checks**, so a setting is writable
 exactly when it is visible and there is no code path for anything else.
 
-| Group | Holds |
-|---|---|
-| Branding | Name, logo, favicon, the sign-in page |
-| Sign in | Which methods, session policy, password strength, invite-only |
-| Printing | Page size, font, PDF engine, margins, letter head on or off |
-| Regional | Timezone, date and number format, currency, first day of week |
-| Books | Company and chart of accounts, without ERPNext's wizard |
-| Print formats | The format list, the builder, letter heads |
-| Naming | Series and counters per doctype |
-| AI | The feature registry, rendered |
-| People / Roles | Members, seats, and the workspace's own role builder |
+**One dialog, and what is in it depends on who opened it.** It used to be
+offered to admins alone, because every tab was the workspace's and a member
+opening it would have been refused by all of them. `oneapp_core/tabs.py`
+declares each tab with the audience it is for — `everyone`, `mailbox`, `admin`,
+`support` — and the shell draws only the ones the server returned, so the gear
+in the rail is a door that opens for whoever presses it. An audience is a
+predicate rather than a role because one of them is not a role: "holds an
+address" is what decides who may write a signature.
+
+| Group | Who | Holds |
+|---|---|---|
+| Profile | Everyone | Their name, photograph, mobile, and their own language and time zone — per-person overrides of Regional below |
+| Security | Everyone | Their password, through the workspace's own policy, and where they are signed in |
+| Notifications | Everyone | What they are told about, and whether it reaches their inbox |
+| Appearance | Everyone | The theme, kept in the browser |
+| Mailbox | Holds an address | The signature on their own mail, their away message, their filing rules, and the mailbox they already had |
+| Branding | Admin | Name, logo, favicon, the sign-in page |
+| Email | Admin | The workspace's addresses, who holds each, which one notifications leave from |
+| Sign in | Admin | Which methods, session policy, password strength, invite-only |
+| Printing | Admin | Page size, font, PDF engine, margins, letter head on or off |
+| Regional | Admin | Timezone, date and number format, currency, first day of week |
+| Books | Admin | Company and chart of accounts, without ERPNext's wizard |
+| Print formats | Admin | The format list, the builder, letter heads |
+| Naming | Admin | Series and counters per doctype |
+| AI | Admin | The feature registry, rendered |
+| People / Roles | Admin | Members, seats, and the workspace's own role builder |
 
 What stays ours is the platform: the scheduler, backups, file size limits (a
 billed quota), guest uploads, telemetry, the mail footer and tracebacks. A

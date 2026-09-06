@@ -115,7 +115,6 @@ import NotificationList from './components/notifications/NotificationList.vue'
 import SettingsShell from './components/settings/SettingsShell.vue'
 import { useNav } from '@/lib/shell/nav'
 import { followNotifications, notifications } from '@/lib/shell/notifications'
-import { openSettings } from '@/lib/shell/settings'
 import { session, sessionResource } from '@/lib/shell/session'
 import { fullName, email, userImage } from '@/lib/shell/user'
 import { followMail } from '@/lib/shell/mail'
@@ -154,24 +153,19 @@ const showNotifications = ref(false)
  * way to it was typing the URL.
  */
 const menuItems = computed(() => [
-  ...(session.isAdmin
-    ? [
-        {
-          label: 'Workspace settings',
-          icon: 'lucide-settings',
-          // Which row of the drawer this is, said rather than inferred from
-          // being first — see AppShell's `settingsItem`.
-          settings: true,
-          onClick: () => openSettings(),
-        },
-      ]
-    : []),
   // The rail footer's own destinations, from the one place navigation is
-  // declared. Named with their count: on a phone this row is the only thing
-  // that says there is anything here.
+  // declared — settings among them now, rather than an admin-only row written
+  // here as well. Named with their count: on a phone this row is the only
+  // thing that says there is anything here.
+  //
+  // `act` becomes `onClick` because a surface that opens something over the
+  // page has no route to push, and `settings: true` marks the one row the
+  // drawer gives its own place to (see AppShell's `settingsItem`).
   ...surfaces.value.map((one) => ({
     ...one,
     label: one.count ? `${one.label} (${one.count})` : one.label,
+    ...(one.act ? { onClick: one.act } : {}),
+    ...(one.key === 'settings' ? { settings: true } : {}),
   })),
   {
     // Named with its count, for the reason above.

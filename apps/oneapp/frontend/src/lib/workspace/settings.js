@@ -3,6 +3,35 @@
 import { callMethod } from '@/lib/runtime/resource'
 
 export const settings = {
+  // --- Yours, not the workspace's -----------------------------------------
+  //
+  // `oneapp_core/me.py`. Every one of these names no user: the server writes
+  // `frappe.session.user` and nothing else, so there is no shape of request
+  // that edits a colleague.
+  profile: () =>
+    callMethod('oneapp.oneapp_core.me.profile', {}, { silent: true, method: 'GET' }),
+
+  saveProfile: (values) =>
+    callMethod('oneapp.oneapp_core.me.save_profile', { values }, {
+      success: 'Profile saved',
+    }),
+
+  security: () =>
+    callMethod('oneapp.oneapp_core.me.security', {}, { silent: true, method: 'GET' }),
+
+  // Not silent and not toasted: the panel shows the refusal in the form, which
+  // is where the correction has to be made.
+  changePassword: (oldPassword, newPassword) =>
+    callMethod('oneapp.oneapp_core.me.change_password', {
+      old_password: oldPassword, new_password: newPassword,
+    }, { success: 'Password changed' }),
+
+  endOtherSessions: () =>
+    callMethod('oneapp.oneapp_core.me.end_other_sessions', {}, {
+      success: 'Signed out everywhere else',
+    }),
+
+
   settings: () =>
     callMethod('oneapp.oneapp_core.workspace.get', {}, { silent: true, method: 'GET' }),
 

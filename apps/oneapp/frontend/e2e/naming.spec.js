@@ -15,8 +15,7 @@ test('the naming panel shows only what this workspace may name', async ({ page, 
   await page.goto('/one/space/zzmock?screen=tasks')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
 
-  await page.getByRole('button', { name: 'Administrator' }).click()
-  await page.getByRole('menuitem', { name: 'Workspace settings' }).click()
+  await page.locator('[data-slot="settings-link"]').click()
   await page.getByRole('tab', { name: 'Naming' }).click()
 
   const records = page.getByRole('combobox', { name: 'Records' })

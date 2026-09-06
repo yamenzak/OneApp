@@ -45,6 +45,16 @@ The single modules, roughly by how often they are touched:
   on, per bench.
 * `workspace.py` — the settings a workspace owns, and the allowlist the write
   path checks against. Adding a setting is a change here and nowhere else.
+* `tabs.py` — which tabs the settings dialog has and who each one is for. The
+  half that was missing: four groups came from `workspace.GROUPS` with a role
+  check, and ten more were written into `SettingsShell.vue` and drawn for
+  everybody, so the dialog could only be offered to admins. An audience is a
+  predicate rather than a role, because "holds an address" is one and no role
+  says it.
+* `me.py` — what a person may change about *themselves*: their name, their
+  password, their own language and time zone, and where they are signed in.
+  Same two rules as `workspace.py` — the spec is the allowlist, and every write
+  names `frappe.session.user` rather than taking a user.
 * `sync.py` — the manifest the control plane sends, cached and applied. What a
   space *is*, on this site.
 * `printing.py`, `naming.py`, `docflow.py`, `collab.py`, `showcase.py`,

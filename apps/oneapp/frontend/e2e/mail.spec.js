@@ -359,13 +359,14 @@ test('anybody may connect the mailbox they already have', async ({ page, baseURL
   await page.goto('/one/space/zzmock?screen=tasks')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
 
-  await page.getByRole('button', { name: 'Administrator' }).click()
-  await page.getByRole('menuitem', { name: 'Workspace settings' }).click()
-  await page.getByRole('tab', { name: 'Email' }).click()
+  await page.locator('[data-slot="settings-link"]').click()
+  await page.getByRole('tab', { name: 'Mailbox' }).click()
 
   // The address the fixture granted, with its signature, is the top half.
+  // `mailbox-address` and not `mail-address`: this tab lists the ones this
+  // person holds, where the workspace's Email tab lists every one it owns.
   await expect(
-    page.locator('[data-slot="mail-address"]').filter({ hasText: ADDRESS }),
+    page.locator('[data-slot="mailbox-address"]').filter({ hasText: ADDRESS }),
   ).toHaveCount(1)
 
   // Typing an address fills in the servers. Somebody who says `gmail.com` has
@@ -482,9 +483,8 @@ test('a rule files mail, and away answers it', async ({ page, baseURL }, info) =
   await page.goto('/one/space/zzmock?screen=tasks')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
 
-  await page.getByRole('button', { name: 'Administrator' }).click()
-  await page.getByRole('menuitem', { name: 'Workspace settings' }).click()
-  await page.getByRole('tab', { name: 'Email' }).click()
+  await page.locator('[data-slot="settings-link"]').click()
+  await page.getByRole('tab', { name: 'Mailbox' }).click()
 
   // A rule is four words: look at this field, for this text, and file it there.
   // Anything more is a query builder, which is not what somebody sorting their
@@ -504,9 +504,8 @@ test('a rule files mail, and away answers it', async ({ page, baseURL }, info) =
 
   // It survives the round trip, which is the half a list in memory would fake.
   await page.reload()
-  await page.getByRole('button', { name: 'Administrator' }).click()
-  await page.getByRole('menuitem', { name: 'Workspace settings' }).click()
-  await page.getByRole('tab', { name: 'Email' }).click()
+  await page.locator('[data-slot="settings-link"]').click()
+  await page.getByRole('tab', { name: 'Mailbox' }).click()
   await expect(mine).toHaveCount(1)
 
   await mine.getByRole('button', { name: `Remove ${title}` }).click()
@@ -520,9 +519,8 @@ test('a rule files mail, and away answers it', async ({ page, baseURL }, info) =
   await page.locator('[data-slot="mail-save-away"]').click()
 
   await page.reload()
-  await page.getByRole('button', { name: 'Administrator' }).click()
-  await page.getByRole('menuitem', { name: 'Workspace settings' }).click()
-  await page.getByRole('tab', { name: 'Email' }).click()
+  await page.locator('[data-slot="settings-link"]').click()
+  await page.getByRole('tab', { name: 'Mailbox' }).click()
   await expect(page.getByLabel('What it says')).toHaveValue('Back on Monday.')
 
   expectNoRealErrors(errors)

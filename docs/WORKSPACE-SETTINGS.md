@@ -11,9 +11,66 @@ Three verdicts:
 
 | | Meaning |
 | --- | --- |
-| **Customer** | In OneSpace → Workspace settings. `oneapp_core/workspace.py` is both the renderer's spec and the write allowlist. |
+| **Customer** | In OneSpace → Settings. `oneapp_core/workspace.py` is both the renderer's spec and the write allowlist. |
 | **Ours** | Set by the platform. Exposing it lets a workspace break itself in a way its owner cannot diagnose and we get the ticket. |
 | **Neither** | Left at Frappe's default. Not harmful, not useful, and every field shown is a field someone has to understand. |
+
+## Who sees which tab
+
+The dialog was an admin's. Every tab in it was the workspace's, so it was
+offered where `session.isAdmin` and nowhere else — and a member had no way to
+change their own name, their own password, or what they were told about.
+
+`oneapp_core/tabs.py` declares every tab with the audience it is for, and
+`workspace.get()` returns the ones this reader may open. The shell draws exactly
+those, so one dialog serves the owner and the member and neither is shown a door
+that does not open. The gear in the rail is offered to everybody.
+
+An audience is a **predicate, not a role**, because one of them is not a role:
+
+| Audience | Who | Tabs |
+| --- | --- | --- |
+| `everyone` | Anybody signed in | Profile, Security, Notifications, Appearance |
+| `mailbox` | Holds an address here — `mailbox._held()`, the same question every other mail endpoint asks | Mailbox |
+| `admin` | `OneSpace Workspace Owner`, or our support as Administrator | Branding, Sign in, Regional, Books, Printing, Print formats, Naming, Email, Templates, Alerts, AI, Storage, Import |
+| `support` | `System Manager` alone | The control plane's own groups, through `onespace_settings_groups` |
+
+Nothing under Workspace is open to everybody, and every tab a member can open is
+one of their own. Both are checked by `tests/test_settings_tabs.py`, along with
+the two lists that have to agree with the declaration and fail silently when
+they do not — the component that draws each panel, and the icon safelist, since
+Tailwind's JIT does not read Python.
+
+**Why mail is two tabs.** Email under Workspace is the workspace's: its domain,
+who holds which address, which one notifications leave from, what it has sent
+this hour. Mailbox under You is the same subject from the other end — the
+signature on your own mail, your away message, your filing rules, and the
+mailbox you have had for nine years and want to read here. They were one tab, so
+a colleague who answers `sales@` could not set any of it: every endpoint under
+it already asked who holds the address, but the only door to them was an admin's.
+
+The signature appears on both, which is not a duplicate: it belongs to the
+*address* rather than to the account — `signatures.py` holds Frappe's per-user
+rule off for exactly that reason — so an admin sets it as the person who manages
+the address, and its holder sets it as the person whose name is at the bottom of
+the mail.
+
+## What a person may change about themselves
+
+`oneapp_core/me.py`, on the same two rules as `workspace.py`: the spec is the
+allowlist, and every write names `frappe.session.user` rather than taking one.
+
+| Field | Verdict | Why |
+| --- | --- | --- |
+| `User.first_name`, `last_name`, `user_image`, `mobile_no` | Theirs | Their name and how they are reached. |
+| `User.language`, `User.time_zone` | Theirs | Per-person *overrides* of the workspace's regional settings, so a colleague in another country reads their own dates without changing anybody else's. Empty follows the workspace, and the panel says what that currently is. |
+| `User.name` (the email) | **Neither** | The account's identity, and the seat is counted against it upstream — changing it is a control-plane act. Shown on the panel rather than hidden, because a profile with no address on it looks like it forgot. |
+| `User.enabled`, `roles`, `role_profile_name`, `user_type`, `api_key`, `api_secret`, `username` | **Ours** | Administration. An endpoint that took a fieldname would be an endpoint that grants roles; `MINE` is a fixed set and `NEVER` names these again. |
+| Password | Theirs | Through `check_password` then `User.save`, so the workspace's own policy — the minimum score an admin set under Sign in — is the rule that applies. |
+| Sessions | Theirs, to end | `tabSessions` has no DocType over it, so it is read with SQL; its columns are user, sid, ipaddress and lastupdate, and none of them names a device. So the panel says when and from where, and offers "sign out everywhere else" rather than picking one row out of a list of near-identical ones. Everywhere *else* deliberately: the reason somebody reaches for it is a laptop they no longer have. |
+| `Notification Settings` | Theirs | Frappe keeps one document per person. Already built (`oneapp_core/notifications.py`); it has a tab now instead of only a block on the Account page. |
+| Theme | Theirs, in the browser | Not on the server at all. A round trip would only make the toggle slower. |
+| Two-factor enrolment | **Not yet** | The workspace switch is an admin's and is built; enrolling *yourself* in an OTP app is a flow with a QR code and a verification step, which is a feature rather than a field. The panel says the workspace asks for one. |
 
 ## What this fixed on the way
 
@@ -183,3 +240,59 @@ The wizard asks a lot; almost none of it is a setting.
 | `Accounts Settings` (60+ toggles) | Neither | Immutable ledger, deferred accounting, fuzzy party matching. Each one is a real decision for a real accountant and none is a workspace setting. |
 | `Global Defaults` | Neither | Duplicates System Settings for country and currency; ERPNext reads those. |
 | Demo data | Ours | Never installed. Demo transactions in a paying customer's ledger is not recoverable by them. |
+
+## Every other singleton, and why the answer is one paragraph
+
+A tenant site carries 70 singles: 31 from Frappe, 31 from ERPNext, 6 from HRMS
+and 2 of ours. Four Frappe ones are above. The rest were read and the verdict is
+a class rather than seventy rows, because writing seventy rows would imply
+seventy decisions when there are four.
+
+**ERPNext's twenty-odd `* Settings` singles are Neither.** `Selling Settings`,
+`Buying Settings`, `Stock Settings`, `Manufacturing Settings`, `Projects
+Settings`, `CRM Settings`, `Support Settings`, `POS Settings`, `Delivery
+Settings`, `Item Variant Settings`, `Subscription Settings`, `Currency Exchange
+Settings`, `Accounts Settings` — the same reasoning `Accounts Settings` already
+carried, applied consistently. Each is a real decision for a real
+practitioner and none is a *workspace* setting: "is a sales order required
+before a delivery note" is a process policy for one company's operations, not a
+preference like a date format. The wrong answer is silent and shows up in the
+ledger a month later.
+
+The escape hatch already exists and is better than a tab: a space declares a
+**screen** over the doctype (`docs/APPS-AND-SPACES.md`), which gives the setting
+a name in the customer's own words, a role that may reach it, and a place in the
+navigation beside the work it governs. A fortieth tab in a shared dialog gives
+it none of those.
+
+**HRMS's `HR Settings` and `Payroll Settings` are Neither, for the same reason.**
+Both are payroll and leave policy, both are per-company, and a workspace running
+HR needs them in an HR space rather than under a gear shared with branding.
+
+**Frappe's remaining singles split three ways.** *Ours*: `Log Settings`,
+`Domain Settings`, `Session Default Settings`, `Push Notification Settings`,
+`Global Search Settings`, `OAuth Provider Settings`, `Audit Trail` — fleet
+plumbing, and several are ways to make a shard slow or leaky. *Neither*:
+`About Us Settings`, `Contact Us Settings`, `Portal Settings`, `Website
+Script`, `Desktop Settings`, `Geolocation Settings`, `Document Naming Settings`
+— the public website and the desk are not product surfaces here, and naming is
+already a tab of ours over the same machinery. *Not a setting at all*:
+`Customize Form`, `Bulk Update`, `Data Export`, `System Console`, `Rename
+Tool`, `Permission Inspector`, `Installed Applications`, `System Health
+Report`, and ERPNext's tools (`BOM Update Tool`, `Bank Reconciliation Tool`,
+`Chart of Accounts Importer`, `Leave Control Panel`, and the rest) — these are
+desk *pages* that happen to be modelled as singles. A few have OneSpace
+equivalents already (Import, Naming, People); the others are operator work.
+
+**`Google Settings`, `SMS Settings`, `LDAP Settings`, `OAuth Settings` are
+deferred rather than declined.** Each needs a credential per workspace and a
+flow to obtain it, which is the same shape as social sign-in above: a real
+feature, not a settings row. Recorded here so the next person does not
+re-derive it.
+
+**`Security Settings` exists on Frappe 17 and is empty of what we use.** Worth
+saying because it looks like the answer: the auth fields this product exposes —
+`enable_two_factor_auth`, `session_expiry`, `enable_password_policy` and the
+rest — are still on `System Settings` on this bench, which is what the Sign in
+group writes. If a Frappe release moves them, the group's targets move with
+them and nothing else changes.

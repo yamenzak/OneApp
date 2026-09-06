@@ -17,128 +17,50 @@
       />
     </div>
 
+    <!--
+      The tabs are the server's list, not this file's.
+
+      They were written here by hand and drawn for everybody, with the actual
+      gate inside each endpoint — so the dialog could only be offered to admins,
+      because a member opening it would have found ten tabs and been refused by
+      all of them. `oneapp_core/tabs.py` declares every tab with the audience it
+      is for and returns the ones this reader may open, which is what makes one
+      dialog serve the owner and the member.
+    -->
     <SettingsSidebar :class="TAB_STRIP">
-      <SettingsNavGroup label="Workspace" :class="TAB_GROUP">
+      <SettingsNavGroup
+        v-for="section in sections"
+        :key="section.label"
+        :label="section.label"
+        :class="TAB_GROUP"
+      >
         <SettingsNavItem
-          v-for="group in groups"
-          :key="group.key"
-          :value="group.key"
+          v-for="tab in section.tabs"
+          :key="tab.key"
+          :value="tab.key"
           :class="TAB_ITEM"
+          :data-slot="`settings-tab-${tab.key}`"
         >
           <template #prefix>
-            <Icon :name="group.icon" class="size-4 text-ink-gray-7" />
+            <Icon :name="iconFor(tab)" class="size-4 text-ink-gray-7" />
           </template>
-          {{ group.label }}
-        </SettingsNavItem>
-
-        <SettingsNavItem value="books" :class="TAB_ITEM">
-          <template #prefix>
-            <Icon name="lucide-book-open" class="size-4 text-ink-gray-7" />
-          </template>
-          Books
-        </SettingsNavItem>
-
-        <SettingsNavItem value="print-formats" :class="TAB_ITEM">
-          <template #prefix>
-            <Icon name="lucide-printer" class="size-4 text-ink-gray-7" />
-          </template>
-          Print formats
-        </SettingsNavItem>
-
-        <SettingsNavItem value="naming" :class="TAB_ITEM">
-          <template #prefix>
-            <Icon name="lucide-hash" class="size-4 text-ink-gray-7" />
-          </template>
-          Naming
-        </SettingsNavItem>
-
-        <!-- Beside the workspace's own settings rather than inside a space:
-             an import fills doctypes many spaces read, and it is a thing an
-             owner does to the workspace. -->
-        <SettingsNavItem value="import" :class="TAB_ITEM">
-          <template #prefix>
-            <Icon name="lucide-import" class="size-4 text-ink-gray-7" />
-          </template>
-          Import
-        </SettingsNavItem>
-
-        <SettingsNavItem value="mail" :class="TAB_ITEM">
-          <template #prefix>
-            <Icon name="lucide-mail" class="size-4 text-ink-gray-7" />
-          </template>
-          Email
-        </SettingsNavItem>
-
-        <SettingsNavItem value="storage" :class="TAB_ITEM">
-          <template #prefix>
-            <Icon name="lucide-hard-drive" class="size-4 text-ink-gray-7" />
-          </template>
-          Storage
-        </SettingsNavItem>
-
-        <SettingsNavItem value="alerts" :class="TAB_ITEM">
-          <template #prefix>
-            <Icon name="lucide-bell" class="size-4 text-ink-gray-7" />
-          </template>
-          Alerts
-        </SettingsNavItem>
-
-        <SettingsNavItem value="templates" :class="TAB_ITEM">
-          <template #prefix>
-            <Icon name="lucide-file-text" class="size-4 text-ink-gray-7" />
-          </template>
-          Templates
-        </SettingsNavItem>
-
-        <SettingsNavItem value="ai" :class="TAB_ITEM">
-          <template #prefix>
-            <Icon name="lucide-sparkles" class="size-4 text-ink-gray-7" />
-          </template>
-          AI
-        </SettingsNavItem>
-      </SettingsNavGroup>
-
-      <SettingsNavGroup label="You" :class="TAB_GROUP">
-        <SettingsNavItem value="appearance" :class="TAB_ITEM">
-          <template #prefix>
-            <Icon name="lucide-sun-moon" class="size-4 text-ink-gray-7" />
-          </template>
-          Appearance
+          {{ tab.label }}
         </SettingsNavItem>
       </SettingsNavGroup>
     </SettingsSidebar>
 
     <SettingsContent :class="PANEL_CONTENT">
-      <SettingsPanel v-for="group in groups" :key="group.key" :value="group.key">
-        <SettingsFields :group="group" @saved="reload" />
-      </SettingsPanel>
-
-      <SettingsPanel value="books"><BooksSettings /></SettingsPanel>
-
-      <SettingsPanel value="print-formats"><PrintingSettings /></SettingsPanel>
-
-      <SettingsPanel value="naming"><NamingSettings /></SettingsPanel>
-
-      <SettingsPanel value="import"><ImportSettings /></SettingsPanel>
-
-      <SettingsPanel value="mail"><MailSettings /></SettingsPanel>
-
-      <SettingsPanel value="storage"><StorageSettings /></SettingsPanel>
-
-      <SettingsPanel value="alerts"><AlertSettings /></SettingsPanel>
-
-      <SettingsPanel value="templates"><TemplateSettings /></SettingsPanel>
-
-      <SettingsPanel value="ai"><AiSettings /></SettingsPanel>
-
-      <SettingsPanel value="appearance">
-        <SettingsHeader title="Appearance" :class="PANEL_HEADER" />
-        <SettingsBody :class="PANEL_BODY">
-          <!-- Yours, not the workspace's: a theme is a per-person preference
-               and lives in this browser, so it is not one of the settings the
-               server spec above carries. -->
-          <div class="pt-6"><ThemeSetting /></div>
-        </SettingsBody>
+      <SettingsPanel v-for="tab in tabs" :key="tab.key" :value="tab.key">
+        <!-- A `fields` tab is a spec the server renders and checks writes
+             against; a `panel` tab is one the SPA draws because it is not a
+             list of fields. `PANELS` is the whole of the second contract, and
+             `tests/test_settings_tabs.py` holds the two ends to it. -->
+        <SettingsFields
+          v-if="tab.kind === 'fields'"
+          :group="groupFor(tab.key)"
+          @saved="reload"
+        />
+        <component :is="PANELS[tab.key]" v-else-if="PANELS[tab.key]" />
       </SettingsPanel>
     </SettingsContent>
   </SettingsDialog>
@@ -153,12 +75,11 @@ import {
   SettingsNavItem,
   SettingsContent,
   SettingsPanel,
-  SettingsHeader,
-  SettingsBody,
   Button,
   Icon,
 } from '@/ui'
 import SettingsFields from './SettingsFields.vue'
+import AppearanceSettings from './AppearanceSettings.vue'
 import BooksSettings from './BooksSettings.vue'
 import AiSettings from './AiSettings.vue'
 import AlertSettings from './AlertSettings.vue'
@@ -168,27 +89,93 @@ import NamingSettings from './NamingSettings.vue'
 import PrintingSettings from './PrintingSettings.vue'
 import ImportSettings from './ImportSettings.vue'
 import MailSettings from './MailSettings.vue'
-import ThemeSetting from '../ThemeSetting.vue'
-import { PANEL_BODY, PANEL_HEADER, TAB_GROUP, TAB_ITEM, TAB_STRIP, PANEL_CONTENT } from './geometry'
+import MailboxSettings from './MailboxSettings.vue'
+import ProfileSettings from './ProfileSettings.vue'
+import SecuritySettings from './SecuritySettings.vue'
+import NotificationSettingsPanel from './NotificationSettingsPanel.vue'
+import { TAB_GROUP, TAB_ITEM, TAB_STRIP, PANEL_CONTENT } from './geometry'
+// Imported for the literals rather than for the value: Tailwind emits a
+// `lucide-*` class only where it can read it as a string, and a tab's icon is
+// named in Python. See `./icons.js`.
+import { TAB_ICONS } from './icons'
 import { settings } from '@/lib/shell/settings'
 import { workspace } from '../../lib/workspace'
 
+/**
+ * Which component draws each `panel` tab.
+ *
+ * The other half of the contract in `oneapp_core/tabs.py`: the server says a
+ * tab exists and who may open it, and this says what it looks like. A key on
+ * one side with nothing on the other is a tab that renders as an empty panel —
+ * silently, the way Vue does — so a test reads both lists and fails on either
+ * gap.
+ */
+const PANELS = {
+  profile: ProfileSettings,
+  security: SecuritySettings,
+  notifications: NotificationSettingsPanel,
+  appearance: AppearanceSettings,
+  mailbox: MailboxSettings,
+  books: BooksSettings,
+  'print-formats': PrintingSettings,
+  naming: NamingSettings,
+  mail: MailSettings,
+  templates: TemplateSettings,
+  alerts: AlertSettings,
+  ai: AiSettings,
+  storage: StorageSettings,
+  import: ImportSettings,
+}
+
 const data = ref(null)
 
-// The groups come from the server, which also owns the allowlist they are
-// checked against on save. See lib/workspace.js.
+/** An icon the build never saw is a blank space, so fall back to one it did. */
+const iconFor = (tab) => (TAB_ICONS.includes(tab.icon) ? tab.icon : 'lucide-settings')
+
+const tabs = computed(() => data.value?.tabs || [])
 const groups = computed(() => data.value?.groups || [])
+
+const groupFor = (key) => groups.value.find((one) => one.key === key) || null
+
+/**
+ * The tabs grouped under their headings, in the order the server sent them.
+ *
+ * Built from the tabs rather than from a list of section names, so a section
+ * with nothing in it does not draw a heading over an empty column — which is
+ * what a member would have seen under "Workspace".
+ */
+const sections = computed(() => {
+  const found = []
+  for (const tab of tabs.value) {
+    const section = found.find((one) => one.label === tab.section)
+    if (section) section.tabs.push(tab)
+    else found.push({ label: tab.section, tabs: [tab] })
+  }
+  return found
+})
 
 const reload = async () => {
   data.value = await workspace.settings()
+
+  // The remembered tab can be one this person cannot open — the dialog keeps
+  // whatever it was last asked for, and an admin's deep link is a member's
+  // blank panel. Fall back to the first they do have.
+  const open = tabs.value.some((one) => one.key === settings.tab)
+  if (!open && tabs.value.length) settings.tab = tabs.value[0].key
 }
 
-// Fetched when the dialog first opens rather than at boot: most sessions never
-// open settings, and this reads several singles.
+// Fetched when the dialog is open and has nothing rather than at boot: most
+// sessions never open settings, and this reads several singles.
+//
+// On the *state* and not on the open transition. This component is mounted
+// under `session.loaded`, and reloading the session — which saving a profile
+// does, so the rail's name follows — unmounts and remounts it with `data` back
+// to null. Watching the transition, that remount happened while `settings.open`
+// was already true, so nothing fired and the dialog stayed a spinner until it
+// was closed and opened again.
 watch(
-  () => settings.open,
-  (open) => {
-    if (open && !data.value) reload()
-  },
+  () => settings.open && !data.value,
+  (wanted) => wanted && reload(),
+  { immediate: true },
 )
 </script>

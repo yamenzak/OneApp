@@ -20,8 +20,7 @@ test('a template written in settings is one the composer offers', async ({
   await page.goto('/one/space/zzmock?screen=tasks')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
 
-  await page.getByRole('button', { name: 'Administrator' }).click()
-  await page.getByRole('menuitem', { name: 'Workspace settings' }).click()
+  await page.locator('[data-slot="settings-link"]').click()
   await page.getByRole('tab', { name: 'Templates' }).click()
 
   // The fixture's own, and not the six ERPNext and HRMS ship on every site.
@@ -61,8 +60,7 @@ test('a template written in settings is one the composer offers', async ({
   await page.keyboard.press('Escape')
   await page.goto('/one/space/zzmock?screen=tasks')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
-  await page.getByRole('button', { name: 'Administrator' }).click()
-  await page.getByRole('menuitem', { name: 'Workspace settings' }).click()
+  await page.locator('[data-slot="settings-link"]').click()
   await page.getByRole('tab', { name: 'Templates' }).click()
 
   const mine = page.locator('[data-slot="mail-template"]').filter({ hasText: title })

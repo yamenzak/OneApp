@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 // outside the generated set falls back to one that does.
 import { spaceIcon } from '@/lib/shell/icons'
 import { assistant, openAssistant } from '@/lib/shell/assistant'
+import { openSettings } from '@/lib/shell/settings'
 import { mail } from '@/lib/shell/mail'
 import { session } from '@/lib/shell/session'
 import { workspace } from '@/lib/workspace'
@@ -177,6 +178,21 @@ export function useNav() {
     // Absent until the server says the workspace has one — AI can be switched
     // off, unconfigured, or suspended by an operator, and a rail entry that
     // leads to "not switched on here" is worse than no entry.
+    // Settings, for everybody rather than for admins.
+    //
+    // It used to be one row in the account menu, offered only where
+    // `session.isAdmin`, because every tab in it was the workspace's and a
+    // member opening it would have been refused by all of them. The dialog has
+    // a "You" section now — your name, your password, what you are told about,
+    // how this looks — so it is a door that opens for whoever presses it, and
+    // it belongs in the rail beside the other things that are not inside a
+    // space. `oneapp_core/tabs.py` decides what is behind it.
+    {
+      key: 'settings',
+      label: 'Settings',
+      icon: 'lucide-settings',
+      act: () => openSettings(),
+    },
     // `act` and not `to`: this one opens a panel over the page rather than
     // navigating to one. Going somewhere to ask about the thing you were
     // looking at is the shape this exists to avoid.

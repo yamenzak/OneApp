@@ -11,8 +11,7 @@ import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 const FORMAT = 'zzmock Task Sheet'
 
 const openSettings = async (page, tab) => {
-  await page.getByRole('button', { name: 'Administrator' }).click()
-  await page.getByRole('menuitem', { name: 'Workspace settings' }).click()
+  await page.locator('[data-slot="settings-link"]').click()
   await page.getByRole('tab', { name: tab }).click()
 }
 

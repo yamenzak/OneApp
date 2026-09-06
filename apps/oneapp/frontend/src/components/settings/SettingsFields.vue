@@ -17,6 +17,20 @@
           :description="field.hint"
           padded
         />
+        <!--
+          A file, picked rather than typed. These were text boxes: the map below
+          sent `Attach Image` to `text`, so setting a logo meant knowing the
+          `/files/...` URL of something already uploaded — which nothing in this
+          product tells you. The same picker a record's Attach field opens, so a
+          logo and an invoice's attachment are chosen the same way.
+        -->
+        <SettingsAttach
+          v-else-if="field.type === 'Attach' || field.type === 'Attach Image'"
+          v-model="form[field.key]"
+          :label="field.label"
+          :hint="field.hint"
+          :image="field.type === 'Attach Image'"
+        />
         <FormControl
           v-else
           v-model="form[field.key]"
@@ -39,6 +53,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { Button, FormControl, SettingsHeader, SettingsBody, Switch } from '@/ui'
+import SettingsAttach from './SettingsAttach.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 
@@ -54,7 +69,9 @@ const saving = ref(false)
 // search is worse than a field that says what it wants. The server validates
 // the value against the doctype either way.
 const control = (field) =>
-  ({ Select: 'select', Int: 'number', 'Attach Image': 'text' })[field.type] || 'text'
+  ({ Select: 'select', Int: 'number', Float: 'number' })[field.type] || 'text'
+
+const numeric = (field) => field.type === 'Int' || field.type === 'Float'
 
 const dirty = computed(() =>
   props.group.fields.some((f) => form[f.key] !== original.value[f.key]),
@@ -75,10 +92,13 @@ watch(
 async function save() {
   saving.value = true
   try {
+    // `type="number"` still hands back a string and the column behind it is a
+    // Float or an Int. Frappe coerces, but a decimal reaching a Float as text
+    // is a round trip nobody should have to rely on.
     const changed = Object.fromEntries(
       props.group.fields
         .filter((f) => form[f.key] !== original.value[f.key])
-        .map((f) => [f.key, form[f.key]]),
+        .map((f) => [f.key, numeric(f) ? Number(form[f.key] || 0) : form[f.key]]),
     )
     if (!Object.keys(changed).length) return
     await workspace.save(props.group.key, changed)
