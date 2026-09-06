@@ -11,7 +11,7 @@ import json
 import frappe
 from frappe.utils import now_datetime
 
-from oneapp.oneapp_core import control_client, site
+from oneapp.oneapp_core import branding, control_client, site
 
 CACHE_KEY = "onespace_site_state"
 CACHE_TTL = 300
@@ -552,6 +552,12 @@ def sync_branding(tenant: dict) -> None:
 	# the member list. See workspace.joining().
 	if not frappe.db.get_single_value("Website Settings", "disable_signup"):
 		frappe.db.set_single_value("Website Settings", "disable_signup", 1)
+
+	# And the line under it. Empty, Frappe's own template renders "Built on
+	# Frappe"; ERPNext's setup fills it with "Powered by ERPNext". Both are on
+	# the sign-in page, which is the one page every person in the workspace sees
+	# before they are anybody. See `branding._own_the_footer`.
+	branding.refresh()
 
 
 def sync_email_account():

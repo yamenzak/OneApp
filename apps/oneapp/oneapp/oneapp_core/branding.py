@@ -87,6 +87,23 @@ def refresh() -> None:
 	block = css(accent())
 	head = "\n\n".join(part for part in (head, block) if part)
 	frappe.db.set_single_value("Website Settings", "head_html", head)
+	_own_the_footer()
+
+
+# What the framework puts under every page it renders itself — the sign-in page,
+# the reset-password page, an error page — when nothing says otherwise.
+#
+# `footer_powered` is a field on Website Settings, and Frappe's template falls
+# through to "Built on Frappe" when it is empty; ERPNext's own setup overwrites
+# it with "Powered by ERPNext". Neither is a sentence a customer of ours should
+# be reading: they bought OneSpace, from us. So we set it, once, and the
+# framework's fallback never runs.
+FOOTER = "OneSpace"
+
+
+def _own_the_footer() -> None:
+	if frappe.db.get_single_value("Website Settings", "footer_powered") != FOOTER:
+		frappe.db.set_single_value("Website Settings", "footer_powered", FOOTER)
 
 
 def without_ours(head: str) -> str:

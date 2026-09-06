@@ -138,8 +138,14 @@ Three commands, and only the first needs a site:
 scripts/dev.sh run scripts/i18n_pot.py   # re-extract every msgid
 python3 scripts/i18n.py stat             # free / translated / owed
 python3 scripts/i18n.py gap ar           # the sentences still owed
-python3 scripts/i18n.py sync             # write them into the .po files
+python3 scripts/i18n.py sync             # bring the .po files up to the POT
+python3 scripts/i18n.py load DIR         # read translations back in, as TSV
 ```
+
+`load` reads `english<TAB>arabic<TAB>german` files — the shape somebody who
+translates for a living can be handed and can hand back without ever seeing a
+`.po` file. A line whose English is no longer a msgid is reported rather than
+dropped: it almost always means the wording moved after the file went out.
 
 `sync` writes **only what is ours**: a msgid Frappe or ERPNext already
 translates is left out, because carrying it would mean maintaining a second,
@@ -179,6 +185,26 @@ direction.
 
 English is the source. **Arabic** and **German** are the two we ship, because
 they are the two our customers read. A fourth is a `.po` file and nothing else.
+
+### What a deploy has to do
+
+Nothing. `bench build` compiles every app's `.po` into
+`sites/assets/locale/<lang>/LC_MESSAGES/<app>.mo`, which is where
+`get_translations_from_apps` reads them, and Frappe Cloud runs `bench build` on
+every deploy. The `.mo` is a build artifact and is not in this repository.
+
+### The Arabic face
+
+IBM Plex Sans Arabic, self-hosted, in three weights — and declared under
+`InterVar`'s **own family name** with a `unicode-range` covering only the Arabic
+block. `unicode-range` extends a family rather than replacing it, so every font
+stack in the product, ours and frappe-ui's, picks up Arabic without a single one
+of them being edited. The display face has the same arrangement with Reem Kufi.
+Arabic sits optically smaller than Latin at the same size, so
+`:root:lang(ar|fa|ur)` lifts the root to 106%.
+
+Both faces are SIL Open Font Licence; the licence text ships beside the files in
+`src/assets/fonts/`.
 
 ---
 

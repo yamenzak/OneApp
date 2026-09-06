@@ -236,3 +236,18 @@ def test_the_workspace_colour_is_the_floor_a_space_theme_stands_on():
 	# And clearing a space repaints rather than removing everything.
 	body = source.split("export function clearTheme")[1].split("}")[0]
 	assert "paint()" in body
+
+
+def test_the_line_under_the_sign_in_page_is_ours():
+	"""Frappe's own footer template renders "Built on Frappe" when
+	`footer_powered` is empty, and ERPNext's setup fills it with "Powered by
+	ERPNext". Both land on the sign-in page — the one page every person in a
+	workspace sees before they are anybody, and the last place a supplier's name
+	belongs. So we set the field, and the fallback never runs."""
+	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/branding.py").read_text()
+	assert 'FOOTER = "OneSpace"' in source
+	assert '"footer_powered"' in source
+	# And it is written on every sync, not only when somebody opens the tab:
+	# a workspace nobody has been into is exactly the one still saying ERPNext.
+	sync = (ROOT / "apps/oneapp/oneapp/oneapp_core/sync.py").read_text()
+	assert "branding.refresh()" in sync.split("def sync_branding")[1].split("\ndef ")[0]

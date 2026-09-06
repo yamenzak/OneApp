@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-06 23:14+0000\n"
-"PO-Revision-Date: 2026-09-06 23:14+0000\n"
+"POT-Creation-Date: 2026-09-06 23:32+0000\n"
+"PO-Revision-Date: 2026-09-06 23:32+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -4838,6 +4838,10 @@ msgstr ""
 msgid "Zone for the tenant root domain. Only needed in Per-tenant mode."
 msgstr ""
 
+#: frontend/src/pages/signup/SignupPage.vue:30
+msgid "acme"
+msgstr ""
+
 #. Description of the 'Feature Key' (Data) field in DocType 'AI Feature'
 #: oneapp_control/control_plane/doctype/ai_feature/ai_feature.json
 msgid "app.module.name, from the decorator."
@@ -4882,6 +4886,10 @@ msgstr ""
 #: oneapp_control/control_plane/doctype/ai_model/ai_model.json
 #: oneapp_control/control_plane/doctype/ai_usage_record/ai_usage_record.json
 msgid "workers-ai"
+msgstr ""
+
+#: frontend/src/pages/signup/SignupPage.vue:40
+msgid "you@acme.com"
 msgstr ""
 
 #: oneapp_control/api/admin/fleet.py:207

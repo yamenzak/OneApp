@@ -27,6 +27,18 @@ msgid ""
 "ignore it.</p>"
 msgstr ""
 
+msgid "A CSS length — 40mm, 120px, 50%. Empty fits the column."
+msgstr ""
+
+msgid "A Select becomes its own options; a Link becomes whoever is on the page."
+msgstr ""
+
+msgid "A camera needs a secure connection. Use the phone’s camera instead."
+msgstr ""
+
+msgid "A colon after every label"
+msgstr ""
+
 msgid "A comment needs something in it."
 msgstr ""
 
@@ -40,6 +52,11 @@ msgid "A disabled letter head cannot be the default one."
 msgstr ""
 
 msgid "A document cannot renew itself."
+msgstr ""
+
+msgid ""
+"A file path or URL. Referenced from the header above, or used on its "
+"own."
 msgstr ""
 
 msgid "A filter on {0} may only narrow {0}."
@@ -101,6 +118,11 @@ msgstr ""
 msgid "A name cannot be empty."
 msgstr ""
 
+msgid ""
+"A named version is never thinned out. The automatic ones are, once they "
+"are old enough to be too many."
+msgstr ""
+
 msgid "A new {0} file is not something this can make."
 msgstr ""
 
@@ -152,6 +174,9 @@ msgstr ""
 msgid "A template written for a record can say {{ doc.customer }} and mean it."
 msgstr ""
 
+msgid "A workspace owner can turn it on under Settings, AI."
+msgstr ""
+
 msgid "A {0} has no rows called {1} to fill."
 msgstr ""
 
@@ -170,13 +195,22 @@ msgstr ""
 msgid "Access"
 msgstr ""
 
+msgid "Add a column"
+msgstr ""
+
 msgid "Add a connection"
 msgstr ""
 
 msgid "Add a file"
 msgstr ""
 
+msgid "Add a mailbox"
+msgstr ""
+
 msgid "Add a picture"
+msgstr ""
+
+msgid "Add a section"
 msgstr ""
 
 msgid "Add a tag"
@@ -194,10 +228,19 @@ msgstr ""
 msgid "Add domain"
 msgstr ""
 
+msgid "Add filter"
+msgstr ""
+
 msgid "Add one on {0} and mail to it arrives here."
 msgstr ""
 
 msgid "Add rule"
+msgstr ""
+
+msgid "Add to favourites"
+msgstr ""
+
+msgid "Add {0} to favourites"
 msgstr ""
 
 msgid "Add-ons"
@@ -247,7 +290,25 @@ msgstr ""
 msgid "Alex Rivera"
 msgstr ""
 
+msgid "Align labels right"
+msgstr ""
+
+msgid "Align to the centre"
+msgstr ""
+
+msgid "Align to the end"
+msgstr ""
+
+msgid "Align to the start"
+msgstr ""
+
 msgid "All conversations"
+msgstr ""
+
+msgid "All day"
+msgstr ""
+
+msgid "All files"
 msgstr ""
 
 msgid "All mail"
@@ -256,7 +317,13 @@ msgstr ""
 msgid "All {0}"
 msgstr ""
 
+msgid "All {0} templates…"
+msgstr ""
+
 msgid "Allowed domains"
+msgstr ""
+
+msgid "Also to"
 msgstr ""
 
 msgid "Always on"
@@ -287,6 +354,9 @@ msgstr ""
 msgid "An app password where the provider needs one."
 msgstr ""
 
+msgid "An earlier version"
+msgstr ""
+
 msgid ""
 "An invited person gets a welcome email within a few minutes. Removing "
 "someone stops them signing in; the work they created stays in the "
@@ -300,6 +370,11 @@ msgid "And for the ones that file things somebody does."
 msgstr ""
 
 msgid "Any record"
+msgstr ""
+
+msgid ""
+"Any record that refuses the change — a submitted one, or a value a rule "
+"forbids — is left alone and named."
 msgstr ""
 
 msgid "Anybody"
@@ -346,13 +421,36 @@ msgstr ""
 msgid "Arrange {0}"
 msgstr ""
 
+msgid ""
+"Ask about anything in this workspace — the records on your screens, your "
+"files, what a document says. Only what you can already open."
+msgstr ""
+
+msgid "Ask about this workspace"
+msgstr ""
+
+msgid "Ask about {0}"
+msgstr ""
+
 msgid "Ask something first."
 msgstr ""
 
 msgid "Assign to"
 msgstr ""
 
+msgid "Assign {0} record"
+msgstr ""
+
+msgid "Assign {0} records"
+msgstr ""
+
 msgid "Assigned to"
+msgstr ""
+
+msgid "Assignments, mentions and alerts turn up here."
+msgstr ""
+
+msgid "Assignments, mentions and workspace notices, in the app."
 msgstr ""
 
 msgid "Assistant"
@@ -373,11 +471,14 @@ msgstr ""
 msgid "Attached"
 msgstr ""
 
+msgid "Back to the canvas"
+msgstr ""
+
 msgid "Back to the default screen"
 msgstr ""
 
 msgid "Back to your spaces"
-msgstr ""
+msgstr "العودة إلى مساحاتك"
 
 msgid "Back to {0}"
 msgstr ""
@@ -389,6 +490,9 @@ msgid "Backups Per Day"
 msgstr ""
 
 msgid "Base Url"
+msgstr ""
+
+msgid "Bcc"
 msgstr ""
 
 msgid "Becomes {0}"
@@ -407,6 +511,9 @@ msgid "Between 0 and {0} days."
 msgstr ""
 
 msgid "Billing, storage add-ons and your plan are in your {0} account."
+msgstr ""
+
+msgid "Blank sheet"
 msgstr ""
 
 msgid "Board"
@@ -436,7 +543,13 @@ msgstr ""
 msgid "Both the current and the new password are needed."
 msgstr ""
 
+msgid "Bottom (mm)"
+msgstr ""
+
 msgid "Brand colour as hex"
+msgstr ""
+
+msgid "Breadcrumb"
 msgstr ""
 
 msgid ""
@@ -479,6 +592,9 @@ msgid "Cached from the control plane"
 msgstr ""
 
 msgid "Cached manifest"
+msgstr ""
+
+msgid "Calculate"
 msgstr ""
 
 msgid "Can edit"
@@ -546,6 +662,18 @@ msgstr ""
 msgid "Catalogue Json"
 msgstr ""
 
+msgid "Cc"
+msgstr ""
+
+msgid "Cc and Bcc"
+msgstr ""
+
+msgid "Centre"
+msgstr ""
+
+msgid "Centred"
+msgstr ""
+
 msgid "Change password"
 msgstr ""
 
@@ -561,6 +689,9 @@ msgstr ""
 msgid "Change the servers"
 msgstr ""
 
+msgid "Change them"
+msgstr ""
+
 msgid "Change to this plan"
 msgstr ""
 
@@ -574,6 +705,12 @@ msgid "Change your card, download an invoice or cancel from there."
 msgstr ""
 
 msgid "Change your password"
+msgstr ""
+
+msgid "Change {0} record"
+msgstr ""
+
+msgid "Change {0} records"
 msgstr ""
 
 msgid "Chart of accounts"
@@ -603,6 +740,9 @@ msgstr ""
 msgid "Choose"
 msgstr ""
 
+msgid "Choose a file"
+msgstr ""
+
 msgid "Choose columns"
 msgstr ""
 
@@ -610,6 +750,9 @@ msgid "Choose {0}"
 msgstr ""
 
 msgid "Claim it"
+msgstr ""
+
+msgid "Clear all"
 msgstr ""
 
 msgid "Clear the filters"
@@ -624,13 +767,25 @@ msgstr ""
 msgid "Close and go back"
 msgstr ""
 
+msgid "Close history"
+msgstr ""
+
 msgid "Close settings"
+msgstr ""
+
+msgid "Close the assistant"
 msgstr ""
 
 msgid "Close the record"
 msgstr ""
 
+msgid "Collapse uploads"
+msgstr ""
+
 msgid "Colour {0} {1}"
+msgstr ""
+
+msgid "Columns of"
 msgstr ""
 
 msgid "Comma separated. A mailbox on anything else is refused."
@@ -660,16 +815,37 @@ msgstr ""
 msgid "Contains"
 msgstr ""
 
+msgid "Contains…"
+msgstr ""
+
 msgid "Copied"
 msgstr ""
 
 msgid "Copy"
 msgstr ""
 
+msgid "Copy as Markdown"
+msgstr ""
+
+msgid "Copy link"
+msgstr ""
+
+msgid "Copy the link"
+msgstr ""
+
 msgid "Correspondence"
 msgstr ""
 
+msgid "Could not save"
+msgstr ""
+
+msgid "Count by"
+msgstr ""
+
 msgid "Counter moved"
+msgstr ""
+
+msgid "Counting"
 msgstr ""
 
 msgid "Counting from"
@@ -721,6 +897,9 @@ msgstr ""
 msgid "Delete for good"
 msgstr ""
 
+msgid "Delete it"
+msgstr ""
+
 msgid "Delete it all"
 msgstr ""
 
@@ -728,6 +907,9 @@ msgid "Delete role"
 msgstr ""
 
 msgid "Delete this alert"
+msgstr ""
+
+msgid "Delete this conversation"
 msgstr ""
 
 msgid "Delete this format"
@@ -760,6 +942,12 @@ msgstr ""
 msgid "Disconnect this mailbox"
 msgstr ""
 
+msgid "Dismiss uploads"
+msgstr ""
+
+msgid "Do not upload {0}"
+msgstr ""
+
 msgid "Doc"
 msgstr ""
 
@@ -772,10 +960,32 @@ msgstr ""
 msgid "Domain verified"
 msgstr ""
 
+msgid "Download as HTML"
+msgstr ""
+
+msgid "Drag to reorder, or use the arrows"
+msgstr ""
+
+msgid ""
+"Drop a file here, or choose one from this device. It goes into your "
+"files and gets used here."
+msgstr ""
+
+msgid ""
+"Drop files here, or choose them from this device. They go into your "
+"files and get used here."
+msgstr ""
+
+msgid "Drop here"
+msgstr ""
+
 msgid "Dry Run"
 msgstr ""
 
 msgid "Edit alert"
+msgstr ""
+
+msgid "Edit event"
 msgstr ""
 
 msgid "Edit role"
@@ -788,6 +998,12 @@ msgid "Edit this alert"
 msgstr ""
 
 msgid "Edit this letter head"
+msgstr ""
+
+msgid "Elements"
+msgstr ""
+
+msgid "Email me as well"
 msgstr ""
 
 msgid ""
@@ -805,6 +1021,12 @@ msgid "Empty the bin"
 msgstr ""
 
 msgid "Empty the bin to get that back now"
+msgstr ""
+
+msgid "Encode field"
+msgstr ""
+
+msgid "Ends"
 msgstr ""
 
 msgid "Ends with"
@@ -845,6 +1067,11 @@ msgid "Every seat is taken. Change plan to invite more people."
 msgstr ""
 
 msgid ""
+"Everybody chosen is added to these records. Nobody already on them comes "
+"off."
+msgstr ""
+
+msgid ""
 "Everyone gets the basics of each app this workspace has. Tick anything "
 "more this person needs."
 msgstr ""
@@ -858,6 +1085,9 @@ msgstr ""
 msgid "Everyone on this workspace"
 msgstr ""
 
+msgid "Everyone on this workspace can use it"
+msgstr ""
+
 msgid "Everything here is deleted after thirty days"
 msgstr ""
 
@@ -865,6 +1095,9 @@ msgid "Everything in the bin is deleted for good. This cannot be undone."
 msgstr ""
 
 msgid "Everything that points at this record keeps working. The old id stops."
+msgstr ""
+
+msgid "Expand uploads"
 msgstr ""
 
 msgid "Expiring"
@@ -899,6 +1132,9 @@ msgid ""
 msgstr ""
 
 msgid "Fewer filters"
+msgstr ""
+
+msgid "Fewer folders"
 msgstr ""
 
 msgid "Field Map"
@@ -937,10 +1173,22 @@ msgstr ""
 msgid "Filing"
 msgstr ""
 
+msgid "Fill"
+msgstr ""
+
+msgid "Fill again"
+msgstr ""
+
+msgid "Fill the row"
+msgstr ""
+
 msgid "Fill the window"
 msgstr ""
 
 msgid "Filled"
+msgstr ""
+
+msgid "Filled from {0}"
 msgstr ""
 
 msgid "Filled in on the old document when a new one names it."
@@ -955,6 +1203,9 @@ msgstr ""
 msgid "Financial year starts"
 msgstr ""
 
+msgid "Find a field"
+msgstr ""
+
 msgid "Finished On"
 msgstr ""
 
@@ -967,6 +1218,9 @@ msgstr ""
 msgid "Folders refreshed"
 msgstr ""
 
+msgid "Follow the sheet again"
+msgstr ""
+
 msgid "Follow the workspace"
 msgstr ""
 
@@ -977,6 +1231,12 @@ msgid ""
 "Following: filling again replaces these rows. Locked: the document is "
 "the record now and the sheet is history, so a pull is refused until "
 "somebody unlocks it."
+msgstr ""
+
+msgid "Font size (pt)"
+msgstr ""
+
+msgid "Footer align"
 msgstr ""
 
 msgid "For a record"
@@ -994,12 +1254,18 @@ msgstr ""
 msgid "Format saved"
 msgstr ""
 
+msgid "Format: {0}"
+msgstr ""
+
 msgid ""
 "Frappe has no opinion here; these are the roles a provider accepts, and "
 "`ai/transcript.py` maps them on."
 msgstr ""
 
 msgid "Free some space or remove people first, and this plan becomes available."
+msgstr ""
+
+msgid "From field"
 msgstr ""
 
 msgid "From the source site's own user."
@@ -1009,6 +1275,9 @@ msgid "From {0}"
 msgstr ""
 
 msgid "From {0} if left blank"
+msgstr ""
+
+msgid "Full width"
 msgstr ""
 
 msgid "Give it a name."
@@ -1029,6 +1298,12 @@ msgstr ""
 msgid "Grid"
 msgstr ""
 
+msgid "Group rows by"
+msgstr ""
+
+msgid "HTML, rendered as a template with the document in scope."
+msgstr ""
+
 msgid "Head Seq"
 msgstr ""
 
@@ -1038,10 +1313,19 @@ msgstr ""
 msgid "Heart a file to keep it here."
 msgstr ""
 
+msgid "Height (px)"
+msgstr ""
+
 msgid "Hidden from your menu"
 msgstr ""
 
 msgid "Hidden views are back"
+msgstr ""
+
+msgid "Hide Cc and Bcc"
+msgstr ""
+
+msgid "Hide it from my menu"
 msgstr ""
 
 msgid "Hide servers"
@@ -1053,6 +1337,12 @@ msgstr ""
 msgid ""
 "How long before the expiry this starts saying so. Thirty days is a month "
 "to renew a licence; a visa wants more."
+msgstr ""
+
+msgid "How many"
+msgstr ""
+
+msgid "How many of each"
 msgstr ""
 
 msgid "How many rows to fetch"
@@ -1084,6 +1374,9 @@ msgid ""
 "document, not the workspace's about all of them."
 msgstr ""
 
+msgid "How {0} matches"
+msgstr ""
+
 msgid "Html"
 msgstr ""
 
@@ -1096,6 +1389,12 @@ msgstr ""
 msgid ""
 "If you already have an SPF record, add the include to it rather than "
 "publishing a second one — two SPF records is the same as none."
+msgstr ""
+
+msgid "Image height (px)"
+msgstr ""
+
+msgid "Image width (px)"
 msgstr ""
 
 msgid "Import Identity"
@@ -1122,6 +1421,15 @@ msgstr ""
 msgid "Import a spreadsheet"
 msgstr ""
 
+msgid "Importing"
+msgstr ""
+
+msgid "In All files"
+msgstr ""
+
+msgid "In app"
+msgstr ""
+
 msgid ""
 "In dependency order — parties before the invoices that link to them. A "
 "link that points at a step not yet run is an issue on the row, not a "
@@ -1129,6 +1437,12 @@ msgid ""
 msgstr ""
 
 msgid "In the app"
+msgstr ""
+
+msgid "In this table"
+msgstr ""
+
+msgid "In {0}"
 msgstr ""
 
 msgid "Included with every plan"
@@ -1163,10 +1477,24 @@ msgid ""
 "An admin can change that."
 msgstr ""
 
+msgid "It stops working after"
+msgstr ""
+
 msgid "It switches itself off the day after this."
 msgstr ""
 
+msgid ""
+"It was saved {0}. Reloading takes what is on the server; anything typed "
+"here and not saved goes with it."
+msgstr ""
+
+msgid "Keep this one"
+msgstr ""
+
 msgid "Kept encrypted. Leave blank to keep the one already saved."
+msgstr ""
+
+msgid "Keyboard shortcuts"
 msgstr ""
 
 msgid "Kind"
@@ -1205,7 +1533,13 @@ msgstr ""
 msgid "Layout"
 msgstr ""
 
+msgid "Leave it empty for a moment rather than a span."
+msgstr ""
+
 msgid "Leave it empty to send the subject on its own."
+msgstr ""
+
+msgid "Left (mm)"
 msgstr ""
 
 msgid "Letter head"
@@ -1217,6 +1551,9 @@ msgstr ""
 msgid "Letter head saved"
 msgstr ""
 
+msgid "Letter head: {0}"
+msgstr ""
+
 msgid "Letter heads"
 msgstr ""
 
@@ -1224,6 +1561,15 @@ msgid "Licence"
 msgstr ""
 
 msgid "Light, dark, or matching your system."
+msgstr ""
+
+msgid "Line spacing"
+msgstr ""
+
+msgid "Link copied"
+msgstr ""
+
+msgid "Link made"
 msgstr ""
 
 msgid "Live and serving your workspace."
@@ -1235,16 +1581,40 @@ msgstr ""
 msgid "Loading files"
 msgstr ""
 
+msgid "Lock against typing"
+msgstr ""
+
+msgid "Lock these rows"
+msgstr ""
+
 msgid "Locked By"
 msgstr ""
 
 msgid "Locked On"
 msgstr ""
 
+msgid "Locked — unlock it from the menu to type"
+msgstr ""
+
 msgid "Look at"
 msgstr ""
 
+msgid "Look at {0}"
+msgstr ""
+
+msgid "Looking at {0}."
+msgstr ""
+
+msgid "Looking…"
+msgstr ""
+
+msgid "Loose"
+msgstr ""
+
 msgid "Lower runs first. The first rule that matches wins."
+msgstr ""
+
+msgid "Made on the mail server, so it appears in your other mail apps too."
 msgstr ""
 
 msgid "Mail"
@@ -1268,13 +1638,33 @@ msgstr ""
 msgid "Mailbox disconnected"
 msgstr ""
 
+msgid "Make a link"
+msgstr ""
+
 msgid "Make default"
 msgstr ""
 
 msgid "Make it"
 msgstr ""
 
+msgid "Make it mine alone"
+msgstr ""
+
+msgid "Make one from the header, then move things into it."
+msgstr ""
+
+msgid ""
+"Make one in Files, price the job in it, then name the rows you want "
+"back."
+msgstr ""
+
 msgid "Make the tag “{0}”"
+msgstr ""
+
+msgid "Make this column wider"
+msgstr ""
+
+msgid "Making the sheet…"
 msgstr ""
 
 msgid "Malformed signature."
@@ -1284,6 +1674,9 @@ msgid "Manage billing"
 msgstr ""
 
 msgid "Manage people"
+msgstr ""
+
+msgid "Manage templates…"
 msgstr ""
 
 msgid ""
@@ -1297,10 +1690,16 @@ msgstr ""
 msgid "Mark Read"
 msgstr ""
 
+msgid "Mark all read"
+msgstr ""
+
 msgid "Mark it read"
 msgstr ""
 
 msgid "Mark unread"
+msgstr ""
+
+msgid "Markdown file"
 msgstr ""
 
 msgid "Marked read"
@@ -1338,6 +1737,9 @@ msgstr ""
 msgid "Microsoft needs an app password where two-factor is on."
 msgstr ""
 
+msgid "Mine"
+msgstr ""
+
 msgid "Missing signature."
 msgstr ""
 
@@ -1350,7 +1752,13 @@ msgstr ""
 msgid "More filters"
 msgstr ""
 
+msgid "More folders"
+msgstr ""
+
 msgid "More for this record"
+msgstr ""
+
+msgid "More for {0}"
 msgstr ""
 
 msgid "More than and less than need a number."
@@ -1368,7 +1776,16 @@ msgstr ""
 msgid "Move to Trash"
 msgstr ""
 
+msgid "Move to a folder"
+msgstr ""
+
 msgid "Move to the bin"
+msgstr ""
+
+msgid "Move {0} down"
+msgstr ""
+
+msgid "Move {0} up"
 msgstr ""
 
 msgid "Moved"
@@ -1391,10 +1808,22 @@ msgstr ""
 msgid "Moving about"
 msgstr ""
 
+msgid "Moving {0} things."
+msgstr ""
+
+msgid "Moving {0}."
+msgstr ""
+
 msgid "Must be unique"
 msgstr ""
 
 msgid "Name somebody to share this with."
+msgstr ""
+
+msgid "Name this version"
+msgstr ""
+
+msgid "Named range"
 msgstr ""
 
 msgid ""
@@ -1423,6 +1852,9 @@ msgstr ""
 msgid "New folder"
 msgstr ""
 
+msgid "New folder in {0}"
+msgstr ""
+
 msgid "New format"
 msgstr ""
 
@@ -1438,7 +1870,13 @@ msgstr ""
 msgid "New mail for this address arrives here."
 msgstr ""
 
+msgid "New message"
+msgstr ""
+
 msgid "New password"
+msgstr ""
+
+msgid "New print format"
 msgstr ""
 
 msgid "New records are paused. Nothing is lost — delete something, or upgrade."
@@ -1471,6 +1909,9 @@ msgstr ""
 msgid "No apps yet"
 msgstr ""
 
+msgid "No camera was found on this device."
+msgstr ""
+
 msgid "No changes recorded"
 msgstr ""
 
@@ -1483,6 +1924,9 @@ msgstr ""
 msgid "No dates to draw"
 msgstr ""
 
+msgid "No earlier versions yet"
+msgstr ""
+
 msgid "No expiry"
 msgstr ""
 
@@ -1492,10 +1936,22 @@ msgstr ""
 msgid "No field"
 msgstr ""
 
+msgid "No field by that name"
+msgstr ""
+
 msgid "No files"
 msgstr ""
 
+msgid "No files here yet — upload one instead."
+msgstr ""
+
 msgid "No files yet"
+msgstr ""
+
+msgid "No filters yet. Add one to narrow the list."
+msgstr ""
+
+msgid "No folders"
 msgstr ""
 
 msgid "No further detail was returned."
@@ -1543,6 +1999,9 @@ msgstr ""
 msgid "No {0} against this yet."
 msgstr ""
 
+msgid "No {0} files here yet — upload one instead."
+msgstr ""
+
 msgid "No {0} to nest."
 msgstr ""
 
@@ -1575,6 +2034,9 @@ msgid ""
 "a logo, an address, a footer — and one format can use another's."
 msgstr ""
 
+msgid "Normal"
+msgstr ""
+
 msgid "Not about this record"
 msgstr ""
 
@@ -1588,6 +2050,9 @@ msgid "Not on this plan"
 msgstr ""
 
 msgid "Not permitted."
+msgstr ""
+
+msgid "Not pinned"
 msgstr ""
 
 msgid "Not read yet"
@@ -1616,8 +2081,11 @@ msgstr ""
 msgid "Not yours to set up."
 msgstr ""
 
-msgid "Nothing at this address"
+msgid "Nothing"
 msgstr ""
+
+msgid "Nothing at this address"
+msgstr "لا يوجد شيء على هذا العنوان"
 
 msgid "Nothing can be created for {0} here."
 msgstr ""
@@ -1689,6 +2157,9 @@ msgstr ""
 msgid "Nothing matches “{0}”"
 msgstr ""
 
+msgid "Nothing matches “{0}”."
+msgstr ""
+
 msgid "Nothing on offer yet"
 msgstr ""
 
@@ -1704,6 +2175,9 @@ msgstr ""
 msgid "Nothing opened yet"
 msgstr ""
 
+msgid "Nothing selected"
+msgstr ""
+
 msgid "Nothing shared with you"
 msgstr ""
 
@@ -1714,6 +2188,9 @@ msgid "Nothing to alert on"
 msgstr ""
 
 msgid "Nothing to choose from"
+msgstr ""
+
+msgid "Nothing to count — every record here leaves this field empty."
 msgstr ""
 
 msgid "Nothing to import"
@@ -1752,6 +2229,9 @@ msgstr ""
 msgid "Nothing yet"
 msgstr ""
 
+msgid "Nothing yet."
+msgstr ""
+
 msgid "Nothing you have liked is on this screen."
 msgstr ""
 
@@ -1762,6 +2242,9 @@ msgid "Notifications ({0})"
 msgstr ""
 
 msgid "Notifications leave from"
+msgstr ""
+
+msgid "Off means the app only, whatever is ticked below."
 msgstr ""
 
 msgid ""
@@ -1776,10 +2259,21 @@ msgstr ""
 msgid "On"
 msgstr ""
 
+msgid "On each card"
+msgstr ""
+
+msgid "On this list"
+msgstr ""
+
 msgid ""
 "On {0} everything held for this workspace is deleted for good — the "
 "database, every file and every backup. Paying before then restores it in "
 "full."
+msgstr ""
+
+msgid ""
+"One is kept the first time this is saved, and every few minutes of work "
+"after that."
 msgstr ""
 
 msgid ""
@@ -1793,10 +2287,16 @@ msgstr ""
 msgid "One person"
 msgstr ""
 
+msgid "One record will have {0} set to this."
+msgstr ""
+
 msgid "One seat"
 msgstr ""
 
 msgid "One seat used"
+msgstr ""
+
+msgid "One, two, three"
 msgstr ""
 
 msgid "OneSpace AI Feature Setting"
@@ -1889,10 +2389,21 @@ msgstr ""
 msgid "Only when"
 msgstr ""
 
+msgid "Open as a page"
+msgstr ""
+
 msgid "Open in the builder"
 msgstr ""
 
 msgid "Open in the editor"
+msgstr ""
+
+msgid "Open it"
+msgstr ""
+
+msgid ""
+"Open it, select the rows including their headings, and choose Name this "
+"range."
 msgstr ""
 
 msgid "Open on its own screen"
@@ -1904,6 +2415,9 @@ msgstr ""
 msgid "Open this row"
 msgstr ""
 
+msgid "Open this screen with it"
+msgstr ""
+
 msgid "Open {0} beside this"
 msgstr ""
 
@@ -1911,6 +2425,9 @@ msgid "Open {0} in the editor"
 msgstr ""
 
 msgid "Opens this screen for whoever this screen belongs to."
+msgstr ""
+
+msgid "Or a fixed image URL"
 msgstr ""
 
 msgid "Or an emoji"
@@ -1924,7 +2441,15 @@ msgid ""
 "that answer it are written in one request and can share a timestamp."
 msgstr ""
 
+msgid ""
+"Otherwise it is yours alone. Sharing does not widen what the view can "
+"reach."
+msgstr ""
+
 msgid "Outgoing (SMTP)"
+msgstr ""
+
+msgid "Outline"
 msgstr ""
 
 msgid "Outside mailboxes"
@@ -1936,7 +2461,16 @@ msgstr ""
 msgid "Over the limit, but not blocked until {0}."
 msgstr ""
 
+msgid "Overdue and mine"
+msgstr ""
+
 msgid "Page Length"
+msgstr ""
+
+msgid "Page number"
+msgstr ""
+
+msgid "Page setup"
 msgstr ""
 
 msgid "Password changed"
@@ -1951,10 +2485,16 @@ msgstr ""
 msgid "People"
 msgstr ""
 
+msgid "Permission for the camera was refused."
+msgstr ""
+
 msgid "Permit"
 msgstr ""
 
 msgid "Person"
+msgstr ""
+
+msgid "Photo {0}.jpg"
 msgstr ""
 
 msgid "Pick a conversation from the list."
@@ -1963,7 +2503,22 @@ msgstr ""
 msgid "Pick an icon"
 msgstr ""
 
+msgid "Pick something on the page to change what it says."
+msgstr ""
+
 msgid "Pick the date to count from."
+msgstr ""
+
+msgid "Pick two dates"
+msgstr ""
+
+msgid "Pin"
+msgstr ""
+
+msgid "Pin to the left edge"
+msgstr ""
+
+msgid "Pin to the right edge"
 msgstr ""
 
 msgid "Place Of Issue"
@@ -1997,6 +2552,9 @@ msgid ""
 "the default — so nothing is added to the page. Make one default."
 msgstr ""
 
+msgid "Privately to"
+msgstr ""
+
 msgid "Problems"
 msgstr ""
 
@@ -2012,10 +2570,22 @@ msgstr ""
 msgid "Pulled On"
 msgstr ""
 
+msgid "Push"
+msgstr ""
+
+msgid "Push notifications are not available yet"
+msgstr ""
+
 msgid "Push notifications are not available yet."
 msgstr ""
 
 msgid "Put back"
+msgstr ""
+
+msgid "Put it back"
+msgstr ""
+
+msgid "Quarterly review"
 msgstr ""
 
 msgid "Quota Enforcement"
@@ -2024,13 +2594,25 @@ msgstr ""
 msgid "Read everything, change nothing, and say what would happen"
 msgstr ""
 
+msgid "Reading…"
+msgstr ""
+
 msgid "Reads invoices and contacts, edits neither."
 msgstr ""
 
 msgid "Ready"
 msgstr ""
 
+msgid "Recent"
+msgstr ""
+
 msgid "Recommended"
+msgstr ""
+
+msgid "Refresh folders"
+msgstr ""
+
+msgid "Refreshing…"
 msgstr ""
 
 msgid "Refused"
@@ -2051,7 +2633,13 @@ msgstr ""
 msgid "Released"
 msgstr ""
 
+msgid "Reload it"
+msgstr ""
+
 msgid "Reminded On"
+msgstr ""
+
+msgid "Remove from favourites"
 msgstr ""
 
 msgid "Remove it"
@@ -2066,16 +2654,36 @@ msgstr ""
 msgid "Remove this address"
 msgstr ""
 
+msgid "Remove this column"
+msgstr ""
+
+msgid "Remove this filter"
+msgstr ""
+
 msgid "Remove this row"
+msgstr ""
+
+msgid "Remove this section"
 msgstr ""
 
 msgid "Remove {0}"
 msgstr ""
 
+msgid "Remove {0} from favourites"
+msgstr ""
+
 msgid "Rename this record"
 msgstr ""
 
+msgid "Rename this view"
+msgstr ""
+
 msgid "Renamed"
+msgstr ""
+
+msgid ""
+"Rendered as a template with the document in scope, so {{ doc.customer }} "
+"works."
 msgstr ""
 
 msgid "Rendering"
@@ -2087,7 +2695,16 @@ msgstr ""
 msgid "Renews"
 msgstr ""
 
+msgid "Repeats at the bottom of every page."
+msgstr ""
+
+msgid "Repeats at the top of every page."
+msgstr ""
+
 msgid "Replace the image"
+msgstr ""
+
+msgid "Replace these rows with {0}"
 msgstr ""
 
 msgid "Reply automatically while I am away"
@@ -2102,7 +2719,16 @@ msgstr ""
 msgid "Reset the columns"
 msgstr ""
 
+msgid "Restore this version"
+msgstr ""
+
 msgid "Retention is a percentage of the invoice, between 0 and 100."
+msgstr ""
+
+msgid "Retired"
+msgstr ""
+
+msgid "Right (mm)"
 msgstr ""
 
 msgid "Roles JSON"
@@ -2115,6 +2741,9 @@ msgid "Roles you built"
 msgstr ""
 
 msgid "Roles your apps came with"
+msgstr ""
+
+msgid "Rows are sorted by this first, so each group arrives whole."
 msgstr ""
 
 msgid "Rows that were refused"
@@ -2132,6 +2761,9 @@ msgstr ""
 msgid "Run"
 msgstr ""
 
+msgid "Save as a new view"
+msgstr ""
+
 msgid "Save away message"
 msgstr ""
 
@@ -2144,7 +2776,19 @@ msgstr ""
 msgid "Save series"
 msgstr ""
 
+msgid "Save the changes here"
+msgstr ""
+
 msgid "Save this first, and you can attach files to it."
+msgstr ""
+
+msgid "Save this version"
+msgstr ""
+
+msgid "Saved views"
+msgstr ""
+
+msgid "Saved {0}"
 msgstr ""
 
 msgid "Saved — it takes effect shortly"
@@ -2156,6 +2800,12 @@ msgstr ""
 msgid ""
 "Saves between this version and the one before it. The panel says '3 "
 "changes' rather than nothing at all."
+msgstr ""
+
+msgid "Saving {0} cells…"
+msgstr ""
+
+msgid "Saving…"
 msgstr ""
 
 msgid "Say when it starts."
@@ -2173,6 +2823,9 @@ msgstr ""
 msgid "Search files"
 msgstr ""
 
+msgid "Search folders"
+msgstr ""
+
 msgid "Search icons"
 msgstr ""
 
@@ -2186,6 +2839,9 @@ msgid "Search…"
 msgstr ""
 
 msgid "Secret"
+msgstr ""
+
+msgid "Section {0}"
 msgstr ""
 
 msgid "Security"
@@ -2242,6 +2898,9 @@ msgstr ""
 msgid "Series saved"
 msgstr ""
 
+msgid "Serif"
+msgstr ""
+
 msgid "Session"
 msgstr ""
 
@@ -2260,16 +2919,25 @@ msgstr ""
 msgid "Settings for these rows"
 msgstr ""
 
+msgid "Share a link"
+msgstr ""
+
 msgid "Share removed"
 msgstr ""
 
 msgid "Share this record"
 msgstr ""
 
+msgid "Share with the workspace"
+msgstr ""
+
 msgid "Shared with"
 msgstr ""
 
 msgid "Shared with everyone on this workspace"
+msgstr ""
+
+msgid "Shared with me"
 msgstr ""
 
 msgid "Shared with {0}"
@@ -2308,6 +2976,15 @@ msgstr ""
 msgid "Show in Files"
 msgstr ""
 
+msgid "Show the hidden view"
+msgstr ""
+
+msgid "Show the label"
+msgstr ""
+
+msgid "Show {0} hidden views"
+msgstr ""
+
 msgid "Show {0} more"
 msgstr ""
 
@@ -2315,6 +2992,9 @@ msgid "Showing the {0} most recent comments of {1}."
 msgstr ""
 
 msgid "Sign out everywhere else"
+msgstr ""
+
+msgid "Signature and away"
 msgstr ""
 
 msgid "Signature expired."
@@ -2327,6 +3007,9 @@ msgid "Signed copy"
 msgstr ""
 
 msgid "Signed in as"
+msgstr ""
+
+msgid "Signed off by the client"
 msgstr ""
 
 msgid "Signed out everywhere else"
@@ -2349,6 +3032,12 @@ msgstr ""
 msgid "Somebody on this workspace"
 msgstr ""
 
+msgid "Someone else changed this"
+msgstr ""
+
+msgid "Something else is already using the camera."
+msgstr ""
+
 msgid "Something happened"
 msgstr ""
 
@@ -2369,6 +3058,12 @@ msgid "Spaces"
 msgstr ""
 
 msgid "Spaces JSON"
+msgstr ""
+
+msgid "Spread apart"
+msgstr ""
+
+msgid "Spread evenly"
 msgstr ""
 
 msgid ""
@@ -2397,13 +3092,28 @@ msgstr ""
 msgid "Start over"
 msgstr ""
 
+msgid "Start writing…"
+msgstr ""
+
 msgid "Started On"
+msgstr ""
+
+msgid "Starts"
 msgstr ""
 
 msgid "Starts with"
 msgstr ""
 
+msgid "Stop following"
+msgstr ""
+
 msgid "Stop sharing with {0}"
+msgstr ""
+
+msgid "Stop the camera"
+msgstr ""
+
+msgid "Stop this link working"
 msgstr ""
 
 msgid "Stop using as a template"
@@ -2429,16 +3139,28 @@ msgid ""
 "Delete some files or upgrade your plan."
 msgstr ""
 
+msgid "Switch camera"
+msgstr ""
+
 msgid "Switch workspace"
 msgstr ""
 
 msgid "Synced from the plan. Zero means unconfigured, not zero allowed."
 msgstr ""
 
+msgid "Tables"
+msgstr ""
+
 msgid "Tag this"
 msgstr ""
 
 msgid "Tags: {0}"
+msgstr ""
+
+msgid "Take another"
+msgstr ""
+
+msgid "Take photo"
 msgstr ""
 
 msgid "Take your address"
@@ -2474,6 +3196,9 @@ msgid "Tenant"
 msgstr ""
 
 msgid "Test"
+msgstr ""
+
+msgid "Text file"
 msgstr ""
 
 msgid "That"
@@ -2531,6 +3256,9 @@ msgid "That file is not yours to attach."
 msgstr ""
 
 msgid "That file is too big to open here. Download it instead."
+msgstr ""
+
+msgid "That is as many as a card carries."
 msgstr ""
 
 msgid "That is as many letter heads as one workspace can hold."
@@ -2598,6 +3326,9 @@ msgstr ""
 msgid "That series would not generate a name"
 msgstr ""
 
+msgid "That sheet is gone"
+msgstr ""
+
 msgid "That upload sent no parts."
 msgstr ""
 
@@ -2647,6 +3378,9 @@ msgstr ""
 msgid "The addresses this workspace sends from, and who may use each."
 msgstr ""
 
+msgid "The assistant is not switched on here"
+msgstr ""
+
 msgid "The authority that issued it."
 msgstr ""
 
@@ -2678,6 +3412,18 @@ msgid ""
 "cannot open."
 msgstr ""
 
+msgid "The camera could not be opened."
+msgstr ""
+
+msgid "The camera is not ready yet."
+msgstr ""
+
+msgid "The columns on the list"
+msgstr ""
+
+msgid "The default"
+msgstr ""
+
 msgid ""
 "The difference is credited against your next invoice, and the new limits "
 "apply straight away."
@@ -2700,6 +3446,11 @@ msgid ""
 "The fieldname of the table these rows landed in. One feed per table: a "
 "second pull into the same table replaces the rows, so it replaces this "
 "too."
+msgstr ""
+
+msgid ""
+"The first row of a range is its headings; there is nothing under them to "
+"bring in."
 msgstr ""
 
 msgid ""
@@ -2754,6 +3505,15 @@ msgstr ""
 msgid "The one that was actually sent, scanned back in."
 msgstr ""
 
+msgid "The page"
+msgstr ""
+
+msgid "The photograph could not be saved."
+msgstr ""
+
+msgid "The photograph just taken"
+msgstr ""
+
 msgid "The platform's own address cannot be changed here."
 msgstr ""
 
@@ -2771,6 +3531,9 @@ msgstr ""
 msgid ""
 "The screen's slug, so two screens over one doctype keep their own "
 "answers."
+msgstr ""
+
+msgid "The sheet has changed since"
 msgstr ""
 
 msgid ""
@@ -2800,10 +3563,16 @@ msgid ""
 "here — a save replaces it whole, which is what the editor does."
 msgstr ""
 
+msgid "The {0} most common. Use Filter for the rest."
+msgstr ""
+
 msgid "Then add it here"
 msgstr ""
 
 msgid "There are no records on this screen."
+msgstr ""
+
+msgid "There are no sheets here yet"
 msgstr ""
 
 msgid "There is already a folder called “{0}” here."
@@ -2820,6 +3589,12 @@ msgstr ""
 msgid "There is no plan called {0}."
 msgstr ""
 
+msgid "There is no preview for this kind of file."
+msgstr ""
+
+msgid "There is no record of this kind yet to draw the preview over."
+msgstr ""
+
 msgid ""
 "There is no sign-up form, on purpose: an account made on this site is "
 "not counted against your seats and is disabled again on the next sync. "
@@ -2834,6 +3609,9 @@ msgid "There is no such version."
 msgstr ""
 
 msgid "There is nothing here to open in a sheet."
+msgstr ""
+
+msgid "There is nothing in that file to import."
 msgstr ""
 
 msgid "There is nothing to assign here."
@@ -2878,12 +3656,27 @@ msgstr ""
 msgid "This browser"
 msgstr ""
 
+msgid "This browser has no camera support."
+msgstr ""
+
+msgid "This browser would not let the page copy to the clipboard."
+msgstr ""
+
 msgid ""
 "This cannot be undone. Anything still linked to elsewhere is kept, and "
 "named."
 msgstr ""
 
 msgid "This company's chart of accounts has nowhere to put retention."
+msgstr ""
+
+msgid "This could not be imported"
+msgstr ""
+
+msgid "This could not be read"
+msgstr ""
+
+msgid "This device"
 msgstr ""
 
 msgid "This has already been amended."
@@ -2911,6 +3704,9 @@ msgid "This list"
 msgstr ""
 
 msgid "This list did not load"
+msgstr ""
+
+msgid "This one is emailed for you rather than by you"
 msgstr ""
 
 msgid ""
@@ -2980,7 +3776,19 @@ msgstr ""
 msgid "This sheet has no range called {0}."
 msgstr ""
 
+msgid "This sheet has nothing named yet"
+msgstr ""
+
+msgid "This sheet's stored data is not readable."
+msgstr ""
+
 msgid "This space is not open to you"
+msgstr ""
+
+msgid ""
+"This spreadsheet is too large to save (over {0} MB). That is usually "
+"formatting applied across a very large range rather than data — clear "
+"what you do not need, or split it across tabs."
 msgstr ""
 
 msgid "This takes a few seconds."
@@ -3070,6 +3878,12 @@ msgstr ""
 msgid "Tick this conversation"
 msgstr ""
 
+msgid "Tight"
+msgstr ""
+
+msgid "To the right"
+msgstr ""
+
 msgid "Too many at once. Choose {0} or fewer."
 msgstr ""
 
@@ -3083,6 +3897,9 @@ msgid "Tool Calls"
 msgstr ""
 
 msgid "Tool Name"
+msgstr ""
+
+msgid "Top margin (mm)"
 msgstr ""
 
 msgid "Total Created"
@@ -3100,16 +3917,33 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
+msgid "Try {0} again"
+msgstr ""
+
+msgid "Turn on “Email me as well” first"
+msgstr ""
+
+msgid "Turn the camera on"
+msgstr ""
+
 msgid "Turned on for your workspace"
 msgstr ""
 
 msgid "Type to make a tag"
 msgstr ""
 
+msgid "Typeface"
+msgstr ""
+
 msgid ""
 "Uncompressed size of the payload. The number a size cap has to be "
 "measured against, since the compressed one says nothing about what "
 "opening it costs."
+msgstr ""
+
+msgid ""
+"Under the title, in this order. Nothing chosen shows the columns you "
+"have on the list."
 msgstr ""
 
 msgid "Undo the last thing"
@@ -3127,6 +3961,12 @@ msgstr ""
 msgid ""
 "Unless you are replying, or writing on a record that already has "
 "correspondence."
+msgstr ""
+
+msgid "Unlock"
+msgstr ""
+
+msgid "Unsaved"
 msgstr ""
 
 msgid "Unsaved changes"
@@ -3150,7 +3990,16 @@ msgstr ""
 msgid "Until then it can be put back exactly where it was."
 msgstr ""
 
+msgid "Until {0}"
+msgstr ""
+
 msgid "Untitled"
+msgstr ""
+
+msgid "Untitled document"
+msgstr ""
+
+msgid "Untitled view"
 msgstr ""
 
 msgid "Upload a file to start."
@@ -3160,6 +4009,15 @@ msgid "Upload a file, or make a folder to put files in."
 msgstr ""
 
 msgid "Upload files"
+msgstr ""
+
+msgid "Uploading {0} file"
+msgstr ""
+
+msgid "Uploading {0} files"
+msgstr ""
+
+msgid "Uploading {0}%"
 msgstr ""
 
 msgid "Uploads are paused. Delete some files, or buy more storage."
@@ -3174,10 +4032,28 @@ msgstr ""
 msgid "Use a different domain"
 msgstr ""
 
+msgid "Use a different sheet"
+msgstr ""
+
 msgid "Use a different sheet…"
 msgstr ""
 
+msgid "Use a template"
+msgstr ""
+
 msgid "Use as a template"
+msgstr ""
+
+msgid "Use the camera to take a photograph."
+msgstr ""
+
+msgid "Use the phone’s camera"
+msgstr ""
+
+msgid "Use this one by default"
+msgstr ""
+
+msgid "Use this photo"
 msgstr ""
 
 msgid "Use your own domain"
@@ -3187,6 +4063,9 @@ msgid "Verified As"
 msgstr ""
 
 msgid "Verified On"
+msgstr ""
+
+msgid "Version history"
 msgstr ""
 
 msgid "View deleted"
@@ -3288,6 +4167,9 @@ msgstr ""
 msgid "What this system is called to the people leaving it."
 msgstr ""
 
+msgid "What this version is"
+msgstr ""
+
 msgid "What this view type needs that columns and filters do not carry."
 msgstr ""
 
@@ -3300,6 +4182,12 @@ msgstr ""
 msgid ""
 "What to call this version in the panel. A timestamp for an automatic "
 "one; whatever somebody typed for a named one."
+msgstr ""
+
+msgid "What to do with this document"
+msgstr ""
+
+msgid "What to do with this version"
 msgstr ""
 
 msgid "What to read on the source site."
@@ -3385,12 +4273,18 @@ msgstr ""
 msgid "Which columns…"
 msgstr ""
 
+msgid "Which day rather than what time."
+msgstr ""
+
 msgid "Which domain?"
 msgstr ""
 
 msgid ""
 "Which features use a model, which model they use, and anything you want "
 "it to keep in mind."
+msgstr ""
+
+msgid "Which field"
 msgstr ""
 
 msgid ""
@@ -3449,6 +4343,12 @@ msgid ""
 "Empty on a person's own message."
 msgstr ""
 
+msgid "Wide"
+msgstr ""
+
+msgid "Width of {0} in pixels"
+msgstr ""
+
 msgid ""
 "Worked out from the expiry date and the warning window, on save and once "
 "a day. Never typed: a status somebody can set is a status that disagrees "
@@ -3462,6 +4362,9 @@ msgid "Write in British English. Never quote a delivery date."
 msgstr ""
 
 msgid "Write the message"
+msgstr ""
+
+msgid "Write your message"
 msgstr ""
 
 msgid "Writing"
@@ -3615,7 +4518,19 @@ msgstr ""
 msgid "Your workspace is past the {0} limit on this plan"
 msgstr ""
 
+msgid "a day"
+msgstr ""
+
+msgid "a month"
+msgstr ""
+
+msgid "a week"
+msgstr ""
+
 msgid "add a connection first"
+msgstr ""
+
+msgid "and {0} more."
 msgstr ""
 
 msgid "app.yourcompany.com"
@@ -3693,6 +4608,12 @@ msgstr ""
 msgid "nothing yet"
 msgstr ""
 
+msgid "opened {0} time"
+msgstr ""
+
+msgid "opened {0} times"
+msgstr ""
+
 msgid "past due"
 msgstr ""
 
@@ -3733,6 +4654,9 @@ msgid "the sidebar"
 msgstr ""
 
 msgid "this"
+msgstr ""
+
+msgid "three months"
 msgstr ""
 
 msgid "tool"
@@ -3780,7 +4704,13 @@ msgstr ""
 msgid "{0} changed since this run was queued."
 msgstr ""
 
+msgid "{0} changes"
+msgstr ""
+
 msgid "{0} commented on {1} {2}"
+msgstr ""
+
+msgid "{0} copy"
 msgstr ""
 
 msgid "{0} credits"
@@ -3795,7 +4725,37 @@ msgstr ""
 msgid "{0} does not print {1}."
 msgstr ""
 
+msgid "{0} file did not upload"
+msgstr ""
+
+msgid "{0} file uploaded"
+msgstr ""
+
+msgid "{0} files did not upload"
+msgstr ""
+
+msgid "{0} files uploaded"
+msgstr ""
+
+msgid "{0} had no matching field and was left out."
+msgstr ""
+
+msgid "{0} had no matching field and were left out."
+msgstr ""
+
 msgid "{0} has no field called {1}."
+msgstr ""
+
+msgid "{0} has no mailbox server, so this folder lives in OneSpace."
+msgstr ""
+
+msgid "{0} has no matching field here and will be left out."
+msgstr ""
+
+msgid "{0} have no matching field here and will be left out."
+msgstr ""
+
+msgid "{0} home"
 msgstr ""
 
 msgid "{0} is already connected."
@@ -3916,10 +4876,19 @@ msgstr ""
 msgid "{0} permissions"
 msgstr ""
 
+msgid "{0} records will have {1} set to this."
+msgstr ""
+
 msgid "{0} row"
 msgstr ""
 
+msgid "{0} row, from {1}!{2}"
+msgstr ""
+
 msgid "{0} rows"
+msgstr ""
+
+msgid "{0} rows, from {1}!{2}"
 msgstr ""
 
 msgid "{0} runs on a workflow, so it is {1} by taking the next step in it."
@@ -3969,6 +4938,17 @@ msgstr ""
 msgid ""
 "{0} was written as a template rather than drawn, so it cannot be opened "
 "here. It still prints."
+msgstr ""
+
+msgid "{0} word"
+msgstr ""
+
+msgid "{0} words"
+msgstr ""
+
+msgid ""
+"{0} {1} is already {2} {3} in this plan — two steps claim it. Narrow one "
+"step's filters."
 msgstr ""
 
 msgid "{0} — last {1}"
