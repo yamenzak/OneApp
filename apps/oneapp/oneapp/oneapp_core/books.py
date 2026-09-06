@@ -21,6 +21,7 @@ import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate
 
+from oneapp.oneapp_core import workspace
 from oneapp.oneapp_core.workspace import require_owner
 
 # Whether the company on this site was set up from signup's answers rather than
@@ -112,6 +113,15 @@ def status() -> dict:
 		# whether the site is usable at all.
 		"setup_complete": bool(frappe.db.get_single_value("System Settings", "setup_complete")),
 		"defaults": _defaults(),
+		# The two closed lists the form asks for. Only where there is a form to
+		# ask them on: a workspace whose books are set up is shown a summary, and
+		# four hundred names on it would be four hundred names nobody reads.
+		#
+		# Here rather than typed, for the reason `workspace.reference` gives:
+		# these have to match a Frappe row exactly or ERPNext's setup throws, and
+		# nothing on a text box says how the row is spelled.
+		"countries": [] if company else workspace.reference("Country"),
+		"currencies": [] if company else workspace.reference("Currency"),
 		# Set up from signup's answers rather than by a person. Worth saying:
 		# the country and currency came from what they chose, but the chart and
 		# the financial year are ERPNext's defaults for that country, and only
@@ -143,11 +153,17 @@ def _defaults(country: str | None = None, currency: str | None = None,
 	country = country or frappe.db.get_single_value("System Settings", "country")
 	start, end = fiscal_year_for(country)
 
+	name = company_name or frappe.db.get_single_value("Website Settings", "app_name")
+
 	return {
 		"country": country,
 		"currency": currency or frappe.db.get_single_value("System Settings", "currency"),
-		"company_name": company_name
-		or frappe.db.get_single_value("Website Settings", "app_name"),
+		"company_name": name,
+		# The same abbreviation the automatic setup would have used. The panel
+		# had its own one-liner for this and it was a worse one: it truncated to
+		# five characters and *then* dropped what was not a letter, so "3M Corp"
+		# came out "MCO" and "123 Ltd" came out "L".
+		"abbr": _abbreviate(name),
 		"fy_start_date": start,
 		"fy_end_date": end,
 	}
@@ -223,6 +239,7 @@ def _run(company_name: str, abbr: str, country: str, currency: str,
 	}
 
 	setup_complete(frappe._dict(args))
+	apply_regional(country, currency, args.get("language") or "")
 
 	# The wizard sets this from the desk; the programmatic path does not.
 	# ERPNext reads it to decide whether the site is configured, so leaving it
@@ -230,6 +247,96 @@ def _run(company_name: str, abbr: str, country: str, currency: str,
 	frappe.db.set_single_value("System Settings", "setup_complete", 1)
 	frappe.db.set_default(ASSUMED_KEY, "1" if assumed else "0")
 	frappe.db.commit()
+
+
+#: What "nobody has chosen this" looks like, per field. Blank for most of them;
+#: the three formats are never blank in practice because the framework supplies
+#: a fallback, so its fallback counts as unchosen too — the same shape of fix as
+#: `sync.FRAMEWORKS` for the workspace's name.
+UNCHOSEN = {
+	"country": ("",),
+	"currency": ("",),
+	"time_zone": ("",),
+	"language": ("", "en"),
+	"date_format": ("", "yyyy-mm-dd"),
+	"time_format": ("", "HH:mm:ss"),
+	"number_format": ("", "#,###.##"),
+}
+
+
+def apply_regional(country: str, currency: str = "", language: str = "") -> dict:
+	"""The half of the setup wizard ERPNext's own entry point does not run.
+
+	`erpnext.setup_wizard.setup_complete` is three stages — fixtures, company,
+	defaults — and none of them touches System Settings. Frappe's wizard runs a
+	fourth, `update_global_settings`, *before* handing over to the app, and that
+	is the one that writes where the workspace is: country, language, time zone,
+	currency, and the date, time and number formats that follow from the
+	country.
+
+	So a workspace set up through here had books that knew they were in the
+	United Arab Emirates and a Regional tab that was blank — every date in
+	`yyyy-mm-dd`, every number in `#,###.##`, and no site time zone at all,
+	which is the value `dayjsLocal` converts every timestamp in the product
+	*from*.
+
+	Frappe's own function is deliberately not called: it also sets
+	`backup_limit`, `enable_scheduler` and `rounding_method`, and the first two
+	are the platform's rather than the customer's — see
+	docs/WORKSPACE-SETTINGS.md. This writes the seven that are theirs.
+
+	Fills only what nobody has chosen, so it is safe to run again on a workspace
+	set up before it existed — which is the point, because that is every
+	workspace set up so far.
+	"""
+	if not country:
+		return {}
+
+	wanted = {
+		"country": country,
+		"currency": currency,
+		"language": language,
+		# Frappe's wizard reads this from the browser it is running in. There is
+		# no browser here, so it comes from the country — `Country.time_zones`
+		# is a list and the first is the one to offer, which is what the desk's
+		# own country picker does with it.
+		"time_zone": _zone_for(country),
+		"date_format": frappe.db.get_value("Country", country, "date_format") or "",
+		"time_format": frappe.db.get_value("Country", country, "time_format") or "",
+		"number_format": _number_format_for(country),
+	}
+
+	filled = {}
+	for field, value in wanted.items():
+		if not value:
+			continue
+		current = frappe.db.get_single_value("System Settings", field) or ""
+		# Already answered, or already this. The second half matters: a country
+		# whose format *is* the framework's fallback stays "unchosen" for ever,
+		# so without it every sync would report writing something it did not.
+		if current not in UNCHOSEN[field] or current == value:
+			continue
+		frappe.db.set_single_value("System Settings", field, value)
+		filled[field] = value
+	return filled
+
+
+def _zone_for(country: str) -> str:
+	"""The first time zone a country lists, or nothing."""
+	zones = (frappe.db.get_value("Country", country, "time_zones") or "").strip()
+	return zones.splitlines()[0].strip() if zones else ""
+
+
+def _number_format_for(country: str) -> str:
+	"""How a country writes a number, corrected the way Frappe's wizard does.
+
+	Two of the values in its country table are *currency* formats with no
+	decimal places, which is wrong for a float.
+	"""
+	from frappe.geo.country_info import get_country_info
+
+	number = (get_country_info(country) or {}).get("number_format") or ""
+	return {"#.###": "#.###,##", "#,###": "#,###.##"}.get(number, number)
 
 
 def ensure_setup(hint: dict | None) -> dict:
@@ -250,8 +357,16 @@ def ensure_setup(hint: dict | None) -> dict:
 	"""
 	if not erpnext_installed():
 		return {"skipped": "no accounting app"}
-	if frappe.get_all("Company", limit=1):
-		return {"skipped": "already set up"}
+
+	if existing := frappe.get_all("Company", fields=["country", "default_currency"], limit=1):
+		# Set up, but possibly before `apply_regional` existed — which is every
+		# workspace so far, and each one has a blank Regional tab and no site
+		# time zone to show for it. Fills blanks only, so a sync running this
+		# every fifteen minutes changes nothing once it has.
+		return {
+			"skipped": "already set up",
+			"regional": apply_regional(existing[0].country, existing[0].default_currency),
+		}
 
 	hint = hint or {}
 	defaults = _defaults(
@@ -292,13 +407,26 @@ def _abbreviate(name: str) -> str:
 	letters gets a placeholder the customer can change rather than a mangled
 	version of itself.
 	"""
-	words = [w for w in (name or "").split() if w]
-	if len(words) > 1:
-		initials = "".join(w[0] for w in words)[:5]
-	else:
-		initials = (words[0] if words else "")[:5]
+	letters = [c for c in (name or "").upper() if "A" <= c <= "Z"]
+	words = [w for w in (name or "").upper().split() if w]
 
-	return "".join(c for c in initials.upper() if "A" <= c <= "Z") or "CO"
+	if len(words) > 1:
+		# The first *letter* of each word, not the first character: taking the
+		# character and dropping it afterwards for not being one is how "3M
+		# Corp" abbreviated to "C" and "123 Ltd" to "L" — one letter, on every
+		# account name in the ledger.
+		initials = "".join(
+			next((c for c in word if "A" <= c <= "Z"), "") for word in words
+		)[:5]
+	else:
+		initials = "".join(letters[:5])
+
+	# Two characters is the floor. Below it the initials say nothing — a name
+	# whose words are mostly numbers gets the letters it does have instead.
+	if len(initials) < 2:
+		initials = "".join(letters[:3])
+
+	return initials or "CO"
 
 
 @frappe.whitelist(methods=["POST"])

@@ -294,9 +294,39 @@ def test_books_setup_marks_the_site_set_up():
 
 
 def test_books_refuses_to_run_twice():
-	# Both paths, because either running twice would insert fixtures that exist.
+	"""Both paths, because either running twice would insert fixtures that
+	exist. `ensure_setup` reads two of the Company's fields rather than only
+	counting rows — it backfills the regional settings off them — so what is
+	checked is that it looks for a Company at all and returns before `_run`."""
 	assert 'frappe.get_all("Company", limit=1)' in function(BOOKS, "_run")
-	assert 'frappe.get_all("Company", limit=1)' in function(BOOKS, "ensure_setup")
+
+	body = function(BOOKS, "ensure_setup")
+	assert 'frappe.get_all("Company"' in body
+	assert '"skipped": "already set up"' in body
+
+
+def test_a_workspace_set_up_before_the_regional_fix_is_repaired():
+	"""ERPNext's `setup_complete` never wrote System Settings, so every
+	workspace so far has books that know their country and a Regional tab that
+	does not. The sync passes over a set-up workspace, so the repair has to
+	happen on the way past."""
+	assert "apply_regional(" in function(BOOKS, "ensure_setup")
+
+	regional = function(BOOKS, "apply_regional")
+	assert "UNCHOSEN" in regional, "a repair that overwrites is not a repair"
+	for field in ("time_zone", "date_format", "number_format", "currency"):
+		assert field in regional, field
+
+
+def test_the_regional_backfill_leaves_the_platforms_own_settings_alone():
+	"""Frappe's `update_system_settings` would have done this in one call, and
+	it also sets `backup_limit` and `enable_scheduler` — which are billed and
+	operational, and are in FORBIDDEN."""
+	# The body, not the docstring — which names all four to say why.
+	body = function(BOOKS, "apply_regional").split('"""')[2]
+	assert "update_system_settings" not in body
+	for ours in ("backup_limit", "enable_scheduler", "rounding_method"):
+		assert ours not in body, ours
 
 
 def test_everything_erpnext_is_guarded_on_it_being_installed():

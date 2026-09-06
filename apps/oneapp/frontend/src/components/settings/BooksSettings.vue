@@ -81,8 +81,23 @@
           label="Abbreviation"
           description="Appears on account names, e.g. Debtors - ACME."
         />
-        <FormControl v-model="form.country" label="Country" />
-        <FormControl v-model="form.currency" label="Currency" placeholder="USD" />
+        <!--
+          Picked, not typed. Both have to match a Frappe row exactly or
+          ERPNext's setup throws, and nothing on a text box says how the row is
+          spelled — the same failure the Regional tab had one tab over.
+        -->
+        <FormControl
+          v-model="form.country"
+          type="select"
+          label="Country"
+          :options="status?.countries || []"
+        />
+        <FormControl
+          v-model="form.currency"
+          type="select"
+          label="Currency"
+          :options="status?.currencies || []"
+        />
         <FormControl v-model="form.fy_start_date" type="date" label="Financial year starts" />
         <FormControl v-model="form.fy_end_date" type="date" label="Financial year ends" />
       </div>
@@ -174,7 +189,11 @@ const load = async () => {
       // different answer, and a company whose country disagrees with the site's
       // is a support ticket about tax rules.
       form.company_name = defaults.company_name || ''
-      form.abbr = (defaults.company_name || '').slice(0, 5).toUpperCase().replace(/[^A-Z]/g, '')
+      // The server's suggestion, not a second one derived here. This line used
+      // to truncate to five characters and *then* drop what was not a letter,
+      // so "3M Corp" came out "MCO" and "123 Ltd" came out "L" — while the
+      // automatic setup, on the same name, used initials.
+      form.abbr = defaults.abbr || ''
       form.country = defaults.country || ''
       form.currency = defaults.currency || ''
       form.fy_start_date = defaults.fy_start_date || ''

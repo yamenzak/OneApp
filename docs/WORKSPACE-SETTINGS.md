@@ -214,6 +214,33 @@ at the code:
 Both are checked by `tests/test_workspace_settings.py` — a dependency has to
 name a real key in its own group, and a declared note has to be rendered.
 
+## The half of the wizard ERPNext does not run
+
+`erpnext.setup_wizard.setup_complete` is three stages — fixtures, company,
+defaults — and none of them touches System Settings. Frappe's own wizard runs a
+fourth *before* handing over to the app, `update_global_settings`, and that is
+the one that writes where the workspace is: country, language, time zone,
+currency, and the date, time and number formats that follow from the country.
+
+Books calls only ERPNext's entry point, so every workspace set up so far has
+had books that know their company is in the United Arab Emirates and a Regional
+tab that is blank — dates in `yyyy-mm-dd`, numbers in `#,###.##`, and no site
+time zone at all, which is the value `dayjsLocal` converts every timestamp in
+the product *from*.
+
+`books.apply_regional` writes those seven, and deliberately does not call
+Frappe's function to do it: that also sets `backup_limit`, `enable_scheduler`
+and `rounding_method`, and the first two are the platform's (they are in
+FORBIDDEN above). It fills only what nobody has chosen — where "nobody has
+chosen" includes the framework's own fallback for the three formats, the same
+shape of rule as `sync.FRAMEWORKS` — so `ensure_setup` runs it on the way past
+a workspace that is already set up, and every existing one is repaired on its
+next sync without a patch.
+
+The time zone has no source in Frappe's wizard either: it reads the browser's.
+There is no browser here, so it comes from `Country.time_zones`, first entry —
+which is what the desk's own country picker does with that field.
+
 ## The one setting with no Frappe field
 
 **Brand colour.** One accent, under Branding, and the only thing in the dialog
