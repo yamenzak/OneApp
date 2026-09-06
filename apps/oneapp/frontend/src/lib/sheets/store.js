@@ -1,26 +1,21 @@
 /**
  * Loading a workbook and saving one.
  *
- * This is the seam between Frappe's editor and our server, and it is the only
- * file in `lib/sheets/` that is ours rather than vendored. Upstream this is
+ * The seam between Frappe's editor and our server. Upstream this is
  * `pages/SheetEditor/usePersistence.js` talking to `sheets.api`; here it talks
- * to `oneapp.oneapp_core.sheets`, where a sheet is a `File` in the Drive and
- * not a `Sheet` doctype — so there is no create, no trash and no share to do:
- * the Drive did all three before a grid existed.
+ * to `oneapp.oneapp_core.sheets`, where a sheet is a `File` in the Drive — so
+ * there is no create, no trash and no share to do.
  *
  * Two things are genuinely ours rather than renamed.
  *
  * **A `values` slice.** The saved payload carries what was typed *and* what it
- * came to. Frappe's server never needs a number, so their payload has no such
- * slice; ours does — the read-back into a child table, the CSV a share link
- * serves and any print format all want `6480` rather than `=A2*B2`, and none of
- * them has a browser to work it out. `codec.py` reads it.
+ * came to: the read-back into a child table, the CSV a share link serves and
+ * any print format all want `6480` rather than `=A2*B2`, and none of them has a
+ * browser to work it out.
  *
- * **`fetch`, not `resource.js`.** Every other call in this app goes through
- * `callMethod`. A save cannot: the last one fires from `pagehide`, and only
- * `keepalive: true` survives the document going away. Losing the last thing
- * somebody typed because the request was cancelled at unload is the one bug an
- * editor may not have.
+ * **`fetch`, not `resource.js`.** A save cannot go through `callMethod`: the
+ * last one fires from `pagehide`, and only `keepalive: true` survives the
+ * document going away.
  */
 
 import { encodeForUpload, isDecompressionSupported, decodeFromDownload } from './utils/compress.js'
@@ -33,9 +28,8 @@ const SAVE = 'oneapp.oneapp_core.sheets.save_sheet'
  * One request to Frappe. `keepalive` for the save that outlives the page.
  *
  * A read goes as a GET and a write as a POST, because that is what the
- * endpoints declare: `get_sheet` is `methods=["GET"]`, and a POST to it is a
- * 403 rather than a 405 — which reads, from inside the editor, exactly like a
- * sheet somebody is not allowed to open.
+ * endpoints declare: a POST to `get_sheet` is a 403 rather than a 405, which
+ * reads from inside the editor like a sheet somebody may not open.
  */
 async function call(method, args = {}, { keepalive = false, get = false } = {}) {
   const url = get
@@ -73,12 +67,8 @@ function serverMessage(json) {
 }
 
 /**
- * Everything the editor needs to draw a workbook, restored into the engines.
- *
- * `engines` is the bag the editor already holds — sheet, formats, merge and
- * the rest — so restoring is a walk over the slices that are present. A slice
- * that is absent is a feature the workbook never used, not an error: a sheet
- * saved before pivots existed simply has no pivots.
+ * Everything the editor needs to draw a workbook, restored into the engines. A
+ * slice that is absent is a feature the workbook never used, not an error.
  */
 export async function loadWorkbook(name, engines) {
   const canGz = isDecompressionSupported()
@@ -120,9 +110,9 @@ export async function loadWorkbook(name, engines) {
  * The payload a save sends: what was typed, what it came to, and the rest.
  *
  * `keepalive` packs synchronously — the page may be gone before an async pass
- * could finish. Everything else yields to the event loop every fifty thousand
- * cells, because a two-million-cell pack that does not is six seconds during
- * which a keystroke cannot be handled.
+ * could finish. Everything else yields every fifty thousand cells, because a
+ * two-million-cell pack that does not is six seconds during which a keystroke
+ * cannot be handled.
  */
 export async function buildPayload(engines, { keepalive = false } = {}) {
   const current = engines.sheet.getCurrentSheet()
@@ -148,11 +138,8 @@ export async function buildPayload(engines, { keepalive = false } = {}) {
 }
 
 /**
- * Every cell of every tab as the number or string it displays.
- *
- * Only cells that hold something are walked, and only formulas cost anything:
- * a literal is returned as it was stored. The engine memoises results, so on a
- * save right after an edit this is mostly cache hits.
+ * Every cell of every tab as the number or string it displays. Only formulas
+ * cost anything, and the engine memoises results.
  */
 function computed(sheet) {
   const out = {}
@@ -179,11 +166,8 @@ export async function saveWorkbook(name, title, payload, { keepalive = false } =
 
 /**
  * Which kind of failure a save hit — worth a retry, or worth telling somebody.
- *
- * No status means `fetch` itself threw: offline, DNS, the server killed
- * mid-flight. A 5xx, a 408 or a 429 is the server saying "later". Everything
- * else is a 4xx, which will fail identically however many times it is sent, so
- * re-sending it only delays an honest error by seven seconds.
+ * No status means `fetch` itself threw; a 5xx, 408 or 429 is the server saying
+ * "later"; everything else will fail identically however many times it is sent.
  */
 export function isTransient(err) {
   if (err?.status == null) return true

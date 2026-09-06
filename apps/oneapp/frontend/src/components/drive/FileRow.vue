@@ -1,18 +1,11 @@
 <!--
-  One file, as a row or as a card.
+  One file, as a row or as a card. The same component draws both, because a list
+  and a grid of the same files differ in layout and not in what a file *is*.
 
-  The same component draws both, because a list and a grid of the same files
-  differ in layout and not in what a file *is* — two components would be two
-  places to add a column to.
-
-  The row is a container and not itself the control. Opening a file and hearting
+  The row is a container and not itself the control: opening a file and hearting
   it are different actions on the same line, and a button inside a button is
-  neither valid nor reachable by a keyboard — which is what this was before the
-  heart and the menu arrived.
-
-  Those controls are always drawn rather than revealed on hover. A phone has no
-  hover, so a heart that appears on `group-hover` is a heart that does not exist
-  on half the devices this runs on.
+  neither valid nor reachable by a keyboard. Those controls are always drawn
+  rather than revealed on hover — a phone has no hover.
 -->
 <template>
   <div
@@ -35,16 +28,11 @@
     @dragleave="over = false"
     @drop="onDrop"
   >
-    <!--
-      Selection is opt-in per surface: the picker offers one file and a
-      checkbox there would be a control that does nothing.
-    -->
-    <!--
-      `aria-label` and not `label`: frappe-ui's Checkbox renders a label as
-      visible text, and forty rows each captioned "Select Perspective.jpg" is a
-      column of instructions where a column of checkboxes belongs. The name is
-      still announced, which is the part that mattered.
-    -->
+    <!-- Selection is opt-in per surface: the picker offers one file, and a
+         checkbox there would do nothing. -->
+    <!-- `aria-label` and not `label`: frappe-ui's Checkbox renders a label as
+         visible text, and forty rows captioned "Select Perspective.jpg" is a
+         column of instructions. -->
     <Checkbox
       v-if="selectable"
       :model-value="selected"
@@ -54,10 +42,9 @@
     />
 
     <!--
-      A folder is a link and a file is a button. A folder is a place with a URL
-      — which is the whole reason the folder is in the query string — so the
-      browser's own middle-click, copy-link and back button all work without a
-      line of ours. A file is not a place; opening one is an action.
+      A folder is a link and a file is a button. A folder is a place with a URL,
+      so middle-click, copy-link and the back button all work without a line of
+      ours. A file is not a place; opening one is an action.
     -->
     <router-link
       v-if="file.is_folder"
@@ -86,8 +73,7 @@
       :class="grid ? 'justify-between' : ''"
     >
       <!-- The heart is the whole of Favourites: `_liked_by` on the row, which
-           the framework keeps on every doctype. So the rail's Favourites is a
-           filter over one column and not a table. -->
+           the framework keeps on every doctype. -->
       <Button
         v-if="actions"
         icon="lucide-heart"
@@ -98,11 +84,8 @@
         @click="emit('favourite', file)"
       />
 
-      <!--
-        Who and when, on a screen with room for them. On a phone they are the
-        first two things to go: the size and the age are already under the
-        name, and a 412px row spent on an avatar is a row with no name left.
-      -->
+      <!-- Who and when, on a screen with room for them. On a phone they are the
+           first two things to go. -->
       <template v-if="!grid">
         <Avatar
           v-if="file.owner_person?.label"
@@ -140,15 +123,13 @@ const props = defineProps({
   // Off in the picker, which offers one file and has nothing to do in bulk.
   selectable: { type: Boolean, default: false },
   selected: { type: Boolean, default: false },
-  // Off in the picker too: the heart and the menu are the Drive's, and a
-  // rename control behind an Attach field is a control in the wrong place.
+  // Off in the picker too: a rename control behind an Attach field is a control
+  // in the wrong place.
   actions: { type: Boolean, default: false },
   // What the bin offers instead, because everything else there is a no-op.
   trashed: { type: Boolean, default: false },
   canWrite: { type: Boolean, default: true },
-  // Dragging is the Drive's alone. In the picker there is nowhere to drag to,
-  // and a row that lifts under the cursor in a dialog is a row that looks
-  // broken.
+  // Dragging is the Drive's alone: in the picker there is nowhere to drag to.
   movable: { type: Boolean, default: false },
 })
 
@@ -180,13 +161,11 @@ const when = computed(() =>
   props.file.modified ? dayjsLocal(props.file.modified).fromNow() : '',
 )
 
-// --------------------------------------------------------------------------
-// Dragging a row onto a folder
-// --------------------------------------------------------------------------
+// --- dragging a row onto a folder -------------------------------------------
 
 // Our own MIME type, and not `text/plain`: a row dragged into a text field
-// somewhere else in the app would otherwise paste a row id, and a file dragged
-// in from the desktop would look to us like one of ours.
+// would otherwise paste a row id, and a file dragged in from the desktop would
+// look to us like one of ours.
 const MOVING = 'application/x-onespace-file'
 
 const lifted = ref(false)
@@ -202,7 +181,7 @@ function onDragStart(event) {
 function onDragOver(event) {
   // Only a folder is a destination, and only for one of ours. A file dragged
   // from the desktop falls through to the page's own drop zone, which uploads
-  // it — which is what somebody dragging a file at a folder row means.
+  // it.
   if (!props.file.is_folder || !event.dataTransfer.types.includes(MOVING)) return
   event.preventDefault()
   event.stopPropagation()

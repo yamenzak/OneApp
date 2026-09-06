@@ -1,24 +1,19 @@
 /**
  * The doctype's own rules about its fields, evaluated against a record.
  *
- * Frappe carries three of them — `depends_on`, `mandatory_depends_on` and
- * `read_only_depends_on` — and they are what make a form feel like a form: a
- * field appears when another says so, becomes required, or stops being
- * editable. Each is either a bare fieldname, meaning "when this is filled in",
- * or `eval:` followed by an expression about `doc`.
+ * Frappe carries three — `depends_on`, `mandatory_depends_on` and
+ * `read_only_depends_on` — each either a bare fieldname, meaning "when this is
+ * filled in", or `eval:` followed by an expression about `doc`.
  *
  * The desk runs that expression as JavaScript. This does not, and the reason is
- * where the string comes from: it is a row in a database, editable by anyone
- * who can write a Property Setter, and `new Function` on it would turn "can
- * customise a form" into "can run code in every reader's browser". So the
- * expression is parsed — a small grammar that covers what these rules actually
- * say — and anything outside it is treated as no rule at all rather than
- * guessed at.
+ * where the string comes from: a row in a database, editable by anyone who can
+ * write a Property Setter, so `new Function` on it would turn "can customise a
+ * form" into "can run code in every reader's browser". The expression is parsed
+ * instead, and anything outside the grammar is treated as no rule at all.
  *
- * What is supported: field paths (`doc.status`), string, number, boolean and
- * null literals, array literals, `== != === !== > >= < <=`, `&& || !`,
- * membership (`doc.status in ['Open', 'Closed']`), `.length`, and brackets.
- * Nothing that calls anything, and nothing that assigns.
+ * Supported: field paths, string, number, boolean and null literals, array
+ * literals, `== != === !== > >= < <=`, `&& || !`, membership, `.length`, and
+ * brackets. Nothing that calls anything, and nothing that assigns.
  */
 
 const NUMBER = /^\d+(\.\d+)?/
@@ -201,11 +196,9 @@ export function evaluate(rule, doc) {
  * How one field should render on this record: shown or not, required or not,
  * editable or not.
  *
- * A rule that cannot be read is no rule — the field behaves as the doctype
- * declared it without one. That is the least surprising of the three possible
- * answers, and it is safe: the server validates `reqd` and
- * `mandatory_depends_on` again on save, so a form that is wrong here produces
- * a worse error message rather than a worse record.
+ * A rule that cannot be read is no rule. That is safe: the server validates
+ * `reqd` and `mandatory_depends_on` again on save, so a form that is wrong here
+ * produces a worse error message rather than a worse record.
  */
 export function fieldRules(field, doc) {
   const shown = evaluate(field?.depends_on, doc)
@@ -214,22 +207,16 @@ export function fieldRules(field, doc) {
   return {
     hidden: shown === false,
     // Three ways for a field to insist on a value, and they end up as one
-    // question for the control. `not_nullable` is the strictest — Frappe
-    // refuses an empty value on one outright rather than asking — so it counts
-    // here even though its message elsewhere is different.
+    // question for the control. `not_nullable` is the strictest.
     required: !!field?.reqd || !!field?.not_nullable || required === true,
     readOnly: readOnly === true,
   }
 }
 
 /**
- * Whether a section starts folded.
- *
- * `collapsible` is the doctype's plain answer and `collapsible_depends_on` is
- * the same expression dialect as `depends_on` — so a section can be folded
- * only while some other field says so. An unreadable expression collapses
- * nothing, which is the safe direction: a section nobody can open is worse
- * than one that is always open.
+ * Whether a section starts folded. `collapsible_depends_on` is the same
+ * expression dialect as `depends_on`. An unreadable expression collapses
+ * nothing: a section nobody can open is worse than one always open.
  */
 export function sectionCollapsed(section, doc) {
   if (!section?.collapsible) return false

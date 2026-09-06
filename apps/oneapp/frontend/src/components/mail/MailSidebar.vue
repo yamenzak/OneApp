@@ -2,12 +2,9 @@
   <!--
     The mail rail *is* the sidebar, not a third column beside it.
 
-    Mail is not inside a space — the addresses somebody holds do not change
-    when they switch space — so on this route the shell's sidebar has nothing
-    space-shaped to show, and drawing the workspace's own list beside a
-    mailbox list gave the page two navigation columns arguing about which one
-    you were in. Same component slot, same width, same collapse: what changes
-    is what is in it.
+    Mail is not inside a space, so on this route the shell's sidebar has nothing
+    space-shaped to show, and drawing the workspace's list beside a mailbox list
+    gave the page two navigation columns arguing about which one you were in.
   -->
   <Sidebar
     v-model:collapsed="collapsed"
@@ -18,11 +15,9 @@
 
     <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pb-6">
       <nav class="space-y-0.5">
-        <!--
-          An address, and under it that mailbox's own folders — the Applicants
-          and Suppliers somebody spent years sorting into. Read off the server
-          itself; see `oneapp_core/email/folders.py`.
-        -->
+        <!-- An address, and under it that mailbox's own folders — the
+             Applicants and Suppliers somebody spent years sorting into. Read
+             off the server itself; see `oneapp_core/email/folders.py`. -->
         <template v-for="one in shown" :key="one.key">
           <SidebarItem
             :icon="one.icon"
@@ -37,11 +32,9 @@
             <template v-if="one.unread || !one.depth" #suffix>
               <Badge v-if="one.unread" theme="blue" :label="String(one.unread)" />
               <!--
-                A folder belongs to a mailbox, so making one is an action on
-                that mailbox rather than a command at the bottom of the rail
-                with a dropdown asking which. In `#suffix` because frappe-ui
-                renders it as a sibling of the link: a button inside an anchor
-                is invalid, and the browser swallows one of the two clicks.
+                A folder belongs to a mailbox, so making one is an action on that
+                mailbox. In `#suffix` because frappe-ui renders it as a sibling
+                of the link: a button inside an anchor is invalid.
               -->
               <Button
                 v-if="!one.depth && !collapsed"
@@ -57,9 +50,9 @@
         </template>
 
         <!-- Deleted mail, spam and drafts. Mirrored, because a mirror that
-             silently omits folders is one nobody can trust, and behind a
-             click, because a rail that opens on somebody's junk is a rail
-             nobody wants. -->
+             silently omits folders is one nobody can trust, and behind a click,
+             because a rail that opens on somebody's junk is a rail nobody
+             wants. -->
         <SidebarItem
           v-if="quiet.length && !collapsed"
           :icon="showQuiet ? 'lucide-chevron-down' : 'lucide-chevron-right'"
@@ -77,10 +70,9 @@
     <div class="mt-auto shrink-0">
       <div class="flex flex-col gap-1 p-2">
         <!--
-          Where mailboxes are added. The rail lists what somebody has; adding
-          one is a form with a password in it, which belongs in Settings beside
-          the addresses the workspace itself owns — one screen for "which
-          addresses exist and who may use them", not two.
+          Where mailboxes are added. The rail lists what somebody has; adding one
+          is a form with a password in it, which belongs in Settings beside the
+          addresses the workspace itself owns.
         -->
         <SidebarItem
           v-if="!collapsed"
@@ -113,9 +105,9 @@
            in here repeating a choice already made. -->
       <p class="text-p-sm text-ink-gray-7">In {{ draft.address }}</p>
       <FormControl v-model="draft.name" label="Name" placeholder="Applicants" />
-      <!-- Said before it happens rather than discovered afterwards: whether
-           this folder will exist in their other mail client depends on whether
-           there is a server behind the address. -->
+      <!-- Said before it happens rather than discovered afterwards: whether this
+           folder will exist in their other mail client depends on whether there
+           is a server behind the address. -->
       <p class="text-p-xs text-ink-gray-5">{{ where }}</p>
       <ErrorMessage v-if="error" :message="error" />
     </div>
@@ -203,19 +195,19 @@ async function make() {
   }
 }
 
-// The quiet folders stay folded unless asked for — or unless one of them is
-// the folder currently open, because collapsing the row somebody is standing
-// on is how a rail loses them.
+// The quiet folders stay folded unless asked for — or unless one of them is the
+// folder currently open, because collapsing the row somebody is standing on is
+// how a rail loses them.
 const shown = computed(() =>
   mail.folders.filter((one) => !one.quiet || showQuiet.value || folder.value === one.key),
 )
 const quiet = computed(() => mail.folders.filter((one) => one.quiet))
 
 onMounted(() => loadMail())
-// Reloaded when the settings dialog closes: connecting or disconnecting a
-// mailbox is the one thing that changes this list without the page moving, and
-// it happens in there. Watching the dialog rather than publishing an event
-// keeps the settings panel from having to know a rail exists.
+// Reloaded when the settings dialog closes: connecting a mailbox is the one
+// thing that changes this list without the page moving. Watching the dialog
+// rather than publishing an event keeps the settings panel from having to know
+// a rail exists.
 watch(
   () => settings.open,
   (isOpen, was) => {
@@ -223,8 +215,7 @@ watch(
   },
 )
 
-// The same width and collapse state as every other rail, because it is the
-// same column: a rail that changed width when you opened mail would read as
-// the page jumping. See `lib/sidebar.js`.
+// The same width and collapse state as every other rail, because it is the same
+// column. See `lib/shell/sidebar.js`.
 const { collapsed, width } = useSidebar()
 </script>

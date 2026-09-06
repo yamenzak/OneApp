@@ -1,21 +1,17 @@
 /**
  * Sending a large file straight to R2.
  *
- * The ordinary upload posts the whole file to Frappe, which holds it in memory,
- * writes it to disk and pushes it to R2 — fine for a photograph and hopeless for
- * a site video, which meets the request-body limit or the worker timeout long
- * before it finishes. This asks the server for signed URLs instead and PUTs the
- * bytes at Cloudflare itself; see `storage/direct.py` for the other half.
+ * The ordinary upload posts the whole file to Frappe, which is fine for a
+ * photograph and hopeless for a site video. This asks the server for signed
+ * URLs and PUTs the bytes at Cloudflare itself; see `storage/direct.py`.
  *
  * `XMLHttpRequest` and not `fetch`, for one reason: `fetch` reports no progress
- * on an upload body. A progress bar that sits at zero for eleven minutes and
- * then jumps to done is worse than no bar, because the only thing a person
- * wants to know about a large upload is whether it is moving.
+ * on an upload body, and the only thing a person wants to know about a large
+ * upload is whether it is moving.
  *
- * Three parts at a time. One is slower than the link on any connection with
- * real latency; a dozen is the same total bandwidth split twelve ways, with
- * twelve chances to fail. Parts are retried individually — losing one of forty
- * to a dropped connection must not cost the other thirty-nine.
+ * Three parts at a time — one is slower than the link on any connection with
+ * real latency, a dozen is twelve chances to fail — and parts are retried
+ * individually.
  */
 import { call } from '@/ui'
 
@@ -35,8 +31,7 @@ const TRIES = 3
  *
  * Returns the row, or `null` when this site cannot do it — no bucket, no
  * boto3, the control plane, or a file small enough that the ordinary POST is
- * the better trade. A `null` is not a failure: the caller falls back. Anything
- * that actually went wrong is thrown.
+ * the better trade. A `null` is not a failure: the caller falls back.
  */
 export async function directUpload(file, options = {}) {
   const { folder = '', attachTo = null, private: isPrivate = true, onProgress } = options
@@ -71,8 +66,8 @@ export async function directUpload(file, options = {}) {
       onProgress,
     })
 
-    // No `is_private` here: `begin` wrote it into the key and the token
-    // vouches for the key, so the server does not ask us twice.
+    // No `is_private` here: `begin` wrote it into the key and the token vouches
+    // for the key.
     return await call(`${API}.finish`, {
       key,
       upload_id: uploadId,
@@ -86,18 +81,16 @@ export async function directUpload(file, options = {}) {
     })
   } catch (raised) {
     // The parts already in the bucket are billed until a lifecycle rule sweeps
-    // them, and we know right now that nobody will ever complete this upload.
+    // them, and nobody will ever complete this upload.
     call(`${API}.abort`, { key, upload_id: uploadId, token }).catch(() => {})
     throw raised
   }
 }
 
 /**
- * Every part, three lanes at a time, and their ETags.
- *
- * URLs arrive a batch at a time — a signature minted at the start of a 40 GB
- * upload has expired long before its part comes up — so the map is filled in as
- * the walk goes forward rather than up front.
+ * Every part, three lanes at a time, and their ETags. URLs arrive a batch at a
+ * time — a signature minted at the start of a 40 GB upload has expired long
+ * before its part comes up.
  */
 async function sendParts(file, { key, uploadId, token, partSize, count, urls, onProgress }) {
   const signed = new Map(urls.map((one) => [one.part, one.url]))
@@ -110,9 +103,8 @@ async function sendParts(file, { key, uploadId, token, partSize, count, urls, on
     onProgress({ loaded: done, total: file.size, percent: Math.round((done / file.size) * 100) })
   }
 
-  // One lane failing stops the others taking new parts. Without it a dropped
-  // connection on part three still pays to upload parts four through forty,
-  // for an upload that has already failed.
+  // One lane failing stops the others taking new parts: without it a dropped
+  // connection on part three still pays to upload parts four through forty.
   let next = 1
   let stopped = false
   const lane = async () => {
@@ -172,8 +164,7 @@ async function sendParts(file, { key, uploadId, token, partSize, count, urls, on
  * The ETag is the whole point of the request: R2 completes a multipart upload
  * from the list of them, and a bucket whose CORS policy does not *expose*
  * `ETag` returns `null` here — every byte uploaded correctly and the upload
- * still fails at the last step. That is what `r2.ensure_cors()` is for, and it
- * is why this says so rather than throwing a bare "cannot complete".
+ * still failing at the last step. That is what `r2.ensure_cors()` is for.
  */
 async function put(url, chunk, onBytes) {
   let last

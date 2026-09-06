@@ -3,15 +3,11 @@
     One timeline over a record: what was said about it, what changed on it, and
     when it started.
 
-    Two tabs before this — Comments and History — which meant "who changed this"
-    and "what did they say about it" were two places, and answering "what
-    happened on Tuesday" meant reading both and merging them by eye. The desk
-    puts them in one column and so does Frappe CRM; the only thing that made
-    them separate here was that they came back as two lists.
-
-    Every entry says what kind of thing it is before it says anything else,
-    through a glyph from a closed set. A column of identical avatars makes a
-    comment and a field change look like the same event.
+    Two tabs before this — Comments and History — so answering "what happened on
+    Tuesday" meant reading both and merging them by eye. Every entry says what
+    kind of thing it is before it says anything else, through a glyph from a
+    closed set: a column of identical avatars makes a comment and a field change
+    look like the same event.
   -->
   <div class="flex flex-col gap-4 pt-4">
     <div class="flex items-start gap-2">
@@ -25,8 +21,7 @@
     </div>
 
     <!-- Everything, or one kind of thing. A filter rather than tabs, because
-         the answer to "what happened here" is the whole column and the
-         narrowing is the exception. -->
+         the answer to "what happened here" is the whole column. -->
     <TabButtons v-model="kind" :options="filters" />
 
     <LoadingText v-if="loading" text="Loading activity" />
@@ -47,10 +42,9 @@
 
     <div v-if="shown.length" class="flex flex-col">
       <!--
-        A rail down the gutter, drawn by each entry rather than by a line
-        behind them: the last one stops at its own glyph instead of running on
-        past the end of the list, which is the thing that makes a timeline read
-        as finished rather than as cut off.
+        A rail down the gutter, drawn by each entry rather than by a line behind
+        them: the last one stops at its own glyph instead of running past the
+        end of the list.
       -->
       <div
         v-for="entry in shown"
@@ -67,7 +61,7 @@
           </span>
           <!-- A 1px rule drawn as a border, not a background: the theme's
                `outline-*` tokens are border colours and `bg-outline-gray-1`
-               emits no CSS at all — which is a timeline with no line. -->
+               emits no CSS at all. -->
           <span
             v-if="entry !== shown[shown.length - 1]"
             class="w-0 flex-1 border-l border-outline-gray-2"
@@ -81,9 +75,8 @@
           </div>
 
           <!-- eslint-disable vue/multiline-html-element-content-newline --
-               `whitespace-pre-wrap`, so a line break between the tags is a
-               line break on screen: the comment would render indented by
-               however far this file happens to be nested. -->
+               `whitespace-pre-wrap`, so a line break between the tags is a line
+               break on screen. -->
           <p
             v-if="entry.kind === 'comment'"
             class="whitespace-pre-wrap text-p-sm text-ink-gray-7"
@@ -93,9 +86,7 @@
           <!--
             One line per field, in the screen's own words. The values come back
             stripped of markup where the fieldtype is markup — a Text Editor's
-            history is otherwise a line of `<p>` tags — and the label is a
-            sentence's worth of space away from them rather than run into the
-            first one.
+            history is otherwise a line of `<p>` tags.
           -->
           <p
             v-for="(change, i) in entry.entries || []"
@@ -151,9 +142,8 @@ const filters = [
 const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
 
 // One list, newest first. Sorted here rather than asked for sorted: the two
-// halves come back from two queries and merging them on the server would mean
-// paging them together, which is a different and much larger change than
-// putting them in one column.
+// halves come back from two queries, and merging them on the server would mean
+// paging them together.
 const entries = computed(() => {
   const all = [
     ...props.comments.map((one) => ({
@@ -172,9 +162,9 @@ const entries = computed(() => {
     })),
   ]
 
-  // Where the record started. Last in the list because it is oldest, and it is
-  // the one entry no log holds: a Version records a change and there was
-  // nothing before the first one.
+  // Where the record started. Last because it is oldest, and the one entry no
+  // log holds: a Version records a change, and there was nothing before the
+  // first one.
   if (props.record?.creation) {
     all.push({
       key: 'created',

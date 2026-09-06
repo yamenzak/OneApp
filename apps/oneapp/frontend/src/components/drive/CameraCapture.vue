@@ -1,28 +1,20 @@
 <!--
   Take a photograph, and hand it back as a file.
 
-  A file manager on a phone that cannot use the camera is a file manager that
-  makes people photograph a delivery note, find it in their gallery, and upload
-  it — three steps for what is one. Frappe's desk has had this for years
-  (`frappe/public/js/frappe/ui/capture.js`) and every surface we built to
-  replace the desk quietly did not.
+  A file manager on a phone that cannot use the camera makes people photograph a
+  delivery note, find it in their gallery, and upload it — three steps for what
+  is one.
 
-  Two ways to reach a camera and this uses both, in this order:
+  Two ways to reach a camera, in this order:
 
-  * **`getUserMedia`**, which gives a live preview inside the dialog, a shutter,
-    a retake, and a front/back toggle. It needs a secure context — HTTPS or
-    localhost — and permission.
+  * **`getUserMedia`**, which gives a live preview, a shutter, a retake and a
+    front/back toggle. It needs a secure context and permission.
   * **A `capture` input**, which hands the whole thing to the phone's own camera
-    app. Worse in that the person leaves the page, better in that it has focus,
-    flash and every other thing a native camera has. It is the fallback rather
-    than the default because leaving the page is a real cost, and it is a
-    fallback rather than nothing because `getUserMedia` fails for four ordinary
-    reasons and "the camera does not work" is not an acceptable answer to any
-    of them.
+    app: worse in that the person leaves the page, better in that it has focus
+    and flash. A fallback rather than nothing, because `getUserMedia` fails for
+    four ordinary reasons.
 
-  What comes out is a `File`, a JPEG, named for the moment it was taken. The
-  caller uploads it like any other — this component knows nothing about where a
-  photograph goes.
+  What comes out is a `File`, a JPEG, named for the moment it was taken.
 -->
 <template>
   <div class="flex min-h-96 flex-col items-center justify-center gap-4 py-4">
@@ -42,9 +34,9 @@
       ></video>
     </div>
 
-    <!-- What was taken, before it is kept. A photograph nobody looked at
-         before it was filed is how a workspace fills with pictures of the
-         inside of a pocket. -->
+    <!-- What was taken, before it is kept: a photograph nobody looked at before
+         it was filed is how a workspace fills with pictures of the inside of a
+         pocket. -->
     <img
       v-if="shot"
       :src="shot.url"
@@ -132,11 +124,9 @@ let stream = null
 
 /**
  * Why the camera could not be opened, in words somebody can act on.
- *
  * `getUserMedia` reports four failures that mean four different things, and
- * "Could not start video source" — which is what the browser's own message
- * says when another tab already holds the camera — sends people to look for a
- * driver problem that is not there.
+ * "Could not start video source" — the browser's message when another tab holds
+ * the camera — sends people looking for a driver problem that is not there.
  */
 function reason(raised) {
   if (!navigator.mediaDevices?.getUserMedia) {
@@ -162,16 +152,13 @@ async function start() {
       video: { facingMode: facing.value },
     })
     streaming.value = true
-    // After the flag, so the element is no longer `v-show`-hidden — a video
-    // attached while its container is display:none reports a zero-sized frame,
-    // and the photograph comes out as a 0×0 canvas.
+    // After the flag, so the element is no longer `v-show`-hidden: a video
+    // attached while its container is display:none reports a zero-sized frame.
     await Promise.resolve()
     if (preview.value) preview.value.srcObject = stream
 
     // Only worth asking once the stream exists: before permission is granted,
-    // `enumerateDevices` returns entries with no labels and, on some browsers,
-    // one entry whatever the hardware. The toggle appears when there is
-    // genuinely something to toggle to.
+    // `enumerateDevices` returns entries with no labels.
     try {
       const devices = await navigator.mediaDevices.enumerateDevices()
       cameras.value = devices.filter((one) => one.kind === 'videoinput').length
@@ -188,8 +175,8 @@ async function start() {
 
 function stop() {
   // Every track, not the stream: a stream whose tracks are still live keeps the
-  // camera's indicator light on after the dialog has closed, which is alarming
-  // and is also true — it is still recording.
+  // camera's indicator light on after the dialog has closed — which is alarming
+  // and is also true.
   stream?.getTracks?.().forEach((track) => track.stop())
   stream = null
   streaming.value = false
@@ -214,9 +201,8 @@ function snap() {
   canvas.height = video.videoHeight
   canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height)
 
-  // JPEG rather than PNG, and it matters: a 12-megapixel photograph is about
-  // 700 KB as a JPEG and eleven megabytes as a PNG, and nothing about a
-  // photograph benefits from being lossless.
+  // JPEG rather than PNG: a 12-megapixel photograph is about 700 KB as a JPEG
+  // and eleven megabytes as a PNG.
   canvas.toBlob(
     (blob) => {
       if (!blob) {
@@ -268,9 +254,7 @@ function keep() {
   release()
 }
 
-// The camera is only ever on while its own tab is in front. Leaving it running
-// behind another tab is a light on somebody's laptop for a dialog they are not
-// looking at.
+// The camera is only ever on while its own tab is in front.
 watch(
   () => props.active,
   (showing) => {

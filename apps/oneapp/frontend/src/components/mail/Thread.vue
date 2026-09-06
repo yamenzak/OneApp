@@ -1,25 +1,17 @@
 <!--
   One conversation, in the shape a conversation actually has.
 
-  Every message was drawn open, all of it, oldest first. On a thread of two
-  that is right and on a thread of fifteen it is a wall: the reply somebody
-  came for is at the bottom, past nine copies of the quoted history above it,
-  and there is nothing to say which part is new.
-
-  So, Frappe Mail's three rules — the same three every mail client converged on
-  — over our own data:
+  Every message drawn open, oldest first, is right on a thread of two and a wall
+  on a thread of fifteen. So, Frappe Mail's three rules over our own data:
 
   * A message already read starts as one row: who, the first line, when. The
-    last one is always open, because a thread nobody has anything new in is
-    still a thread you opened to read something.
-  * A long run of read messages folds. Four or more and the middle goes behind
-    "N earlier messages", keeping the first and the last of the run as context.
-  * Where the unread starts is marked, once, in the colour the notification
-    feed already uses for new.
+    last one is always open.
+  * A long run of read messages folds — four or more and the middle goes behind
+    "N earlier messages", keeping the first and last of the run as context.
+  * Where the unread starts is marked, once.
 
   Whether a message counts as read is decided by the *server*, when the thread
   is fetched, because opening it marks the whole thread read a moment later.
-  Ask again and every one of these distinctions is gone.
 -->
 <template>
   <div class="flex flex-col gap-4">
@@ -47,10 +39,9 @@
         :data-open="isOpen(one, at) ? 'yes' : 'no'"
       >
         <!--
-          The header is the control. A read message opens by pressing it and
-          closes the same way — there is no separate chevron, because the whole
-          row is a bigger target and a thread is read with a thumb as often as
-          with a mouse.
+          The header is the control: a read message opens by pressing it and
+          closes the same way, because the whole row is a bigger target and a
+          thread is read with a thumb as often as with a mouse.
         -->
         <div
           class="flex items-start justify-between gap-3"
@@ -69,8 +60,8 @@
           </span>
         </div>
 
-        <!-- Closed: the first line of the body, which is what makes a
-             collapsed row worth having rather than a list of names. -->
+        <!-- Closed: the first line of the body, which is what makes a collapsed
+             row worth having rather than a list of names. -->
         <p
           v-if="!isOpen(one, at)"
           class="mt-0.5 truncate text-p-xs text-ink-gray-5"
@@ -84,8 +75,7 @@
             to {{ one.recipients }}
             <!-- Cc, which the server has always sent and the reader never drew.
                  Who else saw a message decides whether a reply goes to one
-                 person or to six, and reading it off a forwarded copy later is
-                 not an answer. -->
+                 person or to six. -->
             <span v-if="one.cc" data-slot="mail-cc">· cc {{ one.cc }}</span>
           </span>
 

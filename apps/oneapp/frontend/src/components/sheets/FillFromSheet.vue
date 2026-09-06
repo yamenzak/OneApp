@@ -2,11 +2,9 @@
   <!--
     Fill these rows from a spreadsheet.
 
-    The stage the whole of Sheets exists for. Somebody prices a job in a grid —
-    with lookups, scratch columns and a formula per line — names the rectangle
-    that is the answer, and presses this. What lands is line items on a
-    document; what stays behind is their working, which is nobody else's
-    business.
+    The stage the whole of Sheets exists for: somebody prices a job in a grid,
+    names the rectangle that is the answer, and presses this. What lands is line
+    items on a document; what stays behind is their working.
 
     Replace, never append. The confirmation is the preview: a pull rewrites
     these rows, and pressing it twice must not double the quotation.
@@ -24,12 +22,9 @@
     <template #default>
       <div class="flex flex-col gap-4">
         <!--
-          A select rather than the file picker, and that is a correction. The
-          picker is a dialog, and a dialog inside a dialog puts the outer one
-          behind `aria-hidden` — the same trap the Drive's sharing panel fell
-          into. Two lists in a row is also simply the better answer here: what
-          is being chosen is one of a handful of sheets, not one of four
-          thousand files.
+          A select rather than the file picker: a dialog inside a dialog puts the
+          outer one behind `aria-hidden`. Two lists in a row is also the better
+          answer here — what is being chosen is one of a handful of sheets.
         -->
         <Select
           v-if="options.length"
@@ -44,11 +39,9 @@
           </template>
         </Alert>
 
-        <!--
-          Only named ranges. Not "pick a rectangle": the name is the contract,
-          and a pull aimed at coordinates breaks the first time somebody
-          inserts a row above them.
-        -->
+        <!-- Only named ranges. Not "pick a rectangle": the name is the
+             contract, and a pull aimed at coordinates breaks the first time
+             somebody inserts a row above them. -->
         <Select
           v-if="ranges.length"
           v-model="label"
@@ -74,17 +67,13 @@
           <FormLabel :label="`${shape.count} ${shape.count === 1 ? 'row' : 'rows'}, from ${shape.tab}!${shape.ref}`" />
           <!-- A named range whose first row is its headings and which has
                nothing under them. Said plainly, because the button below is
-               about to be disabled and nothing else would say why. -->
+               about to be disabled. -->
           <p v-if="!shape.count" class="text-p-xs text-ink-gray-5">
             The first row of a range is its headings; there is nothing under
             them to bring in.
           </p>
-          <!--
-            The headings, and what each one will fill. A heading with nowhere
-            to go is said out loud rather than dropped quietly — a column
-            somebody spent an afternoon on, silently ignored, is the reason
-            people stop trusting an import.
-          -->
+          <!-- The headings, and what each one will fill. A heading with nowhere
+               to go is said out loud rather than dropped quietly. -->
           <div class="flex flex-wrap gap-1">
             <Badge
               v-for="head in headings"
@@ -100,13 +89,10 @@
           </p>
 
           <!--
-            The first few rows, as they will land.
-
-            Its own little grid rather than `RecordTable`: that one measures
-            the width it has been given to lay its tracks out, and inside a
-            dialog it measures nothing and stacks every column onto its own
-            line. This is a static preview of at most eight rows, and a grid
-            with as many columns as there are headings is the whole of it.
+            The first few rows, as they will land. Its own little grid rather
+            than `RecordTable`: that one measures the width it has been given,
+            and inside a dialog it measures nothing and stacks every column onto
+            its own line.
           -->
           <div
             v-if="sample.length"
@@ -168,11 +154,8 @@ const props = defineProps({
   into: { type: String, required: true },
   fields: { type: Array, default: () => [] },
   /**
-   * The feed already standing on this table, when there is one.
-   *
-   * Opening the dialog then lands on the same sheet and the same range, which
-   * is what somebody pressing it a second time means: fill it again from where
-   * it came from.
+   * The feed already standing on this table, when there is one. Opening the
+   * dialog then lands on the same sheet and the same range.
    */
   from: { type: Object, default: null },
 })
@@ -211,8 +194,8 @@ function known(heading) {
 }
 
 // Headings that are actually headings. A named range whose first row has a gap
-// in it produces a blank one, and a badge with no text in it is a grey pill
-// that says nothing — as is a sentence that begins ", have no matching field".
+// produces a blank one, and a badge with no text is a grey pill that says
+// nothing.
 const headings = computed(() =>
   (shape.value?.headers || []).filter((one) => (one.field || '').trim()))
 
@@ -226,8 +209,8 @@ const tracks = computed(() =>
     .map(({ head, index }) => ({
       key: String(index),
       label: head.unit ? `${head.field} [${head.unit}]` : head.field,
-      // Pixels as a number, which is what `RecordTable` measures in — a
-      // string here lays every column out on a line of its own.
+      // Pixels as a number, which is what `RecordTable` measures in — a string
+      // here lays every column out on a line of its own.
       width: 160,
     })))
 
@@ -249,9 +232,8 @@ async function start() {
     // attachments folder, and the root would show none of them.
     const found = await workspace.driveList({ place: 'all', kind: 'Sheet', limit: 50 })
     sheets.value = found?.files || []
-    // Where these rows already come from, if they come from anywhere; then
-    // the record's own sheet; then whatever is newest. Each is a better guess
-    // than the one after it about what a person pressing this meant.
+    // Where these rows already come from; then the record's own sheet; then
+    // whatever is newest. Each is a better guess than the one after it.
     const again = props.from && sheets.value.find((one) => one.name === props.from.sheet)
     const mine = sheets.value.find((one) => one.attached_to_name === props.docname)
     picked.value = (again || mine || sheets.value[0])?.name || ''
@@ -262,9 +244,8 @@ async function start() {
   }
 }
 
-// Choosing a sheet loads its named ranges, and nothing else about it — the
-// cells are not needed until the preview, and a workbook is a big thing to
-// fetch to fill a dropdown.
+// Choosing a sheet loads its named ranges and nothing else: a workbook is a
+// big thing to fetch to fill a dropdown.
 watch(picked, async (name) => {
   shape.value = null
   label.value = ''
