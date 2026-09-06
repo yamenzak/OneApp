@@ -55,7 +55,13 @@ def whitelisted() -> dict[str, dict]:
     found = {}
     for path in (ROOT / "apps").rglob("*.py"):
         source = path.read_text()
-        for m in re.finditer(r"@frappe\.whitelist\(([^)]*)\)\s*\ndef (\w+)", source):
+        # A decorator may sit between the whitelist and the `def` — the link
+        # preview is rate limited — and a guard that stops at the first line
+        # reads that endpoint as not existing, which is the exact bug this
+        # file is for, pointed the wrong way.
+        for m in re.finditer(
+            r"@frappe\.whitelist\(([^)]*)\)\s*\n(?:@[^\n]*\n)*def (\w+)", source
+        ):
             args, name = m.groups()
             verbs = re.search(r"methods=\[([^\]]*)\]", args)
             module = path.as_posix().split("apps/", 1)[1].split("/", 1)[1]

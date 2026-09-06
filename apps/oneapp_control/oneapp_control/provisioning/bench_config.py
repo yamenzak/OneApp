@@ -32,6 +32,8 @@ def build_config() -> dict:
 		"oneapp_r2_access_key": s.r2_access_key,
 		"oneapp_r2_secret_key": s.get_password("r2_secret_key", raise_exception=False),
 		"oneapp_r2_public_base": s.r2_public_base,
+		# Sheets
+		"oneapp_link_previews": 1 if s.link_previews else None,
 		# Email
 		"oneapp_cf_email_token": s.get_password("cf_email_token", raise_exception=False),
 		"oneapp_mail_domain": s.mail_domain,

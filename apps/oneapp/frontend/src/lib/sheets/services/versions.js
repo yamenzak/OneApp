@@ -1,32 +1,100 @@
 /**
- * Version history — the server half is not ported, so this says so.
+ * Version history, over the one version module both editors read.
  *
- * Frappe Sheets keeps an operation log (`Sheet Op Log`), periodic snapshots
- * (`Sheet Snapshot`) and a sequence per workbook, and its version panel, cell
- * history popover and preview banner all read them. That is a real feature and
- * a separable one: none of it is needed to open, edit or save a sheet, and all
- * of it needs three doctypes and a retention job we have not written.
+ * The panel, the preview banner and the restore flow are Frappe's, vendored
+ * with the editor (`lib/sheets/VENDORED.md`). This is the half that was not
+ * ported, and it is small because `oneapp_core/versions.py` answers the same
+ * questions for a workbook and a document alike — a version is a blob, its
+ * file, when, who, and whether somebody named it.
  *
- * `AVAILABLE` is what the editor branches on. Every call below answers the
- * empty shape rather than throwing, so a stale button or a keyboard shortcut
- * that slips past the flag does nothing instead of breaking the page.
+ * Two of Frappe's calls stay empty and will. `cellHistory` and `cellDiff` read
+ * their op log, which exists because their save is incremental; ours is total,
+ * so there is no sequence of operations to walk and nothing to replay. The
+ * editor already treats the highlighting they feed as optional — "highlighting
+ * optional" is its own comment — so an empty answer degrades to a preview
+ * without the changed cells outlined, which is what it degrades to upstream
+ * when the log has been truncated.
  */
 
-export const AVAILABLE = false
+import { callMethod } from '@/lib/runtime/resource'
 
-export async function list() { return [] }
-export async function getState() { return null }
-export async function restore() { return null }
-export async function name() { return null }
-export async function clearName() { return null }
-export async function saveVersion() { return null }
-export async function makeACopy() { return null }
+export const AVAILABLE = true
+
+const KIND = 'Sheet'
+
+const OFFSET = () => -new Date().getTimezoneOffset()
+
+/** Their row shape, from ours. The panel groups and labels off these five. */
+const asVersion = (one) => ({
+  name: one.name,
+  // A named version has a name; an automatic one has a timestamp for a title,
+  // and the panel's "named only" filter is exactly this field being set.
+  version_name: one.manual ? one.title : '',
+  timestamp: one.at,
+  user: one.by,
+  collapsed_count: one.saves || 1,
+})
+
+export async function list(sheet) {
+  const answer = await callMethod(
+    'oneapp.oneapp_core.versions.history',
+    { file: sheet, kind: KIND, offset_minutes: OFFSET() },
+    { silent: true, method: 'GET' },
+  )
+  // The panel does its own grouping by date, so the groups are flattened back
+  // out here rather than asking the server not to make them: a document's
+  // panel wants them, and one endpoint serving both is worth one `flatMap`.
+  return (answer?.groups || []).flatMap((group) => group.versions).map(asVersion)
+}
+
+export async function getState(sheet, version) {
+  const answer = await callMethod(
+    'oneapp.oneapp_core.versions.version_body',
+    { version, kind: KIND },
+    { silent: true, method: 'GET' },
+  )
+  return { sheets_data: answer?.payload || '{}', title: '' }
+}
+
+export async function restore(sheet, version) {
+  return callMethod('oneapp.oneapp_core.versions.restore_version',
+    { version, kind: KIND }, { success: 'Restored' })
+}
+
+export async function name(sheet, version, title) {
+  return callMethod('oneapp.oneapp_core.versions.name_version',
+    { version, kind: KIND, title }, { success: 'Named' })
+}
+
+export async function clearName(sheet, version) {
+  // The same endpoint with nothing in it: a name and its absence are one
+  // field, and an empty one puts the version back among the automatic ones.
+  return callMethod('oneapp.oneapp_core.versions.name_version',
+    { version, kind: KIND, title: '' }, { silent: true })
+}
+
+export async function saveVersion(sheet, title = '') {
+  return callMethod('oneapp.oneapp_core.versions.save_version',
+    { file: sheet, kind: KIND, title }, { success: 'Version saved' })
+}
+
+export async function makeACopy(sheet, version, title) {
+  const made = await callMethod('oneapp.oneapp_core.versions.copy_version',
+    { version, kind: KIND, title }, { success: 'Copied' })
+  return made?.name || null
+}
+
+export async function latestVersion(sheet) {
+  const rows = await list(sheet)
+  return rows[0] || null
+}
+
 export async function cellHistory() { return [] }
 export async function cellDiff() { return null }
-export async function latestVersion() { return null }
 
 /**
- * Upstream this posts one entry to the op log. Nothing records ops here, and a
- * caller that awaited a sequence number gets none — which is the truth.
+ * Upstream this posts one entry to the op log. Our save is total — the browser
+ * hands back the whole workbook — so there is no operation to record, and a
+ * caller that awaited a sequence number gets none, which is the truth.
  */
 export function recordOp() { return Promise.resolve(null) }

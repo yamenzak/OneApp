@@ -223,8 +223,9 @@ def payload_of(version: str, kind: str) -> str:
     )
     if not row or row.kind != kind:
         frappe.throw(_("There is no such version."), frappe.DoesNotExistError)
-    _store(kind).may_read(row.file)
-    return row.payload or ""
+    store = _store(kind)
+    store.may_read(row.file)
+    return store.readable(row.payload or "")
 
 
 # --------------------------------------------------------------------------- #
@@ -254,18 +255,54 @@ def restore(version: str, kind: str) -> dict:
 
 
 def rename(version: str, kind: str, title: str) -> dict:
-    """Name a version, which is also what makes it survive the pruner."""
-    row = frappe.db.get_value("File Version", version, ["file", "kind"], as_dict=True)
+    """Name a version, which is also what makes it survive the pruner.
+
+    An empty name takes it back: the row keeps its payload, gets its timestamp
+    back as a title, and rejoins the automatic ones the nightly thinning can
+    reach. That is what "clear this name" means, and it is one endpoint rather
+    than two because a name and its absence are the same field.
+    """
+    row = frappe.db.get_value(
+        "File Version", version, ["file", "kind", "creation"], as_dict=True
+    )
     if not row or row.kind != kind:
         frappe.throw(_("There is no such version."), frappe.DoesNotExistError)
     _store(kind).may_write(row.file)
 
     clean = (title or "").strip()[:TITLE_MAX]
-    if not clean:
-        frappe.throw(_("A version needs a name."))
+    if clean:
+        frappe.db.set_value("File Version", version, {"title": clean, "manual": 1})
+        return {"name": version, "title": clean, "manual": True}
 
-    frappe.db.set_value("File Version", version, {"title": clean, "manual": 1})
-    return {"name": version, "title": clean}
+    stamp = frappe.utils.format_datetime(get_datetime(row.creation), "d MMM, HH:mm")
+    frappe.db.set_value("File Version", version, {"title": stamp, "manual": 0})
+    return {"name": version, "title": stamp, "manual": False}
+
+
+def copy_out(version: str, kind: str, title: str = "") -> dict:
+    """A new file holding what this version held.
+
+    The other half of restore, and the one people reach for more often: keep
+    what is there, and open the old draft beside it. The copy is a new `File`,
+    so it lands in the same folder with the same sharing rules as anything else
+    made here.
+    """
+    row = frappe.db.get_value(
+        "File Version", version, ["file", "kind", "payload", "title"], as_dict=True
+    )
+    if not row or row.kind != kind:
+        frappe.throw(_("There is no such version."), frappe.DoesNotExistError)
+
+    store = _store(kind)
+    store.may_read(row.file)
+
+    folder = frappe.db.get_value("File", row.file, "folder") or ""
+    named = (title or "").strip()[:TITLE_MAX]
+    if not named:
+        was = frappe.db.get_value("File", row.file, "file_name") or "Copy"
+        named = f"{was} — {row.title}"
+
+    return store.copy(row.payload or "", named, folder)
 
 
 def forget(version: str, kind: str) -> dict:
@@ -394,3 +431,9 @@ def name_version(version: str, kind: str, title: str = "") -> dict:
 def forget_version(version: str, kind: str) -> dict:
     """Throw one version away. The body it was taken from is untouched."""
     return forget(version, kind)
+
+
+@frappe.whitelist(methods=["POST"])
+def copy_version(version: str, kind: str, title: str = "") -> dict:
+    """Open an earlier draft as a new file, leaving this one where it is."""
+    return copy_out(version, kind, title)

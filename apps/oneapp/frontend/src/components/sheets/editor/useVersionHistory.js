@@ -257,7 +257,9 @@ export function useVersionHistory({
     try {
       const newName = await _versionsApi.makeACopy(sheetId.value, versionId, title.trim())
       if (newName) {
-        const url = `${window.location.origin}/sheets?id=${newName}`
+        // Our address, not theirs: a sheet is a `File`, so it is `/one/sheets/<file>`
+        // rather than a query parameter on a page of their own.
+        const url = `${window.location.origin}/one/sheets/${newName}`
         window.open(url, '_blank')
       }
     } catch (err) {

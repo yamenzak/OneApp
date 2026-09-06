@@ -439,6 +439,13 @@ doctype(
         f("bucket_max_tenants", "Int", default="200",
           description="Rotation threshold for new buckets. Bounded buckets bound "
                       "the blast radius of losing one."),
+        f("link_previews", "Check", default="0",
+          description="Let a tenant site fetch a URL somebody typed into a cell "
+                      "to read its title and favicon. Off by default: it is an "
+                      "outbound request to an arbitrary host from inside the "
+                      "network, on a customer's say-so. The fetch is guarded "
+                      "against private address space either way — see "
+                      "`oneapp_core/link_preview.py`."),
         section("sec_mail", "Email"),
         f("cf_email_token", "Password", label="Cloudflare Email Token",
           description="API token with Email Sending: Edit."),

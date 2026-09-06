@@ -86,6 +86,20 @@ def put(doc: str, payload: str) -> int:
 # Reading and writing
 # --------------------------------------------------------------------------- #
 
+def readable(payload: str) -> str:
+    """A stored document as the editor reads it, which is unchanged."""
+    return payload
+
+
+def copy(payload: str, title: str, folder: str = "") -> dict:
+    """A new document holding this prose. What "make a copy" of a version is."""
+    from . import writing
+
+    made = writing.make(title=title, folder=folder)
+    store(made["name"], payload, html_of(payload))
+    return made
+
+
 def load(doc: str) -> dict:
     """One document's stored body. No permission check — callers have settled it."""
     row = frappe.db.get_value(

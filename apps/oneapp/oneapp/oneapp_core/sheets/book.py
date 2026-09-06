@@ -103,6 +103,26 @@ def put(sheet: str, payload: str) -> int:
     return store(sheet, payload)
 
 
+def readable(payload: str) -> str:
+    """A stored workbook as the plain JSON the editor reads.
+
+    The store keeps `codec.py`'s gzipped envelope; the editor's version panel
+    unpacks a workbook the same way `get_sheet` hands it one. Without this a
+    preview would be a base64 string parsed as a workbook, which draws an empty
+    grid and says nothing about why.
+    """
+    return codec.decode(payload)
+
+
+def copy(payload: str, title: str, folder: str = "") -> dict:
+    """A new sheet holding this workbook. What "make a copy" of a version is."""
+    from . import writing
+
+    made = writing.make(title=title, folder=folder)
+    store(made["name"], payload)
+    return made
+
+
 @frappe.whitelist(methods=["GET"])
 def get_sheet(name: str, compressed: int = 0) -> dict:
     """Everything the editor needs to draw a workbook, in one request.
@@ -160,7 +180,14 @@ def save_sheet(name: str, sheets_data: str, title: str = "") -> dict:
     # exactly this timestamp. See `feed._with_freshness`.
     doc.db_set("modified", frappe.utils.now(), update_modified=False)
 
-    return {"name": name, "head_seq": head}
+    # And an earlier draft, if the policy says this save is worth one. It
+    # usually is not — a burst of autosaves is one version — and a refusal is
+    # the ordinary answer rather than an error. See `oneapp_core/versions.py`.
+    from .. import versions
+
+    kept = versions.keep(name, versions.SHEET)
+
+    return {"name": name, "head_seq": head, "version": kept}
 
 
 def blank() -> str:
