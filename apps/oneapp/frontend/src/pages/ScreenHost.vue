@@ -540,38 +540,40 @@ import {
   LoadingIndicator,
   Dialog,
 } from '@/ui'
-import EmptyState from '../components/EmptyState.vue'
-import ScreenHeader from '../components/screen/views/ScreenHeader.vue'
-import CreateDialog from '../components/screen/record/CreateDialog.vue'
-import RecordPane from '../components/screen/record/RecordPane.vue'
-import RecordView from '../components/screen/record/RecordView.vue'
-import RecordDrawer from '../components/screen/record/RecordDrawer.vue'
-import FilterPanel from '../components/screen/views/FilterPanel.vue'
-import TallyMenu from '../components/screen/views/TallyMenu.vue'
-import QuickFilters from '../components/screen/views/QuickFilters.vue'
-import CardSettings from '../components/screen/views/CardSettings.vue'
-import ColumnPicker from '../components/screen/views/ColumnPicker.vue'
-import ListFooter from '../components/screen/bodies/ListFooter.vue'
-import SelectionBar from '../components/screen/bodies/SelectionBar.vue'
-import ScreenActions from '../components/screen/views/ScreenActions.vue'
-import BulkEditDialog from '../components/screen/views/BulkEditDialog.vue'
-import BulkAssignDialog from '../components/screen/views/BulkAssignDialog.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import ScreenHeader from '@/components/screen/views/ScreenHeader.vue'
+import CreateDialog from '@/components/screen/record/CreateDialog.vue'
+import RecordPane from '@/components/screen/record/RecordPane.vue'
+import RecordView from '@/components/screen/record/RecordView.vue'
+import RecordDrawer from '@/components/screen/record/RecordDrawer.vue'
+import FilterPanel from '@/components/screen/views/FilterPanel.vue'
+import TallyMenu from '@/components/screen/views/TallyMenu.vue'
+import QuickFilters from '@/components/screen/views/QuickFilters.vue'
+import CardSettings from '@/components/screen/views/CardSettings.vue'
+import ColumnPicker from '@/components/screen/views/ColumnPicker.vue'
+import ListFooter from '@/components/screen/bodies/ListFooter.vue'
+import SelectionBar from '@/components/screen/bodies/SelectionBar.vue'
+import ScreenActions from '@/components/screen/views/ScreenActions.vue'
+import BulkEditDialog from '@/components/screen/views/BulkEditDialog.vue'
+import BulkAssignDialog from '@/components/screen/views/BulkAssignDialog.vue'
+import { useBulkActions } from '@/composables/useBulkActions'
+import { useCreating } from '@/composables/useCreating'
+import { useCrumbs } from '@/composables/useCrumbs'
+import { useListFollow } from '@/composables/useListFollow'
+import { usePeek } from '@/composables/usePeek'
+import { useRecordSurface } from '@/composables/useRecordSurface'
+import { useRows } from '@/composables/useRows'
+import { useRowWrites } from '@/composables/useRowWrites'
+import { useSavedViews } from '@/composables/useSavedViews'
+import { useScreenAsked } from '@/composables/useScreenAsked'
+import { useScreenLayout } from '@/composables/useScreenLayout'
+import { useSorting } from '@/composables/useSorting'
 import { session } from '@/lib/shell/session'
-import { workspace } from '../lib/workspace'
-import { useCreating } from '../composables/useCreating'
-import { useCrumbs } from '../composables/useCrumbs'
-import { useListFollow } from '../composables/useListFollow'
-import { usePeek } from '../composables/usePeek'
-import { useRecordSurface } from '../composables/useRecordSurface'
-import { useRows } from '../composables/useRows'
-import { useSavedViews } from '../composables/useSavedViews'
-import { useSorting } from '../composables/useSorting'
-import { notifyError, notifySuccess } from '@/lib/runtime/notify'
-import { saveCsv } from '@/lib/files/download'
-import { screenComponent } from '../screens'
-import { CARD_VIEW_TYPES, DEFAULT_VIEW_TYPE, bodyFor } from '@/lib/screen/viewTypes'
+import { workspace } from '@/lib/workspace'
+import { CARD_VIEW_TYPES, bodyFor } from '@/lib/screen/viewTypes'
 import { applyTheme, clearTheme } from '@/lib/shell/theme'
 import { DRAWER, PAGE, PANE } from '@/lib/screen/surfaces'
+import { screenComponent } from '@/screens'
 
 const props = defineProps({ spaceCode: { type: String, required: true } })
 const route = useRoute()
@@ -585,9 +587,49 @@ const quickExpanded = ref(false)
 const quickOverflow = ref(false)
 
 const spec = ref(null)
+const loading = ref(false)
+// Why the screen would not resolve at all — a different failure from a list
+// that would not load, and the one that used to read as "no screens".
+const specError = ref('')
+const showColumns = ref(false)
+const showCards = ref(false)
 
-// Making a record — `composables/useCreating.js`. `reloadList` is a thunk
-// because `loadRows` comes from `useRows`, further down.
+/**
+ * The days a calendar has on screen, and the one thing that refetches without
+ * anything having been changed.
+ *
+ * Not in the payload: that is what a saved view is made of, and a view carrying
+ * "March" in its filters is a view that shows nothing in April. Nothing else
+ * reads it — every other body draws the page it was given.
+ */
+const days = ref(null)
+
+const space = computed(() =>
+  (session.spaces || []).find((one) => one.space_code === props.spaceCode),
+)
+
+// Which way this screen is being looked at, from the URL. Empty means the
+// screen's own first type, which is what the server falls back to — so a link
+// without one is a link to the default rather than to nothing.
+const viewType = computed(() => route.query.type || '')
+
+// Which body draws this screen. Resolved from the type the server settled on,
+// so an unknown or unbuilt one has already fallen back to the list.
+const body = computed(() => bodyFor(spec.value?.view_type))
+
+const custom = computed(() => {
+  const name = spec.value?.component
+  return name ? screenComponent(name) : null
+})
+
+// The list's own chrome, kept out of the template so the token audit reads it:
+// one hidden in a string the audit cannot see is how `bg-surface-white`
+// rendered a transparent column for a week. `rounded-6` is the panel radius.
+const SURFACE =
+  'flex min-h-0 flex-1 flex-col overflow-hidden rounded-6 border border-outline-gray-2 bg-surface-base'
+
+// Making a record — `composables/useCreating.js`. The reloads are thunks
+// throughout this file: the rows and the screen are resolved further down.
 const {
   showCreate, preset, childRevision, createSpec, createScreen,
   create, newWith, addChild, created,
@@ -613,99 +655,123 @@ const {
   router,
   reloadList: () => loadRows(),
 })
-const loading = ref(false)
-const showColumns = ref(false)
-const showCards = ref(false)
 
-// One gear, two dialogs. Which one is the body's question, not the footer's:
-// a card view has no column widths and a list has no cards.
-const openSettings = () => {
-  if (CARD_VIEW_TYPES.includes(spec.value?.view_type)) showCards.value = true
-  else showColumns.value = true
-}
+// A record opened from inside another one — `composables/usePeek.js`.
+const {
+  peeked, peekSpec,
+  loadPeek, closePeek, peekSaved, expandPeek, peekRenamed,
+} = usePeek({
+  spaceCode: props.spaceCode,
+  spec,
+  route,
+  router,
+  reloadList: () => loadRows(),
+})
 
-// What the reader has said about a card view and not yet saved. Empty until
-// they touch it, so the screen's own answer stands — the same shape the
-// filters and the sort use, and it rides in the same payload.
+// What the reader has asked of this screen — `composables/useScreenAsked.js`.
+const {
+  quickFilters, panelFilters, order, chosenColumns, favourites, groupBy,
+  dirty,
+  payload, dashboardAsked, askedOfRows, seedFrom, carry, changed,
+  onQuickFilters, onPanelFilters, narrowTo, onColumns, clearAllFilters,
+  onGroupBy, toggleFavourites, cardsChanged,
+} = useScreenAsked({
+  spec,
+  pageLength: () => pageLength.value,
+  reloadRows: () => loadRows(),
+  reload: () => load(),
+})
+
+// The records this screen lists — `composables/useRows.js`.
+const {
+  rows, columns, selection, total, hasMore, rowsLoading, loadingMore,
+  rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards, fetchedCalendar,
+  totals, groupTotals,
+  loadRows, loadMore, setPageLength,
+} = useRows({
+  spaceCode: props.spaceCode,
+  spec,
+  payload: () => payload(),
+  range: () => days.value,
+  onChange: () => changed(),
+})
+
+// Everything done to the ticked rows — `composables/useBulkActions.js`.
+const {
+  bulkEditing, bulkAssigning, bulking, confirmBulkCancel, confirmDelete,
+  deleting, exporting, submittable,
+  bulkSet, bulkAssign, bulkSubmit, bulkCancel, printSelected, removeSelected,
+  exportRows,
+} = useBulkActions({
+  spaceCode: props.spaceCode,
+  spec,
+  selection,
+  payload,
+  reloadRows: () => loadRows(),
+})
+
+// The three writes a body makes — `composables/useRowWrites.js`.
+const { writeField, quickCreate, like } = useRowWrites({
+  spaceCode: props.spaceCode,
+  spec,
+  favourites,
+  reloadRows: () => loadRows(),
+})
+
+// Keeping or discarding an unsaved change — `composables/useScreenLayout.js`.
+const {
+  saving, resetting, saveLabel, discardLabel,
+  saveLayout, discardChanges,
+} = useScreenLayout({
+  spaceCode: props.spaceCode,
+  spec,
+  dirty,
+  payload,
+  reload: () => load(),
+})
+
+// A screen is a named layout — filters, sort and columns saved together, the
+// shape Frappe's own `List Filter` doctype settles on. Which one is open lives
+// in the URL, so a screen is a link somebody can send.
 //
-// Keyed by view type, the shape the manifest and a saved view both store: a
-// board's card and a grid's card are separate answers, and switching between
-// the two views should not carry one over the other.
-const viewSettings = ref({})
+// Kept whole as well as destructured: `ScreenHeader` takes the object, because
+// the switcher's menu is exactly this composable and forwarding its nine verbs
+// one event at a time says nothing that `:views="views"` does not.
+const views = useSavedViews({
+  spaceCode: props.spaceCode,
+  spec,
+  route,
+  router,
+  saving,
+  dirty,
+  payload: () => payload(),
+  reload: (into) => load(into),
+})
+const { layout } = views
 
-const cardsChanged = (changes) => {
-  const type = spec.value?.view_type || DEFAULT_VIEW_TYPE
-  viewSettings.value = {
-    ...viewSettings.value,
-    [type]: { ...(viewSettings.value[type] || {}), ...changes },
-  }
-  changed()
-}
-// Why the screen would not resolve at all — a different failure from a list
-// that would not load, and the one that used to read as "no screens".
-const specError = ref('')
-const saving = ref(false)
-const resetting = ref(false)
-const dirty = ref(false)
-const deleting = ref(false)
-const confirmDelete = ref(false)
+// The order the list is in — `composables/useSorting.js`.
+const { sortBy } = useSorting({ order, spec, onChange: () => changed() })
 
-// The two filter surfaces are separate lists that are asked together, which is
-// what Frappe does: the boxes above answer the common question and the panel
-// answers the rest, and neither clears the other.
-const quickFilters = ref([])
-const panelFilters = ref([])
-const order = ref('')
-const chosenColumns = ref([])
-const favourites = ref(false)
-const groupBy = ref('')
+// Where the reader is, as the header draws it — `composables/useCrumbs.js`.
+const { viewLabel, crumbs, recordCrumb, statusValue, docState } = useCrumbs({
+  spaceCode: props.spaceCode,
+  spec,
+  space,
+  shownRecord,
+  viewType,
+})
 
-const space = computed(() =>
-  (session.spaces || []).find((one) => one.space_code === props.spaceCode),
-)
-
-// Which body draws this screen. Resolved from the type the server settled on,
-// so an unknown or unbuilt one has already fallen back to the list before it
-// reaches here.
-const body = computed(() => bodyFor(spec.value?.view_type))
+// The list follows the site — `composables/useListFollow.js`.
+const { follow } = useListFollow({ paused: dirty, reload: () => loadRows() })
 
 // Whether the body is showing the activity column, which is where the heart
 // lives when it is: above the hearts on the rows, which is the only place the
-// control and the thing it filters line up. When it is not — the reader
-// dropped that column, or the body has no columns at all — the heart comes to
+// control and the thing it filters line up. When it is not, the heart comes to
 // the toolbar instead. Never both, never neither.
 const META_FIELD = '__activity'
 const metaColumn = computed(() =>
   (columns.value || []).some((column) => column.fieldname === META_FIELD),
 )
-
-const custom = computed(() => {
-  const name = spec.value?.component
-  return name ? screenComponent(name) : null
-})
-
-
-
-// The list's own chrome, kept out of the template so the token audit reads it:
-// a class list in an attribute this long is unreadable, and one hidden in a
-// string the audit cannot see is how `bg-surface-white` rendered a transparent
-// column for a week.
-//
-// `rounded-6` is the panel radius — the same one every card on this surface
-// uses. See `docs/ONESPACE.md` for the scale.
-const SURFACE =
-  'flex min-h-0 flex-1 flex-col overflow-hidden rounded-6 border border-outline-gray-2 bg-surface-base'
-
-// The band behind the column headers, and the reason `ListHeader`'s own rule is
-// off: that rule is a grid child inset to the content box, so under a
-// full-width fill it stopped short at both ends. The band carries its own
-// full-width rule instead.
-
-
-
-
-
-
 
 const counted = computed(() =>
   hasMore.value ? `${rows.value.length}+` : String(rows.value.length),
@@ -721,423 +787,12 @@ const emptyBecause = computed(() => {
     : 'Nothing here so far.'
 })
 
-// A record opened from inside another one, in `composables/usePeek.js`.
-const {
-  peeked, peekSpec,
-  closePeek, peekSaved, expandPeek, peekRenamed,
-} = usePeek({
-  spaceCode: props.spaceCode,
-  spec,
-  route,
-  router,
-  // A thunk: `loadRows` is defined below this call.
-  reloadList: () => loadRows(),
-})
-
-/**
- * The space's own look, on the document while this space is open.
- *
- * Read from the session's own list of spaces rather than from `spec`, and that
- * is deliberate: the session is already in hand when the route resolves, so a
- * themed space arrives themed instead of painting one light frame and then
- * turning dark. See `lib/theme.js` for what a declaration moves.
- *
- * Taken off on the way out. A space's personality is that space's — the
- * launcher, the account area and the next space are not it.
- */
-watch(
-  () => props.spaceCode,
-  (code) => {
-    const space = session.spaces.find((one) => one.space_code === code)
-    applyTheme(space?.theme)
-  },
-  { immediate: true },
-)
-
-onBeforeUnmount(clearTheme)
-
-
-// The order the list is in — `composables/useSorting.js`.
-const { sortBy } = useSorting({ order, spec, onChange: () => changed() })
-
-// --- what the list is being asked -------------------------------------------
-
-const payload = () => ({
-  // Which way of looking this view is of. Without it every save landed on the
-  // screen's *first* type, so a view saved from the board was filed as a list
-  // view and never appeared in the board's own switcher again.
-  view_type: spec.value?.view_type || DEFAULT_VIEW_TYPE,
-  filters: [...quickFilters.value, ...panelFilters.value],
-  order_by: order.value,
-  columns: chosenColumns.value,
-  favourites: favourites.value,
-  group_by: groupBy.value,
-  page_length: pageLength.value,
-  // Nested by view type, the same shape the manifest uses and the same shape a
-  // saved view stores. Sent whole so that clearing a choice clears it: a
-  // truthiness check would leave the last board field standing after a reset.
-  view_settings: viewSettings.value,
-})
-
-
-/**
- * What a dashboard is narrowed by, as a value that changes when the filters do.
- *
- * The same `payload()` the rows go through, so the charts and the list are
- * answering one question — but only the parts that decide *which records*.
- * Columns, widths and what a card carries are about drawing, and a chart that
- * re-fetched when somebody widened a column would be re-fetching for nothing.
- *
- * A computed rather than a call, because the body watches it: a function
- * returning a fresh object every render is a watcher that never settles.
- */
-const dashboardAsked = computed(() => ({
-  filters: [...quickFilters.value, ...panelFilters.value],
-  order_by: order.value,
-  favourites: favourites.value,
-}))
-
-
-// --- screens ------------------------------------------------------------------
-//
-// A screen is a named layout — filters, sort and columns saved together — which
-// is the shape Frappe's own `List Filter` doctype settles on. Which one is open
-// lives in the URL, so a screen is a link somebody can send.
-
-// Saved views — `composables/useSavedViews.js`. Kept whole as well as
-// destructured: `ScreenHeader` takes the object, because the switcher's menu
-// is exactly this composable and forwarding its nine verbs one event at a time
-// says nothing that `:views="views"` does not.
-const views = useSavedViews({
-  spaceCode: props.spaceCode,
-  spec,
-  route,
-  router,
-  saving,
-  dirty,
-  // Thunks: both are defined below this call.
-  payload: () => payload(),
-  reload: (into) => load(into),
-})
-const { layout } = views
-
-
-// Which way this screen is being looked at, from the URL. Empty means the
-// screen's own first type, which is what the server falls back to — so a link
-// without one is a link to the default rather than to nothing.
-const viewType = computed(() => route.query.type || '')
-
-// Where the reader is, as the header draws it — `composables/useCrumbs.js`.
-const { viewLabel, crumbs, recordCrumb, statusValue, docState } = useCrumbs({
-  spaceCode: props.spaceCode,
-  spec,
-  space,
-  shownRecord,
-  viewType,
-})
-
-const changed = async () => {
-  dirty.value = true
-  await loadRows()
+// One gear, two dialogs. Which one is the body's question, not the footer's:
+// a card view has no column widths and a list has no cards.
+const openSettings = () => {
+  if (CARD_VIEW_TYPES.includes(spec.value?.view_type)) showCards.value = true
+  else showColumns.value = true
 }
-
-// The list follows the site — `composables/useListFollow.js`.
-const { follow } = useListFollow({ paused: dirty, reload: () => loadRows() })
-
-const onQuickFilters = (filters) => {
-  quickFilters.value = filters
-  changed()
-}
-
-const onPanelFilters = (filters) => {
-  panelFilters.value = filters
-  changed()
-}
-
-/**
- * Narrow to one value of one field, from the tally.
- *
- * Into the panel's filters rather than the quick row: this is the same
- * `[field, =, value]` a person would have added there by hand, and putting it
- * where they can see and remove it is what stops a list being narrowed by
- * something invisible. Replaces any filter already on that field — two
- * equalities on one column match nothing, which reads as the tally lying.
- */
-const narrowTo = ({ field, value }) => {
-  if (!field) return
-  panelFilters.value = [
-    ...panelFilters.value.filter((one) => one[0] !== field),
-    [field, '=', value ?? ''],
-  ]
-  changed()
-}
-
-const onColumns = (chosen) => {
-  chosenColumns.value = chosen
-  changed()
-}
-
-const clearAllFilters = () => {
-  quickFilters.value = []
-  panelFilters.value = []
-  // The controls read their state from the spec, so re-resolving is what puts
-  // the boxes back to empty rather than leaving them showing a cleared filter.
-  load()
-}
-
-const onGroupBy = (fieldname) => {
-  groupBy.value = fieldname || ''
-  changed()
-}
-
-const toggleFavourites = () => {
-  favourites.value = !favourites.value
-  changed()
-}
-
-// --- records ----------------------------------------------------------------
-
-// One field, written from a body, without opening the record.
-//
-// A board's whole reason to exist: dragging a card between columns is a save
-// of the field the columns are. Optimistic on the row so the card stays where
-// it was dropped while the request is in flight, then the list is re-read —
-// the save may have changed more than was sent (a workflow, a fetch_from, a
-// `modified` that reorders the page), and a board showing our guess instead of
-// the server's answer is a board that lies quietly.
-const writeField = async ({ row, field, value }) => {
-  if (!row || !field) return
-  const was = row[field]
-  row[field] = value
-  try {
-    await workspace.saveRecord(props.spaceCode, spec.value.screen, { [field]: value }, row.name)
-  } catch (e) {
-    row[field] = was
-    notifyError(e.message || String(e))
-    return
-  }
-  await loadRows()
-}
-
-/**
- * A record made from inside a body, without the dialog.
- *
- * The board's column foot: a name, Enter, and a card. Here rather than in the
- * body because the list is the shell's — the body has no way to reload it, and
- * a card that appears only after somebody switches screens is worse than the
- * dialog it replaced.
- *
- * The promise is the body's: it keeps what was typed until this resolves, and
- * puts it back where it was if the save is refused.
- */
-const quickCreate = async ({ values, done, fail }) => {
-  try {
-    await workspace.saveRecord(props.spaceCode, spec.value.screen, values, null)
-    await loadRows()
-    done?.()
-  } catch (e) {
-    notifyError(e.message || String(e))
-    fail?.(e)
-  }
-}
-
-const like = async (row) => {
-  const result = await workspace.toggleLike(props.spaceCode, spec.value.screen, row.name)
-  // Patched in place rather than reloaded: a like is not a reason to lose the
-  // reader's scroll position.
-  row._meta = {
-    ...row._meta,
-    liked: !!result?.liked,
-    likes: (result?.likes || []).length,
-  }
-  // Unless the like is what the list is filtered by, in which case a row that
-  // is no longer a favourite has no business still being in it.
-  if (favourites.value) await loadRows()
-}
-
-/**
- * The rows, as a file.
- *
- * `names` is the selection where there is one and nothing where there is not,
- * and the server reads that difference — so the button in the footer and the
- * one in the selection bar are the same call.
- *
- * The whole thing arrives as text and is turned into a download here rather
- * than being fetched from a URL: an export URL would have to carry the screen,
- * the saved view, the unsaved filters and the selection as query parameters,
- * and would be a second way into the data. See `lib/download.js`.
- */
-const exporting = ref(false)
-const exportRows = async (names) => {
-  if (exporting.value) return
-  exporting.value = true
-  try {
-    const file = await workspace.screenExport(
-      props.spaceCode,
-      spec.value.screen,
-      payload(),
-      spec.value.layout || '',
-      spec.value.view_type,
-      names,
-    )
-    saveCsv(file?.filename, file?.csv || '')
-    // The cap is said out loud or not at all. A spreadsheet that quietly stops
-    // at five thousand rows is the worst thing to hand somebody who is about to
-    // add it up.
-    notifySuccess(
-      file?.capped
-        ? `The first ${file.rows.toLocaleString()} rows — this screen has more than ` +
-          `${file.limit.toLocaleString()}, which is the most one file carries.`
-        : `${(file?.rows || 0).toLocaleString()} rows exported`,
-    )
-  } catch (e) {
-    notifyError(e.message || String(e))
-  } finally {
-    exporting.value = false
-  }
-}
-
-/**
- * One change to everything that is ticked.
- *
- * Each record is saved on its own on the server, so what could not take the
- * change comes back named — a submitted document, a rule the value breaks, a
- * row this person may read and not write. Said out loud rather than swallowed:
- * a bulk change that silently skipped nine of forty is worse than one that
- * failed.
- */
-const bulkEditing = ref(false)
-const bulkAssigning = ref(false)
-const bulking = ref(false)
-
-const bulkRan = (result, said) => {
-  if (result?.refused?.length) {
-    notifyError(result.refused.map((row) => `${row.name}: ${row.reason}`).join('\n'))
-  }
-  if (result?.done?.length) notifySuccess(`${said} ${result.done.length}`)
-}
-
-const bulkThrough = async (work, said, close) => {
-  bulking.value = true
-  try {
-    bulkRan(await work(), said)
-    close.value = false
-    selection.value = []
-    await loadRows()
-  } catch (e) {
-    notifyError(e.message || String(e))
-  } finally {
-    bulking.value = false
-  }
-}
-
-const bulkSet = ({ field, value }) =>
-  bulkThrough(
-    () =>
-      workspace.screenBulkSet(props.spaceCode, spec.value.screen, selection.value, field, value),
-    'Changed',
-    bulkEditing,
-  )
-
-const bulkAssign = (users) =>
-  bulkThrough(
-    () =>
-      workspace.screenBulkAssign(props.spaceCode, spec.value.screen, selection.value, users),
-    'Assigned',
-    bulkAssigning,
-  )
-
-// Whether these records are submitted by *this* button.
-//
-// Two facts about the doctype, off the screen rather than off the rows: a list
-// does not carry `_state` (that costs a `get_doc` per record and the record
-// endpoint is where it is worth paying). And not where a workflow owns the
-// transition — `docflow` refuses a plain submit there on purpose, so the
-// button would fail on every record. The single-record header follows the same
-// rule: it offers the workflow's transitions and never Submit beside them.
-const submittable = computed(() => !!spec.value?.submittable && !spec.value?.workflow)
-
-const confirmBulkCancel = ref(false)
-
-const bulkSubmit = () =>
-  bulkThrough(
-    () => workspace.screenBulkSubmit(props.spaceCode, spec.value.screen, selection.value),
-    'Submitted',
-    bulkEditing,
-  )
-
-const bulkCancel = () =>
-  bulkThrough(
-    () => workspace.screenBulkCancel(props.spaceCode, spec.value.screen, selection.value),
-    'Cancelled',
-    confirmBulkCancel,
-  )
-
-/**
- * The selection as one PDF.
- *
- * A window rather than fetch-and-blob, for the reason the record's own print
- * download is: the response is a real download with a filename on it, and
- * rebuilding the file in JavaScript loses the name and the progress bar both.
- *
- * No dialog. Printing *one* record is a choice of format and letter head, and
- * printing forty is "give me the paperwork" — the defaults are what somebody
- * pressing this means, and the record's own dialog is where the other question
- * gets asked.
- */
-const printSelected = () => {
-  window.open(
-    workspace.printManyUrl(props.spaceCode, spec.value.screen, selection.value),
-    '_blank',
-    'noopener',
-  )
-}
-
-const removeSelected = async () => {
-  deleting.value = true
-  try {
-    const result = await workspace.removeRecords(props.spaceCode, spec.value.screen, [
-      ...selection.value,
-    ])
-    confirmDelete.value = false
-    selection.value = (result?.refused || []).map((row) => row.name)
-    if (result?.refused?.length) {
-      // Named rather than counted: "3 could not be deleted" is not something a
-      // person can act on, and the reason is usually a link somewhere else.
-      notifyError(result.refused.map((row) => `${row.name}: ${row.reason}`).join('\n'))
-    } else {
-      notifySuccess(`Deleted ${result?.deleted?.length || 0}`)
-    }
-    await loadRows()
-  } finally {
-    deleting.value = false
-  }
-}
-
-// The records this screen lists — `composables/useRows.js`.
-const {
-  rows, columns, selection, total, hasMore, rowsLoading, loadingMore,
-  rowsError, pageLength, groupedBy, fetchedBoard, fetchedCards, fetchedCalendar, totals,
-  groupTotals,
-  loadRows, loadMore, setPageLength,
-} = useRows({
-  spaceCode: props.spaceCode,
-  spec,
-  // Thunks: both are defined below this call.
-  payload: () => payload(),
-  range: () => days.value,
-  onChange: () => changed(),
-})
-
-/**
- * The days a calendar has on screen, and the one thing that refetches without
- * anything having been changed.
- *
- * Not in `payload`: that is what a saved view is made of, and a view carrying
- * "March" in its filters is a view that shows nothing in April. Nothing else
- * reads it — every other body draws the page it was given.
- */
-const days = ref(null)
 
 const showDays = (asked) => {
   if (days.value?.since === asked?.since && days.value?.until === asked?.until) return
@@ -1145,91 +800,13 @@ const showDays = (asked) => {
   loadRows()
 }
 
-// Where an unsaved change goes when you say to keep it, which depends on where
-// you are. In a named view you may write, it goes into that view; anywhere
-// else it goes into this person's own unnamed default for the screen, which is
-// what "keep this how I left it" has always meant.
-//
-// Frappe CRM draws the same line — Save Changes appears only on a view you may
-// write — and the alternative is worse in both directions: a Save that
-// silently makes a private copy of a shared view, or one that quietly rewrites
-// a view other people are using.
-//
-// "In a named view" and not merely "a layout is open": this person's own
-// unnamed default is a layout row too, and the screen opens with it — so
-// reading `spec.layout` alone made Save write into the default it had just
-// resolved and left Discard with nothing to reset. The label is what makes a
-// layout a view somebody named.
-const currentLayout = computed(
-  () => (spec.value?.layouts || []).find((l) => l.name === spec.value?.layout) || null,
-)
+// What the last render was actually of — the screen, and the way of looking the
+// server settled on, which is not always the one the URL asked for. Only a
+// change of view type carries anything: another screen is another set of
+// records and has nothing to carry.
+const drawnAs = ref({ screen: '', type: '' })
 
-const savesIntoView = computed(
-  () => !!currentLayout.value?.label && (currentLayout.value.mine || !!spec.value?.can_share),
-)
-
-const saveLabel = computed(() => (savesIntoView.value ? 'Save changes' : 'Save this screen'))
-
-const discardLabel = computed(() =>
-  dirty.value ? 'Discard these changes' : 'Back to the default screen',
-)
-
-const saveLayout = async () => {
-  saving.value = true
-  try {
-    await workspace.saveLayout(props.spaceCode, spec.value.screen, {
-      ...payload(),
-      ...(savesIntoView.value ? { layout: spec.value.layout } : {}),
-    })
-    dirty.value = false
-    await load()
-  } finally {
-    saving.value = false
-  }
-}
-
-// The way back. In a view that means the view as it was saved — a reload of
-// the same layout, which is what `load()` does; on the screen itself it means
-// dropping this person's saved default altogether.
-const discardChanges = async () => {
-  resetting.value = true
-  try {
-    if (!savesIntoView.value && spec.value?.saved) {
-      await workspace.resetLayout(
-        props.spaceCode, spec.value.screen, spec.value.view_type,
-      )
-    }
-    dirty.value = false
-    await load()
-  } finally {
-    resetting.value = false
-  }
-}
-
-/**
- * What the reader has asked of the *rows*, as it stands.
- *
- * The distinction this turns on is one the reader already makes: a filter, a
- * sort and "only my favourites" are questions about **which records**, and
- * columns, widths, pinning, grouping and what a card carries are questions
- * about **how they are drawn**. Switching from a list to a board changes the
- * second and not the first — "only the open ones, by priority" is the same
- * question drawn as columns — so that is what crosses over.
- *
- * Only when the switch happens under somebody. Opening a link cold is not
- * carrying anything, so it gets that view type's own default, which is what a
- * link should mean.
- */
-const askedOfRows = () => ({
-  quick: quickFilters.value.map((one) => [...one]),
-  panel: panelFilters.value.map((one) => [...one]),
-  order: order.value,
-  favourites: favourites.value,
-})
-
-const sameRows = (a, b) => JSON.stringify(a) === JSON.stringify(b)
-
-const load = async (openWith, carry = null) => {
+const load = async (openWith, carried = null) => {
   if (!space.value) return
   loading.value = true
   specError.value = ''
@@ -1240,46 +817,13 @@ const load = async (openWith, carry = null) => {
       openWith || layout.value,
       viewType.value || undefined,
     )
-    // Seeded from what the screen resolved to, which already includes this
-    // person's saved view.
-    quickFilters.value = []
-    // Whatever was said about a card and not saved. Cleared with the rest of
-    // the unsaved state: it was said about the view that was open, and opening
-    // another one — a saved view, or a different type — is not a reason to
-    // keep overriding what that one resolved to.
-    viewSettings.value = {}
-    panelFilters.value = (spec.value?.saved?.filters || []).map((filter) => [...filter])
-    order.value = spec.value?.order_by || ''
-    chosenColumns.value = (spec.value?.columns || []).map((c) => ({
-      fieldname: c.fieldname,
-      width: c.width,
-      pin: c.pin,
-      // Empty where nobody has said, which means the fieldtype decides. See
-      // `ListBody`'s `visible`.
-      align: c.align || '',
-    }))
-    favourites.value = !!spec.value?.saved?.favourites
-    groupBy.value = spec.value?.saved?.group_by || ''
+    seedFrom(spec.value)
     pageLength.value = spec.value?.page_length || 100
-    dirty.value = false
     drawnAs.value = {
       screen: spec.value?.screen || '',
       type: spec.value?.view_type || '',
     }
-
-    // What the reader was asking of the rows before the view type changed
-    // under them, applied over what this type resolved to — and marked unsaved
-    // where the two differ, so the switcher says "this view, with changes"
-    // rather than showing a filtered board under a view's name that means
-    // something else.
-    if (carry) {
-      const resolved = askedOfRows()
-      quickFilters.value = carry.quick
-      panelFilters.value = carry.panel
-      order.value = carry.order || order.value
-      favourites.value = carry.favourites
-      dirty.value = !sameRows(carry, resolved)
-    }
+    if (carried) carry(carried)
     follow(spec.value?.doctype || '')
     await loadRows()
   } catch (err) {
@@ -1295,15 +839,24 @@ const load = async (openWith, carry = null) => {
   }
 }
 
+/**
+ * The space's own look, on the document while this space is open.
+ *
+ * Read from the session's list of spaces rather than from `spec`: the session
+ * is already in hand when the route resolves, so a themed space arrives themed
+ * instead of painting one light frame and then turning dark. Taken off on the
+ * way out — a space's personality is that space's.
+ */
+watch(
+  () => props.spaceCode,
+  (code) => applyTheme(session.spaces.find((one) => one.space_code === code)?.theme),
+  { immediate: true },
+)
 
-// Re-resolved on every screen change: the columns, the filters and what this user
-// may do are all per screen, not per space.
-// What the last render was actually of — the screen, and the way of looking the
-// server settled on, which is not always the one the URL asked for. Only a
-// change of view type carries anything: another screen is another set of
-// records and has nothing to carry.
-const drawnAs = ref({ screen: '', type: '' })
+onBeforeUnmount(clearTheme)
 
+// Re-resolved on every screen change: the columns, the filters and what this
+// user may do are all per screen, not per space.
 watch(
   [
     () => props.spaceCode,
@@ -1333,8 +886,7 @@ watch(
 // `?record=` means whatever that component decided it means — the operator
 // console uses it to say which workspace it is showing. Left to run, this
 // fetched a record the screen does not list, found nothing, and cleaned the
-// parameter out of the URL: a link straight to a workspace opened empty, and
-// only arriving from the list worked.
+// parameter out of the URL: a link straight to a workspace opened empty.
 watch([() => route.query.record, () => spec.value?.screen], ([name, screen]) => {
   if (screen && !spec.value?.component) openRecord(name || '')
 })
