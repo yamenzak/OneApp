@@ -95,7 +95,7 @@ because a border lifted toward white is a border that vanishes in light mode.
 Four, and no more, on purpose. The alternative — a manifest that may set any CSS
 variable — is a stylesheet in a database, and the first space to reach for one
 would put its own text colour on our own surface colour and ship a screen nobody
-can read. These are *intents*: `lib/theme.js` owns which variables each one
+can read. These are *intents*: `lib/shell/theme.js` owns which variables each one
 moves, so the mapping is corrected in one place when frappe-ui renames a token,
 and the neutral scale that carries every row hover and hairline in the product
 is deliberately not on the list.
@@ -458,7 +458,7 @@ in.
 
 ### Grid — the same cards, not bucketed
 
-`lib/cards.js` owns what a card *says*; the two bodies are two ways of putting
+`lib/screen/cards.js` owns what a card *says*; the two bodies are two ways of putting
 those on a page. A grid needs no field, so it is offered wherever declared.
 
 **Where the doctype has an `image_field`, the grid is a gallery**: the picture
@@ -541,7 +541,7 @@ Nothing is written and nothing is expanded on the server: one record with a rule
 stays one record, the occurrences exist for as long as the month showing them
 does, and clicking any of them opens the one record. Which is what makes
 deleting a series possible at all — there is no series, there is a record.
-`lib/recurrence.js` decides, capped at 400 occurrences so a daily rule drawn
+`lib/screen/recurrence.js` decides, capped at 400 occurrences so a daily rule drawn
 over a year is not a wall.
 
 Two things a calendar could carry and does not. **Participants** are the
@@ -620,7 +620,7 @@ drawn as a root, muted, and never dropped — the parent may have been filtered
 out, or be on a page nobody has loaded yet, and a tree that hides a record for
 either reason is one that disagrees with the count in its own footer. Load more
 re-nests it. Two records naming each other are both left at the top, which is
-the only drawing of a circle that terminates. `lib/tree.js` owns all of that,
+the only drawing of a circle that terminates. `lib/screen/tree.js` owns all of that,
 and is where its tests are.
 
 **Dragging reparents**, which is the one thing a tree can do that a list cannot.
@@ -660,7 +660,7 @@ is why it was never a dialog.
 | **page** | The whole content area. Always on a phone; on a desktop where the screen declares a showcase, or where the reader pressed the expand control — which is remembered per screen, so "a project is a page and a task is a pane" is a thing a person can have. The list is hidden rather than unmounted, so closing comes back to the same rows and the same scroll position. |
 | **drawer** | An overlay over a page, for a record opened *from* another one: a variation from its job, an invoice from the project it was raised against. In the URL as `peek` + `peekScreen`, so it is linkable and the back button and Escape both close it. It is the one record surface that takes Escape, because it is the one that is modal. |
 
-`lib/surfaces.js` holds the vocabulary and the remembered preference.
+`lib/screen/surfaces.js` holds the vocabulary and the remembered preference.
 
 **One header, and it says the record's name once.** A record used to draw its
 own bar under the screen's — two bands, and on a showcase page the second one
@@ -671,7 +671,7 @@ because the list it would add a row to is not on screen. A pane keeps its own
 bar — it is a column beside a list whose header is that trail — and the drawer
 and the phone keep theirs because both cover the trail. `RecordControls` is the
 row, drawn in whichever of the two places applies; `MERGE_TARGET` in
-`lib/surfaces.js` is the id the two halves agree on.
+`lib/screen/surfaces.js` is the id the two halves agree on.
 
 The identity follows the same question: the trail says it on both desktop
 surfaces, the hero says it wherever there is a showcase, so the header draws it
@@ -1167,7 +1167,7 @@ everyone to upload it again. Sheet import is the same dialog, narrowed to the
 three extensions it can read, so a spreadsheet attached to a quotation last
 March imports without being downloaded and uploaded first.
 
-The upload goes through `lib/attach.js`, which every attach surface shares, so a
+The upload goes through `lib/files/attach.js`, which every attach surface shares, so a
 large file attaches to a record by the same presigned route it takes into the
 Drive — see `docs/DRIVE.md` §8. It used to post through Frappe here, and a large
 attachment simply failed.

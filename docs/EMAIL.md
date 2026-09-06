@@ -438,7 +438,7 @@ trips from the browser. It keeps a note of where every conversation was, and
 that note is what Undo reads. The keys are Gmail's, because Frappe Mail's are
 Gmail's and so are Outlook's: `j` `k` to move, `e` to archive, `#` to bin, `u`,
 `s`, `c`, `r`, `/`, and `?` for the list of them. Two rules keep them safe, in
-`lib/shortcuts.js`: never while somebody is typing, and never over a dialog.
+`lib/shell/shortcuts.js`: never while somebody is typing, and never over a dialog.
 
 **The composer signs, and the reader says who else was on it.** Two things the
 product had and used neither of. The signature people typed into settings was

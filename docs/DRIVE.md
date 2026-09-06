@@ -389,7 +389,7 @@ shard rather than on a schedule. See `docs/ONEADMIN.md`.
 
 ### Every attach surface takes the same route
 
-`lib/attach.js` is one function — `putFile(file, {attachTo, folder})` — that
+`lib/files/attach.js` is one function — `putFile(file, {attachTo, folder})` — that
 tries the direct path and falls back to the POST. The Drive's queue calls it and
 so does the picker, which is what makes a large file attachable to a record and
 not only droppable into the Drive. Before that the picker used frappe-ui's
@@ -412,7 +412,7 @@ Link and Google Drive.
   rather than the root folder because almost every file in a workspace is an
   attachment living in `Home/Attachments`. First, because the file somebody
   wants is usually one that is already here.
-* **This device** — a drop zone and a chooser, through `lib/attach.js`.
+* **This device** — a drop zone and a chooser, through `lib/files/attach.js`.
 * **Camera** — `getUserMedia` with a live preview, a shutter and a front/back
   toggle, falling back to a `capture` input when the page is not on a secure
   origin or permission is refused. Frappe's desk has had this since

@@ -176,7 +176,7 @@ tab. A sheet attached to a quotation is the same idea with no new machinery.
 **Print formats.** Jinja over a document, built in the builder. The output half
 of RUA's flow is already ours.
 
-**A screen can declare a view type.** `VIEW_TYPES` in `lib/viewTypes.js` maps a
+**A screen can declare a view type.** `VIEW_TYPES` in `lib/screen/viewTypes.js` maps a
 declared name to a body component, and `calendar` is already sitting there as
 `built: false` — the mechanism for "this screen is looked at as a sheet" exists
 and has an unbuilt entry in it today.
