@@ -348,13 +348,7 @@ export function useAppearance() {
     label: item.label,
   }))
 
-  /** Select options, for a settings row. */
-  const selectOptions = SCHEMES.map((item) => ({
-    value: item.value,
-    label: item.label,
-  }))
-
-  return { scheme, menuGroup, tabOptions, iconOptions, selectOptions }
+  return { scheme, menuGroup, tabOptions, iconOptions }
 }
 """
 

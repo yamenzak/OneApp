@@ -5,21 +5,28 @@
     description on the left, one compact control on the right.
 
     Not ThemeSwitcher. frappe-ui 1.0 marks it `@deprecated` — "Use `Select` with
-    `useColorScheme` instead" — and it calls warnDeprecated on every render.
+    `useColorScheme` instead" — and it calls warnDeprecated on every render, so
+    the control is assembled here from `useColorScheme` and one of the renderings
+    `lib/shell/appearance.js` offers.
   -->
   <SettingsRow
-    title="Appearance"
+    title="Theme"
     description="Light, dark, or matching your system."
   >
-    <Select v-model="scheme" :options="selectOptions" />
+    <!-- All three at once rather than behind a Select. This is a three-state
+         preference somebody flips and looks at, the row has the width for it,
+         and it is the control the phone's More sheet already draws — one
+         setting rendered one way. "Theme" and not "Appearance", which is the
+         name of the panel it now sits in and said the same word twice. -->
+    <TabButtons v-model="scheme" :options="tabOptions" />
   </SettingsRow>
 </template>
 
 <script setup>
-import { Select, SettingsRow } from '@/ui'
+import { SettingsRow, TabButtons } from '@/ui'
 import { useAppearance } from '@/lib/shell/appearance'
 
 // Three states, not a toggle. A binary switch cannot express 'follow the
 // system', so a user who wants that has to keep changing it by hand twice a day.
-const { scheme, selectOptions } = useAppearance()
+const { scheme, tabOptions } = useAppearance()
 </script>
