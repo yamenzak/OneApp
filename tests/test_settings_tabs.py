@@ -180,7 +180,10 @@ ME = ROOT / "apps/oneapp/oneapp/oneapp_core/me.py"
 #: it needs a doctype's meta — so it is `scripts/check_settings.py`, run against
 #: a bench. This half needs nothing and catches the same class one step earlier.
 DRAWN = {
-	"Data", "Check", "Select", "Int", "Float", "Link", "Attach", "Attach Image",
+	# No "Link": there is no Link control in this dialog, so a setting that
+	# declares one is drawn as a text box. See `test_workspace_settings.py`,
+	# "no setting declares a control that would be a text box".
+	"Data", "Check", "Select", "Int", "Float", "Attach", "Attach Image",
 	# Not a Frappe fieldtype at all — `SettingsColour.vue`, for the one
 	# setting with no doctype behind it. See `oneapp_core/branding.py`.
 	"Color",

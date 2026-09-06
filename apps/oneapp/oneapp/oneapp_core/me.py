@@ -58,9 +58,12 @@ def _me():
 
 
 def _languages() -> list[str]:
-	rows = frappe.get_all("Language", filters={"enabled": 1},
-	                      fields=["name", "language_name"], order_by="language_name")
-	return [{"value": row.name, "label": row.language_name or row.name} for row in rows]
+	# The workspace panel offers the same list for the workspace's own default,
+	# so the query lives once. Imported inside the function: `workspace` reads
+	# this module's neighbours and a module-level import closes the loop.
+	from oneapp.oneapp_core.workspace import reference
+
+	return reference("Language", "language_name", enabled=True)
 
 
 def _zones() -> list[str]:

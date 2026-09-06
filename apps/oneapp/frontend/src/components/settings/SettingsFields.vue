@@ -98,10 +98,13 @@ const form = reactive({})
 const original = ref({})
 const saving = ref(false)
 
-// A Link is a text box here rather than a Link control: the workspace owner is
-// not a System Manager, so `search_link` refuses them, and a picker that cannot
-// search is worse than a field that says what it wants. The server validates
-// the value against the doctype either way.
+// There is no Link control here, and no setting declares one — a guard in
+// `tests/test_workspace_settings.py` holds that. The picker that would make a
+// Link a Link cannot run: `search_link` refuses a workspace owner, who is
+// deliberately not a System Manager, so a Link fell through this map to `text`
+// and became a box you had to already know the exact spelling for. The five
+// settings that were Links are Selects fed from their own doctype instead —
+// see `workspace.reference`.
 const control = (field) =>
   ({ Select: 'select', Int: 'number', Float: 'number' })[field.type] || 'text'
 

@@ -115,6 +115,39 @@ class Setting:
 		}
 
 
+def reference(doctype: str, label_field: str = "", enabled: bool = False) -> list:
+	"""A Frappe reference list, as Select options.
+
+	A `Link` is drawn here as a plain text box, because the picker that would
+	make it a Link cannot run: `search_link` refuses a workspace owner, who is
+	deliberately not a System Manager. That is a reasonable answer for a Link
+	into tenant data and a bad one for the three most closed lists in the
+	product — Country, Currency and Language — which it turned into boxes to
+	type an exact spelling into with nothing to say what the spellings are.
+	The same failure as the logo that was a URL you had to already know, and
+	`me.py` had already fixed its half of it for one person's own language.
+
+	Read with `get_all` on purpose: these are the framework's own reference
+	tables, seeded on install, not tenant data, and the question "what
+	currencies exist" has the same answer for everybody. Read rather than
+	copied, because a list written down here is wrong on the day somebody adds
+	a row to it.
+
+	`label_field` for a doctype whose *name* is not what a person calls it —
+	Language is named by its code, so the option has to carry both.
+	"""
+	fields = ["name"] + ([label_field] if label_field else [])
+	rows = frappe.get_all(
+		doctype,
+		filters={"enabled": 1} if enabled else None,
+		fields=fields,
+		order_by=label_field or "name",
+	)
+	if not label_field:
+		return [row.name for row in rows]
+	return [{"value": row.name, "label": row.get(label_field) or row.name} for row in rows]
+
+
 GROUPS = [
 	{
 		"key": "branding",
@@ -295,7 +328,8 @@ GROUPS = [
 			Setting("font_size", "Font size", type="Float",
 			        targets=[("Print Settings", "font_size")],
 			        hint="In points. A format may still set its own."),
-			Setting("print_style", "Style", type="Link", options="Print Style",
+			Setting("print_style", "Style", type="Select",
+			        options_from=lambda: reference("Print Style"),
 			        targets=[("Print Settings", "print_style")],
 			        hint="The typography and spacing a format is drawn in."),
 			# Chrome renders what a browser renders; wkhtmltopdf is an old
@@ -328,16 +362,20 @@ GROUPS = [
 		"icon": "lucide-globe",
 		"description": "How dates, numbers and money are written throughout the workspace.",
 		"settings": [
-			Setting("country", "Country", type="Link", options="Country",
-			        targets=[("System Settings", "country")]),
+			Setting("country", "Country", type="Select",
+			        options_from=lambda: reference("Country"),
+			        targets=[("System Settings", "country")],
+			        hint="Sets the calendar, the fiscal year and the tax defaults new documents start from."),
 			Setting("time_zone", "Time zone", type="Select",
 			        # Frappe fills this list at runtime from the tz database, so
 			        # the doctype's own options are empty and reading the meta
 			        # gives a select with nothing in it.
 			        options_from=lambda: get_all_timezones(),
 			        targets=[("System Settings", "time_zone")]),
-			Setting("language", "Language", type="Link", options="Language",
-			        targets=[("System Settings", "language")]),
+			Setting("language", "Language", type="Select",
+			        options_from=lambda: reference("Language", "language_name", enabled=True),
+			        targets=[("System Settings", "language")],
+			        hint="The workspace's default. Anybody can set their own under Profile."),
 			Setting("date_format", "Date format", type="Select",
 			        targets=[("System Settings", "date_format")]),
 			Setting("time_format", "Time format", type="Select",
@@ -346,7 +384,12 @@ GROUPS = [
 			        targets=[("System Settings", "number_format")]),
 			Setting("first_day_of_the_week", "Week starts on", type="Select",
 			        targets=[("System Settings", "first_day_of_the_week")]),
-			Setting("currency", "Currency", type="Link", options="Currency",
+			# Every currency, not the nine Frappe enables on install. Enabled is
+			# about which ones ERPNext offers on a document; a workspace whose
+			# money is Saudi riyals needs to be able to say so, and `save`
+			# enables whichever one is chosen.
+			Setting("currency", "Currency", type="Select",
+			        options_from=lambda: reference("Currency"),
 			        targets=[("System Settings", "currency")],
 			        hint="The default for new documents. Each one can still say otherwise."),
 			Setting("float_precision", "Decimal places", type="Select",
@@ -531,6 +574,15 @@ def save(group: str, values: str | dict) -> dict:
 	# emptied by hand comes back on the next save.
 	if group == "branding":
 		branding.refresh()
+
+	# A currency has an `enabled` flag, and ERPNext's own pickers read it — so a
+	# workspace that chose one Frappe ships disabled would have set a default
+	# that nothing else offers. The list here is every currency on purpose (nine
+	# are enabled on install, and none of them is a Saudi riyal), so choosing
+	# one is also the act of turning it on.
+	chosen = values.get("currency")
+	if group == "regional" and chosen:
+		frappe.db.set_value("Currency", chosen, "enabled", 1)
 
 	frappe.clear_cache()
 	return {"ok": True}

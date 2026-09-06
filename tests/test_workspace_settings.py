@@ -441,6 +441,34 @@ def test_a_dependent_setting_hangs_off_one_in_its_own_group():
 			)
 
 
+def test_no_setting_declares_a_control_that_would_be_a_text_box():
+	"""There is no Link control in this dialog, so a Link is a lie.
+
+	`SettingsFields` has no case for one and falls through to `text` — which
+	made Country, Currency, Language and the print Style boxes you had to type
+	an exact spelling into, with nothing on the screen to say what the
+	spellings were. The picker that would fix that cannot run here:
+	`search_link` refuses a workspace owner, who is deliberately not a System
+	Manager. So a closed reference list is a Select fed from the doctype
+	(`workspace.reference`), and a Link is not a type this spec may declare.
+	"""
+	from oneapp.oneapp_core import workspace
+
+	links = [
+		f"{group['key']}.{s.key}"
+		for group in workspace.GROUPS
+		for s in group["settings"]
+		if s.type == "Link"
+	]
+	assert not links, f"drawn as a text box: {links}"
+
+
+def test_a_reference_list_is_read_rather_than_written_down():
+	"""A copy of Frappe's currency list is wrong the day one is added."""
+	body = function(WORKSPACE, "reference")
+	assert "frappe.get_all" in body
+
+
 def test_the_spa_draws_only_the_fields_whose_parent_is_on():
 	fields = source(SPA / "components/settings/SettingsFields.vue")
 	assert "depends_on" in fields, "the server declares it and nothing reads it"

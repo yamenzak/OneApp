@@ -161,6 +161,7 @@ workspace read as not an admin, and our support read as one.
 | `log_api_requests`, `allow_error_traceback` | Ours | Tracebacks leak schema and code paths across a shared fleet. |
 | `max_signups_allowed_per_hour` | Neither | Signup is off permanently — see Joining. |
 | `apply_strict_user_permissions`, `disable_document_sharing`, `document_share_key_expiry` | Neither | Real settings, but sharing is not a feature this product exposes yet. Revisit with sharing. |
+| `currency` | Customer | Every currency, not the nine Frappe enables on install — none of which is a Saudi riyal. Choosing one also enables it, because ERPNext's own pickers read that flag and a default nothing else offers is a setting that half works. |
 | `rounding_method`, `use_number_format_from_currency` | Neither | Accountant-grade; the wrong answer is silent and expensive. |
 | `dormant_days`, `email_retry_limit`, `password_reset_limit`, `link_field_results_limit`, `max_report_rows`, `max_zip_extract_size`, `delete_background_exported_reports_after` | Ours | Fleet tuning. |
 
@@ -189,6 +190,14 @@ at the code:
 
 * **A note.** A group may carry one — a fact about the group that is not a
   field. Sign in has the only one; see Joining below.
+* **No Link.** There is no Link control in this dialog and no setting may
+  declare one: the picker that would make a Link a Link cannot run, because
+  `search_link` refuses a workspace owner who is deliberately not a System
+  Manager. A Link therefore fell through to a text box, which is how Country,
+  Currency, Language and the print Style became fields you had to already know
+  the exact spelling for. They are Selects fed from their own doctype now
+  (`workspace.reference`), read rather than copied — a currency list written
+  down here is wrong the day one is added.
 * **`depends_on`.** A setting may name another *in its own group* as the switch
   it hangs off, and is drawn only when that one is on. A second factor offered
   while two-factor is off is a choice with no effect, and a minimum password
