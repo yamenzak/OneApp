@@ -1,27 +1,19 @@
 /**
  * Merged diary entries, as the grid wants them — and which calendars are on.
  *
- * The mapping is its own module rather than a computed in the page, because it
- * is the piece with rules worth testing on their own: what a whole-day entry
- * is, what an entry with no end is, and which of seven colours a source gets.
- *
- * The state below is here for a different reason: the grid and the rail beside
- * it are two components asking the same question — which calendars are there,
- * and which are switched on — and passing that through the shell's slot would
- * mean the shell knowing what a diary is.
- *
- * `oneapp_core/diary.py` is the other half.
+ * The mapping is its own module because it is the piece with rules worth
+ * testing on their own. The state below is here for a different reason: the
+ * grid and the rail beside it are two components asking the same question, and
+ * passing it through the shell's slot would mean the shell knowing what a diary
+ * is. `oneapp_core/diary.py` is the other half.
  */
 import { reactive } from 'vue'
 
 /**
- * The colours a calendar entry may be, in the order sources take them.
- *
- * frappe-ui's own palette (`CalendarColorMap`), and the whole of it: an entry's
- * colour is what says which calendar it came from, so the list has to be a
- * fixed set that the sidebar can draw the same way. Red is deliberately absent
- * — the palette has no red, and pressing pink into service for one would make
- * every overdue thing look like a category.
+ * The colours a calendar entry may be, in the order sources take them —
+ * frappe-ui's own palette, and the whole of it. Red is deliberately absent: the
+ * palette has no red, and pressing pink into service would make every overdue
+ * thing look like a category.
  */
 export const COLOURS = ['blue', 'green', 'violet', 'amber', 'cyan', 'orange', 'pink']
 
@@ -32,11 +24,8 @@ export const colourFor = (key, sources) => {
 }
 
 /**
- * A day, and a time where there is one.
- *
- * Frappe writes a Date as `YYYY-MM-DD` and a Datetime as `YYYY-MM-DD HH:mm:ss`,
- * so the split is the space — no parsing, no timezone, no date library. A value
- * with no time is a whole day, which is what the fieldtype already said.
+ * A day, and a time where there is one. Frappe writes a Date as `YYYY-MM-DD`
+ * and a Datetime as `YYYY-MM-DD HH:mm:ss`, so the split is the space.
  */
 export function split(value) {
   const said = String(value || '').trim()
@@ -60,7 +49,7 @@ export function diaryEvents(rows, sources) {
         id: row.id,
         title: row.title,
         // Which calendar it came from, said in the one place a grid event has
-        // for it. The colour says the same thing without the words.
+        // for it.
         venue: row.screen_label || '',
         fromDate: from.date,
         // No end is a moment on its own day, not a span running to whenever
@@ -77,11 +66,9 @@ export function diaryEvents(rows, sources) {
 
 
 /**
- * Which calendars there are, and which the reader has switched off.
- *
- * `off` and not `on`: a source added tomorrow — somebody declares a calendar
- * on another screen — should appear, and a list of what is *on* would silently
- * leave it out.
+ * Which calendars there are, and which the reader has switched off. `off` and
+ * not `on`: a source added tomorrow should appear, and a list of what is *on*
+ * would silently leave it out.
  */
 export const diary = reactive({ sources: [], off: [] })
 

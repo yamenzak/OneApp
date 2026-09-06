@@ -4,20 +4,16 @@ import { cardIdentity } from '@/lib/screen/cards'
  * A flat page of records, as the forest a tree draws.
  *
  * Separate from `TreeBody` because it is the only part of that view with a
- * decision in it. The component owns disclosure and indentation — frappe-ui's
- * `Tree` owns those, in fact — and this owns the two questions a hierarchy
- * built out of a *page* has to answer: what happens to a record whose parent is
- * not here, and what happens when the data points in a circle.
+ * decision in it: what happens to a record whose parent is not on the page, and
+ * what happens when the data points in a circle.
  *
  * A record this cannot draw under its parent becomes a root, marked `orphan`.
- * Dropping it would be the alternative and it is never the better one: the
- * parent may be missing because a filter excluded it or because it is on a page
- * nobody has loaded yet, and a tree that silently hides a record for either
- * reason is a tree that disagrees with the count in the footer. Load more
- * re-nests it when the parent arrives.
+ * The parent may be missing because a filter excluded it or because it is on a
+ * page nobody has loaded, and a tree that silently hides a record for either
+ * reason disagrees with the count in the footer.
  *
- * Order is the page's, at every level. A tree is still a screen's rows in the
- * screen's order — nesting them is not a reason to sort them again.
+ * Order is the page's, at every level: nesting rows is not a reason to sort
+ * them again.
  */
 export function forestOf(rows, field, spec, groupField = '') {
   if (!field) return []
@@ -30,9 +26,8 @@ export function forestOf(rows, field, spec, groupField = '') {
       row,
       orphan: false,
       // Whether this record may hold others. Frappe's nested-set doctypes say
-      // so with `is_group` and the desk refuses a child under a leaf; a
-      // doctype nesting through a plain Link may have no such field, and then
-      // every node is a group — which is what a plain Link means.
+      // so with `is_group`; a doctype nesting through a plain Link may have no
+      // such field, and then every node is a group.
       group: !groupField || !!Number(row[groupField] || 0),
       children: [],
     })
@@ -43,8 +38,7 @@ export function forestOf(rows, field, spec, groupField = '') {
     const node = nodes.get(row.name)
     const above = nodes.get(row[field])
     if (!above || above === node || reaches(above, node, nodes, field)) {
-      // Only a record that *names* a parent is an orphan. One that names none
-      // is a root, which is what a root is.
+      // Only a record that *names* a parent is an orphan.
       node.orphan = !!row[field]
       roots.push(node)
       continue
@@ -57,11 +51,9 @@ export function forestOf(rows, field, spec, groupField = '') {
 /**
  * Whether walking up from `above` arrives at `node` — a circle in the data.
  *
- * Nothing stops two records naming each other: `renews` is an ordinary Link and
- * the doctype only refuses a record that renews *itself*. Attaching one under
- * the other here would build a cycle in the node graph, and the component
- * recurses through it. So the pair are both left as roots, which is the only
- * drawing of a circle that terminates.
+ * Nothing stops two records naming each other: the doctype only refuses a
+ * record that renews *itself*. Attaching one under the other would build a
+ * cycle the component recurses through, so the pair are both left as roots.
  */
 function reaches(above, node, nodes, field) {
   const seen = new Set()

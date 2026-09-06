@@ -2,9 +2,7 @@
  * What a File row is, and how to say it.
  *
  * Shared by the attachment list and the gallery, because the two disagreeing
- * about which files are pictures is exactly the bug that would go unnoticed:
- * a photo would appear in one and not the other, and neither would be wrong
- * enough to look broken.
+ * about which files are pictures is exactly the bug that would go unnoticed.
  */
 
 // The extension is all a File row says about what it is, and it is enough for
@@ -24,21 +22,17 @@ export function iconFor(file) {
 }
 
 /**
- * Whether this one can be shown rather than listed.
- *
- * By extension rather than by a stored mime type, because a File row does not
- * carry one — and an `<img>` pointed at a zip renders a broken-image icon,
- * which is worse than a row saying what the thing is.
+ * Whether this one can be shown rather than listed. By extension rather than by
+ * a stored mime type, because a File row does not carry one — and an `<img>`
+ * pointed at a zip renders a broken-image icon.
  */
 export function isImage(file) {
   return IMAGE.test(file?.file_name || file?.file_url || '')
 }
 
 /**
- * "1.2 MB", in the reader's own locale.
- *
- * The server sends bytes because it does not know what locale that is. Zero
- * is empty rather than "0 B": a size nobody needs is noise beside a name.
+ * "1.2 MB", in the reader's own locale — the server sends bytes because it does
+ * not know what locale that is. Zero is empty rather than "0 B".
  */
 export function humanSize(file) {
   const bytes = Number(file?.file_size) || 0
@@ -50,16 +44,11 @@ export function humanSize(file) {
 }
 
 /**
- * A stored file, back in the browser as a `File`.
+ * A stored file, back in the browser as a `File`. Some things — importing a
+ * spreadsheet, reading a CSV — need the bytes in hand rather than on a server.
  *
- * The Drive holds bytes; some things — importing a spreadsheet, reading a CSV
- * — need them in hand rather than on a server. `file_url` is either our own
- * download route, which checks the permission and redirects to a presigned R2
- * URL, or a public CDN path; `fetch` follows either.
- *
- * `credentials: 'include'` because the download route is a permission check and
- * a fetch without the session cookie is an anonymous one, which it correctly
- * refuses.
+ * `credentials: 'include'` because the download route is a permission check,
+ * and a fetch without the session cookie is an anonymous one.
  */
 export async function fetchFile(row) {
   const url = row?.file_url

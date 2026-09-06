@@ -4,19 +4,14 @@
     the id underneath when the name is not already it.
 
     The same three things the title column shows, deliberately — a link *is* a
-    record, and a person picking one out of a menu and reading one in a cell
-    should not be looking at two different renderings of the same thing. Used by
-    the list cell, by the link picker's rows, and by whatever view type comes
-    next.
+    record, and picking one out of a menu and reading one in a cell should not
+    be two renderings of the same thing.
   -->
   <div class="flex min-w-0 items-center gap-2">
     <!--
-      Image or not: Avatar falls back to initials, and that is what the title
-      column already draws for a row with no picture. A face in one place and a
-      bare word in the other reads as two kinds of thing.
-
-      The one exception is a caller that has already drawn the face itself —
-      see `avatar`.
+      Image or not: Avatar falls back to initials, which is what the title
+      column already draws. The one exception is a caller that has already drawn
+      the face itself — see `avatar`.
     -->
     <Avatar
       v-if="avatar"
@@ -30,9 +25,9 @@
         <span class="truncate text-p-sm text-ink-gray-8">
           {{ plainText(record.label) || record.value }}
         </span>
-        <!-- Anything the caller wants said beside the name. A status badge in
-             the breadcrumb; nothing at all in a list cell, where the status
-             has a column of its own. -->
+        <!-- Anything the caller wants said beside the name: a status badge in
+             the breadcrumb, nothing in a list cell where the status has a
+             column. -->
         <slot name="badge" />
       </div>
       <!-- The id, and anything the doctype calls searchable, quietly beneath —
@@ -54,8 +49,7 @@ const props = defineProps({
   compact: { type: Boolean, default: false },
   /**
    * Whether to draw the face. Off where the caller has already drawn it, and
-   * bigger — a gallery card puts the record's image across the top, and the
-   * same picture again at 20px beside the title is the picture said twice.
+   * bigger — a gallery card puts the record's image across the top.
    */
   avatar: { type: Boolean, default: true },
 })

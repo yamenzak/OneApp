@@ -6,18 +6,12 @@ import { formatNumber, plainText } from '@/lib/screen/format'
  *
  * Lifted out of `FieldCell` when a second surface needed the same answer: a
  * gallery card draws its fields as pills over a photograph, where the cell's
- * own markup — an ink colour, a badge, a chip — belongs to a light surface and
- * the text does not. Two switches over the same fieldtypes would be two
- * answers to "what does a Duration look like", and the second one always
- * drifts.
+ * own markup belongs to a light surface and the text does not. Two switches
+ * over the same fieldtypes would be two answers to "what does a Duration look
+ * like", and the second one always drifts.
  *
- * `formats` is the site's number settings, passed in rather than imported for
- * the same reason `lib/format.js` takes them: every function here is a question
- * about a value and a docfield.
- *
- * `link` is the row's already-resolved record for a Link column, where there is
- * one — an id is what the database holds and a name is what the reader asked
- * for.
+ * `formats` is the site's number settings, passed in rather than imported.
+ * `link` is the row's already-resolved record for a Link column.
  */
 export function cellText(column, value, formats = {}, link = null) {
   if (value === null || value === undefined || value === '') return '—'
@@ -25,8 +19,7 @@ export function cellText(column, value, formats = {}, link = null) {
   switch (column.cell) {
     case 'tags':
       // `_user_tags` is comma-joined by Frappe, with a leading comma left
-      // behind on the first one by some versions. Read as a list wherever it
-      // is drawn, so the list cell, the card pill and a copied value agree.
+      // behind on the first one by some versions.
       return tagList(value).join(', ')
     case 'link':
       return plainText(link?.label) || String(link?.value || value)
@@ -53,11 +46,8 @@ export function cellText(column, value, formats = {}, link = null) {
 }
 
 /**
- * A Duration, in the parts the docfield says are worth reading.
- *
- * Frappe's own two flags decide: `hide_days` folds days into hours,
- * `hide_seconds` drops the tail. A field that sets neither reads the way it
- * always did.
+ * A Duration, in the parts the docfield says are worth reading: `hide_days`
+ * folds days into hours, `hide_seconds` drops the tail.
  */
 export function humanDuration(seconds, column) {
   if (!seconds) return '—'
@@ -78,11 +68,9 @@ export function humanDuration(seconds, column) {
 }
 
 /**
- * `_user_tags` as a list.
- *
- * Frappe stores a record's tags as one comma-joined string on the row, which is
- * what makes a tag filterable with the same machinery as any other column and
- * is why it arrives here needing to be read rather than iterated.
+ * `_user_tags` as a list. Frappe stores a record's tags as one comma-joined
+ * string on the row, which is what makes a tag filterable with the same
+ * machinery as any other column.
  */
 export function tagList(value) {
   return String(value || '')

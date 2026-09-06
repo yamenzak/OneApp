@@ -8,14 +8,12 @@ import { session } from '@/lib/shell/session'
  * The notification feed.
  *
  * One store for the whole app rather than state inside the panel, because the
- * bell has to know the count while the panel is shut — and because on a phone
- * the same feed is opened from somewhere else entirely.
+ * bell has to know the count while the panel is shut.
  *
  * The server pushes `notification` into this user's room whenever a row is
- * written for them, **with no payload**. That is Frappe's own design and worth
+ * written for them, **with no payload** — Frappe's own design and worth
  * keeping: nothing sensitive rides the socket, and there is no second
- * serialisation of a notification to keep in step with the first. The poke says
- * "ask again", so we do.
+ * serialisation to keep in step with the first.
  */
 
 const METHOD = 'oneapp.oneapp_core.notifications'
@@ -49,11 +47,9 @@ export async function countNotifications() {
 }
 
 /**
- * Mark one read, or all of them.
- *
- * The row is marked here as well as on the server rather than refetching: the
- * reader is looking at it, and a panel that reorders itself under a click is a
- * panel that loses the thing you were about to press.
+ * Mark one read, or all of them. Marked here as well as on the server rather
+ * than refetching: a panel that reorders itself under a click loses the thing
+ * you were about to press.
  */
 export async function markRead(name) {
   const answer = await callMethod(`${METHOD}.mark_read`, { name }, { silent: true })
@@ -64,11 +60,9 @@ export async function markRead(name) {
 }
 
 /**
- * Follow the server's own notification event.
- *
- * Called once, from the shell. Frappe publishes to the user's room, which the
- * socket joins on authentication, so there is nothing to subscribe to and
- * nothing to clean up — unlike a doctype or a document room.
+ * Follow the server's own notification event. Frappe publishes to the user's
+ * room, which the socket joins on authentication, so there is nothing to
+ * subscribe to and nothing to clean up.
  */
 let following = false
 
@@ -76,9 +70,7 @@ export function followNotifications() {
   if (following || !session.isLoggedIn) return
   following = true
   getSocket().on('notification', () => {
-    // The count always, the rows only when somebody is looking at them: a
-    // panel nobody has opened does not need a page of rows fetched at it every
-    // time a colleague is assigned something.
+    // The count always, the rows only when somebody is looking at them.
     if (notifications.loaded) loadNotifications()
     else countNotifications()
   })
@@ -86,11 +78,9 @@ export function followNotifications() {
 }
 
 /**
- * What this person has said about being notified.
- *
- * Frappe's own `Notification Settings`, one row per user, read and written
- * through our own endpoints only so the browser gets a shape it can render —
- * the store, the rules and the permission are all still the framework's.
+ * What this person has said about being notified. Frappe's own `Notification
+ * Settings`, read and written through our own endpoints only so the browser
+ * gets a shape it can render.
  */
 export async function loadPreferences() {
   return callMethod(`${METHOD}.preferences`, {}, { silent: true, method: 'GET' })

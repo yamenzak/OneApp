@@ -3,9 +3,8 @@
  *
  * The rail is the shell's sidebar and the conversations are the page, so two
  * components need the same folder list. A module-level reactive rather than a
- * prop or a provide: the sidebar outlives the page — it is rendered by the
- * shell — so there is no parent for the page to receive it from, and fetching
- * it twice would draw two rails a beat apart.
+ * prop: the sidebar outlives the page, so there is no parent for the page to
+ * receive it from.
  */
 import { reactive } from 'vue'
 import { workspace } from '@/lib/workspace'
@@ -20,24 +19,21 @@ export const mail = reactive({
   // Whether this person holds an address at all, and how much of it is unread.
   // Here rather than in the bell that draws them, because a phone never renders
   // the rail — so a bell that owned the polling meant a phone that never knew
-  // there was any mail, and no Mail row in the sheet that is its only way in.
+  // there was any mail.
   held: false,
   unread: 0,
 })
 
-// A minute, which is slow for a mail client and right for this. The Mail page
-// refreshes on open; this only decides whether a number in the rail is stale,
-// and polling it faster would be a request a minute per open tab for a badge
-// most people are not looking at.
+// A minute, which is slow for a mail client and right for this: the Mail page
+// refreshes on open, and this only decides whether a number in the rail is
+// stale.
 const EVERY = 60_000
 let ticking = null
 
 /**
- * Keep `held` and `unread` current for as long as there is a session.
- *
- * Started by the app the way notifications are, and for the same reason: the
- * things that decide what the shell offers cannot be owned by the parts of the
- * shell they decide about.
+ * Keep `held` and `unread` current for as long as there is a session. Started
+ * by the app the way notifications are: the things that decide what the shell
+ * offers cannot be owned by the parts of the shell they decide about.
  */
 export function followMail() {
   const look = async () => {
@@ -69,8 +65,7 @@ export async function loadMail({ reload = false } = {}) {
   mail.folders = found?.folders || []
   mail.addresses = found?.addresses || []
   // What each address signs with, keyed by address. The composer needs it the
-  // moment it opens and it rides along with the rail rather than costing a call
-  // of its own.
+  // moment it opens, so it rides along with the rail.
   mail.signatures = found?.signatures || {}
   mail.mailboxes = connected || []
   mail.loaded = true
@@ -78,12 +73,10 @@ export async function loadMail({ reload = false } = {}) {
 }
 
 /**
- * Ask each connected mailbox what folders it has now.
- *
- * A folder made in Outlook this morning is one this site has never heard of,
- * and IMAP has no folder-change notification worth relying on. So it is a
- * button rather than a nightly job that re-lists every mailbox on the site to
- * catch the once-a-month case.
+ * Ask each connected mailbox what folders it has now. A folder made in Outlook
+ * this morning is one this site has never heard of, and IMAP has no
+ * folder-change notification worth relying on — so a button rather than a
+ * nightly job that re-lists every mailbox on the site.
  */
 export async function refreshMail() {
   mail.refreshing = true
