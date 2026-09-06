@@ -1,37 +1,25 @@
 <template>
   <!--
-    Reading mail: three columns, and each one answers a different question.
+    Reading mail: three columns, and each answers a different question. The rail
+    says *which addresses are mine*, the middle *what has arrived*, the right
+    *what does this one say*.
 
-    The rail says *which addresses are mine*, the middle says *what has
-    arrived*, and the right says *what does this one say*. It is the shape every
-    mail client has had for thirty years, and the reason to keep it is that
-    nobody has to learn it.
-
-    What is deliberately not here: folders a person makes, drag and drop,
-    labels, rules. Mail in this product files itself against the record it
-    belongs to — see `view_settings` and the record's own timeline — and a
+    Deliberately not here: folders a person makes, drag and drop, labels, rules.
+    Mail in this product files itself against the record it belongs to, and a
     parallel filing system beside that would be two places to look for the same
     message.
   -->
   <!--
-    The folder list, on a phone.
-
-    The shell draws a sidebar only on a desktop — `MobileShell` has no such
-    slot — so without this every mailbox, every folder and the bin were
-    unreachable from a phone: the page opened on `folder=all` and offered no
-    way out of it. Drive answers the same problem the same way (`Drive.vue`,
-    the places dropdown), off the same list the sidebar draws, so the two
-    cannot drift.
-
-    Where you are, on the same line every other surface puts it. Write is not
-    here — it is over the list already, on both layouts.
+    The folder list, on a phone. The shell draws a sidebar only on a desktop, so
+    without this every mailbox and the bin were unreachable from a phone. Off
+    the same list the sidebar draws, so the two cannot drift.
   -->
   <PageHeader>
     <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center gap-1">
       <!--
-        The folder, and how you change it. On a phone that is a dropdown,
-        because there is no rail to pick from; on a desktop the rail is already
-        the picker, so this says where you are and nothing more.
+        The folder, and how you change it. On a phone a dropdown, because there
+        is no rail to pick from; on a desktop the rail is the picker, so this
+        says where you are and nothing more.
       -->
       <Dropdown v-if="isMobile" :options="folderOptions">
         <Button
@@ -47,12 +35,9 @@
 
   <div class="flex h-full min-h-0">
     <!--
-      What has arrived.
-
-      On a phone the two panes are one screen at a time: the list until a
-      conversation is open, the conversation after. Which is the same thing the
-      URL already says — `?thread=` — so this is a class and not a second state
-      to keep in step, and the back button still closes a conversation.
+      What has arrived. On a phone the two panes are one screen at a time, which
+      is what the URL already says — `?thread=` — so this is a class and not a
+      second state to keep in step.
     -->
     <div
       class="relative flex w-full shrink-0 flex-col border-r border-outline-gray-1 sm:w-96"
@@ -67,9 +52,8 @@
           data-slot="mail-search"
           @keyup.enter="load()"
         />
-        <!-- Write sits over the list rather than in the rail: the rail is the
-             shell's sidebar now, and an action belongs to the thing it acts
-             on. -->
+        <!-- Write sits over the list rather than in the rail: an action
+             belongs to the thing it acts on. -->
         <Button
           variant="subtle"
           icon-left="lucide-pencil"
@@ -93,11 +77,9 @@
 
       <div v-else class="min-h-0 flex-1 overflow-y-auto">
         <!--
-          A conversation is a place, so it is a link and it is in the URL. That
-          is not tidiness: it is what makes the back button close a thread, a
-          reload keep one open, and "look at this one" something somebody can
-          send to a colleague. It is also why these are `router-link` and not a
-          button somebody has to be told is clickable.
+          A conversation is a place, so it is a link and it is in the URL: that
+          is what makes the back button close a thread and a reload keep one
+          open. It is also why these are `router-link`.
         -->
         <RouterLink
           v-for="one in threads"
@@ -111,18 +93,14 @@
             <!--
               The tick, on a span that stops the click.
 
-              `.stop` and not `.prevent`, which took a while to be sure of: the
-              whole row is a link, and stopping the click short of the anchor is
-              what keeps selecting a conversation from also opening it. Adding
-              `.prevent` looks equivalent and is not — the browser undoes a
-              cancelled checkbox's own toggle *after* Vue has already patched
-              the input from our state, so the box ends up unticked while the
-              selection says otherwise. Measured, not reasoned: the bar appeared
-              saying "1 selected" over a box with nothing in it.
+              `.stop` and not `.prevent`: the browser undoes a cancelled
+              checkbox's own toggle *after* Vue has patched the input from our
+              state, so the box ends up unticked while the selection says
+              otherwise. Measured, not reasoned — the bar said "1 selected" over
+              an empty box.
 
               Shift is read off the event: shift-clicking a second tick takes
-              everything between, which is the one thing that makes a list of
-              fifty selectable by hand.
+              everything between.
             -->
             <span
               class="flex shrink-0 items-center"
@@ -135,9 +113,7 @@
               />
             </span>
             <!-- No hover card in the list: fifty of them is fifty listeners
-                 and a card that opens while somebody is scanning down. The
-                 face and the name are the point here; the card is on the
-                 message. -->
+                 and a card that opens while somebody is scanning. -->
             <SenderChip
               class="min-w-0 flex-1 text-p-sm"
               :sender="one.sender"
@@ -147,8 +123,8 @@
             <span class="shrink-0 text-p-xs tabular-nums text-ink-gray-5">
               {{ when(one.at) }}
             </span>
-            <!-- `.prevent` because the whole row is a link: without it, starring
-                 also opens the conversation. -->
+            <!-- `.prevent` because the whole row is a link: without it,
+                 starring also opens the conversation. -->
             <Button
               variant="ghost"
               size="sm"
@@ -187,7 +163,7 @@
       <!--
         What a selection is for. The same bar the record lists draw, in the same
         place, because "several things are ticked and here is what you can do
-        with them" is one idea and this product should have one of it.
+        with them" is one idea.
       -->
       <SelectionBar
         v-if="picked.size"
@@ -196,10 +172,8 @@
         @clear="picked.clear()"
         @all="pickAll"
       >
-        <!-- Icons, not labels: the list column is 384px and four labelled
-             buttons plus a count and Select all do not fit in it — the count
-             was pushed off the left edge, which is the one thing on the bar
-             somebody actually has to read. -->
+        <!-- Icons, not labels: the list column is 384px, and four labelled
+             buttons pushed the count off the left edge. -->
         <Button variant="ghost" icon="lucide-archive" label="Archive" tooltip="Archive" @click="act('archive')" />
         <Button variant="ghost" icon="lucide-trash-2" label="Delete" tooltip="Move to Trash" @click="act('bin')" />
         <Button variant="ghost" icon="lucide-mail" label="Unread" tooltip="Mark unread" @click="act('unread')" />
@@ -217,8 +191,8 @@
       />
 
       <div v-else class="min-h-0 flex-1 overflow-y-auto p-5">
-        <!-- The phone has no second column to go back to, so it needs a way
-             out. `sm:hidden` because on a desktop the list never left. -->
+        <!-- The phone has no second column to go back to. `sm:hidden` because
+             on a desktop the list never left. -->
         <RouterLink
           class="sm:hidden"
           :to="{ name: 'Mail', query: { folder } }"
@@ -229,10 +203,9 @@
         <h2 class="mt-2 text-lg font-semibold text-ink-gray-9 sm:mt-0">{{ openSubject }}</h2>
 
         <!--
-          The conversation itself: read messages closed to a row, a long read
-          run folded, and a line where the new mail starts. See
-          `components/mail/Thread.vue` — it is enough rules to be worth its own
-          file, and this page was long enough already.
+          The conversation itself: read messages closed to a row, a long read run
+          folded, and a line where the new mail starts. See
+          `components/mail/Thread.vue`.
         -->
         <Thread class="mt-4" :messages="messages" @preview="previewing = $event" />
 
@@ -257,11 +230,9 @@
             data-slot="mail-forward"
             @click="compose(last, 'forward')"
           />
-          <!--
-            Filing the conversation, not the message. Filing a reply and
-            leaving the original in the inbox is the behaviour every mail
-            client got complained about until it stopped.
-          -->
+          <!-- Filing the conversation, not the message: filing a reply and
+               leaving the original in the inbox is the behaviour every mail
+               client got complained about until it stopped. -->
           <Button
             variant="ghost"
             icon-left="lucide-archive"
@@ -299,10 +270,9 @@
       What just happened, and the window in which it can be taken back.
 
       One bar for two things that are the same thing. "Sent" is not a countdown
-      in the browser that a closed tab defeats — the message really is held, by
-      the framework's own `send_after`, and the queue refuses to pick it up
-      until the window passes. "Archived 11" is the note `bulk` handed back,
-      which `restore` reads to put every one of them where it was.
+      a closed tab defeats — the message really is held, by the framework's own
+      `send_after`. "Archived 11" is the note `bulk` handed back, which
+      `restore` reads.
     -->
     <div
       v-if="note"
@@ -310,9 +280,8 @@
       data-slot="mail-undo"
     >
       <span class="text-p-sm text-ink-gray-8">{{ note.text }}</span>
-      <!-- Only where there is something to undo. A message that arrived on a
-           routed address was in no folder to begin with, so there is nowhere to
-           put it back to — and an Undo that does nothing is worse than none. -->
+      <!-- Only where there is something to undo: mail that arrived on a routed
+           address was in no folder to begin with. -->
       <Button v-if="note.run" variant="ghost" size="sm" label="Undo" @click="undo()" />
     </div>
 
@@ -322,9 +291,8 @@
 
     <!--
       An attachment opens in the Drive's own previewer, because a mail
-      attachment *is* a Drive file — the same `File` row, the same object, the
-      same permission check on the way to the bytes. A second viewer here would
-      be a second thing to keep in step with the first.
+      attachment *is* a Drive file — the same `File` row, the same permission
+      check on the way to the bytes.
     -->
     <FilePreview v-model="preview" :file="previewing" />
 
@@ -401,13 +369,13 @@ async function loadMore() {
 const search = ref('')
 const messages = ref([])
 
-// Both read from the URL rather than kept beside it. One source, so a link
-// pasted into the address bar opens exactly what the person who sent it saw.
+// Both read from the URL rather than kept beside it, so a link pasted into the
+// address bar opens exactly what the person who sent it saw.
 const folder = computed(() => String(route.query.folder || 'all'))
 const chosen = computed(() => String(route.query.thread || ''))
 
 // Which attachment is being looked at, and therefore whether the previewer is
-// open at all — one ref rather than two kept in step by hand.
+// open — one ref rather than two kept in step by hand.
 const previewing = ref(null)
 const preview = computed({
   get: () => !!previewing.value,
@@ -419,15 +387,13 @@ const isMobile = useIsMobile()
 /**
  * Every folder the sidebar draws, as dropdown options.
  *
- * Off `mail.folders` — the same list `MailSidebar` reads — rather than a copy,
- * so a mailbox connected on a desktop appears on the phone without a second
- * place to remember. Quiet folders (spam, drafts, the bin) are in, because on
- * a phone this dropdown is the *only* way to any of them.
+ * Off `mail.folders` rather than a copy, so a mailbox connected on a desktop
+ * appears on the phone. Quiet folders (spam, drafts, the bin) are in, because
+ * on a phone this dropdown is the *only* way to any of them.
  *
  * Grouped by address rather than indented, because a folder belongs to a
- * mailbox: two people's Archives are two folders, and a flat list that loses
- * which is which is a list you cannot act on. `depth: 0` rows are the mailboxes
- * themselves and become the headings.
+ * mailbox: two people's Archives are two folders. `depth: 0` rows are the
+ * mailboxes themselves and become the headings.
  */
 const folderOptions = computed(() => {
   const groups = []
@@ -449,9 +415,7 @@ const folderOptions = computed(() => {
     else if (one.depth) into(option)
     else {
       // The address heads its own group, and the row under it is that
-      // mailbox's inbox: `reading.py` says the address *is* the inbox, and
-      // repeating "sales@4dl.app" under the heading "sales@4dl.app" says
-      // nothing twice.
+      // mailbox's inbox: `reading.py` says the address *is* the inbox.
       groups.push({
         group: one.label,
         options: [{ ...option, label: 'Inbox', icon: 'lucide-inbox' }],
@@ -462,21 +426,16 @@ const folderOptions = computed(() => {
 })
 
 /**
- * What the button says.
- *
- * `All mail` is the fallback and not a bug: the server only lists that row when
- * there is more than one mailbox (see `mailbox/reading.py`), and with one
- * mailbox `?folder=all` is still the state the page opens in.
+ * What the button says. `All mail` is the fallback and not a bug: the server
+ * only lists that row when there is more than one mailbox, and with one mailbox
+ * `?folder=all` is still the state the page opens in.
  */
 const folderName = computed(
   () => mail.folders.find((one) => one.key === folder.value)?.label || 'All mail',
 )
 
-/**
- * The trail. `All mail` is the root and a folder is under it, which is what
- * the rail beside it shows — one level, because a mail folder tree is one
- * level here (see `mailbox/reading.py`).
- */
+/** The trail. `All mail` is the root and a folder is under it — one level,
+ *  because a mail folder tree is one level here. */
 const crumbs = computed(() => [
   { label: 'Mail', route: { name: 'Mail' } },
   ...(folder.value === 'all' ? [] : [{
@@ -531,9 +490,8 @@ async function toggleStar(one) {
 
 // --- a selection ------------------------------------------------------------
 //
-// Reading a morning's post is the same three actions forty times. Doing them
-// one conversation at a time is the whole cost of a mail reader, which is why
-// every one of them lets you tick a row.
+// Reading a morning's post is the same three actions forty times, which is why
+// every row can be ticked.
 
 /** The conversations ticked, by key. */
 const picked = ref(new Set())
@@ -545,8 +503,8 @@ function pick(one, event) {
   const keys = threads.value.map((row) => row.key)
   const at = keys.indexOf(one.key)
 
-  // Shift takes the run. Not a nicety: without it a list of fifty is fifty
-  // clicks, and the reason people fall back to the mouse and the menu.
+  // Shift takes the run: without it a list of fifty is fifty clicks, and the
+  // reason people fall back to the mouse and the menu.
   if (event?.shiftKey && anchor && keys.includes(anchor)) {
     const from = keys.indexOf(anchor)
     const [start, end] = from < at ? [from, at] : [at, from]
@@ -576,22 +534,17 @@ const WORDS = {
 const OPPOSITE = { unread: 'read', read: 'unread', star: 'unstar', unstar: 'star' }
 
 /** The two that move mail, and so the two Undo has to put back. Matches `MOVES`
- *  in `mailbox/selections.py`, which is what decides whether a note comes back. */
+ *  in `mailbox/selections.py`. */
 const MOVES = ['archive', 'bin']
 
 /**
  * Do one thing to the selection — or, when nothing is ticked, to the open
- * conversation.
- *
- * One path for both, because they are one action with two ways of saying which
- * mail. It is also what gives the header's own Archive an Undo, which it did
- * not have: filing away a conversation somebody is reading is exactly as easy
- * to do by mistake as filing eleven.
+ * conversation. One path for both, which is also what gives the header's own
+ * Archive an Undo.
  *
  * Delete is a move to Trash and not `delete_doc`: removing the document would
  * take the message off the record it is filed against and away from everybody
- * else who holds the address, permanently, on a click every mail client has
- * taught people is reversible.
+ * else who holds the address, permanently.
  */
 async function act(what) {
   const keys = picked.value.size ? [...picked.value] : chosen.value ? [chosen.value] : []
@@ -605,8 +558,8 @@ async function act(what) {
   const said = keys.length > 1 ? `${WORDS[what]} ${count}` : WORDS[what]
 
   // Conversations whose folder the server actually recorded. Mail that arrived
-  // on a routed address was in no folder at all, and inventing an INBOX it
-  // never had would file it somewhere new under the word Undo.
+  // on a routed address was in no folder at all, and inventing an INBOX it never
+  // had would file it somewhere new under the word Undo.
   const back = (done?.was || []).filter((row) => row.folder)
 
   if (MOVES.includes(what)) {
@@ -631,8 +584,7 @@ async function act(what) {
   }
 
   // Back to the list, but only if the conversation in front of somebody is one
-  // of the ones that just moved. Marking three others unread should not close
-  // what they are reading.
+  // of the ones that just moved.
   if (chosen.value && keys.includes(chosen.value) && MOVES.includes(what)) {
     router.push({ name: 'Mail', query: { folder: folder.value } })
   }
@@ -655,9 +607,8 @@ const writing = ref(false)
 const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
 
 async function boot() {
-  // The rail is the shell's sidebar and fetches the same list, so this reads
-  // it from the shared store rather than asking again — two requests would
-  // draw the rail and the compose box's From list a beat apart.
+  // The rail is the shell's sidebar and fetches the same list, so this reads it
+  // from the shared store rather than asking again.
   const found = await loadMail()
   addresses.value = found.addresses || []
   await load()
@@ -671,9 +622,9 @@ async function load({ append = false } = {}) {
       append ? cursor.value : 0,
       search.value,
     )
-    // Merged by key rather than concatenated. A conversation can straddle two
-    // pages — the grouping happens per page of *messages* — and appending
-    // blindly would show it twice with half its messages in each.
+    // Merged by key rather than concatenated: a conversation can straddle two
+    // pages, and appending blindly would show it twice with half its messages
+    // in each.
     threads.value = append ? merge(threads.value, found.threads || []) : (found.threads || [])
     cursor.value = found.next || 0
     more.value = !!found.more
@@ -690,9 +641,8 @@ async function read() {
     return
   }
   // Whole, as it was received. `EmailContent` sanitises and holds the images
-  // back at render time, so the stored message stays intact — which is what
-  // keeps a forward or a print correct, and what makes "show images" a swap
-  // in the browser rather than another round trip.
+  // back at render time, so a forward or a print stays correct and "show
+  // images" is a swap in the browser rather than another round trip.
   messages.value = await workspace.mailThread(chosen.value, folder.value)
 
   const names = messages.value.map((one) => one.name)
@@ -712,12 +662,10 @@ const composer = ref(null)
 const compose = (from, kind) => composer.value?.compose(from, kind)
 
 /**
- * The one thing that can be taken back, and for how long.
- *
- * `{ text, undo }`, and there is only ever one: two floating bars stacked on
- * each other is a screen apologising twice. Sending sets it for exactly as long
- * as the server holds the message; a bulk action sets it for fifteen seconds,
- * which is long enough to notice forty conversations vanish.
+ * The one thing that can be taken back, and for how long. There is only ever
+ * one: two floating bars stacked on each other is a screen apologising twice.
+ * Sending sets it for exactly as long as the server holds the message; a bulk
+ * action for fifteen seconds.
  */
 const note = ref(null)
 let undoTimer = null
@@ -750,10 +698,9 @@ async function unsend(name) {
 
 // --- the keyboard -----------------------------------------------------------
 //
-// Gmail's letters, because Frappe Mail uses them, Outlook and Superhuman use
-// them, and a product that picks different ones is asking people to learn
-// something for nothing. See `lib/shortcuts.js` for the two rules that keep
-// them from firing while somebody is typing.
+// Gmail's letters, because Frappe Mail, Outlook and Superhuman use them. See
+// `lib/shell/shortcuts.js` for the two rules that keep them from firing while
+// somebody is typing.
 
 const showingKeys = ref(false)
 
@@ -789,8 +736,7 @@ const SHORTCUTS = [
   },
   {
     // Not keys, but the same question — "what can I type here?" — and the same
-    // place people look for the answer. A search box that quietly understands
-    // `from:` and says so nowhere is a search box nobody uses that way.
+    // place people look for the answer.
     title: 'Searching',
     keys: [
       [['from:'], 'Who it is from'],
@@ -830,8 +776,7 @@ useShortcuts({
   j: () => step(1),
   k: () => step(-1),
   // The search box is found rather than held in a ref: `FormControl` renders
-  // the control it is told to and the attribute rides down to it, so this asks
-  // the document for the thing somebody would have clicked.
+  // the control it is told to and the attribute rides down to it.
   '/': () => document.querySelector('[data-slot="mail-search"]')?.focus(),
   escape,
   '?': () => { showingKeys.value = true },
@@ -861,33 +806,25 @@ boot()
 watch(folder, () => load())
 
 /**
- * Search, once the typing stops.
- *
- * This was `watch(search, () => load())` — a full-text query over subject *and*
+ * Search, once the typing stops. This was a full-text query over subject and
  * body on every keystroke, so "quotation" was nine searches and the answer you
- * saw was whichever raced home last. 300ms is the same pause the Drive's
- * picker uses.
+ * saw was whichever raced home last.
  */
 watch(search, debounce(() => load(), 300))
 watch([chosen, folder], read, { immediate: true })
 
 // --- mail arriving ----------------------------------------------------------
 //
-// A list left open stops being a photograph of when it was opened. Frappe
-// publishes `list_update` for every document that changes and inbound mail is a
-// `Communication`, so this is the same seam the record lists already use — the
-// bell's one-minute poll is for the rail, not for the screen somebody is
-// looking at.
-//
+// Frappe publishes `list_update` for every document that changes and inbound
+// mail is a `Communication`, so this is the seam the record lists already use.
 // Coalesced: an IMAP sync that pulls forty messages publishes forty of these in
-// a second, and one refetch each is a list that spends its afternoon reloading.
+// a second.
 let pending = null
 const arrived = onDoctypeChange('Communication', () => {
   clearTimeout(pending)
   pending = setTimeout(() => {
     // Only the first page. Somebody who has paged back four screens and is
-    // reading does not want the list to collapse under them because a
-    // newsletter arrived.
+    // reading does not want the list to collapse under them.
     if (cursor.value <= PAGE_ONE) load()
   }, 400)
 })

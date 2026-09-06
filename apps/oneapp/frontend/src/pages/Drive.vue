@@ -1,19 +1,13 @@
 <template>
   <!--
-    Every file in the workspace, in one place.
-
-    The layout is the one every file manager has had for thirty years and the
-    reason to keep it is that nobody has to learn it: a rail of places, a path,
-    and a list or a grid. What is new is underneath — these are Frappe `File`
-    rows, the same ones an attachment is, so nothing here is a second store.
+    Every file in the workspace, in one place. A rail of places, a path, and a
+    list or a grid. What is new is underneath: these are Frappe `File` rows, the
+    same ones an attachment is, so nothing here is a second store.
   -->
   <PageHeader>
     <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center gap-1">
-      <!--
-        The rail, on a phone. The shell draws a sidebar only on a desktop, so
-        without this Recents, Favourites and the bin have no route to them at
-        all — the same list, from the same module, so the two cannot drift.
-      -->
+      <!-- The rail, on a phone: the shell draws a sidebar only on a desktop.
+           The same list, from the same module, so the two cannot drift. -->
       <Dropdown v-if="isMobile" :options="placeOptions">
         <Button
           data-slot="drive-places"
@@ -33,9 +27,8 @@
         class="w-28 sm:w-48"
         @input="onSearch"
       />
-      <!-- List or grid, remembered. The same preference the record surface
-           keeps about panes: a person who wants thumbnails wants them on every
-           folder, not once. -->
+      <!-- List or grid, remembered: a person who wants thumbnails wants them
+           on every folder, not once. -->
       <Button
         :icon="grid ? 'lucide-list' : 'lucide-layout-grid'"
         :label="grid ? 'Show as a list' : 'Show as a grid'"
@@ -44,11 +37,9 @@
         @click="setGrid(!grid)"
       />
       <!--
-        Icon-only on a phone, where the header is already a place, a search box
-        and two buttons in 412px. `icon` rather than `icon-left` is what makes
-        a Button icon-only; the label stays either way, because it is also the
-        accessible name and an unnamed button is a button a screen reader reads
-        as "button".
+        Icon-only on a phone. `icon` rather than `icon-left` is what makes a
+        Button icon-only; the label stays either way, because it is also the
+        accessible name.
       -->
       <Button
         v-if="place === 'trash'"
@@ -62,18 +53,12 @@
       />
       <template v-else>
         <!--
-          Upload. There was no such control until now — the empty state has
-          always said "Upload a file or make a folder to start" beside a
-          toolbar that offered only the folder, and the only ways a file could
-          reach this workspace were a record's attach field and the picker's
-          upload tab, both of which put it somewhere else.
-
-          A plain input rather than `FileUploader`: the queue is
+          Upload. A plain input rather than `FileUploader`: the queue is
           `useUploads`, which outlives this page, and a component that owns
           reactive upload state would end where the page does.
         -->
-        <!-- A hidden file input is the file picker itself; `FormControl`
-             draws a labelled control and there is nothing here to label. -->
+        <!-- A hidden file input is the file picker itself; `FormControl` draws
+             a labelled control and there is nothing here to label. -->
         <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
         <input
           ref="chooser"
@@ -98,14 +83,9 @@
           @click="naming = true"
         />
         <!--
-          The only thing in this product that is made rather than uploaded,
-          which is why it is a control here and not an item in the upload menu:
-          a sheet starts empty, or from one somebody already built.
-
-          A dropdown rather than a button, because a workspace that has an
-          estimator template wants to start from it far more often than from a
-          blank grid — and "New sheet" then finding the template in a file list
-          is two steps for the common case.
+          The only thing in this product that is made rather than uploaded. A
+          dropdown rather than a button, because a workspace with an estimator
+          template starts from it far more often than from a blank grid.
         -->
         <Dropdown :options="sheetOptions">
           <Button
@@ -122,20 +102,15 @@
     </div>
   </PageHeader>
 
-  <!--
-    The rail is the shell's, drawn into its `#sidebar` slot the way Mail's is —
-    a page that drew its own would be two rails on one screen, which is what
-    the first version of this was.
-  -->
+  <!-- The rail is the shell's, drawn into its `#sidebar` slot the way Mail's
+       is — a page that drew its own would be two rails on one screen. -->
   <div class="flex h-full min-h-0">
     <!--
       Drop anywhere in the pane, not only on the list: a person dragging four
-      files at an empty folder aims at the empty state, and a drop zone that
-      is only the rows is a drop zone that misses exactly when it is needed.
+      files at an empty folder aims at the empty state.
 
-      `dragenter`/`dragleave` are counted rather than paired. Both fire for
-      every child element the pointer crosses, so a naive pair turns the
-      highlight off the moment the cursor passes over a row.
+      `dragenter`/`dragleave` are counted rather than paired — both fire for
+      every child the pointer crosses.
     -->
     <div
       class="flex min-w-0 flex-1 flex-col p-5"
@@ -146,11 +121,8 @@
       @dragleave="onDragLeave"
       @drop.prevent="onDrop"
     >
-      <!--
-        What the bin is, said where somebody deciding whether to empty it is
-        looking. Thirty days is the promise the sweep keeps, and a bin whose
-        terms are only in the code is a bin nobody trusts.
-      -->
+      <!-- What the bin is, said where somebody deciding whether to empty it is
+           looking: thirty days is the promise the sweep keeps. -->
       <Alert
         v-if="place === 'trash' && drive.files.value.length"
         class="mb-4"
@@ -179,8 +151,7 @@
 
       <div v-else class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
         <!-- Select-all is a row of its own rather than a header cell, because
-             the list has no header: a file manager's columns are fixed and a
-             header band over four of them is chrome for nothing. -->
+             the list has no header: a file manager's columns are fixed. -->
         <div
           v-if="!grid"
           class="flex items-center gap-2 pb-1 text-p-xs text-ink-gray-5"
@@ -238,11 +209,9 @@
     </div>
   </div>
 
-  <!--
-    What you can do with what you have chosen, over the list rather than in the
-    header: the selection is down here, and a bar at the top means looking away
-    from the thing you are acting on.
-  -->
+  <!-- What you can do with what you have chosen, over the list rather than in
+       the header: a bar at the top means looking away from the thing you are
+       acting on. -->
   <div
     v-if="drive.anySelected.value"
     data-slot="drive-selection"
@@ -251,9 +220,8 @@
     <div
       class="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-3 py-2 shadow-lg"
     >
-      <!-- Not on a phone: the row above the list already says "2 of 50
-           chosen", and repeating it is what pushes the buttons onto a second
-           line. -->
+      <!-- Not on a phone: the row above already says "2 of 50 chosen", and
+           repeating it pushes the buttons onto a second line. -->
       <span v-if="!isMobile" class="px-1 text-p-sm text-ink-gray-7">{{ chosen }}</span>
       <template v-if="place === 'trash'">
         <Button
@@ -334,11 +302,7 @@
     </template>
   </Dialog>
 
-  <!--
-    The one that does not come back gets a question in front of it. Everything
-    else in this page is undoable, which is exactly why this one is not obvious
-    from context.
-  -->
+  <!-- The one that does not come back gets a question in front of it. -->
   <Dialog v-model="emptying" title="Empty the bin">
     <template #default>
       <p class="text-p-base text-ink-gray-7">
@@ -388,8 +352,8 @@ import { PLACES, labelOf } from '../components/drive/places'
 
 const GRID_KEY = 'onespace:drive:grid'
 
-// What an empty place means, which is different in each of them: an empty bin
-// is good news and an empty folder is an invitation.
+// What an empty place means, which is different in each: an empty bin is good
+// news and an empty folder is an invitation.
 const EMPTY = {
   home: { title: 'Nothing here yet', description: 'Upload a file or make a folder to start.' },
   recents: { title: 'Nothing opened yet', description: 'Files you open show up here.' },
@@ -397,8 +361,7 @@ const EMPTY = {
   shared: { title: 'Nothing shared with you', description: 'Files other people share appear here.' },
   trash: { title: 'The bin is empty', description: 'Deleted files wait here for thirty days.' },
   // Not in the rail. `?place=all` is the flat view of everything this person
-  // can see — what the file picker asks for, and a URL worth being able to
-  // type when you know the file exists and not where it is.
+  // can see — what the file picker asks for.
   all: { title: 'No files yet', description: 'Upload a file to start.' },
 }
 
@@ -410,10 +373,8 @@ const router = useRouter()
 const isMobile = useIsMobile()
 
 // The place and the folder are in the URL, so a folder is somewhere you can
-// send a colleague and the back button walks back up the tree.
-//
-// A place that is not one of these is a typo, and a typo must not be a blank
-// page: `EMPTY[place]` is read unconditionally by the template.
+// send a colleague. A place that is not one of these is a typo, and a typo must
+// not be a blank page: `EMPTY[place]` is read unconditionally by the template.
 const place = computed(() =>
   Object.hasOwn(EMPTY, route.query.place) ? route.query.place : 'home',
 )
@@ -429,8 +390,8 @@ const uploads = useUploads()
 const chooser = ref(null)
 
 // A finished upload lands in a folder somebody may be looking at. Re-reading
-// the place rather than pushing a row in: the server decided the name, the
-// size and whether the quota allowed it at all.
+// the place rather than pushing a row in: the server decided the name, the size
+// and whether the quota allowed it at all.
 uploads.onFinished((one) => {
   if (one.folder === (folder.value || 'Home')) drive.load()
 })
@@ -442,8 +403,7 @@ function chosenFiles(event) {
 }
 
 // Counted, not paired: `dragenter` and `dragleave` both fire for every child
-// the pointer crosses, so decrementing on each leave is the only way the
-// highlight survives the cursor passing over a row.
+// the pointer crosses.
 const dragDepth = ref(0)
 const dragging = computed(() => dragDepth.value > 0)
 
@@ -473,8 +433,7 @@ function moveInto(target, names) {
 }
 
 // One menu for the whole list, filled by whichever row was right-clicked —
-// frappe-ui's own pattern for this, and the reason there is not a menu
-// instance per row.
+// frappe-ui's own pattern, and why there is not a menu instance per row.
 const rowMenu = ref([])
 
 const placeName = computed(() => labelOf(place.value))
@@ -545,14 +504,12 @@ const making = ref(false)
 const templates = ref([])
 const importing = ref(false)
 
-// A folder is a link and navigates itself; this is only ever a file.
-//
-// Opening one looks at it rather than downloading it — the download is still
-// there, one button further in, which is the right way round: the common case
-// is wanting to see the thing.
+// A folder is a link and navigates itself; this is only ever a file. Opening
+// one looks at it rather than downloading it — the download is one button
+// further in, which is the right way round.
 function open(file) {
-  // A sheet is not a thing to preview. Its bytes are a CSV somebody exports;
-  // what a person clicking it wants is the grid.
+  // A sheet is not a thing to preview: its bytes are a CSV, and what a person
+  // clicking it wants is the grid.
   if (file.custom_kind === 'Sheet') {
     router.push({ name: 'Sheet', params: { name: file.name } })
     return
@@ -561,9 +518,7 @@ function open(file) {
   previewing.value = true
 }
 
-// A sheet is made and then opened, in one click. The alternative — make it,
-// then find it in the list — is two steps for something whose whole point is
-// that you have somewhere to type.
+// A sheet is made and then opened, in one click.
 async function newSheet(template = '') {
   making.value = true
   try {
@@ -647,9 +602,9 @@ function onSearch() {
 
 onMounted(() => {
   drive.load()
-  // The templates the New sheet menu offers. One small query alongside the
-  // list rather than one when the menu opens, because a menu that takes a
-  // round trip to fill is a menu that appears empty and then jumps.
+  // The templates the New sheet menu offers. One small query alongside the list
+  // rather than one when the menu opens, because a menu that takes a round trip
+  // to fill appears empty and then jumps.
   workspace
     .sheetTemplates()
     .then((found) => { templates.value = found || [] })

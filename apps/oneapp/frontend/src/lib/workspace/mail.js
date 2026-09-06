@@ -81,11 +81,6 @@ export const mail = {
   // Reading is a Communication list asked the right questions — see
   // `oneapp_core/email/mailbox.py`. Which addresses a person may read is the
   // query's filter, not the render's.
-
-  // --- the mailbox --------------------------------------------------------
-  // Reading is a Communication list asked the right questions — see
-  // `oneapp_core/email/mailbox.py`. Which addresses a person may read is the
-  // query's filter, not the render's.
   mailFolders: () =>
     callMethod('oneapp.oneapp_core.email.mailbox.folders', {}, {
       silent: true, method: 'GET',
@@ -229,12 +224,6 @@ export const mail = {
   // `oneapp_core/email/rules.py`. A rule belongs to a mailbox, so every one of
   // these checks the address is one the caller holds — which is why they are
   // whitelisted endpoints rather than a screen over `Mail Rule`.
-
-  // --- filing rules and the out-of-office ----------------------------------
-  //
-  // `oneapp_core/email/rules.py`. A rule belongs to a mailbox, so every one of
-  // these checks the address is one the caller holds — which is why they are
-  // whitelisted endpoints rather than a screen over `Mail Rule`.
   mailRules: (address) =>
     callMethod(
       'oneapp.oneapp_core.email.rules.listing',
@@ -303,8 +292,6 @@ export const mail = {
       { email },
       { silent: true, method: 'GET' },
     ),
-
-  // --- connecting a mailbox somebody already has ---------------------------
 
   // --- connecting a mailbox somebody already has ---------------------------
   mailConnected: () =>

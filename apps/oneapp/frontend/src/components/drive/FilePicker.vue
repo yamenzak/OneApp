@@ -1,39 +1,24 @@
 <!--
   Attach a file: from the library, from this device, or from the camera.
 
-  The component this whole arc was for. Before it there were five separate
-  upload surfaces — the record's Meta tab, the attachment gallery, every Attach
-  field, the mail composer — and none of them could pick something the
-  workspace already had, so the same drawing was uploaded four times under four
-  names.
-
   **Upload writes into the Drive and then picks the result**, which is the
   sentence that makes this one path rather than two. There is no second store
   and no "attached but not in the Drive": a file is a `File` row, and where it
   came from is not a property of it.
 
-  Three sources, which is Frappe's own dialog minus the two we do not want.
-  Its desk offers Library, Link, Camera and Google Drive
-  (`frappe/public/js/frappe/file_uploader/FileUploader.vue`). Link is a `File`
-  row that points at somebody else's server, which is an attachment that breaks
-  when they tidy up and is indistinguishable from one that does not until
-  somebody needs it. Google Drive is a second cloud beside the one we run, and
-  the answer to "my files are somewhere else" is to bring them here once rather
-  than to federate.
+  Three sources, which is Frappe's own dialog minus Link — a `File` row pointing
+  at somebody else's server is an attachment that breaks when they tidy up — and
+  Google Drive, which is a second cloud beside the one we run.
 
-  The upload goes through `lib/attach.js`, so a two-gigabyte video attaches to
-  a record by exactly the route it takes into the Drive — presigned, straight
-  to R2. Before that this dialog posted through Frappe and a large attachment
-  simply failed.
+  The upload goes through `lib/files/attach.js`, so a two-gigabyte video
+  attaches to a record by exactly the route it takes into the Drive.
 -->
 <template>
   <Dialog v-model="open" :title="title" size="3xl">
     <template #default>
       <Tabs v-model="tab" :tabs="TABS">
         <template #tab-panel="{ tab: current }">
-          <!-- ----------------------------------------------------------- -->
-          <!-- The library                                                  -->
-          <!-- ----------------------------------------------------------- -->
+          <!-- The library -->
           <div
             v-if="current.value === 'library'"
             data-slot="picker-library"
@@ -71,9 +56,7 @@
             </div>
           </div>
 
-          <!-- ----------------------------------------------------------- -->
-          <!-- This device                                                  -->
-          <!-- ----------------------------------------------------------- -->
+          <!-- This device -->
           <div
             v-else-if="current.value === 'upload'"
             data-slot="picker-upload"
@@ -91,7 +74,7 @@
               <LoadingIndicator v-if="sending" class="size-8 text-ink-gray-4" />
               <Icon v-else name="lucide-upload-cloud" class="size-8 text-ink-gray-4" />
 
-              <!-- Frappe-ui's FileUploader is deliberately not used here: it
+              <!-- frappe-ui's FileUploader is deliberately not used here: it
                    posts the whole body to Frappe, which is the thing a large
                    file cannot survive. -->
               <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
@@ -118,9 +101,7 @@
             </div>
           </div>
 
-          <!-- ----------------------------------------------------------- -->
-          <!-- The camera                                                   -->
-          <!-- ----------------------------------------------------------- -->
+          <!-- The camera -->
           <CameraCapture
             v-else
             data-slot="picker-camera"
@@ -155,8 +136,7 @@ import { errorText } from '@/lib/runtime/errors'
 import { workspace } from '../../lib/workspace'
 
 // The library first, which is the whole argument for this dialog existing: the
-// file somebody wants is usually one the workspace already has, and a dialog
-// that opens on an upload button teaches everyone to upload it again.
+// file somebody wants is usually one the workspace already has.
 const TABS = [
   { label: 'Library', value: 'library' },
   { label: 'This device', value: 'upload' },
@@ -164,25 +144,22 @@ const TABS = [
 ]
 
 const props = defineProps({
-  // Narrows all three: an Attach Image field offers only images to choose
-  // from and only images to upload, rather than letting somebody pick a
-  // spreadsheet for a cover photo.
+  // Narrows all three: an Attach Image field offers only images to choose from
+  // and only images to upload.
   kind: { type: String, default: '' },
-  // What the dialog is called. A caller doing something specific with the file
-  // — importing a spreadsheet, say — is not "attaching" it, and a dialog that
-  // says so is a dialog somebody has to read twice.
+  // What the dialog is called. A caller importing a spreadsheet is not
+  // "attaching" it.
   title: { type: String, default: 'Attach a file' },
   // Extensions this caller can actually take, lowercase and without the dot.
   // Narrower than `kind`, and sometimes the only useful filter: a spreadsheet
-  // and a Word document are both `Document` in the Drive's taxonomy, and only
-  // one of them can be imported as a sheet.
+  // and a Word document are both `Document` in the Drive's taxonomy.
   extensions: { type: Array, default: () => [] },
   // What the file is attached to, when it is attached to something. A file
   // picked here keeps its own life in the Drive either way.
   attachedTo: { type: Object, default: null },
   // Whether more than one may be taken at once. Off by default because most
-  // callers write into a single field, where the second file would silently
-  // replace the first.
+  // callers write into a single field, where the second would replace the
+  // first.
   multiple: { type: Boolean, default: false },
 })
 
@@ -217,16 +194,15 @@ async function load() {
   error.value = ''
   try {
     const found = await workspace.driveList({
-      // Every file this person can see, not the root folder. Almost every
-      // file in a workspace is an attachment and lives in `Home/Attachments`,
-      // so a picker that showed the root would show an empty drive.
+      // Every file this person can see, not the root folder: almost every file
+      // in a workspace is an attachment and lives in `Home/Attachments`.
       place: 'all',
       kind: props.kind,
       search: search.value,
       limit: 50,
     })
-    // Folders are not a thing you can attach, so they are not offered — the
-    // picker is flat on purpose, and search is how you reach into a folder.
+    // Folders are not a thing you can attach. The picker is flat on purpose,
+    // and search is how you reach into a folder.
     files.value = (found?.files || []).filter((one) => !one.is_folder && allowed(one))
   } catch (e) {
     error.value = errorText(e)
@@ -243,9 +219,9 @@ function onSearch() {
 
 async function choose(file) {
   // Picking, when the picker is on a record, has to end where uploading ends:
-  // attached. The server writes a second row pointing at the same object
-  // rather than moving the file, because the file being picked is usually
-  // already attached to something else — which is why it was worth picking.
+  // attached. The server writes a second row pointing at the same object rather
+  // than moving the file, because the file being picked is usually already
+  // attached to something else.
   if (props.attachedTo?.doctype) {
     try {
       const made = await workspace.driveAttach(file.name, props.attachedTo)
@@ -267,12 +243,9 @@ async function choose(file) {
 // --------------------------------------------------------------------------
 
 /**
- * Send what was chosen, dropped or photographed.
- *
- * Serial, and the reason is the same one the Drive's queue gives: two at a
- * time is not twice as fast on one connection and is twice as likely to trip
- * the quota check halfway, leaving one file uploaded and one refused with no
- * way to tell which was which.
+ * Send what was chosen, dropped or photographed. Serial: two at a time is not
+ * twice as fast on one connection and is twice as likely to trip the quota
+ * check halfway.
  */
 async function send(...chosenFiles) {
   if (sending.value) return
@@ -306,12 +279,8 @@ function chosen(event) {
 }
 
 /**
- * Refuse what the caller cannot take, before anything is uploaded.
- *
- * `accept` on the input is a hint the file dialog may ignore and a drop
- * ignores entirely, so it is checked here as well — and here is before the
- * upload rather than after, which is the difference between a message and a
- * file in the Drive that nothing wanted.
+ * Refuse what the caller cannot take, before anything is uploaded. `accept` on
+ * the input is a hint the file dialog may ignore and a drop ignores entirely.
  */
 function usable(list) {
   const good = list.filter((one) => allowed({ file_name: one.name }))
@@ -339,9 +308,8 @@ function onDrop(event) {
   send(list.filter((one) => one.size || one.type))
 }
 
-// Loaded when the dialog opens rather than on mount: a picker that fetched a
-// page of files behind every Attach field on a form would be one request per
-// field on every record anybody opened.
+// Loaded when the dialog opens rather than on mount: a picker behind every
+// Attach field on a form would be one request per field on every record.
 watch(open, (showing) => {
   if (showing) {
     search.value = ''

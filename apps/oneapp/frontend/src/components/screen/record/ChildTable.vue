@@ -5,12 +5,8 @@
       <div class="flex items-center gap-2">
         <!--
           Read these rows off a spreadsheet. Here rather than in the record's
-          action menu because this is where somebody with a priced estimate in
-          front of them is already looking — and because what it replaces is
-          exactly these rows and nothing else on the document.
-
-          Only on a saved record: a pull writes through the server, and there
-          is nothing to write to until the document exists.
+          action menu because what it replaces is exactly these rows. Only on a
+          saved record: a pull writes through the server.
         -->
         <FillFromSheet
           v-if="editable && docname && !locked"
@@ -22,9 +18,8 @@
           @filled="filled"
         />
         <!-- What is ticked, and the one thing worth doing to it. Beside the
-             count rather than in a floating bar: a child table is a few rows
-             inside a form, and a bar over the form to delete two lines of it
-             is more chrome than the action deserves. -->
+             count rather than in a floating bar: a bar over the form to delete
+             two lines of it is more chrome than the action deserves. -->
         <Button
           v-if="editable && chosen.length"
           size="sm"
@@ -36,13 +31,11 @@
         />
         <!--
           Which of the child's fields are across. The doctype's `in_list_view`
-          is the default and it is only a guess: an invoice line has fifteen
-          fields, four fit across a form column, and which four matter depends
+          is the default and only a guess: which four of fifteen matter depends
           on whether you are pricing the job or checking what was delivered.
 
-          A gear rather than a dialog. The list's picker is a dialog because a
-          column there also carries an order, a width, an edge and a pin; here
-          a column carries nothing but whether it is on.
+          A gear rather than a dialog: the list's picker is a dialog because a
+          column there also carries an order, a width and a pin.
         -->
         <Popover v-model:open="picking">
           <template #trigger>
@@ -89,7 +82,7 @@
 
     <!-- Where these rows came from, when they came from a sheet. Under the
          label rather than beside it: it is a sentence, and a sentence in a row
-         of controls is the thing that pushes them onto a second line. -->
+         of controls pushes them onto a second line. -->
     <FeedNote
       v-if="feed"
       :feed="feed"
@@ -98,16 +91,10 @@
     />
 
     <!--
-      The same table the list is drawn with.
-
-      `RecordTable` owns the tracks, the header, the scroller, the pinning and
-      the edge that says there is more; what is left here is what makes this a
-      *grid* rather than a list — a control in every cell, a row you can drag,
-      a row you can open, and rows you can add and take away.
-
-      It used to own none of that and rebuild the little it had, which is how
-      the grid ended up with no widths, no sticky header, and a header inset
-      twelve pixels from the rows underneath it.
+      The same table the list is drawn with. `RecordTable` owns the tracks, the
+      header, the scroller, the pinning and the edge; what is left here is what
+      makes this a *grid* — a control in every cell, a row you can drag, a row
+      you can open, and rows you can add and take away.
     -->
     <RecordTable
       v-if="rows.length"
@@ -124,10 +111,8 @@
       <template #cell="{ column, row, index }">
         <!--
           Frappe orders a child table by `idx`, so the number is the row's
-          position and worth showing: it is what a person means when they say
-          "the third line". It is also the handle — the number *is* the
-          position, so the thing you drag to change it is the thing that says
-          what it is, rather than a second grip column beside it.
+          position and worth showing. It is also the handle: the thing you drag
+          to change the position is the thing that says what it is.
         -->
         <span
           v-if="column.key === GUTTER"
@@ -140,8 +125,8 @@
 
         <div v-else-if="column.key === ACTIONS" class="flex w-full items-center justify-end gap-0.5">
           <!-- The whole row, laid out the way the child doctype lays itself
-               out. A handful of columns fit across; a child doctype with
-               twenty fields is only usable this way. -->
+               out: a child doctype with twenty fields is only usable this
+               way. -->
           <Button
             icon="lucide-maximize-2"
             variant="ghost"
@@ -182,11 +167,9 @@
     <p v-else class="text-p-sm text-ink-gray-5">Nothing here yet.</p>
 
     <!--
-      A page at a time, the way Frappe's own grid does it. The table
-      virtualises past two hundred rows, so this is not about rendering cost —
-      it is about a form. A four-hundred-line invoice with every line drawn is
-      a section that buries every other section on the record, and the person
-      who opened it wanted the total.
+      A page at a time, the way Frappe's own grid does it. Not about rendering
+      cost — the table virtualises past two hundred rows — but about a form: a
+      four-hundred-line invoice buries every other section on the record.
     -->
     <div v-if="rows.length > shown.length" class="flex items-center gap-2">
       <Button
@@ -211,12 +194,8 @@
 
     <!--
       One row, expanded. `RecordForm` and `FormSections` rather than a second
-      layout engine — so a child row gets the child doctype's own tabs, section
-      and column breaks, `depends_on`, and every field property the parent's
-      form honours, with nothing written twice.
-
-      A drawer on desktop and a sheet on a phone would be the ideal split; a
-      Dialog is both, and is what the create form already uses.
+      layout engine, so a child row gets the child doctype's own tabs, section
+      breaks, `depends_on` and every field property, with nothing written twice.
     -->
     <Dialog v-model="expanded" :title="`${child.label} ${(editingAt ?? 0) + 1}`" size="3xl">
       <div v-if="editing" class="p-1">
@@ -264,12 +243,9 @@ const props = defineProps({
 const emit = defineEmits(['reload'])
 
 /**
- * The standing feed for this table, when there is one.
- *
- * Fetched here rather than handed down, because the record surface has no
- * reason to know about sheets and a table that was never filled from one
- * should cost nothing — which is what `docname` being empty on a new record
- * makes true.
+ * The standing feed for this table, when there is one. Fetched here rather than
+ * handed down: the record surface has no reason to know about sheets, and a
+ * table that was never filled from one should cost nothing.
  */
 const feed = ref(null)
 const locked = computed(() => feed.value?.status === 'Locked')
@@ -303,11 +279,9 @@ const rows = defineModel('rows', { type: Array, default: () => [] })
 const child = computed(() => props.field.child || { columns: [], fields: [], form: [] })
 
 /**
- * Which columns are across, and who decided.
- *
- * `null` while nobody has chosen, which is not the same as "chose none": the
- * doctype's own `in_list_view` answer stands until somebody disagrees with it,
- * and a table nobody has touched should follow a doctype that changes its mind.
+ * Which columns are across, and who decided. `null` while nobody has chosen,
+ * which is not the same as "chose none": the doctype's own `in_list_view`
+ * answer stands until somebody disagrees with it.
  */
 const picking = ref(false)
 const picked = ref(null)
@@ -318,8 +292,7 @@ const columns = computed(() => {
   if (!picked.value) return child.value.columns || []
   const by = Object.fromEntries(offered.value.map((one) => [one.fieldname, one]))
   // In the child doctype's own field order rather than the order they were
-  // ticked in: a grid is read left to right and the author of the doctype
-  // already decided what that order is.
+  // ticked in: the author of the doctype already decided what that order is.
   return offered.value.filter((one) => picked.value.includes(one.fieldname)).map(
     (one) => by[one.fieldname],
   )
@@ -335,7 +308,7 @@ const toggleColumn = (fieldname, on) => {
     .map((one) => one.fieldname)
     .filter((name) => (name === fieldname ? on : shows(name)))
   // Every column off is not a table, it is a list of row numbers. Refused by
-  // putting the doctype's answer back, which is also what Reset does.
+  // putting the doctype's answer back, which is what Reset does.
   picked.value = now.length ? now : null
   remember(child.value.doctype, props.field.fieldname, picked.value)
 }
@@ -353,10 +326,9 @@ onMounted(readColumns)
 watch(() => [child.value.doctype, props.field.fieldname], readColumns)
 const editable = computed(() => !props.disabled && !!child.value.editable && !!props.field.editable)
 
-// `RecordForm` reads `form` for the layout and `all_columns` for the fields —
-// the same two things the child resolver produced, under the names the form
-// already expects. Shaped here rather than on the server so the payload stays
-// one description of a child table rather than one shaped for each consumer.
+// `RecordForm` reads `form` for the layout and `all_columns` for the fields.
+// Shaped here rather than on the server so the payload stays one description of
+// a child table rather than one shaped for each consumer.
 const childSpec = computed(() => ({
   doctype: child.value.doctype,
   form: child.value.form,
@@ -365,17 +337,14 @@ const childSpec = computed(() => ({
 }))
 
 /**
- * A grid cell has no room for a label or a description.
- *
- * The column header is the label, and repeating it inside every control in
- * every row is the difference between a grid and a stack of forms. The
- * behaviour — required, read-only, the bounds — all still travels.
+ * A grid cell has no room for a label or a description: the column header is
+ * the label, and repeating it inside every control in every row is the
+ * difference between a grid and a stack of forms. The behaviour still travels.
  */
 const bare = (column) => ({ ...column, label: '', icon: null, description: null })
 
 // The two columns that are not fields. Named rather than positional, because
-// the cell slot dispatches on the key and `column.key === columns[0]` is a
-// thing that breaks the moment a column is added in front of it.
+// the cell slot dispatches on the key.
 const GUTTER = '__idx'
 const ACTIONS = '__actions'
 
@@ -383,37 +352,31 @@ const ACTIONS = '__actions'
 const VIRTUAL_FROM = 200
 
 // How many rows are across before somebody asks for more. Frappe's own grid
-// pages at fifty and it is the right number for the same reason: it is more
-// than any real document has and less than a section that buries the rest of
-// the form.
+// pages at fifty: more than any real document has, less than a section that
+// buries the rest of the form.
 const PAGE = 50
 
 const showing = ref(PAGE)
 const shown = computed(() => rows.value.slice(0, showing.value))
 
-// Back to one page whenever the table is for something else — a different
-// record, or a different table on the same one. Somebody who expanded four
-// hundred lines on the last invoice did not ask for four hundred on this one.
+// Back to one page whenever the table is for something else. Somebody who
+// expanded four hundred lines on the last invoice did not ask for four hundred
+// on this one.
 watch(() => [props.docname, props.field.fieldname], () => { showing.value = PAGE })
 
 // A row added past the fold has to be visible, or Add row appears to do
-// nothing. One row, deliberately: filling three hundred from a sheet is not a
-// reason to draw three hundred.
+// nothing. One row: filling three hundred from a sheet is not a reason to draw
+// three hundred.
 watch(() => rows.value.length, (many, was) => {
   if (many === was + 1 && many > showing.value) showing.value = many
 })
 
 /**
- * The columns, in the shape `RecordTable` takes.
+ * The columns, in the shape `RecordTable` takes: a narrow one for the row
+ * number, a wide one for the actions, the rest shared.
  *
- * A narrow one for the row number, a wide one for the actions, and the rest
- * shared — the doctype's own `columns` hint would be a nicer weighting, but a
- * child grid is already inside a form column and the honest answer at that
- * width is equal shares.
- *
- * No `width`, and so no pinning and no fill: those are arithmetic over pixels,
- * and these tracks share whatever they are given. The table does the right
- * thing with either.
+ * No `width`, and so no pinning and no fill — those are arithmetic over pixels,
+ * and these tracks share whatever they are given.
  */
 const tracks = computed(() => [
   { key: GUTTER, label: '#', track: '2rem' },
@@ -423,20 +386,16 @@ const tracks = computed(() => [
     track: 'minmax(8rem, 1fr)',
     required: !!column.reqd,
     // A number belongs against the right edge of its column. Which cells are
-    // numbers is generated from the same fieldtype map that decides how a
-    // value is drawn, so this and the list cannot disagree about it.
+    // numbers is generated from the same fieldtype map that decides how a value
+    // is drawn, so this and the list cannot disagree.
     align: isNumericCell(column.cell) ? 'end' : '',
     column,
   })),
   { key: ACTIONS, label: '', track: '5rem' },
 ])
 
-// By position, not by key.
-//
-// A saved child row has a `name` and a new one does not — that is how Frappe
-// tells an update from an insert — so half the rows in an edited table have
-// nothing to key a selection on. Position is what a child table already is:
-// `idx` ordered, renumbered on save.
+// By position, not by key: a saved child row has a `name` and a new one does
+// not, so half the rows in an edited table have nothing to key a selection on.
 const rowKey = (_row, index) => index
 
 // The drag handlers, bound onto each row. The table owns the row element; what
@@ -491,21 +450,17 @@ const remove = (index) => {
 
 // --- selection ---------------------------------------------------------------
 //
-// frappe-ui's own now, keyed by position through `rowKey`. It draws the tick
-// box, the select-all in the header, and the row inset that goes with them —
-// all of which this used to hand-roll in a column of its own, and the inset it
-// got wrong.
-//
-// Every operation that moves a row still clears it. A selection held by
-// position through a reorder is a selection of different rows, and that is the
-// kind of bug that deletes the wrong line.
+// frappe-ui's own, keyed by position through `rowKey`. Every operation that
+// moves a row clears it: a selection held by position through a reorder is a
+// selection of different rows, which is the kind of bug that deletes the wrong
+// line.
 
 const chosen = ref([])
 
 const removeChosen = () => {
-  // `Number`, because the selection comes back as frappe-ui stored it and a
-  // row's identity is typed as a string there — `new Set(['0']).has(0)` is
-  // false, and the first version of this ticked two rows and removed none.
+  // `Number`, because a row's identity is typed as a string in frappe-ui —
+  // `new Set(['0']).has(0)` is false, and the first version ticked two rows and
+  // removed none.
   const going = new Set(chosen.value.map(Number))
   rows.value = rows.value.filter((_row, at) => !going.has(at))
   if (editingAt.value !== null && going.has(editingAt.value)) expanded.value = false
@@ -514,10 +469,9 @@ const removeChosen = () => {
 
 // --- reordering ---------------------------------------------------------------
 //
-// Native drag and drop, and `idx` rewritten to match: Frappe orders a child
-// table by that column and renumbers on save, but the record in the browser is
-// what the form reads back, so leaving the old numbers there would show the
-// rows in one order and save them in another.
+// Native drag and drop, and `idx` rewritten to match: the record in the browser
+// is what the form reads back, so leaving the old numbers would show the rows
+// in one order and save them in another.
 
 const dragging = ref(null)
 const draggedTo = ref(null)
@@ -538,8 +492,7 @@ const drop = (index) => {
   rows.value = next.map((row, at) => ({ ...row, idx: at + 1 }))
   chosen.value = []
   // The expanded row followed its position rather than its contents, which is
-  // the wrong half of the pair. Closing is the honest answer to "the thing you
-  // had open is somewhere else now".
+  // the wrong half of the pair.
   expanded.value = false
 }
 </script>

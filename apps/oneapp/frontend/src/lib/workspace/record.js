@@ -26,14 +26,6 @@ export const record = {
   // own list rather than only somebody's avatar. Both halves are the server's
   // — this sends a set of people and reads back what the document ended up
   // holding.
-
-  // Who a record is assigned to, and who it could be.
-  //
-  // Frappe's own model: `_assign` is a list of user ids on the document and a
-  // ToDo sits beside each one, so assigning is how a record reaches somebody's
-  // own list rather than only somebody's avatar. Both halves are the server's
-  // — this sends a set of people and reads back what the document ended up
-  // holding.
   assignees: (spaceCode, screen, query) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.assignees',
@@ -75,9 +67,6 @@ export const record = {
 
   // Silent: the badge appearing is the confirmation, and a toast for every
   // tag is a toast for something nobody was unsure about.
-
-  // Silent: the badge appearing is the confirmation, and a toast for every
-  // tag is a toast for something nobody was unsure about.
   setTag: (spaceCode, screen, name, tag, on) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.set_tag',
@@ -101,9 +90,6 @@ export const record = {
 
   // Not silent, either way. Handing somebody access to a record — or taking it
   // back — is the kind of change you want told you happened.
-
-  // Not silent, either way. Handing somebody access to a record — or taking it
-  // back — is the kind of change you want told you happened.
   setShare: (spaceCode, screen, name, { user = null, everyone = 0, level = 'read' }) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.set_share',
@@ -120,9 +106,6 @@ export const record = {
 
   // Give a record a different id. Not silent: a rename is the one edit that
   // changes what everything else points at, and it deserves saying so.
-
-  // Give a record a different id. Not silent: a rename is the one edit that
-  // changes what everything else points at, and it deserves saying so.
   rename: (spaceCode, screen, name, newName) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.rename',
@@ -133,23 +116,12 @@ export const record = {
   // Follow this record, or stop. Not silent: unlike a like, nothing on the
   // screen changes to prove it worked — the whole result is a notification
   // that has not happened yet — so the toast is the confirmation.
-
-  // Follow this record, or stop. Not silent: unlike a like, nothing on the
-  // screen changes to prove it worked — the whole result is a notification
-  // that has not happened yet — so the toast is the confirmation.
   toggleFollow: (spaceCode, screen, name) =>
     callMethod('oneapp.oneapp_core.spaceview.toggle_follow', {
       space_code: spaceCode,
       screen,
       name,
     }),
-
-  // What is filed against a record. Frappe's own File rows, so a file uploaded
-  // through an Attach field and a file dropped on the record are one list.
-  // `fieldname` narrows the list to one Attachment Gallery's share of them,
-  // by the `link_filters` on that docfield. The filter is read off the field
-  // server-side rather than sent from here, so this only names which field is
-  // asking.
 
   // What is filed against a record. Frappe's own File rows, so a file uploaded
   // through an Attach field and a file dropped on the record are one list.

@@ -18,10 +18,6 @@ export const settings = {
   // The AI tab is not a field list like the rest: it is the feature registry
   // rendered, so the server sends rows rather than a spec. What it never sends
   // is our own instructions for a feature — only what the workspace added.
-
-  // The AI tab is not a field list like the rest: it is the feature registry
-  // rendered, so the server sends rows rather than a spec. What it never sends
-  // is our own instructions for a feature — only what the workspace added.
   ai: () => callMethod('oneapp.oneapp_core.ai.settings.get', {}, { silent: true, method: 'GET' }),
 
   saveAi: (values) =>

@@ -19,11 +19,7 @@ export const screen = {
       },
     ),
 
-  // `overrides` carries a filter or sort the person changed but has not saved:
-  // the list answers the question the controls are asking, saved or not.
-
-  // `overrides` carries a filter or sort the person changed but has not saved:
-  // the list answers the question the controls are asking, saved or not.
+  // `overrides` carries a filter or sort the person changed but has not saved.
   screenRows: (spaceCode, screen, overrides, layout, page = {}, viewType) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.rows',
@@ -36,26 +32,19 @@ export const screen = {
         // in the footer and the server bounds again.
         start: page.start || 0,
         limit: page.limit || undefined,
-        // The days a calendar has on screen. The server applies them to the
-        // screen's own date field, so these two are the whole of it — a range
-        // that cannot name a column.
+        // The days a calendar has on screen, applied to the screen's own date
+        // field — a range that cannot name a column.
         //
-        // Spread rather than set to `undefined`: the key is serialised either
-        // way, and `since=undefined` reaches the server as the four-letter
-        // string, which is a date to nobody.
+        // Spread rather than set to `undefined`: `since=undefined` reaches the
+        // server as the four-letter string, which is a date to nobody.
         ...(page.since && page.until ? { since: page.since, until: page.until } : {}),
         overrides: overrides ? JSON.stringify(overrides) : null,
       },
       { silent: true, method: 'GET' },
     ),
 
-  // Its own request, and deliberately after the rows: a count over a filter
-  // with no index behind it is a full scan, and nothing should hold a list up
-  // for one.
-
-  // Its own request, and deliberately after the rows: a count over a filter
-  // with no index behind it is a full scan, and nothing should hold a list up
-  // for one.
+  // Its own request, deliberately after the rows: a count over a filter with no
+  // index behind it is a full scan.
   screenRowCount: (spaceCode, screen, overrides, layout, viewType) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.count',
@@ -69,8 +58,8 @@ export const screen = {
       { silent: true, method: 'GET' },
     ),
 
-  // One change to a whole selection. POST because it writes, and each record
-  // is saved on its own so what could not be saved comes back named.
+  // One change to a whole selection. POST because it writes, and each record is
+  // saved on its own so what could not be saved comes back named.
   screenBulkSet: (spaceCode, screen, names, field, value) =>
     callMethod('oneapp.oneapp_core.spaceview.bulk_set', {
       space_code: spaceCode,
@@ -90,9 +79,8 @@ export const screen = {
       users: JSON.stringify(users || []),
     }),
 
-  // A whole selection moved one step of its docstatus. Not `bulk_set`: a
-  // submit is not a save, and `docflow` is what a workflow's own transition
-  // goes through.
+  // A whole selection moved one step of its docstatus. Not `bulk_set`: a submit
+  // is not a save, and `docflow` is what a workflow's transition goes through.
   screenBulkSubmit: (spaceCode, screen, names) =>
     callMethod('oneapp.oneapp_core.spaceview.bulk_submit', {
       space_code: spaceCode,
@@ -107,8 +95,8 @@ export const screen = {
       names: JSON.stringify(names || []),
     }),
 
-  // What the money columns add up to. Its own request for the reason the count
-  // is one: an aggregate over the whole filter, which nothing should wait for.
+  // What the money columns add up to. Its own request, for the reason the count
+  // is one.
   screenTotals: (spaceCode, screen, overrides, layout, viewType) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.totals',
@@ -123,8 +111,7 @@ export const screen = {
     ),
 
   // How many records there are for each value of one field — Frappe's list
-  // sidebar, as a menu. Under the same filters the rows are, so the numbers
-  // match what is on screen.
+  // sidebar, as a menu. Under the same filters the rows are.
   screenTally: (spaceCode, screen, field, overrides, layout) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.tally',
@@ -139,9 +126,8 @@ export const screen = {
     ),
 
   // The same rows, as a file. Its own endpoint rather than a page size of five
-  // thousand: an export is the whole answer, it is built as a CSV on the server
-  // where the quoting is testable, and `names` narrows it to a selection so
-  // "export this list" and "export the four I ticked" are one path.
+  // thousand: the CSV is built on the server where the quoting is testable, and
+  // `names` narrows it to a selection.
   screenExport: (spaceCode, screen, overrides, layout, viewType, names) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.export_rows',
@@ -157,14 +143,8 @@ export const screen = {
     ),
 
   // One record, by id. The list row carries only the columns somebody chose to
-  // see; the record shows the doctype's whole field list, so it is fetched
-  // rather than read out of the row — which is also what lets a record be a
-  // link somebody can send.
-
-  // One record, by id. The list row carries only the columns somebody chose to
-  // see; the record shows the doctype's whole field list, so it is fetched
-  // rather than read out of the row — which is also what lets a record be a
-  // link somebody can send.
+  // see; the record shows the doctype's whole field list, which is also what
+  // lets a record be a link somebody can send.
   screenRecord: (spaceCode, screen, name) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.record',
@@ -172,10 +152,9 @@ export const screen = {
       { silent: true, method: 'GET' },
     ),
 
-  // What a copy of one record would start with. Values rather than a record:
-  // the create dialog opens on them, so a duplicate is a draft somebody is
-  // about to change rather than a document that has been raised. `copy_doc` on
-  // the server decides what carries over.
+  // What a copy of one record would start with. Values rather than a record: a
+  // duplicate is a draft somebody is about to change. `copy_doc` on the server
+  // decides what carries over.
   duplicateRecord: (spaceCode, screen, name) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.duplicate',
@@ -192,9 +171,6 @@ export const screen = {
 
   // One call for a whole selection: forty rows is forty round trips otherwise,
   // and a failure halfway through leaves nobody able to say what happened.
-
-  // One call for a whole selection: forty rows is forty round trips otherwise,
-  // and a failure halfway through leaves nobody able to say what happened.
   removeRecords: (spaceCode, screen, names) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.remove',
@@ -206,17 +182,8 @@ export const screen = {
   // record's name. Bounded by the screen like every other read.
   //
   // `target` is only meaningful for a Dynamic Link, whose doctype is on the
-  // record rather than on the field. The server validates it against the
-  // space's grant and this user's permissions before fetching anything, and
-  // ignores it for a plain Link.
-
-  // A Link is a foreign key, and a text box over one asks a customer to know a
-  // record's name. Bounded by the screen like every other read.
-  //
-  // `target` is only meaningful for a Dynamic Link, whose doctype is on the
-  // record rather than on the field. The server validates it against the
-  // space's grant and this user's permissions before fetching anything, and
-  // ignores it for a plain Link.
+  // record rather than on the field; the server validates it against the
+  // space's grant and ignores it for a plain Link.
   linkOptions: (spaceCode, screen, fieldname, query, target) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.link_options',
@@ -224,27 +191,10 @@ export const screen = {
       { silent: true, method: 'GET' },
     ),
 
-  // What choosing that record fills in elsewhere on the form.
-  //
-  // Frappe's `fetch_from` already applies on save, wherever the write came
-  // from, so this changes no outcome — only when you see it. Without it the
-  // Company box sits empty, somebody types into it, and the save quietly
-  // replaces what they typed with the value it was always going to use.
-  //
-  // `silent`, because a form that fills itself in is a convenience: if the
-  // lookup fails the field stays as it was and the save still fills it, which
-  // is the behaviour that existed before this call did.
-
-  // What choosing that record fills in elsewhere on the form.
-  //
-  // Frappe's `fetch_from` already applies on save, wherever the write came
-  // from, so this changes no outcome — only when you see it. Without it the
-  // Company box sits empty, somebody types into it, and the save quietly
-  // replaces what they typed with the value it was always going to use.
-  //
-  // `silent`, because a form that fills itself in is a convenience: if the
-  // lookup fails the field stays as it was and the save still fills it, which
-  // is the behaviour that existed before this call did.
+  // What choosing that record fills in elsewhere on the form. `fetch_from`
+  // already applies on save wherever the write came from, so this changes no
+  // outcome — only when you see it. `silent`: if the lookup fails the field
+  // stays as it was and the save still fills it.
   fetched: (spaceCode, screen, fieldname, value) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.fetched',
@@ -252,17 +202,9 @@ export const screen = {
       { silent: true, method: 'GET' },
     ),
 
-  // What creating one of those records would ask for: Frappe's own quick entry,
-  // which is the fields a doctype marks `allow_in_quick_entry` plus anything
-  // mandatory. Answers `can_create: false` rather than raising when the target
-  // is outside the space or this user may not create it — a picker with no
-  // Create row is the right shape for that.
-
-  // What creating one of those records would ask for: Frappe's own quick entry,
-  // which is the fields a doctype marks `allow_in_quick_entry` plus anything
-  // mandatory. Answers `can_create: false` rather than raising when the target
-  // is outside the space or this user may not create it — a picker with no
-  // Create row is the right shape for that.
+  // What creating one of those records would ask for: Frappe's own quick entry.
+  // Answers `can_create: false` rather than raising when the target is outside
+  // the space — a picker with no Create row is the right shape for that.
   linkNewSpec: (spaceCode, screen, fieldname, target) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.link_new_spec',
@@ -270,11 +212,8 @@ export const screen = {
       { silent: true, method: 'GET' },
     ),
 
-  // Create one, and hand back the picker row for it so the field can adopt the
-  // record without a second search.
-
-  // Create one, and hand back the picker row for it so the field can adopt the
-  // record without a second search.
+  // Create one, and hand back the picker row so the field can adopt the record
+  // without a second search.
   linkNew: (spaceCode, screen, fieldname, values, target) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.link_new',
@@ -282,13 +221,11 @@ export const screen = {
       { successMessage: 'Created' },
     ),
 
-  // Every named layout in a space, keyed by screen. The sidebar's question:
-  // it lists what each screen can be looked at as before anybody has opened
-  // one, and asking a spec per screen to draw a menu is a request per item.
+  // Every named layout in a space, keyed by screen: the sidebar lists what each
+  // screen can be looked at as before anybody has opened one.
 
   // A few facts about the record a link points at, for a card on hover. Which
-  // facts is the target doctype's own answer — its `in_preview` fields — so no
-  // manifest chooses them and every screen pointing at that doctype agrees.
+  // facts is the target doctype's own answer — its `in_preview` fields.
   linkPreview: (spaceCode, screen, fieldname, name, target) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.link_preview',
@@ -300,8 +237,7 @@ export const screen = {
   // has to ask for them.
 
   // The numbers behind a screen's dashboard. Its own call rather than part of
-  // the spec: a spec is read on every navigation and this is one aggregate
-  // query per widget.
+  // the spec, which is read on every navigation.
   dashboard: (spaceCode, screen, { layout = '', overrides = null } = {}) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.dashboard_data',
@@ -315,7 +251,7 @@ export const screen = {
     ),
 
   // --- mail ---------------------------------------------------------------
-  // Addresses, who holds each, and what they sign with. See
-  // `oneapp_core/email/addresses.py` — the model is Frappe's Email Account and
-  // User Email, so none of this is a parallel permission system.
+  // Addresses, who holds each, and what they sign with. The model is Frappe's
+  // Email Account and User Email, so none of this is a parallel permission
+  // system. See `oneapp_core/email/addresses.py`.
 }
