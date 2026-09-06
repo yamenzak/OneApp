@@ -49,6 +49,13 @@ mailbox you have had for nine years and want to read here. They were one tab, so
 a colleague who answers `sales@` could not set any of it: every endpoint under
 it already asked who holds the address, but the only door to them was an admin's.
 
+Email under Workspace is also where the two workspace-wide mail answers live:
+the DNS for a domain the customer owns (`email/verify.py`, which had answered
+those questions since it shipped and had nothing drawing them), and whether
+members may connect an outside mailbox at all. Mailbox under You is where
+somebody claims their own address, chooses which of theirs they write from, and
+connects one of their own if the workspace allows it.
+
 The signature appears on both, which is not a duplicate: it belongs to the
 *address* rather than to the account — `signatures.py` holds Frappe's per-user
 rule off for exactly that reason — so an admin sets it as the person who manages

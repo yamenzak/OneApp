@@ -58,8 +58,12 @@
                 <span class="truncate text-base font-medium text-ink-gray-8">
                   {{ row.email_id }}
                 </span>
-                <Badge v-if="row.default_outgoing" theme="green" label="Sends notifications" />
-                <Badge v-if="!row.ours" theme="amber" label="Your domain" />
+                <!-- What this address *is*. Five rows all read the same
+                     before this: nothing said which was the shared mailbox and
+                     which was somebody's own. `addresses.kind_of` works it out
+                     from the domain and the number of people on it. -->
+                <Badge :theme="KINDS[row.kind]?.theme || 'gray'"
+                       :label="KINDS[row.kind]?.label || row.kind" />
               </div>
               <span class="truncate text-p-xs text-ink-gray-5">
                 {{ row.granted_to.length ? row.granted_to.join(', ') : 'Nobody yet' }}
@@ -127,7 +131,96 @@
         </div>
       </div>
 
-      <div v-if="canManage" class="flex flex-col gap-2 border-t border-outline-gray-1 pt-4">
+      <!--
+        A domain the workspace owns. `email/verify.py` has answered these two
+        questions since the day it shipped and nothing drew them, so a
+        workspace could add `billing@theirs.com` and had nowhere to be told what
+        DNS to publish — and no way to know sending was refused until it was.
+      -->
+      <section v-if="canManage" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
+        <h3 class="text-base-medium text-ink-gray-8">Your own domain</h3>
+        <p class="text-p-sm text-ink-gray-5">
+          Send as <code>you@yourcompany.com</code> rather than on ours. Mail
+          <em>to</em> that domain still goes wherever its MX points — connect
+          those mailboxes under your own Mailbox tab to read them here.
+        </p>
+
+        <div class="flex items-end gap-2">
+          <FormControl
+            v-model="checking"
+            class="flex-1"
+            label="Domain"
+            placeholder="yourcompany.com"
+          />
+          <Button label="Check DNS" :loading="checkingNow" @click="checkDomain" />
+        </div>
+
+        <div v-if="dns.records" class="flex flex-col gap-2">
+          <Badge
+            :theme="dns.verified ? 'green' : 'amber'"
+            :label="dns.verified ? 'Verified' : 'Not verified yet'"
+          />
+          <div
+            v-for="record in dns.records"
+            :key="record.kind"
+            class="flex flex-col gap-1 rounded-6 border border-outline-gray-2 p-3"
+            data-slot="mail-dns-record"
+          >
+            <div class="flex items-center gap-2">
+              <span class="text-base font-medium text-ink-gray-8">{{ record.kind }}</span>
+              <span class="text-p-xs text-ink-gray-5">{{ record.type }}</span>
+            </div>
+            <span class="break-all text-p-xs text-ink-gray-6">{{ record.host }}</span>
+            <span class="break-all font-mono text-p-xs text-ink-gray-7">
+              {{ record.value || '—' }}
+            </span>
+            <span v-if="record.note" class="text-p-xs text-ink-gray-5">{{ record.note }}</span>
+          </div>
+          <Button
+            v-if="!dns.verified"
+            class="self-start"
+            variant="solid"
+            label="I have published them"
+            :loading="confirming"
+            @click="confirmDomain"
+          />
+        </div>
+      </section>
+
+      <!--
+        Whether a member may bring their own mailbox. Most workspaces want yes
+        — it is the half that matters to somebody with a nine-year-old address
+        — and a regulated one wants no, because a connected mailbox brings
+        private mail into a workspace their colleagues hold addresses in.
+      -->
+      <section v-if="canManage" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
+        <h3 class="text-base-medium text-ink-gray-8">Outside mailboxes</h3>
+        <p class="text-p-sm text-ink-gray-5">
+          Whether members may connect a mailbox they already have, such as
+          Gmail or the company's own server.
+        </p>
+        <div class="flex flex-wrap items-center gap-1">
+          <Button
+            v-for="mode in CONNECT_MODES"
+            :key="mode.value"
+            size="sm"
+            :variant="policy.mode === mode.value ? 'solid' : 'subtle'"
+            :label="mode.label"
+            :data-slot="`mail-policy-${mode.value}`"
+            @click="savePolicy(mode.value)"
+          />
+        </div>
+        <FormControl
+          v-if="policy.mode === 'domains'"
+          :model-value="policy.domains.join(', ')"
+          label="Allowed domains"
+          placeholder="yourcompany.com, gmail.com"
+          description="Comma separated. A mailbox on anything else is refused."
+          @change="savePolicy('domains', $event.target.value)"
+        />
+      </section>
+
+      <div v-if="canManage" class="flex flex-col gap-2 border-t border-outline-gray-1 pt-5">
         <span class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
           Add an address
         </span>
@@ -163,8 +256,36 @@ import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 
+/**
+ * The five kinds an address can be, in the workspace's words.
+ *
+ * Derived on the server from the domain and how many people hold it — see
+ * `addresses.kind_of`. Written out here rather than built from the key so the
+ * label is a sentence somebody wrote and not a capitalised enum.
+ */
+const KINDS = {
+  workspace: { label: 'Sends notifications', theme: 'green' },
+  shared: { label: 'Shared', theme: 'blue' },
+  person: { label: 'One person', theme: 'gray' },
+  domain: { label: 'Your domain', theme: 'amber' },
+  connected: { label: 'Connected mailbox', theme: 'gray' },
+}
+
+/** Who may connect a mailbox of their own. See `addresses.connect_policy`. */
+const CONNECT_MODES = [
+  { value: 'any', label: 'Anybody' },
+  { value: 'domains', label: 'Only some domains' },
+  { value: 'none', label: 'Nobody' },
+]
+
 const loading = ref(true)
 const saving = ref(false)
+const policy = ref({ mode: 'any', domains: [] })
+
+const checking = ref('')
+const checkingNow = ref(false)
+const confirming = ref(false)
+const dns = ref({})
 const error = ref('')
 const draft = ref('')
 const opened = ref('')
@@ -190,6 +311,32 @@ const sendingFrom = computed(() => {
   return usage.value.sender || 'the platform address'
 })
 
+async function checkDomain() {
+  checkingNow.value = true
+  try {
+    dns.value = (await workspace.mailDomainStatus(checking.value.trim())) || {}
+  } finally {
+    checkingNow.value = false
+  }
+}
+
+async function confirmDomain() {
+  confirming.value = true
+  try {
+    await workspace.mailDomainConfirm(checking.value.trim())
+    await checkDomain()
+  } finally {
+    confirming.value = false
+  }
+}
+
+async function savePolicy(mode, domains) {
+  policy.value = await workspace.mailSetConnectPolicy(
+    mode,
+    domains === undefined ? policy.value.domains.join(',') : domains,
+  )
+}
+
 async function load() {
   loading.value = true
   try {
@@ -198,6 +345,7 @@ async function load() {
       workspace.mailUsage(),
     ])
     addresses.value = mail.addresses || []
+    policy.value = mail.connect_policy || { mode: 'any', domains: [] }
     members.value = mail.members || []
     domain.value = mail.domain || ''
     prefix.value = mail.prefix || ''

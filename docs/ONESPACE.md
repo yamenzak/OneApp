@@ -1435,7 +1435,7 @@ address" is what decides who may write a signature.
 | Security | Everyone | Their password, through the workspace's own policy, and where they are signed in |
 | Notifications | Everyone | What they are told about, and whether it reaches their inbox |
 | Appearance | Everyone | The theme, kept in the browser |
-| Mailbox | Holds an address | The signature on their own mail, their away message, their filing rules, and the mailbox they already had |
+| Mailbox | Holds an address | Their own address to claim, which of theirs they write from, the signature, the away message, the filing rules, and the mailbox they already had |
 | Branding | Admin | Name, logo, favicon, the sign-in page |
 | Email | Admin | The workspace's addresses, who holds each, which one notifications leave from |
 | Sign in | Admin | Which methods, session policy, password strength, invite-only |

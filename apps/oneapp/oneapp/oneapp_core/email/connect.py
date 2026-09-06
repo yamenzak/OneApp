@@ -29,7 +29,7 @@ four, and everything else takes the default that works.
 import frappe
 from frappe import _
 
-from oneapp.oneapp_core.email import folders
+from oneapp.oneapp_core.email import addresses, folders
 from oneapp.oneapp_core.workspace import OWNER_ROLE, SUPPORT_ROLE
 
 # The hosts worth knowing by name. A person who types their address is telling
@@ -121,6 +121,11 @@ def connect(email_id: str, password: str, email_server: str = "", smtp_server: s
 	email_id = (email_id or "").strip().lower()
 	if "@" not in email_id:
 		frappe.throw(_("That is not an email address."))
+
+	# The workspace's answer, and it is not always yes: a connected mailbox
+	# brings somebody's own mail into a workspace their colleagues are granted
+	# addresses in. See `addresses.connect_policy`.
+	addresses.may_connect(email_id)
 
 	if frappe.db.exists("Email Account", {"email_id": email_id}):
 		frappe.throw(_("{0} is already connected.").format(email_id))

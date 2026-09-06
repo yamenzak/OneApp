@@ -86,7 +86,16 @@ from .query import (
 from .reading import folders, mark_read, mark_unread, star, thread, threads, unread
 from .filing import _into, add_folder, archive, bin, drop_folder, file_thread
 from .selections import ACTIONS, MOVES, bulk, restore
-from .sending import UNDO_SECONDS, _carry, _names, send, unsend
+from .sending import (
+    UNDO_SECONDS,
+    _carry,
+    _names,
+    default_sender,
+    send,
+    sending_from,
+    set_default_sender,
+    unsend,
+)
 from .drafts import DRAFT_KEY, forget, keep, kept
 from .composing import _quote, draft
 
@@ -142,6 +151,9 @@ __all__ = [
 	"parse",
 	"restore",
 	"send",
+	"sending_from",
+	"set_default_sender",
+	"default_sender",
 	"star",
 	"strip_prefixes",
 	"thread",

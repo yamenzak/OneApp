@@ -213,23 +213,26 @@ reputation being spent.
 
 ### Stage 2 — An internal address for every person
 
-`<local>@<slug>.4dl.app` — the tenant's slug is a **subdomain**, not part of the
-local part.
+`<slug>.<local>@4dl.app` — the workspace's slug leads and the domain is the one
+we route. **§1a is the current answer and this stage used to contradict it**:
+an earlier draft put the slug in a subdomain, which is better in every way
+except the one that decides it — Cloudflare allows a zone thirty domains
+configured for Email Routing or Sending combined, and there is no wildcard, so a
+subdomain per workspace caps the platform at about twenty-nine of them.
 
-That one choice deletes a whole subsystem, and the first draft of this document
-got it wrong, so it is worth saying plainly. On `<user>.<slug>@4dl.app` the
-local-part space is global and the tenants are not, so allocation would belong
-to the control plane and would need a registry — one row per address, unique
-across every workspace on the platform — or a tenant minting `sales@4dl.app`
-would be minting it for everybody. Put the slug in the domain and the namespace
-is already per tenant: `sales@acme.4dl.app` and `sales@rua.4dl.app` are two
-addresses, uniqueness is the site's own `Email Account` uniqueness, and there is
-nothing central to allocate, nothing to keep in step, and nothing to migrate
-when a workspace is renamed.
+Uniqueness needs no registry either way. The slug is on the front of every
+address a workspace issues, so `acme.sales@` and `globex.sales@` are two
+addresses and the site's own `Email Account` uniqueness is the whole of the
+allocation. So this is a local part, validated against `addresses.LOCAL_PART`,
+refused if it is in `addresses.RESERVED`, and inserted on the tenant's own site.
 
-So this is not a registry. It is a local part, validated against
-`addresses.LOCAL_PART`, refused if it is in `addresses.RESERVED`, and inserted
-on the tenant's own site.
+**A member claims their own.** Nothing minted one for a long time: a person
+joined a workspace, opened Mail, and had nowhere to send from until an admin
+thought of it — a bottleneck on the thing that has to work on the first
+morning. `addresses.claim` mints one, suggested from the account they signed in
+with and deduplicated against what exists, granted to them and to nobody else.
+One each: somebody wanting a second is asking for a shared address, which is a
+different thing on a different screen.
 
 Inbound needs no new mechanism either: the Worker already parses the recipient
 and already finds the tenant from the subdomain. It gains one more case — a
@@ -238,6 +241,73 @@ files the `Communication` against that user rather than against a document.
 
 Outbound sends through the same Cloudflare identity with the person's address as
 the From.
+
+### Stage 2a — The five kinds, and which settings belong to whom
+
+Every address here is one `Email Account` row and one `User Email` row per
+person who holds it. What they are is *derived* from two facts — the domain it
+is on and how many people hold it — rather than stored, because a column is a
+second copy of something already true and one somebody can be wrong about.
+`addresses.kind_of` is the derivation and the settings list is where the word
+was missing: five rows all read the same.
+
+| Kind | Shape | Who makes it | The case it exists for |
+|---|---|---|---|
+| Workspace | `acme.hello@4dl.app`, `default_outgoing` | admin | The return address on what the system sends — invites, resets, quota notices — so replies land somewhere a human is. |
+| Person | `acme.alice@4dl.app` | the person, `claim` | A workspace with no domain of its own, on day one; the contractor you will not give an `@acme.com` to. |
+| Shared | `acme.sales@4dl.app` | admin, granted to several | A *function*, not a person. The quote thread stays with `sales@` when the salesperson leaves. |
+| Your domain | `sales@acme.com` | admin, after `verify` | The customer has a brand and mail must look like theirs. **Send only** — see below. |
+| Connected | `alice@gmail.com` | the person, if the workspace allows | The address they have used for nine years and will not give up. |
+
+The split of control follows the same line. The address's own settings — who
+holds it, its signature, whether notifications leave from it — are the admin's.
+What you do with one you hold — your away message, your filing rules, which of
+them you write from — is yours, and lives in the Mailbox tab rather than in the
+workspace's Email tab.
+
+**Sending as your own domain works; receiving on it does not.** Once SPF, DKIM
+and DMARC are published, `sales@acme.com` goes out as itself and nothing leaves
+looking like `4dl.app`. Mail *to* `acme.com` still goes wherever its MX points,
+which is not us — so a customer with Google Workspace connects those mailboxes
+and reads them here, and a customer with no mail host at all has replies that
+bounce. The screen says so rather than letting somebody discover it. Pointing
+their MX at us is a third thing and the thirty-domain cap makes it per-customer
+onboarding rather than something every tenant gets.
+
+**Whether a member may connect an outside mailbox is the workspace's answer**,
+because a connected mailbox brings somebody's private mail into a workspace
+their colleagues hold addresses in. Three states — anybody, only these domains,
+nobody — stored as a site default (`addresses.CONNECT_KEY`), refused in
+`connect` rather than only hidden in the form, and readable by everybody so the
+person refused is owed the reason.
+
+### Stage 2b — Which address a message goes out as
+
+`held[0]`, until this was written: whichever `User Email` row the database
+returned first. Somebody with a company address and one of ours sent from
+whichever happened to be ordered first, which is the one thing about this a
+customer notices and does not forgive.
+
+`mailbox.sending.default_sender` is four rules, most specific first:
+
+1. **A reply goes out as the address it arrived at.** Answering `sales@`'s mail
+   from your own address shows the customer a stranger.
+2. **A record answers as whatever last spoke for it** — the correspondence on a
+   quotation is a conversation, and its second message comes from where the
+   first did.
+3. **Otherwise this person's chosen default**, set in the Mailbox tab.
+4. **Otherwise the one they have**, preferring their own address over a shared
+   one, because signing as the team by accident is rule 1 the other way round.
+
+The composer asks the server rather than keeping a copy of that ordering, and
+shows the answer in a picker that can be changed — a default nobody can see is
+a default nobody can correct.
+
+**Not** an automatic Bcc of the sender's other addresses, which was considered
+and refused. No mail client does it; it doubles every thread in the workspace's
+own storage and makes every conversation unread twice. What people actually
+want from it — "the team can see this" — is what a shared address is, and what
+filing against a record already gives.
 
 ### Stage 3 — Shared addresses
 

@@ -2245,3 +2245,115 @@ def test_rendering_against_a_record_checks_the_record_first(stub_frappe, monkeyp
 
 	assert module.render("Delivery update", "Quotation", "QTN-1")["subject"] == "filled"
 	assert asked == ["read"]
+
+
+# --------------------------------------------------------------------------- #
+# The five kinds, and who may add which
+#
+# Every address here is one `Email Account` row and they differ in two facts —
+# the domain it is on and how many people hold it. That is the right data model
+# and it left the settings list with five rows that read identically, so the
+# word is derived rather than stored. These hold the derivation.
+# --------------------------------------------------------------------------- #
+
+class _Row:
+	"""Enough of an `Email Account` for `kind_of` to have an opinion."""
+
+	def __init__(self, email_id, default_outgoing=0, enable_incoming=0):
+		self.email_id = email_id
+		self.default_outgoing = default_outgoing
+		self.enable_incoming = enable_incoming
+		self.name = email_id
+
+
+def test_what_each_kind_of_address_is(addresses, monkeypatch):
+	monkeypatch.setattr(addresses, "domain", lambda: "4dl.app")
+	monkeypatch.setattr(addresses, "prefix", lambda: "acme")
+
+	def kind(row, held):
+		return addresses.kind_of(row, held)
+
+	# The one the workspace's own mail leaves from, whoever holds it.
+	assert kind(_Row("acme.hello@4dl.app", default_outgoing=1), []) == addresses.KIND_WORKSPACE
+	# A function several people answer, against one person's own.
+	assert kind(_Row("acme.sales@4dl.app"), ["a@x", "b@x"]) == addresses.KIND_SHARED
+	assert kind(_Row("acme.alice@4dl.app"), ["a@x"]) == addresses.KIND_PERSON
+	# Not on our domain: sent for, or polled.
+	assert kind(_Row("sales@acme.com"), ["a@x"]) == addresses.KIND_DOMAIN
+	assert kind(_Row("alice@gmail.com", enable_incoming=1), ["a@x"]) == addresses.KIND_CONNECTED
+
+
+def test_a_kind_is_derived_and_never_stored(addresses):
+	"""The moment it is a column it is a column somebody can be wrong about."""
+	source = code_of(addresses)
+	assert "def kind_of(" in source
+	assert '"kind": kind_of(' in source
+
+
+@pytest.mark.parametrize(
+	"mode,domains,address,refused",
+	[
+		("any", [], "alice@gmail.com", False),
+		("none", [], "alice@gmail.com", True),
+		("domains", ["acme.com"], "alice@acme.com", False),
+		("domains", ["acme.com"], "alice@gmail.com", True),
+		# An empty allow-list under `domains` refuses everything, which is the
+		# safe reading of "only these" when nobody has said which.
+		("domains", [], "alice@acme.com", True),
+	],
+)
+def test_who_may_connect_an_outside_mailbox(addresses, monkeypatch, mode, domains,
+                                            address, refused):
+	monkeypatch.setattr(addresses, "connect_policy",
+	                    lambda: {"mode": mode, "domains": domains})
+
+	if refused:
+		with pytest.raises(Exception):
+			addresses.may_connect(address)
+	else:
+		addresses.may_connect(address)
+
+
+def test_claiming_your_own_address_is_not_a_grant_anybody_can_ask_for(addresses):
+	"""`claim` writes a `User Email` row without an admin, which is right — and
+	the way it does it must not be a flag on the whitelisted `grant`.
+
+	A keyword argument that relaxes a permission check is a keyword argument a
+	browser can send, so the private `_grant` is the door and `grant` is
+	`_require_admin` in front of it.
+	"""
+	source = code_of(addresses)
+	assert "allow_self" not in source
+	assert "def _grant(" in source
+
+	grant = source.split("def grant(", 1)[1].split("def _grant(", 1)[0]
+	assert "_require_admin()" in grant
+
+
+def test_the_transport_is_checked_before_the_framework_complains(addresses):
+	"""Without the platform's mail token there is no password on the transport,
+	and Frappe refuses with the name of a field nobody can see."""
+	assert "Mail is not set up for this workspace yet" in code_of(addresses)
+
+
+# --------------------------------------------------------------------------- #
+# Which address a message goes out as
+# --------------------------------------------------------------------------- #
+
+def test_the_sender_is_decided_in_order_and_not_by_the_database(mailbox):
+	"""`held[0]` is whatever `User Email` came back first.
+
+	Somebody with a company address and one of ours sent from whichever the
+	database happened to order — the one thing about this a customer notices
+	and does not forgive. The four rules are in `default_sender`, and each is
+	a thing somebody would otherwise have to remember.
+	"""
+	source = code_of(mailbox)
+	assert "def default_sender(" in source
+	# The send takes the ordering rather than the first row it was handed.
+	assert "sender or default_sender(" in source
+
+	rules = source.split("def default_sender(", 1)[1].split("\ndef send(", 1)[0]
+	# A reply, then the record, then the person's own answer.
+	assert rules.index("_landed_on") < rules.index("_last_on_record")
+	assert rules.index("_last_on_record") < rules.index("get_user_default")

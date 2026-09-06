@@ -74,14 +74,29 @@
           is a form with a password in it, which belongs in Settings beside the
           addresses the workspace itself owns.
         -->
+        <!-- The *person's* tab, not the workspace's. `mail` is an admin tab
+             and a member opening it was shown a door that does not open —
+             which is exactly what settings audiences exist to stop. -->
         <SidebarItem
           v-if="!collapsed"
           icon="lucide-plus"
           :active="false"
           data-slot="mail-add-mailbox"
-          @click="openSettings('mail')"
+          @click="openSettings('mailbox')"
         >
           <span class="flex-1 truncate text-sm text-ink-gray-6">Add a mailbox</span>
+        </SidebarItem>
+        <!-- Everything else about an address — the signature it signs with, the
+             away message, where its mail files itself — is one dialog away
+             rather than a second set of controls in here. -->
+        <SidebarItem
+          v-if="!collapsed && mail.folders.length"
+          icon="lucide-sliders-horizontal"
+          :active="false"
+          data-slot="mail-open-settings"
+          @click="openSettings('mailbox')"
+        >
+          <span class="flex-1 truncate text-sm text-ink-gray-6">Signature and away</span>
         </SidebarItem>
         <SidebarItem
           v-if="mail.mailboxes.length && !collapsed"

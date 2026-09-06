@@ -82,7 +82,7 @@
           A message written once and sent often. Only where there is one to use:
           a button that opens an empty menu teaches people not to press it.
         -->
-        <Dropdown v-if="templates.length" :options="templateOptions">
+        <Dropdown v-if="templates.length || session.isAdmin" :options="templateOptions">
           <Button
             variant="subtle"
             icon-left="lucide-file-text"
@@ -124,6 +124,8 @@ import { withSignature } from './signature'
 import { mail } from '@/lib/shell/mail'
 import FilePicker from '../drive/FilePicker.vue'
 import { workspace } from '../../lib/workspace'
+import { session } from '@/lib/shell/session'
+import { openSettings } from '@/lib/shell/settings'
 
 const props = defineProps({
   /** The addresses this person may send from. The first is the default. */
@@ -154,8 +156,8 @@ const title = ref('New message')
 /** The workspace's templates, read once per composer opening. */
 const templates = ref([])
 
-const templateOptions = computed(() =>
-  templates.value.map((one) => ({
+const templateOptions = computed(() => [
+  ...templates.value.map((one) => ({
     // The name *is* the title: `Email Template` is named by prompt, so two
     // called "Delivery update" would be two rows nobody could tell apart.
     label: one.name,
@@ -163,7 +165,16 @@ const templateOptions = computed(() =>
     description: one.doctype || '',
     onClick: () => use(one),
   })),
-)
+  // Where they are written, one dialog away — rather than a second editor in
+  // here. Only for somebody who may: the tab is an admin's.
+  ...(session.isAdmin
+    ? [{
+        label: 'Manage templates…',
+        icon: 'lucide-settings',
+        onClick: () => openSettings('templates'),
+      }]
+    : []),
+])
 
 /**
  * Put a template into the message. The subject is replaced; the body is written
@@ -218,6 +229,24 @@ const blank = () => {
 }
 
 /**
+ * Which address this message goes out as, asked rather than guessed.
+ *
+ * `props.addresses[0]` was whatever `User Email` came back first, so somebody
+ * with a company address and one on our own domain sent from whichever the
+ * database happened to order — the one thing about this a customer notices and
+ * does not forgive.
+ */
+async function sendingFrom(about = {}) {
+  const answer = await workspace.mailSendingFrom({
+    ...about,
+    ...(props.about
+      ? { doctype: props.about.doctype || '', name: props.about.name || '' }
+      : {}),
+  })
+  return answer?.sender || props.addresses[0] || ''
+}
+
+/**
  * Open the composer, blank or carrying a message. The carrying case is built on
  * the server — see `mailbox.draft`: quoting in the browser would quote the copy
  * the reader is looking at, whose remote images have been held back.
@@ -238,6 +267,10 @@ async function compose(from, kind = 'reply') {
     Object.assign(draft, opening, { bcc: '' })
     draft.attachments = opening.attachments || []
     copies.value = !!opening.cc
+    // A reply goes out as the address it arrived at. The server decides, from
+    // the message and the record — see `mailbox.sending.default_sender` — so
+    // the browser is not holding a second copy of that rule.
+    draft.sender = (await sendingFrom({ in_reply_to: from.name })) || draft.sender
     sign()
   } else {
     // A blank composer opens on whatever was left behind, if anything was.
@@ -246,7 +279,7 @@ async function compose(from, kind = 'reply') {
       Object.assign(draft, opening)
       copies.value = !!(opening.cc || opening.bcc)
     }
-    if (!draft.sender) draft.sender = props.addresses[0] || ''
+    if (!draft.sender) draft.sender = await sendingFrom()
     // Only for a message that has not been started: what was kept was kept with
     // its signature in it, and signing it again would sign what somebody may
     // have deliberately deleted.

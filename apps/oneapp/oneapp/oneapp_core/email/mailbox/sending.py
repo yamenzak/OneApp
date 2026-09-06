@@ -6,6 +6,125 @@ from frappe.utils import add_to_date, escape_html, now_datetime
 from .scope import _held
 
 
+#: This person's own choice of which address to send from, when nothing about
+#: the message decides it. A user default, like the notification mutes: one
+#: string per person, and no doctype worth making for it.
+DEFAULT_KEY = "onespace_default_sender"
+
+
+@frappe.whitelist(methods=["GET"])
+def sending_from(in_reply_to: str = "", doctype: str = "", name: str = "") -> dict:
+	"""Which address a message would go out as, and what else it could be.
+
+	The composer reads this rather than picking the first row it was handed.
+	`held[0]` is whatever `User Email` came back first — so a member with a
+	company address and a `4dl.app` one sent from whichever the database
+	happened to order first, which is the one thing about this that customers
+	would notice and not forgive.
+	"""
+	held = _held()
+	return {
+		"sender": default_sender(in_reply_to, doctype, name, held),
+		"addresses": held,
+		"default": frappe.defaults.get_user_default(DEFAULT_KEY) or "",
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def set_default_sender(address: str) -> dict:
+	"""Choose which of your addresses is the one you write from."""
+	address = (address or "").strip().lower()
+	if address and address not in _held():
+		frappe.throw(_("That is not one of your addresses."), frappe.PermissionError)
+
+	frappe.defaults.set_user_default(DEFAULT_KEY, address, frappe.session.user)
+	frappe.db.commit()
+	return {"ok": True, "default": address}
+
+
+def default_sender(in_reply_to: str = "", doctype: str = "", name: str = "",
+                   held: list[str] | None = None) -> str:
+	"""The address to send from, in order of what the message itself says.
+
+	Four rules, most specific first, and each one is a thing somebody would
+	otherwise have to remember:
+
+	  1. **A reply goes out as the address it arrived at.** Answering a message
+	     to `sales@` from your own address is the mistake this whole ordering
+	     exists to prevent — the customer sees a stranger.
+	  2. **A record answers as whatever last spoke for it.** The correspondence
+	     on a quotation is a conversation, and the second message in it should
+	     come from the same place as the first.
+	  3. **Otherwise this person's chosen default**, which is the Mailbox tab.
+	  4. **Otherwise the one they have** — and if they have several and have
+	     chosen none, their own address on our domain before a shared one,
+	     because a shared address is a team's and signing as it by accident is
+	     the same mistake as rule 1 the other way round.
+	"""
+	held = _held() if held is None else held
+	if not held:
+		return ""
+
+	if in_reply_to:
+		if landed := _landed_on(in_reply_to, held):
+			return landed
+
+	if doctype and name:
+		if before := _last_on_record(doctype, name, held):
+			return before
+
+	# The person's own, not the site's: `frappe.db.get_default` reads the
+	# global row, which every session on the site loads whole.
+	chosen = (frappe.defaults.get_user_default(DEFAULT_KEY) or "").lower()
+	if chosen in held:
+		return chosen
+
+	from oneapp.oneapp_core.email.addresses import is_ours
+
+	personal = [one for one in held if is_ours(one)]
+	return (personal or held)[0]
+
+
+def _landed_on(message: str, held: list[str]) -> str:
+	"""The address of ours a message came to, if it is one this person holds."""
+	if not frappe.db.exists("Communication", message):
+		return ""
+	row = frappe.db.get_value(
+		"Communication", message, ["recipients", "cc", "sender"], as_dict=True)
+	if not row:
+		return ""
+
+	where = f"{row.recipients or ''},{row.cc or ''}".lower()
+	for one in held:
+		if one in where:
+			return one
+	# A message this person *sent* is replied to from the same address again.
+	return (row.sender or "").lower() if (row.sender or "").lower() in held else ""
+
+
+def _last_on_record(doctype: str, name: str, held: list[str]) -> str:
+	"""The address this record's correspondence has been using."""
+	# `get_list` and not `get_all`: this is the one query here that is scoped by
+	# a *record* rather than by the address scope every other read in this
+	# package goes through, so the permission check has to be the framework's.
+	rows = frappe.get_list(
+		"Communication",
+		filters={"reference_doctype": doctype, "reference_name": name,
+		         "communication_medium": "Email"},
+		fields=["sender", "recipients", "cc"],
+		order_by="creation desc",
+		limit_page_length=10,
+		ignore_permissions=False,
+	)
+	for row in rows:
+		where = f"{row.get('sender') or ''},{row.get('recipients') or ''}," \
+		        f"{row.get('cc') or ''}".lower()
+		for one in held:
+			if one in where:
+				return one
+	return ""
+
+
 @frappe.whitelist(methods=["POST"])
 def send(to: str, subject: str, content: str, sender: str = "",
          in_reply_to: str = "", cc: str = "", bcc: str = "",
@@ -28,7 +147,9 @@ def send(to: str, subject: str, content: str, sender: str = "",
 	if not held:
 		frappe.throw(_("You have no address to send from."), frappe.PermissionError)
 
-	sender = (sender or held[0]).lower()
+	# Not `held[0]`, which is whatever the database ordered first. See
+	# `default_sender` for the four rules and why each one is there.
+	sender = (sender or default_sender(in_reply_to, held=held)).lower()
 	if sender not in held:
 		frappe.throw(_("That is not one of your addresses."), frappe.PermissionError)
 

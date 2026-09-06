@@ -329,4 +329,57 @@ export const mail = {
   //
   // Frappe's `Document Naming Settings`, gated to the doctypes this
   // workspace's spaces granted. See `oneapp_core/naming.py`.
+
+  // --- an address of your own, and who may add an outside one --------------
+  //
+  // `oneapp_core/email/addresses.py`. The first two are a person's own — an
+  // address on the workspace's domain is theirs to claim rather than an
+  // admin's to remember — and the policy is readable by everybody, because the
+  // person it refuses is owed the reason.
+  mailMine: () =>
+    callMethod('oneapp.oneapp_core.email.addresses.mine', {}, {
+      silent: true, method: 'GET',
+    }),
+
+  mailClaim: (localPart = '') =>
+    callMethod(
+      'oneapp.oneapp_core.email.addresses.claim',
+      { local_part: localPart },
+      { successMessage: 'That address is yours' },
+    ),
+
+  mailSetConnectPolicy: (mode, domains) =>
+    callMethod(
+      'oneapp.oneapp_core.email.addresses.set_connect_policy',
+      { mode, domains },
+      { successMessage: 'Saved' },
+    ),
+
+  // --- which address a message goes out as ---------------------------------
+  mailSendingFrom: (values = {}) =>
+    callMethod('oneapp.oneapp_core.email.mailbox.sending_from', values, {
+      silent: true, method: 'GET',
+    }),
+
+  mailSetDefaultSender: (address) =>
+    callMethod(
+      'oneapp.oneapp_core.email.mailbox.set_default_sender',
+      { address },
+      { successMessage: 'Saved' },
+    ),
+
+  // --- a domain the workspace owns -----------------------------------------
+  //
+  // `oneapp_core/email/verify.py` has answered these since the day it landed
+  // and nothing drew them, so a workspace could put its own domain on an
+  // address and had nowhere to be told what DNS to publish.
+  mailDomainStatus: (domain) =>
+    callMethod('oneapp.oneapp_core.email.verify.status', { domain }, {
+      silent: true, method: 'GET',
+    }),
+
+  mailDomainConfirm: (domain) =>
+    callMethod('oneapp.oneapp_core.email.verify.confirm', { domain }, {
+      successMessage: 'Checked',
+    }),
 }

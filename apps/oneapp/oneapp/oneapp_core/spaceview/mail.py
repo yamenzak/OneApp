@@ -91,8 +91,15 @@ def write(space_code: str, screen: str, name: str, to: str, subject: str,
 	from oneapp.oneapp_core.email import linking
 	from oneapp.oneapp_core.email.mailbox import send
 
+	from oneapp.oneapp_core.email.mailbox import default_sender
+
 	sent = send(
-		to=to, subject=subject, content=content, sender=sender,
+		to=to, subject=subject, content=content,
+		# Left empty, this is the record's answer rather than whichever address
+		# the database ordered first: the correspondence on a quotation is a
+		# conversation, and its second message comes from where the first did.
+		# See `mailbox.sending.default_sender`.
+		sender=sender or default_sender(doctype=doctype, name=name),
 		cc=cc, bcc=bcc, attachments=attachments,
 	)
 	if not sent.get("name"):

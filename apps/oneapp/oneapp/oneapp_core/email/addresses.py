@@ -63,6 +63,100 @@ RESERVED = frozenset(
 )
 
 
+#: What an address *is*, worked out rather than stored.
+#:
+#: The four are one `Email Account` row each and differ only in the two facts
+#: below — the domain it is on and how many people hold it — so a field would be
+#: a second copy of something already true. What was missing is the *word*: the
+#: settings list showed five rows and nothing said which was the shared sales
+#: mailbox and which was somebody's own.
+KIND_WORKSPACE = "workspace"   # what the workspace's own notifications leave from
+KIND_SHARED = "shared"         # a function: sales@, accounts@ — several people
+KIND_PERSON = "person"         # one member's own, on our domain
+KIND_DOMAIN = "domain"         # on a domain the customer owns
+KIND_CONNECTED = "connected"   # a mailbox somebody already had, polled by IMAP
+
+
+def kind_of(doc, people: list[str] | None = None) -> str:
+	"""Which of the five an address is."""
+	if doc.default_outgoing:
+		return KIND_WORKSPACE
+	if not is_ours(doc.email_id):
+		# Ours to send *for* but not ours to route: a verified domain sends
+		# through the platform, a connected mailbox has a server of its own.
+		return KIND_CONNECTED if doc.enable_incoming else KIND_DOMAIN
+	held = _people(doc.name) if people is None else people
+	return KIND_SHARED if len(held) > 1 else KIND_PERSON
+
+
+# --------------------------------------------------------------------------- #
+# Who may connect an outside mailbox
+#
+# A connected mailbox brings somebody's private mail into a workspace their
+# colleagues can be granted addresses in, and it is the one kind a member sets
+# up without asking anybody. Most customers want exactly that. A regulated one
+# wants it off, and one with a domain of its own wants "ours only" — so it is a
+# workspace answer, and the workspace has to be able to give it.
+#
+# Stored as a site default rather than in a doctype of its own: it is one word
+# and a list, `frappe.db.get_default` is the framework's own store for exactly
+# that, and a Single with two fields would need a migration, a permission rule
+# and a surface to earn its keep.
+# --------------------------------------------------------------------------- #
+
+CONNECT_KEY = "onespace_outside_mailboxes"
+CONNECT_DOMAINS_KEY = "onespace_outside_domains"
+
+#: Anybody, only these domains, or nobody.
+CONNECT_ANY, CONNECT_DOMAINS, CONNECT_NONE = "any", "domains", "none"
+CONNECT_MODES = (CONNECT_ANY, CONNECT_DOMAINS, CONNECT_NONE)
+
+
+def connect_policy() -> dict:
+	"""What the workspace allows. Readable by anybody, because the person it
+	refuses is owed the reason."""
+	mode = frappe.db.get_default(CONNECT_KEY) or CONNECT_ANY
+	raw = frappe.db.get_default(CONNECT_DOMAINS_KEY) or ""
+	return {
+		"mode": mode if mode in CONNECT_MODES else CONNECT_ANY,
+		"domains": [one.strip().lower() for one in raw.split(",") if one.strip()],
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def set_connect_policy(mode: str, domains: str = "") -> dict:
+	"""Change it. The admin's answer, and only theirs."""
+	_require_admin()
+	if mode not in CONNECT_MODES:
+		frappe.throw(_("{0} is not one of the choices.").format(mode))
+
+	wanted = [one.strip().lower().lstrip("@") for one in (domains or "").split(",")]
+	frappe.db.set_default(CONNECT_KEY, mode)
+	frappe.db.set_default(CONNECT_DOMAINS_KEY, ",".join(one for one in wanted if one))
+	frappe.db.commit()
+	return connect_policy()
+
+
+def may_connect(email_id: str):
+	"""Refuse an outside mailbox the workspace has not allowed, and say why."""
+	policy = connect_policy()
+	if policy["mode"] == CONNECT_ANY:
+		return
+	if policy["mode"] == CONNECT_NONE:
+		frappe.throw(
+			_("This workspace does not allow connecting outside mailboxes."),
+			frappe.PermissionError,
+		)
+
+	domain_of = (email_id or "").split("@")[-1].lower()
+	if domain_of not in policy["domains"]:
+		frappe.throw(
+			_("This workspace only allows mailboxes on: {0}").format(
+				", ".join(policy["domains"]) or _("nothing yet")),
+			frappe.PermissionError,
+		)
+
+
 def _require_admin():
 	roles = set(frappe.get_roles())
 	if not roles & {OWNER_ROLE, SUPPORT_ROLE}:
@@ -148,6 +242,7 @@ def signatures(held: list[str]) -> dict:
 
 
 def _as_row(doc) -> dict:
+	held = sorted(_people(doc.name))
 	return {
 		"name": doc.name,
 		"email_id": doc.email_id,
@@ -162,7 +257,10 @@ def _as_row(doc) -> dict:
 		# particular", which is a Communication against no document and is the
 		# right answer for a person's own address.
 		"append_to": doc.append_to or "",
-		"granted_to": sorted(_people(doc.name)),
+		"granted_to": held,
+		# Derived, not stored — see `kind_of`. The listing had no word for
+		# "this is the shared one" and every row read the same.
+		"kind": kind_of(doc, held),
 	}
 
 
@@ -192,6 +290,9 @@ def listing() -> dict:
 		"reserved": sorted(RESERVED),
 		"can_manage": bool(roles & {OWNER_ROLE, SUPPORT_ROLE}),
 		"members": _members(),
+		# Read by everybody: the Mailbox tab draws the connect form from it, and
+		# somebody refused is owed the reason rather than a form that fails.
+		"connect_policy": connect_policy(),
 	}
 
 
@@ -236,18 +337,33 @@ def create(local_part: str, label: str = "", grant_to: str | list | None = None)
 	_require_admin()
 
 	local_part = validate_local_part(local_part)
-	email_id = address_for(local_part)
+	if frappe.db.exists("Email Account", {"email_id": address_for(local_part)}):
+		frappe.throw(_("{0} already exists.").format(address_for(local_part)))
 
-	if frappe.db.exists("Email Account", {"email_id": email_id}):
-		frappe.throw(_("{0} already exists.").format(email_id))
+	account = _mint(local_part, label)
 
+	for user in _wanted(grant_to):
+		grant(account.name, user)
+
+	return _as_row(frappe.get_doc("Email Account", account.name))
+
+
+def _mint(local_part: str, label: str = ""):
+	"""One `Email Account` on our domain. Used by `create` and by `claim`."""
 	from oneapp.oneapp_core.email import outbound
+
+	# Said here rather than left to the framework. Without the platform's mail
+	# token there is no password on the transport, and `EmailAccount.validate`
+	# refuses with "Password is required or select Awaiting Password" — which
+	# names a field nobody can see on a screen that never mentions one.
+	if not outbound.config()["api_token"]:
+		frappe.throw(_("Mail is not set up for this workspace yet."))
 
 	account = frappe.get_doc(
 		{
 			"doctype": "Email Account",
 			"email_account_name": label or local_part,
-			"email_id": email_id,
+			"email_id": address_for(local_part),
 			# The same Cloudflare transport the platform's own account uses.
 			# An address with `enable_outgoing` and no server is one Frappe
 			# accepts, offers in the picker, and fails on at the first send.
@@ -258,11 +374,77 @@ def create(local_part: str, label: str = "", grant_to: str | list | None = None)
 		}
 	)
 	account.insert(ignore_permissions=True)
+	return account
 
-	for user in _wanted(grant_to):
-		grant(account.name, user)
 
+# --------------------------------------------------------------------------- #
+# The address every member should already have
+#
+# Nothing minted one. A person joined a workspace, opened Mail, and had nowhere
+# to send from until an admin thought to make them an address — which is a
+# bottleneck on the one thing that should work on the first morning. The local
+# part is theirs to choose once, and suggested from the account they signed up
+# with, because `alice@company.com` joining `acme` obviously wants `alice`.
+# --------------------------------------------------------------------------- #
+
+def suggest_local_part(user: str | None = None) -> str:
+	"""A local part for this person, free of collisions and reserved words."""
+	user = user or frappe.session.user
+	wanted = (user or "").split("@")[0].lower()
+	wanted = re.sub(r"[^a-z0-9._-]+", "", wanted).strip("._-") or "member"
+
+	base = wanted if wanted not in RESERVED else f"{wanted}1"
+	candidate, at = base, 1
+	while frappe.db.exists("Email Account", {"email_id": address_for(candidate)}):
+		at += 1
+		candidate = f"{base}{at}"
+	return candidate
+
+
+@frappe.whitelist(methods=["GET"])
+def mine() -> dict:
+	"""Whether this person has an address of their own here, and what one would
+	be called if they claimed it."""
+	held = frappe.get_all(
+		"User Email", filters={"parent": frappe.session.user}, pluck="email_id",
+		distinct=True)
+	own = [one for one in held if is_ours(one)]
+	return {
+		"has_one": bool(own),
+		"held": sorted(held),
+		"suggested": address_for(suggest_local_part()) if not own else "",
+		"domain": domain(),
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def claim(local_part: str = "") -> dict:
+	"""Mint this person's own address on the workspace's domain.
+
+	Theirs, granted to them, and not an admin's decision — the addresses are the
+	workspace's to *shape* (which is why `create` is an admin's) but a member
+	having one at all is the point of issuing a domain. One each: somebody who
+	wants a second is asking for a shared address, which is a different thing.
+	"""
+	if _mine_here():
+		frappe.throw(_("You already have an address here."))
+
+	local_part = validate_local_part(local_part or suggest_local_part())
+	email_id = address_for(local_part)
+	if frappe.db.exists("Email Account", {"email_id": email_id}):
+		frappe.throw(_("{0} is taken.").format(email_id))
+
+	account = _mint(local_part, label=frappe.session.user)
+	_grant(account.name, frappe.session.user)
 	return _as_row(frappe.get_doc("Email Account", account.name))
+
+
+def _mine_here() -> bool:
+	"""Whether this person already holds an address this workspace issued."""
+	held = frappe.get_all(
+		"User Email", filters={"parent": frappe.session.user}, pluck="email_id",
+		distinct=True)
+	return any(is_ours(one) for one in held)
 
 
 def _wanted(grant_to) -> list[str]:
@@ -351,6 +533,17 @@ def remove(name: str) -> dict:
 def grant(name: str, user: str) -> dict:
 	"""Give somebody an address. Idempotent — granting twice is granting once."""
 	_require_admin()
+	return _grant(name, user)
+
+
+def _grant(name: str, user: str) -> dict:
+	"""The row write, without the role check.
+
+	Private, and it matters that it is: `claim` is the one grant that is not an
+	admin's decision, and the honest way to say so is a second entry point
+	rather than a flag on the whitelisted one — a keyword argument that relaxes
+	a permission check is a keyword argument a browser can send.
+	"""
 	account = _account(name)
 
 	if not frappe.db.exists("User", user):

@@ -19,12 +19,60 @@
     <LoadingText v-if="loading" class="py-8" text="Loading" />
 
     <div v-else class="flex flex-col gap-6 py-4">
+      <!--
+        The address every member should already have. Nothing minted one: a
+        person joined, opened Mail, and had nowhere to send from until an admin
+        thought of it — a bottleneck on the one thing that has to work on the
+        first morning. One each, suggested from the account they signed in with.
+      -->
+      <div
+        v-if="ours.suggested"
+        class="flex flex-wrap items-center justify-between gap-3 rounded-6 border border-outline-gray-2 bg-surface-gray-1 p-3"
+        data-slot="mailbox-claim"
+      >
+        <div class="min-w-0">
+          <p class="text-base font-medium text-ink-gray-8">Take your address</p>
+          <p class="truncate text-p-sm text-ink-gray-5">
+            {{ ours.suggested }} — yours, on this workspace's domain.
+          </p>
+        </div>
+        <Button
+          variant="solid"
+          label="Claim it"
+          data-slot="mailbox-claim-go"
+          :loading="claiming"
+          @click="claim"
+        />
+      </div>
+
       <EmptyState
-        v-if="!held.length && !connected.length"
+        v-else-if="!held.length && !connected.length"
         icon="lucide-at-sign"
         title="No address yet"
         description="An admin gives you one, or connect the mailbox you already have below."
       />
+
+      <!--
+        Which of them a new message goes out as when nothing about the message
+        decides it. The four rules are `mailbox.sending.default_sender`, and
+        this is the third of them — a reply and a record answer for themselves.
+      -->
+      <div v-if="held.length > 1" class="flex flex-wrap items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-base text-ink-gray-8">Write from</p>
+          <p class="text-p-sm text-ink-gray-5">
+            Unless you are replying, or writing on a record that already has
+            correspondence.
+          </p>
+        </div>
+        <Select
+          class="w-64"
+          :model-value="defaultSender"
+          :options="held.map((one) => ({ label: one.email_id, value: one.email_id }))"
+          data-slot="mailbox-default-sender"
+          @update:model-value="setDefault"
+        />
+      </div>
 
       <!-- The signature is the address's, not the account's: `sales@` signs
            the same way whoever answers it, which is the reason `signatures.py`
@@ -170,6 +218,12 @@
         <p class="text-p-sm text-ink-gray-5">
           The address you already had. Read and answer it here.
         </p>
+        <!-- Said, not silently missing. A workspace can turn this off or hold
+             it to a list of domains, and somebody refused is owed the reason
+             rather than a form that fails on submit. -->
+        <p v-if="!mayConnect" class="text-p-sm text-ink-gray-6">
+          {{ whyNot }}
+        </p>
 
         <div
           v-for="box in connected"
@@ -203,7 +257,7 @@
           </div>
         </div>
 
-        <div class="flex flex-col gap-2">
+        <div v-if="mayConnect" class="flex flex-col gap-2">
           <div class="flex items-end gap-2">
             <FormControl
               v-model="mailbox.email_id"
@@ -270,6 +324,17 @@ const loading = ref(true)
 
 const addresses = ref([])
 const connected = ref([])
+
+/** Whether this person holds an address of the workspace's own, and what one
+ *  would be called if they claimed it. See `addresses.mine`. */
+const ours = ref({})
+const claiming = ref(false)
+
+/** Which address a new message goes out as. `mailbox.sending.default_sender`. */
+const defaultSender = ref('')
+
+/** The workspace's answer on outside mailboxes. `addresses.connect_policy`. */
+const policy = ref({ mode: 'any', domains: [] })
 
 const connecting = ref(false)
 const connectError = ref('')
@@ -397,15 +462,45 @@ async function disconnect(box) {
   await load()
 }
 
+const mayConnect = computed(() => policy.value.mode !== 'none')
+
+const whyNot = computed(() =>
+  policy.value.mode === 'none'
+    ? 'This workspace does not allow connecting outside mailboxes.'
+    : '',
+)
+
+async function claim() {
+  claiming.value = true
+  try {
+    await workspace.mailClaim()
+    await load()
+  } finally {
+    claiming.value = false
+  }
+}
+
+async function setDefault(address) {
+  defaultSender.value = address
+  await workspace.mailSetDefaultSender(address)
+}
+
 async function load() {
   loading.value = true
   try {
-    const [mail, boxes] = await Promise.all([
+    const [mail, boxes, own, sending] = await Promise.all([
       workspace.mail(),
       workspace.mailConnected(),
+      workspace.mailMine(),
+      workspace.mailSendingFrom(),
     ])
     addresses.value = mail.addresses || []
+    policy.value = mail.connect_policy || { mode: 'any', domains: [] }
     connected.value = boxes || []
+    ours.value = own || {}
+    // What the server would pick today, so the control opens on the truth
+    // rather than on empty: this person may never have chosen one.
+    defaultSender.value = sending?.default || sending?.sender || ''
     // The address whose rules are shown. First one held, because a picker that
     // opens on nothing makes somebody choose before they can look.
     chosen.value = held.value[0]?.email_id || ''
