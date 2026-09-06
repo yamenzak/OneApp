@@ -77,3 +77,34 @@
 :root:lang(ur) {
   font-size: 106%;
 }
+
+/*
+ * An arrow that means "forward" points the other way in Arabic.
+ *
+ * `dir="rtl"` flips text, flex order, scroll and every logical property, and it
+ * cannot flip a picture: a chevron beside a collapsed section still points
+ * right, away from the words it belongs to, and Back still points at the page
+ * you came from in the wrong direction.
+ *
+ * frappe-ui draws a lucide icon as a CSS mask on a class named after it, which
+ * is why this is one rule rather than an edit in sixteen components — and why a
+ * new directional icon is covered the moment it is used.
+ *
+ * Cardinal names only. `arrow-up-right` is the open-this-elsewhere mark and
+ * would arguably flip, but the same name is also one of the icons a customer
+ * can pick for a value of their own, and turning a chosen icon round is a bug
+ * where an external-link arrow pointing the English way is a detail.
+ * `tests/test_rtl.py` keeps this list in step with what the SPA uses.
+ */
+[dir='rtl'] .lucide-chevron-left,
+[dir='rtl'] .lucide-chevron-right,
+[dir='rtl'] .lucide-chevrons-left,
+[dir='rtl'] .lucide-chevrons-right,
+[dir='rtl'] .lucide-arrow-left,
+[dir='rtl'] .lucide-arrow-right,
+[dir='rtl'] .lucide-arrow-left-to-line,
+[dir='rtl'] .lucide-arrow-right-to-line,
+[dir='rtl'] .lucide-corner-left,
+[dir='rtl'] .lucide-corner-right {
+  transform: scaleX(-1);
+}

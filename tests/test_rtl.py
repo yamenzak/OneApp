@@ -96,3 +96,67 @@ def test_the_document_says_which_way_round_it_runs():
 	for spa in ("apps/oneapp", "apps/oneapp_control"):
 		main = (ROOT / spa / "frontend/src/main.js").read_text()
 		assert "documentElement.dir" in main, f"{spa} never sets `dir`"
+
+
+# A lucide name that says which way it points. frappe-ui draws these as a CSS
+# mask on a class of the same name, so `index.css` mirrors them under
+# `[dir=rtl]` — one rule for all of them rather than an edit per component.
+#
+# Cardinal only. The diagonals are deliberately out: `arrow-up-right` is the
+# open-this-elsewhere mark and would arguably flip, but the same name is also
+# one of the icons a customer can pick for a value of their own — and turning a
+# chosen icon round is a bug, where an external-link arrow pointing the English
+# way is a detail.
+DIRECTIONAL = re.compile(r"lucide-(?:chevrons?|arrow|corner)-(?:left|right)(?:-to-line)?")
+
+
+def test_an_arrow_that_means_forward_is_mirrored():
+	"""`dir=rtl` flips the layout and cannot flip a picture.
+
+	A chevron beside a collapsed section points at the words it belongs to, and
+	Back points at the page you came from; both are wrong in Arabic unless
+	something turns them round.
+	"""
+	used = set()
+	for _where, raw in sources():
+		used.update(DIRECTIONAL.findall(raw))
+
+	css = (ROOT / "apps/oneapp/frontend/src/index.css").read_text()
+	mirrored = set(DIRECTIONAL.findall(css))
+
+	missing = sorted(used - mirrored)
+	assert not missing, (
+		"these point the wrong way in Arabic — add them to the `[dir='rtl']` "
+		"block in index.css:\n  " + "\n  ".join(missing)
+	)
+
+
+def test_both_apps_mirror_the_same_arrows():
+	blocks = [
+		set(DIRECTIONAL.findall((ROOT / spa / "frontend/src/index.css").read_text()))
+		for spa in ("apps/oneapp", "apps/oneapp_control")
+	]
+	assert blocks[0] == blocks[1], "the two SPAs disagree about which arrows flip"
+
+
+def test_a_document_leaves_the_right_way_round():
+	"""The HTML export is opened where our stylesheet is not — somebody's word
+	processor, somebody's mail client — so it has to carry its own direction."""
+	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/docs/export.py").read_text()
+	assert 'dir="{direction}"' in source
+	assert "[dir=rtl] td" in source, "the exported table still aligns to the left"
+
+
+def test_the_two_lists_of_right_to_left_languages_agree():
+	"""One is Python and one is a browser bundle, so they cannot be shared —
+	which is exactly why they drift."""
+	import re as _re
+
+	def names(text):
+		return set(_re.findall(r"[\"']([a-z]{2,3})[\"']", text))
+
+	browser = (ROOT / "apps/oneapp/frontend/src/lib/runtime/translate.js").read_text()
+	server = (ROOT / "apps/oneapp/oneapp/oneapp_core/docs/export.py").read_text()
+	assert names(browser.split("RIGHT_TO_LEFT")[1].split("]")[0]) == names(
+		server.split("RIGHT_TO_LEFT")[1].split(")")[0]
+	)

@@ -25,9 +25,22 @@ from .body import _mine
 
 ROUTE = "/api/method/oneapp.oneapp_core.docs.download"
 
+#: The languages that run the other way. Frappe's own list, and the same one the
+#: SPA carries in `lib/runtime/translate.js` — kept here rather than imported
+#: from it because one is Python and one is a browser bundle.
+RIGHT_TO_LEFT = frozenset(
+    ("ar", "arc", "dv", "fa", "ha", "he", "ks", "ku", "ps", "ur", "yi")
+)
+
 #: Enough style that a printed document is not a wall of Times New Roman, and
 #: little enough that it survives being pasted into a mail client. Deliberately
 #: not our design tokens: this file is read where our stylesheet is not.
+#:
+#: The right-to-left rules are written out physically rather than as
+#: `padding-inline-start`, for the same reason. This file is opened by whatever
+#: the reader has — a word processor, a mail client, an old print engine — and
+#: an attribute selector is understood by all of them where a logical property
+#: is not.
 STYLE = """
 body { font: 15px/1.6 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
        color: #1f2933; max-width: 46rem; margin: 3rem auto; padding: 0 1.5rem; }
@@ -38,6 +51,9 @@ blockquote { margin: 1em 0; padding-left: 1em; border-left: 3px solid #d9dde2;
              color: #52606d; }
 img { max-width: 100%; }
 pre { background: #f5f7fa; padding: 12px; overflow-x: auto; }
+[dir=rtl] td, [dir=rtl] th { text-align: right; }
+[dir=rtl] blockquote { padding-left: 0; padding-right: 1em;
+                       border-left: 0; border-right: 3px solid #d9dde2; }
 """
 
 
@@ -62,8 +78,15 @@ def to_response(doc) -> None:
     title = doc.file_name or "document"
     html = body.load(doc.name)["html"]
 
+    # The language this was written in, and which way it runs. Without them an
+    # Arabic document exports as a left-to-right page: the words are right, the
+    # paragraphs start on the wrong side, and every table column is reversed.
+    lang = frappe.local.lang or "en"
+    direction = "rtl" if lang.split("-")[0] in RIGHT_TO_LEFT else "ltr"
+
     page = (
-        "<!doctype html>\n<html><head><meta charset=\"utf-8\">"
+        "<!doctype html>\n"
+        f'<html lang="{lang}" dir="{direction}"><head><meta charset="utf-8">'
         f"<title>{frappe.utils.escape_html(title)}</title>"
         f"<style>{STYLE}</style></head><body>{html}</body></html>"
     )

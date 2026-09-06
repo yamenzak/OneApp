@@ -208,7 +208,44 @@ Both faces are SIL Open Font Licence; the licence text ships beside the files in
 
 ---
 
-## 3. What must never happen
+## 3. Right to left
+
+`dir="rtl"` on `<html>`, set from the language before the app mounts, is most of
+it: text, flex order, scroll direction and every logical property turn round on
+their own. Three things it cannot do, and what we do instead.
+
+**A class that names a side.** `ml-2` is two units on the *left* in every
+language. Converted, and guarded — `tests/test_rtl.py` refuses a new one, and a
+genuinely physical direction says `rtl-ok` on the line and why.
+
+**A picture.** A chevron beside a collapsed section, an arrow that means Back:
+frappe-ui draws a lucide icon as a CSS mask on a class named after it, so one
+rule in `index.css` mirrors every cardinal one at once, and a new one is covered
+the moment it is used. The diagonals are deliberately left alone —
+`arrow-up-right` is the open-this-elsewhere mark, and it is also one of the
+icons a customer can pick for a value of their own.
+
+**A file that leaves.** The HTML export carries its own `lang` and `dir` and its
+own right-to-left rules, written out physically rather than as
+`padding-inline-start`, because it is opened by whatever the reader has.
+
+### What is not right yet
+
+Three surfaces draw themselves rather than being laid out, and none of them
+turns round:
+
+* the **spreadsheet grid**, whose columns run A, B, C from the left whichever
+  way the page does;
+* **charts** and the **Gantt**, whose axes and bars run the same way;
+* the **quoted block in a reply**, which keeps a physical `border-left` on
+  purpose — a mail client is not a browser, and logical properties are not
+  something they can all be relied on to know.
+
+None of these makes a screen unusable in Arabic, and each is a day of its own.
+
+---
+
+## 4. What must never happen
 
 * A string a customer can see that is not inside `__()` or `_()`.
 * A sentence assembled from fragments — `__('Delete') + ' ' + name` — because
@@ -217,8 +254,4 @@ Both faces are SIL Open Font Licence; the licence text ships beside the files in
   `===`.
 * A `.po` entry for a msgid nothing produces any more.
 * A physical direction in a class name — `ml-2`, `pr-3`, `text-left`,
-  `border-l`, `left-0`. Arabic runs the other way, and every one of these
-  pins a margin to the wrong side of the reader. Use the logical property:
-  `ms-`, `me-`, `ps-`, `pe-`, `text-start`, `text-end`, `border-s`, `start-0`.
-  A genuine physical direction — a chevron that must point right whichever way
-  the text runs — says so in a comment beside it.
+  `border-l`, `left-0`. Use the logical property; see §3.
