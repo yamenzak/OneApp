@@ -46,6 +46,7 @@
           v-for="kind in prefs.types"
           :key="kind.name"
           :label="kind.name"
+          :description="kind.about"
           :model-value="kind.email"
           @update:model-value="toggle(kind, $event)"
         />

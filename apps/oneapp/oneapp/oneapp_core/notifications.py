@@ -207,6 +207,24 @@ FOLLOW_TYPE = "Following"
 
 OUR_TYPES = (WORKSPACE_TYPE, FOLLOW_TYPE)
 
+#: Frappe's, and not this product's. Energy Points is the framework's
+#: gamification — points and leaderboards, awarded from the desk — and OneSpace
+#: has no surface that awards one, so nothing ever sends this notification. The
+#: switch was offered anyway, under the framework's own name, which is a control
+#: that does nothing labelled in a vocabulary the customer has never met.
+NOT_OURS = {"Energy Point"}
+
+#: What each type is, in the reader's words rather than the framework's. A row
+#: of bare nouns — "Assignment", "Mention", "Share" — is legible to whoever
+#: built it and a guess for everybody else.
+ABOUT = {
+	"Assignment": "When somebody gives you a record to deal with.",
+	"Mention": "When somebody writes your name in a comment.",
+	"Share": "When somebody shares a record or a file with you.",
+	WORKSPACE_TYPE: "Payments, quotas and anything about the account itself.",
+	FOLLOW_TYPE: "Changes to a record you are following.",
+}
+
 
 def install_types():
 	"""Our Notification Types. From `after_install` and `after_migrate`."""
@@ -267,11 +285,11 @@ def preferences() -> dict:
 		# types` never does — something else owns its email — and a switch that
 		# changes nothing is a switch somebody flips once and stops trusting.
 		"types": [
-			{"name": name, "email": name in wanted}
+			{"name": name, "email": name in wanted, "about": ABOUT.get(name, "")}
 			for name in frappe.get_all(
 				"Notification Type", filters={"enabled": 1}, pluck="name", order_by="name asc"
 			)
-			if name not in skip
+			if name not in skip and name not in NOT_OURS
 		],
 	}
 
