@@ -61,14 +61,11 @@ def sweep():
 def _warn(row, now: str, today: str) -> int:
 	"""One notification per person who should know, through the framework's own.
 
-	`enqueue_create_notification` is what applies each person's settings, skips
-	the actor and dedupes — the same producer an assignment goes through, so a
-	licence warning lands in the same panel with the same read state.
+	`notifications.notify` is the framework's producer with the registry in
+	front of it: each person's settings applied, the actor skipped, dedupe done
+	— and the kind checked, so "Expiring" is a switch somebody can turn off
+	rather than a notification that arrives whatever they set.
 	"""
-	from frappe.desk.doctype.notification_log.notification_log import (
-		enqueue_create_notification,
-	)
-
 	from oneapp.oneapp_core import notifications
 
 	people = set(notifications._followers("Compliance Document", row.name))
@@ -88,8 +85,7 @@ def _warn(row, now: str, today: str) -> int:
 		else f"{row.title} expires in {days} days"
 	)
 
-	enqueue_create_notification(sorted(people), {
-		"type": notifications.WORKSPACE_TYPE,
+	notifications.notify(notifications.EXPIRY_TYPE, people, {
 		"document_type": "Compliance Document",
 		"document_name": row.name,
 		"subject": said,

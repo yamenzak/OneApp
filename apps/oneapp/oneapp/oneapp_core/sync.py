@@ -365,11 +365,7 @@ def sync_notices(notices: list, owner_role: str | None) -> int:
 	if not notices:
 		return 0
 
-	from frappe.desk.doctype.notification_log.notification_log import (
-		enqueue_create_notification,
-	)
-
-	from oneapp.oneapp_core.notifications import WORKSPACE_TYPE
+	from oneapp.oneapp_core import notifications
 
 	owners = _owners(owner_role)
 	written = 0
@@ -378,15 +374,15 @@ def sync_notices(notices: list, owner_role: str | None) -> int:
 		if not key:
 			continue
 		if owners:
-			# Frappe's own producer entry point, so a workspace notice is
-			# emailed, deduplicated and swept by exactly the same rules an
-			# assignment is. `dedupe_on` guards the one case the watermark
+			# Through the registry, so it is emailed, deduplicated and swept by
+			# exactly the same rules an assignment is — and so the kind it is
+			# sent as is one the settings panel offers. `dedupe_on` guards the one case the watermark
 			# cannot: a sync that wrote the rows and then failed before saving
 			# where it got to.
-			enqueue_create_notification(
+			notifications.notify(
+				notifications.WORKSPACE_TYPE,
 				owners,
 				{
-					"type": WORKSPACE_TYPE,
 					"title": notice.get("title") or "",
 					"description": notice.get("body") or "",
 					"from_user": None,

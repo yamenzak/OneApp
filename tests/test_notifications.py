@@ -431,3 +431,76 @@ def test_a_save_nobody_is_following_costs_one_query(notifications, stub_frappe, 
 	)
 
 	assert asked == ["Document Follow"]
+
+
+# --------------------------------------------------------------------------- #
+# The registry
+#
+# The panel and the senders used to be two lists. A `Notification Type` row was
+# enough to be sent, and being offered as a switch was a separate matter — so
+# the panel showed "Energy Point", the framework's gamification, which nothing
+# here awards, and a new sender inventing a type would have shipped a
+# notification nobody could turn off. `KINDS` is the one list; these hold both
+# ends of it.
+# --------------------------------------------------------------------------- #
+
+def test_every_kind_says_what_it_is(notifications):
+	"""A bare noun is legible to whoever wrote it and a guess to everybody else."""
+	for name, spec in notifications.KINDS.items():
+		assert spec["about"], f"{name} is declared with nothing to say about it"
+		assert spec["about"].endswith("."), f"{name}: {spec['about']}"
+
+
+def test_an_undeclared_kind_cannot_be_sent(notifications, monkeypatch):
+	"""The point of the registry.
+
+	A sender that invents a type gets a loud failure here rather than a
+	notification arriving in a panel that offers no way to stop it.
+	"""
+	sent = []
+	monkeypatch.setattr(notifications, "declared", lambda: dict(notifications.KINDS))
+
+	with pytest.raises(Exception):
+		notifications.notify("Made Up", ["ada@example.com"], {"subject": "hello"})
+	assert not sent
+
+
+def test_a_declared_kind_goes_through_the_frameworks_producer(notifications, monkeypatch):
+	"""And carries its own type, so the person's own switch decides the email."""
+	sent = {}
+
+	def fake(people, message, **kw):
+		sent["people"], sent["message"], sent["kw"] = people, message, kw
+
+	# By module object rather than by dotted path: the stub registers
+	# `frappe.desk.doctype...` in `sys.modules` without hanging it off
+	# `frappe.desk` as an attribute, which is what the string form walks.
+	module = sys.modules["frappe.desk.doctype.notification_log.notification_log"]
+	monkeypatch.setattr(module, "enqueue_create_notification", fake, raising=False)
+
+	count = notifications.notify(
+		notifications.EXPIRY_TYPE, ["b@x.test", "a@x.test", ""], {"subject": "soon"})
+
+	assert count == 2
+	assert sent["people"] == ["a@x.test", "b@x.test"]
+	assert sent["message"]["type"] == notifications.EXPIRY_TYPE
+
+
+def test_a_sender_outside_this_module_goes_through_the_registry():
+	"""Nothing else may reach the framework's producer directly.
+
+	That is the only way the registry can promise that everything sent has a
+	switch: one door, checked. Two modules used to call it themselves, and one
+	of them sent a licence expiry as a workspace notice — so somebody who
+	wanted to hear about a failed card had to hear about certificates too.
+	"""
+	import pathlib
+
+	root = pathlib.Path(__file__).resolve().parent.parent / "apps/oneapp/oneapp"
+	guilty = [
+		str(path.relative_to(root))
+		for path in root.rglob("*.py")
+		if path.name != "notifications.py"
+		and "enqueue_create_notification(" in path.read_text(errors="ignore")
+	]
+	assert not guilty, f"these send without declaring a kind: {guilty}"

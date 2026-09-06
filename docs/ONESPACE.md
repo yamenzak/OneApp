@@ -1010,6 +1010,19 @@ notices ride the sync that already runs every fifteen minutes, keyed so a
 re-drain cannot duplicate. The honest cost: a billing notice can be up to
 fifteen minutes late in-app. The email is immediate.
 
+**Every kind is declared where it is sent.** `notifications.KINDS` is one list
+— `kind("Expiring", "A document whose expiry date is coming up.")` — and three
+things read it: `install_types` creates the `Notification Type` rows,
+`notify()` refuses to send a kind nobody declared, and the Notifications panel
+is the registry joined with what the framework will actually email. So writing
+a new notification and giving somebody a switch to turn it off are one act
+rather than two. It fixes both directions of the old gap: the panel offered
+"Energy Point", the framework's gamification, which no surface here awards; and
+a licence expiry was sent as a workspace notice, so anybody who wanted to hear
+about a failed card also heard about certificates. An installed app adds its
+own kinds through `onespace_notification_kinds`, the shape the settings-groups
+hook already uses.
+
 Push is a seam (`push.send`) and not a feature. It stays that way until the
 EU-jurisdiction question is settled — Web Push with VAPID keys we own is the
 answer when it is.

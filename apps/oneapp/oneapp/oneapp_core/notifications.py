@@ -196,44 +196,117 @@ def _shaped(row: dict, people: dict, routes: dict) -> dict:
 # anything.
 # --------------------------------------------------------------------------- #
 
+#: Every kind of notification this product sends, declared where it is sent.
+#:
+#: The registry exists because the panel and the senders were two lists. A
+#: `Notification Type` row was enough to be *sent*, and appearing in the panel
+#: was a separate matter — so the panel offered "Energy Point", the framework's
+#: gamification, which nothing here awards, while a new sender inventing a type
+#: of its own would have shipped a notification nobody could turn off.
+#:
+#: One list instead. `kind()` declares a name and what it is in the reader's
+#: words; `notify()` refuses to send anything undeclared; `install_types`
+#: creates the rows; and the panel is this registry joined with what the
+#: framework will actually email. Declaring is the whole of what a new sender
+#: does to become a switch somebody can turn off.
+KINDS: dict[str, dict] = {}
+
+
+def kind(name: str, about: str, *, ours: bool = True) -> str:
+	"""Declare a notification kind, and hand back its name to send with."""
+	KINDS[name] = {"name": name, "about": about, "ours": ours}
+	return name
+
+
+# The framework's own three. Declared rather than installed: Frappe creates the
+# rows and produces the notifications — an assignment through `assign_to.add`,
+# a mention through `Comment.after_insert` — and what is added here is the
+# sentence, because a switch labelled with a bare noun is legible to whoever
+# built it and a guess for everybody else.
+ASSIGNMENT_TYPE = kind(
+	"Assignment", "When somebody gives you a record to deal with.", ours=False)
+MENTION_TYPE = kind(
+	"Mention", "When somebody writes your name in a comment.", ours=False)
+SHARE_TYPE = kind(
+	"Share", "When somebody shares a record or a file with you.", ours=False)
+
 # What the workspace itself has to say: a payment that failed, a quota reached,
-# a backup restored. Not a record somebody touched — the other four types are
-# all about a document, and this one is about the account the documents live in.
-WORKSPACE_TYPE = "Workspace"
+# a backup restored. Not a record somebody touched — the others are all about a
+# document, and this one is about the account the documents live in.
+WORKSPACE_TYPE = kind(
+	"Workspace", "Payments, quotas and anything about the account itself.")
 
 # What a document you follow has to say. Frappe has no type for this because
 # Frappe never notifies a follower in-app — see the Following section below.
-FOLLOW_TYPE = "Following"
+FOLLOW_TYPE = kind("Following", "Changes to a record you are following.")
 
-OUR_TYPES = (WORKSPACE_TYPE, FOLLOW_TYPE)
+# A date on a record running out. Its own kind rather than the workspace notice
+# it used to be sent as: somebody who wants to know about an expiring insurance
+# certificate does not necessarily want to know about a failed card, and one
+# switch for both is a switch neither of them can use.
+EXPIRY_TYPE = kind("Expiring", "A document whose expiry date is coming up.")
 
-#: Frappe's, and not this product's. Energy Points is the framework's
-#: gamification — points and leaderboards, awarded from the desk — and OneSpace
-#: has no surface that awards one, so nothing ever sends this notification. The
-#: switch was offered anyway, under the framework's own name, which is a control
-#: that does nothing labelled in a vocabulary the customer has never met.
-NOT_OURS = {"Energy Point"}
 
-#: What each type is, in the reader's words rather than the framework's. A row
-#: of bare nouns — "Assignment", "Mention", "Share" — is legible to whoever
-#: built it and a guess for everybody else.
-ABOUT = {
-	"Assignment": "When somebody gives you a record to deal with.",
-	"Mention": "When somebody writes your name in a comment.",
-	"Share": "When somebody shares a record or a file with you.",
-	WORKSPACE_TYPE: "Payments, quotas and anything about the account itself.",
-	FOLLOW_TYPE: "Changes to a record you are following.",
-}
+def declared() -> dict[str, dict]:
+	"""Every kind, ours and any an installed app adds.
+
+	`onespace_notification_kinds` is the shape the settings-groups hook already
+	uses: a method returning `{name, about}` entries. An app that notifies gets
+	a switch in the same panel without this module knowing it exists.
+	"""
+	found = dict(KINDS)
+	for method in frappe.get_hooks("onespace_notification_kinds") or []:
+		try:
+			for one in frappe.get_attr(method)() or []:
+				name = (one.get("name") or "").strip()
+				if name:
+					found[name] = {
+						"name": name, "about": one.get("about") or "", "ours": True}
+		except Exception:
+			# An app whose hook throws must not take the panel with it: the
+			# rest of the list is still true.
+			frappe.log_error(title=f"Notification kinds from {method} failed")
+	return found
 
 
 def install_types():
 	"""Our Notification Types. From `after_install` and `after_migrate`."""
-	for name in OUR_TYPES:
-		if frappe.db.exists("Notification Type", name):
+	for name, spec in declared().items():
+		if not spec["ours"] or frappe.db.exists("Notification Type", name):
 			continue
 		frappe.get_doc(
 			{"doctype": "Notification Type", "type_name": name, "enabled": 1}
 		).insert(ignore_permissions=True)
+
+
+def notify(kind_name: str, users, message: dict, dedupe_on: list | None = None) -> int:
+	"""Send one, through the framework's own producer.
+
+	Everything this product sends goes through here, for two reasons.
+	`enqueue_create_notification` is what applies each person's settings, skips
+	the actor, dedupes and fans out — so a followed document, a licence about to
+	expire and an assignment land in one panel with one read state. And the kind
+	is checked against the registry, so a sender cannot invent a type that has
+	no switch: the failure is loud here rather than silent in a settings panel
+	that never mentions it.
+	"""
+	from frappe.desk.doctype.notification_log.notification_log import (
+		enqueue_create_notification,
+	)
+
+	if kind_name not in declared():
+		frappe.throw(_("{0} is not a declared notification kind.").format(kind_name))
+
+	people = sorted({one for one in (users or []) if one})
+	if not people:
+		return 0
+
+	enqueue_create_notification(
+		people,
+		{**message, "type": kind_name},
+		**({"dedupe_on": dedupe_on} if dedupe_on else {}),
+	)
+	return len(people)
 
 
 # --------------------------------------------------------------------------- #
@@ -275,6 +348,11 @@ def preferences() -> dict:
 	from frappe.desk.doctype.notification_log.notification_log import get_skip_email_types
 
 	doc = _settings()
+	# Declared, enabled and able to email. An allow-list rather than a
+	# deny-list: a `Notification Type` row nothing declares is one nothing here
+	# sends, and a switch that can never do anything is one somebody flips once
+	# and then stops trusting the rest of the panel.
+	known = declared()
 	wanted = {row.notification_type for row in doc.email_notification_types}
 	skip = get_skip_email_types()
 
@@ -285,11 +363,11 @@ def preferences() -> dict:
 		# types` never does — something else owns its email — and a switch that
 		# changes nothing is a switch somebody flips once and stops trusting.
 		"types": [
-			{"name": name, "email": name in wanted, "about": ABOUT.get(name, "")}
+			{"name": name, "email": name in wanted, "about": known[name]["about"]}
 			for name in frappe.get_all(
 				"Notification Type", filters={"enabled": 1}, pluck="name", order_by="name asc"
 			)
-			if name not in skip and name not in NOT_OURS
+			if name not in skip and name in known
 		],
 	}
 
@@ -507,27 +585,14 @@ def notify_followers(doctype: str, name: str, said: str, body: str = "", exclude
 	using it is the reason a followed-document notification lands in the same
 	panel, with the same read state and the same counts, as an assignment.
 	"""
-	from frappe.desk.doctype.notification_log.notification_log import (
-		enqueue_create_notification,
-	)
-
 	actor = frappe.session.user
-	recipients = _followers(doctype, name, exclude=[*exclude, actor])
-	if not recipients:
-		return 0
-
-	enqueue_create_notification(
-		recipients,
-		{
-			"type": FOLLOW_TYPE,
-			"document_type": doctype,
-			"document_name": str(name),
-			"subject": said,
-			"email_content": body or said,
-			"from_user": actor,
-		},
-	)
-	return len(recipients)
+	return notify(FOLLOW_TYPE, _followers(doctype, name, exclude=[*exclude, actor]), {
+		"document_type": doctype,
+		"document_name": str(name),
+		"subject": said,
+		"email_content": body or said,
+		"from_user": actor,
+	})
 
 
 # --- the two things that happen to a document -------------------------------
