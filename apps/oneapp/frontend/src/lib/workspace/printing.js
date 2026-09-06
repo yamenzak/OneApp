@@ -128,6 +128,13 @@ export const printing = {
   letterHeads: () =>
     callMethod('oneapp.oneapp_core.workspace.letter_heads', {}, { silent: true, method: 'GET' }),
 
+  setDefaultLetterHead: (name) =>
+    callMethod(
+      'oneapp.oneapp_core.workspace.set_default_letter_head',
+      { name },
+      { successMessage: 'Default set' },
+    ),
+
   letterHead: (name) =>
     callMethod(
       'oneapp.oneapp_core.workspace.letter_head',

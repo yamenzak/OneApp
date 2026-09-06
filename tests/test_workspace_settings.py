@@ -305,6 +305,21 @@ def test_books_refuses_to_run_twice():
 	assert '"skipped": "already set up"' in body
 
 
+def test_letter_heads_are_the_ones_a_document_can_carry():
+	"""Frappe keeps a default letter head *per kind* — `on_update` clears the
+	flag only within `letter_head_for` — and the other kind is Report, which is
+	a desk surface this product does not have. Listing both put two "Default"
+	badges in one list where one of them meant nothing here."""
+	printing = ROOT / "apps/oneapp/oneapp/oneapp_core/printing.py"
+	body = function(printing, "letter_heads")
+	assert '"letter_head_for": DOCUMENTS' in body
+
+	setter = function(printing, "set_default_letter_head")
+	assert "letter_head_for != DOCUMENTS" in setter, (
+		"a report's letter head must not be settable from a list of documents'"
+	)
+
+
 def test_a_workspace_holds_exactly_one_company():
 	"""A branch that wants its own ledger is its own workspace, on its own
 	subscription — see docs/WORKSPACE-SETTINGS.md, One company per workspace.

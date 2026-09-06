@@ -99,6 +99,16 @@
           >
             <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-8">{{ one.name }}</span>
             <Badge v-if="one.default" label="Default" theme="blue" variant="subtle" />
+            <!-- The same one-click the formats list above offers. It was a
+                 switch three clicks into the editor, on the half of this
+                 feature that Printing's own "Print with the letter head"
+                 depends on. -->
+            <Button
+              v-else
+              label="Make default"
+              :loading="working === one.name"
+              @click="makeHeadDefault(one)"
+            />
             <Button
               icon="lucide-pencil"
               label="Edit this letter head"
@@ -115,7 +125,23 @@
           </li>
         </ul>
 
-        <p v-else class="text-p-xs text-ink-gray-5">
+        <!--
+          The one way these two halves disagree, said out loud. `with_letterhead`
+          is a switch on the Printing tab and the letter head it uses is the one
+          flagged default here; ERPNext ships three and flags none, so a
+          workspace can have the switch on, three letter heads, and a blank band
+          at the top of every page.
+        -->
+        <p
+          v-if="letterHeads.length && withLetterhead && !letterHeads.some((one) => one.default)"
+          class="text-p-xs text-ink-amber-3"
+          data-slot="no-default-letter-head"
+        >
+          Printing with a letter head is on under Printing, but none of these is
+          the default — so nothing is added to the page. Make one default.
+        </p>
+
+        <p v-if="!letterHeads.length" class="text-p-xs text-ink-gray-5">
           None yet. A letter head is the band above and below every printed
           page — a logo, an address, a footer — and one format can use another's.
         </p>
@@ -159,6 +185,7 @@ const doctypes = ref([])
 const doctype = ref('')
 const formats = ref([])
 const letterHeads = ref([])
+const withLetterhead = ref(false)
 
 const loading = ref(false)
 const working = ref('')
@@ -178,6 +205,7 @@ const load = async () => {
     doctype.value = found.doctype || ''
     formats.value = found.formats || []
     letterHeads.value = found.letter_heads || []
+    withLetterhead.value = Boolean(found.with_letterhead)
   } catch (raised) {
     error.value = errorText(raised)
   } finally {
@@ -206,6 +234,18 @@ const makeDefault = async (one) => {
   error.value = ''
   try {
     formats.value = await workspace.setDefaultPrintFormat(doctype.value, one.name)
+  } catch (raised) {
+    error.value = errorText(raised)
+  } finally {
+    working.value = ''
+  }
+}
+
+const makeHeadDefault = async (one) => {
+  working.value = one.name
+  error.value = ''
+  try {
+    letterHeads.value = await workspace.setDefaultLetterHead(one.name)
   } catch (raised) {
     error.value = errorText(raised)
   } finally {

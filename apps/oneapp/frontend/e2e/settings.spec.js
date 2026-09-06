@@ -226,3 +226,52 @@ test('the custom page sizes belong to Custom', async ({ page, baseURL }) => {
   await page.getByRole('option', { name: 'A4', exact: true }).click()
   await expect(page.getByText('Custom width (mm)')).toBeHidden()
 })
+
+// The letter head the Printing tab's "Print with the letter head" actually
+// uses. It was settable only from a switch three clicks inside the editor,
+// while the formats list directly above offered a one-click Make default —
+// and ERPNext ships three letter heads and flags none, so a workspace could
+// have the switch on and a blank band at the top of every page.
+test('a letter head is made the default from the list, and it sticks', async ({
+  page,
+  baseURL,
+}) => {
+  await signIn(page, baseURL)
+  const open = async () => {
+    await page.goto('/one/')
+    await page.locator('[data-slot="settings-link"]').click()
+    await page.locator('[data-slot="settings-tab-print-formats"]').click()
+    await page.locator('[data-slot="letter-head"]').first().waitFor()
+  }
+  await open()
+
+  // Whichever is not the default today — the fixture keeps whatever the last
+  // run left, so the test may not assume which one that is.
+  const other = page
+    .locator('[data-slot="letter-head"]')
+    .filter({ has: page.getByRole('button', { name: 'Make default' }) })
+    .last()
+  const name = (await other.locator('span').first().innerText()).trim()
+
+  // Anchored: ERPNext's three ship as "Company Letterhead", "… - Grey" and
+  // "… Report", so the first is a prefix of the other two.
+  const exactly = (one) => new RegExp(`^${one.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`)
+  const heads = page.locator('[data-slot="letter-head"]')
+
+  await other.getByRole('button', { name: 'Make default' }).click()
+  const row = heads.filter({ has: page.getByText(exactly(name)) })
+  await expect(row.getByText('Default', { exact: true })).toBeVisible()
+
+  // Exactly one *letter head* is the default — the formats list above carries
+  // a Default badge of its own, so this is scoped to these rows. Frappe's own
+  // `on_update` clears the others, and two defaults is a letter head nobody
+  // can predict.
+  await expect(heads.getByText('Default', { exact: true })).toHaveCount(1)
+
+  // And it survives a reload, which is the half a local `ref` would fake.
+  await open()
+  await expect(
+    heads.filter({ has: page.getByText(exactly(name)) })
+      .getByText('Default', { exact: true }),
+  ).toBeVisible()
+})

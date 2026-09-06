@@ -916,6 +916,12 @@ def print_formats(doctype: str = "") -> dict:
 		"doctype": doctype,
 		"formats": printing.formats(doctype) if doctype else [],
 		"letter_heads": printing.letter_heads(),
+		# So the panel can say the one thing the two halves of this feature can
+		# disagree about: printing with a letter head is on, and none of the
+		# letter heads is the default, so nothing is added to the page.
+		"with_letterhead": bool(
+			frappe.db.get_single_value("Print Settings", "with_letterhead")
+		),
 	}
 
 
@@ -1006,6 +1012,15 @@ def save_letter_head(label: str, values=None, name: str = "") -> dict:
 	_printing_gate()
 	values = frappe.parse_json(values) if isinstance(values, str) else (values or {})
 	return printing.save_letter_head(label, values, name)
+
+
+@frappe.whitelist(methods=["POST"])
+def set_default_letter_head(name: str) -> list[dict]:
+	"""Make one the workspace's letter head."""
+	from oneapp.oneapp_core import printing
+
+	_printing_gate()
+	return printing.set_default_letter_head(name)
 
 
 @frappe.whitelist(methods=["POST"])

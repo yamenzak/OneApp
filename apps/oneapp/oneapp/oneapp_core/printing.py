@@ -89,17 +89,47 @@ def formats(doctype: str) -> list[dict]:
 	return found
 
 
+#: Frappe's letter heads come in two kinds and keep a default *per kind* —
+#: `Letter Head.on_update` only clears the flag on its own kind's siblings. The
+#: other kind is Report, which is a desk surface this product does not have, so
+#: listing both put two "Default" badges in one list where one of them meant
+#: nothing here, and "Make default" on the wrong row set a default for a report
+#: nobody can print.
+DOCUMENTS = "DocType"
+
+
 def letter_heads() -> list[dict]:
-	"""Every letter head on the workspace, and which one is the default."""
+	"""Every letter head a printed *document* can carry, and which is default."""
 	return [
 		{"name": row["name"], "default": bool(row["is_default"])}
 		for row in frappe.get_all(
 			"Letter Head",
-			filters={"disabled": 0},
+			filters={"disabled": 0, "letter_head_for": DOCUMENTS},
 			fields=["name", "is_default"],
 			order_by="is_default desc, name asc",
 		)
 	]
+
+
+def set_default_letter_head(name: str) -> list[dict]:
+	"""Make one the workspace's letter head, and give the list back.
+
+	Through the document rather than the column, because `Letter Head.on_update`
+	is what clears the flag on the others — set with `db_set` there would be two
+	defaults and Frappe would pick whichever it read first.
+	"""
+	doc = frappe.get_doc("Letter Head", name)
+	if doc.disabled:
+		frappe.throw(_("A disabled letter head cannot be the default one."))
+	if doc.letter_head_for != DOCUMENTS:
+		# Not reachable from the panel, which lists only document letter heads.
+		# Refused rather than allowed, because setting it would move a default
+		# for reports — a surface this product does not have — while the person
+		# who asked was looking at a list of printed documents.
+		frappe.throw(_("That letter head is not one a document can be printed with."))
+	doc.is_default = 1
+	doc.save(ignore_permissions=True)
+	return letter_heads()
 
 
 def settings() -> dict:
@@ -841,6 +871,9 @@ def save_letter_head(label: str, values: dict, name: str = "") -> dict:
 		doc = frappe.new_doc("Letter Head")
 		doc.letter_head_name = label
 
+	# Ours are for documents. The field defaults to this, but a letter head that
+	# arrived any other way should not silently become a report's.
+	doc.letter_head_for = DOCUMENTS
 	doc.source = "HTML"
 	doc.content = str(values.get("content") or "")[:LETTER_HEAD_HTML]
 	doc.footer = str(values.get("footer") or "")[:LETTER_HEAD_HTML]

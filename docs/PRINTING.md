@@ -204,3 +204,21 @@ are the same kind of thing, and look it.
   says so.
 * **Raw printing.** Escape/POS commands, for label printers. The store is there
   and nothing in the product reaches it.
+
+## Letter heads come in two kinds
+
+`Letter Head.letter_head_for` is `DocType` or `Report`, and Frappe keeps one
+default **per kind** — `on_update` clears the flag only on siblings of the same
+kind. The Print formats panel lists documents' only, because Report letter
+heads belong to the desk's report printing, which this product does not have.
+
+Listing both was the bug: ERPNext ships three, one of them a Report one, so the
+panel showed two rows badged Default with nothing to say they meant different
+things, and "Make default" on the report row moved a default nobody here can
+use. `set_default_letter_head` refuses one for that reason, and
+`save_letter_head` stamps `DocType` so a letter head made here is a document's.
+
+Which one a print actually carries is the pair of `Print Settings.with_letterhead`
+(on the Printing tab) and the default flagged here. They can disagree — the
+switch on, no default set, and a blank band on every page — so the panel says so
+when they do.
