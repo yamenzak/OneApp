@@ -110,13 +110,20 @@ def _require_mine_or_admin(account: str):
 
 @frappe.whitelist(methods=["POST"])
 def connect(email_id: str, password: str, email_server: str = "", smtp_server: str = "",
-            label: str = "") -> dict:
-	"""Attach a mailbox to the person asking.
+            label: str = "", grant_to: str | list | None = None) -> dict:
+	"""Attach a mailbox, to the person asking or to a team.
 
-	Granted to the caller and nobody else. A mailbox somebody connected with
-	their own password is theirs; an admin who wanted the workspace to have it
-	would be asking for a shared address, which is a different thing on a
-	different screen and does not involve anybody's personal credentials.
+	Two cases, and the second is the one that was missing. A mailbox somebody
+	connects with their own password is theirs and nobody else's — that is the
+	default, and `grant_to` empty is what it looks like.
+
+	`grant_to` is an admin's, and it is how `sales@thecompany.com` becomes a
+	shared mailbox: one set of credentials, several people reading it. Frappe's
+	own IMAP sync writes the `Communication`, `inbound.share_with_holders` makes
+	it readable by everyone on the account, and the address is granted the same
+	way an address on our own domain is. Without it a workspace could grant
+	sending as `sales@` to three people and reading it to one, which is not what
+	anybody means by a shared mailbox.
 	"""
 	email_id = (email_id or "").strip().lower()
 	if "@" not in email_id:
@@ -191,14 +198,35 @@ def connect(email_id: str, password: str, email_server: str = "", smtp_server: s
 	# that refuses to connect because the folder listing timed out is not.
 	found = _mirror(account)
 
-	person = frappe.get_doc("User", frappe.session.user)
-	person.append(
-		"user_emails",
-		{"email_account": account.name, "email_id": email_id, "enable_outgoing": 1},
-	)
-	person.save(ignore_permissions=True)
+	wanted = _holders(grant_to)
+	for user in wanted:
+		addresses.hold(account.name, user)
 
-	return {"ok": True, "name": account.name, "email_id": email_id, "folders": found}
+	return {
+		"ok": True, "name": account.name, "email_id": email_id, "folders": found,
+		"granted_to": wanted,
+	}
+
+
+def _holders(grant_to) -> list[str]:
+	"""Who ends up holding this mailbox.
+
+	The caller alone unless an admin named others — and naming others is an
+	admin's call because it is a decision about somebody else's access to
+	somebody's mail, not about a password.
+	"""
+	if not grant_to:
+		return [frappe.session.user]
+
+	if set(frappe.get_roles()) & {OWNER_ROLE, SUPPORT_ROLE}:
+		if isinstance(grant_to, str):
+			grant_to = frappe.parse_json(grant_to) if grant_to.startswith("[") else [grant_to]
+		return list(dict.fromkeys([frappe.session.user, *[one for one in grant_to if one]]))
+
+	frappe.throw(
+		_("Only a workspace admin can connect a mailbox for other people."),
+		frappe.PermissionError,
+	)
 
 
 def _mirror(account) -> int:

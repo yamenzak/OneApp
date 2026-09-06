@@ -162,6 +162,64 @@ def _share(communication: str, user: str):
 		frappe.log_error(title="Inbound share failed", message=frappe.get_traceback())
 
 
+# --------------------------------------------------------------------------- #
+# A shared mailbox has a shared inbox
+#
+# The worker path above shares what it writes, because it knows the account it
+# wrote it for. Nothing did that for the other two paths, and both matter:
+#
+#   * **A connected mailbox synced over IMAP.** Frappe's own `receive` writes
+#     the Communication, so an admin who connects the team's `sales@` and grants
+#     it to three people gave them an address they could send from and an inbox
+#     only the connector could read.
+#   * **Anything sent from a shared address.** The team's sent mail was one
+#     person's, for the same reason — a `Communication` is an ordinary document
+#     and nobody had shared it.
+#
+# So it is a hook on the document rather than a third copy of this logic: every
+# email `Communication`, on insert, is readable by whoever holds the address it
+# is on. `DocShare` is the framework's own answer and the one the timeline, the
+# search and the list already respect.
+# --------------------------------------------------------------------------- #
+
+def share_with_holders(doc, method=None):
+	"""Let everybody who holds this address read this message."""
+	if (doc.communication_medium or "") != "Email":
+		return
+
+	account = _account_for(doc)
+	if not account:
+		return
+
+	for user in frappe.get_all(
+		"User Email", filters={"email_account": account}, pluck="parent", distinct=True
+	):
+		if user != doc.owner:
+			_share(doc.name, user)
+
+
+def _account_for(doc) -> str:
+	"""Which `Email Account` a message belongs to.
+
+	`email_account` where the framework set it — which is every message it
+	receives over IMAP and every one it queues for sending. Where it did not,
+	the address itself: our own composer writes the sender and leaves the
+	account alone, and a message sent as `sales@` is the shared mailbox's
+	whether or not a field says so.
+	"""
+	if doc.get("email_account"):
+		return doc.email_account
+
+	side = doc.sender if (doc.sent_or_received or "") == "Sent" else doc.recipients
+	for one in (side or "").replace(";", ",").split(","):
+		address = one.strip().lower()
+		if "@" not in address:
+			continue
+		if found := frappe.db.get_value("Email Account", {"email_id": address}, "name"):
+			return found
+	return ""
+
+
 def _communication(payload: dict, reference_doctype=None, reference_name=None) -> str:
 	doc = frappe.get_doc(
 		{

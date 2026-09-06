@@ -193,6 +193,45 @@
         — and a regulated one wants no, because a connected mailbox brings
         private mail into a workspace their colleagues hold addresses in.
       -->
+      <!--
+        A mailbox the team shares. One set of credentials, several people
+        reading it: `sales@thecompany.com` on their own server, granted the way
+        an address on our domain is. Without this a workspace could grant
+        sending as `sales@` to three people and reading it to one, which is not
+        what anybody means by a shared mailbox.
+      -->
+      <section v-if="canManage" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
+        <h3 class="text-base-medium text-ink-gray-8">A mailbox the team shares</h3>
+        <p class="text-p-sm text-ink-gray-5">
+          Connect one the company already has, then grant it below like any
+          other address. Everyone who holds it reads the same inbox — and the
+          same sent mail.
+        </p>
+        <div class="flex flex-wrap items-end gap-2">
+          <FormControl
+            v-model="team.email_id"
+            class="flex-1"
+            label="Mailbox address"
+            placeholder="sales@yourcompany.com"
+          />
+          <FormControl
+            v-model="team.password"
+            class="flex-1"
+            type="password"
+            label="Password"
+            description="An app password where the provider needs one."
+          />
+          <Button
+            variant="solid"
+            label="Connect"
+            data-slot="mail-connect-shared"
+            :loading="connecting"
+            @click="connectShared"
+          />
+        </div>
+        <ErrorMessage v-if="teamError" :message="teamError" />
+      </section>
+
       <section v-if="canManage" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
         <h3 class="text-base-medium text-ink-gray-8">Outside mailboxes</h3>
         <p class="text-p-sm text-ink-gray-5">
@@ -282,6 +321,10 @@ const loading = ref(true)
 const saving = ref(false)
 const policy = ref({ mode: 'any', domains: [] })
 
+const team = ref({ email_id: '', password: '' })
+const connecting = ref(false)
+const teamError = ref('')
+
 const checking = ref('')
 const checkingNow = ref(false)
 const confirming = ref(false)
@@ -310,6 +353,25 @@ const sendingFrom = computed(() => {
   if (chosen) return chosen.email_id
   return usage.value.sender || 'the platform address'
 })
+
+async function connectShared() {
+  teamError.value = ''
+  connecting.value = true
+  try {
+    // Granted to the admin doing it, and then to whoever else through the
+    // list above — the same grant an address on our own domain gets.
+    await workspace.mailConnect({
+      email_id: team.value.email_id.trim().toLowerCase(),
+      password: team.value.password,
+    })
+    team.value = { email_id: '', password: '' }
+    await load()
+  } catch (e) {
+    teamError.value = e.message || String(e)
+  } finally {
+    connecting.value = false
+  }
+}
 
 async function checkDomain() {
   checkingNow.value = true

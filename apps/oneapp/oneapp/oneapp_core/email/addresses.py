@@ -435,7 +435,7 @@ def claim(local_part: str = "") -> dict:
 		frappe.throw(_("{0} is taken.").format(email_id))
 
 	account = _mint(local_part, label=frappe.session.user)
-	_grant(account.name, frappe.session.user)
+	hold(account.name, frappe.session.user)
 	return _as_row(frappe.get_doc("Email Account", account.name))
 
 
@@ -533,16 +533,17 @@ def remove(name: str) -> dict:
 def grant(name: str, user: str) -> dict:
 	"""Give somebody an address. Idempotent — granting twice is granting once."""
 	_require_admin()
-	return _grant(name, user)
+	return hold(name, user)
 
 
-def _grant(name: str, user: str) -> dict:
+def hold(name: str, user: str) -> dict:
 	"""The row write, without the role check.
 
-	Private, and it matters that it is: `claim` is the one grant that is not an
-	admin's decision, and the honest way to say so is a second entry point
-	rather than a flag on the whitelisted one — a keyword argument that relaxes
-	a permission check is a keyword argument a browser can send.
+	Not whitelisted, and it matters that it is not: `claim` and `connect` are
+	the two grants that are not an admin's decision — your own address, and a
+	mailbox you have the password to — and the honest way to say so is a second
+	entry point rather than a flag on `grant`. A keyword argument that relaxes a
+	permission check is a keyword argument a browser can send.
 	"""
 	account = _account(name)
 
@@ -562,7 +563,40 @@ def _grant(name: str, user: str) -> dict:
 		},
 	)
 	person.save(ignore_permissions=True)
+	_share_what_is_already_there(account, user)
 	return {"ok": True, "granted": user}
+
+
+#: How far back a new holder is given. A shared mailbox that has been running
+#: for years is not a thing to fan out synchronously, and the last few hundred
+#: messages is what "I have been added to sales@" means in practice.
+BACKFILL = 500
+
+
+def _share_what_is_already_there(account, user: str):
+	"""Let a new holder read the mail that arrived before they were added.
+
+	Without this, being granted `sales@` means an inbox that begins the moment
+	somebody pressed a button — the conversation you were added in order to
+	pick up is the one thing you cannot see. `DocShare` is idempotent, so this
+	is safe to run again on a re-grant.
+	"""
+	from oneapp.oneapp_core.email.inbound import _share
+
+	rows = frappe.get_all(
+		"Communication",
+		filters={"communication_medium": "Email"},
+		or_filters={
+			"email_account": account.name,
+			"sender": account.email_id,
+			"recipients": ["like", f"%{account.email_id}%"],
+		},
+		pluck="name",
+		order_by="creation desc",
+		limit_page_length=BACKFILL,
+	)
+	for name in rows:
+		_share(name, user)
 
 
 @frappe.whitelist(methods=["POST"])

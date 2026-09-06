@@ -55,6 +55,20 @@ def addresses():
 
 
 @pytest.fixture
+def inbound():
+	from oneapp.oneapp_core.email import inbound as module
+
+	return module
+
+
+@pytest.fixture
+def connect():
+	from oneapp.oneapp_core.email import connect as module
+
+	return module
+
+
+@pytest.fixture
 def suppression():
 	from oneapp.oneapp_core.email import suppression as module
 
@@ -2314,20 +2328,32 @@ def test_who_may_connect_an_outside_mailbox(addresses, monkeypatch, mode, domain
 		addresses.may_connect(address)
 
 
-def test_claiming_your_own_address_is_not_a_grant_anybody_can_ask_for(addresses):
-	"""`claim` writes a `User Email` row without an admin, which is right — and
-	the way it does it must not be a flag on the whitelisted `grant`.
+def test_the_two_grants_that_are_not_an_admins_go_through_their_own_door(addresses):
+	"""`claim` and `connect` write a `User Email` row without an admin — your
+	own address, and a mailbox you have the password to — and the way they do it
+	must not be a flag on the whitelisted `grant`.
 
 	A keyword argument that relaxes a permission check is a keyword argument a
-	browser can send, so the private `_grant` is the door and `grant` is
+	browser can send, so `hold` is the unwhitelisted door and `grant` is
 	`_require_admin` in front of it.
 	"""
 	source = code_of(addresses)
 	assert "allow_self" not in source
-	assert "def _grant(" in source
+	assert "def hold(" in source
 
-	grant = source.split("def grant(", 1)[1].split("def _grant(", 1)[0]
+	grant = source.split("def grant(", 1)[1].split("def hold(", 1)[0]
 	assert "_require_admin()" in grant
+
+
+def test_a_new_holder_can_read_what_was_already_there(addresses):
+	"""Being added to `sales@` gave an inbox that began at the button press.
+
+	The conversation somebody is added in order to pick up is the one thing they
+	could not see, which is the opposite of what a shared mailbox is for.
+	"""
+	source = code_of(addresses)
+	assert "_share_what_is_already_there" in source
+	assert "BACKFILL" in source
 
 
 def test_the_transport_is_checked_before_the_framework_complains(addresses):
@@ -2357,3 +2383,68 @@ def test_the_sender_is_decided_in_order_and_not_by_the_database(mailbox):
 	# A reply, then the record, then the person's own answer.
 	assert rules.index("_landed_on") < rules.index("_last_on_record")
 	assert rules.index("_last_on_record") < rules.index("get_user_default")
+
+
+# --------------------------------------------------------------------------- #
+# A shared mailbox has a shared inbox
+# --------------------------------------------------------------------------- #
+
+def test_every_message_on_an_address_is_readable_by_whoever_holds_it(inbound):
+	"""Three paths write a `Communication` and only one of them shared it.
+
+	The Worker's own path did, because it knew the account. Frappe's IMAP sync
+	did not — so a team mailbox connected by an admin and granted to three
+	people was an inbox one person could read. Nor did our composer, so the
+	team's *sent* mail was one person's too. One hook on the document instead
+	of a third copy of the rule.
+	"""
+	source = code_of(inbound)
+	assert "def share_with_holders(" in source
+	# Both directions: what arrived, and what went out as that address.
+	assert '"Sent"' in source.split("def _account_for(", 1)[1]
+
+
+def test_the_hook_is_registered_once(inbound):
+	"""A producer nothing calls is a rule written down and not applied.
+
+	And it has to go in the `Communication` block that already exists: a second
+	key of the same name in a dict literal is not a merge, it is a silent
+	replacement — the first draft of this put one at the top of `doc_events`
+	and lost threading, linking and the signature hold along with it. Python
+	kept the later one, nothing complained, and the sharing simply did not
+	happen.
+	"""
+	import pathlib
+
+	hooks = (pathlib.Path(__file__).resolve().parent.parent
+	         / "apps/oneapp/oneapp/hooks.py").read_text()
+	assert "email.inbound.share_with_holders" in hooks
+	assert hooks.count('"Communication": {') == 1
+
+
+def test_no_doc_events_doctype_is_declared_twice():
+	"""The general form of the bug above, for every doctype in `doc_events`."""
+	import ast
+	import pathlib
+
+	source = (pathlib.Path(__file__).resolve().parent.parent
+	          / "apps/oneapp/oneapp/hooks.py").read_text()
+	for node in ast.walk(ast.parse(source)):
+		if not isinstance(node, ast.Assign):
+			continue
+		if not any(getattr(one, "id", "") == "doc_events" for one in node.targets):
+			continue
+		names = [one.value for one in node.value.keys]
+		assert len(names) == len(set(names)), f"declared twice: {sorted(names)}"
+		return
+	raise AssertionError("hooks.py no longer declares doc_events")
+
+
+def test_connecting_a_mailbox_for_other_people_is_an_admins_call(connect):
+	"""A password is the connector's; who else reads the mail is not."""
+	source = code_of(connect)
+	assert "def _holders(" in source
+	holders = source.split("def _holders(", 1)[1]
+	assert "OWNER_ROLE" in holders and "SUPPORT_ROLE" in holders
+	# The default is still one person: their own mailbox, nobody else's.
+	assert "return [frappe.session.user]" in holders

@@ -309,6 +309,32 @@ own storage and makes every conversation unread twice. What people actually
 want from it — "the team can see this" — is what a shared address is, and what
 filing against a record already gives.
 
+### Stage 2c — A shared mailbox has a shared inbox
+
+Granting `sales@` to three people gave three people an address they could send
+from and one person an inbox. Three paths write a `Communication` and only one
+of them shared what it wrote: the Worker's, because it knows the account. Not
+Frappe's IMAP sync, so a team mailbox connected with the company's own
+credentials was readable by whoever connected it. And not our own composer, so
+the team's *sent* mail was one person's too.
+
+`inbound.share_with_holders` is one hook on the document rather than a third
+copy of the rule: every email `Communication`, on insert, is `DocShare`d with
+whoever holds the address it is on — found from `email_account` where the
+framework set it, and from the address itself where it did not. Being granted
+an address also back-shares what is already there (`BACKFILL`, the last few
+hundred), because an inbox that begins at the button press hides the exact
+conversation somebody was added to pick up.
+
+`connect` takes `grant_to` for this, and only from an admin: a password is the
+connector's business, and who else reads the mail is not.
+
+One thing to know about the hook: `doc_events` already had a `Communication`
+key, and a second key of the same name in a dict literal is a silent
+replacement rather than a merge. The first draft lost threading, linking and
+the signature hold that way, and nothing complained — `tests/test_email.py`
+now fails on a repeated doctype.
+
 ### Stage 3 — Shared addresses
 
 `sales@`, `accounts@`, `info@`. A manager creates one and grants it to people;

@@ -133,7 +133,15 @@ doc_events = {
 		# the rows it was written on — `deduplicate_timeline_links` rebuilds
 		# every one of them from its doctype and name alone. See
 		# `linking.stamp`, which is the whole reason this is two hooks.
-		"after_insert": "oneapp.oneapp_core.email.linking.stamp",
+		"after_insert": [
+			"oneapp.oneapp_core.email.linking.stamp",
+			# A shared mailbox has a shared inbox, and shared sent mail.
+			# Frappe's IMAP sync and our own composer both write a
+			# `Communication` only its owner could read, so an address granted
+			# to three people was one three could send from and one could read.
+			# See `email/inbound.share_with_holders`.
+			"oneapp.oneapp_core.email.inbound.share_with_holders",
+		],
 		# Whose signature goes on a message is a question the framework answers
 		# wrongly here — the site's default outgoing account signs everything,
 		# whichever address it was actually sent from. Ours goes on in the
