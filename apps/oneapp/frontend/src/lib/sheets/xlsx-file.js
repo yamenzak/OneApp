@@ -2,11 +2,9 @@
  * Reading and writing a real .xlsx, in the cell shape the mapper already speaks.
  *
  * `engine/xlsx-io.js` — Frappe's, vendored — is a pure mapper between the
- * engine's state and a SheetJS cell: `{ t, v, f?, z? }`, where `t` is the type
- * (`n` number, `s` string, `b` boolean, `d` date), `v` the value, `f` a formula
- * without its leading `=`, and `z` an Excel number-format code. That mapping is
- * the hard part and it is theirs. What is *not* theirs is the file: upstream
- * hands those cells to SheetJS, and we use ExcelJS instead.
+ * engine's state and a SheetJS cell: `{ t, v, f?, z? }`. That mapping is the
+ * hard part and it is theirs. What is not theirs is the file: upstream hands
+ * those cells to SheetJS, and we use ExcelJS.
  *
  * The reason is narrow and worth stating so nobody "fixes" it back. SheetJS's
  * newest release on npm is 0.18.5 and carries two advisories — prototype
@@ -14,11 +12,9 @@
  * CDN, which is not a registry a lockfile can pin against. ExcelJS is MIT, on
  * npm, maintained, and does the same job.
  *
- * So this file is an adapter and nothing more: in and out, a worksheet is the
- * same `{ 'A1': {t,v,f,z}, '!ref', '!merges' }` object SheetJS would have
- * produced, and every line that builds or consumes one is untouched upstream
- * code. Behind a dynamic `import`, so its 900KB is paid by the person who
- * presses Download or Import and by nobody else.
+ * So this is an adapter and nothing more: in and out, a worksheet is the same
+ * `{ 'A1': {t,v,f,z}, '!ref', '!merges' }` object SheetJS would have produced.
+ * Behind a dynamic `import`, so its 900KB is paid by whoever presses Download.
  */
 
 import { cellId, colLabel, parseCellId } from './utils/cells.js'
@@ -91,20 +87,16 @@ export async function readWorkbook(buffer) {
 /** `{t,v,f,z}` → what ExcelJS wants in `cell.value`. */
 function toExcel(cell) {
   if (cell.f) {
-    // A formula cell carries what it came to as well, so a reader that does
-    // not evaluate — Numbers, Google Sheets on first open, a preview pane —
-    // still shows the number rather than an empty cell.
+    // A formula cell carries what it came to as well, so a reader that does not
+    // evaluate still shows the number rather than an empty cell.
     return { formula: cell.f, result: cell.v ?? null }
   }
   return cell.v ?? null
 }
 
 /**
- * An ExcelJS cell → `{t,v,f,z}`.
- *
- * Rich text collapses to its text, and a hyperlink cell to its label: both are
- * what the grid would display, and neither the engine nor the mapper has
- * anywhere to put the rest.
+ * An ExcelJS cell → `{t,v,f,z}`. Rich text collapses to its text and a
+ * hyperlink cell to its label: both are what the grid would display.
  */
 function fromExcel(cell) {
   const fmt = cell.numFmt || ''

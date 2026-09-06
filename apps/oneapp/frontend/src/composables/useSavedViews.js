@@ -3,13 +3,11 @@ import { computed } from 'vue'
 import { workspace } from '../lib/workspace'
 
 /**
- * A screen is a named layout — filters, sort and columns saved together.
+ * A screen is a named layout — filters, sort and columns saved together, the
+ * shape Frappe's own `List Filter` doctype settles on. Which one is open lives
+ * in the URL, so a screen is a link somebody can send.
  *
- * Which is the shape Frappe's own `List Filter` doctype settles on. Which one
- * is open lives in the URL, so a screen is a link somebody can send.
- *
- * `payload` and `reload` are thunks: the host builds its request and reloads
- * its spec below this call, and every write here needs whichever is current at
+ * `payload` and `reload` are thunks: every write needs whichever is current at
  * the moment the button is pressed rather than at setup.
  */
 export function useSavedViews({ spaceCode, spec, route, router, saving, dirty, payload, reload }) {
@@ -48,15 +46,11 @@ export function useSavedViews({ spaceCode, spec, route, router, saving, dirty, p
     })
 
   // Every one of these names the view it acts on rather than assuming the one
-  // on screen: the menu manages all of them, so "rename" can mean a view this
-  // person is not looking at.
+  // on screen: the menu manages all of them.
   //
   // What is on screen goes with a write only when it is meant to. Renaming the
-  // view you are looking at carries it, because the alternative is a rename
-  // that silently discards an unsaved change; renaming some *other* view must
-  // not, because that would put this screen's filters into a view nobody was
-  // editing. Saving into a view carries it either way — that is what saving
-  // into it is.
+  // view you are looking at carries it; renaming some *other* view must not, or
+  // this screen's filters land in a view nobody was editing.
   const intoLayout = (name, extra, carry = name === spec.value.layout) =>
     withView(() =>
       workspace.saveLayout(spaceCode, spec.value.screen, {
@@ -72,7 +66,7 @@ export function useSavedViews({ spaceCode, spec, route, router, saving, dirty, p
   const shareLayout = ({ layout: name, shared }) => intoLayout(name, { shared })
 
   // The other half of Save: put what is on screen into a view that already
-  // exists rather than into a new one. Only offered for a view you may write.
+  // exists. Only offered for a view you may write.
   const saveIntoLayout = async (name) => {
     await intoLayout(name, {}, true)
     dirty.value = false
@@ -83,8 +77,8 @@ export function useSavedViews({ spaceCode, spec, route, router, saving, dirty, p
     withView(() => workspace.defaultLayout(spaceCode, spec.value.screen, name))
 
   // Deleting and hiding both go back to the screen's own declaration when they
-  // acted on the view that is open — staying in a view you just removed from
-  // your menu reads as a button that did nothing — and reload otherwise.
+  // acted on the view that is open — staying in a view you just removed reads
+  // as a button that did nothing.
   const after = async (name) => {
     if (layout.value === name) openLayout('')
     else await reload()
@@ -103,8 +97,7 @@ export function useSavedViews({ spaceCode, spec, route, router, saving, dirty, p
   const deleteLayout = (name) =>
     write(() => workspace.deleteLayout(spaceCode, spec.value.screen, name), name)
 
-  // Hiding is not deleting, and the difference matters: the view stays where it
-  // is for everybody else.
+  // Hiding is not deleting: the view stays where it is for everybody else.
   const hideLayout = (name) =>
     write(() => workspace.hideLayout(spaceCode, spec.value.screen, name), name)
 

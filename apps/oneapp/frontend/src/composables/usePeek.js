@@ -10,8 +10,7 @@ import { workspace } from '../lib/workspace'
  * — and a name with no screen is a name the host would look up in the wrong
  * place.
  *
- * `reloadList` is a thunk rather than the function itself: the host defines its
- * loader below this call, so passing it directly would pass `undefined`.
+ * `reloadList` is a thunk: the host defines its loader below this call.
  */
 export function usePeek({ spaceCode, spec, route, router, reloadList }) {
   const peeked = ref(null)
@@ -21,8 +20,7 @@ export function usePeek({ spaceCode, spec, route, router, reloadList }) {
   const peekName = computed(() => String(route.query.peek || ''))
 
   // Back, in both senses: the record underneath is still there and the
-  // browser's own back button does the same thing, because the drawer is in
-  // the URL.
+  // browser's own back button does the same thing.
   const closePeek = () => {
     const query = { ...route.query }
     delete query.peek
@@ -31,16 +29,13 @@ export function usePeek({ spaceCode, spec, route, router, reloadList }) {
   }
 
   /**
-   * The peeked record and the spec to draw it with.
-   *
-   * Both, and in parallel: the spec answers what a record of *that* screen
-   * looks like — its fields, its states, its own showcase — and reusing this
-   * screen's would render an invoice through the projects screen's columns.
+   * The peeked record and the spec to draw it with — both, and in parallel:
+   * reusing this screen's spec would render an invoice through the projects
+   * screen's columns.
    *
    * Cleared first, so switching from one peeked record to another does not show
-   * the last one's fields under the new one's name for as long as the request
-   * takes. A record that comes back empty — moved, deleted, or never visible to
-   * this reader — closes the drawer rather than leaving an empty one open.
+   * the last one's fields under the new one's name. A record that comes back
+   * empty closes the drawer rather than leaving an empty one open.
    */
   const loadPeek = async () => {
     if (!peekName.value || !peekScreen.value) {
@@ -66,13 +61,13 @@ export function usePeek({ spaceCode, spec, route, router, reloadList }) {
   const peekSaved = async () => {
     await loadPeek()
     // The page underneath may be showing what just changed — a variation's
-    // stage in the rail, an invoice's total in a tab — so it is re-read too.
+    // stage in the rail, an invoice's total in a tab.
     await reloadList()
   }
 
-  // The peeked record, opened properly: its own screen, its own list behind it,
-  // and the drawer gone. Pushed rather than replaced — the job you were reading
-  // is a place you may well want the back button to return to.
+  // The peeked record, opened properly: its own screen, its own list behind it.
+  // Pushed rather than replaced — the job you were reading is a place you may
+  // want the back button to return to.
   const expandPeek = () => {
     if (!peekName.value) return
     router.push({ query: { screen: peekScreen.value, record: peekName.value } })

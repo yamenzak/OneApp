@@ -1,17 +1,13 @@
 /**
  * A workbook built without a grid on screen.
  *
- * The Drive can import a spreadsheet without opening one: pick a file, get a
- * sheet. That used to be a parser of ours writing cells through a cell
- * endpoint, and there is no cell endpoint any more — a save is the whole
- * workbook (see `store.js`). So the import builds a whole workbook instead.
+ * The Drive can import a spreadsheet without opening one, and there is no cell
+ * endpoint any more — a save is the whole workbook (see `store.js`) — so the
+ * import builds a whole workbook instead.
  *
- * It can, because none of Frappe's engines touch the DOM. `createSheet` and
- * friends are plain objects over plain maps; the canvas is a separate layer
- * that happens to be the only thing that needs a screen. So the same engines
- * the editor drives can be stood up here, fed, and asked for a payload — which
- * means an imported file lands through exactly the code path a typed one does,
- * rather than through a second parser that can disagree with it.
+ * It can, because none of Frappe's engines touch the DOM: the canvas is a
+ * separate layer that happens to be the only thing that needs a screen. So an
+ * imported file lands through exactly the code path a typed one does.
  */
 
 import { createFormatsEngine } from './engine/formats.js'
@@ -26,11 +22,8 @@ import { readWorkbook } from './xlsx-file.js'
 export const ACCEPTS = '.xlsx,.xlsm,.csv'
 
 /**
- * One file → the payload a save would send, plus what is in it.
- *
- * A CSV is one tab named after the file; a workbook keeps its own tab names.
- * Returns `{ payload, tabs, cells }` — the counts are for the dialog to say
- * what it did, not for anything to branch on.
+ * One file → the payload a save would send, plus what is in it. A CSV is one
+ * tab named after the file; a workbook keeps its own tab names.
  */
 export async function workbookFromFile(file) {
   const sheet = createSheet()
@@ -65,9 +58,8 @@ function ingestWorkbook(sheet, formats, merge, wb) {
     const ws = wb.Sheets[wsName]
     if (!ws) continue
 
-    // A fresh workbook already has one tab called Sheet1. The first worksheet
-    // becomes that one rather than a second beside it, so an import never
-    // leaves a stray empty tab nobody asked for.
+    // A fresh workbook already has one tab called Sheet1, so the first
+    // worksheet becomes that one rather than a second beside it.
     const tab = unique(wsName || 'Sheet1', names)
     if (first) sheet.renameSheet('Sheet1', tab)
     else sheet.addSheet(tab)
@@ -113,11 +105,8 @@ function ingestCsv(sheet, text, title) {
 }
 
 /**
- * A CSV, split the way a CSV is actually written.
- *
- * Quoted fields hold commas and newlines of their own, and a doubled quote
- * inside one is a literal quote. Splitting on `,` handles none of that and
- * silently shifts every column after the first address with a comma in it.
+ * A CSV, split the way a CSV is actually written: quoted fields hold commas and
+ * newlines of their own, and a doubled quote inside one is a literal quote.
  */
 function splitCsv(text) {
   const source = String(text || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n')

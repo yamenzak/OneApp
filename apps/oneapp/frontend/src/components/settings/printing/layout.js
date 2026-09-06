@@ -7,22 +7,13 @@
  *      header: {columns: [...]}, footer: {columns: [...]}}
  *
  * and `PrintFormatGenerator` walks exactly that. Building over Frappe's own
- * contract rather than over one of ours is the whole reason a format drawn
- * here prints the same wherever it is opened — the desk, a scheduled email, a
- * portal PDF — instead of only inside this app.
- *
- * Everything in this module is therefore a helper *around* that shape, never a
- * translation of it: what goes to the server is what the canvas holds, minus
- * the `_id`s below.
+ * contract is why a format drawn here prints the same wherever it is opened.
+ * Everything here is a helper *around* that shape, never a translation of it.
  */
 
 /**
- * A client-side identity for a thing on the canvas.
- *
- * Vue needs a stable `:key` per element and the layout has no id of its own —
- * two `total` fields in two columns are two different boxes and must not share
- * a key. Stripped on the way out; the server rebuilds every element from the
- * keys it knows, so an `_id` that leaked would be dropped there anyway.
+ * A client-side identity for a thing on the canvas: Vue needs a stable `:key`
+ * and the layout has no id of its own. Stripped on the way out.
  */
 let counter = 0
 export const identify = (thing) => {
@@ -42,11 +33,9 @@ export const emptySection = () => ({ columns: [emptyColumn()], gap: 20 })
 export const emptyColumn = () => ({ fields: [], width: 1 })
 
 /**
- * A layout from the server, given ids and its gaps filled in.
- *
- * A format saved before a key existed simply does not carry it, so every
- * reader has to tolerate its absence — which is easier done once, here, than
- * in every `v-for` that touches it.
+ * A layout from the server, given ids and its gaps filled in. A format saved
+ * before a key existed does not carry it, and tolerating that is easier done
+ * once here than in every `v-for` that touches it.
  */
 export const adopt = (raw) => {
   const found = raw && typeof raw === 'object' ? raw : {}
@@ -88,11 +77,9 @@ export const stripped = (layout) => {
 }
 
 /**
- * What one palette entry becomes when it lands on a column.
- *
- * The elements carry their own defaults because an element with none renders
- * as nothing, and a thing you dragged onto the page that then does not appear
- * reads as a broken builder rather than as an unset property.
+ * What one palette entry becomes when it lands on a column. The elements carry
+ * their own defaults because an element with none renders as nothing, which
+ * reads as a broken builder.
  */
 export const dropped = (entry) => {
   if (entry.kind === 'element') {
@@ -109,9 +96,8 @@ export const dropped = (entry) => {
     fieldtype: entry.fieldtype,
     label: entry.label,
   }
-  // A table with no columns prints an empty table, so it lands with the
-  // child's first few already on — the common case, and a starting point
-  // rather than a decision.
+  // A table with no columns prints an empty table, so it lands with the child's
+  // first few already on.
   if (entry.kind === 'table') {
     made.table_columns = (entry.columns || []).slice(0, 5).map((one) => ({ ...one }))
   }
