@@ -2,15 +2,12 @@
   <!--
     One field, rendered by whatever frappe-ui component its type maps to.
 
-    The map is generated from Frappe's own fieldtype list (src/lib/fields.js), so
-    a type nobody placed fails the build rather than quietly becoming a text box
-    over a Currency column.
+    The map is generated from Frappe's own fieldtype list
+    (`lib/screen/fields.js`), so a type nobody placed fails the build rather
+    than quietly becoming a text box over a Currency column.
   -->
-  <!--
-    A Link is a record, so it gets the record picker rather than a text box
-    over a foreign key — searchable, showing a face and a name, and able to
-    create one where the doctype and this person's permissions allow it.
-  -->
+  <!-- A Link is a record, so it gets the record picker rather than a text box
+       over a foreign key. -->
   <LinkPicker
     v-if="component === 'Combobox'"
     :model-value="modelValue"
@@ -30,12 +27,9 @@
     @update:model-value="emit('update:modelValue', $event)"
   >
     <!--
-      `v-if` on the slot, not inside it. A child grid strips the label from
-      every control it draws — the column header is the label, and repeating it
-      in every row is the difference between a grid and a stack of forms — and
-      frappe-ui renders its label element whenever the *slot* exists, whatever
-      is in it. So a labelless control still drew a row of bare type icons
-      floating above the inputs.
+      `v-if` on the slot, not inside it: frappe-ui renders its label element
+      whenever the slot exists, whatever is in it, so a labelless control in a
+      child grid still drew a row of bare type icons above the inputs.
     -->
     <template #label v-if="field.label">
       <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
@@ -79,11 +73,8 @@
     </template>
   </Password>
 
-  <!--
-    frappe-ui's Duration has no day unit at all — hours accumulate — so Frappe's
-    `hide_days` is already how it behaves and only `hide_seconds` has anything
-    to change here.
-  -->
+  <!-- frappe-ui's Duration has no day unit at all, so Frappe's `hide_days` is
+       already how it behaves. -->
   <Duration
     v-else-if="component === 'Duration'"
     :model-value="Number(modelValue) || 0"
@@ -94,14 +85,8 @@
   />
 
   <!--
-    A Table MultiSelect is a child table whose rows hold one Link each, so what
-    a person edits is a list of ids and what Frappe stores is a list of rows.
-    The control shows the ids; `tagged` puts the rows back together.
-
-    It was mapped to this component and unreachable for as long as it has
-    existed: `_offerable` excluded child tables outright and `_placed`
-    intersects the manifest with what is offered, so a screen naming one got
-    nothing at all.
+    A Table MultiSelect is a child table whose rows hold one Link each: the
+    control shows the ids, `tagged` puts the rows back together.
   -->
   <MultiSelect
     v-else-if="component === 'MultiSelect'"
@@ -116,15 +101,12 @@
     </template>
   </MultiSelect>
 
-  <!--
-    Attach and Attach Image. The picker hands back the File document, and what
-    belongs in the field is its URL.
-  -->
+  <!-- Attach and Attach Image. The picker hands back the File document, and
+       what belongs in the field is its URL. -->
   <div v-else-if="component === 'FileUploader'" class="flex flex-col gap-1">
     <div class="flex items-center gap-1.5">
       <!-- These four draw their own label because the control below has none
-           to give: FormLabel is frappe-ui's, takes the text as a prop and has
-           no slot, so the icon goes beside it rather than inside it. -->
+           to give: FormLabel takes the text as a prop and has no slot. -->
       <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0 text-ink-gray-4"
             :aria-hidden="true" />
       <FormLabel :label="field.label" :required="!!field.reqd" />
@@ -140,16 +122,10 @@
       </span>
     </div>
     <!--
-      One picker, not an uploader. An Attach field used to be able to upload and
-      not to choose, so the drawing already on the record was uploaded again to
-      put it in a second field. See `components/drive/FilePicker.vue`.
-
-      `attached-to` is what makes the file *belong* to the record rather than
-      only be named by it. Without it — which is how this shipped — a file
-      attached to an Attach field landed loose in the Drive, missing from the
-      record's own Files tab and from its attachment count, and orphaned the
-      moment somebody cleared the field. Every other caller of this picker
-      passed it; this one did not, and the field is the one people use most.
+      One picker, not an uploader. `attached-to` is what makes the file *belong*
+      to the record rather than only be named by it: without it the file lands
+      loose in the Drive, missing from the record's own Files tab, and is
+      orphaned the moment somebody clears the field.
     -->
     <FilePicker
       v-model="picking"
@@ -159,10 +135,8 @@
     />
   </div>
 
-  <!--
-    A child table: rows of another doctype belonging to this record. The
-    control writes the whole list, which is how Frappe stores one.
-  -->
+  <!-- A child table: rows of another doctype belonging to this record. The
+       control writes the whole list, which is how Frappe stores one. -->
   <ChildTable
     v-else-if="field.fieldtype === 'Table' && field.child"
     :rows="Array.isArray(modelValue) ? modelValue : []"
@@ -177,10 +151,9 @@
   />
 
   <!--
-    A gallery of the record's own attachments. The field holds no value at all
-    — Frappe lists this in `no_value_fields` — so the control writes through
-    the File endpoints rather than through the record, and never emits an
-    update.
+    A gallery of the record's own attachments. The field holds no value at all —
+    Frappe lists it in `no_value_fields` — so the control writes through the
+    File endpoints and never emits an update.
   -->
   <AttachmentGallery
     v-else-if="component === 'AttachmentGallery'"
@@ -194,16 +167,12 @@
   />
 
   <!--
-    Prose. One component for both of Frappe's prose fieldtypes — a Text Editor
-    stores HTML and a Markdown Editor stores markdown, and `format` is the only
-    difference between them. An image pasted in becomes an attachment on the
-    record like any other, through the same File endpoints the sidebar lists.
+    Prose. One component for both of Frappe's prose fieldtypes; `format` is the
+    only difference between them. A pasted image becomes an attachment on the
+    record like any other.
   -->
   <div v-else-if="component === 'Editor'" class="flex flex-col gap-1">
     <div class="flex items-center gap-1.5">
-      <!-- These four draw their own label because the control below has none
-           to give: FormLabel is frappe-ui's, takes the text as a prop and has
-           no slot, so the icon goes beside it rather than inside it. -->
       <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0 text-ink-gray-4"
             :aria-hidden="true" />
       <FormLabel :label="field.label" :required="!!field.reqd" />
@@ -213,19 +182,13 @@
       :class="disabled ? 'opacity-60' : ''"
     >
       <!--
-        `extensions` is required and is the whole capability of the editor —
-        which extensions load decides what the toolbar can do and what the
-        document may contain. RichTextKit is frappe-ui's article-grade bundle:
-        tables, task lists, headings, alignment. A lighter one exists
-        (CommentKit) and is the wrong choice here, because a Text Editor field
-        is where a doctype's author put the long-form content.
+        `extensions` is the whole capability of the editor. RichTextKit is
+        frappe-ui's article-grade bundle; the lighter CommentKit is the wrong
+        choice for a field a doctype's author meant for long-form content.
 
-        `Editor` is *renderless*: it owns the lifecycle, the v-model, the upload
-        and the placeholder, and renders no UI at all. Without this slot the
-        field is an empty box — which is exactly what it was, and what a build
-        and 944 unit tests had nothing to say about. The consumer owns the
-        chrome, which is why the menu is a deliberate choice here rather than
-        something that arrived by default.
+        `Editor` is *renderless* — it owns the lifecycle, the v-model and the
+        upload and draws nothing. Without this slot the field is an empty box,
+        which a build and 944 unit tests had nothing to say about.
       -->
       <Editor
         :model-value="modelValue || ''"
@@ -238,15 +201,11 @@
       >
         <template #default="{ editor }">
           <EditorFixedMenu v-if="!disabled" :editor="editor" :items="articleToolbar" class="mb-2" />
-          <!--
-            The accessible name. EditorContent forwards attributes onto the
-            element ProseMirror mounts on, which is the thing a person actually
-            types into — so this is what gives the field a name for a screen
-            reader, and the only way to reach it by its label.
-          -->
-          <!-- `dir="auto"` here too, for the same reason it is on every text
-               box: an Arabic letter body lays itself out from its own first
-               word, beside an English one, with nothing declared. -->
+          <!-- The accessible name. EditorContent forwards attributes onto the
+               element ProseMirror mounts on, which is what a person types
+               into. -->
+          <!-- `dir="auto"` here too: an Arabic body lays itself out from its
+               own first word, beside an English one, with nothing declared. -->
           <EditorContent :editor="editor" :aria-label="field.label" dir="auto" />
         </template>
       </Editor>
@@ -255,22 +214,16 @@
   </div>
 
   <!--
-    Source. Code, JSON, and Frappe's HTML Editor, which is markup somebody
-    edits as markup rather than prose — getting that and Text Editor the right
-    way round is the whole point of separating them.
-
-    CodePreview rather than a disabled CodeEditor when it cannot be written:
-    frappe-ui ships the reader as its own component, and a greyed-out editor
-    still carries an editor's affordances.
+    Source. Code, JSON, and Frappe's HTML Editor, which is markup somebody edits
+    as markup rather than prose. CodePreview rather than a disabled CodeEditor
+    where it cannot be written: a greyed-out editor still carries an editor's
+    affordances.
   -->
   <div v-else-if="component === 'CodeEditor'" class="flex flex-col gap-1">
-    <!-- CodePreview is the reader and takes only what it reads, so the label
-         and the note are drawn here rather than passed to it. -->
+    <!-- CodePreview takes only what it reads, so the label and the note are
+         drawn here rather than passed to it. -->
     <template v-if="disabled">
       <div class="flex items-center gap-1.5">
-      <!-- These four draw their own label because the control below has none
-           to give: FormLabel is frappe-ui's, takes the text as a prop and has
-           no slot, so the icon goes beside it rather than inside it. -->
       <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0 text-ink-gray-4"
             :aria-hidden="true" />
       <FormLabel :label="field.label" :required="!!field.reqd" />
@@ -292,46 +245,39 @@
 
   <!--
     No frappe-ui counterpart: colour, signature, geolocation, barcode, icon.
-    Shown, never offered — a text box that writes a hex string into a Signature
+    Shown, never offered — a text box writing a hex string into a Signature
     field is worse than a value someone can read.
   -->
   <div v-else-if="!controlType" class="flex flex-col gap-1">
     <div class="flex items-center gap-1.5">
-      <!-- These four draw their own label because the control below has none
-           to give: FormLabel is frappe-ui's, takes the text as a prop and has
-           no slot, so the icon goes beside it rather than inside it. -->
       <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0 text-ink-gray-4"
             :aria-hidden="true" />
       <FormLabel :label="field.label" :required="!!field.reqd" />
     </div>
     <div class="flex items-center gap-2 rounded-4 bg-surface-gray-1 px-3 py-2">
-      <!-- A colour is a colour. The list cell has always drawn the swatch;
-           there is no reason the record should show the hex and not it. -->
+      <!-- A colour is a colour: the list cell has always drawn the swatch. -->
       <span
         v-if="field.fieldtype === 'Color' && modelValue"
         class="size-4 shrink-0 rounded-full border border-outline-gray-2"
         :style="{ backgroundColor: modelValue }"
       />
       <!-- Frappe stores a signature as a data-URI PNG, so the honest rendering
-           is the picture. Reading a wall of base64 tells nobody whether the
-           thing was signed. -->
+           is the picture. -->
       <img
         v-else-if="field.fieldtype === 'Signature' && modelValue"
         :src="modelValue"
         alt="Signature"
         class="h-12 max-w-full object-contain"
       />
-      <!-- Geolocation is a GeoJSON blob with no honest small rendering, and
-           printing the JSON is worse than saying what it is. -->
+      <!-- Geolocation is a GeoJSON blob with no honest small rendering. -->
       <span
         v-if="field.fieldtype === 'Geolocation'"
         class="truncate text-p-sm text-ink-gray-7"
       >
         {{ modelValue ? 'Map' : '—' }}
       </span>
-      <!-- Barcode stores the value; the bars are a rendering of it, and one
-           nobody can scan off a screen usefully yet. The value is the useful
-           half, in the typeface that makes an O and a 0 different. -->
+      <!-- Barcode stores the value; the bars are a rendering of it. The value
+           is the useful half, in the typeface that separates an O from a 0. -->
       <span
         v-else-if="field.fieldtype === 'Barcode'"
         class="truncate font-mono text-p-sm text-ink-gray-7"
@@ -347,18 +293,16 @@
     </div>
     <!--
       No apology. A value that cannot be edited here needs a reason only when
-      there is somewhere else to edit it, and for these there is not: frappe-ui
-      has no colour picker, signature pad or map, so the field is read-only
-      until it does. `description` still shows if the doctype wrote one.
+      there is somewhere else to edit it, and frappe-ui has no colour picker,
+      signature pad or map.
     -->
     <p v-if="note" class="text-p-xs text-ink-gray-5">{{ note }}</p>
   </div>
 
   <!--
     The doctype's own bounds reach the control as attributes rather than as
-    validation: `min`, `max` and `maxlength` are what make a field pleasant to
-    type into, and the server enforces all three on save regardless. A browser
-    makes typing pleasant; a database decides what is true.
+    validation: they make a field pleasant to type into, and the server enforces
+    all three on save regardless.
   -->
   <FormControl
     v-else
@@ -408,29 +352,20 @@ import AttachmentGallery from '../record/AttachmentGallery.vue'
 import ChildTable from '../record/ChildTable.vue'
 import { controlComponent, editorFormat, formControlType, valueIcon } from '@/lib/screen/fields'
 
-// Built once for the module rather than per field: the kit is a static
-// extension list, and a form with six rich-text fields should not assemble six
-// identical ones.
+// Built once for the module: the kit is a static extension list, and a form
+// with six rich-text fields should not assemble six identical ones.
 const EXTENSIONS = [RichTextKit]
 
 /**
- * Where an image dropped into the editor goes.
+ * Where an image dropped into the editor goes: onto the record, as a File
+ * attached to it, rather than into a second invisible store.
  *
- * Onto the record, as a File attached to it — the same rows the sidebar lists
- * and an Attach field points at, so a picture pasted into a description is an
- * attachment like any other rather than a second, invisible store.
- *
- * Undefined on a new record, which is the honest answer: there is nothing to
- * attach to until it has an id, and Frappe's own form says the same thing.
- * The editor then simply offers no upload.
+ * Undefined on a new record — there is nothing to attach to until it has an id
+ * — and the editor then offers no upload.
  */
-/**
- * Where a file attached through this field belongs.
- *
- * `undefined` until the record has an id, which is the honest answer: there is
- * nothing to attach to yet, and the picker then files it in the Drive and the
- * field still gets its URL. Frappe's own form behaves the same way.
- */
+/** Where a file attached through this field belongs. `undefined` until the
+ *  record has an id; the picker then files it in the Drive and the field still
+ *  gets its URL. */
 const attachTarget = computed(() => {
   if (!props.doctype || !props.docname) return null
   return {
@@ -450,8 +385,7 @@ const uploadInto = computed(() => {
       docname,
       fieldname: props.field.fieldname,
       // Attachments follow the record's own visibility, which on a tenant site
-      // means private: a customer's file should not become a public URL
-      // because it was pasted rather than uploaded.
+      // means private.
       private: true,
     })
 })
@@ -467,36 +401,29 @@ const props = defineProps({
   isNew: { type: Boolean, default: false },
   /** The doctype's Document States, so an option's glyph matches its badge. */
   states: { type: Array, default: () => [] },
-  /**
-   * The record this field belongs to, where there is one. Only the rich-text
-   * editor reads them, to attach a pasted image to it — so both are absent on
-   * a create form, and the editor correctly offers no upload there.
-   */
+  /** The record this field belongs to, where there is one. Only the rich-text
+   *  editor reads them, to attach a pasted image. */
   doctype: { type: String, default: '' },
   docname: { type: String, default: '' },
   /**
    * The record as it stands, for the fields whose behaviour depends on another
-   * of its values. Only a Dynamic Link reads it today — its target doctype is
-   * in the field `depends_on_field` names — and it is the same object
-   * `FormSections` is already editing, so nothing is copied to provide it.
+   * of its values. Only a Dynamic Link reads it today, and it is the object
+   * `FormSections` is already editing.
    */
   doc: { type: Object, default: () => ({}) },
 })
 // `reload` is for the controls that write through the server rather than
 // through the record — filling a child table from a sheet is the one today.
-// The record they changed is stale afterwards, including its `modified`, so
-// the surface has to fetch it again rather than be handed a patch.
 const emit = defineEmits(['update:modelValue', 'reload'])
 
-// Whether the attach picker is open. One per control, so two Attach fields
-// on one form do not share a dialog.
+// Whether the attach picker is open. One per control, so two Attach fields on
+// one form do not share a dialog.
 const picking = ref(false)
 
 const component = computed(() => controlComponent(props.field))
 
-// A Dynamic Link points wherever another field on this record says. Empty
-// until that field is filled in, which is exactly right: a picker with no
-// target has nothing to search, and the server refuses an unnamed one.
+// A Dynamic Link points wherever another field says. Empty until that field is
+// filled in: a picker with no target has nothing to search.
 const target = computed(() => {
   const field = props.field
   if (field.fieldtype !== 'Dynamic Link' || !field.depends_on_field) return ''
@@ -505,15 +432,9 @@ const target = computed(() => {
 const controlType = computed(() => formControlType(props.field))
 
 /**
- * Which language CodeMirror highlights.
- *
- * Frappe puts it in `options` on a Code field — the same slot a Link uses for
- * its doctype and a Select for its choices — and leaves it blank more often
- * than not. JSON and HTML Editor answer for themselves, since the fieldtype
- * *is* the language.
- *
- * An unknown key is plain text rather than an error: frappe-ui's `loadLanguage`
- * returns null for one, and a code box with no highlighting is still a code box.
+ * Which language CodeMirror highlights. Frappe puts it in `options` on a Code
+ * field and leaves it blank more often than not; JSON and HTML Editor answer
+ * for themselves. An unknown key is plain text rather than an error.
  */
 const LANGUAGE_BY_TYPE = { JSON: 'json', 'HTML Editor': 'html' }
 
@@ -523,8 +444,7 @@ const language = computed(() => {
 })
 
 // A Select's own list. `sort_options` is the doctype asking for it
-// alphabetically rather than in the order somebody typed it in, which is what
-// the desk does and the only thing that flag means.
+// alphabetically rather than in the order somebody typed it.
 const selectOptions = computed(() => {
   const options = (props.field.options || '').split('\n').filter(Boolean)
   const ordered = props.field.sort_options
@@ -532,13 +452,8 @@ const selectOptions = computed(() => {
     : options
 
   // The same glyph the badge draws, so a value looks the same being chosen as
-  // it does once chosen. frappe-ui's Select renders `option.icon` itself, both
-  // in the list and on the trigger.
-  //
-  // Every option or none: a list where half the rows carry a glyph reads as
-  // broken rather than as varied, which is why `valueIcon` answers with a
-  // neutral tag rather than nothing for a Select that is a category rather
-  // than a status.
+  // once chosen. Every option or none: a list where half the rows carry a glyph
+  // reads as broken rather than as varied.
   return ordered.map((value) => ({
     label: value,
     value,
@@ -547,20 +462,14 @@ const selectOptions = computed(() => {
 })
 
 /**
- * `min`, `max` and `maxlength`, where the doctype set them.
- *
- * Bound as an object because each is absent far more often than it is present,
- * and `:max="undefined"` on every number field is three attributes of noise for
- * the one doctype that uses them. `min_value`/`max_value` of 0 are real bounds
- * and travel as 0 — only null means unset.
+ * `min`, `max` and `maxlength`, where the doctype set them. An object because
+ * each is absent far more often than present; 0 is a real bound and travels,
+ * only null means unset.
  */
-// Which control types hold words somebody types in a language. Everything else
-// — a date, a number, a select — is either not text or not free text, and a
-// direction on one of those would flip a currency symbol to the wrong side.
-// An array, and it is worth saying why: `('text', 'textarea', …)` in
-// JavaScript is the comma operator, so that expression is the *last* string and
-// nothing else — which is what this was, silently, and lint has no opinion
-// about it. `.includes` on a string then answers about substrings.
+// Which control types hold words somebody types in a language. An array, and
+// it is worth saying why: `('text', 'textarea', …)` in JavaScript is the comma
+// operator, so that expression is the *last* string and nothing else — and
+// `.includes` on a string then answers about substrings.
 const WORDS = ['text', 'textarea', 'email', 'password', 'url']
 
 const bounds = computed(() => {
@@ -569,16 +478,10 @@ const bounds = computed(() => {
   /**
    * `dir="auto"`, on everything a person types words into.
    *
-   * The browser reads the first strong character and lays the field out from
-   * it — so an Arabic subject line is right-to-left and the English one under
-   * it is not, in the same form, with nothing declared anywhere. Frappe has no
-   * direction property on a DocField and it would be the wrong place for one
-   * anyway: direction belongs to the *value*, not to the schema. A company
-   * writing to a municipality in Arabic and a consultant in English does both
-   * from the same field on the same day.
-   *
-   * `auto` and never `rtl`: a field forced right-to-left mangles the English
-   * that ends up in it just as thoroughly as the other way round.
+   * Direction belongs to the *value*, not to the schema: a company writes to a
+   * municipality in Arabic and a consultant in English from the same field on
+   * the same day. Never `rtl` — a field forced one way mangles what ends up in
+   * it just as thoroughly as the other.
    */
   if (WORDS.includes(controlType.value)) found.dir = 'auto'
   if (controlType.value === 'number') {
@@ -588,9 +491,8 @@ const bounds = computed(() => {
   } else if (field.length) {
     found.maxlength = field.length
   }
-  // Frappe's own ceiling on a text control, in pixels. Bound as a style rather
-  // than a prop because no frappe-ui control takes a height: the textarea
-  // still grows to it and then scrolls, which is what the flag asks for.
+  // Frappe's own ceiling on a text control, in pixels. A style rather than a
+  // prop because no frappe-ui control takes a height.
   if (field.max_height && controlType.value === 'textarea') {
     found.style = { maxHeight: `${parseInt(field.max_height, 10) || 0}px`, overflowY: 'auto' }
   }
@@ -598,22 +500,10 @@ const bounds = computed(() => {
 })
 
 /**
- * The line under the control.
- *
- * Three things can want to be there, and a field that says all three should
- * read as one sentence rather than three stacked notes:
- *
- *  - the doctype's own `description`
- *  - where a `fetch_from` value comes from, because a box that fills itself
- *    with no explanation is a box people retype. Frappe writes the source as
- *    `customer.customer_name`; the field it comes from is the half worth
- *    saying, and `fetch_if_empty` is the difference between "filled in once"
- *    and "replaced on every save"
- *  - that the value may not repeat, which is otherwise something you find out
- *    from a database error
- *
- * `show_description_on_click` moves the description behind the label's info
- * icon instead, which is the doctype saying it is long.
+ * The line under the control, as one sentence rather than three stacked notes:
+ * the doctype's `description`, where a `fetch_from` value comes from, and that
+ * the value may not repeat. `show_description_on_click` moves the description
+ * behind the label's info icon instead.
  */
 const note = computed(() => {
   const field = props.field
@@ -632,21 +522,14 @@ const note = computed(() => {
 })
 
 
-// A Select and a Table MultiSelect both choose from the field's own `options`
-// list. A Link does not — its list is records, which the picker fetches from
-// the server behind the screen's own bounds.
-// A Table MultiSelect takes plain values rather than option objects — it has
-// no icon slot and would print `[object Object]`.
+// A Select and a Table MultiSelect choose from the field's own `options`; a
+// Link does not — its list is records. A Table MultiSelect takes plain values
+// rather than option objects, having no icon slot.
 const options = computed(() => selectOptions.value.map((one) => one.value))
 
 /**
- * The one field a Table MultiSelect's rows actually carry.
- *
- * Frappe stores these as a child table whose child doctype has a single Link,
- * so the value on the record is `[{link_field: 'ACME'}, …]` and what a person
- * means is `['ACME', …]`. The fieldname comes from the child's own shape
- * rather than being guessed at, so a doctype that named its column something
- * other than the usual still works.
+ * The one field a Table MultiSelect's rows actually carry. The fieldname comes
+ * from the child's own shape rather than being guessed at.
  */
 const tagField = computed(() => {
   const fields = props.field.child?.fields || []
@@ -657,13 +540,12 @@ const tagField = computed(() => {
 const tags = computed(() => {
   const rows = Array.isArray(props.modelValue) ? props.modelValue : []
   const key = tagField.value
-  // A list of plain strings is what this looked like before the rows arrived,
-  // and a draft that has not been saved yet may still be one.
+  // A list of plain strings is what this looked like before the rows arrived.
   return rows.map((row) => (typeof row === 'string' ? row : row?.[key])).filter(Boolean)
 })
 
-// Rows back out, keeping each one's identity where it had one: without `name`
-// Frappe deletes and recreates every row on every save.
+// Rows back out, keeping each one's identity: without `name` Frappe deletes and
+// recreates every row on every save.
 const tagged = (values) => {
   const key = tagField.value
   const rows = Array.isArray(props.modelValue) ? props.modelValue : []

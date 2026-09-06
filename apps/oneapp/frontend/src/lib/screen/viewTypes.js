@@ -4,13 +4,9 @@ import { defineAsyncComponent } from 'vue'
  * The ways a screen can be looked at.
  *
  * A screen declares which of these it offers and in what order; the first is
- * what it opens with. Only some are built — the rest are declared here so a
- * manifest can name one before the body exists, and so the vocabulary lives in
- * one place rather than in three components.
- *
- * `built: false` is not a placeholder for tidiness: `viewTypesOf` drops them,
- * so a manifest that names `calendar` today gets a list rather than an empty
- * screen, and starts offering the calendar the day one ships.
+ * what it opens with. `built: false` is not tidiness — `viewTypesOf` drops
+ * them, so a manifest that names `calendar` today gets a list rather than an
+ * empty screen, and starts offering the calendar the day one ships.
  */
 export const VIEW_TYPES = {
   list: {
@@ -54,10 +50,9 @@ export const VIEW_TYPES = {
    * The same table, opened as a worksheet rather than as a way in.
    *
    * `ListBody` again and not a body of its own: a report *is* the list, plus
-   * two things — cells you can type into and a row of totals under them. What
-   * makes them a separate view type rather than a switch on the list is the
-   * click. A list row opens the record; a report cell takes the cursor. One
-   * click cannot mean both, and Frappe answered it the same way.
+   * cells you can type into and a row of totals. What makes it a separate view
+   * type is the click — a list row opens the record, a report cell takes the
+   * cursor, and one click cannot mean both.
    */
   report: {
     label: 'Report',
@@ -78,49 +73,38 @@ export const DEFAULT_VIEW_TYPE = 'list'
 /**
  * View types that are a way of reading one field, and are nothing without it.
  *
- * A board is columns of a status: a screen that names no `status_field` has no
- * columns to make, and a board of one column called "everything" is not a
- * board. The manifest check catches declaring one anyway; this drops it from
- * the sidebar so a screen offers a board only where there is one to offer.
- * `spaceview._view_types` is the same rule on the server.
+ * A screen that names no `status_field` has no columns to make, and a board of
+ * one column called "everything" is not a board. `spaceview._view_types` is the
+ * same rule on the server.
  */
 export const NEEDS_STATUS = ['board']
 
 /**
- * And the same for the calendar, which is a way of reading one date.
- *
- * The field is named in `view_settings.calendar` rather than on the screen
- * itself: a date field is read by the calendar and by nothing else, where
- * `status_field` is also the badge on a record. `viewtypes.NEEDS_DATES` is the
- * same rule on the server.
+ * And the same for the calendar. The field is named in
+ * `view_settings.calendar` rather than on the screen itself: a date field is
+ * read by the calendar and by nothing else, where `status_field` is also the
+ * badge on a record. `viewtypes.NEEDS_DATES` is the same rule.
  */
 export const NEEDS_DATES = ['calendar']
 
 /**
- * And a Gantt needs both ends of a bar.
- *
- * Declared under `gantt`, falling back to the calendar's pair: a screen
- * offering both is placing its records by the same two dates, and saying so
- * twice is how the two drift. `viewtypes.NEEDS_SPANS` is the same rule.
+ * And a Gantt needs both ends of a bar. Declared under `gantt`, falling back to
+ * the calendar's pair: a screen offering both is placing its records by the
+ * same two dates. `viewtypes.NEEDS_SPANS` is the same rule.
  */
 export const NEEDS_SPANS = ['gantt']
 
 /**
  * And a tree needs the field that points a record at the one above it.
- *
  * Declared and never inferred, which is the one place this differs from the
- * desk: a doctype can have several Links to itself and only one of them is a
- * hierarchy. `viewtypes.NEEDS_PARENT` is the same rule.
+ * desk: a doctype can have several Links to itself and only one is a hierarchy.
  */
 export const NEEDS_PARENT = ['tree']
 
 /**
- * View types that are nothing without something declared for them to draw.
- *
- * A dashboard is its widgets: a screen that offers one and declares none opens
- * on an empty page. The server drops the type for the same reason — this is
- * the half that keeps it out of the sidebar, so a screen offers a dashboard
- * only where there is one to offer.
+ * View types that are nothing without something declared for them to draw. A
+ * screen that offers a dashboard and declares no widgets opens on an empty
+ * page; the server drops the type for the same reason.
  */
 export const NEEDS_WIDGETS = ['dashboard']
 
@@ -128,20 +112,15 @@ export const NEEDS_WIDGETS = ['dashboard']
  * The types that draw a record as a card rather than as a line.
  *
  * A board and a grid share the card and differ only in how the cards are laid
- * out — see `lib/cards.js`. What they share here is the question the gear
- * opens: not "which columns and how wide", which is meaningless without a
- * table, but "what does a card say".
- *
- * `spaceview.CARD_VIEW_TYPES` is the same list.
+ * out. What they share here is the question the gear opens: not "which columns
+ * and how wide" but "what does a card say". `spaceview.CARD_VIEW_TYPES` is the
+ * same list.
  */
 export const CARD_VIEW_TYPES = ['board', 'grid']
 
 /**
  * The types one screen offers, in order, filtered to what this build renders.
- *
- * Always at least one. A screen that declares nothing, or declares only types
- * nobody has built, is a list — an empty screen would be the alternative and
- * that is never the better answer.
+ * Always at least one: a screen that declares nothing is a list.
  */
 export function viewTypesOf(screen) {
   const declared = String(screen?.view_types || '')
@@ -158,14 +137,9 @@ export function viewTypesOf(screen) {
 /**
  * Whether a screen names a field a board could make columns of.
  *
- * `status_field` is the usual answer and the one a manifest should give. A
- * screen with no status but an obvious grouping field may name that instead,
- * in its own `view_settings`. Either way this is a declaration check — the
- * fieldtype is checked on the server, where there are columns to check against
- * — and `spaceview._has_column_field` is the same rule.
- *
- * A reader's own choice is deliberately not here: a saved view narrows what a
- * screen offers, it cannot add a view type the screen never offered.
+ * A declaration check — the fieldtype is checked on the server, where there are
+ * columns to check against. A reader's own choice is deliberately not here: a
+ * saved view narrows what a screen offers, it cannot add a view type.
  */
 function hasColumnField(screen) {
   if (String(screen?.status_field || '').trim()) return true
@@ -184,11 +158,8 @@ function settingsOf(screen) {
 }
 
 /**
- * Whether a screen names a field a calendar could place a record by.
- *
- * Only `view_settings`, because there is no screen-level date field to fall
- * back to — `spaceview._has_date_field` is the same rule, and the fieldtype is
- * checked on the server the same way a board's is.
+ * Whether a screen names a field a calendar could place a record by. Only
+ * `view_settings`, because there is no screen-level date field to fall back to.
  */
 function hasDateField(screen) {
   return !!String(settingsOf(screen)?.calendar?.start_field || '').trim()
@@ -209,12 +180,9 @@ function hasSpan(screen) {
 }
 
 /**
- * The component that draws one view type.
- *
- * Async, so a screen only loads the body it is actually rendering — the point
- * of the split is that adding a board does not make every list heavier. Falls
- * back to the list, which is also what the server does, so the two cannot
- * disagree about what an unknown type means.
+ * The component that draws one view type. Async, so a screen only loads the
+ * body it is rendering. Falls back to the list, which is what the server does,
+ * so the two cannot disagree about what an unknown type means.
  */
 export function bodyFor(type) {
   const found = VIEW_TYPES[type]

@@ -5,48 +5,31 @@
     worth reading without opening the record.
 
     Which few is not ours to choose — `in_preview` is a flag a doctype sets on
-    its own fields, once, and every surface pointing at that doctype gets the
-    same answer. That is what makes a board card good for free: a doctype whose
-    author marked three fields worth previewing already described its card.
+    its own fields, and every surface pointing at that doctype gets the same
+    answer.
 
     Two shapes, and one of them has two layouts:
 
-      * `panel` — a hover card. Labels in a narrow column of their own, because
-        five stacked label/value pairs read as ten unrelated lines and the same
-        five in two columns read as a record.
-      * `tile` — a board or grid card. No labels: three bands — who it is, what
-        it says, and how it is doing — separated by hairlines, which is what
-        Frappe CRM's kanban card is and it is right. Values stack one per line
-        rather than wrapping into a paragraph: a card of five values run
-        together is a sentence nobody wrote, and a column of five is a record.
+      * `panel` — a hover card. Labels in a narrow column of their own.
+      * `tile` — a board or grid card. No labels; three bands separated by
+        hairlines, values one per line rather than run into a paragraph.
       * `tile` **with a cover** — a gallery card. The picture is not a band on
-        the card, it *is* the card: everything else sits over it, the way every
-        gallery of things with pictures has ever worked. See `cover`.
+        the card, it *is* the card. See `cover`.
   -->
 
   <!--
     A gallery card: the picture, and what is on it.
 
-    `aspect-square` on the content rather than a height on the card, because an
-    aspect ratio is a preference and not a cage — a card whose caption runs to
-    six fields grows taller instead of clipping them, and the picture, being
-    absolutely placed, still covers whatever height that turns out to be.
+    `aspect-square` on the content rather than a height on the card, so a card
+    whose caption runs to six fields grows instead of clipping them and the
+    picture, absolutely placed, still covers it.
 
-    Three decisions, all of them about the fact that the surface here is
-    somebody's photograph rather than a card:
-
-      * **Dark, not light.** The caption sits in a gradient to black with white
-        type on it, which is how every product that puts words on a picture
-        does it — a white band across a photograph reads as chrome stuck on
-        top, and the first version of this looked exactly like that.
-      * **Nothing behind the top row.** Its three things are small, white and
-        shadowed; a second band up there would frame the picture out of its own
-        card.
-      * **The fields are pills**, not the cells a list draws. A cell's ink and
-        its chip belong to a light surface; over a photograph they are a grey
-        nobody can read. The *text* is the same text — `lib/cells.js` answers
-        that once for both — and a status keeps its colour by going solid,
-        which is the one badge variant that reads on anything.
+    Three decisions, all about the surface being somebody's photograph:
+    **dark, not light** — a white band across a photograph reads as chrome stuck
+    on top; **nothing behind the top row** — a second band would frame the
+    picture out of its own card; and **the fields are pills** rather than the
+    cells a list draws, because a cell's ink belongs to a light surface. The
+    text is the same text — `lib/screen/cells.js` answers that once for both.
   -->
   <div v-if="!isPanel && cover" class="relative overflow-hidden rounded-6">
     <div
@@ -59,26 +42,18 @@
         :alt="plainText(record.label) || String(record.value || '')"
         class="size-full object-cover"
       />
-      <!--
-        No picture, and still a frame: the record's initial on the same square.
-        Its siblings have pictures, and a gallery whose empty cards collapse to
-        nothing jumps every time somebody uploads a photograph.
-      -->
-      <!--
-        Dark, like every other card in this gallery. The chrome over a picture
-        is white with a shadow; a light square under the same chrome is a card
-        whose date and heart have vanished, which is what a grey one did.
-      -->
+      <!-- No picture, and still a frame: a gallery whose empty cards collapse
+           jumps every time somebody uploads a photograph. -->
+      <!-- Dark, like every other card here: the chrome over a picture is white
+           with a shadow, and a light square under it hides the date and the
+           heart. -->
       <span v-else class="text-4xl font-medium uppercase text-white/40">{{ initial }}</span>
     </div>
 
     <div class="relative flex aspect-square flex-col justify-between">
       <!--
-        How the record is doing, along the top: when it last moved on the left,
-        then how many have said something, who it is on, and whether this one
-        is yours at the right. The same row the other tile ends with — one
-        component, one set of rules about what a zero means and what the heart
-        is called — in white.
+        How the record is doing, along the top — the same row the other tile
+        ends with, in white.
       -->
       <div class="p-3">
         <RowMeta
@@ -90,16 +65,13 @@
         />
       </div>
 
-      <!--
-        Who it is, and what it says, along the bottom — where a caption goes on
-        a photograph, and out of the middle of the picture.
-      -->
+      <!-- Who it is and what it says, along the bottom, where a caption goes
+           on a photograph. -->
       <div class="bg-gradient-to-t from-black/80 via-black/50 to-transparent px-3 pb-3 pt-10">
         <!--
           The caption is the control: two lines of type over a photograph.
           `Button` would bring its own padding, height and label layout to a
-          thing that is none of those. See the row in NotificationList for the
-          same exception and the same reason.
+          thing that is none of those.
         -->
         <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
         <button
@@ -108,8 +80,7 @@
           @click.stop="emit('open')"
         >
           <!-- The name, and the id under it where the name is not already the
-               id. A record that has no title of its own is named by its id, and
-               printing that twice is not more informative than once. -->
+               id: a record with no title of its own is named by its id. -->
           <span class="block truncate text-p-base font-semibold text-white">
             {{ plainText(record.label) || record.value }}
           </span>
@@ -149,28 +120,20 @@
   </div>
 
   <div v-else :class="frame">
-    <!--
-      Panel: not a control. Nothing on a hover card is pressable — it is what
-      appears *because* you are already pointing at the link.
-    -->
+    <!-- Panel: not a control. Nothing on a hover card is pressable — it is
+         what appears *because* you are already pointing at the link. -->
     <div v-if="isPanel" class="p-3">
       <RecordChip :record="record" />
     </div>
 
     <!--
-      Tile: the card's one keyboard target, and its accessible name. The card
-      itself is a click surface — the whole tile opens the record, the same way
-      a list row does — and a click surface is not reachable by keyboard, so the
-      title is the real control. Exactly the arrangement the list already uses:
-      the row is a div, the title inside it is a button.
-
-      `.stop` because the tile's own handler would otherwise fire too and open
-      the record twice.
+      Tile: the card's one keyboard target, and its accessible name. The whole
+      tile opens the record and a click surface is not reachable by keyboard, so
+      the title is the real control — the same arrangement the list row uses.
+      `.stop`, or the tile's own handler opens the record twice.
     -->
-    <!--
-      Same exception, same reason: the record's identity — a face, a name and
-      an id — is what you press, and it is a block rather than a label.
-    -->
+    <!-- Same exception, same reason: the record's identity is what you press,
+         and it is a block rather than a label. -->
     <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
     <button
       v-else
@@ -229,22 +192,18 @@
     </template>
 
     <!--
-      How the record is doing: when it last moved, how many people have said
-      something, who it is on, and whether this one is yours. The same four the
-      list shows at the end of every row — they cost nothing to carry, they are
-      already on the row, and a card that drops them is a card saying less than
-      the list it came from for no reason.
+      How the record is doing — the same four the list shows at the end of every
+      row. They are already on the row, and a card that drops them says less
+      than the list it came from for no reason.
 
-      Only where the caller has them. A hover card is one record fetched on its
-      own and has no row meta to show.
+      Only where the caller has them: a hover card is one record fetched on its
+      own and has no row meta.
     -->
     <!--
       Tags, where the record has any. Above the meta band rather than among the
-      fields: a tag is not a value of the record, it is what somebody called
-      it — and on a card that is the one thing worth reading before the fields.
-
-      Every card, not only where a Tags column was added: the tags are already
-      on the row, and a board is not a place people go to configure columns.
+      fields: a tag is not a value of the record, it is what somebody called it.
+      Every card, not only where a Tags column was added — a board is not a
+      place people go to configure columns.
     -->
     <div v-if="!isPanel && tags.length" class="flex flex-wrap items-center gap-1 px-3 pb-1">
       <Badge
@@ -283,9 +242,8 @@ const props = defineProps({
   states: { type: Array, default: () => [] },
   /**
    * The row's resolved links, keyed by fieldname. A board card draws fields
-   * straight off a list row, where a Link is an id and the label for it came
-   * back beside it; a hover card's fields arrive already resolved and pass
-   * nothing here.
+   * straight off a list row, where a Link is an id; a hover card's fields
+   * arrive already resolved and pass nothing here.
    */
   links: { type: Object, default: () => ({}) },
   /** `row._meta` — when it moved, how many comments, whether it is liked. */
@@ -295,44 +253,36 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   shape: { type: String, default: 'panel' },
   /**
-   * Whether the record's picture is the subject of this card.
-   *
-   * The caller's answer, not this component's: it depends on the *screen*
-   * rather than on the record. A grid over a doctype that declares an
-   * `image_field` is a gallery and every card gets a cover, the ones with no
-   * picture included — otherwise a page of contacts where two have photographs
-   * is two tall cards among twenty short ones.
+   * Whether the record's picture is the subject of this card. The caller's
+   * answer, not this component's: it depends on the *screen*. A grid over a
+   * doctype that declares an `image_field` is a gallery and every card gets a
+   * cover, the ones with no picture included.
    */
   cover: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['open', 'like'])
 
-// Computed rather than a ternary in the binding. `test_every_class_emits_css`
-// reads the string literals out of a `:class` and checks each is a real
-// utility, so `shape === 'panel' ? 'p-3' : ''` offered it `panel` and `tile` as
-// class names and it rightly said neither emits any CSS.
+// Computed rather than a ternary in the binding: `test_every_class_emits_css`
+// reads the string literals out of a `:class`, and `shape === 'panel' ? …`
+// offered it `panel` and `tile` as class names.
 const isPanel = computed(() => props.shape === 'panel')
 
-// A card's tags come from the same `_meta.tags` the list's Tags column reads,
-// so a record tagged twice is not tagged once here. See `spaceview._with_meta`.
+// A card's tags come from the same `_meta.tags` the list's Tags column reads.
+// See `spaceview._with_meta`.
 const tags = computed(() => props.meta?.tags || [])
 
 // `gap-2.5` is the rhythm the hairlines sit in: the same space above and below
 // each one, which is what makes three bands read as three bands.
 const frame = computed(() => (isPanel.value ? '' : 'flex flex-col gap-2.5 p-3'))
 
-// What stands in for a picture where there is not one. The first letter of what
-// the record is called, which is what Avatar itself falls back to — the same
-// answer, drawn at the size a gallery asks for.
-// The id, under the name, where the name is not already the id — the server
-// blanks it in exactly that case, so this is only asking whether there is a
-// second thing to say. A doctype with no `title_field` names its records by
-// their id, and a card printing that twice says nothing the once did not.
+// What stands in for a picture: the first letter of what the record is called,
+// which is what Avatar itself falls back to.
+// The id under the name, where the name is not already the id — the server
+// blanks it in exactly that case.
 const subtitle = computed(() => props.record.id || '')
 
-// How this site renders a number when the field does not say, for the pills —
-// the same answer `FieldCell` reads for the cells.
+// How this site renders a number when the field does not say, for the pills.
 const formats = computed(() => session.data?.formats || {})
 
 const initial = computed(

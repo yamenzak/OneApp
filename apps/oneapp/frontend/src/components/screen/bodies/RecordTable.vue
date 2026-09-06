@@ -5,31 +5,20 @@
 
     What it is not is a *list*. It knows nothing about what a cell contains,
     what a row click means, where the rows came from, or whether they can be
-    sorted — those are the consumer's, through slots and props. `ListBody`
-    draws a screen's records with it; `ChildTable` draws the rows inside one
-    record with it. The two disagree about all of the above and about none of
-    this.
-
-    It exists because they used to disagree about this too. The chrome was
-    written once in the list and never in the grid, so the grid had no widths,
-    no pinning and no sticky header — and the one piece it did copy, the row
-    inset, it copied wrongly, along with nine other tables. One table means one
-    place to be wrong.
+    sorted — those are the consumer's, through slots and props. `ListBody` draws
+    a screen's records with it; `ChildTable` draws the rows inside one record
+    with it. One table means one place to be wrong.
   -->
   <div class="relative flex min-h-0 flex-col" :class="fills ? 'flex-1' : ''">
     <!--
-      One scroller, both directions. That is the whole trick: with the pane a
-      fixed height, this element's horizontal scrollbar sits at its own bottom
-      edge — on screen — instead of at the bottom of a table you have to scroll
-      down to reach. Sharing one container with the rows is also what keeps the
-      sticky header aligned: a separate header would sit outside the vertical
-      scrollbar's gutter and be a scrollbar's width out of true.
+      One scroller, both directions. With the pane a fixed height its horizontal
+      scrollbar sits at its own bottom edge instead of at the bottom of a table
+      you have to scroll down to reach — and sharing one container with the rows
+      is what keeps the sticky header aligned.
     -->
     <!--
-      One scroller. Which axes it scrolls is the height mode, and that is the
-      only difference between a table that fills a pane and one that sits in a
-      form: the first has a height to scroll within, the second is as tall as
-      its rows and only ever runs out of width.
+      Which axes it scrolls is the height mode, and that is the only difference
+      between a table that fills a pane and one that sits in a form.
     -->
     <div
       ref="scroller"
@@ -48,10 +37,9 @@
         <ListHeader :class="sticky ? 'sticky top-0 z-20' : ''">
           <template v-for="c in placed" :key="c.key">
             <!--
-              A column the consumer draws itself, whole. The count and the
+              A column the consumer draws itself, whole: the count and the
               favourites heart live in `#prefix` and `#suffix` of their cell,
-              which a content slot cannot reach — so that column hands back the
-              cell rather than what goes in it.
+              which a content slot cannot reach.
             -->
             <slot
               v-if="$slots[`header-${c.key}`]"
@@ -62,17 +50,14 @@
             />
 
             <!--
-              Sorting lives on the headers, which is where everybody reaches
-              first and the only place a direction can sit beside the thing it
-              applies to. frappe-ui ships the cell for it — a real button, the
-              aria-sort, the arrow on hover — so this wires state to it rather
-              than rebuilding it.
+              Sorting lives on the headers, the only place a direction can sit
+              beside the thing it applies to. frappe-ui ships the cell for it,
+              so this wires state to it rather than rebuilding it.
             -->
             <!--
               `aligned` here too, and it was missing: only the plain header cell
-              carried it, so every *sortable* column — which is nearly all of
-              them — sat left over right-aligned numbers. A heading out of true
-              with its own column reads as two columns.
+              carried it, so every sortable column sat left over right-aligned
+              numbers.
             -->
             <ListHeaderCellSort
               v-else-if="c.sortable"
@@ -97,9 +82,9 @@
               </template>
               {{ c.label }}
               <!--
-                A required column says so where its label is said. A grid cell
-                has no room for one, so without this the only warning that a
-                column may not be left blank is the save failing.
+                A required column says so where its label is said. A grid cell has
+                no room for one, so without this the only warning is the save
+                failing.
               -->
               <template #suffix v-if="c.required">
                 <span class="text-ink-red-4" aria-hidden="true">*</span>
@@ -109,18 +94,15 @@
         </ListHeader>
 
         <!--
-          One group per run of rows sharing a value. Whoever sorted the rows
-          put the group column first, so a run *is* a group — which is why this
-          is chunking rather than bucketing, and why a group never appears
-          twice.
+          One group per run of rows sharing a value. Whoever sorted the rows put
+          the group column first, so a run *is* a group — which is why this
+          chunks rather than buckets, and why a group never appears twice.
         -->
         <template v-if="groups">
           <ListGroup v-for="group in groups" :key="group.label" :label="group.label" sticky>
             <!--
-              What the group adds up to, where the caller worked it out. On the
-              heading rather than a row of its own: a subtotal under a run of
-              rows reads as another row, and the reader is scanning the
-              headings to find their group in the first place.
+              What the group adds up to. On the heading rather than a row of its
+              own: a subtotal under a run of rows reads as another row.
             -->
             <template v-if="group.note" #header>
               <span class="flex w-full items-baseline gap-2 pe-2">
@@ -149,10 +131,9 @@
         </template>
 
         <!--
-          Windowed past a few hundred. A list somebody keeps loading reaches
-          thousands of rows, and thousands of rows each carrying an avatar,
-          badges and two buttons is a slow page. Below the threshold the plain
-          path is simpler and behaves better with a keyboard.
+          Windowed past a few hundred. Thousands of rows each carrying an
+          avatar, badges and two buttons is a slow page; below the threshold the
+          plain path behaves better with a keyboard.
         -->
         <ListRows
           v-else
@@ -175,27 +156,19 @@
         </ListRows>
 
         <!--
-          A row of totals, under the rows and stuck to the bottom edge.
-
-          A `ListHeader` rather than a `ListRow`, which is what it structurally
-          is: the same tracks, the same band, the same pinning arithmetic, and
-          none of a row's selection or click behaviour. A total is not a record
-          and ticking it would be meaningless.
-
-          What goes in each cell is the consumer's — this table still knows
-          nothing about what a column contains.
+          A row of totals, stuck to the bottom edge. A `ListHeader` rather than a
+          `ListRow`, which is what it structurally is: the same tracks, the same
+          pinning arithmetic, and none of a row's selection or click behaviour.
         -->
         <!--
           The select-all is hidden rather than absent: `ListHeader` draws one
-          whenever the list is selectable and offers no way to say otherwise,
-          and a checkbox beside a total is a control that would do nothing.
-          `invisible` rather than `hidden` so the cell keeps its width and the
-          totals stay under their own columns.
+          whenever the list is selectable and offers no way to say otherwise.
+          `invisible` rather than `hidden` so the cell keeps its width.
 
-          Mounted with the table rather than with the numbers, deliberately:
-          `ListHeader` sets the flag that puts the whole list into table
-          semantics and clears it on unmount, so a totals row that came and went
-          as an aggregate arrived would take `role="table"` with it.
+          Mounted with the table rather than with the numbers: `ListHeader` sets
+          the flag that puts the list into table semantics and clears it on
+          unmount, so a totals row that came and went would take `role="table"`
+          with it.
         -->
         <ListHeader
           v-if="$slots.total"
@@ -215,10 +188,8 @@
     </div>
 
     <!--
-      A table wide enough to scroll has to say so. The scrollbar is on screen,
-      but an overlay scrollbar fades and a full-bleed column at the edge reads
-      as the end of the table — so the edge with more beyond it carries a rule,
-      and it goes away when there is not.
+      A table wide enough to scroll has to say so: an overlay scrollbar fades and
+      a full-bleed column at the edge reads as the end of the table.
     -->
     <div v-if="edges.left" aria-hidden="true" :class="[EDGE, 'left-0']" />
     <div v-if="edges.right" aria-hidden="true" :class="[EDGE, 'right-0']" />
@@ -244,10 +215,9 @@ const props = defineProps({
    * The columns, in order. Each is
    * `{ key, label, icon?, track, width?, pin?, align?, required?, sortable? }`.
    *
-   * `track` is a CSS grid track — `'180px'` for a table whose widths the
-   * reader sets, `'minmax(8rem, 1fr)'` for one that shares what it is given.
-   * `width` is the same number as pixels and is only needed for pinning and
-   * for `fill`, both of which are arithmetic over widths.
+   * `track` is a CSS grid track; `width` is the same number as pixels and is
+   * only needed for pinning and for `fill`, both of which are arithmetic over
+   * widths.
    */
   columns: { type: Array, required: true },
   rows: { type: Array, default: () => [] },
@@ -263,12 +233,10 @@ const props = defineProps({
   /** Rows past which they are windowed. 0 never windows them. */
   virtualFrom: { type: Number, default: 0 },
   /**
-   * The column that takes whatever width is left over, by key.
-   *
-   * Three columns in a wide pane is a small table in a pool of white space.
-   * The slack goes in as pixels rather than as an `fr` track, so the pinning
-   * offsets and the edge measurement keep working off one set of numbers —
-   * which is also why this only applies where every column has a `width`.
+   * The column that takes whatever width is left over, by key. The slack goes
+   * in as pixels rather than as an `fr` track so the pinning offsets and the
+   * edge measurement keep working off one set of numbers — which is why this
+   * only applies where every column has a `width`.
    */
   fill: { type: String, default: '' },
   /** Attributes and listeners to bind on each row — the drag handlers. */
@@ -287,34 +255,25 @@ const emit = defineEmits(['sort', 'row-click'])
 const chosen = defineModel('selection', { type: Array, default: () => [] })
 
 // A pinned column stops scrolling. Opaque, or the columns sliding under it read
-// through it — and the offset is an inline style rather than a class because it
-// is a computed pixel value, not a token.
+// through it; the offset is an inline style because it is a computed pixel
+// value, not a token.
 /**
  * The row inset, decided here rather than handed in.
  *
  * `list-row-px-3` sets frappe-ui's public `--list-row-padding-x`, which the
  * *header* reads. The rows read a private one the library sets only on
- * `[data-interactive]` rows — which a row becomes by being a link or a button,
- * or by sitting in a selectable list. So the class is right for a selectable
- * table and wrong for a static one, where it insets the header twelve pixels
- * and leaves the rows flush under it, every column out of true with its own
- * heading. A static table pads the grid instead, which moves both together.
- *
- * That was eleven tables across seven files, and it read as "the spacing is
- * broken" long before anyone worked out why. It is a computed here so there is
- * nothing left to get wrong: the caller says whether rows can be ticked, and
- * the inset follows from that.
+ * `[data-interactive]` rows. So the class is right for a selectable table and
+ * wrong for a static one, where it insets the header and leaves the rows flush
+ * under it. A static table pads the grid instead, which moves both together.
  */
 const rowInset = computed(() => (props.selectable ? 'list-row-px-3' : 'px-3'))
 
 // Computed rather than a ternary in the binding: `test_every_class_emits_css`
-// reads the string literals out of a `:class` and checks each is a real
-// utility, so `align === 'end' ? …` offered it `end` as a class name and it
-// rightly said that emits no CSS.
+// reads the string literals out of a `:class`, and `align === 'end' ? …`
+// offered it `end` as a class name.
 const RIGHT = 'justify-end'
 // Logical, so a column of Arabic aligns to the side its words start on. The
-// header takes the same class as the cells: a right-aligned column with a
-// left-aligned heading reads as two columns.
+// header takes the same class as the cells.
 const ALIGNED = { end: RIGHT, center: 'justify-center text-center' }
 const aligned = (c) => ALIGNED[c.align] || ''
 
@@ -322,23 +281,15 @@ const PINNED = 'sticky z-10 bg-surface-base'
 
 // The edge affordance: a hairline at whichever side has more beyond it.
 //
-// It was a 40px gradient wash, which is the shape a phone app uses to fade
-// content out and reads as decoration on a data grid — it dimmed a strip of
-// real values to say something about scrolling. A rule says the same thing in
-// one pixel and hides nothing.
-//
 // A border rather than a background, because the hairline wants the token the
 // header band and the row dividers already draw — and that token is an
-// *outline* colour, so `bg-outline-gray-2` is not a class at all. It emitted no
-// CSS and the affordance was simply invisible.
-//
-// Above the sticky header's z-index, or it stops at the first row.
+// *outline* colour, so `bg-outline-gray-2` is not a class at all and emitted no
+// CSS. Above the sticky header's z-index, or it stops at the first row.
 const EDGE = 'pointer-events-none absolute inset-y-0 z-30 w-0 border-l border-outline-gray-2'
 
 // The band behind the column headers, and the reason `ListHeader`'s own rule is
 // off: that rule is a grid child inset to the content box, so under a
-// full-width fill it stopped short at both ends. The band carries its own
-// full-width rule instead.
+// full-width fill it stopped short at both ends.
 const BAND = [
   '[&_[data-slot=list-header]]:h-9',
   '[&_[data-slot=list-header]]:bg-surface-gray-1',
@@ -350,11 +301,10 @@ const BAND = [
   '[&_[data-slot=list-group-header]]:top-9',
 ].join(' ')
 
-// What a row spends on things that are not columns: the checkbox inset the
-// List adds for `selectable`, the row padding at both ends, and the column gap
-// between every pair of tracks. Read off frappe-ui's own `style.css` rather
-// than guessed — the first version forgot the gaps and left the table four
-// pixels wider than the pane, which is a horizontal scrollbar over nothing.
+// What a row spends on things that are not columns: the checkbox inset, the row
+// padding at both ends, and the column gap between every pair of tracks. Read
+// off frappe-ui's own `style.css` rather than guessed — the first version
+// forgot the gaps and left a horizontal scrollbar over nothing.
 const CHECKBOX = 32
 const ROW_PAD = 12 * 2
 const COLUMN_GAP = 8
@@ -362,9 +312,7 @@ const COLUMN_GAP = 8
 const scroller = ref(null)
 // Whether there is more table beyond each edge. Both false on a table that fits.
 const edges = ref({ left: false, right: false })
-// How much room there is, which is what decides whether the tracks add up to
-// less than it. Measured by the same observer the edges use — there is one
-// question here, asked when the box changes.
+// How much room there is, measured by the same observer the edges use.
 const paneWidth = ref(0)
 
 const widened = computed(() => {
@@ -387,9 +335,8 @@ const widened = computed(() => {
 const placed = computed(() => {
   const declared = widened.value
 
-  // Where a pinned column starts, in pixels. A left pin sits past everything
-  // pinned left before it; a right pin past everything pinned right after it.
-  // Fixed widths are what make this computable at all.
+  // Where a pinned column starts, in pixels: a left pin sits past everything
+  // pinned left before it, a right pin past everything pinned right after it.
   let fromLeft = 0
   const offsets = new Map()
   for (const column of declared) {
@@ -410,8 +357,7 @@ const placed = computed(() => {
 const tracks = computed(() => placed.value.map((c) => c.track))
 
 // A computed rather than an inline expression: a `>` inside a template
-// attribute ends the tag as far as any regex-shaped parser is concerned, which
-// is how the frappe-ui prop guard read `rows.length` as a prop name.
+// attribute ends the tag as far as any regex-shaped parser is concerned.
 const windowed = computed(
   () => !!props.virtualFrom && props.rows.length > props.virtualFrom,
 )
@@ -428,16 +374,13 @@ const directionFor = (c) => {
 
 // A click on a cell rather than on the row.
 //
-// frappe-ui's own answer is the row — `ListRow.onClick` returns before the
-// app's handler ever runs when the list is selectable, which is documented as
-// switching "row click from navigate to toggle". Handled on the cell, stopping
-// it here means `ListRow` never sees it, so its toggle never fires; the
-// checkbox keeps working because `ListRowBase` renders it as an
-// absolutely-positioned sibling with its own `.stop` handler.
+// frappe-ui's `ListRow.onClick` returns before the app's handler ever runs when
+// the list is selectable. Handled on the cell, stopping it here means `ListRow`
+// never sees it; the checkbox keeps working because `ListRowBase` renders it as
+// an absolutely-positioned sibling with its own `.stop` handler.
 //
-// A control inside the cell owns its own click: a like heart, a link chip, an
-// input. Without this, liking a row would also open it, and typing into a
-// child cell would toggle its tick box.
+// A control inside the cell owns its own click: without this, liking a row
+// would also open it.
 const INTERACTIVE =
   'a[href], button, input, select, textarea, [role="checkbox"], [contenteditable="true"]'
 
@@ -448,8 +391,7 @@ const clicked = (row, index, event) => {
 }
 
 // Read rather than tracked: a scroll position is the DOM's own state, and
-// mirroring it into a ref that then has to be kept in step is how the two end
-// up disagreeing.
+// mirroring it into a ref is how the two end up disagreeing.
 const measureEdges = () => {
   const el = scroller.value
   if (!el) return
@@ -463,14 +405,9 @@ const measureEdges = () => {
   }
 }
 
-// The scroll width changes without a scroll: rows arriving, a column resized or
-// added, the window narrowed. None of those fire `scroll`, and an edge left
-// behind on a table that now fits is a lie about there being more.
-//
-// A ResizeObserver rather than a watcher and a nextTick. That is what the first
-// attempt was, and it measured a table that was not laid out yet — the edge
-// only appeared once something else caused a scroll, so a table that opened too
-// wide said nothing at all. An observer fires when the box is real.
+// The scroll width changes without a scroll: rows arriving, a column resized,
+// the window narrowed. A ResizeObserver rather than a watcher and a nextTick,
+// which measured a table that was not laid out yet.
 const observer = new ResizeObserver(measureEdges)
 
 watch(
@@ -478,8 +415,8 @@ watch(
   (el) => {
     observer.disconnect()
     if (!el) return
-    // Both boxes: the viewport and the content. Only one of them changes when
-    // the window narrows, and only the other when a column is widened.
+    // Both boxes: only one changes when the window narrows, and only the other
+    // when a column is widened.
     observer.observe(el)
     if (el.firstElementChild) observer.observe(el.firstElementChild)
     measureEdges()
