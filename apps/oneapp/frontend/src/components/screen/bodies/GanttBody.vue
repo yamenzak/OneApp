@@ -1,19 +1,12 @@
 <template>
   <!--
-    The Gantt: the same rows, drawn as bars down time.
-
-    Same rows, same filters, same order as every other body — what changes is
-    that a record with two dates on it becomes a length rather than a line. It
-    is the view for the question a list cannot answer without arithmetic: what
-    overlaps what, and what is late.
+    The Gantt: the same rows, drawn as bars down time. The view for the question
+    a list cannot answer without arithmetic — what overlaps what, and what is
+    late.
 
     The chart is `frappe-gantt`, Frappe's own MIT package, so this is a
-    dependency and not a vendoring. It draws into a plain element from a list
-    of `{id, name, start, end, progress}`, which is the whole of what this
-    component does — that, and taking a click back to the record.
-
-    A page rather than a range, unlike the calendar: a plan is read whole, and
-    "the bars that happen to be in September" is not a plan.
+    dependency and not a vendoring. A page rather than a range, unlike the
+    calendar: a plan is read whole.
   -->
   <div class="min-h-0 flex-1 overflow-auto p-3" data-slot="gantt">
     <EmptyState
@@ -47,9 +40,9 @@ const props = defineProps({
   /** The page of records, already fetched and shaped by the shell. */
   rows: { type: Array, default: () => [] },
   /**
-   * Which fields the two ends are, as the last page came back for them — the
-   * same reason the board's column field is handed down rather than read from
-   * the spec: the shell owns the request.
+   * Which fields the two ends are, as the last page came back for them — handed
+   * down for the same reason the board's column field is: the shell owns the
+   * request.
    */
   gantt: { type: Object, default: () => ({}) },
 })
@@ -76,14 +69,9 @@ const day = (value) => String(value || '').trim().split(' ')[0]
 /**
  * The bar this one comes after, where the screen names a field for it.
  *
- * A schedule is a set of bars and the arrows between them, and until now this
- * drew only the bars — so a chart of a fit-out showed six lengths and nothing
- * about which of them was waiting on which, which is most of what a plan is.
- *
- * Bounded to the page. The chart resolves a dependency by looking the id up in
- * the list it was handed, so an id that is not there draws nothing at best; and
- * a record whose predecessor is on page two is a record whose arrow would
- * appear and disappear as somebody pressed Load more.
+ * Bounded to the page: the chart resolves a dependency by looking the id up in
+ * the list it was handed, so a predecessor on page two is an arrow that appears
+ * and disappears as somebody presses Load more.
  */
 const onPage = computed(() => new Set(props.rows.map((row) => row.name)))
 
@@ -99,21 +87,19 @@ const bars = computed(() => {
     .map((row) => {
       const from = day(row[field.value])
       const to = day(row[endField.value])
-      // Both ends or no bar. A record with one date is a moment, and drawing
-      // it as a bar of arbitrary length would be inventing a plan.
+      // Both ends or no bar. A record with one date is a moment, and drawing it
+      // as a bar of arbitrary length would be inventing a plan.
       if (!from || !to) return null
       return {
         id: row.name,
         name: nameOf(row),
         start: from,
         // A bar that ends before it starts is a typo in the data rather than a
-        // shape to draw: shown as a single day, which is what it is.
+        // shape to draw: shown as a single day.
         end: to < from ? from : to,
         progress: measure.value ? Number(row[measure.value]) || 0 : 0,
-        // What this one waits on, as the arrow the chart draws between two
-        // bars. Only where the bar it names is on this page: `frappe-gantt`
-        // looks the id up in the list it was given and an arrow to nothing is
-        // a line into the margin.
+        // What this one waits on. Only where the bar it names is on this page —
+        // an arrow to nothing is a line into the margin.
         dependencies: waiting(row),
       }
     })
@@ -121,19 +107,16 @@ const bars = computed(() => {
 })
 
 /**
- * Read-only, like the calendar and for the same reason.
- *
- * Dragging a bar writes two fields on a record, and this screen already writes
- * them properly — with the doctype's rules, its permissions and whatever else
- * depends on them. `readonly` rather than leaving the handles on and ignoring
- * what they emit: a control that moves and then springs back is worse than one
- * that does not move.
+ * Read-only, like the calendar and for the same reason: dragging a bar writes
+ * two fields, and this screen already writes them properly. `readonly` rather
+ * than ignoring what the handles emit — a control that moves and springs back
+ * is worse than one that does not move.
  */
 const OPTIONS = {
   readonly: true,
   view_mode: 'Week',
-  // Frappe's own default set, minus the ones that make no sense at this
-  // scale: Hour is a chart of one afternoon and Year is a chart of nothing.
+  // Frappe's own default set, minus the ones that make no sense at this scale:
+  // Hour is a chart of one afternoon and Year is a chart of nothing.
   view_mode_select: true,
   popup: false,
 }
@@ -157,8 +140,8 @@ onMounted(draw)
 watch(bars, draw)
 
 onBeforeUnmount(() => {
-  // The library binds to the element and to `window`; leaving it attached
-  // after the body swaps is a listener drawing into a detached tree.
+  // The library binds to the element and to `window`; leaving it attached after
+  // the body swaps is a listener drawing into a detached tree.
   chart?.clear?.()
   chart = null
 })
@@ -168,16 +151,14 @@ onBeforeUnmount(() => {
 /*
  * The chart, in this product's colours.
  *
- * `frappe-gantt` ships its own palette on `:root` with a dark set behind
- * `html[data-theme=dark]` — which is our attribute, but only when a reader has
- * *chosen* a mode: on the default "system" setting nothing is stamped and the
- * chart would draw a white grid on a dark page. So the variables are taken from
- * frappe-ui's tokens instead, which resolve in all three states and which every
- * other surface in the app is already painted from.
+ * `frappe-gantt` ships its own palette behind `html[data-theme=dark]` — our
+ * attribute, but only stamped when a reader has *chosen* a mode, so on the
+ * default "system" setting the chart drew a white grid on a dark page. The
+ * variables come from frappe-ui's tokens instead, which resolve in all three
+ * states.
  *
- * Unscoped because the library draws into an element it owns rather than into
- * this template, so a `scoped` attribute would never reach it. Confined to
- * `.gantt-container`, which is the library's own root and nothing else's.
+ * Unscoped because the library draws into an element it owns, so a `scoped`
+ * attribute would never reach it. Confined to `.gantt-container`.
  */
 .gantt-container {
   --g-header-background: var(--surface-base);

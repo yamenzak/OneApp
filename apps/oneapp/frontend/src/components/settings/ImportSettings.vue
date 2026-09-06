@@ -2,16 +2,10 @@
   <!--
     Bringing everything with you from the system you are leaving.
 
-    The engine behind this is in `oneapp_core/importer.py` and it is the reason
-    this panel is two buttons rather than a wizard: it is idempotent, so running
-    it twice is safe, and incremental, so running it again brings only what has
-    changed since. That turns a migration from an event into a habit — rehearse
-    it a month out, run it whenever, run it once more the morning you switch and
-    it catches the night's work.
-
-    So the buttons are honest about which is which: **Rehearse** writes nothing
-    and reports exactly what the real one would do, and the real one says "bring
-    across" the first time and "bring across what has changed" every time after.
+    The engine is `oneapp_core/importer.py`, and it is why this panel is two
+    buttons rather than a wizard: it is idempotent and incremental, so running
+    it again brings only what has changed. **Rehearse** writes nothing and
+    reports exactly what the real one would do.
   -->
   <SettingsHeader
     title="Import"
@@ -30,10 +24,9 @@
 
     <div v-else class="flex flex-col gap-6 py-4">
       <!--
-        Where it is coming from. A key and a secret the customer makes on their
-        own old site — the secret goes out and never comes back: the server
-        keeps it where Frappe keeps passwords, so this box is blank on every
-        visit and filling it in is what changes it.
+        Where it is coming from. The secret goes out and never comes back — the
+        server keeps it where Frappe keeps passwords, so this box is blank on
+        every visit and filling it in is what changes it.
       -->
       <div v-for="one in sources" :key="one.name" class="flex flex-col gap-3">
         <div class="flex items-center gap-2">
@@ -61,10 +54,9 @@
         </div>
 
         <!--
-          "Save connection" and not "Save": this is one card's own action, not
-          the panel's, and there can be more than one card. The pinned-footer
-          rule is about a panel whose single Save scrolls out of reach — a
-          button that scrolls with the thing it saves is where it belongs.
+          "Save connection" and not "Save": this is one card's own action, and
+          there can be more than one card. The pinned-footer rule is about a
+          panel whose single Save scrolls out of reach.
         -->
         <div class="flex items-center gap-2">
           <Button label="Save connection" :loading="saving === one.name" @click="save(one)" />
@@ -77,21 +69,16 @@
         </div>
       </div>
 
-      <!--
-        Adding the first one. Without this the panel's first state is a dead
-        end: nowhere to type an address, and a shipped plan that cannot be set
-        up because it has nothing to point at.
-      -->
+      <!-- Adding the first one. Without this the panel's first state is a dead
+           end: a shipped plan that cannot be set up. -->
       <div>
         <Button label="Add a connection" icon-left="plus" @click="add" />
       </div>
 
       <!--
-        What this app ships and this workspace has not set up. Pressing it
-        writes the plan and the records its maps write against — which is the
-        difference between a migration somebody runs and a migration somebody
-        first has to assemble. The `custom_` fields its maps name are not here:
-        those belong to the space and arrive with the entitlement.
+        What this app ships and this workspace has not set up. Pressing it writes
+        the plan and the records its maps write against. The `custom_` fields
+        its maps name belong to the space and arrive with the entitlement.
       -->
       <div
         v-for="one in shipped"
@@ -118,11 +105,8 @@
             :disabled="!into[one.key]"
             @click="setUp(one)"
           />
-          <!--
-            One connection is the ordinary case and picking from a list of one
-            is a question with an answer already, so it is a sentence until
-            there is a second.
-          -->
+          <!-- One connection is the ordinary case, and picking from a list of
+               one is a question with an answer already. -->
           <span v-if="sources.length < 2" class="text-p-sm text-ink-gray-5">
             {{ into[one.key] ? `from ${into[one.key]}` : 'add a connection first' }}
           </span>
@@ -138,9 +122,8 @@
 
       <!--
         What will come across, and the two buttons. The step list is the plan in
-        the order it runs — parties before the invoices that point at them —
-        and each row says when it last saw anything, which is what makes "up to
-        the last second" something you can read rather than something to trust.
+        the order it runs — parties before the invoices that point at them — and
+        each row says when it last saw anything.
       -->
       <div
         v-for="plan in plans"
@@ -176,12 +159,9 @@
 
         <div class="flex items-center gap-2">
           <!--
-            Before either of the other two, and it touches nothing at all: it
-            reads both schemas — the old system's over the wire, this site's
-            locally — and says what the plan gets wrong. A field renamed since
-            somebody wrote the map drops a column silently; a value map that
-            covers four of five values lets the fifth through untouched. Those
-            are found here or they are found in a report a week later.
+            Before either of the other two, and it touches nothing: it reads both
+            schemas and says what the plan gets wrong. A field renamed since
+            somebody wrote the map drops a column silently.
           -->
           <Button
             data-slot="import-check"
@@ -208,9 +188,9 @@
         </div>
 
         <!--
-          What the check found, per step, until something else is pressed. Green
-          is worth saying out loud: a plan that reads clean against both ends is
-          the difference between running a migration and hoping.
+          What the check found, per step. Green is worth saying out loud: a plan
+          that reads clean against both ends is the difference between running a
+          migration and hoping.
         -->
         <div
           v-if="checked[plan.name]"
@@ -264,9 +244,8 @@
 
     <!--
       Every row that would not come across, with what the old system said about
-      it. Kept whole on purpose: by the time anybody reads this the source has
-      moved on, and an error with no row attached is a question nobody can
-      answer.
+      it. Kept whole: by the time anybody reads this the source has moved on,
+      and an error with no row attached is a question nobody can answer.
     -->
     <Dialog v-model="showingIssues" title="Rows that were refused" size="3xl">
       <div class="flex flex-col gap-3">
@@ -321,8 +300,7 @@ const plans = ref([])
 const shipped = ref([])
 const draft = reactive({})
 // Which connection each offered plan would be set up against. A separate map
-// rather than a field on the offer, because the offer is the server's answer
-// and this is what somebody picked.
+// rather than a field on the offer, because the offer is the server's answer.
 const into = reactive({})
 const error = ref('')
 
@@ -333,8 +311,8 @@ const starting = ref('')
 const checkingPlan = ref('')
 const checked = reactive({})
 
-// The run being watched, and where its progress is kept. One at a time,
-// because `start` refuses a second run of a plan already going.
+// The run being watched, and where its progress is kept. One at a time, because
+// `start` refuses a second run of a plan already going.
 const running = ref('')
 const live = reactive({})
 let ticking = null
@@ -355,16 +333,15 @@ const load = async () => {
     plans.value = found?.plans || []
     shipped.value = found?.shipped || []
     for (const one of shipped.value) {
-      // The one connection there is, where there is only one: picking from a
-      // list of one is a question with an answer already.
+      // The one connection there is, where there is only one.
       into[one.key] = into[one.key] || sources.value[0]?.name || ''
     }
     for (const one of sources.value) {
       draft[one.name] = {
         base_url: one.base_url || '',
         api_key: one.api_key || '',
-        // Never seeded. The server does not send it back and a box that looked
-        // filled would be a box lying about what it holds.
+        // Never seeded: the server does not send it back, and a box that looked
+        // filled would be lying about what it holds.
         api_secret: '',
       }
     }
@@ -374,10 +351,9 @@ const load = async () => {
 }
 
 /**
- * A blank card to fill in.
- *
- * Local until Save connection: the server names an Import Source after what
- * somebody typed, so a row cannot exist before there is a name for it.
+ * A blank card to fill in. Local until Save connection: the server names an
+ * Import Source after what somebody typed, so a row cannot exist before there
+ * is a name for it.
  */
 const add = () => {
   const taken = new Set(sources.value.map((one) => one.name))
@@ -458,12 +434,8 @@ const run = async (plan, dry) => {
 }
 
 /**
- * Poll, because the job is on a worker and nothing pushes.
- *
- * A socket would be nicer and is not worth it here: an import is watched by one
- * person for a few minutes, once, and a two-second poll of one small answer is
- * cheaper than a room and a subscription that then have to be torn down
- * correctly on every path out of this panel.
+ * Poll, because the job is on a worker and nothing pushes. A socket is not
+ * worth it here: an import is watched by one person for a few minutes, once.
  */
 const watch = (planName, runName) => {
   clearInterval(ticking)

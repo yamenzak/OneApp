@@ -7,14 +7,12 @@
         label="From"
         :options="addresses.map((one) => ({ label: one, value: one }))"
       />
-      <!-- Stacked on a phone. Side by side, the toggle takes a third of the
-           line and leaves the recipients a box too narrow to read one
-           address in, which is the field that matters most on the screen
-           with the least room. -->
+      <!-- Stacked on a phone: side by side, the toggle leaves the recipients
+           a box too narrow to read one address in. -->
       <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
         <RecipientField v-model="draft.to" class="flex-1" label="To" />
-        <!-- Behind a toggle, because most messages have neither and two
-             empty boxes above every one of them is two boxes to skip. -->
+        <!-- Behind a toggle, because most messages have neither and two empty
+             boxes above every one of them is two boxes to skip. -->
         <Button
           variant="ghost"
           class="self-start sm:self-auto"
@@ -28,11 +26,10 @@
       <FormControl v-model="draft.subject" label="Subject" />
 
       <!--
-        The same editor a Text Editor field gets, with the same extensions:
-        mail is prose, and a textarea sends a paragraph of plain text to
-        somebody whose client will render it as one long line. `Editor` is
-        renderless — it owns the model, the upload and the placeholder and
-        draws nothing — so the toolbar is a choice made here.
+        The same editor a Text Editor field gets: mail is prose, and a textarea
+        sends a paragraph of plain text to somebody whose client renders it as
+        one long line. `Editor` is renderless, so the toolbar is a choice made
+        here.
       -->
       <div class="rounded-6 border border-outline-gray-2 bg-surface-base px-3 py-2">
         <Editor
@@ -49,8 +46,8 @@
         </Editor>
       </div>
 
-      <!-- What is going with it. A forward arrives here already carrying the
-           original's files; anything else is added below. -->
+      <!-- What is going with it. A forward arrives carrying the original's
+           files; anything else is added below. -->
       <div v-if="draft.attachments.length" class="flex flex-wrap gap-2">
         <span
           v-for="one in draft.attachments"
@@ -71,11 +68,8 @@
         </span>
       </div>
 
-      <!--
-        Upload one, or send one the workspace already has. Before the picker
-        this was upload-only, so attaching last week's drawing to a second
-        email meant uploading it a second time and paying for it twice.
-      -->
+      <!-- Upload one, or send one the workspace already has. Upload-only meant
+           attaching last week's drawing twice and paying for it twice. -->
       <div class="flex flex-wrap gap-2">
         <Button
           variant="subtle"
@@ -85,11 +79,8 @@
           @click="picking = true"
         />
         <!--
-          A message written once and sent often. A shared address answers the
-          same five questions all week, and typing the answer again each time is
-          both slow and inconsistent — which is the half a customer notices.
-          Only where there is one to use: a button that opens an empty menu is
-          a button that teaches people not to press it.
+          A message written once and sent often. Only where there is one to use:
+          a button that opens an empty menu teaches people not to press it.
         -->
         <Dropdown v-if="templates.length" :options="templateOptions">
           <Button
@@ -138,14 +129,10 @@ const props = defineProps({
   /** The addresses this person may send from. The first is the default. */
   addresses: { type: Array, default: () => [] },
   /**
-   * What this message is about, when it is written from a record rather than
-   * from the Mail screen: `{ spaceCode, screen, name }`.
-   *
-   * Sending through the record's own endpoint is what files the message
-   * against it — and that is the one filing in this product that needs no
-   * working out at all, because the person was looking at the record when they
-   * wrote it. Everything else about the composer is the same either way, which
-   * is why this is a prop and not a second composer.
+   * What this message is about, when it is written from a record:
+   * `{ spaceCode, screen, name }`. Sending through the record's own endpoint is
+   * what files the message against it — the one filing here that needs no
+   * working out, because the person was looking at the record.
    */
   about: { type: Object, default: null },
 })
@@ -156,8 +143,7 @@ const draft = reactive({
   sender: '', to: '', cc: '', bcc: '', subject: '', content: '',
   in_reply_to: '', attachments: [],
 })
-// Behind a toggle, because most messages have neither Cc nor Bcc and two empty
-// boxes above every one of them is two boxes to skip.
+// Behind a toggle, because most messages have neither Cc nor Bcc.
 const copies = ref(false)
 // Whether the attach picker is open.
 const picking = ref(false)
@@ -173,20 +159,16 @@ const templateOptions = computed(() =>
     // The name *is* the title: `Email Template` is named by prompt, so two
     // called "Delivery update" would be two rows nobody could tell apart.
     label: one.name,
-    // The record a template is for, where it names one: "Quotation" beside a
-    // template written for quotations is the difference between picking the
-    // right one and reading four.
+    // The record a template is for, where it names one.
     description: one.doctype || '',
     onClick: () => use(one),
   })),
 )
 
 /**
- * Put a template into the message.
- *
- * The subject is replaced; the body is written *above* whatever is there,
- * because what is there is a quote, a signature, or both — and a template that
- * ate somebody's signature would be a template nobody used twice.
+ * Put a template into the message. The subject is replaced; the body is written
+ * *above* whatever is there, because what is there is a quote, a signature, or
+ * both.
  */
 async function use(one) {
   const filled = props.about
@@ -218,10 +200,8 @@ const TITLES = { reply: 'Reply', reply_all: 'Reply to all', forward: 'Forward' }
  *
  * The signature belongs to the address rather than to the person, because an
  * address here is a mailbox several people share — so changing From changes the
- * sign-off, and it changes in front of somebody rather than on the way out.
- * That was the bug this closes: the signature people typed into settings was
- * never used at all, and the framework's own rule appended the *default
- * outgoing* account's one to everything. See `email/signatures.py`.
+ * sign-off, in front of somebody rather than on the way out. See
+ * `email/signatures.py`.
  */
 const sign = (was = '') => {
   draft.content = withSignature(
@@ -238,11 +218,9 @@ const blank = () => {
 }
 
 /**
- * Open the composer, blank or carrying a message.
- *
- * The carrying case is built on the server — see `mailbox.draft`. Quoting in
- * the browser would quote the copy the reader is looking at, which has had its
- * remote images held back, and send somebody a reply full of empty `<img>`.
+ * Open the composer, blank or carrying a message. The carrying case is built on
+ * the server — see `mailbox.draft`: quoting in the browser would quote the copy
+ * the reader is looking at, whose remote images have been held back.
  */
 async function compose(from, kind = 'reply') {
   error.value = ''
@@ -251,8 +229,7 @@ async function compose(from, kind = 'reply') {
   title.value = 'New message'
 
   // Read on opening rather than held: a template written a minute ago should be
-  // in the list, and this is one small request against a dialog somebody is
-  // about to spend a minute in.
+  // in the list.
   workspace.mailTemplates().then((found) => { templates.value = found || [] })
 
   if (from) {
@@ -270,17 +247,16 @@ async function compose(from, kind = 'reply') {
       copies.value = !!(opening.cc || opening.bcc)
     }
     if (!draft.sender) draft.sender = props.addresses[0] || ''
-    // Only for a message that has not been started. What was kept was kept with
-    // its signature in it, and signing it again would be signing what somebody
-    // may have deliberately deleted.
+    // Only for a message that has not been started: what was kept was kept with
+    // its signature in it, and signing it again would sign what somebody may
+    // have deliberately deleted.
     if (!draft.content) sign()
   }
   open.value = true
 }
 
-// Changing who it is from changes what signs it — and only that. `sign()`
-// swaps the block it owns and leaves everything else where it is, which is
-// what makes this safe to run over a half-written message.
+// Changing who it is from changes what signs it — and only that. `sign()` swaps
+// the block it owns, which is what makes this safe over a half-written message.
 watch(() => draft.sender, (address, was) => {
   if (open.value && was && address !== was) sign(was)
 })
@@ -298,7 +274,7 @@ async function post() {
     const values = {
       ...draft,
       // Names, not the files. They are already on the site; sending the bytes
-      // back through this call would be a second upload of what we hold.
+      // back would be a second upload of what we hold.
       attachments: JSON.stringify(draft.attachments.map((one) => one.name)),
     }
     const done = props.about
@@ -318,11 +294,8 @@ async function post() {
 
 /**
  * Whether there is a message here, as opposed to a composer that was opened.
- *
- * The signature does not count. It is put in before anybody types a word, so
- * without this every opened-and-closed composer left a draft behind it — and
- * the next blank message opened carrying a sign-off, a subject and a recipient
- * from a message somebody had decided not to write.
+ * The signature does not count — it is put in before anybody types a word, so
+ * without this every opened-and-closed composer left a draft behind it.
  */
 const written = () => {
   if (draft.to || draft.cc || draft.bcc || draft.subject) return true
@@ -331,8 +304,8 @@ const written = () => {
 }
 
 // Closing the composer by accident and losing a written message is the failure
-// people remember. Held server-side rather than in this browser, so it survives
-// the tab as well as the dialog.
+// people remember. Held server-side, so it survives the tab as well as the
+// dialog.
 let keeping = null
 watch(
   () => [draft.to, draft.cc, draft.bcc, draft.subject, draft.content].join('\u0000'),

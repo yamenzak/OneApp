@@ -1,23 +1,19 @@
 <template>
   <!--
-    A box per field, above the list. Frappe's standard filter row, and it is
-    worth copying because it answers the common case without opening anything:
-    most of the time a person wants "the open ones", not a filter builder.
+    A box per field, above the list. Frappe's standard filter row: most of the
+    time a person wants "the open ones", not a filter builder.
 
-    Which fields get a box is the doctype's own decision — `in_standard_filter`,
-    plus the title field — so no manifest repeats it. The ID box is always
-    there, as it is in the desk.
+    Which fields get a box is the doctype's own decision —
+    `in_standard_filter`, plus the title field — so no manifest repeats it. The
+    ID box is always there, as it is in the desk.
   -->
   <div ref="row" class="flex flex-wrap items-center gap-2">
     <!--
-      On a phone only the ID box stays, and the toolbar's chevron reveals the
-      rest — which is what Frappe's own mobile list does. Five boxes stacked is
-      most of the screen before a single row shows, and hiding them with no way
-      back was the half of that we had.
+      On a phone only the ID box stays and the toolbar's chevron reveals the
+      rest, which is what Frappe's own mobile list does: five boxes stacked is
+      most of the screen before a single row shows.
     -->
-    <!--
-      As many as fit, and no more. See `fits`.
-    -->
+    <!-- As many as fit, and no more. See `fits`. -->
     <div
       v-for="quick in shown"
       :key="quick.key"
@@ -44,13 +40,11 @@
           @keydown.enter="apply"
         />
         <!--
-          Equals or contains, per box, remembered per screen. The same two
-          Frappe offers, and the same icons: `=` is exact, `≈` is roughly.
+          Equals or contains, per box, remembered per screen — the same two
+          Frappe offers and the same icons.
 
-          Only once there is something in the box. An empty box has nothing to
-          match either way, so the toggle beside it was a control that could
-          not do anything — five of them across an empty row, each one a second
-          control glued to a box that reads as one.
+          Only once there is something in the box: an empty box has nothing to
+          match either way.
         -->
         <Dropdown v-if="quick.match && draft[quick.key]" :options="matchOptions(quick)">
           <Button
@@ -77,35 +71,28 @@ const emit = defineEmits(['changed', 'overflow'])
 
 // What the person has typed, and how each box matches. Both keyed by fieldname,
 // with `name` standing for the ID box.
-// FormControl puts a class on its wrapper, and the rounding is on the input
-// inside it — so squaring the wrapper leaves the input round and the toggle
-// button beside it looks bolted on. Reach the input.
+// FormControl puts a class on its wrapper and the rounding is on the input
+// inside it, so squaring the wrapper leaves the input round. Reach the input.
 const SQUARE_END = '[&_input]:rounded-e-none'
 
-// One box per line on a phone, each taking the width it is given: the ID box
-// alone on the first line with the row's two controls at its end, and the rest
-// underneath it once they are revealed. Anything else puts two boxes on the
-// first line and squeezes the one people actually type in.
+// One box per line on a phone, each taking the width it is given. Anything else
+// puts two boxes on the first line and squeezes the one people type in.
 //
 // A constant and not a comment inside the binding: the token audit reads a
-// `:class` array as class names, and an English sentence in one is a hundred
-// tokens that emit no CSS.
+// `:class` array as class names.
 const BOX = 'basis-full sm:basis-auto'
 
 /**
  * How many boxes there is room for, measured rather than guessed.
  *
- * This row used to be laid out against the *viewport* — `sm:` and a wrap — and
- * the thing that decides whether five boxes fit is the *pane*: open a record
- * beside the list and the same five became two lines of empty boxes, and then
- * three. Squeezing them instead was worse; a box whose placeholder reads
- * "Alloca" is a box nobody can use.
+ * What decides whether five boxes fit is the *pane*, not the viewport: open a
+ * record beside the list and the same five became two lines of empty boxes.
+ * Squeezing them was worse — a box whose placeholder reads "Alloca" is a box
+ * nobody can use.
  *
- * So the row measures itself and shows what fits at a readable width. The rest
- * are not gone: the chevron in the toolbar reveals them, which is the control
- * a phone has always had for exactly this, and every column is in the filter
- * panel besides. `expanded` shows them all and lets the row wrap, because
- * asking for them is asking for the space.
+ * The rest are not gone: the chevron in the toolbar reveals them, and every
+ * column is in the filter panel besides. `expanded` shows them all and lets the
+ * row wrap.
  */
 const BOX_WIDTH = 152
 const SIDE_BY_SIDE = '(min-width: 640px)'
@@ -118,8 +105,7 @@ const onMedia = () => (wide.value = media.matches)
 
 onMounted(() => {
   // Below the breakpoint the boxes are full width and stack, so exactly one
-  // fits however wide the row is — the same `sm:` that governs their layout,
-  // asked as a question rather than repeated as a guess.
+  // fits however wide the row is — the same `sm:` that governs their layout.
   media = window.matchMedia(SIDE_BY_SIDE)
   onMedia()
   media.addEventListener('change', onMedia)
@@ -136,19 +122,17 @@ onBeforeUnmount(() => {
   media?.removeEventListener('change', onMedia)
 })
 
-// Never fewer than one: the ID box is the one people type in, and a row that
-// measured itself at zero — which is what it measures before it is laid out —
-// showing nothing at all is a row that never comes back.
+// Never fewer than one: a row that measured itself at zero — which is what it
+// measures before it is laid out — showing nothing at all never comes back.
 const fits = computed(() => {
   if (!wide.value) return 1
   if (!width.value) return 99
   return Math.max(1, Math.floor((width.value + 8) / BOX_WIDTH))
 })
 
-// Whether the boxes past the first are showing. Only ever asked on a phone —
-// above the breakpoint they are all there anyway. The control that toggles it
-// belongs with the list's other controls rather than at the end of a wrapping
-// row of boxes, so it lives in the toolbar and the state comes in.
+// Whether the boxes past the first are showing. Only ever asked on a phone. The
+// control that toggles it lives in the toolbar rather than at the end of a
+// wrapping row of boxes, so the state comes in.
 const expanded = defineModel('expanded', { type: Boolean, default: false })
 
 const draft = reactive({})
@@ -157,8 +141,8 @@ const match = reactive({})
 const columns = computed(() => props.spec?.all_columns || [])
 
 const boxes = computed(() => {
-  // The ID box first, as in the desk. `name` is not a column and never will be,
-  // so it is described here rather than looked up.
+  // The ID box first, as in the desk. `name` is not a column and never will
+  // be, so it is described here rather than looked up.
   const found = [{ key: 'name', label: 'ID', match: true, fieldtype: 'Data' }]
 
   for (const fieldname of props.spec?.quick_filters || []) {
