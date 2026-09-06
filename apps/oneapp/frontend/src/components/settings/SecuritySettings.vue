@@ -54,18 +54,29 @@
 
       <section class="flex flex-col gap-3">
         <h3 class="text-base-medium text-ink-gray-8">Where you are signed in</h3>
-        <div class="rounded-6 border border-outline-gray-2">
+        <!-- Scrolls inside its own box. Every sign-in is a row and they are
+             kept until they expire, so a person who signs in daily pushes the
+             one control on this panel — sign out everywhere else — off the
+             bottom of a list of rows they cannot tell apart. -->
+        <div class="max-h-64 overflow-y-auto rounded-6 border border-outline-gray-2">
           <div
             v-for="(one, at) in data.sessions"
             :key="at"
             class="flex items-center justify-between gap-3 border-b border-outline-gray-1 px-3 py-2 last:border-b-0"
             data-slot="security-session"
           >
+            <!-- When first, address second. `tabSessions` has no device
+                 column and a workspace behind a proxy hands us one address for
+                 everybody, so "when" is the fact that actually distinguishes
+                 two rows — and a column of five identical "Unknown address"
+                 lines is a list that tells you nothing. -->
             <div class="min-w-0">
               <p class="truncate text-p-base text-ink-gray-8">
-                {{ one.from || 'Unknown address' }}
+                Last used {{ when(one.last_seen) }}
               </p>
-              <p class="truncate text-p-xs text-ink-gray-5">{{ one.last_seen }}</p>
+              <p v-if="one.from" class="truncate text-p-xs text-ink-gray-5">
+                From {{ one.from }}
+              </p>
             </div>
             <Badge v-if="one.this_one" theme="green" label="This browser" />
           </div>
@@ -98,7 +109,8 @@
 <script setup>
 import { ref } from 'vue'
 import {
-  Badge, Button, ErrorMessage, FormControl, LoadingIndicator, SettingsBody, SettingsHeader,
+  Badge, Button, dayjsLocal, ErrorMessage, FormControl, LoadingIndicator,
+  SettingsBody, SettingsHeader,
 } from '@/ui'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '@/lib/workspace'
@@ -110,6 +122,9 @@ const fresh = ref('')
 const problem = ref('')
 const changing = ref(false)
 const ending = ref(false)
+
+/** The same relative time the record header and the timeline use. */
+const when = (value) => (value ? dayjsLocal(value).fromNow() : 'just now')
 
 async function load() {
   data.value = await workspace.security()

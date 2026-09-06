@@ -14,6 +14,7 @@
  *   yarn shot '/one/space/rua?screen=projects' rua.png --phone
  *   yarn shot '/one/space/rua?screen=projects' --wait='[data-slot="list-row"]'
  *   yarn shot '/one/mail' --click='text=Quotation' --wait='[data-slot="mail-body"]'
+ *   yarn shot '/one/files' --click='[data-slot="settings-link"]' --click='text=Security'
  *
  * `--wait` is the flag worth knowing: a selector to wait for before the
  * shutter. Without one this waits for the network to go quiet, which is right
@@ -26,7 +27,8 @@
  * photograph.
  *
  * `--click` is the other one: a selector to press after the page loads, before
- * the shutter. Half of what is worth photographing is a row deep — a mail
+ * the shutter. Repeatable, in order — a settings panel is the dialog and then
+ * the tab. Half of what is worth photographing is a row deep — a mail
  * thread, an open record, a dialog — and without it the only way to reach any
  * of those was a throwaway Playwright script.
  *
@@ -57,6 +59,9 @@ const flag = (name, fallback) => {
   const found = args.find((one) => one.startsWith(`--${name}=`))
   return found === undefined ? fallback : found.slice(name.length + 3)
 }
+/** Every occurrence of a flag, in the order it was given. */
+const flags = (name) =>
+  args.filter((one) => one.startsWith(`--${name}=`)).map((one) => one.slice(name.length + 3))
 const has = (name) => args.includes(`--${name}`)
 const positional = args.filter((one) => !one.startsWith('--'))
 
@@ -101,8 +106,12 @@ page.on('response', (r) => {
 try {
   await signIn(page, base)
   await page.goto(base + path)
-  const click = flag('click')
-  if (click) await page.locator(click).first().click({ timeout: 40_000 })
+  // Repeatable, and in the order given: what is worth photographing is often
+  // two clicks deep — open the settings dialog, then the tab. One `--click`
+  // reached the dialog and left every panel but the first unphotographable.
+  for (const one of flags('click')) {
+    await page.locator(one).first().click({ timeout: 40_000 })
+  }
   const keys = (flag('press', '') || '').split(',').filter(Boolean)
   if (keys.length) {
     // A key pressed at a page that has not finished loading is a key nothing is
