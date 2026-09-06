@@ -65,6 +65,22 @@ def zone_id() -> str:
 	return settings().cf_zone_id or ""
 
 
+def zone_name() -> str:
+	"""The zone's apex, as Cloudflare knows it. Empty when it cannot be asked.
+
+	Read rather than configured: an operator who has already typed a zone id has
+	said which zone this is, and asking a second time is a second thing to get
+	wrong.
+	"""
+	zone = zone_id()
+	if not zone:
+		return ""
+	try:
+		return call("GET", f"zones/{zone}").get("name") or ""
+	except CloudflareError:
+		return ""
+
+
 def call(method: str, path: str, purpose: str = "admin", **kwargs) -> dict:
 	"""One Cloudflare call. Answers `result`, or raises with what it said.
 

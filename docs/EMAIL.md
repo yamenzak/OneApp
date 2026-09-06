@@ -81,10 +81,21 @@ somebody is unsure — every step finds what is already there:
 
 | | |
 |---|---|
+| Mail domain | refuses unless it *is* the zone's apex — see below |
 | KV namespace | the tenant map the Worker reads, created if absent |
 | Inbound worker | the bundle uploaded with its bindings — `TENANTS`, `MAIL_DOMAIN` |
 | Email Routing | enabled on the zone, which is also what writes and locks the MX and SPF records |
 | Catch-all | pointed at the worker: one rule, for ever |
+
+**The first step refuses rather than proceeding**, and it is the only one that
+does. Email Routing is a *zone* feature and its catch-all matches the zone's own
+apex, so a `mail_domain` of `mail.4dl.app` against a zone of `4dl.app` passes
+every remaining step, deploys cleanly, and then bounces every message — no
+subdomain was onboarded, and there is no wildcard. Onboarding the apex is the
+whole point of the local-part scheme in §1a, and the mismatch is otherwise
+found a week later by a customer. Where the zone cannot be read at all — no
+token, or Cloudflare unreachable — it does not refuse: that is a different
+problem, and refusing on ignorance sends somebody to fix the wrong thing.
 
 It runs on **one token**, `cf_admin_token`, which is account-wide and never
 pushed to a bench — it can rewrite the routing map for every tenant, and

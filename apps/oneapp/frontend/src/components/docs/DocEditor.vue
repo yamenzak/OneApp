@@ -339,6 +339,8 @@ async function rename() {
   await save()
 }
 
+const isTemplate = ref(!!props.doc.is_template)
+
 const menu = computed(() => [
   {
     label: 'Rename',
@@ -378,12 +380,26 @@ const menu = computed(() => [
     icon: 'copy',
     onClick: () => workspace.docDuplicate(props.name, `${title.value} copy`),
   },
+  {
+    // A template is a document with a flag on it, so this is the whole feature
+    // — see `oneapp_core/docs/templates.py`. It then appears in the New menu,
+    // in the Drive and on a record's Files tab alike.
+    label: isTemplate.value ? 'Stop using as a template' : 'Use as a template',
+    icon: isTemplate.value ? 'bookmark-minus' : 'bookmark-plus',
+    condition: () => props.doc.can_write,
+    onClick: async () => {
+      const next = !isTemplate.value
+      await workspace.docSetTemplate(props.name, next)
+      isTemplate.value = next
+    },
+  },
 ])
 
 // A save the moment the page goes away, because the quiet timer has not fired
 // yet and the last sentence is the one worth keeping.
 watch(() => props.doc, (next) => {
   title.value = next.title || ''
+  isTemplate.value = !!next.is_template
   content.value = next.content ? JSON.parse(next.content) : null
   settings.value = { ...(next.settings || {}) }
   dirty.value = false

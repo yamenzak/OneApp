@@ -30,6 +30,7 @@ The layers, in import order:
     text      the plain-text files beside them, read and written in place
     export    a document as one self-contained HTML file, which is also the
               `file_url` the framework insists on
+    templates one to start from, which is a flag on a file
     writing   making one, copying one, throwing one away
 """
 
@@ -40,6 +41,7 @@ from .body import (
     html_of, load, may_read, may_write, put, save_doc, store,
 )
 from .export import ROUTE, as_markdown, download, to_response, url_for
+from .templates import TEMPLATE_FIELD, listing, set_template
 from .text import EDITABLE, get_text, is_text, save_text
 from .writing import TEXT_KINDS, copy_of, duplicate, make, make_text, on_trash
 
@@ -57,6 +59,7 @@ __all__ = [
     "head_of",
     "html_of",
     "is_text",
+    "listing",
     "load",
     "make",
     "make_text",
@@ -68,6 +71,8 @@ __all__ = [
     "ROUTE",
     "save_doc",
     "save_text",
+    "set_template",
+    "TEMPLATE_FIELD",
     "store",
     "TEXT_KINDS",
     "TITLE_MAX",

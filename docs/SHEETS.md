@@ -347,6 +347,21 @@ this is what makes it part of the product.
   the person entitled to make it is the one who may write it — often not the
   estimator whose sheet fed it.
 
+* **The outward leg: a child table opens in a sheet.** Stage 4 as first built
+  was one-directional, and using it meant making a blank sheet, typing the
+  child doctype's labels by hand *exactly* as it labels them, and naming a
+  range — three chances to get it subtly wrong, each discovered at the pull.
+  `sheets.start_from` does that instead: the grid's own columns become the
+  first row, the named range is drawn round the block including the headings,
+  and the sheet is attached to the record it came from. Press it, price the
+  job, press Fill from a sheet, and the contract on both sides is the same
+  contract because nobody typed it twice.
+
+  The columns are the ones the doctype's author already marked `in_list_view`,
+  falling back to the first six the way Frappe's own grid does. Fieldtypes that
+  cannot be a cell — a signature, an attachment, a nested table — are left out
+  rather than rendered as something nobody can price against.
+
 * **Nothing pushes, and that is the design.** Editing the sheet does not touch
   the document; somebody presses Fill again. The obvious next feature is to
   make it live — change a rate, and every quotation following that range
@@ -401,6 +416,11 @@ Two controls, and no third: **Use as a template** in the sheet's own menu, and
 rest are the templates. A workspace that has an estimator template starts from
 it far more often than from an empty sheet, so making that the same click is
 most of the feature.
+
+The same menu now appears on a record's Files tab and offers document templates
+beside the sheet ones — `composables/useNewFile.js`, once, for both surfaces.
+A document template is the same `custom_is_template` flag on a file of kind
+Doc; see `docs/WRITER.md` §7.
 
 There is still no template *gallery* — a screen of thumbnails and categories —
 and there should not be until a workspace has enough templates for a menu to be

@@ -5,6 +5,7 @@ idempotently, and answers with what each one did. Meant to be pressed whenever
 somebody is unsure rather than once at the beginning: every step finds what is
 already there and leaves it alone.
 
+    0. the mail domain is the zone's apex         refuses if it is not
     1. a KV namespace for the tenant map          Workers KV
     2. the inbound worker, with its bindings      Workers Scripts
     3. Email Routing on the zone                  adds and locks MX and SPF
@@ -38,6 +39,14 @@ def bring_up() -> dict:
 
 	steps = []
 	namespace = None
+
+	# First, and refusing: every step below succeeds against a mail domain that
+	# is not the zone, and the whole thing then bounces every message. Found
+	# here is a sentence; found later is a week of "why is mail not arriving".
+	apex = routing.domain_is_the_zone()
+	steps.append(_step("Mail domain", apex["ok"], apex["detail"]))
+	if not apex["ok"]:
+		return _answer(steps)
 
 	try:
 		namespace = workers.ensure_namespace()
@@ -87,6 +96,7 @@ def readiness() -> dict:
 	_require_manager()
 
 	s = cf.settings()
+	apex = routing.domain_is_the_zone()
 	zone = routing.status()
 	script = workers.deployed()
 	sending = routing.sending_ready()
@@ -96,6 +106,7 @@ def readiness() -> dict:
 		"checks": [
 			_check("Account token", bool(cf.token("admin")),
 			       _("Account-wide token, control plane only.")),
+			_check("Mail domain", apex["ok"], apex["detail"]),
 			_check("KV namespace", bool(s.cf_kv_namespace_id), s.cf_kv_namespace_id or
 			       _("Not created. Run the bring-up.")),
 			_check("Inbound worker", bool(script),

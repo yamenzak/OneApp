@@ -9,13 +9,22 @@
       both — which is what makes this a filter rather than a second store, and
       what stops this tab being the one that never got the new column.
     -->
-    <Button
-      v-if="canWrite"
-      class="w-full"
-      icon-left="lucide-paperclip"
-      label="Attach a file"
-      @click="picking = true"
-    />
+    <div v-if="canWrite" class="flex gap-2">
+      <Button
+        class="flex-1"
+        icon-left="lucide-paperclip"
+        label="Attach a file"
+        @click="picking = true"
+      />
+      <!--
+        The same New menu the Drive has, pointed at this record. A document or
+        a sheet made here is attached rather than filed in a folder, which is
+        what makes "the project's scope of works" a query — see `useNewFile`.
+      -->
+      <Dropdown :options="newOptions">
+        <Button icon-left="lucide-plus" label="New" tooltip="New file" :loading="making" />
+      </Dropdown>
+    </div>
     <FilePicker
       v-model="picking"
       multiple
@@ -66,7 +75,8 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { Button, Dialog, ErrorMessage, FormControl, LoadingText } from '@/ui'
+import { useRouter } from 'vue-router'
+import { Button, Dialog, Dropdown, ErrorMessage, FormControl, LoadingText } from '@/ui'
 import FilePicker from '../../drive/FilePicker.vue'
 import FilePreview from '../../drive/FilePreview.vue'
 import FileRow from '../../drive/FileRow.vue'
@@ -74,6 +84,8 @@ import FileShare from '../../drive/FileShare.vue'
 import EmptyState from '../../EmptyState.vue'
 import { workspace } from '../../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
+import { routeFor } from '@/lib/files/files'
+import { useNewFile } from '@/composables/useNewFile'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -106,6 +118,14 @@ const reload = async () => {
   }
 }
 
+const router = useRouter()
+
+// A file made here belongs to the record rather than to a folder. `doctype` is
+// filled by the reload below, so this reads it rather than closing over it.
+const { making, options: newOptions, loadTemplates } = useNewFile(
+  () => ({ doctype: doctype.value, docname: props.name }),
+)
+
 // Whether the picker is open, and which file the dialogs are about.
 const picking = ref(false)
 const previewing = ref(false)
@@ -114,7 +134,14 @@ const renaming = ref(false)
 const chosen = ref(null)
 const newName = ref('')
 
+// A sheet, a document or a text file opens in its editor; everything else is
+// looked at where it is. Same rule as the Drive, out of the same function.
 const look = (file) => {
+  const route = routeFor(file)
+  if (route) {
+    router.push(route)
+    return
+  }
   chosen.value = file
   previewing.value = true
 }
@@ -155,4 +182,5 @@ const finishRename = async () => {
 const remove = (file) => run(() => workspace.driveTrash([file.name]))
 
 watch(() => props.name, reload, { immediate: true })
+loadTemplates()
 </script>

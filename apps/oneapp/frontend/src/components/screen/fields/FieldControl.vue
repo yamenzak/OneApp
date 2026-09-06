@@ -176,6 +176,25 @@
       <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0 text-ink-gray-4"
             :aria-hidden="true" />
       <FormLabel :label="field.label" :required="!!field.reqd" />
+      <!--
+        The room a document gets, for the field a doctype's author meant for
+        long-form content. It writes back to the field: nothing here becomes a
+        file, because this text is part of the record and part of what its
+        print format renders.
+
+        The label does not name the field, deliberately. The editor beside it
+        is `aria-label`led with the field's own label, and a button called
+        "Open Description in the editor" makes `getByLabel('Description')` — and
+        anything else asking the accessible tree for that field — ambiguous.
+        The tooltip is where the field's name belongs.
+      -->
+      <Button
+        variant="ghost"
+        icon="lucide-maximize-2"
+        label="Open in the editor"
+        :tooltip="`Open ${field.label} in the editor`"
+        @click="expanded = true"
+      />
     </div>
     <div
       class="rounded-6 border border-outline-gray-2 bg-surface-base px-3 py-2"
@@ -211,6 +230,16 @@
       </Editor>
     </div>
     <p v-if="note" class="text-p-xs text-ink-gray-5">{{ note }}</p>
+
+    <LongTextDialog
+      v-model="expanded"
+      :value="modelValue || ''"
+      :label="field.label"
+      :format="editorFormat(field)"
+      :disabled="disabled"
+      :upload-function="uploadInto"
+      @apply="emit('update:modelValue', $event)"
+    />
   </div>
 
   <!--
@@ -350,11 +379,16 @@ import FilePicker from '../../drive/FilePicker.vue'
 import LinkPicker from './LinkPicker.vue'
 import AttachmentGallery from '../record/AttachmentGallery.vue'
 import ChildTable from '../record/ChildTable.vue'
+import LongTextDialog from '../../docs/LongTextDialog.vue'
 import { controlComponent, editorFormat, formControlType, valueIcon } from '@/lib/screen/fields'
 
 // Built once for the module: the kit is a static extension list, and a form
 // with six rich-text fields should not assemble six identical ones.
 const EXTENSIONS = [RichTextKit]
+
+// Whether the long field is open in the document surface. One flag, because a
+// control draws one field.
+const expanded = ref(false)
 
 /**
  * Where an image dropped into the editor goes: onto the record, as a File

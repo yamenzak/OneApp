@@ -369,11 +369,43 @@ PYEOF
     ;;
 
   restart)
-    # Its own port only. A bare `down` stops every dev server, which is right
-    # for `down` and wrong here — `up` brings back one, so restarting through
-    # the bare form would stop two servers and start one.
-    "$0" down "$PORT" >/dev/null 2>&1 || true
-    exec "$0" up
+    # Every server that is currently up, not just `$PORT`.
+    #
+    # `$PORT` defaults to the control plane's, so a bare `dev.sh restart` after
+    # a Python edit used to restart *that* one and report success while the
+    # tenant server — the one being tested — went on answering from the old
+    # code. That is a whole afternoon: the console has the new function, the
+    # browser gets "module has no attribute", and nothing in either says the
+    # two are different processes. `down` was already fixed the same way; this
+    # is the other half.
+    #
+    # Naming a port restarts only that one: `dev.sh restart 8001`.
+    if [ -n "${2:-}" ]; then
+      running="$2"
+    else
+      running=""
+      for pair in $SITES; do
+        port="${pair##*:}"
+        if ss -lptnH "sport = :$port" 2>/dev/null | grep -q .; then
+          running="$running $port"
+        fi
+      done
+      # Nothing up is not an error: `restart` then means `up`, for the site
+      # this shell is pointed at.
+      [ -n "$running" ] || running="$PORT"
+    fi
+
+    for port in $running; do
+      # The site that port belongs to. A port this script does not know about
+      # keeps whichever site the shell already named — guessing would start the
+      # control plane on the tenant's port.
+      site="$SITE"
+      for one in $SITES; do
+        [ "${one##*:}" = "$port" ] && site="${one%%:*}"
+      done
+      "$0" down "$port" >/dev/null 2>&1 || true
+      ONEAPP_SITE="$site" ONEAPP_PORT="$port" "$0" up
+    done
     ;;
 
   down)

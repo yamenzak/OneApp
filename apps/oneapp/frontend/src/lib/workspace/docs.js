@@ -38,6 +38,14 @@ export const docs = {
       silent: true,
     }),
 
+  // A template is a document with a flag on it, the same way a sheet template
+  // is — `oneapp_core/docs/templates.py` says why one shape rather than two.
+  docTemplates: () =>
+    callMethod('oneapp.oneapp_core.docs.listing', {}, { silent: true, method: 'GET' }),
+
+  docSetTemplate: (name, on) =>
+    callMethod('oneapp.oneapp_core.docs.set_template', { doc: name, on: on ? 1 : 0 }),
+
   docDuplicate: (name, title) =>
     callMethod('oneapp.oneapp_core.docs.duplicate', { name, title }, {
       success: 'Copied',

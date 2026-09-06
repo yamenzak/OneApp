@@ -8,6 +8,14 @@
           action menu because what it replaces is exactly these rows. Only on a
           saved record: a pull writes through the server.
         -->
+        <!-- The two halves of one round trip, in the order somebody does
+             them: price it in a grid, then read it back. -->
+        <OpenInSheet
+          v-if="docname"
+          :doctype="doctype"
+          :docname="docname"
+          :into="field.fieldname"
+        />
         <FillFromSheet
           v-if="editable && docname && !locked"
           :doctype="doctype"
@@ -224,6 +232,7 @@ import FieldCell from '../bodies/FieldCell.vue'
 import FieldControl from '../fields/FieldControl.vue'
 import RecordForm from './RecordForm.vue'
 import FillFromSheet from '../../sheets/FillFromSheet.vue'
+import OpenInSheet from '../../sheets/OpenInSheet.vue'
 import FeedNote from '../../sheets/FeedNote.vue'
 import { workspace } from '../../../lib/workspace'
 import { isNumericCell } from '@/lib/screen/fields'

@@ -260,6 +260,84 @@ def test_a_sheets_file_url_is_a_url_the_framework_accepts(sheets):
 	assert "abc123" in sheets.url_for("abc123")
 
 
+# --------------------------------------------------------------------------- #
+# The outward leg: a child table becomes a sheet
+# --------------------------------------------------------------------------- #
+
+def test_the_headings_are_the_first_row(sheets):
+	"""`preview` reads row one as the headings, so `start_from` must write them
+	there — otherwise the round trip loses the labels it exists to agree on."""
+	from oneapp.oneapp_core.sheets import feed
+
+	packed = feed._packed(["Item", "Qty"], [["A", 1], ["B", 2]])
+	rows = packed["sheets"][feed.TAB]["rows"]
+	assert rows["0"] == ["Item", "Qty"]
+	assert rows["1"] == ["A", 1]
+
+
+def test_the_named_range_covers_the_headings(sheets):
+	"""A range starting at row 2 reads the first line of data as the headings
+	and then silently drops it."""
+	from oneapp.oneapp_core.sheets import feed
+
+	# Four columns, nine rows of data: A1 through D10.
+	assert feed._area(4, 9) == "A1:D10"
+
+
+def test_an_empty_table_is_still_a_sheet_with_headings(sheets):
+	"""Opening an empty child table is how somebody starts pricing one."""
+	from oneapp.oneapp_core.sheets import feed
+
+	assert feed._area(3, 0) == "A1:C1"
+
+
+@pytest.mark.parametrize(("label", "expected"), [
+	("Items", "ITEMS"),
+	("Scope of Works", "SCOPE_OF_WORKS"),
+	("Line-items (priced)", "LINE_ITEMS_PRICED"),
+	("", "ROWS"),
+])
+def test_the_range_is_named_after_the_table(sheets, label, expected):
+	"""The name is offered back in the fill dialog, so it has to be the words
+	the person already reads on the record."""
+	from oneapp.oneapp_core.sheets import feed
+
+	class Field:
+		def __init__(self, label):
+			self.label = label
+			self.fieldname = "rows" if label else ""
+
+	assert feed._label_for(Field(label)) == expected
+
+
+def test_what_cannot_be_a_column_is_not_offered_as_one(sheets):
+	"""A signature or an attachment in a cell is a value nobody can price
+	against, and a nested child table has no representation at all."""
+	from oneapp.oneapp_core.sheets import feed
+
+	for kind in ("Table", "Signature", "Attach Image", "Text Editor", "Section Break"):
+		assert kind in feed.NOT_A_COLUMN
+
+
+def test_opening_a_table_in_a_sheet_asks_the_record_first(sheets):
+	"""The sheet it makes carries the record's rows, so the read is the whole
+	access check — `check_permission` before anything is copied out."""
+	source = (SHEETS / "feed.py").read_text()
+	block = source[source.index("def start_from("):]
+	head = block[:block.index("columns =")]
+	assert "check_permission(\"read\")" in head
+
+
+def test_the_made_sheet_is_attached_to_the_record(sheets):
+	"""Filed against the record rather than dropped in Home: a sheet made from
+	a quotation belongs to that quotation's Files tab, which is what makes the
+	round trip findable a week later."""
+	source = (SHEETS / "feed.py").read_text()
+	block = source[source.index("def _make_sheet("):]
+	assert "doctype=target.doctype" in block
+	assert "docname=target.name" in block
+
+
 def test_the_feed_endpoints_ask_the_document(sheets):
 	"""The three that do not ask a File must ask the document instead.
 

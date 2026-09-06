@@ -38,6 +38,33 @@ export const KIND_ICONS = {
 
 export const iconForKind = (kind) => KIND_ICONS[kind] || KIND_ICONS.Other
 
+//: What opens in the text editor rather than the previewer. The server's
+//: `docs/text.py` holds the same list; it is short, and a file that is not on
+//: it is only ever previewed, so the two drifting costs a preview rather than
+//: a broken save.
+const TEXT = /\.(txt|md|markdown|csv|log|json|ya?ml)$/i
+
+/**
+ * The route that opens this file, or `null` when looking at it is the answer.
+ *
+ * A sheet is not a thing to preview — its bytes are a CSV and what a person
+ * clicking it wants is the grid — and the same goes for a document and for the
+ * text files beside them: a `.md` previewed is a `<pre>` of somebody's notes
+ * with no way to fix the typo they opened it to fix.
+ *
+ * One function because two lists drift, and the one that drifted was the
+ * record's Files tab: it previewed sheets long after the Drive had learnt not
+ * to.
+ */
+export function routeFor(file) {
+  if (!file || file.is_folder) return null
+  if (file.custom_kind === 'Sheet') return { name: 'Sheet', params: { name: file.name } }
+  if (file.custom_kind === 'Doc' || TEXT.test(file.file_name || '')) {
+    return { name: 'Doc', params: { name: file.name } }
+  }
+  return null
+}
+
 export function iconFor(file) {
   const found = ICONS.find(([pattern]) => pattern.test(file?.file_name || file?.file_url || ''))
   return found ? found[1] : 'lucide-file'

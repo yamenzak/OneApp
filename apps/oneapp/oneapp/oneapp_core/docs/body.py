@@ -26,6 +26,7 @@ import frappe
 from frappe import _
 
 from ..drive import kinds
+from . import templates
 
 TITLE_MAX = 280
 
@@ -212,6 +213,10 @@ def get_doc(name: str) -> dict:
         # Asked rather than assumed, so a control that is drawn and a write
         # that is allowed read the same flag at the same moment.
         "can_write": bool(frappe.has_permission("File", "write", doc=row)),
+        # Whether this is one to start from. Here rather than scanned out of
+        # the template listing the way the sheet page has to — that editor is
+        # vendored and never sees the File, this one is ours.
+        "is_template": bool(row.get(templates.TEMPLATE_FIELD)),
         "content": held["content"],
         "settings": held["settings"],
         "head_seq": held["head_seq"],

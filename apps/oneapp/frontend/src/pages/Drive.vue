@@ -345,8 +345,9 @@ import FolderPicker from '../components/drive/FolderPicker.vue'
 import UploadTray from '../components/drive/UploadTray.vue'
 import ImportSheet from '../components/sheets/ImportSheet.vue'
 import { useDrive } from '../composables/useDrive'
+import { useNewFile } from '../composables/useNewFile'
 import { useUploads } from '../composables/useUploads'
-import { workspace } from '../lib/workspace'
+import { routeFor } from '../lib/files/files'
 import { useIsMobile } from '@/lib/shell/breakpoint'
 import { PLACES, labelOf } from '../components/drive/places'
 
@@ -500,107 +501,33 @@ const emptying = ref(false)
 const folderName = ref('')
 const newName = ref('')
 const toMove = ref([])
-const making = ref(false)
-const templates = ref([])
 const importing = ref(false)
 
 // A folder is a link and navigates itself; this is only ever a file. Opening
 // one looks at it rather than downloading it — the download is one button
-// further in, which is the right way round.
+// further in, which is the right way round. Where "looking at it" means an
+// editor rather than the previewer, `routeFor` says so.
 function open(file) {
-  // A sheet is not a thing to preview: its bytes are a CSV, and what a person
-  // clicking it wants is the grid.
-  if (file.custom_kind === 'Sheet') {
-    router.push({ name: 'Sheet', params: { name: file.name } })
-    return
-  }
-  // The same argument for a document, and for the text files beside it: a
-  // `.md` previewed is a `<pre>` of somebody's notes with no way to fix the
-  // typo they opened it to fix.
-  if (file.custom_kind === 'Doc' || isText(file.file_name)) {
-    router.push({ name: 'Doc', params: { name: file.name } })
+  const route = routeFor(file)
+  if (route) {
+    router.push(route)
     return
   }
   looking.value = file
   previewing.value = true
 }
 
-//: What opens in the text editor rather than the previewer. The server's
-//: `docs/text.py` holds the same list; it is short, and a file that is not on
-//: it is only ever previewed, so the two drifting costs a preview rather than
-//: a broken save.
-const TEXT = /\.(txt|md|markdown|csv|log|json|ya?ml)$/i
-const isText = (name) => TEXT.test(name || '')
-
-// A sheet is made and then opened, in one click.
-async function newSheet(template = '') {
-  making.value = true
-  try {
-    const made = await workspace.sheetMake({
-      folder: folder.value || '',
-      title: template ? `${labelOfTemplate(template)} copy` : '',
-      template,
-    })
-    router.push({ name: 'Sheet', params: { name: made.name } })
-  } finally {
-    making.value = false
-  }
-}
-
-function labelOfTemplate(name) {
-  return templates.value.find((one) => one.name === name)?.file_name || 'Sheet'
-}
-
-// The only things in this product that are made rather than uploaded. Grouped
-// rather than listed flat, because a workspace with four estimator templates
-// otherwise gets a menu where "Document" is below the fold.
-const newOptions = computed(() => [
-  {
-    group: 'Write',
-    options: [
-      { label: 'Document', icon: 'lucide-file-signature', onClick: () => newDoc() },
-      { label: 'Text file', icon: 'lucide-file-text', onClick: () => newText('txt') },
-      { label: 'Markdown file', icon: 'lucide-file-code', onClick: () => newText('md') },
-    ],
-  },
-  {
-    group: 'Calculate',
-    options: [
-      { label: 'Blank sheet', icon: 'lucide-table-2', onClick: () => newSheet() },
-      {
-        label: 'Import a spreadsheet',
-        icon: 'lucide-file-up',
-        onClick: () => { importing.value = true },
-      },
-      ...templates.value.map((one) => ({
-        label: one.file_name,
-        icon: 'lucide-table-2',
-        onClick: () => newSheet(one.name),
-      })),
-    ],
-  },
-])
-
-// Made and then opened, in one click — the same shape a new sheet has.
-async function newDoc() {
-  making.value = true
-  try {
-    const made = await workspace.docMake({ folder: folder.value || '' })
-    router.push({ name: 'Doc', params: { name: made.name } })
-  } finally {
-    making.value = false
-  }
-}
-
-async function newText(kind) {
-  making.value = true
-  try {
-    const made = await workspace.docMakeText({ kind, folder: folder.value || '' })
-    router.push({ name: 'Doc', params: { name: made.name } })
-  } finally {
-    making.value = false
-  }
-}
+// The only things in this product that are made rather than uploaded, shared
+// with the record's Files tab. Importing a spreadsheet is the Drive's alone:
+// it opens a dialog this page owns.
+const { making, options: newOptions, loadTemplates } = useNewFile(
+  () => ({ folder: folder.value || '' }),
+  () => [{
+    label: 'Import a spreadsheet',
+    icon: 'lucide-file-up',
+    onClick: () => { importing.value = true },
+  }],
+)
 
 function startShare(file) {
   looking.value = file
@@ -653,13 +580,7 @@ function onSearch() {
 
 onMounted(() => {
   drive.load()
-  // The templates the New sheet menu offers. One small query alongside the list
-  // rather than one when the menu opens, because a menu that takes a round trip
-  // to fill appears empty and then jumps.
-  workspace
-    .sheetTemplates()
-    .then((found) => { templates.value = found || [] })
-    .catch(() => { templates.value = [] })
+  loadTemplates()
 })
 watch([place, folder], () => {
   drive.clear()

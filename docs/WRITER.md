@@ -124,20 +124,40 @@ optional.
     oneapp_core/docs/text     the plain-text files beside them
     oneapp_core/docs/export   a document as one HTML file
     oneapp_core/docs/writing  making one, copying one, throwing one away
+    oneapp_core/docs/templates one to start from, which is a flag on a file
     oneapp_core/versions.py   earlier drafts, for both kinds
 
     components/docs/          the editor, the outline, page setup, plain text
     components/versions/      the history panel, shared with the sheet
     lib/workspace/docs.js     the calls
+    composables/useNewFile.js the New menu, shared with the record's Files tab
+    lib/files/files.js        routeFor — whether a click opens an editor
     pages/Doc.vue             which of the two editors this file wants
 
-## 7. What is not built yet
+## 7. Where the editor is reached from
+
+Three seams, and all three are the same two calls the Drive already makes.
+
+**A long-text or text-editor field** on any record carries an expand button
+beside its label. It opens the field's value in the document editor as a
+dialog, and Save writes it back to the field — the same editor, so a scope of
+works typed into a Project reads the way it will print.
+
+**A record's Files tab** carries the Drive's own New menu, pointed at the
+record: a document or a sheet made there is attached to it rather than filed in
+a folder, which is what makes "the project's scope of works" a query rather
+than a feature. `composables/useNewFile.js` is that menu, once, for both
+surfaces.
+
+**Templates** appear in both menus. A template is a document with
+`custom_is_template` on it — the same flag and the same listing a sheet
+template has, deliberately: a person who has made one already knows how to make
+the other. The editor's menu is where a document becomes one.
+
+## 8. What is not built yet
 
 * **Live collaboration**, per §3.
 * **Anchored comments**, per §3.
-* **Templates.** A sheet has them and a document does not; the mechanism is
-  already here — `make(template=…)` copies another document's body — and what
-  is missing is the flag and the menu. A week's work behind somebody asking.
 * **A document as a print format.** A quotation's covering letter is prose with
   fields in it, and the two halves — a document, and Frappe's Jinja print
   formats — do not meet yet.

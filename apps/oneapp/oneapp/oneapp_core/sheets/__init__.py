@@ -44,7 +44,9 @@ from .reading import named_ranges, ranges, read_range, tabs
 from .export import ROUTE, download, to_response, url_for
 from .writing import copy_of, make, on_trash
 from .templates import TEMPLATE_FIELD, listing, set_template
-from .feed import FOLLOWING, LOCKED, feeds, header, lock, number, preview, pull, unlock
+from .feed import (
+    FOLLOWING, LOCKED, feeds, header, lock, number, preview, pull, start_from, unlock,
+)
 
 __all__ = [
     "BadRef",
@@ -80,6 +82,7 @@ __all__ = [
     "ROUTE",
     "save_sheet",
     "set_template",
+    "start_from",
     "tabs",
     "to_response",
     "TEMPLATE_FIELD",

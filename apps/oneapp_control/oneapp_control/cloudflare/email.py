@@ -103,6 +103,41 @@ def points_at_worker(script: str = workers.SCRIPT_NAME) -> bool:
 	return False
 
 
+def domain_is_the_zone() -> dict:
+	"""Whether `mail_domain` is the apex of the zone we hold the id for.
+
+	The one misconfiguration that fails silently and late. Email Routing is a
+	*zone* feature and its catch-all matches the zone's own apex — so a
+	`mail_domain` of `mail.4dl.app` against a zone of `4dl.app` deploys cleanly,
+	enables cleanly, and then bounces every message, because no subdomain was
+	onboarded and there is no wildcard. Onboarding the apex is the whole point of
+	the local-part scheme; see the module docstring.
+
+	A subdomain would not merely be extra work, it would spend one of the thirty
+	domains the zone is allowed for nothing.
+	"""
+	domain = (api.settings().mail_domain or "").strip().lower()
+	apex = api.zone_name().strip().lower()
+
+	if not domain:
+		return {"ok": False, "detail": _("No mail domain set.")}
+	if not apex:
+		# Cannot be asked — no token, no zone id, or Cloudflare is down. Not a
+		# mismatch, and refusing the bring-up on it would be refusing on
+		# ignorance.
+		return {"ok": True, "detail": _("Zone apex could not be read; not checked.")}
+	if domain != apex:
+		return {
+			"ok": False,
+			"detail": _(
+				"The mail domain is {0} but the zone is {1}. Email Routing works on "
+				"the zone itself, so mail sent to {0} would never arrive. Set the mail "
+				"domain to {1}."
+			).format(domain, apex),
+		}
+	return {"ok": True, "detail": _("{0} is the zone.").format(apex)}
+
+
 def _zone() -> str:
 	zone = api.zone_id()
 	if not zone:

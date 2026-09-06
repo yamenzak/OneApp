@@ -17,12 +17,13 @@ Values and never formulas, throughout. The server does not evaluate anything
 workbook's `values` slice, and a number is what a child row wants anyway.
 """
 
+import json
 import re
 
 import frappe
 from frappe import _
 
-from . import book
+from . import book, codec
 from .book import _mine
 from .reading import _read
 
@@ -354,3 +355,138 @@ def _child(row: list, columns: list[dict]) -> dict:
         else:
             out[column["fieldname"]] = str(raw).strip()
     return out
+
+
+# --------------------------------------------------------------------------- #
+# The outward leg
+#
+# Everything above reads a sheet into a document. This is the other direction,
+# and it is what made the round trip usable rather than a thing you had to set
+# up by hand: a child table becomes a sheet whose first row is the column
+# labels, whose named range is already drawn round the block, and which is
+# attached to the record it came from. Press it, price the job, press "Fill from
+# a sheet", and the contract on both sides is the same contract.
+#
+# Without this, using Sheets on a quotation meant making a blank sheet, typing
+# the headings by hand *exactly* as the child doctype labels them, and naming a
+# range — three chances to get it subtly wrong, discovered at the pull.
+# --------------------------------------------------------------------------- #
+
+#: How many columns a grid falls back to when the child doctype marks none
+#: `in_list_view`. Frappe's own grid does the same, and an approximate sheet is
+#: better than an empty one.
+FALLBACK_COLUMNS = 6
+
+#: Fieldtypes that are not a column in a spreadsheet. A signature or an image
+#: in a cell is a value nobody can price against.
+NOT_A_COLUMN = {
+    "Section Break", "Column Break", "Tab Break", "HTML", "Button", "Image",
+    "Signature", "Table", "Table MultiSelect", "Attach", "Attach Image",
+    "Text Editor", "Code", "Markdown Editor", "HTML Editor", "Geolocation",
+}
+
+
+def _grid_columns(child: str) -> list[dict]:
+    """The columns the grid shows, which are the columns the sheet should have.
+
+    The doctype's own answer first — `in_list_view` is what its author already
+    said the grid is for — and Frappe's fallback after it. Implemented here
+    rather than reached for out of `spaceview.meta`: that is a private helper of
+    another package, and eleven lines is cheaper than a dependency between two
+    packages that otherwise do not know about each other.
+    """
+    meta = frappe.get_meta(child)
+    usable = [
+        df for df in meta.fields
+        if df.fieldtype not in NOT_A_COLUMN and not df.hidden
+    ]
+    listed = [df for df in usable if df.in_list_view]
+    chosen = listed or usable[:FALLBACK_COLUMNS]
+    return [{"fieldname": df.fieldname, "label": _(df.label or df.fieldname)}
+            for df in chosen]
+
+
+def _packed(headers: list[str], rows: list[list]) -> dict:
+    """The grid in the shape the editor loads, which is row-major and 0-based."""
+    packed = {"0": list(headers)}
+    for at, row in enumerate(rows, start=1):
+        packed[str(at)] = list(row)
+    return {"v": codec.PACK_VERSION, "current": TAB, "sheets": {TAB: {"rows": packed}}}
+
+
+TAB = "Sheet1"
+
+
+@frappe.whitelist(methods=["POST"])
+def start_from(doctype: str, docname: str, into: str, title: str = "") -> dict:
+    """A sheet holding what this child table holds now, ready to be pulled back.
+
+    The named range is drawn here rather than left to the person, because it is
+    the contract and a contract nobody drew is a pull that finds nothing. It
+    covers the headings too — `preview` reads the first row as the headings, so
+    a range starting at row 2 would lose them.
+    """
+    target = frappe.get_doc(doctype, docname)
+    target.check_permission("read")
+
+    field = target.meta.get_field(into)
+    if not field or field.fieldtype not in ("Table", "Table MultiSelect"):
+        frappe.throw(_("There is nothing here to open in a sheet."))
+
+    columns = _grid_columns(field.options)
+    if not columns:
+        frappe.throw(_("These rows have no columns a sheet could hold."))
+
+    rows = [
+        [row.get(column["fieldname"]) for column in columns]
+        for row in (target.get(into) or [])
+    ]
+
+    label = _label_for(field)
+    made = _make_sheet(target, field, title, columns, rows, label)
+    return {**made, "label": label, "columns": len(columns), "rows": len(rows)}
+
+
+def _label_for(field) -> str:
+    """What the named range is called.
+
+    The child table's own label, upper-cased, because that is the engine's
+    convention for a name and because it is what the person will see offered
+    back to them in the fill dialog.
+    """
+    clean = re.sub(r"[^A-Za-z0-9]+", "_", _(field.label or field.fieldname)).strip("_")
+    return (clean or "ROWS").upper()
+
+
+def _make_sheet(target, field, title, columns, rows, label) -> dict:
+    from . import writing
+
+    name = (title or "").strip() or _("{0} — {1}").format(
+        target.get_title() or target.name, _(field.label or field.fieldname)
+    )
+
+    made = writing.make(title=name, doctype=target.doctype, docname=target.name)
+
+    grid = _packed([column["label"] for column in columns], rows)
+    payload = {
+        "sheet": grid,
+        # What each cell came to. Nothing here is a formula yet, so the two
+        # slices are the same — and `values` has to exist or the read-back has
+        # nothing to read.
+        "values": grid,
+        "namedRanges": {"entries": {label: {
+            "name": label,
+            "sheet": TAB,
+            "range": _area(len(columns), len(rows)),
+        }}},
+    }
+    book.store(made["name"], codec.encode(json.dumps(payload)))
+
+    return made
+
+
+def _area(columns: int, rows: int) -> str:
+    """`A1:D9` — the headings and every row under them."""
+    from . import refs
+
+    return refs.format_range(1, 1, rows + 1, max(1, columns))

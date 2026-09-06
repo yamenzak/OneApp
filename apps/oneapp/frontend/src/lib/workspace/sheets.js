@@ -63,6 +63,13 @@ export const sheets = {
       success: 'Following the sheet again',
     }),
 
+  // The outward leg: these rows become a sheet, headings and named range and
+  // all, so pulling them back needs nothing set up by hand.
+  sheetFromTable: (params) =>
+    callMethod('oneapp.oneapp_core.sheets.start_from', params, {
+      success: 'Opened in a sheet',
+    }),
+
   sheetPull: (name, params) =>
     callMethod('oneapp.oneapp_core.sheets.pull', { sheet: name, ...params }, {
       success: 'Filled from the sheet',

@@ -197,3 +197,53 @@ def test_a_catch_all_pointed_elsewhere_is_not_ours(routing, cf, monkeypatch):
 		lambda *a, **k: {"enabled": True, "actions": [{"type": "forward", "value": ["x@y.com"]}]},
 	)
 	assert routing.points_at_worker() is False
+
+
+# --------------------------------------------------------------------------- #
+# The mail domain is the zone
+# --------------------------------------------------------------------------- #
+
+def test_a_subdomain_mail_domain_refuses_the_bring_up(routing, cf, monkeypatch):
+	"""The misconfiguration that deploys cleanly and then bounces everything.
+
+	Email Routing is a zone feature and its catch-all matches the zone's apex.
+	A `mail_domain` of `mail.4dl.app` against zone `4dl.app` passes every step
+	of the bring-up and routes nothing, because no subdomain was onboarded and
+	Cloudflare has no wildcard.
+	"""
+	monkeypatch.setattr(cf, "settings", lambda: Settings(mail_domain="mail.4dl.app"))
+	monkeypatch.setattr(cf, "zone_name", lambda: "4dl.app")
+
+	answer = routing.domain_is_the_zone()
+	assert answer["ok"] is False
+	assert "4dl.app" in answer["detail"]
+
+
+def test_the_apex_is_what_passes(routing, cf, monkeypatch):
+	monkeypatch.setattr(cf, "settings", lambda: Settings(mail_domain="4dl.app"))
+	monkeypatch.setattr(cf, "zone_name", lambda: "4dl.app")
+	assert routing.domain_is_the_zone()["ok"] is True
+
+
+def test_case_and_spacing_are_not_a_mismatch(routing, cf, monkeypatch):
+	monkeypatch.setattr(cf, "settings", lambda: Settings(mail_domain=" 4DL.app "))
+	monkeypatch.setattr(cf, "zone_name", lambda: "4dl.app")
+	assert routing.domain_is_the_zone()["ok"] is True
+
+
+def test_a_zone_that_cannot_be_read_is_not_a_refusal(routing, cf, monkeypatch):
+	"""Refusing on ignorance would make an unreachable Cloudflare look like a
+	configuration error, which is the wrong thing to go and fix."""
+	monkeypatch.setattr(cf, "settings", lambda: Settings())
+	monkeypatch.setattr(cf, "zone_name", lambda: "")
+	assert routing.domain_is_the_zone()["ok"] is True
+
+
+def test_the_zone_name_is_read_rather_than_configured(cf, sent, monkeypatch):
+	"""An operator who typed a zone id has already said which zone this is."""
+	monkeypatch.setattr(cf, "settings", lambda: Settings(zone="zone-1"))
+	monkeypatch.setattr(
+		cf, "call",
+		lambda method, path, purpose="admin", **kw: {"name": "4dl.app"},
+	)
+	assert cf.zone_name() == "4dl.app"
