@@ -474,6 +474,21 @@ def test_the_spa_draws_only_the_fields_whose_parent_is_on():
 	assert "depends_on" in fields, "the server declares it and nothing reads it"
 
 
+def test_a_group_that_asks_for_two_columns_gets_a_layout_for_it():
+	"""The count is the server's and the classes are the SPA's, and a count
+	with no layout behind it is a panel that silently stays in one column."""
+	from oneapp.oneapp_core import workspace
+
+	asked = {g.get("columns", 1) for g in workspace.GROUPS}
+	fields = source(SPA / "components/settings/SettingsFields.vue")
+	for count in asked:
+		assert f"  {count}: 'grid" in fields, f"no layout for {count} columns"
+
+	# Tailwind reads this file for the classes it emits, so the layout has to
+	# be a literal — a class assembled at runtime is a class with no CSS.
+	assert "grid-cols-${" not in fields and "grid-cols-' +" not in fields
+
+
 def test_a_group_note_is_rendered_where_it_is_declared():
 	"""It used to be computed, returned, and dropped on the floor: `joining()`
 	answered "who may have an account here" and no component read it, while the

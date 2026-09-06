@@ -361,29 +361,37 @@ GROUPS = [
 		"label": "Regional",
 		"icon": "lucide-globe",
 		"description": "How dates, numbers and money are written throughout the workspace.",
+		# Ten short pickers in one column is a scroll for a panel that fits on a
+		# screen. Every field here is a Select with a one-line label, which is
+		# the shape two columns are for — see `SettingsFields`, which drops back
+		# to one on a phone.
+		"columns": 2,
 		"settings": [
+			# The order is the reading order, because two columns fill row by
+			# row: who the workspace is, then its calendar, then how a moment is
+			# written, then a quantity, then how much of one it keeps.
 			Setting("country", "Country", type="Select",
 			        options_from=lambda: reference("Country"),
 			        targets=[("System Settings", "country")],
 			        hint="Sets the calendar, the fiscal year and the tax defaults new documents start from."),
+			Setting("language", "Language", type="Select",
+			        options_from=lambda: reference("Language", "language_name", enabled=True),
+			        targets=[("System Settings", "language")],
+			        hint="The workspace's default. Anybody can set their own under Profile."),
 			Setting("time_zone", "Time zone", type="Select",
 			        # Frappe fills this list at runtime from the tz database, so
 			        # the doctype's own options are empty and reading the meta
 			        # gives a select with nothing in it.
 			        options_from=lambda: get_all_timezones(),
 			        targets=[("System Settings", "time_zone")]),
-			Setting("language", "Language", type="Select",
-			        options_from=lambda: reference("Language", "language_name", enabled=True),
-			        targets=[("System Settings", "language")],
-			        hint="The workspace's default. Anybody can set their own under Profile."),
+			Setting("first_day_of_the_week", "Week starts on", type="Select",
+			        targets=[("System Settings", "first_day_of_the_week")]),
 			Setting("date_format", "Date format", type="Select",
 			        targets=[("System Settings", "date_format")]),
 			Setting("time_format", "Time format", type="Select",
 			        targets=[("System Settings", "time_format")]),
 			Setting("number_format", "Number format", type="Select",
 			        targets=[("System Settings", "number_format")]),
-			Setting("first_day_of_the_week", "Week starts on", type="Select",
-			        targets=[("System Settings", "first_day_of_the_week")]),
 			# Every currency, not the nine Frappe enables on install. Enabled is
 			# about which ones ERPNext offers on a document; a workspace whose
 			# money is Saudi riyals needs to be able to say so, and `save`
@@ -513,6 +521,11 @@ def get() -> dict:
 				"label": group["label"],
 				"icon": group["icon"],
 				"description": group["description"],
+				# How many columns to lay the fields out in. A property of the
+				# group because it is a property of the fields: a panel of short
+				# pickers reads better in two, and one of switches with a
+				# sentence under each does not.
+				"columns": group.get("columns", 1),
 				# Something true about this group that is not a field — today
 				# only "who may have an account here", which is a question with
 				# an answer rather than a switch. Computed here rather than

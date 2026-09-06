@@ -198,6 +198,12 @@ at the code:
   the exact spelling for. They are Selects fed from their own doctype now
   (`workspace.reference`), read rather than copied — a currency list written
   down here is wrong the day one is added.
+* **`columns`.** A group may ask to be laid out in two. Regional is the one
+  that does: ten short pickers in a single column is a scroll for a panel that
+  fits on a screen. It is a grid rather than two stacked columns, so a hint
+  that wraps on the left does not push the right column out of step, and it
+  drops back to one column on a phone. The field order is then the reading
+  order, because a grid fills row by row.
 * **`depends_on`.** A setting may name another *in its own group* as the switch
   it hangs off, and is drawn only when that one is on. A second factor offered
   while two-factor is off is a choice with no effect, and a minimum password

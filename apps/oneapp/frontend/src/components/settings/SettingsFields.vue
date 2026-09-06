@@ -8,7 +8,13 @@
       invented would be refused rather than silently written — and a field added
       server-side appears without a second edit.
     -->
-    <div class="flex max-w-xl flex-col gap-6 pt-6">
+    <!--
+      One column, or two where the group asks for them. `grid` and not two
+      stacked flex columns: a grid keeps the rows aligned across the gutter, so
+      a hint that wraps to a second line on the left does not push the right
+      column out of step with it. Always one on a phone, whatever was declared.
+    -->
+    <div :class="LAYOUT[group.columns] || LAYOUT[1]">
       <!--
         Something true about this group that is not a field. Sign in has the
         only one: there is no sign-up switch, and this is where somebody looks
@@ -17,7 +23,7 @@
       -->
       <div
         v-if="group.note"
-        class="flex flex-col gap-1 rounded-6 border border-outline-gray-2 bg-surface-gray-1 p-3"
+        class="flex flex-col gap-1 rounded-6 border border-outline-gray-2 bg-surface-gray-1 p-3 sm:col-span-full"
         data-slot="settings-note"
       >
         <p class="text-base-medium text-ink-gray-8">{{ group.note.title }}</p>
@@ -90,6 +96,17 @@ import SettingsColour from './SettingsColour.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
 import { setBrand } from '../../lib/shell/theme'
 import { workspace } from '../../lib/workspace'
+
+/**
+ * How wide the form is and how it is divided, by the number of columns the
+ * group asked for. A map rather than a template expression because Tailwind
+ * reads this file for the classes it emits: a class assembled at runtime is a
+ * class that is not in the stylesheet.
+ */
+const LAYOUT = {
+  1: 'grid max-w-xl grid-cols-1 gap-6 pt-6',
+  2: 'grid max-w-3xl grid-cols-1 gap-x-10 gap-y-6 pt-6 sm:grid-cols-2',
+}
 
 const props = defineProps({ group: { type: Object, required: true } })
 const emit = defineEmits(['saved'])
