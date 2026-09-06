@@ -22,9 +22,21 @@
     Sideways it draws a hairline rather than a wash — see `axis`.
   -->
   <div class="relative min-h-0" :class="sideways ? 'min-w-0' : ''">
+    <!--
+      `max-h-[inherit]` is the whole of what bounds this.
+
+      Callers bind the panel by putting a `max-h-*` on the component, which
+      lands on the wrapper above. A `height: 100%` child of a box that has only
+      a *max* height resolves to `auto` — so the scroller grew to its content,
+      `overflow-y-auto` had nothing to scroll, and the rows spilled out of the
+      wrapper and drew over whatever came after it. On a phone that was the
+      column dialog painting its own second half across its first, with Done
+      underneath and unclickable. Inheriting the max height puts the bound on
+      the box that scrolls, which is where it has to be.
+    -->
     <div
       ref="scroller"
-      class="h-full overscroll-contain"
+      class="h-full max-h-[inherit] overscroll-contain"
       :class="sideways ? 'overflow-x-auto' : 'overflow-y-auto'"
       @scroll.passive="measure"
     >

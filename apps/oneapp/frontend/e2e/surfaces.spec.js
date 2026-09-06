@@ -125,38 +125,39 @@ test('a record that fills the window has one header, not two', async ({ page }, 
 
 test('a line opened from a project opens over it, not instead of it', async ({
   page,
+  baseURL,
 }, info) => {
   test.skip(info.project.name === 'mobile', 'the drawer is a desktop surface')
   const errors = collectConsoleErrors(page)
 
-  await page.goto('/one/space/rua?screen=projects')
-  const missing = await page
-    .getByText('Nothing here', { exact: false })
-    .isVisible()
-    .catch(() => false)
-  test.skip(missing, 'this tenant has no ERPNext, so the space is not seeded')
-  await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
+  // Which project has an invoice against it, asked rather than hunted for.
+  //
+  // This used to open the last twenty rows in turn and stop at the first whose
+  // Invoices tab had lines in it. That is a loop whose cost is the fixture's
+  // shape: the projects list is in `modified` order, invoices are seeded
+  // against a fifth of the projects, and the moment none of the twenty on the
+  // first page happens to be one of them the test spends its whole budget
+  // opening records and times out. Twenty-three of a hundred and thirteen
+  // projects qualify, so it is luck rather than a signal.
+  //
+  // The screen already answers the question. One GET names a project that has
+  // an invoice, and `record` in the URL opens it — the same door the row click
+  // goes through, and the part of this test that matters starts after it.
+  const listed = await page.request.get(
+    `${baseURL}/api/method/oneapp.oneapp_core.spaceview.rows`,
+    { params: { space_code: 'rua', screen: 'invoices', limit: 100 } },
+  )
+  test.skip(!listed.ok(), 'this tenant has no ERPNext, so the space is not seeded')
+  const invoices = (await listed.json()).message?.rows || []
+  const project = invoices.map((row) => row.project).find(Boolean)
+  test.skip(!project, 'no invoice in this fixture names a project')
 
-  // A job with invoices against it. Their jobs are in `modified` order, so this
-  // opens a few and stops at the first whose Invoices tab has rows.
-  const rows = page.locator('[data-slot="list-row"]')
-  const last = await rows.count()
-  let opened = false
-  for (let at = last - 1; at >= Math.max(0, last - 20) && !opened; at -= 1) {
-    await rows.nth(at).scrollIntoViewIfNeeded()
-    await rows.nth(at).click()
-    await page.locator('[data-slot="showcase-title"]').waitFor({ timeout: 25_000 })
-    await page.locator('[data-slot="tab-list"]').first().getByRole('tab', { name: 'Invoices' }).click()
-    const inside = page.locator('[data-slot="record-pane"] [data-slot="list-row"]').first()
-    await inside.waitFor({ timeout: 6_000 }).catch(() => {})
-    if (await inside.count()) {
-      await inside.click()
-      opened = true
-    } else {
-      await page.getByRole('button', { name: 'Close the record' }).click()
-    }
-  }
-  test.skip(!opened, 'none of the last twenty jobs has an invoice against it')
+  await page.goto(`/one/space/rua?screen=projects&record=${encodeURIComponent(project)}`)
+  await page.locator('[data-slot="showcase-title"]').waitFor({ timeout: 25_000 })
+  await page.locator('[data-slot="tab-list"]').first().getByRole('tab', { name: 'Invoices' }).click()
+  const inside = page.locator('[data-slot="record-pane"] [data-slot="list-row"]').first()
+  await inside.waitFor({ timeout: 25_000 })
+  await inside.click()
 
   // `textContent`, not `innerText`: the hero is `text-transform: uppercase`, so
   // `innerText` returns what is painted and `toHaveText` compares what is in
