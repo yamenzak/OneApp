@@ -49,7 +49,7 @@ class Setting:
 
 	def __init__(self, key, label, type="Data", targets=(), default_key="",
 	             options=None, options_from=None, hint="", invert=False,
-	             placeholder="", depends_on=""):
+	             placeholder="", depends_on="", depends_value=None):
 		self.key = key
 		self.label = label
 		self.type = type
@@ -71,11 +71,13 @@ class Setting:
 		self.invert = invert
 		self.placeholder = placeholder
 		# Another setting in the same group, by key. This one is drawn only when
-		# that one is on. Frappe's own `depends_on` is an expression evaluated as
-		# code; this is a key, because the only question worth asking here is
-		# "is its parent switched on" and an expression language is a way for a
-		# settings form to acquire a bug.
+		# that one is on — or, with `depends_value`, only when it holds exactly
+		# that. Frappe's own `depends_on` is an expression evaluated as code;
+		# this is a key and at most one value to compare it with, because those
+		# are the only two questions a settings form has ever needed and an
+		# expression language is a way for one to acquire a bug.
 		self.depends_on = depends_on
+		self.depends_value = depends_value
 
 	def read(self):
 		if self.default_key:
@@ -112,6 +114,7 @@ class Setting:
 			"hint": self.hint,
 			"placeholder": self.placeholder,
 			"depends_on": self.depends_on,
+			"depends_value": self.depends_value,
 		}
 
 
@@ -315,9 +318,18 @@ GROUPS = [
 			# Floats, because that is what the columns are. Left at the
 			# default `Data` they were text boxes over numeric columns, so a
 			# page size could be typed as a word and reach the database as one.
+			# Hidden unless the page size is Custom, which is the rule Frappe's
+			# own doctype states — `depends_on: eval:doc.pdf_page_size ==
+			# "Custom"` — and which the desk obeys and this dialog did not.
+			# A zero shows as the placeholder: the column has no default, so an
+			# untouched site reads 0, and a page 0mm wide is not a page.
 			Setting("pdf_page_width", "Custom width (mm)", type="Float",
+			        depends_on="pdf_page_size", depends_value="Custom",
+			        placeholder="210",
 			        targets=[("Print Settings", "pdf_page_width")]),
 			Setting("pdf_page_height", "Custom height (mm)", type="Float",
+			        depends_on="pdf_page_size", depends_value="Custom",
+			        placeholder="297",
 			        targets=[("Print Settings", "pdf_page_height")]),
 			# The typeface every format inherits unless it names its own. A
 			# Select rather than free text: it reaches a stylesheet the PDF
@@ -325,8 +337,13 @@ GROUPS = [
 			# renders as the engine's fallback with nothing to say so.
 			Setting("font", "Font", type="Select",
 			        targets=[("Print Settings", "font")]),
+			# Zero is Frappe's own "not set" here, and it renders at 14 —
+			# `test_zero_font_size_renders_at_default` in the framework says so.
+			# Shown as an empty box against that number rather than as a 0,
+			# which reads like a font nobody can see.
 			Setting("font_size", "Font size", type="Float",
 			        targets=[("Print Settings", "font_size")],
+			        placeholder="14",
 			        hint="In points. A format may still set its own."),
 			Setting("print_style", "Style", type="Select",
 			        options_from=lambda: reference("Print Style"),

@@ -69,6 +69,23 @@ for key, spec in me.MINE.items():
     mark = "  " if (ours == theirs or (ours, theirs) in NARROWED) else "!!"
     print(f"{mark} {key:16} ours={ours:14} frappe={theirs}")
 
+print("\n=== value dependencies ===")
+for group in workspace.GROUPS:
+    known = {s.key: s for s in group["settings"]}
+    for s in group["settings"]:
+        if s.depends_value is None:
+            continue
+        parent = known[s.depends_on]
+        options = workspace._options_for(parent) or []
+        ok = s.depends_value in options
+        print(f"{'  ' if ok else '!!'} {group['key']}.{s.key:24} shown when "
+              f"{parent.key} == {s.depends_value!r}")
+        if not ok:
+            bad.append(
+                f"{group['key']}.{s.key}: {parent.key} has no option "
+                f"{s.depends_value!r} — the field can never be drawn"
+            )
+
 print("\n=== summary ===")
 for line in bad:
     print(" ", line)

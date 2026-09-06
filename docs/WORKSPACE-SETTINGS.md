@@ -204,12 +204,23 @@ at the code:
   that wraps on the left does not push the right column out of step, and it
   drops back to one column on a phone. The field order is then the reading
   order, because a grid fills row by row.
-* **`depends_on`.** A setting may name another *in its own group* as the switch
-  it hangs off, and is drawn only when that one is on. A second factor offered
-  while two-factor is off is a choice with no effect, and a minimum password
-  strength under a policy that is off is a number nobody reads. It is a key and
-  not an expression on purpose: Frappe's own `depends_on` is evaluated as code,
-  and the only question worth asking here is whether the parent is switched on.
+* **`depends_on`, and `depends_value`.** A setting may name another *in its own
+  group* as the switch it hangs off, and is drawn only when that one is on — or,
+  with a `depends_value`, only when it holds exactly that. A second factor
+  offered while two-factor is off is a choice with no effect; a custom page
+  width belongs to the page size being Custom, which is the rule Frappe's own
+  doctype states (`depends_on: eval:doc.pdf_page_size == "Custom"`) and the desk
+  obeys. A key and at most one value to compare it with, not an expression:
+  Frappe's is evaluated as code, and those are the only two questions a settings
+  form has needed. A value dependency may only hang off a `Select`, and
+  `check_settings.py` proves the value is one of its options — otherwise the
+  field can never be drawn at all.
+* **A zero that means nothing is drawn as nothing.** Frappe uses 0 for "not set"
+  on several numeric columns: a print `font_size` of 0 renders at 14, by the
+  framework's own `test_zero_font_size_renders_at_default`. A form that draws
+  the 0 shows a value nobody chose as though somebody had, so a numeric setting
+  that declares a `placeholder` draws an empty box against it, and an empty box
+  saves 0.
 
 Both are checked by `tests/test_workspace_settings.py` — a dependency has to
 name a real key in its own group, and a declared note has to be rendered.

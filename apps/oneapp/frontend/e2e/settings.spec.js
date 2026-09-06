@@ -201,3 +201,28 @@ test('the workspace decides who may connect an outside mailbox',
     ])
     await expect(dialog(page).getByText('Allowed domains')).toHaveCount(0)
   })
+
+// A field that hangs off another one's *value*, not its truthiness. Frappe's
+// own doctype states this rule — `depends_on: eval:doc.pdf_page_size ==
+// "Custom"` — and the desk obeyed it while this dialog drew both sizes under
+// every page size, as zeroes. The placeholder is the other half: 0 is how
+// Frappe says "not set" here, and a page 0mm wide is not a page.
+test('the custom page sizes belong to Custom', async ({ page, baseURL }) => {
+  await signIn(page, baseURL)
+  await page.goto('/one/')
+  await page.locator('[data-slot="settings-link"]').click()
+  await page.locator('[data-slot="settings-tab-printing"]').click()
+  await page.getByText('Page size').waitFor()
+
+  const size = page.getByRole('combobox').first()
+  await expect(page.getByText('Custom width (mm)')).toBeHidden()
+
+  await size.click()
+  await page.getByRole('option', { name: 'Custom', exact: true }).click()
+  await expect(page.getByText('Custom width (mm)')).toBeVisible()
+  await expect(page.getByPlaceholder('210')).toBeVisible()
+
+  await size.click()
+  await page.getByRole('option', { name: 'A4', exact: true }).click()
+  await expect(page.getByText('Custom width (mm)')).toBeHidden()
+})

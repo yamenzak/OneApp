@@ -514,6 +514,38 @@ def test_a_reference_list_is_read_rather_than_written_down():
 def test_the_spa_draws_only_the_fields_whose_parent_is_on():
 	fields = source(SPA / "components/settings/SettingsFields.vue")
 	assert "depends_on" in fields, "the server declares it and nothing reads it"
+	assert "depends_value" in fields, "a value dependency that is never compared"
+
+
+def test_a_value_dependency_only_ever_hangs_off_a_closed_list():
+	"""Comparing against a value means the parent has a known set of them.
+
+	A dependency on a `Data` field would be a string typed one way in the spec
+	and another in the box, which is a control that disappears for a reason
+	nobody can see. Whether the value is one of the parent's *options* needs a
+	doctype's meta and so is `scripts/check_settings.py`.
+	"""
+	from oneapp.oneapp_core import workspace
+
+	for group in workspace.GROUPS:
+		by_key = {s.key: s for s in group["settings"]}
+		for setting in group["settings"]:
+			if setting.depends_value is None:
+				continue
+			parent = by_key[setting.depends_on]
+			assert parent.type == "Select", (
+				f"{group['key']}.{setting.key} compares {parent.key}, "
+				f"which is a {parent.type}"
+			)
+
+
+def test_a_zero_that_means_nothing_is_drawn_as_nothing():
+	"""Frappe uses 0 for "not set" on several numeric columns — a font size of
+	0 renders at 14, by its own test. Drawing the 0 shows a value nobody chose
+	as though somebody had."""
+	fields = source(SPA / "components/settings/SettingsFields.vue")
+	assert "const draw" in fields
+	assert "field.placeholder && !form[field.key]" in fields
 
 
 def test_a_group_that_asks_for_two_columns_gets_a_layout_for_it():

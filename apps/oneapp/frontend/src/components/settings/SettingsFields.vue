@@ -71,7 +71,8 @@
         />
         <FormControl
           v-else
-          v-model="form[field.key]"
+          :model-value="draw(field)"
+          @update:model-value="form[field.key] = $event"
           :type="control(field)"
           :label="field.label"
           :description="field.hint"
@@ -128,16 +129,35 @@ const control = (field) =>
 const numeric = (field) => field.type === 'Int' || field.type === 'Float'
 
 /**
+ * What goes in the box, which is not always what is stored.
+ *
+ * Zero is how Frappe says "not set" on several numeric columns — a font size of
+ * 0 renders at 14, a custom page width of 0 is no width — and a settings form
+ * that draws a 0 there is showing a value nobody chose as though somebody had.
+ * Where a setting declares what it falls back to, the zero is the placeholder
+ * instead. Empty comes back as 0, which is the same "not set" going the other
+ * way.
+ */
+const draw = (field) =>
+  numeric(field) && field.placeholder && !form[field.key] ? '' : form[field.key]
+
+/**
  * The fields to draw, which is not all of them: a setting may name another in
  * the same group as the switch it hangs off, and a second factor nobody can
- * reach is a control that does nothing.
+ * reach is a control that does nothing. With `depends_value` the parent has to
+ * hold exactly that — a custom page width belongs to the page size being
+ * Custom, not to it being anything at all.
  *
  * Read off `form` and not off the server's values, so turning the parent on
  * reveals the child immediately rather than after a save and a reload.
  */
-const shown = computed(() =>
-  props.group.fields.filter((f) => !f.depends_on || form[f.depends_on]),
-)
+const visible = (field) => {
+  if (!field.depends_on) return true
+  const parent = form[field.depends_on]
+  return field.depends_value == null ? Boolean(parent) : parent === field.depends_value
+}
+
+const shown = computed(() => props.group.fields.filter(visible))
 
 const dirty = computed(() =>
   props.group.fields.some((f) => form[f.key] !== original.value[f.key]),
