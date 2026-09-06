@@ -514,6 +514,14 @@ def sync_books(hint: dict | None) -> dict:
 		return {"error": str(e)[:200]}
 
 
+#: What "nobody has chosen this" looks like on a fresh site.
+#:
+#: Empty, or the value Frappe ships the field with. The second half is the
+#: whole of the fix: these fields are never empty, so a sync that only filled
+#: blanks filled nothing.
+FRAMEWORKS = ("", "Frappe", "Frappe Framework")
+
+
 def sync_branding(tenant: dict) -> None:
 	"""Name the workspace after itself, and keep signup shut.
 
@@ -522,16 +530,20 @@ def sync_branding(tenant: dict) -> None:
 	anyone, on a product whose whole premise is that they never see Frappe.
 	Provisioning cannot do it: the control plane has no route into this database.
 
-	Only ever fills a blank. The customer owns these afterwards (see
-	oneapp_core/workspace.py), and a sync that reset their logo every hour would
-	be worse than one that never set it.
+	Only ever replaces what the customer has not chosen. They own these
+	afterwards (see `oneapp_core/workspace.py`) and a sync that reset their name
+	every hour would be worse than one that never set it — but "has not chosen"
+	is not "is empty", which is what this used to test and why it never once
+	fired. Frappe *ships* these fields filled in: `app_name` defaults to
+	"Frappe" and `otp_issuer_name` to "Frappe Framework", so the blank this was
+	waiting for never existed and every workspace's sign-in page said Frappe.
 	"""
 	name = (tenant.get("name") or "").strip()
 	if name:
 		for doctype, field in (("Website Settings", "app_name"),
 		                       ("System Settings", "app_name"),
 		                       ("System Settings", "otp_issuer_name")):
-			if not frappe.db.get_single_value(doctype, field):
+			if (frappe.db.get_single_value(doctype, field) or "") in FRAMEWORKS:
 				frappe.db.set_single_value(doctype, field, name)
 
 	# Not a default an owner may change back. Frappe's signup makes an enabled

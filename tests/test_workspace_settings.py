@@ -224,11 +224,23 @@ def test_the_sync_keeps_signup_shut():
 	assert 'set_single_value("Website Settings", "disable_signup", 1)' in body
 
 
-def test_branding_only_ever_fills_a_blank():
-	"""A sync that reset the customer's logo every hour would be worse than one
-	that never set it."""
+def test_branding_replaces_the_frameworks_own_name_and_nothing_else():
+	"""Two failures, one either side, and this guard used to hold the first one
+	in place.
+
+	A sync that reset the customer's name every hour is worse than one that
+	never set it — so it must not overwrite a chosen value. But it tested for
+	*empty*, and Frappe ships these fields filled: `app_name` is "Frappe" and
+	`otp_issuer_name` is "Frappe Framework". The blank never existed, the branch
+	never ran, and every workspace's sign-in page said Frappe.
+	"""
 	body = function(SYNC, "sync_branding")
-	assert "if not frappe.db.get_single_value" in body
+	source = SYNC.read_text()
+
+	assert "FRAMEWORKS" in body, "the sync no longer asks what nobody has chosen"
+	assert '"Frappe"' in source and '"Frappe Framework"' in source, (
+		"the framework's own defaults are what 'unchosen' means here"
+	)
 
 
 def test_the_workspace_is_named_before_anyone_signs_in():
