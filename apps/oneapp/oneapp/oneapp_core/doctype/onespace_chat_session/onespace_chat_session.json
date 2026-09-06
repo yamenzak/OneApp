@@ -1,0 +1,89 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "last_message_on",
+  "cb_chat_meta",
+  "message_count",
+  "credits",
+  "archived"
+ ],
+ "fields": [
+  {
+   "description": "The first thing that was asked, trimmed. Named from the question rather than by the model: naming a thread is a second call, and it would be charged for.",
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title"
+  },
+  {
+   "fieldname": "last_message_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Last Message On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_chat_meta",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "message_count",
+   "fieldtype": "Int",
+   "label": "Message Count",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "What this whole conversation has cost, summed as each turn settles.",
+   "fieldname": "credits",
+   "fieldtype": "Float",
+   "label": "Credits",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "archived",
+   "fieldtype": "Check",
+   "label": "Archived"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "OneSpace Chat Session",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "if_owner": 1,
+   "read": 1,
+   "role": "All",
+   "write": 1
+  }
+ ],
+ "search_fields": "title",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}

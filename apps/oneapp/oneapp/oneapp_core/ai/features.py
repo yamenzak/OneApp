@@ -51,7 +51,8 @@ class Feature:
 	def __init__(self, key, label, capability, system, description,
 	             tenant_can_disable, allow_prompt_addendum, app,
 	             max_input_tokens, max_output_tokens, max_images, max_outputs,
-	             max_audio_seconds, max_credits, model):
+	             max_audio_seconds, max_credits, model,
+	             max_turns, max_run_credits, tools):
 		self.key = key
 		self.label = label
 		self.capability = capability
@@ -64,6 +65,15 @@ class Feature:
 		self.allow_prompt_addendum = allow_prompt_addendum
 		self.app = app
 		self.model = model
+		# The two ceilings are different questions and are kept apart on
+		# purpose. `limits` prices one call and is what the control plane holds
+		# against; `run` bounds how many calls one ask may become, which only a
+		# conversation can spend and which nothing at the gateway can see.
+		self.run = {"max_turns": max_turns, "max_run_credits": max_run_credits}
+		#: Import path of a callable returning the tools this feature may use.
+		#: A path rather than the tools themselves: importing them at decoration
+		#: time would import half the app to register a feature.
+		self.tools = tools
 		self.limits = {
 			"max_input_tokens": max_input_tokens,
 			"max_output_tokens": max_output_tokens,
@@ -84,6 +94,7 @@ class Feature:
 			"tenant_can_disable": 1 if self.tenant_can_disable else 0,
 			"allow_prompt_addendum": 1 if self.allow_prompt_addendum else 0,
 			**self.limits,
+			**self.run,
 		}
 
 
@@ -102,6 +113,9 @@ def ai_feature(
 	max_audio_seconds: int = 0,
 	max_credits: float = 0,
 	model: str = "",
+	max_turns: int = 0,
+	max_run_credits: float = 0,
+	tools: str = "",
 ):
 	"""Register a feature and hand its function a configured AI callable.
 
@@ -113,6 +127,12 @@ def ai_feature(
 	`model` pins a model in code, for the rare feature that only works with one.
 	Leave it empty and the workspace chooses, from models that match
 	`capability`.
+
+	`max_turns` and `tools` make the feature conversational. A turn is a whole
+	call — its own hold, its own settlement — so a loop of ten spends the
+	ceiling ten times, and `max_run_credits` is the figure that actually bounds
+	one ask. Declare both or neither; `conversation.py` refuses to loop without
+	a turn limit.
 	"""
 
 	def decorate(fn):
@@ -135,6 +155,9 @@ def ai_feature(
 			max_audio_seconds=max_audio_seconds,
 			max_credits=max_credits,
 			model=model,
+			max_turns=max_turns,
+			max_run_credits=max_run_credits,
+			tools=tools,
 		)
 		REGISTRY[key] = feature
 

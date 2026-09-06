@@ -29,7 +29,7 @@ import frappe
 import requests
 
 from oneapp.oneapp_core import control_client
-from oneapp.oneapp_core.ai import features, meter, settings
+from oneapp.oneapp_core.ai import features, meter, settings, transcript
 
 TIMEOUT = 120
 
@@ -87,14 +87,25 @@ def _google_headers() -> dict:
 
 
 def _google_text(model, prompt, system, limits, request):
+	"""One turn, whether it is the only one or the ninth.
+
+	`messages` is a whole transcript and `prompt` is the shorthand for a
+	transcript of one, so a feature that asks a single question and a
+	conversation that has been going for five minutes are the same call with the
+	same ceiling and the same hold. There is no second path for chat.
+	"""
 	body = {
-		"contents": [{"role": "user", "parts": [{"text": prompt}]}],
+		"contents": transcript.to_google(
+			request.get("messages") or [{"role": "user", "content": prompt}]
+		),
 		"generationConfig": {},
 	}
 	if limits.get("max_output_tokens"):
 		body["generationConfig"]["maxOutputTokens"] = limits["max_output_tokens"]
 	if system:
 		body["systemInstruction"] = {"parts": [{"text": system}]}
+	if request.get("tools"):
+		body["tools"] = transcript.to_google_tools(request["tools"])
 	return f"v1beta/models/{model['model_id']}:generateContent", _google_headers(), body
 
 
@@ -148,12 +159,14 @@ def _workers_headers() -> dict:
 
 
 def _workers_text(model, prompt, system, limits, request):
-	messages = ([{"role": "system", "content": system}] if system else []) + [
-		{"role": "user", "content": prompt}
-	]
+	turns = request.get("messages") or [{"role": "user", "content": prompt}]
+	messages = ([{"role": "system", "content": system}] if system else []) + \
+		transcript.to_openai(turns)
 	body = {"messages": messages}
 	if limits.get("max_output_tokens"):
 		body["max_tokens"] = limits["max_output_tokens"]
+	if request.get("tools"):
+		body["tools"] = request["tools"]
 	return model["model_id"], _workers_headers(), body
 
 
@@ -243,7 +256,12 @@ def _google_result(payload: dict, capability: str) -> dict:
 
 	if capability == "Text Embeddings":
 		return {"embedding": (payload.get("embedding") or {}).get("values") or []}
-	return {"text": text, "images": images, "audio": audio}
+
+	# Read again for the calls rather than pulling them out of the loop above:
+	# that loop is about the parts a person sees, and a `functionCall` is not
+	# one — it is the model asking for something before it can answer.
+	_, calls = transcript.from_google(payload)
+	return {"text": text, "images": images, "audio": audio, "tool_calls": calls}
 
 
 def _workers_result(payload: dict, capability: str) -> dict:
@@ -257,7 +275,9 @@ def _workers_result(payload: dict, capability: str) -> dict:
 		return {"images": [result["image"]] if result.get("image") else [], "text": ""}
 	if capability == "Text to Speech":
 		return {"audio": [result.get("audio")] if result.get("audio") else [], "text": ""}
-	return {"text": result.get("response") or result.get("text") or ""}
+
+	text, calls = transcript.from_openai(result)
+	return {"text": text, "tool_calls": calls}
 
 
 # --------------------------------------------------------------------------- #

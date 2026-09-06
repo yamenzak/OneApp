@@ -159,10 +159,13 @@ doc_events = {
 # walking the package: a feature that only registers when something happens to
 # import its module is a feature missing from the settings page on a cold worker.
 #
-# Apps built on OneSpace add their own here. Nothing ships one yet — the mechanism
-# exists so the first app that needs AI declares it and gets the settings row,
-# the credit hold and the operator registry entry for free.
-ai_features = []
+# Apps built on OneSpace add their own here. The workspace assistant is the first
+# one shipped, and it is the mechanism working rather than an exception to it:
+# it gets its settings row, its model picker, its credit hold and its entry in
+# the operator registry from the decorator, like anything else would.
+ai_features = [
+	"oneapp.oneapp_core.chat.assistant",
+]
 
 scheduler_events = {
 	"cron": {

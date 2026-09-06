@@ -24,6 +24,10 @@
   "cb_feat_ceiling",
   "max_audio_seconds",
   "max_credits",
+  "sec_feat_run",
+  "max_turns",
+  "cb_feat_run",
+  "max_run_credits",
   "sec_feat_meta",
   "description",
   "last_seen"
@@ -143,6 +147,29 @@
    "fieldname": "max_credits",
    "fieldtype": "Float",
    "label": "Max Credits"
+  },
+  {
+   "fieldname": "sec_feat_run",
+   "fieldtype": "Section Break",
+   "label": "A run of several calls"
+  },
+  {
+   "default": "0",
+   "description": "A conversation is one call per turn, and the ceiling above holds for one of them. This is how many turns a single ask may take before the loop stops \u2014 a model that keeps calling tools spends the ceiling again each time. 0 means the feature is not conversational.",
+   "fieldname": "max_turns",
+   "fieldtype": "Int",
+   "label": "Max Turns"
+  },
+  {
+   "fieldname": "cb_feat_run",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Credits one ask may spend across all its turns. Checked on this site between turns, against what the previous ones actually settled at. 0 means turns are the only limit.",
+   "fieldname": "max_run_credits",
+   "fieldtype": "Float",
+   "label": "Max Run Credits"
   },
   {
    "fieldname": "sec_feat_meta",

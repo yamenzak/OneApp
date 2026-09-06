@@ -11,6 +11,7 @@
 
 // One object, assembled from the modules, because every caller says
 // `workspace.screenRows(...)` and the split is ours rather than theirs.
+import { assistant } from './assistant'
 import { settings } from './settings'
 import { screen } from './screen'
 import { record } from './record'
@@ -25,6 +26,7 @@ import { docs } from './docs'
 import { versions } from './versions'
 
 export const workspace = {
+  ...assistant,
   ...settings,
   ...screen,
   ...record,

@@ -86,7 +86,24 @@ The single modules, roughly by how often they are touched:
   that came to, and nothing on this side reads the first — the browser
   evaluates formulas, the server stores what it computed. See
   `docs/SHEETS.md` §8.
-* `ai/`, `storage/`, `plans/` — the metered gateway, R2, and the one bespoke
+* `ai/` — one call to a model, everything that follows from declaring one, and
+  the loop above it. `features` (the `@ai_feature` decorator and its registry) →
+  `settings` (the workspace's answers, and the ceilings an operator may lower) →
+  `meter` (units the provider reported, never estimated) → `gateway`
+  (hold → call → settle, through Cloudflare AI Gateway). Then the three that
+  make a conversation possible: `tools` (a Python signature described to a model
+  as JSON Schema), `transcript` (one message shape, and the two provider shapes
+  it becomes) and `conversation` (ask, run what came back, ask again — within a
+  turn count and a credit budget). The last three are adapted from
+  `frappe/flow_client`; the model they call is ours, because Flow's own is a
+  provider row a tenant could edit.
+* `chat/` — the workspace assistant, which is one `@ai_feature` that loops.
+  `toolbox` (what it may read, every tool a wrapper over an endpoint the SPA
+  already calls, so the assistant sees exactly what its asker could click to) →
+  `session` (a conversation on disk, and as the transcript a provider is sent) →
+  `assistant` (the declaration, the system prompt, and four endpoints). Nothing
+  here can write. See `docs/ONESPACE.md` §10.
+* `storage/`, `plans/` — R2, and the one bespoke
   migration plan. In `storage/`, `file.py` is the `File` override that moves an
   uploaded attachment to R2 and `direct.py` is the path a large file takes
   instead: the browser PUTs it straight at the bucket and only tells us where it

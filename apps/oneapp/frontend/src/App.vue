@@ -25,6 +25,8 @@
         />
         <!-- And the diary's, which is the list of calendars it merges. -->
         <DiarySidebar v-else-if="$route.name === 'Calendar'" />
+        <!-- And the assistant's, which is this person's own conversations. -->
+        <ChatSidebar v-else-if="$route.name === 'Chat'" />
         <SpaceSidebar v-else />
       </template>
 
@@ -85,6 +87,7 @@ import AppShell from './components/AppShell.vue'
 import SpaceSidebar from './components/SpaceSidebar.vue'
 import MailSidebar from './components/mail/MailSidebar.vue'
 import DiarySidebar from './components/diary/DiarySidebar.vue'
+import ChatSidebar from './components/chat/ChatSidebar.vue'
 import DriveSidebar from './components/drive/DriveSidebar.vue'
 import RailAccount from './components/RailAccount.vue'
 import NotificationBell from './components/notifications/NotificationBell.vue'
@@ -97,6 +100,7 @@ import { openSettings } from '@/lib/shell/settings'
 import { session, sessionResource } from '@/lib/shell/session'
 import { fullName, email, userImage } from '@/lib/shell/user'
 import { followMail } from '@/lib/shell/mail'
+import { loadAssistant } from '@/lib/shell/assistant'
 
 const route = useRoute()
 
@@ -176,6 +180,14 @@ watch(
 watch(
   () => session.isLoggedIn,
   (yes) => yes && followMail(),
+  { immediate: true },
+)
+
+// And once, for the same reason: whether the rail offers an assistant is not
+// the assistant page's to decide, and a phone never draws that page's rail.
+watch(
+  () => session.isLoggedIn,
+  (yes) => yes && loadAssistant(),
   { immediate: true },
 )
 

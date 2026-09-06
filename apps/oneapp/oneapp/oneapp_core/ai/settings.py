@@ -136,12 +136,27 @@ def system_prompt(feature) -> str:
 
 def limits(feature) -> dict:
 	"""The ceiling for a call, with the operator's cap over the app's."""
+	return _capped(feature, feature.limits)
+
+
+def run_budget(feature) -> dict:
+	"""How far one ask may go: turns, and credits across all of them.
+
+	The same override rule as `limits`, and separate from it because the
+	gateway holds against one call and knows nothing about the loop around it.
+	An operator who suspects a feature is looping shortens the run rather than
+	the call.
+	"""
+	return _capped(feature, feature.run)
+
+
+def _capped(feature, declared: dict) -> dict:
 	rules = policy().get(feature.key) or {}
-	declared = dict(feature.limits)
-	for field in declared:
+	settled = dict(declared)
+	for field in settled:
 		if rules.get(field):
-			declared[field] = rules[field]
-	return declared
+			settled[field] = rules[field]
+	return settled
 
 
 # --------------------------------------------------------------------------- #

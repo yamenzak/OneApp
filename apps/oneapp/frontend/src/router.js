@@ -43,6 +43,17 @@ const routes = [
     meta: { pane: true },
   },
   {
+    // The assistant belongs to the workspace, like Mail and Files: what it can
+    // read follows the reader's roles across every space, not one of them.
+    // The open thread is `?chat=`, so a conversation can be linked to.
+    path: '/chat',
+    name: 'Chat',
+    component: () => import('./pages/Chat.vue'),
+    // A rail, a transcript with its own scroller and a composer pinned under
+    // it: a page scroll on top would move the composer off screen.
+    meta: { pane: true },
+  },
+  {
     // A sheet is a File, so this is not a second kind of thing with a second
     // kind of address: `:name` is the File row.
     path: '/sheets/:name',

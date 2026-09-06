@@ -188,6 +188,19 @@ doctype(
         f("max_credits", "Float", default="0",
           description="Hard cap per call, whatever the model. 0 means the "
                       "ceiling is whatever the limits above cost."),
+        section("sec_feat_run", "A run of several calls"),
+        f("max_turns", "Int", default="0",
+          description="A conversation is one call per turn, and the ceiling "
+                      "above holds for one of them. This is how many turns a "
+                      "single ask may take before the loop stops — a model that "
+                      "keeps calling tools spends the ceiling again each time. "
+                      "0 means the feature is not conversational."),
+        column("cb_feat_run"),
+        f("max_run_credits", "Float", default="0",
+          description="Credits one ask may spend across all its turns. Checked "
+                      "on this site between turns, against what the previous "
+                      "ones actually settled at. 0 means turns are the only "
+                      "limit."),
         section("sec_feat_meta"),
         f("description", "Small Text"),
         f("last_seen", "Datetime", read_only=1,
@@ -302,5 +315,98 @@ doctype(
         f("registry_json", "Code", options="JSON", read_only=1,
           description="Platform policy per feature: what may be disabled, what "
                       "model is pinned, what the ceiling is."),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# The workspace assistant's transcripts.
+#
+# A conversation is stored because a conversation is a document: it is looked
+# at again, it is what "you told me last week" means, and it is the only record
+# of what the assistant was asked to read. Storing it also makes the cost
+# legible — every turn is a metered call, and `credits` on the session is the
+# sum of them.
+#
+# Per person and not per workspace. Two people asking the assistant about the
+# same quotation are having two conversations, and each of them sees only what
+# their own roles let them see, so a shared thread would be a thread whose rows
+# mean different things to different readers.
+# --------------------------------------------------------------------------- #
+CHAT_PERMS = [
+    {"read": 1, "write": 1, "create": 1, "delete": 1, "role": "System Manager"},
+    # Everybody signed in, and only their own. `if_owner` is what makes a
+    # transcript private without a role per person.
+    {"read": 1, "write": 1, "create": 1, "delete": 1, "role": "All", "if_owner": 1},
+]
+
+
+doctype(
+    "OneSpace Chat Session",
+    app="tenant",
+    perms=CHAT_PERMS,
+    autoname="hash",
+    title_field="title",
+    search_fields="title",
+    fields=[
+        f("title", in_list_view=1,
+          description="The first thing that was asked, trimmed. Named from the "
+                      "question rather than by the model: naming a thread is "
+                      "a second call, and it would be charged for."),
+        f("last_message_on", "Datetime", in_list_view=1, read_only=1),
+        column("cb_chat_meta"),
+        f("message_count", "Int", default="0", read_only=1),
+        f("credits", "Float", default="0", read_only=1,
+          description="What this whole conversation has cost, summed as each "
+                      "turn settles."),
+        f("archived", "Check", default="0"),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# OneSpace Chat Message — one turn, including the ones nobody typed.
+#
+# A separate doctype rather than a child table on the session. A chat grows
+# without bound and a child table rewrites every row of the parent on each save,
+# so appending the fortieth message would rewrite the other thirty-nine.
+#
+# `tool` rows are stored alongside the visible ones because they are what the
+# next turn is sent: dropping them would leave the model reading its own
+# question about a record and no answer to it.
+# --------------------------------------------------------------------------- #
+doctype(
+    "OneSpace Chat Message",
+    app="tenant",
+    perms=CHAT_PERMS,
+    autoname="hash",
+    fields=[
+        f("session", "Link", options="OneSpace Chat Session", reqd=1,
+          in_list_view=1, in_standard_filter=1),
+        f("seq", "Int", reqd=1, in_list_view=1,
+          description="Order within the session. Not creation time: a turn and "
+                      "the tool results that answer it are written in one "
+                      "request and can share a timestamp."),
+        f("role", "Select", reqd=1, default="user", in_list_view=1,
+          options="user\nassistant\ntool",
+          description="Frappe has no opinion here; these are the roles a "
+                      "provider accepts, and `ai/transcript.py` maps them on."),
+        column("cb_chat_msg"),
+        f("credits", "Float", default="0", read_only=1,
+          description="What the call that produced this turn settled at. Zero "
+                      "on anything a person typed."),
+        f("stopped", "Data", read_only=1,
+          description="Why the loop ended on this turn: answered, turns_spent "
+                      "or budget_spent. Empty on a person's own message."),
+        section("sec_chat_body"),
+        f("content", "Long Text"),
+        f("tool_calls", "Code", options="JSON",
+          description="What the model asked to run, when this turn asked for "
+                      "anything. The arguments as sent, so a transcript says "
+                      "which records were read."),
+        column("cb_chat_tool"),
+        f("tool_call_id", read_only=1,
+          description="Which call a `tool` row answers."),
+        f("tool_name", read_only=1),
     ],
 )

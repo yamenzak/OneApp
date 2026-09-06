@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router'
 // An icon name that only exists in the database emits no CSS, so anything
 // outside the generated set falls back to one that does.
 import { spaceIcon } from '@/lib/shell/icons'
+import { assistant } from '@/lib/shell/assistant'
 import { mail } from '@/lib/shell/mail'
 import { session } from '@/lib/shell/session'
 import { workspace } from '@/lib/workspace'
@@ -130,13 +131,25 @@ export function useNav() {
 /**
  * The destinations that are not inside a space, declared once.
  *
- * Mail and Files are peers: the addresses somebody holds do not change when
- * they switch space, and neither does the workspace's file table. Here rather
+ * Mail, Files and the assistant are peers: the addresses somebody holds do not
+ * change when they switch space, neither does the workspace's file table, and
+ * the assistant answers across every space its reader can open. Here rather
  * than in App.vue for the reason this module exists — declared in the shell,
  * the rail had Mail and the More sheet did not.
  */
   const surfaces = computed(() => [
     { key: 'files', label: 'Files', icon: 'lucide-folder', to: { name: 'Drive' } },
+    // Absent until the server says the workspace has one — AI can be switched
+    // off, unconfigured, or suspended by an operator, and a rail entry that
+    // leads to "not switched on here" is worse than no entry.
+    ...(assistant.available
+      ? [{
+        key: 'chat',
+        label: 'Assistant',
+        icon: 'lucide-sparkles',
+        to: { name: 'Chat' },
+      }]
+      : []),
     // Always here, unlike Mail: everybody has days.
     { key: 'calendar', label: 'Calendar', icon: 'lucide-calendar', to: { name: 'Calendar' } },
     // Absent for somebody who holds no address, which is most people until

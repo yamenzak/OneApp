@@ -1323,6 +1323,41 @@ off, because the alternative is a broken workflow with no error to point at.
 
 Credits, metering and markup are the platform's — `ONEADMIN.md` §7.
 
+### The workspace assistant
+
+The first feature shipped under that decorator is a chat, at `/one/chat`. It is
+declared exactly like any other — `@ai_feature("chat.workspace")` — so it has a
+settings row, a model picker, an off switch, an addendum a workspace may write
+and may never read, and a credit hold before every call. **There is no second AI
+path and no configuration surface of its own.** A chat that could name a
+provider or hold a key would be the thing OneSpace does not do.
+
+Two things make it a chat rather than a summary, and both are on the
+declaration. `tools` names what it may read; `max_turns` says how many calls one
+question may become.
+
+**It is not privileged.** Every tool in `chat/toolbox.py` is a wrapper over an
+endpoint the SPA already calls — `spaceview.records.rows`, `drive.reading.listing`,
+`docs.body` — so which spaces resolve, which filters are allowed, and which rows
+come back under User Permissions are all decided by the code a click goes
+through. The assistant sees what its asker could have opened by clicking, and a
+question about a space they cannot open is refused in the same words.
+
+**Everything is read-only.** Not because the loop could not carry a write, but
+because a write needs a confirmation step in front of it and there is nowhere yet
+for one to appear. §13.
+
+**Every turn is a whole metered call.** A question that needs three lookups is
+four calls, four holds and four settlements, and it is charged as four. That is
+why the declaration carries `max_run_credits` as well as `max_credits`: the
+gateway holds against one call and cannot see the loop around it, so the run's
+own ceiling is checked between turns by `ai/conversation.py`, against what the
+previous turns actually settled at.
+
+Transcripts are stored per person, not per workspace. Two people asking the same
+question get different answers under their own roles, so a shared thread would
+be one whose rows mean different things to different readers.
+
 ---
 
 ## 11. Workspace settings
@@ -1454,6 +1489,15 @@ designing around their absence would now be designing around nothing:
 panel, and `email/templates.py` with its own) and **data import**
 (`oneapp_core/importer/`, which maps another site's records across with a plan,
 a dry run and a report).
+
+* **A write the assistant can make.** Every tool in `chat/toolbox.py` reads.
+  The loop in `ai/conversation.py` would carry a write perfectly well — that is
+  not what is missing. What is missing is the step in front of it: a model that
+  can change a record has to show what it is about to do and wait, and a chat
+  answer that arrives finished has nowhere for a "do this?" to appear. Flow's
+  own agent has the pause built in (`requires_confirmation`, a `Question` the
+  run stops on) and it is the piece worth taking next; until it has a surface,
+  a write tool is a record changed on a model's say-so.
 
 Also, deliberately: **Assignment is not shown in the list.** The activity column
 is a fixed 176px track already holding an age, a count and a heart. If
