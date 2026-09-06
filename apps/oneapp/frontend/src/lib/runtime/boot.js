@@ -38,6 +38,10 @@ export const devServer = !!read('dev_server', 0) || import.meta.env.DEV
 // favicon so the tab does not visibly change — which is why they ride the boot
 // payload rather than the session resource.
 export const brand = read('brand', {})
+// Which language to draw in, and therefore which way. The reader's own, or the
+// workspace's — `www/one.py` decides; this only has to know the answer before
+// the first paint, because changing it later moves the whole layout.
+export const lang = read('lang', 'en')
 
 export default {
   siteName,
@@ -48,4 +52,5 @@ export default {
   isDev,
   devServer,
   brand,
+  lang,
 }

@@ -48,6 +48,10 @@ export const devServer = !!read('dev_server', 0) || import.meta.env.DEV
 // favicon so the tab does not visibly change — which is why they ride the boot
 // payload rather than the session resource.
 export const brand = read('brand', {})
+// Which language to draw in, and therefore which way. The reader's own, or the
+// workspace's — `www/one.py` decides; this only has to know the answer before
+// the first paint, because changing it later moves the whole layout.
+export const lang = read('lang', 'en')
 
 export default {
   siteName,
@@ -58,6 +62,7 @@ export default {
   isDev,
   devServer,
   brand,
+  lang,
 }
 """
 
@@ -770,3 +775,98 @@ BRAND_JS = BANNER + """
  */
 export const TENANT_APP = 'OneSpace'
 """
+
+
+TRANSLATE_JS = BANNER + '''
+/**
+ * One sentence, in the reader's language.
+ *
+ * Frappe's own mechanism, deliberately, because half the sentences in this
+ * product are sentences Frappe and ERPNext have already translated into forty
+ * languages: the msgid *is* the English string, so `__("Delete")` resolves
+ * against their catalogue with no work from us and no key to invent. What is
+ * ours goes in `apps/<app>/<app>/locale/<lang>.po` beside theirs, and
+ * `bench generate-pot-file` finds it — the extractor already reads `.vue` and
+ * `.js` looking for this exact function name and signature.
+ *
+ * So the signature is not a choice: `__(text, values, context)`, `{0}` and
+ * `{name}` placeholders, `msgid:context` for the two sentences that are the
+ * same words meaning different things. Matching `frappe.public/js/translate.js`
+ * is what makes the extractor and the catalogues work.
+ *
+ * English costs nothing. The msgid is the English, so an English reader
+ * downloads no catalogue and every call returns its own argument.
+ */
+
+/** The catalogue for the reader's language. Empty for English, and for a
+ *  language nobody has translated yet — both of which fall through to the
+ *  msgid, which is the English sentence. */
+let messages = {}
+
+/** `{0}` and `{name}`, the two shapes Frappe's own `$.format` accepts. */
+function fill(text, values) {
+  if (!values) return text
+  return text.replace(/\\{([\\w]+)\\}/g, (whole, key) => {
+    const value = Array.isArray(values) ? values[Number(key)] : values[key]
+    return value === undefined || value === null ? whole : String(value)
+  })
+}
+
+/**
+ * The sentence, translated where there is a translation.
+ *
+ * `context` is for the handful of words that are one word in English and two
+ * everywhere else — "Open" the verb against "Open" the state. It is the second
+ * half of the msgid, exactly as Frappe stores it.
+ */
+export function __(text, values = null, context = null) {
+  if (!text || typeof text !== 'string') return text
+  const translated =
+    (context && messages[`${text}:${context}`]) || messages[text] || text
+  return fill(translated, values)
+}
+
+/**
+ * Fetch the catalogue, once, before anything is drawn.
+ *
+ * Before rather than after because a page that renders in English and then
+ * repaints in Arabic has also changed direction, and that is not a flicker —
+ * it is the whole layout moving. The endpoint is cached for a year by the
+ * server it comes from, so this is one request on a cold visit and none after.
+ *
+ * Never throws: a workspace whose catalogue would not load is a workspace in
+ * English, which is worse than the alternative and better than a blank page.
+ */
+export async function loadTranslations(lang) {
+  if (!lang || lang === 'en') return {}
+  try {
+    const response = await fetch(
+      `/api/method/frappe.translate.get_boot_translations?lang=${encodeURIComponent(lang)}`,
+      { headers: { Accept: 'application/json' } },
+    )
+    if (!response.ok) return {}
+    messages = (await response.json())?.message || {}
+  } catch {
+    messages = {}
+  }
+  return messages
+}
+
+/** What is loaded, for a test that wants to prove a sentence resolves. */
+export function catalogue() {
+  return messages
+}
+
+/**
+ * Which way the page runs.
+ *
+ * The list rather than a lookup of every language: these are the ones written
+ * right to left, and a language absent from it is left to right — which is the
+ * right way for the guess to fail.
+ */
+const RIGHT_TO_LEFT = ['ar', 'arc', 'dv', 'fa', 'ha', 'he', 'ks', 'ku', 'ps', 'ur', 'yi']
+
+export function direction(lang) {
+  return RIGHT_TO_LEFT.includes(String(lang || '').split('-')[0]) ? 'rtl' : 'ltr'
+}
+'''

@@ -39,6 +39,12 @@ def get_context(context):
 		# wanted before first paint — a favicon that arrives after a round trip
 		# is a tab that visibly changes. See `oneapp_core/branding.py`.
 		"brand": branding.boot(),
+		# Which language to draw in. `frappe.local.lang` is already the answer
+		# the framework worked out for this request — the reader's own if they
+		# set one, the workspace's otherwise — so this is that answer handed
+		# forward rather than a second guess at it. Before first paint because
+		# Arabic is not a repaint, it is the layout running the other way.
+		"lang": frappe.local.lang or "en",
 	}
 	context.no_cache = 1
 	return context
