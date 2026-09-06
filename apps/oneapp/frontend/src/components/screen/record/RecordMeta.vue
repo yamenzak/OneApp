@@ -3,15 +3,12 @@
     What the record *is*, and who else is on it.
 
     The desk's own sidebar, and its shape is the argument: the record's face and
-    name, then the four things you do to a record *about other people* —
-    assign it, file something against it, tag it, share it — then who made it
-    and when. None of them is a field on the doctype, all of them are answers
-    to "what is going on with this one", and every desk sidebar has answered
-    them in that order for a decade.
+    name, then the four things you do to a record *about other people* — assign
+    it, file something against it, tag it, share it — then who made it and when.
 
     One row shape throughout: a glyph, a label, and the current answer pressed
-    to the right. So the column of values lands on the same x whatever the row
-    is, and adding the fifth thing later is a row rather than a redesign.
+    to the right, so the column of values lands on the same x whatever the row
+    is.
   -->
   <div class="flex flex-col pt-4">
     <!-- The record, once: its face and its name. -->
@@ -39,9 +36,9 @@
             @click="emit('update:image', '')"
           />
         </div>
-        <!-- A picture the workspace already has is the commonest case here —
-             a logo, a site photo taken last week — and before the picker the
-             only way to reuse one was to upload it again. -->
+        <!-- A picture the workspace already has is the commonest case here, and
+             before the picker the only way to reuse one was to upload it
+             again. -->
         <FilePicker
           v-model="picking"
           kind="Image"
@@ -51,8 +48,8 @@
       </div>
     </div>
 
-    <!-- The four. Each one is a control the record already has elsewhere or a
-         control of its own; this is where they are all in one place. -->
+    <!-- The four. Each is a control the record already has elsewhere; this is
+         where they are all in one place. -->
     <ul class="flex flex-col border-y border-outline-gray-1 py-1">
       <li class="flex min-h-9 items-center gap-2">
         <Icon name="lucide-users" class="size-4 shrink-0 text-ink-gray-5" />
@@ -71,7 +68,7 @@
         <Icon name="lucide-paperclip" class="size-4 shrink-0 text-ink-gray-5" />
         <span class="flex-1 text-p-sm text-ink-gray-6">Attachments</span>
         <!-- A count that opens the tab that holds them, rather than a second
-             uploader: there is one place files live and this points at it. -->
+             uploader: there is one place files live. -->
         <Button
           variant="ghost"
           data-slot="attachments"
@@ -108,11 +105,8 @@
       </li>
     </ul>
 
-    <!--
-      Who made it and who touched it last. A sentence apiece rather than a
-      label-and-value grid: "Administrator, 2 days ago" is one fact, and
-      splitting it across two columns makes the reader assemble it.
-    -->
+    <!-- Who made it and who touched it last. A sentence apiece rather than a
+         label-and-value grid: "Administrator, 2 days ago" is one fact. -->
     <dl class="flex flex-col gap-3 py-4">
       <div v-for="row in history" :key="row.label" class="flex flex-col gap-0.5">
         <dt class="flex min-w-0 items-center gap-1.5 text-p-sm text-ink-gray-6">
@@ -135,10 +129,9 @@
 
     <!--
       The id, and changing it where the doctype allows one to be changed.
-      `allow_rename` is Frappe's own flag and the desk hides its rename on the
-      same one: a doctype that names its records by hash or by a series has an
-      id the framework issued, and that is not the same kind of thing as an id
-      somebody chose.
+      `allow_rename` is Frappe's own flag: a doctype that names its records by a
+      series has an id the framework issued, which is not the same kind of thing
+      as one somebody chose.
     -->
     <div
       v-if="canRename"
@@ -237,8 +230,7 @@ const emit = defineEmits([
 ])
 
 // "3 days ago", with the timestamp on hover — the same call the list's activity
-// column makes, and for the same reason: nobody opens a record to find out that
-// it is 14:32. The exact time is one hover away for the times it matters.
+// column makes: nobody opens a record to find out that it is 14:32.
 const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
 const exact = (value) => (value ? dayjsLocal(value).format('D MMMM YYYY, HH:mm') : '')
 
@@ -281,8 +273,8 @@ const open = () => {
 }
 
 // The name the *server* ended with, not the one that was typed: a doctype may
-// transform what it was handed on the way through, and reporting the argument
-// would leave the URL pointing at an id that was never created.
+// transform what it was handed, and reporting the argument would leave the URL
+// pointing at an id that was never created.
 const commit = async () => {
   if (saving.value) return
   saving.value = true

@@ -2,13 +2,12 @@
   <!--
     The record's tags, and the way to change them.
 
-    A tag is the workspace's own word for something — "urgent", "renewal",
-    "chase in May" — and it is deliberately not a field: no doctype declares
-    it, every doctype has it, and what it means is decided by the people using
-    it rather than by whoever wrote the app.
+    A tag is the workspace's own word for something, and it is deliberately not
+    a field: no doctype declares it, every doctype has it, and what it means is
+    decided by the people using it.
 
     So the picker offers the whole workspace's vocabulary rather than this
-    doctype's. Offering only tags already used here is how one word becomes
+    doctype's — offering only tags already used here is how one word becomes
     three spellings of it.
   -->
   <MultiSelect
@@ -25,11 +24,9 @@
     @update:open="opened"
   >
     <template #trigger>
-      <!--
-        The badges are the control, the way the faces are in AssignControl. The
-        accessible name is the button's rather than MultiSelect's `label`,
-        which renders a visible label above the whole thing.
-      -->
+      <!-- The badges are the control, the way the faces are in AssignControl.
+           The accessible name is the button's rather than MultiSelect's
+           `label`, which renders a visible label above the whole thing. -->
       <Button
         variant="ghost"
         data-slot="tags"
@@ -70,8 +67,7 @@ import { Badge, Button, Icon, MultiSelect } from '@/ui'
 import { workspace } from '../../../lib/workspace'
 import { notifyError } from '@/lib/runtime/notify'
 
-// How many fit beside a label before the rest become a count. The row is one
-// line high and the label owns the left of it.
+// How many fit beside a label before the rest become a count.
 const SHOWN = 2
 
 const props = defineProps({
@@ -94,13 +90,10 @@ const shown = computed(() => props.tags.slice(0, SHOWN))
 const more = computed(() => Math.max(props.tags.length - SHOWN, 0))
 
 /**
- * What the picker offers.
- *
- * The tags already on the record come first and always, so a search that does
- * not match one of them cannot drop it out of the list — which would read as
- * having taken it off. Then whatever was typed, as a tag of its own: a
- * vocabulary has to be able to grow, and the way it grows is somebody typing a
- * word that is not in it yet.
+ * What the picker offers. The tags already on the record come first and always,
+ * so a search that does not match one cannot drop it out of the list. Then
+ * whatever was typed, as a tag of its own: a vocabulary grows by somebody
+ * typing a word that is not in it yet.
  */
 const options = computed(() => {
   const held = props.tags.map((tag) => ({ label: tag, value: tag }))
@@ -142,12 +135,9 @@ const look = async () => {
 }
 
 /**
- * One tag on or off per press.
- *
- * The control hands back the whole set, so the difference is worked out here
- * and sent as the single change it was — which is what the server takes, and
- * what keeps a failed write from looking like the other five tags came off
- * too.
+ * One tag on or off per press. The control hands back the whole set, so the
+ * difference is worked out here and sent as the single change it was — which
+ * keeps a failed write from looking like the other five came off too.
  */
 const write = async (wanted) => {
   const held = props.tags

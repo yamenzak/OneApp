@@ -3,26 +3,21 @@
 
   The body of the share dialog, with no idea what it is sharing. Frappe's
   `DocShare` is a row over `(doctype, name)` and says nothing about what sort of
-  document that is, so the *screen* for it should not either — a record and a
-  file are shared by the same three questions, and two components would be two
-  places to fix "can edit" in.
+  document that is, so the screen for it should not either — a record and a file
+  are shared by the same three questions.
 
-  What varies is three calls, and they arrive as functions: `offer` (who could
-  this go to), `save` and `remove`. The parent owns the endpoint; this owns the
-  shape of the conversation.
+  What varies is three calls, and they arrive as functions: `offer`, `save` and
+  `remove`. The parent owns the endpoint; this owns the shape of the
+  conversation.
 
-  Three levels, not four checkboxes. "Can view / Can edit / Can share" are
-  questions a person can answer about a colleague; `submit` is a question about
-  a document's state that only means anything on some doctypes, and putting it
-  in the same list makes the other three harder to read.
+  Three levels, not four checkboxes: `submit` is a question about a document's
+  state that only means anything on some doctypes, and putting it in the same
+  list makes the other three harder to read.
 -->
 <template>
   <div class="flex flex-col gap-4">
-    <!--
-      Adding somebody. A picker and a level, then Share — rather than adding at
-      a default level and making the person go back and change it, which is how
-      something ends up shared wider than anybody meant.
-    -->
+    <!-- Adding somebody: a picker and a level, then Share — rather than adding
+         at a default level and making the person go back and change it. -->
     <div v-if="canShare" class="flex items-end gap-2">
       <Combobox
         v-model="picked"
@@ -53,8 +48,8 @@
     <ErrorMessage v-if="error" :message="error" />
 
     <!-- Who it is with. Each row's level is editable in place, because "they
-         should only be able to read this" is the correction people actually
-         want to make, and re-sharing to change it is not one. -->
+         should only be able to read this" is the correction people want to
+         make. -->
     <ul v-if="people.length" class="flex flex-col">
       <li
         v-for="person in people"
@@ -92,11 +87,8 @@
       :description="emptyText"
     />
 
-    <!--
-      Everyone is its own statement rather than a person in the list —
-      "anybody who can sign in here" — and drawing it among colleagues is how
-      somebody grants it by accident.
-    -->
+    <!-- Everyone is its own statement rather than a person in the list, because
+         drawing it among colleagues is how somebody grants it by accident. -->
     <div class="flex items-start gap-3 border-t border-outline-gray-1 pt-3">
       <Switch
         :model-value="!!everyone"
@@ -133,8 +125,8 @@ const props = defineProps({
   people: { type: Array, default: () => [] },
   everyone: { type: Object, default: null },
   canShare: { type: Boolean, default: false },
-  // What "not shared" means here, which is the one sentence that differs
-  // between a record and a file.
+  // What "not shared" means here, the one sentence that differs between a
+  // record and a file.
   emptyText: {
     type: String,
     default: 'Only people whose role already reaches this can see it.',

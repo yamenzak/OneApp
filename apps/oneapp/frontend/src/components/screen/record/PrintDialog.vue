@@ -2,16 +2,14 @@
   <!--
     Print this record.
 
-    Frappe renders it and Frappe makes the PDF — this is a picker and a
-    preview. The three questions a person actually has are which format, which
-    letter head and which language; everything else about printing is a
-    workspace-wide decision and lives in settings, once, for everybody.
+    Frappe renders it and Frappe makes the PDF — this is a picker and a preview.
+    The three questions a person has are which format, which letter head and
+    which language; everything else about printing is a workspace-wide decision
+    and lives in settings.
 
-    The preview is an iframe and has to be. A print format's CSS is written to
-    win against a blank page — `body { font-size: 8pt }`, table resets, page
-    rules — so dropping the returned HTML into this document would restyle the
-    app around it. An iframe is a second document, which is exactly what a
-    printed page is.
+    The preview is an iframe and has to be: a print format's CSS is written to
+    win against a blank page, so dropping the returned HTML into this document
+    would restyle the app around it.
   -->
   <Dialog v-model="showing" title="Print" size="4xl">
     <div class="flex flex-col gap-3">
@@ -52,12 +50,10 @@
 
         The sandbox grants two things and refuses the one that matters. No
         `allow-scripts`, because a print format may carry a Jinja-rendered
-        script and a preview is not a place to run one. `allow-same-origin`,
-        because without it a `srcdoc` frame gets an opaque origin and
-        `frame.contentWindow` is unreachable — which is what Print needs, and
-        it is safe precisely because scripts are still refused. `allow-modals`,
-        because the browser's print dialog is a modal and a sandboxed frame may
-        not open one without it.
+        script. `allow-same-origin`, because without it a `srcdoc` frame gets an
+        opaque origin and `frame.contentWindow` is unreachable — safe precisely
+        because scripts are still refused. `allow-modals`, because the browser's
+        print dialog is a modal.
       -->
       <div class="h-[70vh] overflow-hidden rounded-6 border border-outline-gray-2 bg-white">
         <LoadingText v-if="loading" class="p-6" text="Rendering" />
@@ -122,7 +118,7 @@ const look = async () => {
   letterheads.value = found?.letter_heads || []
   format.value = (formats.value.find((one) => one.default) || formats.value[0])?.name || ''
   // The workspace's own answer to "with a letter head", which is a setting
-  // rather than a habit — so an unticked one starts with none.
+  // rather than a habit.
   if (found?.settings?.with_letterhead) {
     letterhead.value = (letterheads.value.find((one) => one.default) || {}).name || ''
   }
@@ -140,7 +136,7 @@ const render = async () => {
     html.value = found?.html || ''
     // The stylesheet and the markup written together into the frame's own
     // document. `srcdoc` rather than `document.write`: it survives the frame
-    // being re-created by a re-render, and it is what `sandbox` applies to.
+    // being re-created, and it is what `sandbox` applies to.
     if (frame.value) {
       frame.value.srcdoc = `<style>${found?.style || ''}</style>${html.value}`
     }
@@ -156,8 +152,7 @@ const download = async () => {
   downloading.value = true
   try {
     // A window rather than fetch-and-blob: the PDF comes back as a real
-    // download response with a filename on it, and asking the browser to
-    // rebuild a file it was handed is asking it to lose the name.
+    // download response with a filename on it.
     window.open(
       workspace.printPdfUrl(props.spaceCode, props.screen, props.name, {
         format: format.value,

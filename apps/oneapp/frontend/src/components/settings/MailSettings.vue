@@ -3,9 +3,8 @@
     Addresses: what this workspace sends from, and who may use each.
 
     One list, not three, because there is one kind of thing here. An address a
-    person holds alone and an address a team shares differ only in how many
-    names are against them, and building two screens for that would mean two
-    sets of rules to keep in step. See `oneapp_core/email/addresses.py`.
+    person holds alone and one a team shares differ only in how many names are
+    against them. See `oneapp_core/email/addresses.py`.
   -->
   <SettingsHeader
     title="Email"
@@ -16,11 +15,9 @@
     <LoadingText v-if="loading" class="py-8" text="Loading" />
 
     <div v-else class="flex flex-col gap-6 py-4">
-      <!--
-        What leaves the site today. Shown first and without being asked for,
-        because "which address do my notifications come from" is the question
-        this page exists to answer and everything else is a way of changing it.
-      -->
+      <!-- What leaves the site today. Shown first and without being asked for,
+           because "which address do my notifications come from" is the question
+           this page exists to answer. -->
       <div class="flex flex-col gap-2 rounded-4 bg-surface-gray-1 p-3">
         <div class="flex items-center justify-between gap-3">
           <span class="text-p-sm text-ink-gray-7">Notifications leave from</span>
@@ -130,13 +127,11 @@
       </div>
 
       <!--
-        Rules and the out-of-office, for one address at a time.
-
-        Both belong to a mailbox rather than to a workspace: `sales@` and `ap@`
-        sort differently and go away separately, so a picker rather than a
-        single form. Frappe has the auto-reply already — what it does not have
-        is a date, and one somebody forgot to switch off answers their mail for
-        a month.
+        Rules and the out-of-office, for one address at a time. Both belong to a
+        mailbox rather than to a workspace, so a picker rather than a single
+        form. Frappe has the auto-reply already — what it does not have is a
+        date, and one somebody forgot to switch off answers their mail for a
+        month.
       -->
       <div v-if="addresses.length" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-4">
         <div class="flex items-end gap-2">
@@ -171,9 +166,8 @@
               description="It switches itself off the day after this."
             />
           </template>
-          <!-- Named for what it saves, not "Save". This panel holds four
-               independent forms — a signature, a mailbox, rules, this — and a
-               bare Save in the middle of them says nothing about which. -->
+          <!-- Named for what it saves, not "Save": this panel holds four
+               independent forms. -->
           <Button
             class="self-start"
             variant="subtle"
@@ -223,11 +217,9 @@
           <Button variant="solid" label="Add rule" @click="addRule" />
         </div>
 
-        <!--
-          The two the rule could always do and the form never offered. `star`
-          in particular was stored, listed and fetched from the day rules
-          shipped and acted on nowhere — see `rules.apply_to`.
-        -->
+        <!-- The two the rule could always do and the form never offered.
+             `star` in particular was stored, listed and fetched from the day
+             rules shipped and acted on nowhere. -->
         <div class="flex flex-wrap items-center gap-4">
           <Checkbox v-model="rule.mark_read" label="Mark it read" />
           <Checkbox v-model="rule.star" label="Star it" />
@@ -237,10 +229,8 @@
 
       <!--
         The other half, and for most people the half that matters: the address
-        they have used for nine years, which they are not giving up because a
-        new product would prefer it. Not gated on `canManage` — a mailbox
-        somebody connects with their own password is theirs, and an owner has no
-        more business connecting it than a colleague does.
+        they have used for nine years. Not gated on `canManage` — a mailbox
+        somebody connects with their own password is theirs.
       -->
       <div class="flex flex-col gap-2 border-t border-outline-gray-1 pt-4">
         <span class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
@@ -262,7 +252,7 @@
           <div class="flex shrink-0 items-center gap-2">
             <!-- Frappe's own consecutive-failure count. Surfaced because the
                  alternative is a mailbox that quietly stopped three weeks ago
-                 and nobody finding out until they wonder why it is silent. -->
+                 and nobody finding out. -->
             <Badge
               v-if="box.awaiting_password || box.failures"
               theme="red"
@@ -296,7 +286,7 @@
             />
           </div>
 
-          <!-- Hidden until asked for. Four fields is a form somebody fills in;
+          <!-- Hidden until asked for: four fields is a form somebody fills in,
                six with two hostnames in them is a form they abandon. -->
           <div v-if="advanced" class="flex items-end gap-2">
             <FormControl v-model="mailbox.email_server" class="flex-1" label="Incoming (IMAP)" />
@@ -429,12 +419,10 @@ async function saveAway() {
 }
 
 /**
- * Which address the workspace's own mail actually leaves from.
- *
- * The one marked default where there is one, and the platform's own sender
- * otherwise — reported by the server rather than assumed here, because "we did
- * not set one so it must be the platform's" is exactly the assumption that is
- * wrong on a site where the token is missing and nothing sends at all.
+ * Which address the workspace's own mail actually leaves from: the one marked
+ * default, and the platform's own sender otherwise — reported by the server
+ * rather than assumed here, because "we did not set one so it must be the
+ * platform's" is wrong on a site where the token is missing.
  */
 const sendingFrom = computed(() => {
   const chosen = addresses.value.find((one) => one.default_outgoing)
@@ -496,23 +484,19 @@ async function toggle(row, person, wanted) {
   await load()
 }
 
-// Watched rather than hung off a `change` event: `change` fires on blur, so
-// somebody who types their address and goes straight for the password field
-// sees the servers appear under their cursor a moment late — or not at all, if
-// they never leave the field.
+// Watched rather than hung off a `change` event, which fires on blur: somebody
+// who types their address and goes straight for the password field would see
+// the servers appear a moment late, or not at all.
 watch(
   () => mailbox.value.email_id,
   () => describe(),
 )
 
 /**
- * Fill in what the address already told us.
- *
- * Somebody typing `you@gmail.com` has said where their mail lives, and asking
- * them for `imap.gmail.com` afterwards is asking them to look up something we
- * know. The note comes back with it — for Gmail and Outlook that note is "this
- * needs an app password", which is the single commonest reason a connection
- * fails, said before it fails rather than after.
+ * Fill in what the address already told us. Somebody typing `you@gmail.com` has
+ * said where their mail lives. The note comes back with it — for Gmail and
+ * Outlook, "this needs an app password", which is the commonest reason a
+ * connection fails, said before it fails rather than after.
  */
 async function describe() {
   const address = (mailbox.value.email_id || '').trim().toLowerCase()
@@ -549,11 +533,9 @@ async function disconnect(box) {
 }
 
 /**
- * Saved on blur rather than on every keystroke, and without reloading the list.
- *
- * A signature is a paragraph somebody types slowly; a request per character
- * would be a request per character, and a reload after each one would move the
- * cursor out from under them.
+ * Saved on blur rather than on every keystroke, and without reloading the list:
+ * a signature is a paragraph somebody types slowly, and a reload after each
+ * character would move the cursor out from under them.
  */
 async function saveSignature(row, value) {
   if (value === row.signature) return

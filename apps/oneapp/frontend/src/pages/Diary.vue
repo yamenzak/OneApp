@@ -4,13 +4,11 @@
 
     A screen's calendar reads one doctype. This reads all of them — the week
     somebody actually has is a quotation due on Tuesday, a site visit on
-    Wednesday and a review in their own diary, and no single screen holds those
-    three. Nothing here is stored: every entry belongs to a record somewhere
-    else, says which, and opens it.
+    Wednesday and a review in their own diary. Nothing here is stored: every
+    entry belongs to a record somewhere else, says which, and opens it.
 
     The merge is the server's (`oneapp_core/diary.py`), because it is the same
-    permission path each screen uses. Five sources from the browser would be
-    five round trips and five chances to disagree about who may see what.
+    permission path each screen uses.
   -->
   <PageHeader>
     <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
@@ -61,13 +59,9 @@ import { errorText } from '@/lib/runtime/errors'
 import { diary, diaryEvents, showing } from '@/lib/screen/diary'
 
 /**
- * Read-only, and more firmly than the screen calendar is.
- *
- * Every entry here belongs to a different doctype under a different screen's
- * rules. Dragging one would be writing a field on a record this surface knows
- * nothing about — where it is, what else it validates, whether this person may
- * write it at all. The record it opens is where that question already has an
- * answer.
+ * Read-only, and more firmly than the screen calendar is: every entry here
+ * belongs to a different doctype under a different screen's rules, so dragging
+ * one would be writing a field on a record this surface knows nothing about.
  */
 const CONFIG = { isEditMode: false, defaultMode: 'Month' }
 
@@ -96,9 +90,7 @@ function start(on = '') {
 function open(event) {
   const found = source(event?.id)
   if (!found) return
-  // Yours opens here, and everything else opens where it lives. A workspace
-  // with an events screen would otherwise let somebody write an event in this
-  // diary and never edit it from the diary they wrote it in.
+  // Yours opens here, and everything else opens where it lives.
   if (found.mine || !found.screen) {
     editing.value = found.record
     startingOn.value = ''
@@ -114,10 +106,8 @@ function open(event) {
 
 /**
  * The days now on screen, which is the whole of what this page fetches.
- *
  * `rangeChange` fires on mount as well as on every move, so there is no second
- * load on open — the grid says which month it is showing and that is the
- * request.
+ * load on open.
  */
 // The days last asked for, so a save can ask for them again. The grid does not
 // re-emit its range when nothing about it moved.

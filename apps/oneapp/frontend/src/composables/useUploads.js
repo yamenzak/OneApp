@@ -1,31 +1,20 @@
 /**
  * Files on their way in.
  *
- * The Drive had no upload control at all — the empty state said "Upload a file
- * or make a folder to start" beside a toolbar that offered only the folder.
- * The only ways in were a record's attach field and the picker's upload tab,
- * both of which put a file somewhere *else*.
+ * A queue rather than a dialog, and three things follow from that choice.
  *
- * So: a queue rather than a dialog. Three things follow from that choice and
- * each is the reason a dialog was wrong.
+ * **It outlives the page.** Held at module scope, so walking into a folder — or
+ * out of the Drive entirely — does not cancel four uploads.
  *
- * **It outlives the page.** Held at module scope, not in a component, so
- * walking into a folder — or out of the Drive entirely — does not cancel four
- * uploads. The tray reads this; nothing owns it.
- *
- * **It is serial.** Two at a time is not twice as fast on one connection and
- * is twice as likely to trip the quota check halfway, leaving a file uploaded
- * and a file refused with no way to tell which was which. One at a time, in
- * the order they were dropped.
+ * **It is serial.** Two at a time is not twice as fast on one connection and is
+ * twice as likely to trip the quota check halfway.
  *
  * **A failure is kept, not toasted.** A toast for the third of nine files is
- * gone before the ninth finishes. A row that stays red with a Retry beside it
- * is the only version of this that a person can act on.
+ * gone before the ninth finishes; a row that stays red with a Retry beside it
+ * is something a person can act on.
  *
- * The upload itself is `lib/attach.js`, which every attach surface in the
- * product goes through — so `storage/quota.py` still refuses the one that
- * would go over, and a large file takes the same presigned route here as it
- * does from a record. Nothing about where a file ends up is decided here.
+ * The upload itself is `lib/files/attach.js`, which every attach surface goes
+ * through — so `storage/quota.py` still refuses the one that would go over.
  */
 import { computed, reactive, readonly } from 'vue'
 
@@ -69,8 +58,7 @@ export function useUploads() {
 
 /**
  * Queue files for a folder. Folders dropped from the desktop are ignored:
- * `DataTransfer` reports a directory as a zero-byte `File` with no type, and
- * uploading that produces an empty file named after the folder.
+ * `DataTransfer` reports a directory as a zero-byte `File` with no type.
  */
 export function add(files, folder = 'Home') {
   for (const file of files) {
@@ -101,8 +89,8 @@ export function retry(id) {
 export function remove(id) {
   const at = items.findIndex((one) => one.id === id)
   // A queued one can go; one already on the wire cannot be un-sent, and
-  // pretending otherwise would leave a file in the Drive that the tray says
-  // was cancelled.
+  // pretending otherwise would leave a file in the Drive the tray says was
+  // cancelled.
   if (at >= 0 && items[at].state !== SENDING) items.splice(at, 1)
 }
 
@@ -130,8 +118,7 @@ async function send(one) {
   one.state = SENDING
   one.progress = 0
   try {
-    // `putFile` decides between the direct path and the ordinary POST. Which
-    // one ran is not this queue's business — see `lib/attach.js`.
+    // `putFile` decides between the direct path and the ordinary POST.
     await putFile(one.file, {
       folder: one.folder,
       onProgress: ({ percent }) => { one.progress = percent },

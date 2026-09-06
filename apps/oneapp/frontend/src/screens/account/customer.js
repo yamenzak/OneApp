@@ -3,12 +3,8 @@
  *
  * Every call here is a whitelisted method on this same site — the control
  * plane, where `oneapp` is installed for its shell. Nothing is cross-site, and
- * nothing needs to be: this is exactly why the account area belongs here rather
- * than inside a tenant workspace. A person with three tenancies authenticates
- * once, in the one place that knows about all three.
- *
- * Ported from the portal SPA. The calls and their reasoning are unchanged; only
- * the import paths moved.
+ * nothing needs to be: a person with three tenancies authenticates once, in the
+ * one place that knows about all three.
  */
 
 import { computed, reactive } from 'vue'
@@ -26,7 +22,7 @@ export const customer = {
 
   buyCredits: (workspace, pack) => callMethod(method('buy_credits'), { workspace, pack }),
 
-  // Storage is an add-on rather than a pack now: bought per month against the
+  // Storage is an add-on rather than a pack: bought per month against the
   // subscription, prorated, and released the same way. `addons` answers with the
   // catalogue and what this workspace holds together, because a stepper needs
   // both in the same render.
@@ -41,7 +37,7 @@ export const customer = {
   billingPortal: (workspace) => callMethod(method('billing_portal'), { workspace }),
   // Ours, not the Stripe portal: the portal cannot know our quotas, so it would
   // sell a downgrade to a workspace already holding more than the smaller plan
-  // allows. See api/customer.change_plan.
+  // allows.
   changePlan: (workspace, plan, interval = 'Monthly') =>
     callMethod(method('change_plan'), { workspace, plan, interval }, {
       successMessage: 'Plan changed',
@@ -55,11 +51,8 @@ export const customer = {
 }
 
 /**
- * The workspaces this account owns.
- *
- * An account may own several — signing up for a company and later for something
- * at home is ordinary — so the portal is always scoped to one of them, chosen
- * here rather than assumed.
+ * The workspaces this account owns. An account may own several, so the portal
+ * is always scoped to one of them, chosen here rather than assumed.
  */
 export const workspaces = reactive({
   list: [],
@@ -78,8 +71,7 @@ export const workspaces = reactive({
       this.current = known ? preferred : this.list[0]?.name || null
     } catch (e) {
       // An expired session is the ordinary case here, not an error worth
-      // showing: send them to sign in and come back to the same page. Anything
-      // else is a real failure and should surface.
+      // showing. Anything else is a real failure and should surface.
       if (isNotSignedIn(e)) return signIn()
       throw e
     } finally {
@@ -95,9 +87,8 @@ function isNotSignedIn(error) {
 }
 
 /**
- * Hand off to Frappe's login page, which returns here afterwards.
- *
- * A full navigation rather than a router push: the session cookie is set by the
+ * Hand off to Frappe's login page, which returns here afterwards. A full
+ * navigation rather than a router push: the session cookie is set by the
  * server, so the SPA has to be reloaded for it to take effect.
  */
 export function signIn() {
@@ -116,12 +107,9 @@ export function useOverview(workspaceRef) {
 }
 
 /**
- * Who can sign in to a workspace.
- *
- * An invite is a row in the control plane; the workspace's site turns it into
- * an account on its next sync, because nothing here can write into a tenant's
- * database. The page says so rather than leaving someone wondering why their
- * colleague cannot sign in yet.
+ * Who can sign in to a workspace. An invite is a row in the control plane; the
+ * workspace's site turns it into an account on its next sync, because nothing
+ * here can write into a tenant's database.
  */
 export function useMembers(workspaceRef) {
   return useResource('oneapp_control.api.customer.members', {
@@ -150,10 +138,8 @@ export const setMemberRoles = (workspace, email, roles, access) =>
 
 /**
  * The roles a workspace may hand out, and the parts a new one is built from.
- *
- * Shipped roles come from the spaces this workspace is entitled to; custom ones
- * it built itself. One list, because the person handing them out does not care
- * which of the two a role is — only what it lets somebody do.
+ * One list, because the person handing them out does not care whether a role is
+ * shipped or custom — only what it lets somebody do.
  */
 export function useRoles(workspaceRef) {
   return useResource('oneapp_control.api.customer.roles', {
@@ -182,11 +168,9 @@ export function useApps(workspaceRef) {
 }
 
 /**
- * What the workspace is on and what else it could be on.
- *
- * Every plan carries every feature — they differ only in quotas — so the
- * comparison is the numbers, and a plan too small for what is already stored
- * comes back marked rather than merely listed.
+ * What the workspace is on and what else it could be on. Every plan carries
+ * every feature — they differ only in quotas — so the comparison is the
+ * numbers, and a plan too small for what is already stored comes back marked.
  */
 export function usePlans(workspaceRef) {
   return useResource('oneapp_control.api.customer.plans', {

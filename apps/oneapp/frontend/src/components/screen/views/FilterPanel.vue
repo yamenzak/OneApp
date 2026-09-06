@@ -2,13 +2,10 @@
   <!--
     The full filter panel: anything the quick boxes above cannot say.
 
-    A stack of [field][operator][value] rows, which is Frappe's shape. Sorting
-    moved onto the column headers and the column picker onto the gear, so this
-    is the one control left that needs room to open.
-
-    What a person picks here narrows the screen and never widens it. The server
-    checks the same thing again — the operator menu below and the allow list it
-    is checked against are generated from one table.
+    A stack of [field][operator][value] rows, which is Frappe's shape. What a
+    person picks here narrows the screen and never widens it, and the server
+    checks the same thing again — the operator menu and the allow list it is
+    checked against are generated from one table.
   -->
   <Popover v-model:open="open">
     <template #trigger>
@@ -76,21 +73,17 @@ const props = defineProps({
 })
 const emit = defineEmits(['changed'])
 
-// Icon and nothing else on a phone, where a filter box and the controls beside
-// it have one row between them and the word is the thing that does not fit. The
-// count
-// goes with the word: a badge on a 28px button is a smudge, and the filled
-// variant already says there are filters.
+// Icon and nothing else on a phone, where the word is the thing that does not
+// fit. The count goes with it: a badge on a 28px button is a smudge, and the
+// filled variant already says there are filters.
 //
 // Asked here rather than passed in: how a control renders at a width is the
-// control's own business, and the screen host is not allowed to ask the
-// viewport anything — see `test_the_screen_host_shows_the_same_columns_on_every_screen`.
+// control's own business.
 const compact = useIsMobile()
 
 const open = ref(false)
 
-// Edited here, applied on Apply: a request per keystroke is not a filter, it is
-// a denial of service with a nice interface.
+// Edited here, applied on Apply: a request per keystroke is not a filter.
 const draft = ref([])
 
 // A field with no operators at all cannot be filtered — a child table is rows
@@ -113,9 +106,8 @@ const replace = (index, next) => {
   draft.value = draft.value.map((filter, at) => (at === index ? next : filter))
 }
 
-// Removing one applies immediately, and leaves the panel open: there is nothing
-// left to type into, so waiting for Apply would leave a filter showing that is
-// no longer there — but a person removing one of three is usually about to
+// Removing one applies immediately and leaves the panel open: there is nothing
+// left to type into, and a person removing one of three is usually about to
 // remove another.
 const remove = (index) => {
   draft.value = draft.value.filter((_filter, at) => at !== index)

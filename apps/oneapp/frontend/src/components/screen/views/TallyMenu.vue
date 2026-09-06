@@ -2,15 +2,13 @@
   <!--
     How many of each, and a way to narrow to one.
 
-    Frappe's list sidebar, which this product has nowhere to put: the sidebar is
-    the space's own navigation, and a second one beside the list would undo the
-    thing that makes every screen here read the same. So it is a menu instead —
-    pick a field, see its values with counts, click one to filter. The same
-    shortcut, one control over.
+    Frappe's list sidebar, which this product has nowhere to put — the sidebar
+    is the space's own navigation. So it is a menu instead: pick a field, see
+    its values with counts, click one to filter.
 
-    Under the filters that are already on, which is the half that makes it a
-    shortcut rather than a second opinion: a tally of everything, shown above a
-    list of twelve, is a menu of numbers that do not match what is on screen.
+    Under the filters that are already on, which is what makes it a shortcut
+    rather than a second opinion: a tally of everything, above a list of twelve,
+    is a menu of numbers that do not match what is on screen.
   -->
   <Popover v-model:open="open">
     <template #trigger>
@@ -38,8 +36,7 @@
           Nothing to count — every record here leaves this field empty.
         </p>
 
-        <!-- The values, largest first. A tally is read from the top: in
-             alphabetical order the answer is wherever the alphabet put it. -->
+        <!-- The values, largest first. A tally is read from the top. -->
         <div v-else-if="values.length" class="flex max-h-80 flex-col overflow-y-auto">
           <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
           <button
@@ -85,11 +82,9 @@ const props = defineProps({
 
 const emit = defineEmits(['narrow'])
 
-// Icon-only on a phone, the way the filter beside it is. The toolbar there is
-// one row holding the box people type in, its operator menu and these two, and
-// a labelled button pushed the operator's chevron under the next control —
-// which is a button nobody could press, and a browser test that could not
-// press it.
+// Icon-only on a phone, the way the filter beside it is: a labelled button
+// pushed the operator's chevron under the next control, which is a button
+// nobody could press.
 const compact = useIsMobile()
 
 const open = ref(false)
@@ -99,11 +94,9 @@ const more = ref(false)
 const loading = ref(false)
 
 /**
- * The fields a tally means something for.
- *
- * A closed set of values, or something that resolves to one — `TALLIED` on the
- * server is the same list, and it refuses anything else, so a Data field with
- * one value per row cannot be asked for from here or from a crafted request.
+ * The fields a tally means something for: a closed set of values, or something
+ * that resolves to one. `TALLIED` on the server is the same list and refuses
+ * anything else, so a Data field with one value per row cannot be asked for.
  */
 const TALLIED = ['Select', 'Link', 'Check']
 
@@ -144,8 +137,7 @@ const count = async () => {
 watch(field, count)
 
 // The status field is the one somebody almost always means, so the menu opens
-// on it rather than on an empty picker. Only on the first open: a reader who
-// chose another field meant to.
+// on it. Only on the first open: a reader who chose another field meant to.
 watch(open, (showing) => {
   if (!showing) return
   if (!field.value) field.value = props.statusField || fields.value[0]?.value || ''
