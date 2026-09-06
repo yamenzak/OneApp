@@ -31,8 +31,8 @@
       <TextInput
         v-model="typed"
         class="w-28"
-        placeholder="#0f62fe"
-        aria-label="Brand colour as hex"
+        :placeholder="'#0f62fe'"
+        :aria-label="__('Brand colour as hex')"
         data-slot="accent-hex"
         @blur="commit"
         @keydown.enter="commit"
@@ -41,13 +41,13 @@
       <Button
         v-if="modelValue"
         variant="ghost"
-        label="Clear"
+        :label="__('Clear')"
         @click="modelValue = ''"
       />
     </div>
 
     <div class="flex items-center gap-3 pt-1">
-      <Button variant="solid" label="Solid button" :style="preview" data-slot="accent-preview" />
+      <Button variant="solid" :label="__('Solid button')" :style="preview" data-slot="accent-preview" />
       <p v-if="hint" class="text-p-sm text-ink-gray-5">{{ hint }}</p>
     </div>
   </div>
@@ -57,6 +57,7 @@
 import { computed, ref, watch } from 'vue'
 import { Button, FormLabel, TextInput } from '@/ui'
 import { variables } from '@/lib/shell/theme'
+import { __ } from '@/lib/runtime/translate'
 
 defineProps({
   label: { type: String, required: true },

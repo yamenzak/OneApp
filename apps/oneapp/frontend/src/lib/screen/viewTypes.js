@@ -1,5 +1,7 @@
 import { defineAsyncComponent } from 'vue'
 
+import { __ } from '@/lib/runtime/translate'
+
 /**
  * The ways a screen can be looked at.
  *
@@ -7,45 +9,50 @@ import { defineAsyncComponent } from 'vue'
  * what it opens with. `built: false` is not tidiness — `viewTypesOf` drops
  * them, so a manifest that names `calendar` today gets a list rather than an
  * empty screen, and starts offering the calendar the day one ships.
+ *
+ * Each label is read rather than stored: this table is built when the module is
+ * imported, which is before main.js has the catalogue, so a word translated
+ * here would be the English one for ever. The sidebar and the crumbs ask for it
+ * while they are drawing, by which time there is a catalogue to ask.
  */
 export const VIEW_TYPES = {
   list: {
-    label: 'List',
+    get label() { return __('List') },
     icon: 'lucide-list',
     built: true,
     body: () => import('@/components/screen/bodies/ListBody.vue'),
   },
   board: {
-    label: 'Board',
+    get label() { return __('Board') },
     icon: 'lucide-columns-3',
     built: true,
     body: () => import('@/components/screen/bodies/BoardBody.vue'),
   },
   calendar: {
-    label: 'Calendar',
+    get label() { return __('Calendar') },
     icon: 'lucide-calendar',
     built: true,
     body: () => import('@/components/screen/bodies/CalendarBody.vue'),
   },
   dashboard: {
-    label: 'Dashboard',
+    get label() { return __('Dashboard') },
     icon: 'lucide-chart-column',
     built: true,
     body: () => import('@/components/screen/bodies/DashboardBody.vue'),
   },
   gantt: {
-    label: 'Gantt',
+    get label() { return __('Gantt') },
     icon: 'lucide-chart-no-axes-gantt',
     built: true,
     body: () => import('@/components/screen/bodies/GanttBody.vue'),
   },
   grid: {
-    label: 'Grid',
+    get label() { return __('Grid') },
     icon: 'lucide-layout-grid',
     built: true,
     body: () => import('@/components/screen/bodies/CardsBody.vue'),
   },
-  map: { label: 'Map', icon: 'lucide-map', built: false },
+  map: { get label() { return __('Map') }, icon: 'lucide-map', built: false },
   /**
    * The same table, opened as a worksheet rather than as a way in.
    *
@@ -55,13 +62,13 @@ export const VIEW_TYPES = {
    * cursor, and one click cannot mean both.
    */
   report: {
-    label: 'Report',
+    get label() { return __('Report') },
     icon: 'lucide-table',
     built: true,
     body: () => import('@/components/screen/bodies/ListBody.vue'),
   },
   tree: {
-    label: 'Tree',
+    get label() { return __('Tree') },
     icon: 'lucide-list-tree',
     built: true,
     body: () => import('@/components/screen/bodies/TreeBody.vue'),

@@ -30,18 +30,21 @@
     >
       <!-- The field's label, forwarded: this component is a wrapper, so a slot
            given to it has to be handed on or it is silently dropped. -->
-      <!-- `#label` before `v-if`, deliberately: `test_content_goes_somewhere`
-           recognises a named-slot block by `<template` followed immediately by
-           `#`. The order is free in Vue and not free here. -->
-      <template #label="slotProps" v-if="$slots.label">
+      <!-- Two names that are not free. `#label` comes before `v-if` because
+           `test_content_goes_somewhere` recognises a named-slot block by
+           `<template` followed immediately by `#`; and the slot's own props are
+           bound as `ls` rather than as `slotProps` because the guard that finds
+           unwrapped copy reads any `label="…"` as a word somebody sees, which
+           the name of a forwarded slot's scope is not. -->
+      <template #label="ls" v-if="$slots.label">
         <div class="flex min-w-0 items-center justify-between gap-2">
-          <slot name="label" v-bind="slotProps" />
+          <slot name="label" v-bind="ls" />
 
           <!--
             Where this link goes, as the two things a person wants: read it
             beside what I am doing, or go and work on it.
 
-            On the label's row rather than inside the box, whose right-hand side
+            On the label's row rather than inside the box, whose end-hand side
             is the chevron that opens the menu — overriding that slot would stop
             the chevron opening the picker, and a row beside the input would
             have to guess how tall the label and description are.
@@ -51,8 +54,8 @@
               variant="ghost"
               size="sm"
               icon="lucide-panel-right"
-              :label="`Open ${named} beside this`"
-              :tooltip="`Open ${named} beside this`"
+              :label="__('Open {0} beside this', [named])"
+              :tooltip="__('Open {0} beside this', [named])"
               data-slot="link-peek"
               @click="peek"
             />
@@ -60,8 +63,8 @@
               variant="ghost"
               size="sm"
               icon="lucide-arrow-up-right"
-              :label="`Open ${named}`"
-              :tooltip="`Open ${named}`"
+              :label="__('Open {0}', [named])"
+              :tooltip="__('Open {0}', [named])"
               data-slot="link-open"
               @click="open"
             />
@@ -112,7 +115,7 @@
       Frappe's quick entry, in our vocabulary. The server decides what it asks
       for — `allow_in_quick_entry` plus anything mandatory.
     -->
-    <Dialog v-model="creating" :title="`New ${spec?.label || 'record'}`" size="lg">
+    <Dialog v-model="creating" :title="__('New {0}', [spec?.label || __('record')])" size="lg">
       <div class="flex flex-col gap-4">
         <div v-for="one in spec?.fields || []" :key="one.fieldname" class="flex gap-2">
           <Icon
@@ -132,7 +135,7 @@
       </div>
 
       <template #actions>
-        <Button variant="solid" label="Create" :loading="saving" @click="create" />
+        <Button variant="solid" :label="__('Create')" :loading="saving" @click="create" />
       </template>
     </Dialog>
   </div>
@@ -144,6 +147,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Combobox, Avatar, Icon, Dialog, Button, ErrorMessage } from '@/ui'
 import { workspace } from '../../../lib/workspace'
 import { screenFor } from '@/lib/shell/nav'
+import { __ } from '@/lib/runtime/translate'
 
 // The quick-create form renders whatever the target doctype asks for, and one
 // of those fields can itself be a Link — so this component and FieldControl
@@ -213,7 +217,7 @@ const destination = computed(() => {
  */
 /** What to call the thing these two open: the record's name where it has been
  *  resolved, its id until then. */
-const named = computed(() => chosen.value?.label || props.modelValue || 'this')
+const named = computed(() => chosen.value?.label || props.modelValue || __('this'))
 
 const peek = () => {
   if (!destination.value) return
@@ -245,7 +249,7 @@ const detail = (record) => [record.id, record.description].filter(Boolean).join(
  * A disabled Combobox still draws its placeholder, so a `read_only` Link sat
  * saying "Search…" over a control that would not open.
  */
-const prompt = computed(() => (props.disabled ? '' : props.placeholder || 'Search…'))
+const prompt = computed(() => (props.disabled ? '' : props.placeholder || __('Search…')))
 
 /**
  * `remember_last_selected_value` — a Link that reopens on your last choice.
@@ -312,8 +316,8 @@ const options = computed(() => {
       key: '__create',
       icon: 'lucide-plus',
       label: query.value
-        ? `Create "${query.value}"`
-        : `Create a new ${spec.value.label || 'record'}`,
+        ? __('Create "{0}"', [query.value])
+        : __('Create a new {0}', [spec.value.label || __('record')]),
       onClick: () => openCreate(),
     })
   }
@@ -321,7 +325,7 @@ const options = computed(() => {
 })
 
 const emptyText = computed(() =>
-  query.value ? `Nothing matches “${query.value}”` : 'Nothing to choose from',
+  query.value ? __('Nothing matches “{0}”', [query.value]) : __('Nothing to choose from'),
 )
 
 const search = async () => {

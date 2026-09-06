@@ -1,6 +1,7 @@
 /** One screen: its spec, its rows, one record, and the link fields on it. */
 
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 export const screen = {
   // One screen, resolved against this site's own metadata: what each field is
@@ -166,7 +167,7 @@ export const screen = {
     callMethod(
       'oneapp.oneapp_core.spaceview.save',
       { space_code: spaceCode, screen, values, name },
-      { successMessage: 'Saved' },
+      { successMessage: __('Saved') },
     ),
 
   // One call for a whole selection: forty rows is forty round trips otherwise,
@@ -218,7 +219,7 @@ export const screen = {
     callMethod(
       'oneapp.oneapp_core.spaceview.link_new',
       { space_code: spaceCode, screen, fieldname, values, target },
-      { successMessage: 'Created' },
+      { successMessage: __('Created') },
     ),
 
   // Every named layout in a space, keyed by screen: the sidebar lists what each

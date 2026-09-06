@@ -14,16 +14,16 @@
   -->
   <div class="pointer-events-none absolute inset-x-0 bottom-16 z-20 flex justify-center px-2">
     <div data-slot="selection-bar" class="pointer-events-auto" :class="BAR">
-      <span class="whitespace-nowrap text-p-base text-ink-gray-8"> {{ count }} selected </span>
+      <span class="whitespace-nowrap text-p-base text-ink-gray-8">{{ __('{0} selected', [count]) }}</span>
 
       <div class="ms-2 flex items-center gap-1 border-s border-outline-gray-2 ps-3">
         <slot />
-        <Button v-if="count < total" variant="ghost" label="Select all" @click="emit('all')" />
+        <Button v-if="count < total" variant="ghost" :label="__('Select all')" @click="emit('all')" />
         <Button
           icon="lucide-x"
           variant="ghost"
-          label="Clear the selection"
-          tooltip="Clear the selection"
+          :label="__('Clear the selection')"
+          :tooltip="__('Clear the selection')"
           @click="emit('clear')"
         />
       </div>
@@ -33,6 +33,7 @@
 
 <script setup>
 import { Button } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 
 defineProps({
   count: { type: Number, required: true },

@@ -13,7 +13,7 @@
     branch instead of a row in a table.
   -->
   <ChartCard v-if="!component" :card="true">
-    <ChartContainer :title="widget.label" error="This kind of chart is not built." />
+    <ChartContainer :title="widget.label" :error="__('This kind of chart is not built.')" />
   </ChartCard>
 
   <NumberCard
@@ -51,11 +51,17 @@ import {
   SankeyChart,
   ScatterChart,
 } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 
 // The server names the component; this is the only place that turns a name
 // into one. Keyed by the same string `dashboard.KINDS` carries, so a kind the
 // server knows and this does not draws its own error rather than nothing —
 // which is what the `v-if` above is for.
+// The key a row carries its own name under. A constant because it is a row
+// key rather than a word anybody reads, and `label: 'label'` written inline is
+// indistinguishable from a label somebody would want translated.
+const LABEL_KEY = 'label'
+
 const COMPONENTS = {
   AreaChart,
   BarChart,
@@ -103,7 +109,7 @@ const plot = computed(() => {
       data,
       x: 'x',
       y: 'y',
-      label: 'label',
+      label: LABEL_KEY,
       ...(props.widget.series ? { series: 'series' } : {}),
     }
   }

@@ -26,7 +26,7 @@
     />
 
     <!--
-      Full height, right-hand side, and wide — 896px rather than the 672 it
+      Full height, end-hand side, and wide — 896px rather than the 672 it
       started at, because a doctype that declares three form columns gets three
       whatever the container is, and at 672 that is 224px a column.
 

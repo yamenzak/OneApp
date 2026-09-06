@@ -49,8 +49,8 @@
         <Dropdown v-if="quick.match && draft[quick.key]" :options="matchOptions(quick)">
           <Button
             :icon="match[quick.key] === '=' ? 'lucide-equal' : 'lucide-equal-approximately'"
-            :label="`How ${quick.label} matches`"
-            :tooltip="`How ${quick.label} matches`"
+            :label="__('How {0} matches', [quick.label])"
+            :tooltip="__('How {0} matches', [quick.label])"
             class="rounded-s-none"
           />
         </Dropdown>
@@ -63,6 +63,7 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { Button, Dropdown, FormControl, Select } from '@/ui'
 import { defaultOperator, operatorsFor } from '@/lib/screen/fields'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   spec: { type: Object, required: true },
@@ -143,7 +144,7 @@ const columns = computed(() => props.spec?.all_columns || [])
 const boxes = computed(() => {
   // The ID box first, as in the desk. `name` is not a column and never will
   // be, so it is described here rather than looked up.
-  const found = [{ key: 'name', label: 'ID', match: true, fieldtype: 'Data' }]
+  const found = [{ key: 'name', label: __('ID'), match: true, fieldtype: 'Data' }]
 
   for (const fieldname of props.spec?.quick_filters || []) {
     const column = columns.value.find((c) => c.fieldname === fieldname)
@@ -173,8 +174,8 @@ watch(
 
 const matchOptions = (quick) =>
   [
-    { value: '=', label: 'Equals' },
-    { value: 'like', label: 'Like' },
+    { value: '=', label: __('Equals') },
+    { value: 'like', label: __('Like') },
   ].map((option) => ({
     label: option.label,
     onClick: () => {

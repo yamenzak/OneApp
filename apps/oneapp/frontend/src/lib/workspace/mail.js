@@ -1,6 +1,7 @@
 /** Addresses, the mailboxes behind them, and everything the Mail screen does. */
 
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 export const mail = {
   // --- mail ---------------------------------------------------------------
@@ -16,21 +17,21 @@ export const mail = {
     callMethod(
       'oneapp.oneapp_core.email.addresses.create',
       { local_part: localPart, label, grant_to: JSON.stringify(grantTo || []) },
-      { successMessage: 'Address created' },
+      { successMessage: __('Address created') },
     ),
 
   mailUpdate: (name, values) =>
     callMethod(
       'oneapp.oneapp_core.email.addresses.update',
       { name, ...values },
-      { successMessage: 'Saved' },
+      { successMessage: __('Saved') },
     ),
 
   mailRemove: (name) =>
     callMethod(
       'oneapp.oneapp_core.email.addresses.remove',
       { name },
-      { successMessage: 'Address removed' },
+      { successMessage: __('Address removed') },
     ),
 
   mailGrant: (name, user) =>
@@ -43,7 +44,7 @@ export const mail = {
     callMethod(
       'oneapp.oneapp_core.email.addresses.set_default',
       { name },
-      { successMessage: 'Sending address set' },
+      { successMessage: __('Sending address set') },
     ),
 
   mailUsage: () =>
@@ -62,7 +63,7 @@ export const mail = {
     callMethod(
       'oneapp.oneapp_core.email.verify.confirm',
       { domain },
-      { successMessage: 'Domain verified' },
+      { successMessage: __('Domain verified') },
     ),
 
   mailSuppressed: () =>
@@ -74,7 +75,7 @@ export const mail = {
     callMethod(
       'oneapp.oneapp_core.email.suppression.release',
       { email },
-      { successMessage: 'Sending to that address again' },
+      { successMessage: __('Sending to that address again') },
     ),
 
   // --- the mailbox --------------------------------------------------------
@@ -114,28 +115,28 @@ export const mail = {
 
   mailSend: (values) =>
     callMethod('oneapp.oneapp_core.email.mailbox.send', values, {
-      successMessage: 'Sent',
+      successMessage: __('Sent'),
     }),
 
   mailAddFolder: (address, name) =>
     callMethod(
       'oneapp.oneapp_core.email.mailbox.add_folder',
       { address, name },
-      { successMessage: 'Folder made' },
+      { successMessage: __('Folder made') },
     ),
 
   mailDropFolder: (address, name) =>
     callMethod(
       'oneapp.oneapp_core.email.mailbox.drop_folder',
       { address, name },
-      { successMessage: 'Folder removed' },
+      { successMessage: __('Folder removed') },
     ),
 
   mailFileThread: (key, address, folder, fromFolder) =>
     callMethod(
       'oneapp.oneapp_core.email.mailbox.file_thread',
       { key, address, folder, from_folder: fromFolder },
-      { successMessage: 'Filed' },
+      { successMessage: __('Filed') },
     ),
 
   mailStar: (key, folder, on) =>
@@ -149,21 +150,21 @@ export const mail = {
     callMethod(
       'oneapp.oneapp_core.email.mailbox.mark_unread',
       { key, folder },
-      { successMessage: 'Marked unread' },
+      { successMessage: __('Marked unread') },
     ),
 
   mailBin: (key, address, folder) =>
     callMethod(
       'oneapp.oneapp_core.email.mailbox.bin',
       { key, address, folder },
-      { successMessage: 'Moved to Trash' },
+      { successMessage: __('Moved to Trash') },
     ),
 
   mailArchive: (key, address, folder) =>
     callMethod(
       'oneapp.oneapp_core.email.mailbox.archive',
       { key, address, folder },
-      { successMessage: 'Archived' },
+      { successMessage: __('Archived') },
     ),
 
   // One request for a whole selection, and the note that request hands back —
@@ -183,7 +184,7 @@ export const mail = {
     callMethod(
       'oneapp.oneapp_core.email.mailbox.restore',
       { was: JSON.stringify(was), address, folder },
-      { successMessage: 'Put back' },
+      { successMessage: __('Put back') },
     ),
 
   // The workspace's own message templates. Read by anybody who holds an
@@ -235,14 +236,14 @@ export const mail = {
     callMethod(
       'oneapp.oneapp_core.email.rules.save',
       { values: JSON.stringify(values) },
-      { successMessage: 'Rule saved' },
+      { successMessage: __('Rule saved') },
     ),
 
   mailDropRule: (name) =>
     callMethod(
       'oneapp.oneapp_core.email.rules.drop',
       { name },
-      { successMessage: 'Rule removed' },
+      { successMessage: __('Rule removed') },
     ),
 
   mailAway: (address) =>
@@ -254,14 +255,14 @@ export const mail = {
 
   mailSetAway: (values) =>
     callMethod('oneapp.oneapp_core.email.rules.set_away', values, {
-      successMessage: 'Saved',
+      successMessage: __('Saved'),
     }),
 
   mailUnsend: (name) =>
     callMethod(
       'oneapp.oneapp_core.email.mailbox.unsend',
       { name },
-      { successMessage: 'Unsent' },
+      { successMessage: __('Unsent') },
     ),
 
   mailKeep: (values) =>
@@ -308,21 +309,21 @@ export const mail = {
 
   mailConnect: (values) =>
     callMethod('oneapp.oneapp_core.email.connect.connect', values, {
-      successMessage: 'Mailbox connected',
+      successMessage: __('Mailbox connected'),
     }),
 
   mailRefreshFolders: (name) =>
     callMethod(
       'oneapp.oneapp_core.email.connect.refresh',
       { name },
-      { successMessage: 'Folders refreshed' },
+      { successMessage: __('Folders refreshed') },
     ),
 
   mailDisconnect: (name) =>
     callMethod(
       'oneapp.oneapp_core.email.connect.disconnect',
       { name },
-      { successMessage: 'Mailbox disconnected' },
+      { successMessage: __('Mailbox disconnected') },
     ),
 
   // --- naming -----------------------------------------------------------
@@ -345,14 +346,14 @@ export const mail = {
     callMethod(
       'oneapp.oneapp_core.email.addresses.claim',
       { local_part: localPart },
-      { successMessage: 'That address is yours' },
+      { successMessage: __('That address is yours') },
     ),
 
   mailSetConnectPolicy: (mode, domains) =>
     callMethod(
       'oneapp.oneapp_core.email.addresses.set_connect_policy',
       { mode, domains },
-      { successMessage: 'Saved' },
+      { successMessage: __('Saved') },
     ),
 
   // --- which address a message goes out as ---------------------------------
@@ -365,7 +366,7 @@ export const mail = {
     callMethod(
       'oneapp.oneapp_core.email.mailbox.set_default_sender',
       { address },
-      { successMessage: 'Saved' },
+      { successMessage: __('Saved') },
     ),
 
   // --- a domain the workspace owns -----------------------------------------
@@ -380,6 +381,6 @@ export const mail = {
 
   mailDomainConfirm: (domain) =>
     callMethod('oneapp.oneapp_core.email.verify.confirm', { domain }, {
-      successMessage: 'Checked',
+      successMessage: __('Checked'),
     }),
 }

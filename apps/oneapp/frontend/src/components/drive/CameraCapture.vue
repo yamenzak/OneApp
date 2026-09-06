@@ -41,7 +41,7 @@
       v-if="shot"
       :src="shot.url"
       data-slot="camera-shot"
-      alt="The photograph just taken"
+      :alt="__('The photograph just taken')"
       class="max-h-96 rounded-6"
     >
 
@@ -51,13 +51,13 @@
     >
       <Icon name="lucide-camera" class="size-8 text-ink-gray-4" />
       <p class="text-p-sm text-ink-gray-6">
-        {{ refused || 'Use the camera to take a photograph.' }}
+        {{ refused || __('Use the camera to take a photograph.') }}
       </p>
       <div class="flex flex-wrap justify-center gap-2">
         <Button
           v-if="!refused"
           variant="solid"
-          label="Turn the camera on"
+          :label="__('Turn the camera on')"
           :loading="starting"
           @click="start"
         />
@@ -73,24 +73,24 @@
           class="hidden"
           @change="fromNative"
         >
-        <Button label="Use the phone's camera" @click="native?.click()" />
+        <Button :label="__('Use the phone’s camera')" @click="native?.click()" />
       </div>
     </div>
 
     <div v-if="streaming || shot" class="flex flex-wrap justify-center gap-2">
       <template v-if="shot">
-        <Button variant="solid" label="Use this photo" @click="keep" />
-        <Button label="Take another" @click="again" />
+        <Button variant="solid" :label="__('Use this photo')" @click="keep" />
+        <Button :label="__('Take another')" @click="again" />
       </template>
       <template v-else>
-        <Button variant="solid" icon-left="lucide-circle" label="Take photo" @click="snap" />
+        <Button variant="solid" icon-left="lucide-circle" :label="__('Take photo')" @click="snap" />
         <Button
           v-if="cameras > 1"
           icon="lucide-switch-camera"
-          tooltip="Switch camera"
+          :tooltip="__('Switch camera')"
           @click="flip"
         />
-        <Button label="Stop the camera" @click="stop" />
+        <Button :label="__('Stop the camera')" @click="stop" />
       </template>
     </div>
 
@@ -101,6 +101,7 @@
 <script setup>
 import { onBeforeUnmount, ref, watch } from 'vue'
 import { Button, ErrorMessage, Icon } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /** Whether the camera tab is the one being looked at. */
@@ -131,14 +132,14 @@ let stream = null
 function reason(raised) {
   if (!navigator.mediaDevices?.getUserMedia) {
     return window.isSecureContext
-      ? 'This browser has no camera support.'
-      : 'A camera needs a secure connection. Use the phone’s camera instead.'
+      ? __('This browser has no camera support.')
+      : __('A camera needs a secure connection. Use the phone’s camera instead.')
   }
   const name = raised?.name || ''
-  if (name === 'NotAllowedError') return 'Permission for the camera was refused.'
-  if (name === 'NotFoundError') return 'No camera was found on this device.'
-  if (name === 'NotReadableError') return 'Something else is already using the camera.'
-  return raised?.message || 'The camera could not be opened.'
+  if (name === 'NotAllowedError') return __('Permission for the camera was refused.')
+  if (name === 'NotFoundError') return __('No camera was found on this device.')
+  if (name === 'NotReadableError') return __('Something else is already using the camera.')
+  return raised?.message || __('The camera could not be opened.')
 }
 
 async function start() {
@@ -192,7 +193,7 @@ async function flip() {
 function snap() {
   const video = preview.value
   if (!video?.videoWidth) {
-    error.value = 'The camera is not ready yet.'
+    error.value = __('The camera is not ready yet.')
     return
   }
 
@@ -206,7 +207,7 @@ function snap() {
   canvas.toBlob(
     (blob) => {
       if (!blob) {
-        error.value = 'The photograph could not be saved.'
+        error.value = __('The photograph could not be saved.')
         return
       }
       release()
@@ -225,7 +226,7 @@ function named(blob) {
   const stamp =
     `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}` +
     ` ${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
-  return new File([blob], `Photo ${stamp}.jpg`, { type: 'image/jpeg' })
+  return new File([blob], __('Photo {0}.jpg', [stamp]), { type: 'image/jpeg' })
 }
 
 function fromNative(event) {

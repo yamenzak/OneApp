@@ -12,26 +12,26 @@
     March" is.
   -->
   <SettingsHeader
-    title="Storage"
-    description="What this workspace is keeping, and how much room is left."
+    :title="__('Storage')"
+    :description="__('What this workspace is keeping, and how much room is left.')"
     :class="PANEL_HEADER"
   >
     <template #actions>
-      <Button icon-left="lucide-folder" label="Open the files" @click="toDrive" />
+      <Button icon-left="lucide-folder" :label="__('Open the files')" @click="toDrive" />
     </template>
   </SettingsHeader>
 
   <SettingsBody :class="PANEL_BODY">
-    <LoadingText v-if="loading" class="py-8" text="Loading" />
+    <LoadingText v-if="loading" class="py-8" :text="__('Loading')" />
 
-    <Alert v-else-if="error" theme="red" title="Storage could not be measured">
+    <Alert v-else-if="error" theme="red" :title="__('Storage could not be measured')">
       <template #description>{{ error }}</template>
     </Alert>
 
     <div v-else class="flex min-w-0 flex-col gap-6 py-4">
       <UsageBar
         v-if="storage.workspace"
-        label="Storage"
+        :label="__('Storage')"
         :usage="storage.workspace"
         format="bytes"
       />
@@ -43,12 +43,7 @@
         breakdown that summed to the meter would be a breakdown that leaked
         what it could not show.
       -->
-      <p class="text-p-xs text-ink-gray-5">
-        The breakdown below covers the {{ storage.files }}
-        {{ storage.files === 1 ? 'file' : 'files' }} you can see, which is
-        {{ bytes(storage.visible) }}. The meter above is the whole workspace,
-        including files on records you cannot open.
-      </p>
+      <p class="text-p-xs text-ink-gray-5">{{ breakdown }}</p>
 
       <!--
         The one thing a storage meter has to say and almost never does. Deleting
@@ -62,11 +57,7 @@
         data-slot="storage-bin"
         class="text-p-xs text-ink-gray-5"
       >
-        The bin is holding {{ storage.bin.label }} across
-        {{ storage.bin.files }}
-        {{ storage.bin.files === 1 ? 'file' : 'files' }}, which still counts.
-        Each is removed for good {{ storage.bin.days }} days after it went
-        there.
+        {{ binNote }}
       </p>
       <router-link
         v-if="storage.bin?.files"
@@ -74,11 +65,11 @@
         class="text-p-xs text-ink-gray-6 underline underline-offset-2 hover:text-ink-gray-8"
         @click="settings.open = false"
       >
-        Empty the bin to get that back now
+        {{ __('Empty the bin to get that back now') }}
       </router-link>
 
       <section v-if="storage.by_kind?.length" class="flex min-w-0 flex-col gap-2">
-        <h3 class="text-p-sm font-medium text-ink-gray-8">By kind</h3>
+        <h3 class="text-p-sm font-medium text-ink-gray-8">{{ __('By kind') }}</h3>
         <div
           v-for="row in storage.by_kind"
           :key="row.kind"
@@ -101,14 +92,14 @@
           <div class="min-w-0 flex-1">
             <Progress class="w-full" size="sm" :value="share(row.bytes)" />
           </div>
-          <span class="w-20 shrink-0 text-right text-p-sm tabular-nums text-ink-gray-6">
+          <span class="w-20 shrink-0 text-end text-p-sm tabular-nums text-ink-gray-6">
             {{ row.label }}
           </span>
         </div>
       </section>
 
       <section v-if="storage.by_folder?.length" class="flex min-w-0 flex-col gap-2">
-        <h3 class="text-p-sm font-medium text-ink-gray-8">By folder</h3>
+        <h3 class="text-p-sm font-medium text-ink-gray-8">{{ __('By folder') }}</h3>
         <div
           v-for="row in storage.by_folder"
           :key="row.folder"
@@ -117,14 +108,14 @@
         >
           <Icon name="lucide-folder" class="size-4 shrink-0 text-ink-gray-5" />
           <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-7">{{ row.folder }}</span>
-          <span class="w-20 shrink-0 text-right text-p-sm tabular-nums text-ink-gray-6">
+          <span class="w-20 shrink-0 text-end text-p-sm tabular-nums text-ink-gray-6">
             {{ row.label }}
           </span>
         </div>
       </section>
 
       <section v-if="storage.biggest?.length" class="flex min-w-0 flex-col gap-2">
-        <h3 class="text-p-sm font-medium text-ink-gray-8">The biggest</h3>
+        <h3 class="text-p-sm font-medium text-ink-gray-8">{{ __('The biggest') }}</h3>
         <div
           v-for="row in storage.biggest"
           :key="row.name"
@@ -136,7 +127,7 @@
             {{ row.file_name }}
           </span>
           <span class="shrink-0 text-p-xs text-ink-gray-5">{{ row.folder }}</span>
-          <span class="w-20 shrink-0 text-right text-p-sm tabular-nums text-ink-gray-6">
+          <span class="w-20 shrink-0 text-end text-p-sm tabular-nums text-ink-gray-6">
             {{ row.label }}
           </span>
         </div>
@@ -145,8 +136,8 @@
       <EmptyState
         v-if="!storage.files"
         icon="lucide-hard-drive"
-        title="Nothing stored yet"
-        description="Files uploaded anywhere in this workspace show up here."
+        :title="__('Nothing stored yet')"
+        :description="__('Files uploaded anywhere in this workspace show up here.')"
       />
     </div>
   </SettingsBody>
@@ -172,6 +163,7 @@ import { settings } from '@/lib/shell/settings'
 import { errorText } from '@/lib/runtime/errors'
 // The same glyphs the Drive draws, because they are the same kinds.
 import { iconForKind } from '@/lib/files/files'
+import { __ } from '@/lib/runtime/translate'
 
 
 const router = useRouter()
@@ -196,6 +188,33 @@ const bytes = (size) => {
   }
   return `${value < 10 && unit ? value.toFixed(1) : Math.round(value)} ${units[unit]}`
 }
+
+// One sentence per count rather than a plural glued on: "file" and "files" are
+// one word in English and several elsewhere.
+const breakdown = computed(() =>
+  storage.value.files === 1
+    ? __(
+        'The breakdown below covers the one file you can see, which is {0}. The meter above is the whole workspace, including files on records you cannot open.',
+        [bytes(storage.value.visible)],
+      )
+    : __(
+        'The breakdown below covers the {0} files you can see, which is {1}. The meter above is the whole workspace, including files on records you cannot open.',
+        [storage.value.files, bytes(storage.value.visible)],
+      ),
+)
+
+const binNote = computed(() => {
+  const bin = storage.value.bin || {}
+  return bin.files === 1
+    ? __(
+        'The bin is holding {0} across one file, which still counts. It is removed for good {1} days after it went there.',
+        [bin.label, bin.days],
+      )
+    : __(
+        'The bin is holding {0} across {1} files, which still counts. Each is removed for good {2} days after it went there.',
+        [bin.label, bin.files, bin.days],
+      )
+})
 
 const toDrive = () => {
   settings.open = false

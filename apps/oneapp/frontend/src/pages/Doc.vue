@@ -15,7 +15,7 @@
   <div v-if="failed" class="p-8">
     <EmptyState
       icon="lucide-file-question"
-      title="This document could not be opened"
+      :title="__('That document did not open')"
       :description="failed"
     />
   </div>
@@ -40,6 +40,7 @@ import DocEditor from '../components/docs/DocEditor.vue'
 import EmptyState from '../components/EmptyState.vue'
 import PlainText from '../components/docs/PlainText.vue'
 import { errorText } from '@/lib/runtime/errors'
+import { __ } from '@/lib/runtime/translate'
 import { workspace } from '@/lib/workspace'
 
 const props = defineProps({

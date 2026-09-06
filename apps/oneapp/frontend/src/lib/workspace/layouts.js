@@ -1,6 +1,7 @@
 /** Saved views: reading them, writing them, hiding them. */
 
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 export const layouts = {
   // Every named layout in a space, keyed by screen. The sidebar's question:
@@ -27,14 +28,14 @@ export const layouts = {
     callMethod(
       'oneapp.oneapp_core.spaceview.save_layout',
       { space_code: spaceCode, screen, ...payload },
-      { successMessage: 'View saved' },
+      { successMessage: __('View saved') },
     ),
 
   deleteLayout: (spaceCode, screen, layout) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.delete_layout',
       { space_code: spaceCode, screen, layout },
-      { successMessage: 'View deleted' },
+      { successMessage: __('View deleted') },
     ),
 
   // Not a delete. A shared view belongs to the workspace and somebody else may
@@ -43,21 +44,21 @@ export const layouts = {
     callMethod(
       'oneapp.oneapp_core.spaceview.hide_layout',
       { space_code: spaceCode, screen, layout },
-      { successMessage: 'Hidden from your menu' },
+      { successMessage: __('Hidden from your menu') },
     ),
 
   showLayouts: (spaceCode, screen) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.show_layouts',
       { space_code: spaceCode, screen },
-      { successMessage: 'Hidden views are back' },
+      { successMessage: __('Hidden views are back') },
     ),
 
   defaultLayout: (spaceCode, screen, layout) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.default_layout',
       { space_code: spaceCode, screen, layout },
-      { successMessage: 'This opens the screen now' },
+      { successMessage: __('This opens the screen now') },
     ),
 
   // The view type goes with it: a screen has one unnamed default per way of
@@ -67,6 +68,6 @@ export const layouts = {
     callMethod(
       'oneapp.oneapp_core.spaceview.reset_layout',
       { space_code: spaceCode, screen, view_type: viewType || undefined },
-      { successMessage: 'Back to the default screen' },
+      { successMessage: __('Back to the default screen') },
     ),
 }

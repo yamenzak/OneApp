@@ -127,10 +127,45 @@ the top and the guard can tell.
 
 ### Where the translations live
 
-`apps/oneapp/oneapp/locale/{ar,de}.po`, beside Frappe's own. `.pot` is
-regenerated with `bench generate-pot-file --app oneapp`; a `.po` is compiled by
-`bench compile-po-to-mo`, and `get_translations_from_apps` merges every
-installed app's catalogue, ours last.
+`apps/oneapp/oneapp/locale/` — `main.pot` for the extract, `ar.po` and `de.po`
+for the translations. `get_translations_from_apps` merges every installed app's
+catalogue into one lookup, ours last, so a msgid Frappe already translates
+resolves without our files being involved at all.
+
+Three commands, and only the first needs a site:
+
+```
+scripts/dev.sh run scripts/i18n_pot.py   # re-extract every msgid
+python3 scripts/i18n.py stat             # free / translated / owed
+python3 scripts/i18n.py gap ar           # the sentences still owed
+python3 scripts/i18n.py sync             # write them into the .po files
+```
+
+`sync` writes **only what is ours**: a msgid Frappe or ERPNext already
+translates is left out, because carrying it would mean maintaining a second,
+worse Arabic for `Save` that shadows theirs whenever ours loads last. It drops
+those, drops msgids the extract no longer produces, and names each one it
+dropped — a reworded sentence and a deleted one look identical from there, and
+the difference is a translation somebody has to write again.
+
+`bench compile-po-to-mo` compiles a `.po`; migrate does it too.
+
+### One extractor row of our own
+
+`apps/oneapp/babel_extractors.csv` claims `**/hooks.py` for the plain Python
+extractor. Frappe's own map sends that file to the navbar extractor, which
+resolves its real path and then asks for it relative to the bench — and our
+apps are symlinked into the bench from this repository, so the subtraction
+throws and the whole extract comes out empty, silently, with a zero exit. The
+app's own map is read first, so one row is the whole fix.
+
+### Who gets translated
+
+The customer's app, and nothing else. `oneapp_control` is the operator console
+and every reader of it works for us; `screens/ops/` is that same console
+rendered inside the tenant SPA, so its strings land in `oneapp`'s POT beside
+the customer's and are filtered out by where they came from. Bench groups,
+shards and dunning ladders stay in English.
 
 ### What it costs a reader
 
@@ -155,3 +190,9 @@ they are the two our customers read. A fourth is a `.po` file and nothing else.
 * A translated string used as a key, a filter value, or anything compared with
   `===`.
 * A `.po` entry for a msgid nothing produces any more.
+* A physical direction in a class name — `ml-2`, `pr-3`, `text-left`,
+  `border-l`, `left-0`. Arabic runs the other way, and every one of these
+  pins a margin to the wrong side of the reader. Use the logical property:
+  `ms-`, `me-`, `ps-`, `pe-`, `text-start`, `text-end`, `border-s`, `start-0`.
+  A genuine physical direction — a chevron that must point right whichever way
+  the text runs — says so in a comment beside it.

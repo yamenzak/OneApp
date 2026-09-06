@@ -12,7 +12,7 @@
   -->
   <div class="flex h-full min-h-0 flex-col">
     <PageHeader>
-      <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center gap-1">
+      <nav data-slot="breadcrumb" :aria-label="__('Breadcrumb')" class="flex min-w-0 items-center gap-1">
         <Breadcrumbs :items="crumbs" />
       </nav>
 
@@ -20,9 +20,9 @@
         <span class="text-p-xs text-ink-gray-5">{{ state }}</span>
         <Button
           icon-left="lucide-download"
-          label="Download"
+          :label="__('Download')"
           variant="ghost"
-          tooltip="Download"
+          :tooltip="__('Download')"
           @click="download"
         />
       </div>
@@ -46,6 +46,7 @@ import { useRoute } from 'vue-router'
 
 import { Breadcrumbs, Button, CodeEditor, PageHeader, dayjsLocal } from '@/ui'
 import { cameFrom } from '@/lib/screen/returnTo'
+import { __ } from '@/lib/runtime/translate'
 import FadedScroll from '../FadedScroll.vue'
 import { workspace } from '@/lib/workspace'
 
@@ -80,18 +81,18 @@ const back = computed(() => cameFrom(route))
 const crumbs = computed(() => [
   back.value
     ? { label: back.value.label, route: back.value.path }
-    : { label: 'Files', route: { name: 'Drive' } },
-  { label: title.value || 'Untitled' },
+    : { label: __('Files'), route: { name: 'Drive' } },
+  { label: title.value || __('Untitled') },
 ])
 
 const language = computed(() => LANGUAGES[props.doc.language] || props.doc.language || 'text')
 
 const state = computed(() => {
   if (failed.value) return failed.value
-  if (busy.value) return 'Saving…'
-  if (dirty.value) return 'Unsaved'
+  if (busy.value) return __('Saving…')
+  if (dirty.value) return __('Unsaved')
   if (!savedAt.value) return ''
-  return `Saved ${dayjsLocal(savedAt.value).fromNow()}`
+  return __('Saved {0}', [dayjsLocal(savedAt.value).fromNow()])
 })
 
 function onChange() {
@@ -112,7 +113,7 @@ async function save() {
     savedAt.value = new Date().toISOString()
     emit('renamed', title.value)
   } catch (raised) {
-    failed.value = raised?.messages?.[0] || 'Could not save'
+    failed.value = raised?.messages?.[0] || __('Could not save')
   } finally {
     busy.value = false
   }

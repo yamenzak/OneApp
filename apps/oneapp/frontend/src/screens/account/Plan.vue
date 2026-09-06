@@ -14,8 +14,7 @@
 
     <div v-else-if="data" class="flex flex-col gap-6 py-5">
       <p class="text-p-sm text-ink-gray-6">
-        Every plan includes every app. They differ in how much you can store and
-        how many people you can invite.
+        {{ __('Every plan includes every app. They differ in how much you can store and how many people you can invite.') }}
       </p>
 
       <section
@@ -28,14 +27,14 @@
           <div class="min-w-0">
             <div class="flex items-center gap-2">
               <h3 class="text-base-medium text-ink-gray-8">{{ plan.name }}</h3>
-              <Badge v-if="plan.current" theme="green" label="Current" variant="subtle" />
+              <Badge v-if="plan.current" theme="green" :label="__('Current')" variant="subtle" />
               <!-- The limits below are what this workspace was sold, which is
                    not always what the plan offers today. Saying so beats a card
                    that quietly disagrees with the price sheet. -->
               <Badge
                 v-if="plan.grandfathered"
                 theme="blue"
-                label="Your original terms"
+                :label="__('Your original terms')"
                 variant="subtle"
               />
             </div>
@@ -43,11 +42,11 @@
               {{ plan.description }}
             </p>
           </div>
-          <div class="shrink-0 text-right">
+          <div class="shrink-0 text-end">
             <p class="text-base-medium tabular-nums text-ink-gray-8">
               {{ money(plan.price_monthly, plan.currency) }}
             </p>
-            <p class="text-p-sm text-ink-gray-5">per month</p>
+            <p class="text-p-sm text-ink-gray-5">{{ __('per month') }}</p>
           </div>
         </div>
 
@@ -65,11 +64,10 @@
           v-if="plan.blocked_by.length"
           class="mt-3"
           theme="amber"
-          :title="`Your workspace is past this plan's ${plan.blocked_by.join(' and ')} limit`"
+          :title="__('Your workspace is past the {0} limit on this plan', [limitNames(plan.blocked_by)])"
         >
           <template #description>
-            Free some space or remove people first, and this plan becomes
-            available.
+            {{ __('Free some space or remove people first, and this plan becomes available.') }}
           </template>
         </Alert>
 
@@ -78,7 +76,7 @@
           class="mt-3"
           :loading="busy === plan.code"
           :disabled="Boolean(busy)"
-          label="Change to this plan"
+          :label="__('Change to this plan')"
           @click="choose(plan)"
         />
       </section>
@@ -91,19 +89,19 @@
   -->
   <Dialog
     v-model="showConfirm"
-    :title="`Change to ${chosen?.name || ''}?`"
+    :title="__('Change to {0}?', [chosen?.name || ''])"
     :actions="[
-      { label: 'Change plan', variant: 'solid', loading: Boolean(busy), onClick: confirm },
+      { label: __('Change plan'), variant: 'solid', loading: Boolean(busy), onClick: confirm },
     ]"
   >
     <div class="flex flex-col gap-3">
       <p class="text-p-base text-ink-gray-7">
         {{ chosen && chosen.price_monthly > (current?.price_monthly || 0)
-          ? 'Stripe charges the difference for the rest of this billing period, and the new limits apply straight away.'
-          : 'Stripe credits the difference against your next invoice, and the new limits apply straight away.' }}
+          ? __('Your card is charged the difference for the rest of this billing period, and the new limits apply straight away.')
+          : __('The difference is credited against your next invoice, and the new limits apply straight away.') }}
       </p>
       <p v-if="chosen" class="text-p-sm text-ink-gray-5">
-        {{ money(chosen.price_monthly, chosen.currency) }} a month, from now on.
+        {{ __('{0} a month, from now on.', [money(chosen.price_monthly, chosen.currency)]) }}
       </p>
     </div>
   </Dialog>
@@ -117,6 +115,7 @@ import {
 import WorkspaceBar from './WorkspaceBar.vue'
 import { useWorkspace } from './workspace'
 import { usePlans, customer } from './customer'
+import { __ } from '@/lib/runtime/translate'
 
 defineProps({
   spaceCode: { type: String, default: '' },
@@ -139,16 +138,31 @@ const money = (amount, currency) =>
         maximumFractionDigits: 0,
       }).format(amount)
 
+// A limit is one whole phrase per line, placeholder and all: "{0} GB files" is
+// a sentence somebody can reorder, and `n + ' ' + noun` is not.
 const limits = (plan) => {
   const out = []
-  if (plan.storage_gb) out.push(`${plan.storage_gb} GB files`)
-  if (plan.database_gb) out.push(`${plan.database_gb} GB database`)
-  if (plan.max_users) out.push(`${plan.max_users} ${plan.max_users === 1 ? 'seat' : 'seats'}`)
-  if (plan.monthly_credit_grant) out.push(`${plan.monthly_credit_grant} credits a month`)
+  if (plan.storage_gb) out.push(__('{0} GB files', [plan.storage_gb]))
+  if (plan.database_gb) out.push(__('{0} GB database', [plan.database_gb]))
+  if (plan.max_users)
+    out.push(
+      plan.max_users === 1 ? __('One seat') : __('{0} seats', [plan.max_users]),
+    )
+  if (plan.monthly_credit_grant)
+    out.push(__('{0} credits a month', [plan.monthly_credit_grant]))
   return out
 }
 
-// Changed here rather than in Stripe's billing portal. The portal owns cards,
+// The server names a limit the way it stores it — `storage`, `users`. A reader
+// owns files and people, so the alert says those.
+const LIMIT_NAMES = () => ({
+  storage: __('files'),
+  database: __('database'),
+  users: __('people'),
+})
+const limitNames = (keys) => (keys || []).map((key) => LIMIT_NAMES()[key] || key).join(', ')
+
+// Changed here rather than in the payment provider's billing portal. It owns cards,
 // invoices and cancellation, and it is better at all three — but it cannot know
 // our quotas, so it would happily sell a downgrade to a workspace already
 // holding more than the smaller plan allows. The server runs the same fit check

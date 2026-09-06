@@ -271,6 +271,6 @@ def test_the_signup_page_offers_the_field_as_optional():
 	"""Somebody with no code should read it as "skip this" rather than as one
 	more thing to fill in."""
 	page = PAGE.read_text()
-	assert 'label="Promo code"' in page
-	assert 'placeholder="Optional"' in page
+	assert "__('Promo code')" in page
+	assert "__('Optional')" in page
 	assert "code" not in page[page.index("const valid = computed("):page.index("// Checked server-side")]

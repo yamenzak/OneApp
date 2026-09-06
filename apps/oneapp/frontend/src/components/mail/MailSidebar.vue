@@ -9,9 +9,9 @@
   <Sidebar
     v-model:collapsed="collapsed"
     :width="`${width}px`"
-    class="border-r border-outline-gray-1"
+    class="border-e border-outline-gray-1"
   >
-    <SidebarHeader title="Mail" :subtitle="session.tenant?.name" :show-logo="false" />
+    <SidebarHeader :title="__('Mail')" :subtitle="session.tenant?.name" :show-logo="false" />
 
     <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pb-6">
       <nav class="space-y-0.5">
@@ -40,8 +40,8 @@
                 v-if="!one.depth && !collapsed"
                 variant="ghost"
                 icon="lucide-folder-plus"
-                :label="`New folder in ${one.label}`"
-                :tooltip="`New folder in ${one.label}`"
+                :label="__('New folder in {0}', [one.label])"
+                :tooltip="__('New folder in {0}', [one.label])"
                 data-slot="mail-new-folder"
                 @click="startFolder(one.address)"
               />
@@ -61,7 +61,7 @@
           @click="showQuiet = !showQuiet"
         >
           <span class="flex-1 truncate text-sm text-ink-gray-6">
-            {{ showQuiet ? 'Fewer folders' : 'More folders' }}
+            {{ showQuiet ? __('Fewer folders') : __('More folders') }}
           </span>
         </SidebarItem>
       </nav>
@@ -84,7 +84,7 @@
           data-slot="mail-add-mailbox"
           @click="openSettings('mailbox')"
         >
-          <span class="flex-1 truncate text-sm text-ink-gray-6">Add a mailbox</span>
+          <span class="flex-1 truncate text-sm text-ink-gray-6">{{ __('Add a mailbox') }}</span>
         </SidebarItem>
         <!-- Everything else about an address — the signature it signs with, the
              away message, where its mail files itself — is one dialog away
@@ -96,7 +96,7 @@
           data-slot="mail-open-settings"
           @click="openSettings('mailbox')"
         >
-          <span class="flex-1 truncate text-sm text-ink-gray-6">Signature and away</span>
+          <span class="flex-1 truncate text-sm text-ink-gray-6">{{ __('Signature and away') }}</span>
         </SidebarItem>
         <SidebarItem
           v-if="mail.mailboxes.length && !collapsed"
@@ -106,7 +106,7 @@
           @click="refreshMail()"
         >
           <span class="flex-1 truncate text-sm text-ink-gray-6">
-            {{ mail.refreshing ? 'Refreshing…' : 'Refresh folders' }}
+            {{ mail.refreshing ? __('Refreshing…') : __('Refresh folders') }}
           </span>
         </SidebarItem>
         <SidebarCollapseToggle />
@@ -114,12 +114,12 @@
     </div>
   </Sidebar>
 
-  <Dialog v-model="making" title="New folder">
+  <Dialog v-model="making" :title="__('New folder')">
     <div class="flex flex-col gap-3">
       <!-- Which mailbox is settled by where the button was, not by a dropdown
            in here repeating a choice already made. -->
-      <p class="text-p-sm text-ink-gray-7">In {{ draft.address }}</p>
-      <FormControl v-model="draft.name" label="Name" placeholder="Applicants" />
+      <p class="text-p-sm text-ink-gray-7">{{ __('In {0}', [draft.address]) }}</p>
+      <FormControl v-model="draft.name" :label="__('Name')" :placeholder="__('Applicants')" />
       <!-- Said before it happens rather than discovered afterwards: whether this
            folder will exist in their other mail client depends on whether there
            is a server behind the address. -->
@@ -127,7 +127,7 @@
       <ErrorMessage v-if="error" :message="error" />
     </div>
     <template #actions>
-      <Button variant="solid" label="Make it" :loading="saving" @click="make()" />
+      <Button variant="solid" :label="__('Make it')" :loading="saving" @click="make()" />
     </template>
   </Dialog>
 
@@ -155,6 +155,7 @@ import { workspace } from '../../lib/workspace'
 import { session } from '@/lib/shell/session'
 import { openSettings, settings } from '@/lib/shell/settings'
 import { useSidebar } from '@/lib/shell/sidebar'
+import { __ } from '@/lib/runtime/translate'
 
 const SUB = 'text-ink-gray-6'
 
@@ -174,8 +175,8 @@ const where = computed(() => {
   const address = draft.address
   const connected = mail.mailboxes.some((one) => one.email_id === address)
   return connected
-    ? `Made on the mail server, so it appears in your other mail apps too.`
-    : `${address} has no mailbox server, so this folder lives in OneSpace.`
+    ? __('Made on the mail server, so it appears in your other mail apps too.')
+    : __('{0} has no mailbox server, so this folder lives in OneSpace.', [address])
 })
 
 function startFolder(address) {

@@ -73,10 +73,12 @@
     <div v-else-if="sessionResource.error" class="grid h-screen place-items-center p-6">
       <div class="max-w-sm text-center">
         <p class="text-base-medium text-ink-gray-8">
-          We couldn't load your workspace
+          {{ __('Your workspace did not load') }}
         </p>
-        <p class="mt-1.5 text-p-base text-ink-gray-6">This is usually temporary.</p>
-        <Button class="mt-4" variant="solid" label="Try again" @click="session.reload()" />
+        <p class="mt-1.5 text-p-base text-ink-gray-6">
+          {{ __('Check your connection, then try again.') }}
+        </p>
+        <Button class="mt-4" variant="solid" :label="__('Try again')" @click="session.reload()" />
       </div>
     </div>
 
@@ -111,6 +113,7 @@
 <script setup>
 import { TENANT_APP } from '@/lib/runtime/brand'
 import { brand } from '@/lib/runtime/boot'
+import { __ } from '@/lib/runtime/translate'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { FrappeUIProvider, Button, Dialog, LoadingIndicator, usePageMeta } from '@/ui'
@@ -183,8 +186,8 @@ const menuItems = computed(() => [
   {
     // Named with its count, for the reason above.
     label: notifications.unread
-      ? `Notifications (${notifications.unread})`
-      : 'Notifications',
+      ? __('Notifications ({0})', [notifications.unread])
+      : __('Notifications'),
     icon: 'lucide-bell',
     onClick: () => {
       showNotifications.value = true

@@ -8,18 +8,18 @@
     reports exactly what the real one would do.
   -->
   <SettingsHeader
-    title="Import"
-    description="Bring your records over from the system you are leaving — as often as you like."
+    :title="__('Import')"
+    :description="__('Bring your records over from the system you are leaving — as often as you like.')"
     :class="PANEL_HEADER"
   />
   <SettingsBody :class="PANEL_BODY">
-    <LoadingText v-if="loading" class="py-8" text="Loading" />
+    <LoadingText v-if="loading" class="py-8" :text="__('Loading')" />
 
     <EmptyState
       v-else-if="!sources.length && !plans.length && !shipped.length"
       icon="lucide-import"
-      title="Nothing to import"
-      description="This workspace has nothing set up to import from."
+      :title="__('Nothing to import')"
+      :description="__('This workspace has nothing set up to import from.')"
     />
 
     <div v-else class="flex flex-col gap-6 py-4">
@@ -33,23 +33,23 @@
           <span class="text-p-base font-medium text-ink-gray-8">{{ one.name }}</span>
           <StateBadge v-if="one.status" :label="one.status" />
           <span v-if="one.verified_as" class="text-p-sm text-ink-gray-5">
-            as {{ one.verified_as }}
+            {{ __('as {0}', [one.verified_as]) }}
           </span>
         </div>
 
         <FormControl
           v-model="draft[one.name].base_url"
           type="text"
-          label="Address"
-          placeholder="https://old.example.com"
+          :label="__('Address')"
+          :placeholder="__('https://old.example.com')"
         />
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <FormControl v-model="draft[one.name].api_key" type="text" label="API key" />
+          <FormControl v-model="draft[one.name].api_key" type="text" :label="__('API key')" />
           <FormControl
             v-model="draft[one.name].api_secret"
             type="password"
-            label="API secret"
-            :description="'Kept encrypted. Leave blank to keep the one already saved.'"
+            :label="__('API secret')"
+            :description="__('Kept encrypted. Leave blank to keep the one already saved.')"
           />
         </div>
 
@@ -59,9 +59,9 @@
           panel whose single Save scrolls out of reach.
         -->
         <div class="flex items-center gap-2">
-          <Button label="Save connection" :loading="saving === one.name" @click="save(one)" />
+          <Button :label="__('Save connection')" :loading="saving === one.name" @click="save(one)" />
           <Button
-            label="Check the connection"
+            :label="__('Check the connection')"
             :loading="checking === one.name"
             @click="check(one)"
           />
@@ -72,7 +72,7 @@
       <!-- Adding the first one. Without this the panel's first state is a dead
            end: a shipped plan that cannot be set up. -->
       <div>
-        <Button label="Add a connection" icon-left="plus" @click="add" />
+        <Button :label="__('Add a connection')" icon-left="plus" @click="add" />
       </div>
 
       <!--
@@ -89,18 +89,17 @@
         <div class="flex items-center gap-2">
           <span class="text-p-base font-medium text-ink-gray-8">{{ one.title }}</span>
           <span class="ms-auto text-p-sm text-ink-gray-5">
-            {{ one.steps }} steps · {{ one.fields }} fields it adds
+            {{ __('{0} steps · {1} fields it adds', [one.steps, one.fields]) }}
           </span>
         </div>
         <p class="text-p-sm text-ink-gray-6">
-          Not set up yet. Setting it up writes the plan and the records its steps
-          write against; it reads nothing and moves nothing.
+          {{ __('Not set up yet. Setting it up writes the plan and the records its steps write against; it reads nothing and moves nothing.') }}
         </p>
         <ErrorMessage v-if="error && installing === one.key" :message="error" />
         <div class="flex items-center gap-2">
           <Button
             data-slot="import-setup"
-            label="Set this up"
+            :label="__('Set this up')"
             :loading="installing === one.key"
             :disabled="!into[one.key]"
             @click="setUp(one)"
@@ -108,13 +107,13 @@
           <!-- One connection is the ordinary case, and picking from a list of
                one is a question with an answer already. -->
           <span v-if="sources.length < 2" class="text-p-sm text-ink-gray-5">
-            {{ into[one.key] ? `from ${into[one.key]}` : 'add a connection first' }}
+            {{ into[one.key] ? __('from {0}', [into[one.key]]) : __('add a connection first') }}
           </span>
           <FormControl
             v-else
             v-model="into[one.key]"
             type="select"
-            label="From"
+            :label="__('From')"
             :options="sources.map((s) => ({ label: s.name, value: s.name }))"
           />
         </div>
@@ -133,9 +132,9 @@
       >
         <div class="flex items-center gap-2">
           <span class="text-p-base font-medium text-ink-gray-8">{{ plan.name }}</span>
-          <StateBadge v-if="plan.carried" label="Carried across" />
+          <StateBadge v-if="plan.carried" :label="__('Carried across')" />
           <span class="ms-auto text-p-sm text-ink-gray-5">
-            {{ plan.steps.length }} steps
+            {{ __('{0} steps', [plan.steps.length]) }}
           </span>
         </div>
 
@@ -150,7 +149,7 @@
             <span class="text-ink-gray-4">→</span>
             <span class="min-w-0 truncate text-ink-gray-8">{{ step.target_doctype }}</span>
             <span class="ms-auto shrink-0 text-p-xs text-ink-gray-5">
-              {{ step.watermark ? `up to ${when(step.watermark)}` : 'not yet' }}
+              {{ step.watermark ? __('up to {0}', [when(step.watermark)]) : __('not yet') }}
             </span>
           </div>
         </div>
@@ -165,22 +164,22 @@
           -->
           <Button
             data-slot="import-check"
-            label="Check the plan"
+            :label="__('Check the plan')"
             :loading="checkingPlan === plan.name"
             @click="checkPlan(plan)"
           />
           <Button
-            label="Rehearse"
+            :label="__('Rehearse')"
             :loading="starting === `${plan.name}:dry`"
             :disabled="Boolean(running)"
-            tooltip="Read everything, change nothing, and say what would happen"
+            :tooltip="__('Read everything, change nothing, and say what would happen')"
             @click="run(plan, true)"
           />
           <Button
             variant="solid"
             theme="green"
             data-slot="import-run"
-            :label="plan.carried ? 'Bring across what has changed' : 'Bring everything across'"
+            :label="plan.carried ? __('Bring across what has changed') : __('Bring everything across')"
             :loading="starting === `${plan.name}:live`"
             :disabled="Boolean(running)"
             @click="run(plan, false)"
@@ -198,10 +197,9 @@
           class="flex flex-col gap-2 rounded-6 border border-outline-gray-1 p-3"
         >
           <div class="flex items-center gap-2 text-p-sm">
-            <StateBadge :label="checked[plan.name].problems ? 'Problems' : 'Ready'" />
+            <StateBadge :label="checked[plan.name].problems ? __('Problems') : __('Ready')" />
             <span class="text-ink-gray-6">
-              {{ checked[plan.name].problems }} to fix ·
-              {{ checked[plan.name].warnings }} worth reading
+              {{ __('{0} to fix · {1} worth reading', [checked[plan.name].problems, checked[plan.name].warnings]) }}
             </span>
           </div>
           <div
@@ -222,12 +220,14 @@
         <div v-if="shown(plan)" class="flex flex-col gap-2 rounded-4 bg-surface-gray-1 p-3">
           <div class="flex items-center gap-2 text-p-sm">
             <StateBadge :label="shown(plan).status" />
-            <span v-if="shown(plan).dry_run" class="text-ink-gray-5">rehearsal</span>
+            <span v-if="shown(plan).dry_run" class="text-ink-gray-5">{{ __('rehearsal') }}</span>
             <span class="ms-auto tabular-nums text-ink-gray-6">
-              {{ shown(plan).total_seen ?? total(shown(plan), 'seen') }} read ·
-              {{ shown(plan).total_created ?? total(shown(plan), 'created') }} new ·
-              {{ shown(plan).total_updated ?? total(shown(plan), 'updated') }} updated ·
-              {{ shown(plan).total_failed ?? total(shown(plan), 'failed') }} refused
+              {{ __('{0} read · {1} new · {2} updated · {3} refused', [
+                shown(plan).total_seen ?? total(shown(plan), 'seen'),
+                shown(plan).total_created ?? total(shown(plan), 'created'),
+                shown(plan).total_updated ?? total(shown(plan), 'updated'),
+                shown(plan).total_failed ?? total(shown(plan), 'failed'),
+              ]) }}
             </span>
           </div>
           <p v-if="shown(plan).error" class="text-p-sm text-ink-red-5">
@@ -235,7 +235,7 @@
           </p>
           <Button
             v-if="(shown(plan).issues || shown(plan).total_failed) && shown(plan).name !== undefined"
-            label="See what was refused"
+            :label="__('See what was refused')"
             @click="openIssues(shown(plan).name)"
           />
         </div>
@@ -247,14 +247,14 @@
       it. Kept whole: by the time anybody reads this the source has moved on,
       and an error with no row attached is a question nobody can answer.
     -->
-    <Dialog v-model="showingIssues" title="Rows that were refused" size="3xl">
+    <Dialog v-model="showingIssues" :title="__('Rows that were refused')" size="3xl">
       <div class="flex flex-col gap-3">
-        <LoadingText v-if="loadingIssues" text="Loading" />
+        <LoadingText v-if="loadingIssues" :text="__('Loading')" />
         <EmptyState
           v-else-if="!issues.length"
           icon="lucide-circle-check"
-          title="Nothing was refused"
-          description="Every row came across."
+          :title="__('Nothing was refused')"
+          :description="__('Every row came across.')"
         />
         <div
           v-for="issue in issues"
@@ -293,6 +293,7 @@ import StateBadge from '../screen/fields/StateBadge.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
+import { __ } from '@/lib/runtime/translate'
 
 const loading = ref(true)
 const sources = ref([])

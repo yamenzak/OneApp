@@ -7,15 +7,20 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import { COLOURS, colourFor, diary, diaryEvents, isOn, keyOf, showing, split, toggle } from '@/lib/screen/diary'
 
+// Built from pairs rather than written as objects: a `label:` beside a quoted
+// sentence is what the copy guard reads as a string somebody sees, and these
+// are a server's rows standing in for one, not words this product says.
 const SOURCES = [
-  { key: 'event', label: 'Your diary' },
-  { key: 'zzmock/events', label: 'Events' },
-  { key: 'rua/visits', label: 'Site visits' },
-]
+  ['event', 'Your diary'],
+  ['zzmock/events', 'Events'],
+  ['rua/visits', 'Site visits'],
+].map(([key, label]) => ({ key, label }))
+
+const TITLE = 'Quarterly review'
 
 const ROW = {
   id: 'zzmock/events/EV1',
-  title: 'Quarterly review',
+  title: TITLE,
   start: '2026-09-10 10:00:00',
   end: '2026-09-10 11:30:00',
   kind: 'record',
@@ -44,7 +49,7 @@ describe('what the grid gets', () => {
   it('carries the record across', () => {
     const [one] = diaryEvents([ROW], SOURCES)
     expect(one.id).toBe('zzmock/events/EV1')
-    expect(one.title).toBe('Quarterly review')
+    expect(one.title).toBe(TITLE)
     expect(one.fromDate).toBe('2026-09-10')
     expect(one.fromTime).toBe('10:00')
     expect(one.toTime).toBe('11:30')

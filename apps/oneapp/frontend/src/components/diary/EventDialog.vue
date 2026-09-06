@@ -9,12 +9,12 @@
     are the next piece of this — they are a people picker and an alerts table,
     and neither is a field.
   -->
-  <Dialog v-model="open" :title="draft.name ? 'Edit event' : 'New event'">
+  <Dialog v-model="open" :title="draft.name ? __('Edit event') : __('New event')">
     <div class="flex flex-col gap-3">
       <FormControl
         v-model="draft.subject"
-        label="Name"
-        placeholder="Quarterly review"
+        :label="__('Name')"
+        :placeholder="__('Quarterly review')"
         data-slot="event-subject"
       />
 
@@ -24,39 +24,39 @@
       -->
       <Switch
         v-model="draft.all_day"
-        label="All day"
-        description="Which day rather than what time."
+        :label="__('All day')"
+        :description="__('Which day rather than what time.')"
         data-slot="event-all-day"
       />
 
       <component
         :is="draft.all_day ? DatePicker : DateTimePicker"
         v-model="draft.starts_on"
-        label="Starts"
+        :label="__('Starts')"
         data-slot="event-starts"
       />
       <component
         :is="draft.all_day ? DatePicker : DateTimePicker"
         v-model="draft.ends_on"
-        label="Ends"
-        description="Leave it empty for a moment rather than a span."
+        :label="__('Ends')"
+        :description="__('Leave it empty for a moment rather than a span.')"
         data-slot="event-ends"
       />
 
-      <Textarea v-model="draft.description" label="Notes" :rows="3" />
+      <Textarea v-model="draft.description" :label="__('Notes')" :rows="3" />
 
       <ErrorMessage v-if="error" :message="error" />
     </div>
 
     <template #actions>
-      <Button variant="solid" label="Save" :loading="saving" @click="save()" />
+      <Button variant="solid" :label="__('Save')" :loading="saving" @click="save()" />
       <!-- Only where there is something to remove. A new event's dialog
            offering Delete is a button that cannot mean anything. -->
       <Button
         v-if="draft.name"
         theme="red"
         variant="subtle"
-        label="Delete"
+        :label="__('Delete')"
         :loading="removing"
         @click="remove()"
       />
@@ -79,6 +79,7 @@ import {
 import { workspace } from '../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
 import { useSaving } from '@/composables/useSaving'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /** The event being edited, or a date to start a new one on. */

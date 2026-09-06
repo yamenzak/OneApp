@@ -15,37 +15,37 @@
           <p class="text-base-medium text-ink-gray-8">{{ data.plan.name }}</p>
           <p class="mt-0.5 text-p-sm text-ink-gray-6">
             <template v-if="data.subscription">
-              {{ data.subscription.interval }} · renews
-              {{ formatDate(data.subscription.current_period_end) }}
+              {{ __('{0} · renews {1}', [
+                data.subscription.interval,
+                formatDate(data.subscription.current_period_end),
+              ]) }}
             </template>
-            <template v-else>No active subscription</template>
+            <template v-else>{{ __('No plan running yet') }}</template>
           </p>
           <Badge
             v-if="data.subscription?.cancel_at_period_end"
             class="mt-2"
             theme="amber"
-            label="Cancels at period end"
+            :label="__('Cancels at the end of this period')"
             variant="subtle"
           />
         </div>
-        <Button label="Manage billing" :loading="opening" @click="openPortal" />
+        <Button :label="__('Manage billing')" :loading="opening" @click="openPortal" />
       </div>
       <p class="mt-2 text-p-sm text-ink-gray-5">
-        Cards, invoices and cancellation are handled by Stripe.
+        {{ __('Change your card, download an invoice or cancel from there.') }}
       </p>
     </section>
 
     <section>
-      <h3 class="mb-1 text-base-medium text-ink-gray-8">Add-ons</h3>
+      <h3 class="mb-1 text-base-medium text-ink-gray-8">{{ __('Add-ons') }}</h3>
       <p class="mb-3 text-p-sm text-ink-gray-6">
-        Extra room, billed with your plan and prorated from the day you add it.
-        Deliberately not paid for with AI credits — a large upload should not
-        quietly drain the budget you were keeping for something else.
+        {{ __('Extra room, billed with your plan and charged from the day you add it. It is not paid for with AI credits.') }}
       </p>
 
-      <Alert v-if="!addons.can_buy" theme="amber" title="No subscription yet">
+      <Alert v-if="!addons.can_buy" theme="amber" :title="__('No plan yet')">
         <template #description>
-          Add-ons go on your plan's invoice, so there has to be a plan first.
+          {{ __('An add-on goes on the same invoice as your plan, so there has to be a plan first.') }}
         </template>
       </Alert>
 
@@ -62,30 +62,28 @@
           v-if="!addons.addons.length"
           class="!py-8"
           icon="lucide-package"
-          title="Nothing on offer yet"
-          description="Extra storage will appear here when it is available."
+          :title="__('Nothing on offer yet')"
+          :description="__('Extra storage appears here when it is available.')"
         />
       </div>
     </section>
 
     <section>
       <div class="mb-1 flex items-baseline justify-between gap-3">
-        <h3 class="text-base-medium text-ink-gray-8">AI credits</h3>
+        <h3 class="text-base-medium text-ink-gray-8">{{ __('AI credits') }}</h3>
         <span class="text-p-sm tabular-nums text-ink-gray-6">
-          {{ Math.round(data.credits.available).toLocaleString() }} available
+          {{ __('{0} available', [Math.round(data.credits.available).toLocaleString()]) }}
         </span>
       </div>
       <p class="mb-3 text-p-sm text-ink-gray-6">
-        Your plan grants some every month and those expire at the end of it.
-        Bought credits roll over and are spent last, so a pack is only ever
-        drawn on once the month's grant is gone.
+        {{ __('Your plan adds credits every month and they expire at the end of it. Credits you buy roll over and are spent last.') }}
       </p>
 
       <div class="grid gap-3 sm:grid-cols-3">
         <PackCard
           v-for="pack in packs.credits"
           :key="pack.code"
-          :title="`${Number(pack.credits).toLocaleString()} credits`"
+          :title="__('{0} credits', [Number(pack.credits).toLocaleString()])"
           :price="pack.amount"
           :currency="pack.currency"
           :description="pack.description"
@@ -131,7 +129,7 @@
     </section>
 
     <section v-if="invoices.length">
-      <h3 class="mb-3 text-base-medium text-ink-gray-8">Invoices</h3>
+      <h3 class="mb-3 text-base-medium text-ink-gray-8">{{ __('Invoices') }}</h3>
       <!-- Narrowed rather than dropped: three short cells all fit a phone once
            the two fixed tracks stop being sized for a desktop. -->
       <List :columns="invoiceColumns" :row-height="52" class="px-3" divider="full">
@@ -172,17 +170,18 @@ import EmptyState from '../../components/EmptyState.vue'
 import { useListColumns } from '@/lib/screen/list'
 import { customer, useOverview } from './customer'
 import { notifyInfo, notifySuccess } from '@/lib/runtime/notify'
+import { __ } from '@/lib/runtime/translate'
 
 const { columns: invoiceColumns } = useListColumns([
-  { key: 'date', header: 'Date', track: 'minmax(0,1fr)' },
-  { key: 'amount', header: 'Amount', track: '8rem', mobile: '6rem' },
-  { key: 'status', header: 'Status', track: '7rem', mobile: '5rem' },
+  { key: 'date', header: __('Date'), track: 'minmax(0,1fr)' },
+  { key: 'amount', header: __('Amount'), track: '8rem', mobile: '6rem' },
+  { key: 'status', header: __('Status'), track: '7rem', mobile: '5rem' },
 ])
 
 const { columns: historyColumns, shows: historyShows } = useListColumns([
-  { key: 'entry', header: 'Entry', track: 'minmax(0,1fr)' },
-  { key: 'when', header: 'When', track: '10rem', mobile: false },
-  { key: 'credits', header: 'Credits', track: '7rem', mobile: '5rem' },
+  { key: 'entry', header: __('Entry'), track: 'minmax(0,1fr)' },
+  { key: 'when', header: __('When'), track: '10rem', mobile: false },
+  { key: 'credits', header: __('Credits'), track: '7rem', mobile: '5rem' },
 ])
 
 defineProps({ spaceCode: { type: String, default: '' }, screen: { type: String, default: '' } })
@@ -200,15 +199,15 @@ const busy = ref(null)
 const route = useRoute()
 const router = useRouter()
 
-// Stripe's redirect is the only signal the customer gets that a purchase landed;
-// the webhook that actually applies it arrives separately, so this says
+// The redirect back from checkout is the only signal the customer gets that a
+// purchase landed; what actually applies it arrives separately, so this says
 // "received" rather than claiming the balance is already updated. The flags are
 // stripped afterwards so a refresh does not toast a second time.
 onMounted(() => {
   if (route.query.checkout === 'success') {
-    notifySuccess('Payment received — your balance updates in a moment')
+    notifySuccess(__('Payment received — your balance updates in a moment'))
   } else if (route.query.checkout === 'cancelled') {
-    notifyInfo('Checkout cancelled. Nothing was charged.')
+    notifyInfo(__('Cancelled. Nothing was charged.'))
   } else {
     return
   }

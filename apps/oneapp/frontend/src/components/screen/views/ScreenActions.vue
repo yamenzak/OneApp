@@ -24,7 +24,7 @@
   <Dropdown v-else :options="options">
     <Button
       icon-right="lucide-chevron-down"
-      label="Actions"
+      :label="__('Actions')"
       variant="subtle"
       :loading="Boolean(running)"
     />
@@ -53,6 +53,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, Dialog, Dropdown } from '@/ui'
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /** The screen's declared actions, as the resolver returned them. */

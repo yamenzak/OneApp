@@ -12,17 +12,17 @@
     The name and the destructive controls are the line you read; the settings
     are the quieter line under it.
   -->
-  <Dialog v-model="open" title="Columns" size="2xl">
+  <Dialog v-model="open" :title="__('Columns')" size="2xl">
     <div class="flex flex-col gap-5">
       <!-- Grouping belongs here rather than in a control of its own: it is a
            question about the columns. -->
       <FormControl
         v-if="has('group')"
         type="select"
-        label="Group rows by"
+        :label="__('Group rows by')"
         :model-value="groupBy"
         :options="groupOptions"
-        description="Rows are sorted by this first, so each group arrives whole."
+        :description="__('Rows are sorted by this first, so each group arrives whole.')"
         @update:model-value="emit('update:groupBy', $event)"
       />
 
@@ -30,7 +30,7 @@
         <div class="flex items-baseline justify-between">
           <h3 class="text-p-sm font-medium text-ink-gray-8">{{ here }}</h3>
           <p class="text-p-xs text-ink-gray-5">
-            Drag to reorder, or use the arrows
+            {{ __('Drag to reorder, or use the arrows') }}
           </p>
         </div>
 
@@ -68,8 +68,8 @@
                   icon="lucide-chevron-up"
                   variant="ghost"
                   size="sm"
-                  :label="`Move ${labelFor(column)} up`"
-                  :tooltip="`Move ${labelFor(column)} up`"
+                  :label="__('Move {0} up', [labelFor(column)])"
+                  :tooltip="__('Move {0} up', [labelFor(column)])"
                   :disabled="index === 0"
                   @click="move(index, -1)"
                 />
@@ -77,8 +77,8 @@
                   icon="lucide-chevron-down"
                   variant="ghost"
                   size="sm"
-                  :label="`Move ${labelFor(column)} down`"
-                  :tooltip="`Move ${labelFor(column)} down`"
+                  :label="__('Move {0} down', [labelFor(column)])"
+                  :tooltip="__('Move {0} down', [labelFor(column)])"
                   :disabled="index === chosen.length - 1"
                   @click="move(index, 1)"
                 />
@@ -87,8 +87,8 @@
                   variant="ghost"
                   size="sm"
                   theme="red"
-                  :label="`Remove ${labelFor(column)}`"
-                  :tooltip="`Remove ${labelFor(column)}`"
+                  :label="__('Remove {0}', [labelFor(column)])"
+                  :tooltip="__('Remove {0}', [labelFor(column)])"
                   :disabled="chosen.length === 1"
                   @click="remove(index)"
                 />
@@ -101,7 +101,7 @@
               -->
               <div class="flex flex-wrap items-center gap-x-4 gap-y-2 ps-6">
                 <div v-if="has('align')" class="flex items-center gap-1.5">
-                  <span class="text-p-xs text-ink-gray-5">Align</span>
+                  <span class="text-p-xs text-ink-gray-5">{{ __('Align') }}</span>
                   <TabButtons
                     :model-value="column.align || ''"
                     :options="ALIGN"
@@ -111,7 +111,7 @@
                 </div>
 
                 <div v-if="has('pin')" class="flex items-center gap-1.5">
-                  <span class="text-p-xs text-ink-gray-5">Pin</span>
+                  <span class="text-p-xs text-ink-gray-5">{{ __('Pin') }}</span>
                   <TabButtons
                     :model-value="column.pin || ''"
                     :options="PIN"
@@ -121,7 +121,7 @@
                 </div>
 
                 <div v-if="has('width')" class="flex items-center gap-1.5">
-                  <span class="text-p-xs text-ink-gray-5">Width</span>
+                  <span class="text-p-xs text-ink-gray-5">{{ __('Width') }}</span>
                   <!-- `aria-label` rather than `label`: FormControl renders a
                        label visibly above the field, which in a row this dense
                        wraps and pushes everything else out of shape. -->
@@ -129,7 +129,7 @@
                     type="number"
                     size="sm"
                     :model-value="column.width"
-                    :aria-label="`Width of ${labelFor(column)} in pixels`"
+                    :aria-label="__('Width of {0} in pixels', [labelFor(column)])"
                     class="w-20"
                     @update:model-value="setWidth(index, $event)"
                   />
@@ -142,12 +142,12 @@
 
       <div v-if="unused.length" class="flex flex-col gap-2">
         <div class="flex items-baseline justify-between">
-          <h3 class="text-p-sm font-medium text-ink-gray-8">Add a column</h3>
+          <h3 class="text-p-sm font-medium text-ink-gray-8">{{ __('Add a column') }}</h3>
           <p class="text-p-xs text-ink-gray-5">
-            {{ unused.length }} left — {{ everything }}
+            {{ leftNote }}
           </p>
         </div>
-        <FormControl v-model="search" type="search" placeholder="Find a field" />
+        <FormControl v-model="search" type="search" :placeholder="__('Find a field')" />
         <!-- Faded rather than clipped: a field name cut in half by a hard edge
              reads as a rendering fault. -->
         <FadedScroll class="max-h-56">
@@ -162,7 +162,7 @@
               @click="add(column)"
             />
             <p v-if="!matching.length" class="px-2 py-1 text-p-sm text-ink-gray-5">
-              Nothing matches “{{ search }}”.
+              {{ __('Nothing matches “{0}”.', [search]) }}
             </p>
           </div>
         </FadedScroll>
@@ -170,7 +170,7 @@
     </div>
 
     <template #actions>
-      <Button variant="solid" label="Done" @click="open = false" />
+      <Button variant="solid" :label="__('Done')" @click="open = false" />
     </template>
   </Dialog>
 </template>
@@ -179,6 +179,7 @@
 import { computed, ref } from 'vue'
 import { Button, Dialog, FormControl, Icon, TabButtons } from '@/ui'
 import FadedScroll from '../../FadedScroll.vue'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -210,17 +211,17 @@ const META_FIELD = '__activity'
  * Which edge the values sit against, and the header with them.
  *
  * Logical rather than physical — this product draws Arabic beside English in
- * one list, and a column aligned "left" in a right-to-left screen is aligned to
+ * one list, and a column aligned "left" in a end-to-left screen is aligned to
  * the wrong side of the words in it.
  *
  * Empty is the default: the fieldtype decides. `spaceview.ALIGNMENTS` is the
  * same set on the server.
  */
 const ALIGN = [
-  { value: '', label: 'Automatic', icon: 'lucide-wand-sparkles' },
-  { value: 'start', label: 'Align to the start', icon: 'lucide-align-left' },
-  { value: 'center', label: 'Align to the centre', icon: 'lucide-align-center' },
-  { value: 'end', label: 'Align to the end', icon: 'lucide-align-right' },
+  { value: '', label: __('Automatic'), icon: 'lucide-wand-sparkles' },
+  { value: 'start', label: __('Align to the start'), icon: 'lucide-align-left' },
+  { value: 'center', label: __('Align to the centre'), icon: 'lucide-align-center' },
+  { value: 'end', label: __('Align to the end'), icon: 'lucide-align-right' },
 ]
 
 /**
@@ -229,9 +230,9 @@ const ALIGN = [
  * answer.
  */
 const PIN = [
-  { value: '', label: 'Not pinned', icon: 'lucide-minus' },
-  { value: 'left', label: 'Pin to the left edge', icon: 'lucide-arrow-left-to-line' },
-  { value: 'right', label: 'Pin to the right edge', icon: 'lucide-arrow-right-to-line' },
+  { value: '', label: __('Not pinned'), icon: 'lucide-minus' },
+  { value: 'left', label: __('Pin to the left edge'), icon: 'lucide-arrow-left-to-line' },
+  { value: 'right', label: __('Pin to the right edge'), icon: 'lucide-arrow-right-to-line' },
 ]
 
 const has = (one) => props.offers.includes(one)
@@ -239,10 +240,18 @@ const has = (one) => props.offers.includes(one)
 // The same dialog over two different things, so it says which. A child grid is
 // not "this list" — the list is the screen behind it, and a heading that names
 // the wrong one is worse than no heading.
-const here = computed(() => (has('group') ? 'On this list' : 'In this table'))
-const everything = computed(() => (has('group')
-  ? 'everything this record has, whether or not the app put it on the list'
-  : 'every field these rows have, whether or not the doctype put it in the grid'))
+const here = computed(() => (has('group') ? __('On this list') : __('In this table')))
+
+// How many fields are left, and where they come from — one sentence rather
+// than a count glued to a phrase, because that join is not the same in every
+// language.
+const leftNote = computed(() => (has('group')
+  ? __('{0} left — everything this record has, whether or not the app put it on the list', [
+    unused.value.length,
+  ])
+  : __('{0} left — every field these rows have, whether or not the grid started with it', [
+    unused.value.length,
+  ])))
 
 const dragging = ref(null)
 const search = ref('')
@@ -253,7 +262,7 @@ const iconFor = (column) => columnFor(column.fieldname)?.icon || 'lucide-circle-
 
 // Not the activity column: it is not a field and has no value to group on.
 const groupOptions = computed(() => [
-  { value: '', label: 'Nothing' },
+  { value: '', label: __('Nothing') },
   ...props.offered
     .filter((c) => c.fieldname !== META_FIELD)
     .map((c) => ({ value: c.fieldname, label: c.label })),

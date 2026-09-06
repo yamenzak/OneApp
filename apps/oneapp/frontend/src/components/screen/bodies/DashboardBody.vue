@@ -14,8 +14,8 @@
     <EmptyState
       v-if="!loading && !widgets.length"
       icon="lucide-chart-column"
-      title="Nothing to measure"
-      description="This screen offers a dashboard but declares no widgets."
+      :title="__('Nothing to measure')"
+      :description="__('This screen shows a dashboard, but nothing has been added to it to count.')"
     />
 
     <!-- Twelve columns, the grid a width of 3, 4, 6, 8 or 12 divides evenly —
@@ -42,6 +42,7 @@
 import { ref, watch } from 'vue'
 import EmptyState from '../../EmptyState.vue'
 import DashboardWidget from './DashboardWidget.vue'
+import { __ } from '@/lib/runtime/translate'
 import { workspace } from '../../../lib/workspace'
 import { notifyError } from '@/lib/runtime/notify'
 

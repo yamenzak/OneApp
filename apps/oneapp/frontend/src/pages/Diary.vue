@@ -12,7 +12,7 @@
   -->
   <PageHeader>
     <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
-      <Breadcrumbs :items="[{ label: 'Calendar', route: { name: 'Calendar' } }]" />
+      <Breadcrumbs :items="[{ label: __('Calendar'), route: { name: 'Calendar' } }]" />
     </nav>
 
     <!-- The one thing this surface writes. Everything else on the grid is a
@@ -20,14 +20,14 @@
     <Button
       variant="solid"
       icon-left="lucide-plus"
-      label="New event"
+      :label="__('New event')"
       data-slot="diary-new"
       @click="start()"
     />
   </PageHeader>
 
   <div class="min-h-0 flex-1 overflow-auto p-3" data-slot="diary">
-    <Alert v-if="error" theme="red" title="The calendar could not be loaded">
+    <Alert v-if="error" theme="red" :title="__('Your calendar did not load')">
       <template #description>{{ error }}</template>
     </Alert>
 
@@ -56,6 +56,7 @@ import { Alert, Breadcrumbs, Button, Calendar, PageHeader } from '@/ui'
 import EventDialog from '../components/diary/EventDialog.vue'
 import { workspace } from '../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
+import { __ } from '@/lib/runtime/translate'
 import { diary, diaryEvents, showing } from '@/lib/screen/diary'
 
 /**

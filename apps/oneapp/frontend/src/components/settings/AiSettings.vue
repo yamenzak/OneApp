@@ -1,7 +1,7 @@
 <template>
   <SettingsHeader
-    title="AI"
-    description="Which features use a model, which model they use, and anything you want it to keep in mind."
+    :title="__('AI')"
+    :description="__('Which features use a model, which model they use, and anything you want it to keep in mind.')"
     :class="PANEL_HEADER"
   />
 
@@ -14,17 +14,16 @@
       v-else-if="!data?.features.length"
       class="!py-12"
       icon="lucide-sparkles"
-      title="Nothing uses AI yet"
-      description="Features appear here as the apps in your workspace add them. There is nothing to set up in advance."
+      :title="__('Nothing uses AI yet')"
+      :description="__('Features appear here as the apps in your workspace add them. There is nothing to set up in advance.')"
     />
 
     <div v-else class="flex flex-col gap-5 pt-6">
       <div class="flex items-start justify-between gap-4 rounded-6 border border-outline-gray-1 p-4">
         <div class="min-w-0">
-          <p class="text-base-medium text-ink-gray-8">Use AI in this workspace</p>
+          <p class="text-base-medium text-ink-gray-8">{{ __('Use AI in this workspace') }}</p>
           <p class="mt-0.5 text-p-sm text-ink-gray-5">
-            {{ data.credit_balance }} credits left. Each feature is charged for
-            what it actually uses.
+            {{ __('{0} credits left. Each feature is charged for what it actually uses.', [data.credit_balance]) }}
           </p>
         </div>
         <Switch v-model="form.ai_enabled" />
@@ -52,7 +51,7 @@
           <Badge
             v-if="!feature.can_disable"
             theme="blue"
-            label="Always on"
+            :label="__('Always on')"
             variant="subtle"
           />
           <Switch
@@ -62,10 +61,9 @@
           />
         </div>
 
-        <Alert v-if="feature.suspended" theme="amber" title="Paused">
+        <Alert v-if="feature.suspended" theme="amber" :title="__('Paused')">
           <template #description>
-            This one is paused for everyone at the moment. Nothing you change
-            here is lost.
+            {{ __('This one is paused for everyone at the moment. Nothing you change here is lost.') }}
           </template>
         </Alert>
 
@@ -74,9 +72,9 @@
             v-if="!feature.pinned_model"
             v-model="answers[feature.key].model"
             type="select"
-            label="Model"
+            :label="__('Model')"
             :options="modelOptions(feature)"
-            description="Only models that can do this job are listed."
+            :description="__('Only models that can do this job are listed.')"
           />
 
           <!--
@@ -89,9 +87,9 @@
             v-model="answers[feature.key].prompt_addendum"
             type="textarea"
             :rows="3"
-            label="Anything it should keep in mind"
-            placeholder="Write in British English. Never quote a delivery date."
-            description="Added to the instructions this feature already has. Use it for your preferences, not for changing what the feature does."
+            :label="__('Anything it should keep in mind')"
+            :placeholder="__('Write in British English. Never quote a delivery date.')"
+            :description="__('Added to the instructions this feature already has. Use it for your preferences, not for changing what the feature does.')"
           />
         </div>
       </div>
@@ -101,7 +99,7 @@
   </SettingsBody>
 
   <div v-if="data?.features.length" :class="PANEL_FOOTER">
-    <Button variant="solid" label="Save" :loading="saving" @click="save" />
+    <Button variant="solid" :label="__('Save')" :loading="saving" @click="save" />
   </div>
 </template>
 
@@ -114,6 +112,7 @@ import {
 import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 import { settings } from '@/lib/shell/settings'
 
 const data = ref(null)
@@ -129,7 +128,7 @@ const dimmed = (feature) =>
   feature.suspended || (feature.can_disable && (!form.ai_enabled || !answers[feature.key]?.enabled))
 
 const modelOptions = (feature) => [
-  { label: 'Recommended', value: '' },
+  { label: __('Recommended'), value: '' },
   ...feature.models.map((m) => ({
     label: m.description ? `${m.label} — ${m.description}` : m.label,
     value: m.value,

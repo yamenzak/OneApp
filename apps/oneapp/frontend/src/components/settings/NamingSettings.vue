@@ -10,24 +10,24 @@
     place to overrule them.
   -->
   <SettingsHeader
-    title="Naming"
-    description="What a record's id looks like before anybody types one."
+    :title="__('Naming')"
+    :description="__('What a record\'s id looks like before anybody types one.')"
     :class="PANEL_HEADER"
   />
   <SettingsBody :class="PANEL_BODY">
-    <LoadingText v-if="loading" class="py-8" text="Loading" />
+    <LoadingText v-if="loading" class="py-8" :text="__('Loading')" />
 
     <EmptyState
       v-else-if="!rows.length"
       icon="lucide-hash"
-      title="Nothing to name"
-      description="No app in this workspace names its records by a series."
+      :title="__('Nothing to name')"
+      :description="__('No app in this workspace names its records by a series.')"
     />
 
     <div v-else class="flex flex-col gap-4 py-4">
       <Select
         v-model="chosen"
-        label="Records"
+        :label="__('Records')"
         :options="rows.map((row) => ({ label: row.label, value: row.doctype }))"
       />
 
@@ -41,7 +41,7 @@
         <FormControl
           v-model="draft"
           type="textarea"
-          label="Series"
+          :label="__('Series')"
           :rows="5"
           :disabled="!editable"
           :description="editable ? EDITABLE : FIXED"
@@ -51,12 +51,12 @@
           <Button
             v-if="editable"
             variant="solid"
-            label="Save series"
+            :label="__('Save series')"
             :loading="saving"
             :disabled="!draft.trim()"
             @click="save"
           />
-          <Button label="Preview" :loading="previewing" @click="look" />
+          <Button :label="__('Preview')" :loading="previewing" @click="look" />
         </div>
 
         <ErrorMessage v-if="error" :message="error" />
@@ -86,8 +86,8 @@
             <span class="min-w-0 flex-1 truncate font-mono text-p-sm text-ink-gray-8">
               {{ one.prefix }}
             </span>
-            <Badge v-if="one.default" label="Default" theme="blue" variant="subtle" />
-            <span class="text-p-xs text-ink-gray-5">at</span>
+            <Badge v-if="one.default" :label="__('Default')" theme="blue" variant="subtle" />
+            <span class="text-p-xs text-ink-gray-5">{{ __('at') }}</span>
             <FormControl
               type="number"
               class="w-28"
@@ -95,15 +95,14 @@
               @update:model-value="counters[one.prefix] = $event"
             />
             <Button
-              label="Set"
+              :label="__('Set')"
               :loading="moving === one.prefix"
               @click="move(one)"
             />
           </li>
         </ul>
         <p class="text-p-xs text-ink-gray-5">
-          Moving a counter backwards will re-issue ids that already exist. The
-          change is recorded against the series.
+          {{ __('Moving a counter backwards will re-issue ids that already exist. The change is recorded against the series.') }}
         </p>
       </div>
     </div>
@@ -127,13 +126,16 @@ import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
 import { useSaving } from '@/composables/useSaving'
+import { __ } from '@/lib/runtime/translate'
 
 // Said under the textarea. Two sentences rather than one, because the second
 // case is the one people will not expect and the first is the one they will.
-const EDITABLE =
-  'One per line. The first is what new records use. `#` is a digit, so ACME-.YYYY.-.##### counts up within the year.'
-const FIXED =
-  'This app names its own records. The series is part of what it is, so it is shown rather than set — the counter under it can still be moved.'
+const EDITABLE = __(
+  'One per line. The first is what new records use. `#` is a digit, so ACME-.YYYY.-.##### counts up within the year.',
+)
+const FIXED = __(
+  'This app names its own records. The series is part of what it is, so it is shown rather than set — the counter under it can still be moved.',
+)
 
 const rows = ref([])
 const chosen = ref('')

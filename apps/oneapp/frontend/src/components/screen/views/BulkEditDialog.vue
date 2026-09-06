@@ -9,9 +9,19 @@
     The value is a `FieldControl`, so a Select offers its options and a Link
     opens its picker.
   -->
-  <Dialog v-model="showing" :title="`Change ${count} ${count === 1 ? 'record' : 'records'}`">
+  <Dialog
+    v-model="showing"
+    :title="count === 1
+      ? __('Change {0} record', [count])
+      : __('Change {0} records', [count])"
+  >
     <div class="flex flex-col gap-4">
-      <Select v-model="chosen" :options="fields" label="Field" placeholder="Which field" />
+      <Select
+        v-model="chosen"
+        :options="fields"
+        :label="__('Field')"
+        :placeholder="__('Which field')"
+      />
 
       <!-- Only once a field is chosen: a control with no field behind it has no
            fieldtype, no options and nothing to validate against. -->
@@ -30,18 +40,18 @@
            write in this product with no undo, so the sentence names the number
            and the field. -->
       <p v-if="field" class="text-p-sm text-ink-gray-6">
-        {{ count }} {{ count === 1 ? 'record' : 'records' }} will have
-        <span class="font-medium text-ink-gray-8">{{ field.label }}</span> set to this.
-        Records the doctype refuses — a submitted one, or a rule this value
-        breaks — are left alone and named.
+        {{ count === 1
+          ? __('One record will have {0} set to this.', [field.label])
+          : __('{0} records will have {1} set to this.', [count, field.label]) }}
+        {{ __('Any record that refuses the change — a submitted one, or a value a rule forbids — is left alone and named.') }}
       </p>
     </div>
 
     <template #actions>
-      <Button label="Never mind" @click="showing = false" />
+      <Button :label="__('Never mind')" @click="showing = false" />
       <Button
         variant="solid"
-        label="Change them"
+        :label="__('Change them')"
         :disabled="!field"
         :loading="working"
         @click="apply"
@@ -54,6 +64,7 @@
 import { computed, ref, watch } from 'vue'
 import { Button, Dialog, FormLabel, Select } from '@/ui'
 import FieldControl from '../fields/FieldControl.vue'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /** Every column the screen could show — the same list the picker offers. */

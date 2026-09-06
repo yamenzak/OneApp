@@ -13,6 +13,8 @@
  * safe to show and `detail` is for the console.
  */
 
+import { __ } from '@/lib/runtime/translate'
+
 /** Strip the HTML Frappe puts in server messages. */
 function stripTags(value) {
   if (typeof value !== 'string') return value
@@ -48,7 +50,7 @@ function lastTracebackLine(exception) {
 }
 
 export function normalizeError(error) {
-  if (!error) return { title: 'Something went wrong', message: '', detail: null }
+  if (!error) return { title: __('Something went wrong'), message: '', detail: null }
 
   // A string is its own message. Callers hand one over whenever the detail is
   // theirs rather than the server's — a bulk change naming the four records
@@ -58,7 +60,7 @@ export function normalizeError(error) {
   // doing that on a refused bulk delete since that was written.
   if (typeof error === 'string') {
     return {
-      title: 'Something went wrong',
+      title: __('Something went wrong'),
       message: error,
       extra: [],
       indicator: 'red',
@@ -78,14 +80,14 @@ export function normalizeError(error) {
   const title =
     first.title ||
     error.title ||
-    (error.name === 'FrappeResponseError' ? 'Request failed' : null) ||
-    'Something went wrong'
+    (error.name === 'FrappeResponseError' ? __('Request failed') : null) ||
+    __('Something went wrong')
 
   const message =
     fromServer ||
     stripTags(error.message) ||
     lastTracebackLine(error.exception) ||
-    'No further detail was returned.'
+    __('No further detail was returned.')
 
   return {
     title: stripTags(title),

@@ -16,8 +16,8 @@
   <div v-if="!name" class="mx-auto w-full max-w-[940px] px-3 py-8 sm:px-5">
     <EmptyState
       icon="lucide-users"
-      title="No workspace chosen"
-      description="Open one from the Tenants screen, or name it in the address."
+      :title="__('No workspace chosen')"
+      :description="__('Open one from the Tenants screen, or name it in the address.')"
     />
   </div>
 
@@ -31,31 +31,31 @@
       <h2 class="truncate text-lg-semibold text-ink-gray-9">
         {{ tenant?.tenant_name || name }}
       </h2>
-      <p class="truncate text-p-sm text-ink-gray-5">{{ tenant?.site_name || 'No site yet' }}</p>
+      <p class="truncate text-p-sm text-ink-gray-5">{{ tenant?.site_name || __('No site yet') }}</p>
     </div>
 
     <div class="flex shrink-0 items-center gap-2">
-      <Button label="Sign in" icon-left="lucide-key-round" @click="showSupport = true" />
-      <Button v-if="tenant?.status === 'Active'" label="Suspend" @click="act('suspend')" />
+      <Button :label="__('Sign in')" icon-left="lucide-key-round" @click="showSupport = true" />
+      <Button v-if="tenant?.status === 'Active'" :label="__('Suspend')" @click="act('suspend')" />
       <Button
         v-else-if="tenant?.status === 'Suspended'"
         variant="solid"
-        label="Resume"
+        :label="__('Resume')"
         @click="act('resume')"
       />
       <Button
         v-else-if="tenant?.status === 'Failed'"
         variant="solid"
-        label="Retry provisioning"
+        :label="__('Retry provisioning')"
         @click="act('provision')"
       />
     </div>
   </div>
 
   <div class="mx-auto w-full max-w-[940px] px-3 pb-10 sm:px-5">
-    <Alert v-if="tenant.status === 'Failed'" theme="red" title="Provisioning failed" class="my-5">
+    <Alert v-if="tenant.status === 'Failed'" theme="red" :title="__('Provisioning failed')" class="my-5">
       <template #description>
-        {{ tenant.suspended_reason || 'See the provisioning job for the reason.' }}
+        {{ tenant.suspended_reason || __('See the provisioning job for the reason.') }}
       </template>
     </Alert>
 
@@ -67,14 +67,14 @@
     -->
     <Tabs v-model="tab" class="mt-5">
       <TabList variant="underline">
-        <TabTrigger value="record" label="Record" icon-left="lucide-file-text" />
-        <TabTrigger value="site" label="Site" icon-left="lucide-server" />
-        <TabTrigger value="domains" label="Domains" icon-left="lucide-globe" />
-        <TabTrigger value="backups" label="Backups" icon-left="lucide-database" />
-        <TabTrigger value="lifecycle" label="Lifecycle" icon-left="lucide-clock" />
-        <TabTrigger value="apps" label="Apps" icon-left="lucide-layout-grid" />
-        <TabTrigger value="billing" label="Billing" icon-left="lucide-credit-card" />
-        <TabTrigger value="activity" label="Activity" icon-left="lucide-activity" />
+        <TabTrigger value="record" :label="__('Record')" icon-left="lucide-file-text" />
+        <TabTrigger value="site" :label="__('Site')" icon-left="lucide-server" />
+        <TabTrigger value="domains" :label="__('Domains')" icon-left="lucide-globe" />
+        <TabTrigger value="backups" :label="__('Backups')" icon-left="lucide-database" />
+        <TabTrigger value="lifecycle" :label="__('Lifecycle')" icon-left="lucide-clock" />
+        <TabTrigger value="apps" :label="__('Apps')" icon-left="lucide-layout-grid" />
+        <TabTrigger value="billing" :label="__('Billing')" icon-left="lucide-credit-card" />
+        <TabTrigger value="activity" :label="__('Activity')" icon-left="lucide-activity" />
       </TabList>
 
       <TabPanel value="record">
@@ -93,7 +93,7 @@
       </TabPanel>
 
       <TabPanel value="site">
-        <PressPanel :state="site" empty="This tenant has no site yet." class="mt-4" @retry="site.reload()">
+        <PressPanel :state="site" :empty="__('This workspace has no site yet.')" class="mt-4" @retry="site.reload()">
           <List :columns="fieldTracks" divider="full">
             <ListRows :items="siteRows" row-key="label" v-slot="{ item: row, value }">
               <ListRow :value="value" class="py-3">
@@ -104,7 +104,7 @@
                   <Badge
                     v-if="row.mismatch"
                     theme="amber"
-                    :label="`${row.value} — we hold ${row.ours}`"
+                    :label="__('{0} — we hold {1}', [row.value, row.ours])"
                     variant="subtle"
                   />
                   <span v-else class="truncate text-p-sm text-ink-gray-8">{{ row.value }}</span>
@@ -116,7 +116,7 @@
       </TabPanel>
 
       <TabPanel value="domains">
-        <PressPanel :state="domains" empty="No domains on this site yet." class="mt-4" @retry="domains.reload()">
+        <PressPanel :state="domains" :empty="__('No domains on this site yet.')" class="mt-4" @retry="domains.reload()">
           <List
             :columns="domainTracks"
             :row-height="52"
@@ -132,7 +132,7 @@
               <ListRow :value="value">
                 <ListCell>
                   <span class="truncate text-base text-ink-gray-8">{{ row.domain }}</span>
-                  <Badge v-if="row.primary" class="ml-2" theme="blue" label="Primary" variant="subtle" />
+                  <Badge v-if="row.primary" class="ms-2" theme="blue" :label="__('Primary')" variant="subtle" />
                 </ListCell>
                 <ListCell v-if="domainShows('certificate')">
                   <Badge
@@ -148,7 +148,7 @@
                     v-if="!row.primary"
                     variant="ghost"
                     :icon="domainShows('certificate') ? undefined : 'lucide-star'"
-                    label="Make primary"
+                    :label="__('Make primary')"
                     :loading="busy === row.domain"
                     @click="makePrimary(row.domain)"
                   />
@@ -156,8 +156,8 @@
                     v-if="!row.primary"
                     variant="ghost"
                     icon="lucide-trash-2"
-                    :label="`Remove ${row.domain}`"
-                    :tooltip="`Remove ${row.domain}`"
+                    :label="__('Remove {0}', [row.domain])"
+                    :tooltip="__('Remove {0}', [row.domain])"
                     :loading="busy === row.domain"
                     @click="dropDomain(row.domain)"
                   />
@@ -171,13 +171,12 @@
       <TabPanel value="backups">
         <div class="mt-4 flex items-center justify-between gap-4">
           <p class="text-p-sm text-ink-gray-6">
-            Frappe Cloud runs the schedule; this is a window onto it. Take one
-            before anything irreversible.
+            {{ __('Frappe Cloud runs the schedule; this is a window onto it. Take one before anything irreversible.') }}
           </p>
-          <Button class="shrink-0" label="Back up now" :loading="backingUp" @click="backup" />
+          <Button class="shrink-0" :label="__('Back up now')" :loading="backingUp" @click="backup" />
         </div>
 
-        <PressPanel :state="backups" empty="No backups yet." class="mt-3" @retry="backups.reload()">
+        <PressPanel :state="backups" :empty="__('No backups yet.')" class="mt-3" @retry="backups.reload()">
           <List
             :columns="backupTracks"
             :row-height="52"
@@ -197,11 +196,11 @@
                        there is not, rather than something a phone never sees. -->
                   <span
                     v-if="!backupShows('size')"
-                    class="ml-2 shrink-0 text-p-sm tabular-nums text-ink-gray-5"
+                    class="ms-2 shrink-0 text-p-sm tabular-nums text-ink-gray-5"
                   >
                     {{ size(row) }}
                   </span>
-                  <Badge v-if="row.with_files" class="ml-2" theme="gray" label="With files" variant="subtle" />
+                  <Badge v-if="row.with_files" class="ms-2" theme="gray" :label="__('With files')" variant="subtle" />
                 </ListCell>
                 <ListCell v-if="backupShows('size')">
                   <span class="text-p-sm tabular-nums text-ink-gray-6">{{ size(row) }}</span>
@@ -216,7 +215,7 @@
                     v-if="row.offsite"
                     variant="ghost"
                     :icon="backupShows('size') ? undefined : 'lucide-download'"
-                    label="Download"
+                    :label="__('Download')"
                     :loading="busy === row.name"
                     @click="download(row)"
                   />
@@ -245,7 +244,7 @@
       <TabPanel value="activity">
         <PressPanel
           :state="jobs"
-          empty="Frappe Cloud has done nothing to this site yet."
+          :empty="__('Frappe Cloud has done nothing to this site yet.')"
           class="mt-4"
           @retry="jobs.reload()"
         >
@@ -282,9 +281,9 @@
         </PressPanel>
 
         <section v-if="logins.length" class="mt-8">
-          <h3 class="mb-1 text-base-medium text-ink-gray-8">Support sign-ins</h3>
+          <h3 class="mb-1 text-base-medium text-ink-gray-8">{{ __('Support sign-ins') }}</h3>
           <p class="mb-3 text-p-sm text-ink-gray-5">
-            Every time one of us entered this workspace, and why.
+            {{ __('Every time one of us entered this workspace, and why.') }}
           </p>
           <List
             :columns="loginTracks"
@@ -307,9 +306,9 @@
                        does not read as an entry. -->
                   <Badge
                     v-if="!row.succeeded"
-                    class="ml-2"
+                    class="ms-2"
                     theme="gray"
-                    label="Did not sign in"
+                    :label="__('Did not sign in')"
                     variant="subtle"
                   />
                 </ListCell>
@@ -328,32 +327,30 @@
   </div>
   </template>
 
-  <Dialog v-model="showSupport" title="Sign in to this workspace" size="lg">
+  <Dialog v-model="showSupport" :title="__('Sign in to this workspace')" size="lg">
     <div v-focus class="flex flex-col gap-4">
-      <Alert theme="amber" title="This is someone else's data">
+      <Alert theme="amber" :title="__('This data is not ours')">
         <template #description>
-          You will be signed in as an administrator of
-          {{ tenant?.tenant_name || name }}. The reason below is recorded against
-          your name and shown on this page.
+          {{ __('You will be signed in as an administrator of {0}. The reason below is recorded against your name and shown on this page.', [tenant?.tenant_name || name]) }}
         </template>
       </Alert>
       <FormControl
         v-model="reason"
         type="textarea"
-        label="Why"
-        placeholder="Investigating ticket #482 — invoices not sending"
+        :label="__('Why')"
+        :placeholder="__('Investigating ticket #482 — invoices not sending')"
       />
       <ErrorMessage v-if="supportError" :message="supportError" />
     </div>
     <template #actions>
       <Button
         variant="solid"
-        label="Sign in"
+        :label="__('Sign in')"
         :loading="signingIn"
         :disabled="!reason.trim()"
         @click="signIn"
       />
-      <Button label="Cancel" @click="showSupport = false" />
+      <Button :label="__('Cancel')" @click="showSupport = false" />
     </template>
   </Dialog>
 </template>
@@ -375,6 +372,7 @@ import { useDocument } from '@/lib/runtime/resource'
 import { useListColumns } from '@/lib/screen/list'
 import { admin } from './admin'
 import { usePress } from './press'
+import { __ } from '@/lib/runtime/translate'
 
 // Fixed tracks sized for a desktop leave a phone about 20px for the column the
 // row exists to name. Each list below says which columns a phone can spare;
@@ -390,31 +388,31 @@ const { columns: fieldTracks } =
 
 const { visible: domainCols, columns: domainTracks, shows: domainShows } =
   useListColumns([
-  { key: 'domain', header: 'Domain', track: 'minmax(0,1fr)' },
-  { key: 'certificate', header: 'Certificate', track: '7rem', mobile: false },
+  { key: 'domain', header: __('Domain'), track: 'minmax(0,1fr)' },
+  { key: 'certificate', header: __('Certificate'), track: '7rem', mobile: false },
   { key: 'actions', header: '', track: '11rem', mobile: '5rem' },
 ])
 
 const { visible: backupCols, columns: backupTracks, shows: backupShows } =
   useListColumns([
-  { key: 'taken', header: 'Taken', track: 'minmax(0,1fr)' },
-  { key: 'size', header: 'Size', track: '7rem', mobile: false },
-  { key: 'state', header: 'State', track: '6rem', mobile: '5.5rem' },
+  { key: 'taken', header: __('Taken'), track: 'minmax(0,1fr)' },
+  { key: 'size', header: __('Size'), track: '7rem', mobile: false },
+  { key: 'state', header: __('State'), track: '6rem', mobile: '5.5rem' },
   { key: 'download', header: '', track: '7rem', mobile: '2.5rem' },
 ])
 
 const { visible: jobCols, columns: jobTracks, shows: jobShows } =
   useListColumns([
-  { key: 'job', header: 'Job', track: 'minmax(0,1fr)' },
-  { key: 'state', header: 'State', track: '8rem', mobile: '6rem' },
-  { key: 'when', header: 'When', track: '11rem', mobile: false },
+  { key: 'job', header: __('Job'), track: 'minmax(0,1fr)' },
+  { key: 'state', header: __('State'), track: '8rem', mobile: '6rem' },
+  { key: 'when', header: __('When'), track: '11rem', mobile: false },
 ])
 
 const { columns: loginTracks } =
   useListColumns([
-  { key: 'operator', header: 'Operator', track: '14rem', mobile: 'minmax(0,1fr)' },
-  { key: 'reason', header: 'Reason', track: 'minmax(0,1fr)', mobile: false },
-  { key: 'when', header: 'When', track: '11rem', mobile: '6rem' },
+  { key: 'operator', header: __('Operator'), track: '14rem', mobile: 'minmax(0,1fr)' },
+  { key: 'reason', header: __('Reason'), track: 'minmax(0,1fr)', mobile: false },
+  { key: 'when', header: __('When'), track: '11rem', mobile: '6rem' },
 ])
 
 defineProps({
@@ -469,13 +467,13 @@ const rows = computed(() => {
   const t = tenant.value
   if (!t) return []
   return [
-    { label: 'Status', value: t.status },
-    { label: 'Site', value: t.site_name || '—' },
-    { label: 'Custom domain', value: t.primary_domain || '—' },
-    { label: 'Plan', value: t.plan || '—' },
-    { label: 'Shard', value: t.shard || '—' },
-    { label: 'Owner', value: t.owner_email },
-    { label: 'Users', value: `${t.user_count || 0} of ${t.max_users || '—'}` },
+    { label: __('Status'), value: t.status },
+    { label: __('Site'), value: t.site_name || '—' },
+    { label: __('Custom domain'), value: t.primary_domain || '—' },
+    { label: __('Plan'), value: t.plan || '—' },
+    { label: __('Shard'), value: t.shard || '—' },
+    { label: __('Owner'), value: t.owner_email },
+    { label: __('Users'), value: __('{0} of {1}', [t.user_count || 0, t.max_users || '—']) },
   ]
 })
 
@@ -487,18 +485,18 @@ const siteRows = computed(() => {
   const ours = s.control_plane || {}
   const differs = (theirs, mine) => Boolean(theirs && mine && theirs !== mine)
   return [
-    { label: 'Site', value: s.site },
+    { label: __('Site'), value: s.site },
     {
-      label: 'Status',
+      label: __('Status'),
       value: s.status || '—',
       ours: ours.status,
       mismatch: differs(s.status, ours.status),
     },
-    { label: 'Bench group', value: s.bench || '—' },
-    { label: 'Server', value: s.server || '—' },
-    { label: 'Region', value: s.region || '—' },
+    { label: __('Bench group'), value: s.bench || '—' },
+    { label: __('Server'), value: s.server || '—' },
+    { label: __('Region'), value: s.region || '—' },
     {
-      label: 'Frappe version',
+      label: __('Frappe version'),
       value: s.version || '—',
       ours: s.latest_version,
       // Not a fault, but worth seeing: a site behind the newest version is the
@@ -506,14 +504,17 @@ const siteRows = computed(() => {
       mismatch: differs(s.version, s.latest_version),
     },
     {
-      label: 'Primary host',
+      label: __('Primary host'),
       value: s.host_name || '—',
       ours: ours.primary_domain,
       mismatch: differs(s.host_name, ours.primary_domain),
     },
-    { label: 'Setup wizard', value: s.setup_wizard_complete ? 'Complete' : 'Not finished' },
-    { label: 'Created', value: when(s.created_on) },
-    { label: 'Last deployed', value: when(s.last_deployed) },
+    {
+      label: __('Setup wizard'),
+      value: s.setup_wizard_complete ? __('Complete') : __('Not finished'),
+    },
+    { label: __('Created'), value: when(s.created_on) },
+    { label: __('Last deployed'), value: when(s.last_deployed) },
   ]
 })
 

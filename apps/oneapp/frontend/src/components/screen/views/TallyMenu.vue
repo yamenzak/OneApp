@@ -15,8 +15,8 @@
       <Button
         :icon="compact ? 'lucide-chart-bar-decreasing' : undefined"
         :icon-left="compact ? undefined : 'lucide-chart-bar-decreasing'"
-        label="How many"
-        tooltip="How many of each"
+        :label="__('How many')"
+        :tooltip="__('How many of each')"
         variant="ghost"
       />
     </template>
@@ -26,14 +26,14 @@
         <Select
           v-model="field"
           :options="fields"
-          label="Count by"
-          placeholder="Which field"
+          :label="__('Count by')"
+          :placeholder="__('Which field')"
         />
 
-        <LoadingText v-if="loading" text="Counting" />
+        <LoadingText v-if="loading" :text="__('Counting')" />
 
         <p v-else-if="field && !values.length" class="px-1 py-2 text-p-sm text-ink-gray-5">
-          Nothing to count — every record here leaves this field empty.
+          {{ __('Nothing to count — every record here leaves this field empty.') }}
         </p>
 
         <!-- The values, largest first. A tally is read from the top. -->
@@ -55,7 +55,7 @@
         </div>
 
         <p v-if="more" class="px-2 pt-1 text-p-xs text-ink-gray-5">
-          The {{ values.length }} most common. Use Filter for the rest.
+          {{ __('The {0} most common. Use Filter for the rest.', [values.length]) }}
         </p>
       </div>
     </template>
@@ -67,6 +67,7 @@ import { computed, ref, watch } from 'vue'
 import { Button, LoadingText, Popover, Select } from '@/ui'
 import { useIsMobile } from '@/lib/shell/breakpoint'
 import { workspace } from '../../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /** Everything the screen could show — the same list the picker offers. */
@@ -108,8 +109,8 @@ const fields = computed(() =>
 
 /** An empty value is a fact about the records, so it is drawn as one. */
 const said = (value) => {
-  if (value === null || value === undefined || value === '') return 'Not set'
-  if (value === 1 || value === 0) return value ? 'Yes' : 'No'
+  if (value === null || value === undefined || value === '') return __('Not set')
+  if (value === 1 || value === 0) return value ? __('Yes') : __('No')
   return String(value)
 }
 

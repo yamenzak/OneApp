@@ -17,8 +17,8 @@
     :loading="loading"
     :filterable="false"
     :disabled="disabled"
-    placeholder="Tag this"
-    empty-text="Type to make a tag"
+    :placeholder="__('Tag this')"
+    :empty-text="__('Type to make a tag')"
     align="end"
     @update:model-value="write"
     @update:open="opened"
@@ -31,7 +31,7 @@
         variant="ghost"
         data-slot="tags"
         :disabled="disabled"
-        :aria-label="tags.length ? `Tags: ${tags.join(', ')}` : 'Add a tag'"
+        :aria-label="tags.length ? __('Tags: {0}', [tags.join(', ')]) : __('Add a tag')"
       >
         <span class="flex min-w-0 items-center gap-1">
           <Badge
@@ -64,6 +64,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { Badge, Button, Icon, MultiSelect } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 import { workspace } from '../../../lib/workspace'
 import { notifyError } from '@/lib/runtime/notify'
 
@@ -111,7 +112,7 @@ const options = computed(() => {
 
   return [
     ...held,
-    ...(isNew ? [{ label: `Make the tag “${typed}”`, value: typed }] : []),
+    ...(isNew ? [{ label: __('Make the tag “{0}”', [typed]), value: typed }] : []),
     ...rest,
   ]
 })

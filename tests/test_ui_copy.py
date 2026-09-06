@@ -7,10 +7,12 @@ than about anything the reader asked for. They leak the same way every time:
 somebody writes the sentence while holding the code in their head, and the
 sentence comes out true and useless.
 
-So this reads every string the browser can show, in both SPAs and in the
-messages the server throws back, and refuses the vocabulary. It is a spelling
-test, not a style test: it cannot tell whether a sentence is good, only whether
-it is about the wrong thing.
+So this refuses the vocabulary, over every string the browser can show in
+either SPA and every message the server throws back. Which strings those are is
+`copy_reader`'s question and not a second answer here — the rule is about the
+English sentence, so it applies to one inside `__()` exactly as it did the day
+before it was wrapped. It is a spelling test, not a style test: it cannot tell
+whether a sentence is good, only whether it is about the wrong thing.
 
 The operator console is exempt from the *vendor* nouns and nothing else.
 Frappe Cloud, bench groups and Stripe subscriptions are what an operator
@@ -18,21 +20,10 @@ actually works with — the names are on the invoices — and renaming them ther
 would be the same mistake in the other direction.
 """
 
-import pathlib
 import re
 
 import pytest
-from vendored import is_vendored
-
-ROOT = pathlib.Path(__file__).resolve().parents[1]
-
-# Where a customer reads. Everything under `screens/ops/` is the operator
-# console; everything else in these trees is a workspace member's.
-SPAS = ("apps/oneapp/frontend/src", "apps/oneapp_control/frontend/src")
-
-# The attributes and calls that put a string in front of somebody.
-ATTRS = ("label", "title", "description", "placeholder", "tooltip", "message",
-         "successMessage", "empty", "header", "subtitle", "text")
+from copy_reader import thrown, visible
 
 # What a sentence must not be about. Each maps to the thing to say instead —
 # the failure prints it, because "don't say doctype" without "say record" is a
@@ -72,43 +63,6 @@ def for_an_operator(where: str) -> bool:
 # is a supplier we buy from and Stripe takes the payments; an operator's screen
 # names them because that is where they will go to look.
 VENDOR = ("frappe", "stripe", "bench", "site plan", "press")
-
-
-def strip_comments(text: str) -> str:
-	text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
-	text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-	return re.sub(r"^\s*//.*$", "", text, flags=re.M)
-
-
-def visible() -> list[tuple[str, str]]:
-	"""Every string the reader can see, as (where, what)."""
-	found = []
-	for spa in SPAS:
-		base = ROOT / spa
-		for path in sorted(base.rglob("*.vue")) + sorted(base.rglob("*.js")):
-			if is_vendored(path):
-				continue
-			raw = strip_comments(path.read_text())
-			where = f"{spa}/{path.relative_to(base)}"
-			for attr in ATTRS:
-				pattern = rf'(?<![\w:.-]){attr}\s*[=:]\s*["\']([^"\']{{3,}})["\']'
-				for m in re.finditer(pattern, raw):
-					found.append((where, m.group(1)))
-			for m in re.finditer(r">\s*([A-Z][^<>{}\n]{12,})\s*<", raw):
-				found.append((where, m.group(1).strip()))
-	return found
-
-
-def thrown() -> list[tuple[str, str]]:
-	"""Every message the server hands back to a browser."""
-	found = []
-	for path in sorted((ROOT / "apps").rglob("*.py")):
-		if "node_modules" in str(path):
-			continue
-		where = str(path.relative_to(ROOT))
-		for m in re.finditer(r'_\(\s*"([^"]{8,})"', path.read_text()):
-			found.append((where, m.group(1)))
-	return found
 
 
 def test_the_reader_found_the_copy():

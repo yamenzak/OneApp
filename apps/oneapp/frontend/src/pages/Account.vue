@@ -1,7 +1,7 @@
 <template>
   <PageHeader>
     <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
-      <Breadcrumbs :items="[{ label: 'Account', route: { name: 'Account' } }]" />
+      <Breadcrumbs :items="[{ label: __('Account'), route: { name: 'Account' } }]" />
     </nav>
   </PageHeader>
 
@@ -24,29 +24,29 @@
         </div>
       </div>
 
-      <h2 class="mt-8 text-base-medium text-ink-gray-8">Usage</h2>
+      <h2 class="mt-8 text-base-medium text-ink-gray-8">{{ __('Usage') }}</h2>
       <div class="mt-3 flex flex-col gap-5 rounded-6 border border-outline-gray-2 bg-surface-base p-4">
         <UsageBar
-          label="Files"
+          :label="__('Files')"
           :usage="quota.storage"
-          exceeded-hint="Uploads are paused. Delete some files, or buy more storage."
+          :exceeded-hint="__('Uploads are paused. Delete some files, or buy more storage.')"
         />
         <UsageBar
-          label="Database"
+          :label="__('Records')"
           :usage="quota.database"
-          exceeded-hint="New records are paused. Your data is intact — delete something, or upgrade."
+          :exceeded-hint="__('New records are paused. Nothing is lost — delete something, or upgrade.')"
         />
-        <UsageBar label="Background jobs" :usage="jobUsage" format="count" />
+        <UsageBar :label="__('Background jobs')" :usage="jobUsage" format="count" />
       </div>
 
-      <h2 class="mt-8 text-base-medium text-ink-gray-8">Preferences</h2>
+      <h2 class="mt-8 text-base-medium text-ink-gray-8">{{ __('Preferences') }}</h2>
       <div class="mt-3 flex flex-col gap-5 rounded-6 border border-outline-gray-2 bg-surface-base p-4">
         <ThemeSetting />
         <NotificationSettings />
       </div>
 
       <p class="mt-4 text-p-sm text-ink-gray-5">
-        Billing, storage add-ons and your plan are managed in your {{ TENANT_APP }} account.
+        {{ __('Billing, storage add-ons and your plan are in your {0} account.', [TENANT_APP]) }}
       </p>
     </template>
   </div>
@@ -59,15 +59,16 @@ import UsageBar from '../components/UsageBar.vue'
 import ThemeSetting from '../components/ThemeSetting.vue'
 import NotificationSettings from '../components/notifications/NotificationSettings.vue'
 import { TENANT_APP } from '@/lib/runtime/brand'
+import { __ } from '@/lib/runtime/translate'
 import { session } from '@/lib/shell/session'
 
 const quota = computed(() => session.quota || {})
 
 const rows = computed(() => [
-  { label: 'Workspace', value: session.tenant?.name || '—' },
-  { label: 'Plan', value: session.tenant?.plan || '—' },
-  { label: 'Signed in as', value: session.user?.name || '—' },
-  { label: 'Credits', value: Math.round(session.credits?.balance ?? 0) },
+  { label: __('Workspace'), value: session.tenant?.name || '—' },
+  { label: __('Plan'), value: session.tenant?.plan || '—' },
+  { label: __('Signed in as'), value: session.user?.name || '—' },
+  { label: __('Credits'), value: Math.round(session.credits?.balance ?? 0) },
 ])
 
 // Shaped like the other meters so one component renders all three. Jobs have no

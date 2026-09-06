@@ -22,11 +22,11 @@
   >
     <Icon name="lucide-table-2" class="size-3.5 shrink-0" />
     <span>
-      Filled from <span class="text-ink-gray-7">{{ feed.sheet_title || feed.sheet }}</span>
+      {{ __('Filled from {0}', [feed.sheet_title || feed.sheet]) }}
       · {{ feed.label }}, {{ when }}
     </span>
 
-    <Badge v-if="locked" theme="gray" variant="subtle" size="sm" label="Locked" />
+    <Badge v-if="locked" theme="gray" variant="subtle" size="sm" :label="__('Locked')" />
 
     <!-- The whole of "following": you are told, and the button that acts on it
          is the next thing along. -->
@@ -35,14 +35,14 @@
       theme="amber"
       variant="subtle"
       size="sm"
-      label="The sheet has changed since"
+      :label="__('The sheet has changed since')"
     />
     <Badge
       v-else-if="feed.sheet_gone"
       theme="gray"
       variant="subtle"
       size="sm"
-      label="That sheet is gone"
+      :label="__('That sheet is gone')"
     />
 
     <!--
@@ -60,7 +60,7 @@
       size="sm"
       variant="subtle"
       icon-left="lucide-refresh-cw"
-      label="Fill again"
+      :label="__('Fill again')"
       :loading="filling"
       @click="fillAgain"
     />
@@ -73,13 +73,17 @@
       size="sm"
       variant="ghost"
       :icon-left="locked ? 'lucide-unlock' : 'lucide-lock'"
-      :label="locked ? 'Follow the sheet again' : 'Lock these rows'"
+      :label="locked ? __('Follow the sheet again') : __('Lock these rows')"
       :loading="busy"
       @click="toggle"
     />
 
     <span v-if="feed.skipped" class="basis-full text-ink-amber-4">
-      {{ feed.skipped }} had no matching field and {{ many ? 'were' : 'was' }} left out.
+      {{
+        many
+          ? __('{0} had no matching field and were left out.', [feed.skipped])
+          : __('{0} had no matching field and was left out.', [feed.skipped])
+      }}
     </span>
   </div>
 </template>
@@ -89,6 +93,7 @@ import { computed, ref } from 'vue'
 import { Badge, Button, Icon, dayjsLocal } from '@/ui'
 
 import { workspace } from '../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   feed: { type: Object, required: true },
@@ -127,7 +132,7 @@ const many = computed(() => String(props.feed.skipped || '').includes(','))
 
 const when = computed(() => {
   const at = locked.value ? props.feed.locked_on : props.feed.pulled_on
-  return at ? dayjsLocal(at).fromNow() : 'just now'
+  return at ? dayjsLocal(at).fromNow() : __('just now')
 })
 
 async function toggle() {

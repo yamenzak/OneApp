@@ -42,7 +42,7 @@
                 :class="active ? 'text-ink-gray-8' : 'text-ink-gray-5'"
               />
               <Badge
-                class="absolute -right-2.5 -top-1 scale-90"
+                class="absolute -end-2.5 -top-1 scale-90"
                 :theme="item.badge.theme"
                 :label="item.badge.label"
                 variant="subtle"
@@ -51,10 +51,10 @@
           </template>
         </MobileNavItem>
 
-        <MobileNavItem label="More" :active="showMenu" @click="showMenu = true">
+        <MobileNavItem :label="__('More')" :active="showMenu" @click="showMenu = true">
           <template #default="{ active }">
             <Avatar
-              :label="user.name || user.email || 'Account'"
+              :label="user.name || user.email || __('Account')"
               :image="user.avatar"
               size="md"
               :class="active ? 'ring-2 ring-outline-gray-4' : ''"
@@ -67,7 +67,7 @@
 
   <DesktopShell v-else :scroll="scroll">
     <template v-if="chrome && entries.length" #rail>
-      <Rail class="border-r border-outline-gray-1">
+      <Rail class="border-e border-outline-gray-1">
         <RailItem
           v-for="entry in entries"
           :key="entry.key"
@@ -98,7 +98,7 @@
        context, and a sheet gives it a touch target per row instead of a menu row. -->
   <!-- v-model:open, not v-model. BottomSheet's prop is `open`, so a bare
        v-model binds a `modelValue` it never reads and the sheet never opens. -->
-  <BottomSheet v-model:open="showMenu" title="Menu">
+  <BottomSheet v-model:open="showMenu" :title="__('Menu')">
     <div class="flex flex-col gap-4 p-3 pb-8">
       <!--
         The rail, on a phone. A desktop switches space in one click; a phone
@@ -184,7 +184,7 @@
         reads left to right and acts on the right is the shape a phone's
         settings list already has.
       -->
-      <div class="flex items-center justify-between gap-3 pl-2">
+      <div class="flex items-center justify-between gap-3 ps-2">
         <!-- The same `data-slot` the rail's own row carries: a phone reaches
              settings through this sheet and a desktop through the rail, and
              one handle over both is what keeps the two from drifting. -->
@@ -197,22 +197,22 @@
           :data-slot="settingsItem.key ? `${settingsItem.key}-link` : undefined"
           @click="run(settingsItem)"
         />
-        <span v-else class="text-base text-ink-gray-7">Appearance</span>
+        <span v-else class="text-base text-ink-gray-7">{{ __('Appearance') }}</span>
         <!-- Icons alone: the word beside them already says what they are for,
              and three labelled tabs is most of a phone's width. -->
         <TabButtons v-model="scheme" :options="iconOptions" />
       </div>
 
-      <div class="flex items-center justify-between gap-3 pl-2">
+      <div class="flex items-center justify-between gap-3 ps-2">
         <div class="flex min-w-0 items-center gap-2.5">
           <Avatar
-            :label="user.name || user.email || 'Account'"
+            :label="user.name || user.email || __('Account')"
             :image="user.avatar"
             size="lg"
           />
           <div class="min-w-0">
             <p class="truncate text-base text-ink-gray-8">
-              {{ user.name || user.email || 'Account' }}
+              {{ user.name || user.email || __('Account') }}
             </p>
             <p v-if="user.subtitle || user.email" class="truncate text-p-sm text-ink-gray-5">
               {{ user.subtitle || user.email }}
@@ -223,8 +223,8 @@
           icon="lucide-log-out"
           variant="ghost"
           theme="red"
-          label="Log out"
-          tooltip="Log out"
+          :label="__('Log out')"
+          :tooltip="__('Log out')"
           @click="signOut"
         />
       </div>
@@ -255,6 +255,7 @@ import {
 import { useAppearance } from '@/lib/shell/appearance'
 import { useIsMobile } from '@/lib/shell/breakpoint'
 import { signOut } from '@/lib/shell/user'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /**
@@ -370,7 +371,7 @@ const entryOptions = computed(() => {
       hideLabel: true,
       options: [
         {
-          label: `All ${props.entriesLabel.toLowerCase()}`,
+          label: __('All {0}', [props.entriesLabel.toLowerCase()]),
           icon: 'lucide-layout-grid',
           onClick: () => {
             showMenu.value = false

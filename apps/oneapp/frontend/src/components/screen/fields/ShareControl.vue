@@ -22,7 +22,7 @@
         <AvatarStack v-if="people.length" :people="people" />
         <Badge
           v-else-if="everyone"
-          label="Everyone"
+          :label="__('Everyone')"
           theme="blue"
           variant="subtle"
         />
@@ -30,12 +30,12 @@
       </span>
     </Button>
 
-    <Dialog v-model="showing" title="Share this record">
+    <Dialog v-model="showing" :title="__('Share this record')">
       <SharePanel
         :people="people"
         :everyone="everyone"
         :can-share="canShare"
-        empty-text="Only people whose role already reaches this record can see it."
+        :empty-text="__('Only people whose role already reaches this record can see it.')"
         :offer="offer"
         :save="save"
         :remove="remove"
@@ -51,6 +51,7 @@ import { Badge, Button, Dialog, Icon } from '@/ui'
 import AvatarStack from './AvatarStack.vue'
 import SharePanel from '../../SharePanel.vue'
 import { workspace } from '../../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -66,11 +67,11 @@ const emit = defineEmits(['shared'])
 const showing = ref(false)
 
 const summary = computed(() => {
-  if (props.everyone) return 'Shared with everyone on this workspace'
+  if (props.everyone) return __('Shared with everyone on this workspace')
   if (props.people.length) {
-    return `Shared with ${props.people.map((one) => one.label).join(', ')}`
+    return __('Shared with {0}', [props.people.map((one) => one.label).join(', ')])
   }
-  return 'Share this record'
+  return __('Share this record')
 })
 
 const open = () => {

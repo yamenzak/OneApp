@@ -9,31 +9,35 @@
     in the HTML anyway. Offering it directly is one control instead of two that
     overwrite each other.
   -->
-  <Dialog v-model="showing" :title="name ? `Letter head: ${name}` : 'New letter head'" size="2xl">
+  <Dialog
+    v-model="showing"
+    :title="name ? __('Letter head: {0}', [name]) : __('New letter head')"
+    size="2xl"
+  >
     <div class="flex flex-col gap-3">
-      <FormControl v-model="label" label="Name" />
+      <FormControl v-model="label" :label="__('Name')" />
 
       <FormControl
         v-model="values.content"
         type="textarea"
-        label="Header"
+        :label="__('Header')"
         :rows="6"
-        description="HTML, rendered as a template with the document in scope."
+        :description="__('HTML, rendered as a template with the document in scope.')"
       />
 
       <FormControl
         v-model="values.footer"
         type="textarea"
-        label="Footer"
+        :label="__('Footer')"
         :rows="4"
       />
 
       <div class="flex flex-wrap gap-2">
-        <Select v-model="values.align" class="w-40" label="Align" :options="ALIGNMENTS" />
+        <Select v-model="values.align" class="w-40" :label="__('Align')" :options="ALIGNMENTS" />
         <Select
           v-model="values.footer_align"
           class="w-40"
-          label="Footer align"
+          :label="__('Footer align')"
           :options="ALIGNMENTS"
         />
       </div>
@@ -47,8 +51,8 @@
       -->
       <FormControl
         v-model="values.image"
-        label="Image"
-        description="A file path or URL. Referenced from the header above, or used on its own."
+        :label="__('Image')"
+        :description="__('A file path or URL. Referenced from the header above, or used on its own.')"
       />
 
       <div class="flex flex-wrap gap-2">
@@ -56,19 +60,19 @@
           v-model="values.image_height"
           type="number"
           class="w-40"
-          label="Image height (px)"
+          :label="__('Image height (px)')"
         />
         <FormControl
           v-model="values.image_width"
           type="number"
           class="w-40"
-          label="Image width (px)"
+          :label="__('Image width (px)')"
         />
       </div>
 
       <div class="flex flex-wrap gap-4">
-        <Switch v-model="values.default" label="Use this one by default" />
-        <Switch v-model="values.disabled" label="Retired" />
+        <Switch v-model="values.default" :label="__('Use this one by default')" />
+        <Switch v-model="values.disabled" :label="__('Retired')" />
       </div>
 
       <ErrorMessage v-if="error" :message="error" />
@@ -77,7 +81,7 @@
     <template #actions>
       <Button
         variant="solid"
-        label="Save"
+        :label="__('Save')"
         :loading="saving"
         :disabled="!label.trim()"
         @click="save"
@@ -92,6 +96,7 @@ import { Button, Dialog, ErrorMessage, FormControl, Select, Switch } from '@/ui'
 import { workspace } from '../../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
 import { useSaving } from '@/composables/useSaving'
+import { __ } from '@/lib/runtime/translate'
 
 const ALIGNMENTS = ['Left', 'Center', 'Right'].map((one) => ({ label: one, value: one }))
 

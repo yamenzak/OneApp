@@ -12,14 +12,14 @@
     <EmptyState
       v-if="!field"
       icon="lucide-chart-no-axes-gantt"
-      title="No dates to draw"
-      description="This screen offers a Gantt but names no pair of dates for it."
+      :title="__('No dates to draw')"
+      :description="__('This screen shows a Gantt, but no fields on it say when a record starts and ends.')"
     />
     <EmptyState
       v-else-if="!bars.length"
       icon="lucide-chart-no-axes-gantt"
-      title="Nothing to plot"
-      description="None of these records has both a start and an end."
+      :title="__('Nothing to plot')"
+      :description="__('None of these records has both a start and an end.')"
     />
     <!-- `v-show` and not `v-else`: the chart draws into this element on mount,
          and an element `v-if` has removed is one the library holds a dead
@@ -33,6 +33,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Gantt from 'frappe-gantt'
 import 'frappe-gantt/style.css'
 import EmptyState from '../../EmptyState.vue'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /** The resolved screen: columns, title field, states, permissions. */

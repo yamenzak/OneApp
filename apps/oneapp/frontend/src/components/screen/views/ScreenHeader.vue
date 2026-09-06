@@ -10,7 +10,7 @@
 -->
 <template>
   <PageHeader>
-    <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
+    <nav data-slot="breadcrumb" :aria-label="__('Breadcrumb')" class="flex min-w-0 items-center">
       <Breadcrumbs :items="crumbs">
         <template #prefix="{ item }">
           <!--
@@ -18,10 +18,10 @@
             hard-codes `aria-hidden` after the attrs it forwards, which leaves a
             link whose only content is one with no accessible name.
           -->
-          <Tooltip v-if="item.home" :text="`${item.space} home`">
+          <Tooltip v-if="item.home" :text="__('{0} home', [item.space])">
             <span class="flex items-center">
               <Icon name="lucide-house" class="size-4 text-ink-gray-5" />
-              <span class="sr-only">{{ item.space }} home</span>
+              <span class="sr-only">{{ __('{0} home', [item.space]) }}</span>
             </span>
           </Tooltip>
         </template>
@@ -105,7 +105,7 @@
         v-if="spec?.can_create && !page"
         variant="solid"
         icon-left="lucide-plus"
-        label="New"
+        :label="__('New')"
         @click="emit('create')"
       />
     </div>
@@ -118,6 +118,7 @@ import RecordChip from '../record/RecordChip.vue'
 import StateBadge from '../fields/StateBadge.vue'
 import ViewSwitcher from './ViewSwitcher.vue'
 import { MERGE_TARGET } from '@/lib/screen/surfaces'
+import { __ } from '@/lib/runtime/translate'
 
 defineProps({
   // The screen, for what the switcher offers and whether New is allowed.

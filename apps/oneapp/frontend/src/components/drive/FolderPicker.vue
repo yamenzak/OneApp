@@ -8,7 +8,7 @@
   two folders called "Drawings" apart.
 -->
 <template>
-  <Dialog v-model="open" title="Move to a folder">
+  <Dialog v-model="open" :title="__('Move to a folder')">
     <template #default>
       <div class="flex flex-col gap-3 py-2">
         <p class="text-p-sm text-ink-gray-6">
@@ -18,7 +18,7 @@
         <FormControl
           v-model="query"
           type="text"
-          placeholder="Search folders"
+          :placeholder="__('Search folders')"
           @input="onSearch"
         />
 
@@ -34,7 +34,7 @@
             variant="ghost"
             class="!justify-start"
             icon-left="lucide-hard-drive"
-            label="All files"
+            :label="__('All files')"
             @click="choose('Home')"
           />
           <Button
@@ -45,7 +45,7 @@
             :label="one.file_name"
             @click="choose(one.name)"
           >
-            <span class="flex min-w-0 flex-col text-left">
+            <span class="flex min-w-0 flex-col text-start">
               <span class="truncate text-p-sm text-ink-gray-8">{{ one.file_name }}</span>
               <span class="truncate text-p-xs text-ink-gray-5">{{ trail(one) }}</span>
             </span>
@@ -55,8 +55,8 @@
             v-if="!folders.length"
             class="!py-6"
             icon="lucide-folder"
-            title="No folders"
-            description="Make one from the header, then move things into it."
+            :title="__('No folders')"
+            :description="__('Make one from the header, then move things into it.')"
           />
         </div>
 
@@ -71,6 +71,7 @@ import { computed, ref, watch } from 'vue'
 import { Button, Dialog, ErrorMessage, FormControl, Skeleton } from '@/ui'
 import EmptyState from '../EmptyState.vue'
 import { workspace } from '../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   // What is being moved, so the dialog can say so rather than making the
@@ -88,14 +89,14 @@ const error = ref('')
 
 const what = computed(() => {
   const count = props.moving.length
-  if (count === 1) return `Moving ${props.moving[0].file_name}.`
-  return `Moving ${count} things.`
+  if (count === 1) return __('Moving {0}.', [props.moving[0].file_name])
+  return __('Moving {0} things.', [count])
 })
 
 // `Home/Drawings` reads as "in All files"; a nested one keeps its parent.
 const trail = (one) => {
   const parent = (one.folder || 'Home').split('/').pop()
-  return parent === 'Home' ? 'In All files' : `In ${parent}`
+  return parent === 'Home' ? __('In All files') : __('In {0}', [parent])
 }
 
 async function load() {

@@ -48,7 +48,7 @@
         <DateRangePicker
           v-else-if="shape === 'range'"
           :model-value="rangeValue"
-          placeholder="Pick two dates"
+          :placeholder="__('Pick two dates')"
           @update:model-value="pickRange"
         />
 
@@ -63,7 +63,7 @@
           v-else-if="shape === 'multi'"
           type="text"
           :model-value="listValue.join(', ')"
-          placeholder="One, two, three"
+          :placeholder="__('One, two, three')"
           @update:model-value="pickList"
         />
 
@@ -98,8 +98,8 @@
     <Button
       icon="lucide-x"
       variant="ghost"
-      label="Remove this filter"
-      tooltip="Remove this filter"
+      :label="__('Remove this filter')"
+      :tooltip="__('Remove this filter')"
       class="mt-0.5 shrink-0"
       @click="emit('remove')"
     />
@@ -119,6 +119,7 @@ import {
   valueShape,
 } from '@/lib/screen/fields'
 import LinkPicker from '../fields/LinkPicker.vue'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   // [fieldname, operator, value] — Frappe's own filter shape, and the server's.
@@ -173,7 +174,7 @@ const plainType = computed(() => {
 })
 
 const placeholder = computed(() =>
-  ['like', 'not like'].includes(props.filter[1]) ? 'Contains…' : 'Value',
+  ['like', 'not like'].includes(props.filter[1]) ? __('Contains…') : __('Value'),
 )
 
 // What an empty value looks like for a shape, so switching operator does not

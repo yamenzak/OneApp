@@ -26,19 +26,19 @@
         :options="offered"
         :loading="looking"
         :filterable="false"
-        label="Who"
-        placeholder="Somebody on this workspace"
-        empty-text="Nobody by that name"
+        :label="__('Who')"
+        :placeholder="__('Somebody on this workspace')"
+        :empty-text="__('Nobody by that name')"
         @update:open="opened"
       >
         <template #item-prefix="{ item }">
           <Avatar :image="item.image" :label="item.label" shape="circle" size="sm" />
         </template>
       </Combobox>
-      <Select v-model="level" label="Access" :options="LEVELS" class="w-40" />
+      <Select v-model="level" :label="__('Access')" :options="levels" class="w-40" />
       <Button
         variant="solid"
-        label="Share"
+        :label="__('Share')"
         :loading="saving"
         :disabled="!picked"
         @click="add"
@@ -63,7 +63,7 @@
         </span>
         <Select
           :model-value="person.level"
-          :options="LEVELS"
+          :options="levels"
           :disabled="!canShare"
           class="w-36"
           @update:model-value="(value) => change(person, value)"
@@ -72,8 +72,8 @@
           v-if="canShare"
           variant="ghost"
           icon="lucide-x"
-          :label="`Stop sharing with ${person.label}`"
-          :tooltip="`Stop sharing with ${person.label}`"
+          :label="__('Stop sharing with {0}', [person.label])"
+          :tooltip="__('Stop sharing with {0}', [person.label])"
           @click="drop(person)"
         />
       </li>
@@ -83,7 +83,7 @@
       v-else-if="!everyone"
       class="!py-6"
       icon="lucide-share-2"
-      title="Not shared"
+      :title="__('Not shared')"
       :description="emptyText"
     />
 
@@ -93,8 +93,8 @@
       <Switch
         :model-value="!!everyone"
         :disabled="!canShare || saving"
-        label="Everyone on this workspace"
-        description="Anybody who can sign in here, whatever their role reaches."
+        :label="__('Everyone on this workspace')"
+        :description="__('Anybody who can sign in here, whatever their role reaches.')"
         @update:model-value="all"
       />
     </div>
@@ -102,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import {
   Avatar,
   Button,
@@ -113,13 +113,14 @@ import {
 } from '@/ui'
 import EmptyState from './EmptyState.vue'
 import { useSaving } from '@/composables/useSaving'
+import { __ } from '@/lib/runtime/translate'
 
 // In the order they give things away, which is the order to read them in.
-const LEVELS = [
-  { label: 'Can view', value: 'read' },
-  { label: 'Can edit', value: 'write' },
-  { label: 'Can share', value: 'share' },
-]
+const levels = computed(() => [
+  { label: __('Can view'), value: 'read' },
+  { label: __('Can edit'), value: 'write' },
+  { label: __('Can share'), value: 'share' },
+])
 
 const props = defineProps({
   people: { type: Array, default: () => [] },
@@ -129,7 +130,7 @@ const props = defineProps({
   // record and a file.
   emptyText: {
     type: String,
-    default: 'Only people whose role already reaches this can see it.',
+    default: () => __('Only people whose role already reaches this can see it.'),
   },
   /** async (query) => [{ value, label, image }] */
   offer: { type: Function, required: true },

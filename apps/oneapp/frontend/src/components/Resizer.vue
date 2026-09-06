@@ -61,7 +61,7 @@ const dragging = defineModel('dragging', { type: Boolean, default: false })
 // reads the string literals out of a `:class`, and `side === 'left' ? …`
 // offered it `left` as a class name.
 const IDLE = 'border-outline-gray-2 hover:border-outline-gray-3'
-const edge = computed(() => (props.side === 'left' ? 'border-l' : 'border-r'))
+const edge = computed(() => (props.side === 'left' ? 'border-s' : 'border-e'))
 
 const ceiling = computed(() => {
   const share = props.maxShare ? window.innerWidth * props.maxShare : Infinity

@@ -8,7 +8,7 @@
     <div class="ms-auto flex items-center gap-2">
       <Button
         v-if="hasMore"
-        label="Load more"
+        :label="__('Load more')"
         :loading="loading"
         @click="emit('more')"
       />
@@ -22,7 +22,7 @@
           size="sm"
           icon-right="lucide-chevron-down"
           :label="shown"
-          tooltip="How many rows to fetch"
+          :tooltip="__('How many rows to fetch')"
         />
       </Dropdown>
       <!--
@@ -36,8 +36,8 @@
         variant="ghost"
         size="sm"
         :loading="exporting"
-        label="Export as CSV"
-        tooltip="Export as CSV"
+        :label="__('Export as CSV')"
+        :tooltip="__('Export as CSV')"
         @click="emit('export')"
       />
 
@@ -62,6 +62,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Button, Dropdown } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 import { CARD_VIEW_TYPES } from '@/lib/screen/viewTypes'
 
 const props = defineProps({
@@ -85,15 +86,15 @@ const number = (value) => value.toLocaleString()
 // Named for what it opens: "Choose columns" over a board is a control that says
 // the wrong thing about itself.
 const settingsLabel = computed(() => {
-  if (props.viewType === 'board') return 'Board settings'
-  return CARD_VIEW_TYPES.includes(props.viewType) ? 'Card settings' : 'Choose columns'
+  if (props.viewType === 'board') return __('Board settings')
+  return CARD_VIEW_TYPES.includes(props.viewType) ? __('Card settings') : __('Choose columns')
 })
 
 // A tick beside the one in force: a menu of four numbers with no mark says
 // which are available and not which you are on.
 const options = computed(() =>
   props.sizes.map((size) => ({
-    label: `${number(size)} rows`,
+    label: __('{0} rows', [number(size)]),
     ...(size === props.pageLength ? { icon: 'lucide-check' } : {}),
     onClick: () => emit('page-length', size),
   })),
@@ -102,6 +103,6 @@ const options = computed(() =>
 const shown = computed(() =>
   props.total === null || props.total === undefined
     ? `${number(props.count)}`
-    : `${number(props.count)} of ${number(props.total)}`,
+    : __('{0} of {1}', [number(props.count), number(props.total)]),
 )
 </script>

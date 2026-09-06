@@ -19,14 +19,14 @@
   <aside
     v-if="state.showing && state.available"
     class="hidden w-96 shrink-0 flex-col border-s border-outline-gray-1 bg-surface-base sm:flex"
-    aria-label="Assistant"
+    :aria-label="__('Assistant')"
     data-slot="assistant-panel"
   >
     <div
       class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-gray-1 px-4 py-3"
     >
       <div class="min-w-0">
-        <p class="truncate text-p-base font-medium text-ink-gray-8">Assistant</p>
+        <p class="truncate text-p-base font-medium text-ink-gray-8">{{ __('Assistant') }}</p>
         <!-- What it is scoped to, in the header rather than only in the empty
              state: the empty state is gone the moment anybody asks anything. -->
         <p v-if="state.on?.label" class="truncate text-p-xs text-ink-gray-5">
@@ -36,13 +36,13 @@
 
       <div class="flex shrink-0 items-center gap-1">
         <Dropdown :options="menu">
-          <Button variant="ghost" icon="lucide-ellipsis" label="More" tooltip="More" />
+          <Button variant="ghost" icon="lucide-ellipsis" :label="__('More')" :tooltip="__('More')" />
         </Dropdown>
         <Button
           variant="ghost"
           icon="lucide-x"
-          label="Close the assistant"
-          tooltip="Close"
+          :label="__('Close the assistant')"
+          :tooltip="__('Close')"
           data-slot="assistant-close"
           @click="closeAssistant"
         />
@@ -60,6 +60,7 @@ import { Button, Dropdown } from '@/ui'
 import ChatPanel from './ChatPanel.vue'
 import { assistant as state, closeAssistant, loadAssistant } from '@/lib/shell/assistant'
 import { workspace } from '@/lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const router = useRouter()
 
@@ -72,12 +73,12 @@ const router = useRouter()
  */
 const menu = computed(() => [
   {
-    label: 'New chat',
+    label: __('New chat'),
     icon: 'plus',
     onClick: () => { state.session = '' },
   },
   {
-    label: 'Open as a page',
+    label: __('Open as a page'),
     icon: 'maximize-2',
     onClick: () => {
       closeAssistant()
@@ -89,7 +90,7 @@ const menu = computed(() => [
   },
   ...(state.session
     ? [{
-      label: 'Delete this conversation',
+      label: __('Delete this conversation'),
       icon: 'trash-2',
       onClick: async () => {
         await workspace.forgetChat(state.session)

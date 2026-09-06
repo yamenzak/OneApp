@@ -55,13 +55,13 @@
                 variant="ghost"
                 size="sm"
                 data-slot="column-menu"
-                :label="`Arrange ${column.label}`"
-                :tooltip="`Arrange ${column.label}`"
+                :label="__('Arrange {0}', [column.label])"
+                :tooltip="__('Arrange {0}', [column.label])"
               />
             </template>
             <template #default>
               <div class="flex w-56 flex-col gap-2 p-2">
-                <span class="px-1 text-p-xs text-ink-gray-5">Colour</span>
+                <span class="px-1 text-p-xs text-ink-gray-5">{{ __('Colour') }}</span>
                 <div class="flex flex-wrap gap-1 px-1">
                   <!--
                     A filled circle per colour. `Button` and not a bare swatch:
@@ -77,7 +77,7 @@
                     :icon="column.theme === one ? 'lucide-circle-check-big' : 'lucide-circle'"
                     :class="INK[one]"
                     :data-slot="`column-colour-${one}`"
-                    :label="`Colour ${column.label} ${one}`"
+                    :label="__('Colour {0} {1}', [column.label, one])"
                     :tooltip="one"
                     @click="paint(column, one)"
                   />
@@ -87,7 +87,7 @@
                     variant="ghost"
                     class="justify-start"
                     icon-left="lucide-arrow-left"
-                    label="Move left"
+                    :label="__('Move left')"
                     :disabled="at === 0"
                     @click="shift(at, -1)"
                   />
@@ -95,7 +95,7 @@
                     variant="ghost"
                     class="justify-start"
                     icon-left="lucide-arrow-right"
-                    label="Move right"
+                    :label="__('Move right')"
                     :disabled="at === columns.length - 1"
                     @click="shift(at, 1)"
                   />
@@ -106,7 +106,7 @@
                     class="justify-start"
                     icon-left="lucide-archive"
                     data-slot="column-archive"
-                    label="Archive this column"
+                    :label="__('Archive this column')"
                     @click="archive(column)"
                   />
                 </div>
@@ -118,8 +118,8 @@
             variant="ghost"
             size="sm"
             icon="lucide-plus"
-            :label="`New in ${column.label}`"
-            :tooltip="`New in ${column.label}`"
+            :label="__('New in {0}', [column.label])"
+            :tooltip="__('New in {0}', [column.label])"
             @click="emit('new', { [field]: column.value })"
           />
         </header>
@@ -166,7 +166,7 @@
             v-if="!column.cards.length"
             class="rounded-6 border border-dashed border-outline-gray-2 px-3 py-6 text-center text-p-sm text-ink-gray-4"
           >
-            Nothing here
+            {{ __('Nothing here') }}
           </p>
 
           <!--
@@ -182,7 +182,7 @@
             :model-value="adding[column.value] || ''"
             :data-slot="`quick-add-${column.value}`"
             type="text"
-            :placeholder="`New ${spec.singular || 'record'}`"
+            :placeholder="__('New {0}', [spec.singular || __('record')])"
             :disabled="creating === column.value"
             @update:model-value="adding[column.value] = $event"
             @keydown.enter="quickAdd(column)"
@@ -193,7 +193,7 @@
       <!-- What was archived, and the way back: a column somebody cannot find
            again is a column they lost. -->
       <section v-if="archived.length" class="flex h-full w-56 shrink-0 flex-col gap-2 p-1">
-        <span class="px-2 text-p-xs text-ink-gray-5">Archived</span>
+        <span class="px-2 text-p-xs text-ink-gray-5">{{ __('Archived') }}</span>
         <Button
           v-for="value in archived"
           :key="value"
@@ -201,7 +201,7 @@
           class="justify-start"
           icon-left="lucide-archive-restore"
           :data-slot="`column-restore-${value}`"
-          :label="value || 'None'"
+          :label="value || __('None')"
           @click="restore(value)"
         />
       </section>
@@ -212,6 +212,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { Badge, Button, Icon, Popover, TextInput } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 import RecordCard from './RecordCard.vue'
 import RecordChip from '../record/RecordChip.vue'
 import { cardIdentity, cardShown, cardValues } from '@/lib/screen/cards'
@@ -356,7 +357,7 @@ const columns = computed(() => {
     .filter((value) => !hidden.has(value))
     .map((value) => ({
       value,
-      label: value || 'None',
+      label: value || __('None'),
       stray: strayValues.has(value),
       record: isLink.value && value ? linkRecord(value) : null,
       theme: (arrangement.value.colours || {})[value]

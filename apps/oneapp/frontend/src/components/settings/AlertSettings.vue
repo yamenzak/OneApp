@@ -14,42 +14,42 @@
     the server compiles.
   -->
   <SettingsHeader
-    title="Alerts"
-    description="Tell somebody when something happens to a record."
+    :title="__('Alerts')"
+    :description="__('Tell somebody when something happens to a record.')"
     :class="PANEL_HEADER"
   >
     <template #actions>
       <Button
         v-if="doctypes.length"
         icon-left="lucide-plus"
-        label="New alert"
+        :label="__('New alert')"
         @click="start()"
       />
     </template>
   </SettingsHeader>
 
   <SettingsBody :class="PANEL_BODY">
-    <LoadingText v-if="loading" class="py-8" text="Loading" />
+    <LoadingText v-if="loading" class="py-8" :text="__('Loading')" />
 
-    <Alert v-else-if="error" theme="red" title="Alerts could not be loaded">
+    <Alert v-else-if="error" theme="red" :title="__('Alerts could not be loaded')">
       <template #description>{{ error }}</template>
     </Alert>
 
     <EmptyState
       v-else-if="!doctypes.length"
       icon="lucide-bell"
-      title="Nothing to alert on"
-      description="This workspace has no records an alert could watch yet."
+      :title="__('Nothing to alert on')"
+      :description="__('This workspace has no records an alert could watch yet.')"
     />
 
     <EmptyState
       v-else-if="!rules.length"
       icon="lucide-bell"
-      title="No alerts yet"
-      description="An alert watches one kind of record and tells somebody when it changes."
+      :title="__('No alerts yet')"
+      :description="__('An alert watches one kind of record and tells somebody when it changes.')"
     >
       <template #action>
-        <Button icon-left="lucide-plus" label="New alert" @click="start()" />
+        <Button icon-left="lucide-plus" :label="__('New alert')" @click="start()" />
       </template>
     </EmptyState>
 
@@ -70,7 +70,7 @@
             v-if="rule.orphaned"
             class="mt-2"
             theme="amber"
-            label="This record is no longer in the workspace"
+            :label="__('This record is no longer in the workspace')"
           />
         </div>
 
@@ -81,22 +81,22 @@
                "On" while it is off is a switch that reads as broken. -->
           <Switch
             :model-value="rule.enabled"
-            :label="rule.enabled ? 'On' : 'Off'"
+            :label="rule.enabled ? __('On') : __('Off')"
             @update:model-value="pause(rule, $event)"
           />
           <Button
             icon="lucide-pencil"
             variant="ghost"
-            label="Edit this alert"
-            tooltip="Edit this alert"
+            :label="__('Edit this alert')"
+            :tooltip="__('Edit this alert')"
             @click="start(rule)"
           />
           <Button
             icon="lucide-trash-2"
             variant="ghost"
             theme="red"
-            label="Delete this alert"
-            tooltip="Delete this alert"
+            :label="__('Delete this alert')"
+            :tooltip="__('Delete this alert')"
             :loading="removing === rule.name"
             @click="remove(rule)"
           />
@@ -110,17 +110,17 @@
     scrolls — and because a Save nested in there is a Save the geometry guard
     reads as one that scrolls away on a phone.
   -->
-  <Dialog v-model="editing" :title="draft.name ? 'Edit alert' : 'New alert'">
+  <Dialog v-model="editing" :title="draft.name ? __('Edit alert') : __('New alert')">
     <template #default>
       <div class="flex flex-col gap-4">
         <Select
           v-model="draft.doctype"
-          label="When this record"
+          :label="__('When this record')"
           :options="doctypes.map((one) => ({ label: one.label, value: one.doctype }))"
           @update:model-value="onDoctype"
         />
 
-        <Select v-model="draft.when" label="Is" :options="whenOptions" />
+        <Select v-model="draft.when" :label="__('Is')" :options="whenOptions" />
 
         <!-- Only the two that count days need a date to count from, and the
              number only means anything beside it. -->
@@ -128,19 +128,19 @@
           <Select
             v-model="draft.date_field"
             class="flex-1"
-            label="Counting from"
+            :label="__('Counting from')"
             :options="dateOptions"
           />
-          <FormControl v-model="draft.days" type="number" label="Days" class="w-24" />
+          <FormControl v-model="draft.days" type="number" :label="__('Days')" class="w-24" />
         </div>
 
         <!-- Optional, and three controls rather than a box: the rules people
              write are "when the status is Overdue". -->
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between">
-            <p class="text-p-sm text-ink-gray-7">Only when</p>
+            <p class="text-p-sm text-ink-gray-7">{{ __('Only when') }}</p>
             <Button
-              :label="condition ? 'Remove the test' : 'Add a test'"
+              :label="condition ? __('Remove the test') : __('Add a test')"
               variant="ghost"
               @click="toggleCondition"
             />
@@ -149,20 +149,20 @@
             <Select
               v-model="draft.condition.field"
               class="flex-1"
-              label="Field"
+              :label="__('Field')"
               :options="watchOptions"
             />
             <Select
               v-model="draft.condition.operator"
               class="w-36"
-              label="Test"
+              :label="__('Test')"
               :options="OPERATORS"
             />
             <FormControl
               v-if="needsValue"
               v-model="draft.condition.value"
               class="flex-1"
-              label="Value"
+              :label="__('Value')"
             />
           </div>
         </div>
@@ -171,33 +171,33 @@
           <Select
             v-model="draft.to_role"
             class="flex-1"
-            label="Tell this role"
-            :options="[{ label: 'Nobody by role', value: '' }, ...roles]"
+            :label="__('Tell this role')"
+            :options="[{ label: __('Nobody by role'), value: '' }, ...roles]"
           />
           <Select
             v-model="draft.to_field"
             class="flex-1"
-            label="Or whoever is in"
-            :options="[{ label: 'No field', value: '' }, ...addressOptions]"
+            :label="__('Or whoever is in')"
+            :options="[{ label: __('No field'), value: '' }, ...addressOptions]"
           />
         </div>
 
-        <Select v-model="draft.channel" label="Send it" :options="CHANNELS" />
+        <Select v-model="draft.channel" :label="__('Send it')" :options="CHANNELS" />
 
-        <FormControl v-model="draft.subject" label="Subject" />
+        <FormControl v-model="draft.subject" :label="__('Subject')" />
         <FormControl
           v-model="draft.message"
           type="textarea"
           :rows="4"
-          label="Message"
-          description="Leave it empty to send the subject on its own."
+          :label="__('Message')"
+          :description="__('Leave it empty to send the subject on its own.')"
         />
 
         <ErrorMessage :message="saveError" />
       </div>
     </template>
     <template #actions>
-      <Button variant="solid" label="Save" :loading="saving" @click="save" />
+      <Button variant="solid" :label="__('Save')" :loading="saving" @click="save" />
     </template>
   </Dialog>
 </template>
@@ -220,31 +220,32 @@ import {
 import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 // The words a rule is written in. The server maps each onto Frappe's own
 // `event`, so this is a vocabulary rather than a second event system.
 const WHEN = [
-  { label: 'made', value: 'created' },
-  { label: 'changed', value: 'changed' },
-  { label: 'submitted', value: 'submitted' },
-  { label: 'cancelled', value: 'cancelled' },
-  { label: 'coming up', value: 'before' },
-  { label: 'past due', value: 'after' },
+  { label: __('made'), value: 'created' },
+  { label: __('changed'), value: 'changed' },
+  { label: __('submitted'), value: 'submitted' },
+  { label: __('cancelled'), value: 'cancelled' },
+  { label: __('coming up'), value: 'before' },
+  { label: __('past due'), value: 'after' },
 ]
 
 const OPERATORS = [
-  { label: 'is', value: 'is' },
-  { label: 'is not', value: 'is not' },
-  { label: 'is over', value: 'over' },
-  { label: 'is under', value: 'under' },
-  { label: 'is filled in', value: 'is set' },
-  { label: 'is empty', value: 'is not set' },
+  { label: __('is'), value: 'is' },
+  { label: __('is not'), value: 'is not' },
+  { label: __('is over'), value: 'over' },
+  { label: __('is under'), value: 'under' },
+  { label: __('is filled in'), value: 'is set' },
+  { label: __('is empty'), value: 'is not set' },
 ]
 
 const CHANNELS = [
-  { label: 'By email', value: 'email' },
-  { label: 'In the app', value: 'app' },
-  { label: 'Both', value: 'both' },
+  { label: __('By email'), value: 'email' },
+  { label: __('In the app'), value: 'app' },
+  { label: __('Both'), value: 'both' },
 ]
 
 const DATED = ['before', 'after']
@@ -294,9 +295,11 @@ const fields = (list) =>
 function sentence(rule) {
   const record = doctypes.value.find((one) => one.doctype === rule.doctype)
   const when = WHEN.find((one) => one.value === rule.when)?.label || rule.when
-  const who = rule.to_role || rule.to_field || 'nobody'
-  const days = DATED.includes(rule.when) ? ` by ${rule.days} days` : ''
-  return `When ${record?.label || rule.doctype} is ${when}${days}, tell ${who}`
+  const who = rule.to_role || rule.to_field || __('nobody')
+  const what = record?.label || rule.doctype
+  return DATED.includes(rule.when)
+    ? __('When {0} is {1} by {2} days, tell {3}', [what, when, rule.days, who])
+    : __('When {0} is {1}, tell {2}', [what, when, who])
 }
 
 async function load() {

@@ -11,15 +11,17 @@
  * be taught to file things into. `oneapp_core/drive/query.py` holds the
  * other half of this list, and a test keeps them in step.
  */
+import { __ } from '@/lib/runtime/translate'
+
 export const PLACES = [
-  { value: 'home', label: 'All files', icon: 'lucide-folder' },
-  { value: 'recents', label: 'Recent', icon: 'lucide-clock' },
-  { value: 'favourites', label: 'Favourites', icon: 'lucide-heart' },
-  { value: 'shared', label: 'Shared with me', icon: 'lucide-users' },
-  { value: 'templates', label: 'Templates', icon: 'lucide-bookmark' },
-  { value: 'trash', label: 'Bin', icon: 'lucide-trash-2' },
+  { value: 'home', label: __('All files'), icon: 'lucide-folder' },
+  { value: 'recents', label: __('Recent'), icon: 'lucide-clock' },
+  { value: 'favourites', label: __('Favourites'), icon: 'lucide-heart' },
+  { value: 'shared', label: __('Shared with me'), icon: 'lucide-users' },
+  { value: 'templates', label: __('Templates'), icon: 'lucide-bookmark' },
+  { value: 'trash', label: __('Bin'), icon: 'lucide-trash-2' },
 ]
 
 /** What to call the place somebody is looking at. */
 export const labelOf = (place) =>
-  PLACES.find((one) => one.value === place)?.label || 'Files'
+  PLACES.find((one) => one.value === place)?.label || __('Files')

@@ -117,14 +117,13 @@
       v-if="staleSince"
       class="mx-4 mt-3"
       theme="amber"
-      title="Someone else changed this"
+      :title="__('Someone else changed this')"
     >
       <template #description>
-        It was saved {{ when(staleSince) }}. Reloading takes what is on the
-        server; anything typed here and not saved goes with it.
+        {{ __('It was saved {0}. Reloading takes what is on the server; anything typed here and not saved goes with it.', [when(staleSince)]) }}
       </template>
       <template #actions>
-        <Button label="Reload it" @click="emit('reload')" />
+        <Button :label="__('Reload it')" @click="emit('reload')" />
       </template>
     </Alert>
 
@@ -164,7 +163,7 @@
           <TabList>
             <!-- A glyph on every one, from the derivation the doctype's own
                  tabs use, or the strip reads as two strips. -->
-            <TabTrigger value="fields" label="Details" :icon-left="tabIcon('Details')" />
+            <TabTrigger value="fields" :label="__('Details')" :icon-left="tabIcon('Details')" />
             <!--
               The other screens in this space that point back at this record.
               Second, not last: on a screen that declares them these are what
@@ -181,7 +180,7 @@
                  is the slot for it; the default slot replaces the label. -->
             <!-- One tab, not two: answering "what happened on Tuesday" from
                  separate places meant merging them by eye. -->
-            <TabTrigger value="activity" label="Activity" :icon-left="tabIcon('Activity')">
+            <TabTrigger value="activity" :label="__('Activity')" :icon-left="tabIcon('Activity')">
               <template #suffix>
                 <Badge
                   v-if="commentCount"
@@ -193,11 +192,11 @@
             </TabTrigger>
             <!-- The mail about this record. Beside Activity rather than in
                  it: a message is something said from outside. -->
-            <TabTrigger value="mail" label="Mail" :icon-left="tabIcon('Mail')" />
-            <TabTrigger value="files" label="Files" :icon-left="tabIcon('Files')" />
+            <TabTrigger value="mail" :label="__('Mail')" :icon-left="tabIcon('Mail')" />
+            <TabTrigger value="files" :label="__('Files')" :icon-left="tabIcon('Files')" />
             <!-- What the record *is* rather than what it says. Last, because
                  it is the tab you go to on purpose. -->
-            <TabTrigger value="meta" label="Meta" :icon-left="tabIcon('Meta')" />
+            <TabTrigger value="meta" :label="__('Meta')" :icon-left="tabIcon('Meta')" />
           </TabList>
         </div>
 
@@ -326,6 +325,7 @@ import { docBadge } from '@/lib/screen/docstate'
 import { tabIcon } from '@/lib/screen/fields'
 import { onDocChange, onDocViewers } from '@/lib/runtime/socket'
 import { session } from '@/lib/shell/session'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   record: { type: Object, required: true },
@@ -579,28 +579,36 @@ const startCopy = async () => {
 const copyLink = async () => {
   try {
     await navigator.clipboard.writeText(window.location.href)
-    notifySuccess('Link copied')
+    notifySuccess(__('Link copied'))
   } catch {
-    notifyError('This browser would not let the page copy to the clipboard.')
+    notifyError(__('This browser would not let the page copy to the clipboard.'))
   }
 }
 
 const extras = computed(() => {
   const found = []
   if (props.spec?.can_print) {
-    found.push({ key: 'print', label: 'Print', icon: 'lucide-printer', onClick: () => (showPrint.value = true) })
+    found.push({
+      key: 'print',
+      label: __('Print'),
+      icon: 'lucide-printer',
+      onClick: () => (showPrint.value = true),
+    })
   }
   if (canFollow.value) {
     found.push({
       key: 'follow',
-      label: following.value ? 'Stop following' : 'Follow',
+      label: following.value ? __('Stop following') : __('Follow'),
       icon: 'lucide-bell',
       onClick: follow,
     })
   }
+  // The word, and how many, which is a count beside it rather than part of
+  // the sentence.
+  const likeWord = liked.value ? __('Liked') : __('Like')
   found.push({
     key: 'like',
-    label: `${liked.value ? 'Liked' : 'Like'}${likes.value.length ? ` · ${likes.value.length}` : ''}`,
+    label: likes.value.length ? `${likeWord} · ${likes.value.length}` : likeWord,
     icon: 'lucide-heart',
     onClick: like,
   })
@@ -609,20 +617,20 @@ const extras = computed(() => {
   if (props.spec?.can_create) {
     found.push({
       key: 'duplicate',
-      label: 'Duplicate',
+      label: __('Duplicate'),
       icon: 'lucide-copy-plus',
       onClick: startCopy,
     })
   }
   found.push({
     key: 'link',
-    label: 'Copy link',
+    label: __('Copy link'),
     icon: 'lucide-link',
     onClick: copyLink,
   })
   found.push({
     key: 'reload',
-    label: 'Reload',
+    label: __('Reload'),
     icon: 'lucide-refresh-cw',
     onClick: () => emit('reload'),
   })

@@ -9,10 +9,10 @@
        doctype's — this used to read **New ToDo** on a screen called Tasks. -->
   <FormDialog
     v-model="open"
-    :title="`New ${spec?.singular || 'record'}`"
+    :title="__('New {0}', [spec?.singular || __('record')])"
     size="3xl"
     :dismissible="!dirty"
-    :close-label="dirty ? 'Discard and close' : 'Close'"
+    :close-label="dirty ? __('Discard and close') : __('Close')"
   >
     <form class="flex flex-col gap-4" @submit.prevent="save()">
       <!-- The doctype's own tabs and sections. See RecordForm. -->
@@ -34,14 +34,14 @@
       -->
       <Button
         v-if="spec?.can_create"
-        label="Create another"
+        :label="__('Create another')"
         :loading="saving === 'another'"
         :disabled="saving !== ''"
         @click="save({ another: true })"
       />
       <Button
         variant="solid"
-        label="Create"
+        :label="__('Create')"
         :loading="saving === 'close'"
         :disabled="saving !== ''"
         @click="save()"
@@ -57,6 +57,7 @@ import FormDialog from './FormDialog.vue'
 import RecordForm from './RecordForm.vue'
 import { notifySuccess } from '@/lib/runtime/notify'
 import { workspace } from '../../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -120,7 +121,9 @@ const save = async ({ another = false } = {}) => {
     if (another) {
       // Stay, and say so: the dialog looks identical after a successful create
       // and an ignored click.
-      notifySuccess(`${props.spec?.singular || 'Record'} ${made?.name || ''} created`)
+      notifySuccess(
+        __('{0} {1} created', [props.spec?.singular || __('Record'), made?.name || '']),
+      )
       blank()
       return
     }

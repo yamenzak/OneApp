@@ -24,6 +24,7 @@ import { useRoute, useRouter } from 'vue-router'
 import SheetEditor from '../components/sheets/editor/index.vue'
 import { workspace } from '../lib/workspace'
 import { cameFrom } from '@/lib/screen/returnTo'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   name: { type: String, required: true },
@@ -74,14 +75,14 @@ function sendRows() {
 }
 
 const hostMenu = computed(() => [{
-  group: 'This sheet',
+  group: __('This sheet'),
   options: [
     // The rows go back to the record this sheet was made from. Only where the
     // person may write that record, and never where the table has been locked
     // — after a lock the document is the record and the sheet is history.
     ...(bound.value && bound.value.may_write && bound.value.status !== 'Locked'
       ? [{
-        label: `Send these rows to ${bound.value.title}`,
+        label: __('Send these rows to {0}', [bound.value.title]),
         icon: 'corner-up-left',
         onClick: () => sendRows(),
       }]
@@ -89,7 +90,7 @@ const hostMenu = computed(() => [{
     {
       // A template is a sheet with a flag on it, so this is the whole feature
       // — see `oneapp_core/sheets/templates.py`.
-      label: isTemplate.value ? 'Stop using as a template' : 'Use as a template',
+      label: isTemplate.value ? __('Stop using as a template') : __('Use as a template'),
       icon: isTemplate.value ? 'bookmark-minus' : 'bookmark-plus',
       onClick: async () => {
         const next = !isTemplate.value
@@ -102,9 +103,9 @@ const hostMenu = computed(() => [{
     // is right to insist those live in `lib/nav.js`. This is a menu item on one
     // page, which is a different thing wearing the same shape.
     ...(back.value
-      ? [{ label: `Back to ${back.value.label}`, icon: 'arrow-left', onClick: () => close() }]
+      ? [{ label: __('Back to {0}', [back.value.label]), icon: 'arrow-left', onClick: () => close() }]
       : []),
-    { label: 'Show in Files', icon: 'folder-open', onClick: () => showInFiles() },
+    { label: __('Show in Files'), icon: 'folder-open', onClick: () => showInFiles() },
   ],
 }])
 

@@ -6,31 +6,31 @@
     workspace setting — a contract wants a narrow measure and a rate schedule
     wants the full width, and the same person wants both on the same afternoon.
   -->
-  <Dialog v-model="open" title="Page setup">
+  <Dialog v-model="open" :title="__('Page setup')">
     <template #default>
       <div class="flex flex-col gap-4">
         <FormControl
           v-model="draft.width"
           type="select"
-          label="Width"
+          :label="__('Width')"
           :options="options(WIDTHS)"
         />
         <FormControl
           v-model="draft.font"
           type="select"
-          label="Typeface"
+          :label="__('Typeface')"
           :options="options(FONTS)"
         />
         <FormControl
           v-model="draft.spacing"
           type="select"
-          label="Line spacing"
+          :label="__('Line spacing')"
           :options="options(SPACINGS)"
         />
       </div>
     </template>
     <template #actions>
-      <Button variant="solid" label="Apply" class="w-full" @click="apply" />
+      <Button variant="solid" :label="__('Apply')" class="w-full" @click="apply" />
     </template>
   </Dialog>
 </template>
@@ -40,6 +40,7 @@ import { ref, watch } from 'vue'
 
 import { Button, Dialog, FormControl } from '@/ui'
 import { FONTS, SPACINGS, WIDTHS } from './toolbar'
+import { __ } from '@/lib/runtime/translate'
 
 const open = defineModel({ type: Boolean, default: false })
 const settings = defineModel('settings', { type: Object, default: () => ({}) })

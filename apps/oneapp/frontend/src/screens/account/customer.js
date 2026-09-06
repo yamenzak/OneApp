@@ -10,6 +10,7 @@
 import { computed, reactive } from 'vue'
 
 import { callMethod, useResource } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 const method = (name) => `oneapp_control.api.customer.${name}`
 
@@ -32,7 +33,11 @@ export const customer = {
     callMethod(
       method('set_addon'),
       { workspace, addon, quantity },
-      { successMessage: quantity ? 'Added — it is on your next invoice' : 'Released' },
+      {
+        successMessage: quantity
+          ? __('Added — it is on your next invoice')
+          : __('Released'),
+      },
     ),
   billingPortal: (workspace) => callMethod(method('billing_portal'), { workspace }),
   // Ours, not the Stripe portal: the portal cannot know our quotas, so it would
@@ -40,13 +45,13 @@ export const customer = {
   // allows.
   changePlan: (workspace, plan, interval = 'Monthly') =>
     callMethod(method('change_plan'), { workspace, plan, interval }, {
-      successMessage: 'Plan changed',
+      successMessage: __('Plan changed'),
     }),
 
   domainGuide: (workspace) => callMethod(method('domain_instructions'), { workspace }, { silent: true }),
   addDomain: (workspace, domain) =>
     callMethod(method('request_custom_domain'), { workspace, domain }, {
-      successMessage: 'Domain queued — we are verifying your DNS',
+      successMessage: __('Added — checking your DNS now'),
     }),
 }
 
@@ -121,19 +126,19 @@ export function useMembers(workspaceRef) {
 
 export const inviteMember = (workspace, payload) =>
   callMethod('oneapp_control.api.customer.invite_member', { workspace, ...payload }, {
-    successMessage: 'Invited — they can sign in shortly',
+    successMessage: __('Invited — they can sign in shortly'),
   })
 
 export const removeMember = (workspace, email) =>
   callMethod('oneapp_control.api.customer.remove_member', { workspace, email }, {
-    successMessage: 'Removed',
+    successMessage: __('Removed'),
   })
 
 export const setMemberRoles = (workspace, email, roles, access) =>
   callMethod(
     'oneapp_control.api.customer.set_member_roles',
     { workspace, email, roles, access },
-    { successMessage: 'Saved — it takes effect shortly' },
+    { successMessage: __('Saved — it takes effect shortly') },
   )
 
 /**
@@ -151,12 +156,12 @@ export function useRoles(workspaceRef) {
 
 export const saveRole = (workspace, payload) =>
   callMethod('oneapp_control.api.customer.save_role', { workspace, ...payload }, {
-    successMessage: 'Saved — it takes effect shortly',
+    successMessage: __('Saved — it takes effect shortly'),
   })
 
 export const deleteRole = (workspace, name) =>
   callMethod('oneapp_control.api.customer.delete_role', { workspace, name }, {
-    successMessage: 'Deleted',
+    successMessage: __('Deleted'),
   })
 
 /** What this workspace can open — the same manifest its launcher renders. */

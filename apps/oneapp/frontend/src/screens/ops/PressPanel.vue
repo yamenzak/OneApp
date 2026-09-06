@@ -6,10 +6,10 @@
 
     <!-- Named rather than blank. "Frappe Cloud is unreachable" is worth more
          than an empty table, which reads as "there is nothing here". -->
-    <Alert v-else-if="state.error" theme="amber" title="Frappe Cloud did not answer">
+    <Alert v-else-if="state.error" theme="amber" :title="__('Frappe Cloud did not answer')">
       <template #description>{{ state.error }}</template>
       <template #actions>
-        <Button label="Try again" :loading="state.loading" @click="$emit('retry')" />
+        <Button :label="__('Try again')" :loading="state.loading" @click="$emit('retry')" />
       </template>
     </Alert>
 
@@ -23,12 +23,13 @@
 import { computed } from 'vue'
 import { Alert, Button, LoadingIndicator } from '@/ui'
 import EmptyState from '../../components/EmptyState.vue'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /** The object usePress() returns. */
   state: { type: Object, required: true },
   /** What to say when the call worked and there is nothing in it. */
-  empty: { type: String, default: 'Nothing here yet.' },
+  empty: { type: String, default: __('Nothing here yet.') },
 })
 
 defineEmits(['retry'])

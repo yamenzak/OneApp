@@ -4,32 +4,20 @@ The rule is one line — a string the reader can see is inside `__()` — and th
 whole of the interesting part is in `tests/copy_reader.py`, which knows what
 "a string the reader can see" means and can tell a wrapped one from a bare one.
 
-`i18n_todo.txt` is the ratchet. It lists the files that still carry bare
-strings, and the only edit it may ever receive is a deletion: a file that
-appears in it may still fail, a file that does not must pass, and a file with
-nothing left in it has to leave. That is what makes a pass this size safe to do
-over several sittings without the guard being switched off in between — the
-number only goes down, and the day it reaches zero the file goes with it.
+It was done behind a ratchet — `i18n_todo.txt`, a list of the files that still
+carried bare strings, which only ever shrank — because 1,224 strings is not one
+sitting and a guard switched off for a week is a guard nobody switches back on.
+The list reached zero and went with it, which is why this file no longer has a
+skip in it: every file passes now, and a new one has to pass on the day it is
+written.
 
 Why `__()` and not a key: see `docs/LANGUAGE.md`. The msgid is the English
 sentence, which is why this guard can read the sentence out of the call and
 hand it to `test_ui_copy` unchanged.
 """
 
-import pathlib
-
 import pytest
 from copy_reader import ROOT, sources, unwrapped, visible
-
-TODO = pathlib.Path(__file__).parent / "i18n_todo.txt"
-
-
-def still_owed() -> set[str]:
-	return {
-		line.strip()
-		for line in TODO.read_text().splitlines()
-		if line.strip() and not line.startswith("#")
-	}
 
 
 def test_the_reader_still_finds_the_copy():
@@ -39,30 +27,13 @@ def test_the_reader_still_finds_the_copy():
 
 def test_every_sentence_a_customer_reads_is_translatable():
 	guilty = {}
-	owed = still_owed()
 	for where, text in unwrapped():
-		if where in owed:
-			continue
 		guilty.setdefault(where, []).append(text)
 
 	assert not guilty, "these are stuck in English — wrap them in `__()`:\n" + "\n".join(
 		f"  {where}: {', '.join(repr(one) for one in texts[:4])}"
 		+ (f" and {len(texts) - 4} more" if len(texts) > 4 else "")
 		for where, texts in sorted(guilty.items())
-	)
-
-
-def test_the_ratchet_only_goes_down():
-	"""A file listed as owing nothing is a line that should have been deleted.
-
-	Without this the list is a place to hide a file rather than a record of
-	what is left: adding a name would silence the guard for it for ever.
-	"""
-	owing = {where for where, _ in unwrapped()}
-	stale = sorted(still_owed() - owing)
-	assert not stale, (
-		"these no longer carry a bare string and must come out of "
-		f"tests/i18n_todo.txt:\n  " + "\n  ".join(stale)
 	)
 
 
@@ -102,3 +73,140 @@ def test_the_page_is_drawn_the_right_way_round_before_it_is_drawn():
 	main = (ROOT / "apps/oneapp/frontend/src/main.js").read_text()
 	assert "documentElement.dir" in main
 	assert main.index("documentElement.dir") < main.index("createApp(App)")
+
+
+@pytest.mark.parametrize("spa", ["apps/oneapp", "apps/oneapp_control"])
+def test_nothing_asks_for_a_word_before_the_catalogue_arrives(spa):
+	"""`App.vue` is imported *after* the catalogue, not at the top of the file.
+
+	A static import is evaluated before any line of `main.js` runs. So a
+	component that builds a table of labels as it is imported — and several do,
+	because a `const` beside the component is where a list of options belongs —
+	would call `__()` against an empty catalogue and hold the English answer for
+	the life of the session. Nothing about that fails loudly: the app works, in
+	English, in Arabic.
+	"""
+	main = (ROOT / spa / "frontend/src/main.js").read_text()
+	assert "import App from" not in main, "App.vue is imported before the catalogue"
+	assert "import('./App.vue')" in main
+	assert main.index("loadTranslations(lang)") < main.index("import('./App.vue')")
+
+
+# --------------------------------------------------------------------------- #
+# The other half: what the server says
+# --------------------------------------------------------------------------- #
+
+# A `frappe.throw` is not always copy. Three of these are a programmer's
+# assertion reached only by a bad call, and three are an operator's — the
+# control plane's desk, which is ours and is English. Each one is exempted by
+# hand, and the point of naming them here is that a *new* one has to be argued
+# for rather than quietly added.
+UNTRANSLATED_ON_PURPOSE = {
+	# A feature name that no decorator registered: a bug in our code, not
+	# something a customer can cause or fix.
+	"apps/oneapp/oneapp/oneapp_core/ai/gateway.py",
+	# An action a selection was told to do that no branch implements: same.
+	"apps/oneapp/oneapp/oneapp_core/email/mailbox/selections.py",
+	# Both of these are read by us, in our own console, about our own fleet.
+	"apps/oneapp_control/oneapp_control/portal.py",
+	"apps/oneapp_control/oneapp_control/provisioning/runner.py",
+}
+
+SPEAKS = {"throw", "msgprint"}
+
+
+def _called(node):
+	import ast
+
+	if isinstance(node, ast.Attribute):
+		return node.attr
+	if isinstance(node, ast.Name):
+		return node.id
+	return ""
+
+
+def _translated(node):
+	"""True, False, or None for an expression this cannot judge statically."""
+	import ast
+
+	if isinstance(node, ast.Call):
+		if _called(node.func) in {"_", "gettext"}:
+			return True
+		# `_("…").format(…)` and `_("…").join(…)` are still translated.
+		if isinstance(node.func, ast.Attribute) and node.func.attr in {"format", "join"}:
+			return _translated(node.func.value)
+		# Anything else — a helper that builds the sentence somewhere else, like
+		# `connect._reason` — is judged where it builds it, not here.
+		return None
+	if isinstance(node, ast.JoinedStr):  # an f-string can never be a msgid
+		return False
+	if isinstance(node, ast.Constant):
+		return not isinstance(node.value, str)
+	if isinstance(node, ast.BinOp):
+		return _translated(node.left) and _translated(node.right)
+	if isinstance(node, ast.IfExp):
+		return _translated(node.body) and _translated(node.orelse)
+	return None  # a variable — some other line built it, and is checked there
+
+
+def test_every_sentence_the_server_says_is_translatable():
+	"""`frappe.throw` and `frappe.msgprint` reach the same reader the SPA does.
+
+	Read as a syntax tree rather than with a regex, because the interesting
+	case is the one that spans four lines: `frappe.throw(` on its own, then an
+	f-string under it, which no grep for `throw(f"` will ever find.
+	"""
+	import ast
+
+	guilty = []
+	for app in ("apps/oneapp/oneapp", "apps/oneapp_control/oneapp_control"):
+		for path in sorted((ROOT / app).rglob("*.py")):
+			where = str(path.relative_to(ROOT))
+			if where in UNTRANSLATED_ON_PURPOSE:
+				continue
+			try:
+				tree = ast.parse(path.read_text())
+			except SyntaxError:
+				continue
+			for node in ast.walk(tree):
+				if not isinstance(node, ast.Call) or _called(node.func) not in SPEAKS:
+					continue
+				if node.args and _translated(node.args[0]) is False:
+					guilty.append(f"{where}:{node.lineno}  {ast.unparse(node.args[0])[:70]}")
+
+	assert not guilty, "these speak English at the reader — wrap them in `_()`:\n  " + "\n  ".join(
+		guilty
+	)
+
+
+def test_the_exemptions_are_still_needed():
+	"""Same ratchet as `i18n_todo.txt`: a name that no longer earns its place
+	comes out, or the set becomes somewhere to hide a file."""
+	import ast
+
+	for where in sorted(UNTRANSLATED_ON_PURPOSE):
+		tree = ast.parse((ROOT / where).read_text())
+		bare = [
+			node
+			for node in ast.walk(tree)
+			if isinstance(node, ast.Call)
+			and _called(node.func) in SPEAKS
+			and node.args
+			and _translated(node.args[0]) is False
+		]
+		assert bare, f"{where} no longer says anything in English — drop it from the set"
+
+
+def test_both_apps_extract_their_own_messages():
+	"""`babel_extractors.csv` beside the app package.
+
+	Frappe's own map sends `**/hooks.py` to the navbar extractor, which
+	resolves the file's real path and then asks for it relative to the bench.
+	Ours are symlinked into the bench from this repository, so that subtraction
+	fails and the whole POT comes out empty — silently, with a zero exit. The
+	app's own map is read first, so one row claiming `hooks.py` for the plain
+	Python extractor is the whole fix.
+	"""
+	for app in ("oneapp", "oneapp_control"):
+		rows = (ROOT / "apps" / app / "babel_extractors.csv").read_text().splitlines()
+		assert "**/hooks.py,frappe.gettext.extractors.python.extract" in rows

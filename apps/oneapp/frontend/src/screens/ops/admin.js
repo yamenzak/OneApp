@@ -12,6 +12,7 @@
  */
 
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 const method = (name) => `oneapp_control.api.admin.${name}`
 
@@ -34,24 +35,24 @@ export const admin = {
   tenantLifecycle: (tenant) => read('tenant_lifecycle')({ tenant }),
 
   provision: (tenant) =>
-    callMethod(method('provision'), { tenant }, { successMessage: 'Provisioning queued' }),
+    callMethod(method('provision'), { tenant }, { successMessage: __('Provisioning queued') }),
   suspend: (tenant, reason) =>
-    callMethod(method('suspend'), { tenant, reason }, { successMessage: 'Suspension queued' }),
+    callMethod(method('suspend'), { tenant, reason }, { successMessage: __('Suspension queued') }),
   resume: (tenant) =>
-    callMethod(method('resume'), { tenant }, { successMessage: 'Resume queued' }),
+    callMethod(method('resume'), { tenant }, { successMessage: __('Resume queued') }),
 
   takeBackup: (tenant) =>
-    callMethod(method('take_backup'), { tenant }, { successMessage: 'Backup started' }),
+    callMethod(method('take_backup'), { tenant }, { successMessage: __('Backup started') }),
   backupDownload: (tenant, backup, file) =>
     callMethod(method('backup_download'), { tenant, backup, file }, { silent: true, method: 'GET' }),
   setPrimaryDomain: (tenant, domain) =>
     callMethod(
       method('set_primary_domain'),
       { tenant, domain },
-      { successMessage: 'Primary domain updated' },
+      { successMessage: __('Primary domain set') },
     ),
   removeSiteDomain: (tenant, domain) =>
-    callMethod(method('remove_domain'), { tenant, domain }, { successMessage: 'Domain removed' }),
+    callMethod(method('remove_domain'), { tenant, domain }, { successMessage: __('Domain removed') }),
 
   // Deliberately not silent and deliberately not a toast on success: what comes
   // back is a URL into somebody else's workspace, and the screen opens it.
@@ -59,16 +60,16 @@ export const admin = {
     callMethod(method('support_login'), { tenant, reason }, { silent: true }),
 
   grantApp: (tenant, spaceCode) =>
-    callMethod(method('grant_app'), { tenant, space_code: spaceCode }, { successMessage: 'App enabled' }),
+    callMethod(method('grant_app'), { tenant, space_code: spaceCode }, { successMessage: __('App granted') }),
   revokeApp: (tenant, spaceCode) =>
-    callMethod(method('revoke_app'), { tenant, space_code: spaceCode }, { successMessage: 'App disabled' }),
+    callMethod(method('revoke_app'), { tenant, space_code: spaceCode }, { successMessage: __('App revoked') }),
 
   // Per-tenant, which is the cut the AI usage screen cannot make: that one is
   // every call on the site. `reconcile` takes nothing, so it is a button on the
   // panel rather than an action against a record.
   aiUsage: (params) => read('ai_usage')(params),
   reconcileAiUsage: () =>
-    callMethod(method('reconcile_ai_usage'), {}, { successMessage: 'Compared against the gateway log' }),
+    callMethod(method('reconcile_ai_usage'), {}, { successMessage: __('Compared against the gateway log') }),
 
   // The only way credits arrive that is not Stripe telling us something
   // happened. A reason is required and lands on the ledger row.
@@ -76,30 +77,30 @@ export const admin = {
     callMethod(
       method('grant_credits'),
       { tenant, credits, reason },
-      { successMessage: 'Credits added' },
+      { successMessage: __('Credits added') },
     ),
 
   holdLifecycle: (tenant) =>
-    callMethod(method('hold_lifecycle'), { tenant }, { successMessage: 'Held from the lifecycle' }),
+    callMethod(method('hold_lifecycle'), { tenant }, { successMessage: __('Held from the lifecycle') }),
   releaseLifecycle: (tenant) =>
     callMethod(
       method('release_lifecycle'),
       { tenant },
-      { successMessage: 'Released into the lifecycle' },
+      { successMessage: __('Released into the lifecycle') },
     ),
   runLifecycle: (tenant) =>
-    callMethod(method('run_lifecycle'), { tenant }, { successMessage: 'Lifecycle applied' }),
+    callMethod(method('run_lifecycle'), { tenant }, { successMessage: __('Lifecycle applied') }),
   takeColdCopy: (tenant) =>
-    callMethod(method('take_cold_copy'), { tenant }, { successMessage: 'Cold copy requested' }),
+    callMethod(method('take_cold_copy'), { tenant }, { successMessage: __('Cold copy requested') }),
   restoreFromCold: (tenant) =>
-    callMethod(method('restore_from_cold'), { tenant }, { successMessage: 'Restore queued' }),
+    callMethod(method('restore_from_cold'), { tenant }, { successMessage: __('Restore queued') }),
 
   adoptPlanTerms: (tenant) =>
     callMethod(
       method('adopt_plan_terms'),
       { tenant },
-      { successMessage: "Moved onto the plan's current terms" },
+      { successMessage: __("Moved onto the plan's current terms") },
     ),
   setTenantPlan: (tenant, plan) =>
-    callMethod(method('set_tenant_plan'), { tenant, plan }, { successMessage: 'Plan changed' }),
+    callMethod(method('set_tenant_plan'), { tenant, plan }, { successMessage: __('Plan changed') }),
 }

@@ -16,11 +16,10 @@
       -->
       <section>
         <div class="mb-1 flex items-baseline justify-between">
-          <h3 class="text-base-medium text-ink-gray-8">Roles your apps came with</h3>
+          <h3 class="text-base-medium text-ink-gray-8">{{ __('Roles your apps came with') }}</h3>
         </div>
         <p class="mb-3 text-p-sm text-ink-gray-5">
-          These arrive with the apps this workspace is entitled to. Hand them out
-          on the People screen.
+          {{ __('These arrive with the apps this workspace has. Hand them out on the People screen.') }}
         </p>
 
         <List :columns="['minmax(0,1fr)', 'auto']" :row-height="56"
@@ -40,22 +39,22 @@
                 <!-- Said rather than left to be discovered: a default role is
                      not something anybody chose, and a manager wondering why
                      everyone can already open Books deserves the answer here. -->
-                <Badge v-if="role.is_default" theme="gray" label="Everyone" />
+                <Badge v-if="role.is_default" theme="gray" :label="__('Everyone')" />
               </ListCell>
             </ListRow>
           </ListRows>
         </List>
-        <EmptyState v-if="!shipped.length" title="No apps yet"
-                    description="Roles appear here once this workspace has an app." />
+        <EmptyState v-if="!shipped.length" :title="__('No apps yet')"
+                    :description="__('Roles appear here once this workspace has an app.')" />
       </section>
 
       <section>
         <div class="mb-1 flex items-baseline justify-between">
-          <h3 class="text-base-medium text-ink-gray-8">Roles you built</h3>
-          <Button variant="subtle" label="New role" @click="startNew" />
+          <h3 class="text-base-medium text-ink-gray-8">{{ __('Roles you built') }}</h3>
+          <Button variant="subtle" :label="__('New role')" @click="startNew" />
         </div>
         <p class="mb-3 text-p-sm text-ink-gray-5">
-          A role of your own can reach anything your apps expose, and nothing else.
+          {{ __('A role of your own can reach anything your apps expose, and nothing else.') }}
         </p>
 
         <List v-if="custom.length" :columns="['minmax(0,1fr)', 'auto', 'auto']"
@@ -66,17 +65,18 @@
                 <div class="flex min-w-0 flex-col">
                   <span class="truncate text-p-sm text-ink-gray-8">{{ role.role_label }}</span>
                   <span class="truncate text-p-xs text-ink-gray-5">
-                    {{ role.grants.length }}
-                    {{ role.grants.length === 1 ? 'permission' : 'permissions' }}
+                    {{ role.grants.length === 1
+                      ? __('One permission')
+                      : __('{0} permissions', [role.grants.length]) }}
                   </span>
                 </div>
               </ListCell>
               <ListCell>
-                <Button variant="ghost" label="Edit" @click="startEdit(role)" />
+                <Button variant="ghost" :label="__('Edit')" @click="startEdit(role)" />
               </ListCell>
               <ListCell>
                 <Button variant="ghost" theme="red" icon="lucide-trash-2"
-                        label="Delete role" tooltip="Delete role"
+                        :label="__('Delete role')" :tooltip="__('Delete role')"
                         @click="remove(role)" />
               </ListCell>
             </ListRow>
@@ -84,8 +84,8 @@
         </List>
         <EmptyState
           v-else
-          title="No roles of your own yet"
-          description="Build one when the roles your apps came with are not the shape you need."
+          :title="__('No roles of your own yet')"
+          :description="__('Build one when the roles your apps came with are not the shape you need.')"
         />
       </section>
     </div>
@@ -93,17 +93,21 @@
 
   <FormDialog
     v-model="editing"
-    :title="draft.name ? 'Edit role' : 'New role'"
+    :title="draft.name ? __('Edit role') : __('New role')"
     size="3xl"
     :dismissible="!dirty"
   >
     <div class="flex flex-col gap-5">
-      <FormControl v-model="draft.role_label" label="Name" placeholder="Bookkeeper" />
+      <FormControl
+        v-model="draft.role_label"
+        :label="__('Name')"
+        :placeholder="__('Bookkeeper')"
+      />
       <FormControl
         v-model="draft.description"
         type="textarea"
-        label="What it is for"
-        placeholder="Reads invoices and contacts, edits neither."
+        :label="__('What it is for')"
+        :placeholder="__('Reads invoices and contacts, edits neither.')"
       />
 
       <!--
@@ -141,7 +145,7 @@
     </div>
 
     <template #actions>
-      <Button variant="solid" label="Save role" :loading="saving"
+      <Button variant="solid" :label="__('Save role')" :loading="saving"
               :disabled="!draft.role_label || !chosen.length" @click="save" />
     </template>
   </FormDialog>
@@ -158,6 +162,7 @@ import FormDialog from '../../components/screen/record/FormDialog.vue'
 import WorkspaceBar from './WorkspaceBar.vue'
 import { deleteRole, saveRole, useRoles } from './customer'
 import { useWorkspace } from './workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const workspace = useWorkspace()
 const resource = useRoles(workspace)
@@ -171,7 +176,12 @@ const available = computed(() => data.value?.available || [])
 // ladder from there.
 const NONE = 'None'
 const levelOptions = computed(() =>
-  [NONE, ...(data.value?.levels || [])].map((value) => ({ label: value, value })),
+  [NONE, ...(data.value?.levels || [])].map((value) => ({
+    // The value stays English: it is the sentinel `chosen` filters on, and a
+    // translated one would read as a granted level in every language but ours.
+    label: value === NONE ? __('None') : value,
+    value,
+  })),
 )
 
 const grouped = computed(() => {

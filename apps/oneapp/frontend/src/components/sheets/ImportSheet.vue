@@ -16,7 +16,7 @@
   -->
   <FilePicker
     v-model="open"
-    title="Import a spreadsheet"
+    :title="__('Import a spreadsheet')"
     :extensions="EXTENSIONS"
     @picked="build"
   />
@@ -27,13 +27,13 @@
     parsing and saving, and a dialog that says which of the two it is on is the
     difference between waiting and refreshing.
   -->
-  <Dialog v-model="working" title="Importing">
+  <Dialog v-model="working" :title="__('Importing')">
     <template #default>
       <div class="flex flex-col items-center gap-3 py-8">
         <LoadingIndicator v-if="!error" class="size-6 text-ink-gray-5" />
         <p v-if="!error" class="text-p-sm text-ink-gray-6">{{ step }}</p>
 
-        <Alert v-else class="w-full" theme="red" title="This could not be imported">
+        <Alert v-else class="w-full" theme="red" :title="__('This could not be imported')">
           <template #description>{{ error }}</template>
         </Alert>
       </div>
@@ -52,6 +52,7 @@ import { saveWorkbook } from '../../lib/sheets/store'
 import { fetchFile } from '@/lib/files/files'
 import { workspace } from '../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
+import { __ } from '@/lib/runtime/translate'
 
 /** What `headless.js` can actually read, as the picker wants them. */
 const EXTENSIONS = ['xlsx', 'xlsm', 'csv']
@@ -81,7 +82,7 @@ async function build(file) {
   working.value = true
   error.value = ''
   try {
-    step.value = 'Reading…'
+    step.value = __('Reading…')
     const bytes = await fetchFile(file)
 
     // The whole workbook is built in memory before anything is created. A save
@@ -90,15 +91,15 @@ async function build(file) {
     // behind in the Drive.
     const read = await workbookFromFile(bytes)
     if (!read.cells) {
-      error.value = 'There is nothing in that file to import.'
+      error.value = __('There is nothing in that file to import.')
       return
     }
 
-    step.value = 'Making the sheet…'
+    step.value = __('Making the sheet…')
     const title = (file.file_name || bytes.name).replace(/\.[^.]+$/, '')
     const made = await workspace.sheetMake({ title, folder: file.folder || '' })
 
-    step.value = `Saving ${read.cells.toLocaleString()} cells…`
+    step.value = __('Saving {0} cells…', [read.cells.toLocaleString()])
     await saveWorkbook(made.name, title, read.payload)
 
     working.value = false

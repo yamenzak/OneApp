@@ -18,14 +18,14 @@
       <FormControl
         v-if="!isElement"
         :model-value="element.label"
-        label="Label"
+        :label="__('Label')"
         @update:model-value="set('label', $event)"
       />
 
       <Switch
         v-if="!isElement"
         :model-value="element.show_label !== 'hide'"
-        label="Show the label"
+        :label="__('Show the label')"
         @update:model-value="set('show_label', $event ? 'show' : 'hide')"
       />
 
@@ -33,9 +33,9 @@
         v-if="element.fieldtype === 'HTML'"
         :model-value="element.html"
         type="textarea"
-        label="HTML"
+        :label="__('HTML')"
         :rows="6"
-        description="Rendered as a template with the document in scope, so {{ doc.customer }} works."
+        :description="__('Rendered as a template with the document in scope, so {{ doc.customer }} works.')"
         @update:model-value="set('html', $event)"
       />
 
@@ -43,33 +43,33 @@
         v-if="element.fieldtype === 'Spacer'"
         :model-value="element.height"
         type="number"
-        label="Height (px)"
+        :label="__('Height (px)')"
         @update:model-value="set('height', Number($event))"
       />
 
       <template v-if="element.fieldtype === 'Image' || element.fieldtype === 'Barcode'">
         <Select
           :model-value="element.align || 'left'"
-          label="Align"
+          :label="__('Align')"
           :options="ALIGN"
           @update:model-value="set('align', $event)"
         />
         <FormControl
           :model-value="element.width"
-          label="Width"
-          description="A CSS length — 40mm, 120px, 50%. Empty fits the column."
+          :label="__('Width')"
+          :description="__('A CSS length — 40mm, 120px, 50%. Empty fits the column.')"
           @update:model-value="set('width', $event)"
         />
         <Select
           :model-value="element.fieldname || ''"
-          :label="element.fieldtype === 'Image' ? 'From field' : 'Encode field'"
+          :label="element.fieldtype === 'Image' ? __('From field') : __('Encode field')"
           :options="fieldOptions"
           @update:model-value="set('fieldname', $event)"
         />
         <FormControl
           v-if="element.fieldtype === 'Image'"
           :model-value="element.image_url"
-          label="Or a fixed image URL"
+          :label="__('Or a fixed image URL')"
           @update:model-value="set('image_url', $event)"
         />
       </template>
@@ -81,7 +81,7 @@
         order can live.
       -->
       <div v-if="element.table_columns" class="flex flex-col gap-2">
-        <span class="text-p-xs font-medium text-ink-gray-6">Columns</span>
+        <span class="text-p-xs font-medium text-ink-gray-6">{{ __('Columns') }}</span>
         <Checkbox
           v-for="one in tableColumns"
           :key="one.fieldname"
@@ -93,7 +93,7 @@
 
       <Button
         icon-left="lucide-trash-2"
-        label="Remove"
+        :label="__('Remove')"
         @click="emit('remove')"
       />
     </div>
@@ -101,12 +101,12 @@
     <EmptyState
       v-else
       icon="lucide-mouse-pointer-click"
-      title="Nothing selected"
-      description="Pick something on the page to change what it says."
+      :title="__('Nothing selected')"
+      :description="__('Pick something on the page to change what it says.')"
     />
 
     <div class="flex flex-col gap-3 border-t border-outline-gray-1 pt-4">
-      <span class="text-p-xs font-medium text-ink-gray-6">The page</span>
+      <span class="text-p-xs font-medium text-ink-gray-6">{{ __('The page') }}</span>
 
       <div class="grid grid-cols-2 gap-2">
         <FormControl
@@ -122,26 +122,26 @@
       <FormControl
         :model-value="setup.font_size"
         type="number"
-        label="Font size (pt)"
+        :label="__('Font size (pt)')"
         @update:model-value="page('font_size', Number($event))"
       />
 
       <Select
         :model-value="setup.page_number"
-        label="Page number"
+        :label="__('Page number')"
         :options="PAGE_NUMBERS"
         @update:model-value="page('page_number', $event)"
       />
 
       <Switch
         :model-value="!!setup.align_labels_right"
-        label="Align labels right"
+        :label="__('Align labels right')"
         @update:model-value="page('align_labels_right', $event)"
       />
 
       <Switch
         :model-value="!!setup.show_label_colon"
-        label="A colon after every label"
+        :label="__('A colon after every label')"
         @update:model-value="page('show_label_colon', $event)"
       />
     </div>
@@ -152,12 +152,13 @@
 import { computed } from 'vue'
 import { Button, Checkbox, FormControl, Icon, Select, Switch } from '@/ui'
 import EmptyState from '../../EmptyState.vue'
+import { __ } from '@/lib/runtime/translate'
 
 // Frappe's own words, because they are what the generator branches on.
 const ALIGN = [
-  { label: 'Left', value: 'left' },
-  { label: 'Center', value: 'center' },
-  { label: 'Right', value: 'right' },
+  { label: __('Left'), value: 'left' },
+  { label: __('Centre'), value: 'center' },
+  { label: __('Right'), value: 'right' },
 ]
 
 const PAGE_NUMBERS = [
@@ -171,10 +172,10 @@ const PAGE_NUMBERS = [
 ].map((one) => ({ label: one, value: one }))
 
 const EDGES = [
-  { key: 'margin_top', label: 'Top margin (mm)' },
-  { key: 'margin_bottom', label: 'Bottom (mm)' },
-  { key: 'margin_left', label: 'Left (mm)' },
-  { key: 'margin_right', label: 'Right (mm)' },
+  { key: 'margin_top', label: __('Top margin (mm)') },
+  { key: 'margin_bottom', label: __('Bottom (mm)') },
+  { key: 'margin_left', label: __('Left (mm)') },
+  { key: 'margin_right', label: __('Right (mm)') },
 ]
 
 const props = defineProps({
@@ -193,7 +194,7 @@ const isElement = computed(() =>
 )
 
 const fieldOptions = computed(() => [
-  { label: 'None', value: '' },
+  { label: __('None'), value: '' },
   ...(props.palette.fields || []).map((one) => ({ label: one.label, value: one.fieldname })),
 ])
 

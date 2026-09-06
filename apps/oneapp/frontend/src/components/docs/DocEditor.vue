@@ -21,7 +21,7 @@
          menu, the way it does in the Drive, so there is one rename in the
          product rather than an editable title here and a dialog there. -->
     <PageHeader>
-      <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center gap-1">
+      <nav data-slot="breadcrumb" :aria-label="__('Breadcrumb')" class="flex min-w-0 items-center gap-1">
         <Breadcrumbs :items="crumbs" />
       </nav>
 
@@ -32,8 +32,8 @@
           <Button
             variant="ghost"
             icon="lucide-list"
-            label="Outline"
-            tooltip="Outline"
+            :label="__('Outline')"
+            :tooltip="__('Outline')"
           />
         </Dropdown>
 
@@ -41,8 +41,8 @@
         <Button
           variant="ghost"
           icon="lucide-history"
-          label="Version history"
-          tooltip="Version history"
+          :label="__('Version history')"
+          :tooltip="__('Version history')"
           :class="showHistory ? 'bg-surface-gray-2' : ''"
           @click="showHistory = !showHistory"
         />
@@ -50,8 +50,8 @@
           <Button
             variant="ghost"
             icon="lucide-more-horizontal"
-            label="What to do with this document"
-            tooltip="What to do with this document"
+            :label="__('What to do with this document')"
+            :tooltip="__('What to do with this document')"
           />
         </Dropdown>
       </div>
@@ -67,7 +67,7 @@
           format="json"
           :editable="doc.can_write && !settings.locked"
           :upload-function="uploadInto"
-          placeholder="Start writing…"
+          :placeholder="__('Start writing…')"
           @change="onChange"
           @transaction="onTransaction"
         >
@@ -87,7 +87,7 @@
               <div class="mx-auto w-full px-6 py-10" :class="pageClasses(settings)">
                 <EditorContent
                   :editor="instance"
-                  aria-label="Document"
+                  :aria-label="__('Document')"
                   dir="auto"
                   class="prose prose-sm max-w-none"
                 />
@@ -102,7 +102,7 @@
           <span>{{ counted }}</span>
           <span v-if="settings.locked" class="flex items-center gap-1">
             <Icon name="lucide-lock" class="size-3" />
-            Locked — unlock it from the menu to type
+            {{ __('Locked — unlock it from the menu to type') }}
           </span>
         </footer>
       </div>
@@ -124,16 +124,16 @@
     <!-- The Drive's rename, in the Drive's shape: one dialog, one field, one
          button. A document renamed here is renamed there, because they are the
          same `File`. -->
-    <Dialog v-model="renaming" title="Rename">
+    <Dialog v-model="renaming" :title="__('Rename')">
       <template #default>
-        <FormControl v-model="draftTitle" label="Name" @keyup.enter="rename" />
+        <FormControl v-model="draftTitle" :label="__('Name')" @keyup.enter="rename" />
       </template>
       <template #actions>
-        <Button variant="solid" label="Rename" :loading="busy" @click="rename" />
+        <Button variant="solid" :label="__('Rename')" :loading="busy" @click="rename" />
       </template>
     </Dialog>
 
-    <Dialog v-model="showing" :title="shown?.title || 'An earlier version'" size="3xl">
+    <Dialog v-model="showing" :title="shown?.title || __('An earlier version')" size="3xl">
       <template #default>
         <!--
           The same editor, not editable, rather than the stored HTML through
@@ -193,6 +193,7 @@ import { useOutline } from '@/composables/useOutline'
 import { putFile } from '@/lib/files/attach'
 import { workspace } from '@/lib/workspace'
 import { cameFrom } from '@/lib/screen/returnTo'
+import { __ } from '@/lib/runtime/translate'
 
 const route = useRoute()
 
@@ -268,17 +269,17 @@ function onChange() {
 
 const state = computed(() => {
   if (failed.value) return failed.value
-  if (busy.value) return 'Saving…'
-  if (dirty.value) return 'Unsaved'
+  if (busy.value) return __('Saving…')
+  if (dirty.value) return __('Unsaved')
   if (!savedAt.value) return ''
-  return `Saved ${dayjsLocal(savedAt.value).fromNow()}`
+  return __('Saved {0}', [dayjsLocal(savedAt.value).fromNow()])
 })
 
 const counted = computed(() => {
   void revision.value
   const text = editor.value?.state?.doc?.textContent || ''
   const words = text.trim() ? text.trim().split(/\s+/).length : 0
-  return `${words} ${words === 1 ? 'word' : 'words'}`
+  return words === 1 ? __('{0} word', [words]) : __('{0} words', [words])
 })
 
 async function save() {
@@ -303,7 +304,7 @@ async function save() {
   } catch (raised) {
     // Beside the title rather than in a toast: a save that failed is a fact
     // about the document on screen, and the person is looking at it.
-    failed.value = raised?.messages?.[0] || 'Could not save'
+    failed.value = raised?.messages?.[0] || __('Could not save')
   } finally {
     busy.value = false
   }
@@ -341,8 +342,8 @@ const back = computed(() => cameFrom(route))
 const crumbs = computed(() => [
   back.value
     ? { label: back.value.label, route: back.value.path }
-    : { label: 'Files', route: { name: 'Drive' } },
-  { label: title.value || 'Untitled document' },
+    : { label: __('Files'), route: { name: 'Drive' } },
+  { label: title.value || __('Untitled document') },
 ])
 
 async function rename() {
@@ -355,14 +356,14 @@ const isTemplate = ref(!!props.doc.is_template)
 
 const menu = computed(() => [
   {
-    label: 'Rename',
+    label: __('Rename'),
     icon: 'pencil',
     condition: () => props.doc.can_write,
     onClick: () => { draftTitle.value = title.value; renaming.value = true },
   },
-  { label: 'Page setup', icon: 'settings-2', onClick: () => { showSettings.value = true } },
+  { label: __('Page setup'), icon: 'settings-2', onClick: () => { showSettings.value = true } },
   {
-    label: settings.value.locked ? 'Unlock' : 'Lock against typing',
+    label: settings.value.locked ? __('Unlock') : __('Lock against typing'),
     icon: settings.value.locked ? 'unlock' : 'lock',
     condition: () => props.doc.can_write,
     onClick: () => {
@@ -370,9 +371,9 @@ const menu = computed(() => [
       save()
     },
   },
-  { label: 'Print', icon: 'printer', onClick: () => window.print() },
+  { label: __('Print'), icon: 'printer', onClick: () => window.print() },
   {
-    label: 'Download as HTML',
+    label: __('Download as HTML'),
     icon: 'download',
     onClick: () => {
       window.location.href =
@@ -380,7 +381,7 @@ const menu = computed(() => [
     },
   },
   {
-    label: 'Copy as Markdown',
+    label: __('Copy as Markdown'),
     icon: 'clipboard',
     onClick: async () => {
       const answer = await workspace.docMarkdown(props.name)
@@ -388,15 +389,15 @@ const menu = computed(() => [
     },
   },
   {
-    label: 'Duplicate',
+    label: __('Duplicate'),
     icon: 'copy',
-    onClick: () => workspace.docDuplicate(props.name, `${title.value} copy`),
+    onClick: () => workspace.docDuplicate(props.name, __('{0} copy', [title.value])),
   },
   {
     // A template is a document with a flag on it, so this is the whole feature
     // — see `oneapp_core/docs/templates.py`. It then appears in the New menu,
     // in the Drive and on a record's Files tab alike.
-    label: isTemplate.value ? 'Stop using as a template' : 'Use as a template',
+    label: isTemplate.value ? __('Stop using as a template') : __('Use as a template'),
     icon: isTemplate.value ? 'bookmark-minus' : 'bookmark-plus',
     condition: () => props.doc.can_write,
     onClick: async () => {

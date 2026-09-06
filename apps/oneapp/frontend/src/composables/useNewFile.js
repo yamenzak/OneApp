@@ -18,6 +18,7 @@ import { useRouter } from 'vue-router'
 
 import { workspace } from '@/lib/workspace'
 import { RETURN_TO, returnQuery } from '@/lib/screen/returnTo'
+import { __ } from '@/lib/runtime/translate'
 
 //: How many templates a menu offers before it stops being a menu. Six is about
 //: what fits under "Blank sheet" without pushing the group below it off the
@@ -74,7 +75,7 @@ export function useNewFile(where, extras = () => []) {
   const newText = (kind) =>
     run(() => workspace.docMakeText({ ...target(), kind }), 'Doc')
 
-  const copyName = (row, fallback) => `${row?.file_name || fallback} copy`
+  const copyName = (row, fallback) => __('{0} copy', [row?.file_name || fallback])
 
   /**
    * The templates a menu can hold, and a way to the rest.
@@ -88,11 +89,11 @@ export function useNewFile(where, extras = () => []) {
     const entries = rows.slice(0, MOST).map((one) => ({
       label: one.file_name,
       icon,
-      onClick: () => start(one.name, copyName(one, 'Copy')),
+      onClick: () => start(one.name, copyName(one, __('Copy'))),
     }))
     if (rows.length > MOST) {
       entries.push({
-        label: `All ${rows.length} templates…`,
+        label: __('All {0} templates…', [rows.length]),
         icon: 'lucide-bookmark',
         onClick: () => router.push({ name: 'Drive', query: { place: 'templates' } }),
       })
@@ -104,18 +105,18 @@ export function useNewFile(where, extras = () => []) {
   // templates otherwise gets a menu where "Document" is below the fold.
   const options = computed(() => [
     {
-      group: 'Write',
+      group: __('Write'),
       options: [
-        { label: 'Document', icon: 'lucide-file-signature', onClick: () => newDoc() },
-        { label: 'Text file', icon: 'lucide-file-text', onClick: () => newText('txt') },
-        { label: 'Markdown file', icon: 'lucide-file-code', onClick: () => newText('md') },
+        { label: __('Document'), icon: 'lucide-file-signature', onClick: () => newDoc() },
+        { label: __('Text file'), icon: 'lucide-file-text', onClick: () => newText('txt') },
+        { label: __('Markdown file'), icon: 'lucide-file-code', onClick: () => newText('md') },
         ...offered(docTemplates.value, 'lucide-file-signature', newDoc),
       ],
     },
     {
-      group: 'Calculate',
+      group: __('Calculate'),
       options: [
-        { label: 'Blank sheet', icon: 'lucide-table-2', onClick: () => newSheet() },
+        { label: __('Blank sheet'), icon: 'lucide-table-2', onClick: () => newSheet() },
         ...extras(),
         ...offered(sheetTemplates.value, 'lucide-table-2', newSheet),
       ],

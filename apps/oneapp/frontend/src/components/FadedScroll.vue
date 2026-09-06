@@ -57,13 +57,13 @@ const EDGE = 'pointer-events-none absolute z-10'
 // the fade has to be the panel's own background or it is a grey band in dark
 // mode.
 const FADE = 'inset-x-0 h-6 from-surface-base to-transparent'
-const RULE = 'inset-y-0 w-0 border-l border-outline-gray-2'
+const RULE = 'inset-y-0 w-0 border-s border-outline-gray-2'
 
 const beforeEdge = computed(() =>
-  sideways.value ? `${RULE} left-0` : `${FADE} top-0 bg-gradient-to-b`,
+  sideways.value ? `${RULE} start-0` : `${FADE} top-0 bg-gradient-to-b`,
 )
 const afterEdge = computed(() =>
-  sideways.value ? `${RULE} right-0` : `${FADE} bottom-0 bg-gradient-to-t`,
+  sideways.value ? `${RULE} end-0` : `${FADE} bottom-0 bg-gradient-to-t`,
 )
 
 const scroller = ref(null)

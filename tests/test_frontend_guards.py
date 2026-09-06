@@ -787,7 +787,7 @@ def test_the_bottom_bar_leaves_a_slot_for_everything_else():
 
 	assert "PRIMARY_SLOTS = 4" in shell, "the bar no longer reserves a slot for More"
 	assert "slice(0, PRIMARY_SLOTS)" in shell, "the bar is no longer capped"
-	assert 'label="More"' in shell, "there is no way into the sheet"
+	assert "__('More')" in shell, "there is no way into the sheet"
 	# Everything the desktop keeps in the rail, its footer and the sidebar foot.
 	#
 	# `navItems` and not `overflowNav`: the sheet lists every destination this

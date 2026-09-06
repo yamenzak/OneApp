@@ -7,12 +7,12 @@
       data-oneapp="settings-dialog"
       class="flex shrink-0 items-center justify-between border-b border-outline-gray-1 px-4 py-3 sm:hidden"
     >
-      <span class="text-lg font-semibold text-ink-gray-8">Settings</span>
+      <span class="text-lg font-semibold text-ink-gray-8">{{ __('Settings') }}</span>
       <Button
         variant="ghost"
         icon="lucide-x"
-        label="Close settings"
-        tooltip="Close settings"
+        :label="__('Close settings')"
+        :tooltip="__('Close settings')"
         @click="settings.open = false"
       />
     </div>
@@ -100,6 +100,7 @@ import { TAB_GROUP, TAB_ITEM, TAB_STRIP, PANEL_CONTENT } from './geometry'
 import { TAB_ICONS } from './icons'
 import { settings } from '@/lib/shell/settings'
 import { workspace } from '../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 /**
  * Which component draws each `panel` tab.

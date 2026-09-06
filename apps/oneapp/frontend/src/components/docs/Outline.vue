@@ -21,7 +21,7 @@
           @click="go(one)"
         >
           <span
-            class="w-full truncate text-left text-p-sm"
+            class="w-full truncate text-start text-p-sm"
             :class="[
               one.level > 2 ? 'ps-3 text-ink-gray-6' : 'text-ink-gray-7',
               one.id === active ? 'font-medium text-ink-gray-8' : '',

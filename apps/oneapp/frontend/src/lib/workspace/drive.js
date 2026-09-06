@@ -7,6 +7,7 @@
  */
 
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 export const drive = {
   // A place is a filter: home, recents, favourites, shared, trash.
@@ -34,7 +35,7 @@ export const drive = {
     callMethod(
       'oneapp.oneapp_core.drive.attach',
       { file, doctype, docname, fieldname: fieldname || '' },
-      { successMessage: 'Attached' },
+      { successMessage: __('Attached') },
     ),
 
   // A link somebody without an account can follow, until a date. The one thing
@@ -49,7 +50,7 @@ export const drive = {
 
   driveRevokeLink: (name) =>
     callMethod('oneapp.oneapp_core.drive.revoke', { name }, {
-      successMessage: 'That link no longer works',
+      successMessage: __('That link no longer works'),
     }),
 
   // Who this file has been given to inside the workspace. `DocShare`, the same
@@ -70,14 +71,14 @@ export const drive = {
     callMethod(
       'oneapp.oneapp_core.drive.share_with',
       { file, user: user || '', everyone: everyone ? 1 : 0, level: level || 'read' },
-      { successMessage: 'Shared' },
+      { successMessage: __('Shared') },
     ),
 
   driveUnshare: (file, { user, everyone } = {}) =>
     callMethod(
       'oneapp.oneapp_core.drive.unshare_with',
       { file, user: user || '', everyone: everyone ? 1 : 0 },
-      { successMessage: 'Share removed' },
+      { successMessage: __('Share removed') },
     ),
 
   // `_liked_by`, which is why Favourites is a filter and not a table.
@@ -92,21 +93,21 @@ export const drive = {
     callMethod(
       'oneapp.oneapp_core.drive.make_folder',
       { file_name: fileName, folder },
-      { successMessage: 'Folder made' },
+      { successMessage: __('Folder made') },
     ),
 
   driveRename: (name, fileName) =>
     callMethod(
       'oneapp.oneapp_core.drive.rename',
       { name, file_name: fileName },
-      { successMessage: 'Renamed' },
+      { successMessage: __('Renamed') },
     ),
 
   driveMove: (names, folder) =>
     callMethod(
       'oneapp.oneapp_core.drive.move',
       { names: JSON.stringify(names), folder },
-      { successMessage: 'Moved' },
+      { successMessage: __('Moved') },
     ),
 
   // Reversible. The object survives until the sweep decides it has been thirty
@@ -115,14 +116,14 @@ export const drive = {
     callMethod(
       'oneapp.oneapp_core.drive.trash',
       { names: JSON.stringify(names) },
-      { successMessage: 'Moved to the bin' },
+      { successMessage: __('Moved to the bin') },
     ),
 
   driveRestore: (names) =>
     callMethod(
       'oneapp.oneapp_core.drive.restore',
       { names: JSON.stringify(names) },
-      { successMessage: 'Restored' },
+      { successMessage: __('Restored') },
     ),
 
   // The one that does not come back, which is why it lives on its own screen.
@@ -130,6 +131,6 @@ export const drive = {
     callMethod(
       'oneapp.oneapp_core.drive.empty_trash',
       { names: JSON.stringify(names || []) },
-      { successMessage: 'Deleted for good' },
+      { successMessage: __('Deleted for good') },
     ),
 }

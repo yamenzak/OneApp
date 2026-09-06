@@ -10,10 +10,9 @@
   -->
   <div class="flex flex-col gap-3">
     <div>
-      <p class="text-p-sm text-ink-gray-7">Can do</p>
+      <p class="text-p-sm text-ink-gray-7">{{ __('What they can do') }}</p>
       <p class="text-p-xs text-ink-gray-5">
-        Everyone gets the basics of each app this workspace has. Tick anything
-        more this person needs.
+        {{ __('Everyone gets the basics of each app this workspace has. Tick anything more this person needs.') }}
       </p>
     </div>
 
@@ -28,7 +27,7 @@
         :label="role.label"
         :disabled="role.is_default"
         :description="role.is_default
-          ? 'Everyone in this workspace has this'
+          ? __('Everyone in this workspace has this')
           : role.description || undefined"
         padded
         @update:model-value="toggle(role.key, $event)"
@@ -36,7 +35,7 @@
     </div>
 
     <p v-if="!groups.length" class="text-p-sm text-ink-gray-5">
-      This workspace has no apps yet, so there is nothing to hand out.
+      {{ __('This workspace has no apps yet, so there is nothing to hand out.') }}
     </p>
   </div>
 </template>
@@ -44,6 +43,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Checkbox } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /** Every role on offer, from `customer.roles`. */
@@ -70,7 +70,7 @@ const groups = computed(() => {
     spaces.get(key).roles.push(role)
   }
   const out = [...spaces.values()]
-  if (custom.length) out.push({ key: '__custom', label: 'Your own roles', roles: custom })
+  if (custom.length) out.push({ key: '__custom', label: __('Your own roles'), roles: custom })
   return out
 })
 

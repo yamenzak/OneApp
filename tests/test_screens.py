@@ -1164,7 +1164,15 @@ def test_the_two_halves_agree_on_what_a_view_type_is(spaceview):
 		f"{sorted(spaceview.VIEW_TYPES)}"
 	)
 
-	built = set(_re.findall(r"^  (\w+): \{[^}]*built: true", source, _re.M | _re.S))
+	# Each entry read as the text between its own key and the next one's: a
+	# label is a getter now — `get label() { return __('List') }` — so a scan
+	# that stops at the first `}` stops inside the first entry.
+	entries = _re.split(r"^  (\w+): \{", source, flags=_re.M)[1:]
+	built = {
+		name
+		for name, body in zip(entries[::2], entries[1::2])
+		if "built: true" in body
+	}
 	assert built == set(spaceview.BUILT_VIEW_TYPES)
 
 	# And on what each of them is nothing without. The sidebar is the SPA's

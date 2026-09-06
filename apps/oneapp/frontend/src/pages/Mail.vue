@@ -40,7 +40,7 @@
       second state to keep in step.
     -->
     <div
-      class="relative flex w-full shrink-0 flex-col border-r border-outline-gray-1 sm:w-96"
+      class="relative flex w-full shrink-0 flex-col border-e border-outline-gray-1 sm:w-96"
       :class="chosen ? 'hidden sm:flex' : 'flex'"
     >
       <div class="flex items-center gap-2 border-b border-outline-gray-1 p-2">
@@ -48,7 +48,7 @@
           v-model="search"
           class="flex-1"
           type="text"
-          placeholder="Search mail"
+          :placeholder="__('Search mail')"
           data-slot="mail-search"
           @keyup.enter="load()"
         />
@@ -57,21 +57,21 @@
         <Button
           variant="subtle"
           icon-left="lucide-pencil"
-          label="Write"
+          :label="__('Write')"
           @click="compose()"
         />
       </div>
 
-      <LoadingText v-if="loading" class="py-8" text="Loading" />
+      <LoadingText v-if="loading" class="py-8" :text="__('Loading')" />
 
       <EmptyState
         v-else-if="!threads.length"
         icon="lucide-inbox"
-        title="Nothing here"
+        :title="__('No mail yet')"
         :description="
           addresses.length
-            ? 'No mail on this address yet.'
-            : 'Nobody has given you an address yet. A workspace admin can, in Settings.'
+            ? __('New mail for this address arrives here.')
+            : __('Nobody has given you an address yet. An admin can add one in Settings.')
         "
       />
 
@@ -85,7 +85,7 @@
           v-for="one in threads"
           :key="one.key"
           :to="{ name: 'Mail', query: { folder, thread: one.key } }"
-          class="flex w-full flex-col gap-0.5 border-b border-outline-gray-1 px-3 py-2.5 text-left hover:bg-surface-gray-2"
+          class="flex w-full flex-col gap-0.5 border-b border-outline-gray-1 px-3 py-2.5 text-start hover:bg-surface-gray-2"
           :class="chosen === one.key ? 'bg-surface-gray-2' : ''"
           data-slot="mail-thread"
         >
@@ -109,7 +109,7 @@
               <Checkbox
                 :model-value="picked.has(one.key)"
                 data-slot="mail-pick"
-                :aria-label="`Select ${one.subject}`"
+                :aria-label="__('Select {0}', [one.subject])"
               />
             </span>
             <!-- No hover card in the list: fifty of them is fifty listeners
@@ -129,8 +129,8 @@
               variant="ghost"
               size="sm"
               icon="lucide-star"
-              :label="one.starred ? 'Unstar' : 'Star'"
-              :tooltip="one.starred ? 'Unstar' : 'Star'"
+              :label="one.starred ? __('Unstar') : __('Star')"
+              :tooltip="one.starred ? __('Unstar') : __('Star')"
               :class="one.starred ? 'text-ink-amber-3' : ''"
               data-slot="mail-star"
               @click.prevent.stop="toggleStar(one)"
@@ -152,7 +152,7 @@
           <Button
             class="w-full"
             variant="subtle"
-            :label="loadingMore ? 'Loading…' : 'Older conversations'"
+            :label="loadingMore ? __('Loading…') : __('Older conversations')"
             :loading="loadingMore"
             data-slot="mail-more"
             @click="loadMore()"
@@ -174,10 +174,10 @@
       >
         <!-- Icons, not labels: the list column is 384px, and four labelled
              buttons pushed the count off the left edge. -->
-        <Button variant="ghost" icon="lucide-archive" label="Archive" tooltip="Archive" @click="act('archive')" />
-        <Button variant="ghost" icon="lucide-trash-2" label="Delete" tooltip="Move to Trash" @click="act('bin')" />
-        <Button variant="ghost" icon="lucide-mail" label="Unread" tooltip="Mark unread" @click="act('unread')" />
-        <Button variant="ghost" icon="lucide-star" label="Star" tooltip="Star" @click="act('star')" />
+        <Button variant="ghost" icon="lucide-archive" :label="__('Archive')" :tooltip="__('Archive')" @click="act('archive')" />
+        <Button variant="ghost" icon="lucide-trash-2" :label="__('Delete')" :tooltip="__('Move to Trash')" @click="act('bin')" />
+        <Button variant="ghost" icon="lucide-mail" :label="__('Unread')" :tooltip="__('Mark unread')" @click="act('unread')" />
+        <Button variant="ghost" icon="lucide-star" :label="__('Star')" :tooltip="__('Star')" @click="act('star')" />
       </SelectionBar>
     </div>
 
@@ -186,8 +186,8 @@
       <EmptyState
         v-if="!chosen"
         icon="lucide-mail-open"
-        title="Nothing open"
-        description="Pick a conversation."
+        :title="__('Nothing open')"
+        :description="__('Pick a conversation from the list.')"
       />
 
       <div v-else class="min-h-0 flex-1 overflow-y-auto p-5">
@@ -198,7 +198,7 @@
           :to="{ name: 'Mail', query: { folder } }"
           data-slot="mail-back"
         >
-          <Button variant="ghost" icon-left="lucide-arrow-left" label="All conversations" />
+          <Button variant="ghost" icon-left="lucide-arrow-left" :label="__('All conversations')" />
         </RouterLink>
         <h2 class="mt-2 text-lg font-semibold text-ink-gray-9 sm:mt-0">{{ openSubject }}</h2>
 
@@ -213,20 +213,20 @@
           <Button
             variant="subtle"
             icon-left="lucide-reply"
-            label="Reply"
+            :label="__('Reply')"
             @click="compose(last, 'reply')"
           />
           <Button
             variant="ghost"
             icon-left="lucide-reply-all"
-            label="Reply to all"
+            :label="__('Reply to all')"
             data-slot="mail-reply-all"
             @click="compose(last, 'reply_all')"
           />
           <Button
             variant="ghost"
             icon-left="lucide-forward"
-            label="Forward"
+            :label="__('Forward')"
             data-slot="mail-forward"
             @click="compose(last, 'forward')"
           />
@@ -236,21 +236,21 @@
           <Button
             variant="ghost"
             icon-left="lucide-archive"
-            label="Archive"
+            :label="__('Archive')"
             data-slot="mail-archive"
             @click="act('archive')"
           />
           <Button
             variant="ghost"
             icon-left="lucide-trash-2"
-            label="Delete"
+            :label="__('Delete')"
             data-slot="mail-delete"
             @click="act('bin')"
           />
           <Button
             variant="ghost"
             icon-left="lucide-mail"
-            label="Mark unread"
+            :label="__('Mark unread')"
             data-slot="mail-unread"
             @click="act('unread')"
           />
@@ -258,7 +258,7 @@
             <Button
               variant="ghost"
               icon-left="lucide-folder-input"
-              label="Move to"
+              :label="__('Move to')"
               data-slot="mail-move"
             />
           </Dropdown>
@@ -276,13 +276,13 @@
     -->
     <div
       v-if="note"
-      class="fixed bottom-8 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-4 py-2 shadow-xl"
+      class="fixed inset-x-0 bottom-8 z-20 mx-auto flex w-fit items-center gap-3 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-4 py-2 shadow-xl"
       data-slot="mail-undo"
     >
       <span class="text-p-sm text-ink-gray-8">{{ note.text }}</span>
       <!-- Only where there is something to undo: mail that arrived on a routed
            address was in no folder to begin with. -->
-      <Button v-if="note.run" variant="ghost" size="sm" label="Undo" @click="undo()" />
+      <Button v-if="note.run" variant="ghost" size="sm" :label="__('Undo')" @click="undo()" />
     </div>
 
     <!-- Every shortcut this screen answers to, because one nobody can find is
@@ -330,6 +330,7 @@ import { onDoctypeChange } from '@/lib/runtime/socket'
 import { MOD, useShortcuts } from '@/lib/shell/shortcuts'
 import { useIsMobile } from '@/lib/shell/breakpoint'
 import { loadMail, mail } from '@/lib/shell/mail'
+import { __ } from '@/lib/runtime/translate'
 import { workspace } from '../lib/workspace'
 
 const loading = ref(true)
@@ -418,7 +419,7 @@ const folderOptions = computed(() => {
       // mailbox's inbox: `reading.py` says the address *is* the inbox.
       groups.push({
         group: one.label,
-        options: [{ ...option, label: 'Inbox', icon: 'lucide-inbox' }],
+        options: [{ ...option, label: __('Inbox'), icon: 'lucide-inbox' }],
       })
     }
   }
@@ -431,13 +432,13 @@ const folderOptions = computed(() => {
  * `?folder=all` is still the state the page opens in.
  */
 const folderName = computed(
-  () => mail.folders.find((one) => one.key === folder.value)?.label || 'All mail',
+  () => mail.folders.find((one) => one.key === folder.value)?.label || __('All mail'),
 )
 
 /** The trail. `All mail` is the root and a folder is under it — one level,
  *  because a mail folder tree is one level here. */
 const crumbs = computed(() => [
-  { label: 'Mail', route: { name: 'Mail' } },
+  { label: __('Mail'), route: { name: 'Mail' } },
   ...(folder.value === 'all' ? [] : [{
     label: folderName.value,
     route: { name: 'Mail', query: { folder: folder.value } },
@@ -522,12 +523,24 @@ const pickAll = () => threads.value.forEach((row) => picked.value.add(row.key))
 
 /** What the bar says afterwards, and what pressing it again would mean. */
 const WORDS = {
-  archive: 'Archived',
-  bin: 'Moved to Trash',
-  unread: 'Marked unread',
-  read: 'Marked read',
-  star: 'Starred',
-  unstar: 'Unstarred',
+  archive: __('Archived'),
+  bin: __('Moved to Trash'),
+  unread: __('Marked unread'),
+  read: __('Marked read'),
+  star: __('Starred'),
+  unstar: __('Unstarred'),
+}
+
+/** The same, said of several. A whole sentence each rather than a word with a
+ *  number stuck on the end, because where the number goes is not the same in
+ *  every language. */
+const WORDS_MANY = {
+  archive: (n) => __('Archived {0}', [n]),
+  bin: (n) => __('Moved {0} to Trash', [n]),
+  unread: (n) => __('Marked {0} unread', [n]),
+  read: (n) => __('Marked {0} read', [n]),
+  star: (n) => __('Starred {0}', [n]),
+  unstar: (n) => __('Unstarred {0}', [n]),
 }
 
 /** For the flags, undo is the opposite flag: nothing moved, so nothing to put back. */
@@ -555,7 +568,7 @@ async function act(what) {
   picked.value.clear()
 
   const count = done?.done || keys.length
-  const said = keys.length > 1 ? `${WORDS[what]} ${count}` : WORDS[what]
+  const said = keys.length > 1 ? WORDS_MANY[what](count) : WORDS[what]
 
   // Conversations whose folder the server actually recorded. Mail that arrived
   // on a routed address was in no folder at all, and inventing an INBOX it never
@@ -684,7 +697,7 @@ async function undo() {
 }
 
 async function afterSend(done) {
-  announce('Sent', () => unsend(done?.name || ''), done?.undo_seconds || 15)
+  announce(__('Sent'), () => unsend(done?.name || ''), done?.undo_seconds || 15)
   await load()
 }
 
@@ -707,52 +720,52 @@ const showingKeys = ref(false)
 /** The list, in the shape the dialog draws — and the source of the bindings. */
 const SHORTCUTS = [
   {
-    title: 'Moving about',
+    title: __('Moving about'),
     keys: [
-      [['J'], 'Next conversation'],
-      [['K'], 'Previous conversation'],
-      [['/'], 'Search'],
-      [['Esc'], 'Clear the selection, or close the conversation'],
-      [['?'], 'This list'],
+      [['J'], __('Next conversation')],
+      [['K'], __('Previous conversation')],
+      [['/'], __('Search')],
+      [['Esc'], __('Clear the selection, or close the conversation')],
+      [['?'], __('This list')],
     ],
   },
   {
-    title: 'Writing',
+    title: __('Writing'),
     keys: [
-      [['C'], 'Write'],
-      [['R'], 'Reply'],
-      [['Shift', 'R'], 'Reply to all'],
-      [['F'], 'Forward'],
+      [['C'], __('Write')],
+      [['R'], __('Reply')],
+      [['Shift', 'R'], __('Reply to all')],
+      [['F'], __('Forward')],
     ],
   },
   {
-    title: 'Filing',
+    title: __('Filing'),
     keys: [
-      [['E'], 'Archive'],
-      [['#'], 'Move to Trash'],
-      [['U'], 'Mark unread'],
-      [['S'], 'Star'],
+      [['E'], __('Archive')],
+      [['#'], __('Move to Trash')],
+      [['U'], __('Mark unread')],
+      [['S'], __('Star')],
     ],
   },
   {
     // Not keys, but the same question — "what can I type here?" — and the same
     // place people look for the answer.
-    title: 'Searching',
+    title: __('Searching'),
     keys: [
-      [['from:'], 'Who it is from'],
-      [['to:'], 'Who it went to'],
-      [['subject:'], 'The subject line only'],
-      [['has:attachment'], 'Carries a file'],
-      [['is:unread'], 'Not read yet'],
-      [['is:starred'], 'Starred'],
+      [['from:'], __('Who it is from')],
+      [['to:'], __('Who it went to')],
+      [['subject:'], __('The subject line only')],
+      [['has:attachment'], __('Carries a file')],
+      [['is:unread'], __('Not read yet')],
+      [['is:starred'], __('Starred')],
     ],
   },
   {
-    title: 'Selecting',
+    title: __('Selecting'),
     keys: [
-      [['X'], 'Tick this conversation'],
-      [[MOD, 'A'], 'Tick everything on this page'],
-      [[MOD, 'Z'], 'Undo the last thing'],
+      [['X'], __('Tick this conversation')],
+      [[MOD, 'A'], __('Tick everything on this page')],
+      [[MOD, 'Z'], __('Undo the last thing')],
     ],
   },
 ]

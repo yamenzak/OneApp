@@ -15,10 +15,10 @@
     <Alert
       v-if="!state.available && state.loaded"
       theme="amber"
-      title="The assistant is not switched on here"
+      :title="__('The assistant is not switched on here')"
     >
       <template #description>
-        A workspace owner can turn it on under Settings, AI.
+        {{ __('A workspace owner can turn it on under Settings, AI.') }}
       </template>
     </Alert>
 
@@ -27,15 +27,13 @@
       <div class="mx-auto flex w-full flex-col gap-6" :class="wide ? 'max-w-3xl' : ''">
         <div v-if="!turns.length && !asking" class="flex flex-col gap-2">
           <p class="text-p-base text-ink-gray-5">
-            Ask about anything in this workspace — the records on your screens, a
-            file in the Drive, what a document says. Only what you can already
-            open.
+            {{ __('Ask about anything in this workspace — the records on your screens, your files, what a document says. Only what you can already open.') }}
           </p>
           <!-- What it is scoped to, said before the first question rather than
                discovered from an answer that turned out to be narrower than
                expected. -->
           <p v-if="on?.label" class="text-p-sm text-ink-gray-5">
-            Looking at <span class="font-medium text-ink-gray-7">{{ on.label }}</span>.
+            {{ __('Looking at {0}.', [on.label]) }}
           </p>
         </div>
 
@@ -47,7 +45,7 @@
           data-slot="chat-thinking"
         >
           <Spinner class="size-4" />
-          <span class="text-p-sm">Looking…</span>
+          <span class="text-p-sm">{{ __('Looking…') }}</span>
         </div>
       </div>
     </div>
@@ -63,7 +61,9 @@
           v-model="typed"
           class="flex-1"
           :rows="1"
-          :placeholder="on?.label ? `Ask about ${on.label}` : 'Ask about this workspace'"
+          :placeholder="
+            on?.label ? __('Ask about {0}', [on.label]) : __('Ask about this workspace')
+          "
           data-slot="chat-input"
           :disabled="asking || (state.loaded && !state.available)"
           @keydown.enter.exact.prevent="ask"
@@ -71,8 +71,8 @@
         <Button
           variant="solid"
           icon-left="lucide-send"
-          :label="wide ? 'Send' : ''"
-          tooltip="Send"
+          :label="wide ? __('Send') : ''"
+          :tooltip="__('Send')"
           data-slot="chat-send"
           :loading="asking"
           :disabled="!typed.trim()"
@@ -89,6 +89,7 @@ import { Alert, Button, Spinner, Textarea } from '@/ui'
 import ChatTurn from './ChatTurn.vue'
 import { assistant as state, loadAssistant } from '@/lib/shell/assistant'
 import { workspace } from '@/lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /**

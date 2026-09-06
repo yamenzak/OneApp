@@ -41,8 +41,8 @@
         data-slot="record-more"
         icon="lucide-ellipsis-vertical"
         variant="ghost"
-        label="More for this record"
-        tooltip="More"
+        :label="__('More for this record')"
+        :tooltip="__('More')"
         :loading="Boolean(running) && !forward.some((one) => one.action === running)"
       />
     </Dropdown>
@@ -55,11 +55,11 @@
   -->
   <Dialog
     v-model="confirming"
-    :title="pending?.action || 'Are you sure?'"
+    :title="pending?.action || __('Cancel this record')"
   >
     <p class="text-p-base text-ink-gray-7">{{ warning }}</p>
     <template #actions>
-      <Button label="Never mind" @click="confirming = false" />
+      <Button :label="__('Never mind')" @click="confirming = false" />
       <Button variant="solid" theme="red" :label="pending?.action" @click="run(pending)" />
     </template>
   </Dialog>
@@ -70,6 +70,7 @@ import { computed, ref } from 'vue'
 import { Button, Dialog, Dropdown } from '@/ui'
 import { workspace } from '../../../lib/workspace'
 import { notifyError } from '@/lib/runtime/notify'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -121,8 +122,10 @@ const menu = computed(() => [
 
 const warning = computed(() =>
   props.state?.workflow
-    ? `This takes the record to ${pending.value?.next || 'the next state'}, which cancels it.`
-    : 'Cancelling unwinds what submitting this wrote. It cannot be undone.',
+    ? __('This takes the record to {0}, which cancels it.', [
+      pending.value?.next || __('the next state'),
+    ])
+    : __('Cancelling unwinds what submitting this wrote. It cannot be undone.'),
 )
 
 const ask = (one) => {

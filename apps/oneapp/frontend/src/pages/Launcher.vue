@@ -7,7 +7,7 @@
   -->
   <PageHeader>
     <nav data-slot="breadcrumb" aria-label="Breadcrumb" class="flex min-w-0 items-center">
-      <Breadcrumbs :items="[{ label: 'Spaces', route: { name: 'Launcher' } }]" />
+      <Breadcrumbs :items="[{ label: __('Spaces'), route: { name: 'Launcher' } }]" />
     </nav>
   </PageHeader>
 
@@ -40,8 +40,8 @@
     <EmptyState
       v-else
       icon="lucide-layout-grid"
-      title="No spaces yet"
-      description="Nothing has been enabled for this workspace. If you were expecting something here, get in touch and we will sort it out."
+      :title="__('No spaces yet')"
+      :description="__('Nothing has been added to your workspace. An admin can add a space, and it appears here.')"
     />
   </div>
 </template>
@@ -51,6 +51,7 @@ import { computed } from 'vue'
 import { Breadcrumbs, PageHeader, Avatar, LoadingIndicator } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import { session } from '@/lib/shell/session'
+import { __ } from '@/lib/runtime/translate'
 
 const spaces = computed(() => session.spaces)
 </script>

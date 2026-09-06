@@ -2,7 +2,7 @@
   <Sidebar
     v-model:collapsed="collapsed"
     :width="`${width}px`"
-    class="border-r border-outline-gray-1"
+    class="border-e border-outline-gray-1"
   >
     <!--
       No logo: the rail already shows the active space's tile.

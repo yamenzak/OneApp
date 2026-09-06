@@ -12,16 +12,16 @@
       <Alert
         v-if="readiness.canProvision"
         theme="green"
-        title="Ready to provision"
+        :title="__('Ready to provision')"
         class="flex-1"
       >
         <template #description>
-          Anything outstanding below limits what tenants can do, not whether they come up.
+          {{ __('Anything outstanding below limits what tenants can do, not whether they come up.') }}
         </template>
       </Alert>
-      <Alert v-else theme="amber" title="Provisioning is disabled" class="flex-1">
+      <Alert v-else theme="amber" :title="__('Provisioning is disabled')" class="flex-1">
         <template #description>
-          A half-configured control plane fails partway, with a real site already created.
+          {{ __('A half-configured control plane fails partway, with a real site already created.') }}
         </template>
       </Alert>
 
@@ -35,8 +35,8 @@
         -->
         <Button
           icon-left="lucide-mail-check"
-          label="Bring up mail"
-          tooltip="Create the KV namespace, deploy the inbound worker, and turn Email Routing on"
+          :label="__('Bring up mail')"
+          :tooltip="__('Create the KV namespace, deploy the inbound worker, and turn Email Routing on')"
           :loading="bringingUp"
           @click="bringUp"
         />
@@ -45,8 +45,8 @@
         <Button
           variant="ghost"
           icon="lucide-refresh-cw"
-          label="Re-check"
-          tooltip="Re-check"
+          :label="__('Re-check')"
+          :tooltip="__('Re-check')"
           :loading="readiness.loading"
           @click="readiness.load()"
         />
@@ -57,7 +57,7 @@
          thrown as a toast: four steps with one cross in the middle is a thing
          to read, not a thing to catch. -->
     <section v-if="steps.length" class="mb-8">
-      <h2 class="mb-2 text-base-medium text-ink-gray-8">Mail bring-up</h2>
+      <h2 class="mb-2 text-base-medium text-ink-gray-8">{{ __('Mail bring-up') }}</h2>
       <List :columns="['minmax(0,1fr)', '5.5rem']" divider="full">
         <ListRows :items="steps" row-key="label" v-slot="{ item: step, value }">
           <ListRow :value="value" class="py-3">
@@ -67,7 +67,7 @@
             </ListCell>
             <ListCell>
               <Badge :theme="step.ok ? 'green' : 'amber'"
-                     :label="step.ok ? 'Done' : 'Left'" />
+                     :label="step.ok ? __('Done') : __('Left')" />
             </ListCell>
           </ListRow>
         </ListRows>
@@ -78,7 +78,7 @@
       <div class="mb-1 flex items-baseline justify-between">
         <h2 class="text-base-medium text-ink-gray-8">{{ group.label }}</h2>
         <span class="text-p-sm tabular-nums text-ink-gray-5">
-          {{ done(group.key) }} of {{ readiness.group(group.key).length }}
+          {{ __('{0} of {1}', [done(group.key), readiness.group(group.key).length]) }}
         </span>
       </div>
       <p class="mb-3 text-p-sm text-ink-gray-5">{{ group.blurb }}</p>
@@ -109,7 +109,7 @@
             <ListCell class="items-start justify-end pt-0.5">
               <Badge
                 :theme="check.ok ? 'green' : group.key === 'blocking' ? 'red' : 'gray'"
-                :label="check.ok ? 'Set' : 'Missing'"
+                :label="check.ok ? __('Set') : __('Missing')"
                 variant="subtle"
               />
             </ListCell>
@@ -126,6 +126,7 @@ import { onMounted, ref } from 'vue'
 import { Alert, Badge, Button, List, ListRows, ListRow, ListCell } from '@/ui'
 import { callMethod } from '@/lib/runtime/resource'
 import { readiness } from './readiness'
+import { __ } from '@/lib/runtime/translate'
 
 // Every screen component takes these, whether or not it reads them.
 defineProps({
@@ -143,7 +144,7 @@ async function bringUp() {
   bringingUp.value = true
   try {
     const answer = await callMethod('oneapp_control.api.admin.bring_up', {}, {
-      success: 'Mail brought up',
+      success: __('Mail brought up'),
     })
     steps.value = answer?.steps || []
   } finally {
@@ -156,18 +157,18 @@ async function bringUp() {
 const GROUPS = [
   {
     key: 'blocking',
-    label: 'Required',
-    blurb: 'Provisioning is refused until all of these pass.',
+    label: __('Required'),
+    blurb: __('Provisioning is refused until all of these pass.'),
   },
   {
     key: 'billing',
-    label: 'Billing',
-    blurb: 'Tenants can be created without these, but nobody can pay you.',
+    label: __('Billing'),
+    blurb: __('Tenants can be created without these, but nobody can pay you.'),
   },
   {
     key: 'optional',
-    label: 'Tenant features',
-    blurb: 'Each is a capability tenants gain. Sites work without them.',
+    label: __('Tenant features'),
+    blurb: __('Each is a capability tenants gain. Sites work without them.'),
   },
 ]
 

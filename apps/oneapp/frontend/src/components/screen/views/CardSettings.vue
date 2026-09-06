@@ -18,8 +18,8 @@
       -->
       <Select
         v-if="buckets"
-        label="Columns of"
-        description="A Select becomes its own options; a Link becomes whoever is on the page."
+        :label="__('Columns of')"
+        :description="__('A Select becomes its own options; a Link becomes whoever is on the page.')"
         :model-value="field"
         :options="fieldOptions"
         @update:model-value="field = $event"
@@ -35,23 +35,23 @@
           card is a record rendered badly.
         -->
         <MultiSelect
-          label="On each card"
-          description="Under the title, in this order. Nothing chosen shows the columns you have on the list."
+          :label="__('On each card')"
+          :description="__('Under the title, in this order. Nothing chosen shows the columns you have on the list.')"
           :model-value="cardFields"
           :options="cardOptions"
-          placeholder="The columns on the list"
-          empty-text="No field by that name"
+          :placeholder="__('The columns on the list')"
+          :empty-text="__('No field by that name')"
           @update:model-value="pickCards"
         />
         <p v-if="full" class="text-p-xs text-ink-gray-5">
-          That is as many as a card carries.
+          {{ __('That is as many as a card carries.') }}
         </p>
       </div>
     </div>
 
     <template #actions>
-      <Button variant="ghost" label="Reset" @click="reset" />
-      <Button variant="solid" label="Done" @click="open = false" />
+      <Button variant="ghost" :label="__('Reset')" @click="reset" />
+      <Button variant="solid" :label="__('Done')" @click="open = false" />
     </template>
   </Dialog>
 </template>
@@ -59,6 +59,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Button, Dialog, MultiSelect, Select } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -86,7 +87,7 @@ const open = computed({
 // checked against a string at each of the three places that ask.
 const buckets = computed(() => props.viewType === 'board')
 
-const title = computed(() => (buckets.value ? 'Board settings' : 'Card settings'))
+const title = computed(() => (buckets.value ? __('Board settings') : __('Card settings')))
 
 const board = computed(() => props.board || {})
 

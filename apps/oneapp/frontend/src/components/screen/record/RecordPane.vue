@@ -51,7 +51,7 @@
       :default-size="DEFAULT"
       :max-share="maxShare"
       side="left"
-      label="the record"
+      :label="__('the record')"
       remember="onespace.record-pane"
       slot-name="record-resizer"
     />
@@ -69,6 +69,7 @@
 <script setup>
 import { ref } from 'vue'
 import Resizer from '../../Resizer.vue'
+import { __ } from '@/lib/runtime/translate'
 import { useIsMobile } from '@/lib/shell/breakpoint'
 
 defineProps({

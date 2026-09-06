@@ -4,26 +4,36 @@
       <Select
         v-if="addresses.length > 1"
         v-model="draft.sender"
-        label="From"
+        :label="__('From')"
         :options="addresses.map((one) => ({ label: one, value: one }))"
       />
       <!-- Stacked on a phone: side by side, the toggle leaves the recipients
            a box too narrow to read one address in. -->
       <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
-        <RecipientField v-model="draft.to" class="flex-1" label="To" />
+        <RecipientField v-model="draft.to" class="flex-1" :label="__('To')" />
         <!-- Behind a toggle, because most messages have neither and two empty
              boxes above every one of them is two boxes to skip. -->
         <Button
           variant="ghost"
           class="self-start sm:self-auto"
-          :label="copies ? 'Hide Cc and Bcc' : 'Cc and Bcc'"
+          :label="copies ? __('Hide Cc and Bcc') : __('Cc and Bcc')"
           data-slot="mail-copies"
           @click="copies = !copies"
         />
       </div>
-      <RecipientField v-if="copies" v-model="draft.cc" label="Cc" placeholder="Also to" />
-      <RecipientField v-if="copies" v-model="draft.bcc" label="Bcc" placeholder="Privately to" />
-      <FormControl v-model="draft.subject" label="Subject" />
+      <RecipientField
+        v-if="copies"
+        v-model="draft.cc"
+        :label="__('Cc')"
+        :placeholder="__('Also to')"
+      />
+      <RecipientField
+        v-if="copies"
+        v-model="draft.bcc"
+        :label="__('Bcc')"
+        :placeholder="__('Privately to')"
+      />
+      <FormControl v-model="draft.subject" :label="__('Subject')" />
 
       <!--
         The same editor a Text Editor field gets: mail is prose, and a textarea
@@ -36,12 +46,12 @@
           v-model="draft.content"
           :extensions="EXTENSIONS"
           format="html"
-          placeholder="Write your message"
+          :placeholder="__('Write your message')"
           :upload-function="uploadInline"
         >
           <template #default="{ editor }">
             <EditorFixedMenu :editor="editor" :items="articleToolbar" class="mb-2" />
-            <EditorContent :editor="editor" aria-label="Message" dir="auto" />
+            <EditorContent :editor="editor" :aria-label="__('Message')" dir="auto" />
           </template>
         </Editor>
       </div>
@@ -61,8 +71,8 @@
             variant="ghost"
             size="sm"
             icon="lucide-x"
-            :label="`Remove ${one.file_name}`"
-            :tooltip="`Remove ${one.file_name}`"
+            :label="__('Remove {0}', [one.file_name])"
+            :tooltip="__('Remove {0}', [one.file_name])"
             @click="unattach(one)"
           />
         </span>
@@ -74,7 +84,7 @@
         <Button
           variant="subtle"
           icon-left="lucide-paperclip"
-          label="Attach a file"
+          :label="__('Attach a file')"
           data-slot="mail-attach"
           @click="picking = true"
         />
@@ -86,7 +96,7 @@
           <Button
             variant="subtle"
             icon-left="lucide-file-text"
-            label="Use a template"
+            :label="__('Use a template')"
             data-slot="mail-templates"
           />
         </Dropdown>
@@ -96,7 +106,7 @@
       <ErrorMessage v-if="error" :message="error" />
     </div>
     <template #actions>
-      <Button variant="solid" label="Send" :loading="sending" @click="post" />
+      <Button variant="solid" :label="__('Send')" :loading="sending" @click="post" />
     </template>
   </Dialog>
 </template>
@@ -126,6 +136,7 @@ import FilePicker from '../drive/FilePicker.vue'
 import { workspace } from '../../lib/workspace'
 import { session } from '@/lib/shell/session'
 import { openSettings } from '@/lib/shell/settings'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /** The addresses this person may send from. The first is the default. */
@@ -151,7 +162,7 @@ const copies = ref(false)
 const picking = ref(false)
 const sending = ref(false)
 const error = ref('')
-const title = ref('New message')
+const title = ref(__('New message'))
 
 /** The workspace's templates, read once per composer opening. */
 const templates = ref([])
@@ -169,7 +180,7 @@ const templateOptions = computed(() => [
   // here. Only for somebody who may: the tab is an admin's.
   ...(session.isAdmin
     ? [{
-        label: 'Manage templates…',
+        label: __('Manage templates…'),
         icon: 'lucide-settings',
         onClick: () => openSettings('templates'),
       }]
@@ -204,7 +215,12 @@ function unattach(one) {
   draft.attachments = draft.attachments.filter((row) => row.name !== one.name)
 }
 
-const TITLES = { reply: 'Reply', reply_all: 'Reply to all', forward: 'Forward' }
+const titleFor = (kind) =>
+  ({
+    reply: __('Reply'),
+    reply_all: __('Reply to all'),
+    forward: __('Forward'),
+  })[kind] || __('Reply')
 
 /**
  * Sign the message with whatever the From address signs with.
@@ -255,14 +271,14 @@ async function compose(from, kind = 'reply') {
   error.value = ''
   copies.value = false
   blank()
-  title.value = 'New message'
+  title.value = __('New message')
 
   // Read on opening rather than held: a template written a minute ago should be
   // in the list.
   workspace.mailTemplates().then((found) => { templates.value = found || [] })
 
   if (from) {
-    title.value = TITLES[kind] || 'Reply'
+    title.value = titleFor(kind)
     const opening = await workspace.mailDraft(from.name, kind)
     Object.assign(draft, opening, { bcc: '' })
     draft.attachments = opening.attachments || []

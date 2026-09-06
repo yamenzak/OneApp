@@ -138,7 +138,7 @@ def test_the_dialog_is_still_bare_and_so_renders_no_close_button():
     assert re.search(r"<Dialog[^>]*\bbare\b", source("SettingsDialog.vue"), re.S)
 
     shell = SHELL.read_text()
-    assert 'label="Close settings"' in shell, "the mobile close control is gone"
+    assert "__('Close settings')" in shell, "the mobile close control is gone"
     assert "sm:hidden" in shell, "the close control should not double up on desktop"
 
 

@@ -38,6 +38,7 @@ import {
   Strike,
   Undo,
 } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 
 export const documentToolbar = [
   Undo,
@@ -68,21 +69,21 @@ export const documentToolbar = [
 
 /** How wide the page is, and what a line of it looks like. */
 export const WIDTHS = {
-  page: { label: 'Page', class: 'max-w-[48rem]' },
-  wide: { label: 'Wide', class: 'max-w-[64rem]' },
-  full: { label: 'Full width', class: 'max-w-none' },
+  page: { label: __('Page'), class: 'max-w-[48rem]' },
+  wide: { label: __('Wide'), class: 'max-w-[64rem]' },
+  full: { label: __('Full width'), class: 'max-w-none' },
 }
 
 export const FONTS = {
-  '': { label: 'Default', class: '' },
-  serif: { label: 'Serif', class: 'font-serif' },
-  mono: { label: 'Monospace', class: 'font-mono' },
+  '': { label: __('Default'), class: '' },
+  serif: { label: __('Serif'), class: 'font-serif' },
+  mono: { label: __('Monospace'), class: 'font-mono' },
 }
 
 export const SPACINGS = {
-  tight: { label: 'Tight', class: 'leading-snug' },
-  normal: { label: 'Normal', class: 'leading-relaxed' },
-  loose: { label: 'Loose', class: 'leading-loose' },
+  tight: { label: __('Tight'), class: 'leading-snug' },
+  normal: { label: __('Normal'), class: 'leading-relaxed' },
+  loose: { label: __('Loose'), class: 'leading-loose' },
 }
 
 /** The three settings as one list of classes, for the element that draws them. */

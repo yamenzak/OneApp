@@ -15,13 +15,13 @@
       blocked, and the customer believes whichever they read second.
     -->
     <p v-if="usage?.exceeded && graceUntil" class="mt-1.5 text-p-sm text-ink-amber-3">
-      Over the limit, but not blocked until {{ graceUntil }}.
+      {{ __('Over the limit, but not blocked until {0}.', [graceUntil]) }}
     </p>
     <p v-else-if="usage?.exceeded" class="mt-1.5 text-p-sm text-ink-red-3">
       {{ exceededHint }}
     </p>
     <p v-else-if="usage?.warn" class="mt-1.5 text-p-sm text-ink-amber-3">
-      Approaching the limit.
+      {{ __('Approaching the limit.') }}
     </p>
   </div>
 </template>
@@ -29,13 +29,14 @@
 <script setup>
 import { computed } from 'vue'
 import { Progress } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   label: { type: String, required: true },
   usage: { type: Object, default: null },
   // 'bytes' for storage and database, 'count' for seats.
   format: { type: String, default: 'bytes' },
-  exceededHint: { type: String, default: 'At the limit. Free some space or add more.' },
+  exceededHint: { type: String, default: () => __('At the limit. Free some space or add more.') },
   // Set while an overage window is open, and it changes what being over means:
   // amber and a date rather than red and an instruction.
   graceUntil: { type: String, default: '' },
@@ -74,7 +75,7 @@ const formatted = computed(() => {
   if (!u) return ''
   if (!u.quota) return props.format === 'bytes' ? bytes(u.used) : String(u.used)
   return props.format === 'bytes'
-    ? `${bytes(u.used)} of ${bytes(u.quota)}`
-    : `${u.used} of ${u.quota}`
+    ? __('{0} of {1}', [bytes(u.used), bytes(u.quota)])
+    : __('{0} of {1}', [u.used, u.quota])
 })
 </script>

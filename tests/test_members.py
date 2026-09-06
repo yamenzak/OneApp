@@ -246,10 +246,12 @@ def test_the_team_screen_is_declared_and_reachable():
 
 
 def test_the_page_says_an_invite_is_not_immediate():
-    """It lands on the next sync. Saying so is the difference between 'slow' and
-    'broken' for someone watching a colleague fail to sign in."""
+    """It lands on the next sync — but `sync` is our word, not the reader's, so
+    the page owes them a duration instead. Saying either is the difference
+    between 'slow' and 'broken' for somebody watching a colleague fail to sign
+    in; saying neither is the failure this guards."""
     page = (ACCOUNT_SCREENS / "People.vue").read_text()
-    assert "syncs" in page
+    assert "within a few minutes" in page
 
 
 # --------------------------------------------------------------------------- #

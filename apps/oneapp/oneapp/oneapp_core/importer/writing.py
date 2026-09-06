@@ -1,6 +1,7 @@
 """Writing a mapped row, with its attachments and its provenance."""
 
 import frappe
+from frappe import _
 from frappe.utils import cint, get_datetime, now_datetime
 from .source import attachments, download
 from .mapping import resolve
@@ -160,9 +161,11 @@ def _remember(plan, step, source_name: str, target_name: str):
 		# rewriting the identity would repoint every link that already resolved
 		# through it, so the row fails and the plan's filters get fixed.
 		frappe.throw(
-			f"{step.source_doctype} {source_name} is already {was} "
-			f"{frappe.db.get_value('Import Identity', existing, 'target_name')} in this plan — "
-			f"two steps claim it. Narrow one step's filters."
+			_("{0} {1} is already {2} {3} in this plan — two steps claim it. "
+			  "Narrow one step's filters.").format(
+				step.source_doctype, source_name, was,
+				frappe.db.get_value("Import Identity", existing, "target_name"),
+			)
 		)
 	if existing:
 		frappe.db.set_value("Import Identity", existing,

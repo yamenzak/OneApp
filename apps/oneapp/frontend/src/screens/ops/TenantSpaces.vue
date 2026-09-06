@@ -1,9 +1,7 @@
 <template>
   <div>
     <p class="mb-4 text-p-base text-ink-gray-6">
-      Every plan carries every generally available app, so this is only about the
-      restricted ones — the bespoke single-tenant work that entitlement exists
-      for. Granting one adds its role on the next sync; revoking removes it.
+      {{ __('Every plan carries every generally available app, so this is only about the restricted ones — the bespoke single-tenant work that entitlement exists for. Granting one adds its role on the next sync; revoking removes it.') }}
     </p>
 
     <div v-if="loading && !rows.length" class="grid place-items-center py-12">
@@ -19,7 +17,7 @@
         <ListRow :value="value">
           <ListCell>
             <Icon :name="spaceIcon(app.icon)" class="size-4 shrink-0 text-ink-gray-7" />
-            <div class="ml-3 min-w-0">
+            <div class="ms-3 min-w-0">
               <p class="truncate text-base text-ink-gray-8">{{ app.space_label }}</p>
               <p class="truncate text-xs text-ink-gray-5">
                 {{ said(app) }}
@@ -29,7 +27,7 @@
           <ListCell v-if="shows('access')">
             <Badge
               :theme="app.entitled ? 'green' : 'gray'"
-              :label="app.entitled ? 'Enabled' : 'Not enabled'"
+              :label="app.entitled ? __('Enabled') : __('Not enabled')"
               variant="subtle"
             />
           </ListCell>
@@ -41,11 +39,11 @@
               v-if="app.availability !== 'Restricted'"
               class="text-p-sm text-ink-gray-4"
             >
-              Always on
+              {{ __('Always on') }}
             </span>
             <Button
               v-else
-              :label="app.entitled ? 'Revoke' : 'Grant'"
+              :label="app.entitled ? __('Revoke') : __('Grant')"
               :theme="app.entitled ? 'red' : 'gray'"
               variant="subtle"
               :loading="busy === app.space_code"
@@ -71,6 +69,7 @@ import {
 import { spaceIcon } from '@/lib/shell/icons'
 import { useListColumns } from '@/lib/screen/list'
 import { admin } from './admin'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({ tenant: { type: String, required: true } })
 
@@ -78,24 +77,28 @@ const props = defineProps({ tenant: { type: String, required: true } })
 // operator wants to know before pressing Grant, and it beats "By entitlement
 // only" — which they already knew, since that is the whole of this screen.
 const said = (app) => {
-  if (app.blocked_by?.length) return `Needs ${app.blocked_by.join(', ')} — not on this bench`
-  if (app.requires?.length) return `Needs ${app.requires.join(', ')}`
-  return app.availability === 'Restricted' ? 'By entitlement only' : 'On every plan'
+  if (app.blocked_by?.length) {
+    return __('Needs {0} — not on this bench', [app.blocked_by.join(', ')])
+  }
+  if (app.requires?.length) return __('Needs {0}', [app.requires.join(', ')])
+  return app.availability === 'Restricted' ? __('By entitlement only') : __('On every plan')
 }
 
 const blocked = (app) =>
   app.entitled || !app.blocked_by?.length
     ? undefined
-    : `The bench this workspace sits on does not carry ${app.blocked_by.join(', ')}. `
-      + 'Move it to a shard whose bench has it, or add it to this one.'
+    : __(
+        'The bench this workspace sits on does not carry {0}. Move it to a shard whose bench has it, or add it to this one.',
+        [app.blocked_by.join(', ')],
+      )
 
 const rows = ref([])
 const loading = ref(false)
 const busy = ref('')
 
 const { visible, columns, shows } = useListColumns([
-  { key: 'app', header: 'App', track: 'minmax(0,1fr)' },
-  { key: 'access', header: 'Access', track: '9rem', mobile: false },
+  { key: 'app', header: __('App'), track: 'minmax(0,1fr)' },
+  { key: 'access', header: __('Access'), track: '9rem', mobile: false },
   { key: 'action', header: '', track: '7rem', mobile: '5rem' },
 ])
 

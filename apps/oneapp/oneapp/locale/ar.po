@@ -1,0 +1,4011 @@
+# Arabic translation for oneapp.
+#
+# The msgid is the English sentence, so this file holds only what nobody
+# upstream has translated already — see scripts/i18n.py.
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ar\n"
+
+msgid "0 follows the screen."
+msgstr ""
+
+msgid "1 thing"
+msgstr ""
+
+msgid "1 thing chosen"
+msgstr ""
+
+msgid "1 thing, more below"
+msgstr ""
+
+msgid ""
+"<p>The warning goes to whoever is <b>following</b> this document, once — "
+"not every morning until somebody acts, which is how people learn to "
+"ignore it.</p>"
+msgstr ""
+
+msgid "A comment needs something in it."
+msgstr ""
+
+msgid "A counter cannot go below zero."
+msgstr ""
+
+msgid "A counter is a whole number."
+msgstr ""
+
+msgid "A disabled letter head cannot be the default one."
+msgstr ""
+
+msgid "A document cannot renew itself."
+msgstr ""
+
+msgid "A filter on {0} may only narrow {0}."
+msgstr ""
+
+msgid "A folder cannot be attached to a record."
+msgstr ""
+
+msgid "A folder cannot be moved inside itself."
+msgstr ""
+
+msgid ""
+"A folder cannot be shared as a link — it would include whatever is put "
+"in it later."
+msgstr ""
+
+msgid "A folder name cannot contain a slash."
+msgstr ""
+
+msgid "A folder needs a name."
+msgstr ""
+
+msgid "A format called {0} already exists."
+msgstr ""
+
+msgid "A format is drawn over the records an app in this workspace shows."
+msgstr ""
+
+msgid "A format needs a name."
+msgstr ""
+
+msgid ""
+"A letter and a form are numbered in separate sequences, because that is "
+"what somebody quoting one on the phone expects."
+msgstr ""
+
+msgid "A letter head called {0} already exists."
+msgstr ""
+
+msgid "A letter head needs a name."
+msgstr ""
+
+msgid ""
+"A letter kept to start others from. Templates are not numbered against "
+"the real sequence."
+msgstr ""
+
+msgid "A link can last between 1 and {0} days."
+msgstr ""
+
+msgid ""
+"A lucide name from the offered set, or an emoji. Anything else is "
+"dropped on the way in — a lucide name reaches the DOM as a class."
+msgstr ""
+
+msgid "A mailbox the team shares"
+msgstr ""
+
+msgid "A name cannot be empty."
+msgstr ""
+
+msgid "A new {0} file is not something this can make."
+msgstr ""
+
+msgid "A record can be shared with {0} people. Use a role beyond that."
+msgstr ""
+
+msgid "A record can carry {0} tags. Take one off first."
+msgstr ""
+
+msgid "A record needs an id."
+msgstr ""
+
+msgid "A record needs at least one series to be named by."
+msgstr ""
+
+msgid "A reply written once, ready to send again."
+msgstr ""
+
+msgid ""
+"A role of your own can reach anything your apps expose, and nothing "
+"else."
+msgstr ""
+
+msgid "A source has to be https. Credentials travel to it."
+msgstr ""
+
+msgid "A source is a host and nothing else, like https://old.example.com."
+msgstr ""
+
+msgid "A source is named by hostname, not by address."
+msgstr ""
+
+msgid ""
+"A starting structure for your country. Accounts can be added later; the "
+"shape is hard to change once entries exist."
+msgstr ""
+
+msgid "A tag needs a name."
+msgstr ""
+
+msgid ""
+"A template is a subject and a message somebody can send without writing "
+"it again."
+msgstr ""
+
+msgid "A template with nothing in it is not a template."
+msgstr ""
+
+msgid "A template written for a record can say {{ doc.customer }} and mean it."
+msgstr ""
+
+msgid "A {0} has no rows called {1} to fill."
+msgstr ""
+
+msgid "AI"
+msgstr ""
+
+msgid "AI credits"
+msgstr ""
+
+msgid "API key"
+msgstr ""
+
+msgid "API secret"
+msgstr ""
+
+msgid "Access"
+msgstr ""
+
+msgid "Add a connection"
+msgstr ""
+
+msgid "Add a file"
+msgstr ""
+
+msgid "Add a picture"
+msgstr ""
+
+msgid "Add a tag"
+msgstr ""
+
+msgid "Add a test"
+msgstr ""
+
+msgid "Add an address"
+msgstr ""
+
+msgid "Add an image"
+msgstr ""
+
+msgid "Add domain"
+msgstr ""
+
+msgid "Add one on {0} and mail to it arrives here."
+msgstr ""
+
+msgid "Add rule"
+msgstr ""
+
+msgid "Add-ons"
+msgstr ""
+
+msgid "Added to the bottom of mail sent from this address."
+msgstr ""
+
+msgid ""
+"Added to the instructions this feature already has. Use it for your "
+"preferences, not for changing what the feature does."
+msgstr ""
+
+msgid "Added — checking your DNS now"
+msgstr ""
+
+msgid "Added — it is on your next invoice"
+msgstr ""
+
+msgid "Address created"
+msgstr ""
+
+msgid "Address removed"
+msgstr ""
+
+msgid ""
+"After this the link is gone and the file is not. Empty is refused on "
+"purpose: a link with no end is a file published for ever by somebody who "
+"has left."
+msgstr ""
+
+msgid "Ai Enabled"
+msgstr ""
+
+msgid "Alert removed"
+msgstr ""
+
+msgid "Alert saved"
+msgstr ""
+
+msgid "Alerts"
+msgstr ""
+
+msgid "Alerts could not be loaded"
+msgstr ""
+
+msgid "Alex Rivera"
+msgstr ""
+
+msgid "All conversations"
+msgstr ""
+
+msgid "All mail"
+msgstr ""
+
+msgid "All {0}"
+msgstr ""
+
+msgid "Allowed domains"
+msgstr ""
+
+msgid "Always on"
+msgstr ""
+
+msgid "Amended"
+msgstr ""
+
+msgid ""
+"An add-on goes on the same invoice as your plan, so there has to be a "
+"plan first."
+msgstr ""
+
+msgid ""
+"An address may use letters, numbers, dots, dashes and underscores, and "
+"must start and end with a letter or number."
+msgstr ""
+
+msgid "An admin gives you one, or connect the mailbox you already have below."
+msgstr ""
+
+msgid "An alert needs a subject — it is the line people see."
+msgstr ""
+
+msgid "An alert watches one kind of record and tells somebody when it changes."
+msgstr ""
+
+msgid "An app password where the provider needs one."
+msgstr ""
+
+msgid ""
+"An invited person gets a welcome email within a few minutes. Removing "
+"someone stops them signing in; the work they created stays in the "
+"workspace."
+msgstr ""
+
+msgid "An out-of-office reply needs something to say."
+msgstr ""
+
+msgid "And for the ones that file things somebody does."
+msgstr ""
+
+msgid "Any record"
+msgstr ""
+
+msgid "Anybody"
+msgstr ""
+
+msgid "Anybody who can sign in here, whatever their role reaches."
+msgstr ""
+
+msgid "Anything it should keep in mind"
+msgstr ""
+
+msgid "Anything on this site: an employee, a company, a vehicle, a project."
+msgstr ""
+
+msgid "Api Key"
+msgstr ""
+
+msgid "Api Secret"
+msgstr ""
+
+msgid "Appearance"
+msgstr ""
+
+msgid "Appears on account names, e.g. Debtors - ACME."
+msgstr ""
+
+msgid ""
+"Appended to our instructions. The model receives both; this field never "
+"contains ours."
+msgstr ""
+
+msgid "Applicants"
+msgstr ""
+
+msgid "Approaching the limit."
+msgstr ""
+
+msgid "Archive this column"
+msgstr ""
+
+msgid "Archived {0}"
+msgstr ""
+
+msgid "Arrange {0}"
+msgstr ""
+
+msgid "Ask something first."
+msgstr ""
+
+msgid "Assign to"
+msgstr ""
+
+msgid "Assigned to"
+msgstr ""
+
+msgid "Assistant"
+msgstr ""
+
+msgid "At Seq"
+msgstr ""
+
+msgid "At the limit for {0}"
+msgstr ""
+
+msgid "At the limit. Free some space or add more."
+msgstr ""
+
+msgid "Attach a file"
+msgstr ""
+
+msgid "Attached"
+msgstr ""
+
+msgid "Back to the default screen"
+msgstr ""
+
+msgid "Back to your spaces"
+msgstr ""
+
+msgid "Back to {0}"
+msgstr ""
+
+msgid "Background jobs"
+msgstr ""
+
+msgid "Backups Per Day"
+msgstr ""
+
+msgid "Base Url"
+msgstr ""
+
+msgid "Becomes {0}"
+msgstr ""
+
+msgid "Before it lapses"
+msgstr ""
+
+msgid "Before restoring “{0}”"
+msgstr ""
+
+msgid "Belongs to"
+msgstr ""
+
+msgid "Between 0 and {0} days."
+msgstr ""
+
+msgid "Billing, storage add-ons and your plan are in your {0} account."
+msgstr ""
+
+msgid "Board"
+msgstr ""
+
+msgid "Board settings"
+msgstr ""
+
+msgid "Body"
+msgstr ""
+
+msgid "Bookkeeper"
+msgstr ""
+
+msgid "Books"
+msgstr ""
+
+msgid "Books are ready"
+msgstr ""
+
+msgid "Books are set up"
+msgstr ""
+
+msgid "Books cleared"
+msgstr ""
+
+msgid "Both the current and the new password are needed."
+msgstr ""
+
+msgid "Brand colour as hex"
+msgstr ""
+
+msgid ""
+"Bring across everything attached to each row and attach it here. One "
+"request per row and one download per file, so it is opt-in per step."
+msgstr ""
+
+msgid "Bring across what has changed"
+msgstr ""
+
+msgid "Bring everything across"
+msgstr ""
+
+msgid ""
+"Bring your records over from the system you are leaving — as often as "
+"you like."
+msgstr ""
+
+msgid "Build one when the roles your apps came with are not the shape you need."
+msgstr ""
+
+msgid "By email"
+msgstr ""
+
+msgid "By folder"
+msgstr ""
+
+msgid "By kind"
+msgstr ""
+
+msgid "Byte Size"
+msgstr ""
+
+msgid ""
+"Bytes of content plus html. What the storage meter counts for a "
+"document, since it has no object behind it."
+msgstr ""
+
+msgid "Cached from the control plane"
+msgstr ""
+
+msgid "Cached manifest"
+msgstr ""
+
+msgid "Can edit"
+msgstr ""
+
+msgid "Can manage the workspace as well as use the apps."
+msgstr ""
+
+msgid "Can share"
+msgstr ""
+
+msgid "Can use the apps in this workspace."
+msgstr ""
+
+msgid "Can view"
+msgstr ""
+
+msgid "Cancel it"
+msgstr ""
+
+msgid "Cancel them"
+msgstr ""
+
+msgid "Cancel this record"
+msgstr ""
+
+msgid "Cancel this record?"
+msgstr ""
+
+msgid "Cancel {0} records?"
+msgstr ""
+
+msgid "Cancellation Reason"
+msgstr ""
+
+msgid "Cancelled. Nothing was charged."
+msgstr ""
+
+msgid "Cancelling unwinds what submitting this wrote. It cannot be undone."
+msgstr ""
+
+msgid ""
+"Cancelling unwinds what submitting wrote. Anything that will not cancel "
+"is named."
+msgstr ""
+
+msgid "Cancels at the end of this period"
+msgstr ""
+
+msgid "Card settings"
+msgstr ""
+
+msgid "Carried across"
+msgstr ""
+
+msgid "Carries a file"
+msgstr ""
+
+msgid "Carry File Fields"
+msgstr ""
+
+msgid "Carry Files"
+msgstr ""
+
+msgid "Catalogue Json"
+msgstr ""
+
+msgid "Change password"
+msgstr ""
+
+msgid "Change picture"
+msgstr ""
+
+msgid "Change plan"
+msgstr ""
+
+msgid "Change the icon"
+msgstr ""
+
+msgid "Change the servers"
+msgstr ""
+
+msgid "Change to this plan"
+msgstr ""
+
+msgid "Change to {0}?"
+msgstr ""
+
+msgid "Change what they can do"
+msgstr ""
+
+msgid "Change your card, download an invoice or cancel from there."
+msgstr ""
+
+msgid "Change your password"
+msgstr ""
+
+msgid "Chart of accounts"
+msgstr ""
+
+msgid "Check DNS"
+msgstr ""
+
+msgid "Check the connection"
+msgstr ""
+
+msgid "Check the plan"
+msgstr ""
+
+msgid "Check your connection, then try again."
+msgstr ""
+
+msgid "Checked"
+msgstr ""
+
+msgid "Checking your DNS"
+msgstr ""
+
+msgid "Child Table"
+msgstr ""
+
+msgid "Choose"
+msgstr ""
+
+msgid "Choose columns"
+msgstr ""
+
+msgid "Choose {0}"
+msgstr ""
+
+msgid "Claim it"
+msgstr ""
+
+msgid "Clear the filters"
+msgstr ""
+
+msgid "Clear the selection"
+msgstr ""
+
+msgid "Clear the selection, or close the conversation"
+msgstr ""
+
+msgid "Close and go back"
+msgstr ""
+
+msgid "Close settings"
+msgstr ""
+
+msgid "Close the record"
+msgstr ""
+
+msgid "Colour {0} {1}"
+msgstr ""
+
+msgid "Comma separated. A mailbox on anything else is refused."
+msgstr ""
+
+msgid "Company name"
+msgstr ""
+
+msgid "Compliance Document"
+msgstr ""
+
+msgid "Concurrent background jobs this workspace may run."
+msgstr ""
+
+msgid "Connect"
+msgstr ""
+
+msgid ""
+"Connect one the company already has, then grant it below like any other "
+"address. Everyone who holds it reads the same inbox — and the same sent "
+"mail."
+msgstr ""
+
+msgid "Connected mailbox"
+msgstr ""
+
+msgid "Contains"
+msgstr ""
+
+msgid "Copied"
+msgstr ""
+
+msgid "Copy"
+msgstr ""
+
+msgid "Correspondence"
+msgstr ""
+
+msgid "Counter moved"
+msgstr ""
+
+msgid "Counting from"
+msgstr ""
+
+msgid "Create \"{0}\""
+msgstr ""
+
+msgid "Create another"
+msgstr ""
+
+msgid "Created by"
+msgstr ""
+
+msgid "Created this record."
+msgstr ""
+
+msgid "Credits"
+msgstr ""
+
+msgid "Current password"
+msgstr ""
+
+msgid "Custom domain"
+msgstr ""
+
+msgid "Data location"
+msgstr ""
+
+msgid ""
+"Data, not a Link: `Tenant` is a control-plane doctype and does not exist "
+"on this site."
+msgstr ""
+
+msgid "Database Quota Bytes"
+msgstr ""
+
+msgid "Database Used Bytes"
+msgstr ""
+
+msgid ""
+"Database limit reached ({0}). Nothing has been deleted and your data is "
+"intact, but new records are paused until you free space or upgrade."
+msgstr ""
+
+msgid "Default set"
+msgstr ""
+
+msgid "Delete for good"
+msgstr ""
+
+msgid "Delete it all"
+msgstr ""
+
+msgid "Delete role"
+msgstr ""
+
+msgid "Delete this alert"
+msgstr ""
+
+msgid "Delete this format"
+msgstr ""
+
+msgid "Delete this letter head"
+msgstr ""
+
+msgid "Delete this record?"
+msgstr ""
+
+msgid "Delete {0}"
+msgstr ""
+
+msgid "Delete {0} records?"
+msgstr ""
+
+msgid "Deleted files wait here for thirty days."
+msgstr ""
+
+msgid "Deleted for good"
+msgstr ""
+
+msgid "Delivery update"
+msgstr ""
+
+msgid "Discard and close"
+msgstr ""
+
+msgid "Disconnect this mailbox"
+msgstr ""
+
+msgid "Doc"
+msgstr ""
+
+msgid "Doc Body"
+msgstr ""
+
+msgid "Document Number"
+msgstr ""
+
+msgid "Domain verified"
+msgstr ""
+
+msgid "Dry Run"
+msgstr ""
+
+msgid "Edit alert"
+msgstr ""
+
+msgid "Edit role"
+msgstr ""
+
+msgid "Edit template"
+msgstr ""
+
+msgid "Edit this alert"
+msgstr ""
+
+msgid "Edit this letter head"
+msgstr ""
+
+msgid ""
+"Empty is a document that does not expire — an academic certificate, a "
+"deed. It is not the same as unknown, and the status says so."
+msgstr ""
+
+msgid ""
+"Empty means whatever the platform recommends for this capability, which "
+"is also what tracks a better model arriving without anyone changing a "
+"setting."
+msgstr ""
+
+msgid "Empty the bin"
+msgstr ""
+
+msgid "Empty the bin to get that back now"
+msgstr ""
+
+msgid "Ends with"
+msgstr ""
+
+msgid "English"
+msgstr ""
+
+msgid ""
+"Entries have been posted, so the chart of accounts can no longer be "
+"replaced here. Ask support if it needs to change."
+msgstr ""
+
+msgid "Entry"
+msgstr ""
+
+msgid ""
+"Every app here is already part of your workspace. Plans differ in how "
+"much you can store and how many people you can invite, never in which "
+"apps you get."
+msgstr ""
+
+msgid ""
+"Every plan includes every app. They differ in how much you can store and "
+"how many people you can invite."
+msgstr ""
+
+msgid "Every recipient of this message has bounced or reported it as spam."
+msgstr ""
+
+msgid "Every row came across."
+msgstr ""
+
+msgid "Every seat is in use"
+msgstr ""
+
+msgid "Every seat is taken. Change plan to invite more people."
+msgstr ""
+
+msgid ""
+"Everyone gets the basics of each app this workspace has. Tick anything "
+"more this person needs."
+msgstr ""
+
+msgid "Everyone here is invited"
+msgstr ""
+
+msgid "Everyone in this workspace has this"
+msgstr ""
+
+msgid "Everyone on this workspace"
+msgstr ""
+
+msgid "Everything here is deleted after thirty days"
+msgstr ""
+
+msgid "Everything in the bin is deleted for good. This cannot be undone."
+msgstr ""
+
+msgid "Everything that points at this record keeps working. The old id stops."
+msgstr ""
+
+msgid "Expiring"
+msgstr ""
+
+msgid "Export as CSV"
+msgstr ""
+
+msgid ""
+"Extra room, billed with your plan and charged from the day you add it. "
+"It is not paid for with AI credits."
+msgstr ""
+
+msgid "Extra storage appears here when it is available."
+msgstr ""
+
+msgid "Fan Out"
+msgstr ""
+
+msgid "Favourites"
+msgstr ""
+
+msgid "Feature Key"
+msgstr ""
+
+msgid "Features"
+msgstr ""
+
+msgid ""
+"Features appear here as the apps in your workspace add them. There is "
+"nothing to set up in advance."
+msgstr ""
+
+msgid "Fewer filters"
+msgstr ""
+
+msgid "Field Map"
+msgstr ""
+
+msgid "File Link"
+msgstr ""
+
+msgid "File Version"
+msgstr ""
+
+msgid "File into"
+msgstr ""
+
+msgid "File removed"
+msgstr ""
+
+msgid "Filed"
+msgstr ""
+
+msgid "Filed here"
+msgstr ""
+
+msgid "Filed here by somebody"
+msgstr ""
+
+msgid "Files other people share with you appear here."
+msgstr ""
+
+msgid "Files uploaded anywhere in this workspace show up here."
+msgstr ""
+
+msgid "Files you open show up here."
+msgstr ""
+
+msgid "Filing"
+msgstr ""
+
+msgid "Fill the window"
+msgstr ""
+
+msgid "Filled"
+msgstr ""
+
+msgid "Filled in on the old document when a new one names it."
+msgstr ""
+
+msgid "Financial year"
+msgstr ""
+
+msgid "Financial year ends"
+msgstr ""
+
+msgid "Financial year starts"
+msgstr ""
+
+msgid "Finished On"
+msgstr ""
+
+msgid "Folder made"
+msgstr ""
+
+msgid "Folder removed"
+msgstr ""
+
+msgid "Folders refreshed"
+msgstr ""
+
+msgid "Follow the workspace"
+msgstr ""
+
+msgid "Following"
+msgstr ""
+
+msgid ""
+"Following: filling again replaces these rows. Locked: the document is "
+"the record now and the sheet is history, so a pull is refused until "
+"somebody unlocks it."
+msgstr ""
+
+msgid "For a record"
+msgstr ""
+
+msgid "For the rules that file things nobody needs to look at."
+msgstr ""
+
+msgid "For {0}"
+msgstr ""
+
+msgid "Format deleted"
+msgstr ""
+
+msgid "Format saved"
+msgstr ""
+
+msgid ""
+"Frappe has no opinion here; these are the roles a provider accepts, and "
+"`ai/transcript.py` maps them on."
+msgstr ""
+
+msgid "Free some space or remove people first, and this plan becomes available."
+msgstr ""
+
+msgid "From the source site's own user."
+msgstr ""
+
+msgid "From {0}"
+msgstr ""
+
+msgid "From {0} if left blank"
+msgstr ""
+
+msgid "Give it a name."
+msgstr ""
+
+msgid "Give the template a name."
+msgstr ""
+
+msgid "Give the template a subject line."
+msgstr ""
+
+msgid "Global"
+msgstr ""
+
+msgid "Google needs an app password, not your account password."
+msgstr ""
+
+msgid "Grid"
+msgstr ""
+
+msgid "Head Seq"
+msgstr ""
+
+msgid "Headings with no matching field, which were left out."
+msgstr ""
+
+msgid "Heart a file to keep it here."
+msgstr ""
+
+msgid "Hidden from your menu"
+msgstr ""
+
+msgid "Hidden views are back"
+msgstr ""
+
+msgid "Hide servers"
+msgstr ""
+
+msgid "How OneSpace looks, on this browser."
+msgstr ""
+
+msgid ""
+"How long before the expiry this starts saying so. Thirty days is a month "
+"to renew a licence; a visa wants more."
+msgstr ""
+
+msgid "How many rows to fetch"
+msgstr ""
+
+msgid ""
+"How many saves this document has had. `File Version` rows point at it, "
+"which is how the history panel knows whether what it is showing is the "
+"current text."
+msgstr ""
+
+msgid ""
+"How many saves this workbook has had. Version history is not built; this "
+"is the counter it would hang off, and it costs nothing to keep."
+msgstr ""
+
+msgid ""
+"How many times a day this workspace copies itself into R2. A plan term, "
+"so the schedule is a decision the control plane makes and this site "
+"carries out."
+msgstr ""
+
+msgid "How many times it was followed."
+msgstr ""
+
+msgid ""
+"How the page is set: width, typeface, line spacing, and whether it is "
+"locked against accidental typing. The reader's choices about one "
+"document, not the workspace's about all of them."
+msgstr ""
+
+msgid "Html"
+msgstr ""
+
+msgid "I have published them"
+msgstr ""
+
+msgid "Identity"
+msgstr ""
+
+msgid ""
+"If you already have an SPF record, add the include to it rather than "
+"publishing a second one — two SPF records is the same as none."
+msgstr ""
+
+msgid "Import Identity"
+msgstr ""
+
+msgid "Import Issue"
+msgstr ""
+
+msgid "Import Plan"
+msgstr ""
+
+msgid "Import Run"
+msgstr ""
+
+msgid "Import Run Step"
+msgstr ""
+
+msgid "Import Source"
+msgstr ""
+
+msgid "Import Step"
+msgstr ""
+
+msgid "Import a spreadsheet"
+msgstr ""
+
+msgid ""
+"In dependency order — parties before the invoices that link to them. A "
+"link that points at a step not yet run is an issue on the row, not a "
+"silent blank."
+msgstr ""
+
+msgid "In the app"
+msgstr ""
+
+msgid "Included with every plan"
+msgstr ""
+
+msgid "Incoming (IMAP)"
+msgstr ""
+
+msgid "Inherited from the conversation this message belongs to"
+msgstr ""
+
+msgid "Into"
+msgstr ""
+
+msgid "Invalid signature."
+msgstr ""
+
+msgid "Invite someone"
+msgstr ""
+
+msgid "Invited — they can sign in shortly"
+msgstr ""
+
+msgid "Issued By"
+msgstr ""
+
+msgid "It cannot end before it starts."
+msgstr ""
+
+msgid ""
+"It is not part of your workspace, or nobody has given you access to it. "
+"An admin can change that."
+msgstr ""
+
+msgid "It switches itself off the day after this."
+msgstr ""
+
+msgid "Kept encrypted. Leave blank to keep the one already saved."
+msgstr ""
+
+msgid "Kind"
+msgstr ""
+
+msgid "Last Error"
+msgstr ""
+
+msgid "Last Message On"
+msgstr ""
+
+msgid "Last Notice"
+msgstr ""
+
+msgid "Last Opened"
+msgstr ""
+
+msgid "Last Seen"
+msgstr ""
+
+msgid "Last Sync"
+msgstr ""
+
+msgid "Last Sync Error"
+msgstr ""
+
+msgid "Last checked"
+msgstr ""
+
+msgid "Last edited by"
+msgstr ""
+
+msgid "Last used {0}"
+msgstr ""
+
+msgid "Layout"
+msgstr ""
+
+msgid "Leave it empty to send the subject on its own."
+msgstr ""
+
+msgid "Letter head"
+msgstr ""
+
+msgid "Letter head deleted"
+msgstr ""
+
+msgid "Letter head saved"
+msgstr ""
+
+msgid "Letter heads"
+msgstr ""
+
+msgid "Licence"
+msgstr ""
+
+msgid "Light, dark, or matching your system."
+msgstr ""
+
+msgid "Live and serving your workspace."
+msgstr ""
+
+msgid "Loading activity"
+msgstr ""
+
+msgid "Loading files"
+msgstr ""
+
+msgid "Locked By"
+msgstr ""
+
+msgid "Locked On"
+msgstr ""
+
+msgid "Look at"
+msgstr ""
+
+msgid "Lower runs first. The first rule that matches wins."
+msgstr ""
+
+msgid "Mail"
+msgstr ""
+
+msgid "Mail Rule"
+msgstr ""
+
+msgid "Mail is not set up for this workspace yet."
+msgstr ""
+
+msgid "Mailbox"
+msgstr ""
+
+msgid "Mailbox address"
+msgstr ""
+
+msgid "Mailbox connected"
+msgstr ""
+
+msgid "Mailbox disconnected"
+msgstr ""
+
+msgid "Make default"
+msgstr ""
+
+msgid "Make it"
+msgstr ""
+
+msgid "Make the tag “{0}”"
+msgstr ""
+
+msgid "Malformed signature."
+msgstr ""
+
+msgid "Manage billing"
+msgstr ""
+
+msgid "Manage people"
+msgstr ""
+
+msgid ""
+"Map everything and write nothing. The counts and the issues are real; "
+"the records are not."
+msgstr ""
+
+msgid "Mapped"
+msgstr ""
+
+msgid "Mark Read"
+msgstr ""
+
+msgid "Mark it read"
+msgstr ""
+
+msgid "Mark unread"
+msgstr ""
+
+msgid "Marked read"
+msgstr ""
+
+msgid "Marked unread"
+msgstr ""
+
+msgid "Marked {0} read"
+msgstr ""
+
+msgid "Marked {0} unread"
+msgstr ""
+
+msgid "Matches"
+msgstr ""
+
+msgid "Max Users"
+msgstr ""
+
+msgid "Memo"
+msgstr ""
+
+msgid "Message Count"
+msgstr ""
+
+msgid "Message templates"
+msgstr ""
+
+msgid ""
+"Messages that mention this record file themselves here. You can also "
+"write one."
+msgstr ""
+
+msgid "Microsoft needs an app password where two-factor is on."
+msgstr ""
+
+msgid "Missing signature."
+msgstr ""
+
+msgid "Model"
+msgstr ""
+
+msgid "Models the workspace may choose, with prices."
+msgstr ""
+
+msgid "More filters"
+msgstr ""
+
+msgid "More for this record"
+msgstr ""
+
+msgid "More than and less than need a number."
+msgstr ""
+
+msgid "Move left"
+msgstr ""
+
+msgid "Move right"
+msgstr ""
+
+msgid "Move to"
+msgstr ""
+
+msgid "Move to Trash"
+msgstr ""
+
+msgid "Move to the bin"
+msgstr ""
+
+msgid "Moved"
+msgstr ""
+
+msgid "Moved to Trash"
+msgstr ""
+
+msgid "Moved to the bin"
+msgstr ""
+
+msgid "Moved {0} to Trash"
+msgstr ""
+
+msgid ""
+"Moving a counter backwards will re-issue ids that already exist. The "
+"change is recorded against the series."
+msgstr ""
+
+msgid "Moving about"
+msgstr ""
+
+msgid "Must be unique"
+msgstr ""
+
+msgid "Name somebody to share this with."
+msgstr ""
+
+msgid ""
+"Narrow what comes across, in Frappe's own filter shape. Applied on the "
+"source site, so what is excluded is never fetched."
+msgstr ""
+
+msgid "Never mind"
+msgstr ""
+
+msgid "Never verified"
+msgstr ""
+
+msgid "New alert"
+msgstr ""
+
+msgid "New chat"
+msgstr ""
+
+msgid "New event"
+msgstr ""
+
+msgid "New file"
+msgstr ""
+
+msgid "New folder"
+msgstr ""
+
+msgid "New format"
+msgstr ""
+
+msgid "New id"
+msgstr ""
+
+msgid "New in {0}"
+msgstr ""
+
+msgid "New letter head"
+msgstr ""
+
+msgid "New mail for this address arrives here."
+msgstr ""
+
+msgid "New password"
+msgstr ""
+
+msgid "New records are paused. Nothing is lost — delete something, or upgrade."
+msgstr ""
+
+msgid "New role"
+msgstr ""
+
+msgid "New template"
+msgstr ""
+
+msgid "Next conversation"
+msgstr ""
+
+msgid "No accounting app"
+msgstr ""
+
+msgid "No address yet"
+msgstr ""
+
+msgid "No addresses yet"
+msgstr ""
+
+msgid "No alerts yet"
+msgstr ""
+
+msgid "No app in this workspace names its records by a series."
+msgstr ""
+
+msgid "No apps yet"
+msgstr ""
+
+msgid "No changes recorded"
+msgstr ""
+
+msgid "No comments"
+msgstr ""
+
+msgid "No date to draw"
+msgstr ""
+
+msgid "No dates to draw"
+msgstr ""
+
+msgid "No expiry"
+msgstr ""
+
+msgid "No favourites"
+msgstr ""
+
+msgid "No field"
+msgstr ""
+
+msgid "No files"
+msgstr ""
+
+msgid "No files yet"
+msgstr ""
+
+msgid "No further detail was returned."
+msgstr ""
+
+msgid "No icon"
+msgstr ""
+
+msgid "No icon by that name"
+msgstr ""
+
+msgid "No mail about this yet"
+msgstr ""
+
+msgid "No mail yet"
+msgstr ""
+
+msgid "No plan running yet"
+msgstr ""
+
+msgid "No plan yet"
+msgstr ""
+
+msgid "No roles of your own yet"
+msgstr ""
+
+msgid "No screen in this workspace shows {0}."
+msgstr ""
+
+msgid "No space named {0} is enabled here."
+msgstr ""
+
+msgid "No spaces yet"
+msgstr ""
+
+msgid "No such address."
+msgstr ""
+
+msgid "No such person."
+msgstr ""
+
+msgid "No templates yet"
+msgstr ""
+
+msgid "No {0} against this yet."
+msgstr ""
+
+msgid "No {0} to nest."
+msgstr ""
+
+msgid "No {0} yet"
+msgstr ""
+
+msgid "Nobody"
+msgstr ""
+
+msgid "Nobody by role"
+msgstr ""
+
+msgid "Nobody by that name"
+msgstr ""
+
+msgid "Nobody has given you an address yet. An admin can add one in Settings."
+msgstr ""
+
+msgid "Nobody to assign it to."
+msgstr ""
+
+msgid "Nobody yet"
+msgstr ""
+
+msgid "None of these records has both a start and an end."
+msgstr ""
+
+msgid ""
+"None yet. A letter head is the band above and below every printed page — "
+"a logo, an address, a footer — and one format can use another's."
+msgstr ""
+
+msgid "Not about this record"
+msgstr ""
+
+msgid "Not available yet — the platform has no signing key configured."
+msgstr ""
+
+msgid "Not connecting"
+msgstr ""
+
+msgid "Not on this plan"
+msgstr ""
+
+msgid "Not permitted."
+msgstr ""
+
+msgid "Not read yet"
+msgstr ""
+
+msgid "Not set"
+msgstr ""
+
+msgid ""
+"Not set up yet. Setting it up writes the plan and the records its steps "
+"write against; it reads nothing and moves nothing."
+msgstr ""
+
+msgid "Not shared"
+msgstr ""
+
+msgid "Not something a message can be turned into."
+msgstr ""
+
+msgid "Not verified yet"
+msgstr ""
+
+msgid "Not yours to see."
+msgstr ""
+
+msgid "Not yours to set up."
+msgstr ""
+
+msgid "Nothing at this address"
+msgstr ""
+
+msgid "Nothing can be created for {0} here."
+msgstr ""
+
+msgid ""
+"Nothing can be invoiced or paid until this exists. It is four answers, "
+"and it runs the same setup the accounting app would have asked for."
+msgstr ""
+
+msgid "Nothing else to show."
+msgstr ""
+
+msgid ""
+"Nothing has been added to your workspace. An admin can add a space, and "
+"it appears here."
+msgstr ""
+
+msgid ""
+"Nothing has been deleted. Free some space, or add more below — new "
+"uploads resume as soon as there is room."
+msgstr ""
+
+msgid "Nothing has been said about this one yet."
+msgstr ""
+
+msgid ""
+"Nothing has been turned on for this workspace yet. Get in touch and we "
+"will sort it out."
+msgstr ""
+
+msgid ""
+"Nothing has changed yet and your workspace works normally. Pay by {0} or "
+"it is switched off until you do."
+msgstr ""
+
+msgid "Nothing has happened to this one yet."
+msgstr ""
+
+msgid "Nothing here"
+msgstr ""
+
+msgid "Nothing here runs on a workflow."
+msgstr ""
+
+msgid "Nothing here so far."
+msgstr ""
+
+msgid "Nothing here so far. New starts the first one."
+msgstr ""
+
+msgid "Nothing here yet"
+msgstr ""
+
+msgid "Nothing here yet."
+msgstr ""
+
+msgid ""
+"Nothing is blocked and nothing has been deleted. Until {0} the workspace "
+"works normally, except that it cannot grow past where it is now. After "
+"that, new uploads stop until there is room."
+msgstr ""
+
+msgid "Nothing is filed against this one yet."
+msgstr ""
+
+msgid "Nothing matches the filters. Clear one to widen the list."
+msgstr ""
+
+msgid "Nothing matches “{0}”"
+msgstr ""
+
+msgid "Nothing on offer yet"
+msgstr ""
+
+msgid "Nothing on this record has changed since it was created."
+msgstr ""
+
+msgid "Nothing on this screen can be changed."
+msgstr ""
+
+msgid "Nothing open"
+msgstr ""
+
+msgid "Nothing opened yet"
+msgstr ""
+
+msgid "Nothing shared with you"
+msgstr ""
+
+msgid "Nothing stored yet"
+msgstr ""
+
+msgid "Nothing to alert on"
+msgstr ""
+
+msgid "Nothing to choose from"
+msgstr ""
+
+msgid "Nothing to import"
+msgstr ""
+
+msgid "Nothing to measure"
+msgstr ""
+
+msgid "Nothing to name"
+msgstr ""
+
+msgid "Nothing to nest by"
+msgstr ""
+
+msgid "Nothing to plot"
+msgstr ""
+
+msgid "Nothing to print yet"
+msgstr ""
+
+msgid "Nothing to show yet"
+msgstr ""
+
+msgid "Nothing uses AI yet"
+msgstr ""
+
+msgid "Nothing was refused"
+msgstr ""
+
+msgid "Nothing was selected to print."
+msgstr ""
+
+msgid "Nothing was selected."
+msgstr ""
+
+msgid "Nothing yet"
+msgstr ""
+
+msgid "Nothing you have liked is on this screen."
+msgstr ""
+
+msgid "Notice"
+msgstr ""
+
+msgid "Notifications ({0})"
+msgstr ""
+
+msgid "Notifications leave from"
+msgstr ""
+
+msgid ""
+"Off stops every feature a workspace is allowed to stop. Features "
+"declared as critical keep running — they are the process, not an "
+"assistant beside it."
+msgstr ""
+
+msgid "Older conversations"
+msgstr ""
+
+msgid "On"
+msgstr ""
+
+msgid ""
+"On {0} everything held for this workspace is deleted for good — the "
+"database, every file and every backup. Paying before then restores it in "
+"full."
+msgstr ""
+
+msgid ""
+"One per line. The first is what new records use. `#` is a digit, so "
+"ACME-.YYYY.-.##### counts up within the year."
+msgstr ""
+
+msgid "One permission"
+msgstr ""
+
+msgid "One person"
+msgstr ""
+
+msgid "One seat"
+msgstr ""
+
+msgid "One seat used"
+msgstr ""
+
+msgid "OneSpace AI Feature Setting"
+msgstr ""
+
+msgid "OneSpace AI Settings"
+msgstr ""
+
+msgid "OneSpace Chat Message"
+msgstr ""
+
+msgid "OneSpace Chat Session"
+msgstr ""
+
+msgid "OneSpace Hidden View"
+msgstr ""
+
+msgid "OneSpace Saved View"
+msgstr ""
+
+msgid "OneSpace Site State"
+msgstr ""
+
+msgid "Only a cancelled document can be amended."
+msgstr ""
+
+msgid "Only a draft can be submitted."
+msgstr ""
+
+msgid "Only a submitted document can be cancelled."
+msgstr ""
+
+msgid "Only a workspace admin can change a shared screen."
+msgstr ""
+
+msgid "Only a workspace admin can change alerts."
+msgstr ""
+
+msgid "Only a workspace admin can change how records are named."
+msgstr ""
+
+msgid "Only a workspace admin can change message templates."
+msgstr ""
+
+msgid "Only a workspace admin can change print formats."
+msgstr ""
+
+msgid "Only a workspace admin can change these settings."
+msgstr ""
+
+msgid "Only a workspace admin can connect a mailbox for other people."
+msgstr ""
+
+msgid "Only a workspace admin can do that."
+msgstr ""
+
+msgid "Only a workspace admin can manage addresses."
+msgstr ""
+
+msgid "Only a workspace admin can see this."
+msgstr ""
+
+msgid "Only a workspace admin can verify a domain."
+msgstr ""
+
+msgid "Only here."
+msgstr ""
+
+msgid "Only models that can do this job are listed."
+msgstr ""
+
+msgid "Only my favourites"
+msgstr ""
+
+msgid "Only people whose role already reaches this can see it."
+msgstr ""
+
+msgid "Only people whose role already reaches this record can see it."
+msgstr ""
+
+msgid ""
+"Only rows this person liked. A flag rather than a filter on _liked_by: "
+"that column holds user ids, so a filter naming it could ask what a "
+"colleague liked."
+msgstr ""
+
+msgid "Only some domains"
+msgstr ""
+
+msgid "Only when"
+msgstr ""
+
+msgid "Open in the builder"
+msgstr ""
+
+msgid "Open in the editor"
+msgstr ""
+
+msgid "Open on its own screen"
+msgstr ""
+
+msgid "Open the files"
+msgstr ""
+
+msgid "Open this row"
+msgstr ""
+
+msgid "Open {0} beside this"
+msgstr ""
+
+msgid "Open {0} in the editor"
+msgstr ""
+
+msgid "Opens this screen for whoever this screen belongs to."
+msgstr ""
+
+msgid "Or an emoji"
+msgstr ""
+
+msgid "Or whoever is in"
+msgstr ""
+
+msgid ""
+"Order within the session. Not creation time: a turn and the tool results "
+"that answer it are written in one request and can share a timestamp."
+msgstr ""
+
+msgid "Outgoing (SMTP)"
+msgstr ""
+
+msgid "Outside mailboxes"
+msgstr ""
+
+msgid "Over the limit for {0}"
+msgstr ""
+
+msgid "Over the limit, but not blocked until {0}."
+msgstr ""
+
+msgid "Page Length"
+msgstr ""
+
+msgid "Password changed"
+msgstr ""
+
+msgid "Payload"
+msgstr ""
+
+msgid "Payment received — your balance updates in a moment"
+msgstr ""
+
+msgid "People"
+msgstr ""
+
+msgid "Permit"
+msgstr ""
+
+msgid "Person"
+msgstr ""
+
+msgid "Pick a conversation from the list."
+msgstr ""
+
+msgid "Pick an icon"
+msgstr ""
+
+msgid "Pick the date to count from."
+msgstr ""
+
+msgid "Place Of Issue"
+msgstr ""
+
+msgid "Plan Code"
+msgstr ""
+
+msgid "Plan changed"
+msgstr ""
+
+msgid ""
+"Platform policy per feature: what may be disabled, what model is pinned, "
+"what the ceiling is."
+msgstr ""
+
+msgid "Preferences"
+msgstr ""
+
+msgid "Previous conversation"
+msgstr ""
+
+msgid "Print formats"
+msgstr ""
+
+msgid "Print preview"
+msgstr ""
+
+msgid ""
+"Printing with a letter head is on under Printing, but none of these is "
+"the default — so nothing is added to the page. Make one default."
+msgstr ""
+
+msgid "Problems"
+msgstr ""
+
+msgid "Profile saved"
+msgstr ""
+
+msgid "Prompt Addendum"
+msgstr ""
+
+msgid "Pulled By"
+msgstr ""
+
+msgid "Pulled On"
+msgstr ""
+
+msgid "Push notifications are not available yet."
+msgstr ""
+
+msgid "Put back"
+msgstr ""
+
+msgid "Quota Enforcement"
+msgstr ""
+
+msgid "Read everything, change nothing, and say what would happen"
+msgstr ""
+
+msgid "Reads invoices and contacts, edits neither."
+msgstr ""
+
+msgid "Ready"
+msgstr ""
+
+msgid "Recommended"
+msgstr ""
+
+msgid "Refused"
+msgstr ""
+
+msgid "Region"
+msgstr ""
+
+msgid "Registration"
+msgstr ""
+
+msgid "Registry Json"
+msgstr ""
+
+msgid "Rehearse"
+msgstr ""
+
+msgid "Released"
+msgstr ""
+
+msgid "Reminded On"
+msgstr ""
+
+msgid "Remove it"
+msgstr ""
+
+msgid "Remove the picture"
+msgstr ""
+
+msgid "Remove the test"
+msgstr ""
+
+msgid "Remove this address"
+msgstr ""
+
+msgid "Remove this row"
+msgstr ""
+
+msgid "Remove {0}"
+msgstr ""
+
+msgid "Rename this record"
+msgstr ""
+
+msgid "Renamed"
+msgstr ""
+
+msgid "Rendering"
+msgstr ""
+
+msgid "Renewed By"
+msgstr ""
+
+msgid "Renews"
+msgstr ""
+
+msgid "Replace the image"
+msgstr ""
+
+msgid "Reply automatically while I am away"
+msgstr ""
+
+msgid "Reply to all"
+msgstr ""
+
+msgid "Request failed"
+msgstr ""
+
+msgid "Reset the columns"
+msgstr ""
+
+msgid "Retention is a percentage of the invoice, between 0 and 100."
+msgstr ""
+
+msgid "Roles JSON"
+msgstr ""
+
+msgid "Roles appear here once this workspace has an app."
+msgstr ""
+
+msgid "Roles you built"
+msgstr ""
+
+msgid "Roles your apps came with"
+msgstr ""
+
+msgid "Rows that were refused"
+msgstr ""
+
+msgid "Rows written."
+msgstr ""
+
+msgid "Rule removed"
+msgstr ""
+
+msgid "Rule saved"
+msgstr ""
+
+msgid "Run"
+msgstr ""
+
+msgid "Save away message"
+msgstr ""
+
+msgid "Save connection"
+msgstr ""
+
+msgid "Save role"
+msgstr ""
+
+msgid "Save series"
+msgstr ""
+
+msgid "Save this first, and you can attach files to it."
+msgstr ""
+
+msgid "Saved — it takes effect shortly"
+msgstr ""
+
+msgid "Saves"
+msgstr ""
+
+msgid ""
+"Saves between this version and the one before it. The panel says '3 "
+"changes' rather than nothing at all."
+msgstr ""
+
+msgid "Say when it starts."
+msgstr ""
+
+msgid "Say when the alert should go out."
+msgstr ""
+
+msgid "Say who the alert goes to."
+msgstr ""
+
+msgid "Screen"
+msgstr ""
+
+msgid "Search files"
+msgstr ""
+
+msgid "Search icons"
+msgstr ""
+
+msgid "Search mail"
+msgstr ""
+
+msgid "Searching"
+msgstr ""
+
+msgid "Search…"
+msgstr ""
+
+msgid "Secret"
+msgstr ""
+
+msgid "Security"
+msgstr ""
+
+msgid "See plans"
+msgstr ""
+
+msgid "See what was refused"
+msgstr ""
+
+msgid "Select all"
+msgstr ""
+
+msgid "Select everything here"
+msgstr ""
+
+msgid "Selecting"
+msgstr ""
+
+msgid ""
+"Send as you@yourcompany.com rather than on ours. Mail to that domain "
+"still goes wherever its MX points — connect those mailboxes under your "
+"own Mailbox tab to read them here."
+msgstr ""
+
+msgid "Send invite"
+msgstr ""
+
+msgid "Send it"
+msgstr ""
+
+msgid "Send notifications from this"
+msgstr ""
+
+msgid "Send these rows to {0}"
+msgstr ""
+
+msgid "Sending address set"
+msgstr ""
+
+msgid "Sending to that address again"
+msgstr ""
+
+msgid "Sends notifications"
+msgstr ""
+
+msgid "Sent this hour"
+msgstr ""
+
+msgid "Seq"
+msgstr ""
+
+msgid "Series saved"
+msgstr ""
+
+msgid "Session"
+msgstr ""
+
+msgid "Set this up"
+msgstr ""
+
+msgid "Set up"
+msgstr ""
+
+msgid "Set up books"
+msgstr ""
+
+msgid "Set up from your signup answers"
+msgstr ""
+
+msgid "Settings for these rows"
+msgstr ""
+
+msgid "Share removed"
+msgstr ""
+
+msgid "Share this record"
+msgstr ""
+
+msgid "Shared with"
+msgstr ""
+
+msgid "Shared with everyone on this workspace"
+msgstr ""
+
+msgid "Shared with {0}"
+msgstr ""
+
+msgid "Sheet"
+msgstr ""
+
+msgid "Sheet Book"
+msgstr ""
+
+msgid "Sheet Feed"
+msgstr ""
+
+msgid "Sheet Title"
+msgstr ""
+
+msgid "Ships with the app"
+msgstr ""
+
+msgid "Show all {0}"
+msgstr ""
+
+msgid "Show as a grid"
+msgstr ""
+
+msgid "Show as a list"
+msgstr ""
+
+msgid "Show beside the list"
+msgstr ""
+
+msgid "Show everything"
+msgstr ""
+
+msgid "Show in Files"
+msgstr ""
+
+msgid "Show {0} more"
+msgstr ""
+
+msgid "Showing the {0} most recent comments of {1}."
+msgstr ""
+
+msgid "Sign out everywhere else"
+msgstr ""
+
+msgid "Signature expired."
+msgstr ""
+
+msgid "Signed By"
+msgstr ""
+
+msgid "Signed copy"
+msgstr ""
+
+msgid "Signed in as"
+msgstr ""
+
+msgid "Signed out everywhere else"
+msgstr ""
+
+msgid "Site Name"
+msgstr ""
+
+msgid "Site is not provisioned."
+msgstr ""
+
+msgid "Solid button"
+msgstr ""
+
+msgid ""
+"Somebody asked for this version by name. Never pruned, and sorted above "
+"the automatic ones."
+msgstr ""
+
+msgid "Somebody on this workspace"
+msgstr ""
+
+msgid "Something happened"
+msgstr ""
+
+msgid "Source Doctype"
+msgstr ""
+
+msgid ""
+"Source fields that hold a path to a file rather than a value, comma "
+"separated. The file is fetched and attached here — for the picture "
+"somebody chose rather than uploaded, which is attached to nothing over "
+"there."
+msgstr ""
+
+msgid "Space Code"
+msgstr ""
+
+msgid "Spaces"
+msgstr ""
+
+msgid "Spaces JSON"
+msgstr ""
+
+msgid ""
+"Standard is the fallback: every field of the record, in the order the "
+"form declares them. A format written as a template rather than drawn "
+"still prints, and opens wherever it was written."
+msgstr ""
+
+msgid "Star"
+msgstr ""
+
+msgid "Star it"
+msgstr ""
+
+msgid "Starred"
+msgstr ""
+
+msgid "Starred {0}"
+msgstr ""
+
+msgid ""
+"Start at p=none so nothing is rejected while you watch the reports, then "
+"tighten to quarantine and reject."
+msgstr ""
+
+msgid "Start over"
+msgstr ""
+
+msgid "Started On"
+msgstr ""
+
+msgid "Starts with"
+msgstr ""
+
+msgid "Stop sharing with {0}"
+msgstr ""
+
+msgid "Stop using as a template"
+msgstr ""
+
+msgid "Stopped sharing"
+msgstr ""
+
+msgid "Storage"
+msgstr ""
+
+msgid "Storage Quota Bytes"
+msgstr ""
+
+msgid "Storage Used Bytes"
+msgstr ""
+
+msgid "Storage could not be measured"
+msgstr ""
+
+msgid ""
+"Storage limit reached. This file needs {0} but only {1} of {2} remains. "
+"Delete some files or upgrade your plan."
+msgstr ""
+
+msgid "Switch workspace"
+msgstr ""
+
+msgid "Synced from the plan. Zero means unconfigured, not zero allowed."
+msgstr ""
+
+msgid "Tag this"
+msgstr ""
+
+msgid "Tags: {0}"
+msgstr ""
+
+msgid "Take your address"
+msgstr ""
+
+msgid ""
+"Taken back early. Kept rather than deleted, so 'who shared this and when "
+"did it stop' has an answer."
+msgstr ""
+
+msgid "Target Doctype"
+msgstr ""
+
+msgid "Target Name"
+msgstr ""
+
+msgid "Tell somebody when something happens to a record."
+msgstr ""
+
+msgid "Tell this role"
+msgstr ""
+
+msgid "Template removed"
+msgstr ""
+
+msgid "Template saved"
+msgstr ""
+
+msgid "Templates could not be loaded"
+msgstr ""
+
+msgid "Tenant"
+msgstr ""
+
+msgid "Test"
+msgstr ""
+
+msgid "That"
+msgstr ""
+
+msgid "That address has no mailbox behind it."
+msgstr ""
+
+msgid "That address is inside this network."
+msgstr ""
+
+msgid "That address is not yours."
+msgstr ""
+
+msgid "That address is yours"
+msgstr ""
+
+msgid "That alert was not made here and cannot be changed here."
+msgstr ""
+
+msgid "That attachment is not yours to send."
+msgstr ""
+
+msgid "That conversation is not yours."
+msgstr ""
+
+msgid "That date has already passed."
+msgstr ""
+
+msgid "That document did not open"
+msgstr ""
+
+msgid "That document is too big to save. Split it in two."
+msgstr ""
+
+msgid "That file has no name."
+msgstr ""
+
+msgid "That file is not a document."
+msgstr ""
+
+msgid "That file is not a sheet."
+msgstr ""
+
+msgid "That file is not on this record."
+msgstr ""
+
+msgid "That file is not text this can show."
+msgstr ""
+
+msgid "That file is not text."
+msgstr ""
+
+msgid "That file is not yours to attach."
+msgstr ""
+
+msgid "That file is too big to open here. Download it instead."
+msgstr ""
+
+msgid "That is as many letter heads as one workspace can hold."
+msgstr ""
+
+msgid "That is more text than this file can hold."
+msgstr ""
+
+msgid "That is not a field on {0}."
+msgstr ""
+
+msgid "That is not a field to test."
+msgstr ""
+
+msgid "That is not a test this can make."
+msgstr ""
+
+msgid "That is not an email address."
+msgstr ""
+
+msgid "That is not one of this workspace's records."
+msgstr ""
+
+msgid "That is not one of this workspace's templates."
+msgstr ""
+
+msgid "That is not one of your addresses."
+msgstr ""
+
+msgid "That is not one of your events."
+msgstr ""
+
+msgid "That is not your current password."
+msgstr ""
+
+msgid "That is not your message."
+msgstr ""
+
+msgid "That is not yours to revoke."
+msgstr ""
+
+msgid "That letter head is not one a document can be printed with."
+msgstr ""
+
+msgid "That link no longer works"
+msgstr ""
+
+msgid "That mailbox is not yours."
+msgstr ""
+
+msgid ""
+"That password was refused. Many providers need an app password rather "
+"than the one you sign in with."
+msgstr ""
+
+msgid "That plan is switched off."
+msgstr ""
+
+msgid "That record is not on this screen."
+msgstr ""
+
+msgid "That screen belongs to someone else."
+msgstr ""
+
+msgid "That series would not generate a name"
+msgstr ""
+
+msgid "That upload sent no parts."
+msgstr ""
+
+msgid "That view belongs to a different screen."
+msgstr ""
+
+msgid "That view is yours — delete it rather than hiding it."
+msgstr ""
+
+msgid ""
+"The File this is a version of, by name. Data rather than a Link for the "
+"same reason the bodies are: the row is written and read by name, and a "
+"Link would make deleting the file a cascade nobody asked for."
+msgstr ""
+
+msgid ""
+"The File this prose belongs to, by name. Data and unique rather than a "
+"Link so the row is addressable as `Doc Body/<file>` — one statement to "
+"load, no filter."
+msgstr ""
+
+msgid ""
+"The File this was pulled from, by name. Data rather than a Link so the "
+"record outlives the sheet."
+msgstr ""
+
+msgid ""
+"The File this workbook belongs to, by name. Data and unique rather than "
+"a Link so the row is addressable as `Sheet Book/<file>` — one statement "
+"to load, no filter."
+msgstr ""
+
+msgid ""
+"The OneSpace Saved View this hides. Data rather than a Link so deleting "
+"the view cannot fail on a row that only says somebody stopped looking at "
+"it — the delete sweeps these up itself."
+msgstr ""
+
+msgid ""
+"The `head_seq` of the body when this was taken. What the panel compares "
+"against to say which version is the one on screen."
+msgstr ""
+
+msgid "The address you already had. Read and answer it here."
+msgstr ""
+
+msgid "The addresses this workspace sends from, and who may use each."
+msgstr ""
+
+msgid "The authority that issued it."
+msgstr ""
+
+msgid "The biggest"
+msgstr ""
+
+msgid "The bin is empty"
+msgstr ""
+
+msgid ""
+"The bin is holding {0} across one file, which still counts. It is "
+"removed for good {1} days after it went there."
+msgstr ""
+
+msgid ""
+"The bin is holding {0} across {1} files, which still counts. Each is "
+"removed for good {2} days after it went there."
+msgstr ""
+
+msgid ""
+"The breakdown below covers the one file you can see, which is {0}. The "
+"meter above is the whole workspace, including files on records you "
+"cannot open."
+msgstr ""
+
+msgid ""
+"The breakdown below covers the {0} files you can see, which is {1}. The "
+"meter above is the whole workspace, including files on records you "
+"cannot open."
+msgstr ""
+
+msgid ""
+"The difference is credited against your next invoice, and the new limits "
+"apply straight away."
+msgstr ""
+
+msgid ""
+"The document as ProseMirror JSON: the source of truth, and the only "
+"representation the editor reads back. Replaced whole on every save."
+msgstr ""
+
+msgid "The document itself"
+msgstr ""
+
+msgid ""
+"The document this one replaces. The old one is kept: an expired licence "
+"is still what you were trading under last year."
+msgstr ""
+
+msgid ""
+"The fieldname of the table these rows landed in. One feed per table: a "
+"second pull into the same table replaces the rows, so it replaces this "
+"too."
+msgstr ""
+
+msgid ""
+"The first thing that was asked, trimmed. Named from the question rather "
+"than by the model: naming a thread is a second call, and it would be "
+"charged for."
+msgstr ""
+
+msgid "The folder to file it in. Made on the mailbox if it is not there yet."
+msgstr ""
+
+msgid "The mail did not load"
+msgstr ""
+
+msgid ""
+"The mail server did not answer. It may be blocking us, or the port may "
+"be wrong."
+msgstr ""
+
+msgid "The mail server refused that name: {0}"
+msgstr ""
+
+msgid "The mail server refused: {0}"
+msgstr ""
+
+msgid ""
+"The mailbox it applies to. A rule belongs to an address, not to a "
+"workspace: `sales@` and `ap@` sort differently."
+msgstr ""
+
+msgid ""
+"The most recent workspace notice this site has already turned into a "
+"notification. A watermark rather than a deduplication key: the control "
+"plane is asked for what happened after it, so nothing is sent twice and "
+"nothing in between is missed."
+msgstr ""
+
+msgid "The named range. The contract between a sheet and the document it fills."
+msgstr ""
+
+msgid ""
+"The newest `modified` this step has taken across. The next run asks the "
+"source only for what changed after it. Clear it to import everything "
+"again."
+msgstr ""
+
+msgid ""
+"The one file this link hands over. A folder is not offered: a link to a "
+"folder is a link to everything somebody puts in it afterwards."
+msgstr ""
+
+msgid "The one that was actually sent, scanned back in."
+msgstr ""
+
+msgid "The platform's own address cannot be changed here."
+msgstr ""
+
+msgid "The range {0} is empty."
+msgstr ""
+
+msgid "The row"
+msgstr ""
+
+msgid ""
+"The screen's name. Empty is the person's own unnamed default for this "
+"screen — what Save writes."
+msgstr ""
+
+msgid ""
+"The screen's slug, so two screens over one doctype keep their own "
+"answers."
+msgstr ""
+
+msgid ""
+"The site to read from, e.g. `https://old.example.com`. No trailing slash "
+"and no path."
+msgstr ""
+
+msgid "The source refused the key. Check it is still valid over there."
+msgstr ""
+
+msgid "The subject line only"
+msgstr ""
+
+msgid ""
+"The text to look for. Case is ignored, because nobody means it when they "
+"type an address."
+msgstr ""
+
+msgid ""
+"The whole body as it stood, in whatever shape its store reads. Restoring "
+"writes this back unchanged."
+msgstr ""
+
+msgid ""
+"The workbook: every tab, cell, formula, format, merge, named range, "
+"pivot and chart, as the gzipped envelope `codec.py` reads. Never edited "
+"here — a save replaces it whole, which is what the editor does."
+msgstr ""
+
+msgid "Then add it here"
+msgstr ""
+
+msgid "There are no records on this screen."
+msgstr ""
+
+msgid "There is already a folder called “{0}” here."
+msgstr ""
+
+msgid ""
+"There is already an alert called “{0}”. Give this one a different "
+"subject."
+msgstr ""
+
+msgid "There is no folder called {0}."
+msgstr ""
+
+msgid "There is no plan called {0}."
+msgstr ""
+
+msgid ""
+"There is no sign-up form, on purpose: an account made on this site is "
+"not counted against your seats and is disabled again on the next sync. "
+"People are added to your workspace from your account, which is also "
+"where seats are counted."
+msgstr ""
+
+msgid "There is no such thing as a {0} version."
+msgstr ""
+
+msgid "There is no such version."
+msgstr ""
+
+msgid "There is nothing here to open in a sheet."
+msgstr ""
+
+msgid "There is nothing to assign here."
+msgstr ""
+
+msgid "There is nothing to comment on here."
+msgstr ""
+
+msgid "There is nothing to follow here."
+msgstr ""
+
+msgid "There is nothing to like here."
+msgstr ""
+
+msgid "There is nothing to rename here."
+msgstr ""
+
+msgid "There is nothing to save a view for here."
+msgstr ""
+
+msgid ""
+"These arrive with the apps this workspace has. Hand them out on the "
+"People screen."
+msgstr ""
+
+msgid ""
+"These rows are locked. Unlock them first if the sheet should replace "
+"them again."
+msgstr ""
+
+msgid "These rows have no columns a sheet could hold."
+msgstr ""
+
+msgid "This"
+msgstr ""
+
+msgid ""
+"This app names its own records. The series is part of what it is, so it "
+"is shown rather than set — the counter under it can still be moved."
+msgstr ""
+
+msgid "This browser"
+msgstr ""
+
+msgid ""
+"This cannot be undone. Anything still linked to elsewhere is kept, and "
+"named."
+msgstr ""
+
+msgid "This company's chart of accounts has nowhere to put retention."
+msgstr ""
+
+msgid "This has already been amended."
+msgstr ""
+
+msgid "This is a template"
+msgstr ""
+
+msgid "This is not yours to change while it is where it is."
+msgstr ""
+
+msgid "This is the workspace's sending address. Choose another one first."
+msgstr ""
+
+msgid "This kind of chart is not built."
+msgstr ""
+
+msgid "This kind of record does not report its changes."
+msgstr ""
+
+msgid "This link is not available."
+msgstr ""
+
+msgid "This list"
+msgstr ""
+
+msgid "This list did not load"
+msgstr ""
+
+msgid ""
+"This one is paused for everyone at the moment. Nothing you change here "
+"is lost."
+msgstr ""
+
+msgid "This opens the screen now"
+msgstr ""
+
+msgid "This record is no longer in the workspace"
+msgstr ""
+
+msgid "This record’s id was written in the subject or the message"
+msgstr ""
+
+msgid "This screen did not open"
+msgstr ""
+
+msgid "This screen has no records to attach anything to."
+msgstr ""
+
+msgid "This screen has nothing to assign."
+msgstr ""
+
+msgid "This screen has nothing to change."
+msgstr ""
+
+msgid "This screen has nothing to delete."
+msgstr ""
+
+msgid "This screen has nothing to export."
+msgstr ""
+
+msgid "This screen has nothing to move."
+msgstr ""
+
+msgid "This screen has nothing to save."
+msgstr ""
+
+msgid "This screen has nothing to show yet."
+msgstr ""
+
+msgid ""
+"This screen shows a Gantt, but no fields on it say when a record starts "
+"and ends."
+msgstr ""
+
+msgid ""
+"This screen shows a calendar, but no field on it says when a record "
+"happens."
+msgstr ""
+
+msgid ""
+"This screen shows a dashboard, but nothing has been added to it to "
+"count."
+msgstr ""
+
+msgid ""
+"This screen shows a tree, but no field on it points one record at "
+"another."
+msgstr ""
+
+msgid "This sheet"
+msgstr ""
+
+msgid "This sheet has no range called {0}."
+msgstr ""
+
+msgid "This space is not open to you"
+msgstr ""
+
+msgid "This takes a few seconds."
+msgstr ""
+
+msgid "This upload is not yours to finish."
+msgstr ""
+
+msgid ""
+"This usually takes a minute or two. If it takes longer, the cause is "
+"almost always a proxied record — see step two below."
+msgstr ""
+
+msgid "This workspace already has a company."
+msgstr ""
+
+msgid "This workspace also asks for a second factor when you sign in."
+msgstr ""
+
+msgid "This workspace does not allow connecting outside mailboxes."
+msgstr ""
+
+msgid "This workspace has no accounting app."
+msgstr ""
+
+msgid "This workspace has no apps yet, so there is nothing to hand out."
+msgstr ""
+
+msgid "This workspace has no records an alert could watch yet."
+msgstr ""
+
+msgid "This workspace has nothing set up to import from."
+msgstr ""
+
+msgid ""
+"This workspace has posted entries, so its chart of accounts can no "
+"longer be replaced here. Ask support."
+msgstr ""
+
+msgid "This workspace has reached its limit of {0} emails per day."
+msgstr ""
+
+msgid ""
+"This workspace has reached its limit of {0} emails per hour. Queued "
+"messages will resume shortly."
+msgstr ""
+
+msgid "This workspace is not entitled to Books, so there is nothing to set up."
+msgstr ""
+
+msgid ""
+"This workspace is over its storage limit and cannot grow further. "
+"Nothing has been deleted — free some space, or add storage from your "
+"account, and uploads resume."
+msgstr ""
+
+msgid "This workspace is scheduled for deletion"
+msgstr ""
+
+msgid "This workspace is suspended and cannot send email."
+msgstr ""
+
+msgid "This workspace is suspended and is not sending email."
+msgstr ""
+
+msgid "This workspace is switched off"
+msgstr ""
+
+msgid "This workspace only allows mailboxes on: {0}"
+msgstr ""
+
+msgid "Those changes could not be read."
+msgstr ""
+
+msgid "Those details could not be read."
+msgstr ""
+
+msgid "Those rows were not filled from a sheet."
+msgstr ""
+
+msgid "Those settings could not be read."
+msgstr ""
+
+msgid "Tick everything on this page"
+msgstr ""
+
+msgid "Tick this conversation"
+msgstr ""
+
+msgid "Too many at once. Choose {0} or fewer."
+msgstr ""
+
+msgid "Too many at once. Delete {0} or fewer."
+msgstr ""
+
+msgid "Tool Call Id"
+msgstr ""
+
+msgid "Tool Calls"
+msgstr ""
+
+msgid "Tool Name"
+msgstr ""
+
+msgid "Total Created"
+msgstr ""
+
+msgid "Total Failed"
+msgstr ""
+
+msgid "Total Seen"
+msgstr ""
+
+msgid "Total Updated"
+msgstr ""
+
+msgid "Try again"
+msgstr ""
+
+msgid "Turned on for your workspace"
+msgstr ""
+
+msgid "Type to make a tag"
+msgstr ""
+
+msgid ""
+"Uncompressed size of the payload. The number a size cap has to be "
+"measured against, since the compressed one says nothing about what "
+"opening it costs."
+msgstr ""
+
+msgid "Undo the last thing"
+msgstr ""
+
+msgid "Unfiled"
+msgstr ""
+
+msgid "Unknown settings group {0}."
+msgstr ""
+
+msgid "Unknown settings tab {0}."
+msgstr ""
+
+msgid ""
+"Unless you are replying, or writing on a record that already has "
+"correspondence."
+msgstr ""
+
+msgid "Unsaved changes"
+msgstr ""
+
+msgid "Unsent"
+msgstr ""
+
+msgid "Unstar"
+msgstr ""
+
+msgid "Unstarred"
+msgstr ""
+
+msgid "Unstarred {0}"
+msgstr ""
+
+msgid "Until"
+msgstr ""
+
+msgid "Until then it can be put back exactly where it was."
+msgstr ""
+
+msgid "Untitled"
+msgstr ""
+
+msgid "Upload a file to start."
+msgstr ""
+
+msgid "Upload a file, or make a folder to put files in."
+msgstr ""
+
+msgid "Upload files"
+msgstr ""
+
+msgid "Uploads are paused. Delete some files, or buy more storage."
+msgstr ""
+
+msgid "Usage"
+msgstr ""
+
+msgid "Use AI in this workspace"
+msgstr ""
+
+msgid "Use a different domain"
+msgstr ""
+
+msgid "Use a different sheet…"
+msgstr ""
+
+msgid "Use as a template"
+msgstr ""
+
+msgid "Use your own domain"
+msgstr ""
+
+msgid "Verified As"
+msgstr ""
+
+msgid "Verified On"
+msgstr ""
+
+msgid "View deleted"
+msgstr ""
+
+msgid "View saved"
+msgstr ""
+
+msgid "Visa"
+msgstr ""
+
+msgid "Warn this many days ahead"
+msgstr ""
+
+msgid "Watermark"
+msgstr ""
+
+msgid "Watermark From"
+msgstr ""
+
+msgid "Watermark To"
+msgstr ""
+
+msgid "We could not connect: {0}"
+msgstr ""
+
+msgid "We could not reach {0}. Check the server name."
+msgstr ""
+
+msgid "We guessed these from your address. Change them if your host differs."
+msgstr ""
+
+msgid "What a printed document looks like, and the letter head it sits under."
+msgstr ""
+
+msgid ""
+"What each target field is made of, keyed by target fieldname. See "
+"`oneapp_core/importer.py`."
+msgstr ""
+
+msgid ""
+"What is in the URL. Long enough not to be guessed, and the only thing "
+"standing between the link and the file."
+msgstr ""
+
+msgid "What is looked at."
+msgstr ""
+
+msgid "What it belongs to"
+msgstr ""
+
+msgid "What it is about"
+msgstr ""
+
+msgid "What it is called in the picker."
+msgstr ""
+
+msgid "What it is for"
+msgstr ""
+
+msgid "What it says"
+msgstr ""
+
+msgid "What it was made for, in the words of whoever made it."
+msgstr ""
+
+msgid ""
+"What that JSON renders to, written on the same save. Everything that is "
+"not the editor reads this one — search, the preview, print, export, a "
+"mail body — so none of them has to load an editor to find out what the "
+"document says."
+msgstr ""
+
+msgid "What that sheet was called when the rows were pulled."
+msgstr ""
+
+msgid ""
+"What the call that produced this turn settled at. Zero on anything a "
+"person typed."
+msgstr ""
+
+msgid ""
+"What the model asked to run, when this turn asked for anything. The "
+"arguments as sent, so a transcript says which records were read."
+msgstr ""
+
+msgid "What the paper is called: Trade Licence, Residence Visa."
+msgstr ""
+
+msgid "What the source said, as it said it."
+msgstr ""
+
+msgid "What they can do"
+msgstr ""
+
+msgid "What this rule is for, in the words of whoever wrote it."
+msgstr ""
+
+msgid "What this system is called to the people leaving it."
+msgstr ""
+
+msgid "What this view type needs that columns and filters do not carry."
+msgstr ""
+
+msgid "What this whole conversation has cost, summed as each turn settles."
+msgstr ""
+
+msgid "What this workspace is keeping, and how much room is left."
+msgstr ""
+
+msgid ""
+"What to call this version in the panel. A timestamp for an automatic "
+"one; whatever somebody typed for a named one."
+msgstr ""
+
+msgid "What to read on the source site."
+msgstr ""
+
+msgid ""
+"What to write here. Usually an ERPNext or HRMS doctype: the point of the "
+"move is that it stops being bespoke."
+msgstr ""
+
+msgid "What we made of it before it was refused."
+msgstr ""
+
+msgid "What you are told about, and how."
+msgstr ""
+
+msgid "When"
+msgstr ""
+
+msgid ""
+"When the last warning went out. Kept so a daily job warns once and not "
+"every morning until somebody acts, which is how people learn to ignore "
+"it."
+msgstr ""
+
+msgid "When this record"
+msgstr ""
+
+msgid "When {0} is {1} by {2} days, tell {3}"
+msgstr ""
+
+msgid "When {0} is {1}, tell {2}"
+msgstr ""
+
+msgid "Where it came from"
+msgstr ""
+
+msgid "Where it got to"
+msgstr ""
+
+msgid "Where it stands"
+msgstr ""
+
+msgid "Where mail that matches goes, before you see it."
+msgstr ""
+
+msgid ""
+"Where one source row is several records. `{\"from\": \"attendance_log\", "
+"\"shape\": \"map\"}` makes one record per key; `\"list\"` makes one per "
+"item. Each gets the parent's fields with its own merged over them and "
+"`__key` holding what it came in under."
+msgstr ""
+
+msgid "Where this step started reading. Empty is everything."
+msgstr ""
+
+msgid "Where you are signed in"
+msgstr ""
+
+msgid ""
+"Whether members may connect a mailbox they already have, such as Gmail "
+"or the company's own server."
+msgstr ""
+
+msgid ""
+"Whether to enforce quotas at all, and until when if not. A workspace "
+"over its limit because a line left its subscription is given a window "
+"rather than a wall."
+msgstr ""
+
+msgid "Which call a `tool` row answers."
+msgstr ""
+
+msgid "Which column the rows are grouped under. Empty is no grouping."
+msgstr ""
+
+msgid ""
+"Which columns, in order, each with a width and an optional left/right "
+"pin. Empty follows the screen. The comma-separated fieldnames this used "
+"to hold still read."
+msgstr ""
+
+msgid "Which columns…"
+msgstr ""
+
+msgid "Which domain?"
+msgstr ""
+
+msgid ""
+"Which features use a model, which model they use, and anything you want "
+"it to keep in mind."
+msgstr ""
+
+msgid ""
+"Which of the screen's view types this view is of. Empty is the screen's "
+"first."
+msgstr ""
+
+msgid "Which one"
+msgstr ""
+
+msgid "Which range?"
+msgstr ""
+
+msgid "Which record's files?"
+msgstr ""
+
+msgid ""
+"Which space this fills. For the record: the import writes doctypes, not "
+"screens."
+msgstr ""
+
+msgid ""
+"Which store the payload goes back to. On the row rather than derived "
+"from the File, so a version is readable on its own — including after the "
+"file it came from is gone."
+msgstr ""
+
+msgid "While you are away"
+msgstr ""
+
+msgid "Who"
+msgstr ""
+
+msgid "Who it is from"
+msgstr ""
+
+msgid "Who it went to"
+msgstr ""
+
+msgid "Who may use this"
+msgstr ""
+
+msgid ""
+"Who the source site said we were. Worth reading: an import runs as this "
+"user over there, and a key made from an account with half the "
+"permissions imports half the data without failing."
+msgstr ""
+
+msgid ""
+"Whose screen this is. Empty is a screen everyone on the workspace sees — "
+"Frappe's `for_user` empty, on List Filter."
+msgstr ""
+
+msgid ""
+"Why the loop ended on this turn: answered, turns_spent or budget_spent. "
+"Empty on a person's own message."
+msgstr ""
+
+msgid ""
+"Worked out from the expiry date and the warning window, on save and once "
+"a day. Never typed: a status somebody can set is a status that disagrees "
+"with the date beside it."
+msgstr ""
+
+msgid "Write from"
+msgstr ""
+
+msgid "Write in British English. Never quote a delivery date."
+msgstr ""
+
+msgid "Write the message"
+msgstr ""
+
+msgid "Writing"
+msgstr ""
+
+msgid "Yahoo needs an app password."
+msgstr ""
+
+msgid "You already have an address here."
+msgstr ""
+
+msgid ""
+"You already have {0} background jobs running, which is the limit on your "
+"plan. Wait for one to finish, or upgrade for more."
+msgstr ""
+
+msgid "You cannot amend this."
+msgstr ""
+
+msgid "You cannot change how {0} is named."
+msgstr ""
+
+msgid "You cannot change that record."
+msgstr ""
+
+msgid "You cannot change {0}."
+msgstr ""
+
+msgid "You cannot open {0}."
+msgstr ""
+
+msgid "You cannot read that record."
+msgstr ""
+
+msgid "You cannot read {0}."
+msgstr ""
+
+msgid "You cannot see that file's links."
+msgstr ""
+
+msgid "You cannot share that file."
+msgstr ""
+
+msgid "You have no address to send from."
+msgstr ""
+
+msgid "You have no address to write from."
+msgstr ""
+
+msgid "Your CNAME should point at:"
+msgstr ""
+
+msgid "Your account"
+msgstr ""
+
+msgid "Your calendar did not load"
+msgstr ""
+
+msgid ""
+"Your card is charged the difference for the rest of this billing period, "
+"and the new limits apply straight away."
+msgstr ""
+
+msgid ""
+"Your company, its financial year, and the accounts everything is posted "
+"to. Answered once."
+msgstr ""
+
+msgid ""
+"Your country and currency are what you chose. The chart of accounts and "
+"financial year below are the usual ones for {0} — check them before you "
+"invoice anything, because they are only easy to change until then."
+msgstr ""
+
+msgid ""
+"Your currency and chart of accounts cannot change once entries exist. "
+"Ask support if you need them changed."
+msgstr ""
+
+msgid "Your diary"
+msgstr ""
+
+msgid "Your domain"
+msgstr ""
+
+msgid "Your files did not load"
+msgstr ""
+
+msgid "Your last payment did not go through"
+msgstr ""
+
+msgid "Your name and how you are reached."
+msgstr ""
+
+msgid "Your order is on its way"
+msgstr ""
+
+msgid "Your original terms"
+msgstr ""
+
+msgid "Your own domain"
+msgstr ""
+
+msgid "Your own mailboxes"
+msgstr ""
+
+msgid "Your own roles"
+msgstr ""
+
+msgid "Your password, and where you are signed in."
+msgstr ""
+
+msgid ""
+"Your plan adds credits every month and they do not carry over. Credits "
+"you buy never expire."
+msgstr ""
+
+msgid ""
+"Your plan adds credits every month and they expire at the end of it. "
+"Credits you buy roll over and are spent last."
+msgstr ""
+
+msgid ""
+"Your plan includes one seat. Change plan to invite more people, or "
+"remove someone who no longer needs access."
+msgstr ""
+
+msgid ""
+"Your plan includes {0} seats. Change plan to invite more people, or "
+"remove someone who no longer needs access."
+msgstr ""
+
+msgid "Your signature, your away message, and where your mail files itself."
+msgstr ""
+
+msgid "Your spaces are all still where you left them."
+msgstr ""
+
+msgid ""
+"Your work has not been touched, and paying brings it back within a "
+"minute. If it is still unpaid on {0}, the workspace comes down and only "
+"a backup is kept."
+msgstr ""
+
+msgid "Your workspace already works at {0}. A custom domain is optional."
+msgstr ""
+
+msgid "Your workspace did not load"
+msgstr ""
+
+msgid "Your workspace is past the {0} limit on this plan"
+msgstr ""
+
+msgid "add a connection first"
+msgstr ""
+
+msgid "app.yourcompany.com"
+msgstr ""
+
+msgid "as {0}"
+msgstr ""
+
+msgid "assistant"
+msgstr ""
+
+msgid "available"
+msgstr ""
+
+msgid "cancelled"
+msgstr ""
+
+msgid "changed"
+msgstr ""
+
+msgid "colleague@acme.test"
+msgstr ""
+
+msgid "coming up"
+msgstr ""
+
+msgid "database"
+msgstr ""
+
+msgid "files"
+msgstr ""
+
+msgid "found"
+msgstr ""
+
+msgid "from {0}"
+msgstr ""
+
+msgid "https://old.example.com"
+msgstr ""
+
+msgid "iCloud needs an app-specific password."
+msgstr ""
+
+msgid "is"
+msgstr ""
+
+msgid "is empty"
+msgstr ""
+
+msgid "is filled in"
+msgstr ""
+
+msgid "is not"
+msgstr ""
+
+msgid "is over"
+msgstr ""
+
+msgid "is under"
+msgstr ""
+
+msgid "made"
+msgstr ""
+
+msgid "missing"
+msgstr ""
+
+msgid "nobody"
+msgstr ""
+
+msgid "not yet"
+msgstr ""
+
+msgid "nothing yet"
+msgstr ""
+
+msgid "past due"
+msgstr ""
+
+msgid "people"
+msgstr ""
+
+msgid "per month"
+msgstr ""
+
+msgid "record"
+msgstr ""
+
+msgid "rehearsal"
+msgstr ""
+
+msgid "sales"
+msgstr ""
+
+msgid "sales@yourcompany.com"
+msgstr ""
+
+msgid "showing the first {0}"
+msgstr ""
+
+msgid "submitted"
+msgstr ""
+
+msgid "the next state"
+msgstr ""
+
+msgid "the platform address"
+msgstr ""
+
+msgid "the record"
+msgstr ""
+
+msgid "the sidebar"
+msgstr ""
+
+msgid "this"
+msgstr ""
+
+msgid "tool"
+msgstr ""
+
+msgid "up to {0}"
+msgstr ""
+
+msgid "user"
+msgstr ""
+
+msgid "you@gmail.com"
+msgstr ""
+
+msgid "yourcompany.com"
+msgstr ""
+
+msgid "yourcompany.com, gmail.com"
+msgstr ""
+
+msgid "{0} (default)"
+msgstr ""
+
+msgid "{0} Currently {1}."
+msgstr ""
+
+msgid "{0} GB database"
+msgstr ""
+
+msgid "{0} GB files"
+msgstr ""
+
+msgid "{0} a month, from now on."
+msgstr ""
+
+msgid "{0} already exists."
+msgstr ""
+
+msgid "{0} available"
+msgstr ""
+
+msgid "{0} cannot be used for {1}."
+msgstr ""
+
+msgid "{0} changed since this run was queued."
+msgstr ""
+
+msgid "{0} commented on {1} {2}"
+msgstr ""
+
+msgid "{0} credits"
+msgstr ""
+
+msgid "{0} credits a month"
+msgstr ""
+
+msgid "{0} credits left. Each feature is charged for what it actually uses."
+msgstr ""
+
+msgid "{0} does not print {1}."
+msgstr ""
+
+msgid "{0} has no field called {1}."
+msgstr ""
+
+msgid "{0} is already connected."
+msgstr ""
+
+msgid "{0} is already running."
+msgstr ""
+
+msgid ""
+"{0} is named by its own scheme, which is part of the app rather than a "
+"setting. Its counter can still be moved."
+msgstr ""
+
+msgid "{0} is not a PDF engine."
+msgstr ""
+
+msgid "{0} is not a declared notification kind."
+msgstr ""
+
+msgid "{0} is not a document that is submitted."
+msgstr ""
+
+msgid "{0} is not a field this screen may change."
+msgstr ""
+
+msgid "{0} is not a folder you can remove."
+msgstr ""
+
+msgid "{0} is not a level of access."
+msgstr ""
+
+msgid "{0} is not a link."
+msgstr ""
+
+msgid "{0} is not a notification you can set."
+msgstr ""
+
+msgid "{0} is not a page size."
+msgstr ""
+
+msgid "{0} is not a print style."
+msgstr ""
+
+msgid "{0} is not a series on {1}."
+msgstr ""
+
+msgid "{0} is not a way to be notified."
+msgstr ""
+
+msgid "{0} is not a workspace setting."
+msgstr ""
+
+msgid "{0} is not an action of this screen."
+msgstr ""
+
+msgid "{0} is not installed on this workspace."
+msgstr ""
+
+msgid "{0} is not named after a field, so it cannot be filled in from a value."
+msgstr ""
+
+msgid "{0} is not named by a series here."
+msgstr ""
+
+msgid "{0} is not on this screen."
+msgstr ""
+
+msgid "{0} is not on this workspace."
+msgstr ""
+
+msgid "{0} is not one of the choices."
+msgstr ""
+
+msgid "{0} is not part of {1}."
+msgstr ""
+
+msgid "{0} is not set up to send."
+msgstr ""
+
+msgid "{0} is not something you can change here."
+msgstr ""
+
+msgid "{0} is not submitted, so it cannot be submitted or cancelled."
+msgstr ""
+
+msgid "{0} is not verified yet. SPF: {1}. DKIM: {2}."
+msgstr ""
+
+msgid ""
+"{0} is on a domain we have not verified yet. Publish the DNS records "
+"first."
+msgstr ""
+
+msgid "{0} is part of your workspace but has no screens in it yet."
+msgstr ""
+
+msgid "{0} is taken."
+msgstr ""
+
+msgid "{0} message about this record"
+msgstr ""
+
+msgid "{0} messages about this record"
+msgstr ""
+
+msgid "{0} of {1} chosen"
+msgstr ""
+
+msgid "{0} of {1} seats used"
+msgstr ""
+
+msgid "{0} of {1} today"
+msgstr ""
+
+msgid "{0} once"
+msgstr ""
+
+msgid "{0} permissions"
+msgstr ""
+
+msgid "{0} row"
+msgstr ""
+
+msgid "{0} rows"
+msgstr ""
+
+msgid "{0} runs on a workflow, so it is {1} by taking the next step in it."
+msgstr ""
+
+msgid "{0} seats"
+msgstr ""
+
+msgid "{0} seats used"
+msgstr ""
+
+msgid "{0} selected"
+msgstr ""
+
+msgid ""
+"{0} ships with the app that defines it, so it is read-only here. "
+"Duplicate it to make it yours."
+msgstr ""
+
+msgid "{0} ships with the app that defines it."
+msgstr ""
+
+msgid "{0} steps"
+msgstr ""
+
+msgid "{0} steps · {1} fields it adds"
+msgstr ""
+
+msgid "{0} things"
+msgstr ""
+
+msgid "{0} things chosen"
+msgstr ""
+
+msgid "{0} things, more below"
+msgstr ""
+
+msgid "{0} times a day"
+msgstr ""
+
+msgid "{0} to fix · {1} worth reading"
+msgstr ""
+
+msgid "{0} updated {1} {2}"
+msgstr ""
+
+msgid ""
+"{0} was written as a template rather than drawn, so it cannot be opened "
+"here. It still prints."
+msgstr ""
+
+msgid "{0} — last {1}"
+msgstr ""
+
+msgid "{0} — none yet"
+msgstr ""
+
+msgid "{0} — yours, on this workspace's domain."
+msgstr ""
+
+msgid "{0} — {1}"
+msgstr ""
+
+msgid "{0}, kept {1} days"
+msgstr ""
+
+msgid "إلى"
+msgstr ""
+
+msgid "التوقيع"
+msgstr ""
+
+msgid "الصفة"
+msgstr ""
+
+msgid "العربية"
+msgstr ""
+
+msgid "الموضوع"
+msgstr ""
+
+msgid "النص"
+msgstr ""
+
+msgid "— which this workspace no longer has"
+msgstr ""
+
+msgid "“{0}” is reserved."
+msgstr ""

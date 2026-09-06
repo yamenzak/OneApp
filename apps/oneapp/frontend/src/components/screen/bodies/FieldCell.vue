@@ -83,7 +83,7 @@
        column nobody can scan. -->
   <span
     v-else-if="numeric"
-    class="w-full truncate text-right text-p-sm tabular-nums"
+    class="w-full truncate text-end text-p-sm tabular-nums"
     :class="[emphasis, value ? 'text-ink-gray-8' : 'text-ink-gray-4']"
   >
     {{ formatted }}

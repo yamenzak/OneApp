@@ -1,6 +1,7 @@
 /** Print formats and letter heads, and rendering one. */
 
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 export const printing = {
   printOptions: (spaceCode, screen, name) =>
@@ -95,21 +96,21 @@ export const printing = {
         setup: JSON.stringify(setup || {}),
         name,
       },
-      { successMessage: 'Format saved' },
+      { successMessage: __('Format saved') },
     ),
 
   deletePrintFormat: (name) =>
     callMethod(
       'oneapp.oneapp_core.workspace.delete_print_format',
       { name },
-      { successMessage: 'Format deleted' },
+      { successMessage: __('Format deleted') },
     ),
 
   setDefaultPrintFormat: (doctype, name) =>
     callMethod(
       'oneapp.oneapp_core.workspace.set_default_print_format',
       { doctype, name },
-      { successMessage: 'Default set' },
+      { successMessage: __('Default set') },
     ),
 
   printFormatPreview: (doctype, layout, setup, { name = '', letterhead = '' } = {}) =>
@@ -132,7 +133,7 @@ export const printing = {
     callMethod(
       'oneapp.oneapp_core.workspace.set_default_letter_head',
       { name },
-      { successMessage: 'Default set' },
+      { successMessage: __('Default set') },
     ),
 
   letterHead: (name) =>
@@ -146,14 +147,14 @@ export const printing = {
     callMethod(
       'oneapp.oneapp_core.workspace.save_letter_head',
       { label, values: JSON.stringify(values || {}), name },
-      { successMessage: 'Letter head saved' },
+      { successMessage: __('Letter head saved') },
     ),
 
   deleteLetterHead: (name) =>
     callMethod(
       'oneapp.oneapp_core.workspace.delete_letter_head',
       { name },
-      { successMessage: 'Letter head deleted' },
+      { successMessage: __('Letter head deleted') },
     ),
 
   // --- tags and sharing ---------------------------------------------------

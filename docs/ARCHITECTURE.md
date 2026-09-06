@@ -182,6 +182,7 @@ three-thousand-line one.
 | `check_frontend.py`, `check_frappe_ui.py` | The CI side: a generated copy edited by hand, and a frappe-ui pin gone stale. |
 | `affected.py` | Which browser specs a change can break, so half an hour is not the price of one line. `dev.sh e2e` runs what it prints; `tests/test_affected.py` holds it to the one asymmetry it rests on — narrow on evidence, and answer `all` on silence. |
 | `check_settings.py` | Every declared settings type against the Frappe fieldtype it actually writes. Needs a bench. |
+| `i18n_pot.py`, `i18n.py` | The catalogue. The first re-extracts every msgid and needs a site; the second answers what is still owed and writes the `.po` files, and needs nothing. `docs/LANGUAGE.md` is the why. |
 
 ## Where a change goes
 
@@ -205,6 +206,9 @@ three-thousand-line one.
   desk.
 * **A new scheduled job** → `hooks.py`, and `tests/test_site_role.py` wants it
   accounted for.
+* **A new sentence a customer reads** → inside `__()` in the browser or `_()`
+  on the server, and nowhere else. `tests/test_i18n.py` reads both halves;
+  `python3 scripts/i18n.py sync` then lists it as owed in Arabic and German.
 
 ## The rules the tests keep
 

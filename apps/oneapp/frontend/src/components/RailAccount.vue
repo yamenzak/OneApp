@@ -25,7 +25,7 @@
       size="lg"
       role="button"
       tabindex="0"
-      :aria-label="fullName || 'Account'"
+      :aria-label="fullName || __('Account')"
       class="size-7 cursor-pointer transition hover:opacity-90"
     />
   </Dropdown>
@@ -38,6 +38,7 @@ import { useRouter } from 'vue-router'
 import { Avatar, Dropdown } from '@/ui'
 import { useAppearance } from '@/lib/shell/appearance'
 import { fullName, userImage } from '@/lib/shell/user'
+import { __ } from '@/lib/runtime/translate'
 
 // The rail's foot, matching where every frappe-ui shell puts the account. The
 // trigger is an Avatar rather than a Button so it reads as a person, not an
@@ -50,13 +51,13 @@ const { menuGroup } = useAppearance()
 
 const options = computed(() => [
   {
-    label: 'Account',
+    label: __('Account'),
     icon: 'lucide-circle-user',
     onClick: () => router.push({ name: 'Account' }),
   },
   menuGroup.value,
   {
-    label: 'Log out',
+    label: __('Log out'),
     icon: 'lucide-log-out',
     onClick: signOut,
   },

@@ -8,8 +8,8 @@
     kept in this browser, and a round trip would only make the toggle slower.
   -->
   <SettingsHeader
-    title="Appearance"
-    description="How OneSpace looks, on this browser."
+    :title="__('Appearance')"
+    :description="__('How OneSpace looks, on this browser.')"
     :class="PANEL_HEADER"
   />
   <SettingsBody :class="PANEL_BODY">
@@ -20,5 +20,6 @@
 <script setup>
 import { SettingsBody, SettingsHeader } from '@/ui'
 import ThemeSetting from '../ThemeSetting.vue'
+import { __ } from '@/lib/runtime/translate'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 </script>

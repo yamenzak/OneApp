@@ -7,7 +7,7 @@
   is trying to do, keys on the right, no search box for a page of twenty.
 -->
 <template>
-  <Dialog v-model="open" title="Keyboard shortcuts" size="2xl">
+  <Dialog v-model="open" :title="__('Keyboard shortcuts')" size="2xl">
     <template #default>
       <div class="grid gap-6 py-2 sm:grid-cols-2" data-slot="mail-shortcuts">
         <div v-for="group in groups" :key="group.title" class="flex flex-col gap-2">
@@ -39,6 +39,7 @@
 
 <script setup>
 import { Dialog } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 
 const open = defineModel({ type: Boolean, default: false })
 

@@ -10,11 +10,11 @@
       dialog, and a place for a file to be orphaned if the dialog is closed.
     -->
     <p v-if="!docname" class="text-p-sm text-ink-gray-5">
-      Save this first, and you can attach files to it.
+      {{ __('Save this first, and you can attach files to it.') }}
     </p>
 
     <template v-else>
-      <LoadingText v-if="loading" text="Loading files" />
+      <LoadingText v-if="loading" :text="__('Loading files')" />
 
       <!--
         Pictures across, files below. frappe-ui ships no carousel, so this is a
@@ -37,7 +37,7 @@
           >
             <img
               :src="file.file_url"
-              :alt="file.file_name || 'Attachment'"
+              :alt="file.file_name || __('Attachment')"
               class="h-28 w-40 rounded-6 border border-outline-gray-1 object-cover"
               loading="lazy"
             />
@@ -51,19 +51,19 @@
              that already fit is chrome pretending there is more. -->
         <template v-if="pictures.length > 2">
           <Button
-            class="absolute left-1 top-10"
+            class="absolute start-1 top-10"
             icon="lucide-chevron-left"
             variant="solid"
-            label="Previous"
-            :tooltip="'Previous'"
+            :label="__('Previous')"
+            :tooltip="__('Previous')"
             @click="nudge(-1)"
           />
           <Button
-            class="absolute right-1 top-10"
+            class="absolute end-1 top-10"
             icon="lucide-chevron-right"
             variant="solid"
-            label="Next"
-            :tooltip="'Next'"
+            :label="__('Next')"
+            :tooltip="__('Next')"
             @click="nudge(1)"
           />
         </template>
@@ -95,15 +95,15 @@
             icon="lucide-trash-2"
             variant="ghost"
             theme="red"
-            :label="`Remove ${file.file_name || 'this file'}`"
-            :tooltip="`Remove ${file.file_name || 'this file'}`"
+            :label="__('Remove {0}', [file.file_name || __('this file')])"
+            :tooltip="__('Remove {0}', [file.file_name || __('this file')])"
             @click="remove(file)"
           />
         </li>
       </ul>
 
       <p v-if="!loading && !files.length" class="text-p-sm text-ink-gray-5">
-        Nothing here yet.
+        {{ __('Nothing here yet.') }}
       </p>
 
       <!--
@@ -116,7 +116,7 @@
         v-if="!disabled"
         class="w-full"
         icon-left="lucide-plus"
-        label="Add a file"
+        :label="__('Add a file')"
         @click="picking = true"
       />
       <FilePicker
@@ -137,6 +137,7 @@ import { Button, FormLabel, Icon, LoadingText } from '@/ui'
 import FilePicker from '../../drive/FilePicker.vue'
 import { workspace } from '../../../lib/workspace'
 import { humanSize, iconFor, isImage } from '@/lib/files/files'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /** The docfield. Read for its label, its name and its description. */

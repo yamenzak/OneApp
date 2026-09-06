@@ -37,8 +37,8 @@
     <EmptyState
       v-else-if="!space"
       icon="lucide-circle-help"
-      title="App not available"
-      description="This space is not enabled for your workspace, or you do not have access to it."
+      :title="__('This space is not open to you')"
+      :description="__('It is not part of your workspace, or nobody has given you access to it. An admin can change that.')"
     />
 
     <!--
@@ -50,7 +50,7 @@
       <component :is="custom" :space-code="spaceCode" :screen="spec.screen" />
     </div>
 
-    <Alert v-else-if="specError" theme="red" title="This screen could not be opened">
+    <Alert v-else-if="specError" theme="red" :title="__('This screen did not open')">
       <template #description>{{ specError }}</template>
     </Alert>
 
@@ -61,8 +61,8 @@
     <EmptyState
       v-else-if="!spec?.screens?.length"
       icon="lucide-hammer"
-      title="Nothing to show yet"
-      :description="`${space.space_label} is enabled for this workspace but has no screens.`"
+      :title="__('Nothing to show yet')"
+      :description="__('{0} is part of your workspace but has no screens in it yet.', [space.space_label])"
     />
 
     <Alert v-else-if="spec.error" theme="amber" :title="spec.screen_label">
@@ -97,8 +97,8 @@
           <Button
             v-if="quickOverflow || quickExpanded"
             :icon="quickExpanded ? 'lucide-chevron-up' : 'lucide-chevron-down'"
-            :label="quickExpanded ? 'Fewer filters' : 'More filters'"
-            :tooltip="quickExpanded ? 'Fewer filters' : 'More filters'"
+            :label="quickExpanded ? __('Fewer filters') : __('More filters')"
+            :tooltip="quickExpanded ? __('Fewer filters') : __('More filters')"
             :variant="quickExpanded ? 'subtle' : 'ghost'"
             @click="quickExpanded = !quickExpanded"
           />
@@ -141,8 +141,8 @@
             icon="lucide-heart"
             :variant="favourites ? 'subtle' : 'ghost'"
             :theme="favourites ? 'red' : 'gray'"
-            label="Only my favourites"
-            tooltip="Only my favourites"
+            :label="__('Only my favourites')"
+            :tooltip="__('Only my favourites')"
             @click="toggleFavourites"
           />
           <!--
@@ -179,7 +179,7 @@
         <Skeleton v-for="n in 6" :key="n" class="h-11 w-full" />
       </div>
 
-      <Alert v-else-if="rowsError" theme="red" title="This list could not be loaded">
+      <Alert v-else-if="rowsError" theme="red" :title="__('This list did not load')">
         <template #description>{{ rowsError }}</template>
       </Alert>
 
@@ -199,20 +199,20 @@
       <EmptyState
         v-else-if="!rows.length && spec.view_type !== 'calendar'"
         icon="lucide-inbox"
-        :title="favourites ? 'Nothing here yet' : `No ${spec.screen_label.toLowerCase()} yet`"
+        :title="favourites ? __('Nothing here yet') : __('No {0} yet', [spec.screen_label.toLowerCase()])"
         :description="emptyBecause"
       >
         <template #action>
           <Button
             v-if="favourites"
             icon-left="lucide-heart-off"
-            label="Show everything"
+            :label="__('Show everything')"
             @click="toggleFavourites"
           />
           <Button
             v-else-if="quickFilters.length || panelFilters.length"
             icon-left="lucide-filter-x"
-            label="Clear the filters"
+            :label="__('Clear the filters')"
             @click="clearAllFilters"
           />
         </template>
@@ -315,13 +315,13 @@
           <Button
             v-if="spec.can_write"
             icon-left="lucide-pencil"
-            label="Edit"
+            :label="__('Edit')"
             @click="bulkEditing = true"
           />
           <Button
             v-if="spec.can_write"
             icon-left="lucide-user-plus"
-            label="Assign"
+            :label="__('Assign')"
             @click="bulkAssigning = true"
           />
           <!--
@@ -336,7 +336,7 @@
           <template v-if="submittable && spec.can_write">
             <Button
               icon-left="lucide-check"
-              label="Submit"
+              :label="__('Submit')"
               :loading="bulking"
               @click="bulkSubmit"
             />
@@ -344,7 +344,7 @@
               theme="red"
               variant="subtle"
               icon-left="lucide-undo-2"
-              label="Cancel"
+              :label="__('Cancel')"
               :loading="bulking"
               @click="confirmBulkCancel = true"
             />
@@ -352,12 +352,12 @@
           <Button
             v-if="spec.can_print"
             icon-left="lucide-printer"
-            label="Print"
+            :label="__('Print')"
             @click="printSelected"
           />
           <Button
             icon-left="lucide-download"
-            label="Export"
+            :label="__('Export')"
             :loading="exporting"
             @click="exportRows(selection)"
           />
@@ -365,7 +365,7 @@
             v-if="spec.can_delete"
             theme="red"
             icon-left="lucide-trash-2"
-            :label="`Delete ${selection.length}`"
+            :label="__('Delete {0}', [selection.length])"
             :loading="deleting"
             @click="confirmDelete = true"
           />
@@ -456,18 +456,19 @@
        ledgers. The one other bulk operation that asks. -->
   <Dialog
     v-model="confirmBulkCancel"
-    :title="`Cancel ${selection.length} ${selection.length === 1 ? 'document' : 'documents'}?`"
+    :title="selection.length === 1
+      ? __('Cancel this record?')
+      : __('Cancel {0} records?', [selection.length])"
   >
     <p class="text-p-base text-ink-gray-7">
-      This unwinds what submitting them wrote. Anything that will not cancel is
-      named rather than skipped.
+      {{ __('Cancelling unwinds what submitting wrote. Anything that will not cancel is named.') }}
     </p>
     <template #actions>
       <Button
         theme="red"
         variant="solid"
         :loading="bulking"
-        label="Cancel them"
+        :label="selection.length === 1 ? __('Cancel it') : __('Cancel them')"
         @click="bulkCancel"
       />
     </template>
@@ -477,17 +478,19 @@
        asks — and says how many, because a selection is easy to lose track of. -->
   <Dialog
     v-model="confirmDelete"
-    :title="`Delete ${selection.length} ${selection.length === 1 ? 'record' : 'records'}?`"
+    :title="selection.length === 1
+      ? __('Delete this record?')
+      : __('Delete {0} records?', [selection.length])"
   >
     <p class="text-p-base text-ink-gray-7">
-      This cannot be undone. Anything still linked to elsewhere will be kept and named.
+      {{ __('This cannot be undone. Anything still linked to elsewhere is kept, and named.') }}
     </p>
     <template #actions>
       <Button
         theme="red"
         variant="solid"
         :loading="deleting"
-        label="Delete"
+        :label="__('Delete')"
         @click="removeSelected"
       />
     </template>
@@ -575,6 +578,7 @@ import { CARD_VIEW_TYPES, bodyFor } from '@/lib/screen/viewTypes'
 import { applyTheme, clearTheme } from '@/lib/shell/theme'
 import { DRAWER, PAGE, PANE } from '@/lib/screen/surfaces'
 import { screenComponent } from '@/screens'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({ spaceCode: { type: String, required: true } })
 const route = useRoute()
@@ -779,13 +783,13 @@ const counted = computed(() =>
 )
 
 const emptyBecause = computed(() => {
-  if (favourites.value) return 'Nothing you have liked is on this screen.'
+  if (favourites.value) return __('Nothing you have liked is on this screen.')
   if (quickFilters.value.length || panelFilters.value.length) {
-    return 'Nothing matches the filters. Clear one to widen the list.'
+    return __('Nothing matches the filters. Clear one to widen the list.')
   }
   return spec.value?.can_create
-    ? 'Nothing here so far. New starts the first one.'
-    : 'Nothing here so far.'
+    ? __('Nothing here so far. New starts the first one.')
+    : __('Nothing here so far.')
 })
 
 // One gear, two dialogs. Which one is the body's question, not the footer's:

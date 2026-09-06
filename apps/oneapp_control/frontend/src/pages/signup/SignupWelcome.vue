@@ -4,37 +4,34 @@
       <template v-if="status?.ready">
         <Avatar label="✓" shape="square" size="2xl" class="mx-auto" />
         <h1 class="mt-4 text-xl-semibold text-ink-gray-9">
-          {{ status.workspace_name }} is ready
+          {{ __('{0} is ready', [status.workspace_name]) }}
         </h1>
         <p class="mt-2 text-p-base text-ink-gray-6">
-          We have emailed you a link to set your password.
+          {{ __('Check your email for a link to set your password.') }}
         </p>
         <Button
           class="mt-5"
           variant="solid"
           size="md"
-          label="Open your workspace"
+          :label="__('Open your workspace')"
           @click="go"
         />
       </template>
 
       <template v-else-if="status?.status === 'Failed'">
-        <h1 class="text-xl-semibold text-ink-gray-9">Something went wrong</h1>
+        <h1 class="text-xl-semibold text-ink-gray-9">{{ __('Setup did not finish') }}</h1>
         <p class="mt-2 text-p-base text-ink-gray-6">
-          Your payment went through but we could not finish setting up. We have
-          been alerted and are looking at it — you do not need to do anything,
-          and you will not be charged again.
+          {{ __('Your payment went through and you will not be charged again. Support has been told, and there is nothing for you to do.') }}
         </p>
       </template>
 
       <template v-else>
         <LoadingIndicator class="mx-auto size-6 text-ink-gray-5" />
         <h1 class="mt-4 text-xl-semibold text-ink-gray-9">
-          Setting up your workspace
+          {{ __('Setting up your workspace') }}
         </h1>
         <p class="mt-2 text-p-base text-ink-gray-6">
-          This usually takes under a minute. If it takes longer we will email you
-          the link — you can safely close this tab.
+          {{ __('This usually takes under a minute. If it takes longer, the link arrives by email — you can close this tab.') }}
         </p>
       </template>
     </div>
@@ -46,6 +43,7 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { Avatar, Button, LoadingIndicator } from '@/ui'
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 const route = useRoute()
 const status = ref(null)

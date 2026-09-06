@@ -2,6 +2,7 @@ import { reactive } from 'vue'
 
 import { getSocket } from '@/lib/runtime/socket'
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 import { session } from '@/lib/shell/session'
 
 /**
@@ -88,7 +89,7 @@ export async function loadPreferences() {
 
 export async function savePreferences(changes) {
   const answer = await callMethod(`${METHOD}.set_preferences`, changes, {
-    successMessage: 'Saved',
+    successMessage: __('Saved'),
   })
   // The master switch decides whether a notification is written at all, so
   // turning it off makes the bell's count wrong until something else asks.
@@ -108,7 +109,7 @@ export async function setChannel(kind, channel, on) {
   const answer = await callMethod(
     `${METHOD}.set_channel`,
     { kind, channel, on: on ? 1 : 0 },
-    { successMessage: 'Saved' },
+    { successMessage: __('Saved') },
   )
   // Muting a kind hides what is already in the feed, so the bell is wrong
   // until something asks again.

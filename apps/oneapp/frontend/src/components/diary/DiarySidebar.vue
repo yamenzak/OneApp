@@ -13,9 +13,9 @@
   <Sidebar
     v-model:collapsed="collapsed"
     :width="`${width}px`"
-    class="border-r border-outline-gray-1"
+    class="border-e border-outline-gray-1"
   >
-    <SidebarHeader title="Calendar" :subtitle="session.tenant?.name" :show-logo="false" />
+    <SidebarHeader :title="__('Calendar')" :subtitle="session.tenant?.name" :show-logo="false" />
 
     <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pb-6">
       <nav class="space-y-0.5">
@@ -68,6 +68,7 @@ import SidebarResizer from '../SidebarResizer.vue'
 import { session } from '@/lib/shell/session'
 import { useSidebar } from '@/lib/shell/sidebar'
 import { colourFor, diary, isOn, toggle } from '@/lib/screen/diary'
+import { __ } from '@/lib/runtime/translate'
 
 const { collapsed, width } = useSidebar()
 

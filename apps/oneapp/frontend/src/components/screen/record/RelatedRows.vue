@@ -14,7 +14,7 @@
     <div class="flex items-center gap-2">
       <span class="text-p-sm text-ink-gray-6">{{ counted }}</span>
       <span v-if="more" class="text-p-xs text-ink-gray-5">
-        showing the first {{ rows.length }}
+        {{ __('showing the first {0}', [rows.length]) }}
       </span>
       <!--
         Frappe's "New linked document", on the tab that is already about the
@@ -25,7 +25,7 @@
         class="ms-auto"
         data-slot="related-new"
         icon-left="lucide-plus"
-        :label="`New ${spec.singular || 'record'}`"
+        :label="__('New {0}', [spec.singular || __('record')])"
         @click="creating = true"
       />
     </div>
@@ -72,12 +72,12 @@
       </template>
     </RecordTable>
 
-    <LoadingText v-else-if="loading" text="Loading" />
+    <LoadingText v-else-if="loading" :text="__('Loading')" />
 
     <!-- Nothing filed against it, said in the words of the thing that is
          missing rather than "No records". -->
     <p v-else class="py-6 text-center text-p-sm text-ink-gray-5">
-      No {{ (label || 'records').toLowerCase() }} against this yet.
+      {{ __('No {0} against this yet.', [(label || __('records')).toLowerCase()]) }}
     </p>
   </div>
 </template>
@@ -91,6 +91,7 @@ import FieldCell from '../bodies/FieldCell.vue'
 import TitleCell from '../bodies/TitleCell.vue'
 import RowMeta from '../bodies/RowMeta.vue'
 import { workspace } from '../../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -137,7 +138,7 @@ const loading = ref(false)
 
 const counted = computed(() => {
   const many = rows.value.length
-  const what = props.label || 'record'
+  const what = props.label || __('record')
   if (!many) return ''
   // The label is a plural already — "Invoices" — so the singular is the one
   // that has to be made, and only where the count is one.

@@ -10,19 +10,19 @@
     are behind the same admin door.
   -->
   <SettingsHeader
-    title="Print formats"
-    description="What a printed document looks like, and the letter head it sits under."
+    :title="__('Print formats')"
+    :description="__('What a printed document looks like, and the letter head it sits under.')"
     :class="PANEL_HEADER"
   />
   <SettingsBody :class="PANEL_BODY">
-    <LoadingText v-if="loading" class="py-8" text="Loading" />
+    <LoadingText v-if="loading" class="py-8" :text="__('Loading')" />
 
     <div v-else class="flex flex-col gap-6 py-4">
       <EmptyState
         v-if="!doctypes.length"
         icon="lucide-printer"
-        title="Nothing to print yet"
-        description="A format is drawn over the records an app in this workspace shows."
+        :title="__('Nothing to print yet')"
+        :description="__('A format is drawn over the records an app in this workspace shows.')"
       />
 
       <div v-else class="flex flex-col gap-3">
@@ -30,14 +30,14 @@
           <Select
             v-model="doctype"
             class="w-56"
-            label="Records"
+            :label="__('Records')"
             :options="doctypes.map((one) => ({ label: one.label, value: one.doctype }))"
           />
           <span class="flex-1" />
           <Button
             variant="solid"
             icon-left="lucide-plus"
-            label="New format"
+            :label="__('New format')"
             @click="draw('')"
           />
         </div>
@@ -50,26 +50,26 @@
             class="flex items-center gap-3 border-b border-outline-gray-1 py-2"
           >
             <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-8">{{ one.name }}</span>
-            <Badge v-if="one.default" label="Default" theme="blue" variant="subtle" />
-            <Badge v-if="one.standard" label="Ships with the app" theme="gray" variant="subtle" />
+            <Badge v-if="one.default" :label="__('Default')" theme="blue" variant="subtle" />
+            <Badge v-if="one.standard" :label="__('Ships with the app')" theme="gray" variant="subtle" />
             <Button
               v-if="!one.default"
-              label="Make default"
+              :label="__('Make default')"
               :loading="working === one.name"
               @click="makeDefault(one)"
             />
             <Button
               v-if="one.built"
               icon="lucide-pencil"
-              label="Open in the builder"
-              tooltip="Open in the builder"
+              :label="__('Open in the builder')"
+              :tooltip="__('Open in the builder')"
               @click="draw(one.name)"
             />
             <Button
               v-if="one.built && !one.standard"
               icon="lucide-trash-2"
-              label="Delete this format"
-              tooltip="Delete this format"
+              :label="__('Delete this format')"
+              :tooltip="__('Delete this format')"
               :loading="working === one.name"
               @click="remove(one)"
             />
@@ -77,17 +77,15 @@
         </ul>
 
         <p class="text-p-xs text-ink-gray-5">
-          Standard is Frappe's own fallback: every field of the record, in the
-          order the form declares them. A format written as a template rather
-          than drawn still prints, and opens wherever it was written.
+          {{ __('Standard is the fallback: every field of the record, in the order the form declares them. A format written as a template rather than drawn still prints, and opens wherever it was written.') }}
         </p>
       </div>
 
       <div class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
         <div class="flex items-center gap-2">
-          <span class="text-p-sm font-medium text-ink-gray-8">Letter heads</span>
+          <span class="text-p-sm font-medium text-ink-gray-8">{{ __('Letter heads') }}</span>
           <span class="flex-1" />
-          <Button icon-left="lucide-plus" label="New letter head" @click="head('')" />
+          <Button icon-left="lucide-plus" :label="__('New letter head')" @click="head('')" />
         </div>
 
         <ul v-if="letterHeads.length" class="flex flex-col border-t border-outline-gray-1">
@@ -98,27 +96,27 @@
             class="flex items-center gap-3 border-b border-outline-gray-1 py-2"
           >
             <span class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-8">{{ one.name }}</span>
-            <Badge v-if="one.default" label="Default" theme="blue" variant="subtle" />
+            <Badge v-if="one.default" :label="__('Default')" theme="blue" variant="subtle" />
             <!-- The same one-click the formats list above offers. It was a
                  switch three clicks into the editor, on the half of this
                  feature that Printing's own "Print with the letter head"
                  depends on. -->
             <Button
               v-else
-              label="Make default"
+              :label="__('Make default')"
               :loading="working === one.name"
               @click="makeHeadDefault(one)"
             />
             <Button
               icon="lucide-pencil"
-              label="Edit this letter head"
-              tooltip="Edit this letter head"
+              :label="__('Edit this letter head')"
+              :tooltip="__('Edit this letter head')"
               @click="head(one.name)"
             />
             <Button
               icon="lucide-trash-2"
-              label="Delete this letter head"
-              tooltip="Delete this letter head"
+              :label="__('Delete this letter head')"
+              :tooltip="__('Delete this letter head')"
               :loading="working === one.name"
               @click="removeHead(one)"
             />
@@ -137,13 +135,11 @@
           class="text-p-xs text-ink-amber-3"
           data-slot="no-default-letter-head"
         >
-          Printing with a letter head is on under Printing, but none of these is
-          the default — so nothing is added to the page. Make one default.
+          {{ __('Printing with a letter head is on under Printing, but none of these is the default — so nothing is added to the page. Make one default.') }}
         </p>
 
         <p v-if="!letterHeads.length" class="text-p-xs text-ink-gray-5">
-          None yet. A letter head is the band above and below every printed
-          page — a logo, an address, a footer — and one format can use another's.
+          {{ __("None yet. A letter head is the band above and below every printed page — a logo, an address, a footer — and one format can use another's.") }}
         </p>
       </div>
 
@@ -180,6 +176,7 @@ import LetterHeadDialog from './printing/LetterHeadDialog.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
+import { __ } from '@/lib/runtime/translate'
 
 const doctypes = ref([])
 const doctype = ref('')

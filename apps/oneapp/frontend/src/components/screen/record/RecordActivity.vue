@@ -11,9 +11,9 @@
   -->
   <div class="flex flex-col gap-4 pt-4">
     <div class="flex items-start gap-2">
-      <Textarea v-model="draft" :rows="2" placeholder="Add a comment" class="flex-1" />
+      <Textarea v-model="draft" :rows="2" :placeholder="__('Add a comment')" class="flex-1" />
       <Button
-        label="Comment"
+        :label="__('Comment')"
         :disabled="!draft.trim()"
         :loading="commenting"
         @click="addComment"
@@ -24,7 +24,7 @@
          the answer to "what happened here" is the whole column. -->
     <TabButtons v-model="kind" :options="filters" />
 
-    <LoadingText v-if="loading" text="Loading activity" />
+    <LoadingText v-if="loading" :text="__('Loading activity')" />
 
     <EmptyState
       v-else-if="!shown.length"
@@ -37,7 +37,7 @@
     <!-- The page is capped, and a list that silently stops at fifty reads as
          "that is all of them". -->
     <p v-if="more && kind !== 'change'" class="text-p-xs text-ink-gray-5">
-      Showing the {{ comments.length }} most recent comments of {{ count }}.
+      {{ __('Showing the {0} most recent comments of {1}.', [comments.length, count]) }}
     </p>
 
     <div v-if="shown.length" class="flex flex-col">
@@ -64,7 +64,7 @@
                emits no CSS at all. -->
           <span
             v-if="entry !== shown[shown.length - 1]"
-            class="w-0 flex-1 border-l border-outline-gray-2"
+            class="w-0 flex-1 border-s border-outline-gray-2"
           />
         </div>
 
@@ -99,7 +99,7 @@
           </p>
 
           <p v-if="entry.kind === 'created'" class="text-p-sm text-ink-gray-6">
-            Created this record.
+            {{ __('Created this record.') }}
           </p>
         </div>
       </div>
@@ -113,6 +113,7 @@ import { Button, Icon, LoadingText, TabButtons, Textarea, dayjsLocal } from '@/u
 import EmptyState from '../../EmptyState.vue'
 import { activityIcon } from '@/lib/screen/fields'
 import { workspace } from '../../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -134,9 +135,9 @@ const commenting = ref(false)
 const kind = ref('all')
 
 const filters = [
-  { label: 'All', value: 'all' },
-  { label: 'Comments', value: 'comment' },
-  { label: 'Changes', value: 'change' },
+  { label: __('All'), value: 'all' },
+  { label: __('Comments'), value: 'comment' },
+  { label: __('Changes'), value: 'change' },
 ]
 
 const when = (value) => (value ? dayjsLocal(value).fromNow() : '')
@@ -182,14 +183,17 @@ const shown = computed(() =>
 )
 
 const EMPTY = {
-  all: { title: 'Nothing yet', description: 'Nothing has happened to this one yet.' },
+  all: {
+    title: __('Nothing yet'),
+    description: __('Nothing has happened to this one yet.'),
+  },
   comment: {
-    title: 'No comments',
-    description: 'Nothing has been said about this one yet.',
+    title: __('No comments'),
+    description: __('Nothing has been said about this one yet.'),
   },
   change: {
-    title: 'No changes recorded',
-    description: 'Nothing on this record has changed since it was created.',
+    title: __('No changes recorded'),
+    description: __('Nothing on this record has changed since it was created.'),
   },
 }
 

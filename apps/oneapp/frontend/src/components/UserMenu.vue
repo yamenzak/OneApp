@@ -14,7 +14,7 @@
       <template #prefix>
         <Avatar :label="displayName" :image="avatar" size="md" />
       </template>
-      <span class="min-w-0 flex-1 text-left">
+      <span class="min-w-0 flex-1 text-start">
         <span class="block truncate text-base text-ink-gray-8">{{ displayName }}</span>
         <span v-if="subtitle" class="block truncate text-xs text-ink-gray-5">
           {{ subtitle }}
@@ -29,6 +29,7 @@ import { computed } from 'vue'
 import { Avatar, Button, Dropdown } from '@/ui'
 import { useAppearance } from '@/lib/shell/appearance'
 import { signOut } from '@/lib/shell/user'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   name: { type: String, default: '' },
@@ -39,7 +40,7 @@ const props = defineProps({
   extra: { type: Array, default: () => [] },
 })
 
-const displayName = computed(() => props.name || props.email || 'Account')
+const displayName = computed(() => props.name || props.email || __('Account'))
 
 // Appearance sits here as well as in settings: it is the preference people
 // change most often, and hunting for it behind a dialog is the slow path.
@@ -55,7 +56,7 @@ const options = computed(() => [
   ...props.extra,
   menuGroup.value,
   {
-    label: 'Log out',
+    label: __('Log out'),
     icon: 'lucide-log-out',
     onClick: signOut,
   },

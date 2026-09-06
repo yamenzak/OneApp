@@ -27,7 +27,7 @@
             <FormControl
               v-model="search"
               type="text"
-              placeholder="Search files"
+              :placeholder="__('Search files')"
               @input="onSearch"
             />
 
@@ -38,11 +38,11 @@
             <EmptyState
               v-else-if="!files.length"
               icon="lucide-folder-open"
-              title="Nothing to choose from"
+              :title="__('Nothing to choose from')"
               :description="
                 kind
-                  ? `No ${kind.toLowerCase()} files here yet — upload one instead.`
-                  : 'No files here yet — upload one instead.'
+                  ? __('No {0} files here yet — upload one instead.', [kind.toLowerCase()])
+                  : __('No files here yet — upload one instead.')
               "
             />
 
@@ -89,14 +89,16 @@
               >
               <Button
                 variant="solid"
-                :label="sending ? `Uploading ${progress}%` : 'Choose a file'"
+                :label="sending ? __('Uploading {0}%', [progress]) : __('Choose a file')"
                 :loading="sending"
                 @click="chooser?.click()"
               />
               <p class="text-p-xs text-ink-gray-5">
-                Drop {{ multiple ? 'files' : 'a file' }} here, or choose from
-                this device. It goes into the workspace's files, and gets used
-                here.
+                {{
+                  multiple
+                    ? __('Drop files here, or choose them from this device. They go into your files and get used here.')
+                    : __('Drop a file here, or choose one from this device. It goes into your files and gets used here.')
+                }}
               </p>
             </div>
           </div>
@@ -134,13 +136,14 @@ import FileRow from './FileRow.vue'
 import { putFile } from '@/lib/files/attach'
 import { errorText } from '@/lib/runtime/errors'
 import { workspace } from '../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 // The library first, which is the whole argument for this dialog existing: the
 // file somebody wants is usually one the workspace already has.
 const TABS = [
-  { label: 'Library', value: 'library' },
-  { label: 'This device', value: 'upload' },
-  { label: 'Camera', value: 'camera' },
+  { label: __('Library'), value: 'library' },
+  { label: __('This device'), value: 'upload' },
+  { label: __('Camera'), value: 'camera' },
 ]
 
 const props = defineProps({
@@ -149,7 +152,7 @@ const props = defineProps({
   kind: { type: String, default: '' },
   // What the dialog is called. A caller importing a spreadsheet is not
   // "attaching" it.
-  title: { type: String, default: 'Attach a file' },
+  title: { type: String, default: () => __('Attach a file') },
   // Extensions this caller can actually take, lowercase and without the dot.
   // Narrower than `kind`, and sometimes the only useful filter: a spreadsheet
   // and a Word document are both `Document` in the Drive's taxonomy.
@@ -285,7 +288,9 @@ function chosen(event) {
 function usable(list) {
   const good = list.filter((one) => allowed({ file_name: one.name }))
   if (good.length < list.length) {
-    error.value = `Only ${props.extensions.map((one) => `.${one}`).join(', ')} files can go here.`
+    error.value = __('Only {0} files can go here.', [
+      props.extensions.map((one) => `.${one}`).join(', '),
+    ])
   }
   return good
 }

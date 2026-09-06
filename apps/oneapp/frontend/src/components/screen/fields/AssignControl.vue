@@ -19,8 +19,8 @@
     :loading="loading"
     :filterable="false"
     :disabled="disabled"
-    placeholder="Assign to"
-    empty-text="Nobody by that name"
+    :placeholder="__('Assign to')"
+    :empty-text="__('Nobody by that name')"
     align="end"
     @update:model-value="write"
     @update:open="opened"
@@ -37,7 +37,7 @@
       <Button
         variant="ghost"
         :disabled="disabled"
-        aria-label="Assigned to"
+        :aria-label="__('Assigned to')"
         data-slot="assign"
       >
         <span class="flex items-center gap-1.5">
@@ -61,6 +61,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { Avatar, Button, Icon, MultiSelect } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 import AvatarStack from './AvatarStack.vue'
 import { workspace } from '../../../lib/workspace'
 import { notifyError } from '@/lib/runtime/notify'

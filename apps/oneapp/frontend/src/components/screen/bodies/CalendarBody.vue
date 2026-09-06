@@ -13,8 +13,8 @@
     <EmptyState
       v-if="!field"
       icon="lucide-calendar"
-      title="No date to draw"
-      description="This screen offers a calendar but names no date field for it."
+      :title="__('No date to draw')"
+      :description="__('This screen shows a calendar, but no field on it says when a record happens.')"
     />
     <Calendar
       v-else
@@ -29,6 +29,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { Calendar } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 import { occurrencesOf } from '@/lib/screen/recurrence'
 import EmptyState from '../../EmptyState.vue'
 

@@ -24,7 +24,7 @@
         v-if="section.label && section.collapsible"
         variant="ghost"
         size="sm"
-        class="-ml-2 self-start"
+        class="-ms-2 self-start"
         :aria-expanded="!folded(index, section)"
         @click="toggle(index)"
       >

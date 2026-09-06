@@ -18,35 +18,33 @@
       about the same unpaid subscription is noise, and the one that matters is
       always the one furthest down the ladder.
     -->
-    <Alert v-if="lifecycle.deleted_on" theme="red" title="This workspace is scheduled for deletion">
+    <Alert
+      v-if="lifecycle.deleted_on"
+      theme="red"
+      :title="__('This workspace is scheduled for deletion')"
+    >
       <template #description>
-        On {{ date(lifecycle.deleted_on) }} everything we hold for this
-        workspace is permanently deleted — the database, every file and every
-        backup. Paying before then restores it in full.
+        {{ __('On {0} everything held for this workspace is deleted for good — the database, every file and every backup. Paying before then restores it in full.', [date(lifecycle.deleted_on)]) }}
       </template>
     </Alert>
 
     <Alert
       v-else-if="lifecycle.archives_on"
       theme="red"
-      title="This workspace is switched off"
+      :title="__('This workspace is switched off')"
     >
       <template #description>
-        Your data has not been touched and paying brings it back within a
-        minute. If it is still unpaid on {{ date(lifecycle.archives_on) }} we
-        remove the running site and keep a copy instead.
+        {{ __('Your work has not been touched, and paying brings it back within a minute. If it is still unpaid on {0}, the workspace comes down and only a backup is kept.', [date(lifecycle.archives_on)]) }}
       </template>
     </Alert>
 
     <Alert
       v-else-if="lifecycle.suspends_on"
       theme="amber"
-      title="We could not take payment"
+      :title="__('Your last payment did not go through')"
     >
       <template #description>
-        Nothing has changed yet and your workspace is working normally. If the
-        payment has not gone through by {{ date(lifecycle.suspends_on) }} it
-        will be switched off until it does.
+        {{ __('Nothing has changed yet and your workspace works normally. Pay by {0} or it is switched off until you do.', [date(lifecycle.suspends_on)]) }}
       </template>
     </Alert>
 
@@ -58,63 +56,58 @@
     <Alert
       v-if="grace"
       theme="amber"
-      :title="`Over the ${overQuota.join(' and ')} limit`"
+      :title="__('Over the limit for {0}', [limitNames(overQuota)])"
     >
       <template #description>
-        Nothing is blocked and nothing has been deleted. Until
-        {{ date(grace) }} the workspace works normally, except that it cannot
-        grow past where it is now. After that, new uploads stop until there is
-        room.
+        {{ __('Nothing is blocked and nothing has been deleted. Until {0} the workspace works normally, except that it cannot grow past where it is now. After that, new uploads stop until there is room.', [date(grace)]) }}
       </template>
     </Alert>
 
     <Alert
       v-else-if="exceeded.length"
       theme="amber"
-      :title="`At the ${exceeded.join(' and ')} limit`"
+      :title="__('At the limit for {0}', [limitNames(exceeded)])"
     >
       <template #description>
-        Nothing has been deleted. Free some space, or add more below — new uploads
-        resume as soon as there is room.
+        {{ __('Nothing has been deleted. Free some space, or add more below — new uploads resume as soon as there is room.') }}
       </template>
     </Alert>
 
     <section>
-      <h3 class="mb-3 text-base-medium text-ink-gray-8">Usage</h3>
+      <h3 class="mb-3 text-base-medium text-ink-gray-8">{{ __('Usage') }}</h3>
       <div class="flex flex-col gap-4 rounded-6 border border-outline-gray-2 p-4">
         <!--
           The window applies to whichever resource is over, so it is passed to
           both. A bar that is not over ignores it.
         -->
-        <UsageBar label="File storage" :usage="data.usage.storage" :grace-until="graceLabel" />
-        <UsageBar label="Database" :usage="data.usage.database" :grace-until="graceLabel" />
+        <UsageBar :label="__('Files')" :usage="data.usage.storage" :grace-until="graceLabel" />
+        <UsageBar :label="__('Database')" :usage="data.usage.database" :grace-until="graceLabel" />
         <UsageBar
-          label="Members"
+          :label="__('People')"
           :usage="data.usage.users"
           format="count"
-          exceeded-hint="Every seat is taken. Upgrade to invite more people."
+          :exceeded-hint="__('Every seat is taken. Change plan to invite more people.')"
         />
       </div>
     </section>
 
     <section>
-      <h3 class="mb-3 text-base-medium text-ink-gray-8">AI credits</h3>
+      <h3 class="mb-3 text-base-medium text-ink-gray-8">{{ __('AI credits') }}</h3>
       <div class="rounded-6 border border-outline-gray-2 p-4">
         <div class="flex items-baseline justify-between">
           <span class="text-2xl-medium tabular-nums text-ink-gray-9">
             {{ Math.round(data.credits.available) }}
           </span>
-          <span class="text-p-sm text-ink-gray-5">available</span>
+          <span class="text-p-sm text-ink-gray-5">{{ __('available') }}</span>
         </div>
         <p class="mt-1.5 text-p-sm text-ink-gray-6">
-          Your plan grants {{ plan?.name }} credits each period. Unused plan credits
-          do not carry over; purchased packs never expire.
+          {{ __('Your plan adds credits every month and they do not carry over. Credits you buy never expire.') }}
         </p>
       </div>
     </section>
 
     <section>
-      <h3 class="mb-3 text-base-medium text-ink-gray-8">Workspace</h3>
+      <h3 class="mb-3 text-base-medium text-ink-gray-8">{{ __('Workspace') }}</h3>
       <List :columns="['10rem', 'minmax(0,1fr)']" divider="full">
         <ListRows :items="details" row-key="label" v-slot="{ item: row, value }">
           <!-- Static rows wrap, so no rowHeight — the family leaves height
@@ -150,13 +143,23 @@ import { useWorkspace } from './workspace'
 // see why from either file.
 import UsageBar from '../../components/UsageBar.vue'
 import { useOverview } from './customer'
+import { __ } from '@/lib/runtime/translate'
 
 defineProps({ spaceCode: { type: String, default: '' }, screen: { type: String, default: '' } })
 const workspace = useWorkspace()
 const resource = useOverview(workspace)
 
 const data = computed(() => resource.data)
-const plan = computed(() => data.value?.plan)
+
+// The server names a limit the way it stores it — `storage`, `users`. A reader
+// owns files and people, so the banner says those, and anything unrecognised
+// falls through as it came rather than disappearing.
+const LIMIT_NAMES = () => ({
+  storage: __('files'),
+  database: __('database'),
+  users: __('people'),
+})
+const limitNames = (keys) => keys.map((key) => LIMIT_NAMES()[key] || key).join(', ')
 
 const lifecycle = computed(() => data.value?.lifecycle || {})
 const overQuota = computed(() => lifecycle.value.over_quota?.over || [])
@@ -182,23 +185,29 @@ const details = computed(() => {
   const d = data.value
   if (!d) return []
   return [
-    { label: 'Address', value: d.workspace.url || '—' },
-    { label: 'Custom domain', value: d.workspace.custom_domain || 'Not set' },
-    { label: 'Plan', value: d.plan.name || '—' },
-    { label: 'Region', value: d.workspace.region || '—' },
-    { label: 'Data location', value: d.workspace.storage_jurisdiction || 'Global' },
-    { label: 'Status', value: d.workspace.status },
+    { label: __('Address'), value: d.workspace.url || '—' },
+    { label: __('Custom domain'), value: d.workspace.custom_domain || __('Not set') },
+    { label: __('Plan'), value: d.plan.name || '—' },
+    { label: __('Region'), value: d.workspace.region || '—' },
+    { label: __('Data location'), value: d.workspace.storage_jurisdiction || __('Global') },
+    { label: __('Status'), value: d.workspace.status },
     // A plan term people pay for and could otherwise not see — and the fastest
     // way to notice a workspace has quietly stopped backing up.
-    { label: 'Backups', value: backups(d.backups) },
+    { label: __('Backups'), value: backups(d.backups) },
   ]
 })
 
+// Built from whole sentences rather than glued fragments: where the date goes
+// in "kept 7 days — last 3 May" is not the same question in every language.
 const backups = (block) => {
-  if (!block?.per_day) return 'Not on this plan'
-  const rate = block.per_day === 1 ? 'Daily' : `${block.per_day} times a day`
-  const kept = block.retention_days ? `, kept ${block.retention_days} days` : ''
-  const last = block.last_on ? ` — last ${date(block.last_on)}` : ' — none yet'
-  return `${rate}${kept}${last}`
+  if (!block?.per_day) return __('Not on this plan')
+  const rate =
+    block.per_day === 1 ? __('Daily') : __('{0} times a day', [block.per_day])
+  const kept = block.retention_days
+    ? __('{0}, kept {1} days', [rate, block.retention_days])
+    : rate
+  return block.last_on
+    ? __('{0} — last {1}', [kept, date(block.last_on)])
+    : __('{0} — none yet', [kept])
 }
 </script>

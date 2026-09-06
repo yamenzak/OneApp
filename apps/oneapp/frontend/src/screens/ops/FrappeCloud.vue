@@ -11,13 +11,13 @@
   <div class="mx-auto max-w-4xl p-5">
     <div class="mb-4 flex items-center justify-between gap-3">
       <p class="text-p-sm text-ink-gray-5">
-        Read from Frappe Cloud each time this opens, so it is never a stale copy.
+        {{ __('Read from Frappe Cloud each time this opens, so it is never a stale copy.') }}
       </p>
       <Button
         variant="ghost"
         icon="lucide-refresh-cw"
-        label="Refresh"
-        tooltip="Refresh"
+        :label="__('Refresh')"
+        :tooltip="__('Refresh')"
         :loading="loading"
         @click="load()"
       />
@@ -30,10 +30,10 @@
     <!-- Named rather than blank. "Frappe Cloud is unreachable" is worth more
          than an empty table, which reads as "there is nothing here" — and an
          operator looking at this may be about to fix the credentials. -->
-    <Alert v-else-if="error" theme="amber" title="Frappe Cloud did not answer">
+    <Alert v-else-if="error" theme="amber" :title="__('Frappe Cloud did not answer')">
       <template #description>{{ error }}</template>
       <template #actions>
-        <Button label="Try again" :loading="loading" @click="load()" />
+        <Button :label="__('Try again')" :loading="loading" @click="load()" />
       </template>
     </Alert>
 
@@ -83,6 +83,7 @@ import { onMounted, ref } from 'vue'
 import { Alert, Button, List, ListRows, ListRow, ListCell, LoadingIndicator } from '@/ui'
 import EmptyState from '../../components/EmptyState.vue'
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 defineProps({
   spaceCode: { type: String, default: '' },
@@ -93,22 +94,22 @@ const GROUPS = [
   {
     key: 'servers',
     id: 'name',
-    label: 'Servers',
-    empty: 'No active servers on this account.',
+    label: __('Servers'),
+    empty: __('No active servers on this account.'),
     detail: (row) => [row.title, row.cluster, row.plan].filter(Boolean).join(' · '),
   },
   {
     key: 'groups',
     id: 'name',
-    label: 'Bench groups',
-    empty: 'No bench groups on this account.',
+    label: __('Bench groups'),
+    empty: __('No bench groups on this account.'),
     detail: (row) => [row.title, row.version].filter(Boolean).join(' · '),
   },
   {
     key: 'plans',
     id: 'name',
-    label: 'Site plans',
-    empty: 'No site plans available.',
+    label: __('Site plans'),
+    empty: __('No site plans on this account.'),
     detail: (row) => [row.title, row.price].filter(Boolean).join(' · '),
   },
 ]

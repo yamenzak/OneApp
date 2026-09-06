@@ -9,6 +9,7 @@ import { mail } from '@/lib/shell/mail'
 import { session } from '@/lib/shell/session'
 import { workspace } from '@/lib/workspace'
 import { VIEW_TYPES, viewTypesOf } from '@/lib/screen/viewTypes'
+import { __ } from '@/lib/runtime/translate'
 
 /**
  * What the reader has open, for the assistant to be scoped to.
@@ -64,8 +65,8 @@ export function useNav() {
   )
 
   const workspaceItems = [
-    { label: 'Spaces', icon: 'lucide-layout-grid', to: { name: 'Launcher' } },
-    { label: 'Account', icon: 'lucide-circle-user', to: { name: 'Account' } },
+    { label: __('Spaces'), icon: 'lucide-layout-grid', to: { name: 'Launcher' } },
+    { label: __('Account'), icon: 'lucide-circle-user', to: { name: 'Account' } },
   ]
 
   const screenRoute = (space, screen, viewType, layout) => ({
@@ -174,7 +175,7 @@ export function useNav() {
  * the rail had Mail and the More sheet did not.
  */
   const surfaces = computed(() => [
-    { key: 'files', label: 'Files', icon: 'lucide-folder', to: { name: 'Drive' } },
+    { key: 'files', label: __('Files'), icon: 'lucide-folder', to: { name: 'Drive' } },
     // Absent until the server says the workspace has one — AI can be switched
     // off, unconfigured, or suspended by an operator, and a rail entry that
     // leads to "not switched on here" is worse than no entry.
@@ -189,7 +190,7 @@ export function useNav() {
     // space. `oneapp_core/tabs.py` decides what is behind it.
     {
       key: 'settings',
-      label: 'Settings',
+      label: __('Settings'),
       icon: 'lucide-settings',
       act: () => openSettings(),
     },
@@ -199,14 +200,14 @@ export function useNav() {
     ...(assistant.available
       ? [{
         key: 'chat',
-        label: 'Assistant',
+        label: __('Assistant'),
         icon: 'lucide-sparkles',
         to: { name: 'Chat' },
         act: () => openAssistant(openContext(route)),
       }]
       : []),
     // Always here, unlike Mail: everybody has days.
-    { key: 'calendar', label: 'Calendar', icon: 'lucide-calendar', to: { name: 'Calendar' } },
+    { key: 'calendar', label: __('Calendar'), icon: 'lucide-calendar', to: { name: 'Calendar' } },
     // Absent for somebody who holds no address, which is most people until
     // somebody sets one up. `count` is the badge in the rail and the number in
     // the sheet's label — one figure, said twice.
@@ -214,7 +215,7 @@ export function useNav() {
       ? [
           {
             key: 'mail',
-            label: 'Mail',
+            label: __('Mail'),
             icon: 'lucide-mail',
             to: { name: 'Mail' },
             count: mail.unread,

@@ -31,7 +31,7 @@
 
       The count goes in `#prefix` rather than the default slot because
       `ListHeaderCell` wraps its default in a `truncate` span, inside which
-      `mr-auto` does nothing — which is why this is a whole cell handed back.
+      `me-auto` does nothing — which is why this is a whole cell handed back.
     -->
     <template #header-__activity="{ pinned, style }">
       <ListHeaderCell class="justify-end" :class="pinned" :style="style">
@@ -43,8 +43,8 @@
             icon="lucide-heart"
             :variant="favourites ? 'subtle' : 'ghost'"
             :theme="favourites ? 'red' : 'gray'"
-            label="Only my favourites"
-            tooltip="Only my favourites"
+            :label="__('Only my favourites')"
+            :tooltip="__('Only my favourites')"
             @click="emit('favourites')"
           />
         </template>
@@ -102,7 +102,7 @@
         v-if="column.key === first && hasTotals"
         class="text-p-sm font-medium text-ink-gray-7"
       >
-        Total
+        {{ __('Total') }}
       </span>
       <span
         v-else-if="totals[column.key] !== undefined"
@@ -117,6 +117,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Button, ListHeaderCell } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 import RecordTable from './RecordTable.vue'
 import EditableCell from './EditableCell.vue'
 import FieldCell from './FieldCell.vue'

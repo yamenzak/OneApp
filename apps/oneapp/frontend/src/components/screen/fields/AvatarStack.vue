@@ -19,7 +19,7 @@
     <Tooltip v-for="person in shown" :key="person.value" :text="person.label">
       <span
         :data-slot="slotName"
-        class="-mr-1.5 inline-flex rounded-full bg-surface-base p-0.5 last:mr-0"
+        class="-me-1.5 inline-flex rounded-full bg-surface-base p-0.5 last:me-0"
       >
         <Avatar :image="person.image" :label="person.label" shape="circle" :size="size" />
       </span>
@@ -27,7 +27,7 @@
 
     <Tooltip v-if="overflow.length" :text="overflow.map((one) => one.label).join(', ')">
       <span
-        class="ml-1.5 flex items-center rounded-full bg-surface-gray-3 px-1.5 text-p-xs tabular-nums text-ink-gray-6"
+        class="ms-1.5 flex items-center rounded-full bg-surface-gray-3 px-1.5 text-p-xs tabular-nums text-ink-gray-6"
       >+{{ overflow.length }}</span>
     </Tooltip>
   </div>

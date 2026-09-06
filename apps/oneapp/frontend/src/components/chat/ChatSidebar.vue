@@ -11,16 +11,16 @@
   <Sidebar
     v-model:collapsed="collapsed"
     :width="`${width}px`"
-    class="border-r border-outline-gray-1"
+    class="border-e border-outline-gray-1"
   >
-    <SidebarHeader title="Assistant" :subtitle="session.tenant?.name" :show-logo="false" />
+    <SidebarHeader :title="__('Assistant')" :subtitle="session.tenant?.name" :show-logo="false" />
 
     <div class="px-2 pb-2">
       <Button
         class="w-full"
         variant="subtle"
         icon-left="lucide-plus"
-        label="New chat"
+        :label="__('New chat')"
         data-slot="chat-rail-new"
         @click="$router.push({ name: 'Chat' })"
       />
@@ -41,7 +41,7 @@
       </nav>
 
       <p v-if="!state.sessions.length" class="px-2 py-3 text-p-sm text-ink-gray-5">
-        Nothing yet.
+        {{ __('Nothing yet.') }}
       </p>
     </ScrollArea>
 
@@ -65,6 +65,7 @@ import SidebarResizer from '../SidebarResizer.vue'
 import { assistant as state, loadAssistant } from '@/lib/shell/assistant'
 import { session } from '@/lib/shell/session'
 import { useSidebar } from '@/lib/shell/sidebar'
+import { __ } from '@/lib/runtime/translate'
 
 const { collapsed, width } = useSidebar()
 const route = useRoute()

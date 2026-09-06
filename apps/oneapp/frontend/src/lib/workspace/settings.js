@@ -1,6 +1,7 @@
 /** The parts of Frappe a workspace owns: its own settings, its books, its naming. */
 
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 export const settings = {
   // --- Yours, not the workspace's -----------------------------------------
@@ -13,7 +14,7 @@ export const settings = {
 
   saveProfile: (values) =>
     callMethod('oneapp.oneapp_core.me.save_profile', { values }, {
-      success: 'Profile saved',
+      success: __('Profile saved'),
     }),
 
   security: () =>
@@ -24,11 +25,11 @@ export const settings = {
   changePassword: (oldPassword, newPassword) =>
     callMethod('oneapp.oneapp_core.me.change_password', {
       old_password: oldPassword, new_password: newPassword,
-    }, { success: 'Password changed' }),
+    }, { success: __('Password changed') }),
 
   endOtherSessions: () =>
     callMethod('oneapp.oneapp_core.me.end_other_sessions', {}, {
-      success: 'Signed out everywhere else',
+      success: __('Signed out everywhere else'),
     }),
 
 
@@ -40,7 +41,7 @@ export const settings = {
       'oneapp.oneapp_core.workspace.save',
       { group, values },
       {
-        successMessage: 'Saved',
+        successMessage: __('Saved'),
       },
     ),
 
@@ -54,7 +55,7 @@ export const settings = {
       'oneapp.oneapp_core.ai.settings.update',
       { values },
       {
-        successMessage: 'Saved',
+        successMessage: __('Saved'),
       },
     ),
 
@@ -82,13 +83,13 @@ export const settings = {
       'oneapp.oneapp_core.books.reset',
       {},
       {
-        successMessage: 'Cleared — set your books up again below',
+        successMessage: __('Books cleared'),
       },
     ),
 
   setUpBooks: (payload) =>
     callMethod('oneapp.oneapp_core.books.create', payload, {
-      successMessage: 'Books are ready',
+      successMessage: __('Books are ready'),
     }),
 
   // --- alerts ---------------------------------------------------------------
@@ -103,7 +104,7 @@ export const settings = {
     callMethod(
       'oneapp.oneapp_core.workspace.save_alert',
       { values: JSON.stringify(values) },
-      { successMessage: 'Alert saved' },
+      { successMessage: __('Alert saved') },
     ),
 
   setAlertEnabled: (name, enabled) =>
@@ -117,7 +118,7 @@ export const settings = {
     callMethod(
       'oneapp.oneapp_core.workspace.remove_alert',
       { name },
-      { successMessage: 'Alert removed' },
+      { successMessage: __('Alert removed') },
     ),
 
   // Message templates: written here, used in the composer. The listing is the
@@ -126,14 +127,14 @@ export const settings = {
     callMethod(
       'oneapp.oneapp_core.workspace.save_mail_template',
       { values: JSON.stringify(values) },
-      { successMessage: 'Template saved' },
+      { successMessage: __('Template saved') },
     ),
 
   removeMailTemplate: (name) =>
     callMethod(
       'oneapp.oneapp_core.workspace.remove_mail_template',
       { name },
-      { successMessage: 'Template removed' },
+      { successMessage: __('Template removed') },
     ),
 
   naming: () =>
@@ -143,14 +144,14 @@ export const settings = {
     callMethod(
       'oneapp.oneapp_core.workspace.set_naming',
       { doctype, series: JSON.stringify(series) },
-      { successMessage: 'Series saved' },
+      { successMessage: __('Series saved') },
     ),
 
   setNamingCounter: (doctype, prefix, value) =>
     callMethod(
       'oneapp.oneapp_core.workspace.set_naming_counter',
       { doctype, prefix, value },
-      { successMessage: 'Counter moved' },
+      { successMessage: __('Counter moved') },
     ),
 
   namingPreview: (doctype, prefix) =>

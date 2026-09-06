@@ -8,8 +8,8 @@
     admin had nowhere at all to change their own name.
   -->
   <SettingsHeader
-    title="Profile"
-    description="Your name and how you are reached."
+    :title="__('Profile')"
+    :description="__('Your name and how you are reached.')"
     :class="PANEL_HEADER"
   />
 
@@ -69,13 +69,13 @@
   <div :class="PANEL_FOOTER">
     <Button
       variant="solid"
-      label="Save"
+      :label="__('Save')"
       data-slot="profile-save"
       :loading="saving"
       :disabled="!changed"
       @click="save"
     />
-    <span v-if="changed" class="text-p-sm text-ink-gray-5">Unsaved changes</span>
+    <span v-if="changed" class="text-p-sm text-ink-gray-5">{{ __('Unsaved changes') }}</span>
   </div>
 </template>
 
@@ -86,6 +86,7 @@ import SettingsAttach from './SettingsAttach.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
 import { workspace } from '@/lib/workspace'
 import { session } from '@/lib/shell/session'
+import { __ } from '@/lib/runtime/translate'
 
 const data = ref(null)
 const draft = reactive({})
@@ -113,7 +114,7 @@ const changed = computed(() =>
 
 /** Empty first, so "follows the workspace" is a choice somebody can make again. */
 const offered = (field) => [
-  { value: '', label: 'Follow the workspace' },
+  { value: '', label: __('Follow the workspace') },
   ...(field.options || []).map((one) =>
     (typeof one === 'string' ? { value: one, label: one } : one),
   ),
@@ -121,7 +122,9 @@ const offered = (field) => [
 
 const follows = (field) => {
   const theirs = data.value?.workspace?.[field.key]
-  return draft[field.key] || !theirs ? field.hint : `${field.hint} Currently ${theirs}.`
+  return draft[field.key] || !theirs
+    ? field.hint
+    : __('{0} Currently {1}.', [field.hint, theirs])
 }
 
 async function load() {

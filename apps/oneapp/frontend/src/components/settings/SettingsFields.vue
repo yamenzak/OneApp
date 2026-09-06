@@ -84,8 +84,8 @@
   </SettingsBody>
 
   <div :class="PANEL_FOOTER">
-    <Button variant="solid" label="Save" :loading="saving" :disabled="!dirty" @click="save" />
-    <span v-if="dirty" class="text-p-sm text-ink-gray-5">Unsaved changes</span>
+    <Button variant="solid" :label="__('Save')" :loading="saving" :disabled="!dirty" @click="save" />
+    <span v-if="dirty" class="text-p-sm text-ink-gray-5">{{ __('Unsaved changes') }}</span>
   </div>
 </template>
 
@@ -97,6 +97,7 @@ import SettingsColour from './SettingsColour.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
 import { setBrand } from '../../lib/shell/theme'
 import { workspace } from '../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 /**
  * How wide the form is and how it is divided, by the number of columns the

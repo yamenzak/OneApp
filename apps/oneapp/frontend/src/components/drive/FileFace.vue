@@ -13,7 +13,7 @@
     two loose spans trusting the parent.
   -->
   <span
-    class="flex min-w-0 flex-1 items-center gap-3 text-left"
+    class="flex min-w-0 flex-1 items-center gap-3 text-start"
     :class="grid ? '!flex-col !items-stretch' : ''"
   >
   <span

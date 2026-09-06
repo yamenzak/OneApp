@@ -11,32 +11,32 @@
     win against a blank page, so dropping the returned HTML into this document
     would restyle the app around it.
   -->
-  <Dialog v-model="showing" title="Print" size="4xl">
+  <Dialog v-model="showing" :title="__('Print')" size="4xl">
     <div class="flex flex-col gap-3">
       <div class="flex flex-wrap items-end gap-2">
         <Select
           v-model="format"
           class="w-48"
-          label="Format"
+          :label="__('Format')"
           :options="formatOptions"
         />
         <Select
           v-model="letterhead"
           class="w-48"
-          label="Letter head"
+          :label="__('Letter head')"
           :options="letterheadOptions"
         />
         <span class="flex-1" />
         <Button
           icon-left="lucide-download"
-          label="Download PDF"
+          :label="__('Download PDF')"
           :loading="downloading"
           @click="download"
         />
         <Button
           variant="solid"
           icon-left="lucide-printer"
-          label="Print"
+          :label="__('Print')"
           :disabled="!html"
           @click="send"
         />
@@ -56,11 +56,11 @@
         print dialog is a modal.
       -->
       <div class="h-[70vh] overflow-hidden rounded-6 border border-outline-gray-2 bg-white">
-        <LoadingText v-if="loading" class="p-6" text="Rendering" />
+        <LoadingText v-if="loading" class="p-6" :text="__('Rendering')" />
         <iframe
           v-show="!loading"
           ref="frame"
-          title="Print preview"
+          :title="__('Print preview')"
           sandbox="allow-same-origin allow-modals"
           class="h-full w-full"
         />
@@ -75,6 +75,7 @@ import { Button, Dialog, ErrorMessage, LoadingText, Select } from '@/ui'
 import { workspace } from '../../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
 import { notifyError } from '@/lib/runtime/notify'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -97,7 +98,7 @@ const letterhead = ref('')
 
 const formatOptions = computed(() =>
   formats.value.map((one) => ({
-    label: one.default ? `${one.name} (default)` : one.name,
+    label: one.default ? __('{0} (default)', [one.name]) : one.name,
     value: one.name,
   })),
 )
@@ -105,9 +106,9 @@ const formatOptions = computed(() =>
 // "None" is a real answer and has to be first: a workspace with a letter head
 // still prints the odd thing that should not carry one.
 const letterheadOptions = computed(() => [
-  { label: 'None', value: '' },
+  { label: __('None'), value: '' },
   ...letterheads.value.map((one) => ({
-    label: one.default ? `${one.name} (default)` : one.name,
+    label: one.default ? __('{0} (default)', [one.name]) : one.name,
     value: one.name,
   })),
 ])

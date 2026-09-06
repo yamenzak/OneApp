@@ -12,30 +12,30 @@
     an admin's; using one is answering an email, so it is anybody's.
   -->
   <SettingsHeader
-    title="Message templates"
-    description="A reply written once, ready to send again."
+    :title="__('Message templates')"
+    :description="__('A reply written once, ready to send again.')"
     :class="PANEL_HEADER"
   >
     <template #actions>
-      <Button icon-left="lucide-plus" label="New template" @click="start()" />
+      <Button icon-left="lucide-plus" :label="__('New template')" @click="start()" />
     </template>
   </SettingsHeader>
 
   <SettingsBody :class="PANEL_BODY">
-    <LoadingText v-if="loading" class="py-8" text="Loading" />
+    <LoadingText v-if="loading" class="py-8" :text="__('Loading')" />
 
-    <Alert v-else-if="error" theme="red" title="Templates could not be loaded">
+    <Alert v-else-if="error" theme="red" :title="__('Templates could not be loaded')">
       <template #description>{{ error }}</template>
     </Alert>
 
     <EmptyState
       v-else-if="!rows.length"
       icon="lucide-file-text"
-      title="No templates yet"
-      description="A template is a subject and a message somebody can send without writing it again."
+      :title="__('No templates yet')"
+      :description="__('A template is a subject and a message somebody can send without writing it again.')"
     >
       <template #action>
-        <Button icon-left="lucide-plus" label="New template" @click="start()" />
+        <Button icon-left="lucide-plus" :label="__('New template')" @click="start()" />
       </template>
     </EmptyState>
 
@@ -50,11 +50,11 @@
           <span class="truncate text-p-sm font-medium text-ink-gray-8">{{ row.name }}</span>
           <span class="truncate text-p-xs text-ink-gray-6">{{ row.subject }}</span>
           <span v-if="row.doctype" class="text-p-xs text-ink-gray-5">
-            For {{ row.doctype }}
+            {{ __('For {0}', [row.doctype]) }}
             <!-- A template written for a record the workspace no longer has is
                  one it cannot use. Shown and said, because hiding it would
                  leave something nobody can find to delete. -->
-            <span v-if="row.orphaned">— which this workspace no longer has</span>
+            <span v-if="row.orphaned">{{ __('— which this workspace no longer has') }}</span>
           </span>
         </div>
 
@@ -62,15 +62,15 @@
           <Button
             variant="ghost"
             icon="lucide-pencil"
-            label="Edit"
-            tooltip="Edit"
+            :label="__('Edit')"
+            :tooltip="__('Edit')"
             @click="start(row)"
           />
           <Button
             variant="ghost"
             icon="lucide-trash-2"
-            label="Remove"
-            tooltip="Remove"
+            :label="__('Remove')"
+            :tooltip="__('Remove')"
             @click="remove(row)"
           />
         </div>
@@ -83,22 +83,22 @@
     part of the panel that opened it, and its Save is its own rather than the
     panel's pinned action.
   -->
-  <Dialog v-model="writing" :title="draft.name ? 'Edit template' : 'New template'" size="xl">
+  <Dialog v-model="writing" :title="draft.name ? __('Edit template') : __('New template')" size="xl">
     <div class="flex flex-col gap-3">
       <FormControl
         v-model="draft.title"
-        label="Name"
-        placeholder="Delivery update"
-        description="What it is called in the picker."
+        :label="__('Name')"
+        :placeholder="__('Delivery update')"
+        :description="__('What it is called in the picker.')"
       />
       <FormControl
         v-model="draft.subject"
-        label="Subject"
-        placeholder="Your order is on its way"
+        :label="__('Subject')"
+        :placeholder="__('Your order is on its way')"
       />
       <Select
         v-model="draft.doctype"
-        label="For a record"
+        :label="__('For a record')"
         :options="doctypeOptions"
         :description="FIELDS_HINT"
       />
@@ -113,11 +113,11 @@
           v-model="draft.body"
           :extensions="EXTENSIONS"
           format="html"
-          placeholder="Write the message"
+          :placeholder="__('Write the message')"
         >
           <template #default="{ editor }">
             <EditorFixedMenu :editor="editor" :items="articleToolbar" class="mb-2" />
-            <EditorContent :editor="editor" aria-label="Template" dir="auto" />
+            <EditorContent :editor="editor" :aria-label="__('Template')" dir="auto" />
           </template>
         </Editor>
       </div>
@@ -125,7 +125,7 @@
       <ErrorMessage v-if="saveError" :message="saveError" />
     </div>
     <template #actions>
-      <Button variant="solid" label="Save" :loading="saving" @click="save()" />
+      <Button variant="solid" :label="__('Save')" :loading="saving" @click="save()" />
     </template>
   </Dialog>
 </template>
@@ -152,12 +152,13 @@ import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
+import { __ } from '@/lib/runtime/translate'
 
 const EXTENSIONS = [RichTextKit]
 
 // In the script rather than in the attribute: the braces are the point, and a
 // mustache inside a Vue template attribute is a fight nobody needs to have.
-const FIELDS_HINT = "A template written for a record can say {{ doc.customer }} and mean it."
+const FIELDS_HINT = __("A template written for a record can say {{ doc.customer }} and mean it.")
 
 const rows = ref([])
 const doctypes = ref([])
@@ -172,7 +173,7 @@ const draft = reactive({ name: '', title: '', subject: '', doctype: '', body: ''
 // The records this workspace has, from the same list the alert form offers —
 // one answer to "what can a rule be about", not two.
 const doctypeOptions = computed(() => [
-  { label: 'Any record', value: '' },
+  { label: __('Any record'), value: '' },
   ...doctypes.value.map((one) => ({ label: one.label || one.value, value: one.value })),
 ])
 

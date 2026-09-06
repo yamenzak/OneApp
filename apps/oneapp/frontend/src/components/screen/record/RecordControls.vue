@@ -46,7 +46,7 @@
     <Button
       v-if="canWrite && dirty"
       variant="solid"
-      label="Save"
+      :label="__('Save')"
       :loading="saving"
       @click="emit('save')"
     />
@@ -61,8 +61,8 @@
       v-if="canResize"
       :icon="wide ? 'lucide-minimize-2' : 'lucide-maximize-2'"
       variant="ghost"
-      :label="wide ? 'Show beside the list' : 'Fill the window'"
-      :tooltip="wide ? 'Show beside the list' : 'Fill the window'"
+      :label="wide ? __('Show beside the list') : __('Fill the window')"
+      :tooltip="wide ? __('Show beside the list') : __('Fill the window')"
       @click="emit('surface', wide ? 'pane' : 'page')"
     />
     <!-- A peek is not always enough. The way from one to the other: the same
@@ -71,8 +71,8 @@
       v-if="drawer"
       icon="lucide-arrow-up-right"
       variant="ghost"
-      label="Open on its own screen"
-      tooltip="Open on its own screen"
+      :label="__('Open on its own screen')"
+      :tooltip="__('Open on its own screen')"
       @click="emit('expand')"
     />
     <!--
@@ -83,8 +83,8 @@
     <Button
       icon="lucide-x"
       variant="ghost"
-      :label="drawer ? 'Close and go back' : 'Close the record'"
-      :tooltip="drawer ? 'Close and go back' : 'Close the record'"
+      :label="drawer ? __('Close and go back') : __('Close the record')"
+      :tooltip="drawer ? __('Close and go back') : __('Close the record')"
       @click="emit('close')"
     />
   </div>
@@ -94,6 +94,7 @@
 import { Button } from '@/ui'
 import ScreenActions from '../views/ScreenActions.vue'
 import RecordActions from './RecordActions.vue'
+import { __ } from '@/lib/runtime/translate'
 
 defineProps({
   /** The record, for its id and its docstatus. */

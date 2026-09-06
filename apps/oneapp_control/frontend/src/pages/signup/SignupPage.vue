@@ -3,59 +3,64 @@
     <div class="mx-auto max-w-lg px-5">
       <div class="mb-6 text-center">
         <Avatar :label="TENANT_APP" shape="square" size="2xl" class="mx-auto" />
-        <h1 class="mt-3 text-xl-semibold text-ink-gray-9">Create your workspace</h1>
+        <h1 class="mt-3 text-xl-semibold text-ink-gray-9">{{ __('Create your workspace') }}</h1>
       </div>
 
       <div v-if="!open.checked" class="grid place-items-center py-16">
         <LoadingIndicator class="size-5 text-ink-gray-5" />
       </div>
 
-      <Alert v-else-if="!open.open" theme="amber" title="Signups are paused">
+      <Alert v-else-if="!open.open" theme="amber" :title="__('Signups are paused')">
         <template #description>
-          We are not taking new workspaces at the moment. Please check back shortly.
+          {{ __('New workspaces are closed for now. Try again later.') }}
         </template>
       </Alert>
 
       <div v-else class="flex flex-col gap-4 rounded-6 border border-outline-gray-2 bg-surface-base p-5">
         <FormControl
           v-model="form.workspace_name"
-          label="Workspace name"
-          placeholder="Acme Ltd"
+          :label="__('Workspace name')"
+          :placeholder="__('Acme Ltd')"
         />
 
         <div>
           <FormControl
             v-model="form.slug"
-            label="Address"
-            placeholder="acme"
+            :label="__('Address')"
+            :placeholder="__('acme')"
             :description="slugHint"
           />
           <ErrorMessage v-if="slugError" class="mt-1" :message="slugError" />
         </div>
 
-        <FormControl v-model="form.email" type="email" label="Email" placeholder="you@acme.com" />
+        <FormControl
+          v-model="form.email"
+          type="email"
+          :label="__('Email')"
+          :placeholder="__('you@acme.com')"
+        />
 
         <FormControl
           v-model="form.plan"
           type="select"
-          label="Plan"
+          :label="__('Plan')"
           :options="planOptions"
         />
 
         <FormControl
           v-model="form.region"
           type="select"
-          label="Region"
+          :label="__('Region')"
           :options="regionOptions"
-          description="Where your workspace runs. The price is the same everywhere."
+          :description="__('Where your workspace runs. The price is the same everywhere.')"
         />
 
         <FormControl
           v-model="form.storage_jurisdiction"
           type="select"
-          label="File storage"
-          :options="JURISDICTIONS"
-          description="Where your files are stored. This cannot be changed later."
+          :label="__('File storage')"
+          :options="jurisdictions"
+          :description="__('Where your files are stored. This cannot be changed later.')"
         />
 
         <!--
@@ -66,9 +71,9 @@
         -->
         <FormControl
           v-model="form.code"
-          label="Promo code"
-          placeholder="Optional"
-          description="If you were given one."
+          :label="__('Promo code')"
+          :placeholder="__('Optional')"
+          :description="__('If you were given one.')"
         />
 
         <ErrorMessage v-if="error" :message="error" />
@@ -83,8 +88,7 @@
         />
 
         <p class="text-center text-p-sm text-ink-gray-5">
-          You will be taken to Stripe. Your workspace is created once payment
-          clears.
+          {{ __('Payment comes next. Your workspace is created once it clears.') }}
         </p>
       </div>
     </div>
@@ -96,11 +100,12 @@ import { TENANT_APP } from '@/lib/runtime/brand'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { Alert, Avatar, Button, ErrorMessage, FormControl, LoadingIndicator, debounce } from '@/ui'
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
-const JURISDICTIONS = [
-  { label: 'Global network', value: 'Global' },
-  { label: 'European Union only', value: 'EU' },
-]
+const jurisdictions = computed(() => [
+  { label: __('Global network'), value: 'Global' },
+  { label: __('European Union only'), value: 'EU' },
+])
 
 const method = (name) => `oneapp_control.api.signup.${name}`
 
@@ -122,19 +127,24 @@ const error = ref('')
 const submitting = ref(false)
 
 const planOptions = computed(() =>
-  plans.value.map((p) => ({ label: `${p.plan_name} — $${p.price_monthly}/mo`, value: p.code })),
+  plans.value.map((p) => ({
+    label: __('{0} — ${1}/mo', [p.plan_name, p.price_monthly]),
+    value: p.code,
+  })),
 )
 const regionOptions = computed(() =>
   regions.value.map((r) => ({ label: `${r.region_name}, ${r.country}`, value: r.code })),
 )
 
 const slugHint = computed(() =>
-  form.slug ? `${form.slug}.4dl.app` : 'Your workspace address.',
+  form.slug ? `${form.slug}.4dl.app` : __('Your workspace address.'),
 )
 
 const selectedPlan = computed(() => plans.value.find((p) => p.code === form.plan))
 const submitLabel = computed(() =>
-  selectedPlan.value ? `Continue — $${selectedPlan.value.price_monthly}/mo` : 'Continue',
+  selectedPlan.value
+    ? __('Continue — ${0}/mo', [selectedPlan.value.price_monthly])
+    : __('Continue'),
 )
 
 const valid = computed(
@@ -151,7 +161,7 @@ const valid = computed(
 const checkSlug = debounce(async (slug) => {
   if (!slug) return (slugError.value = '')
   const { available } = await callMethod(method('check_slug'), { slug }, { silent: true })
-  slugError.value = available ? '' : 'That address is taken or reserved.'
+  slugError.value = available ? '' : __('That address is taken or reserved.')
 }, 400)
 
 watch(() => form.slug, checkSlug)

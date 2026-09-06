@@ -12,18 +12,24 @@
   -->
   <aside
     class="flex w-80 shrink-0 flex-col border-s border-outline-gray-1 bg-surface-base"
-    aria-label="Version history"
+    :aria-label="__('Version history')"
   >
     <div class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-gray-1 px-4 py-3">
-      <p class="text-p-base font-medium text-ink-gray-8">Version history</p>
-      <Button variant="ghost" icon="lucide-x" label="Close history" tooltip="Close" @click="emit('close')" />
+      <p class="text-p-base font-medium text-ink-gray-8">{{ __('Version history') }}</p>
+      <Button
+        variant="ghost"
+        icon="lucide-x"
+        :label="__('Close history')"
+        :tooltip="__('Close')"
+        @click="emit('close')"
+      />
     </div>
 
     <div class="shrink-0 border-b border-outline-gray-1 p-3">
       <Button
         class="w-full"
         icon-left="lucide-bookmark-plus"
-        label="Save this version"
+        :label="__('Save this version')"
         :loading="saving"
         :disabled="!canWrite"
         @click="askFor(null)"
@@ -39,8 +45,8 @@
       <EmptyState
         v-else-if="!groups.length"
         icon="lucide-history"
-        title="No earlier versions yet"
-        description="One is kept the first time this is saved, and every few minutes of work after that."
+        :title="__('No earlier versions yet')"
+        :description="__('One is kept the first time this is saved, and every few minutes of work after that.')"
       />
 
       <div v-else class="flex flex-col gap-3 p-3">
@@ -58,13 +64,13 @@
               <Button
                 variant="ghost"
                 class="!h-auto min-w-0 flex-1 !justify-start !px-2 !py-1.5"
-                :label="`Look at ${one.title}`"
+                :label="__('Look at {0}', [one.title])"
                 @click="emit('preview', one)"
               >
-                <span class="w-full min-w-0 text-left">
+                <span class="w-full min-w-0 text-start">
                   <span class="flex items-center gap-1 truncate text-p-sm text-ink-gray-8">
                     {{ one.title }}
-                    <Badge v-if="one.current" theme="green" label="Current" size="sm" />
+                    <Badge v-if="one.current" theme="green" :label="__('Current')" size="sm" />
                   </span>
                   <span class="block truncate text-p-xs font-normal text-ink-gray-5">
                     {{ said(one) }}
@@ -75,8 +81,8 @@
                 <Button
                   variant="ghost"
                   icon="lucide-more-horizontal"
-                  label="What to do with this version"
-                  tooltip="What to do with this version"
+                  :label="__('What to do with this version')"
+                  :tooltip="__('What to do with this version')"
                 />
               </Dropdown>
             </div>
@@ -88,22 +94,21 @@
 
   <!-- One dialog for both, because naming this moment and naming an older one
        ask the same question and take the same answer. `renaming` is which. -->
-  <Dialog v-model="naming" :title="renaming ? 'Name this version' : 'Save this version'">
+  <Dialog v-model="naming" :title="renaming ? __('Name this version') : __('Save this version')">
     <template #default>
       <FormControl
         v-model="title"
         type="text"
-        label="What this version is"
-        placeholder="Signed off by the client"
+        :label="__('What this version is')"
+        :placeholder="__('Signed off by the client')"
         @keyup.enter="keep"
       />
       <p class="mt-2 text-p-xs text-ink-gray-5">
-        A named version is never thinned out. The automatic ones are, once they
-        are old enough to be too many.
+        {{ __('A named version is never thinned out. The automatic ones are, once they are old enough to be too many.') }}
       </p>
     </template>
     <template #actions>
-      <Button variant="solid" label="Save" :loading="saving" @click="keep" />
+      <Button variant="solid" :label="__('Save')" :loading="saving" @click="keep" />
     </template>
   </Dialog>
 </template>
@@ -116,6 +121,7 @@ import EmptyState from '../EmptyState.vue'
 import FadedScroll from '../FadedScroll.vue'
 import { useSaving } from '@/composables/useSaving'
 import { workspace } from '@/lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   file: { type: String, required: true },
@@ -140,7 +146,7 @@ const { saving: loading, attempt: attemptLoad } = useSaving(error)
 const said = (one) => [
   one.by,
   one.at ? dayjsLocal(one.at).fromNow() : '',
-  one.saves ? `${one.saves} changes` : '',
+  one.saves ? __('{0} changes', [one.saves]) : '',
 ].filter(Boolean).join(' · ')
 
 async function load() {
@@ -170,9 +176,9 @@ async function keep() {
 
 function menu(one) {
   return [
-    { label: 'Preview', icon: 'eye', onClick: () => emit('preview', one) },
+    { label: __('Preview'), icon: 'eye', onClick: () => emit('preview', one) },
     {
-      label: 'Restore this version',
+      label: __('Restore this version'),
       icon: 'rotate-ccw',
       condition: () => props.canWrite,
       onClick: async () => {
@@ -184,13 +190,13 @@ function menu(one) {
     {
       // Naming an automatic version is also what keeps it: the pruner only
       // ever reaches the ones nobody named.
-      label: one.manual ? 'Rename' : 'Keep this one',
+      label: one.manual ? __('Rename') : __('Keep this one'),
       icon: 'bookmark',
       condition: () => props.canWrite,
       onClick: () => askFor(one),
     },
     {
-      label: 'Remove',
+      label: __('Remove'),
       icon: 'trash-2',
       condition: () => props.canWrite && one.manual,
       onClick: async () => {

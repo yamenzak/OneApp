@@ -27,6 +27,7 @@ import {
 
 import { notifyError, notifySuccess } from '@/lib/runtime/notify'
 import { onDoctypeChange } from '@/lib/runtime/socket'
+import { __ } from '@/lib/runtime/translate'
 
 /**
  * Unwrap Frappe's envelope.
@@ -133,7 +134,7 @@ export function useResource(url, options = {}) {
  */
 export function useAction(url, options = {}) {
   const {
-    successMessage = 'Saved',
+    successMessage = __('Saved'),
     silent = false,
     transform,
     onSuccess,

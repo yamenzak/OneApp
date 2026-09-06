@@ -1,6 +1,7 @@
 /** Bringing another Frappe site's records across. */
 
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 export const importing = {
   // --- bringing their data with them ------------------------------------
@@ -14,14 +15,14 @@ export const importing = {
     callMethod(
       'oneapp.oneapp_core.importer.save_source',
       { name, base_url: baseUrl, api_key: apiKey, api_secret: apiSecret },
-      { successMessage: 'Saved' },
+      { successMessage: __('Saved') },
     ),
 
   installImportPlan: (plan, source) =>
     callMethod(
       'oneapp.oneapp_core.importer.install_plan',
       { plan, source },
-      { successMessage: 'Set up' },
+      { successMessage: __('Set up') },
     ),
 
   verifyImportSource: (source) =>

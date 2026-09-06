@@ -16,8 +16,8 @@
       <Button
         class="w-8 !px-0"
         size="md"
-        :label="chosen ? 'Change the icon' : 'Pick an icon'"
-        :tooltip="chosen ? 'Change the icon' : 'Pick an icon'"
+        :label="chosen ? __('Change the icon') : __('Pick an icon')"
+        :tooltip="chosen ? __('Change the icon') : __('Pick an icon')"
       >
         <Icon
           :name="chosen || 'lucide-smile'"
@@ -37,8 +37,8 @@
         <FormControl
           type="text"
           size="sm"
-          aria-label="Search icons"
-          placeholder="Search"
+          :aria-label="__('Search icons')"
+          :placeholder="__('Search')"
           :model-value="query"
           @update:model-value="query = $event"
         >
@@ -69,7 +69,7 @@
             </section>
 
             <p v-if="!groups.length" class="py-4 text-center text-p-sm text-ink-gray-5">
-              No icon by that name
+              {{ __('No icon by that name') }}
             </p>
           </div>
         </FadedScroll>
@@ -78,13 +78,13 @@
              picker, because an emoji keyboard is the operating system's. -->
         <FormControl
           type="text"
-          label="Or an emoji"
+          :label="__('Or an emoji')"
           :model-value="emoji"
           placeholder="📦"
           @update:model-value="pick($event)"
         />
 
-        <Button v-if="chosen" variant="ghost" label="No icon" @click="pick('')" />
+        <Button v-if="chosen" variant="ghost" :label="__('No icon')" @click="pick('')" />
       </div>
     </template>
   </Popover>
@@ -93,6 +93,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { Button, FormControl, Icon, Popover } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 import FadedScroll from '../../FadedScroll.vue'
 import { SPACE_ICONS, findSpaceIcons } from '@/lib/shell/icons'
 

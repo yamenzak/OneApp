@@ -10,8 +10,8 @@
     <EmptyState
       v-if="!field"
       icon="lucide-list-tree"
-      title="Nothing to nest by"
-      description="This screen offers a tree but names no field that points one record at another."
+      :title="__('Nothing to nest by')"
+      :description="__('This screen shows a tree, but no field on it points one record at another.')"
     />
     <!--
       Open by default: a tree that arrives collapsed is a list of roots with the
@@ -55,7 +55,7 @@
         <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
         <button
           type="button"
-          class="truncate text-left"
+          class="truncate text-start"
           :class="node.orphan ? 'text-ink-gray-5' : 'text-ink-gray-8'"
           @click.stop="emit('open', node.row)"
         >
@@ -65,8 +65,8 @@
       <template #empty>
         <EmptyState
           icon="lucide-list-tree"
-          title="Nothing here yet"
-          :description="`No ${(spec.screen_label || '').toLowerCase()} to nest.`"
+          :title="__('Nothing here yet')"
+          :description="__('No {0} to nest.', [(spec.screen_label || '').toLowerCase()])"
         />
       </template>
     </Tree>
@@ -76,6 +76,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Icon, Tree } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 import EmptyState from '../../EmptyState.vue'
 import { forestOf } from '@/lib/screen/tree'
 

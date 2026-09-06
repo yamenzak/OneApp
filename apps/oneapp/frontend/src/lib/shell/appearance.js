@@ -2,6 +2,7 @@
 
 import { computed } from 'vue'
 import { useColorScheme } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 
 /**
  * Light, dark or follow-the-system, in the three shapes the app needs it.
@@ -10,11 +11,16 @@ import { useColorScheme } from '@/ui'
  * settings. Three copies of the same list is how one of them ends up missing
  * an option or writing the theme without updating the stored value, so the
  * list and the setter live here and each surface only picks a rendering.
+ *
+ * The label is read rather than stored: this list is built when the module is
+ * imported, which is before main.js has the catalogue, so a word translated
+ * here would be the English one for ever. Every reader of it asks during a
+ * render, by which time there is a catalogue to ask.
  */
 export const SCHEMES = [
-  { value: 'light', label: 'Light', icon: 'lucide-sun' },
-  { value: 'dark', label: 'Dark', icon: 'lucide-moon' },
-  { value: 'system', label: 'System', icon: 'lucide-monitor' },
+  { value: 'light', get label() { return __('Light') }, icon: 'lucide-sun' },
+  { value: 'dark', get label() { return __('Dark') }, icon: 'lucide-moon' },
+  { value: 'system', get label() { return __('System') }, icon: 'lucide-monitor' },
 ]
 
 export function useAppearance() {

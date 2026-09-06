@@ -35,6 +35,11 @@ def get_context(context):
 		# call Frappe's own desk client makes from `window.dev_server`.
 		"dev_server": 1 if frappe.conf.developer_mode else 0,
 		"csrf_token": frappe.sessions.get_csrf_token(),
+		# Which language to draw in, and therefore which way round. A signup
+		# page is read by somebody who has no account and no preference yet, so
+		# this is whatever the browser asked for in `Accept-Language` —
+		# `frappe.local.lang` already resolves that.
+		"lang": frappe.local.lang or "en",
 	}
 	context.no_cache = 1
 	return context

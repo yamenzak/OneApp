@@ -16,25 +16,25 @@
   <Dialog v-model="showing" :title="title" size="6xl">
     <div class="flex flex-col gap-3">
       <div class="flex flex-wrap items-end gap-2">
-        <FormControl v-model="label" class="w-56" label="Name" />
+        <FormControl v-model="label" class="w-56" :label="__('Name')" />
         <Select
           v-model="letterhead"
           class="w-44"
-          label="Letter head"
+          :label="__('Letter head')"
           :options="letterheadOptions"
         />
         <span class="flex-1" />
         <Button
           :variant="preview ? 'solid' : 'subtle'"
           icon-left="lucide-eye"
-          :label="preview ? 'Back to the canvas' : 'Preview'"
+          :label="preview ? __('Back to the canvas') : __('Preview')"
           :loading="rendering"
           @click="look"
         />
         <Button
           variant="solid"
           icon-left="lucide-check"
-          label="Save"
+          :label="__('Save')"
           :loading="saving"
           :disabled="!label.trim()"
           @click="save"
@@ -52,11 +52,11 @@
         v-if="preview"
         class="h-[62vh] overflow-hidden rounded-6 border border-outline-gray-2 bg-white"
       >
-        <LoadingText v-if="rendering" class="p-6" text="Rendering" />
+        <LoadingText v-if="rendering" class="p-6" :text="__('Rendering')" />
         <iframe
           v-show="!rendering"
           ref="frame"
-          title="Print preview"
+          :title="__('Print preview')"
           sandbox=""
           class="h-full w-full"
         />
@@ -97,8 +97,8 @@
           <div class="mx-auto flex max-w-3xl flex-col gap-3">
             <BuilderZone
               zone="header"
-              label="Header"
-              hint="Repeats at the top of every page."
+              :label="__('Header')"
+              :hint="__('Repeats at the top of every page.')"
               :section="layout.header"
               :selected="selected"
               @drop-on="place"
@@ -114,7 +114,7 @@
                 :key="index"
                 zone="sections"
                 :index="index"
-                :label="`Section ${index + 1}`"
+                :label="__('Section {0}', [index + 1])"
                 :section="section"
                 :selected="selected"
                 :removable="layout.sections.length > 1"
@@ -127,15 +127,15 @@
               />
               <Button
                 icon-left="lucide-plus"
-                label="Add a section"
+                :label="__('Add a section')"
                 @click="layout.sections.push(emptySection())"
               />
             </div>
 
             <BuilderZone
               zone="footer"
-              label="Footer"
-              hint="Repeats at the bottom of every page."
+              :label="__('Footer')"
+              :hint="__('Repeats at the bottom of every page.')"
               :section="layout.footer"
               :selected="selected"
               @drop-on="place"
@@ -187,6 +187,7 @@ import {
 import { workspace } from '../../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
 import { useSaving } from '@/composables/useSaving'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   doctype: { type: String, required: true },
@@ -225,17 +226,19 @@ const { saving, error, attempt } = useSaving()
 const frame = ref(null)
 const letterhead = ref('')
 
-const title = computed(() => (props.name ? `Format: ${props.name}` : 'New print format'))
+const title = computed(() =>
+  props.name ? __('Format: {0}', [props.name]) : __('New print format'),
+)
 
 const letterheadOptions = computed(() => [
-  { label: 'The default', value: '' },
+  { label: __('The default'), value: '' },
   ...props.letterHeads.map((one) => ({ label: one.name, value: one.name })),
 ])
 
 const groups = computed(() => [
   {
     key: 'fields',
-    label: 'Fields',
+    label: __('Fields'),
     icon: 'lucide-type',
     entries: (palette.value.fields || []).map((one) => ({
       ...one,
@@ -245,7 +248,7 @@ const groups = computed(() => [
   },
   {
     key: 'tables',
-    label: 'Tables',
+    label: __('Tables'),
     icon: 'lucide-table',
     entries: (palette.value.tables || []).map((one) => ({
       ...one,
@@ -255,7 +258,7 @@ const groups = computed(() => [
   },
   {
     key: 'elements',
-    label: 'Elements',
+    label: __('Elements'),
     icon: 'lucide-shapes',
     entries: (palette.value.elements || []).map((one) => ({
       ...one,
@@ -412,7 +415,7 @@ const look = async () => {
       { letterhead: letterhead.value },
     )
     if (found.empty) {
-      error.value = 'There is no record of this kind yet to draw the preview over.'
+      error.value = __('There is no record of this kind yet to draw the preview over.')
       preview.value = false
       return
     }

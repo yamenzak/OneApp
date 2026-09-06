@@ -10,8 +10,8 @@
     `lib/shell/appearance.js` offers.
   -->
   <SettingsRow
-    title="Theme"
-    description="Light, dark, or matching your system."
+    :title="__('Theme')"
+    :description="__('Light, dark, or matching your system.')"
   >
     <!-- All three at once rather than behind a Select. This is a three-state
          preference somebody flips and looks at, the row has the width for it,
@@ -25,6 +25,7 @@
 <script setup>
 import { SettingsRow, TabButtons } from '@/ui'
 import { useAppearance } from '@/lib/shell/appearance'
+import { __ } from '@/lib/runtime/translate'
 
 // Three states, not a toggle. A binary switch cannot express 'follow the
 // system', so a user who wants that has to keep changing it by hand twice a day.

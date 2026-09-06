@@ -76,7 +76,7 @@
         <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
         <button
           type="button"
-          class="block w-full min-w-0 text-left"
+          class="block w-full min-w-0 text-start"
           @click.stop="emit('open')"
         >
           <!-- The name, and the id under it where the name is not already the
@@ -138,7 +138,7 @@
     <button
       v-else
       type="button"
-      class="flex min-w-0 text-left"
+      class="flex min-w-0 text-start"
       @click.stop="emit('open')"
     >
       <RecordChip :record="record" />
@@ -147,7 +147,7 @@
     <Divider v-if="isPanel && (loading || fields.length)" />
 
     <div v-if="isPanel" class="p-3">
-      <LoadingText v-if="loading" text="Loading" />
+      <LoadingText v-if="loading" :text="__('Loading')" />
 
       <!-- A hover card: labels beside values. -->
       <dl
@@ -167,7 +167,7 @@
         </template>
       </dl>
 
-      <span v-else class="text-p-sm text-ink-gray-5">Nothing else to show.</span>
+      <span v-else class="text-p-sm text-ink-gray-5">{{ __('Nothing else to show.') }}</span>
     </div>
 
     <!-- A tile: one value per line, each truncated in its own row so a long
@@ -225,6 +225,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Badge, Divider, Icon, LoadingText } from '@/ui'
+import { __ } from '@/lib/runtime/translate'
 import FieldCell from './FieldCell.vue'
 import RecordChip from '../record/RecordChip.vue'
 import RowMeta from './RowMeta.vue'

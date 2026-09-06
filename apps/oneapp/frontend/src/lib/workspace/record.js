@@ -1,6 +1,7 @@
 /** What surrounds a record — its timeline, people, files, tags and state. */
 
 import { callMethod } from '@/lib/runtime/resource'
+import { __ } from '@/lib/runtime/translate'
 
 export const record = {
   // Comments and the change log. Frappe keeps both on every doctype, so no app
@@ -16,7 +17,7 @@ export const record = {
     callMethod(
       'oneapp.oneapp_core.spaceview.comment',
       { space_code: spaceCode, screen, name, content },
-      { successMessage: 'Added' },
+      { successMessage: __('Added') },
     ),
 
   // Who a record is assigned to, and who it could be. Frappe's own model:
@@ -88,14 +89,14 @@ export const record = {
     callMethod(
       'oneapp.oneapp_core.spaceview.set_share',
       { space_code: spaceCode, screen, name, user, everyone, level },
-      { successMessage: 'Shared' },
+      { successMessage: __('Shared') },
     ),
 
   unshare: (spaceCode, screen, name, { user = null, everyone = 0 }) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.unshare',
       { space_code: spaceCode, screen, name, user, everyone },
-      { successMessage: 'Stopped sharing' },
+      { successMessage: __('Stopped sharing') },
     ),
 
   // Give a record a different id. Not silent: a rename is the one edit that
@@ -104,7 +105,7 @@ export const record = {
     callMethod(
       'oneapp.oneapp_core.spaceview.rename',
       { space_code: spaceCode, screen, name, new_name: newName },
-      { successMessage: 'Renamed' },
+      { successMessage: __('Renamed') },
     ),
 
   // Follow this record, or stop. Not silent: nothing on the screen changes to
@@ -131,7 +132,7 @@ export const record = {
     callMethod(
       'oneapp.oneapp_core.spaceview.remove_attachment',
       { space_code: spaceCode, screen, name, file },
-      { successMessage: 'File removed' },
+      { successMessage: __('File removed') },
     ),
 
   // A layout: the filters, the sort and the columns saved together under a
@@ -143,28 +144,28 @@ export const record = {
     callMethod(
       'oneapp.oneapp_core.spaceview.submit',
       { space_code: spaceCode, screen, name },
-      { successMessage: 'Submitted' },
+      { successMessage: __('Submitted') },
     ),
 
   cancel: (spaceCode, screen, name) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.cancel',
       { space_code: spaceCode, screen, name },
-      { successMessage: 'Cancelled' },
+      { successMessage: __('Cancelled') },
     ),
 
   amend: (spaceCode, screen, name) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.amend',
       { space_code: spaceCode, screen, name },
-      { successMessage: 'Amended' },
+      { successMessage: __('Amended') },
     ),
 
   workflowAction: (spaceCode, screen, name, action) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.workflow_action',
       { space_code: spaceCode, screen, name, action },
-      { successMessage: 'Done' },
+      { successMessage: __('Done') },
     ),
 
   // --- the mail about a record --------------------------------------------
@@ -185,7 +186,7 @@ export const record = {
     callMethod(
       'oneapp.oneapp_core.spaceview.write',
       { space_code: spaceCode, screen, name, ...values },
-      { successMessage: 'Sent' },
+      { successMessage: __('Sent') },
     ),
 
   // The way out of every case the automatic filing did not get, and the way
@@ -194,14 +195,14 @@ export const record = {
     callMethod(
       'oneapp.oneapp_core.spaceview.attach',
       { space_code: spaceCode, screen, name, message },
-      { successMessage: 'Filed here' },
+      { successMessage: __('Filed here') },
     ),
 
   recordMailDetach: (spaceCode, screen, name, message) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.detach',
       { space_code: spaceCode, screen, name, message },
-      { successMessage: 'Unfiled' },
+      { successMessage: __('Unfiled') },
     ),
 
   // --- print formats and letter heads -------------------------------------

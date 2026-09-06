@@ -99,7 +99,7 @@ def _decompress(payload: str) -> bytes:
     try:
         compressed = base64.b64decode(payload, validate=True)
     except (binascii.Error, ValueError):
-        _too_big("This sheet's stored data is not readable.")
+        _too_big(unreadable=True)
     if len(compressed) > MAX_BYTES:
         _too_big()
     try:
@@ -108,14 +108,23 @@ def _decompress(payload: str) -> bytes:
             if gz.read(1):
                 _too_big()
     except (OSError, EOFError):
-        _too_big("This sheet's stored data is not readable.")
+        _too_big(unreadable=True)
     return out
 
 
-def _too_big(reason: str = "") -> None:
-    import frappe
+def _too_big(unreadable: bool = False) -> None:
+    """Refuse the payload, in the reader's own language.
 
-    frappe.throw(reason or (
+    The wording is built here rather than passed in because `frappe` is
+    imported lazily in this module — it is otherwise pure — and `_` has to be
+    called where the request's language is known.
+    """
+    import frappe
+    from frappe import _
+
+    if unreadable:
+        frappe.throw(_("This sheet's stored data is not readable."))
+    frappe.throw(_(
         "This spreadsheet is too large to save (over {0} MB). That is usually "
         "formatting applied across a very large range rather than data — clear "
         "what you do not need, or split it across tabs."

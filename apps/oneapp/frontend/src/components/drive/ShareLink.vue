@@ -10,13 +10,15 @@
   a copy: it ends, and it can be taken back.
 -->
 <template>
-  <Dialog v-model="open" title="Share a link" size="lg">
+  <Dialog v-model="open" :title="__('Share a link')" size="lg">
     <template #default>
       <div class="flex flex-col gap-4 py-2">
         <p class="text-p-sm text-ink-gray-6">
-          Anybody with the link can open
-          <span class="text-ink-gray-8">{{ file?.file_name }}</span>
-          until it expires. They do not need an account here.
+          {{
+            __('Anybody with the link can open {0} until it expires. They do not need an account here.', [
+              file?.file_name,
+            ])
+          }}
         </p>
 
         <div class="flex items-end gap-2">
@@ -24,10 +26,10 @@
             v-model="days"
             class="flex-1"
             type="select"
-            label="It stops working after"
-            :options="DAYS"
+            :label="__('It stops working after')"
+            :options="dayOptions"
           />
-          <Button variant="solid" label="Make a link" :loading="making" @click="make" />
+          <Button variant="solid" :label="__('Make a link')" :loading="making" @click="make" />
         </div>
 
         <ErrorMessage :message="error" />
@@ -44,10 +46,13 @@
             <div class="min-w-0 flex-1">
               <p class="truncate text-p-xs text-ink-gray-7">{{ absolute(row) }}</p>
               <p class="text-p-xs text-ink-gray-5">
-                <template v-if="row.revoked">Revoked</template>
-                <template v-else>Until {{ until(row) }}</template>
-                · opened {{ row.opened }}
-                {{ row.opened === 1 ? 'time' : 'times' }}
+                {{ row.revoked ? __('Revoked') : __('Until {0}', [until(row)]) }}
+                ·
+                {{
+                  row.opened === 1
+                    ? __('opened {0} time', [row.opened])
+                    : __('opened {0} times', [row.opened])
+                }}
               </p>
             </div>
             <!--
@@ -60,8 +65,8 @@
               v-if="!row.revoked"
               icon="lucide-copy"
               variant="ghost"
-              label="Copy the link"
-              tooltip="Copy the link"
+              :label="__('Copy the link')"
+              :tooltip="__('Copy the link')"
               @click="copy(row)"
             />
             <Button
@@ -69,8 +74,8 @@
               icon="lucide-x"
               variant="ghost"
               theme="red"
-              label="Stop this link working"
-              tooltip="Stop this link working"
+              :label="__('Stop this link working')"
+              :tooltip="__('Stop this link working')"
               @click="revoke(row)"
             />
           </div>
@@ -81,17 +86,18 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Button, Dialog, Divider, ErrorMessage, FormControl, toast } from '@/ui'
 import { workspace } from '../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 // The server's own bound is ninety days; these are the answers people give.
-const DAYS = [
-  { label: 'a day', value: '1' },
-  { label: 'a week', value: '7' },
-  { label: 'a month', value: '30' },
-  { label: 'three months', value: '90' },
-]
+const dayOptions = computed(() => [
+  { label: __('a day'), value: '1' },
+  { label: __('a week'), value: '7' },
+  { label: __('a month'), value: '30' },
+  { label: __('three months'), value: '90' },
+])
 
 const props = defineProps({
   file: { type: Object, default: null },
@@ -137,11 +143,11 @@ async function make() {
 async function copy(row) {
   try {
     await navigator.clipboard?.writeText(absolute(row))
-    toast.success('Link copied')
+    toast.success(__('Link copied'))
   } catch {
     // A browser that refuses the clipboard is not a failed share — the link is
     // on screen and can be selected.
-    toast.success('Link made')
+    toast.success(__('Link made'))
   }
 }
 

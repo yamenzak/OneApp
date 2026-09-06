@@ -11,7 +11,7 @@
     <header
       class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 px-3 py-2"
     >
-      <span class="text-p-base font-medium text-ink-gray-8">Notifications</span>
+      <span class="text-p-base font-medium text-ink-gray-8">{{ __('Notifications') }}</span>
       <Badge
         v-if="notifications.unread"
         :label="String(notifications.unread)"
@@ -25,7 +25,7 @@
         v-if="notifications.unread"
         variant="ghost"
         size="sm"
-        label="Mark all read"
+        :label="__('Mark all read')"
         @click="markRead()"
       />
     </header>
@@ -43,8 +43,8 @@
       <EmptyState
         v-else-if="!notifications.rows.length"
         icon="lucide-bell"
-        title="Nothing yet"
-        description="Assignments, mentions and alerts turn up here."
+        :title="__('Nothing yet')"
+        :description="__('Assignments, mentions and alerts turn up here.')"
       />
 
       <!--
@@ -59,7 +59,7 @@
         v-for="row in notifications.rows"
         :key="row.name"
         type="button"
-        class="flex w-full items-start gap-3 border-b border-outline-gray-1 px-3 py-2.5 text-left last:border-0 hover:bg-surface-gray-1"
+        class="flex w-full items-start gap-3 border-b border-outline-gray-1 px-3 py-2.5 text-start last:border-0 hover:bg-surface-gray-1"
         :class="row.read ? '' : 'bg-surface-blue-1'"
         @click="open(row)"
       >
@@ -83,7 +83,7 @@
           </span>
           <span
             v-if="row.from"
-            class="absolute -bottom-1 -right-1 flex size-3.5 items-center justify-center rounded-full bg-surface-base"
+            class="absolute -bottom-1 -end-1 flex size-3.5 items-center justify-center rounded-full bg-surface-base"
           >
             <Icon :name="icon(row)" class="size-3 text-ink-gray-6" />
           </span>
@@ -102,7 +102,7 @@
         <span
           v-if="!row.read"
           class="mt-1.5 size-2 shrink-0 rounded-full bg-surface-blue-3"
-          aria-label="Unread"
+          :aria-label="__('Unread')"
         />
       </button>
     </div>
@@ -117,6 +117,7 @@ import EmptyState from '../EmptyState.vue'
 
 import { notificationIcon } from '@/lib/screen/fields'
 import { markRead, notifications } from '@/lib/shell/notifications'
+import { __ } from '@/lib/runtime/translate'
 
 const emit = defineEmits(['opened'])
 const router = useRouter()

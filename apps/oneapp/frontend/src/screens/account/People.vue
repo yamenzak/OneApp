@@ -13,24 +13,24 @@
     </div>
 
     <div v-else-if="data" class="flex flex-col gap-6 py-5">
-      <Alert v-if="!seatsLeft" theme="amber" title="Every seat is in use">
+      <Alert v-if="!seatsLeft" theme="amber" :title="__('Every seat is in use')">
         <template #description>
-          Your plan includes {{ seats.quota }}
-          {{ seats.quota === 1 ? 'seat' : 'seats' }}. Change plan to invite more
-          people, or remove someone who no longer needs access.
+          {{ seats.quota === 1
+            ? __('Your plan includes one seat. Change plan to invite more people, or remove someone who no longer needs access.')
+            : __('Your plan includes {0} seats. Change plan to invite more people, or remove someone who no longer needs access.', [seats.quota]) }}
         </template>
         <template #actions>
-          <Button label="See plans" @click="$router.push({ name: 'AccountBilling', params: { workspace } })" />
+          <Button
+            :label="__('See plans')"
+            @click="$router.push({ name: 'AccountBilling', params: { workspace } })"
+          />
         </template>
       </Alert>
 
       <section>
         <div class="mb-3 flex items-baseline justify-between">
-          <h3 class="text-base-medium text-ink-gray-8">Members</h3>
-          <span class="text-p-sm tabular-nums text-ink-gray-5">
-            {{ seats.used }}<template v-if="seats.quota"> of {{ seats.quota }}</template>
-            {{ seats.used === 1 ? 'seat' : 'seats' }} used
-          </span>
+          <h3 class="text-base-medium text-ink-gray-8">{{ __('People') }}</h3>
+          <span class="text-p-sm tabular-nums text-ink-gray-5">{{ seatLine }}</span>
         </div>
 
         <!-- Narrowed rather than dropped: the access badge and the remove
@@ -38,8 +38,8 @@
              person's name about 120px. -->
         <List :columns="memberColumns" :row-height="56" class="px-3" divider="full">
           <ListHeader>
-            <ListHeaderCell>Person</ListHeaderCell>
-            <ListHeaderCell>Access</ListHeaderCell>
+            <ListHeaderCell>{{ __('Person') }}</ListHeaderCell>
+            <ListHeaderCell>{{ __('Access') }}</ListHeaderCell>
             <ListHeaderCell />
           </ListHeader>
 
@@ -47,7 +47,7 @@
             <ListRow :value="value">
               <ListCell>
                 <Avatar :label="person.full_name || person.email" size="lg" />
-                <div class="ml-3 min-w-0">
+                <div class="ms-3 min-w-0">
                   <p class="truncate text-base text-ink-gray-8">
                     {{ person.full_name || person.email }}
                   </p>
@@ -81,8 +81,8 @@
                 <Button
                   v-if="!person.is_owner"
                   variant="ghost"
-                  label="Change what they can do"
-                  tooltip="Change what they can do"
+                  :label="__('Change what they can do')"
+                  :tooltip="__('Change what they can do')"
                   icon="lucide-settings-2"
                   @click="startRoles(person)"
                 />
@@ -90,8 +90,8 @@
                   v-if="!person.is_owner"
                   variant="ghost"
                   icon="lucide-trash-2"
-                  :label="`Remove ${person.email}`"
-                  :tooltip="`Remove ${person.email}`"
+                  :label="__('Remove {0}', [person.email])"
+                  :tooltip="__('Remove {0}', [person.email])"
                   :loading="removing === person.email"
                   @click="remove(person)"
                 />
@@ -101,32 +101,34 @@
         </List>
 
         <p class="mt-3 text-p-sm text-ink-gray-5">
-          An invited person gets a welcome email from your workspace once it next
-          syncs, usually within a few minutes. Removing someone disables their
-          sign-in; the work they created stays in the workspace.
+          {{ __('An invited person gets a welcome email within a few minutes. Removing someone stops them signing in; the work they created stays in the workspace.') }}
         </p>
       </section>
     </div>
   </div>
 
-  <Dialog v-model="showInvite" title="Invite someone" size="lg">
+  <Dialog v-model="showInvite" :title="__('Invite someone')" size="lg">
     <div v-focus class="flex flex-col gap-4">
       <FormControl
         v-model="form.email"
         type="email"
-        label="Email"
-        placeholder="colleague@acme.test"
+        :label="__('Email')"
+        :placeholder="__('colleague@acme.test')"
       />
-      <FormControl v-model="form.full_name" label="Name" placeholder="Alex Rivera" />
+      <FormControl
+        v-model="form.full_name"
+        :label="__('Name')"
+        :placeholder="__('Alex Rivera')"
+      />
       <FormControl
         v-model="form.access"
         type="select"
-        label="Access"
+        :label="__('Access')"
         :options="accessOptions"
         :description="
           form.access === 'Admin'
-            ? 'Can manage the workspace as well as use the apps.'
-            : 'Can use the apps this workspace is entitled to.'
+            ? __('Can manage the workspace as well as use the apps.')
+            : __('Can use the apps in this workspace.')
         "
       />
       <RolePicker v-model="form.roles" :roles="offeredRoles" />
@@ -136,12 +138,12 @@
     <template #actions>
       <Button
         variant="solid"
-        label="Send invite"
+        :label="__('Send invite')"
         :loading="inviting"
         :disabled="!form.email"
         @click="invite"
       />
-      <Button label="Cancel" @click="showInvite = false" />
+      <Button :label="__('Cancel')" @click="showInvite = false" />
     </template>
   </Dialog>
 
@@ -150,17 +152,21 @@
     it is two decisions (workspace access, and which apps) and a row is one
     line high.
   -->
-  <Dialog v-model="showRoles" :title="editing?.full_name || editing?.email || 'Access'" size="lg">
+  <Dialog
+    v-model="showRoles"
+    :title="editing?.full_name || editing?.email || __('Access')"
+    size="lg"
+  >
     <div class="flex flex-col gap-4">
       <FormControl
         v-model="roleForm.access"
         type="select"
-        label="Access"
+        :label="__('Access')"
         :options="accessOptions"
         :description="
           roleForm.access === 'Admin'
-            ? 'Can manage the workspace as well as use the apps.'
-            : 'Can use the apps this workspace is entitled to.'
+            ? __('Can manage the workspace as well as use the apps.')
+            : __('Can use the apps in this workspace.')
         "
       />
       <RolePicker v-model="roleForm.roles" :roles="offeredRoles" />
@@ -168,8 +174,8 @@
     </div>
 
     <template #actions>
-      <Button variant="solid" label="Save" :loading="savingRoles" @click="saveRoles" />
-      <Button label="Cancel" @click="showRoles = false" />
+      <Button variant="solid" :label="__('Save')" :loading="savingRoles" @click="saveRoles" />
+      <Button :label="__('Cancel')" @click="showRoles = false" />
     </template>
   </Dialog>
 </template>
@@ -186,10 +192,11 @@ import WorkspaceBar from './WorkspaceBar.vue'
 import { useWorkspace } from './workspace'
 import { useListColumns } from '@/lib/screen/list'
 import { useMembers, inviteMember, removeMember, setMemberRoles } from './customer'
+import { __ } from '@/lib/runtime/translate'
 
 const { columns: memberColumns } = useListColumns([
-  { key: 'person', header: 'Person', track: 'minmax(0,1fr)' },
-  { key: 'access', header: 'Access', track: '8rem', mobile: '5.5rem' },
+  { key: 'person', header: __('Person'), track: 'minmax(0,1fr)' },
+  { key: 'access', header: __('Access'), track: '8rem', mobile: '5.5rem' },
   { key: 'remove', header: '', track: '3rem' },
 ])
 
@@ -205,6 +212,14 @@ const workspace = useWorkspace()
 const resource = useMembers(workspace)
 const data = computed(() => resource.data)
 const seats = computed(() => data.value?.seats || { used: 0, quota: 0 })
+
+// One sentence rather than a number with words stuck either side of it: a
+// count and its noun do not sit in the same order in every language.
+const seatLine = computed(() => {
+  const { used = 0, quota = 0 } = seats.value
+  if (quota) return __('{0} of {1} seats used', [used, quota])
+  return used === 1 ? __('One seat used') : __('{0} seats used', [used])
+})
 
 // `remaining` is null on a plan with no seat cap, which is not the same as zero.
 const seatsLeft = computed(() => {

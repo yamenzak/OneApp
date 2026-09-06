@@ -17,13 +17,14 @@
   <div class="flex h-full min-h-0 flex-col gap-4">
     <div class="flex shrink-0 items-center justify-between gap-3">
       <p class="text-p-sm text-ink-gray-6">
-        {{ messages.length }}
-        {{ messages.length === 1 ? 'message' : 'messages' }} about this record
+        {{ messages.length === 1
+          ? __('{0} message about this record', [messages.length])
+          : __('{0} messages about this record', [messages.length]) }}
       </p>
       <Button
         v-if="canSend"
         icon-left="lucide-send"
-        label="Write"
+        :label="__('Write')"
         @click="write"
       />
     </div>
@@ -32,7 +33,7 @@
       <LoadingIndicator class="size-5 text-ink-gray-5" />
     </div>
 
-    <Alert v-else-if="error" theme="red" title="This could not be loaded">
+    <Alert v-else-if="error" theme="red" :title="__('The mail did not load')">
       <template #description>{{ error }}</template>
     </Alert>
 
@@ -44,11 +45,11 @@
     <EmptyState
       v-else-if="!messages.length"
       icon="lucide-mail"
-      title="No mail about this yet"
-      description="Messages that mention this record file themselves here. You can also write one."
+      :title="__('No mail about this yet')"
+      :description="__('Messages that mention this record file themselves here. You can also write one.')"
     >
       <template #action>
-        <Button v-if="canSend" icon-left="lucide-send" label="Write" @click="write" />
+        <Button v-if="canSend" icon-left="lucide-send" :label="__('Write')" @click="write" />
       </template>
     </EmptyState>
 
@@ -71,7 +72,7 @@
                 {{ message.person?.label || message.sender }}
               </p>
               <p class="truncate text-p-xs text-ink-gray-5">
-                {{ message.sent_or_received === 'Sent' ? 'to' : 'to' }}
+                {{ __('to') }}
                 {{ message.recipients }}
               </p>
             </div>
@@ -83,7 +84,7 @@
                  is opened to settle. -->
             <Badge
               :theme="message.sent_or_received === 'Sent' ? 'blue' : 'gray'"
-              :label="message.sent_or_received === 'Sent' ? 'Sent' : 'Received'"
+              :label="message.sent_or_received === 'Sent' ? __('Sent') : __('Received')"
             />
             <Tooltip v-if="message.by" :text="REASONS[message.by] || message.by">
               <Badge theme="gray" variant="subtle" :label="message.by" />
@@ -95,8 +96,8 @@
             <Button
               icon="lucide-unlink"
               variant="ghost"
-              label="Not about this record"
-              tooltip="Not about this record"
+              :label="__('Not about this record')"
+              :tooltip="__('Not about this record')"
               :loading="detaching === message.name"
               @click="detach(message)"
             />
@@ -120,7 +121,7 @@
       <Button
         v-if="more"
         variant="ghost"
-        label="Load more"
+        :label="__('Load more')"
         :loading="loading"
         @click="load(messages.length + PAGE)"
       />
@@ -145,6 +146,7 @@ import EmptyState from '../../EmptyState.vue'
 import MailComposer from '../../mail/MailComposer.vue'
 import { workspace } from '../../../lib/workspace'
 import { plainText } from '@/lib/screen/format'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -158,9 +160,9 @@ const PAGE = 50
 // it. The stored value is one word because it is a key; a badge that says
 // "thread" and explains nothing is a badge that raises a question.
 const REASONS = {
-  thread: 'Inherited from the conversation this message belongs to',
-  text: 'This record’s id was written in the subject or the message',
-  manual: 'Filed here by somebody',
+  thread: __('Inherited from the conversation this message belongs to'),
+  text: __('This record’s id was written in the subject or the message'),
+  manual: __('Filed here by somebody'),
 }
 
 const messages = ref([])

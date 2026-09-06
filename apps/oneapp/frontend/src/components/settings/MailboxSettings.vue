@@ -10,13 +10,13 @@
     offered on exactly that question. See `oneapp_core/tabs.py`.
   -->
   <SettingsHeader
-    title="Mailbox"
-    description="Your signature, your away message, and where your mail files itself."
+    :title="__('Mailbox')"
+    :description="__('Your signature, your away message, and where your mail files itself.')"
     :class="PANEL_HEADER"
   />
 
   <SettingsBody :class="PANEL_BODY">
-    <LoadingText v-if="loading" class="py-8" text="Loading" />
+    <LoadingText v-if="loading" class="py-8" :text="__('Loading')" />
 
     <div v-else class="flex flex-col gap-6 py-4">
       <!--
@@ -31,14 +31,14 @@
         data-slot="mailbox-claim"
       >
         <div class="min-w-0">
-          <p class="text-base font-medium text-ink-gray-8">Take your address</p>
+          <p class="text-base font-medium text-ink-gray-8">{{ __('Take your address') }}</p>
           <p class="truncate text-p-sm text-ink-gray-5">
-            {{ ours.suggested }} — yours, on this workspace's domain.
+            {{ __("{0} — yours, on this workspace's domain.", [ours.suggested]) }}
           </p>
         </div>
         <Button
           variant="solid"
-          label="Claim it"
+          :label="__('Claim it')"
           data-slot="mailbox-claim-go"
           :loading="claiming"
           @click="claim"
@@ -48,8 +48,8 @@
       <EmptyState
         v-else-if="!held.length && !connected.length"
         icon="lucide-at-sign"
-        title="No address yet"
-        description="An admin gives you one, or connect the mailbox you already have below."
+        :title="__('No address yet')"
+        :description="__('An admin gives you one, or connect the mailbox you already have below.')"
       />
 
       <!--
@@ -59,10 +59,9 @@
       -->
       <div v-if="held.length > 1" class="flex flex-wrap items-center justify-between gap-3">
         <div class="min-w-0">
-          <p class="text-base text-ink-gray-8">Write from</p>
+          <p class="text-base text-ink-gray-8">{{ __('Write from') }}</p>
           <p class="text-p-sm text-ink-gray-5">
-            Unless you are replying, or writing on a record that already has
-            correspondence.
+            {{ __('Unless you are replying, or writing on a record that already has correspondence.') }}
           </p>
         </div>
         <Select
@@ -88,15 +87,15 @@
             <span class="truncate text-base font-medium text-ink-gray-8">
               {{ row.email_id }}
             </span>
-            <Badge v-if="row.default_outgoing" theme="green" label="Sends notifications" />
+            <Badge v-if="row.default_outgoing" theme="green" :label="__('Sends notifications')" />
           </div>
 
           <FormControl
             type="textarea"
-            label="Signature"
+            :label="__('Signature')"
             :rows="3"
             :model-value="row.signature"
-            placeholder="Added to the bottom of mail sent from this address."
+            :placeholder="__('Added to the bottom of mail sent from this address.')"
             @change="saveSignature(row, $event.target.value)"
           />
         </div>
@@ -111,7 +110,7 @@
       -->
       <section v-if="held.length" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
         <div class="flex items-center gap-2">
-          <h3 class="text-base-medium text-ink-gray-8">While you are away</h3>
+          <h3 class="text-base-medium text-ink-gray-8">{{ __('While you are away') }}</h3>
           <!-- Which address these two sections are about. Only when there is
                more than one to be about. -->
           <Select
@@ -125,21 +124,21 @@
         <div class="flex flex-col gap-2">
           <Checkbox
             v-model="awayState.enabled"
-            label="Reply automatically while I am away"
+            :label="__('Reply automatically while I am away')"
             data-slot="mail-away"
           />
           <template v-if="awayState.enabled">
             <FormControl
               v-model="awayState.message"
               type="textarea"
-              label="What it says"
+              :label="__('What it says')"
               :rows="3"
             />
             <FormControl
               v-model="awayState.until"
               type="date"
-              label="Until"
-              description="It switches itself off the day after this."
+              :label="__('Until')"
+              :description="__('It switches itself off the day after this.')"
             />
           </template>
           <!-- Named for what it saves, not "Save": this panel holds several
@@ -147,15 +146,15 @@
           <Button
             class="self-start"
             variant="subtle"
-            label="Save away message"
+            :label="__('Save away message')"
             data-slot="mail-save-away"
             @click="saveAway"
           />
         </div>
 
-        <h3 class="mt-2 text-base-medium text-ink-gray-8">Rules</h3>
+        <h3 class="mt-2 text-base-medium text-ink-gray-8">{{ __('Rules') }}</h3>
         <p class="-mt-2 text-p-sm text-ink-gray-5">
-          Where mail that matches goes, before you see it.
+          {{ __('Where mail that matches goes, before you see it.') }}
         </p>
 
         <div
@@ -175,35 +174,35 @@
             variant="ghost"
             size="sm"
             icon="lucide-trash-2"
-            :label="`Remove ${one.title}`"
-            :tooltip="`Remove ${one.title}`"
+            :label="__('Remove {0}', [one.title])"
+            :tooltip="__('Remove {0}', [one.title])"
             @click="dropRule(one)"
           />
         </div>
 
         <div class="flex flex-wrap items-end gap-2">
-          <FormControl v-model="rule.title" class="flex-1" label="Rule" placeholder="Applicants" />
+          <FormControl v-model="rule.title" class="flex-1" :label="__('Rule')" :placeholder="__('Applicants')" />
           <Select
             v-model="rule.field"
-            label="Look at"
+            :label="__('Look at')"
             :options="['Sender', 'Subject', 'Recipient', 'Body']"
           />
           <Select
             v-model="rule.operator"
-            label="That"
+            :label="__('That')"
             :options="['Contains', 'Is', 'Starts with', 'Ends with']"
           />
-          <FormControl v-model="rule.matches" class="flex-1" label="This" />
-          <FormControl v-model="rule.into" class="flex-1" label="File into" />
-          <Button variant="solid" label="Add rule" @click="addRule" />
+          <FormControl v-model="rule.matches" class="flex-1" :label="__('This')" />
+          <FormControl v-model="rule.into" class="flex-1" :label="__('File into')" />
+          <Button variant="solid" :label="__('Add rule')" @click="addRule" />
         </div>
 
         <!-- The two the rule could always do and the form never offered.
              `star` in particular was stored, listed and fetched from the day
              rules shipped and acted on nowhere. -->
         <div class="flex flex-wrap items-center gap-4">
-          <Checkbox v-model="rule.mark_read" label="Mark it read" />
-          <Checkbox v-model="rule.star" label="Star it" />
+          <Checkbox v-model="rule.mark_read" :label="__('Mark it read')" />
+          <Checkbox v-model="rule.star" :label="__('Star it')" />
         </div>
         <ErrorMessage v-if="ruleError" :message="ruleError" />
       </section>
@@ -214,9 +213,9 @@
         with their own password is theirs.
       -->
       <section class="flex flex-col gap-2 border-t border-outline-gray-1 pt-5">
-        <h3 class="text-base-medium text-ink-gray-8">Your own mailboxes</h3>
+        <h3 class="text-base-medium text-ink-gray-8">{{ __('Your own mailboxes') }}</h3>
         <p class="text-p-sm text-ink-gray-5">
-          The address you already had. Read and answer it here.
+          {{ __('The address you already had. Read and answer it here.') }}
         </p>
         <!-- Said, not silently missing. A workspace can turn this off or hold
              it to a list of domains, and somebody refused is owed the reason
@@ -244,14 +243,14 @@
             <Badge
               v-if="box.awaiting_password || box.failures"
               theme="red"
-              label="Not connecting"
+              :label="__('Not connecting')"
             />
             <Button
               variant="ghost"
               size="sm"
               icon="lucide-unplug"
-              label="Disconnect this mailbox"
-              tooltip="Disconnect this mailbox"
+              :label="__('Disconnect this mailbox')"
+              :tooltip="__('Disconnect this mailbox')"
               @click="disconnect(box)"
             />
           </div>
@@ -262,14 +261,14 @@
             <FormControl
               v-model="mailbox.email_id"
               class="flex-1"
-              label="Mailbox address"
-              placeholder="you@gmail.com"
+              :label="__('Mailbox address')"
+              :placeholder="__('you@gmail.com')"
             />
             <FormControl
               v-model="mailbox.password"
               class="flex-1"
               type="password"
-              label="Password"
+              :label="__('Password')"
               :description="guess.note"
             />
           </div>
@@ -277,20 +276,20 @@
           <!-- Hidden until asked for: four fields is a form somebody fills in,
                six with two hostnames in them is a form they abandon. -->
           <div v-if="advanced" class="flex items-end gap-2">
-            <FormControl v-model="mailbox.email_server" class="flex-1" label="Incoming (IMAP)" />
-            <FormControl v-model="mailbox.smtp_server" class="flex-1" label="Outgoing (SMTP)" />
+            <FormControl v-model="mailbox.email_server" class="flex-1" :label="__('Incoming (IMAP)')" />
+            <FormControl v-model="mailbox.smtp_server" class="flex-1" :label="__('Outgoing (SMTP)')" />
           </div>
 
           <div class="flex items-center justify-between gap-2">
             <Button
               variant="ghost"
               size="sm"
-              :label="advanced ? 'Hide servers' : 'Change the servers'"
+              :label="advanced ? __('Hide servers') : __('Change the servers')"
               @click="advanced = !advanced"
             />
             <Button
               variant="solid"
-              label="Connect"
+              :label="__('Connect')"
               :loading="connecting"
               @click="connect"
             />
@@ -319,6 +318,7 @@ import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { session } from '@/lib/shell/session'
+import { __ } from '@/lib/runtime/translate'
 
 const loading = ref(true)
 
@@ -466,7 +466,7 @@ const mayConnect = computed(() => policy.value.mode !== 'none')
 
 const whyNot = computed(() =>
   policy.value.mode === 'none'
-    ? 'This workspace does not allow connecting outside mailboxes.'
+    ? __('This workspace does not allow connecting outside mailboxes.')
     : '',
 )
 

@@ -8,7 +8,7 @@
   <!--
     `w-full` is load-bearing: the cell packs its content at the start, so
     without it this block is only as wide as what is in it and `justify-end`
-    right-aligns inside a box that is itself floating left — which is the
+    end-aligns inside a box that is itself floating left — which is the
     crooked column of hearts.
   -->
   <!--

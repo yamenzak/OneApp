@@ -31,14 +31,14 @@
       >{{ modelValue }}</span>
 
       <Button
-        :label="modelValue ? 'Replace' : 'Choose'"
+        :label="modelValue ? __('Replace') : __('Choose')"
         :data-slot="`attach-${label.toLowerCase().replace(/\s+/g, '-')}`"
         @click="picking = true"
       />
       <Button
         v-if="modelValue"
         variant="ghost"
-        label="Clear"
+        :label="__('Clear')"
         @click="modelValue = ''"
       />
     </div>
@@ -50,7 +50,7 @@
     <FilePicker
       v-model="picking"
       :kind="image ? 'Image' : ''"
-      :title="`Choose ${label.toLowerCase()}`"
+      :title="__('Choose {0}', [label.toLowerCase()])"
       @picked="(file) => { modelValue = file.file_url }"
     />
   </div>
@@ -60,6 +60,7 @@
 import { ref } from 'vue'
 import { Button, FormLabel } from '@/ui'
 import FilePicker from '../drive/FilePicker.vue'
+import { __ } from '@/lib/runtime/translate'
 
 defineProps({
   label: { type: String, required: true },

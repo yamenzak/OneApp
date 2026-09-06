@@ -19,15 +19,15 @@
 
     <template v-else>
       <Switch
-        label="Notifications"
-        description="Assignments, mentions and workspace notices, in the app."
+        :label="__('Notifications')"
+        :description="__('Assignments, mentions and workspace notices, in the app.')"
         :model-value="prefs.enabled"
         @update:model-value="save({ enabled: $event })"
       />
 
       <Switch
-        label="Email me as well"
-        description="Off means the app only, whatever is ticked below."
+        :label="__('Email me as well')"
+        :description="__('Off means the app only, whatever is ticked below.')"
         :model-value="prefs.email"
         :disabled="!prefs.enabled"
         @update:model-value="save({ email: $event })"
@@ -54,7 +54,7 @@
           -->
           <div class="flex shrink-0 items-center gap-1">
             <Button
-              v-for="channel in CHANNELS"
+              v-for="channel in channels"
               :key="channel.key"
               size="sm"
               :variant="kind[channel.key] ? 'solid' : 'subtle'"
@@ -72,17 +72,18 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { Button, Skeleton, Switch } from '@/ui'
 
 import { loadPreferences, savePreferences, setChannel } from '@/lib/shell/notifications'
+import { __ } from '@/lib/runtime/translate'
 
 /** The three the panel names. Push is offered and refused — see `reason`. */
-const CHANNELS = [
-  { key: 'in_app', label: 'In app' },
-  { key: 'email', label: 'Email' },
-  { key: 'push', label: 'Push' },
-]
+const channels = computed(() => [
+  { key: 'in_app', label: __('In app') },
+  { key: 'email', label: __('Email') },
+  { key: 'push', label: __('Push') },
+])
 
 const loading = ref(true)
 const prefs = reactive({ enabled: true, email: true, types: [] })
@@ -118,9 +119,9 @@ const offered = (kind, channel) => {
  */
 const reason = (kind, channel) => {
   if (offered(kind, channel)) return ''
-  if (channel.key === 'push') return 'Push notifications are not available yet'
-  if (!prefs.email) return 'Turn on “Email me as well” first'
-  return 'This one is emailed for you rather than by you'
+  if (channel.key === 'push') return __('Push notifications are not available yet')
+  if (!prefs.email) return __('Turn on “Email me as well” first')
+  return __('This one is emailed for you rather than by you')
 }
 
 const flip = async (kind, channel) => {

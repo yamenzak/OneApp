@@ -60,7 +60,7 @@
             -->
             <!--
               `aligned` here too, and it was missing: only the plain header cell
-              carried it, so every sortable column sat left over right-aligned
+              carried it, so every sortable column sat left over end-aligned
               numbers.
             -->
             <ListHeaderCellSort
@@ -195,8 +195,8 @@
       A table wide enough to scroll has to say so: an overlay scrollbar fades and
       a full-bleed column at the edge reads as the end of the table.
     -->
-    <div v-if="edges.left" aria-hidden="true" :class="[EDGE, 'left-0']" />
-    <div v-if="edges.right" aria-hidden="true" :class="[EDGE, 'right-0']" />
+    <div v-if="edges.left" aria-hidden="true" :class="[EDGE, 'start-0']" />
+    <div v-if="edges.right" aria-hidden="true" :class="[EDGE, 'end-0']" />
   </div>
 </template>
 
@@ -289,7 +289,7 @@ const PINNED = 'sticky z-10 bg-surface-base'
 // header band and the row dividers already draw — and that token is an
 // *outline* colour, so `bg-outline-gray-2` is not a class at all and emitted no
 // CSS. Above the sticky header's z-index, or it stops at the first row.
-const EDGE = 'pointer-events-none absolute inset-y-0 z-30 w-0 border-l border-outline-gray-2'
+const EDGE = 'pointer-events-none absolute inset-y-0 z-30 w-0 border-s border-outline-gray-2'
 
 // The band behind the column headers, and the reason `ListHeader`'s own rule is
 // off: that rule is a grid child inset to the content box, so under a

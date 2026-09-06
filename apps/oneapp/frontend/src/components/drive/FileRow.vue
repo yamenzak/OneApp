@@ -16,7 +16,7 @@
     :class="[
       grid
         ? 'flex flex-col gap-2 rounded-6 border border-outline-gray-1 p-3'
-        : 'flex items-center gap-2 rounded-4 pr-2',
+        : 'flex items-center gap-2 rounded-4 pe-2',
       selected ? 'bg-surface-gray-2' : 'hover:bg-surface-gray-2',
       over ? 'ring-2 ring-outline-gray-3' : '',
       lifted ? 'opacity-50' : '',
@@ -36,8 +36,8 @@
     <Checkbox
       v-if="selectable"
       :model-value="selected"
-      :aria-label="`Select ${file.file_name}`"
-      class="ml-2.5 shrink-0"
+      :aria-label="__('Select {0}', [file.file_name])"
+      class="ms-2.5 shrink-0"
       @update:model-value="emit('select', file)"
     />
 
@@ -89,8 +89,12 @@
         icon="lucide-heart"
         variant="ghost"
         :class="file.liked ? 'text-ink-red-3' : 'text-ink-gray-4'"
-        :label="file.liked ? `Remove ${file.file_name} from favourites` : `Add ${file.file_name} to favourites`"
-        :tooltip="file.liked ? 'Remove from favourites' : 'Add to favourites'"
+        :label="
+          file.liked
+            ? __('Remove {0} from favourites', [file.file_name])
+            : __('Add {0} to favourites', [file.file_name])
+        "
+        :tooltip="file.liked ? __('Remove from favourites') : __('Add to favourites')"
         @click="emit('favourite', file)"
       />
 
@@ -114,8 +118,8 @@
           data-slot="drive-more"
           icon="lucide-ellipsis-vertical"
           variant="ghost"
-          :label="`More for ${file.file_name}`"
-          tooltip="More"
+          :label="__('More for {0}', [file.file_name])"
+          :tooltip="__('More')"
         />
       </Dropdown>
     </div>
@@ -126,6 +130,7 @@
 import { computed, ref } from 'vue'
 import { Avatar, Button, Checkbox, Dropdown, dayjsLocal } from '@/ui'
 import FileFace from './FileFace.vue'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   file: { type: Object, required: true },
@@ -161,16 +166,16 @@ const menu = computed(() => {
   if (!props.actions) return []
   if (props.trashed) {
     return [
-      { label: 'Put it back', icon: 'lucide-rotate-ccw', onClick: () => emit('restore', props.file) },
-      { label: 'Delete for good', icon: 'lucide-trash-2', onClick: () => emit('destroy', props.file) },
+      { label: __('Put it back'), icon: 'lucide-rotate-ccw', onClick: () => emit('restore', props.file) },
+      { label: __('Delete for good'), icon: 'lucide-trash-2', onClick: () => emit('destroy', props.file) },
     ]
   }
-  const items = [{ label: 'Share', icon: 'lucide-user-plus', onClick: () => emit('share', props.file) }]
+  const items = [{ label: __('Share'), icon: 'lucide-user-plus', onClick: () => emit('share', props.file) }]
   if (props.canWrite) {
     items.push(
-      { label: 'Rename', icon: 'lucide-pencil', onClick: () => emit('rename', props.file) },
-      { label: 'Move to a folder', icon: 'lucide-folder-input', onClick: () => emit('move', props.file) },
-      { label: 'Move to the bin', icon: 'lucide-trash-2', onClick: () => emit('trash', props.file) },
+      { label: __('Rename'), icon: 'lucide-pencil', onClick: () => emit('rename', props.file) },
+      { label: __('Move to a folder'), icon: 'lucide-folder-input', onClick: () => emit('move', props.file) },
+      { label: __('Move to the bin'), icon: 'lucide-trash-2', onClick: () => emit('trash', props.file) },
     )
   }
   return items

@@ -16,7 +16,7 @@
     :default-size="DEFAULT"
     :max="MAX"
     side="right"
-    label="the sidebar"
+    :label="__('the sidebar')"
     remember="onespace.sidebar"
     slot-name="sidebar-resizer"
   />
@@ -25,6 +25,7 @@
 <script setup>
 import Resizer from './Resizer.vue'
 import { DEFAULT, MAX, MIN, useSidebar } from '@/lib/shell/sidebar'
+import { __ } from '@/lib/runtime/translate'
 
 const { collapsed, width } = useSidebar()
 </script>

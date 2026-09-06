@@ -14,9 +14,7 @@
 
     <div v-else-if="data" class="py-5">
       <p class="mb-4 text-p-sm text-ink-gray-6">
-        Everything here is already part of your workspace. Plans differ in how
-        much you can store and how many people you can invite — never in which
-        apps you get.
+        {{ __('Every app here is already part of your workspace. Plans differ in how much you can store and how many people you can invite, never in which apps you get.') }}
       </p>
 
       <div class="grid gap-3 sm:grid-cols-2">
@@ -29,7 +27,7 @@
           <div class="min-w-0 flex-1">
             <p class="truncate text-base-medium text-ink-gray-8">{{ app.label }}</p>
             <p class="mt-0.5 text-p-sm text-ink-gray-5">
-              {{ app.included ? 'Included with every plan' : 'Enabled for your workspace' }}
+              {{ app.included ? __('Included with every plan') : __('Turned on for your workspace') }}
             </p>
           </div>
         </div>
@@ -38,8 +36,8 @@
       <EmptyState
         v-if="!data.apps.length"
         icon="lucide-layout-grid"
-        title="No apps yet"
-        description="Nothing has been enabled for this workspace. Get in touch and we will sort it out."
+        :title="__('No apps yet')"
+        :description="__('Nothing has been turned on for this workspace yet. Get in touch and we will sort it out.')"
       />
     </div>
   </div>
@@ -52,6 +50,7 @@ import WorkspaceBar from './WorkspaceBar.vue'
 import { useWorkspace } from './workspace'
 import EmptyState from '../../components/EmptyState.vue'
 import { useApps } from './customer'
+import { __ } from '@/lib/runtime/translate'
 
 defineProps({
   spaceCode: { type: String, default: '' },

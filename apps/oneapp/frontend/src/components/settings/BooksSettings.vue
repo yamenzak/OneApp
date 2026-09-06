@@ -1,7 +1,7 @@
 <template>
   <SettingsHeader
-    title="Books"
-    description="Your company, its financial year, and the accounts everything is posted to. Answered once."
+    :title="__('Books')"
+    :description="__('Your company, its financial year, and the accounts everything is posted to. Answered once.')"
     :class="PANEL_HEADER"
   />
 
@@ -14,8 +14,8 @@
       v-else-if="!status?.available"
       class="!py-12"
       icon="lucide-book-open"
-      title="No accounting app"
-      description="This workspace is not entitled to Books, so there is nothing to set up."
+      :title="__('No accounting app')"
+      :description="__('This workspace is not entitled to Books, so there is nothing to set up.')"
     />
 
     <div v-else-if="status.ready" class="flex flex-col gap-4 pt-6">
@@ -28,31 +28,25 @@
       <Alert
         v-if="status.assumed && status.can_reset"
         theme="amber"
-        title="Set up from your signup answers"
+        :title="__('Set up from your signup answers')"
       >
         <template #description>
-          Your country and currency are what you chose. The chart of accounts
-          and financial year below are the usual ones for {{ status.company?.country }} —
-          check them before you invoice anything, because they are only easy to
-          change until then.
+          {{ __('Your country and currency are what you chose. The chart of accounts and financial year below are the usual ones for {0} — check them before you invoice anything, because they are only easy to change until then.', [status.company?.country]) }}
         </template>
         <template #actions>
-          <Button label="Start over" theme="red" :loading="resetting" @click="startOver" />
+          <Button :label="__('Start over')" theme="red" :loading="resetting" @click="startOver" />
         </template>
       </Alert>
 
-      <Alert v-else-if="status.assumed" theme="blue" title="Set up from your signup answers">
+      <Alert v-else-if="status.assumed" theme="blue" :title="__('Set up from your signup answers')">
         <template #description>
-          Entries have been posted, so the chart of accounts can no longer be
-          replaced here. Ask support if it needs to change.
+          {{ __('Entries have been posted, so the chart of accounts can no longer be replaced here. Ask support if it needs to change.') }}
         </template>
       </Alert>
 
-      <Alert v-else theme="green" title="Books are set up">
+      <Alert v-else theme="green" :title="__('Books are set up')">
         <template #description>
-          Changing a company's currency or chart of accounts after entries exist
-          is a migration, not a setting, so this is shown rather than offered.
-          Ask support if you need it changed.
+          {{ __('Your currency and chart of accounts cannot change once entries exist. Ask support if you need them changed.') }}
         </template>
       </Alert>
 
@@ -70,16 +64,15 @@
 
     <div v-else class="flex max-w-xl flex-col gap-6 pt-6">
       <p class="text-p-base text-ink-gray-6">
-        Nothing can be invoiced or paid until this exists. It is four answers,
-        and it runs the same setup the accounting app would have asked for.
+        {{ __('Nothing can be invoiced or paid until this exists. It is four answers, and it runs the same setup the accounting app would have asked for.') }}
       </p>
 
       <div class="grid gap-4 sm:grid-cols-2">
-        <FormControl v-model="form.company_name" label="Company name" />
+        <FormControl v-model="form.company_name" :label="__('Company name')" />
         <FormControl
           v-model="form.abbr"
-          label="Abbreviation"
-          description="Appears on account names, e.g. Debtors - ACME."
+          :label="__('Abbreviation')"
+          :description="__('Appears on account names, e.g. Debtors - ACME.')"
         />
         <!--
           Picked, not typed. Both have to match a Frappe row exactly or
@@ -89,25 +82,25 @@
         <FormControl
           v-model="form.country"
           type="select"
-          label="Country"
+          :label="__('Country')"
           :options="status?.countries || []"
         />
         <FormControl
           v-model="form.currency"
           type="select"
-          label="Currency"
+          :label="__('Currency')"
           :options="status?.currencies || []"
         />
-        <FormControl v-model="form.fy_start_date" type="date" label="Financial year starts" />
-        <FormControl v-model="form.fy_end_date" type="date" label="Financial year ends" />
+        <FormControl v-model="form.fy_start_date" type="date" :label="__('Financial year starts')" />
+        <FormControl v-model="form.fy_end_date" type="date" :label="__('Financial year ends')" />
       </div>
 
       <FormControl
         v-model="form.chart_of_accounts"
         type="select"
-        label="Chart of accounts"
+        :label="__('Chart of accounts')"
         :options="chartOptions"
-        description="A starting structure for your country. Accounts can be added later; the shape is hard to change once entries exist."
+        :description="__('A starting structure for your country. Accounts can be added later; the shape is hard to change once entries exist.')"
       />
 
       <ErrorMessage v-if="error" :message="error" />
@@ -117,12 +110,12 @@
   <div v-if="status?.available && !status.ready" :class="PANEL_FOOTER">
     <Button
       variant="solid"
-      label="Set up books"
+      :label="__('Set up books')"
       :loading="saving"
       :disabled="!complete"
       @click="create"
     />
-    <span class="text-p-sm text-ink-gray-5">This takes a few seconds.</span>
+    <span class="text-p-sm text-ink-gray-5">{{ __('This takes a few seconds.') }}</span>
   </div>
 </template>
 
@@ -135,6 +128,7 @@ import {
 import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const status = ref(null)
 const charts = ref([])
@@ -167,14 +161,16 @@ const summary = computed(() => {
   const fiscal = status.value?.fiscal_year
   if (!company) return []
   return [
-    { label: 'Company', value: company.company_name },
-    { label: 'Chart of accounts', value: status.value?.charts?.[0] || '—' },
-    { label: 'Abbreviation', value: company.abbr },
-    { label: 'Currency', value: company.default_currency },
-    { label: 'Country', value: company.country },
+    { label: __('Company'), value: company.company_name },
+    { label: __('Chart of accounts'), value: status.value?.charts?.[0] || '—' },
+    { label: __('Abbreviation'), value: company.abbr },
+    { label: __('Currency'), value: company.default_currency },
+    { label: __('Country'), value: company.country },
     {
-      label: 'Financial year',
-      value: fiscal ? `${fiscal.year_start_date} to ${fiscal.year_end_date}` : '—',
+      label: __('Financial year'),
+      value: fiscal
+        ? __('{0} to {1}', [fiscal.year_start_date, fiscal.year_end_date])
+        : '—',
     },
   ]
 })

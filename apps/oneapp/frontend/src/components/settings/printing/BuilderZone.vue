@@ -19,15 +19,15 @@
       />
       <Button
         icon="lucide-columns-3"
-        tooltip="Add a column"
+        :tooltip="__('Add a column')"
         :disabled="section.columns.length >= 6"
         @click="addColumn"
       />
       <Button
         v-if="removable"
         icon="lucide-trash-2"
-        label="Remove this section"
-        tooltip="Remove this section"
+        :label="__('Remove this section')"
+        :tooltip="__('Remove this section')"
         @click="emit('remove')"
       />
     </div>
@@ -59,21 +59,21 @@
           v-if="!column.fields.length"
           class="flex flex-1 items-center justify-center text-p-xs text-ink-gray-4"
         >
-          Drop here
+          {{ __('Drop here') }}
         </div>
 
         <div class="flex items-center gap-1">
           <Button
             icon="lucide-minus"
-            label="Remove this column"
-            tooltip="Remove this column"
+            :label="__('Remove this column')"
+            :tooltip="__('Remove this column')"
             :disabled="section.columns.length <= 1"
             @click="removeColumn(at)"
           />
           <Button
             icon="lucide-move-horizontal"
-            label="Make this column wider"
-            tooltip="Make this column wider"
+            :label="__('Make this column wider')"
+            :tooltip="__('Make this column wider')"
             @click="widen(at)"
           />
         </div>
@@ -86,15 +86,16 @@
 import { computed } from 'vue'
 import { Button, Select } from '@/ui'
 import { address, emptyColumn } from './layout'
+import { __ } from '@/lib/runtime/translate'
 
 // Frappe's own four, because each names a CSS class in the generator's
 // template and anything else is dropped there.
 const JUSTIFY = [
-  { label: 'Fill the row', value: '' },
-  { label: 'Spread apart', value: 'space-between' },
-  { label: 'Spread evenly', value: 'space-evenly' },
-  { label: 'Centred', value: 'center' },
-  { label: 'To the right', value: 'right-end' },
+  { label: __('Fill the row'), value: '' },
+  { label: __('Spread apart'), value: 'space-between' },
+  { label: __('Spread evenly'), value: 'space-evenly' },
+  { label: __('Centred'), value: 'center' },
+  { label: __('To the right'), value: 'right-end' }, // rtl-ok: a stored value, not a class
 ]
 
 const props = defineProps({

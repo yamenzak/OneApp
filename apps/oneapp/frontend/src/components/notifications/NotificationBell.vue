@@ -32,7 +32,7 @@
         -->
         <span
           v-if="notifications.unread"
-          class="pointer-events-none absolute -right-0 -top-0 rounded-full bg-surface-base p-0.5"
+          class="pointer-events-none absolute -end-0 -top-0 rounded-full bg-surface-base p-0.5"
         >
           <span class="block size-2 rounded-full bg-surface-blue-3" />
         </span>

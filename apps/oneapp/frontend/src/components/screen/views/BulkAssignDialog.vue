@@ -13,7 +13,12 @@
     screen at all. Replacing forty assignments with one name is a way to take
     work off thirty-nine people by accident.
   -->
-  <Dialog v-model="showing" :title="`Assign ${count} ${count === 1 ? 'record' : 'records'}`">
+  <Dialog
+    v-model="showing"
+    :title="count === 1
+      ? __('Assign {0} record', [count])
+      : __('Assign {0} records', [count])"
+  >
     <div class="flex flex-col gap-4">
       <!-- The same control the record's own assignment draws, and the same
            endpoint behind it — so who this workspace can assign to is one
@@ -24,21 +29,20 @@
         :options="options"
         :loading="loading"
         :filterable="false"
-        label="People"
-        placeholder="Somebody on this workspace"
-        empty-text="Nobody by that name"
+        :label="__('People')"
+        :placeholder="__('Somebody on this workspace')"
+        :empty-text="__('Nobody by that name')"
       />
       <p class="text-p-sm text-ink-gray-6">
-        They are <span class="font-medium text-ink-gray-8">added</span> to whoever
-        is already on these records rather than replacing them.
+        {{ __('Everybody chosen is added to these records. Nobody already on them comes off.') }}
       </p>
     </div>
 
     <template #actions>
-      <Button label="Never mind" @click="showing = false" />
+      <Button :label="__('Never mind')" @click="showing = false" />
       <Button
         variant="solid"
-        label="Assign"
+        :label="__('Assign')"
         :disabled="!people.length"
         :loading="working"
         @click="emit('apply', people)"
@@ -51,6 +55,7 @@
 import { computed, ref, watch } from 'vue'
 import { Button, Dialog, MultiSelect } from '@/ui'
 import { workspace } from '../../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   count: { type: Number, default: 0 },

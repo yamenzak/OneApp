@@ -13,30 +13,26 @@
       <div class="flex items-center justify-between rounded-6 border border-outline-gray-2 p-4">
         <div>
           <p class="text-base-medium text-ink-gray-8">{{ guide.current }}</p>
-          <p class="mt-0.5 text-p-sm text-ink-gray-6">Live and serving your workspace.</p>
+          <p class="mt-0.5 text-p-sm text-ink-gray-6">{{ __('Live and serving your workspace.') }}</p>
         </div>
-        <Badge theme="green" label="Active" variant="subtle" />
+        <Badge theme="green" :label="__('Active')" variant="subtle" />
       </div>
     </section>
 
     <section v-if="guide.pending">
-      <Alert theme="blue" title="Verifying your DNS">
+      <Alert theme="blue" :title="__('Checking your DNS')">
         <template #description>
-          We are checking the record and issuing a certificate. This usually takes a
-          minute or two. If it does not complete, the cause is almost always a
-          proxied record — see step two below.
+          {{ __('This usually takes a minute or two. If it takes longer, the cause is almost always a proxied record — see step two below.') }}
         </template>
       </Alert>
     </section>
 
     <section>
       <h3 class="mb-1 text-base-medium text-ink-gray-8">
-        {{ guide.current ? 'Use a different domain' : 'Use your own domain' }}
+        {{ guide.current ? __('Use a different domain') : __('Use your own domain') }}
       </h3>
       <p class="mb-4 text-p-sm text-ink-gray-6">
-        Your workspace already works at
-        <span class="text-ink-gray-8">{{ guide.target }}</span>. A custom domain is
-        optional.
+        {{ __('Your workspace already works at {0}. A custom domain is optional.', [guide.target]) }}
       </p>
 
       <ol class="mb-5 flex flex-col gap-3">
@@ -58,24 +54,24 @@
       </ol>
 
       <div class="rounded-6 border border-outline-gray-2 p-4">
-        <p class="mb-2 text-p-sm text-ink-gray-6">Your CNAME should point at:</p>
+        <p class="mb-2 text-p-sm text-ink-gray-6">{{ __('Your CNAME should point at:') }}</p>
         <div class="flex items-center gap-2 rounded-4 bg-surface-gray-2 px-3 py-2">
           <code class="min-w-0 flex-1 truncate text-p-sm text-ink-gray-8">
             {{ guide.target }}
           </code>
-          <Button label="Copy" @click="copyTarget" />
+          <Button :label="__('Copy')" @click="copyTarget" />
         </div>
 
         <div class="mt-4 flex items-end gap-2">
           <FormControl
             v-model="domain"
-            label="Then add it here"
-            placeholder="app.yourcompany.com"
+            :label="__('Then add it here')"
+            :placeholder="__('app.yourcompany.com')"
             class="flex-1"
           />
           <Button
             variant="solid"
-            label="Add domain"
+            :label="__('Add domain')"
             :loading="adding"
             :disabled="!domain"
             @click="submit"
@@ -98,6 +94,7 @@ import WorkspaceBar from './WorkspaceBar.vue'
 import { useWorkspace } from './workspace'
 import { customer } from './customer'
 import { notifySuccess } from '@/lib/runtime/notify'
+import { __ } from '@/lib/runtime/translate'
 
 defineProps({ spaceCode: { type: String, default: '' }, screen: { type: String, default: '' } })
 const workspace = useWorkspace()
@@ -113,7 +110,7 @@ async function load() {
 
 function copyTarget() {
   navigator.clipboard?.writeText(guide.value.target)
-  notifySuccess('Copied')
+  notifySuccess(__('Copied'))
 }
 
 async function submit() {

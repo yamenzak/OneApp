@@ -13,7 +13,7 @@
   <div
     v-if="uploads.items.length"
     data-slot="upload-tray"
-    class="fixed bottom-4 right-4 z-20 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-6 border border-outline-gray-2 bg-surface-elevation-2 shadow-2xl"
+    class="fixed bottom-4 end-4 z-20 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-6 border border-outline-gray-2 bg-surface-elevation-2 shadow-2xl"
   >
     <div class="flex items-center gap-2 border-b border-outline-gray-1 px-3 py-2">
       <p class="min-w-0 flex-1 truncate text-p-sm font-medium text-ink-gray-8">
@@ -22,8 +22,8 @@
       <Button
         :icon="open ? 'lucide-chevron-down' : 'lucide-chevron-up'"
         variant="ghost"
-        :label="open ? 'Collapse uploads' : 'Expand uploads'"
-        :tooltip="open ? 'Collapse' : 'Expand'"
+        :label="open ? __('Collapse uploads') : __('Expand uploads')"
+        :tooltip="open ? __('Collapse') : __('Expand')"
         @click="open = !open"
       />
       <!-- Only once nothing is in flight. Closing mid-upload would leave four
@@ -32,8 +32,8 @@
         v-if="!uploads.active.value.length"
         icon="lucide-x"
         variant="ghost"
-        label="Dismiss uploads"
-        tooltip="Dismiss"
+        :label="__('Dismiss uploads')"
+        :tooltip="__('Dismiss')"
         @click="uploads.clearDone()"
       />
     </div>
@@ -65,16 +65,16 @@
           v-if="one.state === 'failed'"
           icon="lucide-rotate-ccw"
           variant="ghost"
-          :label="`Try ${one.name} again`"
-          tooltip="Try again"
+          :label="__('Try {0} again', [one.name])"
+          :tooltip="__('Try again')"
           @click="uploads.retry(one.id)"
         />
         <Button
           v-else-if="one.state === 'queued'"
           icon="lucide-x"
           variant="ghost"
-          :label="`Do not upload ${one.name}`"
-          tooltip="Remove"
+          :label="__('Do not upload {0}', [one.name])"
+          :tooltip="__('Remove')"
           @click="uploads.remove(one.id)"
         />
       </div>
@@ -87,17 +87,22 @@ import { computed, ref } from 'vue'
 import { Button, Icon, Progress } from '@/ui'
 
 import { useUploads } from '../../composables/useUploads'
+import { __ } from '@/lib/runtime/translate'
 
 const uploads = useUploads()
 const open = ref(true)
 
 const heading = computed(() => {
   const going = uploads.active.value.length
-  if (going) return `Uploading ${going} file${going === 1 ? '' : 's'}`
+  if (going) return going === 1 ? __('Uploading {0} file', [going]) : __('Uploading {0} files', [going])
   const failed = uploads.failed.value.length
-  if (failed) return `${failed} file${failed === 1 ? '' : 's'} did not upload`
+  if (failed) {
+    return failed === 1
+      ? __('{0} file did not upload', [failed])
+      : __('{0} files did not upload', [failed])
+  }
   const done = uploads.done.value.length
-  return `${done} file${done === 1 ? '' : 's'} uploaded`
+  return done === 1 ? __('{0} file uploaded', [done]) : __('{0} files uploaded', [done])
 })
 
 const iconFor = (one) =>

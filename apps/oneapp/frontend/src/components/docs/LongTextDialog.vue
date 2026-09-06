@@ -46,8 +46,8 @@
     </template>
 
     <template #actions>
-      <Button v-if="!disabled" variant="solid" label="Save" @click="apply" />
-      <Button label="Cancel" @click="open = false" />
+      <Button v-if="!disabled" variant="solid" :label="__('Save')" @click="apply" />
+      <Button :label="__('Cancel')" @click="open = false" />
     </template>
   </Dialog>
 </template>
@@ -65,6 +65,7 @@ import {
   RichTextKit,
 } from '@/ui'
 import { documentToolbar } from './toolbar'
+import { __ } from '@/lib/runtime/translate'
 
 const EXTENSIONS = [RichTextKit]
 

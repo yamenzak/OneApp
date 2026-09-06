@@ -23,7 +23,7 @@
       <FormControl
         v-model="drive.search.value"
         type="text"
-        placeholder="Search files"
+        :placeholder="__('Search files')"
         class="w-28 sm:w-48"
         @input="onSearch"
       />
@@ -31,8 +31,8 @@
            on every folder, not once. -->
       <Button
         :icon="grid ? 'lucide-list' : 'lucide-layout-grid'"
-        :label="grid ? 'Show as a list' : 'Show as a grid'"
-        :tooltip="grid ? 'Show as a list' : 'Show as a grid'"
+        :label="grid ? __('Show as a list') : __('Show as a grid')"
+        :tooltip="grid ? __('Show as a list') : __('Show as a grid')"
         variant="ghost"
         @click="setGrid(!grid)"
       />
@@ -46,8 +46,8 @@
         :icon="isMobile ? 'lucide-trash-2' : undefined"
         :icon-left="isMobile ? undefined : 'lucide-trash-2'"
         theme="red"
-        label="Empty the bin"
-        tooltip="Empty the bin"
+        :label="__('Empty the bin')"
+        :tooltip="__('Empty the bin')"
         :disabled="!drive.files.value.length || drive.busy.value"
         @click="emptying = true"
       />
@@ -71,15 +71,15 @@
         <Button
           :icon="isMobile ? 'lucide-upload' : undefined"
           :icon-left="isMobile ? undefined : 'lucide-upload'"
-          label="Upload"
-          tooltip="Upload files"
+          :label="__('Upload')"
+          :tooltip="__('Upload files')"
           @click="chooser?.click()"
         />
         <Button
           :icon="isMobile ? 'lucide-folder-plus' : undefined"
           :icon-left="isMobile ? undefined : 'lucide-folder-plus'"
-          label="New folder"
-          tooltip="New folder"
+          :label="__('New folder')"
+          :tooltip="__('New folder')"
           @click="naming = true"
         />
         <!--
@@ -93,8 +93,8 @@
             :icon-left="isMobile ? undefined : 'lucide-plus'"
             :icon-right="isMobile ? undefined : 'lucide-chevron-down'"
             variant="solid"
-            label="New"
-            tooltip="New file"
+            :label="__('New')"
+            :tooltip="__('New file')"
             :loading="making"
           />
         </Dropdown>
@@ -127,10 +127,10 @@
         v-if="place === 'trash' && drive.files.value.length"
         class="mb-4"
         theme="gray"
-        title="Everything here is deleted after thirty days"
+        :title="__('Everything here is deleted after thirty days')"
       >
         <template #description>
-          Until then it can be put back exactly where it was.
+          {{ __('Until then it can be put back exactly where it was.') }}
         </template>
       </Alert>
 
@@ -138,7 +138,7 @@
         <Skeleton v-for="n in 8" :key="n" class="h-11 w-full" />
       </div>
 
-      <Alert v-else-if="drive.error.value" theme="red" title="These files could not be loaded">
+      <Alert v-else-if="drive.error.value" theme="red" :title="__('Your files did not load')">
         <template #description>{{ drive.error.value }}</template>
       </Alert>
 
@@ -158,8 +158,8 @@
         >
           <Checkbox
             :model-value="drive.allSelected.value"
-            aria-label="Select everything here"
-            class="ml-2.5"
+            :aria-label="__('Select everything here')"
+            class="ms-2.5"
             @update:model-value="drive.toggleAll"
           />
           <span>{{ counted }}</span>
@@ -202,7 +202,7 @@
         <Button
           v-if="drive.more.value"
           variant="ghost"
-          label="Load more"
+          :label="__('Load more')"
           :loading="drive.loading.value"
           @click="drive.load({ append: true })"
         />
@@ -227,16 +227,16 @@
       <template v-if="place === 'trash'">
         <Button
           icon-left="lucide-rotate-ccw"
-          label="Put back"
-          tooltip="Put back"
+          :label="__('Put back')"
+          :tooltip="__('Put back')"
           :loading="drive.busy.value"
           @click="drive.restore(drive.selected.value)"
         />
         <Button
           icon-left="lucide-trash-2"
           theme="red"
-          :label="isMobile ? 'Delete' : 'Delete for good'"
-          tooltip="Delete for good"
+          :label="isMobile ? __('Delete') : __('Delete for good')"
+          :tooltip="__('Delete for good')"
           :loading="drive.busy.value"
           @click="drive.destroy(drive.selected.value)"
         />
@@ -244,15 +244,15 @@
       <template v-else>
         <Button
           icon-left="lucide-folder-input"
-          label="Move"
+          :label="__('Move')"
           :loading="drive.busy.value"
           @click="startMove(drive.selected.value)"
         />
         <Button
           icon-left="lucide-trash-2"
           theme="red"
-          :label="isMobile ? 'Bin' : 'Move to the bin'"
-          tooltip="Move to the bin"
+          :label="isMobile ? __('Bin') : __('Move to the bin')"
+          :tooltip="__('Move to the bin')"
           :loading="drive.busy.value"
           @click="drive.trash(drive.selected.value)"
         />
@@ -260,8 +260,8 @@
       <Button
         icon="lucide-x"
         variant="ghost"
-        label="Clear the selection"
-        tooltip="Clear the selection"
+        :label="__('Clear the selection')"
+        :tooltip="__('Clear the selection')"
         @click="drive.clear"
       />
     </div>
@@ -275,28 +275,28 @@
 
   <FolderPicker v-model="moving" :moving="toMove" @chosen="intoFolder" />
 
-  <Dialog v-model="naming" title="New folder">
+  <Dialog v-model="naming" :title="__('New folder')">
     <template #default>
-      <FormControl v-model="folderName" label="Name" @keyup.enter="makeFolder" />
+      <FormControl v-model="folderName" :label="__('Name')" @keyup.enter="makeFolder" />
     </template>
     <template #actions>
       <Button
         variant="solid"
-        label="Make it"
+        :label="__('Make it')"
         :loading="drive.busy.value"
         @click="makeFolder"
       />
     </template>
   </Dialog>
 
-  <Dialog v-model="renaming" title="Rename">
+  <Dialog v-model="renaming" :title="__('Rename')">
     <template #default>
-      <FormControl v-model="newName" label="Name" @keyup.enter="finishRename" />
+      <FormControl v-model="newName" :label="__('Name')" @keyup.enter="finishRename" />
     </template>
     <template #actions>
       <Button
         variant="solid"
-        label="Rename"
+        :label="__('Rename')"
         :loading="drive.busy.value"
         @click="finishRename"
       />
@@ -304,18 +304,17 @@
   </Dialog>
 
   <!-- The one that does not come back gets a question in front of it. -->
-  <Dialog v-model="emptying" title="Empty the bin">
+  <Dialog v-model="emptying" :title="__('Empty the bin')">
     <template #default>
       <p class="text-p-base text-ink-gray-7">
-        Everything in the bin is deleted for good, along with the files
-        themselves. This cannot be undone.
+        {{ __('Everything in the bin is deleted for good. This cannot be undone.') }}
       </p>
     </template>
     <template #actions>
       <Button
         variant="solid"
         theme="red"
-        label="Delete it all"
+        :label="__('Delete it all')"
         :loading="drive.busy.value"
         @click="finishEmpty"
       />
@@ -350,6 +349,7 @@ import { useNewFile } from '../composables/useNewFile'
 import { useUploads } from '../composables/useUploads'
 import { routeFor } from '../lib/files/files'
 import { useIsMobile } from '@/lib/shell/breakpoint'
+import { __ } from '@/lib/runtime/translate'
 import { PLACES, labelOf } from '../components/drive/places'
 
 const GRID_KEY = 'onespace:drive:grid'
@@ -357,14 +357,29 @@ const GRID_KEY = 'onespace:drive:grid'
 // What an empty place means, which is different in each: an empty bin is good
 // news and an empty folder is an invitation.
 const EMPTY = {
-  home: { title: 'Nothing here yet', description: 'Upload a file or make a folder to start.' },
-  recents: { title: 'Nothing opened yet', description: 'Files you open show up here.' },
-  favourites: { title: 'No favourites', description: 'Heart a file to keep it here.' },
-  shared: { title: 'Nothing shared with you', description: 'Files other people share appear here.' },
-  trash: { title: 'The bin is empty', description: 'Deleted files wait here for thirty days.' },
+  home: {
+    title: __('Nothing here yet'),
+    description: __('Upload a file, or make a folder to put files in.'),
+  },
+  recents: {
+    title: __('Nothing opened yet'),
+    description: __('Files you open show up here.'),
+  },
+  favourites: {
+    title: __('No favourites'),
+    description: __('Heart a file to keep it here.'),
+  },
+  shared: {
+    title: __('Nothing shared with you'),
+    description: __('Files other people share with you appear here.'),
+  },
+  trash: {
+    title: __('The bin is empty'),
+    description: __('Deleted files wait here for thirty days.'),
+  },
   // Not in the rail. `?place=all` is the flat view of everything this person
   // can see — what the file picker asks for.
-  all: { title: 'No files yet', description: 'Upload a file to start.' },
+  all: { title: __('No files yet'), description: __('Upload a file to start.') },
 }
 
 const route = useRoute()
@@ -433,7 +448,7 @@ function moveInto(target, names) {
   if (moving.length) drive.move(moving, target.name)
 }
 
-// One menu for the whole list, filled by whichever row was right-clicked —
+// One menu for the whole list, filled by whichever row was end-clicked —
 // frappe-ui's own pattern, and why there is not a menu instance per row.
 const rowMenu = ref([])
 
@@ -451,7 +466,7 @@ const crumbs = computed(() => [
   // reading "Files / Files / Drawings" is one crumb too many in 412px.
   ...(isMobile.value
     ? []
-    : [{ label: 'Files', route: { name: 'Drive', query: { place: place.value } } }]),
+    : [{ label: __('Files'), route: { name: 'Drive', query: { place: place.value } } }]),
   ...drive.path.value.map((one) => ({
     label: one.label,
     route: { name: 'Drive', query: { place: 'home', folder: one.name } },
@@ -461,13 +476,20 @@ const crumbs = computed(() => [
 const counted = computed(() => {
   const shown = drive.files.value.length
   const chosenNow = drive.picked.value.size
-  if (chosenNow) return `${chosenNow} of ${shown} chosen`
-  return `${shown} ${shown === 1 ? 'thing' : 'things'}${drive.more.value ? ', more below' : ''}`
+  if (chosenNow) return __('{0} of {1} chosen', [chosenNow, shown])
+  // Whole sentences rather than a number glued to a word: the plural and the
+  // "and there is more" are one phrase in some languages and two in others.
+  if (drive.more.value) {
+    return shown === 1
+      ? __('1 thing, more below')
+      : __('{0} things, more below', [shown])
+  }
+  return shown === 1 ? __('1 thing') : __('{0} things', [shown])
 })
 
 const chosen = computed(() => {
   const count = drive.picked.value.size
-  return `${count} ${count === 1 ? 'thing' : 'things'} chosen`
+  return count === 1 ? __('1 thing chosen') : __('{0} things chosen', [count])
 })
 
 // Per-person and per-browser, like the theme: a view preference is not
@@ -518,7 +540,7 @@ function open(file) {
 const { making, options: newOptions, loadTemplates } = useNewFile(
   () => ({ folder: folder.value || '' }),
   () => [{
-    label: 'Import a spreadsheet',
+    label: __('Import a spreadsheet'),
     icon: 'lucide-file-up',
     onClick: () => { importing.value = true },
   }],

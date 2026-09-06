@@ -7,8 +7,8 @@
     so somebody looking for it in Settings finds it where they looked.
   -->
   <SettingsHeader
-    title="Notifications"
-    description="What you are told about, and how."
+    :title="__('Notifications')"
+    :description="__('What you are told about, and how.')"
     :class="PANEL_HEADER"
   />
   <SettingsBody :class="PANEL_BODY">
@@ -19,5 +19,6 @@
 <script setup>
 import { SettingsBody, SettingsHeader } from '@/ui'
 import NotificationSettings from '../notifications/NotificationSettings.vue'
+import { __ } from '@/lib/runtime/translate'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 </script>

@@ -12,13 +12,13 @@
     <Avatar :image="value" :label="label" shape="square" size="3xl" />
     <div v-if="canWrite" class="flex flex-col items-start gap-1">
       <Button
-        :label="value ? 'Replace the image' : 'Add an image'"
+        :label="value ? __('Replace the image') : __('Add an image')"
         @click="picking = true"
       />
       <Button
         v-if="value"
         variant="ghost"
-        label="Remove it"
+        :label="__('Remove it')"
         @click="emit('update:value', '')"
       />
     </div>
@@ -35,6 +35,7 @@
 import { ref } from 'vue'
 import { Avatar, Button } from '@/ui'
 import FilePicker from '../../drive/FilePicker.vue'
+import { __ } from '@/lib/runtime/translate'
 
 defineProps({
   /** The current image URL, which is what the field holds. */

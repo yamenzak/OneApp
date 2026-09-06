@@ -4,8 +4,6 @@ import { brand, lang, systemTimezone } from '@/lib/runtime/boot'
 import { direction, loadTranslations } from '@/lib/runtime/translate'
 import { setBrand } from '@/lib/shell/theme'
 
-import App from './App.vue'
-import router from './router'
 import './index.css'
 
 // Same-origin session cookie authenticates every call.
@@ -31,6 +29,18 @@ document.documentElement.dir = direction(lang)
 // And the catalogue, awaited: a page that draws in English and then repaints
 // in Arabic has also changed direction. English loads nothing — the msgid is
 // the English sentence — so this costs a round trip only where it buys one.
-loadTranslations(lang).finally(() => {
+//
+// The app is *imported* here rather than at the top, and that is the load-order
+// that makes the whole thing work. A static import is evaluated before any line
+// of this file runs, so a component that builds a table of labels as it is
+// imported — `const WHEN = [{ label: __('made') }]` — would ask for a word
+// before the catalogue existed and hold the English answer for the rest of the
+// session. Importing after the await means every module in the graph, however
+// eagerly it translates, is evaluated with the catalogue already in hand.
+loadTranslations(lang).then(async () => {
+  const [{ default: App }, { default: router }] = await Promise.all([
+    import('./App.vue'),
+    import('./router'),
+  ])
   createApp(App).use(router).mount('#app')
 })

@@ -42,8 +42,17 @@ TRANSLATED = re.compile(r"__\(\s*['\"]([^'\"]{3,})['\"]")
 
 
 def strip_comments(text: str) -> str:
+	"""Comments out, and only comments.
+
+	The lookbehind is the whole of the second line: `accept="image/*"` opens
+	nothing, and without it that attribute swallowed everything up to the next
+	`*/` — which in `drive/CameraCapture.vue` was thirty lines including the
+	file's own `import { __ }`, so a file that translated read as one that did
+	not. A real block comment is preceded by a newline or a space; one written
+	tight against a word or inside a string is not one we need to find.
+	"""
 	text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
-	text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+	text = re.sub(r"(?<![\w\"'=/])/\*.*?\*/", "", text, flags=re.S)
 	return re.sub(r"^\s*//.*$", "", text, flags=re.M)
 
 

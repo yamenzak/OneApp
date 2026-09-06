@@ -13,7 +13,7 @@
       <Button
         class="flex-1"
         icon-left="lucide-paperclip"
-        label="Attach a file"
+        :label="__('Attach a file')"
         @click="picking = true"
       />
       <!--
@@ -22,7 +22,7 @@
         what makes "the project's scope of works" a query — see `useNewFile`.
       -->
       <Dropdown :options="newOptions">
-        <Button icon-left="lucide-plus" label="New" tooltip="New file" :loading="making" />
+        <Button icon-left="lucide-plus" :label="__('New')" :tooltip="__('New file')" :loading="making" />
       </Dropdown>
     </div>
     <FilePicker
@@ -32,14 +32,14 @@
       @picked="reload"
     />
 
-    <LoadingText v-if="loading" text="Loading files" />
+    <LoadingText v-if="loading" :text="__('Loading files')" />
 
     <EmptyState
       v-else-if="!files.length"
       class="!py-8"
       icon="lucide-paperclip"
-      title="No files"
-      description="Nothing is filed against this one yet."
+      :title="__('No files')"
+      :description="__('Nothing is filed against this one yet.')"
     />
 
     <div v-else class="flex flex-col">
@@ -63,12 +63,12 @@
     <FilePreview v-model="previewing" :file="chosen" />
     <FileShare v-model="sharing" :file="chosen" />
 
-    <Dialog v-model="renaming" title="Rename">
+    <Dialog v-model="renaming" :title="__('Rename')">
       <template #default>
-        <FormControl v-model="newName" label="Name" @keyup.enter="finishRename" />
+        <FormControl v-model="newName" :label="__('Name')" @keyup.enter="finishRename" />
       </template>
       <template #actions>
-        <Button variant="solid" label="Rename" @click="finishRename" />
+        <Button variant="solid" :label="__('Rename')" @click="finishRename" />
       </template>
     </Dialog>
   </div>
@@ -87,6 +87,7 @@ import { errorText } from '@/lib/runtime/errors'
 import { routeFor } from '@/lib/files/files'
 import { useNewFile } from '@/composables/useNewFile'
 import { RETURN_TO, returnQuery } from '@/lib/screen/returnTo'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },

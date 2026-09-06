@@ -14,7 +14,7 @@
       <Button
         :icon="compact ? 'lucide-list-filter' : undefined"
         :icon-left="compact ? undefined : 'lucide-list-filter'"
-        label="Filter"
+        :label="__('Filter')"
         :variant="filters.length ? 'subtle' : 'ghost'"
       >
         <template v-if="filters.length && !compact" #suffix>
@@ -26,7 +26,7 @@
     <template #default>
       <div class="flex w-[min(34rem,90vw)] flex-col gap-3 p-3">
         <p v-if="!draft.length" class="text-p-sm text-ink-gray-5">
-          No filters yet. Add one to narrow the list.
+          {{ __('No filters yet. Add one to narrow the list.') }}
         </p>
 
         <div v-else class="flex flex-col gap-2">
@@ -45,12 +45,12 @@
         <div class="flex items-center gap-2 border-t border-outline-gray-1 pt-3">
           <Button
             icon-left="lucide-plus"
-            label="Add filter"
+            :label="__('Add filter')"
             :disabled="!filterable.length"
             @click="add"
           />
-          <Button v-if="draft.length" variant="ghost" label="Clear all" @click="clear" />
-          <Button class="ml-auto" variant="solid" label="Apply" @click="apply" />
+          <Button v-if="draft.length" variant="ghost" :label="__('Clear all')" @click="clear" />
+          <Button class="ms-auto" variant="solid" :label="__('Apply')" @click="apply" />
         </div>
       </div>
     </template>
@@ -63,6 +63,7 @@ import { useIsMobile } from '@/lib/shell/breakpoint'
 import { Badge, Button, Popover } from '@/ui'
 import FilterRow from './FilterRow.vue'
 import { defaultOperator, operatorsFor, valueShape } from '@/lib/screen/fields'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   // Applied filters, as the screen resolved them.

@@ -273,17 +273,36 @@ NODE = shutil.which("node") or next(
 needs_node = pytest.mark.skipif(NODE is None, reason="no node to run the generated module")
 
 
+SRC = ROOT / "apps/oneapp/frontend/src"
+
+
 def run_fields_js(body: str):
-    """Evaluate an expression against the generated fields.js and read it back."""
-    module = ROOT / "apps/oneapp/frontend/src/lib/screen/fields.js"
+    """Evaluate an expression against the generated fields.js and read it back.
+
+    Node has no idea what `@/` means — that alias is Vite's, and the module
+    reaches for it to import `__`. So the module is copied beside its own
+    source with the alias spelt out, which is the one thing the bundler would
+    have done anyway, and imported from there.
+    """
+    module = SRC / "lib/screen/fields.js"
+    resolved = re.sub(
+        r"'@/([\w/.-]+?)(\.js)?'",
+        lambda one: f"'{SRC}/{one.group(1)}.js'",
+        module.read_text(),
+    )
+    beside = module.with_name("fields.resolved.test.mjs")
+    beside.write_text(resolved)
     script = (
-        f"import * as fields from {json.dumps(str(module))}\n"
+        f"import * as fields from {json.dumps(str(beside))}\n"
         f"console.log(JSON.stringify({body}))\n"
     )
-    out = subprocess.run(
-        [NODE, "--input-type=module", "-e", script],
-        capture_output=True, text=True, check=True,
-    )
+    try:
+        out = subprocess.run(
+            [NODE, "--input-type=module", "-e", script],
+            capture_output=True, text=True, check=True,
+        )
+    finally:
+        beside.unlink(missing_ok=True)
     return json.loads(out.stdout)
 
 

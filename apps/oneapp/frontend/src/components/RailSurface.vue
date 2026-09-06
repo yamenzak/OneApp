@@ -34,7 +34,7 @@
       v-if="surface.count"
       theme="blue"
       :label="String(surface.count > 99 ? '99+' : surface.count)"
-      class="pointer-events-none absolute -right-1 -top-1"
+      class="pointer-events-none absolute -end-1 -top-1"
     />
   </component>
 </template>

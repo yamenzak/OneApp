@@ -14,20 +14,20 @@
 
       <div class="flex shrink-0 flex-wrap gap-2">
         <Button
-          :label="held ? 'Release' : 'Hold'"
+          :label="held ? __('Release') : __('Hold')"
           :icon-left="held ? 'unlock' : 'lock'"
           :loading="busy === 'hold'"
           @click="toggleHold"
         />
         <Button
-          label="Take a cold copy"
+          :label="__('Take a cold copy')"
           icon-left="package"
           :loading="busy === 'cold'"
           @click="run('cold', () => admin.takeColdCopy(tenant))"
         />
         <Button
           v-if="canRestore"
-          label="Restore"
+          :label="__('Restore')"
           theme="blue"
           variant="solid"
           icon-left="rotate-ccw"
@@ -35,7 +35,7 @@
           @click="run('restore', () => admin.restoreFromCold(tenant))"
         />
         <Button
-          label="Apply now"
+          :label="__('Apply now')"
           icon-left="play"
           :loading="busy === 'run'"
           @click="run('run', () => admin.runLifecycle(tenant))"
@@ -43,14 +43,13 @@
       </div>
     </div>
 
-    <Alert v-if="held" theme="amber" title="Held out of the lifecycle" class="mt-4">
+    <Alert v-if="held" theme="amber" :title="__('Held out of the lifecycle')" class="mt-4">
       <template #description>
-        Nothing is suspended, archived or deleted while this is set. The clock
-        keeps running — releasing resumes at whatever rung the dates say.
+        {{ __('Nothing is suspended, archived or deleted while this is set. The clock keeps running — releasing resumes at whatever rung the dates say.') }}
       </template>
     </Alert>
 
-    <Alert v-if="backup.error" theme="red" title="The last backup did not finish" class="mt-4">
+    <Alert v-if="backup.error" theme="red" :title="__('The last backup did not finish')" class="mt-4">
       <template #description>{{ backup.error }}</template>
     </Alert>
 
@@ -73,11 +72,11 @@
         </ListRows>
       </List>
 
-      <p class="mt-6 text-base-medium text-ink-gray-8">What has happened</p>
+      <p class="mt-6 text-base-medium text-ink-gray-8">{{ __('What has happened') }}</p>
       <EmptyState
         v-if="!events.length"
         icon="lucide-clock"
-        title="Nothing yet. This workspace has never been on the ladder."
+        :title="__('Nothing yet. This workspace has never been on the ladder.')"
         class="mt-3"
       />
       <List
@@ -99,7 +98,7 @@
               </div>
             </ListCell>
             <ListCell v-if="eventShows('by')">
-              <Badge :label="row.triggered_by || 'Sweep'" theme="gray" variant="subtle" />
+              <Badge :label="row.triggered_by || __('Sweep')" theme="gray" variant="subtle" />
             </ListCell>
             <ListCell>
               <span class="truncate text-p-sm text-ink-gray-6">{{ when(row.occurred_on) }}</span>
@@ -120,6 +119,7 @@ import {
 import EmptyState from '../../components/EmptyState.vue'
 import { useListColumns } from '@/lib/screen/list'
 import { admin } from './admin'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   tenant: { type: String, required: true },
@@ -131,9 +131,9 @@ const { columns: fieldTracks } = useListColumns([
 ])
 
 const { visible: eventCols, columns: eventTracks, shows: eventShows } = useListColumns([
-  { key: 'event', header: 'Event', track: 'minmax(0,1fr)' },
-  { key: 'by', header: 'By', track: '8rem', mobile: false },
-  { key: 'when', header: 'When', track: '11rem', mobile: '6rem' },
+  { key: 'event', header: __('Event'), track: 'minmax(0,1fr)' },
+  { key: 'by', header: __('By'), track: '8rem', mobile: false },
+  { key: 'when', header: __('When'), track: '11rem', mobile: '6rem' },
 ])
 
 const data = ref(null)
@@ -180,22 +180,26 @@ const toggleHold = () =>
   )
 
 const headline = computed(() => {
-  if (!data.value) return 'Lifecycle'
-  if (!ladder.value.started_on) return 'Not on the lifecycle ladder'
-  return `On the ladder since ${date(ladder.value.started_on)}`
+  if (!data.value) return __('Lifecycle')
+  if (!ladder.value.started_on) return __('Not on the lifecycle ladder')
+  return __('On the ladder since {0}', [date(ladder.value.started_on)])
 })
 
 const detail = computed(() => {
   if (!data.value) return ''
   if (!ladder.value.started_on) {
-    return 'This workspace is paid for, or has no subscription to be unpaid on.'
+    return __('This workspace is paid for, or has no subscription to be unpaid on.')
   }
   return {
-    Grace: `Working normally. Suspended after ${windows.value.dunning_grace_days} days unpaid.`,
-    Suspended: `Switched off and intact. Archived after ${windows.value.suspended_days} days.`,
-    Archived: 'Site removed from Frappe Cloud. Restorable from the cold copy.',
-    Purged: 'Everything deleted. Nothing can be restored.',
-  }[ladder.value.stage] || 'Unpaid, and the next sweep decides what happens.'
+    Grace: __('Working normally. Suspended after {0} days unpaid.', [
+      windows.value.dunning_grace_days,
+    ]),
+    Suspended: __('Switched off and intact. Archived after {0} days.', [
+      windows.value.suspended_days,
+    ]),
+    Archived: __('Site removed from Frappe Cloud. Restorable from the cold copy.'),
+    Purged: __('Everything deleted. Nothing can be restored.'),
+  }[ladder.value.stage] || __('Unpaid, and the next sweep decides what happens.')
 })
 
 const date = (value) => (value ? dayjsLocal(value).format('D MMM YYYY') : '—')
@@ -213,55 +217,63 @@ const rows = computed(() => {
   if (!data.value) return []
 
   const out = [
-    { label: 'Rung', value: ladder.value.stage || 'Not on the ladder' },
-    { label: 'Unpaid since', value: date(ladder.value.started_on) },
-    { label: 'Switched off', value: date(ladder.value.suspended_on) },
-    { label: 'Archived', value: date(ladder.value.archived_on) },
+    { label: __('Rung'), value: ladder.value.stage || __('Not on the ladder') },
+    { label: __('Unpaid since'), value: date(ladder.value.started_on) },
+    { label: __('Switched off'), value: date(ladder.value.suspended_on) },
+    { label: __('Archived'), value: date(ladder.value.archived_on) },
   ]
 
   if (ladder.value.purge_after) {
     out.push({
-      label: 'Deleted after',
+      label: __('Deleted after'),
       value: date(ladder.value.purge_after),
       // Red rather than plain: this is the one date after which nothing can
       // be recovered, and it should not read like the others.
       badge: 'red',
     })
-    out.push({ label: 'Warned on', value: date(ladder.value.purge_warned_on) })
+    out.push({ label: __('Warned on'), value: date(ladder.value.purge_warned_on) })
   }
   if (ladder.value.purged_on) {
-    out.push({ label: 'Deleted', value: when(ladder.value.purged_on), badge: 'red' })
+    out.push({ label: __('Deleted'), value: when(ladder.value.purged_on), badge: 'red' })
   }
   if (ladder.value.restored_on) {
-    out.push({ label: 'Restored', value: when(ladder.value.restored_on), badge: 'green' })
+    out.push({ label: __('Restored'), value: when(ladder.value.restored_on), badge: 'green' })
   }
 
   out.push(
     {
-      label: 'Cold copy',
-      value: cold.value.key || (cold.value.requested_on ? 'Asked the site for one' : 'None'),
+      label: __('Cold copy'),
+      value:
+        cold.value.key ||
+        (cold.value.requested_on ? __('Asked the site for one') : __('None')),
       // The absence of a copy is what stops an archive, so it is the one thing
       // on this list somebody has to be able to spot without reading.
       badge: cold.value.key ? 'green' : 'amber',
     },
-    { label: 'Copy taken', value: when(cold.value.stored_on) },
-    { label: 'Copy size', value: bytes(cold.value.bytes) },
+    { label: __('Copy taken'), value: when(cold.value.stored_on) },
+    { label: __('Copy size'), value: bytes(cold.value.bytes) },
     {
-      label: 'Backups',
+      label: __('Backups'),
       value: backup.value.per_day
-        ? `${backup.value.per_day} a day, kept ${backup.value.retention_days} days`
-        : 'None on this plan',
+        ? __('{0} a day, kept {1} days', [
+            backup.value.per_day,
+            backup.value.retention_days,
+          ])
+        : __('None on this plan'),
     },
-    { label: 'Last backup', value: when(backup.value.last_on) },
-    { label: 'Last backup size', value: bytes(backup.value.bytes) },
+    { label: __('Last backup'), value: when(backup.value.last_on) },
+    { label: __('Last backup size'), value: bytes(backup.value.bytes) },
   )
 
   if (quota.value.over?.length) {
     out.push({
-      label: 'Over quota',
+      label: __('Over quota'),
       value: quota.value.enforced
-        ? `${quota.value.over.join(', ')} — enforced`
-        : `${quota.value.over.join(', ')} — in grace until ${date(quota.value.grace_until)}`,
+        ? __('{0} — enforced', [quota.value.over.join(', ')])
+        : __('{0} — in grace until {1}', [
+            quota.value.over.join(', '),
+            date(quota.value.grace_until),
+          ]),
       badge: quota.value.enforced ? 'red' : 'amber',
     })
   }

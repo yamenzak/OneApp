@@ -50,6 +50,8 @@ def fields_js(app: str, spec: dict) -> str:
  * cannot produce the right shape is worse than none.
  */
 
+import { __ } from '@/lib/runtime/translate'
+
 export const FIELD_TYPES = %(table)s
 
 /** Layout fields. They carry no value and are skipped rather than rendered. */
@@ -310,16 +312,23 @@ export function valueShape(field, operator) {
   return 'value'
 }
 
-/** Set / Not Set, which is what `is` asks. */
+/**
+ * Set / Not set, which is what `is` asks.
+ *
+ * The label is read rather than stored, here and below: both lists are built
+ * when the module is imported, which is before main.js has the catalogue, so a
+ * word translated here would be the English one for ever. The filter row asks
+ * for it while it is drawing, by which time there is a catalogue to ask.
+ */
 export const IS_OPTIONS = [
-  { value: 'set', label: 'Set' },
-  { value: 'not set', label: 'Not Set' },
+  { value: 'set', get label() { return __('Set') } },
+  { value: 'not set', get label() { return __('Not set') } },
 ]
 
 /** A checkbox is one of two things, and neither of them is a text box. */
 export const CHECK_OPTIONS = [
-  { value: '1', label: 'Yes' },
-  { value: '0', label: 'No' },
+  { value: '1', get label() { return __('Yes') } },
+  { value: '0', get label() { return __('No') } },
 ]
 
 export function isLayout(fieldtype) {

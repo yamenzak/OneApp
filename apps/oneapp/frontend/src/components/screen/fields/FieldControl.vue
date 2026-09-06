@@ -113,7 +113,7 @@
     </div>
     <div class="flex items-center gap-2">
       <Button
-        :label="modelValue ? 'Replace' : 'Attach'"
+        :label="modelValue ? __('Replace') : __('Attach')"
         :disabled="disabled"
         @click="picking = true"
       />
@@ -191,8 +191,8 @@
       <Button
         variant="ghost"
         icon="lucide-maximize-2"
-        label="Open in the editor"
-        :tooltip="`Open ${field.label} in the editor`"
+:label="__('Open in the editor')"
+        :tooltip="__('Open {0} in the editor', [field.label])"
         @click="expanded = true"
       />
     </div>
@@ -295,7 +295,7 @@
       <img
         v-else-if="field.fieldtype === 'Signature' && modelValue"
         :src="modelValue"
-        alt="Signature"
+        :alt="__('Signature')"
         class="h-12 max-w-full object-contain"
       />
       <!-- Geolocation is a GeoJSON blob with no honest small rendering. -->
@@ -303,7 +303,7 @@
         v-if="field.fieldtype === 'Geolocation'"
         class="truncate text-p-sm text-ink-gray-7"
       >
-        {{ modelValue ? 'Map' : '—' }}
+        {{ modelValue ? __('Map') : '—' }}
       </span>
       <!-- Barcode stores the value; the bars are a rendering of it. The value
            is the useful half, in the typeface that separates an O from a 0. -->
@@ -381,6 +381,7 @@ import AttachmentGallery from '../record/AttachmentGallery.vue'
 import ChildTable from '../record/ChildTable.vue'
 import LongTextDialog from '../../docs/LongTextDialog.vue'
 import { controlComponent, editorFormat, formControlType, valueIcon } from '@/lib/screen/fields'
+import { __ } from '@/lib/runtime/translate'
 
 // Built once for the module: the kit is a static extension list, and a form
 // with six rich-text fields should not assemble six identical ones.
@@ -547,10 +548,14 @@ const note = computed(() => {
 
   if (field.fetch_from) {
     const from = String(field.fetch_from).split('.')[0].replace(/_/g, ' ')
-    parts.push(field.fetch_if_empty ? `From ${from} if left blank` : `From ${from}`)
+    parts.push(
+      field.fetch_if_empty
+        ? __('From {0} if left blank', [from])
+        : __('From {0}', [from]),
+    )
   }
 
-  if (field.unique) parts.push('Must be unique')
+  if (field.unique) parts.push(__('Must be unique'))
 
   return parts.join(' · ') || undefined
 })

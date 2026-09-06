@@ -15,7 +15,7 @@
     Replace, never append. The confirmation is the preview: a pull rewrites
     these rows, and pressing it twice must not double the quotation.
   -->
-  <Dialog v-model="open" title="Use a different sheet">
+  <Dialog v-model="open" :title="__('Use a different sheet')">
     <template #default>
       <div class="flex flex-col gap-4">
         <!--
@@ -26,13 +26,12 @@
         <Select
           v-if="options.length"
           v-model="picked"
-          label="Sheet"
+          :label="__('Sheet')"
           :options="options"
         />
-        <Alert v-else-if="!loading" theme="gray" title="There are no sheets here yet">
+        <Alert v-else-if="!loading" theme="gray" :title="__('There are no sheets here yet')">
           <template #description>
-            Make one in Files, price the job in it, then name the rows you want
-            back.
+            {{ __('Make one in Files, price the job in it, then name the rows you want back.') }}
           </template>
         </Alert>
 
@@ -42,32 +41,36 @@
         <Select
           v-if="ranges.length"
           v-model="label"
-          label="Named range"
+          :label="__('Named range')"
           :options="rangeOptions"
         />
         <Alert
           v-else-if="picked"
           theme="gray"
-          title="This sheet has nothing named yet"
+          :title="__('This sheet has nothing named yet')"
         >
           <template #description>
-            Open it, select the rows including their headings, and press Name
-            this range.
+            {{ __('Open it, select the rows including their headings, and choose Name this range.') }}
           </template>
         </Alert>
 
-        <Alert v-if="error" theme="red" title="This could not be read">
+        <Alert v-if="error" theme="red" :title="__('This could not be read')">
           <template #description>{{ error }}</template>
         </Alert>
 
         <div v-if="shape" class="flex flex-col gap-2">
-          <FormLabel :label="`${shape.count} ${shape.count === 1 ? 'row' : 'rows'}, from ${shape.tab}!${shape.ref}`" />
+          <FormLabel
+            :label="
+              shape.count === 1
+                ? __('{0} row, from {1}!{2}', [shape.count, shape.tab, shape.ref])
+                : __('{0} rows, from {1}!{2}', [shape.count, shape.tab, shape.ref])
+            "
+          />
           <!-- A named range whose first row is its headings and which has
                nothing under them. Said plainly, because the button below is
                about to be disabled. -->
           <p v-if="!shape.count" class="text-p-xs text-ink-gray-5">
-            The first row of a range is its headings; there is nothing under
-            them to bring in.
+            {{ __('The first row of a range is its headings; there is nothing under them to bring in.') }}
           </p>
           <!-- The headings, and what each one will fill. A heading with nowhere
                to go is said out loud rather than dropped quietly. -->
@@ -81,8 +84,11 @@
             />
           </div>
           <p v-if="unknown.length" class="text-p-xs text-ink-gray-5">
-            {{ unknown.join(', ') }} {{ unknown.length === 1 ? 'has' : 'have' }}
-            no matching field here and will be left out.
+            {{
+              unknown.length === 1
+                ? __('{0} has no matching field here and will be left out.', [unknown.join(', ')])
+                : __('{0} have no matching field here and will be left out.', [unknown.join(', ')])
+            }}
           </p>
 
           <!--
@@ -118,7 +124,7 @@
             </div>
           </div>
           <p v-if="shape.count > sample.length" class="text-p-xs text-ink-gray-5">
-            and {{ shape.count - sample.length }} more.
+            {{ __('and {0} more.', [shape.count - sample.length]) }}
           </p>
         </div>
       </div>
@@ -127,7 +133,7 @@
     <template #actions>
       <Button
         variant="solid"
-        :label="shape ? `Replace these rows with ${shape.count}` : 'Fill'"
+        :label="shape ? __('Replace these rows with {0}', [shape.count]) : __('Fill')"
         :disabled="!shape || !shape.count"
         :loading="filling"
         @click="fill"
@@ -143,6 +149,7 @@ import { Alert, Badge, Button, Dialog, FormLabel, Select } from '@/ui'
 import { workspace } from '../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
 import { useSaving } from '@/composables/useSaving'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   doctype: { type: String, required: true },

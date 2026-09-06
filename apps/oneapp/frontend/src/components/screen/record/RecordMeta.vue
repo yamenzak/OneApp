@@ -19,11 +19,11 @@
         <p v-if="record.name !== label" class="truncate font-mono text-p-xs text-ink-gray-5">
           {{ record.name }}
         </p>
-        <div v-if="imageField && canWrite" class="-ml-2 mt-1 flex items-center">
+        <div v-if="imageField && canWrite" class="-ms-2 mt-1 flex items-center">
           <Button
             variant="ghost"
             size="sm"
-            :label="image ? 'Change picture' : 'Add a picture'"
+            :label="image ? __('Change picture') : __('Add a picture')"
             @click="picking = true"
           />
           <Button
@@ -31,8 +31,8 @@
             variant="ghost"
             size="sm"
             icon="lucide-trash-2"
-            label="Remove the picture"
-            tooltip="Remove the picture"
+            :label="__('Remove the picture')"
+            :tooltip="__('Remove the picture')"
             @click="emit('update:image', '')"
           />
         </div>
@@ -53,7 +53,7 @@
     <ul class="flex flex-col border-y border-outline-gray-1 py-1">
       <li class="flex min-h-9 items-center gap-2">
         <Icon name="lucide-users" class="size-4 shrink-0 text-ink-gray-5" />
-        <span class="flex-1 text-p-sm text-ink-gray-6">Assigned to</span>
+        <span class="flex-1 text-p-sm text-ink-gray-6">{{ __('Assigned to') }}</span>
         <AssignControl
           :space-code="spaceCode"
           :screen="screen"
@@ -66,20 +66,20 @@
 
       <li class="flex min-h-9 items-center gap-2">
         <Icon name="lucide-paperclip" class="size-4 shrink-0 text-ink-gray-5" />
-        <span class="flex-1 text-p-sm text-ink-gray-6">Attachments</span>
+        <span class="flex-1 text-p-sm text-ink-gray-6">{{ __('Attachments') }}</span>
         <!-- A count that opens the tab that holds them, rather than a second
              uploader: there is one place files live. -->
         <Button
           variant="ghost"
           data-slot="attachments"
-          :label="files === null ? 'Files' : String(files)"
+          :label="files === null ? __('Files') : String(files)"
           @click="emit('files')"
         />
       </li>
 
       <li class="flex min-h-9 items-center gap-2">
         <Icon name="lucide-tag" class="size-4 shrink-0 text-ink-gray-5" />
-        <span class="flex-1 text-p-sm text-ink-gray-6">Tags</span>
+        <span class="flex-1 text-p-sm text-ink-gray-6">{{ __('Tags') }}</span>
         <TagControl
           :space-code="spaceCode"
           :screen="screen"
@@ -92,7 +92,7 @@
 
       <li class="flex min-h-9 items-center gap-2">
         <Icon name="lucide-share-2" class="size-4 shrink-0 text-ink-gray-5" />
-        <span class="flex-1 text-p-sm text-ink-gray-6">Shared with</span>
+        <span class="flex-1 text-p-sm text-ink-gray-6">{{ __('Shared with') }}</span>
         <ShareControl
           :space-code="spaceCode"
           :screen="screen"
@@ -146,8 +146,8 @@
         data-slot="rename"
         variant="ghost"
         icon="lucide-pencil"
-        label="Rename"
-        tooltip="Rename"
+        :label="__('Rename')"
+        :tooltip="__('Rename')"
         @click="open()"
       />
     </div>
@@ -161,24 +161,24 @@
       >{{ record.name }}</span>
     </div>
 
-    <Dialog v-model="renaming" title="Rename this record">
+    <Dialog v-model="renaming" :title="__('Rename this record')">
       <div class="flex flex-col gap-3">
         <FormControl
           v-model="wanted"
           type="text"
-          label="New id"
+          :label="__('New id')"
           :disabled="saving"
           @keydown.enter="commit"
         />
         <p class="text-p-xs text-ink-gray-5">
-          Everything that points at this record keeps working. The old id stops.
+          {{ __('Everything that points at this record keeps working. The old id stops.') }}
         </p>
         <ErrorMessage v-if="error" :message="error" />
       </div>
       <template #actions>
         <Button
           variant="solid"
-          label="Rename"
+          :label="__('Rename')"
           :loading="saving"
           :disabled="!wanted.trim() || wanted.trim() === record.name"
           @click="commit"
@@ -206,6 +206,7 @@ import ShareControl from '../fields/ShareControl.vue'
 import TagControl from '../fields/TagControl.vue'
 import { workspace } from '../../../lib/workspace'
 import { useSaving } from '@/composables/useSaving'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   record: { type: Object, required: true },
@@ -240,7 +241,7 @@ const history = computed(() => {
   // Last edited first. It is the one that changed since you last looked.
   if (record.modified && record.modified !== record.creation) {
     found.push({
-      label: 'Last edited by',
+      label: __('Last edited by'),
       who: record.modified_by,
       person: record._editor,
       when: when(record.modified),
@@ -249,7 +250,7 @@ const history = computed(() => {
   }
   if (record.owner) {
     found.push({
-      label: 'Created by',
+      label: __('Created by'),
       who: record.owner,
       person: record._owner,
       when: when(record.creation),

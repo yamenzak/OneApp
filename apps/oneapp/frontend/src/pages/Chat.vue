@@ -20,14 +20,14 @@
         v-if="session"
         variant="ghost"
         icon-left="lucide-trash-2"
-        label="Delete"
+        :label="__('Delete')"
         data-slot="chat-forget"
         @click="forget"
       />
       <Button
         variant="subtle"
         icon-left="lucide-plus"
-        label="New chat"
+        :label="__('New chat')"
         data-slot="chat-new"
         @click="fresh"
       />
@@ -49,6 +49,7 @@ import { Breadcrumbs, Button, PageHeader } from '@/ui'
 import ChatPanel from '../components/chat/ChatPanel.vue'
 import { assistant as state, loadAssistant } from '@/lib/shell/assistant'
 import { workspace } from '@/lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const route = useRoute()
 const router = useRouter()
@@ -69,7 +70,7 @@ const current = computed(() =>
 )
 
 const crumbs = computed(() => [
-  { label: 'Assistant', route: { name: 'Chat' } },
+  { label: __('Assistant'), route: { name: 'Chat' } },
   ...(current.value?.title
     ? [{ label: current.value.title, route: route.fullPath }]
     : []),

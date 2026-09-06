@@ -125,7 +125,7 @@
       -->
       <div
         v-if="images.length > 1"
-        class="absolute right-4 top-4 z-10 flex items-center gap-1.5 rounded-full bg-black/40 px-2 py-1.5 backdrop-blur-sm sm:right-6 sm:top-6"
+        class="absolute end-4 top-4 z-10 flex items-center gap-1.5 rounded-full bg-black/40 px-2 py-1.5 backdrop-blur-sm sm:end-6 sm:top-6"
       >
         <!--
           An eight-pixel dot. `Button` is a control with a height, a padding and
@@ -147,7 +147,7 @@
       </div>
 
       <!--
-        What hangs off this record, standing up the right-hand side.
+        What hangs off this record, standing up the end-hand side.
 
         One dark panel rather than a stack of floating rows: the scrim is
         weighted to the bottom, so the top of this column sits over an
@@ -208,7 +208,7 @@
               type="button"
               data-slot="showcase-child"
               :data-name="one.name"
-              class="flex items-center gap-3 rounded-4 p-2 text-left transition-colors hover:bg-white/15"
+              class="flex items-center gap-3 rounded-4 p-2 text-start transition-colors hover:bg-white/15"
               @click="emit('open', { screen: childScreen, name: one.name })"
             >
               <span

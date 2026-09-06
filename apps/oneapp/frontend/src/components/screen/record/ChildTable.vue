@@ -24,7 +24,7 @@
           theme="red"
           variant="subtle"
           icon-left="lucide-trash-2"
-          :label="`Remove ${chosen.length}`"
+          :label="__('Remove {0}', [chosen.length])"
           @click="removeChosen"
         />
         <!--
@@ -49,12 +49,12 @@
             variant="ghost"
             size="sm"
             data-slot="child-columns"
-            label="Settings for these rows"
-            tooltip="Settings for these rows"
+            :label="__('Settings for these rows')"
+            :tooltip="__('Settings for these rows')"
           />
         </Dropdown>
         <span class="text-p-xs tabular-nums text-ink-gray-5">
-          {{ rows.length }} {{ rows.length === 1 ? 'row' : 'rows' }}
+          {{ rows.length === 1 ? __('{0} row', [rows.length]) : __('{0} rows', [rows.length]) }}
         </span>
       </div>
     </div>
@@ -110,8 +110,8 @@
           <Button
             icon="lucide-maximize-2"
             variant="ghost"
-            label="Open this row"
-            tooltip="Open this row"
+            :label="__('Open this row')"
+            :tooltip="__('Open this row')"
             @click="open(index)"
           />
           <Button
@@ -119,8 +119,8 @@
             icon="lucide-trash-2"
             variant="ghost"
             theme="red"
-            label="Remove this row"
-            tooltip="Remove this row"
+            :label="__('Remove this row')"
+            :tooltip="__('Remove this row')"
             @click="remove(index)"
           />
         </div>
@@ -144,7 +144,7 @@
       </template>
     </RecordTable>
 
-    <p v-else class="text-p-sm text-ink-gray-5">Nothing here yet.</p>
+    <p v-else class="text-p-sm text-ink-gray-5">{{ __('Nothing here yet.') }}</p>
 
     <!--
       A page at a time, the way Frappe's own grid does it. Not about rendering
@@ -154,12 +154,12 @@
     <div v-if="rows.length > shown.length" class="flex items-center gap-2">
       <Button
         data-slot="child-more"
-        :label="`Show ${Math.min(PAGE, rows.length - shown.length)} more`"
+        :label="__('Show {0} more', [Math.min(PAGE, rows.length - shown.length)])"
         @click="showing += PAGE"
       />
       <Button
         variant="ghost"
-        :label="`Show all ${rows.length}`"
+        :label="__('Show all {0}', [rows.length])"
         @click="showing = rows.length"
       />
     </div>
@@ -168,7 +168,7 @@
       v-if="editable"
       class="self-start"
       icon-left="lucide-plus"
-      label="Add row"
+      :label="__('Add row')"
       @click="add"
     />
 
@@ -208,7 +208,7 @@
         />
       </div>
       <template #actions>
-        <Button variant="solid" label="Done" @click="expanded = false" />
+        <Button variant="solid" :label="__('Done')" @click="expanded = false" />
       </template>
     </Dialog>
   </div>
@@ -228,6 +228,7 @@ import ColumnPicker from '../views/ColumnPicker.vue'
 import { workspace } from '../../../lib/workspace'
 import { isNumericCell } from '@/lib/screen/fields'
 import { remember, remembered } from '@/lib/screen/childColumns'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /** The parent's docfield, whose `child` carries the child doctype's shape. */
@@ -318,7 +319,7 @@ const chosenColumns = computed(() =>
  */
 const tableMenu = computed(() => [
   {
-    label: 'Which columns…',
+    label: __('Which columns…'),
     icon: 'settings-2',
     onClick: () => { picking.value = true },
   },
@@ -326,14 +327,14 @@ const tableMenu = computed(() => [
   // nobody has changed is an offer to do nothing.
   ...(picked.value
     ? [{
-      label: 'Reset the columns',
+      label: __('Reset the columns'),
       icon: 'rotate-ccw',
       onClick: () => resetColumns(),
     }]
     : []),
   ...(editable.value && props.docname && !locked.value
     ? [{
-      label: 'Use a different sheet…',
+      label: __('Use a different sheet…'),
       icon: 'table-2',
       onClick: () => { repointing.value = true },
     }]

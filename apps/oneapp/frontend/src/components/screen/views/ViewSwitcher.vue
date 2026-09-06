@@ -15,7 +15,7 @@
     navigation tab: "Open" the screen and "Open" the view read identically to
     anything looking for one of them by name.
   -->
-  <div role="group" aria-label="Saved views" class="flex min-w-0 items-center">
+  <div role="group" :aria-label="__('Saved views')" class="flex min-w-0 items-center">
     <span class="mx-0.5 text-base text-ink-gray-4" aria-hidden="true">/</span>
     <Dropdown :options="options">
       <template #default="{ open }">
@@ -38,7 +38,7 @@
 
   <!-- Naming a view, whether new or a rename: one dialog, because they ask the
        same question. -->
-  <Dialog v-model="naming" :title="editing ? 'Rename this view' : 'Save as a new view'">
+  <Dialog v-model="naming" :title="editing ? __('Rename this view') : __('Save as a new view')">
     <form class="flex flex-col gap-4" @submit.prevent="confirmName">
       <!-- The icon against the name, which is the shape Frappe CRM uses: they
            are the two halves of what a view is called. A menu of five names is
@@ -49,8 +49,8 @@
           v-model="draftLabel"
           type="text"
           class="flex-1"
-          label="Name"
-          placeholder="Overdue and mine"
+          :label="__('Name')"
+          :placeholder="__('Overdue and mine')"
           autocomplete="off"
         />
       </div>
@@ -58,14 +58,14 @@
         v-if="canShare"
         v-model="draftShared"
         type="checkbox"
-        label="Everyone on this workspace can use it"
-        description="Otherwise it is yours alone. Sharing does not widen what the view can reach."
+        :label="__('Everyone on this workspace can use it')"
+        :description="__('Otherwise it is yours alone. Sharing does not widen what the view can reach.')"
       />
     </form>
     <template #actions>
       <Button
         variant="solid"
-        label="Save"
+        :label="__('Save')"
         :loading="busy"
         :disabled="!draftLabel.trim()"
         @click="confirmName"
@@ -78,6 +78,7 @@
 import { computed, ref } from 'vue'
 import { Button, Dialog, Dropdown, FormControl, Icon } from '@/ui'
 import IconPicker from '../fields/IconPicker.vue'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   // [{ name, label, icon, shared, mine, is_default, opens }]
@@ -142,7 +143,7 @@ const submenuFor = (view) => {
   const items = []
   if (view.name !== props.active) {
     items.push({
-      label: 'Open it', icon: 'lucide-corner-down-right',
+      label: __('Open it'), icon: 'lucide-corner-down-right',
       onClick: () => emit('open', view.name),
     })
   }
@@ -151,15 +152,15 @@ const submenuFor = (view) => {
   // be put into another without opening it first.
   if (props.dirty && mayWrite) {
     items.push({
-      label: 'Save the changes here', icon: 'lucide-bookmark',
+      label: __('Save the changes here'), icon: 'lucide-bookmark',
       onClick: () => emit('save-into', view.name),
     })
   }
   if (mayWrite) {
-    items.push({ label: 'Rename', icon: 'lucide-pencil', onClick: () => askName(view) })
+    items.push({ label: __('Rename'), icon: 'lucide-pencil', onClick: () => askName(view) })
     if (props.canShare) {
       items.push({
-        label: view.shared ? 'Make it mine alone' : 'Share with the workspace',
+        label: view.shared ? __('Make it mine alone') : __('Share with the workspace'),
         icon: view.shared ? 'lucide-lock' : 'lucide-users',
         onClick: () => emit('share', { layout: view.name, shared: !view.shared }),
       })
@@ -168,7 +169,7 @@ const submenuFor = (view) => {
     // be set, and only one actually opens the screen.
     if (!view.opens) {
       items.push({
-        label: 'Open this screen with it', icon: 'lucide-pin',
+        label: __('Open this screen with it'), icon: 'lucide-pin',
         onClick: () => emit('default', view.name),
       })
     }
@@ -177,13 +178,13 @@ const submenuFor = (view) => {
   // it, and deleting is what you want — and never instead of deleting.
   if (view.shared) {
     items.push({
-      label: 'Hide it from my menu', icon: 'lucide-eye-off',
+      label: __('Hide it from my menu'), icon: 'lucide-eye-off',
       onClick: () => emit('hide', view.name),
     })
   }
   if (mayWrite) {
     items.push({
-      label: 'Delete it', icon: 'lucide-trash-2', theme: 'red',
+      label: __('Delete it'), icon: 'lucide-trash-2', theme: 'red',
       onClick: () => emit('remove', view.name),
     })
   }
@@ -196,7 +197,7 @@ const options = computed(() => {
   const shared = props.layouts.filter((l) => l.shared)
 
   const entry = (view) => ({
-    label: view.label || 'Untitled view',
+    label: view.label || __('Untitled view'),
     selected: view.name === props.active,
     // The view's own icon where it has one; the pin where it does not and this
     // is the one the screen opens with.
@@ -217,17 +218,19 @@ const options = computed(() => {
       },
     ],
   })
-  if (mine.length) groups.push({ group: 'Mine', options: mine.map(entry) })
-  if (shared.length) groups.push({ group: 'Shared', options: shared.map(entry) })
+  if (mine.length) groups.push({ group: __('Mine'), options: mine.map(entry) })
+  if (shared.length) groups.push({ group: __('Shared'), options: shared.map(entry) })
 
   const actions = [
-    { label: 'Save as a new view', icon: 'lucide-plus', onClick: () => askName(null) },
+    { label: __('Save as a new view'), icon: 'lucide-plus', onClick: () => askName(null) },
   ]
   // All of them at once. A hidden view is not in this menu, so this menu is the
   // wrong place to pick one out of.
   if (props.hidden) {
     actions.push({
-      label: props.hidden === 1 ? 'Show the hidden view' : `Show ${props.hidden} hidden views`,
+      label: props.hidden === 1
+        ? __('Show the hidden view')
+        : __('Show {0} hidden views', [props.hidden]),
       icon: 'lucide-eye',
       onClick: () => emit('show'),
     })

@@ -7,7 +7,7 @@
   302 is a `<video>` that plays, so streaming needs nothing of ours.
 -->
 <template>
-  <Dialog v-model="open" :title="file?.file_name || 'File'" size="4xl">
+  <Dialog v-model="open" :title="file?.file_name || __('File')" size="4xl">
     <template #default>
       <div class="grid min-h-[24rem] place-items-center">
         <img
@@ -40,15 +40,15 @@
         <div v-else class="flex flex-col items-center gap-3 text-center">
           <Icon name="lucide-file-question" class="size-10 text-ink-gray-4" />
           <p class="text-p-sm text-ink-gray-6">
-            There is no preview for this kind of file.
+            {{ __('There is no preview for this kind of file.') }}
           </p>
         </div>
       </div>
     </template>
 
     <template #actions>
-      <Button icon-left="lucide-link" label="Share a link" @click="share" />
-      <Button icon-left="lucide-download" label="Download" @click="download" />
+      <Button icon-left="lucide-link" :label="__('Share a link')" @click="share" />
+      <Button icon-left="lucide-download" :label="__('Download')" @click="download" />
     </template>
   </Dialog>
 
@@ -60,6 +60,7 @@ import { computed, ref, watch } from 'vue'
 import { Button, Dialog, Icon } from '@/ui'
 import ShareLink from './ShareLink.vue'
 import { workspace } from '../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   file: { type: Object, default: null },

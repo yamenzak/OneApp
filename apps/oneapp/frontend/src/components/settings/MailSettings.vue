@@ -7,12 +7,12 @@
     against them. See `oneapp_core/email/addresses.py`.
   -->
   <SettingsHeader
-    title="Email"
-    description="The addresses this workspace sends from, and who may use each."
+    :title="__('Email')"
+    :description="__('The addresses this workspace sends from, and who may use each.')"
     :class="PANEL_HEADER"
   />
   <SettingsBody :class="PANEL_BODY">
-    <LoadingText v-if="loading" class="py-8" text="Loading" />
+    <LoadingText v-if="loading" class="py-8" :text="__('Loading')" />
 
     <div v-else class="flex flex-col gap-6 py-4">
       <!-- What leaves the site today. Shown first and without being asked for,
@@ -20,29 +20,29 @@
            this page exists to answer. -->
       <div class="flex flex-col gap-2 rounded-4 bg-surface-gray-1 p-3">
         <div class="flex items-center justify-between gap-3">
-          <span class="text-p-sm text-ink-gray-7">Notifications leave from</span>
+          <span class="text-p-sm text-ink-gray-7">{{ __('Notifications leave from') }}</span>
           <span class="text-p-sm font-medium text-ink-gray-8">
             {{ sendingFrom }}
           </span>
         </div>
         <div class="flex items-center justify-between gap-3">
-          <span class="text-p-xs text-ink-gray-5">Sent this hour</span>
+          <span class="text-p-xs text-ink-gray-5">{{ __('Sent this hour') }}</span>
           <span class="text-p-xs tabular-nums text-ink-gray-6">
-            {{ usage.sent_this_hour ?? 0 }} of {{ usage.hourly_limit ?? '—' }}
+            {{ __('{0} of {1}', [usage.sent_this_hour ?? 0, usage.hourly_limit ?? '—']) }}
             <span class="text-ink-gray-4">·</span>
-            {{ usage.sent_today ?? 0 }} of {{ usage.daily_limit ?? '—' }} today
+            {{ __('{0} of {1} today', [usage.sent_today ?? 0, usage.daily_limit ?? '—']) }}
           </span>
         </div>
         <p v-if="usage.suspended" class="text-p-xs text-ink-red-4">
-          This workspace is suspended and is not sending email.
+          {{ __('This workspace is suspended and is not sending email.') }}
         </p>
       </div>
 
       <EmptyState
         v-if="!addresses.length"
         icon="lucide-mail"
-        title="No addresses yet"
-        :description="`Add one on ${domain} and mail to it arrives here.`"
+        :title="__('No addresses yet')"
+        :description="__('Add one on {0} and mail to it arrives here.', [domain])"
       />
 
       <div v-else class="flex flex-col gap-2">
@@ -66,7 +66,7 @@
                        :label="KINDS[row.kind]?.label || row.kind" />
               </div>
               <span class="truncate text-p-xs text-ink-gray-5">
-                {{ row.granted_to.length ? row.granted_to.join(', ') : 'Nobody yet' }}
+                {{ row.granted_to.length ? row.granted_to.join(', ') : __('Nobody yet') }}
               </span>
             </div>
 
@@ -76,24 +76,24 @@
                 variant="ghost"
                 size="sm"
                 icon="lucide-send"
-                label="Send notifications from this"
-                tooltip="Send notifications from this"
+                :label="__('Send notifications from this')"
+                :tooltip="__('Send notifications from this')"
                 @click="setDefault(row)"
               />
               <Button
                 variant="ghost"
                 size="sm"
                 icon="lucide-users"
-                label="Who may use this"
-                tooltip="Who may use this"
+                :label="__('Who may use this')"
+                :tooltip="__('Who may use this')"
                 @click="opened = opened === row.name ? '' : row.name"
               />
               <Button
                 variant="ghost"
                 size="sm"
                 icon="lucide-trash-2"
-                label="Remove this address"
-                tooltip="Remove this address"
+                :label="__('Remove this address')"
+                :tooltip="__('Remove this address')"
                 @click="remove(row)"
               />
             </div>
@@ -105,16 +105,16 @@
           <FormControl
             v-if="canManage"
             type="textarea"
-            label="Signature"
+            :label="__('Signature')"
             :rows="3"
             :model-value="row.signature"
-            placeholder="Added to the bottom of mail sent from this address."
+            :placeholder="__('Added to the bottom of mail sent from this address.')"
             @change="saveSignature(row, $event.target.value)"
           />
 
           <div v-if="opened === row.name && canManage" class="flex flex-col gap-2">
             <span class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
-              Who may use this
+              {{ __('Who may use this') }}
             </span>
             <label
               v-for="person in members"
@@ -138,27 +138,25 @@
         DNS to publish — and no way to know sending was refused until it was.
       -->
       <section v-if="canManage" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
-        <h3 class="text-base-medium text-ink-gray-8">Your own domain</h3>
+        <h3 class="text-base-medium text-ink-gray-8">{{ __('Your own domain') }}</h3>
         <p class="text-p-sm text-ink-gray-5">
-          Send as <code>you@yourcompany.com</code> rather than on ours. Mail
-          <em>to</em> that domain still goes wherever its MX points — connect
-          those mailboxes under your own Mailbox tab to read them here.
+          {{ __('Send as you@yourcompany.com rather than on ours. Mail to that domain still goes wherever its MX points — connect those mailboxes under your own Mailbox tab to read them here.') }}
         </p>
 
         <div class="flex items-end gap-2">
           <FormControl
             v-model="checking"
             class="flex-1"
-            label="Domain"
-            placeholder="yourcompany.com"
+            :label="__('Domain')"
+            :placeholder="__('yourcompany.com')"
           />
-          <Button label="Check DNS" :loading="checkingNow" @click="checkDomain" />
+          <Button :label="__('Check DNS')" :loading="checkingNow" @click="checkDomain" />
         </div>
 
         <div v-if="dns.records" class="flex flex-col gap-2">
           <Badge
             :theme="dns.verified ? 'green' : 'amber'"
-            :label="dns.verified ? 'Verified' : 'Not verified yet'"
+            :label="dns.verified ? __('Verified') : __('Not verified yet')"
           />
           <div
             v-for="record in dns.records"
@@ -180,7 +178,7 @@
             v-if="!dns.verified"
             class="self-start"
             variant="solid"
-            label="I have published them"
+            :label="__('I have published them')"
             :loading="confirming"
             @click="confirmDomain"
           />
@@ -201,29 +199,27 @@
         what anybody means by a shared mailbox.
       -->
       <section v-if="canManage" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
-        <h3 class="text-base-medium text-ink-gray-8">A mailbox the team shares</h3>
+        <h3 class="text-base-medium text-ink-gray-8">{{ __('A mailbox the team shares') }}</h3>
         <p class="text-p-sm text-ink-gray-5">
-          Connect one the company already has, then grant it below like any
-          other address. Everyone who holds it reads the same inbox — and the
-          same sent mail.
+          {{ __('Connect one the company already has, then grant it below like any other address. Everyone who holds it reads the same inbox — and the same sent mail.') }}
         </p>
         <div class="flex flex-wrap items-end gap-2">
           <FormControl
             v-model="team.email_id"
             class="flex-1"
-            label="Mailbox address"
-            placeholder="sales@yourcompany.com"
+            :label="__('Mailbox address')"
+            :placeholder="__('sales@yourcompany.com')"
           />
           <FormControl
             v-model="team.password"
             class="flex-1"
             type="password"
-            label="Password"
-            description="An app password where the provider needs one."
+            :label="__('Password')"
+            :description="__('An app password where the provider needs one.')"
           />
           <Button
             variant="solid"
-            label="Connect"
+            :label="__('Connect')"
             data-slot="mail-connect-shared"
             :loading="connecting"
             @click="connectShared"
@@ -233,10 +229,9 @@
       </section>
 
       <section v-if="canManage" class="flex flex-col gap-3 border-t border-outline-gray-1 pt-5">
-        <h3 class="text-base-medium text-ink-gray-8">Outside mailboxes</h3>
+        <h3 class="text-base-medium text-ink-gray-8">{{ __('Outside mailboxes') }}</h3>
         <p class="text-p-sm text-ink-gray-5">
-          Whether members may connect a mailbox they already have, such as
-          Gmail or the company's own server.
+          {{ __("Whether members may connect a mailbox they already have, such as Gmail or the company's own server.") }}
         </p>
         <div class="flex flex-wrap items-center gap-1">
           <Button
@@ -252,26 +247,26 @@
         <FormControl
           v-if="policy.mode === 'domains'"
           :model-value="policy.domains.join(', ')"
-          label="Allowed domains"
-          placeholder="yourcompany.com, gmail.com"
-          description="Comma separated. A mailbox on anything else is refused."
+          :label="__('Allowed domains')"
+          :placeholder="__('yourcompany.com, gmail.com')"
+          :description="__('Comma separated. A mailbox on anything else is refused.')"
           @change="savePolicy('domains', $event.target.value)"
         />
       </section>
 
       <div v-if="canManage" class="flex flex-col gap-2 border-t border-outline-gray-1 pt-5">
         <span class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
-          Add an address
+          {{ __('Add an address') }}
         </span>
         <div class="flex items-end gap-2">
           <FormControl
             v-model="draft"
             class="flex-1"
-            label="Address"
-            :placeholder="`sales`"
-            :description="`Becomes ${prefix ? prefix + '.' : ''}name@${domain}`"
+            :label="__('Address')"
+            :placeholder="__('sales')"
+            :description="__('Becomes {0}', [`${prefix ? prefix + '.' : ''}name@${domain}`])"
           />
-          <Button variant="solid" label="Add" :loading="saving" @click="create" />
+          <Button variant="solid" :label="__('Add')" :loading="saving" @click="create" />
         </div>
         <ErrorMessage v-if="error" :message="error" />
       </div>
@@ -294,6 +289,7 @@ import {
 import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 /**
  * The five kinds an address can be, in the workspace's words.
@@ -303,18 +299,18 @@ import { workspace } from '../../lib/workspace'
  * label is a sentence somebody wrote and not a capitalised enum.
  */
 const KINDS = {
-  workspace: { label: 'Sends notifications', theme: 'green' },
-  shared: { label: 'Shared', theme: 'blue' },
-  person: { label: 'One person', theme: 'gray' },
-  domain: { label: 'Your domain', theme: 'amber' },
-  connected: { label: 'Connected mailbox', theme: 'gray' },
+  workspace: { label: __('Sends notifications'), theme: 'green' },
+  shared: { label: __('Shared'), theme: 'blue' },
+  person: { label: __('One person'), theme: 'gray' },
+  domain: { label: __('Your domain'), theme: 'amber' },
+  connected: { label: __('Connected mailbox'), theme: 'gray' },
 }
 
 /** Who may connect a mailbox of their own. See `addresses.connect_policy`. */
 const CONNECT_MODES = [
-  { value: 'any', label: 'Anybody' },
-  { value: 'domains', label: 'Only some domains' },
-  { value: 'none', label: 'Nobody' },
+  { value: 'any', label: __('Anybody') },
+  { value: 'domains', label: __('Only some domains') },
+  { value: 'none', label: __('Nobody') },
 ]
 
 const loading = ref(true)
@@ -351,7 +347,7 @@ const usage = ref({})
 const sendingFrom = computed(() => {
   const chosen = addresses.value.find((one) => one.default_outgoing)
   if (chosen) return chosen.email_id
-  return usage.value.sender || 'the platform address'
+  return usage.value.sender || __('the platform address')
 })
 
 async function connectShared() {
