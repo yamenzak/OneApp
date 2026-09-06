@@ -2,13 +2,11 @@
   Where the reader is, and the two things they can do about it from up here.
 
   The trail is Frappe CRM's, and its shape is the argument: a house for the
-  space, the screen, and then the thing you are actually looking at — which is
-  the view, or the record when one is open.
+  space, the screen, and then the thing you are looking at — the view, or the
+  record when one is open.
 
-  It is a component rather than a block in `ScreenHost` because it is the one
-  part of that page with no state of its own: everything here is read from the
-  screen or handed over by `useSavedViews`, and the only decision it makes is
-  which of the last two elements to draw.
+  A component rather than a block in `ScreenHost` because it is the one part of
+  that page with no state of its own.
 -->
 <template>
   <PageHeader>
@@ -17,9 +15,8 @@
         <template #prefix="{ item }">
           <!--
             The name is a span, not the icon's `aria-label`: frappe-ui's Icon
-            hard-codes `aria-hidden` after the attrs it forwards, which is the
-            right call — an icon is decoration — and it leaves a link whose
-            only content is one with no accessible name at all.
+            hard-codes `aria-hidden` after the attrs it forwards, which leaves a
+            link whose only content is one with no accessible name.
           -->
           <Tooltip v-if="item.home" :text="`${item.space} home`">
             <span class="flex items-center">
@@ -31,24 +28,19 @@
       </Breadcrumbs>
 
       <!--
-        A record is a record wherever it is shown: the same face, name and id
-        the list cell and the link picker draw, from the same component — with
-        the status beside the name, because "where does this stand" is the
-        second thing anybody asks about a record and the first thing they look
-        for.
+        A record is a record wherever it is shown: the same face, name and id the
+        list cell and the link picker draw, with the status beside the name.
 
         Its own element rather than a crumb, for the same reason the view
-        switcher is one: a crumb is a line of text, and this is a block two
-        lines tall.
+        switcher is one: a crumb is a line of text, and this is a block two lines
+        tall.
       -->
       <div v-if="recordCrumb" class="flex min-w-0 items-center">
         <span class="mx-0.5 text-base text-ink-gray-4" aria-hidden="true">/</span>
         <RecordChip :record="recordCrumb">
           <template #badge>
-            <!-- The colours and glyphs are the doctype's own Document States —
-                 the same ones the cell in the list reads — so a status is not
-                 one colour here and another there. The manifest says which
-                 field; it does not repeat the palette. -->
+            <!-- The colours and glyphs are the doctype's own Document States,
+                 so a status is not one colour here and another there. -->
             <StateBadge
               v-if="statusValue"
               data-slot="record-status"
@@ -56,9 +48,8 @@
               :states="spec?.states || []"
             />
             <!-- And where the framework stands on it, which is a different
-                 question from the doctype's own status field and used to be
-                 answered a screen-width away among the buttons. Absent unless
-                 the doctype is submittable or runs on a workflow. -->
+                 question from the doctype's own status field. Absent unless the
+                 doctype is submittable or runs on a workflow. -->
             <StateBadge
               v-if="docState"
               data-slot="doc-state"
@@ -69,8 +60,8 @@
         </RecordChip>
       </div>
 
-      <!-- The last crumb, when no record is open: which view of the screen
-           this is, and every other view of it. -->
+      <!-- The last crumb, when no record is open: which view of the screen this
+           is, and every other view of it. -->
       <ViewSwitcher
         v-if="spec?.doctype && !record"
         :layouts="spec.layouts || []"
@@ -94,24 +85,21 @@
 
     <!--
       In the default slot, not a `#right` one: PageHeader has exactly one slot
-      and lays it out as a `justify-between` row, so the trail goes left and
-      this goes right by being second. It spent this long in a slot that does
-      not exist, rendering nowhere — `test_no_unknown_slots` now catches the
-      shape that hid it.
+      and lays it out as a `justify-between` row. It spent this long in a slot
+      that does not exist, rendering nowhere — `test_no_unknown_slots` now
+      catches the shape that hid it.
     -->
     <div class="flex shrink-0 items-center gap-2">
       <!--
-        Where an open record's own controls land when it is a page — see
-        `merged` in `RecordView`. Empty the rest of the time, and an empty flex
-        child costs nothing; rendered unconditionally so the teleport always has
+        Where an open record's own controls land when it is a page — see `merged`
+        in `RecordView`. Rendered unconditionally so the teleport always has
         somewhere to go rather than racing the condition that creates it.
       -->
       <div :id="MERGE_TARGET" class="flex shrink-0 items-center gap-2" />
 
       <!--
-        New stands down while a record fills the page. The list it would add a
-        row to is not on screen, so the button is offering to make a second
-        thing in a place that is showing exactly one.
+        New stands down while a record fills the page: the list it would add a
+        row to is not on screen.
       -->
       <Button
         v-if="spec?.can_create && !page"
@@ -149,9 +137,7 @@ defineProps({
   dirty: { type: Boolean, default: false },
   saving: { type: Boolean, default: false },
   // Everything `useSavedViews` returns. One prop rather than nine re-emitted
-  // events: the switcher's menu *is* that composable, and a header that
-  // forwards each of its verbs one at a time is thirty lines of plumbing that
-  // says nothing.
+  // events: the switcher's menu *is* that composable.
   views: { type: Object, required: true },
 })
 

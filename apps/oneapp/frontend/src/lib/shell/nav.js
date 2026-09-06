@@ -12,13 +12,12 @@ import { VIEW_TYPES, viewTypesOf } from '@/lib/screen/viewTypes'
  * Every destination, declared once.
  *
  * The sidebar and the phone's bottom bar are two renderings of one list, not
- * two lists. Declared separately they drift — which is how the control plane
- * ended up calling the same page "Readiness" in one and "Setup" in the other.
+ * two lists — declared separately they drift, which is how one page came to be
+ * called "Readiness" in the rail and "Setup" in the bar.
  *
- * Inside a space the list is the space's own manifest, so a new space brings
- * its navigation with it rather than needing an edit here. A space can declare
- * more screens than a bottom bar has room for: the first four reach the bar and
- * the rest land in the More sheet, so nothing is silently unreachable.
+ * Inside a space the list is the space's own manifest. A space can declare more
+ * screens than a bottom bar has room for: the first four reach the bar and the
+ * rest land in the More sheet.
  */
 export function useNav() {
   const route = useRoute()
@@ -38,16 +37,15 @@ export function useNav() {
     query: {
       screen: screen.screen,
       // Only when it is not the screen's own first type: a query parameter
-      // that repeats the default is noise in every link and every bookmark.
+      // that repeats the default is noise in every link.
       ...(viewType && viewType !== viewTypesOf(screen)[0] ? { type: viewType } : {}),
       ...(layout ? { layout } : {}),
     },
   })
 
   // The space's named layouts, keyed by screen. Fetched once when a space is
-  // opened rather than per screen: the sidebar lists what every screen can be
-  // looked at as, and a request per item to draw a menu is a menu that
-  // arrives in pieces.
+  // opened rather than per screen: a request per item to draw a menu is a menu
+  // that arrives in pieces.
   const layouts = ref({})
   watch(
     () => activeSpace.value?.space_code,
@@ -77,12 +75,9 @@ export function useNav() {
       label: screen.label,
       icon: spaceIcon(screen.icon),
       to: screenRoute(space, screen),
-      // What the sidebar offers when this screen is expanded: the ways it can
-      // be drawn, then the layouts somebody named. Two groups rather than one
-      // list, because they answer different questions — "as a board or a
-      // list" and "which slice of it" — and a menu that mixes them reads as
-      // one set of alternatives when picking a layout leaves the view type
-      // where it was.
+      // The ways this screen can be drawn, then the layouts somebody named.
+      // Two groups rather than one list, because they answer different
+      // questions — "as a board or a list" and "which slice of it".
       viewTypes: viewTypesOf(screen).map((type) => ({
         key: type,
         label: VIEW_TYPES[type].label,
@@ -92,8 +87,7 @@ export function useNav() {
       layouts: (layouts.value[screen.screen] || []).map((layout) => ({
         key: layout.name,
         label: layout.label,
-        // The view's own icon where somebody gave it one. Otherwise who it is
-        // for, which is the next most useful thing a row can say.
+        // The view's own icon where somebody gave it one, else who it is for.
         icon: layout.icon || (layout.shared ? 'lucide-users' : 'lucide-bookmark'),
         to: screenRoute(space, screen, layout.view_type, layout.name),
       })),
@@ -103,10 +97,10 @@ export function useNav() {
   const activeType = computed(() => route.query.type || '')
   const activeLayout = computed(() => route.query.layout || '')
 
-  // A space opened without a screen in the URL renders its first one — that is
-  // what the server resolves to — so the sidebar has to mark the same item.
-  // Reading `route.query.screen` alone left the whole list unmarked on the one
-  // route people arrive at from the launcher.
+  // A space opened without a screen in the URL renders its first one, so the
+  // sidebar has to mark the same item. Reading `route.query.screen` alone left
+  // the whole list unmarked on the one route people arrive at from the
+  // launcher.
   const activeScreen = computed(
     () => route.query.screen || items.value[0]?.to.query?.screen || '',
   )
@@ -119,8 +113,7 @@ export function useNav() {
         active: route.name === item.to.name && (!item.to.query?.screen || here),
         viewTypes: (item.viewTypes || []).map((type) => ({
           ...type,
-          // A layout is open, so no view type is what you are looking at —
-          // marking one active would claim the list is unfiltered.
+          // A layout is open, so no view type is what you are looking at.
           active:
             here &&
             !activeLayout.value &&
@@ -134,29 +127,21 @@ export function useNav() {
     }),
   )
 
-  /**
-   * The destinations that are not inside a space, declared once.
-   *
-   * Mail and Files are peers: the addresses somebody holds do not change when
-   * they switch space, and neither does the workspace's file table. So they
-   * live in the rail's footer beside the notification bell rather than in any
-   * space's navigation — and, because a phone draws no rail at all, they need
-   * a row in the More sheet too.
-   *
-   * Here rather than in App.vue for the reason this module exists: two
-   * renderings of one list, not two lists. Declared in the shell, the rail had
-   * Mail and the sheet did not, and on a phone the only way to it was typing
-   * the URL.
-   */
+/**
+ * The destinations that are not inside a space, declared once.
+ *
+ * Mail and Files are peers: the addresses somebody holds do not change when
+ * they switch space, and neither does the workspace's file table. Here rather
+ * than in App.vue for the reason this module exists — declared in the shell,
+ * the rail had Mail and the More sheet did not.
+ */
   const surfaces = computed(() => [
     { key: 'files', label: 'Files', icon: 'lucide-folder', to: { name: 'Drive' } },
-    // Always here, unlike Mail: everybody has days, and a diary with nothing
-    // in it is an empty week rather than a page nobody can use.
+    // Always here, unlike Mail: everybody has days.
     { key: 'calendar', label: 'Calendar', icon: 'lucide-calendar', to: { name: 'Calendar' } },
     // Absent for somebody who holds no address, which is most people until
-    // somebody sets one up. An icon that opens an empty page is worse than no
-    // icon. `count` is the badge in the rail and the number in the sheet's
-    // label — one figure, said twice, because a phone has only the second.
+    // somebody sets one up. `count` is the badge in the rail and the number in
+    // the sheet's label — one figure, said twice.
     ...(mail.held
       ? [
           {
@@ -177,20 +162,12 @@ export function useNav() {
  * Which screen in a space shows a given doctype, if any.
  *
  * A Link field holds a doctype and an id, and that is not enough to open
- * anything: this product has no route for a doctype, only for a *screen*, and
- * one space may show Project on a screen the next space does not show at all.
- * So the answer is per space, and it comes out of the session's own manifest
- * rather than from a request — every screen a person may open is already in
- * hand before the first field renders.
+ * anything: this product has no route for a doctype, only for a *screen*. The
+ * answer is per space and comes out of the session's own manifest.
  *
  * Empty for a doctype no screen covers, which is the common case and not a
- * failure: a Link to Currency or UOM points at a master nobody browses, and the
- * honest answer is that there is nowhere to go.
- *
- * The first match wins where a space shows one doctype twice. That is a real
- * shape — a screen filtered to open invoices beside one showing all of them —
- * and the manifest's order is the space's own preference, which is a better
- * answer than refusing to choose.
+ * failure. The first match wins where a space shows one doctype twice — the
+ * manifest's order is the space's own preference.
  */
 export function screenFor(spaceCode, doctype) {
   if (!spaceCode || !doctype) return ''

@@ -1,22 +1,16 @@
 <template>
   <!--
     One list cell. How a field reads in a list is a different question from how
-    it is edited: a Check is a Switch in a form and a tick here, a Select is a
+    it is edited: a Check is a Switch in a form and a tick here, a Select a
     dropdown there and a coloured badge here.
-
-    The colour comes from the doctype's own `states` where it declares them, and
-    from Frappe's word lists otherwise — so a status is not one colour in
-    OneSpace and another in the desk.
   -->
   <!--
-    A badge carries a colour and a glyph, both from the same place: the
-    doctype's own `states` where it declares them, Frappe's word lists
-    otherwise. So a status is not one colour in OneSpace and another in the
-    desk, and it is not iconless in one list and iconed in the next.
+    A badge carries a colour and a glyph, both from the doctype's own `states`
+    where it declares them and Frappe's word lists otherwise — so a status is
+    not one colour in OneSpace and another in the desk.
 
     `prefix` rather than the label, because the glyph is the value said again
-    rather than something extra to read — it should sit inside the badge, not
-    beside it.
+    rather than something extra to read.
   -->
   <StateBadge v-if="column.cell === 'badge' && value" :label="value" :states="states" />
 
@@ -45,9 +39,8 @@
 
   <!--
     A link is a record. The server resolves the ids on a page to their title and
-    image in one query per column, so a cell shows what a person recognises
-    rather than what the database stores — and falls back to the id when the
-    target is one they may not read, which is the truthful thing to show.
+    image in one query per column, and falls back to the id when the target is
+    one they may not read.
   -->
   <RecordPreview
     v-else-if="column.cell === 'link' && link && spaceCode"
@@ -58,8 +51,8 @@
     :target="target"
   />
 
-  <!-- Outside a screen — inside a preview card, say — there is nothing to
-       bound a second lookup by, so the chip is the whole of it. -->
+  <!-- Outside a screen — inside a preview card, say — there is nothing to bound
+       a second lookup by, so the chip is the whole of it. -->
   <RecordChip v-else-if="column.cell === 'link' && link" :record="link" compact />
 
   <span v-else-if="column.cell === 'link' && value" class="truncate text-p-sm text-ink-gray-8">
@@ -67,13 +60,11 @@
   </span>
 
   <!--
-    Tags. Badges rather than text, because a tag is a thing you scan a column
-    for rather than read — and grey, all of them, because a tag is the
-    workspace's own word and colouring it would be inventing a meaning the
-    person who typed it did not give it.
+    Tags. Badges rather than text, because a tag is scanned for rather than
+    read; grey, all of them, because colouring the workspace's own word would
+    invent a meaning nobody gave it.
 
-    The overflow is counted rather than wrapped: a row is one line high, and a
-    record with nine tags would otherwise push every other row's baseline down.
+    The overflow is counted rather than wrapped: a row is one line high.
   -->
   <div v-else-if="column.cell === 'tags'" class="flex min-w-0 items-center gap-1">
     <Badge
@@ -99,9 +90,8 @@
   </span>
 
   <!-- `dir="auto"`: a cell of Arabic reads right to left beside a cell of
-       English, which is what a column of bilingual correspondence is. Not on
-       the numeric cell above — a number laid out from its own first character
-       puts the currency symbol on the wrong side. -->
+       English. Not on the numeric cell above — a number laid out from its own
+       first character puts the currency symbol on the wrong side. -->
   <span
     v-else
     dir="auto"
@@ -129,8 +119,7 @@ const props = defineProps({
   links: { type: Object, default: () => ({}) },
   /**
    * The whole row. Read only by a Dynamic Link, whose target doctype lives in
-   * another of its fields — every other cell needs `value` and nothing else,
-   * which is why this is optional rather than the primary input.
+   * another of its fields — every other cell needs `value` and nothing else.
    */
   row: { type: Object, default: () => ({}) },
   /** What bounds a link's preview lookup. Absent inside a preview card. */
@@ -138,15 +127,14 @@ const props = defineProps({
   screen: { type: String, default: '' },
 })
 
-// The doctype's own emphasis. `bold` on a DocField is Frappe saying this is
-// the field somebody scans the column for, and it costs one class to honour.
+// The doctype's own emphasis. `bold` on a DocField is Frappe saying this is the
+// field somebody scans the column for.
 const emphasis = computed(() => (props.column.bold ? 'font-medium' : ''))
 
 const link = computed(() => props.links?.[props.column.fieldname] || null)
 
-// A Dynamic Link's target is on the row, not on the column — it is whatever
-// the field named by `depends_on_field` holds — so the cell has to read it out
-// of the record before anything downstream can look the value up.
+// A Dynamic Link's target is on the row, not on the column — whatever the field
+// named by `depends_on_field` holds.
 const target = computed(() => {
   const column = props.column
   if (column.fieldtype !== 'Dynamic Link' || !column.depends_on_field) return ''
@@ -154,14 +142,11 @@ const target = computed(() => {
 })
 
 // How this site renders a number when the field does not say. Read here rather
-// than inside the formatter, which stays a pure question about a number and a
-// docfield.
+// than inside the formatter, which stays a pure question.
 const formats = computed(() => session.data?.formats || {})
 
-// How many tags fit on one line of a list cell before the rest become a count.
-// Three is what a 200px column holds at the sizes this list uses; past that the
-// row either wraps — which pushes every other row's baseline down — or clips
-// mid-word, and a count is more honest than either.
+// How many tags fit on one line before the rest become a count. Three is what a
+// 200px column holds; past that the row wraps or clips mid-word.
 const TAGS_SHOWN = 3
 
 const tags = computed(() =>
@@ -174,8 +159,8 @@ const NUMERIC = ['number', 'currency', 'percent', 'duration']
 const numeric = computed(() => NUMERIC.includes(props.column.cell))
 
 // What the value says, from the one place that answers that — a gallery card
-// draws the same values as pills over a photograph and must not have a second
-// opinion about what a Duration looks like. See `lib/cells.js`.
+// draws the same values as pills and must not have a second opinion about what
+// a Duration looks like. See `lib/screen/cells.js`.
 const formatted = computed(() =>
   cellText(props.column, props.value, formats.value, link.value),
 )

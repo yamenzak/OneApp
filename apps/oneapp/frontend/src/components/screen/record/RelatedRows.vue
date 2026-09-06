@@ -2,17 +2,13 @@
   <!--
     Another screen's records, narrowed to the one being read.
 
-    A project's invoices are the invoices screen with `project = this one` —
-    not a second invoices list written for projects. So this asks `rows` for
-    that screen with that filter, and everything the invoices screen knows
-    about drawing an invoice comes with it: its columns, its widths, its title
-    field, its states, its links.
+    A project's invoices are the invoices screen with `project = this one`, so
+    everything that screen knows about drawing an invoice comes with it: its
+    columns, widths, title field, states and links.
 
     Which is the point of declaring a tab as a screen and a fieldname rather
-    than as a query. `rows` is where the space, the permissions and the filter
-    are checked, and it does not care that a hero asked it — a person who may
-    not see the invoices screen gets an empty tab here for the same reason
-    they get no invoices in the rail.
+    than as a query: `rows` is where the space, the permissions and the filter
+    are checked, and it does not care that a hero asked it.
   -->
   <div class="flex flex-col gap-3 pt-4">
     <div class="flex items-center gap-2">
@@ -21,10 +17,8 @@
         showing the first {{ rows.length }}
       </span>
       <!--
-        Frappe's "New linked document", where it belongs: on the tab that is
-        already about the link. The field this tab filtered on arrives filled
-        in, so making an invoice against a project is one button rather than a
-        trip to the invoices screen and a picker.
+        Frappe's "New linked document", on the tab that is already about the
+        link. The field this tab filtered on arrives filled in.
       -->
       <Button
         v-if="spec.can_create"
@@ -80,12 +74,8 @@
 
     <LoadingText v-else-if="loading" text="Loading" />
 
-    <!--
-      Nothing filed against it. Said in the words of the thing that is missing
-      rather than "No records": a person on a project's Invoices tab knows what
-      an invoice is, and "Nothing here yet" is a sentence that could be under
-      anything.
-    -->
+    <!-- Nothing filed against it, said in the words of the thing that is
+         missing rather than "No records". -->
     <p v-else class="py-6 text-center text-p-sm text-ink-gray-5">
       No {{ (label || 'records').toLowerCase() }} against this yet.
     </p>
@@ -109,12 +99,9 @@ const props = defineProps({
   /** The field on that screen pointing back at the record being read. */
   field: { type: String, required: true },
   /**
-   * What else has to be true, which for a Dynamic Link is the doctype.
-   *
-   * `about` on a Correspondence holds an id and `about_doctype` holds what kind
-   * of thing it is, and filtering on the id alone would put a licence's letters
-   * on a project that happens to share its name. Empty for a plain Link, which
-   * is most of them.
+   * What else has to be true, which for a Dynamic Link is the doctype: `about`
+   * holds an id and `about_doctype` what kind of thing it is, and filtering on
+   * the id alone would put a licence's letters on a project sharing its name.
    */
   where: { type: Array, default: () => [] },
   /** The record being read, by id. */
@@ -125,17 +112,15 @@ const props = defineProps({
 
 const emit = defineEmits(['open'])
 
-// A tab, not a list: past this many the answer is the screen itself, and a
-// project with four hundred invoices is not a page anybody scrolls.
+// A tab, not a list: past this many the answer is the screen itself.
 const PAGE = 50
 
-// The same threshold the list uses. It will not be reached at a page of fifty
-// — it is here so the two tables cannot disagree about the number.
+// The same threshold the list uses. It will not be reached at a page of fifty —
+// it is here so the two tables cannot disagree about the number.
 const VIRTUAL_FROM = 200
 
-// What a new one starts with: the link back, and for a Dynamic Link the
-// doctype beside it — without which the row would be about a name and nothing
-// else, and would not come back to this tab.
+// What a new one starts with: the link back, and for a Dynamic Link the doctype
+// beside it — without which the row would not come back to this tab.
 const preset = computed(() =>
   Object.fromEntries([
     [props.field, props.name],
@@ -165,13 +150,11 @@ const singular = (word) => {
 }
 
 /**
- * The columns the rows came back with, as tracks. Same model as the list, less
- * the one that is the question.
- *
- * Every row here has the same value in the field the tab filtered on — that is
- * what the tab *is* — so a Project column on a project's Invoices tab is the
- * project's own name written down six times. Kept only where it is the screen's
- * title field, because then dropping it leaves rows with no name.
+ * The columns the rows came back with, as tracks, less the one that is the
+ * question: every row here has the same value in the field the tab filtered on,
+ * so a Project column on a project's Invoices tab is one name written six
+ * times. Kept where it is the screen's title field, or the rows lose their
+ * name.
  */
 const visible = computed(() => {
   const titleField = spec.value?.title_field
@@ -197,9 +180,8 @@ const load = async () => {
   if (!props.name || !props.screen || !props.field) return
   loading.value = true
   try {
-    // Both at once. The spec answers what a row of this screen looks like —
-    // its title field, its states — and the rows answer which rows; neither
-    // waits on the other.
+    // Both at once: the spec answers what a row of this screen looks like and
+    // the rows answer which rows.
     const [found, page] = await Promise.all([
       workspace.screenSpec(props.spaceCode, props.screen),
       workspace.screenRows(
@@ -222,8 +204,7 @@ const load = async () => {
 }
 
 // Opened rather than only listed: somebody who just made an invoice against
-// this project means to be in it, and a tab that silently grew a row leaves
-// them hunting for the one they made.
+// this project means to be in it.
 const made = (name) => {
   load()
   if (name) emit('open', { screen: props.screen, name })

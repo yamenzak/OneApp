@@ -19,13 +19,9 @@ export const record = {
       { successMessage: 'Added' },
     ),
 
-  // Who a record is assigned to, and who it could be.
-  //
-  // Frappe's own model: `_assign` is a list of user ids on the document and a
-  // ToDo sits beside each one, so assigning is how a record reaches somebody's
-  // own list rather than only somebody's avatar. Both halves are the server's
-  // — this sends a set of people and reads back what the document ended up
-  // holding.
+  // Who a record is assigned to, and who it could be. Frappe's own model:
+  // `_assign` is a list of user ids on the document and a ToDo sits beside each
+  // one, so assigning is how a record reaches somebody's own list.
   assignees: (spaceCode, screen, query) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.assignees',
@@ -48,8 +44,7 @@ export const record = {
     ),
 
   // The numbers behind a screen's dashboard. Its own call rather than part of
-  // the spec: a spec is read on every navigation and this is one aggregate
-  // query per widget.
+  // the spec, which is read on every navigation.
 
   tags: (spaceCode, screen, name) =>
     callMethod(
@@ -65,8 +60,7 @@ export const record = {
       { silent: true, method: 'GET' },
     ),
 
-  // Silent: the badge appearing is the confirmation, and a toast for every
-  // tag is a toast for something nobody was unsure about.
+  // Silent: the badge appearing is the confirmation.
   setTag: (spaceCode, screen, name, tag, on) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.set_tag',
@@ -89,7 +83,7 @@ export const record = {
     ),
 
   // Not silent, either way. Handing somebody access to a record — or taking it
-  // back — is the kind of change you want told you happened.
+  // back — is a change you want told you happened.
   setShare: (spaceCode, screen, name, { user = null, everyone = 0, level = 'read' }) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.set_share',
@@ -105,7 +99,7 @@ export const record = {
     ),
 
   // Give a record a different id. Not silent: a rename is the one edit that
-  // changes what everything else points at, and it deserves saying so.
+  // changes what everything else points at.
   rename: (spaceCode, screen, name, newName) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.rename',
@@ -113,9 +107,8 @@ export const record = {
       { successMessage: 'Renamed' },
     ),
 
-  // Follow this record, or stop. Not silent: unlike a like, nothing on the
-  // screen changes to prove it worked — the whole result is a notification
-  // that has not happened yet — so the toast is the confirmation.
+  // Follow this record, or stop. Not silent: nothing on the screen changes to
+  // prove it worked, so the toast is the confirmation.
   toggleFollow: (spaceCode, screen, name) =>
     callMethod('oneapp.oneapp_core.spaceview.toggle_follow', {
       space_code: spaceCode,
@@ -123,12 +116,10 @@ export const record = {
       name,
     }),
 
-  // What is filed against a record. Frappe's own File rows, so a file uploaded
+  // What is filed against a record — Frappe's own File rows, so a file uploaded
   // through an Attach field and a file dropped on the record are one list.
-  // `fieldname` narrows the list to one Attachment Gallery's share of them,
-  // by the `link_filters` on that docfield. The filter is read off the field
-  // server-side rather than sent from here, so this only names which field is
-  // asking.
+  // `fieldname` narrows it by the `link_filters` on that docfield, which the
+  // server reads off the field rather than taking from here.
   attachments: (spaceCode, screen, name, fieldname) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.attachments',
@@ -144,10 +135,8 @@ export const record = {
     ),
 
   // A layout: the filters, the sort and the columns saved together under a
-  // name, the way Frappe's own List Filter doctype models it. `layout` updates
-  // one, `label` makes a new one, neither writes this person's unnamed default
-  // — the Save button on the toolbar.
-  //
+  // name, the way Frappe's own List Filter models it. `layout` updates one,
+  // `label` makes a new one, neither writes this person's unnamed default.
   // Narrows what the screen offers; never widens it, shared or not.
 
   submit: (spaceCode, screen, name) =>
@@ -180,12 +169,9 @@ export const record = {
 
   // --- the mail about a record --------------------------------------------
   //
-  // Correspondence is a `Communication` linked to the document, and the link is
-  // made by `oneapp_core/email/linking.py` — inherited down a thread, or found
-  // as an id this site issues written in the subject or body. What comes back
-  // is what *this reader* may already see, never everything linked: a link is
-  // not a grant, or filing a message against a project would publish it to
-  // everybody who can open the project.
+  // Correspondence is a `Communication` linked to the document by
+  // `oneapp_core/email/linking.py`. What comes back is what *this reader* may
+  // already see, never everything linked: a link is not a grant.
   recordMail: (spaceCode, screen, name) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.correspondence',
@@ -194,7 +180,7 @@ export const record = {
     ),
 
   // Sending from a record is the one path where the filing needs no working
-  // out at all — the person was looking at the record when they wrote it.
+  // out — the person was looking at the record when they wrote it.
   recordMailSend: (spaceCode, screen, name, values) =>
     callMethod(
       'oneapp.oneapp_core.spaceview.write',
@@ -220,9 +206,7 @@ export const record = {
 
   // --- print formats and letter heads -------------------------------------
   //
-  // What is drawn on the page, as against the paper it comes out on — the
-  // paper is a settings group and lives in `SettingsFields`. A drawn format is
-  // a Frappe beta Print Format: our builder writes `format_data` and Frappe's
-  // own generator renders it, so the same format prints identically wherever
-  // it is opened. See `oneapp_core/printing.py`.
+  // What is drawn on the page, as against the paper it comes out on. A drawn
+  // format is a Frappe beta Print Format: our builder writes `format_data` and
+  // Frappe's own generator renders it. See `oneapp_core/printing.py`.
 }

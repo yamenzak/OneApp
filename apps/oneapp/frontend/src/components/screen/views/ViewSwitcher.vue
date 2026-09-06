@@ -2,21 +2,18 @@
   <!--
     Which saved view this screen is showing, and everything you can do to it.
 
-    Frappe CRM puts this in the breadcrumb line rather than in a toolbar, and it
-    is the right place: the view you are in *is* where you are, so it belongs
-    with the rest of the trail rather than beside the filter controls. What sits
-    behind it is the framework's own model — a named layout that belongs to one
-    person or to the whole workspace — not CRM's parallel invention.
+    In the breadcrumb line rather than a toolbar, as Frappe CRM has it: the view
+    you are in *is* where you are. What sits behind it is the framework's own
+    model — a named layout belonging to one person or to the workspace.
 
     Vocabulary, because three words are close enough to swap by accident: a
-    **space** holds **screens**, a screen is looked at through a **view type**
-    (list, board, …), and a saved arrangement of one is a **view** — a `layout`
-    in the code, which is what Frappe's own framework calls it.
+    **space** holds **screens**, a screen is looked at through a **view type**,
+    and a saved arrangement of one is a **view** — a `layout` in the code.
   -->
   <!--
     A named region, because the word in this button is also the word on a
     navigation tab: "Open" the screen and "Open" the view read identically to
-    anything looking for one of them by name, a screen reader included.
+    anything looking for one of them by name.
   -->
   <div role="group" aria-label="Saved views" class="flex min-w-0 items-center">
     <span class="mx-0.5 text-base text-ink-gray-4" aria-hidden="true">/</span>
@@ -39,19 +36,13 @@
     </Dropdown>
   </div>
 
-  <!--
-    Naming a view, whether it is a new one or a rename. One dialog for both
-    because they ask the same question, and the only other thing worth asking
-    at the same time is who it is for.
-  -->
+  <!-- Naming a view, whether new or a rename: one dialog, because they ask the
+       same question. -->
   <Dialog v-model="naming" :title="editing ? 'Rename this view' : 'Save as a new view'">
     <form class="flex flex-col gap-4" @submit.prevent="confirmName">
-      <!--
-        The icon against the name, which is the shape Frappe CRM uses and the
-        right one: they are the two halves of what a view is called. A view is
-        worth an icon at all because a menu of five names is a list to read,
-        and a menu of five icons is a list to recognise.
-      -->
+      <!-- The icon against the name, which is the shape Frappe CRM uses: they
+           are the two halves of what a view is called. A menu of five names is
+           a list to read, and five icons a list to recognise. -->
       <div class="flex items-end gap-2">
         <IconPicker v-model="draftIcon" />
         <FormControl
@@ -92,19 +83,14 @@ const props = defineProps({
   // [{ name, label, icon, shared, mine, is_default, opens }]
   layouts: { type: Array, default: () => [] },
   active: { type: String, default: '' },
-  /**
-   * How the screen is being drawn — "List", "Board". That is what "no saved
-   * view" reads as, because the crumb before this one already says which
-   * screen it is and saying it twice is not a trail.
-   */
+  /** How the screen is being drawn — "List", "Board". That is what "no saved
+   *  view" reads as, because the crumb before this already says which screen. */
   viewLabel: { type: String, default: 'List' },
   canShare: { type: Boolean, default: false },
-  // Whether there is something on screen that no view is carrying yet. It
-  // decides whether a view offers to take it.
+  // Whether there is something on screen that no view is carrying yet.
   dirty: { type: Boolean, default: false },
-  // How many shared views this person has hidden. They are not in the list —
-  // that is what hiding them did — so the only way back is a count and an
-  // offer to undo all of it.
+  // How many shared views this person has hidden. They are not in the list, so
+  // the only way back is a count and an offer to undo all of it.
   hidden: { type: Number, default: 0 },
   busy: { type: Boolean, default: false },
 })
@@ -147,12 +133,9 @@ const confirmName = () => {
 }
 
 /**
- * What one view offers.
- *
- * A submenu rather than a row that only opens it, because this menu is now the
- * only place a view is managed — it used to be here for the one you were in
- * and nowhere at all for the rest, so renaming another view meant opening it
- * first. Opening is the submenu's first item and stays one gesture away.
+ * What one view offers. A submenu rather than a row that only opens it, because
+ * this menu is the only place a view is managed — renaming another view used to
+ * mean opening it first.
  */
 const submenuFor = (view) => {
   const mayWrite = writable(view)
@@ -163,10 +146,9 @@ const submenuFor = (view) => {
       onClick: () => emit('open', view.name),
     })
   }
-  // Overwriting a view with what is on screen, which is the other half of
-  // "save": one of these, or a new view. Offered per view rather than only for
-  // the one you are in, so a change made while looking at one view can be put
-  // into another without opening it first.
+  // Overwriting a view with what is on screen, the other half of "save".
+  // Offered per view rather than only for the one you are in, so a change can
+  // be put into another without opening it first.
   if (props.dirty && mayWrite) {
     items.push({
       label: 'Save the changes here', icon: 'lucide-bookmark',
@@ -183,7 +165,7 @@ const submenuFor = (view) => {
       })
     }
     // `opens`, not `is_default`: a personal default and a shared one can both
-    // be set, and only one of them actually opens the screen.
+    // be set, and only one actually opens the screen.
     if (!view.opens) {
       items.push({
         label: 'Open this screen with it', icon: 'lucide-pin',
@@ -191,9 +173,8 @@ const submenuFor = (view) => {
       })
     }
   }
-  // Hiding is for a view somebody else shared and you would rather not see.
-  // Never for your own — you made it, and deleting is what you want — and
-  // never instead of deleting, because a shared view is somebody else's too.
+  // Hiding is for a view somebody else shared. Never for your own — you made
+  // it, and deleting is what you want — and never instead of deleting.
   if (view.shared) {
     items.push({
       label: 'Hide it from my menu', icon: 'lucide-eye-off',
@@ -224,8 +205,7 @@ const options = computed(() => {
   })
 
   // The screen as its author wrote it is always reachable, and is what an empty
-  // selection means. Without it there is no way back from a saved view except
-  // deleting it. No submenu: there is nothing to manage about a screen.
+  // selection means. No submenu: there is nothing to manage about a screen.
   groups.push({
     group: 'Views',
     hideLabel: true,
@@ -243,8 +223,8 @@ const options = computed(() => {
   const actions = [
     { label: 'Save as a new view', icon: 'lucide-plus', onClick: () => askName(null) },
   ]
-  // All of them at once. A hidden view is not in this menu — that is what
-  // hiding it did — so this menu is the wrong place to pick one out of.
+  // All of them at once. A hidden view is not in this menu, so this menu is the
+  // wrong place to pick one out of.
   if (props.hidden) {
     actions.push({
       label: props.hidden === 1 ? 'Show the hidden view' : `Show ${props.hidden} hidden views`,

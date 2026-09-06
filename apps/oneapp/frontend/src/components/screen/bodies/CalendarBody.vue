@@ -2,16 +2,12 @@
   <!--
     The calendar: the same rows, on a grid of days.
 
-    A calendar is not a different list — same filters, same order, same screen
-    above it — but it is the one body that does not read a *page*. A month
-    drawn from whichever hundred rows sorted first is a month with holes in it,
-    and the holes move as you page. So the visible range is the request: the
-    calendar says which days it is showing and the shell fetches those.
+    The one body that does not read a *page*. A month drawn from whichever
+    hundred rows sorted first is a month with holes in it, and the holes move as
+    you page — so the visible range is the request.
 
-    The grid itself is frappe-ui's, from `frappe-ui/experimental` — month, week
-    and day, with the event spans and the popover already in it. The part that
-    is ours is the mapping: which field is the start, which is the end, and
-    what a row is called.
+    The grid is frappe-ui's, from `frappe-ui/experimental`. Ours is the mapping:
+    which field is the start, which is the end, and what a row is called.
   -->
   <div class="min-h-0 flex-1 overflow-auto p-3" data-slot="calendar">
     <EmptyState
@@ -43,9 +39,8 @@ const props = defineProps({
   rows: { type: Array, default: () => [] },
   /**
    * Which fields the dates are, as the last page came back for them. The shell
-   * owns this for the same reason it owns the board's column field: it owns
-   * the request, and a calendar drawn from the spec while rows arrive for
-   * another pair is a month of nothing.
+   * owns this because it owns the request: a calendar drawn from the spec while
+   * rows arrive for another pair is a month of nothing.
    */
   calendar: { type: Object, default: () => ({}) },
 })
@@ -53,14 +48,10 @@ const props = defineProps({
 const emit = defineEmits(['open', 'range'])
 
 /**
- * Read-only, deliberately.
- *
- * The grid can drag, resize and create, and every one of those writes a field
- * on a record — which is a thing this screen already does properly, through
- * the record dialog, with the doctype's own rules and permissions in front of
- * it. Turning it on here would be a second way to write that has none of them.
- * Clicking an event opens the record instead; the second half of this is a
- * separate piece of work with `@change` behind it, the way the board's drag is.
+ * Read-only, deliberately. The grid can drag, resize and create, and every one
+ * of those writes a field — which this screen already does properly, through
+ * the record dialog with the doctype's rules in front of it. Clicking an event
+ * opens the record instead.
  */
 const CONFIG = { isEditMode: false, defaultMode: 'Month' }
 
@@ -70,11 +61,10 @@ const repeatField = computed(() => props.calendar?.repeat_field || '')
 const untilField = computed(() => props.calendar?.until_field || '')
 
 /**
- * The days on screen, as the grid last reported them.
- *
- * The shell fetches by this range and so does the repeating: an occurrence
- * only exists for as long as the month showing it does, which is what makes a
- * rule a *drawing* rather than four hundred rows nobody can delete.
+ * The days on screen, as the grid last reported them. The shell fetches by this
+ * range and so does the repeating: an occurrence exists only for as long as the
+ * month showing it does, which is what makes a rule a *drawing* rather than
+ * four hundred rows nobody can delete.
  */
 const shown = ref({})
 
@@ -85,11 +75,9 @@ const titleOf = (row) => {
 }
 
 /**
- * A day, and a time where there is one.
- *
- * Frappe writes a Date as `YYYY-MM-DD` and a Datetime as `YYYY-MM-DD HH:mm:ss`,
- * so the split is the space — no parsing, no timezone, no date library. A value
- * with no time is a whole day, which is what the fieldtype already said.
+ * A day, and a time where there is one. Frappe writes a Date as `YYYY-MM-DD`
+ * and a Datetime as `YYYY-MM-DD HH:mm:ss`, so the split is the space — no
+ * parsing, no timezone, no date library.
  */
 const split = (value) => {
   const said = String(value || '').trim()
@@ -125,8 +113,8 @@ const events = computed(() => {
     // running to whenever the next one happens to be.
     const covers = daysBetween(from.date, to?.date || from.date)
 
-    // Every day this record falls on. One, unless the screen names a rule
-    // field and the record carries a value in it — see `lib/recurrence.js`.
+    // Every day this record falls on. One, unless the screen names a rule field
+    // and the record carries a value — see `lib/screen/recurrence.js`.
     const on = repeatField.value
       ? occurrencesOf(
           from.date,
@@ -139,8 +127,8 @@ const events = computed(() => {
     for (const day of on) {
       found.push({
         // The record's id for the first, and the day appended after that: the
-        // grid keys events by id, and four Tuesdays sharing one would draw
-        // one Tuesday. `open` reads the record's half back.
+        // grid keys events by id, and four Tuesdays sharing one would draw one
+        // Tuesday.
         id: day === from.date ? row.name : `${row.name}@${day}`,
         title: titleOf(row),
         fromDate: day,
@@ -156,19 +144,15 @@ const events = computed(() => {
 
 const open = (event) => {
   // An occurrence opens the record it is an occurrence of. There is only one
-  // record: a rule is a drawing, and the Tuesday you clicked is a day rather
-  // than a document.
+  // record: a rule is a drawing.
   const id = String(event?.id || '').split('@')[0]
   const row = props.rows.find((one) => one.name === id)
   if (row) emit('open', row)
 }
 
 /**
- * The days now on screen.
- *
- * `rangeChange` fires on mount as well as on every move, which is what makes
- * this the only fetch the calendar needs: the shell has no opinion about which
- * month you are in until the grid says.
+ * The days now on screen. `rangeChange` fires on mount as well as on every
+ * move, which is what makes this the only fetch the calendar needs.
  */
 const moved = ({ startDate, endDate }) => {
   if (!startDate || !endDate) return
