@@ -24,14 +24,14 @@ def _cases() -> set:
 	body = DEV_SH.split("case ", 1)[-1]
 	return {
 		one
-		for line in re.findall(r"^  ([a-z|]+)\)$", body, re.M)
+		for line in re.findall(r"^  ([a-z0-9|]+)\)$", body, re.M)
 		for one in line.split("|")
 	}
 
 
 def _documented() -> set:
 	"""The ones its own header advertises."""
-	return set(re.findall(r"^#   scripts/dev\.sh ([a-z]+)", DEV_SH, re.M))
+	return set(re.findall(r"^#   scripts/dev\.sh ([a-z0-9]+)", DEV_SH, re.M))
 
 
 def test_the_header_and_the_script_agree():
@@ -79,5 +79,5 @@ def test_the_docs_name_commands_that_exist():
 	"""Every `dev.sh <word>` written down anywhere is one the script answers to."""
 	cases = _cases()
 	for path in (ROOT / "docs/ONEADMIN.md", ROOT / "CLAUDE.md"):
-		for named in set(re.findall(r"dev\.sh ([a-z]+)", path.read_text())):
+		for named in set(re.findall(r"dev\.sh ([a-z0-9]+)", path.read_text())):
 			assert named in cases, f"{path.name} names `dev.sh {named}`, which does not exist"

@@ -16,6 +16,7 @@
 #   scripts/dev.sh shell     a Python REPL bound to the site
 #   scripts/dev.sh run FILE  execute a Python file against the site
 #   scripts/dev.sh seed      the dev fixture (--manifest for the fast half)
+#   scripts/dev.sh e2e       the browser specs this change can break ('all' for every one)
 #   scripts/dev.sh down      stop the web server
 #
 # There are two SPAs and therefore two sites. ONEAPP_SITE and ONEAPP_PORT pick
@@ -283,6 +284,36 @@ finally:
     frappe.db.commit()
     frappe.destroy()
 PYEOF
+    ;;
+
+  e2e)
+    # The browser suite, narrowed to what the change can actually break.
+    #
+    #   dev.sh e2e            against the working tree
+    #   dev.sh e2e HEAD~3     against a commit
+    #   dev.sh e2e all        the whole suite, half an hour, before a push
+    #
+    # `scripts/affected.py` decides, and it decides mechanically: shared files
+    # mean everything, a component means whatever imports it and the specs that
+    # name what those provide, and anything it cannot attribute means
+    # everything. So the narrow answer is always evidence and never a guess —
+    # which is the part picking specs by hand got wrong, twice, in one session.
+    cd "$(dirname "$0")/.."
+    if [ "${2:-}" = "all" ]; then
+      chosen="all"
+    else
+      chosen="$(python3 scripts/affected.py "${2:-}")"
+    fi
+
+    cd apps/oneapp/frontend
+    if [ "$chosen" = "all" ]; then
+      exec yarn e2e
+    elif [ -z "$chosen" ]; then
+      echo "Nothing a browser can see changed." >&2
+    else
+      # shellcheck disable=SC2086
+      exec npx playwright test $chosen
+    fi
     ;;
 
   seed)

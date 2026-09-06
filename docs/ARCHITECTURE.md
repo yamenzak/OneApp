@@ -174,11 +174,18 @@ three-thousand-line one.
 | `spa/` | The content: `spec` (routes, brand, pinned versions), `ui` (the barrel), `runtime`, `shell`, `screens`, `build`, `browser`, `fields`. |
 | `field_types.py`, `app_icons.py`, `ai_capabilities.py` | Data both generators read. |
 | `check_frontend.py`, `check_frappe_ui.py` | The CI side: a generated copy edited by hand, and a frappe-ui pin gone stale. |
+| `affected.py` | Which browser specs a change can break, so half an hour is not the price of one line. `dev.sh e2e` runs what it prints; `tests/test_affected.py` holds it to the one asymmetry it rests on — narrow on evidence, and answer `all` on silence. |
+| `check_settings.py` | Every declared settings type against the Frappe fieldtype it actually writes. Needs a bench. |
 
 ## Where a change goes
 
 * **A new setting a workspace owns** → `oneapp_core/workspace.py`, then the tab
-  in `components/settings/`.
+  in `oneapp_core/tabs.py`'s list and the panel in `components/settings/`. Three
+  files, and `tests/test_settings_tabs.py` holds them together: a tab with no
+  panel draws nothing, and an icon named only in Python draws nothing either.
+* **A new thing that is a person's own rather than the workspace's** →
+  `oneapp_core/me.py`, whose spec is the allowlist and whose every write names
+  `frappe.session.user`.
 * **A new thing a reader can do to a record** → a layer in `spaceview/`, then a
   call in `lib/workspace/record.js`.
 * **A new operator action** → a module in `api/admin/`, then `screens/ops/`.
