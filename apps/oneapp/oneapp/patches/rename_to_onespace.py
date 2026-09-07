@@ -14,7 +14,12 @@ RENAMES = (
 	("OneApp AI Feature Setting", "OneSpace AI Feature Setting"),
 )
 
-ROLES = (("OneApp Workspace Owner", "OneSpace Workspace Owner"),)
+# Roles are named by whoever declared the space, so there is no fixed list of
+# them — only a prefix. OneApp is the repository and is never product-facing,
+# and a role is: it is offered by name in the alerts form and read back in
+# every rule's sentence, so one left behind says the wrong word to a customer.
+OLD_PREFIX = "OneApp "
+NEW_PREFIX = "OneSpace "
 
 
 def execute():
@@ -22,8 +27,11 @@ def execute():
 		if frappe.db.exists("DocType", old) and not frappe.db.exists("DocType", new):
 			frappe.rename_doc("DocType", old, new, force=True)
 
-	for old, new in ROLES:
-		if frappe.db.exists("Role", old) and not frappe.db.exists("Role", new):
+	for old in frappe.get_all(
+		"Role", filters={"role_name": ("like", f"{OLD_PREFIX}%")}, pluck="name"
+	):
+		new = NEW_PREFIX + old[len(OLD_PREFIX):]
+		if not frappe.db.exists("Role", new):
 			frappe.rename_doc("Role", old, new, force=True)
 
 	# The screen slug moved out of a field called `view`, which is now `screen`.

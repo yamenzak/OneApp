@@ -102,6 +102,8 @@
           />
         </div>
       </article>
+
+      <ErrorMessage v-if="rowError" :message="rowError" />
     </div>
 </SettingsBody>
 
@@ -135,13 +137,26 @@
         </div>
 
         <!-- Optional, and three controls rather than a box: the rules people
-             write are "when the status is Overdue". -->
+             write are "when the status is Overdue".
+
+             Collapsed, this is the button and nothing else. The label used to
+             sit beside it with nothing under it, which read as a heading for
+             the row below — "Only when / Tell this role" is a sentence the
+             form does not mean. -->
         <div class="flex flex-col gap-2">
-          <div class="flex items-center justify-between">
+          <div v-if="!condition">
+            <Button
+              icon-left="lucide-plus"
+              variant="ghost"
+              :label="__('Only when a field says something')"
+              @click="toggleCondition"
+            />
+          </div>
+          <div v-else class="flex items-center justify-between">
             <p class="text-p-sm text-ink-gray-7">{{ __('Only when') }}</p>
             <Button
-              :label="condition ? __('Remove the test') : __('Add a test')"
               variant="ghost"
+              :label="__('Remove the test')"
               @click="toggleCondition"
             />
           </div>
@@ -220,6 +235,7 @@ import {
 import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
+import { errorText } from '@/lib/runtime/errors'
 import { __ } from '@/lib/runtime/translate'
 
 // The words a rule is written in. The server maps each onto Frappe's own
@@ -258,6 +274,9 @@ const error = ref('')
 const saving = ref(false)
 const saveError = ref('')
 const removing = ref('')
+// Kept apart from `error`, which renders *instead of* the list: a refused
+// pause or delete that blanked every rule would hide the row it was about.
+const rowError = ref('')
 const editing = ref(false)
 const condition = ref(false)
 
@@ -310,8 +329,12 @@ async function load() {
     rules.value = found?.rules || []
     doctypes.value = found?.doctypes || []
     roles.value = found?.roles || []
-  } catch (e) {
-    error.value = e.message || String(e)
+  } catch (raised) {
+    // `errorText` and not `e.message`: a `frappe.throw` travels in
+    // `_server_messages`, which `.message` does not read — so every sentence
+    // this module writes ("Say who the alert goes to.") arrived as
+    // `/api/method/…save_alert ValidationError`.
+    error.value = errorText(raised)
   } finally {
     loading.value = false
   }
@@ -351,23 +374,36 @@ async function save() {
     })
     editing.value = false
     await load()
-  } catch (e) {
-    saveError.value = e.message || String(e)
+  } catch (raised) {
+    saveError.value = errorText(raised)
   } finally {
     saving.value = false
   }
 }
 
+// The switch moves first because that is what makes it feel like a switch. So
+// it has to move back when the write is refused: a control left reading Off on
+// a rule that is still on is worse than a slow one.
 async function pause(rule, enabled) {
+  const was = rule.enabled
   rule.enabled = enabled
-  await workspace.setAlertEnabled(rule.name, enabled)
+  rowError.value = ''
+  try {
+    await workspace.setAlertEnabled(rule.name, enabled)
+  } catch (raised) {
+    rule.enabled = was
+    rowError.value = errorText(raised)
+  }
 }
 
 async function remove(rule) {
   removing.value = rule.name
+  rowError.value = ''
   try {
     await workspace.removeAlert(rule.name)
     rules.value = rules.value.filter((one) => one.name !== rule.name)
+  } catch (raised) {
+    rowError.value = errorText(raised)
   } finally {
     removing.value = ''
   }

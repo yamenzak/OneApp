@@ -229,9 +229,6 @@ msgstr "إضافة قسم"
 msgid "Add a tag"
 msgstr "إضافة وسم"
 
-msgid "Add a test"
-msgstr "إضافة اختبار"
-
 msgid "Add an address"
 msgstr "إضافة عنوان"
 
@@ -2505,6 +2502,9 @@ msgstr "نطاقات محددة فقط"
 
 msgid "Only when"
 msgstr "فقط عندما"
+
+msgid "Only when a field says something"
+msgstr "فقط عندما يقول حقل شيئا"
 
 msgid "Open as a page"
 msgstr "فتح كصفحة"

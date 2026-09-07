@@ -61,6 +61,8 @@ export function normalizeError(error) {
   if (typeof error === 'string') {
     return {
       title: __('Something went wrong'),
+      titled: false,
+      detailed: true,
       message: error,
       extra: [],
       indicator: 'red',
@@ -76,6 +78,14 @@ export function normalizeError(error) {
   const first = messages[0] || {}
   const fromServer = stripTags(first.message)
 
+  // Whether anybody actually wrote a title. `Request failed` and `Something
+  // went wrong` below are both inventions of this file, and a `frappe.throw`
+  // carries no title at all — which is the common case. Pairing its sentence
+  // with an invented heading gives "Something went wrong: Say who the alert
+  // goes to.", a first line that says less than the second and reads like two
+  // separate errors.
+  const titled = !!(first.title || error.title)
+
   // FrappeResponseError already carries the parsed fields.
   const title =
     first.title ||
@@ -83,14 +93,19 @@ export function normalizeError(error) {
     (error.name === 'FrappeResponseError' ? __('Request failed') : null) ||
     __('Something went wrong')
 
-  const message =
-    fromServer ||
-    stripTags(error.message) ||
-    lastTracebackLine(error.exception) ||
-    __('No further detail was returned.')
+  const detail =
+    fromServer || stripTags(error.message) || lastTracebackLine(error.exception)
+
+  const message = detail || __('No further detail was returned.')
 
   return {
     title: stripTags(title),
+    titled,
+    // Whether the message is something that was actually reported, rather than
+    // the standing-in sentence below it. Without this, dropping an invented
+    // title left "No further detail was returned." on its own — which is the
+    // most confidently useless sentence in the product.
+    detailed: !!detail,
     message,
     // Extra server messages beyond the first, shown as additional lines.
     extra: messages.slice(1).map((m) => stripTags(m.message)).filter(Boolean),
@@ -101,6 +116,9 @@ export function normalizeError(error) {
 }
 
 export function errorText(error) {
-  const { title, message } = normalizeError(error)
+  const { title, titled, detailed, message } = normalizeError(error)
+  // A title nobody wrote is not worth a line, so long as there is something
+  // real under it. The server's own sentence is then the whole message.
+  if (detailed && !titled) return message
   return message && message !== title ? `${title}: ${message}` : title
 }

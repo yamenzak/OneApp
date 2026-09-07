@@ -255,9 +255,6 @@ msgstr "Abschnitt hinzufügen"
 msgid "Add a tag"
 msgstr "Schlagwort hinzufügen"
 
-msgid "Add a test"
-msgstr "Test hinzufügen"
-
 msgid "Add an address"
 msgstr "Adresse hinzufügen"
 
@@ -2626,6 +2623,9 @@ msgstr "Nur bestimmte Domains"
 
 msgid "Only when"
 msgstr "Nur wenn"
+
+msgid "Only when a field says something"
+msgstr "Nur wenn ein Feld etwas sagt"
 
 msgid "Open as a page"
 msgstr "Als Seite öffnen"

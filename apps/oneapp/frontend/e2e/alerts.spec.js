@@ -62,7 +62,7 @@ test('a condition is three controls, never a box you can type code into', async 
 
   // Off until asked for: most rules have no condition at all.
   await expect(dialog.getByRole('combobox', { name: 'Test' })).toHaveCount(0)
-  await dialog.getByRole('button', { name: 'Add a test' }).click()
+  await dialog.getByRole('button', { name: 'Only when a field says something' }).click()
 
   // A field, an operator and a value — all three chosen, none of them typed as
   // an expression. Frappe evaluates `condition` as code, so a free text box

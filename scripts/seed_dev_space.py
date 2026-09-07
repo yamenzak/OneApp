@@ -37,7 +37,11 @@ ROLE = "OneSpace Mock"
 # still grants doctypes — a stale entitlement is a confusing thing to debug
 # around and a trivial thing to clear.
 RETIRED = ("zztasks",)
-RETIRED_ROLES = ("OneSpace Tasks",)
+# `OneApp Tasks` is the same fixture under its pre-rename name. The rename
+# patch turns it into `OneSpace Tasks` on a site that has yet to run it, and
+# will not run again here — so both names are swept, and a dev box stops
+# offering the repository's name as a role in the alerts form.
+RETIRED_ROLES = ("OneSpace Tasks", "OneApp Tasks")
 
 # The other person on this workspace. Only the browser pass needs one, and only
 # for the things that take two people: who else has a record open, and a save
@@ -724,6 +728,17 @@ def _seed_mail(user):
 	# fixture that remembers.
 	for name in frappe.get_all("Mail Rule", pluck="name"):
 		frappe.delete_doc("Mail Rule", name, force=True, ignore_permissions=True)
+
+	# And the alerts, for the same reason with a longer tail: `alerts.spec.js`
+	# writes one per run and the panel is the only place to delete one, so a
+	# dev site had thirty-nine of them — a settings tab that is a wall of
+	# `Tell me about this 1788760652558`, and thirty-nine rules the scheduler
+	# walks every day. Only ours: the mark is what keeps Frappe's own two error
+	# notifications out of this.
+	from oneapp.oneapp_core.alerts import OURS as ALERTS_ARE_OURS
+
+	for name in frappe.get_all("Notification", filters=ALERTS_ARE_OURS, pluck="name"):
+		frappe.delete_doc("Notification", name, force=True, ignore_permissions=True)
 	doc.db_set("enable_auto_reply", 0, update_modified=False)
 	doc.db_set("auto_reply_message", "", update_modified=False)
 	doc.db_set("custom_away_until", None, update_modified=False)

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 05:52+0000\n"
-"PO-Revision-Date: 2026-09-07 05:52+0000\n"
+"POT-Creation-Date: 2026-09-07 06:26+0000\n"
+"PO-Revision-Date: 2026-09-07 06:26+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -338,10 +338,6 @@ msgstr ""
 
 #: frontend/src/components/screen/fields/TagControl.vue:34
 msgid "Add a tag"
-msgstr ""
-
-#: frontend/src/components/settings/AlertSettings.vue:143
-msgid "Add a test"
 msgstr ""
 
 #: frontend/src/components/settings/MailSettings.vue:271
@@ -924,7 +920,7 @@ msgstr ""
 msgid "Books cleared"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:248
+#: frontend/src/components/settings/AlertSettings.vue:264
 msgid "Both"
 msgstr ""
 
@@ -979,7 +975,7 @@ msgstr ""
 msgid "By"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:246
+#: frontend/src/components/settings/AlertSettings.vue:262
 msgid "By email"
 msgstr ""
 
@@ -1515,7 +1511,7 @@ msgstr ""
 msgid "Counting"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:131
+#: frontend/src/components/settings/AlertSettings.vue:133
 msgid "Counting from"
 msgstr ""
 
@@ -1651,7 +1647,7 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:134
+#: frontend/src/components/settings/AlertSettings.vue:136
 msgid "Days"
 msgstr ""
 
@@ -1880,7 +1876,7 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:113
+#: frontend/src/components/settings/AlertSettings.vue:115
 msgid "Edit alert"
 msgstr ""
 
@@ -2164,7 +2160,7 @@ msgstr ""
 
 #. Label of the field (Select) field in DocType 'Mail Rule'
 #: frontend/src/components/screen/views/BulkEditDialog.vue:22
-#: frontend/src/components/settings/AlertSettings.vue:152
+#: frontend/src/components/settings/AlertSettings.vue:167
 #: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
 msgid "Field"
 msgstr ""
@@ -2736,7 +2732,7 @@ msgstr ""
 msgid "In dependency order — parties before the invoices that link to them. A link that points at a step not yet run is an issue on the row, not a silent blank."
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:247
+#: frontend/src/components/settings/AlertSettings.vue:263
 msgid "In the app"
 msgstr ""
 
@@ -2800,7 +2796,7 @@ msgid "Invoices"
 msgstr ""
 
 #. Option for the 'Operator' (Select) field in DocType 'Mail Rule'
-#: frontend/src/components/settings/AlertSettings.vue:123
+#: frontend/src/components/settings/AlertSettings.vue:125
 #: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
 msgid "Is"
 msgstr ""
@@ -2970,7 +2966,7 @@ msgstr ""
 msgid "Leave it empty for a moment rather than a span."
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:193
+#: frontend/src/components/settings/AlertSettings.vue:208
 msgid "Leave it empty to send the subject on its own."
 msgstr ""
 
@@ -3344,7 +3340,7 @@ msgid "Menu"
 msgstr ""
 
 #: frontend/src/components/mail/MailComposer.vue:54
-#: frontend/src/components/settings/AlertSettings.vue:192
+#: frontend/src/components/settings/AlertSettings.vue:207
 msgid "Message"
 msgstr ""
 
@@ -3583,7 +3579,7 @@ msgstr ""
 
 #: frontend/src/components/settings/AlertSettings.vue:25
 #: frontend/src/components/settings/AlertSettings.vue:52
-#: frontend/src/components/settings/AlertSettings.vue:113
+#: frontend/src/components/settings/AlertSettings.vue:115
 msgid "New alert"
 msgstr ""
 
@@ -3768,7 +3764,7 @@ msgstr ""
 msgid "No favourites"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:181
+#: frontend/src/components/settings/AlertSettings.vue:196
 msgid "No field"
 msgstr ""
 
@@ -3888,7 +3884,7 @@ msgstr ""
 msgid "Nobody"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:175
+#: frontend/src/components/settings/AlertSettings.vue:190
 msgid "Nobody by role"
 msgstr ""
 
@@ -4455,8 +4451,12 @@ msgstr ""
 msgid "Only some domains"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:141
+#: frontend/src/components/settings/AlertSettings.vue:156
 msgid "Only when"
+msgstr ""
+
+#: frontend/src/components/settings/AlertSettings.vue:151
+msgid "Only when a field says something"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Import Issue'
@@ -4546,7 +4546,7 @@ msgstr ""
 msgid "Or an emoji"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:180
+#: frontend/src/components/settings/AlertSettings.vue:195
 msgid "Or whoever is in"
 msgstr ""
 
@@ -5040,7 +5040,7 @@ msgstr ""
 msgid "Remove the picture"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:143
+#: frontend/src/components/settings/AlertSettings.vue:159
 msgid "Remove the test"
 msgstr ""
 
@@ -5328,7 +5328,7 @@ msgstr ""
 #: frontend/src/components/screen/record/RecordControls.vue:49
 #: frontend/src/components/screen/views/ViewSwitcher.vue:68
 #: frontend/src/components/settings/AiSettings.vue:102
-#: frontend/src/components/settings/AlertSettings.vue:200
+#: frontend/src/components/settings/AlertSettings.vue:215
 #: frontend/src/components/settings/ProfileSettings.vue:72
 #: frontend/src/components/settings/SettingsFields.vue:87
 #: frontend/src/components/settings/TemplateSettings.vue:149
@@ -5537,7 +5537,7 @@ msgstr ""
 msgid "Send invite"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:185
+#: frontend/src/components/settings/AlertSettings.vue:200
 msgid "Send it"
 msgstr ""
 
@@ -6093,7 +6093,7 @@ msgstr ""
 #. Label of the subject (Data) field in DocType 'Correspondence'
 #. Option for the 'Field' (Select) field in DocType 'Mail Rule'
 #: frontend/src/components/mail/MailComposer.vue:36
-#: frontend/src/components/settings/AlertSettings.vue:187
+#: frontend/src/components/settings/AlertSettings.vue:202
 #: frontend/src/components/settings/TemplateSettings.vue:108
 #: oneapp/oneapp_core/doctype/correspondence/correspondence.json
 #: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
@@ -6234,7 +6234,7 @@ msgstr ""
 msgid "Tell somebody when something happens to a record."
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:174
+#: frontend/src/components/settings/AlertSettings.vue:189
 msgid "Tell this role"
 msgstr ""
 
@@ -6271,7 +6271,7 @@ msgstr ""
 msgid "Tenants can be created without these, but nobody can pay you."
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:158
+#: frontend/src/components/settings/AlertSettings.vue:173
 msgid "Test"
 msgstr ""
 
@@ -7445,7 +7445,7 @@ msgid "Valid"
 msgstr ""
 
 #: frontend/src/components/screen/views/FilterRow.vue:177
-#: frontend/src/components/settings/AlertSettings.vue:165
+#: frontend/src/components/settings/AlertSettings.vue:180
 msgid "Value"
 msgstr ""
 
@@ -7704,15 +7704,15 @@ msgstr ""
 msgid "When the last warning went out. Kept so a daily job warns once and not every morning until somebody acts, which is how people learn to ignore it."
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:118
+#: frontend/src/components/settings/AlertSettings.vue:120
 msgid "When this record"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:301
+#: frontend/src/components/settings/AlertSettings.vue:320
 msgid "When {0} is {1} by {2} days, tell {3}"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:302
+#: frontend/src/components/settings/AlertSettings.vue:321
 msgid "When {0} is {1}, tell {2}"
 msgstr ""
 
@@ -8143,11 +8143,11 @@ msgstr ""
 msgid "available"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:231
+#: frontend/src/components/settings/AlertSettings.vue:247
 msgid "cancelled"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:229
+#: frontend/src/components/settings/AlertSettings.vue:245
 msgid "changed"
 msgstr ""
 
@@ -8155,7 +8155,7 @@ msgstr ""
 msgid "colleague@acme.test"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:232
+#: frontend/src/components/settings/AlertSettings.vue:248
 msgid "coming up"
 msgstr ""
 
@@ -8187,27 +8187,27 @@ msgstr ""
 msgid "iCloud needs an app-specific password."
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:237
+#: frontend/src/components/settings/AlertSettings.vue:253
 msgid "is"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:242
+#: frontend/src/components/settings/AlertSettings.vue:258
 msgid "is empty"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:241
+#: frontend/src/components/settings/AlertSettings.vue:257
 msgid "is filled in"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:238
+#: frontend/src/components/settings/AlertSettings.vue:254
 msgid "is not"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:239
+#: frontend/src/components/settings/AlertSettings.vue:255
 msgid "is over"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:240
+#: frontend/src/components/settings/AlertSettings.vue:256
 msgid "is under"
 msgstr ""
 
@@ -8216,7 +8216,7 @@ msgstr ""
 msgid "just now"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:228
+#: frontend/src/components/settings/AlertSettings.vue:244
 msgid "made"
 msgstr ""
 
@@ -8225,7 +8225,7 @@ msgstr ""
 msgid "missing"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:298
+#: frontend/src/components/settings/AlertSettings.vue:317
 msgid "nobody"
 msgstr ""
 
@@ -8245,7 +8245,7 @@ msgstr ""
 msgid "opened {0} times"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:233
+#: frontend/src/components/settings/AlertSettings.vue:249
 msgid "past due"
 msgstr ""
 
@@ -8282,7 +8282,7 @@ msgstr ""
 msgid "showing the first {0}"
 msgstr ""
 
-#: frontend/src/components/settings/AlertSettings.vue:230
+#: frontend/src/components/settings/AlertSettings.vue:246
 msgid "submitted"
 msgstr ""
 
