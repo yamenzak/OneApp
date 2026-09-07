@@ -14,6 +14,7 @@
   "is_active",
   "cb_app",
   "availability",
+  "on_by_default",
   "role_name",
   "sec_views",
   "screens",
@@ -71,7 +72,7 @@
   },
   {
    "default": "General",
-   "description": "General: every tenant. Restricted: only via Space Entitlement.",
+   "description": "Who may see it in the marketplace. General: anybody. Restricted: only a workspace an operator offered it to, or one that redeemed a code.",
    "fieldname": "availability",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -79,6 +80,13 @@
    "label": "Availability",
    "options": "General\nRestricted",
    "reqd": 1
+  },
+  {
+   "default": "1",
+   "description": "A new workspace gets this switched on. Uncheck for a space people should choose rather than be given.",
+   "fieldname": "on_by_default",
+   "fieldtype": "Check",
+   "label": "On By Default"
   },
   {
    "description": "Frappe Role gating this app's doctypes. Entitlement grants and revokes this role, so enforcement is native permissions rather than a bespoke hook.",

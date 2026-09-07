@@ -13,6 +13,7 @@ import frappe
 from frappe import _
 from frappe.utils import now_datetime
 
+from oneapp_control.entitlements import registry
 from oneapp_control.utils.slug import is_available
 
 CUSTOMER_ROLE = "OneSpace Customer"
@@ -125,6 +126,12 @@ def ensure_tenant(request, user: str):
 	).insert(ignore_permissions=True)
 
 	request.db_set("tenant", tenant.name)
+
+	# Before the site is built, so `create_site` installs the union of what
+	# these spaces need in one go — which is a great deal cheaper than an
+	# Install App job per app afterwards, and is why this is here rather than
+	# in `complete`.
+	registry.start_a_workspace_with(tenant.name)
 
 	if request.stripe_subscription_id:
 		from oneapp_control.billing.webhooks import ensure_subscription

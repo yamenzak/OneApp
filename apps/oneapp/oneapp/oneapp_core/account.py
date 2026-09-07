@@ -138,6 +138,21 @@ def enable_space(space: str) -> dict:
 
 
 @frappe.whitelist()
+def disable_space(space: str) -> dict:
+	"""Switch a space off. Its app and its records stay exactly where they are."""
+	answer = _ask("disable_space", space=space)
+
+	try:
+		from oneapp.oneapp_core import sync
+
+		sync.sync_from_control_plane()
+	except Exception:
+		frappe.log_error(title="Marketplace: could not pull after switching off")
+
+	return answer
+
+
+@frappe.whitelist()
 def redeem_claim_code(code: str) -> dict:
 	"""Put a private space on this workspace's shelf, with a code somebody was
 	given. It appears in the marketplace; turning it on is a separate press."""

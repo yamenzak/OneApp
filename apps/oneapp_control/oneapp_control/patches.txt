@@ -9,3 +9,4 @@ oneapp_control.patches.seed_lifecycle_windows
 oneapp_control.patches.seed_backup_terms
 oneapp_control.patches.record_existing_site_apps
 oneapp_control.patches.offer_existing_entitlements
+oneapp_control.patches.switch_on_what_everybody_had

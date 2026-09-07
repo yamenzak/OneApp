@@ -163,7 +163,18 @@ doctype(
         column("cb_app"),
         f("availability", "Select", options="General\nRestricted", default="General",
           reqd=1, in_list_view=1, in_standard_filter=1,
-          description="General: every tenant. Restricted: only via Space Entitlement."),
+          description="Who may see it in the marketplace. General: anybody. "
+                      "Restricted: only a workspace an operator offered it to, "
+                      "or one that redeemed a code."),
+        # Availability decides who may *see* it; this decides whether a new
+        # workspace starts with it on. The two were one thing until the
+        # marketplace existed, and conflating them meant every General space
+        # was in every launcher whether or not anybody wanted it — there was
+        # nothing for a customer to add, so the marketplace could only ever
+        # have been about private apps.
+        f("on_by_default", "Check", default="1",
+          description="A new workspace gets this switched on. Uncheck for a "
+                      "space people should choose rather than be given."),
         f("role_name", reqd=1,
           description="Frappe Role gating this app's doctypes. Entitlement grants "
                       "and revokes this role, so enforcement is native permissions "

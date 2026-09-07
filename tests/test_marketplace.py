@@ -124,9 +124,13 @@ def test_the_offered_list_is_the_same_column_list_as_the_manifest():
 	source = (CONTROL / "entitlements" / "registry.py").read_text()
 	body = source[source.index("def offered_spaces"):]
 	assert "SELECT {SPACE_COLUMNS}" in body
-	assert "e.offered = 1" in body and "e.enabled = 0" in body, (
+	assert "COALESCE(e.enabled, 0) = 0" in body, (
 		"a space they already have belongs in the manifest, not in the list of "
 		"things they could add"
+	)
+	assert "a.availability = 'General' OR COALESCE(e.offered, 0) = 1" in body, (
+		"'may I see this' is answered two ways: a General space by being "
+		"General, a Restricted one only where somebody wrote it down"
 	)
 
 
@@ -171,10 +175,37 @@ def test_a_queued_install_already_counts_as_installing():
 
 def test_enabling_is_refused_for_a_space_nobody_offered():
 	"""`grant` alone would let anybody who can guess a space code help
-	themselves to somebody else's bespoke solution."""
+	themselves to somebody else's bespoke solution.
+
+	Checked against the list the marketplace itself drew rather than against
+	an entitlement row: a General space usually has no row at all, and asking
+	about one would refuse every space a workspace is entitled to add."""
 	body = CUSTOMER[CUSTOMER.index("def enable_space"):]
-	assert '"offered": 1' in body[:body.index("registry.grant")]
-	assert "frappe.PermissionError" in body
+	head = body[:body.index("registry.grant")]
+	assert "registry.offered_spaces(tenant.name)" in head
+	assert "frappe.PermissionError" in head
+
+
+def test_switching_off_is_not_the_same_act_as_removing():
+	"""One keeps everything and is undone in a second; the other frees room by
+	dropping records. A single verb doing both is the verb somebody presses by
+	accident."""
+	body = CUSTOMER[CUSTOMER.index("def disable_space"):]
+	body = body[:body.index("frappe.db.commit")]
+	assert "registry.disable(" in body
+	assert "uninstall" not in body.lower()
+
+	registry_source = (CONTROL / "entitlements" / "registry.py").read_text()
+	at = registry_source.index("def disable(")
+	end = registry_source.find("\ndef ", at + 1)
+	disable = registry_source[at:end if end > 0 else len(registry_source)]
+	# Below its own docstring, which explains itself by naming the flag.
+	code = disable.split('"""')[2]
+	assert '"enabled", 0' in code
+	assert "offered" not in code, (
+		"a Restricted space they were given stays on their shelf, so switching "
+		"it off is not the same as being un-offered it"
+	)
 
 
 def test_the_relay_is_an_allow_list_and_now_names_both():

@@ -1529,6 +1529,9 @@ msgstr "داخل التطبيق"
 msgid "In this table"
 msgstr "في هذا الجدول"
 
+msgid "In your workspace"
+msgstr "في مساحة عملك"
+
 msgid "In {0}"
 msgstr "في {0}"
 
@@ -1565,6 +1568,13 @@ msgid ""
 msgstr ""
 "إنه ليس جزءاً من مساحة عملك، أو لم يمنحك أحد صلاحية الوصول إليه. يمكن "
 "للمسؤول تغيير ذلك."
+
+msgid ""
+"It leaves the rail and nobody can open it. Everything in it stays "
+"exactly as it is, and switching it back on brings it back unchanged."
+msgstr ""
+"تختفي من الشريط ولا يستطيع أحد فتحها. كل ما بداخلها يبقى كما هو تماماً، "
+"وإعادة تشغيلها تعيدها دون أي تغيير."
 
 msgid "It stops working after"
 msgstr "يتوقف عن العمل بعد"
@@ -3262,8 +3272,22 @@ msgstr ""
 msgid "Switch camera"
 msgstr "تبديل الكاميرا"
 
+msgid "Switch it off"
+msgstr "أوقفها"
+
+msgid "Switch off"
+msgstr "إيقاف"
+
+msgid "Switch off {0}?"
+msgstr "إيقاف {0}؟"
+
 msgid "Switch workspace"
 msgstr "تبديل مساحة العمل"
+
+msgid ""
+"Switching one off hides it and keeps everything in it. You can switch it "
+"back on here."
+msgstr "الإيقاف يخفيها ويبقي كل ما بداخلها. يمكنك إعادة تشغيلها من هنا."
 
 msgid "Synced from the plan. Zero means unconfigured, not zero allowed."
 msgstr "مُزامَن من الخطة. الصفر يعني غير مُهيأ، لا صفراً مسموحاً به."
@@ -5225,6 +5249,9 @@ msgstr "{0} على نطاق لم نتحقق منه بعد. انشر سجلات D
 
 msgid "{0} is part of your workspace but has no screens in it yet."
 msgstr "{0} جزء من مساحة عملك لكن ليس فيه شاشات بعد."
+
+msgid "{0} is switched off"
+msgstr "تم إيقاف {0}"
 
 msgid "{0} is taken."
 msgstr "{0} محجوز."

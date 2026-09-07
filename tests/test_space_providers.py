@@ -100,7 +100,11 @@ def test_one_field_list_serves_both_readers():
 	fields, or the console and a tenant would render different sidebars from
 	the same rows."""
 	source = REGISTRY.read_text()
-	assert source.count("fields=list(SPACE_FIELDS)") == 2
+	# Two readers, two shapes of query — a `get_all` where there is no tenant to
+	# join against, and SQL where there is — so what is asserted is that both
+	# name the one list rather than either transcribing it.
+	assert "fields=list(SPACE_FIELDS)" in source
+	assert source.count("SELECT {SPACE_COLUMNS}") >= 2
 
 
 def test_every_screen_field_is_sent():
@@ -127,6 +131,14 @@ def test_every_space_field_is_sent_or_deliberately_held_back():
 
 	# `screens`, `doctypes` and `roles` are all sent — through their own
 	# functions, because each is a list a site reads for a different job.
-	held_back = {"is_active", "availability", "screens", "doctypes", "roles"}
+	#
+	# `on_by_default` joins the first two for the same reason: it is read once,
+	# when a workspace is made, to decide which entitlements to write. By the
+	# time a site is being told anything the decision is a row, and sending the
+	# rule as well would invite a site to re-apply it.
+	held_back = {
+		"is_active", "availability", "on_by_default",
+		"screens", "doctypes", "roles",
+	}
 	missing = declared - sent - held_back
 	assert not missing, f"a Space carries {sorted(missing)} and no site is told"

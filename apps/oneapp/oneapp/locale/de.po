@@ -1611,6 +1611,9 @@ msgstr "In der App"
 msgid "In this table"
 msgstr "In dieser Tabelle"
 
+msgid "In your workspace"
+msgstr "In Ihrem Arbeitsbereich"
+
 msgid "In {0}"
 msgstr "In {0}"
 
@@ -1647,6 +1650,14 @@ msgid ""
 msgstr ""
 "Es gehört nicht zu Ihrem Arbeitsbereich, oder niemand hat Ihnen Zugriff "
 "darauf gegeben. Ein Administrator kann das ändern."
+
+msgid ""
+"It leaves the rail and nobody can open it. Everything in it stays "
+"exactly as it is, and switching it back on brings it back unchanged."
+msgstr ""
+"Er verschwindet aus der Leiste und niemand kann ihn öffnen. Alles darin "
+"bleibt genau so, wie es ist, und beim Wiedereinschalten kommt es "
+"unverändert zurück."
 
 msgid "It stops working after"
 msgstr "Funktioniert nicht mehr nach"
@@ -3392,8 +3403,24 @@ msgstr ""
 msgid "Switch camera"
 msgstr "Kamera wechseln"
 
+msgid "Switch it off"
+msgstr "Ausschalten"
+
+msgid "Switch off"
+msgstr "Ausschalten"
+
+msgid "Switch off {0}?"
+msgstr "{0} ausschalten?"
+
 msgid "Switch workspace"
 msgstr "Arbeitsbereich wechseln"
+
+msgid ""
+"Switching one off hides it and keeps everything in it. You can switch it "
+"back on here."
+msgstr ""
+"Ausschalten blendet ihn aus und behält alles darin. Sie können ihn hier "
+"wieder einschalten."
 
 msgid "Synced from the plan. Zero means unconfigured, not zero allowed."
 msgstr ""
@@ -5474,6 +5501,9 @@ msgstr ""
 
 msgid "{0} is part of your workspace but has no screens in it yet."
 msgstr "{0} gehört zu Ihrem Arbeitsbereich, hat aber noch keine Ansichten darin."
+
+msgid "{0} is switched off"
+msgstr "{0} ist ausgeschaltet"
 
 msgid "{0} is taken."
 msgstr "{0} ist bereits vergeben."

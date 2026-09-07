@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 19:16+0000\n"
-"PO-Revision-Date: 2026-09-07 19:16+0000\n"
+"POT-Creation-Date: 2026-09-07 19:37+0000\n"
+"PO-Revision-Date: 2026-09-07 19:37+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -876,7 +876,7 @@ msgstr ""
 msgid "Before restoring “{0}”"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:162
+#: frontend/src/pages/Marketplace.vue:223
 msgid "Being added"
 msgstr ""
 
@@ -1744,7 +1744,7 @@ msgstr ""
 msgid "Details"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:163
+#: frontend/src/pages/Marketplace.vue:224
 msgid "Did not finish"
 msgstr ""
 
@@ -2554,7 +2554,7 @@ msgstr ""
 msgid "HTML, rendered as a template with the document in scope."
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:109
+#: frontend/src/pages/Marketplace.vue:145
 msgid "Have a code?"
 msgstr ""
 
@@ -2781,6 +2781,10 @@ msgstr ""
 msgid "In this table"
 msgstr ""
 
+#: frontend/src/pages/Marketplace.vue:109
+msgid "In your workspace"
+msgstr ""
+
 #: frontend/src/components/drive/FolderPicker.vue:100
 #: frontend/src/components/mail/MailSidebar.vue:121
 msgid "In {0}"
@@ -2873,6 +2877,10 @@ msgstr ""
 
 #: frontend/src/pages/ScreenHost.vue:41
 msgid "It is not part of your workspace, or nobody has given you access to it. An admin can change that."
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:176
+msgid "It leaves the rail and nobody can open it. Everything in it stays exactly as it is, and switching it back on brings it back unchanged."
 msgstr ""
 
 #: frontend/src/components/drive/ShareLink.vue:29
@@ -3996,7 +4004,7 @@ msgstr ""
 msgid "Not about this record"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:164
+#: frontend/src/pages/Marketplace.vue:225
 msgid "Not available here"
 msgstr ""
 
@@ -5864,7 +5872,7 @@ msgstr ""
 msgid "Solid button"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:111
+#: frontend/src/pages/Marketplace.vue:147
 msgid "Some spaces are not listed. If you were given a code for one, it goes here and the space appears above."
 msgstr ""
 
@@ -6144,12 +6152,28 @@ msgstr ""
 msgid "Switch camera"
 msgstr ""
 
+#: frontend/src/pages/Marketplace.vue:182
+msgid "Switch it off"
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:125
+msgid "Switch off"
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:173
+msgid "Switch off {0}?"
+msgstr ""
+
 #: frontend/src/screens/account/WorkspaceBar.vue:27
 msgid "Switch workspace"
 msgstr ""
 
 #: frontend/src/screens/ops/TenantLifecycle.vue:222
 msgid "Switched off"
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:134
+msgid "Switching one off hides it and keeps everything in it. You can switch it back on here."
 msgstr ""
 
 #. Description of the 'Database Quota Bytes' (Float) field in DocType 'OneSpace
@@ -6319,7 +6343,7 @@ msgstr ""
 msgid "That attachment is not yours to send."
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:229
+#: frontend/src/pages/Marketplace.vue:312
 msgid "That code worked. The space is above."
 msgstr ""
 
@@ -7444,7 +7468,7 @@ msgstr ""
 msgid "Use as a template"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:122
+#: frontend/src/pages/Marketplace.vue:158
 msgid "Use it"
 msgstr ""
 
@@ -8126,7 +8150,7 @@ msgstr ""
 msgid "Your card is charged the difference for the rest of this billing period, and the new limits apply straight away."
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:118
+#: frontend/src/pages/Marketplace.vue:154
 msgid "Your code"
 msgstr ""
 
@@ -8574,7 +8598,7 @@ msgstr ""
 msgid "{0} is already running."
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:212
+#: frontend/src/pages/Marketplace.vue:273
 msgid "{0} is being added"
 msgstr ""
 
@@ -8582,7 +8606,7 @@ msgstr ""
 msgid "{0} is being set up"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:207
+#: frontend/src/pages/Marketplace.vue:268
 msgid "{0} is in your workspace"
 msgstr ""
 
@@ -8705,6 +8729,10 @@ msgstr ""
 
 #: frontend/src/pages/ScreenHost.vue:65
 msgid "{0} is part of your workspace but has no screens in it yet."
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:295
+msgid "{0} is switched off"
 msgstr ""
 
 #: oneapp/oneapp_core/email/addresses.py:435

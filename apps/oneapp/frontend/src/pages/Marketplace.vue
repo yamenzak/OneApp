@@ -93,11 +93,47 @@
     </div>
 
     <EmptyState
-      v-else
+      v-else-if="!loading"
       icon="lucide-store"
       :title="__('Nothing to add right now')"
       :description="__('Your workspace already has everything on offer to it. When something new is, it appears here.')"
     />
+
+    <!--
+      What they already have, listed where what they could have is listed.
+      Switching one off belongs beside switching one on: two addresses for the
+      same decision is how somebody ends up looking for the off switch in the
+      space they are trying to turn off.
+    -->
+    <section v-if="held.length && !unreachable" class="mt-8 flex flex-col gap-3">
+      <h2 class="text-base-medium text-ink-gray-8">{{ __('In your workspace') }}</h2>
+      <ul class="flex flex-col">
+        <li
+          v-for="space in held"
+          :key="space.code"
+          data-slot="held-space"
+          class="flex items-center gap-3 border-b border-outline-gray-1 py-2.5"
+        >
+          <Avatar :label="space.label" :image="space.logo" shape="square" size="lg" />
+          <span class="flex min-w-0 flex-1 flex-col">
+            <span class="truncate text-p-sm text-ink-gray-8">{{ space.label }}</span>
+            <span v-if="space.description" class="truncate text-p-xs text-ink-gray-5">
+              {{ space.description }}
+            </span>
+          </span>
+          <Button
+            :label="__('Switch off')"
+            :loading="removing === space.code"
+            :disabled="!!removing"
+            @click="askOff(space)"
+          />
+        </li>
+      </ul>
+      <!-- Said once under the list rather than on every row. -->
+      <p class="text-p-xs text-ink-gray-5">
+        {{ __('Switching one off hides it and keeps everything in it. You can switch it back on here.') }}
+      </p>
+    </section>
 
     <!--
       Below the cards rather than above them, because most visits are somebody
@@ -128,13 +164,34 @@
       <ErrorMessage v-if="codeError" :message="codeError" />
     </section>
   </div>
+
+  <!--
+    Asked rather than done, because the reader's next thought is "what happens
+    to the records" and a button that answers it after the fact answers it too
+    late.
+  -->
+  <Dialog v-model="confirming" :title="__('Switch off {0}?', [offering?.label || ''])">
+    <template #default>
+      <p class="text-p-base text-ink-gray-7">
+        {{ __('It leaves the rail and nobody can open it. Everything in it stays exactly as it is, and switching it back on brings it back unchanged.') }}
+      </p>
+    </template>
+    <template #actions>
+      <Button
+        variant="solid"
+        :label="__('Switch it off')"
+        :loading="!!removing"
+        @click="switchOff"
+      />
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  Alert, Avatar, Breadcrumbs, Button, ErrorMessage, FormControl,
+  Alert, Avatar, Breadcrumbs, Button, Dialog, ErrorMessage, FormControl,
   LoadingIndicator, PageHeader,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
@@ -154,8 +211,12 @@ const error = ref('')
 const code = ref('')
 const redeeming = ref(false)
 const codeError = ref('')
+const removing = ref('')
+const confirming = ref(false)
+const offering = ref(null)
 
 const spaces = computed(() => data.value?.spaces || [])
+const held = computed(() => data.value?.held || [])
 
 /** What a card that cannot be pressed says on its button. */
 const waiting = (space) => {
@@ -214,6 +275,28 @@ const add = async (space) => {
     error.value = errorText(e)
   } finally {
     adding.value = ''
+  }
+}
+
+const askOff = (space) => {
+  offering.value = space
+  confirming.value = true
+}
+
+const switchOff = async () => {
+  const space = offering.value
+  if (!space) return
+  removing.value = space.code
+  error.value = ''
+  try {
+    data.value = await workspace.disableSpace(space.code)
+    await session.resource.reload()
+    confirming.value = false
+    notifySuccess(__('{0} is switched off', [space.label]))
+  } catch (e) {
+    error.value = errorText(e)
+  } finally {
+    removing.value = ''
   }
 }
 

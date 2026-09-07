@@ -6,23 +6,35 @@ Two independent axes, deliberately:
 * **Entitlement** decides apps. That is what makes a single-tenant bespoke
   solution possible without inventing a plan for one customer.
 
-An app marked General is available to everyone. An app marked Restricted appears
-only where an explicit Space Entitlement exists. A Restricted app that nobody has
-been entitled to is simply invisible, not an error.
+**A workspace has exactly the spaces its entitlements enable.** One rule, and it
+is worth stating plainly because it used to be two: General spaces reached every
+launcher whether or not anybody wanted them, and only Restricted ones went
+through an entitlement at all. Which meant a customer had nothing to add and
+nothing to turn off, and a marketplace could only ever have been about private
+apps.
 
-An entitlement carries two independent flags, because a marketplace needs three
-states and not two:
+`availability` no longer decides what a workspace *has*. It decides who may
+**see** a space on offer:
+
+* **General** — anybody may see it in the marketplace and switch it on.
+* **Restricted** — only a workspace that was `offered` it, by an operator or by
+  redeeming a code. A Restricted space nobody was offered is invisible, not an
+  error: a marketplace that drew a locked card for every one of them would tell
+  every customer the name of every bespoke solution built for every other one.
+
+So an entitlement carries two independent flags:
 
 * `enabled` — they have it. It is in their launcher, and its app is on the site.
-* `offered` — they may *see* it. A Restricted space with this flag appears in
-  their marketplace as something they can turn on themselves; without it the
-  space does not exist as far as that workspace is concerned.
+* `offered` — they may see it. Only meaningful for a Restricted space; a General
+  one is visible to everybody by being General.
 
-Both off is a revoked row, kept for the history. Offered without enabled is the
-operator lever this document calls "expose it to that customer" — and it is the
-reason invisibility is the default: a marketplace that draws a locked card for
-every Restricted space tells every customer the name of every bespoke solution
-built for every other one.
+Both off is a revoked row, kept for the history.
+
+`OneSpace Space.on_by_default` is the third piece and belongs to *neither*
+axis: it decides what a **new** workspace starts switched on. A product nobody
+should have to go looking for is on by default; one people should choose is not.
+Existing workspaces were switched on by a patch, because a rule change must not
+take somebody's apps away.
 """
 
 import frappe
@@ -53,20 +65,19 @@ BASE_APPS = ("frappe", "oneapp")
 
 
 def spaces_for_tenant(tenant: str) -> list[dict]:
-	"""The manifest OneSpace renders: every space this workspace may open."""
-	general = frappe.get_all(
-		"OneSpace Space",
-		filters={"is_active": 1, "availability": "General"},
-		fields=list(SPACE_FIELDS),
-	)
+	"""The manifest OneSpace renders: every space this workspace has.
 
-	restricted = frappe.db.sql(
+	One query over enabled entitlements, whatever the space's availability.
+	This was two — every General space plus the entitled Restricted ones —
+	and the General half is what made the marketplace impossible: a space
+	everybody already had was a space with no button to press.
+	"""
+	spaces = frappe.db.sql(
 		f"""
 		SELECT {SPACE_COLUMNS}
 		FROM `tabOneSpace Space` a
 		INNER JOIN `tabSpace Entitlement` e ON e.app = a.name
 		WHERE a.is_active = 1
-		  AND a.availability = 'Restricted'
 		  AND e.tenant = %(tenant)s
 		  AND e.enabled = 1
 		""",
@@ -74,7 +85,6 @@ def spaces_for_tenant(tenant: str) -> list[dict]:
 		as_dict=True,
 	)
 
-	spaces = general + restricted
 	spaces.sort(key=lambda s: (s.get("sort_order") or 0, s.get("space_label") or ""))
 
 	# The screens each space puts in front of a customer — its navigation. Sent
@@ -484,27 +494,76 @@ def offer(tenant: str, space_code: str, note: str | None = None):
 
 
 def offered_spaces(tenant: str) -> list[dict]:
-	"""Restricted spaces this workspace may see but has not turned on.
+	"""Every space this workspace could switch on and has not.
 
-	What the marketplace lists beside the General ones. Enabled spaces are not
-	here — they are in `spaces_for_tenant`, which is where a space they already
-	have belongs.
+	Two halves, and they are two because "may I see this" is answered two
+	different ways: a General space is visible by being General, and a
+	Restricted one only where somebody wrote down that this workspace may see
+	it. `LEFT JOIN` rather than two queries, because the General half has to
+	ask about an entitlement that usually is not there.
+
+	Enabled spaces are not here — they are in `spaces_for_tenant`, which is
+	where a space they already have belongs.
 	"""
 	return frappe.db.sql(
 		f"""
 		SELECT {SPACE_COLUMNS}
 		FROM `tabOneSpace Space` a
-		INNER JOIN `tabSpace Entitlement` e ON e.app = a.name
+		LEFT JOIN `tabSpace Entitlement` e
+		       ON e.app = a.name AND e.tenant = %(tenant)s
 		WHERE a.is_active = 1
-		  AND a.availability = 'Restricted'
-		  AND e.tenant = %(tenant)s
-		  AND e.offered = 1
-		  AND e.enabled = 0
+		  AND COALESCE(e.enabled, 0) = 0
+		  AND (a.availability = 'General' OR COALESCE(e.offered, 0) = 1)
 		ORDER BY a.sort_order, a.space_label
 		""",
 		{"tenant": tenant},
 		as_dict=True,
 	)
+
+
+def start_a_workspace_with(tenant: str) -> list[str]:
+	"""Switch on what a new workspace should not have to go looking for.
+
+	Called once, when the tenant exists and before its site is built, so the
+	first `create_site` installs the union of what these need in one go rather
+	than one Install App job per app afterwards.
+
+	`on_by_default` and General both: a Restricted space is never something a
+	workspace starts with, whatever its default says — that is what makes it
+	restricted.
+	"""
+	codes = frappe.get_all(
+		"OneSpace Space",
+		filters={"is_active": 1, "availability": "General", "on_by_default": 1},
+		pluck="name",
+	)
+	for code in codes:
+		if not frappe.db.exists("Space Entitlement", {"tenant": tenant, "app": code}):
+			frappe.get_doc({
+				"doctype": "Space Entitlement",
+				"tenant": tenant,
+				"app": code,
+				"enabled": 1,
+				"offered": 1,
+				"note": "On by default when this workspace was made.",
+			}).insert(ignore_permissions=True)
+	return codes
+
+
+def disable(tenant: str, space_code: str):
+	"""Switch a space off without taking it away.
+
+	The customer's own verb, and deliberately not `revoke`: `offered` is left
+	alone, so a Restricted space they were given stays on their shelf and they
+	can switch it back on. Nothing is uninstalled and nothing is deleted — the
+	app stays on the site with its data, which is what makes this reversible in
+	a second rather than in a restore.
+	"""
+	name = frappe.db.get_value(
+		"Space Entitlement", {"tenant": tenant, "app": space_code}, "name"
+	)
+	if name:
+		frappe.db.set_value("Space Entitlement", name, "enabled", 0)
 
 
 def revoke(tenant: str, space_code: str):

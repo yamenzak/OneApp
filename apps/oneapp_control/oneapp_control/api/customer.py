@@ -1021,14 +1021,13 @@ def marketplace(workspace: str | None = None) -> dict:
 	from oneapp_control.entitlements import apps as app_registry
 
 	tenant = require_workspace_admin(workspace)
-	held = {space["space_code"] for space in registry.spaces_for_tenant(tenant.name)}
+	mine = registry.spaces_for_tenant(tenant.name)
+	held = {space["space_code"] for space in mine}
 
 	offered = [
 		space for space in registry.offered_spaces(tenant.name)
 		if space["space_code"] not in held
 	]
-	if not offered:
-		return {"spaces": []}
 
 	jobs = _jobs(tenant.name)
 	carried = set(app_registry.bench_apps(tenant))
@@ -1036,6 +1035,17 @@ def marketplace(workspace: str | None = None) -> dict:
 	spaces = [_card(space, jobs, carried) for space in offered]
 	return {
 		"spaces": spaces,
+		# What they already have, so switching one off is done where switching
+		# one on is done rather than at a second address.
+		"held": [
+			{
+				"code": space["space_code"],
+				"label": space["space_label"],
+				"description": space.get("description") or "",
+				"logo": space.get("logo") or "",
+			}
+			for space in mine
+		],
 		# So the page knows whether to look again rather than guessing from the
 		# card states it just rendered.
 		"working": any(space["state"] == "installing" for space in spaces),
@@ -1117,14 +1127,36 @@ def enable_space(workspace: str, space: str) -> dict:
 	"""
 	tenant = require_workspace_admin(workspace)
 
-	if not frappe.db.exists(
-		"Space Entitlement",
-		{"tenant": tenant.name, "app": space, "offered": 1},
-	):
+	if space not in {one["space_code"] for one in registry.offered_spaces(tenant.name)}:
+		# Asked against the same list the marketplace drew rather than against
+		# the entitlement alone: a General space usually has no row at all, and
+		# a Restricted one they were never offered must not become theirs
+		# because they guessed its code.
 		frappe.throw(_("That space is not one this workspace was offered."),
 		             frappe.PermissionError)
 
 	registry.grant(tenant.name, space, note="Enabled from the marketplace.")
+	frappe.db.commit()
+	return marketplace(workspace)
+
+
+@frappe.whitelist(methods=["POST"])
+def disable_space(workspace: str, space: str) -> dict:
+	"""Switch a space off. Everything in it stays.
+
+	Reversible in a second: the app stays on the site, its records stay, and
+	the card goes back to the list of things this workspace could add. What it
+	does not do is free any room — that is `remove_space`, which is a different
+	sentence for a different act.
+	"""
+	tenant = require_workspace_admin(workspace)
+
+	if not frappe.db.exists(
+		"Space Entitlement", {"tenant": tenant.name, "app": space, "enabled": 1}
+	):
+		frappe.throw(_("That space is not switched on here."))
+
+	registry.disable(tenant.name, space)
 	frappe.db.commit()
 	return marketplace(workspace)
 

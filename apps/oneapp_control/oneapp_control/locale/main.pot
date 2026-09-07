@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 19:16+0000\n"
-"PO-Revision-Date: 2026-09-07 19:16+0000\n"
+"POT-Creation-Date: 2026-09-07 19:37+0000\n"
+"PO-Revision-Date: 2026-09-07 19:37+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -65,6 +65,11 @@ msgstr ""
 #. Description of the 'Max Turns' (Int) field in DocType 'AI Feature'
 #: oneapp_control/control_plane/doctype/ai_feature/ai_feature.json
 msgid "A conversation is one call per turn, and the ceiling above holds for one of them. This is how many turns a single ask may take before the loop stops — a model that keeps calling tools spends the ceiling again each time. 0 means the feature is not conversational."
+msgstr ""
+
+#. Description of the 'On By Default' (Check) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "A new workspace gets this switched on. Uncheck for a space people should choose rather than be given."
 msgstr ""
 
 #: oneapp_control/control_plane/doctype/credit_pack/credit_pack.py:13
@@ -674,7 +679,7 @@ msgstr ""
 msgid "Claimed On"
 msgstr ""
 
-#: oneapp_control/api/customer.py:1180
+#: oneapp_control/api/customer.py:1212
 msgid "Claimed with code {0}."
 msgstr ""
 
@@ -864,7 +869,7 @@ msgstr ""
 msgid "Cost Usd"
 msgstr ""
 
-#: oneapp_control/provisioning/signup.py:151
+#: oneapp_control/provisioning/signup.py:158
 msgid "Could not find an available subdomain for '{0}'."
 msgstr ""
 
@@ -1590,11 +1595,6 @@ msgstr ""
 #. Option for the 'Availability' (Select) field in DocType 'OneSpace Space'
 #: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
 msgid "General"
-msgstr ""
-
-#. Description of the 'Availability' (Select) field in DocType 'OneSpace Space'
-#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
-msgid "General: every tenant. Restricted: only via Space Entitlement."
 msgstr ""
 
 #. Description of the 'Max Outputs' (Int) field in DocType 'AI Feature'
@@ -2452,6 +2452,11 @@ msgstr ""
 #. Label of the on_addons (Check) field in DocType 'Promo Code'
 #: oneapp_control/control_plane/doctype/promo_code/promo_code.json
 msgid "On Addons"
+msgstr ""
+
+#. Label of the on_by_default (Check) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "On By Default"
 msgstr ""
 
 #. Label of the on_credit_packs (Check) field in DocType 'Promo Code'
@@ -4194,7 +4199,7 @@ msgstr ""
 msgid "That code is not live yet. Try again in a minute."
 msgstr ""
 
-#: oneapp_control/api/customer.py:1152
+#: oneapp_control/api/customer.py:1184
 msgid "That code is not one we know."
 msgstr ""
 
@@ -4222,8 +4227,12 @@ msgstr ""
 msgid "That role belongs to another workspace."
 msgstr ""
 
-#: oneapp_control/api/customer.py:1124
+#: oneapp_control/api/customer.py:1135
 msgid "That space is not one this workspace was offered."
+msgstr ""
+
+#: oneapp_control/api/customer.py:1157
+msgid "That space is not switched on here."
 msgstr ""
 
 #. Description of the 'Provider' (Select) field in DocType 'AI Model'
@@ -4851,6 +4860,11 @@ msgstr ""
 msgid "Who else may sign in. Seats used is this plus the owner, and the plan's max_users is what caps it."
 msgstr ""
 
+#. Description of the 'Availability' (Select) field in DocType 'OneSpace Space'
+#: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
+msgid "Who may see it in the marketplace. General: anybody. Restricted: only a workspace an operator offered it to, or one that redeemed a code."
+msgstr ""
+
 #. Description of the 'Last Backup Error' (Small Text) field in DocType
 #. 'Tenant'
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
@@ -5093,7 +5107,7 @@ msgstr ""
 msgid "{0} is not sold on a {1} subscription."
 msgstr ""
 
-#: oneapp_control/api/tenant.py:763
+#: oneapp_control/api/tenant.py:764
 msgid "{0} is not something a workspace may ask."
 msgstr ""
 

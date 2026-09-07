@@ -254,13 +254,19 @@ because it is the only one that is about the thing being slow.
 
 ## 6. What this does not decide
 
-* **Whether a customer may enable a `General` space without asking.** The model
-  allows it and the marketplace assumes it. If any General space should cost
-  money or need a word first, that is a `Plan`/`Add-on` question and this
-  document does not answer it.
-* **Uninstalling.** `revoke` disables the entitlement and leaves the app on the
-  site, which is right — the data is theirs — but nothing reclaims the space an
-  unused ERPNext takes. That is its own piece of work.
+* **Whether any `General` space should cost money.** *Decided in part.* A
+  customer may switch one on themselves, and every space a workspace has is now
+  an entitlement — General spaces reached every launcher unconditionally until
+  now, which is why there was nothing to add and nothing to turn off. What is
+  still undecided is whether a particular General space should need paying for
+  or asking for; that is a `Plan`/`Add-on` question and this document does not
+  answer it. `OneSpace Space.on_by_default` is the lever in the meantime: on,
+  and a new workspace starts with it; off, and they go and find it.
+* **Uninstalling.** Switching a space off is `disable` — the app stays, the
+  records stay, and it is undone in a second. Freeing the room an unused ERPNext
+  takes means uninstalling the app from the site, which drops its tables, and
+  that is a different act needing a different sentence. Still its own piece of
+  work.
 * **Who may claim.** Redeeming a code changes what a workspace carries, so it
   is an owner's action rather than a member's; which role exactly is a question
   for whoever writes stage 4.

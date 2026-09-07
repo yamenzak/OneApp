@@ -45,5 +45,7 @@ export const account = {
 
   enableSpace: (space) => callMethod(at('enable_space'), { space }),
 
+  disableSpace: (space) => callMethod(at('disable_space'), { space }),
+
   redeemClaimCode: (code) => callMethod(at('redeem_claim_code'), { code }),
 }
