@@ -41,7 +41,7 @@
         class="flex flex-col gap-3 rounded-6 border border-outline-gray-2 bg-surface-base p-4"
       >
         <div class="flex items-start gap-3">
-          <Avatar :label="space.label" :image="space.logo" shape="square" size="lg" />
+          <SpaceFace :space="space" size="xl" />
           <div class="min-w-0 flex-1">
             <p class="truncate text-base-medium text-ink-gray-8">{{ space.label }}</p>
             <p v-if="space.description" class="mt-0.5 line-clamp-3 text-p-sm text-ink-gray-6">
@@ -114,7 +114,7 @@
           data-slot="held-space"
           class="flex items-center gap-3 border-b border-outline-gray-1 py-2.5"
         >
-          <Avatar :label="space.label" :image="space.logo" shape="square" size="lg" />
+          <SpaceFace :space="space" size="lg" />
           <span class="flex min-w-0 flex-1 flex-col">
             <span class="truncate text-p-sm text-ink-gray-8">{{ space.label }}</span>
             <span v-if="space.description" class="truncate text-p-xs text-ink-gray-5">
@@ -224,9 +224,10 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  Alert, Avatar, Breadcrumbs, Button, Dialog, ErrorMessage, FormControl,
+  Alert, Breadcrumbs, Button, Dialog, ErrorMessage, FormControl,
   LoadingIndicator, PageHeader,
 } from '@/ui'
+import SpaceFace from '../components/brand/SpaceFace.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { workspace } from '@/lib/workspace'
 import { session } from '@/lib/shell/session'

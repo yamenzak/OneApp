@@ -1321,6 +1321,10 @@ def seed_control():
 	doc = frappe.get_doc({
 		"doctype": "OneSpace Space", "space_code": CODE, "space_label": LABEL,
 		"module": "Mock", "role_name": ROLE, "icon": "lucide-briefcase",
+		# A mark, so the rail, the launcher and the marketplace all have one to
+		# draw. OneInventory because the fixture is projects and lines, which is
+		# the nearest of the fifteen — the point is a mark rather than which.
+		"brand": "oneinventory",
 		"is_active": 1, "availability": "General", "sort_order": 5,
 		"description": "Two screens over two doctypes, for looking at.",
 	})
@@ -1396,7 +1400,8 @@ def seed_tenant(manifest_only=False):
 
 	spaces.append({
 		"space_code": CODE, "space_label": LABEL, "module": "Mock",
-		"role_name": ROLE, "icon": "lucide-briefcase", "sort_order": 5,
+		"role_name": ROLE, "icon": "lucide-briefcase", "brand": "oneinventory",
+		"sort_order": 5,
 		"description": "Two screens over two doctypes, for looking at.",
 		"screens": [dict(v, component=None) for v in SCREENS],
 	})

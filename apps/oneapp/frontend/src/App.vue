@@ -145,8 +145,10 @@ const railSpaces = computed(() =>
     key: space.space_code,
     label: space.space_label,
     // The manifest's own logo where there is one, so a space reads as itself
-    // rather than as a letter.
+    // rather than as a letter. `brand` travels beside it because a mark beats
+    // both — see `components/brand/SpaceFace.vue`.
     image: space.logo || null,
+    brand: space.brand || '',
     description: space.description,
     to: { name: 'Screen', params: { spaceCode: space.space_code } },
   })),

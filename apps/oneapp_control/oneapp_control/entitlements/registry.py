@@ -44,7 +44,7 @@ import frappe
 # the local provider — so the two cannot drift into describing different things.
 SPACE_FIELDS = (
 	"name as space_code", "space_label", "module", "role_name", "icon",
-	"logo", "sort_order", "description", "theme", "requires_apps",
+	"logo", "brand", "sort_order", "description", "theme", "requires_apps",
 	"custom_fields",
 )
 

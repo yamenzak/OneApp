@@ -1043,6 +1043,7 @@ def marketplace(workspace: str | None = None) -> dict:
 				"label": space["space_label"],
 				"description": space.get("description") or "",
 				"logo": space.get("logo") or "",
+				"brand": space.get("brand") or "",
 			}
 			for space in mine
 		],
@@ -1108,6 +1109,7 @@ def _card(space: dict, jobs: dict[str, dict], carried: set[str]) -> dict:
 		"description": space.get("description") or "",
 		"icon": space.get("icon") or "",
 		"logo": space.get("logo") or "",
+		"brand": space.get("brand") or "",
 		"state": state,
 		"missing_apps": because,
 		# What the job itself got to. Sent for `installing` and `failed` alike;

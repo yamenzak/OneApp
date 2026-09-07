@@ -24,9 +24,9 @@
         class="rounded-6 border border-outline-gray-2 bg-surface-base p-4 transition hover:border-outline-gray-3 hover:bg-surface-gray-1"
       >
         <div class="flex items-start gap-3">
-          <!-- The manifest's logo where there is one; initials otherwise, which
-               is what Avatar draws from a label on its own. -->
-          <Avatar :label="space.space_label" :image="space.logo" shape="square" size="lg" />
+          <!-- Its mark, its logo, or its letter — `SpaceFace` decides, so the
+               rail and the marketplace decide the same way. -->
+          <SpaceFace :space="space" size="xl" />
           <div class="min-w-0">
             <p class="truncate text-base-medium text-ink-gray-8">{{ space.space_label }}</p>
             <p v-if="space.description" class="mt-0.5 line-clamp-2 text-p-sm text-ink-gray-6">
@@ -48,7 +48,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Breadcrumbs, PageHeader, Avatar, LoadingIndicator } from '@/ui'
+import { Breadcrumbs, PageHeader, LoadingIndicator } from '@/ui'
+import SpaceFace from '../components/brand/SpaceFace.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { session } from '@/lib/shell/session'
 import { __ } from '@/lib/runtime/translate'

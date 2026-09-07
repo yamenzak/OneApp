@@ -6,6 +6,7 @@ per-person too.
 """
 
 from app_icons import SPACE_ICONS, DEFAULT_SPACE_ICON
+from brand_marks import BRAND_MARKS
 from .spec import column, doctype, f, section
 
 
@@ -217,6 +218,18 @@ doctype(
         f("logo", "Attach Image",
           description="Shown on the rail. Without one the icon is drawn "
                       "instead."),
+        # One of the marks `scripts/gen_brand.py` produces, and the first thing
+        # tried wherever a space has to be shown: a mark is the app's own
+        # drawing in its own colours, where `icon` is a lucide glyph in the
+        # theme's ink. The glyph is the fallback, and stays the right answer for
+        # a space that is somebody's own rather than one of ours.
+        #
+        # A closed Select for the reason `icon` is one: a name nothing draws is
+        # an empty box, and a validation error at seed time is a much better
+        # place to find that out.
+        f("brand", "Select", options="\n".join(("", *BRAND_MARKS)),
+          description="An app mark. Beats the icon wherever a space is drawn; "
+                      "empty falls back to it."),
         f("sort_order", "Int", default="0"),
         section("sec_desc"),
         f("description", "Small Text"),

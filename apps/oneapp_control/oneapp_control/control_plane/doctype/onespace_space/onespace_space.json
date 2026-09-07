@@ -25,6 +25,7 @@
   "custom_fields",
   "icon",
   "logo",
+  "brand",
   "sort_order",
   "sec_desc",
   "description",
@@ -151,6 +152,13 @@
    "fieldname": "logo",
    "fieldtype": "Attach Image",
    "label": "Logo"
+  },
+  {
+   "description": "An app mark. Beats the icon wherever a space is drawn; empty falls back to it.",
+   "fieldname": "brand",
+   "fieldtype": "Select",
+   "label": "Brand",
+   "options": "\none\nonespace\noneadmin\noneinventory\nonewallet\nonecredit\nonemobility\nonearchive\nonestorage\nonedisplay\nonesheet\nonedoc\nonehr\nonebook\nonecrm\noneai"
   },
   {
    "default": "0",

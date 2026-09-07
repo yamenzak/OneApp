@@ -78,7 +78,11 @@
           variant="tile"
           @click="$emit('select-entry', entry.key)"
         >
-          <Avatar :label="entry.label" :image="entry.image" size="lg" shape="square" class="size-7" />
+          <SpaceFace
+            :space="{ label: entry.label, logo: entry.image, brand: entry.brand }"
+            size="lg"
+            class="size-7"
+          />
         </RailItem>
 
         <div class="mt-auto flex flex-col items-center gap-2.5 pt-3">
@@ -114,11 +118,13 @@
             :icon-right="open ? 'lucide-chevron-up' : 'lucide-chevron-down'"
           >
             <template #prefix>
-              <Avatar
-                :label="activeEntry_?.label || entriesLabel"
-                :image="activeEntry_?.image"
+              <SpaceFace
+                :space="{
+                  label: activeEntry_?.label || entriesLabel,
+                  logo: activeEntry_?.image,
+                  brand: activeEntry_?.brand,
+                }"
                 size="lg"
-                shape="square"
               />
             </template>
             <span class="min-w-0 flex-1 truncate text-base text-ink-gray-8">
@@ -235,6 +241,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import SpaceFace from './brand/SpaceFace.vue'
 import {
   Avatar,
   Badge,
