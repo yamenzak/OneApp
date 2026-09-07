@@ -906,6 +906,29 @@ ATTACHED = "Re: Quotation for the Al Reem tower"
 ATTACHMENT = "Al Reem cladding schedule.txt"
 
 
+def _sweep_chat():
+	"""The conversations a run left behind.
+
+	`chat.spec.js` asks the assistant a question in a fresh thread each time and
+	the rail is the only place to delete one, so a dev box ends up with twenty
+	identical `How many projects are open` threads down the side — the same
+	accumulation the alerts had, and the same argument: a fixture owns the state
+	a person sets. Messages go with their session; Frappe does not cascade a
+	child table on a `delete_doc` of the parent by name alone here, because a
+	Chat Message is its own doctype rather than a child row.
+	"""
+	for session in frappe.get_all("OneSpace Chat Session", pluck="name"):
+		for message in frappe.get_all(
+			"OneSpace Chat Message", filters={"session": session}, pluck="name"
+		):
+			frappe.delete_doc(
+				"OneSpace Chat Message", message, force=True, ignore_permissions=True
+			)
+		frappe.delete_doc(
+			"OneSpace Chat Session", session, force=True, ignore_permissions=True
+		)
+
+
 def _seed_attachment():
 	"""A real file on a real message.
 
@@ -1235,6 +1258,7 @@ def seed_tenant(manifest_only=False):
 		_seed_registers()
 		_seed_import()
 		mailbox = _seed_mail(frappe.session.user)
+		_sweep_chat()
 
 	state = frappe.get_single("OneSpace Site State")
 	spaces = [

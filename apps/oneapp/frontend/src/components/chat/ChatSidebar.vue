@@ -13,7 +13,11 @@
     :width="`${width}px`"
     class="border-e border-outline-gray-1"
   >
-    <SidebarHeader :title="__('Assistant')" :subtitle="session.tenant?.name" :show-logo="false" />
+    <SidebarHeader
+      :title="assistantName"
+      :subtitle="session.tenant?.name"
+      :show-logo="false"
+    />
 
     <div class="px-2 pb-2">
       <Button
@@ -63,7 +67,7 @@ import {
 } from '@/ui'
 import SidebarCollapse from '../SidebarCollapse.vue'
 import SidebarResizer from '../SidebarResizer.vue'
-import { assistant as state, loadAssistant } from '@/lib/shell/assistant'
+import { assistant as state, assistantName, loadAssistant } from '@/lib/shell/assistant'
 import { session } from '@/lib/shell/session'
 import { useSidebar } from '@/lib/shell/sidebar'
 import { __ } from '@/lib/runtime/translate'

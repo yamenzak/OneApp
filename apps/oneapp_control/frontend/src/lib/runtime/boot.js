@@ -42,6 +42,12 @@ export const brand = read('brand', {})
 // workspace's — `www/one.py` decides; this only has to know the answer before
 // the first paint, because changing it later moves the whole layout.
 export const lang = read('lang', 'en')
+// Who the assistant is: `{ name, avatar, tone, personality }`, built by
+// `oneapp_core/ai/settings.py`. Here for the same reason the favicon is — the
+// chat rail and the panel header name it before anything is fetched, and a
+// header that says "Assistant" for a moment and then says something else is a
+// visible flicker. `lib/shell/assistant.js` makes it reactive from here.
+export const assistant = read('assistant', {})
 
 export default {
   siteName,
@@ -53,4 +59,5 @@ export default {
   devServer,
   brand,
   lang,
+  assistant,
 }

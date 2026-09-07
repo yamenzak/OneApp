@@ -3,7 +3,7 @@ import { useRoute } from 'vue-router'
 // An icon name that only exists in the database emits no CSS, so anything
 // outside the generated set falls back to one that does.
 import { spaceIcon } from '@/lib/shell/icons'
-import { assistant, openAssistant } from '@/lib/shell/assistant'
+import { assistant, assistantName, openAssistant } from '@/lib/shell/assistant'
 import { openSettings } from '@/lib/shell/settings'
 import { mail } from '@/lib/shell/mail'
 import { session } from '@/lib/shell/session'
@@ -200,7 +200,7 @@ export function useNav() {
     ...(assistant.available
       ? [{
         key: 'chat',
-        label: __('Assistant'),
+        label: assistantName.value,
         icon: 'lucide-sparkles',
         to: { name: 'Chat' },
         act: () => openAssistant(openContext(route)),

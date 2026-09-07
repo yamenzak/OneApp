@@ -47,7 +47,7 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Breadcrumbs, Button, PageHeader } from '@/ui'
 import ChatPanel from '../components/chat/ChatPanel.vue'
-import { assistant as state, loadAssistant } from '@/lib/shell/assistant'
+import { assistant as state, assistantName, loadAssistant } from '@/lib/shell/assistant'
 import { workspace } from '@/lib/workspace'
 import { __ } from '@/lib/runtime/translate'
 
@@ -70,7 +70,7 @@ const current = computed(() =>
 )
 
 const crumbs = computed(() => [
-  { label: __('Assistant'), route: { name: 'Chat' } },
+  { label: assistantName.value, route: { name: 'Chat' } },
   ...(current.value?.title
     ? [{ label: current.value.title, route: route.fullPath }]
     : []),

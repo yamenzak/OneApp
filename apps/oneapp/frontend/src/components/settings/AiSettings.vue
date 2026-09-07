@@ -168,6 +168,7 @@ import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { __ } from '@/lib/runtime/translate'
 import { settings } from '@/lib/shell/settings'
+import { setAssistant } from '@/lib/shell/assistant'
 import { errorText } from '@/lib/runtime/errors'
 
 const data = ref(null)
@@ -227,6 +228,10 @@ const save = async () => {
       assistant: { ...form.assistant },
       features: answers,
     })
+    // The rail, the panel header and the breadcrumb read this. Told rather
+    // than re-fetched: they are already drawn, and a name that only changes on
+    // the next reload is a name somebody sets twice.
+    setAssistant(data.value.assistant)
   } catch (e) {
     error.value = errorText(e)
   } finally {

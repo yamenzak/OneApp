@@ -11,8 +11,10 @@
  * timer would be a request a minute to answer a question whose answer does not
  * move.
  */
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
+import { assistant as booted } from '@/lib/runtime/boot'
 import { workspace } from '@/lib/workspace'
+import { __ } from '@/lib/runtime/translate'
 
 export const assistant = reactive({
   // The panel, and what it is looking at. Here rather than on the panel itself
@@ -27,7 +29,31 @@ export const assistant = reactive({
   available: false,
   sessions: [],
   loaded: false,
+  // Who it is, from the boot payload. Here rather than fetched with the thread
+  // list, because the rail names it before that call returns and a label that
+  // says "Assistant" for a beat and then says something else is the same
+  // visible flicker the favicon had. `www/one.py` puts it there.
+  name: booted?.name || '',
+  avatar: booted?.avatar || '',
 })
+
+/** What to call it. Never empty — a nameless assistant is still on screen, and
+ *  this is the same fallback the server uses when nothing has been set. */
+export const assistantName = computed(() => assistant.name || __('Assistant'))
+
+/** Its picture, or nothing: `Avatar` draws a letter from the label instead. */
+export const assistantAvatar = computed(() => assistant.avatar)
+
+/**
+ * What the AI settings tab calls once a save has come back.
+ *
+ * Without it the rail and the panel keep the old name until a reload, which is
+ * the kind of wrong nobody reports and everybody notices.
+ */
+export function setAssistant(who) {
+  assistant.name = who?.name || ''
+  assistant.avatar = who?.avatar || ''
+}
 
 /**
  * Open the panel, against what the caller is looking at.

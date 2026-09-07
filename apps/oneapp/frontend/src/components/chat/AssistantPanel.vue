@@ -19,14 +19,17 @@
   <aside
     v-if="state.showing && state.available"
     class="hidden w-96 shrink-0 flex-col border-s border-outline-gray-1 bg-surface-base sm:flex"
-    :aria-label="__('Assistant')"
+    :aria-label="assistantName"
     data-slot="assistant-panel"
   >
     <div
       class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-gray-1 px-4 py-3"
     >
       <div class="min-w-0">
-        <p class="truncate text-p-base font-medium text-ink-gray-8">{{ __('Assistant') }}</p>
+        <div class="flex min-w-0 items-center gap-2">
+          <Avatar size="sm" :image="assistantAvatar" :label="assistantName" />
+          <p class="truncate text-p-base font-medium text-ink-gray-8">{{ assistantName }}</p>
+        </div>
         <!-- What it is scoped to, in the header rather than only in the empty
              state: the empty state is gone the moment anybody asks anything. -->
         <p v-if="state.on?.label" class="truncate text-p-xs text-ink-gray-5">
@@ -56,9 +59,15 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button, Dropdown } from '@/ui'
+import { Avatar, Button, Dropdown } from '@/ui'
 import ChatPanel from './ChatPanel.vue'
-import { assistant as state, closeAssistant, loadAssistant } from '@/lib/shell/assistant'
+import {
+  assistant as state,
+  assistantAvatar,
+  assistantName,
+  closeAssistant,
+  loadAssistant,
+} from '@/lib/shell/assistant'
 import { workspace } from '@/lib/workspace'
 import { __ } from '@/lib/runtime/translate'
 

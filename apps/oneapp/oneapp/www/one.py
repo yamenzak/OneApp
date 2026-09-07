@@ -2,6 +2,7 @@ import frappe
 from frappe.utils import get_system_timezone
 
 from oneapp.oneapp_core import branding
+from oneapp.oneapp_core.ai import settings as ai_settings
 
 # The SPA owns routing under /one, so every path below it serves the same shell
 # rather than 404ing on a deep link.
@@ -39,6 +40,12 @@ def get_context(context):
 		# wanted before first paint — a favicon that arrives after a round trip
 		# is a tab that visibly changes. See `oneapp_core/branding.py`.
 		"brand": branding.boot(),
+		# Who the assistant is. Here rather than on the AI settings resource
+		# because the chat rail, the panel header and the breadcrumb all name it
+		# before anything is fetched — and a header that says "Assistant" for a
+		# moment and then says "Rua" is the same visible flicker the favicon
+		# had. See `oneapp_core/ai/settings.py`.
+		"assistant": ai_settings.identity(),
 		# Which language to draw in. `frappe.local.lang` is already the answer
 		# the framework worked out for this request — the reader's own if they
 		# set one, the workspace's otherwise — so this is that answer handed
