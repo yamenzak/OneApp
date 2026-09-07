@@ -163,7 +163,7 @@ const download = async () => {
       'noopener',
     )
   } catch (raised) {
-    notifyError(raised.message || String(raised))
+    notifyError(raised)
   } finally {
     downloading.value = false
   }

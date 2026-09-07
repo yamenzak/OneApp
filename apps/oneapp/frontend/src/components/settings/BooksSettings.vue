@@ -129,6 +129,7 @@ import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const status = ref(null)
 const charts = ref([])
@@ -223,7 +224,7 @@ async function startOver() {
     await load()
     await loadCharts()
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     resetting.value = false
   }
@@ -235,7 +236,7 @@ async function create() {
   try {
     status.value = await workspace.setUpBooks({ ...form })
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     saving.value = false
   }

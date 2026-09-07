@@ -158,7 +158,7 @@ const write = async (wanted) => {
     emit('tagged', result?.tags || [])
     query.value = ''
   } catch (raised) {
-    notifyError(raised.message || String(raised))
+    notifyError(raised)
   }
 }
 </script>

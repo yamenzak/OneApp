@@ -156,6 +156,7 @@ import { session } from '@/lib/shell/session'
 import { openSettings, settings } from '@/lib/shell/settings'
 import { useSidebar } from '@/lib/shell/sidebar'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const SUB = 'text-ink-gray-6'
 
@@ -195,7 +196,7 @@ async function make() {
     making.value = false
     await loadMail({ reload: true })
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     saving.value = false
   }

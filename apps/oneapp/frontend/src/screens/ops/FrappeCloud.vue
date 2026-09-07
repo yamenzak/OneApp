@@ -84,6 +84,7 @@ import { Alert, Button, List, ListRows, ListRow, ListCell, LoadingIndicator } fr
 import EmptyState from '../../components/EmptyState.vue'
 import { callMethod } from '@/lib/runtime/resource'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 defineProps({
   spaceCode: { type: String, default: '' },
@@ -133,7 +134,7 @@ const load = async () => {
     data.value = result
     error.value = result?.error || ''
   } catch (e) {
-    error.value = e?.message || String(e)
+    error.value = errorText(e)
   } finally {
     loading.value = false
     loaded.value = true

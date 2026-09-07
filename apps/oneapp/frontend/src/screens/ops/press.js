@@ -1,4 +1,5 @@
 import { reactive, watch } from 'vue'
+import { errorText } from '@/lib/runtime/errors'
 
 /**
  * A read from Frappe Cloud, fetched when its panel is first looked at.
@@ -31,7 +32,7 @@ export function usePress(fetcher, tabRef, tabValue) {
         state.data = result
         state.error = result?.error || ''
       } catch (e) {
-        state.error = e.message || String(e)
+        state.error = errorText(e)
       } finally {
         state.loading = false
         state.loaded = true

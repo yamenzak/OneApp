@@ -319,6 +319,7 @@ import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { session } from '@/lib/shell/session'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const loading = ref(true)
 
@@ -385,7 +386,7 @@ async function addRule() {
     Object.assign(rule, { title: '', matches: '', into: '', mark_read: false, star: false })
     rules.value = (await workspace.mailRules(chosen.value)) || []
   } catch (e) {
-    ruleError.value = e.message || String(e)
+    ruleError.value = errorText(e)
   }
 }
 
@@ -451,7 +452,7 @@ async function connect() {
     advanced.value = false
     await load()
   } catch (e) {
-    connectError.value = e.message || String(e)
+    connectError.value = errorText(e)
   } finally {
     connecting.value = false
   }

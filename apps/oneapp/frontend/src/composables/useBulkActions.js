@@ -39,7 +39,7 @@ export function useBulkActions({ spaceCode, spec, selection, payload, reloadRows
       selection.value = []
       await reloadRows()
     } catch (e) {
-      notifyError(e.message || String(e))
+      notifyError(e)
     } finally {
       bulking.value = false
     }
@@ -145,7 +145,7 @@ export function useBulkActions({ spaceCode, spec, selection, payload, reloadRows
           : `${(file?.rows || 0).toLocaleString()} rows exported`,
       )
     } catch (e) {
-      notifyError(e.message || String(e))
+      notifyError(e)
     } finally {
       exporting.value = false
     }

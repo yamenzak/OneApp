@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 
 import { workspace } from '../lib/workspace'
+import { errorText } from '@/lib/runtime/errors'
 
 /**
  * The records a screen lists, and everything about having fetched them.
@@ -131,7 +132,7 @@ export function useRows({ spaceCode, spec, payload, range, onChange }) {
       rows.value = []
       total.value = null
       hasMore.value = false
-      rowsError.value = error?.message || String(error)
+      rowsError.value = errorText(error)
     } finally {
       rowsLoading.value = false
     }

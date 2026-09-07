@@ -326,6 +326,7 @@ import { tabIcon } from '@/lib/screen/fields'
 import { onDocChange, onDocViewers } from '@/lib/runtime/socket'
 import { session } from '@/lib/shell/session'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const props = defineProps({
   record: { type: Object, required: true },
@@ -644,7 +645,7 @@ const save = async () => {
     await workspace.saveRecord(props.spaceCode, props.screen, { ...form }, props.record.name)
     emit('saved')
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     saving.value = false
   }

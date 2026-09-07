@@ -150,7 +150,7 @@ const run = async (one) => {
       emit('moved', await workspace[one.kind](props.spaceCode, props.screen, props.name))
     }
   } catch (raised) {
-    notifyError(raised.message || String(raised))
+    notifyError(raised)
   } finally {
     running.value = ''
     pending.value = null

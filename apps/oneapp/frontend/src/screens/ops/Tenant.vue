@@ -373,6 +373,7 @@ import { useListColumns } from '@/lib/screen/list'
 import { admin } from './admin'
 import { usePress } from './press'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 // Fixed tracks sized for a desktop leave a phone about 20px for the column the
 // row exists to name. Each list below says which columns a phone can spare;
@@ -589,7 +590,7 @@ async function signIn() {
     // and losing this page to go and look is its own small tax.
     if (result?.url) window.open(result.url, '_blank', 'noopener')
   } catch (e) {
-    supportError.value = e.message || String(e)
+    supportError.value = errorText(e)
   } finally {
     signingIn.value = false
   }

@@ -579,6 +579,7 @@ import { applyTheme, clearTheme } from '@/lib/shell/theme'
 import { DRAWER, PAGE, PANE } from '@/lib/screen/surfaces'
 import { screenComponent } from '@/screens'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const props = defineProps({ spaceCode: { type: String, required: true } })
 const route = useRoute()
@@ -838,7 +839,7 @@ const load = async (openWith, carried = null) => {
     // the manifest for an hour while the real answer, a permission the fixture
     // had not written, was in the response body all along.
     spec.value = null
-    specError.value = err?.message || String(err)
+    specError.value = errorText(err)
   } finally {
     loading.value = false
   }

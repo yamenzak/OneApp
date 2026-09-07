@@ -75,6 +75,37 @@ def test_raw_form_elements_are_banned(generated, element):
 		assert f"'{element}'" in files["frontend/eslint.config.js"], f"{app}: {element}"
 
 
+def test_a_server_refusal_is_shown_as_the_server_wrote_it():
+	"""`errorText(e)`, never `e.message`.
+
+	A `frappe.throw` travels in `_server_messages`, which `.message` does not
+	read — so `e.message || String(e)` renders the endpoint path and the
+	exception class instead of the sentence. Every refusal the server writes
+	was being thrown away this way in thirty-eight places, and each one was
+	invisible until somebody hit that path: the code looked like it handled the
+	error, and it did, into a message nobody could act on. `notifyError` is
+	included because it normalises what it is given, so handing it a string
+	first is the same loss.
+	"""
+	import re
+
+	bad = re.compile(r"\.message \|\| String\(")
+	guilty = []
+	for app in ("oneapp", "oneapp_control"):
+		root = ROOT / "apps" / app / "frontend/src"
+		for one in sorted(root.rglob("*")):
+			if one.suffix not in (".vue", ".js") or is_vendored(one):
+				continue
+			for number, line in enumerate(one.read_text().splitlines(), 1):
+				if bad.search(line):
+					guilty.append(f"{one.relative_to(ROOT)}:{number}: {line.strip()}")
+
+	assert not guilty, (
+		"use `errorText(e)` so the server's own sentence reaches the reader:\n  "
+		+ "\n  ".join(guilty)
+	)
+
+
 def test_apps_pin_the_same_dependency_versions(generated):
 	shared = {}
 	for app, files in generated.items():

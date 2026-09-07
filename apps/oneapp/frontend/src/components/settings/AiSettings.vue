@@ -114,6 +114,7 @@ import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { __ } from '@/lib/runtime/translate'
 import { settings } from '@/lib/shell/settings'
+import { errorText } from '@/lib/runtime/errors'
 
 const data = ref(null)
 const loading = ref(false)
@@ -162,7 +163,7 @@ const save = async () => {
       features: answers,
     })
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     saving.value = false
   }

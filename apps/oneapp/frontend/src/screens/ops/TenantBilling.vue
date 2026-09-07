@@ -225,6 +225,7 @@ import { useListColumns } from '@/lib/screen/list'
 import { useDocList } from '@/lib/runtime/resource'
 import { admin } from './admin'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const props = defineProps({ tenant: { type: String, required: true } })
 
@@ -376,7 +377,7 @@ async function grant() {
     showGrant.value = false
     await load()
   } catch (e) {
-    grantError.value = e.message || String(e)
+    grantError.value = errorText(e)
   } finally {
     granting.value = false
   }
@@ -400,7 +401,7 @@ async function change() {
     showChange.value = false
     await load()
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     changing.value = false
   }

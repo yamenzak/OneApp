@@ -193,6 +193,7 @@ import { useWorkspace } from './workspace'
 import { useListColumns } from '@/lib/screen/list'
 import { useMembers, inviteMember, removeMember, setMemberRoles } from './customer'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const { columns: memberColumns } = useListColumns([
   { key: 'person', header: __('Person'), track: 'minmax(0,1fr)' },
@@ -267,7 +268,7 @@ const saveRoles = async () => {
     showRoles.value = false
     resource.reload()
   } catch (e) {
-    roleError.value = e.message || String(e)
+    roleError.value = errorText(e)
   } finally {
     savingRoles.value = false
   }
@@ -287,7 +288,7 @@ async function invite() {
     showInvite.value = false
     resource.reload()
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     inviting.value = false
   }

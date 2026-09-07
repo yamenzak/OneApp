@@ -58,6 +58,7 @@ import RecordForm from './RecordForm.vue'
 import { notifySuccess } from '@/lib/runtime/notify'
 import { workspace } from '../../../lib/workspace'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -131,7 +132,7 @@ const save = async ({ another = false } = {}) => {
     // Opened straight away: the point of making one is to be in it.
     emit('created', made?.name || '')
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     saving.value = ''
   }

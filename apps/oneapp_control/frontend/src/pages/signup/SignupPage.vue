@@ -101,6 +101,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { Alert, Avatar, Button, ErrorMessage, FormControl, LoadingIndicator, debounce } from '@/ui'
 import { callMethod } from '@/lib/runtime/resource'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const jurisdictions = computed(() => [
   { label: __('Global network'), value: 'Global' },
@@ -174,7 +175,7 @@ async function submit() {
     const { url } = await callMethod(method('start'), payload, { silent: true })
     if (url) window.location.href = url
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     submitting.value = false
   }

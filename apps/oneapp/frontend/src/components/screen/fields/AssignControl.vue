@@ -117,7 +117,7 @@ const write = async (users) => {
     // rather than the result is a control that lies.
     emit('assigned', after?.assigned || [])
   } catch (e) {
-    notifyError(e.message || String(e))
+    notifyError(e)
   }
 }
 </script>

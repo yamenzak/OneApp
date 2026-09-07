@@ -72,6 +72,7 @@ import { Button, Dialog, ErrorMessage, FormControl, Skeleton } from '@/ui'
 import EmptyState from '../EmptyState.vue'
 import { workspace } from '../../lib/workspace'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const props = defineProps({
   // What is being moved, so the dialog can say so rather than making the
@@ -115,7 +116,7 @@ async function load() {
     const excluded = new Set(props.moving.map((one) => one.name))
     folders.value = (found?.files || []).filter((one) => !excluded.has(one.name))
   } catch (raised) {
-    error.value = raised.message || String(raised)
+    error.value = errorText(raised)
   } finally {
     loading.value = false
   }

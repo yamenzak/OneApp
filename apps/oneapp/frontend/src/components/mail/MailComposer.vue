@@ -137,6 +137,7 @@ import { workspace } from '../../lib/workspace'
 import { session } from '@/lib/shell/session'
 import { openSettings } from '@/lib/shell/settings'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const props = defineProps({
   /** The addresses this person may send from. The first is the default. */
@@ -335,7 +336,7 @@ async function post() {
     await workspace.mailForget()
     emit('sent', done)
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     sending.value = false
   }

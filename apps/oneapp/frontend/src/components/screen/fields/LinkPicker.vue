@@ -148,6 +148,7 @@ import { Combobox, Avatar, Icon, Dialog, Button, ErrorMessage } from '@/ui'
 import { workspace } from '../../../lib/workspace'
 import { screenFor } from '@/lib/shell/nav'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 // The quick-create form renders whatever the target doctype asks for, and one
 // of those fields can itself be a Link — so this component and FieldControl
@@ -471,7 +472,7 @@ const create = async () => {
     pick(record.value)
     creating.value = false
   } catch (err) {
-    error.value = err?.message || String(err)
+    error.value = errorText(err)
   } finally {
     saving.value = false
   }

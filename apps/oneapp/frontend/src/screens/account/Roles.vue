@@ -163,6 +163,7 @@ import WorkspaceBar from './WorkspaceBar.vue'
 import { deleteRole, saveRole, useRoles } from './customer'
 import { useWorkspace } from './workspace'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const workspace = useWorkspace()
 const resource = useRoles(workspace)
@@ -255,7 +256,7 @@ const save = async () => {
     editing.value = false
     resource.reload()
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     saving.value = false
   }

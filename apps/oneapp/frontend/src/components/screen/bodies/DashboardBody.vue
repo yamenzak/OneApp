@@ -100,7 +100,7 @@ const load = async () => {
     })
     widgets.value = found?.widgets || []
   } catch (raised) {
-    notifyError(raised.message || String(raised))
+    notifyError(raised)
     widgets.value = []
   } finally {
     loading.value = false

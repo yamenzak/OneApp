@@ -90,6 +90,7 @@ import { computed, ref, watch } from 'vue'
 import { Button, Dialog, Divider, ErrorMessage, FormControl, toast } from '@/ui'
 import { workspace } from '../../lib/workspace'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 // The server's own bound is ninety days; these are the answers people give.
 const dayOptions = computed(() => [
@@ -122,7 +123,7 @@ async function load() {
   try {
     rows.value = (await workspace.driveLinks(props.file.name)) || []
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   }
 }
 
@@ -134,7 +135,7 @@ async function make() {
     await copy(made)
     await load()
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     making.value = false
   }

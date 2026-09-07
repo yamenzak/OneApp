@@ -27,7 +27,7 @@ export function useRowWrites({ spaceCode, spec, favourites, reloadRows }) {
       await workspace.saveRecord(spaceCode, spec.value.screen, { [field]: value }, row.name)
     } catch (e) {
       row[field] = was
-      notifyError(e.message || String(e))
+      notifyError(e)
       return
     }
     await reloadRows()
@@ -46,7 +46,7 @@ export function useRowWrites({ spaceCode, spec, favourites, reloadRows }) {
       await reloadRows()
       done?.()
     } catch (e) {
-      notifyError(e.message || String(e))
+      notifyError(e)
       fail?.(e)
     }
   }

@@ -301,6 +301,7 @@ import EmptyState from '../EmptyState.vue'
 import { PANEL_BODY, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 /**
  * The five kinds an address can be, in the workspace's words.
@@ -383,7 +384,7 @@ async function connectShared() {
     team.value = { email_id: '', password: '' }
     await load()
   } catch (e) {
-    teamError.value = e.message || String(e)
+    teamError.value = errorText(e)
   } finally {
     connecting.value = false
   }
@@ -444,7 +445,7 @@ async function create() {
     draft.value = ''
     await load()
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     saving.value = false
   }

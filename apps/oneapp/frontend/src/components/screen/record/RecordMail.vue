@@ -147,6 +147,7 @@ import MailComposer from '../../mail/MailComposer.vue'
 import { workspace } from '../../../lib/workspace'
 import { plainText } from '@/lib/screen/format'
 import { __ } from '@/lib/runtime/translate'
+import { errorText } from '@/lib/runtime/errors'
 
 const props = defineProps({
   spaceCode: { type: String, required: true },
@@ -184,7 +185,7 @@ async function load(limit = PAGE) {
     canSend.value = !!found?.can_send
     more.value = !!found?.more
   } catch (e) {
-    error.value = e.message || String(e)
+    error.value = errorText(e)
   } finally {
     loading.value = false
   }
