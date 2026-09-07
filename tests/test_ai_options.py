@@ -160,3 +160,29 @@ def test_an_empty_answer_is_how_the_default_is_asked_for(options):
 def test_the_keys_a_model_declares_are_what_a_save_replaces(options):
 	assert options.keys(TTS) == {"lang", "speed", "denoise"}
 	assert options.keys(PLAIN) == set()
+
+
+VOICE_PATH = "generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName"
+
+SPEAKS = {
+	"model_key": "google-ai-studio:tts",
+	"capability": "Text to Speech",
+	"options": [
+		{"key": "voiceName", "label": "Voice", "type": "select",
+		 "path": VOICE_PATH, "default": "Zephyr",
+		 "options": [{"value": "Zephyr", "label": "Zephyr — Bright"},
+		             {"value": "Puck", "label": "Puck — Upbeat"}]},
+	],
+}
+
+
+def test_an_option_can_say_where_in_the_request_it_goes(options):
+	"""Not every parameter is a key at the top of something.
+
+	Google's voice sits four objects down, so the declaration carries the path
+	and the gateway writes it there. Without this the answer lands somewhere the
+	provider ignores and the setting silently does nothing.
+	"""
+	assert options.placements(SPEAKS) == {"voiceName": VOICE_PATH}
+	assert options.placements(TTS) == {}
+	assert options.declared(SPEAKS)[0]["path"] == VOICE_PATH

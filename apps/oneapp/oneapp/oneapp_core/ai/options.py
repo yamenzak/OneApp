@@ -57,6 +57,10 @@ def declared(model: dict | None) -> list[dict]:
 			"type": kind,
 			"help": str(row.get("help") or ""),
 			"default": row.get("default"),
+			# Where in the request this goes, dotted, when it is not simply a
+			# key at the level its provider takes them at. Google's voice is
+			# four objects deep. See `resolved` and the gateway.
+			"path": str(row.get("path") or ""),
 		}
 		if kind == "select":
 			option["options"] = _choices(row.get("options"))
@@ -110,6 +114,20 @@ def answered(row, model: dict | None) -> dict:
 		option["key"]: answers[option["key"]]
 		for option in declared(model)
 		if option["key"] in answers
+	}
+
+
+def placements(model: dict | None) -> dict[str, str]:
+	"""Where each answered option goes, for the options that say.
+
+	Only the ones that declare a path; everything else the gateway puts where
+	that provider takes its parameters. Kept apart from the values so the
+	gateway is handed a plain answer dict and a plain map, rather than having to
+	pick one apart from the other.
+	"""
+	return {
+		option["key"]: option["path"]
+		for option in declared(model) if option.get("path")
 	}
 
 

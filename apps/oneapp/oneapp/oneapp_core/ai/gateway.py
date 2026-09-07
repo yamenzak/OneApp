@@ -29,7 +29,7 @@ import frappe
 import requests
 
 from oneapp.oneapp_core import control_client
-from oneapp.oneapp_core.ai import features, meter, settings, transcript
+from oneapp.oneapp_core.ai import features, meter, options, settings, transcript
 
 TIMEOUT = 120
 
@@ -321,13 +321,36 @@ def _with_options(model: dict, body: dict, chosen: dict) -> None:
 	if not chosen:
 		return
 
-	where = (
-		body.setdefault("generationConfig", {})
+	default = (
+		"generationConfig"
 		if model["provider"] == "google-ai-studio"
-		else body
+		else ""
 	)
+	said = options.placements(model)
 	for key, value in chosen.items():
-		where.setdefault(key, value)
+		# A declared path wins, because some parameters are not a key at the
+		# top of anything: Google's voice sits four objects down, under
+		# `generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig`.
+		path = said.get(key) or (f"{default}.{key}" if default else key)
+		_put(body, path.split("."), value)
+
+
+def _put(body: dict, path: list[str], value) -> None:
+	"""Write one value at a dotted path, making the objects on the way.
+
+	Never over something already there. The builder ran first and what it set
+	are the operator's ceilings and the shapes a capability needs — a workspace
+	answer that could overwrite one would be a setting that raises its own
+	limit.
+	"""
+	for step in path[:-1]:
+		nested = body.get(step)
+		if not isinstance(nested, dict):
+			if step in body:
+				return
+			nested = body[step] = {}
+		body = nested
+	body.setdefault(path[-1], value)
 
 
 def call(feature: features.Feature, prompt: str = "", **request) -> Result:

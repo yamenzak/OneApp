@@ -114,9 +114,13 @@ doctype(
                       "{key, label, type, default, ...}; see "
                       "`oneapp_core/ai/options.py` for the four types. Sent to "
                       "every tenant with the catalogue and rendered under the "
-                      "model picker. Written by hand: no sync fills this in "
-                      "yet, and a provider's own schema is where it should come "
-                      "from when one does."),
+                      "model picker. Filled by the sync from the provider's "
+                      "own list — Cloudflare's input schema, Google's published "
+                      "voice table — so it is not a thing anyone transcribes."),
+        f("options_locked", "Check", default="0",
+          description="The sync leaves the options above alone. Tick it after "
+                      "editing them by hand, or the next run writes over them "
+                      "with whatever the provider publishes."),
         section("sec_model_limits", "Limits and features"),
         f("context_window", "Int"),
         f("max_output_tokens", "Int"),

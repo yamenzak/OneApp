@@ -47,6 +47,19 @@ CATALOGUE = [{
 	"capability": "Audio Generation", "is_recommended": 1,
 	"prices": [{"kind": "Output", "modality": "Audio", "unit": "Request"}],
 }, {
+	# The one that declares an option, and declares where it goes: a voice is
+	# four objects down inside `generationConfig`, which is exactly the case a
+	# flat merge would get wrong. See `ai/model_options.GOOGLE_VOICE_PATH`.
+	"model_key": "google-ai-studio:tts", "display_name": "Flash TTS",
+	"provider": "google-ai-studio", "model_id": "gemini-3.7-flash-tts",
+	"capability": "Text to Speech", "is_recommended": 1, "prices": [],
+	"options": [{
+		"key": "voiceName", "label": "Voice", "type": "select", "default": "Zephyr",
+		"path": "generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName",
+		"options": [{"value": "Zephyr", "label": "Zephyr — Bright"},
+		            {"value": "Puck", "label": "Puck — Upbeat"}],
+	}],
+}, {
 	"model_key": "workers-ai:flux", "display_name": "Flux",
 	"provider": "workers-ai", "model_id": "@cf/black-forest-labs/flux-1-schnell",
 	"capability": "Image Generation", "is_recommended": 1,
@@ -330,3 +343,36 @@ def test_the_convenience_property_is_read_when_there_are_no_steps(gateway):
 	result = gateway.module.call(feature, "A song")
 	assert result["audio"] == ["c2hvcnRjdXQ="]
 	assert result["text"] == "Lyrics"
+
+
+# --------------------------------------------------------------------------- #
+# What the workspace chose about *how*, not what
+# --------------------------------------------------------------------------- #
+
+def test_a_declared_option_lands_where_the_declaration_says(gateway):
+	"""A voice is not a key at the top of anything.
+
+	Google nests it four objects down, so the declaration carries the path and
+	the gateway makes the objects on the way. A flat merge would put
+	`voiceName` beside `maxOutputTokens`, where the provider ignores it and the
+	setting silently does nothing.
+	"""
+	sent, _, feature = wire(gateway, GEMINI_OK, capability="Text to Speech")
+	gateway.module.call(feature, "Read this out.")
+
+	spoken = sent["body"]["generationConfig"]["speechConfig"]
+	assert spoken["voiceConfig"]["prebuiltVoiceConfig"]["voiceName"] == "Zephyr"
+
+
+def test_an_option_never_overwrites_a_ceiling_the_builder_set(gateway):
+	"""Those are the operator's limits and the shapes a capability needs.
+
+	A workspace answer that could overwrite one would be a setting that raises
+	its own limit.
+	"""
+	sent, _, feature = wire(gateway, GEMINI_OK, capability="Text to Speech")
+	gateway.module.call(feature, "Read this out.")
+
+	config = sent["body"]["generationConfig"]
+	assert config["maxOutputTokens"] == 400
+	assert config["responseModalities"] == ["AUDIO"]

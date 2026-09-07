@@ -29,7 +29,7 @@ import frappe
 import requests
 from frappe.utils import now_datetime, today
 
-from oneapp_control.ai import capabilities, sources
+from oneapp_control.ai import capabilities, model_options, sources
 
 TIMEOUT = 60
 
@@ -37,6 +37,7 @@ CF_API = "https://api.cloudflare.com/client/v4"
 CF_PRICING_URL = "https://developers.cloudflare.com/workers-ai/platform/pricing/index.md"
 GOOGLE_API = "https://generativelanguage.googleapis.com/v1beta"
 GOOGLE_PRICING_URL = "https://ai.google.dev/gemini-api/docs/pricing.md.txt"
+GOOGLE_SPEECH_URL = "https://ai.google.dev/gemini-api/docs/speech-generation.md.txt"
 
 # Providers are the AI Gateway path segment, used verbatim in the request URL.
 WORKERS = "workers-ai"
@@ -198,11 +199,18 @@ def workers_rows(models: list[dict], pricing_md: str) -> list[dict]:
 			"unparsed": parsed.unparsed,
 			"notes": notes,
 			"preview": _flag(props.get("beta")),
+			# Cloudflare returns a JSON Schema of each model's input beside its
+			# task. Whatever of it is a setting a workspace could sensibly
+			# choose becomes an option; the rest — the prompt, the image — is
+			# the ask and not a setting. See `ai/model_options.py`.
+			"options": model_options.from_workers_schema(
+				model.get("schema"), capability or ""
+			),
 		})
 	return rows
 
 
-def gemini_rows(models: list[dict], pricing_txt: str) -> list[dict]:
+def gemini_rows(models: list[dict], pricing_txt: str, speech_txt: str = "") -> list[dict]:
 	priced = sources.parse_gemini_pricing(pricing_txt)
 	rows = []
 
@@ -234,6 +242,10 @@ def gemini_rows(models: list[dict], pricing_txt: str) -> list[dict]:
 			# output; the models API does not say so, and claiming otherwise
 			# would hide features that work.
 			"supports_tools": 1 if capability == "Text Generation" else 0,
+			# Google publishes its voices as a table on the speech generation
+			# page rather than through the API, so that page is fetched like the
+			# pricing one is. See `ai/model_options.py`.
+			"options": model_options.for_google(capability or "", speech_txt),
 			"supports_json": 1 if capability == "Text Generation" else 0,
 			"supports_reasoning": _flag(model.get("thinking")),
 			"supports_streaming": 1 if "streamgeneratecontent" in
@@ -325,6 +337,13 @@ def _upsert(row: dict, report: dict):
 		"sync_note": note,
 		"last_synced": now_datetime(),
 	})
+
+	# What else the model takes, from the provider's own list. Never over an
+	# operator's — `options_locked` is a human saying they read the page and
+	# decided — and never *away*: a parser that came back empty means the page
+	# changed, not that the model lost its voices.
+	if not doc.options_locked and row.get("options"):
+		doc.options_json = json.dumps(row["options"], indent=2)
 
 	doc.set("prices", _price_children(row["prices"]))
 
@@ -423,7 +442,14 @@ def _sync_google(conf) -> list[dict]:
 		raise SyncError("Google AI Studio key is not set.")
 
 	models = fetch_gemini_models(key)
-	return gemini_rows(models, _get(GOOGLE_PRICING_URL).text)
+	# The speech page is not worth failing the whole sync over: without it the
+	# TTS models simply keep whatever options they had, which is the same thing
+	# that happens when Google reformats the table.
+	try:
+		speech = _get(GOOGLE_SPEECH_URL).text
+	except SyncError:
+		speech = ""
+	return gemini_rows(models, _get(GOOGLE_PRICING_URL).text, speech)
 
 
 def scheduled_sync():

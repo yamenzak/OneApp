@@ -1407,11 +1407,20 @@ ever read back *through* the declaration, which is what makes an option that has
 gone away stop being offered and stop being sent, with nothing to migrate.
 
 An option's `key` is the provider's own parameter name, so there is no
-translation table anywhere: the operator who writes the declaration read that
-provider's documentation, and the gateway only has to know *where* each provider
-takes its parameters. It never lets an answer overwrite something the request
-builder already set — those are the operator's ceilings, and a setting that
-could raise its own limit is not a setting.
+translation table anywhere. Where it *goes* is the declaration's to say: most
+sit at the level a provider takes its parameters at, and one that does not —
+Google's voice is four objects down — carries a dotted `path` and the gateway
+writes it there. It never lets an answer overwrite something the request builder
+already set: those are the operator's ceilings, and a setting that could raise
+its own limit is not a setting.
+
+**Nobody transcribes the list.** The declaration is derived on the control plane
+from the same kind of source the prices come from — Cloudflare returns a JSON
+Schema of each model's input on the endpoint the catalogue sync already calls,
+and Google publishes its thirty voices as a table on the speech generation page.
+An operator who edits one by hand ticks `options_locked` and the sync leaves it
+alone, and a parser that comes back empty changes nothing: that means the page
+was reformatted, not that the model lost its voices.
 
 Leaving one unanswered is a real answer, and the one that keeps working: the
 panel offers "Default — 0.7" the way the model picker offers "Recommended", and
