@@ -14,6 +14,15 @@
     — and reads on both grounds because it sits inside a coloured shape rather
     than against the canvas.
   -->
+  <!--
+    `v-html`, and the rule that objects to it is switched off for this one
+    element. What goes in is not a string from anywhere: it is a mark out of
+    `lib/brand/marks.js`, which `scripts/gen_brand.py` writes from a page in
+    this repository. Nothing a customer or a request can reach touches it, and
+    an SVG cannot be assembled from components without transcribing sixteen
+    marks into Vue templates by hand.
+  -->
+  <!-- eslint-disable vue/no-v-html -->
   <svg
     viewBox="0 0 100 100"
     :class="$attrs.class"
@@ -22,6 +31,7 @@
     :aria-label="label"
     v-html="drawn"
   />
+  <!-- eslint-enable vue/no-v-html -->
 </template>
 
 <script setup>

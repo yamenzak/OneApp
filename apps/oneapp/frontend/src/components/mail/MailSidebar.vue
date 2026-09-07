@@ -109,8 +109,8 @@
             {{ mail.refreshing ? __('Refreshing…') : __('Refresh folders') }}
           </span>
         </SidebarItem>
-        <SidebarCollapse />
       </div>
+      <ShellFoot />
     </div>
   </Sidebar>
 
@@ -148,7 +148,7 @@ import {
   SidebarHeader,
   SidebarItem,
 } from '@/ui'
-import SidebarCollapse from '../SidebarCollapse.vue'
+import ShellFoot from '../shell/ShellFoot.vue'
 import SidebarResizer from '../SidebarResizer.vue'
 import { loadMail, mail, refreshMail } from '@/lib/shell/mail'
 import { workspace } from '../../lib/workspace'

@@ -205,7 +205,6 @@
 <script setup>
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import {
-  Icon,
   List,
   ListCell,
   ListGroup,

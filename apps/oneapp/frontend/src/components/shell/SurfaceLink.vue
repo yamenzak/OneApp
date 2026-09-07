@@ -1,17 +1,17 @@
 <template>
   <!--
-    One destination in the rail's footer: Mail, Files.
+    One destination in the column's foot: Mail, Files, the calendar.
 
-    Both are surfaces that are not inside a space — the addresses somebody holds
-    do not change when they switch space, and neither does the workspace's file
-    table — so neither belongs in any space's navigation. They sit above the
-    notification bell, which is above the account, which is the last thing in
-    the rail everywhere in this product.
+    None of them is inside a space — the addresses somebody holds do not change
+    when they switch space, and neither does the workspace's file table — so
+    none belongs in any space's navigation. They sit above the account and the
+    notification bell, which are the last two things in the column everywhere in
+    this product.
 
-    One component for both, drawn from `useNav().surfaces`, for the reason that
-    module exists: two renderings of one list, not two lists. Written as two
-    components they drifted immediately — one of them had a row in the phone's
-    More sheet and the other did not.
+    One component for all of them, drawn from `useNav().surfaces`, for the
+    reason that module exists: one list rendered twice, not two lists. Written
+    as separate components they drifted immediately — one of them had a row in
+    the phone's More sheet and the other did not.
 
     The badge is Mail's and would be wrong on Files. A count of files is not
     news: nothing there is waiting for you, which is the difference between a

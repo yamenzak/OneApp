@@ -66,28 +66,34 @@
   </MobileShell>
 
   <!--
-    One piece, not four panels.
+    One shell: a bar, a column, and a curved inset.
 
-    A bar across the whole width, the space's navigation under its left end,
-    and the page in a curved inset that owns its own scroll. There is no rail:
-    fifteen marks do not fit a 50px column and the number grows every time
-    somebody adds a space from the marketplace, so the corner names the space
-    you are in and the switcher behind it holds the rest. What used to sit in
-    the rail's foot — the surfaces that are not inside any space, the bell,
-    you — moves to the bar, which is the one place with room to grow.
+    The bar carries two things and no third. On the left, in the corner, the
+    workspace and every space in it — the switcher, because fifteen marks do
+    not fit a 50px rail and the marketplace exists to make the number grow. To
+    the right of it, the page's own header, teleported up out of the page:
+    where you are and what you can do here are the same row as where you are in
+    the product, rather than a second band of chrome under the first.
+
+    Everything else — the surfaces that are not inside a space, you, the bell,
+    the settings dialog — is in the foot of the column, which is `ShellFoot`.
+
+    Composed here rather than by `DesktopShell`, which renders its header
+    target *inside* the content column: the whole point is that the header is
+    beside the switcher, and a slot cannot reach past its own parent.
   -->
   <div v-else class="flex h-full min-h-0 flex-col bg-surface-sidebar">
     <header
       v-if="chrome"
       data-slot="shell-topbar"
-      class="flex h-12 shrink-0 items-center gap-1 ps-2 pe-2.5"
+      class="flex h-12 shrink-0 items-center gap-2 ps-2 pe-3"
     >
       <!--
         The corner. The workspace, and behind it every space in it.
 
         The workspace and not the space: the sidebar's own header names the
-        space directly under this, and the two saying the same word 48px apart
-        is what a header is for avoiding. Width-matched to that sidebar so the
+        space directly under this, and two labels saying one word 48px apart is
+        what a header is for avoiding. Width-matched to that sidebar so the
         pair read as one column, and it follows it when it collapses.
       -->
       <div v-if="entries.length || entriesTo" class="shrink-0" :style="cornerStyle">
@@ -95,7 +101,6 @@
           <Button
             variant="ghost"
             class="!h-8 w-full !justify-start !px-1"
-            icon-right="lucide-chevrons-up-down"
             :tooltip="__('Switch space')"
           >
             <template #prefix>
@@ -107,43 +112,63 @@
             >
               {{ workspace.label || entriesLabel }}
             </span>
+            <!--
+              In the label slot rather than `icon-right`, and after a `flex-1`
+              span. Button lays its prefix, label and right icon out as one
+              flex row and sizes itself to them, so the chevron sat against the
+              last letter of a name however wide the corner was; the span takes
+              the slack and pushes it to the end, which is where a combobox
+              puts its arrows.
+            -->
+            <Icon
+              v-if="!sidebarCollapsed"
+              name="lucide-chevrons-up-down"
+              class="ms-1 size-4 shrink-0 text-ink-gray-5"
+            />
           </Button>
         </Dropdown>
       </div>
 
-      <!-- Quick access: what is not inside a space, one press away from
-           wherever you are. -->
-      <div class="flex min-w-0 items-center gap-0.5">
-        <slot name="topbar" />
-      </div>
-
-      <div class="ms-auto flex shrink-0 items-center gap-1">
-        <slot name="topbar-end" />
+      <!--
+        The page's header, which teleports itself here. Its own classes are for
+        a band of its own — a white ground, a bottom border, its own padding —
+        and none of that is wanted inside a bar that already has a ground, so
+        they are turned off from the outside rather than by asking every page
+        to draw a different header.
+      -->
+      <div
+        data-slot="shell-page-header"
+        class="min-w-0 flex-1 [&_header]:!min-h-0 [&_header]:!border-0 [&_header]:!bg-transparent [&_header]:!px-0"
+      >
+        <PageHeaderTarget />
       </div>
     </header>
 
-    <DesktopShell class="min-h-0 flex-1" :scroll="scroll">
-      <template v-if="chrome && $slots.sidebar" #sidebar>
-        <slot name="sidebar" />
-      </template>
+    <div class="flex min-h-0 flex-1">
+      <slot v-if="chrome && $slots.sidebar" name="sidebar" />
 
       <!--
         The inset. `overflow-hidden` so whatever scrolls inside is clipped to
         the curve, and the scroller is inside this rather than around it: the
         frame stays where it is and only the content moves.
 
-        Only when the surface takes the chrome. An editor asked for the window
-        and a frame around the window is not that.
+        An editor asked for the window, so it gets no frame — and its own
+        header target, because there is no bar above it to hold one.
       -->
       <div
-        v-if="chrome"
         data-slot="shell-inset"
-        class="mb-2 me-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-6 border border-outline-gray-2 bg-surface-base"
+        class="flex min-w-0 flex-1 flex-col overflow-hidden"
+        :class="chrome ? 'mb-2 me-2 rounded-6 border border-outline-gray-2 bg-surface-base' : ''"
       >
-        <slot />
+        <PageHeaderTarget v-if="!chrome" />
+        <ScrollArea v-if="scroll" class="min-h-0 flex-1">
+          <slot />
+        </ScrollArea>
+        <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <slot />
+        </div>
       </div>
-      <slot v-else />
-    </DesktopShell>
+    </div>
   </div>
 
   <!-- Sheet rather than a dropdown: on a phone this is the primary way to change
@@ -287,7 +312,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SpaceFace from './brand/SpaceFace.vue'
 import {
@@ -295,7 +320,6 @@ import {
   Badge,
   BottomSheet,
   Button,
-  DesktopShell,
   Icon,
   ItemListRow,
   MobileNav,
@@ -303,6 +327,8 @@ import {
   MobileShell,
   Divider,
   Dropdown,
+  PageHeaderTarget,
+  ScrollArea,
   TabButtons,
 } from '@/ui'
 import { useAppearance } from '@/lib/shell/appearance'
@@ -337,6 +363,11 @@ const props = defineProps({
    * than a gap.
    */
   workspace: { type: Object, default: () => ({}) },
+  /**
+   * Extra rows under the spaces, as menu options. The marketplace goes here
+   * and only for somebody who may act on it.
+   */
+  entryExtra: { type: Array, default: () => [] },
   /**
    * Every destination this surface has, in sidebar order:
    * { label, icon, to, active?, badge?, primary? }.
@@ -426,7 +457,12 @@ const entryOptions = computed(() => {
       hideLabel: true,
       options: props.entries.map((entry) => ({
         label: entry.label,
-        icon: entry.key === props.activeEntry ? 'lucide-check' : undefined,
+        // Its own mark, drawn the way it is drawn everywhere else. A tick
+        // beside the current one instead would have been the only place in the
+        // product where a space is a word rather than a face, and `selected`
+        // already says which one you are in without spending the icon on it.
+        icon: () => h(SpaceFace, { space: { label: entry.label, logo: entry.image, brand: entry.brand } }),
+        selected: entry.key === props.activeEntry,
         onClick: () => {
           showMenu.value = false
           router.push(entry.to)
@@ -434,19 +470,33 @@ const entryOptions = computed(() => {
       })),
     })
   }
-  if (props.entriesTo) {
+  if (props.entriesTo || props.entryExtra.length) {
     groups.push({
       group: 'all',
       hideLabel: true,
       options: [
-        {
-          label: __('All {0}', [props.entriesLabel.toLowerCase()]),
-          icon: 'lucide-layout-grid',
+        ...(props.entriesTo
+          ? [{
+            label: __('All {0}', [props.entriesLabel.toLowerCase()]),
+            icon: 'lucide-layout-grid',
+            onClick: () => {
+              showMenu.value = false
+              router.push(props.entriesTo)
+            },
+          }]
+          : []),
+        // Adding a space is something you do to the *workspace*, so it belongs
+        // where the workspace's spaces are listed rather than beside the day's
+        // work. Whoever may not add one is not offered the row at all — the
+        // caller decides that, because who may is a permission and this is a
+        // menu.
+        ...props.entryExtra.map((one) => ({
+          ...one,
           onClick: () => {
             showMenu.value = false
-            router.push(props.entriesTo)
+            one.onClick?.()
           },
-        },
+        })),
       ],
     })
   }

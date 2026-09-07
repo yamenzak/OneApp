@@ -45,11 +45,7 @@
       </nav>
     </ScrollArea>
 
-    <div class="mt-auto shrink-0">
-      <div class="p-2">
-        <SidebarCollapse />
-      </div>
-    </div>
+    <ShellFoot />
   </Sidebar>
 
   <SidebarResizer />
@@ -63,7 +59,7 @@ import {
   SidebarHeader,
   SidebarItem,
 } from '@/ui'
-import SidebarCollapse from '../SidebarCollapse.vue'
+import ShellFoot from '../shell/ShellFoot.vue'
 import SidebarResizer from '../SidebarResizer.vue'
 import { session } from '@/lib/shell/session'
 import { useSidebar } from '@/lib/shell/sidebar'

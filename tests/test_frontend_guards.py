@@ -786,12 +786,19 @@ def test_every_page_opens_with_the_same_header(app):
 		)
 
 
-# One column, three fillings. Which component sits in the shell's `#sidebar`
-# slot depends on where you are; that it is a `Sidebar` with a header, a
-# collapse toggle and the shared width does not. The Drive's rail was a plain
-# `<div>` for a while, which is how you get one surface with no header, no
-# collapse and no resize handle — a difference nobody chose and everybody sees.
+# One column, five fillings. Which component sits in the shell's `#sidebar`
+# slot depends on where you are; that it is a `Sidebar` with a header, a foot
+# and the shared width does not. The Drive's column was a plain `<div>` for a
+# while, which is how you get one surface with no header, no collapse and no
+# resize handle — a difference nobody chose and everybody sees.
 SIDEBAR_STATE = "sidebar"
+
+# The foot is one component rather than a block per column, because it was a
+# block per column and they disagreed: the quota meter existed under the spaces
+# and nowhere else, so the number that decides whether an upload is refused was
+# invisible on the screen you upload from. It carries the collapse toggle, so a
+# column that renders it has one.
+FOOT = "ShellFoot"
 
 
 @pytest.mark.parametrize("app", SHELL_APPS)
@@ -806,7 +813,7 @@ def test_every_sidebar_is_the_same_sidebar(app):
 		# that component with its one hardcoded English word translated, which
 		# is the difference between an Arabic screen and an Arabic screen with
 		# "Collapse" in the corner of it.
-		for component in ("Sidebar", "SidebarHeader", "SidebarCollapse"):
+		for component in ("Sidebar", "SidebarHeader", FOOT):
 			assert f"<{component}" in source, f"{path.name} does not render {component}"
 
 		# And the state is the shared one, not a fourth copy of it. Two of the
@@ -819,6 +826,11 @@ def test_every_sidebar_is_the_same_sidebar(app):
 		# One handle, not four: `SidebarResizer` owns the floor, the ceiling
 		# and the key the width is remembered under.
 		assert "<SidebarResizer" in source, f"{path.name} cannot be resized"
+
+	# And the foot is the one place the toggle lives, so "renders the foot" is
+	# the same claim as "can be collapsed".
+	foot = (root / "components" / "shell" / f"{FOOT}.vue").read_text()
+	assert "<SidebarCollapse" in foot, f"{FOOT} does not render the collapse toggle"
 
 
 def test_the_bottom_bar_leaves_a_slot_for_everything_else():

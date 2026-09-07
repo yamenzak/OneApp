@@ -49,8 +49,8 @@
           format="bytes"
           class="mb-2 px-1"
         />
-        <SidebarCollapse />
       </div>
+      <ShellFoot />
     </div>
   </Sidebar>
 
@@ -65,7 +65,7 @@ import {
   SidebarHeader,
   SidebarItem,
 } from '@/ui'
-import SidebarCollapse from '../SidebarCollapse.vue'
+import ShellFoot from '../shell/ShellFoot.vue'
 import SidebarResizer from '../SidebarResizer.vue'
 import UsageBar from '../UsageBar.vue'
 import { PLACES } from './places'

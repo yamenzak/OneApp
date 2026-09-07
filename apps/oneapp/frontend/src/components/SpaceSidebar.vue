@@ -72,20 +72,9 @@
 
     <!-- Sidebar has one slot, the default: a `#footer` template renders
          nothing at all, which is how the quota meter, the user menu and the
-         setup card all silently disappeared. `mt-auto` pins this to the
-         bottom. -->
-    <div class="mt-auto shrink-0">
-      <div class="p-2">
-        <!-- A meter is a number and a bar, and neither survives 3rem of
-             width. -->
-        <QuotaMeter v-if="!collapsed" class="mb-2 px-1" />
-        <!--
-          frappe-ui's own toggle, which is a SidebarItem — so it collapses to
-          its icon with everything else and stays where the eye already is.
-        -->
-        <SidebarCollapse />
-      </div>
-    </div>
+         setup card all silently disappeared. `ShellFoot` pins itself to the
+         bottom and is the same three rows under every column. -->
+    <ShellFoot />
   </Sidebar>
 
   <!-- Two roots rather than a wrapper: the shell lays its sidebar out as a
@@ -103,9 +92,8 @@ import {
   SidebarItem,
   SidebarLabel,
 } from '@/ui'
-import SidebarCollapse from './SidebarCollapse.vue'
+import ShellFoot from './shell/ShellFoot.vue'
 import SidebarResizer from './SidebarResizer.vue'
-import QuotaMeter from './QuotaMeter.vue'
 import { useNav } from '@/lib/shell/nav'
 import { useSidebar } from '@/lib/shell/sidebar'
 

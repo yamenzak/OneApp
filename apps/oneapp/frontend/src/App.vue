@@ -8,6 +8,7 @@
       :active-entry="activeSpaceCode"
       :entries-to="{ name: 'Launcher' }"
       :workspace="workspace"
+      :entry-extra="entryExtra"
       :nav-items="nav"
       :menu-items="menuItems"
       :user="identity"
@@ -29,19 +30,6 @@
         <!-- And the assistant's, which is this person's own conversations. -->
         <ChatSidebar v-else-if="$route.name === 'Chat'" />
         <SpaceSidebar v-else />
-      </template>
-
-      <!-- The surfaces that are not spaces: quick access from the bar,
-           beside the switcher rather than under it. Everything here has a row
-           in the More sheet below, because a phone draws no bar. -->
-      <template #topbar>
-        <RailSurface v-for="one in surfaces" :key="one.key" :surface="one" />
-      </template>
-
-      <!-- What is about you rather than about the workspace, at the far end. -->
-      <template #topbar-end>
-        <NotificationBell />
-        <RailAccount />
       </template>
 
       <!--
@@ -119,8 +107,8 @@
 import { TENANT_APP } from '@/lib/runtime/brand'
 import { brand } from '@/lib/runtime/boot'
 import { __ } from '@/lib/runtime/translate'
-import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, h, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { FrappeUIProvider, Button, Dialog, LoadingIndicator, usePageMeta } from '@/ui'
 import AppShell from './components/AppShell.vue'
 import SpaceSidebar from './components/SpaceSidebar.vue'
@@ -129,9 +117,7 @@ import DiarySidebar from './components/diary/DiarySidebar.vue'
 import ChatSidebar from './components/chat/ChatSidebar.vue'
 import AssistantPanel from './components/chat/AssistantPanel.vue'
 import DriveSidebar from './components/drive/DriveSidebar.vue'
-import RailAccount from './components/RailAccount.vue'
-import NotificationBell from './components/notifications/NotificationBell.vue'
-import RailSurface from './components/RailSurface.vue'
+import BrandMark from './components/brand/BrandMark.vue'
 import NotificationList from './components/notifications/NotificationList.vue'
 import SettingsShell from './components/settings/SettingsShell.vue'
 import { useNav } from '@/lib/shell/nav'
@@ -142,6 +128,7 @@ import { followMail } from '@/lib/shell/mail'
 import { loadAssistant } from '@/lib/shell/assistant'
 
 const route = useRoute()
+const router = useRouter()
 
 // The rail is the workspace's spaces. This is the one place they are enumerated
 // for navigation; the sidebar belongs to whichever is active.
@@ -234,6 +221,22 @@ const workspace = computed(() => ({
   label: session.tenant?.name || TENANT_APP,
   logo: brand.favicon || null,
 }))
+
+// The one row under the spaces: where a workspace gets another one. Its own
+// mark rather than a lucide shop — the marketplace is one of ours, and every
+// other place a space is offered already draws it that way. Absent for
+// somebody who may not add one: `require_workspace_admin` on the control plane
+// admits the owner and an Admin member, and a row leading to a page of
+// refusals is worse than no row.
+const entryExtra = computed(() =>
+  session.isAdmin
+    ? [{
+      label: __('Add a space'),
+      icon: () => h(BrandMark, { name: 'onemarket' }),
+      onClick: () => router.push({ name: 'Marketplace' }),
+    }]
+    : [],
+)
 
 const identity = computed(() => ({
   name: fullName.value,
