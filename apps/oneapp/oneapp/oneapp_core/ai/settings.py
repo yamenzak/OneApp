@@ -22,6 +22,17 @@ import json
 import frappe
 from frappe import _
 
+#: How the assistant speaks, as the panel offers it and the prompt says it.
+#:
+#: Here rather than read off the Select's own options: this is read on every
+#: call that builds a prompt, a meta lookup for a fixed list of five words is a
+#: query for nothing, and a site whose doctype has not been migrated yet would
+#: have no vocabulary to validate against — which would refuse every tone
+#: rather than none. `scripts/doctypes/ai.py` writes the same list into the
+#: field, and `test_the_tones_offered_are_the_tones_stored` holds the two ends
+#: together.
+TONES = ("Neutral", "Friendly", "Formal", "Direct", "Warm")
+
 from oneapp.oneapp_core.ai import features
 
 
@@ -111,27 +122,83 @@ def model_for(feature) -> str:
 	return (recommended or matching)[0]["model_key"]
 
 
+def identity() -> dict:
+	"""Who the assistant is, to this workspace.
+
+	One answer for the whole product. The chat panel, a drafted reply and
+	anything else it speaks through are the same character, and a name that
+	changed between them would read as two different products.
+
+	The name and the picture are what surfaces show; the tone and the
+	personality are what the model is told. Kept together because they are one
+	decision — `assistant_name` is in the prompt too, since an assistant that
+	is called Rua on screen and calls itself "the assistant" in its own answers
+	is the same inconsistency from the other side.
+	"""
+	# `get` rather than attribute access: this is read on every call that
+	# builds a prompt, and a site running new code against a database that has
+	# not been migrated yet would otherwise raise here rather than fall back to
+	# the default. A missing field is an assistant with no character, which is
+	# what it had before there were fields.
+	settings = doc()
+	said = lambda name: (settings.get(name) or "").strip()  # noqa: E731
+
+	return {
+		"name": said("assistant_name") or _("Assistant"),
+		"avatar": settings.get("assistant_avatar") or "",
+		"tone": said("assistant_tone"),
+		"personality": said("assistant_personality"),
+	}
+
+
+def _character() -> str:
+	"""The identity as a paragraph, or nothing at all.
+
+	Nothing where the workspace has said nothing beyond the default: an empty
+	instruction is still a sentence the model reads and weighs, and "You are
+	called Assistant" is not worth what it costs.
+	"""
+	who = identity()
+	said = []
+	if who["name"] and who["name"] != _("Assistant"):
+		said.append(f"You are called {who['name']}.")
+	if who["tone"] and who["tone"] != "Neutral":
+		said.append(f"Your tone is {who['tone'].lower()}.")
+	if who["personality"]:
+		said.append(who["personality"])
+	return " ".join(said)
+
+
 def system_prompt(feature) -> str:
-	"""Ours, then theirs.
+	"""Ours, then who it is, then theirs.
 
 	Concatenated in that order deliberately: instructions later in a system
 	prompt qualify what came before rather than replacing it, so a workspace can
-	say "answer in French" without being able to say "ignore the above".
+	say "answer in French" without being able to say "ignore the above". The
+	identity sits in the middle for the same reason — it shapes how the answer
+	reads, and must not be able to reach what the feature is for.
 	"""
 	if not feature.allow_prompt_addendum:
 		return feature.system
 
-	row = _row(doc(), feature.key)
-	addendum = (row.prompt_addendum or "").strip() if row else ""
-	if not addendum:
-		return feature.system
+	parts = [feature.system]
 
-	return (
-		f"{feature.system}\n\n"
-		"The workspace has added the following preferences. Follow them where "
-		"they do not conflict with the instructions above.\n"
-		f"{addendum}"
-	)
+	if character := _character():
+		parts.append(
+			"You have been given a character by the workspace. Keep it in how "
+			"you write, not in what you do.\n"
+			f"{character}"
+		)
+
+	row = _row(doc(), feature.key)
+	if addendum := ((row.prompt_addendum or "").strip() if row else ""):
+		parts.append(
+			"The workspace has added the following preferences. Follow them "
+			"where they do not conflict with the instructions above.\n"
+			f"{addendum}"
+		)
+
+	return "\n\n".join(parts)
 
 
 def limits(feature) -> dict:
@@ -212,9 +279,16 @@ def spec() -> dict:
 	return {
 		"ai_enabled": bool(settings.ai_enabled),
 		"credit_balance": settings.credit_balance,
+		"assistant": identity(),
+		"tones": _tones(),
 		"features": rows,
 		"has_catalogue": bool(models),
 	}
+
+
+def _tones() -> list[str]:
+	"""The tones offered. See `TONES`."""
+	return list(TONES)
 
 
 def _rate_line(model: dict) -> str:
@@ -252,6 +326,29 @@ def _amount(value: float) -> str:
 	return f"{value:.10f}".rstrip("0").rstrip(".") or "0"
 
 
+def _identity(settings, who: dict) -> None:
+	"""Write the assistant's identity, bounded.
+
+	The tone is checked against the field's own options rather than taken as
+	given: it reaches the model as a word in an instruction, and a Select whose
+	value came from the browser is not a Select.
+	"""
+	if "name" in who:
+		settings.assistant_name = (who["name"] or "").strip()[:60]
+	if "avatar" in who:
+		settings.assistant_avatar = (who["avatar"] or "").strip()
+	if "tone" in who:
+		tone = (who["tone"] or "").strip()
+		if tone and tone not in _tones():
+			frappe.throw(_("{0} is not a tone this can use.").format(tone))
+		settings.assistant_tone = tone
+	if "personality" in who:
+		# Bounded like the addendum, and for the same reason: this is prose that
+		# goes in front of a model on every call, and the cost of it is paid by
+		# the workspace on each one.
+		settings.assistant_personality = (who["personality"] or "")[:1000]
+
+
 def save(values: dict) -> dict:
 	"""Apply what the workspace changed, ignoring what it may not change."""
 	features.discover()
@@ -262,6 +359,9 @@ def save(values: dict) -> dict:
 
 	if "ai_enabled" in values:
 		settings.ai_enabled = 1 if values["ai_enabled"] else 0
+
+	if who := values.get("assistant"):
+		_identity(settings, who)
 
 	for key, answer in (values.get("features") or {}).items():
 		feature = features.REGISTRY.get(key)

@@ -9,6 +9,12 @@
   "credit_balance",
   "cb_ai_set",
   "last_sync",
+  "sec_ai_identity",
+  "assistant_name",
+  "assistant_avatar",
+  "cb_ai_identity",
+  "assistant_tone",
+  "assistant_personality",
   "sec_ai_features",
   "features",
   "sec_ai_cache",
@@ -38,6 +44,42 @@
    "fieldtype": "Datetime",
    "label": "Last Sync",
    "read_only": 1
+  },
+  {
+   "fieldname": "sec_ai_identity",
+   "fieldtype": "Section Break",
+   "label": "The assistant"
+  },
+  {
+   "default": "Assistant",
+   "description": "What it is called wherever it appears.",
+   "fieldname": "assistant_name",
+   "fieldtype": "Data",
+   "label": "Assistant Name"
+  },
+  {
+   "description": "Its picture. Falls back to a mark drawn from the name.",
+   "fieldname": "assistant_avatar",
+   "fieldtype": "Attach Image",
+   "label": "Assistant Avatar"
+  },
+  {
+   "fieldname": "cb_ai_identity",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Neutral",
+   "description": "How it speaks.",
+   "fieldname": "assistant_tone",
+   "fieldtype": "Select",
+   "label": "Assistant Tone",
+   "options": "Neutral\nFriendly\nFormal\nDirect\nWarm"
+  },
+  {
+   "description": "Who it is, in a sentence. Say what it knows and how it should come across.",
+   "fieldname": "assistant_personality",
+   "fieldtype": "Small Text",
+   "label": "Assistant Personality"
   },
   {
    "fieldname": "sec_ai_features",

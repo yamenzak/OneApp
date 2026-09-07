@@ -100,6 +100,9 @@ msgstr ""
 "الخطاب والنموذج يُرقَّمان في تسلسلين منفصلين، لأن هذا ما يتوقعه من يذكر "
 "رقم أحدهما على الهاتف."
 
+msgid "A letter from its name is used where there is none."
+msgstr "يستخدم حرف من اسمه عند غياب الصورة."
+
 msgid "A letter head called {0} already exists."
 msgstr "توجد بالفعل ترويسة باسم {0}."
 
@@ -261,6 +264,11 @@ msgstr "الإضافات"
 
 msgid "Added to the bottom of mail sent from this address."
 msgstr "يُضاف إلى أسفل البريد المرسل من هذا العنوان."
+
+msgid ""
+"Added to the instructions it already has. It changes how answers read, "
+"not what a feature does."
+msgstr "يضاف إلى التعليمات الموجودة. يغير أسلوب الإجابات لا وظيفة الميزة."
 
 msgid ""
 "Added to the instructions this feature already has. Use it for your "
@@ -482,6 +490,18 @@ msgstr "الإسنادات والإشارات وإشعارات مساحة الع
 
 msgid "Assistant"
 msgstr "المساعد"
+
+msgid "Assistant Avatar"
+msgstr "صورة المساعد"
+
+msgid "Assistant Name"
+msgstr "اسم المساعد"
+
+msgid "Assistant Personality"
+msgstr "شخصية المساعد"
+
+msgid "Assistant Tone"
+msgstr "نبرة المساعد"
 
 msgid "At Seq"
 msgstr "عند التسلسل"
@@ -978,6 +998,9 @@ msgstr "تم الحذف نهائياً"
 msgid "Delivery update"
 msgstr "تحديث التسليم"
 
+msgid "Direct"
+msgstr "مباشر"
+
 msgid "Discard and close"
 msgstr "تجاهل وإغلاق"
 
@@ -1310,6 +1333,9 @@ msgstr "للقواعد التي تُصنّف أشياء لا يحتاج أحد �
 msgid "For {0}"
 msgstr "لـ {0}"
 
+msgid "Formal"
+msgstr "رسمي"
+
 msgid "Format deleted"
 msgstr "تم حذف النموذج"
 
@@ -1328,6 +1354,9 @@ msgstr ""
 
 msgid "Free some space or remove people first, and this plan becomes available."
 msgstr "أفرغ بعض المساحة أو أزل بعض الأشخاص أولاً، فتصبح هذه الخطة متاحة."
+
+msgid "Friendly"
+msgstr "ودود"
 
 msgid "From field"
 msgstr "من حقل"
@@ -1397,6 +1426,9 @@ msgstr "إخفاء الخوادم"
 
 msgid "How OneSpace looks, on this browser."
 msgstr "شكل OneSpace على هذا المتصفح."
+
+msgid "How it speaks."
+msgstr "كيف يتحدث."
 
 msgid ""
 "How long before the expiry this starts saying so. Thirty days is a month "
@@ -1571,6 +1603,12 @@ msgstr ""
 "حُفظ {0}. إعادة التحميل تأخذ ما على الخادم؛ وكل ما كُتب هنا ولم يُحفظ "
 "يضيع معها."
 
+msgid "Its name and picture are used wherever it appears."
+msgstr "اسمه وصورته يظهران أينما ظهر."
+
+msgid "Its picture. Falls back to a mark drawn from the name."
+msgstr "صورته. يستخدم حرف من الاسم عند غيابها."
+
 msgid "Keep this one"
 msgstr "الاحتفاظ بهذه"
 
@@ -1582,6 +1620,9 @@ msgstr "اختصارات لوحة المفاتيح"
 
 msgid "Kind"
 msgstr "النوع"
+
+msgid "Knows the trade, answers short, never guesses a price."
+msgstr "يعرف المهنة، يجيب باختصار، ولا يخمن سعرا."
 
 msgid "Last Error"
 msgstr "آخر خطأ"
@@ -1927,6 +1968,9 @@ msgid ""
 msgstr ""
 "ضيّق ما يُنقل، بصيغة مرشّحات Frappe نفسها. يُطبَّق على الموقع المصدر، "
 "فما يُستبعد لا يُجلب أبدًا."
+
+msgid "Neutral"
+msgstr "محايد"
 
 msgid "Never mind"
 msgstr "لا داعي"
@@ -2639,6 +2683,9 @@ msgstr "اختر التاريخ الذي يبدأ العد منه."
 
 msgid "Pick two dates"
 msgstr "اختيار تاريخين"
+
+msgid "Picture"
+msgstr "الصورة"
 
 msgid "Pin"
 msgstr "تثبيت"
@@ -3546,6 +3593,9 @@ msgstr "العنوان الذي لديك بالفعل. اقرأه وأجب عن�
 msgid "The addresses this workspace sends from, and who may use each."
 msgstr "العناوين التي ترسل منها مساحة العمل هذه، ومن يجوز له استخدام كل منها."
 
+msgid "The assistant"
+msgstr "المساعد"
+
 msgid "The assistant is not switched on here"
 msgstr "المساعد غير مفعّل هنا"
 
@@ -4113,6 +4163,9 @@ msgstr "ضيق"
 msgid "To the right"
 msgstr "إلى اليمين"
 
+msgid "Tone"
+msgstr "النبرة"
+
 msgid "Too many at once. Choose {0} or fewer."
 msgstr "كثير دفعة واحدة. اختر {0} أو أقل."
 
@@ -4310,6 +4363,9 @@ msgstr "تم حفظ العرض"
 msgid "Visa"
 msgstr "تأشيرة"
 
+msgid "Warm"
+msgstr "دافئ"
+
 msgid "Warn this many days ahead"
 msgstr "التحذير قبل هذا العدد من الأيام"
 
@@ -4359,6 +4415,9 @@ msgstr "عمَّ يدور"
 
 msgid "What it is called in the picker."
 msgstr "اسمه في قائمة الاختيار."
+
+msgid "What it is called wherever it appears."
+msgstr "ما يسمى به أينما ظهر."
 
 msgid "What it is for"
 msgstr "ما الغرض منه"
@@ -4592,8 +4651,16 @@ msgstr "أثناء غيابك"
 msgid "Who"
 msgstr "من"
 
+msgid "Who it is"
+msgstr "من يكون"
+
 msgid "Who it is from"
 msgstr "المُرسِل"
+
+msgid ""
+"Who it is, in a sentence. Say what it knows and how it should come "
+"across."
+msgstr "من يكون، في جملة. اذكر ما يعرفه وكيف ينبغي أن يظهر."
 
 msgid "Who it went to"
 msgstr "المُرسَل إليه"
@@ -5108,6 +5175,9 @@ msgstr "{0} ليس نمط طباعة."
 
 msgid "{0} is not a series on {1}."
 msgstr "{0} ليس تسلسلًا على {1}."
+
+msgid "{0} is not a tone this can use."
+msgstr "{0} ليست نبرة يمكن استخدامها."
 
 msgid "{0} is not a way to be notified."
 msgstr "{0} ليس طريقة للإشعار."

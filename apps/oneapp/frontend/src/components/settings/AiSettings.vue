@@ -29,6 +29,59 @@
         <Switch v-model="form.ai_enabled" />
       </div>
 
+      <!--
+        Who the assistant is. Above the features because it is one answer for
+        all of them: the same character answers in the chat panel and drafts a
+        reply, and a name that changed between the two would read as two
+        products. The picture and the name are what the app shows; the tone and
+        the sentence are what the model is told.
+      -->
+      <div class="flex flex-col gap-4 rounded-6 border border-outline-gray-1 p-4">
+        <div class="flex items-center gap-3">
+          <Avatar
+            size="2xl"
+            :image="form.assistant.avatar"
+            :label="form.assistant.name || __('Assistant')"
+          />
+          <div class="min-w-0">
+            <p class="text-base-medium text-ink-gray-8">{{ __('The assistant') }}</p>
+            <p class="mt-0.5 text-p-sm text-ink-gray-5">
+              {{ __('Its name and picture are used wherever it appears.') }}
+            </p>
+          </div>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <FormControl
+            v-model="form.assistant.name"
+            :label="__('Name')"
+            :placeholder="__('Assistant')"
+          />
+          <FormControl
+            v-model="form.assistant.tone"
+            type="select"
+            :label="__('Tone')"
+            :options="toneOptions"
+          />
+        </div>
+
+        <SettingsAttach
+          v-model="form.assistant.avatar"
+          image
+          :label="__('Picture')"
+          :hint="__('A letter from its name is used where there is none.')"
+        />
+
+        <FormControl
+          v-model="form.assistant.personality"
+          type="textarea"
+          :rows="3"
+          :label="__('Who it is')"
+          :placeholder="__('Knows the trade, answers short, never guesses a price.')"
+          :description="__('Added to the instructions it already has. It changes how answers read, not what a feature does.')"
+        />
+      </div>
+
       <div
         v-for="feature in data.features"
         :key="feature.key"
@@ -104,12 +157,13 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import {
-  Alert, Badge, Button, ErrorMessage, FormControl, LoadingIndicator, Switch,
+  Alert, Avatar, Badge, Button, ErrorMessage, FormControl, LoadingIndicator, Switch,
   SettingsHeader, SettingsBody,
 } from '@/ui'
 import EmptyState from '../EmptyState.vue'
+import SettingsAttach from './SettingsAttach.vue'
 import { PANEL_BODY, PANEL_FOOTER, PANEL_HEADER } from './geometry'
 import { workspace } from '../../lib/workspace'
 import { __ } from '@/lib/runtime/translate'
@@ -120,7 +174,16 @@ const data = ref(null)
 const loading = ref(false)
 const saving = ref(false)
 const error = ref('')
-const form = reactive({ ai_enabled: true })
+const form = reactive({
+  ai_enabled: true,
+  assistant: { name: '', avatar: '', tone: '', personality: '' },
+})
+
+// From the server, which reads them off the Select's own options — restating
+// them here would be a second list to keep in step.
+const toneOptions = computed(() =>
+  (data.value?.tones || []).map((one) => ({ label: __(one), value: one })),
+)
 const answers = reactive({})
 
 // Greyed rather than hidden: a feature that has been switched off should still
@@ -142,6 +205,7 @@ const load = async () => {
     const spec = await workspace.ai()
     data.value = spec
     form.ai_enabled = !!spec.ai_enabled
+    Object.assign(form.assistant, spec.assistant || {})
     for (const feature of spec.features) {
       answers[feature.key] = {
         enabled: feature.enabled,
@@ -160,6 +224,7 @@ const save = async () => {
   try {
     data.value = await workspace.saveAi({
       ai_enabled: form.ai_enabled ? 1 : 0,
+      assistant: { ...form.assistant },
       features: answers,
     })
   } catch (e) {

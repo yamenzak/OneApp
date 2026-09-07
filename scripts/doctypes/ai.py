@@ -288,6 +288,13 @@ doctype(
 )
 
 
+#: How the assistant speaks. A fixed vocabulary rather than free text, because
+#: this half goes into the prompt as a word the model has to act on, and "how
+#: formal" is a dial with a handful of stops. The character itself is free text
+#: — that is `assistant_personality`, which is where the specific goes.
+TONES = "\n".join(["Neutral", "Friendly", "Formal", "Direct", "Warm"])
+
+
 # --------------------------------------------------------------------------- #
 # OneSpace AI Settings — the workspace's AI switch and its per-feature answers.
 #
@@ -307,6 +314,26 @@ doctype(
         f("credit_balance", "Float", read_only=1),
         column("cb_ai_set"),
         f("last_sync", "Datetime", read_only=1),
+        # Who the assistant is, to this workspace.
+        #
+        # Workspace-level and not per feature: a person talking to it in the
+        # chat panel and a person reading something it drafted are meeting the
+        # same character, and a name that changed between the two would read as
+        # two different products. The name and the picture are what the app
+        # shows; the personality and the tone are what the model is told, the
+        # same way `prompt_addendum` is — appended to our instructions, never
+        # replacing them.
+        section("sec_ai_identity", "The assistant"),
+        f("assistant_name", default="Assistant",
+          description="What it is called wherever it appears."),
+        f("assistant_avatar", "Attach Image",
+          description="Its picture. Falls back to a mark drawn from the name."),
+        column("cb_ai_identity"),
+        f("assistant_tone", "Select", options=TONES, default="Neutral",
+          description="How it speaks."),
+        f("assistant_personality", "Small Text",
+          description="Who it is, in a sentence. Say what it knows and how it "
+                      "should come across."),
         section("sec_ai_features", "Features"),
         f("features", "Table", options="OneSpace AI Feature Setting"),
         section("sec_ai_cache", "Cached from the control plane"),

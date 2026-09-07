@@ -111,6 +111,9 @@ msgstr ""
 "Ein Brief und ein Formular werden in getrennten Nummernkreisen gezählt, "
 "weil das jemand erwartet, der eine Nummer am Telefon nennt."
 
+msgid "A letter from its name is used where there is none."
+msgstr "Ohne Bild wird ein Buchstabe aus dem Namen verwendet."
+
 msgid "A letter head called {0} already exists."
 msgstr "Ein Briefkopf namens {0} existiert bereits."
 
@@ -287,6 +290,13 @@ msgstr "Zusatzoptionen"
 
 msgid "Added to the bottom of mail sent from this address."
 msgstr "Wird unten an E-Mail angehängt, die von dieser Adresse gesendet wird."
+
+msgid ""
+"Added to the instructions it already has. It changes how answers read, "
+"not what a feature does."
+msgstr ""
+"Wird zu den vorhandenen Anweisungen hinzugefügt. Es ändert den Stil der "
+"Antworten, nicht die Funktion."
 
 msgid ""
 "Added to the instructions this feature already has. Use it for your "
@@ -526,6 +536,18 @@ msgstr ""
 
 msgid "Assistant"
 msgstr "Assistent"
+
+msgid "Assistant Avatar"
+msgstr "Bild des Assistenten"
+
+msgid "Assistant Name"
+msgstr "Name des Assistenten"
+
+msgid "Assistant Personality"
+msgstr "Persönlichkeit des Assistenten"
+
+msgid "Assistant Tone"
+msgstr "Ton des Assistenten"
 
 msgid "At Seq"
 msgstr "Bei Sequenz"
@@ -1034,6 +1056,9 @@ msgstr "Endgültig gelöscht"
 msgid "Delivery update"
 msgstr "Zustellungsmeldung"
 
+msgid "Direct"
+msgstr "Direkt"
+
 msgid "Discard and close"
 msgstr "Verwerfen und schließen"
 
@@ -1384,6 +1409,9 @@ msgstr "Für die Regeln, die Dinge ablegen, die niemand ansehen muss."
 msgid "For {0}"
 msgstr "Für {0}"
 
+msgid "Formal"
+msgstr "Förmlich"
+
 msgid "Format deleted"
 msgstr "Format gelöscht"
 
@@ -1404,6 +1432,9 @@ msgid "Free some space or remove people first, and this plan becomes available."
 msgstr ""
 "Geben Sie zuerst Speicher frei oder entfernen Sie Personen, dann wird "
 "dieser Tarif verfügbar."
+
+msgid "Friendly"
+msgstr "Freundlich"
 
 msgid "From field"
 msgstr "Aus Feld"
@@ -1473,6 +1504,9 @@ msgstr "Server ausblenden"
 
 msgid "How OneSpace looks, on this browser."
 msgstr "Wie OneSpace in diesem Browser aussieht."
+
+msgid "How it speaks."
+msgstr "Wie er spricht."
 
 msgid ""
 "How long before the expiry this starts saying so. Thirty days is a month "
@@ -1653,6 +1687,12 @@ msgstr ""
 "Server; alles hier Eingetippte und nicht Gespeicherte geht dabei "
 "verloren."
 
+msgid "Its name and picture are used wherever it appears."
+msgstr "Name und Bild erscheinen überall, wo er auftritt."
+
+msgid "Its picture. Falls back to a mark drawn from the name."
+msgstr "Sein Bild. Ersatzweise ein Zeichen aus dem Namen."
+
 msgid "Keep this one"
 msgstr "Diese behalten"
 
@@ -1666,6 +1706,9 @@ msgstr "Tastenkürzel"
 
 msgid "Kind"
 msgstr "Art"
+
+msgid "Knows the trade, answers short, never guesses a price."
+msgstr "Kennt das Fach, antwortet kurz, rät nie einen Preis."
 
 msgid "Last Error"
 msgstr "Letzter Fehler"
@@ -2014,6 +2057,9 @@ msgstr ""
 "Schränken Sie ein, was übernommen wird, im Filterformat von Frappe. Wird "
 "auf der Quellinstanz angewendet, sodass Ausgeschlossenes nie abgerufen "
 "wird."
+
+msgid "Neutral"
+msgstr "Neutral"
 
 msgid "Never mind"
 msgstr "Doch nicht"
@@ -2765,6 +2811,9 @@ msgstr "Wählen Sie das Datum, ab dem gezählt wird."
 
 msgid "Pick two dates"
 msgstr "Zwei Datumsangaben auswählen"
+
+msgid "Picture"
+msgstr "Bild"
 
 msgid "Pin"
 msgstr "Anheften"
@@ -3686,6 +3735,9 @@ msgstr ""
 "Die Adressen, von denen dieser Arbeitsbereich sendet, und wer sie "
 "jeweils nutzen darf."
 
+msgid "The assistant"
+msgstr "Der Assistent"
+
 msgid "The assistant is not switched on here"
 msgstr "Der Assistent ist hier nicht aktiviert"
 
@@ -4309,6 +4361,9 @@ msgstr "Eng"
 msgid "To the right"
 msgstr "Nach rechts"
 
+msgid "Tone"
+msgstr "Ton"
+
 msgid "Too many at once. Choose {0} or fewer."
 msgstr "Zu viele auf einmal. Wählen Sie {0} oder weniger."
 
@@ -4510,6 +4565,9 @@ msgstr "Ansicht gespeichert"
 msgid "Visa"
 msgstr "Visum"
 
+msgid "Warm"
+msgstr "Herzlich"
+
 msgid "Warn this many days ahead"
 msgstr "So viele Tage im Voraus warnen"
 
@@ -4563,6 +4621,9 @@ msgstr "Worum es geht"
 
 msgid "What it is called in the picker."
 msgstr "Wie es in der Auswahl heißt."
+
+msgid "What it is called wherever it appears."
+msgstr "Wie er überall genannt wird."
 
 msgid "What it is for"
 msgstr "Wofür es gedacht ist"
@@ -4814,8 +4875,16 @@ msgstr "Während Ihrer Abwesenheit"
 msgid "Who"
 msgstr "Wer"
 
+msgid "Who it is"
+msgstr "Wer er ist"
+
 msgid "Who it is from"
 msgstr "Absender"
+
+msgid ""
+"Who it is, in a sentence. Say what it knows and how it should come "
+"across."
+msgstr "Wer er ist, in einem Satz. Nenne, was er weiß und wie er wirken soll."
 
 msgid "Who it went to"
 msgstr "Empfänger"
@@ -5339,6 +5408,9 @@ msgstr "{0} ist kein Druckstil."
 
 msgid "{0} is not a series on {1}."
 msgstr "{0} ist keine Nummernserie auf {1}."
+
+msgid "{0} is not a tone this can use."
+msgstr "{0} ist kein verwendbarer Ton."
 
 msgid "{0} is not a way to be notified."
 msgstr "{0} ist kein Weg, benachrichtigt zu werden."

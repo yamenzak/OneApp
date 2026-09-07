@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 06:52+0000\n"
-"PO-Revision-Date: 2026-09-07 06:52+0000\n"
+"POT-Creation-Date: 2026-09-07 09:15+0000\n"
+"PO-Revision-Date: 2026-09-07 09:15+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -129,6 +129,10 @@ msgstr ""
 #. 'Correspondence'
 #: oneapp/oneapp_core/doctype/correspondence/correspondence.json
 msgid "A letter and a form are numbered in separate sequences, because that is what somebody quoting one on the phone expects."
+msgstr ""
+
+#: frontend/src/components/settings/AiSettings.vue:72
+msgid "A letter from its name is used where there is none."
 msgstr ""
 
 #: oneapp/oneapp_core/printing.py:870
@@ -264,7 +268,7 @@ msgid "API secret"
 msgstr ""
 
 #: frontend/src/components/settings/BooksSettings.vue:74
-#: frontend/src/components/settings/BooksSettings.vue:166
+#: frontend/src/components/settings/BooksSettings.vue:167
 msgid "Abbreviation"
 msgstr ""
 
@@ -278,7 +282,7 @@ msgstr ""
 #: frontend/src/screens/account/People.vue:126
 #: frontend/src/screens/account/People.vue:157
 #: frontend/src/screens/account/People.vue:164
-#: frontend/src/screens/account/People.vue:199
+#: frontend/src/screens/account/People.vue:200
 #: frontend/src/screens/ops/TenantSpaces.vue:101
 msgid "Access"
 msgstr ""
@@ -399,7 +403,11 @@ msgstr ""
 msgid "Added to the bottom of mail sent from this address."
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:92
+#: frontend/src/components/settings/AiSettings.vue:81
+msgid "Added to the instructions it already has. It changes how answers read, not what a feature does."
+msgstr ""
+
+#: frontend/src/components/settings/AiSettings.vue:145
 msgid "Added to the instructions this feature already has. Use it for your preferences, not for changing what the feature does."
 msgstr ""
 
@@ -519,7 +527,7 @@ msgstr ""
 msgid "Also to"
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:54
+#: frontend/src/components/settings/AiSettings.vue:107
 #: frontend/src/screens/ops/TenantSpaces.vue:42
 msgid "Always on"
 msgstr ""
@@ -581,7 +589,7 @@ msgstr ""
 msgid "Any record that refuses the change — a submitted one, or a value a rule forbids — is left alone and named."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:322
+#: frontend/src/components/settings/MailSettings.vue:323
 msgid "Anybody"
 msgstr ""
 
@@ -589,7 +597,7 @@ msgstr ""
 msgid "Anybody who can sign in here, whatever their role reaches."
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:90
+#: frontend/src/components/settings/AiSettings.vue:143
 msgid "Anything it should keep in mind"
 msgstr ""
 
@@ -741,8 +749,33 @@ msgstr ""
 #: frontend/src/components/chat/AssistantPanel.vue:22
 #: frontend/src/components/chat/AssistantPanel.vue:29
 #: frontend/src/components/chat/ChatSidebar.vue:16
+#: frontend/src/components/settings/AiSettings.vue:44
+#: frontend/src/components/settings/AiSettings.vue:58
 #: frontend/src/lib/shell/nav.js:203 frontend/src/pages/Chat.vue:73
+#: oneapp/oneapp_core/ai/settings.py:147 oneapp/oneapp_core/ai/settings.py:163
 msgid "Assistant"
+msgstr ""
+
+#. Label of the assistant_avatar (Attach Image) field in DocType 'OneSpace AI
+#. Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "Assistant Avatar"
+msgstr ""
+
+#. Label of the assistant_name (Data) field in DocType 'OneSpace AI Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "Assistant Name"
+msgstr ""
+
+#. Label of the assistant_personality (Small Text) field in DocType 'OneSpace
+#. AI Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "Assistant Personality"
+msgstr ""
+
+#. Label of the assistant_tone (Select) field in DocType 'OneSpace AI Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "Assistant Tone"
 msgstr ""
 
 #. Label of the at_seq (Long Int) field in DocType 'File Version'
@@ -813,7 +846,7 @@ msgstr ""
 msgid "Background jobs"
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:285
+#: frontend/src/screens/ops/TenantBilling.vue:286
 msgid "Background workers"
 msgstr ""
 
@@ -859,11 +892,11 @@ msgstr ""
 msgid "Belongs to"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:495
+#: frontend/src/screens/ops/Tenant.vue:496
 msgid "Bench group"
 msgstr ""
 
-#: frontend/src/screens/ops/FrappeCloud.vue:104
+#: frontend/src/screens/ops/FrappeCloud.vue:105
 msgid "Bench groups"
 msgstr ""
 
@@ -1031,7 +1064,7 @@ msgstr ""
 msgid "Calendar"
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:253
+#: frontend/src/screens/ops/TenantBilling.vue:254
 msgid "Call"
 msgstr ""
 
@@ -1115,7 +1148,7 @@ msgstr ""
 msgid "Cancelling unwinds what submitting wrote. Anything that will not cancel is named."
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:315
+#: frontend/src/screens/ops/TenantBilling.vue:316
 msgid "Cancels at period end"
 msgstr ""
 
@@ -1173,7 +1206,7 @@ msgid "Centred"
 msgstr ""
 
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
-#: frontend/src/screens/ops/Tenant.vue:392
+#: frontend/src/screens/ops/Tenant.vue:393
 #: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
 msgid "Certificate"
 msgstr ""
@@ -1248,7 +1281,7 @@ msgid "Charged from what each model reported it used. The gateway column is Clou
 msgstr ""
 
 #: frontend/src/components/settings/BooksSettings.vue:101
-#: frontend/src/components/settings/BooksSettings.vue:165
+#: frontend/src/components/settings/BooksSettings.vue:166
 msgid "Chart of accounts"
 msgstr ""
 
@@ -1401,7 +1434,7 @@ msgstr ""
 msgid "Comments"
 msgstr ""
 
-#: frontend/src/components/settings/BooksSettings.vue:164
+#: frontend/src/components/settings/BooksSettings.vue:165
 msgid "Company"
 msgstr ""
 
@@ -1418,7 +1451,7 @@ msgstr ""
 msgid "Compared against the gateway log"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:514
+#: frontend/src/screens/ops/Tenant.vue:515
 msgid "Complete"
 msgstr ""
 
@@ -1442,7 +1475,7 @@ msgstr ""
 msgid "Connect one the company already has, then grant it below like any other address. Everyone who holds it reads the same inbox — and the same sent mail."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:317
+#: frontend/src/components/settings/MailSettings.vue:318
 msgid "Connected mailbox"
 msgstr ""
 
@@ -1480,7 +1513,7 @@ msgstr ""
 msgid "Copy as Markdown"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:627
+#: frontend/src/components/screen/record/RecordView.vue:628
 msgid "Copy link"
 msgstr ""
 
@@ -1524,7 +1557,7 @@ msgid "Counting from"
 msgstr ""
 
 #: frontend/src/components/settings/BooksSettings.vue:85
-#: frontend/src/components/settings/BooksSettings.vue:168
+#: frontend/src/components/settings/BooksSettings.vue:169
 msgid "Country"
 msgstr ""
 
@@ -1533,11 +1566,11 @@ msgstr ""
 msgid "Create"
 msgstr ""
 
-#: frontend/src/components/screen/fields/LinkPicker.vue:319
+#: frontend/src/components/screen/fields/LinkPicker.vue:320
 msgid "Create \"{0}\""
 msgstr ""
 
-#: frontend/src/components/screen/fields/LinkPicker.vue:320
+#: frontend/src/components/screen/fields/LinkPicker.vue:321
 msgid "Create a new {0}"
 msgstr ""
 
@@ -1551,7 +1584,7 @@ msgstr ""
 
 #. Label of the created (Int) field in DocType 'Import Run Step'
 #: frontend/src/lib/workspace/screen.js:222
-#: frontend/src/screens/ops/Tenant.vue:516
+#: frontend/src/screens/ops/Tenant.vue:517
 #: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
 msgid "Created"
 msgstr ""
@@ -1577,8 +1610,8 @@ msgstr ""
 #: frontend/src/screens/account/Billing.vue:184
 #: frontend/src/screens/ops/TenantBilling.vue:65
 #: frontend/src/screens/ops/TenantBilling.vue:169
-#: frontend/src/screens/ops/TenantBilling.vue:256
-#: frontend/src/screens/ops/TenantBilling.vue:262
+#: frontend/src/screens/ops/TenantBilling.vue:257
+#: frontend/src/screens/ops/TenantBilling.vue:263
 #: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
 #: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "Credits"
@@ -1589,7 +1622,7 @@ msgid "Credits added"
 msgstr ""
 
 #: frontend/src/components/settings/BooksSettings.vue:91
-#: frontend/src/components/settings/BooksSettings.vue:167
+#: frontend/src/components/settings/BooksSettings.vue:168
 msgid "Currency"
 msgstr ""
 
@@ -1603,7 +1636,7 @@ msgid "Current password"
 msgstr ""
 
 #: frontend/src/screens/account/Overview.vue:189
-#: frontend/src/screens/ops/Tenant.vue:472
+#: frontend/src/screens/ops/Tenant.vue:473
 msgid "Custom domain"
 msgstr ""
 
@@ -1629,7 +1662,7 @@ msgid "Data, not a Link: `Tenant` is a control-plane doctype and does not exist 
 msgstr ""
 
 #: frontend/src/screens/account/Overview.vue:84
-#: frontend/src/screens/ops/TenantBilling.vue:282
+#: frontend/src/screens/ops/TenantBilling.vue:283
 msgid "Database"
 msgstr ""
 
@@ -1755,6 +1788,12 @@ msgstr ""
 msgid "Did not sign in"
 msgstr ""
 
+#. Option for the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
+#. Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "Direct"
+msgstr ""
+
 #: frontend/src/components/screen/record/CreateDialog.vue:15
 msgid "Discard and close"
 msgstr ""
@@ -1799,7 +1838,7 @@ msgid "Document Number"
 msgstr ""
 
 #: frontend/src/components/settings/MailSettings.vue:153
-#: frontend/src/screens/ops/Tenant.vue:391
+#: frontend/src/screens/ops/Tenant.vue:392
 msgid "Domain"
 msgstr ""
 
@@ -1869,7 +1908,7 @@ msgid "Dry Run"
 msgstr ""
 
 #: frontend/src/components/docs/DocEditor.vue:392
-#: frontend/src/components/screen/record/RecordView.vue:620
+#: frontend/src/components/screen/record/RecordView.vue:621
 msgid "Duplicate"
 msgstr ""
 
@@ -1978,7 +2017,7 @@ msgid "Entries have been posted, so the chart of accounts can no longer be repla
 msgstr ""
 
 #: frontend/src/screens/account/Billing.vue:182
-#: frontend/src/screens/ops/TenantBilling.vue:260
+#: frontend/src/screens/ops/TenantBilling.vue:261
 msgid "Entry"
 msgstr ""
 
@@ -2208,7 +2247,7 @@ msgstr ""
 msgid "File removed"
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:281
+#: frontend/src/screens/ops/TenantBilling.vue:282
 msgid "File storage"
 msgstr ""
 
@@ -2220,7 +2259,7 @@ msgstr ""
 msgid "Filed here"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordMail.vue:165
+#: frontend/src/components/screen/record/RecordMail.vue:166
 msgid "Filed here by somebody"
 msgstr ""
 
@@ -2298,7 +2337,7 @@ msgstr ""
 msgid "Filters"
 msgstr ""
 
-#: frontend/src/components/settings/BooksSettings.vue:170
+#: frontend/src/components/settings/BooksSettings.vue:171
 msgid "Financial year"
 msgstr ""
 
@@ -2332,7 +2371,7 @@ msgstr ""
 msgid "Folders refreshed"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:601
+#: frontend/src/components/screen/record/RecordView.vue:602
 msgid "Follow"
 msgstr ""
 
@@ -2385,6 +2424,12 @@ msgstr ""
 msgid "Form"
 msgstr ""
 
+#. Option for the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
+#. Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "Formal"
+msgstr ""
+
 #: frontend/src/components/screen/record/PrintDialog.vue:20
 msgid "Format"
 msgstr ""
@@ -2401,7 +2446,7 @@ msgstr ""
 msgid "Format: {0}"
 msgstr ""
 
-#: frontend/src/components/mail/MailComposer.vue:222
+#: frontend/src/components/mail/MailComposer.vue:223
 #: frontend/src/pages/Mail.vue:238 frontend/src/pages/Mail.vue:748
 msgid "Forward"
 msgstr ""
@@ -2419,7 +2464,7 @@ msgstr ""
 msgid "Frappe Cloud runs the schedule; this is a window onto it. Take one before anything irreversible."
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:286
+#: frontend/src/screens/ops/TenantBilling.vue:287
 msgid "Frappe Cloud site plan"
 msgstr ""
 
@@ -2428,12 +2473,18 @@ msgstr ""
 msgid "Frappe has no opinion here; these are the roles a provider accepts, and `ai/transcript.py` maps them on."
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:499
+#: frontend/src/screens/ops/Tenant.vue:500
 msgid "Frappe version"
 msgstr ""
 
 #: frontend/src/screens/account/Plan.vue:70
 msgid "Free some space or remove people first, and this plan becomes available."
+msgstr ""
+
+#. Option for the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
+#. Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "Friendly"
 msgstr ""
 
 #: frontend/src/components/mail/MailComposer.vue:7
@@ -2467,7 +2518,7 @@ msgstr ""
 msgid "Gantt"
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:255
+#: frontend/src/screens/ops/TenantBilling.vue:256
 msgid "Gateway"
 msgstr ""
 
@@ -2587,6 +2638,12 @@ msgstr ""
 
 #: frontend/src/components/settings/AppearanceSettings.vue:12
 msgid "How OneSpace looks, on this browser."
+msgstr ""
+
+#. Description of the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
+#. Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "How it speaks."
 msgstr ""
 
 #. Description of the 'Warn this many days ahead' (Int) field in DocType
@@ -2727,7 +2784,7 @@ msgstr ""
 msgid "Importing"
 msgstr ""
 
-#: frontend/src/components/drive/FolderPicker.vue:99
+#: frontend/src/components/drive/FolderPicker.vue:100
 msgid "In All files"
 msgstr ""
 
@@ -2748,7 +2805,7 @@ msgstr ""
 msgid "In this table"
 msgstr ""
 
-#: frontend/src/components/drive/FolderPicker.vue:99
+#: frontend/src/components/drive/FolderPicker.vue:100
 #: frontend/src/components/mail/MailSidebar.vue:121
 msgid "In {0}"
 msgstr ""
@@ -2765,7 +2822,7 @@ msgstr ""
 msgid "Incoming (IMAP)"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordMail.vue:163
+#: frontend/src/components/screen/record/RecordMail.vue:164
 msgid "Inherited from the conversation this message belongs to"
 msgstr ""
 
@@ -2774,7 +2831,7 @@ msgstr ""
 msgid "Insurance"
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:312
+#: frontend/src/screens/ops/TenantBilling.vue:313
 msgid "Interval"
 msgstr ""
 
@@ -2854,7 +2911,17 @@ msgstr ""
 msgid "It was saved {0}. Reloading takes what is on the server; anything typed here and not saved goes with it."
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:406
+#: frontend/src/components/settings/AiSettings.vue:49
+msgid "Its name and picture are used wherever it appears."
+msgstr ""
+
+#. Description of the 'Assistant Avatar' (Attach Image) field in DocType
+#. 'OneSpace AI Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "Its picture. Falls back to a mark drawn from the name."
+msgstr ""
+
+#: frontend/src/screens/ops/Tenant.vue:407
 msgid "Job"
 msgstr ""
 
@@ -2875,6 +2942,10 @@ msgstr ""
 #: oneapp/oneapp_core/doctype/correspondence/correspondence.json
 #: oneapp/oneapp_core/doctype/file_version/file_version.json
 msgid "Kind"
+msgstr ""
+
+#: frontend/src/components/settings/AiSettings.vue:80
+msgid "Knows the trade, answers short, never guesses a price."
 msgstr ""
 
 #. Label of the label (Data) field in DocType 'File Link'
@@ -2945,7 +3016,7 @@ msgstr ""
 msgid "Last checked"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:517
+#: frontend/src/screens/ops/Tenant.vue:518
 msgid "Last deployed"
 msgstr ""
 
@@ -3039,12 +3110,12 @@ msgstr ""
 msgid "Light, dark, or matching your system."
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:608
+#: frontend/src/components/screen/record/RecordView.vue:609
 #: frontend/src/components/screen/views/QuickFilters.vue:178
 msgid "Like"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:608
+#: frontend/src/components/screen/record/RecordView.vue:609
 msgid "Liked"
 msgstr ""
 
@@ -3056,12 +3127,12 @@ msgstr ""
 msgid "Line spacing"
 msgstr ""
 
-#: frontend/src/components/drive/ShareLink.vue:146
-#: frontend/src/components/screen/record/RecordView.vue:582
+#: frontend/src/components/drive/ShareLink.vue:147
+#: frontend/src/components/screen/record/RecordView.vue:583
 msgid "Link copied"
 msgstr ""
 
-#: frontend/src/components/drive/ShareLink.vue:150
+#: frontend/src/components/drive/ShareLink.vue:151
 msgid "Link made"
 msgstr ""
 
@@ -3167,7 +3238,7 @@ msgstr ""
 msgid "Lower runs first. The first rule that matches wins."
 msgstr ""
 
-#: frontend/src/components/mail/MailSidebar.vue:178
+#: frontend/src/components/mail/MailSidebar.vue:179
 msgid "Made on the mail server, so it appears in your other mail apps too."
 msgstr ""
 
@@ -3266,7 +3337,7 @@ msgstr ""
 msgid "Manage people"
 msgstr ""
 
-#: frontend/src/components/mail/MailComposer.vue:183
+#: frontend/src/components/mail/MailComposer.vue:184
 msgid "Manage templates…"
 msgstr ""
 
@@ -3386,7 +3457,7 @@ msgid "Missing signature."
 msgstr ""
 
 #. Label of the model_key (Data) field in DocType 'OneSpace AI Feature Setting'
-#: frontend/src/components/settings/AiSettings.vue:75
+#: frontend/src/components/settings/AiSettings.vue:128
 #: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "Model"
 msgstr ""
@@ -3401,7 +3472,7 @@ msgstr ""
 msgid "Monospace"
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:284
+#: frontend/src/screens/ops/TenantBilling.vue:285
 msgid "Monthly credits"
 msgstr ""
 
@@ -3504,11 +3575,11 @@ msgstr ""
 msgid "Moving about"
 msgstr ""
 
-#: frontend/src/components/drive/FolderPicker.vue:93
+#: frontend/src/components/drive/FolderPicker.vue:94
 msgid "Moving {0} things."
 msgstr ""
 
-#: frontend/src/components/drive/FolderPicker.vue:92
+#: frontend/src/components/drive/FolderPicker.vue:93
 msgid "Moving {0}."
 msgstr ""
 
@@ -3521,6 +3592,7 @@ msgstr ""
 #: frontend/src/components/mail/MailSidebar.vue:122
 #: frontend/src/components/screen/record/RecordFiles.vue:68
 #: frontend/src/components/screen/views/ViewSwitcher.vue:52
+#: frontend/src/components/settings/AiSettings.vue:57
 #: frontend/src/components/settings/TemplateSettings.vue:102
 #: frontend/src/components/settings/printing/FormatBuilder.vue:19
 #: frontend/src/components/settings/printing/LetterHeadDialog.vue:18
@@ -3566,6 +3638,12 @@ msgstr ""
 
 #: frontend/src/screens/ops/TenantBilling.vue:170
 msgid "Negative takes some away. Nothing here expires."
+msgstr ""
+
+#. Option for the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
+#. Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "Neutral"
 msgstr ""
 
 #: frontend/src/components/screen/record/RecordActions.vue:62
@@ -3640,8 +3718,8 @@ msgstr ""
 msgid "New mail for this address arrives here."
 msgstr ""
 
-#: frontend/src/components/mail/MailComposer.vue:165
-#: frontend/src/components/mail/MailComposer.vue:274
+#: frontend/src/components/mail/MailComposer.vue:166
+#: frontend/src/components/mail/MailComposer.vue:275
 msgid "New message"
 msgstr ""
 
@@ -3686,7 +3764,7 @@ msgstr ""
 
 #: frontend/src/components/screen/views/TallyMenu.vue:113
 #: frontend/src/lib/screen/fields.js:1512
-#: frontend/src/screens/ops/TenantBilling.vue:316
+#: frontend/src/screens/ops/TenantBilling.vue:317
 msgid "No"
 msgstr ""
 
@@ -3698,7 +3776,7 @@ msgstr ""
 msgid "No accounting app"
 msgstr ""
 
-#: frontend/src/screens/ops/FrappeCloud.vue:98
+#: frontend/src/screens/ops/FrappeCloud.vue:99
 msgid "No active servers on this account."
 msgstr ""
 
@@ -3727,7 +3805,7 @@ msgstr ""
 msgid "No backups yet."
 msgstr ""
 
-#: frontend/src/screens/ops/FrappeCloud.vue:105
+#: frontend/src/screens/ops/FrappeCloud.vue:106
 msgid "No bench groups on this account."
 msgstr ""
 
@@ -3836,7 +3914,7 @@ msgstr ""
 msgid "No screen in this workspace shows {0}."
 msgstr ""
 
-#: frontend/src/screens/ops/FrappeCloud.vue:112
+#: frontend/src/screens/ops/FrappeCloud.vue:113
 msgid "No site plans on this account."
 msgstr ""
 
@@ -3888,7 +3966,7 @@ msgstr ""
 msgid "No."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:324
+#: frontend/src/components/settings/MailSettings.vue:325
 msgid "Nobody"
 msgstr ""
 
@@ -3918,7 +3996,7 @@ msgstr ""
 #: frontend/src/components/screen/bodies/BoardBody.vue:360
 #: frontend/src/components/screen/record/PrintDialog.vue:109
 #: frontend/src/components/settings/printing/BuilderInspector.vue:197
-#: frontend/src/screens/account/Roles.vue:182
+#: frontend/src/screens/account/Roles.vue:183
 #: frontend/src/screens/ops/TenantLifecycle.vue:248
 #: oneapp/oneapp_core/dashboard.py:369
 msgid "None"
@@ -3936,7 +4014,7 @@ msgstr ""
 msgid "None yet. A letter head is the band above and below every printed page — a logo, an address, a footer — and one format can use another's."
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:300
+#: frontend/src/screens/ops/TenantBilling.vue:301
 msgid "None — this workspace was not sold through checkout"
 msgstr ""
 
@@ -3961,7 +4039,7 @@ msgstr ""
 msgid "Not enabled"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:514
+#: frontend/src/screens/ops/Tenant.vue:515
 msgid "Not finished"
 msgstr ""
 
@@ -4084,11 +4162,11 @@ msgstr ""
 msgid "Nothing here runs on a workflow."
 msgstr ""
 
-#: frontend/src/pages/ScreenHost.vue:792
+#: frontend/src/pages/ScreenHost.vue:793
 msgid "Nothing here so far."
 msgstr ""
 
-#: frontend/src/pages/ScreenHost.vue:791
+#: frontend/src/pages/ScreenHost.vue:792
 msgid "Nothing here so far. New starts the first one."
 msgstr ""
 
@@ -4119,11 +4197,11 @@ msgstr ""
 msgid "Nothing is suspended, archived or deleted while this is set. The clock keeps running — releasing resumes at whatever rung the dates say."
 msgstr ""
 
-#: frontend/src/pages/ScreenHost.vue:788
+#: frontend/src/pages/ScreenHost.vue:789
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr ""
 
-#: frontend/src/components/screen/fields/LinkPicker.vue:328
+#: frontend/src/components/screen/fields/LinkPicker.vue:329
 msgid "Nothing matches “{0}”"
 msgstr ""
 
@@ -4168,7 +4246,7 @@ msgid "Nothing to alert on"
 msgstr ""
 
 #: frontend/src/components/drive/FilePicker.vue:41
-#: frontend/src/components/screen/fields/LinkPicker.vue:328
+#: frontend/src/components/screen/fields/LinkPicker.vue:329
 msgid "Nothing to choose from"
 msgstr ""
 
@@ -4234,7 +4312,7 @@ msgstr ""
 msgid "Nothing yet. This workspace has never been on the ladder."
 msgstr ""
 
-#: frontend/src/pages/ScreenHost.vue:786
+#: frontend/src/pages/ScreenHost.vue:787
 msgid "Nothing you have liked is on this screen."
 msgstr ""
 
@@ -4316,7 +4394,7 @@ msgstr ""
 msgid "One permission"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:315
+#: frontend/src/components/settings/MailSettings.vue:316
 msgid "One person"
 msgstr ""
 
@@ -4328,7 +4406,7 @@ msgstr ""
 msgid "One seat"
 msgstr ""
 
-#: frontend/src/screens/account/People.vue:221
+#: frontend/src/screens/account/People.vue:222
 msgid "One seat used"
 msgstr ""
 
@@ -4431,7 +4509,7 @@ msgstr ""
 msgid "Only here."
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:77
+#: frontend/src/components/settings/AiSettings.vue:130
 msgid "Only models that can do this job are listed."
 msgstr ""
 
@@ -4455,7 +4533,7 @@ msgstr ""
 msgid "Only rows this person liked. A flag rather than a filter on _liked_by: that column holds user ids, so a filter naming it could ask what a colleague liked."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:323
+#: frontend/src/components/settings/MailSettings.vue:324
 msgid "Only some domains"
 msgstr ""
 
@@ -4541,7 +4619,7 @@ msgid "Opens this screen for whoever this screen belongs to."
 msgstr ""
 
 #. Label of the operator (Select) field in DocType 'Mail Rule'
-#: frontend/src/screens/ops/Tenant.vue:413
+#: frontend/src/screens/ops/Tenant.vue:414
 #: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
 msgid "Operator"
 msgstr ""
@@ -4606,7 +4684,7 @@ msgstr ""
 msgid "Overdue and mine"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:475
+#: frontend/src/screens/ops/Tenant.vue:476
 msgid "Owner"
 msgstr ""
 
@@ -4637,7 +4715,7 @@ msgstr ""
 msgid "Password changed"
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:64
+#: frontend/src/components/settings/AiSettings.vue:117
 msgid "Paused"
 msgstr ""
 
@@ -4664,7 +4742,7 @@ msgstr ""
 msgid "People"
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:313
+#: frontend/src/screens/ops/TenantBilling.vue:314
 msgid "Period ends"
 msgstr ""
 
@@ -4678,7 +4756,7 @@ msgid "Permit"
 msgstr ""
 
 #: frontend/src/screens/account/People.vue:41
-#: frontend/src/screens/account/People.vue:198
+#: frontend/src/screens/account/People.vue:199
 msgid "Person"
 msgstr ""
 
@@ -4707,6 +4785,10 @@ msgstr ""
 msgid "Pick two dates"
 msgstr ""
 
+#: frontend/src/components/settings/AiSettings.vue:71
+msgid "Picture"
+msgstr ""
+
 #: frontend/src/components/screen/views/ColumnPicker.vue:114
 msgid "Pin"
 msgstr ""
@@ -4728,9 +4810,9 @@ msgstr ""
 #. Label of the plan (Link) field in DocType 'Import Run'
 #: frontend/src/pages/Account.vue:69
 #: frontend/src/screens/account/Overview.vue:190
-#: frontend/src/screens/ops/Tenant.vue:473
+#: frontend/src/screens/ops/Tenant.vue:474
 #: frontend/src/screens/ops/TenantBilling.vue:200
-#: frontend/src/screens/ops/TenantBilling.vue:305
+#: frontend/src/screens/ops/TenantBilling.vue:306
 #: oneapp/oneapp_core/doctype/import_identity/import_identity.json
 #: oneapp/oneapp_core/doctype/import_run/import_run.json
 msgid "Plan"
@@ -4784,14 +4866,14 @@ msgstr ""
 msgid "Primary domain set"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:507
+#: frontend/src/screens/ops/Tenant.vue:508
 msgid "Primary host"
 msgstr ""
 
 #: frontend/src/components/docs/DocEditor.vue:374
 #: frontend/src/components/screen/record/PrintDialog.vue:14
 #: frontend/src/components/screen/record/PrintDialog.vue:39
-#: frontend/src/components/screen/record/RecordView.vue:593
+#: frontend/src/components/screen/record/RecordView.vue:594
 #: frontend/src/pages/ScreenHost.vue:355
 msgid "Print"
 msgstr ""
@@ -4928,7 +5010,7 @@ msgstr ""
 msgid "Ready to provision"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:414
+#: frontend/src/screens/ops/Tenant.vue:415
 msgid "Reason"
 msgstr ""
 
@@ -4945,7 +5027,7 @@ msgstr ""
 msgid "Recipient"
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:131
+#: frontend/src/components/settings/AiSettings.vue:195
 msgid "Recommended"
 msgstr ""
 
@@ -4988,7 +5070,7 @@ msgid "Refused"
 msgstr ""
 
 #: frontend/src/screens/account/Overview.vue:191
-#: frontend/src/screens/ops/Tenant.vue:497
+#: frontend/src/screens/ops/Tenant.vue:498
 msgid "Region"
 msgstr ""
 
@@ -5018,7 +5100,7 @@ msgstr ""
 msgid "Released into the lifecycle"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:633
+#: frontend/src/components/screen/record/RecordView.vue:634
 msgid "Reload"
 msgstr ""
 
@@ -5173,8 +5255,8 @@ msgstr ""
 msgid "Replace these rows with {0}"
 msgstr ""
 
-#: frontend/src/components/mail/MailComposer.vue:220
-#: frontend/src/components/mail/MailComposer.vue:223
+#: frontend/src/components/mail/MailComposer.vue:221
+#: frontend/src/components/mail/MailComposer.vue:224
 #: frontend/src/pages/Mail.vue:223 frontend/src/pages/Mail.vue:746
 msgid "Reply"
 msgstr ""
@@ -5183,7 +5265,7 @@ msgstr ""
 msgid "Reply automatically while I am away"
 msgstr ""
 
-#: frontend/src/components/mail/MailComposer.vue:221
+#: frontend/src/components/mail/MailComposer.vue:222
 #: frontend/src/pages/Mail.vue:230 frontend/src/pages/Mail.vue:747
 msgid "Reply to all"
 msgstr ""
@@ -5343,7 +5425,7 @@ msgstr ""
 #: frontend/src/components/docs/LongTextDialog.vue:49
 #: frontend/src/components/screen/record/RecordControls.vue:49
 #: frontend/src/components/screen/views/ViewSwitcher.vue:68
-#: frontend/src/components/settings/AiSettings.vue:102
+#: frontend/src/components/settings/AiSettings.vue:155
 #: frontend/src/components/settings/AlertSettings.vue:215
 #: frontend/src/components/settings/ProfileSettings.vue:72
 #: frontend/src/components/settings/SettingsFields.vue:87
@@ -5485,11 +5567,11 @@ msgstr ""
 msgid "Searching"
 msgstr ""
 
-#: frontend/src/components/screen/fields/LinkPicker.vue:252
+#: frontend/src/components/screen/fields/LinkPicker.vue:253
 msgid "Search…"
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:283
+#: frontend/src/screens/ops/TenantBilling.vue:284
 msgid "Seats"
 msgstr ""
 
@@ -5579,7 +5661,7 @@ msgstr ""
 msgid "Sending to that address again"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:313
+#: frontend/src/components/settings/MailSettings.vue:314
 #: frontend/src/components/settings/MailboxSettings.vue:90
 msgid "Sends notifications"
 msgstr ""
@@ -5608,11 +5690,11 @@ msgstr ""
 msgid "Serif"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:496
+#: frontend/src/screens/ops/Tenant.vue:497
 msgid "Server"
 msgstr ""
 
-#: frontend/src/screens/ops/FrappeCloud.vue:97
+#: frontend/src/screens/ops/FrappeCloud.vue:98
 msgid "Servers"
 msgstr ""
 
@@ -5656,11 +5738,11 @@ msgstr ""
 msgid "Settings for these rows"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:513
+#: frontend/src/screens/ops/Tenant.vue:514
 msgid "Setup wizard"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:474
+#: frontend/src/screens/ops/Tenant.vue:475
 msgid "Shard"
 msgstr ""
 
@@ -5688,7 +5770,7 @@ msgid "Share with the workspace"
 msgstr ""
 
 #: frontend/src/components/screen/views/ViewSwitcher.vue:222
-#: frontend/src/components/settings/MailSettings.vue:314
+#: frontend/src/components/settings/MailSettings.vue:315
 #: frontend/src/lib/workspace/drive.js:74
 #: frontend/src/lib/workspace/record.js:92
 msgid "Shared"
@@ -5836,8 +5918,8 @@ msgid "Signed out everywhere else"
 msgstr ""
 
 #: frontend/src/screens/ops/Tenant.vue:71
-#: frontend/src/screens/ops/Tenant.vue:471
-#: frontend/src/screens/ops/Tenant.vue:488
+#: frontend/src/screens/ops/Tenant.vue:472
+#: frontend/src/screens/ops/Tenant.vue:489
 msgid "Site"
 msgstr ""
 
@@ -5850,7 +5932,7 @@ msgstr ""
 msgid "Site is not provisioned."
 msgstr ""
 
-#: frontend/src/screens/ops/FrappeCloud.vue:111
+#: frontend/src/screens/ops/FrappeCloud.vue:112
 msgid "Site plans"
 msgstr ""
 
@@ -5858,7 +5940,7 @@ msgstr ""
 msgid "Site removed from Frappe Cloud. Restorable from the cold copy."
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:399
+#: frontend/src/screens/ops/Tenant.vue:400
 msgid "Size"
 msgstr ""
 
@@ -6006,8 +6088,8 @@ msgstr ""
 msgid "Starts with"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:400
-#: frontend/src/screens/ops/Tenant.vue:407
+#: frontend/src/screens/ops/Tenant.vue:401
+#: frontend/src/screens/ops/Tenant.vue:408
 msgid "State"
 msgstr ""
 
@@ -6021,9 +6103,9 @@ msgstr ""
 #. Label of the status (Select) field in DocType 'Sheet Feed'
 #: frontend/src/screens/account/Billing.vue:178
 #: frontend/src/screens/account/Overview.vue:193
-#: frontend/src/screens/ops/Tenant.vue:470
-#: frontend/src/screens/ops/Tenant.vue:490
-#: frontend/src/screens/ops/TenantBilling.vue:307
+#: frontend/src/screens/ops/Tenant.vue:471
+#: frontend/src/screens/ops/Tenant.vue:491
+#: frontend/src/screens/ops/TenantBilling.vue:308
 #: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
 #: oneapp/oneapp_core/doctype/correspondence/correspondence.json
 #: oneapp/oneapp_core/doctype/import_issue/import_issue.json
@@ -6044,7 +6126,7 @@ msgstr ""
 msgid "Steps"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:601
+#: frontend/src/components/screen/record/RecordView.vue:602
 msgid "Stop following"
 msgstr ""
 
@@ -6102,7 +6184,7 @@ msgstr ""
 msgid "Storage limit reached. This file needs {0} but only {1} of {2} remains. Delete some files or upgrade your plan."
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:318
+#: frontend/src/screens/ops/TenantBilling.vue:319
 msgid "Stripe subscription"
 msgstr ""
 
@@ -6125,7 +6207,7 @@ msgid "Submitted"
 msgstr ""
 
 #: frontend/src/screens/ops/TenantBilling.vue:23
-#: frontend/src/screens/ops/TenantBilling.vue:299
+#: frontend/src/screens/ops/TenantBilling.vue:300
 msgid "Subscription"
 msgstr ""
 
@@ -6223,7 +6305,7 @@ msgstr ""
 msgid "Take your address"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:398
+#: frontend/src/screens/ops/Tenant.vue:399
 msgid "Taken"
 msgstr ""
 
@@ -6521,6 +6603,13 @@ msgstr ""
 
 #: frontend/src/components/settings/MailSettings.vue:11
 msgid "The addresses this workspace sends from, and who may use each."
+msgstr ""
+
+#. Label of the sec_ai_identity (Section Break) field in DocType 'OneSpace AI
+#. Settings'
+#: frontend/src/components/settings/AiSettings.vue:47
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "The assistant"
 msgstr ""
 
 #: frontend/src/components/chat/ChatPanel.vue:18
@@ -6858,7 +6947,7 @@ msgstr ""
 msgid "This browser has no camera support."
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:584
+#: frontend/src/components/screen/record/RecordView.vue:585
 msgid "This browser would not let the page copy to the clipboard."
 msgstr ""
 
@@ -6928,7 +7017,7 @@ msgstr ""
 msgid "This one is emailed for you rather than by you"
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:66
+#: frontend/src/components/settings/AiSettings.vue:119
 msgid "This one is paused for everyone at the moment. Nothing you change here is lost."
 msgstr ""
 
@@ -6941,7 +7030,7 @@ msgstr ""
 msgid "This record is no longer in the workspace"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordMail.vue:164
+#: frontend/src/components/screen/record/RecordMail.vue:165
 msgid "This record's id was written in the subject or the message"
 msgstr ""
 
@@ -7041,7 +7130,7 @@ msgstr ""
 msgid "This workspace also asks for a second factor when you sign in."
 msgstr ""
 
-#: frontend/src/components/settings/MailboxSettings.vue:469
+#: frontend/src/components/settings/MailboxSettings.vue:470
 #: oneapp/oneapp_core/email/addresses.py:147
 msgid "This workspace does not allow connecting outside mailboxes."
 msgstr ""
@@ -7123,7 +7212,7 @@ msgstr ""
 msgid "Those rows were not filled from a sheet."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/settings.py:326 oneapp/oneapp_core/printing.py:286
+#: oneapp/oneapp_core/ai/settings.py:426 oneapp/oneapp_core/printing.py:286
 #: oneapp/oneapp_core/workspace.py:578
 msgid "Those settings could not be read."
 msgstr ""
@@ -7161,6 +7250,10 @@ msgstr ""
 
 #: frontend/src/components/settings/printing/BuilderZone.vue:98
 msgid "To the right"
+msgstr ""
+
+#: frontend/src/components/settings/AiSettings.vue:63
+msgid "Tone"
 msgstr ""
 
 #: oneapp/oneapp_core/spaceview/bulk.py:168
@@ -7451,7 +7544,7 @@ msgstr ""
 msgid "User"
 msgstr ""
 
-#: frontend/src/screens/ops/Tenant.vue:476
+#: frontend/src/screens/ops/Tenant.vue:477
 msgid "Users"
 msgstr ""
 
@@ -7509,6 +7602,12 @@ msgstr ""
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
 #: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
 msgid "Visa"
+msgstr ""
+
+#. Option for the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
+#. Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "Warm"
 msgstr ""
 
 #. Label of the remind_days (Int) field in DocType 'Compliance Document'
@@ -7590,6 +7689,12 @@ msgstr ""
 
 #: frontend/src/components/settings/TemplateSettings.vue:104
 msgid "What it is called in the picker."
+msgstr ""
+
+#. Description of the 'Assistant Name' (Data) field in DocType 'OneSpace AI
+#. Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "What it is called wherever it appears."
 msgstr ""
 
 #: frontend/src/screens/account/Roles.vue:109
@@ -7706,10 +7811,10 @@ msgid "What you are told about, and how."
 msgstr ""
 
 #: frontend/src/screens/account/Billing.vue:183
-#: frontend/src/screens/ops/Tenant.vue:408
-#: frontend/src/screens/ops/Tenant.vue:415
-#: frontend/src/screens/ops/TenantBilling.vue:254
-#: frontend/src/screens/ops/TenantBilling.vue:261
+#: frontend/src/screens/ops/Tenant.vue:409
+#: frontend/src/screens/ops/Tenant.vue:416
+#: frontend/src/screens/ops/TenantBilling.vue:255
+#: frontend/src/screens/ops/TenantBilling.vue:262
 #: frontend/src/screens/ops/TenantLifecycle.vue:136
 msgid "When"
 msgstr ""
@@ -7863,8 +7968,18 @@ msgstr ""
 msgid "Who"
 msgstr ""
 
+#: frontend/src/components/settings/AiSettings.vue:79
+msgid "Who it is"
+msgstr ""
+
 #: frontend/src/pages/Mail.vue:765
 msgid "Who it is from"
+msgstr ""
+
+#. Description of the 'Assistant Personality' (Small Text) field in DocType
+#. 'OneSpace AI Settings'
+#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+msgid "Who it is, in a sentence. Say what it knows and how it should come across."
 msgstr ""
 
 #: frontend/src/pages/Mail.vue:766
@@ -7936,7 +8051,7 @@ msgstr ""
 msgid "Write from"
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:91
+#: frontend/src/components/settings/AiSettings.vue:144
 msgid "Write in British English. Never quote a delivery date."
 msgstr ""
 
@@ -7958,7 +8073,7 @@ msgstr ""
 
 #: frontend/src/components/screen/views/TallyMenu.vue:113
 #: frontend/src/lib/screen/fields.js:1511
-#: frontend/src/screens/ops/TenantBilling.vue:316
+#: frontend/src/screens/ops/TenantBilling.vue:317
 msgid "Yes"
 msgstr ""
 
@@ -8053,7 +8168,7 @@ msgstr ""
 msgid "Your diary"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:316
+#: frontend/src/components/settings/MailSettings.vue:317
 msgid "Your domain"
 msgstr ""
 
@@ -8133,16 +8248,16 @@ msgstr ""
 msgid "Your workspace is past the {0} limit on this plan"
 msgstr ""
 
-#: frontend/src/components/drive/ShareLink.vue:96
+#: frontend/src/components/drive/ShareLink.vue:97
 msgid "a day"
 msgstr ""
 
-#: frontend/src/components/drive/ShareLink.vue:98
-#: frontend/src/screens/ops/TenantBilling.vue:284
+#: frontend/src/components/drive/ShareLink.vue:99
+#: frontend/src/screens/ops/TenantBilling.vue:285
 msgid "a month"
 msgstr ""
 
-#: frontend/src/components/drive/ShareLink.vue:97
+#: frontend/src/components/drive/ShareLink.vue:98
 msgid "a week"
 msgstr ""
 
@@ -8318,7 +8433,7 @@ msgstr ""
 msgid "the next state"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:370
+#: frontend/src/components/settings/MailSettings.vue:371
 msgid "the platform address"
 msgstr ""
 
@@ -8330,11 +8445,11 @@ msgstr ""
 msgid "the sidebar"
 msgstr ""
 
-#: frontend/src/components/screen/fields/LinkPicker.vue:220
+#: frontend/src/components/screen/fields/LinkPicker.vue:221
 msgid "this"
 msgstr ""
 
-#: frontend/src/components/drive/ShareLink.vue:99
+#: frontend/src/components/drive/ShareLink.vue:100
 msgid "three months"
 msgstr ""
 
@@ -8402,7 +8517,7 @@ msgstr ""
 msgid "{0} available of {1} — the difference is reserved by calls in flight."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/settings.py:285
+#: oneapp/oneapp_core/ai/settings.py:385
 msgid "{0} cannot be used for {1}."
 msgstr ""
 
@@ -8472,7 +8587,7 @@ msgstr ""
 msgid "{0} has no field called {1}."
 msgstr ""
 
-#: frontend/src/components/mail/MailSidebar.vue:179
+#: frontend/src/components/mail/MailSidebar.vue:180
 msgid "{0} has no mailbox server, so this folder lives in OneSpace."
 msgstr ""
 
@@ -8543,6 +8658,10 @@ msgstr ""
 
 #: oneapp/oneapp_core/naming.py:226
 msgid "{0} is not a series on {1}."
+msgstr ""
+
+#: oneapp/oneapp_core/ai/settings.py:343
+msgid "{0} is not a tone this can use."
 msgstr ""
 
 #: oneapp/oneapp_core/notifications.py:523
@@ -8626,7 +8745,7 @@ msgstr ""
 #: frontend/src/components/UsageBar.vue:79
 #: frontend/src/components/screen/bodies/ListFooter.vue:106
 #: frontend/src/screens/ops/Readiness.vue:81
-#: frontend/src/screens/ops/Tenant.vue:476
+#: frontend/src/screens/ops/Tenant.vue:477
 msgid "{0} of {1}"
 msgstr ""
 
@@ -8634,7 +8753,7 @@ msgstr ""
 msgid "{0} of {1} chosen"
 msgstr ""
 
-#: frontend/src/screens/account/People.vue:220
+#: frontend/src/screens/account/People.vue:221
 msgid "{0} of {1} seats used"
 msgstr ""
 
@@ -8683,7 +8802,7 @@ msgstr ""
 msgid "{0} seats"
 msgstr ""
 
-#: frontend/src/screens/account/People.vue:221
+#: frontend/src/screens/account/People.vue:222
 msgid "{0} seats used"
 msgstr ""
 
@@ -8727,7 +8846,7 @@ msgstr ""
 msgid "{0} to fix · {1} worth reading"
 msgstr ""
 
-#: frontend/src/components/settings/BooksSettings.vue:172
+#: frontend/src/components/settings/BooksSettings.vue:173
 msgid "{0} to {1}"
 msgstr ""
 
@@ -8747,7 +8866,7 @@ msgstr ""
 msgid "{0} words"
 msgstr ""
 
-#: frontend/src/components/screen/record/CreateDialog.vue:125
+#: frontend/src/components/screen/record/CreateDialog.vue:126
 msgid "{0} {1} created"
 msgstr ""
 
@@ -8755,7 +8874,7 @@ msgstr ""
 msgid "{0} {1} is already {2} {3} in this plan — two steps claim it. Narrow one step's filters."
 msgstr ""
 
-#: frontend/src/screens/ops/TenantBilling.vue:273
+#: frontend/src/screens/ops/TenantBilling.vue:274
 msgid "{0} — ${1}/mo"
 msgstr ""
 

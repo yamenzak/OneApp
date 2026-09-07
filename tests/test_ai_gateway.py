@@ -63,6 +63,12 @@ class Single:
 		self.features = []
 		self.credit_balance = 100
 
+	def get(self, field, default=None):
+		"""What a Frappe Document does. The assistant's identity is read this
+		way — the fields may not exist yet on a site mid-deploy, and a stub
+		that raises where the real thing answers None tests the stub."""
+		return getattr(self, field, default)
+
 	def append(self, _f, values):
 		self.features.append(types.SimpleNamespace(**values))
 		return self.features[-1]
