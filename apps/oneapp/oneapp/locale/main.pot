@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 19:09+0000\n"
-"PO-Revision-Date: 2026-09-07 19:09+0000\n"
+"POT-Creation-Date: 2026-09-07 19:16+0000\n"
+"PO-Revision-Date: 2026-09-07 19:16+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -780,7 +780,7 @@ msgstr ""
 msgid "Attach"
 msgstr ""
 
-#: frontend/src/components/drive/FilePicker.vue:155
+#: frontend/src/components/drive/FilePicker.vue:156
 #: frontend/src/components/mail/MailComposer.vue:87
 #: frontend/src/components/screen/record/RecordFiles.vue:16
 msgid "Attach a file"
@@ -796,6 +796,10 @@ msgstr ""
 
 #: frontend/src/components/screen/record/RecordMeta.vue:69
 msgid "Attachments"
+msgstr ""
+
+#: frontend/src/lib/files/files.js:61
+msgid "Audio"
 msgstr ""
 
 #: frontend/src/components/screen/views/ColumnPicker.vue:221
@@ -1045,7 +1049,7 @@ msgstr ""
 msgid "Call"
 msgstr ""
 
-#: frontend/src/components/drive/FilePicker.vue:146
+#: frontend/src/components/drive/FilePicker.vue:147
 msgid "Camera"
 msgstr ""
 
@@ -1777,6 +1781,7 @@ msgstr ""
 
 #. Label of the doc (Data) field in DocType 'Doc Body'
 #. Option for the 'Kind' (Select) field in DocType 'File Version'
+#: frontend/src/lib/files/files.js:64
 #: oneapp/oneapp_core/doctype/doc_body/doc_body.json
 #: oneapp/oneapp_core/doctype/file_version/file_version.json
 msgid "Doc"
@@ -1790,6 +1795,7 @@ msgstr ""
 #. Label of the reference_name (Data) field in DocType 'AI Written Value'
 #: frontend/src/components/docs/DocEditor.vue:90
 #: frontend/src/composables/useNewFile.js:110
+#: frontend/src/lib/files/files.js:62
 #: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
 msgid "Document"
 msgstr ""
@@ -1836,7 +1842,7 @@ msgstr ""
 
 #: frontend/src/components/docs/PlainText.vue:23
 #: frontend/src/components/docs/PlainText.vue:25
-#: frontend/src/components/drive/FilePreview.vue:51
+#: frontend/src/components/drive/FilePreview.vue:65
 #: frontend/src/screens/ops/Tenant.vue:218
 msgid "Download"
 msgstr ""
@@ -2189,6 +2195,7 @@ msgstr ""
 #. Label of the file (Link) field in DocType 'File Link'
 #. Label of the file (Data) field in DocType 'File Version'
 #: frontend/src/components/drive/FilePreview.vue:10
+#: frontend/src/components/drive/FilePreview.vue:20
 #: oneapp/oneapp_core/doctype/file_link/file_link.json
 #: oneapp/oneapp_core/doctype/file_version/file_version.json
 msgid "File"
@@ -2321,6 +2328,10 @@ msgstr ""
 #. Label of the finished_on (Datetime) field in DocType 'Import Run'
 #: oneapp/oneapp_core/doctype/import_run/import_run.json
 msgid "Finished On"
+msgstr ""
+
+#: frontend/src/lib/files/files.js:57
+msgid "Folder"
 msgstr ""
 
 #: frontend/src/lib/workspace/drive.js:96
@@ -2693,6 +2704,7 @@ msgid "If you already have an SPF record, add the include to it rather than publ
 msgstr ""
 
 #: frontend/src/components/settings/printing/LetterHeadDialog.vue:54
+#: frontend/src/lib/files/files.js:58
 msgid "Image"
 msgstr ""
 
@@ -3044,7 +3056,7 @@ msgstr ""
 msgid "Letter heads"
 msgstr ""
 
-#: frontend/src/components/drive/FilePicker.vue:144
+#: frontend/src/components/drive/FilePicker.vue:145
 msgid "Library"
 msgstr ""
 
@@ -4588,6 +4600,7 @@ msgid "Order within the session. Not creation time: a turn and the tool results 
 msgstr ""
 
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
+#: frontend/src/lib/files/files.js:65
 #: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
 msgid "Other"
 msgstr ""
@@ -4628,6 +4641,10 @@ msgstr ""
 #: frontend/src/components/settings/PeopleSettings.vue:55
 #: frontend/src/screens/ops/Tenant.vue:476
 msgid "Owner"
+msgstr ""
+
+#: frontend/src/lib/files/files.js:59
+msgid "PDF"
 msgstr ""
 
 #: frontend/src/components/docs/toolbar.js:72
@@ -5642,7 +5659,7 @@ msgstr ""
 msgid "Share"
 msgstr ""
 
-#: frontend/src/components/drive/FilePreview.vue:50
+#: frontend/src/components/drive/FilePreview.vue:64
 #: frontend/src/components/drive/ShareLink.vue:13
 msgid "Share a link"
 msgstr ""
@@ -5687,6 +5704,7 @@ msgstr ""
 #. Label of the sheet (Data) field in DocType 'Sheet Book'
 #. Label of the sheet (Data) field in DocType 'Sheet Feed'
 #: frontend/src/components/sheets/FillFromSheet.vue:29
+#: frontend/src/lib/files/files.js:63
 #: oneapp/oneapp_core/doctype/file_version/file_version.json
 #: oneapp/oneapp_core/doctype/sheet_book/sheet_book.json
 #: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
@@ -6777,7 +6795,7 @@ msgstr ""
 msgid "There is no folder called {0}."
 msgstr ""
 
-#: frontend/src/components/drive/FilePreview.vue:43
+#: frontend/src/components/drive/FilePreview.vue:57
 msgid "There is no preview for this kind of file."
 msgstr ""
 
@@ -6888,7 +6906,7 @@ msgstr ""
 msgid "This data is not ours"
 msgstr ""
 
-#: frontend/src/components/drive/FilePicker.vue:145
+#: frontend/src/components/drive/FilePicker.vue:146
 msgid "This device"
 msgstr ""
 
@@ -7492,6 +7510,10 @@ msgstr ""
 #: frontend/src/components/versions/VersionPanel.vue:15
 #: frontend/src/components/versions/VersionPanel.vue:18
 msgid "Version history"
+msgstr ""
+
+#: frontend/src/lib/files/files.js:60
+msgid "Video"
 msgstr ""
 
 #. Label of the view_settings (Code) field in DocType 'OneSpace Saved View'

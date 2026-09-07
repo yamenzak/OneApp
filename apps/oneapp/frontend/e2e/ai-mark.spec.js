@@ -63,5 +63,15 @@ test('a file a model made says so, in the list', async ({ page }) => {
     'aria-label', /Flux/,
   )
 
+  // And in the previewer, which is the surface that face did *not* reach: the
+  // dialog takes its title as a string, so a generated image opened unmarked
+  // until the title became a slot.
+  await row.click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toContainText(DRAWN)
+  await expect(dialog.locator('[data-slot="ai-mark"]')).toHaveAttribute(
+    'aria-label', /Flux/,
+  )
+
   expectNoRealErrors(errors)
 })

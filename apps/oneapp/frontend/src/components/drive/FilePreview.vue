@@ -8,6 +8,20 @@
 -->
 <template>
   <Dialog v-model="open" :title="file?.file_name || __('File')" size="4xl">
+    <!--
+      The title slot rather than the `title` prop, for one reason: a file a
+      model drew carries the same mark here as it does in the list. `FileFace`
+      says it reaches every surface by being said once, and this was the one
+      surface it did not reach — the previewer takes its title as a string, so
+      the mark had nowhere to go and a generated image opened unmarked.
+    -->
+    <template #title>
+      <h3 class="flex min-w-0 items-center gap-1.5 text-2xl-semibold leading-6 text-ink-gray-8">
+        <span class="truncate">{{ file?.file_name || __('File') }}</span>
+        <AiMark v-if="file?._ai" :mark="file._ai" />
+      </h3>
+    </template>
+
     <template #default>
       <div class="grid min-h-[24rem] place-items-center">
         <img
@@ -58,6 +72,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { Button, Dialog, Icon } from '@/ui'
+import AiMark from '../AiMark.vue'
 import ShareLink from './ShareLink.vue'
 import { workspace } from '../../lib/workspace'
 import { __ } from '@/lib/runtime/translate'

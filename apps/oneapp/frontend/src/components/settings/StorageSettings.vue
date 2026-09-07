@@ -77,7 +77,7 @@
           class="flex min-w-0 items-center gap-3"
         >
           <Icon :name="iconForKind(row.kind)" class="size-4 shrink-0 text-ink-gray-5" />
-          <span class="w-24 shrink-0 text-p-sm text-ink-gray-7">{{ row.kind }}</span>
+          <span class="w-24 shrink-0 text-p-sm text-ink-gray-7">{{ labelForKind(row.kind) }}</span>
           <!--
             Against the largest kind and not against the quota: the shape worth
             seeing here is which of these is the big one, and every bar being 2%
@@ -162,7 +162,7 @@ import { workspace } from '../../lib/workspace'
 import { settings } from '@/lib/shell/settings'
 import { errorText } from '@/lib/runtime/errors'
 // The same glyphs the Drive draws, because they are the same kinds.
-import { iconForKind } from '@/lib/files/files'
+import { iconForKind, labelForKind } from '@/lib/files/files'
 import { __ } from '@/lib/runtime/translate'
 
 

@@ -5,6 +5,8 @@
  * about which files are pictures is exactly the bug that would go unnoticed.
  */
 
+import { __ } from '@/lib/runtime/translate'
+
 // The extension is all a File row says about what it is, and it is enough for
 // an icon. Anything unrecognised is a file, which is true.
 const ICONS = [
@@ -37,6 +39,31 @@ export const KIND_ICONS = {
 }
 
 export const iconForKind = (kind) => KIND_ICONS[kind] || KIND_ICONS.Other
+
+/**
+ * The kind, in the reader's language.
+ *
+ * A kind is a stored English string because it is a key — it is filtered on,
+ * grouped by and matched against `drive/kinds.py`, and a stored value that
+ * changed with the reader's language would be a filter that stopped matching.
+ * So the value stays and the *word* is looked up here.
+ *
+ * Written as returns rather than as a map for the reason every other list of
+ * `__()` in this app is: a map built at module scope calls `__()` before the
+ * catalogue has loaded, and the extractor that builds the catalogue needs to
+ * see each string as a literal.
+ */
+export const labelForKind = (kind) => {
+  if (kind === 'Folder') return __('Folder')
+  if (kind === 'Image') return __('Image')
+  if (kind === 'PDF') return __('PDF')
+  if (kind === 'Video') return __('Video')
+  if (kind === 'Audio') return __('Audio')
+  if (kind === 'Document') return __('Document')
+  if (kind === 'Sheet') return __('Sheet')
+  if (kind === 'Doc') return __('Doc')
+  return __('Other')
+}
 
 //: What opens in the text editor rather than the previewer. The server's
 //: `docs/text.py` holds the same list; it is short, and a file that is not on

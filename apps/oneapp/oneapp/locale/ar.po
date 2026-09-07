@@ -508,6 +508,9 @@ msgstr "إرفاق ملف"
 msgid "Attached"
 msgstr "تم الإرفاق"
 
+msgid "Audio"
+msgstr "صوت"
+
 msgid "Back to the canvas"
 msgstr "العودة إلى اللوحة"
 

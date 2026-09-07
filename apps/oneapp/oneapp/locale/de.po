@@ -553,6 +553,9 @@ msgstr "Datei anhängen"
 msgid "Attached"
 msgstr "Angehängt"
 
+msgid "Audio"
+msgstr "Audio"
+
 msgid "Back to the canvas"
 msgstr "Zurück zur Arbeitsfläche"
 

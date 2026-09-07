@@ -41,7 +41,7 @@
               :title="__('Nothing to choose from')"
               :description="
                 kind
-                  ? __('No {0} files here yet — upload one instead.', [kind.toLowerCase()])
+                  ? __('No {0} files here yet — upload one instead.', [labelForKind(kind).toLowerCase()])
                   : __('No files here yet — upload one instead.')
               "
             />
@@ -133,6 +133,7 @@ import {
 import CameraCapture from './CameraCapture.vue'
 import EmptyState from '../EmptyState.vue'
 import FileRow from './FileRow.vue'
+import { labelForKind } from '@/lib/files/files'
 import { putFile } from '@/lib/files/attach'
 import { errorText } from '@/lib/runtime/errors'
 import { workspace } from '../../lib/workspace'

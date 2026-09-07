@@ -47,7 +47,7 @@
       <AiMark v-if="file._ai" :mark="file._ai" />
     </span>
     <span class="block truncate text-p-xs font-normal text-ink-gray-5">
-      {{ file.is_folder ? 'Folder' : size }}<template v-if="!grid"> · {{ when }}</template>
+      {{ file.is_folder ? labelForKind('Folder') : size }}<template v-if="!grid"> · {{ when }}</template>
     </span>
   </span>
   </span>
@@ -56,7 +56,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Icon, dayjsLocal } from '@/ui'
-import { iconForKind } from '@/lib/files/files'
+import { iconForKind, labelForKind } from '@/lib/files/files'
 import AiMark from '../AiMark.vue'
 
 const props = defineProps({
