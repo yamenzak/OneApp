@@ -233,7 +233,12 @@ test('the workspace decides who may connect an outside mailbox',
 // "Custom"` — and the desk obeyed it while this dialog drew both sizes under
 // every page size, as zeroes. The placeholder is the other half: 0 is how
 // Frappe says "not set" here, and a page 0mm wide is not a page.
-test('the custom page sizes belong to Custom', async ({ page, baseURL }) => {
+test('the custom page sizes belong to Custom', async ({ page, baseURL }, info) => {
+  // The gear is in the rail on a desktop and in the More sheet on a phone, and
+  // this reaches for the rail's. Skipped rather than taught the other way in:
+  // what it is about is a field that depends on another one's value, which is
+  // the same field on both.
+  test.skip(info.project.name === 'mobile', 'the phone draws no rail')
   await signIn(page, baseURL)
   await page.goto('/one/')
   await page.locator('[data-slot="settings-link"]').click()
@@ -261,7 +266,8 @@ test('the custom page sizes belong to Custom', async ({ page, baseURL }) => {
 test('a letter head is made the default from the list, and it sticks', async ({
   page,
   baseURL,
-}) => {
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone draws no rail')
   await signIn(page, baseURL)
   const open = async () => {
     await page.goto('/one/')
