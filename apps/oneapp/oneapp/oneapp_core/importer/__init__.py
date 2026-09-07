@@ -84,7 +84,6 @@ In import order. A module may use the ones above it, never below:. A module may 
     writing     writing a mapped row, its files, and where it came from
     running     the run: steps, batches, progress
     checking    what a plan would do, before it does any of it
-    screen      the import screen
 
 `checking` is deliberately below `running` rather than beside it: a check is a
 dry run, and it reads the same mapping and the same fan-out the real run would,
@@ -128,7 +127,6 @@ from .checking import (
 	_their_fields,
 	check,
 )
-from .screen import console, install_plan, issues, save_source
 
 __all__ = [
 	"ALL_FIELDS",
@@ -159,18 +157,14 @@ __all__ = [
 	"build",
 	"carry",
 	"check",
-	"console",
 	"download",
 	"execute",
 	"explode",
 	"fetch",
-	"install_plan",
-	"issues",
 	"maps_children",
 	"preview",
 	"progress",
 	"resolve",
-	"save_source",
 	"start",
 	"verify",
 	"vocabulary",

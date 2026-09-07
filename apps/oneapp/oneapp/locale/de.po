@@ -237,17 +237,8 @@ msgstr "Vom KI-Modell geschriebener Wert"
 msgid "AI credits"
 msgstr "KI-Guthaben"
 
-msgid "API key"
-msgstr "API-Schlüssel"
-
-msgid "API secret"
-msgstr "API-Geheimnis"
-
 msgid "Add a column"
 msgstr "Spalte hinzufügen"
-
-msgid "Add a connection"
-msgstr "Verbindung hinzufügen"
 
 msgid "Add a file"
 msgstr "Datei hinzufügen"
@@ -658,19 +649,6 @@ msgstr ""
 "Anfrage pro Zeile und ein Download pro Datei, daher pro Schritt "
 "zuschaltbar."
 
-msgid "Bring across what has changed"
-msgstr "Geändertes übernehmen"
-
-msgid "Bring everything across"
-msgstr "Alles übernehmen"
-
-msgid ""
-"Bring your records over from the system you are leaving — as often as "
-"you like."
-msgstr ""
-"Übernehmen Sie Ihre Datensätze aus dem System, das Sie verlassen — so "
-"oft Sie möchten."
-
 msgid "Build one when the roles your apps came with are not the shape you need."
 msgstr ""
 "Erstellen Sie eine, wenn die mitgelieferten Rollen Ihrer Apps nicht die "
@@ -758,9 +736,6 @@ msgstr "Wird zum Ende dieses Zeitraums gekündigt"
 msgid "Card settings"
 msgstr "Karten-Einstellungen"
 
-msgid "Carried across"
-msgstr "Übernommen"
-
 msgid "Carries a file"
 msgstr "Enthält eine Datei"
 
@@ -834,12 +809,6 @@ msgstr "Kontenplan"
 
 msgid "Check DNS"
 msgstr "DNS prüfen"
-
-msgid "Check the connection"
-msgstr "Verbindung prüfen"
-
-msgid "Check the plan"
-msgstr "Tarif prüfen"
 
 msgid "Check your connection, then try again."
 msgstr "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut."
@@ -1207,9 +1176,6 @@ msgid "Every recipient of this message has bounced or reported it as spam."
 msgstr ""
 "Jeder Empfänger dieser Nachricht ist unzustellbar oder hat sie als Spam "
 "gemeldet."
-
-msgid "Every row came across."
-msgstr "Alle Zeilen wurden übernommen."
 
 msgid "Every seat is in use"
 msgstr "Alle Plätze sind belegt"
@@ -1704,11 +1670,6 @@ msgstr "Sein Bild. Ersatzweise ein Zeichen aus dem Namen."
 
 msgid "Keep this one"
 msgstr "Diese behalten"
-
-msgid "Kept encrypted. Leave blank to keep the one already saved."
-msgstr ""
-"Wird verschlüsselt gespeichert. Leer lassen, um das bereits gespeicherte "
-"zu behalten."
 
 msgid "Keyboard shortcuts"
 msgstr "Tastenkürzel"
@@ -2314,14 +2275,6 @@ msgstr "Noch nicht gelesen"
 msgid "Not set"
 msgstr "Nicht gesetzt"
 
-msgid ""
-"Not set up yet. Setting it up writes the plan and the records its steps "
-"write against; it reads nothing and moves nothing."
-msgstr ""
-"Noch nicht eingerichtet. Beim Einrichten werden der Plan und die "
-"Datensätze geschrieben, gegen die seine Schritte schreiben; es liest "
-"nichts und verschiebt nichts."
-
 msgid "Not shared"
 msgstr "Nicht geteilt"
 
@@ -2330,12 +2283,6 @@ msgstr "Dazu lässt sich eine Nachricht nicht umwandeln."
 
 msgid "Not verified yet"
 msgstr "Noch nicht verifiziert"
-
-msgid "Not yours to see."
-msgstr "Sie dürfen das nicht sehen."
-
-msgid "Not yours to set up."
-msgstr "Sie dürfen das nicht einrichten."
 
 msgid "Nothing"
 msgstr "Nichts"
@@ -2465,9 +2412,6 @@ msgstr "Nichts zur Auswahl"
 msgid "Nothing to count — every record here leaves this field empty."
 msgstr "Nichts zu zählen — jeder Datensatz hier lässt dieses Feld leer."
 
-msgid "Nothing to import"
-msgstr "Nichts zu importieren"
-
 msgid "Nothing to measure"
 msgstr "Nichts zu messen"
 
@@ -2488,9 +2432,6 @@ msgstr "Noch nichts anzuzeigen"
 
 msgid "Nothing uses AI yet"
 msgstr "Noch nutzt nichts KI"
-
-msgid "Nothing was refused"
-msgstr "Nichts wurde abgelehnt"
 
 msgid "Nothing was selected to print."
 msgstr "Es wurde nichts zum Drucken ausgewählt."
@@ -2878,9 +2819,6 @@ msgstr ""
 msgid "Privately to"
 msgstr "Blindkopie an"
 
-msgid "Problems"
-msgstr "Probleme"
-
 msgid "Profile saved"
 msgstr "Profil gespeichert"
 
@@ -2914,9 +2852,6 @@ msgstr "Quartalsrückblick"
 msgid "Quota Enforcement"
 msgstr "Kontingentdurchsetzung"
 
-msgid "Read everything, change nothing, and say what would happen"
-msgstr "Alles lesen, nichts ändern und sagen, was passieren würde"
-
 msgid "Reading…"
 msgstr "Wird gelesen…"
 
@@ -2946,9 +2881,6 @@ msgstr "Registrierung"
 
 msgid "Registry Json"
 msgstr "Verzeichnis-JSON"
-
-msgid "Rehearse"
-msgstr "Proben"
 
 msgid "Released"
 msgstr "Freigegeben"
@@ -3070,9 +3002,6 @@ msgstr ""
 "Zeilen werden zuerst danach sortiert, damit jede Gruppe vollständig "
 "ankommt."
 
-msgid "Rows that were refused"
-msgstr "Abgelehnte Zeilen"
-
 msgid "Rows written."
 msgstr "Geschriebene Zeilen."
 
@@ -3090,9 +3019,6 @@ msgstr "Als neue Ansicht speichern"
 
 msgid "Save away message"
 msgstr "Abwesenheitsnachricht speichern"
-
-msgid "Save connection"
-msgstr "Verbindung speichern"
 
 msgid "Save role"
 msgstr "Rolle speichern"
@@ -3176,9 +3102,6 @@ msgstr "Sicherheit"
 msgid "See plans"
 msgstr "Tarife ansehen"
 
-msgid "See what was refused"
-msgstr "Ansehen, was abgelehnt wurde"
-
 msgid "Select all"
 msgstr "Alle auswählen"
 
@@ -3229,12 +3152,6 @@ msgstr "Serifenschrift"
 
 msgid "Session"
 msgstr "Sitzung"
-
-msgid "Set this up"
-msgstr "Dies einrichten"
-
-msgid "Set up"
-msgstr "Einrichten"
 
 msgid "Set up books"
 msgstr "Bücher einrichten"
@@ -4062,9 +3979,6 @@ msgstr ""
 msgid "There is no folder called {0}."
 msgstr "Es gibt keinen Ordner namens {0}."
 
-msgid "There is no plan called {0}."
-msgstr "Es gibt keinen Tarif namens {0}."
-
 msgid "There is no preview for this kind of file."
 msgstr "Für diese Art von Datei gibt es keine Vorschau."
 
@@ -4338,9 +4252,6 @@ msgid "This workspace has no records an alert could watch yet."
 msgstr ""
 "Dieser Arbeitsbereich hat noch keine Datensätze, die eine Warnung "
 "überwachen könnte."
-
-msgid "This workspace has nothing set up to import from."
-msgstr "In diesem Arbeitsbereich ist keine Quelle zum Importieren eingerichtet."
 
 msgid ""
 "This workspace has posted entries, so its chart of accounts can no "
@@ -5200,17 +5111,11 @@ msgstr "einem Monat"
 msgid "a week"
 msgstr "einer Woche"
 
-msgid "add a connection first"
-msgstr "zuerst eine Verbindung hinzufügen"
-
 msgid "and {0} more."
 msgstr "und {0} weitere."
 
 msgid "app.yourcompany.com"
 msgstr "app.ihrefirma.de"
-
-msgid "as {0}"
-msgstr "als {0}"
 
 msgid "assistant"
 msgstr "Assistent"
@@ -5238,9 +5143,6 @@ msgstr "Dateien"
 
 msgid "from {0}"
 msgstr "von {0}"
-
-msgid "https://old.example.com"
-msgstr "https://old.example.com"
 
 msgid "iCloud needs an app-specific password."
 msgstr "iCloud benötigt ein anwendungsspezifisches Passwort."
@@ -5272,9 +5174,6 @@ msgstr "fehlt"
 msgid "nobody"
 msgstr "niemand"
 
-msgid "not yet"
-msgstr "noch nicht"
-
 msgid "nothing yet"
 msgstr "noch nichts"
 
@@ -5295,9 +5194,6 @@ msgstr "pro Monat"
 
 msgid "record"
 msgstr "Datensatz"
-
-msgid "rehearsal"
-msgstr "Probe"
 
 msgid "sales"
 msgstr "sales"
@@ -5331,9 +5227,6 @@ msgstr "drei Monaten"
 
 msgid "tool"
 msgstr "Werkzeug"
-
-msgid "up to {0}"
-msgstr "bis zu {0}"
 
 msgid "user"
 msgstr "Benutzer"
@@ -5610,12 +5503,6 @@ msgstr ""
 msgid "{0} ships with the app that defines it."
 msgstr "{0} wird mit der App ausgeliefert, die es definiert."
 
-msgid "{0} steps"
-msgstr "{0} Schritte"
-
-msgid "{0} steps · {1} fields it adds"
-msgstr "{0} Schritte · {1} Felder, die sie hinzufügt"
-
 msgid "{0} things"
 msgstr "{0} Elemente"
 
@@ -5627,9 +5514,6 @@ msgstr "{0} Elemente, weitere unten"
 
 msgid "{0} times a day"
 msgstr "{0}-mal täglich"
-
-msgid "{0} to fix · {1} worth reading"
-msgstr "{0} zu beheben · {1} lesenswert"
 
 msgid "{0} updated {1} {2}"
 msgstr "{0} hat {1} {2} aktualisiert"

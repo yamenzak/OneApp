@@ -129,8 +129,6 @@ TABS = [
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 	{"key": "storage", "label": "Storage", "icon": "lucide-hard-drive",
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
-	{"key": "import", "label": "Import", "icon": "lucide-import",
-	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 ]
 
 

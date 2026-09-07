@@ -190,6 +190,27 @@ TENANT_EXEMPT = {
 		"child table; one row per declared feature, edited in the workspace's AI "
 		"settings tab"
 	),
+	"Import Identity": (
+		"the import engine has no customer surface on purpose: a workspace does not author its own migration, and the mapping is code — see `oneapp_core/plans/rua.py`. The panel that let one point at their old site was removed; what replaces it is an operator turning an import on for a named tenant, which is not built yet"
+	),
+	"Import Issue": (
+		"the import engine has no customer surface on purpose: a workspace does not author its own migration, and the mapping is code — see `oneapp_core/plans/rua.py`. The panel that let one point at their old site was removed; what replaces it is an operator turning an import on for a named tenant, which is not built yet"
+	),
+	"Import Plan": (
+		"the import engine has no customer surface on purpose: a workspace does not author its own migration, and the mapping is code — see `oneapp_core/plans/rua.py`. The panel that let one point at their old site was removed; what replaces it is an operator turning an import on for a named tenant, which is not built yet"
+	),
+	"Import Run": (
+		"the import engine has no customer surface on purpose: a workspace does not author its own migration, and the mapping is code — see `oneapp_core/plans/rua.py`. The panel that let one point at their old site was removed; what replaces it is an operator turning an import on for a named tenant, which is not built yet"
+	),
+	"Import Run Step": (
+		"the import engine has no customer surface on purpose: a workspace does not author its own migration, and the mapping is code — see `oneapp_core/plans/rua.py`. The panel that let one point at their old site was removed; what replaces it is an operator turning an import on for a named tenant, which is not built yet"
+	),
+	"Import Source": (
+		"the import engine has no customer surface on purpose: a workspace does not author its own migration, and the mapping is code — see `oneapp_core/plans/rua.py`. The panel that let one point at their old site was removed; what replaces it is an operator turning an import on for a named tenant, which is not built yet"
+	),
+	"Import Step": (
+		"the import engine has no customer surface on purpose: a workspace does not author its own migration, and the mapping is code — see `oneapp_core/plans/rua.py`. The panel that let one point at their old site was removed; what replaces it is an operator turning an import on for a named tenant, which is not built yet"
+	),
 }
 
 

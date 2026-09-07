@@ -13,14 +13,24 @@ from oneapp.oneapp_core.plans import rua
 PLANS = {"rua": rua}
 
 
-def shipped() -> list[dict]:
-	"""Every plan this app carries, as the console offers them.
+def shipped(here: set[str] | None = None) -> list[dict]:
+	"""The plans this app carries, narrowed to a workspace's own spaces.
 
 	`key` and not the title is what `install` takes: a plan's title is the
 	customer's sentence about their own old system and may be edited, and the
 	module it came from may not.
+
+	**Narrowed here rather than by whatever offers them.** A shipped plan is one
+	customer's migration, and offering RUA's to another workspace is offering to
+	fill their books with a stranger's — the install writes custom fields and
+	seed records before it reads a row. That rule used to live in the tenant
+	import panel, which is gone; a rule that only holds inside one surface is a
+	rule that lapses the day the surface is remade.
+
+	`here` is the space codes the workspace has. Passing none asks for every
+	plan, which is what a caller listing what this *app* carries wants.
 	"""
-	return [
+	plans = [
 		{
 			"key": key,
 			"title": module.PLAN,
@@ -30,6 +40,7 @@ def shipped() -> list[dict]:
 		}
 		for key, module in PLANS.items()
 	]
+	return plans if here is None else [one for one in plans if one["space"] in here]
 
 
 def install(name: str, source: str) -> str:

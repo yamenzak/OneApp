@@ -643,34 +643,34 @@ def test_a_shared_source_with_disjoint_filters_is_silent(importer, stub_importer
 # --------------------------------------------------------------------------- #
 
 
-def test_a_shipped_plan_is_offered_only_where_its_space_is(importer, stub_frappe, monkeypatch):
+def test_a_shipped_plan_is_offered_only_where_its_space_is(stub_frappe):
 	"""A shipped plan is one customer's own migration.
 
 	Offering it to every workspace would be offering to fill their books with a
-	stranger's — and the button that does it writes custom fields and seed
+	stranger's — and the install that does it writes custom fields and seed
 	records before it reads a row.
+
+	Asked of `shipped` itself rather than of a surface. It used to be the
+	tenant import panel that filtered, and that panel is gone: a rule that only
+	holds inside one screen lapses the day the screen is remade.
 	"""
-	monkeypatch.setattr(stub_frappe, "has_permission", lambda *a, **k: True)
-	monkeypatch.setattr(stub_frappe, "get_all", lambda *a, **k: [])
+	from oneapp.oneapp_core import plans
 
-	import sys
-	import types
+	assert plans.shipped({"zzmock"}) == []
 
-	sync = types.ModuleType("oneapp.oneapp_core.sync")
-	sync.state = lambda: {"spaces": [{"space_code": "zzmock"}]}
-	monkeypatch.setitem(sys.modules, "oneapp.oneapp_core.sync", sync)
-
-	assert importer.console()["shipped"] == []
-
-	sync.state = lambda: {"spaces": [{"space_code": "rua"}, {"space_code": "zzmock"}]}
-	offered = importer.console()["shipped"]
-
+	offered = plans.shipped({"rua", "zzmock"})
 	assert [one["key"] for one in offered] == ["rua"]
-	# What the card says before anybody presses it: how much it will bring and
-	# how many records it makes to write against. Not schema — the `custom_`
-	# fields its maps name belong to the space and arrive with the entitlement.
+
+	# What a card would say before anybody pressed it: how much it will bring
+	# and how many records it makes to write against. Not schema — the
+	# `custom_` fields its maps name belong to the space and arrive with the
+	# entitlement.
 	assert offered[0]["steps"] == 12
 	assert offered[0]["records"] > 0
+
+	# And asking for everything this app carries is a different question, which
+	# is what an operator listing the plans on offer will need.
+	assert [one["key"] for one in plans.shipped()] == ["rua"]
 
 
 def test_the_rua_plan_resolves_every_link_backwards(stub_frappe):

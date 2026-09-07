@@ -208,20 +208,11 @@ msgstr "قيمة كتبها الذكاء الاصطناعي"
 msgid "AI credits"
 msgstr "أرصدة الذكاء الاصطناعي"
 
-msgid "API key"
-msgstr "مفتاح API"
-
-msgid "API secret"
-msgstr "سر API"
-
 msgid "Access"
 msgstr "الوصول"
 
 msgid "Add a column"
 msgstr "إضافة عمود"
-
-msgid "Add a connection"
-msgstr "إضافة اتصال"
 
 msgid "Add a file"
 msgstr "إضافة ملف"
@@ -612,17 +603,6 @@ msgstr ""
 "انقل كل ما هو مرفق بكل صف وأرفقه هنا. طلب واحد لكل صف وتنزيل واحد لكل "
 "ملف، لذا فهو اختياري في كل خطوة."
 
-msgid "Bring across what has changed"
-msgstr "نقل ما تغيّر"
-
-msgid "Bring everything across"
-msgstr "نقل كل شيء"
-
-msgid ""
-"Bring your records over from the system you are leaving — as often as "
-"you like."
-msgstr "انقل سجلاتك من النظام الذي تتركه — بالمرات التي تشاء."
-
 msgid "Build one when the roles your apps came with are not the shape you need."
 msgstr ""
 "أنشئ دوراً عندما لا تكون الأدوار التي جاءت مع تطبيقاتك بالشكل الذي "
@@ -706,9 +686,6 @@ msgstr "يُلغى في نهاية هذه الفترة"
 msgid "Card settings"
 msgstr "إعدادات البطاقة"
 
-msgid "Carried across"
-msgstr "تم نقله"
-
 msgid "Carries a file"
 msgstr "يحتوي على ملف"
 
@@ -780,12 +757,6 @@ msgstr "دليل الحسابات"
 
 msgid "Check DNS"
 msgstr "فحص DNS"
-
-msgid "Check the connection"
-msgstr "فحص الاتصال"
-
-msgid "Check the plan"
-msgstr "مراجعة الخطة"
 
 msgid "Check your connection, then try again."
 msgstr "تحقق من اتصالك، ثم حاول مرة أخرى."
@@ -1142,9 +1113,6 @@ msgstr ""
 
 msgid "Every recipient of this message has bounced or reported it as spam."
 msgstr "كل مستلمي هذه الرسالة ارتدّت رسائلهم أو أبلغوا عنها كبريد مزعج."
-
-msgid "Every row came across."
-msgstr "انتقل كل صف."
 
 msgid "Every seat is in use"
 msgstr "كل المقاعد مشغولة"
@@ -1620,9 +1588,6 @@ msgstr "صورته. يستخدم حرف من الاسم عند غيابها."
 
 msgid "Keep this one"
 msgstr "الاحتفاظ بهذه"
-
-msgid "Kept encrypted. Leave blank to keep the one already saved."
-msgstr "يُحفظ مشفّرًا. اتركه فارغًا للإبقاء على المحفوظ حاليًا."
 
 msgid "Keyboard shortcuts"
 msgstr "اختصارات لوحة المفاتيح"
@@ -2219,13 +2184,6 @@ msgstr "غير مقروء بعد"
 msgid "Not set"
 msgstr "غير محدد"
 
-msgid ""
-"Not set up yet. Setting it up writes the plan and the records its steps "
-"write against; it reads nothing and moves nothing."
-msgstr ""
-"لم يُعد بعد. إعداده يكتب الخطة والسجلات التي تكتب خطواته عليها؛ ولا يقرأ "
-"شيئًا ولا ينقل شيئًا."
-
 msgid "Not shared"
 msgstr "غير مشارَك"
 
@@ -2234,12 +2192,6 @@ msgstr "ليس شيئًا يمكن تحويل رسالة إليه."
 
 msgid "Not verified yet"
 msgstr "لم يُتحقق منه بعد"
-
-msgid "Not yours to see."
-msgstr "ليس من حقك الاطلاع عليه."
-
-msgid "Not yours to set up."
-msgstr "ليس من حقك إعداده."
 
 msgid "Nothing"
 msgstr "لا شيء"
@@ -2362,9 +2314,6 @@ msgstr "لا شيء للاختيار منه"
 msgid "Nothing to count — every record here leaves this field empty."
 msgstr "لا شيء للعد — كل سجل هنا يترك هذا الحقل فارغًا."
 
-msgid "Nothing to import"
-msgstr "لا شيء للاستيراد"
-
 msgid "Nothing to measure"
 msgstr "لا شيء للقياس"
 
@@ -2385,9 +2334,6 @@ msgstr "لا شيء لعرضه بعد"
 
 msgid "Nothing uses AI yet"
 msgstr "لا شيء يستخدم الذكاء الاصطناعي بعد"
-
-msgid "Nothing was refused"
-msgstr "لم يُرفض شيء"
 
 msgid "Nothing was selected to print."
 msgstr "لم يُحدَّد شيء للطباعة."
@@ -2749,9 +2695,6 @@ msgstr ""
 msgid "Privately to"
 msgstr "نسخة مخفية إلى"
 
-msgid "Problems"
-msgstr "مشكلات"
-
 msgid "Profile saved"
 msgstr "تم حفظ الملف الشخصي"
 
@@ -2785,17 +2728,11 @@ msgstr "مراجعة ربع سنوية"
 msgid "Quota Enforcement"
 msgstr "تطبيق الحصة"
 
-msgid "Read everything, change nothing, and say what would happen"
-msgstr "قراءة كل شيء دون تغيير أي شيء، وبيان ما سيحدث"
-
 msgid "Reading…"
 msgstr "جارٍ القراءة…"
 
 msgid "Reads invoices and contacts, edits neither."
 msgstr "يقرأ الفواتير وجهات الاتصال، ولا يعدّل أياً منهما."
-
-msgid "Ready"
-msgstr "جاهز"
 
 msgid "Recent"
 msgstr "الأخيرة"
@@ -2820,9 +2757,6 @@ msgstr "التسجيل"
 
 msgid "Registry Json"
 msgstr "JSON الفهرس"
-
-msgid "Rehearse"
-msgstr "تجربة"
 
 msgid "Released"
 msgstr "تم الإصدار"
@@ -2940,9 +2874,6 @@ msgstr "الأدوار التي جاءت مع تطبيقاتك"
 msgid "Rows are sorted by this first, so each group arrives whole."
 msgstr "تُرتَّب الصفوف بهذا أولًا، فتصل كل مجموعة كاملة."
 
-msgid "Rows that were refused"
-msgstr "الصفوف المرفوضة"
-
 msgid "Rows written."
 msgstr "الصفوف المكتوبة."
 
@@ -2963,9 +2894,6 @@ msgstr "حفظ كعرض جديد"
 
 msgid "Save away message"
 msgstr "حفظ رسالة الغياب"
-
-msgid "Save connection"
-msgstr "حفظ الاتصال"
 
 msgid "Save role"
 msgstr "حفظ الدور"
@@ -3049,9 +2977,6 @@ msgstr "الأمان"
 msgid "See plans"
 msgstr "عرض الخطط"
 
-msgid "See what was refused"
-msgstr "عرض ما رُفض"
-
 msgid "Select all"
 msgstr "تحديد الكل"
 
@@ -3102,12 +3027,6 @@ msgstr "سيريف"
 
 msgid "Session"
 msgstr "جلسة"
-
-msgid "Set this up"
-msgstr "إعداد هذا"
-
-msgid "Set up"
-msgstr "الإعداد"
 
 msgid "Set up books"
 msgstr "إعداد الدفاتر"
@@ -3886,9 +3805,6 @@ msgstr "يوجد بالفعل تنبيه باسم “{0}”. أعطِ هذا م�
 msgid "There is no folder called {0}."
 msgstr "لا يوجد مجلد باسم {0}."
 
-msgid "There is no plan called {0}."
-msgstr "لا توجد خطة باسم {0}."
-
 msgid "There is no preview for this kind of file."
 msgstr "لا توجد معاينة لهذا النوع من الملفات."
 
@@ -4137,9 +4053,6 @@ msgstr "مساحة العمل هذه ليس فيها تطبيقات بعد، ف�
 
 msgid "This workspace has no records an alert could watch yet."
 msgstr "لا تحتوي مساحة العمل هذه بعد على سجلات يمكن لتنبيه مراقبتها."
-
-msgid "This workspace has nothing set up to import from."
-msgstr "لا يوجد في مساحة العمل هذه أي مصدر مُعد للاستيراد منه."
 
 msgid ""
 "This workspace has posted entries, so its chart of accounts can no "
@@ -4959,17 +4872,11 @@ msgstr "شهر"
 msgid "a week"
 msgstr "أسبوع"
 
-msgid "add a connection first"
-msgstr "أضف اتصالًا أولًا"
-
 msgid "and {0} more."
 msgstr "و{0} أخرى."
 
 msgid "app.yourcompany.com"
 msgstr "app.sharikatuk.com"
-
-msgid "as {0}"
-msgstr "كـ {0}"
 
 msgid "assistant"
 msgstr "المساعد"
@@ -5001,9 +4908,6 @@ msgstr "موجود"
 msgid "from {0}"
 msgstr "من {0}"
 
-msgid "https://old.example.com"
-msgstr "https://old.example.com"
-
 msgid "iCloud needs an app-specific password."
 msgstr "يتطلب iCloud كلمة مرور خاصة بالتطبيق."
 
@@ -5034,9 +4938,6 @@ msgstr "مفقود"
 msgid "nobody"
 msgstr "لا أحد"
 
-msgid "not yet"
-msgstr "ليس بعد"
-
 msgid "nothing yet"
 msgstr "لا شيء بعد"
 
@@ -5057,9 +4958,6 @@ msgstr "شهرياً"
 
 msgid "record"
 msgstr "سجل"
-
-msgid "rehearsal"
-msgstr "تجربة"
 
 msgid "sales"
 msgstr "sales"
@@ -5093,9 +4991,6 @@ msgstr "ثلاثة أشهر"
 
 msgid "tool"
 msgstr "أداة"
-
-msgid "up to {0}"
-msgstr "حتى {0}"
 
 msgid "user"
 msgstr "مستخدم"
@@ -5360,12 +5255,6 @@ msgstr "{0} يأتي مع التطبيق الذي يعرّفه، لذا هو ل�
 msgid "{0} ships with the app that defines it."
 msgstr "{0} يأتي مع التطبيق الذي يعرّفه."
 
-msgid "{0} steps"
-msgstr "{0} خطوة"
-
-msgid "{0} steps · {1} fields it adds"
-msgstr "{0} خطوة · {1} حقلًا تضيفها"
-
 msgid "{0} things"
 msgstr "{0} عنصر"
 
@@ -5377,9 +5266,6 @@ msgstr "{0} عنصر، والمزيد أدناه"
 
 msgid "{0} times a day"
 msgstr "{0} مرات يومياً"
-
-msgid "{0} to fix · {1} worth reading"
-msgstr "{0} للإصلاح · {1} جدير بالقراءة"
 
 msgid "{0} updated {1} {2}"
 msgstr "حدّث {0} {1} {2}"

@@ -30,7 +30,7 @@ above it and never below — and each has a test that keeps it that way.
 |---|---|
 | `spaceview/` | One screen and everything a reader can do on it. Twenty-odd modules from `meta` (what a doctype's metadata says a screen may show) down to `run` (running a declared action) — the package docstring is the map, and `tests/test_spaceview_layers.py` reads it back and holds the import order to it. The whitelisted paths the SPA calls are re-exported from the package, so they are `spaceview.rows` and not `spaceview.records.rows`. |
 | `email/mailbox/` | Reading and writing one person's mail. `scope` → `flags` → `query` → `reading` → `filing` → `sending` → `drafts` → `composing`. |
-| `importer/` | Bringing another Frappe site's records across. `source` → `mapping` → `writing` → `running` → `checking` → `screen`. |
+| `importer/` | Bringing another Frappe site's records across. `source` → `mapping` → `writing` → `running` → `checking`. **No surface**: the tenant panel that let a workspace point at its old site is gone, because a workspace does not author its own migration — the mapping is code (`plans/rua.py`) and turning an import on for a named tenant is the operator's, which is not built yet. |
 | `docs/` | The prose a `File` could not hold. `body` (opening one, saving one, and the store contract `versions.py` reads) → `text` (the `.txt` and `.md` beside them, edited as their own bytes) → `export` (one self-contained HTML file, which is also the `file_url` the framework insists on) → `writing`. See `docs/WRITER.md`. |
 | `email/` (the rest) | `addresses`, `connect`, `folders`, `inbound`, `outbound`, `people`, `rules`, `threading`. Inbound arrives from a Cloudflare Worker; there is no IMAP server behind an address we route. |
 

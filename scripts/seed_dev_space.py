@@ -1645,6 +1645,18 @@ def seed_tenant(manifest_only=False):
 		frappe.delete_doc(written.DOCTYPE, stray, force=True, ignore_permissions=True)
 	written._forget_which_doctypes_are_marked()
 
+	# The files a browser pass attached to a record and never took back.
+	#
+	# `drive.spec.js` uploads `field-<stamp>.txt` onto the first project to
+	# prove an attachment lands on the record it was made from, and nothing
+	# removes it. Frappe caps a document at four attachments, so the fifth run
+	# of that spec fails on a limit rather than on the thing it tests — and the
+	# failure reads as the upload being broken, which it is not.
+	for stray in frappe.get_all(
+		"File", filters={"file_name": ["like", "field-%.txt"]}, pluck="name"
+	):
+		frappe.delete_doc("File", stray, force=True, ignore_permissions=True)
+
 	# And their views. A browser pass that makes a view and fails before
 	# deleting it leaves one behind, and three runs later "Only the urgent"
 	# matches three rows and every test that names one is ambiguous. The

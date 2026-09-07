@@ -87,7 +87,6 @@ import TemplateSettings from './TemplateSettings.vue'
 import StorageSettings from './StorageSettings.vue'
 import NamingSettings from './NamingSettings.vue'
 import PrintingSettings from './PrintingSettings.vue'
-import ImportSettings from './ImportSettings.vue'
 import MailSettings from './MailSettings.vue'
 import MailboxSettings from './MailboxSettings.vue'
 import ProfileSettings from './ProfileSettings.vue'
@@ -125,7 +124,6 @@ const PANELS = {
   alerts: AlertSettings,
   ai: AiSettings,
   storage: StorageSettings,
-  import: ImportSettings,
 }
 
 const data = ref(null)

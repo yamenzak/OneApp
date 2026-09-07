@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 14:39+0000\n"
-"PO-Revision-Date: 2026-09-07 14:39+0000\n"
+"POT-Creation-Date: 2026-09-07 16:03+0000\n"
+"PO-Revision-Date: 2026-09-07 16:03+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -264,14 +264,6 @@ msgstr ""
 msgid "AI usage"
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:47
-msgid "API key"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:51
-msgid "API secret"
-msgstr ""
-
 #: frontend/src/components/settings/BooksSettings.vue:74
 #: frontend/src/components/settings/BooksSettings.vue:167
 msgid "Abbreviation"
@@ -327,10 +319,6 @@ msgstr ""
 
 #: frontend/src/components/screen/record/RecordActivity.vue:14
 msgid "Add a comment"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:75
-msgid "Add a connection"
 msgstr ""
 
 #: frontend/src/components/screen/record/AttachmentGallery.vue:119
@@ -425,7 +413,6 @@ msgid "Added — it is on your next invoice"
 msgstr ""
 
 #. Label of the address (Data) field in DocType 'Mail Rule'
-#: frontend/src/components/settings/ImportSettings.vue:43
 #: frontend/src/components/settings/MailSettings.vue:276
 #: frontend/src/screens/account/Overview.vue:188
 #: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
@@ -991,20 +978,8 @@ msgstr ""
 msgid "Bring across everything attached to each row and attach it here. One request per row and one download per file, so it is opt-in per step."
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:182
-msgid "Bring across what has changed"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:182
-msgid "Bring everything across"
-msgstr ""
-
 #: frontend/src/screens/ops/Readiness.vue:38
 msgid "Bring up mail"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:12
-msgid "Bring your records over from the system you are leaving — as often as you like."
 msgstr ""
 
 #: frontend/src/screens/account/Roles.vue:88
@@ -1168,10 +1143,6 @@ msgstr ""
 msgid "Card settings"
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:135
-msgid "Carried across"
-msgstr ""
-
 #: frontend/src/pages/Mail.vue:768
 msgid "Carries a file"
 msgstr ""
@@ -1294,14 +1265,6 @@ msgstr ""
 
 #: frontend/src/components/settings/MailSettings.vue:156
 msgid "Check DNS"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:64
-msgid "Check the connection"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:167
-msgid "Check the plan"
 msgstr ""
 
 #: frontend/src/App.vue:79
@@ -2072,10 +2035,6 @@ msgstr ""
 msgid "Every recipient of this message has bounced or reported it as spam."
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:257
-msgid "Every row came across."
-msgstr ""
-
 #: frontend/src/screens/account/People.vue:16
 msgid "Every seat is in use"
 msgstr ""
@@ -2513,7 +2472,6 @@ msgid "Friendly"
 msgstr ""
 
 #: frontend/src/components/mail/MailComposer.vue:7
-#: frontend/src/components/settings/ImportSettings.vue:116
 msgid "From"
 msgstr ""
 
@@ -2761,10 +2719,6 @@ msgstr ""
 msgid "Image width (px)"
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:11
-msgid "Import"
-msgstr ""
-
 #. Name of a DocType
 #: oneapp/oneapp_core/doctype/import_identity/import_identity.json
 msgid "Import Identity"
@@ -2952,10 +2906,6 @@ msgstr ""
 
 #: frontend/src/components/versions/VersionPanel.vue:193
 msgid "Keep this one"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:52
-msgid "Kept encrypted. Leave blank to keep the one already saved."
 msgstr ""
 
 #: frontend/src/components/mail/ShortcutsDialog.vue:10
@@ -3178,8 +3128,6 @@ msgstr ""
 #: frontend/src/components/screen/bodies/RecordCard.vue:150
 #: frontend/src/components/screen/record/RelatedRows.vue:75
 #: frontend/src/components/settings/AlertSettings.vue:32
-#: frontend/src/components/settings/ImportSettings.vue:16
-#: frontend/src/components/settings/ImportSettings.vue:252
 #: frontend/src/components/settings/MailSettings.vue:15
 #: frontend/src/components/settings/MailboxSettings.vue:19
 #: frontend/src/components/settings/NamingSettings.vue:18
@@ -4114,10 +4062,6 @@ msgstr ""
 msgid "Not set"
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:96
-msgid "Not set up yet. Setting it up writes the plan and the records its steps write against; it reads nothing and moves nothing."
-msgstr ""
-
 #: frontend/src/components/SharePanel.vue:86
 msgid "Not shared"
 msgstr ""
@@ -4128,14 +4072,6 @@ msgstr ""
 
 #: frontend/src/components/settings/MailSettings.vue:162
 msgid "Not verified yet"
-msgstr ""
-
-#: oneapp/oneapp_core/importer/screen.py:17
-msgid "Not yours to see."
-msgstr ""
-
-#: oneapp/oneapp_core/importer/screen.py:80
-msgid "Not yours to set up."
 msgstr ""
 
 #. Label of the notes (Small Text) field in DocType 'Compliance Document'
@@ -4290,10 +4226,6 @@ msgstr ""
 msgid "Nothing to count — every record here leaves this field empty."
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:21
-msgid "Nothing to import"
-msgstr ""
-
 #: frontend/src/components/screen/bodies/DashboardBody.vue:17
 msgid "Nothing to measure"
 msgstr ""
@@ -4320,10 +4252,6 @@ msgstr ""
 
 #: frontend/src/components/settings/AiSettings.vue:17
 msgid "Nothing uses AI yet"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:256
-msgid "Nothing was refused"
 msgstr ""
 
 #: oneapp/oneapp_core/spaceview/printing.py:77
@@ -4936,10 +4864,6 @@ msgstr ""
 msgid "Privately to"
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:200
-msgid "Problems"
-msgstr ""
-
 #: frontend/src/components/settings/ProfileSettings.vue:11
 msgid "Profile"
 msgstr ""
@@ -5022,10 +4946,6 @@ msgstr ""
 msgid "Re-check"
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:175
-msgid "Read everything, change nothing, and say what would happen"
-msgstr ""
-
 #: frontend/src/screens/ops/FrappeCloud.vue:14
 msgid "Read from Frappe Cloud each time this opens, so it is never a stale copy."
 msgstr ""
@@ -5036,10 +4956,6 @@ msgstr ""
 
 #: frontend/src/screens/account/Roles.vue:110
 msgid "Reads invoices and contacts, edits neither."
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:200
-msgid "Ready"
 msgstr ""
 
 #: frontend/src/screens/ops/Readiness.vue:15
@@ -5118,10 +5034,6 @@ msgstr ""
 #. Label of the registry_json (Code) field in DocType 'OneSpace AI Settings'
 #: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Registry Json"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:172
-msgid "Rehearse"
 msgstr ""
 
 #: frontend/src/screens/ops/TenantLifecycle.vue:17
@@ -5412,10 +5324,6 @@ msgstr ""
 msgid "Rows are sorted by this first, so each group arrives whole."
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:250
-msgid "Rows that were refused"
-msgstr ""
-
 #. Description of the 'Filled' (Int) field in DocType 'Sheet Feed'
 #: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
 msgid "Rows written."
@@ -5482,10 +5390,6 @@ msgstr ""
 msgid "Save away message"
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:62
-msgid "Save connection"
-msgstr ""
-
 #: frontend/src/screens/account/Roles.vue:148
 msgid "Save role"
 msgstr ""
@@ -5510,7 +5414,6 @@ msgstr ""
 #: frontend/src/lib/runtime/resource.js:137
 #: frontend/src/lib/shell/notifications.js:92
 #: frontend/src/lib/shell/notifications.js:112
-#: frontend/src/lib/workspace/importing.js:18
 #: frontend/src/lib/workspace/mail.js:27 frontend/src/lib/workspace/mail.js:258
 #: frontend/src/lib/workspace/mail.js:356
 #: frontend/src/lib/workspace/mail.js:369
@@ -5632,10 +5535,6 @@ msgstr ""
 msgid "See the provisioning job for the reason."
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:238
-msgid "See what was refused"
-msgstr ""
-
 #. Label of the seen (Int) field in DocType 'Import Run Step'
 #: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
 msgid "Seen"
@@ -5743,14 +5642,6 @@ msgstr ""
 #: frontend/src/lib/screen/fields.js:1505
 #: frontend/src/screens/ops/Readiness.vue:112
 msgid "Set"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:102
-msgid "Set this up"
-msgstr ""
-
-#: frontend/src/lib/workspace/importing.js:25
-msgid "Set up"
 msgstr ""
 
 #: frontend/src/components/settings/BooksSettings.vue:113
@@ -6914,10 +6805,6 @@ msgstr ""
 msgid "There is no folder called {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/importer/screen.py:87
-msgid "There is no plan called {0}."
-msgstr ""
-
 #: frontend/src/components/drive/FilePreview.vue:43
 msgid "There is no preview for this kind of file."
 msgstr ""
@@ -7205,10 +7092,6 @@ msgstr ""
 msgid "This workspace has no site yet."
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:22
-msgid "This workspace has nothing set up to import from."
-msgstr ""
-
 #: oneapp/oneapp_core/books.py:446
 msgid "This workspace has posted entries, so its chart of accounts can no longer be replaced here. Ask support."
 msgstr ""
@@ -7425,7 +7308,7 @@ msgstr ""
 msgid "Unknown settings group {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/tabs.py:185
+#: oneapp/oneapp_core/tabs.py:183
 msgid "Unknown settings tab {0}."
 msgstr ""
 
@@ -8181,7 +8064,7 @@ msgstr ""
 msgid "You cannot change {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/tabs.py:181
+#: oneapp/oneapp_core/tabs.py:179
 msgid "You cannot open {0}."
 msgstr ""
 
@@ -8338,20 +8221,12 @@ msgstr ""
 msgid "a week"
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:110
-msgid "add a connection first"
-msgstr ""
-
 #: frontend/src/components/sheets/FillFromSheet.vue:127
 msgid "and {0} more."
 msgstr ""
 
 #: frontend/src/screens/account/Domain.vue:69
 msgid "app.yourcompany.com"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:36
-msgid "as {0}"
 msgstr ""
 
 #. Option for the 'Role' (Select) field in DocType 'OneSpace Chat Message'
@@ -8394,13 +8269,8 @@ msgstr ""
 msgid "found"
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:110
 #: frontend/src/components/settings/NamingSettings.vue:101
 msgid "from {0}"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:44
-msgid "https://old.example.com"
 msgstr ""
 
 #: oneapp/oneapp_core/email/connect.py:62
@@ -8449,10 +8319,6 @@ msgstr ""
 msgid "nobody"
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:152
-msgid "not yet"
-msgstr ""
-
 #: oneapp/oneapp_core/email/addresses.py:155
 msgid "nothing yet"
 msgstr ""
@@ -8484,10 +8350,6 @@ msgstr ""
 
 #: frontend/src/components/screen/record/RelatedRows.vue:141
 msgid "record"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:223
-msgid "rehearsal"
 msgstr ""
 
 #: frontend/src/components/settings/MailSettings.vue:277
@@ -8537,10 +8399,6 @@ msgstr ""
 #. Option for the 'Role' (Select) field in DocType 'OneSpace Chat Message'
 #: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "tool"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:152
-msgid "up to {0}"
 msgstr ""
 
 #. Option for the 'Role' (Select) field in DocType 'OneSpace Chat Message'
@@ -8907,14 +8765,6 @@ msgstr ""
 msgid "{0} ships with the app that defines it."
 msgstr ""
 
-#: frontend/src/components/settings/ImportSettings.vue:137
-msgid "{0} steps"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:92
-msgid "{0} steps · {1} fields it adds"
-msgstr ""
-
 #: frontend/src/pages/Drive.vue:487
 msgid "{0} things"
 msgstr ""
@@ -8929,10 +8779,6 @@ msgstr ""
 
 #: frontend/src/screens/account/Overview.vue:205
 msgid "{0} times a day"
-msgstr ""
-
-#: frontend/src/components/settings/ImportSettings.vue:202
-msgid "{0} to fix · {1} worth reading"
 msgstr ""
 
 #: frontend/src/components/settings/BooksSettings.vue:173
