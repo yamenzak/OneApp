@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 16:03+0000\n"
-"PO-Revision-Date: 2026-09-07 16:03+0000\n"
+"POT-Creation-Date: 2026-09-07 17:12+0000\n"
+"PO-Revision-Date: 2026-09-07 17:12+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -1138,6 +1138,10 @@ msgstr ""
 msgid "Cancels at the end of this period"
 msgstr ""
 
+#: frontend/src/components/settings/PeopleSettings.vue:24
+msgid "Cannot reach your account"
+msgstr ""
+
 #: frontend/src/components/screen/bodies/ListFooter.vue:90
 #: frontend/src/components/screen/views/CardSettings.vue:90
 msgid "Card settings"
@@ -1202,6 +1206,10 @@ msgstr ""
 #: frontend/src/screens/ops/TenantBilling.vue:192
 #: frontend/src/screens/ops/TenantBilling.vue:208
 msgid "Change plan"
+msgstr ""
+
+#: frontend/src/components/settings/PeopleSettings.vue:33
+msgid "Change plan to invite more people, or remove somebody who no longer needs access. Plans are in your account."
 msgstr ""
 
 #: frontend/src/components/screen/fields/IconPicker.vue:19
@@ -1936,6 +1944,7 @@ msgstr ""
 
 #: frontend/src/components/notifications/NotificationSettings.vue:84
 #: frontend/src/components/settings/MailSettings.vue:10
+#: frontend/src/components/settings/PeopleSettings.vue:85
 #: frontend/src/screens/account/People.vue:115
 msgid "Email"
 msgstr ""
@@ -2035,6 +2044,7 @@ msgstr ""
 msgid "Every recipient of this message has bounced or reported it as spam."
 msgstr ""
 
+#: frontend/src/components/settings/PeopleSettings.vue:31
 #: frontend/src/screens/account/People.vue:16
 msgid "Every seat is in use"
 msgstr ""
@@ -2827,6 +2837,10 @@ msgstr ""
 msgid "Investigating ticket #482 — invoices not sending"
 msgstr ""
 
+#: frontend/src/components/settings/PeopleSettings.vue:80
+msgid "Invite somebody"
+msgstr ""
+
 #: frontend/src/screens/account/People.vue:110
 msgid "Invite someone"
 msgstr ""
@@ -3577,6 +3591,7 @@ msgstr ""
 #: frontend/src/components/screen/record/RecordFiles.vue:68
 #: frontend/src/components/screen/views/ViewSwitcher.vue:52
 #: frontend/src/components/settings/AiSettings.vue:57
+#: frontend/src/components/settings/PeopleSettings.vue:88
 #: frontend/src/components/settings/TemplateSettings.vue:102
 #: frontend/src/components/settings/printing/FormatBuilder.vue:19
 #: frontend/src/components/settings/printing/LetterHeadDialog.vue:18
@@ -4648,6 +4663,7 @@ msgstr ""
 msgid "Overdue and mine"
 msgstr ""
 
+#: frontend/src/components/settings/PeopleSettings.vue:55
 #: frontend/src/screens/ops/Tenant.vue:476
 msgid "Owner"
 msgstr ""
@@ -4701,6 +4717,7 @@ msgid "Payments, quotas and anything about the account itself."
 msgstr ""
 
 #: frontend/src/components/screen/views/BulkAssignDialog.vue:32
+#: frontend/src/components/settings/PeopleSettings.vue:12
 #: frontend/src/screens/account/Overview.vue:86
 #: frontend/src/screens/account/People.vue:32
 msgid "People"
@@ -4801,6 +4818,10 @@ msgstr ""
 #. Settings'
 #: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Platform policy per feature: what may be disabled, what model is pinned, what the ceiling is."
+msgstr ""
+
+#: oneapp/oneapp_core/account.py:31
+msgid "Please sign in."
 msgstr ""
 
 #: frontend/src/pages/Account.vue:42
@@ -5120,6 +5141,8 @@ msgstr ""
 #: frontend/src/components/screen/views/ColumnPicker.vue:91
 #: frontend/src/components/settings/MailboxSettings.vue:177
 #: frontend/src/components/settings/MailboxSettings.vue:178
+#: frontend/src/components/settings/PeopleSettings.vue:69
+#: frontend/src/components/settings/PeopleSettings.vue:70
 #: frontend/src/screens/account/People.vue:93
 #: frontend/src/screens/account/People.vue:94
 #: frontend/src/screens/ops/Tenant.vue:159
@@ -5577,6 +5600,10 @@ msgstr ""
 #: frontend/src/components/settings/MailSettings.vue:82
 #: frontend/src/components/settings/MailSettings.vue:83
 msgid "Send notifications from this"
+msgstr ""
+
+#: frontend/src/components/settings/PeopleSettings.vue:105
+msgid "Send the invitation"
 msgstr ""
 
 #: frontend/src/pages/Sheet.vue:85
@@ -6872,6 +6899,10 @@ msgstr ""
 msgid "These rows have no columns a sheet could hold."
 msgstr ""
 
+#: frontend/src/components/settings/PeopleSettings.vue:94
+msgid "They can sign in within about fifteen minutes."
+msgstr ""
+
 #: frontend/src/components/settings/MailboxSettings.vue:195
 msgid "This"
 msgstr ""
@@ -7308,7 +7339,7 @@ msgstr ""
 msgid "Unknown settings group {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/tabs.py:183
+#: oneapp/oneapp_core/tabs.py:190
 msgid "Unknown settings tab {0}."
 msgstr ""
 
@@ -7920,6 +7951,14 @@ msgstr ""
 msgid "Who asked for it. Nothing wrote itself."
 msgstr ""
 
+#: frontend/src/components/settings/PeopleSettings.vue:13
+msgid "Who can sign in to this workspace, and what each of them may do."
+msgstr ""
+
+#: frontend/src/components/settings/PeopleSettings.vue:26
+msgid "Who is in this workspace is kept with your account, and it is not answering. Nobody has lost access; this page is what cannot be read."
+msgstr ""
+
 #: frontend/src/components/settings/AiSettings.vue:79
 msgid "Who it is"
 msgstr ""
@@ -8064,7 +8103,7 @@ msgstr ""
 msgid "You cannot change {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/tabs.py:179
+#: oneapp/oneapp_core/tabs.py:186
 msgid "You cannot open {0}."
 msgstr ""
 
@@ -8313,6 +8352,10 @@ msgstr ""
 #: oneapp/oneapp_core/email/verify.py:201
 #: oneapp/oneapp_core/email/verify.py:202
 msgid "missing"
+msgstr ""
+
+#: frontend/src/components/settings/PeopleSettings.vue:86
+msgid "name@example.com"
 msgstr ""
 
 #: frontend/src/components/settings/AlertSettings.vue:317
@@ -8698,6 +8741,10 @@ msgstr ""
 
 #: frontend/src/pages/Drive.vue:479
 msgid "{0} of {1} chosen"
+msgstr ""
+
+#: frontend/src/components/settings/PeopleSettings.vue:136
+msgid "{0} of {1} seats in use."
 msgstr ""
 
 #: frontend/src/screens/account/People.vue:221

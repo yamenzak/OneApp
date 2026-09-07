@@ -683,6 +683,9 @@ msgstr "الإلغاء يتراجع عما كتبه الاعتماد. وكل م�
 msgid "Cancels at the end of this period"
 msgstr "يُلغى في نهاية هذه الفترة"
 
+msgid "Cannot reach your account"
+msgstr "تعذّر الوصول إلى حسابك"
+
 msgid "Card settings"
 msgstr "إعدادات البطاقة"
 
@@ -718,6 +721,13 @@ msgstr "تغيير الصورة"
 
 msgid "Change plan"
 msgstr "تغيير الخطة"
+
+msgid ""
+"Change plan to invite more people, or remove somebody who no longer "
+"needs access. Plans are in your account."
+msgstr ""
+"غيّر الخطة لدعوة مزيد من الأشخاص، أو أزل من لم يعد بحاجة إلى الوصول. "
+"الخطط في حسابك."
 
 msgid "Change the icon"
 msgstr "تغيير الأيقونة"
@@ -1547,6 +1557,9 @@ msgstr "إلى"
 
 msgid "Invalid signature."
 msgstr "توقيع غير صالح."
+
+msgid "Invite somebody"
+msgstr "ادعُ شخصًا"
 
 msgid "Invite someone"
 msgstr "دعوة شخص"
@@ -2673,6 +2686,9 @@ msgstr ""
 "سياسة المنصة لكل ميزة: ما الذي يمكن تعطيله، وأي نموذج مثبَّت، وما الحد "
 "الأقصى."
 
+msgid "Please sign in."
+msgstr "يرجى تسجيل الدخول."
+
 msgid "Preferences"
 msgstr "التفضيلات"
 
@@ -3003,6 +3019,9 @@ msgstr "إرساله"
 
 msgid "Send notifications from this"
 msgstr "إرسال الإشعارات من هذا"
+
+msgid "Send the invitation"
+msgstr "أرسل الدعوة"
 
 msgid "Send these rows to {0}"
 msgstr "إرسال هذه الصفوف إلى {0}"
@@ -3868,6 +3887,9 @@ msgstr ""
 msgid "These rows have no columns a sheet could hold."
 msgstr "هذه الصفوف ليس فيها أعمدة يمكن لجدول بيانات أن يحملها."
 
+msgid "They can sign in within about fifteen minutes."
+msgstr "يمكنهم تسجيل الدخول خلال خمس عشرة دقيقة تقريبًا."
+
 msgid "This"
 msgstr "هذا"
 
@@ -4618,6 +4640,16 @@ msgstr "من"
 msgid "Who asked for it. Nothing wrote itself."
 msgstr "من طلبها. لا شيء يكتب نفسه."
 
+msgid "Who can sign in to this workspace, and what each of them may do."
+msgstr "من يمكنه تسجيل الدخول إلى مساحة العمل هذه، وما يستطيع كلٌّ منهم فعله."
+
+msgid ""
+"Who is in this workspace is kept with your account, and it is not "
+"answering. Nobody has lost access; this page is what cannot be read."
+msgstr ""
+"قائمة من في مساحة العمل هذه محفوظة مع حسابك، وهو لا يستجيب. لم يفقد أحد "
+"صلاحيته؛ ما تعذّرت قراءته هو هذه الصفحة فقط."
+
 msgid "Who it is"
 msgstr "من يكون"
 
@@ -4935,6 +4967,9 @@ msgstr "أُنشئ"
 msgid "missing"
 msgstr "مفقود"
 
+msgid "name@example.com"
+msgstr "name@example.com"
+
 msgid "nobody"
 msgstr "لا أحد"
 
@@ -5204,6 +5239,9 @@ msgstr "{0} رسائل عن هذا السجل"
 
 msgid "{0} of {1} chosen"
 msgstr "{0} من {1} محدد"
+
+msgid "{0} of {1} seats in use."
+msgstr "{0} من {1} مقعدًا قيد الاستخدام."
 
 msgid "{0} of {1} seats used"
 msgstr "{0} من {1} مقاعد مستخدمة"

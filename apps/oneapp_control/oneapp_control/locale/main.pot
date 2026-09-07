@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 16:03+0000\n"
-"PO-Revision-Date: 2026-09-07 16:03+0000\n"
+"POT-Creation-Date: 2026-09-07 17:12+0000\n"
+"PO-Revision-Date: 2026-09-07 17:12+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -2317,6 +2317,10 @@ msgstr ""
 #: oneapp_control/cloudflare/email.py:123
 #: oneapp_control/cloudflare/email.py:173
 msgid "No mail domain set."
+msgstr ""
+
+#: oneapp_control/api/tenant.py:701
+msgid "No person named."
 msgstr ""
 
 #: oneapp_control/api/customer.py:339
@@ -4814,7 +4818,7 @@ msgstr ""
 msgid "Workspace name"
 msgstr ""
 
-#: oneapp_control/api/customer.py:51
+#: oneapp_control/api/customer.py:51 oneapp_control/api/tenant.py:706
 msgid "Workspace not found."
 msgstr ""
 
@@ -4978,6 +4982,10 @@ msgstr ""
 
 #: oneapp_control/billing/addons.py:95
 msgid "{0} is not sold on a {1} subscription."
+msgstr ""
+
+#: oneapp_control/api/tenant.py:751
+msgid "{0} is not something a workspace may ask."
 msgstr ""
 
 #: oneapp_control/control_plane/doctype/workspace_role/workspace_role.py:59

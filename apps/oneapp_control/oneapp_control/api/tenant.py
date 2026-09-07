@@ -669,3 +669,91 @@ def _header(name: str) -> str | None:
 	"""
 	headers = frappe.request.headers
 	return headers.get(f"X-OneSpace-{name}") or headers.get(f"X-OneApp-{name}")
+
+
+# --------------------------------------------------------------------------- #
+# The workspace's own administration, asked from inside the workspace
+# --------------------------------------------------------------------------- #
+#
+# People, Roles and Domain are facts about one workspace, so a customer editing
+# them should not have to leave it — see `docs/MARKETPLACE.md` §2. The endpoints
+# that answer them live here because the control plane owns the rows, and they
+# were written against `frappe.session.user`, which a person signed into their
+# own site does not have here.
+#
+# So the site says who is asking, and **this** decides whether that person may.
+# The trust extended is exactly one sentence — "the site is not lying about
+# which of its own people is signed in" — and it is the same trust the HMAC
+# already carries for every usage figure and every credit reservation. What is
+# *not* trusted is the answer to "does that person own this workspace", which is
+# checked here against our own rows, because a site that could assert that could
+# assert it about somebody else's workspace.
+
+def _asked_by(tenant_name: str, data: dict) -> str:
+	"""The person the site says is asking, checked against who owns this.
+
+	Refuses rather than falling back to the owner: an unsigned assertion that
+	quietly becomes "the owner" is a bug that grants rather than one that
+	blocks.
+	"""
+	user = (data.get("as_user") or "").strip()
+	if not user:
+		frappe.throw(_("No person named."), frappe.PermissionError)
+
+	if frappe.db.get_value("Tenant", tenant_name, "owner_user") != user:
+		# The same words the customer surface uses, for the same reason: not
+		# confirming which workspace names exist or who holds them.
+		frappe.throw(_("Workspace not found."), frappe.PermissionError)
+
+	return user
+
+
+def _may_be_asked() -> dict:
+	"""The customer endpoints a workspace may reach from inside itself.
+
+	An allow-list and not a `getattr`: `customer` is a module of whitelisted
+	methods, and reaching it by name would make every one of them callable from
+	any tenant site the day somebody adds one.
+
+	Imported here rather than at the top because `customer` imports plenty and
+	this module is loaded on every signed call a site makes.
+	"""
+	from oneapp_control.api import customer
+
+	return {
+		"members": customer.members,
+		"invite_member": customer.invite_member,
+		"remove_member": customer.remove_member,
+		"set_member_roles": customer.set_member_roles,
+		"roles": customer.roles,
+		"save_role": customer.save_role,
+		"delete_role": customer.delete_role,
+		"domain": customer.domain_instructions,
+		"request_domain": customer.request_custom_domain,
+	}
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def workspace_admin():
+	"""One signed door for the workspace's own administration.
+
+	One rather than nine, because every one of them is the same shape — a
+	person, a workspace and a customer endpoint — and nine would be nine places
+	to forget `_asked_by`.
+	"""
+	tenant_name = _authenticate()
+	data = _body()
+	user = _asked_by(tenant_name, data)
+
+	allowed = _may_be_asked()
+	action = data.get("action") or ""
+	if action not in allowed:
+		frappe.throw(_("{0} is not something a workspace may ask.").format(action))
+
+	# As the person, so every ownership check inside `customer` runs exactly as
+	# it does when they are signed in here — this endpoint adds a door, not a
+	# way past the checks behind it.
+	frappe.set_user(user)
+	arguments = dict(data.get("arguments") or {})
+	arguments["workspace"] = tenant_name
+	return allowed[action](**arguments)

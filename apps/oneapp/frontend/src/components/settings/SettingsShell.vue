@@ -84,6 +84,7 @@ import BooksSettings from './BooksSettings.vue'
 import AiSettings from './AiSettings.vue'
 import AlertSettings from './AlertSettings.vue'
 import TemplateSettings from './TemplateSettings.vue'
+import PeopleSettings from './PeopleSettings.vue'
 import StorageSettings from './StorageSettings.vue'
 import NamingSettings from './NamingSettings.vue'
 import PrintingSettings from './PrintingSettings.vue'
@@ -123,6 +124,7 @@ const PANELS = {
   templates: TemplateSettings,
   alerts: AlertSettings,
   ai: AiSettings,
+  people: PeopleSettings,
   storage: StorageSettings,
 }
 

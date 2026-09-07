@@ -23,6 +23,7 @@ import { printing } from './printing'
 import { sheets } from './sheets'
 import { docs } from './docs'
 import { versions } from './versions'
+import { account } from './account'
 
 export const workspace = {
   ...assistant,
@@ -37,4 +38,5 @@ export const workspace = {
   ...sheets,
   ...docs,
   ...versions,
+  ...account,
 }

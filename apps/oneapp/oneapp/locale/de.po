@@ -733,6 +733,9 @@ msgstr ""
 msgid "Cancels at the end of this period"
 msgstr "Wird zum Ende dieses Zeitraums gekündigt"
 
+msgid "Cannot reach your account"
+msgstr "Ihr Konto ist nicht erreichbar"
+
 msgid "Card settings"
 msgstr "Karten-Einstellungen"
 
@@ -768,6 +771,14 @@ msgstr "Bild ändern"
 
 msgid "Change plan"
 msgstr "Tarif wechseln"
+
+msgid ""
+"Change plan to invite more people, or remove somebody who no longer "
+"needs access. Plans are in your account."
+msgstr ""
+"Wechseln Sie den Tarif, um mehr Personen einzuladen, oder entfernen Sie "
+"jemanden, der keinen Zugang mehr braucht. Die Tarife finden Sie in Ihrem "
+"Konto."
 
 msgid "Change the icon"
 msgstr "Symbol ändern"
@@ -1628,6 +1639,9 @@ msgstr "In"
 
 msgid "Invalid signature."
 msgstr "Ungültige Signatur."
+
+msgid "Invite somebody"
+msgstr "Jemanden einladen"
 
 msgid "Invite someone"
 msgstr "Person einladen"
@@ -2796,6 +2810,9 @@ msgstr ""
 "Plattformrichtlinie je Funktion: Was deaktiviert werden darf, welches "
 "Modell festgelegt ist und wo die Obergrenze liegt."
 
+msgid "Please sign in."
+msgstr "Bitte melden Sie sich an."
+
 msgid "Preferences"
 msgstr "Voreinstellungen"
 
@@ -3128,6 +3145,9 @@ msgstr "Senden"
 
 msgid "Send notifications from this"
 msgstr "Benachrichtigungen hiervon senden"
+
+msgid "Send the invitation"
+msgstr "Einladung senden"
 
 msgid "Send these rows to {0}"
 msgstr "Diese Zeilen an {0} senden"
@@ -4046,6 +4066,9 @@ msgstr ""
 msgid "These rows have no columns a sheet could hold."
 msgstr "Diese Zeilen haben keine Spalten, die eine Tabelle aufnehmen könnte."
 
+msgid "They can sign in within about fifteen minutes."
+msgstr "Sie können sich in etwa fünfzehn Minuten anmelden."
+
 msgid "This"
 msgstr "Dies"
 
@@ -4847,6 +4870,19 @@ msgstr "Wer"
 msgid "Who asked for it. Nothing wrote itself."
 msgstr "Wer darum gebeten hat. Nichts hat sich selbst geschrieben."
 
+msgid "Who can sign in to this workspace, and what each of them may do."
+msgstr ""
+"Wer sich in diesem Arbeitsbereich anmelden kann und was jede Person tun "
+"darf."
+
+msgid ""
+"Who is in this workspace is kept with your account, and it is not "
+"answering. Nobody has lost access; this page is what cannot be read."
+msgstr ""
+"Wer in diesem Arbeitsbereich ist, wird bei Ihrem Konto geführt, und das "
+"antwortet gerade nicht. Niemand hat den Zugang verloren — nur diese "
+"Seite lässt sich nicht lesen."
+
 msgid "Who it is"
 msgstr "Wer er ist"
 
@@ -5171,6 +5207,9 @@ msgstr "erstellt"
 msgid "missing"
 msgstr "fehlt"
 
+msgid "name@example.com"
+msgstr "name@example.com"
+
 msgid "nobody"
 msgstr "niemand"
 
@@ -5448,6 +5487,9 @@ msgstr "{0} Nachrichten zu diesem Datensatz"
 
 msgid "{0} of {1} chosen"
 msgstr "{0} von {1} ausgewählt"
+
+msgid "{0} of {1} seats in use."
+msgstr "{0} von {1} Plätzen belegt."
 
 msgid "{0} of {1} seats used"
 msgstr "{0} von {1} Plätzen belegt"

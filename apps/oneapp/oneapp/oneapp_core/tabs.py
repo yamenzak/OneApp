@@ -129,6 +129,13 @@ TABS = [
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 	{"key": "storage", "label": "Storage", "icon": "lucide-hard-drive",
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
+	# The first of three that used to be at a different address. Who is in this
+	# workspace is a fact about *this* workspace, so the person reading it has
+	# no reason to leave it — Roles and Domain follow, and Billing does not,
+	# for the reason in `docs/MARKETPLACE.md` §2. The rows are still the
+	# control plane's; `oneapp_core/account.py` is the relay.
+	{"key": "people", "label": "People", "icon": "lucide-users",
+	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 ]
 
 

@@ -35,6 +35,7 @@ export const TAB_ICONS = [
   'lucide-bell',
   'lucide-sparkles',
   'lucide-hard-drive',
+  'lucide-users',
   'lucide-import',
   // The control plane adds its own groups through
   // `onespace_settings_groups`; these are the ones it names.
