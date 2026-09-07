@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 09:15+0000\n"
-"PO-Revision-Date: 2026-09-07 09:15+0000\n"
+"POT-Creation-Date: 2026-09-07 10:35+0000\n"
+"PO-Revision-Date: 2026-09-07 10:35+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -244,6 +244,11 @@ msgstr ""
 
 #: frontend/src/components/settings/AiSettings.vue:3
 msgid "AI"
+msgstr ""
+
+#. Name of a DocType
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+msgid "AI Written Value"
 msgstr ""
 
 #: frontend/src/screens/ops/TenantBilling.vue:136
@@ -489,6 +494,7 @@ msgstr ""
 
 #. Name of a role
 #: frontend/src/components/screen/record/RecordActivity.vue:138
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
 #: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
 #: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "All"
@@ -712,6 +718,11 @@ msgstr ""
 msgid "Ask something first."
 msgstr ""
 
+#. Label of the asked_by (Link) field in DocType 'AI Written Value'
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+msgid "Asked By"
+msgstr ""
+
 #: frontend/src/screens/ops/TenantLifecycle.vue:248
 msgid "Asked the site for one"
 msgstr ""
@@ -746,13 +757,10 @@ msgstr ""
 msgid "Assignments, mentions and workspace notices, in the app."
 msgstr ""
 
-#: frontend/src/components/chat/AssistantPanel.vue:22
-#: frontend/src/components/chat/AssistantPanel.vue:29
-#: frontend/src/components/chat/ChatSidebar.vue:16
 #: frontend/src/components/settings/AiSettings.vue:44
 #: frontend/src/components/settings/AiSettings.vue:58
-#: frontend/src/lib/shell/nav.js:203 frontend/src/pages/Chat.vue:73
-#: oneapp/oneapp_core/ai/settings.py:147 oneapp/oneapp_core/ai/settings.py:163
+#: frontend/src/lib/shell/assistant.js:42 oneapp/oneapp_core/ai/settings.py:147
+#: oneapp/oneapp_core/ai/settings.py:163
 msgid "Assistant"
 msgstr ""
 
@@ -791,7 +799,7 @@ msgstr ""
 msgid "At the limit. Free some space or add more."
 msgstr ""
 
-#: frontend/src/components/screen/fields/FieldControl.vue:116
+#: frontend/src/components/screen/fields/FieldControl.vue:141
 msgid "Attach"
 msgstr ""
 
@@ -1357,7 +1365,7 @@ msgstr ""
 msgid "Clear the selection, or close the conversation"
 msgstr ""
 
-#: frontend/src/components/chat/AssistantPanel.vue:45
+#: frontend/src/components/chat/AssistantPanel.vue:48
 #: frontend/src/components/screen/record/CreateDialog.vue:15
 #: frontend/src/components/versions/VersionPanel.vue:23
 msgid "Close"
@@ -1377,7 +1385,7 @@ msgstr ""
 msgid "Close settings"
 msgstr ""
 
-#: frontend/src/components/chat/AssistantPanel.vue:44
+#: frontend/src/components/chat/AssistantPanel.vue:47
 msgid "Close the assistant"
 msgstr ""
 
@@ -1513,7 +1521,7 @@ msgstr ""
 msgid "Copy as Markdown"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:628
+#: frontend/src/components/screen/record/RecordView.vue:629
 msgid "Copy link"
 msgstr ""
 
@@ -1733,7 +1741,7 @@ msgstr ""
 msgid "Delete this alert"
 msgstr ""
 
-#: frontend/src/components/chat/AssistantPanel.vue:93
+#: frontend/src/components/chat/AssistantPanel.vue:102
 msgid "Delete this conversation"
 msgstr ""
 
@@ -1827,14 +1835,21 @@ msgstr ""
 msgid "Doc Body"
 msgstr ""
 
+#. Label of the reference_name (Data) field in DocType 'AI Written Value'
 #: frontend/src/components/docs/DocEditor.vue:90
 #: frontend/src/composables/useNewFile.js:110
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
 msgid "Document"
 msgstr ""
 
 #. Label of the document_number (Data) field in DocType 'Compliance Document'
 #: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
 msgid "Document Number"
+msgstr ""
+
+#. Label of the reference_doctype (Data) field in DocType 'AI Written Value'
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+msgid "Document Type"
 msgstr ""
 
 #: frontend/src/components/settings/MailSettings.vue:153
@@ -1908,7 +1923,7 @@ msgid "Dry Run"
 msgstr ""
 
 #: frontend/src/components/docs/DocEditor.vue:392
-#: frontend/src/components/screen/record/RecordView.vue:621
+#: frontend/src/components/screen/record/RecordView.vue:622
 msgid "Duplicate"
 msgstr ""
 
@@ -2180,8 +2195,10 @@ msgstr ""
 msgid "Favourites"
 msgstr ""
 
+#. Label of the feature_key (Data) field in DocType 'AI Written Value'
 #. Label of the feature_key (Data) field in DocType 'OneSpace AI Feature
 #. Setting'
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
 #: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "Feature Key"
 msgstr ""
@@ -2215,6 +2232,11 @@ msgstr ""
 #. Label of the field_map (Code) field in DocType 'Import Step'
 #: oneapp/oneapp_core/doctype/import_step/import_step.json
 msgid "Field Map"
+msgstr ""
+
+#. Label of the fieldname (Data) field in DocType 'AI Written Value'
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+msgid "Fieldname"
 msgstr ""
 
 #: frontend/src/components/settings/printing/FormatBuilder.vue:241
@@ -2371,7 +2393,7 @@ msgstr ""
 msgid "Folders refreshed"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:602
+#: frontend/src/components/screen/record/RecordView.vue:603
 msgid "Follow"
 msgstr ""
 
@@ -2501,12 +2523,12 @@ msgstr ""
 msgid "From the source site's own user."
 msgstr ""
 
-#: frontend/src/components/screen/fields/FieldControl.vue:554
+#: frontend/src/components/screen/fields/FieldControl.vue:594
 #: frontend/src/components/settings/SecuritySettings.vue:78
 msgid "From {0}"
 msgstr ""
 
-#: frontend/src/components/screen/fields/FieldControl.vue:553
+#: frontend/src/components/screen/fields/FieldControl.vue:593
 msgid "From {0} if left blank"
 msgstr ""
 
@@ -3110,12 +3132,12 @@ msgstr ""
 msgid "Light, dark, or matching your system."
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:609
+#: frontend/src/components/screen/record/RecordView.vue:610
 #: frontend/src/components/screen/views/QuickFilters.vue:178
 msgid "Like"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:609
+#: frontend/src/components/screen/record/RecordView.vue:610
 msgid "Liked"
 msgstr ""
 
@@ -3128,7 +3150,7 @@ msgid "Line spacing"
 msgstr ""
 
 #: frontend/src/components/drive/ShareLink.vue:147
-#: frontend/src/components/screen/record/RecordView.vue:583
+#: frontend/src/components/screen/record/RecordView.vue:584
 msgid "Link copied"
 msgstr ""
 
@@ -3346,7 +3368,7 @@ msgstr ""
 msgid "Manual"
 msgstr ""
 
-#: frontend/src/components/screen/fields/FieldControl.vue:306
+#: frontend/src/components/screen/fields/FieldControl.vue:337
 #: frontend/src/lib/screen/viewTypes.js:55
 msgid "Map"
 msgstr ""
@@ -3462,6 +3484,11 @@ msgstr ""
 msgid "Model"
 msgstr ""
 
+#. Label of the model_key (Data) field in DocType 'AI Written Value'
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+msgid "Model Key"
+msgstr ""
+
 #. Description of the 'Catalogue Json' (Code) field in DocType 'OneSpace AI
 #. Settings'
 #: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
@@ -3477,7 +3504,7 @@ msgid "Monthly credits"
 msgstr ""
 
 #: frontend/src/components/AppShell.vue:54
-#: frontend/src/components/chat/AssistantPanel.vue:39
+#: frontend/src/components/chat/AssistantPanel.vue:42
 #: frontend/src/components/drive/FileRow.vue:122
 #: frontend/src/components/screen/record/RecordActions.vue:45
 msgid "More"
@@ -3583,7 +3610,7 @@ msgstr ""
 msgid "Moving {0}."
 msgstr ""
 
-#: frontend/src/components/screen/fields/FieldControl.vue:558
+#: frontend/src/components/screen/fields/FieldControl.vue:598
 msgid "Must be unique"
 msgstr ""
 
@@ -3669,8 +3696,8 @@ msgstr ""
 msgid "New alert"
 msgstr ""
 
-#: frontend/src/components/chat/AssistantPanel.vue:76
-#: frontend/src/components/chat/ChatSidebar.vue:23
+#: frontend/src/components/chat/AssistantPanel.vue:85
+#: frontend/src/components/chat/ChatSidebar.vue:27
 #: frontend/src/pages/Chat.vue:30 oneapp/oneapp_core/chat/session.py:41
 msgid "New chat"
 msgstr ""
@@ -4217,7 +4244,7 @@ msgstr ""
 msgid "Nothing on this record has changed since it was created."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/records.py:610
+#: oneapp/oneapp_core/spaceview/records.py:625
 msgid "Nothing on this screen can be changed."
 msgstr ""
 
@@ -4304,7 +4331,7 @@ msgstr ""
 msgid "Nothing yet"
 msgstr ""
 
-#: frontend/src/components/chat/ChatSidebar.vue:44
+#: frontend/src/components/chat/ChatSidebar.vue:48
 msgid "Nothing yet."
 msgstr ""
 
@@ -4550,7 +4577,7 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: frontend/src/components/chat/AssistantPanel.vue:81
+#: frontend/src/components/chat/AssistantPanel.vue:90
 msgid "Open as a page"
 msgstr ""
 
@@ -4559,7 +4586,7 @@ msgstr ""
 msgid "Open in the builder"
 msgstr ""
 
-#: frontend/src/components/screen/fields/FieldControl.vue:194
+#: frontend/src/components/screen/fields/FieldControl.vue:225
 msgid "Open in the editor"
 msgstr ""
 
@@ -4603,7 +4630,7 @@ msgstr ""
 msgid "Open {0} beside this"
 msgstr ""
 
-#: frontend/src/components/screen/fields/FieldControl.vue:195
+#: frontend/src/components/screen/fields/FieldControl.vue:226
 msgid "Open {0} in the editor"
 msgstr ""
 
@@ -4873,7 +4900,7 @@ msgstr ""
 #: frontend/src/components/docs/DocEditor.vue:374
 #: frontend/src/components/screen/record/PrintDialog.vue:14
 #: frontend/src/components/screen/record/PrintDialog.vue:39
-#: frontend/src/components/screen/record/RecordView.vue:594
+#: frontend/src/components/screen/record/RecordView.vue:595
 #: frontend/src/pages/ScreenHost.vue:355
 msgid "Print"
 msgstr ""
@@ -5027,7 +5054,7 @@ msgstr ""
 msgid "Recipient"
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:195
+#: frontend/src/components/settings/AiSettings.vue:196
 msgid "Recommended"
 msgstr ""
 
@@ -5100,7 +5127,7 @@ msgstr ""
 msgid "Released into the lifecycle"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:634
+#: frontend/src/components/screen/record/RecordView.vue:635
 msgid "Reload"
 msgstr ""
 
@@ -5242,7 +5269,7 @@ msgstr ""
 msgid "Repeats at the top of every page."
 msgstr ""
 
-#: frontend/src/components/screen/fields/FieldControl.vue:116
+#: frontend/src/components/screen/fields/FieldControl.vue:141
 #: frontend/src/components/settings/SettingsAttach.vue:34
 msgid "Replace"
 msgstr ""
@@ -5880,7 +5907,7 @@ msgid "Sign out everywhere else"
 msgstr ""
 
 #. Label of the signature (Attach Image) field in DocType 'Correspondence'
-#: frontend/src/components/screen/fields/FieldControl.vue:298
+#: frontend/src/components/screen/fields/FieldControl.vue:329
 #: frontend/src/components/settings/MailSettings.vue:111
 #: frontend/src/components/settings/MailboxSettings.vue:95
 #: oneapp/oneapp_core/doctype/correspondence/correspondence.json
@@ -6126,7 +6153,7 @@ msgstr ""
 msgid "Steps"
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:602
+#: frontend/src/components/screen/record/RecordView.vue:603
 msgid "Stop following"
 msgstr ""
 
@@ -6250,6 +6277,7 @@ msgid "System"
 msgstr ""
 
 #. Name of a role
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
 #: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
 #: oneapp/oneapp_core/doctype/correspondence/correspondence.json
 #: oneapp/oneapp_core/doctype/doc_body/doc_body.json
@@ -6669,6 +6697,12 @@ msgstr ""
 msgid "The difference is credited against your next invoice, and the new limits apply straight away."
 msgstr ""
 
+#. Description of the 'Document Type' (Data) field in DocType 'AI Written
+#. Value'
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+msgid "The doctype the value is on. Data and not Link: a workspace's records belong to apps we do not own, and a Link would refuse a row for a doctype uninstalled since."
+msgstr ""
+
 #. Description of the 'Content' (Long Text) field in DocType 'Doc Body'
 #: oneapp/oneapp_core/doctype/doc_body/doc_body.json
 msgid "The document as ProseMirror JSON: the source of truth, and the only representation the editor reads back. Replaced whole on every save."
@@ -6683,6 +6717,11 @@ msgstr ""
 #. Description of the 'Renews' (Link) field in DocType 'Compliance Document'
 #: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
 msgid "The document this one replaces. The old one is kept: an expired licence is still what you were trading under last year."
+msgstr ""
+
+#. Description of the 'Fieldname' (Data) field in DocType 'AI Written Value'
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+msgid "The field. `file_url` on a File is how a generated image or a piece of audio is marked, so one mechanism covers fields and media rather than two."
 msgstr ""
 
 #. Description of the 'Child Table' (Data) field in DocType 'Sheet Feed'
@@ -6947,7 +6986,7 @@ msgstr ""
 msgid "This browser has no camera support."
 msgstr ""
 
-#: frontend/src/components/screen/record/RecordView.vue:585
+#: frontend/src/components/screen/record/RecordView.vue:586
 msgid "This browser would not let the page copy to the clipboard."
 msgstr ""
 
@@ -6984,7 +7023,7 @@ msgstr ""
 msgid "This is a template"
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/records.py:629
+#: oneapp/oneapp_core/spaceview/records.py:644
 msgid "This is not yours to change while it is where it is."
 msgstr ""
 
@@ -7050,7 +7089,7 @@ msgstr ""
 msgid "This screen has nothing to change."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/records.py:718
+#: oneapp/oneapp_core/spaceview/records.py:733
 msgid "This screen has nothing to delete."
 msgstr ""
 
@@ -7062,7 +7101,7 @@ msgstr ""
 msgid "This screen has nothing to move."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/records.py:597
+#: oneapp/oneapp_core/spaceview/records.py:612
 msgid "This screen has nothing to save."
 msgstr ""
 
@@ -7200,7 +7239,7 @@ msgid "This workspace only allows mailboxes on: {0}"
 msgstr ""
 
 #: oneapp/oneapp_core/spaceview/links.py:187
-#: oneapp/oneapp_core/spaceview/records.py:602
+#: oneapp/oneapp_core/spaceview/records.py:617
 msgid "Those changes could not be read."
 msgstr ""
 
@@ -7260,7 +7299,7 @@ msgstr ""
 msgid "Too many at once. Choose {0} or fewer."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/records.py:724
+#: oneapp/oneapp_core/spaceview/records.py:739
 msgid "Too many at once. Delete {0} or fewer."
 msgstr ""
 
@@ -7917,6 +7956,11 @@ msgstr ""
 msgid "Which day rather than what time."
 msgstr ""
 
+#. Description of the 'Feature Key' (Data) field in DocType 'AI Written Value'
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+msgid "Which declared feature wrote it. See `ai/features.py`."
+msgstr ""
+
 #: oneapp/oneapp_core/email/verify.py:181
 msgid "Which domain?"
 msgstr ""
@@ -7928,6 +7972,11 @@ msgstr ""
 #: frontend/src/components/screen/views/BulkEditDialog.vue:23
 #: frontend/src/components/screen/views/TallyMenu.vue:30
 msgid "Which field"
+msgstr ""
+
+#. Description of the 'Model Key' (Data) field in DocType 'AI Written Value'
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+msgid "Which model, from the catalogue."
 msgstr ""
 
 #. Description of the 'View Type' (Data) field in DocType 'OneSpace Saved View'
@@ -7966,6 +8015,11 @@ msgstr ""
 
 #: frontend/src/components/SharePanel.vue:29
 msgid "Who"
+msgstr ""
+
+#. Description of the 'Asked By' (Link) field in DocType 'AI Written Value'
+#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+msgid "Who asked for it. Nothing wrote itself."
 msgstr ""
 
 #: frontend/src/components/settings/AiSettings.vue:79
@@ -8065,6 +8119,14 @@ msgstr ""
 
 #: frontend/src/pages/Mail.vue:743
 msgid "Writing"
+msgstr ""
+
+#: frontend/src/components/AiMark.vue:45
+msgid "Written by {0}, using {1}."
+msgstr ""
+
+#: frontend/src/components/AiMark.vue:46
+msgid "Written by {0}."
 msgstr ""
 
 #: oneapp/oneapp_core/email/connect.py:59

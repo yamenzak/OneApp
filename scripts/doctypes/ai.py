@@ -347,6 +347,58 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
+# What a model wrote, and where.
+#
+# A row per value: `Sales Invoice` / `ACC-SINV-0001` / `remarks`. A row rather
+# than a field on the record, because most records are not ours — a workspace's
+# documents are Quotations and Sales Invoices, and marking a field on one would
+# mean a custom field on every doctype an app might ever touch. The same shape
+# `Document Follow` and `Tag Link` use, for the same reason, and it covers a
+# child row too since a child row has a name of its own.
+#
+# It carries who and what, not only where. "AI wrote this" is an icon; "the
+# workspace assistant wrote this with <model>, at Ada's asking, on 3 May" is an
+# answer to the question the icon provokes — and it is the same row, so there is
+# no reason to store less.
+#
+# Hash-named, and the triple kept unique by `written.mark` looking first. Frappe
+# indexes one field at a time and a name built from the three would overflow the
+# 140 characters a name has, so the uniqueness is the module's to keep — which
+# it does, because a value written twice is one fact and not two.
+# --------------------------------------------------------------------------- #
+doctype(
+    "AI Written Value",
+    app="tenant",
+    autoname="hash",
+    perms=[
+        # Nobody reads this doctype directly, and that is deliberate. A mark
+        # reaches a browser only inside the record it is about, from
+        # `spaceview.records.record`, which has already decided that reader may
+        # see that record. Readable here as well and a person could list every
+        # marked field on the site — which names documents they cannot open.
+        {"read": 1, "write": 1, "create": 1, "delete": 1, "role": "System Manager"},
+    ],
+    fields=[
+        f("reference_doctype", "Data", "Document Type", search_index=1,
+          description="The doctype the value is on. Data and not Link: a "
+                      "workspace's records belong to apps we do not own, and a "
+                      "Link would refuse a row for a doctype uninstalled since."),
+        f("reference_name", "Data", "Document", search_index=1),
+        f("fieldname", "Data", search_index=1,
+          description="The field. `file_url` on a File is how a generated "
+                      "image or a piece of audio is marked, so one mechanism "
+                      "covers fields and media rather than two."),
+        column("cb_ai_written"),
+        f("feature_key", "Data",
+          description="Which declared feature wrote it. See `ai/features.py`."),
+        f("model_key", "Data", description="Which model, from the catalogue."),
+        f("asked_by", "Link", options="User",
+          description="Who asked for it. Nothing wrote itself."),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
 # The workspace assistant's transcripts.
 #
 # A conversation is stored because a conversation is a document: it is looked

@@ -209,6 +209,7 @@
               :screen="screen"
               :disabled="!canWrite"
               :docname="record?.name || ''"
+              :ai="record?._ai || {}"
               @reload="emit('reload')"
             />
             <ErrorMessage v-if="error" :message="error" />

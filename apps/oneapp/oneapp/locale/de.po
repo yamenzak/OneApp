@@ -231,6 +231,9 @@ msgstr "Ein {0} hat keine Zeilen namens {1} zum Ausfüllen."
 msgid "AI"
 msgstr "KI"
 
+msgid "AI Written Value"
+msgstr "Vom KI-Modell geschriebener Wert"
+
 msgid "AI credits"
 msgstr "KI-Guthaben"
 
@@ -513,6 +516,9 @@ msgstr "{0} befragen"
 
 msgid "Ask something first."
 msgstr "Stellen Sie zuerst eine Frage."
+
+msgid "Asked By"
+msgstr "Angefragt von"
 
 msgid "Assign to"
 msgstr "Zuweisen an"
@@ -1967,6 +1973,9 @@ msgstr "Meine"
 
 msgid "Missing signature."
 msgstr "Fehlende Signatur."
+
+msgid "Model Key"
+msgstr "Modellschlüssel"
 
 msgid "Models the workspace may choose, with prices."
 msgstr "Modelle, die der Arbeitsbereich wählen darf, mit Preisen."
@@ -3802,6 +3811,16 @@ msgstr ""
 "Limits gelten sofort."
 
 msgid ""
+"The doctype the value is on. Data and not Link: a workspace's records "
+"belong to apps we do not own, and a Link would refuse a row for a "
+"doctype uninstalled since."
+msgstr ""
+"Der Doctype, zu dem der Wert gehört. Ein Data-Feld und kein Link: Die "
+"Datensätze eines Arbeitsbereichs gehören Apps, die uns nicht gehören, "
+"und ein Link würde eine Zeile für einen inzwischen deinstallierten "
+"Doctype ablehnen."
+
+msgid ""
 "The document as ProseMirror JSON: the source of truth, and the only "
 "representation the editor reads back. Replaced whole on every save."
 msgstr ""
@@ -3819,6 +3838,15 @@ msgstr ""
 "Das Dokument, das dieses ersetzt. Das alte bleibt erhalten: Eine "
 "abgelaufene Lizenz ist immer noch das, womit Sie letztes Jahr gearbeitet "
 "haben."
+
+msgid ""
+"The field. `file_url` on a File is how a generated image or a piece of "
+"audio is marked, so one mechanism covers fields and media rather than "
+"two."
+msgstr ""
+"Das Feld. Ein erzeugtes Bild oder eine Audiodatei wird über `file_url` "
+"auf einer File markiert, sodass ein Mechanismus Felder und Medien "
+"abdeckt statt zwei."
 
 msgid ""
 "The fieldname of the table these rows landed in. One feed per table: a "
@@ -4824,6 +4852,9 @@ msgstr "Welche Spalten…"
 msgid "Which day rather than what time."
 msgstr "Welcher Tag statt welche Uhrzeit."
 
+msgid "Which declared feature wrote it. See `ai/features.py`."
+msgstr "Welche deklarierte Funktion es geschrieben hat. Siehe `ai/features.py`."
+
 msgid "Which domain?"
 msgstr "Welche Domain?"
 
@@ -4836,6 +4867,9 @@ msgstr ""
 
 msgid "Which field"
 msgstr "Welches Feld"
+
+msgid "Which model, from the catalogue."
+msgstr "Welches Modell, aus dem Katalog."
 
 msgid ""
 "Which of the screen's view types this view is of. Empty is the screen's "
@@ -4874,6 +4908,9 @@ msgstr "Während Ihrer Abwesenheit"
 
 msgid "Who"
 msgstr "Wer"
+
+msgid "Who asked for it. Nothing wrote itself."
+msgstr "Wer darum gebeten hat. Nichts hat sich selbst geschrieben."
 
 msgid "Who it is"
 msgstr "Wer er ist"
@@ -4944,6 +4981,12 @@ msgstr "Schreiben Sie Ihre Nachricht"
 
 msgid "Writing"
 msgstr "Schreiben"
+
+msgid "Written by {0}, using {1}."
+msgstr "Geschrieben von {0}, mit {1}."
+
+msgid "Written by {0}."
+msgstr "Geschrieben von {0}."
 
 msgid "Yahoo needs an app password."
 msgstr "Yahoo benötigt ein App-Passwort."

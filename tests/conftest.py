@@ -181,8 +181,16 @@ def _make_frappe():
 		def delete_value(self, key):
 			self.store.pop(key, None)
 
-	_cache = _Cache()
-	frappe.cache = lambda: _cache
+		def __call__(self):
+			"""Frappe's older `frappe.cache()` form, which still works there.
+
+			Both spellings are in this codebase — `sync.py` calls it, `written.py`
+			reads the attribute — so the stub answers to both rather than making
+			the choice of spelling a thing a test can fail on.
+			"""
+			return self
+
+	frappe.cache = _Cache()
 	frappe.conf = {}
 	frappe.get_all = lambda *a, **k: []
 	frappe.get_doc = lambda *a, **k: None

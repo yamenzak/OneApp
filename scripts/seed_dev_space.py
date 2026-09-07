@@ -317,7 +317,12 @@ TODOS = [
 	# this one to check that a record with no assignment offers the outline of
 	# a person, and assigns it itself.
 	{"name": "zzmock-halloway",
-	 "description": "Chase the Halloway invoice", "priority": "High", "status": "Open"},
+	 "description": "Chase the Halloway invoice", "priority": "High", "status": "Open",
+	 # The one field in the fixture a model wrote. Nothing in the product writes
+	 # a record yet — the assistant's tools all read — so without this the
+	 # sparkle beside a marked label is a thing only a hand-made row can show,
+	 # and no browser pass can point at it.
+	 "written_by_ai": "description"},
 	# Allocated to the colleague on purpose. Frappe's ToDo has a permission
 	# rule of its own — owner, allocated_to, assigned_by — so a second person
 	# cannot so much as join the realtime room for a task that is none of
@@ -1239,6 +1244,7 @@ def seed_tenant(manifest_only=False):
 	Run the whole thing before a browser pass; run this while iterating.
 	"""
 	from oneapp.oneapp_core import branding, sync
+	from oneapp.oneapp_core.ai import written
 
 	# Cheap, and in the manifest half on purpose: it is part of what the
 	# workspace *looks like*, which is the thing `manifest_only` exists to let
@@ -1381,7 +1387,10 @@ def seed_tenant(manifest_only=False):
 			# `set_name`, not a `name` key: ToDo autonames by hash, and
 			# `set_new_name` overwrites whatever is on the document unless the
 			# insert was told the name is already decided.
-			fields = {k: v for k, v in row.items() if k not in ("name", "assigned")}
+			fields = {
+				k: v for k, v in row.items()
+				if k not in ("name", "assigned", "written_by_ai")
+			}
 			frappe.get_doc({"doctype": "ToDo", **fields}).insert(
 				ignore_permissions=True, set_name=row["name"]
 			)
@@ -1414,6 +1423,16 @@ def seed_tenant(manifest_only=False):
 			pluck="name",
 		):
 			frappe.delete_doc("ToDo", stray, ignore_permissions=True, force=True)
+
+		# And the provenance mark, re-asserted rather than inserted once: a
+		# browser pass that edits this task's text clears the mark, which is the
+		# behaviour, and the next seed has to put it back.
+		if row.get("written_by_ai"):
+			written.mark(
+				"ToDo", row["name"], row["written_by_ai"],
+				feature="oneapp.chat.workspace", model="google-ai-studio:flash",
+				asked_by="Administrator",
+			)
 
 	for row in NOTES:
 		if frappe.db.exists("Note", {"title": row["title"]}):

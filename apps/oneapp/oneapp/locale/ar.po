@@ -202,6 +202,9 @@ msgstr "لا يحتوي {0} على صفوف باسم {1} لتعبئتها."
 msgid "AI"
 msgstr "الذكاء الاصطناعي"
 
+msgid "AI Written Value"
+msgstr "قيمة كتبها الذكاء الاصطناعي"
+
 msgid "AI credits"
 msgstr "أرصدة الذكاء الاصطناعي"
 
@@ -469,6 +472,9 @@ msgstr "اسأل عن {0}"
 
 msgid "Ask something first."
 msgstr "اطرح سؤالًا أولًا."
+
+msgid "Asked By"
+msgstr "طلبها"
 
 msgid "Assign to"
 msgstr "إسناد إلى"
@@ -1879,6 +1885,9 @@ msgstr "التوقيع مفقود."
 
 msgid "Model"
 msgstr "النموذج"
+
+msgid "Model Key"
+msgstr "مفتاح النموذج"
 
 msgid "Models the workspace may choose, with prices."
 msgstr "النماذج التي يمكن لمساحة العمل اختيارها، مع الأسعار."
@@ -3657,6 +3666,15 @@ msgid ""
 msgstr "يُضاف الفرق كرصيد إلى فاتورتك التالية، وتسري الحدود الجديدة فوراً."
 
 msgid ""
+"The doctype the value is on. Data and not Link: a workspace's records "
+"belong to apps we do not own, and a Link would refuse a row for a "
+"doctype uninstalled since."
+msgstr ""
+"نوع المستند الذي تنتمي إليه القيمة. حقل بيانات لا حقل ارتباط: سجلات "
+"مساحة العمل تعود إلى تطبيقات لا نملكها، وحقل الارتباط يرفض صفًا لنوع "
+"مستند أُلغي تثبيته بعد ذلك."
+
+msgid ""
 "The document as ProseMirror JSON: the source of truth, and the only "
 "representation the editor reads back. Replaced whole on every save."
 msgstr ""
@@ -3672,6 +3690,14 @@ msgid ""
 msgstr ""
 "المستند الذي يحل هذا محله. يُحتفظ بالقديم: الرخصة المنتهية تبقى ما كنت "
 "تعمل بموجبه العام الماضي."
+
+msgid ""
+"The field. `file_url` on a File is how a generated image or a piece of "
+"audio is marked, so one mechanism covers fields and media rather than "
+"two."
+msgstr ""
+"الحقل. يُعلَّم على الصورة أو المقطع الصوتي المولَّد عبر `file_url` في "
+"مستند الملف، فتغطي آلية واحدة الحقول والوسائط بدل آليتين."
 
 msgid ""
 "The fieldname of the table these rows landed in. One feed per table: a "
@@ -4605,6 +4631,9 @@ msgstr "أي أعمدة…"
 msgid "Which day rather than what time."
 msgstr "أي يوم لا أي وقت."
 
+msgid "Which declared feature wrote it. See `ai/features.py`."
+msgstr "أي ميزة معلَنة كتبتها. انظر `ai/features.py`."
+
 msgid "Which domain?"
 msgstr "أي نطاق؟"
 
@@ -4617,6 +4646,9 @@ msgstr ""
 
 msgid "Which field"
 msgstr "أي حقل"
+
+msgid "Which model, from the catalogue."
+msgstr "أي نموذج، من الكتالوج."
 
 msgid ""
 "Which of the screen's view types this view is of. Empty is the screen's "
@@ -4650,6 +4682,9 @@ msgstr "أثناء غيابك"
 
 msgid "Who"
 msgstr "من"
+
+msgid "Who asked for it. Nothing wrote itself."
+msgstr "من طلبها. لا شيء يكتب نفسه."
 
 msgid "Who it is"
 msgstr "من يكون"
@@ -4720,6 +4755,12 @@ msgstr "اكتب رسالتك"
 
 msgid "Writing"
 msgstr "الكتابة"
+
+msgid "Written by {0}, using {1}."
+msgstr "كتبها {0} باستخدام {1}."
+
+msgid "Written by {0}."
+msgstr "كتبها {0}."
 
 msgid "Yahoo needs an app password."
 msgstr "يتطلب Yahoo كلمة مرور تطبيق."

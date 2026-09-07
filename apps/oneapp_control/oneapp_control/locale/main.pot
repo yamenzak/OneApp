@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 05:17+0000\n"
-"PO-Revision-Date: 2026-09-07 05:17+0000\n"
+"POT-Creation-Date: 2026-09-07 10:35+0000\n"
+"PO-Revision-Date: 2026-09-07 10:35+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -818,11 +818,11 @@ msgstr ""
 msgid "Context Window"
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:147
+#: frontend/src/pages/signup/SignupPage.vue:148
 msgid "Continue"
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:146
+#: frontend/src/pages/signup/SignupPage.vue:147
 msgid "Continue — ${0}/mo"
 msgstr ""
 
@@ -1262,7 +1262,7 @@ msgstr ""
 msgid "Escape hatch: a component the SPA registered under `spaceCode/screen`. Set this and the doctype above is ignored."
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:107
+#: frontend/src/pages/signup/SignupPage.vue:108
 msgid "European Union only"
 msgstr ""
 
@@ -1591,7 +1591,7 @@ msgstr ""
 msgid "Global"
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:106
+#: frontend/src/pages/signup/SignupPage.vue:107
 msgid "Global network"
 msgstr ""
 
@@ -2310,7 +2310,7 @@ msgstr ""
 msgid "No Stripe customer on this subscription."
 msgstr ""
 
-#: frontend/src/lib/runtime/errors.js:90
+#: frontend/src/lib/runtime/errors.js:99
 msgid "No further detail was returned."
 msgstr ""
 
@@ -3200,7 +3200,7 @@ msgstr ""
 msgid "Request"
 msgstr ""
 
-#: frontend/src/lib/runtime/errors.js:83
+#: frontend/src/lib/runtime/errors.js:93
 msgid "Request failed"
 msgstr ""
 
@@ -3531,7 +3531,7 @@ msgid "Soft cap. MariaDB is the real ceiling; see docs/ONEADMIN.md."
 msgstr ""
 
 #: frontend/src/lib/runtime/errors.js:53 frontend/src/lib/runtime/errors.js:63
-#: frontend/src/lib/runtime/errors.js:84
+#: frontend/src/lib/runtime/errors.js:94
 msgid "Something went wrong"
 msgstr ""
 
@@ -4106,7 +4106,7 @@ msgstr ""
 msgid "Text to Speech"
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:164
+#: frontend/src/pages/signup/SignupPage.vue:165
 msgid "That address is taken or reserved."
 msgstr ""
 
@@ -4824,7 +4824,7 @@ msgstr ""
 msgid "Your payment went through and you will not be charged again. Support has been told, and there is nothing for you to do."
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:140
+#: frontend/src/pages/signup/SignupPage.vue:141
 msgid "Your workspace address."
 msgstr ""
 
@@ -5028,7 +5028,7 @@ msgstr ""
 msgid "{0} workspaces keep the {1} GB they bought: this applies to new purchases only."
 msgstr ""
 
-#: frontend/src/pages/signup/SignupPage.vue:131
+#: frontend/src/pages/signup/SignupPage.vue:132
 msgid "{0} — ${1}/mo"
 msgstr ""
 

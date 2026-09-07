@@ -1,0 +1,83 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_doctype",
+  "reference_name",
+  "fieldname",
+  "cb_ai_written",
+  "feature_key",
+  "model_key",
+  "asked_by"
+ ],
+ "fields": [
+  {
+   "description": "The doctype the value is on. Data and not Link: a workspace's records belong to apps we do not own, and a Link would refuse a row for a doctype uninstalled since.",
+   "fieldname": "reference_doctype",
+   "fieldtype": "Data",
+   "label": "Document Type",
+   "search_index": 1
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Data",
+   "label": "Document",
+   "search_index": 1
+  },
+  {
+   "description": "The field. `file_url` on a File is how a generated image or a piece of audio is marked, so one mechanism covers fields and media rather than two.",
+   "fieldname": "fieldname",
+   "fieldtype": "Data",
+   "label": "Fieldname",
+   "search_index": 1
+  },
+  {
+   "fieldname": "cb_ai_written",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Which declared feature wrote it. See `ai/features.py`.",
+   "fieldname": "feature_key",
+   "fieldtype": "Data",
+   "label": "Feature Key"
+  },
+  {
+   "description": "Which model, from the catalogue.",
+   "fieldname": "model_key",
+   "fieldtype": "Data",
+   "label": "Model Key"
+  },
+  {
+   "description": "Who asked for it. Nothing wrote itself.",
+   "fieldname": "asked_by",
+   "fieldtype": "Link",
+   "label": "Asked By",
+   "options": "User"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneApp Core",
+ "name": "AI Written Value",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

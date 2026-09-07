@@ -113,6 +113,11 @@ The single modules, roughly by how often they are touched:
   turn count and a credit budget). The last three are adapted from
   `frappe/flow_client`; the model they call is ours, because Flow's own is a
   provider row a tenant could edit.
+  Beside them, `written` — which values on a record a model wrote. A row per
+  `doctype`/`docname`/`fieldname` rather than a field on the record, because a
+  workspace's documents belong to apps we do not own. It is what puts the
+  sparkle beside a field's label, and it is hooked on `doc_events["*"]` so a
+  person rewriting a value takes the mark off it.
 * `chat/` — the workspace assistant, which is one `@ai_feature` that loops.
   `toolbox` (what it may read, every tool a wrapper over an endpoint the SPA
   already calls, so the assistant sees exactly what its asker could click to) →

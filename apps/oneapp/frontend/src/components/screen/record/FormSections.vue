@@ -130,6 +130,7 @@
               :screen="screen"
               :is-new="isNew"
               :states="states"
+              :ai="ai[field.fieldname] || null"
               :doctype="doctype"
               :docname="docname || values.name || ''"
               :doc="values"
@@ -206,6 +207,9 @@ const props = defineProps({
   docname: { type: String, default: '' },
   /** The doctype's Document States, so a Select's options carry their glyph. */
   states: { type: Array, default: () => [] },
+  /** The record's `_ai`: fieldname → what wrote the value there. Absent on a
+   *  record nothing wrote, which is nearly all of them. */
+  ai: { type: Object, default: () => ({}) },
 })
 
 // The draft, written into per field. A model rather than a prop: the object is

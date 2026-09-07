@@ -74,6 +74,9 @@ const props = defineProps({
    * `name` is not one. The controls that write through the server need it.
    */
   docname: { type: String, default: '' },
+  /** The record's `_ai`: fieldname → what wrote the value there. See
+   *  `components/AiMark.vue` and `oneapp_core/ai/written.py`. */
+  ai: { type: Object, default: () => ({}) },
 })
 
 /** The values being edited, keyed by fieldname. */
@@ -130,6 +133,7 @@ const passthrough = computed(() => ({
   // Same argument: the spec carries the doctype's Document States, so a
   // Select's options draw the glyph their badge will draw once chosen.
   states: props.spec?.states || [],
+  ai: props.ai || {},
 }))
 
 // Back to the first tab whenever the form is for something else.

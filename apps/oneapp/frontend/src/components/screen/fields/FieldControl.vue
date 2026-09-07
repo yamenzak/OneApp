@@ -32,7 +32,12 @@
       child grid still drew a row of bare type icons above the inputs.
     -->
     <template #label v-if="field.label">
-      <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
+      <FieldLabel
+        :label="field.label"
+        :icon="field.icon"
+        :required="!!field.reqd"
+        :ai="ai"
+      />
     </template>
   </LinkPicker>
 
@@ -45,7 +50,12 @@
     @update:model-value="emit('update:modelValue', $event ? 1 : 0)"
   >
     <template #label v-if="field.label">
-      <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
+      <FieldLabel
+        :label="field.label"
+        :icon="field.icon"
+        :required="!!field.reqd"
+        :ai="ai"
+      />
     </template>
   </Switch>
 
@@ -57,7 +67,12 @@
     @update:model-value="emit('update:modelValue', $event)"
   >
     <template #label v-if="field.label">
-      <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
+      <FieldLabel
+        :label="field.label"
+        :icon="field.icon"
+        :required="!!field.reqd"
+        :ai="ai"
+      />
     </template>
   </Rating>
 
@@ -69,7 +84,12 @@
     @update:model-value="emit('update:modelValue', $event)"
   >
     <template #label v-if="field.label">
-      <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
+      <FieldLabel
+        :label="field.label"
+        :icon="field.icon"
+        :required="!!field.reqd"
+        :ai="ai"
+      />
     </template>
   </Password>
 
@@ -97,7 +117,12 @@
     @update:model-value="emit('update:modelValue', tagged($event))"
   >
     <template #label v-if="field.label">
-      <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
+      <FieldLabel
+        :label="field.label"
+        :icon="field.icon"
+        :required="!!field.reqd"
+        :ai="ai"
+      />
     </template>
   </MultiSelect>
 
@@ -176,6 +201,12 @@
       <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0 text-ink-gray-4"
             :aria-hidden="true" />
       <FormLabel :label="field.label" :required="!!field.reqd" />
+      <!-- Where a model wrote this. Beside the label like every other field's
+           is, and said here rather than through `FieldLabel` because this row
+           is built by hand: `FormLabel` renders its own `<label>` and the
+           editor below is a `contenteditable` rather than an input, so the
+           slot the other controls use does not exist here. -->
+      <AiMark v-if="ai" :mark="ai" />
       <!--
         The room a document gets, for the field a doctype's author meant for
         long-form content. It writes back to the field: nothing here becomes a
@@ -348,7 +379,12 @@
     @update:model-value="emit('update:modelValue', $event)"
   >
     <template #label v-if="field.label">
-      <FieldLabel :label="field.label" :icon="field.icon" :required="!!field.reqd" />
+      <FieldLabel
+        :label="field.label"
+        :icon="field.icon"
+        :required="!!field.reqd"
+        :ai="ai"
+      />
     </template>
   </FormControl>
 </template>
@@ -375,6 +411,7 @@ import {
   upload,
 } from '@/ui'
 import FieldLabel from './FieldLabel.vue'
+import AiMark from '../../AiMark.vue'
 import FilePicker from '../../drive/FilePicker.vue'
 import LinkPicker from './LinkPicker.vue'
 import AttachmentGallery from '../record/AttachmentGallery.vue'
@@ -436,6 +473,9 @@ const props = defineProps({
   isNew: { type: Boolean, default: false },
   /** The doctype's Document States, so an option's glyph matches its badge. */
   states: { type: Array, default: () => [] },
+  /** Where a model wrote this value: `{ feature, model, by, when }` off the
+   *  record's `_ai`, or nothing. Drawn beside the label — see `AiMark.vue`. */
+  ai: { type: Object, default: null },
   /** The record this field belongs to, where there is one. Only the rich-text
    *  editor reads them, to attach a pasted image. */
   doctype: { type: String, default: '' },

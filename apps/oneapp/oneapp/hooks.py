@@ -154,6 +154,16 @@ doc_events = {
 	# measurement is an information_schema scan and must not run per insert.
 	"*": {
 		"before_insert": "oneapp.oneapp_core.storage.quota.enforce_database_quota",
+		# A field a person rewrote is not the model's any more, and the marks
+		# go when the document goes. `*` because the mark is about a value on
+		# any doctype — a workspace's records belong to apps we do not own, so
+		# there is no list to name instead. The cost is a comparison against
+		# the document the framework is already holding for its own Version
+		# row, and on a document with no marks one indexed read; the doctypes
+		# that save constantly and can never carry a mark are skipped before
+		# the query. See `oneapp_core/ai/written.py`.
+		"on_update": "oneapp.oneapp_core.ai.written.forget_changed",
+		"on_trash": "oneapp.oneapp_core.ai.written.forget_deleted",
 	},
 }
 

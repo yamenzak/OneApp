@@ -21,14 +21,23 @@
       <span class="select-none text-ink-red-5" aria-hidden="true">*</span>
       <span class="sr-only">(required)</span>
     </template>
+    <!-- Where a model wrote this value. Last, after the asterisk, because the
+         prose editor builds its label by hand out of frappe-ui's `FormLabel`,
+         which draws its own asterisk and gives nothing to put a mark before.
+         One order across every fieldtype is worth more than the argument for
+         the other one. See `components/AiMark.vue`. -->
+    <AiMark v-if="ai" :mark="ai" />
   </span>
 </template>
 
 <script setup>
 import { Icon } from '@/ui'
+import AiMark from '../../AiMark.vue'
 
 defineProps({
   label: { type: String, default: '' },
+  /** `{ feature, model, by, when }` where a model wrote this value, else null. */
+  ai: { type: Object, default: null },
   /** A lucide name from the fieldtype table. Absent for a type with no icon. */
   icon: { type: String, default: '' },
   required: { type: Boolean, default: false },

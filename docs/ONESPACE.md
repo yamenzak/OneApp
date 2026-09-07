@@ -1375,6 +1375,35 @@ off, because the alternative is a broken workflow with no error to point at.
 
 Credits, metering and markup are the platform's — `ONEADMIN.md` §7.
 
+### The assistant has a name, and it is the workspace's
+
+Four settings sit above the feature rows: a **name**, an **avatar**, a **tone**
+and a **personality**. The first two are not prompt material — they are what the
+product calls the thing, so the chat panel's header, the rail item, the empty
+state and the sparkle's tooltip all say the workspace's own word rather than
+"Assistant". The name reaches the browser in the boot payload, beside the accent
+and the favicon, because it is needed before the first paint.
+
+The other two are prompt material and go in one place: after our instructions
+and before the workspace's addendum, as a sentence rather than an adverb — a
+model reads "Be direct" and weighs it, and there is nothing else a tone could
+be. A workspace that has set none of the four gets no character paragraph at
+all, rather than one made of blanks.
+
+### What a model wrote is marked
+
+A sparkle beside a field's label, and a sentence in its tooltip naming the
+assistant and the model. It reads off a row per `doctype`/`docname`/`fieldname`
+— the shape `Document Follow` and `Tag Link` already use — because a workspace's
+records are Quotations and Sales Invoices, and a field on the record would mean
+a custom field on every doctype an app might ever install. A generated image or
+a piece of audio is the same row against `file_url` on its `File`, so one
+mechanism carries fields and media.
+
+**A mark expires when a person rewrites the value.** Only that field: a save
+that touched one field leaves the other nine marked. Without it the icon is a
+lie within a month and then noise, which is worse than never having said it.
+
 ### The workspace assistant
 
 The first feature shipped under that decorator is a chat. It is declared exactly

@@ -11,6 +11,7 @@ is asked for.
 import frappe
 from frappe import _
 from oneapp.oneapp_core import collab, dashboard, docflow, fieldtypes, printing, showcase
+from oneapp.oneapp_core.ai import written
 from .meta import MAX_PAGE, META_FIELDS, PAGE, RECORD_META, _fetch_fields
 from .filters import MAX_DELETE, _all_filters, _grouped_order
 from .applied import _apply_overrides, _apply_saved
@@ -319,7 +320,21 @@ def record(space_code: str, screen: str, name: str) -> dict:
 	_with_authors(found[0])
 	_with_children(resolved, found[0], name)
 	_with_state(resolved, found[0], name)
+	_with_written(resolved, found[0], name)
 	return found[0]
+
+
+def _with_written(resolved: dict, row: dict, name: str) -> None:
+	"""Which of these values a model wrote.
+
+	On the record and not on the list: the mark belongs beside the value, and a
+	list of a hundred rows asking about each of them is a hundred questions to
+	draw an icon nobody is reading at that zoom. One query, and a record with
+	nothing marked costs that one query. See `ai/written.py`.
+	"""
+	marks = written.written(resolved["doctype"], name)
+	if marks:
+		row["_ai"] = marks
 
 
 def _with_state(resolved: dict, row: dict, name: str) -> None:
