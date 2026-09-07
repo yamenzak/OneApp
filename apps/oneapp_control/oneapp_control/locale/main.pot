@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 19:37+0000\n"
-"PO-Revision-Date: 2026-09-07 19:37+0000\n"
+"POT-Creation-Date: 2026-09-07 19:47+0000\n"
+"PO-Revision-Date: 2026-09-07 19:47+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -679,7 +679,7 @@ msgstr ""
 msgid "Claimed On"
 msgstr ""
 
-#: oneapp_control/api/customer.py:1212
+#: oneapp_control/api/customer.py:1288
 msgid "Claimed with code {0}."
 msgstr ""
 
@@ -3597,6 +3597,10 @@ msgstr ""
 msgid "Soft cap. MariaDB is the real ceiling; see docs/ONEADMIN.md."
 msgstr ""
 
+#: oneapp_control/entitlements/apps.py:201
+msgid "Something still needs that"
+msgstr ""
+
 #: frontend/src/lib/runtime/errors.js:53 frontend/src/lib/runtime/errors.js:63
 #: frontend/src/lib/runtime/errors.js:94
 msgid "Something went wrong"
@@ -4199,12 +4203,16 @@ msgstr ""
 msgid "That code is not live yet. Try again in a minute."
 msgstr ""
 
-#: oneapp_control/api/customer.py:1184
+#: oneapp_control/api/customer.py:1260
 msgid "That code is not one we know."
 msgstr ""
 
 #: oneapp_control/billing/promos.py:183
 msgid "That code is not valid here."
+msgstr ""
+
+#: oneapp_control/api/customer.py:1218
+msgid "That did not match"
 msgstr ""
 
 #: oneapp_control/api/customer.py:455
@@ -4231,7 +4239,7 @@ msgstr ""
 msgid "That space is not one this workspace was offered."
 msgstr ""
 
-#: oneapp_control/api/customer.py:1157
+#: oneapp_control/api/customer.py:1157 oneapp_control/api/customer.py:1224
 msgid "That space is not switched on here."
 msgstr ""
 
@@ -4462,6 +4470,10 @@ msgstr ""
 msgid "Two screens share a slug, so one of them is unreachable."
 msgstr ""
 
+#: oneapp_control/api/customer.py:1217
+msgid "Type {0} to confirm."
+msgstr ""
+
 #. Description of the 'Cost Usd' (Float) field in DocType 'AI Model Price'
 #: oneapp_control/control_plane/doctype/ai_model_price/ai_model_price.json
 msgid "USD for `per_units` of them."
@@ -4480,6 +4492,11 @@ msgstr ""
 #. Description of the 'Is Active' (Check) field in DocType 'Workspace Role'
 #: oneapp_control/control_plane/doctype/workspace_role/workspace_role.json
 msgid "Unchecking takes it off everyone holding it at the next sync, without losing what it was."
+msgstr ""
+
+#. Option for the 'Action' (Select) field in DocType 'Provisioning Job'
+#: oneapp_control/control_plane/doctype/provisioning_job/provisioning_job.json
+msgid "Uninstall App"
 msgstr ""
 
 #. Label of the unit (Select) field in DocType 'AI Model Price'
@@ -5107,7 +5124,7 @@ msgstr ""
 msgid "{0} is not sold on a {1} subscription."
 msgstr ""
 
-#: oneapp_control/api/tenant.py:764
+#: oneapp_control/api/tenant.py:766
 msgid "{0} is not something a workspace may ask."
 msgstr ""
 
@@ -5119,12 +5136,20 @@ msgstr ""
 msgid "{0} is now the primary domain."
 msgstr ""
 
+#: oneapp_control/entitlements/apps.py:187
+msgid "{0} is part of every workspace and cannot be removed."
+msgstr ""
+
 #: frontend/src/pages/signup/SignupWelcome.vue:7
 msgid "{0} is ready"
 msgstr ""
 
 #: oneapp_control/billing/checkout.py:331
 msgid "{0} is sold up to {1} units."
+msgstr ""
+
+#: oneapp_control/entitlements/apps.py:198
+msgid "{0} is still needed by {1}. Switch those off first."
 msgstr ""
 
 #: oneapp_control/api/admin/sites.py:179

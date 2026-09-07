@@ -1641,6 +1641,15 @@ msgstr "Eingeladen — die Anmeldung ist in Kürze möglich"
 msgid "Issued By"
 msgstr "Ausgestellt von"
 
+msgid ""
+"It can also be removed, which frees the room {0} takes. That deletes "
+"everything those hold, and the only way back is the backup we take "
+"first."
+msgstr ""
+"Er kann auch entfernt werden, was den Platz freigibt, den {0} belegt. "
+"Dabei wird alles gelöscht, was darin liegt, und der einzige Weg zurück "
+"ist die Sicherung, die wir vorher anlegen."
+
 msgid "It cannot end before it starts."
 msgstr "Es kann nicht enden, bevor es beginnt."
 
@@ -2904,6 +2913,9 @@ msgstr "Aus Favoriten entfernen"
 
 msgid "Remove it"
 msgstr "Entfernen"
+
+msgid "Remove it and free the room"
+msgstr "Entfernen und Platz freigeben"
 
 msgid "Remove the picture"
 msgstr "Bild entfernen"
@@ -4399,6 +4411,9 @@ msgstr "Für Ihren Arbeitsbereich aktiviert"
 msgid "Type to make a tag"
 msgstr "Tippen, um ein Schlagwort zu erstellen"
 
+msgid "Type {0} to remove it"
+msgstr "Geben Sie {0} ein, um ihn zu entfernen"
+
 msgid "Typeface"
 msgstr "Schriftart"
 
@@ -5393,6 +5408,9 @@ msgstr "{0} läuft bereits."
 
 msgid "{0} is being added"
 msgstr "{0} wird hinzugefügt"
+
+msgid "{0} is being removed"
+msgstr "{0} wird entfernt"
 
 msgid "{0} is being set up"
 msgstr "{0} wird eingerichtet"

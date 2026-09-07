@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 19:37+0000\n"
-"PO-Revision-Date: 2026-09-07 19:37+0000\n"
+"POT-Creation-Date: 2026-09-07 19:47+0000\n"
+"PO-Revision-Date: 2026-09-07 19:47+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -876,7 +876,7 @@ msgstr ""
 msgid "Before restoring “{0}”"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:223
+#: frontend/src/pages/Marketplace.vue:260
 msgid "Being added"
 msgstr ""
 
@@ -1744,7 +1744,7 @@ msgstr ""
 msgid "Details"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:224
+#: frontend/src/pages/Marketplace.vue:261
 msgid "Did not finish"
 msgstr ""
 
@@ -2871,6 +2871,10 @@ msgstr ""
 msgid "Issued By"
 msgstr ""
 
+#: frontend/src/pages/Marketplace.vue:191
+msgid "It can also be removed, which frees the room {0} takes. That deletes everything those hold, and the only way back is the backup we take first."
+msgstr ""
+
 #: oneapp/oneapp_core/diary.py:284
 msgid "It cannot end before it starts."
 msgstr ""
@@ -2879,7 +2883,7 @@ msgstr ""
 msgid "It is not part of your workspace, or nobody has given you access to it. An admin can change that."
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:176
+#: frontend/src/pages/Marketplace.vue:177
 msgid "It leaves the rail and nobody can open it. Everything in it stays exactly as it is, and switching it back on brings it back unchanged."
 msgstr ""
 
@@ -4004,7 +4008,7 @@ msgstr ""
 msgid "Not about this record"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:225
+#: frontend/src/pages/Marketplace.vue:262
 msgid "Not available here"
 msgstr ""
 
@@ -5077,6 +5081,10 @@ msgstr ""
 
 #: frontend/src/components/screen/record/RecordImage.vue:21
 msgid "Remove it"
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:214
+msgid "Remove it and free the room"
 msgstr ""
 
 #: frontend/src/components/screen/record/RecordMeta.vue:34
@@ -6152,7 +6160,7 @@ msgstr ""
 msgid "Switch camera"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:182
+#: frontend/src/pages/Marketplace.vue:205
 msgid "Switch it off"
 msgstr ""
 
@@ -6343,7 +6351,7 @@ msgstr ""
 msgid "That attachment is not yours to send."
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:312
+#: frontend/src/pages/Marketplace.vue:388
 msgid "That code worked. The space is above."
 msgstr ""
 
@@ -7295,6 +7303,10 @@ msgstr ""
 
 #: frontend/src/components/screen/fields/TagControl.vue:21
 msgid "Type to make a tag"
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:196
+msgid "Type {0} to remove it"
 msgstr ""
 
 #: frontend/src/components/docs/DocSettings.vue:21
@@ -8598,15 +8610,19 @@ msgstr ""
 msgid "{0} is already running."
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:273
+#: frontend/src/pages/Marketplace.vue:310
 msgid "{0} is being added"
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:368
+msgid "{0} is being removed"
 msgstr ""
 
 #: frontend/src/components/settings/DomainSettings.vue:36
 msgid "{0} is being set up"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:268
+#: frontend/src/pages/Marketplace.vue:305
 msgid "{0} is in your workspace"
 msgstr ""
 
@@ -8731,7 +8747,8 @@ msgstr ""
 msgid "{0} is part of your workspace but has no screens in it yet."
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:295
+#: frontend/src/pages/Marketplace.vue:346
+#: frontend/src/pages/Marketplace.vue:369
 msgid "{0} is switched off"
 msgstr ""
 

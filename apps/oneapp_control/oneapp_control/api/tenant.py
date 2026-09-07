@@ -742,6 +742,8 @@ def _may_be_asked() -> dict:
 		"marketplace": customer.marketplace,
 		"enable_space": customer.enable_space,
 		"disable_space": customer.disable_space,
+		"removable": customer.removable,
+		"remove_space": customer.remove_space,
 		"redeem_claim_code": customer.redeem_claim_code,
 	}
 

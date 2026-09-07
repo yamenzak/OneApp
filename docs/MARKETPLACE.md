@@ -262,11 +262,21 @@ because it is the only one that is about the thing being slow.
   or asking for; that is a `Plan`/`Add-on` question and this document does not
   answer it. `OneSpace Space.on_by_default` is the lever in the meantime: on,
   and a new workspace starts with it; off, and they go and find it.
-* **Uninstalling.** Switching a space off is `disable` — the app stays, the
-  records stay, and it is undone in a second. Freeing the room an unused ERPNext
-  takes means uninstalling the app from the site, which drops its tables, and
-  that is a different act needing a different sentence. Still its own piece of
-  work.
+* **Uninstalling.** *Done.* Two verbs, because they are two acts. `disable`
+  switches a space off: the app stays, the records stay, and it is undone in a
+  second. `remove_space` also uninstalls whatever nothing else on the site
+  still needs, which drops those apps' tables and everything in them. It is
+  offered only where it would actually free something, it names which apps, the
+  job's first step is a backup with files, the check is made again when the job
+  runs rather than only when it was queued, and the confirmation is the
+  workspace's own name typed out.
+
+  A one-time code was considered and is the wrong instrument: it proves who is
+  at the keyboard, and the risk here is *this* person pressing it without
+  reading. Typing the name is the one gesture that cannot be done by accident.
+
+  The one thing not proved: `press.api.site.uninstall_app` is the only call in
+  the press client that has never run against a real Frappe Cloud.
 * **Who may claim.** Redeeming a code changes what a workspace carries, so it
   is an owner's action rather than a member's; which role exactly is a question
   for whoever writes stage 4.

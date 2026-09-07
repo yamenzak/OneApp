@@ -72,7 +72,8 @@ ADMIN_MAY_REACH = {
 	"members", "invite_member", "remove_member", "set_member_roles",
 	"roles", "save_role", "delete_role",
 	"domain_instructions", "request_custom_domain",
-	"marketplace", "enable_space", "disable_space", "redeem_claim_code",
+	"marketplace", "enable_space", "disable_space", "removable",
+	"remove_space", "redeem_claim_code",
 }
 
 

@@ -1162,6 +1162,82 @@ def disable_space(workspace: str, space: str) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
+def removable(workspace: str | None = None, space: str = "") -> dict:
+	"""What switching this space off *and* removing it would drop.
+
+	Asked before the confirmation is drawn, so the sentence a customer reads
+	names the apps rather than saying "some data". A space that shares its apps
+	with something else frees nothing, and saying so is the difference between a
+	dialog somebody reads and a dialog somebody clicks through.
+	"""
+	from oneapp_control.entitlements import apps as app_registry
+
+	tenant = require_workspace_admin(workspace)
+
+	needed = set()
+	for one in registry.spaces_for_tenant(tenant.name):
+		if one["space_code"] != space:
+			needed.update(app_registry.required_by(one))
+	needed.update(registry.BASE_APPS)
+
+	# What *this* would free, not what happens to be unneeded already. An app
+	# nothing wants is unneeded whether or not this space goes, and listing it
+	# here would make removing one space look like it deletes more than it does
+	# — which is the wrong way for a warning to be wrong.
+	spare = set(app_registry.droppable(tenant))
+
+	return {
+		"apps": [
+			app for app in app_registry.installed_on(tenant)
+			if app not in needed and app not in spare
+		],
+		"workspace_name": tenant.tenant_name,
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def remove_space(workspace: str, space: str, confirm: str = "") -> dict:
+	"""Switch a space off and uninstall what nothing else needs.
+
+	The destructive one. Uninstalling an app drops its doctypes and everything
+	in them, and the only way back is the backup the job takes first.
+
+	The confirmation is the workspace's own name, typed. Not a checkbox, which
+	is a thing people tick; not a one-time code, which proves who is at the
+	keyboard rather than that they understood — and the risk here is not
+	somebody else pressing this, it is *this* person pressing it without
+	reading. Typing the name is the one gesture that cannot be done by
+	accident, and it is what every other product asks for before it deletes
+	something that will not come back.
+	"""
+	tenant = require_workspace_admin(workspace)
+
+	if (confirm or "").strip() != (tenant.tenant_name or "").strip():
+		frappe.throw(
+			_("Type {0} to confirm.").format(tenant.tenant_name),
+			title=_("That did not match"),
+		)
+
+	if not frappe.db.exists(
+		"Space Entitlement", {"tenant": tenant.name, "app": space, "enabled": 1}
+	):
+		frappe.throw(_("That space is not switched on here."))
+
+	from oneapp_control.entitlements import apps as app_registry
+
+	# Off first: nothing should be able to open the space while its tables are
+	# being dropped, and `drop` asks what is unneeded of a workspace that no
+	# longer has it.
+	registry.disable(tenant.name, space)
+	queued = app_registry.drop(tenant, space)
+	frappe.db.commit()
+
+	answer = marketplace(workspace)
+	answer["removing"] = queued
+	return answer
+
+
+@frappe.whitelist(methods=["POST"])
 def redeem_claim_code(workspace: str, code: str) -> dict:
 	"""Put a private space on this workspace's shelf, with a string.
 

@@ -324,6 +324,21 @@ class PressClient:
 		"""
 		return self.call("press.api.site.install_app", name=site, app=app)
 
+	def uninstall_app(self, site: str, app: str):
+		"""Take one app off a running site, with everything it stored.
+
+		The destructive twin of `install_app`, and the asymmetry is the point:
+		installing adds tables, uninstalling drops them. Frappe's own
+		`uninstall-app` removes the app's doctypes and their data, and there is
+		no undo but a restore — which is why the job that calls this takes a
+		backup as its first step.
+
+		Press names this the same way it names the install. If a bench ever
+		answers "unknown method" here, that is what to check first: this is the
+		one call in the client that has never run against a real press.
+		"""
+		return self.call("press.api.site.uninstall_app", name=site, app=app)
+
 	def migrate(self, site: str, skip_failing_patches: bool = False):
 		return self.call(
 			"press.api.site.migrate", name=site, skip_failing_patches=skip_failing_patches

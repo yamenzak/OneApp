@@ -386,7 +386,7 @@ doctype(
           options=("Create Site\nSuspend Site\nResume Site\nBackup Site\nArchive Site\n"
                    "Restore Site\nPurge Tenant\n"
                    "Add Domain\nSet Primary Domain\nChange Plan\nMigrate Site\n"
-                   "Install App\n"
+                   "Install App\nUninstall App\n"
                    "Create Standby Site\nClaim Standby Site"),
           reqd=1, in_list_view=1, in_standard_filter=1),
         f("state", "Select",

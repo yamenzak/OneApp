@@ -151,3 +151,93 @@ def record_installed(tenant, apps: list[str]) -> None:
 
 def _tenant(tenant):
 	return tenant if hasattr(tenant, "doctype") else frappe.get_doc("Tenant", tenant)
+
+
+def droppable(tenant) -> list[str]:
+	"""Apps on the site that nothing this workspace has switched on still needs.
+
+	The arithmetic behind "switching that off frees room": what is installed,
+	minus what the enabled spaces want, minus the two every site has. Empty is
+	the ordinary answer and is not a failure — most spaces share ERPNext with
+	something else, and a space whose apps are still wanted is a space whose
+	removal frees nothing but a row.
+	"""
+	doc = _tenant(tenant)
+	wanted = set(wanted_for(doc.name))
+	return [app for app in installed_on(doc) if app not in wanted]
+
+
+def assert_can_drop(tenant, app: str) -> None:
+	"""Refuse to uninstall an app that something still needs, naming what.
+
+	Two ways an app is still needed, and only one of them is about spaces:
+
+	* **A space this workspace has** declares it. `droppable` already excludes
+	  those; this says so out loud for anything that reaches here another way.
+	* **Another installed app** is built on it — hrms on erpnext being the pair
+	  that matters. We do not read a tenant's hooks from here, so what stands in
+	  for a dependency graph is the convention every space follows: a space that
+	  needs hrms declares `erpnext,hrms`, and its erpnext is what keeps erpnext
+	  from being dropped underneath it. A space that declared only the top of a
+	  stack would break this, which is why `tests/test_apps_and_spaces.py`
+	  checks the declarations rather than trusting them.
+	"""
+	if app in registry.BASE_APPS:
+		frappe.throw(
+			_("{0} is part of every workspace and cannot be removed.").format(app)
+		)
+
+	doc = _tenant(tenant)
+	needed_by = [
+		space["space_label"]
+		for space in registry.spaces_for_tenant(doc.name)
+		if app in required_by(space)
+	]
+	if needed_by:
+		frappe.throw(
+			_("{0} is still needed by {1}. Switch those off first.").format(
+				app, ", ".join(needed_by)
+			),
+			title=_("Something still needs that"),
+		)
+
+
+def drop(tenant, space_code: str) -> list[str]:
+	"""Queue the uninstall of whatever removing this space leaves unneeded.
+
+	Called after the space is already switched off, so `droppable` is asking
+	about a workspace that no longer has it. Order matters: switching off first
+	means nothing can open the space while its tables are being dropped.
+
+	One job per app, each with its own idempotency key, for the reason
+	`reconcile` gives — two apps failing together in one job leaves nothing to
+	say which.
+	"""
+	from oneapp_control.provisioning import runner
+
+	doc = _tenant(tenant)
+	if not doc.press_site:
+		return []
+
+	queued = []
+	for app in droppable(doc):
+		assert_can_drop(doc, app)
+		runner.enqueue(
+			doc.name,
+			"Uninstall App",
+			payload={"app": app, "because": space_code},
+			# Not keyed on the space: the same app can be left unneeded by
+			# switching off any of several spaces, and the second one should
+			# not queue a second uninstall of something already going.
+			idempotency_key=f"Uninstall App:{doc.name}:{app}",
+		)
+		queued.append(app)
+	return queued
+
+
+def record_uninstalled(tenant, apps: list[str]) -> None:
+	"""Take them off `Tenant.site_apps`, which is what the site actually has."""
+	doc = _tenant(tenant)
+	gone = {app for app in apps if app}
+	kept = [app for app in installed_on(doc) if app not in gone]
+	doc.db_set("site_apps", ",".join(kept), update_modified=False)

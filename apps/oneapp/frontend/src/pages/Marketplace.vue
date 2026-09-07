@@ -172,16 +172,49 @@
   -->
   <Dialog v-model="confirming" :title="__('Switch off {0}?', [offering?.label || ''])">
     <template #default>
-      <p class="text-p-base text-ink-gray-7">
-        {{ __('It leaves the rail and nobody can open it. Everything in it stays exactly as it is, and switching it back on brings it back unchanged.') }}
-      </p>
+      <div class="flex flex-col gap-4">
+        <p class="text-p-base text-ink-gray-7">
+          {{ __('It leaves the rail and nobody can open it. Everything in it stays exactly as it is, and switching it back on brings it back unchanged.') }}
+        </p>
+
+        <!--
+          The second half, and only where there is one. A space that shares its
+          apps with something else frees nothing by being removed, so offering
+          the destructive option there would be offering a risk with no reward.
+        -->
+        <div
+          v-if="frees.length"
+          data-slot="remove-offer"
+          class="flex flex-col gap-3 rounded-6 border border-outline-gray-2 p-3"
+        >
+          <p class="text-p-sm text-ink-gray-7">
+            {{ __('It can also be removed, which frees the room {0} takes. That deletes everything those hold, and the only way back is the backup we take first.', [frees.join(', ')]) }}
+          </p>
+          <FormControl
+            v-model="typed"
+            data-slot="remove-confirm"
+            :label="__('Type {0} to remove it', [workspaceName])"
+            :placeholder="workspaceName"
+          />
+        </div>
+      </div>
     </template>
     <template #actions>
       <Button
         variant="solid"
         :label="__('Switch it off')"
-        :loading="!!removing"
+        :loading="removing === offering?.code && !removingHard"
         @click="switchOff"
+      />
+      <Button
+        v-if="frees.length"
+        theme="red"
+        variant="subtle"
+        data-slot="remove-space"
+        :label="__('Remove it and free the room')"
+        :loading="removingHard"
+        :disabled="typed.trim() !== workspaceName"
+        @click="removeIt"
       />
     </template>
   </Dialog>
@@ -212,8 +245,12 @@ const code = ref('')
 const redeeming = ref(false)
 const codeError = ref('')
 const removing = ref('')
+const removingHard = ref(false)
 const confirming = ref(false)
 const offering = ref(null)
+const frees = ref([])
+const workspaceName = ref('')
+const typed = ref('')
 
 const spaces = computed(() => data.value?.spaces || [])
 const held = computed(() => data.value?.held || [])
@@ -278,9 +315,23 @@ const add = async (space) => {
   }
 }
 
-const askOff = (space) => {
+const askOff = async (space) => {
   offering.value = space
+  frees.value = []
+  typed.value = ''
   confirming.value = true
+
+  // Asked while the dialog is already open: the switch-off half needs no
+  // answer, and waiting for one before drawing anything would make the safe
+  // action wait on the dangerous one.
+  try {
+    const answer = await workspace.removable(space.code)
+    frees.value = answer?.apps || []
+    workspaceName.value = answer?.workspace_name || ''
+  } catch {
+    // No offer to remove, then. Switching off still works, which is the half
+    // that matters and the half that cannot fail.
+  }
 }
 
 const switchOff = async () => {
@@ -296,6 +347,31 @@ const switchOff = async () => {
   } catch (e) {
     error.value = errorText(e)
   } finally {
+    removing.value = ''
+  }
+}
+
+const removeIt = async () => {
+  const space = offering.value
+  if (!space) return
+  removingHard.value = true
+  removing.value = space.code
+  error.value = ''
+  try {
+    const answer = await workspace.removeSpace(space.code, typed.value.trim())
+    data.value = answer
+    again(answer)
+    await session.resource.reload()
+    confirming.value = false
+    notifySuccess(
+      answer?.removing?.length
+        ? __('{0} is being removed', [space.label])
+        : __('{0} is switched off', [space.label]),
+    )
+  } catch (e) {
+    error.value = errorText(e)
+  } finally {
+    removingHard.value = false
     removing.value = ''
   }
 }

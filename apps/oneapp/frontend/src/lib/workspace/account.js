@@ -47,5 +47,12 @@ export const account = {
 
   disableSpace: (space) => callMethod(at('disable_space'), { space }),
 
+  // What removing it would uninstall, asked before the confirmation is drawn
+  // so the sentence names the apps rather than saying "some data".
+  removable: (space) => callMethod(at('removable'), { space }, { silent: true }),
+
+  removeSpace: (space, confirm) =>
+    callMethod(at('remove_space'), { space, confirm }),
+
   redeemClaimCode: (code) => callMethod(at('redeem_claim_code'), { code }),
 }

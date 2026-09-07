@@ -358,3 +358,89 @@ def test_a_redemption_is_a_row_somebody_can_read():
 	assert '"Space Claim Code"' in operator and '"Space Claim Redemption"' in operator
 	assert '"doctype": "Space Claim Redemption"' in REDEEM
 	assert "redeemed_by" in REDEEM
+
+
+# --------------------------------------------------------------------------- #
+# Removing
+#
+# The one path in this product that destroys a customer's data on purpose.
+# Everything below is about the two questions that follow from that: is it
+# really unneeded, and did somebody mean it.
+# --------------------------------------------------------------------------- #
+
+APPS = (CONTROL / "entitlements" / "apps.py").read_text()
+STEPS = (CONTROL / "provisioning" / "steps.py").read_text()
+REMOVE = CUSTOMER[CUSTOMER.index("def remove_space"):]
+
+
+def test_a_backup_is_taken_before_anything_is_dropped():
+	"""The only way back. The nightly one is up to a day old and the room is
+	being freed now."""
+	order = STEPS[STEPS.index('"Uninstall App": ['):]
+	order = order[:order.index("]")]
+	assert order.index("back_up_first") < order.index("uninstall_app")
+	assert order.index("await_backup") < order.index("uninstall_app"), (
+		"queuing a backup and not waiting for it is not taking a backup"
+	)
+	body = STEPS[STEPS.index("def back_up_first"):STEPS.index("def uninstall_app")]
+	assert "with_files=True" in body, (
+		"an app's records and the files attached to them go together"
+	)
+
+
+def test_the_check_is_made_again_when_the_job_runs():
+	"""Minutes pass between queuing and running, and in them the workspace may
+	have switched the space back on or added one that needs the same app."""
+	body = STEPS[STEPS.index("def uninstall_app"):STEPS.index("def finalise_uninstall")]
+	assert "apps.assert_can_drop(" in body
+
+
+def test_a_base_app_can_never_be_dropped():
+	body = APPS[APPS.index("def assert_can_drop"):]
+	assert "registry.BASE_APPS" in body
+
+
+def test_an_app_another_space_needs_is_refused_by_name():
+	"""'Cannot remove' with nothing named is a support ticket. The workspace is
+	told which of its own spaces is the reason, because that is the thing they
+	can act on."""
+	body = APPS[APPS.index("def assert_can_drop"):]
+	assert "is still needed by {1}" in body
+	assert "space_label" in body
+
+
+def test_removing_switches_off_before_it_drops():
+	"""Nothing should be able to open the space while its tables are going."""
+	body = REMOVE[:REMOVE.index("frappe.db.commit")]
+	assert body.index("registry.disable(") < body.index("app_registry.drop(")
+
+
+def test_the_confirmation_is_the_workspace_name_typed():
+	"""Not a checkbox, which is a thing people tick. The risk is this person
+	pressing it without reading, and typing the name is the one gesture that
+	cannot be done by accident."""
+	assert "tenant.tenant_name" in REMOVE[:REMOVE.index("registry.disable")]
+	assert "frappe.throw" in REMOVE[:REMOVE.index("registry.disable")]
+	assert 'data-slot="remove-confirm"' in PAGE
+	assert "typed.trim() !== workspaceName" in PAGE, (
+		"the button is only pressable once the name matches"
+	)
+
+
+def test_removal_is_only_offered_where_it_frees_something():
+	"""A space sharing its apps with another frees nothing by being removed, so
+	offering the destructive option there is a risk with no reward."""
+	assert 'v-if="frees.length"' in PAGE
+	assert "def removable" in CUSTOMER, (
+		"what it would free is asked before the dialog draws, so the sentence "
+		"names the apps rather than saying 'some data'"
+	)
+
+
+def test_the_warning_names_only_what_this_removal_would_free():
+	"""An app nothing wants is unneeded whether or not this space goes, and
+	listing it would make removing one space look like it deletes more than it
+	does — which is the wrong direction for a warning to be wrong in."""
+	body = CUSTOMER[CUSTOMER.index("def removable"):CUSTOMER.index("def remove_space")]
+	assert "app_registry.droppable(tenant)" in body
+	assert "app not in spare" in body

@@ -610,6 +610,66 @@ def finalise_install(job):
 	return None
 
 
+# --------------------------------------------------------------------------- #
+# Uninstall App
+#
+# The one job in this file that destroys data on purpose. Frappe's uninstall
+# drops the app's doctypes and everything in them, and there is no undo but a
+# restore — which is why the first step here is a backup rather than the
+# uninstall, and why the customer had to type the workspace's name to get here.
+#
+# Its own job for the reason Install App is: minutes against a live database,
+# and a failure that has to be visible as a failed job with a step and an error.
+# --------------------------------------------------------------------------- #
+
+def back_up_first(job):
+	"""A restorable copy, before anything is dropped.
+
+	With files, because an app's records and the files attached to them go
+	together and a restore that brought back invoices with no attachments would
+	be a restore nobody wanted.
+
+	Not conditional on anything. A workspace removing a space they have used
+	for a year is exactly the case where "we take backups nightly" is not good
+	enough — the nightly one is up to a day old, and the room is being freed
+	now.
+	"""
+	result = get_client().backup(_site_for(job), with_files=True)
+	_capture_job_id(job, result)
+	return None
+
+
+def uninstall_app(job):
+	from oneapp_control.entitlements import apps
+
+	payload = job.parsed_payload()
+	app = (payload.get("app") or "").strip()
+	if not app:
+		raise PressPermanentError("Uninstall App requires an app in the payload.")
+
+	# Asked again here, not only when the job was queued. Minutes have passed,
+	# and in them the workspace may have switched the space back on or added
+	# another that needs the same app — in which case dropping it now would take
+	# the tables out from under something somebody is using.
+	apps.assert_can_drop(job.tenant, app)
+
+	# A lost response looks exactly like a call that never landed; the site's
+	# own list is what settles it.
+	if app not in apps.installed_on(job.tenant):
+		return None
+
+	result = get_client().uninstall_app(_site_for(job), app)
+	_capture_job_id(job, result)
+	return None
+
+
+def finalise_uninstall(job):
+	from oneapp_control.entitlements import apps
+
+	apps.record_uninstalled(job.tenant, [job.parsed_payload().get("app")])
+	return None
+
+
 def migrate_site(job):
 	result = get_client().migrate(_site_for(job))
 	_capture_job_id(job, result)
@@ -821,6 +881,13 @@ PIPELINES = {
 		("install_app", install_app),
 		("await_agent", await_agent),
 		("finalise_install", finalise_install),
+	],
+	"Uninstall App": [
+		("back_up_first", back_up_first),
+		("await_backup", await_agent),
+		("uninstall_app", uninstall_app),
+		("await_agent", await_agent),
+		("finalise_uninstall", finalise_uninstall),
 	],
 	"Migrate Site": [
 		("migrate_site", migrate_site),

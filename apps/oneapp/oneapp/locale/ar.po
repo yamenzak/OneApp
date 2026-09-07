@@ -1559,6 +1559,14 @@ msgstr "تمت الدعوة — يمكنه تسجيل الدخول قريباً"
 msgid "Issued By"
 msgstr "صادر عن"
 
+msgid ""
+"It can also be removed, which frees the room {0} takes. That deletes "
+"everything those hold, and the only way back is the backup we take "
+"first."
+msgstr ""
+"يمكن أيضاً إزالتها، ما يحرّر المساحة التي يشغلها {0}. هذا يحذف كل ما "
+"بداخلها، والسبيل الوحيد للرجوع هو النسخة الاحتياطية التي نأخذها أولاً."
+
 msgid "It cannot end before it starts."
 msgstr "لا يمكن أن ينتهي قبل أن يبدأ."
 
@@ -2778,6 +2786,9 @@ msgstr "إزالة من المفضلة"
 
 msgid "Remove it"
 msgstr "إزالته"
+
+msgid "Remove it and free the room"
+msgstr "إزالتها وتحرير المساحة"
 
 msgid "Remove the picture"
 msgstr "إزالة الصورة"
@@ -4191,6 +4202,9 @@ msgstr "مفعّل لمساحة عملك"
 msgid "Type to make a tag"
 msgstr "اكتب لإنشاء وسم"
 
+msgid "Type {0} to remove it"
+msgstr "اكتب {0} لإزالتها"
+
 msgid "Typeface"
 msgstr "نوع الخط"
 
@@ -5147,6 +5161,9 @@ msgstr "{0} قيد التشغيل بالفعل."
 
 msgid "{0} is being added"
 msgstr "تجري إضافة {0}"
+
+msgid "{0} is being removed"
+msgstr "تجري إزالة {0}"
 
 msgid "{0} is being set up"
 msgstr "يجري إعداد {0}"

@@ -153,6 +153,27 @@ def disable_space(space: str) -> dict:
 
 
 @frappe.whitelist()
+def removable(space: str) -> dict:
+	"""What removing this space would uninstall, and what to type to confirm."""
+	return _ask("removable", space=space)
+
+
+@frappe.whitelist()
+def remove_space(space: str, confirm: str = "") -> dict:
+	"""Switch a space off and uninstall what nothing else needs. Not undoable."""
+	answer = _ask("remove_space", space=space, confirm=confirm)
+
+	try:
+		from oneapp.oneapp_core import sync
+
+		sync.sync_from_control_plane()
+	except Exception:
+		frappe.log_error(title="Marketplace: could not pull after removing")
+
+	return answer
+
+
+@frappe.whitelist()
 def redeem_claim_code(code: str) -> dict:
 	"""Put a private space on this workspace's shelf, with a code somebody was
 	given. It appears in the marketplace; turning it on is a separate press."""
