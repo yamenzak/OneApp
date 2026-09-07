@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 05:17+0000\n"
-"PO-Revision-Date: 2026-09-07 05:17+0000\n"
+"POT-Creation-Date: 2026-09-07 05:52+0000\n"
+"PO-Revision-Date: 2026-09-07 05:52+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -150,7 +150,7 @@ msgstr ""
 msgid "A lucide name from the offered set, or an emoji. Anything else is dropped on the way in — a lucide name reaches the DOM as a class."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:202
+#: frontend/src/components/settings/MailSettings.vue:205
 msgid "A mailbox the team shares"
 msgstr ""
 
@@ -210,6 +210,10 @@ msgstr ""
 msgid "A tag needs a name."
 msgstr ""
 
+#: oneapp/oneapp_core/email/templates.py:133
+msgid "A template called {0} already exists."
+msgstr ""
+
 #: frontend/src/components/settings/TemplateSettings.vue:35
 msgid "A template is a subject and a message somebody can send without writing it again."
 msgstr ""
@@ -218,7 +222,7 @@ msgstr ""
 msgid "A template with nothing in it is not a template."
 msgstr ""
 
-#: frontend/src/components/settings/TemplateSettings.vue:161
+#: frontend/src/components/settings/TemplateSettings.vue:183
 msgid "A template written for a record can say {{ doc.customer }} and mean it."
 msgstr ""
 
@@ -299,7 +303,7 @@ msgstr ""
 msgid "Activity"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:269
+#: frontend/src/components/settings/MailSettings.vue:280
 msgid "Add"
 msgstr ""
 
@@ -340,7 +344,7 @@ msgstr ""
 msgid "Add a test"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:259
+#: frontend/src/components/settings/MailSettings.vue:271
 msgid "Add an address"
 msgstr ""
 
@@ -362,7 +366,7 @@ msgstr ""
 msgid "Add filter"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:45
+#: frontend/src/components/settings/MailSettings.vue:48
 msgid "Add one on {0} and mail to it arrives here."
 msgstr ""
 
@@ -390,7 +394,7 @@ msgstr ""
 msgid "Added"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:111
+#: frontend/src/components/settings/MailSettings.vue:114
 #: frontend/src/components/settings/MailboxSettings.vue:98
 msgid "Added to the bottom of mail sent from this address."
 msgstr ""
@@ -409,7 +413,7 @@ msgstr ""
 
 #. Label of the address (Data) field in DocType 'Mail Rule'
 #: frontend/src/components/settings/ImportSettings.vue:43
-#: frontend/src/components/settings/MailSettings.vue:265
+#: frontend/src/components/settings/MailSettings.vue:276
 #: frontend/src/screens/account/Overview.vue:188
 #: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
 msgid "Address"
@@ -507,7 +511,7 @@ msgstr ""
 msgid "All {0} templates…"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:250
+#: frontend/src/components/settings/MailSettings.vue:261
 msgid "Allowed domains"
 msgstr ""
 
@@ -548,7 +552,7 @@ msgstr ""
 msgid "An alert watches one kind of record and tells somebody when it changes."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:218
+#: frontend/src/components/settings/MailSettings.vue:237
 msgid "An app password where the provider needs one."
 msgstr ""
 
@@ -569,7 +573,7 @@ msgstr ""
 msgid "And for the ones that file things somebody does."
 msgstr ""
 
-#: frontend/src/components/settings/TemplateSettings.vue:176
+#: frontend/src/components/settings/TemplateSettings.vue:204
 msgid "Any record"
 msgstr ""
 
@@ -577,7 +581,7 @@ msgstr ""
 msgid "Any record that refuses the change — a submitted one, or a value a rule forbids — is left alone and named."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:311
+#: frontend/src/components/settings/MailSettings.vue:322
 msgid "Anybody"
 msgstr ""
 
@@ -837,7 +841,7 @@ msgstr ""
 msgid "Bcc"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:267
+#: frontend/src/components/settings/MailSettings.vue:278
 msgid "Becomes {0}"
 msgstr ""
 
@@ -1244,7 +1248,7 @@ msgstr ""
 msgid "Chart of accounts"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:153
+#: frontend/src/components/settings/MailSettings.vue:156
 msgid "Check DNS"
 msgstr ""
 
@@ -1381,7 +1385,7 @@ msgstr ""
 msgid "Columns of"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:252
+#: frontend/src/components/settings/MailSettings.vue:263
 msgid "Comma separated. A mailbox on anything else is refused."
 msgstr ""
 
@@ -1425,16 +1429,16 @@ msgstr ""
 msgid "Concurrent background jobs this workspace may run."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:222
+#: frontend/src/components/settings/MailSettings.vue:230
 #: frontend/src/components/settings/MailboxSettings.vue:292
 msgid "Connect"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:204
+#: frontend/src/components/settings/MailSettings.vue:207
 msgid "Connect one the company already has, then grant it below like any other address. Everyone who holds it reads the same inbox — and the same sent mail."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:306
+#: frontend/src/components/settings/MailSettings.vue:317
 msgid "Connected mailbox"
 msgstr ""
 
@@ -1735,7 +1739,7 @@ msgstr ""
 msgid "Deleted for good"
 msgstr ""
 
-#: frontend/src/components/settings/TemplateSettings.vue:91
+#: frontend/src/components/settings/TemplateSettings.vue:103
 msgid "Delivery update"
 msgstr ""
 
@@ -1790,7 +1794,7 @@ msgstr ""
 msgid "Document Number"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:150
+#: frontend/src/components/settings/MailSettings.vue:153
 #: frontend/src/screens/ops/Tenant.vue:391
 msgid "Domain"
 msgstr ""
@@ -1869,8 +1873,8 @@ msgstr ""
 msgid "Each is a capability tenants gain. Sites work without them."
 msgstr ""
 
-#: frontend/src/components/settings/TemplateSettings.vue:65
-#: frontend/src/components/settings/TemplateSettings.vue:66
+#: frontend/src/components/settings/TemplateSettings.vue:73
+#: frontend/src/components/settings/TemplateSettings.vue:74
 #: frontend/src/pages/ScreenHost.vue:318
 #: frontend/src/screens/account/Roles.vue:75
 msgid "Edit"
@@ -1888,7 +1892,7 @@ msgstr ""
 msgid "Edit role"
 msgstr ""
 
-#: frontend/src/components/settings/TemplateSettings.vue:86
+#: frontend/src/components/settings/TemplateSettings.vue:98
 msgid "Edit template"
 msgstr ""
 
@@ -2359,7 +2363,7 @@ msgstr ""
 msgid "Footer align"
 msgstr ""
 
-#: frontend/src/components/settings/TemplateSettings.vue:101
+#: frontend/src/components/settings/TemplateSettings.vue:113
 msgid "For a record"
 msgstr ""
 
@@ -2635,7 +2639,7 @@ msgstr ""
 msgid "Html"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:181
+#: frontend/src/components/settings/MailSettings.vue:184
 msgid "I have published them"
 msgstr ""
 
@@ -3190,7 +3194,7 @@ msgstr ""
 msgid "Mailbox"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:210
+#: frontend/src/components/settings/MailSettings.vue:219
 #: frontend/src/components/settings/MailboxSettings.vue:264
 msgid "Mailbox address"
 msgstr ""
@@ -3513,7 +3517,7 @@ msgstr ""
 #: frontend/src/components/mail/MailSidebar.vue:122
 #: frontend/src/components/screen/record/RecordFiles.vue:68
 #: frontend/src/components/screen/views/ViewSwitcher.vue:52
-#: frontend/src/components/settings/TemplateSettings.vue:90
+#: frontend/src/components/settings/TemplateSettings.vue:102
 #: frontend/src/components/settings/printing/FormatBuilder.vue:19
 #: frontend/src/components/settings/printing/LetterHeadDialog.vue:18
 #: frontend/src/pages/Drive.vue:280 frontend/src/pages/Drive.vue:294
@@ -3656,7 +3660,7 @@ msgstr ""
 
 #: frontend/src/components/settings/TemplateSettings.vue:20
 #: frontend/src/components/settings/TemplateSettings.vue:38
-#: frontend/src/components/settings/TemplateSettings.vue:86
+#: frontend/src/components/settings/TemplateSettings.vue:98
 msgid "New template"
 msgstr ""
 
@@ -3698,7 +3702,7 @@ msgstr ""
 msgid "No address yet"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:44
+#: frontend/src/components/settings/MailSettings.vue:47
 msgid "No addresses yet"
 msgstr ""
 
@@ -3880,7 +3884,7 @@ msgstr ""
 msgid "No."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:313
+#: frontend/src/components/settings/MailSettings.vue:324
 msgid "Nobody"
 msgstr ""
 
@@ -3902,7 +3906,7 @@ msgstr ""
 msgid "Nobody to assign it to."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:69
+#: frontend/src/components/settings/MailSettings.vue:72
 msgid "Nobody yet"
 msgstr ""
 
@@ -4004,7 +4008,7 @@ msgstr ""
 msgid "Not something a message can be turned into."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:159
+#: frontend/src/components/settings/MailSettings.vue:162
 msgid "Not verified yet"
 msgstr ""
 
@@ -4308,7 +4312,7 @@ msgstr ""
 msgid "One permission"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:304
+#: frontend/src/components/settings/MailSettings.vue:315
 msgid "One person"
 msgstr ""
 
@@ -4447,7 +4451,7 @@ msgstr ""
 msgid "Only rows this person liked. A flag rather than a filter on _liked_by: that column holds user ids, so a filter naming it could ask what a colleague liked."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:312
+#: frontend/src/components/settings/MailSettings.vue:323
 msgid "Only some domains"
 msgstr ""
 
@@ -4574,7 +4578,7 @@ msgstr ""
 msgid "Outline"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:232
+#: frontend/src/components/settings/MailSettings.vue:243
 msgid "Outside mailboxes"
 msgstr ""
 
@@ -4616,7 +4620,7 @@ msgstr ""
 msgid "Page setup"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:217
+#: frontend/src/components/settings/MailSettings.vue:226
 #: frontend/src/components/settings/MailboxSettings.vue:271
 msgid "Password"
 msgstr ""
@@ -5016,8 +5020,8 @@ msgid "Reminded On"
 msgstr ""
 
 #: frontend/src/components/drive/UploadTray.vue:77
-#: frontend/src/components/settings/TemplateSettings.vue:72
-#: frontend/src/components/settings/TemplateSettings.vue:73
+#: frontend/src/components/settings/TemplateSettings.vue:81
+#: frontend/src/components/settings/TemplateSettings.vue:82
 #: frontend/src/components/settings/printing/BuilderInspector.vue:96
 #: frontend/src/components/versions/VersionPanel.vue:199
 msgid "Remove"
@@ -5040,8 +5044,8 @@ msgstr ""
 msgid "Remove the test"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:95
-#: frontend/src/components/settings/MailSettings.vue:96
+#: frontend/src/components/settings/MailSettings.vue:98
+#: frontend/src/components/settings/MailSettings.vue:99
 msgid "Remove this address"
 msgstr ""
 
@@ -5327,7 +5331,7 @@ msgstr ""
 #: frontend/src/components/settings/AlertSettings.vue:200
 #: frontend/src/components/settings/ProfileSettings.vue:72
 #: frontend/src/components/settings/SettingsFields.vue:87
-#: frontend/src/components/settings/TemplateSettings.vue:128
+#: frontend/src/components/settings/TemplateSettings.vue:149
 #: frontend/src/components/settings/printing/FormatBuilder.vue:37
 #: frontend/src/components/settings/printing/LetterHeadDialog.vue:84
 #: frontend/src/components/versions/VersionPanel.vue:111
@@ -5525,7 +5529,7 @@ msgstr ""
 msgid "Send"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:143
+#: frontend/src/components/settings/MailSettings.vue:146
 msgid "Send as you@yourcompany.com rather than on ours. Mail to that domain still goes wherever its MX points — connect those mailboxes under your own Mailbox tab to read them here."
 msgstr ""
 
@@ -5537,8 +5541,8 @@ msgstr ""
 msgid "Send it"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:79
-#: frontend/src/components/settings/MailSettings.vue:80
+#: frontend/src/components/settings/MailSettings.vue:82
+#: frontend/src/components/settings/MailSettings.vue:83
 msgid "Send notifications from this"
 msgstr ""
 
@@ -5559,19 +5563,16 @@ msgstr ""
 msgid "Sending to that address again"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:302
+#: frontend/src/components/settings/MailSettings.vue:313
 #: frontend/src/components/settings/MailboxSettings.vue:90
 msgid "Sends notifications"
 msgstr ""
 
 #: frontend/src/components/screen/record/RecordMail.vue:87
+#: frontend/src/components/settings/MailSettings.vue:32
 #: frontend/src/lib/workspace/mail.js:118
 #: frontend/src/lib/workspace/record.js:189 frontend/src/pages/Mail.vue:710
 msgid "Sent"
-msgstr ""
-
-#: frontend/src/components/settings/MailSettings.vue:29
-msgid "Sent this hour"
 msgstr ""
 
 #. Label of the seq (Int) field in DocType 'OneSpace Chat Message'
@@ -5671,7 +5672,7 @@ msgid "Share with the workspace"
 msgstr ""
 
 #: frontend/src/components/screen/views/ViewSwitcher.vue:222
-#: frontend/src/components/settings/MailSettings.vue:303
+#: frontend/src/components/settings/MailSettings.vue:314
 #: frontend/src/lib/workspace/drive.js:74
 #: frontend/src/lib/workspace/record.js:92
 msgid "Shared"
@@ -5782,7 +5783,7 @@ msgstr ""
 
 #. Label of the signature (Attach Image) field in DocType 'Correspondence'
 #: frontend/src/components/screen/fields/FieldControl.vue:298
-#: frontend/src/components/settings/MailSettings.vue:108
+#: frontend/src/components/settings/MailSettings.vue:111
 #: frontend/src/components/settings/MailboxSettings.vue:95
 #: oneapp/oneapp_core/doctype/correspondence/correspondence.json
 msgid "Signature"
@@ -6093,7 +6094,7 @@ msgstr ""
 #. Option for the 'Field' (Select) field in DocType 'Mail Rule'
 #: frontend/src/components/mail/MailComposer.vue:36
 #: frontend/src/components/settings/AlertSettings.vue:187
-#: frontend/src/components/settings/TemplateSettings.vue:96
+#: frontend/src/components/settings/TemplateSettings.vue:108
 #: oneapp/oneapp_core/doctype/correspondence/correspondence.json
 #: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
 msgid "Subject"
@@ -6237,7 +6238,7 @@ msgstr ""
 msgid "Tell this role"
 msgstr ""
 
-#: frontend/src/components/settings/TemplateSettings.vue:120
+#: frontend/src/components/settings/TemplateSettings.vue:138
 msgid "Template"
 msgstr ""
 
@@ -6387,7 +6388,7 @@ msgstr ""
 msgid "That is not one of this workspace's records."
 msgstr ""
 
-#: oneapp/oneapp_core/email/templates.py:168
+#: oneapp/oneapp_core/email/templates.py:182
 msgid "That is not one of this workspace's templates."
 msgstr ""
 
@@ -6920,6 +6921,7 @@ msgid "This opens the screen now"
 msgstr ""
 
 #: frontend/src/components/settings/AlertSettings.vue:73
+#: frontend/src/components/settings/TemplateSettings.vue:65
 msgid "This record is no longer in the workspace"
 msgstr ""
 
@@ -7080,7 +7082,7 @@ msgstr ""
 msgid "This workspace is suspended and cannot send email."
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:37
+#: frontend/src/components/settings/MailSettings.vue:40
 msgid "This workspace is suspended and is not sending email."
 msgstr ""
 
@@ -7448,7 +7450,7 @@ msgid "Value"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Import Source'
-#: frontend/src/components/settings/MailSettings.vue:159
+#: frontend/src/components/settings/MailSettings.vue:162
 #: oneapp/oneapp_core/doctype/import_source/import_source.json
 msgid "Verified"
 msgstr ""
@@ -7570,7 +7572,7 @@ msgstr ""
 msgid "What it is about"
 msgstr ""
 
-#: frontend/src/components/settings/TemplateSettings.vue:92
+#: frontend/src/components/settings/TemplateSettings.vue:104
 msgid "What it is called in the picker."
 msgstr ""
 
@@ -7748,7 +7750,7 @@ msgstr ""
 msgid "Where you are signed in"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:234
+#: frontend/src/components/settings/MailSettings.vue:245
 msgid "Whether members may connect a mailbox they already have, such as Gmail or the company's own server."
 msgstr ""
 
@@ -7841,9 +7843,9 @@ msgstr ""
 msgid "Who it went to"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:87
-#: frontend/src/components/settings/MailSettings.vue:88
-#: frontend/src/components/settings/MailSettings.vue:117
+#: frontend/src/components/settings/MailSettings.vue:90
+#: frontend/src/components/settings/MailSettings.vue:91
+#: frontend/src/components/settings/MailSettings.vue:120
 msgid "Who may use this"
 msgstr ""
 
@@ -7910,7 +7912,7 @@ msgstr ""
 msgid "Write in British English. Never quote a delivery date."
 msgstr ""
 
-#: frontend/src/components/settings/TemplateSettings.vue:116
+#: frontend/src/components/settings/TemplateSettings.vue:128
 msgid "Write the message"
 msgstr ""
 
@@ -8023,7 +8025,7 @@ msgstr ""
 msgid "Your diary"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:305
+#: frontend/src/components/settings/MailSettings.vue:316
 msgid "Your domain"
 msgstr ""
 
@@ -8039,7 +8041,7 @@ msgstr ""
 msgid "Your name and how you are reached."
 msgstr ""
 
-#: frontend/src/components/settings/TemplateSettings.vue:97
+#: frontend/src/components/settings/TemplateSettings.vue:109
 msgid "Your order is on its way"
 msgstr ""
 
@@ -8047,7 +8049,7 @@ msgstr ""
 msgid "Your original terms"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:141
+#: frontend/src/components/settings/MailSettings.vue:144
 msgid "Your own domain"
 msgstr ""
 
@@ -8268,11 +8270,11 @@ msgstr ""
 msgid "rehearsal"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:266
+#: frontend/src/components/settings/MailSettings.vue:277
 msgid "sales"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:211
+#: frontend/src/components/settings/MailSettings.vue:220
 msgid "sales@yourcompany.com"
 msgstr ""
 
@@ -8288,7 +8290,7 @@ msgstr ""
 msgid "the next state"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:350
+#: frontend/src/components/settings/MailSettings.vue:370
 msgid "the platform address"
 msgstr ""
 
@@ -8330,11 +8332,11 @@ msgstr ""
 msgid "you@gmail.com"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:151
+#: frontend/src/components/settings/MailSettings.vue:154
 msgid "yourcompany.com"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:251
+#: frontend/src/components/settings/MailSettings.vue:262
 msgid "yourcompany.com, gmail.com"
 msgstr ""
 
@@ -8595,7 +8597,6 @@ msgstr ""
 #: frontend/src/components/UsageBar.vue:78
 #: frontend/src/components/UsageBar.vue:79
 #: frontend/src/components/screen/bodies/ListFooter.vue:106
-#: frontend/src/components/settings/MailSettings.vue:31
 #: frontend/src/screens/ops/Readiness.vue:81
 #: frontend/src/screens/ops/Tenant.vue:476
 msgid "{0} of {1}"
@@ -8609,7 +8610,11 @@ msgstr ""
 msgid "{0} of {1} seats used"
 msgstr ""
 
-#: frontend/src/components/settings/MailSettings.vue:33
+#: frontend/src/components/settings/MailSettings.vue:34
+msgid "{0} of {1} this hour"
+msgstr ""
+
+#: frontend/src/components/settings/MailSettings.vue:36
 msgid "{0} of {1} today"
 msgstr ""
 
@@ -8782,10 +8787,6 @@ msgstr ""
 #. Label of the body_ar (Text Editor) field in DocType 'Correspondence'
 #: oneapp/oneapp_core/doctype/correspondence/correspondence.json
 msgid "النص"
-msgstr ""
-
-#: frontend/src/components/settings/TemplateSettings.vue:57
-msgid "— which this workspace no longer has"
 msgstr ""
 
 #: oneapp/oneapp_core/email/addresses.py:323

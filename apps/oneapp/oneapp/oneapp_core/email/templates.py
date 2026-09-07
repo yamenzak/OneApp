@@ -107,9 +107,11 @@ def save(values: str | dict) -> dict:
 		# rename is a rename. Which is the honest shape: two templates called
 		# "Delivery update" would be two rows nobody could tell apart in a
 		# picker that shows their names.
+		_free(title)
 		doc.name = title
 		doc.insert(ignore_permissions=True)
 	elif doc.name != title:
+		_free(title)
 		frappe.rename_doc("Email Template", doc.name, title, force=True)
 		doc = frappe.get_doc("Email Template", title)
 		doc.save(ignore_permissions=True)
@@ -117,6 +119,18 @@ def save(values: str | dict) -> dict:
 		doc.save(ignore_permissions=True)
 
 	return {"ok": True, "name": doc.name}
+
+
+def _free(title: str) -> None:
+	"""Refuse a name something already holds, in words the writer can act on.
+
+	The panel shows this workspace's templates and hides the six ERPNext and
+	HRMS ship, so "Interview Reminder" is a name that is taken by a row nobody
+	here can see. Left to Frappe, that is a `DuplicateEntryError` naming a
+	doctype and a record the reader has never met.
+	"""
+	if frappe.db.exists("Email Template", title):
+		frappe.throw(_("A template called {0} already exists.").format(title))
 
 
 def remove(name: str) -> dict:

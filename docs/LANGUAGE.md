@@ -269,8 +269,11 @@ None of these makes a screen unusable in Arabic, and each is a day of its own.
 ## 4. What must never happen
 
 * A string a customer can see that is not inside `__()` or `_()`.
-* A sentence assembled from fragments — `__('Delete') + ' ' + name` — because
-  word order is not the same in every language. Use a placeholder.
+* A sentence assembled from fragments — `__('Delete') + ' ' + name`, or one
+  `__()` in a template followed by another that only reads as its second half —
+  because word order is not the same in every language. Use a placeholder.
+  `test_a_sentence_is_written_whole_and_not_glued_together` catches the shape
+  it usually takes: a string that opens or closes on a dash or a comma.
 * A translated string used as a key, a filter value, or anything compared with
   `===`.
 * A `.po` entry for a msgid nothing produces any more.

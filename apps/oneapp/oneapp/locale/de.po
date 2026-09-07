@@ -196,6 +196,9 @@ msgstr ""
 msgid "A tag needs a name."
 msgstr "Ein Schlagwort braucht einen Namen."
 
+msgid "A template called {0} already exists."
+msgstr "Eine Vorlage namens {0} gibt es bereits."
+
 msgid ""
 "A template is a subject and a message somebody can send without writing "
 "it again."
@@ -3139,9 +3142,6 @@ msgstr "Wird erneut an diese Adresse gesendet"
 msgid "Sends notifications"
 msgstr "Sendet Benachrichtigungen"
 
-msgid "Sent this hour"
-msgstr "In dieser Stunde gesendet"
-
 msgid "Seq"
 msgstr "Sequenz"
 
@@ -5390,6 +5390,9 @@ msgstr "{0} von {1} ausgewählt"
 msgid "{0} of {1} seats used"
 msgstr "{0} von {1} Plätzen belegt"
 
+msgid "{0} of {1} this hour"
+msgstr "{0} von {1} in dieser Stunde"
+
 msgid "{0} of {1} today"
 msgstr "{0} von {1} heute"
 
@@ -5514,9 +5517,6 @@ msgstr "Betreff"
 
 msgid "النص"
 msgstr "Text"
-
-msgid "— which this workspace no longer has"
-msgstr "— was dieser Arbeitsbereich nicht mehr hat"
 
 msgid "“{0}” is reserved."
 msgstr "„{0}“ ist reserviert."

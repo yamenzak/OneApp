@@ -173,6 +173,9 @@ msgstr ""
 msgid "A tag needs a name."
 msgstr "الوسم يحتاج إلى اسم."
 
+msgid "A template called {0} already exists."
+msgstr "يوجد قالب بالاسم {0} بالفعل."
+
 msgid ""
 "A template is a subject and a message somebody can send without writing "
 "it again."
@@ -3014,9 +3017,6 @@ msgstr "جارٍ الإرسال إلى ذلك العنوان مرة أخرى"
 msgid "Sends notifications"
 msgstr "يُرسل الإشعارات"
 
-msgid "Sent this hour"
-msgstr "أُرسلت هذه الساعة"
-
 msgid "Seq"
 msgstr "تسلسل"
 
@@ -5153,6 +5153,9 @@ msgstr "{0} من {1} محدد"
 msgid "{0} of {1} seats used"
 msgstr "{0} من {1} مقاعد مستخدمة"
 
+msgid "{0} of {1} this hour"
+msgstr "{0} من {1} هذه الساعة"
+
 msgid "{0} of {1} today"
 msgstr "{0} من {1} اليوم"
 
@@ -5271,9 +5274,6 @@ msgstr "الموضوع"
 
 msgid "النص"
 msgstr "النص"
-
-msgid "— which this workspace no longer has"
-msgstr "— وهو ما لم يعد لدى مساحة العمل هذه"
 
 msgid "“{0}” is reserved."
 msgstr "“{0}” محجوز."

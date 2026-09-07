@@ -58,6 +58,33 @@ def test_an_apostrophe_is_the_one_on_the_keyboard():
 	)
 
 
+#: A string that only makes sense stuck to the one beside it. A leading dash or
+#: comma is the giveaway, and so is a trailing one — both mean the sentence was
+#: assembled in the template rather than written in the catalogue. A trailing
+#: colon is not on the list: `Your CNAME should point at:` is a label, and a
+#: label above its value is a whole thing.
+_FRAGMENT = re.compile(r"^\s*[\u2014\u2013,;:]|[\u2014\u2013,;]\s*$")
+
+
+def test_a_sentence_is_written_whole_and_not_glued_together():
+	"""One `__()` per sentence, with a placeholder where the value goes.
+
+	`__('For {0}') + __('— which this workspace no longer has')` reads correctly
+	in English and nowhere else: the two halves land in the catalogue as two
+	msgids, a translator sees each without the other, and a language that puts
+	the qualifier first has no way to say so. `docs/LANGUAGE.md` §4.
+	"""
+	guilty = [
+		f"{where}: {text!r}"
+		for where, text in visible()
+		if text.strip() and _FRAGMENT.search(text)
+	]
+	assert not guilty, (
+		"these read as half a sentence — write the whole one with a placeholder:\n  "
+		+ "\n  ".join(guilty)
+	)
+
+
 def test_a_file_that_translates_says_so_at_the_top():
 	"""`__` is imported per file rather than made global, so that a file which
 	puts words on screen is a file whose imports say it does."""

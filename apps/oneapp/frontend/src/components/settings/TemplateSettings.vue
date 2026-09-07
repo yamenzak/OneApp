@@ -46,16 +46,24 @@
         class="flex items-start justify-between gap-3 rounded-6 border border-outline-gray-2 p-4"
         data-slot="mail-template"
       >
-        <div class="flex min-w-0 flex-col gap-1">
+        <div class="flex min-w-0 flex-col items-start gap-1">
           <span class="truncate text-p-sm font-medium text-ink-gray-8">{{ row.name }}</span>
           <span class="truncate text-p-xs text-ink-gray-6">{{ row.subject }}</span>
           <span v-if="row.doctype" class="text-p-xs text-ink-gray-5">
             {{ __('For {0}', [row.doctype]) }}
-            <!-- A template written for a record the workspace no longer has is
-                 one it cannot use. Shown and said, because hiding it would
-                 leave something nobody can find to delete. -->
-            <span v-if="row.orphaned">{{ __('— which this workspace no longer has') }}</span>
           </span>
+          <!-- A template written for a record the workspace no longer has is
+               one it cannot use. Shown and said, because hiding it would leave
+               something nobody can find to delete. The same badge the alerts
+               panel puts on an orphaned rule, and one sentence rather than a
+               fragment glued to the line above: word order is not the same in
+               every language. -->
+          <Badge
+            v-if="row.orphaned"
+            class="mt-1"
+            theme="amber"
+            :label="__('This record is no longer in the workspace')"
+          />
         </div>
 
         <div class="flex shrink-0 items-center gap-1">
@@ -68,13 +76,17 @@
           />
           <Button
             variant="ghost"
+            theme="red"
             icon="lucide-trash-2"
             :label="__('Remove')"
             :tooltip="__('Remove')"
+            :loading="removing === row.name"
             @click="remove(row)"
           />
         </div>
       </article>
+
+      <ErrorMessage v-if="removeError" :message="removeError" />
     </div>
   </SettingsBody>
 
@@ -117,7 +129,16 @@
         >
           <template #default="{ editor }">
             <EditorFixedMenu :editor="editor" :items="articleToolbar" class="mb-2" />
-            <EditorContent :editor="editor" :aria-label="__('Template')" dir="auto" />
+            <!-- Tall enough to be what it is. ProseMirror grows with what is
+                 typed and starts at one line, so an empty template body was a
+                 box the size of the Subject field above it — which is not what
+                 a message looks like, and invites a one-line template. -->
+            <EditorContent
+              :editor="editor"
+              :aria-label="__('Template')"
+              dir="auto"
+              class="min-h-40"
+            />
           </template>
         </Editor>
       </div>
@@ -134,6 +155,7 @@
 import { computed, reactive, ref } from 'vue'
 import {
   Alert,
+  Badge,
   Button,
   Dialog,
   Editor,
@@ -168,6 +190,12 @@ const error = ref('')
 const writing = ref(false)
 const saving = ref(false)
 const saveError = ref('')
+// Which row is being deleted, and why the last delete did not happen. Frappe
+// refuses to delete a document something else links to, and without somewhere
+// to say so the row simply stayed where it was and the click looked like it
+// had missed.
+const removing = ref('')
+const removeError = ref('')
 const draft = reactive({ name: '', title: '', subject: '', doctype: '', body: '' })
 
 // The records this workspace has, from the same list the alert form offers —
@@ -219,8 +247,19 @@ async function save() {
 }
 
 async function remove(row) {
-  await workspace.removeMailTemplate(row.name)
-  await load()
+  removing.value = row.name
+  removeError.value = ''
+  try {
+    await workspace.removeMailTemplate(row.name)
+    // Dropped from the list rather than reloaded: `load()` blanks the panel
+    // behind a spinner and fetches the doctype list again, for a row that has
+    // already gone.
+    rows.value = rows.value.filter((one) => one.name !== row.name)
+  } catch (raised) {
+    removeError.value = errorText(raised)
+  } finally {
+    removing.value = ''
+  }
 }
 
 load()
