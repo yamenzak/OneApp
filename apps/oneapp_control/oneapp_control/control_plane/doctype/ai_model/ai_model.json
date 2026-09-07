@@ -17,6 +17,7 @@
   "input_modalities",
   "output_modalities",
   "is_recommended",
+  "options_json",
   "sec_model_limits",
   "context_window",
   "max_output_tokens",
@@ -113,6 +114,13 @@
    "fieldname": "is_recommended",
    "fieldtype": "Check",
    "label": "Is Recommended"
+  },
+  {
+   "description": "What else this model takes beyond the ask \u2014 a voice, a language, a size. A JSON array of {key, label, type, default, ...}; see `oneapp_core/ai/options.py` for the four types. Sent to every tenant with the catalogue and rendered under the model picker. Written by hand: no sync fills this in yet, and a provider's own schema is where it should come from when one does.",
+   "fieldname": "options_json",
+   "fieldtype": "Code",
+   "label": "Options",
+   "options": "JSON"
   },
   {
    "fieldname": "sec_model_limits",

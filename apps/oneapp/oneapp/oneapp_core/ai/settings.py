@@ -33,7 +33,7 @@ from frappe import _
 #: together.
 TONES = ("Neutral", "Friendly", "Formal", "Direct", "Warm")
 
-from oneapp.oneapp_core.ai import features
+from oneapp.oneapp_core.ai import features, options
 
 
 def doc():
@@ -120,6 +120,32 @@ def model_for(feature) -> str:
 		)
 	recommended = [m for m in matching if m.get("is_recommended")]
 	return (recommended or matching)[0]["model_key"]
+
+
+def _resolved(feature) -> str:
+	"""Which model this feature would run on right now, or nothing.
+
+	`model_for` raises when the catalogue has nothing of the capability, which
+	is a real answer to a call and the wrong answer to a settings page: a
+	workspace with no model for one feature must still be able to read the tab
+	and change the others.
+	"""
+	try:
+		return model_for(feature)
+	except features.AIError:
+		return ""
+
+
+def options_for(feature) -> dict:
+	"""What to send this feature's call besides the ask itself.
+
+	The model's own defaults with the workspace's answers over them, which is
+	what a caller wants: an option nobody has touched is still sent, and is
+	still sent as the model said. A feature that runs on a model declaring
+	nothing gets an empty dict and passes it along, which costs nothing.
+	"""
+	model = {m["model_key"]: m for m in catalogue()}.get(model_for(feature))
+	return options.resolved(_row(doc(), feature.key), model)
 
 
 def identity() -> dict:
@@ -255,6 +281,10 @@ def spec() -> dict:
 				"label": m["display_name"],
 				"provider": m["provider"],
 				"description": _rate_line(m),
+				# What else this one takes. On every choice rather than only on
+				# the one in use, so picking a model that speaks draws its
+				# language and its pace straight away instead of after a save.
+				"options": options.declared(m),
 			}
 			for m in models if m["capability"] == feature.capability
 		]
@@ -272,6 +302,16 @@ def spec() -> dict:
 			"pinned_model": bool(feature.model),
 			"model": (row.model_key if row else "") or "",
 			"models": choices,
+			# Which model an empty choice comes out as, so the panel can find
+			# the declaration for "Recommended" without repeating the rule that
+			# decides it. See `model_for`.
+			"resolved_model": _resolved(feature),
+			# And what this workspace has answered. Every answer it has, not
+			# only the ones the model in use declares: the panel narrows them as
+			# the picker moves, and dropping them here would lose an answer the
+			# moment somebody looked at another model. `options.answered` is
+			# what narrows them for a call.
+			"model_options": options.stored(row),
 			"allow_prompt_addendum": bool(feature.allow_prompt_addendum),
 			"prompt_addendum": (row.prompt_addendum if row else "") or "",
 		})
@@ -384,6 +424,26 @@ def save(values: dict) -> dict:
 			if chosen and (not model or model["capability"] != feature.capability):
 				frappe.throw(_("{0} cannot be used for {1}.").format(chosen, feature.label))
 			row.model_key = chosen
+
+		# After the model, and on purpose: an answer is only meaningful against
+		# the model it is for, and a save that changes both has to be checked
+		# against the new one. `model_for` is what the call will use, which is
+		# not always what the row says — a feature can pin one, and an empty
+		# choice means whatever is recommended.
+		if "model_options" in answer:
+			chosen = {m["model_key"]: m for m in catalogue()}.get(_resolved(feature))
+			# This model's answers are replaced wholesale and every other
+			# model's are left alone. Replaced, because an option cleared back
+			# to the model's default has to stop being stored or it can never be
+			# cleared; left alone, because a workspace that tries a second model
+			# and goes back should find what it typed still there.
+			kept = {
+				key: value for key, value in options.stored(row).items()
+				if key not in options.keys(chosen)
+			}
+			row.model_options = json.dumps(
+				{**kept, **options.checked(answer["model_options"], chosen)}
+			)
 
 		if "prompt_addendum" in answer and feature.allow_prompt_addendum:
 			row.prompt_addendum = (answer["prompt_addendum"] or "")[:4000]

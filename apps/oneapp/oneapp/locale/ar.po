@@ -962,6 +962,9 @@ msgstr ""
 msgid "Default set"
 msgstr "تم تعيين الافتراضي"
 
+msgid "Default — {0}"
+msgstr "الافتراضي — {0}"
+
 msgid "Delete for good"
 msgstr "حذف نهائي"
 
@@ -1888,6 +1891,9 @@ msgstr "النموذج"
 
 msgid "Model Key"
 msgstr "مفتاح النموذج"
+
+msgid "Model Options"
+msgstr "خيارات النموذج"
 
 msgid "Models the workspace may choose, with prices."
 msgstr "النماذج التي يمكن لمساحة العمل اختيارها، مع الأسعار."
@@ -3844,6 +3850,16 @@ msgstr ""
 "بياني، في الغلاف المضغوط بـ gzip الذي يقرؤه `codec.py`. لا يُحرَّر هنا "
 "أبداً — الحفظ يستبدله كاملاً، وهو ما يفعله المحرر."
 
+msgid ""
+"The workspace's answers to whatever the chosen model declares — a voice, "
+"a language, a size. JSON keyed by option, read back only through the "
+"model's own declaration, so an option that goes away stops being sent "
+"without anything having to migrate."
+msgstr ""
+"إجابات مساحة العمل عمّا يعلنه النموذج المختار — صوت أو لغة أو حجم. بصيغة "
+"JSON مفتاحها اسم الخيار، ولا تُقرأ إلا عبر إعلان النموذج نفسه، فيتوقف "
+"إرسال أي خيار يختفي دون الحاجة إلى ترحيل أي شيء."
+
 msgid "The {0} most common. Use Filter for the rest."
 msgstr "أكثر {0} شيوعًا. استخدم المرشّح للبقية."
 
@@ -5165,6 +5181,12 @@ msgstr "لا يوجد خادم صندوق بريد لـ {0}، لذا يوجد ه
 msgid "{0} has no matching field here and will be left out."
 msgstr "{0} ليس له حقل مطابق هنا وسيُترك جانبًا."
 
+msgid "{0} has to be a number."
+msgstr "{0} يجب أن يكون رقمًا."
+
+msgid "{0} has to be between {1} and {2}."
+msgstr "{0} يجب أن يكون بين {1} و{2}."
+
 msgid "{0} have no matching field here and will be left out."
 msgstr "{0} ليست لها حقول مطابقة هنا وستُترك جانبًا."
 
@@ -5225,6 +5247,9 @@ msgstr "{0} ليس طريقة للإشعار."
 
 msgid "{0} is not a workspace setting."
 msgstr "{0} ليس إعدادًا لمساحة العمل."
+
+msgid "{0} is not a {1} this model offers."
+msgstr "{0} ليس {1} يوفّره هذا النموذج."
 
 msgid "{0} is not an action of this screen."
 msgstr "{0} ليس إجراءً في هذه الشاشة."

@@ -67,6 +67,7 @@ class Single:
 		self.credit_balance = 100
 		self.features = ([types.SimpleNamespace(
 			feature_key=key, enabled=1, model_key=model, prompt_addendum="",
+			model_options="",
 		)] if model else [])
 
 	def get(self, field, default=None):

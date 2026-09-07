@@ -466,6 +466,52 @@ def _write_pictures():
 BACKLOG = 40
 BACKLOG_PREFIX = "Backlog item"
 
+# The model catalogue, in the shape `sync_ai` caches it from the control plane.
+# Written here because a dev site is not linked to one, and because the two
+# things the AI tab is for cannot be looked at without it: a model picker with
+# nothing to pick from draws nothing, and the per-action options are declared on
+# a model. Two, not one, and deliberately of different capabilities — a picker
+# filtered to the feature's capability is only visibly doing that when there is
+# something for it to leave out.
+#
+# The second one carries options, which is the thing being shown: pick a model
+# that speaks and you are then asked which language and how fast. The values are
+# a fixture's and not a claim about any provider's voice list — what is real
+# here is the shape, which is what the renderer and the validator read.
+AI_MODELS = [
+	{
+		"model_key": "google-ai-studio:flash", "display_name": "Flash",
+		"provider": "google-ai-studio", "model_id": "gemini-3.7-flash",
+		"capability": "Text Generation", "is_recommended": 1, "prices": [],
+		# One option on the model the assistant runs on, so the thing being
+		# built is visible on the feature this fixture actually has. Real for
+		# every text model there is, and the one dial a workspace might sensibly
+		# be handed: how much the same question varies between askings.
+		"options": [
+			{"key": "temperature", "label": "Variety", "type": "number",
+			 "default": 0.7, "min": 0, "max": 2,
+			 "help": "Lower keeps answers close to the same each time."},
+		],
+	},
+	{
+		"model_key": "workers-ai:melotts", "display_name": "MeloTTS",
+		"provider": "workers-ai", "model_id": "@cf/myshell-ai/melotts",
+		"capability": "Text to Speech", "is_recommended": 1, "prices": [],
+		"options": [
+			{"key": "lang", "label": "Language", "type": "select",
+			 "default": "EN",
+			 "options": [
+				 {"value": "EN", "label": "English"},
+				 {"value": "ES", "label": "Spanish"},
+				 {"value": "FR", "label": "French"},
+			 ]},
+			{"key": "speed", "label": "Speed", "type": "number",
+			 "default": 1, "min": 0.5, "max": 2,
+			 "help": "1 is the pace the model was trained at."},
+		],
+	},
+]
+
 # The one backlog row this fixture says a model wrote. On the tail and not on
 # one of the three named tasks, because a mark is *meant* to go when a person
 # rewrites the value — so a task three specs type into is the one place it
@@ -1263,6 +1309,14 @@ def seed_tenant(manifest_only=False):
 	# workspace *looks like*, which is the thing `manifest_only` exists to let
 	# you iterate on.
 	branding.set_accent(BRAND_ACCENT)
+
+	# The catalogue, cached the way a sync would have cached it. In the manifest
+	# half because it is what the AI tab renders from, and iterating on that tab
+	# is the loop this mode exists for.
+	frappe.db.set_single_value(
+		"OneSpace AI Settings",
+		{"catalogue_json": json.dumps(AI_MODELS)},
+	)
 
 	approvals = 0
 	mailbox = ""

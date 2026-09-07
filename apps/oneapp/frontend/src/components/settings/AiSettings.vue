@@ -131,6 +131,28 @@
           />
 
           <!--
+            What else the chosen model takes — a language, a voice, a size.
+            Drawn from what the model declares rather than from anything here:
+            the list of voices a provider offers is the provider's to change,
+            and a copy of it in this file would be a copy that goes stale. See
+            `oneapp_core/ai/options.py`.
+          -->
+          <div v-if="declared(feature).length" class="grid gap-3 sm:grid-cols-2">
+            <FormControl
+              v-for="option in declared(feature)"
+              :key="option.key"
+              v-model="answers[feature.key].model_options[option.key]"
+              :type="control(option)"
+              :label="__(option.label)"
+              :options="option.type === 'select' ? choices(option) : undefined"
+              :placeholder="unanswered(option)"
+              :min="option.min ?? undefined"
+              :max="option.max ?? undefined"
+              :description="option.help ? __(option.help) : ''"
+            />
+          </div>
+
+          <!--
             Added to our instructions, never instead of them. Said in the
             description because the difference matters to what someone writes
             here: a preference works, a rewrite of the task does not.
@@ -192,6 +214,46 @@ const answers = reactive({})
 const dimmed = (feature) =>
   feature.suspended || (feature.can_disable && (!form.ai_enabled || !answers[feature.key]?.enabled))
 
+/**
+ * What the model this feature is set to run on takes besides the ask.
+ *
+ * Off the picker's own choice rather than off the feature, so choosing a model
+ * that speaks draws its language straight away. An empty choice is
+ * "Recommended", and which model that is was worked out on the server — the
+ * rule that decides it is not one worth having twice.
+ */
+const declared = (feature) => {
+  const key = answers[feature.key]?.model || feature.resolved_model
+  return feature.models.find((m) => m.value === key)?.options || []
+}
+
+/** A declared type, as the control that draws it. */
+const control = (option) => {
+  if (option.type === 'select') return 'select'
+  if (option.type === 'number') return 'number'
+  if (option.type === 'switch') return 'checkbox'
+  return 'text'
+}
+
+/**
+ * The choices for a select, led by the model's own.
+ *
+ * The same shape the model picker uses for "Recommended", and for the same
+ * reason: leaving it unanswered is a real answer, and the one that keeps
+ * working when the provider changes what its default is. Storing the default
+ * as though somebody had chosen it would pin the workspace to today's.
+ */
+const choices = (option) => [
+  { label: unanswered(option), value: '' },
+  ...option.options.map((one) => ({ label: __(one.label), value: one.value })),
+]
+
+/** What an option says when nobody has answered it. */
+const unanswered = (option) => {
+  const fallback = option.options?.find((one) => one.value === String(option.default))
+  return __('Default — {0}', [fallback ? __(fallback.label) : String(option.default ?? '')])
+}
+
 const modelOptions = (feature) => [
   { label: __('Recommended'), value: '' },
   ...feature.models.map((m) => ({
@@ -211,6 +273,11 @@ const load = async () => {
       answers[feature.key] = {
         enabled: feature.enabled,
         model: feature.model,
+        // Every answer this workspace has, including ones for a model it is
+        // not on: the server narrows them to the model in use when it sends
+        // the call, and dropping them here would lose an answer the moment
+        // somebody looked at another model and looked back.
+        model_options: { ...(feature.model_options || {}) },
         prompt_addendum: feature.prompt_addendum,
       }
     }

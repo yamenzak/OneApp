@@ -108,6 +108,15 @@ doctype(
         f("output_modalities", default="text"),
         f("is_recommended", "Check", default="0",
           description="Pre-selected for features that do not pin a model."),
+        f("options_json", "Code", label="Options", options="JSON",
+          description="What else this model takes beyond the ask — a voice, a "
+                      "language, a size. A JSON array of "
+                      "{key, label, type, default, ...}; see "
+                      "`oneapp_core/ai/options.py` for the four types. Sent to "
+                      "every tenant with the catalogue and rendered under the "
+                      "model picker. Written by hand: no sync fills this in "
+                      "yet, and a provider's own schema is where it should come "
+                      "from when one does."),
         section("sec_model_limits", "Limits and features"),
         f("context_window", "Int"),
         f("max_output_tokens", "Int"),
@@ -280,6 +289,12 @@ doctype(
           description="Empty means whatever the platform recommends for this "
                       "capability, which is also what tracks a better model "
                       "arriving without anyone changing a setting."),
+        f("model_options", "Small Text", label="Model Options",
+          description="The workspace's answers to whatever the chosen model "
+                      "declares — a voice, a language, a size. JSON keyed by "
+                      "option, read back only through the model's own "
+                      "declaration, so an option that goes away stops being "
+                      "sent without anything having to migrate."),
         section("sec_feat_prompt"),
         f("prompt_addendum", "Small Text",
           description="Appended to our instructions. The model receives both; "

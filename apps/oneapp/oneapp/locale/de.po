@@ -1020,6 +1020,9 @@ msgstr ""
 msgid "Default set"
 msgstr "Standard festgelegt"
 
+msgid "Default — {0}"
+msgstr "Standard — {0}"
+
 msgid "Delete for good"
 msgstr "Endgültig löschen"
 
@@ -1976,6 +1979,9 @@ msgstr "Fehlende Signatur."
 
 msgid "Model Key"
 msgstr "Modellschlüssel"
+
+msgid "Model Options"
+msgstr "Modelloptionen"
 
 msgid "Models the workspace may choose, with prices."
 msgstr "Modelle, die der Arbeitsbereich wählen darf, mit Preisen."
@@ -4013,6 +4019,18 @@ msgstr ""
 "nie bearbeitet — ein Speichern ersetzt sie vollständig, und genau das "
 "tut der Editor."
 
+msgid ""
+"The workspace's answers to whatever the chosen model declares — a voice, "
+"a language, a size. JSON keyed by option, read back only through the "
+"model's own declaration, so an option that goes away stops being sent "
+"without anything having to migrate."
+msgstr ""
+"Die Antworten des Arbeitsbereichs auf das, was das gewählte Modell "
+"deklariert — eine Stimme, eine Sprache, eine Größe. JSON mit der Option "
+"als Schlüssel, nur über die Deklaration des Modells selbst gelesen, "
+"sodass eine entfallene Option nicht mehr gesendet wird, ohne dass etwas "
+"migriert werden muss."
+
 msgid "The {0} most common. Use Filter for the rest."
 msgstr "Die {0} häufigsten. Für den Rest den Filter verwenden."
 
@@ -5400,6 +5418,12 @@ msgstr "{0} hat keinen Postfachserver, daher liegt dieser Ordner in OneSpace."
 msgid "{0} has no matching field here and will be left out."
 msgstr "{0} hat hier kein passendes Feld und wird ausgelassen."
 
+msgid "{0} has to be a number."
+msgstr "{0} muss eine Zahl sein."
+
+msgid "{0} has to be between {1} and {2}."
+msgstr "{0} muss zwischen {1} und {2} liegen."
+
 msgid "{0} have no matching field here and will be left out."
 msgstr "{0} haben hier kein passendes Feld und werden ausgelassen."
 
@@ -5460,6 +5484,9 @@ msgstr "{0} ist kein Weg, benachrichtigt zu werden."
 
 msgid "{0} is not a workspace setting."
 msgstr "{0} ist keine Arbeitsbereichseinstellung."
+
+msgid "{0} is not a {1} this model offers."
+msgstr "{0} ist kein {1}, das dieses Modell anbietet."
 
 msgid "{0} is not an action of this screen."
 msgstr "{0} ist keine Aktion dieser Ansicht."

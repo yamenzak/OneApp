@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 10:35+0000\n"
-"PO-Revision-Date: 2026-09-07 10:35+0000\n"
+"POT-Creation-Date: 2026-09-07 12:27+0000\n"
+"PO-Revision-Date: 2026-09-07 12:27+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -412,7 +412,7 @@ msgstr ""
 msgid "Added to the instructions it already has. It changes how answers read, not what a feature does."
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:145
+#: frontend/src/components/settings/AiSettings.vue:167
 msgid "Added to the instructions this feature already has. Use it for your preferences, not for changing what the feature does."
 msgstr ""
 
@@ -494,7 +494,6 @@ msgstr ""
 
 #. Name of a role
 #: frontend/src/components/screen/record/RecordActivity.vue:138
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
 #: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
 #: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "All"
@@ -603,7 +602,7 @@ msgstr ""
 msgid "Anybody who can sign in here, whatever their role reaches."
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:143
+#: frontend/src/components/settings/AiSettings.vue:165
 msgid "Anything it should keep in mind"
 msgstr ""
 
@@ -759,8 +758,8 @@ msgstr ""
 
 #: frontend/src/components/settings/AiSettings.vue:44
 #: frontend/src/components/settings/AiSettings.vue:58
-#: frontend/src/lib/shell/assistant.js:42 oneapp/oneapp_core/ai/settings.py:147
-#: oneapp/oneapp_core/ai/settings.py:163
+#: frontend/src/lib/shell/assistant.js:42 oneapp/oneapp_core/ai/settings.py:173
+#: oneapp/oneapp_core/ai/settings.py:189
 msgid "Assistant"
 msgstr ""
 
@@ -1710,6 +1709,10 @@ msgstr ""
 #: frontend/src/lib/workspace/printing.js:113
 #: frontend/src/lib/workspace/printing.js:136
 msgid "Default set"
+msgstr ""
+
+#: frontend/src/components/settings/AiSettings.vue:254
+msgid "Default — {0}"
 msgstr ""
 
 #: frontend/src/components/diary/EventDialog.vue:59
@@ -3489,6 +3492,12 @@ msgstr ""
 msgid "Model Key"
 msgstr ""
 
+#. Label of the model_options (Small Text) field in DocType 'OneSpace AI
+#. Feature Setting'
+#: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
+msgid "Model Options"
+msgstr ""
+
 #. Description of the 'Catalogue Json' (Code) field in DocType 'OneSpace AI
 #. Settings'
 #: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
@@ -5054,7 +5063,7 @@ msgstr ""
 msgid "Recipient"
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:196
+#: frontend/src/components/settings/AiSettings.vue:258
 msgid "Recommended"
 msgstr ""
 
@@ -5452,7 +5461,7 @@ msgstr ""
 #: frontend/src/components/docs/LongTextDialog.vue:49
 #: frontend/src/components/screen/record/RecordControls.vue:49
 #: frontend/src/components/screen/views/ViewSwitcher.vue:68
-#: frontend/src/components/settings/AiSettings.vue:155
+#: frontend/src/components/settings/AiSettings.vue:177
 #: frontend/src/components/settings/AlertSettings.vue:215
 #: frontend/src/components/settings/ProfileSettings.vue:72
 #: frontend/src/components/settings/SettingsFields.vue:87
@@ -6867,6 +6876,12 @@ msgstr ""
 msgid "The workbook: every tab, cell, formula, format, merge, named range, pivot and chart, as the gzipped envelope `codec.py` reads. Never edited here — a save replaces it whole, which is what the editor does."
 msgstr ""
 
+#. Description of the 'Model Options' (Small Text) field in DocType 'OneSpace
+#. AI Feature Setting'
+#: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
+msgid "The workspace's answers to whatever the chosen model declares — a voice, a language, a size. JSON keyed by option, read back only through the model's own declaration, so an option that goes away stops being sent without anything having to migrate."
+msgstr ""
+
 #: frontend/src/components/screen/views/TallyMenu.vue:58
 msgid "The {0} most common. Use Filter for the rest."
 msgstr ""
@@ -7251,7 +7266,7 @@ msgstr ""
 msgid "Those rows were not filled from a sheet."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/settings.py:426 oneapp/oneapp_core/printing.py:286
+#: oneapp/oneapp_core/ai/settings.py:486 oneapp/oneapp_core/printing.py:286
 #: oneapp/oneapp_core/workspace.py:578
 msgid "Those settings could not be read."
 msgstr ""
@@ -8105,7 +8120,7 @@ msgstr ""
 msgid "Write from"
 msgstr ""
 
-#: frontend/src/components/settings/AiSettings.vue:144
+#: frontend/src/components/settings/AiSettings.vue:166
 msgid "Write in British English. Never quote a delivery date."
 msgstr ""
 
@@ -8579,7 +8594,7 @@ msgstr ""
 msgid "{0} available of {1} — the difference is reserved by calls in flight."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/settings.py:385
+#: oneapp/oneapp_core/ai/settings.py:425
 msgid "{0} cannot be used for {1}."
 msgstr ""
 
@@ -8657,6 +8672,14 @@ msgstr ""
 msgid "{0} has no matching field here and will be left out."
 msgstr ""
 
+#: oneapp/oneapp_core/ai/options.py:184
+msgid "{0} has to be a number."
+msgstr ""
+
+#: oneapp/oneapp_core/ai/options.py:188
+msgid "{0} has to be between {1} and {2}."
+msgstr ""
+
 #: frontend/src/components/sheets/FillFromSheet.vue:90
 msgid "{0} have no matching field here and will be left out."
 msgstr ""
@@ -8722,7 +8745,7 @@ msgstr ""
 msgid "{0} is not a series on {1}."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/settings.py:343
+#: oneapp/oneapp_core/ai/settings.py:383
 msgid "{0} is not a tone this can use."
 msgstr ""
 
@@ -8732,6 +8755,10 @@ msgstr ""
 
 #: oneapp/oneapp_core/workspace.py:583
 msgid "{0} is not a workspace setting."
+msgstr ""
+
+#: oneapp/oneapp_core/ai/options.py:177
+msgid "{0} is not a {1} this model offers."
 msgstr ""
 
 #: oneapp/oneapp_core/spaceview/run.py:33

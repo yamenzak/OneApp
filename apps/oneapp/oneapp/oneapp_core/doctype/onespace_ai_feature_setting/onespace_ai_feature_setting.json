@@ -8,6 +8,7 @@
   "feature_key",
   "enabled",
   "model_key",
+  "model_options",
   "sec_feat_prompt",
   "prompt_addendum"
  ],
@@ -32,6 +33,12 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Model"
+  },
+  {
+   "description": "The workspace's answers to whatever the chosen model declares \u2014 a voice, a language, a size. JSON keyed by option, read back only through the model's own declaration, so an option that goes away stops being sent without anything having to migrate.",
+   "fieldname": "model_options",
+   "fieldtype": "Small Text",
+   "label": "Model Options"
   },
   {
    "fieldname": "sec_feat_prompt",

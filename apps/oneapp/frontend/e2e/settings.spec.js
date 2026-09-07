@@ -176,6 +176,32 @@ test('every tab an admin is offered actually draws something', async ({ page }, 
   expectNoRealErrors(errors)
 })
 
+test('a model that takes more than a prompt says what else it takes',
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'the phone draws no rail')
+    await openSettings(page)
+    await page.locator('[data-slot="settings-tab-ai"]').click()
+
+    const panel = page.locator('[role="tabpanel"][data-state="active"]')
+
+    // Declared on the model, not written here — the fixture's text model
+    // declares one and the panel draws it under the picker. See `AI_MODELS` in
+    // `scripts/seed_dev_space.py` and `oneapp_core/ai/options.py`.
+    const variety = panel.getByLabel('Variety')
+    await expect(variety).toBeVisible({ timeout: 15_000 })
+
+    // Unanswered, and saying so: the model's own default rather than a blank,
+    // and rather than that number sitting there as though somebody chose it.
+    await expect(variety).toHaveAttribute('placeholder', /0\.7/)
+
+    // And it is refused where the model says it should be, in words. No
+    // `expectNoRealErrors` after this one: the refusal is the assertion, and a
+    // refused write is a 417 the console records like any other.
+    await variety.fill('9')
+    await page.getByRole('button', { name: 'Save' }).click()
+    await expect(panel.getByText(/between/)).toBeVisible({ timeout: 15_000 })
+  })
+
 test('the workspace decides who may connect an outside mailbox',
   async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'the phone draws no rail')

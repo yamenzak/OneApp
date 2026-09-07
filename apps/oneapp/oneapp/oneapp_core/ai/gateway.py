@@ -304,6 +304,32 @@ def caller(feature: features.Feature):
 	return run
 
 
+def _with_options(model: dict, body: dict, chosen: dict) -> None:
+	"""The workspace's answers for this model, in the place its provider reads.
+
+	An option's key **is** the provider's own parameter name — the declaration
+	is written per model by the operator who read that provider's docs, so there
+	is no translation table here and nothing to keep in step. All that differs
+	is where they go: Google nests its generation parameters, Workers AI takes
+	them at the top of the body.
+
+	Never over something the builder already set. Those are the ceilings — the
+	most output an operator allows, the modalities the capability needs — and a
+	workspace answer that could overwrite one would be a setting that raises its
+	own limit.
+	"""
+	if not chosen:
+		return
+
+	where = (
+		body.setdefault("generationConfig", {})
+		if model["provider"] == "google-ai-studio"
+		else body
+	)
+	for key, value in chosen.items():
+		where.setdefault(key, value)
+
+
 def call(feature: features.Feature, prompt: str = "", **request) -> Result:
 	if not is_configured():
 		raise AIError("AI gateway is not configured in site_config.json.")
@@ -381,6 +407,7 @@ def call(feature: features.Feature, prompt: str = "", **request) -> Result:
 def _execute(model, feature, builder, prompt, system, limits, request):
 	c = config()
 	path, headers, body = builder(model, prompt, system, limits, request)
+	_with_options(model, body, settings.options_for(feature))
 	url = gateway_url(model["provider"], path)
 
 	if c["gateway_token"]:

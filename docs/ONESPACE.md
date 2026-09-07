@@ -1390,6 +1390,36 @@ model reads "Be direct" and weighs it, and there is nothing else a tone could
 be. A workspace that has set none of the four gets no character paragraph at
 all, rather than one made of blanks.
 
+### A model can take more than a prompt
+
+Picking a model that reads text aloud should then let you pick the language and
+the pace; one that draws should let you pick the size. None of that belongs on
+the feature — "read this aloud" is the same feature whichever model does it —
+and none of it belongs in our code either, because the list of voices a provider
+offers is the provider's to change and ours to relay.
+
+So the **model declares** and the **workspace answers**. The declaration comes
+down with the catalogue, from the control plane, which is the only side that
+talks to a provider; it is a JSON array of `{key, label, type, default}` in four
+types — a list, a number with ends, a switch, and free text for the one case
+none of those fit. The answer is stored beside the choice of model and is only
+ever read back *through* the declaration, which is what makes an option that has
+gone away stop being offered and stop being sent, with nothing to migrate.
+
+An option's `key` is the provider's own parameter name, so there is no
+translation table anywhere: the operator who writes the declaration read that
+provider's documentation, and the gateway only has to know *where* each provider
+takes its parameters. It never lets an answer overwrite something the request
+builder already set — those are the operator's ceilings, and a setting that
+could raise its own limit is not a setting.
+
+Leaving one unanswered is a real answer, and the one that keeps working: the
+panel offers "Default — 0.7" the way the model picker offers "Recommended", and
+storing that number as though somebody had chosen it would pin the workspace to
+today's default. A value outside the model's range is refused in words rather
+than quietly clamped, because a clamp is a number the workspace did not choose
+and then reads back as though it had.
+
 ### What a model wrote is marked
 
 A sparkle beside a field's label, and a sentence in its tooltip naming the

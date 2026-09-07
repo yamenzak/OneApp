@@ -444,11 +444,21 @@ def catalogue_for_tenant() -> list[dict]:
 			"name as model_key", "display_name", "provider", "model_id", "capability",
 			"input_modalities", "output_modalities", "context_window",
 			"max_output_tokens", "supports_tools", "supports_json",
-			"supports_reasoning", "is_recommended", "status",
+			"supports_reasoning", "is_recommended", "status", "options_json",
 		],
 		order_by="capability asc, is_recommended desc, display_name asc",
 	)
 	for model in models:
+		# Parsed here rather than sent as a string, so a declaration an operator
+		# typed badly is one broken model rather than a settings page that will
+		# not render on every site that syncs. See `oneapp_core/ai/options.py`
+		# for what a tenant does with it.
+		raw = model.pop("options_json", "") or ""
+		try:
+			model["options"] = json.loads(raw) if raw.strip() else []
+		except ValueError:
+			model["options"] = []
+
 		model["prices"] = frappe.get_all(
 			"AI Model Price",
 			filters={"parent": model["model_key"], "tier": "Standard"},
