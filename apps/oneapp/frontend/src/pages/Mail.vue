@@ -209,11 +209,19 @@
         -->
         <Thread class="mt-4" :messages="messages" @preview="previewing = $event" />
 
+        <!--
+          Disabled until there is a message to answer. `compose(null)` is not an
+          error — it is the blank composer, which is the right thing for the New
+          button and quietly the wrong thing here: pressed in the moment between
+          the thread opening and its messages arriving, Reply opens an empty
+          message instead of a reply, and nothing says so.
+        -->
         <div class="mt-4 flex flex-wrap items-center gap-2">
           <Button
             variant="subtle"
             icon-left="lucide-reply"
             :label="__('Reply')"
+            :disabled="!last"
             @click="compose(last, 'reply')"
           />
           <Button
@@ -221,6 +229,7 @@
             icon-left="lucide-reply-all"
             :label="__('Reply to all')"
             data-slot="mail-reply-all"
+            :disabled="!last"
             @click="compose(last, 'reply_all')"
           />
           <Button
@@ -228,6 +237,7 @@
             icon-left="lucide-forward"
             :label="__('Forward')"
             data-slot="mail-forward"
+            :disabled="!last"
             @click="compose(last, 'forward')"
           />
           <!-- Filing the conversation, not the message: filing a reply and
