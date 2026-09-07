@@ -60,7 +60,10 @@ const dragging = defineModel('dragging', { type: Boolean, default: false })
 // Computed rather than a ternary in the binding: `test_every_class_emits_css`
 // reads the string literals out of a `:class`, and `side === 'left' ? …`
 // offered it `left` as a class name.
-const IDLE = 'border-outline-gray-2 hover:border-outline-gray-3'
+// Invisible until it is wanted. Drawn, it is the sidebar's right border — and
+// the shell has no seams: the bar, the column and the ground are one surface,
+// and a hairline down the middle of it is a panel edge with no panel.
+const IDLE = 'border-transparent hover:border-outline-gray-3'
 const edge = computed(() => (props.side === 'left' ? 'border-s' : 'border-e'))
 
 const ceiling = computed(() => {

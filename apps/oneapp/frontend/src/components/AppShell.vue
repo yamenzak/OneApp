@@ -89,42 +89,21 @@
       class="flex h-12 shrink-0 items-center gap-2 ps-2 pe-3"
     >
       <!--
-        The corner. The workspace, and behind it every space in it.
-
-        The workspace and not the space: the sidebar's own header names the
-        space directly under this, and two labels saying one word 48px apart is
-        what a header is for avoiding. Width-matched to that sidebar so the
-        pair read as one column, and it follows it when it collapses.
+        The corner, width-matched to the sidebar beneath it so the pair read as
+        one column, and following it when it collapses. What goes in it is the
+        app's own — the switcher knows about spaces, and this file does not.
       -->
-      <div v-if="entries.length || entriesTo" class="shrink-0" :style="cornerStyle">
-        <Dropdown :options="entryOptions" align="start" class="w-full">
-          <Button
-            variant="ghost"
-            data-slot="space-switcher"
-            class="!h-8 w-full !justify-start !px-1"
-            :tooltip="__('Switch space')"
-          >
-            <template #prefix>
-              <SpaceFace :space="workspace" size="lg" class="size-6" />
-            </template>
-            <!--
-              One row inside the label slot rather than `icon-right`. Button
-              lays its prefix, label and right icon out as a flex column's
-              worth of children and sizes itself to them, so the chevron sat
-              against the last letter of the name however wide the corner was —
-              and, once the label was a `flex-1` span, wrapped onto a second
-              line. A row of its own, with the name taking the slack, puts the
-              arrows at the end, which is where a combobox keeps them.
-            -->
-            <span v-if="!sidebarCollapsed" class="flex w-full min-w-0 items-center gap-1">
-              <span class="min-w-0 flex-1 truncate text-start text-base text-ink-gray-8">
-                {{ workspace.label || entriesLabel }}
-              </span>
-              <Icon name="lucide-chevrons-up-down" class="size-4 shrink-0 text-ink-gray-5" />
-            </span>
-          </Button>
-        </Dropdown>
+      <div class="shrink-0" :style="cornerStyle">
+        <slot name="corner" />
       </div>
+
+      <!--
+        The one control that belongs to the column rather than to the page, so
+        it sits at the head of the bar rather than at the foot of the column:
+        folding the navigation is something you do on the way in, and the foot
+        is where you look on the way out.
+      -->
+      <SidebarCollapse :icon-only="true" />
 
       <!--
         The page's header, which teleports itself here. Its own classes are for
@@ -311,6 +290,7 @@
 <script setup>
 import { computed, h, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import SidebarCollapse from './SidebarCollapse.vue'
 import SpaceFace from './brand/SpaceFace.vue'
 import {
   Avatar,
@@ -354,12 +334,6 @@ const props = defineProps({
    * surface with no such page simply does not get the row.
    */
   entriesTo: { type: [Object, String], default: null },
-  /**
-   * What the corner shows: `{ label, logo }` for the workspace itself. Drawn
-   * by `SpaceFace`, so a workspace with no image gets its own initial rather
-   * than a gap.
-   */
-  workspace: { type: Object, default: () => ({}) },
   /**
    * Extra rows under the spaces, as menu options. The marketplace goes here
    * and only for somebody who may act on it.

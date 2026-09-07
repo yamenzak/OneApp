@@ -7,12 +7,17 @@
       :entries="railSpaces"
       :active-entry="activeSpaceCode"
       :entries-to="{ name: 'Launcher' }"
-      :workspace="workspace"
       :entry-extra="entryExtra"
       :nav-items="nav"
       :menu-items="menuItems"
       :user="identity"
     >
+      <!-- The corner. Its own component because it knows what a space is and
+           the shell does not. -->
+      <template #corner>
+        <SpaceSwitcher />
+      </template>
+
       <template #sidebar>
         <!-- Mail is not inside a space — the addresses somebody holds do not
              change when they switch space — so on that route the mailboxes go
@@ -118,6 +123,7 @@ import ChatSidebar from './components/chat/ChatSidebar.vue'
 import AssistantPanel from './components/chat/AssistantPanel.vue'
 import DriveSidebar from './components/drive/DriveSidebar.vue'
 import BrandMark from './components/brand/BrandMark.vue'
+import SpaceSwitcher from './components/shell/SpaceSwitcher.vue'
 import NotificationList from './components/notifications/NotificationList.vue'
 import SettingsShell from './components/settings/SettingsShell.vue'
 import { useNav } from '@/lib/shell/nav'
@@ -213,14 +219,6 @@ watch(
   (yes) => yes && loadAssistant(),
   { immediate: true },
 )
-
-// The corner's own face: the workspace, drawn from what it chose for its tab.
-// A workspace that set no image gets its initial, which is what SpaceFace does
-// with a space that named no mark.
-const workspace = computed(() => ({
-  label: session.tenant?.name || TENANT_APP,
-  logo: brand.favicon || null,
-}))
 
 // The one row under the spaces: where a workspace gets another one. Its own
 // mark rather than a lucide shop — the marketplace is one of ours, and every

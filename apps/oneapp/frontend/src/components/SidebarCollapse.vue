@@ -7,12 +7,34 @@
   and not a translated application. So on an Arabic screen it was the one
   English word left in the frame, on every page that has a sidebar.
 
-  This is that component with the label translated and nothing else changed: the
-  same `SidebarItem`, the same icon, and frappe-ui's own injection keys, which
-  it exports. Not a reimplementation — a label.
+  This is that component with the label translated and the state taken from
+  ours rather than from the `Sidebar` it used to sit inside: the same
+  `SidebarItem`, the same icon.
 -->
 <template>
-  <SidebarItem :label="collapsed ? __('Expand') : __('Collapse')" @click="toggle">
+  <!--
+    Two renderings, because it is reached from two places and they are not the
+    same shape. In the bar it is one control beside the switcher, so it is a
+    Button with its name in a tooltip; in a column it is a row among rows, so
+    it is the `SidebarItem` frappe-ui's own toggle is.
+  -->
+  <Button
+    v-if="iconOnly"
+    variant="ghost"
+    :label="label"
+    :tooltip="label"
+    data-slot="sidebar-collapse"
+    @click="toggle"
+  >
+    <template #icon>
+      <span
+        class="lucide-panel-right-open size-4 text-ink-gray-6 transition-transform duration-300 ease-in-out"
+        :class="{ 'rotate-180': collapsed }"
+      />
+    </template>
+  </Button>
+
+  <SidebarItem v-else :label="label" data-slot="sidebar-collapse" @click="toggle">
     <template #prefix>
       <!-- rtl-ok: the panel this points at is the sidebar, and `dir` has
            already moved the sidebar; the glyph turns with it. -->
@@ -25,16 +47,26 @@
 </template>
 
 <script setup>
-import { computed, inject } from 'vue'
-import { SidebarItem, sidebarCollapsedKey, sidebarToggleKey } from '@/ui'
+import { computed } from 'vue'
+import { Button, SidebarItem } from '@/ui'
+import { useSidebar } from '@/lib/shell/sidebar'
 import { __ } from '@/lib/runtime/translate'
 
-// The same two keys frappe-ui's own toggle injects, with the same fallbacks:
-// a toggle rendered outside a `Sidebar` reads as expanded and does nothing,
-// rather than throwing.
-const collapsed = inject(
-  sidebarCollapsedKey,
-  computed(() => false),
-)
-const toggle = inject(sidebarToggleKey, () => {})
+defineProps({
+  /** True in the top bar, where it is one control rather than a row. */
+  iconOnly: { type: Boolean, default: false },
+})
+
+// The shared state, not frappe-ui's injection. Its own toggle injects two keys
+// the `Sidebar` provides, and this one now lives in the *bar* — outside every
+// Sidebar, where those keys resolve to their fallbacks: reads as expanded, does
+// nothing. `useSidebar()` is what each column binds its `v-model:collapsed` to,
+// so it is the same value from either side of the tree.
+const { collapsed } = useSidebar()
+
+const toggle = () => {
+  collapsed.value = !collapsed.value
+}
+
+const label = computed(() => (collapsed.value ? __('Expand') : __('Collapse')))
 </script>

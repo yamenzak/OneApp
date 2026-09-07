@@ -1,14 +1,16 @@
 <template>
-  <!-- No border. The bar, this column and the ground behind them are one
-       surface; a seam down the middle of it is a panel edge with no panel. -->
-  <Sidebar v-model:collapsed="collapsed" :width="`${width}px`">
-    <!--
-      No logo, and no workspace underneath: the bar's corner names the
-      workspace directly above this, so a subtitle repeating it was the same
-      words twice, 48px apart. What is left is where you are.
-    -->
-    <SidebarHeader :title="activeSpace?.space_label || 'Spaces'" :show-logo="false" />
+  <!--
+    No border, and no header.
 
+    No border because the bar, this column and the ground behind them are one
+    surface, and a seam down the middle of it is a panel edge with no panel.
+
+    No header because the switcher sits directly above it and is a board of
+    every space in the workspace: a row under it naming the one you are in was
+    the same word twice, 48px apart, and now that the switcher draws the space
+    it is the same *face* twice as well.
+  -->
+  <Sidebar v-model:collapsed="collapsed" :width="`${width}px`">
     <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pb-6">
       <nav class="space-y-0.5">
         <template v-for="item in nav" :key="item.label">
@@ -88,7 +90,6 @@ import {
   Button,
   ScrollArea,
   Sidebar,
-  SidebarHeader,
   SidebarItem,
   SidebarLabel,
 } from '@/ui'
@@ -99,7 +100,7 @@ import { useSidebar } from '@/lib/shell/sidebar'
 
 // The destinations live in `lib/shell/nav.js`: the phone's bottom bar renders
 // the same list, and two declarations of it drift into two names for one page.
-const { nav, activeSpace } = useNav()
+const { nav } = useNav()
 
 // A sub-item says it is active by weight, not by a filled pill — the fill
 // belongs to the screen above it. `:active="false"` and not simply omitting it:

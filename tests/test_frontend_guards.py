@@ -796,9 +796,14 @@ SIDEBAR_STATE = "sidebar"
 # The foot is one component rather than a block per column, because it was a
 # block per column and they disagreed: the quota meter existed under the spaces
 # and nowhere else, so the number that decides whether an upload is refused was
-# invisible on the screen you upload from. It carries the collapse toggle, so a
-# column that renders it has one.
+# invisible on the screen you upload from.
 FOOT = "ShellFoot"
+
+# The one column that draws no header. Everywhere else the header names
+# something the bar does not — Mail, Files, the calendar, a conversation. The
+# space's own name and face are the switcher in the corner, directly above it,
+# so a header here was the same word and the same mark twice, 48px apart.
+NO_HEADER = {"SpaceSidebar.vue"}
 
 
 @pytest.mark.parametrize("app", SHELL_APPS)
@@ -813,7 +818,10 @@ def test_every_sidebar_is_the_same_sidebar(app):
 		# that component with its one hardcoded English word translated, which
 		# is the difference between an Arabic screen and an Arabic screen with
 		# "Collapse" in the corner of it.
-		for component in ("Sidebar", "SidebarHeader", FOOT):
+		wanted = ["Sidebar", FOOT]
+		if path.name not in NO_HEADER:
+			wanted.append("SidebarHeader")
+		for component in wanted:
 			assert f"<{component}" in source, f"{path.name} does not render {component}"
 
 		# And the state is the shared one, not a fourth copy of it. Two of the
@@ -827,10 +835,11 @@ def test_every_sidebar_is_the_same_sidebar(app):
 		# and the key the width is remembered under.
 		assert "<SidebarResizer" in source, f"{path.name} cannot be resized"
 
-	# And the foot is the one place the toggle lives, so "renders the foot" is
-	# the same claim as "can be collapsed".
-	foot = (root / "components" / "shell" / f"{FOOT}.vue").read_text()
-	assert "<SidebarCollapse" in foot, f"{FOOT} does not render the collapse toggle"
+	# The toggle is in the bar, not in the foot: folding the navigation is
+	# something you do on the way in, and one control for every column beats a
+	# row in each of them. So it is the shell that has to carry it.
+	shell = (ROOT / f"apps/{app}/frontend/{SHELL}").read_text()
+	assert "<SidebarCollapse" in shell, "the bar has no collapse toggle"
 
 
 def test_the_bottom_bar_leaves_a_slot_for_everything_else():
