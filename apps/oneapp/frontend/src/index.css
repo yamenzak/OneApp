@@ -5,6 +5,35 @@
 @tailwind utilities;
 
 /*
+ * The brand marks' knockout, and the one cavity that is its opposite.
+ *
+ * A mark is drawn in its own colours and does not follow the theme — that is
+ * what makes an app recognisable at 20px in a rail. These two are the
+ * exception, and they are not colour: they are the *structure* the design
+ * knocks out of a mark. A pallet under a crate, a page block inside a ledger,
+ * the stem of the numeral. Drawn as pure white they disappear on a light
+ * ground, which is exactly what four of the sixteen did.
+ *
+ * So they invert, which is what a knockout in a logo normally does. The values
+ * are also written into every standalone file `scripts/gen_brand.py` produces,
+ * behind a `prefers-color-scheme` query, so a mark used outside this app —
+ * a favicon, an email — adapts on its own.
+ *
+ * Declared here rather than in the theme's token set because they belong to
+ * the artwork rather than to the interface: nothing but a mark reads them, and
+ * a workspace's accent must never move them.
+ */
+:root {
+  --brand-knockout: #0f172a;
+  --brand-ground: #ffffff;
+}
+
+:root[data-theme='dark'] {
+  --brand-knockout: #ffffff;
+  --brand-ground: #0b0f19;
+}
+
+/*
  * The display face: one family, two files, split by script.
  *
  * Everything in this product is set in the UI face, and that is right for a

@@ -57,6 +57,50 @@ UNIQUE = "__ONE__"
 #: it is the platform's own, not an app's. Read from there by its own marker.
 PARENT_ID = "one"
 
+#: The design uses white as a *structural* element — a pallet under a crate, a
+#: page block inside a ledger, the stem of the numeral. On a dark ground that
+#: reads; on a light one it is invisible, and four of the sixteen marks came out
+#: as fragments. So the white becomes a token that inverts with the theme, which
+#: is what a knockout in a logo normally does.
+#:
+#: `--brand-ground` is the other half and only OneCredit needs it: its coin has
+#: a near-black cavity punched through, which is the same problem the other way
+#: up.
+KNOCKOUT = "var(--brand-knockout, #ffffff)"
+GROUND = "var(--brand-ground, #0b0f19)"
+
+#: What each is in each theme. Written into the standalone files as a `<style>`
+#: so a file on its own adapts too, and declared for the SPA in `index.css`.
+LIGHT_KNOCKOUT, DARK_KNOCKOUT = "#0f172a", "#ffffff"
+LIGHT_GROUND, DARK_GROUND = "#ffffff", "#0b0f19"
+
+_MASK = re.compile(r"<mask\b.*?</mask>", re.S)
+_WHITE = re.compile(r'(?<=")(#ffffff|#fff)(?=")', re.I)
+_DARK = re.compile(r'(?<=")#0b0f19(?=")', re.I)
+
+
+def themed(body: str) -> str:
+	"""Swap the visible whites for the token, leaving every mask alone.
+
+	The masks are the reason this cannot be a plain replace. A `<mask>` uses
+	white and black as *luminance*, not as colour — white keeps a pixel, black
+	cuts it — so a token in there would either do nothing or erase the mark.
+	They are lifted out, the swap runs on what is left, and they go back.
+	"""
+	held = []
+
+	def _hold(match):
+		held.append(match.group(0))
+		return f"__MASK{len(held) - 1}__"
+
+	rest = _MASK.sub(_hold, body)
+	rest = _WHITE.sub(KNOCKOUT, rest)
+	rest = _DARK.sub(GROUND, rest)
+
+	for at, mask in enumerate(held):
+		rest = rest.replace(f"__MASK{at}__", mask)
+	return rest
+
 _FIELD = re.compile(r"^\s*(id|name|category|subtitle|color):\s*'([^']*)',?\s*$")
 _START = re.compile(r"^\s*renderSvg:\s*\(\)\s*=>\s*`\s*$")
 _ID_ATTR = re.compile(r'\bid="([^"]+)"')
@@ -170,7 +214,7 @@ def write_js(marks: list[dict]) -> None:
 				json.dumps(mark["name"]),
 				json.dumps(mark["color"]),
 				json.dumps(mark.get("subtitle", "")),
-				json.dumps(uniquify(mark["body"])),
+				json.dumps(uniquify(themed(mark["body"]))),
 			)
 		)
 
@@ -209,11 +253,19 @@ def write_svgs(marks: list[dict]) -> None:
 	page — that is what the component is for.
 	"""
 	SVG_DIR.mkdir(parents=True, exist_ok=True)
+	style = (
+		"<style>\n"
+		"    :root { --brand-knockout: %s; --brand-ground: %s; }\n"
+		"    @media (prefers-color-scheme: dark) {\n"
+		"      :root { --brand-knockout: %s; --brand-ground: %s; }\n"
+		"    }\n"
+		"  </style>" % (LIGHT_KNOCKOUT, LIGHT_GROUND, DARK_KNOCKOUT, DARK_GROUND)
+	)
 	for mark in marks:
 		(SVG_DIR / f"{mark['id']}.svg").write_text(
 			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" '
-			'width="100" height="100" role="img" aria-label="%s">\n%s\n</svg>\n'
-			% (mark["name"], mark["body"]),
+			'width="100" height="100" role="img" aria-label="%s">\n  %s\n%s\n</svg>\n'
+			% (mark["name"], style, themed(mark["body"])),
 			encoding="utf-8",
 		)
 

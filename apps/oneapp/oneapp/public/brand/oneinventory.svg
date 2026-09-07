@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="OneInventory">
+  <style>
+    :root { --brand-knockout: #0f172a; --brand-ground: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --brand-knockout: #ffffff; --brand-ground: #0b0f19; }
+    }
+  </style>
 <defs>
   <linearGradient id="g-oneinventory" x1="0%" y1="0%" x2="100%" y2="100%">
     <stop offset="0%" stop-color="#22d3ee"/>
@@ -17,5 +23,5 @@
 <!-- Cargo Container Crate -->
 <rect x="22" y="18" width="56" height="48" rx="6" fill="url(#g-oneinventory)" mask="url(#m-oneinventory)"/>
 <!-- Semantic White Pallet Base -->
-<rect x="20" y="70" width="60" height="10" rx="2" fill="#ffffff" mask="url(#m-oneinventory)"/>
+<rect x="20" y="70" width="60" height="10" rx="2" fill="var(--brand-knockout, #ffffff)" mask="url(#m-oneinventory)"/>
 </svg>

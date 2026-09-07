@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="OneBook">
+  <style>
+    :root { --brand-knockout: #0f172a; --brand-ground: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --brand-knockout: #ffffff; --brand-ground: #0b0f19; }
+    }
+  </style>
 <defs>
   <linearGradient id="g-onebook" x1="0%" y1="0%" x2="100%" y2="100%">
     <stop offset="0%" stop-color="#fb7185"/>
@@ -13,5 +19,5 @@
 <!-- Crimson Hardcover Binding -->
 <path d="M 18 28 C 32 24 44 28 50 32 C 56 28 68 24 82 28 L 82 76 C 68 72 56 76 50 80 C 44 76 32 72 18 76 Z" fill="url(#g-onebook)" mask="url(#m-onebook)"/>
 <!-- White Ledger Pages Block -->
-<path d="M 24 34 C 34 31 44 34 50 38 C 56 34 66 31 76 34 L 76 68 C 66 65 56 68 50 72 C 44 68 34 65 24 68 Z" fill="#ffffff" mask="url(#m-onebook)"/>
+<path d="M 24 34 C 34 31 44 34 50 38 C 56 34 66 31 76 34 L 76 68 C 66 65 56 68 50 72 C 44 68 34 65 24 68 Z" fill="var(--brand-knockout, #ffffff)" mask="url(#m-onebook)"/>
 </svg>

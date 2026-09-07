@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="OneSheet">
+  <style>
+    :root { --brand-knockout: #0f172a; --brand-ground: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --brand-knockout: #ffffff; --brand-ground: #0b0f19; }
+    }
+  </style>
 <defs>
   <linearGradient id="g-onesheet" x1="0%" y1="0%" x2="100%" y2="100%">
     <stop offset="0%" stop-color="#4ade80"/>
@@ -14,7 +20,7 @@
   </mask>
 </defs>
 <!-- Full White Spreadsheet Grid Body -->
-<rect x="18" y="18" width="64" height="64" rx="8" fill="#ffffff" mask="url(#m-onesheet)"/>
+<rect x="18" y="18" width="64" height="64" rx="8" fill="var(--brand-knockout, #ffffff)" mask="url(#m-onesheet)"/>
 <!-- Emerald Header Row (Top Section y: 18 to 36) -->
 <path d="M 18 26 C 18 21.5 21.5 18 26 18 L 74 18 C 78.5 18 82 21.5 82 26 L 82 36 L 18 36 Z" fill="url(#g-onesheet)" mask="url(#m-onesheet)"/>
 </svg>

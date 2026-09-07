@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="OneDisplay">
+  <style>
+    :root { --brand-knockout: #0f172a; --brand-ground: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --brand-knockout: #ffffff; --brand-ground: #0b0f19; }
+    }
+  </style>
 <defs>
   <linearGradient id="g-onedisplay" x1="0%" y1="0%" x2="100%" y2="100%">
     <stop offset="0%" stop-color="#60a5fa"/>
@@ -14,5 +20,5 @@
 <!-- 16:9 Display Screen (Masked) -->
 <rect x="16" y="22" width="68" height="44" rx="5" fill="url(#g-onedisplay)" mask="url(#m-onedisplay-screen)"/>
 <!-- Solid White Stand (Completely Uncut) -->
-<path d="M 44 66 L 56 66 L 58 76 L 68 76 L 68 80 L 32 80 L 32 76 L 42 76 Z" fill="#ffffff"/>
+<path d="M 44 66 L 56 66 L 58 76 L 68 76 L 68 80 L 32 80 L 32 76 L 42 76 Z" fill="var(--brand-knockout, #ffffff)"/>
 </svg>

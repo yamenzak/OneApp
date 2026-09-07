@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="OneStorage">
+  <style>
+    :root { --brand-knockout: #0f172a; --brand-ground: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --brand-knockout: #ffffff; --brand-ground: #0b0f19; }
+    }
+  </style>
 <defs>
   <linearGradient id="g-onestorage" x1="0%" y1="0%" x2="100%" y2="100%">
     <stop offset="0%" stop-color="#38bdf8"/>
@@ -14,7 +20,7 @@
 <rect x="20" y="22" width="60" height="14" rx="4" fill="url(#g-onestorage)" mask="url(#m-onestorage)"/>
 <!-- Middle Storage Blade with White NVMe Core -->
 <rect x="20" y="42" width="60" height="16" rx="4" fill="url(#g-onestorage)" mask="url(#m-onestorage)"/>
-<rect x="36" y="45" width="28" height="10" rx="2" fill="#ffffff" mask="url(#m-onestorage)"/>
+<rect x="36" y="45" width="28" height="10" rx="2" fill="var(--brand-knockout, #ffffff)" mask="url(#m-onestorage)"/>
 <!-- Bottom Storage Blade -->
 <rect x="20" y="64" width="60" height="14" rx="4" fill="url(#g-onestorage)" mask="url(#m-onestorage)"/>
 </svg>

@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="OneHR">
+  <style>
+    :root { --brand-knockout: #0f172a; --brand-ground: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --brand-knockout: #ffffff; --brand-ground: #0b0f19; }
+    }
+  </style>
 <defs>
   <linearGradient id="g-onehr" x1="0%" y1="0%" x2="100%" y2="100%">
     <stop offset="0%" stop-color="#fb923c"/>
@@ -16,5 +22,5 @@
 <circle cx="28" cy="66" r="12" fill="url(#g-onehr)" mask="url(#m-onehr)"/>
 <circle cx="72" cy="66" r="12" fill="url(#g-onehr)" mask="url(#m-onehr)"/>
 <!-- Keystone Apex Talent Node (White, Sliced by Twin Cuts) -->
-<circle cx="50" cy="30" r="13" fill="#ffffff" mask="url(#m-onehr)"/>
+<circle cx="50" cy="30" r="13" fill="var(--brand-knockout, #ffffff)" mask="url(#m-onehr)"/>
 </svg>

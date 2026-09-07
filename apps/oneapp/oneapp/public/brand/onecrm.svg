@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="OneCRM">
+  <style>
+    :root { --brand-knockout: #0f172a; --brand-ground: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --brand-knockout: #ffffff; --brand-ground: #0b0f19; }
+    }
+  </style>
 <defs>
   <linearGradient id="g-onecrm" x1="0%" y1="0%" x2="100%" y2="100%">
     <stop offset="0%" stop-color="#c084fc"/>
@@ -13,5 +19,5 @@
 <!-- Purple Pipeline Funnel -->
 <polygon points="18,22 82,22 58,56 58,82 42,74 42,56" fill="url(#g-onecrm)" mask="url(#m-onecrm)"/>
 <!-- White Lead Stream Vector -->
-<circle cx="50" cy="38" r="8" fill="#ffffff" mask="url(#m-onecrm)"/>
+<circle cx="50" cy="38" r="8" fill="var(--brand-knockout, #ffffff)" mask="url(#m-onecrm)"/>
 </svg>
