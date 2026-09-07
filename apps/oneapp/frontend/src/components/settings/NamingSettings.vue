@@ -83,14 +83,30 @@
             data-slot="series-row"
             class="flex items-center gap-3 border-b border-outline-gray-1 py-2"
           >
-            <span class="min-w-0 flex-1 truncate font-mono text-p-sm text-ink-gray-8">
-              {{ one.prefix }}
+            <!--
+              The prefix the counter is kept under, and the template it came
+              from underneath it. Not the other way round: `HR-ATT-.YYYY.-`
+              counts under `HR-ATT-2026-`, so a row that leads with the template
+              is a row whose number belongs to something else — and next January
+              this line is a different counter that starts at nothing.
+            -->
+            <span class="flex min-w-0 flex-1 flex-col">
+              <span class="truncate font-mono text-p-sm text-ink-gray-8">
+                {{ one.counted || one.prefix }}
+              </span>
+              <span
+                v-if="one.counted && one.counted !== one.prefix"
+                class="truncate text-p-xs text-ink-gray-5"
+              >
+                {{ __('from {0}', [one.prefix]) }}
+              </span>
             </span>
             <Badge v-if="one.default" :label="__('Default')" theme="blue" variant="subtle" />
-            <span class="text-p-xs text-ink-gray-5">{{ __('at') }}</span>
+            <span class="text-p-xs text-ink-gray-5">{{ __('Last used') }}</span>
             <FormControl
               type="number"
               class="w-28"
+              :aria-label="__('Last id used under {0}', [one.counted || one.prefix])"
               :model-value="counters[one.prefix] ?? one.current ?? 0"
               @update:model-value="counters[one.prefix] = $event"
             />
@@ -130,9 +146,9 @@ import { __ } from '@/lib/runtime/translate'
 
 // Said under the textarea. Two sentences rather than one, because the second
 // case is the one people will not expect and the first is the one they will.
-const EDITABLE = __(
-  'One per line. The first is what new records use. `#` is a digit, so ACME-.YYYY.-.##### counts up within the year.',
-)
+// One literal, however long: the extractor reads the string in the call, so a
+// sentence built with `+` is a sentence that never reaches the catalogue.
+const EDITABLE = __('One per line, and the first is what new records use. A run of # is where the number goes and .YYYY. is the year, so ACME-.YYYY.-.##### starts counting again each January.')
 const FIXED = __(
   'This app names its own records. The series is part of what it is, so it is shown rather than set — the counter under it can still be moved.',
 )

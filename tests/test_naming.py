@@ -141,3 +141,69 @@ def test_a_series_with_no_prefixes_is_refused(naming, stub_frappe, monkeypatch):
 
 	with pytest.raises(stub_frappe.ValidationError):
 		naming.set_options("Sales Invoice", ["   ", ""])
+
+
+def test_a_row_says_which_prefix_the_counter_is_actually_under(naming, stub_frappe,
+                                                               monkeypatch):
+	"""`HR-ATT-.YYYY.-` counts under `HR-ATT-2026-`.
+
+	Frappe keys `Series` on the *resolved* prefix, so a template with a year in
+	it has a counter per year and next January's starts at nothing. A page that
+	puts the template beside the number is putting a number there that belongs
+	to a different key — and the person who moves it has moved this year's
+	without being told which year. So the row leads with what is counted and
+	names the template underneath.
+	"""
+	declare(stub_frappe, "Attendance", series=True)
+	stub_frappe._meta["Attendance"].get_field("naming_series").options = "HR-ATT-.YYYY.-"
+
+	class Series:
+		def __init__(self, prefix):
+			self.prefix = prefix
+
+		def get_prefix(self):
+			return self.prefix.replace(".YYYY.", "2026")
+
+		def get_current_value(self):
+			return 20229
+
+	monkeypatch.setitem(
+		__import__("sys").modules,
+		"frappe.model.naming",
+		types.SimpleNamespace(NamingSeries=Series),
+	)
+
+	row = naming.options("Attendance")[0]
+	assert row["prefix"] == "HR-ATT-.YYYY.-"
+	assert row["counted"] == "HR-ATT-2026-"
+	assert row["current"] == 20229
+
+
+def test_a_prefix_that_cannot_be_resolved_still_names_itself(naming, stub_frappe,
+                                                             monkeypatch):
+	"""A template that reads a field off the document has nothing to read here.
+
+	It is shown without a counter rather than dropped — and `counted` falls back
+	to the template, so the row has a name either way.
+	"""
+	declare(stub_frappe, "Quotation", series=True)
+	stub_frappe._meta["Quotation"].get_field("naming_series").options = "{customer}-.####"
+
+	class Angry:
+		def __init__(self, prefix):
+			pass
+
+		def get_prefix(self):
+			raise ValueError("no document to read from")
+
+		get_current_value = get_prefix
+
+	monkeypatch.setitem(
+		__import__("sys").modules,
+		"frappe.model.naming",
+		types.SimpleNamespace(NamingSeries=Angry),
+	)
+
+	row = naming.options("Quotation")[0]
+	assert row["counted"] == "{customer}-.####"
+	assert row["current"] is None

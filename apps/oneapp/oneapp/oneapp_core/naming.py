@@ -145,16 +145,24 @@ def options(doctype: str) -> list[dict]:
 
 	found = []
 	for prefix in declared:
+		# The prefix the counter is actually kept under, which is not always the
+		# one that was typed. `HR-ATT-.YYYY.-` counts under `HR-ATT-2026-`, and a
+		# separate counter starts at zero in January — so a page that shows the
+		# template beside the number is showing a number that belongs to
+		# something else, and somebody moving it has moved this year's without
+		# being told which year.
 		try:
+			counted = NamingSeries(prefix).get_prefix()
 			current = NamingSeries(prefix).get_current_value()
 		except Exception:
 			# A template whose prefix depends on a field cannot be resolved
 			# without a document, and a settings page is not the place to
 			# invent one. Shown without a counter rather than dropped.
 			frappe.clear_last_message()
-			current = None
+			counted, current = prefix, None
 		found.append({
 			"prefix": prefix,
+			"counted": counted,
 			"current": current,
 			"default": prefix == default,
 		})

@@ -1604,6 +1604,12 @@ msgstr "آخر فحص"
 msgid "Last edited by"
 msgstr "آخر تعديل بواسطة"
 
+msgid "Last id used under {0}"
+msgstr "آخر معرّف مستخدم ضمن {0}"
+
+msgid "Last used"
+msgstr "آخر استخدام"
+
 msgid "Last used {0}"
 msgstr "آخر استخدام {0}"
 
@@ -2379,11 +2385,13 @@ msgid ""
 msgstr "تُحفظ نسخة عند أول حفظ، ثم كل بضع دقائق من العمل بعد ذلك."
 
 msgid ""
-"One per line. The first is what new records use. `#` is a digit, so "
-"ACME-.YYYY.-.##### counts up within the year."
+"One per line, and the first is what new records use. A run of # is where "
+"the number goes and .YYYY. is the year, so ACME-.YYYY.-.##### starts "
+"counting again each January."
 msgstr ""
-"واحد في كل سطر. الأول هو ما تستخدمه السجلات الجديدة. `#` رقم، لذا فإن "
-"ACME-.YYYY.-.##### يتصاعد داخل السنة."
+"سطر لكل واحدة، والأولى هي ما تستخدمه السجلات الجديدة. سلسلة من # هي موضع "
+"الرقم و.YYYY. هي السنة، لذا تبدأ ACME-.YYYY.-.##### العدّ من جديد كل "
+"يناير."
 
 msgid "One permission"
 msgstr "صلاحية واحدة"

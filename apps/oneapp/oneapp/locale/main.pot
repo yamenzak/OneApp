@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 00:50+0000\n"
-"PO-Revision-Date: 2026-09-07 00:50+0000\n"
+"POT-Creation-Date: 2026-09-07 05:17+0000\n"
+"PO-Revision-Date: 2026-09-07 05:17+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -60,11 +60,11 @@ msgstr ""
 msgid "A comment needs something in it."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:225
+#: oneapp/oneapp_core/naming.py:233
 msgid "A counter cannot go below zero."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:223
+#: oneapp/oneapp_core/naming.py:231
 msgid "A counter is a whole number."
 msgstr ""
 
@@ -178,7 +178,7 @@ msgstr ""
 msgid "A record needs an id."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:194
+#: oneapp/oneapp_core/naming.py:202
 msgid "A record needs at least one series to be named by."
 msgstr ""
 
@@ -1652,7 +1652,7 @@ msgid "Days"
 msgstr ""
 
 #: frontend/src/components/docs/toolbar.js:78
-#: frontend/src/components/settings/NamingSettings.vue:89
+#: frontend/src/components/settings/NamingSettings.vue:104
 #: frontend/src/components/settings/PrintingSettings.vue:53
 #: frontend/src/components/settings/PrintingSettings.vue:99
 msgid "Default"
@@ -2945,6 +2945,14 @@ msgstr ""
 msgid "Last edited by"
 msgstr ""
 
+#: frontend/src/components/settings/NamingSettings.vue:109
+msgid "Last id used under {0}"
+msgstr ""
+
+#: frontend/src/components/settings/NamingSettings.vue:105
+msgid "Last used"
+msgstr ""
+
 #: frontend/src/components/settings/SecuritySettings.vue:75
 msgid "Last used {0}"
 msgstr ""
@@ -3480,7 +3488,7 @@ msgstr ""
 msgid "Moved {0} to Trash"
 msgstr ""
 
-#: frontend/src/components/settings/NamingSettings.vue:105
+#: frontend/src/components/settings/NamingSettings.vue:121
 msgid "Moving a counter backwards will re-issue ids that already exist. The change is recorded against the series."
 msgstr ""
 
@@ -4292,8 +4300,8 @@ msgstr ""
 msgid "One is kept the first time this is saved, and every few minutes of work after that."
 msgstr ""
 
-#: frontend/src/components/settings/NamingSettings.vue:133
-msgid "One per line. The first is what new records use. `#` is a digit, so ACME-.YYYY.-.##### counts up within the year."
+#: frontend/src/components/settings/NamingSettings.vue:151
+msgid "One per line, and the first is what new records use. A run of # is where the number goes and .YYYY. is the year, so ACME-.YYYY.-.##### starts counting again each January."
 msgstr ""
 
 #: frontend/src/screens/account/Roles.vue:69
@@ -5596,7 +5604,7 @@ msgstr ""
 msgid "Session"
 msgstr ""
 
-#: frontend/src/components/settings/NamingSettings.vue:98
+#: frontend/src/components/settings/NamingSettings.vue:114
 #: frontend/src/lib/screen/fields.js:1505
 #: frontend/src/screens/ops/Readiness.vue:112
 msgid "Set"
@@ -6437,7 +6445,7 @@ msgstr ""
 msgid "That screen belongs to someone else."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:264
+#: oneapp/oneapp_core/naming.py:272
 msgid "That series would not generate a name"
 msgstr ""
 
@@ -6821,7 +6829,7 @@ msgstr ""
 msgid "This"
 msgstr ""
 
-#: frontend/src/components/settings/NamingSettings.vue:136
+#: frontend/src/components/settings/NamingSettings.vue:152
 msgid "This app names its own records. The series is part of what it is, so it is shown rather than set — the counter under it can still be moved."
 msgstr ""
 
@@ -7936,7 +7944,7 @@ msgstr ""
 msgid "You cannot amend this."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:171
+#: oneapp/oneapp_core/naming.py:179
 msgid "You cannot change how {0} is named."
 msgstr ""
 
@@ -8129,10 +8137,6 @@ msgstr ""
 msgid "assistant"
 msgstr ""
 
-#: frontend/src/components/settings/NamingSettings.vue:90
-msgid "at"
-msgstr ""
-
 #: frontend/src/screens/account/Overview.vue:101
 msgid "available"
 msgstr ""
@@ -8169,6 +8173,7 @@ msgid "found"
 msgstr ""
 
 #: frontend/src/components/settings/ImportSettings.vue:110
+#: frontend/src/components/settings/NamingSettings.vue:101
 msgid "from {0}"
 msgstr ""
 
@@ -8462,7 +8467,7 @@ msgstr ""
 msgid "{0} is already running."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:187
+#: oneapp/oneapp_core/naming.py:195
 msgid "{0} is named by its own scheme, which is part of the app rather than a setting. Its counter can still be moved."
 msgstr ""
 
@@ -8506,7 +8511,7 @@ msgstr ""
 msgid "{0} is not a print style."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:218
+#: oneapp/oneapp_core/naming.py:226
 msgid "{0} is not a series on {1}."
 msgstr ""
 
@@ -8530,7 +8535,7 @@ msgstr ""
 msgid "{0} is not named after a field, so it cannot be filled in from a value."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:167
+#: oneapp/oneapp_core/naming.py:175
 msgid "{0} is not named by a series here."
 msgstr ""
 
