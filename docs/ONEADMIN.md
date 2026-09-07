@@ -197,9 +197,15 @@ each tenant site was being told to create an `OneSpace Operator` role with
 permissions over Tenant, Subscription and the credit ledger.
 
 Beside it, `entitlements/account.py` is the customer's own Space on the same
-site: Overview, Apps, Billing, Plan, People, Roles, Domain. No doctypes and no
-grant — every screen is a component calling whitelisted methods that resolve the
-workspace from the session.
+site: Overview, Apps, Billing, Plan. No doctypes and no grant — every screen is
+a component calling whitelisted methods that resolve the workspace from the
+session.
+
+It had three more — People, Roles, Domain — and they are workspace settings
+tabs now, relayed through `oneapp/oneapp_core/account.py`. The four that stayed
+are facts about an account that owns several workspaces; the three that moved
+were facts about one, and their reader had to change address to edit them.
+`docs/MARKETPLACE.md` §2 is the split and why it stops there.
 
 ### No desk
 

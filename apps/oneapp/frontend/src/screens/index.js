@@ -23,16 +23,14 @@ export const APP_COMPONENTS = {
   'onespace-ops/press': () => import('./ops/FrappeCloud.vue'),
   'onespace-ops/tenant': () => import('./ops/Tenant.vue'),
 
-  // The customer's account: one workspace's overview, billing and people
-  // rather than a list of records. It lives on the control plane because that
-  // is the only place that knows a person owns three tenancies.
+  // The customer's account: the facts about an account that owns several
+  // workspaces rather than about any one of them. People, Roles and Domain
+  // used to be here and are now settings tabs inside the workspace they are
+  // about — `docs/MARKETPLACE.md` §2 is the dividing question.
   'onespace-account/overview': () => import('./account/Overview.vue'),
   'onespace-account/apps': () => import('./account/Apps.vue'),
   'onespace-account/billing': () => import('./account/Billing.vue'),
   'onespace-account/plan': () => import('./account/Plan.vue'),
-  'onespace-account/people': () => import('./account/People.vue'),
-  'onespace-account/roles': () => import('./account/Roles.vue'),
-  'onespace-account/domain': () => import('./account/Domain.vue'),
 }
 
 /**

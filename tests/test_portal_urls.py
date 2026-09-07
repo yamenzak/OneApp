@@ -127,7 +127,7 @@ def test_the_account_space_is_the_one_that_is_declared(portal):
 	assert portal.ACCOUNT.endswith(f"/{account.SPACE_CODE}")
 
 
-@pytest.mark.parametrize("section", ["overview", "billing", "plan", "people", "domain"])
+@pytest.mark.parametrize("section", ["overview", "apps", "billing", "plan"])
 def test_a_linked_section_is_a_screen_the_space_declares(portal, section):
 	# `screen` is resolved against the Space's own screens, so a section this
 	# file names but `account.py` does not is the same dead end as a bad route —

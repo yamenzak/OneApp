@@ -1,19 +1,26 @@
 """The customer's account, declared as a Space.
 
-`/portal/account` is the other half of what `oneapp_control` served: overview,
-billing, plan, people, domain. Almost none of it is a list of records — it is
-*one* workspace seen six ways — so it is component screens by nature rather
-than by exception. That is the right shape for it rather than a compromise: the
-Space runtime is what gives it the rail, the mobile shell, theming, toasts and
-every future improvement, and the screens themselves stay bespoke because their
-content is.
+`/portal/account` is the other half of what `oneapp_control` served. Almost none
+of it is a list of records — it is *one account* seen four ways — so it is
+component screens by nature rather than by exception. That is the right shape
+for it rather than a compromise: the Space runtime is what gives it the rail,
+the mobile shell, theming, toasts and every future improvement, and the screens
+themselves stay bespoke because their content is.
 
-It lives on the control plane, and that is the whole architectural point. A
-tenant site's HMAC secret proves it is *itself* and nothing more, so a tenant
-can never show you the other two tenancies you own. The control plane is the one
-place that knows a person owns three, which is why the account area belongs here
-— not as a stepping stone to putting it inside a workspace, but as the
-destination.
+It lives on the control plane, and half of that is the whole architectural
+point. A tenant site's HMAC secret proves it is *itself* and nothing more, so a
+tenant can never show you the other two tenancies you own. The control plane is
+the one place that knows a person owns three.
+
+That argument is about **billing** — one card pays for three workspaces — and
+about Plan and Overview, which are the same kind of fact. It was read for a
+while as an argument about the whole area, and it is not: People, Roles and
+Domain are facts about *one* workspace, and a person editing them had to leave
+the workspace they were editing to do it. They are settings tabs inside
+OneSpace now, relayed through `oneapp/oneapp_core/account.py` as the person who
+asked. `docs/MARKETPLACE.md` §2 is the dividing question — not "is this
+administration?" but "whose fact is it?" — and the reason it is worth keeping
+written down is that the pull is always toward moving one more.
 
 Read by `install.py`, beside the operator console, and owned by this file for
 the same reason.
@@ -34,12 +41,6 @@ SCREENS = (
 	("apps", "Apps", "lucide-package"),
 	("billing", "Billing", "lucide-receipt"),
 	("plan", "Plan", "lucide-briefcase"),
-	("people", "People", "lucide-users"),
-	# Beside People rather than inside it: a role is a thing that exists whether
-	# or not anybody holds it, and building one is a different sitting from
-	# handing one out.
-	("roles", "Roles", "lucide-user-round"),
-	("domain", "Domain", "lucide-store"),
 )
 
 
@@ -59,7 +60,7 @@ def manifest() -> dict:
 		# does not see this and a customer cannot resolve the console by name.
 		"availability": "General",
 		"is_active": 1,
-		"description": "Your workspaces, what they cost, and who is in them.",
+		"description": "Your workspaces, and what they cost.",
 		"screens": [
 			{
 				"screen": screen,

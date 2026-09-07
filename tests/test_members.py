@@ -241,8 +241,28 @@ def declared_and_registered(screen: str) -> None:
     )
 
 
-def test_the_team_screen_is_declared_and_reachable():
-    declared_and_registered("people")
+PEOPLE_PANEL = (
+    ROOT / "apps/oneapp/frontend/src/components/settings/PeopleSettings.vue"
+)
+
+
+def test_the_team_screen_moved_into_the_workspace_it_is_about():
+    """Who is in *this* workspace is a fact about this workspace, so it is a
+    settings tab rather than a screen at another address (docs/MARKETPLACE.md
+    §2). The account Space keeps the facts about an account that owns several.
+
+    Guarded from both ends: a copy left behind on the control plane is two
+    pages that disagree the first time one of them is changed."""
+    assert "people" not in account_screens()
+    assert not (ACCOUNT_SCREENS / "People.vue").exists()
+
+    from oneapp.oneapp_core import tabs
+
+    assert "people" in {tab["key"] for tab in tabs.TABS}
+    shell = (
+        ROOT / "apps/oneapp/frontend/src/components/settings/SettingsShell.vue"
+    ).read_text()
+    assert "people: PeopleSettings" in shell
 
 
 def test_the_page_says_an_invite_is_not_immediate():
@@ -250,8 +270,8 @@ def test_the_page_says_an_invite_is_not_immediate():
     the page owes them a duration instead. Saying either is the difference
     between 'slow' and 'broken' for somebody watching a colleague fail to sign
     in; saying neither is the failure this guards."""
-    page = (ACCOUNT_SCREENS / "People.vue").read_text()
-    assert "within a few minutes" in page
+    page = PEOPLE_PANEL.read_text()
+    assert "about fifteen minutes" in page
 
 
 # --------------------------------------------------------------------------- #
