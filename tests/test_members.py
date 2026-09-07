@@ -103,10 +103,16 @@ def test_the_owner_cannot_be_removed():
     assert "owner cannot be removed" in function(CUSTOMER, "remove_member")
 
 
-def test_member_endpoints_are_owner_scoped():
-    """Every one goes through the single ownership check."""
+def test_member_endpoints_are_admin_scoped():
+    """Every one resolves the workspace, and through the wider of the two.
+
+    Managing people is what `Tenant Member.access` says an Admin is for — "the
+    owner's role, without being the billing contact" — and the narrow check
+    answered "Workspace not found" for every admin who was not also the person
+    paying. Which door each endpoint uses is guarded whole in
+    `tests/test_customer_isolation.py`; this is the three that are people."""
     for name in ("members", "invite_member", "remove_member"):
-        assert "require_workspace(workspace)" in function(CUSTOMER, name), name
+        assert "require_workspace_admin(workspace)" in function(CUSTOMER, name), name
 
 
 # --------------------------------------------------------------------------- #

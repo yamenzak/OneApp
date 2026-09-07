@@ -690,17 +690,26 @@ def _header(name: str) -> str | None:
 # assert it about somebody else's workspace.
 
 def _asked_by(tenant_name: str, data: dict) -> str:
-	"""The person the site says is asking, checked against who owns this.
+	"""The person the site says is asking, checked against who may administer it.
 
 	Refuses rather than falling back to the owner: an unsigned assertion that
 	quietly becomes "the owner" is a bug that grants rather than one that
 	blocks.
+
+	The owner, or an Admin member — the same line `require_workspace_admin`
+	draws, and drawn twice on purpose. This is the outer door and that is the
+	inner one; a door that opened wider than the room behind it would be a door
+	whose refusals are the room's rather than its own, which is how a widened
+	allow-list quietly widens the check as well.
 	"""
 	user = (data.get("as_user") or "").strip()
 	if not user:
 		frappe.throw(_("No person named."), frappe.PermissionError)
 
-	if frappe.db.get_value("Tenant", tenant_name, "owner_user") != user:
+	if frappe.db.get_value("Tenant", tenant_name, "owner_user") != user and not frappe.db.exists(
+		"Tenant Member",
+		{"parent": tenant_name, "parenttype": "Tenant", "email": user, "access": "Admin"},
+	):
 		# The same words the customer surface uses, for the same reason: not
 		# confirming which workspace names exist or who holds them.
 		frappe.throw(_("Workspace not found."), frappe.PermissionError)

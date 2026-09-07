@@ -5,12 +5,20 @@ One account may own several workspaces, so an endpoint has to take a workspace
 name — which makes "no parameter at all" unavailable as a defence. The rule
 instead is:
 
-    every endpoint touching a workspace goes through require_workspace(),
-    which verifies ownership before returning anything.
+    every endpoint touching a workspace goes through require_workspace() or
+    require_workspace_admin(), which verify who is asking before returning
+    anything.
 
-Concentrating it in one function is what makes it auditable. These tests read the
-source rather than executing it, because what is asserted is a property of the
-interface: they hold regardless of what any function body does.
+Two resolvers rather than one, and the line between them is the point:
+`require_workspace` is the owner and nobody else, and is what anything that
+spends money uses; `require_workspace_admin` also admits an Admin member, which
+is what `Tenant Member.access` says an Admin is — "the owner's role, without
+being the billing contact". A flag on one function would be a flag somebody
+passes wrong on the endpoint that moves money.
+
+Concentrating it in two named functions is what makes it auditable. These tests
+read the source rather than executing it, because what is asserted is a property
+of the interface: they hold regardless of what any function body does.
 """
 
 import ast
@@ -58,24 +66,74 @@ def test_workspace_endpoints_take_a_workspace_not_a_tenant(endpoints):
 			)
 
 
-def test_every_workspace_endpoint_verifies_ownership(endpoints):
+#: The endpoints an Admin member may reach — exactly the allow-list the tenant
+#: relay carries, and read back from it below so the two cannot drift.
+ADMIN_MAY_REACH = {
+	"members", "invite_member", "remove_member", "set_member_roles",
+	"roles", "save_role", "delete_role",
+	"domain_instructions", "request_custom_domain",
+	"marketplace", "enable_space",
+}
+
+
+def test_every_workspace_endpoint_verifies_who_is_asking(endpoints):
 	"""An endpoint taking a workspace but never checking it owns nothing."""
 	for node, _decorator in endpoints:
 		args = [a.arg for a in node.args.args] + [a.arg for a in node.args.kwonlyargs]
 		if "workspace" not in args:
 			continue
-		assert "require_workspace(" in ast.unparse(node), (
-			f"{node.name}() takes a workspace but never calls require_workspace()"
+		source = ast.unparse(node)
+		assert "require_workspace(" in source or "require_workspace_admin(" in source, (
+			f"{node.name}() takes a workspace but never resolves it"
 		)
 
 
-def test_ownership_failure_does_not_disclose_existence():
+def test_only_the_named_endpoints_admit_an_admin(endpoints):
+	"""The wider door opens onto exactly the rooms it was widened for.
+
+	Anything that spends — checkout, a plan change, a credit pack — is the
+	owner's, and the failure this guards is the quiet one: a new endpoint
+	written by copying the one above it, which happened to be a People endpoint.
+	"""
+	for node, _decorator in endpoints:
+		if "require_workspace_admin(" not in ast.unparse(node):
+			continue
+		assert node.name in ADMIN_MAY_REACH, (
+			f"{node.name}() admits an Admin member. If that is right, say so in "
+			"ADMIN_MAY_REACH and in the tenant relay's allow-list; if it moves "
+			"money, it wants require_workspace()"
+		)
+
+
+def test_the_relay_allows_exactly_what_admits_an_admin():
+	relay = (
+		ROOT / "apps/oneapp_control/oneapp_control/api/tenant.py"
+	).read_text()
+	body = relay[relay.index("def _may_be_asked"):relay.index("def workspace_admin")]
+	named = {
+		line.split("customer.")[1].strip().rstrip(",")
+		for line in body.splitlines() if "customer." in line and ":" in line
+	}
+	assert named == ADMIN_MAY_REACH, (
+		"a workspace reaches these through the relay and nothing else does, so "
+		"the two lists are the same list"
+	)
+
+
+@pytest.mark.parametrize("resolver", ["require_workspace(", "require_workspace_admin("])
+def test_a_refusal_does_not_disclose_existence(resolver):
 	"""A customer must not be able to probe which workspace names are taken, so
-	'not yours' and 'does not exist' return the same error."""
+	'not yours' and 'does not exist' return the same error — and so does 'you
+	are a member here but not an admin'."""
 	source = CUSTOMER_API.read_text()
-	check = source[source.index("def require_workspace("):source.index("@frappe.whitelist()")]
-	assert check.count("Workspace not found") == 1
-	assert "does not exist" not in check
+	at = source.index("def " + resolver.rstrip("("))
+	end = source.index("\ndef ", at + 1)
+	# Below the docstring: one of these explains itself by quoting the words,
+	# and a count over the whole function would be counting the explanation.
+	body = source[at:end]
+	body = body[body.index('"""', body.index('"""') + 3):]
+	assert body.count("Workspace not found") == 1
+	assert "does not exist" not in body
 
 
 def test_no_customer_endpoint_is_guest_accessible(endpoints):
