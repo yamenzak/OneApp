@@ -100,31 +100,28 @@
         <Dropdown :options="entryOptions" align="start" class="w-full">
           <Button
             variant="ghost"
+            data-slot="space-switcher"
             class="!h-8 w-full !justify-start !px-1"
             :tooltip="__('Switch space')"
           >
             <template #prefix>
               <SpaceFace :space="workspace" size="lg" class="size-6" />
             </template>
-            <span
-              v-if="!sidebarCollapsed"
-              class="min-w-0 flex-1 truncate text-start text-base text-ink-gray-8"
-            >
-              {{ workspace.label || entriesLabel }}
-            </span>
             <!--
-              In the label slot rather than `icon-right`, and after a `flex-1`
-              span. Button lays its prefix, label and right icon out as one
-              flex row and sizes itself to them, so the chevron sat against the
-              last letter of a name however wide the corner was; the span takes
-              the slack and pushes it to the end, which is where a combobox
-              puts its arrows.
+              One row inside the label slot rather than `icon-right`. Button
+              lays its prefix, label and right icon out as a flex column's
+              worth of children and sizes itself to them, so the chevron sat
+              against the last letter of the name however wide the corner was —
+              and, once the label was a `flex-1` span, wrapped onto a second
+              line. A row of its own, with the name taking the slack, puts the
+              arrows at the end, which is where a combobox keeps them.
             -->
-            <Icon
-              v-if="!sidebarCollapsed"
-              name="lucide-chevrons-up-down"
-              class="ms-1 size-4 shrink-0 text-ink-gray-5"
-            />
+            <span v-if="!sidebarCollapsed" class="flex w-full min-w-0 items-center gap-1">
+              <span class="min-w-0 flex-1 truncate text-start text-base text-ink-gray-8">
+                {{ workspace.label || entriesLabel }}
+              </span>
+              <Icon name="lucide-chevrons-up-down" class="size-4 shrink-0 text-ink-gray-5" />
+            </span>
           </Button>
         </Dropdown>
       </div>

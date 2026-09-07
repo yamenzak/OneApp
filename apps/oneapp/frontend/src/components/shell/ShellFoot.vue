@@ -22,13 +22,18 @@
       </div>
 
       <div class="flex items-center gap-1" :class="collapsed ? 'flex-col' : ''">
-        <UserMenu
-          class="min-w-0 flex-1"
-          :name="fullName"
-          :email="email"
-          :avatar="userImage"
-          :extra="accountRows"
-        />
+        <!-- Wrapped rather than given the class: UserMenu's own root is a
+             Dropdown carrying `w-full`, so a `flex-1` on it fought that and
+             the bell beside it was pushed out of a column that hides its own
+             overflow. -->
+        <div class="min-w-0 flex-1">
+          <UserMenu
+            :name="fullName"
+            :email="email"
+            :avatar="userImage"
+            :extra="accountRows"
+          />
+        </div>
         <NotificationBell />
       </div>
 
