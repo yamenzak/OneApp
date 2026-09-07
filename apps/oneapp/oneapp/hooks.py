@@ -243,4 +243,11 @@ after_migrate = [
 # shape for email and needs a frequency preference we have not built — so a
 # follow is an in-app subscription and says so, rather than quietly filling an
 # inbox. The digest is left alone: `User.document_follow_notify` stays 0.
-notification_skip_email_types = ["Workspace", "Following"]
+# And an `Alert` is emailed by the rule that sent it. A rule set to "By email"
+# calls `send_an_email`, which builds a Communication and sends — it never asks
+# `Notification Settings`, because an alert an admin wrote about an overdue
+# invoice is not a thing the recipient opted into. That is Frappe's call and the
+# right one; what would be wrong is a switch in the panel that looks like it
+# turns those emails off. So the app half is a real choice and the email half
+# says who owns it.
+notification_skip_email_types = ["Workspace", "Following", "Alert"]

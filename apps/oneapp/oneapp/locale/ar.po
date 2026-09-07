@@ -56,6 +56,9 @@ msgstr "لا يمكن أن تكون ترويسة معطّلة هي الافتر�
 msgid "A document cannot renew itself."
 msgstr "لا يمكن للمستند أن يجدّد نفسه."
 
+msgid "A document whose expiry date is coming up."
+msgstr "مستند يقترب تاريخ انتهائه."
+
 msgid ""
 "A file path or URL. Referenced from the header above, or used on its "
 "own."
@@ -742,6 +745,9 @@ msgstr "تغيير {0} سجل"
 
 msgid "Change {0} records"
 msgstr "تغيير {0} سجلات"
+
+msgid "Changes to a record you are following."
+msgstr "تغييرات على سجل تتابعه."
 
 msgid "Chart of accounts"
 msgstr "دليل الحسابات"
@@ -2601,6 +2607,9 @@ msgstr "الحمولة"
 msgid "Payment received — your balance updates in a moment"
 msgstr "تم استلام الدفعة — يتحدث رصيدك بعد لحظات"
 
+msgid "Payments, quotas and anything about the account itself."
+msgstr "المدفوعات والحصص وكل ما يخص الحساب نفسه."
+
 msgid "People"
 msgstr "الأشخاص"
 
@@ -2880,6 +2889,9 @@ msgstr "تمت إزالة القاعدة"
 
 msgid "Rule saved"
 msgstr "تم حفظ القاعدة"
+
+msgid "Rules this workspace wrote about its own records."
+msgstr "قواعد كتبتها مساحة العمل هذه عن سجلاتها."
 
 msgid "Run"
 msgstr "تشغيل"
@@ -4442,6 +4454,15 @@ msgstr "ما تُبلَّغ به، وكيف."
 
 msgid "When"
 msgstr "متى"
+
+msgid "When somebody gives you a record to deal with."
+msgstr "عندما يسند إليك أحدهم سجلا للتعامل معه."
+
+msgid "When somebody shares a record or a file with you."
+msgstr "عندما يشاركك أحدهم سجلا أو ملفا."
+
+msgid "When somebody writes your name in a comment."
+msgstr "عندما يذكر أحدهم اسمك في تعليق."
 
 msgid ""
 "When the last warning went out. Kept so a daily job warns once and not "

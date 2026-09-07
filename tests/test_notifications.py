@@ -399,8 +399,37 @@ def test_following_never_emails(notifications):
 	import pathlib
 
 	hooks = pathlib.Path("apps/oneapp/oneapp/hooks.py").read_text()
-	assert 'notification_skip_email_types = ["Workspace", "Following"]' in hooks
+	assert '"Following"' in _skip_line(hooks)
 	assert notifications.FOLLOW_TYPE == "Following"
+
+
+def _skip_line(hooks: str) -> str:
+	"""The `notification_skip_email_types` line, whatever is on it.
+
+	Read rather than matched whole: the list grows, and a test that pins the
+	exact literal fails on the next kind added for a reason that has nothing to
+	do with what it is checking.
+	"""
+	for line in hooks.splitlines():
+		if line.startswith("notification_skip_email_types"):
+			return line
+	raise AssertionError("notification_skip_email_types is not in hooks.py")
+
+
+def test_an_alert_is_emailed_by_the_rule_that_sent_it(notifications):
+	"""So the panel offers the app half and not the email half.
+
+	`Notification.send_an_email` builds a Communication and sends it — it never
+	reads `Notification Settings`, because an alert an admin wrote about an
+	overdue invoice is not a thing the recipient opted into. That is the
+	framework's call and the right one. What would be wrong is a switch here
+	that looks like it turns those emails off.
+	"""
+	import pathlib
+
+	hooks = pathlib.Path("apps/oneapp/oneapp/hooks.py").read_text()
+	assert '"Alert"' in _skip_line(hooks)
+	assert notifications.ALERT_TYPE == "Alert"
 
 
 def test_a_save_nobody_is_following_costs_one_query(notifications, stub_frappe, monkeypatch):
@@ -447,8 +476,12 @@ def test_a_save_nobody_is_following_costs_one_query(notifications, stub_frappe, 
 def test_every_kind_says_what_it_is(notifications):
 	"""A bare noun is legible to whoever wrote it and a guess to everybody else."""
 	for name, spec in notifications.KINDS.items():
-		assert spec["about"], f"{name} is declared with nothing to say about it"
-		assert spec["about"].endswith("."), f"{name}: {spec['about']}"
+		# `str()` because these are declared with `_lt` — lazy, so that a
+		# module-level sentence is not frozen in whatever language the worker
+		# booted in.
+		about = str(spec["about"])
+		assert about, f"{name} is declared with nothing to say about it"
+		assert about.endswith("."), f"{name}: {about}"
 
 
 def test_an_undeclared_kind_cannot_be_sent(notifications, monkeypatch):

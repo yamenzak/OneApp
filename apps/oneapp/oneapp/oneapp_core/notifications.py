@@ -24,7 +24,7 @@ Two things are ours, and they are the two the framework has no answer for:
 """
 
 import frappe
-from frappe import _
+from frappe import _, _lt
 from frappe.utils import strip_html
 
 from oneapp.oneapp_core import spaceview, sync
@@ -223,8 +223,15 @@ def _shaped(row: dict, people: dict, routes: dict) -> dict:
 KINDS: dict[str, dict] = {}
 
 
-def kind(name: str, about: str, *, ours: bool = True) -> str:
-	"""Declare a notification kind, and hand back its name to send with."""
+def kind(name: str, about, *, ours: bool = True) -> str:
+	"""Declare a notification kind, and hand back its name to send with.
+
+	`about` is `_lt` rather than `_`: these are module-level, so a `_()` here
+	would resolve once at import — in whatever language the first worker
+	happened to boot in — and every reader would get that one. `_lt` is
+	Frappe's lazy translation, is in its babel keyword map, and resolves when
+	`preferences` reads it, per request.
+	"""
 	KINDS[name] = {"name": name, "about": about, "ours": ours}
 	return name
 
@@ -235,27 +242,37 @@ def kind(name: str, about: str, *, ours: bool = True) -> str:
 # sentence, because a switch labelled with a bare noun is legible to whoever
 # built it and a guess for everybody else.
 ASSIGNMENT_TYPE = kind(
-	"Assignment", "When somebody gives you a record to deal with.", ours=False)
+	"Assignment", _lt("When somebody gives you a record to deal with."), ours=False)
 MENTION_TYPE = kind(
-	"Mention", "When somebody writes your name in a comment.", ours=False)
+	"Mention", _lt("When somebody writes your name in a comment."), ours=False)
 SHARE_TYPE = kind(
-	"Share", "When somebody shares a record or a file with you.", ours=False)
+	"Share", _lt("When somebody shares a record or a file with you."), ours=False)
 
 # What the workspace itself has to say: a payment that failed, a quota reached,
 # a backup restored. Not a record somebody touched — the others are all about a
 # document, and this one is about the account the documents live in.
 WORKSPACE_TYPE = kind(
-	"Workspace", "Payments, quotas and anything about the account itself.")
+	"Workspace", _lt("Payments, quotas and anything about the account itself."))
 
 # What a document you follow has to say. Frappe has no type for this because
 # Frappe never notifies a follower in-app — see the Following section below.
-FOLLOW_TYPE = kind("Following", "Changes to a record you are following.")
+FOLLOW_TYPE = kind("Following", _lt("Changes to a record you are following."))
 
 # A date on a record running out. Its own kind rather than the workspace notice
 # it used to be sent as: somebody who wants to know about an expiring insurance
 # certificate does not necessarily want to know about a failed card, and one
 # switch for both is a switch neither of them can use.
-EXPIRY_TYPE = kind("Expiring", "A document whose expiry date is coming up.")
+EXPIRY_TYPE = kind("Expiring", _lt("A document whose expiry date is coming up."))
+
+# What a rule somebody wrote in Settings has to say. `alerts.py` builds Frappe
+# `Notification` rows, and one with the in-app channel writes into the same
+# `Notification Log` this module reads — so alerts were already arriving in the
+# bell. What they had no way to be was *declared*: Frappe stamps its own row
+# `notification_type or "Alert"`, "Alert" was a kind nothing here knew about,
+# and an undeclared kind gets no switch. Alerts landed in a feed nobody could
+# turn off. Declaring it is the whole fix: the panel, the `Notification Type`
+# row and the mute list all come from `declared()`.
+ALERT_TYPE = kind("Alert", _lt("Rules this workspace wrote about its own records."))
 
 
 def declared() -> dict[str, dict]:
@@ -273,6 +290,7 @@ def declared() -> dict[str, dict]:
 				if name:
 					found[name] = {
 						"name": name, "about": one.get("about") or "", "ours": True}
+					# An installed app's own sentence, in its own catalogue.
 		except Exception:
 			# An app whose hook throws must not take the panel with it: the
 			# rest of the list is still true.
@@ -410,7 +428,10 @@ def preferences() -> dict:
 			continue
 		types.append({
 			"name": name,
-			"about": known[name]["about"],
+			# `str()` resolves the lazy translation into this request's
+			# language. Left lazy it would reach the browser as whatever the
+			# JSON encoder made of the object.
+			"about": str(known[name]["about"]),
 			"in_app": name not in muted,
 			"email": name in wanted and name not in skip,
 			# What the panel may offer, as opposed to what is on. Push is

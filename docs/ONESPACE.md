@@ -1046,6 +1046,22 @@ about a failed card also heard about certificates. An installed app adds its
 own kinds through `onespace_notification_kinds`, the shape the settings-groups
 hook already uses.
 
+**An alert is a kind, which is what joins the two settings tabs.** Alerts and
+Notifications are the same feature from two ends: Alerts is an admin deciding
+what gets sent about the workspace's records, Notifications is a person deciding
+what they receive. They meet in `Notification Log` — a rule set to the in-app
+channel writes the row the bell reads — and for a while that join was one-way.
+Frappe stamps its row `notification_type or "Alert"`, `Alert` was a kind nothing
+declared, and an undeclared kind gets no switch: alerts arrived in the feed and
+there was no way to stop them. `kind("Alert", …)` is the whole fix, because the
+registry is what the panel, `install_types` and the mute list are all built
+from. The email half is not a preference and the panel does not pretend it is:
+`Notification.send_an_email` builds a Communication and sends it without reading
+`Notification Settings`, because an alert an admin wrote about an overdue
+invoice is not something the recipient opted into — so `Alert` is in
+`notification_skip_email_types` beside `Workspace` and `Following`, and the
+email column says who owns it rather than offering a switch that does nothing.
+
 Push is a seam (`push.send`) and not a feature. It stays that way until the
 EU-jurisdiction question is settled — Web Push with VAPID keys we own is the
 answer when it is.

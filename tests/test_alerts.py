@@ -195,6 +195,59 @@ def test_a_wait_is_bounded(alerts, monkeypatch, days):
 		             "days": days, "subject": "x", "to_role": "OneSpace Workspace Owner"})
 
 
+def test_a_rule_files_its_in_app_row_under_a_kind_somebody_can_turn_off(
+	alerts, monkeypatch
+):
+	"""The seam between this panel and the Notifications one.
+
+	A rule with the in-app channel writes a `Notification Log`, which is the
+	store the bell reads — so alerts were always arriving there. Frappe stamps
+	the row `notification_type or "Alert"`, and an undeclared kind gets no
+	switch in the settings panel: the notification arrived and there was no way
+	to stop it arriving. Setting it from `notifications` is what ties the two
+	halves together, and the assertion is that the name is a declared one
+	rather than a string that happens to match.
+	"""
+	from oneapp.oneapp_core import notifications
+
+	written = {}
+
+	class Recorder:
+		is_standard = 0
+		name = "ALERT-1"
+
+		def update(self, values):
+			written.update(values)
+
+		def set(self, field, value):
+			pass
+
+		def append(self, field, row):
+			pass
+
+		def save(self, **kwargs):
+			pass
+
+		def get(self, field, default=None):
+			return written.get(field, default)
+
+	monkeypatch.setattr(alerts, "_meta", lambda doctype: meta(status="Select"))
+	# `raising=False`: the stub frappe in `conftest` carries only what the
+	# modules under test reach for, and nothing had needed `new_doc` before.
+	monkeypatch.setattr(
+		alerts.frappe, "new_doc", lambda doctype: Recorder(), raising=False
+	)
+	monkeypatch.setattr(alerts, "_read", lambda doc: written)
+
+	alerts.save({
+		"doctype": "Project", "when": "created", "subject": "Overdue",
+		"to_role": "OneSpace Workspace Owner", "channel": "app",
+	})
+
+	assert written["notification_type"] == notifications.ALERT_TYPE
+	assert notifications.ALERT_TYPE in notifications.KINDS
+
+
 def test_an_apps_own_rule_is_not_ours_to_change(alerts, monkeypatch):
 	"""A standard Notification belongs to the app that shipped it and is
 	exported to disk, so an edit here would be edited back on the next deploy —

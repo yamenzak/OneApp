@@ -61,6 +61,9 @@ msgstr "Ein deaktivierter Briefkopf kann nicht der Standard sein."
 msgid "A document cannot renew itself."
 msgstr "Ein Dokument kann sich nicht selbst erneuern."
 
+msgid "A document whose expiry date is coming up."
+msgstr "Ein Dokument, dessen Ablaufdatum näher rückt."
+
 msgid ""
 "A file path or URL. Referenced from the header above, or used on its "
 "own."
@@ -794,6 +797,9 @@ msgstr "{0} Datensatz ändern"
 
 msgid "Change {0} records"
 msgstr "{0} Datensätze ändern"
+
+msgid "Changes to a record you are following."
+msgstr "Änderungen an einem Datensatz, dem du folgst."
 
 msgid "Chart of accounts"
 msgstr "Kontenplan"
@@ -2727,6 +2733,9 @@ msgstr "Nutzdaten"
 msgid "Payment received — your balance updates in a moment"
 msgstr "Zahlung erhalten — Ihr Guthaben wird gleich aktualisiert"
 
+msgid "Payments, quotas and anything about the account itself."
+msgstr "Zahlungen, Kontingente und alles rund um das Konto selbst."
+
 msgid "People"
 msgstr "Personen"
 
@@ -3008,6 +3017,9 @@ msgstr "Regel entfernt"
 
 msgid "Rule saved"
 msgstr "Regel gespeichert"
+
+msgid "Rules this workspace wrote about its own records."
+msgstr "Regeln, die dieser Arbeitsbereich für seine Datensätze geschrieben hat."
 
 msgid "Save as a new view"
 msgstr "Als neue Ansicht speichern"
@@ -4653,6 +4665,15 @@ msgstr "Worüber Sie benachrichtigt werden und wie."
 
 msgid "When"
 msgstr "Wann"
+
+msgid "When somebody gives you a record to deal with."
+msgstr "Wenn dir jemand einen Datensatz überträgt."
+
+msgid "When somebody shares a record or a file with you."
+msgstr "Wenn jemand einen Datensatz oder eine Datei mit dir teilt."
+
+msgid "When somebody writes your name in a comment."
+msgstr "Wenn jemand deinen Namen in einem Kommentar nennt."
 
 msgid ""
 "When the last warning went out. Kept so a daily job warns once and not "

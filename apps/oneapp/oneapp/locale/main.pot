@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 06:26+0000\n"
-"PO-Revision-Date: 2026-09-07 06:26+0000\n"
+"POT-Creation-Date: 2026-09-07 06:52+0000\n"
+"PO-Revision-Date: 2026-09-07 06:52+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -74,6 +74,10 @@ msgstr ""
 
 #: oneapp/oneapp_core/doctype/compliance_document/compliance_document.py:49
 msgid "A document cannot renew itself."
+msgstr ""
+
+#: oneapp/oneapp_core/notifications.py:265
+msgid "A document whose expiry date is coming up."
 msgstr ""
 
 #: frontend/src/components/settings/printing/LetterHeadDialog.vue:55
@@ -1233,6 +1237,10 @@ msgstr ""
 
 #: frontend/src/components/screen/record/RecordActivity.vue:140
 msgid "Changes"
+msgstr ""
+
+#: oneapp/oneapp_core/notifications.py:259
+msgid "Changes to a record you are following."
 msgstr ""
 
 #: frontend/src/screens/ops/TenantBilling.vue:122
@@ -3420,7 +3428,7 @@ msgstr ""
 msgid "More for {0}"
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:359
+#: oneapp/oneapp_core/alerts.py:365
 msgid "More than and less than need a number."
 msgstr ""
 
@@ -3792,7 +3800,7 @@ msgstr ""
 msgid "No folders"
 msgstr ""
 
-#: frontend/src/lib/runtime/errors.js:90
+#: frontend/src/lib/runtime/errors.js:99
 msgid "No further detail was returned."
 msgstr ""
 
@@ -4646,6 +4654,10 @@ msgstr ""
 msgid "Payment received — your balance updates in a moment"
 msgstr ""
 
+#: oneapp/oneapp_core/notifications.py:255
+msgid "Payments, quotas and anything about the account itself."
+msgstr ""
+
 #: frontend/src/components/screen/views/BulkAssignDialog.vue:32
 #: frontend/src/screens/account/Overview.vue:86
 #: frontend/src/screens/account/People.vue:32
@@ -4858,7 +4870,7 @@ msgstr ""
 msgid "Push notifications are not available yet"
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:479
+#: oneapp/oneapp_core/notifications.py:500
 msgid "Push notifications are not available yet."
 msgstr ""
 
@@ -5180,7 +5192,7 @@ msgstr ""
 msgid "Report"
 msgstr ""
 
-#: frontend/src/lib/runtime/errors.js:83
+#: frontend/src/lib/runtime/errors.js:93
 msgid "Request failed"
 msgstr ""
 
@@ -5305,6 +5317,10 @@ msgstr ""
 
 #: frontend/src/components/settings/MailboxSettings.vue:155
 msgid "Rules"
+msgstr ""
+
+#: oneapp/oneapp_core/notifications.py:275
+msgid "Rules this workspace wrote about its own records."
 msgstr ""
 
 #. Label of the run (Link) field in DocType 'Import Issue'
@@ -5880,7 +5896,7 @@ msgid "Something happened"
 msgstr ""
 
 #: frontend/src/lib/runtime/errors.js:53 frontend/src/lib/runtime/errors.js:63
-#: frontend/src/lib/runtime/errors.js:84
+#: frontend/src/lib/runtime/errors.js:94
 msgid "Something went wrong"
 msgstr ""
 
@@ -6299,7 +6315,7 @@ msgstr ""
 msgid "That address is yours"
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:318
+#: oneapp/oneapp_core/alerts.py:324
 msgid "That alert was not made here and cannot be changed here."
 msgstr ""
 
@@ -6372,11 +6388,11 @@ msgstr ""
 msgid "That is not a field on {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:345
+#: oneapp/oneapp_core/alerts.py:351
 msgid "That is not a field to test."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:347
+#: oneapp/oneapp_core/alerts.py:353
 msgid "That is not a test this can make."
 msgstr ""
 
@@ -6747,7 +6763,7 @@ msgstr ""
 msgid "There is already a folder called “{0}” here."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:288
+#: oneapp/oneapp_core/alerts.py:294
 msgid "There is already an alert called “{0}”. Give this one a different subject."
 msgstr ""
 
@@ -7698,6 +7714,18 @@ msgstr ""
 msgid "When"
 msgstr ""
 
+#: oneapp/oneapp_core/notifications.py:245
+msgid "When somebody gives you a record to deal with."
+msgstr ""
+
+#: oneapp/oneapp_core/notifications.py:249
+msgid "When somebody shares a record or a file with you."
+msgstr ""
+
+#: oneapp/oneapp_core/notifications.py:247
+msgid "When somebody writes your name in a comment."
+msgstr ""
+
 #. Description of the 'Reminded On' (Date) field in DocType 'Compliance
 #. Document'
 #: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
@@ -8387,7 +8415,7 @@ msgstr ""
 msgid "{0} changes"
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:772
+#: oneapp/oneapp_core/notifications.py:793
 msgid "{0} commented on {1} {2}"
 msgstr ""
 
@@ -8477,7 +8505,7 @@ msgstr ""
 msgid "{0} is not a PDF engine."
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:309
+#: oneapp/oneapp_core/notifications.py:327
 msgid "{0} is not a declared notification kind."
 msgstr ""
 
@@ -8501,7 +8529,7 @@ msgstr ""
 msgid "{0} is not a link."
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:473
+#: oneapp/oneapp_core/notifications.py:494
 msgid "{0} is not a notification you can set."
 msgstr ""
 
@@ -8517,7 +8545,7 @@ msgstr ""
 msgid "{0} is not a series on {1}."
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:502
+#: oneapp/oneapp_core/notifications.py:523
 msgid "{0} is not a way to be notified."
 msgstr ""
 
@@ -8703,7 +8731,7 @@ msgstr ""
 msgid "{0} to {1}"
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:748
+#: oneapp/oneapp_core/notifications.py:769
 msgid "{0} updated {1} {2}"
 msgstr ""
 

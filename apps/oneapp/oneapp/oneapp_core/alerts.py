@@ -45,7 +45,7 @@ platform's own bookkeeping to mail itself about.
 import frappe
 from frappe import _
 
-from oneapp.oneapp_core import sync
+from oneapp.oneapp_core import notifications, sync
 
 # The mark on a rule this workspace wrote.
 #
@@ -272,6 +272,12 @@ def save(values: dict) -> dict:
 		"message": values.get("message") or subject,
 		"condition": built,
 		"send_system_notification": 1 if values.get("channel") == "both" else 0,
+		# What the in-app row is filed under, so somebody can turn these off in
+		# their own settings. Frappe defaults the field to the string "Alert"
+		# and a `Notification Log` typed with a kind nothing declares gets no
+		# switch in the panel — it arrives in the bell and stays there. Set
+		# from `notifications`, which is what declares it.
+		"notification_type": notifications.ALERT_TYPE,
 	})
 	doc.set("recipients", [])
 	doc.append("recipients", {

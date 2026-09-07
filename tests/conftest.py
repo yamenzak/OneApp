@@ -49,6 +49,11 @@ def _make_frappe():
 
 	frappe.throw = throw
 	frappe._ = lambda s: s
+	# Frappe's lazy translation, for strings declared at module level — see
+	# `notifications.kind`. The real one returns an object that resolves on
+	# `str()`; the sentence itself is what the tests read, so it is enough here
+	# for it to be the sentence.
+	frappe._lt = lambda s: s
 	frappe.request = None
 	frappe.get_hooks = lambda key, *a, **kw: []
 	frappe.get_module = __import__
