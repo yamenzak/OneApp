@@ -671,11 +671,13 @@ def _seed_mail(user):
 	"""
 	from oneapp.oneapp_core.email import addresses
 
-	# The workspace's own domain, asked for rather than spelled out: a fixture
-	# that hard-coded `4dl.app` would seed an address the product then badges
-	# as somebody else's domain, and the panel would be lying about the one
-	# address it has.
-	address = f"sales@{addresses.domain()}"
+	# `address_for` rather than a domain and an f-string, which is what this was
+	# and which stopped being right the day the workspace's slug moved onto the
+	# front of every address. `is_ours` wants the prefix too, so `sales@4dl.app`
+	# came back as an address on somebody else's domain — and the Email tab
+	# badged the one address it had "Your domain", in a fixture whose whole
+	# purpose is to show what the product does.
+	address = addresses.address_for("sales")
 	if not frappe.db.exists("Email Account", {"email_id": address}):
 		frappe.get_doc({
 			"doctype": "Email Account",
@@ -725,6 +727,19 @@ def _seed_mail(user):
 	doc.db_set("enable_auto_reply", 0, update_modified=False)
 	doc.db_set("auto_reply_message", "", update_modified=False)
 	doc.db_set("custom_away_until", None, update_modified=False)
+
+	# And the half-written message somebody left behind, for the same reason and
+	# with sharper teeth. The composer opens on a kept draft when there is one,
+	# so a spec that types into it and then fails leaves every *later* composer
+	# test opening on that draft instead of a blank message — and they fail
+	# saying the signature is missing, which is true and is not the bug. Twice
+	# in one sitting that read as a broken composer.
+	from oneapp.oneapp_core.email.mailbox.drafts import DRAFT_KEY
+
+	for holder in frappe.get_all(
+		"DefaultValue", filters={"defkey": DRAFT_KEY}, pluck="parent"
+	):
+		frappe.defaults.clear_default(key=DRAFT_KEY, parent=holder)
 
 	# A second recipient on the conversation, so a reply-to-all has somebody to
 	# copy. Without one the fixture cannot tell "no Cc because the code is
@@ -797,6 +812,19 @@ def _seed_mail(user):
 			frappe.db.set_value(
 				"Communication", existing, "cc", copied, update_modified=False
 			)
+			# And the address itself, which is the one that moved. When the
+			# workspace slug went onto the front of every address, `sales@`
+			# became `dev.sales@` — and these two fields were the only ones this
+			# branch did not put back, so every seeded message went on naming an
+			# account that no longer existed and the Mail screen showed an empty
+			# inbox on a mailbox with four messages in it.
+			frappe.db.set_value(
+				"Communication", existing, "email_account", account, update_modified=False
+			)
+			if direction == "Sent":
+				frappe.db.set_value(
+					"Communication", existing, "sender", address, update_modified=False
+				)
 			# Put the folder back. The fixture is what a browser pass starts
 			# from, and that pass *files* things — a seed that only inserted
 			# would leave every conversation wherever the last run dropped it,

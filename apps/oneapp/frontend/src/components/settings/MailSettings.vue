@@ -25,10 +25,13 @@
             {{ sendingFrom }}
           </span>
         </div>
+        <!-- Each half says its own window. The row was labelled "Sent this
+             hour" and then carried the day's count beside it, so half of what
+             it showed was under a heading that did not cover it. -->
         <div class="flex items-center justify-between gap-3">
-          <span class="text-p-xs text-ink-gray-5">{{ __('Sent this hour') }}</span>
+          <span class="text-p-xs text-ink-gray-5">{{ __('Sent') }}</span>
           <span class="text-p-xs tabular-nums text-ink-gray-6">
-            {{ __('{0} of {1}', [usage.sent_this_hour ?? 0, usage.hourly_limit ?? '—']) }}
+            {{ __('{0} of {1} this hour', [usage.sent_this_hour ?? 0, usage.hourly_limit ?? '—']) }}
             <span class="text-ink-gray-4">·</span>
             {{ __('{0} of {1} today', [usage.sent_today ?? 0, usage.daily_limit ?? '—']) }}
           </span>
@@ -203,6 +206,12 @@
         <p class="text-p-sm text-ink-gray-5">
           {{ __('Connect one the company already has, then grant it below like any other address. Everyone who holds it reads the same inbox — and the same sent mail.') }}
         </p>
+        <!--
+          The hint sits under the row rather than on the password field. On the
+          field it is a description below one of three controls, and `items-end`
+          then aligns the bottom of *that* — which lifts the password box a line
+          above the address box beside it.
+        -->
         <div class="flex flex-wrap items-end gap-2">
           <FormControl
             v-model="team.email_id"
@@ -215,7 +224,6 @@
             class="flex-1"
             type="password"
             :label="__('Password')"
-            :description="__('An app password where the provider needs one.')"
           />
           <Button
             variant="solid"
@@ -225,6 +233,9 @@
             @click="connectShared"
           />
         </div>
+        <p class="text-p-xs text-ink-gray-5">
+          {{ __('An app password where the provider needs one.') }}
+        </p>
         <ErrorMessage v-if="teamError" :message="teamError" />
       </section>
 
@@ -255,16 +266,16 @@
       </section>
 
       <div v-if="canManage" class="flex flex-col gap-2 border-t border-outline-gray-1 pt-5">
-        <span class="text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
-          {{ __('Add an address') }}
-        </span>
+        <!-- The same heading the two sections above it use. It was the one in
+             uppercase, which read as a different kind of thing. -->
+        <h3 class="text-base-medium text-ink-gray-8">{{ __('Add an address') }}</h3>
         <div class="flex items-end gap-2">
           <FormControl
             v-model="draft"
             class="flex-1"
             :label="__('Address')"
             :placeholder="__('sales')"
-            :description="__('Becomes {0}', [`${prefix ? prefix + '.' : ''}name@${domain}`])"
+            :description="__('Becomes {0}', [becomes])"
           />
           <Button variant="solid" :label="__('Add')" :loading="saving" @click="create" />
         </div>
@@ -327,6 +338,15 @@ const confirming = ref(false)
 const dns = ref({})
 const error = ref('')
 const draft = ref('')
+
+// What the address will be, as it is typed. The literal word `name` stood here
+// before, which made the one line on the page that answers "what am I about to
+// create" the one line that never changed. Falls back to the placeholder rather
+// than to a stand-in word, so the example and the answer are the same shape.
+const becomes = computed(() => {
+  const local = draft.value.trim().toLowerCase() || 'sales'
+  return `${prefix.value ? prefix.value + '.' : ''}${local}@${domain.value}`
+})
 const opened = ref('')
 
 const addresses = ref([])
