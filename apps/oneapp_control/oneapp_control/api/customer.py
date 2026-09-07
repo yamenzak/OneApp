@@ -1127,3 +1127,71 @@ def enable_space(workspace: str, space: str) -> dict:
 	registry.grant(tenant.name, space, note="Enabled from the marketplace.")
 	frappe.db.commit()
 	return marketplace(workspace)
+
+
+@frappe.whitelist(methods=["POST"])
+def redeem_claim_code(workspace: str, code: str) -> dict:
+	"""Put a private space on this workspace's shelf, with a string.
+
+	`offer` and not `grant`, deliberately: a code says "you may see this", and
+	pressing the card is still theirs to do. Which keeps one path through the
+	marketplace rather than two — the four card states, the bench refusal
+	included, are the same four whether an operator put the space there or a
+	code did.
+
+	Every refusal is the same sentence. A code is a guessable string, and a
+	reply that told the difference between "no such code", "that code is spent"
+	and "expired" would be a way to enumerate which codes exist and which spaces
+	we have built for other people.
+	"""
+	from frappe.utils import getdate, nowdate
+
+	tenant = require_workspace_admin(workspace)
+
+	typed = (code or "").strip().upper()
+	no = _("That code is not one we know.")
+	if not typed:
+		frappe.throw(no)
+
+	row = frappe.db.get_value(
+		"Space Claim Code", typed,
+		["name", "app", "enabled", "uses_allowed", "uses_spent", "expires_on"],
+		as_dict=True,
+	)
+	if not row or not row.enabled:
+		frappe.throw(no)
+	if row.expires_on and getdate(row.expires_on) < getdate(nowdate()):
+		frappe.throw(no)
+
+	# Asked before the count, not after. Redeeming twice from the same workspace
+	# is not an error and does not spend a use: somebody typing it again is
+	# somebody who did not notice it worked the first time, and both charging
+	# them a use and refusing them are wrong — a one-use code would retire
+	# itself on a double-click and then tell its own redeemer it never existed.
+	already = frappe.db.exists(
+		"Space Claim Redemption", {"claim_code": row.name, "tenant": tenant.name}
+	)
+	if not already and row.uses_allowed and int(row.uses_spent or 0) >= int(row.uses_allowed):
+		frappe.throw(no)
+
+	# `offer` refuses what the bench cannot carry, and that refusal names the
+	# app — which is the one case where a specific answer is right, because it
+	# is about their site rather than about our catalogue.
+	registry.offer(tenant.name, row.app, note=_("Claimed with code {0}.").format(row.name))
+
+	if not already:
+		frappe.get_doc({
+			"doctype": "Space Claim Redemption",
+			"claim_code": row.name,
+			"tenant": tenant.name,
+			"app": row.app,
+			"redeemed_by": frappe.session.user,
+			"redeemed_on": frappe.utils.now_datetime(),
+		}).insert(ignore_permissions=True)
+		frappe.db.set_value(
+			"Space Claim Code", row.name, "uses_spent",
+			int(row.uses_spent or 0) + 1, update_modified=False,
+		)
+
+	frappe.db.commit()
+	return marketplace(workspace)

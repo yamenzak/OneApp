@@ -1367,6 +1367,9 @@ msgstr "تجميع الصفوف حسب"
 msgid "HTML, rendered as a template with the document in scope."
 msgstr "HTML، يُعرض كقالب مع المستند ضمن السياق."
 
+msgid "Have a code?"
+msgstr "لديك رمز؟"
+
 msgid "Head Seq"
 msgstr "تسلسل الرأس"
 
@@ -3121,6 +3124,13 @@ msgid "Solid button"
 msgstr "زر ممتلئ"
 
 msgid ""
+"Some spaces are not listed. If you were given a code for one, it goes "
+"here and the space appears above."
+msgstr ""
+"بعض المساحات غير مدرجة. إن كان لديك رمز لإحداها، فاكتبه هنا وستظهر "
+"المساحة أعلاه."
+
+msgid ""
 "Somebody asked for this version by name. Never pruned, and sorted above "
 "the automatic ones."
 msgstr ""
@@ -3330,6 +3340,9 @@ msgstr "لم يُنشأ هذا التنبيه هنا ولا يمكن تغيير�
 
 msgid "That attachment is not yours to send."
 msgstr "هذا المرفق ليس لك لترسله."
+
+msgid "That code worked. The space is above."
+msgstr "الرمز صحيح. المساحة أعلاه."
 
 msgid "That conversation is not yours."
 msgstr "هذه المحادثة ليست لك."
@@ -4264,6 +4277,9 @@ msgstr "استخدام قالب"
 msgid "Use as a template"
 msgstr "استخدام كقالب"
 
+msgid "Use it"
+msgstr "استخدمه"
+
 msgid "Use the camera to take a photograph."
 msgstr "استخدم الكاميرا لالتقاط صورة."
 
@@ -4753,6 +4769,9 @@ msgid ""
 msgstr ""
 "تُخصم من بطاقتك قيمة الفرق لبقية فترة الفوترة هذه، وتسري الحدود الجديدة "
 "فوراً."
+
+msgid "Your code"
+msgstr "رمزك"
 
 msgid ""
 "Your company, its financial year, and the accounts everything is posted "

@@ -260,3 +260,70 @@ def test_the_rail_offers_it_only_to_somebody_who_can_use_it():
 	assert "session.isAdmin" in entry, (
 		"a rail icon leading to a page of refusals is worse than no icon"
 	)
+
+
+# --------------------------------------------------------------------------- #
+# Claim codes
+#
+# A code is a row, not a coupon (§4). What it does is `offer`, not `grant` —
+# it says "you may see this", and pressing the card is still theirs.
+# --------------------------------------------------------------------------- #
+
+CODE_CONTROLLER = (
+	CONTROL / "control_plane" / "doctype" / "space_claim_code"
+	/ "space_claim_code.py"
+).read_text()
+
+REDEEM = CUSTOMER[CUSTOMER.index("def redeem_claim_code"):]
+
+
+def test_redeeming_offers_rather_than_enables():
+	"""One path through the marketplace rather than two. The four card states,
+	the bench refusal included, are the same whether an operator put the space
+	on the shelf or a code did."""
+	assert "registry.offer(" in REDEEM
+	assert "registry.grant(" not in REDEEM
+
+
+def test_every_refusal_is_the_same_sentence():
+	"""A code is a guessable string. A reply that told "no such code" from
+	"that code is spent" from "expired" would be a way to enumerate which codes
+	exist and which spaces we have built for other people."""
+	assert REDEEM.count('_("That code is not one we know.")') == 1
+	assert REDEEM.count("frappe.throw(no)") >= 3
+
+
+def test_a_second_press_by_the_same_workspace_is_not_a_refusal():
+	"""And does not spend a use. Somebody typing it again is somebody who did
+	not notice it worked; a one-use code would otherwise retire itself on a
+	double-click and then tell its own redeemer it never existed."""
+	before = REDEEM.index("already = frappe.db.exists")
+	spent = REDEEM.index("uses_spent or 0) >= int(row.uses_allowed)")
+	assert before < spent, (
+		"the count is asked after 'have they already', not before"
+	)
+	assert "if not already:" in REDEEM
+
+
+def test_the_code_is_upper_cased_before_it_becomes_a_name():
+	"""Nobody types a code the way it was written down, and Frappe would treat
+	RUA-2026 and rua-2026 as two codes."""
+	assert "def before_naming" in CODE_CONTROLLER
+	assert ".strip().upper()" in CODE_CONTROLLER
+	assert ".strip().upper()" in REDEEM, "and the same on the way in"
+
+
+def test_a_code_for_a_space_everybody_can_see_is_refused_at_the_model():
+	"""It would report success and change nothing, which is the worst answer a
+	code can give."""
+	assert '!= "Restricted"' in CODE_CONTROLLER
+
+
+def test_a_redemption_is_a_row_somebody_can_read():
+	"""§3A: minting a code and *seeing who claimed one* are both operator
+	actions. Its own doctype rather than a child table, because the question is
+	"who has RUA and how did they get it" — a list across codes."""
+	operator = (CONTROL / "entitlements" / "operator.py").read_text()
+	assert '"Space Claim Code"' in operator and '"Space Claim Redemption"' in operator
+	assert '"doctype": "Space Claim Redemption"' in REDEEM
+	assert "redeemed_by" in REDEEM

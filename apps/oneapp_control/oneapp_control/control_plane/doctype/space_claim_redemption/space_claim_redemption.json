@@ -1,0 +1,84 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "claim_code",
+  "tenant",
+  "app",
+  "cb_redemption",
+  "redeemed_by",
+  "redeemed_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "claim_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Claim Code",
+   "options": "Space Claim Code",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tenant",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tenant",
+   "options": "Tenant",
+   "reqd": 1
+  },
+  {
+   "fieldname": "app",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "App",
+   "options": "OneSpace Space",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_redemption",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "redeemed_by",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Redeemed By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "redeemed_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Redeemed On",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Space Claim Redemption",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

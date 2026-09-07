@@ -44,4 +44,6 @@ export const account = {
   marketplace: () => callMethod(at('marketplace'), {}, { silent: true, method: 'GET' }),
 
   enableSpace: (space) => callMethod(at('enable_space'), { space }),
+
+  redeemClaimCode: (code) => callMethod(at('redeem_claim_code'), { code }),
 }

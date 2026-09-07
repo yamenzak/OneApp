@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 18:58+0000\n"
-"PO-Revision-Date: 2026-09-07 18:58+0000\n"
+"POT-Creation-Date: 2026-09-07 19:09+0000\n"
+"PO-Revision-Date: 2026-09-07 19:09+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -872,7 +872,7 @@ msgstr ""
 msgid "Before restoring “{0}”"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:129
+#: frontend/src/pages/Marketplace.vue:162
 msgid "Being added"
 msgstr ""
 
@@ -1740,7 +1740,7 @@ msgstr ""
 msgid "Details"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:130
+#: frontend/src/pages/Marketplace.vue:163
 msgid "Did not finish"
 msgstr ""
 
@@ -2541,6 +2541,10 @@ msgstr ""
 
 #: frontend/src/components/settings/printing/LetterHeadDialog.vue:25
 msgid "HTML, rendered as a template with the document in scope."
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:109
+msgid "Have a code?"
 msgstr ""
 
 #. Label of the head_seq (Long Int) field in DocType 'Doc Body'
@@ -3980,7 +3984,7 @@ msgstr ""
 msgid "Not about this record"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:131
+#: frontend/src/pages/Marketplace.vue:164
 msgid "Not available here"
 msgstr ""
 
@@ -5842,6 +5846,10 @@ msgstr ""
 msgid "Solid button"
 msgstr ""
 
+#: frontend/src/pages/Marketplace.vue:111
+msgid "Some spaces are not listed. If you were given a code for one, it goes here and the space appears above."
+msgstr ""
+
 #. Description of the 'Manual' (Check) field in DocType 'File Version'
 #: oneapp/oneapp_core/doctype/file_version/file_version.json
 msgid "Somebody asked for this version by name. Never pruned, and sorted above the automatic ones."
@@ -6291,6 +6299,10 @@ msgstr ""
 
 #: oneapp/oneapp_core/email/mailbox/sending.py:252
 msgid "That attachment is not yours to send."
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:229
+msgid "That code worked. The space is above."
 msgstr ""
 
 #: oneapp/oneapp_core/chat/session.py:35
@@ -7414,6 +7426,10 @@ msgstr ""
 msgid "Use as a template"
 msgstr ""
 
+#: frontend/src/pages/Marketplace.vue:122
+msgid "Use it"
+msgstr ""
+
 #: frontend/src/components/drive/CameraCapture.vue:54
 msgid "Use the camera to take a photograph."
 msgstr ""
@@ -8088,6 +8104,10 @@ msgstr ""
 msgid "Your card is charged the difference for the rest of this billing period, and the new limits apply straight away."
 msgstr ""
 
+#: frontend/src/pages/Marketplace.vue:118
+msgid "Your code"
+msgstr ""
+
 #: frontend/src/components/settings/BooksSettings.vue:4
 msgid "Your company, its financial year, and the accounts everything is posted to. Answered once."
 msgstr ""
@@ -8532,7 +8552,7 @@ msgstr ""
 msgid "{0} is already running."
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:179
+#: frontend/src/pages/Marketplace.vue:212
 msgid "{0} is being added"
 msgstr ""
 
@@ -8540,7 +8560,7 @@ msgstr ""
 msgid "{0} is being set up"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:174
+#: frontend/src/pages/Marketplace.vue:207
 msgid "{0} is in your workspace"
 msgstr ""
 

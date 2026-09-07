@@ -450,6 +450,71 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
+# Space Claim Code — how a private space reaches a workspace nobody entitled.
+#
+# A code is a row, not a coupon. `Promo Code` above is Stripe-backed and about
+# money; this is about entitlement, and borrowing the money one would mean
+# minting a Stripe object every time somebody wants a customer to try RUA.
+#
+# Redeeming is `registry.offer` and not `grant`: a code says "you may see this",
+# and pressing the card is still theirs to do. Which keeps one path through the
+# marketplace rather than two, and means the four card states — including the
+# refusal when the bench cannot carry it — are the same four whether an operator
+# put the space on the shelf or a code did.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Space Claim Code",
+    search_fields="claim_code,app,description",
+    autoname="field:claim_code",
+    fields=[
+        f("claim_code", label="Code", reqd=1, unique=1, in_list_view=1,
+          description="What somebody types. Upper-cased on save, because nobody "
+                      "types a code the way it was written down."),
+        f("app", "Link", options="OneSpace Space", reqd=1, in_list_view=1,
+          description="Which space it puts on their shelf."),
+        f("description", "Small Text",
+          description="What it is for. An operator reads this in six months and "
+                      "has to know whether it can be retired."),
+        f("enabled", "Check", default="1", in_list_view=1),
+        column("cb_claim"),
+        f("uses_allowed", "Int", default="1", in_list_view=1,
+          description="0 is unlimited. One is the ordinary case: a code written "
+                      "down for one customer."),
+        f("uses_spent", "Int", default="0", read_only=1, in_list_view=1),
+        f("expires_on", "Date",
+          description="Empty never expires."),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
+# Space Claim Redemption — who used one, and when.
+#
+# Its own doctype rather than a child table on the code, because the question an
+# operator asks is "who has RUA and how did they get it", which is a list across
+# codes rather than a list inside one.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Space Claim Redemption",
+    autoname="hash",
+    # Written by redemption and by nothing else; a row typed by hand would be a
+    # record of something that did not happen.
+    in_create=1,
+    perms=READONLY_PERMS,
+    fields=[
+        f("claim_code", "Link", options="Space Claim Code", reqd=1,
+          in_list_view=1, in_standard_filter=1),
+        f("tenant", "Link", options="Tenant", reqd=1, in_list_view=1,
+          in_standard_filter=1),
+        f("app", "Link", options="OneSpace Space", reqd=1, in_list_view=1),
+        column("cb_redemption"),
+        f("redeemed_by", "Link", options="User", read_only=1, in_list_view=1),
+        f("redeemed_on", "Datetime", read_only=1, in_list_view=1),
+    ],
+)
+
+
+# --------------------------------------------------------------------------- #
 # Credit Ledger Entry — append-only. Balance is a sum, never a stored field.
 # --------------------------------------------------------------------------- #
 doctype(

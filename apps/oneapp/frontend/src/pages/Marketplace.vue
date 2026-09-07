@@ -98,6 +98,35 @@
       :title="__('Nothing to add right now')"
       :description="__('Your workspace already has everything on offer to it. When something new is, it appears here.')"
     />
+
+    <!--
+      Below the cards rather than above them, because most visits are somebody
+      browsing what they were already offered and a code is the rarer errand.
+      Shown even when the account is unreachable would be a box that cannot
+      work, so it goes with the rest.
+    -->
+    <section v-if="!unreachable" class="mt-8 flex max-w-md flex-col gap-3">
+      <h2 class="text-base-medium text-ink-gray-8">{{ __('Have a code?') }}</h2>
+      <p class="text-p-sm text-ink-gray-6">
+        {{ __('Some spaces are not listed. If you were given a code for one, it goes here and the space appears above.') }}
+      </p>
+      <div class="flex items-start gap-2">
+        <FormControl
+          v-model="code"
+          class="flex-1"
+          data-slot="claim-code"
+          :placeholder="__('Your code')"
+          @keyup.enter="redeem"
+        />
+        <Button
+          :label="__('Use it')"
+          :loading="redeeming"
+          :disabled="!code.trim()"
+          @click="redeem"
+        />
+      </div>
+      <ErrorMessage v-if="codeError" :message="codeError" />
+    </section>
   </div>
 </template>
 
@@ -105,7 +134,8 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  Alert, Avatar, Breadcrumbs, Button, ErrorMessage, LoadingIndicator, PageHeader,
+  Alert, Avatar, Breadcrumbs, Button, ErrorMessage, FormControl,
+  LoadingIndicator, PageHeader,
 } from '@/ui'
 import EmptyState from '../components/EmptyState.vue'
 import { workspace } from '@/lib/workspace'
@@ -121,6 +151,9 @@ const loading = ref(false)
 const unreachable = ref(false)
 const adding = ref('')
 const error = ref('')
+const code = ref('')
+const redeeming = ref(false)
+const codeError = ref('')
 
 const spaces = computed(() => data.value?.spaces || [])
 
@@ -181,6 +214,23 @@ const add = async (space) => {
     error.value = errorText(e)
   } finally {
     adding.value = ''
+  }
+}
+
+const redeem = async () => {
+  if (!code.value.trim()) return
+  redeeming.value = true
+  codeError.value = ''
+  try {
+    const answer = await workspace.redeemClaimCode(code.value.trim())
+    data.value = answer
+    again(answer)
+    code.value = ''
+    notifySuccess(__('That code worked. The space is above.'))
+  } catch (e) {
+    codeError.value = errorText(e)
+  } finally {
+    redeeming.value = false
   }
 }
 

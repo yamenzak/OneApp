@@ -135,3 +135,10 @@ def enable_space(space: str) -> dict:
 		frappe.log_error(title="Marketplace: could not pull after enabling")
 
 	return answer
+
+
+@frappe.whitelist()
+def redeem_claim_code(code: str) -> dict:
+	"""Put a private space on this workspace's shelf, with a code somebody was
+	given. It appears in the marketplace; turning it on is a separate press."""
+	return _ask("redeem_claim_code", code=code)

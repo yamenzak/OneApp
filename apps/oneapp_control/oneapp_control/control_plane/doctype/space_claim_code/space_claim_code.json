@@ -1,0 +1,104 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:claim_code",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "claim_code",
+  "app",
+  "description",
+  "enabled",
+  "cb_claim",
+  "uses_allowed",
+  "uses_spent",
+  "expires_on"
+ ],
+ "fields": [
+  {
+   "description": "What somebody types. Upper-cased on save, because nobody types a code the way it was written down.",
+   "fieldname": "claim_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "Which space it puts on their shelf.",
+   "fieldname": "app",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "App",
+   "options": "OneSpace Space",
+   "reqd": 1
+  },
+  {
+   "description": "What it is for. An operator reads this in six months and has to know whether it can be retired.",
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "cb_claim",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "0 is unlimited. One is the ordinary case: a code written down for one customer.",
+   "fieldname": "uses_allowed",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Uses Allowed"
+  },
+  {
+   "default": "0",
+   "fieldname": "uses_spent",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Uses Spent",
+   "read_only": 1
+  },
+  {
+   "description": "Empty never expires.",
+   "fieldname": "expires_on",
+   "fieldtype": "Date",
+   "label": "Expires On"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Space Claim Code",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "claim_code,app,description",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

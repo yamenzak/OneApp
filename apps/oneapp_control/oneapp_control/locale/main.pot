@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 18:58+0000\n"
-"PO-Revision-Date: 2026-09-07 18:58+0000\n"
+"POT-Creation-Date: 2026-09-07 19:09+0000\n"
+"PO-Revision-Date: 2026-09-07 19:09+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -31,6 +31,11 @@ msgstr ""
 #. Description of the 'Max Input Tokens' (Int) field in DocType 'AI Feature'
 #: oneapp_control/control_plane/doctype/ai_feature/ai_feature.json
 msgid "0 falls back to the model's context window, which is the most the provider would accept anyway."
+msgstr ""
+
+#. Description of the 'Uses Allowed' (Int) field in DocType 'Space Claim Code'
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
+msgid "0 is unlimited. One is the ordinary case: a code written down for one customer."
 msgstr ""
 
 #. Description of the 'Percent Off' (Float) field in DocType 'Promo Code'
@@ -355,8 +360,12 @@ msgid "Any"
 msgstr ""
 
 #. Label of the app (Data) field in DocType 'AI Feature'
+#. Label of the app (Link) field in DocType 'Space Claim Code'
+#. Label of the app (Link) field in DocType 'Space Claim Redemption'
 #. Label of the app (Link) field in DocType 'Space Entitlement'
 #: oneapp_control/control_plane/doctype/ai_feature/ai_feature.json
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
+#: oneapp_control/control_plane/doctype/space_claim_redemption/space_claim_redemption.json
 #: oneapp_control/control_plane/doctype/space_entitlement/space_entitlement.json
 msgid "App"
 msgstr ""
@@ -640,6 +649,11 @@ msgstr ""
 msgid "Chosen at signup."
 msgstr ""
 
+#. Label of the claim_code (Link) field in DocType 'Space Claim Redemption'
+#: oneapp_control/control_plane/doctype/space_claim_redemption/space_claim_redemption.json
+msgid "Claim Code"
+msgstr ""
+
 #. Option for the 'Action' (Select) field in DocType 'Provisioning Job'
 #: oneapp_control/control_plane/doctype/provisioning_job/provisioning_job.json
 msgid "Claim Standby Site"
@@ -658,6 +672,10 @@ msgstr ""
 #. Label of the claimed_on (Datetime) field in DocType 'Standby Site'
 #: oneapp_control/control_plane/doctype/standby_site/standby_site.json
 msgid "Claimed On"
+msgstr ""
+
+#: oneapp_control/api/customer.py:1180
+msgid "Claimed with code {0}."
 msgstr ""
 
 #. Option for the 'Capability' (Select) field in DocType 'AI Feature'
@@ -727,7 +745,9 @@ msgid "Cloudflare KV (control plane only)"
 msgstr ""
 
 #. Label of the promo_code (Data) field in DocType 'Promo Code'
+#. Label of the claim_code (Data) field in DocType 'Space Claim Code'
 #: oneapp_control/control_plane/doctype/promo_code/promo_code.json
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
 msgid "Code"
 msgstr ""
 
@@ -1077,6 +1097,7 @@ msgstr ""
 #. Label of the description (Small Text) field in DocType 'Plan'
 #. Label of the description (Small Text) field in DocType 'Promo Code'
 #. Label of the description (Small Text) field in DocType 'Region'
+#. Label of the description (Small Text) field in DocType 'Space Claim Code'
 #. Label of the description (Small Text) field in DocType 'Workspace Role'
 #: oneapp_control/control_plane/doctype/add_on/add_on.json
 #: oneapp_control/control_plane/doctype/ai_feature/ai_feature.json
@@ -1087,6 +1108,7 @@ msgstr ""
 #: oneapp_control/control_plane/doctype/plan/plan.json
 #: oneapp_control/control_plane/doctype/promo_code/promo_code.json
 #: oneapp_control/control_plane/doctype/region/region.json
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
 #: oneapp_control/control_plane/doctype/workspace_role/workspace_role.json
 msgid "Description"
 msgstr ""
@@ -1218,7 +1240,14 @@ msgstr ""
 msgid "Empty for standby pool builds, which belong to no tenant yet."
 msgstr ""
 
+#. Description of the 'Expires On' (Date) field in DocType 'Space Claim Code'
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
+msgid "Empty never expires."
+msgstr ""
+
+#. Label of the enabled (Check) field in DocType 'Space Claim Code'
 #. Label of the enabled (Check) field in DocType 'Space Entitlement'
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
 #: oneapp_control/control_plane/doctype/space_entitlement/space_entitlement.json
 msgid "Enabled"
 msgstr ""
@@ -1320,8 +1349,10 @@ msgstr ""
 
 #. Label of the expires_on (Date) field in DocType 'Credit Ledger Entry'
 #. Label of the expires_on (Date) field in DocType 'Promo Code'
+#. Label of the expires_on (Date) field in DocType 'Space Claim Code'
 #: oneapp_control/control_plane/doctype/credit_ledger_entry/credit_ledger_entry.json
 #: oneapp_control/control_plane/doctype/promo_code/promo_code.json
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
 msgid "Expires On"
 msgstr ""
 
@@ -3142,6 +3173,17 @@ msgstr ""
 msgid "Reconciliation"
 msgstr ""
 
+#. Label of the redeemed_by (Link) field in DocType 'Space Claim Redemption'
+#: oneapp_control/control_plane/doctype/space_claim_redemption/space_claim_redemption.json
+msgid "Redeemed By"
+msgstr ""
+
+#. Label of the redeemed_on (Datetime) field in DocType 'Space Claim
+#. Redemption'
+#: oneapp_control/control_plane/doctype/space_claim_redemption/space_claim_redemption.json
+msgid "Redeemed On"
+msgstr ""
+
 #. Option for the 'Entry Type' (Select) field in DocType 'Credit Ledger Entry'
 #: oneapp_control/control_plane/doctype/credit_ledger_entry/credit_ledger_entry.json
 msgid "Refund"
@@ -3593,6 +3635,16 @@ msgstr ""
 msgid "Space"
 msgstr ""
 
+#. Name of a DocType
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
+msgid "Space Claim Code"
+msgstr ""
+
+#. Name of a DocType
+#: oneapp_control/control_plane/doctype/space_claim_redemption/space_claim_redemption.json
+msgid "Space Claim Redemption"
+msgstr ""
+
 #. Label of the space_code (Data) field in DocType 'OneSpace Space'
 #: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
 msgid "Space Code"
@@ -3981,6 +4033,8 @@ msgstr ""
 #: oneapp_control/control_plane/doctype/provisioning_job/provisioning_job.json
 #: oneapp_control/control_plane/doctype/region/region.json
 #: oneapp_control/control_plane/doctype/shard/shard.json
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
+#: oneapp_control/control_plane/doctype/space_claim_redemption/space_claim_redemption.json
 #: oneapp_control/control_plane/doctype/space_entitlement/space_entitlement.json
 #: oneapp_control/control_plane/doctype/standby_site/standby_site.json
 #: oneapp_control/control_plane/doctype/storage_bucket/storage_bucket.json
@@ -4008,6 +4062,7 @@ msgstr ""
 #. Label of the tenant (Link) field in DocType 'Credit Ledger Entry'
 #. Label of the tenant (Link) field in DocType 'Credit Reservation'
 #. Label of the tenant (Link) field in DocType 'Provisioning Job'
+#. Label of the tenant (Link) field in DocType 'Space Claim Redemption'
 #. Label of the tenant (Link) field in DocType 'Space Entitlement'
 #. Label of the tenant (Link) field in DocType 'Stripe Webhook Event'
 #. Label of the tenant (Link) field in DocType 'Subscription'
@@ -4020,6 +4075,7 @@ msgstr ""
 #: oneapp_control/control_plane/doctype/credit_ledger_entry/credit_ledger_entry.json
 #: oneapp_control/control_plane/doctype/credit_reservation/credit_reservation.json
 #: oneapp_control/control_plane/doctype/provisioning_job/provisioning_job.json
+#: oneapp_control/control_plane/doctype/space_claim_redemption/space_claim_redemption.json
 #: oneapp_control/control_plane/doctype/space_entitlement/space_entitlement.json
 #: oneapp_control/control_plane/doctype/stripe_webhook_event/stripe_webhook_event.json
 #: oneapp_control/control_plane/doctype/subscription/subscription.json
@@ -4136,6 +4192,10 @@ msgstr ""
 
 #: oneapp_control/billing/promos.py:188
 msgid "That code is not live yet. Try again in a minute."
+msgstr ""
+
+#: oneapp_control/api/customer.py:1152
+msgid "That code is not one we know."
 msgstr ""
 
 #: oneapp_control/billing/promos.py:183
@@ -4475,6 +4535,20 @@ msgstr ""
 msgid "User Count"
 msgstr ""
 
+#. Label of the uses_allowed (Int) field in DocType 'Space Claim Code'
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
+msgid "Uses Allowed"
+msgstr ""
+
+#. Label of the uses_spent (Int) field in DocType 'Space Claim Code'
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
+msgid "Uses Spent"
+msgstr ""
+
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.py:18
+msgid "Uses allowed cannot be negative. Zero is unlimited."
+msgstr ""
+
 #. Description of the 'Requested Slug' (Data) field in DocType 'Account
 #. Request'
 #: oneapp_control/control_plane/doctype/account_request/account_request.json
@@ -4584,7 +4658,10 @@ msgid "What it applies to"
 msgstr ""
 
 #. Description of the 'Description' (Small Text) field in DocType 'Promo Code'
+#. Description of the 'Description' (Small Text) field in DocType 'Space Claim
+#. Code'
 #: oneapp_control/control_plane/doctype/promo_code/promo_code.json
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
 msgid "What it is for. An operator reads this in six months and has to know whether it can be retired."
 msgstr ""
 
@@ -4612,7 +4689,9 @@ msgid "What somebody holding it can do, in a sentence."
 msgstr ""
 
 #. Description of the 'Code' (Data) field in DocType 'Promo Code'
+#. Description of the 'Code' (Data) field in DocType 'Space Claim Code'
 #: oneapp_control/control_plane/doctype/promo_code/promo_code.json
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
 msgid "What somebody types. Upper-cased on save, because nobody types a code the way it was written down."
 msgstr ""
 
@@ -4749,6 +4828,11 @@ msgstr ""
 #. Description of the 'Dunning Stage' (Select) field in DocType 'Tenant'
 #: oneapp_control/control_plane/doctype/tenant/tenant.json
 msgid "Which rung the sweep last acted on. Distinct from status: an operator can suspend a paid-up workspace, and that is not the ladder."
+msgstr ""
+
+#. Description of the 'App' (Link) field in DocType 'Space Claim Code'
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.json
+msgid "Which space it puts on their shelf."
 msgstr ""
 
 #. Description of the 'Space' (Data) field in DocType 'Workspace Role Grant'
@@ -4981,6 +5065,10 @@ msgstr ""
 msgid "{0} is already a member."
 msgstr ""
 
+#: oneapp_control/control_plane/doctype/space_claim_code/space_claim_code.py:27
+msgid "{0} is available to every workspace, so a code for it would change nothing. Codes are for Restricted spaces."
+msgstr ""
+
 #: oneapp_control/billing/checkout.py:48
 msgid "{0} is no longer offered."
 msgstr ""
@@ -5005,7 +5093,7 @@ msgstr ""
 msgid "{0} is not sold on a {1} subscription."
 msgstr ""
 
-#: oneapp_control/api/tenant.py:762
+#: oneapp_control/api/tenant.py:763
 msgid "{0} is not something a workspace may ask."
 msgstr ""
 

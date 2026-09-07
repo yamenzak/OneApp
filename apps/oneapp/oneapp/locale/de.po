@@ -1444,6 +1444,9 @@ msgstr "Zeilen gruppieren nach"
 msgid "HTML, rendered as a template with the document in scope."
 msgstr "HTML, als Vorlage gerendert, mit dem Dokument im Kontext."
 
+msgid "Have a code?"
+msgstr "Haben Sie einen Code?"
+
 msgid "Head Seq"
 msgstr "Kopf-Sequenz"
 
@@ -3247,6 +3250,13 @@ msgid "Solid button"
 msgstr "Gefüllte Schaltfläche"
 
 msgid ""
+"Some spaces are not listed. If you were given a code for one, it goes "
+"here and the space appears above."
+msgstr ""
+"Manche Bereiche sind nicht aufgeführt. Wenn Sie für einen davon einen "
+"Code erhalten haben, gehört er hierher, und der Bereich erscheint oben."
+
+msgid ""
 "Somebody asked for this version by name. Never pruned, and sorted above "
 "the automatic ones."
 msgstr ""
@@ -3464,6 +3474,9 @@ msgstr ""
 
 msgid "That attachment is not yours to send."
 msgstr "Dieser Anhang gehört Ihnen nicht, Sie können ihn nicht senden."
+
+msgid "That code worked. The space is above."
+msgstr "Der Code hat funktioniert. Der Bereich ist oben."
 
 msgid "That conversation is not yours."
 msgstr "Diese Unterhaltung gehört Ihnen nicht."
@@ -4473,6 +4486,9 @@ msgstr "Vorlage verwenden"
 msgid "Use as a template"
 msgstr "Als Vorlage verwenden"
 
+msgid "Use it"
+msgstr "Einlösen"
+
 msgid "Use the camera to take a photograph."
 msgstr "Verwenden Sie die Kamera, um ein Foto aufzunehmen."
 
@@ -4991,6 +5007,9 @@ msgid ""
 msgstr ""
 "Ihrer Karte wird die Differenz für den Rest dieses Abrechnungszeitraums "
 "belastet, und die neuen Limits gelten sofort."
+
+msgid "Your code"
+msgstr "Ihr Code"
 
 msgid ""
 "Your company, its financial year, and the accounts everything is posted "

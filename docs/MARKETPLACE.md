@@ -166,17 +166,28 @@ this is about entitlement and should not borrow it.
 
 ```
 Space Claim Code
-    code            the string somebody types
-    app             which space it claims
+    claim_code      the string somebody types, upper-cased on save
+    app             which space it puts on their shelf
     uses_allowed    0 for unlimited
     uses_spent
     expires_on
     enabled
 ```
 
-Redeeming is `registry.grant(tenant, app)` with the checks it already makes,
-plus the two a code adds: it exists and has uses left. Every refusal already
-has its sentence — `assert_can_carry` names the app the bench lacks.
+Redeeming is `registry.offer(tenant, app)` — not `grant`, which the sketch
+said and which would have been the wrong verb: a code says "you may see this",
+and pressing the card is still theirs to do.
+
+Two things it added that the sketch did not have. **Every refusal is the same
+sentence**, because a code is a guessable string and a reply distinguishing "no
+such code" from "spent" from "expired" is a way to enumerate which codes exist
+and which spaces we have built for other people. The one exception is
+`assert_can_carry`, which names the app the bench lacks — and is right to,
+because that is about their site rather than about our catalogue. And **a
+second press by the same workspace is not a refusal and does not spend a use**:
+somebody typing it again is somebody who did not notice it worked, so a one-use
+code would otherwise retire itself on a double-click and then tell its own
+redeemer it never existed.
 
 The operator's other lever is the one that exists: entitle the workspace
 directly, and the private space appears in their marketplace as available with
@@ -219,7 +230,13 @@ Ordered so each is worth having on its own.
    entry. *Done.* `/one/add`, offered in the rail to whoever can act on it.
    Pressing a card enables the space and pulls the manifest in the same
    request, so it is in the launcher rather than fifteen minutes away.
-4. **`Space Claim Code`**, its two operator screens, and redemption.
+4. **`Space Claim Code`**, its two operator screens, and redemption. *Done.*
+   Redeeming is `registry.offer` and not `grant`, which keeps one path through
+   the marketplace rather than two: the four card states are the same four
+   whether an operator put the space on the shelf or a code did. `Space Claim
+   Redemption` is its own doctype rather than a child table, because the
+   question an operator asks is "who has RUA and how did they get it", which is
+   a list across codes.
 5. **Install App, visible to the customer** — the card that started it says
    what is happening, and the space appears when it finishes. *Done.* The card
    reads the newest Install App job per app, looks again every fifteen seconds
