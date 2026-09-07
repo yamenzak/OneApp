@@ -23,6 +23,7 @@ tenant caches it.
 Nothing here runs on Frappe Cloud, and nothing here is a fixture the apps ship.
 """
 
+import re
 import json
 from pathlib import Path
 
@@ -317,12 +318,7 @@ TODOS = [
 	# this one to check that a record with no assignment offers the outline of
 	# a person, and assigns it itself.
 	{"name": "zzmock-halloway",
-	 "description": "Chase the Halloway invoice", "priority": "High", "status": "Open",
-	 # The one field in the fixture a model wrote. Nothing in the product writes
-	 # a record yet — the assistant's tools all read — so without this the
-	 # sparkle beside a marked label is a thing only a hand-made row can show,
-	 # and no browser pass can point at it.
-	 "written_by_ai": "description"},
+	 "description": "Chase the Halloway invoice", "priority": "High", "status": "Open"},
 	# Allocated to the colleague on purpose. Frappe's ToDo has a permission
 	# rule of its own — owner, allocated_to, assigned_by — so a second person
 	# cannot so much as join the realtime room for a task that is none of
@@ -469,6 +465,23 @@ def _write_pictures():
 # not crowd the Open work layout.
 BACKLOG = 40
 BACKLOG_PREFIX = "Backlog item"
+
+# The one backlog row this fixture says a model wrote. On the tail and not on
+# one of the three named tasks, because a mark is *meant* to go when a person
+# rewrites the value — so a task three specs type into is the one place it
+# cannot be asserted twice in the same browser pass. Nothing names a backlog
+# row but the spec that reads this.
+WRITTEN_BY_AI = f"{BACKLOG_PREFIX} 01"
+
+
+def _plain(html: str) -> str:
+	"""A description as it was written, without the wrapper ToDo adds.
+
+	`ToDo` sanitises a Text Editor field, so a row inserted with `Book the van`
+	reads back as `<p>Book the van</p>`. Comparing the two directly decides the
+	fixture has drifted on every run.
+	"""
+	return re.sub(r"<[^>]+>", "", html or "").strip()
 
 # Field metadata the UI honours and stock Frappe never sets. These are
 # ERPNext-shaped flags — a doctype there marks the two or three fields worth
@@ -1383,14 +1396,21 @@ def seed_tenant(manifest_only=False):
 			frappe.db.set_value(
 				"ToDo", row["name"], "allocated_to", row.get("allocated_to") or None
 			)
+			# And the text, for the same reason one step further along: three
+			# specs name a task by the words on it, so a pass that typed into
+			# one — or a hand at a console — leaves every one of them failing on
+			# a fixture that no longer says what they were written against.
+			# Through the document rather than the column, so ToDo's own
+			# sanitiser wraps it exactly as it wraps a fresh insert.
+			task = frappe.get_doc("ToDo", row["name"])
+			if _plain(task.description) != row["description"]:
+				task.description = row["description"]
+				task.save(ignore_permissions=True)
 		else:
 			# `set_name`, not a `name` key: ToDo autonames by hash, and
 			# `set_new_name` overwrites whatever is on the document unless the
 			# insert was told the name is already decided.
-			fields = {
-				k: v for k, v in row.items()
-				if k not in ("name", "assigned", "written_by_ai")
-			}
+			fields = {k: v for k, v in row.items() if k not in ("name", "assigned")}
 			frappe.get_doc({"doctype": "ToDo", **fields}).insert(
 				ignore_permissions=True, set_name=row["name"]
 			)
@@ -1423,16 +1443,6 @@ def seed_tenant(manifest_only=False):
 			pluck="name",
 		):
 			frappe.delete_doc("ToDo", stray, ignore_permissions=True, force=True)
-
-		# And the provenance mark, re-asserted rather than inserted once: a
-		# browser pass that edits this task's text clears the mark, which is the
-		# behaviour, and the next seed has to put it back.
-		if row.get("written_by_ai"):
-			written.mark(
-				"ToDo", row["name"], row["written_by_ai"],
-				feature="oneapp.chat.workspace", model="google-ai-studio:flash",
-				asked_by="Administrator",
-			)
 
 	for row in NOTES:
 		if frappe.db.exists("Note", {"title": row["title"]}):
@@ -1483,6 +1493,31 @@ def seed_tenant(manifest_only=False):
 			"doctype": "ToDo", "description": description, "status": "Closed",
 			"priority": ["High", "Medium", "Low"][n % 3],
 		}).insert(ignore_permissions=True)
+
+	# The one field in the fixture a model wrote. Nothing in the product writes
+	# a record yet — the assistant's tools all read — so without this the sparkle
+	# beside a marked label is something only a hand-made row can show, and no
+	# browser pass can point at it. Re-asserted rather than inserted once, since
+	# a pass that types into this row clears it, which is the behaviour.
+	marked = frappe.db.get_value(
+		"ToDo", {"description": ["like", f"%{WRITTEN_BY_AI}%"]}, "name"
+	)
+	if marked:
+		written.mark(
+			"ToDo", marked, "description",
+			feature="oneapp.chat.workspace", model="google-ai-studio:flash",
+			asked_by="Administrator",
+		)
+
+	# And nothing else is marked. A mark left on another record — by a hand at a
+	# console, or by a run of an older version of this file — is a sparkle the
+	# spec that checks an unmarked field would find, and the failure would read
+	# as the mark being drawn where it should not be rather than as litter.
+	for stray in frappe.get_all(
+		written.DOCTYPE, filters={"reference_name": ["!=", marked or ""]}, pluck="name"
+	):
+		frappe.delete_doc(written.DOCTYPE, stray, force=True, ignore_permissions=True)
+	written._forget_which_doctypes_are_marked()
 
 	# And their views. A browser pass that makes a view and fails before
 	# deleting it leaves one behind, and three runs later "Only the urgent"
