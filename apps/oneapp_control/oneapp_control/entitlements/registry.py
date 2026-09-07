@@ -449,6 +449,11 @@ def offer(tenant: str, space_code: str, note: str | None = None):
 	rather than at the customer's: a card that can only ever fail is worse than
 	no card, and the operator offering it is the one who can do something about
 	a bench that cannot carry the app.
+
+	Which does not make the marketplace's `unavailable` state unreachable — a
+	bench is not fixed. A space offered onto one that carried its app, on a
+	workspace later moved to a shard that does not, is exactly the case where a
+	customer would otherwise press a button that fails.
 	"""
 	from oneapp_control.entitlements import apps
 
