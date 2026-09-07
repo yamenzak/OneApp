@@ -273,6 +273,9 @@ msgstr "Legen Sie eine auf {0} an, dann kommt E-Mail an diese Adresse hier an."
 msgid "Add rule"
 msgstr "Regel hinzufügen"
 
+msgid "Add this domain"
+msgstr "Diese Domain hinzufügen"
+
 msgid "Add to favourites"
 msgstr "Zu Favoriten hinzufügen"
 
@@ -654,6 +657,14 @@ msgstr ""
 "Erstellen Sie eine, wenn die mitgelieferten Rollen Ihrer Apps nicht die "
 "Form haben, die Sie brauchen."
 
+msgid ""
+"Build one where the shipped roles are the wrong shape — somebody who "
+"should read the whole workspace and change one part of it."
+msgstr ""
+"Erstellen Sie eine, wenn die mitgelieferten Rollen nicht passen — für "
+"jemanden, der den ganzen Arbeitsbereich lesen und einen Teil davon "
+"ändern soll."
+
 msgid "By email"
 msgstr "Per E-Mail"
 
@@ -966,6 +977,9 @@ msgstr "Hat diesen Datensatz erstellt."
 
 msgid "Credits"
 msgstr "Guthaben"
+
+msgid "Current address"
+msgstr "Aktuelle Adresse"
 
 msgid "Current password"
 msgstr "Aktuelles Passwort"
@@ -2529,6 +2543,9 @@ msgstr "Eine Person"
 msgid "One record will have {0} set to this."
 msgstr "Bei einem Datensatz wird {0} darauf gesetzt."
 
+msgid "One screen — {0}"
+msgstr "Ein Bildschirm — {0}"
+
 msgid "One seat"
 msgstr "Ein Platz"
 
@@ -2869,6 +2886,9 @@ msgstr "Quartalsrückblick"
 msgid "Quota Enforcement"
 msgstr "Kontingentdurchsetzung"
 
+msgid "Reaches nothing yet"
+msgstr "Erreicht noch nichts"
+
 msgid "Reading…"
 msgstr "Wird gelesen…"
 
@@ -3009,6 +3029,9 @@ msgid "Roles appear here once this workspace has an app."
 msgstr "Rollen erscheinen hier, sobald dieser Arbeitsbereich eine App hat."
 
 msgid "Roles you built"
+msgstr "Von Ihnen erstellte Rollen"
+
+msgid "Roles you made"
 msgstr "Von Ihnen erstellte Rollen"
 
 msgid "Roles your apps came with"
@@ -3679,6 +3702,9 @@ msgstr ""
 "vergleicht die Leiste, um zu sagen, welche Version gerade angezeigt "
 "wird."
 
+msgid "The address people type to reach this workspace."
+msgstr "Die Adresse, die man eingibt, um diesen Arbeitsbereich zu erreichen."
+
 msgid "The address you already had. Read and answer it here."
 msgstr "Die Adresse, die Sie bereits haben. Lesen und beantworten Sie sie hier."
 
@@ -4055,6 +4081,13 @@ msgid ""
 msgstr ""
 "Diese kommen mit den Apps dieses Arbeitsbereichs. Vergeben Sie sie in "
 "der Ansicht Personen."
+
+msgid ""
+"These come with the apps this workspace has. They cannot be changed "
+"here."
+msgstr ""
+"Diese kommen mit den Apps dieses Arbeitsbereichs und lassen sich hier "
+"nicht ändern."
 
 msgid ""
 "These rows are locked. Unlock them first if the sheet should replace "
@@ -4533,6 +4566,9 @@ msgstr "Dieses Foto verwenden"
 msgid "Use your own domain"
 msgstr "Eigene Domain verwenden"
 
+msgid "Using a domain of your own"
+msgstr "Eine eigene Domain verwenden"
+
 msgid "Verified As"
 msgstr "Verifiziert als"
 
@@ -4566,6 +4602,13 @@ msgstr "Wasserzeichen von"
 msgid "Watermark To"
 msgstr "Wasserzeichen bis"
 
+msgid ""
+"We are checking the record and issuing a certificate. Usually a minute "
+"or two."
+msgstr ""
+"Wir prüfen den Eintrag und stellen ein Zertifikat aus. Meist ein bis "
+"zwei Minuten."
+
 msgid "We could not connect: {0}"
 msgstr "Verbindung nicht möglich: {0}"
 
@@ -4576,6 +4619,9 @@ msgid "We guessed these from your address. Change them if your host differs."
 msgstr ""
 "Diese haben wir aus Ihrer Adresse abgeleitet. Ändern Sie sie, wenn Ihr "
 "Anbieter abweicht."
+
+msgid "What a person may reach, as a set you can give somebody in one go."
+msgstr "Worauf jemand zugreifen darf, als Satz, den Sie in einem Zug vergeben."
 
 msgid "What a printed document looks like, and the letter head it sits under."
 msgstr ""
@@ -4709,6 +4755,9 @@ msgstr "Was wir daraus gemacht haben, bevor es abgelehnt wurde."
 
 msgid "What you are told about, and how."
 msgstr "Worüber Sie benachrichtigt werden und wie."
+
+msgid "What your apps ship"
+msgstr "Was Ihre Apps mitbringen"
 
 msgid "When"
 msgstr "Wann"
@@ -5053,6 +5102,14 @@ msgstr "Ihr Tagebuch"
 msgid "Your domain"
 msgstr "Ihre Domain"
 
+msgid ""
+"Your domain is kept with your account, and it is not answering. The "
+"workspace is still reachable at the address it already has."
+msgstr ""
+"Ihre Domain wird bei Ihrem Konto geführt, und das antwortet gerade "
+"nicht. Der Arbeitsbereich ist weiterhin unter seiner bisherigen Adresse "
+"erreichbar."
+
 msgid "Your files did not load"
 msgstr "Ihre Dateien konnten nicht geladen werden"
 
@@ -5109,6 +5166,13 @@ msgstr ""
 "Ihr Tarif enthält {0} Plätze. Wechseln Sie den Tarif, um weitere "
 "Personen einzuladen, oder entfernen Sie jemanden, der keinen Zugriff "
 "mehr braucht."
+
+msgid ""
+"Your roles are kept with your account, and it is not answering. "
+"Everybody keeps the access they already have."
+msgstr ""
+"Ihre Rollen werden bei Ihrem Konto geführt, und das antwortet gerade "
+"nicht. Alle behalten den Zugang, den sie haben."
 
 msgid "Your signature, your away message, and where your mail files itself."
 msgstr ""
@@ -5374,6 +5438,9 @@ msgstr "{0} ist bereits verbunden."
 msgid "{0} is already running."
 msgstr "{0} läuft bereits."
 
+msgid "{0} is being set up"
+msgstr "{0} wird eingerichtet"
+
 msgid ""
 "{0} is named by its own scheme, which is part of the app rather than a "
 "setting. Its counter can still be moved."
@@ -5525,6 +5592,9 @@ msgid "{0} runs on a workflow, so it is {1} by taking the next step in it."
 msgstr ""
 "{0} läuft über einen Workflow, wird also {1}, indem der nächste Schritt "
 "darin ausgeführt wird."
+
+msgid "{0} screens — {1}"
+msgstr "{0} Bildschirme — {1}"
 
 msgid "{0} seats"
 msgstr "{0} Plätze"

@@ -247,6 +247,9 @@ msgstr "أضف واحدًا على {0} ليصل البريد الموجّه إل
 msgid "Add rule"
 msgstr "إضافة قاعدة"
 
+msgid "Add this domain"
+msgstr "أضف هذا النطاق"
+
 msgid "Add to favourites"
 msgstr "إضافة إلى المفضلة"
 
@@ -608,6 +611,13 @@ msgstr ""
 "أنشئ دوراً عندما لا تكون الأدوار التي جاءت مع تطبيقاتك بالشكل الذي "
 "تحتاجه."
 
+msgid ""
+"Build one where the shipped roles are the wrong shape — somebody who "
+"should read the whole workspace and change one part of it."
+msgstr ""
+"أنشئ دورًا حين لا تناسبك الأدوار الجاهزة — لشخص ينبغي أن يقرأ مساحة "
+"العمل كلها ويعدّل جزءًا واحدًا منها."
+
 msgid "By email"
 msgstr "بالبريد"
 
@@ -910,6 +920,9 @@ msgstr "أنشأ هذا السجل."
 
 msgid "Credits"
 msgstr "أرصدة"
+
+msgid "Current address"
+msgstr "العنوان الحالي"
 
 msgid "Current password"
 msgstr "كلمة المرور الحالية"
@@ -2426,6 +2439,9 @@ msgstr "شخص واحد"
 msgid "One record will have {0} set to this."
 msgstr "سجل واحد ستُضبط فيه قيمة {0} على هذا."
 
+msgid "One screen — {0}"
+msgstr "شاشة واحدة — {0}"
+
 msgid "One seat"
 msgstr "مقعد واحد"
 
@@ -2744,6 +2760,9 @@ msgstr "مراجعة ربع سنوية"
 msgid "Quota Enforcement"
 msgstr "تطبيق الحصة"
 
+msgid "Reaches nothing yet"
+msgstr "لا يصل إلى شيء بعد"
+
 msgid "Reading…"
 msgstr "جارٍ القراءة…"
 
@@ -2882,6 +2901,9 @@ msgid "Roles appear here once this workspace has an app."
 msgstr "تظهر الأدوار هنا بمجرد أن يصبح لمساحة العمل هذه تطبيق."
 
 msgid "Roles you built"
+msgstr "الأدوار التي أنشأتها"
+
+msgid "Roles you made"
 msgstr "الأدوار التي أنشأتها"
 
 msgid "Roles your apps came with"
@@ -3540,6 +3562,9 @@ msgstr ""
 "قيمة `head_seq` للمحتوى وقت أخذ هذه النسخة. وهي ما تقارن به اللوحة لتقول "
 "أي نسخة هي المعروضة."
 
+msgid "The address people type to reach this workspace."
+msgstr "العنوان الذي يكتبه الناس للوصول إلى مساحة العمل هذه."
+
 msgid "The address you already had. Read and answer it here."
 msgstr "العنوان الذي لديك بالفعل. اقرأه وأجب عنه هنا."
 
@@ -3876,6 +3901,11 @@ msgid ""
 msgstr ""
 "تأتي هذه مع التطبيقات الموجودة في مساحة العمل هذه. وزّعها من شاشة "
 "الأشخاص."
+
+msgid ""
+"These come with the apps this workspace has. They cannot be changed "
+"here."
+msgstr "تأتي هذه مع التطبيقات التي تملكها مساحة العمل، ولا يمكن تغييرها هنا."
 
 msgid ""
 "These rows are locked. Unlock them first if the sheet should replace "
@@ -4325,6 +4355,9 @@ msgstr "استخدام هذه الصورة"
 msgid "Use your own domain"
 msgstr "استخدام نطاقك الخاص"
 
+msgid "Using a domain of your own"
+msgstr "استخدام نطاق خاص بك"
+
 msgid "Verified As"
 msgstr "تم التحقق بصفة"
 
@@ -4358,6 +4391,11 @@ msgstr "العلامة المائية من"
 msgid "Watermark To"
 msgstr "العلامة المائية إلى"
 
+msgid ""
+"We are checking the record and issuing a certificate. Usually a minute "
+"or two."
+msgstr "نتحقق من السجل ونُصدر الشهادة. عادةً دقيقة أو دقيقتان."
+
 msgid "We could not connect: {0}"
 msgstr "تعذّر الاتصال: {0}"
 
@@ -4366,6 +4404,9 @@ msgstr "تعذّر الوصول إلى {0}. تحقق من اسم الخادم."
 
 msgid "We guessed these from your address. Change them if your host differs."
 msgstr "خمّنّا هذه من عنوانك. غيّرها إذا كان مزوّدك مختلفًا."
+
+msgid "What a person may reach, as a set you can give somebody in one go."
+msgstr "ما يمكن للشخص الوصول إليه، كمجموعة تمنحها لأحدهم دفعة واحدة."
 
 msgid "What a printed document looks like, and the letter head it sits under."
 msgstr "شكل المستند المطبوع، والترويسة التي يظهر تحتها."
@@ -4490,6 +4531,9 @@ msgstr "ما فهمناه منه قبل أن يُرفض."
 
 msgid "What you are told about, and how."
 msgstr "ما تُبلَّغ به، وكيف."
+
+msgid "What your apps ship"
+msgstr "ما تأتي به تطبيقاتك"
 
 msgid "When"
 msgstr "متى"
@@ -4817,6 +4861,13 @@ msgstr "يومياتك"
 msgid "Your domain"
 msgstr "نطاقك"
 
+msgid ""
+"Your domain is kept with your account, and it is not answering. The "
+"workspace is still reachable at the address it already has."
+msgstr ""
+"نطاقك محفوظ مع حسابك، وهو لا يستجيب. ما زال الوصول إلى مساحة العمل "
+"ممكنًا على عنوانها الحالي."
+
 msgid "Your files did not load"
 msgstr "لم تُحمَّل ملفاتك"
 
@@ -4871,6 +4922,13 @@ msgid ""
 msgstr ""
 "تشمل خطتك {0} مقاعد. غيّر الخطة لدعوة المزيد من الأشخاص، أو أزل شخصاً لم "
 "يعد يحتاج الوصول."
+
+msgid ""
+"Your roles are kept with your account, and it is not answering. "
+"Everybody keeps the access they already have."
+msgstr ""
+"أدوارك محفوظة مع حسابك، وهو لا يستجيب. يحتفظ الجميع بالصلاحيات التي "
+"لديهم."
 
 msgid "Your signature, your away message, and where your mail files itself."
 msgstr "توقيعك، ورسالة غيابك، وأين يُصنَّف بريدك تلقائيًا."
@@ -5132,6 +5190,9 @@ msgstr "{0} متصل بالفعل."
 msgid "{0} is already running."
 msgstr "{0} قيد التشغيل بالفعل."
 
+msgid "{0} is being set up"
+msgstr "يجري إعداد {0}"
+
 msgid ""
 "{0} is named by its own scheme, which is part of the app rather than a "
 "setting. Its counter can still be moved."
@@ -5275,6 +5336,9 @@ msgstr "{0} صفوف، من {1}!{2}"
 
 msgid "{0} runs on a workflow, so it is {1} by taking the next step in it."
 msgstr "{0} يعمل بسير عمل، لذا يصبح {1} باتخاذ الخطوة التالية فيه."
+
+msgid "{0} screens — {1}"
+msgstr "{0} شاشات — {1}"
 
 msgid "{0} seats"
 msgstr "{0} مقاعد"

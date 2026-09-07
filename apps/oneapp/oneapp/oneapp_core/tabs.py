@@ -136,6 +136,10 @@ TABS = [
 	# control plane's; `oneapp_core/account.py` is the relay.
 	{"key": "people", "label": "People", "icon": "lucide-users",
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
+	{"key": "roles", "label": "Roles", "icon": "lucide-user-round",
+	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
+	{"key": "domain", "label": "Domain", "icon": "lucide-globe",
+	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 ]
 
 

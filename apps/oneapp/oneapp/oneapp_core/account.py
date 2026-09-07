@@ -26,15 +26,25 @@ from oneapp.oneapp_core import control_client
 
 
 def _ask(action: str, **arguments) -> dict:
-	"""Relay one question, as the person who asked it."""
+	"""Relay one question, as the person who asked it.
+
+	An account that cannot be reached comes back as `{"unreachable": True}`
+	rather than as an exception, because it is an answer: this site is not
+	linked to a control plane, or the network is having a day, and neither is a
+	fault in the request somebody just made. Raising made it a 500 in the
+	browser console on a settings page that had rendered correctly.
+	"""
 	if frappe.session.user in ("", "Guest", None):
 		frappe.throw(frappe._("Please sign in."), frappe.PermissionError)
 
-	return control_client.call("workspace_admin", {
-		"action": action,
-		"as_user": frappe.session.user,
-		"arguments": arguments,
-	})
+	try:
+		return control_client.call("workspace_admin", {
+			"action": action,
+			"as_user": frappe.session.user,
+			"arguments": arguments,
+		})
+	except (control_client.NotProvisioned, control_client.ControlPlaneError):
+		return {"unreachable": True}
 
 
 @frappe.whitelist(methods=["GET"])

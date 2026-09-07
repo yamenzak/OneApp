@@ -144,12 +144,12 @@ const accessOptions = computed(() =>
 const load = async () => {
   loading.value = true
   try {
-    data.value = await workspace.members()
-    unreachable.value = false
+    const answer = await workspace.members()
+    // A state of the answer rather than an exception: the account being
+    // unreachable is not a fault in what anybody asked for.
+    unreachable.value = !!answer.unreachable
+    data.value = answer
   } catch (e) {
-    // Told apart from a refusal on purpose: this one is not the reader's fault
-    // and there is nothing for them to do about it.
-    unreachable.value = true
     error.value = errorText(e)
   } finally {
     loading.value = false

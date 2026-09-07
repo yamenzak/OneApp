@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 17:12+0000\n"
-"PO-Revision-Date: 2026-09-07 17:12+0000\n"
+"POT-Creation-Date: 2026-09-07 17:25+0000\n"
+"PO-Revision-Date: 2026-09-07 17:25+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -373,6 +373,10 @@ msgstr ""
 
 #: frontend/src/components/settings/MailboxSettings.vue:197
 msgid "Add rule"
+msgstr ""
+
+#: frontend/src/components/settings/DomainSettings.vue:84
+msgid "Add this domain"
 msgstr ""
 
 #: frontend/src/components/drive/FileRow.vue:97
@@ -986,6 +990,10 @@ msgstr ""
 msgid "Build one when the roles your apps came with are not the shape you need."
 msgstr ""
 
+#: frontend/src/components/settings/RoleSettings.vue:48
+msgid "Build one where the shipped roles are the wrong shape — somebody who should read the whole workspace and change one part of it."
+msgstr ""
+
 #: frontend/src/screens/account/PackCard.vue:8
 msgid "Buy"
 msgstr ""
@@ -1138,7 +1146,9 @@ msgstr ""
 msgid "Cancels at the end of this period"
 msgstr ""
 
+#: frontend/src/components/settings/DomainSettings.vue:19
 #: frontend/src/components/settings/PeopleSettings.vue:24
+#: frontend/src/components/settings/RoleSettings.vue:22
 msgid "Cannot reach your account"
 msgstr ""
 
@@ -1609,6 +1619,10 @@ msgstr ""
 msgid "Current"
 msgstr ""
 
+#: frontend/src/components/settings/DomainSettings.vue:28
+msgid "Current address"
+msgstr ""
+
 #: frontend/src/components/settings/SecuritySettings.vue:30
 msgid "Current password"
 msgstr ""
@@ -1733,6 +1747,8 @@ msgstr ""
 msgid "Delete this record?"
 msgstr ""
 
+#: frontend/src/components/settings/RoleSettings.vue:66
+#: frontend/src/components/settings/RoleSettings.vue:67
 #: frontend/src/pages/ScreenHost.vue:368
 msgid "Delete {0}"
 msgstr ""
@@ -1826,6 +1842,7 @@ msgstr ""
 msgid "Document Type"
 msgstr ""
 
+#: frontend/src/components/settings/DomainSettings.vue:11
 #: frontend/src/components/settings/MailSettings.vue:153
 #: frontend/src/screens/ops/Tenant.vue:392
 msgid "Domain"
@@ -3905,6 +3922,7 @@ msgstr ""
 msgid "No plan yet"
 msgstr ""
 
+#: frontend/src/components/settings/RoleSettings.vue:47
 #: frontend/src/screens/account/Roles.vue:87
 msgid "No roles of your own yet"
 msgstr ""
@@ -4379,6 +4397,10 @@ msgstr ""
 
 #: frontend/src/components/screen/views/BulkEditDialog.vue:44
 msgid "One record will have {0} set to this."
+msgstr ""
+
+#: frontend/src/components/settings/RoleSettings.vue:110
+msgid "One screen — {0}"
 msgstr ""
 
 #: frontend/src/screens/account/Plan.vue:149
@@ -4967,6 +4989,10 @@ msgstr ""
 msgid "Re-check"
 msgstr ""
 
+#: frontend/src/components/settings/RoleSettings.vue:107
+msgid "Reaches nothing yet"
+msgstr ""
+
 #: frontend/src/screens/ops/FrappeCloud.vue:14
 msgid "Read from Frappe Cloud each time this opens, so it is never a stale copy."
 msgstr ""
@@ -5326,6 +5352,10 @@ msgstr ""
 msgid "Role"
 msgstr ""
 
+#: frontend/src/components/settings/RoleSettings.vue:14
+msgid "Roles"
+msgstr ""
+
 #. Label of the roles_json (Code) field in DocType 'OneSpace Site State'
 #: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
 msgid "Roles JSON"
@@ -5337,6 +5367,10 @@ msgstr ""
 
 #: frontend/src/screens/account/Roles.vue:53
 msgid "Roles you built"
+msgstr ""
+
+#: frontend/src/components/settings/RoleSettings.vue:42
+msgid "Roles you made"
 msgstr ""
 
 #: frontend/src/screens/account/Roles.vue:19
@@ -6552,6 +6586,10 @@ msgstr ""
 msgid "The `head_seq` of the body when this was taken. What the panel compares against to say which version is the one on screen."
 msgstr ""
 
+#: frontend/src/components/settings/DomainSettings.vue:12
+msgid "The address people type to reach this workspace."
+msgstr ""
+
 #: frontend/src/components/settings/MailboxSettings.vue:218
 msgid "The address you already had. Read and answer it here."
 msgstr ""
@@ -6889,6 +6927,10 @@ msgstr ""
 
 #: frontend/src/screens/account/Roles.vue:22
 msgid "These arrive with the apps this workspace has. Hand them out on the People screen."
+msgstr ""
+
+#: frontend/src/components/settings/RoleSettings.vue:34
+msgid "These come with the apps this workspace has. They cannot be changed here."
 msgstr ""
 
 #: oneapp/oneapp_core/sheets/feed.py:123
@@ -7339,7 +7381,7 @@ msgstr ""
 msgid "Unknown settings group {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/tabs.py:190
+#: oneapp/oneapp_core/tabs.py:194
 msgid "Unknown settings tab {0}."
 msgstr ""
 
@@ -7516,6 +7558,10 @@ msgstr ""
 msgid "Users"
 msgstr ""
 
+#: frontend/src/components/settings/DomainSettings.vue:50
+msgid "Using a domain of your own"
+msgstr ""
+
 #. Option for the 'Status' (Select) field in DocType 'Compliance Document'
 #: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
 msgid "Valid"
@@ -7608,6 +7654,10 @@ msgstr ""
 msgid "Watermark To"
 msgstr ""
 
+#: frontend/src/components/settings/DomainSettings.vue:40
+msgid "We are checking the record and issuing a certificate. Usually a minute or two."
+msgstr ""
+
 #: oneapp/oneapp_core/email/connect.py:285
 msgid "We could not connect: {0}"
 msgstr ""
@@ -7618,6 +7668,10 @@ msgstr ""
 
 #: oneapp/oneapp_core/email/connect.py:88
 msgid "We guessed these from your address. Change them if your host differs."
+msgstr ""
+
+#: frontend/src/components/settings/RoleSettings.vue:15
+msgid "What a person may reach, as a set you can give somebody in one go."
 msgstr ""
 
 #: frontend/src/components/settings/PrintingSettings.vue:14
@@ -7776,6 +7830,10 @@ msgstr ""
 
 #: frontend/src/components/settings/NotificationSettingsPanel.vue:11
 msgid "What you are told about, and how."
+msgstr ""
+
+#: frontend/src/components/settings/RoleSettings.vue:30
+msgid "What your apps ship"
 msgstr ""
 
 #: frontend/src/screens/account/Billing.vue:183
@@ -8103,7 +8161,7 @@ msgstr ""
 msgid "You cannot change {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/tabs.py:186
+#: oneapp/oneapp_core/tabs.py:190
 msgid "You cannot open {0}."
 msgstr ""
 
@@ -8167,8 +8225,13 @@ msgstr ""
 msgid "Your diary"
 msgstr ""
 
+#: frontend/src/components/settings/DomainSettings.vue:72
 #: frontend/src/components/settings/MailSettings.vue:317
 msgid "Your domain"
+msgstr ""
+
+#: frontend/src/components/settings/DomainSettings.vue:21
+msgid "Your domain is kept with your account, and it is not answering. The workspace is still reachable at the address it already has."
 msgstr ""
 
 #: frontend/src/pages/Drive.vue:141
@@ -8223,6 +8286,10 @@ msgstr ""
 msgid "Your plan includes {0} seats. Change plan to invite more people, or remove someone who no longer needs access."
 msgstr ""
 
+#: frontend/src/components/settings/RoleSettings.vue:24
+msgid "Your roles are kept with your account, and it is not answering. Everybody keeps the access they already have."
+msgstr ""
+
 #: frontend/src/components/settings/MailboxSettings.vue:14
 msgid "Your signature, your away message, and where your mail files itself."
 msgstr ""
@@ -8264,6 +8331,7 @@ msgstr ""
 msgid "and {0} more."
 msgstr ""
 
+#: frontend/src/components/settings/DomainSettings.vue:73
 #: frontend/src/screens/account/Domain.vue:69
 msgid "app.yourcompany.com"
 msgstr ""
@@ -8598,6 +8666,10 @@ msgstr ""
 msgid "{0} is already running."
 msgstr ""
 
+#: frontend/src/components/settings/DomainSettings.vue:36
+msgid "{0} is being set up"
+msgstr ""
+
 #: oneapp/oneapp_core/naming.py:195
 msgid "{0} is named by its own scheme, which is part of the app rather than a setting. Its counter can still be moved."
 msgstr ""
@@ -8790,6 +8862,10 @@ msgstr ""
 
 #: oneapp/oneapp_core/docflow.py:324
 msgid "{0} runs on a workflow, so it is {1} by taking the next step in it."
+msgstr ""
+
+#: frontend/src/components/settings/RoleSettings.vue:111
+msgid "{0} screens — {1}"
 msgstr ""
 
 #: frontend/src/screens/account/Plan.vue:149
