@@ -42,8 +42,11 @@
         </span>
         <!-- The id underneath, quietly: it is what a person quotes on the phone
              and never what they read first. Suppressed when the title is the
-             id, which is most doctypes without a title field. -->
-        <span v-if="title && title !== row.name" class="truncate text-p-xs text-ink-gray-5">
+             id, which is most doctypes without a title field.
+             `ink-gray-4` and not 5, which is the ink an ordinary value is: at 5
+             a column of ids reads as a second column of content rather than as
+             the reference under a name. -->
+        <span v-if="title && title !== row.name" class="truncate text-p-xs text-ink-gray-4">
           {{ row.name }}
         </span>
       </div>

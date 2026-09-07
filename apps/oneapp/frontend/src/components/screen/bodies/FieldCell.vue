@@ -25,7 +25,11 @@
 
   <div v-else-if="column.cell === 'image'" class="flex items-center">
     <Avatar v-if="value" :image="value" :label="String(value)" shape="square" size="sm" />
-    <span v-else class="text-p-sm text-ink-gray-4">—</span>
+    <!-- The lightest ink there is. An empty cell is the absence of a value and
+         should read as one: at `ink-gray-4` a screen whose optional columns are
+         mostly blank is a grid of dashes competing with the values beside
+         them. -->
+    <span v-else class="text-p-sm text-ink-gray-3">—</span>
   </div>
 
   <div v-else-if="column.cell === 'color'" class="flex items-center gap-2">
@@ -34,7 +38,10 @@
       class="size-3 shrink-0 rounded-full border border-outline-gray-2"
       :style="{ backgroundColor: value }"
     />
-    <span class="truncate text-p-sm text-ink-gray-7">{{ value || '—' }}</span>
+    <span
+      class="truncate text-p-sm"
+      :class="value ? 'text-ink-gray-7' : 'text-ink-gray-3'"
+    >{{ value || '—' }}</span>
   </div>
 
   <!--

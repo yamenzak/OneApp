@@ -57,6 +57,14 @@
               Sorting lives on the headers, the only place a direction can sit
               beside the thing it applies to. frappe-ui ships the cell for it,
               so this wires state to it rather than rebuilding it.
+
+              No fieldtype glyph beside the label, and it used to carry one. The
+              glyph says what *kind* of field this is — a Link, a Select — which
+              is a fact about the schema rather than about the data, and five
+              near-identical grey marks across a header is five things to look
+              past on the way to the words. It is kept in the column picker,
+              where you are choosing a field and the kind is what you are
+              choosing by.
             -->
             <!--
               `aligned` here too, and it was missing: only the plain header cell
@@ -70,9 +78,6 @@
               :style="stickyStyle(c)"
               @click="emit('sort', c.key)"
             >
-              <template #prefix v-if="c.icon">
-                <Icon :name="c.icon" class="size-3.5 text-ink-gray-4" />
-              </template>
               {{ c.label }}
             </ListHeaderCellSort>
 
@@ -81,9 +86,6 @@
               :class="[c.pin && PINNED, aligned(c)]"
               :style="stickyStyle(c)"
             >
-              <template #prefix v-if="c.icon">
-                <Icon :name="c.icon" class="size-3.5 text-ink-gray-4" />
-              </template>
               {{ c.label }}
               <!--
                 A required column says so where its label is said. A grid cell has
