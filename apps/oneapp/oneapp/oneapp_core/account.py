@@ -112,5 +112,26 @@ def marketplace() -> dict:
 
 @frappe.whitelist()
 def enable_space(space: str) -> dict:
-	"""Turn on a space this workspace was offered, and say where it got to."""
-	return _ask("enable_space", space=space)
+	"""Turn on a space this workspace was offered, and bring it in now.
+
+	The grant is written on the control plane, and this site learns what it is
+	entitled to by pulling — every fifteen minutes. Which would make pressing a
+	card do nothing visible for a quarter of an hour, and "it will appear
+	shortly" is the sentence `tests/test_ui_copy.py` exists to keep out of this
+	product. So the pull is made here, immediately, and the space is in the
+	launcher by the time the page has finished reloading.
+
+	The sync is allowed to fail without failing the press: the entitlement is
+	written either way, and the scheduled pull fifteen minutes later is exactly
+	the fallback this is a shortcut past.
+	"""
+	answer = _ask("enable_space", space=space)
+
+	try:
+		from oneapp.oneapp_core import sync
+
+		sync.sync_from_control_plane()
+	except Exception:
+		frappe.log_error(title="Marketplace: could not pull after enabling")
+
+	return answer

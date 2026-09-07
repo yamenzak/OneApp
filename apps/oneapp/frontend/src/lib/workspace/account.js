@@ -38,4 +38,10 @@ export const account = {
   domain: () => callMethod(at('domain'), {}, { silent: true, method: 'GET' }),
 
   requestDomain: (domain) => callMethod(at('request_domain'), { domain }),
+
+  // The marketplace. `docs/MARKETPLACE.md` §4: what this workspace could add,
+  // narrowed to what it is entitled to *see*.
+  marketplace: () => callMethod(at('marketplace'), {}, { silent: true, method: 'GET' }),
+
+  enableSpace: (space) => callMethod(at('enable_space'), { space }),
 }

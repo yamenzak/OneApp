@@ -185,3 +185,49 @@ def test_the_relay_is_an_allow_list_and_now_names_both():
 		"reaching `customer` by name makes every method it ever gains callable "
 		"from any tenant site"
 	)
+
+
+# --------------------------------------------------------------------------- #
+# The screen
+# --------------------------------------------------------------------------- #
+
+PAGE = (
+	ROOT / "apps/oneapp/frontend/src/pages/Marketplace.vue"
+).read_text()
+
+
+def test_every_state_the_server_can_send_is_drawn():
+	"""A state the page has no branch for is a card that renders as its
+	fallback, which here is a disabled button with no sentence beside it."""
+	for state in ("available", "installing", "unavailable"):
+		assert f"'{state}'" in PAGE, state
+
+
+def test_a_card_that_cannot_be_pressed_says_why():
+	"""Both of the states that are not `available` carry their own line. A
+	disabled button on its own is a control that refuses without explaining,
+	which is the thing `docs/LANGUAGE.md` is about."""
+	assert PAGE.count('data-slot="marketplace-state"') == 2
+	assert "which your workspace cannot carry yet" in PAGE
+	assert "A few minutes" in PAGE
+
+
+def test_pressing_it_does_not_leave_the_reader_waiting_for_a_sync():
+	"""The grant is written on the control plane and this site learns what it
+	is entitled to by pulling. Pressing a card and being told to come back in
+	fifteen minutes is the failure; the pull happens in the endpoint."""
+	relay = (ROOT / "apps/oneapp/oneapp/oneapp_core/account.py").read_text()
+	body = relay[relay.index("def enable_space"):]
+	assert "sync_from_control_plane()" in body
+	assert "except Exception" in body, (
+		"a sync that fails must not fail the press: the entitlement is written "
+		"either way and the scheduled pull is the fallback"
+	)
+
+
+def test_the_rail_offers_it_only_to_somebody_who_can_use_it():
+	nav = (ROOT / "apps/oneapp/frontend/src/lib/shell/nav.js").read_text()
+	entry = nav[nav.index("key: 'marketplace'") - 400:nav.index("key: 'marketplace'")]
+	assert "session.isAdmin" in entry, (
+		"a rail icon leading to a page of refusals is worse than no icon"
+	)

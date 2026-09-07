@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 18:03+0000\n"
-"PO-Revision-Date: 2026-09-07 18:03+0000\n"
+"POT-Creation-Date: 2026-09-07 18:52+0000\n"
+"PO-Revision-Date: 2026-09-07 18:52+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -86,7 +86,7 @@ msgstr ""
 msgid "A repeating code has to say for how many months."
 msgstr ""
 
-#: oneapp_control/api/customer.py:931
+#: oneapp_control/api/customer.py:972
 msgid "A role has to grant something."
 msgstr ""
 
@@ -339,7 +339,7 @@ msgstr ""
 msgid "An amount-off coupon only applies to purchases in its own currency. Stripe enforces that, not us."
 msgstr ""
 
-#: oneapp_control/api/customer.py:586
+#: oneapp_control/api/customer.py:627
 msgid "An email address is required."
 msgstr ""
 
@@ -1227,7 +1227,7 @@ msgstr ""
 msgid "Enabled; MX and SPF written and locked."
 msgstr ""
 
-#: oneapp_control/api/customer.py:412
+#: oneapp_control/api/customer.py:453
 msgid "Enter a domain such as app.yourcompany.com."
 msgstr ""
 
@@ -2306,7 +2306,7 @@ msgstr ""
 msgid "No Stripe customer for {0}."
 msgstr ""
 
-#: oneapp_control/api/customer.py:343
+#: oneapp_control/api/customer.py:384
 msgid "No Stripe customer on this subscription."
 msgstr ""
 
@@ -2319,15 +2319,15 @@ msgstr ""
 msgid "No mail domain set."
 msgstr ""
 
-#: oneapp_control/api/tenant.py:701
+#: oneapp_control/api/tenant.py:707
 msgid "No person named."
 msgstr ""
 
-#: oneapp_control/api/customer.py:339
+#: oneapp_control/api/customer.py:380
 msgid "No subscription to manage yet."
 msgstr ""
 
-#: oneapp_control/api/customer.py:44
+#: oneapp_control/api/customer.py:44 oneapp_control/api/customer.py:79
 msgid "No workspace specified."
 msgstr ""
 
@@ -2725,7 +2725,8 @@ msgstr ""
 msgid "Plans. This is the one a free demo instance needs."
 msgstr ""
 
-#: oneapp_control/api/customer.py:41 oneapp_control/api/customer.py:61
+#: oneapp_control/api/customer.py:41 oneapp_control/api/customer.py:76
+#: oneapp_control/api/customer.py:102
 msgid "Please sign in."
 msgstr ""
 
@@ -4141,7 +4142,7 @@ msgstr ""
 msgid "That code is not valid here."
 msgstr ""
 
-#: oneapp_control/api/customer.py:414
+#: oneapp_control/api/customer.py:455
 msgid "That is already your workspace address."
 msgstr ""
 
@@ -4157,11 +4158,11 @@ msgstr ""
 msgid "That region is not available right now."
 msgstr ""
 
-#: oneapp_control/api/customer.py:897 oneapp_control/api/customer.py:948
+#: oneapp_control/api/customer.py:938 oneapp_control/api/customer.py:989
 msgid "That role belongs to another workspace."
 msgstr ""
 
-#: oneapp_control/api/customer.py:1053
+#: oneapp_control/api/customer.py:1094
 msgid "That space is not one this workspace was offered."
 msgstr ""
 
@@ -4223,7 +4224,7 @@ msgstr ""
 msgid "The owner account, created after payment clears."
 msgstr ""
 
-#: oneapp_control/api/customer.py:636
+#: oneapp_control/api/customer.py:677
 msgid "The owner cannot be removed from their own workspace."
 msgstr ""
 
@@ -4242,7 +4243,7 @@ msgstr ""
 msgid "The sync leaves the options above alone. Tick it after editing them by hand, or the next run writes over them with whatever the provider publishes."
 msgstr ""
 
-#: oneapp_control/api/customer.py:504
+#: oneapp_control/api/customer.py:545
 msgid "The workspace owner's access cannot be changed here."
 msgstr ""
 
@@ -4265,7 +4266,7 @@ msgstr ""
 msgid "This event was recorded without a payload to replay."
 msgstr ""
 
-#: oneapp_control/api/customer.py:603
+#: oneapp_control/api/customer.py:644
 msgid "This plan includes {0} seats and all are in use. Change plan to add more."
 msgstr ""
 
@@ -4304,7 +4305,7 @@ msgstr ""
 msgid "This workspace already has a role called {0}."
 msgstr ""
 
-#: oneapp_control/api/customer.py:482
+#: oneapp_control/api/customer.py:523
 msgid "This workspace does not offer {0}."
 msgstr ""
 
@@ -4436,8 +4437,8 @@ msgstr ""
 msgid "Units"
 msgstr ""
 
-#: oneapp_control/api/customer.py:514 oneapp_control/api/customer.py:590
-#: oneapp_control/api/customer.py:923
+#: oneapp_control/api/customer.py:555 oneapp_control/api/customer.py:631
+#: oneapp_control/api/customer.py:964
 msgid "Unknown access level {0}."
 msgstr ""
 
@@ -4837,7 +4838,8 @@ msgstr ""
 msgid "Workspace name"
 msgstr ""
 
-#: oneapp_control/api/customer.py:51 oneapp_control/api/tenant.py:706
+#: oneapp_control/api/customer.py:51 oneapp_control/api/customer.py:92
+#: oneapp_control/api/tenant.py:715
 msgid "Workspace not found."
 msgstr ""
 
@@ -4975,7 +4977,7 @@ msgstr ""
 msgid "{0} is a Production workspace. Ageing its clock would suspend, archive and eventually delete somebody's live business several days early. Rehearse on a staging shard."
 msgstr ""
 
-#: oneapp_control/api/customer.py:596
+#: oneapp_control/api/customer.py:637
 msgid "{0} is already a member."
 msgstr ""
 
@@ -4983,7 +4985,7 @@ msgstr ""
 msgid "{0} is no longer offered."
 msgstr ""
 
-#: oneapp_control/api/customer.py:510 oneapp_control/api/customer.py:640
+#: oneapp_control/api/customer.py:551 oneapp_control/api/customer.py:681
 msgid "{0} is not a member of this workspace."
 msgstr ""
 
@@ -5003,7 +5005,7 @@ msgstr ""
 msgid "{0} is not sold on a {1} subscription."
 msgstr ""
 
-#: oneapp_control/api/tenant.py:753
+#: oneapp_control/api/tenant.py:762
 msgid "{0} is not something a workspace may ask."
 msgstr ""
 
@@ -5051,7 +5053,7 @@ msgstr ""
 msgid "{0} needs {1}, which the bench {2} sits on does not carry. Move the workspace to a shard whose bench has it, or add it to that bench, and grant this again."
 msgstr ""
 
-#: oneapp_control/api/customer.py:593
+#: oneapp_control/api/customer.py:634
 msgid "{0} owns this workspace already."
 msgstr ""
 

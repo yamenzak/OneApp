@@ -221,6 +221,9 @@ msgstr "إضافة صورة"
 msgid "Add a section"
 msgstr "إضافة قسم"
 
+msgid "Add a space"
+msgstr "إضافة مساحة"
+
 msgid "Add a tag"
 msgstr "إضافة وسم"
 
@@ -244,6 +247,9 @@ msgstr "أضف هذا النطاق"
 
 msgid "Add to favourites"
 msgstr "إضافة إلى المفضلة"
+
+msgid "Add to workspace"
+msgstr "إضافة إلى مساحة العمل"
 
 msgid "Add {0} to favourites"
 msgstr "إضافة {0} إلى المفضلة"
@@ -531,6 +537,12 @@ msgstr "قبل انقضائه"
 
 msgid "Before restoring “{0}”"
 msgstr "قبل استعادة „{0}“"
+
+msgid "Being added"
+msgstr "قيد الإضافة"
+
+msgid "Being added to your workspace. A few minutes."
+msgstr "قيد الإضافة إلى مساحة عملك. بضع دقائق."
 
 msgid "Belongs to"
 msgstr "ينتمي إلى"
@@ -2132,6 +2144,9 @@ msgstr "عادي"
 msgid "Not about this record"
 msgstr "ليس عن هذا السجل"
 
+msgid "Not available here"
+msgstr "غير متاح هنا"
+
 msgid "Not available yet — the platform has no signing key configured."
 msgstr "غير متاح بعد — لا يوجد مفتاح توقيع مُعدّ على المنصة."
 
@@ -2273,6 +2288,9 @@ msgstr "لا شيء مشارَك معك"
 
 msgid "Nothing stored yet"
 msgstr "لا شيء مخزّن بعد"
+
+msgid "Nothing to add right now"
+msgstr "لا شيء لإضافته الآن"
 
 msgid "Nothing to alert on"
 msgstr "لا شيء للتنبيه عليه"
@@ -3896,6 +3914,13 @@ msgid ""
 "is lost."
 msgstr "هذا متوقف مؤقتًا للجميع في الوقت الحالي. لا يضيع أي تغيير تجريه هنا."
 
+msgid ""
+"This one needs {0}, which your workspace cannot carry yet. Ask us and we "
+"will move it."
+msgstr ""
+"هذا يحتاج إلى {0}، وهو ما لا تستطيع مساحة عملك حمله بعد. اطلب منا "
+"وسننقلها."
+
 msgid "This opens the screen now"
 msgstr "هذا يفتح الشاشة الآن"
 
@@ -4387,6 +4412,13 @@ msgstr "ما يحتاجه نوع العرض هذا مما لا تحمله الأ
 msgid "What this whole conversation has cost, summed as each turn settles."
 msgstr "كم كلّفت هذه المحادثة كلها، مجموعةً مع استقرار كل دور."
 
+msgid ""
+"What this workspace could add is kept with your account, and it is not "
+"answering. Everything you already have is unaffected."
+msgstr ""
+"ما يمكن لمساحة العمل هذه إضافته محفوظ مع حسابك، وهو لا يستجيب. كل ما "
+"لديك بالفعل لم يتأثر."
+
 msgid "What this workspace is keeping, and how much room is left."
 msgstr "ما تحتفظ به مساحة العمل هذه، وكم بقي من مساحة."
 
@@ -4814,6 +4846,13 @@ msgstr ""
 "لم يُمَس عملك، والدفع يعيده خلال دقيقة. وإذا بقي غير مدفوع في {0}، "
 "تُوقَف مساحة العمل ولا يُحتفظ إلا بنسخة احتياطية."
 
+msgid ""
+"Your workspace already has everything on offer to it. When something new "
+"is, it appears here."
+msgstr ""
+"مساحة عملك لديها بالفعل كل ما هو معروض عليها. وعندما يُعرض شيء جديد، "
+"سيظهر هنا."
+
 msgid "Your workspace did not load"
 msgstr "لم تُحمَّل مساحة عملك"
 
@@ -5054,8 +5093,14 @@ msgstr "{0} متصل بالفعل."
 msgid "{0} is already running."
 msgstr "{0} قيد التشغيل بالفعل."
 
+msgid "{0} is being added"
+msgstr "تجري إضافة {0}"
+
 msgid "{0} is being set up"
 msgstr "يجري إعداد {0}"
+
+msgid "{0} is in your workspace"
+msgstr "{0} في مساحة عملك"
 
 msgid ""
 "{0} is named by its own scheme, which is part of the app rather than a "

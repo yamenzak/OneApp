@@ -208,6 +208,18 @@ export function useNav() {
       : []),
     // Always here, unlike Mail: everybody has days.
     { key: 'calendar', label: __('Calendar'), icon: 'lucide-calendar', to: { name: 'Calendar' } },
+    // What the workspace could add. Offered to whoever may actually add it —
+    // `require_workspace_admin` on the control plane admits the owner and an
+    // Admin member, and a rail icon leading to a page of refusals is worse
+    // than no icon. `docs/MARKETPLACE.md` §4.
+    ...(session.isAdmin
+      ? [{
+        key: 'marketplace',
+        label: __('Add a space'),
+        icon: 'lucide-store',
+        to: { name: 'Marketplace' },
+      }]
+      : []),
     // Absent for somebody who holds no address, which is most people until
     // somebody sets one up. `count` is the badge in the rail and the number in
     // the sheet's label — one figure, said twice.

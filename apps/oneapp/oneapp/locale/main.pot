@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 18:03+0000\n"
-"PO-Revision-Date: 2026-09-07 18:03+0000\n"
+"POT-Creation-Date: 2026-09-07 18:52+0000\n"
+"PO-Revision-Date: 2026-09-07 18:52+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -324,6 +324,10 @@ msgstr ""
 msgid "Add a section"
 msgstr ""
 
+#: frontend/src/lib/shell/nav.js:218 frontend/src/pages/Marketplace.vue:18
+msgid "Add a space"
+msgstr ""
+
 #: frontend/src/components/screen/fields/TagControl.vue:34
 msgid "Add a tag"
 msgstr ""
@@ -364,6 +368,10 @@ msgstr ""
 
 #: frontend/src/components/drive/FileRow.vue:97
 msgid "Add to favourites"
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:73
+msgid "Add to workspace"
 msgstr ""
 
 #: frontend/src/components/drive/FileRow.vue:95
@@ -860,6 +868,14 @@ msgstr ""
 msgid "Before restoring “{0}”"
 msgstr ""
 
+#: frontend/src/pages/Marketplace.vue:82
+msgid "Being added"
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:59
+msgid "Being added to your workspace. A few minutes."
+msgstr ""
+
 #. Label of the about_doctype (Link) field in DocType 'Compliance Document'
 #: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
 msgid "Belongs to"
@@ -1104,6 +1120,7 @@ msgstr ""
 #: frontend/src/components/settings/DomainSettings.vue:19
 #: frontend/src/components/settings/PeopleSettings.vue:24
 #: frontend/src/components/settings/RoleSettings.vue:22
+#: frontend/src/pages/Marketplace.vue:27
 msgid "Cannot reach your account"
 msgstr ""
 
@@ -3169,7 +3186,7 @@ msgstr ""
 
 #: frontend/src/components/mail/MailSidebar.vue:14
 #: frontend/src/components/screen/record/RecordView.vue:195
-#: frontend/src/lib/shell/nav.js:218 frontend/src/pages/Mail.vue:451
+#: frontend/src/lib/shell/nav.js:230 frontend/src/pages/Mail.vue:451
 msgid "Mail"
 msgstr ""
 
@@ -3955,6 +3972,10 @@ msgstr ""
 msgid "Not about this record"
 msgstr ""
 
+#: frontend/src/pages/Marketplace.vue:82
+msgid "Not available here"
+msgstr ""
+
 #: oneapp/oneapp_core/email/verify.py:93
 msgid "Not available yet — the platform has no signing key configured."
 msgstr ""
@@ -4155,6 +4176,10 @@ msgstr ""
 
 #: frontend/src/components/settings/StorageSettings.vue:139
 msgid "Nothing stored yet"
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:91
+msgid "Nothing to add right now"
 msgstr ""
 
 #: frontend/src/components/settings/AlertSettings.vue:41
@@ -6893,6 +6918,10 @@ msgstr ""
 msgid "This one is paused for everyone at the moment. Nothing you change here is lost."
 msgstr ""
 
+#: frontend/src/pages/Marketplace.vue:66
+msgid "This one needs {0}, which your workspace cannot carry yet. Ask us and we will move it."
+msgstr ""
+
 #: frontend/src/lib/workspace/layouts.js:61
 msgid "This opens the screen now"
 msgstr ""
@@ -7636,6 +7665,10 @@ msgstr ""
 msgid "What this whole conversation has cost, summed as each turn settles."
 msgstr ""
 
+#: frontend/src/pages/Marketplace.vue:29
+msgid "What this workspace could add is kept with your account, and it is not answering. Everything you already have is unaffected."
+msgstr ""
+
 #: frontend/src/components/settings/StorageSettings.vue:16
 msgid "What this workspace is keeping, and how much room is left."
 msgstr ""
@@ -8132,6 +8165,10 @@ msgstr ""
 msgid "Your work has not been touched, and paying brings it back within a minute. If it is still unpaid on {0}, the workspace comes down and only a backup is kept."
 msgstr ""
 
+#: frontend/src/pages/Marketplace.vue:92
+msgid "Your workspace already has everything on offer to it. When something new is, it appears here."
+msgstr ""
+
 #: frontend/src/App.vue:76
 msgid "Your workspace did not load"
 msgstr ""
@@ -8487,8 +8524,16 @@ msgstr ""
 msgid "{0} is already running."
 msgstr ""
 
+#: frontend/src/pages/Marketplace.vue:147
+msgid "{0} is being added"
+msgstr ""
+
 #: frontend/src/components/settings/DomainSettings.vue:36
 msgid "{0} is being set up"
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:142
+msgid "{0} is in your workspace"
 msgstr ""
 
 #: oneapp/oneapp_core/naming.py:195

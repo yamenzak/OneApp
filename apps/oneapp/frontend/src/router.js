@@ -15,6 +15,14 @@ const routes = [
   },
   { path: '/account', name: 'Account', component: () => import('./pages/Account.vue') },
   {
+    // What this workspace could add. A page rather than a dialog because it is
+    // a place you browse and come back to, and because a card that starts a
+    // several-minute install wants a URL somebody can return to.
+    path: '/add',
+    name: 'Marketplace',
+    component: () => import('./pages/Marketplace.vue'),
+  },
+  {
     // Mail belongs to the workspace rather than to any one space — the
     // addresses a person holds do not change when they switch space.
     path: '/mail',

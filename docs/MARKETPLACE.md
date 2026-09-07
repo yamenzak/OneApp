@@ -209,7 +209,9 @@ Ordered so each is worth having on its own.
    one workspace without installing anything for them.
 3. **The marketplace screen**, reading the catalogue narrowed to what this
    workspace may see, with the four card states. Rail icon and app-switcher
-   entry.
+   entry. *Done.* `/one/add`, offered in the rail to whoever can act on it.
+   Pressing a card enables the space and pulls the manifest in the same
+   request, so it is in the launcher rather than fifteen minutes away.
 4. **`Space Claim Code`**, its two operator screens, and redemption.
 5. **Install App, visible to the customer** — the card that started it says
    what is happening, and the space appears when it finishes.
@@ -232,3 +234,23 @@ because it is the only one that is about the thing being slow.
 * **Who may claim.** Redeeming a code changes what a workspace carries, so it
   is an owner's action rather than a member's; which role exactly is a question
   for whoever writes stage 4.
+
+---
+
+## 7. Looking at any of this on a dev bench
+
+Four surfaces — People, Roles, Domain and the marketplace — reach the control
+plane over a signed call, and a dev tenant site is not linked to one: the
+fixture writes the manifest cache directly, because a linked site pulls it
+every fifteen minutes and two sources of truth in a fixture is a race.
+
+So on an unlinked site all four honestly say they cannot reach the account, and
+`scripts/link_dev_control.py` is how you see the other answer. Run it on the
+control site; it makes a Tenant the space site can prove it is, writes the two
+missing keys into that site's `site_config.json`, and offers it one Restricted
+space so the marketplace has a card. Restart the tenant server afterwards.
+
+It is deliberately not part of `dev.sh seed`. Pressing a marketplace card pulls
+the manifest, and on a linked dev site that replaces the fixture's own richer
+cached copy — `dev.sh seed` puts it back, but a browser suite that ran in
+between would have been reading something else.
