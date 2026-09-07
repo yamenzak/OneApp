@@ -1443,22 +1443,34 @@ def seed_tenant(manifest_only=False):
 		# nobody and so cannot be opened by the second user — and failed on
 		# litter the seed itself had left.
 		if frappe.db.exists("ToDo", row["name"]):
-			# Who a task is allocated to is worth re-asserting: it decides who
-			# may open it at all — Frappe's ToDo has its own permission rule —
-			# and a browser pass that reassigns one would otherwise leave the
-			# next run with a record its second user cannot see.
-			frappe.db.set_value(
-				"ToDo", row["name"], "allocated_to", row.get("allocated_to") or None
-			)
-			# And the text, for the same reason one step further along: three
-			# specs name a task by the words on it, so a pass that typed into
-			# one — or a hand at a console — leaves every one of them failing on
-			# a fixture that no longer says what they were written against.
-			# Through the document rather than the column, so ToDo's own
-			# sanitiser wraps it exactly as it wraps a fresh insert.
+			# Every field this fixture declares, put back the way it declares
+			# it. Not a list of the ones that have bitten us: the three named
+			# tasks are what a dozen specs point at — by the words on them, by
+			# who they are allocated to, by their priority — and each of those
+			# is a thing a browser pass or a hand at a console can change.
+			# Re-asserting one at a time means finding out which the hard way,
+			# once per field, in a suite that takes fifty minutes.
+			#
+			# Through the document rather than the columns, so ToDo's own
+			# sanitiser treats the text exactly as it treats a fresh insert, and
+			# only when something actually differs, so `modified` — which is on
+			# every card a browser pass looks at — does not move on every run.
 			task = frappe.get_doc("ToDo", row["name"])
-			if _plain(task.description) != row["description"]:
-				task.description = row["description"]
+			drifted = False
+			for field, value in row.items():
+				if field in ("name", "assigned"):
+					continue
+				held = _plain(task.get(field)) if field == "description" else task.get(field)
+				if held != value:
+					task.set(field, value)
+					drifted = True
+			# Said separately because it is the one whose absence is a value:
+			# a task the fixture allocates to nobody must go back to nobody, and
+			# `row.get` would leave whoever a browser pass allocated it to.
+			if task.allocated_to != (row.get("allocated_to") or None):
+				task.allocated_to = row.get("allocated_to") or None
+				drifted = True
+			if drifted:
 				task.save(ignore_permissions=True)
 		else:
 			# `set_name`, not a `name` key: ToDo autonames by hash, and
