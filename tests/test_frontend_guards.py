@@ -764,7 +764,11 @@ def test_every_sidebar_is_the_same_sidebar(app):
 
 	for path in root.rglob("*Sidebar.vue"):
 		source = path.read_text()
-		for component in ("Sidebar", "SidebarHeader", "SidebarCollapseToggle"):
+		# `SidebarCollapse` and not frappe-ui's `SidebarCollapseToggle`: ours is
+		# that component with its one hardcoded English word translated, which
+		# is the difference between an Arabic screen and an Arabic screen with
+		# "Collapse" in the corner of it.
+		for component in ("Sidebar", "SidebarHeader", "SidebarCollapse"):
 			assert f"<{component}" in source, f"{path.name} does not render {component}"
 
 		# And the state is the shared one, not a fourth copy of it. Two of the

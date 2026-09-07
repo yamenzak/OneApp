@@ -90,7 +90,7 @@
           frappe-ui's own toggle, which is a SidebarItem — so it collapses to
           its icon with everything else and stays where the eye already is.
         -->
-        <SidebarCollapseToggle />
+        <SidebarCollapse />
       </div>
     </div>
   </Sidebar>
@@ -107,11 +107,11 @@ import {
   Button,
   ScrollArea,
   Sidebar,
-  SidebarCollapseToggle,
   SidebarHeader,
   SidebarItem,
   SidebarLabel,
 } from '@/ui'
+import SidebarCollapse from './SidebarCollapse.vue'
 import SidebarResizer from './SidebarResizer.vue'
 import QuotaMeter from './QuotaMeter.vue'
 import { useNav } from '@/lib/shell/nav'

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-06 23:48+0000\n"
-"PO-Revision-Date: 2026-09-06 23:48+0000\n"
+"POT-Creation-Date: 2026-09-07 00:50+0000\n"
+"PO-Revision-Date: 2026-09-07 00:50+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -48,7 +48,7 @@ msgstr ""
 msgid "A Select becomes its own options; a Link becomes whoever is on the page."
 msgstr ""
 
-#: frontend/src/components/drive/CameraCapture.vue:136
+#: frontend/src/components/drive/CameraCapture.vue:141
 msgid "A camera needs a secure connection. Use the phone's camera instead."
 msgstr ""
 
@@ -495,7 +495,7 @@ msgstr ""
 msgid "All files"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:435
+#: frontend/src/pages/Mail.vue:445
 msgid "All mail"
 msgstr ""
 
@@ -658,8 +658,8 @@ msgstr ""
 msgid "Apps"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:177 frontend/src/pages/Mail.vue:239
-#: frontend/src/pages/Mail.vue:744
+#: frontend/src/pages/Mail.vue:177 frontend/src/pages/Mail.vue:249
+#: frontend/src/pages/Mail.vue:754
 msgid "Archive"
 msgstr ""
 
@@ -669,13 +669,13 @@ msgstr ""
 
 #. Label of the archived (Check) field in DocType 'OneSpace Chat Session'
 #: frontend/src/components/screen/bodies/BoardBody.vue:196
-#: frontend/src/lib/workspace/mail.js:167 frontend/src/pages/Mail.vue:526
+#: frontend/src/lib/workspace/mail.js:167 frontend/src/pages/Mail.vue:536
 #: frontend/src/screens/ops/TenantLifecycle.vue:223
 #: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "Archived"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:538
+#: frontend/src/pages/Mail.vue:548
 msgid "Archived {0}"
 msgstr ""
 
@@ -1128,7 +1128,7 @@ msgstr ""
 msgid "Carried across"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:758
+#: frontend/src/pages/Mail.vue:768
 msgid "Carries a file"
 msgstr ""
 
@@ -1312,7 +1312,7 @@ msgstr ""
 msgid "Clear the selection"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:728
+#: frontend/src/pages/Mail.vue:738
 msgid "Clear the selection, or close the conversation"
 msgstr ""
 
@@ -1353,6 +1353,7 @@ msgstr ""
 msgid "Cold copy requested"
 msgstr ""
 
+#: frontend/src/components/SidebarCollapse.vue:15
 #: frontend/src/components/drive/UploadTray.vue:26
 msgid "Collapse"
 msgstr ""
@@ -1664,7 +1665,7 @@ msgstr ""
 
 #: frontend/src/components/diary/EventDialog.vue:59
 #: frontend/src/pages/Chat.vue:23 frontend/src/pages/Drive.vue:238
-#: frontend/src/pages/Mail.vue:178 frontend/src/pages/Mail.vue:246
+#: frontend/src/pages/Mail.vue:178 frontend/src/pages/Mail.vue:256
 #: frontend/src/pages/ScreenHost.vue:493
 msgid "Delete"
 msgstr ""
@@ -2067,6 +2068,7 @@ msgstr ""
 msgid "Everything that points at this record keeps working. The old id stops."
 msgstr ""
 
+#: frontend/src/components/SidebarCollapse.vue:15
 #: frontend/src/components/drive/UploadTray.vue:26
 msgid "Expand"
 msgstr ""
@@ -2241,7 +2243,7 @@ msgstr ""
 msgid "Files you open show up here."
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:742
+#: frontend/src/pages/Mail.vue:752
 msgid "Filing"
 msgstr ""
 
@@ -2392,7 +2394,7 @@ msgid "Format: {0}"
 msgstr ""
 
 #: frontend/src/components/mail/MailComposer.vue:222
-#: frontend/src/pages/Mail.vue:229 frontend/src/pages/Mail.vue:738
+#: frontend/src/pages/Mail.vue:238 frontend/src/pages/Mail.vue:748
 msgid "Forward"
 msgstr ""
 
@@ -2743,7 +2745,7 @@ msgstr ""
 msgid "In {0}"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:422
+#: frontend/src/pages/Mail.vue:432
 msgid "Inbox"
 msgstr ""
 
@@ -3155,7 +3157,7 @@ msgstr ""
 
 #: frontend/src/components/mail/MailSidebar.vue:14
 #: frontend/src/components/screen/record/RecordView.vue:195
-#: frontend/src/lib/shell/nav.js:218 frontend/src/pages/Mail.vue:441
+#: frontend/src/lib/shell/nav.js:218 frontend/src/pages/Mail.vue:451
 msgid "Mail"
 msgstr ""
 
@@ -3285,8 +3287,8 @@ msgstr ""
 msgid "Mark it read"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:179 frontend/src/pages/Mail.vue:253
-#: frontend/src/pages/Mail.vue:746
+#: frontend/src/pages/Mail.vue:179 frontend/src/pages/Mail.vue:263
+#: frontend/src/pages/Mail.vue:756
 msgid "Mark unread"
 msgstr ""
 
@@ -3294,19 +3296,19 @@ msgstr ""
 msgid "Markdown file"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:529
+#: frontend/src/pages/Mail.vue:539
 msgid "Marked read"
 msgstr ""
 
-#: frontend/src/lib/workspace/mail.js:153 frontend/src/pages/Mail.vue:528
+#: frontend/src/lib/workspace/mail.js:153 frontend/src/pages/Mail.vue:538
 msgid "Marked unread"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:541
+#: frontend/src/pages/Mail.vue:551
 msgid "Marked {0} read"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:540
+#: frontend/src/pages/Mail.vue:550
 msgid "Marked {0} unread"
 msgstr ""
 
@@ -3426,11 +3428,11 @@ msgstr ""
 msgid "Move right"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:261
+#: frontend/src/pages/Mail.vue:271
 msgid "Move to"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:178 frontend/src/pages/Mail.vue:745
+#: frontend/src/pages/Mail.vue:178 frontend/src/pages/Mail.vue:755
 msgid "Move to Trash"
 msgstr ""
 
@@ -3466,7 +3468,7 @@ msgstr ""
 msgid "Moved onto the plan's current terms"
 msgstr ""
 
-#: frontend/src/lib/workspace/mail.js:160 frontend/src/pages/Mail.vue:527
+#: frontend/src/lib/workspace/mail.js:160 frontend/src/pages/Mail.vue:537
 msgid "Moved to Trash"
 msgstr ""
 
@@ -3474,7 +3476,7 @@ msgstr ""
 msgid "Moved to the bin"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:539
+#: frontend/src/pages/Mail.vue:549
 msgid "Moved {0} to Trash"
 msgstr ""
 
@@ -3482,7 +3484,7 @@ msgstr ""
 msgid "Moving a counter backwards will re-issue ids that already exist. The change is recorded against the series."
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:723
+#: frontend/src/pages/Mail.vue:733
 msgid "Moving about"
 msgstr ""
 
@@ -3662,7 +3664,7 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:725
+#: frontend/src/pages/Mail.vue:735
 msgid "Next conversation"
 msgstr ""
 
@@ -3713,7 +3715,7 @@ msgstr ""
 msgid "No bench groups on this account."
 msgstr ""
 
-#: frontend/src/components/drive/CameraCapture.vue:140
+#: frontend/src/components/drive/CameraCapture.vue:145
 msgid "No camera was found on this device."
 msgstr ""
 
@@ -3972,7 +3974,7 @@ msgstr ""
 msgid "Not pinned"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:759
+#: frontend/src/pages/Mail.vue:769
 msgid "Not read yet"
 msgstr ""
 
@@ -4642,7 +4644,7 @@ msgstr ""
 msgid "Period ends"
 msgstr ""
 
-#: frontend/src/components/drive/CameraCapture.vue:139
+#: frontend/src/components/drive/CameraCapture.vue:144
 msgid "Permission for the camera was refused."
 msgstr ""
 
@@ -4656,7 +4658,7 @@ msgstr ""
 msgid "Person"
 msgstr ""
 
-#: frontend/src/components/drive/CameraCapture.vue:229
+#: frontend/src/components/drive/CameraCapture.vue:234
 msgid "Photo {0}.jpg"
 msgstr ""
 
@@ -4746,7 +4748,7 @@ msgstr ""
 msgid "Previous"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:726
+#: frontend/src/pages/Mail.vue:736
 msgid "Previous conversation"
 msgstr ""
 
@@ -5149,7 +5151,7 @@ msgstr ""
 
 #: frontend/src/components/mail/MailComposer.vue:220
 #: frontend/src/components/mail/MailComposer.vue:223
-#: frontend/src/pages/Mail.vue:216 frontend/src/pages/Mail.vue:736
+#: frontend/src/pages/Mail.vue:223 frontend/src/pages/Mail.vue:746
 msgid "Reply"
 msgstr ""
 
@@ -5158,7 +5160,7 @@ msgid "Reply automatically while I am away"
 msgstr ""
 
 #: frontend/src/components/mail/MailComposer.vue:221
-#: frontend/src/pages/Mail.vue:222 frontend/src/pages/Mail.vue:737
+#: frontend/src/pages/Mail.vue:230 frontend/src/pages/Mail.vue:747
 msgid "Reply to all"
 msgstr ""
 
@@ -5430,7 +5432,7 @@ msgid "Screen"
 msgstr ""
 
 #: frontend/src/components/screen/fields/IconPicker.vue:41
-#: frontend/src/pages/Mail.vue:727
+#: frontend/src/pages/Mail.vue:737
 msgid "Search"
 msgstr ""
 
@@ -5451,7 +5453,7 @@ msgstr ""
 msgid "Search mail"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:753
+#: frontend/src/pages/Mail.vue:763
 msgid "Searching"
 msgstr ""
 
@@ -5505,7 +5507,7 @@ msgstr ""
 msgid "Select {0}"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:764
+#: frontend/src/pages/Mail.vue:774
 msgid "Selecting"
 msgstr ""
 
@@ -5556,7 +5558,7 @@ msgstr ""
 
 #: frontend/src/components/screen/record/RecordMail.vue:87
 #: frontend/src/lib/workspace/mail.js:118
-#: frontend/src/lib/workspace/record.js:189 frontend/src/pages/Mail.vue:700
+#: frontend/src/lib/workspace/record.js:189 frontend/src/pages/Mail.vue:710
 msgid "Sent"
 msgstr ""
 
@@ -5860,7 +5862,7 @@ msgstr ""
 msgid "Someone else changed this"
 msgstr ""
 
-#: frontend/src/components/drive/CameraCapture.vue:141
+#: frontend/src/components/drive/CameraCapture.vue:146
 msgid "Something else is already using the camera."
 msgstr ""
 
@@ -5936,7 +5938,7 @@ msgstr ""
 
 #. Label of the star (Check) field in DocType 'Mail Rule'
 #: frontend/src/pages/Mail.vue:132 frontend/src/pages/Mail.vue:133
-#: frontend/src/pages/Mail.vue:180 frontend/src/pages/Mail.vue:747
+#: frontend/src/pages/Mail.vue:180 frontend/src/pages/Mail.vue:757
 #: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
 msgid "Star"
 msgstr ""
@@ -5945,11 +5947,11 @@ msgstr ""
 msgid "Star it"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:530 frontend/src/pages/Mail.vue:760
+#: frontend/src/pages/Mail.vue:540 frontend/src/pages/Mail.vue:770
 msgid "Starred"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:542
+#: frontend/src/pages/Mail.vue:552
 msgid "Starred {0}"
 msgstr ""
 
@@ -6533,11 +6535,11 @@ msgstr ""
 msgid "The breakdown below covers the {0} files you can see, which is {1}. The meter above is the whole workspace, including files on records you cannot open."
 msgstr ""
 
-#: frontend/src/components/drive/CameraCapture.vue:142
+#: frontend/src/components/drive/CameraCapture.vue:147
 msgid "The camera could not be opened."
 msgstr ""
 
-#: frontend/src/components/drive/CameraCapture.vue:196
+#: frontend/src/components/drive/CameraCapture.vue:201
 msgid "The camera is not ready yet."
 msgstr ""
 
@@ -6644,7 +6646,7 @@ msgstr ""
 msgid "The page"
 msgstr ""
 
-#: frontend/src/components/drive/CameraCapture.vue:210
+#: frontend/src/components/drive/CameraCapture.vue:215
 msgid "The photograph could not be saved."
 msgstr ""
 
@@ -6693,7 +6695,7 @@ msgstr ""
 msgid "The source refused the key. Check it is still valid over there."
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:757
+#: frontend/src/pages/Mail.vue:767
 msgid "The subject line only"
 msgstr ""
 
@@ -6827,7 +6829,7 @@ msgstr ""
 msgid "This browser"
 msgstr ""
 
-#: frontend/src/components/drive/CameraCapture.vue:135
+#: frontend/src/components/drive/CameraCapture.vue:140
 msgid "This browser has no camera support."
 msgstr ""
 
@@ -6889,7 +6891,7 @@ msgstr ""
 msgid "This link is not available."
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:729
+#: frontend/src/pages/Mail.vue:739
 msgid "This list"
 msgstr ""
 
@@ -7100,11 +7102,11 @@ msgstr ""
 msgid "Those settings could not be read."
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:767
+#: frontend/src/pages/Mail.vue:777
 msgid "Tick everything on this page"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:766
+#: frontend/src/pages/Mail.vue:776
 msgid "Tick this conversation"
 msgstr ""
 
@@ -7234,11 +7236,11 @@ msgstr ""
 msgid "Under the title, in this order. Nothing chosen shows the columns you have on the list."
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:285
+#: frontend/src/pages/Mail.vue:295
 msgid "Undo"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:768
+#: frontend/src/pages/Mail.vue:778
 msgid "Undo the last thing"
 msgstr ""
 
@@ -7293,11 +7295,11 @@ msgstr ""
 msgid "Unstar"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:531
+#: frontend/src/pages/Mail.vue:541
 msgid "Unstarred"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:543
+#: frontend/src/pages/Mail.vue:553
 msgid "Unstarred {0}"
 msgstr ""
 
@@ -7400,7 +7402,7 @@ msgstr ""
 msgid "Use the camera to take a photograph."
 msgstr ""
 
-#: frontend/src/components/drive/CameraCapture.vue:76
+#: frontend/src/components/drive/CameraCapture.vue:109
 msgid "Use the phone's camera"
 msgstr ""
 
@@ -7823,11 +7825,11 @@ msgstr ""
 msgid "Who"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:755
+#: frontend/src/pages/Mail.vue:765
 msgid "Who it is from"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:756
+#: frontend/src/pages/Mail.vue:766
 msgid "Who it went to"
 msgstr ""
 
@@ -7888,7 +7890,7 @@ msgstr ""
 #: frontend/src/components/screen/record/RecordMail.vue:27
 #: frontend/src/components/screen/record/RecordMail.vue:52
 #: frontend/src/composables/useNewFile.js:108 frontend/src/pages/Mail.vue:60
-#: frontend/src/pages/Mail.vue:735
+#: frontend/src/pages/Mail.vue:745
 msgid "Write"
 msgstr ""
 
@@ -7908,7 +7910,7 @@ msgstr ""
 msgid "Write your message"
 msgstr ""
 
-#: frontend/src/pages/Mail.vue:733
+#: frontend/src/pages/Mail.vue:743
 msgid "Writing"
 msgstr ""
 

@@ -47,7 +47,7 @@
 
     <div class="mt-auto shrink-0">
       <div class="p-2">
-        <SidebarCollapseToggle />
+        <SidebarCollapse />
       </div>
     </div>
   </Sidebar>
@@ -60,10 +60,10 @@ import {
   CalendarColorMap,
   ScrollArea,
   Sidebar,
-  SidebarCollapseToggle,
   SidebarHeader,
   SidebarItem,
 } from '@/ui'
+import SidebarCollapse from '../SidebarCollapse.vue'
 import SidebarResizer from '../SidebarResizer.vue'
 import { session } from '@/lib/shell/session'
 import { useSidebar } from '@/lib/shell/sidebar'

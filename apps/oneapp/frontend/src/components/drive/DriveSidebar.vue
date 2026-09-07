@@ -49,7 +49,7 @@
           format="bytes"
           class="mb-2 px-1"
         />
-        <SidebarCollapseToggle />
+        <SidebarCollapse />
       </div>
     </div>
   </Sidebar>
@@ -62,10 +62,10 @@ import { onMounted, ref } from 'vue'
 import {
   ScrollArea,
   Sidebar,
-  SidebarCollapseToggle,
   SidebarHeader,
   SidebarItem,
 } from '@/ui'
+import SidebarCollapse from '../SidebarCollapse.vue'
 import SidebarResizer from '../SidebarResizer.vue'
 import UsageBar from '../UsageBar.vue'
 import { PLACES } from './places'

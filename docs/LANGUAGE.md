@@ -229,6 +229,21 @@ icons a customer can pick for a value of their own.
 own right-to-left rules, written out physically rather than as
 `padding-inline-start`, because it is opened by whatever the reader has.
 
+### Two things the catalogue does not reach
+
+**A date.** "8 days ago" is built by dayjs's `relativeTime` plugin out of a
+locale of its own, so a page can be translated down to the last button and still
+say the age of every row in English. `lib/runtime/dates.js` loads the one locale
+the reader needs, beside `loadTranslations` and before the app mounts.
+
+**A component's own words.** frappe-ui is a component library, not a translated
+application, so a label it hardcodes cannot be reached — and
+`SidebarCollapseToggle` hardcodes `Collapse`, on every screen with a sidebar.
+`components/SidebarCollapse.vue` is that component with the label translated and
+nothing else changed; it uses frappe-ui's own `SidebarItem` and its two exported
+injection keys. Any other one that turns up gets the same treatment, and the
+list is short.
+
 ### What is not right yet
 
 Three surfaces draw themselves rather than being laid out, and none of them
@@ -240,6 +255,12 @@ turns round:
 * the **quoted block in a reply**, which keeps a physical `border-left` on
   purpose — a mail client is not a browser, and logical properties are not
   something they can all be relied on to know.
+
+And one word that is not a sentence: a file's **kind** — `Folder`, `Image`,
+`Spreadsheet` — is a stored value the server sends, so it reads in English on an
+Arabic file list. Translating it at the render site is the right fix and it is
+the same fix as every other stored vocabulary in the product; it is worth doing
+once, for all of them.
 
 None of these makes a screen unusable in Arabic, and each is a day of its own.
 

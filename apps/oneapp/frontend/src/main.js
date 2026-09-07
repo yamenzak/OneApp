@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { setConfig, frappeRequest } from '@/ui'
 import { brand, lang, systemTimezone } from '@/lib/runtime/boot'
 import { direction, loadTranslations } from '@/lib/runtime/translate'
+import { loadDates } from '@/lib/runtime/dates'
 import { setBrand } from '@/lib/shell/theme'
 
 import './index.css'
@@ -30,6 +31,10 @@ document.documentElement.dir = direction(lang)
 // in Arabic has also changed direction. English loads nothing — the msgid is
 // the English sentence — so this costs a round trip only where it buys one.
 //
+// `loadDates` beside it because "8 days ago" is not in the catalogue: it is
+// built by dayjs out of a locale of its own, and without one every row of
+// every list says its age in English on an otherwise Arabic screen.
+//
 // The app is *imported* here rather than at the top, and that is the load-order
 // that makes the whole thing work. A static import is evaluated before any line
 // of this file runs, so a component that builds a table of labels as it is
@@ -37,7 +42,7 @@ document.documentElement.dir = direction(lang)
 // before the catalogue existed and hold the English answer for the rest of the
 // session. Importing after the await means every module in the graph, however
 // eagerly it translates, is evaluated with the catalogue already in hand.
-loadTranslations(lang).then(async () => {
+Promise.all([loadTranslations(lang), loadDates(lang)]).then(async () => {
   const [{ default: App }, { default: router }] = await Promise.all([
     import('./App.vue'),
     import('./router'),

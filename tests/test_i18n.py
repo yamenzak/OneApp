@@ -113,6 +113,25 @@ def test_nothing_asks_for_a_word_before_the_catalogue_arrives(spa):
 	assert main.index("loadTranslations(lang)") < main.index("import('./App.vue')")
 
 
+@pytest.mark.parametrize("spa", ["apps/oneapp", "apps/oneapp_control"])
+def test_a_date_says_its_age_in_the_reader_s_language(spa):
+	"""`8 days ago` is not in the catalogue.
+
+	It is built by dayjs's `relativeTime` plugin out of a locale that has to be
+	loaded separately, so a page can be translated down to the last button and
+	still say the age of every row in English.
+	"""
+	runtime = (ROOT / spa / "frontend/src/lib/runtime/dates.js").read_text()
+	assert "export async function loadDates" in runtime
+	# Literal import paths, or the bundler cannot see which locales to ship.
+	for lang in ("ar", "de"):
+		assert f"import('dayjs/esm/locale/{lang}')" in runtime
+
+	main = (ROOT / spa / "frontend/src/main.js").read_text()
+	assert "loadDates(lang)" in main
+	assert main.index("loadDates(lang)") < main.index("import('./App.vue')")
+
+
 # --------------------------------------------------------------------------- #
 # The other half: what the server says
 # --------------------------------------------------------------------------- #

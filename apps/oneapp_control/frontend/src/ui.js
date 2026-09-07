@@ -42,7 +42,12 @@ export {
   SidebarSection,
   SidebarHeader,
   SidebarCard,
+  // Exported but not used: `components/SidebarCollapse.vue` is this component
+  // with its one hardcoded English word translated, and the two injection keys
+  // under it are what let it be.
   SidebarCollapseToggle,
+  sidebarCollapsedKey,
+  sidebarToggleKey,
 
   // ----- Settings --------------------------------------------------------
   // A whole family, so settings surfaces are composed rather than hand-built.

@@ -47,7 +47,7 @@
 
     <div class="mt-auto shrink-0">
       <div class="p-2">
-        <SidebarCollapseToggle />
+        <SidebarCollapse />
       </div>
     </div>
   </Sidebar>
@@ -59,8 +59,9 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-  Button, ScrollArea, Sidebar, SidebarCollapseToggle, SidebarHeader, SidebarItem,
+  Button, ScrollArea, Sidebar, SidebarHeader, SidebarItem,
 } from '@/ui'
+import SidebarCollapse from '../SidebarCollapse.vue'
 import SidebarResizer from '../SidebarResizer.vue'
 import { assistant as state, loadAssistant } from '@/lib/shell/assistant'
 import { session } from '@/lib/shell/session'
