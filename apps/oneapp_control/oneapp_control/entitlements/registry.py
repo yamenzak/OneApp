@@ -9,6 +9,20 @@ Two independent axes, deliberately:
 An app marked General is available to everyone. An app marked Restricted appears
 only where an explicit Space Entitlement exists. A Restricted app that nobody has
 been entitled to is simply invisible, not an error.
+
+An entitlement carries two independent flags, because a marketplace needs three
+states and not two:
+
+* `enabled` — they have it. It is in their launcher, and its app is on the site.
+* `offered` — they may *see* it. A Restricted space with this flag appears in
+  their marketplace as something they can turn on themselves; without it the
+  space does not exist as far as that workspace is concerned.
+
+Both off is a revoked row, kept for the history. Offered without enabled is the
+operator lever this document calls "expose it to that customer" — and it is the
+reason invisibility is the default: a marketplace that draws a locked card for
+every Restricted space tells every customer the name of every bespoke solution
+built for every other one.
 """
 
 import frappe
@@ -402,7 +416,11 @@ def grant(tenant: str, space_code: str, note: str | None = None):
 		"Space Entitlement", {"tenant": tenant, "app": space_code}, "name"
 	)
 	if name:
-		frappe.db.set_value("Space Entitlement", name, "enabled", 1)
+		# Enabled implies offered: a space somebody is using is not one they are
+		# forbidden to see, and leaving the second flag off would take it out of
+		# their marketplace the moment they turned it off themselves.
+		frappe.db.set_value(
+			"Space Entitlement", name, {"enabled": 1, "offered": 1})
 	else:
 		name = frappe.get_doc(
 			{
@@ -410,12 +428,78 @@ def grant(tenant: str, space_code: str, note: str | None = None):
 				"tenant": tenant,
 				"app": space_code,
 				"enabled": 1,
+				"offered": 1,
 				"note": note,
 			}
 		).insert(ignore_permissions=True).name
 
 	apps.reconcile(tenant)
 	return name
+
+
+def offer(tenant: str, space_code: str, note: str | None = None):
+	"""Let a workspace see a space, without turning it on for them.
+
+	The half of the marketplace an operator drives: RUA is Restricted and
+	invisible to everybody, and this is what puts it on one customer's shelf.
+	Pressing the card is then theirs to do, which is what makes it a marketplace
+	rather than a request form.
+
+	Refused on the same ground `grant` is refused, and deliberately at this end
+	rather than at the customer's: a card that can only ever fail is worse than
+	no card, and the operator offering it is the one who can do something about
+	a bench that cannot carry the app.
+	"""
+	from oneapp_control.entitlements import apps
+
+	apps.assert_can_carry(tenant, space_code)
+
+	name = frappe.db.get_value(
+		"Space Entitlement", {"tenant": tenant, "app": space_code}, "name"
+	)
+	if name:
+		# `enabled` is left exactly as it is. Offering a space somebody already
+		# has is a no-op, not a downgrade.
+		frappe.db.set_value("Space Entitlement", name, "offered", 1)
+		return name
+
+	# No `reconcile`: nothing is installed until they press the card. That is
+	# the whole point of the second flag — an offer costs a row, not minutes of
+	# patches against a live database.
+	return frappe.get_doc(
+		{
+			"doctype": "Space Entitlement",
+			"tenant": tenant,
+			"app": space_code,
+			"enabled": 0,
+			"offered": 1,
+			"note": note,
+		}
+	).insert(ignore_permissions=True).name
+
+
+def offered_spaces(tenant: str) -> list[dict]:
+	"""Restricted spaces this workspace may see but has not turned on.
+
+	What the marketplace lists beside the General ones. Enabled spaces are not
+	here — they are in `spaces_for_tenant`, which is where a space they already
+	have belongs.
+	"""
+	return frappe.db.sql(
+		f"""
+		SELECT {SPACE_COLUMNS}
+		FROM `tabOneSpace Space` a
+		INNER JOIN `tabSpace Entitlement` e ON e.app = a.name
+		WHERE a.is_active = 1
+		  AND a.availability = 'Restricted'
+		  AND e.tenant = %(tenant)s
+		  AND e.offered = 1
+		  AND e.enabled = 0
+		ORDER BY a.sort_order, a.space_label
+		""",
+		{"tenant": tenant},
+		as_dict=True,
+	)
 
 
 def revoke(tenant: str, space_code: str):
@@ -425,4 +509,9 @@ def revoke(tenant: str, space_code: str):
 	if name:
 		# Kept as a disabled row rather than deleted, so the history of who had
 		# access to what survives.
-		frappe.db.set_value("Space Entitlement", name, "enabled", 0)
+		#
+		# Both flags, and this is the whole of "take it away": leaving `offered`
+		# on would put the card straight back in their marketplace with a button
+		# that works, which is not what anybody means by revoke.
+		frappe.db.set_value(
+			"Space Entitlement", name, {"enabled": 0, "offered": 0})

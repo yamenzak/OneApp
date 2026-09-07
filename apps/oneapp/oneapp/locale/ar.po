@@ -155,11 +155,6 @@ msgstr "السجل يحتاج إلى تسلسل واحد على الأقل لي�
 msgid "A reply written once, ready to send again."
 msgstr "رد يُكتب مرة واحدة، جاهز للإرسال مجددًا."
 
-msgid ""
-"A role of your own can reach anything your apps expose, and nothing "
-"else."
-msgstr "الدور الذي تنشئه بنفسك يصل إلى كل ما تتيحه تطبيقاتك، ولا شيء غير ذلك."
-
 msgid "A source has to be https. Credentials travel to it."
 msgstr "يجب أن يكون المصدر https. بيانات الاعتماد تنتقل إليه."
 
@@ -235,9 +230,6 @@ msgstr "إضافة عنوان"
 msgid "Add an image"
 msgstr "إضافة صورة"
 
-msgid "Add domain"
-msgstr "إضافة نطاق"
-
 msgid "Add filter"
 msgstr "إضافة مرشّح"
 
@@ -309,9 +301,6 @@ msgstr "التنبيهات"
 msgid "Alerts could not be loaded"
 msgstr "تعذّر تحميل التنبيهات"
 
-msgid "Alex Rivera"
-msgstr "أليكس ريفيرا"
-
 msgid "Align labels right"
 msgstr "محاذاة التسميات إلى اليمين"
 
@@ -380,14 +369,6 @@ msgstr "كلمة مرور تطبيق إن كان المزوّد يطلبها."
 
 msgid "An earlier version"
 msgstr "نسخة سابقة"
-
-msgid ""
-"An invited person gets a welcome email within a few minutes. Removing "
-"someone stops them signing in; the work they created stays in the "
-"workspace."
-msgstr ""
-"يصل الشخص المدعو بريد ترحيب خلال دقائق قليلة. إزالة شخص تمنعه من تسجيل "
-"الدخول؛ أما العمل الذي أنشأه فيبقى في مساحة العمل."
 
 msgid "An out-of-office reply needs something to say."
 msgstr "رد الغياب عن المكتب يحتاج إلى نص."
@@ -572,9 +553,6 @@ msgstr "إعدادات اللوحة"
 msgid "Body"
 msgstr "النص"
 
-msgid "Bookkeeper"
-msgstr "محاسب"
-
 msgid "Books"
 msgstr "الدفاتر"
 
@@ -605,11 +583,6 @@ msgid ""
 msgstr ""
 "انقل كل ما هو مرفق بكل صف وأرفقه هنا. طلب واحد لكل صف وتنزيل واحد لكل "
 "ملف، لذا فهو اختياري في كل خطوة."
-
-msgid "Build one when the roles your apps came with are not the shape you need."
-msgstr ""
-"أنشئ دوراً عندما لا تكون الأدوار التي جاءت مع تطبيقاتك بالشكل الذي "
-"تحتاجه."
 
 msgid ""
 "Build one where the shipped roles are the wrong shape — somebody who "
@@ -649,14 +622,8 @@ msgstr "احسب"
 msgid "Can edit"
 msgstr "يمكنه التعديل"
 
-msgid "Can manage the workspace as well as use the apps."
-msgstr "يمكنه إدارة مساحة العمل واستخدام التطبيقات."
-
 msgid "Can share"
 msgstr "يمكنه المشاركة"
-
-msgid "Can use the apps in this workspace."
-msgstr "يمكنه استخدام التطبيقات في مساحة العمل هذه."
 
 msgid "Can view"
 msgstr "يمكنه العرض"
@@ -754,9 +721,6 @@ msgstr "التغيير إلى هذه الخطة"
 msgid "Change to {0}?"
 msgstr "التغيير إلى {0}؟"
 
-msgid "Change what they can do"
-msgstr "تغيير ما يمكن لهذا الشخص فعله"
-
 msgid "Change your card, download an invoice or cancel from there."
 msgstr "غيّر بطاقتك أو نزّل فاتورة أو ألغِ من هناك."
 
@@ -783,9 +747,6 @@ msgstr "تحقق من اتصالك، ثم حاول مرة أخرى."
 
 msgid "Checked"
 msgstr "محدد"
-
-msgid "Checking your DNS"
-msgstr "جارٍ فحص DNS"
 
 msgid "Child Table"
 msgstr "جدول فرعي"
@@ -872,9 +833,6 @@ msgstr "يحتوي على"
 
 msgid "Contains…"
 msgstr "يحتوي…"
-
-msgid "Copied"
-msgstr "تم النسخ"
 
 msgid "Copy"
 msgstr "نسخ"
@@ -968,9 +926,6 @@ msgstr "حذفه"
 msgid "Delete it all"
 msgstr "حذف الكل"
 
-msgid "Delete role"
-msgstr "حذف الدور"
-
 msgid "Delete this alert"
 msgstr "حذف هذا التنبيه"
 
@@ -1057,9 +1012,6 @@ msgstr "تعديل التنبيه"
 
 msgid "Edit event"
 msgstr "تعديل الحدث"
-
-msgid "Edit role"
-msgstr "تعديل الدور"
 
 msgid "Edit template"
 msgstr "تعديل القالب"
@@ -1574,9 +1526,6 @@ msgstr "توقيع غير صالح."
 msgid "Invite somebody"
 msgstr "ادعُ شخصًا"
 
-msgid "Invite someone"
-msgstr "دعوة شخص"
-
 msgid "Invited — they can sign in shortly"
 msgstr "تمت الدعوة — يمكنه تسجيل الدخول قريباً"
 
@@ -1701,9 +1650,6 @@ msgstr "تم نسخ الرابط"
 
 msgid "Link made"
 msgstr "تم إنشاء الرابط"
-
-msgid "Live and serving your workspace."
-msgstr "نشط ويخدم مساحة عملك."
 
 msgid "Loading activity"
 msgstr "جارٍ تحميل النشاط"
@@ -2028,9 +1974,6 @@ msgstr "نموذج طباعة جديد"
 
 msgid "New records are paused. Nothing is lost — delete something, or upgrade."
 msgstr "إنشاء السجلات الجديدة متوقف. لم يُفقد شيء — احذف شيئاً أو ارتقِ بخطتك."
-
-msgid "New role"
-msgstr "دور جديد"
 
 msgid "New template"
 msgstr "قالب جديد"
@@ -2430,9 +2373,6 @@ msgstr ""
 "الرقم و.YYYY. هي السنة، لذا تبدأ ACME-.YYYY.-.##### العدّ من جديد كل "
 "يناير."
 
-msgid "One permission"
-msgstr "صلاحية واحدة"
-
 msgid "One person"
 msgstr "شخص واحد"
 
@@ -2444,9 +2384,6 @@ msgstr "شاشة واحدة — {0}"
 
 msgid "One seat"
 msgstr "مقعد واحد"
-
-msgid "One seat used"
-msgstr "مقعد واحد مستخدم"
 
 msgid "One, two, three"
 msgstr "واحد، اثنان، ثلاثة"
@@ -2653,9 +2590,6 @@ msgstr "تم رفض إذن الكاميرا."
 msgid "Permit"
 msgstr "تصريح"
 
-msgid "Person"
-msgstr "شخص"
-
 msgid "Photo {0}.jpg"
 msgstr "صورة {0}.jpg"
 
@@ -2765,9 +2699,6 @@ msgstr "لا يصل إلى شيء بعد"
 
 msgid "Reading…"
 msgstr "جارٍ القراءة…"
-
-msgid "Reads invoices and contacts, edits neither."
-msgstr "يقرأ الفواتير وجهات الاتصال، ولا يعدّل أياً منهما."
 
 msgid "Recent"
 msgstr "الأخيرة"
@@ -2897,17 +2828,8 @@ msgstr "يمين (مم)"
 msgid "Roles JSON"
 msgstr "JSON الأدوار"
 
-msgid "Roles appear here once this workspace has an app."
-msgstr "تظهر الأدوار هنا بمجرد أن يصبح لمساحة العمل هذه تطبيق."
-
-msgid "Roles you built"
-msgstr "الأدوار التي أنشأتها"
-
 msgid "Roles you made"
 msgstr "الأدوار التي أنشأتها"
-
-msgid "Roles your apps came with"
-msgstr "الأدوار التي جاءت مع تطبيقاتك"
 
 msgid "Rows are sorted by this first, so each group arrives whole."
 msgstr "تُرتَّب الصفوف بهذا أولًا، فتصل كل مجموعة كاملة."
@@ -2932,9 +2854,6 @@ msgstr "حفظ كعرض جديد"
 
 msgid "Save away message"
 msgstr "حفظ رسالة الغياب"
-
-msgid "Save role"
-msgstr "حفظ الدور"
 
 msgid "Save series"
 msgstr "حفظ التسلسل"
@@ -3012,9 +2931,6 @@ msgstr "القسم {0}"
 msgid "Security"
 msgstr "الأمان"
 
-msgid "See plans"
-msgstr "عرض الخطط"
-
 msgid "Select all"
 msgstr "تحديد الكل"
 
@@ -3032,9 +2948,6 @@ msgstr ""
 "أرسل باسم you@yourcompany.com بدلًا من نطاقنا. البريد إلى ذلك النطاق يظل "
 "يذهب إلى حيث يشير سجل MX الخاص به — اربط تلك الصناديق من تبويب صندوق "
 "البريد الخاص بك لقراءتها هنا."
-
-msgid "Send invite"
-msgstr "إرسال الدعوة"
 
 msgid "Send it"
 msgstr "إرساله"
@@ -3829,9 +3742,6 @@ msgstr ""
 msgid "The {0} most common. Use Filter for the rest."
 msgstr "أكثر {0} شيوعًا. استخدم المرشّح للبقية."
 
-msgid "Then add it here"
-msgstr "ثم أضفه هنا"
-
 msgid "There are no records on this screen."
 msgstr "لا توجد سجلات على هذه الشاشة."
 
@@ -3894,13 +3804,6 @@ msgstr "لا شيء هنا لإعادة تسميته."
 
 msgid "There is nothing to save a view for here."
 msgstr "لا شيء هنا يمكن حفظ عرض له."
-
-msgid ""
-"These arrive with the apps this workspace has. Hand them out on the "
-"People screen."
-msgstr ""
-"تأتي هذه مع التطبيقات الموجودة في مساحة العمل هذه. وزّعها من شاشة "
-"الأشخاص."
 
 msgid ""
 "These come with the apps this workspace has. They cannot be changed "
@@ -4080,13 +3983,6 @@ msgstr "يستغرق هذا بضع ثوانٍ."
 
 msgid "This upload is not yours to finish."
 msgstr "ليس لك إنهاء هذا الرفع."
-
-msgid ""
-"This usually takes a minute or two. If it takes longer, the cause is "
-"almost always a proxied record — see step two below."
-msgstr ""
-"يستغرق هذا عادةً دقيقة أو دقيقتين. وإذا طال أكثر، فالسبب غالباً سجل DNS "
-"يمر عبر وسيط — راجع الخطوة الثانية أدناه."
 
 msgid "This workspace already has a company."
 msgstr "مساحة العمل هذه لديها شركة بالفعل."
@@ -4325,9 +4221,6 @@ msgstr "الاستخدام"
 msgid "Use AI in this workspace"
 msgstr "استخدام الذكاء الاصطناعي في مساحة العمل هذه"
 
-msgid "Use a different domain"
-msgstr "استخدام نطاق آخر"
-
 msgid "Use a different sheet"
 msgstr "استخدام جدول بيانات آخر"
 
@@ -4351,9 +4244,6 @@ msgstr "استخدام هذا افتراضيًا"
 
 msgid "Use this photo"
 msgstr "استخدام هذه الصورة"
-
-msgid "Use your own domain"
-msgstr "استخدام نطاقك الخاص"
 
 msgid "Using a domain of your own"
 msgstr "استخدام نطاق خاص بك"
@@ -4439,9 +4329,6 @@ msgstr "اسمه في قائمة الاختيار."
 
 msgid "What it is called wherever it appears."
 msgstr "ما يسمى به أينما ظهر."
-
-msgid "What it is for"
-msgstr "ما الغرض منه"
 
 msgid "What it says"
 msgstr "ما يقوله"
@@ -4816,9 +4703,6 @@ msgstr "ليس لديك عنوان للإرسال منه."
 msgid "You have no address to write from."
 msgstr "ليس لديك عنوان للكتابة منه."
 
-msgid "Your CNAME should point at:"
-msgstr "يجب أن يشير CNAME إلى:"
-
 msgid "Your account"
 msgstr "حسابك"
 
@@ -4910,20 +4794,6 @@ msgstr ""
 "فتُرحَّل وتُستهلك أخيراً."
 
 msgid ""
-"Your plan includes one seat. Change plan to invite more people, or "
-"remove someone who no longer needs access."
-msgstr ""
-"تشمل خطتك مقعداً واحداً. غيّر الخطة لدعوة المزيد من الأشخاص، أو أزل "
-"شخصاً لم يعد يحتاج الوصول."
-
-msgid ""
-"Your plan includes {0} seats. Change plan to invite more people, or "
-"remove someone who no longer needs access."
-msgstr ""
-"تشمل خطتك {0} مقاعد. غيّر الخطة لدعوة المزيد من الأشخاص، أو أزل شخصاً لم "
-"يعد يحتاج الوصول."
-
-msgid ""
 "Your roles are kept with your account, and it is not answering. "
 "Everybody keeps the access they already have."
 msgstr ""
@@ -4943,9 +4813,6 @@ msgid ""
 msgstr ""
 "لم يُمَس عملك، والدفع يعيده خلال دقيقة. وإذا بقي غير مدفوع في {0}، "
 "تُوقَف مساحة العمل ولا يُحتفظ إلا بنسخة احتياطية."
-
-msgid "Your workspace already works at {0}. A custom domain is optional."
-msgstr "مساحة عملك تعمل أصلاً على {0}. النطاق المخصص اختياري."
 
 msgid "Your workspace did not load"
 msgstr "لم تُحمَّل مساحة عملك"
@@ -4979,9 +4846,6 @@ msgstr "ملغى"
 
 msgid "changed"
 msgstr "تغيّر"
-
-msgid "colleague@acme.test"
-msgstr "zameel@acme.test"
 
 msgid "coming up"
 msgstr "قادم"
@@ -5304,9 +5168,6 @@ msgstr "{0} من {1} محدد"
 msgid "{0} of {1} seats in use."
 msgstr "{0} من {1} مقعدًا قيد الاستخدام."
 
-msgid "{0} of {1} seats used"
-msgstr "{0} من {1} مقاعد مستخدمة"
-
 msgid "{0} of {1} this hour"
 msgstr "{0} من {1} هذه الساعة"
 
@@ -5315,9 +5176,6 @@ msgstr "{0} من {1} اليوم"
 
 msgid "{0} once"
 msgstr "{0} مرة واحدة"
-
-msgid "{0} permissions"
-msgstr "{0} صلاحيات"
 
 msgid "{0} records will have {1} set to this."
 msgstr "{0} سجلات ستُضبط فيها قيمة {1} على هذا."
@@ -5342,9 +5200,6 @@ msgstr "{0} شاشات — {1}"
 
 msgid "{0} seats"
 msgstr "{0} مقاعد"
-
-msgid "{0} seats used"
-msgstr "{0} مقاعد مستخدمة"
 
 msgid "{0} selected"
 msgstr "{0} محدد"

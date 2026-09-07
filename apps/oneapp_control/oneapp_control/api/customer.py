@@ -950,3 +950,109 @@ def delete_role(workspace: str, name: str) -> dict:
 	doc.delete(ignore_permissions=True)
 	frappe.db.commit()
 	return roles(workspace)
+
+
+# --------------------------------------------------------------------------- #
+# The marketplace
+#
+# What a workspace could have and does not. Narrower than "every space that
+# exists" in a way that matters: a Restricted space appears only where somebody
+# wrote down that this workspace may see it (`Space Entitlement.offered`),
+# because a locked card for every private app tells every customer the name of
+# every bespoke solution built for every other one.
+#
+# Four states rather than two, and the middle one is the reason this is not a
+# list of buttons. Enabling a space whose app is already on the site is a row
+# and a role — seconds. Enabling one whose app is not is an Install App job:
+# patches against a live database, minutes, and it can fail. A card that says
+# "enabled" while that is still running is a card that lies for four minutes.
+# --------------------------------------------------------------------------- #
+
+#: A job that has not finished. `Requested` is in here too: a card that shows
+#: nothing until the runner picks the job up is a card that looks like the
+#: button did nothing.
+RUNNING = ("Requested", "Running", "Awaiting Agent", "Bootstrapping")
+
+
+@frappe.whitelist(methods=["GET"])
+def marketplace(workspace: str | None = None) -> dict:
+	"""Spaces this workspace could add, each with the state of adding it."""
+	from oneapp_control.entitlements import apps as app_registry
+
+	tenant = require_workspace(workspace)
+	held = {space["space_code"] for space in registry.spaces_for_tenant(tenant.name)}
+
+	offered = [
+		space for space in registry.offered_spaces(tenant.name)
+		if space["space_code"] not in held
+	]
+	if not offered:
+		return {"spaces": []}
+
+	installing = _installing(tenant.name)
+	carried = set(app_registry.bench_apps(tenant))
+
+	return {"spaces": [_card(space, installing, carried) for space in offered]}
+
+
+def _installing(tenant: str) -> set[str]:
+	"""Apps this workspace has an Install App job running for."""
+	jobs = frappe.get_all(
+		"Provisioning Job",
+		filters={"tenant": tenant, "action": "Install App", "state": ["in", RUNNING]},
+		pluck="payload",
+	)
+	return {
+		(frappe.parse_json(payload) or {}).get("app")
+		for payload in jobs
+		if payload
+	} - {None}
+
+
+def _card(space: dict, installing: set[str], carried: set[str]) -> dict:
+	from oneapp_control.entitlements import apps as app_registry
+
+	needed = app_registry.required_by(space)
+	missing = [app for app in needed if app not in carried]
+
+	if missing:
+		# Named, because "unavailable" on its own is a card nobody can act on
+		# and a support ticket that starts with "it just says no".
+		state, because = "unavailable", ", ".join(missing)
+	elif any(app in installing for app in needed):
+		state, because = "installing", ""
+	else:
+		state, because = "available", ""
+
+	return {
+		"code": space["space_code"],
+		"label": space["space_label"],
+		"description": space.get("description") or "",
+		"icon": space.get("icon") or "",
+		"logo": space.get("logo") or "",
+		"state": state,
+		"missing_apps": because,
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def enable_space(workspace: str, space: str) -> dict:
+	"""Turn on a space this workspace was offered.
+
+	Only one it was offered: `grant` alone would let anybody who can guess a
+	space code help themselves to somebody else's bespoke solution, and the
+	whole point of the second flag is that being allowed to see a space is a
+	fact somebody wrote down.
+	"""
+	tenant = require_workspace(workspace)
+
+	if not frappe.db.exists(
+		"Space Entitlement",
+		{"tenant": tenant.name, "app": space, "offered": 1},
+	):
+		frappe.throw(_("That space is not one this workspace was offered."),
+		             frappe.PermissionError)
+
+	registry.grant(tenant.name, space, note="Enabled from the marketplace.")
+	frappe.db.commit()
+	return marketplace(workspace)

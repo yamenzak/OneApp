@@ -181,8 +181,10 @@ has its sentence — `assert_can_carry` names the app the bench lacks.
 The operator's other lever is the one that exists: entitle the workspace
 directly, and the private space appears in their marketplace as available with
 no code needed. That is the "explicitly exposed to a tenant from admin panel"
-half, and it is `registry.grant` with `enabled = 0` — entitled to *see*, not yet
-enabled — which is one field this model does not have yet and needs.
+half, and it is `registry.offer` — a row with `offered = 1` and `enabled = 0`,
+entitled to *see* and not yet turned on. The second flag is what tells that
+apart from a revoked row, and `revoke` clears both, because leaving `offered`
+on would put the card back in front of them with a button that works.
 
 ### What a card must say
 
@@ -198,12 +200,13 @@ between a marketplace that is honest and one that appears to hang.
 
 Ordered so each is worth having on its own.
 
-1. **Three tabs move.** People, Roles and Domain become workspace settings tabs
-   calling the control plane through the seam that already exists. The account
-   Space keeps Overview, Billing and Plan, and its docstring is corrected to say
+1. **Three tabs move.** *Done.* People, Roles and Domain are workspace settings
+   tabs calling the control plane through the seam that already exists. The
+   account Space keeps Overview, Apps, Billing and Plan, and its docstring says
    which half of its argument survived.
-2. **`Space Entitlement` gains "entitled to see".** One field. An operator can
-   expose a private space to one workspace without enabling it.
+2. **`Space Entitlement` gains "entitled to see".** *Done.* `offered`, and
+   `registry.offer` beside `grant`: an operator can expose a private space to
+   one workspace without installing anything for them.
 3. **The marketplace screen**, reading the catalogue narrowed to what this
    workspace may see, with the four card states. Rail icon and app-switcher
    entry.

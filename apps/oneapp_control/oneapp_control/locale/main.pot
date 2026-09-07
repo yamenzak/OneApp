@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 17:25+0000\n"
-"PO-Revision-Date: 2026-09-07 17:25+0000\n"
+"POT-Creation-Date: 2026-09-07 18:03+0000\n"
+"PO-Revision-Date: 2026-09-07 18:03+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -2413,6 +2413,11 @@ msgstr ""
 msgid "Occurred On"
 msgstr ""
 
+#. Label of the offered (Check) field in DocType 'Space Entitlement'
+#: oneapp_control/control_plane/doctype/space_entitlement/space_entitlement.json
+msgid "Offered"
+msgstr ""
+
 #. Label of the on_addons (Check) field in DocType 'Promo Code'
 #: oneapp_control/control_plane/doctype/promo_code/promo_code.json
 msgid "On Addons"
@@ -4156,6 +4161,10 @@ msgstr ""
 msgid "That role belongs to another workspace."
 msgstr ""
 
+#: oneapp_control/api/customer.py:1053
+msgid "That space is not one this workspace was offered."
+msgstr ""
+
 #. Description of the 'Provider' (Select) field in DocType 'AI Model'
 #: oneapp_control/control_plane/doctype/ai_model/ai_model.json
 msgid "The AI Gateway provider slug, used verbatim in the URL."
@@ -4240,6 +4249,16 @@ msgstr ""
 #. Label of the theme (Small Text) field in DocType 'OneSpace Space'
 #: oneapp_control/control_plane/doctype/onespace_space/onespace_space.json
 msgid "Theme"
+msgstr ""
+
+#. Description of the 'Offered' (Check) field in DocType 'Space Entitlement'
+#: oneapp_control/control_plane/doctype/space_entitlement/space_entitlement.json
+msgid "They can see it in the marketplace and enable it themselves."
+msgstr ""
+
+#. Description of the 'Enabled' (Check) field in DocType 'Space Entitlement'
+#: oneapp_control/control_plane/doctype/space_entitlement/space_entitlement.json
+msgid "They have it. It is in their launcher."
 msgstr ""
 
 #: oneapp_control/api/admin/billing.py:47
@@ -4984,7 +5003,7 @@ msgstr ""
 msgid "{0} is not sold on a {1} subscription."
 msgstr ""
 
-#: oneapp_control/api/tenant.py:751
+#: oneapp_control/api/tenant.py:753
 msgid "{0} is not something a workspace may ask."
 msgstr ""
 

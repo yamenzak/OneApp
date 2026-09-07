@@ -10,6 +10,7 @@
   "tenant",
   "app",
   "enabled",
+  "offered",
   "cb_ent",
   "granted_on",
   "note"
@@ -35,10 +36,19 @@
   },
   {
    "default": "1",
+   "description": "They have it. It is in their launcher.",
    "fieldname": "enabled",
    "fieldtype": "Check",
    "in_list_view": 1,
    "label": "Enabled"
+  },
+  {
+   "default": "0",
+   "description": "They can see it in the marketplace and enable it themselves.",
+   "fieldname": "offered",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Offered"
   },
   {
    "fieldname": "cb_ent",

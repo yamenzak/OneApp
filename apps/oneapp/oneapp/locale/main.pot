@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 17:25+0000\n"
-"PO-Revision-Date: 2026-09-07 17:25+0000\n"
+"POT-Creation-Date: 2026-09-07 18:03+0000\n"
+"PO-Revision-Date: 2026-09-07 18:03+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -194,10 +194,6 @@ msgstr ""
 msgid "A reply written once, ready to send again."
 msgstr ""
 
-#: frontend/src/screens/account/Roles.vue:57
-msgid "A role of your own can reach anything your apps expose, and nothing else."
-msgstr ""
-
 #: oneapp/oneapp_core/importer/source.py:44
 msgid "A source has to be https. Credentials travel to it."
 msgstr ""
@@ -275,11 +271,6 @@ msgid "About"
 msgstr ""
 
 #: frontend/src/components/SharePanel.vue:38
-#: frontend/src/screens/account/People.vue:42
-#: frontend/src/screens/account/People.vue:126
-#: frontend/src/screens/account/People.vue:157
-#: frontend/src/screens/account/People.vue:164
-#: frontend/src/screens/account/People.vue:200
 #: frontend/src/screens/ops/TenantSpaces.vue:101
 msgid "Access"
 msgstr ""
@@ -296,10 +287,6 @@ msgstr ""
 
 #: frontend/src/components/screen/views/ScreenActions.vue:27
 msgid "Actions"
-msgstr ""
-
-#: frontend/src/screens/account/Domain.vue:18
-msgid "Active"
 msgstr ""
 
 #: frontend/src/components/screen/record/RecordView.vue:183
@@ -353,10 +340,6 @@ msgstr ""
 #: frontend/src/screens/ops/TenantBilling.vue:164
 #: frontend/src/screens/ops/TenantBilling.vue:184
 msgid "Add credits"
-msgstr ""
-
-#: frontend/src/screens/account/Domain.vue:74
-msgid "Add domain"
 msgstr ""
 
 #: frontend/src/components/screen/views/FilterPanel.vue:48
@@ -455,10 +438,6 @@ msgstr ""
 
 #: frontend/src/components/settings/AlertSettings.vue:34
 msgid "Alerts could not be loaded"
-msgstr ""
-
-#: frontend/src/screens/account/People.vue:121
-msgid "Alex Rivera"
 msgstr ""
 
 #: frontend/src/components/screen/views/ColumnPicker.vue:104
@@ -562,10 +541,6 @@ msgstr ""
 
 #: frontend/src/components/docs/DocEditor.vue:136
 msgid "An earlier version"
-msgstr ""
-
-#: frontend/src/screens/account/People.vue:104
-msgid "An invited person gets a welcome email within a few minutes. Removing someone stops them signing in; the work they created stays in the workspace."
 msgstr ""
 
 #: oneapp/oneapp_core/email/rules.py:175
@@ -935,10 +910,6 @@ msgstr ""
 msgid "Body"
 msgstr ""
 
-#: frontend/src/screens/account/Roles.vue:104
-msgid "Bookkeeper"
-msgstr ""
-
 #: frontend/src/components/settings/BooksSettings.vue:3
 msgid "Books"
 msgstr ""
@@ -984,10 +955,6 @@ msgstr ""
 
 #: frontend/src/screens/ops/Readiness.vue:38
 msgid "Bring up mail"
-msgstr ""
-
-#: frontend/src/screens/account/Roles.vue:88
-msgid "Build one when the roles your apps came with are not the shape you need."
 msgstr ""
 
 #: frontend/src/components/settings/RoleSettings.vue:48
@@ -1066,18 +1033,8 @@ msgstr ""
 msgid "Can edit"
 msgstr ""
 
-#: frontend/src/screens/account/People.vue:130
-#: frontend/src/screens/account/People.vue:168
-msgid "Can manage the workspace as well as use the apps."
-msgstr ""
-
 #: frontend/src/components/SharePanel.vue:122
 msgid "Can share"
-msgstr ""
-
-#: frontend/src/screens/account/People.vue:131
-#: frontend/src/screens/account/People.vue:169
-msgid "Can use the apps in this workspace."
 msgstr ""
 
 #: frontend/src/components/SharePanel.vue:120
@@ -1086,8 +1043,6 @@ msgstr ""
 
 #: frontend/src/components/docs/LongTextDialog.vue:50
 #: frontend/src/pages/ScreenHost.vue:347
-#: frontend/src/screens/account/People.vue:146
-#: frontend/src/screens/account/People.vue:178
 #: frontend/src/screens/ops/Tenant.vue:353
 msgid "Cancel"
 msgstr ""
@@ -1243,11 +1198,6 @@ msgstr ""
 msgid "Change to {0}?"
 msgstr ""
 
-#: frontend/src/screens/account/People.vue:84
-#: frontend/src/screens/account/People.vue:85
-msgid "Change what they can do"
-msgstr ""
-
 #: frontend/src/screens/account/Billing.vue:36
 msgid "Change your card, download an invoice or cancel from there."
 msgstr ""
@@ -1291,10 +1241,6 @@ msgstr ""
 
 #: frontend/src/lib/workspace/mail.js:384
 msgid "Checked"
-msgstr ""
-
-#: frontend/src/screens/account/Domain.vue:23
-msgid "Checking your DNS"
 msgstr ""
 
 #. Label of the into (Data) field in DocType 'Sheet Feed'
@@ -1488,12 +1434,7 @@ msgstr ""
 msgid "Contract"
 msgstr ""
 
-#: frontend/src/screens/account/Domain.vue:113
-msgid "Copied"
-msgstr ""
-
 #: frontend/src/composables/useNewFile.js:92
-#: frontend/src/screens/account/Domain.vue:62
 msgid "Copy"
 msgstr ""
 
@@ -1720,10 +1661,6 @@ msgstr ""
 msgid "Delete it all"
 msgstr ""
 
-#: frontend/src/screens/account/Roles.vue:79
-msgid "Delete role"
-msgstr ""
-
 #: frontend/src/components/settings/AlertSettings.vue:98
 #: frontend/src/components/settings/AlertSettings.vue:99
 msgid "Delete this alert"
@@ -1925,7 +1862,6 @@ msgstr ""
 #: frontend/src/components/settings/TemplateSettings.vue:73
 #: frontend/src/components/settings/TemplateSettings.vue:74
 #: frontend/src/pages/ScreenHost.vue:318
-#: frontend/src/screens/account/Roles.vue:75
 msgid "Edit"
 msgstr ""
 
@@ -1935,10 +1871,6 @@ msgstr ""
 
 #: frontend/src/components/diary/EventDialog.vue:12
 msgid "Edit event"
-msgstr ""
-
-#: frontend/src/screens/account/Roles.vue:96
-msgid "Edit role"
 msgstr ""
 
 #: frontend/src/components/settings/TemplateSettings.vue:98
@@ -1962,7 +1894,6 @@ msgstr ""
 #: frontend/src/components/notifications/NotificationSettings.vue:84
 #: frontend/src/components/settings/MailSettings.vue:10
 #: frontend/src/components/settings/PeopleSettings.vue:85
-#: frontend/src/screens/account/People.vue:115
 msgid "Email"
 msgstr ""
 
@@ -2062,7 +1993,6 @@ msgid "Every recipient of this message has bounced or reported it as spam."
 msgstr ""
 
 #: frontend/src/components/settings/PeopleSettings.vue:31
-#: frontend/src/screens/account/People.vue:16
 msgid "Every seat is in use"
 msgstr ""
 
@@ -2079,7 +2009,6 @@ msgid "Everybody chosen is added to these records. Nobody already on them comes 
 msgstr ""
 
 #: frontend/src/components/screen/fields/ShareControl.vue:25
-#: frontend/src/screens/account/Roles.vue:42
 msgid "Everyone"
 msgstr ""
 
@@ -2858,10 +2787,6 @@ msgstr ""
 msgid "Invite somebody"
 msgstr ""
 
-#: frontend/src/screens/account/People.vue:110
-msgid "Invite someone"
-msgstr ""
-
 #: frontend/src/screens/account/customer.js:129
 msgid "Invited — they can sign in shortly"
 msgstr ""
@@ -3144,10 +3069,6 @@ msgstr ""
 
 #: frontend/src/lib/screen/viewTypes.js:20
 msgid "List"
-msgstr ""
-
-#: frontend/src/screens/account/Domain.vue:16
-msgid "Live and serving your workspace."
 msgstr ""
 
 #: frontend/src/components/screen/bodies/ListFooter.vue:11
@@ -3613,8 +3534,6 @@ msgstr ""
 #: frontend/src/components/settings/printing/FormatBuilder.vue:19
 #: frontend/src/components/settings/printing/LetterHeadDialog.vue:18
 #: frontend/src/pages/Drive.vue:280 frontend/src/pages/Drive.vue:294
-#: frontend/src/screens/account/People.vue:120
-#: frontend/src/screens/account/Roles.vue:103
 msgid "Name"
 msgstr ""
 
@@ -3751,11 +3670,6 @@ msgstr ""
 msgid "New records are paused. Nothing is lost — delete something, or upgrade."
 msgstr ""
 
-#: frontend/src/screens/account/Roles.vue:54
-#: frontend/src/screens/account/Roles.vue:96
-msgid "New role"
-msgstr ""
-
 #: frontend/src/components/settings/TemplateSettings.vue:20
 #: frontend/src/components/settings/TemplateSettings.vue:38
 #: frontend/src/components/settings/TemplateSettings.vue:98
@@ -3813,7 +3727,6 @@ msgid "No app in this workspace names its records by a series."
 msgstr ""
 
 #: frontend/src/screens/account/Apps.vue:39
-#: frontend/src/screens/account/Roles.vue:47
 msgid "No apps yet"
 msgstr ""
 
@@ -3923,7 +3836,6 @@ msgid "No plan yet"
 msgstr ""
 
 #: frontend/src/components/settings/RoleSettings.vue:47
-#: frontend/src/screens/account/Roles.vue:87
 msgid "No roles of your own yet"
 msgstr ""
 
@@ -4013,7 +3925,6 @@ msgstr ""
 #: frontend/src/components/screen/bodies/BoardBody.vue:360
 #: frontend/src/components/screen/record/PrintDialog.vue:109
 #: frontend/src/components/settings/printing/BuilderInspector.vue:197
-#: frontend/src/screens/account/Roles.vue:183
 #: frontend/src/screens/ops/TenantLifecycle.vue:248
 #: oneapp/oneapp_core/dashboard.py:369
 msgid "None"
@@ -4387,10 +4298,6 @@ msgstr ""
 msgid "One per line, and the first is what new records use. A run of # is where the number goes and .YYYY. is the year, so ACME-.YYYY.-.##### starts counting again each January."
 msgstr ""
 
-#: frontend/src/screens/account/Roles.vue:69
-msgid "One permission"
-msgstr ""
-
 #: frontend/src/components/settings/MailSettings.vue:316
 msgid "One person"
 msgstr ""
@@ -4405,10 +4312,6 @@ msgstr ""
 
 #: frontend/src/screens/account/Plan.vue:149
 msgid "One seat"
-msgstr ""
-
-#: frontend/src/screens/account/People.vue:222
-msgid "One seat used"
 msgstr ""
 
 #: frontend/src/components/screen/views/FilterRow.vue:66
@@ -4741,7 +4644,6 @@ msgstr ""
 #: frontend/src/components/screen/views/BulkAssignDialog.vue:32
 #: frontend/src/components/settings/PeopleSettings.vue:12
 #: frontend/src/screens/account/Overview.vue:86
-#: frontend/src/screens/account/People.vue:32
 msgid "People"
 msgstr ""
 
@@ -4756,11 +4658,6 @@ msgstr ""
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
 #: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
 msgid "Permit"
-msgstr ""
-
-#: frontend/src/screens/account/People.vue:41
-#: frontend/src/screens/account/People.vue:199
-msgid "Person"
 msgstr ""
 
 #: frontend/src/components/drive/CameraCapture.vue:234
@@ -4842,7 +4739,7 @@ msgstr ""
 msgid "Platform policy per feature: what may be disabled, what model is pinned, what the ceiling is."
 msgstr ""
 
-#: oneapp/oneapp_core/account.py:31
+#: oneapp/oneapp_core/account.py:38
 msgid "Please sign in."
 msgstr ""
 
@@ -4999,10 +4896,6 @@ msgstr ""
 
 #: frontend/src/components/sheets/ImportSheet.vue:85
 msgid "Reading…"
-msgstr ""
-
-#: frontend/src/screens/account/Roles.vue:110
-msgid "Reads invoices and contacts, edits neither."
 msgstr ""
 
 #: frontend/src/screens/ops/Readiness.vue:15
@@ -5169,8 +5062,6 @@ msgstr ""
 #: frontend/src/components/settings/MailboxSettings.vue:178
 #: frontend/src/components/settings/PeopleSettings.vue:69
 #: frontend/src/components/settings/PeopleSettings.vue:70
-#: frontend/src/screens/account/People.vue:93
-#: frontend/src/screens/account/People.vue:94
 #: frontend/src/screens/ops/Tenant.vue:159
 #: frontend/src/screens/ops/Tenant.vue:160
 msgid "Remove {0}"
@@ -5361,20 +5252,8 @@ msgstr ""
 msgid "Roles JSON"
 msgstr ""
 
-#: frontend/src/screens/account/Roles.vue:48
-msgid "Roles appear here once this workspace has an app."
-msgstr ""
-
-#: frontend/src/screens/account/Roles.vue:53
-msgid "Roles you built"
-msgstr ""
-
 #: frontend/src/components/settings/RoleSettings.vue:42
 msgid "Roles you made"
-msgstr ""
-
-#: frontend/src/screens/account/Roles.vue:19
-msgid "Roles your apps came with"
 msgstr ""
 
 #: frontend/src/components/screen/views/ColumnPicker.vue:25
@@ -5434,7 +5313,6 @@ msgstr ""
 #: frontend/src/components/settings/printing/FormatBuilder.vue:37
 #: frontend/src/components/settings/printing/LetterHeadDialog.vue:84
 #: frontend/src/components/versions/VersionPanel.vue:111
-#: frontend/src/screens/account/People.vue:177
 msgid "Save"
 msgstr ""
 
@@ -5445,10 +5323,6 @@ msgstr ""
 
 #: frontend/src/components/settings/MailboxSettings.vue:149
 msgid "Save away message"
-msgstr ""
-
-#: frontend/src/screens/account/Roles.vue:148
-msgid "Save role"
 msgstr ""
 
 #: frontend/src/components/settings/NamingSettings.vue:54
@@ -5584,10 +5458,6 @@ msgstr ""
 msgid "Security"
 msgstr ""
 
-#: frontend/src/screens/account/People.vue:24
-msgid "See plans"
-msgstr ""
-
 #: frontend/src/screens/ops/Tenant.vue:58
 msgid "See the provisioning job for the reason."
 msgstr ""
@@ -5621,10 +5491,6 @@ msgstr ""
 
 #: frontend/src/components/settings/MailSettings.vue:146
 msgid "Send as you@yourcompany.com rather than on ours. Mail to that domain still goes wherever its MX points — connect those mailboxes under your own Mailbox tab to read them here."
-msgstr ""
-
-#: frontend/src/screens/account/People.vue:141
-msgid "Send invite"
 msgstr ""
 
 #: frontend/src/components/settings/AlertSettings.vue:200
@@ -6846,10 +6712,6 @@ msgstr ""
 msgid "Theme"
 msgstr ""
 
-#: frontend/src/screens/account/Domain.vue:68
-msgid "Then add it here"
-msgstr ""
-
 #: oneapp/oneapp_core/spaceview/guard.py:14
 msgid "There are no records on this screen."
 msgstr ""
@@ -6923,10 +6785,6 @@ msgstr ""
 
 #: oneapp/oneapp_core/spaceview/layouts.py:88
 msgid "There is nothing to save a view for here."
-msgstr ""
-
-#: frontend/src/screens/account/Roles.vue:22
-msgid "These arrive with the apps this workspace has. Hand them out on the People screen."
 msgstr ""
 
 #: frontend/src/components/settings/RoleSettings.vue:34
@@ -7130,10 +6988,6 @@ msgstr ""
 
 #: oneapp/oneapp_core/storage/direct.py:347
 msgid "This upload is not yours to finish."
-msgstr ""
-
-#: frontend/src/screens/account/Domain.vue:25
-msgid "This usually takes a minute or two. If it takes longer, the cause is almost always a proxied record — see step two below."
 msgstr ""
 
 #: oneapp/oneapp_core/books.py:221
@@ -7506,10 +7360,6 @@ msgstr ""
 msgid "Use AI in this workspace"
 msgstr ""
 
-#: frontend/src/screens/account/Domain.vue:32
-msgid "Use a different domain"
-msgstr ""
-
 #: frontend/src/components/sheets/FillFromSheet.vue:18
 msgid "Use a different sheet"
 msgstr ""
@@ -7541,10 +7391,6 @@ msgstr ""
 
 #: frontend/src/components/drive/CameraCapture.vue:82
 msgid "Use this photo"
-msgstr ""
-
-#: frontend/src/screens/account/Domain.vue:32
-msgid "Use your own domain"
 msgstr ""
 
 #. Label of the user (Link) field in DocType 'OneSpace Hidden View'
@@ -7717,10 +7563,6 @@ msgstr ""
 #. Settings'
 #: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "What it is called wherever it appears."
-msgstr ""
-
-#: frontend/src/screens/account/Roles.vue:109
-msgid "What it is for"
 msgstr ""
 
 #: frontend/src/components/settings/MailboxSettings.vue:134
@@ -8193,10 +8035,6 @@ msgstr ""
 msgid "You will be signed in as an administrator of {0}. The reason below is recorded against your name and shown on this page."
 msgstr ""
 
-#: frontend/src/screens/account/Domain.vue:57
-msgid "Your CNAME should point at:"
-msgstr ""
-
 #: frontend/src/screens/account/WorkspaceBar.vue:17
 msgid "Your account"
 msgstr ""
@@ -8278,14 +8116,6 @@ msgstr ""
 msgid "Your plan adds credits every month and they expire at the end of it. Credits you buy roll over and are spent last."
 msgstr ""
 
-#: frontend/src/screens/account/People.vue:19
-msgid "Your plan includes one seat. Change plan to invite more people, or remove someone who no longer needs access."
-msgstr ""
-
-#: frontend/src/screens/account/People.vue:20
-msgid "Your plan includes {0} seats. Change plan to invite more people, or remove someone who no longer needs access."
-msgstr ""
-
 #: frontend/src/components/settings/RoleSettings.vue:24
 msgid "Your roles are kept with your account, and it is not answering. Everybody keeps the access they already have."
 msgstr ""
@@ -8300,10 +8130,6 @@ msgstr ""
 
 #: frontend/src/screens/account/Overview.vue:37
 msgid "Your work has not been touched, and paying brings it back within a minute. If it is still unpaid on {0}, the workspace comes down and only a backup is kept."
-msgstr ""
-
-#: frontend/src/screens/account/Domain.vue:35
-msgid "Your workspace already works at {0}. A custom domain is optional."
 msgstr ""
 
 #: frontend/src/App.vue:76
@@ -8332,7 +8158,6 @@ msgid "and {0} more."
 msgstr ""
 
 #: frontend/src/components/settings/DomainSettings.vue:73
-#: frontend/src/screens/account/Domain.vue:69
 msgid "app.yourcompany.com"
 msgstr ""
 
@@ -8351,10 +8176,6 @@ msgstr ""
 
 #: frontend/src/components/settings/AlertSettings.vue:245
 msgid "changed"
-msgstr ""
-
-#: frontend/src/screens/account/People.vue:116
-msgid "colleague@acme.test"
 msgstr ""
 
 #: frontend/src/components/settings/AlertSettings.vue:248
@@ -8819,10 +8640,6 @@ msgstr ""
 msgid "{0} of {1} seats in use."
 msgstr ""
 
-#: frontend/src/screens/account/People.vue:221
-msgid "{0} of {1} seats used"
-msgstr ""
-
 #: frontend/src/components/settings/MailSettings.vue:34
 msgid "{0} of {1} this hour"
 msgstr ""
@@ -8833,10 +8650,6 @@ msgstr ""
 
 #: frontend/src/screens/account/PackCard.vue:5
 msgid "{0} once"
-msgstr ""
-
-#: frontend/src/screens/account/Roles.vue:70
-msgid "{0} permissions"
 msgstr ""
 
 #: frontend/src/components/screen/views/BulkEditDialog.vue:45
@@ -8870,10 +8683,6 @@ msgstr ""
 
 #: frontend/src/screens/account/Plan.vue:149
 msgid "{0} seats"
-msgstr ""
-
-#: frontend/src/screens/account/People.vue:222
-msgid "{0} seats used"
 msgstr ""
 
 #: frontend/src/components/screen/bodies/SelectionBar.vue:17

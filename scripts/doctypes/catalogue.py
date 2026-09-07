@@ -430,7 +430,18 @@ doctype(
           in_standard_filter=1),
         f("app", "Link", options="OneSpace Space", reqd=1, in_list_view=1,
           in_standard_filter=1),
-        f("enabled", "Check", default="1", in_list_view=1),
+        f("enabled", "Check", default="1", in_list_view=1,
+          description="They have it. It is in their launcher."),
+        # The third state, and the reason this is not one checkbox. A Restricted
+        # space a workspace has never been told about must not appear in their
+        # marketplace at all — a locked card for every private app tells every
+        # customer the name of every bespoke solution built for every other one.
+        # So "may see it" is its own fact: offered and not enabled is a card
+        # they can press, and not offered is a space that does not exist to
+        # them. `enabled` without `offered` is what a revoked row looks like.
+        f("offered", "Check", default="0", in_list_view=1,
+          description="They can see it in the marketplace and enable it "
+                      "themselves."),
         column("cb_ent"),
         f("granted_on", "Datetime", read_only=1),
         f("note", "Small Text"),

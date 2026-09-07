@@ -102,3 +102,15 @@ def domain() -> dict:
 def request_domain(domain: str) -> str:
 	"""Ask for a domain of your own. The records to add come back with it."""
 	return _ask("request_domain", domain=domain)
+
+
+@frappe.whitelist(methods=["GET"])
+def marketplace() -> dict:
+	"""Spaces this workspace could add, and what adding each one would take."""
+	return _ask("marketplace")
+
+
+@frappe.whitelist()
+def enable_space(space: str) -> dict:
+	"""Turn on a space this workspace was offered, and say where it got to."""
+	return _ask("enable_space", space=space)

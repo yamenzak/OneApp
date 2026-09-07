@@ -173,13 +173,6 @@ msgstr ""
 msgid "A reply written once, ready to send again."
 msgstr "Eine einmal geschriebene Antwort, bereit zum erneuten Senden."
 
-msgid ""
-"A role of your own can reach anything your apps expose, and nothing "
-"else."
-msgstr ""
-"Eine eigene Rolle erreicht alles, was Ihre Apps bereitstellen, und "
-"nichts darüber hinaus."
-
 msgid "A source has to be https. Credentials travel to it."
 msgstr "Eine Quelle muss https sein. Zugangsdaten werden dorthin übertragen."
 
@@ -261,9 +254,6 @@ msgstr "Adresse hinzufügen"
 msgid "Add an image"
 msgstr "Bild hinzufügen"
 
-msgid "Add domain"
-msgstr "Domain hinzufügen"
-
 msgid "Add filter"
 msgstr "Filter hinzufügen"
 
@@ -337,9 +327,6 @@ msgstr "Benachrichtigungen"
 
 msgid "Alerts could not be loaded"
 msgstr "Benachrichtigungen konnten nicht geladen werden"
-
-msgid "Alex Rivera"
-msgstr "Alex Rivera"
 
 msgid "Align labels right"
 msgstr "Beschriftungen rechts ausrichten"
@@ -418,15 +405,6 @@ msgstr "Ein App-Passwort, wenn der Anbieter eines verlangt."
 
 msgid "An earlier version"
 msgstr "Eine frühere Version"
-
-msgid ""
-"An invited person gets a welcome email within a few minutes. Removing "
-"someone stops them signing in; the work they created stays in the "
-"workspace."
-msgstr ""
-"Eine eingeladene Person erhält innerhalb weniger Minuten eine "
-"Willkommens-E-Mail. Wer entfernt wird, kann sich nicht mehr anmelden; "
-"die erstellte Arbeit bleibt im Arbeitsbereich."
 
 msgid "An out-of-office reply needs something to say."
 msgstr "Eine Abwesenheitsnotiz braucht einen Inhalt."
@@ -617,9 +595,6 @@ msgstr "Tafel"
 msgid "Board settings"
 msgstr "Board-Einstellungen"
 
-msgid "Bookkeeper"
-msgstr "Buchhalter"
-
 msgid "Books"
 msgstr "Buchhaltung"
 
@@ -651,11 +626,6 @@ msgstr ""
 "Bringt alles mit, was an jeder Zeile hängt, und hängt es hier an. Eine "
 "Anfrage pro Zeile und ein Download pro Datei, daher pro Schritt "
 "zuschaltbar."
-
-msgid "Build one when the roles your apps came with are not the shape you need."
-msgstr ""
-"Erstellen Sie eine, wenn die mitgelieferten Rollen Ihrer Apps nicht die "
-"Form haben, die Sie brauchen."
 
 msgid ""
 "Build one where the shipped roles are the wrong shape — somebody who "
@@ -696,14 +666,8 @@ msgstr "Berechnen"
 msgid "Can edit"
 msgstr "Kann bearbeiten"
 
-msgid "Can manage the workspace as well as use the apps."
-msgstr "Kann den Arbeitsbereich verwalten und die Apps nutzen."
-
 msgid "Can share"
 msgstr "Kann teilen"
-
-msgid "Can use the apps in this workspace."
-msgstr "Kann die Apps in diesem Arbeitsbereich nutzen."
 
 msgid "Can view"
 msgstr "Kann ansehen"
@@ -806,9 +770,6 @@ msgstr "Zu diesem Tarif wechseln"
 msgid "Change to {0}?"
 msgstr "Zu {0} wechseln?"
 
-msgid "Change what they can do"
-msgstr "Ändern, was diese Person darf"
-
 msgid "Change your card, download an invoice or cancel from there."
 msgstr ""
 "Ändern Sie dort Ihre Karte, laden Sie eine Rechnung herunter oder "
@@ -837,9 +798,6 @@ msgstr "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut."
 
 msgid "Checked"
 msgstr "Angehakt"
-
-msgid "Checking your DNS"
-msgstr "DNS wird geprüft"
 
 msgid "Child Table"
 msgstr "Untertabelle"
@@ -929,9 +887,6 @@ msgstr "Enthält"
 
 msgid "Contains…"
 msgstr "Enthält…"
-
-msgid "Copied"
-msgstr "Kopiert"
 
 msgid "Copy"
 msgstr "Kopieren"
@@ -1026,9 +981,6 @@ msgstr "Löschen"
 msgid "Delete it all"
 msgstr "Alles löschen"
 
-msgid "Delete role"
-msgstr "Rolle löschen"
-
 msgid "Delete this alert"
 msgstr "Diese Benachrichtigung löschen"
 
@@ -1117,9 +1069,6 @@ msgstr "Benachrichtigung bearbeiten"
 
 msgid "Edit event"
 msgstr "Termin bearbeiten"
-
-msgid "Edit role"
-msgstr "Rolle bearbeiten"
 
 msgid "Edit template"
 msgstr "Vorlage bearbeiten"
@@ -1657,9 +1606,6 @@ msgstr "Ungültige Signatur."
 msgid "Invite somebody"
 msgstr "Jemanden einladen"
 
-msgid "Invite someone"
-msgstr "Person einladen"
-
 msgid "Invited — they can sign in shortly"
 msgstr "Eingeladen — die Anmeldung ist in Kürze möglich"
 
@@ -1782,9 +1728,6 @@ msgstr "Link kopiert"
 
 msgid "Link made"
 msgstr "Link erstellt"
-
-msgid "Live and serving your workspace."
-msgstr "Aktiv und bedient Ihren Arbeitsbereich."
 
 msgid "Loading activity"
 msgstr "Aktivität wird geladen"
@@ -2117,9 +2060,6 @@ msgid "New records are paused. Nothing is lost — delete something, or upgrade.
 msgstr ""
 "Neue Datensätze sind pausiert. Nichts geht verloren — löschen Sie etwas "
 "oder wechseln Sie den Tarif."
-
-msgid "New role"
-msgstr "Neue Rolle"
 
 msgid "New template"
 msgstr "Neue Vorlage"
@@ -2534,9 +2474,6 @@ msgstr ""
 "# ist die Stelle für die Nummer und .YYYY. ist das Jahr, deshalb beginnt "
 "ACME-.YYYY.-.##### jeden Januar neu zu zählen."
 
-msgid "One permission"
-msgstr "Eine Berechtigung"
-
 msgid "One person"
 msgstr "Eine Person"
 
@@ -2548,9 +2485,6 @@ msgstr "Ein Bildschirm — {0}"
 
 msgid "One seat"
 msgstr "Ein Platz"
-
-msgid "One seat used"
-msgstr "Ein Platz belegt"
 
 msgid "One, two, three"
 msgstr "Eins, zwei, drei"
@@ -2778,9 +2712,6 @@ msgstr "Die Berechtigung für die Kamera wurde verweigert."
 msgid "Permit"
 msgstr "Genehmigung"
 
-msgid "Person"
-msgstr "Person"
-
 msgid "Photo {0}.jpg"
 msgstr "Foto {0}.jpg"
 
@@ -2891,9 +2822,6 @@ msgstr "Erreicht noch nichts"
 
 msgid "Reading…"
 msgstr "Wird gelesen…"
-
-msgid "Reads invoices and contacts, edits neither."
-msgstr "Liest Rechnungen und Kontakte, bearbeitet beides nicht."
 
 msgid "Recent"
 msgstr "Zuletzt verwendet"
@@ -3025,17 +2953,8 @@ msgstr "Rechts (mm)"
 msgid "Roles JSON"
 msgstr "Rollen-JSON"
 
-msgid "Roles appear here once this workspace has an app."
-msgstr "Rollen erscheinen hier, sobald dieser Arbeitsbereich eine App hat."
-
-msgid "Roles you built"
-msgstr "Von Ihnen erstellte Rollen"
-
 msgid "Roles you made"
 msgstr "Von Ihnen erstellte Rollen"
-
-msgid "Roles your apps came with"
-msgstr "Mitgelieferte Rollen Ihrer Apps"
 
 msgid "Rows are sorted by this first, so each group arrives whole."
 msgstr ""
@@ -3059,9 +2978,6 @@ msgstr "Als neue Ansicht speichern"
 
 msgid "Save away message"
 msgstr "Abwesenheitsnachricht speichern"
-
-msgid "Save role"
-msgstr "Rolle speichern"
 
 msgid "Save series"
 msgstr "Nummernkreis speichern"
@@ -3139,9 +3055,6 @@ msgstr "Abschnitt {0}"
 msgid "Security"
 msgstr "Sicherheit"
 
-msgid "See plans"
-msgstr "Tarife ansehen"
-
 msgid "Select all"
 msgstr "Alle auswählen"
 
@@ -3159,9 +3072,6 @@ msgstr ""
 "Senden Sie als you@yourcompany.com statt über unsere Domain. E-Mail an "
 "diese Domain geht weiterhin dorthin, wohin ihr MX zeigt — verbinden Sie "
 "diese Postfächer im Tab Postfach, um sie hier zu lesen."
-
-msgid "Send invite"
-msgstr "Einladung senden"
 
 msgid "Send it"
 msgstr "Senden"
@@ -4003,9 +3913,6 @@ msgstr ""
 msgid "The {0} most common. Use Filter for the rest."
 msgstr "Die {0} häufigsten. Für den Rest den Filter verwenden."
 
-msgid "Then add it here"
-msgstr "Dann hier hinzufügen"
-
 msgid "There are no records on this screen."
 msgstr "In dieser Ansicht gibt es keine Datensätze."
 
@@ -4074,13 +3981,6 @@ msgstr "Hier gibt es nichts umzubenennen."
 
 msgid "There is nothing to save a view for here."
 msgstr "Hier gibt es nichts, wofür eine Ansicht gespeichert werden könnte."
-
-msgid ""
-"These arrive with the apps this workspace has. Hand them out on the "
-"People screen."
-msgstr ""
-"Diese kommen mit den Apps dieses Arbeitsbereichs. Vergeben Sie sie in "
-"der Ansicht Personen."
 
 msgid ""
 "These come with the apps this workspace has. They cannot be changed "
@@ -4276,14 +4176,6 @@ msgstr "Das dauert ein paar Sekunden."
 
 msgid "This upload is not yours to finish."
 msgstr "Diesen Upload dürfen Sie nicht abschließen."
-
-msgid ""
-"This usually takes a minute or two. If it takes longer, the cause is "
-"almost always a proxied record — see step two below."
-msgstr ""
-"Das dauert normalerweise ein bis zwei Minuten. Dauert es länger, liegt "
-"es fast immer an einem über einen Proxy geleiteten DNS-Eintrag — siehe "
-"Schritt zwei unten."
 
 msgid "This workspace already has a company."
 msgstr "Dieser Arbeitsbereich hat bereits eine Firma."
@@ -4536,9 +4428,6 @@ msgstr "Nutzung"
 msgid "Use AI in this workspace"
 msgstr "KI in diesem Arbeitsbereich verwenden"
 
-msgid "Use a different domain"
-msgstr "Andere Domain verwenden"
-
 msgid "Use a different sheet"
 msgstr "Eine andere Tabelle verwenden"
 
@@ -4562,9 +4451,6 @@ msgstr "Dieses standardmäßig verwenden"
 
 msgid "Use this photo"
 msgstr "Dieses Foto verwenden"
-
-msgid "Use your own domain"
-msgstr "Eigene Domain verwenden"
 
 msgid "Using a domain of your own"
 msgstr "Eine eigene Domain verwenden"
@@ -4656,9 +4542,6 @@ msgstr "Wie es in der Auswahl heißt."
 
 msgid "What it is called wherever it appears."
 msgstr "Wie er überall genannt wird."
-
-msgid "What it is for"
-msgstr "Wofür es gedacht ist"
 
 msgid "What it says"
 msgstr "Was darin steht"
@@ -5055,9 +4938,6 @@ msgstr "Sie haben keine Adresse zum Senden."
 msgid "You have no address to write from."
 msgstr "Sie haben keine Adresse zum Schreiben."
 
-msgid "Your CNAME should point at:"
-msgstr "Ihr CNAME sollte zeigen auf:"
-
 msgid "Your account"
 msgstr "Ihr Konto"
 
@@ -5152,22 +5032,6 @@ msgstr ""
 "Gekauftes Guthaben wird übertragen und zuletzt verbraucht."
 
 msgid ""
-"Your plan includes one seat. Change plan to invite more people, or "
-"remove someone who no longer needs access."
-msgstr ""
-"Ihr Tarif enthält einen Platz. Wechseln Sie den Tarif, um weitere "
-"Personen einzuladen, oder entfernen Sie jemanden, der keinen Zugriff "
-"mehr braucht."
-
-msgid ""
-"Your plan includes {0} seats. Change plan to invite more people, or "
-"remove someone who no longer needs access."
-msgstr ""
-"Ihr Tarif enthält {0} Plätze. Wechseln Sie den Tarif, um weitere "
-"Personen einzuladen, oder entfernen Sie jemanden, der keinen Zugriff "
-"mehr braucht."
-
-msgid ""
 "Your roles are kept with your account, and it is not answering. "
 "Everybody keeps the access they already have."
 msgstr ""
@@ -5190,11 +5054,6 @@ msgstr ""
 "Ihre Arbeit ist unangetastet, und eine Zahlung holt sie innerhalb einer "
 "Minute zurück. Ist am {0} noch nicht gezahlt, wird der Arbeitsbereich "
 "abgeschaltet und nur eine Sicherung bleibt erhalten."
-
-msgid "Your workspace already works at {0}. A custom domain is optional."
-msgstr ""
-"Ihr Arbeitsbereich funktioniert bereits unter {0}. Eine eigene Domain "
-"ist optional."
 
 msgid "Your workspace did not load"
 msgstr "Ihr Arbeitsbereich wurde nicht geladen"
@@ -5228,9 +5087,6 @@ msgstr "storniert"
 
 msgid "changed"
 msgstr "geändert"
-
-msgid "colleague@acme.test"
-msgstr "kollege@acme.test"
 
 msgid "coming up"
 msgstr "bevorstehend"
@@ -5558,9 +5414,6 @@ msgstr "{0} von {1} ausgewählt"
 msgid "{0} of {1} seats in use."
 msgstr "{0} von {1} Plätzen belegt."
 
-msgid "{0} of {1} seats used"
-msgstr "{0} von {1} Plätzen belegt"
-
 msgid "{0} of {1} this hour"
 msgstr "{0} von {1} in dieser Stunde"
 
@@ -5569,9 +5422,6 @@ msgstr "{0} von {1} heute"
 
 msgid "{0} once"
 msgstr "{0} einmalig"
-
-msgid "{0} permissions"
-msgstr "{0} Berechtigungen"
 
 msgid "{0} records will have {1} set to this."
 msgstr "Bei {0} Datensätzen wird {1} darauf gesetzt."
@@ -5598,9 +5448,6 @@ msgstr "{0} Bildschirme — {1}"
 
 msgid "{0} seats"
 msgstr "{0} Plätze"
-
-msgid "{0} seats used"
-msgstr "{0} Plätze belegt"
 
 msgid "{0} selected"
 msgstr "{0} ausgewählt"

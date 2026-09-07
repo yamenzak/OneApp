@@ -730,6 +730,8 @@ def _may_be_asked() -> dict:
 		"delete_role": customer.delete_role,
 		"domain": customer.domain_instructions,
 		"request_domain": customer.request_custom_domain,
+		"marketplace": customer.marketplace,
+		"enable_space": customer.enable_space,
 	}
 
 
