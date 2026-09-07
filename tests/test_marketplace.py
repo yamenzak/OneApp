@@ -199,17 +199,46 @@ PAGE = (
 def test_every_state_the_server_can_send_is_drawn():
 	"""A state the page has no branch for is a card that renders as its
 	fallback, which here is a disabled button with no sentence beside it."""
-	for state in ("available", "installing", "unavailable"):
+	for state in ("available", "installing", "unavailable", "failed"):
 		assert f"'{state}'" in PAGE, state
 
 
 def test_a_card_that_cannot_be_pressed_says_why():
-	"""Both of the states that are not `available` carry their own line. A
-	disabled button on its own is a control that refuses without explaining,
-	which is the thing `docs/LANGUAGE.md` is about."""
-	assert PAGE.count('data-slot="marketplace-state"') == 2
+	"""Every state that is not `available` carries its own line. A disabled
+	button on its own is a control that refuses without explaining."""
+	assert PAGE.count('data-slot="marketplace-state"') == 3
 	assert "which your workspace cannot carry yet" in PAGE
 	assert "A few minutes" in PAGE
+	assert "did not finish" in PAGE
+
+
+def test_an_install_that_failed_does_not_read_as_one_that_never_started():
+	"""The grant is written before the app arrives, so a space whose install
+	failed is enabled, in the launcher, and empty — which `entitlements/apps.py`
+	names as the silent failure the whole mechanism exists to prevent.
+
+	Back to `available` would be worse than silent: the obvious thing to do
+	with a button is press it, and pressing it queues the same job to fail the
+	same way."""
+	body = CUSTOMER[CUSTOMER.index("def _card"):CUSTOMER.index("def enable_space")]
+	assert '"failed"' in body
+	assert '"Failed", "Cancelled"' in body
+
+
+def test_the_page_looks_again_only_while_something_is_running():
+	"""Minutes pass on the server and nothing changes in the browser, so a page
+	that drew "being added" once would say it until somebody reloaded. And a
+	page with nothing installing should cost nothing."""
+	assert "answer?.working" in PAGE
+	assert "setTimeout" in PAGE and "clearTimeout" in PAGE
+	assert "onBeforeUnmount" in PAGE, (
+		"a timer that outlives the page is a request against a route nobody is "
+		"looking at"
+	)
+	assert '"working": any(' in CUSTOMER, (
+		"the server says whether to look again; a page inferring it from the "
+		"cards it just drew is a second implementation of the same rule"
+	)
 
 
 def test_pressing_it_does_not_leave_the_reader_waiting_for_a_sync():

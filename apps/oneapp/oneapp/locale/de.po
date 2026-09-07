@@ -304,6 +304,11 @@ msgstr "Hinzugefügt — Ihr DNS wird jetzt geprüft"
 msgid "Added — it is on your next invoice"
 msgstr "Hinzugefügt — es steht auf Ihrer nächsten Rechnung"
 
+msgid "Adding this did not finish. We have been told and are looking at it."
+msgstr ""
+"Das Hinzufügen wurde nicht abgeschlossen. Wir wurden benachrichtigt und "
+"sehen uns das an."
+
 msgid "Address created"
 msgstr "Adresse erstellt"
 
@@ -1022,6 +1027,9 @@ msgstr "Endgültig gelöscht"
 
 msgid "Delivery update"
 msgstr "Zustellungsmeldung"
+
+msgid "Did not finish"
+msgstr "Nicht abgeschlossen"
 
 msgid "Direct"
 msgstr "Direkt"

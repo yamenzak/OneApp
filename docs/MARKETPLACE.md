@@ -194,6 +194,13 @@ doing and roughly how long), **enabled**, and **unavailable** (the bench cannot
 carry it, said with the app named). Collapsing the middle one is the difference
 between a marketplace that is honest and one that appears to hang.
 
+Building it found a fifth, and it is the one that matters most: **failed**. The
+entitlement is written before the app arrives, so an install that fails leaves a
+space that is enabled, in the launcher, and empty — which `entitlements/apps.py`
+already names as the silent failure the whole mechanism exists to prevent. A
+card that read that as "available" would be inviting the press that queues the
+same job to fail the same way.
+
 ---
 
 ## 5. Stages
@@ -214,7 +221,13 @@ Ordered so each is worth having on its own.
    request, so it is in the launcher rather than fifteen minutes away.
 4. **`Space Claim Code`**, its two operator screens, and redemption.
 5. **Install App, visible to the customer** — the card that started it says
-   what is happening, and the space appears when it finishes.
+   what is happening, and the space appears when it finishes. *Done.* The card
+   reads the newest Install App job per app, looks again every fifteen seconds
+   while one is running and not otherwise, and has a fifth state the study did
+   not have: **failed**. A grant is written before its app arrives, so a space
+   whose install failed is enabled, in the launcher and empty — and a card that
+   went quietly back to "available" would invite somebody to press a button
+   that queues the same job to fail the same way.
 
 Stage 1 is independent of the rest and is the one a customer notices tomorrow.
 Stages 2–4 are the marketplace. Stage 5 is the one that must not be skipped,

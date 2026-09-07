@@ -278,6 +278,9 @@ msgstr "تمت الإضافة — يجري الآن فحص DNS"
 msgid "Added — it is on your next invoice"
 msgstr "تمت الإضافة — ستظهر في فاتورتك التالية"
 
+msgid "Adding this did not finish. We have been told and are looking at it."
+msgstr "لم تكتمل إضافة هذا. لقد أُبلغنا ونحن ننظر في الأمر."
+
 msgid "Address created"
 msgstr "تم إنشاء العنوان"
 
@@ -967,6 +970,9 @@ msgstr "تم الحذف نهائياً"
 
 msgid "Delivery update"
 msgstr "تحديث التسليم"
+
+msgid "Did not finish"
+msgstr "لم تكتمل"
 
 msgid "Direct"
 msgstr "مباشر"

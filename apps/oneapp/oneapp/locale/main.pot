@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 18:52+0000\n"
-"PO-Revision-Date: 2026-09-07 18:52+0000\n"
+"POT-Creation-Date: 2026-09-07 18:58+0000\n"
+"PO-Revision-Date: 2026-09-07 18:58+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -370,7 +370,7 @@ msgstr ""
 msgid "Add to favourites"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:73
+#: frontend/src/pages/Marketplace.vue:85
 msgid "Add to workspace"
 msgstr ""
 
@@ -405,6 +405,10 @@ msgstr ""
 
 #: frontend/src/screens/account/customer.js:38
 msgid "Added — it is on your next invoice"
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:78
+msgid "Adding this did not finish. We have been told and are looking at it."
 msgstr ""
 
 #. Label of the address (Data) field in DocType 'Mail Rule'
@@ -868,7 +872,7 @@ msgstr ""
 msgid "Before restoring “{0}”"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:82
+#: frontend/src/pages/Marketplace.vue:129
 msgid "Being added"
 msgstr ""
 
@@ -1734,6 +1738,10 @@ msgstr ""
 
 #: frontend/src/components/screen/record/RecordView.vue:166
 msgid "Details"
+msgstr ""
+
+#: frontend/src/pages/Marketplace.vue:130
+msgid "Did not finish"
 msgstr ""
 
 #: frontend/src/screens/ops/Tenant.vue:311
@@ -3972,7 +3980,7 @@ msgstr ""
 msgid "Not about this record"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:82
+#: frontend/src/pages/Marketplace.vue:131
 msgid "Not available here"
 msgstr ""
 
@@ -4178,7 +4186,7 @@ msgstr ""
 msgid "Nothing stored yet"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:91
+#: frontend/src/pages/Marketplace.vue:98
 msgid "Nothing to add right now"
 msgstr ""
 
@@ -8165,7 +8173,7 @@ msgstr ""
 msgid "Your work has not been touched, and paying brings it back within a minute. If it is still unpaid on {0}, the workspace comes down and only a backup is kept."
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:92
+#: frontend/src/pages/Marketplace.vue:99
 msgid "Your workspace already has everything on offer to it. When something new is, it appears here."
 msgstr ""
 
@@ -8524,7 +8532,7 @@ msgstr ""
 msgid "{0} is already running."
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:147
+#: frontend/src/pages/Marketplace.vue:179
 msgid "{0} is being added"
 msgstr ""
 
@@ -8532,7 +8540,7 @@ msgstr ""
 msgid "{0} is being set up"
 msgstr ""
 
-#: frontend/src/pages/Marketplace.vue:142
+#: frontend/src/pages/Marketplace.vue:174
 msgid "{0} is in your workspace"
 msgstr ""
 

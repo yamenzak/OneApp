@@ -65,6 +65,18 @@
         >
           {{ __('This one needs {0}, which your workspace cannot carry yet. Ask us and we will move it.', [space.missing_apps]) }}
         </p>
+        <!--
+          Not back to a button that would queue the same job to fail the same
+          way. Said as what it means to them, and without asking them to do
+          anything: a failed provisioning job is already on our own screen.
+        -->
+        <p
+          v-else-if="space.state === 'failed'"
+          data-slot="marketplace-state"
+          class="text-p-xs text-ink-red-3"
+        >
+          {{ __('Adding this did not finish. We have been told and are looking at it.') }}
+        </p>
 
         <div class="mt-auto flex">
           <Button
@@ -75,12 +87,7 @@
             :disabled="!!adding"
             @click="add(space)"
           />
-          <Button
-            v-else
-            variant="subtle"
-            :disabled="true"
-            :label="space.state === 'installing' ? __('Being added') : __('Not available here')"
-          />
+          <Button v-else variant="subtle" :disabled="true" :label="waiting(space)" />
         </div>
       </article>
     </div>
@@ -95,7 +102,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Alert, Avatar, Breadcrumbs, Button, ErrorMessage, LoadingIndicator, PageHeader,
@@ -117,12 +124,27 @@ const error = ref('')
 
 const spaces = computed(() => data.value?.spaces || [])
 
+/** What a card that cannot be pressed says on its button. */
+const waiting = (space) => {
+  if (space.state === 'installing') return __('Being added')
+  if (space.state === 'failed') return __('Did not finish')
+  return __('Not available here')
+}
+
+// Installing an app is patches against a live database — minutes — and the
+// only thing that changes when it lands is on the server. A page that drew
+// "being added" once and never looked again would say it until somebody
+// reloaded, which is the same lie the state exists to avoid.
+const LOOK_AGAIN = 15000
+let timer = null
+
 const load = async () => {
   loading.value = true
   try {
     const answer = await workspace.marketplace()
     unreachable.value = !!answer.unreachable
     data.value = answer
+    again(answer)
   } catch (e) {
     error.value = errorText(e)
   } finally {
@@ -130,11 +152,21 @@ const load = async () => {
   }
 }
 
+const again = (answer) => {
+  clearTimeout(timer)
+  // Only while something is actually running: a page left open on a workspace
+  // with nothing installing should cost nothing.
+  if (answer?.working) timer = setTimeout(load, LOOK_AGAIN)
+}
+
+onBeforeUnmount(() => clearTimeout(timer))
+
 const add = async (space) => {
   adding.value = space.code
   error.value = ''
   try {
     data.value = await workspace.enableSpace(space.code)
+    again(data.value)
     // The server pulled the manifest before answering, so the space is really
     // there; the shell is what has not heard yet.
     await session.resource.reload()
