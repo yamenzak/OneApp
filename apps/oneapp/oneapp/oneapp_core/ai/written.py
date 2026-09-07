@@ -140,6 +140,44 @@ def written(doctype: str, name: str) -> dict[str, dict]:
 	}
 
 
+def across(doctype: str, names: list[str], fieldname: str) -> dict[str, dict]:
+	"""One field, over a page of documents, in one query.
+
+	`written` answers for one document, which is what a record needs. A list of
+	files needs the same answer for fifty of them, and fifty queries to draw an
+	icon most of them will not have is the wrong shape. The doctype-level cache
+	means a site where nothing is marked pays nothing at all here.
+	"""
+	if not (names and doctype in _marked_doctypes()):
+		return {}
+
+	rows = frappe.get_all(
+		DOCTYPE,
+		filters={
+			"reference_doctype": doctype,
+			"reference_name": ["in", list(names)],
+			"fieldname": fieldname,
+		},
+		fields=["reference_name", "feature_key", "model_key", "asked_by", "creation"],
+		ignore_permissions=True,
+	)
+	if not rows:
+		return {}
+
+	from oneapp.oneapp_core.ai.settings import catalogue
+
+	named = {m["model_key"]: m["display_name"] for m in catalogue()}
+	return {
+		row.reference_name: {
+			"feature": row.feature_key or "",
+			"model": named.get(row.model_key or "", row.model_key or ""),
+			"by": row.asked_by or "",
+			"when": row.creation,
+		}
+		for row in rows
+	}
+
+
 #: Doctypes nothing marks, skipped before the query rather than after it.
 #:
 #: `forget_changed` is hooked on `*` — the mark is about a value on any doctype,

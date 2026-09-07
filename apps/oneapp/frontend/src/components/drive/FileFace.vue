@@ -37,8 +37,14 @@
   </span>
 
   <span class="min-w-0 flex-1">
-    <span class="block truncate text-p-sm font-normal text-ink-gray-8">
-      {{ file.file_name }}
+    <span class="flex min-w-0 items-center gap-1.5 text-p-sm font-normal text-ink-gray-8">
+      <span class="truncate">{{ file.file_name }}</span>
+      <!-- Where a model made this. Here rather than on the row, because this
+           is the one component that draws a file's identity — the list, the
+           grid, the picker and the previewer all come through it, so the mark
+           reaches every one of them by being said once. See
+           `components/AiMark.vue`. -->
+      <AiMark v-if="file._ai" :mark="file._ai" />
     </span>
     <span class="block truncate text-p-xs font-normal text-ink-gray-5">
       {{ file.is_folder ? 'Folder' : size }}<template v-if="!grid"> · {{ when }}</template>
@@ -51,6 +57,7 @@
 import { computed } from 'vue'
 import { Icon, dayjsLocal } from '@/ui'
 import { iconForKind } from '@/lib/files/files'
+import AiMark from '../AiMark.vue'
 
 const props = defineProps({
   file: { type: Object, required: true },

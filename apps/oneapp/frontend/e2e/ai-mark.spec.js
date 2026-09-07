@@ -16,6 +16,7 @@ import { expect, test } from '@playwright/test'
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 
 const TASKS = '/one/space/zzmock?screen=tasks'
+const DRAWN = 'zzmock-drawn.svg'
 const MARKED = 'Backlog item 01'
 const UNMARKED = 'Backlog item 02'
 
@@ -42,6 +43,25 @@ test('a field a model wrote says so, and the fields beside it do not', async ({ 
 
   await open(page, UNMARKED)
   await expect(page.locator('[data-slot="ai-mark"]')).toHaveCount(0)
+
+  expectNoRealErrors(errors)
+})
+
+test('a file a model made says so, in the list', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+
+  await page.goto('/one/files')
+  await page.getByPlaceholder('Search files').fill(DRAWN)
+
+  const row = page.locator('[data-slot="drive-file"]', { hasText: DRAWN })
+  await expect(row).toHaveCount(1, { timeout: 20_000 })
+
+  // Said on the file's face — the one component the list, the grid and the
+  // picker all draw a file's identity through — so the mark reaches every one
+  // of them from one place. See `drive/FileFace.vue`.
+  await expect(row.locator('[data-slot="ai-mark"]')).toHaveAttribute(
+    'aria-label', /Flux/,
+  )
 
   expectNoRealErrors(errors)
 })

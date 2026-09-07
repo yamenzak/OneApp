@@ -9,6 +9,7 @@ records they cannot open, which is where most of a workspace's files live.
 import frappe
 from frappe import _
 
+from oneapp.oneapp_core.ai import written
 from oneapp.oneapp_core.email import people
 
 from .kinds import KIND_FIELD, KINDS, OPENED_FIELD, STATUS_FIELD, TRASHED, TRASHED_FIELD
@@ -92,6 +93,15 @@ def _shape(rows: list[dict]) -> None:
         # Frappe stores `Home/Attachments` and the like; a reader wants the
         # last part, and the breadcrumb carries the rest.
         row["folder_label"] = (row.get("folder") or "").rsplit("/", 1)[-1]
+
+    # Which of these a model made. On `file_url` because that is the thing a
+    # model produced — the row is a File either way, and renaming one does not
+    # make its picture somebody's drawing. One query for the page, and none at
+    # all on a site where nothing has ever been marked. See `ai/written.py`.
+    marks = written.across("File", [row["name"] for row in rows], "file_url")
+    for row in rows:
+        if row["name"] in marks:
+            row["_ai"] = marks[row["name"]]
 
 
 @frappe.whitelist(methods=["GET"])

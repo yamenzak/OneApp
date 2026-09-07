@@ -1443,6 +1443,14 @@ mechanism carries fields and media.
 that touched one field leaves the other nine marked. Without it the icon is a
 lie within a month and then noise, which is worse than never having said it.
 
+On a file it is said on the file's *face* — the one component the list, the
+grid and the picker all draw a file's identity through — so the mark reaches
+every one of them by being written once. The listing asks for the whole page in
+one query, and a site where nothing has ever been marked pays nothing for it at
+all. The previewer does not carry the mark yet: its title is a plain dialog
+prop with nowhere to put an icon, and it is opened from a row that already
+says so.
+
 ### The workspace assistant
 
 The first feature shipped under that decorator is a chat. It is declared exactly

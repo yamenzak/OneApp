@@ -429,6 +429,10 @@ CONTACTS = [
 # the site's own public files, the same on every machine, and dark enough to be
 # an honest test of white type over a picture — which is what the gallery card
 # actually has to survive.
+#: The fixture's pictures are named from one place, because a File row made
+#: below points at one of them by path.
+PICTURES_PREFIX = "zzmock-"
+
 PICTURES = {
 	"dusk": ("#1f2937", "#7c3aed"),
 	"moss": ("#052e16", "#0891b2"),
@@ -454,7 +458,7 @@ def _write_pictures():
 			f'<circle cx="110" cy="300" r="130" fill="{dark}" fill-opacity="0.45"/>'
 			"</svg>"
 		)
-		name = f"zzmock-{key}.svg"
+		name = f"{PICTURES_PREFIX}{key}.svg"
 		(folder / name).write_text(svg)
 		paths[key] = f"/files/{name}"
 	return paths
@@ -494,6 +498,19 @@ AI_MODELS = [
 		],
 	},
 	{
+		# The one that drew the fixture's picture. Its options come from the
+		# shape Cloudflare's own input schema has, which is where a real one's
+		# would be derived from — see `oneapp_control/ai/model_options.py`.
+		"model_key": "workers-ai:flux", "display_name": "Flux",
+		"provider": "workers-ai", "model_id": "@cf/black-forest-labs/flux-1-schnell",
+		"capability": "Image Generation", "is_recommended": 1, "prices": [],
+		"options": [
+			{"key": "steps", "label": "Steps", "type": "number",
+			 "default": 4, "min": 1, "max": 8,
+			 "help": "More steps, more detail, more credits."},
+		],
+	},
+	{
 		"model_key": "workers-ai:melotts", "display_name": "MeloTTS",
 		"provider": "workers-ai", "model_id": "@cf/myshell-ai/melotts",
 		"capability": "Text to Speech", "is_recommended": 1, "prices": [],
@@ -518,6 +535,16 @@ AI_MODELS = [
 # cannot be asserted twice in the same browser pass. Nothing names a backlog
 # row but the spec that reads this.
 WRITTEN_BY_AI = f"{BACKLOG_PREFIX} 01"
+
+#: And the one file. A picture is the other half of what a mark is for — a
+#: model that draws is as much a thing to say so about as one that writes — and
+#: `file_url` is where it goes, because the row is a File either way and
+#: renaming one does not make its picture somebody's drawing.
+#:
+#: Its own row in the drive rather than one of the three the contacts carry:
+#: those are attachments, which the Files screen does not list, so a mark on one
+#: is a mark nobody can be shown.
+WRITTEN_BY_AI_FILE = "zzmock-drawn.svg"
 
 
 def _plain(html: str) -> str:
@@ -1261,6 +1288,30 @@ def _seed_approvals():
 	return made
 
 
+def _drawn_file() -> str:
+	"""The fixture's one file in the drive, made if it is not there.
+
+	Its own row rather than one of the pictures the contacts carry, because
+	those are attachments and the Files screen does not list them — see
+	`WRITTEN_BY_AI_FILE`. The picture itself is one of the three already written
+	into the site's public files; what is new here is a File row in Home that
+	belongs to nothing, which is what a generated image would be.
+	"""
+	existing = frappe.db.get_value("File", {
+		"file_name": WRITTEN_BY_AI_FILE, "attached_to_doctype": ["is", "not set"],
+	}, "name")
+	if existing:
+		return existing
+
+	return frappe.get_doc({
+		"doctype": "File",
+		"file_name": WRITTEN_BY_AI_FILE,
+		"file_url": f"/files/{PICTURES_PREFIX}dusk.svg",
+		"folder": "Home",
+		"is_private": 0,
+	}).insert(ignore_permissions=True).name
+
+
 def seed_control():
 	"""The manifest itself. Only the control plane has OneSpace Space."""
 	for code in (CODE, *RETIRED):
@@ -1575,12 +1626,21 @@ def seed_tenant(manifest_only=False):
 			asked_by="Administrator",
 		)
 
+	drawn = _drawn_file()
+	if drawn:
+		written.mark(
+			"File", drawn, "file_url",
+			feature="oneapp.chat.workspace", model="workers-ai:flux",
+			asked_by="Administrator",
+		)
+
 	# And nothing else is marked. A mark left on another record — by a hand at a
 	# console, or by a run of an older version of this file — is a sparkle the
 	# spec that checks an unmarked field would find, and the failure would read
 	# as the mark being drawn where it should not be rather than as litter.
+	ours = [one for one in (marked, drawn) if one]
 	for stray in frappe.get_all(
-		written.DOCTYPE, filters={"reference_name": ["!=", marked or ""]}, pluck="name"
+		written.DOCTYPE, filters={"reference_name": ["not in", ours or [""]]}, pluck="name"
 	):
 		frappe.delete_doc(written.DOCTYPE, stray, force=True, ignore_permissions=True)
 	written._forget_which_doctypes_are_marked()
