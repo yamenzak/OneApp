@@ -1,20 +1,13 @@
 <template>
-  <Sidebar
-    v-model:collapsed="collapsed"
-    :width="`${width}px`"
-    class="border-e border-outline-gray-1"
-  >
+  <!-- No border. The bar, this column and the ground behind them are one
+       surface; a seam down the middle of it is a panel edge with no panel. -->
+  <Sidebar v-model:collapsed="collapsed" :width="`${width}px`">
     <!--
-      No logo: the rail already shows the active space's tile.
-
-      Where you are on top, the workspace underneath — the same two lines the
-      mail and Drive rails carry, so the header is the same height everywhere.
+      No logo, and no workspace underneath: the bar's corner names the
+      workspace directly above this, so a subtitle repeating it was the same
+      words twice, 48px apart. What is left is where you are.
     -->
-    <SidebarHeader
-      :title="activeSpace?.space_label || 'Spaces'"
-      :subtitle="session.tenant?.name || TENANT_APP"
-      :show-logo="false"
-    />
+    <SidebarHeader :title="activeSpace?.space_label || 'Spaces'" :show-logo="false" />
 
     <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pb-6">
       <nav class="space-y-0.5">
@@ -102,7 +95,6 @@
 
 <script setup>
 import { reactive, watch } from 'vue'
-import { TENANT_APP } from '@/lib/runtime/brand'
 import {
   Button,
   ScrollArea,
@@ -115,7 +107,6 @@ import SidebarCollapse from './SidebarCollapse.vue'
 import SidebarResizer from './SidebarResizer.vue'
 import QuotaMeter from './QuotaMeter.vue'
 import { useNav } from '@/lib/shell/nav'
-import { session } from '@/lib/shell/session'
 import { useSidebar } from '@/lib/shell/sidebar'
 
 // The destinations live in `lib/shell/nav.js`: the phone's bottom bar renders

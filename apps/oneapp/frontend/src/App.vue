@@ -7,6 +7,7 @@
       :entries="railSpaces"
       :active-entry="activeSpaceCode"
       :entries-to="{ name: 'Launcher' }"
+      :workspace="workspace"
       :nav-items="nav"
       :menu-items="menuItems"
       :user="identity"
@@ -30,11 +31,15 @@
         <SpaceSidebar v-else />
       </template>
 
-      <!-- The surfaces that are not spaces, then the alert, then you.
-           Everything here has a row in the More sheet below, because a phone
-           draws no rail. -->
-      <template #rail-footer>
+      <!-- The surfaces that are not spaces: quick access from the bar,
+           beside the switcher rather than under it. Everything here has a row
+           in the More sheet below, because a phone draws no bar. -->
+      <template #topbar>
         <RailSurface v-for="one in surfaces" :key="one.key" :surface="one" />
+      </template>
+
+      <!-- What is about you rather than about the workspace, at the far end. -->
+      <template #topbar-end>
         <NotificationBell />
         <RailAccount />
       </template>
@@ -221,6 +226,14 @@ watch(
   (yes) => yes && loadAssistant(),
   { immediate: true },
 )
+
+// The corner's own face: the workspace, drawn from what it chose for its tab.
+// A workspace that set no image gets its initial, which is what SpaceFace does
+// with a space that named no mark.
+const workspace = computed(() => ({
+  label: session.tenant?.name || TENANT_APP,
+  logo: brand.favicon || null,
+}))
 
 const identity = computed(() => ({
   name: fullName.value,

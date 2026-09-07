@@ -1,6 +1,6 @@
 <template>
   <!--
-    The account menu at the foot of the rail.
+    The account menu at the end of the top bar.
 
     The trigger goes in the **default** slot. frappe-ui's Dropdown has no
     `trigger` slot — it renders whatever its default slot holds and attaches the
@@ -12,7 +12,7 @@
     `side` + `align`, not `placement`: frappe-ui removed `placement` in 1.0 and
     warns about it in dev, so the menu was never positioned either.
   -->
-  <Dropdown :options="options" side="right" align="end">
+  <Dropdown :options="options" side="bottom" align="end">
     <!--
       An Avatar renders a div, so without these the one control that reaches
       settings had no name and no way in from a keyboard. `role` and `tabindex`
@@ -40,9 +40,9 @@ import { useAppearance } from '@/lib/shell/appearance'
 import { fullName, userImage } from '@/lib/shell/user'
 import { __ } from '@/lib/runtime/translate'
 
-// The rail's foot, matching where every frappe-ui shell puts the account. The
-// trigger is an Avatar rather than a Button so it reads as a person, not an
-// action — and it keeps the rail's 28px rhythm.
+// The far end of the bar, which is where an account sits in every shell that
+// has one. The trigger is an Avatar rather than a Button so it reads as a
+// person, not an action.
 const router = useRouter()
 
 // Appearance is here as well as in settings: it is the preference people change

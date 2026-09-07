@@ -65,38 +65,86 @@
     </template>
   </MobileShell>
 
-  <DesktopShell v-else :scroll="scroll">
-    <template v-if="chrome && entries.length" #rail>
-      <Rail class="border-e border-outline-gray-1">
-        <RailItem
-          v-for="entry in entries"
-          :key="entry.key"
-          :label="entry.label"
-          :description="entry.description"
-          :active="entry.key === activeEntry"
-          :to="entry.to"
-          variant="tile"
-          @click="$emit('select-entry', entry.key)"
-        >
-          <SpaceFace
-            :space="{ label: entry.label, logo: entry.image, brand: entry.brand }"
-            size="lg"
-            class="size-7"
-          />
-        </RailItem>
+  <!--
+    One piece, not four panels.
 
-        <div class="mt-auto flex flex-col items-center gap-2.5 pt-3">
-          <slot name="rail-footer" />
-        </div>
-      </Rail>
-    </template>
+    A bar across the whole width, the space's navigation under its left end,
+    and the page in a curved inset that owns its own scroll. There is no rail:
+    fifteen marks do not fit a 50px column and the number grows every time
+    somebody adds a space from the marketplace, so the corner names the space
+    you are in and the switcher behind it holds the rest. What used to sit in
+    the rail's foot — the surfaces that are not inside any space, the bell,
+    you — moves to the bar, which is the one place with room to grow.
+  -->
+  <div v-else class="flex h-full min-h-0 flex-col bg-surface-sidebar">
+    <header
+      v-if="chrome"
+      data-slot="shell-topbar"
+      class="flex h-12 shrink-0 items-center gap-1 ps-2 pe-2.5"
+    >
+      <!--
+        The corner. The workspace, and behind it every space in it.
 
-    <template v-if="chrome && $slots.sidebar" #sidebar>
-      <slot name="sidebar" />
-    </template>
+        The workspace and not the space: the sidebar's own header names the
+        space directly under this, and the two saying the same word 48px apart
+        is what a header is for avoiding. Width-matched to that sidebar so the
+        pair read as one column, and it follows it when it collapses.
+      -->
+      <div v-if="entries.length || entriesTo" class="shrink-0" :style="cornerStyle">
+        <Dropdown :options="entryOptions" align="start" class="w-full">
+          <Button
+            variant="ghost"
+            class="!h-8 w-full !justify-start !px-1"
+            icon-right="lucide-chevrons-up-down"
+            :tooltip="__('Switch space')"
+          >
+            <template #prefix>
+              <SpaceFace :space="workspace" size="lg" class="size-6" />
+            </template>
+            <span
+              v-if="!sidebarCollapsed"
+              class="min-w-0 flex-1 truncate text-start text-base text-ink-gray-8"
+            >
+              {{ workspace.label || entriesLabel }}
+            </span>
+          </Button>
+        </Dropdown>
+      </div>
 
-    <slot />
-  </DesktopShell>
+      <!-- Quick access: what is not inside a space, one press away from
+           wherever you are. -->
+      <div class="flex min-w-0 items-center gap-0.5">
+        <slot name="topbar" />
+      </div>
+
+      <div class="ms-auto flex shrink-0 items-center gap-1">
+        <slot name="topbar-end" />
+      </div>
+    </header>
+
+    <DesktopShell class="min-h-0 flex-1" :scroll="scroll">
+      <template v-if="chrome && $slots.sidebar" #sidebar>
+        <slot name="sidebar" />
+      </template>
+
+      <!--
+        The inset. `overflow-hidden` so whatever scrolls inside is clipped to
+        the curve, and the scroller is inside this rather than around it: the
+        frame stays where it is and only the content moves.
+
+        Only when the surface takes the chrome. An editor asked for the window
+        and a frame around the window is not that.
+      -->
+      <div
+        v-if="chrome"
+        data-slot="shell-inset"
+        class="mb-2 me-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-6 border border-outline-gray-2 bg-surface-base"
+      >
+        <slot />
+      </div>
+      <slot v-else />
+    </DesktopShell>
+  </div>
 
   <!-- Sheet rather than a dropdown: on a phone this is the primary way to change
        context, and a sheet gives it a touch target per row instead of a menu row. -->
@@ -255,25 +303,24 @@ import {
   MobileShell,
   Divider,
   Dropdown,
-  Rail,
-  RailItem,
   TabButtons,
 } from '@/ui'
 import { useAppearance } from '@/lib/shell/appearance'
 import { useIsMobile } from '@/lib/shell/breakpoint'
+import { useSidebar } from '@/lib/shell/sidebar'
 import { signOut } from '@/lib/shell/user'
 import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
   /**
-   * Rail entries. Each is { key, label, to, image?, description? }.
-   * Empty renders no rail at all — a single-app surface should not show a
-   * one-item switcher.
+   * The spaces this workspace has. Each is { key, label, to, image?, brand?,
+   * description? }. Empty renders no switcher at all — a surface with one
+   * place to be should not offer a way to change it.
    */
   entries: { type: Array, default: () => [] },
   activeEntry: { type: String, default: '' },
   /**
-   * Heading the mobile sheet gives the rail's entries. Named for the entries
+   * Heading the mobile sheet gives the entries. Named for the entries
    * rather than for one product's word for them: both call sites were already
    * passing `entries-label`, which silently was not a prop, so both sheets
    * read "Apps" long after neither surface called anything that.
@@ -285,6 +332,12 @@ const props = defineProps({
    */
   entriesTo: { type: [Object, String], default: null },
   /**
+   * What the corner shows: `{ label, logo }` for the workspace itself. Drawn
+   * by `SpaceFace`, so a workspace with no image gets its own initial rather
+   * than a gap.
+   */
+  workspace: { type: Object, default: () => ({}) },
+  /**
    * Every destination this surface has, in sidebar order:
    * { label, icon, to, active?, badge?, primary? }.
    *
@@ -294,8 +347,8 @@ const props = defineProps({
    */
   navItems: { type: Array, default: () => [] },
   /**
-   * Actions that live in the rail footer or the sidebar foot on a desktop,
-   * e.g. Settings. A phone has neither, so they appear in the More sheet.
+   * Actions a desktop reaches from the top bar, e.g. Settings. A phone has
+   * no bar, so they appear in the More sheet.
    */
   menuItems: { type: Array, default: () => [] },
   /** Identity for the bottom bar's avatar: { name, email, avatar, subtitle }. */
@@ -303,23 +356,32 @@ const props = defineProps({
   /** false when inner panes own their scroll — a list/detail split, say. */
   scroll: { type: Boolean, default: true },
   /**
-   * Whether this surface gets the workspace's furniture — the rail of spaces
-   * and the sidebar — or the window to itself.
+   * Whether this surface gets the workspace's furniture — the bar, the
+   * sidebar and the curved inset — or the window to itself.
    *
    * False for the editors. A sheet and a document belong to the *workspace*
    * rather than to any space, so the sidebar beside them was the space list
    * with no space chosen: a column of navigation to somewhere you were not
-   * going, next to the thing you opened to concentrate on. The rail goes with
-   * it, because a rail with no sidebar is a stripe.
+   * going, next to the thing you opened to concentrate on.
    */
   chrome: { type: Boolean, default: true },
 })
 
-defineEmits(['select-entry'])
-
 defineSlots()
 
 const isMobile = useIsMobile()
+
+/**
+ * The corner is exactly as wide as the sidebar under it, less the bar's own
+ * start padding, so the switcher and the navigation it belongs to line up on
+ * both edges. Any other width and the corner reads as a button that happens to
+ * be first rather than as the head of that column.
+ */
+const { collapsed: sidebarCollapsed, width: sidebarWidth } = useSidebar()
+
+const cornerStyle = computed(() => ({
+  width: sidebarCollapsed.value ? '2.5rem' : `calc(${sidebarWidth.value}px - 0.5rem)`,
+}))
 /**
  * Navigate from the click rather than leaving it to the item's own link.
  *
