@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ONE Model B — Purposeful Gradient System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .bg-checkerboard-dark {
+      background-color: #080c14;
+      background-image: 
+        linear-gradient(45deg, #111827 25%, transparent 25%), 
+        linear-gradient(-45deg, #111827 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #111827 75%), 
+        linear-gradient(-45deg, transparent 75%, #111827 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    }
+    .bg-checkerboard-light {
+      background-color: #f8fafc;
+      background-image: 
+        linear-gradient(45deg, #e2e8f0 25%, transparent 25%), 
+        linear-gradient(-45deg, #e2e8f0 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #e2e8f0 75%), 
+        linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-indigo-500/30">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Parent ONE mark -->
+        <div class="w-8 h-8 text-white flex-shrink-0">
+          <svg viewBox="0 0 100 100" class="w-full h-full">
+            <defs>
+              <linearGradient id="hdr-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#818cf8"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+            </defs>
+            <path d="M 28 36 L 46 18 L 46 36 Z" fill="url(#hdr-grad)"/>
+            <mask id="hdr-parent-mask">
+              <rect width="100%" height="100%" fill="#fff" />
+              <line x1="53" y1="18" x2="53" y2="82" stroke="#000" stroke-width="3"/>
+              <line x1="60" y1="18" x2="60" y2="82" stroke="#000" stroke-width="2.5"/>
+            </mask>
+            <path d="M 46 18 L 66 18 L 66 82 L 46 82 Z" fill="#ffffff" mask="url(#hdr-parent-mask)"/>
+          </svg>
+        </div>
+        <div>
+          <span class="font-extrabold text-base tracking-tight text-white">ONE <span class="text-xs px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-mono ml-1.5">Model B Gradient</span></span>
+          <p class="text-[11px] text-slate-400 hidden sm:block">Purposeful Two-Tone + Signature Twin Cuts</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-slate-400 font-mono hidden md:inline">15 Refined Icons</span>
+        <button onclick="scrollToInspector()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition flex items-center gap-1.5">
+          <i data-lucide="scan" class="w-3.5 h-3.5"></i>
+          <span>Inspect Architecture</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-8 w-full flex-1 space-y-10">
+
+    <!-- Hero / Strategy Banner -->
+    <section class="bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-3 relative overflow-hidden shadow-2xl">
+      <div class="max-w-3xl space-y-2">
+        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-medium">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i>
+          <span>Polished Gradient System</span>
+        </div>
+        <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          Vibrant Gradients. Organic White Elements.
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          Every app features a customized multi-stop gradient giving depth and character. The white elements serve realistic structural purposes, and the signature twin cuts maintain 100% ecosystem coherence.
+        </p>
+      </div>
+    </section>
+
+    <!-- App Lineup Grid -->
+    <section class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg font-bold text-white">Full Ecosystem Lineup</h2>
+          <p class="text-xs text-slate-400">Click any card to inspect its gradient lighting, white anchor, and twin cuts.</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-400">Filter:</span>
+          <button onclick="filterCategory('all')" id="flt-all" class="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800 text-white">All (15)</button>
+          <button onclick="filterCategory('core')" id="flt-core" class="px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white">Core & Ops</button>
+          <button onclick="filterCategory('productivity')" id="flt-prod" class="px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white">Work & Data</button>
+          <button onclick="filterCategory('fin')" id="flt-fin" class="px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white">Finance</button>
+        </div>
+      </div>
+
+      <!-- Cards Grid -->
+      <div id="apps-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- High Resolution Inspector -->
+    <section id="inspector-section" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="inspect-category" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-800">Core Architecture</span>
+            <span class="text-xs text-slate-400" id="inspect-tag">Model B Refined</span>
+          </div>
+          <h2 id="inspect-title" class="text-2xl font-extrabold text-white mt-1">OneSpace</h2>
+          <p id="inspect-subtitle" class="text-xs text-slate-400 mt-0.5">Unified Workspace, Portals & Accounts Gateway</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Background controls -->
+          <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+            <span class="text-slate-500 px-1 text-[11px]">Canvas:</span>
+            <button onclick="setInspectBg('dark')" id="btn-bg-dark" class="px-2 py-0.5 rounded bg-slate-800 text-white font-medium">Dark</button>
+            <button onclick="setInspectBg('light')" id="btn-bg-light" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">Light</button>
+            <button onclick="setInspectBg('gradient')" id="btn-bg-grad" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">Neon</button>
+          </div>
+
+          <button onclick="copyCurrentSvg()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg transition active:scale-95">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span id="copy-label">Copy SVG</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <!-- Preview Stage -->
+        <div class="lg:col-span-6 flex flex-col items-center justify-center">
+          <div id="inspect-canvas" class="bg-checkerboard-dark w-full max-w-sm aspect-square rounded-2xl border border-slate-800 p-8 flex items-center justify-center transition-all shadow-inner">
+            <div class="w-56 h-56 transition-transform duration-300 hover:scale-105" id="inspect-svg-wrapper">
+              <!-- Injected SVG -->
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-2 font-mono">100x100 Vector Box • Gradient Master Vector</p>
+        </div>
+
+        <!-- Semantic Role Breakdown -->
+        <div class="lg:col-span-6 space-y-4">
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">Semantic Role of the White Element</span>
+            <p id="inspect-white-role" class="text-xs text-white font-medium leading-relaxed"></p>
+            <p id="inspect-rationale" class="text-xs text-slate-400 leading-relaxed pt-1 border-t border-slate-800/80"></p>
+          </div>
+
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Self-Contained SVG Code</span>
+              <span class="text-[10px] font-mono text-slate-500">Includes &lt;linearGradient&gt; Defs</span>
+            </div>
+            <pre id="inspect-code" class="text-[11px] text-slate-300 font-mono bg-slate-900 p-3 rounded-xl overflow-x-auto max-h-48 border border-slate-800/80 leading-relaxed select-all"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dock Glanceability Test Bar -->
+    <section class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
+      <div class="text-center max-w-xl mx-auto space-y-1">
+        <h2 class="text-lg font-bold text-white">The "Glanceability" Dock Test</h2>
+        <p class="text-xs text-slate-400">
+          At 40px scale, notice how the gradients give visual depth while the white accents pop with crisp contrast.
+        </p>
+      </div>
+
+      <div class="max-w-4xl mx-auto bg-slate-950/90 border border-slate-800 rounded-2xl p-3 flex items-center justify-between overflow-x-auto shadow-2xl backdrop-blur gap-2 scrollbar-none">
+        <div class="flex items-center gap-2 mx-auto" id="dock-icons-container">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
+    ONE Platform Ecosystem Brand System • Purposeful Gradient Model B
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // The Refined 15 App Database with Dedicated Gradients & Fixed Semantics
+    const APPS = [
+      {
+        id: 'onespace',
+        name: 'OneSpace',
+        category: 'core',
+        subtitle: 'Unified Workspace & Accounts Gateway',
+        color: '#6366f1',
+        whiteRole: 'The Gravitational Nexus: A solid white core planet sliced through by the twin cuts, anchored within the deep violet gateway ring.',
+        rationale: 'Represents the gravitational hub around which all workspaces and accounts revolve. Sliced edge-to-edge through the gateway.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-onespace" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#818cf8"/>
+              <stop offset="100%" stop-color="#4338ca"/>
+            </linearGradient>
+            <mask id="m-onespace">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="46" y1="10" x2="46" y2="90" stroke="#000000" stroke-width="4" />
+              <line x1="54" y1="10" x2="54" y2="90" stroke="#000000" stroke-width="3.5" />
+            </mask>
+          </defs>
+          <!-- Gateway Orbit Ring -->
+          <circle cx="50" cy="50" r="34" fill="none" stroke="url(#g-onespace)" stroke-width="12" mask="url(#m-onespace)" />
+          <!-- Purposeful White Core Nexus -->
+          <circle cx="50" cy="50" r="12" fill="#ffffff" mask="url(#m-onespace)" />`
+      },
+      {
+        id: 'oneadmin',
+        name: 'OneAdmin',
+        category: 'core',
+        subtitle: 'Control Plane, IAM & Governance',
+        color: '#ec4899',
+        whiteRole: 'The Governor Hub: A precision white mechanical axle ring anchoring the rotating admin dial.',
+        rationale: 'The gear handles platform levers and access rules; the white center is the solid mechanical hub holding the system steady.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-oneadmin" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f472b6"/>
+              <stop offset="100%" stop-color="#db2777"/>
+            </linearGradient>
+            <mask id="m-oneadmin">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="46" y1="10" x2="46" y2="90" stroke="#000000" stroke-width="3.5" />
+              <line x1="54" y1="10" x2="54" y2="90" stroke="#000000" stroke-width="3" />
+              <circle cx="50" cy="50" r="8" fill="#000000" />
+            </mask>
+          </defs>
+          <!-- Governor Dial -->
+          <path d="M 43 14 L 57 14 L 59 23 L 69 27 L 77 21 L 84 28 L 79 36 L 83 46 L 92 48 L 92 62 L 83 64 L 79 74 L 84 82 L 77 89 L 69 83 L 59 87 L 43 87 L 41 78 L 31 74 L 23 80 L 16 73 L 21 65 L 17 55 L 8 53 L 8 39 L 17 37 L 21 27 L 16 20 L 23 13 L 31 19 Z" fill="url(#g-oneadmin)" mask="url(#m-oneadmin)"/>
+          <!-- White Hub Axle -->
+          <circle cx="50" cy="50" r="16" fill="none" stroke="#ffffff" stroke-width="4" mask="url(#m-oneadmin)" />`
+      },
+      {
+        id: 'oneinventory',
+        name: 'OneInventory',
+        category: 'productivity',
+        subtitle: 'Logistics, SKU Barcodes & Warehouse Stock',
+        color: '#06b6d4',
+        whiteRole: 'The Loading Pallet: A structural white forklift pallet base supporting the cyan cargo container.',
+        rationale: 'The cargo crate is textured with SKU barcode cuts, resting solidly on the white industrial pallet base.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-oneinventory" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#22d3ee"/>
+              <stop offset="100%" stop-color="#0284c7"/>
+            </linearGradient>
+            <mask id="m-oneinventory">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="38" y1="15" x2="38" y2="85" stroke="#000000" stroke-width="3" />
+              <line x1="43" y1="15" x2="43" y2="85" stroke="#000000" stroke-width="1.5" />
+              <line x1="47" y1="15" x2="47" y2="85" stroke="#000000" stroke-width="3.5" />
+              <line x1="53" y1="15" x2="53" y2="85" stroke="#000000" stroke-width="1.8" />
+              <line x1="58" y1="15" x2="58" y2="85" stroke="#000000" stroke-width="4" />
+              <line x1="63" y1="15" x2="63" y2="85" stroke="#000000" stroke-width="2" />
+            </mask>
+          </defs>
+          <!-- Cargo Container Crate -->
+          <rect x="22" y="18" width="56" height="48" rx="6" fill="url(#g-oneinventory)" mask="url(#m-oneinventory)"/>
+          <!-- Semantic White Pallet Base -->
+          <rect x="20" y="70" width="60" height="10" rx="2" fill="#ffffff" mask="url(#m-oneinventory)"/>`
+      },
+      {
+        id: 'onewallet',
+        name: 'OneWallet',
+        category: 'fin',
+        subtitle: 'Digital Card & Balance Ledger',
+        color: '#10b981',
+        whiteRole: 'The Smart EMV Chip: A crisp white security microchip embedded on the card face.',
+        rationale: 'Unmistakable fintech identity: An emerald card slab sliced by the twin cuts, with an illuminated white chip anchor.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-onewallet" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#34d399"/>
+              <stop offset="100%" stop-color="#059669"/>
+            </linearGradient>
+            <mask id="m-onewallet">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="46" y1="15" x2="46" y2="85" stroke="#000000" stroke-width="3.5" />
+              <line x1="54" y1="15" x2="54" y2="85" stroke="#000000" stroke-width="3" />
+            </mask>
+          </defs>
+          <!-- Green Card Body -->
+          <rect x="18" y="26" width="64" height="48" rx="8" fill="url(#g-onewallet)" mask="url(#m-onewallet)"/>
+          <!-- White Smart EMV Chip -->
+          <rect x="28" y="42" width="14" height="16" rx="3" fill="#ffffff" mask="url(#m-onewallet)"/>`
+      },
+      {
+        id: 'onecredit',
+        name: 'OneCredit',
+        category: 'fin',
+        subtitle: 'In-App Token & Platform Currency Symbol',
+        color: '#f59e0b',
+        whiteRole: 'The Contained Currency Pillar: A solid white monetary stem floating comfortably inside the coin bezel without touching the edges.',
+        rationale: 'Adjusted margins: The white stem is safely padded inside the coin cavity (height: 38, y: 31 to 69), struck by the gold double crossbars (=).',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-onecredit" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fbbf24"/>
+              <stop offset="100%" stop-color="#d97706"/>
+            </linearGradient>
+          </defs>
+          <!-- Token Ring Coin -->
+          <circle cx="50" cy="50" r="34" fill="url(#g-onecredit)" />
+          <circle cx="50" cy="50" r="24" fill="#0b0f19" />
+          <!-- White Central Currency Pillar (Padded inside, not touching edges) -->
+          <rect x="46" y="31" width="8" height="38" rx="2" fill="#ffffff" />
+          <!-- Currency Crossbars Strike (=) -->
+          <rect x="35" y="43" width="30" height="4" rx="2" fill="url(#g-onecredit)" />
+          <rect x="35" y="53" width="30" height="4" rx="2" fill="url(#g-onecredit)" />`
+      },
+      {
+        id: 'onemobility',
+        name: 'OneMobility',
+        category: 'productivity',
+        subtitle: 'Transit Telemetry, Schedules & Routing',
+        color: '#0284c7',
+        whiteRole: 'The Transit Interchange Hub: An illuminated central station nexus connecting the transit corridor and timetable slashes.',
+        rationale: 'The sky-to-deep-blue diamond is the transit waypoint; the white interchange hub anchors the vehicle trajectory tracks.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-onemobility" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8"/>
+              <stop offset="100%" stop-color="#0369a1"/>
+            </linearGradient>
+            <mask id="m-onemobility">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="46" y1="10" x2="46" y2="90" stroke="#000000" stroke-width="3.5" />
+              <line x1="54" y1="10" x2="54" y2="90" stroke="#000000" stroke-width="3" />
+              <line x1="22" y1="22" x2="78" y2="78" stroke="#000000" stroke-width="3.5" />
+            </mask>
+          </defs>
+          <!-- Route Waypoint Diamond -->
+          <rect x="23" y="23" width="54" height="54" rx="10" transform="rotate(45 50 50)" fill="url(#g-onemobility)" mask="url(#m-onemobility)"/>
+          <!-- White Interchange Hub -->
+          <circle cx="50" cy="50" r="10" fill="#ffffff" mask="url(#m-onemobility)"/>`
+      },
+      {
+        id: 'onearchive',
+        name: 'OneArchive',
+        category: 'productivity',
+        subtitle: 'Intelligent Long-Term Cold Storage & Vault',
+        color: '#64748b',
+        whiteRole: 'The Indexed File Folder: A clean white indexed file tab rising securely out of the titanium vault box.',
+        rationale: 'Represents indexed cold-storage preservation: The white file folder tab lifts up from the secure steel casing.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-onearchive" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#94a3b8"/>
+              <stop offset="100%" stop-color="#475569"/>
+            </linearGradient>
+            <mask id="m-onearchive">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="46" y1="12" x2="46" y2="88" stroke="#000000" stroke-width="3.5" />
+              <line x1="54" y1="12" x2="54" y2="88" stroke="#000000" stroke-width="3" />
+            </mask>
+          </defs>
+          <!-- White Document Folder Tab Peeking Out -->
+          <path d="M 28 26 L 50 26 L 56 32 L 72 32 C 75 32 76 34 76 37 L 76 56 L 24 56 L 24 30 C 24 28 26 26 28 26 Z" fill="#ffffff" mask="url(#m-onearchive)"/>
+          <!-- Steel Storage Drawer -->
+          <rect x="18" y="42" width="64" height="40" rx="5" fill="url(#g-onearchive)" mask="url(#m-onearchive)"/>`
+      },
+      {
+        id: 'onestorage',
+        name: 'OneStorage',
+        category: 'productivity',
+        subtitle: 'Cloud File Drive & Object Bucket',
+        color: '#0284c7',
+        whiteRole: 'The High-Speed NVMe Storage Tier: An illuminated white solid-state data blade nested within the tiered storage drive array.',
+        rationale: 'Redesigned: Replaced the cloud/chassis with a modular cloud drive array. Three tiered data blades cleaved by the twin cuts with a solid white cache tier.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-onestorage" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8"/>
+              <stop offset="100%" stop-color="#0284c7"/>
+            </linearGradient>
+            <mask id="m-onestorage">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="46" y1="12" x2="46" y2="88" stroke="#000000" stroke-width="3.5" />
+              <line x1="54" y1="12" x2="54" y2="88" stroke="#000000" stroke-width="3" />
+            </mask>
+          </defs>
+          <!-- Top Storage Blade -->
+          <rect x="20" y="22" width="60" height="14" rx="4" fill="url(#g-onestorage)" mask="url(#m-onestorage)"/>
+          <!-- Middle Storage Blade with White NVMe Core -->
+          <rect x="20" y="42" width="60" height="16" rx="4" fill="url(#g-onestorage)" mask="url(#m-onestorage)"/>
+          <rect x="36" y="45" width="28" height="10" rx="2" fill="#ffffff" mask="url(#m-onestorage)"/>
+          <!-- Bottom Storage Blade -->
+          <rect x="20" y="64" width="60" height="14" rx="4" fill="url(#g-onestorage)" mask="url(#m-onestorage)"/>`
+      },
+      {
+        id: 'onedisplay',
+        name: 'OneDisplay',
+        category: 'productivity',
+        subtitle: 'Digital Signage & Video Wall Management',
+        color: '#2563eb',
+        whiteRole: 'The Solid Monitor Stand: An uncut, grounded white display pedestal that remains intact beneath the partitioned 16:9 screen.',
+        rationale: 'Fixed stand issue: The twin cuts now only slice across the 16:9 screen frame, leaving the white ergonomic stand solid and physically grounded.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-onedisplay" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#60a5fa"/>
+              <stop offset="100%" stop-color="#1d4ed8"/>
+            </linearGradient>
+            <mask id="m-onedisplay-screen">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <!-- Twin cuts restricted strictly to the screen area -->
+              <line x1="46" y1="15" x2="46" y2="68" stroke="#000000" stroke-width="3.5" />
+              <line x1="54" y1="15" x2="54" y2="68" stroke="#000000" stroke-width="3" />
+            </mask>
+          </defs>
+          <!-- 16:9 Display Screen (Masked) -->
+          <rect x="16" y="22" width="68" height="44" rx="5" fill="url(#g-onedisplay)" mask="url(#m-onedisplay-screen)"/>
+          <!-- Solid White Stand (Completely Uncut) -->
+          <path d="M 44 66 L 56 66 L 58 76 L 68 76 L 68 80 L 32 80 L 32 76 L 42 76 Z" fill="#ffffff"/>`
+      },
+      {
+        id: 'onesheet',
+        name: 'OneSheet',
+        category: 'productivity',
+        subtitle: 'Data Tables, Spreadsheets & Financial Models',
+        color: '#16a34a',
+        whiteRole: 'The Pure Calculation Matrix: The entire spreadsheet grid body is solid white, topped with an emerald calculation header row.',
+        rationale: 'Redesigned: The forced inner white box is gone. The entire spreadsheet grid rectangle is now white, with a green header row sliced by the twin cuts and grid lines.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-onesheet" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#4ade80"/>
+              <stop offset="100%" stop-color="#15803d"/>
+            </linearGradient>
+            <mask id="m-onesheet">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="46" y1="12" x2="46" y2="88" stroke="#000000" stroke-width="3.5" />
+              <line x1="54" y1="12" x2="54" y2="88" stroke="#000000" stroke-width="3" />
+              <line x1="12" y1="36" x2="88" y2="36" stroke="#000000" stroke-width="3" />
+              <line x1="12" y1="52" x2="88" y2="52" stroke="#000000" stroke-width="3" />
+              <line x1="12" y1="68" x2="88" y2="68" stroke="#000000" stroke-width="3" />
+            </mask>
+          </defs>
+          <!-- Full White Spreadsheet Grid Body -->
+          <rect x="18" y="18" width="64" height="64" rx="8" fill="#ffffff" mask="url(#m-onesheet)"/>
+          <!-- Emerald Header Row (Top Section y: 18 to 36) -->
+          <path d="M 18 26 C 18 21.5 21.5 18 26 18 L 74 18 C 78.5 18 82 21.5 82 26 L 82 36 L 18 36 Z" fill="url(#g-onesheet)" mask="url(#m-onesheet)"/>`
+      },
+      {
+        id: 'onedoc',
+        name: 'OneDoc',
+        category: 'productivity',
+        subtitle: 'Collaborative Docs, Notes & Knowledge Base',
+        color: '#2563eb',
+        whiteRole: 'The 45° Corner Fold: The crisp white dog-ear paper fold turned over on the top right corner.',
+        rationale: 'Updated to Royal Document Blue: Gives instant document authority and separates it cleanly from OneSheet green.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-onedoc" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#60a5fa"/>
+              <stop offset="100%" stop-color="#1d4ed8"/>
+            </linearGradient>
+            <mask id="m-onedoc">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="46" y1="15" x2="46" y2="85" stroke="#000000" stroke-width="3.5" />
+              <line x1="54" y1="15" x2="54" y2="85" stroke="#000000" stroke-width="3" />
+            </mask>
+          </defs>
+          <!-- Blue Document Page Body -->
+          <path d="M 22 18 L 56 18 L 78 40 L 78 82 L 22 82 Z" fill="url(#g-onedoc)" mask="url(#m-onedoc)"/>
+          <!-- White Folded Corner -->
+          <polygon points="56,18 56,40 78,40" fill="#ffffff"/>`
+      },
+      {
+        id: 'onehr',
+        name: 'OneHR',
+        category: 'productivity',
+        subtitle: 'People, Teams & Organizational Culture',
+        color: '#f97316',
+        whiteRole: 'The Keystone Talent Node: The apex leadership/talent node rendered in solid white, connected to the peer network.',
+        rationale: 'Organic and hierarchy-driven: Removed the forced center circle. Now the apex node of the collaborative triad is solid white, sliced by the twin cuts.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-onehr" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fb923c"/>
+              <stop offset="100%" stop-color="#ea580c"/>
+            </linearGradient>
+            <mask id="m-onehr">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="46" y1="12" x2="46" y2="88" stroke="#000000" stroke-width="3.5" />
+              <line x1="54" y1="12" x2="54" y2="88" stroke="#000000" stroke-width="3" />
+            </mask>
+          </defs>
+          <!-- Connecting Synergy Bridge Framework -->
+          <path d="M 50 30 L 28 66 L 72 66 Z" fill="none" stroke="url(#g-onehr)" stroke-width="8" stroke-linejoin="round" mask="url(#m-onehr)"/>
+          <!-- Base Peer Talent Nodes (Gradient) -->
+          <circle cx="28" cy="66" r="12" fill="url(#g-onehr)" mask="url(#m-onehr)"/>
+          <circle cx="72" cy="66" r="12" fill="url(#g-onehr)" mask="url(#m-onehr)"/>
+          <!-- Keystone Apex Talent Node (White, Sliced by Twin Cuts) -->
+          <circle cx="50" cy="30" r="13" fill="#ffffff" mask="url(#m-onehr)"/>`
+      },
+      {
+        id: 'onebook',
+        name: 'OneBook',
+        category: 'productivity',
+        subtitle: 'Accounting, Ledgers & Invoicing',
+        color: '#e11d48',
+        whiteRole: 'The Open Ledger Paper Block: The clean white journal pages exposed between the crimson book covers.',
+        rationale: 'Balanced double-entry bookkeeping: An open accounting ledger split across the binding spine by the signature cuts.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-onebook" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fb7185"/>
+              <stop offset="100%" stop-color="#be123c"/>
+            </linearGradient>
+            <mask id="m-onebook">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="46" y1="15" x2="46" y2="85" stroke="#000000" stroke-width="3.5" />
+              <line x1="54" y1="15" x2="54" y2="85" stroke="#000000" stroke-width="3" />
+            </mask>
+          </defs>
+          <!-- Crimson Hardcover Binding -->
+          <path d="M 18 28 C 32 24 44 28 50 32 C 56 28 68 24 82 28 L 82 76 C 68 72 56 76 50 80 C 44 76 32 72 18 76 Z" fill="url(#g-onebook)" mask="url(#m-onebook)"/>
+          <!-- White Ledger Pages Block -->
+          <path d="M 24 34 C 34 31 44 34 50 38 C 56 34 66 31 76 34 L 76 68 C 66 65 56 68 50 72 C 44 68 34 65 24 68 Z" fill="#ffffff" mask="url(#m-onebook)"/>`
+      },
+      {
+        id: 'onecrm',
+        name: 'OneCRM',
+        category: 'productivity',
+        subtitle: 'Customer Journeys & Relationship Pipeline',
+        color: '#a855f7',
+        whiteRole: 'The High-Value Lead Core: An illuminated white customer nexus flowing through the conversion funnel.',
+        rationale: 'A customer conversion pipeline funnel sliced by the twin cuts, with an active white deal stream vector.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-onecrm" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#c084fc"/>
+              <stop offset="100%" stop-color="#7e22ce"/>
+            </linearGradient>
+            <mask id="m-onecrm">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="46" y1="12" x2="46" y2="88" stroke="#000000" stroke-width="3.5" />
+              <line x1="54" y1="12" x2="54" y2="88" stroke="#000000" stroke-width="3" />
+            </mask>
+          </defs>
+          <!-- Purple Pipeline Funnel -->
+          <polygon points="18,22 82,22 58,56 58,82 42,74 42,56" fill="url(#g-onecrm)" mask="url(#m-onecrm)"/>
+          <!-- White Lead Stream Vector -->
+          <circle cx="50" cy="38" r="8" fill="#ffffff" mask="url(#m-onecrm)"/>`
+      },
+      {
+        id: 'oneai',
+        name: 'OneAI',
+        category: 'core',
+        subtitle: 'Intelligence, Neural Models & Automation',
+        color: '#f43f5e',
+        whiteRole: 'The Cognitive Synapse Spark: A white neural spark firing at the center of the 4-point intelligence starburst.',
+        rationale: 'Communicates the ignition point of artificial cognition radiating outward across the platform.',
+        renderSvg: () => `
+          <defs>
+            <linearGradient id="g-oneai" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fda4af"/>
+              <stop offset="100%" stop-color="#e11d48"/>
+            </linearGradient>
+            <mask id="m-oneai">
+              <rect width="100%" height="100%" fill="#ffffff" />
+              <line x1="46" y1="10" x2="46" y2="90" stroke="#000000" stroke-width="3.5" />
+              <line x1="54" y1="10" x2="54" y2="90" stroke="#000000" stroke-width="3" />
+            </mask>
+          </defs>
+          <!-- 4-Point Cognitive Star -->
+          <path d="M 50 14 C 50 36 36 50 14 50 C 36 50 50 64 50 86 C 50 64 64 50 86 50 C 64 50 50 36 50 14 Z" fill="url(#g-oneai)" mask="url(#m-oneai)"/>
+          <!-- White Synapse Spark -->
+          <circle cx="50" cy="50" r="8" fill="#ffffff" mask="url(#m-oneai)"/>`
+      }
+    ];
+
+    let currentSelectedApp = APPS[0];
+    let currentFilter = 'all';
+
+    function renderGrid() {
+      const container = document.getElementById('apps-container');
+      container.innerHTML = '';
+
+      const filtered = (currentFilter === 'all') 
+        ? APPS 
+        : APPS.filter(a => a.category === currentFilter);
+
+      filtered.forEach(app => {
+        const isSelected = (app.id === currentSelectedApp.id);
+        const card = document.createElement('div');
+        card.className = `cursor-pointer rounded-2xl p-3.5 transition-all flex flex-col items-center justify-between border ${
+          isSelected 
+            ? 'bg-slate-800/90 border-indigo-500 ring-2 ring-indigo-500/30 shadow-xl' 
+            : 'bg-slate-900/70 border-slate-800/90 hover:border-slate-700 hover:bg-slate-800/40'
+        }`;
+        card.onclick = () => selectApp(app.id);
+
+        card.innerHTML = `
+          <div class="w-16 h-16 sm:w-20 sm:h-20 bg-checkerboard-dark rounded-xl p-2.5 border border-slate-800/80 flex items-center justify-center transition-transform hover:scale-105">
+            <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
+              ${app.renderSvg()}
+            </svg>
+          </div>
+          <div class="text-center mt-3 w-full">
+            <div class="text-xs font-bold text-white truncate">${app.name}</div>
+            <div class="text-[10px] text-slate-400 truncate mt-0.5" style="color: ${app.color}">${app.subtitle.split('&')[0]}</div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderDock() {
+      const dock = document.getElementById('dock-icons-container');
+      dock.innerHTML = '';
+
+      APPS.forEach(app => {
+        const isSelected = (app.id === currentSelectedApp.id);
+        const iconBtn = document.createElement('div');
+        iconBtn.className = `w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center p-1.5 transition-all cursor-pointer flex-shrink-0 ${
+          isSelected ? 'bg-indigo-950 border-2 border-indigo-500 scale-110 shadow-lg' : 'bg-slate-900 border border-slate-800 hover:-translate-y-1 hover:border-slate-700'
+        }`;
+        iconBtn.title = `${app.name} — ${app.subtitle}`;
+        iconBtn.onclick = () => selectApp(app.id);
+
+        iconBtn.innerHTML = `
+          <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+            ${app.renderSvg()}
+          </svg>
+        `;
+        dock.appendChild(iconBtn);
+      });
+    }
+
+    function selectApp(appId) {
+      const found = APPS.find(a => a.id === appId);
+      if (!found) return;
+      currentSelectedApp = found;
+      updateInspector();
+      renderGrid();
+      renderDock();
+    }
+
+    function updateInspector() {
+      const app = currentSelectedApp;
+      document.getElementById('inspect-title').textContent = app.name;
+      document.getElementById('inspect-subtitle').textContent = app.subtitle;
+      document.getElementById('inspect-category').textContent = app.category.toUpperCase();
+      document.getElementById('inspect-white-role').textContent = app.whiteRole;
+      document.getElementById('inspect-rationale').textContent = app.rationale;
+
+      const svgCode = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+${app.renderSvg().trim()}
+</svg>`;
+
+      document.getElementById('inspect-svg-wrapper').innerHTML = `
+        <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-2xl">
+          ${app.renderSvg()}
+        </svg>
+      `;
+
+      document.getElementById('inspect-code').textContent = svgCode;
+    }
+
+    function setInspectBg(type) {
+      const canvas = document.getElementById('inspect-canvas');
+      document.getElementById('btn-bg-dark').className = "px-2 py-0.5 rounded text-slate-400 hover:text-white";
+      document.getElementById('btn-bg-light').className = "px-2 py-0.5 rounded text-slate-400 hover:text-white";
+      document.getElementById('btn-bg-grad').className = "px-2 py-0.5 rounded text-slate-400 hover:text-white";
+
+      if (type === 'dark') {
+        canvas.className = "bg-checkerboard-dark w-full max-w-sm aspect-square rounded-2xl border border-slate-800 p-8 flex items-center justify-center transition-all shadow-inner";
+        document.getElementById('btn-bg-dark').className = "px-2 py-0.5 rounded bg-slate-800 text-white font-medium";
+      } else if (type === 'light') {
+        canvas.className = "bg-checkerboard-light w-full max-w-sm aspect-square rounded-2xl border border-slate-300 p-8 flex items-center justify-center transition-all shadow-inner";
+        document.getElementById('btn-bg-light').className = "px-2 py-0.5 rounded bg-slate-200 text-slate-900 font-medium";
+      } else if (type === 'gradient') {
+        canvas.className = "bg-gradient-to-br from-indigo-900/60 via-slate-900 to-rose-950/40 w-full max-w-sm aspect-square rounded-2xl border border-slate-700 p-8 flex items-center justify-center transition-all shadow-inner";
+        document.getElementById('btn-bg-grad').className = "px-2 py-0.5 rounded bg-indigo-600 text-white font-medium";
+      }
+    }
+
+    function filterCategory(cat) {
+      currentFilter = cat;
+      ['all', 'core', 'prod', 'fin'].forEach(c => {
+        const btn = document.getElementById(`flt-${c}`);
+        if ((cat === 'all' && c === 'all') || (cat === 'core' && c === 'core') || (cat === 'productivity' && c === 'prod') || (cat === 'fin' && c === 'fin')) {
+          btn.className = "px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800 text-white";
+        } else {
+          btn.className = "px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white";
+        }
+      });
+      renderGrid();
+    }
+
+    function scrollToInspector() {
+      document.getElementById('inspector-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyCurrentSvg() {
+      const code = document.getElementById('inspect-code').textContent;
+      const textarea = document.createElement('textarea');
+      textarea.value = code;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      const label = document.getElementById('copy-label');
+      label.textContent = "Copied!";
+      setTimeout(() => { label.textContent = "Copy SVG"; }, 2000);
+    }
+
+    // Initialize
+    renderGrid();
+    renderDock();
+    updateInspector();
+  </script>
+</body>
+</html>

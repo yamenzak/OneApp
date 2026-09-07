@@ -464,7 +464,14 @@ def test_no_local_component_shadows_a_frappe_ui_one():
 # what this is is the pane's argument one level in: the thing behind it stays
 # where it was. Everything drawn inside it comes from the barrel, through
 # `RecordView`.
+# `BrandMark.vue` is the fifth, and the clearest: it is one `<svg>` element.
+# The barrel has `Icon`, which draws a lucide glyph by name from a font-like
+# sprite, and a brand mark is not one of those — it is a gradient, a mask and
+# four shapes, in its own colours, which is the whole reason it is a mark and
+# not an icon. There is nothing to compose it out of because it is the
+# primitive everything else composes.
 LAYOUT_ONLY = frozenset({
+	"BrandMark.vue",
 	"RecordPane.vue",
 	"Resizer.vue",
 	"FadedScroll.vue",

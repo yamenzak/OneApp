@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="OneInventory">
+<defs>
+  <linearGradient id="g-oneinventory" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#22d3ee"/>
+    <stop offset="100%" stop-color="#0284c7"/>
+  </linearGradient>
+  <mask id="m-oneinventory">
+    <rect width="100%" height="100%" fill="#ffffff" />
+    <line x1="38" y1="15" x2="38" y2="85" stroke="#000000" stroke-width="3" />
+    <line x1="43" y1="15" x2="43" y2="85" stroke="#000000" stroke-width="1.5" />
+    <line x1="47" y1="15" x2="47" y2="85" stroke="#000000" stroke-width="3.5" />
+    <line x1="53" y1="15" x2="53" y2="85" stroke="#000000" stroke-width="1.8" />
+    <line x1="58" y1="15" x2="58" y2="85" stroke="#000000" stroke-width="4" />
+    <line x1="63" y1="15" x2="63" y2="85" stroke="#000000" stroke-width="2" />
+  </mask>
+</defs>
+<!-- Cargo Container Crate -->
+<rect x="22" y="18" width="56" height="48" rx="6" fill="url(#g-oneinventory)" mask="url(#m-oneinventory)"/>
+<!-- Semantic White Pallet Base -->
+<rect x="20" y="70" width="60" height="10" rx="2" fill="#ffffff" mask="url(#m-oneinventory)"/>
+</svg>
