@@ -51,7 +51,14 @@ DB_EXEMPT_DOCTYPES = {
 #: check reuses a `file_url` rather than writing a second copy, so two local
 #: rows sharing one are two names for one file. `name` is the fallback, which
 #: makes a row that shares nothing count for itself.
-OBJECT = "COALESCE(NULLIF(r2_key, ''), NULLIF(file_url, ''), name)"
+#:
+#: `BINARY` because MariaDB's default collation is case-insensitive and an
+#: object key is not. A site holding `PHOTO.JPG` and `PHOTO.jpg` — two files,
+#: two sizes, two objects in R2 and two files on any Linux disk — was being
+#: charged for one of them, because `GROUP BY` folded them together and kept
+#: the larger. Under-counting a quota is the direction that costs us money
+#: rather than the customer, which is why it survived this long unnoticed.
+OBJECT = "BINARY COALESCE(NULLIF(r2_key, ''), NULLIF(file_url, ''), name)"
 
 
 def current_usage() -> int:

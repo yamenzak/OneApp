@@ -160,6 +160,32 @@ def details(name: str) -> dict:
     return row
 
 
+def _one_row_per_object(rows: list[dict]) -> list[dict]:
+    """One row per stored object, the way the meter counts them.
+
+    A drawing attached to twenty records is twenty `File` rows over one object:
+    Frappe reuses the `file_url` rather than writing a second copy, and an R2
+    upload reuses the key. `quota.current_usage` groups by exactly that, so a
+    breakdown that summed `file_size` over rows was counting the same bytes
+    twenty times — and on this fixture said 737 MB under a meter reading 85.6,
+    with a sentence above it claiming the meter was the *larger* of the two.
+
+    The largest row wins, which is what the meter's `MAX(file_size)` does, and
+    the key is compared exactly — the meter groups on `BINARY` for the same
+    reason, because `PHOTO.JPG` and `PHOTO.jpg` are two objects everywhere
+    except in a case-insensitive collation. A folder therefore holds an object
+    once even where two rows point at it from two places; the object is stored
+    once, so it weighs once, somewhere.
+    """
+    by_object = {}
+    for row in rows:
+        key = row.get("r2_key") or row.get("file_url") or row["name"]
+        held = by_object.get(key)
+        if not held or (row.get("file_size") or 0) > (held.get("file_size") or 0):
+            by_object[key] = row
+    return list(by_object.values())
+
+
 @frappe.whitelist(methods=["GET"])
 def storage() -> dict:
     """What is stored, by kind, and what the plan allows.
@@ -177,9 +203,11 @@ def storage() -> dict:
     rows = frappe.get_list(
         "File",
         filters={"is_folder": 0, **_visible()},
-        fields=["name", "file_name", "file_size", "folder", KIND_FIELD],
+        fields=["name", "file_name", "file_size", "folder", "r2_key", "file_url",
+                KIND_FIELD],
         limit_page_length=0,
     )
+    rows = _one_row_per_object(rows)
 
     by_kind, by_folder = {}, {}
     for row in rows:
@@ -234,6 +262,10 @@ def storage() -> dict:
             for row in sorted(rows, key=lambda one: -(one.get("file_size") or 0))[:BIGGEST]
         ],
         "visible": sum(by_kind.values()),
+        # Laboured here rather than in the browser because the meter beside it
+        # is laboured here: two formatters over one quantity read as two
+        # numbers, and this one said "86 MB" under a meter saying "85.8 MB".
+        "visible_label": quota.format_bytes(sum(by_kind.values())),
         "files": len(rows),
         "workspace": quota.usage_summary(),
     }

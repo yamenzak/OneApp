@@ -178,28 +178,22 @@ const largest = computed(() =>
 
 const share = (size) => Math.round(((size || 0) / largest.value) * 100)
 
-const bytes = (size) => {
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
-  let value = size || 0
-  let unit = 0
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024
-    unit += 1
-  }
-  return `${value < 10 && unit ? value.toFixed(1) : Math.round(value)} ${units[unit]}`
-}
-
 // One sentence per count rather than a plural glued on: "file" and "files" are
 // one word in English and several elsewhere.
+//
+// Both say the same second thing, and it is the one that makes the two numbers
+// agree: the same file on two records is one file here, because it is stored
+// once and charged once. Said because it is the difference between a breakdown
+// a reader can add up and one that reads as a bug.
 const breakdown = computed(() =>
   storage.value.files === 1
     ? __(
-        'The breakdown below covers the one file you can see, which is {0}. The meter above is the whole workspace, including files on records you cannot open.',
-        [bytes(storage.value.visible)],
+        'The breakdown below covers the one file you can see, which is {0}. The same file on two records is one file here, because it is stored once — and the meter above is the whole workspace, including files on records you cannot open.',
+        [storage.value.visible_label],
       )
     : __(
-        'The breakdown below covers the {0} files you can see, which is {1}. The meter above is the whole workspace, including files on records you cannot open.',
-        [storage.value.files, bytes(storage.value.visible)],
+        'The breakdown below covers the {0} files you can see, which is {1}. The same file on two records is one file here, because it is stored once — and the meter above is the whole workspace, including files on records you cannot open.',
+        [storage.value.files, storage.value.visible_label],
       ),
 )
 

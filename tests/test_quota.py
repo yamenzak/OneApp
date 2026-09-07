@@ -243,3 +243,17 @@ def test_usage_groups_rows_that_share_one_object(quota, stub_frappe):
 	assert "MAX(file_size)" in query
 	# Folders weigh nothing and would only add rows to the grouping.
 	assert "is_folder = 0" in query
+
+
+def test_two_files_differing_only_in_case_are_two_objects(quota):
+	"""`PHOTO.JPG` and `PHOTO.jpg` are two files everywhere but in a collation.
+
+	MariaDB compares case-insensitively by default, so `GROUP BY` folded them
+	into one and `MAX` kept the larger — the workspace stored two objects, in
+	R2 and on any Linux disk, and was charged for one. Found by a storage
+	breakdown that came out larger than the meter above it.
+
+	Under-counting a quota costs us rather than the customer, which is why it
+	sat there: nothing complains.
+	"""
+	assert quota.OBJECT.startswith("BINARY ")

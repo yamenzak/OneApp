@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 12:27+0000\n"
-"PO-Revision-Date: 2026-09-07 12:27+0000\n"
+"POT-Creation-Date: 2026-09-07 14:39+0000\n"
+"PO-Revision-Date: 2026-09-07 14:39+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -1685,7 +1685,7 @@ msgstr ""
 msgid "Database Used Bytes"
 msgstr ""
 
-#: oneapp/oneapp_core/storage/quota.py:270
+#: oneapp/oneapp_core/storage/quota.py:277
 msgid "Database limit reached ({0}). Nothing has been deleted and your data is intact, but new records are paused until you free space or upgrade."
 msgstr ""
 
@@ -6216,7 +6216,7 @@ msgstr ""
 msgid "Storage could not be measured"
 msgstr ""
 
-#: oneapp/oneapp_core/storage/quota.py:204
+#: oneapp/oneapp_core/storage/quota.py:211
 msgid "Storage limit reached. This file needs {0} but only {1} of {2} remains. Delete some files or upgrade your plan."
 msgstr ""
 
@@ -6670,20 +6670,20 @@ msgstr ""
 msgid "The bin is empty"
 msgstr ""
 
-#: frontend/src/components/settings/StorageSettings.vue:209
+#: frontend/src/components/settings/StorageSettings.vue:203
 msgid "The bin is holding {0} across one file, which still counts. It is removed for good {1} days after it went there."
 msgstr ""
 
-#: frontend/src/components/settings/StorageSettings.vue:213
+#: frontend/src/components/settings/StorageSettings.vue:207
 msgid "The bin is holding {0} across {1} files, which still counts. Each is removed for good {2} days after it went there."
 msgstr ""
 
-#: frontend/src/components/settings/StorageSettings.vue:196
-msgid "The breakdown below covers the one file you can see, which is {0}. The meter above is the whole workspace, including files on records you cannot open."
+#: frontend/src/components/settings/StorageSettings.vue:190
+msgid "The breakdown below covers the one file you can see, which is {0}. The same file on two records is one file here, because it is stored once — and the meter above is the whole workspace, including files on records you cannot open."
 msgstr ""
 
-#: frontend/src/components/settings/StorageSettings.vue:200
-msgid "The breakdown below covers the {0} files you can see, which is {1}. The meter above is the whole workspace, including files on records you cannot open."
+#: frontend/src/components/settings/StorageSettings.vue:194
+msgid "The breakdown below covers the {0} files you can see, which is {1}. The same file on two records is one file here, because it is stored once — and the meter above is the whole workspace, including files on records you cannot open."
 msgstr ""
 
 #: frontend/src/components/drive/CameraCapture.vue:147
@@ -7225,7 +7225,7 @@ msgstr ""
 msgid "This workspace is not entitled to Books, so there is nothing to set up."
 msgstr ""
 
-#: oneapp/oneapp_core/storage/quota.py:195
+#: oneapp/oneapp_core/storage/quota.py:202
 msgid "This workspace is over its storage limit and cannot grow further. Nothing has been deleted — free some space, or add storage from your account, and uploads resume."
 msgstr ""
 
@@ -8672,11 +8672,11 @@ msgstr ""
 msgid "{0} has no matching field here and will be left out."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/options.py:184
+#: oneapp/oneapp_core/ai/options.py:202
 msgid "{0} has to be a number."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/options.py:188
+#: oneapp/oneapp_core/ai/options.py:206
 msgid "{0} has to be between {1} and {2}."
 msgstr ""
 
@@ -8757,7 +8757,7 @@ msgstr ""
 msgid "{0} is not a workspace setting."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/options.py:177
+#: oneapp/oneapp_core/ai/options.py:195
 msgid "{0} is not a {1} this model offers."
 msgstr ""
 

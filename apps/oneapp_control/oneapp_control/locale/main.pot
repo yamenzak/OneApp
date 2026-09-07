@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-07 12:27+0000\n"
-"PO-Revision-Date: 2026-09-07 12:27+0000\n"
+"POT-Creation-Date: 2026-09-07 14:39+0000\n"
+"PO-Revision-Date: 2026-09-07 14:39+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -2530,6 +2530,11 @@ msgstr ""
 msgid "Options"
 msgstr ""
 
+#. Label of the options_locked (Check) field in DocType 'AI Model'
+#: oneapp_control/control_plane/doctype/ai_model/ai_model.json
+msgid "Options Locked"
+msgstr ""
+
 #. Label of the order_by (Data) field in DocType 'OneSpace Space Screen'
 #: oneapp_control/control_plane/doctype/onespace_space_screen/onespace_space_screen.json
 msgid "Order By"
@@ -4219,6 +4224,11 @@ msgstr ""
 msgid "The published wording this row came from."
 msgstr ""
 
+#. Description of the 'Options Locked' (Check) field in DocType 'AI Model'
+#: oneapp_control/control_plane/doctype/ai_model/ai_model.json
+msgid "The sync leaves the options above alone. Tick it after editing them by hand, or the next run writes over them with whatever the provider publishes."
+msgstr ""
+
 #: oneapp_control/api/customer.py:504
 msgid "The workspace owner's access cannot be changed here."
 msgstr ""
@@ -4531,7 +4541,7 @@ msgstr ""
 
 #. Description of the 'Options' (Code) field in DocType 'AI Model'
 #: oneapp_control/control_plane/doctype/ai_model/ai_model.json
-msgid "What else this model takes beyond the ask — a voice, a language, a size. A JSON array of {key, label, type, default, ...}; see `oneapp_core/ai/options.py` for the four types. Sent to every tenant with the catalogue and rendered under the model picker. Written by hand: no sync fills this in yet, and a provider's own schema is where it should come from when one does."
+msgid "What else this model takes beyond the ask — a voice, a language, a size. A JSON array of {key, label, type, default, ...}; see `oneapp_core/ai/options.py` for the four types. Sent to every tenant with the catalogue and rendered under the model picker. Filled by the sync from the provider's own list — Cloudflare's input schema, Google's published voice table — so it is not a thing anyone transcribes."
 msgstr ""
 
 #. Description of the 'Model Id' (Data) field in DocType 'AI Model'
