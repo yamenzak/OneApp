@@ -98,6 +98,13 @@ server is one GIL-bound Python process, so four Playwright workers buy about
 * `docs/PRINTING.md` and `docs/WORKSPACE-SETTINGS.md` are reference tables that
   tests read back.
 
+**A module's own document lives beside it**, at
+`apps/oneapp/oneapp/<module>/README.md` — one per module, covering both its
+server and its browser half. `docs/` keeps only what no single module owns. The
+standard those files follow is in `docs/ARCHITECTURE.md`, under "Where a
+document goes"; `apps/oneapp/oneapp/onemobility/README.md` is the first written
+to it.
+
 ## Two rules that are nowhere else
 
 * **OneApp is the repository name and is never product-facing.** The product is

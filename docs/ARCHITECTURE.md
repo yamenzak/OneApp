@@ -228,6 +228,40 @@ three-thousand-line one.
 | `check_settings.py` | Every declared settings type against the Frappe fieldtype it actually writes. Needs a bench. |
 | `i18n_pot.py`, `i18n.py` | The catalogue. The first re-extracts every msgid and needs a site; the second answers what is still owed and writes the `.po` files, and needs nothing. `docs/LANGUAGE.md` is the why. |
 
+## Where a document goes
+
+A module's document lives **beside the module**, at
+`apps/oneapp/oneapp/<module>/README.md`. GitHub renders it when somebody browses
+into the directory, it travels with the app when the repo is mirrored, and a
+person reading the code is one level away from the argument behind it.
+
+One document per module and not two. A module has a server half and a browser
+half — `oneapp/onemail/` and `frontend/src/modules/onemail/` — and they are one
+thing; two documents would be two accounts of it, disagreeing within a month.
+The one at the module root covers both.
+
+`docs/` at the repository root keeps only what no single module owns: the map
+you are reading, the platform (`ONEADMIN.md`), the product as a whole
+(`ONESPACE.md`), and the cross-cutting arguments — tenancy, legal, printing.
+Anything there that is really about one module is stale and belongs beside it.
+
+A module document answers four questions, in this order:
+
+1. **What this is, and who opens it.** One paragraph somebody outside the team
+   could read.
+2. **The model** — the nouns, and why those nouns rather than the obvious ones.
+3. **The decisions that cost something**, each with what was rejected and why.
+   This is the part that cannot be recovered from the code, and the only reason
+   the file exists.
+4. **What is not built**, in the order it blocks.
+
+Two rules about how it is written. **Reasons, not restatements**: a document
+that says what the code says is a second copy of the code, and it goes stale
+the first time somebody edits only one of them. And **a fact that must not
+drift is read back by a test** — `docs/PRINTING.md` and
+`docs/WORKSPACE-SETTINGS.md` are tables the suite reads, which is why they are
+still true.
+
 ## Where a change goes
 
 * **A new setting a workspace owns** → `onespace/workspace.py`, then the tab
