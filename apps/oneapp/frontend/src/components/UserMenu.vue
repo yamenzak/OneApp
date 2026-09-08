@@ -12,8 +12,8 @@
     <Button
       variant="ghost"
       :icon-right="compact ? undefined : 'lucide-chevron-up'"
-      class="!h-11 !justify-start !px-2"
-      :class="compact ? '' : 'w-full'"
+      class="!h-11 w-full"
+      :class="compact ? '!justify-center !px-0' : '!justify-start !px-2'"
       :label="displayName"
     >
       <template #prefix>
