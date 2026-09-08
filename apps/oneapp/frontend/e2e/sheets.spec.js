@@ -204,25 +204,32 @@ async function attendeeSheet(page, title) {
   return id
 }
 
+/** The row for the sheet just made, once the debounced search has settled. */
+async function sheetRow(page) {
+  await page.goto('/one/files?place=all')
+  await page.getByPlaceholder('Search files').fill('Untitled sheet')
+  // The search is debounced; without this the click lands on whatever row the
+  // unfiltered list had first.
+  await expect(page.locator('[data-slot="drive-file"]').first())
+    .toContainText('Untitled sheet')
+  const row = page.locator('[data-slot="drive-open"]').first()
+  await row.waitFor({ timeout: 20_000 })
+  return row
+}
+
 test('a sheet in the file list opens its grid beside the list, and on its own page from a modifier',
-  async ({ page }) => {
+  async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'there is no beside on a phone — see the test below')
     // The one thing about a sheet that is not like every other file: it has no
     // bytes to look at. It opens its grid — editable, in the pane beside the
     // list, because the point of a file manager is to work in a file without
     // losing the folder you found it in.
     const id = await newSheet(page)
-    await page.goto('/one/files?place=all')
-    await page.getByPlaceholder('Search files').fill('Untitled sheet')
-    // The search is debounced; without this the click lands on whatever row the
-    // unfiltered list had first.
-    await expect(page.locator('[data-slot="drive-file"]').first())
-      .toContainText('Untitled sheet')
+    const row = await sheetRow(page)
 
     // An anchor, not a button — and it stays one, which is the point of the
     // second half: the plain click is taken by the page, every modifier is
     // left to the browser.
-    const row = page.locator('[data-slot="drive-open"]').first()
-    await row.waitFor({ timeout: 20_000 })
     await expect(row).toHaveJSProperty('tagName', 'A')
 
     const here = page.url()
@@ -240,6 +247,20 @@ test('a sheet in the file list opens its grid beside the list, and on its own pa
     const tab = await opened
     await expect(tab).toHaveURL(/\/one\/sheets\//)
     expect(id).toBeTruthy()
+  })
+
+test('on a phone the same row is a plain link to the sheet',
+  async ({ page }, info) => {
+    test.skip(info.project.name !== 'mobile', 'this is the phone half of the test above')
+    // The pane on a phone is a full-screen overlay, so opening a sheet in it
+    // buys nothing the page does not already give and costs the URL and the
+    // back button. So the row is left alone and behaves like what it looks
+    // like — which is also why nothing here has to intercept a tap.
+    await newSheet(page)
+    const row = await sheetRow(page)
+    await row.click()
+    await page.waitForURL(/\/one\/sheets\//)
+    await expect(grid(page)).toBeVisible()
   })
 
 test('a sheet is made from the Drive and opens on an empty grid', async ({ page }) => {

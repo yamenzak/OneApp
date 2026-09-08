@@ -202,7 +202,7 @@
             :key="file.name"
             :file="file"
             :link="routeFor(file)"
-            :inline="INLINE"
+            :inline="isMobile ? [] : INLINE"
             :dense="editing && previewing && !isMobile"
             :grid="grid"
             selectable
@@ -697,6 +697,10 @@ const previewing = ref(false)
  * detour. Everything else either has no editor of ours or is a place with an
  * address, and both of those still navigate.
  */
+// The kinds that open in the pane instead of on their own page — and only on
+// a desktop. On a phone the pane is a full-screen overlay, so opening a sheet
+// in it buys nothing the page does not already give and costs the URL and the
+// back button. So there the row stays what it looks like: a link.
 const INLINE = ['Sheet', 'Doc']
 
 // Wider when the pane holds an editor. Four hundred and eighty pixels is a
