@@ -33,6 +33,7 @@ MODULE_DIRS = {
     "OneMail": "onemail",
     "OneCalendar": "onecalendar",
     "OneLegal": "onelegal",
+    "OneMobility": "onemobility",
     "Control Plane": "control_plane",
 }
 

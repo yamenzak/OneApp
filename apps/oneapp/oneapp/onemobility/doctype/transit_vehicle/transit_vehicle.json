@@ -1,0 +1,122 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:vehicle_key",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "vehicle_key",
+  "label",
+  "status",
+  "mode",
+  "cb_vehicle_size",
+  "seats",
+  "standing",
+  "capacity",
+  "agency"
+ ],
+ "fields": [
+  {
+   "description": "What the feed calls it.",
+   "fieldname": "vehicle_key",
+   "fieldtype": "Data",
+   "label": "Key",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "The fleet number painted on the side.",
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Vehicle",
+   "reqd": 1
+  },
+  {
+   "default": "In service",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "In service\nDepot\nOut of service"
+  },
+  {
+   "default": "Bus",
+   "fieldname": "mode",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Mode",
+   "options": "Bus\nTram\nMetro\nRail\nFerry\nCable\nOther"
+  },
+  {
+   "fieldname": "cb_vehicle_size",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "seats",
+   "fieldtype": "Int",
+   "label": "Seats"
+  },
+  {
+   "fieldname": "standing",
+   "fieldtype": "Int",
+   "label": "Standing places"
+  },
+  {
+   "description": "Seats and standing places together, which is what an occupancy percentage is a percentage of.",
+   "fieldname": "capacity",
+   "fieldtype": "Int",
+   "label": "Capacity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "agency",
+   "fieldtype": "Link",
+   "label": "Agency",
+   "options": "Transit Agency"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneMobility",
+ "name": "Transit Vehicle",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "label,vehicle_key",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  }
+ ],
+ "title_field": "label",
+ "track_changes": 1
+}

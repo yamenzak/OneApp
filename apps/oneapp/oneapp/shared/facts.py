@@ -136,6 +136,22 @@ def reset():
 # The table
 # --------------------------------------------------------------------------- #
 
+def exists(fact: Fact) -> bool:
+    """Whether the table is there yet.
+
+    Not `frappe.db.table_exists`, which prepends `tab` — these are not
+    doctypes, which is the whole point of them, and asking the framework about
+    one gets a confident no about a table called `tabfactObservation`.
+    """
+    return bool(
+        frappe.db.sql(
+            """select 1 from information_schema.TABLES
+               where TABLE_SCHEMA = database() and TABLE_NAME = %s""",
+            fact.table,
+        )
+    )
+
+
 def _partition_name(day: date) -> str:
     return f"p{day.strftime('%Y%m%d')}"
 
@@ -286,11 +302,17 @@ def aggregate(
             frappe.throw(_("There is no column called {0}.").format(column))
 
     picked = []
+    ranked = []
     for alias, (function, column) in measures.items():
-        if function not in AGGREGATIONS:
-            frappe.throw(_("{0} is not something to measure with.").format(function))
         if column != "*" and column not in allowed:
             frappe.throw(_("There is no column called {0}.").format(column))
+        if function in PERCENTILES:
+            if column == "*":
+                frappe.throw(_("A percentile needs a column to rank."))
+            ranked.append((alias, PERCENTILES[function], column))
+            continue
+        if function not in AGGREGATIONS:
+            frappe.throw(_("{0} is not something to measure with.").format(function))
         target = "*" if column == "*" else f"`{column}`"
         picked.append(f"{AGGREGATIONS[function]}({target}) AS `{alias}`")
 
@@ -298,24 +320,81 @@ def aggregate(
     grouped = ", ".join(f"`{c}`" for c in group)
     select = ", ".join([*(f"`{c}`" for c in group), *picked]) or "COUNT(*) AS `rows`"
 
+    rows = (
+        frappe.db.sql(
+            f"SELECT {select} FROM `{fact.table}` WHERE {clauses}"
+            + (f" GROUP BY {grouped}" if group else "")
+            + f" LIMIT {cint(limit)}",
+            values,
+            as_dict=True,
+        )
+        if picked or not ranked
+        else []
+    )
+    if not ranked:
+        return rows
+
+    return _merge(rows, _percentiles(fact, ranked, clauses, values, group, limit), group)
+
+
+def _percentiles(fact, ranked, clauses, values, group, limit) -> list[dict]:
+    """The percentile half of `aggregate`, as its own query.
+
+    MariaDB has `PERCENTILE_CONT` from 10.3 but only as a *window* function —
+    there is no aggregate form, so it cannot sit in the `GROUP BY` select list
+    beside `COUNT` and `AVG`. The shape that does work is one row per input row
+    with the partition's answer repeated across it, collapsed with `DISTINCT`.
+    Two queries and a join in Python, rather than a percentile computed here
+    over every row of a day, which is the thing this whole module exists to
+    avoid.
+    """
+    over = f"PARTITION BY {', '.join(f'`{c}`' for c in group)}" if group else ""
+    columns = [
+        f"PERCENTILE_CONT({quantile}) WITHIN GROUP (ORDER BY `{column}`) "
+        f"OVER ({over}) AS `{alias}`"
+        for alias, quantile, column in ranked
+    ]
+    select = ", ".join([*(f"`{c}`" for c in group), *columns])
     return frappe.db.sql(
-        f"SELECT {select} FROM `{fact.table}` WHERE {clauses}"
-        + (f" GROUP BY {grouped}" if group else "")
+        f"SELECT DISTINCT {select} FROM `{fact.table}` WHERE {clauses}"
         + f" LIMIT {cint(limit)}",
         values,
         as_dict=True,
     )
 
 
-#: What `aggregate` will compute. `p85` is here because it is the number a
-#: scheduler actually builds a timetable from, and a mean travel time answers
-#: no question anybody has — see `onemobility/README.md` §7a.
+def _merge(left: list[dict], right: list[dict], group: list[str]) -> list[dict]:
+    """Two result sets over the same grouping, as one."""
+    if not left:
+        return right
+    key = lambda row: tuple(row.get(c) for c in group)  # noqa: E731
+    found = {key(row): row for row in right}
+    for row in left:
+        row.update({k: v for k, v in found.get(key(row), {}).items() if k not in group})
+    return left
+
+
+#: The measures SQL can compute in one grouped pass.
 AGGREGATIONS = {
     "count": "COUNT",
     "sum": "SUM",
     "avg": "AVG",
     "min": "MIN",
     "max": "MAX",
+}
+
+#: The measures that are a position in the sorted values rather than a sum of
+#: them. `p85` is here because it is the number a scheduler actually builds a
+#: timetable from: a mean journey time is a promise kept half the time, and the
+#: complaint is always about the other half. `median` is spelled out because it
+#: is what a reader calls p50.
+PERCENTILES = {
+    "p50": 0.5,
+    "median": 0.5,
+    "p85": 0.85,
+    "p90": 0.9,
+    "p95": 0.95,
+    "p99": 0.99,
 }
 
 

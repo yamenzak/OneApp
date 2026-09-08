@@ -177,6 +177,12 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# document on the control plane, so `File Version` is empty there and
 		# the nightly thinning has nothing to walk.
 		"oneapp.shared.versions.thin",
+		# And the fact tables. `TABLES` is populated by a space's `model.py`
+		# being imported; the control plane carries no space that declares one,
+		# so this iterates an empty registry. The same shape as every other
+		# entry above, and gating it would be a branch to say "there is nothing
+		# here" where an empty loop already says it.
+		"oneapp.shared.facts.sweep",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "

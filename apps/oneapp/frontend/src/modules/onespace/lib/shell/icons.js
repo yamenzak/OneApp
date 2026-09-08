@@ -38,6 +38,10 @@ export const SPACE_ICONS = [
   'lucide-message-square',
   'lucide-mail',
   'lucide-phone',
+  'lucide-bus',
+  'lucide-route',
+  'lucide-map-pin',
+  'lucide-map',
   'lucide-chart-line',
   'lucide-chart-pie',
   'lucide-book-open',
@@ -292,6 +296,48 @@ export const SPACE_ICON_GROUPS = [
           "calls",
           "phone",
           "dialer"
+        ]
+      }
+    ]
+  },
+  {
+    "group": "Moving",
+    "icons": [
+      {
+        "icon": "lucide-bus",
+        "words": [
+          "transit",
+          "mobility",
+          "vehicles",
+          "fleet",
+          "bus"
+        ]
+      },
+      {
+        "icon": "lucide-route",
+        "words": [
+          "routes",
+          "lines",
+          "network",
+          "corridors"
+        ]
+      },
+      {
+        "icon": "lucide-map-pin",
+        "words": [
+          "stops",
+          "stations",
+          "places",
+          "locations"
+        ]
+      },
+      {
+        "icon": "lucide-map",
+        "words": [
+          "map",
+          "geography",
+          "coverage",
+          "territory"
         ]
       }
     ]

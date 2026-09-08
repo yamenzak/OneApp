@@ -22,7 +22,7 @@ already carries when this site reports how much storage it is using.
 
 import frappe
 
-from oneapp.onespace import control_client
+from oneapp.onespace import control_client, spacelife
 
 
 def _ask(action: str, **arguments) -> dict:
@@ -143,6 +143,11 @@ def enable_space(space: str) -> dict:
 	except Exception:
 		frappe.log_error(title="Marketplace: could not pull after enabling")
 
+	# And let the space bring itself up — fact tables, caches, whatever it
+	# declared. After the sync, because a space that reads its own manifest
+	# needs the manifest to be here. See `onespace/spacelife.py`.
+	spacelife.on_enable(space)
+
 	return answer
 
 
@@ -150,6 +155,11 @@ def enable_space(space: str) -> dict:
 def disable_space(space: str) -> dict:
 	"""Switch a space off. Its app and its records stay exactly where they are."""
 	answer = _ask("disable_space", space=space)
+
+	# Off, not gone: `delete_data` stays false here deliberately. Switching a
+	# space off is usually tidying a launcher, and a launcher tidy that drops
+	# four years of telemetry is the worst thing this product could do.
+	spacelife.on_disable(space, delete_data=False)
 
 	try:
 		from oneapp.onespace import sync
@@ -169,8 +179,16 @@ def removable(space: str) -> dict:
 
 @frappe.whitelist()
 def remove_space(space: str, confirm: str = "") -> dict:
-	"""Switch a space off and uninstall what nothing else needs. Not undoable."""
+	"""Switch a space off and uninstall what nothing else needs. Not undoable.
+
+	The one path that deletes. It is reached by typing the space's name into a
+	confirmation that says what will go, which is the difference between this
+	and `disable_space` — and why the space's own data goes with it here and
+	stays there.
+	"""
 	answer = _ask("remove_space", space=space, confirm=confirm)
+
+	spacelife.on_disable(space, delete_data=True)
 
 	try:
 		from oneapp.onespace import sync

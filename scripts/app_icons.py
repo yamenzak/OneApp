@@ -55,6 +55,12 @@ SPACE_ICON_GROUPS = [
         ("lucide-mail", ("email", "campaigns", "newsletter", "inbox")),
         ("lucide-phone", ("telephony", "calls", "phone", "dialer")),
     ]),
+    ("Moving", [
+        ("lucide-bus", ("transit", "mobility", "vehicles", "fleet", "bus")),
+        ("lucide-route", ("routes", "lines", "network", "corridors")),
+        ("lucide-map-pin", ("stops", "stations", "places", "locations")),
+        ("lucide-map", ("map", "geography", "coverage", "territory")),
+    ]),
     ("Numbers", [
         ("lucide-chart-line", ("analytics", "reports", "trends", "metrics")),
         ("lucide-chart-pie", ("dashboards", "insights", "breakdown", "share")),

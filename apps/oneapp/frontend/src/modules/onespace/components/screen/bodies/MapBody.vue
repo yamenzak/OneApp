@@ -27,7 +27,15 @@
     <!-- `v-show` and not `v-else`: the map draws into this element on mount,
          and an element `v-if` has removed is one the library holds a dead
          reference to the moment a filter empties the page. -->
-    <div v-show="placed && features.length" ref="canvas" class="absolute inset-0" />
+    <!--
+      `h-full w-full`, not `absolute inset-0`: maplibre-gl.css declares
+      `.maplibregl-map { position: relative }` at the same specificity as
+      Tailwind's `.absolute` and is loaded after it, so the moment the library's
+      stylesheet arrives the container stops being positioned, `inset-0` stops
+      meaning anything, and the height collapses to zero — a map drawn into
+      MapLibre's 400x300 fallback canvas with no error said anywhere.
+    -->
+    <div v-show="placed && features.length" ref="canvas" class="h-full w-full" />
   </div>
 </template>
 
@@ -38,7 +46,8 @@ import EmptyState from '@/shared/components/EmptyState.vue'
 import { valueTheme } from '@/modules/onespace/lib/screen/fields'
 import { __ } from '@/shared/lib/runtime/translate'
 import { featuresFrom } from '@/modules/onespace/lib/screen/place'
-import { inkOf } from '@/modules/onespace/lib/screen/ink'
+import { inkOf, tokenInk } from '@/modules/onespace/lib/screen/ink'
+import { attribution, styleFor, whenLoaded } from '@/modules/onespace/lib/screen/basemap'
 
 const props = defineProps({
   /** The resolved screen: columns, title field, states, permissions. */
@@ -61,6 +70,7 @@ const canvas = ref(null)
 const ready = ref(false)
 let map = null
 let library = null
+let sizes = null
 
 const placed = computed(() => {
   const one = props.place || {}
@@ -80,24 +90,14 @@ const features = computed(() =>
 )
 
 /**
- * A basemap, or an honest absence of one.
- *
- * The tiles are ours and self-hosted, so where they are is a deployment fact
- * rather than a workspace's choice — it arrives on the screen payload from
- * site config. With none configured the map still draws: a flat ground in the
- * surface colour, and the records on it. That is not a degraded mode to
- * apologise for, it is what a schematic looks like, and it means this works
- * offline, in a test, and on a bench nobody has pointed at a tile store.
+ * The ground, from `lib/screen/basemap.js` — the one place the product decides
+ * where tiles come from. `place.style` still wins: a screen that names its own
+ * style has said something more specific than the instance default.
  */
-function styleFor(background) {
-  const url = (props.place?.style || '').trim()
-  if (url) return url
-  return {
-    version: 8,
-    sources: {},
-    layers: [{ id: 'ground', type: 'background', paint: { 'background-color': background } }],
-  }
+function ground(background) {
+  return styleFor(background, props.place?.style || '')
 }
+
 
 function collection() {
   return { type: 'FeatureCollection', features: features.value }
@@ -120,26 +120,53 @@ function frame() {
   map.fitBounds(bounds, { padding: 48, duration: 0, maxZoom: 15 })
 }
 
+
+/**
+ * MapLibre sizes its canvas from the container at construction and does not
+ * always notice later. A screen that mounts before its parent has settled
+ * gets a map drawn into a canvas three hundred pixels tall inside a container
+ * of eight hundred — no error, no warning, just most of the map missing.
+ *
+ * So: wait for a real size before constructing, and watch for changes after.
+ */
+function whenSized(element) {
+  return new Promise((resolve) => {
+    if (element?.clientHeight) return resolve()
+    const observer = new ResizeObserver(() => {
+      if (!element.clientHeight) return
+      observer.disconnect()
+      resolve()
+    })
+    observer.observe(element)
+    // A container that never gets a height should not hang the screen.
+    setTimeout(() => { observer.disconnect(); resolve() }, 2000)
+  })
+}
+
 async function draw() {
   if (map || !canvas.value || !placed.value || !features.value.length) return
 
+  await whenSized(canvas.value)
   const module = await import('maplibre-gl')
   await import('maplibre-gl/dist/maplibre-gl.css')
   library = module.default || module
 
-  const ground = getComputedStyle(document.documentElement)
-    .getPropertyValue('--surface-gray-1').trim() || '#f4f4f5'
+  // Through the canvas normaliser: the tokens are `oklch()`, which MapLibre's
+  // style specification refuses and which fails the whole map, not one layer.
+  const background = tokenInk('--surface-gray-1', '#f4f4f5')
 
   map = new library.Map({
     container: canvas.value,
-    style: styleFor(ground),
+    style: ground(background),
     center: props.place?.centre || [0, 20],
     zoom: props.place?.zoom || 1,
-    attributionControl: { compact: true },
+    attributionControl: { compact: true, customAttribution: attribution() },
   })
   map.addControl(new library.NavigationControl({ showCompass: false }), 'top-right')
+  sizes = new ResizeObserver(() => map?.resize())
+  sizes.observe(canvas.value)
 
-  await new Promise((resolve) => map.on('load', resolve))
+  await whenLoaded(map, background)
 
   map.addSource('records', { type: 'geojson', data: collection() })
   map.addLayer({
@@ -160,7 +187,7 @@ async function draw() {
       'circle-radius': 6,
       'circle-color': ['get', 'ink'],
       'circle-stroke-width': 2,
-      'circle-stroke-color': ground,
+      'circle-stroke-color': background,
     },
   })
 
@@ -200,6 +227,7 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  sizes?.disconnect()
   map?.remove()
   map = null
 })

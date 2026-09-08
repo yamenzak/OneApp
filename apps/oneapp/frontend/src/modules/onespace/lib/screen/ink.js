@@ -27,6 +27,57 @@ const INK = {
 /** Last resort, and only reached with no document — a unit test, or SSR. */
 const FALLBACK = '#8b8b8b'
 
+/**
+ * Any CSS colour as one WebGL will accept.
+ *
+ * The design tokens are `oklch()`, which is correct and modern and which
+ * MapLibre's style specification refuses outright — "color expected,
+ * oklch(.964 0 0) found" — and it refuses the whole style, so one unconverted
+ * value is a blank map rather than a grey box.
+ *
+ * Two things that look like they would work and do not: `getComputedStyle`
+ * hands oklch back as oklch, and so does a canvas `fillStyle` round-trip. A
+ * browser that understands the colour has no reason to downgrade it.
+ *
+ * So it is *painted* and the pixel read back. One device pixel through the
+ * browser's own colour pipeline, which is by definition the right answer, and
+ * correct for whatever the tokens become next — no colour library, no table of
+ * conversions to keep in step with the design system.
+ */
+let pad = null
+
+export function paintable(value, fallback = FALLBACK) {
+  const text = String(value || '').trim()
+  if (!text) return fallback
+  if (typeof document === 'undefined') return fallback
+
+  try {
+    if (!pad) {
+      pad = document.createElement('canvas')
+      pad.width = pad.height = 1
+    }
+    const context = pad.getContext('2d', { willReadFrequently: true })
+    context.clearRect(0, 0, 1, 1)
+    context.fillStyle = text
+    context.fillRect(0, 0, 1, 1)
+    const [r, g, b, a] = context.getImageData(0, 0, 1, 1).data
+    if (!a) return fallback
+    const hex = (n) => n.toString(16).padStart(2, '0')
+    return a === 255
+      ? `#${hex(r)}${hex(g)}${hex(b)}`
+      : `rgba(${r}, ${g}, ${b}, ${(a / 255).toFixed(3)})`
+  } catch {
+    return fallback
+  }
+}
+
+/** One design token, ready to paint with. */
+export function tokenInk(name, fallback = FALLBACK) {
+  if (typeof document === 'undefined') return fallback
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(name)
+  return paintable(raw, fallback)
+}
+
 let cache = {}
 let themedFor = ''
 
@@ -57,7 +108,7 @@ export function inkOf(theme) {
   probe.style.visibility = 'hidden'
   probe.style.pointerEvents = 'none'
   document.body.appendChild(probe)
-  const colour = getComputedStyle(probe).color || FALLBACK
+  const colour = paintable(getComputedStyle(probe).color)
   probe.remove()
 
   cache[className] = colour

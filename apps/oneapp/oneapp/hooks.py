@@ -213,6 +213,12 @@ scheduler_events = {
 		# dense to be worth their bytes. Named versions are not in its reach —
 		# see `shared/versions.py`.
 		"oneapp.shared.versions.thin",
+		# And the fact tables: tomorrow's partition opened, yesterday rolled up
+		# into the tier that stays, and anything past its hot window frozen
+		# into R2 and dropped. Nightly and not hourly because the unit of every
+		# one of those is a day. A workspace with no declared fact table does
+		# nothing here. See `shared/facts.py`.
+		"oneapp.shared.facts.sweep",
 	],
 	"hourly": [
 		"oneapp.onespace.sync.report_usage_to_control_plane",

@@ -115,3 +115,54 @@ clause(
         cannot be reached at all.
     """,
 )
+
+clause(
+    document="privacy", section="modules", key="space-map-tiles", module=M,
+    body="""
+        A screen that draws a map fetches its background squares from a tile
+        service, and that service therefore sees the reading device's network
+        address and roughly which part of the world is on screen. It does not
+        see the records you are looking at: what is drawn on top of the
+        background — the pins, the routes, the vehicles — never leaves the
+        workspace. Where a workspace runs on an instance whose operator hosts
+        the tiles themselves, or has turned the background off, nothing is
+        fetched at all.
+    """, order=30,
+)
+
+clause(
+    document="subprocessors", section="about", key="space-map-tiles", module=M,
+    body="""
+        The map background is the one thing a reader's browser fetches from
+        outside the workspace. Which service it comes from is set for the whole
+        instance rather than per workspace, it can be pointed at a tile store
+        the operator runs, and it can be switched off — a map with no
+        background still draws every record on it.
+    """,
+)
+
+# A request from the reader's browser, not from the workspace: what CARTO
+# receives is an address and a tile number, which is why `data` says so rather
+# than naming a record. Named because it is the default; an instance that
+# configures its own tile store is not talking to them at all.
+subprocessor(
+    name="CARTO (Grupo CARTO, S.L.)", module=M,
+    purpose="Map background tiles, drawn from OpenStreetMap data",
+    data="The reading device's network address and which map squares it asked "
+         "for. No record, position or search reaches them.",
+    where="CARTO's content delivery network",
+    safeguard="Standard Contractual Clauses; the default can be replaced with "
+              "a tile store the operator hosts, or switched off entirely",
+    url="https://carto.com/legal/",
+)
+
+# Named for the licence rather than for a data flow: the obligation is
+# attribution, which every map in the product carries.
+subprocessor(
+    name="OpenStreetMap contributors", module=M,
+    purpose="The map data the background tiles are drawn from",
+    data="None. No request reaches OpenStreetMap from this product.",
+    where="Not applicable",
+    safeguard="Open Database Licence; attributed on every map",
+    url="https://www.openstreetmap.org/copyright",
+)

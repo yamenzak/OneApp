@@ -1,0 +1,135 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "label",
+  "source",
+  "status",
+  "received_on",
+  "cb_feed_counts",
+  "file",
+  "lines_seen",
+  "stops_seen",
+  "trips_seen",
+  "sec_feed_notes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "description": "One delivery from one source at one moment. Everything traces back to a feed, which is what makes a wrong number answerable.",
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Feed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Source",
+   "options": "Transit Source",
+   "reqd": 1
+  },
+  {
+   "default": "Received",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Received\nLoaded\nRefused"
+  },
+  {
+   "fieldname": "received_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Received",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_feed_counts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The delivery as it arrived, kept so a load can be explained and repeated.",
+   "fieldname": "file",
+   "fieldtype": "Attach",
+   "label": "File"
+  },
+  {
+   "fieldname": "lines_seen",
+   "fieldtype": "Int",
+   "label": "Lines",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stops_seen",
+   "fieldtype": "Int",
+   "label": "Stops",
+   "read_only": 1
+  },
+  {
+   "fieldname": "trips_seen",
+   "fieldtype": "Int",
+   "label": "Trips",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_feed_notes",
+   "fieldtype": "Section Break",
+   "label": "What happened"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneMobility",
+ "name": "Transit Feed",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "source,status",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  }
+ ],
+ "title_field": "label",
+ "track_changes": 1
+}

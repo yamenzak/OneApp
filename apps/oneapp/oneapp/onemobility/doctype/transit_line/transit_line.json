@@ -1,0 +1,138 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "short_name",
+  "line_name",
+  "agency",
+  "line_key",
+  "status",
+  "cb_line_kind",
+  "mode",
+  "colour",
+  "feed",
+  "sec_line_shape",
+  "shape"
+ ],
+ "fields": [
+  {
+   "description": "What a rider calls it \u2014 12, S3, N9.",
+   "fieldname": "short_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "line_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "agency",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Agency",
+   "options": "Transit Agency"
+  },
+  {
+   "description": "What the feed calls it. The natural key.",
+   "fieldname": "line_key",
+   "fieldtype": "Data",
+   "label": "Key",
+   "reqd": 1
+  },
+  {
+   "default": "Running",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Running\nSuspended\nRetired"
+  },
+  {
+   "fieldname": "cb_line_kind",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Bus",
+   "fieldname": "mode",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Mode",
+   "options": "Bus\nTram\nMetro\nRail\nFerry\nCable\nOther"
+  },
+  {
+   "fieldname": "colour",
+   "fieldtype": "Color",
+   "label": "Colour"
+  },
+  {
+   "fieldname": "feed",
+   "fieldtype": "Link",
+   "label": "First seen in",
+   "options": "Transit Feed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_line_shape",
+   "fieldtype": "Section Break",
+   "label": "Where it goes"
+  },
+  {
+   "description": "The drawn geometry, as a GeoJSON LineString. Written by the importer, never typed.",
+   "fieldname": "shape",
+   "fieldtype": "Long Text",
+   "label": "Shape",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneMobility",
+ "name": "Transit Line",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "short_name,line_name,agency",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  }
+ ],
+ "title_field": "line_name",
+ "track_changes": 1
+}

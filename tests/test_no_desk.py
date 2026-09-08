@@ -230,6 +230,15 @@ TENANT_EXEMPT = {
 RENDERED_BY_MANIFEST = {
 	"Compliance Document": "a register of papers that expire; a list and a record",
 	"Correspondence": "bilingual letters and forms; a list and a record",
+	# OneMobility's six. Every one is a screen in
+	# `oneapp_control/spaces/onemobility.py` — a list, a board, a map, and for
+	# the line a network screen of its own.
+	"Transit Source": "where feeds come from; the Sources screen and its record",
+	"Transit Feed": "one delivery; the Deliveries screen, list and dashboard",
+	"Transit Agency": "who runs the service; reached from a line's record",
+	"Transit Line": "the Lines screen, and the Network screen it draws",
+	"Transit Stop": "the Stops screen, as a map and as a list",
+	"Transit Vehicle": "the Vehicles screen, as a list and a board",
 }
 
 

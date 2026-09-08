@@ -1,7 +1,7 @@
 import frappe
 from frappe.utils import get_system_timezone
 
-from oneapp.onespace import branding
+from oneapp.onespace import basemap, branding
 from oneapp.onespace.ai import settings as ai_settings
 
 # The SPA owns routing under /one, so every path below it serves the same shell
@@ -52,6 +52,12 @@ def get_context(context):
 		# forward rather than a second guess at it. Before first paint because
 		# Arabic is not a repaint, it is the layout running the other way.
 		"lang": frappe.local.lang or "en",
+		# Where a map gets its ground: `{ style, tiles, dark, attribution }`.
+		# A deployment fact rather than a workspace's, so it rides the boot
+		# payload rather than a screen's — every map surface reads the same
+		# answer and an air-gapped install changes it in one place. See
+		# `onespace/basemap.py`.
+		"basemap": basemap.boot(),
 	}
 	context.no_cache = 1
 	return context

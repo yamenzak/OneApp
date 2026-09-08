@@ -775,6 +775,232 @@ def _seed_rua():
 	)
 
 
+def _seed_onemobility():
+	"""The OneMobility space, and a small network to look at.
+
+	A whole city is not a fixture: it is slow to seed, slow to draw, and
+	impossible to eyeball for correctness. This is three lines through central
+	Berlin — real coordinates, so the map is recognisable — with twelve stops,
+	four vehicles and a day of positions moving along the shapes.
+
+	Deterministic. Every position is computed from the shape and the clock
+	rather than sampled at random, so two runs put the same bus in the same
+	place and a screenshot is comparable between them.
+
+	Returns the same pair `_seed_rua` does, for the same reason: the caller
+	reconciles permissions once across every space, and two calls to
+	`sync_permissions` leave whichever ran last.
+	"""
+	from datetime import datetime, timedelta
+
+	from oneapp.onemobility import live, model
+	from oneapp.onespace import sync
+	from oneapp_control.spaces import onemobility as manifest
+
+	sync.ensure_role(manifest.SPACE["role_name"])
+	me = frappe.get_doc("User", "Administrator")
+	if manifest.SPACE["role_name"] not in {one.role for one in me.roles}:
+		me.append("roles", {"role": manifest.SPACE["role_name"]})
+		me.save(ignore_permissions=True)
+
+	model.ensure_all()
+
+	source = _one("Transit Source", "source_name", "zzBVG feed", {
+		"kind": "Upload", "format": "GTFS", "status": "Connected", "precedence": 10,
+		"endpoint": "", "every_minutes": 0,
+	})
+	feed = frappe.db.get_value("Transit Feed", {"source": source}, "name")
+	if not feed:
+		feed = frappe.get_doc({
+			"doctype": "Transit Feed", "label": "zzBVG 2026-09-01", "source": source,
+			"status": "Loaded", "received_on": frappe.utils.now_datetime(),
+			"lines_seen": len(MOBILITY_LINES), "stops_seen": sum(len(l["stops"]) for l in MOBILITY_LINES),
+			"trips_seen": 0,
+		}).insert(ignore_permissions=True).name
+
+	agency = _one("Transit Agency", "agency_key", "zzbvg", {
+		"agency_name": "zzBerlin Transit", "timezone": "Europe/Berlin", "feed": feed,
+	})
+
+	stops = {}
+	lines = {}
+	for spec in MOBILITY_LINES:
+		coordinates = []
+		for stop in spec["stops"]:
+			key = f"zz-{stop['code']}"
+			stops[key] = _one("Transit Stop", "stop_key", key, {
+				"stop_name": stop["name"], "stop_code": stop["code"],
+				"latitude": stop["lat"], "longitude": stop["lon"],
+				"status": stop.get("status", "Served"), "zone": "A", "feed": feed,
+			})
+			coordinates.append([stop["lon"], stop["lat"]])
+
+		lines[spec["key"]] = _one("Transit Line", "line_key", spec["key"], {
+			"short_name": spec["number"], "line_name": spec["name"], "agency": agency,
+			"mode": spec["mode"], "colour": spec["colour"], "status": "Running",
+			"feed": feed,
+			"shape": json.dumps({"type": "LineString", "coordinates": coordinates}),
+		})
+
+	vehicles = {}
+	for spec in MOBILITY_VEHICLES:
+		vehicles[spec["key"]] = _one("Transit Vehicle", "vehicle_key", spec["key"], {
+			"label": spec["label"], "mode": spec["mode"], "seats": spec["seats"],
+			"standing": spec["standing"], "capacity": spec["seats"] + spec["standing"],
+			"status": "In service", "agency": agency,
+		})
+
+	# A day of movement, computed rather than sampled. Yesterday as well as
+	# today, so the scrubber has a day to go back to and the roll-up has a
+	# finished day to summarise.
+	table = model.OBSERVATION.table
+	frappe.db.sql(f"DELETE FROM `{table}` WHERE `vehicle` LIKE 'zz-%%'")
+	midnight = datetime.combine(frappe.utils.getdate(), datetime.min.time())
+	written = 0
+	for day_offset in (-1, 0):
+		start = midnight + timedelta(days=day_offset)
+		written += live.record(_mobility_day(start, MOBILITY_LINES, MOBILITY_VEHICLES))
+	frappe.db.commit()
+
+	return (
+		{**manifest.SPACE, "screens": [dict(one) for one in manifest.SCREENS]},
+		[{"role": manifest.SPACE["role_name"], "doctype": document_type,
+		  "access": access, "if_owner": if_owner}
+		 for document_type, access, if_owner in manifest.DOCTYPES],
+		written,
+	)
+
+
+def _one(doctype: str, key_field: str, key: str, values: dict) -> str:
+	"""Upsert by natural key — the same idempotence the real importer has."""
+	name = frappe.db.get_value(doctype, {key_field: key}, "name")
+	if name:
+		doc = frappe.get_doc(doctype, name)
+		doc.update(values)
+		doc.save(ignore_permissions=True)
+		return doc.name
+	return frappe.get_doc({"doctype": doctype, key_field: key, **values}).insert(
+		ignore_permissions=True
+	).name
+
+
+def _mobility_day(start, lines, vehicles) -> list[dict]:
+	"""One day of positions for every vehicle, along its line's own shape.
+
+	Each vehicle runs its line end to end and back, every forty minutes, from
+	six in the morning until eight at night, reporting every thirty seconds —
+	which is what a real feed does and is why the browser has to move the
+	marker between reports rather than waiting for the next one.
+
+	Occupancy is a function of the hour rather than a random number, because
+	the point of the fixture is that the peak-hour chart has a peak in it.
+	"""
+	from datetime import timedelta
+
+	rows = []
+	for at, vehicle in enumerate(vehicles):
+		spec = next(one for one in lines if one["key"] == vehicle["line"])
+		points = [(one["lon"], one["lat"]) for one in spec["stops"]]
+		if len(points) < 2:
+			continue
+		# Stagger the vehicles down the line so they are not all at the depot
+		# at once, which is what a fleet actually looks like.
+		offset = timedelta(minutes=13 * at)
+		for tick in range(0, 14 * 60 * 2, 1):  # 14 hours, every 30 seconds
+			when = start + timedelta(hours=6) + offset + timedelta(seconds=tick * 30)
+			if when.hour >= 20:
+				break
+			# Where along the line: a triangle wave, so it runs out and back.
+			phase = (tick % 80) / 80.0
+			along = phase * 2 if phase < 0.5 else (1 - phase) * 2
+			lon, lat = _along(points, along)
+			hour = when.hour
+			busy = 70 if hour in (7, 8, 16, 17) else 45 if hour in (9, 15, 18) else 22
+			rows.append({
+				"at": when, "vehicle": vehicle["key"], "line": vehicle["line"],
+				"trip_key": f"{vehicle['key']}-{tick // 80}",
+				"lat": round(lat, 6), "lon": round(lon, 6),
+				"occupancy": busy + (at * 3) % 11,
+				# Late in the peak and early off it, which is what the
+				# punctuality chart is for.
+				"delay_s": 180 if hour in (7, 8, 17) else -30 if hour < 7 else 40,
+			})
+	return rows
+
+
+def _along(points, fraction: float):
+	"""A point some fraction of the way along a polyline. Plain geometry."""
+	fraction = max(0.0, min(1.0, fraction))
+	spans = [
+		((points[at + 1][0] - points[at][0]) ** 2 + (points[at + 1][1] - points[at][1]) ** 2) ** 0.5
+		for at in range(len(points) - 1)
+	]
+	total = sum(spans) or 1
+	want = fraction * total
+	for at, span in enumerate(spans):
+		if want <= span or at == len(spans) - 1:
+			ratio = (want / span) if span else 0
+			x0, y0 = points[at]
+			x1, y1 = points[at + 1]
+			return x0 + (x1 - x0) * ratio, y0 + (y1 - y0) * ratio
+		want -= span
+	return points[-1]
+
+
+#: Three lines through central Berlin. Real coordinates, so somebody who knows
+#: the city can tell at a glance whether the map is drawing what it says.
+MOBILITY_LINES = [
+	{
+		"key": "zz-100", "number": "100", "name": "zzAlexanderplatz — Zoo",
+		"mode": "Bus", "colour": "#c8102e",
+		"stops": [
+			{"code": "ALX", "name": "zzAlexanderplatz", "lat": 52.5219, "lon": 13.4132},
+			{"code": "LUS", "name": "zzLustgarten", "lat": 52.5186, "lon": 13.3989},
+			{"code": "UNT", "name": "zzUnter den Linden", "lat": 52.5170, "lon": 13.3888},
+			{"code": "BRB", "name": "zzBrandenburger Tor", "lat": 52.5163, "lon": 13.3777},
+			{"code": "SIE", "name": "zzSiegessäule", "lat": 52.5145, "lon": 13.3501},
+			{"code": "ZOO", "name": "zzZoologischer Garten", "lat": 52.5073, "lon": 13.3324},
+		],
+	},
+	{
+		"key": "zz-m10", "number": "M10", "name": "zzHauptbahnhof — Warschauer",
+		"mode": "Tram", "colour": "#e2001a",
+		"stops": [
+			{"code": "HBF", "name": "zzHauptbahnhof", "lat": 52.5251, "lon": 13.3694},
+			{"code": "NAT", "name": "zzNaturkundemuseum", "lat": 52.5305, "lon": 13.3820},
+			{"code": "BER", "name": "zzBernauer Straße", "lat": 52.5382, "lon": 13.3961},
+			{"code": "EBE", "name": "zzEberswalder Straße", "lat": 52.5410, "lon": 13.4122},
+			{"code": "WAR", "name": "zzWarschauer Straße", "lat": 52.5053, "lon": 13.4494},
+		],
+	},
+	{
+		"key": "zz-s1", "number": "S1", "name": "zzNord — Süd",
+		"mode": "Rail", "colour": "#da6ba2",
+		"stops": [
+			{"code": "GES", "name": "zzGesundbrunnen", "lat": 52.5486, "lon": 13.3886},
+			{"code": "FRI", "name": "zzFriedrichstraße", "lat": 52.5200, "lon": 13.3870},
+			{"code": "POT", "name": "zzPotsdamer Platz", "lat": 52.5096, "lon": 13.3760},
+			{"code": "YOR", "name": "zzYorckstraße", "lat": 52.4919, "lon": 13.3730},
+			# One stop no feed declared, so the Inferred status has something to
+			# draw and the map's colour-by-status has a second colour.
+			{"code": "PRI", "name": "zzPriesterweg", "lat": 52.4650, "lon": 13.3610,
+			 "status": "Inferred"},
+		],
+	},
+]
+
+MOBILITY_VEHICLES = [
+	{"key": "zz-1041", "label": "zz1041", "line": "zz-100", "mode": "Bus",
+	 "seats": 45, "standing": 60},
+	{"key": "zz-1042", "label": "zz1042", "line": "zz-100", "mode": "Bus",
+	 "seats": 45, "standing": 60},
+	{"key": "zz-2210", "label": "zz2210", "line": "zz-m10", "mode": "Tram",
+	 "seats": 70, "standing": 120},
+	{"key": "zz-4801", "label": "zz4801", "line": "zz-s1", "mode": "Rail",
+	 "seats": 300, "standing": 500},
+]
+
+
 def _seed_mail(user):
 	"""An address this person holds, and one conversation on it.
 
@@ -1511,10 +1737,18 @@ def seed_tenant(manifest_only=False):
 		one for one in json.loads(state.spaces_json or "[]")
 		if one.get("space_code") not in (CODE, *RETIRED)
 	]
-	spaces = [one for one in spaces if one.get("space_code") != "rua"]
+	spaces = [
+		one for one in spaces
+		if one.get("space_code") not in ("rua", "onemobility")
+	]
 	rua, rua_grants = _seed_rua() or (None, [])
 	if rua:
 		spaces.append(rua)
+
+	# OneMobility, which needs no ERPNext and so is always seeded — and is what
+	# a browser pass looks at once RUA is gone.
+	mobility, mobility_grants, readings = _seed_onemobility()
+	spaces.append(mobility)
 
 	spaces.append({
 		"space_code": CODE, "space_label": LABEL, "module": "Mock",
@@ -1540,7 +1774,7 @@ def seed_tenant(manifest_only=False):
 		{"role": ROLE, "doctype": grant["document_type"],
 		 "access": grant["access"], "if_owner": grant["if_owner"]}
 		for grant in DOCTYPES
-	] + rua_grants)
+	] + rua_grants + mobility_grants)
 	user = frappe.get_doc("User", frappe.session.user)
 	if ROLE not in {r.role for r in user.roles}:
 		user.append("roles", {"role": ROLE})
@@ -1568,7 +1802,7 @@ def seed_tenant(manifest_only=False):
 		# above reads the site state, and any one of those reads repopulates
 		# the cache from a document this process had already loaded.
 		sync.invalidate()
-		print(f"tenant: {CODE} and rua re-declared — manifest, roles and permissions only")
+		print(f"tenant: {CODE}, rua and onemobility re-declared — manifest, roles and permissions only")
 		return
 
 	for role in RETIRED_ROLES:

@@ -31,6 +31,11 @@ export const APP_COMPONENTS = {
   'onespace-account/apps': () => import('@/modules/onespace/screens/account/Apps.vue'),
   'onespace-account/billing': () => import('@/modules/onespace/screens/account/Billing.vue'),
   'onespace-account/plan': () => import('@/modules/onespace/screens/account/Plan.vue'),
+
+  // OneMobility's one screen that is not a list: a map of a moving fleet with
+  // a time scrubber. Registered here for the same reason the operator's are —
+  // this is where the shell resolves a `component`.
+  'onemobility/network': () => import('@/modules/onemobility/components/Network.vue'),
 }
 
 /**

@@ -25,7 +25,7 @@ from .registry import clauses_for, subprocessor_rows
 #: order so the registry is the same on every process — the hash depends on it.
 MODULES = (
     "onespace", "onedoc", "onesheet", "onecode", "onestorage", "onemail",
-    "onecalendar",
+    "onecalendar", "onemobility",
 )
 
 _loaded = False

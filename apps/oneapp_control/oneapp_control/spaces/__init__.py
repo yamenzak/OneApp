@@ -18,9 +18,9 @@ import json
 
 import frappe
 
-from oneapp_control.spaces import books, rua
+from oneapp_control.spaces import books, onemobility, rua
 
-SPACES = {"books": books, "rua": rua}
+SPACES = {"books": books, "onemobility": onemobility, "rua": rua}
 
 
 def install(name: str) -> str:

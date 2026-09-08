@@ -1,0 +1,180 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:source_name",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "source_name",
+  "kind",
+  "format",
+  "status",
+  "precedence",
+  "cb_source_where",
+  "endpoint",
+  "folder",
+  "username",
+  "secret",
+  "sec_source_when",
+  "every_minutes",
+  "last_run",
+  "watermark",
+  "cb_source_last",
+  "last_message",
+  "rows_seen"
+ ],
+ "fields": [
+  {
+   "description": "What this connection is called on screen.",
+   "fieldname": "source_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "How the data arrives. Every kind runs the same pipeline; only the fetch differs.",
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Kind",
+   "options": "Upload\nSFTP\nHTTP\nSocket",
+   "reqd": 1
+  },
+  {
+   "description": "Which dialect it speaks. Each is a normaliser onto the one model, never a second model.",
+   "fieldname": "format",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Format",
+   "options": "GTFS\nGTFS Realtime\nVDV 452\nVDV 454\nNeTEx\nSIRI",
+   "reqd": 1
+  },
+  {
+   "default": "Connected",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Connected\nPaused\nFailing"
+  },
+  {
+   "default": "100",
+   "description": "Lower wins where two sources disagree about the same line, stop or trip. The loser is kept and stays visible.",
+   "fieldname": "precedence",
+   "fieldtype": "Int",
+   "label": "Precedence"
+  },
+  {
+   "fieldname": "cb_source_where",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Host, URL or socket address. Empty for an upload.",
+   "fieldname": "endpoint",
+   "fieldtype": "Data",
+   "label": "Endpoint"
+  },
+  {
+   "description": "Where on the host to look, for SFTP.",
+   "fieldname": "folder",
+   "fieldtype": "Data",
+   "label": "Folder"
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "label": "Username"
+  },
+  {
+   "fieldname": "secret",
+   "fieldtype": "Password",
+   "label": "Password or key"
+  },
+  {
+   "fieldname": "sec_source_when",
+   "fieldtype": "Section Break",
+   "label": "Schedule"
+  },
+  {
+   "default": "60",
+   "description": "Zero for a source that pushes to us rather than being asked.",
+   "fieldname": "every_minutes",
+   "fieldtype": "Int",
+   "label": "Fetch every (minutes)"
+  },
+  {
+   "fieldname": "last_run",
+   "fieldtype": "Datetime",
+   "label": "Last run",
+   "read_only": 1
+  },
+  {
+   "description": "The newest row this source has been read up to. What makes the next fetch incremental rather than whole.",
+   "fieldname": "watermark",
+   "fieldtype": "Datetime",
+   "label": "Taken up to",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_source_last",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_message",
+   "fieldtype": "Small Text",
+   "label": "Last message",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rows_seen",
+   "fieldtype": "Int",
+   "label": "Rows seen",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneMobility",
+ "name": "Transit Source",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "kind,status",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  }
+ ],
+ "title_field": "source_name",
+ "track_changes": 1
+}

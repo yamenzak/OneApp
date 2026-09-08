@@ -219,7 +219,7 @@ three-thousand-line one.
 | | |
 |---|---|
 | `gen_doctypes.py` | Turns declarations into JSON, plus the fieldtype map and the capability list that follow from them. |
-| `doctypes/` | The declarations: `spec` (the `f`/`section`/`column` vocabulary), then `fleet`, `catalogue`, `ai`, `spaces`, `records`, `importing`. A `doctype()` call registers by side effect, which is why `__init__` imports every module. |
+| `doctypes/` | The declarations: `spec` (the `f`/`section`/`column` vocabulary), then `fleet`, `catalogue`, `ai`, `spaces`, `records`, `importing`, `mobility`. A `doctype()` call registers by side effect, which is why `__init__` imports every module. |
 | `gen_frontend.py` | Decides which generated file gets which content, and which bundle gets which files. |
 | `spa/` | The content: `spec` (routes, brand, pinned versions), `ui` (the barrel), `runtime`, `shell`, `screens`, `build`, `browser`, `fields`. |
 | `field_types.py`, `app_icons.py`, `ai_capabilities.py` | Data both generators read. |

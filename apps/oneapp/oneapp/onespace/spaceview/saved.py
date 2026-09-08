@@ -41,6 +41,9 @@ VIEW_ICONS = (
 	# Talking
 	"lucide-message-square", "lucide-mail",
 	"lucide-phone",
+	# Moving
+	"lucide-bus", "lucide-route",
+	"lucide-map-pin", "lucide-map",
 	# Numbers
 	"lucide-chart-line", "lucide-chart-pie",
 	"lucide-book-open",

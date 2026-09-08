@@ -124,7 +124,7 @@ DOCUMENTS = {
     "terms": {
         "title": "Terms of Service",
         "audience": "customer",
-        "revision": 1,
+        "revision": 2,
         "summary": "The agreement between your organisation and Four Degree "
                    "Labs for the use of OneSpace.",
     },
@@ -138,7 +138,7 @@ DOCUMENTS = {
     "privacy": {
         "title": "Privacy Policy",
         "audience": "user",
-        "revision": 1,
+        "revision": 3,
         "summary": "What we do with personal data — yours, and the personal "
                    "data your organisation puts into the product.",
     },
@@ -158,7 +158,7 @@ DOCUMENTS = {
     "subprocessors": {
         "title": "Subprocessors",
         "audience": "customer",
-        "revision": 1,
+        "revision": 3,
         "summary": "Every third party that receives customer data, what for, "
                    "and where it sits.",
     },

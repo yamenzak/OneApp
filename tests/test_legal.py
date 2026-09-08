@@ -36,12 +36,12 @@ LEGAL = ROOT / "apps/oneapp/oneapp/onelegal"
 #: To update: run `python3 -m pytest tests/test_legal.py -k hashes -q` and paste
 #: what it prints, *after* deciding whether the revision should go up too.
 HASHES = {
-    "terms": "02b12064",
+    "terms": "48dad46f",
     "aup": "6a531fe5",
-    "privacy": "83caba9a",
+    "privacy": "d5e7bc06",
     "cookies": "8266af8b",
     "dpa": "7fbb62c6",
-    "subprocessors": "bcd98c31",
+    "subprocessors": "db9adfef",
     "ai": "5a2cefb5",
     "licences": "c5d062c1",
 }

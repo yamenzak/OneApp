@@ -48,6 +48,12 @@ export const lang = read('lang', 'en')
 // header that says "Assistant" for a moment and then says something else is a
 // visible flicker. `lib/shell/assistant.js` makes it reactive from here.
 export const assistant = read('assistant', {})
+// Where map tiles come from: `{ style, tiles, attribution }`, built by
+// `onespace/basemap.py` out of site config. A deployment fact, not a
+// workspace's choice — which tile store a bench points at is decided by
+// whoever runs the bench — and every map surface in the product reads the same
+// answer, so a self-hosted or air-gapped install changes it in one place.
+export const basemap = read('basemap', {})
 
 export default {
   siteName,
@@ -60,4 +66,5 @@ export default {
   brand,
   lang,
   assistant,
+  basemap,
 }
