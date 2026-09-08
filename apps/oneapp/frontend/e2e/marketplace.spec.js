@@ -26,9 +26,11 @@ test('the switcher offers a way to add a space, and it opens', async ({ page, ba
   await signIn(page, baseURL)
   await page.goto('/one/files')
   await page.locator('[data-slot="space-switcher"]').click()
-  // A tile in the switcher's Apps row, beside Mail and the calendar: adding a
-  // space is the same kind of act as opening one. So a link, not a button.
-  await page.getByRole('link', { name: 'Add a space' }).click()
+  // A tile in the switcher's Apps row, beside OneMail and OneCalendar: adding
+  // a space is the same kind of act as opening one. So a link, not a button —
+  // and called what the app is called, because that row is where a product is
+  // named. The page it opens is still "Add a space", which is the verb.
+  await page.getByRole('link', { name: 'OneMarket' }).click()
 
   await expect(page).toHaveURL(/\/one\/add/)
   await expect(page.getByText('Add a space', { exact: true }).first()).toBeVisible()
@@ -66,5 +68,5 @@ test('a member is not offered it', async ({ page, baseURL }, info) => {
   // rendered at all.
   await page.locator('[data-slot="space-switcher"]').click()
   await expect(page.getByRole('button', { name: 'View all' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Add a space' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'OneMarket' })).toHaveCount(0)
 })

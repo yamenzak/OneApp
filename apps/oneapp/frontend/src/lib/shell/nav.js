@@ -212,6 +212,9 @@ export function useNav() {
         label: assistantName.value,
         icon: 'lucide-sparkles',
         brand: 'oneai',
+        // The workspace names its own assistant, so the surfaces that write an
+        // app's product name write this one's label instead. See `SpaceName`.
+        renamed: true,
         to: { name: 'Chat' },
         act: () => openAssistant(openContext(route)),
       }]

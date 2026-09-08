@@ -22,16 +22,20 @@
       <Button
         variant="ghost"
         data-slot="space-switcher"
-        :label="workspace.label"
+        :label="here.label"
         class="!h-8 w-full !px-1 [&>span]:min-w-0 [&>span]:flex-1 [&>span]:text-start"
         :class="open ? '!bg-surface-gray-3' : ''"
       >
         <template #prefix>
-          <SpaceFace :space="workspace" size="lg" class="size-6 shrink-0" />
+          <SpaceFace :space="here" size="lg" class="size-6 shrink-0" />
         </template>
-        <span v-if="!collapsed" class="truncate text-base text-ink-gray-8">
-          {{ workspace.label }}
-        </span>
+        <SpaceName
+          v-if="!collapsed"
+          :brand="here.brand"
+          :label="here.label"
+          :renamed="here.renamed"
+          class="truncate text-base"
+        />
         <template v-if="!collapsed" #suffix>
           <Icon name="lucide-chevrons-up-down" class="size-4 shrink-0 text-ink-gray-5" />
         </template>
@@ -49,7 +53,11 @@
           word "Spaces" it reads as what it is — more of these.
         -->
         <div class="flex items-center justify-between gap-2 px-1 pb-2">
-          <p class="text-p-xs text-ink-gray-5">{{ __('Spaces') }}</p>
+          <!-- Named by the workspace rather than by the word "Spaces": these
+               are its spaces, the corner no longer says which workspace you
+               are in, and a heading is somewhere to say it that costs no
+               row. -->
+          <p class="truncate text-p-xs text-ink-gray-5">{{ workspace.label }}</p>
           <Button
             variant="ghost"
             size="sm"
@@ -101,7 +109,12 @@
               @click="close()"
             >
               <SpaceFace :space="{ label: app.label, brand: app.brand }" size="2xl" :class="FACE" />
-              <span :class="CAPTION">{{ app.label }}</span>
+              <SpaceName
+                :brand="app.brand"
+                :label="app.label"
+                :renamed="app.renamed"
+                :class="CAPTION"
+              />
             </router-link>
           </div>
         </template>
@@ -115,6 +128,7 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button, Divider, Icon, Popover } from '@/ui'
 import SpaceFace from '../brand/SpaceFace.vue'
+import SpaceName from '../brand/SpaceName.vue'
 import { TENANT_APP } from '@/lib/runtime/brand'
 import { brand } from '@/lib/runtime/boot'
 import { session } from '@/lib/shell/session'
@@ -170,6 +184,33 @@ const { surfaces } = useNav()
 const apps = computed(() => surfaces.value.filter((one) => one.brand && one.to))
 
 const active = computed(() => route.params.spaceCode || '')
+
+/**
+ * Where you are, which is what the trigger of a switcher shows.
+ *
+ * It used to show the workspace, always — the reasoning being that the corner
+ * names the workspace and the trail beside it names the page. That held while
+ * the only things in here were spaces. Now that Mail, Files and the calendar
+ * are in it too, a control listing five places and never saying which of them
+ * you are in is a picker with no value in it, and the workspace's name has
+ * somewhere better to be: over its own spaces, one row down.
+ *
+ * A route this does not recognise — the launcher, the marketplace, your
+ * account — falls back to the workspace, which is true of all three: none of
+ * them is inside anything.
+ */
+const here = computed(() => {
+  const code = route.params.spaceCode
+  if (code) {
+    const found = spaces.value.find((one) => one.space_code === code)
+    if (found) {
+      return { label: found.space_label, logo: found.logo, brand: found.brand, renamed: true }
+    }
+  }
+  const app = apps.value.find((one) => one.to?.name === route.name)
+  if (app) return { label: app.label, brand: app.brand, renamed: !!app.renamed }
+  return { ...workspace.value, renamed: true }
+})
 
 function goTo(to, close) {
   close()
