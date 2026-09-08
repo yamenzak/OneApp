@@ -3,7 +3,7 @@
 // Each of these is one control on a surface that already existed, and each one
 // is the difference between "the workspace has a spreadsheet" and "the
 // workspace prices a quotation in one". They are together because they are one
-// idea said four times: the editors are not a place you go, they are what the
+// idea said five times: the editors are not a place you go, they are what the
 // thing you are already looking at opens into.
 import { expect, test } from '@playwright/test'
 
@@ -70,7 +70,7 @@ test('a long-text field opens in the document editor', async ({ page }, info) =>
   await openEvent(page, 'Details')
 
   const details = page.getByRole('tabpanel', { name: 'Details' }).last()
-  await details.getByRole('button', { name: 'Open in the editor' }).first().click()
+  await details.locator('[data-slot="open-in-doc"]').first().click()
 
   const dialog = page.getByRole('dialog').filter({ hasText: 'Description' })
   await dialog.locator('.ProseMirror').first().click()
@@ -131,5 +131,41 @@ test('a document marked as a template is one the editor offers to load', async (
   await page.getByRole('menuitem', { name: 'Load a template' }).click()
   await expect(page.locator('[data-slot="template-row"]', { hasText: title })).toBeVisible()
 
+  expectNoRealErrors(errors)
+})
+
+test('a code field opens in OneCode, and what is saved there is the field', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone opens a record as a page')
+  const errors = collectConsoleErrors(page)
+
+  // A letter head, because it is the fixture's one `Code` field on a screen —
+  // and that screen exists for this test. See `seed_dev_space.LETTERHEAD`.
+  await page.goto('/one/space/zzmock?screen=letterheads&type=list')
+  const row = page.locator('[data-slot="list-row"]').filter({ hasText: 'zzMock House Style' })
+  await row.first().waitFor({ timeout: 15_000 })
+  await row.first().locator('[data-slot="list-cell"]').nth(1).click()
+
+  // Beside the field rather than in a menu: eight lines of a form is not enough
+  // room for markup, and the way out of that should be where the problem is.
+  const opener = page.locator('[data-slot="open-in-code"]').first()
+  await opener.waitFor({ timeout: 15_000 })
+  await opener.click()
+
+  const dialog = page.getByRole('dialog').filter({ hasText: 'Header HTML' })
+  await expect(dialog).toBeVisible()
+
+  // The field's own value, coloured as the field's own language: `Letter Head`
+  // stores HTML, and the tag names are what CodeMirror had to be told about.
+  await expect(dialog.locator('.cm-content')).toContainText('zzMock Contracting LLC')
+
+  await dialog.locator('.cm-content').click()
+  await page.keyboard.press('ControlOrMeta+End')
+  await page.keyboard.type('<!-- edited in OneCode -->')
+  await dialog.getByRole('button', { name: 'Save' }).click()
+  await expect(dialog).toBeHidden()
+
+  // Back into the field, not into a file. That is the whole design: a letter
+  // head's markup is part of the letter head.
+  await expect(page.locator('.cm-content').first()).toContainText('edited in OneCode')
   expectNoRealErrors(errors)
 })

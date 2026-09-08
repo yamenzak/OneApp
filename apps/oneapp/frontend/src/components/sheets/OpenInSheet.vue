@@ -12,7 +12,6 @@
   -->
   <Button
     data-slot="open-in-sheet"
-    icon-left="lucide-table-2"
     variant="ghost"
     size="sm"
     :label="label"
@@ -21,7 +20,14 @@
       : 'Price these rows in a spreadsheet, then send them back'"
     :loading="making"
     @click="open"
-  />
+  >
+    <!-- The mark rather than a glyph. The three seams — a table into OneSheet,
+         a long field into OneDoc, a code field into OneCode — all read as "this
+         opens somewhere else", and what a person needs to know is *where*.
+         Three lucide icons said "table", "document" and "code", which is what
+         the field already was. -->
+    <template #prefix><BrandMark name="onesheet" class="size-4" /></template>
+  </Button>
 </template>
 
 <script setup>
@@ -29,6 +35,7 @@ import { computed, inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { Button } from '@/ui'
+import BrandMark from '../brand/BrandMark.vue'
 import { workspace } from '@/lib/workspace'
 import { RETURN_TO, returnQuery } from '@/lib/screen/returnTo'
 
@@ -44,7 +51,7 @@ const props = defineProps({
 // sheet yet and naming one that does not exist is a lie.
 const label = computed(() => (props.from?.sheet_title
   ? `Open ${props.from.sheet_title}`
-  : 'Open in a sheet'))
+  : 'Open in OneSheet'))
 
 const router = useRouter()
 const making = ref(false)

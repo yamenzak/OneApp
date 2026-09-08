@@ -141,6 +141,9 @@ DOCTYPES = [
 	# what proves that claim on every browser run.
 	{"document_type": "Compliance Document", "access": "Manage", "if_owner": 0},
 	{"document_type": "Correspondence", "access": "Manage", "if_owner": 0},
+	# Frappe's own, carried for the one thing about it this fixture needs: a
+	# `Code` field on a screen, so OneCode's seam has somewhere to be pressed.
+	{"document_type": "Letter Head", "access": "Manage", "if_owner": 0},
 ]
 
 # Enough of each register to read as one. The compliance columns are the
@@ -148,6 +151,13 @@ DOCTYPES = [
 # ones are the pair of subjects, because a bilingual register that shows only
 # the English half is the register they already had.
 COMPLIANCE_FIELDS = "title,category,about,expiry_date,status"
+#: The one field set in this fixture that carries a `Code` field, which is the
+#: only reason the screen below exists: OneCode's seam — "open this field in
+#: OneCode" — had nowhere in the fixture to be pressed, and a seam no browser
+#: test can reach is a seam that breaks silently. A letter head is a real thing
+#: a workspace edits and its `content` is real markup, so this is a screen
+#: somebody might actually want rather than a test fixture wearing a costume.
+LETTERHEAD_FIELDS = "letter_head_name,content,is_default,disabled"
 CORRESPONDENCE_FIELDS = "kind,subject,subject_ar,to_party,letter_date,status"
 
 SCREENS = [
@@ -280,6 +290,18 @@ SCREENS = [
 		"order_by": "creation desc", "view_types": "list",
 		"status_field": "status",
 		"singular": "Letter",
+	},
+	{
+		# The fixture's one screen over a doctype with a `Code` field, and it is
+		# here for OneCode's seam: "open this field in OneCode" is one control
+		# on a form, and a control no browser test can reach is one that breaks
+		# without anybody hearing. Frappe's own `Letter Head`, so nothing is
+		# invented — a workspace really does edit these, and `content` really is
+		# markup somebody would rather see forty lines of than eight.
+		"screen": "letterheads", "label": "Letterheads", "icon": "lucide-file-text",
+		"document_type": "Letter Head", "fields": LETTERHEAD_FIELDS,
+		"order_by": "modified desc", "view_types": "list",
+		"singular": "Letterhead",
 	},
 ]
 
@@ -978,6 +1000,7 @@ def _seed_mail(user):
 
 	_seed_attachment()
 	_seed_template()
+	_seed_letterhead()
 	_seed_read_state(user)
 	return address
 
@@ -1082,6 +1105,42 @@ def _seed_attachment():
 			"=================================\n\n"
 			"Zone 3 glazing line moved 400mm east. Everything else holds.\n"
 		),
+	}).insert(ignore_permissions=True)
+
+
+#: The letterhead the Letterheads screen lists, so OneCode's seam has a `Code`
+#: field to be pressed beside. One row, because the screen exists for the field
+#: and not for the register.
+LETTERHEAD = "zzMock House Style"
+
+
+def _seed_letterhead():
+	"""One letter head, so the fixture has a `Code` field on a screen.
+
+	Every other seam in this product — a child table into OneSheet, a long field
+	into OneDoc — sits on a doctype the fixture already carries. A `Code` field
+	did not, so "Open in OneCode" was a control no browser test could reach, and
+	a control nothing presses is one that breaks without anybody hearing.
+	"""
+	if frappe.db.exists("Letter Head", LETTERHEAD):
+		return
+
+	frappe.get_doc({
+		"doctype": "Letter Head",
+		"letter_head_name": LETTERHEAD,
+		"source": "HTML",
+		# Real markup rather than a placeholder: the point of opening this in
+		# OneCode is that eight lines in a form field is not enough room for it.
+		"content": (
+			'<div class="letterhead">\n'
+			'  <img src="/assets/oneapp/brand/onespace.svg" alt="" height="40">\n'
+			'  <div class="who">\n'
+			'    <strong>zzMock Contracting LLC</strong><br>\n'
+			'    PO Box 4411, Dubai &middot; +971 4 000 0000\n'
+			'  </div>\n'
+			'</div>\n'
+		),
+		"disabled": 0,
 	}).insert(ignore_permissions=True)
 
 

@@ -221,11 +221,14 @@
       -->
       <Button
         variant="ghost"
-        icon="lucide-maximize-2"
-:label="__('Open in the editor')"
-        :tooltip="__('Open {0} in the editor', [field.label])"
+        size="sm"
+        data-slot="open-in-doc"
+        :label="__('Open in OneDoc')"
+        :tooltip="__('Open {0} in OneDoc', [field.label])"
         @click="expanded = true"
-      />
+      >
+        <template #prefix><BrandMark name="onedoc" class="size-4" /></template>
+      </Button>
     </div>
     <div
       class="rounded-6 border border-outline-gray-2 bg-surface-base px-3 py-2"
@@ -291,16 +294,51 @@
       <CodePreview :model-value="modelValue || ''" :language="language" />
       <p v-if="note" class="text-p-xs text-ink-gray-5">{{ note }}</p>
     </template>
-    <CodeEditor
-      v-else
-      :model-value="modelValue || ''"
-      :language="language"
-      :label="field.label"
-      :description="note"
-      :placeholder="field.placeholder"
-      :required="!!field.reqd"
-      @update:model-value="emit('update:modelValue', $event)"
-    />
+    <template v-else>
+      <!--
+        The way into OneCode, on the same terms the long-text field opens
+        OneDoc: the value stays the field's and nothing becomes a file. A
+        400-line print format in a box eight lines tall is the case this is
+        for, and it is the common case rather than the rare one.
+
+        The label does not name the field, deliberately — the editor beside it
+        is `aria-label`led with it, and a second control carrying the same name
+        makes `getByLabel('Terms')` ambiguous. The tooltip is where the field's
+        name belongs.
+      -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-1.5">
+          <Icon v-if="field.icon" :name="field.icon" class="size-3.5 shrink-0 text-ink-gray-4"
+                :aria-hidden="true" />
+          <FormLabel :label="field.label" :required="!!field.reqd" />
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          data-slot="open-in-code"
+          :label="__('Open in OneCode')"
+          :tooltip="__('Open {0} in OneCode', [field.label])"
+          @click="coding = true"
+        >
+          <template #prefix><BrandMark name="onecode" class="size-4" /></template>
+        </Button>
+      </div>
+      <CodeEditor
+        :model-value="modelValue || ''"
+        :language="language"
+        :description="note"
+        :placeholder="field.placeholder"
+        :aria-label="field.label"
+        @update:model-value="emit('update:modelValue', $event)"
+      />
+      <CodeDialog
+        v-model="coding"
+        :value="modelValue || ''"
+        :label="field.label"
+        :language="language"
+        @apply="emit('update:modelValue', $event)"
+      />
+    </template>
   </div>
 
   <!--
@@ -417,6 +455,8 @@ import LinkPicker from './LinkPicker.vue'
 import AttachmentGallery from '../record/AttachmentGallery.vue'
 import ChildTable from '../record/ChildTable.vue'
 import LongTextDialog from '../../docs/LongTextDialog.vue'
+import CodeDialog from '../../code/CodeDialog.vue'
+import BrandMark from '../../brand/BrandMark.vue'
 import { controlComponent, editorFormat, formControlType, valueIcon } from '@/lib/screen/fields'
 import { __ } from '@/lib/runtime/translate'
 
@@ -427,6 +467,7 @@ const EXTENSIONS = [RichTextKit]
 // Whether the long field is open in the document surface. One flag, because a
 // control draws one field.
 const expanded = ref(false)
+const coding = ref(false)
 
 /**
  * Where an image dropped into the editor goes: onto the record, as a File

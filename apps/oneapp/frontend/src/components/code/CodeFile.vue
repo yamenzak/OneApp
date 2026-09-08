@@ -114,18 +114,21 @@
       <div v-if="reading" class="h-full overflow-auto px-8 py-6">
         <CodePreview :model-value="text" language="markdown" data-slot="code-preview" />
       </div>
-      <CodeEditor
-        v-else
-        v-model="text"
-        :language="highlight || 'plain'"
-        :disabled="!doc.can_write"
-        variant="subtle"
-        size="md"
-        class="h-full"
-        data-slot="code-body"
-        :aria-label="__('File contents')"
-        @update:model-value="onChange"
-      />
+      <!-- `fills` on the wrapper rather than on `CodeEditor`: scoped CSS reaches
+           a child's root, but `:deep()` under a class is a descendant selector
+           and CodeEditor's root *is* the `.cm-editor`. -->
+      <div v-else class="fills h-full">
+        <CodeEditor
+          v-model="text"
+          :language="highlight || 'plain'"
+          :disabled="!doc.can_write"
+          variant="subtle"
+          size="md"
+          data-slot="code-body"
+          :aria-label="__('File contents')"
+          @update:model-value="onChange"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -242,12 +245,12 @@ onBeforeUnmount(() => {
  * and clicking that white would not put the caret anywhere. So the cap comes
  * off and the height becomes the pane's.
  */
-.h-full :deep(.cm-editor) {
+.fills :deep(.cm-editor) {
   height: 100%;
   max-height: none;
 }
 
-.h-full :deep(.cm-scroller) {
+.fills :deep(.cm-scroller) {
   overflow: auto;
 }
 </style>
