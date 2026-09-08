@@ -46,6 +46,7 @@ top of it:
 | `../../components/sheets/editor/usePersistence.js` | The five refs and five functions `index.vue` expects, over `store.js`. |
 | `../../components/sheets/editor/useCollaboration.js` | Inert. Yjs wants a second Node process. |
 | `../../components/sheets/editor/shortcutRegistry.js` | frappe-ui 1.0 replaced `{key, ctrl}` with `'Mod+S'`. |
+| `../../components/sheets/editor/useTemplateInsert.js` | A template's tabs added to the open workbook. No upstream counterpart. |
 | `../../components/sheets/editor/editor.css`, `editor.global.css` | Their `<style>` blocks, lifted into files of their own. Same rules, same scoping — `<style scoped src>` still bounds them to the component. |
 
 *Version differences* — the editor targets frappe-ui `1.0.0-beta.3` and this

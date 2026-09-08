@@ -392,43 +392,66 @@ test('a named range fills a record\'s child table', async ({ page }) => {
 })
 
 /**
- * A template is a sheet with a flag on it, and starting from one copies its
- * workbook. What is worth checking in a browser is the loop rather than the
- * copy: marking one, loading it from inside a sheet, and landing in a grid
- * that already has the template's cells in it.
+ * A template is a sheet with a flag on it, and loading one puts its tabs into
+ * the workbook you are already in.
  *
- * From inside a sheet, because that is where templates are offered now — the
- * moment you want one is the moment you are looking at a blank grid, not the
- * moment you decided to make one. And it lands in a *new* sheet: the whole
- * claim of the word "load" here is that nothing you have is written over.
+ * Which is the whole point of it, and what this asserts. A sheet bound to a
+ * record's child table is that record's workbook: the estimator has to sit
+ * beside the bound tab so a formula can reach it and so it is still there next
+ * time. A template that opened as a separate file would be a calculation
+ * nobody can find again.
+ *
+ * So: the tab arrives, its cells are in it, the tab that was already here is
+ * untouched, and a formula written across the two of them computes.
  */
-test('a sheet can be made a template, and a new sheet starts from it', async ({ page }) => {
-  const title = `Estimator ${Date.now()}`
+test('a template loads into the workbook you are in, as tabs beside it',
+  async ({ page }) => {
+    const title = `Estimator ${Date.now()}`
 
-  await newSheet(page)
-  await rename(page, title)
-  await type(page, 'A1', 'Rate card')
-  await type(page, 'B1', '250')
-  await saved(page)
+    await newSheet(page)
+    await rename(page, title)
+    await type(page, 'A1', 'Rate card')
+    await type(page, 'B1', '250')
+    await saved(page)
 
-  await fileMenu(page).click()
-  await page.getByRole('menuitem', { name: 'Use as a template' }).click()
+    await fileMenu(page).click()
+    await page.getByRole('menuitem', { name: 'Use as a template' }).click()
 
-  // A different sheet, so "it opened a new one" is a claim the URL can settle.
-  await newSheet(page)
-  const blank = page.url()
+    // A different workbook, with something of its own in it — the thing that
+    // must survive being loaded into.
+    await newSheet(page)
+    const book = page.url()
+    await type(page, 'A1', 'Line items')
+    await saved(page)
 
-  await fileMenu(page).click()
-  await page.getByRole('menuitem', { name: 'Load a template' }).click()
-  await page.locator('[data-slot="template-row"]', { hasText: title }).click()
+    await fileMenu(page).click()
+    await page.getByRole('menuitem', { name: 'Load a template' }).click()
+    await page.locator('[data-slot="template-row"]', { hasText: title }).click()
 
-  await page.waitForURL((url) => /\/one\/sheets\//.test(url.href) && url.href !== blank)
-  await ready(page)
-  await select(page, 'A1')
-  await expect(formulaBar(page)).toHaveValue('Rate card')
-  await select(page, 'B1')
-  await expect(formulaBar(page)).toHaveValue('250')
-})
+    // Same workbook. Not a new file, which is what the old behaviour was and
+    // what the URL is here to rule out.
+    await expect.poll(() => page.url()).toBe(book)
+
+    // The template's tab, with the template's cells in it.
+    await expect(page.locator('.sn-tabs-track')).toContainText('Sheet1 (2)')
+    await select(page, 'A1')
+    await expect(formulaBar(page)).toHaveValue('Rate card')
+    await select(page, 'B1')
+    await expect(formulaBar(page)).toHaveValue('250')
+
+    // And the tab that was here before still holds what it held.
+    await page.locator('.sn-tab', { hasText: /^Sheet1$/ }).click()
+    await select(page, 'A1')
+    await expect(formulaBar(page)).toHaveValue('Line items')
+
+    // The two are one workbook, which is the claim: a formula in the original
+    // tab reaches into the loaded one and computes. Read off the server, which
+    // is the only way to see a computed value — a canvas has no text.
+    await type(page, 'C1', "='Sheet1 (2)'!B1*2")
+    await saved(page)
+    const id = book.split('/').pop()
+    await expectComputed(page, id, 'C1').toBe('500')
+  })
 
 /**
  * Excel, both ways, as one round trip.

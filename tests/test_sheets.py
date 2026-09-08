@@ -470,6 +470,7 @@ OURS_INSIDE = {
 	"components/sheets/editor/usePersistence.js",
 	"components/sheets/editor/useCollaboration.js",
 	"components/sheets/editor/shortcutRegistry.js",
+	"components/sheets/editor/useTemplateInsert.js",
 }
 
 

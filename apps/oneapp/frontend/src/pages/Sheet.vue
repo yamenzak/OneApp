@@ -14,13 +14,13 @@
     standalone spreadsheet cannot — that it is a file, that it can be the one
     everybody starts from — goes into the editor's own File menu instead.
   -->
-  <SheetEditor :id="name" :host-menu="hostMenu" @close="close" />
+  <SheetEditor ref="editor" :id="name" :host-menu="hostMenu" @close="close" />
 
   <TemplatePicker
     v-model="picking"
     :rows="templates"
     icon="lucide-table-2"
-    :said="__('This opens the template as a new sheet. The one you are in is not touched.')"
+    :said="__('Its sheets are added to this workbook as new tabs. Nothing here is written over.')"
     @pick="fromTemplate"
   />
 </template>
@@ -33,6 +33,7 @@ import SheetEditor from '../components/sheets/editor/index.vue'
 import TemplatePicker from '../components/drive/TemplatePicker.vue'
 import { workspace } from '../lib/workspace'
 import { cameFrom } from '@/lib/screen/returnTo'
+import { notifySuccess } from '@/lib/runtime/notify'
 import { __ } from '@/lib/runtime/translate'
 
 const props = defineProps({
@@ -89,19 +90,24 @@ function sendRows() {
  * They used to be rows in the Drive's New menu. Wrong place twice over: New is
  * a menu of *kinds*, and a workspace's own files in it made the kinds hard to
  * find; and the moment you want a template is the moment you are looking at a
- * blank grid, not the moment you decided to make one.
+ * grid, not the moment you decided to make one.
  *
- * What it does is deliberately safe: it opens the template as a new sheet and
- * leaves this one alone. Merging a template's tabs into the open workbook is
- * the other reading of "load", and it is a real piece of work — the engine
- * holds cells, formats, named ranges and charts, and there is no server call
- * that adds a tab, only one that saves the whole workbook. A new file is
- * honest about what it does, and nothing can be lost by pressing it.
+ * And it loads *into this workbook*, as new tabs, rather than opening the
+ * template as a separate file. That is the whole point of it. A sheet bound to
+ * a record's child table is that record's workbook: somebody pricing a
+ * quotation opens its line items here, loads their estimator beside them, does
+ * the working and fills the bound tab from it. The working has to be in the
+ * same book — so a formula can reach across to it, and so it is still there
+ * the next time that quotation is repriced. A separate file would be a
+ * calculation nobody can find again.
+ *
+ * Nothing already here is written over; see `useTemplateInsert`.
  *
  * Fetched when the dialog is first opened rather than on mount: most sheets
  * are opened to work in, and a query for a list nobody will look at is a query
  * every open pays for.
  */
+const editor = ref(null)
 const picking = ref(false)
 const templates = ref([])
 
@@ -113,11 +119,20 @@ watch(picking, (open) => {
 })
 
 async function fromTemplate(row) {
-  const made = await workspace.sheetMake({
-    template: row.name,
-    title: __('{0} copy', [row.file_name]),
-  })
-  router.push({ name: 'Sheet', params: { name: made.name } })
+  const done = await editor.value?.insertTemplate(row.name)
+  if (!done?.added?.length) return
+
+  notifySuccess(
+    done.added.length === 1
+      ? __('{0} was added as a tab.', [done.added[0]])
+      : __('{0} tabs were added.', [done.added.length]),
+    // Said rather than dropped quietly: a template with a chart in it comes in
+    // without the chart, and finding that out by looking for it is worse than
+    // being told.
+    done.left.length
+      ? { description: __('Charts, pivots and named ranges did not come across.') }
+      : {},
+  )
 }
 
 const hostMenu = computed(() => [{

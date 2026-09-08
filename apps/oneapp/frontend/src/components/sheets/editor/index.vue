@@ -1250,6 +1250,7 @@ import { usePivotIntegration } from './usePivotIntegration.js'
 import { useShortcuts } from './useShortcuts.js'
 import { useCollaboration }    from './useCollaboration.js'
 import { useExportImport }     from './useExportImport.js'
+import { useTemplateInsert }   from './useTemplateInsert.js'
 import { useVersionHistory }   from './useVersionHistory.js'
 import { useSplitText }        from './useSplitText.js'
 import { buildCommandGroups }  from './commandPalette.config.js'
@@ -1833,6 +1834,21 @@ onMounted(() => {
   userFullName.value = u.fullName  || userFullName.value
   userImage.value    = u.image     || userImage.value
 })
+
+// Ours, not vendored: a template's tabs added to this workbook rather than
+// opened as a separate file. Same handles the import path takes, because it is
+// the same act — make a tab, fill it, mark the book dirty.
+const { insertTemplate } = useTemplateInsert({
+  getSheet:       () => sheet,
+  getFormats:     () => formats,
+  getMerge:       () => merge,
+  syncNames:      () => syncNames(),
+  switchSheet:    (n) => switchSheet(n),
+  repopulateGrid: _repopulateGrid,
+  isDirty,
+})
+
+defineExpose({ insertTemplate })
 
 const { exportCSV, exportXLSX, exportPDF, importCSV, importXLSX } = useExportImport({
   getSheet:        () => sheet,

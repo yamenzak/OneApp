@@ -70,17 +70,29 @@ function serverMessage(json) {
  * Everything the editor needs to draw a workbook, restored into the engines. A
  * slice that is absent is a feature the workbook never used, not an error.
  */
-export async function loadWorkbook(name, engines) {
+/**
+ * One workbook, read and unpacked, with nothing loaded into anything.
+ *
+ * `loadWorkbook` restores into live engines and every `restore` is
+ * destructive, so it cannot be used to *read* a second workbook while one is
+ * open. Loading a template's tabs into the workbook you are in needs exactly
+ * this: the other book's slices, in hand, to merge from.
+ */
+export async function fetchWorkbook(name) {
   const canGz = isDecompressionSupported()
   const doc = await call(GET, { name, compressed: canGz ? 1 : 0 }, { get: true })
   const plain = canGz ? await decodeFromDownload(doc.sheets_data) : doc.sheets_data
 
-  let saved = {}
   try {
-    saved = JSON.parse(plain || '{}') || {}
+    return { doc, saved: JSON.parse(plain || '{}') || {} }
   } catch {
-    saved = {}
+    return { doc, saved: {} }
   }
+}
+
+
+export async function loadWorkbook(name, engines) {
+  const { doc, saved } = await fetchWorkbook(name)
 
   if (saved.formats) engines.formats?.restore(saved.formats)
   engines.sheet.restore(
