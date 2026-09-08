@@ -10,14 +10,9 @@
     <stop offset="0%" stop-color="#94a3b8"/>
     <stop offset="100%" stop-color="#475569"/>
   </linearGradient>
-  <mask id="m-onearchive">
-    <rect width="100%" height="100%" fill="#ffffff" />
-    <line x1="46" y1="12" x2="46" y2="88" stroke="#000000" stroke-width="3.5" />
-    <line x1="54" y1="12" x2="54" y2="88" stroke="#000000" stroke-width="3" />
-  </mask>
-</defs>
+  </defs>
 <!-- White Document Folder Tab Peeking Out -->
-<path d="M 28 26 L 50 26 L 56 32 L 72 32 C 75 32 76 34 76 37 L 76 56 L 24 56 L 24 30 C 24 28 26 26 28 26 Z" fill="var(--brand-knockout, #ffffff)" mask="url(#m-onearchive)"/>
+<path d="M 28 26 L 50 26 L 56 32 L 72 32 C 75 32 76 34 76 37 L 76 56 L 24 56 L 24 30 C 24 28 26 26 28 26 Z" fill="var(--brand-knockout, #ffffff)"/>
 <!-- Steel Storage Drawer -->
-<rect x="18" y="42" width="64" height="40" rx="5" fill="url(#g-onearchive)" mask="url(#m-onearchive)"/>
+<rect x="18" y="42" width="64" height="40" rx="5" fill="url(#g-onearchive)"/>
 </svg>

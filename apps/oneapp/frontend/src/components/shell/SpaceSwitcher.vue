@@ -40,23 +40,20 @@
 
     <template #default="{ close }">
       <div
-        class="w-[380px] rounded-6 border border-outline-gray-2 bg-surface-elevation-2 p-2 shadow-2xl"
+        class="w-[348px] rounded-6 border border-outline-gray-2 bg-surface-elevation-2 p-3 shadow-2xl"
       >
-        <p class="px-2 pb-2 pt-1 text-p-xs text-ink-gray-5">{{ __('Spaces') }}</p>
+        <p class="px-1 pb-2 text-p-xs text-ink-gray-5">{{ __('Spaces') }}</p>
 
-        <div class="grid grid-cols-3 gap-1">
+        <div :class="GRID">
           <router-link
             v-for="space in spaces"
             :key="space.space_code"
             :to="{ name: 'Screen', params: { spaceCode: space.space_code } }"
-            class="flex flex-col items-center gap-2 rounded-4 px-2 py-3 hover:bg-surface-gray-2"
-            :class="space.space_code === active ? 'bg-surface-gray-2' : ''"
+            :class="[TILE, space.space_code === active ? 'bg-surface-gray-2' : '']"
             @click="close()"
           >
-            <SpaceFace :space="space" size="2xl" />
-            <span class="w-full truncate text-center text-p-sm text-ink-gray-7">
-              {{ space.space_label }}
-            </span>
+            <SpaceFace :space="space" size="2xl" :class="FACE" />
+            <span :class="CAPTION">{{ space.space_label }}</span>
           </router-link>
         </div>
 
@@ -69,26 +66,24 @@
           dialog rather than going anywhere and is in the account menu.
         -->
         <template v-if="apps.length">
-          <Divider class="my-2" />
-          <p class="px-2 pb-2 text-p-xs text-ink-gray-5">{{ __('Apps') }}</p>
+          <Divider class="my-3" />
+          <p class="px-1 pb-2 text-p-xs text-ink-gray-5">{{ __('Apps') }}</p>
 
-          <div class="grid grid-cols-3 gap-1">
+          <div :class="GRID">
             <router-link
               v-for="app in apps"
               :key="app.key"
               :to="app.to"
-              class="flex flex-col items-center gap-2 rounded-4 px-2 py-3 hover:bg-surface-gray-2"
+              :class="TILE"
               @click="close()"
             >
-              <SpaceFace :space="{ label: app.label, brand: app.brand }" size="2xl" />
-              <span class="w-full truncate text-center text-p-sm text-ink-gray-7">
-                {{ app.label }}
-              </span>
+              <SpaceFace :space="{ label: app.label, brand: app.brand }" size="2xl" :class="FACE" />
+              <span :class="CAPTION">{{ app.label }}</span>
             </router-link>
           </div>
         </template>
 
-        <Divider class="my-2" />
+        <Divider class="my-3" />
 
         <div class="flex flex-col gap-0.5">
           <Button
@@ -134,6 +129,32 @@ import { session } from '@/lib/shell/session'
 import { useNav } from '@/lib/shell/nav'
 import { useSidebar } from '@/lib/shell/sidebar'
 import { __ } from '@/lib/runtime/translate'
+
+/*
+ * The launcher's tile, which is one shape used twice.
+ *
+ * Google's app grid is the reference, and what it gets right is regularity:
+ * the mark sits in a box of a fixed height whatever its own proportions are,
+ * the caption sits under it at a fixed distance, and a two-word name wraps
+ * instead of truncating — so no tile is a different height from its
+ * neighbours and the grid reads as a grid rather than as a paragraph of
+ * icons.
+ *
+ * Hence a height on the face rather than letting each mark set its own, and a
+ * two-line clamp rather than `truncate`: "Compliance" is a word and "Cloud
+ * Search" is two, and cutting the second is worse than wrapping it.
+ *
+ * The face is 48 and not 40 because a mark's ink fills about two thirds of its
+ * own 100-unit box — the shapes start at 18 and end at 82 — so a 40px face
+ * draws a 26px object, which is smaller than the launcher it is copying. The
+ * panel
+ * is 348 rather than a round number so three tiles and the padding divide it
+ * exactly — a launcher whose columns do not fit its width has a ragged edge.
+ */
+const GRID = 'grid grid-cols-3'
+const TILE = 'flex h-[100px] flex-col items-center gap-1.5 rounded-4 px-1 pt-3 hover:bg-surface-gray-2'
+const FACE = 'h-12 shrink-0'
+const CAPTION = 'line-clamp-2 w-full text-center text-p-xs leading-tight text-ink-gray-7'
 
 const route = useRoute()
 const router = useRouter()

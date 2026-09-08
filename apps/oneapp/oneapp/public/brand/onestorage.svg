@@ -10,17 +10,12 @@
     <stop offset="0%" stop-color="#38bdf8"/>
     <stop offset="100%" stop-color="#0284c7"/>
   </linearGradient>
-  <mask id="m-onestorage">
-    <rect width="100%" height="100%" fill="#ffffff" />
-    <line x1="46" y1="12" x2="46" y2="88" stroke="#000000" stroke-width="3.5" />
-    <line x1="54" y1="12" x2="54" y2="88" stroke="#000000" stroke-width="3" />
-  </mask>
-</defs>
+  </defs>
 <!-- Top Storage Blade -->
-<rect x="20" y="22" width="60" height="14" rx="4" fill="url(#g-onestorage)" mask="url(#m-onestorage)"/>
+<rect x="20" y="22" width="60" height="14" rx="4" fill="url(#g-onestorage)"/>
 <!-- Middle Storage Blade with White NVMe Core -->
-<rect x="20" y="42" width="60" height="16" rx="4" fill="url(#g-onestorage)" mask="url(#m-onestorage)"/>
-<rect x="36" y="45" width="28" height="10" rx="2" fill="var(--brand-knockout, #ffffff)" mask="url(#m-onestorage)"/>
+<rect x="20" y="42" width="60" height="16" rx="4" fill="url(#g-onestorage)"/>
+<rect x="36" y="45" width="28" height="10" rx="2" fill="var(--brand-knockout, #ffffff)"/>
 <!-- Bottom Storage Blade -->
-<rect x="20" y="64" width="60" height="14" rx="4" fill="url(#g-onestorage)" mask="url(#m-onestorage)"/>
+<rect x="20" y="64" width="60" height="14" rx="4" fill="url(#g-onestorage)"/>
 </svg>

@@ -79,6 +79,17 @@ LIGHT_KNOCKOUT, DARK_KNOCKOUT = "#cbd5e1", "#ffffff"
 LIGHT_GROUND, DARK_GROUND = "#ffffff", "#0b0f19"
 
 _MASK = re.compile(r"<mask\b.*?</mask>", re.S)
+#: A mask the app marks all declare, and the attribute pointing at it. Named
+#: `m-<id>` throughout the page, which is what makes them findable.
+_CUT_MASK = re.compile(r"<mask\b[^>]*\bid=\"m-[^\"]*\".*?</mask>\s*", re.S)
+_CUT_REF = re.compile(r'\s*mask="url\(#m-[^)]*\)"')
+
+#: The marks whose cuts are the subject and not the signature, and so are kept.
+#: OneInventory's are six lines of varying width across a crate: that is a
+#: barcode, which is what the mark is about, and a crate without it is a blue
+#: box. Everywhere else the mask is the same twin `||` scored over whatever the
+#: mark happens to draw.
+CUT_IS_THE_MARK = {"oneinventory"}
 _WHITE = re.compile(r'(?<=")(#ffffff|#fff)(?=")', re.I)
 _DARK = re.compile(r'(?<=")#0b0f19(?=")', re.I)
 
@@ -126,7 +137,10 @@ def apps(text: str) -> list[dict]:
 			# "`" — so the end of the template is the end of a line, not a line.
 			if line.rstrip().endswith("`"):
 				body.append(line.rstrip()[:-1])
-				one["body"] = _tidy("\n".join(body))
+				raw = "\n".join(body)
+				one["body"] = _tidy(
+					raw if one.get("id") in CUT_IS_THE_MARK else uncut(raw)
+				)
 				body = None
 			else:
 				body.append(line)
@@ -153,6 +167,29 @@ def apps(text: str) -> list[dict]:
 	if not found:
 		raise SystemExit("read no marks — the page's shape has changed")
 	return found
+
+
+def uncut(body: str) -> str:
+	"""Take the twin vertical cuts out of an app's mark.
+
+	Every mark in the page carries a mask of two vertical lines — the `||` of
+	the parent wordmark, scored through the whole silhouette as a family
+	signature. It does not survive being an icon. At 48px the cuts are under
+	two pixels, and what they do to a shape that small is not signature but
+	noise: the envelope stops reading as an envelope and reads as red and white
+	stripes; a folder and a barcode become the same object. Held beside
+	Google's launcher, where every mark is one legible thing, ours were legible
+	as *textures*.
+
+	So the cuts stay in the two places they are the drawing rather than a
+	watermark over one — the parent mark, where the `||` *is* the logo and
+	which does not come through here, and `CUT_IS_THE_MARK` below. Everywhere
+	else the mark ships as the object it draws.
+
+	Both halves go: the `<mask>` block and the attribute pointing at it. A mask
+	left declared and unused is dead weight in every copy of every icon.
+	"""
+	return _CUT_REF.sub("", _CUT_MASK.sub("", body))
 
 
 def parent(text: str) -> dict:
