@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
+import { openSettings } from './shell.js'
 
 /**
  * The file manager, and the picker that made it worth building.
@@ -302,7 +303,7 @@ test('the storage screen says which file and not only which kind', async ({ page
   const errors = collectConsoleErrors(page)
   await page.goto('/one/files')
 
-  await page.locator('[data-slot="settings-link"]').click()
+  await openSettings(page)
   await page.getByRole('tab', { name: 'Storage' }).click()
 
   await expect(page.getByText('By kind')).toBeVisible({ timeout: 15_000 })

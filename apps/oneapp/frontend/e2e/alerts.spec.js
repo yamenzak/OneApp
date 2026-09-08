@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
+import { openSettings } from './shell.js'
 
 /**
  * Rules that tell somebody when something happens to a record.
@@ -18,7 +19,7 @@ async function openAlerts(page, baseURL) {
   await page.goto('/one/space/zzmock?screen=tasks')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
 
-  await page.locator('[data-slot="settings-link"]').click()
+  await openSettings(page)
   await page.getByRole('tab', { name: 'Alerts' }).click()
 }
 

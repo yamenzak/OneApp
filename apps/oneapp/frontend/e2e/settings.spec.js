@@ -11,6 +11,7 @@
 import { expect, test } from '@playwright/test'
 
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
+import { openSettings } from './shell.js'
 
 const MEMBER = { user: 'robin@zzmock.test' }
 
@@ -39,10 +40,10 @@ async function saved(page, press) {
   ])
 }
 
-async function openSettings(page, who) {
+async function signInAndOpen(page, who) {
   await signIn(page, BASE, who)
   await page.goto('/one/files')
-  await page.locator('[data-slot="settings-link"]').click()
+  await openSettings(page)
   await expect(dialog(page)).toBeVisible()
   // The tabs are the server's list, so the dialog is visible for a moment with
   // nothing in the strip. Profile is the one tab everybody has, which makes it
@@ -62,7 +63,7 @@ test('the gear is in the rail for everybody, not only an admin',
     }
     // Generously: the rail is drawn from the session's spaces, so on a cold
     // start this is waiting for a fetch rather than for a render.
-    await expect(page.locator('[data-slot="settings-link"]'))
+    await expect(page.locator('[data-slot="account-menu"]'))
       .toBeVisible({ timeout: 15_000 })
   })
 
@@ -70,7 +71,7 @@ test('a member sees their own settings and none of the workspace it',
   async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'the phone draws no rail')
     const errors = collectConsoleErrors(page)
-    await openSettings(page, MEMBER)
+    await signInAndOpen(page, MEMBER)
 
     for (const key of ['profile', 'security', 'notifications', 'appearance']) {
       await expect(tab(page, key)).toBeVisible()
@@ -101,13 +102,13 @@ test('a member opens on a tab they have, not the one last asked for',
     test.skip(info.project.name === 'mobile', 'the phone draws no rail')
     // The dialog remembers its tab across sessions in one browser, so a member
     // signing in after an admin would otherwise open on a blank panel.
-    await openSettings(page, MEMBER)
+    await signInAndOpen(page, MEMBER)
     await expect(dialog(page)).toContainText('Your name and how you are reached.')
   })
 
 test('a member can change their own name', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'the phone draws no rail')
-  await openSettings(page, MEMBER)
+  await signInAndOpen(page, MEMBER)
 
   // FormControl forwards fallthrough attributes to the control itself, so the
   // slot is the input rather than a wrapper around one.
@@ -241,7 +242,7 @@ test('the custom page sizes belong to Custom', async ({ page, baseURL }, info) =
   test.skip(info.project.name === 'mobile', 'the phone draws no rail')
   await signIn(page, baseURL)
   await page.goto('/one/')
-  await page.locator('[data-slot="settings-link"]').click()
+  await openSettings(page)
   await page.locator('[data-slot="settings-tab-printing"]').click()
   await page.getByText('Page size').waitFor()
 
@@ -271,7 +272,7 @@ test('a letter head is made the default from the list, and it sticks', async ({
   await signIn(page, baseURL)
   const open = async () => {
     await page.goto('/one/')
-    await page.locator('[data-slot="settings-link"]').click()
+    await openSettings(page)
     await page.locator('[data-slot="settings-tab-print-formats"]').click()
     await page.locator('[data-slot="letter-head"]').first().waitFor()
   }

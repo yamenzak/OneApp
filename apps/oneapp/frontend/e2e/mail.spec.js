@@ -14,6 +14,7 @@
 // to an owner — a mailbox somebody connects with their own password is theirs.
 import { expect, test } from '@playwright/test'
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
+import { openSettings } from './shell.js'
 
 // What `_seed_mail` puts on the site.
 const SUBJECT = 'Quotation for the Al Reem tower'
@@ -359,7 +360,7 @@ test('anybody may connect the mailbox they already have', async ({ page, baseURL
   await page.goto('/one/space/zzmock?screen=tasks')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
 
-  await page.locator('[data-slot="settings-link"]').click()
+  await openSettings(page)
   await page.getByRole('tab', { name: 'Mailbox' }).click()
 
   // The address the fixture granted, with its signature, is the top half.
@@ -483,7 +484,7 @@ test('a rule files mail, and away answers it', async ({ page, baseURL }, info) =
   await page.goto('/one/space/zzmock?screen=tasks')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
 
-  await page.locator('[data-slot="settings-link"]').click()
+  await openSettings(page)
   await page.getByRole('tab', { name: 'Mailbox' }).click()
 
   // A rule is four words: look at this field, for this text, and file it there.
@@ -504,7 +505,7 @@ test('a rule files mail, and away answers it', async ({ page, baseURL }, info) =
 
   // It survives the round trip, which is the half a list in memory would fake.
   await page.reload()
-  await page.locator('[data-slot="settings-link"]').click()
+  await openSettings(page)
   await page.getByRole('tab', { name: 'Mailbox' }).click()
   await expect(mine).toHaveCount(1)
 
@@ -519,7 +520,7 @@ test('a rule files mail, and away answers it', async ({ page, baseURL }, info) =
   await page.locator('[data-slot="mail-save-away"]').click()
 
   await page.reload()
-  await page.locator('[data-slot="settings-link"]').click()
+  await openSettings(page)
   await page.getByRole('tab', { name: 'Mailbox' }).click()
   await expect(page.getByLabel('What it says')).toHaveValue('Back on Monday.')
 

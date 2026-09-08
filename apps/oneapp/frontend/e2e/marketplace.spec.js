@@ -1,8 +1,10 @@
 // Adding a space to the workspace.
 //
-// The rail entry is offered to whoever can actually act on it — the control
-// plane's `require_workspace_admin` admits the owner and an Admin member, and
-// an icon leading to a page of refusals is worse than no icon.
+// The row is inside the space switcher, because adding a space is something you
+// do to the workspace rather than beside the day's work — and it is offered to
+// whoever can actually act on it: the control plane's `require_workspace_admin`
+// admits the owner and an Admin member, and a row leading to a page of refusals
+// is worse than no row.
 //
 // What the page draws depends on something a browser cannot arrange: the
 // catalogue lives on the control plane and reaches this site over a signed
@@ -17,13 +19,14 @@ import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
 
 const MEMBER = { user: 'robin@zzmock.test' }
 
-test('the rail offers a way to add a space, and it opens', async ({ page, baseURL }, info) => {
-  test.skip(info.project.name === 'mobile', 'the phone draws no rail')
+test('the switcher offers a way to add a space, and it opens', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone draws no bar')
   const errors = collectConsoleErrors(page)
 
   await signIn(page, baseURL)
   await page.goto('/one/files')
-  await page.locator('[data-slot="marketplace-link"]').click()
+  await page.locator('[data-slot="space-switcher"]').click()
+  await page.getByRole('button', { name: 'Add a space' }).click()
 
   await expect(page).toHaveURL(/\/one\/add/)
   await expect(page.getByText('Add a space', { exact: true }).first()).toBeVisible()
@@ -51,12 +54,14 @@ test('the rail offers a way to add a space, and it opens', async ({ page, baseUR
 })
 
 test('a member is not offered it', async ({ page, baseURL }, info) => {
-  test.skip(info.project.name === 'mobile', 'the phone draws no rail')
+  test.skip(info.project.name === 'mobile', 'the phone draws no bar')
   await signIn(page, baseURL, MEMBER)
   await page.goto('/one/files')
 
-  // The gear is beside it and is offered to everybody, so this is the honest
-  // check that the rail rendered at all before concluding the entry is absent.
-  await expect(page.locator('[data-slot="settings-link"]')).toBeVisible()
-  await expect(page.locator('[data-slot="marketplace-link"]')).toHaveCount(0)
+  // Opened, so this is the honest check: the switcher is there, it has the row
+  // every workspace has, and the one that adds a space is absent — rather than
+  // a count of zero that would also pass if nothing rendered at all.
+  await page.locator('[data-slot="space-switcher"]').click()
+  await expect(page.getByRole('button', { name: 'All spaces' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Add a space' })).toHaveCount(0)
 })

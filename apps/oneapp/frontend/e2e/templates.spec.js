@@ -7,6 +7,7 @@
 // and a picker that drifted apart.
 import { expect, test } from '@playwright/test'
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
+import { openSettings } from './shell.js'
 
 test('a template written in settings is one the composer offers', async ({
   page,
@@ -20,7 +21,7 @@ test('a template written in settings is one the composer offers', async ({
   await page.goto('/one/space/zzmock?screen=tasks')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
 
-  await page.locator('[data-slot="settings-link"]').click()
+  await openSettings(page)
   await page.getByRole('tab', { name: 'Templates' }).click()
 
   // The fixture's own, and not the six ERPNext and HRMS ship on every site.
@@ -60,7 +61,7 @@ test('a template written in settings is one the composer offers', async ({
   await page.keyboard.press('Escape')
   await page.goto('/one/space/zzmock?screen=tasks')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
-  await page.locator('[data-slot="settings-link"]').click()
+  await openSettings(page)
   await page.getByRole('tab', { name: 'Templates' }).click()
 
   const mine = page.locator('[data-slot="mail-template"]').filter({ hasText: title })

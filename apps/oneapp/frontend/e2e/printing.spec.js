@@ -7,11 +7,12 @@
 // output rather than a drawing of it.
 import { expect, test } from '@playwright/test'
 import { collectConsoleErrors, expectNoRealErrors, signIn } from './auth.js'
+import { openSettings } from './shell.js'
 
 const FORMAT = 'zzmock Task Sheet'
 
-const openSettings = async (page, tab) => {
-  await page.locator('[data-slot="settings-link"]').click()
+const openTab = async (page, tab) => {
+  await openSettings(page)
   await page.getByRole('tab', { name: tab }).click()
 }
 
@@ -50,7 +51,7 @@ test('a format drawn in the builder prints the record', async ({ page, baseURL }
   await page.goto('/one/space/zzmock?screen=tasks')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 15_000 })
 
-  await openSettings(page, 'Print formats')
+  await openTab(page, 'Print formats')
   await clean(page)
 
   // The doctypes offered are the ones this workspace's own screens show —
