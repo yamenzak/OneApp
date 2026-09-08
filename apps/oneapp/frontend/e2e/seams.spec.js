@@ -37,12 +37,24 @@ test('a child table opens in a sheet, headings and all', async ({ page }, info) 
   const errors = collectConsoleErrors(page)
   const panel = await openEvent(page, 'Notifications')
 
-  // By slot, not by name: the button is named after the sheet once the table
-  // has one, and every row in the grid also has an "Open this row".
+  // By slot, not by name: every row in the grid also has an "Open this row",
+  // and this button says only where it goes.
   await panel.locator('[data-slot="open-in-sheet"]').click()
-  await page.waitForURL(/\/one\/sheets\//, { timeout: 30_000 })
 
-  const name = nameInUrl(page, '/one/sheets/')
+  // In a dialog, over the record — not on a page of its own. Pricing a child
+  // table is something you do *while looking at the record*, and the route
+  // change this replaced took the record away.
+  const held = page.locator('[data-slot="sheet-dialog"]')
+  await held.waitFor({ timeout: 30_000 })
+  await expect(page.locator('.sn-toolbar')).toBeVisible()
+  // Still there behind it. By slot rather than by role: a modal takes the rest
+  // of the page out of the accessibility tree, which is the whole point of a
+  // modal and would make `getByRole` answer "gone" about a record that is not.
+  await expect(page.locator('[data-slot="record-pane"]')).toBeAttached()
+
+  // Which sheet, from the dialog rather than from a URL there no longer is.
+  const name = await held.getAttribute('data-sheet')
+  expect(name).toBeTruthy()
 
   // The contract the pull reads: a named range drawn round the block, starting
   // at row one so the headings are inside it. Nobody typed either.

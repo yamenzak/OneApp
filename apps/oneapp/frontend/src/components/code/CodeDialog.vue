@@ -12,6 +12,11 @@
     a rule and thinking better of it, and Cancel has to mean cancel.
   -->
   <Dialog v-model="open" :title="label" size="5xl">
+    <!-- The mark and the product name, then the field. A dialog that is one of
+         our editors says which one it is, the same way the editor's own corner
+         does when it is a page. -->
+    <template #title><EditorTitle brand="onecode" :name="label" /></template>
+
     <template #default>
       <!-- The class is on the wrapper and not on `CodeEditor`. Scoped CSS
            reaches a child component's root, and `.tall :deep(.cm-editor)` is a
@@ -40,6 +45,7 @@
 import { ref, watch } from 'vue'
 
 import { Button, CodeEditor, Dialog } from '@/ui'
+import EditorTitle from '../brand/EditorTitle.vue'
 import { __ } from '@/lib/runtime/translate'
 
 const open = defineModel({ type: Boolean, default: false })

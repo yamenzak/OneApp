@@ -219,16 +219,12 @@
         anything else asking the accessible tree for that field — ambiguous.
         The tooltip is where the field's name belongs.
       -->
-      <Button
-        variant="ghost"
-        size="sm"
-        data-slot="open-in-doc"
-        :label="__('Open in OneDoc')"
+      <OpenIn
+        brand="onedoc"
+        slot-name="open-in-doc"
         :tooltip="__('Open {0} in OneDoc', [field.label])"
-        @click="expanded = true"
-      >
-        <template #prefix><BrandMark name="onedoc" class="size-4" /></template>
-      </Button>
+        @open="expanded = true"
+      />
     </div>
     <div
       class="rounded-6 border border-outline-gray-2 bg-surface-base px-3 py-2"
@@ -312,16 +308,12 @@
                 :aria-hidden="true" />
           <FormLabel :label="field.label" :required="!!field.reqd" />
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          data-slot="open-in-code"
-          :label="__('Open in OneCode')"
+        <OpenIn
+          brand="onecode"
+          slot-name="open-in-code"
           :tooltip="__('Open {0} in OneCode', [field.label])"
-          @click="coding = true"
-        >
-          <template #prefix><BrandMark name="onecode" class="size-4" /></template>
-        </Button>
+          @open="coding = true"
+        />
       </div>
       <CodeEditor
         :model-value="modelValue || ''"
@@ -456,7 +448,7 @@ import AttachmentGallery from '../record/AttachmentGallery.vue'
 import ChildTable from '../record/ChildTable.vue'
 import LongTextDialog from '../../docs/LongTextDialog.vue'
 import CodeDialog from '../../code/CodeDialog.vue'
-import BrandMark from '../../brand/BrandMark.vue'
+import OpenIn from '../../brand/OpenIn.vue'
 import { controlComponent, editorFormat, formControlType, valueIcon } from '@/lib/screen/fields'
 import { __ } from '@/lib/runtime/translate'
 

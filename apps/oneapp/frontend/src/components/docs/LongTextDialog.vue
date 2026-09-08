@@ -13,6 +13,10 @@
     a clause and thinking better of it, and Cancel has to mean cancel.
   -->
   <Dialog v-model="open" :title="label" size="5xl">
+    <!-- The mark and the product name, then the field — as OneCode's dialog
+         does, and as every editor's own corner does when it is a page. -->
+    <template #title><EditorTitle brand="onedoc" :name="label" /></template>
+
     <template #default>
       <div class="rounded-6 border border-outline-gray-2">
         <Editor
@@ -64,6 +68,7 @@ import {
   EditorTableMenu,
   RichTextKit,
 } from '@/ui'
+import EditorTitle from '../brand/EditorTitle.vue'
 import { documentToolbar } from './toolbar'
 import { __ } from '@/lib/runtime/translate'
 

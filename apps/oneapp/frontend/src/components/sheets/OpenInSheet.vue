@@ -3,41 +3,51 @@
     The sheet these rows are priced in — this table's own, made on the first
     press and reopened on every one after.
 
-    It says which sheet once there is one. Two controls that both mentioned a
-    sheet, sitting side by side, was the confusion this replaces: an "open" and
-    a "fill" read as two features rather than as two ends of one round trip,
-    and once a table has exactly one sheet the second question — which one? —
-    is already answered. Choosing a different one is in the overflow, where a
-    once-per-table act belongs.
+    It opens in a dialog rather than on its own page, which is what the other
+    two seams do and is the reason this changed: pricing a child table is
+    something you do *while looking at the record*, and a route change took the
+    record away and made "come back to it" a feature — `returnTo`, a crumb, a
+    query parameter — instead of a thing that needed no feature at all.
+
+    The editor brings its own bar, its own mark and its own way out, so the
+    dialog is `bare`: a second header above it would say the file's name twice.
   -->
-  <Button
-    data-slot="open-in-sheet"
-    variant="ghost"
-    size="sm"
-    :label="label"
+  <OpenIn
+    brand="onesheet"
+    slot-name="open-in-sheet"
     :tooltip="from
-      ? 'Open the sheet these rows are priced in'
+      ? `Open ${from.sheet_title}, where these rows are priced`
       : 'Price these rows in a spreadsheet, then send them back'"
     :loading="making"
-    @click="open"
-  >
-    <!-- The mark rather than a glyph. The three seams — a table into OneSheet,
-         a long field into OneDoc, a code field into OneCode — all read as "this
-         opens somewhere else", and what a person needs to know is *where*.
-         Three lucide icons said "table", "document" and "code", which is what
-         the field already was. -->
-    <template #prefix><BrandMark name="onesheet" class="size-4" /></template>
-  </Button>
+    @open="open"
+  />
+
+  <Dialog v-model="showing" bare size="7xl">
+    <template #default>
+      <!--
+        Tall and fixed rather than sized to the grid: a spreadsheet has no
+        natural height, and one that grew with its rows would resize the dialog
+        every time somebody pasted.
+      -->
+      <div
+        v-if="opened"
+        class="flex h-[82vh] min-h-0 flex-col overflow-hidden rounded-6"
+        data-slot="sheet-dialog"
+        :data-sheet="opened"
+      >
+        <SheetEditor :key="opened" :id="opened" :host-menu="[]" @close="showing = false" />
+      </div>
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
-import { computed, inject, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 
-import { Button } from '@/ui'
-import BrandMark from '../brand/BrandMark.vue'
+import { Dialog } from '@/ui'
+import OpenIn from '../brand/OpenIn.vue'
+import SheetEditor from './editor/index.vue'
 import { workspace } from '@/lib/workspace'
-import { RETURN_TO, returnQuery } from '@/lib/screen/returnTo'
 
 const props = defineProps({
   doctype: { type: String, required: true },
@@ -47,18 +57,13 @@ const props = defineProps({
   from: { type: Object, default: null },
 })
 
-// Named once there is a name. "Open in a sheet" before, because there is no
-// sheet yet and naming one that does not exist is a lie.
-const label = computed(() => (props.from?.sheet_title
-  ? `Open ${props.from.sheet_title}`
-  : 'Open in OneSheet'))
-
-const router = useRouter()
 const making = ref(false)
+const showing = ref(false)
 
-// The record this was pressed on, so closing the sheet comes back to it rather
-// than to the Drive's root.
-const came = inject(RETURN_TO, null)
+//: The sheet on screen. Held rather than read from `from`, because the first
+//: press is what creates it and `from` does not know about it until the record
+//: is read again.
+const opened = ref('')
 
 async function open() {
   making.value = true
@@ -68,11 +73,8 @@ async function open() {
       docname: props.docname,
       into: props.into,
     })
-    router.push({
-      name: 'Sheet',
-      params: { name: made.name },
-      query: returnQuery(came?.value),
-    })
+    opened.value = made.name
+    showing.value = true
   } finally {
     making.value = false
   }
