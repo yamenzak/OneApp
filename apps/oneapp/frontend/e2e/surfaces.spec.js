@@ -108,8 +108,12 @@ test('a record that fills the window has one header, not two', async ({ page }, 
   // And New stands down: the list it would add a row to is not on screen.
   await expect(page.getByRole('button', { name: 'New' })).toBeHidden()
 
-  // A pane keeps its own band — it is a column beside a list whose header is
-  // the trail, so its controls are the pane's and sit below that line.
+  // A pane does not get a band of its own either: the one header *splits*.
+  // The trail on the left keeps saying where you are in the space, and a second
+  // half — the width of the pane and starting at its edge — says which record
+  // and carries the record's controls. Still one row, two halves, which is what
+  // this test is about and is why the pane's half is measured across rather
+  // than below.
   await page.waitForLoadState('networkidle')
   await page.goto('/one/space/rua?screen=invoices')
   await page.locator('[data-slot="list-row"]').first().waitFor({ timeout: 25_000 })
@@ -117,7 +121,15 @@ test('a record that fills the window has one header, not two', async ({ page }, 
   await page.locator('[data-slot="record-controls"]').waitFor({ timeout: 25_000 })
   const inPane = await page.locator('[data-slot="record-controls"]').boundingBox()
   const listTrail = await page.locator('[data-slot="breadcrumb"]').boundingBox()
-  expect(inPane.y).toBeGreaterThan(listTrail.y + listTrail.height)
+  expect(Math.abs(inPane.y - listTrail.y)).toBeLessThan(24)
+
+  // And that half sits over the pane rather than over the list: its left edge
+  // is the pane's, which is what makes the two read as one header per panel.
+  const paneHead = await page.locator('[data-slot="pane-header"]').boundingBox()
+  const pane = await page.locator('[data-slot="record-pane"]').boundingBox()
+  expect(Math.abs(paneHead.x - pane.x)).toBeLessThan(4)
+  expect(inPane.x).toBeGreaterThan(paneHead.x)
+
   await expect(page.getByRole('button', { name: 'New' })).toBeVisible()
 
   expectNoRealErrors(errors)

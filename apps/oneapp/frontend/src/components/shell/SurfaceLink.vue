@@ -23,23 +23,23 @@
   -->
   <component :is="surface.act ? 'div' : RouterLink" :to="surface.to" class="relative">
     <!--
-      Its own mark where it has one. Files, Mail, the calendar and the
-      assistant are apps of ours and are drawn as themselves everywhere else —
-      in the switcher, on the launcher, on a marketplace card — so a lucide
-      outline here was the one place they were anonymous.
+      The lucide outline, not the app's own mark, even though these have one.
+
+      This row is four things side by side at 20px, and a mark is a filled
+      gradient square: four of them in a line read as a toolbar of stickers
+      while everything else in the column is a line drawing. The marks are how
+      you tell one app from another when you are *choosing* — which is the
+      switcher, the launcher and the marketplace, and is where they are drawn.
+      Here you are not choosing between apps, you are reaching for one.
     -->
     <Button
       variant="ghost"
-      :icon="surface.brand ? undefined : surface.icon"
+      :icon="surface.icon"
       :label="surface.label"
       :tooltip="surface.label"
       :data-slot="`${surface.key}-link`"
       @click="surface.act?.()"
-    >
-      <template v-if="surface.brand" #icon>
-        <BrandMark :name="surface.brand" class="size-[18px]" />
-      </template>
-    </Button>
+    />
     <Badge
       v-if="surface.count"
       theme="blue"
@@ -52,7 +52,6 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import { Badge, Button } from '@/ui'
-import BrandMark from '../brand/BrandMark.vue'
 
 defineProps({
   /**

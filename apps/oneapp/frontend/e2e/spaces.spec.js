@@ -127,10 +127,12 @@ test('an open record is in the URL, and in the trail', async ({ page }) => {
   await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
   await expect(page).toHaveURL(/record=/)
 
-  // Located by its slot, not its role: a modal takes the rest of the page out
-  // of the accessibility tree, so while the dialog is open the trail is there
-  // to read and not to reach.
-  const trail = page.locator('[data-slot="breadcrumb"]')
+  // The pane's own header, not the list's. The chrome splits when a record
+  // opens: the trail on the left says where you are in the space, and this one
+  // — the width of the pane and sitting over it — says which record. Located by
+  // its slot rather than its role, because a modal takes the rest of the page
+  // out of the accessibility tree.
+  const trail = page.locator('[data-slot="pane-header"]')
   await expect(trail).toContainText('Chase the Halloway invoice')
   await expect(trail).toContainText('zzmock-halloway')
 
@@ -206,16 +208,20 @@ test('a record opens and saves', async ({ page }, info) => {
   // where nothing was watching — a dialog test that only reads the form would
   // never have noticed.
   const dialog = page.locator('[data-slot="record-pane"]')
+  // The fields are in the pane; Save is not. A record's actions teleport into
+  // the top bar with the rest of the page's header, so a pane-scoped lookup
+  // waits out the test on a button that is on screen and outside the pane.
+  const save = page.getByRole('button', { name: 'Save' })
   const changed = `Chase the Halloway invoice ${Date.now() % 1000}`
   await dialog.getByLabel('Description').fill(changed)
-  await dialog.getByRole('button', { name: 'Save' }).click()
+  await save.click()
 
   // Save going away is the round trip landing: it is offered only while the
   // form holds something the server has not seen. Waited for rather than
   // assumed, because the second edit below would otherwise race the refetch —
   // type into the form, have the arriving record overwrite it, and press a
   // button that is no longer there.
-  await expect(dialog.getByRole('button', { name: 'Save' })).toHaveCount(0)
+  await expect(save).toHaveCount(0)
 
   // The pane stays open — a record you just saved is a record you are still
   // reading — and what it shows is what came back from the server rather than
@@ -227,8 +233,8 @@ test('a record opens and saves', async ({ page }, info) => {
 
   // Put it back, so the next run starts where this one did.
   await dialog.getByLabel('Description').fill(SEEDED)
-  await dialog.getByRole('button', { name: 'Save' }).click()
-  await expect(dialog.getByRole('button', { name: 'Save' })).toHaveCount(0)
+  await save.click()
+  await expect(save).toHaveCount(0)
   await expect(dialog.getByLabel('Description')).toContainText(SEEDED)
   expectNoRealErrors(errors)
 })

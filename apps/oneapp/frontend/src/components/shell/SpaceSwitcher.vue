@@ -60,6 +60,34 @@
           </router-link>
         </div>
 
+        <!--
+          The apps that are not inside any space — Mail, Files, the calendar,
+          the assistant. They are tiles here and outlines in the foot of the
+          column, and that is the split on purpose: this is the board you look
+          at when you are choosing where to go, which is the one place a mark
+          earns its colour. Only the ones that *have* a mark; settings opens a
+          dialog rather than going anywhere and is in the account menu.
+        -->
+        <template v-if="apps.length">
+          <Divider class="my-2" />
+          <p class="px-2 pb-2 text-p-xs text-ink-gray-5">{{ __('Apps') }}</p>
+
+          <div class="grid grid-cols-3 gap-1">
+            <router-link
+              v-for="app in apps"
+              :key="app.key"
+              :to="app.to"
+              class="flex flex-col items-center gap-2 rounded-4 px-2 py-3 hover:bg-surface-gray-2"
+              @click="close()"
+            >
+              <SpaceFace :space="{ label: app.label, brand: app.brand }" size="2xl" />
+              <span class="w-full truncate text-center text-p-sm text-ink-gray-7">
+                {{ app.label }}
+              </span>
+            </router-link>
+          </div>
+        </template>
+
         <Divider class="my-2" />
 
         <div class="flex flex-col gap-0.5">
@@ -103,6 +131,7 @@ import SpaceFace from '../brand/SpaceFace.vue'
 import { TENANT_APP } from '@/lib/runtime/brand'
 import { brand } from '@/lib/runtime/boot'
 import { session } from '@/lib/shell/session'
+import { useNav } from '@/lib/shell/nav'
 import { useSidebar } from '@/lib/shell/sidebar'
 import { __ } from '@/lib/runtime/translate'
 
@@ -119,6 +148,13 @@ const workspace = computed(() => ({
 }))
 
 const spaces = computed(() => session.spaces)
+
+// From the one declaration the foot of the column reads, filtered to what has
+// a mark and a place to go: settings opens a dialog, and a tile that is not a
+// destination is a tile that lies about being one.
+const { surfaces } = useNav()
+
+const apps = computed(() => surfaces.value.filter((one) => one.brand && one.to))
 
 const active = computed(() => route.params.spaceCode || '')
 
