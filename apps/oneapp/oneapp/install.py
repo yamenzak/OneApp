@@ -53,6 +53,7 @@ def create_custom_fields():
 	from frappe.custom.doctype.custom_field.custom_field import create_custom_fields as make
 
 	from oneapp.oneapp_core.drive import KIND_FIELD, OPENED_FIELD, STATUS_FIELD, TRASHED_FIELD
+	from oneapp.oneapp_core.docs.text import SEQ_FIELD
 	from oneapp.oneapp_core.sheets import TEMPLATE_FIELD
 	from oneapp.oneapp_core.email.folders import FOLDER_FIELD
 	from oneapp.oneapp_core.email.linking import LINK_BY
@@ -109,6 +110,23 @@ def create_custom_fields():
 					"fieldname": OPENED_FIELD,
 					"label": "Last Opened",
 					"fieldtype": "Datetime",
+					"read_only": 1,
+					"no_copy": 1,
+				},
+				{
+					# How many times this file's bytes have been written. What
+					# `Doc Body.head_seq` and `Sheet Book.head_seq` are for the
+					# two stores that have a row of their own — and a text file
+					# has none, because its body *is* the object. So the counter
+					# lives here, and `versions.py` reads the same number from
+					# all three.
+					"fieldname": SEQ_FIELD,
+					"label": "Body Saves",
+					# `Int` and not `Long Int`: a Custom Field's fieldtype list
+					# is shorter than a doctype's and does not carry it. Two
+					# billion saves of one file is not a number to plan for.
+					"fieldtype": "Int",
+					"default": "0",
 					"read_only": 1,
 					"no_copy": 1,
 				},

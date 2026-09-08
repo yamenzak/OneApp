@@ -422,12 +422,12 @@ doctype(
 # --------------------------------------------------------------------------- #
 # Versions, for both of them
 #
-# One doctype and not two, because a version of a sheet and a version of a
-# document are the same row: a blob, whose file it belongs to, when it was
-# taken, by whom, and whether a person named it. The two stores differ — a
-# workbook is `codec.py`'s gzipped envelope, a document is ProseMirror JSON —
-# and neither this row nor the module over it has to care, because restoring is
-# handing the blob back to the store it came from.
+# One doctype and not three, because a version of a sheet, of a document and of
+# a source file are the same row: a blob, whose file it belongs to, when it was
+# taken, by whom, and whether a person named it. The three stores differ — a
+# workbook is `codec.py`'s gzipped envelope, a document is ProseMirror JSON, a
+# `.py` is its own bytes — and neither this row nor the module over it has to
+# care, because restoring is handing the blob back to the store it came from.
 #
 # The policy over these rows is taken from `frappe/sheets`'
 # `sheets/versioning/` (AGPL-3.0, © Frappe Technologies Pvt. Ltd.): snapshot on
@@ -449,11 +449,13 @@ doctype(
                       "than a Link for the same reason the bodies are: the row "
                       "is written and read by name, and a Link would make "
                       "deleting the file a cascade nobody asked for."),
-        f("kind", "Select", options="Sheet\nDoc", reqd=1, in_list_view=1,
+        f("kind", "Select", options="Sheet\nDoc\nText", reqd=1, in_list_view=1,
           description="Which store the payload goes back to. On the row rather "
                       "than derived from the File, so a version is readable on "
                       "its own — including after the file it came from is "
-                      "gone."),
+                      "gone. `Text` covers every file whose bytes are its own "
+                      "— a `.py`, a `.md`, a `.txt` — where the payload is "
+                      "simply the content and the store is the object."),
         f("title", "Data", in_list_view=1,
           description="What to call this version in the panel. A timestamp for "
                       "an automatic one; whatever somebody typed for a named "

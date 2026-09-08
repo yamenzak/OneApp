@@ -33,6 +33,14 @@ EDITABLE = ("txt", "md", "markdown", "csv", "log") + languages.EXTENSIONS
 #: box; it is a download. Two megabytes is a very long README.
 MAX_BYTES = 2 * 1024 * 1024
 
+#: How many times this file's bytes have been written, on the `File` row.
+#: `Doc Body` and `Sheet Book` each carry their own `head_seq`; a text file has
+#: no body row, because its body *is* the object — so the counter goes where
+#: the file is. Declared here rather than in `install.py` for the same reason
+#: `drive/kinds.py` declares the other four: the module that reads a column
+#: should be the one that names it.
+SEQ_FIELD = "custom_body_seq"
+
 
 def is_text(file_name: str) -> bool:
     name = (file_name or "").rsplit("?", 1)[0]
@@ -40,56 +48,56 @@ def is_text(file_name: str) -> bool:
 
 
 def own_object(doc) -> bool:
-	"""Make sure this row's bytes are its own, and not another row's.
+    """Make sure this row's bytes are its own, and not another row's.
 
-	Frappe deduplicates a `File` by content hash — twice, in two places, with
-	two different switches. `File.validate_duplicate_entry` has a flag; the
-	check inside `File.save_file` has an `ignore_existing_file_check`
-	*parameter* that `validate` does not pass, so there is no way to turn it
-	off from outside. Both point the new row at an object that already exists.
+    Frappe deduplicates a `File` by content hash — twice, in two places, with
+    two different switches. `File.validate_duplicate_entry` has a flag; the
+    check inside `File.save_file` has an `ignore_existing_file_check`
+    *parameter* that `validate` does not pass, so there is no way to turn it
+    off from outside. Both point the new row at an object that already exists.
 
-	For an upload that is exactly right: two people attaching the same drawing
-	should not be billed for it twice. For a file created empty to be typed
-	into it is ruinous, because every one of them starts as the same single
-	newline — eight new files, one object, and the first edit to any of them
-	rewriting all eight, since `save_text` writes back through `file_url`.
+    For an upload that is exactly right: two people attaching the same drawing
+    should not be billed for it twice. For a file created empty to be typed
+    into it is ruinous, because every one of them starts as the same single
+    newline — eight new files, one object, and the first edit to any of them
+    rewriting all eight, since `save_text` writes back through `file_url`.
 
-	So the row is given an object named after itself, which is the one name
-	nothing else can claim. Deliberately the same shape `storage/r2.object_key`
-	already uses, and for the same reason.
+    So the row is given an object named after itself, which is the one name
+    nothing else can claim. Deliberately the same shape `storage/r2.object_key`
+    already uses, and for the same reason.
 
-	R2-backed rows are left alone: their key already carries `File.name`, so
-	two of them cannot share one however identical their bytes.
-	"""
-	# Imported here rather than at the top: `frappe.utils` is a package on a
-	# bench and a flat module in the unit suite's stub, so a module-level
-	# `from frappe.utils.file_manager import …` fails every test in this file
-	# for a helper only one code path calls.
-	from frappe.utils import get_files_path
-	from frappe.utils.file_manager import get_content_hash
+    R2-backed rows are left alone: their key already carries `File.name`, so
+    two of them cannot share one however identical their bytes.
+    """
+    # Imported here rather than at the top: `frappe.utils` is a package on a
+    # bench and a flat module in the unit suite's stub, so a module-level
+    # `from frappe.utils.file_manager import …` fails every test in this file
+    # for a helper only one code path calls.
+    from frappe.utils import get_files_path
+    from frappe.utils.file_manager import get_content_hash
 
-	if doc.get("r2_key") or not (doc.file_url or "").startswith(("/files/", "/private/files/")):
-		return False
+    if doc.get("r2_key") or not (doc.file_url or "").startswith(("/files/", "/private/files/")):
+        return False
 
-	mine = f"/private/files/" if doc.is_private else "/files/"
-	stem, dot, extension = (doc.file_name or "").rpartition(".")
-	unique = f"{stem or doc.file_name}-{doc.name}{dot}{extension}"
-	if doc.file_url == mine + unique:
-		return False
+    mine = f"/private/files/" if doc.is_private else "/files/"
+    stem, dot, extension = (doc.file_name or "").rpartition(".")
+    unique = f"{stem or doc.file_name}-{doc.name}{dot}{extension}"
+    if doc.file_url == mine + unique:
+        return False
 
-	content = doc.get_content()
-	if isinstance(content, str):
-		content = content.encode("utf-8")
+    content = doc.get_content()
+    if isinstance(content, str):
+        content = content.encode("utf-8")
 
-	folder = get_files_path(is_private=doc.is_private)
-	os.makedirs(folder, exist_ok=True)
-	with open(os.path.join(folder, unique), "wb") as handle:
-		handle.write(content)
+    folder = get_files_path(is_private=doc.is_private)
+    os.makedirs(folder, exist_ok=True)
+    with open(os.path.join(folder, unique), "wb") as handle:
+        handle.write(content)
 
-	doc.db_set("file_url", mine + unique, update_modified=False)
-	doc.db_set("content_hash", get_content_hash(content), update_modified=False)
-	doc.file_url = mine + unique
-	return True
+    doc.db_set("file_url", mine + unique, update_modified=False)
+    doc.db_set("content_hash", get_content_hash(content), update_modified=False)
+    doc.file_url = mine + unique
+    return True
 
 
 def _mine(name: str, level: str = "read"):
@@ -158,13 +166,66 @@ def save_text(name: str, content: str = "", title: str = "") -> dict:
     row.db_set("file_size", len(raw), update_modified=False)
     row.db_set("modified", frappe.utils.now(), update_modified=False)
 
+    # The counter, then a version of what it now holds. Same order and same
+    # policy as a document and a sheet: save first, offer a version after, and
+    # a refused one during a burst of autosaves is the ordinary answer rather
+    # than an error. See `oneapp_core/versions.py`.
+    seq = frappe.utils.cint(row.get(SEQ_FIELD)) + 1
+    row.db_set(SEQ_FIELD, seq, update_modified=False)
+
+    from .. import versions
+
+    kept = versions.keep(name, versions.TEXT)
+
     clean = (title or "").strip()
     if clean and clean != row.file_name:
         from ..drive import writing as drive
 
         drive.rename(name, clean)
 
-    return {"name": name, "size": len(raw)}
+    return {"name": name, "size": len(raw), "version": kept}
+
+
+# --------------------------------------------------------------------------- #
+# The store contract `versions.py` reads
+#
+# The third store, and the odd one out: `Doc Body` and `Sheet Book` are rows
+# holding a payload, and a text file's payload is the object itself. So `put`
+# writes bytes where the other two write a column, and the sequence number
+# lives on the `File` row because there is no body row to put it on.
+#
+# Which is the whole reason a `.py` can be versioned at all: a version is a
+# blob and a moment, and it never mattered what the blob was.
+# --------------------------------------------------------------------------- #
+
+def head_of(name: str) -> dict:
+    row = frappe.get_doc("File", name)
+    content = row.get_content()
+    if isinstance(content, bytes):
+        content = content.decode("utf-8", "replace")
+    return {
+        "payload": content or "",
+        "head_seq": frappe.utils.cint(row.get(SEQ_FIELD)),
+    }
+
+
+def may_read(name: str) -> None:
+    _mine(name)
+
+
+def may_write(name: str) -> None:
+    _mine(name, "write")
+
+
+def put(name: str, payload: str) -> int:
+    """Write a text file back wholesale. What restoring a version calls.
+
+    Straight through `save_text`, which is the one place that knows whether the
+    bytes go to R2 or to disk — and which bumps the counter, so a restore is a
+    save like any other and the next version is taken against it.
+    """
+    save_text(name, content=payload or "")
+    return frappe.utils.cint(frappe.db.get_value("File", name, SEQ_FIELD))
 
 
 def _write_local(row, raw: bytes) -> None:

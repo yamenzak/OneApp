@@ -27,12 +27,12 @@
    "reqd": 1
   },
   {
-   "description": "Which store the payload goes back to. On the row rather than derived from the File, so a version is readable on its own \u2014 including after the file it came from is gone.",
+   "description": "Which store the payload goes back to. On the row rather than derived from the File, so a version is readable on its own \u2014 including after the file it came from is gone. `Text` covers every file whose bytes are its own \u2014 a `.py`, a `.md`, a `.txt` \u2014 where the payload is simply the content and the store is the object.",
    "fieldname": "kind",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Kind",
-   "options": "Sheet\nDoc",
+   "options": "Sheet\nDoc\nText",
    "reqd": 1
   },
   {

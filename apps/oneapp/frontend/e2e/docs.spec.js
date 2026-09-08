@@ -30,6 +30,15 @@ async function stored(page, name) {
   return (await res.json()).message
 }
 
+/** What a text file's bytes say, straight from the server. */
+async function storedText(page, name) {
+  const res = await page.request.get(
+    `/api/method/oneapp.oneapp_core.docs.get_text?name=${name}`,
+  )
+  expect(res.ok()).toBe(true)
+  return (await res.json()).message.content || ''
+}
+
 /** Make one through the New menu, and answer with the id it landed on. */
 async function newDocument(page) {
   await page.goto('/one/files')
@@ -185,4 +194,50 @@ test('a document is found by what it says, not only by its name', async ({ page 
       { timeout: 20_000 },
     )
     .toContain(name)
+})
+
+test('a code file keeps versions too, and an old one goes back', async ({ page }) => {
+  // The third store. A version of a `.py` is a blob and a moment like a
+  // version of anything else — `oneapp_core/versions.py` gained a kind, not a
+  // second mechanism — and this is the proof that the panel, the policy and
+  // the restore all reach it.
+  await page.goto('/one/files')
+  await page.getByRole('button', { name: 'New', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Code', exact: true }).click()
+  await page.locator('[data-slot="language-option"]:has-text("Python")').click()
+  await page.waitForURL(/\/one\/docs\//)
+
+  const name = nameInUrl(page, '/one/docs/')
+  const cm = page.locator('.cm-content')
+  await cm.waitFor({ timeout: 20_000 })
+
+  await cm.click()
+  await page.keyboard.type('RATE = 0.05')
+  await expect
+    .poll(() => storedText(page, name), { timeout: 20_000 })
+    .toContain('RATE = 0.05')
+
+  await page.locator('[data-slot="code-history"]').click()
+  await page.getByRole('button', { name: 'Save this version' }).click()
+  await page.getByLabel('What this version is').fill('Signed off')
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
+  await expect(page.getByText('Signed off')).toBeVisible()
+
+  // Move on, then put the named one back.
+  await cm.click()
+  await page.keyboard.press('ControlOrMeta+a')
+  await page.keyboard.type('RATE = 0.10')
+  await expect
+    .poll(() => storedText(page, name), { timeout: 20_000 })
+    .toContain('RATE = 0.10')
+
+  await page
+    .getByRole('button', { name: 'What to do with this version' })
+    .first()
+    .click()
+  await page.getByRole('menuitem', { name: 'Restore this version' }).click()
+
+  await expect
+    .poll(() => storedText(page, name), { timeout: 20_000 })
+    .toContain('RATE = 0.05')
 })

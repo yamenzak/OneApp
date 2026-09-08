@@ -18,10 +18,11 @@ the whole body back — so a version *is* a snapshot and there is nothing to
 replay. That also removes their `state_at`: reading a version is reading its
 payload.
 
-One module for both kinds because there is only one shape here. A version is a
-blob, a file, a moment, a person and a name; whether the blob is `codec.py`'s
-gzipped workbook or a document's ProseMirror JSON is the store's business, and
-restoring is handing it back to the store it came from.
+One module for all three kinds because there is only one shape here. A version
+is a blob, a file, a moment, a person and a name; whether the blob is
+`codec.py`'s gzipped workbook, a document's ProseMirror JSON or the bytes of a
+`.py` is the store's business, and restoring is handing it back to the store it
+came from.
 """
 
 import frappe
@@ -30,7 +31,12 @@ from frappe.utils import cint, get_datetime, now_datetime
 
 SHEET = "Sheet"
 DOC = "Doc"
-KINDS = (SHEET, DOC)
+#: Every file whose bytes are its own — a `.py`, a `.md`, a `.txt`. One kind
+#: rather than one per language: the store is the object either way, and what
+#: distinguishes a Python file from a README is what opens it, not where it
+#: lives.
+TEXT = "Text"
+KINDS = (SHEET, DOC, TEXT)
 
 #: Snapshot after this many saves, or after this many seconds of editing —
 #: whichever comes first. Frappe's numbers, which are Google Sheets' numbers,
@@ -64,6 +70,10 @@ def _store(kind: str):
         from .docs import body
 
         return body
+    if kind == TEXT:
+        from .docs import text
+
+        return text
     frappe.throw(_("There is no such thing as a {0} version.").format(kind))
 
 

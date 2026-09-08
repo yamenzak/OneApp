@@ -89,7 +89,7 @@
            Python would be Python. -->
       <Button
         v-if="canRead"
-        variant="subtle"
+        variant="ghost"
         size="sm"
         :icon-left="reading ? 'lucide-pencil' : 'lucide-book-open'"
         data-slot="code-read"
@@ -99,7 +99,18 @@
       />
 
       <Button
-        variant="subtle"
+        variant="ghost"
+        size="sm"
+        icon="lucide-history"
+        data-slot="code-history"
+        :label="__('Version history')"
+        :tooltip="__('Version history')"
+        :class="showHistory ? 'bg-surface-gray-2' : ''"
+        @click="showHistory = !showHistory"
+      />
+
+      <Button
+        variant="ghost"
         size="sm"
         icon="lucide-download"
         :label="__('Download')"
@@ -115,7 +126,26 @@
       around that is how you get a line-number column that scrolls away from
       the lines it numbers.
     -->
-    <div class="min-h-0 flex-1 overflow-hidden">
+    <div class="flex min-h-0 flex-1 overflow-hidden">
+      <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <!-- What is on screen is not what the file says. Said plainly, because
+             an editor showing something other than the file, with no sign of
+             it, is how somebody types into the past. -->
+        <div
+          v-if="looking"
+          class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-amber-2 bg-surface-amber-1 px-3 py-1.5"
+          data-slot="code-looking"
+        >
+          <span class="truncate text-p-sm text-ink-amber-3">
+            {{ __('Looking at {0}. Nothing here is being saved.', [looking.title]) }}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            :label="__('Back to now')"
+            @click="stopLooking"
+          />
+        </div>
       <div v-if="reading" class="h-full overflow-auto px-8 py-6">
         <CodePreview :model-value="text" language="markdown" data-slot="code-preview" />
       </div>
@@ -134,6 +164,24 @@
           @update:model-value="onChange"
         />
       </div>
+      </div>
+
+      <!--
+        The same panel a document and a sheet get, over the same rows. A version
+        of a `.py` is a blob and a moment like any other — see
+        `oneapp_core/versions.py`, where `Text` is the third store rather than a
+        second mechanism.
+      -->
+      <VersionPanel
+        v-if="showHistory"
+        :file="name"
+        kind="Text"
+        :can-write="doc.can_write"
+        :revision="revision"
+        @close="showHistory = false"
+        @preview="preview"
+        @restored="restored"
+      />
     </div>
   </div>
 </template>
@@ -143,6 +191,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import { Badge, Button, CodeEditor, CodePreview, Icon, Tooltip, dayjsLocal } from '@/ui'
 import BrandMark from '../brand/BrandMark.vue'
+import VersionPanel from '../versions/VersionPanel.vue'
 import SpaceName from '../brand/SpaceName.vue'
 import { downloadUrl } from '@/lib/files/files'
 import { highlightFor, labelForLanguage } from '@/lib/files/languages'
@@ -161,6 +210,12 @@ const QUIET_MS = 1200
 const title = ref(props.doc.title || '')
 const text = ref(props.doc.content || '')
 const reading = ref(false)
+const showHistory = ref(false)
+
+//: Bumped after every save, so the history panel follows the work rather than
+//: needing a refresh button beside it. The same contract the document editor
+//: has with the same component.
+const revision = ref(0)
 const busy = ref(false)
 const dirty = ref(false)
 const failed = ref('')
@@ -190,7 +245,7 @@ const state = computed(() => {
 })
 
 function onChange() {
-  if (!props.doc.can_write) return
+  if (!props.doc.can_write || looking.value) return
   dirty.value = true
   failed.value = ''
   clearTimeout(timer)
@@ -205,6 +260,7 @@ async function save() {
     await workspace.textSave(props.name, { content: text.value, title: title.value })
     dirty.value = false
     savedAt.value = new Date().toISOString()
+    revision.value += 1
     emit('renamed', title.value)
   } catch (raised) {
     failed.value = raised?.messages?.[0] || __('Could not save')
@@ -227,6 +283,40 @@ async function leave() {
 }
 
 const download = () => { window.location.href = downloadUrl(props.name) }
+
+/**
+ * Looking at an old version, without leaving.
+ *
+ * The panel hands over the version *row*; the body is a second call, because a
+ * history of forty versions is forty blobs nobody asked to download. The editor
+ * shows it read-only until Restore — `looking` is what says so, and it is also
+ * what stops the autosave from writing an old body back over the current one
+ * two seconds after somebody glances at it.
+ */
+const looking = ref(null)
+
+async function preview(one) {
+  const answer = await workspace.fileVersionBody(one.name, 'Text')
+  looking.value = one
+  text.value = answer?.payload ?? text.value
+}
+
+/** Restore wrote it server-side; this is the editor catching up. */
+async function restored() {
+  const answer = await workspace.textOpen(props.name)
+  looking.value = null
+  text.value = answer?.content || ''
+  dirty.value = false
+  savedAt.value = new Date().toISOString()
+  revision.value += 1
+}
+
+/** Back to what the file actually says, after looking at an old version. */
+async function stopLooking() {
+  const answer = await workspace.textOpen(props.name)
+  looking.value = null
+  text.value = answer?.content || ''
+}
 
 watch(() => props.doc, (next) => {
   title.value = next.title || ''
