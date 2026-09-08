@@ -75,7 +75,14 @@ GROUND = "var(--brand-ground, #0b0f19)"
 #: small bright object and half of it went to ink. A light grey reads against
 #: white where it has to and still reads as the sheet-of-paper it is where it
 #: sits inside a coloured shape, which is most of where it sits.
-LIGHT_KNOCKOUT, DARK_KNOCKOUT = "#cbd5e1", "#ffffff"
+#:
+#: And light rather than mid: slate-300 was the first try and it read as a grey
+#: card rather than as paper — the knockout is nearly always *inside* a
+#: coloured shape, where the contrast it needs is against that colour and not
+#: against the page, so it can go much closer to white than a first guess
+#: allows and only has to stop short of vanishing on the few edges that touch
+#: the ground.
+LIGHT_KNOCKOUT, DARK_KNOCKOUT = "#e6ebf1", "#ffffff"
 LIGHT_GROUND, DARK_GROUND = "#ffffff", "#0b0f19"
 
 _MASK = re.compile(r"<mask\b.*?</mask>", re.S)
