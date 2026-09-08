@@ -21,7 +21,7 @@
     of a table is a scrollbar you have to scroll down to find, and on a list of
     two hundred rows nobody finds it.
   -->
-  <div class="flex h-full min-h-0">
+  <div class="flex h-full min-h-0 gap-2">
    <!--
      `v-show` and not `v-if`: on a showcase screen the record takes the whole
      area and the list goes away, but it goes away the way a covered thing does
@@ -29,7 +29,13 @@
      and the same unsaved filter, rather than to a screen that fetches itself
      again.
    -->
-   <div v-show="!asPage" class="flex min-w-0 flex-1 flex-col p-5">
+   <!--
+     The list's panel. The shell draws no frame on this route (`meta.bare`), so
+     this is the frame — and when a record opens beside it, the two are two
+     panels with the ground between them rather than one panel split down the
+     middle by a rule.
+   -->
+   <div v-show="!asPage" class="flex min-w-0 flex-1 flex-col rounded-6 bg-surface-base p-5">
     <div v-if="loading" class="grid place-items-center py-20">
       <LoadingIndicator class="size-5 text-ink-gray-5" />
     </div>

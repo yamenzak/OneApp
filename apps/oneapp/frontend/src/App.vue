@@ -4,6 +4,7 @@
       v-if="session.loaded && session.isLoggedIn"
       :scroll="false"
       :chrome="!$route.meta.focused"
+      :framed="!$route.meta.bare"
       :entries="railSpaces"
       :active-entry="activeSpaceCode"
       :entries-to="{ name: 'Launcher' }"

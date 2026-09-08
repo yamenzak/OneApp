@@ -148,7 +148,7 @@
       <div
         data-slot="shell-inset"
         class="flex min-w-0 flex-1 flex-col overflow-hidden"
-        :class="chrome ? 'mb-2 me-2 rounded-6 bg-surface-base' : ''"
+        :class="[chrome ? 'mb-2 me-2' : '', chrome && framed ? 'rounded-6 bg-surface-base' : '']"
       >
         <PageHeaderTarget v-if="!chrome" />
         <ScrollArea v-if="scroll" class="min-h-0 flex-1">
@@ -371,6 +371,11 @@ const props = defineProps({
   user: { type: Object, default: () => ({}) },
   /** false when inner panes own their scroll — a list/detail split, say. */
   scroll: { type: Boolean, default: true },
+  /**
+   * Whether the shell draws the page's panel. False for a route that draws its
+   * own — see `meta.bare` in the router.
+   */
+  framed: { type: Boolean, default: true },
   /**
    * Whether this surface gets the workspace's furniture — the bar, the
    * sidebar and the curved inset — or the window to itself.

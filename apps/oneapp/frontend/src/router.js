@@ -11,7 +11,12 @@ const routes = [
     // The app host is a pane, not a page: its list is a fixed-height grid that
     // owns both scrollbars, so the horizontal one sits at the bottom of the
     // screen. `pane` turns the shell's own page scroll off for this route.
-    meta: { pane: true },
+    //
+    // `bare` turns the shell's frame off as well, because this route draws its
+    // own: the list is one panel and an open record is a second beside it, and
+    // two panels inside a third is a card in a card. Every other route is one
+    // thing and takes the frame the shell gives it.
+    meta: { pane: true, bare: true },
   },
   { path: '/account', name: 'Account', component: () => import('./pages/Account.vue') },
   {

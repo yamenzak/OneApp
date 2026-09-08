@@ -34,7 +34,7 @@
   <div
     v-else-if="page"
     data-slot="record-pane"
-    class="flex min-h-0 flex-1 flex-col overflow-hidden"
+    class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-6 bg-surface-base"
   >
     <slot name="body" :phone="false" />
   </div>
@@ -56,9 +56,12 @@
       slot-name="record-resizer"
     />
 
+    <!-- Its own panel, beside the list's. Both sit on the shell's ground with
+         a gutter between them, which is what says they are two things you are
+         looking at rather than one thing with a rule down it. -->
     <div
       data-slot="record-pane"
-      class="flex shrink-0 flex-col overflow-hidden"
+      class="flex shrink-0 flex-col overflow-hidden rounded-6 bg-surface-base"
       :style="{ width: `${width}px` }"
     >
       <slot name="body" :phone="false" />
