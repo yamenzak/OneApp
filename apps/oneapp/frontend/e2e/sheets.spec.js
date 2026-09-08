@@ -204,29 +204,43 @@ async function attendeeSheet(page, title) {
   return id
 }
 
-test('a sheet in the file list opens its grid rather than a preview', async ({ page }) => {
-  // The one thing about a sheet that is not like every other file: it has no
-  // bytes to look at, so clicking it navigates instead of opening the preview
-  // dialog every other row opens.
-  const id = await newSheet(page)
-  await page.goto('/one/files?place=all')
-  await page.getByPlaceholder('Search files').fill('Untitled sheet')
-  // The search is debounced; without this the click lands on whatever row the
-  // unfiltered list had first.
-  await expect(page.locator('[data-slot="drive-file"]').first())
-    .toContainText('Untitled sheet')
-  // An anchor, not a button: a sheet is a place now, so cmd-click opens it in
-  // a tab like any other link. That is the whole claim of this test.
-  const row = page.locator('[data-slot="drive-open"]').first()
-  await row.waitFor({ timeout: 20_000 })
-  await expect(row).toHaveJSProperty('tagName', 'A')
-  await row.click()
+test('a sheet in the file list opens its grid beside the list, and on its own page from a modifier',
+  async ({ page }) => {
+    // The one thing about a sheet that is not like every other file: it has no
+    // bytes to look at. It opens its grid — editable, in the pane beside the
+    // list, because the point of a file manager is to work in a file without
+    // losing the folder you found it in.
+    const id = await newSheet(page)
+    await page.goto('/one/files?place=all')
+    await page.getByPlaceholder('Search files').fill('Untitled sheet')
+    // The search is debounced; without this the click lands on whatever row the
+    // unfiltered list had first.
+    await expect(page.locator('[data-slot="drive-file"]').first())
+      .toContainText('Untitled sheet')
 
-  await page.waitForURL(/\/one\/sheets\//)
-  await expect(grid(page)).toBeVisible()
-  await expect(page.getByRole('dialog')).toHaveCount(0)
-  expect(id).toBeTruthy()
-})
+    // An anchor, not a button — and it stays one, which is the point of the
+    // second half: the plain click is taken by the page, every modifier is
+    // left to the browser.
+    const row = page.locator('[data-slot="drive-open"]').first()
+    await row.waitFor({ timeout: 20_000 })
+    await expect(row).toHaveJSProperty('tagName', 'A')
+
+    const here = page.url()
+    await row.click()
+    await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
+    await expect(grid(page)).toBeVisible()
+    // Beside the list, not instead of it, and without leaving the Drive.
+    await expect(page.locator('[data-slot="drive-file"]').first()).toBeVisible()
+    expect(page.url()).toBe(here)
+
+    // And a modifier still opens it on its own page — a file manager where
+    // cmd-click does nothing is one people fight.
+    const opened = page.context().waitForEvent('page')
+    await row.click({ modifiers: ['ControlOrMeta'] })
+    const tab = await opened
+    await expect(tab).toHaveURL(/\/one\/sheets\//)
+    expect(id).toBeTruthy()
+  })
 
 test('a sheet is made from the Drive and opens on an empty grid', async ({ page }) => {
   const errors = collectConsoleErrors(page)
