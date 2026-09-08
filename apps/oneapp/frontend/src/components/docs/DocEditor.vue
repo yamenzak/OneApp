@@ -121,6 +121,14 @@
 
     <DocSettings v-model="showSettings" v-model:settings="settings" @change="save()" />
 
+    <TemplatePicker
+      v-model="picking"
+      :rows="templates"
+      icon="lucide-file-signature"
+      :said="__('This opens the template as a new document. What you have here is not touched.')"
+      @pick="fromTemplate"
+    />
+
     <!-- The Drive's rename, in the Drive's shape: one dialog, one field, one
          button. A document renamed here is renamed there, because they are the
          same `File`. -->
@@ -166,7 +174,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import {
   Button,
@@ -188,6 +196,7 @@ import FadedScroll from '../FadedScroll.vue'
 import DocSettings from './DocSettings.vue'
 import Outline from './Outline.vue'
 import VersionPanel from '../versions/VersionPanel.vue'
+import TemplatePicker from '../drive/TemplatePicker.vue'
 import { documentToolbar, pageClasses } from './toolbar'
 import { useOutline } from '@/composables/useOutline'
 import { putFile } from '@/lib/files/attach'
@@ -231,6 +240,32 @@ const showHistory = ref(false)
 const renaming = ref(false)
 const draftTitle = ref('')
 const showSettings = ref(false)
+
+/*
+ * Templates, and what picking one does.
+ *
+ * Fetched when the menu is first opened rather than on mount: most documents
+ * are opened to read, and a query for a list nobody will look at is a query
+ * every open pays for.
+ */
+const router = useRouter()
+const picking = ref(false)
+const templates = ref([])
+
+watch(picking, (open) => {
+  if (!open || templates.value.length) return
+  workspace.docTemplates()
+    .then((found) => { templates.value = found || [] })
+    .catch(() => { templates.value = [] })
+})
+
+async function fromTemplate(row) {
+  const made = await workspace.docMake({
+    template: row.name,
+    title: __('{0} copy', [row.file_name]),
+  })
+  router.push({ name: 'Doc', params: { name: made.name } })
+}
 const showing = ref(false)
 const shown = ref(null)
 const shownContent = ref(null)
@@ -355,6 +390,15 @@ async function rename() {
 const isTemplate = ref(!!props.doc.is_template)
 
 const menu = computed(() => [
+  {
+    // Where a template is reached from, now that it is not in the New menu.
+    // A blank page is when you realise you wanted one, and a new document is
+    // what it opens — this one is left exactly as it was, which is the whole
+    // reason it is not called "apply".
+    label: __('Load a template'),
+    icon: 'bookmark',
+    onClick: () => { picking.value = true },
+  },
   {
     label: __('Rename'),
     icon: 'pencil',

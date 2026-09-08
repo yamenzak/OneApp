@@ -394,8 +394,13 @@ test('a named range fills a record\'s child table', async ({ page }) => {
 /**
  * A template is a sheet with a flag on it, and starting from one copies its
  * workbook. What is worth checking in a browser is the loop rather than the
- * copy: marking one, finding it in the New menu, and landing in a grid
+ * copy: marking one, loading it from inside a sheet, and landing in a grid
  * that already has the template's cells in it.
+ *
+ * From inside a sheet, because that is where templates are offered now — the
+ * moment you want one is the moment you are looking at a blank grid, not the
+ * moment you decided to make one. And it lands in a *new* sheet: the whole
+ * claim of the word "load" here is that nothing you have is written over.
  */
 test('a sheet can be made a template, and a new sheet starts from it', async ({ page }) => {
   const title = `Estimator ${Date.now()}`
@@ -409,11 +414,15 @@ test('a sheet can be made a template, and a new sheet starts from it', async ({ 
   await fileMenu(page).click()
   await page.getByRole('menuitem', { name: 'Use as a template' }).click()
 
-  await page.goto('/one/files')
-  await page.getByRole('button', { name: 'New', exact: true }).click()
-  await page.getByRole('menuitem', { name: title, exact: true }).click()
+  // A different sheet, so "it opened a new one" is a claim the URL can settle.
+  await newSheet(page)
+  const blank = page.url()
 
-  await page.waitForURL(/\/one\/sheets\//)
+  await fileMenu(page).click()
+  await page.getByRole('menuitem', { name: 'Load a template' }).click()
+  await page.locator('[data-slot="template-row"]', { hasText: title }).click()
+
+  await page.waitForURL((url) => /\/one\/sheets\//.test(url.href) && url.href !== blank)
   await ready(page)
   await select(page, 'A1')
   await expect(formulaBar(page)).toHaveValue('Rate card')

@@ -15,13 +15,22 @@
     everybody starts from — goes into the editor's own File menu instead.
   -->
   <SheetEditor :id="name" :host-menu="hostMenu" @close="close" />
+
+  <TemplatePicker
+    v-model="picking"
+    :rows="templates"
+    icon="lucide-table-2"
+    :said="__('This opens the template as a new sheet. The one you are in is not touched.')"
+    @pick="fromTemplate"
+  />
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import SheetEditor from '../components/sheets/editor/index.vue'
+import TemplatePicker from '../components/drive/TemplatePicker.vue'
 import { workspace } from '../lib/workspace'
 import { cameFrom } from '@/lib/screen/returnTo'
 import { __ } from '@/lib/runtime/translate'
@@ -74,9 +83,51 @@ function sendRows() {
   })
 }
 
+/*
+ * Templates, and what picking one does.
+ *
+ * They used to be rows in the Drive's New menu. Wrong place twice over: New is
+ * a menu of *kinds*, and a workspace's own files in it made the kinds hard to
+ * find; and the moment you want a template is the moment you are looking at a
+ * blank grid, not the moment you decided to make one.
+ *
+ * What it does is deliberately safe: it opens the template as a new sheet and
+ * leaves this one alone. Merging a template's tabs into the open workbook is
+ * the other reading of "load", and it is a real piece of work — the engine
+ * holds cells, formats, named ranges and charts, and there is no server call
+ * that adds a tab, only one that saves the whole workbook. A new file is
+ * honest about what it does, and nothing can be lost by pressing it.
+ *
+ * Fetched when the dialog is first opened rather than on mount: most sheets
+ * are opened to work in, and a query for a list nobody will look at is a query
+ * every open pays for.
+ */
+const picking = ref(false)
+const templates = ref([])
+
+watch(picking, (open) => {
+  if (!open || templates.value.length) return
+  workspace.sheetTemplates()
+    .then((found) => { templates.value = found || [] })
+    .catch(() => { templates.value = [] })
+})
+
+async function fromTemplate(row) {
+  const made = await workspace.sheetMake({
+    template: row.name,
+    title: __('{0} copy', [row.file_name]),
+  })
+  router.push({ name: 'Sheet', params: { name: made.name } })
+}
+
 const hostMenu = computed(() => [{
   group: __('This sheet'),
   options: [
+    {
+      label: __('Load a template'),
+      icon: 'bookmark',
+      onClick: () => { picking.value = true },
+    },
     // The rows go back to the record this sheet was made from. Only where the
     // person may write that record, and never where the table has been locked
     // — after a lock the document is the record and the sheet is history.
