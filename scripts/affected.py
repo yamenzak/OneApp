@@ -55,7 +55,10 @@ SHARED = (
 	"apps/oneapp/frontend/src/main.js",
 	"apps/oneapp/frontend/src/router*",
 	"apps/oneapp/frontend/src/components/AppShell.vue",
-	"apps/oneapp/frontend/src/components/Rail*.vue",
+	# The rail, which is three components under `shell/` since the launcher
+	# and the foot were split out of it, plus the sidebar it sits in.
+	"apps/oneapp/frontend/src/components/shell/*",
+	"apps/oneapp/frontend/src/components/SpaceSidebar.vue",
 	"apps/oneapp/frontend/src/lib/shell/*",
 	"apps/oneapp/frontend/src/lib/runtime/*",
 	"apps/oneapp/frontend/src/ui.js",

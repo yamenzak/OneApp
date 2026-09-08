@@ -15,13 +15,17 @@ matters is the one you can download.
 import frappe
 from frappe import _
 
+from .. import languages
 from ..drive import kinds
 from ..storage import r2
 
-#: What may be opened as text rather than downloaded. The same set `make_text`
-#: creates, plus the ones a person routinely wants to fix a line of without
-#: leaving the workspace.
-EDITABLE = ("txt", "md", "markdown", "csv", "log", "json", "yml", "yaml")
+#: What may be opened as text rather than downloaded: the three `make_text`
+#: creates, the ones a person routinely wants to fix a line of without leaving
+#: the workspace, and every language OneCode knows. One editor reads all of
+#: them — a `.txt` is the same bytes in the same box as a `.py`, minus the
+#: colouring — so a second list of "and also code" would be the same list
+#: written twice.
+EDITABLE = ("txt", "md", "markdown", "csv", "log") + languages.EXTENSIONS
 
 #: A text file bigger than this is not something to open in a browser text
 #: box; it is a download. Two megabytes is a very long README.
@@ -49,6 +53,8 @@ def get_text(name: str) -> dict:
     if (row.file_size or 0) > MAX_BYTES:
         frappe.throw(_("That file is too big to open here. Download it instead."))
 
+    extension = (row.file_name or "").rsplit(".", 1)[-1].lower()
+
     content = row.get_content()
     if isinstance(content, bytes):
         try:
@@ -64,7 +70,14 @@ def get_text(name: str) -> dict:
         "modified": str(row.modified),
         "can_write": bool(frappe.has_permission("File", "write", doc=row)),
         "content": content or "",
-        "language": (row.file_name or "").rsplit(".", 1)[-1].lower(),
+        # Three answers about one thing, because three readers want different
+        # ones: the extension is what the file *is* and is what tells `Doc.vue`
+        # this is not prose; `highlight` is CodeMirror's key and is empty for
+        # most of them; `language_label` is what a person is shown.
+        "language": extension,
+        "highlight": languages.highlight_for(extension),
+        "language_label": languages.label_for(extension),
+        "is_code": languages.is_code(row.file_name),
     }
 
 

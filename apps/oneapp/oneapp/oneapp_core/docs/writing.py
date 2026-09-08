@@ -15,6 +15,7 @@ ever an upload. The editor opens both; `text.py` is the second one's store.
 import frappe
 from frappe import _
 
+from .. import languages
 from ..drive import kinds
 from . import body, export, text
 
@@ -24,6 +25,14 @@ TEXT_KINDS = {
     "txt": ("Untitled.txt", "text/plain"),
     "md": ("Untitled.md", "text/markdown"),
     "csv": ("Untitled.csv", "text/csv"),
+    # And every language OneCode knows, on the same terms: a new empty file
+    # with a real object behind it, named `Untitled.<ext>`. Built rather than
+    # typed out, so adding a language is one line in `languages.py` and not
+    # three edits that have to agree.
+    **{
+        key: (f"Untitled.{key}", "text/plain")
+        for key in languages.LANGUAGES
+    },
 }
 
 

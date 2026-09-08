@@ -114,16 +114,29 @@ def test_a_documents_prose_goes_when_its_file_does(docs):
 
 def test_python_and_the_browser_agree_about_what_opens_in_the_editor(docs):
 	"""A `.md` the browser routes to the editor and the server calls "not text"
-	is a page that loads and then says the file cannot be opened."""
+	is a page that loads and then says the file cannot be opened.
+
+	Both sides now build the same union — the plain kinds plus every language in
+	the catalogue — so what is checked here is the *plain* half. The language
+	half is `tests/test_onecode.py`, which reads the two catalogues back against
+	each other.
+	"""
 	js = (FRONTEND / "lib/files/files.js").read_text()
-	pattern = re.search(r"const TEXT = /\\\.\(([^)]+)\)\$/i", js)
-	assert pattern, "files.js no longer declares the text extensions"
+	pattern = re.search(r"const PLAIN = \[([^\]]+)\]", js)
+	assert pattern, "files.js no longer declares the plain text extensions"
 
-	browser = set(pattern.group(1).split("|"))
-	# `ya?ml` is one alternation in the regex and two extensions in Python.
-	browser = {one for one in browser if one != "ya?ml"} | {"yml", "yaml"}
+	browser = set(re.findall(r"'([^']+)'", pattern.group(1)))
+	python = set(docs.EDITABLE) - set(_catalogue()["EXTENSIONS"])
+	# The two Python spells `markdown` as an alias and the browser reaches
+	# through the catalogue for.
+	assert browser == python - {"md", "markdown"}
 
-	assert browser == set(docs.EDITABLE)
+
+def _catalogue() -> dict:
+	source = ROOT / "apps/oneapp/oneapp/oneapp_core/languages.py"
+	namespace = {}
+	exec(compile(source.read_text(), str(source), "exec"), namespace)
+	return namespace
 
 
 def test_one_function_decides_whether_a_click_routes(docs):
@@ -134,7 +147,8 @@ def test_one_function_decides_whether_a_click_routes(docs):
 		if "custom_kind === 'Sheet'" in path.read_text():
 			deciding.append(path.relative_to(FRONTEND).as_posix())
 	assert deciding == [], (
-		f"{deciding} decides for itself what a click opens — use routeFor()"
+		f"{deciding} decides for itself what a click opens — use routeFor() "
+		"for where it goes, or editorFor() for which editor to mount"
 	)
 
 

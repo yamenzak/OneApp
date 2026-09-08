@@ -6,6 +6,7 @@
  */
 
 import { __ } from '@/lib/runtime/translate'
+import { isCode, resolveLanguage } from './languages'
 
 // The extension is all a File row says about what it is, and it is enough for
 // an icon. Anything unrecognised is a file, which is true.
@@ -35,6 +36,7 @@ export const KIND_ICONS = {
   Document: 'lucide-file',
   Sheet: 'lucide-table-2',
   Doc: 'lucide-file-signature',
+  Code: 'lucide-file-code',
   Other: 'lucide-file-question',
 }
 
@@ -62,14 +64,31 @@ export const labelForKind = (kind) => {
   if (kind === 'Document') return __('Document')
   if (kind === 'Sheet') return __('Sheet')
   if (kind === 'Doc') return __('Doc')
+  if (kind === 'Code') return __('Code')
   return __('Other')
 }
 
-//: What opens in the text editor rather than the previewer. The server's
-//: `docs/text.py` holds the same list; it is short, and a file that is not on
-//: it is only ever previewed, so the two drifting costs a preview rather than
-//: a broken save.
-const TEXT = /\.(txt|md|markdown|csv|log|json|ya?ml)$/i
+/**
+ * What opens in an editor rather than the previewer.
+ *
+ * The three plain kinds `make_text` creates plus a log, and then every language
+ * OneCode knows — which is the same union `docs/text.py` builds, and
+ * `tests/test_docs.py` reads the two back against each other. It used to be a
+ * regular expression written out here, and that was the drift: a file the
+ * browser routed to the editor and the server called "not text" is a page that
+ * loads and then says the file cannot be opened.
+ */
+const PLAIN = ['txt', 'csv', 'log']
+
+const extensionOf = (fileName) => {
+  const name = String(fileName || '').split('?')[0]
+  return name.includes('.') ? name.split('.').pop().toLowerCase() : ''
+}
+
+export const isEditableText = (fileName) => {
+  const extension = extensionOf(fileName)
+  return !!extension && (PLAIN.includes(extension) || !!resolveLanguage(extension))
+}
 
 /**
  * The route that opens this file, or `null` when looking at it is the answer.
@@ -84,12 +103,29 @@ const TEXT = /\.(txt|md|markdown|csv|log|json|ya?ml)$/i
  * to.
  */
 export function routeFor(file) {
+  const editor = editorFor(file)
+  if (!editor) return null
+  return editor === 'sheet'
+    ? { name: 'Sheet', params: { name: file.name } }
+    : { name: 'Doc', params: { name: file.name } }
+}
+
+/**
+ * Which editor this file is, or null when looking at it is the answer.
+ *
+ * Three now rather than two, and they do not map one-to-one onto routes: a
+ * document and a `.py` are both `/one/docs/…` because both are one `File` and
+ * the server decides which editor the page mounts. The Drive's pane needs the
+ * distinction that the route does not carry — it renders the editor itself,
+ * beside the list — so this is what it asks rather than re-deriving a kind for
+ * itself, which is exactly the drift `routeFor` exists to prevent.
+ */
+export function editorFor(file) {
   if (!file || file.is_folder) return null
-  if (file.custom_kind === 'Sheet') return { name: 'Sheet', params: { name: file.name } }
-  if (file.custom_kind === 'Doc' || TEXT.test(file.file_name || '')) {
-    return { name: 'Doc', params: { name: file.name } }
-  }
-  return null
+  if (file.custom_kind === 'Sheet') return 'sheet'
+  if (file.custom_kind === 'Doc') return 'doc'
+  if (isCode(file.file_name)) return 'code'
+  return isEditableText(file.file_name) ? 'text' : null
 }
 
 export function iconFor(file) {

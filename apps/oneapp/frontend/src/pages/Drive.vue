@@ -320,18 +320,14 @@
             one on screen.
           -->
           <SheetEditor
-            v-if="looking.custom_kind === 'Sheet'"
+            v-if="mounts === 'sheet'"
             :key="looking.name"
             :id="looking.name"
             :host-menu="[]"
             @close="previewing = false"
           />
 
-          <Doc
-            v-else-if="looking.custom_kind === 'Doc'"
-            :key="looking.name"
-            :name="looking.name"
-          />
+          <Doc v-else-if="mounts" :key="looking.name" :name="looking.name" />
 
           <div v-else class="min-h-0 flex-1 overflow-auto p-3">
             <FileSurface :file="looking" :live="previewing" :tall="false" />
@@ -484,7 +480,7 @@ import ImportSheet from '../components/sheets/ImportSheet.vue'
 import { useDrive } from '../composables/useDrive'
 import { useNewFile } from '../composables/useNewFile'
 import { useUploads } from '../composables/useUploads'
-import { downloadUrl, routeFor } from '../lib/files/files'
+import { downloadUrl, editorFor, routeFor } from '../lib/files/files'
 import { useIsMobile } from '@/lib/shell/breakpoint'
 import { __ } from '@/lib/runtime/translate'
 import { PLACES, labelOf } from '../components/drive/places'
@@ -701,7 +697,13 @@ const previewing = ref(false)
 // a desktop. On a phone the pane is a full-screen overlay, so opening a sheet
 // in it buys nothing the page does not already give and costs the URL and the
 // back button. So there the row stays what it looks like: a link.
-const INLINE = ['Sheet', 'Doc']
+//
+// Kinds and not editors, because this is what a `FileRow` has: `editorFor`
+// answers from a whole file and the row is deciding before it opens one. `Code`
+// carries every `.py` and `.sql`; the text kinds a `.txt` and a `.log`, which
+// `custom_kind` calls Document — so the pane takes a Document only when
+// `editorFor` says there is an editor behind it, which `mounts` below settles.
+const INLINE = ['Sheet', 'Doc', 'Code', 'Document']
 
 // Wider when the pane holds an editor. Four hundred and eighty pixels is a
 // preview; it is not a spreadsheet, and a person who has to drag the resizer
@@ -729,7 +731,15 @@ const editorFloor = () => {
   return Math.round(Math.max(480, Math.min(860, half, spare)))
 }
 
-const editing = computed(() => INLINE.includes(looking.value?.custom_kind))
+// Which editor the pane mounts, from the one function that decides it. A
+// Document whose bytes nothing can edit — a `.docx` — comes back null and gets
+// the previewer, which is the whole reason this is not `INLINE.includes`.
+const mounts = computed(() => {
+  const editor = editorFor(looking.value)
+  return editor === 'sheet' ? 'sheet' : (editor ? 'doc' : '')
+})
+
+const editing = computed(() => !!mounts.value)
 
 const downloadLooking = () => window.open(downloadUrl(looking.value.name), '_blank')
 const sharing = ref(false)

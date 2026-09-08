@@ -5,7 +5,7 @@ be a column. Deriving it from the mime type at read time would be a Python walk
 over a mime map for every row of every page; deriving it on insert is one
 comparison, once, ever.
 
-Nine kinds and no more. The point of a kind is the filter chip and the icon —
+Ten kinds and no more. The point of a kind is the filter chip and the icon —
 a reader scanning for the site photos does not want twelve buckets, and the
 mime type is still on the row for anything that needs to be exact.
 
@@ -23,6 +23,8 @@ asymmetry already exists for `Sheet` beside a `.xlsx`.
 """
 
 import frappe
+
+from .. import languages
 
 KIND_FIELD = "custom_kind"
 STATUS_FIELD = "custom_status"
@@ -46,9 +48,10 @@ AUDIO = "Audio"
 DOCUMENT = "Document"
 SHEET = "Sheet"
 DOC = "Doc"
+CODE = "Code"
 OTHER = "Other"
 
-KINDS = (FOLDER, IMAGE, PDF, VIDEO, AUDIO, DOCUMENT, SHEET, DOC, OTHER)
+KINDS = (FOLDER, IMAGE, PDF, VIDEO, AUDIO, DOCUMENT, SHEET, DOC, CODE, OTHER)
 
 # Matched in order, on the extension rather than on a mime type: Frappe stores
 # no mime type on `File`, and the browser's guess for an upload is famously the
@@ -62,6 +65,11 @@ BY_EXTENSION = (
         "doc", "docx", "xls", "xlsx", "ppt", "pptx", "odt", "ods", "odp",
         "txt", "md", "csv", "rtf",
     )),
+    # Last, so a name that is both stays what it already was. `.md` and `.txt`
+    # are read here by the same editor as a `.py`, and are still Documents:
+    # what a kind answers is "show me the drawings", and a person filtering for
+    # code does not mean the README.
+    (CODE, languages.EXTENSIONS),
 )
 
 
