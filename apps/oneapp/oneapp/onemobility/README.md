@@ -149,7 +149,7 @@ kept forever and the large one is not.
 | hot | MariaDB, partitioned by day | raw rows, ~30 days | anything, at full grain |
 | warm | R2, one object per vehicle per day | the rolled track | playback, instantly |
 | frozen | R2, one Parquet file per day | the raw rows again | a question nobody anticipated |
-| aggregate | MariaDB, never expires | per line/stop/hour counts, means | every chart, every long range |
+| aggregate | MariaDB, never expires | per line/stop/hour counts and **percentiles** | every chart, every long range, every forecast |
 
 The aggregate tier is the one that makes the rest affordable. A year of "trips,
 mean delay, mean occupancy, per line per stop per hour" is tens of thousands of
@@ -278,6 +278,89 @@ Rendering:
 
 ---
 
+## 7a. Forecasting, and what the aggregate tier is really for
+
+The point that reorganises this whole section: **forecasting is not a
+subsystem, it is a second reader of the aggregate tier**. The roll-up in §3a
+already computes, per line, per stop, per hour, per weekday, what actually
+happened. That table *is* the model for almost everything worth predicting, and
+the interesting work is not building a predictor — it is storing the right
+numbers in the first place.
+
+Which means one concrete change to that tier: **store percentiles, not means.**
+A mean travel time answers no question anybody has. The 85th percentile is what
+a scheduler builds a timetable from, the 50th is what an ETA should say, and
+the spread between them is the uncertainty a forecast has to show. Keeping
+p50/p85/p95 alongside the count costs three columns and is the difference
+between a chart and a product.
+
+### What is genuinely predictable, in the order it works
+
+1. **Arrival time.** A vehicle is at a known point with a known delay; when
+   does it reach the next six stops? The honest first version is not a model —
+   it is a lookup of the historical distribution for that segment at that hour
+   on that weekday, offset by the current delay. A percentile table beats most
+   fitted models here, and it is explainable to somebody who does not trust
+   software.
+2. **Punctuality risk.** The same distribution, stated as a probability rather
+   than a point: "this trip reaches the terminus more than five minutes late on
+   seven runs in ten at this hour". An operator acts on risk, not on a number.
+3. **Bunching.** On a frequent line, vehicles catch each other, and the gap
+   collapses predictably. Detecting it live is arithmetic on two positions;
+   predicting it is extrapolating one gap. No model at all, and it is the thing
+   an operator can actually intervene on — which makes it the highest ratio of
+   value to effort in this list.
+4. **Occupancy and demand.** Strongly periodic: hour, weekday, school term,
+   weather, events. Classic seasonal decomposition, and it works.
+5. **Anomaly.** "This trip is behaving unlike its own history" is a z-score
+   against the same table. It catches incidents without anybody having to
+   define what an incident is, which is the only way that feature ever works.
+6. **Dwell time** as a function of boardings, which is what makes 1 accurate
+   rather than merely present.
+
+What is **not** on this list: what-if simulation — "add a bus at 07:00 and what
+happens to load" — which is a different discipline, needs a network model
+rather than a history, and should be refused rather than approximated.
+
+### The scrubber earns a second use
+
+The time control in §4 has a right-hand side. Past on the left, forecast on the
+right, one control, with the uncertainty band widening as it goes forward and
+the vehicles on the map becoming ghosts. That is the demo: the same gesture
+that shows what happened shows what is about to.
+
+It is also an honest design, because it makes the uncertainty visible rather
+than hiding it behind a single number. **A forecast is never drawn without its
+spread.** A confident wrong ETA costs more trust than no ETA.
+
+### We have to score ourselves
+
+Every prediction is written down with what it predicted and when, and a job
+scores it against what happened. Without that we cannot answer "is it any
+good", cannot tell a customer, and cannot notice the day it stops working
+because a line was rerouted.
+
+It also decides the cold start honestly: a workspace with no history has no
+distribution, so an ETA is the timetable plus the current delay and the screen
+says so. Software that pretends to know is worse than software that says it is
+still learning.
+
+### Where AI earns its cost, and where it is theatre
+
+Points 1–6 are statistics. Putting a language model on them would be slower,
+dearer and worse, and we meter every AI call, so it would also be visibly
+worse. The gateway is not the tool for arithmetic.
+
+Where it earns its place is **the sentence**, and this product's buyer is
+exactly the person who wants one: turning "line 12, p85 delay 8.4 min, 14 of 21
+weekday mornings, segment Hbf→Markt" into *"Line 12 is reliably late leaving
+the Hauptbahnhof on weekday mornings, and it has been since March."* And the
+other direction — a question typed in German becoming an aggregate query.
+
+Both operate on the rolled-up numbers, never on raw observations, which keeps
+them cheap and keeps them compatible with a customer who has AI switched off
+entirely.
+
 ## 8. What the engine is missing
 
 In the order it blocks:
@@ -294,6 +377,23 @@ In the order it blocks:
    settings tab today.
 5. **A component screen that is a real product surface.** The escape hatch
    exists and nothing has used it in anger.
+
+Two of these are not OneMobility's at all, and should be built as OneSpace's
+own so the next space inherits them:
+
+* **The map system.** A view type over `Geolocation`, and the map primitives
+  under it — tiles, projection, clustering, the marker layer. Any doctype with
+  a position gets a map, and OneMobility is only its loudest customer.
+* **Tiered storage, declared rather than written.** A module says "this is a
+  fact table, keep 30 days hot, roll it up like *this*, freeze the rest" and
+  the engine does the partitioning, the nightly roll-up, the freeze to R2 and
+  the hydrate on request. Zero-touch in both directions — dump, hydrate, dump
+  again — and nothing in the module knows which tier a row is in.
+
+  OneMobility is the first module with a fact table, so it is where the seam
+  gets discovered. It must not be where it lives: the next module with
+  millions of rows of anything — mail events, AI call logs, audit trails —
+  wants exactly this and should not reimplement it.
 
 None is a reason to wait; they are the order to build in.
 
@@ -373,8 +473,13 @@ Each ships something a person can look at.
 8. **Sources, plural.** Precedence, conflicts, inferred stops, the connection
    surface.
 
-Stages 1–4 are a sellable demo. Stages 5–6 are the product. Stage 7 is what
-renews it.
+9. **Forecast.** The percentile roll-up read forwards — ETAs, punctuality risk,
+   bunching — the scrubber's right-hand side, and the scoring job that says
+   whether any of it is any good.
+
+Stages 1–4 are a sellable demo. Stages 5–6 are the product. Stages 7–9 are what
+renews it, and stage 9 is what makes a competitor's version look like a
+screenshot.
 
 ---
 

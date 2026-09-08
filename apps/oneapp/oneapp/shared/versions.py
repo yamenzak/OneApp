@@ -61,17 +61,24 @@ TITLE_MAX = 140
 
 
 def _store(kind: str):
-    """The module that owns bodies of this kind."""
+    """The module that owns bodies of this kind.
+
+    Imported by absolute path and not relatively. `shared` sits beside the
+    product modules rather than above them, so `.sheets` reaches for a sibling
+    of `shared` that has never existed — and it resolves at *call* time, which
+    is why a wrong one here is not an import error at boot but a save that
+    fails in a browser.
+    """
     if kind == SHEET:
-        from .sheets import book
+        from oneapp.onesheet import book
 
         return book
     if kind == DOC:
-        from .docs import body
+        from oneapp.onedoc import body
 
         return body
     if kind == TEXT:
-        from .docs import text
+        from oneapp.onedoc import text
 
         return text
     frappe.throw(_("There is no such thing as a {0} version.").format(kind))
