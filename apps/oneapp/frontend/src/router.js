@@ -44,8 +44,10 @@ const routes = [
     path: '/files',
     name: 'Drive',
     component: () => import('./pages/Drive.vue'),
-    // A rail, a list and its own scroller, same as the screen host.
-    meta: { pane: true },
+    // A rail, a list and its own scroller, same as the screen host — and, like
+    // the screen host, it draws its own panels: a file opens in a pane beside
+    // the list, and the two are two islands rather than a split inside one.
+    meta: { pane: true, bare: true },
   },
   {
     // The diary: everything the reader has with a date on it, from every

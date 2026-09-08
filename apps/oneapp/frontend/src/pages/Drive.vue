@@ -100,7 +100,7 @@
 
   <!-- The rail is the shell's, drawn into its `#sidebar` slot the way Mail's
        is — a page that drew its own would be two rails on one screen. -->
-  <div class="flex h-full min-h-0">
+  <div class="flex h-full min-h-0 gap-2">
     <!--
       Drop anywhere in the pane, not only on the list: a person dragging four
       files at an empty folder aims at the empty state.
@@ -109,7 +109,7 @@
       every child the pointer crosses.
     -->
     <div
-      class="flex min-w-0 flex-1 flex-col p-5"
+      class="flex min-w-0 flex-1 flex-col rounded-6 bg-surface-base p-5"
       data-slot="drive-dropzone"
       :class="dragging ? 'rounded-6 ring-2 ring-inset ring-outline-gray-3' : ''"
       @dragenter.prevent="onDragEnter"
@@ -232,6 +232,66 @@
         />
       </div>
     </div>
+
+    <!--
+      The file you are looking at, beside the list rather than over it.
+
+      A dialog was the wrong shape for a file manager: looking at a photograph
+      is how you decide which photograph, and a modal makes that a sequence of
+      open-look-close-open rather than a walk down the list. The same pane a
+      record opens in, for the same reason and with the same resizer — and on a
+      phone `RecordPane` draws itself as a full overlay, which is what a
+      dialog was doing there anyway.
+
+      Only for what has no editor of its own. A sheet, a document and a folder
+      are places with addresses, and clicking one goes there; a `.zip` is not,
+      and this is where it opens.
+    -->
+    <RecordPane v-if="looking && previewing">
+      <template #body>
+        <div class="flex h-full min-h-0 flex-col rounded-6 bg-surface-base">
+          <header class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 p-3">
+            <h2 class="flex min-w-0 flex-1 items-center gap-1.5">
+              <span class="truncate text-base text-ink-gray-8">{{ looking.file_name }}</span>
+              <AiMark v-if="looking._ai" :mark="looking._ai" />
+            </h2>
+            <!--
+              A link, not `FileShare`. Two different things wear the word
+              share: `FileShare` is a `DocShare` row and needs the other person
+              to have a login here, and this is the one for the consultant who
+              does not. The row's menu offers the first; a file you are looking
+              at is usually a file you are about to send somebody.
+            -->
+            <Button
+              icon="lucide-link"
+              variant="ghost"
+              :label="__('Share a link')"
+              :tooltip="__('Share a link')"
+              @click="linking = true"
+            />
+            <Button
+              icon="lucide-download"
+              variant="ghost"
+              :label="__('Download')"
+              :tooltip="__('Download')"
+              @click="downloadLooking"
+            />
+            <Button
+              icon="lucide-x"
+              variant="ghost"
+              :label="__('Close')"
+              :tooltip="__('Close')"
+              data-slot="drive-pane-close"
+              @click="previewing = false"
+            />
+          </header>
+
+          <div class="min-h-0 flex-1 overflow-auto p-3">
+            <FileSurface :file="looking" :live="previewing" :tall="false" />
+          </div>
+        </div>
+      </template>
+    </RecordPane>
   </div>
 
   <!-- What you can do with what you have chosen, over the list rather than in
@@ -293,8 +353,9 @@
 
   <UploadTray />
 
-  <FilePreview v-model="previewing" :file="looking" />
   <FileShare v-model="sharing" :file="looking" />
+
+  <ShareLink v-model="linking" :file="looking" />
   <ImportSheet v-model="importing" :folder="folder" />
 
   <FolderPicker v-model="moving" :moving="toMove" @chosen="intoFolder" />
@@ -361,17 +422,20 @@ import {
   PageHeader,
   Skeleton,
 } from '@/ui'
+import AiMark from '../components/AiMark.vue'
 import EmptyState from '../components/EmptyState.vue'
-import FilePreview from '../components/drive/FilePreview.vue'
+import FileSurface from '../components/drive/FileSurface.vue'
 import FileRow from '../components/drive/FileRow.vue'
 import FileShare from '../components/drive/FileShare.vue'
+import ShareLink from '../components/drive/ShareLink.vue'
 import FolderPicker from '../components/drive/FolderPicker.vue'
 import UploadTray from '../components/drive/UploadTray.vue'
+import RecordPane from '../components/screen/record/RecordPane.vue'
 import ImportSheet from '../components/sheets/ImportSheet.vue'
 import { useDrive } from '../composables/useDrive'
 import { useNewFile } from '../composables/useNewFile'
 import { useUploads } from '../composables/useUploads'
-import { routeFor } from '../lib/files/files'
+import { downloadUrl, routeFor } from '../lib/files/files'
 import { useIsMobile } from '@/lib/shell/breakpoint'
 import { __ } from '@/lib/runtime/translate'
 import { PLACES, labelOf } from '../components/drive/places'
@@ -574,7 +638,10 @@ function read(key) {
 // Which file the dialogs are about. One ref, because only one of them is open.
 const looking = ref(null)
 const previewing = ref(false)
+
+const downloadLooking = () => window.open(downloadUrl(looking.value.name), '_blank')
 const sharing = ref(false)
+const linking = ref(false)
 const naming = ref(false)
 const renaming = ref(false)
 const moving = ref(false)

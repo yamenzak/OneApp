@@ -60,7 +60,7 @@ test('the drive lists the workspace files, and every place in the rail loads', a
   expectNoRealErrors(errors)
 })
 
-test('opening a file opens a preview, and the preview offers a link', async ({ page }) => {
+test('opening a file opens a pane, and the pane offers a link', async ({ page }) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/files?place=all')
 
@@ -80,9 +80,15 @@ test('opening a file opens a preview, and the preview offers a link', async ({ p
   await file.first().waitFor({ timeout: 20_000 })
   await file.first().click()
 
-  const preview = page.getByRole('dialog')
+  // A pane beside the list, not a dialog over it: looking at a photograph is
+  // how you decide which photograph, and a modal makes that open-look-close
+  // rather than a walk down the list.
+  const preview = page.locator('[data-slot="record-pane"]')
   await expect(preview).toBeVisible()
   await expect(preview.getByRole('button', { name: 'Download' })).toBeVisible()
+
+  // The list is still there beside it, which is the whole point.
+  await expect(page.locator('[data-slot="drive-file"]').first()).toBeVisible()
 
   // A text preview is the case that catches the download route serving an
   // error page instead of the file — which is what it did on any site without
@@ -93,7 +99,8 @@ test('opening a file opens a preview, and the preview offers a link', async ({ p
   // Opening it is what makes it recent, so Recents has something in it now.
   // Nothing called the endpoint that stamps this, so the rail's second place
   // was empty on every site and looked like a place nobody used.
-  await page.keyboard.press('Escape')
+  await page.locator('[data-slot="drive-pane-close"]').click()
+  await expect(preview).toHaveCount(0)
   await goToPlace(page, 'Recent')
   await expect(page.locator('[data-slot="drive-file"]').first()).toBeVisible({
     timeout: 15_000,
@@ -103,13 +110,14 @@ test('opening a file opens a preview, and the preview offers a link', async ({ p
   await page.goBack()
   await file.first().click()
 
-  // Sharing replaces the preview rather than stacking on it, because two open
-  // modals nest and the outer one goes `aria-hidden` under the inner. What
-  // makes a link different from a copy of the file is that it ends, so the
-  // expiry is the part worth asserting.
+  // Sharing is still a dialog — it has a list, a form and a destructive control
+  // of its own — and it opens over the pane rather than replacing it, which it
+  // could not do while the preview was a modal too. What makes a link different
+  // from a copy of the file is that it ends, so the expiry is the part worth
+  // asserting.
   await preview.getByRole('button', { name: 'Share a link' }).click()
   const share = page.getByRole('dialog')
-  await expect(share.getByText('It stops working after')).toBeVisible()
+  await expect(share.getByText('It stops working after')).toBeVisible({ timeout: 15_000 })
   await expect(share.getByRole('button', { name: 'Make a link' })).toBeVisible()
 
   expectNoRealErrors(errors)
@@ -327,15 +335,16 @@ test('a link made here is a link a stranger can follow', async ({ page, browser 
   const errors = collectConsoleErrors(page)
   await page.goto('/one/files?place=all')
 
-  // The fixture's own pictures, for the same reason as the preview test above:
-  // a sheet is a file and clicking one opens its grid rather than a dialog.
+  // The fixture's own pictures, for the same reason as the pane test above:
+  // a sheet is a file and clicking one opens its grid rather than a pane.
   await page.getByPlaceholder('Search files').fill('zzmock')
   await expect(page.locator('[data-slot="drive-file"]').first()).toContainText('zzmock')
 
   const file = page.locator('button[data-slot="drive-open"]')
   await file.first().waitFor({ timeout: 20_000 })
   await file.first().click()
-  await page.getByRole('dialog').getByRole('button', { name: 'Share a link' }).click()
+  await page.locator('[data-slot="record-pane"]')
+    .getByRole('button', { name: 'Share a link' }).click()
 
   // Links this file already has, from earlier runs. The dialog draws them
   // before the new one exists, so waiting for "a row" would read whichever was

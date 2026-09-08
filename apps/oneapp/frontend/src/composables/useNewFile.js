@@ -20,12 +20,6 @@ import { workspace } from '@/lib/workspace'
 import { RETURN_TO, returnQuery } from '@/lib/screen/returnTo'
 import { __ } from '@/lib/runtime/translate'
 
-//: How many templates a menu offers before it stops being a menu. Six is about
-//: what fits under "Blank sheet" without pushing the group below it off the
-//: screen; past that the list is a place to browse rather than a list to read,
-//: and the Drive's Templates rail entry is that place.
-const MOST = 6
-
 export function useNewFile(where, extras = () => []) {
   const router = useRouter()
 
@@ -75,34 +69,18 @@ export function useNewFile(where, extras = () => []) {
   const newText = (kind) =>
     run(() => workspace.docMakeText({ ...target(), kind }), 'Doc')
 
-  const copyName = (row, fallback) => __('{0} copy', [row?.file_name || fallback])
-
-  /**
-   * The templates a menu can hold, and a way to the rest.
+  /*
+   * Grouped rather than listed flat, because a workspace with four estimator
+   * templates otherwise gets a menu where "Document" is below the fold.
    *
-   * Uncapped, this grew to fourteen entries against three real ones — every
-   * estimator anybody had ever flagged, in one flat list, with "Document" and
-   * "Blank sheet" scrolled off the top. A menu is for the handful you reach for
-   * daily.
+   * And no templates in it at all any more. They were here, capped at six with
+   * an "All 14 templates…" row under them, and it was the wrong place twice
+   * over: a menu called New is a menu of *kinds*, and putting a workspace's
+   * own files in it made the kinds hard to find; and the moment you actually
+   * want a template is the moment you are looking at a blank sheet, not the
+   * moment you are deciding to make one. So Load a template lives in the
+   * editors — `TemplatePicker` — where the blank page is on screen.
    */
-  const offered = (rows, icon, start) => {
-    const entries = rows.slice(0, MOST).map((one) => ({
-      label: one.file_name,
-      icon,
-      onClick: () => start(one.name, copyName(one, __('Copy'))),
-    }))
-    if (rows.length > MOST) {
-      entries.push({
-        label: __('All {0} templates…', [rows.length]),
-        icon: 'lucide-bookmark',
-        onClick: () => router.push({ name: 'Drive', query: { place: 'templates' } }),
-      })
-    }
-    return entries
-  }
-
-  // Grouped rather than listed flat, because a workspace with four estimator
-  // templates otherwise gets a menu where "Document" is below the fold.
   const options = computed(() => [
     {
       group: __('Write'),
@@ -110,7 +88,6 @@ export function useNewFile(where, extras = () => []) {
         { label: __('Document'), icon: 'lucide-file-signature', onClick: () => newDoc() },
         { label: __('Text file'), icon: 'lucide-file-text', onClick: () => newText('txt') },
         { label: __('Markdown file'), icon: 'lucide-file-code', onClick: () => newText('md') },
-        ...offered(docTemplates.value, 'lucide-file-signature', newDoc),
       ],
     },
     {
@@ -118,7 +95,6 @@ export function useNewFile(where, extras = () => []) {
       options: [
         { label: __('Blank sheet'), icon: 'lucide-table-2', onClick: () => newSheet() },
         ...extras(),
-        ...offered(sheetTemplates.value, 'lucide-table-2', newSheet),
       ],
     },
   ])

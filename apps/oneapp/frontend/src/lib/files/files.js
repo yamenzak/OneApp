@@ -136,3 +136,13 @@ export async function fetchFile(row) {
   const blob = await answer.blob()
   return new File([blob], row.file_name || row.name || 'file', { type: blob.type })
 }
+
+/**
+ * Where a file's bytes are.
+ *
+ * `r2.download` checks the reader's permission and then redirects to a
+ * presigned object, so an `<img>`, a `<video>` and a download link are all the
+ * same URL — and none of them needs a key of ours to reach it.
+ */
+export const downloadUrl = (name) =>
+  `/api/method/oneapp.oneapp_core.storage.r2.download?file=${encodeURIComponent(name)}`
