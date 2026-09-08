@@ -25,11 +25,15 @@ test('the list is still there beside the record', async ({ page }, info) => {
 
   // Beside, not over. The row's own box is wider than what is on screen — the
   // grid scrolls sideways inside its pane — so what is asserted is that the
-  // list starts to the left of the record and the record runs to the edge.
+  // list starts to the left of the record and the record runs to the far edge
+  // of the area the shell gives the page. Not to the edge of the *window*: the
+  // shell insets that area by 8px, so a record that ran to 1280 would be one
+  // that had escaped its own panel.
   const list = await rows.first().boundingBox()
   const pane = await page.locator('[data-slot="record-pane"]').boundingBox()
+  const inset = await page.locator('[data-slot="shell-inset"]').boundingBox()
   expect(list.x).toBeLessThan(pane.x)
-  expect(Math.round(pane.x + pane.width)).toBe(page.viewportSize().width)
+  expect(Math.round(pane.x + pane.width)).toBe(Math.round(inset.x + inset.width))
 
   await info.attach(`pane-${info.project.name}`, {
     body: await page.screenshot(),

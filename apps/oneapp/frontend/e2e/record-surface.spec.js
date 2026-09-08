@@ -33,8 +33,14 @@ const openRecord = async (page) => {
   await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
 }
 
-// What each column's fieldtype maps to. A phone shows two of the six, so the
-// assertion is per rendered header rather than a fixed count.
+// What each column's fieldtype maps to.
+//
+// Asserted in the column picker rather than on the list's own header. The
+// header used to carry the glyph too and no longer does: a fieldtype is a
+// property of a column you are *choosing*, and repeating it above every column
+// you already chose put six icons in a row that never changes and made the
+// header look like a toolbar. The mapping is the same mapping; this is where it
+// is now visible.
 const HEADER_ICONS = {
   Description: 'lucide-pilcrow',
   // The title column is the title field, so it carries that field's icon.
@@ -46,9 +52,6 @@ const HEADER_ICONS = {
   Color: 'lucide-palette',
 }
 
-// The three boxes of one filter row in the panel, in order: field, operator,
-// value. Scoped to the popover, because the quick boxes above are the same kind
-// of control and come first in the DOM.
 const box = (page, at) => page.locator('[data-slot="content-body"] button[role="combobox"]').nth(at)
 
 const pick = async (page, at, option) => {
@@ -65,26 +68,31 @@ test('every list header carries the icon its fieldtype maps to', async ({ page }
 
   // Not one icon repeated: the map is keyed by fieldtype, so a Select and a
   // Link and a Date are told apart at a glance.
+  await page.getByRole('button', { name: 'Columns' }).click()
+  await expect(page.locator('[data-slot="column-row"]').first()).toBeVisible()
+
+  // The grip comes first in every row and is the same glyph in all of them, so
+  // it is dropped rather than indexed past: a row that loses its drag handle
+  // should fail this on the fieldtype, not silently pass on the grip.
   const found = await page
-    .locator('[data-slot="list-header-cell"]')
-    .evaluateAll((cells) =>
-      cells
-        .filter((cell) => cell.querySelector('button')?.innerText.trim())
-        .map((cell) => [
-          cell.innerText.trim(),
-          [...(cell.querySelector('[class*="lucide-"]')?.classList || [])].find((c) =>
-            c.startsWith('lucide-'),
-          ),
-        ]),
+    .locator('[data-slot="column-row"]')
+    .evaluateAll((rows) =>
+      rows.map((row) => [
+        row.innerText.trim().split('\n')[0].trim(),
+        [...row.querySelectorAll('[class*="lucide-"]')]
+          .flatMap((el) => [...el.classList])
+          .filter((c) => c.startsWith('lucide-') && c !== 'lucide-grip-vertical')[0],
+      ]),
     )
-  console.log('header icons:', found)
+  console.log('column icons:', found)
 
   expect(found.length).toBeGreaterThanOrEqual(2)
   for (const [label, icon] of found) {
+    if (!(label in HEADER_ICONS)) continue
     expect(icon, `${label} has no icon`).toBe(HEADER_ICONS[label])
   }
 
-  await info.attach(`headers-${info.project.name}`, {
+  await info.attach(`columns-${info.project.name}`, {
     body: await page.screenshot({ fullPage: true }),
     contentType: 'image/png',
   })
