@@ -6,14 +6,22 @@
     <!-- icon-right, not a #suffix holding an <Icon>: Button declares the prop
          and renders it at the library's own size and tone. The #prefix stays a
          slot because an Avatar is not something an icon prop can express. -->
-    <!-- Collapsed, the column is 3rem and a name is not something 3rem can
-         hold: it does not truncate to nothing, it runs out of the column and
-         out of the window. So the trigger becomes the avatar it already had. -->
+    <!--
+      Collapsed, the column is 3rem and a name is not something 3rem can hold:
+      it does not truncate to nothing, it runs out of the column and off the
+      edge of the window. So the trigger becomes the avatar it already had.
+
+      `!gap-0` as well as centring, because Button lays out prefix, label and
+      suffix with a gap and still renders the label span when the slot inside
+      it draws nothing. An empty span plus 8px of gap is 8px of nothing after
+      the avatar, and a centred row of two things one of which is invisible
+      puts the visible one four pixels off the line everything else sits on.
+    -->
     <Button
       variant="ghost"
       :icon-right="compact ? undefined : 'lucide-chevron-up'"
       class="!h-11 w-full"
-      :class="compact ? '!justify-center !px-0' : '!justify-start !px-2'"
+      :class="compact ? '!justify-center !gap-0 !px-0' : '!justify-start !px-2'"
       :label="displayName"
     >
       <template #prefix>
