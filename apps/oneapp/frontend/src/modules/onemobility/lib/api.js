@@ -25,6 +25,9 @@ export const network = {
   punctuality: (params) =>
     callMethod('oneapp.onemobility.punctuality', params, { method: 'GET' }),
 
+  /** What the network does over a day and over a week, off the aggregate tier. */
+  rhythm: (params) => callMethod('oneapp.onemobility.rhythm', params, { method: 'GET' }),
+
   /** Vehicles on one line that have caught each other. */
   bunching: (params) =>
     callMethod('oneapp.onemobility.bunching', params, { method: 'GET', silent: true }),

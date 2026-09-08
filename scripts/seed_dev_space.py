@@ -795,6 +795,7 @@ def _seed_onemobility():
 
 	from oneapp.onemobility import live, model
 	from oneapp.onespace import sync
+	from oneapp.shared import facts
 	from oneapp_control.spaces import onemobility as manifest
 
 	sync.ensure_role(manifest.SPACE["role_name"])
@@ -850,16 +851,25 @@ def _seed_onemobility():
 			"status": "In service", "agency": agency,
 		})
 
-	# A day of movement, computed rather than sampled. Yesterday as well as
-	# today, so the scrubber has a day to go back to and the roll-up has a
-	# finished day to summarise.
+	# Movement, computed rather than sampled. Two weeks and not two days: the
+	# week heatmap is hour against weekday, and two days of it is two columns
+	# and five blanks — a fixture that makes a working chart look broken. Two
+	# weeks is every weekday twice, which is the least that reads as a pattern.
 	table = model.OBSERVATION.table
 	frappe.db.sql(f"DELETE FROM `{table}` WHERE `vehicle` LIKE 'zz-%%'")
 	midnight = datetime.combine(frappe.utils.getdate(), datetime.min.time())
 	written = 0
-	for day_offset in (-1, 0):
-		start = midnight + timedelta(days=day_offset)
-		written += live.record(_mobility_day(start, MOBILITY_LINES, MOBILITY_VEHICLES))
+	days = [midnight + timedelta(days=one) for one in range(-13, 1)]
+	for start in days:
+		written += live.record(_mobility_day(start, MOBILITY_LINES, MOBILITY_VEHICLES, lines))
+
+	# And the roll-up, which on a real workspace the nightly sweep does. Without
+	# it the aggregate tier is empty, every chart on the Insights screen draws
+	# nothing, and the fixture disagrees with the product about whether the
+	# feature works.
+	facts.ensure(model.SERVICE_HOUR)
+	for start in days:
+		facts.roll_up(model.OBSERVATION, start.date())
 	frappe.db.commit()
 
 	return (
@@ -884,8 +894,14 @@ def _one(doctype: str, key_field: str, key: str, values: dict) -> str:
 	).name
 
 
-def _mobility_day(start, lines, vehicles) -> list[dict]:
+def _mobility_day(start, lines, vehicles, named) -> list[dict]:
 	"""One day of positions for every vehicle, along its line's own shape.
+
+	`named` maps a line's natural key to the id of the record that was written
+	for it, because that id is what the fact tables hold. The real importer
+	does the same — `gtfs.load` stores what `_upsert` returned — and a fixture
+	that stored the natural key instead was a fixture where filtering the map
+	by line returned nothing and every chart named a line "zz-100".
 
 	Each vehicle runs its line end to end and back, every forty minutes, from
 	six in the morning until eight at night, reporting every thirty seconds —
@@ -917,7 +933,7 @@ def _mobility_day(start, lines, vehicles) -> list[dict]:
 			hour = when.hour
 			busy = 70 if hour in (7, 8, 16, 17) else 45 if hour in (9, 15, 18) else 22
 			rows.append({
-				"at": when, "vehicle": vehicle["key"], "line": vehicle["line"],
+				"at": when, "vehicle": vehicle["key"], "line": named[vehicle["line"]],
 				"trip_key": f"{vehicle['key']}-{tick // 80}",
 				"lat": round(lat, 6), "lon": round(lon, 6),
 				"occupancy": busy + (at * 3) % 11,

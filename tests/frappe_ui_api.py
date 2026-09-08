@@ -295,10 +295,35 @@ def _resolve_named_type(name: str, script: str, directory: Path, seen=None) -> d
         if not m:
             continue
         found = {}
-        for parent in re.findall(r"[A-Za-z_$][\w$]*", m.group(1) or ""):
+        # What the declaration says between its name and its body, and whether
+        # it has a body at all. The header pattern is `[^{;]*`, which crosses
+        # newlines — so for a bare alias with no body,
+        #
+        #     export type AreaChartProps = AxisChartProps
+        #
+        #     export type DonutChartProps = ChartBaseProps & {
+        #
+        # it ran on to the *next* declaration's brace, and Area and Line came
+        # back carrying DonutChart's `category` and `value` as required props.
+        # Correct markup was then reported as missing them, which is the
+        # failure mode worse than missing a bug: it argues for changing
+        # something that works. A blank line or a new declaration keyword at
+        # the start of a line ends a header, and a header that ended has no
+        # body brace to find.
+        header = m.group(1) or ""
+        ran_on = re.search(
+            r"\n\s*\n|^\s*(?:export|declare|interface|type|const|function)\b",
+            header,
+            re.M,
+        )
+        if ran_on and ran_on.start():
+            header = header[: ran_on.start()]
+
+        for parent in re.findall(r"[A-Za-z_$][\w$]*", header):
             if parent not in {"extends", "type", "interface", "ExtractPublicPropTypes", "typeof"}:
                 found |= _resolve_named_type(parent, script, directory, seen)
-        brace = text.find("{", m.end() - 1)
+
+        brace = -1 if (ran_on and ran_on.start()) else text.find("{", m.end() - 1)
         if brace != -1:
             members = _members(_balanced(text, brace))
             # A runtime props object is `title: { type: String, default: … }`.

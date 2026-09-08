@@ -15,11 +15,13 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     gtfs        a GTFS zip read into that model
     live        positions in, positions out, one vehicle's day for the scrubber
     network     the drawn network, and the numbers read off the aggregate tier
+    insights    the aggregate tier as four plots and four figures
     legal       what this module adds to the agreements
     lifecycle   what enabling and disabling it does to the data
 """
 
 from .gtfs import load_feed
+from .insights import rhythm
 from .live import at, report, track
 from .lifecycle import forget_everything
 from .network import bunching, days, punctuality, shape
@@ -32,6 +34,7 @@ __all__ = [
     "load_feed",
     "punctuality",
     "report",
+    "rhythm",
     "shape",
     "track",
 ]

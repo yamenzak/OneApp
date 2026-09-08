@@ -32,10 +32,14 @@ export const APP_COMPONENTS = {
   'onespace-account/billing': () => import('@/modules/onespace/screens/account/Billing.vue'),
   'onespace-account/plan': () => import('@/modules/onespace/screens/account/Plan.vue'),
 
-  // OneMobility's one screen that is not a list: a map of a moving fleet with
-  // a time scrubber. Registered here for the same reason the operator's are —
-  // this is where the shell resolves a `component`.
+  // OneMobility's two screens that are not lists: a map of a moving fleet with
+  // a time scrubber, and the aggregate tier as plots. Registered here for the
+  // same reason the operator's are — this is where the shell resolves a
+  // `component`. Insights is not a dashboard view because a dashboard widget
+  // counts a doctype's rows, and the fact tables are outside the document
+  // system on purpose.
   'onemobility/network': () => import('@/modules/onemobility/components/Network.vue'),
+  'onemobility/insights': () => import('@/modules/onemobility/components/Insights.vue'),
 }
 
 /**

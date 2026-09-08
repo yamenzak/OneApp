@@ -143,7 +143,11 @@ def class_lists(app: str) -> list[tuple[str, str]]:
             # Prose in the doc comments is not a class list, and "the" is not a
             # retired token.
             code = re.sub(r"/\*.*?\*/", "", source, flags=re.S)
-            code = re.sub(r"//[^\n]*", "", code)
+            # `(?<!:)` so a URL inside a string is not read as a line comment. Without
+            # it, `'https://x/y'` loses everything after `https:`, its closing quote
+            # pairs with the next one instead, and two lines of code arrive here as one
+            # string to be inspected for class names.
+            code = re.sub(r"(?<!:)//[^\n]*", "", code)
             for single, double in STRING_IN_EXPR.findall(code):
                 record(single or double, path)
             continue
@@ -198,7 +202,11 @@ def loose_class_lists(script: str) -> list[str]:
     favourites" and "last 7 days" do not.
     """
     code = re.sub(r"/\*.*?\*/", "", script, flags=re.S)
-    code = re.sub(r"//[^\n]*", "", code)
+    # `(?<!:)` so a URL inside a string is not read as a line comment. Without
+    # it, `'https://x/y'` loses everything after `https:`, its closing quote
+    # pairs with the next one instead, and two lines of code arrive here as one
+    # string to be inspected for class names.
+    code = re.sub(r"(?<!:)//[^\n]*", "", code)
 
     found = []
     for single, double in STRING_IN_EXPR.findall(code):

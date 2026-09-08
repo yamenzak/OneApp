@@ -206,10 +206,28 @@ def _open_partitions(fact: Fact, through: date):
     which, on a table swept nightly, is none.
     """
     have = _existing_partitions(fact)
+
+    # Reorganising `pMAX` can only add partitions *after* the last boundary
+    # there is: a range list has to be strictly increasing, and MariaDB refuses
+    # the whole statement otherwise. So a backfill — a roll-up of a fortnight,
+    # an import of last year — must not try to open a day it has already gone
+    # past. Those rows are not lost: a day below every boundary lands in the
+    # earliest partition, which is the right trade. It means retiring that
+    # partition retires the backfilled days with it, and the alternative is a
+    # rebuild of the whole table to insert a partition in the middle.
+    days = [
+        datetime.strptime(one[1:], "%Y%m%d").date()
+        for one in have
+        if one != "pMAX" and one[1:].isdigit()
+    ]
+    floor = max(days) if days else None
+
     wanted = []
     day = getdate(through) - timedelta(days=2)
     for _ in range(4):
         day += timedelta(days=1)
+        if floor and day <= floor:
+            continue
         if _partition_name(day) not in have:
             wanted.append(day)
     if not wanted:

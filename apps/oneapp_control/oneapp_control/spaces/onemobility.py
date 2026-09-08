@@ -71,6 +71,19 @@ SCREENS = [
 		"status_field": "status",
 	},
 	{
+		# The aggregate tier, looked at. The second honest use of the escape
+		# hatch: a dashboard widget counts a doctype's rows, and none of this
+		# is a doctype — `serviceHour` is outside the document system on
+		# purpose. See README §7a.
+		"screen": "insights", "label": "Insights", "singular": "Insight",
+		"icon": "lucide-chart-pie", "document_type": "Transit Line",
+		"component": "onemobility/insights",
+		"fields": "short_name,line_name,mode,status",
+		"order_by": "short_name asc",
+		"view_types": "list",
+		"status_field": "status",
+	},
+	{
 		"screen": "lines", "label": "Lines", "singular": "Line",
 		"icon": "lucide-route", "document_type": "Transit Line",
 		"fields": "short_name,line_name,agency,mode,status",
