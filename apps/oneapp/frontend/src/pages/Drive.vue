@@ -75,19 +75,15 @@
           :tooltip="__('Upload files')"
           @click="chooser?.click()"
         />
-        <Button
-          :icon="isMobile ? 'lucide-folder-plus' : undefined"
-          :icon-left="isMobile ? undefined : 'lucide-folder-plus'"
-          :label="__('New folder')"
-          :tooltip="__('New folder')"
-          @click="naming = true"
-        />
         <!--
-          The only thing in this product that is made rather than uploaded. A
-          dropdown rather than a button, because a workspace with an estimator
-          template starts from it far more often than from a blank grid.
+          Everything made rather than uploaded, behind one button — a folder
+          included. A dropdown rather than a row of buttons, because a
+          workspace with an estimator template starts from it far more often
+          than from a blank grid, and because "New folder" sitting beside "New"
+          was two buttons for one idea: the first thing anybody asks of either
+          is "make me something here".
         -->
-        <Dropdown :options="newOptions">
+        <Dropdown :options="makeOptions">
           <Button
             :icon="isMobile ? 'lucide-plus' : undefined"
             :icon-left="isMobile ? undefined : 'lucide-plus'"
@@ -545,6 +541,25 @@ const { making, options: newOptions, loadTemplates } = useNewFile(
     onClick: () => { importing.value = true },
   }],
 )
+
+/**
+ * The New menu, with a folder at the top of it.
+ *
+ * A folder is the Drive's alone — a record's Files tab has folders nowhere to
+ * put them — so it is added here rather than in `useNewFile`, which both
+ * surfaces share. Ungrouped and first, which the Menu turns into a group of
+ * its own with a rule under it: a folder is not something you write and not
+ * something you calculate, and giving it a heading of its own for one row is
+ * more furniture than the row is worth.
+ */
+const makeOptions = computed(() => [
+  {
+    label: __('New folder'),
+    icon: 'lucide-folder-plus',
+    onClick: () => { naming.value = true },
+  },
+  ...newOptions.value,
+])
 
 function startShare(file) {
   looking.value = file

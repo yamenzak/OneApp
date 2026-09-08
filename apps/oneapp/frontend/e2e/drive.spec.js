@@ -518,7 +518,10 @@ test('a file dragged onto a folder ends up inside it', async ({ page }) => {
   const folder = `Landing ${stamp}`
 
   await page.goto('/one/files')
-  await page.getByRole('button', { name: 'New folder' }).click()
+  // A row in the New menu now, not a button of its own: everything made
+  // rather than uploaded is behind one button, a folder included.
+  await page.getByRole('button', { name: 'New', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'New folder' }).click()
   await page.getByRole('textbox', { name: 'Name' }).fill(folder)
   await page.getByRole('button', { name: 'Make it', exact: true }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)

@@ -23,8 +23,8 @@ tenant caches it.
 Nothing here runs on Frappe Cloud, and nothing here is a fixture the apps ship.
 """
 
-import re
 import json
+import re
 from pathlib import Path
 
 import frappe
@@ -1681,6 +1681,44 @@ def seed_tenant(manifest_only=False):
 		"File", filters={"file_name": ["like", "field-%.txt"]}, pluck="name"
 	):
 		frappe.delete_doc("File", stray, force=True, ignore_permissions=True)
+
+	# And everything else a browser pass made in the Drive.
+	#
+	# The same litter one doctype over from `_sweep_mail`, and it had grown to
+	# fifty folders and eighty-eight templates: a fixture where the first page
+	# of All files is nothing but other runs' folders, and where two specs fail
+	# because the file they made is on page three. The failures read as the
+	# heart being broken and the upload landing in the wrong place, and neither
+	# was true.
+	#
+	# By the stamp rather than by a list of names: every one of these is
+	# `<something> <Date.now()>` or `<something>-<Date.now()>.<ext>`, because a
+	# spec that makes two of anything has to tell them apart, and nothing the
+	# fixture itself writes is named after a millisecond.
+	# Contents first, then the folders themselves deepest-first: Frappe refuses
+	# to delete a folder that still holds anything, `force` included, and a
+	# folder a spec made holds whatever that spec dragged into it.
+	stamped = re.compile(r"[ \-]\d{10,}(\.\w+)?$")
+	rows = frappe.get_all("File", fields=["name", "file_name", "folder", "is_folder"])
+	doomed = [row for row in rows if row.file_name and stamped.search(row.file_name)]
+
+	inside = tuple(
+		f"{row.folder}/{row.file_name}" for row in doomed if row.is_folder and row.folder
+	)
+	held = [
+		row for row in rows
+		if row not in doomed and row.folder and row.folder.startswith(inside or ("\0",))
+	]
+
+	loose = [row for row in doomed if not row.is_folder]
+	# Deepest first, by how many folders deep the path is.
+	folders = sorted(
+		(row for row in doomed if row.is_folder),
+		key=lambda row: (row.folder or "").count("/"),
+		reverse=True,
+	)
+	for row in [*held, *loose, *folders]:
+		frappe.delete_doc("File", row.name, force=True, ignore_permissions=True)
 
 	# And their views. A browser pass that makes a view and fails before
 	# deleting it leaves one behind, and three runs later "Only the urgent"
