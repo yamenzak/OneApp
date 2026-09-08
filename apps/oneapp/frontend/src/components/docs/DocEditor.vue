@@ -21,7 +21,13 @@
          menu, the way it does in the Drive, so there is one rename in the
          product rather than an editable title here and a dialog there. -->
     <PageHeader>
-      <nav data-slot="breadcrumb" :aria-label="__('Breadcrumb')" class="flex min-w-0 items-center gap-1">
+      <nav data-slot="breadcrumb" :aria-label="__('Breadcrumb')" class="flex min-w-0 items-center gap-2">
+        <!-- The OneDoc mark, ahead of the trail. It is not a control: the first
+             crumb is already Files, and a logo that navigates where the word
+             beside it navigates is one of them too many. It is here because
+             the corner of a document is where a product says what it is, and
+             a breadcrumb on its own said nothing. -->
+        <BrandMark name="onedoc" class="size-6 shrink-0" />
         <Breadcrumbs :items="crumbs" />
       </nav>
 
@@ -197,6 +203,7 @@ import DocSettings from './DocSettings.vue'
 import Outline from './Outline.vue'
 import VersionPanel from '../versions/VersionPanel.vue'
 import TemplatePicker from '../drive/TemplatePicker.vue'
+import BrandMark from '../brand/BrandMark.vue'
 import { documentToolbar, pageClasses } from './toolbar'
 import { useOutline } from '@/composables/useOutline'
 import { putFile } from '@/lib/files/attach'

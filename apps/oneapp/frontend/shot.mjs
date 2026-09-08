@@ -26,6 +26,10 @@
  * only a keyboard can reach was a screen only a throwaway script could
  * photograph.
  *
+ * `--type=TEXT` types a line and presses Enter, repeatable — how an editor
+ * gets something in it to look at. Use it after a `--click` that puts the
+ * caret where the text should land.
+ *
  * `--click` is the other one: a selector to press after the page loads, before
  * the shutter. Repeatable, in order — a settings panel is the dialog and then
  * the tab. Half of what is worth photographing is a row deep — a mail
@@ -73,7 +77,7 @@ const path = positional[0]
 if (!path) {
   console.error(
     'usage: yarn shot <path> [out.png] ' +
-      '[--wait=SELECTOR] [--click=SELECTOR] [--press=KEY] [--phone] [--full] ' +
+      '[--wait=SELECTOR] [--click=SELECTOR] [--press=KEY] [--type=TEXT] [--phone] [--full] ' +
       '[--retina] [--settle=MS] ' +
       '[--tokens=--a,--b]',
   )
@@ -122,6 +126,14 @@ try {
     // listening for: the screen binds its shortcuts when it mounts.
     await page.waitForLoadState('networkidle').catch(() => {})
     for (const key of keys) await page.keyboard.press(key)
+  }
+  // Typed, in order, after the clicks that put the caret somewhere. `--press`
+  // cannot do this: it takes key *names*, so a sentence through it is forty
+  // commas and no punctuation. An editor photographed empty says nothing about
+  // how it sets a heading or where its outline appears.
+  for (const line of flags('type')) {
+    await page.keyboard.type(line, { delay: 8 })
+    await page.keyboard.press('Enter')
   }
   const wait = flag('wait')
   if (wait) await page.locator(wait).first().waitFor({ timeout: 40_000 })

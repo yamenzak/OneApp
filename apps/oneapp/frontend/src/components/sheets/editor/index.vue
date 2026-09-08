@@ -51,18 +51,30 @@
     <!-- Bar 1 · Identity -->
     <div class="sn-topbar">
       <div class="sn-topbar-left">
-        <!-- Back to the Drive. Frappe's brand mark sat here; ours is a
-             file, in a folder, in a file list, so the way back is the list
-             and not a logo. Still `flushAndClose`, so anything typed in the
-             last two seconds is saved before the route changes. -->
-        <Button
-          variant="ghost"
-          size="sm"
-          icon="lucide-arrow-left"
-          tooltip="Back to Files"
+        <!-- The mark, and the way back, are one control — which is how every
+             other spreadsheet on the web does it, and it is worth the pixels
+             twice over: the corner of a document is the only place a product
+             gets to say what it is, and a bare arrow said nothing. Still
+             `flushAndClose`, so anything typed in the last two seconds is
+             saved before the route changes.
+
+             An arrow slides over the mark on hover so the click is not a
+             guess — the mark is the identity at rest and the exit under the
+             pointer, and neither has to be explained. -->
+        <button
+          type="button"
+          class="sn-app-icon-btn"
+          data-slot="sheet-brand"
           aria-label="Back to Files"
           @click="flushAndClose"
-        />
+        >
+          <Tooltip text="Back to Files">
+            <span class="sn-app-swap">
+              <BrandMark name="onesheet" class="sn-app-icon" />
+              <Icon name="lucide-arrow-left" class="sn-app-back" />
+            </span>
+          </Tooltip>
+        </button>
         <!-- Auto-sizing title. A hidden ::after pseudo mirrors the text and
              sizes the grid track, so the input grows via real DOM text layout —
              pixel-perfect and smooth per keystroke, with no JS canvas measuring
@@ -1278,6 +1290,7 @@ import ChartOverlay            from './ChartOverlay.vue'
 import { createNamedRanges }   from '@/lib/sheets/engine/named-ranges.js'
 import { getFunctionNames }    from '@/lib/sheets/engine/formula.js'
 import NamedRangesDialog       from './NamedRangesDialog.vue'
+import BrandMark              from '@/components/brand/BrandMark.vue'
 import { useSmartFill }        from './useSmartFill.js'
 import * as versionsApi        from '@/lib/sheets/services/versions.js'
 import { Avatar, Badge, Button, Checkbox, Dialog, Dropdown, FormControl, Icon, KeyboardShortcut, KeyboardShortcutsDialog, Spinner, TextInput, Tooltip, useKeyboardShortcut } from 'frappe-ui'

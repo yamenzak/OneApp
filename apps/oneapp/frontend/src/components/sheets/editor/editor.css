@@ -64,6 +64,16 @@
 .sn-app-icon-btn:hover  { background:var(--surface-gray-2); }
 .sn-app-icon-btn:focus-visible { outline:2px solid var(--outline-gray-4); outline-offset:2px; }
 
+/* The mark and the way out, stacked in one 28px box and cross-faded. Both are
+   absolute so neither sizes the button, which is why the layout does not shift
+   under the pointer — and why the tooltip, anchored to the box rather than to
+   either child, does not move either. */
+.sn-app-swap { position:relative; display:block; width:28px; height:28px; }
+.sn-app-swap > * { position:absolute; inset:0; transition:opacity .12s; }
+.sn-app-back { padding:3px; color:var(--ink-gray-7); opacity:0; }
+.sn-app-icon-btn:hover .sn-app-icon { opacity:0; }
+.sn-app-icon-btn:hover .sn-app-back { opacity:1; }
+
 /* Auto-sizing title. A hidden ::after mirror carries the exact same typography
    and box as the input; being normal flow, ITS width sizes the wrapper to the
    real rendered text. The input is positioned absolutely on top so its own
