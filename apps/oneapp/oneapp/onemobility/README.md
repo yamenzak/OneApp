@@ -133,6 +133,54 @@ Writing screens against raw rows is what would make that swap a rewrite.
 
 ---
 
+## 3a. Four tiers, and why the old data can leave the database
+
+Frappe has no answer for this, and that is fine: it has no answer *for
+documents*, and observations are not documents. Having stepped outside the
+Document machinery in §3, nothing constrains where the rows live.
+
+The reframing that makes it easy: **long-range questions are aggregate
+questions.** Nobody asks where vehicle 412 was at 14:23:07 in March last year.
+They ask what punctuality on line 12 was last quarter. So the small answer is
+kept forever and the large one is not.
+
+| tier | where | holds | answers |
+|---|---|---|---|
+| hot | MariaDB, partitioned by day | raw rows, ~30 days | anything, at full grain |
+| warm | R2, one object per vehicle per day | the rolled track | playback, instantly |
+| frozen | R2, one Parquet file per day | the raw rows again | a question nobody anticipated |
+| aggregate | MariaDB, never expires | per line/stop/hour counts, means | every chart, every long range |
+
+The aggregate tier is the one that makes the rest affordable. A year of "trips,
+mean delay, mean occupancy, per line per stop per hour" is tens of thousands of
+rows — a rounding error beside the raw, and it is what every chart on every
+dashboard actually reads.
+
+Two different things get called "load on demand" and they are not the same:
+
+* **Playing back a specific past day** needs no rehydration at all. The day's
+  track objects are already the playback format (§4), so the browser fetches
+  them from R2 and scrubs. This is the common case and it is instant.
+* **A novel question over frozen raw** — the rare case — is DuckDB reading
+  Parquet on R2 directly, or a date range pulled back into a temporary table for
+  one report. Either way it is minutes, on request, and it does not have to be
+  built until somebody asks.
+
+Two details that decide whether this works in practice. The hot table must be
+**partitioned by day**, so retiring a month is `DROP PARTITION` — instant —
+rather than a `DELETE` of sixty million rows, which locks the table and leaves
+it bloated. And R2 charges no egress, which is what makes fetching a day's
+objects on every scrub an unremarkable cost rather than a bill.
+
+One thing this is not: `lifecycle/cold.py`'s `cold/` prefix is a whole
+workspace's escrow copy for the dunning ladder, promoted from a backup. Frozen
+observations are live data in a cheaper place. Same bucket, different
+mechanism, and conflating them would put a customer's working history behind a
+restore-from-archive flow.
+
+Frozen still counts against the workspace's storage quota. It is cheaper, not
+free, and the meter should say so rather than hiding it.
+
 ## 4. Playback is an object, not a query
 
 The obvious build of a scrubber queries the fact table per frame, and it is
