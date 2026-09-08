@@ -86,7 +86,7 @@
     <header
       v-if="chrome"
       data-slot="shell-topbar"
-      class="flex h-12 shrink-0 items-center gap-2 ps-2 pe-3"
+      class="flex h-12 shrink-0 items-center gap-2 ps-2 pe-2"
     >
       <!--
         The corner, width-matched to the sidebar beneath it so the pair read as
@@ -106,7 +106,11 @@
       <SidebarCollapse :icon-only="true" />
 
       <!--
-        The page's header, which teleports itself here. Its own classes are for
+        The page's header, which teleports itself here.
+
+        `pe-2` and not `pe-3`, so the bar ends exactly where the panel under it
+        ends — the inset's own `me-2`. Four pixels of difference is what put a
+        pane's trail four pixels left of the pane. Its own classes are for
         a band of its own — a white ground, a bottom border, its own padding —
         and none of that is wanted inside a bar that already has a ground, so
         they are turned off from the outside rather than by asking every page
