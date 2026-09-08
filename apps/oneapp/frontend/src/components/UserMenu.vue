@@ -6,15 +6,20 @@
     <!-- icon-right, not a #suffix holding an <Icon>: Button declares the prop
          and renders it at the library's own size and tone. The #prefix stays a
          slot because an Avatar is not something an icon prop can express. -->
+    <!-- Collapsed, the column is 3rem and a name is not something 3rem can
+         hold: it does not truncate to nothing, it runs out of the column and
+         out of the window. So the trigger becomes the avatar it already had. -->
     <Button
       variant="ghost"
-      icon-right="lucide-chevron-up"
-      class="!h-11 w-full !justify-start !px-2"
+      :icon-right="compact ? undefined : 'lucide-chevron-up'"
+      class="!h-11 !justify-start !px-2"
+      :class="compact ? '' : 'w-full'"
+      :label="displayName"
     >
       <template #prefix>
         <Avatar :label="displayName" :image="avatar" size="md" />
       </template>
-      <span class="min-w-0 flex-1 text-start">
+      <span v-if="!compact" class="min-w-0 flex-1 text-start">
         <span class="block truncate text-base text-ink-gray-8">{{ displayName }}</span>
         <span v-if="subtitle" class="block truncate text-xs text-ink-gray-5">
           {{ subtitle }}
@@ -38,6 +43,8 @@ const props = defineProps({
   subtitle: { type: String, default: '' },
   // Entries shown above the standard ones, e.g. Settings for an operator.
   extra: { type: Array, default: () => [] },
+  /** The avatar alone, for a column folded to its icons. */
+  compact: { type: Boolean, default: false },
 })
 
 const displayName = computed(() => props.name || props.email || __('Account'))

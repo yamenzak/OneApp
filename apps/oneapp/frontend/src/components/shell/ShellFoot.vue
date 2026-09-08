@@ -42,6 +42,7 @@
              overflow. -->
         <div class="min-w-0 flex-1">
           <UserMenu
+            :compact="collapsed"
             :name="fullName"
             :email="email"
             :avatar="userImage"
