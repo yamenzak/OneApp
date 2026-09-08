@@ -36,7 +36,22 @@ MAX_BYTES = 8 * 1024 * 1024
 
 BLANK = {"type": "doc", "content": [{"type": "paragraph"}]}
 
-DEFAULT_SETTINGS = {"width": "page", "font": "", "spacing": "normal", "locked": False}
+#: Everything the editor stores about how a document looks. The first four are
+#: about the screen — how wide the measure is, in what face, how far apart the
+#: lines, and whether typing is allowed. The last five are about paper, and
+#: `paper.py` is what reads them: a document is pageless until somebody says
+#: otherwise, which is the right default for prose written to be scrolled.
+DEFAULT_SETTINGS = {
+    "width": "page",
+    "font": "",
+    "spacing": "normal",
+    "locked": False,
+    "paged": False,
+    "page_size": "A4",
+    "orientation": "portrait",
+    "margin": "normal",
+    "letter_head": "",
+}
 
 
 def _mine(doc: str, level: str = "read"):

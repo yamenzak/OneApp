@@ -59,7 +59,13 @@ CLASS_MODULES = ("components/settings/geometry.js",)
 # `'dd-mmm-yyyy hh:mm'` is two tokens, both lowercase, both carrying a `-` or a
 # `:`, which is exactly the shape of `sticky right-0`. Only the heuristic is
 # skipped: a real `class="…"` in one of these files is still read.
-NOT_CLASS_LISTS = ("lib/sheets/display.js",)
+NOT_CLASS_LISTS = (
+    "lib/sheets/display.js",
+    # An iframe's `sandbox` token list — `allow-same-origin allow-modals` is
+    # two lowercase hyphenated words in a string, which is the same shape as
+    # `sticky right-0` and is not a class list either.
+    "lib/paper/print.js",
+)
 
 # Whole subtrees that are somebody else's code and do not use Tailwind at all.
 # The spreadsheet engine and its canvas renderer are Frappe's, vendored as-is

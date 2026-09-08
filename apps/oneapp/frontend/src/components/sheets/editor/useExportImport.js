@@ -1,7 +1,10 @@
 // Copyright (c) Frappe Technologies Pvt. Ltd. and contributors.
 // Vendored from frappe/sheets (3f9e37b5776f), frontend/src/pages/SheetEditor/
 // useExportImport.js, which is AGPL-3.0, and modified for OneSpace: the two
-// SheetJS calls are ExcelJS instead — see lib/sheets/xlsx-file.js for why.
+// SheetJS calls are ExcelJS instead — see lib/sheets/xlsx-file.js for why, and
+// their `exportPDF` is gone. It opened a popup holding a hand-built table and
+// called `print()` on it; ours is SheetPrintDialog, over a page the server
+// builds with a real @page, a letter head and a repeating header row.
 
 import { colLabel, parseCellId } from '@/lib/sheets/utils/cells.js'
 import { toXlsxCell, fromXlsxCell, mergesToXlsx, mergesFromXlsx } from '@/lib/sheets/engine/xlsx-io.js'
@@ -27,11 +30,6 @@ function _sheetToAoa(sheetName, sheet) {
   }
   return rows
 }
-
-function _esc(v) {
-  return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-}
-
 
 export function _parseCSV(text) {
   const rows = []
@@ -162,35 +160,6 @@ export function useExportImport({
     }
     used.add(out.toLowerCase())
     return out
-  }
-
-  function exportPDF() {
-    const sheet = getSheet()
-    const sn    = sheet.getCurrentSheet()
-    const rows  = _sheetToAoa(sn, sheet)
-    if (!rows.length) return
-    const thead = `<tr>${rows[0].map(c => `<th>${_esc(c)}</th>`).join('')}</tr>`
-    const tbody = rows.slice(1)
-      .map(r => `<tr>${r.map(c => `<td>${_esc(c)}</td>`).join('')}</tr>`).join('')
-    const title = getCurrentTitle()
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-    <title>${_esc(title)}</title>
-    <style>
-      body{font:11px/1.4 Arial,sans-serif;margin:20px}
-      h2{font-size:14px;margin:0 0 12px}
-      table{border-collapse:collapse;width:100%}
-      th,td{border:1px solid #ccc;padding:3px 6px;text-align:left}
-      th{background:#f2f2f2;font-weight:600}
-      @page{margin:1.5cm}
-    </style></head>
-    <body><h2>${_esc(title)} — ${_esc(sn)}</h2>
-    <table><thead>${thead}</thead><tbody>${tbody}</tbody></table></body></html>`
-    const win = window.open('', '_blank', 'width=800,height=600')
-    if (!win) return
-    win.document.write(html)
-    win.document.close()
-    win.focus()
-    win.print()
   }
 
   // ── imports ──────────────────────────────────────────────────────────────────
@@ -335,5 +304,5 @@ export function useExportImport({
     return fileName
   }
 
-  return { exportCSV, exportXLSX, exportPDF, importCSV, importXLSX }
+  return { exportCSV, exportXLSX, importCSV, importXLSX }
 }

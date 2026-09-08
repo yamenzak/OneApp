@@ -64,6 +64,13 @@ The single modules, roughly by how often they are touched:
   newest and the clearest example: Frappe keeps a board's arrangement on a
   Kanban Board doctype, and here the same four facts are a *view*, because a
   view is what this product already had for "how one person looks at a screen".
+* `paper.py` — how a page is set, for the two things that print without a
+  doctype. `printing.py` is records: a doctype, a name, a print format. A
+  document and a sheet have neither, so this is the other half — size,
+  orientation, margins and a letter head, turned into `@page` and a `<thead>`
+  the letter head repeats in. `docs/export.py` and `sheets/printing.py` are its
+  only callers, and both hand the finished page to a browser rather than making
+  a PDF: the browser that is open is a print engine we do not have to install.
 * `branding.py` — the workspace's own colour, and the two places a colour has to
   land. The only setting with no Frappe field behind it, and the only thing here
   that writes CSS: the app gets the accent in the boot payload, and the pages the

@@ -62,7 +62,7 @@ function makeActions(overrides = {}) {
     onSave:           vi.fn(),
     exportCSV:        vi.fn(),
     exportXLSX:       vi.fn(),
-    exportPDF:        vi.fn(),
+    onPrint:          vi.fn(),
     csvInputRef:      ref({ click: vi.fn() }),
     xlsxInputRef:     ref({ click: vi.fn() }),
     ...overrides,

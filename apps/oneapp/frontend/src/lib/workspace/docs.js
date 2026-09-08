@@ -51,6 +51,13 @@ export const docs = {
       success: 'Copied',
     }),
 
+  // The whole printable page as one string, for the frame that prints it —
+  // `lib/paper/print.js` says why the app's own window is the wrong printer.
+  docPrintable: (name) =>
+    callMethod('oneapp.oneapp_core.docs.printable', { name }, {
+      silent: true, method: 'GET',
+    }),
+
   docMarkdown: (name) =>
     callMethod('oneapp.oneapp_core.docs.as_markdown', { name }, {
       silent: true, method: 'GET',

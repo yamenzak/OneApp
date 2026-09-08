@@ -86,11 +86,15 @@ export const SPACINGS = {
   loose: { label: __('Loose'), class: 'leading-loose' },
 }
 
-/** The three settings as one list of classes, for the element that draws them. */
-export function pageClasses(settings = {}) {
+/** Face and leading — the two that hold whether there are pages or not. */
+export function bodyClasses(settings = {}) {
   return [
-    WIDTHS[settings.width]?.class ?? WIDTHS.page.class,
     FONTS[settings.font]?.class ?? '',
     SPACINGS[settings.spacing]?.class ?? SPACINGS.normal.class,
   ]
+}
+
+/** The three settings as one list of classes, for the element that draws them. */
+export function pageClasses(settings = {}) {
+  return [WIDTHS[settings.width]?.class ?? WIDTHS.page.class, ...bodyClasses(settings)]
 }

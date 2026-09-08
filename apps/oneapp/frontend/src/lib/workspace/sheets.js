@@ -30,6 +30,16 @@ export const sheets = {
       silent: true, method: 'GET',
     }),
 
+  // Printing. The whole page comes back as one string and goes into a frame —
+  // `lib/paper/print.js` says why, and `oneapp_core/sheets/printing.py` is what
+  // turns a rectangle of values into it. POST because the options are a body.
+  sheetPrintable: (name, options, setup) =>
+    callMethod(
+      'oneapp.oneapp_core.sheets.printable',
+      { name, options: JSON.stringify(options || {}), setup: JSON.stringify(setup || {}) },
+      { silent: true },
+    ),
+
   sheetTemplates: () =>
     callMethod('oneapp.oneapp_core.sheets.listing', {}, { silent: true, method: 'GET' }),
 

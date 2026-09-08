@@ -110,14 +110,14 @@ function buildSheetGroup({ addSheet, currentSheet, openRenameDialog, doDuplicate
   }
 }
 
-function buildFileGroup({ onSave, exportCSV, exportXLSX, exportPDF, csvInputRef, xlsxInputRef }) {
+function buildFileGroup({ onSave, exportCSV, exportXLSX, onPrint, csvInputRef, xlsxInputRef }) {
   return {
     title: 'File',
     items: [
       item('save',        'Save',        'Ctrl+S', () => onSave()),
       item('csv-export',  'Export CSV',  '',       () => exportCSV()),
       item('xlsx-export', 'Export XLSX', '',       () => exportXLSX()),
-      item('pdf-export',  'Export PDF',  '',       () => exportPDF()),
+      item('print',       'Print',       '',       () => onPrint()),
       item('csv-import',  'Import CSV',  '',       () => csvInputRef.value?.click()),
       item('xlsx-import', 'Import XLSX', '',       () => xlsxInputRef.value?.click()),
     ],

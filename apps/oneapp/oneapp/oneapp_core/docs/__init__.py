@@ -40,7 +40,7 @@ from .body import (
     BLANK, DEFAULT_SETTINGS, MAX_BYTES, TITLE_MAX, blank, get_doc, head_of,
     html_of, load, may_read, may_write, put, save_doc, store,
 )
-from .export import ROUTE, as_markdown, download, to_response, url_for
+from .export import ROUTE, as_markdown, download, page_html, printable, to_response, url_for
 from .templates import TEMPLATE_FIELD, listing, set_template
 from .text import EDITABLE, get_text, is_text, save_text
 from .writing import TEXT_KINDS, copy_of, duplicate, make, make_text, on_trash
@@ -67,6 +67,8 @@ __all__ = [
     "may_write",
     "MAX_BYTES",
     "on_trash",
+    "page_html",
+    "printable",
     "put",
     "ROUTE",
     "save_doc",

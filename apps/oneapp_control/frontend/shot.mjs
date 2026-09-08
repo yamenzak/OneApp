@@ -111,6 +111,13 @@ const page = await context.newPage()
 // obviously a screenshot of a broken screen — it is usually just empty.
 const complaints = []
 page.on('pageerror', (e) => complaints.push(String(e)))
+// Vue catches an error thrown in a component's setup and reports it to the
+// console rather than re-throwing, so `pageerror` never fires and a screen
+// that failed to mount comes back as a blank white PNG with nothing said. An
+// hour went into one of those. Console errors count as complaints.
+page.on('console', (m) => {
+  if (m.type() === 'error') complaints.push(m.text())
+})
 page.on('response', (r) => {
   if (r.status() >= 400) complaints.push(`${r.status()} ${r.url()}`)
 })

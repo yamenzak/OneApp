@@ -222,3 +222,56 @@ Which one a print actually carries is the pair of `Print Settings.with_letterhea
 (on the Printing tab) and the default flagged here. They can disagree — the
 switch on, no default set, and a blank band on every page — so the panel says so
 when they do.
+
+---
+
+## What a document and a sheet print instead
+
+None of the above. `frappe.get_print` needs a doctype and a name, and a
+document or a spreadsheet has neither — it has content and a page it has to sit
+on. `oneapp_core/paper.py` is that page: size, orientation, margins and a
+letter head, turned into CSS.
+
+| | a record | a document, a sheet |
+|---|---|---|
+| what renders it | `frappe.get_print` | `docs/export.py`, `sheets/printing.py` |
+| the layout | a `Print Format` | the content itself |
+| the page | `Print Settings` | this document's own page setup |
+| the letter head | Frappe resolves it | `paper.repeated`, a `<thead>` |
+| the file | a PDF from wkhtmltopdf or Chrome | HTML, printed by the browser |
+
+Three things are worth stating because they look like omissions.
+
+**No server-side PDF.** Producing one means a headless browser in every
+container, and the browser already open is one. Print goes into an iframe
+holding the page the server built — `lib/paper/print.js` — so `@page` is the
+document's rather than the app's, and "Save as PDF" in the browser's own print
+dialog is the PDF.
+
+**The letter head repeats by `<thead>`.** `position: running()` is what the
+paged-media spec says and Chrome has never implemented it; `position: fixed`
+repeats in Chrome and not in Firefox. A table header repeats in both.
+
+**The editor draws one page and guides for the rest.** Real pagination is what
+the print engine does when it prints, so the sheet on screen carries the page's
+width and margins, a hairline every page height, and the letter head where it
+will actually be — at the top. Repeating it further down would mean guessing
+where a break falls and putting the guess on top of somebody's paragraph.
+
+The letter heads offered are the same list as above: `Letter Head` rows for
+`DocType`, through `printing.letter_heads`. A workspace does not keep one set
+of stationery for invoices and another for documents.
+
+## What a sheet's print dialog asks
+
+Google's questions, because they are the ones somebody printing a spreadsheet
+already expects: this tab or every tab, paper size, orientation, margins,
+scale, gridlines on or off, and whether the first row comes back at the top of
+every page. Every tab starts a new sheet of paper. Scale is a percentage —
+100, 90, 75, 50 — applied with `zoom`, because `transform: scale()` moves the
+box and not the layout, and a transformed table prints full size with the ink
+in the wrong place.
+
+Page numbers are not offered. They need `@page` margin boxes, which Chrome does
+not implement; the browser's own print dialog puts them there, and offering a
+switch that does nothing would be worse than the gap.

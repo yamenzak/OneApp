@@ -1,10 +1,15 @@
 <template>
   <!--
-    How the page is set: how wide, in what face, how far apart the lines.
+    How the page is set: how wide, in what face, how far apart the lines — and
+    whether there are pages at all.
 
     A reader's choice about *this* document, stored on it rather than in a
     workspace setting — a contract wants a narrow measure and a rate schedule
     wants the full width, and the same person wants both on the same afternoon.
+
+    Pageless is the default and stays the default. A document written to be
+    read on a screen has no pages, and the moment it has to become paper is the
+    moment somebody comes here and says so.
   -->
   <Dialog v-model="open" :title="__('Page setup')">
     <template #default>
@@ -14,6 +19,8 @@
           type="select"
           :label="__('Width')"
           :options="options(WIDTHS)"
+          :disabled="draft.paged"
+          :description="draft.paged ? __('A paged document is as wide as its page.') : ''"
         />
         <FormControl
           v-model="draft.font"
@@ -27,6 +34,48 @@
           :label="__('Line spacing')"
           :options="options(SPACINGS)"
         />
+
+        <div class="border-t border-outline-gray-1 pt-4">
+          <FormControl
+            v-model="draft.paged"
+            type="checkbox"
+            :label="__('Break into pages')"
+            :description="__('Off, the document is one continuous page that never ends.')"
+          />
+        </div>
+
+        <div v-if="draft.paged" class="flex flex-col gap-4">
+          <div class="grid grid-cols-2 gap-3">
+            <FormControl
+              v-model="draft.page_size"
+              type="select"
+              :label="__('Page size')"
+              :options="options(PAGE_SIZES)"
+            />
+            <FormControl
+              v-model="draft.orientation"
+              type="select"
+              :label="__('Orientation')"
+              :options="options(ORIENTATIONS)"
+            />
+          </div>
+          <FormControl
+            v-model="draft.margin"
+            type="select"
+            :label="__('Margins')"
+            :options="marginOptions"
+          />
+          <!-- The workspace's letter heads, the same list the record printer
+               offers. "None" first, because a workspace that has one still
+               prints the odd thing that should not carry it. -->
+          <FormControl
+            v-model="draft.letter_head"
+            type="select"
+            :label="__('Letter head')"
+            :options="letterheadOptions"
+            :description="__('Shown at the top of every printed page.')"
+          />
+        </div>
       </div>
     </template>
     <template #actions>
@@ -36,10 +85,12 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { Button, Dialog, FormControl } from '@/ui'
 import { FONTS, SPACINGS, WIDTHS } from './toolbar'
+import { MARGINS, ORIENTATIONS, PAGE_SIZES } from '@/lib/paper/setup'
+import { workspace } from '@/lib/workspace'
 import { __ } from '@/lib/runtime/translate'
 
 const open = defineModel({ type: Boolean, default: false })
@@ -48,19 +99,40 @@ const settings = defineModel('settings', { type: Object, default: () => ({}) })
 const emit = defineEmits(['change'])
 
 const draft = ref({ ...settings.value })
+const letterheads = ref([])
 
 const options = (from) =>
   Object.entries(from).map(([value, one]) => ({ label: one.label, value }))
+
+const marginOptions = computed(() =>
+  Object.entries(MARGINS).map(([value, one]) => ({
+    label: __('{0} ({1} mm)', [one.label, one.mm]),
+    value,
+  })),
+)
+
+const letterheadOptions = computed(() => [
+  { label: __('None'), value: '' },
+  ...letterheads.value.map((one) => ({
+    label: one.default ? __('{0} (default)', [one.name]) : one.name,
+    value: one.name,
+  })),
+])
+
+// Opened again after a change elsewhere — the lock, say — so the draft starts
+// from what the document actually says rather than from the last look at it.
+watch(open, (showing) => {
+  if (!showing) return
+  draft.value = { ...settings.value }
+  if (letterheads.value.length) return
+  workspace.letterHeads()
+    .then((found) => { letterheads.value = found || [] })
+    .catch(() => { letterheads.value = [] })
+})
 
 function apply() {
   settings.value = { ...settings.value, ...draft.value }
   open.value = false
   emit('change')
 }
-
-// Opened again after a change elsewhere — the lock, say — so the draft starts
-// from what the document actually says rather than from the last look at it.
-watch(open, (showing) => {
-  if (showing) draft.value = { ...settings.value }
-})
 </script>

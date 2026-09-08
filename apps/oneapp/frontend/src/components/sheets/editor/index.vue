@@ -858,6 +858,8 @@
       @changed="_onNamedRangesChanged"
     />
 
+    <SheetPrintDialog v-model="printing" :name="props.id" :tab="currentSheet" />
+
     <!-- Find & Replace panel -->
     <FindReplace
       v-if="showFindReplace"
@@ -1295,6 +1297,7 @@ import ChartOverlay            from './ChartOverlay.vue'
 import { createNamedRanges }   from '@/lib/sheets/engine/named-ranges.js'
 import { getFunctionNames }    from '@/lib/sheets/engine/formula.js'
 import NamedRangesDialog       from './NamedRangesDialog.vue'
+import SheetPrintDialog        from '../SheetPrintDialog.vue'
 import BrandMark              from '@/components/brand/BrandMark.vue'
 import SpaceName              from '@/components/brand/SpaceName.vue'
 import { useSmartFill }        from './useSmartFill.js'
@@ -1386,6 +1389,12 @@ const namedRanges = createNamedRanges({ isBuiltinFunction: n => _builtinFns.has(
 // Plug the named-range resolver into the sheet engine so `=Revenue` etc.
 // resolve at evaluate-time without crossing engine boundaries via imports.
 sheet.setNamedRangeResolver?.(name => namedRanges.resolve(name))
+
+// Printing. The dialog builds the page on the server and prints the frame it
+// previews — a sheet's paper is `oneapp_core/sheets/printing.py`, not the
+// browser's idea of what this window looks like.
+const printing = ref(false)
+function openPrint() { printing.value = true }
 
 // Dialog state — toolbar / context-menu entries flip this open. Changes
 // inside the dialog (add/edit/delete) mark the workbook dirty and push a
@@ -1828,7 +1837,10 @@ const fileDropdownOptions = computed(() => [
   { group: 'Export', options: [
     { label: 'Export as CSV',  icon: 'lucide-download',  onClick: () => exportCSV() },
     { label: 'Export as XLSX', icon: 'lucide-download',  onClick: () => exportXLSX() },
-    { label: 'Export as PDF',  icon: 'lucide-printer',   onClick: () => exportPDF() },
+    // Print rather than "Export as PDF": the page is built on the server with
+    // a real @page, a letter head and a repeating header row, and what makes a
+    // PDF of it is the browser's own print dialog. See SheetPrintDialog.
+    { label: 'Print',          icon: 'lucide-printer',   onClick: () => openPrint() },
   ]},
   // Import writes cells — hide it for viewers (export/read stays available).
   ...(readOnly.value ? [] : [{ group: 'Import', options: [
@@ -1897,7 +1909,7 @@ async function doSaveTabAsTemplate(tabName) {
 
 defineExpose({ insertTemplate })
 
-const { exportCSV, exportXLSX, exportPDF, importCSV, importXLSX } = useExportImport({
+const { exportCSV, exportXLSX, importCSV, importXLSX } = useExportImport({
   getSheet:        () => sheet,
   getCurrentTitle: () => currentTitle.value,
   getGrid:         () => grid,
@@ -5605,7 +5617,7 @@ const cmdGroups = computed(() => buildCommandGroups({
   doFreezeRow, doFreezeCol, doUnfreezeRows, doUnfreezeCols, showSortFilter,
   openPivotDialog,
   addSheet, currentSheet, openRenameDialog, doDuplicateSheet, doDeleteSheet,
-  onSave, exportCSV, exportXLSX, exportPDF, csvInputRef, xlsxInputRef,
+  onSave, exportCSV, exportXLSX, onPrint: openPrint, csvInputRef, xlsxInputRef,
 }))
 
 function onCmdSelect(item) { item?.fn?.() }

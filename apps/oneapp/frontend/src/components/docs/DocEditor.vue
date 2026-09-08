@@ -96,8 +96,39 @@
             />
             <EditorTableMenu v-if="doc.can_write" :editor="instance" />
 
-            <FadedScroll class="min-h-0 flex-1">
-              <div class="mx-auto w-full px-6 py-10" :class="pageClasses(settings)">
+            <!-- Paged, the scroller is a desk and the document is a sheet on
+                 it. Pageless, it is what it always was: prose in the middle of
+                 the window with nothing behind it. -->
+            <FadedScroll class="min-h-0 flex-1" :class="paper.paged ? 'bg-surface-gray-2' : ''">
+              <div
+                class="mx-auto"
+                :class="paper.paged
+                  ? ['doc-sheet my-8 shadow-sm', ...bodyClasses(settings)]
+                  : ['w-full px-6 py-10', ...pageClasses(settings)]"
+                :style="paperStyle(settings)"
+              >
+                <!--
+                  The letter head, where it will be when this is printed.
+
+                  Once, at the top, rather than at the top of every page: real
+                  pagination is what the print engine does, and drawing a
+                  repeat here would mean guessing where the page breaks fall
+                  and putting the guess on top of somebody's paragraph. The
+                  guide lines say where the pages are; this says what is at the
+                  top of each of them. Subtle for the same reason — it is not
+                  content and it is not editable, and it should not read as
+                  either.
+
+                  `v-html` because `Letter Head.validate` scrubs the markup on
+                  the way in, which is the same reason the settings screen
+                  renders its preview this way.
+                -->
+                <div
+                  v-if="paper.paged && headMarkup"
+                  class="pointer-events-none mb-6 select-none border-b border-outline-gray-2 pb-3 opacity-60"
+                  aria-hidden="true"
+                  v-html="headMarkup"
+                />
                 <EditorContent
                   :editor="instance"
                   :aria-label="__('Document')"
@@ -212,7 +243,9 @@ import VersionPanel from '../versions/VersionPanel.vue'
 import TemplatePicker from '../drive/TemplatePicker.vue'
 import BrandMark from '../brand/BrandMark.vue'
 import SpaceName from '../brand/SpaceName.vue'
-import { documentToolbar, pageClasses } from './toolbar'
+import { bodyClasses, documentToolbar, pageClasses } from './toolbar'
+import { paperSetup, paperStyle } from '@/lib/paper/setup'
+import { printHtml } from '@/lib/paper/print'
 import { useOutline } from '@/composables/useOutline'
 import { putFile } from '@/lib/files/attach'
 import { workspace } from '@/lib/workspace'
@@ -250,6 +283,32 @@ const failed = ref('')
 const savedAt = ref(props.doc.modified || '')
 // Bumped after every landed save, so the history panel follows the work.
 const saved = ref(0)
+
+/*
+ * Paper.
+ *
+ * `paper` is the same resolution `oneapp_core/paper.py` does on the way out,
+ * so what the sheet on screen is is what the printer gets. `headMarkup` is the
+ * chosen letter head's HTML, fetched once when a document that has one opens —
+ * a document with no letter head, which is most of them, asks for nothing.
+ */
+const paper = computed(() => paperSetup(settings.value))
+const headMarkup = ref('')
+
+watch(
+  () => [paper.value.paged, paper.value.letterHead],
+  async ([paged, head]) => {
+    if (!paged || !head) return (headMarkup.value = '')
+    try {
+      headMarkup.value = (await workspace.letterHead(head))?.content || ''
+    } catch {
+      // A letter head somebody deleted is a document that prints without one,
+      // which is what `paper.letter_head_html` decides on the server too.
+      headMarkup.value = ''
+    }
+  },
+  { immediate: true },
+)
 
 const showHistory = ref(false)
 const renaming = ref(false)
@@ -430,7 +489,18 @@ const menu = computed(() => [
       save()
     },
   },
-  { label: __('Print'), icon: 'printer', onClick: () => window.print() },
+  {
+    // The page the server builds, printed from a frame of its own — the size,
+    // the margins and the letter head on every sheet are all in that page and
+    // none of them are in this window. `lib/paper/print.js`.
+    label: __('Print'),
+    icon: 'printer',
+    onClick: async () => {
+      if (dirty.value) await save()
+      const found = await workspace.docPrintable(props.name)
+      if (found?.html) await printHtml(found.html)
+    },
+  },
   {
     label: __('Download as HTML'),
     icon: 'download',
@@ -482,3 +552,35 @@ onBeforeUnmount(() => {
   if (dirty.value) save()
 })
 </script>
+
+<style scoped>
+/*
+ * The sheet, and where its pages end.
+ *
+ * One repeating gradient rather than an element per page: the editor has no
+ * idea how many pages there are — the browser works that out when it
+ * paginates, and it only paginates when it prints. What it can say truthfully
+ * is that a page is this tall, so a hairline every page-height is a guide
+ * rather than a claim. `--page-height` comes from `paperStyle`.
+ *
+ * `background-origin: border-box` because the sheet's padding is the page
+ * margin: measured from the padding box the first guide would land a margin
+ * too low, and every one after it would drift.
+ */
+.doc-sheet {
+  /* At least one page. A paged document shorter than its page is still a
+     page — a sheet that stops where the words stop is the pageless layout
+     with a border round it. */
+  min-height: var(--page-height);
+  background-color: #ffffff;
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(100% - 1px),
+    rgb(0 0 0 / 8%) calc(100% - 1px)
+  );
+  background-size: 100% var(--page-height);
+  background-repeat: repeat-y;
+  background-origin: border-box;
+  background-clip: border-box;
+}
+</style>

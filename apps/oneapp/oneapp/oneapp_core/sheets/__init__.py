@@ -42,6 +42,7 @@ from .codec import MAX_BYTES
 from .book import get_sheet, save_sheet
 from .reading import named_ranges, ranges, read_range, tabs
 from .export import ROUTE, download, to_response, url_for
+from .printing import printable
 from .writing import copy_of, make, on_trash
 from .templates import TEMPLATE_FIELD, listing, set_template
 from .feed import (
@@ -77,6 +78,7 @@ __all__ = [
     "parse",
     "parse_range",
     "preview",
+    "printable",
     "pull",
     "ranges",
     "read_range",

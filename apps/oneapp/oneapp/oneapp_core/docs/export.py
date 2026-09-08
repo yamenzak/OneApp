@@ -20,6 +20,7 @@ and every word processor opens HTML.
 
 import frappe
 
+from .. import paper
 from . import body
 from .body import _mine
 
@@ -67,6 +68,42 @@ def download(name: str) -> None:
     to_response(_mine(name, "read"))
 
 
+def page_html(doc) -> str:
+    """One document as a whole HTML file — the bytes both readers get.
+
+    Split out from `to_response` because printing wants the same page and not
+    as a download: the browser prints an iframe holding this, which is how a
+    letter head repeats on every sheet and how `@page` gets a size at all. A
+    document printed from the app's own window would be printed through the
+    app's chrome, and `@page` would be the app's.
+    """
+    title = doc.file_name or "document"
+    loaded = body.load(doc.name)
+    html = loaded["html"]
+
+    # The language this was written in, and which way it runs. Without them an
+    # Arabic document exports as a left-to-right page: the words are right, the
+    # paragraphs start on the wrong side, and every table column is reversed.
+    lang = frappe.local.lang or "en"
+    direction = "rtl" if lang.split("-")[0] in RIGHT_TO_LEFT else "ltr"
+
+    # How the page is set — size, orientation, margins, letter head. A pageless
+    # document answers `paged: False` and gets none of it, which is the same
+    # file this produced before any of this existed.
+    setup = paper.setup_of(loaded.get("settings"))
+    sheet = STYLE
+    if setup["paged"]:
+        sheet += paper.page_css(setup) + paper.PAPER_CSS
+        html = paper.repeated(setup, html)
+
+    return (
+        "<!doctype html>\n"
+        f'<html lang="{lang}" dir="{direction}"><head><meta charset="utf-8">'
+        f"<title>{frappe.utils.escape_html(title)}</title>"
+        f"<style>{sheet}</style></head><body>{html}</body></html>"
+    )
+
+
 def to_response(doc) -> None:
     """The same file, for a caller that has already settled the permission.
 
@@ -76,24 +113,16 @@ def to_response(doc) -> None:
     otherwise ask `get_content()` for bytes that do not exist and answer 500.
     """
     title = doc.file_name or "document"
-    html = body.load(doc.name)["html"]
-
-    # The language this was written in, and which way it runs. Without them an
-    # Arabic document exports as a left-to-right page: the words are right, the
-    # paragraphs start on the wrong side, and every table column is reversed.
-    lang = frappe.local.lang or "en"
-    direction = "rtl" if lang.split("-")[0] in RIGHT_TO_LEFT else "ltr"
-
-    page = (
-        "<!doctype html>\n"
-        f'<html lang="{lang}" dir="{direction}"><head><meta charset="utf-8">'
-        f"<title>{frappe.utils.escape_html(title)}</title>"
-        f"<style>{STYLE}</style></head><body>{html}</body></html>"
-    )
-
     frappe.local.response.filename = title if title.lower().endswith(".html") else f"{title}.html"
-    frappe.local.response.filecontent = page.encode("utf-8")
+    frappe.local.response.filecontent = page_html(doc).encode("utf-8")
     frappe.local.response.type = "download"
+
+
+@frappe.whitelist(methods=["GET"])
+def printable(name: str) -> dict:
+    """The printable page, as a string the editor can put in an iframe."""
+    doc = _mine(name, "read")
+    return {"name": doc.name, "title": doc.file_name, "html": page_html(doc)}
 
 
 @frappe.whitelist(methods=["GET"])
