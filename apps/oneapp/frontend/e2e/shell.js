@@ -27,25 +27,31 @@ export async function openSettings(page) {
   await expect(account.or(more).first()).toBeVisible({ timeout: 15_000 })
 
   if (await account.count()) {
-    // Opened once, and opened again only if it did not take. The foot is drawn
-    // from the session, so a page that has only just arrived re-renders under
-    // the click: the popover opens onto a trigger that is no longer the same
-    // node and shuts in the same frame. Specs that wait for a list row first
-    // have a settled page and never saw it.
+    // Opened, and re-opened only if it is not already open.
     //
-    // One retry, not a loop. A loop presses a *toggle* — the press that follows
-    // a menu it merely failed to see in time is the press that closes it, and
-    // then the row is detached under the click that comes next.
+    // Two failure shapes, one cause: the foot is drawn from the session, so
+    // for about a second after a page arrives the surfaces recompute as the
+    // mail count and the assistant's availability land. The menu either never
+    // opens — the popover mounts onto a trigger that has already been replaced
+    // — or opens and is then torn down with the rows under the click.
+    //
+    // So: only press when the row is not on screen, which keeps a retry from
+    // pressing a *toggle* shut, and let the click itself be retried, because
+    // the row it detached is a row that comes straight back.
     const row = page.getByRole('menuitem', { name: 'Settings' })
-    await account.click()
-    try {
-      await row.waitFor({ state: 'visible', timeout: 3_000 })
-    } catch {
-      await account.click()
-      await row.waitFor({ state: 'visible', timeout: 10_000 })
+    for (let go = 0; go < 4; go += 1) {
+      if (!(await row.isVisible().catch(() => false))) {
+        await account.click()
+        await row.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {})
+      }
+      try {
+        await row.click({ timeout: 4_000 })
+        return
+      } catch {
+        await page.waitForTimeout(300)
+      }
     }
-    await row.click()
-    return
+    throw new Error('the account menu would not stay open long enough to press Settings')
   }
   await more.click()
   await page.locator('[data-slot="settings-link"]').click()
