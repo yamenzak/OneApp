@@ -784,8 +784,28 @@ def _seed_mail(user):
 			"add_signature": 1,
 		}).insert(ignore_permissions=True)
 
+	# Every other address on our own domain, which is litter by definition: the
+	# workspace has one mailbox in this fixture and `address_for` decides what
+	# it is called. The rule moved once — the slug went onto the front of every
+	# address — and the account from before it stayed behind, so the rail drew
+	# two mailboxes and every spec reaching for one by `sales@` matched both.
+	# Deleting the fixture's own by mistake is the same failure from the other
+	# end, and it cost an evening.
+	for stale in frappe.get_all(
+		"Email Account", filters={"email_id": ("!=", address)}, pluck="name"
+	):
+		# By domain, not `is_ours`: `is_ours` asks for *this* workspace's prefix
+		# too, so the account from before the prefix existed answers no — and it
+		# is precisely that account this sweep is here to remove.
+		held = (frappe.db.get_value("Email Account", stale, "email_id") or "").lower()
+		if not held.endswith("@" + addresses.domain()):
+			continue
+		frappe.db.delete("User Email", {"email_account": stale})
+		frappe.delete_doc("Email Account", stale, force=True, ignore_permissions=True)
+
 	account = frappe.db.get_value("Email Account", {"email_id": address}, "name")
 	holder = frappe.get_doc("User", user)
+	holder.reload()
 	if address not in {row.email_id for row in holder.user_emails}:
 		holder.append("user_emails", {"email_account": account, "email_id": address})
 		holder.save(ignore_permissions=True)
