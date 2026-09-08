@@ -24,6 +24,7 @@
     "fast-formula-parser": "^1.0.19",
     "frappe-gantt": "^1.2.2",
     "frappe-ui": "^1.0.0-beta.55",
+    "maplibre-gl": "^5.0.0",
     "socket.io-client": "^4.8.1",
     "vue": "^3.5.13",
     "vue-echarts": "^8.0.1",

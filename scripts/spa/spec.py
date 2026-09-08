@@ -101,6 +101,16 @@ APPS = {
             # list of {id, name, start, end, progress}, so the mapping is ours
             # and small: `components/screen/bodies/GanttBody.vue`.
             "frappe-gantt": "^1.2.2",
+            # The map. BSD-3, so a dependency rather than a vendoring — the
+            # AGPL obligations that come with taking code from `frappe/*` do
+            # not apply to something published on npm under a permissive
+            # licence. WebGL, which is what makes a thousand moving markers
+            # possible at all, and behind a dynamic import so its weight is
+            # paid by whoever opens a map. Its basemap is ours and self-hosted
+            # (see `apps/oneapp/oneapp/onemobility/README.md` §7): no tile
+            # request ever leaves for a third party, which is a privacy
+            # position as much as a rendering one.
+            "maplibre-gl": "^5.0.0",
             "dompurify": "^3.2.6",
             "@iframe-resizer/child": "5.5.9",
             "@iframe-resizer/vue": "5.5.9",

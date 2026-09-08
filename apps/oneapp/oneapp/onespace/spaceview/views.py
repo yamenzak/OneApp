@@ -278,6 +278,74 @@ def _gantt(resolved: dict) -> dict:
 	}
 
 
+# What a pin's position may be read from. `Geolocation` is Frappe's own and
+# holds GeoJSON, which is the right answer for a shape as well as a point. The
+# numeric pair is the one every address table in the world actually has —
+# ERPNext's Address carries `latitude` and `longitude` as Floats — and refusing
+# it would have made this a OneMobility feature wearing an engine's clothes.
+POSITIONED = ("Geolocation",)
+COORDINATE = ("Float", "Data", "Int")
+
+
+def _place(resolved: dict) -> dict:
+	"""Where a record sits, and what colours the pin once it is there.
+
+	Two shapes, checked in the order a screen would prefer them: a single
+	`Geolocation`, or a pair of numeric fields. A screen declaring both gets
+	the first, because GeoJSON can say "this is a line" and two numbers cannot.
+
+	`colour_field` is the board's column field by another name — a Select whose
+	options carry colours, so a map of stops can be read the way a board is,
+	without a legend nobody wrote. Deliberately the same rule as the board's,
+	so a doctype that works as one works as the other.
+	"""
+	offered = {c["fieldname"]: c for c in resolved.get("all_columns") or []}
+	said = (resolved.get("view_settings") or {}).get("map") or {}
+
+	def _is(name: str, kinds) -> bool:
+		return (offered.get(name) or {}).get("fieldtype") in kinds
+
+	point = said.get("point_field") or ""
+	if not _is(point, POSITIONED):
+		point = ""
+
+	lat = said.get("lat_field") or ""
+	lon = said.get("lon_field") or ""
+	if not (_is(lat, COORDINATE) and _is(lon, COORDINATE)):
+		lat = lon = ""
+
+	# A screen that declared neither validly has no map, and `_view_types` will
+	# already have dropped it — this is the runtime half, so a saved view made
+	# before a field was renamed opens as a list rather than as an empty world.
+	label = said.get("label_field") or resolved.get("title_field") or ""
+	if label and label not in offered:
+		label = ""
+
+	colour = said.get("colour_field") or resolved.get("status_field") or ""
+	if not _is(colour, ("Select", "Link")):
+		colour = ""
+
+	return {
+		"point_field": point,
+		"lat_field": lat,
+		"lon_field": lon,
+		"label_field": label,
+		"colour_field": colour,
+		# Where to open when nothing has a position yet. A workspace's own
+		# country would be a better answer and is not a thing we store, so:
+		# the whole world, which is honest, rather than a guess at Berlin.
+		"centre": said.get("centre") or None,
+		"zoom": said.get("zoom") or None,
+		# The basemap, which is a deployment fact rather than a workspace's
+		# choice: the tiles are ours and self-hosted, so every workspace on an
+		# instance uses the same ones and none of them should be asked. Absent,
+		# the map draws its records on a flat ground — which is what a
+		# schematic looks like, and is why this works on a bench nobody has
+		# pointed at a tile store.
+		"style": frappe.conf.get("oneapp_map_style") or "",
+	}
+
+
 def _tree(resolved: dict) -> dict:
 	"""Which field points a record at the one above it.
 
@@ -449,6 +517,7 @@ def _resolve_views(resolved: dict) -> dict:
 	resolved["calendar"] = _calendar(resolved)
 	resolved["gantt"] = _gantt(resolved)
 	resolved["tree"] = _tree(resolved)
+	resolved["place"] = _place(resolved)
 	resolved["cards"] = _cards(resolved)
 	resolved["widgets"] = _widgets(resolved)
 	resolved["fields"] = _fetch_fields(
@@ -470,6 +539,14 @@ def _resolve_views(resolved: dict) -> dict:
 		# hierarchy, and without this every record comes back with an empty
 		# parent and the tree is one flat list of roots.
 		resolved["tree"]["parent_field"],
+		# And where a map puts the pin, which is never a column: a coordinate
+		# is not something anybody reads in a table, so without this every
+		# record arrives without one and the map is an empty world.
+		resolved["place"]["point_field"],
+		resolved["place"]["lat_field"],
+		resolved["place"]["lon_field"],
+		resolved["place"]["label_field"],
+		resolved["place"]["colour_field"],
 		# What a record *is*, which every surface draws and none of them asked
 		# for. The doctype's own `title_field` and `image_field`: the title cell
 		# reads one and the card reads the other, and neither is a column

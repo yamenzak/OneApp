@@ -264,6 +264,7 @@
             :calendar="fetchedCalendar || spec.calendar || {}"
             :gantt="spec.gantt || {}"
             :tree="spec.tree || {}"
+            :place="spec.place || {}"
             :totals="totals"
             :group-totals="groupTotals"
             :space-code="spaceCode"

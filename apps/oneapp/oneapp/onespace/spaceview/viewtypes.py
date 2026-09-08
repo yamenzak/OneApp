@@ -16,7 +16,8 @@ VIEW_TYPES = (
 
 
 BUILT_VIEW_TYPES = (
-	"list", "board", "grid", "dashboard", "calendar", "gantt", "report", "tree",
+	"list", "board", "grid", "dashboard", "calendar", "gantt", "map", "report",
+	"tree",
 )
 
 
@@ -66,6 +67,17 @@ NEEDS_PARENT = ("tree",)
 # empty page — so the type is dropped and the screen opens on its list, the
 # way a board is dropped where there is no field to make columns of.
 NEEDS_WIDGETS = ("dashboard",)
+
+
+# And a map needs somewhere to put a pin.
+#
+# Two shapes are accepted, because the field a doctype already has decides
+# which: Frappe's own `Geolocation`, which holds GeoJSON and is the right
+# answer for anything drawn as a shape, and a pair of numeric fields, which is
+# what every address table in the world actually has — ERPNext's own Address
+# carries `latitude` and `longitude` as Floats. Demanding the first would have
+# made this a OneMobility feature wearing an engine's clothes.
+NEEDS_PLACE = ("map",)
 
 
 # Plural endings, longest first, and their singular. Not a stemmer: this is
@@ -124,6 +136,8 @@ def _view_types(screen: dict) -> list[str]:
 		declared = [one for one in declared if one not in NEEDS_SPANS]
 	if not _has_parent_field(screen):
 		declared = [one for one in declared if one not in NEEDS_PARENT]
+	if not _has_place_field(screen):
+		declared = [one for one in declared if one not in NEEDS_PLACE]
 	return list(dict.fromkeys(declared)) or [DEFAULT_VIEW_TYPE]
 
 
@@ -166,6 +180,24 @@ def _has_span(screen: dict) -> bool:
 		if (found.get("start_field") or "").strip() and (found.get("end_field") or "").strip():
 			return True
 	return False
+
+
+def _has_place_field(screen: dict) -> bool:
+	"""Whether this screen names a field a map could place a record by.
+
+	A declaration check like the others: either a single `point_field`, or the
+	`lat_field`/`lon_field` pair. The fieldtypes are checked in `_place`, where
+	the columns are.
+	"""
+	settings = _json(screen.get("view_settings"))
+	found = settings.get("map") if isinstance(settings, dict) else None
+	if not isinstance(found, dict):
+		return False
+	if (found.get("point_field") or "").strip():
+		return True
+	return bool(
+		(found.get("lat_field") or "").strip() and (found.get("lon_field") or "").strip()
+	)
 
 
 def _has_parent_field(screen: dict) -> bool:

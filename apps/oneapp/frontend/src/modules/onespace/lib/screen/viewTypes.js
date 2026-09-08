@@ -52,7 +52,12 @@ export const VIEW_TYPES = {
     built: true,
     body: () => import('@/modules/onespace/components/screen/bodies/CardsBody.vue'),
   },
-  map: { get label() { return __('Map') }, icon: 'lucide-map', built: false },
+  map: {
+    get label() { return __('Map') },
+    icon: 'lucide-map',
+    built: true,
+    body: () => import('@/modules/onespace/components/screen/bodies/MapBody.vue'),
+  },
   /**
    * The same table, opened as a worksheet rather than as a way in.
    *
