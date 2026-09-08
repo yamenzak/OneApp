@@ -37,6 +37,9 @@ test.describe('realtime', () => {
     const renamed = `ZZ Realtime ${Date.now() % 10000}`
     await writerPage.goto('/one/space/zzmock')
     await writerPage.getByText(original).first().click()
+    // The fields are in the pane; Save is not. A record's actions teleport into
+    // the top bar with the rest of the page's header, so a pane-scoped lookup
+    // finds a button that is no longer inside it and waits out the test.
     const pane = writerPage.locator('[data-slot="record-pane"]')
 
     // In a `finally`, because a rename that is not put back is a fixture the
@@ -44,7 +47,7 @@ test.describe('realtime', () => {
     // left itself.
     try {
       await pane.getByLabel('Description').fill(renamed)
-      await pane.getByRole('button', { name: 'Save' }).click()
+      await writerPage.getByRole('button', { name: 'Save' }).click()
 
       // And it turns up, without a reload. The refetch is coalesced, so this
       // is allowed a moment — a bulk import publishes hundreds of these a
@@ -53,7 +56,7 @@ test.describe('realtime', () => {
       await expect(readerPage.getByText(renamed).first()).toBeVisible({ timeout: 15000 })
     } finally {
       await pane.getByLabel('Description').fill(original)
-      await pane.getByRole('button', { name: 'Save' }).click()
+      await writerPage.getByRole('button', { name: 'Save' }).click()
       // `toContainText`, not `toHaveValue`: a Text Editor field is a
       // contenteditable rather than an input, so it has no value to read.
       await expect(pane.getByLabel('Description')).toContainText(original)
@@ -107,7 +110,7 @@ test.describe('realtime', () => {
     await secondPage
       .getByRole('option', { name: now === 'Low' ? 'Medium' : 'Low', exact: true })
       .click()
-    await pane.getByRole('button', { name: 'Save' }).click()
+    await secondPage.getByRole('button', { name: 'Save' }).click()
 
     await expect(
       firstPage.getByText('Someone else changed this'),
