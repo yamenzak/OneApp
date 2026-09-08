@@ -26,7 +26,9 @@ test('the switcher offers a way to add a space, and it opens', async ({ page, ba
   await signIn(page, baseURL)
   await page.goto('/one/files')
   await page.locator('[data-slot="space-switcher"]').click()
-  await page.getByRole('button', { name: 'Add a space' }).click()
+  // A tile in the switcher's Apps row, beside Mail and the calendar: adding a
+  // space is the same kind of act as opening one. So a link, not a button.
+  await page.getByRole('link', { name: 'Add a space' }).click()
 
   await expect(page).toHaveURL(/\/one\/add/)
   await expect(page.getByText('Add a space', { exact: true }).first()).toBeVisible()
@@ -58,10 +60,11 @@ test('a member is not offered it', async ({ page, baseURL }, info) => {
   await signIn(page, baseURL, MEMBER)
   await page.goto('/one/files')
 
-  // Opened, so this is the honest check: the switcher is there, it has the row
-  // every workspace has, and the one that adds a space is absent — rather than
-  // a count of zero that would also pass if nothing rendered at all.
+  // Opened, so this is the honest check: the switcher is there, it has the way
+  // to the full list every workspace has, and the tile that adds a space is
+  // absent — rather than a count of zero that would also pass if nothing
+  // rendered at all.
   await page.locator('[data-slot="space-switcher"]').click()
-  await expect(page.getByRole('button', { name: 'All spaces' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Add a space' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'View all' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Add a space' })).toHaveCount(0)
 })

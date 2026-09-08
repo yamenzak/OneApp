@@ -233,6 +233,7 @@ export function useNav() {
         key: 'marketplace',
         label: __('Add a space'),
         icon: 'lucide-store',
+        brand: 'onemarket',
         to: { name: 'Marketplace' },
       }]
       : []),

@@ -40,9 +40,23 @@
 
     <template #default="{ close }">
       <div
-        class="w-[348px] rounded-6 border border-outline-gray-2 bg-surface-elevation-2 p-3 shadow-2xl"
+        class="w-[392px] rounded-6 border border-outline-gray-2 bg-surface-elevation-2 p-3 shadow-2xl"
       >
-        <p class="px-1 pb-2 text-p-xs text-ink-gray-5">{{ __('Spaces') }}</p>
+        <!--
+          The way to the full list sits on the group it belongs to rather than
+          in a footer under everything. A footer row reads as another
+          destination in the same list as Mail and the calendar; beside the
+          word "Spaces" it reads as what it is — more of these.
+        -->
+        <div class="flex items-center justify-between gap-2 px-1 pb-2">
+          <p class="text-p-xs text-ink-gray-5">{{ __('Spaces') }}</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            :label="__('View all')"
+            @click="goTo({ name: 'Launcher' }, close)"
+          />
+        </div>
 
         <div :class="GRID">
           <router-link
@@ -59,11 +73,20 @@
 
         <!--
           The apps that are not inside any space — Mail, Files, the calendar,
-          the assistant. They are tiles here and outlines in the foot of the
-          column, and that is the split on purpose: this is the board you look
-          at when you are choosing where to go, which is the one place a mark
-          earns its colour. Only the ones that *have* a mark; settings opens a
-          dialog rather than going anywhere and is in the account menu.
+          the assistant, and the marketplace. They are tiles here and outlines
+          in the foot of the column, and that is the split on purpose: this is
+          the board you look at when you are *choosing* where to go, which is
+          the one place a mark earns its colour.
+
+          The marketplace is one of them rather than a footer row, because
+          adding a space is the same kind of act as opening one and reads
+          better as the empty tile at the end of the board than as a line of
+          text under it. Absent for somebody who may not add one:
+          `require_workspace_admin` admits the owner and an Admin member, and
+          `nav.js` leaves the entry out for everyone else.
+
+          Only what has a mark and somewhere to go: settings opens a dialog
+          rather than going anywhere and is in the account menu.
         -->
         <template v-if="apps.length">
           <Divider class="my-3" />
@@ -82,37 +105,7 @@
             </router-link>
           </div>
         </template>
-
-        <Divider class="my-3" />
-
-        <div class="flex flex-col gap-0.5">
-          <Button
-            variant="ghost"
-            class="!justify-start"
-            icon-left="lucide-layout-grid"
-            :label="__('All spaces')"
-            @click="goTo({ name: 'Launcher' }, close)"
-          />
-          <!--
-            Adding a space is something you do to the *workspace*, so it belongs
-            where the workspace's spaces are, not beside the day's work. Absent
-            for somebody who may not: `require_workspace_admin` on the control
-            plane admits the owner and an Admin member, and a row leading to a
-            page of refusals is worse than no row.
-          -->
-          <Button
-            v-if="session.isAdmin"
-            variant="ghost"
-            class="!justify-start"
-            :label="__('Add a space')"
-            @click="goTo({ name: 'Marketplace' }, close)"
-          >
-            <template #prefix>
-              <BrandMark name="onemarket" class="size-4" />
-            </template>
-          </Button>
-        </div>
-      </div>
+</div>
     </template>
   </Popover>
 </template>
@@ -121,7 +114,6 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button, Divider, Icon, Popover } from '@/ui'
-import BrandMark from '../brand/BrandMark.vue'
 import SpaceFace from '../brand/SpaceFace.vue'
 import { TENANT_APP } from '@/lib/runtime/brand'
 import { brand } from '@/lib/runtime/boot'
@@ -151,8 +143,8 @@ import { __ } from '@/lib/runtime/translate'
  * is 348 rather than a round number so three tiles and the padding divide it
  * exactly — a launcher whose columns do not fit its width has a ragged edge.
  */
-const GRID = 'grid grid-cols-3'
-const TILE = 'flex h-[100px] flex-col items-center gap-1.5 rounded-4 px-1 pt-3 hover:bg-surface-gray-2'
+const GRID = 'grid grid-cols-4'
+const TILE = 'flex h-[100px] flex-col items-center gap-1.5 rounded-4 px-0.5 pt-3 hover:bg-surface-gray-2'
 const FACE = 'h-12 shrink-0'
 const CAPTION = 'line-clamp-2 w-full text-center text-p-xs leading-tight text-ink-gray-7'
 
