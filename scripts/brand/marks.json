@@ -96,6 +96,14 @@
     "body": "<defs>\n  <linearGradient id=\"g-onedoc\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n    <stop offset=\"0%\" stop-color=\"#60a5fa\"/>\n    <stop offset=\"100%\" stop-color=\"#1d4ed8\"/>\n  </linearGradient>\n  </defs>\n<!-- Blue Document Page Body -->\n<path d=\"M 22 18 L 56 18 L 78 40 L 78 82 L 22 82 Z\" fill=\"url(#g-onedoc)\"/>\n<!-- White Folded Corner -->\n<polygon points=\"56,18 56,40 78,40\" fill=\"#ffffff\"/>"
   },
   {
+    "id": "onecode",
+    "name": "OneCode",
+    "category": "productivity",
+    "subtitle": "Source Files, Scripts & Code Fields",
+    "color": "#f59e0b",
+    "body": "<defs>\n  <linearGradient id=\"g-onecode\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n    <stop offset=\"0%\" stop-color=\"#fbbf24\"/>\n    <stop offset=\"100%\" stop-color=\"#d97706\"/>\n  </linearGradient>\n  </defs>\n<!-- Editor Tile -->\n<rect x=\"14\" y=\"14\" width=\"72\" height=\"72\" rx=\"17\" fill=\"url(#g-onecode)\" />\n<!-- White Prompt Chevron -->\n<path d=\"M 33 37 L 46 50 L 33 63\" fill=\"none\" stroke=\"#ffffff\" stroke-width=\"7.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" />\n<!-- White Caret -->\n<path d=\"M 55 63.5 L 68 63.5\" fill=\"none\" stroke=\"#ffffff\" stroke-width=\"7.5\" stroke-linecap=\"round\" />"
+  },
+  {
     "id": "onehr",
     "name": "OneHR",
     "category": "productivity",

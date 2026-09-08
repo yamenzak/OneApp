@@ -88,6 +88,12 @@ export const MARKS = {
     said: "Collaborative Docs, Notes & Knowledge Base",
     body: "<defs>\n  <linearGradient id=\"g-onedoc__ONE__\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n    <stop offset=\"0%\" stop-color=\"#60a5fa\"/>\n    <stop offset=\"100%\" stop-color=\"#1d4ed8\"/>\n  </linearGradient>\n  </defs>\n<!-- Blue Document Page Body -->\n<path d=\"M 22 18 L 56 18 L 78 40 L 78 82 L 22 82 Z\" fill=\"url(#g-onedoc__ONE__)\"/>\n<!-- White Folded Corner -->\n<polygon points=\"56,18 56,40 78,40\" fill=\"var(--brand-knockout, #ffffff)\"/>",
   },
+  "onecode": {
+    name: "OneCode",
+    colour: "#f59e0b",
+    said: "Source Files, Scripts & Code Fields",
+    body: "<defs>\n  <linearGradient id=\"g-onecode__ONE__\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n    <stop offset=\"0%\" stop-color=\"#fbbf24\"/>\n    <stop offset=\"100%\" stop-color=\"#d97706\"/>\n  </linearGradient>\n  </defs>\n<!-- Editor Tile -->\n<rect x=\"14\" y=\"14\" width=\"72\" height=\"72\" rx=\"17\" fill=\"url(#g-onecode__ONE__)\" />\n<!-- White Prompt Chevron -->\n<path d=\"M 33 37 L 46 50 L 33 63\" fill=\"none\" stroke=\"var(--brand-knockout, #ffffff)\" stroke-width=\"7.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" />\n<!-- White Caret -->\n<path d=\"M 55 63.5 L 68 63.5\" fill=\"none\" stroke=\"var(--brand-knockout, #ffffff)\" stroke-width=\"7.5\" stroke-linecap=\"round\" />",
+  },
   "onehr": {
     name: "OneHR",
     colour: "#f97316",
