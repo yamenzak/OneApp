@@ -82,7 +82,17 @@
     target *inside* the content column: the whole point is that the header is
     beside the switcher, and a slot cannot reach past its own parent.
   -->
-  <div v-else class="flex h-full min-h-0 flex-col bg-surface-gray-3">
+  <!--
+    The ground, and the one case where there is none. An editor takes the whole
+    window — no bar, no column — so there is nothing for a ground to be behind:
+    it is the page, and grey around a page that does not fill the window is a
+    gap rather than a frame.
+  -->
+  <div
+    v-else
+    class="flex h-full min-h-0 flex-col"
+    :class="chrome ? 'bg-surface-gray-3' : 'bg-surface-base'"
+  >
     <header
       v-if="chrome"
       data-slot="shell-topbar"
