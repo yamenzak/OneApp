@@ -1294,13 +1294,24 @@ def _seed_approvals():
 	# And anything else, which is a test's leftover whatever it was called.
 	# The docflow tests submit and cancel records to prove a workflow moves,
 	# and every one of those stayed — showing up in a report's totals as an
-	# amount nobody in the fixture wrote. `force` is what carries a submitted
-	# document out.
+	# amount nobody in the fixture wrote.
+	#
+	# Cancelled first, and this comment used to say `force` was enough. It is
+	# not: `force` skips the *link* checks, and a submitted document is refused
+	# on its docstatus by a rule that runs before them — "Submitted Record
+	# cannot be deleted. You must Cancel it first", which is exactly what
+	# stopped a seed dead. Written rather than cancelled through the document,
+	# because `cancel()` runs the doctype's own hooks and this is a sweep
+	# putting a fixture back, not a person changing their mind.
 	kept = {title for title, _ in KEEP}
-	for row in frappe.get_all(APPROVAL_DOCTYPE, fields=["name", "title"]):
-		if row["title"] not in kept:
-			frappe.delete_doc(APPROVAL_DOCTYPE, row["name"],
-			                  ignore_permissions=True, force=True)
+	for row in frappe.get_all(APPROVAL_DOCTYPE, fields=["name", "title", "docstatus"]):
+		if row["title"] in kept:
+			continue
+		if row["docstatus"] == 1:
+			frappe.db.set_value(APPROVAL_DOCTYPE, row["name"], "docstatus", 2,
+			                    update_modified=False)
+		frappe.delete_doc(APPROVAL_DOCTYPE, row["name"],
+		                  ignore_permissions=True, force=True)
 
 	# The cache keyed on doctype, which `get_workflow_name` reads. Without this
 	# the workflow is invisible until the next process starts.
