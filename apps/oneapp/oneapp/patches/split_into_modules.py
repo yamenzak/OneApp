@@ -66,4 +66,14 @@ def execute():
 		frappe.delete_doc("Module Def", OLD, force=True, ignore_permissions=True)
 
 	frappe.db.commit()
+
+	# The module list itself is cached, and nothing else invalidates it: Frappe
+	# builds `app_modules` from `modules.txt` once and keeps it, so a bench that
+	# has read the old list goes on resolving `oneapp.oneapp_core` from memory
+	# however correct the database now is — a 500 on every page that survives a
+	# restart, because the cache does too. Cleared by name rather than by
+	# `clear_cache` alone, which does not reach these.
+	frappe.cache.delete_value("app_modules")
+	frappe.client_cache.delete_value("installed_app_modules")
 	frappe.clear_cache()
+	frappe.setup_module_map(include_all_apps=False)
