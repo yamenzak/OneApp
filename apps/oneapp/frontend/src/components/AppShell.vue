@@ -82,7 +82,7 @@
     target *inside* the content column: the whole point is that the header is
     beside the switcher, and a slot cannot reach past its own parent.
   -->
-  <div v-else class="flex h-full min-h-0 flex-col bg-surface-sidebar">
+  <div v-else class="flex h-full min-h-0 flex-col bg-surface-gray-3">
     <header
       v-if="chrome"
       data-slot="shell-topbar"
@@ -128,13 +128,27 @@
         the curve, and the scroller is inside this rather than around it: the
         frame stays where it is and only the content moves.
 
+        A shadow and not a hairline. A border is a line drawn between two
+        things the same colour, which is what it was: `surface-sidebar` and
+        `surface-base` are two percent apart in light, so the curve read as a
+        rule rather than as a page lifted off a ground.
+
+        `surface-gray-3` is the ground and `surface-elevation-2` the page, and
+        the pair separate in both themes for different reasons. In light the
+        page is white on .946 and the shadow lifts it. In dark the page is
+        .26 on .341 — *darker* than its ground, which is the way round every
+        dark editor does it, and the step is what does the work there because
+        a shadow on a dark ground does nothing. Elevation rather than
+        `surface-base` because it is the surface a shadow is allowed to sit
+        on, which is the whole of what that token is for.
+
         An editor asked for the window, so it gets no frame — and its own
         header target, because there is no bar above it to hold one.
       -->
       <div
         data-slot="shell-inset"
         class="flex min-w-0 flex-1 flex-col overflow-hidden"
-        :class="chrome ? 'mb-2 me-2 rounded-6 border border-outline-gray-2 bg-surface-base' : ''"
+        :class="chrome ? 'mb-2 me-2 rounded-6 bg-surface-elevation-2 shadow-md' : ''"
       >
         <PageHeaderTarget v-if="!chrome" />
         <ScrollArea v-if="scroll" class="min-h-0 flex-1">

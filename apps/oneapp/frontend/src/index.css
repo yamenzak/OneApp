@@ -34,6 +34,23 @@
 }
 
 /*
+ * The sidebar is not a surface of its own here.
+ *
+ * frappe-ui's `Sidebar` paints `--surface-sidebar`, which is right for a shell
+ * where the column is a panel beside the page. Ours is the other shape: the
+ * bar, the column and the ground behind them are one piece, and the page is
+ * what steps out of it. A column with its own fill inside that is a block of
+ * a third colour with no edge to explain it.
+ *
+ * Overridden rather than each column carrying `!bg-transparent`, because five
+ * of them fill that slot and the fifth would have been added without it. Dark
+ * already resolves to transparent; light is the one that had a value.
+ */
+:root {
+  --surface-sidebar: transparent;
+}
+
+/*
  * The display face: one family, two files, split by script.
  *
  * Everything in this product is set in the UI face, and that is right for a
