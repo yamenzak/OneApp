@@ -472,6 +472,10 @@ def test_no_local_component_shadows_a_frappe_ui_one():
 # primitive everything else composes.
 LAYOUT_ONLY = frozenset({
 	"BrandMark.vue",
+	# A product's name in two weights — `One` quiet, the word after it at full
+	# strength. Two spans and a split, and there is no component in the library
+	# for "one word said in two voices" to build it out of.
+	"SpaceName.vue",
 	"RecordPane.vue",
 	"Resizer.vue",
 	"FadedScroll.vue",
