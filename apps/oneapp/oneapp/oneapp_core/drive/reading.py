@@ -15,7 +15,8 @@ from oneapp.oneapp_core.email import people
 from .kinds import KIND_FIELD, KINDS, OPENED_FIELD, STATUS_FIELD, TRASHED, TRASHED_FIELD
 from .writing import KEEP_DAYS
 from .query import (
-    HOME, ORDER, PLACES, RECORD, ROOT, TRASH, _place_filters, _searching, _visible,
+    HOME, ORDER, PLACES, RECORD, ROOT, SORTABLE, TRASH, _place_filters, _searching,
+    _visible, ordering,
 )
 
 PAGE = 50
@@ -42,7 +43,8 @@ DEPTH = 20
 @frappe.whitelist(methods=["GET"])
 def listing(place: str = HOME, folder: str = "", kind: str = "",
             search: str = "", start: int = 0, limit: int = PAGE,
-            order_by: str = "", doctype: str = "", docname: str = "") -> dict:
+            sort: str = "", descending: int = 0,
+            doctype: str = "", docname: str = "") -> dict:
     """One page of one place."""
     place = place if place in PLACES else HOME
     if kind and kind not in KINDS:
@@ -60,7 +62,9 @@ def listing(place: str = HOME, folder: str = "", kind: str = "",
         filters=filters,
         or_filters=or_filters,
         fields=FIELDS,
-        order_by=order_by or ORDER.get(place) or "modified desc",
+        # A key the reader picked, resolved against an allowlist — never the
+        # string they sent. See `ordering`.
+        order_by=ordering(place, sort, bool(int(descending or 0))),
         limit_start=start,
         limit_page_length=limit + 1,
     )
@@ -76,6 +80,10 @@ def listing(place: str = HOME, folder: str = "", kind: str = "",
         "folder": folder,
         "path": path(folder) if folder else [],
         "can_write": place != TRASH,
+        # Echoed so the control can draw the order that is actually in force,
+        # which is the place's own default until somebody picks one.
+        "sort": sort if sort in SORTABLE else "",
+        "descending": bool(int(descending or 0)),
         # What the caller asked for, echoed so a tab that scopes itself can
         # tell its own answer from a stale one that arrived after it moved on.
         "attached_to": {"doctype": doctype, "docname": docname} if place == RECORD else None,

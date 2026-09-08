@@ -146,19 +146,47 @@
       />
 
       <div v-else class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-        <!-- Select-all is a row of its own rather than a header cell, because
-             the list has no header: a file manager's columns are fixed. -->
-        <div
-          v-if="!grid"
-          class="flex items-center gap-2 pb-1 text-p-xs text-ink-gray-5"
-        >
-          <Checkbox
-            :model-value="drive.allSelected.value"
-            :aria-label="__('Select everything here')"
-            class="ms-2.5"
-            @update:model-value="drive.toggleAll"
-          />
-          <span>{{ counted }}</span>
+        <!--
+          The header, which is a row of its own rather than a set of column
+          cells: a file's name is a column and everything after it — who,
+          when, how big — is one right-hand cluster, so headings over it would
+          label nothing. Select-all on the left, the count beside it, and the
+          order on the right.
+
+          Drawn over the grid too. The grid has no rows to head, but "biggest
+          first" is a question you ask of thumbnails as often as of a list, and
+          a control that disappears when you switch view is a control you stop
+          trusting.
+        -->
+        <div class="flex items-center gap-2 pb-1 text-p-xs text-ink-gray-5">
+          <template v-if="!grid">
+            <Checkbox
+              :model-value="drive.allSelected.value"
+              :aria-label="__('Select everything here')"
+              class="ms-2.5"
+              @update:model-value="drive.toggleAll"
+            />
+            <span>{{ counted }}</span>
+          </template>
+          <span v-else>{{ counted }}</span>
+
+          <!-- Wrapped, because `Dropdown`'s root is reka's provider and a class
+               on it has no element to land on. -->
+          <div class="ms-auto">
+          <Dropdown :options="orderOptions">
+            <Button
+              variant="ghost"
+              size="sm"
+              data-slot="drive-order"
+              :icon-left="drive.descending.value
+                ? 'lucide-arrow-down-narrow-wide'
+                : 'lucide-arrow-up-narrow-wide'"
+              icon-right="lucide-chevron-down"
+              :label="orderName"
+              :tooltip="__('How these are ordered')"
+            />
+          </Dropdown>
+          </div>
         </div>
 
         <ContextMenu :options="rowMenu">
@@ -468,6 +496,41 @@ const crumbs = computed(() => [
     route: { name: 'Drive', query: { place: 'home', folder: one.name } },
   })),
 ])
+
+/*
+ * What a place can be put in order by, and what each is called.
+ *
+ * Four, and not every column the server would allow: a sort control is a list
+ * you read every time you open it, and the fifth entry is the one that makes
+ * you read rather than recognise. Kind is in it because "show me the sheets"
+ * is a real question in a folder of forty attachments, and grouping by it is
+ * the nearest thing to an answer this list has.
+ *
+ * The empty key is the place's own — Home leads with folders and then names,
+ * Recents with what was opened last — and it is first, because "however this
+ * place normally is" is where most people want to be.
+ */
+const ORDERS = [
+  { key: '', label: __('However this place is'), icon: 'lucide-sparkles' },
+  { key: 'name', label: __('Name'), icon: 'lucide-case-sensitive' },
+  { key: 'modified', label: __('Last changed'), icon: 'lucide-clock' },
+  { key: 'size', label: __('Size'), icon: 'lucide-hard-drive' },
+  { key: 'kind', label: __('Kind'), icon: 'lucide-shapes' },
+]
+
+const orderName = computed(
+  () => ORDERS.find((one) => one.key === drive.sort.value)?.label || ORDERS[0].label,
+)
+
+const orderOptions = computed(() => ORDERS.map((one) => ({
+  label: one.label,
+  icon: one.icon,
+  // Ticked rather than only bolded: a menu of five where one is in force is a
+  // menu that has to say which, and the arrow on the button says only which
+  // way round it is.
+  selected: one.key === drive.sort.value,
+  onClick: () => drive.orderBy(one.key),
+})))
 
 const counted = computed(() => {
   const shown = drive.files.value.length

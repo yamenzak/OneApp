@@ -62,6 +62,35 @@ ORDER = {
 }
 
 
+# What a reader may order by, and the expression each one means.
+#
+# An allowlist and not the string the client sent, because `order_by` reaches
+# `get_list` and `get_list` puts it in the query: a whitelisted GET that takes
+# arbitrary SQL there is a read of any table on the site. Nothing sent this
+# until the Drive grew a sort control, which is exactly when a dormant hole
+# stops being dormant.
+#
+# A folder is always first whatever the key is. A file manager that mixes them
+# is a file manager where a folder is somewhere in the middle of page two, and
+# nobody has ever wanted that.
+SORTABLE = {
+    "name": "file_name",
+    "modified": "modified",
+    "size": "file_size",
+    "kind": KIND_FIELD,
+}
+
+FOLDERS_FIRST = "is_folder desc"
+
+
+def ordering(place: str, key: str, descending: bool) -> str:
+    """One of `SORTABLE`, or the place's own default when the key is not one."""
+    field = SORTABLE.get(key or "")
+    if not field:
+        return ORDER.get(place) or "modified desc"
+    return f"{FOLDERS_FIRST}, {field} {'desc' if descending else 'asc'}"
+
+
 def _visible() -> dict:
     """The filter every place starts from: files that are not in the bin.
 

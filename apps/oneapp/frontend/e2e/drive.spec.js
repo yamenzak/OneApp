@@ -548,3 +548,36 @@ test('a file dragged onto a folder ends up inside it', async ({ page }) => {
   await expect(page.locator('[data-slot="drive-file"]').first())
     .toContainText(`mover-${stamp}.txt`, { timeout: 20_000 })
 })
+
+test('a place can be put in an order, and it is the server that orders it', async ({ page }) => {
+  await page.goto('/one/files')
+  await page.locator('[data-slot="drive-file"]').first().waitFor({ timeout: 20_000 })
+
+  // The files, not the folders: a folder is first whatever the order is, which
+  // is the one rule a file manager keeps, so the whole list is two runs rather
+  // than one. And the name alone — the row says the size and the age under it.
+  const names = async () => page.locator('[data-slot="drive-file"]:not([data-kind="Folder"])')
+    .locator('[data-slot="file-name"]')
+    .allInnerTexts()
+
+  const ordered = (shown, down) => shown.length > 1 && shown.every((one, at) => {
+    if (at === 0) return true
+    const before = shown[at - 1].toLowerCase()
+    const now = one.toLowerCase()
+    return down ? now <= before : now >= before
+  })
+
+  await page.locator('[data-slot="drive-order"]').click()
+  await page.getByRole('menuitem', { name: 'Name' }).click()
+  await expect.poll(async () => ordered(await names(), false)).toBe(true)
+
+  // Pressing the same key again turns it round rather than clearing it.
+  await page.locator('[data-slot="drive-order"]').click()
+  await page.getByRole('menuitem', { name: 'Name' }).click()
+  await expect.poll(async () => ordered(await names(), true)).toBe(true)
+
+  // And it survives a reload: the choice is the reader's, not the page's.
+  await page.reload()
+  await page.locator('[data-slot="drive-file"]').first().waitFor({ timeout: 20_000 })
+  await expect(page.locator('[data-slot="drive-order"]')).toContainText('Name')
+})

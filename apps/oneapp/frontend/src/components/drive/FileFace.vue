@@ -38,7 +38,7 @@
 
   <span class="min-w-0 flex-1">
     <span class="flex min-w-0 items-center gap-1.5 text-p-sm font-normal text-ink-gray-8">
-      <span class="truncate">{{ file.file_name }}</span>
+      <span data-slot="file-name" class="truncate">{{ file.file_name }}</span>
       <!-- Where a model made this. Here rather than on the row, because this
            is the one component that draws a file's identity — the list, the
            grid, the picker and the previewer all come through it, so the mark

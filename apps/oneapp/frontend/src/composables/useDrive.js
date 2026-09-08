@@ -18,6 +18,27 @@ import { useSaving } from './useSaving'
 
 export const PAGE = 50
 
+//: Where the chosen order is kept. One key for both halves, because "by size,
+//: biggest first" is one decision and storing it as two lets them drift.
+const ORDER_KEY = 'onespace:drive:order'
+
+function read() {
+  try {
+    const held = JSON.parse(localStorage.getItem(ORDER_KEY) || '{}')
+    return { key: held.key || '', down: !!held.down }
+  } catch {
+    return { key: '', down: false }
+  }
+}
+
+function write(key, down) {
+  try {
+    localStorage.setItem(ORDER_KEY, JSON.stringify({ key, down }))
+  } catch {
+    // A browser with storage switched off orders this session and forgets.
+  }
+}
+
 export function useDrive({ place, folder }) {
   const files = ref([])
   const more = ref(false)
@@ -26,6 +47,16 @@ export function useDrive({ place, folder }) {
   const search = ref('')
   const path = ref([])
   const picked = ref(new Set())
+
+  // What the reader put this place in. Empty means the place's own default —
+  // Home leads with folders and then names, Recents with what was opened last
+  // — and the server decides that, so an empty key here is not "no order" but
+  // "whatever this place is for".
+  //
+  // Remembered in the browser like the grid toggle, and for the same reason: a
+  // person who wants the biggest file first wants it in every folder, not once.
+  const sort = ref(read().key)
+  const descending = ref(read().down)
 
   const selected = computed(() => files.value.filter((one) => picked.value.has(one.name)))
   const anySelected = computed(() => picked.value.size > 0)
@@ -41,6 +72,8 @@ export function useDrive({ place, folder }) {
         search: search.value,
         start: append ? files.value.length : 0,
         limit: PAGE,
+        sort: sort.value,
+        descending: descending.value ? 1 : 0,
       })
       files.value = append ? [...files.value, ...(found?.files || [])] : found?.files || []
       more.value = !!found?.more
@@ -83,9 +116,30 @@ export function useDrive({ place, folder }) {
 
   const names = (of) => (Array.isArray(of) ? of : [of]).map((one) => one.name || one)
 
+  /**
+   * Put the place in an order, and read it back from the top.
+   *
+   * From the top because `start` is an offset into the old order: appending
+   * page two of "by name" onto page one of "by date" is a list that is in
+   * neither order and has rows twice.
+   *
+   * Pressing the key that is already in force turns it round, which is what a
+   * sort control does everywhere; pressing it a third time is still descending
+   * rather than back to nothing, because "no order" is not a state anybody is
+   * trying to reach.
+   */
+  function orderBy(key) {
+    const down = key === sort.value ? !descending.value : false
+    sort.value = key
+    descending.value = down
+    write(key, down)
+    return load()
+  }
+
   return {
     files, more, loading, error, search, path, busy,
     picked, selected, anySelected, allSelected,
+    sort, descending, orderBy,
     load, toggle, toggleAll, clear, act,
 
     // The eight. Each is a call and a re-read, which is why they are one line.
