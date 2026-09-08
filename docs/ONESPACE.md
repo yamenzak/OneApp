@@ -72,7 +72,7 @@ So a space may declare a **theme**, on its registration, in four words:
 |---|---|
 | `mode` | `light` or `dark`, for the whole app while this space is open |
 | `accent` | The solid buttons, the tab indicator, the progress fill, the links — and the ink that goes on them |
-| `ground` | The page, the rail and sidebar, the surfaces that step up from it, and the hairlines |
+| `ground` | The bar and the sidebar the shell sits on, the panels that step up from it, and the hairlines |
 | `radius` | `sharp` or `soft` — the corner scale, not the components |
 
 Two of those do a little more than they look like they do, and both are there
@@ -120,10 +120,10 @@ dialog teleported to `document.body`. Leaving the space puts the document back
 as it was found, the reader's own light-or-dark preference included: a theme
 overrules it for as long as it is on screen and never overwrites it.
 
-What a theme **cannot** do is redesign a component. The rail and the sidebar
+What a theme **cannot** do is redesign a component. The bar and the sidebar
 follow it — their surface is the ground's own step, the active item is an
 elevation, the corners are the radius scale — so a themed space's navigation
-looks like that space. Where the rail sits, how tall an item is and what is in
+looks like that space. Where the bar sits, how tall an item is and what is in
 it are the shell's, and changing those changes them for everybody. The line is
 between a component's *palette*, which a space owns, and its *shape*, which the
 product does.
@@ -812,7 +812,7 @@ preset, an ordinary value in an ordinary control that the person can change
 before saving, the same way a board's New seeds the column it was pressed in.
 Offered only where *that* screen says this person may create one, which is its
 own `can_create` and not the screen being read. Creating from here stays on the
-parent and re-reads the rail: you were reading a job and you added a variation
+parent and re-reads the panel: you were reading a job and you added a variation
 to it, so the job is where you still want to be. It is also the only place that
 knows which record a new one hangs off — the alternative is making it from its
 own list and remembering to set the parent by hand, which is where every orphan
@@ -1109,8 +1109,8 @@ that are four words — look at this field, for this text, file it there.
 
 ### Calendar
 
-Beside Mail and Files on the rail, and the same argument for being there: a week
-does not belong to one space. `/one/calendar` is a **merge**, not a store —
+Beside Mail and Files in the column's foot, and the same argument for being
+there: a week does not belong to one space. `/one/calendar` is a **merge**, not a store —
 nothing on it is written here, every entry belongs to a record somewhere else,
 says which, and opens it.
 
@@ -1379,8 +1379,9 @@ Credits, metering and markup are the platform's — `ONEADMIN.md` §7.
 
 Four settings sit above the feature rows: a **name**, an **avatar**, a **tone**
 and a **personality**. The first two are not prompt material — they are what the
-product calls the thing, so the chat panel's header, the rail item, the empty
-state and the sparkle's tooltip all say the workspace's own word rather than
+product calls the thing, so the chat panel's header, its row in the column's
+foot, the empty state and the sparkle's tooltip all say the workspace's own
+word rather than
 "Assistant". The name reaches the browser in the boot payload, beside the accent
 and the favicon, because it is needed before the first paint.
 
@@ -1527,8 +1528,8 @@ exactly when it is visible and there is no code path for anything else.
 offered to admins alone, because every tab was the workspace's and a member
 opening it would have been refused by all of them. `oneapp_core/tabs.py`
 declares each tab with the audience it is for — `everyone`, `mailbox`, `admin`,
-`support` — and the shell draws only the ones the server returned, so the gear
-in the rail is a door that opens for whoever presses it. An audience is a
+`support` — and the shell draws only the ones the server returned, so the row
+in the account menu is a door that opens for whoever presses it. An audience is a
 predicate rather than a role because one of them is not a role: "holds an
 address" is what decides who may write a signature.
 

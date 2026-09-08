@@ -158,7 +158,7 @@
    "fieldname": "brand",
    "fieldtype": "Select",
    "label": "Brand",
-   "options": "\none\nonespace\noneadmin\noneinventory\nonewallet\nonecredit\nonemobility\nonearchive\nonestorage\nonedisplay\nonesheet\nonedoc\nonehr\nonebook\nonecrm\noneai"
+   "options": "\none\nonespace\noneadmin\noneinventory\nonewallet\nonecredit\nonemobility\nonearchive\nonestorage\nonedisplay\nonesheet\nonedoc\nonehr\nonebook\nonecrm\noneai\nonemarket"
   },
   {
    "default": "0",
