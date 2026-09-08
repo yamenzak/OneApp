@@ -71,10 +71,21 @@
               carried it, so every sortable column sat left over end-aligned
               numbers.
             -->
+            <!--
+              The whole cell sorts, not the word in it.
+
+              `ListHeaderCellSort` puts an `inline-flex` button around the label
+              and nothing else, so on a 300px column with a six-letter name most
+              of the header was dead: the pointer changed over the word and did
+              nothing anywhere else, which is not how a column header has
+              behaved in any table anybody has used. The button is stretched to
+              the cell, and told which end to keep its content at, because a
+              full-width button lays its own row out from the start.
+            -->
             <ListHeaderCellSort
               v-else-if="c.sortable"
               :direction="directionFor(c)"
-              :class="[c.pin && PINNED, aligned(c)]"
+              :class="[c.pin && PINNED, aligned(c), SORT_HITBOX, sortAligned(c)]"
               :style="stickyStyle(c)"
               @click="emit('sort', c.key)"
             >
@@ -281,6 +292,21 @@ const RIGHT = 'justify-end'
 // header takes the same class as the cells.
 const ALIGNED = { end: RIGHT, center: 'justify-center text-center' }
 const aligned = (c) => ALIGNED[c.align] || ''
+
+// The sort button fills its cell so the whole header is the target. Both
+// selectors, because whether the Tooltip around it renders a wrapper of its own
+// is the Tooltip's business and not something a hit area should depend on.
+const SORT_HITBOX = '[&>*]:w-full [&_button]:w-full'
+
+// And a stretched button lays out from the start, so an end- or centre-aligned
+// column has to say so a second time — once for the cell, once for the row
+// inside it. Written out rather than composed: Tailwind reads these files as
+// text, and a class built from a variable is a class that never gets generated.
+const SORT_ALIGNED = {
+  end: '[&_button]:justify-end',
+  center: '[&_button]:justify-center',
+}
+const sortAligned = (c) => SORT_ALIGNED[c.align] || ''
 
 const PINNED = 'sticky z-10 bg-surface-base'
 

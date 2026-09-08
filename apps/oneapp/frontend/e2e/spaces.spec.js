@@ -118,7 +118,7 @@ test('the trail is a house, a screen, and what you are looking at', async ({ pag
   expectNoRealErrors(errors)
 })
 
-test('an open record is in the URL, and in the trail', async ({ page }) => {
+test('an open record is in the URL, and in the trail', async ({ page }, info) => {
   const errors = collectConsoleErrors(page)
   await page.goto('/one/space/zzmock')
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
@@ -127,12 +127,17 @@ test('an open record is in the URL, and in the trail', async ({ page }) => {
   await expect(page.locator('[data-slot="record-pane"]')).toBeVisible()
   await expect(page).toHaveURL(/record=/)
 
-  // The pane's own header, not the list's. The chrome splits when a record
-  // opens: the trail on the left says where you are in the space, and this one
-  // — the width of the pane and sitting over it — says which record. Located by
-  // its slot rather than its role, because a modal takes the rest of the page
-  // out of the accessibility tree.
-  const trail = page.locator('[data-slot="pane-header"]')
+  // Where the record's trail is, which is not the same place on both. On a
+  // desktop the chrome splits when a record opens — the left half keeps saying
+  // where you are in the space and a second half, the width of the pane and
+  // sitting over it, says which record. A phone has no pane and no room for
+  // two halves, so the record goes into the one trail there is.
+  //
+  // Located by slot rather than by role either way, because a modal takes the
+  // rest of the page out of the accessibility tree.
+  const trail = page.locator(
+    info.project.name === 'mobile' ? '[data-slot="breadcrumb"]' : '[data-slot="pane-header"]',
+  )
   await expect(trail).toContainText('Chase the Halloway invoice')
   await expect(trail).toContainText('zzmock-halloway')
 
