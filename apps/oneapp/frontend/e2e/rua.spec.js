@@ -32,7 +32,10 @@ test('the rail calls things what they are called on site', async ({ page }, info
 
   // Their word, not ERPNext's. A Purchase Order is an LPO to every person in
   // this company, and the screen is for the people.
-  const rail = page.locator('nav, aside').first()
+  // By slot, not by `nav, aside`: the bar's own page header teleports a
+  // breadcrumb `nav` into the top of the document, so "the first nav" is now
+  // the trail rather than the column.
+  const rail = page.locator('[data-slot="space-nav"]')
   await expect(rail.getByText('LPOs', { exact: true })).toBeVisible()
   await expect(rail.getByText('Clients', { exact: true })).toBeVisible()
   await expect(rail.getByText('Team', { exact: true })).toBeVisible()

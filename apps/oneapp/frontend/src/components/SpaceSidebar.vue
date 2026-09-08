@@ -12,7 +12,7 @@
   -->
   <Sidebar v-model:collapsed="collapsed" :width="`${width}px`">
     <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pb-6">
-      <nav class="space-y-0.5">
+      <nav data-slot="space-nav" class="space-y-0.5">
         <template v-for="item in nav" :key="item.label">
           <SidebarItem :icon="item.icon" :to="item.to" :active="item.active">
             <span class="flex-1 truncate text-sm">{{ item.label }}</span>

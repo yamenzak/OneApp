@@ -51,21 +51,17 @@ async function signInAndOpen(page, who) {
   await expect(tab(page, 'profile')).toBeVisible()
 }
 
-test('the gear is in the rail for everybody, not only an admin',
-  async ({ page, baseURL }, info) => {
-    await signIn(page, baseURL, MEMBER)
-    await page.goto('/one/files')
-    // Both shells, from the one declaration in `lib/shell/nav.js`: the rail's
-    // footer on a desktop, and a row in the More sheet on a phone, which draws
-    // no rail. Same slot on both, which is the point.
-    if (info.project.name === 'mobile') {
-      await page.getByRole('button', { name: 'More' }).click()
-    }
-    // Generously: the rail is drawn from the session's spaces, so on a cold
-    // start this is waiting for a fetch rather than for a render.
-    await expect(page.locator('[data-slot="account-menu"]'))
-      .toBeVisible({ timeout: 15_000 })
-  })
+test('settings is reachable by everybody, not only an admin', async ({ page, baseURL }) => {
+  await signIn(page, baseURL, MEMBER)
+  await page.goto('/one/files')
+
+  // Both shells: the account menu in the foot of the column on a desktop, the
+  // More sheet on a phone. `openSettings` knows which is on screen — what this
+  // asserts is that a member gets there at all, which is what was once wrong.
+  await openSettings(page)
+  await expect(dialog(page)).toBeVisible()
+  await expect(tab(page, 'profile')).toBeVisible({ timeout: 15_000 })
+})
 
 test('a member sees their own settings and none of the workspace it',
   async ({ page }, info) => {
@@ -89,7 +85,7 @@ test('a member sees their own settings and none of the workspace it',
 
 test('an admin sees the workspace as well as themselves', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'the phone draws no rail')
-  await openSettings(page)
+  await signInAndOpen(page)
 
   await expect(heading(page, 'You')).toBeVisible()
   await expect(heading(page, 'Workspace')).toBeVisible()
@@ -154,7 +150,7 @@ test('a profile write is refused for anything outside the allowlist',
 test('every tab an admin is offered actually draws something', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'the phone draws no rail')
   const errors = collectConsoleErrors(page)
-  await openSettings(page)
+  await signInAndOpen(page)
 
   // The contract `tabs.py` and `SettingsShell.vue` share, checked end to end
   // rather than by reading both files: a key with no component renders as an
@@ -180,7 +176,7 @@ test('every tab an admin is offered actually draws something', async ({ page }, 
 test('a model that takes more than a prompt says what else it takes',
   async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'the phone draws no rail')
-    await openSettings(page)
+    await signInAndOpen(page)
     await page.locator('[data-slot="settings-tab-ai"]').click()
 
     const panel = page.locator('[role="tabpanel"][data-state="active"]')
@@ -206,7 +202,7 @@ test('a model that takes more than a prompt says what else it takes',
 test('the workspace decides who may connect an outside mailbox',
   async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'the phone draws no rail')
-    await openSettings(page)
+    await signInAndOpen(page)
     await tab(page, 'mail').click()
 
     // Three states, and the middle one asks which domains. A connected mailbox
