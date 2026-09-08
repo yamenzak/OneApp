@@ -83,16 +83,41 @@ for free — permissions, the timeline, saved views, the lot. That is the entire
 reason OneSpace exists and OneMobility should not reinvent an inch of it.
 
 A Stop Time is not a document. A single mid-size operator's timetable period is
-millions of them, and `get_doc().save()` per row is not slow, it is impossible:
-each one is a controller, a validation pass, a version row and a modified
-stamp. The same for Observations, only worse — 500 vehicles at 1 Hz is roughly
-43 million rows a day, and playback means keeping them.
+millions of them, and `get_doc().save()` per row is not slow, it is impossible.
+The arithmetic is worth writing down once, because it is the whole argument.
 
-So facts live in **plain tables that OneMobility creates and writes in bulk**,
-outside Frappe's Document machinery, read only through an aggregate API.
-Concretely: `CREATE TABLE` in a patch, `INSERT ... VALUES` in batches,
-`frappe.db.sql` with a hand-written query behind a whitelisted endpoint that
-returns rows already grouped.
+Take 500 vehicles reporting every 15 seconds over an 18-hour service day —
+which is what real feeds do; 1 Hz is a pessimistic bound, not a normal rate.
+That is **2.2 million observations a day**.
+
+As doctypes: every row is a controller instantiation, a validation pass, a
+permission check, a `modified` stamp and possibly a `tabVersion` row, inserted
+one at a time because `save()` does not batch. Call it 150 a second on a small
+shard and the day's writes need four hours of continuous CPU — to store data
+nobody will ever open individually. The row itself is mostly overhead too: a
+`varchar(140)` primary key that every secondary index carries a copy of, plus
+ten metadata columns, so a GPS ping costs several hundred bytes of bookkeeping
+to hold sixteen bytes of fact.
+
+As plain rows: a `BIGINT` key, a vehicle id, a timestamp and two scaled
+integers for the position — about 50 bytes with its index, written by
+multi-row `INSERT` at tens of thousands a second. The same day is **~110 MB and
+a few seconds of work**, arriving in batches of a few hundred. At a 30-day
+retention window that is a steady state of three or four gigabytes, which is an
+unremarkable table.
+
+So it is not heavy data. It is data that becomes heavy the moment it is a
+Document, and the weight is entirely Frappe's machinery rather than the facts.
+
+Facts therefore live in **plain tables that OneMobility creates and writes in
+bulk**, outside that machinery, read only through an aggregate API. Concretely:
+`CREATE TABLE` in a patch, batched `INSERT`, and `frappe.db.sql` with a
+hand-written query behind a whitelisted endpoint that returns rows already
+grouped. No `name` column, no controller, no Document class.
+
+What is given up is exactly what nobody wants on a GPS ping: per-row
+permissions, comments, the timeline, versions, assignment. Permission lives one
+level up, on the Vehicle and the Line, which are documents.
 
 Why not a real analytics store — ClickHouse, Timescale, DuckDB over Parquet on
 R2? Because a second service per tenant is a second thing to provision, back
