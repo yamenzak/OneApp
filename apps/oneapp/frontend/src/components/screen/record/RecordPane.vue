@@ -76,8 +76,15 @@ import { __ } from '@/lib/runtime/translate'
 import { useIsMobile } from '@/lib/shell/breakpoint'
 
 defineProps({
-  /** How wide the pane may get, as a share of the window. */
-  maxShare: { type: Number, default: 0.6 },
+  /**
+   * How wide the pane may get, as a share of the window.
+   *
+   * Not much more than a third. The other side is a table, and a table stops
+   * being one column at a time: at .6 on a 1280px window the list was down to
+   * Description alone, with Status, Priority and everything after it gone —
+   * which is not a narrower list, it is a different screen.
+   */
+  maxShare: { type: Number, default: 0.45 },
   /**
    * Whether the record takes the whole content area rather than a column of it.
    * The screen's decision, not this component's — the host passes what the

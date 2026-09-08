@@ -20,6 +20,7 @@
     <Button
       variant="ghost"
       :icon-right="compact ? undefined : 'lucide-chevron-up'"
+      data-slot="account-menu"
       class="!h-11 w-full"
       :class="compact ? '!justify-center !gap-0 !px-0' : '!justify-start !px-2'"
       :label="displayName"

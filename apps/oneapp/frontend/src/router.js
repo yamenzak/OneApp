@@ -33,8 +33,10 @@ const routes = [
     path: '/mail',
     name: 'Mail',
     component: () => import('./pages/Mail.vue'),
-    // Two columns and a reading pane, each with its own scroller.
-    meta: { pane: true },
+    // Two columns and a reading pane, each with its own scroller — and `bare`
+    // for the same reason the screen host is: they are two panels, and the
+    // shell drawing a third around them is a card in a card.
+    meta: { pane: true, bare: true },
   },
   {
     // Files belong to the workspace too: an attachment on a project and a

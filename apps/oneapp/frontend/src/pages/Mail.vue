@@ -33,14 +33,21 @@
     </nav>
   </PageHeader>
 
-  <div class="flex h-full min-h-0">
+  <!--
+    Two panels, not one with a rule down it. The shell draws no frame on this
+    route (`meta.bare`), so what has arrived and what it says are each their own
+    panel with the ground between them — the same shape a screen takes when a
+    record opens beside its list, and for the same reason: they are two things
+    you are looking at.
+  -->
+  <div class="flex h-full min-h-0 gap-2">
     <!--
       What has arrived. On a phone the two panes are one screen at a time, which
       is what the URL already says — `?thread=` — so this is a class and not a
       second state to keep in step.
     -->
     <div
-      class="relative flex w-full shrink-0 flex-col border-e border-outline-gray-1 sm:w-96"
+      class="relative flex w-full shrink-0 flex-col rounded-6 bg-surface-base sm:w-96"
       :class="chosen ? 'hidden sm:flex' : 'flex'"
     >
       <div class="flex items-center gap-2 border-b border-outline-gray-1 p-2">
@@ -182,7 +189,10 @@
     </div>
 
     <!-- What it says -->
-    <div class="flex min-w-0 flex-1 flex-col" :class="chosen ? 'flex' : 'hidden sm:flex'">
+    <div
+      class="flex min-w-0 flex-1 flex-col rounded-6 bg-surface-base"
+      :class="chosen ? 'flex' : 'hidden sm:flex'"
+    >
       <EmptyState
         v-if="!chosen"
         icon="lucide-mail-open"

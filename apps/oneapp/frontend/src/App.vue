@@ -178,7 +178,10 @@ const menuItems = computed(() => [
   // `act` becomes `onClick` because a surface that opens something over the
   // page has no route to push, and `settings: true` marks the one row the
   // drawer gives its own place to (see AppShell's `settingsItem`).
-  ...surfaces.value.map((one) => ({
+  // The marketplace is not among them: it is a row inside the switcher, on a
+  // phone as on a desktop, and a sheet that offers it in both places offers it
+  // twice.
+  ...surfaces.value.filter((one) => one.key !== 'marketplace').map((one) => ({
     ...one,
     label: one.count ? `${one.label} (${one.count})` : one.label,
     ...(one.act ? { onClick: one.act } : {}),
