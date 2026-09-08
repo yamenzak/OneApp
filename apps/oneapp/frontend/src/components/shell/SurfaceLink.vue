@@ -22,14 +22,24 @@
     the thing you wanted to ask about. `surface.act` is how an entry says so.
   -->
   <component :is="surface.act ? 'div' : RouterLink" :to="surface.to" class="relative">
+    <!--
+      Its own mark where it has one. Files, Mail, the calendar and the
+      assistant are apps of ours and are drawn as themselves everywhere else —
+      in the switcher, on the launcher, on a marketplace card — so a lucide
+      outline here was the one place they were anonymous.
+    -->
     <Button
       variant="ghost"
-      :icon="surface.icon"
+      :icon="surface.brand ? undefined : surface.icon"
       :label="surface.label"
       :tooltip="surface.label"
       :data-slot="`${surface.key}-link`"
       @click="surface.act?.()"
-    />
+    >
+      <template v-if="surface.brand" #icon>
+        <BrandMark :name="surface.brand" class="size-[18px]" />
+      </template>
+    </Button>
     <Badge
       v-if="surface.count"
       theme="blue"
@@ -42,9 +52,13 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import { Badge, Button } from '@/ui'
+import BrandMark from '../brand/BrandMark.vue'
 
 defineProps({
-  /** One entry from `useNav().surfaces`: key, label, icon, to, and a count. */
+  /**
+   * One entry from `useNav().surfaces`: key, label, icon, to, a count, and
+   * `brand` where the surface is one of our own apps.
+   */
   surface: { type: Object, required: true },
 })
 </script>

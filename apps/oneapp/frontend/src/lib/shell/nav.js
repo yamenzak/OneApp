@@ -175,7 +175,16 @@ export function useNav() {
  * the rail had Mail and the More sheet did not.
  */
   const surfaces = computed(() => [
-    { key: 'files', label: __('Files'), icon: 'lucide-folder', to: { name: 'Drive' } },
+    // `brand` beside `icon`: the mark is what a desktop draws, the lucide name
+    // is what the phone's sheet and the bottom bar draw, because a 100×100
+    // gradient at 16px in a row of outlines is a smudge among glyphs.
+    {
+      key: 'files',
+      label: __('Files'),
+      icon: 'lucide-folder',
+      brand: 'onestorage',
+      to: { name: 'Drive' },
+    },
     // Absent until the server says the workspace has one — AI can be switched
     // off, unconfigured, or suspended by an operator, and a rail entry that
     // leads to "not switched on here" is worse than no entry.
@@ -202,12 +211,19 @@ export function useNav() {
         key: 'chat',
         label: assistantName.value,
         icon: 'lucide-sparkles',
+        brand: 'oneai',
         to: { name: 'Chat' },
         act: () => openAssistant(openContext(route)),
       }]
       : []),
     // Always here, unlike Mail: everybody has days.
-    { key: 'calendar', label: __('Calendar'), icon: 'lucide-calendar', to: { name: 'Calendar' } },
+    {
+      key: 'calendar',
+      label: __('Calendar'),
+      icon: 'lucide-calendar',
+      brand: 'onecalendar',
+      to: { name: 'Calendar' },
+    },
     // What the workspace could add. Offered to whoever may actually add it —
     // `require_workspace_admin` on the control plane admits the owner and an
     // Admin member, and a rail icon leading to a page of refusals is worse
@@ -229,6 +245,7 @@ export function useNav() {
             key: 'mail',
             label: __('Mail'),
             icon: 'lucide-mail',
+            brand: 'onemail',
             to: { name: 'Mail' },
             count: mail.unread,
           },

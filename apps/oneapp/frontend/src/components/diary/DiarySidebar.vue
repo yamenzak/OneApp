@@ -15,7 +15,10 @@
     :width="`${width}px`"
     class="border-e border-outline-gray-1"
   >
-    <SidebarHeader :title="__('Calendar')" :subtitle="session.tenant?.name" :show-logo="false" />
+    <!-- No header. The bar's corner names the workspace directly above this and
+         the trail beside it names where you are, so a header here was a third
+         telling of the same two words — and its own dropdown, which read as a
+         second switcher. -->
 
     <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pb-6">
       <nav class="space-y-0.5">
@@ -56,15 +59,12 @@ import {
   CalendarColorMap,
   ScrollArea,
   Sidebar,
-  SidebarHeader,
   SidebarItem,
 } from '@/ui'
 import ShellFoot from '../shell/ShellFoot.vue'
 import SidebarResizer from '../SidebarResizer.vue'
-import { session } from '@/lib/shell/session'
 import { useSidebar } from '@/lib/shell/sidebar'
 import { colourFor, diary, isOn, toggle } from '@/lib/screen/diary'
-import { __ } from '@/lib/runtime/translate'
 
 const { collapsed, width } = useSidebar()
 

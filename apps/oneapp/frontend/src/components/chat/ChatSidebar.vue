@@ -13,11 +13,10 @@
     :width="`${width}px`"
     class="border-e border-outline-gray-1"
   >
-    <SidebarHeader
-      :title="assistantName"
-      :subtitle="session.tenant?.name"
-      :show-logo="false"
-    />
+    <!-- No header. The bar's corner names the workspace directly above this and
+         the trail beside it names where you are, so a header here was a third
+         telling of the same two words — and its own dropdown, which read as a
+         second switcher. -->
 
     <div class="px-2 pb-2">
       <Button
@@ -59,12 +58,11 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-  Button, ScrollArea, Sidebar, SidebarHeader, SidebarItem,
+  Button, ScrollArea, Sidebar, SidebarItem,
 } from '@/ui'
 import ShellFoot from '../shell/ShellFoot.vue'
 import SidebarResizer from '../SidebarResizer.vue'
-import { assistant as state, assistantName, loadAssistant } from '@/lib/shell/assistant'
-import { session } from '@/lib/shell/session'
+import { assistant as state, loadAssistant } from '@/lib/shell/assistant'
 import { useSidebar } from '@/lib/shell/sidebar'
 import { __ } from '@/lib/runtime/translate'
 

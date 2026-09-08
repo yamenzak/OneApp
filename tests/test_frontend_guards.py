@@ -799,11 +799,14 @@ SIDEBAR_STATE = "sidebar"
 # invisible on the screen you upload from.
 FOOT = "ShellFoot"
 
-# The one column that draws no header. Everywhere else the header names
-# something the bar does not — Mail, Files, the calendar, a conversation. The
-# space's own name and face are the switcher in the corner, directly above it,
-# so a header here was the same word and the same mark twice, 48px apart.
-NO_HEADER = {"SpaceSidebar.vue"}
+# No column draws a header any more, and that is the assertion: the bar's
+# corner names the workspace and the trail beside it names where you are, so a
+# header inside the column was a third telling of the same two words — with its
+# own dropdown, which read as a second switcher under the real one.
+#
+# Kept as a check rather than deleted, because "put the name back at the top of
+# the column" is the obvious thing to reach for and it is wrong here.
+NO_HEADER_ANYWHERE = "SidebarHeader"
 
 
 @pytest.mark.parametrize("app", SHELL_APPS)
@@ -818,11 +821,12 @@ def test_every_sidebar_is_the_same_sidebar(app):
 		# that component with its one hardcoded English word translated, which
 		# is the difference between an Arabic screen and an Arabic screen with
 		# "Collapse" in the corner of it.
-		wanted = ["Sidebar", FOOT]
-		if path.name not in NO_HEADER:
-			wanted.append("SidebarHeader")
-		for component in wanted:
+		for component in ("Sidebar", FOOT):
 			assert f"<{component}" in source, f"{path.name} does not render {component}"
+
+		assert f"<{NO_HEADER_ANYWHERE}" not in source, (
+			f"{path.name} names itself again under the bar that already names it"
+		)
 
 		# And the state is the shared one, not a fourth copy of it. Two of the
 		# three had their own and disagreed about the minimum and the maximum,

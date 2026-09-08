@@ -71,7 +71,11 @@ GROUND = "var(--brand-ground, #0b0f19)"
 
 #: What each is in each theme. Written into the standalone files as a `<style>`
 #: so a file on its own adapts too, and declared for the SPA in `index.css`.
-LIGHT_KNOCKOUT, DARK_KNOCKOUT = "#0f172a", "#ffffff"
+#: Light was near-black — a true inversion, and far too heavy: a mark is a
+#: small bright object and half of it went to ink. A light grey reads against
+#: white where it has to and still reads as the sheet-of-paper it is where it
+#: sits inside a coloured shape, which is most of where it sits.
+LIGHT_KNOCKOUT, DARK_KNOCKOUT = "#cbd5e1", "#ffffff"
 LIGHT_GROUND, DARK_GROUND = "#ffffff", "#0b0f19"
 
 _MASK = re.compile(r"<mask\b.*?</mask>", re.S)
