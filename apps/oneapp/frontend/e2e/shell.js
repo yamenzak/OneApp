@@ -27,8 +27,18 @@ export async function openSettings(page) {
   await expect(account.or(more).first()).toBeVisible({ timeout: 15_000 })
 
   if (await account.count()) {
-    await account.click()
-    await page.locator('[data-slot="item"]', { hasText: 'Settings' }).click()
+    // Pressed until it opens, not pressed once. The foot is drawn from the
+    // session, so a page that has only just arrived re-renders under the click
+    // and the popover opens onto a trigger that is no longer the same node —
+    // it shuts again in the same frame. Specs that wait for a list row first
+    // never saw it; the ones that go straight for the menu saw it every time.
+    const row = page.getByRole('menuitem', { name: 'Settings' })
+    for (let go = 0; go < 3; go += 1) {
+      await account.click()
+      if (await row.isVisible().catch(() => false)) break
+      await page.waitForTimeout(500)
+    }
+    await row.click()
     return
   }
   await more.click()
