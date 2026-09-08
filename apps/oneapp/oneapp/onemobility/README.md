@@ -278,9 +278,17 @@ Rendering:
 
 ---
 
-## 7a. Forecasting, and what the aggregate tier is really for
+## 7a. Reading the history forward, without a model
 
-The point that reorganises this whole section: **forecasting is not a
+None of what follows is machine learning, and none of it should become machine
+learning. Every number here is arithmetic over data we already hold — a
+percentile, a gradient, a projection along a line — which makes each one
+explainable to a customer, cheap to compute, correct on a workspace with no
+credits, and impossible to get subtly and unaccountably wrong. That is not a
+limitation accepted reluctantly; for these questions it is simply the better
+engineering.
+
+The point that reorganises the analytical half: **prediction is not a
 subsystem, it is a second reader of the aggregate tier**. The roll-up in §3a
 already computes, per line, per stop, per hour, per weekday, what actually
 happened. That table *is* the model for almost everything worth predicting, and
@@ -321,6 +329,54 @@ between a chart and a product.
 What is **not** on this list: what-if simulation — "add a bus at 07:00 and what
 happens to load" — which is a different discipline, needs a network model
 rather than a history, and should be refused rather than approximated.
+
+### Moving the vehicle between pings
+
+Everything above is about minutes and hours. This is about the next second, and
+it is what makes the map look like software somebody paid for.
+
+A feed reports every 15 to 30 seconds. A marker that jumps every 20 seconds
+reads as broken, so between reports the vehicle is **moved by dead reckoning
+along the route shape** — projected forward at its recent speed, following the
+polyline rather than a straight line, because a bus follows the road and a
+straight line puts it through a building. That is one geometric step per frame,
+in the browser, over data already loaded.
+
+Four details are the whole difference between convincing and amateurish:
+
+* **Map-match the reported position.** Raw GPS lands in gardens and on roofs.
+  Project it onto the line's own shape, which is a point-to-polyline
+  projection, and the vehicle sits on its route because that is where it is.
+* **Never snap.** When the true position arrives, ease to it over about a
+  second rather than teleporting. A marker that jumps looks wrong even when it
+  has just become more correct.
+* **Speed from the recent past, not from one gap.** Two consecutive reports
+  give a noisy speed; a short rolling window gives one that does not oscillate.
+  Near a stop, expect a stop: the shape knows where the stop is and the
+  historical dwell time says how long it sits there.
+* **A silent vehicle is drawn differently.** When reports stop, carry it
+  forward on the timetable and its last known delay for a short grace period,
+  drawn faintly, then stop and say the position is stale. A stale position
+  drawn as though it were live is the one thing that makes an operator stop
+  trusting the screen.
+
+The same projection answers "where is it now" for a vehicle that has never
+reported at all: on its shape, at the point the timetable says, which is a
+better answer than an empty map and is honestly labelled as scheduled rather
+than observed.
+
+### Demand, per stop and per hour
+
+"How many people board here on a Saturday afternoon" is not a forecast at all
+for any period we have already seen — it is a `GROUP BY` over the aggregate
+tier, and it is instant. It only becomes a prediction for a date in the future,
+and then it is the same table read against the calendar: this stop, this hour,
+this weekday, school term or not.
+
+Which is worth saying plainly because it sets the order of work: **the
+historical version of every demand question is free once the roll-up exists,
+and it is most of the value.** The forward-looking version is a second read of
+the same numbers, and nothing in between needs building.
 
 ### The scrubber earns a second use
 
