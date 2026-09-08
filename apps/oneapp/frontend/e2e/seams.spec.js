@@ -105,7 +105,7 @@ test("a record's Files tab makes a document of its own", async ({ page }, info) 
   expectNoRealErrors(errors)
 })
 
-test('a document marked as a template is one the New menu offers', async ({ page }) => {
+test('a document marked as a template is one the editor offers to load', async ({ page }) => {
   const errors = collectConsoleErrors(page)
   const title = `Scope of works ${Date.now()}`
 
@@ -124,10 +124,12 @@ test('a document marked as a template is one the New menu offers', async ({ page
   await page.getByRole('button', { name: 'What to do with this document' }).click()
   await page.getByRole('menuitem', { name: 'Use as a template' }).click()
 
-  // The flag is the whole feature: the Drive's New menu is the template list.
-  await page.goto('/one/files')
-  await page.getByRole('button', { name: 'New', exact: true }).click()
-  await expect(page.getByRole('menuitem', { name: title })).toBeVisible()
+  // The flag is the whole feature, and where it is read is the editor rather
+  // than the Drive's New menu: New is a menu of *kinds*, and the moment you
+  // want a template is the moment you are looking at a blank page.
+  await page.getByRole('button', { name: 'What to do with this document' }).click()
+  await page.getByRole('menuitem', { name: 'Load a template' }).click()
+  await expect(page.locator('[data-slot="template-row"]', { hasText: title })).toBeVisible()
 
   expectNoRealErrors(errors)
 })

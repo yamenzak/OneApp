@@ -115,7 +115,13 @@ test('the footer counts what matches, and load more appends', async ({ page }) =
   // rather than by its shape — a bare "48 of 1,240" would also match the
   // chevron's own button.
   const counter = page.locator('[data-slot="page-length"]')
-  const total = Number((await counter.innerText()).split(' of ')[1])
+
+  // Waited for rather than read once. The total is a second request — the rows
+  // arrive and the count follows — so the control says "48" for a moment and
+  // only then "48 of 1,240", and a read taken on the first of those parses to
+  // NaN and fails on a number that was on its way.
+  await expect(counter).toHaveText(/ of /, { timeout: 20_000 })
+  const total = Number((await counter.innerText()).split(' of ')[1].replace(/,/g, ''))
   expect(total).toBeGreaterThan(20)
 
   // A smaller page, so there is a second one. How many to fetch lives inside

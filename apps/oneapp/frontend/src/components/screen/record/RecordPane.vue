@@ -47,7 +47,7 @@
     -->
     <Resizer
       v-model="width"
-      :min="MIN"
+      :min="min"
       :default-size="DEFAULT"
       :max-share="maxShare"
       side="left"
@@ -85,6 +85,16 @@ defineProps({
    * which is not a narrower list, it is a different screen.
    */
   maxShare: { type: Number, default: 0.45 },
+  /**
+   * The narrowest this pane may be, which is also the narrowest it opens at.
+   *
+   * A prop rather than the module's `MIN` alone, because what fits depends on
+   * what is in it: a record's fields read at 360, and a spreadsheet at 360 is
+   * four columns. The Resizer clamps *up* to this, so a remembered width from
+   * a narrower use is widened rather than obeyed — and dragging wider still
+   * works and is still remembered.
+   */
+  min: { type: Number, default: MIN },
   /**
    * Whether the record takes the whole content area rather than a column of it.
    * The screen's decision, not this component's — the host passes what the

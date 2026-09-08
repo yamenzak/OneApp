@@ -713,6 +713,10 @@
       <Button variant="ghost" size="sm" iconLeft="lucide-edit-2"  label="Rename"    @click="openRenameDialog(tabMenu.name)" />
       <Button variant="ghost" size="sm" iconLeft="lucide-copy"    label="Duplicate" @click="doDuplicateSheet(tabMenu.name)" />
       <Button variant="ghost" size="sm" :iconLeft="tabMenuSheetLocked() ? 'lucide-unlock' : 'lucide-lock'" :label="tabMenuSheetLocked() ? 'Unprotect sheet' : 'Protect sheet'" @click="toggleSheetProtection(tabMenu.name)" />
+      <!-- Ours: the other direction of Load a template. A tab is the unit
+           worth keeping — the estimator, not the quotation it was priced
+           against — so a template is made from one tab and not the book. -->
+      <Button variant="ghost" size="sm" iconLeft="lucide-bookmark-plus" label="Save as a template" data-slot="tab-save-template" @click="doSaveTabAsTemplate(tabMenu.name)" />
       <Button
         variant="ghost"
         size="sm"
@@ -1251,6 +1255,10 @@ import { useShortcuts } from './useShortcuts.js'
 import { useCollaboration }    from './useCollaboration.js'
 import { useExportImport }     from './useExportImport.js'
 import { useTemplateInsert }   from './useTemplateInsert.js'
+import { workbookFromTab }     from '@/lib/sheets/headless.js'
+import { saveWorkbook }        from '@/lib/sheets/store.js'
+import { notifySuccess }       from '@/lib/runtime/notify'
+import { workspace as workspaceApi } from '@/lib/workspace'
 import { useVersionHistory }   from './useVersionHistory.js'
 import { useSplitText }        from './useSplitText.js'
 import { buildCommandGroups }  from './commandPalette.config.js'
@@ -1847,6 +1855,26 @@ const { insertTemplate } = useTemplateInsert({
   repopulateGrid: _repopulateGrid,
   isDirty,
 })
+
+/**
+ * One tab, kept as a template of its own.
+ *
+ * The other direction of Load a template, and it takes the tab rather than the
+ * workbook because a tab is the unit worth reusing: a book bound to a
+ * quotation holds that quotation's line items beside the estimator, and only
+ * one of the two is worth having on the next job.
+ *
+ * The tab comes across under its own name, so loading it back gives you a tab
+ * called what you saved.
+ */
+async function doSaveTabAsTemplate(tabName) {
+  tabMenu.open = false
+  const payload = await workbookFromTab({ sheet, formats, merge }, tabName, tabName)
+  const made = await workspaceApi.sheetMake({ title: tabName })
+  await saveWorkbook(made.name, tabName, payload)
+  await workspaceApi.sheetSetTemplate(made.name, true)
+  notifySuccess(`"${tabName}" is a template now.`)
+}
 
 defineExpose({ insertTemplate })
 

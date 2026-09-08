@@ -54,6 +54,15 @@
       A `.zip` is still not a place. Opening one is an action, and it stays a
       button.
     -->
+    <!--
+      `inline` is the host saying it will open this one itself.
+
+      The link stays a link — that is what makes cmd-click open a tab, and a
+      file manager where a modifier does nothing is a file manager somebody
+      fights. What changes is the plain click: the Drive opens a sheet in the
+      pane beside the list rather than walking away from the list, so it takes
+      the click and the anchor keeps every other way of using it.
+    -->
     <router-link
       v-if="file.is_folder || link"
       data-slot="drive-open"
@@ -62,6 +71,7 @@
       :to="file.is_folder
         ? { name: 'Drive', query: { place: 'home', folder: file.name } }
         : link"
+      @click.capture="onOpen"
     >
       <FileFace :file="file" :grid="grid" />
     </router-link>
@@ -102,13 +112,19 @@
            first two things to go. -->
       <template v-if="!grid">
         <Avatar
-          v-if="file.owner_person?.label"
+          v-if="file.owner_person?.label && !dense"
           class="hidden sm:flex"
           size="sm"
           :label="file.owner_person.label"
           :image="file.owner_person.image"
         />
-        <span class="hidden w-24 shrink-0 text-p-xs text-ink-gray-5 sm:block">
+        <!-- The same words the face already says under the name — "Folder ·
+             9 days ago" — so in a narrow list it is the column to lose, not
+             the name. -->
+        <span
+          v-if="!dense"
+          class="hidden w-24 shrink-0 text-p-xs text-ink-gray-5 sm:block"
+        >
           {{ when }}
         </span>
       </template>
@@ -155,7 +171,42 @@ const props = defineProps({
   canWrite: { type: Boolean, default: true },
   // Dragging is the Drive's alone: in the picker there is nowhere to drag to.
   movable: { type: Boolean, default: false },
+  /**
+   * The kinds this host opens itself rather than navigating to.
+   *
+   * The Drive passes Sheet and Doc: those open in the pane beside the list.
+   * Everywhere else this is empty and a link is a link.
+   */
+  inline: { type: Array, default: () => [] },
+  /**
+   * The list is sharing its width with something — the Drive's pane, open on a
+   * file. A viewport breakpoint cannot see that: the window is still wide and
+   * only this column is narrow, so who-and-when goes on a word from the host
+   * rather than on `sm:`. The name is what a list is for; the avatar is not.
+   */
+  dense: { type: Boolean, default: false },
 })
+
+/**
+ * A plain click on a kind the host claims, handed to the host.
+ *
+ * Every modifier is left alone — cmd, ctrl, shift, middle-click and the
+ * context menu all belong to the anchor, and taking them would be taking the
+ * only ways to open a second one.
+ *
+ * On the capture phase, which is the whole reason this works. `RouterLink`
+ * binds its own click handler inside its render, so a plain `@click` here is a
+ * fallthrough listener that runs *after* it — the navigation has already been
+ * decided by the time `preventDefault` is called, and the page changes anyway.
+ * A capture listener on the same element runs before every bubble one.
+ */
+function onOpen(event) {
+  if (props.file.is_folder) return
+  if (!props.inline.includes(props.file.custom_kind)) return
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button) return
+  event.preventDefault()
+  emit('open', props.file)
+}
 
 const emit = defineEmits([
   'open', 'select', 'favourite', 'share', 'rename', 'move', 'trash', 'restore',

@@ -202,6 +202,8 @@
             :key="file.name"
             :file="file"
             :link="routeFor(file)"
+            :inline="INLINE"
+            :dense="editing && previewing && !isMobile"
             :grid="grid"
             selectable
             actions
@@ -247,10 +249,30 @@
       are places with addresses, and clicking one goes there; a `.zip` is not,
       and this is where it opens.
     -->
-    <RecordPane v-if="looking && previewing">
+    <!--
+      More of the window than a record pane takes, when it holds an editor.
+      A record is fields beside a list; a spreadsheet is the thing you came to
+      work in, and 45% of a laptop is four columns.
+    -->
+    <RecordPane
+      v-if="looking && previewing"
+      :max-share="editing ? 0.72 : 0.45"
+      :min="editing ? editorFloor() : undefined"
+    >
       <template #body>
-        <div class="flex h-full min-h-0 flex-col rounded-6 bg-surface-base">
-          <header class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 p-3">
+        <div class="flex h-full min-h-0 flex-col overflow-hidden rounded-6 bg-surface-base">
+          <!--
+            No header of ours over an editor. Both editors bring their own
+            identity bar — the name, a way back, and their own File menu — and
+            a second one above it is the file's name said twice with a rule
+            between. What this header offers that theirs does not (a link, a
+            download) a sheet offers under File and a document under its own
+            menu.
+          -->
+          <header
+            v-if="!editing"
+            class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 p-3"
+          >
             <h2 class="flex min-w-0 flex-1 items-center gap-1.5">
               <span class="truncate text-base text-ink-gray-8">{{ looking.file_name }}</span>
               <AiMark v-if="looking._ai" :mark="looking._ai" />
@@ -286,7 +308,32 @@
             />
           </header>
 
-          <div class="min-h-0 flex-1 overflow-auto p-3">
+          <!--
+            A sheet and a document open here rather than on a page of their
+            own, and they open editable: the point of a file manager is to work
+            in a file without losing the folder you found it in. Cmd-click
+            still opens either on its own page, because the row is still a
+            link — see `FileRow`.
+
+            `:key` on the name, because both editors load their document once
+            on mount: without it, clicking a second sheet would keep the first
+            one on screen.
+          -->
+          <SheetEditor
+            v-if="looking.custom_kind === 'Sheet'"
+            :key="looking.name"
+            :id="looking.name"
+            :host-menu="[]"
+            @close="previewing = false"
+          />
+
+          <Doc
+            v-else-if="looking.custom_kind === 'Doc'"
+            :key="looking.name"
+            :name="looking.name"
+          />
+
+          <div v-else class="min-h-0 flex-1 overflow-auto p-3">
             <FileSurface :file="looking" :live="previewing" :tall="false" />
           </div>
         </div>
@@ -431,6 +478,8 @@ import ShareLink from '../components/drive/ShareLink.vue'
 import FolderPicker from '../components/drive/FolderPicker.vue'
 import UploadTray from '../components/drive/UploadTray.vue'
 import RecordPane from '../components/screen/record/RecordPane.vue'
+import SheetEditor from '../components/sheets/editor/index.vue'
+import Doc from './Doc.vue'
 import ImportSheet from '../components/sheets/ImportSheet.vue'
 import { useDrive } from '../composables/useDrive'
 import { useNewFile } from '../composables/useNewFile'
@@ -638,6 +687,45 @@ function read(key) {
 // Which file the dialogs are about. One ref, because only one of them is open.
 const looking = ref(null)
 const previewing = ref(false)
+
+/*
+ * The kinds the pane opens rather than the router.
+ *
+ * A sheet and a document, because both have an editor that fits a column and
+ * because opening one is the commonest thing anybody does in a file manager —
+ * walking away from the list to do it is what makes a file manager feel like a
+ * detour. Everything else either has no editor of ours or is a place with an
+ * address, and both of those still navigate.
+ */
+const INLINE = ['Sheet', 'Doc']
+
+// Wider when the pane holds an editor. Four hundred and eighty pixels is a
+// preview; it is not a spreadsheet, and a person who has to drag the resizer
+// before they can read a row has been handed a chore rather than a feature.
+//
+// As the pane's *minimum* rather than by setting its width: the Resizer takes
+// the remembered width on mount, so anything written before that is overwritten
+// a frame later. A floor is declarative, survives the mount, and still lets
+// somebody drag wider.
+//
+// A share of the window and not 860 flat. 860 on a 1280 laptop leaves the list
+// 180 pixels — every name truncated to nothing, which is a file manager you
+// cannot pick the next file from. Half the window, up to 860: six columns on a
+// laptop and a proper grid on a large screen, and the list stays a list.
+//: What the list keeps whatever is open beside it. Below this a row is dates
+//: and a truncation, and picking the next file — the only reason the list is
+//: still on screen — stops working.
+const LIST_FLOOR = 420
+
+const editorFloor = () => {
+  const half = Math.max(560, window.innerWidth * 0.5)
+  // The sidebar is outside this pane's window share, so the room to leave the
+  // list is measured off what the content column actually has.
+  const spare = window.innerWidth - LIST_FLOOR - 260
+  return Math.round(Math.max(480, Math.min(860, half, spare)))
+}
+
+const editing = computed(() => INLINE.includes(looking.value?.custom_kind))
 
 const downloadLooking = () => window.open(downloadUrl(looking.value.name), '_blank')
 const sharing = ref(false)

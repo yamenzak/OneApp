@@ -154,3 +154,53 @@ function unique(name, taken) {
   while (taken.some((t) => t.toLowerCase() === out.toLowerCase())) out = `${base} (${++n})`
   return out
 }
+
+
+/**
+ * One tab of an open workbook → the payload a save would send.
+ *
+ * The other direction of `useTemplateInsert`. A workbook that has grown an
+ * estimator beside its bound tab is a workbook somebody wants to reuse on the
+ * next job, and what they want to keep is that tab — not the line items of the
+ * quotation it happened to be priced against.
+ *
+ * Throwaway engines, because the live ones hold the whole book and
+ * `buildPayload` serialises whatever it is given: copying one tab into fresh
+ * engines is how you serialise a subset without touching what is on screen.
+ *
+ * Cells, formats and merges, which is the same set the insert carries and the
+ * same set the XLSX import does. A template built from a tab and loaded back
+ * gives you what you saved.
+ */
+export async function workbookFromTab(live, tabName, saveAs = 'Sheet1') {
+  const sheet = createSheet()
+  const formats = createFormatsEngine()
+  const merge = createMergeEngine()
+
+  // `createSheet` starts on a tab called Sheet1; rename rather than add, so the
+  // payload has one tab and not an empty one beside it.
+  const [only] = sheet.getSheetNames()
+  if (only !== saveAs) sheet.renameSheet(only, saveAs)
+
+  sheet.batchSetCells({ ...(live.sheet.getRawData(tabName) || {}) }, saveAs)
+
+  const held = live.formats?.snapshot?.()?.[tabName]
+  if (held) {
+    for (const [id, format] of Object.entries(held.cells || {})) formats.set(id, format, saveAs)
+    for (const [col, format] of Object.entries(held.cols || {})) {
+      formats.setCol(Number(col), format, saveAs)
+    }
+    for (const [row, format] of Object.entries(held.rows || {})) {
+      formats.setRow(Number(row), format, saveAs)
+    }
+  }
+
+  const merged = live.merge?.snapshot?.()?.[tabName]?.masterMap
+  for (const rect of Object.values(merged || {})) {
+    if (!rect) continue
+    merge.merge(rect.r0 ?? rect.startRow, rect.c0 ?? rect.startCol,
+      rect.r1 ?? rect.endRow, rect.c1 ?? rect.endCol, saveAs)
+  }
+
+  return buildPayload({ sheet, formats, merge, getViewState: () => null })
+}
