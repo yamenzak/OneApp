@@ -82,7 +82,7 @@
     target *inside* the content column: the whole point is that the header is
     beside the switcher, and a slot cannot reach past its own parent.
   -->
-  <div v-else class="flex h-full min-h-0 flex-col bg-surface-base dark:bg-surface-gray-2">
+  <div v-else class="flex h-full min-h-0 flex-col bg-surface-gray-3">
     <header
       v-if="chrome"
       data-slot="shell-topbar"
@@ -148,7 +148,7 @@
       <div
         data-slot="shell-inset"
         class="flex min-w-0 flex-1 flex-col overflow-hidden"
-        :class="chrome ? INSET : ''"
+        :class="chrome ? 'mb-2 me-2 rounded-6 bg-surface-base' : ''"
       >
         <PageHeaderTarget v-if="!chrome" />
         <ScrollArea v-if="scroll" class="min-h-0 flex-1">
@@ -393,18 +393,6 @@ const isMobile = useIsMobile()
  * both edges. Any other width and the corner reads as a button that happens to
  * be first rather than as the head of that column.
  */
-/**
- * The recess. Written once rather than inline because it is two theme-swapped
- * surfaces and an arbitrary shadow, and a class list that long inside a
- * ternary in the template is a paragraph nobody reads.
- *
- * The shadow is arbitrary because Tailwind's named ones all fall outward. An
- * inner shadow is what a hole in a surface casts.
- */
-const INSET =
-  'mb-2 me-2 rounded-6 bg-surface-gray-2 dark:bg-surface-base ' +
-  'shadow-[inset_0_1px_4px_rgba(0,0,0,0.10)]'
-
 const { collapsed: sidebarCollapsed, width: sidebarWidth } = useSidebar()
 
 const cornerStyle = computed(() => ({
