@@ -10,7 +10,11 @@
 -->
 <template>
   <PageHeader>
-    <nav data-slot="breadcrumb" :aria-label="__('Breadcrumb')" class="flex min-w-0 items-center">
+    <nav
+      data-slot="breadcrumb"
+      :aria-label="__('Breadcrumb')"
+      class="flex min-w-0 flex-1 items-center"
+    >
       <Breadcrumbs :items="crumbs">
         <template #prefix="{ item }">
           <!--
@@ -35,7 +39,7 @@
         switcher is one: a crumb is a line of text, and this is a block two lines
         tall.
       -->
-      <div v-if="recordCrumb" class="flex min-w-0 items-center">
+      <div v-if="recordCrumb && !split" class="flex min-w-0 items-center">
         <span class="mx-0.5 text-base text-ink-gray-4" aria-hidden="true">/</span>
         <RecordChip :record="recordCrumb">
           <template #badge>
@@ -62,8 +66,11 @@
 
       <!-- The last crumb, when no record is open: which view of the screen this
            is, and every other view of it. -->
+      <!-- Shown beside the record when the two are side by side: the list is
+           still there, still in a view, and the trail over it should say which
+           one. Hidden only when the record has taken the whole area. -->
       <ViewSwitcher
-        v-if="spec?.doctype && !record"
+        v-if="spec?.doctype && (!record || split)"
         :layouts="spec.layouts || []"
         :active="spec.layout || ''"
         :view-label="viewLabel"
@@ -91,11 +98,12 @@
     -->
     <div class="flex shrink-0 items-center gap-2">
       <!--
-        Where an open record's own controls land when it is a page — see `merged`
-        in `RecordView`. Rendered unconditionally so the teleport always has
-        somewhere to go rather than racing the condition that creates it.
+        Where an open record's own controls land — see `merged` in `RecordView`.
+        Here when the record is the whole area; over in the pane's own block
+        when it is a column beside the list, so that each panel's controls sit
+        above that panel.
       -->
-      <div :id="MERGE_TARGET" class="flex shrink-0 items-center gap-2" />
+      <div v-if="!split" :id="MERGE_TARGET" class="flex shrink-0 items-center gap-2" />
 
       <!--
         New stands down while a record fills the page: the list it would add a
@@ -109,18 +117,57 @@
         @click="emit('create')"
       />
     </div>
+
+    <!--
+      The pane's own half of the bar, exactly as wide as the pane under it and
+      starting where it starts. Two panels, two trails: the left one says which
+      view of the list you are looking at, this one says which record — and a
+      header that is not the width of the panel it belongs to reads as
+      belonging to something else.
+    -->
+    <div
+      v-if="split"
+      data-slot="pane-header"
+      class="ms-2 flex shrink-0 items-center gap-2 ps-3"
+      :style="{ width: `${paneWidth}px` }"
+    >
+      <span class="shrink-0 text-base text-ink-gray-5">{{ screenLabel }}</span>
+      <span class="shrink-0 text-base text-ink-gray-4" aria-hidden="true">/</span>
+      <div class="flex min-w-0 items-center">
+        <RecordChip :record="recordCrumb">
+          <template #badge>
+            <StateBadge
+              v-if="statusValue"
+              data-slot="record-status"
+              :label="statusValue"
+              :states="spec?.states || []"
+            />
+            <StateBadge
+              v-if="docState"
+              data-slot="doc-state"
+              :label="docState.label"
+              :theme="docState.theme"
+            />
+          </template>
+        </RecordChip>
+      </div>
+      <div :id="MERGE_TARGET" class="ms-auto flex shrink-0 items-center gap-1" />
+    </div>
   </PageHeader>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { PageHeader, Breadcrumbs, Icon, Tooltip, Button } from '@/ui'
+import { useRecordPane } from '@/lib/screen/pane'
+import { useIsMobile } from '@/lib/shell/breakpoint'
 import RecordChip from '../record/RecordChip.vue'
 import StateBadge from '../fields/StateBadge.vue'
 import ViewSwitcher from './ViewSwitcher.vue'
 import { MERGE_TARGET } from '@/lib/screen/surfaces'
 import { __ } from '@/lib/runtime/translate'
 
-defineProps({
+const props = defineProps({
   // The screen, for what the switcher offers and whether New is allowed.
   spec: { type: Object, default: null },
   // The trail itself, and the record at the end of it — both from `useCrumbs`,
@@ -143,4 +190,21 @@ defineProps({
 })
 
 const emit = defineEmits(['create'])
+
+const phone = useIsMobile()
+const { width: paneWidth } = useRecordPane()
+
+/**
+ * Whether the bar is two trails rather than one.
+ *
+ * Only when the record is genuinely a column beside the list: as a page it has
+ * the whole area and one trail is the truth, and on a phone there is one
+ * surface at a time.
+ */
+const split = computed(() => !!props.record && !props.page && !phone.value)
+
+// The screen's own name, which is the last crumb the list's trail carries. Read
+// off the crumbs rather than passed again: two props for one string is two
+// places for it to be wrong.
+const screenLabel = computed(() => props.crumbs[props.crumbs.length - 1]?.label || '')
 </script>

@@ -70,8 +70,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import Resizer from '../../Resizer.vue'
+import { DEFAULT, MIN, useRecordPane } from '@/lib/screen/pane'
 import { __ } from '@/lib/runtime/translate'
 import { useIsMobile } from '@/lib/shell/breakpoint'
 
@@ -91,10 +91,7 @@ defineProps({
 // viewport anything.
 const phone = useIsMobile()
 
-// Narrow enough that a form is still readable, and no narrower: below this the
-// labels wrap and the pane is a column of hyphens.
-const MIN = 360
-const DEFAULT = 480
-
-const width = ref(DEFAULT)
+// Shared, because the bar above draws a block exactly this wide to carry the
+// pane's own trail — see `lib/screen/pane.js`.
+const { width } = useRecordPane()
 </script>

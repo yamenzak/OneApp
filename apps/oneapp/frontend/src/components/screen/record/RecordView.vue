@@ -369,12 +369,15 @@ const names = computed(() => !showcase.value && (props.phone || drawer.value))
 const canResize = computed(() => !props.phone && !drawer.value)
 
 /**
- * Whether this record's controls belong on the page header's line.
+ * Whether this record's controls belong up on the bar rather than inside the
+ * panel.
  *
- * Only the desktop page: the one surface where the trail above is both visible
- * and about this record.
+ * Both desktop surfaces now. As a page the trail above is about this record;
+ * as a pane the bar carries a second trail exactly the width of the pane, and
+ * these are what sits at the end of it. Left inside the panel only where there
+ * is no trail of its own to join: a phone, and a drawer over another record.
  */
-const merged = computed(() => wide.value && !props.phone && !drawer.value)
+const merged = computed(() => !props.phone && !drawer.value)
 
 const tab = ref('fields')
 
