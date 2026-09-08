@@ -1,0 +1,215 @@
+<template>
+  <!--
+    Another screen's records, narrowed to the one being read.
+
+    A project's invoices are the invoices screen with `project = this one`, so
+    everything that screen knows about drawing an invoice comes with it: its
+    columns, widths, title field, states and links.
+
+    Which is the point of declaring a tab as a screen and a fieldname rather
+    than as a query: `rows` is where the space, the permissions and the filter
+    are checked, and it does not care that a hero asked it.
+  -->
+  <div class="flex flex-col gap-3 pt-4">
+    <div class="flex items-center gap-2">
+      <span class="text-p-sm text-ink-gray-6">{{ counted }}</span>
+      <span v-if="more" class="text-p-xs text-ink-gray-5">
+        {{ __('showing the first {0}', [rows.length]) }}
+      </span>
+      <!--
+        Frappe's "New linked document", on the tab that is already about the
+        link. The field this tab filtered on arrives filled in.
+      -->
+      <Button
+        v-if="spec.can_create"
+        class="ms-auto"
+        data-slot="related-new"
+        icon-left="lucide-plus"
+        :label="__('New {0}', [spec.singular || __('record')])"
+        @click="creating = true"
+      />
+    </div>
+
+    <CreateDialog
+      v-if="spec.can_create"
+      v-model="creating"
+      :spec="spec"
+      :space-code="spaceCode"
+      :screen="screen"
+      :preset="preset"
+      @created="made"
+    />
+
+    <RecordTable
+      v-if="rows.length"
+      :columns="visible"
+      :rows="rows"
+      :row-height="52"
+      :fill="spec.title_field"
+      :virtual-from="VIRTUAL_FROM"
+      extra-class="rounded-6 border border-outline-gray-2"
+      @row-click="emit('open', { screen, name: $event.name })"
+    >
+      <template #cell="{ column, row }">
+        <TitleCell
+          v-if="column.cell === 'title'"
+          :row="row"
+          :title-field="spec.title_field"
+          :image-field="spec.image_field"
+          @open="emit('open', { screen, name: row.name })"
+        />
+        <RowMeta v-else-if="column.cell === 'meta'" :meta="row._meta || {}" />
+        <FieldCell
+          v-else
+          :column="column.column"
+          :value="row[column.key]"
+          :row="row"
+          :links="row._links || {}"
+          :states="spec.states || []"
+          :space-code="spaceCode"
+          :screen="screen"
+        />
+      </template>
+    </RecordTable>
+
+    <LoadingText v-else-if="loading" :text="__('Loading')" />
+
+    <!-- Nothing filed against it, said in the words of the thing that is
+         missing rather than "No records". -->
+    <p v-else class="py-6 text-center text-p-sm text-ink-gray-5">
+      {{ __('No {0} against this yet.', [(label || __('records')).toLowerCase()]) }}
+    </p>
+  </div>
+</template>
+
+<script setup>
+import { computed, ref, watch } from 'vue'
+import { Button, LoadingText } from '@/ui'
+import CreateDialog from '@/modules/onespace/components/screen/record/CreateDialog.vue'
+import RecordTable from '@/modules/onespace/components/screen/bodies/RecordTable.vue'
+import FieldCell from '@/modules/onespace/components/screen/bodies/FieldCell.vue'
+import TitleCell from '@/modules/onespace/components/screen/bodies/TitleCell.vue'
+import RowMeta from '@/modules/onespace/components/screen/bodies/RowMeta.vue'
+import { workspace } from '@/shared/lib/workspace'
+import { __ } from '@/shared/lib/runtime/translate'
+
+const props = defineProps({
+  spaceCode: { type: String, required: true },
+  /** The screen whose records these are — not the one being read. */
+  screen: { type: String, required: true },
+  /** The field on that screen pointing back at the record being read. */
+  field: { type: String, required: true },
+  /**
+   * What else has to be true, which for a Dynamic Link is the doctype: `about`
+   * holds an id and `about_doctype` what kind of thing it is, and filtering on
+   * the id alone would put a licence's letters on a project sharing its name.
+   */
+  where: { type: Array, default: () => [] },
+  /** The record being read, by id. */
+  name: { type: String, required: true },
+  /** What they are called, for the count and the empty line. */
+  label: { type: String, default: '' },
+})
+
+const emit = defineEmits(['open'])
+
+// A tab, not a list: past this many the answer is the screen itself.
+const PAGE = 50
+
+// The same threshold the list uses. It will not be reached at a page of fifty —
+// it is here so the two tables cannot disagree about the number.
+const VIRTUAL_FROM = 200
+
+// What a new one starts with: the link back, and for a Dynamic Link the doctype
+// beside it — without which the row would not come back to this tab.
+const preset = computed(() =>
+  Object.fromEntries([
+    [props.field, props.name],
+    ...(props.where || []).map(([field, , value]) => [field, value]),
+  ]),
+)
+
+const creating = ref(false)
+const spec = ref({})
+const rows = ref([])
+const columns = ref([])
+const more = ref(false)
+const loading = ref(false)
+
+const counted = computed(() => {
+  const many = rows.value.length
+  const what = props.label || __('record')
+  if (!many) return ''
+  // The label is a plural already — "Invoices" — so the singular is the one
+  // that has to be made, and only where the count is one.
+  return `${many}${more.value ? '+' : ''} ${many === 1 ? singular(what) : what.toLowerCase()}`
+})
+
+const singular = (word) => {
+  const one = word.toLowerCase()
+  return one.endsWith('s') ? one.slice(0, -1) : one
+}
+
+/**
+ * The columns the rows came back with, as tracks, less the one that is the
+ * question: every row here has the same value in the field the tab filtered on,
+ * so a Project column on a project's Invoices tab is one name written six
+ * times. Kept where it is the screen's title field, or the rows lose their
+ * name.
+ */
+const visible = computed(() => {
+  const titleField = spec.value?.title_field
+  return (columns.value || [])
+    .filter((column) => column.fieldname !== props.field || column.fieldname === titleField)
+    .map((column) => ({
+      key: column.fieldname,
+      label: column.label,
+      icon: column.icon,
+      track: `${column.width}px`,
+      width: column.width,
+      cell:
+        column.fieldname === '__activity'
+          ? 'meta'
+          : column.fieldname === titleField
+            ? 'title'
+            : column.cell,
+      column,
+    }))
+})
+
+const load = async () => {
+  if (!props.name || !props.screen || !props.field) return
+  loading.value = true
+  try {
+    // Both at once: the spec answers what a row of this screen looks like and
+    // the rows answer which rows.
+    const [found, page] = await Promise.all([
+      workspace.screenSpec(props.spaceCode, props.screen),
+      workspace.screenRows(
+        props.spaceCode,
+        props.screen,
+        { filters: [[props.field, '=', props.name], ...(props.where || [])] },
+        '',
+        { start: 0, limit: PAGE },
+      ),
+    ])
+    spec.value = found || {}
+    rows.value = page?.rows || []
+    // The columns the rows were fetched with, not the spec's — the same reason
+    // the list reads them off the page.
+    columns.value = page?.columns || found?.columns || []
+    more.value = !!page?.has_more
+  } finally {
+    loading.value = false
+  }
+}
+
+// Opened rather than only listed: somebody who just made an invoice against
+// this project means to be in it.
+const made = (name) => {
+  load()
+  if (name) emit('open', { screen: props.screen, name })
+}
+
+watch(() => [props.screen, props.field, props.name, props.where], load, { immediate: true })
+</script>

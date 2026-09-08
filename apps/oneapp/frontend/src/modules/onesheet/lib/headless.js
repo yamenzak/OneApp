@@ -1,0 +1,206 @@
+/**
+ * A workbook built without a grid on screen.
+ *
+ * The Drive can import a spreadsheet without opening one, and there is no cell
+ * endpoint any more — a save is the whole workbook (see `store.js`) — so the
+ * import builds a whole workbook instead.
+ *
+ * It can, because none of Frappe's engines touch the DOM: the canvas is a
+ * separate layer that happens to be the only thing that needs a screen. So an
+ * imported file lands through exactly the code path a typed one does.
+ */
+
+import { createFormatsEngine } from '@/modules/onesheet/lib/engine/formats.js'
+import { createMergeEngine } from '@/modules/onesheet/lib/engine/merge.js'
+import { createSheet } from '@/modules/onesheet/lib/engine/sheet.js'
+import { fromXlsxCell, mergesFromXlsx } from '@/modules/onesheet/lib/engine/xlsx-io.js'
+import { parseCellId } from '@/modules/onesheet/lib/utils/cells.js'
+import { buildPayload } from '@/modules/onesheet/lib/store.js'
+import { readWorkbook } from '@/modules/onesheet/lib/xlsx-file.js'
+
+/** What the Drive's import dialog will accept. */
+export const ACCEPTS = '.xlsx,.xlsm,.csv'
+
+/**
+ * One file → the payload a save would send, plus what is in it. A CSV is one
+ * tab named after the file; a workbook keeps its own tab names.
+ */
+export async function workbookFromFile(file) {
+  const sheet = createSheet()
+  const formats = createFormatsEngine()
+  const merge = createMergeEngine()
+
+  const name = String(file?.name || '')
+  const isCsv = /\.csv$/i.test(name)
+
+  const tabs = isCsv
+    ? ingestCsv(sheet, await file.text(), name.replace(/\.[^.]+$/, '') || 'Sheet1')
+    : ingestWorkbook(sheet, formats, merge, await readWorkbook(await file.arrayBuffer()))
+
+  let cells = 0
+  const raw = sheet.getAllRaw()
+  for (const tab of Object.keys(raw)) cells += Object.keys(raw[tab]).length
+
+  const payload = await buildPayload({
+    sheet, formats, merge,
+    getViewState: () => null,
+  })
+
+  return { payload, tabs, cells }
+}
+
+/** Every worksheet becomes a tab, cells, number formats and merges included. */
+function ingestWorkbook(sheet, formats, merge, wb) {
+  const names = []
+  let first = true
+
+  for (const wsName of wb.SheetNames) {
+    const ws = wb.Sheets[wsName]
+    if (!ws) continue
+
+    // A fresh workbook already has one tab called Sheet1, so the first
+    // worksheet becomes that one rather than a second beside it.
+    const tab = unique(wsName || 'Sheet1', names)
+    if (first) sheet.renameSheet('Sheet1', tab)
+    else sheet.addSheet(tab)
+    first = false
+    names.push(tab)
+
+    const cells = {}
+    const numberFormats = []
+    for (const [id, cell] of Object.entries(ws)) {
+      if (id[0] === '!') continue
+      if (!parseCellId(id)) continue
+      const { value, fmt } = fromXlsxCell(cell)
+      if (value !== '' && value != null) cells[id] = value
+      if (fmt) numberFormats.push([id, fmt])
+    }
+
+    sheet.batchSetCells(cells, tab, { replace: false })
+    for (const [id, fmt] of numberFormats) formats.set(id, { numberFormat: fmt }, tab)
+    for (const box of mergesFromXlsx(ws['!merges'] || [])) {
+      merge.merge(box.r0, box.c0, box.r1, box.c1, tab)
+    }
+  }
+
+  return names.length ? names : ['Sheet1']
+}
+
+/** One tab, from comma-separated text. */
+function ingestCsv(sheet, text, title) {
+  const tab = title.slice(0, 31) || 'Sheet1'
+  sheet.renameSheet('Sheet1', tab)
+
+  const cells = {}
+  const rows = splitCsv(text)
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r]
+    for (let c = 0; c < row.length; c++) {
+      const value = row[c]
+      if (value !== '' && value != null) cells[cellRef(r, c)] = String(value)
+    }
+  }
+  sheet.batchSetCells(cells, tab)
+  return [tab]
+}
+
+/**
+ * A CSV, split the way a CSV is actually written: quoted fields hold commas and
+ * newlines of their own, and a doubled quote inside one is a literal quote.
+ */
+function splitCsv(text) {
+  const source = String(text || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  const rows = []
+  let at = 0
+
+  while (at < source.length) {
+    const row = []
+    for (;;) {
+      if (source[at] === '"') {
+        at += 1
+        let cell = ''
+        while (at < source.length) {
+          if (source[at] === '"' && source[at + 1] === '"') { cell += '"'; at += 2 } else if (source[at] === '"') { at += 1; break } else { cell += source[at]; at += 1 }
+        }
+        row.push(cell)
+      } else {
+        const from = at
+        while (at < source.length && source[at] !== ',' && source[at] !== '\n') at += 1
+        row.push(source.slice(from, at))
+      }
+      if (at >= source.length || source[at] === '\n') { at += 1; break }
+      at += 1
+    }
+    rows.push(row)
+  }
+  return rows
+}
+
+function cellRef(row, col) {
+  let label = ''
+  let n = col + 1
+  while (n > 0) {
+    const rest = (n - 1) % 26
+    label = String.fromCharCode(65 + rest) + label
+    n = Math.floor((n - 1) / 26)
+  }
+  return label + (row + 1)
+}
+
+function unique(name, taken) {
+  const base = String(name || 'Sheet').trim() || 'Sheet'
+  let out = base
+  let n = 1
+  while (taken.some((t) => t.toLowerCase() === out.toLowerCase())) out = `${base} (${++n})`
+  return out
+}
+
+
+/**
+ * One tab of an open workbook → the payload a save would send.
+ *
+ * The other direction of `useTemplateInsert`. A workbook that has grown an
+ * estimator beside its bound tab is a workbook somebody wants to reuse on the
+ * next job, and what they want to keep is that tab — not the line items of the
+ * quotation it happened to be priced against.
+ *
+ * Throwaway engines, because the live ones hold the whole book and
+ * `buildPayload` serialises whatever it is given: copying one tab into fresh
+ * engines is how you serialise a subset without touching what is on screen.
+ *
+ * Cells, formats and merges, which is the same set the insert carries and the
+ * same set the XLSX import does. A template built from a tab and loaded back
+ * gives you what you saved.
+ */
+export async function workbookFromTab(live, tabName, saveAs = 'Sheet1') {
+  const sheet = createSheet()
+  const formats = createFormatsEngine()
+  const merge = createMergeEngine()
+
+  // `createSheet` starts on a tab called Sheet1; rename rather than add, so the
+  // payload has one tab and not an empty one beside it.
+  const [only] = sheet.getSheetNames()
+  if (only !== saveAs) sheet.renameSheet(only, saveAs)
+
+  sheet.batchSetCells({ ...(live.sheet.getRawData(tabName) || {}) }, saveAs)
+
+  const held = live.formats?.snapshot?.()?.[tabName]
+  if (held) {
+    for (const [id, format] of Object.entries(held.cells || {})) formats.set(id, format, saveAs)
+    for (const [col, format] of Object.entries(held.cols || {})) {
+      formats.setCol(Number(col), format, saveAs)
+    }
+    for (const [row, format] of Object.entries(held.rows || {})) {
+      formats.setRow(Number(row), format, saveAs)
+    }
+  }
+
+  const merged = live.merge?.snapshot?.()?.[tabName]?.masterMap
+  for (const rect of Object.values(merged || {})) {
+    if (!rect) continue
+    merge.merge(rect.r0 ?? rect.startRow, rect.c0 ?? rect.startCol,
+      rect.r1 ?? rect.endRow, rect.c1 ?? rect.endCol, saveAs)
+  }
+
+  return buildPayload({ sheet, formats, merge, getViewState: () => null })
+}

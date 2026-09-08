@@ -13,7 +13,7 @@ returning the mark's body, and this pulls those out and writes three things:
 
     scripts/brand/marks.json                     what was read, for a human to
                                                  diff when the page is revised
-    apps/oneapp/frontend/src/lib/brand/marks.js  the SPA's copy
+    apps/oneapp/frontend/src/shared/lib/brand/marks.js  the SPA's copy
     apps/oneapp/oneapp/public/brand/<id>.svg     standalone files, for a
                                                  favicon, an email, a print
 

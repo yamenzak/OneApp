@@ -17,9 +17,11 @@ from pathlib import Path
 
 import pytest
 
+import where
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-USAGE_BAR = ROOT / "apps/oneapp/frontend/src/components/UsageBar.vue"
+USAGE_BAR = where.path("UsageBar.vue")
 TENANT_QUOTA = ROOT / "apps/oneapp/oneapp/onestorage/quota.py"
 CONTROL_CUSTOMER = ROOT / "apps/oneapp_control/oneapp_control/api/customer.py"
 
@@ -81,8 +83,8 @@ def test_the_component_is_generated_rather_than_written():
 	compared. Only the tenant bundle has it now — signup shows nobody's usage —
 	so what survives is the other half of that claim: the copy on disk is the
 	generator's, not something edited in place beside it."""
-	from gen_frontend import USAGE_BAR_VUE
+	from gen_frontend import USAGE_BAR_VUE, rewrite
 
-	assert USAGE_BAR.read_text() == USAGE_BAR_VUE, (
+	assert USAGE_BAR.read_text() == rewrite("oneapp", USAGE_BAR_VUE), (
 		"UsageBar was edited in place — edit scripts/gen_frontend.py"
 	)

@@ -55,6 +55,10 @@ OURS = ("oneapp",)
 # inside the tenant SPA, so its strings land in oneapp's POT beside the
 # customer's. A msgid that appears *only* there is operator vocabulary — bench
 # groups, shards, dunning ladders — and is left in English.
+#
+# Matched as a suffix of the directory rather than a full path: which module
+# holds the tree is the SPA layout's business, and a POT written before a move
+# should not start charging us for translations we do not owe.
 OPERATOR = "screens/ops/"
 
 # The languages we sell in. English is not here and never will be: the msgid is

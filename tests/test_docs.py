@@ -121,7 +121,7 @@ def test_python_and_the_browser_agree_about_what_opens_in_the_editor(docs):
 	half is `tests/test_onecode.py`, which reads the two catalogues back against
 	each other.
 	"""
-	js = (FRONTEND / "lib/files/files.js").read_text()
+	js = (FRONTEND / "modules/onestorage/lib/files.js").read_text()
 	pattern = re.search(r"const PLAIN = \[([^\]]+)\]", js)
 	assert pattern, "files.js no longer declares the plain text extensions"
 
@@ -187,5 +187,5 @@ def test_the_editor_is_told_whether_this_is_a_template(docs):
 	block = source[source.index("def get_doc("):]
 	assert '"is_template"' in block[:block.index("\n\n\n")]
 
-	editor = (FRONTEND / "components/docs/DocEditor.vue").read_text()
+	editor = (FRONTEND / "modules/onedoc/components/DocEditor.vue").read_text()
 	assert "docSetTemplate" in editor

@@ -22,7 +22,7 @@ from doctype_paths import slug as doctype_slug
 ROOT = Path(__file__).resolve().parent.parent
 OPERATOR = ROOT / "apps/oneapp_control/oneapp_control/entitlements/operator.py"
 CONTROL = ROOT / "apps/oneapp_control/oneapp_control"
-SCREENS_INDEX = ROOT / "apps/oneapp/frontend/src/screens/index.js"
+SCREENS_INDEX = ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/index.js"
 
 
 def _const(name):
@@ -183,7 +183,7 @@ def test_every_account_screen_is_registered(row):
 def test_every_account_screen_component_exists(row):
 	screen, _label, _icon = row
 	name = screen.capitalize() if screen != "apps" else "Apps"
-	found = list((ROOT / "apps/oneapp/frontend/src/screens/account").glob("*.vue"))
+	found = list((ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/account").glob("*.vue"))
 	stems = {p.stem.lower() for p in found}
 	assert screen.lower() in stems, f"no component for {screen}; have {sorted(stems)}"
 

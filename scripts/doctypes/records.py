@@ -267,7 +267,7 @@ doctype(
 # One row per workbook and not one per cell, which is a reversal. The first
 # build stored a `Sheet Cell` per cell so a read-back could be a query, and it
 # was a defensible shape for a grid we had written ourselves. The grid is
-# Frappe's now (`apps/oneapp/frontend/src/lib/sheets/VENDORED.md`): it holds the
+# Frappe's now (`apps/oneapp/frontend/src/modules/onesheet/lib/VENDORED.md`): it holds the
 # whole workbook in memory, saves it whole and loads it whole, and a second
 # store the browser never reads would be a second thing to keep in step with no
 # reader to justify it. Python reads the blob through
@@ -494,7 +494,11 @@ doctype(
     "Legal Document Version",
     app="tenant",
     module="OneLegal",
-    autoname="field:name",
+    # The two fields that define it, and no third one holding their join.
+    # `field:` needs a real fieldname and `name` is not one — a doctype named
+    # that way throws "ID is required" the first time a version is stored,
+    # which is the first time a clause changes rather than at install.
+    autoname="format:{document}-{version}",
     title_field="title",
     search_fields="document,version",
     allow_rename=0,

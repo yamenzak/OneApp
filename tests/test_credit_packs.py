@@ -161,8 +161,8 @@ def test_a_purchased_credit_never_expires():
 # What the customer sees
 # --------------------------------------------------------------------------- #
 
-BILLING = ROOT / "apps/oneapp/frontend/src/screens/account/Billing.vue"
-PACK_CARD = ROOT / "apps/oneapp/frontend/src/screens/account/PackCard.vue"
+BILLING = ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/account/Billing.vue"
+PACK_CARD = ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/account/PackCard.vue"
 
 
 def test_a_price_is_shown_in_its_own_currency():

@@ -22,6 +22,8 @@ from pathlib import Path
 
 import pytest
 
+import where
+
 from frappe_ui_api import ROOT
 from reachable import paths as reachable_paths
 
@@ -157,8 +159,10 @@ def test_guest_surfaces_only_call_guest_methods():
 CLIENT_METHODS = re.compile(r"frappe\.client\.(get_list|get|set_value|insert|delete)\b")
 
 # Where the wrappers themselves live. They are the one place allowed to know
-# about the transport.
-DATA_LAYER = ("lib/runtime/resource.js", "lib/api.js")
+# about the transport. Named in the flat layout and resolved per bundle, since
+# the tenant app keeps its runtime under `shared/` and the control plane does
+# not — a path written out here would exempt one of them and not the other.
+DATA_LAYER = ("src/lib/runtime/resource.js", "src/lib/api.js")
 
 
 @pytest.mark.parametrize("app", APPS)
@@ -176,12 +180,16 @@ def test_documents_go_through_the_document_layer(app):
     first, so it reads through the boot payload's user instead.
     """
     root = ROOT / f"apps/{app}/frontend/src"
+    exempt = {
+        where.spa(app, name).relative_to(root).as_posix()
+        for name in DATA_LAYER + ("src/lib/shell/user.js",)
+    }
     problems = []
     for path in sorted(root.rglob("*")):
         if path.suffix not in (".vue", ".js"):
             continue
         rel = path.relative_to(root).as_posix()
-        if rel in DATA_LAYER or rel == "lib/shell/user.js":
+        if rel in exempt:
             continue
         for method in set(CLIENT_METHODS.findall(path.read_text())):
             problems.append(
@@ -193,7 +201,7 @@ def test_documents_go_through_the_document_layer(app):
 
 def test_the_document_layer_wraps_the_recommended_composables():
     """And is the only place that imports them."""
-    resource = (ROOT / "apps/oneapp/frontend/src/lib/runtime/resource.js").read_text()
+    resource = where.spa("oneapp", "src/lib/runtime/resource.js").read_text()
     for composable in ("useList", "useDoc", "useDoctype"):
         assert f"  {composable},\n" in resource, f"{composable} is not wrapped"
     for wrapper in ("useDocList", "useDocument", "useDocWrites"):

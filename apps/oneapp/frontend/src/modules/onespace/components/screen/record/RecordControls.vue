@@ -1,0 +1,121 @@
+<template>
+  <!--
+    The things you do to a record rather than to one of its fields.
+
+    Its own component because it is drawn in two places and must be the same row
+    in both: in the record's own header, where the record has one, and on the
+    page header's line, where it does not. See `merged` in `RecordView`.
+
+    The record's other verbs — print, follow, like — are inside `RecordActions`'
+    menu, and assignment is not here at all: the Meta tab offers it one tab
+    away.
+  -->
+  <div data-slot="record-controls" class="flex shrink-0 items-center gap-1">
+    <!-- What this screen can do to this record beyond editing its fields.
+         Declared by the space and resolved server-side. -->
+    <ScreenActions
+      :actions="spec.actions || []"
+      scope="record"
+      :space-code="spaceCode"
+      :screen="screen"
+      :names="[record.name]"
+      @ran="emit('reload')"
+    />
+    <!-- The step this record is waiting for, and one menu holding everything
+         else. -->
+    <RecordActions
+      :space-code="spaceCode"
+      :screen="screen"
+      :name="record.name"
+      :state="record._state"
+      :extras="extras"
+      :dirty="dirty"
+      @moved="emit('reload')"
+      @opened="emit('renamed', $event)"
+    />
+    <!--
+      Save lives up here rather than in a footer because of the corner: the toast
+      that says a save worked is fixed to the bottom right, which is exactly
+      where a pane's footer button sits, so saving twice meant clicking through
+      the first confirmation. frappe-ui's ToastProvider hard-codes that
+      position.
+
+      Only while there is something to save. It shares its place with the
+      document's own actions, which are offered only while there is not.
+    -->
+    <Button
+      v-if="canWrite && dirty"
+      variant="solid"
+      :label="__('Save')"
+      :loading="saving"
+      @click="emit('save')"
+    />
+    <!--
+      How much of the window this record gets: the manifest has an opinion and
+      this is the reader overruling it, remembered per screen.
+
+      Not on a phone, where there is only ever one surface, and not in the
+      drawer, where the width is the peek's argument rather than this one.
+    -->
+    <Button
+      v-if="canResize"
+      :icon="wide ? 'lucide-minimize-2' : 'lucide-maximize-2'"
+      variant="ghost"
+      :label="wide ? __('Show beside the list') : __('Fill the window')"
+      :tooltip="wide ? __('Show beside the list') : __('Fill the window')"
+      @click="emit('surface', wide ? 'pane' : 'page')"
+    />
+    <!-- A peek is not always enough. The way from one to the other: the same
+         record, on its own screen, with its list behind it. -->
+    <Button
+      v-if="drawer"
+      icon="lucide-arrow-up-right"
+      variant="ghost"
+      :label="__('Open on its own screen')"
+      :tooltip="__('Open on its own screen')"
+      @click="emit('expand')"
+    />
+    <!--
+      Out. What it means depends on where you are — in a drawer it puts the
+      record you came from back, everywhere else it goes back to the list — and
+      the tooltip says which, because guessing wrong loses your place.
+    -->
+    <Button
+      icon="lucide-x"
+      variant="ghost"
+      :label="drawer ? __('Close and go back') : __('Close the record')"
+      :tooltip="drawer ? __('Close and go back') : __('Close the record')"
+      @click="emit('close')"
+    />
+  </div>
+</template>
+
+<script setup>
+import { Button } from '@/ui'
+import ScreenActions from '@/modules/onespace/components/screen/views/ScreenActions.vue'
+import RecordActions from '@/modules/onespace/components/screen/record/RecordActions.vue'
+import { __ } from '@/shared/lib/runtime/translate'
+
+defineProps({
+  /** The record, for its id and its docstatus. */
+  record: { type: Object, required: true },
+  /** The resolved screen, for the actions it declares. */
+  spec: { type: Object, required: true },
+  spaceCode: { type: String, required: true },
+  screen: { type: String, required: true },
+  /** The record's own verbs, as menu entries — print, follow, like. */
+  extras: { type: Array, default: () => [] },
+  canWrite: { type: Boolean, default: false },
+  /** Whether the form holds something the server has not seen. */
+  dirty: { type: Boolean, default: false },
+  saving: { type: Boolean, default: false },
+  /** Whether this record already fills the window. */
+  wide: { type: Boolean, default: false },
+  /** Whether it is being peeked at from another record. */
+  drawer: { type: Boolean, default: false },
+  /** Whether the reader may choose between the pane and the page. */
+  canResize: { type: Boolean, default: false },
+})
+
+const emit = defineEmits(['save', 'close', 'reload', 'renamed', 'surface', 'expand'])
+</script>

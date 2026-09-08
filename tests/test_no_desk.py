@@ -382,7 +382,7 @@ BY_ACTION = {
 	"adopt_plan_terms": "the deliberate half of grandfathering",
 }
 
-OPS_SCREENS = ROOT / "apps/oneapp/frontend/src/screens/ops"
+OPS_SCREENS = ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/ops"
 ACTIONS = CONTROL / "entitlements/actions.py"
 
 

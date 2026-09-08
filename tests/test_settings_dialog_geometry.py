@@ -1,6 +1,6 @@
 """What the settings-dialog geometry classes compensate for, pinned.
 
-`apps/oneapp/frontend/src/components/settings/geometry.js` reflows
+`apps/oneapp/frontend/src/modules/onespace/components/settings/geometry.js` reflows
 frappe-ui's SettingsDialog for a phone: hard-coded values with no responsive
 variant — a vertical nav capped at 38vh, `px-[4.4rem]` panel padding — become a
 horizontally scrolling tab strip and a 1rem gutter.
@@ -24,7 +24,7 @@ pytestmark = needs_frappe_ui()
 # have a second copy of this over its own Single; it hands its groups to this one
 # through `onespace_settings_groups` now, so everything below is the only
 # settings shell there is.
-SETTINGS_SRC = ROOT / "apps/oneapp/frontend/src/components/settings"
+SETTINGS_SRC = ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings"
 GEOMETRY = SETTINGS_SRC / "geometry.js"
 SHELL = SETTINGS_SRC / "SettingsShell.vue"
 SETTINGS = UI_SRC / "components/SettingsDialog"

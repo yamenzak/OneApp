@@ -1,9 +1,9 @@
 import { createApp } from 'vue'
 import { setConfig, frappeRequest } from '@/ui'
-import { brand, lang, systemTimezone } from '@/lib/runtime/boot'
-import { direction, loadTranslations } from '@/lib/runtime/translate'
-import { loadDates } from '@/lib/runtime/dates'
-import { setBrand } from '@/lib/shell/theme'
+import { brand, lang, systemTimezone } from '@/shared/lib/runtime/boot'
+import { direction, loadTranslations } from '@/shared/lib/runtime/translate'
+import { loadDates } from '@/shared/lib/runtime/dates'
+import { setBrand } from '@/modules/onespace/lib/shell/theme'
 
 import './index.css'
 

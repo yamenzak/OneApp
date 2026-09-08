@@ -32,7 +32,7 @@ def chosen(*paths: str) -> list[str]:
 
 def test_a_leaf_panel_reaches_its_own_spec():
 	"""`SettingsAttach` is three files below anything a spec names."""
-	found = chosen("apps/oneapp/frontend/src/components/settings/SettingsAttach.vue")
+	found = chosen("apps/oneapp/frontend/src/modules/onespace/components/settings/SettingsAttach.vue")
 	assert found != ["all"], "a leaf component should narrow"
 	assert "e2e/settings.spec.js" in found
 
@@ -54,7 +54,7 @@ def test_a_shared_file_means_everything():
 	for path in (
 		"apps/oneapp/frontend/src/App.vue",
 		"apps/oneapp/frontend/src/components/RailAccount.vue",
-		"apps/oneapp/frontend/src/lib/shell/nav.js",
+		"apps/oneapp/frontend/src/modules/onespace/lib/shell/nav.js",
 		"apps/oneapp/frontend/e2e/auth.js",
 		"scripts/spa/shell.py",
 	):

@@ -1,7 +1,7 @@
 """The doctype's own rules, evaluated by the code that will evaluate them.
 
 `depends_on` and its two cousins are strings out of a database, and the desk
-runs them as JavaScript. Ours does not — see `apps/oneapp/frontend/src/lib/screen/
+runs them as JavaScript. Ours does not — see `apps/oneapp/frontend/src/modules/onespace/lib/screen/
 rules.js` for why — so what it does instead has to be right about the
 expressions people actually write.
 
@@ -19,7 +19,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-RULES = ROOT / "apps/oneapp/frontend/src/lib/screen/rules.js"
+RULES = ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/screen/rules.js"
 
 
 def run(cases: list[tuple[str, dict]]) -> list:

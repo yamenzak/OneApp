@@ -19,6 +19,8 @@ hand it to `test_ui_copy` unchanged.
 import re
 
 import pytest
+
+import where
 from copy_reader import ROOT, sources, unwrapped, visible
 
 
@@ -97,21 +99,21 @@ def test_a_file_that_translates_says_so_at_the_top():
 	]
 	assert not missing, (
 		"these call `__()` without importing it — add "
-		"`import { __ } from '@/lib/runtime/translate'`:\n  " + "\n  ".join(sorted(missing))
+		"`import { __ } from '@/shared/lib/runtime/translate'`:\n  " + "\n  ".join(sorted(missing))
 	)
 
 
 @pytest.mark.parametrize("half", ["__(", "loadTranslations", "direction"])
 def test_the_runtime_is_shared_by_both_apps(half):
 	for spa in ("apps/oneapp", "apps/oneapp_control"):
-		source = (ROOT / spa / "frontend/src/lib/runtime/translate.js").read_text()
+		source = where.spa(spa.split('/')[1], 'src/lib/runtime/translate.js').read_text()
 		assert half in source, f"{spa} has no {half}"
 
 
 def test_english_pays_nothing():
 	"""The msgid is the English sentence, so an English reader must not be
 	made to fetch a catalogue to be told so."""
-	source = (ROOT / "apps/oneapp/frontend/src/lib/runtime/translate.js").read_text()
+	source = where.spa('oneapp', 'src/lib/runtime/translate.js').read_text()
 	assert "lang === 'en'" in source
 
 
@@ -148,7 +150,7 @@ def test_a_date_says_its_age_in_the_reader_s_language(spa):
 	loaded separately, so a page can be translated down to the last button and
 	still say the age of every row in English.
 	"""
-	runtime = (ROOT / spa / "frontend/src/lib/runtime/dates.js").read_text()
+	runtime = where.spa(spa.split('/')[1], 'src/lib/runtime/dates.js').read_text()
 	assert "export async function loadDates" in runtime
 	# Literal import paths, or the bundler cannot see which locales to ship.
 	for lang in ("ar", "de"):

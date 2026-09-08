@@ -19,7 +19,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-THEME_JS = ROOT / "apps/oneapp/frontend/src/lib/shell/theme.js"
+THEME_JS = ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/shell/theme.js"
 SPA = ROOT / "apps/oneapp/frontend/src"
 
 
@@ -204,7 +204,7 @@ def test_the_boot_payload_carries_what_is_wanted_before_the_first_paint():
 	page = (ROOT / "apps/oneapp/oneapp/www/one.py").read_text()
 	assert "branding.boot()" in page
 
-	boot = (SPA / "lib/runtime/boot.js").read_text()
+	boot = (SPA / "shared/lib/runtime/boot.js").read_text()
 	assert "read('brand', {})" in boot
 
 

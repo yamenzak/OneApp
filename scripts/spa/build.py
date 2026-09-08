@@ -8,7 +8,7 @@ and index.html; `frappe-ui/tailwind` owns the design tokens.
 """
 
 import json
-from .spec import BANNER, DEPENDENCIES, DEV_DEPENDENCIES
+from .spec import BANNER, DEPENDENCIES, DEV_DEPENDENCIES, where
 
 
 def vite_config(app: str, spec: dict) -> str:
@@ -255,7 +255,24 @@ def package_json(app: str, spec: dict) -> str:
 
 
 def eslint_config(app: str) -> str:
-    return BANNER + """
+    # The three lists below name directories, and a bundle keeps its directories
+    # where its layout says. Asking `where` rather than writing the path means a
+    # module split moves the ignore with the files: an ignore that silently
+    # stops matching does not fail, it just stops guarding.
+    vendored = json.dumps(
+        [where(app, p) for p in (
+            "src/lib/sheets/**",
+            "src/components/sheets/editor/**",
+            "src/components/mail/reader/**",
+        )]
+    )
+    # Every `lib/`, wherever its module keeps it — `src/lib` when the bundle is
+    # flat, `src/shared/lib` and `src/modules/*/lib` when it is not. The runtime
+    # is what wraps frappe-ui, so it is the one place allowed to import it
+    # directly.
+    libs = json.dumps(["src/ui.js", "src/**/lib/**"])
+    shell = json.dumps([where(app, "src/components/AppShell.vue")])
+    return BANNER + f"""
 import globals from 'globals'
 import pluginVue from 'eslint-plugin-vue'
 
@@ -266,17 +283,17 @@ import pluginVue from 'eslint-plugin-vue'
 // Escape hatch is a one-line eslint-disable with a reason, so bypassing it is a
 // visible decision rather than an accident.
 const BANNED = [
-  { element: 'button', message: 'Use <Button> from @/ui instead of a raw <button>.' },
-  { element: 'input', message: 'Use <TextInput>, <FormControl>, <Checkbox> or <Switch> from @/ui.' },
-  { element: 'select', message: 'Use <Select> or <Autocomplete> from @/ui.' },
-  { element: 'textarea', message: 'Use <Textarea> or <FormControl type="textarea"> from @/ui.' },
-  { element: 'dialog', message: 'Use <Dialog> from @/ui.' },
-  { element: 'table', message: 'Use <ListView> from frappe-ui/list.' },
+  {{ element: 'button', message: 'Use <Button> from @/ui instead of a raw <button>.' }},
+  {{ element: 'input', message: 'Use <TextInput>, <FormControl>, <Checkbox> or <Switch> from @/ui.' }},
+  {{ element: 'select', message: 'Use <Select> or <Autocomplete> from @/ui.' }},
+  {{ element: 'textarea', message: 'Use <Textarea> or <FormControl type="textarea"> from @/ui.' }},
+  {{ element: 'dialog', message: 'Use <Dialog> from @/ui.' }},
+  {{ element: 'table', message: 'Use <ListView> from frappe-ui/list.' }},
 ]
 
 // Somebody else's code, kept as somebody else's. The spreadsheet — its engine,
 // its canvas renderer and the editor above them — is Frappe's, vendored whole
-// (see src/lib/sheets/VENDORED.md). It was written against its own eslintrc and
+// (see its VENDORED.md). It was written against its own eslintrc and
 // its own frappe-ui, and every rule below would report against it: a `<button>`
 // inside a canvas toolbar, an unused catch binding, a `_` placeholder. Editing
 // their files to satisfy our linter is exactly what vendoring exists to avoid,
@@ -286,23 +303,19 @@ const BANNED = [
 // Our own seams inside that tree (store.js, headless.js, xlsx-file.js,
 // usePersistence.js, useCollaboration.js, shortcutRegistry.js) sit under the
 // same ignore, which is the one real cost. They are small and they are read.
-const VENDORED = [
-  'src/lib/sheets/**',
-  'src/components/sheets/editor/**',
-  'src/components/mail/reader/**',
-]
+const VENDORED = {vendored}
 
 export default [
-  { ignores: VENDORED },
+  {{ ignores: VENDORED }},
   ...pluginVue.configs['flat/recommended'],
-  {
+  {{
     // What `no-undef` is allowed to already know about. Browser globals
     // because this is a browser, and Vue's compiler macros because they are
     // not imports — `defineProps` is compiled away, so to a linter reading the
     // source it is a name nothing defines.
-    files: ['src/**/*.{js,vue}'],
-    languageOptions: {
-      globals: {
+    files: ['src/**/*.{{js,vue}}'],
+    languageOptions: {{
+      globals: {{
         ...globals.browser,
         defineProps: 'readonly',
         defineEmits: 'readonly',
@@ -311,9 +324,9 @@ export default [
         defineOptions: 'readonly',
         defineSlots: 'readonly',
         withDefaults: 'readonly',
-      },
-    },
-    rules: {
+      }},
+    }},
+    rules: {{
       // A name nothing defines. Off by default in flat config, which is how
       // `pages/Mail.vue` called `onDoctypeChange` for a whole batch without
       // importing it: `vite build` compiles an undefined identifier happily,
@@ -326,13 +339,13 @@ export default [
       // behind by a refactor is dead weight the bundler still resolves and,
       // worse, reads as evidence that a file still does something it no longer
       // does. Arguments are exempt — a handler often takes what it ignores.
-      'no-unused-vars': ['error', { args: 'none' }],
+      'no-unused-vars': ['error', {{ args: 'none' }}],
 
-    },
-  },
-  {
+    }},
+  }},
+  {{
     files: ['src/**/*.vue'],
-    rules: {
+    rules: {{
       'vue/no-restricted-html-elements': ['error', ...BANNED],
       'vue/multi-word-component-names': 'off',
       'vue/no-v-html': 'error',
@@ -347,16 +360,16 @@ export default [
       'vue/html-closing-bracket-newline': 'off',
       'vue/attributes-order': 'off',
       'vue/first-attribute-linebreak': 'off',
-    },
-  },
-  {
+    }},
+  }},
+  {{
     // The shared runtime is exempt — it is what wraps frappe-ui.
-    files: ['src/**/*.{js,vue}'],
-    ignores: ['src/ui.js', 'src/lib/**'],
-    rules: {
-      'no-restricted-imports': ['error', {
+    files: ['src/**/*.{{js,vue}}'],
+    ignores: {libs},
+    rules: {{
+      'no-restricted-imports': ['error', {{
         paths: [
-          {
+          {{
             name: 'frappe-ui',
             // Two separate reasons, both load-bearing:
             //  - components: '@/ui' is the one reviewable list of what is allowed
@@ -366,18 +379,18 @@ export default [
               "Import components from '@/ui', data helpers from '@/lib/runtime/resource', " +
               "and toasts from '@/lib/runtime/notify'. Going direct skips error parsing, " +
               'response unwrapping and notification sound.',
-          },
-          {
+          }},
+          {{
             name: 'frappe-ui/list',
             message: \"Import list components from '@/ui' too — one import path \" +
               'for the whole sanctioned surface.',
-          },
-          {
+          }},
+          {{
             name: 'frappe-ui/editor',
             message: \"Import the editor from '@/ui' too — one import path for \" +
               'the whole sanctioned surface.',
-          },
-          {
+          }},
+          {{
             // The unstable entry point, so the one reviewable list matters
             // more here rather than less: a breaking change upstream should
             // show up in one file, not in however many reached for it.
@@ -385,25 +398,25 @@ export default [
             message: \"Import experimental components from '@/ui' too. They \" +
               'carry no backward-compatibility promise, so the barrel is what ' +
               'keeps the blast radius to one file.',
-          },
-          {
+          }},
+          {{
             name: 'frappe-ui/charts',
             message: "Import charts from '@/ui' too. They pull echarts in, so " +
               'the one reviewable list is also the one place that decides ' +
               'what a page pays for.',
-          },
-          {
+          }},
+          {{
             name: 'socket.io-client',
             message: "Use onDoctypeChange from '@/lib/runtime/socket' — one shared, " +
               'reference-counted socket per app.',
-          },
+          }},
         ],
-      }],
+      }}],
       // console.error is deliberate in the error normaliser; noise elsewhere.
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
-    },
-  },
-  {
+      'no-console': ['warn', {{ allow: ['warn', 'error'] }}],
+    }},
+  }},
+  {{
     // The layout primitives belong to AppShell and nothing else.
     //
     // DesktopShell and MobileShell are different components with different
@@ -414,10 +427,10 @@ export default [
     // mobile shell has no rail slot at all, so 'just use MobileShell' silently
     // drops app switching.
     files: ['src/**/*.vue'],
-    ignores: ['src/components/AppShell.vue'],
-    rules: {
-      'no-restricted-imports': ['error', {
-        paths: [{
+    ignores: {shell},
+    rules: {{
+      'no-restricted-imports': ['error', {{
+        paths: [{{
           name: '@/ui',
           importNames: [
             'DesktopShell', 'MobileShell', 'MobileNav', 'MobileNavItem',
@@ -426,9 +439,9 @@ export default [
           message:
             'Compose <AppShell> instead. It owns the desktop/mobile split, the ' +
             'rail, and the bottom-bar app switcher, so every surface agrees.',
-        }],
-      }],
-    },
-  },
+        }}],
+      }}],
+    }},
+  }},
 ]
 """

@@ -514,13 +514,13 @@ something somebody had already done under a licence we had already taken.
 So the second build takes theirs. `frappe/sheets` at `3f9e37b5776f`:
 
 * `frontend/src/engine/` and `frontend/src/canvas/` come across **whole and
-  unmodified** into `apps/oneapp/frontend/src/lib/sheets/`. Neither imports
+  unmodified** into `apps/oneapp/frontend/src/modules/onesheet/lib/`. Neither imports
   anything outside that tree — no Vue, no Frappe, no DOM beyond the canvas
   element — which is the fact that makes taking them possible without taking
   their app. Their unit suite comes with them and runs unchanged: 931 tests in
   four seconds, `yarn test`.
 * `frontend/src/pages/SheetEditor/` comes across into
-  `src/components/sheets/editor/` and **is** modified, at seven named seams
+  `src/modules/onesheet/components/editor/` and **is** modified, at seven named seams
   listed in `lib/sheets/VENDORED.md`.
 
 ### What the seams are, and why each one exists

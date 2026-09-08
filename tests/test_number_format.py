@@ -22,7 +22,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-FORMAT = ROOT / "apps/oneapp/frontend/src/lib/screen/format.js"
+FORMAT = ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/screen/format.js"
 
 
 def run(cases: list[tuple]) -> list:

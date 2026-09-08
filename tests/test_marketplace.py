@@ -223,7 +223,7 @@ def test_the_relay_is_an_allow_list_and_now_names_both():
 # --------------------------------------------------------------------------- #
 
 PAGE = (
-	ROOT / "apps/oneapp/frontend/src/pages/Marketplace.vue"
+	ROOT / "apps/oneapp/frontend/src/modules/onespace/pages/Marketplace.vue"
 ).read_text()
 
 
@@ -286,7 +286,7 @@ def test_pressing_it_does_not_leave_the_reader_waiting_for_a_sync():
 
 
 def test_the_rail_offers_it_only_to_somebody_who_can_use_it():
-	nav = (ROOT / "apps/oneapp/frontend/src/lib/shell/nav.js").read_text()
+	nav = (ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/shell/nav.js").read_text()
 	entry = nav[nav.index("key: 'marketplace'") - 400:nav.index("key: 'marketplace'")]
 	assert "session.isAdmin" in entry, (
 		"a rail icon leading to a page of refusals is worse than no icon"

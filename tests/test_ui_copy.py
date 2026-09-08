@@ -51,7 +51,7 @@ BANNED = {
 OPERATOR = (
 	"apps/oneapp_control/oneapp_control/api/admin",
 	"apps/oneapp_control/oneapp_control/billing/",
-	"screens/ops/",
+	"modules/onespace/screens/ops/",
 )
 
 

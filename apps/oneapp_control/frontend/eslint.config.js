@@ -20,7 +20,7 @@ const BANNED = [
 
 // Somebody else's code, kept as somebody else's. The spreadsheet — its engine,
 // its canvas renderer and the editor above them — is Frappe's, vendored whole
-// (see src/lib/sheets/VENDORED.md). It was written against its own eslintrc and
+// (see its VENDORED.md). It was written against its own eslintrc and
 // its own frappe-ui, and every rule below would report against it: a `<button>`
 // inside a canvas toolbar, an unused catch binding, a `_` placeholder. Editing
 // their files to satisfy our linter is exactly what vendoring exists to avoid,
@@ -30,11 +30,7 @@ const BANNED = [
 // Our own seams inside that tree (store.js, headless.js, xlsx-file.js,
 // usePersistence.js, useCollaboration.js, shortcutRegistry.js) sit under the
 // same ignore, which is the one real cost. They are small and they are read.
-const VENDORED = [
-  'src/lib/sheets/**',
-  'src/components/sheets/editor/**',
-  'src/components/mail/reader/**',
-]
+const VENDORED = ["src/lib/sheets/**", "src/components/sheets/editor/**", "src/components/mail/reader/**"]
 
 export default [
   { ignores: VENDORED },
@@ -96,7 +92,7 @@ export default [
   {
     // The shared runtime is exempt — it is what wraps frappe-ui.
     files: ['src/**/*.{js,vue}'],
-    ignores: ['src/ui.js', 'src/lib/**'],
+    ignores: ["src/ui.js", "src/**/lib/**"],
     rules: {
       'no-restricted-imports': ['error', {
         paths: [
@@ -158,7 +154,7 @@ export default [
     // mobile shell has no rail slot at all, so 'just use MobileShell' silently
     // drops app switching.
     files: ['src/**/*.vue'],
-    ignores: ['src/components/AppShell.vue'],
+    ignores: ["src/components/AppShell.vue"],
     rules: {
       'no-restricted-imports': ['error', {
         paths: [{

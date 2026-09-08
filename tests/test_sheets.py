@@ -29,7 +29,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 SHEETS = ROOT / "apps/oneapp/oneapp/onesheet"
-FRONTEND = ROOT / "apps/oneapp/frontend/src/lib/sheets"
+FRONTEND = ROOT / "apps/oneapp/frontend/src/modules/onesheet/lib"
 
 
 @pytest.fixture
@@ -459,18 +459,18 @@ def test_the_package_re_exports_everything_it_whitelists(sheets):
 # --------------------------------------------------------------------------- #
 
 VENDORED_TREES = (
-	"lib/sheets/engine",
-	"lib/sheets/canvas",
-	"lib/sheets/utils",
-	"components/sheets/editor",
+	"modules/onesheet/lib/engine",
+	"modules/onesheet/lib/canvas",
+	"modules/onesheet/lib/utils",
+	"modules/onesheet/components/editor",
 )
 
 # Ours, inside a vendored tree, and listed as ours in VENDORED.md.
 OURS_INSIDE = {
-	"components/sheets/editor/usePersistence.js",
-	"components/sheets/editor/useCollaboration.js",
-	"components/sheets/editor/shortcutRegistry.js",
-	"components/sheets/editor/useTemplateInsert.js",
+	"modules/onesheet/components/editor/usePersistence.js",
+	"modules/onesheet/components/editor/useCollaboration.js",
+	"modules/onesheet/components/editor/shortcutRegistry.js",
+	"modules/onesheet/components/editor/useTemplateInsert.js",
 }
 
 
@@ -517,12 +517,15 @@ def test_the_vendored_trees_are_the_ones_the_guards_skip(sheets):
 
 	skipped = {part.replace("frontend/src/", "").rstrip("/") for part in SKIPPED}
 	# `lib/sheets` covers all three of its subtrees.
-	assert "lib/sheets" in skipped
-	assert "components/sheets/editor" in skipped
+	assert "modules/onesheet/lib" in skipped
+	assert "modules/onesheet/components/editor" in skipped
 
-	eslint = (ROOT / "scripts/spa/build.py").read_text()
-	assert "'src/lib/sheets/**'" in eslint
-	assert "'src/components/sheets/editor/**'" in eslint
+	# The config, not its generator: the generator names these in the flat
+	# layout and asks `spa.spec.where` to place them, so what proves the two
+	# agree is what it actually wrote.
+	eslint = (ROOT / "apps/oneapp/frontend/eslint.config.js").read_text()
+	assert '"src/modules/onesheet/lib/**"' in eslint
+	assert '"src/modules/onesheet/components/editor/**"' in eslint
 
 	audit = (ROOT / "scripts/token_audit.py").read_text()
-	assert '"components/sheets/editor/"' in audit
+	assert '"modules/onesheet/components/editor/"' in audit

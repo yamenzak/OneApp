@@ -170,6 +170,29 @@ scripts/gen_frontend.py` at the top is written by that script** — edit
 `scripts/spa/`, not the copy, and `tests/test_frontend_guards.py` fails if the
 two disagree.
 
+The tenant bundle mirrors the Frappe modules: `modules/<product>/` for what one
+product owns, `shared/` for what more than one needs and none of them owns. The
+control plane is a signup page and stays flat — a layout is a way of finding
+things and there is nothing in it to find.
+
+Which means **the generator writes flat paths and the bundle places them**.
+`LAYOUTS` in `scripts/spa/spec.py` is the one table that says where each family
+lives, and `spa.spec.where(app, path)` is what everything asks — the generator
+for where to write, `rewrite` for the `@/…` imports inside the text it wrote,
+and `tests/where.py` for the guards. A directory moves by editing that table;
+nothing else carries a path. The table also covers hand-written files, because
+generated text imports them.
+
+| | |
+|---|---|
+| `modules/onespace/` | The platform: the shell, screens, settings, notifications, chat, versions. |
+| `modules/onedoc/`, `modules/onesheet/`, `modules/onestorage/`, `modules/onemail/`, `modules/onecalendar/`, `modules/onecode/` | One product each — its components, its `lib/`, its page. |
+| `modules/onelegal/` | The gate that will not let you past an agreement you have not accepted. |
+| `shared/` | `lib/runtime`, `lib/brand`, `lib/paper`, `lib/workspace`, `composables/`, `components/brand/` and the four primitives more than one product draws. |
+
+The families below are named by what they hold, and each sits under whichever
+of the above owns it.
+
 | | |
 |---|---|
 | `lib/runtime/` | The layer under everything, and the only part both SPAs share byte for byte: `resource` (every call), `errors`, `notify`, `socket`, `sound`, `boot`, `brand`. Generated. |

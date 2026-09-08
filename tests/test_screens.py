@@ -1149,7 +1149,7 @@ def test_the_count_goes_through_the_same_permissions_as_the_rows(spaceview):
 
 VIEW_TYPES_JS = (
 	_Path(__file__).resolve().parents[1]
-	/ "apps/oneapp/frontend/src/lib/screen/viewTypes.js"
+	/ "apps/oneapp/frontend/src/modules/onespace/lib/screen/viewTypes.js"
 )
 
 
@@ -1997,7 +1997,7 @@ def test_the_icon_set_is_the_one_the_spa_can_draw(spaceview):
 	renders as a blank square."""
 	import re as _re
 
-	icons = SPACEVIEW.parents[2] / "frontend/src/lib/shell/icons.js"
+	icons = SPACEVIEW.parents[2] / "frontend/src/modules/onespace/lib/shell/icons.js"
 	source = icons.read_text()
 	block = _re.search(r"export const SPACE_ICONS = \[(.*?)\]", source, _re.S).group(1)
 	assert tuple(_re.findall(r"'([^']+)'", block)) == spaceview.VIEW_ICONS

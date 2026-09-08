@@ -15,6 +15,8 @@ against.
 
 import pytest
 
+import where
+
 
 @pytest.fixture
 def board(stub_frappe):
@@ -60,13 +62,7 @@ def test_every_theme_the_browser_draws_is_one_the_server_admits(board):
 	"""Read off the component rather than restated: a colour the browser offers
 	and the server refuses is one that cannot be chosen, and nothing would say
 	why."""
-	from pathlib import Path
-
-	source = (
-		Path(__file__).resolve().parent.parent
-		/ "apps" / "oneapp" / "frontend" / "src" / "components" / "screen" / "bodies"
-		/ "BoardBody.vue"
-	).read_text()
+	source = where.source("BoardBody.vue")
 	block = source[source.index("const INK = {"):]
 	block = block[: block.index("}")]
 	drawn = {line.split(":")[0].strip() for line in block.splitlines() if ":" in line}

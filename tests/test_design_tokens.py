@@ -106,7 +106,7 @@ def _generated_icons(app: str) -> list[str]:
     Scoped to the array: DEFAULT_SPACE_ICON below it is another `lucide-*` literal
     and would otherwise be counted as a 27th icon.
     """
-    js = (ROOT / f"apps/{app}/frontend/src/lib/shell/icons.js").read_text()
+    js = (ROOT / f"apps/{app}/frontend/src/modules/onespace/lib/shell/icons.js").read_text()
     block = re.search(r"SPACE_ICONS = \[(.*?)\]", js, re.S)
     assert block, f"{app}/lib/icons.js has no SPACE_ICONS array"
     return re.findall(r"'(lucide-[\w-]+)'", block.group(1))

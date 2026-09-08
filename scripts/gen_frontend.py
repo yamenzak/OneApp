@@ -20,7 +20,9 @@ Run: python3 scripts/gen_frontend.py
 
 import os
 
-from spa.spec import APPS, BANNER, BRAND, DEPENDENCIES, DEV_DEPENDENCIES, ROOT
+from spa.spec import (
+    APPS, BANNER, BRAND, DEPENDENCIES, DEV_DEPENDENCIES, ROOT, rewrite, where,
+)
 from spa.ui import UI_BARREL
 from spa.runtime import (
     BOOT_JS, BRAND_JS, DATES_JS, ERRORS_JS, NOTIFY_JS, RESOURCE_JS, SOCKET_JS,
@@ -96,11 +98,22 @@ ROOT_FILES = {
 
 
 def render(app: str, spec: dict) -> dict:
-    """Every generated path, relative to apps/<app>/."""
+    """Every generated path, relative to apps/<app>/.
+
+    The keys below are written in the flat layout — `src/lib/runtime/boot.js` —
+    because that is the layout this shared setup was born in and renaming every
+    one of them would say nothing the table in `spa/spec.py` does not. A bundle
+    that keeps things somewhere else says so once, there, and both the path and
+    the `@/…` imports inside the text follow from the same table. They cannot
+    disagree, which is the only reason to do it this way rather than by hand.
+    """
     files = dict(FILES)
     if spec.get("shell"):
         files.update(SHELL_FILES)
-    out = {f"frontend/{name}": fn(app, spec) for name, fn in files.items()}
+    out = {
+        f"frontend/{where(app, name)}": rewrite(app, fn(app, spec))
+        for name, fn in files.items()
+    }
     out.update({name: fn(app, spec) for name, fn in ROOT_FILES.items()})
     return out
 

@@ -89,7 +89,7 @@ def test_the_scan_would_notice():
 
 def test_the_document_says_which_way_round_it_runs():
 	"""`dir` is set from the language, in one place, before the app mounts."""
-	runtime = (ROOT / "apps/oneapp/frontend/src/lib/runtime/translate.js").read_text()
+	runtime = (ROOT / "apps/oneapp/frontend/src/shared/lib/runtime/translate.js").read_text()
 	assert "export function direction" in runtime
 	assert "'ar'" in runtime, "Arabic is not in the right-to-left list"
 
@@ -158,7 +158,7 @@ def test_the_two_lists_of_right_to_left_languages_agree():
 	def names(text):
 		return set(_re.findall(r"[\"']([a-z]{2,3})[\"']", text))
 
-	browser = (ROOT / "apps/oneapp/frontend/src/lib/runtime/translate.js").read_text()
+	browser = (ROOT / "apps/oneapp/frontend/src/shared/lib/runtime/translate.js").read_text()
 	server = (ROOT / "apps/oneapp/oneapp/onedoc/export.py").read_text()
 	assert names(browser.split("RIGHT_TO_LEFT")[1].split("]")[0]) == names(
 		server.split("RIGHT_TO_LEFT")[1].split(")")[0]

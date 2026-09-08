@@ -350,8 +350,8 @@ def test_the_customer_endpoints_prove_they_own_the_workspace():
 # What the customer sees
 # --------------------------------------------------------------------------- #
 
-BILLING = ROOT / "apps/oneapp/frontend/src/screens/account/Billing.vue"
-ADDON_ROW = ROOT / "apps/oneapp/frontend/src/screens/account/AddonRow.vue"
+BILLING = ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/account/Billing.vue"
+ADDON_ROW = ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/account/AddonRow.vue"
 
 
 def test_an_add_on_is_a_stepper_rather_than_a_buy_button():

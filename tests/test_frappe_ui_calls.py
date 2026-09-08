@@ -12,6 +12,11 @@ from pathlib import Path
 
 import pytest
 
+import where
+
+# The request layer, named in the flat layout each bundle lays out its own way.
+RESOURCE = "src/lib/runtime/resource.js"
+
 from frappe_ui_api import ROOT, UI_SRC, _balanced, needs_frappe_ui
 
 # Nothing here can be checked without the library it reads.
@@ -112,7 +117,7 @@ def test_reads_go_to_the_v2_method_endpoint():
     Checked against frappe-ui's own source rather than pinned, so the day it
     learns to read `message` this fails and the prefix can go back.
     """
-    resource = (ROOT / "apps/oneapp/frontend/src/lib/runtime/resource.js").read_text()
+    resource = where.spa("oneapp", RESOURCE).read_text()
     assert "/api/v2/method/" in resource, "reads are pointed at the v1 endpoint again"
 
     use_call = (UI_SRC / "data-fetching/useCall/useCall.ts").read_text()
@@ -124,7 +129,7 @@ def test_reads_go_to_the_v2_method_endpoint():
 
 def test_the_two_apps_read_through_the_same_endpoint():
     versions = {
-        app: "/api/v2/method/" in (ROOT / f"apps/{app}/frontend/src/lib/runtime/resource.js").read_text()
+        app: "/api/v2/method/" in where.spa(app, RESOURCE).read_text()
         for app in APPS
     }
     assert all(versions.values()), f"one app is still on v1: {versions}"
@@ -176,7 +181,7 @@ def test_no_v0_data_helpers(app):
 def test_the_wrappers_are_built_on_the_v1_layer(app):
     """And that the names are still what frappe-ui exports, so a rename shows up
     here rather than as a page that fetches nothing."""
-    source = (ROOT / f"apps/{app}/frontend/src/lib/runtime/resource.js").read_text()
+    source = where.spa(app, RESOURCE).read_text()
     for name in V1:
         assert re.search(rf"\b{name}\b", source), f"{app} no longer uses {name}"
 

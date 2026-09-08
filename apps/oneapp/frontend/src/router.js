@@ -1,12 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { session, sessionReady } from '@/lib/shell/session'
+import { session, sessionReady } from '@/modules/onespace/lib/shell/session'
 
 const routes = [
-  { path: '/', name: 'Launcher', component: () => import('./pages/Launcher.vue') },
+  { path: '/', name: 'Launcher', component: () => import('@/modules/onespace/pages/Launcher.vue') },
   {
     path: '/space/:spaceCode',
     name: 'Screen',
-    component: () => import('./pages/ScreenHost.vue'),
+    component: () => import('@/modules/onespace/pages/ScreenHost.vue'),
     props: true,
     // The app host is a pane, not a page: its list is a fixed-height grid that
     // owns both scrollbars, so the horizontal one sits at the bottom of the
@@ -18,21 +18,21 @@ const routes = [
     // thing and takes the frame the shell gives it.
     meta: { pane: true, bare: true },
   },
-  { path: '/account', name: 'Account', component: () => import('./pages/Account.vue') },
+  { path: '/account', name: 'Account', component: () => import('@/modules/onespace/pages/Account.vue') },
   {
     // What this workspace could add. A page rather than a dialog because it is
     // a place you browse and come back to, and because a card that starts a
     // several-minute install wants a URL somebody can return to.
     path: '/add',
     name: 'Marketplace',
-    component: () => import('./pages/Marketplace.vue'),
+    component: () => import('@/modules/onespace/pages/Marketplace.vue'),
   },
   {
     // Mail belongs to the workspace rather than to any one space — the
     // addresses a person holds do not change when they switch space.
     path: '/mail',
     name: 'Mail',
-    component: () => import('./pages/Mail.vue'),
+    component: () => import('@/modules/onemail/pages/Mail.vue'),
     // Two columns and a reading pane, each with its own scroller — and `bare`
     // for the same reason the screen host is: they are two panels, and the
     // shell drawing a third around them is a card in a card.
@@ -43,7 +43,7 @@ const routes = [
     // drawing nobody has filed are the same row in the same table.
     path: '/files',
     name: 'Drive',
-    component: () => import('./pages/Drive.vue'),
+    component: () => import('@/modules/onestorage/pages/Drive.vue'),
     // A rail, a list and its own scroller, same as the screen host — and, like
     // the screen host, it draws its own panels: a file opens in a pane beside
     // the list, and the two are two islands rather than a split inside one.
@@ -55,7 +55,7 @@ const routes = [
     // `onecalendar/diary.py`.
     path: '/calendar',
     name: 'Calendar',
-    component: () => import('./pages/Diary.vue'),
+    component: () => import('@/modules/onecalendar/pages/Diary.vue'),
     // A rail, a grid and its own scroller: the shell must not add a second.
     meta: { pane: true },
   },
@@ -65,7 +65,7 @@ const routes = [
     // The open thread is `?chat=`, so a conversation can be linked to.
     path: '/chat',
     name: 'Chat',
-    component: () => import('./pages/Chat.vue'),
+    component: () => import('@/modules/onespace/pages/Chat.vue'),
     // A rail, a transcript with its own scroller and a composer pinned under
     // it: a page scroll on top would move the composer off screen.
     meta: { pane: true },
@@ -75,7 +75,7 @@ const routes = [
     // kind of address: `:name` is the File row.
     path: '/sheets/:name',
     name: 'Sheet',
-    component: () => import('./pages/Sheet.vue'),
+    component: () => import('@/modules/onesheet/pages/Sheet.vue'),
     props: true,
     // A grid owns both its scrollbars, and it gets the window: see `chrome` on
     // `AppShell` for why an editor draws no rail and no sidebar.
@@ -87,7 +87,7 @@ const routes = [
     // what the file is, which only the server knows.
     path: '/docs/:name',
     name: 'Doc',
-    component: () => import('./pages/Doc.vue'),
+    component: () => import('@/modules/onedoc/pages/Doc.vue'),
     props: true,
     // The editor owns its own scroller, and a page scroll under it would put
     // the toolbar off screen the moment anybody typed past the fold. It gets
@@ -97,7 +97,7 @@ const routes = [
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    component: () => import('./pages/NotFound.vue'),
+    component: () => import('@/shared/pages/NotFound.vue'),
   },
 ]
 

@@ -386,7 +386,7 @@ def test_the_chart_list_is_read_from_erpnext():
 def test_the_spa_does_not_keep_its_own_copy_of_the_fields():
 	"""A second list is a second thing to keep in step, and the one that drifts
 	is always the one that decides what is rendered."""
-	fields = source(SPA / "components/settings/SettingsFields.vue")
+	fields = source(SPA / "modules/onespace/components/settings/SettingsFields.vue")
 	assert "group.fields" in fields
 
 	for name in ("session_expiry", "two_factor_method", "date_format"):
@@ -403,7 +403,7 @@ def test_settings_are_reachable_from_both_shells():
 	`menu-items`. Written in two places they drift, which is how one page came
 	to be called "Readiness" in the rail and "Setup" in the bar.
 	"""
-	nav = source(SPA / "lib/shell/nav.js")
+	nav = source(SPA / "modules/onespace/lib/shell/nav.js")
 	assert "openSettings" in nav, "the rail no longer offers settings"
 	assert "key: 'settings'" in nav
 
@@ -427,7 +427,7 @@ def test_nobody_is_shown_a_tab_that_refuses_them():
 	Which means the shell must not hard-code a tab list again. Checked by its
 	absence: a `SettingsNavItem` with a literal `value` is a tab nobody gated.
 	"""
-	shell = source(SPA / "components/settings/SettingsShell.vue")
+	shell = source(SPA / "modules/onespace/components/settings/SettingsShell.vue")
 
 	assert 'v-for="tab in section.tabs"' in shell, (
 		"SettingsShell no longer renders the tabs the server sent"
@@ -453,7 +453,7 @@ def test_every_panel_tab_has_a_component_and_every_component_a_tab():
 	}
 	drawn = set(re.findall(
 		r"^\s+'?([\w-]+)'?: \w+Settings\w*,",
-		source(SPA / "components/settings/SettingsShell.vue"), re.M))
+		source(SPA / "modules/onespace/components/settings/SettingsShell.vue"), re.M))
 
 	assert declared == drawn, (
 		f"declared with no component: {sorted(declared - drawn)}; "
@@ -468,7 +468,7 @@ def test_the_admin_flag_is_not_system_manager():
 	assert "is_workspace_admin" in api
 	assert '"is_admin": "System Manager" in' not in api
 
-	session = (SPA / "lib/shell/session.js").read_text()
+	session = (SPA / "modules/onespace/lib/shell/session.js").read_text()
 	assert "is_workspace_admin" in session
 
 
@@ -527,7 +527,7 @@ def test_a_reference_list_is_read_rather_than_written_down():
 
 
 def test_the_spa_draws_only_the_fields_whose_parent_is_on():
-	fields = source(SPA / "components/settings/SettingsFields.vue")
+	fields = source(SPA / "modules/onespace/components/settings/SettingsFields.vue")
 	assert "depends_on" in fields, "the server declares it and nothing reads it"
 	assert "depends_value" in fields, "a value dependency that is never compared"
 
@@ -558,7 +558,7 @@ def test_a_zero_that_means_nothing_is_drawn_as_nothing():
 	"""Frappe uses 0 for "not set" on several numeric columns — a font size of
 	0 renders at 14, by its own test. Drawing the 0 shows a value nobody chose
 	as though somebody had."""
-	fields = source(SPA / "components/settings/SettingsFields.vue")
+	fields = source(SPA / "modules/onespace/components/settings/SettingsFields.vue")
 	assert "const draw" in fields
 	assert "field.placeholder && !form[field.key]" in fields
 
@@ -569,7 +569,7 @@ def test_a_group_that_asks_for_two_columns_gets_a_layout_for_it():
 	from oneapp.onespace import workspace
 
 	asked = {g.get("columns", 1) for g in workspace.GROUPS}
-	fields = source(SPA / "components/settings/SettingsFields.vue")
+	fields = source(SPA / "modules/onespace/components/settings/SettingsFields.vue")
 	for count in asked:
 		assert f"  {count}: 'grid" in fields, f"no layout for {count} columns"
 
@@ -587,7 +587,7 @@ def test_a_group_note_is_rendered_where_it_is_declared():
 	noted = [g["key"] for g in workspace.GROUPS if g.get("note")]
 	assert noted, "no group carries a note; the seam is decoration"
 
-	fields = source(SPA / "components/settings/SettingsFields.vue")
+	fields = source(SPA / "modules/onespace/components/settings/SettingsFields.vue")
 	assert "group.note" in fields
 
 
@@ -668,7 +668,7 @@ def test_an_assumed_setup_says_so():
 	assert '"assumed"' in function(BOOKS, "status")
 	assert '"can_reset"' in function(BOOKS, "status")
 
-	panel = source(SPA / "components/settings/BooksSettings.vue")
+	panel = source(SPA / "modules/onespace/components/settings/BooksSettings.vue")
 	assert "status.assumed" in panel
 	assert "Start over" in panel
 

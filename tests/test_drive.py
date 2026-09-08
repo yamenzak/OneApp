@@ -22,6 +22,8 @@ from pathlib import Path
 
 import pytest
 
+import where
+
 ROOT = Path(__file__).resolve().parent.parent
 DRIVE = ROOT / "apps/oneapp/oneapp/onestorage"
 
@@ -451,7 +453,7 @@ def test_a_records_files_are_the_drives_own_rows():
 def test_taking_a_file_off_a_record_is_reversible():
 	"""It used to remove the row outright, so a misplaced click on the wrong
 	record's Files tab could not be undone — which is what the bin is for."""
-	source = (ROOT / "apps/oneapp/frontend/src/components/screen/record/RecordFiles.vue").read_text()
+	source = (ROOT / "apps/oneapp/frontend/src/modules/onespace/components/screen/record/RecordFiles.vue").read_text()
 	assert "driveTrash" in source
 
 
@@ -463,7 +465,7 @@ def test_the_storage_screen_says_what_it_cannot_see():
 	"""The meter is the workspace's real usage and the breakdown is what this
 	reader may see. A breakdown that summed to the meter would be a breakdown
 	that leaked what it could not show, so the screen says they differ."""
-	source = (ROOT / "apps/oneapp/frontend/src/components/settings/StorageSettings.vue").read_text()
+	source = (ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/StorageSettings.vue").read_text()
 	assert "cannot open" in source
 
 
@@ -471,17 +473,17 @@ def test_the_rail_and_the_phone_offer_the_same_places(drive):
 	"""The shell draws a sidebar only on a desktop, so the phone reaches the
 	places through a dropdown. Two hand-kept lists is how one of them ends up
 	without the bin."""
-	source = (ROOT / "apps/oneapp/frontend/src/components/drive/places.js").read_text()
+	source = where.module("places.js").read_text()
 	offered = set(re.findall(r"value: '(\w+)'", source))
 	# `all` and `record` are not in the rail on purpose — one is the picker's
 	# flat view and the other is a record's Files tab.
 	assert offered == set(drive.PLACES) - {drive.ALL, "record"}
 
 	# And one list rather than two copies of it.
-	rail = (ROOT / "apps/oneapp/frontend/src/components/drive/DriveSidebar.vue").read_text()
-	page = (ROOT / "apps/oneapp/frontend/src/pages/Drive.vue").read_text()
-	assert "from './places'" in rail
-	assert "drive/places'" in page
+	# One module, imported by both — the claim is that there is a single list,
+	# not where the file sits.
+	for name in ("DriveSidebar.vue", "Drive.vue"):
+		assert where.imports(where.source(name), "places"), f"{name} has its own list"
 
 
 def test_every_endpoint_in_the_package_is_reachable(drive):

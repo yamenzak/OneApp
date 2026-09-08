@@ -22,8 +22,8 @@ import re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TABS = ROOT / "apps/oneapp/oneapp/onespace/tabs.py"
-SHELL = ROOT / "apps/oneapp/frontend/src/components/settings/SettingsShell.vue"
-ICONS = ROOT / "apps/oneapp/frontend/src/components/settings/icons.js"
+SHELL = ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/SettingsShell.vue"
+ICONS = ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/icons.js"
 
 
 def declared() -> list[dict]:
@@ -96,7 +96,7 @@ def test_every_tab_icon_is_one_the_build_emits():
 	missing = sorted({tab["icon"] for tab in declared()} - safelisted())
 	assert not missing, (
 		"these are named in tabs.py and not written as literals in "
-		f"components/settings/icons.js, so they draw nothing: {missing}"
+		f"modules/onespace/components/settings/icons.js, so they draw nothing: {missing}"
 	)
 
 
@@ -207,7 +207,7 @@ def test_every_declared_type_is_one_the_dialog_can_draw():
 
 def test_the_renderer_draws_every_type_that_is_declared():
 	"""And the other way: a control map that has lost a type is a text box."""
-	fields = (ROOT / "apps/oneapp/frontend/src/components/settings/SettingsFields.vue"
+	fields = (ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/SettingsFields.vue"
 	          ).read_text()
 
 	# Check and the two Attach kinds are branches; the rest come from the map.
@@ -236,7 +236,7 @@ def test_an_image_setting_is_published_before_it_is_stored():
 
 def test_a_numeric_setting_is_saved_as_a_number():
 	"""`type="number"` hands back a string; the column is a Float or an Int."""
-	fields = (ROOT / "apps/oneapp/frontend/src/components/settings/SettingsFields.vue"
+	fields = (ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/SettingsFields.vue"
 	          ).read_text()
 	assert "numeric(f) ? Number(" in fields, (
 		"SettingsFields no longer coerces a numeric setting before saving it"

@@ -21,6 +21,8 @@ from pathlib import Path
 
 import pytest
 
+import where
+
 from frappe_ui_api import needs_frappe_ui, NOT_PROPS, ROOT, UI_SRC, component_api
 from vendored import is_vendored
 
@@ -416,13 +418,13 @@ def test_the_reader_does_not_follow_imports():
 # in the product, named, so adding one means coming here.
 SURFACES = {
     "oneapp": {
-        "the tenant workspace": "pages/Launcher.vue",
+        "the tenant workspace": "modules/onespace/pages/Launcher.vue",
         # Both consoles moved here as Spaces. They are not routes of their own —
         # `/one/space/<code>` renders them — so what names each surface is its
         # entry component, and a fourth Space with a bespoke screen lands in the
         # same directory and is swept by being there.
-        "the operator console": "screens/ops/Readiness.vue",
-        "customer self-service": "screens/account/Overview.vue",
+        "the operator console": "modules/onespace/screens/ops/Readiness.vue",
+        "customer self-service": "modules/onespace/screens/account/Overview.vue",
     },
     "oneapp_control": {
         "signup": "pages/signup/SignupPage.vue",
@@ -441,13 +443,21 @@ def test_every_surface_is_swept(app, surface, witness):
 
 @pytest.mark.parametrize("app", APPS)
 def test_the_sweep_reaches_every_directory_a_surface_lives_in(app):
-    """Both bundles keep their pages under `pages/`; only the one with a shell
-    has components and screens of its own."""
+    """Both bundles keep pages; only the one with a shell has components and
+    screens of its own. A split bundle has one of each per module, so the
+    directories are found rather than named."""
     files = sources(app)
-    assert any(p.startswith("pages/") for p in files), f"{app}: no pages swept"
+    src = ROOT / f"apps/{app}/frontend/src"
+
+    def swept(name):
+        roots = [d.relative_to(src).as_posix() for d in where.dirs(name, app)]
+        assert roots, f"{app} has no {name}/ at all"
+        return any(p.startswith(f"{root}/") for p in files for root in roots)
+
+    assert swept("pages"), f"{app}: no pages swept"
     if app == "oneapp":
-        assert any(p.startswith("components/") for p in files), f"{app}: no components swept"
-        assert any(p.startswith("screens/") for p in files), f"{app}: no screens swept"
+        assert swept("components"), f"{app}: no components swept"
+        assert swept("screens"), f"{app}: no screens swept"
 
 
 def test_the_sweep_descends_into_subdirectories():

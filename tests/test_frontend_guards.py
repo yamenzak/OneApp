@@ -40,14 +40,28 @@ def test_generated_copies_are_on_disk_and_unmodified():
 
 @pytest.mark.parametrize(
 	"filename",
-	["frontend/src/ui.js", "frontend/src/lib/runtime/resource.js",
-	 "frontend/src/lib/runtime/notify.js", "frontend/src/lib/runtime/errors.js",
-	 "frontend/src/lib/runtime/socket.js", "frontend/src/lib/runtime/sound.js"],
+	["src/ui.js", "src/lib/runtime/resource.js", "src/lib/runtime/notify.js",
+	 "src/lib/runtime/errors.js", "src/lib/runtime/socket.js",
+	 "src/lib/runtime/sound.js"],
 )
 def test_shared_runtime_is_byte_identical(generated, filename):
-	"""Not merely present in both — the same file."""
-	contents = {app: files[filename] for app, files in generated.items()}
-	assert len(set(contents.values())) == 1, f"{filename} differs between apps"
+	"""Not merely present in both — the same file.
+
+	Two claims, and both are the point. The template is one text: neither
+	bundle gets a runtime the other does not have. And what lands on disk is
+	that text with this bundle's layout applied to its `@/…` imports — which is
+	the only way the two copies are allowed to differ, and is not a decision
+	anybody makes per file.
+	"""
+	from gen_frontend import FILES, rewrite
+
+	source = {app: FILES[filename](app, spec) for app, spec in APPS.items()}
+	assert len(set(source.values())) == 1, f"{filename} differs between apps"
+
+	for app, files in generated.items():
+		assert files[where.generated(app, filename)] == rewrite(app, source[app]), (
+			f"{app}'s {filename} is not the shared template, laid out"
+		)
 
 
 def test_direct_frappe_ui_imports_are_blocked(generated):
@@ -62,7 +76,7 @@ def test_direct_frappe_ui_imports_are_blocked(generated):
 def test_the_runtime_itself_is_exempt_from_that_rule(generated):
 	"""The wrapper has to import what it wraps."""
 	for app, files in generated.items():
-		assert "src/lib/**" in files["frontend/eslint.config.js"], app
+		assert "src/**/lib/**" in files["frontend/eslint.config.js"], app
 
 
 @pytest.mark.parametrize(
@@ -367,7 +381,9 @@ def test_only_the_shell_composes_the_layout_primitives(app):
 	offenders = {
 		path: [name for name in restricted if re.search(rf"<{name}[\s/>]", source)]
 		for path, source in _sources(app).items()
-		if path != SHELL
+		if path != where.spa(app, SHELL).relative_to(
+			ROOT / f"apps/{app}/frontend"
+		).as_posix()
 	}
 	offenders = {k: v for k, v in offenders.items() if v}
 	assert not offenders, f"compose <AppShell> instead: {offenders}"
@@ -379,10 +395,12 @@ def test_the_shell_is_generated_rather_than_written():
 	other half of the same claim — that nobody edits the copy on disk instead of
 	the template it comes from, which is how the two used to drift apart.
 	"""
-	from gen_frontend import APP_SHELL_VUE
+	from gen_frontend import APP_SHELL_VUE, rewrite
 
 	for app in SHELL_APPS:
-		assert (ROOT / f"apps/{app}/frontend/{SHELL}").read_text() == APP_SHELL_VUE, (
+		# What the generator writes, including the `@/…` rewriting its layout
+		# does — the shell imports components that moved with it.
+		assert where.spa(app, SHELL).read_text() == rewrite(app, APP_SHELL_VUE), (
 			f"{app}'s shell was edited in place — edit scripts/gen_frontend.py"
 		)
 
@@ -391,7 +409,7 @@ def test_the_shell_is_generated_rather_than_written():
 def test_mobile_can_still_reach_the_app_switcher(app):
 	# The gap MobileShell leaves: it has no rail slot, so without an explicit
 	# switcher a phone user is stuck in whichever app they opened.
-	shell = (ROOT / f"apps/{app}/frontend/{SHELL}").read_text()
+	shell = where.spa(app, SHELL).read_text()
 	assert "BottomSheet" in shell
 
 
@@ -586,7 +604,7 @@ def test_stored_datetimes_are_converted_from_the_site_timezone():
 	for app in APPS:
 		root = ROOT / f"apps/{app}/frontend/src"
 
-		boot = (root / "lib/runtime/boot.js").read_text()
+		boot = where.spa(app, "src/lib/runtime/boot.js").read_text()
 		assert "system_timezone" in boot, f"{app}: boot.js does not read the timezone"
 
 		main = (root / "main.js").read_text()
@@ -664,7 +682,7 @@ def test_we_are_on_the_v1_line():
 # dialog's.
 # --------------------------------------------------------------------------- #
 
-NAV_MODULE = "lib/shell/nav.js"
+NAV_MODULE = "src/lib/shell/nav.js"
 def _declares_a_nav_item(source: str) -> bool:
 	"""Does this file contain an object literal with both an icon and a route?
 
@@ -703,13 +721,14 @@ def _declares_a_nav_item(source: str) -> bool:
 @pytest.mark.parametrize("app", SHELL_APPS)
 def test_navigation_is_declared_in_one_place(app):
 	root = ROOT / f"apps/{app}/frontend/src"
-	assert (root / NAV_MODULE).exists(), f"{app} has no {NAV_MODULE}"
+	nav = where.spa(app, NAV_MODULE)
+	assert nav.exists(), f"{app} has no {NAV_MODULE}"
 
 	offenders = []
 	for path in sorted(root.rglob("*")):
 		if path.suffix not in (".vue", ".js"):
 			continue
-		if path.relative_to(root).as_posix() == NAV_MODULE:
+		if path == nav:
 			continue
 		if _declares_a_nav_item(path.read_text()):
 			offenders.append(path.relative_to(root).as_posix())
@@ -772,7 +791,7 @@ def test_every_page_opens_with_the_same_header(app):
 		if TRAIL in path.read_text() and "Breadcrumbs" in path.read_text()
 	}
 
-	pages = sorted((root / "pages").glob("*.vue"))
+	pages = where.within("pages", app)
 	assert pages, f"{app} has no pages"
 
 	for path in pages:
@@ -846,7 +865,7 @@ def test_every_sidebar_is_the_same_sidebar(app):
 	# The toggle is in the bar, not in the foot: folding the navigation is
 	# something you do on the way in, and one control for every column beats a
 	# row in each of them. So it is the shell that has to carry it.
-	shell = (ROOT / f"apps/{app}/frontend/{SHELL}").read_text()
+	shell = where.spa(app, SHELL).read_text()
 	assert "<SidebarCollapse" in shell, "the bar has no collapse toggle"
 
 
@@ -854,7 +873,7 @@ def test_the_bottom_bar_leaves_a_slot_for_everything_else():
 	"""A grid bar of equal columns stops being readable past five on a phone,
 	and a sidebar can hold twenty entries. The last slot is always the account,
 	opening a sheet, so nothing a surface declares is unreachable."""
-	shell = (ROOT / f"apps/{SHELL_APPS[0]}/frontend/{SHELL}").read_text()
+	shell = where.spa(SHELL_APPS[0], SHELL).read_text()
 
 	assert "PRIMARY_SLOTS = 4" in shell, "the bar no longer reserves a slot for More"
 	assert "slice(0, PRIMARY_SLOTS)" in shell, "the bar is no longer capped"
@@ -877,7 +896,9 @@ def test_appearance_is_reachable_without_opening_settings(app):
 	"""It is the preference people change most often; behind a dialog is the
 	slow path. Three options, not a toggle — see test_no_binary_theme_toggle."""
 	root = ROOT / f"apps/{app}/frontend/src"
-	assert (root / "lib/shell/appearance.js").exists(), f"{app} has no appearance module"
+	assert where.spa(app, "src/lib/shell/appearance.js").exists(), (
+		f"{app} has no appearance module"
+	)
 
 	# The account menu, wherever this surface puts it, and the phone's sheet.
 	menus = [p for p in root.rglob("*.vue") if "Dropdown" in p.read_text() and "Avatar" in p.read_text()]
@@ -885,7 +906,7 @@ def test_appearance_is_reachable_without_opening_settings(app):
 	assert any("useAppearance" in p.read_text() for p in menus), (
 		f"{app}: no account menu offers appearance"
 	)
-	assert "useAppearance" in (root / "components/AppShell.vue").read_text()
+	assert "useAppearance" in where.spa(app, SHELL).read_text()
 
 
 # --------------------------------------------------------------------------- #
@@ -1177,7 +1198,7 @@ def test_something_waits_visibly_while_a_screen_loads(app):
 # its `mobile:` key are still how those narrow.
 # --------------------------------------------------------------------------- #
 
-SCREEN_HOST = ROOT / "apps/oneapp/frontend/src/pages/ScreenHost.vue"
+SCREEN_HOST = where.spa("oneapp", "src/pages/ScreenHost.vue")
 # The shell renders a body per view type; the list is the one that draws a grid.
 LIST_BODY = where.path("ListBody.vue")
 RECORD_TABLE = where.path("RecordTable.vue")
@@ -1375,8 +1396,8 @@ def test_no_component_is_shadowed_by_a_copy_in_a_screen():
 
 	for app in APPS:
 		frontend = ROOT / "apps" / app / "frontend"
-		shared = {p.name for p in (frontend / "src/components").glob("*.vue")}
-		for path in (frontend / "src/screens").rglob("*.vue"):
+		shared = {p.name for p in where.within("components", app)}
+		for path in (p for d in where.dirs("screens", app) for p in d.rglob("*.vue")):
 			if path.name in shared:
 				offenders.append(path.relative_to(frontend).as_posix())
 

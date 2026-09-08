@@ -1426,6 +1426,34 @@ def seed_control():
 	print(f"control plane: {CODE} with {len(SCREENS)} screens")
 
 
+def _accept_the_agreements(users):
+	"""Both fixture users have agreed, so the gate is not in front of everything.
+
+	It is the first thing a browser pass meets otherwise — a modal over every
+	one of 263 specs, none of which is about agreeing to anything.
+
+	Written through `gate.standing` and `gate.record`, the way a person
+	accepting is, so the fixture cannot drift into a shape the endpoint would
+	not produce: the version is assembled rather than stated, and the day a
+	clause changes this records the new one instead of leaving a stale string
+	that would put the gate straight back up. `standing` is asked per user
+	because it reads the session's roles to decide who may bind the
+	organisation, and only the owner can — the other party, consent to the
+	handling of one's own personal data, is nobody else's to give.
+	"""
+	from oneapp.onelegal import gate
+
+	original = frappe.session.user
+	try:
+		for user in users:
+			frappe.set_user(user)
+			for one in gate.standing():
+				if not one["accepted"]:
+					gate.record(one["document"], one["party"], user)
+	finally:
+		frappe.set_user(original)
+
+
 def seed_tenant(manifest_only=False):
 	"""The tenant's cached copy, plus records to look at.
 
@@ -1532,6 +1560,8 @@ def seed_tenant(manifest_only=False):
 	if ROLE not in {r.role for r in colleague.roles}:
 		colleague.append("roles", {"role": ROLE})
 		colleague.save(ignore_permissions=True)
+
+	_accept_the_agreements([frappe.session.user, COLLEAGUE])
 
 	if manifest_only:
 		# The same last-call-wins reason the full run ends with one: everything

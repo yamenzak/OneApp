@@ -29,8 +29,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 PAPER = ROOT / "apps/oneapp/oneapp/shared/paper.py"
-PAPER_JS = ROOT / "apps/oneapp/frontend/src/lib/paper/setup.js"
-PAGINATE_JS = ROOT / "apps/oneapp/frontend/src/lib/paper/paginate.js"
+PAPER_JS = ROOT / "apps/oneapp/frontend/src/shared/lib/paper/setup.js"
+PAGINATE_JS = ROOT / "apps/oneapp/frontend/src/shared/lib/paper/paginate.js"
 
 
 @pytest.fixture
@@ -296,7 +296,7 @@ def test_the_two_agree_on_what_line_spacing_means(typography):
 
 
 def test_every_face_the_dialog_offers_is_one_the_export_knows(typography):
-	source = ROOT / "apps/oneapp/frontend/src/components/docs/toolbar.js"
+	source = ROOT / "apps/oneapp/frontend/src/modules/onedoc/components/toolbar.js"
 	block = source.read_text()
 	block = block[block.index("export const FONTS") : block.index("export const SPACINGS")]
 	offered = set(re.findall(r"^\s*'?(\w*)'?: \{", block, re.M))

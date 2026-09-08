@@ -284,7 +284,7 @@ def run_fields_js(body: str):
     source with the alias spelt out, which is the one thing the bundler would
     have done anyway, and imported from there.
     """
-    module = SRC / "lib/screen/fields.js"
+    module = SRC / "modules/onespace/lib/screen/fields.js"
     resolved = re.sub(
         r"'@/([\w/.-]+?)(\.js)?'",
         lambda one: f"'{SRC}/{one.group(1)}.js'",

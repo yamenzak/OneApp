@@ -29,7 +29,7 @@ SETTINGS = (
 # that carried all of this became a component screen there — reached from the
 # Tenants list through a declared action — so the panels are checked where they
 # actually live.
-OPS = ROOT / "apps/oneapp/frontend/src/screens/ops"
+OPS = ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/ops"
 PAGE = OPS / "Tenant.vue"
 
 
@@ -193,7 +193,7 @@ def test_the_screen_is_reachable_from_the_tenants_list():
     ).read_text()
     assert '"screen": "tenant"' in actions, "nothing opens the workspace screen"
 
-    registry = (ROOT / "apps/oneapp/frontend/src/screens/index.js").read_text()
+    registry = (ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/index.js").read_text()
     assert "'onespace-ops/tenant'" in registry, "the screen is declared but not rendered"
 
 

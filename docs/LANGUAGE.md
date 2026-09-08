@@ -106,7 +106,7 @@ only for what is ours.
 ### In the browser
 
 ```js
-import { __ } from '@/lib/runtime/translate'
+import { __ } from '@/shared/lib/runtime/translate'
 
 __('Delete')
 __('{0} files moved to the bin', [count])

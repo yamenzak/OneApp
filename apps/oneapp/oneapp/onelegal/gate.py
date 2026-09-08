@@ -122,6 +122,20 @@ def outstanding() -> dict:
     }
 
 
+def _agent() -> str:
+    """The browser that accepted, when there is one.
+
+    `frappe.get_request_header` reaches for a request object that is not bound
+    outside one, and raises rather than returning nothing. Accepting is not
+    only something a browser does — the dev fixture agrees on behalf of both
+    its users, and a console or a migration may too — so the absence of a
+    request is a blank field, not a failure.
+    """
+    if not getattr(frappe.local, "request", None):
+        return ""
+    return (frappe.get_request_header("User-Agent") or "")[:500]
+
+
 def record(key: str, party: str, user: str | None = None) -> dict:
     """Write one acceptance, and the version's text if it is new here.
 
@@ -146,7 +160,6 @@ def record(key: str, party: str, user: str | None = None) -> dict:
     if not frappe.db.exists("Legal Document Version", stored):
         frappe.get_doc({
             "doctype": "Legal Document Version",
-            "name": stored,
             "document": key,
             "title": rendered["title"],
             "version": version,
@@ -164,8 +177,8 @@ def record(key: str, party: str, user: str | None = None) -> dict:
         "party": party,
         "user": user or frappe.session.user,
         "accepted_on": frappe.utils.now_datetime(),
-        "address": (frappe.local.request_ip or "")[:140],
-        "agent": (frappe.get_request_header("User-Agent") or "")[:500],
+        "address": (getattr(frappe.local, "request_ip", None) or "")[:140],
+        "agent": _agent(),
     }).insert(ignore_permissions=True)
 
     return {"document": key, "party": party, "version": version, "name": row.name}

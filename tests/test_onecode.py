@@ -14,7 +14,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 PY_SIDE = ROOT / "apps/oneapp/oneapp/onecode/languages.py"
-JS_SIDE = ROOT / "apps/oneapp/frontend/src/lib/files/languages.js"
+JS_SIDE = ROOT / "apps/oneapp/frontend/src/modules/onestorage/lib/languages.js"
 
 
 @pytest.fixture(scope="module")

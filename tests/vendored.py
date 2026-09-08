@@ -2,7 +2,7 @@
 
 The spreadsheet — its engine, its canvas renderer and the editor above them —
 is Frappe's, taken whole from `frappe/sheets` and kept as theirs
-(`apps/oneapp/frontend/src/lib/sheets/VENDORED.md`). Every guard in this
+(`apps/oneapp/frontend/src/modules/onesheet/lib/VENDORED.md`). Every guard in this
 directory encodes a rule about how *we* write a component: which frappe-ui props
 exist in the version we pin, that an icon-only button says what it does, that a
 tooltip is frappe-ui's, that a customer never reads a supplier's name.
@@ -24,12 +24,12 @@ from pathlib import Path
 #: Path fragments, matched against a POSIX path. Anything under one of these is
 #: somebody else's.
 VENDORED = (
-    "frontend/src/lib/sheets/",
-    "frontend/src/components/sheets/editor/",
+    "frontend/src/modules/onesheet/lib/",
+    "frontend/src/modules/onesheet/components/editor/",
     # The message reader — DOMPurify, the sandboxed iframe, and remote-asset
     # blocking that parses the document rather than pattern-matching it. From
     # frappe/mail; see components/mail/reader/VENDORED.md.
-    "frontend/src/components/mail/reader/",
+    "frontend/src/modules/onemail/components/reader/",
 )
 
 

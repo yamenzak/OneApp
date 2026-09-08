@@ -157,7 +157,7 @@ def test_a_declared_state_is_a_real_option_in_a_real_colour(name):
 
 def test_the_ui_maps_every_colour_frappe_offers():
 	"""A colour the doctype may hold and the SPA cannot read renders gray."""
-	fields = (ROOT / "apps/oneapp/frontend/src/lib/screen/fields.js").read_text()
+	fields = (ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/screen/fields.js").read_text()
 	block = fields[fields.index("export const STATE_COLORS"):]
 	block = block[: block.index("}")]
 	for color in COLORS:
@@ -253,7 +253,7 @@ def test_the_glyphs_reach_the_spa_as_literals():
 	"""The closed-set argument, again. Tailwind emits CSS only for class names
 	it finds written out in the source, so a glyph that exists only in Python
 	draws nothing."""
-	fields = (ROOT / "apps/oneapp/frontend/src/lib/screen/fields.js").read_text()
+	fields = (ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/screen/fields.js").read_text()
 	block = fields[fields.index("export const STATE_ICONS"):]
 	block = block[: block.index("]")]
 	for icon in _state_icons():
@@ -297,7 +297,7 @@ def test_every_state_badge_is_the_same_badge():
 	# either moves.
 	for path, computes in (
 		(where.path("ScreenHeader.vue"),
-		 ROOT / "apps/oneapp/frontend/src/composables/useCrumbs.js"),
+		 ROOT / "apps/oneapp/frontend/src/shared/composables/useCrumbs.js"),
 		(where.path("RecordView.vue"), where.path("RecordView.vue")),
 	):
 		body = path.read_text()
@@ -389,7 +389,7 @@ def test_the_tab_glyphs_reach_the_spa_as_literals():
 	"""The closed-set argument, again. Tailwind emits CSS only for class names
 	it finds written out in the source."""
 	_, icons, _, _ = _tab_icons()
-	fields = (ROOT / "apps/oneapp/frontend/src/lib/screen/fields.js").read_text()
+	fields = (ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/screen/fields.js").read_text()
 	block = fields[fields.index("export const TAB_ICONS"):]
 	block = block[: block.index("]")]
 	for icon in icons:
@@ -468,7 +468,7 @@ def test_every_kind_of_activity_the_spa_renders_has_a_glyph():
 def test_the_activity_glyphs_reach_the_spa_as_literals():
 	"""Tailwind emits CSS only for class names it finds written out."""
 	icons, default = _activity_icons()
-	fields = (ROOT / "apps/oneapp/frontend/src/lib/screen/fields.js").read_text()
+	fields = (ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/screen/fields.js").read_text()
 	block = fields[fields.index("export const ACTIVITY_ICONS"):]
 	block = block[: block.index("}")]
 	for icon in icons.values():

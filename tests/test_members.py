@@ -222,8 +222,8 @@ def test_members_are_reconciled_after_the_owner():
 # question about those two agreeing, and the rail comes free.
 # --------------------------------------------------------------------------- #
 
-ACCOUNT_SCREENS = ROOT / "apps/oneapp/frontend/src/screens/account"
-SCREEN_REGISTRY = ROOT / "apps/oneapp/frontend/src/screens/index.js"
+ACCOUNT_SCREENS = ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/account"
+SCREEN_REGISTRY = ROOT / "apps/oneapp/frontend/src/modules/onespace/screens/index.js"
 
 
 def account_screens() -> set[str]:
@@ -248,7 +248,7 @@ def declared_and_registered(screen: str) -> None:
 
 
 PEOPLE_PANEL = (
-    ROOT / "apps/oneapp/frontend/src/components/settings/PeopleSettings.vue"
+    ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/PeopleSettings.vue"
 )
 
 
@@ -266,7 +266,7 @@ def test_the_team_screen_moved_into_the_workspace_it_is_about():
 
     assert "people" in {tab["key"] for tab in tabs.TABS}
     shell = (
-        ROOT / "apps/oneapp/frontend/src/components/settings/SettingsShell.vue"
+        ROOT / "apps/oneapp/frontend/src/modules/onespace/components/settings/SettingsShell.vue"
     ).read_text()
     assert "people: PeopleSettings" in shell
 

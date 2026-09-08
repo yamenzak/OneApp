@@ -51,7 +51,7 @@ UTILITY = re.compile(r"""^[-!]?[a-z\[][\w\[\]&=!*>+~:.,%#/()'"$-]*$""")
 # audited at all — and one of them (an arbitrary variant Tailwind could not
 # parse) emitted nothing for exactly as long as nobody looked. A file listed
 # here is opting in to being read as a class list.
-CLASS_MODULES = ("components/settings/geometry.js",)
+CLASS_MODULES = ("modules/onespace/components/settings/geometry.js",)
 
 # The opposite exemption: files whose string literals are a formal language of
 # somebody else's, which the loose heuristic below cannot tell from a class
@@ -60,33 +60,33 @@ CLASS_MODULES = ("components/settings/geometry.js",)
 # `:`, which is exactly the shape of `sticky right-0`. Only the heuristic is
 # skipped: a real `class="…"` in one of these files is still read.
 NOT_CLASS_LISTS = (
-    "lib/sheets/display.js",
+    "modules/onesheet/lib/display.js",
     # An iframe's `sandbox` token list — `allow-same-origin allow-modals` is
     # two lowercase hyphenated words in a string, which is the same shape as
     # `sticky right-0` and is not a class list either.
-    "lib/paper/print.js",
+    "shared/lib/paper/print.js",
 )
 
 # Whole subtrees that are somebody else's code and do not use Tailwind at all.
 # The spreadsheet engine and its canvas renderer are Frappe's, vendored as-is
-# (see apps/oneapp/frontend/src/lib/sheets/VENDORED.md); a canvas has no class
+# (see apps/oneapp/frontend/src/modules/onesheet/lib/VENDORED.md); a canvas has no class
 # attribute, and what class-shaped strings they do hold are their own — the
 # scrollbar's `sn-sb`, a `describe()` title, an Excel format code. Auditing them
 # against our Tailwind build asks a question with no right answer, and the
 # alternative — editing their files to please our linter — is exactly what
 # vendoring is meant to avoid.
 VENDORED = (
-    "lib/sheets/engine/",
-    "lib/sheets/canvas/",
-    "lib/sheets/utils/",
+    "modules/onesheet/lib/engine/",
+    "modules/onesheet/lib/canvas/",
+    "modules/onesheet/lib/utils/",
     # The editor above them. It paints itself: four hundred lines of its own
     # `sn-*` CSS in the same file, so `sn-topbar` is defined two hundred lines
     # below where it is used and has never been a Tailwind utility.
-    "components/sheets/editor/",
+    "modules/onesheet/components/editor/",
     # The message reader. Its classes are Frappe's own and its `<style>` block
     # is written into an iframe's `srcdoc`, so auditing it against our Tailwind
     # build asks a question with no right answer.
-    "components/mail/reader/",
+    "modules/onemail/components/reader/",
 )
 
 # Files that write a *whole* HTML document — their own `<style>` included — and
@@ -94,7 +94,7 @@ VENDORED = (
 # stylesheet in the same string, so measuring them against the app's Tailwind
 # build asks the wrong question: they emit no utility CSS because they are not
 # utilities. `lib/sheets/printing.js` builds the printer's copy of a tab.
-SELF_CONTAINED = ("lib/sheets/printing.js",)
+SELF_CONTAINED = ("modules/onesheet/lib/printing.js",)
 
 # Referenced but never emitted for reasons that are not drift.
 ALLOWED_MISSING = {
