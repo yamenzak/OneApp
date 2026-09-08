@@ -1,0 +1,97 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "document",
+  "version",
+  "stored_version",
+  "party",
+  "cb_la_who",
+  "user",
+  "accepted_on",
+  "address",
+  "agent"
+ ],
+ "fields": [
+  {
+   "fieldname": "document",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Document",
+   "reqd": 1
+  },
+  {
+   "fieldname": "version",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Version",
+   "reqd": 1
+  },
+  {
+   "fieldname": "stored_version",
+   "fieldtype": "Link",
+   "label": "Text agreed to",
+   "options": "Legal Document Version"
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Party",
+   "options": "Workspace\nUser",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_la_who",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Who",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "accepted_on",
+   "fieldtype": "Datetime",
+   "label": "When",
+   "reqd": 1
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Data",
+   "label": "From address"
+  },
+  {
+   "fieldname": "agent",
+   "fieldtype": "Small Text",
+   "label": "Browser"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneLegal",
+ "name": "Legal Acceptance",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

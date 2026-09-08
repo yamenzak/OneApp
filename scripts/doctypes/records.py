@@ -484,3 +484,52 @@ doctype(
                       "panel says '3 changes' rather than nothing at all."),
     ],
 )
+
+
+# --------------------------------------------------------------------------- #
+# OneLegal
+# --------------------------------------------------------------------------- #
+
+doctype(
+    "Legal Document Version",
+    app="tenant",
+    module="OneLegal",
+    autoname="field:name",
+    title_field="title",
+    search_fields="document,version",
+    allow_rename=0,
+    fields=[
+        f("document", "Data", "Document", reqd=1,
+          description="The document's key — terms, privacy, dpa."),
+        f("title", "Data", "Title", reqd=1),
+        f("version", "Data", "Version", reqd=1,
+          description="revision.hash — see oneapp/onelegal/assemble.py."),
+        f("revision", "Int", "Revision"),
+        f("audience", "Select", "Audience", options="\ncustomer\nuser\nboth"),
+        column("cb_lv_text"),
+        f("html", "Text Editor", "As shown", read_only=1),
+        f("text", "Long Text", "As hashed", read_only=1,
+          description="The plain text the version's hash was taken over."),
+    ],
+    perms=READONLY_PERMS,
+)
+
+doctype(
+    "Legal Acceptance",
+    app="tenant",
+    module="OneLegal",
+    autoname="hash",
+    fields=[
+        f("document", "Data", "Document", reqd=1, in_list_view=1),
+        f("version", "Data", "Version", reqd=1, in_list_view=1),
+        f("stored_version", "Link", "Text agreed to", options="Legal Document Version"),
+        f("party", "Select", "Party", options="Workspace\nUser", reqd=1,
+          in_list_view=1),
+        column("cb_la_who"),
+        f("user", "Link", "Who", options="User", reqd=1, in_list_view=1),
+        f("accepted_on", "Datetime", "When", reqd=1),
+        f("address", "Data", "From address"),
+        f("agent", "Small Text", "Browser"),
+    ],
+    perms=READONLY_PERMS,
+)

@@ -92,6 +92,9 @@ server is one GIL-bound Python process, so four Playwright workers buy about
   screens belong in workspace settings and which cannot move, what the operator
   rework actually is (less than it sounds), and why enabling an app is sometimes
   a migration.
+* **`docs/LEGAL.md`** — the agreements. Why each module writes its own clauses,
+  how a version is `revision.hash` and what the guard that reads it back is for,
+  who agrees to what and why it is asked twice.
 * `docs/PRINTING.md` and `docs/WORKSPACE-SETTINGS.md` are reference tables that
   tests read back.
 

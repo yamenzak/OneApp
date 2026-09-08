@@ -124,7 +124,16 @@ def enable_space(space: str) -> dict:
 	The sync is allowed to fail without failing the press: the entitlement is
 	written either way, and the scheduled pull fifteen minutes later is exactly
 	the fallback this is a shortcut past.
+
+	Nothing is enabled while an agreement is outstanding. Turning a space on can
+	add processing — a new integration, sometimes a new subprocessor — and doing
+	that under a contract nobody has agreed to is the thing `onelegal` exists to
+	stop. The shell already asks on the way in; this is the path that must not
+	be reachable around it.
 	"""
+	from oneapp.onelegal import require
+
+	require("enabling a space")
 	answer = _ask("enable_space", space=space)
 
 	try:

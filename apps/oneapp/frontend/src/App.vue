@@ -106,6 +106,14 @@
     <Dialog v-if="session.isLoggedIn" v-model="showNotifications">
       <NotificationList @opened="showNotifications = false" />
     </Dialog>
+
+    <!--
+      Last, and over everything: the agreements. It draws nothing at all unless
+      something is outstanding, and when it does it cannot be dismissed —
+      `oneapp/onelegal/gate.py` says why the workspace's half and the person's
+      half are asked separately.
+    -->
+    <LegalGate v-if="session.isLoggedIn" />
   </FrappeUIProvider>
 </template>
 
@@ -127,6 +135,7 @@ import BrandMark from './components/brand/BrandMark.vue'
 import SpaceSwitcher from './components/shell/SpaceSwitcher.vue'
 import NotificationList from './components/notifications/NotificationList.vue'
 import SettingsShell from './components/settings/SettingsShell.vue'
+import LegalGate from './components/LegalGate.vue'
 import { useNav } from '@/lib/shell/nav'
 import { followNotifications, notifications } from '@/lib/shell/notifications'
 import { session, sessionResource } from '@/lib/shell/session'

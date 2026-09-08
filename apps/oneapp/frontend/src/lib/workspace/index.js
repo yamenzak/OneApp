@@ -19,6 +19,7 @@ import { drive } from './drive'
 import { diary } from './diary'
 import { layouts } from './layouts'
 import { mail } from './mail'
+import { legal } from './legal'
 import { printing } from './printing'
 import { sheets } from './sheets'
 import { docs } from './docs'
@@ -34,6 +35,7 @@ export const workspace = {
   ...diary,
   ...layouts,
   ...mail,
+  ...legal,
   ...printing,
   ...sheets,
   ...docs,

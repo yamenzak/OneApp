@@ -89,6 +89,7 @@ import PeopleSettings from './PeopleSettings.vue'
 import RoleSettings from './RoleSettings.vue'
 import StorageSettings from './StorageSettings.vue'
 import NamingSettings from './NamingSettings.vue'
+import LegalSettings from './LegalSettings.vue'
 import PrintingSettings from './PrintingSettings.vue'
 import MailSettings from './MailSettings.vue'
 import MailboxSettings from './MailboxSettings.vue'
@@ -121,6 +122,7 @@ const PANELS = {
   mailbox: MailboxSettings,
   books: BooksSettings,
   'print-formats': PrintingSettings,
+  legal: LegalSettings,
   naming: NamingSettings,
   mail: MailSettings,
   templates: TemplateSettings,

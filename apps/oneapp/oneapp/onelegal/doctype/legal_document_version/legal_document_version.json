@@ -1,0 +1,91 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:name",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "document",
+  "title",
+  "version",
+  "revision",
+  "audience",
+  "cb_lv_text",
+  "html",
+  "text"
+ ],
+ "fields": [
+  {
+   "description": "The document's key \u2014 terms, privacy, dpa.",
+   "fieldname": "document",
+   "fieldtype": "Data",
+   "label": "Document",
+   "reqd": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "description": "revision.hash \u2014 see oneapp/onelegal/assemble.py.",
+   "fieldname": "version",
+   "fieldtype": "Data",
+   "label": "Version",
+   "reqd": 1
+  },
+  {
+   "fieldname": "revision",
+   "fieldtype": "Int",
+   "label": "Revision"
+  },
+  {
+   "fieldname": "audience",
+   "fieldtype": "Select",
+   "label": "Audience",
+   "options": "\ncustomer\nuser\nboth"
+  },
+  {
+   "fieldname": "cb_lv_text",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "html",
+   "fieldtype": "Text Editor",
+   "label": "As shown",
+   "read_only": 1
+  },
+  {
+   "description": "The plain text the version's hash was taken over.",
+   "fieldname": "text",
+   "fieldtype": "Long Text",
+   "label": "As hashed",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneLegal",
+ "name": "Legal Document Version",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "search_fields": "document,version",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}

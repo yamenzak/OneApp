@@ -98,6 +98,14 @@ TABS = [
 	 "section": "You", "kind": PANEL, "audience": "everyone"},
 	{"key": "appearance", "label": "Appearance", "icon": "lucide-sun-moon",
 	 "section": "You", "kind": PANEL, "audience": "everyone"},
+	# Under You and not under Workspace, and the rule that says so is a good
+	# one: a tab everybody can open is one of their own. Half of what is in
+	# here *is* theirs — the privacy notice describes the handling of their
+	# personal data and they agreed to it themselves — and the workspace's half
+	# is shown beside it because a person is entitled to read the contract they
+	# are working under even when somebody else signed it.
+	{"key": "legal", "label": "Legal", "icon": "lucide-scale",
+	 "section": "You", "kind": PANEL, "audience": "everyone"},
 	# Only for somebody who holds an address, which is the whole reason an
 	# audience is a predicate: a signature and an away message belong to
 	# whoever answers the address, and no role in this product says that.
@@ -129,6 +137,7 @@ TABS = [
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 	{"key": "storage", "label": "Storage", "icon": "lucide-hard-drive",
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
+
 	# The first of three that used to be at a different address. Who is in this
 	# workspace is a fact about *this* workspace, so the person reading it has
 	# no reason to leave it — Roles and Domain follow, and Billing does not,

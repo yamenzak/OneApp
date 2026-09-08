@@ -64,6 +64,10 @@ The single modules, roughly by how often they are touched:
   newest and the clearest example: Frappe keeps a board's arrangement on a
   Kanban Board doctype, and here the same four facts are a *view*, because a
   view is what this product already had for "how one person looks at a screen".
+* `onelegal/` — the agreements a workspace runs under, assembled from what the
+  other modules declare. Not a page of text: each module's `legal.py` says what
+  follows from what it does, and a version is `revision.hash` so a clause that
+  changes without a decision fails the suite. `docs/LEGAL.md`.
 * `paper.py` — how a page is set, for the two things that print without a
   doctype. `printing.py` is records: a doctype, a name, a print format. A
   document and a sheet have neither, so this is the other half — size,
