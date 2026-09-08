@@ -10,7 +10,10 @@
 
     Two editors behind one address, because there is one thing here: a `File`.
     Which editor opens is what the file *is* — prose in a `Doc Body` row, or
-    bytes in R2 — and that is the server's answer, not a route parameter.
+    bytes in R2 — and that is the server's answer, not a route parameter. A
+    `.py`, a `.md` and a `.txt` are all the second one: OneCode is the editor
+    for anything whose content is its own bytes, coloured where CodeMirror has
+    a pack for it and plain where it does not.
   -->
   <div v-if="failed" class="p-8">
     <EmptyState
@@ -27,25 +30,41 @@
     <Skeleton class="h-4 w-2/3" />
   </div>
 
-  <PlainText v-else-if="doc.language" :name="name" :doc="doc" @renamed="onRenamed" />
+  <CodeFile
+    v-else-if="doc.language"
+    :name="name"
+    :doc="doc"
+    @renamed="onRenamed"
+    @close="leave"
+  />
 
   <DocEditor v-else :name="name" :doc="doc" @renamed="onRenamed" @reload="load" />
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import { Skeleton } from '@/ui'
 import DocEditor from '../components/docs/DocEditor.vue'
 import EmptyState from '../components/EmptyState.vue'
-import PlainText from '../components/docs/PlainText.vue'
+import CodeFile from '../components/code/CodeFile.vue'
 import { errorText } from '@/lib/runtime/errors'
 import { __ } from '@/lib/runtime/translate'
+import { cameFrom } from '@/lib/screen/returnTo'
 import { workspace } from '@/lib/workspace'
 
 const props = defineProps({
   name: { type: String, required: true },
 })
+
+const route = useRoute()
+const router = useRouter()
+
+// Where "out" goes, which the editor asks and does not answer: the record it
+// was opened from when there was one, and the Drive otherwise.
+const back = computed(() => cameFrom(route))
+const leave = () => router.push(back.value ? back.value.path : { name: 'Drive' })
 
 const doc = ref(null)
 const failed = ref('')

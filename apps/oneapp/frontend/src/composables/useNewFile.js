@@ -28,6 +28,11 @@ export function useNewFile(where, extras = () => []) {
   const came = inject(RETURN_TO, null)
 
   const making = ref(false)
+
+  // Whether the language dialog is open. Here rather than in each of the two
+  // components that draw this menu, because both would otherwise carry the same
+  // ref, the same import and the same handler for one shared question.
+  const choosingLanguage = ref(false)
   const docTemplates = ref([])
   const sheetTemplates = ref([])
 
@@ -97,7 +102,19 @@ export function useNewFile(where, extras = () => []) {
         ...extras(),
       ],
     },
+    {
+      group: __('Build'),
+      options: [
+        // No language on it: which one is the dialog's question, and a New menu
+        // that named a default would be a menu where twenty of the twenty-one
+        // are hidden behind a submenu nobody opens.
+        { label: __('Code'), icon: 'lucide-file-code', onClick: () => { choosingLanguage.value = true } },
+      ],
+    },
   ])
 
-  return { making, options, docTemplates, sheetTemplates, loadTemplates, newDoc, newSheet, newText }
+  return {
+    making, options, choosingLanguage, docTemplates, sheetTemplates, loadTemplates,
+    newDoc, newSheet, newText,
+  }
 }

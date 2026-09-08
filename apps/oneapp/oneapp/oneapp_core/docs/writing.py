@@ -113,6 +113,12 @@ def make_text(kind: str = "txt", title: str = "", folder: str = "",
         "custom_status": kinds.ACTIVE,
     }).insert()
 
+    # The one line without which none of this works. Every file this function
+    # makes starts as the same single newline, so Frappe hands them all one
+    # object — and the first edit to any of them rewrites all of them. See
+    # `text.own_object`.
+    text.own_object(doc)
+
     return {"name": doc.name, "title": doc.file_name, "url": f"/one/docs/{doc.name}"}
 
 

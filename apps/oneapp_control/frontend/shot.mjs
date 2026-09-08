@@ -30,6 +30,10 @@
  * gets something in it to look at. Use it after a `--click` that puts the
  * caret where the text should land.
  *
+ * `--click`, `--press` and `--type` all happen in the order you wrote them, so
+ * click into an editor, type, and then click the control you want to
+ * photograph the effect of.
+ *
  * `--click` is the other one: a selector to press after the page loads, before
  * the shutter. Repeatable, in order — a settings panel is the dialog and then
  * the tab. Half of what is worth photographing is a row deep — a mail
@@ -114,26 +118,34 @@ page.on('response', (r) => {
 try {
   await signIn(page, base)
   await page.goto(base + path)
-  // Repeatable, and in the order given: what is worth photographing is often
-  // two clicks deep — open the settings dialog, then the tab. One `--click`
-  // reached the dialog and left every panel but the first unphotographable.
-  for (const one of flags('click')) {
-    await page.locator(one).first().click({ timeout: 40_000 })
-  }
-  const keys = (flag('press', '') || '').split(',').filter(Boolean)
-  if (keys.length) {
+  // Clicks, keys and typed lines, in the order they were written on the command
+  // line rather than grouped by kind. Grouped was the first version and it is
+  // wrong in a way that looks like a bug in the app: `--click=.cm-content
+  // --type='# Hi' --click=[read]` toggled the reader *before* anything had been
+  // typed, so the screenshot showed an empty preview and the toggle looked
+  // broken. Read from argv because that is the only place the order survives.
+  let waited = false
+  for (const argument of process.argv.slice(2)) {
+    const matched = /^--(click|press|type)=([\s\S]*)$/.exec(argument)
+    if (!matched) continue
+    const [, kind, value] = matched
+
     // A key pressed at a page that has not finished loading is a key nothing is
-    // listening for: the screen binds its shortcuts when it mounts.
-    await page.waitForLoadState('networkidle').catch(() => {})
-    for (const key of keys) await page.keyboard.press(key)
-  }
-  // Typed, in order, after the clicks that put the caret somewhere. `--press`
-  // cannot do this: it takes key *names*, so a sentence through it is forty
-  // commas and no punctuation. An editor photographed empty says nothing about
-  // how it sets a heading or where its outline appears.
-  for (const line of flags('type')) {
-    await page.keyboard.type(line, { delay: 8 })
-    await page.keyboard.press('Enter')
+    // listening for: the screen binds its shortcuts when it mounts. Once, and
+    // only for the flags that need it.
+    if (!waited && kind !== 'click') {
+      await page.waitForLoadState('networkidle').catch(() => {})
+      waited = true
+    }
+
+    if (kind === 'click') {
+      await page.locator(value).first().click({ timeout: 40_000 })
+    } else if (kind === 'press') {
+      for (const key of value.split(',').filter(Boolean)) await page.keyboard.press(key)
+    } else {
+      await page.keyboard.type(value, { delay: 8 })
+      await page.keyboard.press('Enter')
+    }
   }
   const wait = flag('wait')
   if (wait) await page.locator(wait).first().waitFor({ timeout: 40_000 })

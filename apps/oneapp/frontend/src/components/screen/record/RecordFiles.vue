@@ -32,6 +32,10 @@
       @picked="reload"
     />
 
+    <!-- Which language, for `New > Code`. The same dialog the Drive draws,
+         because it is the same menu asking the same question. -->
+    <LanguagePicker v-model="choosingLanguage" @pick="newText($event.key)" />
+
     <LoadingText v-if="loading" :text="__('Loading files')" />
 
     <EmptyState
@@ -86,6 +90,7 @@ import { workspace } from '../../../lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
 import { routeFor } from '@/lib/files/files'
 import { useNewFile } from '@/composables/useNewFile'
+import LanguagePicker from '@/components/code/LanguagePicker.vue'
 import { RETURN_TO, returnQuery } from '@/lib/screen/returnTo'
 import { __ } from '@/lib/runtime/translate'
 
@@ -125,7 +130,7 @@ const came = inject(RETURN_TO, null)
 
 // A file made here belongs to the record rather than to a folder. `doctype` is
 // filled by the reload below, so this reads it rather than closing over it.
-const { making, options: newOptions, loadTemplates } = useNewFile(
+const { making, options: newOptions, choosingLanguage, newText, loadTemplates } = useNewFile(
   () => ({ doctype: doctype.value, docname: props.name }),
 )
 

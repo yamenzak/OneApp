@@ -399,6 +399,9 @@
   <FileShare v-model="sharing" :file="looking" />
 
   <ShareLink v-model="linking" :file="looking" />
+  <!-- Which language, for `New > Code`. One dialog per surface that draws the
+       New menu, because the menu is where the question is asked. -->
+  <LanguagePicker v-model="choosingLanguage" @pick="newText($event.key)" />
   <ImportSheet v-model="importing" :folder="folder" />
 
   <FolderPicker v-model="moving" :moving="toMove" @chosen="intoFolder" />
@@ -479,6 +482,7 @@ import Doc from './Doc.vue'
 import ImportSheet from '../components/sheets/ImportSheet.vue'
 import { useDrive } from '../composables/useDrive'
 import { useNewFile } from '../composables/useNewFile'
+import LanguagePicker from '../components/code/LanguagePicker.vue'
 import { useUploads } from '../composables/useUploads'
 import { downloadUrl, editorFor, routeFor } from '../lib/files/files'
 import { useIsMobile } from '@/lib/shell/breakpoint'
@@ -765,7 +769,7 @@ function open(file) {
 // The only things in this product that are made rather than uploaded, shared
 // with the record's Files tab. Importing a spreadsheet is the Drive's alone:
 // it opens a dialog this page owns.
-const { making, options: newOptions, loadTemplates } = useNewFile(
+const { making, options: newOptions, choosingLanguage, newText, loadTemplates } = useNewFile(
   () => ({ folder: folder.value || '' }),
   () => [{
     label: __('Import a spreadsheet'),

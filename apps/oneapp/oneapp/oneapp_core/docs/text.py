@@ -12,6 +12,8 @@ earlier drafts would be a third store for a fourth shape, and the one that
 matters is the one you can download.
 """
 
+import os
+
 import frappe
 from frappe import _
 
@@ -35,6 +37,59 @@ MAX_BYTES = 2 * 1024 * 1024
 def is_text(file_name: str) -> bool:
     name = (file_name or "").rsplit("?", 1)[0]
     return "." in name and name.rsplit(".", 1)[-1].lower() in EDITABLE
+
+
+def own_object(doc) -> bool:
+	"""Make sure this row's bytes are its own, and not another row's.
+
+	Frappe deduplicates a `File` by content hash — twice, in two places, with
+	two different switches. `File.validate_duplicate_entry` has a flag; the
+	check inside `File.save_file` has an `ignore_existing_file_check`
+	*parameter* that `validate` does not pass, so there is no way to turn it
+	off from outside. Both point the new row at an object that already exists.
+
+	For an upload that is exactly right: two people attaching the same drawing
+	should not be billed for it twice. For a file created empty to be typed
+	into it is ruinous, because every one of them starts as the same single
+	newline — eight new files, one object, and the first edit to any of them
+	rewriting all eight, since `save_text` writes back through `file_url`.
+
+	So the row is given an object named after itself, which is the one name
+	nothing else can claim. Deliberately the same shape `storage/r2.object_key`
+	already uses, and for the same reason.
+
+	R2-backed rows are left alone: their key already carries `File.name`, so
+	two of them cannot share one however identical their bytes.
+	"""
+	# Imported here rather than at the top: `frappe.utils` is a package on a
+	# bench and a flat module in the unit suite's stub, so a module-level
+	# `from frappe.utils.file_manager import …` fails every test in this file
+	# for a helper only one code path calls.
+	from frappe.utils import get_files_path
+	from frappe.utils.file_manager import get_content_hash
+
+	if doc.get("r2_key") or not (doc.file_url or "").startswith(("/files/", "/private/files/")):
+		return False
+
+	mine = f"/private/files/" if doc.is_private else "/files/"
+	stem, dot, extension = (doc.file_name or "").rpartition(".")
+	unique = f"{stem or doc.file_name}-{doc.name}{dot}{extension}"
+	if doc.file_url == mine + unique:
+		return False
+
+	content = doc.get_content()
+	if isinstance(content, str):
+		content = content.encode("utf-8")
+
+	folder = get_files_path(is_private=doc.is_private)
+	os.makedirs(folder, exist_ok=True)
+	with open(os.path.join(folder, unique), "wb") as handle:
+		handle.write(content)
+
+	doc.db_set("file_url", mine + unique, update_modified=False)
+	doc.db_set("content_hash", get_content_hash(content), update_modified=False)
+	doc.file_url = mine + unique
+	return True
 
 
 def _mine(name: str, level: str = "read"):
@@ -138,5 +193,10 @@ def duplicate(source, title: str = ""):
         "content": content,
         "custom_status": kinds.ACTIVE,
     }).insert()
+
+    # A copy has by definition the same bytes as its source, so it is handed
+    # the source's object — and the first edit to the copy would rewrite the
+    # thing it was copied from.
+    own_object(copy)
 
     return {"name": copy.name, "title": copy.file_name, "url": f"/one/docs/{copy.name}"}
