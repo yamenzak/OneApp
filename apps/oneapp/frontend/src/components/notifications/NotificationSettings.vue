@@ -8,7 +8,7 @@
     could not say that — it meant email, and the app half was a single switch
     for everything.
 
-    The kinds come from the server's registry (`oneapp_core/notifications.py`),
+    The kinds come from the server's registry (`onespace/notifications.py`),
     so a notification declared anywhere in the product appears here without an
     edit to this file.
   -->

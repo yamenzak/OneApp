@@ -19,5 +19,5 @@ rather than only where it happens to be read.
 from . import ai, catalogue, fleet, importing, records, spaces  # noqa: F401
 from .spec import (  # noqa: F401
     APPS, APPS_ROOT, DOCTYPES, GRANTED_GB, HANDLED_SPEC_KEYS, MANAGER_PERMS,
-    READONLY_PERMS, STAMP, column, doctype, f, section,
+    MODULE_DIRS, READONLY_PERMS, STAMP, column, doctype, f, section,
 )

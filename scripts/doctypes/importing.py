@@ -93,7 +93,7 @@ doctype(
         #   {"const": "..."}                                 the same every row
         f("field_map", "Code", options="JSON", reqd=1,
           description="What each target field is made of, keyed by target "
-                      "fieldname. See `oneapp_core/importer.py`."),
+                      "fieldname. See `onespace/importer.py`."),
         f("filters", "Code", options="JSON",
           description="Narrow what comes across, in Frappe's own filter shape. "
                       "Applied on the source site, so what is excluded is never "

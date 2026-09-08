@@ -7,7 +7,7 @@ The fixture writes that cache directly for exactly that reason.
 
 What the link is for is the handful of surfaces that have no other way to be
 looked at — People, Roles, Domain and the marketplace all relay through
-`oneapp_core/account.py` to `oneapp_control.api.tenant.workspace_admin`, and on
+`onespace/account.py` to `oneapp_control.api.tenant.workspace_admin`, and on
 an unlinked site every one of them honestly says it cannot reach the account.
 
 Run it on the **control** site; it writes both halves:

@@ -23,7 +23,7 @@ ACTIONS = ROOT / "apps/oneapp_control/oneapp_control/entitlements/actions.py"
 
 @pytest.fixture
 def spaceview(stub_frappe):
-	from oneapp.oneapp_core import spaceview
+	from oneapp.onespace import spaceview
 
 	return spaceview
 

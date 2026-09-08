@@ -16,7 +16,7 @@ a print font size as an Int, which cannot be 9.5.
 A few pairs differ on purpose and are listed in `NARROWED`, with the reason.
 """
 import frappe
-from oneapp.oneapp_core import workspace, me
+from oneapp.onespace import workspace, me
 
 #: (ours, Frappe's) pairs that differ on purpose.
 NARROWED = {

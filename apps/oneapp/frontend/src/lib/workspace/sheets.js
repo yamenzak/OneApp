@@ -5,7 +5,7 @@
  * move, share, trash, the expiring link — goes through `drive.js` and none of
  * it is repeated here. What is here is the workbook: loading one, saving one,
  * templates, and the read-back that fills a document's child table from a
- * named rectangle. See `oneapp_core/sheets`.
+ * named rectangle. See `onesheet`.
  *
  * Two calls carry the grid, and that is the whole protocol. The editor is
  * Frappe's (`lib/sheets/VENDORED.md`) and holds the entire workbook in memory,
@@ -19,39 +19,39 @@ import { callMethod } from '@/lib/runtime/resource'
 
 export const sheets = {
   sheetMake: (params) =>
-    callMethod('oneapp.oneapp_core.sheets.make', params, {
+    callMethod('oneapp.onesheet.make', params, {
       success: 'Sheet created',
     }),
 
   // The contract, and nothing else about the sheet. A record's fill control
   // wants four labels, not the workbook.
   sheetRanges: (name) =>
-    callMethod('oneapp.oneapp_core.sheets.named_ranges', { sheet: name }, {
+    callMethod('oneapp.onesheet.named_ranges', { sheet: name }, {
       silent: true, method: 'GET',
     }),
 
   // Printing. The whole page comes back as one string and goes into a frame —
-  // `lib/paper/print.js` says why, and `oneapp_core/sheets/printing.py` is what
+  // `lib/paper/print.js` says why, and `onesheet/printing.py` is what
   // turns a rectangle of values into it. POST because the options are a body.
   sheetPrintable: (name, options, setup) =>
     callMethod(
-      'oneapp.oneapp_core.sheets.printable',
+      'oneapp.onesheet.printable',
       { name, options: JSON.stringify(options || {}), setup: JSON.stringify(setup || {}) },
       { silent: true },
     ),
 
   sheetTemplates: () =>
-    callMethod('oneapp.oneapp_core.sheets.listing', {}, { silent: true, method: 'GET' }),
+    callMethod('oneapp.onesheet.listing', {}, { silent: true, method: 'GET' }),
 
   sheetSetTemplate: (name, on) =>
-    callMethod('oneapp.oneapp_core.sheets.set_template', { sheet: name, on: on ? 1 : 0 }),
+    callMethod('oneapp.onesheet.set_template', { sheet: name, on: on ? 1 : 0 }),
 
   // The read-back. `preview` says what would happen; `pull` does it. Two calls
   // rather than one with a flag, because the confirmation step is the whole
   // point — a pull replaces the child table, and replacing somebody's priced
   // line items with the wrong range is not an undo away.
   sheetPreview: (name, params) =>
-    callMethod('oneapp.oneapp_core.sheets.preview', { sheet: name, ...params }, {
+    callMethod('oneapp.onesheet.preview', { sheet: name, ...params }, {
       silent: true, method: 'GET',
     }),
 
@@ -59,17 +59,17 @@ export const sheets = {
   // record, because `Sheet Feed` is ours and the document is somebody else's
   // doctype — this product does not add columns to Frappe's Quotation.
   sheetFeeds: (doctype, docname) =>
-    callMethod('oneapp.oneapp_core.sheets.feeds', { doctype, docname }, {
+    callMethod('oneapp.onesheet.feeds', { doctype, docname }, {
       silent: true, method: 'GET',
     }),
 
   sheetLock: (doctype, docname, into) =>
-    callMethod('oneapp.oneapp_core.sheets.lock', { doctype, docname, into }, {
+    callMethod('oneapp.onesheet.lock', { doctype, docname, into }, {
       success: 'These rows are locked',
     }),
 
   sheetUnlock: (doctype, docname, into) =>
-    callMethod('oneapp.oneapp_core.sheets.unlock', { doctype, docname, into }, {
+    callMethod('oneapp.onesheet.unlock', { doctype, docname, into }, {
       success: 'Following the sheet again',
     }),
 
@@ -77,17 +77,17 @@ export const sheets = {
   // all, so pulling them back needs nothing set up by hand. Pressing it again
   // opens the same sheet — one estimator per table, not one per press.
   sheetFromTable: (params) =>
-    callMethod('oneapp.oneapp_core.sheets.start_from', params, { silent: true }),
+    callMethod('oneapp.onesheet.start_from', params, { silent: true }),
 
   // Which record and table this sheet feeds, so the estimator can send the
   // rows back without walking to the record to press a button there.
   sheetBoundTo: (name) =>
-    callMethod('oneapp.oneapp_core.sheets.bound_to', { sheet: name }, {
+    callMethod('oneapp.onesheet.bound_to', { sheet: name }, {
       silent: true, method: 'GET',
     }),
 
   sheetPull: (name, params) =>
-    callMethod('oneapp.oneapp_core.sheets.pull', { sheet: name, ...params }, {
+    callMethod('oneapp.onesheet.pull', { sheet: name, ...params }, {
       success: 'Filled from the sheet',
     }),
 }

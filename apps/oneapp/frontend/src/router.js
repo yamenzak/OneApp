@@ -52,7 +52,7 @@ const routes = [
   {
     // The diary: everything the reader has with a date on it, from every
     // calendar this workspace has. The merge is the server's, in
-    // `oneapp_core/diary.py`.
+    // `onecalendar/diary.py`.
     path: '/calendar',
     name: 'Calendar',
     component: () => import('./pages/Diary.vue'),

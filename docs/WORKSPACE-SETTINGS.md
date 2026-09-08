@@ -11,7 +11,7 @@ Three verdicts:
 
 | | Meaning |
 | --- | --- |
-| **Customer** | In OneSpace → Settings. `oneapp_core/workspace.py` is both the renderer's spec and the write allowlist. |
+| **Customer** | In OneSpace → Settings. `onespace/workspace.py` is both the renderer's spec and the write allowlist. |
 | **Ours** | Set by the platform. Exposing it lets a workspace break itself in a way its owner cannot diagnose and we get the ticket. |
 | **Neither** | Left at Frappe's default. Not harmful, not useful, and every field shown is a field someone has to understand. |
 
@@ -21,7 +21,7 @@ The dialog was an admin's. Every tab in it was the workspace's, so it was
 offered where `session.isAdmin` and nowhere else — and a member had no way to
 change their own name, their own password, or what they were told about.
 
-`oneapp_core/tabs.py` declares every tab with the audience it is for, and
+`onespace/tabs.py` declares every tab with the audience it is for, and
 `workspace.get()` returns the ones this reader may open. The shell draws exactly
 those, so one dialog serves the owner and the member and neither is shown a door
 that does not open. The gear in the rail is offered to everybody.
@@ -77,7 +77,7 @@ avatar pointing at a 404.
 
 ## What a person may change about themselves
 
-`oneapp_core/me.py`, on the same two rules as `workspace.py`: the spec is the
+`onespace/me.py`, on the same two rules as `workspace.py`: the spec is the
 allowlist, and every write names `frappe.session.user` rather than taking one.
 
 | Field | Verdict | Why |
@@ -88,7 +88,7 @@ allowlist, and every write names `frappe.session.user` rather than taking one.
 | `User.enabled`, `roles`, `role_profile_name`, `user_type`, `api_key`, `api_secret`, `username` | **Ours** | Administration. An endpoint that took a fieldname would be an endpoint that grants roles; `MINE` is a fixed set and `NEVER` names these again. |
 | Password | Theirs | Through `check_password` then `User.save`, so the workspace's own policy — the minimum score an admin set under Sign in — is the rule that applies. |
 | Sessions | Theirs, to end | `tabSessions` has no DocType over it, so it is read with SQL; its columns are user, sid, ipaddress and lastupdate, and none of them names a device. So the panel says when and from where, and offers "sign out everywhere else" rather than picking one row out of a list of near-identical ones. Everywhere *else* deliberately: the reason somebody reaches for it is a laptop they no longer have. |
-| `Notification Settings` | Theirs | Frappe keeps one document per person. Already built (`oneapp_core/notifications.py`); it has a tab now instead of only a block on the Account page. |
+| `Notification Settings` | Theirs | Frappe keeps one document per person. Already built (`onespace/notifications.py`); it has a tab now instead of only a block on the Account page. |
 | Theme | Theirs, in the browser | Not on the server at all. A round trip would only make the toggle slower. |
 | Two-factor enrolment | **Not yet** | The workspace switch is an admin's and is built; enrolling *yourself* in an OTP app is a flow with a QR code and a verification step, which is a feature rather than a field. The panel says the workspace asks for one. |
 
@@ -175,7 +175,7 @@ workspace read as not an admin, and our support read as one.
 | `splash_image` | Customer | Shown while the workspace loads — by the app, now that something reads it. |
 | `disable_signup` | **Ours, forced on** | See Joining. |
 | `footer_powered`, `copyright`, `banner_html` | Ours | White-label surface. |
-| `head_html` | Ours, and we write to it | Never offered as a field — it is script injection on a shared fleet. But it is the only way a value reaches the pages Frappe renders for itself, so `oneapp_core/branding.py` writes the brand colour into it as a `<style>` block between markers, and leaves whatever else is in there alone. |
+| `head_html` | Ours, and we write to it | Never offered as a field — it is script injection on a shared fleet. But it is the only way a value reaches the pages Frappe renders for itself, so `onespace/branding.py` writes the brand colour into it as a `<style>` block between markers, and leaves whatever else is in there alone. |
 | `home_page`, `route_redirects`, `top_bar_items`, `footer_items`, `navbar_template`, `footer_template` | Neither | The public website is not a product surface; a tenant site serves the SPA. |
 | `google_analytics_id`, `enable_google_indexing`, `enable_view_tracking` | Neither | No public site to measure. Indexing a tenant workspace would be actively wrong. |
 | `hide_login`, `show_footer_on_login` | Neither | The sign-in page is ours to lay out; two half-controls of it are worse than none. |
@@ -282,7 +282,7 @@ which is what the desk's own country picker does with that field.
 **Brand colour.** One accent, under Branding, and the only thing in the dialog
 that no doctype holds: it is `frappe.db.set_default("onespace_brand_accent")`,
 for the reason in the Website Theme row above. It is an *intent* in the sense
-`oneapp_core/theming.py` means it — the same validator, the same expansion into
+`onespace/theming.py` means it — the same validator, the same expansion into
 CSS variables — and it lands in two places because a workspace is two
 applications:
 

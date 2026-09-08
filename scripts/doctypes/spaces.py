@@ -235,7 +235,7 @@ doctype(
         f("description", "Small Text"),
         # A space's own look, as four words rather than a stylesheet: a mode, an
         # accent, a ground and how sharp its corners are. Validated on the
-        # tenant by `oneapp_core/theming.py` and expanded into CSS variables by
+        # tenant by `onespace/theming.py` and expanded into CSS variables by
         # the browser, so a manifest declares an intent and never a token.
         f("theme", "Small Text",
           description='JSON. e.g. {"mode": "dark", "accent": "#E50914", '
@@ -484,7 +484,7 @@ doctype(
                       "outbound request to an arbitrary host from inside the "
                       "network, on a customer's say-so. The fetch is guarded "
                       "against private address space either way — see "
-                      "`oneapp_core/link_preview.py`."),
+                      "`onespace/link_preview.py`."),
         section("sec_mail", "Email"),
         f("cf_email_token", "Password", label="Cloudflare Email Token",
           description="API token with Email Sending: Edit."),

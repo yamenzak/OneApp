@@ -5,7 +5,7 @@
  * its header, its scrollbars, and `@page` rules nobody wrote. What a document
  * or a sheet wants printed is the page the server built for it: the right
  * size, the right margins, and the letter head repeating on every sheet
- * through the `<thead>` that `oneapp_core/paper.py` wraps it in.
+ * through the `<thead>` that `shared/paper.py` wraps it in.
  *
  * So the page goes into an iframe and the iframe prints itself. The same
  * mechanism `screen/record/PrintDialog.vue` uses for a record's print format,

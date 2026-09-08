@@ -6,7 +6,7 @@ here and no console typing at all. `install` writes one onto the control plane
 as `OneSpace Space` rows; everything downstream (the entitlement registry, the
 sync payload, the rail, the resolver) reads those and knows nothing about this.
 
-The same shape as `oneapp/oneapp_core/plans/`, deliberately: a customer arriving
+The same shape as `oneapp/onespace/plans/`, deliberately: a customer arriving
 off their own system is a plan module and a space module, and between them they
 are the whole delivery.
 

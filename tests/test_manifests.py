@@ -40,7 +40,7 @@ COLORS = {
 
 def doctypes() -> dict:
 	found = {}
-	for app, module in (("oneapp_control", "control_plane"), ("oneapp", "oneapp_core")):
+	for app, module in (("oneapp_control", "control_plane"), ("oneapp", "onespace")):
 		root = ROOT / "apps" / app / app / module / "doctype"
 		if not root.is_dir():
 			continue

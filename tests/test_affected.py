@@ -39,7 +39,7 @@ def test_a_leaf_panel_reaches_its_own_spec():
 
 def test_an_endpoint_reaches_the_spec_that_calls_it():
 	"""`me.py` is named by `settings.spec.js`, which asserts against it."""
-	found = chosen("apps/oneapp/oneapp/oneapp_core/me.py")
+	found = chosen("apps/oneapp/oneapp/onespace/me.py")
 	assert found != ["all"]
 	assert "e2e/settings.spec.js" in found
 

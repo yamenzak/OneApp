@@ -103,7 +103,7 @@ test('an assignment turns up in the panel, and opens the record', async ({
 const clearAssignment = async (page) =>
   page.evaluate(
     async (task) =>
-      fetch('/api/method/oneapp.oneapp_core.spaceview.assign', {
+      fetch('/api/method/oneapp.onespace.spaceview.assign', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ const clearAssignment = async (page) =>
 const sweepAssignments = async (page) =>
   page.evaluate(async () => {
     const ask = async (method, options) => {
-      const res = await fetch(`/api/method/oneapp.oneapp_core.spaceview.${method}`, options)
+      const res = await fetch(`/api/method/oneapp.onespace.spaceview.${method}`, options)
       return (await res.json()).message
     }
     const first = await ask('rows?space_code=zzmock&screen=tasks&limit=500', {
@@ -179,7 +179,7 @@ test('every kind says where it reaches you, and each channel is its own', async 
   await page.goto('/one/account')
 
   // Two masters, then a row per kind. The kinds are the server's registry —
-  // `oneapp_core/notifications.py` — so this is also what proves a declared
+  // `onespace/notifications.py` — so this is also what proves a declared
   // notification reaches the panel without an edit to the SPA.
   const app = page.getByText('Notifications', { exact: true })
   await expect(app).toBeVisible({ timeout: 15_000 })

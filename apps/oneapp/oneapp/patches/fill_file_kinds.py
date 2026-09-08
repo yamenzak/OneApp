@@ -15,7 +15,7 @@ so a file backfilled here and a file uploaded tomorrow cannot disagree.
 
 import frappe
 
-from oneapp.oneapp_core.drive import KIND_FIELD, kind_of
+from oneapp.onestorage import KIND_FIELD, kind_of
 
 
 def execute():

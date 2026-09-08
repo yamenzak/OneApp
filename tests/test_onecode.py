@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-PY_SIDE = ROOT / "apps/oneapp/oneapp/oneapp_core/languages.py"
+PY_SIDE = ROOT / "apps/oneapp/oneapp/onecode/languages.py"
 JS_SIDE = ROOT / "apps/oneapp/frontend/src/lib/files/languages.js"
 
 

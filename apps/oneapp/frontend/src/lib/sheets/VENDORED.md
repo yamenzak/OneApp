@@ -38,11 +38,11 @@ top of it:
 
 | File | Why |
 |---|---|
-| `store.js` | Their `usePersistence`, against `oneapp.oneapp_core.sheets` rather than `sheets.api`, because a sheet of ours is a `File` in the Drive. Adds a `values` slice their payload has no reason to carry. |
+| `store.js` | Their `usePersistence`, against `oneapp.onesheet` rather than `sheets.api`, because a sheet of ours is a `File` in the Drive. Adds a `values` slice their payload has no reason to carry. |
 | `headless.js` | A workbook built with no grid on screen, for the Drive's import. |
 | `xlsx-file.js` | ExcelJS where upstream calls SheetJS. Their pure `engine/xlsx-io.js` mapper is untouched behind it. |
-| `services/versions.js` | Their version panel, over `oneapp_core/versions.py` — one module shared with documents (`docs/WRITER.md` §5). `cellHistory` and `cellDiff` stay empty: they read an op log, which exists because their save is incremental and ours is total, and the editor already treats what they feed as optional. |
-| `services/linkPreview.js` | Their hover card, over `oneapp_core/link_preview.py` — which is their endpoint, vendored whole for its SSRF guards, off unless an operator turns it on. |
+| `services/versions.js` | Their version panel, over `shared/versions.py` — one module shared with documents (`docs/WRITER.md` §5). `cellHistory` and `cellDiff` stay empty: they read an op log, which exists because their save is incremental and ours is total, and the editor already treats what they feed as optional. |
+| `services/linkPreview.js` | Their hover card, over `onespace/link_preview.py` — which is their endpoint, vendored whole for its SSRF guards, off unless an operator turns it on. |
 | `../../components/sheets/editor/usePersistence.js` | The five refs and five functions `index.vue` expects, over `store.js`. |
 | `../../components/sheets/editor/useCollaboration.js` | Inert. Yjs wants a second Node process. |
 | `../../components/sheets/editor/shortcutRegistry.js` | frappe-ui 1.0 replaced `{key, ctrl}` with `'Mod+S'`. |

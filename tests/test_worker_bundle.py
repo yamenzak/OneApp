@@ -52,7 +52,7 @@ def test_the_bundle_matches_its_source():
 	# One line from each source, so a bundle built from a different tree fails
 	# rather than merely being stale.
 	"Unknown recipient",
-	"oneapp.oneapp_core.email.inbound.receive",
+	"oneapp.onemail.inbound.receive",
 	"X-OneSpace-Signature",
 ])
 def test_the_bundle_holds_what_the_worker_does(marker):

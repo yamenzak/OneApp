@@ -17,7 +17,7 @@ about Plan and Overview, which are the same kind of fact. It was read for a
 while as an argument about the whole area, and it is not: People, Roles and
 Domain are facts about *one* workspace, and a person editing them had to leave
 the workspace they were editing to do it. They are settings tabs inside
-OneSpace now, relayed through `oneapp/oneapp_core/account.py` as the person who
+OneSpace now, relayed through `oneapp/onespace/account.py` as the person who
 asked. `docs/MARKETPLACE.md` §2 is the dividing question — not "is this
 administration?" but "whose fact is it?" — and the reason it is worth keeping
 written down is that the pull is always toward moving one more.

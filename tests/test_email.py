@@ -49,35 +49,35 @@ def code_of(thing) -> str:
 # exists and fails on the real package being absent.
 @pytest.fixture
 def addresses():
-	from oneapp.oneapp_core.email import addresses as module
+	from oneapp.onemail import addresses as module
 
 	return module
 
 
 @pytest.fixture
 def inbound():
-	from oneapp.oneapp_core.email import inbound as module
+	from oneapp.onemail import inbound as module
 
 	return module
 
 
 @pytest.fixture
 def connect():
-	from oneapp.oneapp_core.email import connect as module
+	from oneapp.onemail import connect as module
 
 	return module
 
 
 @pytest.fixture
 def suppression():
-	from oneapp.oneapp_core.email import suppression as module
+	from oneapp.onemail import suppression as module
 
 	return module
 
 
 @pytest.fixture
 def verify():
-	from oneapp.oneapp_core.email import verify as module
+	from oneapp.onemail import verify as module
 
 	return module
 
@@ -379,7 +379,7 @@ def test_dns_that_will_not_answer_reads_as_unpublished(verify, monkeypatch):
 
 @pytest.fixture
 def mailbox():
-	from oneapp.oneapp_core.email import mailbox as module
+	from oneapp.onemail import mailbox as module
 
 	return module
 
@@ -709,7 +709,7 @@ def test_read_receipts_are_stored_under_the_person_they_belong_to(mailbox):
 
 @pytest.fixture
 def connect():
-	from oneapp.oneapp_core.email import connect as module
+	from oneapp.onemail import connect as module
 
 	return module
 
@@ -795,7 +795,7 @@ def test_the_first_sync_is_bounded(connect):
 
 @pytest.fixture
 def folders():
-	from oneapp.oneapp_core.email import folders as module
+	from oneapp.onemail import folders as module
 
 	return module
 
@@ -943,7 +943,7 @@ def test_every_message_remembers_where_it_was_filed(folders):
 
 @pytest.fixture
 def people():
-	from oneapp.oneapp_core.email import people as module
+	from oneapp.onemail import people as module
 
 	return module
 
@@ -1501,7 +1501,7 @@ def test_a_conversation_is_starred_if_any_message_in_it_is(mailbox):
 
 @pytest.fixture
 def threading():
-	from oneapp.oneapp_core.email import threading as module
+	from oneapp.onemail import threading as module
 
 	return module
 
@@ -1558,7 +1558,7 @@ def test_only_email_gets_a_conversation_key(threading):
 
 @pytest.fixture
 def rules():
-	from oneapp.oneapp_core.email import rules as module
+	from oneapp.onemail import rules as module
 
 	return module
 
@@ -1596,7 +1596,7 @@ def test_the_first_matching_rule_wins(rules):
 def test_rules_run_after_the_message_is_stored(rules):
 	"""A rule that threw while the message was half-written would lose the
 	message, and losing mail to a filing rule is the worst trade there is."""
-	from oneapp.oneapp_core.email import inbound
+	from oneapp.onemail import inbound
 
 	source = code_of(inbound.handle_address)
 	assert source.index("_communication(payload") < source.index("rules.apply_to")
@@ -1611,7 +1611,7 @@ def test_a_rule_that_says_star_actually_stars(rules, monkeypatch, stub_frappe):
 	rule with Star ticked filed the message and left it unstarred, which is the
 	failure nobody reports because it looks like forgetting to tick the box.
 	"""
-	from oneapp.oneapp_core.email import folders as folder_ops
+	from oneapp.onemail import folders as folder_ops
 
 	monkeypatch.setattr(
 		rules, "matching",
@@ -1648,7 +1648,7 @@ def test_a_rule_that_says_star_actually_stars(rules, monkeypatch, stub_frappe):
 
 def test_a_rule_only_touches_an_address_you_hold(rules, monkeypatch):
 	monkeypatch.setattr(
-		"oneapp.oneapp_core.email.mailbox._held", lambda: ["mine@x.test"]
+		"oneapp.onemail.mailbox._held", lambda: ["mine@x.test"]
 	)
 	assert rules._mine("MINE@x.test") == "mine@x.test"
 	with pytest.raises(Exception):
@@ -1658,7 +1658,7 @@ def test_a_rule_only_touches_an_address_you_hold(rules, monkeypatch):
 def test_an_away_message_needs_something_to_say(rules, monkeypatch):
 	monkeypatch.setattr(rules, "_account_of", lambda address: None, raising=False)
 	monkeypatch.setattr(
-		"oneapp.oneapp_core.email.mailbox._account_of",
+		"oneapp.onemail.mailbox._account_of",
 		lambda address: types.SimpleNamespace(db_set=lambda *a, **k: None),
 	)
 	with pytest.raises(Exception):
@@ -1693,7 +1693,7 @@ def selection(mailbox, stub_mailbox):
 	# exports, and the two cannot share a name — see the module's own docstring.
 	import importlib
 
-	module = importlib.import_module("oneapp.oneapp_core.email.mailbox.selections")
+	module = importlib.import_module("oneapp.onemail.mailbox.selections")
 
 	log = []
 	rows = {
@@ -1842,7 +1842,7 @@ def test_everywhere_is_not_a_folder_somebody_can_ask_for(mailbox, filed):
 
 @pytest.fixture
 def signing(stub_frappe):
-	from oneapp.oneapp_core.email import addresses
+	from oneapp.onemail import addresses
 
 	return addresses
 
@@ -1907,7 +1907,7 @@ def test_the_frameworks_own_signature_is_held_off_every_email(stub_frappe):
 	after it left the composer where nobody could see it happen."""
 	import types
 
-	from oneapp.oneapp_core.email import signatures
+	from oneapp.onemail import signatures
 
 	doc = types.SimpleNamespace(communication_medium="Email", flags=_flags())
 	signatures.hold_the_frameworks_signature(doc)
@@ -1919,7 +1919,7 @@ def test_a_chat_or_a_phone_call_is_left_alone(stub_frappe):
 	message are recorded. Neither is sent, so neither is signed."""
 	import types
 
-	from oneapp.oneapp_core.email import signatures
+	from oneapp.onemail import signatures
 
 	doc = types.SimpleNamespace(communication_medium="Phone", flags=_flags())
 	signatures.hold_the_frameworks_signature(doc)
@@ -1933,7 +1933,7 @@ def test_the_hook_is_registered_where_frappe_will_find_it():
 
 	assert (
 		hooks.doc_events["Communication"]["before_save"]
-		== "oneapp.oneapp_core.email.signatures.hold_the_frameworks_signature"
+		== "oneapp.onemail.signatures.hold_the_frameworks_signature"
 	)
 
 
@@ -1952,7 +1952,7 @@ def test_a_draft_that_will_not_parse_is_a_draft_that_is_gone(mailbox, stub_frapp
 	every attempt to write a message — for that person, until somebody clears a
 	user default by hand. We wrote one: an attribute the rich editor mangled came
 	back with a stray backslash in it, and the stored draft stopped parsing."""
-	from oneapp.oneapp_core.email.mailbox import drafts
+	from oneapp.onemail.mailbox import drafts
 
 	stored = {"value": '{"content": "<div a=\\&quot;1\\&quot;>"}'}
 	monkeypatch.setattr(
@@ -1974,7 +1974,7 @@ def test_a_draft_that_parses_to_something_that_is_not_a_draft_is_also_nothing(
 	mailbox, stub_frappe, monkeypatch
 ):
 	monkeypatch.setattr(stub_frappe.defaults, "get_user_default", lambda *a, **k: "[1, 2]")
-	from oneapp.oneapp_core.email.mailbox import drafts
+	from oneapp.onemail.mailbox import drafts
 
 	assert drafts.kept() == {}
 
@@ -2114,7 +2114,7 @@ def written(stub_frappe, monkeypatch):
 	"""`templates`, over a site holding one of ours and one of ERPNext's."""
 	import types
 
-	from oneapp.oneapp_core.email import templates as module
+	from oneapp.onemail import templates as module
 
 	saved = {}
 	rows = [
@@ -2204,7 +2204,7 @@ def test_a_new_template_is_marked_as_ours_and_named_for_what_it_is(written):
 def test_an_app_s_own_template_is_not_ours_to_edit(stub_frappe, monkeypatch):
 	"""ERPNext and HRMS ship six on every site, and a settings screen that could
 	edit those could edit the reminder somebody's leave approval depends on."""
-	from oneapp.oneapp_core.email import templates as module
+	from oneapp.onemail import templates as module
 
 	monkeypatch.setattr(stub_frappe.db, "exists", lambda *a, **k: None)
 	with pytest.raises(Exception):
@@ -2215,7 +2215,7 @@ def test_a_template_with_no_record_is_offered_as_written(stub_frappe, monkeypatc
 	"""Placeholders and all, which is better than a body full of "None"."""
 	import types
 
-	from oneapp.oneapp_core.email import templates as module
+	from oneapp.onemail import templates as module
 
 	monkeypatch.setattr(stub_frappe.db, "exists", lambda *a, **k: "Delivery update")
 	monkeypatch.setattr(
@@ -2237,7 +2237,7 @@ def test_rendering_against_a_record_checks_the_record_first(stub_frappe, monkeyp
 	a record is reading it."""
 	import types
 
-	from oneapp.oneapp_core.email import templates as module
+	from oneapp.onemail import templates as module
 
 	asked = []
 	monkeypatch.setattr(stub_frappe.db, "exists", lambda *a, **k: "Delivery update")

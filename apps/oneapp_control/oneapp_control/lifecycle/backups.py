@@ -1,6 +1,6 @@
 """Retention, and noticing when a workspace stops backing itself up.
 
-Taking the backup is the site's job — see `oneapp/oneapp_core/backup.py`. Two
+Taking the backup is the site's job — see `oneapp/onespace/backup.py`. Two
 things are deliberately not: deciding when an old copy may go, and noticing that
 new ones stopped arriving. Both have to keep working for a workspace whose site
 is suspended, off, or gone, which is exactly when the site cannot do them.

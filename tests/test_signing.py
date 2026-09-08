@@ -70,7 +70,7 @@ def test_empty_secret_fails(signing):
 
 def test_tenant_site_and_control_plane_agree(signing):
 	"""The two implementations are separate code and must stay compatible."""
-	from oneapp.oneapp_core import control_client
+	from oneapp.onespace import control_client
 
 	body = '{"a":1,"b":2}'
 	sig, ts = control_client._sign(SECRET, body)

@@ -12,7 +12,7 @@ data and everything they see.
 `apps/oneapp_control` is installed on the **control plane** only. It holds who
 the customers are, what they are entitled to, what they owe, and the machinery
 that creates and destroys their sites. A tenant site never imports it; it
-reaches the control plane over HTTP through `oneapp_core/control_client.py`.
+reaches the control plane over HTTP through `onespace/control_client.py`.
 
 The seam is worth stating plainly, because most confusion about this repo is
 confusion about which side of it something is on: **the control plane holds
@@ -20,7 +20,7 @@ intent, the tenant site holds data.** The plan a workspace is on lives on the
 control plane. The invoices that workspace issues to *its* customers live on
 the tenant site.
 
-## The tenant app, `oneapp/oneapp_core`
+## The tenant app, `oneapp/onespace`
 
 Four packages carry most of the weight. Each is layered internally — a strict
 import order written into its `__init__` docstring, so a module may use the ones
@@ -173,10 +173,10 @@ two disagree.
 | `lib/screen/` | What a screen's rows and fields *mean*: `fields` (every fieldtype), `cells`, `cards`, `format`, `list`, `rules`, `docstate`, `viewTypes`, `surfaces`, `tree`, `recurrence`, `diary`, `childColumns`. |
 | `lib/files/` | One file into the workspace: `attach` (the one door), `directUpload` (the big ones, straight at R2), `files` (what a `File` row is, and `routeFor` — whether clicking one opens an editor or the previewer) and `download`. |
 | `lib/workspace/` | Hand-written, and the one place a server call is named: `settings`, `screen`, `record`, `layouts`, `mail`, `drive`, `sheets`, `docs`, `versions`, `importing`, `printing`, assembled into one `workspace` object because every caller says `workspace.screenRows(...)`. |
-| `lib/sheets/` | The spreadsheet itself, and mostly **not ours**. `engine/`, `canvas/` and `utils/` are Frappe's, vendored whole from `frappe/sheets` and unmodified — the formula evaluator and its dependency graph, number formats, fill series, merges, spills, validation, conditional formats, pivots, charts, sort and filter, the clipboard, named ranges, the undo stack, and the canvas renderer that draws all of it. `VENDORED.md` is the licence position and the list of what we changed; `tests/vendored.py` is what the guards read. Ours in that tree: `store.js` (loading and saving, against `oneapp_core/sheets`, and the `values` slice their payload has no reason to carry), `headless.js` (a workbook built with no grid on screen, for the Drive's import), `xlsx-file.js` (ExcelJS behind their SheetJS-shaped mapper) and `services/` (`versions.js` and `linkPreview.js`, which fill in the two features whose server halves were not ported when the editor was vendored). |
+| `lib/sheets/` | The spreadsheet itself, and mostly **not ours**. `engine/`, `canvas/` and `utils/` are Frappe's, vendored whole from `frappe/sheets` and unmodified — the formula evaluator and its dependency graph, number formats, fill series, merges, spills, validation, conditional formats, pivots, charts, sort and filter, the clipboard, named ranges, the undo stack, and the canvas renderer that draws all of it. `VENDORED.md` is the licence position and the list of what we changed; `tests/vendored.py` is what the guards read. Ours in that tree: `store.js` (loading and saving, against `onesheet`, and the `values` slice their payload has no reason to carry), `headless.js` (a workbook built with no grid on screen, for the Drive's import), `xlsx-file.js` (ExcelJS behind their SheetJS-shaped mapper) and `services/` (`versions.js` and `linkPreview.js`, which fill in the two features whose server halves were not ported when the editor was vendored). |
 | `pages/` | One per route. `ScreenHost` is the big one — it resolves a screen and hosts whichever body the view type asks for. |
 | `components/screen/` | Everything a screen draws, in four families. `bodies/` is how the rows are shown — `ListBody` (which is also the report), `BoardBody`, `CardsBody`, `DashboardBody`, `CalendarBody`, `GanttBody`, `TreeBody` and the cells, footer and selection bar they share. `record/` is one record open — `RecordView`, its pane, drawer, showcase, tabs and dialogs. `fields/` is one value drawn or edited — `FieldControl`, `LinkPicker`, `StateBadge`, the pickers. `views/` is which screen and how it is filtered — `ScreenHeader`, the filters, the column picker, the switcher. |
-| `components/docs/`, `components/versions/` | A document open, and the earlier drafts of one. `DocEditor` is frappe-ui's `RichTextKit` with the surround around it — the save loop, the outline derived from the headings on every transaction, the page setup, the word count — and `PlainText` is the other editor behind the same route, for a `.txt` or `.md` whose bytes are the file. `VersionPanel` is one component for a document and a sheet, because `oneapp_core/versions.py` is one module for both. See `docs/WRITER.md`. |
+| `components/docs/`, `components/versions/` | A document open, and the earlier drafts of one. `DocEditor` is frappe-ui's `RichTextKit` with the surround around it — the save loop, the outline derived from the headings on every transaction, the page setup, the word count — and `PlainText` is the other editor behind the same route, for a `.txt` or `.md` whose bytes are the file. `VersionPanel` is one component for a document and a sheet, because `shared/versions.py` is one module for both. See `docs/WRITER.md`. |
 | `components/mail/`, `components/notifications/`, `components/drive/`, `components/sheets/` | The four surfaces that are not screens. `drive/` is the file manager and the picker every attach surface opens; its `FileRow` is also what a record's Files tab draws, because the two are one query apart. `sheets/` is the editor — `editor/`, which is Frappe's page vendored and reseamed (`lib/sheets/VENDORED.md`), hosted by a four-line `pages/Sheet.vue` that adds no chrome of its own because the editor brings four rows of it. Its `index.vue` is the largest file in the repository and is meant to stay one file: twenty composables have already come out of it and what is left is one canvas, one selection and one history, whose functions each read a dozen of the others — the stylesheet is out, in `editor.css`, because CSS has no closure to share — plus `ImportSheet`, `FeedNote` and `FillFromSheet`, which is the one piece of it that appears somewhere else: a control on every editable child table, because a spreadsheet that cannot feed a document is a spreadsheet. Everything left at the root of `components/` is the shell — the bottom bar, the account menu, the quota meter — with `components/shell/` holding the bar's own pieces: the space switcher, the foot every column ends in, and one surface link — or a primitive more than one side uses: `Resizer`, `FadedScroll`, `EmptyState`, `UsageBar`, and `SharePanel`, which is the body of the share dialog for a record and for a file alike. |
 | `composables/` | State pulled out of a page, and what makes `ScreenHost` a shell rather than a program. `useScreenAsked` is what the reader has asked of a screen — the filters, the sort, the columns, the card settings, and whether any of it is unsaved; `useRows` the records that came back for it; `useBulkActions` everything done to the ticked ones; `useRowWrites` the three writes a body makes without opening a record; `useScreenLayout` where an unsaved change goes when you keep it. Beside them: `useRecordSurface` (which record is open, and whether it is a pane or the page), `useCreating` (the three doors that make a new one), `useSavedViews`, `usePeek`, `useListFollow`, `useDrive`, `useUploads`, `useNewFile` (the New menu, shared by the Drive and a record's Files tab), `useOutline` (a document's headings, shared by the rail and the phone's dropdown), `useCrumbs` and `useSorting`. A composable called at the top of `<script setup>` runs *immediately*, so everything it reads must be declared above the call — `tests/test_composables.py` enforces exactly that — written after one extraction read a `const` declared below its call, which is a `ReferenceError`, a blank page, and 152 specs timing out at once. |
 | `screens/` | Bespoke screens a manifest names by component, rather than rendering from metadata. |
@@ -203,15 +203,15 @@ three-thousand-line one.
 
 ## Where a change goes
 
-* **A new setting a workspace owns** → `oneapp_core/workspace.py`, then the tab
-  in `oneapp_core/tabs.py`'s list and the panel in `components/settings/`. Three
+* **A new setting a workspace owns** → `onespace/workspace.py`, then the tab
+  in `onespace/tabs.py`'s list and the panel in `components/settings/`. Three
   files, and `tests/test_settings_tabs.py` holds them together: a tab with no
   panel draws nothing, an icon named only in Python draws nothing either, and a
   declared `type` no control can draw falls through to a text box in silence.
   A setting with no Frappe field to write takes `default_key=` instead of
   `targets=`; `branding.py`'s accent is the one that does.
 * **A new thing that is a person's own rather than the workspace's** →
-  `oneapp_core/me.py`, whose spec is the allowlist and whose every write names
+  `onespace/me.py`, whose spec is the allowlist and whose every write names
   `frappe.session.user`.
 * **A new thing a reader can do to a record** → a layer in `spaceview/`, then a
   call in `lib/workspace/record.js`.

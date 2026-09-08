@@ -26,7 +26,7 @@ disagree about what owning your own object means.
 
 import frappe
 
-from oneapp.oneapp_core.docs.text import is_text, own_object
+from oneapp.onedoc.text import is_text, own_object
 
 #: What a local object's URL looks like. An R2-backed row's does not, and the
 #: R2 ones cannot be shared in the first place.

@@ -5,7 +5,7 @@ rests on.
 
 **A sheet is a `File`.** Not a doctype of its own — so its permission, its
 folder, its share, its bin and its link are all things that already existed.
-Every read and write in `oneapp_core/sheets` goes through the File, and a path
+Every read and write in `onesheet` goes through the File, and a path
 that did not would be a path with no access model at all.
 
 **A1 notation is implemented twice**, once in Python and once in JavaScript,
@@ -28,13 +28,13 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-SHEETS = ROOT / "apps/oneapp/oneapp/oneapp_core/sheets"
+SHEETS = ROOT / "apps/oneapp/oneapp/onesheet"
 FRONTEND = ROOT / "apps/oneapp/frontend/src/lib/sheets"
 
 
 @pytest.fixture
 def sheets():
-	from oneapp.oneapp_core import sheets as module
+	from oneapp import onesheet as module
 
 	return module
 
@@ -267,7 +267,7 @@ def test_a_sheets_file_url_is_a_url_the_framework_accepts(sheets):
 def test_the_headings_are_the_first_row(sheets):
 	"""`preview` reads row one as the headings, so `start_from` must write them
 	there — otherwise the round trip loses the labels it exists to agree on."""
-	from oneapp.oneapp_core.sheets import feed
+	from oneapp.onesheet import feed
 
 	packed = feed._packed(["Item", "Qty"], [["A", 1], ["B", 2]])
 	rows = packed["sheets"][feed.TAB]["rows"]
@@ -278,7 +278,7 @@ def test_the_headings_are_the_first_row(sheets):
 def test_the_named_range_covers_the_headings(sheets):
 	"""A range starting at row 2 reads the first line of data as the headings
 	and then silently drops it."""
-	from oneapp.oneapp_core.sheets import feed
+	from oneapp.onesheet import feed
 
 	# Four columns, nine rows of data: A1 through D10.
 	assert feed._area(4, 9) == "A1:D10"
@@ -286,7 +286,7 @@ def test_the_named_range_covers_the_headings(sheets):
 
 def test_an_empty_table_is_still_a_sheet_with_headings(sheets):
 	"""Opening an empty child table is how somebody starts pricing one."""
-	from oneapp.oneapp_core.sheets import feed
+	from oneapp.onesheet import feed
 
 	assert feed._area(3, 0) == "A1:C1"
 
@@ -300,7 +300,7 @@ def test_an_empty_table_is_still_a_sheet_with_headings(sheets):
 def test_the_range_is_named_after_the_table(sheets, label, expected):
 	"""The name is offered back in the fill dialog, so it has to be the words
 	the person already reads on the record."""
-	from oneapp.oneapp_core.sheets import feed
+	from oneapp.onesheet import feed
 
 	class Field:
 		def __init__(self, label):
@@ -313,7 +313,7 @@ def test_the_range_is_named_after_the_table(sheets, label, expected):
 def test_what_cannot_be_a_column_is_not_offered_as_one(sheets):
 	"""A signature or an attachment in a cell is a value nobody can price
 	against, and a nested child table has no representation at all."""
-	from oneapp.oneapp_core.sheets import feed
+	from oneapp.onesheet import feed
 
 	for kind in ("Table", "Signature", "Attach Image", "Text Editor", "Section Break"):
 		assert kind in feed.NOT_A_COLUMN
@@ -410,7 +410,7 @@ def test_the_one_download_funnel_knows_about_sheets(sheets):
 	browser pass over the Drive rather than by anything here, because nothing
 	about either module read wrongly on its own.
 	"""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/r2.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onestorage/r2.py").read_text()
 	block = source[source.index("def serve("):]
 	# The call, not the sentence about it — the comment above the branch names
 	# `get_content()` too.
@@ -430,7 +430,7 @@ def test_renaming_a_sheet_leaves_it_a_sheet(sheets):
 	findable any other way, because nothing about the two modules apart is
 	wrong.
 	"""
-	from oneapp.oneapp_core.drive import kind_of
+	from oneapp.onestorage import kind_of
 
 	assert kind_of("Padel Pro estimator", False, "Sheet") == "Sheet"
 	assert kind_of("estimator.xlsx", False, "Sheet") == "Sheet"
@@ -441,7 +441,7 @@ def test_renaming_a_sheet_leaves_it_a_sheet(sheets):
 
 
 def test_the_package_re_exports_everything_it_whitelists(sheets):
-	"""`oneapp.oneapp_core.sheets.open_sheet` has to resolve, or it is a 404.
+	"""`oneapp.onesheet.open_sheet` has to resolve, or it is a 404.
 
 	A whitelisted function inside a package module is not reachable by the
 	package's own path unless the package re-exports it. This is the same bug

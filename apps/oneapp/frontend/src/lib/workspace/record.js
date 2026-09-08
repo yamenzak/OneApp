@@ -8,14 +8,14 @@ export const record = {
   // has to ask for them.
   timeline: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.timeline',
+      'oneapp.onespace.spaceview.timeline',
       { space_code: spaceCode, screen, name },
       { silent: true, method: 'GET' },
     ),
 
   comment: (spaceCode, screen, name, content) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.comment',
+      'oneapp.onespace.spaceview.comment',
       { space_code: spaceCode, screen, name, content },
       { successMessage: __('Added') },
     ),
@@ -25,21 +25,21 @@ export const record = {
   // one, so assigning is how a record reaches somebody's own list.
   assignees: (spaceCode, screen, query) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.assignees',
+      'oneapp.onespace.spaceview.assignees',
       { space_code: spaceCode, screen, query },
       { silent: true, method: 'GET' },
     ),
 
   assign: (spaceCode, screen, name, users) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.assign',
+      'oneapp.onespace.spaceview.assign',
       { space_code: spaceCode, screen, name, users },
       { silent: true },
     ),
 
   toggleLike: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.toggle_like',
+      'oneapp.onespace.spaceview.toggle_like',
       { space_code: spaceCode, screen, name },
       { silent: true },
     ),
@@ -49,14 +49,14 @@ export const record = {
 
   tags: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.tags',
+      'oneapp.onespace.spaceview.tags',
       { space_code: spaceCode, screen, name },
       { silent: true, method: 'GET' },
     ),
 
   tagOptions: (spaceCode, screen, name, query = '') =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.tag_options',
+      'oneapp.onespace.spaceview.tag_options',
       { space_code: spaceCode, screen, name, query },
       { silent: true, method: 'GET' },
     ),
@@ -64,21 +64,21 @@ export const record = {
   // Silent: the badge appearing is the confirmation.
   setTag: (spaceCode, screen, name, tag, on) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.set_tag',
+      'oneapp.onespace.spaceview.set_tag',
       { space_code: spaceCode, screen, name, tag, on: on ? 1 : 0 },
       { silent: true },
     ),
 
   shares: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.shares',
+      'oneapp.onespace.spaceview.shares',
       { space_code: spaceCode, screen, name },
       { silent: true, method: 'GET' },
     ),
 
   shareable: (spaceCode, screen, query = '') =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.shareable',
+      'oneapp.onespace.spaceview.shareable',
       { space_code: spaceCode, screen, query },
       { silent: true, method: 'GET' },
     ),
@@ -87,14 +87,14 @@ export const record = {
   // back — is a change you want told you happened.
   setShare: (spaceCode, screen, name, { user = null, everyone = 0, level = 'read' }) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.set_share',
+      'oneapp.onespace.spaceview.set_share',
       { space_code: spaceCode, screen, name, user, everyone, level },
       { successMessage: __('Shared') },
     ),
 
   unshare: (spaceCode, screen, name, { user = null, everyone = 0 }) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.unshare',
+      'oneapp.onespace.spaceview.unshare',
       { space_code: spaceCode, screen, name, user, everyone },
       { successMessage: __('Stopped sharing') },
     ),
@@ -103,7 +103,7 @@ export const record = {
   // changes what everything else points at.
   rename: (spaceCode, screen, name, newName) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.rename',
+      'oneapp.onespace.spaceview.rename',
       { space_code: spaceCode, screen, name, new_name: newName },
       { successMessage: __('Renamed') },
     ),
@@ -111,7 +111,7 @@ export const record = {
   // Follow this record, or stop. Not silent: nothing on the screen changes to
   // prove it worked, so the toast is the confirmation.
   toggleFollow: (spaceCode, screen, name) =>
-    callMethod('oneapp.oneapp_core.spaceview.toggle_follow', {
+    callMethod('oneapp.onespace.spaceview.toggle_follow', {
       space_code: spaceCode,
       screen,
       name,
@@ -123,14 +123,14 @@ export const record = {
   // server reads off the field rather than taking from here.
   attachments: (spaceCode, screen, name, fieldname) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.attachments',
+      'oneapp.onespace.spaceview.attachments',
       { space_code: spaceCode, screen, name, fieldname },
       { silent: true, method: 'GET' },
     ),
 
   removeAttachment: (spaceCode, screen, name, file) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.remove_attachment',
+      'oneapp.onespace.spaceview.remove_attachment',
       { space_code: spaceCode, screen, name, file },
       { successMessage: __('File removed') },
     ),
@@ -142,28 +142,28 @@ export const record = {
 
   submit: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.submit',
+      'oneapp.onespace.spaceview.submit',
       { space_code: spaceCode, screen, name },
       { successMessage: __('Submitted') },
     ),
 
   cancel: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.cancel',
+      'oneapp.onespace.spaceview.cancel',
       { space_code: spaceCode, screen, name },
       { successMessage: __('Cancelled') },
     ),
 
   amend: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.amend',
+      'oneapp.onespace.spaceview.amend',
       { space_code: spaceCode, screen, name },
       { successMessage: __('Amended') },
     ),
 
   workflowAction: (spaceCode, screen, name, action) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.workflow_action',
+      'oneapp.onespace.spaceview.workflow_action',
       { space_code: spaceCode, screen, name, action },
       { successMessage: __('Done') },
     ),
@@ -171,11 +171,11 @@ export const record = {
   // --- the mail about a record --------------------------------------------
   //
   // Correspondence is a `Communication` linked to the document by
-  // `oneapp_core/email/linking.py`. What comes back is what *this reader* may
+  // `onemail/linking.py`. What comes back is what *this reader* may
   // already see, never everything linked: a link is not a grant.
   recordMail: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.correspondence',
+      'oneapp.onespace.spaceview.correspondence',
       { space_code: spaceCode, screen, name },
       { silent: true, method: 'GET' },
     ),
@@ -184,7 +184,7 @@ export const record = {
   // out — the person was looking at the record when they wrote it.
   recordMailSend: (spaceCode, screen, name, values) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.write',
+      'oneapp.onespace.spaceview.write',
       { space_code: spaceCode, screen, name, ...values },
       { successMessage: __('Sent') },
     ),
@@ -193,14 +193,14 @@ export const record = {
   // back from every one it got wrong.
   recordMailAttach: (spaceCode, screen, name, message) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.attach',
+      'oneapp.onespace.spaceview.attach',
       { space_code: spaceCode, screen, name, message },
       { successMessage: __('Filed here') },
     ),
 
   recordMailDetach: (spaceCode, screen, name, message) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.detach',
+      'oneapp.onespace.spaceview.detach',
       { space_code: spaceCode, screen, name, message },
       { successMessage: __('Unfiled') },
     ),
@@ -209,5 +209,5 @@ export const record = {
   //
   // What is drawn on the page, as against the paper it comes out on. A drawn
   // format is a Frappe beta Print Format: our builder writes `format_data` and
-  // Frappe's own generator renders it. See `oneapp_core/printing.py`.
+  // Frappe's own generator renders it. See `onespace/printing.py`.
 }

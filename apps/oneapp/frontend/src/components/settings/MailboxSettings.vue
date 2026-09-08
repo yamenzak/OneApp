@@ -7,7 +7,7 @@
     and could not file their own mail — the three things somebody with a
     mailbox actually asks for. Nothing here is an admin's: every endpoint under
     it already checked that the address is one the caller holds, and the tab is
-    offered on exactly that question. See `oneapp_core/tabs.py`.
+    offered on exactly that question. See `onespace/tabs.py`.
   -->
   <SettingsHeader
     :title="__('Mailbox')"

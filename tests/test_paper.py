@@ -2,7 +2,7 @@
 
 Documents and sheets both print, and neither goes near Frappe's print stack —
 that one walks a doctype through a print format, and a document has no doctype.
-What they share is `oneapp_core/paper.py`: a page setup resolved from whatever
+What they share is `shared/paper.py`: a page setup resolved from whatever
 the editor stored, turned into `@page` and the two or three rules that keep a
 heading with its paragraph.
 
@@ -28,14 +28,14 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-PAPER = ROOT / "apps/oneapp/oneapp/oneapp_core/paper.py"
+PAPER = ROOT / "apps/oneapp/oneapp/shared/paper.py"
 PAPER_JS = ROOT / "apps/oneapp/frontend/src/lib/paper/setup.js"
 PAGINATE_JS = ROOT / "apps/oneapp/frontend/src/lib/paper/paginate.js"
 
 
 @pytest.fixture
 def paper(stub_frappe):
-	from oneapp.oneapp_core import paper as module
+	from oneapp.shared import paper as module
 
 	return module
 
@@ -177,7 +177,7 @@ def test_the_editor_offers_both_orientations(paper):
 
 @pytest.fixture
 def sheet_printing(stub_frappe):
-	from oneapp.oneapp_core.sheets import printing as module
+	from oneapp.onesheet import printing as module
 
 	return module
 
@@ -263,7 +263,7 @@ def test_cells_are_escaped(sheet_printing):
 
 @pytest.fixture
 def typography(stub_frappe):
-	from oneapp.oneapp_core.docs import typography as module
+	from oneapp.onedoc import typography as module
 
 	return module
 

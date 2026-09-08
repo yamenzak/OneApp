@@ -17,7 +17,7 @@ import pytest
 
 @pytest.fixture
 def direct(stub_frappe):
-	from oneapp.oneapp_core.storage import direct as module
+	from oneapp.onestorage import direct as module
 
 	return module
 

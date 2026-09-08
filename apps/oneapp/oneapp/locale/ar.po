@@ -4391,10 +4391,10 @@ msgstr "شكل المستند المطبوع، والترويسة التي يظ�
 
 msgid ""
 "What each target field is made of, keyed by target fieldname. See "
-"`oneapp_core/importer.py`."
+"`onespace/importer.py`."
 msgstr ""
 "ممّ يتكوّن كل حقل هدف، مفهرسًا باسم الحقل الهدف. راجع "
-"`oneapp_core/importer.py`."
+"`onespace/importer.py`."
 
 msgid ""
 "What is in the URL. Long enough not to be guessed, and the only thing "

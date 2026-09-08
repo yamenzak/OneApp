@@ -5,7 +5,7 @@ import pytest
 
 @pytest.fixture
 def quota(stub_frappe, monkeypatch):
-	from oneapp.oneapp_core.storage import quota as module
+	from oneapp.onestorage import quota as module
 
 	# The ordinary case, so a test only says so when it is about the exception.
 	# Left unstubbed this reaches the site-state singleton, which the stub
@@ -199,8 +199,8 @@ def test_an_unreadable_verdict_does_not_stop_the_site_accepting_writes(
 	Deliberately not using the `quota` fixture, which replaces the very function
 	under test.
 	"""
-	from oneapp.oneapp_core import sync
-	from oneapp.oneapp_core.storage import quota as module
+	from oneapp.onespace import sync
+	from oneapp.onestorage import quota as module
 
 	def explode():
 		raise RuntimeError("Unknown column 'quota_json' in 'field list'")

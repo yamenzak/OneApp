@@ -135,7 +135,7 @@
             Drawn from what the model declares rather than from anything here:
             the list of voices a provider offers is the provider's to change,
             and a copy of it in this file would be a copy that goes stale. See
-            `oneapp_core/ai/options.py`.
+            `onespace/ai/options.py`.
           -->
           <div v-if="declared(feature).length" class="grid gap-3 sm:grid-cols-2">
             <FormControl

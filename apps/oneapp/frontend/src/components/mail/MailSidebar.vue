@@ -20,7 +20,7 @@
       <nav class="space-y-0.5">
         <!-- An address, and under it that mailbox's own folders — the
              Applicants and Suppliers somebody spent years sorting into. Read
-             off the server itself; see `oneapp_core/email/folders.py`. -->
+             off the server itself; see `onemail/folders.py`. -->
         <template v-for="one in shown" :key="one.key">
           <SidebarItem
             :icon="one.icon"

@@ -64,7 +64,7 @@ const fileMenu = (page) =>
  */
 async function computed(page, id, ref) {
   const res = await page.request.get(
-    `/api/method/oneapp.oneapp_core.sheets.read_range?sheet=${id}&tab=Sheet1&ref=${ref}`,
+    `/api/method/oneapp.onesheet.read_range?sheet=${id}&tab=Sheet1&ref=${ref}`,
   )
   expect(res.ok()).toBe(true)
   return (await res.json()).message.values[0][0]
@@ -558,7 +558,7 @@ test('a filled table says where its rows came from, and can be locked', async ({
   await page.goto('/one/files')
   const csrf = await page.evaluate(() => window.csrf_token)
   const signed = { 'X-Frappe-CSRF-Token': csrf }
-  await page.request.post('/api/method/oneapp.oneapp_core.sheets.unlock', {
+  await page.request.post('/api/method/oneapp.onesheet.unlock', {
     form: table, headers: signed,
   })
 
@@ -594,7 +594,7 @@ test('a filled table says where its rows came from, and can be locked', async ({
   // The real sheet and the real range, signed. A made-up sheet name would be
   // refused for not existing, and an unsigned POST for being unsigned — either
   // would "pass" this without the lock existing at all.
-  const refused = await page.request.post('/api/method/oneapp.oneapp_core.sheets.pull', {
+  const refused = await page.request.post('/api/method/oneapp.onesheet.pull', {
     form: { sheet: id, label: 'Attendees', ...table },
     headers: signed,
   })

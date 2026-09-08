@@ -117,7 +117,7 @@
    "label": "Is Recommended"
   },
   {
-   "description": "What else this model takes beyond the ask \u2014 a voice, a language, a size. A JSON array of {key, label, type, default, ...}; see `oneapp_core/ai/options.py` for the four types. Sent to every tenant with the catalogue and rendered under the model picker. Filled by the sync from the provider's own list \u2014 Cloudflare's input schema, Google's published voice table \u2014 so it is not a thing anyone transcribes.",
+   "description": "What else this model takes beyond the ask \u2014 a voice, a language, a size. A JSON array of {key, label, type, default, ...}; see `onespace/ai/options.py` for the four types. Sent to every tenant with the catalogue and rendered under the model picker. Filled by the sync from the provider's own list \u2014 Cloudflare's input schema, Google's published voice table \u2014 so it is not a thing anyone transcribes.",
    "fieldname": "options_json",
    "fieldtype": "Code",
    "label": "Options",

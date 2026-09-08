@@ -21,7 +21,7 @@ Creating the field here is idempotent and costs nothing on a site that has it.
 import frappe
 
 from oneapp.install import create_custom_fields
-from oneapp.oneapp_core.email.threading import THREAD_FIELD, key_for
+from oneapp.onemail.threading import THREAD_FIELD, key_for
 
 BATCH = 500
 

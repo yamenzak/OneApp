@@ -169,7 +169,7 @@
       <!--
         The same panel a document and a sheet get, over the same rows. A version
         of a `.py` is a blob and a moment like any other — see
-        `oneapp_core/versions.py`, where `Text` is the third store rather than a
+        `shared/versions.py`, where `Text` is the third store rather than a
         second mechanism.
       -->
       <VersionPanel

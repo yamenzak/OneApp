@@ -66,7 +66,7 @@ denormalised currency fields per invoice (`amount_after_retention`,
 nothing, which means there is nothing for the import to carry across and the
 question is only what the new system does when they start.
 
-It is built, in `oneapp_core/retention.py`, and it is this. A percentage on the
+It is built, in `onespace/retention.py`, and it is this. A percentage on the
 invoice puts a **negative row in Sales Taxes and Charges** against a
 *Retention Receivable* account, made once per company beside that company's own
 receivables. What lands in Debtors is then what the customer owes now, and what
@@ -264,7 +264,7 @@ None of these is a reason to stop; they are the order to build in.
 
 ## 7. How to migrate
 
-Not a script. `oneapp_core/importer.py` is an engine, and it is not
+Not a script. `onespace/importer.py` is an engine, and it is not
 RUA-specific: a plan is data — steps, field maps, value maps — so the next
 workspace arriving off its own Frappe site is a plan and no code at all.
 
@@ -303,7 +303,7 @@ a link resolved against a later step files an issue per row. `importer.check`
 reads both schemas — the source's over the wire, this site's locally — and
 reports all four. It touches nothing, so it is free to press.
 
-The plan itself is `oneapp_core/plans/rua.py`: eleven steps, declared as data.
+The plan itself is `onespace/plans/rua.py`: eleven steps, declared as data.
 Checked against the live source, every step reads clean —
 
 | Step | Rows | |

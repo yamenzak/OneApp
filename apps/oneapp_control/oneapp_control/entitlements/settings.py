@@ -10,7 +10,7 @@ over through `onespace_settings_groups`. Nothing downstream can tell them apart
 from the workspace's own; what differs is `roles`, which is what keeps a
 customer's account dialog and an operator's out of each other.
 
-Read by `oneapp.oneapp_core.workspace.all_groups`, so this file is the whole of
+Read by `oneapp.onespace.workspace.all_groups`, so this file is the whole of
 what an operator can change here.
 """
 
@@ -31,7 +31,7 @@ def _setting(key, label, **kw):
 	tenant app at module scope would make the control plane refuse to load
 	wherever `oneapp` is not installed.
 	"""
-	from oneapp.oneapp_core.workspace import Setting
+	from oneapp.onespace.workspace import Setting
 
 	return Setting(key, label, targets=[(SETTINGS, key)], **kw)
 

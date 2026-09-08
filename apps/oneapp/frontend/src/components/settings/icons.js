@@ -4,7 +4,7 @@
  * These literals are what make the CSS exist. frappe-ui renders `lucide-*`
  * names as Tailwind utility classes and the JIT only emits a class it can find
  * as a literal string in the source it scans — which is this directory, not
- * `oneapp_core/tabs.py`. A tab's icon is declared in Python now, where it
+ * `onespace/tabs.py`. A tab's icon is declared in Python now, where it
  * belongs with the audience that decides who sees the tab, so without this list
  * every one of them would render as an empty box.
  *

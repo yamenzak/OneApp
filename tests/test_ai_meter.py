@@ -11,7 +11,7 @@ import pytest
 
 @pytest.fixture
 def meter():
-	from oneapp.oneapp_core.ai import meter as module
+	from oneapp.onespace.ai import meter as module
 
 	return module
 

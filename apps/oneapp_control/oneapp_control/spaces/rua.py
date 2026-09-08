@@ -1,7 +1,7 @@
 """RUA Contracting — aluminium, glass and cladding, in Abu Dhabi.
 
 Read `docs/RUA.md` first: it is the argument, and this is the half a machine
-reads. Its companion is `oneapp/oneapp_core/plans/rua.py`, which brings their
+reads. Its companion is `oneapp/onespace/plans/rua.py`, which brings their
 four years of records across; between them they are the whole delivery.
 
 Everything here is over a doctype ERPNext, HRMS or OneSpace already ships. That
@@ -32,7 +32,7 @@ SPACE = {
 	"sort_order": 20,
 	"availability": "Restricted",
 	"description": "Projects, quotations, LPOs, invoices and the people on site.",
-	# What this space looks like, in four words. See `oneapp_core/theming.py`
+	# What this space looks like, in four words. See `onespace/theming.py`
 	# for the vocabulary and `lib/theme.js` for what each word moves.
 	#
 	# Dark, because the thing they open first is a photograph of a building and
@@ -129,7 +129,7 @@ DOCTYPES = [
 # is the same kind of thing, something we give a workspace somewhere to start
 # and then stop touching.
 #
-# `oneapp/oneapp_core/plans/rua.py` maps into them and creates none of them.
+# `oneapp/onespace/plans/rua.py` maps into them and creates none of them.
 # --------------------------------------------------------------------------- #
 
 # Their five project states, in their words. `PROJECT_STATUS` in the plan maps
@@ -175,7 +175,7 @@ CUSTOM_FIELDS = [
 	 "label": "Retention %", "fieldtype": "Percent", "insert_after": "project",
 	 "description": "Held back until the defects period ends. A percentage here "
 	                "deducts itself from the invoice and waits in Retention "
-	                "Receivable — see `oneapp_core/retention.py`. Zero on every "
+	                "Receivable — see `onespace/retention.py`. Zero on every "
 	                "invoice the old system ever issued."},
 	{"dt": "Sales Invoice", "fieldname": "custom_legacy_number", "label": "Old number",
 	 "fieldtype": "Data", "read_only": 1, "insert_after": "custom_retention_percentage",
@@ -202,7 +202,7 @@ SCREENS = [
 		# Opening a project is not opening a form. It is a building, a contract
 		# value, a percentage done, the variation orders hanging off it and
 		# every quotation, LPO, invoice and payment written against it — see
-		# `oneapp_core/showcase.py`. The hero is what is filed against the
+		# `onespace/showcase.py`. The hero is what is filed against the
 		# record, which for these people is the architect's perspectives.
 		"view_settings": json.dumps({"showcase": {
 			"images": True,

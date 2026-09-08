@@ -34,9 +34,16 @@ def gen():
 
 
 def _path(gen, name):
-	pkg, module_dir, _ = gen.APPS[gen.DOCTYPES[name]["app"]]
+	"""Where the doctype belongs — its *module's* directory, not its app's.
+
+	The tenant app is several Frappe modules now, so the app only decides which
+	package it is in; `module_of` decides which directory beside `modules.txt`.
+	"""
+	spec = gen.DOCTYPES[name]
+	pkg = gen.APPS[spec["app"]][0]
 	slug = doctype_slug(name)
-	return ROOT / "apps" / pkg / pkg / module_dir / "doctype" / slug / f"{slug}.json"
+	folder = gen.MODULE_DIRS[gen.module_of(spec)]
+	return ROOT / "apps" / pkg / pkg / folder / "doctype" / slug / f"{slug}.json"
 
 
 def test_every_doctype_on_disk_is_what_the_generator_would_write(gen):

@@ -23,7 +23,7 @@
       They were written here by hand and drawn for everybody, with the actual
       gate inside each endpoint — so the dialog could only be offered to admins,
       because a member opening it would have found ten tabs and been refused by
-      all of them. `oneapp_core/tabs.py` declares every tab with the audience it
+      all of them. `onespace/tabs.py` declares every tab with the audience it
       is for and returns the ones this reader may open, which is what makes one
       dialog serve the owner and the member.
     -->
@@ -107,7 +107,7 @@ import { __ } from '@/lib/runtime/translate'
 /**
  * Which component draws each `panel` tab.
  *
- * The other half of the contract in `oneapp_core/tabs.py`: the server says a
+ * The other half of the contract in `onespace/tabs.py`: the server says a
  * tab exists and who may open it, and this says what it looks like. A key on
  * one side with nothing on the other is a tab that renders as an empty panel —
  * silently, the way Vue does — so a test reads both lists and fails on either

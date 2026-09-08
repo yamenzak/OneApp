@@ -249,7 +249,7 @@ def _make_frappe():
 	utils = types.ModuleType("frappe.utils")
 	# `frappe.utils` is a real package in the framework and a plain module here,
 	# so a submodule import — `from frappe.utils.momentjs import …`, which
-	# `oneapp_core/workspace.py` does for the timezone list — fails with "not a
+	# `onespace/workspace.py` does for the timezone list — fails with "not a
 	# package" unless it is given a module of its own.
 	momentjs = types.ModuleType("frappe.utils.momentjs")
 	momentjs.get_all_timezones = lambda: ["UTC", "Asia/Dubai"]
@@ -432,7 +432,7 @@ def _make_frappe():
 	workflow.get_transitions = lambda doc, workflow=None, raise_exception=False: []
 	workflow.apply_workflow = lambda doc, action: doc
 
-	# `frappe.email` — the two classes `oneapp_core/email/folders.py` subclasses
+	# `frappe.email` — the two classes `onemail/folders.py` subclasses
 	# so a connected mailbox's folders survive the sync. Stubs with no behaviour
 	# on purpose: what is ours in that file is which folder a message came from
 	# and whether a Sent folder is exempt from the sender check, and both are
@@ -532,7 +532,7 @@ def _package_stubber(monkeypatch, package):
 @pytest.fixture
 def stub_spaceview(monkeypatch):
 	"""Stub a name across the screen package. See `_package_stubber`."""
-	from oneapp.oneapp_core import spaceview
+	from oneapp.onespace import spaceview
 
 	return _package_stubber(monkeypatch, spaceview)
 
@@ -540,7 +540,7 @@ def stub_spaceview(monkeypatch):
 @pytest.fixture
 def stub_mailbox(monkeypatch):
 	"""Stub a name across the mail package. See `_package_stubber`."""
-	from oneapp.oneapp_core.email import mailbox
+	from oneapp.onemail import mailbox
 
 	return _package_stubber(monkeypatch, mailbox)
 
@@ -548,6 +548,6 @@ def stub_mailbox(monkeypatch):
 @pytest.fixture
 def stub_importer(monkeypatch):
 	"""Stub a name across the import package. See `_package_stubber`."""
-	from oneapp.oneapp_core import importer
+	from oneapp.onespace import importer
 
 	return _package_stubber(monkeypatch, importer)

@@ -16,10 +16,10 @@ def collab(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core import collab as module
+	from oneapp.onespace import collab as module
 
 	return module
 
@@ -167,7 +167,7 @@ def test_write_access_carries_the_permission_to_share():
 	assigned to and the documents that could not be followed."""
 	import pathlib
 
-	source = pathlib.Path("apps/oneapp/oneapp/oneapp_core/sync.py").read_text()
+	source = pathlib.Path("apps/oneapp/oneapp/onespace/sync.py").read_text()
 	block = source.split("ACCESS_LEVELS = {")[1].split("}\n", 1)[0]
 	read, write, manage = block.split('"Read"')[1], block.split('"Write"')[1], block.split('"Manage"')[1]
 

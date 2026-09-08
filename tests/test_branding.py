@@ -28,21 +28,21 @@ SPA = ROOT / "apps/oneapp/frontend/src"
 # real name and bind a module the next test throws away.
 @pytest.fixture
 def branding():
-	from oneapp.oneapp_core import branding as module
+	from oneapp.onespace import branding as module
 
 	return module
 
 
 @pytest.fixture
 def theming():
-	from oneapp.oneapp_core import theming as module
+	from oneapp.onespace import theming as module
 
 	return module
 
 
 @pytest.fixture
 def workspace():
-	from oneapp.oneapp_core import workspace as module
+	from oneapp.onespace import workspace as module
 
 	return module
 
@@ -187,7 +187,7 @@ def test_saving_branding_puts_the_frameworks_pages_back_in_step():
 	"""Otherwise the colour is in the app and the sign-in page is still grey."""
 	from tests.sources import text
 
-	body = text(ROOT / "apps/oneapp/oneapp/oneapp_core/workspace.py")
+	body = text(ROOT / "apps/oneapp/oneapp/onespace/workspace.py")
 	assert "branding.refresh()" in body
 
 
@@ -244,10 +244,10 @@ def test_the_line_under_the_sign_in_page_is_ours():
 	ERPNext". Both land on the sign-in page — the one page every person in a
 	workspace sees before they are anybody, and the last place a supplier's name
 	belongs. So we set the field, and the fallback never runs."""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/branding.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onespace/branding.py").read_text()
 	assert 'FOOTER = "OneSpace"' in source
 	assert '"footer_powered"' in source
 	# And it is written on every sync, not only when somebody opens the tab:
 	# a workspace nobody has been into is exactly the one still saying ERPNext.
-	sync = (ROOT / "apps/oneapp/oneapp/oneapp_core/sync.py").read_text()
+	sync = (ROOT / "apps/oneapp/oneapp/onespace/sync.py").read_text()
 	assert "branding.refresh()" in sync.split("def sync_branding")[1].split("\ndef ")[0]

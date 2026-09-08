@@ -109,9 +109,9 @@ word and not four — a workspace is not an application, it is the frame around
 several, and a workspace-wide `ground` or `mode` would be the reader's
 light-or-dark preference taken away from them. It reaches the pages Frappe
 renders for itself as well, which is how the sign-in page ends up the same
-colour as the workspace behind it; `oneapp_core/branding.py` is both halves.
+colour as the workspace behind it; `onespace/branding.py` is both halves.
 
-A theme is checked where the session is built (`oneapp_core/theming.py`), field
+A theme is checked where the session is built (`onespace/theming.py`), field
 by field — a good accent and a bad radius keeps the accent — so a hex with a typo
 renders the default look rather than a broken one, and the space arrives already
 themed with no light frame flashing before it. It is put on `<html>` rather than
@@ -447,7 +447,7 @@ colour it is, whether it is archived, and the order of the cards inside it are
 four facts about how *this reader* works — and Frappe keeps them on a Kanban
 Board doctype. Here they go in `view_settings.board.arrangement`, beside the
 field the board is columns of, saved by the same button as the filters and
-switchable with the view. `oneapp_core/board.py` bounds them: everything is
+switchable with the view. `onespace/board.py` bounds them: everything is
 keyed by a column's **value** — `Open`, `HR-EMP-00042` — which is a string the
 server cannot check against anything, so it checks lengths, counts and a closed
 set of nine colours instead.
@@ -1114,7 +1114,7 @@ there: a week does not belong to one space. `/one/calendar` is a **merge**, not 
 nothing on it is written here, every entry belongs to a record somewhere else,
 says which, and opens it.
 
-Two sources, both already permissioned, in `oneapp_core/diary.py` (named
+Two sources, both already permissioned, in `onecalendar/diary.py` (named
 `diary` because a module called `calendar` inside a package is one import from
 shadowing the standard library's):
 
@@ -1520,13 +1520,13 @@ A tenant site is a real Frappe site, so the name and logo on its sign-in page,
 who may sign in, and what a date looks like all already exist — behind a desk
 its owner never sees. Those are the customer's.
 
-`oneapp_core/workspace.py` is **one object serving as both the spec the SPA
+`onespace/workspace.py` is **one object serving as both the spec the SPA
 renders and the allowlist the write path checks**, so a setting is writable
 exactly when it is visible and there is no code path for anything else.
 
 **One dialog, and what is in it depends on who opened it.** It used to be
 offered to admins alone, because every tab was the workspace's and a member
-opening it would have been refused by all of them. `oneapp_core/tabs.py`
+opening it would have been refused by all of them. `onespace/tabs.py`
 declares each tab with the audience it is for — `everyone`, `mailbox`, `admin`,
 `support` — and the shell draws only the ones the server returned, so the row
 in the account menu is a door that opens for whoever presses it. An audience is a
@@ -1656,7 +1656,7 @@ Two things were on this list and are built, and they are named here because
 designing around their absence would now be designing around nothing:
 **notification rules and email templates** (`alerts.py` with its settings
 panel, and `email/templates.py` with its own) and **data import**
-(`oneapp_core/importer/`, which maps another site's records across with a plan,
+(`onespace/importer/`, which maps another site's records across with a plan,
 a dry run and a report).
 
 * **A write the assistant can make.** Every tool in `chat/toolbox.py` reads.

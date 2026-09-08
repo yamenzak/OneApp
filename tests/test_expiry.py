@@ -14,10 +14,10 @@ def rule(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core.doctype.compliance_document.compliance_document import standing
+	from oneapp.onespace.doctype.compliance_document.compliance_document import standing
 
 	return standing
 
@@ -81,13 +81,13 @@ def test_the_sweep_only_warns_on_the_way_in(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core import expiry
+	from oneapp.onespace import expiry
 
 	source = (
-		__import__("pathlib").Path("apps/oneapp/oneapp/oneapp_core/expiry.py").read_text()
+		__import__("pathlib").Path("apps/oneapp/oneapp/onespace/expiry.py").read_text()
 	)
 	# `moved` is the guard, and it is what makes the warning once rather than
 	# daily. Read out of the source because the alternative is a fake scheduler.
@@ -109,7 +109,7 @@ def test_the_statuses_sort_into_urgency():
 	import pathlib
 
 	schema = json.loads(pathlib.Path(
-		"apps/oneapp/oneapp/oneapp_core/doctype/compliance_document/"
+		"apps/oneapp/oneapp/onespace/doctype/compliance_document/"
 		"compliance_document.json"
 	).read_text())
 	options = next(f for f in schema["fields"] if f["fieldname"] == "status")["options"]

@@ -2,7 +2,7 @@
  * Loading and saving, in the shape the editor above expects.
  *
  * Upstream this file talks to `sheets.api.get_sheet` / `save_sheet` on a `Sheet`
- * doctype. Here it talks to `oneapp.oneapp_core.sheets`, where a sheet is a
+ * doctype. Here it talks to `oneapp.onesheet`, where a sheet is a
  * `File` in the Drive — so the same five refs and five functions come back, and
  * `index.vue` is untouched, but three things behind them differ.
  *

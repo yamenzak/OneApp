@@ -6,39 +6,39 @@ import { __ } from '@/lib/runtime/translate'
 export const settings = {
   // --- Yours, not the workspace's -----------------------------------------
   //
-  // `oneapp_core/me.py`. Every one of these names no user: the server writes
+  // `onespace/me.py`. Every one of these names no user: the server writes
   // `frappe.session.user` and nothing else, so there is no shape of request
   // that edits a colleague.
   profile: () =>
-    callMethod('oneapp.oneapp_core.me.profile', {}, { silent: true, method: 'GET' }),
+    callMethod('oneapp.onespace.me.profile', {}, { silent: true, method: 'GET' }),
 
   saveProfile: (values) =>
-    callMethod('oneapp.oneapp_core.me.save_profile', { values }, {
+    callMethod('oneapp.onespace.me.save_profile', { values }, {
       success: __('Profile saved'),
     }),
 
   security: () =>
-    callMethod('oneapp.oneapp_core.me.security', {}, { silent: true, method: 'GET' }),
+    callMethod('oneapp.onespace.me.security', {}, { silent: true, method: 'GET' }),
 
   // Not silent and not toasted: the panel shows the refusal in the form, which
   // is where the correction has to be made.
   changePassword: (oldPassword, newPassword) =>
-    callMethod('oneapp.oneapp_core.me.change_password', {
+    callMethod('oneapp.onespace.me.change_password', {
       old_password: oldPassword, new_password: newPassword,
     }, { success: __('Password changed') }),
 
   endOtherSessions: () =>
-    callMethod('oneapp.oneapp_core.me.end_other_sessions', {}, {
+    callMethod('oneapp.onespace.me.end_other_sessions', {}, {
       success: __('Signed out everywhere else'),
     }),
 
 
   settings: () =>
-    callMethod('oneapp.oneapp_core.workspace.get', {}, { silent: true, method: 'GET' }),
+    callMethod('oneapp.onespace.workspace.get', {}, { silent: true, method: 'GET' }),
 
   save: (group, values) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.save',
+      'oneapp.onespace.workspace.save',
       { group, values },
       {
         successMessage: __('Saved'),
@@ -48,11 +48,11 @@ export const settings = {
   // The AI tab is not a field list like the rest: it is the feature registry
   // rendered, so the server sends rows rather than a spec. What it never sends
   // is our own instructions for a feature — only what the workspace added.
-  ai: () => callMethod('oneapp.oneapp_core.ai.settings.get', {}, { silent: true, method: 'GET' }),
+  ai: () => callMethod('oneapp.onespace.ai.settings.get', {}, { silent: true, method: 'GET' }),
 
   saveAi: (values) =>
     callMethod(
-      'oneapp.oneapp_core.ai.settings.update',
+      'oneapp.onespace.ai.settings.update',
       { values },
       {
         successMessage: __('Saved'),
@@ -66,11 +66,11 @@ export const settings = {
   // API. That is what stops a screen being used to read a doctype the
   // entitlement did not include, or to write a field it does not show.
 
-  books: () => callMethod('oneapp.oneapp_core.books.status', {}, { silent: true, method: 'GET' }),
+  books: () => callMethod('oneapp.onespace.books.status', {}, { silent: true, method: 'GET' }),
 
   charts: (country) =>
     callMethod(
-      'oneapp.oneapp_core.books.charts',
+      'oneapp.onespace.books.charts',
       { country },
       {
         silent: true,
@@ -80,7 +80,7 @@ export const settings = {
 
   resetBooks: () =>
     callMethod(
-      'oneapp.oneapp_core.books.reset',
+      'oneapp.onespace.books.reset',
       {},
       {
         successMessage: __('Books cleared'),
@@ -88,7 +88,7 @@ export const settings = {
     ),
 
   setUpBooks: (payload) =>
-    callMethod('oneapp.oneapp_core.books.create', payload, {
+    callMethod('oneapp.onespace.books.create', payload, {
       successMessage: __('Books are ready'),
     }),
 
@@ -96,27 +96,27 @@ export const settings = {
   //
   // "Tell the accounts role when an invoice is three days past due." Frappe's
   // own `Notification`, gated to this workspace's doctypes and narrowed to the
-  // sentence somebody would say out loud — see `oneapp_core/alerts.py`.
+  // sentence somebody would say out loud — see `onespace/alerts.py`.
   alerts: () =>
-    callMethod('oneapp.oneapp_core.workspace.alerts', {}, { silent: true, method: 'GET' }),
+    callMethod('oneapp.onespace.workspace.alerts', {}, { silent: true, method: 'GET' }),
 
   saveAlert: (values) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.save_alert',
+      'oneapp.onespace.workspace.save_alert',
       { values: JSON.stringify(values) },
       { successMessage: __('Alert saved') },
     ),
 
   setAlertEnabled: (name, enabled) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.set_alert_enabled',
+      'oneapp.onespace.workspace.set_alert_enabled',
       { name, enabled: enabled ? 1 : 0 },
       { silent: true },
     ),
 
   removeAlert: (name) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.remove_alert',
+      'oneapp.onespace.workspace.remove_alert',
       { name },
       { successMessage: __('Alert removed') },
     ),
@@ -125,44 +125,44 @@ export const settings = {
   // same endpoint the composer reads — one list, not an admin copy of it.
   saveMailTemplate: (values) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.save_mail_template',
+      'oneapp.onespace.workspace.save_mail_template',
       { values: JSON.stringify(values) },
       { successMessage: __('Template saved') },
     ),
 
   removeMailTemplate: (name) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.remove_mail_template',
+      'oneapp.onespace.workspace.remove_mail_template',
       { name },
       { successMessage: __('Template removed') },
     ),
 
   naming: () =>
-    callMethod('oneapp.oneapp_core.workspace.naming', {}, { silent: true, method: 'GET' }),
+    callMethod('oneapp.onespace.workspace.naming', {}, { silent: true, method: 'GET' }),
 
   setNaming: (doctype, series) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.set_naming',
+      'oneapp.onespace.workspace.set_naming',
       { doctype, series: JSON.stringify(series) },
       { successMessage: __('Series saved') },
     ),
 
   setNamingCounter: (doctype, prefix, value) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.set_naming_counter',
+      'oneapp.onespace.workspace.set_naming_counter',
       { doctype, prefix, value },
       { successMessage: __('Counter moved') },
     ),
 
   namingPreview: (doctype, prefix) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.naming_preview',
+      'oneapp.onespace.workspace.naming_preview',
       { doctype, prefix },
       { silent: true, method: 'GET' },
     ),
 
   // --- bringing their data with them ------------------------------------
   //
-  // See `oneapp_core/importer.py`. The panel is one read and two buttons; the
+  // See `onespace/importer.py`. The panel is one read and two buttons; the
   // rest of this is watching a job somebody else is running.
 }

@@ -4,7 +4,7 @@
 
     A role is built out of *this* workspace's own screens, so it is a fact
     about the workspace and belongs here rather than at another address. The
-    rows are the control plane's and `oneapp_core/account.py` relays. See
+    rows are the control plane's and `onespace/account.py` relays. See
     `docs/MARKETPLACE.md` §2.
 
     Beside People rather than inside it: a role exists whether or not anybody

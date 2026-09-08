@@ -3,7 +3,7 @@
  *
  * Four calls and none of them names a model, a prompt or a limit. That is the
  * whole boundary: what the assistant may do is declared on the server in
- * `oneapp_core/chat/assistant.py` as an `@ai_feature`, and the browser picks a
+ * `onespace/chat/assistant.py` as an `@ai_feature`, and the browser picks a
  * thread and types a question. There is nothing here to configure and nowhere
  * to put a key.
  *
@@ -18,12 +18,12 @@ import { callMethod } from '@/lib/runtime/resource'
 
 export const assistant = {
   assistantSessions: () =>
-    callMethod('oneapp.oneapp_core.chat.sessions', {}, {
+    callMethod('oneapp.onespace.chat.sessions', {}, {
       silent: true, method: 'GET',
     }),
 
   assistantMessages: (session) =>
-    callMethod('oneapp.oneapp_core.chat.messages', { session }, {
+    callMethod('oneapp.onespace.chat.messages', { session }, {
       silent: true, method: 'GET',
     }),
 
@@ -32,10 +32,10 @@ export const assistant = {
   // every part of it through the same checks a click goes through, so a stale
   // one narrows to nothing rather than widening anything.
   askAssistant: (question, session = '', on = null) =>
-    callMethod('oneapp.oneapp_core.chat.send', { question, session, on }),
+    callMethod('oneapp.onespace.chat.send', { question, session, on }),
 
   forgetChat: (session) =>
-    callMethod('oneapp.oneapp_core.chat.forget', { session }, {
+    callMethod('oneapp.onespace.chat.forget', { session }, {
       success: 'Conversation deleted',
     }),
 }

@@ -3989,7 +3989,7 @@ async function deliver(tenant, payload) {
   const body = JSON.stringify(payload, Object.keys(payload).sort());
   const { signature, timestamp } = await sign(tenant.secret, body);
   const response = await fetch(
-    `${tenant.url}/api/method/oneapp.oneapp_core.email.inbound.receive`,
+    `${tenant.url}/api/method/oneapp.onemail.inbound.receive`,
     {
       method: "POST",
       headers: {

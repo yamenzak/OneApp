@@ -588,7 +588,7 @@ doctype(
         # A Link, not free text, because this is not decoration: it reaches a
         # tenant through the sync payload, names the Company that is created
         # there, and picks its chart of accounts — `_charts_for(country)` in
-        # `oneapp/oneapp_core/books.py` looks up by exactly this string. A typo
+        # `oneapp/onespace/books.py` looks up by exactly this string. A typo
         # produced a workspace whose books quietly never got set up.
         #
         # `Country` is core Frappe (`frappe/geo`), so this costs no dependency,
@@ -656,7 +656,7 @@ doctype(
 # The tenant end of the signed sync: quotas, usage, credits and the space
 # manifest, cached here so every page load is a local read rather than a call
 # across the wire to a site that may be unreachable. Nothing here is authored —
-# every field is written by `oneapp_core.sync` and read by the app.
+# every field is written by `onespace.sync` and read by the app.
 #
 # It was the one doctype maintained by hand rather than declared here, which
 # made it the one doctype `test_every_doctype_on_disk_is_what_the_generator_

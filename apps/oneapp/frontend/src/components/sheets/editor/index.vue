@@ -1391,7 +1391,7 @@ const namedRanges = createNamedRanges({ isBuiltinFunction: n => _builtinFns.has(
 sheet.setNamedRangeResolver?.(name => namedRanges.resolve(name))
 
 // Printing. The dialog builds the page on the server and prints the frame it
-// previews — a sheet's paper is `oneapp_core/sheets/printing.py`, not the
+// previews — a sheet's paper is `onesheet/printing.py`, not the
 // browser's idea of what this window looks like.
 const printing = ref(false)
 function openPrint() { printing.value = true }

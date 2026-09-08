@@ -4,7 +4,7 @@
 
     The shaping is deliberately not here. The same aggregate feeds a number
     card and a donut, and two shapings of one answer is how a dashboard comes
-    to disagree with itself — so `oneapp_core/dashboard.py` returns rows of
+    to disagree with itself — so `onespace/dashboard.py` returns rows of
     `{label, value}` (plus `series` where there is one) and this decides only
     which frappe-ui component reads them and with which keys.
 

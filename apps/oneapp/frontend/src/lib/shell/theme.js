@@ -2,7 +2,7 @@
  * A space's declared look, turned into the variables that carry it.
  *
  * The manifest says four words — a mode, an accent, a ground, a radius; see
- * `oneapp_core/theming.py` for why four and not a stylesheet. This owns *which*
+ * `onespace/theming.py` for why four and not a stylesheet. This owns *which*
  * CSS custom properties each of those words moves, so a space declares an
  * intent and never a token.
  *
@@ -16,7 +16,7 @@
  *
  * Two layers, not one. The *workspace* has a colour of its own — one accent, set
  * in the Branding settings tab and carried in the boot payload
- * (`oneapp_core/branding.py`) — and `setBrand` makes it the floor every space
+ * (`onespace/branding.py`) — and `setBrand` makes it the floor every space
  * theme stands on. So a space that declares nothing is the workspace's colour
  * rather than our grey, a space that declares an accent still wins, and clearing
  * a space's theme goes back to the workspace rather than to bare default.

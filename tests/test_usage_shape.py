@@ -20,7 +20,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 USAGE_BAR = ROOT / "apps/oneapp/frontend/src/components/UsageBar.vue"
-TENANT_QUOTA = ROOT / "apps/oneapp/oneapp/oneapp_core/storage/quota.py"
+TENANT_QUOTA = ROOT / "apps/oneapp/oneapp/onestorage/quota.py"
 CONTROL_CUSTOMER = ROOT / "apps/oneapp_control/oneapp_control/api/customer.py"
 
 

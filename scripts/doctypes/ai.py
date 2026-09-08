@@ -112,7 +112,7 @@ doctype(
           description="What else this model takes beyond the ask — a voice, a "
                       "language, a size. A JSON array of "
                       "{key, label, type, default, ...}; see "
-                      "`oneapp_core/ai/options.py` for the four types. Sent to "
+                      "`onespace/ai/options.py` for the four types. Sent to "
                       "every tenant with the catalogue and rendered under the "
                       "model picker. Filled by the sync from the provider's "
                       "own list — Cloudflare's input schema, Google's published "

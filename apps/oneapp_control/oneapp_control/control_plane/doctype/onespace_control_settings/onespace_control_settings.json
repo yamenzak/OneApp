@@ -254,7 +254,7 @@
   },
   {
    "default": "0",
-   "description": "Let a tenant site fetch a URL somebody typed into a cell to read its title and favicon. Off by default: it is an outbound request to an arbitrary host from inside the network, on a customer's say-so. The fetch is guarded against private address space either way \u2014 see `oneapp_core/link_preview.py`.",
+   "description": "Let a tenant site fetch a URL somebody typed into a cell to read its title and favicon. Off by default: it is an outbound request to an arbitrary host from inside the network, on a customer's say-so. The fetch is guarded against private address space either way \u2014 see `onespace/link_preview.py`.",
    "fieldname": "link_previews",
    "fieldtype": "Check",
    "label": "Link Previews"

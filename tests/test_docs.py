@@ -5,7 +5,7 @@ on — the same one a sheet rests on.
 
 **A document is a `File`.** Not a doctype of its own, so its permission, its
 folder, its share, its bin and its link are all things that already existed.
-Every read and write in `oneapp_core/docs` goes through the File, and a path
+Every read and write in `onedoc` goes through the File, and a path
 that did not would be a path with no access model at all.
 
 **Two blobs go up and only one is authoritative.** `content` is the ProseMirror
@@ -28,14 +28,14 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-DOCS = ROOT / "apps/oneapp/oneapp/oneapp_core/docs"
-SHEETS = ROOT / "apps/oneapp/oneapp/oneapp_core/sheets"
+DOCS = ROOT / "apps/oneapp/oneapp/onedoc"
+SHEETS = ROOT / "apps/oneapp/oneapp/onesheet"
 FRONTEND = ROOT / "apps/oneapp/frontend/src"
 
 
 @pytest.fixture
 def docs(stub_frappe):
-	from oneapp.oneapp_core import docs as module
+	from oneapp import onedoc as module
 
 	return module
 
@@ -77,7 +77,7 @@ def test_making_one_against_a_record_asks_that_record(docs):
 
 
 def test_the_package_re_exports_everything_it_whitelists(docs):
-	"""`oneapp.oneapp_core.docs.save_doc` has to resolve, or it is a 404.
+	"""`oneapp.onedoc.save_doc` has to resolve, or it is a 404.
 
 	A whitelisted function inside a package module is not reachable by the
 	package's own path unless the package re-exports it.
@@ -105,7 +105,7 @@ def test_a_documents_prose_goes_when_its_file_does(docs):
 	block = source[source.index("def on_trash("):]
 	assert "Doc Body" in block
 	hooks = (ROOT / "apps/oneapp/oneapp/hooks.py").read_text()
-	assert "docs.on_trash" in hooks
+	assert "onedoc.on_trash" in hooks
 
 
 # --------------------------------------------------------------------------- #
@@ -133,7 +133,7 @@ def test_python_and_the_browser_agree_about_what_opens_in_the_editor(docs):
 
 
 def _catalogue() -> dict:
-	source = ROOT / "apps/oneapp/oneapp/oneapp_core/languages.py"
+	source = ROOT / "apps/oneapp/oneapp/onecode/languages.py"
 	namespace = {}
 	exec(compile(source.read_text(), str(source), "exec"), namespace)
 	return namespace
@@ -159,7 +159,7 @@ def test_one_function_decides_whether_a_click_routes(docs):
 def test_a_template_is_the_same_flag_on_both(docs):
 	"""One shape rather than two. A second column would be a second listing, a
 	second menu and a second thing to explain."""
-	from oneapp.oneapp_core import sheets
+	from oneapp import onesheet as sheets
 
 	assert docs.TEMPLATE_FIELD == sheets.TEMPLATE_FIELD == "custom_is_template"
 

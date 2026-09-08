@@ -59,7 +59,7 @@ test('a child table opens in a sheet, headings and all', async ({ page }, info) 
   // The contract the pull reads: a named range drawn round the block, starting
   // at row one so the headings are inside it. Nobody typed either.
   const res = await page.request.get(
-    `/api/method/oneapp.oneapp_core.sheets.named_ranges?sheet=${name}`,
+    `/api/method/oneapp.onesheet.named_ranges?sheet=${name}`,
   )
   expect(res.ok()).toBe(true)
   const [range] = (await res.json()).message
@@ -67,7 +67,7 @@ test('a child table opens in a sheet, headings and all', async ({ page }, info) 
 
   // And the same range reads back the three notification rows it came from.
   const seen = await page.request.get(
-    `/api/method/oneapp.oneapp_core.sheets.preview?sheet=${name}&label=${range.label}`,
+    `/api/method/oneapp.onesheet.preview?sheet=${name}&label=${range.label}`,
   )
   expect(seen.ok()).toBe(true)
   const preview = (await seen.json()).message
@@ -106,7 +106,7 @@ test("a record's Files tab makes a document of its own", async ({ page }, info) 
 
   const name = nameInUrl(page, '/one/docs/')
   const res = await page.request.get(
-    `/api/method/oneapp.oneapp_core.docs.get_doc?name=${name}`,
+    `/api/method/oneapp.onedoc.get_doc?name=${name}`,
   )
   expect(res.ok()).toBe(true)
 

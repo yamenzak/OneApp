@@ -12,7 +12,7 @@ GB = 1024**3
 
 @pytest.fixture
 def quota(stub_frappe, monkeypatch):
-	from oneapp.oneapp_core.storage import quota as module
+	from oneapp.onestorage import quota as module
 
 	frappe = stub_frappe
 	frappe.cache().store.clear()
@@ -26,7 +26,7 @@ def quota(stub_frappe, monkeypatch):
 
 @pytest.fixture
 def jobs(stub_frappe, monkeypatch):
-	from oneapp.oneapp_core import jobs as module
+	from oneapp.onespace import jobs as module
 
 	return module
 

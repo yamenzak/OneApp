@@ -14,7 +14,7 @@ whether a request naming one may run — so what is here is exactly what can be
 called, and `spaceview.run_action` still asks Frappe whether this person may
 write the record before calling anything.
 
-Read by `oneapp.oneapp_core.spaceview.actions`.
+Read by `oneapp.onespace.spaceview.actions`.
 """
 
 from oneapp_control.entitlements.operator import SPACE_CODE

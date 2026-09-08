@@ -17,10 +17,10 @@ def notifications(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core import notifications as module
+	from oneapp.onespace import notifications as module
 
 	return module
 
@@ -105,10 +105,10 @@ def test_a_workspace_notice_reaches_the_owner_by_email_not_by_name(stub_frappe, 
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core import sync as module
+	from oneapp.onespace import sync as module
 
 	sent = []
 	written = []
@@ -158,10 +158,10 @@ def test_a_notice_with_no_owner_still_advances_the_watermark(stub_frappe, monkey
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core import sync as module
+	from oneapp.onespace import sync as module
 
 	written = []
 	monkeypatch.setattr(module.frappe, "get_all", lambda *a, **k: [])

@@ -17,7 +17,7 @@ const SCREEN = 'approvals'
 const call = (page, method, body) =>
   page.evaluate(
     ([name, payload]) =>
-      fetch(`/api/method/oneapp.oneapp_core.spaceview.${name}`, {
+      fetch(`/api/method/oneapp.onespace.spaceview.${name}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ const clean = async (page, name) => {
       screen: 'approvals',
       name: record,
     })
-    return fetch(`/api/method/oneapp.oneapp_core.spaceview.record?${asked}`)
+    return fetch(`/api/method/oneapp.onespace.spaceview.record?${asked}`)
       .then((r) => r.json())
       .then((one) => one.message?._state?.docstatus)
   }, [name])
@@ -101,7 +101,7 @@ test('a workflow owns the transition, and approving is what submits', async ({
       screen: 'approvals',
       name: record,
     })
-    return fetch(`/api/method/oneapp.oneapp_core.spaceview.record?${asked}`)
+    return fetch(`/api/method/oneapp.onespace.spaceview.record?${asked}`)
       .then((r) => r.json())
       .then((one) => one.message?._state?.docstatus)
   }, [name])

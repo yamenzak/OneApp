@@ -599,7 +599,7 @@ test('an attachment shows its size and opens in the previewer', async ({
   expectNoRealErrors(errors)
 })
 
-const MAILBOX = 'oneapp.oneapp_core.email.mailbox.reading'
+const MAILBOX = 'oneapp.onemail.mailbox.reading'
 // The thread key is the subject, lowercased with the `Re:` off — the whole of
 // what threading is here. Written out because this spec sets read state
 // straight through the API and needs to name the conversation before it has a

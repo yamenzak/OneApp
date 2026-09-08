@@ -151,7 +151,7 @@ def forget_spaces(doc=None, method=None) -> None:
 	which is not an error: a tenant's cache is invalidated by its own sync.
 	"""
 	try:
-		from oneapp.oneapp_core import sync
+		from oneapp.onespace import sync
 	except ImportError:
 		return
 	sync.invalidate()

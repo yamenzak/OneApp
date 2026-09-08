@@ -24,7 +24,7 @@ const prose = (page) => page.locator('.ProseMirror').first()
 /** What the server holds for this document, whatever the browser thinks. */
 async function stored(page, name) {
   const res = await page.request.get(
-    `/api/method/oneapp.oneapp_core.docs.get_doc?name=${name}`,
+    `/api/method/oneapp.onedoc.get_doc?name=${name}`,
   )
   expect(res.ok()).toBe(true)
   return (await res.json()).message
@@ -33,7 +33,7 @@ async function stored(page, name) {
 /** What a text file's bytes say, straight from the server. */
 async function storedText(page, name) {
   const res = await page.request.get(
-    `/api/method/oneapp.oneapp_core.docs.get_text?name=${name}`,
+    `/api/method/oneapp.onedoc.get_text?name=${name}`,
   )
   expect(res.ok()).toBe(true)
   return (await res.json()).message.content || ''
@@ -164,7 +164,7 @@ test('a markdown file is made, edited as text, and downloads as itself', async (
     .poll(
       async () => {
         const res = await page.request.get(
-          `/api/method/oneapp.oneapp_core.docs.get_text?name=${name}`,
+          `/api/method/oneapp.onedoc.get_text?name=${name}`,
         )
         return res.ok() ? (await res.json()).message.content : ''
       },
@@ -186,7 +186,7 @@ test('a document is found by what it says, not only by its name', async ({ page 
     .poll(
       async () => {
         const found = await page.request.get(
-          '/api/method/oneapp.oneapp_core.drive.listing?place=all&search=Vermiculite',
+          '/api/method/oneapp.onestorage.listing?place=all&search=Vermiculite',
         )
         if (!found.ok()) return []
         return (await found.json()).message.files.map((one) => one.name)
@@ -198,7 +198,7 @@ test('a document is found by what it says, not only by its name', async ({ page 
 
 test('a code file keeps versions too, and an old one goes back', async ({ page }) => {
   // The third store. A version of a `.py` is a blob and a moment like a
-  // version of anything else — `oneapp_core/versions.py` gained a kind, not a
+  // version of anything else — `shared/versions.py` gained a kind, not a
   // second mechanism — and this is the proof that the panel, the policy and
   // the restore all reach it.
   await page.goto('/one/files')

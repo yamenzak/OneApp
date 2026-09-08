@@ -17,7 +17,7 @@ import { session } from '@/lib/shell/session'
  * serialisation to keep in step with the first.
  */
 
-const METHOD = 'oneapp.oneapp_core.notifications'
+const METHOD = 'oneapp.onespace.notifications'
 
 export const notifications = reactive({
   rows: [],

@@ -217,7 +217,7 @@ def test_a_class_list_in_a_constant_is_read(source):
         "const order = 'modified desc'",
         # One token is a name, not a list.
         "const icon = 'lucide-arrow-up'",
-        "const method = 'oneapp.oneapp_core.spaceview.rows'",
+        "const method = 'oneapp.onespace.spaceview.rows'",
         # A hyphenated English word is not enough on its own.
         "const note = 'a well-known thing happened'",
     ],

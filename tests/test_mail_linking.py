@@ -26,7 +26,7 @@ def linking(monkeypatch):
 	Imported inside the fixture, not at module scope: `frappe` is stubbed by an
 	autouse fixture in conftest, and a module-level import would run before it.
 	"""
-	from oneapp.oneapp_core.email import linking as module
+	from oneapp.onemail import linking as module
 
 	monkeypatch.setattr(
 		module.sync, "granted_doctypes",
@@ -236,7 +236,7 @@ def test_the_record_reader_applies_the_readers_own_permission():
 	address they were never granted. `get_list` is what stops it, and it is not
 	something a reviewer would notice going missing.
 	"""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/spaceview/mail.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onespace/spaceview/mail.py").read_text()
 	body = source[source.index("def correspondence("):source.index("def write(")]
 
 	assert 'frappe.get_list(\n\t\t"Communication"' in body, (
@@ -256,8 +256,8 @@ def test_nothing_in_the_record_reader_shares_a_message():
 	# and a guard that cannot tell an explanation from an instruction is a guard
 	# that has to be worked around.
 	for path in (
-		"apps/oneapp/oneapp/oneapp_core/spaceview/mail.py",
-		"apps/oneapp/oneapp/oneapp_core/email/linking.py",
+		"apps/oneapp/oneapp/onespace/spaceview/mail.py",
+		"apps/oneapp/oneapp/onemail/linking.py",
 	):
 		assert "frappe.share.add" not in (ROOT / path).read_text(), path
 

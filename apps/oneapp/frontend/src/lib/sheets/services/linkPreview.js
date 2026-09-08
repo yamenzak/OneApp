@@ -1,7 +1,7 @@
 /**
  * The hover card for a URL in a cell.
  *
- * The server half is `oneapp_core/link_preview.py`, vendored from Frappe with
+ * The server half is `onespace/link_preview.py`, vendored from Frappe with
  * its SSRF guards intact — the browser cannot fetch a foreign page, so the
  * tenant's server does, which is the whole reason that module is as careful as
  * it is. Off unless an operator turned it on, and a site that has not says so
@@ -21,7 +21,7 @@ export function fetchLinkPreview(url) {
   if (held.has(url)) return Promise.resolve(held.get(url))
 
   const asked = callMethod(
-    'oneapp.oneapp_core.link_preview.get_link_preview',
+    'oneapp.onespace.link_preview.get_link_preview',
     { url },
     { silent: true, method: 'GET' },
   )

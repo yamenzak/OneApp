@@ -5,7 +5,7 @@
  * testing on their own. The state below is here for a different reason: the
  * grid and the rail beside it are two components asking the same question, and
  * passing it through the shell's slot would mean the shell knowing what a diary
- * is. `oneapp_core/diary.py` is the other half.
+ * is. `onecalendar/diary.py` is the other half.
  */
 import { reactive } from 'vue'
 

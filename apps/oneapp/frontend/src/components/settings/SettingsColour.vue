@@ -6,7 +6,7 @@
     people want a colour that looks like theirs and a few have one written down
     to six digits. What is *not* here is a second theme editor — the workspace
     declares an accent and nothing else, for the same reason a space declares
-    four words and not a stylesheet (`oneapp_core/theming.py`).
+    four words and not a stylesheet (`onespace/theming.py`).
 
     The preview is the point of the control. `variables()` is the same mapping
     the document itself is painted with, so the button below is not an

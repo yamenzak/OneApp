@@ -5,7 +5,7 @@
     It used to be a screen on the control plane, at another address, which is
     where the rows still live — a person may own three workspaces and only the
     control plane knows that. What changed is where you stand to read them:
-    `oneapp_core/account.py` relays the question, and `docs/MARKETPLACE.md` §2
+    `onespace/account.py` relays the question, and `docs/MARKETPLACE.md` §2
     is why this one moved and Billing did not.
   -->
   <SettingsHeader

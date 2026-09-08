@@ -17,7 +17,7 @@ def install_notification_types():
 	Also on `after_migrate`, because a site installed before the type existed
 	has to get it too — see hooks.
 	"""
-	from oneapp.oneapp_core.notifications import install_types
+	from oneapp.onespace.notifications import install_types
 
 	install_types()
 
@@ -31,33 +31,33 @@ def create_custom_fields():
 
 	**The four Drive columns.** A file manager needs to filter by what a file
 	is, hide what was thrown away, and order by what was opened — and none of
-	those is a question `File` can answer. See `oneapp_core/drive.py`.
+	those is a question `File` can answer. See `onestorage.py`.
 
 	**The mail folder pair** — `Communication.custom_imap_folder` and
 	`Email Account.custom_folder_kinds`. Frappe syncs a mailbox folder by
 	folder and then throws the folder away: `InboundMail` is handed it and
 	nothing on the Communication records where the message was filed. So
 	somebody's Applicants folder arrives as part of one flat list and their
-	filing is gone. See `oneapp_core/email/folders.py`, which fills both in.
+	filing is gone. See `onemail/folders.py`, which fills both in.
 
 	**`Communication Link.custom_linked_by`** — how a link between a message and
 	a record was made: the thread it inherited from, an id somebody wrote, a
 	person, or later a model. The framework's link row
 	says only that a link exists. A link that cannot say where it came from
 	cannot be reviewed, and a link nobody reviews is one nobody will trust on an
-	invoice. See `oneapp_core/email/linking.py`.
+	invoice. See `onemail/linking.py`.
 
 	Also on `after_migrate`, because a site installed before these existed has
 	to get them too.
 	"""
 	from frappe.custom.doctype.custom_field.custom_field import create_custom_fields as make
 
-	from oneapp.oneapp_core.drive import KIND_FIELD, OPENED_FIELD, STATUS_FIELD, TRASHED_FIELD
-	from oneapp.oneapp_core.docs.text import SEQ_FIELD
-	from oneapp.oneapp_core.sheets import TEMPLATE_FIELD
-	from oneapp.oneapp_core.email.folders import FOLDER_FIELD
-	from oneapp.oneapp_core.email.linking import LINK_BY
-	from oneapp.oneapp_core.email.threading import THREAD_FIELD
+	from oneapp.onestorage import KIND_FIELD, OPENED_FIELD, STATUS_FIELD, TRASHED_FIELD
+	from oneapp.onedoc.text import SEQ_FIELD
+	from oneapp.onesheet import TEMPLATE_FIELD
+	from oneapp.onemail.folders import FOLDER_FIELD
+	from oneapp.onemail.linking import LINK_BY
+	from oneapp.onemail.threading import THREAD_FIELD
 
 	make(
 		{
@@ -151,7 +151,7 @@ def create_custom_fields():
 					# a reply somebody renamed is a new one. This inherits the
 					# parent's key through `in_reply_to` instead, so the chain
 					# holds however the subject drifts — see
-					# `oneapp_core/email/threading.py`.
+					# `onemail/threading.py`.
 					"fieldname": THREAD_FIELD,
 					"label": "Conversation",
 					"fieldtype": "Data",
@@ -176,7 +176,7 @@ def create_custom_fields():
 			# the framework ships itself — Frappe has two non-standard
 			# Notifications of its own on every site, and a customer's settings
 			# page is not where the platform's error alerts belong. See
-			# `oneapp_core/alerts.py`.
+			# `onespace/alerts.py`.
 			"Notification": [
 				{
 					"fieldname": "custom_onespace",
@@ -191,7 +191,7 @@ def create_custom_fields():
 			# between them on every site — "Exit Questionnaire Notification",
 			# "Interview Reminder" — and a workspace's own list is not where
 			# those belong. Same field and same argument as the Notification
-			# above. See `oneapp_core/email/templates.py`.
+			# above. See `onemail/templates.py`.
 			"Email Template": [
 				{
 					"fieldname": "custom_onespace",
@@ -243,7 +243,7 @@ def setup_outgoing_email():
 	No-ops when the token is absent, so a site without mail configured installs
 	cleanly rather than failing.
 	"""
-	from oneapp.oneapp_core.email import outbound
+	from oneapp.onemail import outbound
 
 	outbound.ensure_email_account()
 
@@ -251,7 +251,7 @@ def setup_outgoing_email():
 def initial_sync():
 	"""Pull entitlements immediately so the site is usable the moment provisioning
 	finishes, rather than waiting for the first scheduled sync."""
-	from oneapp.oneapp_core import control_client, sync
+	from oneapp.onespace import control_client, sync
 
 	if control_client.is_provisioned():
 		sync.sync_from_control_plane()

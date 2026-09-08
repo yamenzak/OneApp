@@ -18,10 +18,10 @@ def naming(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core import naming as module
+	from oneapp.onespace import naming as module
 
 	return module
 

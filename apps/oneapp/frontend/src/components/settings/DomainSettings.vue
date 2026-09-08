@@ -5,7 +5,7 @@
     One workspace has one domain, so this is a fact about the workspace and
     belongs beside Branding and Sign in rather than at another address. The
     record is still the control plane's — it is what issues the certificate —
-    and `oneapp_core/account.py` relays. See `docs/MARKETPLACE.md` §2.
+    and `onespace/account.py` relays. See `docs/MARKETPLACE.md` §2.
   -->
   <SettingsHeader
     :title="__('Domain')"

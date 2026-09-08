@@ -6,14 +6,14 @@ import { __ } from '@/lib/runtime/translate'
 export const printing = {
   printOptions: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.print_options',
+      'oneapp.onespace.spaceview.print_options',
       { space_code: spaceCode, screen, name },
       { silent: true, method: 'GET' },
     ),
 
   printPreview: (spaceCode, screen, name, { format = '', letterhead = '', language = '' } = {}) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.print_preview',
+      'oneapp.onespace.spaceview.print_preview',
       { space_code: spaceCode, screen, name, format, letterhead, language },
       { silent: true, method: 'GET' },
     ),
@@ -36,7 +36,7 @@ export const printing = {
       letterhead,
       language,
     })
-    return `/api/method/oneapp.oneapp_core.spaceview.print_pdf?${asked}`
+    return `/api/method/oneapp.onespace.spaceview.print_pdf?${asked}`
   },
 
   /**
@@ -56,39 +56,39 @@ export const printing = {
       letterhead,
       language,
     })
-    return `/api/method/oneapp.oneapp_core.spaceview.print_many?${asked}`
+    return `/api/method/oneapp.onespace.spaceview.print_many?${asked}`
   },
 
   // --- where a document stands ---------------------------------------------
   //
   // Submit, cancel and amend are three permissions rather than one verb, and a
   // workflow transition is checked by the workflow — so four calls rather than
-  // one taking a string. See `oneapp_core/docflow.py`.
+  // one taking a string. See `onespace/docflow.py`.
 
   printFormats: (doctype = '') =>
     callMethod(
-      'oneapp.oneapp_core.workspace.print_formats',
+      'oneapp.onespace.workspace.print_formats',
       { doctype },
       { silent: true, method: 'GET' },
     ),
 
   printPalette: (doctype) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.print_palette',
+      'oneapp.onespace.workspace.print_palette',
       { doctype },
       { silent: true, method: 'GET' },
     ),
 
   printFormat: (name) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.print_format',
+      'oneapp.onespace.workspace.print_format',
       { name },
       { silent: true, method: 'GET' },
     ),
 
   savePrintFormat: (doctype, label, layout, setup, name = '') =>
     callMethod(
-      'oneapp.oneapp_core.workspace.save_print_format',
+      'oneapp.onespace.workspace.save_print_format',
       {
         doctype,
         label,
@@ -101,21 +101,21 @@ export const printing = {
 
   deletePrintFormat: (name) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.delete_print_format',
+      'oneapp.onespace.workspace.delete_print_format',
       { name },
       { successMessage: __('Format deleted') },
     ),
 
   setDefaultPrintFormat: (doctype, name) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.set_default_print_format',
+      'oneapp.onespace.workspace.set_default_print_format',
       { doctype, name },
       { successMessage: __('Default set') },
     ),
 
   printFormatPreview: (doctype, layout, setup, { name = '', letterhead = '' } = {}) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.print_format_preview',
+      'oneapp.onespace.workspace.print_format_preview',
       {
         doctype,
         layout: JSON.stringify(layout),
@@ -127,32 +127,32 @@ export const printing = {
     ),
 
   letterHeads: () =>
-    callMethod('oneapp.oneapp_core.workspace.letter_heads', {}, { silent: true, method: 'GET' }),
+    callMethod('oneapp.onespace.workspace.letter_heads', {}, { silent: true, method: 'GET' }),
 
   setDefaultLetterHead: (name) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.set_default_letter_head',
+      'oneapp.onespace.workspace.set_default_letter_head',
       { name },
       { successMessage: __('Default set') },
     ),
 
   letterHead: (name) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.letter_head',
+      'oneapp.onespace.workspace.letter_head',
       { name },
       { silent: true, method: 'GET' },
     ),
 
   saveLetterHead: (label, values, name = '') =>
     callMethod(
-      'oneapp.oneapp_core.workspace.save_letter_head',
+      'oneapp.onespace.workspace.save_letter_head',
       { label, values: JSON.stringify(values || {}), name },
       { successMessage: __('Letter head saved') },
     ),
 
   deleteLetterHead: (name) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.delete_letter_head',
+      'oneapp.onespace.workspace.delete_letter_head',
       { name },
       { successMessage: __('Letter head deleted') },
     ),
@@ -160,5 +160,5 @@ export const printing = {
   // --- tags and sharing ---------------------------------------------------
   //
   // Frappe's `_user_tags` and `DocShare`, screen-gated. See
-  // `oneapp_core/collab.py` for what each one is and why neither is ours.
+  // `onespace/collab.py` for what each one is and why neither is ours.
 }

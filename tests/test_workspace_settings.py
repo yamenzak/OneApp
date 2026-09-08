@@ -4,7 +4,7 @@ The risk here is not that a setting is missing. It is that one is present that
 should not be — a workspace that can stop its own scheduler, raise its own file
 size limit past the quota it pays for, or turn its own signup back on.
 
-`oneapp_core/workspace.py` makes that checkable by construction: the spec the SPA
+`onespace/workspace.py` makes that checkable by construction: the spec the SPA
 renders is the same object the write path validates against, so a field is
 writable exactly when it is visible. These check that nothing on the wrong side
 of `docs/WORKSPACE-SETTINGS.md` has crept into it.
@@ -18,11 +18,11 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 TENANT = ROOT / "apps/oneapp/oneapp"
-WORKSPACE = TENANT / "oneapp_core/workspace.py"
-BOOKS = TENANT / "oneapp_core/books.py"
-SYNC = TENANT / "oneapp_core/sync.py"
+WORKSPACE = TENANT / "onespace/workspace.py"
+BOOKS = TENANT / "onespace/books.py"
+SYNC = TENANT / "onespace/sync.py"
 AUDIT = ROOT / "docs/WORKSPACE-SETTINGS.md"
-TABS = TENANT / "oneapp_core/tabs.py"
+TABS = TENANT / "onespace/tabs.py"
 SPA = ROOT / "apps/oneapp/frontend/src"
 
 
@@ -310,7 +310,7 @@ def test_letter_heads_are_the_ones_a_document_can_carry():
 	flag only within `letter_head_for` — and the other kind is Report, which is
 	a desk surface this product does not have. Listing both put two "Default"
 	badges in one list where one of them meant nothing here."""
-	printing = ROOT / "apps/oneapp/oneapp/oneapp_core/printing.py"
+	printing = ROOT / "apps/oneapp/oneapp/onespace/printing.py"
 	body = function(printing, "letter_heads")
 	assert '"letter_head_for": DOCUMENTS' in body
 
@@ -435,7 +435,7 @@ def test_nobody_is_shown_a_tab_that_refuses_them():
 	hard_coded = re.findall(r'<SettingsNavItem\s+value="([\w-]+)"', shell)
 	assert not hard_coded, (
 		"these tabs are written into the shell rather than declared in "
-		f"oneapp_core/tabs.py, so nothing gates them: {hard_coded}"
+		f"onespace/tabs.py, so nothing gates them: {hard_coded}"
 	)
 
 
@@ -485,7 +485,7 @@ def test_the_admin_flag_is_not_system_manager():
 
 def test_a_dependent_setting_hangs_off_one_in_its_own_group():
 	"""`depends_on` is a key, not an expression — so it has to be a real key."""
-	from oneapp.oneapp_core import workspace
+	from oneapp.onespace import workspace
 
 	for group in workspace.GROUPS:
 		keys = {s.key for s in group["settings"]}
@@ -509,7 +509,7 @@ def test_no_setting_declares_a_control_that_would_be_a_text_box():
 	Manager. So a closed reference list is a Select fed from the doctype
 	(`workspace.reference`), and a Link is not a type this spec may declare.
 	"""
-	from oneapp.oneapp_core import workspace
+	from oneapp.onespace import workspace
 
 	links = [
 		f"{group['key']}.{s.key}"
@@ -540,7 +540,7 @@ def test_a_value_dependency_only_ever_hangs_off_a_closed_list():
 	nobody can see. Whether the value is one of the parent's *options* needs a
 	doctype's meta and so is `scripts/check_settings.py`.
 	"""
-	from oneapp.oneapp_core import workspace
+	from oneapp.onespace import workspace
 
 	for group in workspace.GROUPS:
 		by_key = {s.key: s for s in group["settings"]}
@@ -566,7 +566,7 @@ def test_a_zero_that_means_nothing_is_drawn_as_nothing():
 def test_a_group_that_asks_for_two_columns_gets_a_layout_for_it():
 	"""The count is the server's and the classes are the SPA's, and a count
 	with no layout behind it is a panel that silently stays in one column."""
-	from oneapp.oneapp_core import workspace
+	from oneapp.onespace import workspace
 
 	asked = {g.get("columns", 1) for g in workspace.GROUPS}
 	fields = source(SPA / "components/settings/SettingsFields.vue")
@@ -582,7 +582,7 @@ def test_a_group_note_is_rendered_where_it_is_declared():
 	"""It used to be computed, returned, and dropped on the floor: `joining()`
 	answered "who may have an account here" and no component read it, while the
 	Sign in description told the reader to see it."""
-	from oneapp.oneapp_core import workspace
+	from oneapp.onespace import workspace
 
 	noted = [g["key"] for g in workspace.GROUPS if g.get("note")]
 	assert noted, "no group carries a note; the seam is decoration"
@@ -594,7 +594,7 @@ def test_a_group_note_is_rendered_where_it_is_declared():
 def test_no_group_description_names_something_only_the_source_has():
 	"""A description is customer copy. Backticks in it are a comment that
 	escaped into the product."""
-	from oneapp.oneapp_core import workspace
+	from oneapp.onespace import workspace
 
 	for group in workspace.GROUPS:
 		assert "`" not in group["description"], group["key"]

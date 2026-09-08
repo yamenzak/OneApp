@@ -7,14 +7,14 @@ no tokens, no CORS, no refresh dance.
 import frappe
 from frappe import _
 
-from oneapp.oneapp_core import jobs, sync
-from oneapp.oneapp_core.storage import quota
+from oneapp.onespace import jobs, sync
+from oneapp.onestorage import quota
 
 
 @frappe.whitelist()
 def session():
 	"""Everything the shell needs on boot, in one round trip."""
-	from oneapp.oneapp_core.workspace import OWNER_ROLE, SUPPORT_ROLE
+	from oneapp.onespace.workspace import OWNER_ROLE, SUPPORT_ROLE
 
 	state = sync.state()
 	user = frappe.session.user
@@ -105,8 +105,8 @@ def visible_spaces():
 	the resolver did not — so a space absent from somebody's rail still
 	answered when its code was asked for by name.
 	"""
-	from oneapp.oneapp_core.spaceview import visible
-	from oneapp.oneapp_core import theming
+	from oneapp.onespace.spaceview import visible
+	from oneapp.onespace import theming
 
 	spaces = visible(sync.state().get("spaces", []))
 

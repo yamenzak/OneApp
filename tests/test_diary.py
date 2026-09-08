@@ -20,7 +20,7 @@ import pytest
 
 @pytest.fixture
 def diary(monkeypatch):
-	from oneapp.oneapp_core import diary as module
+	from oneapp.onecalendar import diary as module
 	return module
 
 

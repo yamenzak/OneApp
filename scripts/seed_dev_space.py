@@ -179,7 +179,7 @@ SCREENS = [
 		# The dashboard, declared and nothing more. Every widget here is an
 		# aggregate over the rows this screen already narrows to, so there is
 		# no query to write and no second permission model to keep in step —
-		# see `oneapp_core/dashboard.py`.
+		# see `onespace/dashboard.py`.
 		#
 		# Six of them, and deliberately one of each family: a reading, a ring,
 		# bars, a line down time, a funnel and a grid. A fixture with three bar
@@ -749,7 +749,7 @@ def _seed_rua():
 	HRMS doctype, and a space whose screens are all skipped is a rail item that
 	opens onto nothing.
 	"""
-	from oneapp.oneapp_core import sync
+	from oneapp.onespace import sync
 	from oneapp_control.spaces import rua
 
 	if not frappe.db.exists("DocType", "Sales Invoice"):
@@ -786,7 +786,7 @@ def _seed_mail(user):
 	is a delivery point, not a mailbox, and mail arrives by the Worker POSTing
 	it. A fixture that set an IMAP host would have Frappe try to reach one.
 	"""
-	from oneapp.oneapp_core.email import addresses
+	from oneapp.onemail import addresses
 
 	# `address_for` rather than a domain and an f-string, which is what this was
 	# and which stopped being right the day the workspace's slug moved onto the
@@ -836,7 +836,7 @@ def _seed_mail(user):
 	# the server would have flagged. Written here rather than discovered,
 	# because discovering them needs an IMAP server and what this fixture is
 	# for is the rail that draws them.
-	from oneapp.oneapp_core.email import folders as folder_lib
+	from oneapp.onemail import folders as folder_lib
 
 	mirrored = [
 		{"name": "INBOX", "kind": "inbox"},
@@ -868,7 +868,7 @@ def _seed_mail(user):
 	# `Tell me about this 1788760652558`, and thirty-nine rules the scheduler
 	# walks every day. Only ours: the mark is what keeps Frappe's own two error
 	# notifications out of this.
-	from oneapp.oneapp_core.alerts import OURS as ALERTS_ARE_OURS
+	from oneapp.onespace.alerts import OURS as ALERTS_ARE_OURS
 
 	for name in frappe.get_all("Notification", filters=ALERTS_ARE_OURS, pluck="name"):
 		frappe.delete_doc("Notification", name, force=True, ignore_permissions=True)
@@ -882,7 +882,7 @@ def _seed_mail(user):
 	# test opening on that draft instead of a blank message — and they fail
 	# saying the signature is missing, which is true and is not the bug. Twice
 	# in one sitting that read as a broken composer.
-	from oneapp.oneapp_core.email.mailbox.drafts import DRAFT_KEY
+	from oneapp.onemail.mailbox.drafts import DRAFT_KEY
 
 	for holder in frappe.get_all(
 		"DefaultValue", filters={"defkey": DRAFT_KEY}, pluck="parent"
@@ -1155,7 +1155,7 @@ def _seed_template():
 	without a template is a fixture where that button does not exist — and the
 	browser pass would be checking that an absent control is absent.
 	"""
-	from oneapp.oneapp_core.email.templates import MARK
+	from oneapp.onemail.templates import MARK
 
 	# Sweep first, for the reason the mailbox sweep exists: a browser pass writes
 	# one to prove the settings panel writes one, and sixty runs later the picker
@@ -1197,7 +1197,7 @@ def _seed_read_state(user):
 	that shows both halves at once — something collapsed above, and a marker
 	saying the rest is new.
 	"""
-	from oneapp.oneapp_core.email.mailbox.flags import SEEN_KEY
+	from oneapp.onemail.mailbox.flags import SEEN_KEY
 
 	first = frappe.db.get_value(
 		"Communication", {"subject": "Quotation for the Al Reem tower"}, "name"
@@ -1214,7 +1214,7 @@ def _seed_import():
 	"not yet" before a first run, and the three buttons in the order they are
 	meant to be pressed in.
 
-	A real one lives in the app (`oneapp_core/plans/`) and is installed against
+	A real one lives in the app (`onespace/plans/`) and is installed against
 	a customer's own credentials; this is the dev site's stand-in for it.
 	"""
 	SOURCE = "The old system"
@@ -1447,8 +1447,8 @@ def seed_tenant(manifest_only=False):
 
 	Run the whole thing before a browser pass; run this while iterating.
 	"""
-	from oneapp.oneapp_core import branding, sync
-	from oneapp.oneapp_core.ai import written
+	from oneapp.onespace import branding, sync
+	from oneapp.onespace.ai import written
 
 	# Cheap, and in the manifest half on purpose: it is part of what the
 	# workspace *looks like*, which is the thing `manifest_only` exists to let

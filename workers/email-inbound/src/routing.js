@@ -21,13 +21,13 @@
 export const MIN_SLUG_LENGTH = 3
 export const MAX_SLUG_LENGTH = 40
 
-// The one the outbound side sends as. `oneapp_core/email/outbound.py`.
+// The one the outbound side sends as. `onemail/outbound.py`.
 const BOUNCE_PREFIX = 't-'
 
 // What a workspace's own local part may contain, once the tenant is off the
 // front. Dots are gone by then — the first one is the separator — so this is
 // deliberately narrower than the address grammar RFC 5322 permits, and matches
-// `oneapp_core/email/addresses.validate_local_part`.
+// `onemail/addresses.validate_local_part`.
 const LOCAL = /^[a-z0-9](?:[a-z0-9._+-]*[a-z0-9+])?$/
 
 const SLUG = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/

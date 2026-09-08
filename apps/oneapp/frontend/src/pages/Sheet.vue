@@ -155,7 +155,7 @@ const hostMenu = computed(() => [{
       : []),
     {
       // A template is a sheet with a flag on it, so this is the whole feature
-      // — see `oneapp_core/sheets/templates.py`.
+      // — see `onesheet/templates.py`.
       label: isTemplate.value ? __('Stop using as a template') : __('Use as a template'),
       icon: isTemplate.value ? 'bookmark-minus' : 'bookmark-plus',
       onClick: async () => {

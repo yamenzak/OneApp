@@ -4610,10 +4610,10 @@ msgstr ""
 
 msgid ""
 "What each target field is made of, keyed by target fieldname. See "
-"`oneapp_core/importer.py`."
+"`onespace/importer.py`."
 msgstr ""
 "Woraus sich jedes Zielfeld zusammensetzt, geschlüsselt nach dem "
-"Zielfeldnamen. Siehe `oneapp_core/importer.py`."
+"Zielfeldnamen. Siehe `onespace/importer.py`."
 
 msgid ""
 "What is in the URL. Long enough not to be guessed, and the only thing "

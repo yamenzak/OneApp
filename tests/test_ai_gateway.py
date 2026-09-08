@@ -17,7 +17,7 @@ def gateway(stub_frappe, monkeypatch):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
 	stub_frappe.conf = {
@@ -28,7 +28,7 @@ def gateway(stub_frappe, monkeypatch):
 	stub_frappe.log_error = lambda **kw: None
 	stub_frappe.get_traceback = lambda: ""
 
-	from oneapp.oneapp_core.ai import features, gateway as module, settings
+	from oneapp.onespace.ai import features, gateway as module, settings
 
 	features.REGISTRY.clear()
 	return types.SimpleNamespace(
@@ -115,7 +115,7 @@ def wire(gw, response, capability="Text Generation", control=None):
 			raise response
 		return response
 
-	gw.monkeypatch.setattr("oneapp.oneapp_core.ai.gateway.requests.post", post)
+	gw.monkeypatch.setattr("oneapp.onespace.ai.gateway.requests.post", post)
 
 	calls = []
 	answers = control or {}
@@ -128,7 +128,7 @@ def wire(gw, response, capability="Text Generation", control=None):
 		return answers.get("ai_settle", {"ok": True, "credits": 0.47})
 
 	gw.monkeypatch.setattr(
-		"oneapp.oneapp_core.control_client.call", control_call)
+		"oneapp.onespace.control_client.call", control_call)
 
 	@gw.features.ai_feature("summary", label="Summary", capability=capability,
 	                        system="You are our assistant.", max_output_tokens=400)

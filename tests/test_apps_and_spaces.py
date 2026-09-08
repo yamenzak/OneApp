@@ -229,7 +229,7 @@ def test_a_new_sites_app_list_is_the_tenants_and_not_the_benchs():
 def test_ruas_fields_belong_to_its_space_and_not_to_its_import_plan():
 	"""They lived in the plan, so a workspace granted RUA who never imported
 	anything got RUA's screens without RUA's fields — and nothing said so."""
-	plan = (TENANT / "oneapp_core" / "plans" / "rua.py").read_text()
+	plan = (TENANT / "onespace" / "plans" / "rua.py").read_text()
 	assert "\nFIELDS = [" not in plan, (
 		"the import plan is a data migration; schema arrives with the grant"
 	)
@@ -256,7 +256,7 @@ def test_the_stages_a_space_offers_are_the_ones_the_plan_maps():
 	is on the control plane and the plan is on the tenant. So the two lists are
 	held to each other here instead."""
 	stages = declarations(CONTROL / "spaces" / "rua.py").STAGES
-	mapped = declarations(TENANT / "oneapp_core" / "plans" / "rua.py").PROJECT_STATUS
+	mapped = declarations(TENANT / "onespace" / "plans" / "rua.py").PROJECT_STATUS
 	assert stages == list(mapped), (
 		"the Select on Project.custom_stage and the values the import writes "
 		"into it have drifted: a row would import with a stage the field refuses"
@@ -264,7 +264,7 @@ def test_the_stages_a_space_offers_are_the_ones_the_plan_maps():
 
 
 def test_the_plan_no_longer_makes_schema():
-	source = (TENANT / "oneapp_core" / "plans" / "__init__.py").read_text()
+	source = (TENANT / "onespace" / "plans" / "__init__.py").read_text()
 	body = source[source.index("def prepare"):]
 	assert "Custom Field" not in body
 
@@ -279,7 +279,7 @@ def test_a_spaces_fields_travel_to_the_tenant():
 
 
 def test_the_sync_applies_them_once_and_never_again():
-	source = (TENANT / "oneapp_core" / "sync.py").read_text()
+	source = (TENANT / "onespace" / "sync.py").read_text()
 	body = source[source.index("def _seed_custom_fields"):source.index("def sync_notices")]
 	assert 'frappe.db.exists("Custom Field"' in body, (
 		"a Custom Field reapplied every fifteen minutes undoes an afternoon of "

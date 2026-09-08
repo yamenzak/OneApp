@@ -114,7 +114,7 @@ test('a member can change their own name', async ({ page }, info) => {
   await saved(page, () => page.locator('[data-slot="profile-save"]').click())
 
   // Read back from the server rather than from the field that was typed in.
-  const res = await page.request.get('/api/method/oneapp.oneapp_core.me.profile')
+  const res = await page.request.get('/api/method/oneapp.onespace.me.profile')
   const fields = (await res.json()).message.fields
   expect(fields.find((one) => one.key === 'first_name').value).toBe(said)
 
@@ -129,7 +129,7 @@ test("a member cannot write the workspace's settings by asking directly",
     // The tabs decide what is *shown*; this is the door itself, which never
     // moved — `workspace.save` has always checked the group's own roles.
     const refused = await page.request.post(
-      '/api/method/oneapp.oneapp_core.workspace.save',
+      '/api/method/oneapp.onespace.workspace.save',
       { data: { group: 'branding', values: JSON.stringify({ workspace_name: 'Mine' }) } },
     )
     expect(refused.ok()).toBe(false)
@@ -141,7 +141,7 @@ test('a profile write is refused for anything outside the allowlist',
     // `User` is a large doctype and most of it is administration, so the
     // endpoint takes a fixed set of fields rather than a fieldname.
     const refused = await page.request.post(
-      '/api/method/oneapp.oneapp_core.me.save_profile',
+      '/api/method/oneapp.onespace.me.save_profile',
       { data: { values: JSON.stringify({ enabled: 1, role_profile_name: 'System Manager' }) } },
     )
     expect(refused.ok()).toBe(false)
@@ -183,7 +183,7 @@ test('a model that takes more than a prompt says what else it takes',
 
     // Declared on the model, not written here — the fixture's text model
     // declares one and the panel draws it under the picker. See `AI_MODELS` in
-    // `scripts/seed_dev_space.py` and `oneapp_core/ai/options.py`.
+    // `scripts/seed_dev_space.py` and `onespace/ai/options.py`.
     const variety = panel.getByLabel('Variety')
     await expect(variety).toBeVisible({ timeout: 15_000 })
 

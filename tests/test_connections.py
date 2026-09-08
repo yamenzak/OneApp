@@ -26,7 +26,7 @@ def connections(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
 	# By path rather than `from ... import connections`: the package re-exports
@@ -34,7 +34,7 @@ def connections(stub_frappe):
 	# and every `module.frappe` below fails somewhere unhelpful.
 	import importlib
 
-	return importlib.import_module("oneapp.oneapp_core.spaceview.connections")
+	return importlib.import_module("oneapp.onespace.spaceview.connections")
 
 
 def field(fieldname, fieldtype="Data", options=None):

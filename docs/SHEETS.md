@@ -164,7 +164,7 @@ amended when the first stage lands.
 
 More than is obvious, because the Drive was just built.
 
-**A place for a sheet to live.** `oneapp_core/drive` is folders, favourites,
+**A place for a sheet to live.** `onestorage` is folders, favourites,
 recents, a bin with a thirty-day promise, `DocShare` for colleagues, an expiring
 link for strangers, and a picker that every attach surface in the product now
 opens. Every one of those is a query over `File` with a `where` clause.
@@ -548,7 +548,7 @@ no longer ours to shape the store around: it loads the workbook entire and
 saves it entire, and a second store the browser never reads would be a second
 thing to keep in step with no reader to justify it.
 
-`oneapp_core/sheets/codec.py` is how Python reads it. The cap moved with the
+`onesheet/codec.py` is how Python reads it. The cap moved with the
 shape — 40 MB uncompressed, measured after a bounded gunzip so a small envelope
 cannot expand into a large allocation.
 
@@ -585,7 +585,7 @@ a Done button. Both looked like features that had never been written.
 Live collaboration and AI. Version history and link previews were on this list
 and are built: both were seams in `lib/sheets/services/`, and filling them in
 cost one service module each — version history because
-`oneapp_core/versions.py` already answered the same questions for a document
+`shared/versions.py` already answered the same questions for a document
 (`docs/WRITER.md` §5), and link previews because Frappe's endpoint is taken
 whole for its SSRF guards, off unless an operator turns it on. Everything else Frappe
 Sheets does — pivots, charts, conditional formats, data validation, merges,

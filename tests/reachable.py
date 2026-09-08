@@ -3,7 +3,7 @@
 A method in a package is callable at its own module's path *and* at the
 package's, when the package re-exports it. `spaceview` is a package of layered
 modules whose `__init__` re-exports everything, precisely so that
-`oneapp.oneapp_core.spaceview.rows` keeps working — and that is the path the SPA
+`oneapp.onespace.spaceview.rows` keeps working — and that is the path the SPA
 calls. A guard that reads only the filename declares every one of those missing.
 """
 

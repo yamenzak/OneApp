@@ -6,163 +6,163 @@ import { __ } from '@/lib/runtime/translate'
 export const mail = {
   // --- mail ---------------------------------------------------------------
   // Addresses, who holds each, and what they sign with. See
-  // `oneapp_core/email/addresses.py` — the model is Frappe's Email Account and
+  // `onemail/addresses.py` — the model is Frappe's Email Account and
   // User Email, so none of this is a parallel permission system.
   mail: () =>
-    callMethod('oneapp.oneapp_core.email.addresses.listing', {}, {
+    callMethod('oneapp.onemail.addresses.listing', {}, {
       silent: true, method: 'GET',
     }),
 
   mailCreate: (localPart, label, grantTo) =>
     callMethod(
-      'oneapp.oneapp_core.email.addresses.create',
+      'oneapp.onemail.addresses.create',
       { local_part: localPart, label, grant_to: JSON.stringify(grantTo || []) },
       { successMessage: __('Address created') },
     ),
 
   mailUpdate: (name, values) =>
     callMethod(
-      'oneapp.oneapp_core.email.addresses.update',
+      'oneapp.onemail.addresses.update',
       { name, ...values },
       { successMessage: __('Saved') },
     ),
 
   mailRemove: (name) =>
     callMethod(
-      'oneapp.oneapp_core.email.addresses.remove',
+      'oneapp.onemail.addresses.remove',
       { name },
       { successMessage: __('Address removed') },
     ),
 
   mailGrant: (name, user) =>
-    callMethod('oneapp.oneapp_core.email.addresses.grant', { name, user }),
+    callMethod('oneapp.onemail.addresses.grant', { name, user }),
 
   mailRevoke: (name, user) =>
-    callMethod('oneapp.oneapp_core.email.addresses.revoke', { name, user }),
+    callMethod('oneapp.onemail.addresses.revoke', { name, user }),
 
   mailSetDefault: (name) =>
     callMethod(
-      'oneapp.oneapp_core.email.addresses.set_default',
+      'oneapp.onemail.addresses.set_default',
       { name },
       { successMessage: __('Sending address set') },
     ),
 
   mailUsage: () =>
-    callMethod('oneapp.oneapp_core.email.outbound.usage', {}, {
+    callMethod('oneapp.onemail.outbound.usage', {}, {
       silent: true, method: 'GET',
     }),
 
   mailDomain: (domain) =>
     callMethod(
-      'oneapp.oneapp_core.email.verify.status',
+      'oneapp.onemail.verify.status',
       { domain },
       { silent: true, method: 'GET' },
     ),
 
   mailDomainConfirm: (domain) =>
     callMethod(
-      'oneapp.oneapp_core.email.verify.confirm',
+      'oneapp.onemail.verify.confirm',
       { domain },
       { successMessage: __('Domain verified') },
     ),
 
   mailSuppressed: () =>
-    callMethod('oneapp.oneapp_core.email.suppression.listing', {}, {
+    callMethod('oneapp.onemail.suppression.listing', {}, {
       silent: true, method: 'GET',
     }),
 
   mailRelease: (email) =>
     callMethod(
-      'oneapp.oneapp_core.email.suppression.release',
+      'oneapp.onemail.suppression.release',
       { email },
       { successMessage: __('Sending to that address again') },
     ),
 
   // --- the mailbox --------------------------------------------------------
   // Reading is a Communication list asked the right questions — see
-  // `oneapp_core/email/mailbox.py`. Which addresses a person may read is the
+  // `onemail/mailbox.py`. Which addresses a person may read is the
   // query's filter, not the render's.
   mailFolders: () =>
-    callMethod('oneapp.oneapp_core.email.mailbox.folders', {}, {
+    callMethod('oneapp.onemail.mailbox.folders', {}, {
       silent: true, method: 'GET',
     }),
 
   mailThreads: (folder, start = 0, search = '') =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.threads',
+      'oneapp.onemail.mailbox.threads',
       { folder, start, search },
       { silent: true, method: 'GET' },
     ),
 
   mailThread: (key, folder) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.thread',
+      'oneapp.onemail.mailbox.thread',
       { key, folder },
       { silent: true, method: 'GET' },
     ),
 
   mailUnread: () =>
-    callMethod('oneapp.oneapp_core.email.mailbox.unread', {}, {
+    callMethod('oneapp.onemail.mailbox.unread', {}, {
       silent: true, method: 'GET',
     }),
 
   mailMarkRead: (names) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.mark_read',
+      'oneapp.onemail.mailbox.mark_read',
       { names: JSON.stringify(names) },
       { silent: true },
     ),
 
   mailSend: (values) =>
-    callMethod('oneapp.oneapp_core.email.mailbox.send', values, {
+    callMethod('oneapp.onemail.mailbox.send', values, {
       successMessage: __('Sent'),
     }),
 
   mailAddFolder: (address, name) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.add_folder',
+      'oneapp.onemail.mailbox.add_folder',
       { address, name },
       { successMessage: __('Folder made') },
     ),
 
   mailDropFolder: (address, name) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.drop_folder',
+      'oneapp.onemail.mailbox.drop_folder',
       { address, name },
       { successMessage: __('Folder removed') },
     ),
 
   mailFileThread: (key, address, folder, fromFolder) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.file_thread',
+      'oneapp.onemail.mailbox.file_thread',
       { key, address, folder, from_folder: fromFolder },
       { successMessage: __('Filed') },
     ),
 
   mailStar: (key, folder, on) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.star',
+      'oneapp.onemail.mailbox.star',
       { key, folder, on: on ? 1 : 0 },
       { silent: true },
     ),
 
   mailMarkUnread: (key, folder) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.mark_unread',
+      'oneapp.onemail.mailbox.mark_unread',
       { key, folder },
       { successMessage: __('Marked unread') },
     ),
 
   mailBin: (key, address, folder) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.bin',
+      'oneapp.onemail.mailbox.bin',
       { key, address, folder },
       { successMessage: __('Moved to Trash') },
     ),
 
   mailArchive: (key, address, folder) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.archive',
+      'oneapp.onemail.mailbox.archive',
       { key, address, folder },
       { successMessage: __('Archived') },
     ),
@@ -175,14 +175,14 @@ export const mail = {
   // Undo beside it; a toast on top of that is the same sentence twice.
   mailBulk: (action, keys, address, folder) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.bulk',
+      'oneapp.onemail.mailbox.bulk',
       { action, keys: JSON.stringify(keys), address, folder },
       { silent: true },
     ),
 
   mailUndoBulk: (was, address, folder) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.restore',
+      'oneapp.onemail.mailbox.restore',
       { was: JSON.stringify(was), address, folder },
       { successMessage: __('Put back') },
     ),
@@ -192,7 +192,7 @@ export const mail = {
   // and lives in settings.
   mailTemplates: () =>
     callMethod(
-      'oneapp.oneapp_core.workspace.mail_templates',
+      'oneapp.onespace.workspace.mail_templates',
       {},
       { silent: true, method: 'GET' },
     ),
@@ -201,127 +201,127 @@ export const mail = {
   // written where it was not.
   mailTemplate: (name) =>
     callMethod(
-      'oneapp.oneapp_core.workspace.render_mail_template',
+      'oneapp.onespace.workspace.render_mail_template',
       { name },
       { silent: true, method: 'GET' },
     ),
 
   recordMailTemplate: (spaceCode, screen, record, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.template',
+      'oneapp.onespace.spaceview.template',
       { space_code: spaceCode, screen, name: record, template: name },
       { silent: true, method: 'GET' },
     ),
 
   mailDraft: (message, kind) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.draft',
+      'oneapp.onemail.mailbox.draft',
       { message, kind },
       { silent: true, method: 'GET' },
     ),
 
   // --- filing rules and the out-of-office ----------------------------------
   //
-  // `oneapp_core/email/rules.py`. A rule belongs to a mailbox, so every one of
+  // `onemail/rules.py`. A rule belongs to a mailbox, so every one of
   // these checks the address is one the caller holds — which is why they are
   // whitelisted endpoints rather than a screen over `Mail Rule`.
   mailRules: (address) =>
     callMethod(
-      'oneapp.oneapp_core.email.rules.listing',
+      'oneapp.onemail.rules.listing',
       { address },
       { silent: true, method: 'GET' },
     ),
 
   mailSaveRule: (values) =>
     callMethod(
-      'oneapp.oneapp_core.email.rules.save',
+      'oneapp.onemail.rules.save',
       { values: JSON.stringify(values) },
       { successMessage: __('Rule saved') },
     ),
 
   mailDropRule: (name) =>
     callMethod(
-      'oneapp.oneapp_core.email.rules.drop',
+      'oneapp.onemail.rules.drop',
       { name },
       { successMessage: __('Rule removed') },
     ),
 
   mailAway: (address) =>
     callMethod(
-      'oneapp.oneapp_core.email.rules.away',
+      'oneapp.onemail.rules.away',
       { address },
       { silent: true, method: 'GET' },
     ),
 
   mailSetAway: (values) =>
-    callMethod('oneapp.oneapp_core.email.rules.set_away', values, {
+    callMethod('oneapp.onemail.rules.set_away', values, {
       successMessage: __('Saved'),
     }),
 
   mailUnsend: (name) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.unsend',
+      'oneapp.onemail.mailbox.unsend',
       { name },
       { successMessage: __('Unsent') },
     ),
 
   mailKeep: (values) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.keep',
+      'oneapp.onemail.mailbox.keep',
       { values: JSON.stringify(values) },
       { silent: true },
     ),
 
   mailKept: () =>
-    callMethod('oneapp.oneapp_core.email.mailbox.kept', {}, {
+    callMethod('oneapp.onemail.mailbox.kept', {}, {
       silent: true, method: 'GET',
     }),
 
   mailForget: () =>
-    callMethod('oneapp.oneapp_core.email.mailbox.forget', {}, { silent: true }),
+    callMethod('oneapp.onemail.mailbox.forget', {}, { silent: true }),
 
   mailSuggest: (text) =>
     callMethod(
-      'oneapp.oneapp_core.email.people.suggest',
+      'oneapp.onemail.people.suggest',
       { text },
       { silent: true, method: 'GET' },
     ),
 
   mailProfile: (email) =>
     callMethod(
-      'oneapp.oneapp_core.email.people.profile',
+      'oneapp.onemail.people.profile',
       { email },
       { silent: true, method: 'GET' },
     ),
 
   // --- connecting a mailbox somebody already has ---------------------------
   mailConnected: () =>
-    callMethod('oneapp.oneapp_core.email.connect.mine', {}, {
+    callMethod('oneapp.onemail.connect.mine', {}, {
       silent: true, method: 'GET',
     }),
 
   mailSuggestion: (emailId) =>
     callMethod(
-      'oneapp.oneapp_core.email.connect.suggestion',
+      'oneapp.onemail.connect.suggestion',
       { email_id: emailId },
       { silent: true, method: 'GET' },
     ),
 
   mailConnect: (values) =>
-    callMethod('oneapp.oneapp_core.email.connect.connect', values, {
+    callMethod('oneapp.onemail.connect.connect', values, {
       successMessage: __('Mailbox connected'),
     }),
 
   mailRefreshFolders: (name) =>
     callMethod(
-      'oneapp.oneapp_core.email.connect.refresh',
+      'oneapp.onemail.connect.refresh',
       { name },
       { successMessage: __('Folders refreshed') },
     ),
 
   mailDisconnect: (name) =>
     callMethod(
-      'oneapp.oneapp_core.email.connect.disconnect',
+      'oneapp.onemail.connect.disconnect',
       { name },
       { successMessage: __('Mailbox disconnected') },
     ),
@@ -329,58 +329,58 @@ export const mail = {
   // --- naming -----------------------------------------------------------
   //
   // Frappe's `Document Naming Settings`, gated to the doctypes this
-  // workspace's spaces granted. See `oneapp_core/naming.py`.
+  // workspace's spaces granted. See `onespace/naming.py`.
 
   // --- an address of your own, and who may add an outside one --------------
   //
-  // `oneapp_core/email/addresses.py`. The first two are a person's own — an
+  // `onemail/addresses.py`. The first two are a person's own — an
   // address on the workspace's domain is theirs to claim rather than an
   // admin's to remember — and the policy is readable by everybody, because the
   // person it refuses is owed the reason.
   mailMine: () =>
-    callMethod('oneapp.oneapp_core.email.addresses.mine', {}, {
+    callMethod('oneapp.onemail.addresses.mine', {}, {
       silent: true, method: 'GET',
     }),
 
   mailClaim: (localPart = '') =>
     callMethod(
-      'oneapp.oneapp_core.email.addresses.claim',
+      'oneapp.onemail.addresses.claim',
       { local_part: localPart },
       { successMessage: __('That address is yours') },
     ),
 
   mailSetConnectPolicy: (mode, domains) =>
     callMethod(
-      'oneapp.oneapp_core.email.addresses.set_connect_policy',
+      'oneapp.onemail.addresses.set_connect_policy',
       { mode, domains },
       { successMessage: __('Saved') },
     ),
 
   // --- which address a message goes out as ---------------------------------
   mailSendingFrom: (values = {}) =>
-    callMethod('oneapp.oneapp_core.email.mailbox.sending_from', values, {
+    callMethod('oneapp.onemail.mailbox.sending_from', values, {
       silent: true, method: 'GET',
     }),
 
   mailSetDefaultSender: (address) =>
     callMethod(
-      'oneapp.oneapp_core.email.mailbox.set_default_sender',
+      'oneapp.onemail.mailbox.set_default_sender',
       { address },
       { successMessage: __('Saved') },
     ),
 
   // --- a domain the workspace owns -----------------------------------------
   //
-  // `oneapp_core/email/verify.py` has answered these since the day it landed
+  // `onemail/verify.py` has answered these since the day it landed
   // and nothing drew them, so a workspace could put its own domain on an
   // address and had nowhere to be told what DNS to publish.
   mailDomainStatus: (domain) =>
-    callMethod('oneapp.oneapp_core.email.verify.status', { domain }, {
+    callMethod('oneapp.onemail.verify.status', { domain }, {
       silent: true, method: 'GET',
     }),
 
   mailDomainConfirm: (domain) =>
-    callMethod('oneapp.oneapp_core.email.verify.confirm', { domain }, {
+    callMethod('oneapp.onemail.verify.confirm', { domain }, {
       successMessage: __('Checked'),
     }),
 }

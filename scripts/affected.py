@@ -69,8 +69,8 @@ SHARED = (
 	"apps/oneapp/oneapp/hooks.py",
 	# Every screen in every space is resolved and read through these two, so a
 	# change in either is a change to every list, record and view there is.
-	"apps/oneapp/oneapp/oneapp_core/spaceview/resolve.py",
-	"apps/oneapp/oneapp/oneapp_core/spaceview/records.py",
+	"apps/oneapp/oneapp/onespace/spaceview/resolve.py",
+	"apps/oneapp/oneapp/onespace/spaceview/records.py",
 	"scripts/gen_frontend.py",
 	"scripts/spa/*",
 	"scripts/doctypes/*",
@@ -252,7 +252,7 @@ def tokens_of(path: pathlib.Path) -> set[str]:
 def python_tokens(path: pathlib.Path) -> set[str]:
 	"""A Python module's endpoints, as the SPA and the specs name them.
 
-	`oneapp/oneapp_core/me.py` provides `oneapp.oneapp_core.me.save_profile`,
+	`oneapp/onespace/me.py` provides `oneapp.onespace.me.save_profile`,
 	which is the string `lib/workspace/settings.js` calls and the string
 	`settings.spec.js` asserts against — so one token reaches both ends.
 	"""
@@ -284,7 +284,7 @@ def python_importers() -> dict[str, set[pathlib.Path]]:
 	*endpoint* uses them, which is one hop up this graph.
 
 	Relative imports are resolved against the importing module's package, which
-	is how half of `oneapp_core` refers to its neighbours.
+	is how half of `onespace` refers to its neighbours.
 	"""
 	back: dict[str, set[pathlib.Path]] = {}
 	for path in PY_ROOT.rglob("*.py"):

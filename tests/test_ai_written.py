@@ -62,7 +62,7 @@ def row(doctype="ToDo", name="TASK-1", fieldname="description", **extra):
 
 @pytest.fixture
 def written(monkeypatch):
-	from oneapp.oneapp_core.ai import written as module
+	from oneapp.onespace.ai import written as module
 
 	monkeypatch.setattr(module.frappe, "session", types.SimpleNamespace(user="ada@example.com"))
 	monkeypatch.setattr(module.frappe, "flags", {})
@@ -100,7 +100,7 @@ def test_a_mark_names_the_model_the_way_the_workspace_sees_it(written, monkeypat
 	"""
 	wire(written, monkeypatch, Store([row()]))
 	monkeypatch.setattr(
-		"oneapp.oneapp_core.ai.settings.catalogue",
+		"oneapp.onespace.ai.settings.catalogue",
 		lambda: [{"model_key": "google-ai-studio:flash", "display_name": "Flash"}],
 	)
 
@@ -113,7 +113,7 @@ def test_a_mark_names_the_model_the_way_the_workspace_sees_it(written, monkeypat
 def test_a_document_with_no_marks_asks_the_catalogue_nothing(written, monkeypatch):
 	wire(written, monkeypatch, Store())
 	monkeypatch.setattr(
-		"oneapp.oneapp_core.ai.settings.catalogue",
+		"oneapp.onespace.ai.settings.catalogue",
 		lambda: pytest.fail("the catalogue was read for a document with no marks"),
 	)
 

@@ -276,7 +276,7 @@ def test_pressing_it_does_not_leave_the_reader_waiting_for_a_sync():
 	"""The grant is written on the control plane and this site learns what it
 	is entitled to by pulling. Pressing a card and being told to come back in
 	fifteen minutes is the failure; the pull happens in the endpoint."""
-	relay = (ROOT / "apps/oneapp/oneapp/oneapp_core/account.py").read_text()
+	relay = (ROOT / "apps/oneapp/oneapp/onespace/account.py").read_text()
 	body = relay[relay.index("def enable_space"):]
 	assert "sync_from_control_plane()" in body
 	assert "except Exception" in body, (

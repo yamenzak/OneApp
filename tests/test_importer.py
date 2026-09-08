@@ -21,10 +21,10 @@ def importer(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core import importer as module
+	from oneapp.onespace import importer as module
 
 	return module
 
@@ -654,7 +654,7 @@ def test_a_shipped_plan_is_offered_only_where_its_space_is(stub_frappe):
 	tenant import panel that filtered, and that panel is gone: a rule that only
 	holds inside one screen lapses the day the screen is remade.
 	"""
-	from oneapp.oneapp_core import plans
+	from oneapp.onespace import plans
 
 	assert plans.shipped({"zzmock"}) == []
 
@@ -679,10 +679,10 @@ def test_the_rua_plan_resolves_every_link_backwards(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core.plans import rua
+	from oneapp.onespace.plans import rua
 
 	made = set()
 	for step in rua.STEPS:
@@ -701,10 +701,10 @@ def test_every_rua_step_says_what_it_is_for(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core.plans import rua
+	from oneapp.onespace.plans import rua
 
 	for step in rua.STEPS:
 		assert len(step.get("why", "")) > 20, f"{step['source']} says nothing"

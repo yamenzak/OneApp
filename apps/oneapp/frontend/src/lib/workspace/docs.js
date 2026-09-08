@@ -4,7 +4,7 @@
  * A document's identity is a File row, so everything about *the file* —
  * rename, move, share, trash, the expiring link — goes through `drive.js` and
  * none of it is repeated here. What is here is the prose: loading it, saving
- * it, and the two plain-text calls beside it. See `oneapp_core/docs`.
+ * it, and the two plain-text calls beside it. See `onedoc`.
  *
  * Two blobs go up on every save and only one is authoritative. `content` is
  * the ProseMirror JSON the editor reads back; `html` is what it rendered, and
@@ -17,61 +17,61 @@ import { callMethod } from '@/lib/runtime/resource'
 
 export const docs = {
   docMake: (params) =>
-    callMethod('oneapp.oneapp_core.docs.make', params, {
+    callMethod('oneapp.onedoc.make', params, {
       success: 'Document created',
     }),
 
   docMakeText: (params) =>
-    callMethod('oneapp.oneapp_core.docs.make_text', params, {
+    callMethod('oneapp.onedoc.make_text', params, {
       success: 'File created',
     }),
 
   docOpen: (name) =>
-    callMethod('oneapp.oneapp_core.docs.get_doc', { name }, {
+    callMethod('oneapp.onedoc.get_doc', { name }, {
       silent: true, method: 'GET',
     }),
 
   // Silent: this runs every few seconds while somebody types, and a toast per
   // save is a toast every few seconds. The header says whether it landed.
   docSave: (name, params) =>
-    callMethod('oneapp.oneapp_core.docs.save_doc', { name, ...params }, {
+    callMethod('oneapp.onedoc.save_doc', { name, ...params }, {
       silent: true,
     }),
 
   // A template is a document with a flag on it, the same way a sheet template
-  // is — `oneapp_core/docs/templates.py` says why one shape rather than two.
+  // is — `onedoc/templates.py` says why one shape rather than two.
   docTemplates: () =>
-    callMethod('oneapp.oneapp_core.docs.listing', {}, { silent: true, method: 'GET' }),
+    callMethod('oneapp.onedoc.listing', {}, { silent: true, method: 'GET' }),
 
   docSetTemplate: (name, on) =>
-    callMethod('oneapp.oneapp_core.docs.set_template', { doc: name, on: on ? 1 : 0 }),
+    callMethod('oneapp.onedoc.set_template', { doc: name, on: on ? 1 : 0 }),
 
   docDuplicate: (name, title) =>
-    callMethod('oneapp.oneapp_core.docs.duplicate', { name, title }, {
+    callMethod('oneapp.onedoc.duplicate', { name, title }, {
       success: 'Copied',
     }),
 
   // The whole printable page as one string, for the frame that prints it —
   // `lib/paper/print.js` says why the app's own window is the wrong printer.
   docPrintable: (name) =>
-    callMethod('oneapp.oneapp_core.docs.printable', { name }, {
+    callMethod('oneapp.onedoc.printable', { name }, {
       silent: true, method: 'GET',
     }),
 
   docMarkdown: (name) =>
-    callMethod('oneapp.oneapp_core.docs.as_markdown', { name }, {
+    callMethod('oneapp.onedoc.as_markdown', { name }, {
       silent: true, method: 'GET',
     }),
 
   // The plain-text pair. A `.md` in the Drive is a real object, so these read
   // and write the file itself rather than a body row beside it.
   textOpen: (name) =>
-    callMethod('oneapp.oneapp_core.docs.get_text', { name }, {
+    callMethod('oneapp.onedoc.get_text', { name }, {
       silent: true, method: 'GET',
     }),
 
   textSave: (name, params) =>
-    callMethod('oneapp.oneapp_core.docs.save_text', { name, ...params }, {
+    callMethod('oneapp.onedoc.save_text', { name, ...params }, {
       silent: true,
     }),
 }

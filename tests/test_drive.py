@@ -23,12 +23,12 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-DRIVE = ROOT / "apps/oneapp/oneapp/oneapp_core/drive"
+DRIVE = ROOT / "apps/oneapp/oneapp/onestorage"
 
 
 @pytest.fixture
 def drive(monkeypatch):
-	from oneapp.oneapp_core import drive as module
+	from oneapp import onestorage as module
 
 	return module
 
@@ -76,7 +76,7 @@ def test_a_file_that_arrived_before_this_existed_is_not_broken(drive):
 	The alternative is a backfill: a write over every File on every site to
 	record what its absence already says.
 	"""
-	from oneapp.oneapp_core.drive.query import _visible
+	from oneapp.onestorage.query import _visible
 
 	assert _visible()[drive.STATUS_FIELD] == ["in", [drive.ACTIVE, "", None]]
 
@@ -309,7 +309,7 @@ def test_a_link_works_on_a_site_with_no_bucket():
 	bucket was exactly this bug on the other route: it fetched the download
 	endpoint and rendered the error page as the file's contents.
 	"""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/r2.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onestorage/r2.py").read_text()
 	serving = source[source.index("def serve("):source.index("def sync_backup_to_r2(")]
 	assert "is_configured()" in serving
 	assert "filecontent" in serving
@@ -354,7 +354,7 @@ def test_a_second_row_over_one_object_is_not_uploaded_twice():
 	"""`File.after_insert` moves content to R2. The row a pick writes has no
 	content of its own — reading it back would mean fetching our own download
 	route, and uploading it again would bill the workspace twice for one file."""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/file.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onestorage/file.py").read_text()
 	inserting = source[source.index("def after_insert("):source.index("def move_to_r2(")]
 	assert 'self.get("r2_key")' in inserting
 
@@ -363,7 +363,7 @@ def test_deleting_one_attachment_does_not_empty_the_other():
 	"""Two rows can point at one object, which is what picking a file that is
 	already attached somewhere writes. Deleting the object because one of them
 	went would empty the original, from a record nobody was looking at."""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/file.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onestorage/file.py").read_text()
 	trashing = source[source.index("def on_trash("):]
 	assert "shared_object(key)" in trashing
 
@@ -376,7 +376,7 @@ def test_sharing_a_file_does_not_make_it_undeletable():
 	assert 'ignore_links_on_delete = ["File Link"]' in hooks
 	# And the links go rather than being orphaned: an orphan answers a
 	# stranger's request with a stack trace instead of the one sentence.
-	trashing = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/file.py").read_text()
+	trashing = (ROOT / "apps/oneapp/oneapp/onestorage/file.py").read_text()
 	assert '"File Link"' in trashing[trashing.index("def on_trash("):]
 
 
@@ -442,7 +442,7 @@ def test_a_file_cannot_be_shared_outside_the_workspace(drive):
 def test_a_records_files_are_the_drives_own_rows():
 	"""Two lists that looked alike would be two places to add a column to, and
 	the tab would be the one that never got it."""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/spaceview/surround.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onespace/spaceview/surround.py").read_text()
 	listing = source[source.index("def attachments("):source.index("def _gallery_filters(")]
 	assert "reading.FIELDS" in listing
 	assert "reading._shape(" in listing
@@ -521,7 +521,7 @@ def test_a_failed_presign_does_not_leave_half_a_redirect():
 	"""`presigned_url` can raise, and assigning the response type before calling
 	it leaves `type=redirect` with no location behind — which Werkzeug answers as
 	`Location: None`, a 500 saying nothing about what actually failed."""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/r2.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onestorage/r2.py").read_text()
 	serving = source[source.index("def serve("):source.index("def sync_backup_to_r2(")]
 	built = serving.index("presigned_url(")
 	assigned = serving.index('response["type"] = "redirect"')
@@ -532,6 +532,6 @@ def test_a_stored_key_is_not_a_working_bucket():
 	"""A row keeps its `r2_key` through a site being reconfigured, and
 	presigning needs the client and the credentials rather than the key. Serving
 	on the key alone is a redirect nothing can build."""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/storage/r2.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onestorage/r2.py").read_text()
 	serving = source[source.index("def serve("):source.index("def sync_backup_to_r2(")]
 	assert "if is_configured():" in serving

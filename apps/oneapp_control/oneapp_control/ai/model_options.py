@@ -25,7 +25,7 @@ import re
 
 #: Where each capability's options go inside the request our gateway builds.
 #: Not the provider's documentation shape — *ours* — because the declaration is
-#: read by `oneapp_core/ai/gateway.py`, which already decides which endpoint and
+#: read by `onespace/ai/gateway.py`, which already decides which endpoint and
 #: which body a capability gets. See `_google_speech` there for this one.
 GOOGLE_VOICE_PATH = "generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName"
 

@@ -5,7 +5,7 @@
  * needs the same nine numbers, and reaching them through `docs/toolbar.js`
  * would pull the whole tiptap toolbar into the spreadsheet's bundle.
  *
- * The same five sizes and three margins `oneapp_core/paper.py` offers, in
+ * The same five sizes and three margins `shared/paper.py` offers, in
  * millimetres, because the editor has to draw the sheet the server will print
  * — a page that looks A4 on screen and prints Letter is worse than no page at
  * all. Kept as a copy rather than fetched: it is nine numbers that have not
@@ -35,7 +35,7 @@ export const MARGINS = {
 }
 
 /*
- * The type a paged document is set in — `oneapp_core/docs/typography.py`,
+ * The type a paged document is set in — `onedoc/typography.py`,
  * mirrored, and `tests/test_paper.py` reads the two back against each other.
  *
  * A page that reflows on the way to the printer is the whole thing pagination

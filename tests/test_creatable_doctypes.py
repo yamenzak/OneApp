@@ -28,7 +28,7 @@ CONTROL = ROOT / "apps/oneapp_control/oneapp_control"
 
 def doctype(name: str) -> dict:
 	s = doctype_slug(name)
-	for app, module in (("oneapp_control", "control_plane"), ("oneapp", "oneapp_core")):
+	for app, module in (("oneapp_control", "control_plane"), ("oneapp", "onespace")):
 		path = ROOT / "apps" / app / app / module / "doctype" / s / f"{s}.json"
 		if path.exists():
 			return json.loads(path.read_text())

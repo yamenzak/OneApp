@@ -20,9 +20,20 @@ import json
 import os
 
 from doctypes import (
-    APPS, APPS_ROOT, DOCTYPES, HANDLED_SPEC_KEYS, MANAGER_PERMS,
+    APPS, APPS_ROOT, DOCTYPES, HANDLED_SPEC_KEYS, MANAGER_PERMS, MODULE_DIRS,
     READONLY_PERMS, STAMP,
 )
+
+
+def module_of(spec):
+    """Which Frappe module a doctype belongs to.
+
+    The app's own default unless the declaration names one. A doctype that
+    belongs to a product — a `Doc Body`, a `Sheet Tab` — says so, and both the
+    JSON's `module` and the directory it is written into follow from the one
+    answer.
+    """
+    return spec.get("module") or APPS[spec["app"]][2]
 
 
 def build(spec):
@@ -40,7 +51,7 @@ def build(spec):
         "links": [],
         "modified": STAMP,
         "modified_by": "Administrator",
-        "module": APPS[spec["app"]][2],
+        "module": module_of(spec),
         "name": spec["name"],
         "owner": "Administrator",
         "permissions": spec["perms"],
@@ -294,7 +305,7 @@ def write_fieldtypes():
         timespans=pprint.pformat(dict(field_types.TIMESPANS), width=88, sort_dicts=False),
         default_operators=pprint.pformat(defaults, width=88, sort_dicts=True),
     )
-    path = os.path.join(APPS_ROOT, "oneapp", "oneapp", "oneapp_core")
+    path = os.path.join(APPS_ROOT, "oneapp", "oneapp", "onespace")
     with open(os.path.join(path, "fieldtypes.py"), "w") as fh:
         fh.write(body)
 
@@ -318,8 +329,8 @@ def main():
     write_fieldtypes()
     written = []
     for name, spec in DOCTYPES.items():
-        pkg, module_dir, _ = APPS[spec["app"]]
-        base = os.path.join(APPS_ROOT, pkg, pkg, module_dir, "doctype")
+        pkg = APPS[spec["app"]][0]
+        base = os.path.join(APPS_ROOT, pkg, pkg, MODULE_DIRS[module_of(spec)], "doctype")
         # Frappe's own `scrub`: spaces and hyphens both become underscores, so
         # "Add-on" is looked for at add_on/add_on.json. Getting this wrong
         # produces a directory Frappe never reads and a doctype that silently

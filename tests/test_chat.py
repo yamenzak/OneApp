@@ -24,13 +24,13 @@ import pytest
 @pytest.fixture
 def chat(stub_frappe, monkeypatch):
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
 	stub_frappe.log_error = lambda **kw: None
 	stub_frappe.get_traceback = lambda: ""
 
-	from oneapp.oneapp_core.chat import context, session, toolbox
+	from oneapp.onespace.chat import context, session, toolbox
 
 	return types.SimpleNamespace(
 		context=context, session=session, toolbox=toolbox,
@@ -57,9 +57,9 @@ def test_finding_records_goes_through_the_screen_the_browser_uses(chat):
 		return {"rows": [{"name": "Q-1", "status": "Open", "_liked_by": "[]"}],
 		        "has_more": False}
 
-	module = types.ModuleType("oneapp.oneapp_core.spaceview.records")
+	module = types.ModuleType("oneapp.onespace.spaceview.records")
 	module.rows = rows
-	chat.monkeypatch.setitem(sys.modules, "oneapp.oneapp_core.spaceview.records", module)
+	chat.monkeypatch.setitem(sys.modules, "oneapp.onespace.spaceview.records", module)
 
 	found = chat.toolbox.find_records(
 		space="sales", screen="quotations",
@@ -74,11 +74,11 @@ def test_finding_records_goes_through_the_screen_the_browser_uses(chat):
 def test_a_tool_cannot_ask_for_more_rows_than_the_cap(chat):
 	"""Every row is input tokens on every turn after it. The cap is not advice."""
 	asked = {}
-	module = types.ModuleType("oneapp.oneapp_core.spaceview.records")
+	module = types.ModuleType("oneapp.onespace.spaceview.records")
 	module.rows = lambda space_code, screen, limit, overrides: (
 		asked.update(limit=limit) or {"rows": [], "has_more": False}
 	)
-	chat.monkeypatch.setitem(sys.modules, "oneapp.oneapp_core.spaceview.records", module)
+	chat.monkeypatch.setitem(sys.modules, "oneapp.onespace.spaceview.records", module)
 
 	chat.toolbox.find_records(space="sales", screen="quotations", limit=5_000)
 	assert asked["limit"] == chat.toolbox.MAX_ROWS
@@ -225,19 +225,19 @@ def screens(chat, resolved):
 	"""Stand in for `spaceview.resolve._resolve` and `records.record`."""
 	import types
 
-	resolve = types.ModuleType("oneapp.oneapp_core.spaceview.resolve")
+	resolve = types.ModuleType("oneapp.onespace.spaceview.resolve")
 	resolve._resolve = lambda space, screen=None, view_type=None: (
 		resolved.get((space, screen)) or _refuse(space)
 	)
 	chat.monkeypatch.setitem(
-		sys.modules, "oneapp.oneapp_core.spaceview.resolve", resolve)
+		sys.modules, "oneapp.onespace.spaceview.resolve", resolve)
 
-	records = types.ModuleType("oneapp.oneapp_core.spaceview.records")
+	records = types.ModuleType("oneapp.onespace.spaceview.records")
 	records.record = lambda space_code, screen, name: (
 		{"name": name, "project_name": "Marina tower"} if name == "PROJ-1" else {}
 	)
 	chat.monkeypatch.setitem(
-		sys.modules, "oneapp.oneapp_core.spaceview.records", records)
+		sys.modules, "oneapp.onespace.spaceview.records", records)
 
 
 def _refuse(space):

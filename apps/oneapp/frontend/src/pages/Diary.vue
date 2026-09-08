@@ -7,7 +7,7 @@
     Wednesday and a review in their own diary. Nothing here is stored: every
     entry belongs to a record somewhere else, says which, and opens it.
 
-    The merge is the server's (`oneapp_core/diary.py`), because it is the same
+    The merge is the server's (`onecalendar/diary.py`), because it is the same
     permission path each screen uses.
   -->
   <PageHeader>

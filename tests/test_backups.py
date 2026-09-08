@@ -14,7 +14,7 @@ import pytest
 
 @pytest.fixture
 def backup(stub_frappe):
-	from oneapp.oneapp_core import backup as module
+	from oneapp.onespace import backup as module
 
 	return module
 

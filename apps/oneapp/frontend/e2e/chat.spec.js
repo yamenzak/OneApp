@@ -125,7 +125,7 @@ test('a conversation can be deleted and stops being listed', async ({ page }) =>
   // Back to a blank thread, and the server has forgotten it.
   await expect(page).toHaveURL(/\/one\/chat$/)
   const res = await page.request.get(
-    `/api/method/oneapp.oneapp_core.chat.messages?session=${session}`,
+    `/api/method/oneapp.onespace.chat.messages?session=${session}`,
   )
   expect(res.ok()).toBe(false)
 })
@@ -138,7 +138,7 @@ test('the assistant appears in the rail only where it is switched on',
     // The dev site has the gateway configured and AI on, so it is here. The
     // absent case is the server's answer, not the browser's: `sessions()`
     // reports `available` and the rail draws nothing when it is false.
-    const said = await page.request.get('/api/method/oneapp.oneapp_core.chat.sessions')
+    const said = await page.request.get('/api/method/oneapp.onespace.chat.sessions')
     const available = (await said.json()).message.available
     await expect(page.locator('[data-slot="chat-link"]')).toHaveCount(available ? 1 : 0)
   })
@@ -207,7 +207,7 @@ test('a panel opened on a record is scoped to it, server side', async ({ page },
   // browser sends is an answer to be verified, so a space this reader cannot
   // open is refused rather than quietly widened to the whole workspace.
   const refused = await page.request.post(
-    '/api/method/oneapp.oneapp_core.chat.send',
+    '/api/method/oneapp.onespace.chat.send',
     { data: { question: 'anything', on: JSON.stringify({
       space: 'not-a-space', screen: 'projects' }) } },
   )

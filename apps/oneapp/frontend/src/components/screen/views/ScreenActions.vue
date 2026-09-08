@@ -113,7 +113,7 @@ async function run(action) {
       return
     }
 
-    await callMethod('oneapp.oneapp_core.spaceview.run_action', {
+    await callMethod('oneapp.onespace.spaceview.run_action', {
       space_code: props.spaceCode,
       screen: props.screen,
       action: action.key,

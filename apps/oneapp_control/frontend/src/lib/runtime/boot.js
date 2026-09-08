@@ -33,7 +33,7 @@ export const systemTimezone = read('system_timezone', '')
 export const isDev = import.meta.env.DEV
 export const devServer = !!read('dev_server', 0) || import.meta.env.DEV
 // What this workspace looks like: `{ accent, favicon, splash }`, built by
-// `oneapp_core/branding.py`. All three are wanted before the first paint — the
+// `onespace/branding.py`. All three are wanted before the first paint — the
 // accent so no button is drawn in the default colour and then repainted, the
 // favicon so the tab does not visibly change — which is why they ride the boot
 // payload rather than the session resource.
@@ -43,7 +43,7 @@ export const brand = read('brand', {})
 // the first paint, because changing it later moves the whole layout.
 export const lang = read('lang', 'en')
 // Who the assistant is: `{ name, avatar, tone, personality }`, built by
-// `oneapp_core/ai/settings.py`. Here for the same reason the favicon is — the
+// `onespace/ai/settings.py`. Here for the same reason the favicon is — the
 // chat rail and the panel header name it before anything is fetched, and a
 // header that says "Assistant" for a moment and then says something else is a
 // visible flicker. `lib/shell/assistant.js` makes it reactive from here.

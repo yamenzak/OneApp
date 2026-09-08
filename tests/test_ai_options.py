@@ -16,7 +16,7 @@ import pytest
 
 @pytest.fixture
 def options(stub_frappe):
-	from oneapp.oneapp_core.ai import options as module
+	from oneapp.onespace.ai import options as module
 
 	return module
 

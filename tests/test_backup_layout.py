@@ -13,7 +13,7 @@ import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-TENANT = ROOT / "apps/oneapp/oneapp/oneapp_core/backup.py"
+TENANT = ROOT / "apps/oneapp/oneapp/onespace/backup.py"
 CONTROL = ROOT / "apps/oneapp_control/oneapp_control/lifecycle/backups.py"
 
 

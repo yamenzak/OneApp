@@ -4,7 +4,7 @@
 
     Nothing here is about construction: the manifest says which field is the
     eyebrow, which is the badge, which three numbers matter and what hangs off
-    this record. See `oneapp_core/showcase.py`.
+    this record. See `onespace/showcase.py`.
 
     Black and white here rather than the grey tokens, and it is the one place in
     the product that is right: the surface is somebody's photograph, which is
@@ -256,7 +256,7 @@ const props = defineProps({
   record: { type: Object, required: true },
   /** What the screen says about itself — columns, states, title field. */
   spec: { type: Object, default: () => ({}) },
-  /** The declaration. See `oneapp_core/showcase.py`. */
+  /** The declaration. See `onespace/showcase.py`. */
   showcase: { type: Object, default: () => ({}) },
   title: { type: String, default: '' },
   /**

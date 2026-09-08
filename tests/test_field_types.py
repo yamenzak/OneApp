@@ -385,7 +385,7 @@ def test_frappes_bookkeeping_is_all_reserved():
     import sys
 
     sys.path.insert(0, str(ROOT / "apps/oneapp"))
-    from oneapp.oneapp_core import fieldtypes
+    from oneapp.onespace import fieldtypes
 
     declared = frappe_tuple("default_fields") | frappe_tuple("optional_fields")
     missing = declared - set(fieldtypes.RESERVED)

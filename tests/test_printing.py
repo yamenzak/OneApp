@@ -19,10 +19,10 @@ def printing(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core import printing as module
+	from oneapp.onespace import printing as module
 
 	return module
 
@@ -242,10 +242,10 @@ def sync(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core import sync as module
+	from oneapp.onespace import sync as module
 
 	return module
 
@@ -270,7 +270,7 @@ def test_a_shipped_format_is_created_once_and_then_left_alone(sync, stub_frappe,
 	monkeypatch.setattr(stub_frappe.db, "exists",
 	                    lambda doctype, name=None: doctype == "DocType" or name in held)
 
-	from oneapp.oneapp_core import printing
+	from oneapp.onespace import printing
 
 	monkeypatch.setattr(printing, "save_format",
 	                    lambda dt, label, layout, page: (held.add(label), made.append(label)))
@@ -290,7 +290,7 @@ def test_a_bad_fixture_row_costs_one_row_rather_than_the_sync(sync, stub_frappe,
 	also carries roles, members and quotas."""
 	monkeypatch.setattr(stub_frappe.db, "exists", lambda *a, **k: True)
 
-	from oneapp.oneapp_core import printing
+	from oneapp.onespace import printing
 
 	def boom(*a, **k):
 		raise ValueError("that layout will not parse")

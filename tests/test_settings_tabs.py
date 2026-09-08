@@ -1,6 +1,6 @@
 """The settings dialog's tabs, and the three lists that have to agree.
 
-A tab is declared in `oneapp_core/tabs.py` — its key, its label, its icon, and
+A tab is declared in `onespace/tabs.py` — its key, its label, its icon, and
 the audience that decides who may open it. Two other places have to match, and
 both fail *silently* when they do not:
 
@@ -21,7 +21,7 @@ import pathlib
 import re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-TABS = ROOT / "apps/oneapp/oneapp/oneapp_core/tabs.py"
+TABS = ROOT / "apps/oneapp/oneapp/onespace/tabs.py"
 SHELL = ROOT / "apps/oneapp/frontend/src/components/settings/SettingsShell.vue"
 ICONS = ROOT / "apps/oneapp/frontend/src/components/settings/icons.js"
 
@@ -79,7 +79,7 @@ def test_every_component_has_a_tab():
 def test_every_fields_tab_is_a_workspace_group():
 	"""A `fields` tab's key is a `workspace.GROUPS` key, because that is what
 	renders it. One that names nothing renders an empty form."""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/workspace.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onespace/workspace.py").read_text()
 	groups = set(re.findall(r'"key": "(\w+)",\n\s+"label"', source))
 	wanted = {tab["key"] for tab in declared() if tab["kind"] == "FIELDS"}
 	assert wanted <= groups, (
@@ -171,8 +171,8 @@ def test_the_workspaces_tabs_are_the_admins():
 # mismatch to fix rather than to add here.
 # --------------------------------------------------------------------------- #
 
-WORKSPACE = ROOT / "apps/oneapp/oneapp/oneapp_core/workspace.py"
-ME = ROOT / "apps/oneapp/oneapp/oneapp_core/me.py"
+WORKSPACE = ROOT / "apps/oneapp/oneapp/onespace/workspace.py"
+ME = ROOT / "apps/oneapp/oneapp/onespace/me.py"
 
 #: The controls `SettingsFields.vue` and `ProfileSettings.vue` can actually draw.
 #:
@@ -185,7 +185,7 @@ DRAWN = {
 	# "no setting declares a control that would be a text box".
 	"Data", "Check", "Select", "Int", "Float", "Attach", "Attach Image",
 	# Not a Frappe fieldtype at all — `SettingsColour.vue`, for the one
-	# setting with no doctype behind it. See `oneapp_core/branding.py`.
+	# setting with no doctype behind it. See `onespace/branding.py`.
 	"Color",
 }
 

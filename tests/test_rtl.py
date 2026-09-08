@@ -142,11 +142,11 @@ def test_both_apps_mirror_the_same_arrows():
 def test_a_document_leaves_the_right_way_round():
 	"""The HTML export is opened where our stylesheet is not — somebody's word
 	processor, somebody's mail client — so it has to carry its own direction."""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/docs/export.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onedoc/export.py").read_text()
 	assert 'dir="{direction}"' in source
 	# The type scale moved to `typography.py`, which the editor is measured
 	# against too — so the mirrored rules live there with the rest of it.
-	scale = (ROOT / "apps/oneapp/oneapp/oneapp_core/docs/typography.py").read_text()
+	scale = (ROOT / "apps/oneapp/oneapp/onedoc/typography.py").read_text()
 	assert "[dir=rtl] td" in scale, "the exported table still aligns to the left"
 
 
@@ -159,7 +159,7 @@ def test_the_two_lists_of_right_to_left_languages_agree():
 		return set(_re.findall(r"[\"']([a-z]{2,3})[\"']", text))
 
 	browser = (ROOT / "apps/oneapp/frontend/src/lib/runtime/translate.js").read_text()
-	server = (ROOT / "apps/oneapp/oneapp/oneapp_core/docs/export.py").read_text()
+	server = (ROOT / "apps/oneapp/oneapp/onedoc/export.py").read_text()
 	assert names(browser.split("RIGHT_TO_LEFT")[1].split("]")[0]) == names(
 		server.split("RIGHT_TO_LEFT")[1].split(")")[0]
 	)

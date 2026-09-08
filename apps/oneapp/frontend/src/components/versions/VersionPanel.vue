@@ -2,7 +2,7 @@
   <!--
     Earlier drafts of one file, whether that file is a workbook or a document.
 
-    One panel for both, because `oneapp_core/versions.py` is one module for
+    One panel for both, because `shared/versions.py` is one module for
     both: the rows are the same five columns and the only thing that differs is
     which store the payload goes back to. `kind` carries that, and nothing else
     in here knows what a version contains.

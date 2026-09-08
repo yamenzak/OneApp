@@ -181,4 +181,4 @@ export async function fetchFile(row) {
  * same URL — and none of them needs a key of ours to reach it.
  */
 export const downloadUrl = (name) =>
-  `/api/method/oneapp.oneapp_core.storage.r2.download?file=${encodeURIComponent(name)}`
+  `/api/method/oneapp.onestorage.r2.download?file=${encodeURIComponent(name)}`

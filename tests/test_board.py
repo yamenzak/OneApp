@@ -18,7 +18,7 @@ import pytest
 
 @pytest.fixture
 def board(stub_frappe):
-	from oneapp.oneapp_core import board as module
+	from oneapp.onespace import board as module
 
 	return module
 
@@ -28,10 +28,10 @@ def views(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core.spaceview import views as module
+	from oneapp.onespace.spaceview import views as module
 
 	return module
 

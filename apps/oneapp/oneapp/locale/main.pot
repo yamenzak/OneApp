@@ -18,7 +18,7 @@ msgstr ""
 
 #. Description of the 'Page Length' (Int) field in DocType 'OneSpace Saved
 #. View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "0 follows the screen."
 msgstr ""
 
@@ -36,7 +36,7 @@ msgstr ""
 
 #. Content of the 'note_cd_warning' (HTML) field in DocType 'Compliance
 #. Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "<p>The warning goes to whoever is <b>following</b> this document, once — not every morning until somebody acts, which is how people learn to ignore it.</p>"
 msgstr ""
 
@@ -56,27 +56,27 @@ msgstr ""
 msgid "A colon after every label"
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/surround.py:281
+#: oneapp/onespace/spaceview/surround.py:281
 msgid "A comment needs something in it."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:233
+#: oneapp/onespace/naming.py:233
 msgid "A counter cannot go below zero."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:231
+#: oneapp/onespace/naming.py:231
 msgid "A counter is a whole number."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:123
+#: oneapp/onespace/printing.py:123
 msgid "A disabled letter head cannot be the default one."
 msgstr ""
 
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.py:49
+#: oneapp/onespace/doctype/compliance_document/compliance_document.py:49
 msgid "A document cannot renew itself."
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:265
+#: oneapp/onespace/notifications.py:265
 msgid "A document whose expiry date is coming up."
 msgstr ""
 
@@ -84,32 +84,32 @@ msgstr ""
 msgid "A file path or URL. Referenced from the header above, or used on its own."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/meta.py:814
+#: oneapp/onespace/spaceview/meta.py:814
 msgid "A filter on {0} may only narrow {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/drive/writing.py:153
+#: oneapp/onestorage/writing.py:153
 msgid "A folder cannot be attached to a record."
 msgstr ""
 
-#: oneapp/oneapp_core/drive/writing.py:112
+#: oneapp/onestorage/writing.py:112
 msgid "A folder cannot be moved inside itself."
 msgstr ""
 
-#: oneapp/oneapp_core/drive/sharing.py:153
+#: oneapp/onestorage/sharing.py:153
 msgid "A folder cannot be shared as a link — it would include whatever is put in it later."
 msgstr ""
 
-#: oneapp/oneapp_core/drive/writing.py:45
+#: oneapp/onestorage/writing.py:45
 msgid "A folder name cannot contain a slash."
 msgstr ""
 
-#: oneapp/oneapp_core/drive/writing.py:41
-#: oneapp/oneapp_core/email/folders.py:315
+#: oneapp/onestorage/writing.py:41
+#: oneapp/onemail/folders.py:315
 msgid "A folder needs a name."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:701
+#: oneapp/onespace/printing.py:701
 msgid "A format called {0} already exists."
 msgstr ""
 
@@ -117,7 +117,7 @@ msgstr ""
 msgid "A format is drawn over the records an app in this workspace shows."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:685
+#: oneapp/onespace/printing.py:685
 msgid "A format needs a name."
 msgstr ""
 
@@ -127,7 +127,7 @@ msgstr ""
 
 #. Description of the 'Naming Series' (Select) field in DocType
 #. 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "A letter and a form are numbered in separate sequences, because that is what somebody quoting one on the phone expects."
 msgstr ""
 
@@ -135,26 +135,26 @@ msgstr ""
 msgid "A letter from its name is used where there is none."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:870
+#: oneapp/onespace/printing.py:870
 msgid "A letter head called {0} already exists."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:860
+#: oneapp/onespace/printing.py:860
 msgid "A letter head needs a name."
 msgstr ""
 
 #. Description of the 'This is a template' (Check) field in DocType
 #. 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "A letter kept to start others from. Templates are not numbered against the real sequence."
 msgstr ""
 
-#: oneapp/oneapp_core/drive/sharing.py:158
+#: oneapp/onestorage/sharing.py:158
 msgid "A link can last between 1 and {0} days."
 msgstr ""
 
 #. Description of the 'Icon' (Data) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "A lucide name from the offered set, or an emoji. Anything else is dropped on the way in — a lucide name reaches the DOM as a class."
 msgstr ""
 
@@ -162,7 +162,7 @@ msgstr ""
 msgid "A mailbox the team shares"
 msgstr ""
 
-#: oneapp/oneapp_core/drive/writing.py:83
+#: oneapp/onestorage/writing.py:83
 msgid "A name cannot be empty."
 msgstr ""
 
@@ -170,23 +170,23 @@ msgstr ""
 msgid "A named version is never thinned out. The automatic ones are, once they are old enough to be too many."
 msgstr ""
 
-#: oneapp/oneapp_core/docs/writing.py:82
+#: oneapp/onedoc/writing.py:82
 msgid "A new {0} file is not something this can make."
 msgstr ""
 
-#: oneapp/oneapp_core/collab.py:261
+#: oneapp/onespace/collab.py:261
 msgid "A record can be shared with {0} people. Use a role beyond that."
 msgstr ""
 
-#: oneapp/oneapp_core/collab.py:117
+#: oneapp/onespace/collab.py:117
 msgid "A record can carry {0} tags. Take one off first."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/surround.py:345
+#: oneapp/onespace/spaceview/surround.py:345
 msgid "A record needs an id."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:202
+#: oneapp/onespace/naming.py:202
 msgid "A record needs at least one series to be named by."
 msgstr ""
 
@@ -194,15 +194,15 @@ msgstr ""
 msgid "A reply written once, ready to send again."
 msgstr ""
 
-#: oneapp/oneapp_core/importer/source.py:44
+#: oneapp/onespace/importer/source.py:44
 msgid "A source has to be https. Credentials travel to it."
 msgstr ""
 
-#: oneapp/oneapp_core/importer/source.py:46
+#: oneapp/onespace/importer/source.py:46
 msgid "A source is a host and nothing else, like https://old.example.com."
 msgstr ""
 
-#: oneapp/oneapp_core/importer/source.py:54
+#: oneapp/onespace/importer/source.py:54
 msgid "A source is named by hostname, not by address."
 msgstr ""
 
@@ -210,11 +210,11 @@ msgstr ""
 msgid "A starting structure for your country. Accounts can be added later; the shape is hard to change once entries exist."
 msgstr ""
 
-#: oneapp/oneapp_core/collab.py:112
+#: oneapp/onespace/collab.py:112
 msgid "A tag needs a name."
 msgstr ""
 
-#: oneapp/oneapp_core/email/templates.py:133
+#: oneapp/onemail/templates.py:133
 msgid "A template called {0} already exists."
 msgstr ""
 
@@ -222,7 +222,7 @@ msgstr ""
 msgid "A template is a subject and a message somebody can send without writing it again."
 msgstr ""
 
-#: oneapp/oneapp_core/email/templates.py:82
+#: oneapp/onemail/templates.py:82
 msgid "A template with nothing in it is not a template."
 msgstr ""
 
@@ -234,7 +234,7 @@ msgstr ""
 msgid "A workspace owner can turn it on under Settings, AI."
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/feed.py:130
+#: oneapp/onesheet/feed.py:130
 msgid "A {0} has no rows called {1} to fill."
 msgstr ""
 
@@ -243,7 +243,7 @@ msgid "AI"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "AI Written Value"
 msgstr ""
 
@@ -266,7 +266,7 @@ msgid "Abbreviation"
 msgstr ""
 
 #. Label of the about_doctype (Link) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "About"
 msgstr ""
 
@@ -291,7 +291,7 @@ msgstr ""
 
 #: frontend/src/components/screen/record/RecordView.vue:183
 #: frontend/src/screens/ops/Tenant.vue:77
-#: oneapp/oneapp_core/spaceview/meta.py:426
+#: oneapp/onespace/spaceview/meta.py:426
 msgid "Activity"
 msgstr ""
 
@@ -414,7 +414,7 @@ msgstr ""
 #. Label of the address (Data) field in DocType 'Mail Rule'
 #: frontend/src/components/settings/MailSettings.vue:276
 #: frontend/src/screens/account/Overview.vue:188
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Address"
 msgstr ""
 
@@ -427,12 +427,12 @@ msgid "Address removed"
 msgstr ""
 
 #. Description of the 'Expires On' (Datetime) field in DocType 'File Link'
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_link/file_link.json
 msgid "After this the link is gone and the file is not. Empty is refused on purpose: a link with no end is a file published for ever by somebody who has left."
 msgstr ""
 
 #. Label of the ai_enabled (Check) field in DocType 'OneSpace AI Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Ai Enabled"
 msgstr ""
 
@@ -476,8 +476,8 @@ msgstr ""
 
 #. Name of a role
 #: frontend/src/components/screen/record/RecordActivity.vue:138
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
-#: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "All"
 msgstr ""
 
@@ -531,7 +531,7 @@ msgstr ""
 msgid "An add-on goes on the same invoice as your plan, so there has to be a plan first."
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:317
+#: oneapp/onemail/addresses.py:317
 msgid "An address may use letters, numbers, dots, dashes and underscores, and must start and end with a letter or number."
 msgstr ""
 
@@ -539,7 +539,7 @@ msgstr ""
 msgid "An admin gives you one, or connect the mailbox you already have below."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:247
+#: oneapp/onespace/alerts.py:247
 msgid "An alert needs a subject — it is the line people see."
 msgstr ""
 
@@ -555,12 +555,12 @@ msgstr ""
 msgid "An earlier version"
 msgstr ""
 
-#: oneapp/oneapp_core/email/rules.py:175
+#: oneapp/onemail/rules.py:175
 msgid "An out-of-office reply needs something to say."
 msgstr ""
 
 #. Description of the 'Star' (Check) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "And for the ones that file things somebody does."
 msgstr ""
 
@@ -586,7 +586,7 @@ msgstr ""
 
 #. Description of the 'Belongs to' (Link) field in DocType 'Compliance
 #. Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Anything on this site: an employee, a company, a vehicle, a project."
 msgstr ""
 
@@ -595,12 +595,12 @@ msgid "Anything outstanding below limits what tenants can do, not whether they c
 msgstr ""
 
 #. Label of the api_key (Data) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Api Key"
 msgstr ""
 
 #. Label of the api_secret (Password) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Api Secret"
 msgstr ""
 
@@ -627,7 +627,7 @@ msgstr ""
 
 #. Description of the 'Prompt Addendum' (Small Text) field in DocType 'OneSpace
 #. AI Feature Setting'
-#: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
+#: oneapp/onespace/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "Appended to our instructions. The model receives both; this field never contains ours."
 msgstr ""
 
@@ -666,7 +666,7 @@ msgstr ""
 #: frontend/src/components/screen/bodies/BoardBody.vue:196
 #: frontend/src/lib/workspace/mail.js:167 frontend/src/pages/Mail.vue:536
 #: frontend/src/screens/ops/TenantLifecycle.vue:223
-#: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
+#: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "Archived"
 msgstr ""
 
@@ -691,12 +691,12 @@ msgstr ""
 msgid "Ask about {0}"
 msgstr ""
 
-#: oneapp/oneapp_core/chat/assistant.py:173
+#: oneapp/onespace/chat/assistant.py:173
 msgid "Ask something first."
 msgstr ""
 
 #. Label of the asked_by (Link) field in DocType 'AI Written Value'
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Asked By"
 msgstr ""
 
@@ -736,35 +736,35 @@ msgstr ""
 
 #: frontend/src/components/settings/AiSettings.vue:44
 #: frontend/src/components/settings/AiSettings.vue:58
-#: frontend/src/lib/shell/assistant.js:42 oneapp/oneapp_core/ai/settings.py:173
-#: oneapp/oneapp_core/ai/settings.py:189
+#: frontend/src/lib/shell/assistant.js:42 oneapp/onespace/ai/settings.py:173
+#: oneapp/onespace/ai/settings.py:189
 msgid "Assistant"
 msgstr ""
 
 #. Label of the assistant_avatar (Attach Image) field in DocType 'OneSpace AI
 #. Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Assistant Avatar"
 msgstr ""
 
 #. Label of the assistant_name (Data) field in DocType 'OneSpace AI Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Assistant Name"
 msgstr ""
 
 #. Label of the assistant_personality (Small Text) field in DocType 'OneSpace
 #. AI Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Assistant Personality"
 msgstr ""
 
 #. Label of the assistant_tone (Select) field in DocType 'OneSpace AI Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Assistant Tone"
 msgstr ""
 
 #. Label of the at_seq (Long Int) field in DocType 'File Version'
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "At Seq"
 msgstr ""
 
@@ -827,7 +827,7 @@ msgid "Back up now"
 msgstr ""
 
 #. Label of the background_workers (Int) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Background Workers"
 msgstr ""
 
@@ -850,12 +850,12 @@ msgid "Backups"
 msgstr ""
 
 #. Label of the backups_per_day (Int) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Backups Per Day"
 msgstr ""
 
 #. Label of the base_url (Data) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Base Url"
 msgstr ""
 
@@ -868,11 +868,11 @@ msgid "Becomes {0}"
 msgstr ""
 
 #. Label of the h_cd_warning (Heading) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Before it lapses"
 msgstr ""
 
-#: oneapp/oneapp_core/versions.py:251
+#: oneapp/shared/versions.py:251
 msgid "Before restoring “{0}”"
 msgstr ""
 
@@ -885,7 +885,7 @@ msgid "Being added to your workspace. A few minutes."
 msgstr ""
 
 #. Label of the about_doctype (Link) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Belongs to"
 msgstr ""
 
@@ -897,7 +897,7 @@ msgstr ""
 msgid "Bench groups"
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:243
+#: oneapp/onespace/alerts.py:243
 msgid "Between 0 and {0} days."
 msgstr ""
 
@@ -929,8 +929,8 @@ msgstr ""
 
 #. Label of the body (Text Editor) field in DocType 'Correspondence'
 #. Option for the 'Field' (Select) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Body"
 msgstr ""
 
@@ -954,7 +954,7 @@ msgstr ""
 msgid "Both"
 msgstr ""
 
-#: oneapp/oneapp_core/me.py:248
+#: oneapp/onespace/me.py:248
 msgid "Both the current and the new password are needed."
 msgstr ""
 
@@ -973,7 +973,7 @@ msgid "Breadcrumb"
 msgstr ""
 
 #. Description of the 'Carry Files' (Check) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Bring across everything attached to each row and attach it here. One request per row and one download per file, so it is opt-in per step."
 msgstr ""
 
@@ -1012,26 +1012,26 @@ msgstr ""
 #. Label of the byte_size (Int) field in DocType 'Doc Body'
 #. Label of the byte_size (Int) field in DocType 'File Version'
 #. Label of the byte_size (Int) field in DocType 'Sheet Book'
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
-#: oneapp/oneapp_core/doctype/sheet_book/sheet_book.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/sheet_book/sheet_book.json
 msgid "Byte Size"
 msgstr ""
 
 #. Description of the 'Byte Size' (Int) field in DocType 'Doc Body'
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
 msgid "Bytes of content plus html. What the storage meter counts for a document, since it has no object behind it."
 msgstr ""
 
 #. Label of the sec_ai_cache (Section Break) field in DocType 'OneSpace AI
 #. Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Cached from the control plane"
 msgstr ""
 
 #. Label of the sec_cache (Section Break) field in DocType 'OneSpace Site
 #. State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Cached manifest"
 msgstr ""
 
@@ -1093,15 +1093,15 @@ msgstr ""
 
 #. Label of the cancellation_reason (Small Text) field in DocType
 #. 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Cancellation Reason"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Correspondence'
 #. Option for the 'Status' (Select) field in DocType 'Import Run'
 #: frontend/src/lib/workspace/record.js:154
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Cancelled"
 msgstr ""
 
@@ -1142,22 +1142,22 @@ msgid "Carries a file"
 msgstr ""
 
 #. Label of the carry_file_fields (Small Text) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Carry File Fields"
 msgstr ""
 
 #. Label of the carry_files (Check) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Carry Files"
 msgstr ""
 
 #. Label of the catalogue_json (Code) field in DocType 'OneSpace AI Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Catalogue Json"
 msgstr ""
 
 #. Label of the category (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Category"
 msgstr ""
 
@@ -1179,7 +1179,7 @@ msgstr ""
 
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
 #: frontend/src/screens/ops/Tenant.vue:393
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Certificate"
 msgstr ""
 
@@ -1243,7 +1243,7 @@ msgstr ""
 msgid "Changes"
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:259
+#: oneapp/onespace/notifications.py:259
 msgid "Changes to a record you are following."
 msgstr ""
 
@@ -1269,7 +1269,7 @@ msgid "Checked"
 msgstr ""
 
 #. Label of the into (Data) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Child Table"
 msgstr ""
 
@@ -1373,7 +1373,7 @@ msgstr ""
 #. Label of the columns (Code) field in DocType 'OneSpace Saved View'
 #: frontend/src/components/screen/views/ColumnPicker.vue:15
 #: frontend/src/components/settings/printing/BuilderInspector.vue:84
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Columns"
 msgstr ""
 
@@ -1415,13 +1415,13 @@ msgid "Complete"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Compliance Document"
 msgstr ""
 
 #. Description of the 'Background Workers' (Int) field in DocType 'OneSpace
 #. Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Concurrent background jobs this workspace may run."
 msgstr ""
 
@@ -1439,7 +1439,7 @@ msgid "Connected mailbox"
 msgstr ""
 
 #. Option for the 'Operator' (Select) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Contains"
 msgstr ""
 
@@ -1449,13 +1449,13 @@ msgstr ""
 
 #. Label of the content (Long Text) field in DocType 'Doc Body'
 #. Label of the content (Long Text) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Content"
 msgstr ""
 
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Contract"
 msgstr ""
 
@@ -1485,7 +1485,7 @@ msgid "Copy the link"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Correspondence"
 msgstr ""
 
@@ -1539,7 +1539,7 @@ msgstr ""
 #. Label of the created (Int) field in DocType 'Import Run Step'
 #: frontend/src/lib/workspace/screen.js:222
 #: frontend/src/screens/ops/Tenant.vue:517
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Created"
 msgstr ""
 
@@ -1553,8 +1553,8 @@ msgstr ""
 
 #. Label of the credit_balance (Float) field in DocType 'OneSpace AI Settings'
 #. Label of the credit_balance (Float) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Credit Balance"
 msgstr ""
 
@@ -1566,8 +1566,8 @@ msgstr ""
 #: frontend/src/screens/ops/TenantBilling.vue:169
 #: frontend/src/screens/ops/TenantBilling.vue:257
 #: frontend/src/screens/ops/TenantBilling.vue:263
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
-#: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "Credits"
 msgstr ""
 
@@ -1615,7 +1615,7 @@ msgid "Data location"
 msgstr ""
 
 #. Description of the 'Tenant' (Data) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Data, not a Link: `Tenant` is a control-plane doctype and does not exist on this site."
 msgstr ""
 
@@ -1626,23 +1626,23 @@ msgstr ""
 
 #. Label of the database_quota_bytes (Float) field in DocType 'OneSpace Site
 #. State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Database Quota Bytes"
 msgstr ""
 
 #. Label of the database_used_bytes (Float) field in DocType 'OneSpace Site
 #. State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Database Used Bytes"
 msgstr ""
 
-#: oneapp/oneapp_core/storage/quota.py:277
+#: oneapp/onestorage/quota.py:277
 msgid "Database limit reached ({0}). Nothing has been deleted and your data is intact, but new records are paused until you free space or upgrade."
 msgstr ""
 
 #. Label of the letter_date (Date) field in DocType 'Correspondence'
 #: frontend/src/screens/account/Billing.vue:176
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Date"
 msgstr ""
 
@@ -1754,7 +1754,7 @@ msgstr ""
 
 #. Option for the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
 #. Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Direct"
 msgstr ""
 
@@ -1782,13 +1782,13 @@ msgstr ""
 #. Label of the doc (Data) field in DocType 'Doc Body'
 #. Option for the 'Kind' (Select) field in DocType 'File Version'
 #: frontend/src/lib/files/files.js:64
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "Doc"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
 msgid "Doc Body"
 msgstr ""
 
@@ -1796,17 +1796,17 @@ msgstr ""
 #: frontend/src/components/docs/DocEditor.vue:90
 #: frontend/src/composables/useNewFile.js:110
 #: frontend/src/lib/files/files.js:62
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Document"
 msgstr ""
 
 #. Label of the document_number (Data) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Document Number"
 msgstr ""
 
 #. Label of the reference_doctype (Data) field in DocType 'AI Written Value'
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Document Type"
 msgstr ""
 
@@ -1835,8 +1835,8 @@ msgstr ""
 #: frontend/src/components/screen/views/ColumnPicker.vue:173
 #: frontend/src/lib/workspace/record.js:168
 #: frontend/src/screens/ops/Readiness.vue:70
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Done"
 msgstr ""
 
@@ -1856,7 +1856,7 @@ msgid "Download as HTML"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Draft"
 msgstr ""
 
@@ -1877,7 +1877,7 @@ msgid "Drop here"
 msgstr ""
 
 #. Label of the dry_run (Check) field in DocType 'Import Run'
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Dry Run"
 msgstr ""
 
@@ -1934,13 +1934,13 @@ msgstr ""
 
 #. Description of the 'Expiry Date' (Date) field in DocType 'Compliance
 #. Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Empty is a document that does not expire — an academic certificate, a deed. It is not the same as unknown, and the status says so."
 msgstr ""
 
 #. Description of the 'Model' (Data) field in DocType 'OneSpace AI Feature
 #. Setting'
-#: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
+#: oneapp/onespace/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "Empty means whatever the platform recommends for this capability, which is also what tracks a better model arriving without anyone changing a setting."
 msgstr ""
 
@@ -1957,9 +1957,9 @@ msgstr ""
 #. Label of the enabled (Check) field in DocType 'Mail Rule'
 #. Label of the enabled (Check) field in DocType 'OneSpace AI Feature Setting'
 #: frontend/src/screens/ops/TenantSpaces.vue:30
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
-#: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
+#: oneapp/onespace/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "Enabled"
 msgstr ""
 
@@ -1972,12 +1972,12 @@ msgid "Ends"
 msgstr ""
 
 #. Option for the 'Operator' (Select) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Ends with"
 msgstr ""
 
 #. Label of the sec_corr_en (Section Break) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "English"
 msgstr ""
 
@@ -1997,9 +1997,9 @@ msgstr ""
 #. Label of the error (Small Text) field in DocType 'Import Issue'
 #. Label of the error (Small Text) field in DocType 'Import Run'
 #. Label of the error (Small Text) field in DocType 'Import Run Step'
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Error"
 msgstr ""
 
@@ -2019,7 +2019,7 @@ msgstr ""
 msgid "Every plan includes every app. They differ in how much you can store and how many people you can invite."
 msgstr ""
 
-#: oneapp/oneapp_core/email/outbound.py:257
+#: oneapp/onemail/outbound.py:257
 msgid "Every recipient of this message has bounced or reported it as spam."
 msgstr ""
 
@@ -2047,7 +2047,7 @@ msgstr ""
 msgid "Everyone gets the basics of each app this workspace has. Tick anything more this person needs."
 msgstr ""
 
-#: oneapp/oneapp_core/workspace.py:660
+#: oneapp/onespace/workspace.py:660
 msgid "Everyone here is invited"
 msgstr ""
 
@@ -2089,22 +2089,22 @@ msgid "Expand uploads"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Expired"
 msgstr ""
 
 #. Label of the expires_on (Datetime) field in DocType 'File Link'
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_link/file_link.json
 msgid "Expires On"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Expiring"
 msgstr ""
 
 #. Label of the expiry_date (Date) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Expiry Date"
 msgstr ""
 
@@ -2128,34 +2128,34 @@ msgstr ""
 #. Option for the 'Status' (Select) field in DocType 'Import Run'
 #. Option for the 'Status' (Select) field in DocType 'Import Run Step'
 #. Label of the failed (Int) field in DocType 'Import Run Step'
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Failed"
 msgstr ""
 
 #. Label of the fan_out (Code) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Fan Out"
 msgstr ""
 
 #. Label of the favourites (Check) field in DocType 'OneSpace Saved View'
 #: frontend/src/components/drive/places.js:19
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Favourites"
 msgstr ""
 
 #. Label of the feature_key (Data) field in DocType 'AI Written Value'
 #. Label of the feature_key (Data) field in DocType 'OneSpace AI Feature
 #. Setting'
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
-#: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "Feature Key"
 msgstr ""
 
 #. Label of the sec_ai_features (Section Break) field in DocType 'OneSpace AI
 #. Settings'
 #. Label of the features (Table) field in DocType 'OneSpace AI Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Features"
 msgstr ""
 
@@ -2174,17 +2174,17 @@ msgstr ""
 #. Label of the field (Select) field in DocType 'Mail Rule'
 #: frontend/src/components/screen/views/BulkEditDialog.vue:22
 #: frontend/src/components/settings/AlertSettings.vue:167
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Field"
 msgstr ""
 
 #. Label of the field_map (Code) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Field Map"
 msgstr ""
 
 #. Label of the fieldname (Data) field in DocType 'AI Written Value'
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Fieldname"
 msgstr ""
 
@@ -2196,18 +2196,18 @@ msgstr ""
 #. Label of the file (Data) field in DocType 'File Version'
 #: frontend/src/components/drive/FilePreview.vue:10
 #: frontend/src/components/drive/FilePreview.vue:20
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "File"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_link/file_link.json
 msgid "File Link"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "File Version"
 msgstr ""
 
@@ -2246,7 +2246,7 @@ msgstr ""
 #: frontend/src/lib/shell/nav.js:178 frontend/src/pages/Account.vue:30
 #: frontend/src/pages/Drive.vue:469
 #: frontend/src/screens/account/Overview.vue:83
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Files"
 msgstr ""
 
@@ -2284,7 +2284,7 @@ msgid "Fill the window"
 msgstr ""
 
 #. Label of the filled (Int) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Filled"
 msgstr ""
 
@@ -2294,7 +2294,7 @@ msgstr ""
 
 #. Description of the 'Renewed By' (Link) field in DocType 'Compliance
 #. Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Filled in on the old document when a new one names it."
 msgstr ""
 
@@ -2304,8 +2304,8 @@ msgstr ""
 
 #. Label of the filters (Code) field in DocType 'Import Step'
 #. Label of the filters (Code) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Filters"
 msgstr ""
 
@@ -2326,7 +2326,7 @@ msgid "Find a field"
 msgstr ""
 
 #. Label of the finished_on (Datetime) field in DocType 'Import Run'
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Finished On"
 msgstr ""
 
@@ -2360,12 +2360,12 @@ msgid "Follow the workspace"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Following"
 msgstr ""
 
 #. Description of the 'Status' (Select) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Following: filling again replaces these rows. Locked: the document is the record now and the sheet is history, so a pull is refused until somebody unlocks it."
 msgstr ""
 
@@ -2387,7 +2387,7 @@ msgid "For a record"
 msgstr ""
 
 #. Description of the 'Mark Read' (Check) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "For the rules that file things nobody needs to look at."
 msgstr ""
 
@@ -2396,13 +2396,13 @@ msgid "For {0}"
 msgstr ""
 
 #. Option for the 'Kind' (Select) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Form"
 msgstr ""
 
 #. Option for the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
 #. Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Formal"
 msgstr ""
 
@@ -2445,7 +2445,7 @@ msgid "Frappe Cloud site plan"
 msgstr ""
 
 #. Description of the 'Role' (Select) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Frappe has no opinion here; these are the roles a provider accepts, and `ai/transcript.py` maps them on."
 msgstr ""
 
@@ -2459,7 +2459,7 @@ msgstr ""
 
 #. Option for the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
 #. Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Friendly"
 msgstr ""
 
@@ -2472,7 +2472,7 @@ msgid "From field"
 msgstr ""
 
 #. Description of the 'Api Key' (Data) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "From the source site's own user."
 msgstr ""
 
@@ -2497,15 +2497,15 @@ msgstr ""
 msgid "Gateway"
 msgstr ""
 
-#: oneapp/oneapp_core/diary.py:274
+#: oneapp/onecalendar/diary.py:274
 msgid "Give it a name."
 msgstr ""
 
-#: oneapp/oneapp_core/email/templates.py:74
+#: oneapp/onemail/templates.py:74
 msgid "Give the template a name."
 msgstr ""
 
-#: oneapp/oneapp_core/email/templates.py:78
+#: oneapp/onemail/templates.py:78
 msgid "Give the template a subject line."
 msgstr ""
 
@@ -2521,7 +2521,7 @@ msgstr ""
 msgid "Goodwill after the outage on the 12th"
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:43
+#: oneapp/onemail/connect.py:43
 msgid "Google needs an app password, not your account password."
 msgstr ""
 
@@ -2538,7 +2538,7 @@ msgid "Grid"
 msgstr ""
 
 #. Label of the group_by (Data) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Group By"
 msgstr ""
 
@@ -2560,8 +2560,8 @@ msgstr ""
 
 #. Label of the head_seq (Long Int) field in DocType 'Doc Body'
 #. Label of the head_seq (Long Int) field in DocType 'Sheet Book'
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
-#: oneapp/oneapp_core/doctype/sheet_book/sheet_book.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/sheet_book/sheet_book.json
 msgid "Head Seq"
 msgstr ""
 
@@ -2571,7 +2571,7 @@ msgid "Header"
 msgstr ""
 
 #. Description of the 'Skipped' (Small Text) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Headings with no matching field, which were left out."
 msgstr ""
 
@@ -2621,13 +2621,13 @@ msgstr ""
 
 #. Description of the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
 #. Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "How it speaks."
 msgstr ""
 
 #. Description of the 'Warn this many days ahead' (Int) field in DocType
 #. 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "How long before the expiry this starts saying so. Thirty days is a month to renew a licence; a visa wants more."
 msgstr ""
 
@@ -2644,28 +2644,28 @@ msgid "How many rows to fetch"
 msgstr ""
 
 #. Description of the 'Head Seq' (Long Int) field in DocType 'Doc Body'
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
 msgid "How many saves this document has had. `File Version` rows point at it, which is how the history panel knows whether what it is showing is the current text."
 msgstr ""
 
 #. Description of the 'Head Seq' (Long Int) field in DocType 'Sheet Book'
-#: oneapp/oneapp_core/doctype/sheet_book/sheet_book.json
+#: oneapp/onespace/doctype/sheet_book/sheet_book.json
 msgid "How many saves this workbook has had. Version history is not built; this is the counter it would hang off, and it costs nothing to keep."
 msgstr ""
 
 #. Description of the 'Backups Per Day' (Int) field in DocType 'OneSpace Site
 #. State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "How many times a day this workspace copies itself into R2. A plan term, so the schedule is a decision the control plane makes and this site carries out."
 msgstr ""
 
 #. Description of the 'Opened' (Int) field in DocType 'File Link'
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_link/file_link.json
 msgid "How many times it was followed."
 msgstr ""
 
 #. Description of the 'Settings' (JSON) field in DocType 'Doc Body'
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
 msgid "How the page is set: width, typeface, line spacing, and whether it is locked against accidental typing. The reader's choices about one document, not the workspace's about all of them."
 msgstr ""
 
@@ -2675,7 +2675,7 @@ msgid "How {0} matches"
 msgstr ""
 
 #. Label of the html (Long Text) field in DocType 'Doc Body'
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
 msgid "Html"
 msgstr ""
 
@@ -2684,22 +2684,22 @@ msgid "I have published them"
 msgstr ""
 
 #: frontend/src/components/screen/views/QuickFilters.vue:147
-#: oneapp/oneapp_core/printing.py:412
-#: oneapp/oneapp_core/spaceview/filters.py:96
+#: oneapp/onespace/printing.py:412
+#: oneapp/onespace/spaceview/filters.py:96
 msgid "ID"
 msgstr ""
 
 #. Label of the icon (Data) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Icon"
 msgstr ""
 
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Identity"
 msgstr ""
 
-#: oneapp/oneapp_core/email/verify.py:76
+#: oneapp/onemail/verify.py:76
 msgid "If you already have an SPF record, add the include to it rather than publishing a second one — two SPF records is the same as none."
 msgstr ""
 
@@ -2717,37 +2717,37 @@ msgid "Image width (px)"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/import_identity/import_identity.json
+#: oneapp/onespace/doctype/import_identity/import_identity.json
 msgid "Import Identity"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
 msgid "Import Issue"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/import_plan/import_plan.json
+#: oneapp/onespace/doctype/import_plan/import_plan.json
 msgid "Import Plan"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Import Run"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Import Run Step"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Import Source"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Import Step"
 msgstr ""
 
@@ -2769,7 +2769,7 @@ msgid "In app"
 msgstr ""
 
 #. Description of the 'Steps' (Table) field in DocType 'Import Plan'
-#: oneapp/oneapp_core/doctype/import_plan/import_plan.json
+#: oneapp/onespace/doctype/import_plan/import_plan.json
 msgid "In dependency order — parties before the invoices that link to them. A link that points at a step not yet run is an issue on the row, not a silent blank."
 msgstr ""
 
@@ -2807,7 +2807,7 @@ msgid "Inherited from the conversation this message belongs to"
 msgstr ""
 
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Insurance"
 msgstr ""
 
@@ -2816,11 +2816,11 @@ msgid "Interval"
 msgstr ""
 
 #. Label of the into (Data) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Into"
 msgstr ""
 
-#: oneapp/oneapp_core/email/inbound.py:55
+#: oneapp/onemail/inbound.py:55
 msgid "Invalid signature."
 msgstr ""
 
@@ -2842,32 +2842,32 @@ msgstr ""
 
 #. Option for the 'Operator' (Select) field in DocType 'Mail Rule'
 #: frontend/src/components/settings/AlertSettings.vue:125
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Is"
 msgstr ""
 
 #. Label of the is_active (Check) field in DocType 'Import Plan'
-#: oneapp/oneapp_core/doctype/import_plan/import_plan.json
+#: oneapp/onespace/doctype/import_plan/import_plan.json
 msgid "Is Active"
 msgstr ""
 
 #. Label of the is_default (Check) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Is Default"
 msgstr ""
 
 #. Label of the issue_date (Date) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Issue Date"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Issued"
 msgstr ""
 
 #. Label of the issued_by (Data) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Issued By"
 msgstr ""
 
@@ -2875,7 +2875,7 @@ msgstr ""
 msgid "It can also be removed, which frees the room {0} takes. That deletes everything those hold, and the only way back is the backup we take first."
 msgstr ""
 
-#: oneapp/oneapp_core/diary.py:284
+#: oneapp/onecalendar/diary.py:284
 msgid "It cannot end before it starts."
 msgstr ""
 
@@ -2905,7 +2905,7 @@ msgstr ""
 
 #. Description of the 'Assistant Avatar' (Attach Image) field in DocType
 #. 'OneSpace AI Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Its picture. Falls back to a mark drawn from the name."
 msgstr ""
 
@@ -2923,8 +2923,8 @@ msgstr ""
 
 #. Label of the kind (Select) field in DocType 'Correspondence'
 #. Label of the kind (Select) field in DocType 'File Version'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "Kind"
 msgstr ""
 
@@ -2936,53 +2936,53 @@ msgstr ""
 #. Label of the label (Data) field in DocType 'OneSpace Saved View'
 #. Label of the label (Data) field in DocType 'Sheet Feed'
 #: frontend/src/components/settings/printing/BuilderInspector.vue:21
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Label"
 msgstr ""
 
 #. Label of the last_error (Small Text) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Last Error"
 msgstr ""
 
 #. Label of the last_message_on (Datetime) field in DocType 'OneSpace Chat
 #. Session'
-#: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
+#: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "Last Message On"
 msgstr ""
 
 #. Label of the last_notice (Data) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Last Notice"
 msgstr ""
 
 #. Label of the last_opened (Datetime) field in DocType 'File Link'
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_link/file_link.json
 msgid "Last Opened"
 msgstr ""
 
 #. Label of the last_run (Link) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Last Run"
 msgstr ""
 
 #. Label of the last_seen (Datetime) field in DocType 'Import Identity'
-#: oneapp/oneapp_core/doctype/import_identity/import_identity.json
+#: oneapp/onespace/doctype/import_identity/import_identity.json
 msgid "Last Seen"
 msgstr ""
 
 #. Label of the last_sync (Datetime) field in DocType 'OneSpace AI Settings'
 #. Label of the last_sync (Datetime) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Last Sync"
 msgstr ""
 
 #. Label of the last_sync_error (Small Text) field in DocType 'OneSpace Site
 #. State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Last Sync Error"
 msgstr ""
 
@@ -2996,7 +2996,7 @@ msgstr ""
 
 #. Label of the sec_source_state (Section Break) field in DocType 'Import
 #. Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Last checked"
 msgstr ""
 
@@ -3021,7 +3021,7 @@ msgid "Last used {0}"
 msgstr ""
 
 #. Label of the layout (Data) field in DocType 'OneSpace Hidden View'
-#: oneapp/oneapp_core/doctype/onespace_hidden_view/onespace_hidden_view.json
+#: oneapp/onespace/doctype/onespace_hidden_view/onespace_hidden_view.json
 msgid "Layout"
 msgstr ""
 
@@ -3043,7 +3043,7 @@ msgid "Left (mm)"
 msgstr ""
 
 #. Option for the 'Kind' (Select) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Letter"
 msgstr ""
 
@@ -3073,7 +3073,7 @@ msgid "Library"
 msgstr ""
 
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Licence"
 msgstr ""
 
@@ -3166,17 +3166,17 @@ msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Sheet Feed'
 #: frontend/src/components/sheets/FeedNote.vue:29
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Locked"
 msgstr ""
 
 #. Label of the locked_by (Link) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Locked By"
 msgstr ""
 
 #. Label of the locked_on (Datetime) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Locked On"
 msgstr ""
 
@@ -3212,7 +3212,7 @@ msgid "Loose"
 msgstr ""
 
 #. Description of the 'Priority' (Int) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Lower runs first. The first rule that matches wins."
 msgstr ""
 
@@ -3227,7 +3227,7 @@ msgid "Mail"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Mail Rule"
 msgstr ""
 
@@ -3239,7 +3239,7 @@ msgstr ""
 msgid "Mail brought up"
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:360
+#: oneapp/onemail/addresses.py:360
 msgid "Mail is not set up for this workspace yet."
 msgstr ""
 
@@ -3303,7 +3303,7 @@ msgstr ""
 msgid "Making the sheet…"
 msgstr ""
 
-#: oneapp/oneapp_core/email/inbound.py:48
+#: oneapp/onemail/inbound.py:48
 msgid "Malformed signature."
 msgstr ""
 
@@ -3311,7 +3311,7 @@ msgstr ""
 msgid "Manage billing"
 msgstr ""
 
-#: oneapp/oneapp_core/workspace.py:671
+#: oneapp/onespace/workspace.py:671
 msgid "Manage people"
 msgstr ""
 
@@ -3320,7 +3320,7 @@ msgid "Manage templates…"
 msgstr ""
 
 #. Label of the manual (Check) field in DocType 'File Version'
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "Manual"
 msgstr ""
 
@@ -3330,17 +3330,17 @@ msgid "Map"
 msgstr ""
 
 #. Description of the 'Dry Run' (Check) field in DocType 'Import Run'
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Map everything and write nothing. The counts and the issues are real; the records are not."
 msgstr ""
 
 #. Label of the mapped (Code) field in DocType 'Import Issue'
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
 msgid "Mapped"
 msgstr ""
 
 #. Label of the mark_read (Check) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Mark Read"
 msgstr ""
 
@@ -3378,17 +3378,17 @@ msgid "Marked {0} unread"
 msgstr ""
 
 #. Label of the matches (Data) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Matches"
 msgstr ""
 
 #. Label of the max_users (Int) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Max Users"
 msgstr ""
 
 #. Option for the 'Kind' (Select) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Memo"
 msgstr ""
 
@@ -3402,7 +3402,7 @@ msgid "Message"
 msgstr ""
 
 #. Label of the message_count (Int) field in DocType 'OneSpace Chat Session'
-#: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
+#: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "Message Count"
 msgstr ""
 
@@ -3418,7 +3418,7 @@ msgstr ""
 msgid "Meta"
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:51
+#: oneapp/onemail/connect.py:51
 msgid "Microsoft needs an app password where two-factor is on."
 msgstr ""
 
@@ -3430,30 +3430,30 @@ msgstr ""
 msgid "Missing"
 msgstr ""
 
-#: oneapp/oneapp_core/email/inbound.py:42
+#: oneapp/onemail/inbound.py:42
 msgid "Missing signature."
 msgstr ""
 
 #. Label of the model_key (Data) field in DocType 'OneSpace AI Feature Setting'
 #: frontend/src/components/settings/AiSettings.vue:128
-#: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
+#: oneapp/onespace/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "Model"
 msgstr ""
 
 #. Label of the model_key (Data) field in DocType 'AI Written Value'
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Model Key"
 msgstr ""
 
 #. Label of the model_options (Small Text) field in DocType 'OneSpace AI
 #. Feature Setting'
-#: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
+#: oneapp/onespace/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "Model Options"
 msgstr ""
 
 #. Description of the 'Catalogue Json' (Code) field in DocType 'OneSpace AI
 #. Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Models the workspace may choose, with prices."
 msgstr ""
 
@@ -3488,7 +3488,7 @@ msgstr ""
 msgid "More for {0}"
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:365
+#: oneapp/onespace/alerts.py:365
 msgid "More than and less than need a number."
 msgstr ""
 
@@ -3590,7 +3590,7 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: oneapp/oneapp_core/collab.py:255
+#: oneapp/onespace/collab.py:255
 msgid "Name somebody to share this with."
 msgstr ""
 
@@ -3607,12 +3607,12 @@ msgid "Naming"
 msgstr ""
 
 #. Label of the naming_series (Select) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Naming Series"
 msgstr ""
 
 #. Description of the 'Filters' (Code) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Narrow what comes across, in Frappe's own filter shape. Applied on the source site, so what is excluded is never fetched."
 msgstr ""
 
@@ -3630,7 +3630,7 @@ msgstr ""
 
 #. Option for the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
 #. Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Neutral"
 msgstr ""
 
@@ -3641,7 +3641,7 @@ msgid "Never mind"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Never verified"
 msgstr ""
 
@@ -3659,7 +3659,7 @@ msgstr ""
 
 #: frontend/src/components/chat/AssistantPanel.vue:85
 #: frontend/src/components/chat/ChatSidebar.vue:27
-#: frontend/src/pages/Chat.vue:30 oneapp/oneapp_core/chat/session.py:41
+#: frontend/src/pages/Chat.vue:30 oneapp/onespace/chat/session.py:41
 msgid "New chat"
 msgstr ""
 
@@ -3824,7 +3824,7 @@ msgid "No earlier versions yet"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "No expiry"
 msgstr ""
 
@@ -3892,7 +3892,7 @@ msgstr ""
 msgid "No roles of your own yet"
 msgstr ""
 
-#: oneapp/oneapp_core/workspace.py:903
+#: oneapp/onespace/workspace.py:903
 msgid "No screen in this workspace shows {0}."
 msgstr ""
 
@@ -3904,7 +3904,7 @@ msgstr ""
 msgid "No site yet"
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/resolve.py:55
+#: oneapp/onespace/spaceview/resolve.py:55
 msgid "No space named {0} is enabled here."
 msgstr ""
 
@@ -3912,11 +3912,11 @@ msgstr ""
 msgid "No spaces yet"
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:491
+#: oneapp/onemail/addresses.py:491
 msgid "No such address."
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:551
+#: oneapp/onemail/addresses.py:551
 msgid "No such person."
 msgstr ""
 
@@ -3944,7 +3944,7 @@ msgstr ""
 msgid "No {0} yet"
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:551
+#: oneapp/onespace/printing.py:551
 msgid "No."
 msgstr ""
 
@@ -3966,7 +3966,7 @@ msgstr ""
 msgid "Nobody has given you an address yet. An admin can add one in Settings."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/bulk.py:74
+#: oneapp/onespace/spaceview/bulk.py:74
 msgid "Nobody to assign it to."
 msgstr ""
 
@@ -3979,7 +3979,7 @@ msgstr ""
 #: frontend/src/components/screen/record/PrintDialog.vue:109
 #: frontend/src/components/settings/printing/BuilderInspector.vue:197
 #: frontend/src/screens/ops/TenantLifecycle.vue:248
-#: oneapp/oneapp_core/dashboard.py:369
+#: oneapp/onespace/dashboard.py:369
 msgid "None"
 msgstr ""
 
@@ -4012,7 +4012,7 @@ msgstr ""
 msgid "Not available here"
 msgstr ""
 
-#: oneapp/oneapp_core/email/verify.py:93
+#: oneapp/onemail/verify.py:93
 msgid "Not available yet — the platform has no signing key configured."
 msgstr ""
 
@@ -4044,8 +4044,8 @@ msgstr ""
 msgid "Not on this plan"
 msgstr ""
 
-#: oneapp/api.py:127 oneapp/oneapp_core/storage/direct.py:329
-#: oneapp/oneapp_core/storage/r2.py:249
+#: oneapp/api.py:127 oneapp/onestorage/direct.py:329
+#: oneapp/onestorage/r2.py:249
 msgid "Not permitted."
 msgstr ""
 
@@ -4067,7 +4067,7 @@ msgstr ""
 msgid "Not shared"
 msgstr ""
 
-#: oneapp/oneapp_core/email/mailbox/composing.py:25
+#: oneapp/onemail/mailbox/composing.py:25
 msgid "Not something a message can be turned into."
 msgstr ""
 
@@ -4078,8 +4078,8 @@ msgstr ""
 #. Label of the notes (Small Text) field in DocType 'Compliance Document'
 #. Label of the notes (Small Text) field in DocType 'Import Step'
 #: frontend/src/components/diary/EventDialog.vue:46
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Notes"
 msgstr ""
 
@@ -4091,7 +4091,7 @@ msgstr ""
 msgid "Nothing at this address"
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/links.py:181
+#: oneapp/onespace/spaceview/links.py:181
 msgid "Nothing can be created for {0} here."
 msgstr ""
 
@@ -4131,7 +4131,7 @@ msgstr ""
 msgid "Nothing here"
 msgstr ""
 
-#: oneapp/oneapp_core/docflow.py:308
+#: oneapp/onespace/docflow.py:308
 msgid "Nothing here runs on a workflow."
 msgstr ""
 
@@ -4190,7 +4190,7 @@ msgstr ""
 msgid "Nothing on this record has changed since it was created."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/records.py:625
+#: oneapp/onespace/spaceview/records.py:625
 msgid "Nothing on this screen can be changed."
 msgstr ""
 
@@ -4259,12 +4259,12 @@ msgstr ""
 msgid "Nothing uses AI yet"
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/printing.py:77
+#: oneapp/onespace/spaceview/printing.py:77
 msgid "Nothing was selected to print."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/bulk.py:160
-#: oneapp/oneapp_core/spaceview/bulk.py:164
+#: oneapp/onespace/spaceview/bulk.py:160
+#: oneapp/onespace/spaceview/bulk.py:164
 msgid "Nothing was selected."
 msgstr ""
 
@@ -4286,7 +4286,7 @@ msgid "Nothing you have liked is on this screen."
 msgstr ""
 
 #. Option for the 'Kind' (Select) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Notice"
 msgstr ""
 
@@ -4315,7 +4315,7 @@ msgstr ""
 
 #. Description of the 'Ai Enabled' (Check) field in DocType 'OneSpace AI
 #. Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Off stops every feature a workspace is allowed to stop. Features declared as critical keep running — they are the process, not an assistant beside it."
 msgstr ""
 
@@ -4380,93 +4380,93 @@ msgid "One, two, three"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
+#: oneapp/onespace/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "OneSpace AI Feature Setting"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "OneSpace AI Settings"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "OneSpace Chat Message"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
+#: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "OneSpace Chat Session"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/onespace_hidden_view/onespace_hidden_view.json
+#: oneapp/onespace/doctype/onespace_hidden_view/onespace_hidden_view.json
 msgid "OneSpace Hidden View"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "OneSpace Saved View"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "OneSpace Site State"
 msgstr ""
 
-#: oneapp/oneapp_core/docflow.py:279
+#: oneapp/onespace/docflow.py:279
 msgid "Only a cancelled document can be amended."
 msgstr ""
 
-#: oneapp/oneapp_core/docflow.py:252
+#: oneapp/onespace/docflow.py:252
 msgid "Only a draft can be submitted."
 msgstr ""
 
-#: oneapp/oneapp_core/docflow.py:260
+#: oneapp/onespace/docflow.py:260
 msgid "Only a submitted document can be cancelled."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/layouts.py:187
+#: oneapp/onespace/spaceview/layouts.py:187
 msgid "Only a workspace admin can change a shared screen."
 msgstr ""
 
-#: oneapp/oneapp_core/workspace.py:716
+#: oneapp/onespace/workspace.py:716
 msgid "Only a workspace admin can change alerts."
 msgstr ""
 
-#: oneapp/oneapp_core/workspace.py:696
+#: oneapp/onespace/workspace.py:696
 msgid "Only a workspace admin can change how records are named."
 msgstr ""
 
-#: oneapp/oneapp_core/workspace.py:779
+#: oneapp/onespace/workspace.py:779
 msgid "Only a workspace admin can change message templates."
 msgstr ""
 
-#: oneapp/oneapp_core/workspace.py:884
+#: oneapp/onespace/workspace.py:884
 msgid "Only a workspace admin can change print formats."
 msgstr ""
 
-#: oneapp/oneapp_core/workspace.py:494
+#: oneapp/onespace/workspace.py:494
 msgid "Only a workspace admin can change these settings."
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:227
+#: oneapp/onemail/connect.py:227
 msgid "Only a workspace admin can connect a mailbox for other people."
 msgstr ""
 
-#: oneapp/oneapp_core/email/suppression.py:102
+#: oneapp/onemail/suppression.py:102
 msgid "Only a workspace admin can do that."
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:163
+#: oneapp/onemail/addresses.py:163
 msgid "Only a workspace admin can manage addresses."
 msgstr ""
 
-#: oneapp/oneapp_core/email/suppression.py:121
+#: oneapp/onemail/suppression.py:121
 msgid "Only a workspace admin can see this."
 msgstr ""
 
-#: oneapp/oneapp_core/email/verify.py:50
+#: oneapp/onemail/verify.py:50
 msgid "Only a workspace admin can verify a domain."
 msgstr ""
 
@@ -4494,7 +4494,7 @@ msgstr ""
 
 #. Description of the 'Favourites' (Check) field in DocType 'OneSpace Saved
 #. View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Only rows this person liked. A flag rather than a filter on _liked_by: that column holds user ids, so a filter naming it could ask what a colleague liked."
 msgstr ""
 
@@ -4511,7 +4511,7 @@ msgid "Only when a field says something"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Import Issue'
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
 msgid "Open"
 msgstr ""
 
@@ -4573,19 +4573,19 @@ msgid "Open {0} in the editor"
 msgstr ""
 
 #. Label of the opened (Int) field in DocType 'File Link'
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_link/file_link.json
 msgid "Opened"
 msgstr ""
 
 #. Description of the 'Is Default' (Check) field in DocType 'OneSpace Saved
 #. View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Opens this screen for whoever this screen belongs to."
 msgstr ""
 
 #. Label of the operator (Select) field in DocType 'Mail Rule'
 #: frontend/src/screens/ops/Tenant.vue:414
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Operator"
 msgstr ""
 
@@ -4602,18 +4602,18 @@ msgid "Or whoever is in"
 msgstr ""
 
 #. Label of the order_by (Data) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Order By"
 msgstr ""
 
 #. Description of the 'Seq' (Int) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Order within the session. Not creation time: a turn and the tool results that answer it are written in one request and can share a timestamp."
 msgstr ""
 
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
 #: frontend/src/lib/files/files.js:65
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Other"
 msgstr ""
 
@@ -4664,7 +4664,7 @@ msgid "Page"
 msgstr ""
 
 #. Label of the page_length (Int) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Page Length"
 msgstr ""
 
@@ -4693,9 +4693,9 @@ msgstr ""
 #. Label of the payload (Long Text) field in DocType 'File Version'
 #. Label of the payload (Code) field in DocType 'Import Issue'
 #. Label of the payload (Long Text) field in DocType 'Sheet Book'
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
-#: oneapp/oneapp_core/doctype/sheet_book/sheet_book.json
+#: oneapp/onespace/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/sheet_book/sheet_book.json
 msgid "Payload"
 msgstr ""
 
@@ -4703,7 +4703,7 @@ msgstr ""
 msgid "Payment received — your balance updates in a moment"
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:255
+#: oneapp/onespace/notifications.py:255
 msgid "Payments, quotas and anything about the account itself."
 msgstr ""
 
@@ -4722,7 +4722,7 @@ msgid "Permission for the camera was refused."
 msgstr ""
 
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Permit"
 msgstr ""
 
@@ -4743,7 +4743,7 @@ msgstr ""
 msgid "Pick something on the page to change what it says."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:240
+#: oneapp/onespace/alerts.py:240
 msgid "Pick the date to count from."
 msgstr ""
 
@@ -4768,7 +4768,7 @@ msgid "Pin to the right edge"
 msgstr ""
 
 #. Label of the place_of_issue (Data) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Place Of Issue"
 msgstr ""
 
@@ -4779,18 +4779,18 @@ msgstr ""
 #: frontend/src/screens/ops/Tenant.vue:474
 #: frontend/src/screens/ops/TenantBilling.vue:200
 #: frontend/src/screens/ops/TenantBilling.vue:306
-#: oneapp/oneapp_core/doctype/import_identity/import_identity.json
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_identity/import_identity.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Plan"
 msgstr ""
 
 #. Label of the plan_code (Data) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Plan Code"
 msgstr ""
 
 #. Label of the plan_name (Data) field in DocType 'Import Plan'
-#: oneapp/oneapp_core/doctype/import_plan/import_plan.json
+#: oneapp/onespace/doctype/import_plan/import_plan.json
 msgid "Plan Name"
 msgstr ""
 
@@ -4801,11 +4801,11 @@ msgstr ""
 
 #. Description of the 'Registry Json' (Code) field in DocType 'OneSpace AI
 #. Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Platform policy per feature: what may be disabled, what model is pinned, what the ceiling is."
 msgstr ""
 
-#: oneapp/oneapp_core/account.py:38
+#: oneapp/onespace/account.py:38
 msgid "Please sign in."
 msgstr ""
 
@@ -4862,7 +4862,7 @@ msgid "Printing with a letter head is on under Printing, but none of these is th
 msgstr ""
 
 #. Label of the priority (Int) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Priority"
 msgstr ""
 
@@ -4880,7 +4880,7 @@ msgstr ""
 
 #. Label of the prompt_addendum (Small Text) field in DocType 'OneSpace AI
 #. Feature Setting'
-#: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
+#: oneapp/onespace/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "Prompt Addendum"
 msgstr ""
 
@@ -4901,12 +4901,12 @@ msgid "Provisioning queued"
 msgstr ""
 
 #. Label of the pulled_by (Link) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Pulled By"
 msgstr ""
 
 #. Label of the pulled_on (Datetime) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Pulled On"
 msgstr ""
 
@@ -4918,7 +4918,7 @@ msgstr ""
 msgid "Push notifications are not available yet"
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:500
+#: oneapp/onespace/notifications.py:500
 msgid "Push notifications are not available yet."
 msgstr ""
 
@@ -4937,13 +4937,13 @@ msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Import Run'
 #. Option for the 'Status' (Select) field in DocType 'Import Run Step'
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Queued"
 msgstr ""
 
 #. Label of the quota_json (Code) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Quota Enforcement"
 msgstr ""
 
@@ -4981,7 +4981,7 @@ msgid "Recent"
 msgstr ""
 
 #. Option for the 'Field' (Select) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Recipient"
 msgstr ""
 
@@ -5000,12 +5000,12 @@ msgid "Records"
 msgstr ""
 
 #. Label of the reference_doctype (Link) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Reference Doctype"
 msgstr ""
 
 #. Label of the reference_name (Dynamic Link) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Reference Name"
 msgstr ""
 
@@ -5023,7 +5023,7 @@ msgid "Refreshing…"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Refused"
 msgstr ""
 
@@ -5033,12 +5033,12 @@ msgid "Region"
 msgstr ""
 
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Registration"
 msgstr ""
 
 #. Label of the registry_json (Code) field in DocType 'OneSpace AI Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Registry Json"
 msgstr ""
 
@@ -5063,7 +5063,7 @@ msgid "Reload it"
 msgstr ""
 
 #. Label of the reminded_on (Date) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Reminded On"
 msgstr ""
 
@@ -5183,12 +5183,12 @@ msgid "Rendering"
 msgstr ""
 
 #. Label of the renewed_by (Link) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Renewed By"
 msgstr ""
 
 #. Label of the renews (Link) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Renews"
 msgstr ""
 
@@ -5249,7 +5249,7 @@ msgid "Reset the columns"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Import Issue'
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
 msgid "Resolved"
 msgstr ""
 
@@ -5278,7 +5278,7 @@ msgstr ""
 msgid "Resume queued"
 msgstr ""
 
-#: oneapp/oneapp_core/retention.py:76
+#: oneapp/onespace/retention.py:76
 msgid "Retention is a percentage of the invoice, between 0 and 100."
 msgstr ""
 
@@ -5296,7 +5296,7 @@ msgstr ""
 
 #. Label of the revoked (Check) field in DocType 'File Link'
 #: frontend/src/components/drive/ShareLink.vue:49
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_link/file_link.json
 msgid "Revoked"
 msgstr ""
 
@@ -5309,7 +5309,7 @@ msgid "Right (mm)"
 msgstr ""
 
 #. Label of the role (Select) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Role"
 msgstr ""
 
@@ -5318,7 +5318,7 @@ msgid "Roles"
 msgstr ""
 
 #. Label of the roles_json (Code) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Roles JSON"
 msgstr ""
 
@@ -5331,7 +5331,7 @@ msgid "Rows are sorted by this first, so each group arrives whole."
 msgstr ""
 
 #. Description of the 'Filled' (Int) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Rows written."
 msgstr ""
 
@@ -5351,12 +5351,12 @@ msgstr ""
 msgid "Rules"
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:275
+#: oneapp/onespace/notifications.py:275
 msgid "Rules this workspace wrote about its own records."
 msgstr ""
 
 #. Label of the run (Link) field in DocType 'Import Issue'
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
 msgid "Run"
 msgstr ""
 
@@ -5366,8 +5366,8 @@ msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Import Run'
 #. Option for the 'Status' (Select) field in DocType 'Import Run Step'
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Running"
 msgstr ""
 
@@ -5439,12 +5439,12 @@ msgid "Saved — it takes effect shortly"
 msgstr ""
 
 #. Label of the saves (Int) field in DocType 'File Version'
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "Saves"
 msgstr ""
 
 #. Description of the 'Saves' (Int) field in DocType 'File Version'
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "Saves between this version and the one before it. The panel says '3 changes' rather than nothing at all."
 msgstr ""
 
@@ -5457,27 +5457,27 @@ msgstr ""
 msgid "Saving…"
 msgstr ""
 
-#: oneapp/oneapp_core/diary.py:278
+#: oneapp/onecalendar/diary.py:278
 msgid "Say when it starts."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:229
+#: oneapp/onespace/alerts.py:229
 msgid "Say when the alert should go out."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:252
+#: oneapp/onespace/alerts.py:252
 msgid "Say who the alert goes to."
 msgstr ""
 
 #. Label of the file (Attach) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Scan"
 msgstr ""
 
 #. Label of the screen (Data) field in DocType 'OneSpace Hidden View'
 #. Label of the screen (Data) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_hidden_view/onespace_hidden_view.json
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_hidden_view/onespace_hidden_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Screen"
 msgstr ""
 
@@ -5516,7 +5516,7 @@ msgid "Seats"
 msgstr ""
 
 #. Label of the secret (Data) field in DocType 'File Link'
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_link/file_link.json
 msgid "Secret"
 msgstr ""
 
@@ -5533,7 +5533,7 @@ msgid "See the provisioning job for the reason."
 msgstr ""
 
 #. Label of the seen (Int) field in DocType 'Import Run Step'
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Seen"
 msgstr ""
 
@@ -5581,7 +5581,7 @@ msgid "Send these rows to {0}"
 msgstr ""
 
 #. Option for the 'Field' (Select) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Sender"
 msgstr ""
 
@@ -5606,7 +5606,7 @@ msgid "Sent"
 msgstr ""
 
 #. Label of the seq (Int) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Seq"
 msgstr ""
 
@@ -5631,7 +5631,7 @@ msgid "Servers"
 msgstr ""
 
 #. Label of the session (Link) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Session"
 msgstr ""
 
@@ -5653,7 +5653,7 @@ msgstr ""
 #. Label of the settings (JSON) field in DocType 'Doc Body'
 #: frontend/src/components/settings/SettingsShell.vue:10
 #: frontend/src/lib/shell/nav.js:193
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
 msgid "Settings"
 msgstr ""
 
@@ -5721,24 +5721,24 @@ msgstr ""
 #. Label of the sheet (Data) field in DocType 'Sheet Feed'
 #: frontend/src/components/sheets/FillFromSheet.vue:29
 #: frontend/src/lib/files/files.js:63
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
-#: oneapp/oneapp_core/doctype/sheet_book/sheet_book.json
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/sheet_book/sheet_book.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Sheet"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/sheet_book/sheet_book.json
+#: oneapp/onespace/doctype/sheet_book/sheet_book.json
 msgid "Sheet Book"
 msgstr ""
 
 #. Name of a DocType
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Sheet Feed"
 msgstr ""
 
 #. Label of the sheet_title (Data) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Sheet Title"
 msgstr ""
 
@@ -5808,7 +5808,7 @@ msgstr ""
 #: frontend/src/components/screen/fields/FieldControl.vue:329
 #: frontend/src/components/settings/MailSettings.vue:111
 #: frontend/src/components/settings/MailboxSettings.vue:95
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Signature"
 msgstr ""
 
@@ -5816,17 +5816,17 @@ msgstr ""
 msgid "Signature and away"
 msgstr ""
 
-#: oneapp/oneapp_core/email/inbound.py:46
+#: oneapp/onemail/inbound.py:46
 msgid "Signature expired."
 msgstr ""
 
 #. Label of the signed_by (Data) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Signed By"
 msgstr ""
 
 #. Label of the issued_file (Attach) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Signed copy"
 msgstr ""
 
@@ -5849,11 +5849,11 @@ msgid "Site"
 msgstr ""
 
 #. Label of the site_name (Data) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Site Name"
 msgstr ""
 
-#: oneapp/oneapp_core/email/inbound.py:35
+#: oneapp/onemail/inbound.py:35
 msgid "Site is not provisioned."
 msgstr ""
 
@@ -5871,8 +5871,8 @@ msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Import Run Step'
 #. Label of the skipped (Small Text) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Skipped"
 msgstr ""
 
@@ -5885,7 +5885,7 @@ msgid "Some spaces are not listed. If you were given a code for one, it goes her
 msgstr ""
 
 #. Description of the 'Manual' (Check) field in DocType 'File Version'
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "Somebody asked for this version by name. Never pruned, and sorted above the automatic ones."
 msgstr ""
 
@@ -5902,7 +5902,7 @@ msgstr ""
 msgid "Something else is already using the camera."
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:183
+#: oneapp/onespace/notifications.py:183
 msgid "Something happened"
 msgstr ""
 
@@ -5912,7 +5912,7 @@ msgid "Something went wrong"
 msgstr ""
 
 #. Label of the source (Link) field in DocType 'Import Plan'
-#: oneapp/oneapp_core/doctype/import_plan/import_plan.json
+#: oneapp/onespace/doctype/import_plan/import_plan.json
 msgid "Source"
 msgstr ""
 
@@ -5920,34 +5920,34 @@ msgstr ""
 #. Label of the source_doctype (Data) field in DocType 'Import Issue'
 #. Label of the source_doctype (Data) field in DocType 'Import Run Step'
 #. Label of the source_doctype (Data) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_identity/import_identity.json
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_identity/import_identity.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Source Doctype"
 msgstr ""
 
 #. Label of the source_name (Data) field in DocType 'Import Identity'
 #. Label of the source_name (Data) field in DocType 'Import Issue'
 #. Label of the source_name (Data) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_identity/import_identity.json
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_identity/import_identity.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Source Name"
 msgstr ""
 
 #. Description of the 'Carry File Fields' (Small Text) field in DocType 'Import
 #. Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Source fields that hold a path to a file rather than a value, comma separated. The file is fetched and attached here — for the picture somebody chose rather than uploaded, which is attached to nothing over there."
 msgstr ""
 
 #. Label of the space_code (Data) field in DocType 'Import Plan'
 #. Label of the space_code (Data) field in DocType 'OneSpace Hidden View'
 #. Label of the space_code (Data) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/import_plan/import_plan.json
-#: oneapp/oneapp_core/doctype/onespace_hidden_view/onespace_hidden_view.json
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/import_plan/import_plan.json
+#: oneapp/onespace/doctype/onespace_hidden_view/onespace_hidden_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Space Code"
 msgstr ""
 
@@ -5956,7 +5956,7 @@ msgid "Spaces"
 msgstr ""
 
 #. Label of the spaces_json (Code) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Spaces JSON"
 msgstr ""
 
@@ -5975,7 +5975,7 @@ msgstr ""
 #. Label of the star (Check) field in DocType 'Mail Rule'
 #: frontend/src/pages/Mail.vue:132 frontend/src/pages/Mail.vue:133
 #: frontend/src/pages/Mail.vue:180 frontend/src/pages/Mail.vue:757
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Star"
 msgstr ""
 
@@ -5991,7 +5991,7 @@ msgstr ""
 msgid "Starred {0}"
 msgstr ""
 
-#: oneapp/oneapp_core/email/verify.py:101
+#: oneapp/onemail/verify.py:101
 msgid "Start at p=none so nothing is rejected while you watch the reports, then tighten to quarantine and reject."
 msgstr ""
 
@@ -6004,7 +6004,7 @@ msgid "Start writing…"
 msgstr ""
 
 #. Label of the started_on (Datetime) field in DocType 'Import Run'
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Started On"
 msgstr ""
 
@@ -6013,7 +6013,7 @@ msgid "Starts"
 msgstr ""
 
 #. Option for the 'Operator' (Select) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Starts with"
 msgstr ""
 
@@ -6035,14 +6035,14 @@ msgstr ""
 #: frontend/src/screens/ops/Tenant.vue:471
 #: frontend/src/screens/ops/Tenant.vue:491
 #: frontend/src/screens/ops/TenantBilling.vue:308
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Status"
 msgstr ""
 
@@ -6050,8 +6050,8 @@ msgstr ""
 #. Label of the steps (Table) field in DocType 'Import Plan'
 #. Label of the sec_run_steps (Section Break) field in DocType 'Import Run'
 #. Label of the steps (Table) field in DocType 'Import Run'
-#: oneapp/oneapp_core/doctype/import_plan/import_plan.json
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_plan/import_plan.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Steps"
 msgstr ""
 
@@ -6079,7 +6079,7 @@ msgid "Stop using as a template"
 msgstr ""
 
 #. Label of the stopped (Data) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Stopped"
 msgstr ""
 
@@ -6095,13 +6095,13 @@ msgstr ""
 
 #. Label of the storage_quota_bytes (Float) field in DocType 'OneSpace Site
 #. State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Storage Quota Bytes"
 msgstr ""
 
 #. Label of the storage_used_bytes (Float) field in DocType 'OneSpace Site
 #. State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Storage Used Bytes"
 msgstr ""
 
@@ -6109,7 +6109,7 @@ msgstr ""
 msgid "Storage could not be measured"
 msgstr ""
 
-#: oneapp/oneapp_core/storage/quota.py:211
+#: oneapp/onestorage/quota.py:211
 msgid "Storage limit reached. This file needs {0} but only {1} of {2} remains. Delete some files or upgrade your plan."
 msgstr ""
 
@@ -6122,8 +6122,8 @@ msgstr ""
 #: frontend/src/components/mail/MailComposer.vue:36
 #: frontend/src/components/settings/AlertSettings.vue:202
 #: frontend/src/components/settings/TemplateSettings.vue:108
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "Subject"
 msgstr ""
 
@@ -6186,7 +6186,7 @@ msgstr ""
 
 #. Description of the 'Database Quota Bytes' (Float) field in DocType 'OneSpace
 #. Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Synced from the plan. Zero means unconfigured, not zero allowed."
 msgstr ""
 
@@ -6195,26 +6195,26 @@ msgid "System"
 msgstr ""
 
 #. Name of a role
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
-#: oneapp/oneapp_core/doctype/import_identity/import_identity.json
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
-#: oneapp/oneapp_core/doctype/import_plan/import_plan.json
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
-#: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
-#: oneapp/oneapp_core/doctype/onespace_hidden_view/onespace_hidden_view.json
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
-#: oneapp/oneapp_core/doctype/sheet_book/sheet_book.json
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/import_identity/import_identity.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_plan/import_plan.json
+#: oneapp/onespace/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
+#: oneapp/onespace/doctype/onespace_hidden_view/onespace_hidden_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/sheet_book/sheet_book.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "System Manager"
 msgstr ""
 
@@ -6227,7 +6227,7 @@ msgid "Tag this"
 msgstr ""
 
 #: frontend/src/components/screen/record/RecordMeta.vue:82
-#: oneapp/oneapp_core/spaceview/meta.py:412
+#: oneapp/onespace/spaceview/meta.py:412
 msgid "Tags"
 msgstr ""
 
@@ -6256,21 +6256,21 @@ msgid "Taken"
 msgstr ""
 
 #. Description of the 'Revoked' (Check) field in DocType 'File Link'
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_link/file_link.json
 msgid "Taken back early. Kept rather than deleted, so 'who shared this and when did it stop' has an answer."
 msgstr ""
 
 #. Label of the target_doctype (Data) field in DocType 'Import Identity'
 #. Label of the target_doctype (Data) field in DocType 'Import Run Step'
 #. Label of the target_doctype (Data) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_identity/import_identity.json
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_identity/import_identity.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Target Doctype"
 msgstr ""
 
 #. Label of the target_name (Data) field in DocType 'Import Identity'
-#: oneapp/oneapp_core/doctype/import_identity/import_identity.json
+#: oneapp/onespace/doctype/import_identity/import_identity.json
 msgid "Target Name"
 msgstr ""
 
@@ -6303,7 +6303,7 @@ msgid "Templates could not be loaded"
 msgstr ""
 
 #. Label of the tenant (Data) field in DocType 'OneSpace Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Tenant"
 msgstr ""
 
@@ -6327,15 +6327,15 @@ msgstr ""
 msgid "That"
 msgstr ""
 
-#: oneapp/oneapp_core/email/mailbox/scope.py:131
+#: oneapp/onemail/mailbox/scope.py:131
 msgid "That address has no mailbox behind it."
 msgstr ""
 
-#: oneapp/oneapp_core/importer/source.py:50
+#: oneapp/onespace/importer/source.py:50
 msgid "That address is inside this network."
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:500
+#: oneapp/onemail/addresses.py:500
 msgid "That address is not yours."
 msgstr ""
 
@@ -6343,11 +6343,11 @@ msgstr ""
 msgid "That address is yours"
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:324
+#: oneapp/onespace/alerts.py:324
 msgid "That alert was not made here and cannot be changed here."
 msgstr ""
 
-#: oneapp/oneapp_core/email/mailbox/sending.py:252
+#: oneapp/onemail/mailbox/sending.py:252
 msgid "That attachment is not yours to send."
 msgstr ""
 
@@ -6355,11 +6355,11 @@ msgstr ""
 msgid "That code worked. The space is above."
 msgstr ""
 
-#: oneapp/oneapp_core/chat/session.py:35
+#: oneapp/onespace/chat/session.py:35
 msgid "That conversation is not yours."
 msgstr ""
 
-#: oneapp/oneapp_core/email/rules.py:177
+#: oneapp/onemail/rules.py:177
 msgid "That date has already passed."
 msgstr ""
 
@@ -6367,40 +6367,40 @@ msgstr ""
 msgid "That document did not open"
 msgstr ""
 
-#: oneapp/oneapp_core/docs/body.py:132
+#: oneapp/onedoc/body.py:132
 msgid "That document is too big to save. Split it in two."
 msgstr ""
 
-#: oneapp/oneapp_core/storage/direct.py:412
+#: oneapp/onestorage/direct.py:412
 msgid "That file has no name."
 msgstr ""
 
-#: oneapp/oneapp_core/docs/body.py:46 oneapp/oneapp_core/docs/templates.py:58
+#: oneapp/onedoc/body.py:46 oneapp/onedoc/templates.py:58
 msgid "That file is not a document."
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/book.py:32
-#: oneapp/oneapp_core/sheets/templates.py:60
+#: oneapp/onesheet/book.py:32
+#: oneapp/onesheet/templates.py:60
 msgid "That file is not a sheet."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/surround.py:264
+#: oneapp/onespace/spaceview/surround.py:264
 msgid "That file is not on this record."
 msgstr ""
 
-#: oneapp/oneapp_core/docs/text.py:57
+#: oneapp/onedoc/text.py:57
 msgid "That file is not text this can show."
 msgstr ""
 
-#: oneapp/oneapp_core/docs/text.py:39
+#: oneapp/onedoc/text.py:39
 msgid "That file is not text."
 msgstr ""
 
-#: oneapp/oneapp_core/drive/writing.py:151
+#: oneapp/onestorage/writing.py:151
 msgid "That file is not yours to attach."
 msgstr ""
 
-#: oneapp/oneapp_core/docs/text.py:50
+#: oneapp/onedoc/text.py:50
 msgid "That file is too big to open here. Download it instead."
 msgstr ""
 
@@ -6408,65 +6408,65 @@ msgstr ""
 msgid "That is as many as a card carries."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:868
+#: oneapp/onespace/printing.py:868
 msgid "That is as many letter heads as one workspace can hold."
 msgstr ""
 
-#: oneapp/oneapp_core/docs/text.py:83
+#: oneapp/onedoc/text.py:83
 msgid "That is more text than this file can hold."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:254
+#: oneapp/onespace/alerts.py:254
 msgid "That is not a field on {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:351
+#: oneapp/onespace/alerts.py:351
 msgid "That is not a field to test."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:353
+#: oneapp/onespace/alerts.py:353
 msgid "That is not a test this can make."
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:130
+#: oneapp/onemail/connect.py:130
 msgid "That is not an email address."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:224 oneapp/oneapp_core/email/templates.py:86
+#: oneapp/onespace/alerts.py:224 oneapp/onemail/templates.py:86
 msgid "That is not one of this workspace's records."
 msgstr ""
 
-#: oneapp/oneapp_core/email/templates.py:182
+#: oneapp/onemail/templates.py:182
 msgid "That is not one of this workspace's templates."
 msgstr ""
 
-#: oneapp/oneapp_core/email/mailbox/query.py:81
-#: oneapp/oneapp_core/email/mailbox/query.py:120
-#: oneapp/oneapp_core/email/mailbox/scope.py:125
-#: oneapp/oneapp_core/email/mailbox/sending.py:38
-#: oneapp/oneapp_core/email/mailbox/sending.py:154
-#: oneapp/oneapp_core/email/rules.py:225
+#: oneapp/onemail/mailbox/query.py:81
+#: oneapp/onemail/mailbox/query.py:120
+#: oneapp/onemail/mailbox/scope.py:125
+#: oneapp/onemail/mailbox/sending.py:38
+#: oneapp/onemail/mailbox/sending.py:154
+#: oneapp/onemail/rules.py:225
 msgid "That is not one of your addresses."
 msgstr ""
 
-#: oneapp/oneapp_core/diary.py:338
+#: oneapp/onecalendar/diary.py:338
 msgid "That is not one of your events."
 msgstr ""
 
-#: oneapp/oneapp_core/me.py:253
+#: oneapp/onespace/me.py:253
 msgid "That is not your current password."
 msgstr ""
 
-#: oneapp/oneapp_core/email/mailbox/composing.py:35
-#: oneapp/oneapp_core/email/mailbox/sending.py:218
+#: oneapp/onemail/mailbox/composing.py:35
+#: oneapp/onemail/mailbox/sending.py:218
 msgid "That is not your message."
 msgstr ""
 
-#: oneapp/oneapp_core/drive/sharing.py:197
+#: oneapp/onestorage/sharing.py:197
 msgid "That is not yours to revoke."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:129
+#: oneapp/onespace/printing.py:129
 msgid "That letter head is not one a document can be printed with."
 msgstr ""
 
@@ -6474,27 +6474,27 @@ msgstr ""
 msgid "That link no longer works"
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:108
+#: oneapp/onemail/connect.py:108
 msgid "That mailbox is not yours."
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:277
+#: oneapp/onemail/connect.py:277
 msgid "That password was refused. Many providers need an app password rather than the one you sign in with."
 msgstr ""
 
-#: oneapp/oneapp_core/importer/running.py:24
+#: oneapp/onespace/importer/running.py:24
 msgid "That plan is switched off."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/guard.py:16
+#: oneapp/onespace/spaceview/guard.py:16
 msgid "That record is not on this screen."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/layouts.py:191
+#: oneapp/onespace/spaceview/layouts.py:191
 msgid "That screen belongs to someone else."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:272
+#: oneapp/onespace/naming.py:272
 msgid "That series would not generate a name"
 msgstr ""
 
@@ -6502,48 +6502,48 @@ msgstr ""
 msgid "That sheet is gone"
 msgstr ""
 
-#: oneapp/oneapp_core/storage/direct.py:398
+#: oneapp/onestorage/direct.py:398
 msgid "That upload sent no parts."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/layouts.py:162
-#: oneapp/oneapp_core/spaceview/layouts.py:220
-#: oneapp/oneapp_core/spaceview/layouts.py:244
-#: oneapp/oneapp_core/spaceview/layouts.py:281
+#: oneapp/onespace/spaceview/layouts.py:162
+#: oneapp/onespace/spaceview/layouts.py:220
+#: oneapp/onespace/spaceview/layouts.py:244
+#: oneapp/onespace/spaceview/layouts.py:281
 msgid "That view belongs to a different screen."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/layouts.py:246
+#: oneapp/onespace/spaceview/layouts.py:246
 msgid "That view is yours — delete it rather than hiding it."
 msgstr ""
 
 #. Description of the 'File' (Data) field in DocType 'File Version'
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "The File this is a version of, by name. Data rather than a Link for the same reason the bodies are: the row is written and read by name, and a Link would make deleting the file a cascade nobody asked for."
 msgstr ""
 
 #. Description of the 'Doc' (Data) field in DocType 'Doc Body'
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
 msgid "The File this prose belongs to, by name. Data and unique rather than a Link so the row is addressable as `Doc Body/<file>` — one statement to load, no filter."
 msgstr ""
 
 #. Description of the 'Sheet' (Data) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "The File this was pulled from, by name. Data rather than a Link so the record outlives the sheet."
 msgstr ""
 
 #. Description of the 'Sheet' (Data) field in DocType 'Sheet Book'
-#: oneapp/oneapp_core/doctype/sheet_book/sheet_book.json
+#: oneapp/onespace/doctype/sheet_book/sheet_book.json
 msgid "The File this workbook belongs to, by name. Data and unique rather than a Link so the row is addressable as `Sheet Book/<file>` — one statement to load, no filter."
 msgstr ""
 
 #. Description of the 'Layout' (Data) field in DocType 'OneSpace Hidden View'
-#: oneapp/oneapp_core/doctype/onespace_hidden_view/onespace_hidden_view.json
+#: oneapp/onespace/doctype/onespace_hidden_view/onespace_hidden_view.json
 msgid "The OneSpace Saved View this hides. Data rather than a Link so deleting the view cannot fail on a row that only says somebody stopped looking at it — the delete sweeps these up itself."
 msgstr ""
 
 #. Description of the 'At Seq' (Long Int) field in DocType 'File Version'
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "The `head_seq` of the body when this was taken. What the panel compares against to say which version is the one on screen."
 msgstr ""
 
@@ -6562,7 +6562,7 @@ msgstr ""
 #. Label of the sec_ai_identity (Section Break) field in DocType 'OneSpace AI
 #. Settings'
 #: frontend/src/components/settings/AiSettings.vue:47
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "The assistant"
 msgstr ""
 
@@ -6571,7 +6571,7 @@ msgid "The assistant is not switched on here"
 msgstr ""
 
 #. Description of the 'Issued By' (Data) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "The authority that issued it."
 msgstr ""
 
@@ -6625,33 +6625,33 @@ msgstr ""
 
 #. Description of the 'Document Type' (Data) field in DocType 'AI Written
 #. Value'
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "The doctype the value is on. Data and not Link: a workspace's records belong to apps we do not own, and a Link would refuse a row for a doctype uninstalled since."
 msgstr ""
 
 #. Description of the 'Content' (Long Text) field in DocType 'Doc Body'
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
 msgid "The document as ProseMirror JSON: the source of truth, and the only representation the editor reads back. Replaced whole on every save."
 msgstr ""
 
 #. Label of the sec_cd_file (Section Break) field in DocType 'Compliance
 #. Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "The document itself"
 msgstr ""
 
 #. Description of the 'Renews' (Link) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "The document this one replaces. The old one is kept: an expired licence is still what you were trading under last year."
 msgstr ""
 
 #. Description of the 'Fieldname' (Data) field in DocType 'AI Written Value'
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "The field. `file_url` on a File is how a generated image or a piece of audio is marked, so one mechanism covers fields and media rather than two."
 msgstr ""
 
 #. Description of the 'Child Table' (Data) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "The fieldname of the table these rows landed in. One feed per table: a second pull into the same table replaces the rows, so it replaces this too."
 msgstr ""
 
@@ -6660,12 +6660,12 @@ msgid "The first row of a range is its headings; there is nothing under them to 
 msgstr ""
 
 #. Description of the 'Title' (Data) field in DocType 'OneSpace Chat Session'
-#: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
+#: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "The first thing that was asked, trimmed. Named from the question rather than by the model: naming a thread is a second call, and it would be charged for."
 msgstr ""
 
 #. Description of the 'Into' (Data) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "The folder to file it in. Made on the mailbox if it is not there yet."
 msgstr ""
 
@@ -6677,47 +6677,47 @@ msgstr ""
 msgid "The mail did not load"
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:284
+#: oneapp/onemail/connect.py:284
 msgid "The mail server did not answer. It may be blocking us, or the port may be wrong."
 msgstr ""
 
-#: oneapp/oneapp_core/email/folders.py:324
+#: oneapp/onemail/folders.py:324
 msgid "The mail server refused that name: {0}"
 msgstr ""
 
-#: oneapp/oneapp_core/email/folders.py:361
-#: oneapp/oneapp_core/email/folders.py:412
+#: oneapp/onemail/folders.py:361
+#: oneapp/onemail/folders.py:412
 msgid "The mail server refused: {0}"
 msgstr ""
 
 #. Description of the 'Address' (Data) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "The mailbox it applies to. A rule belongs to an address, not to a workspace: `sales@` and `ap@` sort differently."
 msgstr ""
 
 #. Description of the 'Last Notice' (Data) field in DocType 'OneSpace Site
 #. State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "The most recent workspace notice this site has already turned into a notification. A watermark rather than a deduplication key: the control plane is asked for what happened after it, so nothing is sent twice and nothing in between is missed."
 msgstr ""
 
 #. Description of the 'Label' (Data) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "The named range. The contract between a sheet and the document it fills."
 msgstr ""
 
 #. Description of the 'Watermark' (Datetime) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "The newest `modified` this step has taken across. The next run asks the source only for what changed after it. Clear it to import everything again."
 msgstr ""
 
 #. Description of the 'File' (Link) field in DocType 'File Link'
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_link/file_link.json
 msgid "The one file this link hands over. A folder is not offered: a link to a folder is a link to everything somebody puts in it afterwards."
 msgstr ""
 
 #. Description of the 'Signed copy' (Attach) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "The one that was actually sent, scanned back in."
 msgstr ""
 
@@ -6733,17 +6733,17 @@ msgstr ""
 msgid "The photograph just taken"
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:489
+#: oneapp/onemail/addresses.py:489
 msgid "The platform's own address cannot be changed here."
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/feed.py:135
+#: oneapp/onesheet/feed.py:135
 msgid "The range {0} is empty."
 msgstr ""
 
 #. Label of the sec_issue_payload (Section Break) field in DocType 'Import
 #. Issue'
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
 msgid "The row"
 msgstr ""
 
@@ -6752,12 +6752,12 @@ msgid "The same switch the customer's own page runs, so the fit check, the prora
 msgstr ""
 
 #. Description of the 'Label' (Data) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "The screen's name. Empty is the person's own unnamed default for this screen — what Save writes."
 msgstr ""
 
 #. Description of the 'Screen' (Data) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "The screen's slug, so two screens over one doctype keep their own answers."
 msgstr ""
 
@@ -6766,11 +6766,11 @@ msgid "The sheet has changed since"
 msgstr ""
 
 #. Description of the 'Base Url' (Data) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "The site to read from, e.g. `https://old.example.com`. No trailing slash and no path."
 msgstr ""
 
-#: oneapp/oneapp_core/importer/source.py:77
+#: oneapp/onespace/importer/source.py:77
 msgid "The source refused the key. Check it is still valid over there."
 msgstr ""
 
@@ -6779,23 +6779,23 @@ msgid "The subject line only"
 msgstr ""
 
 #. Description of the 'Matches' (Data) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "The text to look for. Case is ignored, because nobody means it when they type an address."
 msgstr ""
 
 #. Description of the 'Payload' (Long Text) field in DocType 'File Version'
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "The whole body as it stood, in whatever shape its store reads. Restoring writes this back unchanged."
 msgstr ""
 
 #. Description of the 'Payload' (Long Text) field in DocType 'Sheet Book'
-#: oneapp/oneapp_core/doctype/sheet_book/sheet_book.json
+#: oneapp/onespace/doctype/sheet_book/sheet_book.json
 msgid "The workbook: every tab, cell, formula, format, merge, named range, pivot and chart, as the gzipped envelope `codec.py` reads. Never edited here — a save replaces it whole, which is what the editor does."
 msgstr ""
 
 #. Description of the 'Model Options' (Small Text) field in DocType 'OneSpace
 #. AI Feature Setting'
-#: oneapp/oneapp_core/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
+#: oneapp/onespace/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "The workspace's answers to whatever the chosen model declares — a voice, a language, a size. JSON keyed by option, read back only through the model's own declaration, so an option that goes away stops being sent without anything having to migrate."
 msgstr ""
 
@@ -6807,7 +6807,7 @@ msgstr ""
 msgid "Theme"
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/guard.py:14
+#: oneapp/onespace/spaceview/guard.py:14
 msgid "There are no records on this screen."
 msgstr ""
 
@@ -6815,15 +6815,15 @@ msgstr ""
 msgid "There are no sheets here yet"
 msgstr ""
 
-#: oneapp/oneapp_core/drive/writing.py:64
+#: oneapp/onestorage/writing.py:64
 msgid "There is already a folder called “{0}” here."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:294
+#: oneapp/onespace/alerts.py:294
 msgid "There is already an alert called “{0}”. Give this one a different subject."
 msgstr ""
 
-#: oneapp/oneapp_core/email/folders.py:351
+#: oneapp/onemail/folders.py:351
 msgid "There is no folder called {0}."
 msgstr ""
 
@@ -6835,21 +6835,21 @@ msgstr ""
 msgid "There is no record of this kind yet to draw the preview over."
 msgstr ""
 
-#: oneapp/oneapp_core/workspace.py:661
+#: oneapp/onespace/workspace.py:661
 msgid "There is no sign-up form, on purpose: an account made on this site is not counted against your seats and is disabled again on the next sync. People are added to your workspace from your account, which is also where seats are counted."
 msgstr ""
 
-#: oneapp/oneapp_core/versions.py:67
+#: oneapp/shared/versions.py:67
 msgid "There is no such thing as a {0} version."
 msgstr ""
 
-#: oneapp/oneapp_core/versions.py:225 oneapp/oneapp_core/versions.py:246
-#: oneapp/oneapp_core/versions.py:269 oneapp/oneapp_core/versions.py:294
-#: oneapp/oneapp_core/versions.py:311
+#: oneapp/shared/versions.py:225 oneapp/shared/versions.py:246
+#: oneapp/shared/versions.py:269 oneapp/shared/versions.py:294
+#: oneapp/shared/versions.py:311
 msgid "There is no such version."
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/feed.py:460
+#: oneapp/onesheet/feed.py:460
 msgid "There is nothing here to open in a sheet."
 msgstr ""
 
@@ -6857,28 +6857,28 @@ msgstr ""
 msgid "There is nothing in that file to import."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/assign.py:120
+#: oneapp/onespace/spaceview/assign.py:120
 msgid "There is nothing to assign here."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/surround.py:277
+#: oneapp/onespace/spaceview/surround.py:277
 msgid "There is nothing to comment on here."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/surround.py:387
+#: oneapp/onespace/spaceview/surround.py:387
 msgid "There is nothing to follow here."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/surround.py:305
+#: oneapp/onespace/spaceview/surround.py:305
 msgid "There is nothing to like here."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/surround.py:341
-#: oneapp/oneapp_core/spaceview/surround.py:353
+#: oneapp/onespace/spaceview/surround.py:341
+#: oneapp/onespace/spaceview/surround.py:353
 msgid "There is nothing to rename here."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/layouts.py:88
+#: oneapp/onespace/spaceview/layouts.py:88
 msgid "There is nothing to save a view for here."
 msgstr ""
 
@@ -6886,11 +6886,11 @@ msgstr ""
 msgid "These come with the apps this workspace has. They cannot be changed here."
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/feed.py:123
+#: oneapp/onesheet/feed.py:123
 msgid "These rows are locked. Unlock them first if the sheet should replace them again."
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/feed.py:464
+#: oneapp/onesheet/feed.py:464
 msgid "These rows have no columns a sheet could hold."
 msgstr ""
 
@@ -6922,7 +6922,7 @@ msgstr ""
 msgid "This cannot be undone. Anything still linked to elsewhere is kept, and named."
 msgstr ""
 
-#: oneapp/oneapp_core/retention.py:118
+#: oneapp/onespace/retention.py:118
 msgid "This company's chart of accounts has nowhere to put retention."
 msgstr ""
 
@@ -6942,20 +6942,20 @@ msgstr ""
 msgid "This device"
 msgstr ""
 
-#: oneapp/oneapp_core/docflow.py:285
+#: oneapp/onespace/docflow.py:285
 msgid "This has already been amended."
 msgstr ""
 
 #. Label of the is_template (Check) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "This is a template"
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/records.py:644
+#: oneapp/onespace/spaceview/records.py:644
 msgid "This is not yours to change while it is where it is."
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:517
+#: oneapp/onemail/addresses.py:517
 msgid "This is the workspace's sending address. Choose another one first."
 msgstr ""
 
@@ -6963,12 +6963,12 @@ msgstr ""
 msgid "This kind of chart is not built."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/surround.py:390
+#: oneapp/onespace/spaceview/surround.py:390
 msgid "This kind of record does not report its changes."
 msgstr ""
 
-#: oneapp/oneapp_core/drive/sharing.py:228
-#: oneapp/oneapp_core/drive/sharing.py:230
+#: oneapp/onestorage/sharing.py:228
+#: oneapp/onestorage/sharing.py:230
 msgid "This link is not available."
 msgstr ""
 
@@ -7009,35 +7009,35 @@ msgstr ""
 msgid "This screen did not open"
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/surround.py:178
+#: oneapp/onespace/spaceview/surround.py:178
 msgid "This screen has no records to attach anything to."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/bulk.py:70
+#: oneapp/onespace/spaceview/bulk.py:70
 msgid "This screen has nothing to assign."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/bulk.py:45
+#: oneapp/onespace/spaceview/bulk.py:45
 msgid "This screen has nothing to change."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/records.py:733
+#: oneapp/onespace/spaceview/records.py:733
 msgid "This screen has nothing to delete."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/export.py:74
+#: oneapp/onespace/spaceview/export.py:74
 msgid "This screen has nothing to export."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/bulk.py:134
+#: oneapp/onespace/spaceview/bulk.py:134
 msgid "This screen has nothing to move."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/records.py:612
+#: oneapp/onespace/spaceview/records.py:612
 msgid "This screen has nothing to save."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/resolve.py:138
+#: oneapp/onespace/spaceview/resolve.py:138
 msgid "This screen has nothing to show yet."
 msgstr ""
 
@@ -7061,7 +7061,7 @@ msgstr ""
 msgid "This sheet"
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/reading.py:84
+#: oneapp/onesheet/reading.py:84
 msgid "This sheet has no range called {0}."
 msgstr ""
 
@@ -7069,7 +7069,7 @@ msgstr ""
 msgid "This sheet has nothing named yet"
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/codec.py:126
+#: oneapp/onesheet/codec.py:126
 msgid "This sheet's stored data is not readable."
 msgstr ""
 
@@ -7077,7 +7077,7 @@ msgstr ""
 msgid "This space is not open to you"
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/codec.py:127
+#: oneapp/onesheet/codec.py:127
 msgid "This spreadsheet is too large to save (over {0} MB). That is usually formatting applied across a very large range rather than data — clear what you do not need, or split it across tabs."
 msgstr ""
 
@@ -7085,11 +7085,11 @@ msgstr ""
 msgid "This takes a few seconds."
 msgstr ""
 
-#: oneapp/oneapp_core/storage/direct.py:347
+#: oneapp/onestorage/direct.py:347
 msgid "This upload is not yours to finish."
 msgstr ""
 
-#: oneapp/oneapp_core/books.py:221
+#: oneapp/onespace/books.py:221
 msgid "This workspace already has a company."
 msgstr ""
 
@@ -7098,11 +7098,11 @@ msgid "This workspace also asks for a second factor when you sign in."
 msgstr ""
 
 #: frontend/src/components/settings/MailboxSettings.vue:470
-#: oneapp/oneapp_core/email/addresses.py:147
+#: oneapp/onemail/addresses.py:147
 msgid "This workspace does not allow connecting outside mailboxes."
 msgstr ""
 
-#: oneapp/oneapp_core/books.py:84
+#: oneapp/onespace/books.py:84
 msgid "This workspace has no accounting app."
 msgstr ""
 
@@ -7118,15 +7118,15 @@ msgstr ""
 msgid "This workspace has no site yet."
 msgstr ""
 
-#: oneapp/oneapp_core/books.py:446
+#: oneapp/onespace/books.py:446
 msgid "This workspace has posted entries, so its chart of accounts can no longer be replaced here. Ask support."
 msgstr ""
 
-#: oneapp/oneapp_core/email/outbound.py:224
+#: oneapp/onemail/outbound.py:224
 msgid "This workspace has reached its limit of {0} emails per day."
 msgstr ""
 
-#: oneapp/oneapp_core/email/outbound.py:221
+#: oneapp/onemail/outbound.py:221
 msgid "This workspace has reached its limit of {0} emails per hour. Queued messages will resume shortly."
 msgstr ""
 
@@ -7134,7 +7134,7 @@ msgstr ""
 msgid "This workspace is not entitled to Books, so there is nothing to set up."
 msgstr ""
 
-#: oneapp/oneapp_core/storage/quota.py:202
+#: oneapp/onestorage/quota.py:202
 msgid "This workspace is over its storage limit and cannot grow further. Nothing has been deleted — free some space, or add storage from your account, and uploads resume."
 msgstr ""
 
@@ -7146,7 +7146,7 @@ msgstr ""
 msgid "This workspace is scheduled for deletion"
 msgstr ""
 
-#: oneapp/oneapp_core/email/outbound.py:210
+#: oneapp/onemail/outbound.py:210
 msgid "This workspace is suspended and cannot send email."
 msgstr ""
 
@@ -7158,25 +7158,25 @@ msgstr ""
 msgid "This workspace is switched off"
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:154
+#: oneapp/onemail/addresses.py:154
 msgid "This workspace only allows mailboxes on: {0}"
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/links.py:187
-#: oneapp/oneapp_core/spaceview/records.py:617
+#: oneapp/onespace/spaceview/links.py:187
+#: oneapp/onespace/spaceview/records.py:617
 msgid "Those changes could not be read."
 msgstr ""
 
-#: oneapp/oneapp_core/me.py:118
+#: oneapp/onespace/me.py:118
 msgid "Those details could not be read."
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/feed.py:291
+#: oneapp/onesheet/feed.py:291
 msgid "Those rows were not filled from a sheet."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/settings.py:486 oneapp/oneapp_core/printing.py:286
-#: oneapp/oneapp_core/workspace.py:578
+#: oneapp/onespace/ai/settings.py:486 oneapp/onespace/printing.py:286
+#: oneapp/onespace/workspace.py:578
 msgid "Those settings could not be read."
 msgstr ""
 
@@ -7197,17 +7197,17 @@ msgstr ""
 #. Label of the title (Data) field in DocType 'File Version'
 #. Label of the title (Data) field in DocType 'Mail Rule'
 #. Label of the title (Data) field in DocType 'OneSpace Chat Session'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
-#: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "Title"
 msgstr ""
 
 #. Label of the to_party (Data) field in DocType 'Correspondence'
 #: frontend/src/components/mail/MailComposer.vue:13
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "To"
 msgstr ""
 
@@ -7219,26 +7219,26 @@ msgstr ""
 msgid "Tone"
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/bulk.py:168
+#: oneapp/onespace/spaceview/bulk.py:168
 msgid "Too many at once. Choose {0} or fewer."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/records.py:739
+#: oneapp/onespace/spaceview/records.py:739
 msgid "Too many at once. Delete {0} or fewer."
 msgstr ""
 
 #. Label of the tool_call_id (Data) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Tool Call Id"
 msgstr ""
 
 #. Label of the tool_calls (Code) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Tool Calls"
 msgstr ""
 
 #. Label of the tool_name (Data) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Tool Name"
 msgstr ""
 
@@ -7251,27 +7251,27 @@ msgid "Total"
 msgstr ""
 
 #. Label of the total_created (Int) field in DocType 'Import Run'
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Total Created"
 msgstr ""
 
 #. Label of the total_failed (Int) field in DocType 'Import Run'
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Total Failed"
 msgstr ""
 
 #. Label of the total_seen (Int) field in DocType 'Import Run'
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Total Seen"
 msgstr ""
 
 #. Label of the total_updated (Int) field in DocType 'Import Run'
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Total Updated"
 msgstr ""
 
 #. Label of the sec_run_totals (Section Break) field in DocType 'Import Run'
-#: oneapp/oneapp_core/doctype/import_run/import_run.json
+#: oneapp/onespace/doctype/import_run/import_run.json
 msgid "Totals"
 msgstr ""
 
@@ -7314,7 +7314,7 @@ msgid "Typeface"
 msgstr ""
 
 #. Description of the 'Byte Size' (Int) field in DocType 'Sheet Book'
-#: oneapp/oneapp_core/doctype/sheet_book/sheet_book.json
+#: oneapp/onespace/doctype/sheet_book/sheet_book.json
 msgid "Uncompressed size of the payload. The number a size cap has to be measured against, since the compressed one says nothing about what opening it costs."
 msgstr ""
 
@@ -7334,11 +7334,11 @@ msgstr ""
 msgid "Unfiled"
 msgstr ""
 
-#: oneapp/oneapp_core/workspace.py:461
+#: oneapp/onespace/workspace.py:461
 msgid "Unknown settings group {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/tabs.py:194
+#: oneapp/onespace/tabs.py:194
 msgid "Unknown settings tab {0}."
 msgstr ""
 
@@ -7402,7 +7402,7 @@ msgid "Until {0}"
 msgstr ""
 
 #: frontend/src/components/docs/PlainText.vue:85
-#: oneapp/oneapp_core/dashboard.py:141
+#: oneapp/onespace/dashboard.py:141
 msgid "Untitled"
 msgstr ""
 
@@ -7415,7 +7415,7 @@ msgid "Untitled view"
 msgstr ""
 
 #. Label of the updated (Int) field in DocType 'Import Run Step'
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Updated"
 msgstr ""
 
@@ -7455,7 +7455,7 @@ msgstr ""
 #. State'
 #: frontend/src/pages/Account.vue:27
 #: frontend/src/screens/account/Overview.vue:77
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Usage"
 msgstr ""
 
@@ -7502,8 +7502,8 @@ msgstr ""
 
 #. Label of the user (Link) field in DocType 'OneSpace Hidden View'
 #. Label of the user (Link) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_hidden_view/onespace_hidden_view.json
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_hidden_view/onespace_hidden_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "User"
 msgstr ""
 
@@ -7516,7 +7516,7 @@ msgid "Using a domain of your own"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Valid"
 msgstr ""
 
@@ -7527,17 +7527,17 @@ msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Import Source'
 #: frontend/src/components/settings/MailSettings.vue:162
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Verified"
 msgstr ""
 
 #. Label of the verified_as (Data) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Verified As"
 msgstr ""
 
 #. Label of the verified_on (Datetime) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Verified On"
 msgstr ""
 
@@ -7553,12 +7553,12 @@ msgid "Video"
 msgstr ""
 
 #. Label of the view_settings (Code) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "View Settings"
 msgstr ""
 
 #. Label of the view_type (Data) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "View Type"
 msgstr ""
 
@@ -7571,18 +7571,18 @@ msgid "View saved"
 msgstr ""
 
 #. Option for the 'Category' (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Visa"
 msgstr ""
 
 #. Option for the 'Assistant Tone' (Select) field in DocType 'OneSpace AI
 #. Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Warm"
 msgstr ""
 
 #. Label of the remind_days (Int) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Warn this many days ahead"
 msgstr ""
 
@@ -7592,22 +7592,22 @@ msgstr ""
 
 #. Label of the sec_cd_warning (Section Break) field in DocType 'Compliance
 #. Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Warning"
 msgstr ""
 
 #. Label of the watermark (Datetime) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Watermark"
 msgstr ""
 
 #. Label of the watermark_from (Datetime) field in DocType 'Import Run Step'
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Watermark From"
 msgstr ""
 
 #. Label of the watermark_to (Datetime) field in DocType 'Import Run Step'
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Watermark To"
 msgstr ""
 
@@ -7615,15 +7615,15 @@ msgstr ""
 msgid "We are checking the record and issuing a certificate. Usually a minute or two."
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:285
+#: oneapp/onemail/connect.py:285
 msgid "We could not connect: {0}"
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:282
+#: oneapp/onemail/connect.py:282
 msgid "We could not reach {0}. Check the server name."
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:88
+#: oneapp/onemail/connect.py:88
 msgid "We guessed these from your address. Change them if your host differs."
 msgstr ""
 
@@ -7636,8 +7636,8 @@ msgid "What a printed document looks like, and the letter head it sits under."
 msgstr ""
 
 #. Description of the 'Field Map' (Code) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
-msgid "What each target field is made of, keyed by target fieldname. See `oneapp_core/importer.py`."
+#: oneapp/onespace/doctype/import_step/import_step.json
+msgid "What each target field is made of, keyed by target fieldname. See `onespace/importer.py`."
 msgstr ""
 
 #: frontend/src/screens/ops/TenantLifecycle.vue:75
@@ -7645,24 +7645,24 @@ msgid "What has happened"
 msgstr ""
 
 #. Description of the 'Secret' (Data) field in DocType 'File Link'
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_link/file_link.json
 msgid "What is in the URL. Long enough not to be guessed, and the only thing standing between the link and the file."
 msgstr ""
 
 #. Description of the 'Field' (Select) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "What is looked at."
 msgstr ""
 
 #. Label of the sec_cd_about (Section Break) field in DocType 'Compliance
 #. Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "What it belongs to"
 msgstr ""
 
 #. Label of the sec_corr_about (Section Break) field in DocType
 #. 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "What it is about"
 msgstr ""
 
@@ -7672,7 +7672,7 @@ msgstr ""
 
 #. Description of the 'Assistant Name' (Data) field in DocType 'OneSpace AI
 #. Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "What it is called wherever it appears."
 msgstr ""
 
@@ -7681,39 +7681,39 @@ msgid "What it says"
 msgstr ""
 
 #. Description of the 'Label' (Data) field in DocType 'File Link'
-#: oneapp/oneapp_core/doctype/file_link/file_link.json
+#: oneapp/onespace/doctype/file_link/file_link.json
 msgid "What it was made for, in the words of whoever made it."
 msgstr ""
 
 #. Description of the 'Html' (Long Text) field in DocType 'Doc Body'
-#: oneapp/oneapp_core/doctype/doc_body/doc_body.json
+#: oneapp/onespace/doctype/doc_body/doc_body.json
 msgid "What that JSON renders to, written on the same save. Everything that is not the editor reads this one — search, the preview, print, export, a mail body — so none of them has to load an editor to find out what the document says."
 msgstr ""
 
 #. Description of the 'Sheet Title' (Data) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "What that sheet was called when the rows were pulled."
 msgstr ""
 
 #. Description of the 'Credits' (Float) field in DocType 'OneSpace Chat
 #. Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "What the call that produced this turn settled at. Zero on anything a person typed."
 msgstr ""
 
 #. Description of the 'Tool Calls' (Code) field in DocType 'OneSpace Chat
 #. Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "What the model asked to run, when this turn asked for anything. The arguments as sent, so a transcript says which records were read."
 msgstr ""
 
 #. Description of the 'Title' (Data) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "What the paper is called: Trade Licence, Residence Visa."
 msgstr ""
 
 #. Description of the 'Payload' (Code) field in DocType 'Import Issue'
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
 msgid "What the source said, as it said it."
 msgstr ""
 
@@ -7722,12 +7722,12 @@ msgid "What they can do"
 msgstr ""
 
 #. Description of the 'Title' (Data) field in DocType 'Mail Rule'
-#: oneapp/oneapp_core/doctype/mail_rule/mail_rule.json
+#: oneapp/onespace/doctype/mail_rule/mail_rule.json
 msgid "What this rule is for, in the words of whoever wrote it."
 msgstr ""
 
 #. Description of the 'Source Name' (Data) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "What this system is called to the people leaving it."
 msgstr ""
 
@@ -7737,13 +7737,13 @@ msgstr ""
 
 #. Description of the 'View Settings' (Code) field in DocType 'OneSpace Saved
 #. View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "What this view type needs that columns and filters do not carry."
 msgstr ""
 
 #. Description of the 'Credits' (Float) field in DocType 'OneSpace Chat
 #. Session'
-#: oneapp/oneapp_core/doctype/onespace_chat_session/onespace_chat_session.json
+#: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "What this whole conversation has cost, summed as each turn settles."
 msgstr ""
 
@@ -7756,7 +7756,7 @@ msgid "What this workspace is keeping, and how much room is left."
 msgstr ""
 
 #. Description of the 'Title' (Data) field in DocType 'File Version'
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "What to call this version in the panel. A timestamp for an automatic one; whatever somebody typed for a named one."
 msgstr ""
 
@@ -7771,17 +7771,17 @@ msgid "What to do with this version"
 msgstr ""
 
 #. Description of the 'Source Doctype' (Data) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "What to read on the source site."
 msgstr ""
 
 #. Description of the 'Target Doctype' (Data) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "What to write here. Usually an ERPNext or HRMS doctype: the point of the move is that it stops being bespoke."
 msgstr ""
 
 #. Description of the 'Mapped' (Code) field in DocType 'Import Issue'
-#: oneapp/oneapp_core/doctype/import_issue/import_issue.json
+#: oneapp/onespace/doctype/import_issue/import_issue.json
 msgid "What we made of it before it was refused."
 msgstr ""
 
@@ -7802,21 +7802,21 @@ msgstr ""
 msgid "When"
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:245
+#: oneapp/onespace/notifications.py:245
 msgid "When somebody gives you a record to deal with."
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:249
+#: oneapp/onespace/notifications.py:249
 msgid "When somebody shares a record or a file with you."
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:247
+#: oneapp/onespace/notifications.py:247
 msgid "When somebody writes your name in a comment."
 msgstr ""
 
 #. Description of the 'Reminded On' (Date) field in DocType 'Compliance
 #. Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "When the last warning went out. Kept so a daily job warns once and not every morning until somebody acts, which is how people learn to ignore it."
 msgstr ""
 
@@ -7833,17 +7833,17 @@ msgid "When {0} is {1}, tell {2}"
 msgstr ""
 
 #. Label of the source (Section Break) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Where it came from"
 msgstr ""
 
 #. Label of the sec_step_state (Section Break) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Where it got to"
 msgstr ""
 
 #. Label of the state (Section Break) field in DocType 'Sheet Feed'
-#: oneapp/oneapp_core/doctype/sheet_feed/sheet_feed.json
+#: oneapp/onespace/doctype/sheet_feed/sheet_feed.json
 msgid "Where it stands"
 msgstr ""
 
@@ -7852,13 +7852,13 @@ msgid "Where mail that matches goes, before you see it."
 msgstr ""
 
 #. Description of the 'Fan Out' (Code) field in DocType 'Import Step'
-#: oneapp/oneapp_core/doctype/import_step/import_step.json
+#: oneapp/onespace/doctype/import_step/import_step.json
 msgid "Where one source row is several records. `{\"from\": \"attendance_log\", \"shape\": \"map\"}` makes one record per key; `\"list\"` makes one per item. Each gets the parent's fields with its own merged over them and `__key` holding what it came in under."
 msgstr ""
 
 #. Description of the 'Watermark From' (Datetime) field in DocType 'Import Run
 #. Step'
-#: oneapp/oneapp_core/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/import_run_step/import_run_step.json
 msgid "Where this step started reading. Empty is everything."
 msgstr ""
 
@@ -7872,23 +7872,23 @@ msgstr ""
 
 #. Description of the 'Quota Enforcement' (Code) field in DocType 'OneSpace
 #. Site State'
-#: oneapp/oneapp_core/doctype/onespace_site_state/onespace_site_state.json
+#: oneapp/onespace/doctype/onespace_site_state/onespace_site_state.json
 msgid "Whether to enforce quotas at all, and until when if not. A workspace over its limit because a line left its subscription is given a window rather than a wall."
 msgstr ""
 
 #. Description of the 'Tool Call Id' (Data) field in DocType 'OneSpace Chat
 #. Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Which call a `tool` row answers."
 msgstr ""
 
 #. Description of the 'Group By' (Data) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Which column the rows are grouped under. Empty is no grouping."
 msgstr ""
 
 #. Description of the 'Columns' (Code) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Which columns, in order, each with a width and an optional left/right pin. Empty follows the screen. The comma-separated fieldnames this used to hold still read."
 msgstr ""
 
@@ -7901,11 +7901,11 @@ msgid "Which day rather than what time."
 msgstr ""
 
 #. Description of the 'Feature Key' (Data) field in DocType 'AI Written Value'
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Which declared feature wrote it. See `ai/features.py`."
 msgstr ""
 
-#: oneapp/oneapp_core/email/verify.py:181
+#: oneapp/onemail/verify.py:181
 msgid "Which domain?"
 msgstr ""
 
@@ -7919,37 +7919,37 @@ msgid "Which field"
 msgstr ""
 
 #. Description of the 'Model Key' (Data) field in DocType 'AI Written Value'
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Which model, from the catalogue."
 msgstr ""
 
 #. Description of the 'View Type' (Data) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Which of the screen's view types this view is of. Empty is the screen's first."
 msgstr ""
 
 #. Label of the about (Dynamic Link) field in DocType 'Compliance Document'
 #. Label of the about (Dynamic Link) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "Which one"
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/reading.py:88
+#: oneapp/onesheet/reading.py:88
 msgid "Which range?"
 msgstr ""
 
-#: oneapp/oneapp_core/drive/query.py:123
+#: oneapp/onestorage/query.py:123
 msgid "Which record's files?"
 msgstr ""
 
 #. Description of the 'Space Code' (Data) field in DocType 'Import Plan'
-#: oneapp/oneapp_core/doctype/import_plan/import_plan.json
+#: oneapp/onespace/doctype/import_plan/import_plan.json
 msgid "Which space this fills. For the record: the import writes doctypes, not screens."
 msgstr ""
 
 #. Description of the 'Kind' (Select) field in DocType 'File Version'
-#: oneapp/oneapp_core/doctype/file_version/file_version.json
+#: oneapp/onespace/doctype/file_version/file_version.json
 msgid "Which store the payload goes back to. On the row rather than derived from the File, so a version is readable on its own — including after the file it came from is gone."
 msgstr ""
 
@@ -7962,7 +7962,7 @@ msgid "Who"
 msgstr ""
 
 #. Description of the 'Asked By' (Link) field in DocType 'AI Written Value'
-#: oneapp/oneapp_core/doctype/ai_written_value/ai_written_value.json
+#: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Who asked for it. Nothing wrote itself."
 msgstr ""
 
@@ -7984,7 +7984,7 @@ msgstr ""
 
 #. Description of the 'Assistant Personality' (Small Text) field in DocType
 #. 'OneSpace AI Settings'
-#: oneapp/oneapp_core/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "Who it is, in a sentence. Say what it knows and how it should come across."
 msgstr ""
 
@@ -7999,12 +7999,12 @@ msgid "Who may use this"
 msgstr ""
 
 #. Description of the 'Verified As' (Data) field in DocType 'Import Source'
-#: oneapp/oneapp_core/doctype/import_source/import_source.json
+#: oneapp/onespace/doctype/import_source/import_source.json
 msgid "Who the source site said we were. Worth reading: an import runs as this user over there, and a key made from an account with half the permissions imports half the data without failing."
 msgstr ""
 
 #. Description of the 'User' (Link) field in DocType 'OneSpace Saved View'
-#: oneapp/oneapp_core/doctype/onespace_saved_view/onespace_saved_view.json
+#: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Whose screen this is. Empty is a screen everyone on the workspace sees — Frappe's `for_user` empty, on List Filter."
 msgstr ""
 
@@ -8014,7 +8014,7 @@ msgid "Why"
 msgstr ""
 
 #. Description of the 'Stopped' (Data) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Why the loop ended on this turn: answered, turns_spent or budget_spent. Empty on a person's own message."
 msgstr ""
 
@@ -8037,7 +8037,7 @@ msgid "With files"
 msgstr ""
 
 #. Description of the 'Status' (Select) field in DocType 'Compliance Document'
-#: oneapp/oneapp_core/doctype/compliance_document/compliance_document.json
+#: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "Worked out from the expiry date and the warning window, on save and once a day. Never typed: a status somebody can set is a status that disagrees with the date beside it."
 msgstr ""
 
@@ -8081,7 +8081,7 @@ msgstr ""
 msgid "Written by {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:59
+#: oneapp/onemail/connect.py:59
 msgid "Yahoo needs an app password."
 msgstr ""
 
@@ -8091,58 +8091,58 @@ msgstr ""
 msgid "Yes"
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:430
+#: oneapp/onemail/addresses.py:430
 msgid "You already have an address here."
 msgstr ""
 
-#: oneapp/oneapp_core/jobs.py:95
+#: oneapp/onespace/jobs.py:95
 msgid "You already have {0} background jobs running, which is the limit on your plan. Wait for one to finish, or upgrade for more."
 msgstr ""
 
-#: oneapp/oneapp_core/docflow.py:283
+#: oneapp/onespace/docflow.py:283
 msgid "You cannot amend this."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:179
+#: oneapp/onespace/naming.py:179
 msgid "You cannot change how {0} is named."
 msgstr ""
 
-#: oneapp/oneapp_core/docs/writing.py:112
-#: oneapp/oneapp_core/drive/writing.py:159
-#: oneapp/oneapp_core/sheets/feed.py:287
-#: oneapp/oneapp_core/sheets/writing.py:32
+#: oneapp/onedoc/writing.py:112
+#: oneapp/onestorage/writing.py:159
+#: oneapp/onesheet/feed.py:287
+#: oneapp/onesheet/writing.py:32
 msgid "You cannot change that record."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/run.py:40 oneapp/oneapp_core/workspace.py:485
+#: oneapp/onespace/spaceview/run.py:40 oneapp/onespace/workspace.py:485
 msgid "You cannot change {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/tabs.py:190
+#: oneapp/onespace/tabs.py:190
 msgid "You cannot open {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/feed.py:220
+#: oneapp/onesheet/feed.py:220
 msgid "You cannot read that record."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:389
+#: oneapp/onespace/printing.py:389
 msgid "You cannot read {0}."
 msgstr ""
 
-#: oneapp/oneapp_core/drive/sharing.py:176
+#: oneapp/onestorage/sharing.py:176
 msgid "You cannot see that file's links."
 msgstr ""
 
-#: oneapp/oneapp_core/drive/sharing.py:150
+#: oneapp/onestorage/sharing.py:150
 msgid "You cannot share that file."
 msgstr ""
 
-#: oneapp/oneapp_core/email/mailbox/sending.py:148
+#: oneapp/onemail/mailbox/sending.py:148
 msgid "You have no address to send from."
 msgstr ""
 
-#: oneapp/oneapp_core/workspace.py:768
+#: oneapp/onespace/workspace.py:768
 msgid "You have no address to write from."
 msgstr ""
 
@@ -8178,7 +8178,7 @@ msgstr ""
 msgid "Your currency and chart of accounts cannot change once entries exist. Ask support if you need them changed."
 msgstr ""
 
-#: oneapp/oneapp_core/diary.py:222 oneapp/oneapp_core/diary.py:237
+#: oneapp/onecalendar/diary.py:222 oneapp/onecalendar/diary.py:237
 msgid "Your diary"
 msgstr ""
 
@@ -8285,7 +8285,7 @@ msgid "app.yourcompany.com"
 msgstr ""
 
 #. Option for the 'Role' (Select) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "assistant"
 msgstr ""
 
@@ -8315,8 +8315,8 @@ msgstr ""
 msgid "files"
 msgstr ""
 
-#: oneapp/oneapp_core/email/verify.py:201
-#: oneapp/oneapp_core/email/verify.py:202
+#: oneapp/onemail/verify.py:201
+#: oneapp/onemail/verify.py:202
 msgid "found"
 msgstr ""
 
@@ -8324,7 +8324,7 @@ msgstr ""
 msgid "from {0}"
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:62
+#: oneapp/onemail/connect.py:62
 msgid "iCloud needs an app-specific password."
 msgstr ""
 
@@ -8361,8 +8361,8 @@ msgstr ""
 msgid "made"
 msgstr ""
 
-#: oneapp/oneapp_core/email/verify.py:201
-#: oneapp/oneapp_core/email/verify.py:202
+#: oneapp/onemail/verify.py:201
+#: oneapp/onemail/verify.py:202
 msgid "missing"
 msgstr ""
 
@@ -8374,7 +8374,7 @@ msgstr ""
 msgid "nobody"
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:155
+#: oneapp/onemail/addresses.py:155
 msgid "nothing yet"
 msgstr ""
 
@@ -8452,12 +8452,12 @@ msgid "to"
 msgstr ""
 
 #. Option for the 'Role' (Select) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "tool"
 msgstr ""
 
 #. Option for the 'Role' (Select) field in DocType 'OneSpace Chat Message'
-#: oneapp/oneapp_core/doctype/onespace_chat_message/onespace_chat_message.json
+#: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "user"
 msgstr ""
 
@@ -8494,8 +8494,8 @@ msgstr ""
 msgid "{0} a month, from now on."
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:341
-#: oneapp/oneapp_core/email/folders.py:317
+#: oneapp/onemail/addresses.py:341
+#: oneapp/onemail/folders.py:317
 msgid "{0} already exists."
 msgstr ""
 
@@ -8507,12 +8507,12 @@ msgstr ""
 msgid "{0} available of {1} — the difference is reserved by calls in flight."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/settings.py:425
+#: oneapp/onespace/ai/settings.py:425
 msgid "{0} cannot be used for {1}."
 msgstr ""
 
-#: oneapp/oneapp_core/importer/running.py:92
-#: oneapp/oneapp_core/importer/running.py:98
+#: oneapp/onespace/importer/running.py:92
+#: oneapp/onespace/importer/running.py:98
 msgid "{0} changed since this run was queued."
 msgstr ""
 
@@ -8520,7 +8520,7 @@ msgstr ""
 msgid "{0} changes"
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:793
+#: oneapp/onespace/notifications.py:793
 msgid "{0} commented on {1} {2}"
 msgstr ""
 
@@ -8545,7 +8545,7 @@ msgstr ""
 msgid "{0} differ from the plan as it stands now. Captured when the subscription was sold, and unchanged by later edits to the plan."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:693 oneapp/oneapp_core/printing.py:771
+#: oneapp/onespace/printing.py:693 oneapp/onespace/printing.py:771
 msgid "{0} does not print {1}."
 msgstr ""
 
@@ -8573,7 +8573,7 @@ msgstr ""
 msgid "{0} had no matching field and were left out."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:532
+#: oneapp/onespace/printing.py:532
 msgid "{0} has no field called {1}."
 msgstr ""
 
@@ -8585,11 +8585,11 @@ msgstr ""
 msgid "{0} has no matching field here and will be left out."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/options.py:202
+#: oneapp/onespace/ai/options.py:202
 msgid "{0} has to be a number."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/options.py:206
+#: oneapp/onespace/ai/options.py:206
 msgid "{0} has to be between {1} and {2}."
 msgstr ""
 
@@ -8602,11 +8602,11 @@ msgstr ""
 msgid "{0} home"
 msgstr ""
 
-#: oneapp/oneapp_core/email/connect.py:138
+#: oneapp/onemail/connect.py:138
 msgid "{0} is already connected."
 msgstr ""
 
-#: oneapp/oneapp_core/importer/running.py:30
+#: oneapp/onespace/importer/running.py:30
 msgid "{0} is already running."
 msgstr ""
 
@@ -8626,120 +8626,120 @@ msgstr ""
 msgid "{0} is in your workspace"
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:195
+#: oneapp/onespace/naming.py:195
 msgid "{0} is named by its own scheme, which is part of the app rather than a setting. Its counter can still be moved."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:293
+#: oneapp/onespace/printing.py:293
 msgid "{0} is not a PDF engine."
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:327
+#: oneapp/onespace/notifications.py:327
 msgid "{0} is not a declared notification kind."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/bulk.py:137
+#: oneapp/onespace/spaceview/bulk.py:137
 msgid "{0} is not a document that is submitted."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/bulk.py:51
+#: oneapp/onespace/spaceview/bulk.py:51
 msgid "{0} is not a field this screen may change."
 msgstr ""
 
-#: oneapp/oneapp_core/email/folders.py:353
+#: oneapp/onemail/folders.py:353
 msgid "{0} is not a folder you can remove."
 msgstr ""
 
-#: oneapp/oneapp_core/collab.py:251
+#: oneapp/onespace/collab.py:251
 msgid "{0} is not a level of access."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/run.py:76
+#: oneapp/onespace/spaceview/run.py:76
 msgid "{0} is not a link."
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:494
+#: oneapp/onespace/notifications.py:494
 msgid "{0} is not a notification you can set."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:291
+#: oneapp/onespace/printing.py:291
 msgid "{0} is not a page size."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:296
+#: oneapp/onespace/printing.py:296
 msgid "{0} is not a print style."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:226
+#: oneapp/onespace/naming.py:226
 msgid "{0} is not a series on {1}."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/settings.py:383
+#: oneapp/onespace/ai/settings.py:383
 msgid "{0} is not a tone this can use."
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:523
+#: oneapp/onespace/notifications.py:523
 msgid "{0} is not a way to be notified."
 msgstr ""
 
-#: oneapp/oneapp_core/workspace.py:583
+#: oneapp/onespace/workspace.py:583
 msgid "{0} is not a workspace setting."
 msgstr ""
 
-#: oneapp/oneapp_core/ai/options.py:195
+#: oneapp/onespace/ai/options.py:195
 msgid "{0} is not a {1} this model offers."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/run.py:33
+#: oneapp/onespace/spaceview/run.py:33
 msgid "{0} is not an action of this screen."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/resolve.py:150
+#: oneapp/onespace/spaceview/resolve.py:150
 msgid "{0} is not installed on this workspace."
 msgstr ""
 
-#: oneapp/oneapp_core/importer/mapping.py:139
+#: oneapp/onespace/importer/mapping.py:139
 msgid "{0} is not named after a field, so it cannot be filled in from a value."
 msgstr ""
 
-#: oneapp/oneapp_core/naming.py:175
+#: oneapp/onespace/naming.py:175
 msgid "{0} is not named by a series here."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/links.py:304
+#: oneapp/onespace/spaceview/links.py:304
 msgid "{0} is not on this screen."
 msgstr ""
 
-#: oneapp/oneapp_core/drive/sharing.py:116
-#: oneapp/oneapp_core/spaceview/sharing.py:76
+#: oneapp/onestorage/sharing.py:116
+#: oneapp/onespace/spaceview/sharing.py:76
 msgid "{0} is not on this workspace."
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:131
+#: oneapp/onemail/addresses.py:131
 msgid "{0} is not one of the choices."
 msgstr ""
 
-#: oneapp/oneapp_core/spaceview/resolve.py:145
+#: oneapp/onespace/spaceview/resolve.py:145
 msgid "{0} is not part of {1}."
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:652
+#: oneapp/onemail/addresses.py:652
 msgid "{0} is not set up to send."
 msgstr ""
 
-#: oneapp/oneapp_core/me.py:122
+#: oneapp/onespace/me.py:122
 msgid "{0} is not something you can change here."
 msgstr ""
 
-#: oneapp/oneapp_core/alerts.py:233
+#: oneapp/onespace/alerts.py:233
 msgid "{0} is not submitted, so it cannot be submitted or cancelled."
 msgstr ""
 
-#: oneapp/oneapp_core/email/verify.py:199
+#: oneapp/onemail/verify.py:199
 msgid "{0} is not verified yet. SPF: {1}. DKIM: {2}."
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:655
+#: oneapp/onemail/addresses.py:655
 msgid "{0} is on a domain we have not verified yet. Publish the DNS records first."
 msgstr ""
 
@@ -8752,7 +8752,7 @@ msgstr ""
 msgid "{0} is switched off"
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:435
+#: oneapp/onemail/addresses.py:435
 msgid "{0} is taken."
 msgstr ""
 
@@ -8813,7 +8813,7 @@ msgstr ""
 msgid "{0} rows, from {1}!{2}"
 msgstr ""
 
-#: oneapp/oneapp_core/docflow.py:324
+#: oneapp/onespace/docflow.py:324
 msgid "{0} runs on a workflow, so it is {1} by taking the next step in it."
 msgstr ""
 
@@ -8829,11 +8829,11 @@ msgstr ""
 msgid "{0} selected"
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:696
+#: oneapp/onespace/printing.py:696
 msgid "{0} ships with the app that defines it, so it is read-only here. Duplicate it to make it yours."
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:747
+#: oneapp/onespace/printing.py:747
 msgid "{0} ships with the app that defines it."
 msgstr ""
 
@@ -8857,11 +8857,11 @@ msgstr ""
 msgid "{0} to {1}"
 msgstr ""
 
-#: oneapp/oneapp_core/notifications.py:769
+#: oneapp/onespace/notifications.py:769
 msgid "{0} updated {1} {2}"
 msgstr ""
 
-#: oneapp/oneapp_core/printing.py:647
+#: oneapp/onespace/printing.py:647
 msgid "{0} was written as a template rather than drawn, so it cannot be opened here. It still prints."
 msgstr ""
 
@@ -8877,7 +8877,7 @@ msgstr ""
 msgid "{0} {1} created"
 msgstr ""
 
-#: oneapp/oneapp_core/importer/writing.py:164
+#: oneapp/onespace/importer/writing.py:164
 msgid "{0} {1} is already {2} {3} in this plan — two steps claim it. Narrow one step's filters."
 msgstr ""
 
@@ -8905,7 +8905,7 @@ msgstr ""
 msgid "{0} — yours, on this workspace's domain."
 msgstr ""
 
-#: oneapp/oneapp_core/sheets/feed.py:542
+#: oneapp/onesheet/feed.py:542
 msgid "{0} — {1}"
 msgstr ""
 
@@ -8914,36 +8914,36 @@ msgid "{0}, kept {1} days"
 msgstr ""
 
 #. Label of the to_party_ar (Data) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "إلى"
 msgstr ""
 
 #. Label of the signed_by_ar (Data) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "التوقيع"
 msgstr ""
 
 #. Label of the signed_by_title_ar (Data) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "الصفة"
 msgstr ""
 
 #. Label of the sec_corr_ar (Section Break) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "العربية"
 msgstr ""
 
 #. Label of the subject_ar (Data) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "الموضوع"
 msgstr ""
 
 #. Label of the body_ar (Text Editor) field in DocType 'Correspondence'
-#: oneapp/oneapp_core/doctype/correspondence/correspondence.json
+#: oneapp/onespace/doctype/correspondence/correspondence.json
 msgid "النص"
 msgstr ""
 
-#: oneapp/oneapp_core/email/addresses.py:323
+#: oneapp/onemail/addresses.py:323
 msgid "“{0}” is reserved."
 msgstr ""
 

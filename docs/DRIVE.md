@@ -262,7 +262,7 @@ learn it: a rail of places, a path, and a list or a grid.
 * **Selection and drag**: the selection bar we already have; drag onto a folder
   to move.
 
-Server side, one module — `oneapp_core/drive.py` — with the reader shaped like
+Server side, one module — `onestorage.py` — with the reader shaped like
 `mailbox`'s: a scope, a query, and the actions. `sync.granted_doctypes()` has no
 part in it; a file is not a doctype screen.
 

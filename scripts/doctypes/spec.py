@@ -10,13 +10,30 @@ import os
 
 
 APPS = {
-    # key -> (app package dir, module directory, Frappe module name)
+    # key -> (app package dir, default module directory, default module name)
+    #
+    # OneAdmin is one module because it is one subject: the control plane. The
+    # tenant app is not — it is OneSpace and the products that sit in it — so
+    # its default is the platform module and anything belonging to a product
+    # says so with `module=`, below.
     "control": ("oneapp_control", "control_plane", "Control Plane"),
-    # "OneApp Core" and not "OneSpace Core": a Frappe module name is plumbing —
-    # it has to match `apps/oneapp/oneapp/modules.txt` and the directory beside
-    # it, and renaming one is a migration on every site rather than an edit
-    # here. The product-facing names are the labels, and those did move.
-    "tenant": ("oneapp", "oneapp_core", "OneApp Core"),
+    "tenant": ("oneapp", "onespace", "OneSpace"),
+}
+
+#: Frappe module name -> the directory beside `modules.txt` that holds it.
+#: Frappe's own rule is `scrub(module)`, and every one of ours is that already;
+#: this exists so a name with a space in it would still resolve rather than
+#: quietly writing a doctype into a directory the framework never reads.
+MODULE_DIRS = {
+    "OneSpace": "onespace",
+    "OneDoc": "onedoc",
+    "OneSheet": "onesheet",
+    "OneCode": "onecode",
+    "OneStorage": "onestorage",
+    "OneMail": "onemail",
+    "OneCalendar": "onecalendar",
+    "OneLegal": "onelegal",
+    "Control Plane": "control_plane",
 }
 
 
@@ -74,5 +91,5 @@ def doctype(name, fields, autoname=None, perms=None, app="control", **kw):
 HANDLED_SPEC_KEYS = {
     "name", "fields", "perms", "autoname", "title_field",
     "allow_rename", "issingle", "istable", "app", "track_changes",
-    "in_create", "states", "search_fields",
+    "in_create", "states", "search_fields", "module",
 }

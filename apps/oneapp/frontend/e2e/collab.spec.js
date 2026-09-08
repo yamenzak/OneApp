@@ -25,7 +25,7 @@ const clean = (page) =>
   page.evaluate(
     async ([task, tag]) => {
       const post = (method, body) =>
-        fetch(`/api/method/oneapp.oneapp_core.spaceview.${method}`, {
+        fetch(`/api/method/oneapp.onespace.spaceview.${method}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

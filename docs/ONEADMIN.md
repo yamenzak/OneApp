@@ -202,7 +202,7 @@ a component calling whitelisted methods that resolve the workspace from the
 session.
 
 It had three more — People, Roles, Domain — and they are workspace settings
-tabs now, relayed through `oneapp/oneapp_core/account.py`. The four that stayed
+tabs now, relayed through `oneapp/onespace/account.py`. The four that stayed
 are facts about an account that owns several workspaces; the three that moved
 were facts about one, and their reader had to change address to edit them.
 `docs/MARKETPLACE.md` §2 is the split and why it stops there.
@@ -514,7 +514,7 @@ bucket-level operation, so it is run once per bucket when the bucket is made,
 not per site and not on a schedule:
 
     bench --site <any site on the shard> execute \
-      oneapp.oneapp_core.storage.r2.ensure_cors --kwargs "{'origins': ['https://*.4dl.app']}"
+      oneapp.onestorage.r2.ensure_cors --kwargs "{'origins': ['https://*.4dl.app']}"
 
 **Buckets are rotated at a cap.** A `Storage Bucket` tracks jurisdiction, tenant
 count and bytes; at the cap it is marked Full and a fresh one is created.

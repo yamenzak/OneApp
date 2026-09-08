@@ -23,10 +23,10 @@ def spaceview(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core import spaceview as module
+	from oneapp.onespace import spaceview as module
 
 	return module
 
@@ -401,7 +401,7 @@ import ast as _ast  # noqa: E402
 import re as _re  # noqa: E402
 from pathlib import Path as _Path  # noqa: E402
 
-SPACEVIEW = _Path(__file__).resolve().parents[1] / "apps/oneapp/oneapp/oneapp_core/spaceview"
+SPACEVIEW = _Path(__file__).resolve().parents[1] / "apps/oneapp/oneapp/onespace/spaceview"
 
 # The parameters the SPA sends as JSON rather than as a query-string value, and
 # the shapes it sends them in. Keyed by `method.param` where the shape belongs
@@ -1668,9 +1668,9 @@ def test_a_colleague_is_somebody_holding_a_role_we_granted(spaceview, monkeypatc
 	# `_granted_roles` reads the roles this app made on the site. Stubbed to two
 	# of them, because what is under test is the question being asked and not
 	# how the site answers it.
-	sync = _types.ModuleType("oneapp.oneapp_core.sync")
+	sync = _types.ModuleType("oneapp.onespace.sync")
 	sync._granted_roles = lambda: {"MockSpace Member", "MockSpace Owner"}
-	monkeypatch.setitem(sys.modules, "oneapp.oneapp_core.sync", sync)
+	monkeypatch.setitem(sys.modules, "oneapp.onespace.sync", sync)
 
 	who = spaceview._colleagues()
 
@@ -2678,7 +2678,7 @@ def sited(spaceview, stub_frappe, monkeypatch):
 	# `_space` imports sync inside the function, so the module has to be
 	# imported here rather than looked up in sys.modules — the resolver fixture
 	# has just cleared it.
-	from oneapp.oneapp_core import sync
+	from oneapp.onespace import sync
 
 	monkeypatch.setattr(sync, "state", lambda: {"spaces": SPACES})
 	return stub_frappe

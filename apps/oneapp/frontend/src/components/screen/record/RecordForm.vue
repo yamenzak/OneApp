@@ -75,7 +75,7 @@ const props = defineProps({
    */
   docname: { type: String, default: '' },
   /** The record's `_ai`: fieldname → what wrote the value there. See
-   *  `components/AiMark.vue` and `oneapp_core/ai/written.py`. */
+   *  `components/AiMark.vue` and `onespace/ai/written.py`. */
   ai: { type: Object, default: () => ({}) },
 })
 

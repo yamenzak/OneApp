@@ -3,7 +3,7 @@
  *
  * The seam between Frappe's editor and our server. Upstream this is
  * `pages/SheetEditor/usePersistence.js` talking to `sheets.api`; here it talks
- * to `oneapp.oneapp_core.sheets`, where a sheet is a `File` in the Drive — so
+ * to `oneapp.onesheet`, where a sheet is a `File` in the Drive — so
  * there is no create, no trash and no share to do.
  *
  * Two things are genuinely ours rather than renamed.
@@ -21,8 +21,8 @@
 import { encodeForUpload, isDecompressionSupported, decodeFromDownload } from './utils/compress.js'
 import { packSheet, packSheetChunked, unpackSheet, boundsOf } from './utils/sheet-codec.js'
 
-const GET = 'oneapp.oneapp_core.sheets.get_sheet'
-const SAVE = 'oneapp.oneapp_core.sheets.save_sheet'
+const GET = 'oneapp.onesheet.get_sheet'
+const SAVE = 'oneapp.onesheet.save_sheet'
 
 /**
  * One request to Frappe. `keepalive` for the save that outlives the page.

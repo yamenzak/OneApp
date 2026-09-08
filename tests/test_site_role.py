@@ -14,10 +14,10 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-SITE = ROOT / "apps/oneapp/oneapp/oneapp_core/site.py"
-FILE_OVERRIDE = ROOT / "apps/oneapp/oneapp/oneapp_core/storage/file.py"
-SYNC = ROOT / "apps/oneapp/oneapp/oneapp_core/sync.py"
-BACKUP = ROOT / "apps/oneapp/oneapp/oneapp_core/backup.py"
+SITE = ROOT / "apps/oneapp/oneapp/onespace/site.py"
+FILE_OVERRIDE = ROOT / "apps/oneapp/oneapp/onestorage/file.py"
+SYNC = ROOT / "apps/oneapp/oneapp/onespace/sync.py"
+BACKUP = ROOT / "apps/oneapp/oneapp/onespace/backup.py"
 
 
 @pytest.fixture
@@ -25,9 +25,9 @@ def site(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
-	from oneapp.oneapp_core import site as module
+	from oneapp.onespace import site as module
 
 	return module
 
@@ -151,32 +151,32 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 	# Gated above, and the two that are correct on any site: measuring this
 	# site's own database says nothing to anybody else.
 	known = {
-		"oneapp.oneapp_core.sync.sync_from_control_plane",
-		"oneapp.oneapp_core.sync.report_usage_to_control_plane",
-		"oneapp.oneapp_core.backup.scheduled_backup",
-		"oneapp.oneapp_core.storage.quota.refresh_database_verdict",
+		"oneapp.onespace.sync.sync_from_control_plane",
+		"oneapp.onespace.sync.report_usage_to_control_plane",
+		"oneapp.onespace.backup.scheduled_backup",
+		"oneapp.onestorage.quota.refresh_database_verdict",
 		# Correct on any site, and ungated on purpose: the control plane keeps
 		# no Compliance Documents, so the sweep reads an empty table and stops.
 		# Gating it would be a branch that exists to say "there is nothing here"
 		# where an empty query already says it.
-		"oneapp.oneapp_core.expiry.sweep",
+		"oneapp.onespace.expiry.sweep",
 		# Same shape as the sweep and ungated for the same reason: the control
 		# plane holds no Email Accounts with an away date on them, so this
 		# reads an empty table. A branch to say so would say less than the
 		# empty query already does.
-		"oneapp.oneapp_core.email.rules.expire_away",
+		"oneapp.onemail.rules.expire_away",
 		# And the same again for the bin. The control plane's own files are the
 		# operator console's, nobody throws one away there, and a query for
 		# what has been trashed thirty days comes back empty — which is the
 		# answer, not a case to branch on.
-		"oneapp.oneapp_core.drive.sweep_trash",
+		"oneapp.onestorage.sweep_trash",
 		# Same again: the control plane holds no share links, so this reads an
 		# empty table and says so by coming back with nothing.
-		"oneapp.oneapp_core.drive.sweep_links",
+		"oneapp.onestorage.sweep_links",
 		# And once more for the version pruner. Nobody writes a sheet or a
 		# document on the control plane, so `File Version` is empty there and
 		# the nightly thinning has nothing to walk.
-		"oneapp.oneapp_core.versions.thin",
+		"oneapp.shared.versions.thin",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "

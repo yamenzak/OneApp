@@ -229,7 +229,7 @@ when they do.
 
 None of the above. `frappe.get_print` needs a doctype and a name, and a
 document or a spreadsheet has neither — it has content and a page it has to sit
-on. `oneapp_core/paper.py` is that page: size, orientation, margins and a
+on. `shared/paper.py` is that page: size, orientation, margins and a
 letter head, turned into CSS.
 
 | | a record | a document, a sheet |

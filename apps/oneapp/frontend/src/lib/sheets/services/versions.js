@@ -3,7 +3,7 @@
  *
  * The panel, the preview banner and the restore flow are Frappe's, vendored
  * with the editor (`lib/sheets/VENDORED.md`). This is the half that was not
- * ported, and it is small because `oneapp_core/versions.py` answers the same
+ * ported, and it is small because `shared/versions.py` answers the same
  * questions for a workbook and a document alike — a version is a blob, its
  * file, when, who, and whether somebody named it.
  *
@@ -37,7 +37,7 @@ const asVersion = (one) => ({
 
 export async function list(sheet) {
   const answer = await callMethod(
-    'oneapp.oneapp_core.versions.history',
+    'oneapp.shared.versions.history',
     { file: sheet, kind: KIND, offset_minutes: OFFSET() },
     { silent: true, method: 'GET' },
   )
@@ -49,7 +49,7 @@ export async function list(sheet) {
 
 export async function getState(sheet, version) {
   const answer = await callMethod(
-    'oneapp.oneapp_core.versions.version_body',
+    'oneapp.shared.versions.version_body',
     { version, kind: KIND },
     { silent: true, method: 'GET' },
   )
@@ -57,29 +57,29 @@ export async function getState(sheet, version) {
 }
 
 export async function restore(sheet, version) {
-  return callMethod('oneapp.oneapp_core.versions.restore_version',
+  return callMethod('oneapp.shared.versions.restore_version',
     { version, kind: KIND }, { success: 'Restored' })
 }
 
 export async function name(sheet, version, title) {
-  return callMethod('oneapp.oneapp_core.versions.name_version',
+  return callMethod('oneapp.shared.versions.name_version',
     { version, kind: KIND, title }, { success: 'Named' })
 }
 
 export async function clearName(sheet, version) {
   // The same endpoint with nothing in it: a name and its absence are one
   // field, and an empty one puts the version back among the automatic ones.
-  return callMethod('oneapp.oneapp_core.versions.name_version',
+  return callMethod('oneapp.shared.versions.name_version',
     { version, kind: KIND, title: '' }, { silent: true })
 }
 
 export async function saveVersion(sheet, title = '') {
-  return callMethod('oneapp.oneapp_core.versions.save_version',
+  return callMethod('oneapp.shared.versions.save_version',
     { file: sheet, kind: KIND, title }, { success: 'Version saved' })
 }
 
 export async function makeACopy(sheet, version, title) {
-  const made = await callMethod('oneapp.oneapp_core.versions.copy_version',
+  const made = await callMethod('oneapp.shared.versions.copy_version',
     { version, kind: KIND, title }, { success: 'Copied' })
   return made?.name || null
 }

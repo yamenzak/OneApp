@@ -1,7 +1,7 @@
 /**
  * Which languages OneCode knows, and what each one is called.
  *
- * The SPA's copy of `oneapp_core/docs/languages.py`, and `tests/test_onecode.py`
+ * The SPA's copy of `onedoc/languages.py`, and `tests/test_onecode.py`
  * reads the two back against each other: a language the picker offers and the
  * server refuses is a button that throws, and one the server will create and
  * the picker does not offer is a file nobody can make.

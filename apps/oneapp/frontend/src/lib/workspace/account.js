@@ -3,14 +3,14 @@
  * it is called on the internet.
  *
  * The rows are the control plane's and these endpoints are a relay: see
- * `oneapp_core/account.py` for what is asserted and what is checked, and
+ * `onespace/account.py` for what is asserted and what is checked, and
  * `docs/MARKETPLACE.md` §2 for why these three questions are asked from inside
  * the workspace while billing is not.
  */
 
 import { callMethod } from '@/lib/runtime/resource'
 
-const at = (method) => `oneapp.oneapp_core.account.${method}`
+const at = (method) => `oneapp.onespace.account.${method}`
 
 export const account = {
   members: () => callMethod(at('members'), {}, { silent: true, method: 'GET' }),

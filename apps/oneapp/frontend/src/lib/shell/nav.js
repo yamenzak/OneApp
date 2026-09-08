@@ -196,7 +196,7 @@ export function useNav() {
     // a "You" section now — your name, your password, what you are told about,
     // how this looks — so it is a door that opens for whoever presses it, and
     // it belongs in the rail beside the other things that are not inside a
-    // space. `oneapp_core/tabs.py` decides what is behind it.
+    // space. `onespace/tabs.py` decides what is behind it.
     {
       key: 'settings',
       label: __('Settings'),

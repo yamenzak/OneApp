@@ -8,7 +8,7 @@
  * Every one of them is the same query with a different `where`; there is no
  * second store behind any. That is why the rail is cheap, and why Templates
  * — the sixth — is a `where` on the flag rather than a folder somebody has to
- * be taught to file things into. `oneapp_core/drive/query.py` holds the
+ * be taught to file things into. `onestorage/query.py` holds the
  * other half of this list, and a test keeps them in step.
  */
 import { __ } from '@/lib/runtime/translate'

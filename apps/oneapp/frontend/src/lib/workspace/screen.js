@@ -12,7 +12,7 @@ export const screen = {
   // entitlement did not include, or to write a field it does not show.
   screenSpec: (spaceCode, screen, layout, viewType) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.spec',
+      'oneapp.onespace.spaceview.spec',
       { space_code: spaceCode, screen, layout, view_type: viewType },
       {
         silent: true,
@@ -23,7 +23,7 @@ export const screen = {
   // `overrides` carries a filter or sort the person changed but has not saved.
   screenRows: (spaceCode, screen, overrides, layout, page = {}, viewType) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.rows',
+      'oneapp.onespace.spaceview.rows',
       {
         space_code: spaceCode,
         screen,
@@ -48,7 +48,7 @@ export const screen = {
   // index behind it is a full scan.
   screenRowCount: (spaceCode, screen, overrides, layout, viewType) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.count',
+      'oneapp.onespace.spaceview.count',
       {
         space_code: spaceCode,
         screen,
@@ -62,7 +62,7 @@ export const screen = {
   // One change to a whole selection. POST because it writes, and each record is
   // saved on its own so what could not be saved comes back named.
   screenBulkSet: (spaceCode, screen, names, field, value) =>
-    callMethod('oneapp.oneapp_core.spaceview.bulk_set', {
+    callMethod('oneapp.onespace.spaceview.bulk_set', {
       space_code: spaceCode,
       screen,
       names: JSON.stringify(names || []),
@@ -73,7 +73,7 @@ export const screen = {
   // People added to the assignment on every record in a selection. Added and
   // never replaced — see `bulk_assign`.
   screenBulkAssign: (spaceCode, screen, names, users) =>
-    callMethod('oneapp.oneapp_core.spaceview.bulk_assign', {
+    callMethod('oneapp.onespace.spaceview.bulk_assign', {
       space_code: spaceCode,
       screen,
       names: JSON.stringify(names || []),
@@ -83,14 +83,14 @@ export const screen = {
   // A whole selection moved one step of its docstatus. Not `bulk_set`: a submit
   // is not a save, and `docflow` is what a workflow's transition goes through.
   screenBulkSubmit: (spaceCode, screen, names) =>
-    callMethod('oneapp.oneapp_core.spaceview.bulk_submit', {
+    callMethod('oneapp.onespace.spaceview.bulk_submit', {
       space_code: spaceCode,
       screen,
       names: JSON.stringify(names || []),
     }),
 
   screenBulkCancel: (spaceCode, screen, names) =>
-    callMethod('oneapp.oneapp_core.spaceview.bulk_cancel', {
+    callMethod('oneapp.onespace.spaceview.bulk_cancel', {
       space_code: spaceCode,
       screen,
       names: JSON.stringify(names || []),
@@ -100,7 +100,7 @@ export const screen = {
   // is one.
   screenTotals: (spaceCode, screen, overrides, layout, viewType) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.totals',
+      'oneapp.onespace.spaceview.totals',
       {
         space_code: spaceCode,
         screen,
@@ -115,7 +115,7 @@ export const screen = {
   // sidebar, as a menu. Under the same filters the rows are.
   screenTally: (spaceCode, screen, field, overrides, layout) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.tally',
+      'oneapp.onespace.spaceview.tally',
       {
         space_code: spaceCode,
         screen,
@@ -131,7 +131,7 @@ export const screen = {
   // `names` narrows it to a selection.
   screenExport: (spaceCode, screen, overrides, layout, viewType, names) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.export_rows',
+      'oneapp.onespace.spaceview.export_rows',
       {
         space_code: spaceCode,
         screen,
@@ -148,7 +148,7 @@ export const screen = {
   // lets a record be a link somebody can send.
   screenRecord: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.record',
+      'oneapp.onespace.spaceview.record',
       { space_code: spaceCode, screen, name },
       { silent: true, method: 'GET' },
     ),
@@ -158,14 +158,14 @@ export const screen = {
   // decides what carries over.
   duplicateRecord: (spaceCode, screen, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.duplicate',
+      'oneapp.onespace.spaceview.duplicate',
       { space_code: spaceCode, screen, name },
       { silent: true, method: 'GET' },
     ),
 
   saveRecord: (spaceCode, screen, values, name) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.save',
+      'oneapp.onespace.spaceview.save',
       { space_code: spaceCode, screen, values, name },
       { successMessage: __('Saved') },
     ),
@@ -174,7 +174,7 @@ export const screen = {
   // and a failure halfway through leaves nobody able to say what happened.
   removeRecords: (spaceCode, screen, names) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.remove',
+      'oneapp.onespace.spaceview.remove',
       { space_code: spaceCode, screen, name: names },
       { silent: true },
     ),
@@ -187,7 +187,7 @@ export const screen = {
   // space's grant and ignores it for a plain Link.
   linkOptions: (spaceCode, screen, fieldname, query, target) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.link_options',
+      'oneapp.onespace.spaceview.link_options',
       { space_code: spaceCode, screen, fieldname, query, target },
       { silent: true, method: 'GET' },
     ),
@@ -198,7 +198,7 @@ export const screen = {
   // stays as it was and the save still fills it.
   fetched: (spaceCode, screen, fieldname, value) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.fetched',
+      'oneapp.onespace.spaceview.fetched',
       { space_code: spaceCode, screen, fieldname, value },
       { silent: true, method: 'GET' },
     ),
@@ -208,7 +208,7 @@ export const screen = {
   // the space — a picker with no Create row is the right shape for that.
   linkNewSpec: (spaceCode, screen, fieldname, target) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.link_new_spec',
+      'oneapp.onespace.spaceview.link_new_spec',
       { space_code: spaceCode, screen, fieldname, target },
       { silent: true, method: 'GET' },
     ),
@@ -217,7 +217,7 @@ export const screen = {
   // without a second search.
   linkNew: (spaceCode, screen, fieldname, values, target) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.link_new',
+      'oneapp.onespace.spaceview.link_new',
       { space_code: spaceCode, screen, fieldname, values, target },
       { successMessage: __('Created') },
     ),
@@ -229,7 +229,7 @@ export const screen = {
   // facts is the target doctype's own answer — its `in_preview` fields.
   linkPreview: (spaceCode, screen, fieldname, name, target) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.link_preview',
+      'oneapp.onespace.spaceview.link_preview',
       { space_code: spaceCode, screen, fieldname, name, target },
       { silent: true, method: 'GET' },
     ),
@@ -241,7 +241,7 @@ export const screen = {
   // the spec, which is read on every navigation.
   dashboard: (spaceCode, screen, { layout = '', overrides = null } = {}) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.dashboard_data',
+      'oneapp.onespace.spaceview.dashboard_data',
       {
         space_code: spaceCode,
         screen,
@@ -254,5 +254,5 @@ export const screen = {
   // --- mail ---------------------------------------------------------------
   // Addresses, who holds each, and what they sign with. The model is Frappe's
   // Email Account and User Email, so none of this is a parallel permission
-  // system. See `oneapp_core/email/addresses.py`.
+  // system. See `onemail/addresses.py`.
 }

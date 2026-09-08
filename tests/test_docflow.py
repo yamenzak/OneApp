@@ -19,10 +19,10 @@ def docflow(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core import docflow as module
+	from oneapp.onespace import docflow as module
 
 	return module
 

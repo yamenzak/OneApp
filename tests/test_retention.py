@@ -5,7 +5,7 @@ invoice which does not use retention is left completely alone, that a second
 save does not leave two rows, and that the deduction is negative — because a
 retention row with a positive rate is an invoice for money nobody owes.
 
-See `oneapp_core/retention.py` for why a subcontractor's books are wrong
+See `onespace/retention.py` for why a subcontractor's books are wrong
 without this at all.
 """
 
@@ -16,7 +16,7 @@ import pytest
 
 @pytest.fixture
 def retention(stub_frappe):
-	from oneapp.oneapp_core import retention as module
+	from oneapp.onespace import retention as module
 
 	return module
 

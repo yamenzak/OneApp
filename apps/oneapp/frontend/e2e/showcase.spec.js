@@ -218,7 +218,7 @@ test('a variation is added from the rail it will appear in', async ({
     .filter({ hasText: made })
     .first()
     .getAttribute('data-name')
-  await page.request.post(`${baseURL}/api/method/oneapp.oneapp_core.spaceview.remove`, {
+  await page.request.post(`${baseURL}/api/method/oneapp.onespace.spaceview.remove`, {
     form: { space_code: 'rua', screen: 'projects', name: JSON.stringify([name]) },
   })
 

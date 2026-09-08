@@ -719,7 +719,7 @@ test('rows can be selected and deleted together', async ({ page, baseURL }, info
   // it, which the browser reports as "Failed to fetch".
   await expect(page.locator('[data-slot="list-row"]').first()).toBeVisible()
   const csrf = await page.evaluate(() => window.csrf_token)
-  const made = await page.request.post(`${baseURL}/api/method/oneapp.oneapp_core.spaceview.save`, {
+  const made = await page.request.post(`${baseURL}/api/method/oneapp.onespace.spaceview.save`, {
     headers: { 'X-Frappe-CSRF-Token': csrf },
     form: {
       space_code: 'zzmock',

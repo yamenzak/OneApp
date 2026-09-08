@@ -1,7 +1,7 @@
 """Every Frappe fieldtype, and what renders it.
 
 Canonical here. Emitted into both SPAs as `src/lib/fields.js` and into the
-tenant app as `oneapp_core/fieldtypes.py`, so the browser and the server never
+tenant app as `onespace/fieldtypes.py`, so the browser and the server never
 disagree about whether something is editable.
 
 The list is Frappe's own — `frappe/model/__init__.py`, `data_fieldtypes` plus

@@ -319,7 +319,7 @@ const saved = ref(0)
 /*
  * Paper.
  *
- * `paper` is the same resolution `oneapp_core/paper.py` does on the way out,
+ * `paper` is the same resolution `shared/paper.py` does on the way out,
  * so what the sheet on screen is is what the printer gets. `headMarkup` is the
  * chosen letter head's HTML, fetched once when a document that has one opens —
  * a document with no letter head, which is most of them, asks for nothing.
@@ -673,7 +673,7 @@ const menu = computed(() => [
     icon: 'download',
     onClick: () => {
       window.location.href =
-        `/api/method/oneapp.oneapp_core.docs.download?name=${encodeURIComponent(props.name)}`
+        `/api/method/oneapp.onedoc.download?name=${encodeURIComponent(props.name)}`
     },
   },
   {
@@ -691,7 +691,7 @@ const menu = computed(() => [
   },
   {
     // A template is a document with a flag on it, so this is the whole feature
-    // — see `oneapp_core/docs/templates.py`. It then appears in the New menu,
+    // — see `onedoc/templates.py`. It then appears in the New menu,
     // in the Drive and on a record's Files tab alike.
     label: isTemplate.value ? __('Stop using as a template') : __('Use as a template'),
     icon: isTemplate.value ? 'bookmark-minus' : 'bookmark-plus',

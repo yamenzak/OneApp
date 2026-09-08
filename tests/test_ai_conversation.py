@@ -21,7 +21,7 @@ def gateway(stub_frappe, monkeypatch):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
 	stub_frappe.conf = {
@@ -32,7 +32,7 @@ def gateway(stub_frappe, monkeypatch):
 	stub_frappe.log_error = lambda **kw: None
 	stub_frappe.get_traceback = lambda: ""
 
-	from oneapp.oneapp_core.ai import (
+	from oneapp.onespace.ai import (
 		conversation, features, gateway as module, settings, tools, transcript,
 	)
 
@@ -118,9 +118,9 @@ def wire(gw, replies, model="", credits=0.5, turns=4, run_credits=0):
 		sent.append({"url": url, "body": json})
 		return answered.pop(0)
 
-	gw.monkeypatch.setattr("oneapp.oneapp_core.ai.gateway.requests.post", post)
+	gw.monkeypatch.setattr("oneapp.onespace.ai.gateway.requests.post", post)
 	gw.monkeypatch.setattr(
-		"oneapp.oneapp_core.control_client.call",
+		"oneapp.onespace.control_client.call",
 		lambda method, payload=None: (
 			{"ok": True, "reservation": "CRES-1", "ceiling": 2.0}
 			if method == "ai_reserve" else {"ok": True, "credits": credits}
@@ -130,7 +130,7 @@ def wire(gw, replies, model="", credits=0.5, turns=4, run_credits=0):
 	@gw.features.ai_feature(
 		"chat", label="Chat", system="You are ours.",
 		max_output_tokens=400, max_turns=turns, max_run_credits=run_credits,
-		tools="oneapp.oneapp_core.chat.toolbox.tools",
+		tools="oneapp.onespace.chat.toolbox.tools",
 	)
 	def run(call, **kw):
 		return call(**kw)

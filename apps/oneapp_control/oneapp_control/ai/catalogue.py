@@ -477,7 +477,7 @@ def catalogue_for_tenant() -> list[dict]:
 	for model in models:
 		# Parsed here rather than sent as a string, so a declaration an operator
 		# typed badly is one broken model rather than a settings page that will
-		# not render on every site that syncs. See `oneapp_core/ai/options.py`
+		# not render on every site that syncs. See `onespace/ai/options.py`
 		# for what a tenant does with it.
 		raw = model.pop("options_json", "") or ""
 		try:

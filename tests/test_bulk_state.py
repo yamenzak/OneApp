@@ -22,12 +22,12 @@ def bulk(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
 	import importlib
 
-	module = importlib.import_module("oneapp.oneapp_core.spaceview.bulk")
+	module = importlib.import_module("oneapp.onespace.spaceview.bulk")
 	# `_quietly` puts the response back the way `frappe.throw` found it, and
 	# the stub has no request to put back. Real enough to be written into.
 	module.frappe.local = types.SimpleNamespace(message_log=[], response={})
@@ -137,7 +137,7 @@ def test_a_bundle_is_bounded(stub_frappe):
 	"""A PDF is built inside the request and every record in it is a full
 	render. Fifty invoices is a few seconds; two hundred is a request that
 	times out and leaves nobody with anything."""
-	from oneapp.oneapp_core import printing
+	from oneapp.onespace import printing
 
 	assert printing.MAX_BUNDLE == 50
 
@@ -148,7 +148,7 @@ def test_a_bundle_asks_per_record(stub_frappe):
 	rather than once for the doctype."""
 	import inspect
 
-	from oneapp.oneapp_core import printing
+	from oneapp.onespace import printing
 
 	body = inspect.getsource(printing.bundle)
 	# Once as a call, per record, inside the loop — the import above it is the
@@ -170,10 +170,10 @@ def records(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	module = importlib.import_module("oneapp.oneapp_core.spaceview.records")
+	module = importlib.import_module("oneapp.onespace.spaceview.records")
 	module.frappe.get_list = lambda *a, **k: []
 	return module
 

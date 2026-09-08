@@ -20,7 +20,7 @@ import pytest
 
 @pytest.fixture
 def alerts(monkeypatch):
-	from oneapp.oneapp_core import alerts as module
+	from oneapp.onespace import alerts as module
 
 	monkeypatch.setattr(
 		module.sync, "granted_doctypes",
@@ -208,7 +208,7 @@ def test_a_rule_files_its_in_app_row_under_a_kind_somebody_can_turn_off(
 	halves together, and the assertion is that the name is a declared one
 	rather than a string that happens to match.
 	"""
-	from oneapp.oneapp_core import notifications
+	from oneapp.onespace import notifications
 
 	written = {}
 

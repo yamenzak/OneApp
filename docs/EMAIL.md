@@ -360,7 +360,7 @@ somebody notices is missing, and it is one field.
 
 ### Stage 5 — Bring your own mailbox
 
-A person connects the mailbox they already have. `oneapp_core/email/connect.py`,
+A person connects the mailbox they already have. `onemail/connect.py`,
 and a panel under Settings → Email that is deliberately not gated on being a
 manager: a mailbox somebody connects with their own password is theirs, and an
 owner has no more business connecting it than a colleague does.
@@ -439,7 +439,7 @@ works for two.
 ### Stage 6 — The Mail screen
 
 Only now, and only because by now there is something to look at.
-`oneapp_core/email/mailbox.py` and `pages/Mail.vue`.
+`onemail/mailbox.py` and `pages/Mail.vue`.
 
 Thin on purpose. Mail in this product is already a document — inbound writes a
 `Communication`, Frappe's IMAP sync writes a `Communication`, replying writes
@@ -483,7 +483,7 @@ is a reader they cannot move to. Stage 8 is what that turned into.
 `Notification` is the framework's own rule → recipients → message on a document
 event, with a scheduler for the date-relative ones and a `System Notification`
 channel that writes the same `Notification Log` the bell already reads. None of
-that is reimplemented. What is ours is `oneapp_core/alerts.py`: the gate, the
+that is reimplemented. What is ours is `onespace/alerts.py`: the gate, the
 scope, and a much smaller shape.
 
 A rule is one sentence — *when a Project is past due by 3 days, tell the

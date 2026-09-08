@@ -3,7 +3,7 @@
  *
  * Every one of these is over Frappe's own `File` table — the same rows an
  * attachment already is — so the Drive and a record's Files tab are two queries
- * rather than two stores. See `oneapp_core/drive`.
+ * rather than two stores. See `onestorage`.
  */
 
 import { callMethod } from '@/lib/runtime/resource'
@@ -12,7 +12,7 @@ import { __ } from '@/lib/runtime/translate'
 export const drive = {
   // A place is a filter: home, recents, favourites, shared, trash.
   driveList: (params) =>
-    callMethod('oneapp.oneapp_core.drive.listing', params, {
+    callMethod('oneapp.onestorage.listing', params, {
       silent: true, method: 'GET',
     }),
 
@@ -20,12 +20,12 @@ export const drive = {
   // it — deliberately, and on the details rather than the preview, because the
   // preview is a redirect and there is no request to hang it on.
   driveFile: (name) =>
-    callMethod('oneapp.oneapp_core.drive.details', { name }, {
+    callMethod('oneapp.onestorage.details', { name }, {
       silent: true, method: 'GET',
     }),
 
   driveStorage: () =>
-    callMethod('oneapp.oneapp_core.drive.storage', {}, {
+    callMethod('oneapp.onestorage.storage', {}, {
       silent: true, method: 'GET',
     }),
 
@@ -33,7 +33,7 @@ export const drive = {
   // the same object, not a move — see `drive/writing.attach`.
   driveAttach: (file, { doctype, docname, fieldname } = {}) =>
     callMethod(
-      'oneapp.oneapp_core.drive.attach',
+      'oneapp.onestorage.attach',
       { file, doctype, docname, fieldname: fieldname || '' },
       { successMessage: __('Attached') },
     ),
@@ -41,42 +41,42 @@ export const drive = {
   // A link somebody without an account can follow, until a date. The one thing
   // `DocShare` cannot do — see `drive/sharing`.
   driveMakeLink: (file, days) =>
-    callMethod('oneapp.oneapp_core.drive.make_link', { file, days }),
+    callMethod('oneapp.onestorage.make_link', { file, days }),
 
   driveLinks: (file) =>
-    callMethod('oneapp.oneapp_core.drive.links', { file }, {
+    callMethod('oneapp.onestorage.links', { file }, {
       silent: true, method: 'GET',
     }),
 
   driveRevokeLink: (name) =>
-    callMethod('oneapp.oneapp_core.drive.revoke', { name }, {
+    callMethod('oneapp.onestorage.revoke', { name }, {
       successMessage: __('That link no longer works'),
     }),
 
   // Who this file has been given to inside the workspace. `DocShare`, the same
   // rows the record surface writes — there is nothing of ours in it.
   drivePeople: (file) =>
-    callMethod('oneapp.oneapp_core.drive.people', { file }, {
+    callMethod('oneapp.onestorage.people', { file }, {
       silent: true, method: 'GET',
     }),
 
   // Who a file can be shared with: the workspace, asked without a screen —
   // a file is not on a space, so there is no screen to bound it by.
   driveColleagues: (query = '') =>
-    callMethod('oneapp.oneapp_core.drive.colleagues', { query }, {
+    callMethod('oneapp.onestorage.colleagues', { query }, {
       silent: true, method: 'GET',
     }),
 
   driveShare: (file, { user, everyone, level } = {}) =>
     callMethod(
-      'oneapp.oneapp_core.drive.share_with',
+      'oneapp.onestorage.share_with',
       { file, user: user || '', everyone: everyone ? 1 : 0, level: level || 'read' },
       { successMessage: __('Shared') },
     ),
 
   driveUnshare: (file, { user, everyone } = {}) =>
     callMethod(
-      'oneapp.oneapp_core.drive.unshare_with',
+      'oneapp.onestorage.unshare_with',
       { file, user: user || '', everyone: everyone ? 1 : 0 },
       { successMessage: __('Share removed') },
     ),
@@ -84,28 +84,28 @@ export const drive = {
   // `_liked_by`, which is why Favourites is a filter and not a table.
   driveFavourite: (name, on) =>
     callMethod(
-      'oneapp.oneapp_core.drive.set_favourite',
+      'oneapp.onestorage.set_favourite',
       { name, on: on ? 1 : 0 },
       { silent: true },
     ),
 
   driveNewFolder: (fileName, folder) =>
     callMethod(
-      'oneapp.oneapp_core.drive.make_folder',
+      'oneapp.onestorage.make_folder',
       { file_name: fileName, folder },
       { successMessage: __('Folder made') },
     ),
 
   driveRename: (name, fileName) =>
     callMethod(
-      'oneapp.oneapp_core.drive.rename',
+      'oneapp.onestorage.rename',
       { name, file_name: fileName },
       { successMessage: __('Renamed') },
     ),
 
   driveMove: (names, folder) =>
     callMethod(
-      'oneapp.oneapp_core.drive.move',
+      'oneapp.onestorage.move',
       { names: JSON.stringify(names), folder },
       { successMessage: __('Moved') },
     ),
@@ -114,14 +114,14 @@ export const drive = {
   // days, which is the whole reason this is not a delete.
   driveTrash: (names) =>
     callMethod(
-      'oneapp.oneapp_core.drive.trash',
+      'oneapp.onestorage.trash',
       { names: JSON.stringify(names) },
       { successMessage: __('Moved to the bin') },
     ),
 
   driveRestore: (names) =>
     callMethod(
-      'oneapp.oneapp_core.drive.restore',
+      'oneapp.onestorage.restore',
       { names: JSON.stringify(names) },
       { successMessage: __('Restored') },
     ),
@@ -129,7 +129,7 @@ export const drive = {
   // The one that does not come back, which is why it lives on its own screen.
   driveEmptyTrash: (names) =>
     callMethod(
-      'oneapp.oneapp_core.drive.empty_trash',
+      'oneapp.onestorage.empty_trash',
       { names: JSON.stringify(names || []) },
       { successMessage: __('Deleted for good') },
     ),

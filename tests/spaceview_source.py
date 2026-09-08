@@ -11,7 +11,7 @@ import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-PACKAGE = ROOT / "apps/oneapp/oneapp/oneapp_core/spaceview"
+PACKAGE = ROOT / "apps/oneapp/oneapp/onespace/spaceview"
 
 
 def files() -> list[Path]:

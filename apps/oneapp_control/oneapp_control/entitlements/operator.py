@@ -207,7 +207,7 @@ def sync_permissions() -> None:
 	registry, so there is one implementation of what a manifest means.
 	"""
 	try:
-		from oneapp.oneapp_core import sync
+		from oneapp.onespace import sync
 	except ImportError:
 		# `oneapp` is not installed here, so there is no console to grant for.
 		return

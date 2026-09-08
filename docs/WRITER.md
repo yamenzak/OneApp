@@ -95,7 +95,7 @@ HTML and nothing has to be kept in step with a schema.
 
 ## 5. Versions, and why they are shared with sheets
 
-`File Version` and `oneapp_core/versions.py` serve a workbook and a document
+`File Version` and `shared/versions.py` serve a workbook and a document
 alike, because a version of either turned out to be the same five columns: a
 blob, its file, when, who, and whether somebody named it. The store says how to
 write its own kind of blob back and how a reader wants it read; nothing else in
@@ -120,12 +120,12 @@ optional.
 
 ## 6. Where the code is
 
-    oneapp_core/docs/body     opening a document and saving one
-    oneapp_core/docs/text     the plain-text files beside them
-    oneapp_core/docs/export   a document as one HTML file
-    oneapp_core/docs/writing  making one, copying one, throwing one away
-    oneapp_core/docs/templates one to start from, which is a flag on a file
-    oneapp_core/versions.py   earlier drafts, for both kinds
+    onedoc/body     opening a document and saving one
+    onedoc/text     the plain-text files beside them
+    onedoc/export   a document as one HTML file
+    onedoc/writing  making one, copying one, throwing one away
+    onedoc/templates one to start from, which is a flag on a file
+    shared/versions.py   earlier drafts, for both kinds
 
     components/docs/          the editor, the outline, page setup, plain text
     components/versions/      the history panel, shared with the sheet

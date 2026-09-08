@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CUSTOMER = ROOT / "apps/oneapp_control/oneapp_control/api/customer.py"
 CHECKOUT = ROOT / "apps/oneapp_control/oneapp_control/billing/checkout.py"
 TENANT_API = ROOT / "apps/oneapp_control/oneapp_control/api/tenant.py"
-SYNC = ROOT / "apps/oneapp/oneapp/oneapp_core/sync.py"
+SYNC = ROOT / "apps/oneapp/oneapp/onespace/sync.py"
 
 
 def source(path: Path) -> str:
@@ -262,7 +262,7 @@ def test_the_team_screen_moved_into_the_workspace_it_is_about():
     assert "people" not in account_screens()
     assert not (ACCOUNT_SCREENS / "People.vue").exists()
 
-    from oneapp.oneapp_core import tabs
+    from oneapp.onespace import tabs
 
     assert "people" in {tab["key"] for tab in tabs.TABS}
     shell = (

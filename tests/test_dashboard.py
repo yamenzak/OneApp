@@ -23,10 +23,10 @@ def dashboard(stub_frappe):
 	import sys
 
 	for name in list(sys.modules):
-		if name.startswith("oneapp.oneapp_core"):
+		if name.startswith("oneapp.onespace"):
 			del sys.modules[name]
 
-	from oneapp.oneapp_core import dashboard as module
+	from oneapp.onespace import dashboard as module
 
 	return module
 
@@ -208,7 +208,7 @@ def test_every_kind_names_a_chart_frappe_ui_actually_exports():
 		pytest.skip("frappe-ui not installed")
 
 	exported = set(re.findall(r"export \{ default as (\w+)", charts.read_text()))
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/dashboard.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onespace/dashboard.py").read_text()
 	named = set(re.findall(r'"component": "(\w+)"', source))
 
 	assert named, "the KINDS reader matched nothing"
@@ -221,7 +221,7 @@ def test_every_kind_names_a_chart_frappe_ui_actually_exports():
 def test_the_browser_can_draw_every_kind_the_server_offers():
 	"""The other half of the same rule: a component frappe-ui exports and our
 	widget does not import is one the server will happily name."""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/dashboard.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onespace/dashboard.py").read_text()
 	named = set(re.findall(r'"component": "(\w+)"', source))
 	widget = where.source("DashboardWidget.vue")
 	lookup = widget.split("const COMPONENTS = {")[1].split("}")[0]
@@ -236,7 +236,7 @@ def test_every_width_the_server_allows_has_a_class_the_browser_emits():
 	"""Tailwind only emits CSS for class names it can see written out, so
 	`md:col-span-${n}` compiles to nothing and every widget sits full width
 	with no error anywhere."""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/dashboard.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onespace/dashboard.py").read_text()
 	widths = re.search(r"WIDTHS = \(([\d, ]+)\)", source).group(1)
 	allowed = {int(one) for one in widths.replace(" ", "").strip(",").split(",")}
 

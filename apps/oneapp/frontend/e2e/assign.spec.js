@@ -79,7 +79,7 @@ test('a record can be assigned, and says so in faces', async ({ page }, info) =>
 const sweepAssignments = async (page) =>
   page.evaluate(async () => {
     const ask = async (method, options) => {
-      const res = await fetch(`/api/method/oneapp.oneapp_core.spaceview.${method}`, options)
+      const res = await fetch(`/api/method/oneapp.onespace.spaceview.${method}`, options)
       return (await res.json()).message
     }
     const page1 = await ask(

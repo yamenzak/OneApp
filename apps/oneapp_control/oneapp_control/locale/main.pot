@@ -1993,7 +1993,7 @@ msgstr ""
 #. Description of the 'Link Previews' (Check) field in DocType 'OneSpace
 #. Control Settings'
 #: oneapp_control/control_plane/doctype/onespace_control_settings/onespace_control_settings.json
-msgid "Let a tenant site fetch a URL somebody typed into a cell to read its title and favicon. Off by default: it is an outbound request to an arbitrary host from inside the network, on a customer's say-so. The fetch is guarded against private address space either way — see `oneapp_core/link_preview.py`."
+msgid "Let a tenant site fetch a URL somebody typed into a cell to read its title and favicon. Off by default: it is an outbound request to an arbitrary host from inside the network, on a customer's say-so. The fetch is guarded against private address space either way — see `onespace/link_preview.py`."
 msgstr ""
 
 #. Label of the sec_lifecycle_set (Section Break) field in DocType 'OneSpace
@@ -4665,7 +4665,7 @@ msgstr ""
 
 #. Description of the 'Options' (Code) field in DocType 'AI Model'
 #: oneapp_control/control_plane/doctype/ai_model/ai_model.json
-msgid "What else this model takes beyond the ask — a voice, a language, a size. A JSON array of {key, label, type, default, ...}; see `oneapp_core/ai/options.py` for the four types. Sent to every tenant with the catalogue and rendered under the model picker. Filled by the sync from the provider's own list — Cloudflare's input schema, Google's published voice table — so it is not a thing anyone transcribes."
+msgid "What else this model takes beyond the ask — a voice, a language, a size. A JSON array of {key, label, type, default, ...}; see `onespace/ai/options.py` for the four types. Sent to every tenant with the catalogue and rendered under the model picker. Filled by the sync from the provider's own list — Cloudflare's input schema, Google's published voice table — so it is not a thing anyone transcribes."
 msgstr ""
 
 #. Description of the 'Model Id' (Data) field in DocType 'AI Model'

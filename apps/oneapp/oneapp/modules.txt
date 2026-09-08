@@ -1,1 +1,8 @@
-OneApp Core
+OneSpace
+OneDoc
+OneSheet
+OneCode
+OneStorage
+OneMail
+OneCalendar
+OneLegal

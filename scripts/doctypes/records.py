@@ -114,6 +114,7 @@ doctype(
 doctype(
     "Correspondence",
     app="tenant",
+    module="OneMail",
     autoname="naming_series:",
     search_fields="subject,to_party",
     title_field="subject",
@@ -177,6 +178,7 @@ doctype(
 doctype(
     "Mail Rule",
     app="tenant",
+    module="OneMail",
     autoname="format:MR-{#####}",
     title_field="title",
     search_fields="title,address,matches",
@@ -224,6 +226,7 @@ doctype(
 doctype(
     "File Link",
     app="tenant",
+    module="OneStorage",
     autoname="hash",
     title_field="label",
     search_fields="label,file",
@@ -268,11 +271,12 @@ doctype(
 # whole workbook in memory, saves it whole and loads it whole, and a second
 # store the browser never reads would be a second thing to keep in step with no
 # reader to justify it. Python reads the blob through
-# `oneapp_core/sheets/codec.py`, which is where the argument is written out.
+# `onesheet/codec.py`, which is where the argument is written out.
 # --------------------------------------------------------------------------- #
 doctype(
     "Sheet Book",
     app="tenant",
+    module="OneSheet",
     autoname="field:sheet",
     title_field="sheet",
     search_fields="sheet",
@@ -317,6 +321,7 @@ doctype(
 doctype(
     "Sheet Feed",
     app="tenant",
+    module="OneSheet",
     autoname="hash",
     title_field="sheet_title",
     search_fields="reference_doctype,reference_name,sheet_title",
@@ -382,6 +387,7 @@ doctype(
 doctype(
     "Doc Body",
     app="tenant",
+    module="OneDoc",
     autoname="field:doc",
     title_field="doc",
     search_fields="doc",
@@ -439,6 +445,7 @@ doctype(
 doctype(
     "File Version",
     app="tenant",
+    module="OneStorage",
     autoname="hash",
     title_field="title",
     search_fields="file,title",

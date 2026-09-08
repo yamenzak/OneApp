@@ -16,7 +16,7 @@ import pytest
 
 @pytest.fixture
 def sync(stub_frappe, monkeypatch):
-	from oneapp.oneapp_core import sync as module
+	from oneapp.onespace import sync as module
 
 	return module
 
@@ -104,7 +104,7 @@ def test_control_plane_sends_what_the_tenant_reads(stub_frappe):
 
 	root = pathlib.Path(__file__).resolve().parents[1]
 	control = (root / "apps/oneapp_control/oneapp_control/api/tenant.py").read_text()
-	tenant = (root / "apps/oneapp/oneapp/oneapp_core/sync.py").read_text()
+	tenant = (root / "apps/oneapp/oneapp/onespace/sync.py").read_text()
 
 	sent = set()
 	for node in ast.walk(ast.parse(control)):

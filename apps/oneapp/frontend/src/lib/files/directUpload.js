@@ -15,7 +15,7 @@
  */
 import { call } from '@/ui'
 
-const API = 'oneapp.oneapp_core.storage.direct'
+const API = 'oneapp.onestorage.direct'
 
 /** Matches `direct.THRESHOLD`. Below it we do not even ask. */
 export const THRESHOLD = 8 * 1024 * 1024

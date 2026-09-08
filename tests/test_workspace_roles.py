@@ -29,7 +29,7 @@ def registry(stub_frappe, monkeypatch):
 
 @pytest.fixture
 def sync(stub_frappe):
-	from oneapp.oneapp_core import sync as module
+	from oneapp.onespace import sync as module
 
 	return module
 

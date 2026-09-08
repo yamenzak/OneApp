@@ -20,7 +20,7 @@ def build_config() -> dict:
 	"""The keys tenant sites read out of frappe.conf.
 
 	Names here must match what `oneapp` looks up — see
-	`oneapp.oneapp_core.storage.r2.config`, `.email.outbound.config` and
+	`oneapp.onestorage.r2.config`, `.email.outbound.config` and
 	`.ai.gateway.config`.
 	"""
 	s = frappe.get_single("OneSpace Control Settings")

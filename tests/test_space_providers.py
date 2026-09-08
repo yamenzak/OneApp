@@ -69,14 +69,14 @@ def test_the_provider_exists_and_is_callable():
 def test_state_merges_providers_into_its_space_list():
 	"""Below `state()` rather than beside it, so nothing downstream has to
 	learn about providers."""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/sync.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onespace/sync.py").read_text()
 	assert "local_spaces()" in source
 	assert 'json.loads(doc.spaces_json or "[]") + local_spaces()' in source
 
 
 def test_a_failing_provider_is_not_a_site_that_will_not_open():
 	"""This runs behind every page load of the shell."""
-	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/sync.py").read_text()
+	source = (ROOT / "apps/oneapp/oneapp/onespace/sync.py").read_text()
 	body = source[source.index("def local_spaces"):source.index("def invalidate")]
 	assert "except Exception" in body
 	assert "log_error" in body

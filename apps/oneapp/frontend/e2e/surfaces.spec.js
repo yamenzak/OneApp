@@ -156,7 +156,7 @@ test('a line opened from a project opens over it, not instead of it', async ({
   // an invoice, and `record` in the URL opens it — the same door the row click
   // goes through, and the part of this test that matters starts after it.
   const listed = await page.request.get(
-    `${baseURL}/api/method/oneapp.oneapp_core.spaceview.rows`,
+    `${baseURL}/api/method/oneapp.onespace.spaceview.rows`,
     { params: { space_code: 'rua', screen: 'invoices', limit: 100 } },
   )
   test.skip(!listed.ok(), 'this tenant has no ERPNext, so the space is not seeded')

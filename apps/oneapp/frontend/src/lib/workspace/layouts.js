@@ -9,7 +9,7 @@ export const layouts = {
   // one, and asking a spec per screen to draw a menu is a request per item.
   spaceLayouts: (spaceCode) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.space_layouts',
+      'oneapp.onespace.spaceview.space_layouts',
       { space_code: spaceCode },
       { silent: true, method: 'GET' },
     ),
@@ -26,14 +26,14 @@ export const layouts = {
   // Narrows what the screen offers; never widens it, shared or not.
   saveLayout: (spaceCode, screen, payload) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.save_layout',
+      'oneapp.onespace.spaceview.save_layout',
       { space_code: spaceCode, screen, ...payload },
       { successMessage: __('View saved') },
     ),
 
   deleteLayout: (spaceCode, screen, layout) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.delete_layout',
+      'oneapp.onespace.spaceview.delete_layout',
       { space_code: spaceCode, screen, layout },
       { successMessage: __('View deleted') },
     ),
@@ -42,21 +42,21 @@ export const layouts = {
   // be living in it — this says only that one reader would rather not see it.
   hideLayout: (spaceCode, screen, layout) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.hide_layout',
+      'oneapp.onespace.spaceview.hide_layout',
       { space_code: spaceCode, screen, layout },
       { successMessage: __('Hidden from your menu') },
     ),
 
   showLayouts: (spaceCode, screen) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.show_layouts',
+      'oneapp.onespace.spaceview.show_layouts',
       { space_code: spaceCode, screen },
       { successMessage: __('Hidden views are back') },
     ),
 
   defaultLayout: (spaceCode, screen, layout) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.default_layout',
+      'oneapp.onespace.spaceview.default_layout',
       { space_code: spaceCode, screen, layout },
       { successMessage: __('This opens the screen now') },
     ),
@@ -66,7 +66,7 @@ export const layouts = {
   // the list.
   resetLayout: (spaceCode, screen, viewType) =>
     callMethod(
-      'oneapp.oneapp_core.spaceview.reset_layout',
+      'oneapp.onespace.spaceview.reset_layout',
       { space_code: spaceCode, screen, view_type: viewType || undefined },
       { successMessage: __('Back to the default screen') },
     ),

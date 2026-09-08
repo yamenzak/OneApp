@@ -4,7 +4,7 @@ Both were found in the Drive and both were invisible from the layer above:
 nothing failed, nothing logged, and the feature was simply absent.
 
 The first is a name. A package re-exports what its modules whitelist, and the
-client calls `oneapp.oneapp_core.drive.details` — the *package* path. A function
+client calls `oneapp.onestorage.details` — the *package* path. A function
 the package does not re-export is a method Frappe cannot resolve, so the call
 404s and the caller's `.catch` swallows it.
 
@@ -58,7 +58,12 @@ def test_a_package_re_exports_everything_it_whitelists():
 	missing = []
 	for init in sorted(APP.rglob("__init__.py")):
 		exported = init.read_text()
-		if "import" not in exported:
+		# A *façade* — a package whose `__init__` pulls its neighbours up so a
+		# client can call `oneapp.onedoc.get_doc`. Asked of the syntax rather
+		# than of the text, because the word "import" turns up in a docstring
+		# explaining when to put something in a package and that is not one.
+		tree = ast.parse(exported)
+		if not any(isinstance(node, (ast.Import, ast.ImportFrom)) for node in tree.body):
 			continue
 		for module in sorted(init.parent.glob("*.py")):
 			if module.name == "__init__.py":

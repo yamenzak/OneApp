@@ -4,7 +4,7 @@
 
     One list, not three, because there is one kind of thing here. An address a
     person holds alone and one a team shares differ only in how many names are
-    against them. See `oneapp_core/email/addresses.py`.
+    against them. See `onemail/addresses.py`.
   -->
   <SettingsHeader
     :title="__('Email')"
@@ -354,7 +354,7 @@ const addresses = ref([])
 const members = ref([])
 const domain = ref('')
 // Every address this workspace issues carries its label on the front — one
-// domain serves the whole platform, see `oneapp_core/email/addresses.py`.
+// domain serves the whole platform, see `onemail/addresses.py`.
 const prefix = ref('')
 const canManage = ref(false)
 const usage = ref({})

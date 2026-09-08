@@ -46,7 +46,7 @@
             What this reader has done to the column itself: where it sits, what
             colour it is, and whether they want to see it. Frappe keeps the same
             four facts on a Kanban Board doctype; here they are a *view* — see
-            `oneapp_core/board.py`.
+            `onespace/board.py`.
           -->
           <Popover v-if="!column.stray">
             <template #trigger>
@@ -326,7 +326,7 @@ const strays = computed(() => {
  * What this reader has done to the board itself, as the server kept it: the
  * order of the columns, their colours, which are archived, and the order of the
  * cards inside them — keyed by column *value*, because a column is a Select
- * option or a Link id. See `oneapp_core/board.py`.
+ * option or a Link id. See `onespace/board.py`.
  */
 const arrangement = computed(() => board.value.arrangement || {})
 

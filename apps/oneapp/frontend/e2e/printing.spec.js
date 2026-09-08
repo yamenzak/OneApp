@@ -26,7 +26,7 @@ const openTab = async (page, tab) => {
 const clean = (page) =>
   page.evaluate(async (format) => {
     const call = (method, body) =>
-      fetch(`/api/method/oneapp.oneapp_core.workspace.${method}`, {
+      fetch(`/api/method/oneapp.onespace.workspace.${method}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ const clean = (page) =>
       }).then((r) => r.json())
 
     const found = await fetch(
-      '/api/method/oneapp.oneapp_core.workspace.print_formats',
+      '/api/method/oneapp.onespace.workspace.print_formats',
     ).then((r) => r.json())
     if ((found.message?.formats || []).some((one) => one.name === format)) {
       await call('delete_print_format', { name: format })
