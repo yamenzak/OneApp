@@ -74,6 +74,11 @@
               <Icon name="lucide-arrow-left" class="sn-app-back" />
             </span>
           </Tooltip>
+          <!-- And the name beside it. The mark alone is recognisable to
+               somebody who already knows it and says nothing to somebody who
+               does not, which is everybody on their first day. Hidden on a
+               phone, where the filename is the only thing there is room for. -->
+          <SpaceName brand="onesheet" class="sn-app-name" />
         </button>
         <!-- Auto-sizing title. A hidden ::after pseudo mirrors the text and
              sizes the grid track, so the input grows via real DOM text layout —
@@ -1291,6 +1296,7 @@ import { createNamedRanges }   from '@/lib/sheets/engine/named-ranges.js'
 import { getFunctionNames }    from '@/lib/sheets/engine/formula.js'
 import NamedRangesDialog       from './NamedRangesDialog.vue'
 import BrandMark              from '@/components/brand/BrandMark.vue'
+import SpaceName              from '@/components/brand/SpaceName.vue'
 import { useSmartFill }        from './useSmartFill.js'
 import * as versionsApi        from '@/lib/sheets/services/versions.js'
 import { Avatar, Badge, Button, Checkbox, Dialog, Dropdown, FormControl, Icon, KeyboardShortcut, KeyboardShortcutsDialog, Spinner, TextInput, Tooltip, useKeyboardShortcut } from 'frappe-ui'

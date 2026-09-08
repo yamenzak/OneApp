@@ -22,12 +22,19 @@
          product rather than an editable title here and a dialog there. -->
     <PageHeader>
       <nav data-slot="breadcrumb" :aria-label="__('Breadcrumb')" class="flex min-w-0 items-center gap-2">
-        <!-- The OneDoc mark, ahead of the trail. It is not a control: the first
-             crumb is already Files, and a logo that navigates where the word
-             beside it navigates is one of them too many. It is here because
-             the corner of a document is where a product says what it is, and
-             a breadcrumb on its own said nothing. -->
+        <!-- The mark and the name, ahead of the trail. Not a control: the
+             first crumb is already Files, and a logo that navigates where the
+             word beside it navigates is one of them too many. It is here
+             because the corner of a document is where a product says what it
+             is, and a breadcrumb on its own said nothing.
+
+             The name as well as the mark, because a mark alone is recognisable
+             to somebody who already knows it and says nothing to somebody who
+             does not — which is everybody on their first day. Hidden on a
+             phone, where the trail is the only thing there is room for. -->
         <BrandMark name="onedoc" class="size-6 shrink-0" />
+        <SpaceName brand="onedoc" class="hidden shrink-0 text-base font-medium sm:block" />
+        <span class="hidden shrink-0 text-ink-gray-3 sm:block" aria-hidden="true">·</span>
         <Breadcrumbs :items="crumbs" />
       </nav>
 
@@ -204,6 +211,7 @@ import Outline from './Outline.vue'
 import VersionPanel from '../versions/VersionPanel.vue'
 import TemplatePicker from '../drive/TemplatePicker.vue'
 import BrandMark from '../brand/BrandMark.vue'
+import SpaceName from '../brand/SpaceName.vue'
 import { documentToolbar, pageClasses } from './toolbar'
 import { useOutline } from '@/composables/useOutline'
 import { putFile } from '@/lib/files/attach'

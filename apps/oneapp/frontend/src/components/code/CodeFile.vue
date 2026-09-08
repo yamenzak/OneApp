@@ -27,13 +27,13 @@
            the hover text on it is a real frappe-ui `Tooltip`, two lines down. -->
       <button
         type="button"
-        class="group relative size-8 shrink-0 rounded-4 p-0.5 hover:bg-surface-gray-2"
+        class="group flex shrink-0 items-center gap-1.5 rounded-4 py-0.5 pe-2 ps-0.5 hover:bg-surface-gray-2"
         data-slot="code-brand"
         :aria-label="__('Back to Files')"
         @click="leave"
       >
         <Tooltip :text="__('Back to Files')">
-          <span class="relative block size-7">
+          <span class="relative block size-7 shrink-0">
             <BrandMark
               name="onecode"
               class="absolute inset-0 transition-opacity group-hover:opacity-0"
@@ -44,6 +44,11 @@
             />
           </span>
         </Tooltip>
+        <!-- And the name beside it. The mark alone is recognisable to somebody
+             who already knows it and says nothing to somebody who does not,
+             which is everybody on their first day. Hidden on a phone, where the
+             filename is the only thing there is room for. -->
+        <SpaceName brand="onecode" class="hidden text-base font-medium sm:block" />
       </button>
 
       <!-- The name, edited where it is shown. A `.py` renamed to `.sql` is a
@@ -138,6 +143,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import { Badge, Button, CodeEditor, CodePreview, Icon, Tooltip, dayjsLocal } from '@/ui'
 import BrandMark from '../brand/BrandMark.vue'
+import SpaceName from '../brand/SpaceName.vue'
 import { downloadUrl } from '@/lib/files/files'
 import { highlightFor, labelForLanguage } from '@/lib/files/languages'
 import { __ } from '@/lib/runtime/translate'
