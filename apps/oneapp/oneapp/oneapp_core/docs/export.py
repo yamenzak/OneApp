@@ -21,7 +21,7 @@ and every word processor opens HTML.
 import frappe
 
 from .. import paper
-from . import body
+from . import body, typography
 from .body import _mine
 
 ROUTE = "/api/method/oneapp.oneapp_core.docs.download"
@@ -33,28 +33,19 @@ RIGHT_TO_LEFT = frozenset(
     ("ar", "arc", "dv", "fa", "ha", "he", "ks", "ku", "ps", "ur", "yi")
 )
 
-#: Enough style that a printed document is not a wall of Times New Roman, and
-#: little enough that it survives being pasted into a mail client. Deliberately
-#: not our design tokens: this file is read where our stylesheet is not.
+#: What surrounds the type, which `docs/typography.py` sets. Split in two
+#: because the type scale is shared with the editor and has to stay exactly
+#: what the editor uses, and this is the page around it — which the editor
+#: draws itself, out of the same numbers, in `lib/paper/`.
 #:
-#: The right-to-left rules are written out physically rather than as
-#: `padding-inline-start`, for the same reason. This file is opened by whatever
-#: the reader has — a word processor, a mail client, an old print engine — and
-#: an attribute selector is understood by all of them where a logical property
-#: is not.
-STYLE = """
-body { font: 15px/1.6 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-       color: #1f2933; max-width: 46rem; margin: 3rem auto; padding: 0 1.5rem; }
-h1, h2, h3 { line-height: 1.25; margin: 1.6em 0 0.5em; }
-table { border-collapse: collapse; width: 100%; }
-td, th { border: 1px solid #d9dde2; padding: 6px 8px; text-align: left; }
-blockquote { margin: 1em 0; padding-left: 1em; border-left: 3px solid #d9dde2;
-             color: #52606d; }
-img { max-width: 100%; }
-pre { background: #f5f7fa; padding: 12px; overflow-x: auto; }
-[dir=rtl] td, [dir=rtl] th { text-align: right; }
-[dir=rtl] blockquote { padding-left: 0; padding-right: 1em;
-                       border-left: 0; border-right: 3px solid #d9dde2; }
+#: Deliberately not our design tokens: this file is read where our stylesheet
+#: is not. The right-to-left rules are physical rather than logical for the
+#: same reason — an attribute selector is understood by a word processor, a
+#: mail client and an old print engine alike, and `padding-inline-start` is
+#: understood by none of them.
+FRAME = """
+html, body { margin: 0; padding: 0; }
+body { max-width: 46rem; margin: 3rem auto; padding: 0 1.5rem; }
 """
 
 
@@ -90,11 +81,17 @@ def page_html(doc) -> str:
     # How the page is set — size, orientation, margins, letter head. A pageless
     # document answers `paged: False` and gets none of it, which is the same
     # file this produced before any of this existed.
-    setup = paper.setup_of(loaded.get("settings"))
-    sheet = STYLE
+    settings = loaded.get("settings") or {}
+    setup = paper.setup_of(settings)
+    # The type first, because the page is measured in it. Paged, the page
+    # supplies its own width and margins and `FRAME`'s centred column would
+    # fight them.
+    sheet = typography.sheet(settings)
     if setup["paged"]:
         sheet += paper.page_css(setup) + paper.PAPER_CSS
         html = paper.repeated(setup, html)
+    else:
+        sheet += FRAME
 
     return (
         "<!doctype html>\n"

@@ -34,6 +34,38 @@ export const MARGINS = {
   wide: { label: __('Wide'), mm: 30 },
 }
 
+/*
+ * The type a paged document is set in — `oneapp_core/docs/typography.py`,
+ * mirrored, and `tests/test_paper.py` reads the two back against each other.
+ *
+ * A page that reflows on the way to the printer is the whole thing pagination
+ * is here to prevent, so the sheet on screen is set in the face the exported
+ * file is set in: the system sans rather than the app's Inter, which is a web
+ * font a standalone HTML file cannot carry.
+ *
+ * The leading matters for a second reason. `prose-sm` sets `line-height` on
+ * the element it is on and the `leading-*` class sits on the wrapper above it,
+ * so picking a line spacing changed nothing; these go on inline, where they
+ * win.
+ */
+export const FACES = {
+  '': '-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  serif: 'Georgia, Cambria, "Times New Roman", Times, serif',
+  mono: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+}
+
+export const LEADING = { tight: 1.5, normal: 1.7142857, loose: 2 }
+
+/** How far a measured margin may go, the same clamp `paper.setup_of` applies. */
+export const MARGIN_MIN = 0
+export const MARGIN_MAX = 60
+
+/** One CSS millimetre. The browser's own number: 96dpi over 25.4mm an inch. */
+export const MM = 96 / 25.4
+
+/** The gap drawn between two sheets on screen. Nothing to do with the page. */
+export const SHEET_GAP = 24
+
 /** One document's page setup with every gap filled — `paper.setup_of`, here. */
 export function paperSetup(settings = {}) {
   const size = PAGE_SIZES[settings.page_size] ? settings.page_size : 'A4'
@@ -45,8 +77,49 @@ export function paperSetup(settings = {}) {
     orientation,
     width: orientation === 'landscape' ? height : width,
     height: orientation === 'landscape' ? width : height,
-    margin: MARGINS[settings.margin]?.mm ?? MARGINS.normal.mm,
+    // A preset name, or a number of millimetres somebody typed — the same two
+    // shapes `paper.setup_of` takes, because somebody printing onto headed
+    // stationery has a measurement rather than a preference.
+    margin: marginMm(settings.margin),
     letterHead: settings.letter_head || '',
+  }
+}
+
+/** Millimetres of margin, from a preset name or a measured number. */
+export function marginMm(given) {
+  const measured = Number(given)
+  if (Number.isFinite(measured) && typeof given !== 'string') {
+    return Math.max(MARGIN_MIN, Math.min(MARGIN_MAX, measured))
+  }
+  return MARGINS[given]?.mm ?? MARGINS.normal.mm
+}
+
+/** The type one document is set in, for the element that has to carry it. */
+export function typeStyle(settings = {}) {
+  return {
+    fontFamily: FACES[settings.font] ?? FACES[''],
+    lineHeight: String(LEADING[settings.spacing] ?? LEADING.normal),
+  }
+}
+
+/**
+ * The page, in pixels, for the editor that has to draw it.
+ *
+ * `stride` is where the next sheet starts and is a page plus the gap between
+ * sheets — a screen decision, not a paper one, and the reason it is a separate
+ * number from `height`.
+ */
+export function geometry(settings = {}) {
+  const setup = paperSetup(settings)
+  const height = setup.height * MM
+  const margin = setup.margin * MM
+  return {
+    ...setup,
+    pageWidth: setup.width * MM,
+    pageHeight: height,
+    marginPx: margin,
+    stride: height + SHEET_GAP,
+    gap: SHEET_GAP,
   }
 }
 
@@ -54,8 +127,9 @@ export function paperSetup(settings = {}) {
  * The sheet, as inline style.
  *
  * Millimetres rather than pixels, so the browser does the conversion it is
- * going to do anyway when it prints. `--page` is the page height, which the
- * guide lines in `DocEditor` repeat on.
+ * going to do anyway when it prints. Everything else about the page — where
+ * the breaks fall, where each sheet starts — is measured, not styled, and
+ * lives in `paginate.js`.
  */
 export function paperStyle(settings = {}) {
   const setup = paperSetup(settings)
@@ -64,6 +138,5 @@ export function paperStyle(settings = {}) {
     width: `${setup.width}mm`,
     maxWidth: '100%',
     padding: `${setup.margin}mm`,
-    '--page-height': `${setup.height}mm`,
   }
 }

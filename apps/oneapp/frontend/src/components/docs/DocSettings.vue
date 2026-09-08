@@ -59,12 +59,24 @@
               :options="options(ORIENTATIONS)"
             />
           </div>
-          <FormControl
-            v-model="draft.margin"
-            type="select"
-            :label="__('Margins')"
-            :options="marginOptions"
-          />
+          <div class="grid grid-cols-2 gap-3">
+            <FormControl
+              v-model="marginChoice"
+              type="select"
+              :label="__('Margins')"
+              :options="marginOptions"
+            />
+            <!-- A number, because somebody printing onto pre-printed
+                 stationery has a measurement rather than a preference. -->
+            <FormControl
+              v-if="marginChoice === 'custom'"
+              v-model.number="draft.margin"
+              type="number"
+              :label="__('Millimetres')"
+              :min="MARGIN_MIN"
+              :max="MARGIN_MAX"
+            />
+          </div>
           <!-- The workspace's letter heads, the same list the record printer
                offers. "None" first, because a workspace that has one still
                prints the odd thing that should not carry it. -->
@@ -89,7 +101,9 @@ import { computed, ref, watch } from 'vue'
 
 import { Button, Dialog, FormControl } from '@/ui'
 import { FONTS, SPACINGS, WIDTHS } from './toolbar'
-import { MARGINS, ORIENTATIONS, PAGE_SIZES } from '@/lib/paper/setup'
+import {
+  MARGINS, MARGIN_MAX, MARGIN_MIN, ORIENTATIONS, PAGE_SIZES, marginMm,
+} from '@/lib/paper/setup'
 import { workspace } from '@/lib/workspace'
 import { __ } from '@/lib/runtime/translate'
 
@@ -104,12 +118,29 @@ const letterheads = ref([])
 const options = (from) =>
   Object.entries(from).map(([value, one]) => ({ label: one.label, value }))
 
-const marginOptions = computed(() =>
-  Object.entries(MARGINS).map(([value, one]) => ({
+const marginOptions = computed(() => [
+  ...Object.entries(MARGINS).map(([value, one]) => ({
     label: __('{0} ({1} mm)', [one.label, one.mm]),
     value,
   })),
-)
+  { label: __('Custom'), value: 'custom' },
+])
+
+/*
+ * The preset, or the word "custom".
+ *
+ * `draft.margin` is what gets stored and is either a preset's name or a number
+ * of millimetres — the same two shapes `paper.setup_of` reads. This is the
+ * select over it: choosing a preset stores the name, choosing Custom turns
+ * whatever is there now into the number it already meant, so the box opens on
+ * the margin the document has rather than on nothing.
+ */
+const marginChoice = computed({
+  get: () => (typeof draft.value.margin === 'number' ? 'custom' : draft.value.margin || 'normal'),
+  set: (value) => {
+    draft.value.margin = value === 'custom' ? marginMm(draft.value.margin) : value
+  },
+})
 
 const letterheadOptions = computed(() => [
   { label: __('None'), value: '' },

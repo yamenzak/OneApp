@@ -252,11 +252,28 @@ dialog is the PDF.
 paged-media spec says and Chrome has never implemented it; `position: fixed`
 repeats in Chrome and not in Firefox. A table header repeats in both.
 
-**The editor draws one page and guides for the rest.** Real pagination is what
-the print engine does when it prints, so the sheet on screen carries the page's
-width and margins, a hairline every page height, and the letter head where it
-will actually be — at the top. Repeating it further down would mean guessing
-where a break falls and putting the guess on top of somebody's paragraph.
+**The editor paginates too, by measuring.** The sheet on screen carries the
+page's width and margins, the sheets are drawn apart where the pages end, and
+the letter head is at the top of every one of them — because the breaks are
+measured rather than drawn: `lib/paper/paginate.js` walks the blocks the
+browser has already laid out and pushes the first one that would not fit onto
+the next page. The same engine lays out the same blocks at the same width in
+the same type on both sides, which is what makes the two agree; the type is
+`docs/typography.py`, written out once and read by both.
+
+The push is a stylesheet rule rather than an inline style, and that is not a
+detail. Setting `style.marginTop` on a paragraph inside the editable appears to
+work and then silently undoes itself — ProseMirror watches the editable for
+mutations it did not make and redraws the node from state, margin and all. A
+rule in a `<style>` element outside the editable is not a mutation of the
+editable at all. The other trap is measuring a letter head before its logo has
+loaded: every page after the first then comes out about a hundred pixels short,
+so the pass re-runs on a `ResizeObserver` over the column and on each image's
+`load`.
+
+What neither side does is break *inside* a block. A table taller than a page
+runs over the bottom of it on screen and is split by the print engine on paper;
+closing that gap means a renderer of our own.
 
 The letter heads offered are the same list as above: `Letter Head` rows for
 `DocType`, through `printing.letter_heads`. A workspace does not keep one set

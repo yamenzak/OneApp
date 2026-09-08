@@ -42,10 +42,18 @@
           </div>
           <div class="grid grid-cols-2 gap-3">
             <FormControl
-              v-model="setup.margin"
+              v-model="marginChoice"
               type="select"
               :label="__('Margins')"
               :options="marginOptions"
+            />
+            <FormControl
+              v-if="marginChoice === 'custom'"
+              v-model.number="setup.margin"
+              type="number"
+              :label="__('Millimetres')"
+              :min="MARGIN_MIN"
+              :max="MARGIN_MAX"
             />
             <FormControl
               v-model="options.scale"
@@ -119,7 +127,9 @@ import { computed, reactive, ref, watch } from 'vue'
 
 import { Button, Dialog, ErrorMessage, FormControl, LoadingText } from '@/ui'
 import EditorTitle from '../brand/EditorTitle.vue'
-import { MARGINS, ORIENTATIONS, PAGE_SIZES } from '@/lib/paper/setup'
+import {
+  MARGINS, MARGIN_MAX, MARGIN_MIN, ORIENTATIONS, PAGE_SIZES, marginMm,
+} from '@/lib/paper/setup'
 import { workspace } from '@/lib/workspace'
 import { errorText } from '@/lib/runtime/errors'
 import { __ } from '@/lib/runtime/translate'
@@ -169,12 +179,21 @@ const orientationOptions = computed(() =>
   Object.entries(ORIENTATIONS).map(([value, one]) => ({ label: one.label, value })),
 )
 
-const marginOptions = computed(() =>
-  Object.entries(MARGINS).map(([value, one]) => ({
+const marginOptions = computed(() => [
+  ...Object.entries(MARGINS).map(([value, one]) => ({
     label: __('{0} ({1} mm)', [one.label, one.mm]),
     value,
   })),
-)
+  { label: __('Custom'), value: 'custom' },
+])
+
+/** The preset, or the word "custom" — `DocSettings.vue` says the rest. */
+const marginChoice = computed({
+  get: () => (typeof setup.margin === 'number' ? 'custom' : setup.margin || 'normal'),
+  set: (value) => {
+    setup.margin = value === 'custom' ? marginMm(setup.margin) : value
+  },
+})
 
 const scaleOptions = computed(() =>
   [100, 90, 75, 50].map((one) => ({ label: `${one}%`, value: one })),

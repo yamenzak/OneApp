@@ -96,45 +96,76 @@
             />
             <EditorTableMenu v-if="doc.can_write" :editor="instance" />
 
-            <!-- Paged, the scroller is a desk and the document is a sheet on
-                 it. Pageless, it is what it always was: prose in the middle of
-                 the window with nothing behind it. -->
+            <!-- Paged, the scroller is a desk and the document is a stack
+                 of sheets on it. Pageless, it is what it always was: prose in
+                 the middle of the window with nothing behind it.
+
+                 Two boxes rather than one, and the reason is dull but it cost
+                 an afternoon: an absolutely positioned child is placed from
+                 its parent's *padding* box, so a sheet that carried the page
+                 margin as padding measured its blocks in one coordinate system
+                 and drew its page breaks in another, one margin apart. The
+                 sheet has no padding now. The column inside it does. -->
             <FadedScroll class="min-h-0 flex-1" :class="paper.paged ? 'bg-surface-gray-2' : ''">
               <div
-                class="mx-auto"
-                :class="paper.paged
-                  ? ['doc-sheet my-8 shadow-sm', ...bodyClasses(settings)]
-                  : ['w-full px-6 py-10', ...pageClasses(settings)]"
-                :style="paperStyle(settings)"
+                ref="sheet"
+                :data-paper="paperId"
+                class="relative mx-auto"
+                :class="paper.paged ? 'doc-sheet my-8 shadow-sm' : 'w-full'"
+                :style="sheetStyle"
               >
-                <!--
-                  The letter head, where it will be when this is printed.
+                <template v-if="paper.paged">
+                  <!-- What makes two sheets two sheets: the desk showing
+                       between them, edge to edge. -->
+                  <div
+                    v-for="(top, index) in pages.tops.slice(1)"
+                    :key="`gap-${index}`"
+                    class="pointer-events-none absolute inset-x-0 bg-surface-gray-2"
+                    :style="{ top: `${top - paper.gap}px`, height: `${paper.gap}px` }"
+                    aria-hidden="true"
+                  />
+                  <!--
+                    The letter head at the top of every page after the first.
 
-                  Once, at the top, rather than at the top of every page: real
-                  pagination is what the print engine does, and drawing a
-                  repeat here would mean guessing where the page breaks fall
-                  and putting the guess on top of somebody's paragraph. The
-                  guide lines say where the pages are; this says what is at the
-                  top of each of them. Subtle for the same reason — it is not
-                  content and it is not editable, and it should not read as
-                  either.
+                    The first one is in the flow below, because only the first
+                    can be: the rest sit in space `paginate()` has already left
+                    for them, which is how a repeat can be exact rather than a
+                    guess. Subtle in both, because it is not content and it is
+                    not editable and it should not read as either.
+                  -->
+                  <div
+                    v-for="(top, index) in headMarkup ? pages.tops.slice(1) : []"
+                    :key="`head-${index}`"
+                    class="pointer-events-none absolute select-none border-b border-outline-gray-2 pb-3 opacity-60"
+                    :style="headStyle(top)"
+                    aria-hidden="true"
+                    v-html="headMarkup"
+                  />
+                </template>
 
-                  `v-html` because `Letter Head.validate` scrubs the markup on
-                  the way in, which is the same reason the settings screen
-                  renders its preview this way.
-                -->
                 <div
-                  v-if="paper.paged && headMarkup"
-                  class="pointer-events-none mb-6 select-none border-b border-outline-gray-2 pb-3 opacity-60"
-                  aria-hidden="true"
-                  v-html="headMarkup"
-                />
-                <EditorContent
-                  :editor="instance"
-                  :aria-label="__('Document')"
-                  dir="auto"
-                  class="prose prose-sm max-w-none"
-                />
+                  ref="columnEl"
+                  :class="paper.paged ? '' : ['mx-auto px-6 py-10', ...pageClasses(settings)]"
+                  :style="columnStyle"
+                >
+                  <!-- `v-html` because `Letter Head.validate` scrubs the markup
+                       on the way in — the same reason the settings screen
+                       renders its preview this way. -->
+                  <div
+                    v-if="paper.paged && headMarkup"
+                    ref="headEl"
+                    class="pointer-events-none mb-6 select-none border-b border-outline-gray-2 pb-3 opacity-60"
+                    aria-hidden="true"
+                    v-html="headMarkup"
+                  />
+                  <EditorContent
+                    :editor="instance"
+                    :aria-label="__('Document')"
+                    dir="auto"
+                    class="prose prose-sm max-w-none"
+                    :style="paper.paged ? typeStyle(settings) : {}"
+                  />
+                </div>
               </div>
             </FadedScroll>
           </template>
@@ -217,7 +248,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import {
@@ -243,8 +274,9 @@ import VersionPanel from '../versions/VersionPanel.vue'
 import TemplatePicker from '../drive/TemplatePicker.vue'
 import BrandMark from '../brand/BrandMark.vue'
 import SpaceName from '../brand/SpaceName.vue'
-import { bodyClasses, documentToolbar, pageClasses } from './toolbar'
-import { paperSetup, paperStyle } from '@/lib/paper/setup'
+import { documentToolbar, pageClasses } from './toolbar'
+import { geometry, typeStyle } from '@/lib/paper/setup'
+import { paginate } from '@/lib/paper/paginate'
 import { printHtml } from '@/lib/paper/print'
 import { useOutline } from '@/composables/useOutline'
 import { putFile } from '@/lib/files/attach'
@@ -292,8 +324,140 @@ const saved = ref(0)
  * chosen letter head's HTML, fetched once when a document that has one opens —
  * a document with no letter head, which is most of them, asks for nothing.
  */
-const paper = computed(() => paperSetup(settings.value))
+const paper = computed(() => geometry(settings.value))
 const headMarkup = ref('')
+
+const sheet = ref(null)
+const headEl = ref(null)
+const columnEl = ref(null)
+
+/*
+ * The pushes are written into a stylesheet of this sheet's own, and the
+ * attribute is how a rule finds it. `useId` rather than a counter because two
+ * documents can be open at once — a record's pane and the file behind it.
+ */
+const paperId = useId()
+let rules = null
+const pages = ref({ pages: 1, tops: [0], height: 0 })
+
+/*
+ * Where the pages break, measured rather than drawn.
+ *
+ * A hairline every page height was a guide and this is the thing itself: the
+ * blocks are laid out, the first one that would not fit is pushed onto the
+ * next page, and the letter head is drawn at the top of every page that
+ * results. It agrees with the printed page because the same engine lays the
+ * same blocks out at the same width in the same type — `docs/typography.py`
+ * is the other half of that, and `lib/paper/paginate.js` is this half.
+ */
+function repaginate() {
+  if (!paper.value.paged || !sheet.value) return
+  const body = sheet.value.querySelector('.ProseMirror')
+  if (!body) return
+
+  // The letter head is above the text on every page, so what it takes is what
+  // every page has less of. Its margin counts: it is the gap to the first
+  // paragraph, and that gap is on every page too.
+  const mark = headEl.value
+  const height = mark
+    ? mark.offsetHeight + parseFloat(getComputedStyle(mark).marginBottom || 0)
+    : 0
+
+  if (!rules) {
+    rules = document.createElement('style')
+    document.head.append(rules)
+  }
+
+  pages.value = paginate(
+    sheet.value, body, rules, `[data-paper="${paperId}"] .ProseMirror`,
+    paper.value, height,
+  )
+}
+
+/** After the DOM has settled, and never twice in one frame. */
+let pending = null
+function schedule() {
+  if (pending) return
+  pending = requestAnimationFrame(() => {
+    pending = null
+    repaginate()
+  })
+}
+
+/*
+ * Anything that changes a height changes where the pages break, and most of
+ * those are not transactions. The letter head's logo is the one that cost an
+ * afternoon: it was measured before the image had loaded, so every page after
+ * the first was laid out about a hundred pixels short and the repeated letter
+ * head landed in the middle of a paragraph. A web font arriving does the same
+ * thing more quietly.
+ *
+ * Watching the boxes rather than the causes: one observer over the letter head
+ * and the prose. It settles after one extra pass, because a second run on an
+ * unchanged layout produces the same margins and so no further resize.
+ */
+let watcher = null
+function watchSizes() {
+  if (!window.ResizeObserver || !sheet.value) return
+  watcher?.disconnect()
+  watcher = new ResizeObserver(schedule)
+  // The column, not the prose: the letter head is the thing that changes
+  // height when its logo arrives, and it is the prose's *sibling*. Watching
+  // the prose sees a box that moved rather than one that grew, and a box that
+  // moved fires nothing.
+  if (columnEl.value) watcher.observe(columnEl.value)
+
+  // And the images by name, because a letter head is usually a logo and an
+  // `<img>` with no width attribute is nothing at all until it has loaded.
+  // Measuring the page against a letter head that is about to get a hundred
+  // pixels taller is how every page after the first ends up wrong.
+  for (const img of sheet.value.querySelectorAll('img')) {
+    if (img.complete) continue
+    img.addEventListener('load', schedule, { once: true })
+    img.addEventListener('error', schedule, { once: true })
+  }
+}
+
+const sheetStyle = computed(() => {
+  if (!paper.value.paged) return {}
+  return {
+    width: `${paper.value.width}mm`,
+    maxWidth: '100%',
+    // Tall enough for the last page to be a whole page. A paged document that
+    // stops where the words stop is the pageless one with a border round it.
+    minHeight: `${pages.value.height || paper.value.pageHeight}px`,
+  }
+})
+
+/** The text column: the page's margins, and nothing else. */
+const columnStyle = computed(() =>
+  (paper.value.paged ? { padding: `${paper.value.margin}mm` } : {}),
+)
+
+const headStyle = (top) => ({
+  top: `${top + paper.value.marginPx}px`,
+  left: `${paper.value.marginPx}px`,
+  right: `${paper.value.marginPx}px`,
+})
+
+// Every reason the pages could move: the text changed, the page setup changed,
+// the letter head arrived, the window got narrower.
+watch(revision, schedule)
+watch(columnEl, watchSizes)
+watch([() => settings.value, headMarkup], schedule, { deep: true })
+onMounted(() => {
+  schedule()
+  nextTick(watchSizes)
+  window.addEventListener('resize', schedule)
+  // A face that arrives late re-measures everything it sets.
+  document.fonts?.ready?.then(schedule)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', schedule)
+  watcher?.disconnect()
+  rules?.remove()
+})
 
 watch(
   () => [paper.value.paged, paper.value.letterHead],
@@ -301,6 +465,9 @@ watch(
     if (!paged || !head) return (headMarkup.value = '')
     try {
       headMarkup.value = (await workspace.letterHead(head))?.content || ''
+      await nextTick()
+      watchSizes()
+      schedule()
     } catch {
       // A letter head somebody deleted is a document that prints without one,
       // which is what `paper.letter_head_html` decides on the server too.
@@ -555,32 +722,14 @@ onBeforeUnmount(() => {
 
 <style scoped>
 /*
- * The sheet, and where its pages end.
+ * The sheet.
  *
- * One repeating gradient rather than an element per page: the editor has no
- * idea how many pages there are — the browser works that out when it
- * paginates, and it only paginates when it prints. What it can say truthfully
- * is that a page is this tall, so a hairline every page-height is a guide
- * rather than a claim. `--page-height` comes from `paperStyle`.
- *
- * `background-origin: border-box` because the sheet's padding is the page
- * margin: measured from the padding box the first guide would land a margin
- * too low, and every one after it would drift.
+ * White paper on a grey desk, and nothing else — where the pages end is
+ * measured and drawn by `paginate()`, not painted on with a repeating
+ * gradient. A gradient could only ever say "a page is this tall"; the gaps say
+ * "this page ends here", which is a different and truer claim.
  */
 .doc-sheet {
-  /* At least one page. A paged document shorter than its page is still a
-     page — a sheet that stops where the words stop is the pageless layout
-     with a border round it. */
-  min-height: var(--page-height);
   background-color: #ffffff;
-  background-image: linear-gradient(
-    to bottom,
-    transparent calc(100% - 1px),
-    rgb(0 0 0 / 8%) calc(100% - 1px)
-  );
-  background-size: 100% var(--page-height);
-  background-repeat: repeat-y;
-  background-origin: border-box;
-  background-clip: border-box;
 }
 </style>

@@ -144,7 +144,10 @@ def test_a_document_leaves_the_right_way_round():
 	processor, somebody's mail client — so it has to carry its own direction."""
 	source = (ROOT / "apps/oneapp/oneapp/oneapp_core/docs/export.py").read_text()
 	assert 'dir="{direction}"' in source
-	assert "[dir=rtl] td" in source, "the exported table still aligns to the left"
+	# The type scale moved to `typography.py`, which the editor is measured
+	# against too — so the mirrored rules live there with the rest of it.
+	scale = (ROOT / "apps/oneapp/oneapp/oneapp_core/docs/typography.py").read_text()
+	assert "[dir=rtl] td" in scale, "the exported table still aligns to the left"
 
 
 def test_the_two_lists_of_right_to_left_languages_agree():

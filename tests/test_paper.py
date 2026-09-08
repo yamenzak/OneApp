@@ -30,6 +30,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 PAPER = ROOT / "apps/oneapp/oneapp/oneapp_core/paper.py"
 PAPER_JS = ROOT / "apps/oneapp/frontend/src/lib/paper/setup.js"
+PAGINATE_JS = ROOT / "apps/oneapp/frontend/src/lib/paper/paginate.js"
 
 
 @pytest.fixture
@@ -254,3 +255,93 @@ def test_a_letter_head_rides_in_the_same_thead(paper, sheet_printing, monkeypatc
 def test_cells_are_escaped(sheet_printing):
 	assert sheet_printing._cell({"A1": "<script>"}, 1, 1) == "&lt;script&gt;"
 	assert sheet_printing._cell({}, 1, 1) == ""
+
+
+# --------------------------------------------------------------------------- #
+# The editor and the printer are set in the same type
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def typography(stub_frappe):
+	from oneapp.oneapp_core.docs import typography as module
+
+	return module
+
+
+def _js_faces() -> dict:
+	source = PAPER_JS.read_text()
+	block = source[source.index("export const FACES") : source.index("export const LEADING")]
+	return dict(re.findall(r"(\w+|''): '([^']*)',", block))
+
+
+def _js_leading() -> dict:
+	source = PAPER_JS.read_text()
+	line = source[source.index("export const LEADING") :].split("\n")[0]
+	return {name: float(value) for name, value in re.findall(r"(\w+): ([\d.]+)", line)}
+
+
+def test_the_sheet_is_set_in_the_face_the_page_prints_in(typography):
+	# Not Inter. A paged document is measured on screen and printed by a
+	# different renderer, and a web font the exported file cannot carry is a
+	# document that repaginates on the way to the printer.
+	faces = _js_faces()
+	assert faces["''"] == typography.FONT_STACK
+	assert faces["serif"] == typography.SERIF_STACK
+	assert faces["mono"] == typography.MONO_STACK
+	assert "Inter" not in typography.FONT_STACK
+
+
+def test_the_two_agree_on_what_line_spacing_means(typography):
+	assert _js_leading() == typography.LEADING
+
+
+def test_every_face_the_dialog_offers_is_one_the_export_knows(typography):
+	source = ROOT / "apps/oneapp/frontend/src/components/docs/toolbar.js"
+	block = source.read_text()
+	block = block[block.index("export const FONTS") : block.index("export const SPACINGS")]
+	offered = set(re.findall(r"^\s*'?(\w*)'?: \{", block, re.M))
+	assert offered == set(typography.FACES)
+
+
+def test_the_type_scale_is_written_out_rather_than_a_class(typography):
+	# The exported file is opened where Tailwind is not, so `prose-sm` has to
+	# arrive as declarations rather than as a class name.
+	css = typography.sheet({})
+	assert "prose" not in css
+	assert "font-size: 14px" in css
+	assert "line-height: 1.7142857" in css
+
+
+def test_a_document_carries_its_own_face_and_leading(typography):
+	css = typography.sheet({"font": "serif", "spacing": "loose"})
+	assert typography.SERIF_STACK in css
+	assert "line-height: 2" in css
+
+
+# --------------------------------------------------------------------------- #
+# Where the pages break
+# --------------------------------------------------------------------------- #
+
+def test_the_push_is_a_stylesheet_rather_than_an_inline_style():
+	"""The one that cost an afternoon.
+
+	Setting `style.marginTop` on a paragraph inside the editable looks like it
+	works and then silently undoes itself: ProseMirror watches the editable for
+	mutations it did not make and redraws the node from state, taking the
+	margin with it. A rule in a `<style>` element outside the editable is not a
+	mutation of the editable at all.
+	"""
+	source = PAGINATE_JS.read_text()
+	assert "nth-child" in source
+	assert "rules.textContent" in source
+	code = "\n".join(
+		line for line in source.splitlines()
+		if not line.lstrip().startswith(("*", "/*", "//"))
+	)
+	assert "style.margin" not in code
+
+
+def test_a_heading_is_never_the_last_thing_on_a_page():
+	source = PAGINATE_JS.read_text()
+	assert "ORPHANS" in source
+	assert set(re.findall(r"'(H\d)'", source)) == {"H1", "H2", "H3", "H4", "H5", "H6"}
