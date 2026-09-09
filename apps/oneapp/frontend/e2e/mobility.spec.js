@@ -103,9 +103,17 @@ test('the aggregate tier reaches the charts', async ({ page }) => {
   // the bar cannot draw before it answers — and then the numbers. The frame is
   // on screen after the first, so waiting for `[data-slot="insights"]` above is
   // no longer the same thing as waiting for data.
-  await expect(screen.getByText('Readings')).toBeVisible({ timeout: 20_000 })
-  await expect(screen.getByText('On time')).toBeVisible({ timeout: 20_000 })
-  await expect(screen.getByText('Busiest hour')).toBeVisible({ timeout: 20_000 })
+  //
+  // Scoped to the headline row rather than matched anywhere on the screen.
+  // These words are not unique here and never will be: "Readings" opens a chart
+  // subtitle further down and "On time" is a series a legend can hide, so a
+  // loose match resolved to two elements and the test passed or failed on
+  // whether the assertion beat that chart to the DOM. A test decided by which
+  // of two components mounts first is not testing what it says it is.
+  const headline = screen.locator('[data-slot="insights-headline"]')
+  await expect(headline.getByText('Readings')).toBeVisible({ timeout: 20_000 })
+  await expect(headline.getByText('On time')).toBeVisible({ timeout: 20_000 })
+  await expect(headline.getByText('Busiest hour')).toBeVisible({ timeout: 20_000 })
 
   // Every chart draws into an SVG or a canvas of its own. Four plots, so four
   // of them; fewer means one silently failed to render its data.

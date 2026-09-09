@@ -62,7 +62,10 @@
         <!-- A height, and it has to be here: a card with a trend across its
              bottom is taller than one with a number in it, and the grid gives
              every cell the height of the shortest unless told otherwise. -->
-        <div class="grid auto-rows-[7.5rem] grid-cols-2 gap-3 lg:grid-cols-4">
+        <div
+          class="grid auto-rows-[7.5rem] grid-cols-2 gap-3 lg:grid-cols-4"
+          data-slot="insights-headline"
+        >
           <NumberCard
             v-for="one in headline"
             :key="one.label"
