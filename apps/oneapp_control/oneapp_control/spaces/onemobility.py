@@ -90,7 +90,7 @@ SCREENS = [
 	{
 		"screen": "lines", "label": "Lines", "singular": "Line",
 		"icon": "lucide-route", "document_type": "Transit Line",
-		"fields": "short_name,line_name,agency,mode,status",
+		"fields": "emoji,short_name,line_name,agency,mode,status",
 		"order_by": "short_name asc",
 		"view_types": "list,board,grid,dashboard",
 		"status_field": "status",
@@ -117,7 +117,7 @@ SCREENS = [
 		# first thing that has one.
 		"screen": "stops", "label": "Stops", "singular": "Stop",
 		"icon": "lucide-map-pin", "document_type": "Transit Stop",
-		"fields": "stop_name,stop_code,zone,status",
+		"fields": "emoji,stop_name,stop_code,zone,status",
 		"order_by": "stop_name asc",
 		"view_types": "map,list,dashboard",
 		"status_field": "status",

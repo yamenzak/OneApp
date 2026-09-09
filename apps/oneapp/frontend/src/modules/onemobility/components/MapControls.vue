@@ -18,7 +18,7 @@
   >
     <div class="flex flex-col overflow-hidden rounded-6 border border-outline-gray-2
                 bg-surface-elevation-2 shadow-sm">
-      <Popover v-model:open="layersOpen">
+      <Popover v-model:open="layersOpen" align="end">
         <template #trigger>
           <Button
             variant="ghost"
@@ -76,7 +76,7 @@
         the thing being chosen is a picture, and a picture is chosen by looking
         at the map it lands on.
       -->
-      <Popover v-model:open="shapesOpen">
+      <Popover v-model:open="shapesOpen" align="end">
         <template #trigger>
           <Button
             variant="ghost"

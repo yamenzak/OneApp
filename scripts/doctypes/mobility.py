@@ -127,6 +127,8 @@ doctype(
     search_fields="agency_name",
     fields=[
         f("agency_name", "Data", "Agency", reqd=1, in_list_view=1, unique=1),
+        f("emoji", "Data", "Emoji", length=16,
+          description="Shown wherever this agency is named."),
         f("agency_key", "Data", "Key", reqd=1,
           description="What the feed calls it. The natural key two sources are "
                       "compared on."),
@@ -167,6 +169,14 @@ doctype(
         # One line drawn differently from the rest of its mode: a heritage tram
         # on a bus network, a rail replacement that is a coach. Empty means
         # "whatever this mode is drawn as", which is what nearly every line is.
+        # The glyph a person recognises before they have read anything. Not a
+        # replacement for the map marker — an emoji is a fixed-colour side
+        # elevation, so it cannot carry occupancy and lies on its side the
+        # moment the symbol layer rotates it to a bearing — but everywhere the
+        # line is *named*, it is the fastest identifier there is.
+        f("emoji", "Data", "Emoji", length=16,
+          description="Shown wherever this line is named. Empty follows the "
+                      "mode's own."),
         f("marker_shape", "Select", "Drawn as",
           options="\nBus\nTram\nMetro\nRail\nFerry\nCable\nOther",
           description="Overrides the mode's own silhouette on the map. Empty "
@@ -192,6 +202,8 @@ doctype(
     ],
     fields=[
         f("stop_name", "Data", "Stop", reqd=1, in_list_view=1),
+        f("emoji", "Data", "Emoji", length=16,
+          description="Shown wherever this stop is named."),
         f("stop_code", "Data", "Code", in_list_view=1,
           description="The number on the pole, which is what somebody phoning "
                       "in will read out."),
@@ -277,6 +289,11 @@ doctype(
         f("shape", "Select", "Drawn as", reqd=1, in_list_view=1,
           options=MARKER_SHAPES,
           description="Which silhouette the map draws for this mode."),
+        # The mode's own glyph, which is what nearly every line ends up wearing:
+        # a network of two hundred buses wants 🚌 once, not two hundred times.
+        f("emoji", "Data", "Emoji", length=16, in_list_view=1,
+          description="Shown beside every line of this mode that has not "
+                      "chosen its own."),
     ],
     **TENANT,
 )

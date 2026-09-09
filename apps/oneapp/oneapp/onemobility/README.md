@@ -641,6 +641,26 @@ permissions, a history and an audit trail like every other document, and no
 screen of its own — the picker is on the map, because what is being chosen is a
 picture and a picture is chosen by looking at where it lands.
 
+**And an emoji, which is a third thing and is not a marker.** A glyph is the
+fastest identifier a person has — 🚇 beside U6 is read before the U or the 6 —
+and it cannot be the thing that moves on the map. That was settled by rendering
+them rather than arguing: an emoji is a fixed-colour bitmap, so it cannot carry
+occupancy the way a drawn silhouette can; it is a front or side elevation, so
+the symbol layer rotating it to a bearing lays the bus on its side; and at the
+sixteen pixels a marker actually occupies it is mush. So the glyph goes
+everywhere the thing is *named* — a list, a record, the facet bar, a hover card,
+the isolate button — and nowhere it is drawn. It follows the same ladder as the
+shape: the line's own, then its mode's, then a default, so a network nobody has
+decorated still reads at a glance. Stops and agencies carry one too.
+
+The glyph is checked on the way in rather than trusted: at most eight code
+points (a flag is two, a skin tone adds one, a family joined by zero-width
+joiners is seven), and nothing with an ASCII letter, digit or space in it. That
+is frappe-ui's own definition of an emoji — `Icon` renders anything else as
+nothing at all — asked before the value is stored. It is the same rule as
+`onespace/spaceview/saved.py` minus the lucide half: a class name reaching the
+DOM from a customer's feed is not a door worth leaving open.
+
 Resolved on the server and sent already resolved, so the browser never carries
 the mapping table: `shape()` hands it a line that already knows what it looks
 like. `tests/test_marker_shapes.py` holds the three lists that must agree and

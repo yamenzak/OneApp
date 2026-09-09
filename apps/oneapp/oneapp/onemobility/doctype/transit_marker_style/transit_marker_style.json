@@ -8,7 +8,8 @@
  "engine": "InnoDB",
  "field_order": [
   "mode",
-  "shape"
+  "shape",
+  "emoji"
  ],
  "fields": [
   {
@@ -29,6 +30,14 @@
    "label": "Drawn as",
    "options": "Bus\nTram\nMetro\nRail\nFerry\nCable\nOther",
    "reqd": 1
+  },
+  {
+   "description": "Shown beside every line of this mode that has not chosen its own.",
+   "fieldname": "emoji",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Emoji",
+   "length": 16
   }
  ],
  "index_web_pages_for_search": 1,

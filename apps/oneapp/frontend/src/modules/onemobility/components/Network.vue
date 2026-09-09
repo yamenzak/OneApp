@@ -82,7 +82,10 @@
             :style="{ backgroundColor: inkOfLine(chosen.line) }"
           >{{ shortNameOf(chosen.line) }}</span>
           <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-medium text-ink-gray-8">{{ chosen.vehicle }}</p>
+            <p class="truncate text-sm font-medium text-ink-gray-8">
+              <span v-if="emojiOfLine(chosen.line)">{{ emojiOfLine(chosen.line) }}</span>
+              {{ chosen.vehicle }}
+            </p>
             <p class="truncate text-xs text-ink-gray-5">{{ nameOfLine(chosen.line) }}</p>
           </div>
           <Button
@@ -549,6 +552,10 @@ function shortNameOf(name) {
 function nameOfLine(name) {
   return lines.value.find((one) => one.name === name)?.line_name || ''
 }
+/** The glyph a line wears. Resolved on the server — see `onemobility/markers.py`. */
+function emojiOfLine(name) {
+  return lines.value.find((one) => one.name === name)?.emoji || ''
+}
 function inkOfLine(name) {
   const at = lines.value.findIndex((one) => one.name === name)
   return lineInk(lines.value[at], Math.max(0, at))
@@ -817,17 +824,21 @@ function lineOfVehicle(vehicle) {
  * shape nobody else could see would be lying about what it had done. The round
  * trip is one small write and the map redraws in the same frame it returns.
  */
-async function restyle({ mode, shape }) {
-  await network.setMarkerStyle({ mode, shape })
+async function restyle({ mode, shape, emoji }) {
+  await network.setMarkerStyle({ mode, shape: shape || '', emoji_glyph: emoji || '' })
   for (const line of lines.value) {
     if (String(line.mode || '').toLowerCase() === String(mode).toLowerCase()) {
       // Only where the line has not overridden its mode: a heritage tram stays
-      // a tram when the whole Bus fleet is redrawn.
-      if (!line.marker_shape) line.marker = shape
+      // a tram, and a line with its own glyph keeps it, when the whole Bus
+      // fleet is redrawn.
+      if (shape && !line.marker_shape) line.marker = shape
+      if (emoji && !line.emoji_own) line.emoji = emoji
     }
   }
   for (const one of markerStyles.value) {
-    if (one.mode === mode) one.shape = shape
+    if (one.mode !== mode) continue
+    if (shape) one.shape = shape
+    if (emoji) one.emoji = emoji
   }
   // The images are keyed by shape and are already registered for all seven, so
   // nothing has to be redrawn — only the features that name them.
@@ -1288,7 +1299,8 @@ async function draw() {
     isolate(already ? null : {
       kind: 'line',
       name: line.name,
-      label: line.short_name || line.line_name || line.name,
+      label: [line.emoji, line.short_name || line.line_name || line.name]
+        .filter(Boolean).join(' '),
     })
   })
 
@@ -1375,7 +1387,9 @@ function stopCard(hit) {
     ? `<p class="text-2xs text-ink-amber-3">${escapeHtml(__('Nobody declared this stop'))}</p>`
     : ''
   return `<div class="flex flex-col gap-0.5">
-    <p class="text-xs font-medium text-ink-gray-8">${escapeHtml(hit.properties.label || '')}</p>
+    <p class="text-xs font-medium text-ink-gray-8">
+      ${escapeHtml(hit.properties.emoji || '')} ${escapeHtml(hit.properties.label || '')}
+    </p>
     <p class="text-2xs text-ink-gray-5">${escapeHtml(lines)}</p>${inferred}</div>`
 }
 
@@ -1384,7 +1398,9 @@ function vehicleCard(hit) {
   const found = drawn.value.find((one) => one.vehicle === hit.properties.vehicle)
   const band = occupancyBand(found?.occupancy)
   return `<div class="flex flex-col gap-0.5">
-    <p class="text-xs font-medium text-ink-gray-8">${escapeHtml(hit.properties.vehicle || '')}</p>
+    <p class="text-xs font-medium text-ink-gray-8">
+      ${escapeHtml(line?.emoji || '')} ${escapeHtml(hit.properties.vehicle || '')}
+    </p>
     <p class="text-2xs text-ink-gray-5">${escapeHtml(line?.line_name || '')}</p>
     <p class="flex items-center gap-1 text-2xs text-ink-gray-6">
       <span style="background:${escapeHtml(bandInk(band))}"
@@ -1402,6 +1418,7 @@ function lineCard(hit) {
     <p class="flex items-center gap-1.5 text-xs font-medium text-ink-gray-8">
       <span style="background:${escapeHtml(hit.properties.colour || '#888')}"
             class="inline-block size-2 rounded-full"></span>
+      ${escapeHtml(line.emoji || '')}
       ${escapeHtml(line.short_name || '')} ${escapeHtml(line.line_name || '')}
     </p>
     <p class="text-2xs text-ink-gray-5">${escapeHtml(
@@ -1443,6 +1460,7 @@ function stopFeatures() {
         properties: {
           name: one.name,
           label: one.stop_name,
+          emoji: one.emoji || '',
           status: one.status,
           // How many lines have actually been seen here — observed, not
           // declared. See `network.py`'s `_served`.

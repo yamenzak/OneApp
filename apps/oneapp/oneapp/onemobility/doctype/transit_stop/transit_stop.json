@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "stop_name",
+  "emoji",
   "stop_code",
   "stop_key",
   "status",
@@ -27,6 +28,13 @@
    "in_list_view": 1,
    "label": "Stop",
    "reqd": 1
+  },
+  {
+   "description": "Shown wherever this stop is named.",
+   "fieldname": "emoji",
+   "fieldtype": "Data",
+   "label": "Emoji",
+   "length": 16
   },
   {
    "description": "The number on the pole, which is what somebody phoning in will read out.",

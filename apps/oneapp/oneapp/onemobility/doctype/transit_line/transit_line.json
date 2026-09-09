@@ -15,6 +15,7 @@
   "cb_line_kind",
   "mode",
   "colour",
+  "emoji",
   "marker_shape",
   "feed",
   "sec_line_shape",
@@ -74,6 +75,13 @@
    "fieldname": "colour",
    "fieldtype": "Color",
    "label": "Colour"
+  },
+  {
+   "description": "Shown wherever this line is named. Empty follows the mode's own.",
+   "fieldname": "emoji",
+   "fieldtype": "Data",
+   "label": "Emoji",
+   "length": 16
   },
   {
    "description": "Overrides the mode's own silhouette on the map. Empty follows the mode.",

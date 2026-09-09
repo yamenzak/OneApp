@@ -232,6 +232,13 @@ test('the controls are a rail and the legend is a key', async ({ page }) => {
   const picker = page.locator('[data-slot="marker-picker"]')
   await expect(picker).toBeVisible({ timeout: 20_000 })
   await expect(picker.getByRole('button', { name: 'Tram' })).toHaveCount(7)
+
+  // And a glyph beside each, which is the other half of what a mode wears:
+  // the silhouette is what moves on the map, the emoji is what it is called
+  // in a list, a chip and a hover card.
+  await expect(
+    picker.getByRole('button', { name: 'The glyph beside this mode' }),
+  ).toHaveCount(7)
   expectNoRealErrors(errors)
 })
 

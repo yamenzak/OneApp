@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "agency_name",
+  "emoji",
   "agency_key",
   "timezone",
   "cb_agency_more",
@@ -22,6 +23,13 @@
    "label": "Agency",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "description": "Shown wherever this agency is named.",
+   "fieldname": "emoji",
+   "fieldtype": "Data",
+   "label": "Emoji",
+   "length": 16
   },
   {
    "description": "What the feed calls it. The natural key two sources are compared on.",

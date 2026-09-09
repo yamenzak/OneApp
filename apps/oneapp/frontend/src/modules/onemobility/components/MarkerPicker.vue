@@ -14,7 +14,7 @@
     this cannot come to disagree with the thing it sets.
   -->
   <div
-    class="flex w-[min(23rem,92vw)] flex-col gap-2 p-3"
+    class="flex w-[min(21rem,92vw)] flex-col gap-2 p-3"
     data-slot="marker-picker"
   >
     <p class="text-xs font-medium text-ink-gray-7">{{ __('How each mode is drawn') }}</p>
@@ -25,7 +25,42 @@
 
     <div class="flex max-h-[22rem] flex-col gap-0.5 overflow-y-auto">
       <div v-for="one in styles" :key="one.key" class="flex items-center gap-1">
-        <span class="w-14 shrink-0 truncate text-xs text-ink-gray-7">{{ one.mode }}</span>
+        <span class="w-11 shrink-0 truncate text-xs text-ink-gray-7">{{ one.mode }}</span>
+        <!--
+          The glyph, which is a different job from the silhouette and sits
+          apart from it. The silhouette is what moves on the map; this is what
+          this mode is *called* in a list, a chip and a hover card. An emoji
+          cannot do the first — fixed colour, and a side elevation turned to a
+          bearing is a bus lying down — and is the fastest thing there is at
+          the second.
+        -->
+        <Popover align="end">
+          <template #trigger>
+            <Button
+              variant="ghost"
+              :disabled="!mayWrite"
+              :tooltip="__('The glyph beside this mode')"
+              :aria-label="__('The glyph beside this mode')"
+            >
+              <span class="text-base leading-none">{{ one.emoji || '·' }}</span>
+            </Button>
+          </template>
+          <template #default>
+            <div class="grid w-56 grid-cols-8 gap-0.5 p-2">
+              <Button
+                v-for="glyph in GLYPHS"
+                :key="glyph"
+                variant="ghost"
+                :aria-label="glyph"
+                :class="one.emoji === glyph ? 'bg-surface-gray-3' : ''"
+                @click="emit('pick', { mode: one.mode, emoji: glyph })"
+              >
+                <span class="text-base leading-none">{{ glyph }}</span>
+              </Button>
+            </div>
+          </template>
+        </Popover>
+        <span class="mx-0.5 h-4 w-px shrink-0 bg-surface-gray-3" />
         <!-- Seven in one row and no wrapping: the point of a picker made of
              pictures is that they are compared side by side, and a row that
              wraps compares four with three. -->
@@ -57,7 +92,7 @@ import { casingInk } from '@/modules/onemobility/lib/palette'
 import { MODES, SHAPE_NAMES, swatchUrl } from '@/modules/onemobility/lib/markers'
 import { tokenInk } from '@/modules/onespace/lib/screen/ink'
 import { __ } from '@/shared/lib/runtime/translate'
-import { Button } from '@/ui'
+import { Button, Popover } from '@/ui'
 
 defineProps({
   /** `{ mode, key, shape }` per mode, from `markers.marker_styles`. */
@@ -66,6 +101,21 @@ defineProps({
 })
 
 const emit = defineEmits(['pick'])
+
+/**
+ * The glyphs on offer. Not "any emoji": a picker of eighteen hundred is a
+ * search box, and what somebody is choosing here is one of the forty things
+ * that move people. A workspace that wants something else can still type it
+ * into the record — this is the shortcut, not the gate.
+ */
+const GLYPHS = [
+  '🚇', '🚊', '🚋', '🚞', '🚝', '🚄', '🚅', '🚆',
+  '🚈', '🚉', '🚂', '🚃', '🚌', '🚍', '🚐', '🚎',
+  '🚏', '🚑', '🚒', '🚓', '🚕', '🚖', '🚗', '🚙',
+  '🚘', '🚚', '🚛', '🚜', '🛺', '🏍️', '🛵', '🚲',
+  '🦽', '🦼', '⛴️', '🚢', '🛳️', '🚤', '🛥️', '⛵',
+  '🚡', '🚠', '🚦', '🚥', '🚧', '🏎️', '🚀', '🛻',
+]
 
 /**
  * Every silhouette, drawn once.

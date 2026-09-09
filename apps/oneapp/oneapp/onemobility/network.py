@@ -31,7 +31,7 @@ def shape() -> dict:
         "Transit Line",
         filters={"status": ("!=", "Retired")},
         fields=["name", "short_name", "line_name", "mode", "colour", "shape", "status",
-                "marker_shape"],
+                "marker_shape", "emoji"],
         order_by="short_name asc",
         limit_page_length=0,
     )
@@ -44,7 +44,7 @@ def shape() -> dict:
     stops = frappe.get_all(
         "Transit Stop",
         filters={"status": ("!=", "Closed")},
-        fields=["name", "stop_name", "stop_code", "latitude", "longitude", "status"],
+        fields=["name", "stop_name", "stop_code", "latitude", "longitude", "status", "emoji"],
         order_by="stop_name asc",
         limit_page_length=0,
     )
