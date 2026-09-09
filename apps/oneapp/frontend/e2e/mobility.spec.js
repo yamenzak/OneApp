@@ -75,9 +75,17 @@ test('a doctype with a position gets a map, from the engine', async ({ page }) =
   await page.goto('/one/space/onemobility?screen=stops&type=map')
 
   await canvasIn(page, 'map')
-  // The attribution is the map saying where its ground came from. It is drawn
-  // whether or not the tiles arrive, because the credit is owed to the data.
-  await expect(page.getByText(/OpenStreetMap/).first()).toBeVisible()
+  // The credit follows the ground, and this bench has no route out to one.
+  //
+  // It used to be asserted here unconditionally, and that was right while the
+  // ground was raster: we authored the style, so we supplied the credit and it
+  // was drawn whether or not a single tile arrived. A vector style carries its
+  // own — the full linked one, out of the TileJSON — so on a bench that cannot
+  // reach the style there is no credit, and nothing that owes one either: what
+  // draws is a flat colour and the records on it. Which rule produces which
+  // credit is `tests/test_basemap.py`, where it can be asserted for all four
+  // grounds rather than for whichever one this machine can reach.
+  await expect(page.getByText(/OpenStreetMap/)).toHaveCount(0)
 
   // And the same records are still a list: a view type is a way of looking at
   // a screen, not a different screen.

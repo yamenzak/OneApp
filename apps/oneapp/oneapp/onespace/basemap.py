@@ -74,7 +74,22 @@ STYLES = {
 #: Quiet grey, thin roads, low-contrast labels — so a route line and a moving
 #: vehicle are the loudest things on the screen.
 DEFAULT_STYLE = STYLES["Positron"]
-DEFAULT_ATTRIBUTION = "© OpenStreetMap contributors © OpenFreeMap"
+
+#: Who to credit when nothing else does — which is only the raster path.
+#:
+#: **A style document credits itself.** Every style here names a TileJSON, and
+#: that document carries the full linked attribution the licence actually wants:
+#: OpenFreeMap, OpenMapTiles, and OpenStreetMap, each as a link. MapLibre reads
+#: it and draws it, so sending our own alongside it stacked two credits into one
+#: line — "© OpenStreetMap contributors © OpenFreeMap | OpenFreeMap ©
+#: OpenMapTiles Data from OpenStreetMap" — saying the same thing twice, once
+#: less completely.
+#:
+#: A raster template is a URL and nothing else: there is no document to read a
+#: credit out of, so one is needed. This is the minimum true of any OSM-derived
+#: store; an operator pointing at their own should name themselves, which is
+#: what ``oneapp_map_attribution`` is for.
+DEFAULT_ATTRIBUTION = "© OpenStreetMap contributors"
 
 #: What a workspace gets before anybody opens the picker. Quiet rather than
 #: Full: every screen that draws a map draws *records* on it, and buildings and
@@ -114,6 +129,12 @@ def boot() -> dict:
 	dark = (frappe.conf.get("oneapp_map_tiles_dark") or "").strip()
 	prefer = chosen()
 
+	# The instance's own answer, before this workspace had a say. Sent alongside
+	# the resolved one because the picker resolves the *next* style itself: this
+	# payload was written when the page loaded, so a reader going back to "Follow
+	# the instance" would otherwise be handed whatever they had picked before.
+	instance = style or (DEFAULT_STYLE if not tiles else "")
+
 	# An explicit empty string is how an instance says "no third-party tiles":
 	# `frappe.conf` cannot hold a false that is distinguishable from unset, so
 	# the opt-out is its own key rather than an empty value for another.
@@ -121,12 +142,6 @@ def boot() -> dict:
 	# A workspace that picks Plain says the same thing for itself, which is the
 	# air-gapped instance's setting made available to one customer on a shared
 	# one. Either way nothing is fetched.
-	# The instance's own answer, before this workspace had a say. Sent alongside
-	# the resolved one because the picker resolves the *next* style itself: this
-	# payload was written when the page loaded, so a reader going back to "Follow
-	# the instance" would otherwise be handed whatever they had picked before.
-	instance = style or (DEFAULT_STYLE if not tiles else "")
-
 	if frappe.conf.get("oneapp_map_plain") or prefer["pick"] == "Plain":
 		return {"style": "", "tiles": "", "dark": "", "attribution": "", **prefer,
 		        "styles": dict(STYLES), "instance": instance, "plain": True}
@@ -136,12 +151,16 @@ def boot() -> dict:
 	# a bench at their own tile store has done so for a reason, and a customer
 	# picking "Bright" should not send them back off it.
 	picked = STYLES.get(prefer["pick"], "")
+	# An operator's own credit always wins and is always drawn — they may be
+	# serving tiles nobody else knows the provenance of. Otherwise: nothing on
+	# the style path, because the style says it better than we would.
+	credit = (frappe.conf.get("oneapp_map_attribution") or "").strip()
+	resolved = style or picked or (DEFAULT_STYLE if not tiles else "")
 	return {
-		"style": style or picked or (DEFAULT_STYLE if not tiles else ""),
+		"style": resolved,
 		"tiles": tiles,
 		"dark": dark or tiles,
-		"attribution": (frappe.conf.get("oneapp_map_attribution") or "").strip()
-		or DEFAULT_ATTRIBUTION,
+		"attribution": credit or ("" if resolved else DEFAULT_ATTRIBUTION),
 		# By name *and* URL, for the same reason `instance` is here.
 		"styles": dict(STYLES),
 		"instance": instance,

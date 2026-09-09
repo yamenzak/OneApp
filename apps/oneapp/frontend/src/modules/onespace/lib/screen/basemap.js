@@ -54,7 +54,16 @@ export function preferred() {
   }
 }
 
-/** Who to credit, for the attribution control. */
+/**
+ * Who to credit, for the attribution control — and usually nobody, now.
+ *
+ * A vector style names a TileJSON, and that document carries the full linked
+ * attribution the licence wants. MapLibre reads it and draws it, so anything we
+ * add sits *beside* it: the first version of this stacked two credits into one
+ * line that said the same thing twice, once less completely. So the server
+ * sends one only where there is no document to read it out of — a raster
+ * template — or where an operator has named their own.
+ */
 export function attribution() {
   return (configured?.attribution || '').trim()
 }

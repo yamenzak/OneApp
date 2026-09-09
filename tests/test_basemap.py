@@ -38,7 +38,6 @@ def test_a_bench_that_says_nothing_gets_the_quiet_vector_style(basemap, stub_fra
 	workspace(stub_frappe)
 	out = basemap.boot()
 	assert out["style"] == basemap.DEFAULT_STYLE
-	assert out["attribution"] == basemap.DEFAULT_ATTRIBUTION
 	assert not out["plain"]
 
 
@@ -100,6 +99,30 @@ def test_a_workspace_may_refuse_them_for_itself(basemap, stub_frappe):
 	stub_frappe.conf = {}
 	workspace(stub_frappe, map_style="Plain")
 	assert basemap.boot()["plain"]
+
+
+def test_a_style_credits_itself_and_is_not_credited_twice(basemap, stub_frappe):
+	"""Every style here names a TileJSON that carries the full linked
+	attribution, and MapLibre draws it. Sending ours alongside it stacked two
+	credits into one line saying the same thing twice, once less completely."""
+	stub_frappe.conf = {}
+	workspace(stub_frappe, map_style="Bright")
+	assert basemap.boot()["attribution"] == ""
+
+
+def test_a_raster_template_has_no_document_to_credit_it(basemap, stub_frappe):
+	"""A tile template is a URL and nothing else, so a credit is needed and this
+	is the minimum true of any OSM-derived store."""
+	stub_frappe.conf = {"oneapp_map_tiles": "https://tiles.internal/{z}/{x}/{y}.png"}
+	workspace(stub_frappe)
+	assert basemap.boot()["attribution"] == basemap.DEFAULT_ATTRIBUTION
+
+
+def test_an_operator_who_names_a_credit_always_gets_it(basemap, stub_frappe):
+	"""They may be serving tiles nobody else knows the provenance of."""
+	stub_frappe.conf = {"oneapp_map_attribution": "© The Ordnance Survey"}
+	workspace(stub_frappe, map_style="Bright")
+	assert basemap.boot()["attribution"] == "© The Ordnance Survey"
 
 
 def test_a_raster_bench_is_still_a_raster_bench(basemap, stub_frappe):
