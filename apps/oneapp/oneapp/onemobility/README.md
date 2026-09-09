@@ -526,6 +526,31 @@ is drawn faintly, because it is a weaker claim rather than a cooler one. Below
 eight readings a cell is dropped rather than faded — the honest thing to say
 about one bus that once went through is nothing.
 
+**The bins are bins; the edges were a mistake.** The argument above is about
+what is *measured*, and the first version acted as though it settled the
+rendering too — each cell went down as its own polygon, so an answer that was
+correct about lateness looked like a spreadsheet laid over a city. Worse, the
+blockiness read as precision the data does not have: a cell boundary is an
+artefact of where the grid happened to fall, not a place where the network
+changes.
+
+So the grid stays and the edges go. `frontend/src/modules/onemobility/lib/surface.js`
+paints the field into a canvas at one pixel per cell and hands it to MapLibre as
+a canvas source with linear resampling; the GPU interpolates it up to the screen,
+which is the soft falloff a heatmap is expected to have, off numbers that still
+mean the mean.
+
+The smoothing is a **normalised convolution** and that is the part worth getting
+right. A plain blur over a grid with holes in it drags every cell beside a hole
+towards zero, so a genuinely late junction next to unsurveyed ground would read
+as less late than it is. Blurring the weighted values and the weights separately
+and dividing one by the other — Knutsson's method — means a hole contributes to
+neither sum: the result is the mean of the neighbours that *are* there, and the
+blurred weight becomes the alpha, so a place nothing has been seen is
+transparent rather than cool. Alpha is scaled to the busiest place in the answer
+rather than to an absolute, because a kernel spreads an isolated cell over nine
+and reading it absolutely made the whole field a wash.
+
 A cell is a rounded latitude and longitude, and how rounded follows the zoom:
 kilometre cells for the shape of a city, hundred-metre for a district,
 ten-metre once a street fills the screen. Three buckets rather than a

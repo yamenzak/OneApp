@@ -318,7 +318,8 @@ import {
   FALLBACK as FALLBACK_SHAPE,
   SHAPES as ART_SHAPES,
 } from '@/modules/onemobility/lib/art'
-import { OVERLAYS, overlayFor, rampStops } from '@/modules/onemobility/lib/layers'
+import { OVERLAYS, overlayFor } from '@/modules/onemobility/lib/layers'
+import { paintSurface } from '@/modules/onemobility/lib/surface'
 import { advance, blend, prepare } from '@/modules/onemobility/lib/motion'
 import {
   bearingBetween,
@@ -356,6 +357,14 @@ const SPEEDS = [1, 4, 12]
 const TRACK_W = 1000
 
 const canvas = ref(null)
+/**
+ * The bitmap the analytical surface is painted into.
+ *
+ * Never in the document: MapLibre reads it as a texture, and putting it on the
+ * page would be a second, differently-sized copy of the same thing for a reader
+ * to be confused by.
+ */
+const field = document.createElement('canvas')
 const ready = ref(false)
 const failed = ref(false)
 const lines = ref([])
@@ -1039,30 +1048,6 @@ function gridFor(zoom) {
 
 let gridNow = 2
 
-/** Each cell as a square of one grid step, which is how they tile without gaps. */
-function surfaceFeatures() {
-  const { cells, size } = surfaceNow.value
-  return {
-    type: 'FeatureCollection',
-    features: (cells || []).map((one) => {
-      const west = one.lon - size / 2
-      const east = one.lon + size / 2
-      const south = one.lat - size / 2
-      const north = one.lat + size / 2
-      return {
-        type: 'Feature',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [[
-            [west, south], [east, south], [east, north], [west, north], [west, south],
-          ]],
-        },
-        properties: { value: one.value, readings: one.readings },
-      }
-    }),
-  }
-}
-
 function demandFeatures() {
   const field = overlayNow.value.field
   return {
@@ -1093,18 +1078,17 @@ function drawOverlay() {
   map.setLayoutProperty('demand', 'visibility', one.kind === 'points' ? 'visible' : 'none')
 
   if (one.kind === 'surface') {
-    const { low, high, quiet, busy } = surfaceNow.value
-    map.getSource('surface').setData(surfaceFeatures())
-    map.setPaintProperty('surface', 'fill-color', [
-      'interpolate', ['linear'], ['get', 'value'], ...rampStops(one.ramp(), low, high),
-    ])
-    // How much has been seen here becomes how solid the cell is. A mean over
-    // eight readings and a mean over eight hundred are both averages and only
-    // one of them is worth acting on, and opacity is where that belongs —
-    // colour is already carrying the measure.
-    map.setPaintProperty('surface', 'fill-opacity', [
-      'interpolate', ['linear'], ['get', 'readings'], quiet, 0.25, Math.max(quiet + 1, busy), 0.7,
-    ])
+    // Colour, coverage and where it goes, all decided in one pass over the
+    // cells — see `lib/surface.js`. The alpha is how much has been seen there,
+    // because colour is already carrying the measure.
+    const corners = paintSurface(field, surfaceNow.value, one.ramp())
+    if (corners) {
+      map.getSource('surface').setCoordinates(corners)
+      // The source only re-reads the canvas when it is told to; nothing about
+      // drawing into it is something MapLibre can observe.
+      map.getSource('surface').play()
+      map.getSource('surface').pause()
+    }
   }
 
   if (one.kind === 'points') {
@@ -1176,13 +1160,28 @@ async function draw() {
   // The surface goes down *first*, so every route, stop and vehicle sits on top
   // of it. It is the ground the network runs over, and a grid painted above the
   // lines would be a grid that hides them.
-  map.addSource('surface', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+  // A canvas rather than a polygon per cell. The bins are still bins — the mean
+  // inside one is what the colour means — but the *edges* were an artefact of
+  // where the grid happened to fall, drawn as though they were a place where
+  // the network changes. `lib/surface.js` says how the field is smoothed.
+  //
+  // `coordinates` are replaced on every answer; these four are a placeholder,
+  // because a canvas source cannot be added without them.
+  map.addSource('surface', {
+    type: 'canvas',
+    canvas: field,
+    coordinates: [[0, 1], [1, 1], [1, 0], [0, 0]],
+    animate: false,
+  })
   map.addLayer({
     id: 'surface',
-    type: 'fill',
+    type: 'raster',
     source: 'surface',
     layout: { visibility: 'none' },
-    paint: { 'fill-color': casing, 'fill-opacity': 0.6 },
+    // Linear, which is where most of the smoothing comes from: the canvas is
+    // one pixel per cell and the GPU interpolates it up to the screen. Nearest
+    // would put every hard edge straight back.
+    paint: { 'raster-opacity': 1, 'raster-resampling': 'linear', 'raster-fade-duration': 0 },
   })
 
   map.addSource('lines', { type: 'geojson', data: lineFeatures() })
