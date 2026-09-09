@@ -65,7 +65,15 @@ from frappe import _
 #: CARTO's raster Positron and it had quietly stopped being usable: their
 #: keyless endpoint now returns every tile stamped "API KEY REQUIRED", which
 #: nothing in this product could have noticed — a watermark is a valid PNG.
+#:
+#: **Canvas is ours**, and is the only one of the four that could be. The other
+#: three are documents somebody else wrote and serves, so the most a workspace
+#: can do to them is turn layers off. Canvas is a file in this repository —
+#: `scripts/gen_basemap.py` writes it — so its palette is a decision we make,
+#: and it is the one that can eventually follow the workspace's own accent. Its
+#: tiles still come from OpenFreeMap, so it adds nobody to disclose.
 STYLES = {
+	"Canvas": "/assets/oneapp/basemaps/canvas.json",
 	"Positron": "https://tiles.openfreemap.org/styles/positron",
 	"Bright": "https://tiles.openfreemap.org/styles/bright",
 	"Liberty": "https://tiles.openfreemap.org/styles/liberty",

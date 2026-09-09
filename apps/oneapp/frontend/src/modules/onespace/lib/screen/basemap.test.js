@@ -175,6 +175,22 @@ describe('restyle', () => {
     expect(map.seen.place_label).toBe('none')
   })
 
+  // Two spellings of the same thing, and Minimal has to keep both: our own
+  // style comes from Positron and calls a road `highway_*`, where the three
+  // from OpenFreeMap call it `road_*`.
+  it('knows a road by either name the schema is written in', () => {
+    const map = fake([
+      ['background', 'background'],
+      ['highway_motorway_inner', 'line'],
+      ['railway', 'line'],
+      ['building', 'fill'],
+    ])
+    restyle(map, { labels: true, detail: 'Minimal' })
+    expect(map.seen.highway_motorway_inner).toBe('visible')
+    expect(map.seen.railway).toBe('visible')
+    expect(map.seen.building).toBe('none')
+  })
+
   // The legend does not disappear because somebody turned off place names.
   it('never touches a layer the surface added itself', () => {
     const map = fake([...ground, ['vehicles', 'symbol'], ['routes', 'line']])

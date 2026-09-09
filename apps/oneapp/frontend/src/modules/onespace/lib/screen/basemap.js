@@ -217,8 +217,21 @@ export function quietTiles(map) {
  */
 const DECORATION = ['building', 'landcover', 'landuse', 'park', 'poi', 'housenumber', 'aeroway']
 
-/** What a minimal ground keeps. Everything a route needs to be placed, and no more. */
-const ESSENTIAL = ['background', 'water', 'waterway', 'road', 'bridge', 'tunnel', 'boundary']
+/**
+ * What a minimal ground keeps. Everything a route needs to be placed, and no
+ * more.
+ *
+ * `highway` and `railway` are here beside `road` because the schema names the
+ * layers and the *styles* name them differently within it: OpenFreeMap's three
+ * call a road `road_*`, and Canvas — which comes from Positron — calls it
+ * `highway_*`. Keeping only one of those spellings meant Minimal took every
+ * road off exactly one of the four styles, which reads as a broken map rather
+ * than as a quiet one.
+ */
+const ESSENTIAL = [
+  'background', 'water', 'waterway', 'road', 'highway', 'railway', 'bridge',
+  'tunnel', 'boundary',
+]
 
 function starts(id, prefixes) {
   const name = String(id || '').toLowerCase()

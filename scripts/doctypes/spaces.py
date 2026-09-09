@@ -414,11 +414,13 @@ doctype(
     issingle=1,
     fields=[
         f("map_style", "Select", "Basemap", default="Follow the instance",
-          options="Follow the instance\nPositron\nBright\nLiberty\nPlain",
-          description="Positron is quiet grey, Bright is a conventional road "
-                      "map, Liberty is closer to OpenStreetMap's own. Plain "
-                      "draws no background at all, which is what an air-gapped "
-                      "instance and a schematic have in common."),
+          options="Follow the instance\nCanvas\nPositron\nBright\nLiberty\nPlain",
+          description="Canvas is ours: near-white, roads drawn as channels "
+                      "rather than ribbons, made to be drawn on. Positron is "
+                      "quiet grey, Bright is a conventional road map, Liberty "
+                      "is closer to OpenStreetMap's own. Plain draws no "
+                      "background at all, which is what an air-gapped instance "
+                      "and a schematic have in common."),
         f("map_labels", "Check", "Name places on the map", default="1",
           description="Off leaves the shapes and takes away the words. A map "
                       "with forty vehicles on it is often busy enough."),

@@ -371,6 +371,24 @@ Rendering:
   "API KEY REQUIRED", which nothing here could have noticed, because a watermark
   is a valid PNG. Moving to our own archive is then a change of one URL and the
   subprocessor clause that names it, not a change to any screen.
+
+  **One of the four styles is already ours**, and it is the half of this that
+  did not need the archive. A style document is JSON, so
+  `scripts/gen_basemap.py` writes one: it takes openmaptiles/positron-gl-style
+  (BSD-3, vendored beside it with its licence), points it at OpenFreeMap, and
+  repaints it from a palette in one table — near-white ground, water and
+  greenery a step towards cool, roads as white channels between hairlines. That
+  is Canvas, and the reason to own it is that a palette we hold is one that can
+  take the workspace's own accent and grow a real dark variant, neither of which
+  is possible with a document somebody else serves.
+
+  Three things upstream assumes that OpenFreeMap does not provide, all of which
+  fail *silently* and are in the generator with the explanation: Metropolis as
+  the font, a `name:nonlatin` on every place (a `concat` of a null throws, so
+  the label is simply absent), and a `rank` on every city (a numeric comparison
+  against a missing field throws too, and takes the whole filter with it). The
+  first render came back a good map of Berlin with the word Berlin nowhere on
+  it.
 * Routing, when it is needed, is OSRM or Valhalla over an OSM extract — **not**
   the OSM API, which is an editing interface and must not be used for this.
 
@@ -679,6 +697,12 @@ OpenMapTiles schema names. Ours are passed over by name — a legend that hid
 itself when somebody turned off place names would be a surprising way to learn
 what the setting does. Changing the *style* is the one thing that cannot be done
 in place, because that is a different document, so that one redraws.
+
+The prefixes are per *style* rather than per schema, which is the trap: the
+three from OpenFreeMap call a road `road_*`, and Canvas, which comes from
+Positron, calls it `highway_*`. Minimal knows both, because keeping one
+spelling took every road off exactly one of the four — which reads as a broken
+map rather than as a quiet one.
 
 **Hovering says what the thing is.** A stop gives its name and how many lines
 have been seen there; a vehicle gives its fleet number, its line, how full it is

@@ -79,6 +79,35 @@ def test_the_instance_answer_is_sent_alongside_the_resolved_one(basemap, stub_fr
 	assert out["instance"] == basemap.DEFAULT_STYLE
 
 
+def test_the_picker_and_the_doctype_offer_the_same_styles(basemap):
+	"""Two lists of the same names, in two languages, and only one of them is
+	validated against — so a style added to `STYLES` and not to the Select is
+	one nobody can reach, and the other way round is a Select entry that throws
+	when it is chosen."""
+	import json
+	import os
+
+	here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+	with open(os.path.join(here, "apps/oneapp/oneapp/onespace/doctype/"
+	                             "onespace_map_settings/onespace_map_settings.json"),
+	          encoding="utf-8") as handle:
+		field = next(one for one in json.load(handle)["fields"]
+		             if one["fieldname"] == "map_style")
+	offered = field["options"].split("\n")
+	assert offered == ["Follow the instance", *basemap.STYLES, "Plain"]
+
+
+def test_our_own_style_is_a_file_this_app_serves(basemap):
+	"""It is a path rather than a URL, and that is the difference that matters:
+	the other three are documents somebody else writes and serves."""
+	assert basemap.STYLES["Canvas"] == "/assets/oneapp/basemaps/canvas.json"
+	import os
+
+	here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+	assert os.path.exists(os.path.join(
+		here, "apps/oneapp/oneapp/public/basemaps/canvas.json"))
+
+
 def test_the_styles_are_sent_by_name_and_url(basemap, stub_frappe):
 	stub_frappe.conf = {}
 	workspace(stub_frappe)

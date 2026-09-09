@@ -13,11 +13,11 @@
  "fields": [
   {
    "default": "Follow the instance",
-   "description": "Positron is quiet grey, Bright is a conventional road map, Liberty is closer to OpenStreetMap's own. Plain draws no background at all, which is what an air-gapped instance and a schematic have in common.",
+   "description": "Canvas is ours: near-white, roads drawn as channels rather than ribbons, made to be drawn on. Positron is quiet grey, Bright is a conventional road map, Liberty is closer to OpenStreetMap's own. Plain draws no background at all, which is what an air-gapped instance and a schematic have in common.",
    "fieldname": "map_style",
    "fieldtype": "Select",
    "label": "Basemap",
-   "options": "Follow the instance\nPositron\nBright\nLiberty\nPlain"
+   "options": "Follow the instance\nCanvas\nPositron\nBright\nLiberty\nPlain"
   },
   {
    "default": "1",
