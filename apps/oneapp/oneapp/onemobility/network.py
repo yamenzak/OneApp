@@ -44,8 +44,37 @@ def shape() -> dict:
         order_by="stop_name asc",
         limit_page_length=0,
     )
+    interchange = _served()
+    for stop in stops:
+        stop["served"] = interchange.get(stop["name"], 0)
 
     return {"lines": lines, "stops": stops}
+
+
+def _served() -> dict:
+    """How many lines have actually been seen at each stop.
+
+    Every transit map ever printed draws an interchange larger than a plain
+    stop, and it is not decoration — it is the thing a person navigating is
+    looking for. Until `arrivals.py` there was nothing here to draw it from:
+    this model has no stop-to-line relation, and GTFS's own lives on a trip
+    rather than a line.
+
+    So the number is *observed* rather than declared: how many distinct lines
+    have had a vehicle stand at this stop. Which is better than a timetable
+    would be, and worth saying plainly — a stop the timetable claims is an
+    interchange but where the second line has not run for a month is not one,
+    and this draws it the way it actually is.
+    """
+    if not facts.exists(model.STOP_HOUR):
+        return {}
+
+    rows = frappe.db.sql(
+        f"""SELECT `stop`, COUNT(DISTINCT `line`) AS `lines_seen`
+            FROM `{model.STOP_HOUR.table}` GROUP BY `stop`""",
+        as_dict=True,
+    )
+    return {row["stop"]: cint(row["lines_seen"]) for row in rows if row.get("stop")}
 
 
 @frappe.whitelist(methods=["GET"])

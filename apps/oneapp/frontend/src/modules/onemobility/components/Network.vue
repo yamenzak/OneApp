@@ -69,9 +69,26 @@
               {{ band.floor }}%+
             </span>
           </div>
-          <div class="mt-1 flex items-center gap-2 border-t border-outline-gray-1 pt-2 text-xs text-ink-gray-6">
-            <span class="size-2.5 shrink-0 rounded-full border-2 border-outline-amber-3 bg-surface-elevation-2" />
-            <span>{{ __('Stop nobody declared') }}</span>
+          <div class="mt-1 flex flex-col gap-1.5 border-t border-outline-gray-1 pt-2 text-xs text-ink-gray-6">
+            <div class="flex items-center gap-2">
+              <span class="size-2.5 shrink-0 rounded-full border-2 border-outline-amber-3 bg-surface-elevation-2" />
+              <span>{{ __('Stop nobody declared') }}</span>
+            </div>
+            <!--
+              The bigger double ring, said out loud. It is the oldest
+              convention on any transit map and still worth naming here,
+              because this one is not read off a timetable: it counts the lines
+              that have actually had a vehicle stand at the stop.
+            -->
+            <div class="flex items-center gap-2">
+              <span
+                class="flex size-3.5 shrink-0 items-center justify-center rounded-full
+                       border-2 border-outline-gray-3 bg-surface-elevation-2"
+              >
+                <span class="size-1 rounded-full bg-surface-gray-7" />
+              </span>
+              <span>{{ __('More than one line stops here') }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -304,7 +321,7 @@ import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
 import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
 import { between, blend, prepare } from '@/modules/onemobility/lib/motion'
-import { bearingBetween, easeBearing, vehicleMarker } from '@/modules/onemobility/lib/markers'
+import { bearingBetween, bodyFor, easeBearing, MODES, vehicleMarker } from '@/modules/onemobility/lib/markers'
 import {
   casingInk,
   delayInk,
@@ -547,6 +564,7 @@ function paint() {
         stale: latest.stale ? 1 : 0,
         bearing: heading,
         band: occupancyBand(latest.occupancy).key,
+        mode: modeOf(latest.line),
         chosen: vehicle === selected.value ? 1 : 0,
       },
     })
@@ -645,21 +663,43 @@ function whenSized(element) {
 }
 
 /** One drawn marker per occupancy band, registered under that band's name. */
+/**
+ * One image per mode per occupancy band — six by five, drawn once at load.
+ *
+ * Thirty small canvases sounds like a lot and is about four milliseconds; the
+ * alternative is one image and a separate badge layer, which costs a second
+ * symbol layer and a second label for every vehicle on screen. The silhouette
+ * is doing the work that a badge would: what a person picks out of forty
+ * moving markers is the *outline*, and a tram differs from a bus in exactly the
+ * two ways that survive being sixteen pixels tall.
+ */
 function registerMarkers() {
   const ring = casingInk()
   const ratio = Math.min(3, Math.max(1, window.devicePixelRatio || 1))
-  for (const band of OCCUPANCY) {
-    const id = `vehicle-${band.key}`
-    if (map.hasImage(id)) map.removeImage(id)
-    map.addImage(
-      id,
-      vehicleMarker(occupancyInk(band.floor < 0 ? -1 : band.floor), ring, ratio),
-      // `pixelRatio` is style-image *metadata* and belongs in the third
-      // argument. Passed inside the image it is silently ignored, and every
-      // marker draws at twice the size it was meant to.
-      { pixelRatio: ratio },
-    )
+  for (const mode of MODES) {
+    for (const band of OCCUPANCY) {
+      const id = `vehicle-${mode}-${band.key}`
+      if (map.hasImage(id)) map.removeImage(id)
+      map.addImage(
+        id,
+        vehicleMarker(mode, occupancyInk(band.floor < 0 ? -1 : band.floor), ring, ratio),
+        // `pixelRatio` is style-image *metadata* and belongs in the third
+        // argument. Passed inside the image it is silently ignored, and every
+        // marker draws at twice the size it was meant to.
+        { pixelRatio: ratio },
+      )
+    }
   }
+}
+
+/**
+ * A vehicle's mode, which is its line's. The observation carries a position and
+ * a line and nothing about what kind of thing it is — that belongs to the
+ * reference nouns, and denormalising it onto forty million rows to save this
+ * lookup would be the wrong trade twice over.
+ */
+function modeOf(line) {
+  return bodyFor(lines.value.find((one) => one.name === line)?.mode)
 }
 
 async function draw() {
@@ -745,9 +785,24 @@ async function draw() {
     type: 'circle',
     source: 'stops',
     paint: {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 4, 14, 6, 16, 8],
+      // An interchange is drawn bigger. Every printed transit map does this and
+      // it is not decoration — it is the thing somebody working out a journey
+      // is scanning for. What makes it possible here is that the number is now
+      // *observed*: `arrivals.py` counts the lines that have actually had a
+      // vehicle stand at each stop, and this model has no timetable relation
+      // that could have said so.
+      'circle-radius': [
+        'interpolate', ['linear'], ['zoom'],
+        10, ['case', ['>', ['get', 'served'], 1], 6.5, 3.5],
+        14, ['case', ['>', ['get', 'served'], 1], 10, 5.5],
+        16, ['case', ['>', ['get', 'served'], 1], 13, 7.5],
+      ],
       'circle-color': casing,
-      'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 14, 2.5, 16, 3],
+      'circle-stroke-width': [
+        'interpolate', ['linear'], ['zoom'],
+        10, 2, 14, ['case', ['>', ['get', 'served'], 1], 3.5, 2.5],
+        16, ['case', ['>', ['get', 'served'], 1], 4.5, 3],
+      ],
       // An inferred stop — one a vehicle stopped at and no feed declared — is
       // drawn differently and never quietly promoted into the network.
       'circle-stroke-color': [
@@ -755,6 +810,21 @@ async function draw() {
         ['==', ['get', 'status'], 'Inferred'], tokenInk('--ink-amber-3', '#f59e0b'),
         tokenInk('--ink-gray-7', '#3f3f46'),
       ],
+    },
+  })
+
+  // The interchange's inner ring. A second, smaller circle inside the first —
+  // the double ring a transit map draws where lines meet — rather than a
+  // thicker stroke, because a thick stroke at three lines and at seven looks
+  // the same and this does not.
+  map.addLayer({
+    id: 'stops-interchange',
+    type: 'circle',
+    source: 'stops',
+    filter: ['>', ['get', 'served'], 1],
+    paint: {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 2.5, 14, 4, 16, 5.5],
+      'circle-color': tokenInk('--ink-gray-7', '#3f3f46'),
     },
   })
 
@@ -780,8 +850,12 @@ async function draw() {
     type: 'symbol',
     source: 'vehicles',
     layout: {
-      'icon-image': ['concat', 'vehicle-', ['get', 'band']],
-      'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.9, 14, 1.1, 16, 1.3],
+      // Mode picks the silhouette, band picks the colour. One expression and
+      // no second layer: the images are registered under exactly this name.
+      'icon-image': ['concat', 'vehicle-', ['get', 'mode'], '-', ['get', 'band']],
+      // The bitmap is forty points on its long side so a bus has room to be a
+      // bus; on the map it wants to be about half a stop's width, not twice it.
+      'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.55, 14, 0.75, 16, 0.95],
       'icon-rotate': ['get', 'bearing'],
       'icon-rotation-alignment': 'map',
       'icon-allow-overlap': true,
@@ -867,7 +941,14 @@ function stopFeatures() {
       .map((one) => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [one.longitude, one.latitude] },
-        properties: { name: one.name, label: one.stop_name, status: one.status },
+        properties: {
+          name: one.name,
+          label: one.stop_name,
+          status: one.status,
+          // How many lines have actually been seen here — observed, not
+          // declared. See `network.py`'s `_served`.
+          served: one.served || 0,
+        },
       })),
   }
 }
