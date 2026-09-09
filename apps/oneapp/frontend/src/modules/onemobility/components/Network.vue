@@ -37,144 +37,33 @@
 
     <template v-if="ready && lines.length">
       <!--
-        What the colours mean. Occupancy is an ordinal state with a name for
-        each step — seats free, standing, crush — and a legend is what keeps it
-        from being colour alone, which is the one thing a fleet map must not
-        be.
+        The controls, as a rail under the zoom, and the key as a key. They were
+        one card and it had become a control panel with a scrollbar in which the
+        thing a reader wanted — what does this colour mean — was below the fold.
       -->
-      <div
-        class="pointer-events-auto absolute bottom-[11.5rem] start-4 z-10 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 shadow-sm"
-        data-slot="network-legend"
-      >
-        <Button
-          class="w-full justify-start"
-          variant="ghost"
-          size="sm"
-          :label="__('Layers and key')"
-          :icon-left="legendOpen ? 'lucide-chevron-down' : 'lucide-chevron-right'"
-          @click="legendOpen = !legendOpen"
-        />
-        <!-- Scrolls rather than growing past the top of the map: the card now
-             carries controls as well as a key, and on a short window the two
-             together are taller than the space above the clock bar. -->
-        <div
-          v-show="legendOpen"
-          class="flex max-h-[26rem] w-56 flex-col gap-1.5 overflow-y-auto px-3 pb-3"
-        >
-          <!--
-            The controls and the key in one card, because they are one idea:
-            what is drawn, and what it means. Two floating cards was the first
-            version and they collided — which was the layout telling me what the
-            content already said.
+      <MapControls
+        v-model:overlay="overlay"
+        v-model:show-routes="showRoutes"
+        v-model:show-stops="showStops"
+        v-model:show-vehicles="showVehicles"
+        :overlay-options="overlayOptions"
+        :isolated="isolated"
+        :styles="markerStyles"
+        :may-style="mayStyle"
+        @clear-isolate="isolate(null)"
+        @style="restyle"
+      />
 
-            One overlay at a time and not a stack of checkboxes: two of these
-            are tiled surfaces and two are graduated circles, and any two at
-            once is mud. The three below are independent because they are
-            different *things* — routes, stops, vehicles — rather than
-            competing answers to one question.
-          -->
-          <Select v-model="overlay" :options="overlayOptions" />
-          <p v-if="overlayNow.hint" class="text-xs leading-snug text-ink-gray-5">
-            {{ overlayNow.hint() }}
-          </p>
-          <div class="my-0.5 flex flex-col gap-2 border-y border-outline-gray-1 py-2">
-            <Switch v-model="showRoutes" size="sm" :label="__('Routes')" />
-            <Switch v-model="showStops" size="sm" :label="__('Stops')" />
-            <Switch v-model="showVehicles" size="sm" :label="__('Vehicles')" />
-          </div>
-
-          <!--
-            The shapes, before the colours, because a marker says two things at
-            once and a legend that explains one of them teaches people that the
-            other is decoration. Drawn in one neutral grey with the same
-            function the map uses: showing them in their occupancy colours here
-            would vary both axes at once, which is exactly the confusion this
-            section exists to remove.
-
-            Only the modes this network actually runs — a city with buses and
-            nothing else should not be told what a ferry looks like.
-          -->
-          <!--
-            The overlay's own key, first and only while one is on. A layer
-            without a scale beside it is a picture of some colours; and the
-            shape and load keys below belong to the markers, which the overlay
-            does not replace.
-          -->
-          <template v-if="overlayNow.kind !== 'none'">
-            <p class="text-xs font-medium text-ink-gray-7">{{ overlayNow.label() }}</p>
-            <div class="flex items-center gap-1.5">
-              <span class="tabular-nums text-xs text-ink-gray-5">{{ scaleLow }}</span>
-              <div class="flex h-2 flex-1 overflow-hidden rounded-full">
-                <div
-                  v-for="(ink, at) in scaleInks"
-                  :key="at"
-                  class="h-full flex-1"
-                  :style="{ backgroundColor: ink }"
-                />
-              </div>
-              <span class="tabular-nums text-xs text-ink-gray-5">{{ scaleHigh }}</span>
-            </div>
-            <p v-if="overlayNow.kind === 'surface'" class="text-xs text-ink-gray-5">
-              {{ __('Paler where fewer vehicles have been through') }}
-            </p>
-            <div class="my-1 border-t border-outline-gray-1" />
-          </template>
-
-          <p class="text-xs font-medium text-ink-gray-7">{{ __('What runs here') }}</p>
-          <div class="flex flex-col gap-1">
-            <div
-              v-for="one in modesHere"
-              :key="one.key"
-              class="flex items-center gap-2 text-xs text-ink-gray-6"
-            >
-              <!-- Larger than the map draws them: a key has to be readable at
-                   a glance, and the marker's own size is a compromise with how
-                   many of them share the screen, which a legend row is not. -->
-              <img :src="one.url" :alt="one.label" class="h-7 w-7 shrink-0 object-contain" />
-              <span>{{ one.label }}</span>
-            </div>
-          </div>
-
-          <p class="mt-1 border-t border-outline-gray-1 pt-2 text-xs font-medium text-ink-gray-7">
-            {{ __('How full it is') }}
-          </p>
-          <div
-            v-for="band in occupancy"
-            :key="band.key"
-            class="flex items-center gap-2 text-xs text-ink-gray-6"
-          >
-            <span
-              class="size-2.5 shrink-0 rounded-full ring-2 ring-outline-elevation-2"
-              :style="{ backgroundColor: band.ink }"
-            />
-            <span>{{ band.label }}</span>
-            <span v-if="band.floor > 0" class="ms-auto tabular-nums text-ink-gray-4">
-              {{ band.floor }}%+
-            </span>
-          </div>
-          <div class="mt-1 flex flex-col gap-1.5 border-t border-outline-gray-1 pt-2 text-xs text-ink-gray-6">
-            <div class="flex items-center gap-2">
-              <span class="size-2.5 shrink-0 rounded-full border-2 border-outline-amber-3 bg-surface-elevation-2" />
-              <span>{{ __('Stop nobody declared') }}</span>
-            </div>
-            <!--
-              The bigger double ring, said out loud. It is the oldest
-              convention on any transit map and still worth naming here,
-              because this one is not read off a timetable: it counts the lines
-              that have actually had a vehicle stand at the stop.
-            -->
-            <div class="flex items-center gap-2">
-              <span
-                class="flex size-3.5 shrink-0 items-center justify-center rounded-full
-                       border-2 border-outline-gray-3 bg-surface-elevation-2"
-              >
-                <span class="size-1 rounded-full bg-surface-gray-7" />
-              </span>
-              <span>{{ __('More than one line stops here') }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <MapLegend
+        :overlay="overlayNow"
+        :ramp="scaleInks"
+        :low="scaleLow"
+        :high="scaleHigh"
+        :drawn="shapesHere"
+        :show-stops="showStops"
+        :show-vehicles="showVehicles"
+        :isolated="isolated"
+      />
 
       <!--
         One vehicle, opened. Its day is fetched and drawn behind it, which is
@@ -183,7 +72,8 @@
       -->
       <div
         v-if="chosen"
-        class="pointer-events-auto absolute end-4 top-[5.5rem] z-10 w-64 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 p-3 shadow-lg"
+        class="pointer-events-auto absolute bottom-[11.5rem] end-4 z-10 w-64 rounded-6 border
+               border-outline-gray-2 bg-surface-elevation-2 p-3 shadow-lg"
         data-slot="network-vehicle"
       >
         <div class="flex items-start gap-2">
@@ -237,13 +127,25 @@
           </div>
         </div>
 
-        <Button
-          class="mt-3 w-full"
-          :variant="following ? 'solid' : 'subtle'"
-          :label="following ? __('Following') : __('Follow it')"
-          icon-left="lucide-crosshair"
-          @click="following = !following"
-        />
+        <div class="mt-3 flex gap-2">
+          <Button
+            class="flex-1"
+            :variant="following ? 'solid' : 'subtle'"
+            :label="following ? __('Following') : __('Follow it')"
+            icon-left="lucide-crosshair"
+            @click="following = !following"
+          />
+          <!-- Following moves the *map*; this dims the network. Two different
+               questions — where is it going, and which of these forty is it —
+               and answering both with one button was the first version. -->
+          <Button
+            variant="subtle"
+            icon="lucide-eye"
+            :tooltip="__('Show this one alone')"
+            :aria-label="__('Show this one alone')"
+            @click="isolate({ kind: 'vehicle', name: chosen.vehicle, label: chosen.vehicle })"
+          />
+        </div>
       </div>
 
       <!--
@@ -399,21 +301,29 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { Badge, Button, Select, Switch } from '@/ui'
+import { Badge, Button, Select } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
 import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
+import MapControls from '@/modules/onemobility/components/MapControls.vue'
+import MapLegend from '@/modules/onemobility/components/MapLegend.vue'
 import { OVERLAYS, overlayFor, rampStops } from '@/modules/onemobility/lib/layers'
-import { between, blend, prepare } from '@/modules/onemobility/lib/motion'
-import { bearingBetween, bodyFor, easeBearing, MODES, vehicleMarker } from '@/modules/onemobility/lib/markers'
+import { advance, blend, prepare } from '@/modules/onemobility/lib/motion'
 import {
+  bearingBetween,
+  bodyFor,
+  easeBearing,
+  MODES,
+  vehicleMarker,
+} from '@/modules/onemobility/lib/markers'
+import {
+  bandInk,
   casingInk,
   delayInk,
   lineInk,
   occupancyBand,
   occupancyInk,
-  occupancyScale,
   OCCUPANCY,
 } from '@/modules/onemobility/lib/palette'
 import { tokenInk } from '@/modules/onespace/lib/screen/ink'
@@ -494,18 +404,21 @@ function reads(value, span) {
 }
 
 const scaleLow = computed(() => {
+  const one = overlayNow.value
+  // `none` has no unit because it measures nothing. These used to be read only
+  // inside a `v-if` that already knew that; they are props now, so they are
+  // evaluated whether or not anything renders them.
+  if (!one.unit) return ''
   const { low, high } = surfaceNow.value
-  if (overlayNow.value.kind === 'surface') {
-    return `${reads(low, high - low)} ${overlayNow.value.unit()}`
-  }
-  return `0 ${overlayNow.value.unit()}`
+  if (one.kind === 'surface') return `${reads(low, high - low)} ${one.unit()}`
+  return `0 ${one.unit()}`
 })
 const scaleHigh = computed(() => {
+  const one = overlayNow.value
+  if (!one.unit) return ''
   const { low, high } = surfaceNow.value
-  if (overlayNow.value.kind === 'surface') {
-    return `${reads(high, high - low)} ${overlayNow.value.unit()}`
-  }
-  return `${pointHigh.value} ${overlayNow.value.unit()}`
+  if (one.kind === 'surface') return `${reads(high, high - low)} ${one.unit()}`
+  return `${pointHigh.value} ${one.unit()}`
 })
 
 /** The top of the circle scale: the biggest value any stop actually has. */
@@ -515,12 +428,30 @@ const pointHigh = computed(() => {
   return Math.max(0, ...demandNow.value.stops.map((one) => one[field] || 0))
 })
 const onlyLine = computed(() => facets.value.line || '')
+
+/**
+ * One thing, looked at alone.
+ *
+ * `{ kind: 'line' | 'vehicle', name, label }`, or null. Distinct from the facet
+ * bar on purpose: a facet is a *question* put to the server — how did U6 run —
+ * and re-asks every query on the screen. This is a way of *looking*, costs
+ * nothing, and never re-fetches. Conflating them meant that picking a vehicle
+ * out of a crowd re-queried a month of history.
+ *
+ * Everything else stays on the map rather than being removed. A network with
+ * one route left on it has lost the thing that makes a route legible, which is
+ * the others — so the rest goes grey and faint, and the shape of the city is
+ * still there behind the answer.
+ */
+const isolated = ref(null)
 const livemode = ref(true)
 const position = ref(1000)
 const drawn = ref([])
 const service = ref([])
-const legendOpen = ref(true)
 const selected = ref('')
+/** The workspace's mode-to-shape mapping, for the picker. Fetched once. */
+const markerStyles = ref([])
+const mayStyle = ref(false)
 const following = ref(false)
 const playing = ref(false)
 const speed = ref(1)
@@ -536,7 +467,6 @@ const seen = new Map()
 const painted = new Map()
 const headings = new Map()
 
-const occupancy = computed(() => occupancyScale())
 /** The wall clock, ticked so a live screen left open does not freeze at the
  *  minute it was opened. */
 const wallClock = ref('')
@@ -691,15 +621,22 @@ function paint() {
     const { previous, latest, from, span } = state
     const shape = shapes.get(latest.line) || null
     const k = span ? (now - from) / span : 1
-    const along = between(shape, previous, latest, k) || [latest.lon, latest.lat]
+    const moved = advance(shape, previous, latest, k)
+    const along = moved?.point || [latest.lon, latest.lat]
     // Ease onto the computed point rather than teleporting when a poll lands.
     const was = painted.get(vehicle)
     const at = blend(was, along, span ? 0.25 : 1)
     painted.set(vehicle, at)
 
-    // Which way it is facing, from where it has just been. Eased the short way
-    // round, so a vehicle crossing north does not spin through the compass.
-    const heading = easeBearing(headings.get(vehicle), bearingBetween(was, at), span ? 0.3 : 1)
+    // Which way it is facing: the direction of the *route* under it, not the
+    // direction it happened to move last frame. A vehicle standing at a stop
+    // still faces down the road, and one that has just appeared faces the way
+    // it is about to go rather than north. Frame-to-frame movement is the
+    // fallback, for a vehicle whose line has no shape to follow.
+    const facing = moved?.bearing ?? bearingBetween(was, at)
+    // Eased the short way round, so a vehicle crossing north does not spin
+    // through the compass.
+    const heading = easeBearing(headings.get(vehicle), facing, span ? 0.3 : 1)
     headings.set(vehicle, heading)
 
     features.push({
@@ -711,7 +648,7 @@ function paint() {
         stale: latest.stale ? 1 : 0,
         bearing: heading,
         band: occupancyBand(latest.occupancy).key,
-        mode: modeOf(latest.line),
+        mode: markerOf(latest.line),
         chosen: vehicle === selected.value ? 1 : 0,
       },
     })
@@ -803,6 +740,98 @@ const BASE_LAYERS = {
   routes: ['lines-casing', 'lines'],
   stops: ['stops', 'stops-interchange'],
   vehicles: ['vehicles', 'vehicles-chosen'],
+}
+
+/**
+ * Look at one thing alone: full colour on it, grey and faint on everything else.
+ *
+ * Monochrome rather than hidden, and that is the whole design. A route drawn
+ * alone on a blank ground has lost its context — which junctions it crosses,
+ * which corridor it shares — and those are exactly what somebody isolating it
+ * is usually trying to see. So the network stays, in one grey, at a fifth of
+ * the opacity: present as geography, gone as information.
+ */
+function isolate(what) {
+  isolated.value = what || null
+  paintIsolation()
+  if (map?.getSource('lines')) map.getSource('lines').setData(lineFeatures())
+}
+
+/**
+ * The paint expressions that carry it. Set here rather than at layer creation
+ * because they change with what is chosen, and rebuilding a layer to change a
+ * colour is how a map comes to flicker.
+ */
+function paintIsolation() {
+  if (!map || !map.getLayer('lines')) return
+  const one = isolated.value
+  const grey = tokenInk('--ink-gray-4', '#a1a1aa')
+
+  // A vehicle belongs to a line, so isolating a vehicle isolates its line too:
+  // the road it is on is the first thing anybody looks at next.
+  const line = one?.kind === 'line' ? one.name : lineOfVehicle(one?.name)
+
+  map.setPaintProperty('lines', 'line-color',
+    line ? ['case', ['==', ['get', 'name'], line], ['get', 'colour'], grey] : ['get', 'colour'])
+  // Faint, not gone. Dimmed far enough that nothing competes with the answer,
+  // and not so far that the city disappears — which is the failure mode of
+  // every "show only this" that hides instead of fading.
+  map.setPaintProperty('lines', 'line-opacity',
+    line
+      ? ['case', ['==', ['get', 'name'], line], 1, 0.3]
+      : ['case', ['==', ['get', 'dimmed'], 1], 0.18, 1])
+
+  for (const layer of ['stops', 'stops-interchange']) {
+    if (map.getLayer(layer)) map.setPaintProperty(layer, 'circle-opacity', one ? 0.35 : 1)
+  }
+  if (map.getLayer('vehicles')) {
+    map.setPaintProperty('vehicles', 'icon-opacity', vehicleOpacity())
+  }
+}
+
+/**
+ * How solid a vehicle marker is: stale is faint, and so is everything that is
+ * not the thing being looked at. One expression rather than two layers, because
+ * a second symbol layer for forty markers is a second placement pass.
+ */
+function vehicleOpacity() {
+  const one = isolated.value
+  const live = ['case', ['==', ['get', 'stale'], 1], 0.4, 1]
+  if (!one) return live
+  const mine = one.kind === 'vehicle'
+    ? ['==', ['get', 'vehicle'], one.name]
+    : ['==', ['get', 'line'], one.name]
+  return ['case', mine, live, 0.2]
+}
+
+function lineOfVehicle(vehicle) {
+  if (!vehicle) return ''
+  return drawn.value.find((one) => one.vehicle === vehicle)?.line || ''
+}
+
+/**
+ * Draw a mode as a different shape, and show it immediately.
+ *
+ * Written to the server first and applied locally after, rather than
+ * optimistically: this is a workspace-wide change and a picker that showed a
+ * shape nobody else could see would be lying about what it had done. The round
+ * trip is one small write and the map redraws in the same frame it returns.
+ */
+async function restyle({ mode, shape }) {
+  await network.setMarkerStyle({ mode, shape })
+  for (const line of lines.value) {
+    if (String(line.mode || '').toLowerCase() === String(mode).toLowerCase()) {
+      // Only where the line has not overridden its mode: a heritage tram stays
+      // a tram when the whole Bus fleet is redrawn.
+      if (!line.marker_shape) line.marker = shape
+    }
+  }
+  for (const one of markerStyles.value) {
+    if (one.mode === mode) one.shape = shape
+  }
+  // The images are keyed by shape and are already registered for all seven, so
+  // nothing has to be redrawn — only the features that name them.
+  lines.value = [...lines.value]
 }
 
 function showGroup(group, on) {
@@ -901,48 +930,15 @@ function registerMarkers() {
 }
 
 /**
- * A vehicle's mode, which is its line's. The observation carries a position and
- * a line and nothing about what kind of thing it is — that belongs to the
- * reference nouns, and denormalising it onto forty million rows to save this
- * lookup would be the wrong trade twice over.
- */
-/** What each silhouette is called, in the order a legend should read them. */
-const MODE_NAMES = {
-  bus: () => __('Bus'),
-  tram: () => __('Tram'),
-  metro: () => __('Metro'),
-  rail: () => __('Train'),
-  ferry: () => __('Ferry'),
-  cable: () => __('Cable car'),
-  other: () => __('Something else'),
-}
-
-/**
  * The legend's shape key: one drawing per mode this network actually runs.
  *
- * Painted with the same `vehicleMarker` the map registers, so the legend cannot
- * come to disagree with the thing it explains — a legend drawn separately is a
- * legend that is wrong the first time a shape changes.
- *
- * In one neutral grey on purpose. Colour is the other half of what a marker
- * says, and a shape key that also varied colour would be teaching two scales in
- * one row, which is the confusion this exists to remove.
+ * Off the *resolved* marker rather than the mode, so a workspace that draws
+ * its Rail as a tram gets a key with a tram in it. `markers.py` decides;
+ * this only reports.
  */
-const modesHere = computed(() => {
-  const found = new Set(lines.value.map((one) => bodyFor(one.mode)))
-  if (!found.size) return []
-  const ring = casingInk()
-  const neutral = tokenInk('--ink-gray-4', '#999999')
-  return MODES.filter((mode) => found.has(mode)).map((mode) => {
-    const image = vehicleMarker(mode, neutral, ring, 2)
-    const pad = document.createElement('canvas')
-    pad.width = image.width
-    pad.height = image.height
-    pad.getContext('2d').putImageData(
-      new ImageData(image.data, image.width, image.height), 0, 0,
-    )
-    return { key: mode, label: MODE_NAMES[mode](), url: pad.toDataURL() }
-  })
+const shapesHere = computed(() => {
+  const found = new Set(lines.value.map((one) => markerOf(one)))
+  return MODES.filter((shape) => found.has(shape))
 })
 
 /**
@@ -1065,8 +1061,17 @@ function drawOverlay() {
   }
 }
 
-function modeOf(line) {
-  return bodyFor(lines.value.find((one) => one.name === line)?.mode)
+/**
+ * Which silhouette a line is drawn with.
+ *
+ * Resolved on the server — `onemobility/markers.py` applies the workspace's
+ * own mode-to-shape mapping and any per-line override — so this reads an
+ * answer rather than deciding one. `bodyFor` is the floor under it: a line
+ * from a feed older than the mapping still gets a drawing.
+ */
+function markerOf(line) {
+  const found = typeof line === 'string' ? lines.value.find((one) => one.name === line) : line
+  return bodyFor(found?.marker || found?.mode)
 }
 
 async function draw() {
@@ -1269,6 +1274,33 @@ async function draw() {
     const hit = event.features?.[0]
     if (hit?.properties?.vehicle) choose(hit.properties.vehicle)
   })
+
+  // A click on a route looks at it alone. The one interaction a transit map
+  // has always had and this one did not: forty overlapping lines and no way to
+  // pull one out of them without going to another screen and narrowing.
+  map.on('click', 'lines', (event) => {
+    const hit = event.features?.[0]
+    const line = hit && lines.value.find((one) => one.name === hit.properties.name)
+    if (!line) return
+    // The same route again puts everything back. A mode you can enter and not
+    // leave by the way you entered it is a mode people learn to avoid.
+    const already = isolated.value?.kind === 'line' && isolated.value.name === line.name
+    isolate(already ? null : {
+      kind: 'line',
+      name: line.name,
+      label: line.short_name || line.line_name || line.name,
+    })
+  })
+
+  // And a click on the ground clears it, which is what every map has taught
+  // people that clicking nothing does.
+  map.on('click', (event) => {
+    if (!isolated.value) return
+    const hit = map.queryRenderedFeatures(event.point, {
+      layers: ['lines', 'vehicles', 'stops'].filter((one) => map.getLayer(one)),
+    })
+    if (!hit.length) isolate(null)
+  })
   map.on('mouseenter', 'vehicles', () => { map.getCanvas().style.cursor = 'pointer' })
   map.on('mouseleave', 'vehicles', () => { map.getCanvas().style.cursor = '' })
 
@@ -1276,20 +1308,35 @@ async function draw() {
   // style carries no `glyphs` URL and MapLibre needs one for any label — so
   // the name is an HTML popup, which is better anyway: it wears the product's
   // own type rather than a font baked into a tileset.
-  const popup = new library.Popup({ closeButton: false, closeOnClick: false, offset: 10 })
-  map.on('mouseenter', 'stops', (event) => {
-    const hit = event.features?.[0]
-    if (!hit) return
-    map.getCanvas().style.cursor = 'pointer'
-    popup
-      .setLngLat(hit.geometry.coordinates)
-      .setHTML(`<span class="text-xs font-medium">${escapeHtml(hit.properties.label || '')}</span>`)
-      .addTo(map)
-  })
-  map.on('mouseleave', 'stops', () => {
-    map.getCanvas().style.cursor = ''
-    popup.remove()
-  })
+  const popup = new library.Popup({ closeButton: false, closeOnClick: false, offset: 12 })
+
+  /**
+   * One hover handler for all three, because a hover is one behaviour and
+   * three copies of it is three chances for one of them to stop closing.
+   *
+   * `card` builds the HTML; `where` says where to anchor it — a stop and a
+   * vehicle are points and have their own coordinates, a route is a line and
+   * has none, so the pointer is the only honest anchor for it.
+   */
+  const onHover = (layer, card, where) => {
+    map.on('mousemove', layer, (event) => {
+      const hit = event.features?.[0]
+      if (!hit) return
+      map.getCanvas().style.cursor = 'pointer'
+      popup.setLngLat(where ? where(hit, event) : event.lngLat).setHTML(card(hit)).addTo(map)
+    })
+    map.on('mouseleave', layer, () => {
+      map.getCanvas().style.cursor = ''
+      popup.remove()
+    })
+  }
+
+  // A stop, a vehicle and a route each say the thing a person is hovering to
+  // find out — which stop, which vehicle and how full, which line — rather
+  // than one generic tooltip that says the id three times.
+  onHover('stops', stopCard, (hit) => hit.geometry.coordinates)
+  onHover('vehicles', vehicleCard, (hit) => hit.geometry.coordinates)
+  onHover('lines', lineCard)
 
   const bounds = new library.LngLatBounds()
   let any = false
@@ -1310,6 +1357,58 @@ async function draw() {
 }
 
 /** Escaped, because a stop name comes from a feed somebody else wrote. */
+/**
+ * The three hover cards.
+ *
+ * Built as HTML strings rather than as components, because MapLibre's Popup
+ * takes markup and mounting a Vue component per hover would be a mount and an
+ * unmount on every pixel of a drag across a network. Every value that reaches
+ * one goes through `escapeHtml` — a stop is named by a customer's feed, and a
+ * feed is not a trusted author.
+ */
+function stopCard(hit) {
+  const served = Number(hit.properties.served || 0)
+  const lines = served > 1
+    ? __('{0} lines stop here', [served])
+    : (served === 1 ? __('One line stops here') : __('Nothing has stopped here yet'))
+  const inferred = hit.properties.status === 'Inferred'
+    ? `<p class="text-2xs text-ink-amber-3">${escapeHtml(__('Nobody declared this stop'))}</p>`
+    : ''
+  return `<div class="flex flex-col gap-0.5">
+    <p class="text-xs font-medium text-ink-gray-8">${escapeHtml(hit.properties.label || '')}</p>
+    <p class="text-2xs text-ink-gray-5">${escapeHtml(lines)}</p>${inferred}</div>`
+}
+
+function vehicleCard(hit) {
+  const line = lines.value.find((one) => one.name === hit.properties.line)
+  const found = drawn.value.find((one) => one.vehicle === hit.properties.vehicle)
+  const band = occupancyBand(found?.occupancy)
+  return `<div class="flex flex-col gap-0.5">
+    <p class="text-xs font-medium text-ink-gray-8">${escapeHtml(hit.properties.vehicle || '')}</p>
+    <p class="text-2xs text-ink-gray-5">${escapeHtml(line?.line_name || '')}</p>
+    <p class="flex items-center gap-1 text-2xs text-ink-gray-6">
+      <span style="background:${escapeHtml(bandInk(band))}"
+            class="inline-block size-1.5 rounded-full"></span>
+      ${escapeHtml(band.label())}
+      ${found ? `&middot; ${escapeHtml(delayLabel(found.delay_s))}` : ''}
+    </p></div>`
+}
+
+function lineCard(hit) {
+  const line = lines.value.find((one) => one.name === hit.properties.name)
+  if (!line) return ''
+  const running = drawn.value.filter((one) => one.line === line.name).length
+  return `<div class="flex flex-col gap-0.5">
+    <p class="flex items-center gap-1.5 text-xs font-medium text-ink-gray-8">
+      <span style="background:${escapeHtml(hit.properties.colour || '#888')}"
+            class="inline-block size-2 rounded-full"></span>
+      ${escapeHtml(line.short_name || '')} ${escapeHtml(line.line_name || '')}
+    </p>
+    <p class="text-2xs text-ink-gray-5">${escapeHtml(
+      __('{0} out right now', [running]),
+    )}</p></div>`
+}
+
 function escapeHtml(text) {
   return String(text).replace(/[&<>"']/g, (one) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -1377,14 +1476,16 @@ watch(playing, (on) => {
 
 onMounted(async () => {
   try {
-    const [drawnNetwork, when, choices] = await Promise.all([
-      network.shape(), network.days(), network.offered(),
+    const [drawnNetwork, when, choices, styles] = await Promise.all([
+      network.shape(), network.days(), network.offered(), network.markerStyles(),
     ])
     lines.value = drawnNetwork.lines || []
     stops.value = drawnNetwork.stops || []
     days.value = when.days || []
     day.value = days.value[0]?.day || ''
     offered.value = choices.facets || []
+    markerStyles.value = styles.styles || []
+    mayStyle.value = !!styles.may_write
 
     for (const line of lines.value) {
       const shape = prepare(line.shape)

@@ -98,16 +98,61 @@ export function at(points, along, distance) {
  */
 export const MAX_EXTRAPOLATION = 1.5
 
-export function between(shape, previous, latest, k) {
+export function advance(shape, previous, latest, k) {
   if (!latest) return null
   if (!shape || shape.points.length < 2 || !previous) {
-    return [latest.lon, latest.lat]
+    return { point: [latest.lon, latest.lat], bearing: null }
   }
 
   const from = project(shape.points, shape.along, previous.lon, previous.lat)
   const to = project(shape.points, shape.along, latest.lon, latest.lat)
   const capped = Math.max(0, Math.min(MAX_EXTRAPOLATION, k))
-  return at(shape.points, shape.along, from + (to - from) * capped)
+  const reached = from + (to - from) * capped
+  return {
+    point: at(shape.points, shape.along, reached),
+    // Both answers off one pair of projections. Asking for the point and then
+    // asking again for the heading is the same O(n) walk twice, per vehicle,
+    // per frame — and this runs sixty times a second.
+    bearing: tangent(shape.points, shape.along, reached, to < from),
+  }
+}
+
+/** Just the position. What most callers want, and what the tests hold. */
+export function between(shape, previous, latest, k) {
+  return advance(shape, previous, latest, k)?.point ?? null
+}
+
+/**
+ * Which way the shape is heading at a given distance along it, in degrees
+ * clockwise from north.
+ *
+ * The direction a marker should face is a property of the *route*, not of where
+ * the marker happened to be one frame ago. Taking it from frame-to-frame
+ * movement was the first version and it is wrong twice: a vehicle standing at a
+ * stop has no movement to take a bearing from, so it keeps whatever it had and
+ * a newly-appeared one points north; and a marker eased onto a corrected
+ * position swings to face the correction rather than the road.
+ *
+ * `backwards` is the other half of it. A line's shape is drawn once and run in
+ * both directions, so the tangent alone would have half the fleet driving
+ * backwards up their own route.
+ */
+export function tangent(points, along, distance, backwards = false) {
+  if (!points || points.length < 2) return 0
+
+  const total = along[along.length - 1]
+  const want = Math.max(0, Math.min(total, distance))
+  let index = 1
+  while (index < along.length - 1 && want > along[index]) index += 1
+
+  const [x0, y0] = points[index - 1]
+  const [x1, y1] = points[index]
+  // Longitude degrees are shorter than latitude ones away from the equator, and
+  // a bearing taken without that correction is visibly wrong at Berlin's
+  // latitude — about eight degrees out on a diagonal.
+  const scale = Math.cos((((y0 + y1) / 2) * Math.PI) / 180)
+  const heading = (Math.atan2((x1 - x0) * scale, y1 - y0) * 180) / Math.PI
+  return (heading + (backwards ? 180 : 0) + 360) % 360
 }
 
 /**

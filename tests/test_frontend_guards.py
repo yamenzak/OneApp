@@ -498,6 +498,12 @@ LAYOUT_ONLY = frozenset({
 	"Resizer.vue",
 	"FadedScroll.vue",
 	"RecordDrawer.vue",
+	# `MapLegend.vue` is the sixth: swatches and their names, and nothing a
+	# person can touch. Every control it used to carry moved out to
+	# `MapControls.vue`, which is built from the barrel — what is left is a
+	# colour beside a word, repeated, and there is no component in the library
+	# for that because there is nothing to it but the colour and the word.
+	"MapLegend.vue",
 })
 
 

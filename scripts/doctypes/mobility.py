@@ -164,6 +164,13 @@ doctype(
         # by sight. Read by the map and the network screen so a drawn route
         # looks like the one on the wall of the station.
         f("colour", "Color", "Colour"),
+        # One line drawn differently from the rest of its mode: a heritage tram
+        # on a bus network, a rail replacement that is a coach. Empty means
+        # "whatever this mode is drawn as", which is what nearly every line is.
+        f("marker_shape", "Select", "Drawn as",
+          options="\nBus\nTram\nMetro\nRail\nFerry\nCable\nOther",
+          description="Overrides the mode's own silhouette on the map. Empty "
+                      "follows the mode."),
         f("feed", "Link", "First seen in", options="Transit Feed", read_only=1),
         section("sec_line_shape", "Where it goes"),
         f("shape", "Long Text", "Shape", read_only=1,
@@ -237,6 +244,39 @@ doctype(
           description="Seats and standing places together, which is what an "
                       "occupancy percentage is a percentage of."),
         f("agency", "Link", "Agency", options="Transit Agency"),
+    ],
+    **TENANT,
+)
+
+
+# --------------------------------------------------------------------------- #
+# How the network is drawn
+# --------------------------------------------------------------------------- #
+
+#: The silhouettes the map can draw, and the one word each is called by.
+#:
+#: Kept in step with `BODIES` in `frontend/src/modules/onemobility/lib/markers.js`
+#: — the browser draws them, this names them, and `test_marker_shapes.py` fails
+#: if the two lists drift apart.
+MARKER_SHAPES = "Bus\nTram\nMetro\nRail\nFerry\nCable\nOther"
+
+doctype(
+    "Transit Marker Style",
+    autoname="field:mode",
+    title_field="mode",
+    search_fields="mode,shape",
+    fields=[
+        f("mode", "Select", "Mode", reqd=1, unique=1, in_list_view=1,
+          options="Bus\nTram\nMetro\nRail\nFerry\nCable\nOther",
+          description="The mode a line is imported as."),
+        # Not the same list twice by accident. A mode is what a network *runs*
+        # and a shape is what the map *draws*, and a customer whose Rail is a
+        # light rail wants the tram outline without relabelling their network.
+        # Identity is the default, so a workspace that never opens this screen
+        # gets exactly what it would have got before the doctype existed.
+        f("shape", "Select", "Drawn as", reqd=1, in_list_view=1,
+          options=MARKER_SHAPES,
+          description="Which silhouette the map draws for this mode."),
     ],
     **TENANT,
 )

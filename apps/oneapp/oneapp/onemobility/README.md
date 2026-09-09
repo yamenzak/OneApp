@@ -570,6 +570,87 @@ time" should be a link somebody can send, not a screenshot.
 
 ---
 
+## 7c. What a person can do to the map
+
+Four things, and each of them is here because a map that only shows is half a
+map.
+
+**The controls are a rail, the legend is a key.** They were one card, and it had
+become a control panel with a scrollbar in which the thing a reader actually
+wanted — what does this orange mean — was below the fold. So the controls are
+icon buttons under the zoom, where every web map worth using puts them, and the
+legend went back to being a legend: read-only, bottom-left, and every row in it
+present only while the thing it explains is drawn. An empty map with a key
+explaining four scales is how people learn to stop reading the key.
+
+**One line, looked at alone.** Click a route and it stays in its colour while
+everything else goes grey at a third opacity; click it again, or click the
+ground, and the network comes back. Monochrome rather than hidden, and that is
+the design rather than a shortcut: a route drawn alone on a blank ground has
+lost which junctions it crosses and which corridor it shares, and those are
+usually what somebody isolating it is trying to see.
+
+This is deliberately **not** a facet. A facet is a question put to the server —
+how did U6 run — and re-asks every query on the screen; isolation is a way of
+looking, costs nothing and never re-fetches. The first version conflated them,
+and picking one vehicle out of a crowd re-queried a month of history.
+
+**A marker faces the way the road goes.** The bearing comes from the tangent of
+the line's own shape at the point the vehicle has reached, not from where the
+marker moved between two frames. Frame-to-frame is wrong twice: a vehicle
+standing at a stop has no movement to take a bearing from, so it keeps whatever
+it had and a newly-appeared one points north; and a marker eased onto a
+corrected position swings to face the correction rather than the road. The
+shape is run in both directions, so the tangent is turned through 180° for a
+vehicle whose projected position is going backwards along it — otherwise half
+the fleet drives backwards up its own route. `motion.tangent` is pure and
+unit-tested; `motion.advance` returns the point and the bearing off one pair of
+projections, because asking for each separately is the same O(n) walk twice,
+per vehicle, per frame, sixty times a second.
+
+**Hovering says what the thing is.** A stop gives its name and how many lines
+have been seen there; a vehicle gives its fleet number, its line, how full it is
+and how late; a route gives its number, its name and how many of it are out
+right now. Built as HTML strings rather than components, because MapLibre's
+popup takes markup and mounting a component per hover would be a mount and an
+unmount on every pixel of a drag. Everything that reaches one goes through
+`escapeHtml`: a stop is named by a customer's feed, and a feed is not a trusted
+author.
+
+---
+
+## 7d. A mode is not a shape
+
+`markers.py` and `Transit Marker Style` exist because those are two different
+things and conflating them is the mistake. A **mode** is what a network runs: it
+comes off the feed, Insights groups by it, and renaming it to change a picture
+would corrupt every number. A **shape** is what the map draws. They start
+identical — so a workspace that never opens the picker sees exactly what it saw
+before any of this existed — and they come apart the first time a customer whose
+"Rail" is really a light rail wants the tram outline across their whole S-Bahn.
+
+Two levels: `Transit Marker Style` holds one row per mode, and
+`Transit Line.marker_shape` overrides it for one line — a heritage tram on a bus
+network, a rail replacement that is really a coach. Empty follows the mode,
+which is what nearly every line is.
+
+A doctype rather than a saved view, because it is a **workspace's** decision and
+not a reader's: a control room where two screens draw the same tram differently
+is a control room having an argument about which screen is right. It gets
+permissions, a history and an audit trail like every other document, and no
+screen of its own — the picker is on the map, because what is being chosen is a
+picture and a picture is chosen by looking at where it lands.
+
+Resolved on the server and sent already resolved, so the browser never carries
+the mapping table: `shape()` hands it a line that already knows what it looks
+like. `tests/test_marker_shapes.py` holds the three lists that must agree and
+cannot see each other — the outlines `markers.js` can draw, the shapes the
+server will accept, and the options the doctype offers. A Select option with no
+drawing behind it is a promise the map keeps by silently drawing a capsule for
+ever.
+
+---
+
 ## 8. What the engine was missing, and what it now has
 
 Three of the five gaps below were OneSpace's rather than OneMobility's, and

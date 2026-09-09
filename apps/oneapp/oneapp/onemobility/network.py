@@ -12,7 +12,7 @@ from frappe import _
 from frappe.utils import cint, getdate, now_datetime
 
 from ..shared import facts
-from . import model
+from . import markers, model
 
 
 @frappe.whitelist(methods=["GET"])
@@ -30,12 +30,16 @@ def shape() -> dict:
     lines = frappe.get_all(
         "Transit Line",
         filters={"status": ("!=", "Retired")},
-        fields=["name", "short_name", "line_name", "mode", "colour", "shape", "status"],
+        fields=["name", "short_name", "line_name", "mode", "colour", "shape", "status",
+                "marker_shape"],
         order_by="short_name asc",
         limit_page_length=0,
     )
     for line in lines:
         line["shape"] = frappe.parse_json(line.get("shape") or "null")
+    # Already resolved, so the browser is handed a line that knows what it looks
+    # like rather than a mapping table it would have to apply itself.
+    markers.resolve(lines)
 
     stops = frappe.get_all(
         "Transit Stop",

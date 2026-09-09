@@ -1,0 +1,85 @@
+<template>
+  <!--
+    Which silhouette each mode is drawn as.
+
+    A mode is what a network *runs* and a shape is what the map *draws*, and
+    they are only the same thing until a customer's Rail turns out to be a light
+    rail. The mapping is a document — `Transit Marker Style` — because it is a
+    workspace's decision and not a reader's: two screens in one control room
+    drawing the same tram differently is a control room having an argument about
+    which screen is right.
+
+    Pictures rather than a Select of words, because what is being chosen is a
+    picture. Drawn with the same function the map registers its images with, so
+    this cannot come to disagree with the thing it sets.
+  -->
+  <div
+    class="flex w-[min(23rem,92vw)] flex-col gap-2 p-3"
+    data-slot="marker-picker"
+  >
+    <p class="text-xs font-medium text-ink-gray-7">{{ __('How each mode is drawn') }}</p>
+
+    <p v-if="!mayWrite" class="text-xs leading-snug text-ink-gray-5">
+      {{ __('Somebody who can manage this space can change these.') }}
+    </p>
+
+    <div class="flex max-h-[22rem] flex-col gap-0.5 overflow-y-auto">
+      <div v-for="one in styles" :key="one.key" class="flex items-center gap-1">
+        <span class="w-14 shrink-0 truncate text-xs text-ink-gray-7">{{ one.mode }}</span>
+        <!-- Seven in one row and no wrapping: the point of a picker made of
+             pictures is that they are compared side by side, and a row that
+             wraps compares four with three. -->
+        <div class="flex flex-1 items-center gap-0.5">
+          <Button
+            v-for="shape in shapes"
+            :key="shape.key"
+            variant="ghost"
+            :tooltip="shape.label"
+            :aria-label="shape.label"
+            :disabled="!mayWrite"
+            :class="one.shape === shape.key
+              ? 'bg-surface-gray-3 ring-1 ring-outline-gray-3'
+              : ''"
+            @click="emit('pick', { mode: one.mode, shape: shape.key })"
+          >
+            <img :src="shape.url" :alt="shape.label" class="size-5 object-contain" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+
+import { casingInk } from '@/modules/onemobility/lib/palette'
+import { MODES, SHAPE_NAMES, swatchUrl } from '@/modules/onemobility/lib/markers'
+import { tokenInk } from '@/modules/onespace/lib/screen/ink'
+import { __ } from '@/shared/lib/runtime/translate'
+import { Button } from '@/ui'
+
+defineProps({
+  /** `{ mode, key, shape }` per mode, from `markers.marker_styles`. */
+  styles: { type: Array, default: () => [] },
+  mayWrite: { type: Boolean, default: false },
+})
+
+const emit = defineEmits(['pick'])
+
+/**
+ * Every silhouette, drawn once.
+ *
+ * In one neutral grey: colour is the other half of what a marker says, and a
+ * picker that varied both would be asking two questions in one row.
+ */
+const shapes = computed(() => {
+  const ring = casingInk()
+  const neutral = tokenInk('--ink-gray-5', '#8b8b8b')
+  return MODES.map((key) => ({
+    key,
+    label: SHAPE_NAMES[key](),
+    url: swatchUrl(key, neutral, ring, 2),
+  }))
+})
+</script>

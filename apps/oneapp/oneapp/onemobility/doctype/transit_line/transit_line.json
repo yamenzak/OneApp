@@ -15,6 +15,7 @@
   "cb_line_kind",
   "mode",
   "colour",
+  "marker_shape",
   "feed",
   "sec_line_shape",
   "shape"
@@ -73,6 +74,13 @@
    "fieldname": "colour",
    "fieldtype": "Color",
    "label": "Colour"
+  },
+  {
+   "description": "Overrides the mode's own silhouette on the map. Empty follows the mode.",
+   "fieldname": "marker_shape",
+   "fieldtype": "Select",
+   "label": "Drawn as",
+   "options": "\nBus\nTram\nMetro\nRail\nFerry\nCable\nOther"
   },
   {
    "fieldname": "feed",

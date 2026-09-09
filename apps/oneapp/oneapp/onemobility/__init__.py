@@ -22,6 +22,7 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     insights    the aggregate tiers as plots — the network, the fleet, the stops
     legal       what this module adds to the agreements
     lifecycle   what enabling and disabling it does to the data
+    markers     which silhouette the map draws for a line, and who decides
 """
 
 from .facets import offered
@@ -30,6 +31,7 @@ from .gtfs import load_feed
 from .insights import fleet, rhythm, stops
 from .live import at, report, track
 from .lifecycle import forget_everything
+from .markers import marker_styles, set_marker_style
 from .network import bunching, days, punctuality, shape
 from .sources import fetch_now
 
@@ -42,10 +44,12 @@ __all__ = [
     "fleet",
     "forget_everything",
     "load_feed",
+    "marker_styles",
     "offered",
     "punctuality",
     "report",
     "rhythm",
+    "set_marker_style",
     "shape",
     "stops",
     "surface",

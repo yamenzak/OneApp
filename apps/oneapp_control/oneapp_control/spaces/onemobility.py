@@ -51,6 +51,10 @@ DOCTYPES = [
 	("Transit Line", "Write", 0),
 	("Transit Stop", "Write", 0),
 	("Transit Vehicle", "Write", 0),
+	# How the map draws each mode. Not a record anybody browses — the picker is
+	# on the map itself, where the effect is visible — but it is a document, so
+	# it gets permissions, a history and an audit trail like everything else.
+	("Transit Marker Style", "Write", 0),
 	# The engine's own, because a screen that cannot save a view is a screen
 	# people stop using by the second week.
 	("OneSpace Saved View", "Write", 1),

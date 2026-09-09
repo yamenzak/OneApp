@@ -27,6 +27,8 @@
  * windscreen band at the front so the nose reads as a nose at sixteen pixels.
  */
 
+import { __ } from '@/shared/lib/runtime/translate'
+
 /** Points across, before the pixel ratio. Big enough for a bus to read as one. */
 const SIZE = 40
 
@@ -285,4 +287,37 @@ export function easeBearing(from, to, k = 0.25) {
   if (!Number.isFinite(from)) return to
   let difference = ((to - from + 540) % 360) - 180
   return from + difference * k
+}
+
+/**
+ * What each silhouette is called, in the order a legend should read them.
+ *
+ * Named after what the drawing *is*, not after the mode it usually belongs to —
+ * a workspace can draw its Rail as a tram, and a key that then said "Train"
+ * beside a tram outline would be explaining the wrong thing.
+ */
+export const SHAPE_NAMES = {
+  bus: () => __('Bus'),
+  tram: () => __('Tram'),
+  metro: () => __('Metro'),
+  rail: () => __('Train'),
+  ferry: () => __('Ferry'),
+  cable: () => __('Cable car'),
+  other: () => __('Something else'),
+}
+
+/**
+ * One silhouette as a `data:` URL, for a legend row or a picker button.
+ *
+ * The same `vehicleMarker` the map registers rather than a second drawing, so
+ * a key cannot come to disagree with the thing it explains — which is what
+ * happens the first time a shape changes and only one of the two is updated.
+ */
+export function swatchUrl(shape, fill, ring, ratio = 2) {
+  const image = vehicleMarker(shape, fill, ring, ratio)
+  const pad = document.createElement('canvas')
+  pad.width = image.width
+  pad.height = image.height
+  pad.getContext('2d').putImageData(new ImageData(image.data, image.width, image.height), 0, 0)
+  return pad.toDataURL()
 }

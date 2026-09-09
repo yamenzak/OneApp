@@ -187,8 +187,11 @@ test('an overlay is chosen from the panel, and is a link when it is', async ({ p
   await legend.waitFor({ timeout: 30_000 })
   await canvasIn(page, 'network')
 
-  await legend.getByRole('combobox').click()
+  // The switcher is in the layers panel now, not on the key.
+  await page.locator('[data-slot="layers-button"]').click()
+  await page.locator('[data-slot="overlay-picker"]').getByRole('combobox').click()
   await page.getByRole('option', { name: 'Where it runs late' }).click()
+  await page.keyboard.press('Escape')
 
   // The key is the proof the server answered: its ends are the 5th and 95th
   // percentile of what came back, so a number in the unit means cells exist.
@@ -202,10 +205,53 @@ test('an overlay is chosen from the panel, and is a link when it is', async ({ p
   await page.goto('/one/space/onemobility?screen=network&overlay=occupancy')
   const again = page.locator('[data-slot="network-legend"]')
   await again.waitFor({ timeout: 30_000 })
-  // The switcher, not "the text on the card": the key heading names the chosen
-  // layer too, so a plain text match resolves to two elements.
-  await expect(again.getByRole('combobox')).toContainText('Where it fills up', {
-    timeout: 30_000,
-  })
+  await expect(again).toContainText('Where it fills up', { timeout: 30_000 })
   expectNoRealErrors(errors)
+})
+
+test('the controls are a rail and the legend is a key', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onemobility?screen=network')
+  await canvasIn(page, 'network')
+
+  // The legend holds no controls at all any more. It is the whole point of the
+  // split, and it is the thing that quietly regresses the next time somebody
+  // needs somewhere to put a switch.
+  const legend = page.locator('[data-slot="network-legend"]')
+  await expect(legend).toBeVisible({ timeout: 30_000 })
+  await expect(legend.getByRole('combobox')).toHaveCount(0)
+  await expect(legend.getByRole('switch')).toHaveCount(0)
+
+  const controls = page.locator('[data-slot="map-controls"]')
+  await controls.locator('[data-slot="layers-button"]').click()
+  await expect(page.getByRole('switch', { name: 'Routes' })).toBeVisible({ timeout: 20_000 })
+  await page.keyboard.press('Escape')
+
+  // Seven silhouettes for each of seven modes, drawn rather than named.
+  await controls.locator('[data-slot="shapes-button"]').click()
+  const picker = page.locator('[data-slot="marker-picker"]')
+  await expect(picker).toBeVisible({ timeout: 20_000 })
+  await expect(picker.getByRole('button', { name: 'Tram' })).toHaveCount(7)
+  expectNoRealErrors(errors)
+})
+
+test('a route can be looked at alone, and put back', async ({ page }) => {
+  await page.goto('/one/space/onemobility?screen=network')
+  const canvas = await canvasIn(page, 'network')
+  const box = await canvas.boundingBox()
+
+  // A route line is eight pixels wide and this fixture's geometry moves with
+  // the seed, so the click is aimed at a grid rather than at a coordinate.
+  const clear = page.locator('[data-slot="isolate-clear"]')
+  for (let x = 0.35; x < 0.8 && !(await clear.count()); x += 0.05) {
+    for (let y = 0.2; y < 0.7 && !(await clear.count()); y += 0.05) {
+      await page.mouse.click(box.x + box.width * x, box.y + box.height * y)
+      await page.waitForTimeout(120)
+    }
+  }
+  await expect(clear).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('[data-slot="network-legend"]')).toContainText('dimmed')
+
+  await clear.click()
+  await expect(clear).toHaveCount(0)
 })

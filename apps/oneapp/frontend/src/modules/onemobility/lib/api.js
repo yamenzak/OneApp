@@ -51,6 +51,12 @@ export const network = {
    */
   offered: () => callMethod('oneapp.onemobility.offered', {}, { method: 'GET' }),
 
+  /** Every mode, and which silhouette the map draws for it. Once per session. */
+  markerStyles: () => callMethod('oneapp.onemobility.marker_styles', {}, { method: 'GET' }),
+
+  /** Draw a mode as a different shape, for the whole workspace. */
+  setMarkerStyle: (params) => callMethod('oneapp.onemobility.set_marker_style', params),
+
   /** Vehicles on one line that have caught each other. */
   bunching: (params) =>
     callMethod('oneapp.onemobility.bunching', params, { method: 'GET', silent: true }),

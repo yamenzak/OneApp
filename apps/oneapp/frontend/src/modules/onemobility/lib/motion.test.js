@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { at, between, blend, ease, measure, prepare, project } from './motion'
+import { at, between, blend, ease, measure, prepare, project, tangent } from './motion'
 
 // A right angle: east one degree, then north one degree. A straight line
 // between the two ends would cut the corner, which is the whole point.
@@ -102,5 +102,31 @@ describe('prepare', () => {
     expect(prepare(null)).toBe(null)
     expect(prepare({ coordinates: [] })).toBe(null)
     expect(prepare({ coordinates: [[1, 1]] })).toBe(null)
+  })
+})
+
+describe('tangent', () => {
+  // A shape running due east, then due north.
+  const points = [[0, 0], [1, 0], [1, 1]]
+  const along = measure(points)
+
+  it('reads the direction of the leg it is on', () => {
+    expect(tangent(points, along, 0.5)).toBeCloseTo(90, 0)
+    expect(tangent(points, along, 1.5)).toBeCloseTo(0, 0)
+  })
+
+  it('turns a vehicle running the route the other way', () => {
+    expect(tangent(points, along, 0.5, true)).toBeCloseTo(270, 0)
+    expect(tangent(points, along, 1.5, true)).toBeCloseTo(180, 0)
+  })
+
+  it('clamps to the ends rather than reading past them', () => {
+    expect(tangent(points, along, -9)).toBeCloseTo(90, 0)
+    expect(tangent(points, along, 99)).toBeCloseTo(0, 0)
+  })
+
+  it('has no direction to give for a shape that is not one', () => {
+    expect(tangent([[1, 1]], [0], 0)).toBe(0)
+    expect(tangent(null, [], 0)).toBe(0)
   })
 })
