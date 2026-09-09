@@ -32,6 +32,7 @@ from frappe.utils import cint, flt, now_datetime
 from ..shared import facts
 from . import conflicts
 from . import model
+from . import timetable
 
 #: How many rows of one CSV are held in memory at once. A big-city
 #: `stop_times.txt` is hundreds of megabytes, so it is streamed and committed
@@ -218,7 +219,7 @@ def load(feed_name: str, content: bytes) -> dict:
             update_modified=False,
         )
 
-    counts["trip_rows"] = _load_trips(feed, trips)
+    counts["trip_rows"] = timetable.runs(feed, trips)
     counts["stop_times"] = _load_stop_times(archive, feed, trips, stops)
 
     feed.db_set("lines_seen", counts["lines"], update_modified=False)
@@ -273,40 +274,7 @@ def _load_stop_times(archive, feed, trips: dict, stops: dict) -> int:
                 "headsign": trip["headsign"],
             }
 
-    from . import timetable
-
     return timetable.replace(feed.source, calls())
-
-
-def _load_trips(feed, trips: dict) -> int:
-    """Write the trip facts.
-
-    Separate from the timetable above and kept: this is one row per *run*,
-    which the network screen counts and the roll-up uses as a denominator,
-    where the timetable is one row per run per stop.
-    """
-    if not trips:
-        return 0
-
-    day = frappe.utils.getdate()
-    rows = []
-    for key, trip in trips.items():
-        started = datetime.combine(day, datetime.min.time()) + timedelta(hours=6)
-        rows.append(
-            {
-                "started": started,
-                "trip_key": key[:64],
-                "line": trip["line"],
-                "vehicle": "",
-                "headsign": trip["headsign"],
-                "planned_end": started + timedelta(hours=1),
-                "hour": started.hour,
-                "dow": started.weekday(),
-            }
-        )
-
-    facts.ensure(model.TRIP)
-    return facts.write(model.TRIP, rows)
 
 
 #: GTFS route types, as the words this product uses. Only the ones a European

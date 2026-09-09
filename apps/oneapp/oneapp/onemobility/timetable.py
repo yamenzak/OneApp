@@ -138,6 +138,40 @@ def replace(source: str, rows, valid_from: date | None = None) -> int:
 	return written
 
 
+def runs(feed, trips: dict) -> int:
+	"""One row per *run*, where the schedule above is one row per run per stop.
+
+	Kept separate and kept at all because the network screen counts trips and
+	the roll-up uses them as a denominator. Shared by both importers: a VDV
+	delivery and a GTFS export disagree about almost everything and agree
+	exactly here, which is what §1 said would happen.
+
+	`started` is a placeholder and is knowingly one — the timetable holds the
+	real answer as a pattern, and materialising a run per calendar day is the
+	flattening `SCHEDULE`'s docstring refuses. What this table is asked is how
+	many runs a line has, and that it answers.
+	"""
+	if not trips:
+		return 0
+
+	day = getdate()
+	started = datetime.combine(day, datetime.min.time()) + timedelta(hours=6)
+	facts.ensure(model.TRIP)
+	return facts.write(model.TRIP, [
+		{
+			"started": started,
+			"trip_key": key[:64],
+			"line": trip["line"],
+			"vehicle": "",
+			"headsign": trip.get("headsign") or "",
+			"planned_end": started + timedelta(hours=1),
+			"hour": started.hour,
+			"dow": started.weekday(),
+		}
+		for key, trip in trips.items()
+	])
+
+
 def kept(source: str = "") -> int:
 	"""How many calls the timetable holds. The fixture and the tests read it."""
 	if not facts.exists(model.SCHEDULE):

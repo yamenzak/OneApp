@@ -43,10 +43,18 @@ MAX_BYTES = 256 * 1024 * 1024
 #: for the rest of the hour.
 TIMEOUT = 120
 
-#: Which formats have a normaliser. The rest are declared on the doctype
-#: because a customer should be able to say what they have before we can read
-#: it — and be told so plainly rather than have it fail as a parse error.
-LOADERS = {"GTFS"}
+#: Which formats have a normaliser, and which module is it. The rest are
+#: declared on the doctype because a customer should be able to say what they
+#: have before we can read it — and be told so plainly rather than have it fail
+#: as a parse error.
+#:
+#: Every one of these is an importer onto the *one* model, never a second model:
+#: README §1, which is also why they share a signature and why `deliver` below
+#: does not know which of them it called.
+LOADERS = {
+	"GTFS": "gtfs",
+	"VDV 452": "vdv452",
+}
 
 
 def _refuse(feed, message: str):
@@ -94,10 +102,10 @@ def deliver(source: str, content: bytes, label: str = "", file_url: str = "") ->
 		_refuse(feed, _("{0} is not a format this can read yet.").format(doc.format))
 		return {"feed": feed.name, "loaded": False}
 
-	from .gtfs import load
+	reader = frappe.get_attr(f"oneapp.onemobility.{LOADERS[doc.format]}.load")
 
 	try:
-		counts = load(feed.name, content)
+		counts = reader(feed.name, content)
 	except Exception:
 		_refuse(feed, frappe.get_traceback(with_context=False)[-400:])
 		raise

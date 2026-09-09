@@ -1043,9 +1043,13 @@ Each ships something a person can look at. **Done** is done and in the fixture.
 2. **The map view type**, in the engine, over Geolocation. Stops on a map, and
    every other space gets it too. **Done**, with the basemap under it.
 3. **VDV 452 over SFTP.** The real acquisition path, on the pipeline stage 1
-   proved. **Half done:** the SFTP door is built and takes the newest file in a
-   drop folder; the VDV 452 normaliser is not written, and a source declaring
-   that format is told so plainly rather than failing as a parse error.
+   proved. **Done:** the SFTP door takes the newest file in a drop folder and
+   `vdv452.py` reads it — the `tbl`/`atr`/`rec` interchange, a zip of `.x10`
+   files or a bare one, into the same nouns GTFS lands on. The planning tables
+   GTFS has no word for are skipped rather than stored and ignored, and the two
+   things that can be quietly wrong — columns are positional against the `atr`
+   line above them, coordinates are integers at a scale a delivery need not
+   declare — have tests naming them.
 4. **The network screen, static.** Lines drawn from shapes, coloured, filtered,
    with a legend. **Done.**
 5. **Live.** A socket source, the observation table, vehicles moving. **Done**,
