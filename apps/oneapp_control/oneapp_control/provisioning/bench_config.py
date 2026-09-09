@@ -27,11 +27,14 @@ def build_config() -> dict:
 
 	config = {
 		# R2
+		# The account-wide credentials only. Which bucket a site writes to, the
+		# host its public objects are served from, and any bucket-scoped keys
+		# are per tenant and go into *site* config at provisioning — a bench
+		# value for any of them is a value that is right for one jurisdiction
+		# and silently wrong for the other.
 		"oneapp_r2_account_id": s.r2_account_id,
-		"oneapp_r2_bucket": s.r2_bucket,
 		"oneapp_r2_access_key": s.r2_access_key,
 		"oneapp_r2_secret_key": s.get_password("r2_secret_key", raise_exception=False),
-		"oneapp_r2_public_base": s.r2_public_base,
 		# Sheets
 		"oneapp_link_previews": 1 if s.link_previews else None,
 		# Email

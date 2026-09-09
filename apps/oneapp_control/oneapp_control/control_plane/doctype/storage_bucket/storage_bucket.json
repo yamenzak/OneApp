@@ -12,13 +12,13 @@
   "status",
   "cb_bucket",
   "tenant_count",
-  "max_tenants",
   "bytes_used",
-  "max_bytes",
+  "created_on",
   "sec_bucket_cf",
   "public_base_url",
-  "created_on",
+  "access_key",
   "cb_bucket_cf",
+  "secret_key",
   "last_error"
  ],
  "fields": [
@@ -48,7 +48,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Provisioning\nActive\nFull\nRetired",
+   "options": "Provisioning\nActive\nRetired",
    "reqd": 1
   },
   {
@@ -64,36 +64,11 @@
    "read_only": 1
   },
   {
-   "default": "200",
-   "description": "Rotation threshold. Reaching it marks the bucket Full and a fresh one is created.",
-   "fieldname": "max_tenants",
-   "fieldtype": "Int",
-   "label": "Max Tenants"
-  },
-  {
    "default": "0",
    "fieldname": "bytes_used",
    "fieldtype": "Float",
    "label": "Bytes Used",
    "read_only": 1
-  },
-  {
-   "default": "0",
-   "description": "Optional secondary cap. Zero means tenant count only.",
-   "fieldname": "max_bytes",
-   "fieldtype": "Float",
-   "label": "Max Bytes"
-  },
-  {
-   "fieldname": "sec_bucket_cf",
-   "fieldtype": "Section Break",
-   "label": "Cloudflare"
-  },
-  {
-   "description": "CDN host bound to this bucket, for public objects.",
-   "fieldname": "public_base_url",
-   "fieldtype": "Data",
-   "label": "Public Base Url"
   },
   {
    "fieldname": "created_on",
@@ -102,8 +77,30 @@
    "read_only": 1
   },
   {
+   "fieldname": "sec_bucket_cf",
+   "fieldtype": "Section Break",
+   "label": "Cloudflare"
+  },
+  {
+   "description": "CDN host bound to this bucket, e.g. https://cdn.4dl.app. Per bucket, because a hostname is: without it public objects are served through our own download route, which works and is slower.",
+   "fieldname": "public_base_url",
+   "fieldtype": "Data",
+   "label": "Public Base URL"
+  },
+  {
+   "description": "Optional. An S3 key scoped to this bucket \u2014 the EU one is the reason to bother. Blank falls back to the account-wide keys in Control Settings.",
+   "fieldname": "access_key",
+   "fieldtype": "Data",
+   "label": "Access Key"
+  },
+  {
    "fieldname": "cb_bucket_cf",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "secret_key",
+   "fieldtype": "Password",
+   "label": "Secret Key"
   },
   {
    "fieldname": "last_error",
@@ -145,10 +142,6 @@
   {
    "color": "Green",
    "title": "Active"
-  },
-  {
-   "color": "Yellow",
-   "title": "Full"
   },
   {
    "color": "Gray",

@@ -32,13 +32,10 @@
   "bench_config_html",
   "sec_r2",
   "r2_account_id",
-  "r2_bucket",
-  "r2_public_base",
   "cb_r2",
   "r2_access_key",
   "r2_secret_key",
   "r2_admin_token",
-  "bucket_max_tenants",
   "link_previews",
   "sec_mail",
   "cf_email_token",
@@ -215,17 +212,6 @@
    "label": "R2 Account ID"
   },
   {
-   "fieldname": "r2_bucket",
-   "fieldtype": "Data",
-   "label": "R2 Bucket"
-  },
-  {
-   "description": "e.g. https://cdn.4dl.app",
-   "fieldname": "r2_public_base",
-   "fieldtype": "Data",
-   "label": "R2 Public Base URL"
-  },
-  {
    "fieldname": "cb_r2",
    "fieldtype": "Column Break"
   },
@@ -240,17 +226,10 @@
    "label": "R2 Secret Key"
   },
   {
-   "description": "Creates buckets, so it is control-plane only and never pushed to a bench. The S3 keys above are what tenant sites use to read and write objects.",
+   "description": "Creates buckets, so it is control-plane only and never pushed to a bench. The S3 keys above are what tenant sites use to read and write objects, unless a Storage Bucket carries its own. Which bucket a workspace uses, and the CDN host in front of it, live on the bucket.",
    "fieldname": "r2_admin_token",
    "fieldtype": "Password",
    "label": "R2 Admin API Token"
-  },
-  {
-   "default": "200",
-   "description": "Rotation threshold for new buckets. Bounded buckets bound the blast radius of losing one.",
-   "fieldname": "bucket_max_tenants",
-   "fieldtype": "Int",
-   "label": "Bucket Max Tenants"
   },
   {
    "default": "0",

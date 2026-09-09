@@ -49,6 +49,7 @@ def built(bench_config, stub_frappe):
 # itself, is forbidden in bench config.
 FORBIDDEN = [
 	"cf_admin_token",       # brings the whole platform up, so it can take it down
+	"r2_admin_token",       # creates and deletes buckets
 	"cf_kv_token",          # could rewrite every tenant's mail routing
 	"cf_kv_namespace_id",
 	"press_api_secret",     # could create or destroy any site
@@ -72,13 +73,26 @@ def test_kv_token_absent_even_though_settings_has_one(built):
 
 def test_expected_keys_are_present(built):
 	for key in (
-		"oneapp_r2_bucket",
+		"oneapp_r2_access_key",
 		"oneapp_cf_email_token",
 		"oneapp_mail_domain",
 		"oneapp_ai_gateway",
 		"oneapp_control_url",
 	):
 		assert key in built, key
+
+
+def test_a_bucket_is_never_a_bench_wide_default(built):
+	"""One bench carries both jurisdictions.
+
+	A bench-wide bucket, public host or bucket-scoped key is right for one
+	jurisdiction and silently wrong for the other — and site config, which is
+	where the real per-tenant values land, would have to overwrite it on every
+	single site for the wrong one never to be used. Site config wins where it
+	is set; the failure is the site where it is *not*.
+	"""
+	assert "oneapp_r2_bucket" not in built
+	assert "oneapp_r2_public_base" not in built
 
 
 def test_every_key_is_namespaced(built):
@@ -93,7 +107,7 @@ def test_blank_values_are_dropped(bench_config, stub_frappe):
 	class Sparse(FakeSettings):
 		def __init__(self):
 			super().__init__()
-			self.r2_bucket = ""
+			self.r2_access_key = ""
 			self.mail_domain = None
 
 		def get_password(self, field, raise_exception=False):
@@ -102,7 +116,7 @@ def test_blank_values_are_dropped(bench_config, stub_frappe):
 	stub_frappe.get_single = lambda *a, **k: Sparse()
 	built = bench_config.build_config()
 
-	assert "oneapp_r2_bucket" not in built
+	assert "oneapp_r2_access_key" not in built
 	assert "oneapp_mail_domain" not in built
 	assert "oneapp_cf_email_token" not in built
 

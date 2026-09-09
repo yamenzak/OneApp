@@ -37,7 +37,7 @@ class FakeS3:
 
 
 def _install(monkeypatch, r2, fake):
-	monkeypatch.setattr(r2, "s3", lambda: fake)
+	monkeypatch.setattr(r2, "s3", lambda bucket=None: fake)
 	return fake
 
 

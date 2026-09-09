@@ -559,19 +559,33 @@ does: **its CORS policy must allow the tenant origins to `PUT` and must expose
 the browser is not allowed to read does not exist as far as the page is
 concerned — so a bucket without it uploads every byte correctly and then fails
 on the last call. `r2.ensure_cors(origins)` writes the policy. It is a
-bucket-level operation, so it is run once per bucket when the bucket is made,
-not per site and not on a schedule:
+bucket-level operation, so it is run once per bucket — which now means twice
+ever — and not per site and not on a schedule:
 
     bench --site <any site on the shard> execute \
       oneapp.onestorage.r2.ensure_cors --kwargs "{'origins': ['https://*.4dl.app']}"
 
-**Buckets are rotated at a cap.** A `Storage Bucket` tracks jurisdiction, tenant
-count and bytes; at the cap it is marked Full and a fresh one is created.
-Customers choose Global or EU jurisdiction. The reason is blast radius: one
-bucket holding every tenant's files is a single credential, a single
-misconfiguration and a single accidental lifecycle rule away from losing
-everything at once. Consequence: the bucket is per-tenant, so it belongs in
-*site* config; bench config keeps only the account-wide credentials.
+**Two buckets, one per jurisdiction.** A `Storage Bucket` records the name, the
+CDN host bound to it and optionally its own S3 keys; the first signup in a
+jurisdiction creates it and every workspace after that lands in the same one.
+Customers choose Global or EU at signup and it cannot be changed afterwards
+without moving objects.
+
+Buckets used to be capped at a couple of hundred tenants and rotated, to bound
+the blast radius of losing one. It bounded nothing: a bad lifecycle rule gets
+written against the next bucket too, and a key that reaches a bucket reaches
+every tenant in it. Versioning and object lock defend the objects, a scoped
+token bounds a credential, and both are bucket settings — cheaper to get right
+on two buckets than on a pool whose first rotation would have run inside a
+signup around the two-hundredth customer.
+
+Consequence, and the reason any of this is in this file: **nothing about a
+bucket may be a bench-wide default.** One bench carries both jurisdictions, so a
+bench value for the bucket, its public host or its keys is right for one
+jurisdiction and silently wrong for the other. All three go into *site* config
+at provisioning; bench config keeps only the account-wide credentials. A site
+with no assignment gets none of them and falls back to local disk, which is the
+failure worth having.
 
 **Backups: two custodians.** Frappe Cloud's managed backups and our own into R2,
 because one provider holding both your site and the only copy of it is not a
@@ -669,9 +683,11 @@ installed?" would make this a consequence of an app list, and its failure mode
 is silence: install an app for an unrelated reason and a customer's attachments
 quietly stop going to R2.
 
-**R2**: `oneapp_r2_account_id`, `oneapp_r2_bucket`, `oneapp_r2_access_key`,
-`oneapp_r2_secret_key`, `oneapp_r2_public_base`. Absent, the File override falls
-back to Frappe's filesystem behaviour rather than failing every upload.
+**R2**: `oneapp_r2_account_id`, `oneapp_r2_access_key`, `oneapp_r2_secret_key`
+on the bench; `oneapp_r2_bucket` and `oneapp_r2_public_base` per site, and the
+access key and secret again per site when the bucket carries its own. Absent,
+the File override falls back to Frappe's filesystem behaviour rather than
+failing every upload.
 
 **AI**: `oneapp_cf_account_id`, `oneapp_ai_gateway`, `oneapp_ai_gateway_token`,
 `oneapp_google_ai_key`, `oneapp_cf_api_token`, `oneapp_ai_markup`.
@@ -891,7 +907,11 @@ accident.
 threshold sat in the settings dialog, described itself as the cap a new bucket
 is created with, and was wired to nothing — narrowing the blast radius to 50
 tenants produced buckets that still took 200, silently. A setting is either read
-outside the form that offers it or it comes off the form.
+outside the form that offers it or it comes off the form. Its mirror image is
+worth the same line: a fleet-wide `r2_public_base`, faithfully copied onto every
+bucket at creation, is a setting that *is* read and is still wrong — a CDN host
+is bound to one bucket, so the second bucket served its public objects from the
+first one's domain. Both are gone.
 
 **A derived field is read-only.** `Tenant.environment` is overwritten from the
 shard on every save; as an editable Select it was a control whose value was

@@ -198,15 +198,28 @@ def push_site_config(job):
 		"oneapp_site_name": tenant.site_name,
 	}
 
-	# The bucket is per tenant, so unlike the R2 credentials it cannot live in
-	# bench config. Assigning here also rotates the pool when one fills.
+	# The bucket is per tenant, so unlike the account-wide R2 credentials it
+	# cannot live in bench config — and neither can the public host or the
+	# scoped keys, which belong to the bucket rather than to the account. A site
+	# with no assignment gets none of these and falls back to local disk, which
+	# is the right failure: better than writing into another jurisdiction's
+	# bucket because a bench-wide default was standing there.
 	if r2.is_configured():
 		try:
 			bucket = r2.assign(tenant.name)
+			row = frappe.db.get_value(
+				"Storage Bucket", bucket, ["name", "public_base_url", "access_key"],
+				as_dict=True,
+			) or {}
 			config["oneapp_r2_bucket"] = bucket
-			config["oneapp_r2_public_base"] = (
-				frappe.db.get_value("Storage Bucket", bucket, "public_base_url") or ""
-			)
+			config["oneapp_r2_public_base"] = row.get("public_base_url") or ""
+			if row.get("access_key"):
+				secret = frappe.get_doc("Storage Bucket", bucket).get_password(
+					"secret_key", raise_exception=False
+				)
+				if secret:
+					config["oneapp_r2_access_key"] = row["access_key"]
+					config["oneapp_r2_secret_key"] = secret
 		except r2.R2Error as e:
 			# Storage is a capability, not a prerequisite: the workspace works
 			# without it and files fall back to local disk until it is fixed.

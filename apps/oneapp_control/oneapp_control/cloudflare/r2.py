@@ -1,13 +1,23 @@
-"""R2 buckets, created and rotated through the Cloudflare API.
+"""R2 buckets, created and recorded through the Cloudflare API.
 
-Objects are never pooled into one enormous bucket. A single bucket holding every
-tenant's files is one credential, one misconfiguration and one bad lifecycle rule
-away from losing everything at once — so buckets are capped, and a fresh one is
-created when a cap is reached. The worst case stays bounded.
+Two buckets, and only two: one Global, one EU. Jurisdiction is chosen by the
+customer at signup, R2 pins an EU bucket to EU data centres, and it cannot be
+changed afterwards without moving objects — so the jurisdiction is the only
+thing that ever needs a second bucket.
 
-Jurisdiction is chosen by the customer at signup. R2 pins an EU bucket to EU data
-centres, which is what "where is my data" actually needs answering, and it cannot
-be changed afterwards without moving objects.
+There used to be a third reason: buckets were capped at a couple of hundred
+tenants and rotated, on the theory that a bad lifecycle rule or a leaked
+credential would then lose a bounded fraction of the fleet. It bounded nothing
+worth bounding. A rule written against one bucket gets written against the next
+one too, a key scoped to a bucket still reaches every tenant in it, and the
+rotation's first execution would have been in the middle of a signup around the
+two-hundredth customer — untested code on the provisioning path. Versioning and
+object lock are what actually defend the objects; scoped tokens are what bound a
+credential. Both are bucket settings, and both are cheaper to get right on two
+buckets than on a growing pool.
+
+A bucket keeps its own public host and, optionally, its own S3 keys, so an EU
+token can be scoped to the EU bucket and reach nothing else.
 """
 
 import frappe
@@ -108,38 +118,33 @@ def create_bucket(name: str, jurisdiction: str = "Global") -> dict:
 # Allocation
 # --------------------------------------------------------------------------- #
 
-def allocate(jurisdiction: str = "Global") -> str:
-	"""A bucket with headroom in this jurisdiction, creating one if needed.
+def bucket_in(jurisdiction: str = "Global") -> str:
+	"""The bucket for a jurisdiction, creating it the first time one is asked for.
 
-	Called at provisioning. A tenant keeps its bucket for life — moving objects
-	between buckets later is a migration, not a setting.
+	One per jurisdiction, so this is a lookup rather than a placement decision.
+	The first EU signup makes the EU bucket; everyone after it lands in the same
+	one.
 	"""
 	existing = frappe.get_all(
 		"Storage Bucket",
 		filters={"jurisdiction": jurisdiction, "status": "Active"},
-		fields=["name", "tenant_count", "max_tenants", "bytes_used", "max_bytes"],
-		order_by="tenant_count desc",
+		fields=["name"],
+		order_by="creation asc",
+		limit=1,
 	)
-
-	# Fill the fullest bucket that still has room rather than spreading evenly:
-	# fewer part-full buckets is easier to reason about and to retire.
-	for bucket in existing:
-		if _has_headroom(bucket):
-			return bucket["name"]
+	if existing:
+		return existing[0]["name"]
 
 	return provision_bucket(jurisdiction)
 
 
-def _has_headroom(bucket) -> bool:
-	if bucket["max_tenants"] and bucket["tenant_count"] >= bucket["max_tenants"]:
-		return False
-	if bucket["max_bytes"] and (bucket["bytes_used"] or 0) >= bucket["max_bytes"]:
-		return False
-	return True
-
-
 def provision_bucket(jurisdiction: str = "Global") -> str:
-	"""Create the next bucket in a jurisdiction and record it."""
+	"""Create a jurisdiction's bucket and record it.
+
+	The name carries a random suffix rather than being `oneapp-eu` outright: a
+	creation that fails after R2 has made the bucket leaves a Retired row, and a
+	fixed name would make every retry after that fail on "already exists".
+	"""
 	import secrets
 
 	suffix = "eu" if jurisdiction == "EU" else "gl"
@@ -151,15 +156,6 @@ def provision_bucket(jurisdiction: str = "Global") -> str:
 			"bucket_name": name,
 			"jurisdiction": jurisdiction,
 			"status": "Provisioning",
-			# The fleet-wide rotation threshold, copied onto the bucket at
-			# creation. Copied rather than read live for the same reason a
-			# plan's terms are: lowering the setting should bound the *next*
-			# bucket, not retroactively declare a running one full.
-			#
-			# Without this the setting was inert — an operator narrowing the
-			# blast radius to 50 tenants a bucket got buckets that still took
-			# 200, and nothing said so.
-			"max_tenants": _bucket_cap(),
 			"created_on": now_datetime(),
 		}
 	).insert(ignore_permissions=True)
@@ -172,46 +168,37 @@ def provision_bucket(jurisdiction: str = "Global") -> str:
 		raise
 
 	doc.db_set("status", "Active")
-	if config()["public_base"]:
-		doc.db_set("public_base_url", config()["public_base"])
-
+	# Deliberately no public host: it is a CDN hostname bound to *this* bucket,
+	# and there is no fleet-wide value that could be right for it. Copying one
+	# on from settings is what made every bucket after the first serve its
+	# public objects from the first bucket's domain. An operator binds the host
+	# in Cloudflare and puts it on the row; until then public URLs go through
+	# our own download route, which is slower and works.
 	return doc.name
 
 
-def _bucket_cap() -> int:
-	"""Tenants a fresh bucket accepts, from settings, falling back to the field
-	default. Zero in settings means the doctype default rather than no cap: an
-	unset Int and a deliberate "unlimited" look identical, and of the two only
-	one of them is safe to assume."""
-	return int(
-		frappe.db.get_single_value("OneSpace Control Settings", "bucket_max_tenants")
-		or 200
-	)
-
-
 def assign(tenant_name: str) -> str:
-	"""Give a tenant its bucket, rotating the pool when one fills."""
+	"""Give a tenant its jurisdiction's bucket.
+
+	A tenant keeps it for life — moving objects between buckets later is a
+	migration, not a setting.
+	"""
 	tenant = frappe.get_doc("Tenant", tenant_name)
 	if tenant.storage_bucket:
 		return tenant.storage_bucket
 
-	bucket = allocate(tenant.storage_jurisdiction or "Global")
+	bucket = bucket_in(tenant.storage_jurisdiction or "Global")
 	tenant.db_set("storage_bucket", bucket)
-
-	count = frappe.db.count("Tenant", {"storage_bucket": bucket})
-	frappe.db.set_value("Storage Bucket", bucket, "tenant_count", count)
-
-	# Close the bucket as soon as it is full so the next signup does not race
-	# into it.
-	doc = frappe.get_doc("Storage Bucket", bucket)
-	if doc.max_tenants and count >= doc.max_tenants:
-		doc.db_set("status", "Full")
+	frappe.db.set_value(
+		"Storage Bucket", bucket, "tenant_count",
+		frappe.db.count("Tenant", {"storage_bucket": bucket}),
+	)
 
 	return bucket
 
 
 def refresh_usage():
-	"""Scheduled. Roll tenant usage up per bucket and retire full ones."""
+	"""Scheduled. Roll tenant usage up per bucket, for the console."""
 	for bucket in frappe.get_all("Storage Bucket", pluck="name"):
 		rows = frappe.db.sql(
 			"""
@@ -230,19 +217,16 @@ def refresh_usage():
 
 @frappe.whitelist()
 def bucket_report() -> list[dict]:
-	"""What each tenant's bucket holds, for the console's storage panel."""
+	"""What each bucket holds, for the console's storage panel."""
 	if "System Manager" not in frappe.get_roles():
 		frappe.throw(_("Not permitted."), frappe.PermissionError)
 
-	rows = frappe.get_all(
+	return frappe.get_all(
 		"Storage Bucket",
-		fields=["name", "jurisdiction", "status", "tenant_count", "max_tenants", "bytes_used"],
+		fields=["name", "jurisdiction", "status", "tenant_count", "bytes_used",
+		        "public_base_url"],
 		order_by="jurisdiction asc, creation asc",
 	)
-	for row in rows:
-		cap = row["max_tenants"] or 0
-		row["utilisation"] = round(row["tenant_count"] / cap, 3) if cap else None
-	return rows
 
 
 # --------------------------------------------------------------------------- #
@@ -262,8 +246,35 @@ def bucket_report() -> list[dict]:
 PAGE = 1000
 
 
-def s3():
-	"""boto3 against R2's S3 endpoint.
+def _keys(bucket: str | None) -> tuple[str, str]:
+	"""The S3 credentials to use for a bucket: its own, or the account's.
+
+	A bucket may carry its own key pair. The point is the EU one: a token scoped
+	to the EU bucket cannot read a Global tenant's objects, which turns "your
+	data stays in the EU" from a placement decision into something the
+	credential itself enforces. Unset, both buckets share the account-wide keys
+	and nothing changes.
+	"""
+	if bucket:
+		row = frappe.db.get_value(
+			"Storage Bucket", bucket, ["name", "access_key"], as_dict=True
+		)
+		if row and row.get("access_key"):
+			secret = frappe.get_doc("Storage Bucket", row["name"]).get_password(
+				"secret_key", raise_exception=False
+			)
+			if secret:
+				return row["access_key"], secret
+
+	settings = frappe.get_single("OneSpace Control Settings")
+	return (
+		settings.r2_access_key,
+		settings.get_password("r2_secret_key", raise_exception=False),
+	)
+
+
+def s3(bucket: str | None = None):
+	"""boto3 against R2's S3 endpoint, holding `bucket`'s credentials.
 
 	Imported inside the function, like the tenant side does it, so a control
 	plane without boto3 fails on the one call that needs it rather than at
@@ -273,12 +284,10 @@ def s3():
 	from botocore.config import Config
 
 	c = config()
-	if not is_configured():
-		raise R2NotConfigured("R2 admin credentials are not set in OneSpace Control Settings.")
+	if not c["account_id"]:
+		raise R2NotConfigured("R2 is not configured in OneSpace Control Settings.")
 
-	settings = frappe.get_single("OneSpace Control Settings")
-	access_key = settings.r2_access_key
-	secret_key = settings.get_password("r2_secret_key", raise_exception=False)
+	access_key, secret_key = _keys(bucket)
 	if not (access_key and secret_key):
 		raise R2NotConfigured(
 			"R2 access keys are not set. The admin token administers buckets; "
@@ -305,7 +314,7 @@ def objects(bucket: str, prefix: str) -> list[dict]:
 	"""
 	found = []
 	token = None
-	client = s3()
+	client = s3(bucket)
 
 	while True:
 		kwargs = {"Bucket": bucket, "Prefix": prefix, "MaxKeys": PAGE}
@@ -343,7 +352,7 @@ def copy(bucket: str, source_key: str, target_key: str) -> None:
 	promoting a 4 GB backup costs a request, not four gigabytes of transfer on
 	a control plane that has no business moving them.
 	"""
-	s3().copy_object(
+	s3(bucket).copy_object(
 		Bucket=bucket,
 		CopySource={"Bucket": bucket, "Key": source_key},
 		Key=target_key,
@@ -351,7 +360,7 @@ def copy(bucket: str, source_key: str, target_key: str) -> None:
 
 
 def put(bucket: str, key: str, body: bytes, content_type: str = "application/json") -> None:
-	s3().put_object(Bucket=bucket, Key=key, Body=body, ContentType=content_type)
+	s3(bucket).put_object(Bucket=bucket, Key=key, Body=body, ContentType=content_type)
 
 
 def get(bucket: str, key: str) -> bytes | None:
@@ -361,7 +370,7 @@ def get(bucket: str, key: str) -> bytes | None:
 	to whoever actually needs the bytes.
 	"""
 	try:
-		return s3().get_object(Bucket=bucket, Key=key)["Body"].read()
+		return s3(bucket).get_object(Bucket=bucket, Key=key)["Body"].read()
 	except Exception:
 		return None
 
@@ -376,7 +385,7 @@ def delete_keys(bucket: str, keys: list[str]) -> int:
 	if not keys:
 		return 0
 
-	client = s3()
+	client = s3(bucket)
 	deleted = 0
 
 	for start in range(0, len(keys), PAGE):
@@ -421,6 +430,6 @@ def presign(bucket: str, key: str, ttl: int = 3600) -> str:
 	itself and a database dump of any size takes longer than the five minutes
 	an attachment redirect is given.
 	"""
-	return s3().generate_presigned_url(
+	return s3(bucket).generate_presigned_url(
 		"get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=ttl
 	)

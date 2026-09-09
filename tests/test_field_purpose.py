@@ -6,7 +6,10 @@ of them silent, and each one a class rather than a one-off:
   * a setting an operator can change that nothing reads. `bucket_max_tenants`
     promised to be the rotation threshold for new R2 buckets and was wired to
     nothing at all — an operator narrowing the blast radius to 50 tenants a
-    bucket got buckets that still took 200, with no error and no clue.
+    bucket got buckets that still took 200, with no error and no clue. It is
+    gone now along with the rotation itself, and the field that replaced it in
+    this file is its mirror image: `r2_public_base`, one fleet-wide value read
+    by every bucket, which is right for at most one of them.
     `credits_per_currency_unit` was the same shape and had simply been
     outlived by the Credit Pack catalogue.
 
@@ -93,7 +96,8 @@ def test_every_offered_setting_is_read_somewhere(fieldname):
 
 	`bucket_max_tenants` broke that promise for as long as it existed: it
 	described itself as the rotation threshold and `provision_bucket` never
-	looked at it. Nothing in the readiness board covers this, because from the
+	looked at it. Wiring it up bought a year of nothing; taking the rotation
+	out was the actual fix. Nothing in the readiness board covers this, because from the
 	outside a setting that is stored and ignored looks exactly like one that
 	works.
 	"""
@@ -106,15 +110,23 @@ def test_every_offered_setting_is_read_somewhere(fieldname):
 	)
 
 
-def test_a_new_bucket_carries_the_configured_cap():
-	"""The specific one, at the line that was missing it."""
+def test_a_bucket_is_not_stamped_with_a_fleet_wide_public_host():
+	"""The same class, one field along, and this one had already misfired.
+
+	`bucket_max_tenants` was a setting nothing read. `r2_public_base` was the
+	inverse: one fleet-wide value, copied onto every bucket at creation, so the
+	second bucket served its public objects from the first bucket's CDN host
+	and nothing said so. A hostname is bound to one bucket in Cloudflare; there
+	is no fleet-wide value that could be right.
+	"""
 	r2 = (CONTROL / "cloudflare/r2.py").read_text()
-	assert "def _bucket_cap()" in r2, "the cap is no longer read from settings"
-	assert '"bucket_max_tenants"' in r2
-	created = r2[r2.index("def provision_bucket"):]
-	assert "_bucket_cap()" in created, (
-		"provision_bucket no longer stamps the configured cap onto the bucket, "
-		"so lowering it in settings does nothing again"
+	created = r2[r2.index("def provision_bucket"):r2.index("def assign(")]
+	assert "public_base" not in created, (
+		"provision_bucket is copying a public host onto the bucket again — if "
+		"it came from settings it is right for at most one bucket"
+	)
+	assert "def _bucket_cap()" not in r2 and "max_tenants" not in r2, (
+		"the rotating pool is back; there are two buckets, one per jurisdiction"
 	)
 
 

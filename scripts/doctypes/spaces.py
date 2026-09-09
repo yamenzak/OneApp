@@ -508,19 +508,15 @@ doctype(
                   "any site.</p>"),
         section("sec_r2", "R2 storage"),
         f("r2_account_id", label="R2 Account ID"),
-        f("r2_bucket", label="R2 Bucket"),
-        f("r2_public_base", label="R2 Public Base URL",
-          description="e.g. https://cdn.4dl.app"),
         column("cb_r2"),
         f("r2_access_key", label="R2 Access Key"),
         f("r2_secret_key", "Password", label="R2 Secret Key"),
         f("r2_admin_token", "Password", label="R2 Admin API Token",
           description="Creates buckets, so it is control-plane only and never "
                       "pushed to a bench. The S3 keys above are what tenant "
-                      "sites use to read and write objects."),
-        f("bucket_max_tenants", "Int", default="200",
-          description="Rotation threshold for new buckets. Bounded buckets bound "
-                      "the blast radius of losing one."),
+                      "sites use to read and write objects, unless a Storage "
+                      "Bucket carries its own. Which bucket a workspace uses, "
+                      "and the CDN host in front of it, live on the bucket."),
         f("link_previews", "Check", default="0",
           description="Let a tenant site fetch a URL somebody typed into a cell "
                       "to read its title and favicon. Off by default: it is an "

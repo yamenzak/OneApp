@@ -607,11 +607,14 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
-# Storage Bucket — one R2 bucket, deliberately bounded.
+# Storage Bucket — one R2 bucket per jurisdiction, and there are two.
 #
-# A single bucket holding every tenant's files is one credential, one
-# misconfiguration or one bad lifecycle rule away from losing everything. Every
-# bucket is capped and rotated so the worst case stays bounded.
+# Not a pool. Buckets were once capped and rotated to bound the blast radius of
+# losing one, which bounded nothing: the same lifecycle rule gets written
+# against the next bucket, and a key scoped to a bucket still reaches every
+# tenant in it. What the row carries instead is the part that differs per
+# bucket and cannot be guessed — the name, the CDN host bound to it, and
+# optionally its own S3 keys.
 # --------------------------------------------------------------------------- #
 doctype(
     "Storage Bucket",
@@ -619,7 +622,6 @@ doctype(
     states=[
         ("Provisioning", "Blue"),
         ("Active", "Green"),
-        ("Full", "Yellow"),
         ("Retired", "Gray"),
     ],
     # Not made by hand: `r2.provision_bucket` makes the bucket first and the row after.
@@ -631,20 +633,24 @@ doctype(
           in_list_view=1, in_standard_filter=1,
           description="R2 pins EU buckets to EU data centres. Chosen by the "
                       "customer at signup and never changed afterwards."),
-        f("status", "Select", options="Provisioning\nActive\nFull\nRetired",
+        f("status", "Select", options="Provisioning\nActive\nRetired",
           default="Provisioning", reqd=1, in_list_view=1, in_standard_filter=1),
         column("cb_bucket"),
         f("tenant_count", "Int", default="0", read_only=1, in_list_view=1),
-        f("max_tenants", "Int", default="200",
-          description="Rotation threshold. Reaching it marks the bucket Full and "
-                      "a fresh one is created."),
         f("bytes_used", "Float", default="0", read_only=1),
-        f("max_bytes", "Float", default="0",
-          description="Optional secondary cap. Zero means tenant count only."),
-        section("sec_bucket_cf", "Cloudflare"),
-        f("public_base_url", description="CDN host bound to this bucket, for public objects."),
         f("created_on", "Datetime", read_only=1),
+        section("sec_bucket_cf", "Cloudflare"),
+        f("public_base_url", label="Public Base URL",
+          description="CDN host bound to this bucket, e.g. https://cdn.4dl.app. "
+                      "Per bucket, because a hostname is: without it public "
+                      "objects are served through our own download route, which "
+                      "works and is slower."),
+        f("access_key", label="Access Key",
+          description="Optional. An S3 key scoped to this bucket — the EU one "
+                      "is the reason to bother. Blank falls back to the "
+                      "account-wide keys in Control Settings."),
         column("cb_bucket_cf"),
+        f("secret_key", "Password", label="Secret Key"),
         f("last_error", "Small Text", read_only=1),
     ],
 )

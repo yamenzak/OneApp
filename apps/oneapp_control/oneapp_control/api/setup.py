@@ -306,10 +306,14 @@ def checks() -> list[dict]:
 			"key": "r2",
 			"group": OPTIONAL,
 			"label": "R2 storage",
-			"ok": bool(s.r2_account_id and s.r2_bucket and s.r2_access_key)
+			"ok": bool(s.r2_account_id and s.r2_access_key)
 			and _secret(s, "r2_secret_key"),
 			"detail": "Tenant sites fall back to local disk until this is set.",
-			"needs": "A Cloudflare account ID, a bucket, and an R2 API token's access key and secret.",
+			"needs": (
+				"A Cloudflare account ID and an R2 API token's access key and "
+				"secret. The buckets themselves are records — one per "
+				"jurisdiction, made on the first signup that needs one."
+			),
 			"where": "Settings → Storage buckets",
 		},
 		{
