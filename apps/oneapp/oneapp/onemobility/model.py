@@ -59,7 +59,13 @@ OBSERVATION = facts.declare(
                 "readings": ("count", "*"),
                 "delay_avg": ("avg", "delay_s"),
                 "delay_max": ("max", "delay_s"),
+                # The distribution, which is what makes this tier forecastable
+                # rather than merely reportable. See `SERVICE_HOUR`.
+                "delay_p50": ("p50", "delay_s"),
+                "delay_p85": ("p85", "delay_s"),
+                "delay_p95": ("p95", "delay_s"),
                 "occupancy_avg": ("avg", "occupancy"),
+                "occupancy_p85": ("p85", "occupancy"),
             },
         },
         {
@@ -113,7 +119,18 @@ VEHICLE_DAY = facts.declare(
 
 #: The tier that stays. Small enough that a year of it is a rounding error
 #: beside a day of the one above, and it is what answers every long-range
-#: question anybody actually asks.
+#: question anybody actually asks — and, now, every forward-looking one.
+#:
+#: **Three percentiles rather than one mean, and that is the difference between
+#: a chart and a product.** A mean delay answers no question anybody has: p50 is
+#: what an ETA should say, p85 is what a scheduler builds a timetable from, and
+#: the distance between p50 and p95 *is* the uncertainty a forecast has to draw.
+#: Without them `forecast.py` could offer a number and no spread, and a
+#: confident wrong ETA costs more trust than no ETA at all.
+#:
+#: Four columns and no extra query: `aggregate` computes percentiles in a
+#: second pass it was already capable of, and this tier is thousands of rows a
+#: year rather than millions.
 SERVICE_HOUR = facts.declare(
     "serviceHour",
     module="OneMobility",
@@ -126,7 +143,11 @@ SERVICE_HOUR = facts.declare(
         "readings": "int",
         "delay_avg": "float",
         "delay_max": "smallint",
+        "delay_p50": "float",
+        "delay_p85": "float",
+        "delay_p95": "float",
         "occupancy_avg": "float",
+        "occupancy_p85": "float",
     },
     keys=(("line", "at"), ("hour", "dow")),
     # Never expires, never freezes. `sweep` skips a table with no hot window,
@@ -185,6 +206,11 @@ STOP_EVENT = facts.declare(
             # the p85 is the wait the complaint is about.
             "headway_p85": ("p85", "headway_s"),
             "delay_avg": ("avg", "delay_s"),
+            # What an arrival is actually predicted from: the delay a vehicle
+            # has *at this stop* at this hour, as a distribution rather than as
+            # an average of a line's whole route.
+            "delay_p50": ("p50", "delay_s"),
+            "delay_p85": ("p85", "delay_s"),
             "occupancy_avg": ("avg", "occupancy"),
         },
     },
@@ -216,6 +242,8 @@ STOP_HOUR = facts.declare(
         "headway_avg": "float",
         "headway_p85": "float",
         "delay_avg": "float",
+        "delay_p50": "float",
+        "delay_p85": "float",
         "occupancy_avg": "float",
     },
     keys=(("stop", "at"), ("line", "at"), ("hour", "dow")),

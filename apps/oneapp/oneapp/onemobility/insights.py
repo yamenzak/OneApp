@@ -25,6 +25,7 @@ from frappe.utils import cint, flt, getdate
 from ..shared import facts
 from . import facets as facetlib
 from . import model
+from . import network as networklib
 
 #: Late enough to be late, and early enough to be early. The European
 #: convention a transport authority already reports against: a minute early or
@@ -198,10 +199,7 @@ def _by_line(start, end) -> list[dict]:
 		group=["line"],
 		measures={"delay_avg": ("avg", "delay_avg"), "readings": ("sum", "readings")},
 	)
-	named = {
-		one["name"]: one["short_name"] or one["name"]
-		for one in frappe.get_all("Transit Line", fields=["name", "short_name"], limit_page_length=0)
-	}
+	named = networklib.line_names()
 	out = [
 		{
 			"label": named.get(row.get("line"), row.get("line") or ""),

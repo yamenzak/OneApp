@@ -17,6 +17,8 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     live        positions in, positions out, one vehicle's day for the scrubber
     arrivals    positions turned into stop visits, which is how a stop gets a number
     facets      one vocabulary for narrowing every screen: line, vehicle, stop, mode
+    forecast    the same aggregate tier read forward — an arrival, a risk, an
+                anomaly, and never a number without the spread it rests on
     geo         the map's analytical layers — what the network does *somewhere*
     network     the drawn network, and the numbers read off the aggregate tier
     insights    the aggregate tiers as plots — the network, the fleet, the stops
@@ -26,6 +28,7 @@ everything at time T" for one clock that is either now or a Tuesday in March.
 """
 
 from .facets import offered
+from .forecast import expect, outlook, risk, unusual
 from .geo import demand, surface
 from .gtfs import load_feed
 from .insights import fleet, rhythm, stops
@@ -40,18 +43,22 @@ __all__ = [
     "bunching",
     "days",
     "demand",
+    "expect",
     "fetch_now",
     "fleet",
     "forget_everything",
     "load_feed",
     "marker_styles",
     "offered",
+    "outlook",
     "punctuality",
     "report",
     "rhythm",
+    "risk",
     "set_marker_style",
     "shape",
     "stops",
     "surface",
     "track",
+    "unusual",
 ]

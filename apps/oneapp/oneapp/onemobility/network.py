@@ -55,6 +55,25 @@ def shape() -> dict:
     return {"lines": lines, "stops": stops}
 
 
+def line_names() -> dict:
+    """Every line's id and what a person calls it.
+
+    Here rather than in either screen, because both need it and neither owns
+    it: a fact table stores `line` as the doctype's id — a hash, which is the
+    right thing to store and the wrong thing to draw. A chart labelled
+    `sh7n2blrbv` is a chart nobody can act on, and it is exactly the kind of
+    defect that looks fine in a unit test and obvious in a screenshot.
+    """
+    return {
+        one["name"]: one["short_name"] or one["line_name"] or one["name"]
+        for one in frappe.get_all(
+            "Transit Line",
+            fields=["name", "short_name", "line_name"],
+            limit_page_length=0,
+        )
+    }
+
+
 def _served() -> dict:
     """How many lines have actually been seen at each stop.
 

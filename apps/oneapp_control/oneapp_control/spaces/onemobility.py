@@ -88,6 +88,20 @@ SCREENS = [
 		"status_field": "status",
 	},
 	{
+		# The same tier as Insights, asked about a day that may not have
+		# happened. A third screen rather than a fourth tab on Insights: the
+		# question is a different one — *what will* rather than *what did* —
+		# and the two want different controls, a date against a window.
+		# README §7a is the argument for why it is arithmetic and not a model.
+		"screen": "outlook", "label": "Outlook", "singular": "Outlook",
+		"icon": "lucide-chart-line", "document_type": "Transit Line",
+		"component": "onemobility/outlook",
+		"fields": "short_name,line_name,mode,status",
+		"order_by": "short_name asc",
+		"view_types": "list",
+		"status_field": "status",
+	},
+	{
 		"screen": "lines", "label": "Lines", "singular": "Line",
 		"icon": "lucide-route", "document_type": "Transit Line",
 		"fields": "emoji,short_name,line_name,agency,mode,status",

@@ -60,4 +60,22 @@ export const network = {
   /** Vehicles on one line that have caught each other. */
   bunching: (params) =>
     callMethod('oneapp.onemobility.bunching', params, { method: 'GET', silent: true }),
+
+  /**
+   * The four forward reads. Same aggregate tier as the charts above, asked
+   * about a day that may not have happened — see `onemobility/forecast.py` for
+   * why that is one lookup rather than a second subsystem.
+   */
+
+  /** A day, hour by hour, each hour with the spread it rests on. */
+  outlook: (params) => callMethod('oneapp.onemobility.outlook', params, { method: 'GET' }),
+
+  /** Every line's chance of running late at one hour, worst first. */
+  risk: (params) => callMethod('oneapp.onemobility.risk', params, { method: 'GET' }),
+
+  /** What today is doing that its own history does not. */
+  unusual: (params) => callMethod('oneapp.onemobility.unusual', params, { method: 'GET' }),
+
+  /** When a vehicle reaches one stop, as a range. */
+  expect: (params) => callMethod('oneapp.onemobility.expect', params, { method: 'GET' }),
 }

@@ -193,7 +193,40 @@ def ensure(fact: Fact, through: date | None = None):
         )
         """
     )
+    _add_missing_columns(fact)
     _open_partitions(fact, through or (getdate() + timedelta(days=1)))
+
+
+def _add_missing_columns(fact: Fact):
+    """Give an existing table the columns its declaration has grown.
+
+    `CREATE TABLE IF NOT EXISTS` does nothing to a table that is already there,
+    so before this a column added to a declaration existed everywhere except in
+    the database — and the failure was a roll-up writing a measure into a column
+    that was not there, on a nightly job, on a customer's site.
+
+    **Added and never dropped or retyped.** Adding is safe and is the change
+    that actually happens: a tier grows a percentile because somebody wanted to
+    forecast from it. Dropping is data loss and retyping is a table rewrite, and
+    neither should happen because an import ran. A column removed from a
+    declaration simply stops being written, which is visible in a diff and
+    reversible; a column dropped by a migration is neither.
+    """
+    have = {
+        row[0]
+        for row in frappe.db.sql(
+            """select COLUMN_NAME from information_schema.COLUMNS
+               where TABLE_SCHEMA = database() and TABLE_NAME = %s""",
+            fact.table,
+        )
+    }
+    missing = [one for one in fact.columns if one not in have]
+    if not missing:
+        return
+    frappe.db.sql_ddl(
+        f"ALTER TABLE `{fact.table}` "
+        + ", ".join(f"ADD COLUMN `{one}` {TYPES[fact.columns[one]]}" for one in missing)
+    )
 
 
 def _existing_partitions(fact: Fact) -> set[str]:

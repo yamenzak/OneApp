@@ -344,6 +344,11 @@ depots, incidents, and every future space's own records. That belongs in
 **OneSpace**, not here, and OneMobility is simply its first customer. Building
 it inside OneMobility is how it ends up RUA-shaped and unusable by anyone else.
 
+**The Outlook screen** is not one either, and is the third `component`. It
+reads the same aggregate tier Insights does, about a day that may not have
+happened — see §7a, and `onemobility/forecast.py` for why that is one lookup
+rather than a second subsystem.
+
 **The live network screen** is not a view type. Moving vehicles, route lines
 coloured by occupancy or delay, a time scrubber, a source filter and a legend
 is a bespoke surface, and it is the first honest use of the manifest's
@@ -417,6 +422,25 @@ a scheduler builds a timetable from, the 50th is what an ETA should say, and
 the spread between them is the uncertainty a forecast has to show. Keeping
 p50/p85/p95 alongside the count costs three columns and is the difference
 between a chart and a product.
+
+**Four of the six are built, and `forecast.py` is where.** The shape it settled
+into is worth stating because it is not the one the list below implies: there is
+no predictor. `outlook`, `risk`, `expect` and `unusual` are four reads of
+`serviceHour` and `stopHour`, and the arithmetic between the query and the
+answer is a weighted mean, a normal tail and a z-score. The Outlook screen draws
+them.
+
+The instruction at the top of this section — store percentiles, not means — was
+the whole of the work. `serviceHour` now carries p50, p85 and p95 of delay and
+p85 of occupancy, and `stopHour` carries p50 and p85 of delay; before that this
+tier could report and not forecast, because a mean cannot be turned into "seven
+runs in ten" and a median with a spread can. Four columns on a tier that is
+thousands of rows a year.
+
+Three rules hold across all four reads and they are in the module docstring:
+nothing is answered without `basis`, nothing is answered without its spread, and
+nothing invents a dimension we do not measure. The horizon is a fortnight,
+because what changes past that is the timetable.
 
 ### What is genuinely predictable, in the order it works
 
@@ -518,6 +542,13 @@ It also decides the cold start honestly: a workspace with no history has no
 distribution, so an ETA is the timetable plus the current delay and the screen
 says so. Software that pretends to know is worse than software that says it is
 still learning.
+
+**Not built.** Which is the honest gap in what ships, and it is named here
+rather than left to be discovered: `forecast.py` will tell you that a line
+misses five minutes on seven runs in ten, and nothing yet checks whether it was
+right. Until that exists the numbers are defensible arithmetic over data the
+customer can see, which is not nothing — but it is not a claim of accuracy, and
+no screen makes one.
 
 ### Where AI earns its cost, and where it is theatre
 

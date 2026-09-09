@@ -337,3 +337,42 @@ test('the workspace can change the ground, and it survives a reload', async ({ p
   await expect((await open()).getByRole('combobox').nth(1)).toContainText('Quiet')
   expectNoRealErrors(errors)
 })
+
+test('the outlook reads the same tier forward, and says what it rests on', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onemobility?screen=outlook')
+
+  // Four figures and the plots under them, all off `serviceHour` — the same
+  // table Insights reads, asked about a day rather than a window.
+  const headline = page.locator('[data-slot="outlook-headline"]')
+  await headline.waitFor({ timeout: 30_000 })
+  await expect(headline.getByText('Worst hour')).toBeVisible()
+  await expect(headline.getByText('Chance of late')).toBeVisible()
+
+  // The rule the screen exists to keep: three lines and not one, so the
+  // spread is drawn rather than averaged away.
+  for (const band of ['Half the runs', 'Most runs', 'Nearly all runs']) {
+    await expect(page.getByText(band, { exact: true })).toBeVisible({ timeout: 20_000 })
+  }
+
+  // And what it is resting on, in readings rather than as a claim of accuracy.
+  await expect(page.locator('[data-slot="outlook-controls"]')).toContainText('readings')
+  await expect(page.locator('[data-slot="outlook-unusual"]')).toBeVisible()
+  expectNoRealErrors(errors)
+})
+
+test('a day next week is the same lookup as a day last week', async ({ page }) => {
+  await page.goto('/one/space/onemobility?screen=outlook')
+  const headline = page.locator('[data-slot="outlook-headline"]')
+  await headline.waitFor({ timeout: 30_000 })
+
+  const controls = page.locator('[data-slot="outlook-controls"]')
+  await controls.getByRole('combobox').first().click()
+  await page.getByRole('option', { name: 'Tomorrow', exact: true }).click()
+
+  // Still answered, and still off the aggregate tier: a Wednesday that has not
+  // happened is every Wednesday that has, which is the whole argument for this
+  // being one read rather than a forecaster bolted onto a reporter.
+  await expect(headline.getByText('Worst hour')).toBeVisible({ timeout: 20_000 })
+  await expect(controls).toContainText('readings')
+})
