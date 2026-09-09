@@ -98,9 +98,14 @@ test('the aggregate tier reaches the charts', async ({ page }) => {
   // fixture seeds a fortnight of observations and rolls each day up, so an
   // empty reading here means the pipeline broke somewhere along its four
   // layers rather than that there is nothing to show.
-  await expect(screen.getByText('Readings')).toBeVisible()
-  await expect(screen.getByText('On time')).toBeVisible()
-  await expect(screen.getByText('Busiest hour')).toBeVisible()
+  // Given time, because the screen makes two round trips on mount now: the
+  // facet vocabulary first — what can be narrowed is the server's to say, and
+  // the bar cannot draw before it answers — and then the numbers. The frame is
+  // on screen after the first, so waiting for `[data-slot="insights"]` above is
+  // no longer the same thing as waiting for data.
+  await expect(screen.getByText('Readings')).toBeVisible({ timeout: 20_000 })
+  await expect(screen.getByText('On time')).toBeVisible({ timeout: 20_000 })
+  await expect(screen.getByText('Busiest hour')).toBeVisible({ timeout: 20_000 })
 
   // Every chart draws into an SVG or a canvas of its own. Four plots, so four
   // of them; fewer means one silently failed to render its data.

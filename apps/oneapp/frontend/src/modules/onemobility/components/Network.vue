@@ -50,11 +50,40 @@
           class="w-full justify-start"
           variant="ghost"
           size="sm"
-          :label="__('How full')"
+          :label="__('What you are looking at')"
           :icon-left="legendOpen ? 'lucide-chevron-down' : 'lucide-chevron-right'"
           @click="legendOpen = !legendOpen"
         />
         <div v-show="legendOpen" class="flex flex-col gap-1.5 px-3 pb-3">
+          <!--
+            The shapes, before the colours, because a marker says two things at
+            once and a legend that explains one of them teaches people that the
+            other is decoration. Drawn in one neutral grey with the same
+            function the map uses: showing them in their occupancy colours here
+            would vary both axes at once, which is exactly the confusion this
+            section exists to remove.
+
+            Only the modes this network actually runs — a city with buses and
+            nothing else should not be told what a ferry looks like.
+          -->
+          <p class="text-xs font-medium text-ink-gray-7">{{ __('What runs here') }}</p>
+          <div class="flex flex-col gap-1">
+            <div
+              v-for="one in modesHere"
+              :key="one.key"
+              class="flex items-center gap-2 text-xs text-ink-gray-6"
+            >
+              <!-- Larger than the map draws them: a key has to be readable at
+                   a glance, and the marker's own size is a compromise with how
+                   many of them share the screen, which a legend row is not. -->
+              <img :src="one.url" :alt="one.label" class="h-7 w-7 shrink-0 object-contain" />
+              <span>{{ one.label }}</span>
+            </div>
+          </div>
+
+          <p class="mt-1 border-t border-outline-gray-1 pt-2 text-xs font-medium text-ink-gray-7">
+            {{ __('How full it is') }}
+          </p>
           <div
             v-for="band in occupancy"
             :key="band.key"
@@ -698,6 +727,45 @@ function registerMarkers() {
  * reference nouns, and denormalising it onto forty million rows to save this
  * lookup would be the wrong trade twice over.
  */
+/** What each silhouette is called, in the order a legend should read them. */
+const MODE_NAMES = {
+  bus: () => __('Bus'),
+  tram: () => __('Tram'),
+  metro: () => __('Metro'),
+  rail: () => __('Train'),
+  ferry: () => __('Ferry'),
+  cable: () => __('Cable car'),
+  other: () => __('Something else'),
+}
+
+/**
+ * The legend's shape key: one drawing per mode this network actually runs.
+ *
+ * Painted with the same `vehicleMarker` the map registers, so the legend cannot
+ * come to disagree with the thing it explains — a legend drawn separately is a
+ * legend that is wrong the first time a shape changes.
+ *
+ * In one neutral grey on purpose. Colour is the other half of what a marker
+ * says, and a shape key that also varied colour would be teaching two scales in
+ * one row, which is the confusion this exists to remove.
+ */
+const modesHere = computed(() => {
+  const found = new Set(lines.value.map((one) => bodyFor(one.mode)))
+  if (!found.size) return []
+  const ring = casingInk()
+  const neutral = tokenInk('--ink-gray-4', '#999999')
+  return MODES.filter((mode) => found.has(mode)).map((mode) => {
+    const image = vehicleMarker(mode, neutral, ring, 2)
+    const pad = document.createElement('canvas')
+    pad.width = image.width
+    pad.height = image.height
+    pad.getContext('2d').putImageData(
+      new ImageData(image.data, image.width, image.height), 0, 0,
+    )
+    return { key: mode, label: MODE_NAMES[mode](), url: pad.toDataURL() }
+  })
+})
+
 function modeOf(line) {
   return bodyFor(lines.value.find((one) => one.name === line)?.mode)
 }

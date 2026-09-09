@@ -650,8 +650,16 @@ function writeTheUrl() {
 }
 
 onMounted(async () => {
-  offered.value = (await network.offered()).facets || []
+  // Together, not one after the other. The vocabulary and the numbers do not
+  // need each other — `resolve` runs on the server against whatever facets the
+  // URL carried, and the bar is drawn from the vocabulary — so asking serially
+  // spent a whole round trip putting the frame on screen with nothing in it.
+  const [choices] = await Promise.all([network.offered(), pull()])
+  offered.value = choices.facets || []
   readTheUrl()
-  await pullCurrent()
+
+  // Only if the URL actually narrowed something, or moved the tab: the first
+  // fetch above already answered the unnarrowed question.
+  if (Object.keys(facets.value).length || tab.value !== 'network') pullCurrent()
 })
 </script>
