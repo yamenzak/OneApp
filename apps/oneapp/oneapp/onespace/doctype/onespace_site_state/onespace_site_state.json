@@ -22,6 +22,7 @@
   "sec_usage",
   "storage_used_bytes",
   "database_used_bytes",
+  "frozen_bytes",
   "quota_json",
   "cb2",
   "credit_balance",
@@ -134,6 +135,13 @@
    "fieldname": "database_used_bytes",
    "fieldtype": "Float",
    "label": "Database Used Bytes",
+   "read_only": 1
+  },
+  {
+   "description": "What this workspace's frozen fact history weighs in the bucket. Measured by the nightly sweep, because it is a listing rather than a query. Nothing else counts it: a frozen day is not a File row, so the storage meter has never seen one.",
+   "fieldname": "frozen_bytes",
+   "fieldtype": "Float",
+   "label": "Frozen Bytes",
    "read_only": 1
   },
   {

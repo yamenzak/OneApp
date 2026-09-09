@@ -330,6 +330,13 @@ doctype(
         f("database_used_bytes", "Float", default="0", read_only=1,
           description="Reported by the site. The resource that actually threatens "
                       "the server, so it is capped like file storage."),
+        f("frozen_bytes", "Float", default="0", read_only=1,
+          description="Objects this workspace's history left behind: fact days "
+                      "aged out of the database and frozen into the bucket. "
+                      "Recorded and never enforced — they are not files the "
+                      "customer uploaded, so refusing their next upload over "
+                      "them would be a refusal nobody could act on. The "
+                      "workspace shortens its own window instead."),
         # Grants, not purchases. An add-on is bought against the subscription
         # and lives in its own table there; these two are the lever an operator
         # pulls by hand — goodwill, a migration allowance, room on a demo
@@ -718,6 +725,12 @@ doctype(
         section("sec_usage", "Usage"),
         f("storage_used_bytes", "Float", read_only=1),
         f("database_used_bytes", "Float", read_only=1),
+        f("frozen_bytes", "Float", read_only=1,
+          description="What this workspace's frozen fact history weighs in the "
+                      "bucket. Measured by the nightly sweep, because it is a "
+                      "listing rather than a query. Nothing else counts it: a "
+                      "frozen day is not a File row, so the storage meter has "
+                      "never seen one."),
         f("quota_json", "Code", label="Quota Enforcement", options="JSON",
           read_only=1,
           description="Whether to enforce quotas at all, and until when if not. "

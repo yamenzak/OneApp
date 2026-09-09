@@ -17,7 +17,7 @@ otherwise write itself:
     ensure()      the table, partitioned by day
     write()       batched inserts, no Document anywhere
     sweep()       roll yesterday up, freeze what has aged out, drop it
-    hydrate()     bring a frozen range back for one question
+    thaw()        bring a frozen day back, and keep it back for a week
 
 The tiers are the argument in `onemobility/README.md` §3a, generalised: hot
 rows for a declared window, an aggregate that never expires and is what every
@@ -94,6 +94,8 @@ class Fact:
         hot_days: int = 30,
         rollup: dict | list | None = None,
         freeze: bool = True,
+        frozen_days: int = 0,
+        settings: str | None = None,
     ):
         self.name = name
         self.module = module
@@ -111,6 +113,17 @@ class Fact:
         # whole reason this takes a list.
         self.rollups = [rollup] if isinstance(rollup, dict) and rollup else list(rollup or [])
         self.freeze = freeze
+        # How long a frozen day is kept. Zero is for ever, which is what this
+        # did before there was a word for it — and for ever is a bill nobody
+        # reads: a fleet freezing ten megabytes a day is four gigabytes a year,
+        # per workspace, growing, counted by nothing.
+        self.frozen_days = frozen_days
+        # A Single whose `hot_days` and `frozen_days` fields, when set, beat
+        # the numbers above. The platform reads two fixed names rather than a
+        # mapping, so a module that wants the workspace to own its own window
+        # names its fields that way and writes no code. See
+        # `onemobility/model.py`, which is the first to.
+        self.settings = settings
 
     @property
     def table(self) -> str:
@@ -138,6 +151,35 @@ def declare(name: str, **spec) -> Fact:
 def reset():
     """Forget every declaration. For tests, which declare their own."""
     TABLES.clear()
+
+
+def _setting(fact: Fact, field: str) -> int:
+    """One window, from the workspace's own Single if it has one and set it.
+
+    Zero and absent both mean "not set", which is deliberate: an unset Int and
+    a deliberate nought are the same value in Frappe, and of the two readings
+    only one of them is safe. A workspace cannot turn its history off by
+    leaving a field empty.
+    """
+    if not fact.settings:
+        return 0
+    try:
+        return cint(frappe.db.get_single_value(fact.settings, field) or 0)
+    except Exception:
+        # The Single may not exist yet on a site running new code before its
+        # migration. A window that falls back to the declared default is the
+        # right failure; an exception here would stop the nightly sweep.
+        return 0
+
+
+def hot_days(fact: Fact) -> int:
+    """How many days of raw rows stay in the database."""
+    return _setting(fact, "hot_days") or fact.hot_days
+
+
+def frozen_days(fact: Fact) -> int:
+    """How long a frozen day is kept in the bucket. Zero is for ever."""
+    return _setting(fact, "frozen_days") or fact.frozen_days
 
 
 # --------------------------------------------------------------------------- #
@@ -568,6 +610,110 @@ def freeze(fact: Fact, day: date) -> str | None:
     return key
 
 
+#: How long a day brought back stays back. The sweep drops anything past the
+#: hot window every night, so without this a day thawed on Tuesday afternoon is
+#: gone again by Wednesday morning — and the person who asked for it comes back
+#: on Thursday to find it missing and no reason why.
+#:
+#: A week, and held in the cache rather than a table: the marker is a decision
+#: with a date on it and nothing else, and losing it to a Redis restart costs
+#: one re-thaw rather than any data.
+THAW_HOLD_DAYS = 7
+
+
+def _hold_key(fact: Fact, day: date) -> str:
+    return f"oneapp_facts_thawed:{fact.name}:{day}"
+
+
+def held(fact: Fact, day: date) -> bool:
+    """Whether this day was brought back recently and must not be dropped."""
+    try:
+        return bool(frappe.cache().get_value(_hold_key(fact, day)))
+    except Exception:
+        return False
+
+
+def hold(fact: Fact, day: date) -> None:
+    frappe.cache().set_value(
+        _hold_key(fact, day), str(day), expires_in_sec=THAW_HOLD_DAYS * 86400
+    )
+
+
+def frozen_index(fact: Fact | None = None) -> list[dict]:
+    """Which days are in the bucket, for which table, and how big.
+
+    One listing. The alternative — asking whether an object exists, per day,
+    per table — is a request each and is what a screen would do if this did not
+    exist.
+    """
+    from ..onestorage import r2
+
+    if not r2.is_configured():
+        return []
+
+    prefix = f"tenants/{r2.config()['tenant']}/{FROZEN_PREFIX}/"
+    if fact:
+        prefix += f"{fact.name}/"
+
+    found = []
+    for row in r2.list_objects(prefix):
+        rest = row["key"][len(f"tenants/{r2.config()['tenant']}/{FROZEN_PREFIX}/"):]
+        name, _sep, day = rest.partition("/")
+        day = day.replace(".jsonl.gz", "")
+        if not (name and day):
+            continue
+        found.append({"fact": name, "day": day, "bytes": row["size"], "key": row["key"]})
+
+    found.sort(key=lambda one: (one["fact"], one["day"]))
+    return found
+
+
+def frozen_bytes() -> int:
+    """What this workspace's frozen history weighs, all tables together.
+
+    Measured once a night by the sweep rather than per request: it is a bucket
+    listing, and the number it produces changes once a day.
+    """
+    return sum(one["bytes"] for one in frozen_index())
+
+
+def expire_frozen(fact: Fact, today: date) -> int:
+    """Delete frozen days past this table's frozen window. Returns how many.
+
+    The window is the workspace's, and zero means for ever — which is the
+    default, because deleting somebody's history is not a thing to start doing
+    on an upgrade. What this closes is the option: a workspace that does not
+    want four gigabytes a year of positions it will never read can say so.
+    """
+    from ..onestorage import r2
+
+    keep = frozen_days(fact)
+    if not keep or not r2.is_configured():
+        return 0
+
+    cutoff = today - timedelta(days=keep)
+    going = [
+        one["key"] for one in frozen_index(fact)
+        if _day_of(one["day"]) and _day_of(one["day"]) < cutoff
+    ]
+    return r2.delete_keys(going) if going else 0
+
+
+def _day_of(text: str) -> date | None:
+    try:
+        return datetime.strptime(text, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return None
+
+
+def thaw(fact: Fact, day: date) -> int:
+    """Bring a day back and keep it back for a week. What a screen calls."""
+    rows = hydrate(fact, day)
+    if rows:
+        hold(fact, day)
+    return rows
+
+
 def hydrate(fact: Fact, day: date) -> int:
     """Bring one frozen day back into the hot table.
 
@@ -625,7 +771,8 @@ def sweep(today: date | None = None) -> dict:
             continue  # An aggregate tier. It is the thing that stays.
         ensure(fact)
 
-        rolled = frozen = dropped = 0
+        window = hot_days(fact)
+        rolled = frozen = dropped = kept = 0
         for partition in sorted(_existing_partitions(fact)):
             if partition == "pMAX":
                 continue
@@ -637,7 +784,14 @@ def sweep(today: date | None = None) -> dict:
                 # Yesterday and the day before, in case a feed arrived late.
                 rolled += 1 if roll_up(fact, day) else 0
 
-            if day >= today - timedelta(days=fact.hot_days):
+            if day >= today - timedelta(days=window):
+                continue
+
+            if held(fact, day):
+                # Somebody asked for this day back within the week. Dropping it
+                # tonight is the sweep undoing a person's request while they
+                # sleep, which is worse than carrying one partition.
+                kept += 1
                 continue
 
             if fact.rollups:
@@ -647,7 +801,28 @@ def sweep(today: date | None = None) -> dict:
             frappe.db.sql_ddl(f"ALTER TABLE `{fact.table}` DROP PARTITION {partition}")
             dropped += 1
 
-        done[name] = {"rolled": rolled, "frozen": frozen, "dropped": dropped}
+        done[name] = {
+            "rolled": rolled, "frozen": frozen, "dropped": dropped, "held": kept,
+            # Last, and after the drops, so it sees the day this run froze:
+            # a workspace keeping its frozen days for a week and its hot days
+            # for a week should not have a day live in both tiers for a night.
+            "expired": expire_frozen(fact, today),
+        }
+
+    if done:
+        # One listing, once a night, right after the run that changed the
+        # number. Kept because nothing else was counting it: frozen days are
+        # not `File` rows, so the storage meter has never seen them and the
+        # bill for them was ours alone and invisible.
+        try:
+            frappe.get_single("OneSpace Site State").db_set(
+                "frozen_bytes", frozen_bytes()
+            )
+        except Exception:
+            frappe.log_error(
+                title="Frozen usage could not be measured",
+                message=frappe.get_traceback(),
+            )
 
     frappe.db.commit()
     return done

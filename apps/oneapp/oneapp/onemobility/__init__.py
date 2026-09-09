@@ -44,7 +44,7 @@ from .forecast import bunching_risk, expect, outlook, risk, unusual
 from .geo import demand, surface
 from .gtfs import load_feed
 from .insights import fleet, rhythm, stops
-from .live import at, report, track
+from .live import at, report, thaw, track
 from .lifecycle import forget_everything
 from .scoring import accuracy
 from .markers import marker_styles, set_marker_style
@@ -70,6 +70,7 @@ __all__ = [
     "fleet",
     "forget_everything",
     "listen_now",
+    "thaw",
     "load_feed",
     "marker_styles",
     "offered",

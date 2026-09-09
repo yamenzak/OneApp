@@ -240,6 +240,29 @@
         </div>
 
         <!--
+          An empty map has two meanings and only the server can tell them
+          apart: nothing was running, or this day has aged out of the database
+          and is sitting in cold storage. The second one has something to
+          offer, so it is offered here rather than left as a blank map nobody
+          can explain.
+        -->
+        <div
+          v-if="frozen"
+          data-slot="network-frozen"
+          class="flex flex-wrap items-center gap-3 rounded-6 bg-surface-gray-2 px-3 py-2"
+        >
+          <Icon name="lucide-history" class="size-4 shrink-0 text-ink-gray-5" />
+          <span class="min-w-0 flex-1 text-p-xs text-ink-gray-7">
+            {{ __('This day is in cold storage. Summaries still cover it — the detail behind the map does not.') }}
+          </span>
+          <Button
+            :label="__('Bring this day back')"
+            :loading="thawing"
+            @click="bringBack"
+          />
+        </div>
+
+        <!--
           The track. An SVG of how much service each hour holds, the hour ruler
           under it, and the range input laid over the top — one control, three
           things said. `pointer-events-none` on the drawing so every press
@@ -323,7 +346,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { Badge, Button, Select } from '@/ui'
+import { Badge, Button, Icon, Select, toast } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
@@ -408,6 +431,11 @@ const day = ref('')
 const facets = ref({})
 const offered = ref([])
 const unavailable = ref([])
+// Whether the moment on screen is a day the database no longer holds. The
+// server answers it, because only the server knows both the window and what is
+// in the bucket.
+const frozen = ref(false)
+const thawing = ref(false)
 
 /**
  * Which overlay is drawn, and which of the three base layers are on.
@@ -939,6 +967,27 @@ function paintGhosts() {
   drawnGhosts.value = features.length
 }
 
+/**
+ * Ask for the day on screen to be brought back out of cold storage.
+ *
+ * The job is minutes for a large fleet, so this does not wait on it: the map
+ * keeps polling anyway — every five seconds in live mode, on every scrub
+ * otherwise — and the rows appear in whichever poll comes after the job lands.
+ * A progress bar for something whose duration nobody can predict is a worse
+ * lie than a sentence saying it is coming.
+ */
+async function bringBack() {
+  thawing.value = true
+  try {
+    await network.thaw({ day: day.value })
+    toast.success(__('Bringing that day back. It appears on the map as it lands.'))
+  } catch (raised) {
+    toast.error(raised?.messages?.[0] || __('That day could not be brought back.'))
+  } finally {
+    thawing.value = false
+  }
+}
+
 async function pull() {
   if (ahead.value) return pullAhead()
   paintGhosts()
@@ -952,6 +1001,7 @@ async function pull() {
       facets: JSON.stringify(facets.value),
     })
     unavailable.value = answer.unavailable || []
+    frozen.value = !!answer.frozen
     const now = performance.now()
     for (const one of answer.vehicles || []) {
       const before = seen.get(one.vehicle)

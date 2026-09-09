@@ -21,6 +21,11 @@ here by an order of magnitude.
 
 from ..shared import facts
 
+#: The Single whose `hot_days` and `frozen_days` a workspace edits in Settings →
+#: Transit history, and which beats the numbers declared below. Named here
+#: rather than imported from `settings.py`, which imports this module.
+SETTINGS = "OneMobility Settings"
+
 #: Where a vehicle was, and how it was doing. The big one.
 OBSERVATION = facts.declare(
     "observation",
@@ -49,6 +54,7 @@ OBSERVATION = facts.declare(
         ("trip_key",),
     ),
     hot_days=30,
+    settings=SETTINGS,
     # Two aggregates, not one at two grains — see `VEHICLE_DAY` for why the
     # fleet cannot simply be another column on the first.
     rollup=[
@@ -234,6 +240,7 @@ STOP_EVENT = facts.declare(
             "occupancy_avg": ("avg", "occupancy"),
         },
     },
+    settings=SETTINGS,
 )
 
 
@@ -345,6 +352,7 @@ TRIP = facts.declare(
     },
     keys=(("line", "started"), ("trip_key",)),
     hot_days=400,
+    settings=SETTINGS,
 )
 
 

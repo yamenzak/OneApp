@@ -56,6 +56,7 @@
   "sec_usage",
   "storage_used_bytes",
   "database_used_bytes",
+  "frozen_bytes",
   "extra_storage_gb",
   "extra_database_gb",
   "cb_usage",
@@ -398,6 +399,14 @@
    "fieldname": "database_used_bytes",
    "fieldtype": "Float",
    "label": "Database Used Bytes",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Objects this workspace's history left behind: fact days aged out of the database and frozen into the bucket. Recorded and never enforced \u2014 they are not files the customer uploaded, so refusing their next upload over them would be a refusal nobody could act on. The workspace shortens its own window instead.",
+   "fieldname": "frozen_bytes",
+   "fieldtype": "Float",
+   "label": "Frozen Bytes",
    "read_only": 1
   },
   {

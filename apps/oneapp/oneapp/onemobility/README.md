@@ -161,6 +161,21 @@ Two different things get called "load on demand" and they are not the same:
 * **Playing back a specific past day** needs no rehydration at all. The day's
   track objects are already the playback format (§4), so the browser fetches
   them from R2 and scrubs. This is the common case and it is instant.
+**The two windows are the workspace's.** Settings → Transit history: how many
+days of detail stay in the database, and how long the frozen copy is kept after
+that. Both are Ints on `OneMobility Settings`, both empty by default, and empty
+means the number declared in `model.py` — an unset Int and a deliberate nought
+are the same value in Frappe, and a workspace must not be able to throw its own
+history away by clearing a field. `shared/facts` reads them by those exact field
+names off the Single each table declares, so the wiring is the doctype.
+
+**A frozen day can be brought back from the map.** An empty frame has two
+meanings and only the server can tell them apart, so `live.at` says `frozen` when
+the day asked for is past the window and sitting in the bucket; the Network
+screen offers "Bring this day back", which enqueues `live.thaw_day` — every raw
+tier for that day, not just positions, because half a day is worse than none.
+The day is then held for a week so that night's sweep does not undo it.
+
 * **A novel question over frozen raw** — the rare case — is DuckDB reading
   Parquet on R2 directly, or a date range pulled back into a temporary table for
   one report. Either way it is minutes, on request, and it does not have to be

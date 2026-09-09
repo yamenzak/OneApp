@@ -83,7 +83,16 @@ class Setting:
 		if self.default_key:
 			return frappe.db.get_default(self.default_key) or ""
 		doctype, field = self.targets[0]
-		value = frappe.db.get_single_value(doctype, field)
+		try:
+			value = frappe.db.get_single_value(doctype, field)
+		except Exception:
+			# A target that does not exist yet. App code deploys before `bench
+			# migrate` runs, so a group whose Single arrives with this release
+			# is a group that raises for the length of that window — and this
+			# is read to render the whole dialog, so one young field takes
+			# every tab with it. Empty is what an unset field looks like
+			# anyway, and the value appears once the migration lands.
+			value = None
 		if self.type == "Check":
 			value = 1 if value else 0
 			return 0 if self.invert and value else (1 if self.invert else value)
@@ -476,7 +485,18 @@ def may_read(group: dict) -> bool:
 	"""
 	roles = set(frappe.get_roles())
 	wanted = set(group.get("roles") or (OWNER_ROLE, SUPPORT_ROLE))
-	return bool(roles & wanted)
+	if not roles & wanted:
+		return False
+
+	# And the other question, which roles cannot answer: whether this group
+	# applies to this workspace at all. A group belonging to a space is not the
+	# owner's business on a workspace that never enabled it, and the space's own
+	# role does not exist there to say so. A predicate, like a tab's audience,
+	# and for the same reason — see `tabs.AUDIENCES`.
+	when = group.get("when")
+	if when and not when():
+		return False
+	return True
 
 
 def require_group(group: dict) -> None:

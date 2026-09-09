@@ -18,6 +18,13 @@ export const network = {
   /** Every vehicle's position at a moment. Empty `when` means now. */
   at: (params) => callMethod('oneapp.onemobility.at', params, { method: 'GET', silent: true }),
 
+  /**
+   * Bring a frozen day back into the database. Enqueued server-side — see
+   * `onemobility/live.thaw` — so this returns as soon as the job is queued
+   * and the rows arrive in a later poll.
+   */
+  thaw: (params) => callMethod('oneapp.onemobility.thaw', params),
+
   /** One vehicle's whole day, for the scrubber. */
   track: (params) => callMethod('oneapp.onemobility.track', params, { method: 'GET' }),
 

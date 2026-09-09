@@ -108,13 +108,18 @@ def sync(since: str | None = None) -> dict:
 
 
 def report_usage(storage_used_bytes: int, user_count: int,
-                 database_used_bytes: int = 0) -> dict:
+                 database_used_bytes: int = 0, frozen_bytes: int = 0) -> dict:
 	return call(
 		"report_usage",
 		{
 			"storage_used_bytes": storage_used_bytes,
 			"user_count": user_count,
 			"database_used_bytes": database_used_bytes,
+			# Frozen fact days: objects this workspace's history left behind,
+			# owned by no `File` row and therefore counted by nothing else.
+			# Reported separately rather than folded into storage because it is
+			# not the customer's files and must not refuse their next upload.
+			"frozen_bytes": frozen_bytes,
 		},
 	)
 

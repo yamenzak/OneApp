@@ -276,6 +276,12 @@ scheduler_events = {
 # method somebody can invoke, and that list is not a row an operator edits.
 onespace_screen_actions = ["oneapp.onemobility.actions.actions"]
 
+# A space with a setting of its own, through the same door an installed app
+# uses. OneMobility's two are how long a workspace keeps its vehicle detail and
+# its frozen copy of it — see `onemobility/settings.py`. The group carries a
+# `when`, so a workspace without the space is not offered it.
+onespace_settings_groups = ["oneapp.onemobility.settings.groups"]
+
 after_install = "oneapp.install.after_install"
 
 # Our own Notification Type, seeded the way the framework seeds its five: in

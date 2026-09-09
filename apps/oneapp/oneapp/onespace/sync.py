@@ -9,7 +9,7 @@ rather than have every app vanish from their launcher.
 import json
 
 import frappe
-from frappe.utils import now_datetime
+from frappe.utils import cint, now_datetime
 
 from oneapp.onespace import branding, control_client, restore, site
 
@@ -991,8 +991,16 @@ def report_usage_to_control_plane() -> dict:
 		"User", {"enabled": 1, "name": ("not in", ("Administrator", "Guest"))}
 	)
 
+	# Measured by the nightly sweep rather than here: it is a bucket listing,
+	# and this runs every hour.
+	frozen = cint(
+		frappe.db.get_single_value("OneSpace Site State", "frozen_bytes") or 0
+	)
+
 	try:
-		result = control_client.report_usage(int(storage), int(users), int(database))
+		result = control_client.report_usage(
+			int(storage), int(users), int(database), int(frozen)
+		)
 	except control_client.ControlPlaneError as e:
 		frappe.log_error(title="OneSpace usage report failed", message=str(e))
 		return {"ok": False, "error": str(e)}

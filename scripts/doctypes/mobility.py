@@ -353,3 +353,30 @@ doctype(
     ],
     **TENANT,
 )
+
+
+# --------------------------------------------------------------------------- #
+# OneMobility Settings (Single) — the two windows a workspace owns.
+#
+# `shared/facts` reads `hot_days` and `frozen_days` off a Single named by the
+# declaration, by those exact names, so this doctype is the whole of the wiring
+# between the settings dialog and the nightly sweep. Both default to zero, which
+# the platform reads as "not set" and answers with the declared default — an
+# unset Int and a deliberate nought are the same value in Frappe, and of the two
+# readings only one of them is safe: a workspace must not be able to turn its
+# own history off by emptying a field.
+# --------------------------------------------------------------------------- #
+doctype(
+    "OneMobility Settings",
+    issingle=1,
+    fields=[
+        f("hot_days", "Int", label="Days of detail in the database", default="0",
+          description="How far back the live map and the scrubber can go. Empty "
+                      "means the declared default, which is thirty days."),
+        column("cb_history"),
+        f("frozen_days", "Int", label="Days to keep the frozen copy", default="0",
+          description="A day that ages out is compressed into storage first. "
+                      "Empty keeps it for ever."),
+    ],
+    **TENANT,
+)

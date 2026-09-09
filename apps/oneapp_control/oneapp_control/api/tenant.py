@@ -307,6 +307,13 @@ def report_usage():
 		updates["user_count"] = int(data["user_count"] or 0)
 	if "database_used_bytes" in data:
 		updates["database_used_bytes"] = float(data["database_used_bytes"] or 0)
+	# What this workspace's frozen history weighs. Recorded and not enforced:
+	# it is not files the customer uploaded, so refusing their next upload over
+	# it would be a refusal nobody could act on — and now that they can shorten
+	# the window themselves, it is a number worth being able to see per
+	# workspace and across the fleet.
+	if "frozen_bytes" in data:
+		updates["frozen_bytes"] = float(data["frozen_bytes"] or 0)
 
 	frappe.db.set_value("Tenant", tenant_name, updates)
 

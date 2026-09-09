@@ -16,7 +16,7 @@ from datetime import timedelta
 
 import frappe
 from frappe import _
-from frappe.utils import cint, get_datetime, now_datetime
+from frappe.utils import cint, get_datetime, getdate, now_datetime
 
 from ..shared import facts
 from . import facets as facetlib
@@ -109,7 +109,71 @@ def at(when: str = "", facets: str = "") -> dict:
         "vehicles": rows,
         "capped": len(rows) >= MAX_VEHICLES,
         "unavailable": unavailable,
+        # An empty frame has two meanings and the screen cannot tell them
+        # apart: nothing was running, or the day has aged out of the database
+        # and is sitting in the bucket. Only the second one has something to
+        # offer, so it is answered here rather than left to be inferred.
+        "frozen": bool(not rows and _is_frozen(moment.date())),
     }
+
+
+def _is_frozen(day) -> bool:
+    """Whether this day is out of the hot window and in the bucket.
+
+    Two questions and the cheap one first: a day inside the window is not
+    frozen whatever the bucket holds, and asking the bucket about today would
+    be a network call on every frame the map draws.
+    """
+    if day > (now_datetime().date() - timedelta(days=facts.hot_days(model.OBSERVATION))):
+        return False
+    return any(one["day"] == str(day) for one in facts.frozen_index(model.OBSERVATION))
+
+
+@frappe.whitelist(methods=["POST"])
+def thaw(day: str) -> dict:
+    """Bring one frozen day back into the database, on request.
+
+    Enqueued: a day of a large fleet is millions of rows out of a gzipped
+    object, which outlives the request that asked for it — and a map that hangs
+    for four minutes reads as broken rather than as busy.
+
+    The day is then held for a week, so the sweep that runs tonight does not
+    quietly undo what somebody asked for this afternoon. See
+    `shared/facts.THAW_HOLD_DAYS`.
+    """
+    if not frappe.has_permission("Transit Vehicle", "read"):
+        frappe.throw(_("You cannot read this."), frappe.PermissionError)
+
+    when = getdate(day)
+    if not when:
+        frappe.throw(_("That is not a day."))
+    if not any(one["day"] == str(when) for one in facts.frozen_index(model.OBSERVATION)):
+        frappe.throw(_("There is no stored copy of {0}.").format(day))
+
+    frappe.enqueue(
+        "oneapp.onemobility.live.thaw_day",
+        queue="long",
+        timeout=3600,
+        job_id=f"oneapp-thaw-{frappe.local.site}-{when}",
+        deduplicate=True,
+        day=str(when),
+    )
+    return {"ok": True, "day": str(when), "queued": True}
+
+
+def thaw_day(day: str) -> dict:
+    """The job behind `thaw`. Every raw tier for that day, not just positions.
+
+    A person asking for the 12th of March back wants the map *and* the stop
+    calls, and hydrating one of the two would produce a day that half exists —
+    which is worse than one that does not.
+    """
+    when = getdate(day)
+    brought = {}
+    for fact in (model.OBSERVATION, model.STOP_EVENT, model.TRIP):
+        brought[fact.name] = facts.thaw(fact, when)
+    frappe.db.commit()
+    return {"ok": True, "day": str(when), "rows": brought}
 
 
 @frappe.whitelist(methods=["GET"])
