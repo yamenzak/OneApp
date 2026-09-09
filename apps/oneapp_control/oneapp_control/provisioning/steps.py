@@ -482,9 +482,21 @@ def archive_site(job):
 
 
 def finalise_archive(job):
+	"""The site is gone. Stop charging for it, and say so.
+
+	Here rather than at the purge sixty days later: what the customer is losing
+	at this moment is the product, and the cold-retention window after it is our
+	promise rather than something they are still buying. Never fatal — see
+	`billing.checkout.stop_billing` — because an archive that cannot finish
+	because Stripe is unreachable is a workspace stuck on the ladder, still
+	costing us a site plan, with every rung below it blocked.
+	"""
+	from oneapp_control.billing.checkout import stop_billing
+
 	tenant = frappe.get_doc("Tenant", job.tenant)
 	tenant.db_set("status", "Archived")
 	tenant.db_set("archived_on", now_datetime())
+	stop_billing(tenant.name, reason="The site was archived and deleted.")
 	return None
 
 

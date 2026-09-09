@@ -390,6 +390,24 @@ timer with nobody watching, and the last rung destroys customer data.
 | `Purged` | gone | **deleted** | never |
 | `Failed` | half-built | none | — |
 
+**The charging stops at `Archived`, not at `Purged`.** The moment the site is
+deleted is the moment they stop having the product; the sixty days of cold
+retention after it are our promise rather than something they are still buying.
+`finalise_archive` cancels the Stripe subscription immediately — not
+`cancel_at_period_end`, which would keep it alive through a month the workspace
+does not exist for — and the purge calls the same function again for anything
+that got there still subscribed. Never fatal: an archive that cannot finish
+because Stripe is unreachable is a workspace stuck on the ladder, still costing
+us a site plan, with every rung below it blocked. The failure is recorded
+against the workspace as `Billing Stop Failed`, which is the row worth having in
+a dispute.
+
+Stripe's own dunning cancels most subscriptions long before the ladder reaches
+them, which is why this went missing for so long: it only bites on the
+workspaces that never went through dunning at all — one an operator archived,
+one whose owner asked to be removed — and it bites as a charge for a workspace
+we deleted.
+
 Suspended is a switch — the site exists, we still pay for it, one API call turns
 it back on. Archived is not — the site is gone, we have stopped paying, and what
 remains is the copy under `cold/<tenant>/`.

@@ -450,6 +450,8 @@ doctype(
         ("Backup Failed", "Red"),
         ("Over Quota", "Orange"),
         ("Back Under Quota", "Green"),
+        ("Billing Stopped", "Gray"),
+        ("Billing Stop Failed", "Red"),
         ("Held", "Purple"),
         ("Released", "Gray"),
     ],
@@ -466,6 +468,9 @@ doctype(
           options=("Dunning Started\nDunning Cleared\nWarned\nSuspended\nResumed\n"
                    "Cold Copy Taken\nArchived\nRestored\nPurge Warned\nPurged\n"
                    "Backup Taken\nBackup Failed\nOver Quota\nBack Under Quota\n"
+                   # When we stopped charging, and — the one worth having in a
+                   # dispute — when we tried to and could not.
+                   "Billing Stopped\nBilling Stop Failed\n"
                    "Held\nReleased"),
           reqd=1, in_list_view=1, in_standard_filter=1),
         f("occurred_on", "Datetime", reqd=1, in_list_view=1),

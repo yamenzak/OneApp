@@ -319,6 +319,15 @@ def purge(tenant, *, triggered_by: str = "Sweep", reason: str = "") -> dict:
 	doc = tenant if hasattr(tenant, "get") else frappe.get_doc("Tenant", tenant)
 	bucket = bucket_for(doc)
 
+	# Belt and braces. `finalise_archive` stops the billing at the moment the
+	# site goes, which is where it belongs — but a workspace archived by hand
+	# before that existed, or one whose cancellation failed against an
+	# unreachable Stripe, arrives here still subscribed. Idempotent: a
+	# subscription already cancelled is nothing to cancel.
+	from oneapp_control.billing.checkout import stop_billing
+
+	stop_billing(doc.name, reason="The workspace is being purged.")
+
 	row = events.opening(
 		doc.name,
 		"Purged",

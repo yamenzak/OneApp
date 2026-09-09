@@ -44,7 +44,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Event",
-   "options": "Dunning Started\nDunning Cleared\nWarned\nSuspended\nResumed\nCold Copy Taken\nArchived\nRestored\nPurge Warned\nPurged\nBackup Taken\nBackup Failed\nOver Quota\nBack Under Quota\nHeld\nReleased",
+   "options": "Dunning Started\nDunning Cleared\nWarned\nSuspended\nResumed\nCold Copy Taken\nArchived\nRestored\nPurge Warned\nPurged\nBackup Taken\nBackup Failed\nOver Quota\nBack Under Quota\nBilling Stopped\nBilling Stop Failed\nHeld\nReleased",
    "reqd": 1
   },
   {
@@ -172,6 +172,14 @@
   {
    "color": "Green",
    "title": "Back Under Quota"
+  },
+  {
+   "color": "Gray",
+   "title": "Billing Stopped"
+  },
+  {
+   "color": "Red",
+   "title": "Billing Stop Failed"
   },
   {
    "color": "Purple",
