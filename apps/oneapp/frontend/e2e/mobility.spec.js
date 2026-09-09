@@ -50,7 +50,11 @@ test('the scrubber moves the clock without reloading the screen', async ({ page 
   await clock.waitFor({ timeout: 30_000 })
 
   const scrubber = clock.locator('input[type="range"]')
-  const before = await clock.locator('.tabular-nums').first().innerText()
+  // The readout by its own slot, not by "the first tabular-nums in the bar":
+  // the fleet count is set in the same face and sits beside it, so DOM order
+  // was deciding which number this test read.
+  const readout = clock.locator('[data-slot="network-time"]')
+  const before = await readout.innerText()
 
   // A range input is dragged, not typed into. Filling it and dispatching the
   // event the component listens for is the same thing without the geometry.
@@ -60,7 +64,7 @@ test('the scrubber moves the clock without reloading the screen', async ({ page 
   })
 
   await expect
-    .poll(() => clock.locator('.tabular-nums').first().innerText(), { timeout: 15_000 })
+    .poll(() => readout.innerText(), { timeout: 15_000 })
     .not.toBe(before)
   // Still the same screen: a scrub is a fetch, never a navigation.
   await expect(page.locator('[data-slot="network"]')).toBeVisible()

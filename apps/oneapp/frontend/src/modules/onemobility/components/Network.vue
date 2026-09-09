@@ -196,8 +196,11 @@
 
           <div class="ms-auto flex items-center gap-3">
             <!-- The fleet's occupancy mix, as one bar. Four seconds of glance
-                 answers "is the network under pressure right now". -->
-            <div class="hidden items-center gap-1.5 sm:flex" data-slot="network-mix">
+                 answers "is the network under pressure right now". The *bar*
+                 folds away on a phone and the count does not: a hundred pixels
+                 of stacked colour is the first thing to lose when there is no
+                 room, and how many vehicles are out there is the last. -->
+            <div class="hidden items-center sm:flex" data-slot="network-mix">
               <div class="flex h-2 w-24 overflow-hidden rounded-full bg-surface-gray-2">
                 <div
                   v-for="part in mix"
@@ -207,15 +210,16 @@
                   :title="`${part.label}: ${part.count}`"
                 />
               </div>
-              <span class="tabular-nums text-xs text-ink-gray-5">
-                {{ __('{0} vehicles', [String(drawn.length)]) }}
-              </span>
             </div>
+            <span class="tabular-nums text-xs text-ink-gray-5">
+              {{ __('{0} vehicles', [String(drawn.length)]) }}
+            </span>
 
             <div class="flex items-baseline gap-2">
-              <span class="tabular-nums text-xl font-semibold leading-none text-ink-gray-9">
-                {{ clockLabel }}
-              </span>
+              <span
+                class="tabular-nums text-xl font-semibold leading-none text-ink-gray-9"
+                data-slot="network-time"
+              >{{ clockLabel }}</span>
               <Badge v-if="livemode" theme="green" :label="__('Live')" />
               <Badge v-else theme="blue" :label="dayLabel" />
             </div>

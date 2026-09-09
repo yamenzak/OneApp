@@ -452,7 +452,7 @@ const punctualitySplit = computed(() => {
   const found = Object.fromEntries(punctuality.value.map((one) => [one.label, one.value]))
   if (!punctuality.value.length) return []
   return [{
-    label: __('Readings'),
+    label: __('Every reading'),
     early: found[__('Early')] || 0,
     on_time: found[__('On time')] || 0,
     late: found[__('Late')] || 0,
@@ -490,7 +490,7 @@ const spreadKeys = computed(() => spread.value.map((_one, at) => `b${at}`))
 
 const spreadSplit = computed(() => {
   if (!spread.value.length) return []
-  const row = { label: __('Readings') }
+  const row = { label: __('Every reading') }
   spread.value.forEach((one, at) => {
     row[`b${at}`] = one.value
   })
