@@ -73,7 +73,9 @@ def _cached(key: str, load):
 
 def forget():
 	"""Drop every cached listing. Called after anything that changes press."""
-	for key in ("sites", "servers", "groups"):
+	keys = ["sites", "servers", "groups"]
+	keys += [f"apps:{row.get('name')}" for row in (groups() or []) if row.get("name")]
+	for key in keys:
 		try:
 			frappe.cache().delete_value(f"oneapp_press:{key}")
 		except Exception:
@@ -94,6 +96,41 @@ def servers() -> list[dict]:
 
 def groups() -> list[dict]:
 	return _cached("groups", lambda: get_client().release_groups())
+
+
+def group_of(name: str) -> dict:
+	"""One bench group's row, or an empty one."""
+	return next((row for row in groups() if row.get("name") == name), {})
+
+
+def version_of(name: str) -> str:
+	"""Which Frappe version a bench group builds.
+
+	Asked here rather than stored on the Shard. It used to be a required field
+	somebody typed off another screen, checked against press on save and never
+	again — so a bench upgraded afterwards left us telling press the version it
+	used to be, and press answers a version mismatch by falling back to its
+	public marketplace path and failing with an error about that instead.
+	"""
+	return group_of(name).get("version") or ""
+
+
+def apps_of(name: str) -> list[str]:
+	"""Every app on a bench group, in press's order.
+
+	Cached per group: a screen asking what a workspace could install asks this,
+	and the answer changes when somebody deploys rather than when somebody
+	looks.
+	"""
+	rows = _cached(
+		f"apps:{name}", lambda: get_client().group_apps(name)
+	)
+	found = []
+	for app in rows or []:
+		said = str(app.get("app") or app.get("name") or "").strip() if isinstance(app, dict) else str(app)
+		if said and said not in found:
+			found.append(said)
+	return found
 
 
 def tenants_by_site() -> dict[str, str]:

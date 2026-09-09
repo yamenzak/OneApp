@@ -1,6 +1,6 @@
 """A shard may not name something Frappe Cloud does not have.
 
-`press_server`, `press_release_group` and `press_version` are typed by hand and
+`press_server` and `press_release_group` are typed by hand and
 read off a different screen, and every one of them fails *late*: press matches a
 bench by server, version and apps, so a wrong value gets several steps into a
 provision — past `create_site`, with a real site already made — and then fails
@@ -40,7 +40,6 @@ def make(shard):
             self.press_server = "u25-nuremberg-3.frappe.cloud"
             self.press_release_group = "bench-46919"
             self.press_cluster = "Nuremberg-3"
-            self.press_version = "Nightly"
             self.capacity_tenants = 0
             self.tenant_count = 0
             self.accepts_new_tenants = 1
@@ -74,7 +73,6 @@ def validate(doc):
 @pytest.mark.parametrize("field,bad", [
     ("press_server", "u25-nuremberg-9.frappe.cloud"),
     ("press_release_group", "bench-46810"),
-    ("press_version", "Version 15"),
 ])
 def test_a_name_frappe_cloud_does_not_have_is_refused(shard, make, monkeypatch, field, bad):
     _known(shard, monkeypatch)
@@ -124,8 +122,7 @@ def test_an_empty_inventory_does_not_block_a_save(shard, make, monkeypatch):
 
 def test_a_shard_naming_nothing_yet_is_left_alone(shard, make, monkeypatch):
     _known(shard, monkeypatch)
-    validate(make(press_server="", press_release_group="",
-                              press_version=""))
+    validate(make(press_server="", press_release_group=""))
 
 
 def test_blank_fields_are_skipped_individually(shard, make, monkeypatch):
@@ -186,16 +183,14 @@ def test_press_is_asked_once_per_request(shard, stub_frappe, monkeypatch):
 # --------------------------------------------------------------------------- #
 # What derives, and what refuses to guess
 # --------------------------------------------------------------------------- #
-# A shard is one choice and a handful of decisions. The bench group determines
-# the version, the server determines the cluster, and a single-server account
-# determines the server — none of those is a judgement, so none should be typed.
-
-def test_the_group_supplies_the_version(shard, make, monkeypatch):
-    _known(shard, monkeypatch)
-    doc = make(press_version="")
-    validate(doc)
-    assert doc.press_version == "Nightly"
-
+# A shard is one choice and a handful of decisions. The server determines the
+# cluster and a single-server account determines the server — neither is a
+# judgement, so neither should be typed.
+#
+# The version used to be here too, filled from the bench group on save. It is
+# gone: filling a field from press on save is still a copy, right on the day it
+# was made and wrong the day somebody upgrades the bench, so it is asked for at
+# the moment the site is created instead. See `press/records.version_of`.
 
 def test_the_server_supplies_the_cluster(shard, make, monkeypatch):
     _known(shard, monkeypatch, {
@@ -250,7 +245,7 @@ def test_filling_does_not_excuse_a_wrong_value(shard, make, monkeypatch):
     """Filling is the convenience; refusing is the guarantee. Both run."""
     _known(shard, monkeypatch)
     with pytest.raises(Exception):
-        validate(make(press_version="", press_release_group="bench-46810"))
+        validate(make(press_release_group="bench-46810"))
 
 
 def test_an_empty_shard_fills_itself_when_the_account_leaves_no_choice(
@@ -265,13 +260,11 @@ def test_an_empty_shard_fills_itself_when_the_account_leaves_no_choice(
         "release_groups": [{"name": "bench-46919", "version": "Nightly"}],
         "versions": ["Nightly"],
     })
-    doc = make(press_server="", press_release_group="", press_cluster="",
-               press_version="")
+    doc = make(press_server="", press_release_group="", press_cluster="")
     validate(doc)
 
-    assert (doc.press_server, doc.press_release_group,
-            doc.press_cluster, doc.press_version) == (
-        "u25-nuremberg-3.frappe.cloud", "bench-46919", "Nuremberg-3", "Nightly")
+    assert (doc.press_server, doc.press_release_group, doc.press_cluster) == (
+        "u25-nuremberg-3.frappe.cloud", "bench-46919", "Nuremberg-3")
 
 
 def test_a_single_bench_group_does_not_have_to_be_named_either(shard, make,
@@ -283,14 +276,12 @@ def test_a_single_bench_group_does_not_have_to_be_named_either(shard, make,
         "release_groups": [{"name": "bench-46919", "version": "Nightly"}],
         "versions": ["Nightly"],
     })
-    doc = make(press_server="", press_release_group="", press_cluster="",
-               press_version="")
+    doc = make(press_server="", press_release_group="", press_cluster="")
     validate(doc)
 
     assert doc.press_server == "u25-nuremberg-3.frappe.cloud"
     assert doc.press_release_group == "bench-46919"
     assert doc.press_cluster == "Nuremberg-3"
-    assert doc.press_version == "Nightly"
 
 
 def test_two_bench_groups_are_a_real_choice(shard, make, monkeypatch):
@@ -300,7 +291,6 @@ def test_two_bench_groups_are_a_real_choice(shard, make, monkeypatch):
                            {"name": "bench-2", "version": "Version 16"}],
         "versions": ["Nightly", "Version 16"],
     })
-    doc = make(press_release_group="", press_version="")
+    doc = make(press_release_group="")
     validate(doc)
     assert doc.press_release_group == ""
-    assert doc.press_version == ""

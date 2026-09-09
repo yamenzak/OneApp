@@ -11,7 +11,6 @@ from frappe.model.document import Document
 PRESS_FIELDS = (
 	("press_server", "servers", "name", "server"),
 	("press_release_group", "release_groups", "name", "bench group"),
-	("press_version", "versions", None, "Frappe version"),
 )
 
 
@@ -30,10 +29,14 @@ class Shard(Document):
 		"""Derive what Frappe Cloud already knows, and leave the rest alone.
 
 		A shard is one choice and a handful of decisions, not seventeen fields.
-		The bench group determines the version; the server determines the
-		cluster; and an account with a single server determines the server. None
-		of those is a judgement, so asking somebody to copy them off another
-		screen only creates a chance to get one wrong.
+		The server determines the cluster, and an account with a single server
+		determines the server. Neither is a judgement, so asking somebody to
+		copy them off another screen only creates a chance to get one wrong.
+
+		The version and the app list used to be filled here too, and are now not
+		stored at all: `press/records.py` answers both at the moment they are
+		used. Filling a field from press on save is still a copy — right on the
+		day it was made and wrong the day somebody upgrades the bench.
 
 		**Only ever fills a blank.** A value already set is a deliberate one —
 		an operator pinning a shard to a cluster press would not have picked, or
@@ -79,22 +82,16 @@ class Shard(Document):
 			if match:
 				self.press_cluster = match.get("cluster")
 
-		if not self.get("press_version") and self.get("press_release_group"):
-			match = next(
-				(g for g in groups if g.get("name") == self.get("press_release_group")), None
-			)
-			if match:
-				self.press_version = match.get("version")
-
 	def validate_against_press(self):
 		"""Refuse a shard naming something Frappe Cloud does not have.
 
-		These are typed by hand, read off a different screen, and every one of
-		them fails *late*: press matches a bench by server, version and apps, so
-		a wrong value gets several steps into a provision — past `create_site`,
-		with a real site already made — and then fails naming the wrong cause.
-		The version is the worst of them, because press falls back to its public
-		marketplace path and the error talks about that instead.
+		These are typed by hand, read off a different screen, and both fail
+		*late*: press matches a bench by server, version and apps, so a wrong
+		value gets several steps into a provision — past `create_site`, with a
+		real site already made — and then fails naming the wrong cause.
+
+		The version used to be the worst of them and is no longer here at all:
+		press is asked for it when the site is created, so it cannot be wrong.
 
 		Checked here rather than in the form so the API, a script and a fixture
 		are held to it too.
@@ -104,7 +101,7 @@ class Shard(Document):
 		because Frappe Cloud is briefly down is a worse failure than a typo, and
 		the readiness board already reports unreachable credentials.
 		"""
-		if not (self.press_server or self.press_release_group or self.press_version):
+		if not (self.press_server or self.press_release_group):
 			return
 
 		# Installs, migrations and fixtures must not reach the network.

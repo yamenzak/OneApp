@@ -20,14 +20,12 @@
   "press_release_group",
   "press_cluster",
   "region",
-  "press_version",
   "cb_press2",
   "domain",
   "domain_mode",
   "press_default_domain",
   "press_site_plan",
   "standby_target",
-  "site_apps",
   "sec_notes",
   "notes"
  ],
@@ -130,14 +128,6 @@
    "reqd": 1
   },
   {
-   "default": "Nightly",
-   "description": "Must match the bench group's version exactly. Without it press cannot match the bench on a dedicated server and falls back to its public marketplace path, which fails.",
-   "fieldname": "press_version",
-   "fieldtype": "Data",
-   "label": "Press Version",
-   "reqd": 1
-  },
-  {
    "fieldname": "cb_press2",
    "fieldtype": "Column Break"
   },
@@ -175,14 +165,6 @@
    "fieldname": "standby_target",
    "fieldtype": "Int",
    "label": "Standby Target"
-  },
-  {
-   "default": "frappe,erpnext,hrms,oneapp",
-   "description": "Apps installed on sites created here, comma separated. Must all be present on the bench group. `hrms` is what makes attendance, leave balances and payroll real rather than a table of dates.",
-   "fieldname": "site_apps",
-   "fieldtype": "Data",
-   "label": "Site Apps",
-   "reqd": 1
   },
   {
    "fieldname": "sec_notes",

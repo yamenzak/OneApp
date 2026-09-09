@@ -15,6 +15,7 @@ and raises ``PressPermanentError`` to fail the job outright.
 import frappe
 from frappe.utils import now_datetime
 
+from oneapp_control.press import records
 from oneapp_control.press.client import (
 	PressPermanentError,
 	PressTransientError,
@@ -54,15 +55,30 @@ def uses_wildcard(shard) -> bool:
 	return shard.domain_mode == "Wildcard"
 
 
+#: What a bench is assumed to carry when press cannot be asked. Only ever the
+#: fallback — a screen that renders while Frappe Cloud is briefly unreachable
+#: should show something plausible rather than an empty list, and a provision
+#: that reaches press for everything else will not be running on this.
+ASSUMED_APPS = ("frappe", "erpnext", "hrms", "oneapp")
+
+
 def site_apps(shard) -> list[str]:
-	"""Apps to install, from the shard rather than hardcoded.
+	"""Apps to install: what the bench group actually carries, asked of press.
 
 	Bench groups differ — a control bench carries payments and oneapp_control, a
 	tenant bench carries oneapp — and press rejects a site referencing an app the
 	bench does not have.
+
+	This used to be `Shard.site_apps`, a required text box somebody typed to
+	match a bench they were reading off another screen. It had to be right, it
+	was checked against nothing, and it went stale the moment an app was added
+	to the group. Press has the list; there is no reason to keep a second one.
 	"""
-	raw = shard.site_apps or "frappe,erpnext,hrms,oneapp"
-	apps = [a.strip() for a in raw.split(",") if a.strip()]
+	from oneapp_control.press import records
+
+	apps = records.apps_of(shard.press_release_group) if shard.press_release_group else []
+	if not apps:
+		apps = list(ASSUMED_APPS)
 
 	# frappe is implicit but press expects it listed first.
 	if "frappe" not in apps:
@@ -136,7 +152,7 @@ def create_site(job):
 		plan=plan,
 		server=shard.press_server or None,
 		cluster=shard.press_cluster or None,
-		version=shard.press_version or None,
+		version=records.version_of(shard.press_release_group) or None,
 	)
 
 	if not result or not result.get("site"):
@@ -848,7 +864,7 @@ def create_standby_site(job):
 		plan=shard.press_site_plan or None,
 		server=shard.press_server or None,
 		cluster=shard.press_cluster or None,
-		version=shard.press_version or None,
+		version=records.version_of(shard.press_release_group) or None,
 	)
 
 	if not result or not result.get("site"):

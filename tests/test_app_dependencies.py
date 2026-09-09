@@ -60,18 +60,23 @@ def test_oneapp_declares_hrms_too():
 
 
 def test_a_new_tenant_site_gets_hrms():
-	"""The default a shard is created with, and the fallback in `site_apps`.
+	"""What a bench is assumed to carry when press cannot be asked.
 
-	Two places, and they have to agree: a shard whose field is empty falls back
-	to the string in the provisioning step, and one created today takes the
-	doctype's default. A tenant that came up without HRMS has no payroll and
-	nothing says why."""
+	One place now rather than two. It used to be a field on the Shard *and* a
+	fallback string in the provisioning step, which had to agree and were
+	checked here because they might not. Both are gone: press is asked what the
+	bench group carries at the moment a site is created, and this list is only
+	what a screen shows while Frappe Cloud is briefly unreachable.
+
+	A tenant that came up without HRMS has no payroll and nothing says why, so
+	the assumption still has to be the full one.
+	"""
 	steps = (ROOT / "apps/oneapp_control/oneapp_control/provisioning/steps.py").read_text()
-	schema = (ROOT / "apps/oneapp_control/oneapp_control/control_plane/doctype/"
-	          "shard/shard.json").read_text()
 
-	assert '"frappe,erpnext,hrms,oneapp"' in steps
-	assert '"frappe,erpnext,hrms,oneapp"' in schema
+	assert 'ASSUMED_APPS = ("frappe", "erpnext", "hrms", "oneapp")' in steps
+	assert "records.apps_of" in steps, (
+		"the app list is no longer read off the bench group, so it is a copy again"
+	)
 
 
 def test_oneapp_requires_erpnext():

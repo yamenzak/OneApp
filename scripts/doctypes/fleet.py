@@ -50,10 +50,6 @@ doctype(
         f("region", "Link", options="Region", reqd=1, in_list_view=1, in_standard_filter=1,
           description="What customers choose at signup. Several shards may share "
                       "a region."),
-        f("press_version", label="Press Version", default="Nightly", reqd=1,
-          description="Must match the bench group's version exactly. Without it "
-                      "press cannot match the bench on a dedicated server and "
-                      "falls back to its public marketplace path, which fails."),
         column("cb_press2"),
         f("domain", default="4dl.app", reqd=1,
           description="Root domain tenants are addressed on."),
@@ -70,11 +66,6 @@ doctype(
         f("standby_target", "Int", default="0",
           description="Warm sites to keep ready here. Zero disables the pool for "
                       "this shard, and signup falls back to creating on demand."),
-        f("site_apps", default="frappe,erpnext,hrms,oneapp", reqd=1,
-          description="Apps installed on sites created here, comma separated. Must "
-                      "all be present on the bench group. `hrms` is what makes "
-                      "attendance, leave balances and payroll real rather than "
-                      "a table of dates."),
         section("sec_notes"),
         f("notes", "Small Text"),
     ],

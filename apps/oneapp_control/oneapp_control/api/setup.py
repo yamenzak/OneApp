@@ -191,7 +191,7 @@ def checks() -> list[dict]:
 	shards = frappe.get_all(
 		"Shard",
 		filters={"status": "Active", "accepts_new_tenants": 1},
-		fields=["name", "domain_mode", "press_release_group", "press_version"],
+		fields=["name", "domain_mode", "press_release_group"],
 	)
 	per_tenant = [x for x in shards if x.domain_mode == "Per-tenant"]
 
@@ -241,13 +241,18 @@ def checks() -> list[dict]:
 			"where": "Shards",
 		},
 		{
-			"key": "shard_version",
+			"key": "shard_bench",
 			"group": BLOCKING,
-			"label": "Shards declare a bench version",
-			"ok": all(x.press_version for x in shards) if shards else False,
-			"detail": "Frappe Cloud matches a bench by server, version and apps. Without the version it falls back to its public path and fails naming the wrong cause.",
-			"needs": "A Frappe version on every shard, e.g. version-15.",
-			"where": "Shards → Bench version",
+			"label": "Shards name a bench group",
+			"ok": all(x.press_release_group for x in shards) if shards else False,
+			"detail": (
+				"Frappe Cloud matches a bench by server, version and apps. The "
+				"version and the app list are read off the group at the moment a "
+				"site is created — so the group is the one thing that has to be "
+				"named, and a shard without one cannot place anybody."
+			),
+			"needs": "A press bench group on every shard.",
+			"where": "Shards → Bench group",
 		},
 		{
 			"key": "cloudflare_dns",

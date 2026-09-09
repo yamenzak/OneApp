@@ -174,13 +174,11 @@ def create_shard(
 	press_release_group: str,
 	region: str,
 	domain: str,
-	press_version: str = "Nightly",
 	capacity_tenants: int = 60,
 	deploy_ring: str = "Fleet",
 	environment: str = "Production",
 	domain_mode: str = "Per-tenant",
 	standby_target: int = 1,
-	site_apps: str | None = None,
 	press_cluster: str | None = None,
 	press_site_plan: str | None = None,
 ) -> str:
@@ -218,7 +216,6 @@ def create_shard(
 			"capacity_tenants": int(capacity_tenants),
 			"press_server": press_server,
 			"press_release_group": press_release_group,
-			"press_version": press_version,
 			# Both read off the server press told us about rather than typed:
 			# create_site passes the cluster through, and a wrong site plan fails
 			# at creation.
@@ -228,7 +225,6 @@ def create_shard(
 			"domain": domain,
 			"domain_mode": domain_mode,
 			"standby_target": int(standby_target),
-			"site_apps": site_apps or "",
 		}
 	)
 	shard.insert(ignore_permissions=True)
