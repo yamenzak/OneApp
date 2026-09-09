@@ -355,6 +355,16 @@ class PressClient:
 	# Capacity — what exists on the account to build a shard from
 	# ------------------------------------------------------------------ #
 
+	def sites(self) -> list[dict]:
+		"""Every site on the account, whether or not we know whose it is.
+
+		The listing an orphan shows up in: a site press is charging us for that
+		no `Tenant` claims, and a workspace whose site press has never heard of.
+		Neither is visible from a table of ours, by construction — a mirror only
+		ever contains what we remembered to put in it.
+		"""
+		return self.call("press.api.site.all", timeout=READ_TIMEOUT) or []
+
 	def servers(self) -> list[dict]:
 		"""Every server on the account, with the cluster each sits in."""
 		return self.call("press.api.server.all") or []

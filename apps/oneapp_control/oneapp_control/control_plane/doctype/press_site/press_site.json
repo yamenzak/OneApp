@@ -1,0 +1,139 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "site_name",
+  "status",
+  "tenant",
+  "cb_press_site",
+  "bench_group",
+  "server",
+  "cluster",
+  "plan",
+  "site_created_on"
+ ],
+ "fields": [
+  {
+   "description": "What press calls it, which is the site's own hostname.",
+   "fieldname": "site_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Site Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "\nActive\nInactive\nSuspended\nBroken\nPending\nInstalling\nUpdating\nArchived",
+   "read_only": 1
+  },
+  {
+   "description": "The workspace this site belongs to. Empty is an orphan: a site on the account that no workspace of ours claims.",
+   "fieldname": "tenant",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tenant",
+   "options": "Tenant",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_press_site",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The press bench group it was created on.",
+   "fieldname": "bench_group",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Bench Group",
+   "read_only": 1
+  },
+  {
+   "fieldname": "server",
+   "fieldtype": "Data",
+   "label": "Server",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cluster",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Cluster",
+   "read_only": 1
+  },
+  {
+   "fieldname": "plan",
+   "fieldtype": "Data",
+   "label": "Plan",
+   "read_only": 1
+  },
+  {
+   "fieldname": "site_created_on",
+   "fieldtype": "Datetime",
+   "label": "Site Created On",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_virtual": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Press Site",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "search_fields": "status,bench_group",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Green",
+   "title": "Active"
+  },
+  {
+   "color": "Gray",
+   "title": "Inactive"
+  },
+  {
+   "color": "Orange",
+   "title": "Suspended"
+  },
+  {
+   "color": "Red",
+   "title": "Broken"
+  },
+  {
+   "color": "Blue",
+   "title": "Pending"
+  },
+  {
+   "color": "Blue",
+   "title": "Installing"
+  },
+  {
+   "color": "Blue",
+   "title": "Updating"
+  },
+  {
+   "color": "Gray",
+   "title": "Archived"
+  }
+ ],
+ "track_changes": 0
+}

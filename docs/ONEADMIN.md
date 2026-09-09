@@ -146,6 +146,27 @@ variable. Env gating is one System Manager role away from being no gating, and
 it would put billing records, the credit ledger and our Frappe Cloud token on
 machines customers administer.
 
+**Press owns what press knows.** Every fact about a site, a server or a bench
+group lives in Frappe Cloud, and the console reads it there through three
+**virtual doctypes** — `Press Site`, `Press Server`, `Press Bench Group` — which
+have no table, no mirror and no migration. The controller fetches on read and
+the framework supplies the rest: permissions, list views, filters, the record
+engine, saved views. A screen cannot tell one from an ordinary doctype, which is
+the whole reason the console stayed a Frappe app.
+
+Two rules come with having no table, and both are load-bearing. **Nothing there
+is written** — the permissions are read-only and the controllers refuse a save
+outright, because changing a site is an operation with a job behind it rather
+than a form that quietly means something else. And **nothing there can be joined
+or aggregated in SQL**: a list is an API call, so anything filtered across the
+fleet on a hot path — which shard has headroom, above all — stays a real column
+on a real table.
+
+What it buys beyond tidiness is the one thing a mirror can never show: an
+**orphan**. A site on the account that no workspace claims is a row in
+`Press Site` with an empty `tenant` and a filter an operator can save. A copy of
+somebody else's truth only ever contains what we remembered to put in it.
+
 Owns `Tenant`, `Shard`, `Region`, `Plan`, `Subscription`, `Add-on`,
 `Credit Pack`, `Promo Code`, `Credit Ledger Entry` (append-only),
 `Credit Reservation`, `Space Entitlement`, `Provisioning Job`, `Standby Site`,

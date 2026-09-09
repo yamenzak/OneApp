@@ -1,0 +1,72 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "group_name",
+  "title",
+  "version",
+  "cb_press_group",
+  "apps"
+ ],
+ "fields": [
+  {
+   "fieldname": "group_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Group Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "read_only": 1
+  },
+  {
+   "description": "Which Frappe version its benches are built on. Press knows; we no longer keep a second copy that goes stale the first time somebody upgrades a bench.",
+   "fieldname": "version",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Version",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_press_group",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Every app on the group, in press's order. Read when the record is opened rather than listed \u2014 it is one call per group and a list of forty would be forty.",
+   "fieldname": "apps",
+   "fieldtype": "Small Text",
+   "label": "Apps",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_virtual": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Control Plane",
+ "name": "Press Bench Group",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "search_fields": "version",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

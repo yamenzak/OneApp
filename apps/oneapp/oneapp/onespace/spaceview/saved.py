@@ -45,6 +45,9 @@ VIEW_ICONS = (
 	# Moving
 	"lucide-bus", "lucide-route",
 	"lucide-map-pin", "lucide-map",
+	# Systems
+	"lucide-server", "lucide-hard-drive",
+	"lucide-layers",
 	# Numbers
 	"lucide-chart-line", "lucide-chart-pie",
 	"lucide-book-open",

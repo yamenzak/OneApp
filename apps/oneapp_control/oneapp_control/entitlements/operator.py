@@ -32,6 +32,8 @@ DOCTYPES = (
 	"Space Claim Redemption", "AI Model", "AI Feature",
 	"AI Usage Record", "Support Login", "Add-on", "Credit Pack", "Promo Code",
 	"Tenant Lifecycle Event", "Workspace Role",
+	# Read-only, and not ours: three virtual doctypes over the press API.
+	"Press Site", "Press Server", "Press Bench Group",
 )
 
 # screen, label, icon, doctype, fields, status field
@@ -76,6 +78,16 @@ SCREENS = (
 	 "region_name,region_code,country,is_active", ""),
 	("buckets", "Buckets", "lucide-database", "Storage Bucket",
 	 "bucket_name,jurisdiction,status,tenant_count,bytes_used", "status"),
+	# Frappe Cloud's own records, read live. No table behind any of the three —
+	# see `press/records.py` — so these are the same screens over somebody
+	# else's truth, and the first of them is the one that finds an orphan: a
+	# site on the account with no workspace against it.
+	("sites", "Sites", "lucide-server", "Press Site",
+	 "site_name,status,tenant,bench_group,cluster,plan", "status"),
+	("servers", "Servers", "lucide-hard-drive", "Press Server",
+	 "server_name,title,status,cluster,plan", "status"),
+	("benches", "Bench groups", "lucide-layers", "Press Bench Group",
+	 "group_name,title,version", ""),
 	("spaces", "Spaces", "lucide-layout-grid", "OneSpace Space",
 	 "space_label,module,role_name,availability,is_active", "availability"),
 	("entitlements", "Entitlements", "lucide-shield", "Space Entitlement",

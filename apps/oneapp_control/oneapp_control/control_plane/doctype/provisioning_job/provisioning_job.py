@@ -59,6 +59,14 @@ class ProvisioningJob(Document):
 		self.db_set("finished_at", now_datetime())
 		self.db_set("last_error", None)
 
+		# Every job here changed something on Frappe Cloud, and the console
+		# reads press through a minute of cache — see `press/records.py`. An
+		# operator who has just watched a site be created should find it in the
+		# list, not in fifty seconds.
+		from oneapp_control.press import records
+
+		records.forget()
+
 	def reset(self):
 		"""Re-run a failed job from the beginning of its pipeline."""
 		self.db_set("state", "Requested")

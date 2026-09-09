@@ -43,6 +43,9 @@ export const SPACE_ICONS = [
   'lucide-route',
   'lucide-map-pin',
   'lucide-map',
+  'lucide-server',
+  'lucide-hard-drive',
+  'lucide-layers',
   'lucide-chart-line',
   'lucide-chart-pie',
   'lucide-book-open',
@@ -349,6 +352,40 @@ export const SPACE_ICON_GROUPS = [
           "geography",
           "coverage",
           "territory"
+        ]
+      }
+    ]
+  },
+  {
+    "group": "Systems",
+    "icons": [
+      {
+        "icon": "lucide-server",
+        "words": [
+          "servers",
+          "sites",
+          "hosting",
+          "machines",
+          "infra"
+        ]
+      },
+      {
+        "icon": "lucide-hard-drive",
+        "words": [
+          "disks",
+          "storage",
+          "volumes",
+          "hardware"
+        ]
+      },
+      {
+        "icon": "lucide-layers",
+        "words": [
+          "groups",
+          "benches",
+          "environments",
+          "tiers",
+          "stacks"
         ]
       }
     ]

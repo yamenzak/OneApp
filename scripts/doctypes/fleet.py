@@ -754,3 +754,100 @@ doctype(
                       "in between is missed."),
     ],
 )
+
+
+# --------------------------------------------------------------------------- #
+# Frappe Cloud's own records, as doctypes with no table.
+#
+# Everything below is `is_virtual`: the rows live in press and the controller
+# fetches them — see `oneapp_control/press/records.py` for the argument and the
+# two rules that follow from having no table. Read-only permissions, because
+# changing a site is an operation with a job behind it rather than a form save.
+#
+# Fields are named for what press calls them, so a reader comparing this screen
+# with the Frappe Cloud dashboard is comparing like with like. A field press
+# stops sending reads as empty rather than raising, which is the right failure
+# for a console: an operator can see that a column went quiet.
+# --------------------------------------------------------------------------- #
+doctype(
+    "Press Site",
+    is_virtual=1,
+    perms=READONLY_PERMS,
+    search_fields="status,bench_group",
+    states=[
+        ("Active", "Green"),
+        ("Inactive", "Gray"),
+        ("Suspended", "Orange"),
+        ("Broken", "Red"),
+        ("Pending", "Blue"),
+        ("Installing", "Blue"),
+        ("Updating", "Blue"),
+        ("Archived", "Gray"),
+    ],
+    fields=[
+        f("site_name", read_only=1, in_list_view=1,
+          description="What press calls it, which is the site's own hostname."),
+        f("status", "Select",
+          options="\nActive\nInactive\nSuspended\nBroken\nPending\nInstalling\nUpdating\nArchived",
+          read_only=1, in_list_view=1, in_standard_filter=1),
+        # The join, and the whole reason this doctype earns its place: a site
+        # with no workspace is one we are paying for and nobody is using.
+        f("tenant", "Link", options="Tenant", read_only=1, in_list_view=1,
+          in_standard_filter=1,
+          description="The workspace this site belongs to. Empty is an orphan: "
+                      "a site on the account that no workspace of ours claims."),
+        column("cb_press_site"),
+        f("bench_group", read_only=1, in_standard_filter=1,
+          description="The press bench group it was created on."),
+        f("server", read_only=1),
+        f("cluster", read_only=1, in_standard_filter=1),
+        f("plan", read_only=1),
+        f("site_created_on", "Datetime", read_only=1),
+    ],
+)
+
+
+doctype(
+    "Press Server",
+    is_virtual=1,
+    perms=READONLY_PERMS,
+    search_fields="cluster,status",
+    states=[
+        ("Active", "Green"),
+        ("Pending", "Blue"),
+        ("Broken", "Red"),
+        ("Archived", "Gray"),
+    ],
+    fields=[
+        f("server_name", read_only=1, in_list_view=1),
+        f("title", read_only=1, in_list_view=1),
+        f("status", "Select", options="\nActive\nPending\nBroken\nArchived",
+          read_only=1, in_list_view=1, in_standard_filter=1),
+        column("cb_press_server"),
+        f("cluster", read_only=1, in_list_view=1, in_standard_filter=1,
+          description="Where it physically is. A Region is a name over one of "
+                      "these rather than a table we keep in step by hand."),
+        f("plan", read_only=1),
+    ],
+)
+
+
+doctype(
+    "Press Bench Group",
+    is_virtual=1,
+    perms=READONLY_PERMS,
+    search_fields="version",
+    fields=[
+        f("group_name", read_only=1, in_list_view=1),
+        f("title", read_only=1, in_list_view=1),
+        f("version", read_only=1, in_list_view=1, in_standard_filter=1,
+          description="Which Frappe version its benches are built on. Press "
+                      "knows; we no longer keep a second copy that goes stale "
+                      "the first time somebody upgrades a bench."),
+        column("cb_press_group"),
+        f("apps", "Small Text", read_only=1,
+          description="Every app on the group, in press's order. Read when the "
+                      "record is opened rather than listed — it is one call per "
+                      "group and a list of forty would be forty."),
+    ],
+)

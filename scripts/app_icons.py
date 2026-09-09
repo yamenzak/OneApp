@@ -63,6 +63,16 @@ SPACE_ICON_GROUPS = [
         ("lucide-map-pin", ("stops", "stations", "places", "locations")),
         ("lucide-map", ("map", "geography", "coverage", "territory")),
     ]),
+    # Machinery. Added when the operator console got screens over Frappe
+    # Cloud's own records and had nothing in this list that meant "a server" —
+    # every existing icon meant a *subject*, and infrastructure is not one. A
+    # customer's space can pick them too: somebody selling field service has
+    # assets, and somebody selling hosting has servers.
+    ("Systems", [
+        ("lucide-server", ("servers", "sites", "hosting", "machines", "infra")),
+        ("lucide-hard-drive", ("disks", "storage", "volumes", "hardware")),
+        ("lucide-layers", ("groups", "benches", "environments", "tiers", "stacks")),
+    ]),
     ("Numbers", [
         ("lucide-chart-line", ("analytics", "reports", "trends", "metrics")),
         ("lucide-chart-pie", ("dashboards", "insights", "breakdown", "share")),

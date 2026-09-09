@@ -98,6 +98,20 @@ def build(spec):
         # make, and until now every link target of ours answered with the id
         # alone and nothing underneath it.
         doc["search_fields"] = spec["search_fields"]
+    if spec.get("is_virtual"):
+        # A doctype with no table. Its rows live in somebody else's system and
+        # the controller fetches them — see `press/records.py`. Everything else
+        # about it is ordinary: permissions apply, the list view is the list
+        # view, and a screen cannot tell the difference.
+        #
+        # `track_changes` off, and not by choice: Frappe files a Version by
+        # comparing a saved document against the one in the table, and there is
+        # no table. A rename is meaningless for the same reason — the id is the
+        # id the other system gave it.
+        doc["is_virtual"] = 1
+        doc["track_changes"] = 0
+        doc["allow_rename"] = 0
+
     if spec.get("issingle"):
         doc["issingle"] = 1
         doc.pop("allow_rename", None)

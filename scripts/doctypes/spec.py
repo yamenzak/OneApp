@@ -92,5 +92,5 @@ def doctype(name, fields, autoname=None, perms=None, app="control", **kw):
 HANDLED_SPEC_KEYS = {
     "name", "fields", "perms", "autoname", "title_field",
     "allow_rename", "issingle", "istable", "app", "track_changes",
-    "in_create", "states", "search_fields", "module",
+    "in_create", "states", "search_fields", "module", "is_virtual",
 }
