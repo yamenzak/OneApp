@@ -98,6 +98,44 @@
         </div>
 
         <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <div class="h-80">
+            <!--
+              The same arithmetic on the other measure, and the reason the
+              occupancy percentiles exist: "half full on average" is a number,
+              "full on three journeys in ten at this hour" is a decision about
+              whether to put another vehicle out.
+            -->
+            <BarChart
+              :data="byHour"
+              x="label"
+              y="full_chance"
+              :title="__('Chance of being full')"
+              :subtitle="__('Percent of journeys over four fifths loaded')"
+              :palette="[occupancyInk(85)]"
+              :loading="loading"
+            />
+          </div>
+
+          <div class="h-80">
+            <!--
+              Where the gap collapses, which is a different question from
+              which vehicles have caught each other right now — that one is on
+              the map and is radioed about; this one is fixed in a timetable.
+            -->
+            <BarChart
+              :data="bunches"
+              x="label"
+              y="chance"
+              horizontal
+              :title="__('Where the gap collapses')"
+              :subtitle="bunchingSubtitle"
+              :palette="[occupancyInk(45)]"
+              :loading="loadingBunching"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
           <div class="h-96">
             <!--
               Worst first, because this is a list somebody reads the top of.
@@ -283,6 +321,9 @@ const answer = ref({})
 const loadingRisk = ref(false)
 const riskAnswer = ref({})
 
+const loadingBunching = ref(false)
+const bunchingAnswer = ref({})
+
 const unusualReady = ref(false)
 const unusualAnswer = ref({})
 
@@ -319,8 +360,36 @@ const byHour = computed(() =>
     p85: one.delay?.p85 ?? 0,
     p95: one.delay?.p95 ?? 0,
     late_chance: one.late_chance ?? 0,
+    full_chance: one.full_chance ?? 0,
   }))
 )
+
+/**
+ * Worst first, and labelled by stop and line together: "Alexanderplatz" is
+ * where it happens and "U6" is whose problem it is, and a scheduler needs
+ * both to act on it.
+ */
+const bunches = computed(() =>
+  (bunchingAnswer.value.stops || [])
+    .slice(0, 10)
+    .map((one) => ({ label: `${one.stop} · ${one.line}`, chance: one.chance }))
+)
+
+const bunchingSubtitle = computed(() => {
+  const share = Math.round((bunchingAnswer.value.share ?? 0.4) * 100)
+  const said = __('Percent of gaps under {0}% of the usual one, at {1}:00', [
+    share,
+    String(hour.value).padStart(2, '0'),
+  ])
+  // Said on the chart rather than left to the reader. A stop-and-hour figure
+  // rests on far fewer observations than a line-and-hour one — a fortnight of
+  // Tuesdays at eight is a handful of visits — and a bar drawn from six
+  // readings looks exactly like a bar drawn from six hundred.
+  const rows = bunchingAnswer.value.stops || []
+  return rows.length && rows.every((one) => one.learning)
+    ? `${said} · ${__('still learning')}`
+    : said
+})
 
 const atRisk = computed(() =>
   (riskAnswer.value.lines || [])
@@ -515,6 +584,15 @@ async function pull() {
   }
 }
 
+async function pullBunching() {
+  loadingBunching.value = true
+  try {
+    bunchingAnswer.value = await network.bunchingRisk(narrowed.value)
+  } finally {
+    loadingBunching.value = false
+  }
+}
+
 async function pullRisk() {
   loadingRisk.value = true
   try {
@@ -549,18 +627,20 @@ async function pullStop() {
 }
 
 /**
- * The day moves three of the four reads and not the fourth: `unusual` is about
- * today by definition — a day that has not happened cannot be behaving oddly —
- * so it is fetched once and left alone while somebody scrubs through next week.
+ * The day moves every read but one: `unusual` is about today by definition — a
+ * day that has not happened cannot be behaving oddly — so it is fetched once
+ * and left alone while somebody scrubs through next week.
  */
 watch([facets, day], () => {
   pull()
   pullRisk()
+  pullBunching()
   pullStop()
   pullScore()
 })
 watch(hour, () => {
   pullRisk()
+  pullBunching()
   pullStop()
 })
 
@@ -568,6 +648,7 @@ onMounted(async () => {
   offered.value = (await network.offered()).facets || []
   pull()
   pullRisk()
+  pullBunching()
   pullUnusual()
   pullScore()
 })

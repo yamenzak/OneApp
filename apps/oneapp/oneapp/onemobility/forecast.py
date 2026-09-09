@@ -70,6 +70,17 @@ HORIZON_DAYS = 14
 #: punctuality the other contradicts.
 LATE_S = 300
 
+#: What counts as full. Not a hundred: a vehicle at eighty percent of its
+#: capacity is one people are already choosing not to board, and an operator
+#: acting on crowding acts before the doors stop closing rather than after.
+FULL_PCT = 80
+
+#: How far a gap has to collapse before it is bunching rather than a bus a
+#: minute early. Two fifths of the typical headway on that line at that stop —
+#: relative and not absolute, because four minutes is a disaster on a ninety
+#: second metro and unremarkable on an hourly rural bus.
+BUNCHED_SHARE = 0.4
+
 #: The spread between p50 and p95 of a normal distribution, in standard
 #: deviations. Used to turn the two percentiles we store back into a sigma,
 #: which is what a probability needs.
@@ -224,7 +235,9 @@ def outlook(facets: str = "", when: str = "", days_back: int = 90) -> dict:
 			"delay_p85": ("avg", "delay_p85"),
 			"delay_p95": ("avg", "delay_p95"),
 			"occupancy_avg": ("avg", "occupancy_avg"),
+			"occupancy_p50": ("avg", "occupancy_p50"),
 			"occupancy_p85": ("avg", "occupancy_p85"),
+			"occupancy_p95": ("avg", "occupancy_p95"),
 		},
 		# The weekday is the whole point: a Tuesday is forecast from Tuesdays.
 		# Reading a Saturday's demand off a week that is five sixths weekday is
@@ -248,6 +261,11 @@ def outlook(facets: str = "", when: str = "", days_back: int = 90) -> dict:
 			"delay": delay,
 			"occupancy": load,
 			"late_chance": _chance_over(delay, LATE_S),
+			# The same arithmetic on the other measure, and the reason the
+			# occupancy percentiles now exist: "half full on average" is a
+			# number, "full on three journeys in ten at this hour" is a
+			# decision about whether to put another vehicle out.
+			"full_chance": _chance_over(load, FULL_PCT),
 			"basis": delay["basis"],
 			"learning": delay["learning"],
 		})
@@ -306,8 +324,11 @@ def expect(stop: str, line: str = "", when: str = "", delay_s: int = 0,
 			"delay_p50": ("avg", "delay_p50"),
 			"delay_p85": ("avg", "delay_p85"),
 			"headway_avg": ("avg", "headway_avg"),
+			"headway_p50": ("avg", "headway_p50"),
 			"headway_p85": ("avg", "headway_p85"),
 			"dwell_avg": ("avg", "dwell_avg"),
+			"dwell_p50": ("avg", "dwell_p50"),
+			"dwell_p85": ("avg", "dwell_p85"),
 		},
 		where=where,
 	)
@@ -331,6 +352,13 @@ def expect(stop: str, line: str = "", when: str = "", delay_s: int = 0,
 		"headway_avg_s": row.get("headway_avg"),
 		"headway_p85_s": row.get("headway_p85"),
 		"dwell_avg_s": row.get("dwell_avg"),
+		# §7a point 6, and what makes point 1 accurate rather than merely
+		# present: an arrival is when the doors open, and a stop where the
+		# vehicle usually stands thirty seconds and sometimes two minutes is
+		# the difference between catching a connection and missing it. The
+		# distribution rather than the mean, for the same reason everything
+		# else here is one.
+		"dwell": _reading(rows, "dwell"),
 	}
 
 
@@ -404,6 +432,148 @@ def risk(facets: str = "", when: str = "", late_s: int = LATE_S,
 	# ordering it by line name would bury the one that needs attention.
 	lines.sort(key=lambda one: (one["chance"] is None, -(one["chance"] or 0)))
 	return {**empty, "lines": lines}
+
+
+@frappe.whitelist(methods=["GET"])
+def bunching_risk(facets: str = "", when: str = "", days_back: int = 90,
+                  limit: int = 20) -> dict:
+	"""Where the gap collapses, and how often. The forward half of §7a point 3.
+
+	Named apart from `network.bunching` because they answer different questions
+	and a workspace wants both: that one is the live half — two positions and one distance,
+	answering "which vehicles have caught each other right now". This is the
+	question a scheduler asks instead: *where does this keep happening*, so
+	that it can be fixed in the timetable rather than radioed about every
+	morning.
+
+	No model, again. `stopHour` holds the headway as a distribution, and a
+	collapsed gap is the low tail of it — so the chance of bunching at a stop is
+	the chance a headway falls below a share of its own median. Relative and not
+	absolute, because four minutes is a disaster on a ninety second metro and
+	unremarkable on an hourly rural bus.
+
+	It is the highest ratio of value to effort in this whole module and it needs
+	one column that did not exist until now: the *median* headway. A mean cannot
+	do this — a ten minute timetable running as a pair four minutes apart and
+	then a sixteen minute hole averages exactly ten.
+	"""
+	_guard()
+	moment = _when(when)
+	_horizon(moment)
+	day = getdate(moment)
+	start, end = _history(days_back)
+	where, unavailable = facetlib.resolve(model.STOP_HOUR, facets)
+
+	empty = {
+		"stops": [],
+		"hour": moment.hour,
+		"weekday": day.weekday(),
+		"share": BUNCHED_SHARE,
+		"from": str(start),
+		"to": str(end),
+		"unavailable": unavailable,
+	}
+	if not facts.exists(model.STOP_HOUR):
+		return empty
+
+	rows = facts.aggregate(
+		model.STOP_HOUR,
+		start=start, end=end,
+		group=["stop", "line"],
+		measures={
+			"visits": ("sum", "visits"),
+			"headway_avg": ("avg", "headway_avg"),
+			"headway_p50": ("avg", "headway_p50"),
+			"headway_p85": ("avg", "headway_p85"),
+		},
+		where={**where, "hour": moment.hour, "dow": day.weekday()},
+	)
+
+	named = networklib.line_names()
+	stops = _stop_names([row["stop"] for row in rows])
+	found = []
+	for row in rows:
+		gap = _headway(row)
+		if gap["p50"] is None:
+			continue
+		# Thin readings are *marked*, not withheld — the rule the whole module
+		# keeps, and the one that matters most here: a stop with four
+		# observations of a collapsing gap is exactly the finding somebody
+		# wants early, and dropping it would leave a workspace switched on this
+		# month with a permanently empty screen and no way to tell that from a
+		# network with no bunching in it.
+		threshold = gap["p50"] * BUNCHED_SHARE
+		chance = _chance_under(gap, threshold)
+		if chance is None:
+			continue
+		found.append({
+			"id": row["stop"],
+			"stop": stops.get(row["stop"], row["stop"]),
+			"line": named.get(row["line"], row["line"]),
+			"typical_s": round(gap["p50"]),
+			"collapses_below_s": round(threshold),
+			"chance": chance,
+			"basis": gap["basis"],
+			"learning": gap["learning"],
+		})
+
+	found.sort(key=lambda one: -one["chance"])
+	return {**empty, "stops": found[: max(5, min(cint(limit) or 20, 100))]}
+
+
+def _headway(row: dict) -> dict:
+	"""The gap distribution, in the shape `_reading` produces.
+
+	Hand-built rather than run through `_reading` because the columns are named
+	for the measure and there is no `headway_p95`: the interesting tail of a
+	headway is the *low* one, and a p95 gap is a hole rather than a collapse.
+	The spread is taken off the p85 instead — the same normal approximation,
+	one point further in.
+	"""
+	visits = cint(row.get("visits") or 0)
+	return {
+		"basis": visits,
+		"learning": visits < ENOUGH,
+		"p50": flt(row["headway_p50"]) if row.get("headway_p50") else None,
+		"p85": flt(row["headway_p85"]) if row.get("headway_p85") else None,
+		"p95": None,
+	}
+
+
+def _chance_under(reading: dict, threshold: float) -> float | None:
+	"""The share of gaps below a number, off the same normal tail.
+
+	The mirror of `_chance_over` and deliberately a separate function: reading
+	one as `100 - the other` is right only while the distribution is symmetric,
+	and the moment somebody swaps the approximation that becomes a silent bug in
+	whichever of the two nobody was looking at.
+	"""
+	import math
+
+	if reading["p50"] is None or reading["p85"] is None:
+		return None
+	# p85 is roughly one sigma above the median on a normal, which is the same
+	# approximation `_sigma` makes from the p95 and is the only one available
+	# here — see `_headway` on why there is no p95.
+	sigma = (reading["p85"] - reading["p50"]) / 1.0364
+	if sigma <= 0:
+		return None
+	return round(50 * (1 + math.erf((threshold - reading["p50"]) / (sigma * math.sqrt(2)))), 1)
+
+
+def _stop_names(names: list[str]) -> dict:
+	"""What a person calls each stop. The same problem `line_names` solves, and
+	for the same reason: a chart labelled with document ids is a chart nobody
+	can read."""
+	if not names:
+		return {}
+	return {
+		row["name"]: row["stop_name"]
+		for row in frappe.get_all(
+			"Transit Stop", filters={"name": ("in", list(set(names)))},
+			fields=["name", "stop_name"], limit_page_length=0,
+		)
+	}
 
 
 @frappe.whitelist(methods=["GET"])

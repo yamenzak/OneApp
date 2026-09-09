@@ -495,12 +495,28 @@ the spread between them is the uncertainty a forecast has to show. Keeping
 p50/p85/p95 alongside the count costs three columns and is the difference
 between a chart and a product.
 
-**Four of the six are built, and `forecast.py` is where.** The shape it settled
-into is worth stating because it is not the one the list below implies: there is
-no predictor. `outlook`, `risk`, `expect` and `unusual` are four reads of
-`serviceHour` and `stopHour`, and the arithmetic between the query and the
-answer is a weighted mean, a normal tail and a z-score. The Outlook screen draws
-them.
+**All six are built, and `forecast.py` is where.** The shape it settled into is
+worth stating because it is not the one the list below implies: there is no
+predictor. `outlook`, `risk`, `expect`, `unusual` and `bunching_risk` are five
+reads of `serviceHour` and `stopHour`, and the arithmetic between the query and
+the answer is a weighted mean, a normal tail and a z-score. The Outlook screen
+draws them.
+
+The last three arrived together and each needed one column that did not exist.
+**Occupancy** was stored as an average and a p85, which cannot be turned into
+"full on three journeys in ten" — the whole distribution now is, and `outlook`
+carries a chance of being full beside the chance of running late. **Dwell** is a
+distribution too, which is what makes point 1 accurate rather than merely
+present: a stop where a vehicle usually stands thirty seconds and sometimes two
+minutes is the difference between catching a connection and missing it. And
+**bunching** needed the *median* headway, because a mean cannot see it — a ten
+minute timetable running as a pair four minutes apart and then a sixteen minute
+hole averages exactly ten. `bunching_risk` reads the low tail of that gap, as a
+share of the line's own headway rather than a number of seconds, because four
+minutes is a disaster on a ninety second metro and unremarkable on an hourly
+rural bus. It is the forward half of `network.bunching`: that one says which
+vehicles have caught each other now and is radioed about, this one says where it
+keeps happening and is fixed in a timetable.
 
 The instruction at the top of this section — store percentiles, not means — was
 the whole of the work. `serviceHour` now carries p50, p85 and p95 of delay and
@@ -1082,11 +1098,10 @@ Each ships something a person can look at. **Done** is done and in the fixture.
    bunching — the scrubber's right-hand side, and the scoring job that says
    whether any of it is any good. **Nearly done:** `serviceHour` and `stopHour`
    store their percentiles, `forecast.py` reads them forward as an arrival, a
-   risk, an anomaly and a day's outlook, the Outlook screen draws them, and
-   `scoring.py` writes each claim down before the answer exists and settles it
-   the night after, and the scrubber's right-hand side draws the network's
-   expected hour past the present. What is left is the ghosts on it, which need
-   a timetable this model does not keep — see §7a.
+   risk, an anomaly, a crowding chance, a collapsing gap and a day's outlook,
+   the Outlook screen draws all six, and `scoring.py` writes each claim down
+   before the answer exists and settles it the night after. What is left is the
+   ghosts on the scrubber, which the timetable now makes possible — see §7a.
 
 Stages 1–4 are a sellable demo. Stages 5–6 are the product. Stages 7–9 are what
 renews it, and stage 9 is what makes a competitor's version look like a

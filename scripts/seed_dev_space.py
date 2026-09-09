@@ -1047,7 +1047,13 @@ def _mobility_day(start, lines, vehicles, named) -> list[dict]:
 				"at": when, "vehicle": vehicle["key"], "line": named[vehicle["line"]],
 				"trip_key": f"{vehicle['key']}-{tick // len(run)}",
 				"lat": round(lat, 6), "lon": round(lon, 6),
-				"occupancy": min(99, busy + (at * 3) % 11),
+				# Spread around the hour's level, not pinned to it. A fixture
+				# where every journey at eight o'clock is 86% full has an
+				# occupancy p50 and p95 one point apart, which makes "the
+				# chance of being full" either nought or a hundred and makes a
+				# working chart look broken — the same argument as the incident
+				# day below. Deterministic in the tick, so two runs agree.
+				"occupancy": max(2, min(99, busy + (at * 3) % 11 + ((tick * 7) % 31) - 15)),
 				# Late in the peak and early off it, spread around that so the
 				# punctuality split has all three states in it and the per-line
 				# ranking has an order. Deterministic: the spread is a function

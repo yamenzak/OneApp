@@ -73,6 +73,15 @@ export const network = {
   /** Every line's chance of running late at one hour, worst first. */
   risk: (params) => callMethod('oneapp.onemobility.risk', params, { method: 'GET' }),
 
+  /**
+   * Where the gap collapses, and how often. The forward half of
+   * `network.bunching`: that one says which vehicles have caught each other
+   * now, this one says where it keeps happening — which is the question a
+   * timetable can be fixed from rather than radioed about.
+   */
+  bunchingRisk: (params) =>
+    callMethod('oneapp.onemobility.bunching_risk', params, { method: 'GET' }),
+
   /** What today is doing that its own history does not. */
   unusual: (params) => callMethod('oneapp.onemobility.unusual', params, { method: 'GET' }),
 

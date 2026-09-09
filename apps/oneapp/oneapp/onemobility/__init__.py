@@ -40,7 +40,7 @@ everything at time T" for one clock that is either now or a Tuesday in March.
 
 from .conflicts import accept_stop, disagreements
 from .facets import offered
-from .forecast import expect, outlook, risk, unusual
+from .forecast import bunching_risk, expect, outlook, risk, unusual
 from .geo import demand, surface
 from .gtfs import load_feed
 from .insights import fleet, rhythm, stops
@@ -58,6 +58,7 @@ __all__ = [
     "accuracy",
     "at",
     "bunching",
+    "bunching_risk",
     "days",
     "demand",
     "deviation",

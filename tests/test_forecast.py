@@ -133,11 +133,11 @@ def test_the_history_window_cannot_be_talked_into_anything(forecast):
 
 def test_every_endpoint_is_a_read_and_says_so(forecast):
 	"""A whitelisted method that writes on GET is a CSRF away from being a
-	problem, and the four here are all lookups."""
+	problem, and the five here are all lookups."""
 	import inspect
 
 	source = inspect.getsource(forecast)
-	assert source.count('@frappe.whitelist(methods=["GET"])') == 4
+	assert source.count('@frappe.whitelist(methods=["GET"])') == 5
 	assert "methods=[\"POST\"]" not in source
 
 
@@ -147,3 +147,82 @@ def test_it_refuses_a_reader_who_cannot_see_a_line(forecast, stub_frappe):
 	stub_frappe.has_permission = lambda *a, **k: False
 	with pytest.raises(stub_frappe.PermissionError):
 		forecast._guard()
+
+
+# --------------------------------------------------------------------------- #
+# The three that were missing
+# --------------------------------------------------------------------------- #
+
+def test_how_full_becomes_a_decision_rather_than_a_number(forecast):
+	"""§7a point 4, and the reason the occupancy percentiles now exist. "Half
+	full on average" is a number; "full on three journeys in ten at this hour"
+	is a decision about whether to put another vehicle out."""
+	one = forecast._reading(
+		[{"readings": 500, "occupancy_p50": 60, "occupancy_p85": 85,
+		  "occupancy_p95": 95, "occupancy_avg": 62}],
+		"occupancy",
+	)
+	assert one["p50"] == 60
+	# A median of sixty with a p95 of ninety-five: about one journey in six is
+	# over eighty, which is a sentence somebody can act on.
+	assert forecast._chance_over(one, forecast.FULL_PCT) == pytest.approx(17, abs=3)
+
+
+def test_full_is_not_a_hundred_percent(forecast):
+	"""A vehicle at eighty percent of capacity is one people are already
+	choosing not to board. An operator acts on crowding before the doors stop
+	closing, not after."""
+	assert 70 <= forecast.FULL_PCT <= 85
+
+
+def test_a_collapsing_gap_is_read_off_the_low_tail(forecast):
+	"""§7a point 3, and the forward half of `network.bunching` — that one
+	answers "which vehicles have caught each other now", this one answers
+	"where does this keep happening", which is the question a timetable can be
+	fixed from."""
+	gap = forecast._headway({"visits": 400, "headway_p50": 600, "headway_p85": 900})
+	# Half the median is well inside the low tail of a gap that spreads from
+	# ten minutes to fifteen.
+	assert forecast._chance_under(gap, 300) == pytest.approx(15, abs=5)
+	assert forecast._chance_under(gap, 600) == pytest.approx(50, abs=1)
+
+
+def test_bunching_is_measured_against_the_lines_own_headway(forecast):
+	"""Four minutes is a disaster on a ninety second metro and unremarkable on
+	an hourly rural bus, so the threshold is a share of the median rather than
+	a number of seconds."""
+	assert 0 < forecast.BUNCHED_SHARE < 1
+
+
+def test_a_gap_with_no_spread_yields_no_chance_of_collapsing(forecast):
+	"""The same refusal `_sigma` makes: every gap landing on one number means
+	too little data far more often than it means a perfect timetable."""
+	flat = forecast._headway({"visits": 400, "headway_p50": 600, "headway_p85": 600})
+	assert forecast._chance_under(flat, 300) is None
+
+
+def test_the_low_tail_is_its_own_arithmetic_and_not_one_minus_the_high_one(forecast):
+	"""Read as `100 - _chance_over` this is right only while the distribution
+	is symmetric, and the moment somebody changes the approximation it becomes
+	a silent bug in whichever of the two nobody was looking at."""
+	import ast
+	import inspect
+
+	body = ast.parse(inspect.getsource(forecast._chance_under).lstrip())
+	called = {
+		ast.unparse(node.func) for node in ast.walk(body) if isinstance(node, ast.Call)
+	}
+	assert "_chance_over" not in called, called
+
+
+def test_a_dwell_is_a_distribution_like_everything_else(forecast):
+	"""§7a point 6, and what makes point 1 accurate rather than merely present:
+	an arrival is when the doors open, and a stop where a vehicle usually
+	stands thirty seconds and sometimes two minutes is the difference between
+	catching a connection and missing it."""
+	one = forecast._reading(
+		[{"visits": 200, "dwell_p50": 30, "dwell_p85": 120, "dwell_avg": 45}],
+		"dwell",
+	)
+	assert (one["p50"], one["p85"]) == (30, 120)
+	assert not one["learning"]

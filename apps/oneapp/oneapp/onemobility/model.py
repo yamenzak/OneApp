@@ -65,7 +65,13 @@ OBSERVATION = facts.declare(
                 "delay_p85": ("p85", "delay_s"),
                 "delay_p95": ("p95", "delay_s"),
                 "occupancy_avg": ("avg", "occupancy"),
+                # The whole distribution and not two points of it. A median
+                # with a spread can be turned into "seven runs in ten"; an
+                # average and one percentile cannot, which is the same
+                # argument the delay columns beside them settled.
+                "occupancy_p50": ("p50", "occupancy"),
                 "occupancy_p85": ("p85", "occupancy"),
+                "occupancy_p95": ("p95", "occupancy"),
             },
         },
         {
@@ -147,7 +153,9 @@ SERVICE_HOUR = facts.declare(
         "delay_p85": "float",
         "delay_p95": "float",
         "occupancy_avg": "float",
+        "occupancy_p50": "float",
         "occupancy_p85": "float",
+        "occupancy_p95": "float",
     },
     keys=(("line", "at"), ("hour", "dow")),
     # Never expires, never freezes. `sweep` skips a table with no hot window,
@@ -201,7 +209,19 @@ STOP_EVENT = facts.declare(
         "measures": {
             "visits": ("count", "*"),
             "dwell_avg": ("avg", "dwell_s"),
+            # How long it stands there, as a distribution. §7a point 6: dwell
+            # is what makes an arrival estimate accurate rather than merely
+            # present, and an average dwell cannot say "usually thirty seconds
+            # and sometimes two minutes", which is the difference between
+            # catching a connection and missing it.
+            "dwell_p50": ("p50", "dwell_s"),
+            "dwell_p85": ("p85", "dwell_s"),
             "headway_avg": ("avg", "headway_s"),
+            # And the gap, as one too. Bunching is the gap collapsing, so
+            # predicting it needs the shape of the gap rather than its mean —
+            # a ten minute timetable running as a pair and then a sixteen
+            # minute hole has a perfectly ordinary average.
+            "headway_p50": ("p50", "headway_s"),
             # The number a rider experiences. A mean headway is the timetable;
             # the p85 is the wait the complaint is about.
             "headway_p85": ("p85", "headway_s"),
@@ -239,7 +259,10 @@ STOP_HOUR = facts.declare(
         "dow": "smallint",
         "visits": "int",
         "dwell_avg": "float",
+        "dwell_p50": "float",
+        "dwell_p85": "float",
         "headway_avg": "float",
+        "headway_p50": "float",
         "headway_p85": "float",
         "delay_avg": "float",
         "delay_p50": "float",
