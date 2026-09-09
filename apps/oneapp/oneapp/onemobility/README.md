@@ -571,6 +571,23 @@ small, real, checked-in GTFS feed — a handful of lines, a few dozen stops, a
 day of synthetic observations — deterministic enough that a screenshot is
 comparable between runs.
 
+What `scripts/dev.sh seed` builds today is six Berlin lines across four modes
+(the 100 bus, U1, U2, U6 and U8, and the S1), each with its operator's own
+colour and its real coordinates, sharing interchange stops the way the network
+does — so a map with every line drawn has crossings in it, which is the only
+way to tell whether the casings work. Ten vehicles report every sixty seconds
+over a fourteen-hour service day.
+
+Two of those numbers are load-bearing and were not obvious. Six lines rather
+than three, because a categorical palette that reads cleanly at three tells you
+nothing about the pair a reader actually has to separate. And lateness is
+per-line and shaped by the hour — `_lateness()` gives each line its own
+multiplier over a peak-hour base, plus a deterministic spread — because the
+first fixture had every line identically punctual, which drew four charts that
+were flat and one that was a single bar at a hundred percent. A fixture that
+makes every plot look correct is worse than no fixture: it hides exactly the
+bugs the plots exist to show.
+
 Test data is not the problem it looks like. GTFS feeds are published openly by
 most German authorities and by aggregators; VDV 452 samples are scarcer and
 will likely have to come from a customer or from an open repository, which is

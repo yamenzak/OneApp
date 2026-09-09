@@ -61,8 +61,10 @@ def rhythm(line: str = "", days_back: int = 30) -> dict:
 		"headline": [],
 		"by_hour": [],
 		"load_by_hour": [],
+		"service_by_hour": [],
 		"week": [],
 		"by_line": [],
+		"punctuality": [],
 		"from": str(start),
 		"to": str(end),
 		"lines": _lines(),
@@ -86,10 +88,17 @@ def rhythm(line: str = "", days_back: int = 30) -> dict:
 	if not hours:
 		return empty
 
+	punctuality = _punctuality(line, start, end)
 	return {
-		"headline": _headline(hours, line, start, end),
+		"headline": _headline(hours, punctuality),
+		"punctuality": punctuality["split"],
 		"by_hour": _fold(hours, "delay_avg"),
 		"load_by_hour": _fold(hours, "occupancy_avg"),
+		# How much *service* there is in each hour, which is a different
+		# question from how full it was and is the one the scrubber's track
+		# draws: an operator dragging through a day should be able to see where
+		# the day has something in it before they let go.
+		"service_by_hour": _service(hours),
 		"week": _week(hours),
 		"by_line": _by_line(start, end),
 		"from": str(start),
@@ -133,6 +142,16 @@ def _fold(rows: list[dict], measure: str) -> list[dict]:
 		{"label": _label(hour), "value": round(carried[0] / carried[1], 1) if carried[1] else 0}
 		for hour, carried in sorted(totals.items())
 	]
+
+
+def _service(rows: list[dict]) -> list[dict]:
+	"""Readings per hour of the day, summed over every day in the window."""
+	totals: dict[int, int] = {}
+	for row in rows:
+		hour = cint(row.get("hour"))
+		totals[hour] = totals.get(hour, 0) + cint(row.get("readings"))
+	return [{"label": _label(hour), "hour": hour, "value": total}
+	        for hour, total in sorted(totals.items())]
 
 
 def _week(rows: list[dict]) -> list[dict]:
@@ -193,7 +212,7 @@ def _by_line(start, end) -> list[dict]:
 	return out[:20]
 
 
-def _headline(hours: list[dict], line: str, start, end) -> list[dict]:
+def _headline(hours: list[dict], punctuality: dict) -> list[dict]:
 	"""The four figures across the top, in the order somebody reads them."""
 	readings = sum(cint(row.get("readings")) for row in hours)
 	weighted = sum(flt(row.get("delay_avg")) * (flt(row.get("readings")) or 1) for row in hours)
@@ -208,7 +227,7 @@ def _headline(hours: list[dict], line: str, start, end) -> list[dict]:
 			"value": round((weighted / weight) / 60, 1) if weight else 0,
 			"suffix": _(" min"),
 		},
-		{"label": _("On time"), "value": _punctual(line, start, end), "suffix": "%"},
+		{"label": _("On time"), "value": punctuality["share"], "suffix": "%"},
 		{
 			"label": _("Busiest hour"),
 			"value": _label(busiest.get("hour")) if busiest else "—",
@@ -216,17 +235,23 @@ def _headline(hours: list[dict], line: str, start, end) -> list[dict]:
 	]
 
 
-def _punctual(line: str, start, end) -> float:
-	"""The share of readings inside the on-time window.
+def _punctuality(line: str, start, end) -> dict:
+	"""How the readings fall either side of the on-time window.
 
 	A threshold, so it cannot come from the aggregate tier: an average delay of
 	zero is equally a service that is always punctual and one that is five
 	minutes early half the time and five late the other half, and those are not
 	the same railway. This reads the observations, and therefore only reaches
 	as far back as the hot window does — which is said on the screen.
+
+	Three counts rather than one percentage, because early and late are
+	opposite failures with opposite fixes — a bus running early has left a stop
+	before people got to it — and a single "on time" figure hides which one a
+	network has.
 	"""
+	empty = {"share": 0, "split": []}
 	if not facts.exists(model.OBSERVATION):
-		return 0
+		return empty
 
 	clauses = ["`at` >= %s", "`at` < %s", "`delay_s` IS NOT NULL"]
 	values = [start, end]
@@ -236,10 +261,23 @@ def _punctual(line: str, start, end) -> float:
 
 	row = frappe.db.sql(
 		f"""SELECT COUNT(*) AS seen,
-		           SUM(CASE WHEN `delay_s` BETWEEN %s AND %s THEN 1 ELSE 0 END) AS punctual
+		           SUM(CASE WHEN `delay_s` < %s THEN 1 ELSE 0 END) AS early,
+		           SUM(CASE WHEN `delay_s` BETWEEN %s AND %s THEN 1 ELSE 0 END) AS punctual,
+		           SUM(CASE WHEN `delay_s` > %s THEN 1 ELSE 0 END) AS late
 		    FROM `{model.OBSERVATION.table}` WHERE {' AND '.join(clauses)}""",
-		(EARLY_S, LATE_S, *values),
+		(EARLY_S, EARLY_S, LATE_S, LATE_S, *values),
 		as_dict=True,
 	)
 	seen = cint(row and row[0].get("seen"))
-	return round(100.0 * cint(row[0].get("punctual")) / seen, 1) if seen else 0
+	if not seen:
+		return empty
+
+	found = row[0]
+	return {
+		"share": round(100.0 * cint(found.get("punctual")) / seen, 1),
+		"split": [
+			{"label": _("Early"), "value": cint(found.get("early"))},
+			{"label": _("On time"), "value": cint(found.get("punctual"))},
+			{"label": _("Late"), "value": cint(found.get("late"))},
+		],
+	}

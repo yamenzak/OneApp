@@ -922,26 +922,58 @@ def _mobility_day(start, lines, vehicles, named) -> list[dict]:
 		# Stagger the vehicles down the line so they are not all at the depot
 		# at once, which is what a fleet actually looks like.
 		offset = timedelta(minutes=13 * at)
-		for tick in range(0, 14 * 60 * 2, 1):  # 14 hours, every 30 seconds
-			when = start + timedelta(hours=6) + offset + timedelta(seconds=tick * 30)
+		# Every sixty seconds, which is what a great many real feeds send and is
+		# what keeps ten vehicles costing about what four cost at thirty. The
+		# browser tweens between pings either way, so the map is no less smooth
+		# for it — see `lib/motion.js`.
+		for tick in range(0, 14 * 60, 1):  # 14 hours, every 60 seconds
+			when = start + timedelta(hours=6) + offset + timedelta(seconds=tick * 60)
 			if when.hour >= 20:
 				break
 			# Where along the line: a triangle wave, so it runs out and back.
-			phase = (tick % 80) / 80.0
+			phase = (tick % 40) / 40.0
 			along = phase * 2 if phase < 0.5 else (1 - phase) * 2
 			lon, lat = _along(points, along)
 			hour = when.hour
 			busy = 70 if hour in (7, 8, 16, 17) else 45 if hour in (9, 15, 18) else 22
+			# A rail vehicle carries a different load to a bus at the same hour,
+			# and a fixture where every vehicle sits in one occupancy band is a
+			# fixture that cannot show the band scale working. The factor is by
+			# mode rather than random, so two runs still agree.
+			busy = round(busy * {"Rail": 1.35, "Metro": 1.2, "Tram": 1.0}.get(vehicle["mode"], 0.85))
 			rows.append({
 				"at": when, "vehicle": vehicle["key"], "line": named[vehicle["line"]],
-				"trip_key": f"{vehicle['key']}-{tick // 80}",
+				"trip_key": f"{vehicle['key']}-{tick // 40}",
 				"lat": round(lat, 6), "lon": round(lon, 6),
-				"occupancy": busy + (at * 3) % 11,
-				# Late in the peak and early off it, which is what the
-				# punctuality chart is for.
-				"delay_s": 180 if hour in (7, 8, 17) else -30 if hour < 7 else 40,
+				"occupancy": min(99, busy + (at * 3) % 11),
+				# Late in the peak and early off it, spread around that so the
+				# punctuality split has all three states in it and the per-line
+				# ranking has an order. Deterministic: the spread is a function
+				# of the tick and the vehicle, so two runs still agree and a
+				# screenshot is still comparable between them.
+				"delay_s": _lateness(spec["key"], hour, tick, at),
 			})
 	return rows
+
+
+#: How reliably each line runs, as a multiplier on the hour's base delay. A
+#: fixture where every line is equally late cannot show a ranking working, and
+#: "which of my lines is the problem" is the first question this screen is for.
+MOBILITY_LATENESS = {
+	"zz-100": 1.6,   # a bus in traffic
+	"zz-u1": 0.5,    # underground, its own right of way
+	"zz-u2": 0.9,
+	"zz-u6": 1.2,
+	"zz-u8": 0.7,
+	"zz-s1": 0.4,    # heavy rail, the most reliable thing on the map
+}
+
+
+def _lateness(line_key: str, hour: int, tick: int, at: int) -> int:
+	"""Seconds behind the timetable for one reading. Negative is early."""
+	base = 240 if hour in (7, 8, 16, 17) else -50 if hour < 7 else 45
+	spread = ((tick * 37 + at * 61) % 140) - 70
+	return int(round(base * MOBILITY_LATENESS.get(line_key, 1.0)) + spread)
 
 
 def _along(points, fraction: float):
@@ -963,8 +995,16 @@ def _along(points, fraction: float):
 	return points[-1]
 
 
-#: Three lines through central Berlin. Real coordinates, so somebody who knows
-#: the city can tell at a glance whether the map is drawing what it says.
+#: Six lines through central Berlin. Real coordinates and each line's own real
+#: colour, so somebody who knows the city can tell at a glance whether the map
+#: is drawing what it says — and so the network has enough colours in it to
+#: show whether the map reads. Three lines was the first fixture and two of
+#: them were the same red, which is true of Berlin's buses and trams and made
+#: every screenshot an argument about whether the renderer worked.
+#:
+#: The U-Bahn is where the colours are: Berlin gives every underground line a
+#: distinct one and has done since 1966, which is exactly the palette a transit
+#: map is designed around.
 MOBILITY_LINES = [
 	{
 		"key": "zz-100", "number": "100", "name": "zzAlexanderplatz — Zoo",
@@ -979,14 +1019,58 @@ MOBILITY_LINES = [
 		],
 	},
 	{
-		"key": "zz-m10", "number": "M10", "name": "zzHauptbahnhof — Warschauer",
-		"mode": "Tram", "colour": "#e2001a",
+		"key": "zz-u1", "number": "U1", "name": "zzWarschauer Straße — Uhlandstraße",
+		"mode": "Metro", "colour": "#7dad4c",
 		"stops": [
-			{"code": "HBF", "name": "zzHauptbahnhof", "lat": 52.5251, "lon": 13.3694},
-			{"code": "NAT", "name": "zzNaturkundemuseum", "lat": 52.5305, "lon": 13.3820},
-			{"code": "BER", "name": "zzBernauer Straße", "lat": 52.5382, "lon": 13.3961},
-			{"code": "EBE", "name": "zzEberswalder Straße", "lat": 52.5410, "lon": 13.4122},
 			{"code": "WAR", "name": "zzWarschauer Straße", "lat": 52.5053, "lon": 13.4494},
+			{"code": "SCL", "name": "zzSchlesisches Tor", "lat": 52.5008, "lon": 13.4415},
+			{"code": "KOT", "name": "zzKottbusser Tor", "lat": 52.4991, "lon": 13.4180},
+			{"code": "HAL", "name": "zzHallesches Tor", "lat": 52.4977, "lon": 13.3915},
+			{"code": "MOK", "name": "zzMöckernbrücke", "lat": 52.4993, "lon": 13.3823},
+			{"code": "NOL", "name": "zzNollendorfplatz", "lat": 52.4996, "lon": 13.3540},
+			{"code": "WIT", "name": "zzWittenbergplatz", "lat": 52.5019, "lon": 13.3430},
+			{"code": "UHL", "name": "zzUhlandstraße", "lat": 52.5033, "lon": 13.3266},
+		],
+	},
+	{
+		"key": "zz-u2", "number": "U2", "name": "zzPankow — Ruhleben",
+		"mode": "Metro", "colour": "#da421e",
+		"stops": [
+			{"code": "SEN", "name": "zzSenefelderplatz", "lat": 52.5321, "lon": 13.4131},
+			{"code": "ROS", "name": "zzRosa-Luxemburg-Platz", "lat": 52.5279, "lon": 13.4106},
+			{"code": "ALX", "name": "zzAlexanderplatz", "lat": 52.5219, "lon": 13.4132},
+			{"code": "STA", "name": "zzStadtmitte", "lat": 52.5110, "lon": 13.3892},
+			{"code": "POT", "name": "zzPotsdamer Platz", "lat": 52.5096, "lon": 13.3760},
+			{"code": "GLE", "name": "zzGleisdreieck", "lat": 52.4993, "lon": 13.3745},
+			{"code": "NOL", "name": "zzNollendorfplatz", "lat": 52.4996, "lon": 13.3540},
+			{"code": "ZOO", "name": "zzZoologischer Garten", "lat": 52.5073, "lon": 13.3324},
+		],
+	},
+	{
+		"key": "zz-u6", "number": "U6", "name": "zzAlt-Tegel — Alt-Mariendorf",
+		"mode": "Metro", "colour": "#8c6dab",
+		"stops": [
+			{"code": "WED", "name": "zzWedding", "lat": 52.5495, "lon": 13.3663},
+			{"code": "REI", "name": "zzReinickendorfer Straße", "lat": 52.5432, "lon": 13.3661},
+			{"code": "NAT", "name": "zzNaturkundemuseum", "lat": 52.5305, "lon": 13.3820},
+			{"code": "FRI", "name": "zzFriedrichstraße", "lat": 52.5200, "lon": 13.3870},
+			{"code": "STA", "name": "zzStadtmitte", "lat": 52.5110, "lon": 13.3892},
+			{"code": "KOC", "name": "zzKochstraße", "lat": 52.5063, "lon": 13.3906},
+			{"code": "HAL", "name": "zzHallesches Tor", "lat": 52.4977, "lon": 13.3915},
+			{"code": "PLA", "name": "zzPlatz der Luftbrücke", "lat": 52.4845, "lon": 13.3877},
+		],
+	},
+	{
+		"key": "zz-u8", "number": "U8", "name": "zzWittenau — Hermannstraße",
+		"mode": "Metro", "colour": "#0067a8",
+		"stops": [
+			{"code": "GES", "name": "zzGesundbrunnen", "lat": 52.5486, "lon": 13.3886},
+			{"code": "BER", "name": "zzBernauer Straße", "lat": 52.5382, "lon": 13.3961},
+			{"code": "ROS", "name": "zzRosa-Luxemburg-Platz", "lat": 52.5279, "lon": 13.4106},
+			{"code": "WEI", "name": "zzWeinmeisterstraße", "lat": 52.5250, "lon": 13.4053},
+			{"code": "JAN", "name": "zzJannowitzbrücke", "lat": 52.5147, "lon": 13.4183},
+			{"code": "KOT", "name": "zzKottbusser Tor", "lat": 52.4991, "lon": 13.4180},
+			{"code": "HER", "name": "zzHermannplatz", "lat": 52.4867, "lon": 13.4245},
 		],
 	},
 	{
@@ -994,6 +1078,7 @@ MOBILITY_LINES = [
 		"mode": "Rail", "colour": "#da6ba2",
 		"stops": [
 			{"code": "GES", "name": "zzGesundbrunnen", "lat": 52.5486, "lon": 13.3886},
+			{"code": "NOR", "name": "zzNordbahnhof", "lat": 52.5320, "lon": 13.3885},
 			{"code": "FRI", "name": "zzFriedrichstraße", "lat": 52.5200, "lon": 13.3870},
 			{"code": "POT", "name": "zzPotsdamer Platz", "lat": 52.5096, "lon": 13.3760},
 			{"code": "YOR", "name": "zzYorckstraße", "lat": 52.4919, "lon": 13.3730},
@@ -1005,14 +1090,30 @@ MOBILITY_LINES = [
 	},
 ]
 
+#: Ten vehicles across the six lines. Enough that the occupancy mix on the
+#: clock has more than one band in it and the map has traffic on it, and few
+#: enough that a fortnight of them is the same number of rows the four-vehicle
+#: fixture wrote — see `_mobility_day` for the interval that pays for it.
 MOBILITY_VEHICLES = [
 	{"key": "zz-1041", "label": "zz1041", "line": "zz-100", "mode": "Bus",
 	 "seats": 45, "standing": 60},
 	{"key": "zz-1042", "label": "zz1042", "line": "zz-100", "mode": "Bus",
 	 "seats": 45, "standing": 60},
-	{"key": "zz-2210", "label": "zz2210", "line": "zz-m10", "mode": "Tram",
-	 "seats": 70, "standing": 120},
+	{"key": "zz-2101", "label": "zz2101", "line": "zz-u1", "mode": "Metro",
+	 "seats": 180, "standing": 320},
+	{"key": "zz-2102", "label": "zz2102", "line": "zz-u1", "mode": "Metro",
+	 "seats": 180, "standing": 320},
+	{"key": "zz-2201", "label": "zz2201", "line": "zz-u2", "mode": "Metro",
+	 "seats": 180, "standing": 320},
+	{"key": "zz-2202", "label": "zz2202", "line": "zz-u2", "mode": "Metro",
+	 "seats": 180, "standing": 320},
+	{"key": "zz-2601", "label": "zz2601", "line": "zz-u6", "mode": "Metro",
+	 "seats": 180, "standing": 320},
+	{"key": "zz-2801", "label": "zz2801", "line": "zz-u8", "mode": "Metro",
+	 "seats": 180, "standing": 320},
 	{"key": "zz-4801", "label": "zz4801", "line": "zz-s1", "mode": "Rail",
+	 "seats": 300, "standing": 500},
+	{"key": "zz-4802", "label": "zz4802", "line": "zz-s1", "mode": "Rail",
 	 "seats": 300, "standing": 500},
 ]
 
