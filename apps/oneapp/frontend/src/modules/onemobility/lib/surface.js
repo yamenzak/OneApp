@@ -154,11 +154,21 @@ export function paintSurface(canvas, answer, inks) {
     weight[at] += w
   }
 
-  // Two passes, which is a kernel reaching two cells — the same distance as the
-  // margin, so the field is fully faded by the time the canvas ends. The GPU's
-  // linear resampling does the rest of the smoothing on the way to the screen.
-  const smoothTotal = blur(blur(total, cols, rows), cols, rows)
-  const smoothWeight = blur(blur(weight, cols, rows), cols, rows)
+  // One pass, reaching one cell, inside a margin of two — so the outer ring of
+  // the canvas is still empty and the field ends without an edge, without
+  // smearing the interior to get there. That was the mistake in the version
+  // before this one: the second pass was added to fix the boundary and cost the
+  // structure everywhere else.
+  //
+  // The restraint is the point. Delay on a network is not a continuous field —
+  // it concentrates on corridors and junctions, and two roads a kilometre apart
+  // that do not touch have nothing to say about each other. Smoothing far
+  // enough to look like weather asserts a continuity that is not there. What
+  // the blur is *for* is hiding the grid, which is an artefact of where the
+  // bins happened to fall; the GPU's linear resampling does most of that on the
+  // way to the screen, and this only takes the corners off.
+  const smoothTotal = blur(total, cols, rows)
+  const smoothWeight = blur(weight, cols, rows)
 
   // Alpha is relative to the busiest place in this answer, not absolute.
   //

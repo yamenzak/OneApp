@@ -551,6 +551,16 @@ transparent rather than cool. Alpha is scaled to the busiest place in the answer
 rather than to an absolute, because a kernel spreads an isolated cell over nine
 and reading it absolutely made the whole field a wash.
 
+**The kernel reaches one cell and no further, and the restraint is the point.**
+Delay on a network is not a continuous field: it concentrates on corridors and
+junctions, and two roads a kilometre apart that do not touch have nothing to say
+about each other. Smoothing far enough to look like weather asserts a continuity
+that is not there — at a hundred-metre grid it turns a corridor into a district.
+What the blur is *for* is hiding the grid, and the GPU's linear resampling does
+most of that on the way to the screen. Two passes were tried, to fade the canvas
+boundary, and cost the structure everywhere else; the boundary is a two-cell
+margin instead, which the one-cell kernel cannot reach across.
+
 A cell is a rounded latitude and longitude, and how rounded follows the zoom:
 kilometre cells for the shape of a city, hundred-metre for a district,
 ten-metre once a street fills the screen. Three buckets rather than a
