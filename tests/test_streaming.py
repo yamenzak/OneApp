@@ -189,10 +189,21 @@ def test_a_document_may_not_declare_a_doctype(streaming, stub_frappe):
 
 def test_a_dialect_with_no_reader_is_told_so(streaming, stub_frappe):
 	"""The same honesty `sources.LOADERS` keeps: a customer can declare what
-	they have before we can read it, and hears that rather than a parse error."""
-	assert set(streaming.READERS) == {"SIRI"}
+	they have before we can read it, and hears that rather than a parse error.
+	NeTEx is the one still outstanding."""
+	assert set(streaming.READERS) == {"SIRI", "VDV 454", "GTFS Realtime"}
 	with pytest.raises(stub_frappe.ValidationError):
-		streaming.read("GTFS Realtime", siri())
+		streaming.read("NeTEx", siri())
+
+
+def test_a_dialect_says_how_its_messages_end(streaming):
+	"""The decision the two new readers forced. A stream of XML documents is
+	self-delimiting — the closing root tag is the boundary. A protobuf body is
+	not: no terminator, no top-level length, no way to tell a complete message
+	from a truncated one, and its only boundary is the end of the response."""
+	assert streaming.framing("SIRI") == "xml"
+	assert streaming.framing("VDV 454") == "xml"
+	assert streaming.framing("GTFS Realtime") == "whole"
 
 
 # --------------------------------------------------------------------------- #

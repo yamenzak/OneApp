@@ -17,7 +17,10 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     sources     the four doors a delivery arrives through, and the one pipeline
     conflicts   two sources claiming one key: whose answer is drawn, and where
                 the other one went
-    streaming   the door that never closes — a socket read in bounded windows
+    streaming   the door that never closes — a socket read in bounded windows,
+                in SIRI, VDV 454 or GTFS-Realtime
+    gtfsrt      protocol buffers, decoded off the wire format rather than off a
+                dependency
     timetable   what the feed plans, kept as a pattern: a departure board, the
                 ghosts on the forward scrubber, and the plan against what ran
     live        positions in, positions out, one vehicle's day for the scrubber

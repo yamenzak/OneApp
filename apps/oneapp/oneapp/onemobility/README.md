@@ -332,13 +332,25 @@ file and impossible for a stream, where a day of positions is not a delivery and
 one `File` per frame would be a hundred thousand of them. The observation row is
 its own record here, carrying the feed's own timestamp.
 
-SIRI is the reader that exists — stdlib XML, namespace-agnostic because
-authorities disagree about which one they declare, signed durations because
-`-PT45S` is a vehicle running early, and a refusal for any document carrying an
-inline entity definition. GTFS-Realtime is protocol buffers and wants a
-dependency and a schema; VDV 454 is XML and will be a second reader here rather
-than a second anything else. A source declaring either is told so plainly, the
-way `sources.LOADERS` tells an unreadable file format so.
+Three readers, and each is honest about something different. **SIRI** is stdlib
+XML, namespace-agnostic because authorities disagree about which one they
+declare, with signed durations because `-PT45S` is a vehicle running early.
+**VDV 454** is a prognosis interface rather than a positions one, and most
+deliveries carry no coordinate at all — so a vehicle is placed at the last stop
+it *called at*, which the feed stated, and never between stops, where it said
+nothing. **GTFS-Realtime** is protocol buffers, read without a dependency in
+`gtfsrt.py`: the wire format carries no names, so a decoder is a map from field
+numbers to meanings and those numbers are frozen by a published specification
+that cannot renumber without breaking every consumer in the world. NeTEx is
+still told plainly that it has no reader, the way `sources.LOADERS` tells an
+unreadable file format so.
+
+The framing is per format because it has to be. A stream of XML documents is
+self-delimiting — the closing root tag is the boundary. A protobuf body is not:
+no terminator, no top-level length, no way to tell a complete message from a
+truncated one, and its only boundary is the end of the response. So
+GTFS-Realtime is read `whole`, and the reconnect loop is what makes it a live
+feed at all: one body per connection, several connections per window.
 
 ---
 
@@ -1054,8 +1066,8 @@ Each ships something a person can look at. **Done** is done and in the fixture.
    with a legend. **Done.**
 5. **Live.** A socket source, the observation table, vehicles moving. **Done**,
    both doors: `live.report` takes a push from a bridge, and `streaming.py`
-   holds a connection open itself, in bounded windows the scheduler chains —
-   SIRI today, VDV 454 and GTFS-Realtime as further readers.
+   holds a connection open itself, in bounded windows the scheduler chains,
+   speaking SIRI, VDV 454 and GTFS-Realtime.
 6. **The scrubber.** The nightly roll-up, the day objects, and one screen with
    two clocks. **Done.**
 7. **Analysis.** Peak hours, punctuality, occupancy over time — the aggregate

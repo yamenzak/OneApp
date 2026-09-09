@@ -78,14 +78,30 @@ MAX_OPENS = 8
 #: worker dies.
 MAX_FRAME = 16 * 1024 * 1024
 
-#: Which live dialects have a reader, in the shape `LOADERS` is declared in
-#: `sources.py` and for the same reason: a customer should be able to say what
-#: they have before we can read it, and be told so plainly.
+#: Which live dialects have a reader, and how a connection speaking one is cut
+#: into messages. Declared in the shape `sources.LOADERS` is and for the same
+#: reason: a customer should be able to say what they have before we can read
+#: it, and be told so plainly.
 #:
-#: GTFS-Realtime is protocol buffers and needs a dependency and a schema; VDV
-#: 454 is XML and is close enough to SIRI that it will be a second reader here
-#: rather than a second anything else.
-READERS: dict[str, str] = {"SIRI": "_siri"}
+#: **The framing is per format because it has to be.** A stream of XML documents
+#: is self-delimiting — the closing root tag is the boundary, and `frames` finds
+#: it. A protocol-buffers body is not: it carries no terminator, no length
+#: prefix at the top level, and no way to tell a complete message from a
+#: truncated one. Its only boundary is the end of the response, which is why
+#: GTFS-Realtime is read `whole` and why the reconnect loop in `listen` is what
+#: makes it a live feed at all — one body per connection, several connections
+#: per window.
+READERS: dict[str, tuple] = {
+	"SIRI": ("_siri", "xml"),
+	"VDV 454": ("_vdv454", "xml"),
+	"GTFS Realtime": ("_gtfsrt", "whole"),
+}
+
+#: The most one `whole`-framed body may be. A GTFS-Realtime feed for a large
+#: network is a few megabytes; past this it is not a feed and holding it in a
+#: buffer is how a worker dies — the same argument `MAX_FRAME` makes for a
+#: document that never closes.
+MAX_BODY = 64 * 1024 * 1024
 
 
 # --------------------------------------------------------------------------- #
@@ -166,8 +182,22 @@ def _find(node, *names: str):
 
 
 def _text(node, *names: str) -> str:
-	found = _find(node, *names) if node is not None else None
-	return (found.text or "").strip() if found is not None and found.text else ""
+	"""The first of these elements that actually says something.
+
+	One name at a time and in the order given, which is the whole of it: a
+	document-order search returns whichever happens to come first, and in VDV
+	454 that is the empty `FahrtID` wrapper rather than the `FahrtBezeichner`
+	inside it. Every caller here lists its names in order of preference, so
+	honouring that order is the difference between reading a trip reference and
+	reading nothing.
+	"""
+	if node is None:
+		return ""
+	for name in names:
+		found = _find(node, name)
+		if found is not None and (found.text or "").strip():
+			return found.text.strip()
+	return ""
 
 
 def _seconds(text: str) -> int:
@@ -275,12 +305,150 @@ def _siri(frame: bytes) -> list[dict]:
 	return rows
 
 
+# --------------------------------------------------------------------------- #
+# VDV 454
+# --------------------------------------------------------------------------- #
+
+#: VDV's own word for how full, which is three bands rather than SIRI's seven.
+#: Midpoints again, for the reason `_BANDS` gives.
+_AUSLASTUNG = {"unbekannt": -1, "gering": 20, "mittel": 55, "hoch": 90}
+
+
+def _vdv454(frame: bytes) -> list[dict]:
+	"""One VDV 454 `AUSNachricht`, as observations.
+
+	454 is a *prognosis* interface rather than a positions one: an `IstFahrt`
+	says when a trip called at each stop and when it now expects to reach the
+	rest, and a great many deliveries carry no coordinate at all. So where the
+	message states a `FahrzeugPosition` that is used, and where it does not the
+	vehicle is placed **at the last stop it actually called at**, whose position
+	we already hold.
+
+	That is a real claim and not a guess — the feed said the vehicle was there
+	at that minute — and it is the same fact `arrivals.py` infers in the other
+	direction from positions. What it is *not* is a position between stops:
+	a 454 feed draws a network that hops from stop to stop, which is honest to
+	what the interface says and is why a customer with 453 positions should
+	connect those instead.
+	"""
+	from xml.etree import ElementTree
+
+	if b"<!DOCTYPE" in frame[:2048]:
+		frappe.throw(_("A feed may not carry an inline entity definition."))
+
+	root = ElementTree.fromstring(frame)
+	where: dict[str, tuple] = {}
+	rows = []
+
+	for journey in root.iter():
+		if _local(journey.tag) != "IstFahrt":
+			continue
+
+		line = _text(journey, "LinienText", "LinienID")
+		trip = _text(journey, "FahrtBezeichner", "FahrtID")
+		vehicle = _text(journey, "FahrzeugID", "FahrzeugNummer") or trip
+		if not (line or trip):
+			continue
+
+		called = None
+		for halt in journey.iter():
+			if _local(halt.tag) != "IstHalt":
+				continue
+			actual = _text(halt, "IstAbfahrtPrognose", "IstAnkunftPrognose")
+			planned = _text(halt, "Abfahrtszeit", "Ankunftszeit")
+			if not actual:
+				continue
+			when = _moment(actual)
+			# The last call it has made, which is the one that says where it
+			# is. A later `IstHalt` is a prediction about a stop it has not
+			# reached, and drawing a vehicle at one of those is drawing a guess
+			# as a fact — see `live.at` on why that is the thing not to do.
+			if called and when <= called["at"]:
+				continue
+			called = {
+				"at": when,
+				"stop": _text(halt, "HaltID", "HaltestellenID"),
+				"delay_s": int((when - _moment(planned)).total_seconds()) if planned else 0,
+			}
+
+		if not called:
+			continue
+
+		point = _find(journey, "FahrzeugPosition", "GeoPunkt")
+		lat = _text(point, "Y", "Latitude", "Breite") if point is not None else ""
+		lon = _text(point, "X", "Longitude", "Laenge") if point is not None else ""
+		if not (lat and lon):
+			lat, lon = _at_stop(called["stop"], where)
+		if lat is None or lon is None:
+			continue
+
+		rows.append({
+			"at": called["at"],
+			"vehicle": vehicle,
+			"line": line,
+			"trip_key": trip,
+			"lat": float(lat),
+			"lon": float(lon),
+			"occupancy": _AUSLASTUNG.get(
+				_text(journey, "Auslastung", "Besetztgrad").lower(), -1
+			),
+			"delay_s": called["delay_s"],
+		})
+	return rows
+
+
+def _at_stop(key: str, cache: dict):
+	"""Where a stop is, by the key its feed calls it — the same natural key
+	`conflicts.py` compares two sources on. Cached per frame, because a busy
+	delivery names the same interchange fifty times."""
+	if not key:
+		return None, None
+	if key not in cache:
+		row = frappe.db.get_value(
+			"Transit Stop", {"stop_key": key}, ["latitude", "longitude"], as_dict=True
+		)
+		cache[key] = (row.latitude, row.longitude) if row else (None, None)
+	return cache[key]
+
+
+# --------------------------------------------------------------------------- #
+# GTFS-Realtime
+# --------------------------------------------------------------------------- #
+
+def _gtfsrt(frame: bytes) -> list[dict]:
+	"""One protocol-buffers `FeedMessage`. The decoding is `gtfsrt.py`.
+
+	Only the time is done here, and it is done here because it is the same
+	question SIRI raises: a GTFS-Realtime timestamp is seconds since the epoch
+	in UTC, every datetime in the fact tables is naive site time, and a feed
+	read at the wrong offset draws a plausible and wrong timetable for ever.
+	"""
+	from . import gtfsrt
+
+	rows = gtfsrt.read(frame)
+	for row in rows:
+		row["at"] = (
+			convert_utc_to_system_timezone(
+				datetime.fromtimestamp(row["at"], tz=timezone.utc).replace(tzinfo=None)
+			).replace(tzinfo=None)
+			if row.get("at") else now_datetime()
+		)
+	return rows
+
+
 def read(fmt: str, frame: bytes) -> list[dict]:
 	"""One frame, in whichever dialect this source speaks."""
-	reader = READERS.get(fmt)
-	if not reader:
+	declared = READERS.get(fmt)
+	if not declared:
 		frappe.throw(_("{0} is not a live format this can read yet.").format(fmt))
-	return globals()[reader](frame)
+	return globals()[declared[0]](frame)
+
+
+def framing(fmt: str) -> str:
+	"""`xml` for a dialect whose documents delimit themselves, `whole` for one
+	whose only boundary is the end of the connection."""
+	declared = READERS.get(fmt)
+	return declared[1] if declared else "xml"
 
 
 # --------------------------------------------------------------------------- #
@@ -374,6 +542,7 @@ def _drain(requests, doc, auth, deadline, state, commit):
 	document neither side ever sent.
 	"""
 	buffer = bytearray()
+	whole = framing(doc.format) == "whole"
 	answer = requests.get(
 		doc.endpoint, stream=True, auth=auth, timeout=(30, IDLE_SECONDS)
 	)
@@ -382,10 +551,19 @@ def _drain(requests, doc, auth, deadline, state, commit):
 		for chunk in answer.iter_content(64 * 1024):
 			if chunk:
 				buffer.extend(chunk)
-				for frame in frames(buffer):
-					rows = read(doc.format, frame)
-					state["seen"] += len(rows)
-					state["pending"].extend(rows)
+				if whole:
+					# No boundary until the body ends, so nothing is read yet —
+					# only the ceiling is checked, because a body that grows
+					# past it is not a feed and buffering it is how a worker
+					# dies.
+					if len(buffer) > MAX_BODY:
+						frappe.throw(_("The stream sent {0} bytes in one message.")
+						             .format(len(buffer)))
+				else:
+					for frame in frames(buffer):
+						rows = read(doc.format, frame)
+						state["seen"] += len(rows)
+						state["pending"].extend(rows)
 			if len(state["pending"]) >= COMMIT_ROWS or (
 				state["pending"]
 				and (now_datetime() - state["last"]).total_seconds() >= COMMIT_SECONDS
@@ -399,6 +577,15 @@ def _drain(requests, doc, auth, deadline, state, commit):
 		pass
 	finally:
 		answer.close()
+
+	# The body ended, which for a `whole` dialect is the only frame boundary
+	# there is. Read here rather than in the loop above so a connection that
+	# died mid-message contributes nothing instead of half a message —
+	# a truncated protobuf decodes to something rather than to an error.
+	if whole and buffer:
+		rows = read(doc.format, bytes(buffer))
+		state["seen"] += len(rows)
+		state["pending"].extend(rows)
 
 
 def run_streams():
