@@ -252,6 +252,58 @@ STOP_HOUR = facts.declare(
 )
 
 
+#: The timetable: when each trip is *due* at each stop. What a feed plans,
+#: against which everything else in this module is what happened.
+#:
+#: **Stored as a pattern rather than as calendar days**, which is the decision
+#: worth defending. Flattening a timetable over the dates it runs is the
+#: obvious version and multiplies the table by the length of the horizon — a
+#: three thousand stop network is tens of millions of rows a fortnight, rewritten
+#: nightly, to say something the pattern already said. A pattern is one row per
+#: trip per stop with the weekdays it runs on, and "what is due at Alexanderplatz
+#: at 08:15 next Tuesday" is a bitmask test and a range on `arrives_s`.
+#:
+#: `arrives_s` and `departs_s` are seconds from midnight of the **service day**
+#: and not times, for the reason `gtfs._seconds` gives: `25:10:00` is a real and
+#: common value meaning ten past one in the morning on the day that began
+#: yesterday, and a night bus expressed as a time is a night bus on the wrong
+#: day. VDV 452 says the same thing with `SEL_FZT` offsets from a trip's start.
+#:
+#: It is a fact table for its size and not for its shape, so `when` is the day
+#: the version became valid — which means every row of one delivery lands in one
+#: partition and the partition prunes nothing. That is the honest trade: the
+#: indexes do the work here, and the alternative is a doctype with ten million
+#: rows and a controller on every one of them.
+SCHEDULE = facts.declare(
+    "schedule",
+    module="OneMobility",
+    when="valid_from",
+    columns={
+        "valid_from": "datetime",
+        "valid_to": "datetime",
+        "trip_key": "char",
+        "line": "key",
+        "stop": "key",
+        "seq": "smallint",
+        "arrives_s": "int",
+        "departs_s": "int",
+        # Monday is bit 0. A trip that runs Monday to Friday is 31; one that
+        # runs only on a Sunday is 64. Seven booleans would be seven columns
+        # and seven indexes to answer one question.
+        "days": "smallint",
+        "headsign": "char",
+        # Which delivery wrote it, so replacing a feed's timetable is one
+        # delete and does not take another source's with it.
+        "source": "key",
+        "hour": "smallint",
+    },
+    keys=(("line", "valid_from"), ("stop", "valid_from"), ("trip_key", "seq"),
+          ("source",)),
+    hot_days=0,
+    freeze=False,
+)
+
+
 #: One run of one line on one day. Not as heavy as observations and not light
 #: enough to be a Document either: a year of a mid-size operator is millions.
 TRIP = facts.declare(
@@ -330,7 +382,8 @@ PREDICTION = facts.declare(
 #: once so `ensure_all` and `drop_all` cannot drift apart — a table created on
 #: enable and not dropped on disable is a tenant paying for a fleet they
 #: removed.
-ALL = (OBSERVATION, SERVICE_HOUR, VEHICLE_DAY, STOP_EVENT, STOP_HOUR, TRIP,
+ALL = (OBSERVATION, SERVICE_HOUR, VEHICLE_DAY, STOP_EVENT, STOP_HOUR, SCHEDULE,
+       TRIP,
        PREDICTION)
 
 

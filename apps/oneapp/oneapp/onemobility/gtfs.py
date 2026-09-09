@@ -170,6 +170,23 @@ def load(feed_name: str, content: bytes) -> dict:
         )
         counts["stops"] += 1
 
+    # Which days each service pattern runs. `calendar.txt` is seven booleans
+    # per service id, which is exactly the bitmask the timetable stores — see
+    # `timetable.py`. `calendar_dates.txt`, which is the exceptions to it, is
+    # deliberately not read: a public holiday timetable is a different service
+    # on a named date and belongs to a Service Day record nobody has asked for
+    # yet, and folding it into the weekly pattern would say the wrong thing
+    # about every other week.
+    services = {}
+    for row in _text(archive, "calendar.txt") or ():
+        key = (row.get("service_id") or "").strip()
+        if not key:
+            continue
+        services[key] = sum(
+            1 << at for at, name in enumerate(WEEKDAYS)
+            if (row.get(name) or "").strip() == "1"
+        )
+
     # Trips, and the shape each one draws, so a line can be given the geometry
     # of the pattern most of its trips actually run.
     trips = {}
@@ -182,6 +199,10 @@ def load(feed_name: str, content: bytes) -> dict:
             "line": lines[route],
             "headsign": (row.get("trip_headsign") or "")[:64],
             "shape": (row.get("shape_id") or "").strip(),
+            # 127 for a feed with no calendar at all, which is legal and
+            # common: every day beats no day, because a trip that runs on no
+            # day is one no screen can ever show and nobody can debug.
+            "days": services.get((row.get("service_id") or "").strip(), 127),
         }
         if trips[key]["shape"]:
             line_shape.setdefault(lines[route], trips[key]["shape"])
@@ -197,7 +218,8 @@ def load(feed_name: str, content: bytes) -> dict:
             update_modified=False,
         )
 
-    counts["stop_times"] = _load_trips(feed, trips, stops)
+    counts["trip_rows"] = _load_trips(feed, trips)
+    counts["stop_times"] = _load_stop_times(archive, feed, trips, stops)
 
     feed.db_set("lines_seen", counts["lines"], update_modified=False)
     feed.db_set("stops_seen", counts["stops"], update_modified=False)
@@ -212,13 +234,56 @@ def load(feed_name: str, content: bytes) -> dict:
     return counts
 
 
-def _load_trips(feed, trips: dict, stops: dict) -> int:
-    """Write the trip facts. The first thing here that is not a Document.
+#: `calendar.txt`'s seven columns, in the order the bitmask numbers them —
+#: Monday is bit 0, which is `date.weekday()`'s own numbering and therefore the
+#: one place this file does not have to convert anything.
+WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday",
+            "saturday", "sunday")
 
-    Stop times are not stored yet — the screens that would read them do not
-    exist, and a table nobody queries is a table nobody notices is wrong. The
-    trips are, because the network screen counts them and the roll-up needs a
-    denominator.
+
+def _load_stop_times(archive, feed, trips: dict, stops: dict) -> int:
+    """The timetable: when each trip is due at each stop.
+
+    The one file here that does not fit in memory. A big-city `stop_times.txt`
+    is hundreds of megabytes and tens of millions of rows, so it is read as a
+    stream and written in batches of `CHUNK` — and it is written through
+    `timetable.replace`, which swaps this source's whole plan rather than
+    merging it into whatever was there before. A timetable half from March and
+    half from April is one nobody ever published.
+
+    Times are kept as seconds from midnight of the service day rather than as
+    times, which is `_seconds` above and README's night-bus argument: 25:10:00
+    is ten past one on the day that began yesterday.
+    """
+    def calls():
+        for row in _text(archive, "stop_times.txt") or ():
+            trip = trips.get((row.get("trip_id") or "").strip())
+            stop = stops.get((row.get("stop_id") or "").strip())
+            if not (trip and stop):
+                continue
+            arrives = _seconds(row.get("arrival_time") or row.get("departure_time"))
+            yield {
+                "trip_key": (row.get("trip_id") or "").strip(),
+                "line": trip["line"],
+                "stop": stop,
+                "seq": cint(row.get("stop_sequence")),
+                "arrives_s": arrives,
+                "departs_s": _seconds(row.get("departure_time")) or arrives,
+                "days": trip["days"],
+                "headsign": trip["headsign"],
+            }
+
+    from . import timetable
+
+    return timetable.replace(feed.source, calls())
+
+
+def _load_trips(feed, trips: dict) -> int:
+    """Write the trip facts.
+
+    Separate from the timetable above and kept: this is one row per *run*,
+    which the network screen counts and the roll-up uses as a denominator,
+    where the timetable is one row per run per stop.
     """
     if not trips:
         return 0

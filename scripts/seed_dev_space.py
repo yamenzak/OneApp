@@ -911,6 +911,14 @@ def _seed_onemobility():
 		day = start.date()
 		scoring.claim(for_day=day + timedelta(days=1), made_on=day)
 		scoring.settle(day + timedelta(days=1))
+
+	# And the plan. Derived from one day's stop visits minus the lateness the
+	# fixture modelled, which is the honest direction: the timetable is what the
+	# operator *intended*, and what ran is that plus a delay. Inventing a plan
+	# out of the line geometry instead would have half the calls unmatched, and
+	# a deviation screen that is half missed calls on a working fixture looks
+	# broken rather than instructive.
+	_mobility_timetable(source, days[-2].date(), lines)
 	frappe.db.commit()
 
 	return (
@@ -920,6 +928,54 @@ def _seed_onemobility():
 		 for document_type, access, if_owner in manifest.DOCTYPES],
 		written,
 	)
+
+
+def _mobility_timetable(source: str, day, named: dict) -> int:
+	"""The plan, read back off one day of what ran.
+
+	One row per trip per stop, at the minute the vehicle would have called had
+	it been on time, on every weekday — which is what a fixture timetable is:
+	the pattern the whole fortnight was generated from, stated once.
+
+	Rounded to the minute, because a published timetable is. That rounding is
+	also what stops the deviation screen reading nought everywhere: what ran is
+	the plan plus the modelled lateness, so the gap on screen is the fixture's
+	own lateness curve and the incident afternoon stands out on it exactly as
+	it does everywhere else.
+	"""
+	from datetime import datetime, timedelta
+
+	from oneapp.onemobility import model, timetable
+	from oneapp.shared import facts
+
+	if not facts.exists(model.STOP_EVENT):
+		return 0
+
+	midnight = datetime.combine(day, datetime.min.time())
+	visits = facts.rows_between(model.STOP_EVENT, midnight, midnight + timedelta(days=1))
+
+	# Every visit, not one per stop. A run that goes out and comes back calls
+	# at the same stop twice, and a plan that keeps only the first says the
+	# return leg was never scheduled — which the deviation screen then reports
+	# as several hundred unplanned visits on a fixture where nothing is wrong.
+	order: dict = {}
+	rows = []
+	for one in sorted(visits, key=lambda v: v["at"]):
+		due = frappe.utils.get_datetime(one["at"]) - timedelta(seconds=int(one["delay_s"] or 0))
+		due = due.replace(second=0, microsecond=0)
+		order[one["trip_key"]] = order.get(one["trip_key"], 0) + 1
+		arrives = int((due - midnight).total_seconds())
+		rows.append({
+			"trip_key": one["trip_key"],
+			"line": one["line"],
+			"stop": one["stop"],
+			"seq": order[one["trip_key"]],
+			"arrives_s": arrives,
+			"departs_s": arrives + 30,
+			"days": 127,
+			"headsign": "",
+		})
+	return timetable.replace(source, rows)
 
 
 def _one(doctype: str, key_field: str, key: str, values: dict) -> str:

@@ -17,6 +17,8 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     conflicts   two sources claiming one key: whose answer is drawn, and where
                 the other one went
     streaming   the door that never closes — a socket read in bounded windows
+    timetable   what the feed plans, kept as a pattern: a departure board, the
+                ghosts on the forward scrubber, and the plan against what ran
     live        positions in, positions out, one vehicle's day for the scrubber
     arrivals    positions turned into stop visits, which is how a stop gets a number
     facets      one vocabulary for narrowing every screen: line, vehicle, stop, mode
@@ -44,6 +46,7 @@ from .scoring import accuracy
 from .markers import marker_styles, set_marker_style
 from .network import bunching, days, punctuality, shape
 from .sources import fetch_now
+from .timetable import deviation, due, expected
 from .streaming import listen_now
 
 __all__ = [
@@ -53,8 +56,11 @@ __all__ = [
     "bunching",
     "days",
     "demand",
+    "deviation",
     "disagreements",
+    "due",
     "expect",
+    "expected",
     "fetch_now",
     "fleet",
     "forget_everything",
