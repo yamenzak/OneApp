@@ -793,7 +793,7 @@ def _seed_onemobility():
 	"""
 	from datetime import datetime, timedelta
 
-	from oneapp.onemobility import arrivals, live, model
+	from oneapp.onemobility import arrivals, live, model, scoring
 	from oneapp.onespace import sync
 	from oneapp.shared import facts
 	from oneapp_control.spaces import onemobility as manifest
@@ -875,6 +875,17 @@ def _seed_onemobility():
 	for start in days:
 		facts.roll_up(model.OBSERVATION, start.date())
 		arrivals.build(start.date())
+
+	# And the fortnight of nights the scoring job would have had, walked in
+	# order: on each night, claim tomorrow off the history up to that night,
+	# then settle it once tomorrow has happened. Walked rather than written
+	# directly, because the thing the fixture has to demonstrate is precisely
+	# that a claim was made before the answer existed — a table filled in one
+	# pass with both halves is a table that proves nothing.
+	for start in days[:-1]:
+		day = start.date()
+		scoring.claim(for_day=day + timedelta(days=1), made_on=day)
+		scoring.settle(day + timedelta(days=1))
 	frappe.db.commit()
 
 	return (
@@ -961,7 +972,7 @@ def _mobility_day(start, lines, vehicles, named) -> list[dict]:
 				# ranking has an order. Deterministic: the spread is a function
 				# of the tick and the vehicle, so two runs still agree and a
 				# screenshot is still comparable between them.
-				"delay_s": _lateness(spec["key"], hour, tick, at),
+				"delay_s": _lateness(spec["key"], hour, tick, at, when.date()),
 			})
 	return rows
 
@@ -979,11 +990,45 @@ MOBILITY_LATENESS = {
 }
 
 
-def _lateness(line_key: str, hour: int, tick: int, at: int) -> int:
-	"""Seconds behind the timetable for one reading. Negative is early."""
+#: The one bad afternoon in the fortnight, and which line has it.
+#:
+#: Every other day in this fixture is a good day, and a fortnight of good days
+#: is a fixture that cannot show `forecast.unusual` finding anything or the
+#: scoring saying no. Both of those features are only interesting when they
+#: *fire*, and a demo where the anomaly detector has never found an anomaly is
+#: indistinguishable from one where it does not work.
+#:
+#: Four days back, so it is inside every window the screens offer and old enough
+#: to have been claimed and settled by the walk the fixture does.
+INCIDENT_DAYS_BACK = 4
+INCIDENT_LINE = "zz-u6"
+INCIDENT_HOURS = (14, 15, 16)
+INCIDENT_S = 900
+
+
+def _lateness(line_key: str, hour: int, tick: int, at: int, on) -> int:
+	"""Seconds behind the timetable for one reading. Negative is early.
+
+	Deterministic in every argument including the date, which is the point: two
+	runs of the seeder agree, and two *days* do not. Before the date was in
+	here every Tuesday was byte-identical, so a forecast built from Tuesdays
+	predicted Tuesday exactly — the scoring screen read a hundred percent and a
+	one-second typical miss, which is not a fixture demonstrating that scoring
+	works. It is a fixture demonstrating that nothing varies.
+	"""
 	base = 240 if hour in (7, 8, 16, 17) else -50 if hour < 7 else 45
 	spread = ((tick * 37 + at * 61) % 140) - 70
-	return int(round(base * MOBILITY_LATENESS.get(line_key, 1.0)) + spread)
+	# A day effect: some days the whole network runs a little worse. Modest,
+	# because a fixture where the day dominates the hour has no rush hour in it.
+	daily = ((on.toordinal() * 89) % 121) - 60
+	late = int(round(base * MOBILITY_LATENESS.get(line_key, 1.0)) + spread + daily)
+	from datetime import timedelta
+
+	if line_key == INCIDENT_LINE and hour in INCIDENT_HOURS and (
+		on == frappe.utils.getdate() - timedelta(days=INCIDENT_DAYS_BACK)
+	):
+		late += INCIDENT_S
+	return late
 
 
 #: How many readings a vehicle spends standing at a stop, and how many it

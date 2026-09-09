@@ -273,11 +273,65 @@ TRIP = facts.declare(
 )
 
 
+#: What was claimed, before it was known — and what actually happened.
+#:
+#: **The one table here written by a *forecast* rather than by a feed**, and the
+#: reason it has to exist at all: a scorer that recomputes the forecast today
+#: and compares it against today is not scoring anything. It is asking a model
+#: whether it agrees with itself, and it always does. A prediction is only a
+#: prediction if it was written down before the answer was available.
+#:
+#: Partitioned by `about` — the moment predicted for, not the moment predicted
+#: *at* — so scoring a day is one partition rather than a scan for rows whose
+#: subject has since passed. `made_at` keeps the other half, because the gap
+#: between the two is itself a finding: a claim made a fortnight out and one
+#: made last night are not equally impressive when they are both right.
+#:
+#: The four columns after `basis` are empty until the night the answer arrives.
+#: `inside` is the honest headline: not whether the median was close, but
+#: whether what happened landed in the range that was offered — a forecast that
+#: is confidently wrong and one that is uncertain and right look identical on
+#: an error metric and are not the same product.
+PREDICTION = facts.declare(
+    "prediction",
+    module="OneMobility",
+    when="about",
+    columns={
+        "about": "datetime",
+        "made_at": "datetime",
+        # What was being claimed. `delay` is the network's, per line and hour;
+        # room for an arrival's is left by making this a column rather than a
+        # second table nobody would keep in step.
+        "kind": "char",
+        "line": "key",
+        "stop": "key",
+        "hour": "smallint",
+        "dow": "smallint",
+        "p50": "float",
+        "p85": "float",
+        "p95": "float",
+        "basis": "int",
+        # Filled in by `scoring.settle`, on the night the day it is about ends.
+        "actual": "float",
+        "error_s": "float",
+        "inside": "smallint",
+        "scored_at": "datetime",
+    },
+    keys=(("kind", "about"), ("line", "about")),
+    # Kept long and never frozen: this is the smallest table in the module and
+    # the one a customer is most likely to ask a year-old question about —
+    # "has this got better since spring" is the question scoring exists for.
+    hot_days=0,
+    freeze=False,
+)
+
+
 #: Every table this module declares, in the order they are created. Written
 #: once so `ensure_all` and `drop_all` cannot drift apart — a table created on
 #: enable and not dropped on disable is a tenant paying for a fleet they
 #: removed.
-ALL = (OBSERVATION, SERVICE_HOUR, VEHICLE_DAY, STOP_EVENT, STOP_HOUR, TRIP)
+ALL = (OBSERVATION, SERVICE_HOUR, VEHICLE_DAY, STOP_EVENT, STOP_HOUR, TRIP,
+       PREDICTION)
 
 
 def ensure_all():

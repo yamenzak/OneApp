@@ -19,6 +19,8 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     facets      one vocabulary for narrowing every screen: line, vehicle, stop, mode
     forecast    the same aggregate tier read forward — an arrival, a risk, an
                 anomaly, and never a number without the spread it rests on
+    scoring     what the forecast claimed, written down before the answer
+                existed, and checked against it the night after
     geo         the map's analytical layers — what the network does *somewhere*
     network     the drawn network, and the numbers read off the aggregate tier
     insights    the aggregate tiers as plots — the network, the fleet, the stops
@@ -34,11 +36,13 @@ from .gtfs import load_feed
 from .insights import fleet, rhythm, stops
 from .live import at, report, track
 from .lifecycle import forget_everything
+from .scoring import accuracy
 from .markers import marker_styles, set_marker_style
 from .network import bunching, days, punctuality, shape
 from .sources import fetch_now
 
 __all__ = [
+    "accuracy",
     "at",
     "bunching",
     "days",

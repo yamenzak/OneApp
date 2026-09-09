@@ -78,4 +78,7 @@ export const network = {
 
   /** When a vehicle reaches one stop, as a range. */
   expect: (params) => callMethod('oneapp.onemobility.expect', params, { method: 'GET' }),
+
+  /** How often the forecast's own range held. Off the record it wrote first. */
+  accuracy: (params) => callMethod('oneapp.onemobility.accuracy', params, { method: 'GET' }),
 }

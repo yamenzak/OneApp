@@ -155,6 +155,61 @@
         </div>
 
         <!--
+          Whether any of the above has been worth reading, off the record the
+          nightly job wrote before the answer existed. Last on the screen and
+          not first, because it is the question somebody asks after they have
+          looked at a forecast rather than before — but it is on the same screen
+          deliberately: a scorecard filed somewhere else is a scorecard nobody
+          checks against the thing it scores.
+        -->
+        <div
+          class="flex flex-wrap items-center gap-3 rounded-6 border
+                 border-outline-gray-2 bg-surface-elevation-2 p-4"
+          data-slot="outlook-accuracy"
+        >
+          <div class="flex flex-col gap-0.5">
+            <p class="text-base font-medium text-ink-gray-8">{{ __('Has this been right?') }}</p>
+            <p class="text-xs text-ink-gray-5">{{ scoreNote }}</p>
+          </div>
+          <template v-if="score.scored">
+            <div class="flex flex-col gap-0.5 ps-4">
+              <p class="text-xs text-ink-gray-5">{{ __('Inside the range') }}</p>
+              <p class="text-xl font-medium tabular-nums text-ink-gray-8">
+                {{ score.inside_pct }}%
+              </p>
+            </div>
+            <div class="flex flex-col gap-0.5 ps-4">
+              <p class="text-xs text-ink-gray-5">{{ __('Typical miss') }}</p>
+              <p class="text-xl font-medium tabular-nums text-ink-gray-8">
+                {{ minutes(score.typical_error_s) }}
+              </p>
+            </div>
+            <div class="flex flex-col gap-0.5 ps-4">
+              <p class="text-xs text-ink-gray-5">{{ __('Hours scored') }}</p>
+              <p class="text-xl font-medium tabular-nums text-ink-gray-8">{{ score.scored }}</p>
+            </div>
+            <!--
+              Plotted as what *missed* rather than what held, and that is the
+              chart working rather than a presentational preference. The share
+              inside is ninety-nine point something every day, so a plot of it
+              is a flat line at the top of an axis that starts at twenty, and
+              the day it fell four points is invisible — which is the one day
+              the chart exists to show. The complement starts at nought, so a
+              bad day is a spike.
+            -->
+            <div class="h-24 min-w-64 flex-1">
+              <LineChart
+                :data="missed"
+                x="label"
+                y="value"
+                :title="__('Missed the range')"
+                :palette="[delayInk(300)]"
+              />
+            </div>
+          </template>
+        </div>
+
+        <!--
           Only when a stop has been chosen, because that is the only time there
           is one to answer about. The facet bar is already the way a screen here
           is narrowed to a stop, so this needs no picker of its own — and a
@@ -232,6 +287,7 @@ const unusualReady = ref(false)
 const unusualAnswer = ref({})
 
 const stopAnswer = ref({})
+const scoreAnswer = ref({})
 
 function today() {
   return new Date().toISOString().slice(0, 10)
@@ -418,6 +474,31 @@ const stopFigures = computed(() => {
   ]
 })
 
+const score = computed(() => ({
+  scored: scoreAnswer.value.scored || 0,
+  inside_pct: scoreAnswer.value.inside_pct,
+  typical_error_s: scoreAnswer.value.typical_error_s,
+  by_day: scoreAnswer.value.by_day || [],
+}))
+
+const missed = computed(() =>
+  score.value.by_day.map((one) => ({
+    label: one.label,
+    value: Math.round((100 - one.value) * 10) / 10,
+  }))
+)
+
+/**
+ * The cold start, said plainly. A workspace switched on this week has claims
+ * and no answers yet, and "0%" would read as a forecast that is always wrong
+ * rather than one that has not been marked.
+ */
+const scoreNote = computed(() =>
+  score.value.scored
+    ? __('Every claim was written down the night before, then checked against what happened.')
+    : __('Nothing has been scored yet. Each night this writes down what it expects tomorrow, and checks it the night after.')
+)
+
 /** What every endpoint here is narrowed by. One object, one place. */
 const narrowed = computed(() => ({
   facets: JSON.stringify(facets.value),
@@ -441,6 +522,10 @@ async function pullRisk() {
   } finally {
     loadingRisk.value = false
   }
+}
+
+async function pullScore() {
+  scoreAnswer.value = await network.accuracy({ facets: narrowed.value.facets })
 }
 
 async function pullUnusual() {
@@ -472,6 +557,7 @@ watch([facets, day], () => {
   pull()
   pullRisk()
   pullStop()
+  pullScore()
 })
 watch(hour, () => {
   pullRisk()
@@ -483,5 +569,6 @@ onMounted(async () => {
   pull()
   pullRisk()
   pullUnusual()
+  pullScore()
 })
 </script>

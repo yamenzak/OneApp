@@ -224,6 +224,11 @@ scheduler_events = {
 		# visit nobody infers. See `onemobility/arrivals.py`.
 		"oneapp.onemobility.arrivals.build",
 		"oneapp.shared.facts.sweep",
+		# And last, because it depends on both: yesterday's claims settled
+		# against the roll-up the sweep has just written, then tomorrow's made
+		# off a history that now includes yesterday. A forecast nobody scores is
+		# a decoration — see `onemobility/scoring.py`.
+		"oneapp.onemobility.scoring.nightly",
 	],
 	"hourly": [
 		"oneapp.onespace.sync.report_usage_to_control_plane",

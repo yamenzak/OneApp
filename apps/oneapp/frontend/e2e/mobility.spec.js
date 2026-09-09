@@ -358,6 +358,13 @@ test('the outlook reads the same tier forward, and says what it rests on', async
   // And what it is resting on, in readings rather than as a claim of accuracy.
   await expect(page.locator('[data-slot="outlook-controls"]')).toContainText('readings')
   await expect(page.locator('[data-slot="outlook-unusual"]')).toBeVisible()
+
+  // And whether any of it has been right, off the record the nightly job wrote
+  // before the answer existed — which is the only version of this number that
+  // means anything.
+  const scored = page.locator('[data-slot="outlook-accuracy"]')
+  await expect(scored).toContainText('Inside the range')
+  await expect(scored).toContainText('written down the night before')
   expectNoRealErrors(errors)
 })
 

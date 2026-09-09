@@ -192,6 +192,13 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# doctype, so on the control plane — and on any tenant that never
 		# enabled OneMobility — it returns nought without a query.
 		"oneapp.onemobility.arrivals.build",
+		# And the scoring pass, which is the same shape once more: it asks
+		# whether `serviceHour` exists before anything else, so a site with no
+		# OneMobility — the control plane, and every tenant that never enabled
+		# it — returns without a query. Ungated for the reason all of these are:
+		# a branch that says "there is nothing here" says less than the check
+		# that already found nothing.
+		"oneapp.onemobility.scoring.nightly",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "

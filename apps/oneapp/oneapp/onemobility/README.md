@@ -543,12 +543,33 @@ distribution, so an ETA is the timetable plus the current delay and the screen
 says so. Software that pretends to know is worse than software that says it is
 still learning.
 
-**Not built.** Which is the honest gap in what ships, and it is named here
-rather than left to be discovered: `forecast.py` will tell you that a line
-misses five minutes on seven runs in ten, and nothing yet checks whether it was
-right. Until that exists the numbers are defensible arithmetic over data the
-customer can see, which is not nothing — but it is not a claim of accuracy, and
-no screen makes one.
+**`scoring.py`, and the whole design is in when the row is written.** The
+tempting version needs no table: a nightly job that recomputes yesterday's
+forecast and compares it against yesterday. It is also worthless, because the
+history it forecasts from now contains the day it is judging — that model is
+being asked whether it agrees with itself, and it always does. So a claim is
+written down before the answer exists, into a `prediction` fact table
+partitioned by the moment it is *about*, and settled the night after.
+
+Two passes, nightly, after `facts.sweep` because settling reads the roll-up it
+has just written: `settle` fills in what happened, `claim` records tomorrow off
+a history that now includes yesterday. Both run whether or not anybody is
+looking, which is the point — writing predictions only when a screen asks for
+one would make the score a measurement of traffic.
+
+**What is scored is the band, not the number.** `inside` — did what happened
+land under the 95th percentile that was offered — is the headline, and the
+absolute error is the supporting detail. A forecast that is confidently wrong
+and one that is uncertain and right have similar errors and are not the same
+product, and only the first destroys trust. The comparison is one-sided for the
+same reason: arriving *inside* the range and early in it is not a miss.
+
+The Outlook screen carries it as a footer — the share that held, the typical
+miss, how many hours have been scored, and the daily record plotted as what
+*missed* rather than what held. That last is the chart working rather than a
+preference: the share inside is ninety-nine point something every day, so a plot
+of it is a flat line and the day it fell four points — the one day worth
+seeing — is invisible.
 
 ### Where AI earns its cost, and where it is theatre
 
