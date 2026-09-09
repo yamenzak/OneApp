@@ -23,7 +23,15 @@ CREDITS_PER_USD = 100.0
 
 # Used only when nothing else is configured. Every real deployment sets this in
 # OneSpace Control Settings.
-FALLBACK_MARKUP = 1.5
+#
+# Three, not the one-and-a-half it was, because provider cost is not the only
+# cost a credit has to carry. Stripe takes roughly 2.9% and thirty cents of
+# every payment — on a small credit pack that alone is a tenth of the sale —
+# and beneath that sit the metering, the reconciliation against the gateway's
+# own logs, the ledger, and the reservations that make a refused call cost
+# something. A markup of 1.5 is a 33% gross margin *of revenue* before any of
+# that, which is not a margin, it is a rounding error with a database attached.
+FALLBACK_MARKUP = 3.0
 
 
 class Unpriceable(Exception):
@@ -94,6 +102,49 @@ def markup_for(model) -> float:
 	configured = frappe.db.get_single_value(
 		"OneSpace Control Settings", "ai_markup_multiplier")
 	return float(configured) if configured and float(configured) > 0 else FALLBACK_MARKUP
+
+
+def cost_per_credit(markup: float | None = None) -> float:
+	"""What one credit costs us in provider spend, in dollars.
+
+	The inverse of `to_credits`: a call costing $C is charged `C × 100 × M`
+	credits, so a credit is worth `1 / (100 × M)` dollars of provider cost. The
+	number a credit is *sold* for has to clear this, and nothing in the
+	catalogue was checking it — see `packs.floor_price`.
+	"""
+	return 1.0 / (CREDITS_PER_USD * (markup or lowest_markup()))
+
+
+def lowest_markup() -> float:
+	"""The smallest markup any sellable model carries.
+
+	The *lowest*, because a customer chooses which model to spend a credit on
+	and will not choose the one that is dearest for us. A single model with an
+	override of 1.0 makes every pack in the catalogue price against that one.
+
+	And note which direction is dangerous: raising a markup charges more credits
+	for the same provider spend, so each credit buys less and packs get *more*
+	profitable. Lowering one is what puts a pack under water, which is why
+	`set_ai_markup` and the model's own validate both check before saving.
+	"""
+	overrides = [
+		float(one.markup_override)
+		for one in frappe.get_all(
+			# Only the ones a call can actually reach: a Retired model's override
+			# cannot be spent, and pricing every pack against it would be
+			# pricing against a model nobody can choose.
+			"AI Model", filters={"status": ("in", ("Available", "Preview"))},
+			fields=["markup_override"],
+		)
+		if one.markup_override and float(one.markup_override) > 0
+	]
+	configured = frappe.db.get_single_value(
+		"OneSpace Control Settings", "ai_markup_multiplier")
+	global_markup = (
+		float(configured) if configured and float(configured) > 0 else FALLBACK_MARKUP
+	)
+	# The global one counts too: any model without an override uses it.
+	return min([global_markup, *overrides])
 
 
 def to_credits(usd: float, markup: float) -> float:

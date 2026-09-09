@@ -300,6 +300,10 @@ def _make_frappe():
 	# Enough of a date to be told apart from a timestamp with microseconds in it,
 	# which is the whole point of the caller: a reply's attribution line.
 	utils.format_datetime = lambda value, fmt=None: str(value)
+	# Frappe's own money formatter, near enough: the tests that read a
+	# refusal care that the number is in the sentence, not which symbol
+	# precedes it.
+	utils.fmt_money = lambda value, currency=None, **k: f"{currency or ''} {float(value):,.2f}".strip()
 	# Real, not a stub returning None: the AI pricer picks between two rows by
 	# comparing today against a rate's effective window, and a getdate that
 	# answers None makes every dated rate look current.

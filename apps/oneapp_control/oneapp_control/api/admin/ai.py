@@ -190,6 +190,19 @@ def set_ai_markup(markup: float) -> dict:
 	if markup <= 0:
 		frappe.throw(_("Markup must be greater than zero."))
 
+	# Lowering it is what breaks a credit pack: fewer credits are charged for
+	# the same provider spend, so each credit has to buy more of it. Refused
+	# with the packs named rather than saved into a catalogue that quietly
+	# sells inference below cost. Raising it is always safe.
+	from oneapp_control.billing import packs
+
+	broken = packs.underwater(markup)
+	if broken:
+		frappe.throw(
+			_("At {0}× these packs would sell credits below cost: {1}. Reprice them first.")
+			.format(markup, ", ".join(one["pack_name"] for one in broken))
+		)
+
 	frappe.db.set_single_value("OneSpace Control Settings", "ai_markup_multiplier", markup)
 	frappe.db.commit()
 	return {"ok": True, "markup": markup}

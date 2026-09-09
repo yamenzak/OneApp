@@ -324,8 +324,8 @@
    "label": "Cloudflare API Token"
   },
   {
-   "default": "1.5",
-   "description": "Applied to measured provider cost when converting to credits. A model may override it; see AI Model.",
+   "default": "3",
+   "description": "Applied to measured provider cost when converting to credits. Three, not one and a half: provider cost is not the only cost a credit carries \u2014 Stripe takes about 2.9% and thirty cents of every payment, and the metering, reconciliation and ledger sit under that. Lowering it can put a credit pack below cost, and saving refuses when it would. A model may override it; see AI Model.",
    "fieldname": "ai_markup_multiplier",
    "fieldtype": "Float",
    "label": "Ai Markup Multiplier"

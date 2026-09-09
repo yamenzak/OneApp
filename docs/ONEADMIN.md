@@ -295,6 +295,35 @@ refused**, naming the resource.
 grant. Never billed, never expiring, no price. Goodwill, a migration allowance,
 room on a demo.
 
+### Trials
+
+`Plan.trial_days` is Stripe's own `trial_period_days`, set on the subscription at
+checkout. Stripe then owns the whole thing: `trialing` until the first charge,
+`active` after it, `past_due` if the card fails — and each of those already
+meant something here, which is why the feature is a plan term and two guards
+rather than a lifecycle.
+
+**The card is still taken.** What moves is when the money leaves, not whether
+there is a card behind it, so this opens no abuse surface that signing up does
+not already open and `signup.py`'s wall stands.
+
+**Once per workspace, ever.** Stripe will happily start a fresh trial on every
+new subscription, so cancelling and resubscribing would be an unlimited supply
+of free months; any subscription a workspace has ever held, in whatever state it
+ended, spends it. It is a plan term rather than a global because only the entry
+plan should carry one — a trial on an upgrade is a discount nobody asked for.
+
+**A trial is granted its credits.** Every other grant hangs off `invoice.paid`
+and a trial does not reliably produce one, so `customer.subscription.created`
+grants when the status is trialing. `last_grant_period_end` already makes a
+second grant for the same period a no-op, so it is safe whether or not Stripe
+also sends the invoice. Without it a trialing workspace has every screen and no
+AI — which is the one thing §9 calls the actual margin variable, and the first
+thing a trial is meant to demonstrate.
+
+Nobody is dunned during one: `Trialing` is deliberately absent from the sweep's
+`UNPAID`.
+
 ### Promo codes and the free instance
 
 Ours to declare, Stripe's to enforce: a `Promo Code` creates a Stripe Coupon
@@ -468,10 +497,30 @@ about price but about what happened, and re-billing a customer on the strength
 of a number its own vendor calls an estimate is not automatic. Those are flagged
 for a person.
 
-**Markup** is one multiplier with a per-model override. Credits are
-`cost_usd × 100 × markup`, rounded up so a million tiny calls are not free.
-Credits stay deliberately abstract: customers buy credits, not tokens, so a
-provider repricing a model is our problem rather than a pricing announcement.
+**Markup** is one multiplier with a per-model override, defaulting to **3×**.
+Credits are `cost_usd × 100 × markup`, rounded up so a million tiny calls are
+not free. Credits stay deliberately abstract: customers buy credits, not tokens,
+so a provider repricing a model is our problem rather than a pricing
+announcement.
+
+Three and not the one and a half it started at, because provider cost is not the
+only cost a credit carries: Stripe takes about 2.9% and thirty cents of every
+payment — on a small pack that alone is a tenth of the sale — and the metering,
+the hourly reconciliation and the ledger sit underneath. A markup of 1.5 is a
+33% gross margin *of revenue* before any of that, which is the classic
+confusion: markup is on cost, not on the sale.
+
+**A credit cannot be sold below what it costs to honour**, and until recently
+nothing checked. Three numbers decide it and no two are typed on the same
+screen — `CREDITS_PER_USD` in code, the markup on the AI screen, a pack's
+credits and price in the catalogue. `packs.floor_price` closes it: a pack whose
+price falls under `credits ÷ (100 × markup)` is refused on save, and the two
+screens that can *cause* it — the global markup and a model's override — check
+every active pack before writing. The direction that breaks things is the
+counter-intuitive one: raising a markup charges more credits for the same
+provider spend, so each credit buys less and packs get safer; **lowering** one is
+what strands them. And it is priced against the *lowest* markup any callable
+model carries, because the customer chooses which model to spend a credit on.
 
 Two edges worth knowing: `commit_usage` never charges more than was held — right
 for a hold, wrong for a bill — so a call that overran posts the remainder as an

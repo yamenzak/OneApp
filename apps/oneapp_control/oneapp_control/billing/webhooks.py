@@ -263,6 +263,23 @@ def handle_subscription_change(obj: dict, record):
 	if obj.get("current_period_end"):
 		subscription.db_set("current_period_end", _ts(obj["current_period_end"]))
 
+	# A trial's credits.
+	#
+	# Every other grant hangs off `invoice.paid`, and a trial does not reliably
+	# produce one — Stripe bills nothing until the trial ends. Left alone, a
+	# trialing workspace has every screen and no AI at all, which is the one
+	# thing ONEADMIN §9 calls the actual margin variable and the first thing a
+	# trial is meant to demonstrate.
+	#
+	# Safe to call whether or not Stripe also sends the invoice:
+	# `last_grant_period_end` already makes a second grant for the same period a
+	# no-op, which is the guard a replayed webhook needed anyway.
+	if status == "Trialing":
+		grant_period_credits(
+			subscription,
+			_ts(obj["trial_end"]) if obj.get("trial_end") else subscription.current_period_end,
+		)
+
 	apply_subscription_status(subscription)
 
 

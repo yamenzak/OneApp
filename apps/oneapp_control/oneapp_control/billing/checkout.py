@@ -9,7 +9,7 @@ Two shapes, deliberately different:
 
 import frappe
 from frappe import _
-from frappe.utils import now_datetime
+from frappe.utils import cint, now_datetime
 
 from oneapp_control import portal
 from oneapp_control.billing import addons as addon_catalogue
@@ -55,6 +55,27 @@ def _sellable(plan: str, interval: str):
 	return plan_doc, price_id
 
 
+def trial_days_for(tenant: str, plan_doc) -> int:
+	"""How long this workspace's trial is, which is usually not at all.
+
+	Once per workspace, ever. Stripe will happily start a fresh trial on every
+	new subscription, so cancelling and resubscribing would be an unlimited
+	supply of free months — and the cheapest way to find that out is from a
+	customer who already has. Any subscription this workspace has ever held,
+	whatever state it ended in, spends the trial.
+
+	The card is still taken at checkout. The trial moves *when* the first charge
+	lands, not whether there is a card behind it, so it opens no abuse surface
+	that signing up does not already open.
+	"""
+	days = cint(getattr(plan_doc, "trial_days", 0))
+	if days <= 0:
+		return 0
+	if frappe.db.exists("Subscription", {"tenant": tenant}):
+		return 0
+	return days
+
+
 @frappe.whitelist()
 def start_subscription(tenant: str, plan: str, interval: str = "Monthly") -> dict:
 	"""Create a Checkout session for a plan subscription."""
@@ -63,6 +84,13 @@ def start_subscription(tenant: str, plan: str, interval: str = "Monthly") -> dic
 
 	success_url, cancel_url = _urls(tenant)
 
+	# Echoed back on every webhook, so we never have to guess which tenant an
+	# event belongs to.
+	subscription_data = {"metadata": {"tenant": tenant, "plan": plan}}
+	trial = trial_days_for(tenant, plan_doc)
+	if trial:
+		subscription_data["trial_period_days"] = trial
+
 	session = stripe_client.create_checkout_session(
 		mode="subscription",
 		line_items=[{"price": price_id, "quantity": 1}],
@@ -70,13 +98,11 @@ def start_subscription(tenant: str, plan: str, interval: str = "Monthly") -> dic
 		cancel_url=cancel_url,
 		customer_email=tenant_doc.owner_email,
 		client_reference_id=tenant,
-		# Echoed back on every webhook, so we never have to guess which tenant an
-		# event belongs to.
-		subscription_data={"metadata": {"tenant": tenant, "plan": plan}},
+		subscription_data=subscription_data,
 		metadata={"tenant": tenant, "plan": plan, "interval": interval},
 	)
 
-	return {"url": session.get("url"), "id": session.get("id")}
+	return {"url": session.get("url"), "id": session.get("id"), "trial_days": trial}
 
 
 @frappe.whitelist()

@@ -16,6 +16,7 @@
   "currency",
   "price_monthly",
   "price_yearly",
+  "trial_days",
   "stripe_product_id",
   "stripe_price_id_monthly",
   "stripe_price_id_yearly",
@@ -95,6 +96,13 @@
    "fieldname": "price_yearly",
    "fieldtype": "Currency",
    "label": "Price Yearly"
+  },
+  {
+   "default": "0",
+   "description": "Days of free use before the first charge. Stripe holds the card from the start and bills automatically when the trial ends. Only offered on a workspace's first subscription.",
+   "fieldname": "trial_days",
+   "fieldtype": "Int",
+   "label": "Trial days"
   },
   {
    "fieldname": "stripe_product_id",

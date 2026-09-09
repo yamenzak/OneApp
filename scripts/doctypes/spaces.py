@@ -543,9 +543,14 @@ doctype(
         f("google_ai_key", "Password", label="Google AI Studio Key"),
         f("cf_api_token", "Password", label="Cloudflare API Token",
           description="For Workers AI."),
-        f("ai_markup_multiplier", "Float", default="1.5",
+        f("ai_markup_multiplier", "Float", default="3",
           description="Applied to measured provider cost when converting to credits. "
-                      "A model may override it; see AI Model."),
+                      "Three, not one and a half: provider cost is not the only "
+                      "cost a credit carries — Stripe takes about 2.9% and thirty "
+                      "cents of every payment, and the metering, reconciliation and "
+                      "ledger sit under that. Lowering it can put a credit pack "
+                      "below cost, and saving refuses when it would. A model may "
+                      "override it; see AI Model."),
         f("ai_catalogue_synced_on", "Datetime", read_only=1,
           description="Last successful model and price sync."),
         f("ai_catalogue_note", "Small Text", read_only=1,

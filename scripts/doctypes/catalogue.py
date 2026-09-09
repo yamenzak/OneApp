@@ -250,6 +250,18 @@ doctype(
         f("currency", "Link", options="Currency", default="USD"),
         f("price_monthly", "Currency", in_list_view=1),
         f("price_yearly", "Currency"),
+        # Stripe's own `trial_period_days`, set on the subscription at checkout.
+        # Stripe then owns the whole trial: `trialing` until the first charge
+        # lands, `active` after it, `past_due` if the card fails — and each of
+        # those already means something here.
+        #
+        # A plan term rather than a global, because only the entry plan is meant
+        # to be trialable and a trial on an upgrade is a discount nobody asked
+        # for. Zero is no trial, which is what every plan starts as.
+        f("trial_days", "Int", default="0", label="Trial days",
+          description="Days of free use before the first charge. Stripe holds the "
+                      "card from the start and bills automatically when the trial "
+                      "ends. Only offered on a workspace's first subscription."),
         # Written by the Stripe sync, never by hand. Saving a plan creates the
         # product and prices it needs; a changed amount mints a new price and
         # archives the old one. Two people typing the same id into two systems
