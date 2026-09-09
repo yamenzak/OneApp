@@ -402,9 +402,26 @@ precedence, never silently promoted into the network. An inferred stop is drawn
 differently and is accepted into the real network by a person, through the
 Accept action on the stop; nothing else can promote one.
 
-What is not built is the conflict between two *facts* — the planned 07:38 and
-the observed 07:44 — which is a different table and is what §7a's arrival model
-reads rather than something a precedence resolves.
+The conflict between two *facts* — the planned 07:38 and the observed 07:44 —
+is the other half of this section and is a different mechanism entirely.
+`timetable.deviation` matches every planned call against what actually served
+that stop, and the **Against the plan** screen draws it: how many calls were
+made, how far off the middle one was hour by hour, what nothing came to at all,
+and the worst of each by name.
+
+Nothing resolves that one, and nothing should. A precedence picks whose
+*description* of a stop to draw; there is no sense in which the timetable or the
+vehicle is the more correct account of when the bus arrived. The gap is the
+product, and a screen that reconciled the two would be throwing away the only
+number on it worth reading.
+
+Matched on line, stop and nearest time rather than on a trip key, because a live
+feed's journey reference and a timetable's trip id agree in about half the
+deliveries in this market, and a comparison that only works for the tidy half is
+one nobody can rely on. A planned call with nothing inside three quarters of an
+hour is reported as missed rather than matched to the next hour's vehicle —
+which is the failure that would make a cancelled trip look like a very late
+one, and it is the first thing an operator will check.
 
 ---
 

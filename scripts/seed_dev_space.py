@@ -975,7 +975,41 @@ def _mobility_timetable(source: str, day, named: dict) -> int:
 			"days": 127,
 			"headsign": "",
 		})
+
+	# And the last run of the evening, published and not worked.
+	#
+	# Every other call in this fixture is derived from a vehicle that actually
+	# ran, so every one of them matches and "Calls nothing came to" is a chart
+	# of zeroes — a working screen that looks broken, which is the same argument
+	# as the incident day and the occupancy spread. This is also the commonest
+	# real finding of its kind: the timetable on the pole claims a service the
+	# operator quietly stopped working.
+	rows.extend(_phantom_last_runs(rows))
 	return timetable.replace(source, rows)
+
+
+#: How long after the real last run the published one claims to be. Far enough
+#: outside `timetable.MATCH_S` that it is reported as missed rather than matched
+#: to the run before it.
+PHANTOM_AFTER_S = 75 * 60
+
+
+def _phantom_last_runs(rows: list[dict]) -> list[dict]:
+	"""One published-and-never-worked run per line, off its own last trip."""
+	last: dict[str, str] = {}
+	latest: dict[str, int] = {}
+	for one in rows:
+		if one["arrives_s"] > latest.get(one["line"], -1):
+			latest[one["line"]] = one["arrives_s"]
+			last[one["line"]] = one["trip_key"]
+
+	trips = set(last.values())
+	return [
+		{**one, "trip_key": f"{one['trip_key']}-published",
+		 "arrives_s": one["arrives_s"] + PHANTOM_AFTER_S,
+		 "departs_s": one["departs_s"] + PHANTOM_AFTER_S}
+		for one in rows if one["trip_key"] in trips
+	]
 
 
 def _one(doctype: str, key_field: str, key: str, values: dict) -> str:

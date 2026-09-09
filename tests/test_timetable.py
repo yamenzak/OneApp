@@ -288,3 +288,43 @@ def test_it_refuses_a_reader_who_cannot_see_a_line(timetable, stub_frappe):
 	stub_frappe.has_permission = lambda *a, **k: False
 	with pytest.raises(stub_frappe.PermissionError):
 		timetable._guard()
+
+
+def test_the_day_has_a_shape_and_not_only_a_number(timetable, table, stub_frappe):
+	"""One figure cannot show the morning peak holding and the afternoon
+	falling apart, which is the finding somebody opens this screen for."""
+	out = compare(
+		timetable, stub_frappe, table,
+		[call(7 * 3600, trip="a", stop="alx"), call(15 * 3600, trip="b", stop="zoo")],
+		[seen(datetime(2026, 9, 9, 7, 1), stop="alx"),
+		 seen(datetime(2026, 9, 9, 15, 10), stop="zoo")],
+	)
+	assert [one["hour"] for one in out["by_hour"]] == [7, 15]
+	assert [one["median_s"] for one in out["by_hour"]] == [60, 600]
+
+
+def test_an_hour_whose_calls_all_went_missing_says_so(timetable, table, stub_frappe):
+	"""Rather than dropping out of the series. An hour with no median and four
+	planned calls is a suspended service, and it is the strongest signal this
+	screen can carry."""
+	out = compare(
+		timetable, stub_frappe, table,
+		[call(7 * 3600, trip="a"), call(7 * 3600 + 600, trip="b")],
+		[],
+	)
+	assert out["by_hour"] == [
+		{"hour": 7, "label": "07:00", "planned": 2, "missed": 2, "median_s": None}
+	]
+
+
+def test_a_row_is_named_the_way_a_person_names_it(timetable, table, stub_frappe):
+	"""This is a table somebody reads row by row, and `sh7n2blrbv` against
+	`hrh3cvh2in` is a table nobody can act on."""
+	timetable.networklib.line_names = lambda: {"u6": "U6"}
+	timetable._stop_names = lambda names: {"alx": "Alexanderplatz"}
+	out = compare(
+		timetable, stub_frappe, table,
+		[call(7 * 3600)], [seen(datetime(2026, 9, 9, 7, 5))],
+	)
+	assert out["calls"][0]["line"] == "U6"
+	assert out["calls"][0]["stop"] == "Alexanderplatz"

@@ -106,6 +106,25 @@ SCREENS = [
 		"status_field": "status",
 	},
 	{
+		# What was published against what ran, call by call. §6's other half:
+		# `conflicts.py` decides which *record* two sources are describing and
+		# this compares two statements about the same *event* — and nothing
+		# resolves it, because the gap is the product rather than something to
+		# reconcile away.
+		#
+		# Its own screen and not a tab on Insights, for the reason Outlook is
+		# its own: the question is different — *did we run what we said* rather
+		# than *how did it run* — and the answer is a table somebody reads row
+		# by row, which no chart tab is shaped for.
+		"screen": "plan", "label": "Against the plan", "singular": "Call",
+		"icon": "lucide-calendar", "document_type": "Transit Line",
+		"component": "onemobility/plan",
+		"fields": "short_name,line_name,mode,status",
+		"order_by": "short_name asc",
+		"view_types": "list",
+		"status_field": "status",
+	},
+	{
 		"screen": "lines", "label": "Lines", "singular": "Line",
 		"icon": "lucide-route", "document_type": "Transit Line",
 		"fields": "emoji,short_name,line_name,agency,mode,status",

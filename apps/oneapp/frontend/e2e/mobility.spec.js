@@ -198,6 +198,31 @@ test('two sources claiming one stop both stay on the screen', async ({ page }) =
   await expect(rows.filter({ hasText: 'stop_name' }).first()).toBeVisible()
 })
 
+test('what was published, against what ran', async ({ page }) => {
+  // §6's other half. `conflicts.py` decides which *record* two sources are
+  // describing; this compares two statements about the same *event*, and
+  // nothing reconciles them — the gap is the product.
+  await page.goto('/one/space/onemobility?screen=plan')
+  const screen = page.locator('[data-slot="plan"]')
+  await screen.waitFor({ timeout: 30_000 })
+
+  const headline = screen.locator('[data-slot="plan-headline"]')
+  await expect(headline.getByText('Calls planned')).toBeVisible({ timeout: 20_000 })
+  await expect(headline.getByText('Nothing came')).toBeVisible()
+
+  // The fixture publishes a last run of the evening that the operator does not
+  // work, which is the commonest finding of its kind and the only reason this
+  // screen has anything in its second chart. A call nothing came to says so in
+  // words rather than leaving a cell blank: an empty cell reads as data we do
+  // not have, and this is data we do have.
+  const calls = screen.locator('[data-slot="plan-calls"]')
+  await expect(calls.getByText('Nothing came').first()).toBeVisible({ timeout: 20_000 })
+  // And a call that was made carries the two times it is the difference
+  // between — 07:38 published against 07:44 observed, which is the sentence
+  // README §6 opens on.
+  await expect(calls.getByText(/\d+\.\d min/).first()).toBeVisible()
+})
+
 test('a facet this tier cannot answer is refused before it is used', async ({ page }) => {
   await page.goto('/one/space/onemobility?screen=insights')
   const screen = page.locator('[data-slot="insights"]')

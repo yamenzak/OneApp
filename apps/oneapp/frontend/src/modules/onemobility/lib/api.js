@@ -85,6 +85,16 @@ export const network = {
    * `motion.js` puts the point on it, so coordinates from the server would be
    * a second geometry that can disagree about where a route goes.
    */
+  /**
+   * What was published against what ran, call by call. Nothing here resolves
+   * the disagreement — §6: the gap is the product.
+   */
+  deviation: (params) =>
+    callMethod('oneapp.onemobility.deviation', params, { method: 'GET' }),
+
+  /** The timetable itself, as a departure board. */
+  due: (params) => callMethod('oneapp.onemobility.due', params, { method: 'GET' }),
+
   expected: (params) =>
     callMethod('oneapp.onemobility.expected', params, { method: 'GET' }),
 

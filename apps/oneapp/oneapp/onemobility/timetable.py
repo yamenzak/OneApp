@@ -37,6 +37,7 @@ from frappe.utils import cint, get_datetime, getdate, now_datetime
 
 from . import facets as facetlib
 from . import model
+from . import network as networklib
 from ..shared import facts
 
 #: A day, in seconds. Named because it appears as an offset rather than as a
@@ -376,6 +377,7 @@ def deviation(day: str = "", facets: str = "", limit: int = 200) -> dict:
 		"day": str(on),
 		"planned": 0, "observed": 0, "matched": 0, "missed": 0, "unplanned": 0,
 		"median_s": None,
+		"by_hour": [],
 		"calls": [],
 		"unavailable": unavailable,
 		"kept": kept(),
@@ -422,6 +424,12 @@ def deviation(day: str = "", facets: str = "", limit: int = 200) -> dict:
 		key=lambda one: (one["gap_s"] is not None, -abs(one["gap_s"] or 0)),
 	)[: max(10, min(cint(limit) or 200, 1000))]
 
+	# Names, not ids. A table of `sh7n2blrbv` against `hrh3cvh2in` is a table
+	# nobody can act on, and this is a screen whose whole purpose is to be read
+	# row by row.
+	lines = networklib.line_names()
+	stops = _stop_names([one["stop"] for one in shown])
+
 	return {
 		**empty,
 		"planned": len(planned),
@@ -430,10 +438,54 @@ def deviation(day: str = "", facets: str = "", limit: int = 200) -> dict:
 		"missed": len(matched) - len(gaps),
 		"unplanned": max(0, len(visits) - len(gaps)),
 		"median_s": gaps[len(gaps) // 2] if gaps else None,
+		"by_hour": _by_hour(matched),
 		"calls": [{
-			"line": one["line"], "stop": one["stop"], "trip_key": one["trip_key"],
+			"line": lines.get(one["line"], one["line"]),
+			"stop": stops.get(one["stop"], one["stop"]),
+			"trip_key": one["trip_key"],
 			"due": str(one["due"]),
 			"seen": str(one["seen"]) if one["seen"] else None,
 			"gap_s": one["gap_s"],
 		} for one in shown],
+	}
+
+
+def _by_hour(matched: list[dict]) -> list[dict]:
+	"""The day's shape, hour by hour: how far off the middle call was, and how
+	many were missed.
+
+	A median rather than a mean, for the reason it is a median everywhere else
+	here: one cancelled run matched to nothing and one vehicle forty minutes
+	down should not decide what the eight o'clock hour looks like.
+	"""
+	hours: dict[int, list] = {}
+	for one in matched:
+		hours.setdefault(one["due"].hour, []).append(one)
+
+	out = []
+	for hour in sorted(hours):
+		group = hours[hour]
+		gaps = sorted(one["gap_s"] for one in group if one["gap_s"] is not None)
+		out.append({
+			"hour": hour,
+			"label": f"{hour:02d}:00",
+			"planned": len(group),
+			"missed": len(group) - len(gaps),
+			"median_s": gaps[len(gaps) // 2] if gaps else None,
+		})
+	return out
+
+
+def _stop_names(names: list[str]) -> dict:
+	"""What a person calls each stop. `forecast` keeps the same helper for the
+	same reason — a chart or a table labelled with document ids is one nobody
+	can read."""
+	if not names:
+		return {}
+	return {
+		row["name"]: row["stop_name"]
+		for row in frappe.get_all(
+			"Transit Stop", filters={"name": ("in", list(set(names)))},
+			fields=["name", "stop_name"], limit_page_length=0,
+		)
 	}

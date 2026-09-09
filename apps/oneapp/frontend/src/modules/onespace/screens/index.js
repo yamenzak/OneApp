@@ -41,6 +41,7 @@ export const APP_COMPONENTS = {
   'onemobility/network': () => import('@/modules/onemobility/components/Network.vue'),
   'onemobility/insights': () => import('@/modules/onemobility/components/Insights.vue'),
   'onemobility/outlook': () => import('@/modules/onemobility/components/Outlook.vue'),
+  'onemobility/plan': () => import('@/modules/onemobility/components/Timetable.vue'),
 }
 
 /**
