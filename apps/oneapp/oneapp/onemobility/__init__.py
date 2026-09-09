@@ -14,6 +14,7 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     model       the fact tables, declared against shared/facts.py
     gtfs        a GTFS zip read into that model
     sources     the four doors a delivery arrives through, and the one pipeline
+    streaming   the door that never closes — a socket read in bounded windows
     live        positions in, positions out, one vehicle's day for the scrubber
     arrivals    positions turned into stop visits, which is how a stop gets a number
     facets      one vocabulary for narrowing every screen: line, vehicle, stop, mode
@@ -40,6 +41,7 @@ from .scoring import accuracy
 from .markers import marker_styles, set_marker_style
 from .network import bunching, days, punctuality, shape
 from .sources import fetch_now
+from .streaming import listen_now
 
 __all__ = [
     "accuracy",
@@ -51,6 +53,7 @@ __all__ = [
     "fetch_now",
     "fleet",
     "forget_everything",
+    "listen_now",
     "load_feed",
     "marker_styles",
     "offered",

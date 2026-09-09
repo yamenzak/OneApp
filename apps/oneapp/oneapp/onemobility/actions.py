@@ -51,5 +51,17 @@ def actions() -> dict:
 				"scope": "selection",
 				"method": "oneapp.onemobility.fetch_now",
 			},
+			{
+				# And the same question for the door that is never asked:
+				# a socket is read in windows by the scheduler, so "fetch"
+				# means nothing to it and the first five minutes of silence
+				# after saving the form look exactly like a wrong endpoint.
+				# This opens it for a few seconds and says what came.
+				"key": "listen",
+				"label": "Listen now",
+				"icon": "lucide-radio",
+				"scope": "selection",
+				"method": "oneapp.onemobility.listen_now",
+			},
 		],
 	}

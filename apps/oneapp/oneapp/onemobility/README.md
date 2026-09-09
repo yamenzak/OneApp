@@ -305,9 +305,40 @@ was deliberately written as an engine over a *plan* rather than as RUA's script.
 A source is a plan. If OneMobility writes a second importer, something has gone
 wrong.
 
-The one addition it needs is a **streaming** mode: the existing engine assumes a
-finite fetch, and a socket has no end. That is a source that appends to a buffer
-and commits on a timer, reusing the same normalise and resolve steps.
+The one addition it needed was a **streaming** mode, because the engine assumes
+a finite fetch and a socket has no end. That is `streaming.py`: a connection is
+read into a buffer, whole documents are taken out of it, and the rows land on
+`live.record` — the same normalise step every live dialect already ends at.
+
+Three decisions in it are worth keeping written down.
+
+**A stream has no end; a job must have one.** The obvious version holds the
+connection open for ever, and it is wrong three separate ways: a worker that
+never returns is a worker gone, a job nobody can end cannot be redeployed past
+or stopped by pausing the source, and a connection that died an hour ago looks
+exactly like a quiet feed. So the scheduler opens a window every five minutes
+and the window lasts just under five minutes. The seconds between two windows
+are a real gap and are what those three properties cost.
+
+**Committing is on a count and on a clock, and it needs both.** On a clock
+alone a busy network holds thousands of positions in memory between ticks and
+loses all of them when the worker dies. On a count alone a two-line operator at
+four in the morning holds three rows for the whole window, and a live map that
+is blank while the feed works is the same bug from the other end.
+
+**What is not kept is the delivery.** `sources.deliver` writes every fetch to a
+`File` so a number traces back to the bytes it came from; that is right for a
+file and impossible for a stream, where a day of positions is not a delivery and
+one `File` per frame would be a hundred thousand of them. The observation row is
+its own record here, carrying the feed's own timestamp.
+
+SIRI is the reader that exists — stdlib XML, namespace-agnostic because
+authorities disagree about which one they declare, signed durations because
+`-PT45S` is a vehicle running early, and a refusal for any document carrying an
+inline entity definition. GTFS-Realtime is protocol buffers and wants a
+dependency and a schema; VDV 454 is XML and will be a second reader here rather
+than a second anything else. A source declaring either is told so plainly, the
+way `sources.LOADERS` tells an unreadable file format so.
 
 ---
 
@@ -988,9 +1019,10 @@ Each ships something a person can look at. **Done** is done and in the fixture.
    that format is told so plainly rather than failing as a parse error.
 4. **The network screen, static.** Lines drawn from shapes, coloured, filtered,
    with a legend. **Done.**
-5. **Live.** A socket source, the observation table, vehicles moving. **Done**
-   except the socket itself: `live.report` is the door, and nothing holds a
-   long-lived connection open yet.
+5. **Live.** A socket source, the observation table, vehicles moving. **Done**,
+   both doors: `live.report` takes a push from a bridge, and `streaming.py`
+   holds a connection open itself, in bounded windows the scheduler chains —
+   SIRI today, VDV 454 and GTFS-Realtime as further readers.
 6. **The scrubber.** The nightly roll-up, the day objects, and one screen with
    two clocks. **Done.**
 7. **Analysis.** Peak hours, punctuality, occupancy over time — the aggregate

@@ -193,6 +193,12 @@ def _make_frappe():
 	frappe.cache = _Cache()
 	frappe.conf = {}
 	frappe.get_all = lambda *a, **k: []
+	# Frappe's background enqueue, recorded rather than run. What a test wants
+	# to know about a job is that it was enqueued, with which arguments and
+	# under which deduplicating id; running it here would run the code under
+	# test twice and hide the enqueue it is actually asserting.
+	frappe.enqueued = []
+	frappe.enqueue = lambda method, **k: frappe.enqueued.append((method, k))
 	frappe.get_doc = lambda *a, **k: None
 	frappe.get_single = lambda *a, **k: None
 	frappe.get_cached_doc = lambda *a, **k: None
@@ -283,6 +289,14 @@ def _make_frappe():
 	utils.now_datetime = lambda: None
 	utils.add_to_date = lambda *a, **k: None
 	utils.get_datetime = lambda x: x
+	# The stub site keeps UTC, which is what makes it useful: the code under
+	# test converts an offset-bearing feed timestamp to UTC itself, and this
+	# only supplies the site's own zone. A test can then say that a stamp two
+	# hours ahead lands two hours earlier, which is the arithmetic that goes
+	# wrong silently.
+	utils.convert_utc_to_system_timezone = lambda value: value.replace(
+		tzinfo=__import__("datetime").timezone.utc
+	)
 	# Enough of a date to be told apart from a timestamp with microseconds in it,
 	# which is the whole point of the caller: a reply's attribution line.
 	utils.format_datetime = lambda value, fmt=None: str(value)

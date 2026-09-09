@@ -190,6 +190,12 @@ scheduler_events = {
 		# Entitlements and balance. Frequent because revoking an app should take
 		# effect in minutes, not hours.
 		"*/15 * * * *": ["oneapp.onespace.sync.sync_from_control_plane"],
+		# And the live streams, which are the one scheduled thing here that is
+		# not a sweep: each run opens a window on every socket source and holds
+		# it for just under five minutes, so the runs form a chain rather than
+		# a series of polls. A stream that had no end would be a job nobody
+		# could restart — see `onemobility/streaming.py`.
+		"*/5 * * * *": ["oneapp.onemobility.streaming.run_streams"],
 	},
 	"daily": [
 		# The register of things that expire — licences, visas, insurance — and

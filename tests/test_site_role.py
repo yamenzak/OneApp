@@ -199,6 +199,12 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# a branch that says "there is nothing here" says less than the check
 		# that already found nothing.
 		"oneapp.onemobility.scoring.nightly",
+		# And the live stream windows. The query is for sources of kind Socket
+		# in a format that has a reader; the control plane has no Transit
+		# Source table row to match and neither does a tenant without
+		# OneMobility, so this enqueues nothing — once again the empty query is
+		# the answer rather than a case to branch on.
+		"oneapp.onemobility.streaming.run_streams",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "
