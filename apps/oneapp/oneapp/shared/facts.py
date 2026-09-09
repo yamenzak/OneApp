@@ -92,7 +92,7 @@ class Fact:
         when: str,
         keys: tuple = (),
         hot_days: int = 30,
-        rollup: dict | None = None,
+        rollup: dict | list | None = None,
         freeze: bool = True,
     ):
         self.name = name
@@ -101,7 +101,15 @@ class Fact:
         self.when = when
         self.keys = keys
         self.hot_days = hot_days
-        self.rollup = rollup or {}
+        # One raw tier commonly feeds more than one aggregate, and the two are
+        # different shapes rather than one shape at two grains: `observation`
+        # rolls per line and per hour into the table every chart reads, and
+        # per vehicle and per day into a much smaller one. Adding `vehicle` to
+        # the first instead would multiply it by the size of the fleet — a
+        # mid-size operator's line-and-hour tier is four thousand rows a year
+        # and its line-hour-and-vehicle tier is four million — which is the
+        # whole reason this takes a list.
+        self.rollups = [rollup] if isinstance(rollup, dict) and rollup else list(rollup or [])
         self.freeze = freeze
 
     @property
@@ -450,17 +458,17 @@ def _conditions(fact: Fact, start, end, where: dict | None):
 # --------------------------------------------------------------------------- #
 
 def roll_up(fact: Fact, day: date) -> int:
-    """Write one day's aggregate rows into the table that never expires.
+    """Write one day's aggregate rows into the tables that never expire.
 
     Declared as `rollup = {"into": <fact name>, "group": [...],
-    "measures": {...}}`. The target is another declared fact table — one with
-    no `hot_days`, because it is the tier that stays — so there is one
-    mechanism rather than a second concept called "summary".
+    "measures": {...}}`, or a list of those. Each target is another declared
+    fact table — one with no `hot_days`, because it is the tier that stays —
+    so there is one mechanism rather than a second concept called "summary".
     """
-    plan = fact.rollup
-    if not plan:
-        return 0
+    return sum(_roll_one(fact, day, plan) for plan in fact.rollups)
 
+
+def _roll_one(fact: Fact, day: date, plan: dict) -> int:
     target = TABLES.get(plan["into"])
     if not target:
         raise ValueError(f"{fact.name} rolls up into {plan['into']}, which is not declared")
@@ -592,14 +600,14 @@ def sweep(today: date | None = None) -> dict:
             if day >= today:
                 continue
 
-            if fact.rollup and day >= today - timedelta(days=2):
+            if fact.rollups and day >= today - timedelta(days=2):
                 # Yesterday and the day before, in case a feed arrived late.
                 rolled += 1 if roll_up(fact, day) else 0
 
             if day >= today - timedelta(days=fact.hot_days):
                 continue
 
-            if fact.rollup:
+            if fact.rollups:
                 roll_up(fact, day)
             if freeze(fact, day):
                 frozen += 1

@@ -793,7 +793,7 @@ def _seed_onemobility():
 	"""
 	from datetime import datetime, timedelta
 
-	from oneapp.onemobility import live, model
+	from oneapp.onemobility import arrivals, live, model
 	from oneapp.onespace import sync
 	from oneapp.shared import facts
 	from oneapp_control.spaces import onemobility as manifest
@@ -863,13 +863,18 @@ def _seed_onemobility():
 	for start in days:
 		written += live.record(_mobility_day(start, MOBILITY_LINES, MOBILITY_VEHICLES, lines))
 
-	# And the roll-up, which on a real workspace the nightly sweep does. Without
-	# it the aggregate tier is empty, every chart on the Insights screen draws
-	# nothing, and the fixture disagrees with the product about whether the
-	# feature works.
-	facts.ensure(model.SERVICE_HOUR)
+	# And the roll-ups and the stop pass, which on a real workspace the nightly
+	# sweep does. Without them the aggregate tiers are empty, every chart on the
+	# Insights screen draws nothing, and the fixture disagrees with the product
+	# about whether the feature works.
+	#
+	# `arrivals.build` is the expensive one and is worth its second: it is the
+	# only thing that gives a stop a number at all, and a Stops tab with an
+	# empty state on a seeded fixture is indistinguishable from a broken one.
+	model.ensure_all()
 	for start in days:
 		facts.roll_up(model.OBSERVATION, start.date())
+		arrivals.build(start.date())
 	frappe.db.commit()
 
 	return (
@@ -922,6 +927,7 @@ def _mobility_day(start, lines, vehicles, named) -> list[dict]:
 		# Stagger the vehicles down the line so they are not all at the depot
 		# at once, which is what a fleet actually looks like.
 		offset = timedelta(minutes=13 * at)
+		run = _run(points)
 		# Every sixty seconds, which is what a great many real feeds send and is
 		# what keeps ten vehicles costing about what four cost at thirty. The
 		# browser tweens between pings either way, so the map is no less smooth
@@ -930,10 +936,14 @@ def _mobility_day(start, lines, vehicles, named) -> list[dict]:
 			when = start + timedelta(hours=6) + offset + timedelta(seconds=tick * 60)
 			if when.hour >= 20:
 				break
-			# Where along the line: a triangle wave, so it runs out and back.
-			phase = (tick % 40) / 40.0
-			along = phase * 2 if phase < 0.5 else (1 - phase) * 2
-			lon, lat = _along(points, along)
+			# Where it is, from a run that stops at the stops. A plain triangle
+			# wave along the polyline was the first version and it looked right
+			# on the map and produced almost no stop visits: a sample a minute
+			# over a kilometre between stops lands three hundred metres apart,
+			# and `arrivals.py` calls a vehicle *at* a stop within fifty. So the
+			# fixture does what a bus does — pulls in, waits, pulls out — which
+			# is also the only way dwell and headway mean anything in it.
+			lon, lat = run[tick % len(run)]
 			hour = when.hour
 			busy = 70 if hour in (7, 8, 16, 17) else 45 if hour in (9, 15, 18) else 22
 			# A rail vehicle carries a different load to a bus at the same hour,
@@ -943,7 +953,7 @@ def _mobility_day(start, lines, vehicles, named) -> list[dict]:
 			busy = round(busy * {"Rail": 1.35, "Metro": 1.2, "Tram": 1.0}.get(vehicle["mode"], 0.85))
 			rows.append({
 				"at": when, "vehicle": vehicle["key"], "line": named[vehicle["line"]],
-				"trip_key": f"{vehicle['key']}-{tick // 40}",
+				"trip_key": f"{vehicle['key']}-{tick // len(run)}",
 				"lat": round(lat, 6), "lon": round(lon, 6),
 				"occupancy": min(99, busy + (at * 3) % 11),
 				# Late in the peak and early off it, spread around that so the
@@ -976,23 +986,36 @@ def _lateness(line_key: str, hour: int, tick: int, at: int) -> int:
 	return int(round(base * MOBILITY_LATENESS.get(line_key, 1.0)) + spread)
 
 
-def _along(points, fraction: float):
-	"""A point some fraction of the way along a polyline. Plain geometry."""
-	fraction = max(0.0, min(1.0, fraction))
-	spans = [
-		((points[at + 1][0] - points[at][0]) ** 2 + (points[at + 1][1] - points[at][1]) ** 2) ** 0.5
-		for at in range(len(points) - 1)
-	]
-	total = sum(spans) or 1
-	want = fraction * total
-	for at, span in enumerate(spans):
-		if want <= span or at == len(spans) - 1:
-			ratio = (want / span) if span else 0
-			x0, y0 = points[at]
-			x1, y1 = points[at + 1]
-			return x0 + (x1 - x0) * ratio, y0 + (y1 - y0) * ratio
-		want -= span
-	return points[-1]
+#: How many readings a vehicle spends standing at a stop, and how many it
+#: spends getting to the next one. At a reading a minute, two and three: a bus
+#: dwells about ninety seconds and takes three or four minutes between stops in
+#: the middle of a city, which is close enough that the numbers the fixture
+#: produces are ones an operator would recognise.
+DWELL_TICKS = 2
+RUN_TICKS = 3
+
+
+def _run(points) -> list:
+	"""One round trip as a list of positions, one per reading.
+
+	Out along the stops and back again, standing at each. Returned as a list
+	rather than computed from a phase because the shape of it — flat at the
+	stops, sloped between them — is the whole reason the stop pass finds
+	anything, and a formula that produced it would be harder to see than the
+	list.
+	"""
+	out = []
+	for at, point in enumerate(points):
+		out.extend([point] * DWELL_TICKS)
+		if at + 1 >= len(points):
+			continue
+		x0, y0 = point
+		x1, y1 = points[at + 1]
+		for step in range(1, RUN_TICKS + 1):
+			ratio = step / (RUN_TICKS + 1)
+			out.append((x0 + (x1 - x0) * ratio, y0 + (y1 - y0) * ratio))
+	# And back, without standing twice at the terminus it has just left.
+	return out + out[::-1][1:]
 
 
 #: Six lines through central Berlin. Real coordinates and each line's own real

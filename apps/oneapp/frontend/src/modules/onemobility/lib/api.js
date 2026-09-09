@@ -28,6 +28,19 @@ export const network = {
   /** What the network does over a day and over a week, off the aggregate tier. */
   rhythm: (params) => callMethod('oneapp.onemobility.rhythm', params, { method: 'GET' }),
 
+  /** Every vehicle, ranked by how it actually ran. Off `vehicleDay`. */
+  fleet: (params) => callMethod('oneapp.onemobility.fleet', params, { method: 'GET' }),
+
+  /** What each stop does: how often, how long, how evenly. Off `stopHour`. */
+  stops: (params) => callMethod('oneapp.onemobility.stops', params, { method: 'GET' }),
+
+  /**
+   * Every facet and the values it can take. Once per session — the vocabulary
+   * is a closed table on the server and the options are doctype rows read as
+   * the person asking, so this is not something a screen can assemble itself.
+   */
+  offered: () => callMethod('oneapp.onemobility.offered', {}, { method: 'GET' }),
+
   /** Vehicles on one line that have caught each other. */
   bunching: (params) =>
     callMethod('oneapp.onemobility.bunching', params, { method: 'GET', silent: true }),

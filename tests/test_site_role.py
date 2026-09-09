@@ -187,6 +187,11 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# control plane carries no space, and the query for what is due comes
 		# back empty there — the same shape as every other entry above.
 		"oneapp.onemobility.sources.poll",
+		# And the pass that turns yesterday's positions into stop visits. It
+		# asks whether the observation table exists before it touches a
+		# doctype, so on the control plane — and on any tenant that never
+		# enabled OneMobility — it returns nought without a query.
+		"oneapp.onemobility.arrivals.build",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "

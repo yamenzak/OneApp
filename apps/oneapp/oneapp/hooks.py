@@ -218,6 +218,11 @@ scheduler_events = {
 		# into R2 and dropped. Nightly and not hourly because the unit of every
 		# one of those is a day. A workspace with no declared fact table does
 		# nothing here. See `shared/facts.py`.
+		# Yesterday's positions turned into stop visits, *before* the sweep
+		# below can drop the partition they were derived from. Order is the
+		# whole of it: a visit inferred from rows that are already in R2 is a
+		# visit nobody infers. See `onemobility/arrivals.py`.
+		"oneapp.onemobility.arrivals.build",
 		"oneapp.shared.facts.sweep",
 	],
 	"hourly": [

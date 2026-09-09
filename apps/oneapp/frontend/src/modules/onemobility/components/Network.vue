@@ -43,17 +43,17 @@
         be.
       -->
       <div
-        class="pointer-events-auto absolute bottom-[7.5rem] start-4 z-10 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 shadow-sm"
+        class="pointer-events-auto absolute bottom-[11.5rem] start-4 z-10 rounded-6 border border-outline-gray-2 bg-surface-elevation-2 shadow-sm"
         data-slot="network-legend"
       >
-        <button
-          type="button"
-          class="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium text-ink-gray-7"
+        <Button
+          class="w-full justify-start"
+          variant="ghost"
+          size="sm"
+          :label="__('How full')"
+          :icon-left="legendOpen ? 'lucide-chevron-down' : 'lucide-chevron-right'"
           @click="legendOpen = !legendOpen"
-        >
-          <Icon :name="legendOpen ? 'lucide-chevron-down' : 'lucide-chevron-right'" class="size-3.5" />
-          {{ __('How full') }}
-        </button>
+        />
         <div v-show="legendOpen" class="flex flex-col gap-1.5 px-3 pb-3">
           <div
             v-for="band in occupancy"
@@ -182,11 +182,16 @@
             :placeholder="__('A day')"
             class="w-40"
           />
-          <Select
-            v-model="onlyLine"
-            :options="lineOptions"
-            :placeholder="__('Every line')"
-            class="w-44"
+          <!--
+            The same bar Insights carries, and the same server-side vocabulary
+            behind it — see `FacetBar.vue`. The map used to take a line and
+            Insights took a line separately, which is how one filter becomes
+            two slightly different filters nobody notices disagreeing.
+          -->
+          <FacetBar
+            v-model="facets"
+            :facets="offered"
+            :unavailable="unavailable"
           />
 
           <div class="ms-auto flex items-center gap-3">
@@ -254,6 +259,14 @@
             laid over its own painted background gives two tracks and two
             handles, which is one control pretending to be two.
           -->
+          <!--
+            A native range, deliberately. frappe-ui ships no slider, and the two
+            things this control has to do are exactly what a native range does
+            for free and a div does badly: drag with a pointer, and step with
+            the arrow keys from a focus ring a screen reader announces.
+            Everything visible is the SVG above; this is the input behind it.
+          -->
+          <!-- eslint-disable-next-line vue/no-restricted-html-elements -->
           <input
             v-model.number="position"
             type="range"
@@ -281,10 +294,11 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-import { Badge, Button, Icon, Select } from '@/ui'
+import { Badge, Button, Select } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
+import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
 import { between, blend, prepare } from '@/modules/onemobility/lib/motion'
 import { bearingBetween, easeBearing, vehicleMarker } from '@/modules/onemobility/lib/markers'
 import {
@@ -323,7 +337,16 @@ const lines = ref([])
 const stops = ref([])
 const days = ref([])
 const day = ref('')
-const onlyLine = ref('')
+/**
+ * What is narrowing the map. `onlyLine` is read out of it rather than kept
+ * beside it: the line facet is the one the drawing itself reacts to — the rest
+ * of the network dims around it — and two sources of truth for "which line" is
+ * the bug this bar exists to remove.
+ */
+const facets = ref({})
+const offered = ref([])
+const unavailable = ref([])
+const onlyLine = computed(() => facets.value.line || '')
 const livemode = ref(true)
 const position = ref(1000)
 const drawn = ref([])
@@ -361,11 +384,6 @@ const muted = computed(() => tokenInk('--surface-gray-5', '#94a3b8'))
 const dayOptions = computed(() =>
   days.value.map((one) => ({ label: one.day, value: one.day }))
 )
-const lineOptions = computed(() => [
-  { label: __('Every line'), value: '' },
-  ...lines.value.map((one) => ({ label: `${one.short_name} · ${one.line_name}`, value: one.name })),
-])
-
 const minuteOfDay = computed(
   () => DAY_START + ((DAY_END - DAY_START) * position.value) / 1000
 )
@@ -468,9 +486,11 @@ function moment() {
 
 async function pull() {
   try {
-    const params = { when: moment() }
-    if (onlyLine.value) params.line = onlyLine.value
-    const answer = await network.at(params)
+    const answer = await network.at({
+      when: moment(),
+      facets: JSON.stringify(facets.value),
+    })
+    unavailable.value = answer.unavailable || []
     const now = performance.now()
     for (const one of answer.vehicles || []) {
       const before = seen.get(one.vehicle)
@@ -564,7 +584,7 @@ function cycleSpeed() {
 watch(day, () => scrubTo(0.5))
 // And the line filter, which had no handler at all: in live mode the poller
 // would have picked it up within five seconds, and in replay it never would.
-watch(onlyLine, () => pull())
+watch(facets, () => pull(), { deep: true })
 
 function goLive() {
   livemode.value = true
@@ -872,11 +892,14 @@ watch(playing, (on) => {
 
 onMounted(async () => {
   try {
-    const [drawnNetwork, when] = await Promise.all([network.shape(), network.days()])
+    const [drawnNetwork, when, choices] = await Promise.all([
+      network.shape(), network.days(), network.offered(),
+    ])
     lines.value = drawnNetwork.lines || []
     stops.value = drawnNetwork.stops || []
     days.value = when.days || []
     day.value = days.value[0]?.day || ''
+    offered.value = choices.facets || []
 
     for (const line of lines.value) {
       const shape = prepare(line.shape)

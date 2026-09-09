@@ -19,6 +19,7 @@ from frappe import _
 from frappe.utils import cint, get_datetime, now_datetime
 
 from ..shared import facts
+from . import facets as facetlib
 from . import model
 
 #: How far back to look for a vehicle's last report before calling it silent.
@@ -34,12 +35,16 @@ MAX_VEHICLES = 1500
 
 
 @frappe.whitelist(methods=["GET"])
-def at(when: str = "", line: str = "") -> dict:
+def at(when: str = "", facets: str = "") -> dict:
     """Every vehicle's position at a moment. `when` empty means now.
 
     One row per vehicle: its newest observation at or before the moment asked
     for. Written as a correlated maximum rather than a window function because
     the same query has to run on the MariaDB a bench actually has.
+
+    `facets` is the shared vocabulary — see `facets.py`. It used to be a bare
+    `line`, which meant the map could be narrowed one way and Insights another
+    and the two were separate code.
     """
     if not frappe.has_permission("Transit Vehicle", "read"):
         frappe.throw(_("You cannot read this."), frappe.PermissionError)
@@ -52,9 +57,25 @@ def at(when: str = "", line: str = "") -> dict:
     # somebody opens the screen.
     conditions = ["`at` <= %(moment)s", "`at` >= %(since)s"]
     values = {"moment": moment, "since": since}
-    if line:
-        conditions.append("`line` = %(line)s")
-        values["line"] = line
+
+    narrow, unavailable = facetlib.resolve(model.OBSERVATION, facets)
+    for at_index, (column, value) in enumerate(sorted(narrow.items())):
+        # The column names come out of the closed table in `facets.py` and are
+        # checked there against this fact's own columns, so they can be
+        # interpolated; every value is still a parameter.
+        if isinstance(value, list):
+            if not value:
+                conditions.append("1 = 0")
+                continue
+            marks = []
+            for one_index, one in enumerate(value):
+                key = f"f{at_index}_{one_index}"
+                values[key] = one
+                marks.append(f"%({key})s")
+            conditions.append(f"`{column}` IN ({', '.join(marks)})")
+        else:
+            values[f"f{at_index}"] = value
+            conditions.append(f"`{column}` = %(f{at_index})s")
 
     table = model.OBSERVATION.table
     rows = frappe.db.sql(
@@ -83,7 +104,12 @@ def at(when: str = "", line: str = "") -> dict:
         row["age_s"] = int(age)
         row["at"] = str(row["at"])
 
-    return {"moment": str(moment), "vehicles": rows, "capped": len(rows) >= MAX_VEHICLES}
+    return {
+        "moment": str(moment),
+        "vehicles": rows,
+        "capped": len(rows) >= MAX_VEHICLES,
+        "unavailable": unavailable,
+    }
 
 
 @frappe.whitelist(methods=["GET"])

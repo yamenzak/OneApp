@@ -181,6 +181,93 @@ restore-from-archive flow.
 Frozen still counts against the workspace's storage quota. It is cheaper, not
 free, and the meter should say so rather than hiding it.
 
+## 3b. The four aggregates, and how a stop gets a number
+
+The tier that stays is not one table. `observation` is raw and rolls into two
+of them; a third is derived rather than rolled, and rolls into a fourth.
+
+| table | grain | rolled from | answers |
+|---|---|---|---|
+| `serviceHour` | line, hour, weekday | `observation` | how the network runs |
+| `vehicleDay` | vehicle, line, day | `observation` | how one bus runs |
+| `stopEvent` | one visit, hot 30 days | *inferred*, see below | what happened at a stop |
+| `stopHour` | stop, line, hour, weekday | `stopEvent` | what a stop does |
+
+**Why vehicle is a second table and not a fourth column on the first.** Putting
+`vehicle` in `serviceHour` multiplies it by the size of the fleet: a mid-size
+operator's line-and-hour tier is four thousand rows a year and its
+line-hour-and-vehicle tier is four million, on the tier whose whole
+justification is that a year of it is a rounding error. Per vehicle per *day*
+is a hundred and eighty thousand, and it answers every question anybody asks
+about a vehicle. So `shared/facts.py` takes a list of roll-up plans rather than
+one, which is the normal shape for a raw tier: two aggregates at two grains,
+not one aggregate at a compromise.
+
+**Why a stop event is inferred.** Nothing else here is. A feed reports
+"vehicle 41 is at 52.5219, 13.4132" and never "vehicle 41 is serving
+Alexanderplatz", and without that second sentence a stop has no history at all
+— no dwell, no headway, no answer to what it does on a Saturday. GTFS has
+`stop_times`, but that is the *timetable*: it says where a bus was meant to be,
+and the whole product is the difference between that and where it was.
+
+So `arrivals.py` makes the weakest claim that is still useful: **a vehicle is
+at a stop while it is within fifty metres of it, and one unbroken run of
+readings inside that circle is one visit.** It needs no stop-to-line relation
+— this model has none, and GTFS's own is a property of a trip rather than a
+line — and it finds a bus serving a stop it was never scheduled for, which is a
+thing operators do and timetables do not record. Fifty metres is the figure
+GTFS-RT consumers settle on and it is a compromise both ways: tighter and a
+reading taken across a wide forecourt misses, looser and two stops either side
+of a junction become one.
+
+It runs nightly, **before** the sweep that drops the partition it reads —
+a visit inferred from rows already in R2 is a visit nobody infers.
+
+`headway_s` is the number worth the whole table. A ten minute timetable run as
+a pair four minutes apart and then a sixteen minute hole is on time by every
+average in `serviceHour` and unusable to the person standing at the stop.
+Bunching is invisible everywhere else in this module.
+
+**What it will not do is count boardings.** Occupancy is a percentage of
+capacity with a counter's error either side of it, and the difference between
+two of them is that error twice over. A boarding figure derived that way is a
+guess, and a guess drawn as a fact is the one thing that makes an operator stop
+trusting the screen.
+
+---
+
+## 3c. One vocabulary for narrowing a screen
+
+The map and Insights ask the same question — *only this line, only this
+vehicle, only the metro* — of different tables. Before `facets.py` they each
+carried their own answer: `live.at` took a `line` string and `insights.rhythm`
+took a different one, and nothing took a vehicle at all. Two implementations of
+one idea is how a filter comes to mean something slightly different on two
+screens of one product, and nobody notices until somebody compares them.
+
+A facet is one of two things. **Direct** — the fact table has the column, so
+narrowing is a `WHERE`. **Through** — the table has no such column and never
+should: a mode is a property of a *line*, not of a position, and denormalising
+"Metro" onto forty million rows to save a lookup is the wrong trade by four
+orders of magnitude. So `mode=Metro` resolves against the doctype first and
+arrives as the set of lines it names.
+
+Two facets landing on the same column intersect rather than replace: a mode and
+an agency chosen together mean the lines that are both.
+
+It resolves on the server because resolution reads doctypes — so it runs as the
+person asking, cannot widen what they may see, and a facet never offers a line
+their User Permissions hide. A browser that resolved its own facets would be a
+browser deciding which lines exist.
+
+**A facet a table cannot answer is refused, not ignored,** and refused before
+it is used rather than after. `serviceHour` has no vehicle column, so the
+Insights network tab reports `vehicle` as unavailable whether or not anybody has
+chosen one, and the control greys itself out. Reporting it on use would mean a
+control that looks available right up to the moment it silently does nothing.
+
+---
+
 ## 4. Playback is an object, not a query
 
 The obvious build of a scrubber queries the fact table per frame, and it is
@@ -367,9 +454,11 @@ than observed.
 
 ### Demand, per stop and per hour
 
-"How many people board here on a Saturday afternoon" is not a forecast at all
-for any period we have already seen — it is a `GROUP BY` over the aggregate
-tier, and it is instant. It only becomes a prediction for a date in the future,
+"How busy is this stop on a Saturday afternoon" is not a forecast at all for
+any period we have already seen — it is a `GROUP BY` over `stopHour`, and it is
+instant. Note the wording: *busy*, not *boarding*. We measure visits, dwell,
+headway and how full the vehicle was when it pulled in; we do not measure how
+many people got on, and §3b says why we will not derive it. It only becomes a prediction for a date in the future,
 and then it is the same table read against the calendar: this stop, this hour,
 this weekday, school term or not.
 

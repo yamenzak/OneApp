@@ -88,10 +88,23 @@ SCREENS = [
 		"icon": "lucide-route", "document_type": "Transit Line",
 		"fields": "short_name,line_name,agency,mode,status",
 		"order_by": "short_name asc",
-		"view_types": "list,board,grid",
+		"view_types": "list,board,grid,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
 			"cards": {"card_fields": ["agency", "mode"]},
+			# The network as a *catalogue*, which is a different question from
+			# the network as a set of readings. Insights answers how the lines
+			# ran; this answers what there are — and it is the one an operator
+			# opens after an import, to see whether the feed brought in what
+			# they expected before they trust a single number off it.
+			"dashboard": {
+				"widgets": [
+					{"kind": "number", "label": "Lines", "width": 3},
+					{"kind": "donut", "label": "By mode", "group_by": "mode", "width": 4},
+					{"kind": "bar", "label": "By agency", "group_by": "agency", "width": 5},
+					{"kind": "bar", "label": "By status", "group_by": "status", "width": 12},
+				],
+			},
 		}),
 	},
 	{
@@ -102,7 +115,7 @@ SCREENS = [
 		"icon": "lucide-map-pin", "document_type": "Transit Stop",
 		"fields": "stop_name,stop_code,zone,status",
 		"order_by": "stop_name asc",
-		"view_types": "map,list",
+		"view_types": "map,list,dashboard",
 		"status_field": "status",
 		"view_settings": json.dumps({
 			"map": {
@@ -111,15 +124,46 @@ SCREENS = [
 				"label_field": "stop_name",
 				"colour_field": "status",
 			},
+			# Served against Inferred is the widget that earns this dashboard.
+			# An inferred stop is one we guessed from a position and nobody has
+			# confirmed, and a network where that slice is growing is a network
+			# whose feed is drifting from its timetable — which is invisible in
+			# a list of two thousand stops and obvious in one ring.
+			"dashboard": {
+				"widgets": [
+					{"kind": "number", "label": "Stops", "width": 3},
+					{"kind": "donut", "label": "How each one is known",
+					 "group_by": "status", "width": 4},
+					{"kind": "bar", "label": "By fare zone", "group_by": "zone", "width": 5},
+				],
+			},
 		}),
 	},
 	{
 		"screen": "vehicles", "label": "Vehicles", "singular": "Vehicle",
 		"icon": "lucide-bus", "document_type": "Transit Vehicle",
-		"fields": "label,vehicle_key,mode,capacity,status",
+		"fields": "label,vehicle_key,mode,capacity,status,agency",
 		"order_by": "label asc",
-		"view_types": "list,board",
+		"view_types": "list,board,dashboard",
 		"status_field": "status",
+		"view_settings": json.dumps({
+			# The fleet as an asset register. How many, how much they can carry,
+			# and how that splits by mode — which is the number a scheduler and
+			# a finance director both want and neither can get from Insights,
+			# because that screen only knows about vehicles that reported.
+			"dashboard": {
+				"widgets": [
+					{"kind": "number", "label": "Vehicles", "width": 3},
+					{"kind": "number", "label": "Places", "aggregate": "sum",
+					 "field": "capacity", "width": 3},
+					{"kind": "donut", "label": "By mode", "group_by": "mode", "width": 6},
+					{"kind": "bar", "label": "In service, and not",
+					 "group_by": "status", "width": 6},
+					{"kind": "bar", "label": "Average capacity by mode", "group_by": "mode",
+					 "aggregate": "avg", "field": "capacity", "width": 6},
+				],
+			},
+		}),
 	},
 	{
 		"screen": "sources", "label": "Sources", "singular": "Source",

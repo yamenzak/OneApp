@@ -21,11 +21,10 @@
     <div class="mx-auto flex max-w-7xl flex-col gap-4 p-1">
       <!-- What is being read, and over how long. One row, above everything. -->
       <div class="flex flex-wrap items-center gap-2" data-slot="insights-controls">
-        <Select
-          v-model="line"
-          :options="lineOptions"
-          :placeholder="__('Every line')"
-          class="w-52"
+        <FacetBar
+          v-model="facets"
+          :facets="offered"
+          :unavailable="unavailable"
         />
         <Select v-model="range" :options="rangeOptions" class="w-40" />
         <span v-if="window" class="ms-auto text-sm text-ink-gray-5">{{ window }}</span>
@@ -39,6 +38,22 @@
       />
 
       <template v-else>
+        <!--
+          Three tabs and not three screens, because they are three views of one
+          set of readings and the facet bar above belongs to all of them. The
+          split is by *subject* and not by chart type: an operator asking about
+          the network, the fleet and the stops is asking three different
+          questions, and each is answered off the tier rolled for it —
+          `serviceHour`, `vehicleDay`, `stopHour`.
+        -->
+        <Tabs v-model="tab">
+          <TabList variant="underline">
+            <TabTrigger value="network" :label="__('The network')" icon-left="lucide-route" />
+            <TabTrigger value="fleet" :label="__('The fleet')" icon-left="lucide-bus" />
+            <TabTrigger value="stops" :label="__('The stops')" icon-left="lucide-map-pin" />
+          </TabList>
+
+        <TabPanel value="network" class="flex flex-col gap-4 pt-4">
         <!--
           The four figures. Each carries the shape it is a summary of, because
           a number with its own history beside it answers "and is that
@@ -137,6 +152,135 @@
             />
           </div>
         </div>
+
+        <div class="h-80">
+          <!--
+            The one plot here that cannot be derived from any of the others,
+            and the reason it earns its space: an average delay of ninety
+            seconds is equally a service that is reliably a minute and a half
+            late and one that is punctual four times in five and twenty minutes
+            late on the fifth. Those are the same number and a different
+            railway, and nothing else on this tab can tell them apart.
+
+            Coloured across the diverging ramp rather than in one hue, because
+            the buckets *are* the poles: early on one side, late on the other,
+            on time in the neutral middle.
+          -->
+          <BarChart
+            :data="spreadSplit"
+            x="label"
+            :y="spreadKeys"
+            :title="__('How late, and how often')"
+            :subtitle="__('Every reading, by how far it was from the timetable')"
+            :series-config="spreadConfig"
+            :loading="loading"
+          />
+        </div>
+        </TabPanel>
+
+        <TabPanel value="fleet" class="flex flex-col gap-4 pt-4">
+          <EmptyState
+            v-if="fleetReady && !fleet.reliability.length"
+            icon="lucide-bus"
+            :title="__('No vehicle has a history yet')"
+            :description="__('The nightly roll-up writes one row per vehicle per day. It fills in after the first night.')"
+          />
+          <template v-else>
+            <div class="h-96">
+              <!--
+                Ranked on the 85th percentile and not the mean. A vehicle that
+                is punctual four days in five and twenty minutes late on the
+                fifth averages the same as one four minutes late every day, and
+                only one of them has something wrong with it.
+              -->
+              <BarChart
+                :data="fleet.reliability"
+                x="label"
+                y="value"
+                horizontal
+                :title="__('Which vehicles run late')"
+                :subtitle="__('Minutes behind the timetable on the worst one day in six')"
+                :palette="[delayInk(240)]"
+                :loading="loadingFleet"
+              />
+            </div>
+            <div class="h-96">
+              <!--
+                One point per vehicle: how full it runs against how late it
+                runs. The plot that answers the operator's own suspicion that a
+                full bus is a late bus — which is usually wrong, because the
+                cause is the road rather than the load, and a cloud with no
+                slope in it says so faster than any number.
+              -->
+              <ScatterChart
+                :data="fleet.load"
+                x="x"
+                y="y"
+                :label="POINT_LABEL"
+                :title="__('Does a full bus run late?')"
+                :subtitle="__('Each vehicle: average load across, average lateness up')"
+                :palette="[occupancyInk(60)]"
+                :loading="loadingFleet"
+              />
+            </div>
+          </template>
+        </TabPanel>
+
+        <TabPanel value="stops" class="flex flex-col gap-4 pt-4">
+          <EmptyState
+            v-if="stopsReady && !stopped.busiest.length"
+            icon="lucide-map-pin"
+            :title="__('No stop has been visited yet')"
+            :description="__('Stop visits are worked out from positions overnight. They appear after the first pass.')"
+          />
+          <template v-else>
+            <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+              <div class="h-96">
+                <BarChart
+                  :data="stopped.busiest"
+                  x="label"
+                  y="value"
+                  horizontal
+                  :title="__('Where the service goes')"
+                  :subtitle="__('Vehicle visits, worked out from positions')"
+                  :palette="[occupancyInk(20)]"
+                  :loading="loadingStops"
+                />
+              </div>
+              <div class="h-96">
+                <!--
+                  The number worth the whole table. A ten minute timetable run
+                  as a pair four minutes apart and then a sixteen minute hole is
+                  on time by every average on the first tab, and unusable to the
+                  person standing at the stop. This is the gap between the wait
+                  most people get and the wait the timetable implies.
+                -->
+                <BarChart
+                  :data="stopped.bunching"
+                  x="label"
+                  y="value"
+                  horizontal
+                  :title="__('Where the wait is worse than the timetable')"
+                  :subtitle="__('Extra minutes at the stop, on the worst one wait in six')"
+                  :palette="[delayInk(300)]"
+                  :loading="loadingStops"
+                />
+              </div>
+            </div>
+            <div class="h-72">
+              <AreaChart
+                :data="stopped.by_hour"
+                x="label"
+                y="value"
+                :title="__('Visits through the day')"
+                :subtitle="__('Every stop together, by hour')"
+                :palette="[occupancyInk(45)]"
+                :loading="loadingStops"
+              />
+            </div>
+          </template>
+        </TabPanel>
+        </Tabs>
       </template>
     </div>
   </div>
@@ -145,22 +289,75 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 
-import { BarChart, HeatmapChart, LineChart, NumberCard, Select } from '@/ui'
+import {
+  AreaChart, BarChart, HeatmapChart, LineChart, NumberCard, ScatterChart,
+  Select, TabList, TabPanel, TabTrigger, Tabs,
+} from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
 import { delayInk, divergingRamp, occupancyInk } from '@/modules/onemobility/lib/palette'
+import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
 
 defineProps({
   /** The resolved screen. Unused: this surface reads no records. */
   spec: { type: Object, default: () => ({}) },
 })
 
-const line = ref('')
+/**
+ * Which key on a scatter row carries the point's name. Bound rather than
+ * written as a literal attribute: `label="label"` is a column name and reads
+ * to the i18n guard as a word somebody forgot to translate, which is a fair
+ * thing for it to think.
+ */
+const POINT_LABEL = 'label'
+
+const tab = ref('network')
 const range = ref('30')
 const ready = ref(false)
 const loading = ref(true)
 const answer = ref({})
+
+/**
+ * What is narrowing every tab. One object, shared — the point of the facet bar
+ * is that a line chosen while looking at the network is still chosen when the
+ * fleet tab opens, because it is the same question asked of a different table.
+ */
+const facets = ref({})
+const offered = ref([])
+
+const loadingFleet = ref(false)
+const fleetReady = ref(false)
+const fleetAnswer = ref({})
+
+const loadingStops = ref(false)
+const stopsReady = ref(false)
+const stopsAnswer = ref({})
+
+const spread = computed(() => answer.value.spread || [])
+
+const fleet = computed(() => ({
+  reliability: fleetAnswer.value.reliability || [],
+  load: fleetAnswer.value.load || [],
+}))
+
+const stopped = computed(() => ({
+  busiest: stopsAnswer.value.busiest || [],
+  bunching: stopsAnswer.value.bunching || [],
+  by_hour: stopsAnswer.value.by_hour || [],
+}))
+
+/**
+ * Which facets the tab in front cannot honour, straight from the server that
+ * knows — `serviceHour` has no vehicle column, `vehicleDay` no stop. Read off
+ * the answer rather than hard-coded here, so a column added to a fact table
+ * turns a chip back on without a line changing in the browser.
+ */
+const unavailable = computed(() => {
+  if (tab.value === 'fleet') return fleetAnswer.value.unavailable || []
+  if (tab.value === 'stops') return stopsAnswer.value.unavailable || []
+  return answer.value.unavailable || []
+})
 
 const byHour = computed(() => answer.value.by_hour || [])
 const loadByHour = computed(() => answer.value.load_by_hour || [])
@@ -263,6 +460,50 @@ const punctualityConfig = computed(() => {
   }
 })
 
+/**
+ * The distribution's own colours, one series per bucket so each takes its step
+ * of the diverging ramp — cool at the early end, neutral through the on-time
+ * bucket, warm and warmer out into the tail. `seriesConfig` keyed by label is
+ * how a bar chart of one series is given more than one colour; see the note
+ * below for what happens when you reach for `echartOptions` instead.
+ */
+/**
+ * The buckets as *series* rather than rows, for the reason spelled out under
+ * the line ranking below: `seriesConfig` colours a series and nothing colours a
+ * row, so seven bars of one series take one colour however the config is keyed.
+ * Seven series over one category draws the same seven bars side by side, each
+ * its own step of the ramp, and gets a legend naming them for free.
+ *
+ * Keyed `b0`…`b6` and not by the label, because the label is translated and a
+ * series key that changes with the interface language is a chart that loses its
+ * colours in German.
+ */
+const spreadKeys = computed(() => spread.value.map((_one, at) => `b${at}`))
+
+const spreadSplit = computed(() => {
+  if (!spread.value.length) return []
+  const row = { label: __('Readings') }
+  spread.value.forEach((one, at) => {
+    row[`b${at}`] = one.value
+  })
+  return [row]
+})
+
+const spreadConfig = computed(() => {
+  const ramp = divergingRamp()
+  // Seven buckets across nine ramp steps, skipping the two that sit closest to
+  // the neutral middle on either side — they read as the same colour at bar
+  // size, and a legend with two indistinguishable swatches is worse than one
+  // with a slightly coarser scale.
+  const steps = [ramp[0], ramp[2], ramp[4], ramp[5], ramp[6], ramp[7], ramp[8]]
+  return Object.fromEntries(
+    spread.value.map((one, at) => [
+      `b${at}`,
+      { name: `b${at}`, label: one.label, color: steps[at] || steps[steps.length - 1] },
+    ])
+  )
+})
+
 /*
  * Not coloured per bar, and that was a decision rather than an omission.
  *
@@ -276,14 +517,6 @@ const punctualityConfig = computed(() => {
  * the identity is on the axis beside each bar, where a reader is already
  * looking.
  */
-
-const lineOptions = computed(() => [
-  { label: __('Every line'), value: '' },
-  ...(answer.value.lines || []).map((one) => ({
-    label: `${one.short_name} · ${one.line_name}`,
-    value: one.name,
-  })),
-])
 
 // Written out rather than generated: each one is a sentence somebody reads,
 // and `__('{0} days')` interpolated over a list is a string a translator
@@ -299,21 +532,76 @@ const window = computed(() =>
   answer.value.from ? __('{0} to {1}', [answer.value.from, answer.value.to]) : ''
 )
 
+/** The facets, as the server's endpoints want them: one JSON object. */
+const narrowed = computed(() => ({
+  facets: JSON.stringify(facets.value),
+  days_back: range.value,
+}))
+
 async function pull() {
   loading.value = true
   try {
-    answer.value = await network.rhythm({ line: line.value, days_back: range.value })
+    answer.value = await network.rhythm(narrowed.value)
   } finally {
     loading.value = false
     ready.value = true
   }
 }
 
+async function pullFleet() {
+  loadingFleet.value = true
+  try {
+    fleetAnswer.value = await network.fleet(narrowed.value)
+  } finally {
+    loadingFleet.value = false
+    fleetReady.value = true
+  }
+}
+
+async function pullStops() {
+  loadingStops.value = true
+  try {
+    stopsAnswer.value = await network.stops(narrowed.value)
+  } finally {
+    loadingStops.value = false
+    stopsReady.value = true
+  }
+}
+
+/**
+ * The tab in front, and only it.
+ *
+ * Three tabs asking three questions on mount would be three aggregate queries
+ * for two answers nobody has looked at — and the fleet and stop tiers are the
+ * two with a row per vehicle and per stop behind them. Each tab fetches when
+ * it is first opened and again when the facets or the window move under it.
+ */
+function pullCurrent() {
+  if (tab.value === 'fleet') return pullFleet()
+  if (tab.value === 'stops') return pullStops()
+  return pull()
+}
+
 // Watched rather than `@change`: frappe-ui's Select emits `update:modelValue`
 // and `update:open`, and nothing else. A `@change` on it is a listener for an
 // event that is never raised — the control moves, the model updates, and the
 // server is never asked again.
-watch([line, range], pull)
+watch([facets, range], () => {
+  // The tab in front is refetched now; the other two are marked unfetched, so
+  // opening one asks again rather than showing the previous window's numbers
+  // under the new window's heading.
+  if (tab.value !== 'fleet') fleetReady.value = false
+  if (tab.value !== 'stops') stopsReady.value = false
+  pullCurrent()
+}, { deep: true })
 
-onMounted(pull)
+watch(tab, () => {
+  if (tab.value === 'fleet' && !fleetReady.value) pullFleet()
+  if (tab.value === 'stops' && !stopsReady.value) pullStops()
+})
+
+onMounted(async () => {
+  offered.value = (await network.offered()).facets || []
+  await pull()
+})
 </script>
