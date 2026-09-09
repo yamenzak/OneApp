@@ -134,6 +134,26 @@ test('narrowing to one line asks the server again', async ({ page }) => {
   expect(asked[asked.length - 1]).toContain('facets=')
 })
 
+test('a record carries its own name over to the screen that can say how it ran', async ({ page }) => {
+  // A line, a stop and a vehicle are documents; how each of them ran is not —
+  // it is in the fact tiers, outside the document system, and no dashboard
+  // widget over `tabTransit Line` reaches it. So the record hands its name to
+  // Insights through the engine's screen-action, and the facet bar there
+  // arrives with that one thing chosen.
+  await page.goto('/one/space/onemobility?screen=insights&vehicle=zz-1041')
+  const screen = page.locator('[data-slot="insights"]')
+  await screen.waitFor({ timeout: 30_000 })
+
+  // Opened *at* a vehicle, so opened where a vehicle can be seen: `vehicleDay`
+  // is the tier with that column, and it is the fleet tab that reads it.
+  await expect(screen.getByRole('tab', { name: 'The fleet' })).toHaveAttribute(
+    'aria-selected', 'true', { timeout: 20_000 },
+  )
+  await expect(
+    screen.locator('[data-slot="facet-bar"]').getByRole('button', { name: /1041/ }),
+  ).toBeVisible({ timeout: 20_000 })
+})
+
 test('a facet this tier cannot answer is refused before it is used', async ({ page }) => {
   await page.goto('/one/space/onemobility?screen=insights')
   const screen = page.locator('[data-slot="insights"]')

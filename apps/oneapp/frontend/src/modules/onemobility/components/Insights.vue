@@ -288,6 +288,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import {
   AreaChart, BarChart, HeatmapChart, LineChart, NumberCard, ScatterChart,
@@ -311,6 +312,13 @@ defineProps({
  * thing for it to think.
  */
 const POINT_LABEL = 'label'
+
+/**
+ * Which tab can answer for a kind of thing, so a record arriving from Lines,
+ * Stops or Vehicles lands on the tier that knows about it rather than on the
+ * network tab with its own chip greyed out.
+ */
+const HOME_TAB = { vehicle: 'fleet', stop: 'stops' }
 
 const tab = ref('network')
 const range = ref('30')
@@ -592,6 +600,7 @@ watch([facets, range], () => {
   // under the new window's heading.
   if (tab.value !== 'fleet') fleetReady.value = false
   if (tab.value !== 'stops') stopsReady.value = false
+  writeTheUrl()
   pullCurrent()
 }, { deep: true })
 
@@ -600,8 +609,49 @@ watch(tab, () => {
   if (tab.value === 'stops' && !stopsReady.value) pullStops()
 })
 
+const route = useRoute()
+const router = useRouter()
+
+/**
+ * The facets live in the URL as well as in the ref, and both directions matter.
+ *
+ * Inwards: `actions.py` puts a "How this line ran" button on a Line, and the
+ * engine's screen-action carries the record's name over as one query parameter
+ * — so a record hands its identity to the screen that can say how it behaved,
+ * without either half knowing anything about the other beyond the name of a
+ * facet.
+ *
+ * Outwards: a narrowed view is then a link somebody can send. "Look at U6's
+ * punctuality" being a URL rather than a set of instructions is most of what
+ * makes a screen like this get used by more than the person who built it.
+ */
+function readTheUrl() {
+  const found = {}
+  for (const one of offered.value) {
+    const value = route.query[one.key]
+    if (value) found[one.key] = String(value)
+  }
+  facets.value = found
+
+  // Opened *at* something, so open where that something can be seen. Only on
+  // arrival: after that the tab is the reader's to choose.
+  for (const key of Object.keys(found)) {
+    if (HOME_TAB[key]) {
+      tab.value = HOME_TAB[key]
+      break
+    }
+  }
+}
+
+function writeTheUrl() {
+  const query = { ...route.query }
+  for (const one of offered.value) delete query[one.key]
+  router.replace({ query: { ...query, ...facets.value } }).catch(() => {})
+}
+
 onMounted(async () => {
   offered.value = (await network.offered()).facets || []
-  await pull()
+  readTheUrl()
+  await pullCurrent()
 })
 </script>
