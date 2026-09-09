@@ -14,7 +14,7 @@ from oneapp.onestorage import quota
 @frappe.whitelist()
 def session():
 	"""Everything the shell needs on boot, in one round trip."""
-	from oneapp.onespace.workspace import OWNER_ROLE, SUPPORT_ROLE
+	from oneapp.onespace.workspace import OWNER_ROLE, SUPPORT_ROLE, account_url
 
 	state = sync.state()
 	user = frappe.session.user
@@ -37,6 +37,10 @@ def session():
 			"name": state.get("tenant"),
 			"status": state.get("status"),
 			"plan": state.get("plan_code"),
+			# The one link out of the product. Only an admin is shown it: the
+			# account is a billing surface, and somebody invited into one
+			# workspace has no business being pointed at its owner's.
+			"account_url": account_url() if roles & {OWNER_ROLE, SUPPORT_ROLE} else "",
 		},
 		"spaces": visible_spaces(),
 		# Measured here rather than read from cached state, which holds the

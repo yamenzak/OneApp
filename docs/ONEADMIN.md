@@ -131,6 +131,42 @@ Slugs are validated against a blocklist (`www`, `api`, `admin`, `mail`, `one`,
 `billing`, plus profanity and anything phishable) because `*.4dl.app` resolves
 for anything.
 
+### The control site answers on two names
+
+`control_plane_url` is the API origin: where a tenant site signs its calls back
+to, and where an operator works. It is `admin.4dl.app`, and until recently it
+was also the first thing a customer ever saw of the product — signup lived on
+it, Stripe returned to it, and the address in their history was the hostname of
+a console they will never open.
+
+So the same site answers on the apex as well. Add it as a domain in Frappe
+Cloud, name it in `public_url`, and everything a *person* follows — signup, the
+welcome page, Stripe's return, the account area, the link a workspace hands its
+owner — is built from it. `portal.customer_base_url` is the one function that
+decides, and `portal._build` is the only place that calls it, so a new
+customer-facing link cannot get this wrong by forgetting.
+
+One site, one session, two names: no proxy, no second app, nothing to keep in
+step. The apex needs Cloudflare's CNAME flattening to point at press, and
+`public_url` falls back to `control_plane_url` rather than refusing — a platform
+that will not take a signup until a certificate has landed is worse than one
+whose first release still says `admin.`
+
+The way back in is the same seam from the other side. A tenant site's HMAC
+secret proves it is *itself* and nothing more, so it can never show you the
+other two workspaces on the same account — the control plane is the one place
+that knows there are three. That makes "my workspaces" a link rather than a
+screen: `oneapp_account_url` is pushed to every tenant beside
+`oneapp_control_url`, and the space switcher draws one row that leaves. Only for
+somebody who administers the workspace, because the account is a billing
+surface.
+
+It is a link and not a session handoff. A tenant site could be given a token
+that logs its members straight into the control plane, and the HMAC secret is
+already trusted enough to mint one — but that would widen a tenant-site
+compromise from "that workspace's data" to "that account's billing", which is a
+trade worth making deliberately rather than in passing.
+
 **Customer domains** go through Frappe Cloud's Add Domain API. Two constraints
 belong in the UI copy because they are the predictable tickets: the CNAME must
 be DNS-only, and apex domains cannot CNAME. `<tenant>.4dl.app` remains the

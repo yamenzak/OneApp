@@ -15,6 +15,7 @@ and raises ``PressPermanentError`` to fail the job outright.
 import frappe
 from frappe.utils import now_datetime
 
+from oneapp_control import portal
 from oneapp_control.press import records
 from oneapp_control.press.client import (
 	PressPermanentError,
@@ -210,6 +211,10 @@ def push_site_config(job):
 		# not it — a slug taken twice gets a suffix — so both are sent.
 		"oneapp_tenant_slug": tenant.tenant_slug,
 		"oneapp_control_url": settings.control_plane_url,
+		# Where the workspace sends a person rather than a request: the account
+		# area, on the public hostname. On site config as well as the bench so a
+		# site provisioned before the next bench push already has it.
+		"oneapp_account_url": portal.account_url(),
 		"oneapp_hmac_secret": tenant.signing_secret(),
 		"oneapp_site_name": tenant.site_name,
 	}

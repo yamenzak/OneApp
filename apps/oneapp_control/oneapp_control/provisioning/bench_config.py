@@ -49,11 +49,34 @@ def build_config() -> dict:
 		"oneapp_cf_api_token": s.get_password("cf_api_token", raise_exception=False),
 		"oneapp_ai_markup": s.ai_markup_multiplier,
 		# Control plane
+		#
+		# Two names for one site, and a tenant needs both. The first is the API
+		# origin it signs its calls to; the second is where it sends a *person*
+		# — the account area, where the workspaces somebody owns are listed and
+		# where a second one is started. A customer must never be handed the
+		# operator hostname, so this is built from the public URL where one is
+		# set. See `portal.customer_base_url`.
 		"oneapp_control_url": s.control_plane_url,
+		"oneapp_account_url": _account_url(),
 	}
 
 	# Never push a blank over a value that is already set on the bench.
 	return {k: v for k, v in config.items() if v not in (None, "")}
+
+
+def _account_url() -> str:
+	"""Where a customer's account lives, or nothing.
+
+	Blank on a bench with no control plane URL set at all — bring-up order —
+	and the tenant then draws the sentence without a link rather than one that
+	goes nowhere.
+	"""
+	from oneapp_control import portal
+
+	try:
+		return portal.account_url()
+	except Exception:
+		return ""
 
 
 @frappe.whitelist()

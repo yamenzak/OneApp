@@ -13,6 +13,7 @@
   "default_shard",
   "tenant_domain",
   "control_plane_url",
+  "public_url",
   "sec_slug",
   "reserved_slugs",
   "sec_stripe",
@@ -110,10 +111,16 @@
    "reqd": 1
   },
   {
-   "description": "Base URL tenant sites call back on.",
+   "description": "Base URL tenant sites call back on. The API origin, and where an operator works.",
    "fieldname": "control_plane_url",
    "fieldtype": "Data",
    "label": "Control Plane Url"
+  },
+  {
+   "description": "Where a customer is sent \u2014 signup, the welcome page, Stripe's return, and the account area. Blank uses the control plane URL above, which means the first thing somebody sees of the product is the operator hostname. Point the apex at this site in Frappe Cloud and name it here.",
+   "fieldname": "public_url",
+   "fieldtype": "Data",
+   "label": "Public URL"
   },
   {
    "fieldname": "sec_slug",

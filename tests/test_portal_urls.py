@@ -175,3 +175,98 @@ def test_checkout_urls_use_the_builders():
 		ROOT / "apps/oneapp_control/oneapp_control/billing/checkout.py"
 	).read_text()
 	assert "control_plane_url" not in source, "checkout.py should build URLs via portal.py"
+
+
+# --------------------------------------------------------------------------- #
+# Two names for one site
+#
+# Signing up was the first thing anybody saw of the product, and it happened on
+# `admin.` — the hostname of a console they will never open. That is the address
+# in their browser history, the one Stripe returns them to, and the one they
+# hand a colleague. So the same site answers on two names: `control_plane_url`
+# stays the API origin a tenant signs its calls to and the one an operator
+# works on, and everything a *person* follows is built from `public_url`.
+# --------------------------------------------------------------------------- #
+
+def test_a_customer_never_sees_the_operator_hostname(portal, stub_frappe):
+	stub_frappe.db.singles[("OneSpace Control Settings", "public_url")] = "https://4dl.app"
+
+	assert portal.signup_url().startswith("https://4dl.app/signup")
+	assert portal.account_url("acme", "billing").startswith("https://4dl.app/one/")
+	assert portal.welcome_url("REQ-1").startswith("https://4dl.app/signup/welcome")
+
+
+def test_the_api_origin_is_still_the_control_plane(portal, stub_frappe):
+	"""The two are different jobs. A tenant site signs its calls to the first
+	and would fail every one of them against a hostname the HMAC seam does not
+	answer on."""
+	stub_frappe.db.singles[("OneSpace Control Settings", "public_url")] = "https://4dl.app"
+
+	assert portal.base_url() == "https://app.4dl.app"
+
+
+def test_no_public_url_falls_back_rather_than_refusing(portal):
+	"""An apex is a DNS change and a certificate. A platform that will not take
+	a signup until both have landed is worse than one whose first release still
+	says `admin.`."""
+	assert portal.customer_base_url() == "https://app.4dl.app"
+
+
+def test_a_trailing_slash_on_the_public_url_is_dropped_too(portal, stub_frappe):
+	stub_frappe.db.singles[("OneSpace Control Settings", "public_url")] = "https://4dl.app/"
+
+	assert portal.customer_base_url() == "https://4dl.app"
+
+
+def test_every_customer_link_is_built_from_the_customer_origin():
+	"""Read off the source: a builder that reached for `base_url()` directly
+	would pass every test above and still hand somebody the console."""
+	import inspect
+
+	from oneapp_control import portal as module
+
+	assert "customer_base_url()" in inspect.getsource(module._build)
+
+
+# --------------------------------------------------------------------------- #
+# The way back in
+# --------------------------------------------------------------------------- #
+
+def test_a_workspace_is_told_where_its_account_lives(stub_frappe):
+	"""The one link out of the product. A tenant site's HMAC secret proves it
+	is *itself*, so it can never show you the other two workspaces on the same
+	account — which makes "my workspaces" a link rather than a screen."""
+	from oneapp.onespace import workspace
+
+	stub_frappe.conf = {"oneapp_account_url": "https://4dl.app/one/space/onespace-account"}
+
+	assert workspace.account_url() == "https://4dl.app/one/space/onespace-account"
+
+
+def test_a_site_provisioned_before_that_config_still_has_somewhere_to_go(stub_frappe):
+	from oneapp.onespace import workspace
+
+	stub_frappe.conf = {"oneapp_control_url": "https://app.4dl.app/"}
+
+	assert workspace.account_url() == "https://app.4dl.app"
+
+
+def test_a_bench_with_no_control_plane_offers_no_link(stub_frappe):
+	"""A development bench. Every caller draws the sentence without a link
+	rather than one that goes nowhere."""
+	from oneapp.onespace import workspace
+
+	stub_frappe.conf = {}
+
+	assert workspace.account_url() == ""
+
+
+def test_only_somebody_who_administers_the_workspace_is_pointed_at_the_account():
+	"""The account is a billing surface. Somebody invited into one workspace
+	has no business being sent to its owner's."""
+	import inspect
+
+	from oneapp import api
+
+	body = inspect.getsource(api.session)
+	assert "account_url() if roles & {OWNER_ROLE, SUPPORT_ROLE}" in body

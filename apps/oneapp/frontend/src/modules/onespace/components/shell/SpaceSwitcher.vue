@@ -118,6 +118,38 @@
             </router-link>
           </div>
         </template>
+
+        <!--
+          The one row that leaves. A footer row is the wrong shape for another
+          space — that is what the tiles are — but it is exactly the right one
+          for a place that is not in this workspace at all, and the arrow says
+          so before the words do.
+
+          It has to be a link rather than a screen: a tenant site's HMAC secret
+          proves it is *itself*, so it can never show you the other two
+          workspaces on the same account. The control plane is the one place
+          that knows there are three.
+
+          Absent for a member: the account is a billing surface, and the server
+          sends the address only to somebody who administers the workspace.
+        -->
+        <template v-if="accountUrl">
+          <Divider class="my-3" />
+          <a
+            :href="accountUrl"
+            target="_blank"
+            rel="noopener"
+            data-slot="my-workspaces"
+            class="flex items-center gap-2 rounded-4 px-2 py-1.5 hover:bg-surface-gray-2"
+            @click="close()"
+          >
+            <Icon name="lucide-building-2" class="size-4 shrink-0 text-ink-gray-6" />
+            <span class="flex-1 truncate text-p-sm text-ink-gray-8">
+              {{ __('My workspaces') }}
+            </span>
+            <Icon name="lucide-arrow-up-right" class="size-4 shrink-0 text-ink-gray-5" />
+          </a>
+        </template>
 </div>
     </template>
   </Popover>
@@ -184,6 +216,10 @@ const { surfaces } = useNav()
 const apps = computed(() => surfaces.value.filter((one) => one.brand && one.to))
 
 const active = computed(() => route.params.spaceCode || '')
+
+// Empty for a member, and empty on a development bench with no control plane.
+// Either way the row is not drawn — see `workspace.account_url`.
+const accountUrl = computed(() => session.tenant?.account_url || '')
 
 /**
  * Where you are, which is what the trigger of a switcher shows.

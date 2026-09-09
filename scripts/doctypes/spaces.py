@@ -451,7 +451,15 @@ doctype(
         column("cb_set1"),
         f("default_shard", "Link", options="Shard"),
         f("tenant_domain", default="4dl.app", reqd=1),
-        f("control_plane_url", description="Base URL tenant sites call back on."),
+        f("control_plane_url", description="Base URL tenant sites call back on. "
+                                           "The API origin, and where an operator works."),
+        f("public_url", label="Public URL",
+          description="Where a customer is sent — signup, the welcome page, "
+                      "Stripe's return, and the account area. Blank uses the "
+                      "control plane URL above, which means the first thing "
+                      "somebody sees of the product is the operator hostname. "
+                      "Point the apex at this site in Frappe Cloud and name it "
+                      "here."),
         section("sec_slug", "Tenant naming"),
         f("reserved_slugs", "Small Text",
           description="Additional comma or newline separated slugs to block."),

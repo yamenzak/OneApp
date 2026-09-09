@@ -127,6 +127,26 @@ class Setting:
 		}
 
 
+def account_url() -> str:
+	"""Where this workspace's owner goes to see the others they own.
+
+	The one link out of the product that has to exist. A tenant site's HMAC
+	secret proves it is *itself* and nothing more, so it can never show you the
+	other two workspaces on the same account — the control plane is the one
+	place that knows there are three. Which makes "my workspaces" a link rather
+	than a screen, and this the address it points at.
+
+	Pushed in as `oneapp_account_url`, built on the control plane from the
+	public hostname rather than the operator one. Falls back to the API origin
+	for a site provisioned before that config landed, and is empty on a
+	development bench with no control plane at all — every caller draws nothing
+	rather than a link that goes nowhere.
+	"""
+	conf = frappe.conf or {}
+	found = conf.get("oneapp_account_url") or conf.get("oneapp_control_url") or ""
+	return str(found).rstrip("/")
+
+
 def reference(doctype: str, label_field: str = "", enabled: bool = False) -> list:
 	"""A Frappe reference list, as Select options.
 
@@ -684,10 +704,12 @@ def joining() -> dict:
 			"People are added to your workspace from your account, which is also "
 			"where seats are counted."
 		),
-		# Where that is. Empty on a site with no control plane — a development
-		# bench — and the panel then says the sentence without offering a link
-		# that would go nowhere.
-		"link": (frappe.conf.get("oneapp_control_url") or "").rstrip("/"),
+		# Where that is. The account area on the public hostname, not the API
+		# origin: `oneapp_control_url` is where this site signs its calls to,
+		# and sending a person there hands them the operator's address. Empty
+		# on a site with no control plane — a development bench — and the panel
+		# then says the sentence without offering a link that goes nowhere.
+		"link": account_url(),
 		"link_label": _("Manage people"),
 	}
 

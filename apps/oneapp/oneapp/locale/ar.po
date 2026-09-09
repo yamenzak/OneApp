@@ -1944,6 +1944,9 @@ msgstr "جارٍ نقل {0} عنصر."
 msgid "Moving {0}."
 msgstr "جارٍ نقل {0}."
 
+msgid "My workspaces"
+msgstr "مساحات عملي"
+
 msgid "Must be unique"
 msgstr "يجب أن يكون فريدًا"
 
