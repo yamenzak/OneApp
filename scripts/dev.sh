@@ -84,12 +84,20 @@ QUEUE_LIMIT="${ONEAPP_QUEUE_LIMIT:-300}"
 # whatever an older configuration left behind — so counting both reports four
 # hundred jobs on an empty queue, and a check that cries wolf is worse than no
 # check.
-queue_redis() {
+# One setting out of the bench's own config, by name. A redis URL comes back
+# as its port; anything else comes back as itself.
+queue_or_web_port() {
   python3 -c "
-import json, urllib.parse
-url = json.load(open('$sites_path/common_site_config.json')).get('redis_queue', '')
-print(urllib.parse.urlparse(url).port or 11000)
-" 2>/dev/null || echo 11000
+import json, sys, urllib.parse
+value = json.load(open('$sites_path/common_site_config.json')).get(sys.argv[1], '')
+print(urllib.parse.urlparse(value).port if isinstance(value, str) and '://' in value else value)
+" "$1" 2>/dev/null || echo
+}
+
+queue_redis() {
+  local port
+  port="$(queue_or_web_port redis_queue)"
+  echo "${port:-11000}"
 }
 
 queue_depth() {
@@ -118,6 +126,26 @@ WARNING
   return 1
 }
 
+# Stop the realtime server, and wait until it has actually let go of the port.
+#
+# `node .*socketio\.js`, and the regex matters. This used to be
+# `pkill -f "node apps/frappe/socketio.js"` — a *relative* path, while
+# `services` starts it with an absolute one, so the pattern matched nothing and
+# every "restart it, the port changed" in this file quietly did nothing for as
+# long as it has existed. A stale realtime server accepts connections, answers
+# the handshake, and joins nobody to any room; the list stops following the
+# site and a notification never turns up, and both read as a bug in the SPA.
+#
+# Waited for rather than slept off, because the check that follows is "is 9000
+# open" and a killed node holds it for a moment.
+stop_realtime() {
+  pkill -f "node .*socketio\.js" 2>/dev/null || true
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    (exec 3<>/dev/tcp/127.0.0.1/9000) 2>/dev/null || return 0
+    sleep 0.5
+  done
+}
+
 services() {
   pgrep -x mariadbd >/dev/null || service mariadb start >/dev/null 2>&1 || true
   # Ports come from common_site_config.json; starting them idempotently is
@@ -143,10 +171,33 @@ services() {
   # reads exactly like a migration that is still going.
   #
   # `setsid` puts it in a session of its own, where it cannot be waited on.
+  # Started, *and* started against the port it is meant to call back to.
+  #
+  # "Is 9000 open" is the wrong question on its own, and it cost a night. The
+  # socketio server reads `webserver_port` once at boot and authenticates every
+  # connection by asking the site on that port who the cookie belongs to. Two
+  # sites on two ports means the setting moves, and a server left over from the
+  # other one is listening, accepting connections, answering the handshake —
+  # and silently joining nobody to any room, because its permission check went
+  # to a site that does not have that document.
+  #
+  # What that looks like: a list that does not follow the site, and a
+  # notification that never turns up. Both read as our bug in the SPA. Neither
+  # is. So the port it was started with is written down and compared, and a
+  # mismatch restarts it.
+  local wanted running
+  wanted="$(queue_or_web_port webserver_port)"
+  running="$(cat "$BENCH/.oneapp-socketio-webserver-port" 2>/dev/null || echo)"
+  if (exec 3<>/dev/tcp/127.0.0.1/9000) 2>/dev/null && [ "$running" != "$wanted" ]; then
+    echo "Realtime was started against webserver_port $running, now $wanted. Restarting it."
+    stop_realtime
+  fi
+
   if ! (exec 3<>/dev/tcp/127.0.0.1/9000) 2>/dev/null; then
     setsid nohup node "$BENCH/apps/frappe/socketio.js" \
       >"$BENCH/logs/socketio.log" 2>&1 < /dev/null &
     disown 2>/dev/null || true
+    echo "$wanted" > "$BENCH/.oneapp-socketio-webserver-port"
     sleep 2
   fi
 }
@@ -199,8 +250,7 @@ PYEOF
     then
       # The socketio server reads the config once, at startup. A running one is
       # holding the old port, so it goes and `services` starts a fresh one.
-      pkill -f "node apps/frappe/socketio.js" 2>/dev/null || true
-      sleep 1
+      stop_realtime
     fi
 
     services
@@ -257,13 +307,22 @@ PYEOF
     # RQ's own worker rather than `bench worker`: bench reads its config from
     # the directory it is run in, and this script is deliberately runnable from
     # anywhere.
+    # Every queue, not just `default` — `dev.sh worker short` narrows it.
+    #
+    # It used to default to `default`, and that is not where the interesting
+    # work is. The framework puts a notification on `short`, and a browser pass
+    # then failed on "no notification arrived" with a worker visibly running
+    # and visibly busy — draining `default` while `short` filled up beside it.
+    # `start_worker(queue=None)` works all of them, which is what `bench worker`
+    # does and what anybody typing this expects.
     exec "$PY" -c "
 import frappe
 from frappe.utils.background_jobs import start_worker
 
 frappe.init(site='$SITE', sites_path='$sites_path')
-print('Working the queues for $SITE. Ctrl-C to stop.')
-start_worker(queue='${2:-default}')
+queue = '${2:-}'.strip() or None
+print(f'Working {queue or \"every queue\"} for $SITE. Ctrl-C to stop.')
+start_worker(queue=queue)
 "
     ;;
 
