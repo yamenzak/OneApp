@@ -47,6 +47,10 @@ SPACE = {
 DOCTYPES = [
 	("Transit Source", "Manage", 0),
 	("Transit Feed", "Write", 0),
+	# Read, not Write. A claim is what a source said, and the answer to "this
+	# is wrong" is to change the precedence or fix the feed, never to edit the
+	# record of what arrived — an editable audit trail is not one.
+	("Transit Claim", "Read", 0),
 	("Transit Agency", "Write", 0),
 	("Transit Line", "Write", 0),
 	("Transit Stop", "Write", 0),
@@ -199,6 +203,7 @@ SCREENS = [
 		"fields": "entity,natural_key,label,source,precedence,differs,verdict",
 		"order_by": "natural_key asc",
 		"filters": json.dumps({"contested": 1}),
+		"hide_new": 1,
 		"view_types": "list",
 		"status_field": "verdict",
 	},
