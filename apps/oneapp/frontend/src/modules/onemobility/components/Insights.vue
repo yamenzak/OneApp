@@ -21,13 +21,11 @@
           :options="lineOptions"
           :placeholder="__('Every line')"
           class="w-52"
-          @change="pull"
         />
         <Select
           v-model="range"
           :options="rangeOptions"
           class="w-40"
-          @change="pull"
         />
         <span class="ms-auto text-sm text-ink-gray-5">{{ window }}</span>
       </div>
@@ -104,7 +102,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 import { AreaChart, BarChart, HeatmapChart, NumberCard, Select } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
@@ -159,6 +157,12 @@ async function pull() {
     ready.value = true
   }
 }
+
+// Watched rather than `@change`: frappe-ui's Select emits `update:modelValue`
+// and `update:open`, and nothing else. A `@change` on it is a listener for an
+// event that is never raised — the control moves, the model updates, and the
+// server is never asked again.
+watch([line, range], pull)
 
 onMounted(pull)
 </script>

@@ -13,6 +13,7 @@ everything at time T" for one clock that is either now or a Tuesday in March.
 
     model       the fact tables, declared against shared/facts.py
     gtfs        a GTFS zip read into that model
+    sources     the four doors a delivery arrives through, and the one pipeline
     live        positions in, positions out, one vehicle's day for the scrubber
     network     the drawn network, and the numbers read off the aggregate tier
     insights    the aggregate tier as four plots and four figures
@@ -25,11 +26,13 @@ from .insights import rhythm
 from .live import at, report, track
 from .lifecycle import forget_everything
 from .network import bunching, days, punctuality, shape
+from .sources import fetch_now
 
 __all__ = [
     "at",
     "bunching",
     "days",
+    "fetch_now",
     "forget_everything",
     "load_feed",
     "punctuality",

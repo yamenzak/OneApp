@@ -59,7 +59,6 @@
           :options="dayOptions"
           :placeholder="__('A day')"
           class="w-40"
-          @change="scrubTo(0.5)"
         />
         <Select
           v-model="onlyLine"
@@ -93,7 +92,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { Badge, Button, Select } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
@@ -101,7 +100,7 @@ import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
 import { between, blend, prepare } from '@/modules/onemobility/lib/motion'
 import { paintable, tokenInk } from '@/modules/onespace/lib/screen/ink'
-import { attribution, styleFor, whenLoaded } from '@/modules/onespace/lib/screen/basemap'
+import { attribution, quietTiles, styleFor, whenLoaded } from '@/modules/onespace/lib/screen/basemap'
 
 defineProps({
   /** The resolved screen. Unused: this surface is not a list of records. */
@@ -241,6 +240,15 @@ function scrubTo(where) {
   scrubbing = setTimeout(pull, 120)
 }
 
+// Watched rather than `@change` on the Select: frappe-ui's Select emits
+// `update:modelValue` and `update:open`, and nothing else. A `@change` on it is
+// a listener for an event that is never raised — the day changes, and the map
+// goes on showing the one before.
+watch(day, () => scrubTo(0.5))
+// And the line filter, which had no handler at all: in live mode the poller
+// would have picked it up within five seconds, and in replay it never would.
+watch(onlyLine, () => pull())
+
 function goLive() {
   livemode.value = true
   position.value = 1000
@@ -292,6 +300,7 @@ async function draw() {
     new library.AttributionControl({ compact: true, customAttribution: attribution() }),
     'top-left',
   )
+  quietTiles(map)
   map.addControl(new library.NavigationControl({ showCompass: false }), 'top-right')
   sizes = new ResizeObserver(() => map?.resize())
   sizes.observe(canvas.value)

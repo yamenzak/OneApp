@@ -106,3 +106,24 @@ export function whenLoaded(map, background, within = 8000) {
     return once(3000)
   })
 }
+
+/**
+ * Stop a basemap that cannot be reached from shouting about it.
+ *
+ * MapLibre reports every failed tile to the console as an error, one per tile,
+ * a fresh dozen on every pan. On a workspace behind a firewall, on a bench with
+ * no route out, or on the day the tile host is having a bad afternoon, that is
+ * a console full of red for something the map already handles: the ground is
+ * blank and every record is still drawn on it.
+ *
+ * Only the ground is quietened. An error about a source or a layer we added is
+ * ours and still surfaces, because that one means the screen is wrong.
+ */
+export function quietTiles(map) {
+  map.on('error', (event) => {
+    const source = event?.sourceId
+    if (source === 'basemap' || event?.error?.status === 404) return
+    // eslint-disable-next-line no-console
+    console.error(event?.error || event)
+  })
+}

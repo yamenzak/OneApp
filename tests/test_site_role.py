@@ -183,6 +183,10 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# entry above, and gating it would be a branch to say "there is nothing
 		# here" where an empty loop already says it.
 		"oneapp.shared.facts.sweep",
+		# And the transit source poll. `Transit Source` is OneMobility's, the
+		# control plane carries no space, and the query for what is due comes
+		# back empty there — the same shape as every other entry above.
+		"oneapp.onemobility.sources.poll",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "

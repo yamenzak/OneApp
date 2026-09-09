@@ -40,11 +40,12 @@ and on a bench nobody has pointed at a tile store.
 
 import frappe
 
-# CARTO's Positron, over OpenStreetMap data. `{r}` is MapLibre's own retina
+# CARTO's Positron, over OpenStreetMap data. `{ratio}` is MapLibre's retina
 # placeholder — it resolves to "@2x" on a high-density screen and to nothing
-# otherwise, which is the whole of retina support.
-DEFAULT_TILES = "https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png"
-DEFAULT_DARK = "https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png"
+# otherwise, which is the whole of retina support. Not `{r}`: that is Leaflet's
+# spelling, MapLibre leaves it in the URL, and every tile 404s.
+DEFAULT_TILES = "https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{ratio}.png"
+DEFAULT_DARK = "https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{ratio}.png"
 DEFAULT_ATTRIBUTION = "© OpenStreetMap contributors © CARTO"
 
 #: Who the default sends a request to, for the subprocessor clauses. A space

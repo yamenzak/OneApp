@@ -47,7 +47,7 @@ import { valueTheme } from '@/modules/onespace/lib/screen/fields'
 import { __ } from '@/shared/lib/runtime/translate'
 import { featuresFrom } from '@/modules/onespace/lib/screen/place'
 import { inkOf, tokenInk } from '@/modules/onespace/lib/screen/ink'
-import { attribution, styleFor, whenLoaded } from '@/modules/onespace/lib/screen/basemap'
+import { attribution, quietTiles, styleFor, whenLoaded } from '@/modules/onespace/lib/screen/basemap'
 
 const props = defineProps({
   /** The resolved screen: columns, title field, states, permissions. */
@@ -162,6 +162,7 @@ async function draw() {
     zoom: props.place?.zoom || 1,
     attributionControl: { compact: true, customAttribution: attribution() },
   })
+  quietTiles(map)
   map.addControl(new library.NavigationControl({ showCompass: false }), 'top-right')
   sizes = new ResizeObserver(() => map?.resize())
   sizes.observe(canvas.value)

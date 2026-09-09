@@ -262,39 +262,16 @@ def load_feed(source: str, file_url: str = "", label: str = "") -> dict:
     """Take a delivery from an upload and read it.
 
     The Upload door of the four in README §5, and the one a manager tries
-    first. The others — SFTP, HTTP, socket — fetch differently and arrive here.
+    first. The others — SFTP, HTTP, socket — fetch differently and then arrive
+    at the same `sources.deliver`, so there is one place a feed is recorded and
+    one place it is normalised.
     """
     if not frappe.has_permission("Transit Feed", "create"):
         frappe.throw(_("You cannot load a feed."), frappe.PermissionError)
 
-    feed = frappe.get_doc(
-        {
-            "doctype": "Transit Feed",
-            "label": label or f"{source} {now_datetime():%Y-%m-%d %H:%M}",
-            "source": source,
-            "status": "Received",
-            "received_on": now_datetime(),
-            "file": file_url,
-        }
-    ).insert(ignore_permissions=True)
+    from .sources import deliver
 
-    content = _bytes_of(file_url)
-    if not content:
-        feed.db_set("status", "Refused", update_modified=False)
-        feed.db_set("notes", _("The file could not be read."), update_modified=False)
-        return {"feed": feed.name, "loaded": False}
-
-    try:
-        counts = load(feed.name, content)
-    except Exception:
-        feed.db_set("status", "Refused", update_modified=False)
-        feed.db_set("notes", frappe.get_traceback(with_context=False)[-400:],
-                    update_modified=False)
-        raise
-
-    frappe.db.set_value("Transit Source", source, "last_run", now_datetime(),
-                        update_modified=False)
-    return {"feed": feed.name, "loaded": True, **counts}
+    return deliver(source, _bytes_of(file_url) or b"", label=label, file_url=file_url)
 
 
 def _bytes_of(file_url: str) -> bytes | None:

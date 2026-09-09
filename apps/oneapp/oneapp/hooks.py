@@ -231,8 +231,19 @@ scheduler_events = {
 		# so a workspace that frees space is unblocked without waiting out the
 		# cache, and one that fills up is caught within the hour.
 		"oneapp.onestorage.quota.refresh_database_verdict",
+		# And the transit sources that are asked rather than pushed. Hourly for
+		# the same reason backups are: how often a source is fetched is a
+		# setting on the source, and a setting cannot be a cron line — so this
+		# wakes every hour and works out which sources this hour is a slot for.
+		# A workspace with no OneMobility reads an empty table.
+		"oneapp.onemobility.sources.poll",
 	],
 }
+
+# Fetch a transit source on demand, from the screen it is listed on. Declared
+# in code behind the hook rather than stored on the Space: an action names a
+# method somebody can invoke, and that list is not a row an operator edits.
+onespace_screen_actions = ["oneapp.onemobility.actions.actions"]
 
 after_install = "oneapp.install.after_install"
 
