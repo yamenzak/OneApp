@@ -360,6 +360,17 @@ Rendering:
   like raw OSM. It is also the privacy answer: with a third-party tile provider,
   every pan and zoom tells them which city a customer is watching, and the tile
   requests themselves leak the extent of a fleet.
+
+  **That is still where this is going and it is not where it is.** What ships
+  today is OpenFreeMap, keyless and self-hostable, through `onespace/basemap.py`
+  — a *vector* style rather than the raster one it replaced, which is what makes
+  the picker in 7c possible at all: a raster tile is a picture somebody else has
+  already drawn and the only thing anyone can change about it is what goes on
+  top. The default before this was CARTO's keyless raster Positron, and it had
+  quietly stopped being usable — their endpoint now returns every tile stamped
+  "API KEY REQUIRED", which nothing here could have noticed, because a watermark
+  is a valid PNG. Moving to our own archive is then a change of one URL and the
+  subprocessor clause that names it, not a change to any screen.
 * Routing, when it is needed, is OSRM or Valhalla over an OSM extract — **not**
   the OSM API, which is an editing interface and must not be used for this.
 
@@ -607,7 +618,7 @@ time" should be a link somebody can send, not a screenshot.
 
 ## 7c. What a person can do to the map
 
-Four things, and each of them is here because a map that only shows is half a
+Five things, and each of them is here because a map that only shows is half a
 map.
 
 **The controls are a rail, the legend is a key.** They were one card, and it had
@@ -649,6 +660,25 @@ the fleet drives backwards up its own route. `motion.tangent` is pure and
 unit-tested; `motion.advance` returns the point and the bearing off one pair of
 projections, because asking for each separately is the same O(n) walk twice,
 per vehicle, per frame, sixty times a second.
+
+**The ground itself is the workspace's.** Which tile store to talk to stays the
+operator's decision — it is a deployment fact, and an air-gapped bench has to be
+able to change it in one place. Whether places are *named* and how much of the
+world is drawn under the records are not: they are about the screens this
+customer looks at all day, and a network diagram and a delivery round want
+different answers. So the rail's third control offers the curated styles, a
+switch for place names, and Full / Quiet / Minimal, stored in `OneSpace Map
+Settings` for everybody on the workspace. Quiet is the default: every screen
+that draws a map draws *records* on it, and buildings and points of interest are
+competing with them for the same pixels.
+
+The last two apply without a reload, and that is the vector argument made
+visible in about a hundred milliseconds: `restyle` walks the layers already on
+the running map and sets `visibility`, matching on the layer-id prefixes the
+OpenMapTiles schema names. Ours are passed over by name — a legend that hid
+itself when somebody turned off place names would be a surprising way to learn
+what the setting does. Changing the *style* is the one thing that cannot be done
+in place, because that is a different document, so that one redraws.
 
 **Hovering says what the thing is.** A stop gives its name and how many lines
 have been seen there; a vehicle gives its fleet number, its line, how full it is

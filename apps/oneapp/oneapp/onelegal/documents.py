@@ -138,7 +138,7 @@ DOCUMENTS = {
     "privacy": {
         "title": "Privacy Policy",
         "audience": "user",
-        "revision": 3,
+        "revision": 4,
         "summary": "What we do with personal data — yours, and the personal "
                    "data your organisation puts into the product.",
     },
@@ -158,7 +158,7 @@ DOCUMENTS = {
     "subprocessors": {
         "title": "Subprocessors",
         "audience": "customer",
-        "revision": 3,
+        "revision": 4,
         "summary": "Every third party that receives customer data, what for, "
                    "and where it sits.",
     },

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 // The boot payload is a module-level read, so it is mocked rather than set:
 // `window.basemap` is written by the page before the bundle loads, and a test
 // that assigned it afterwards would be testing the mock.
-const boot = { style: '', tiles: '', dark: '', attribution: '' }
+const boot = { style: '', tiles: '', dark: '', attribution: '', instance: '', styles: {} }
 vi.mock('@/shared/lib/runtime/boot', () => ({
   get basemap() {
     return boot
@@ -16,12 +16,14 @@ vi.mock('@/modules/onespace/lib/screen/ink', () => ({
 
 let surface = '#ffffff'
 
-const { attribution, isDark, styleFor, whenLoaded } = await import(
+const { attribution, isDark, quietTiles, restyle, styleFor, whenLoaded } = await import(
   '@/modules/onespace/lib/screen/basemap'
 )
 
 beforeEach(() => {
-  Object.assign(boot, { style: '', tiles: '', dark: '', attribution: '' })
+  Object.assign(boot, {
+    style: '', tiles: '', dark: '', attribution: '', instance: '', styles: {},
+  })
   surface = '#ffffff'
 })
 
@@ -116,5 +118,132 @@ describe('whenLoaded', () => {
     // The recovery style is ours, so `addSource` afterwards has a style to
     // add to — which is the whole reason this is not a bare timeout.
     expect(map.setStyle.mock.calls[0][0].layers[0].id).toBe('ground')
+  })
+})
+
+describe('restyle', () => {
+  const fake = (ids) => {
+    const seen = {}
+    return {
+      seen,
+      getStyle: () => ({ layers: ids.map(([id, type]) => ({ id, type })) }),
+      setLayoutProperty: (id, _prop, value) => {
+        seen[id] = value
+      },
+    }
+  }
+
+  const ground = [
+    ['background', 'background'],
+    ['water', 'fill'],
+    ['landuse_park', 'fill'],
+    ['building', 'fill'],
+    ['road_major', 'line'],
+    ['poi_z14', 'symbol'],
+    ['place_label', 'symbol'],
+  ]
+
+  it('draws everything when nothing is asked for', () => {
+    const map = fake(ground)
+    restyle(map, { labels: true, detail: 'Full' })
+    expect(Object.values(map.seen).every((one) => one === 'visible')).toBe(true)
+  })
+
+  it('hides the symbol layers when places are not named', () => {
+    const map = fake(ground)
+    restyle(map, { labels: false, detail: 'Full' })
+    expect(map.seen.place_label).toBe('none')
+    expect(map.seen.poi_z14).toBe('none')
+    expect(map.seen.road_major).toBe('visible')
+  })
+
+  it('takes the decoration out on Quiet and keeps the roads', () => {
+    const map = fake(ground)
+    restyle(map, { labels: true, detail: 'Quiet' })
+    expect(map.seen.building).toBe('none')
+    expect(map.seen.landuse_park).toBe('none')
+    expect(map.seen.road_major).toBe('visible')
+    expect(map.seen.place_label).toBe('visible')
+  })
+
+  it('keeps only what places a route on Minimal', () => {
+    const map = fake(ground)
+    restyle(map, { labels: true, detail: 'Minimal' })
+    expect(map.seen.road_major).toBe('visible')
+    expect(map.seen.water).toBe('visible')
+    expect(map.seen.background).toBe('visible')
+    expect(map.seen.place_label).toBe('none')
+  })
+
+  // The legend does not disappear because somebody turned off place names.
+  it('never touches a layer the surface added itself', () => {
+    const map = fake([...ground, ['vehicles', 'symbol'], ['routes', 'line']])
+    restyle(map, { labels: false, detail: 'Minimal' }, ['vehicles', 'routes'])
+    expect(map.seen.vehicles).toBeUndefined()
+    expect(map.seen.routes).toBeUndefined()
+  })
+
+  it('survives a map with no style yet', () => {
+    expect(() => restyle(null)).not.toThrow()
+    expect(() => restyle({ getStyle: () => null })).not.toThrow()
+  })
+})
+
+describe('styleFor, the two words that are not URLs', () => {
+  it("takes the instance's own answer rather than the resolved one", () => {
+    // The payload was written when the page loaded, so `style` has whatever
+    // this workspace had picked then baked into it.
+    boot.style = 'https://tiles.example/bright.json'
+    boot.instance = 'https://tiles.example/positron.json'
+    expect(styleFor('#eee', 'instance')).toBe(boot.instance)
+  })
+
+  it('falls back to the raster path when the instance named no style', () => {
+    boot.style = 'https://tiles.example/bright.json'
+    boot.tiles = 'https://tiles.example/{z}/{x}/{y}.png'
+    expect(styleFor('#eee', 'instance').sources.basemap.tiles).toEqual([boot.tiles])
+  })
+
+  it('draws a flat ground on purpose, which an empty string cannot say', () => {
+    boot.style = 'https://tiles.example/bright.json'
+    const style = styleFor('#eeeeee', 'none')
+    expect(style.sources).toEqual({})
+    expect(style.layers[0].paint['background-color']).toBe('#eeeeee')
+  })
+})
+
+describe('quietTiles', () => {
+  const fake = () => {
+    let handler = null
+    return {
+      on: (event, fn) => {
+        if (event === 'error') handler = fn
+      },
+      raise: (event) => handler?.(event),
+    }
+  }
+
+  it('says nothing about a ground that could not be reached', () => {
+    // A vector style fails one step before there is a source to blame, so the
+    // event carries no sourceId at all — which is how switching to vector put
+    // a red line under every map screen on a bench with no route out.
+    boot.styles = { Positron: 'https://tiles.example/positron' }
+    boot.instance = 'https://tiles.example/positron'
+    const map = fake()
+    const said = vi.spyOn(console, 'error').mockImplementation(() => {})
+    quietTiles(map)
+    map.raise({ error: { status: 0, url: 'https://tiles.example/positron' } })
+    expect(said).not.toHaveBeenCalled()
+    said.mockRestore()
+  })
+
+  it('still says everything about a layer of ours', () => {
+    boot.styles = { Positron: 'https://tiles.example/positron' }
+    const map = fake()
+    const said = vi.spyOn(console, 'error').mockImplementation(() => {})
+    quietTiles(map)
+    map.raise({ sourceId: 'vehicles', error: { status: 400 } })
+    expect(said).toHaveBeenCalledOnce()
+    said.mockRestore()
   })
 })

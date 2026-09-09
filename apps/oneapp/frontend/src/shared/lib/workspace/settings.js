@@ -4,6 +4,18 @@ import { callMethod } from '@/shared/lib/runtime/resource'
 import { __ } from '@/shared/lib/runtime/translate'
 
 export const settings = {
+  /**
+   * How this workspace's maps are drawn. `onespace/basemap.py`.
+   *
+   * A workspace decision rather than a person's, which is why it is here and
+   * not in the theme: two screens in one room drawing the same city
+   * differently is a room arguing about which screen is right.
+   */
+  setBasemap: (params) =>
+    callMethod('oneapp.onespace.basemap.set_basemap', params, {
+      success: __('The map was changed for everyone here'),
+    }),
+
   // --- Yours, not the workspace's -----------------------------------------
   //
   // `onespace/me.py`. Every one of these names no user: the server writes

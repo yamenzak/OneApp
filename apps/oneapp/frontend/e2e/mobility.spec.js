@@ -278,3 +278,54 @@ test('a route can be looked at alone, and put back', async ({ page }) => {
   await clear.click()
   await expect(clear).toHaveCount(0)
 })
+
+test('the workspace can change the ground, and it survives a reload', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onemobility?screen=network')
+  await canvasIn(page, 'network')
+
+  const open = async () => {
+    if (!(await page.locator('[data-slot="ground-picker"]').count())) {
+      await page.locator('[data-slot="ground-button"]').click()
+    }
+    return page.locator('[data-slot="ground-picker"]')
+  }
+
+  const picker = await open()
+  await expect(picker).toBeVisible({ timeout: 20_000 })
+  const places = picker.getByRole('switch')
+  await expect(places).toHaveAttribute('aria-checked', 'true')
+
+  // A sentinel on the window, because the claim being tested is that this does
+  // *not* reload: labels and detail are properties of layers already on the
+  // map, and a screen that quietly re-fetched the world would pass every other
+  // assertion here.
+  await page.evaluate(() => {
+    window.__ground = 'same document'
+  })
+
+  await places.click()
+  await expect(places).toHaveAttribute('aria-checked', 'false')
+  expect(await page.evaluate(() => window.__ground)).toBe('same document')
+
+  // frappe-ui's Select is a combobox rather than a native one, so it is opened
+  // and picked from rather than filled.
+  await (await open()).getByRole('combobox').nth(1).click()
+  await page.getByRole('option', { name: 'Minimal', exact: true }).click()
+  expect(await page.evaluate(() => window.__ground)).toBe('same document')
+
+  // And it is the workspace's, not this tab's.
+  await page.reload()
+  await canvasIn(page, 'network')
+  const after = await open()
+  await expect(after.getByRole('switch')).toHaveAttribute('aria-checked', 'false')
+  await expect(after.getByRole('combobox').nth(1)).toContainText('Minimal')
+
+  // Put the fixture back: this setting is shared, so a spec that left it
+  // changed would be changing what every later spec is looking at.
+  await after.getByRole('switch').click()
+  await (await open()).getByRole('combobox').nth(1).click()
+  await page.getByRole('option', { name: 'Quiet', exact: true }).click()
+  await expect((await open()).getByRole('combobox').nth(1)).toContainText('Quiet')
+  expectNoRealErrors(errors)
+})

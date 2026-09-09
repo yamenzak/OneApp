@@ -47,7 +47,14 @@ import { valueTheme } from '@/modules/onespace/lib/screen/fields'
 import { __ } from '@/shared/lib/runtime/translate'
 import { featuresFrom } from '@/modules/onespace/lib/screen/place'
 import { inkOf, tokenInk } from '@/modules/onespace/lib/screen/ink'
-import { attribution, quietTiles, styleFor, whenLoaded } from '@/modules/onespace/lib/screen/basemap'
+import {
+  attribution,
+  preferred,
+  quietTiles,
+  restyle,
+  styleFor,
+  whenLoaded,
+} from '@/modules/onespace/lib/screen/basemap'
 
 const props = defineProps({
   /** The resolved screen: columns, title field, states, permissions. */
@@ -168,6 +175,10 @@ async function draw() {
   sizes.observe(canvas.value)
 
   await whenLoaded(map, background)
+
+  // What the workspace said about its ground, on the style that is actually on
+  // the map. Before our own layers, so nothing of ours can be caught by it.
+  restyle(map, preferred())
 
   map.addSource('records', { type: 'geojson', data: collection() })
   map.addLayer({

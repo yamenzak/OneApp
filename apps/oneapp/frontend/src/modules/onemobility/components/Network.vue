@@ -50,8 +50,11 @@
         :isolated="isolated"
         :styles="markerStyles"
         :may-style="mayStyle"
+        :ground="mapPrefs"
+        :grounds="mapStyles"
         @clear-isolate="isolate(null)"
         @style="restyle"
+        @ground="reground"
       />
 
       <MapLegend
@@ -308,6 +311,8 @@ import { Badge, Button, Select } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
+import { basemap } from '@/shared/lib/runtime/boot'
+import { settings } from '@/shared/lib/workspace/settings'
 import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
 import MapControls from '@/modules/onemobility/components/MapControls.vue'
 import MapLegend from '@/modules/onemobility/components/MapLegend.vue'
@@ -337,7 +342,14 @@ import {
   OCCUPANCY,
 } from '@/modules/onemobility/lib/palette'
 import { tokenInk } from '@/modules/onespace/lib/screen/ink'
-import { attribution, quietTiles, styleFor, whenLoaded } from '@/modules/onespace/lib/screen/basemap'
+import {
+  attribution,
+  preferred,
+  quietTiles,
+  restyle as applyGround,
+  styleFor,
+  whenLoaded,
+} from '@/modules/onespace/lib/screen/basemap'
 
 defineProps({
   /** The resolved screen. Unused: this surface is not a list of records. */
@@ -470,6 +482,67 @@ const selected = ref('')
 /** The workspace's mode-to-shape mapping, for the picker. Fetched once. */
 const markerStyles = ref([])
 const mayStyle = ref(false)
+/**
+ * The workspace's basemap preferences, as the boot payload left them and as the
+ * picker changes them.
+ *
+ * Held here rather than read from `boot` each time because the picker changes
+ * them in place: the point of a vector style is that this is a live property of
+ * the running map, not a reload.
+ */
+const mapPrefs = ref(preferred())
+const mapStyles = computed(() => Object.keys(basemap?.styles || {}))
+
+/** Our own layers, which a basemap preference must never hide. */
+const OURS = [
+  'surface', 'lines-casing', 'lines', 'trail', 'stops', 'stops-interchange',
+  'demand', 'vehicles-chosen', 'vehicles',
+]
+
+/**
+ * Change the ground, for everybody on the workspace.
+ *
+ * Picking a different *style* is the one change that cannot be made in place —
+ * it is a different document — so that one redraws. Labels and detail are
+ * properties of layers already on the map, so they are instant, which is the
+ * whole argument for vector tiles made visible in about a hundred
+ * milliseconds.
+ *
+ * The next style's URL is resolved here rather than left to `styleFor`, which
+ * reads the boot payload: that payload was written when the page loaded and
+ * still names whatever the workspace had picked *then*. Hence `styles` arriving
+ * as name-to-URL rather than as a list of names.
+ */
+async function reground(change) {
+  const before = mapPrefs.value.pick
+  mapPrefs.value = { ...mapPrefs.value, ...change }
+  await settings.setBasemap({
+    style: change.pick || '',
+    labels: change.labels === undefined ? undefined : (change.labels ? 1 : 0),
+    detail: change.detail || '',
+  })
+  if (change.pick && change.pick !== before) {
+    await draw()
+    return
+  }
+  applyGround(map, mapPrefs.value, OURS)
+}
+
+/**
+ * The style this workspace's pick resolves to, as `styleFor` wants it.
+ *
+ * Resolved here on every draw rather than taken from `basemap.style`, which was
+ * written when the page loaded: a reader who picks Bright and then goes back to
+ * "Follow the instance" would otherwise be handed Bright, because that is what
+ * the payload says the instance resolved to for them that morning.
+ */
+function chosenStyle() {
+  const pick = mapPrefs.value.pick
+  if (pick === 'Plain') return 'none'
+  if (pick === 'Follow the instance') return 'instance'
+  return (basemap?.styles || {})[pick] || ''
+}
+
 const following = ref(false)
 const playing = ref(false)
 const speed = ref(1)
@@ -1132,7 +1205,7 @@ async function draw() {
   // this screen are never drawn on two different grounds.
   map = new library.Map({
     container: canvas.value,
-    style: styleFor(ground()),
+    style: styleFor(ground(), chosenStyle()),
     center: [13.4, 52.52],
     zoom: 11,
     // Credit goes top-left: the bottom of this screen is the clock, and an
@@ -1148,6 +1221,11 @@ async function draw() {
   sizes = new ResizeObserver(() => map?.resize())
   sizes.observe(canvas.value)
   await whenLoaded(map, ground())
+
+  // What the workspace has said about its ground, applied to the style that is
+  // actually on the map. Before our own layers go down, so `OURS` below is only
+  // about the calls that happen *after* a picker changes something.
+  applyGround(map, mapPrefs.value)
 
   registerMarkers()
   // Not awaited: the squat silhouettes are already registered, so the map draws

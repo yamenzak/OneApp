@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "map_style",
+  "map_labels",
+  "cb_map",
+  "map_detail"
+ ],
+ "fields": [
+  {
+   "default": "Follow the instance",
+   "description": "Positron is quiet grey, Bright is a conventional road map, Liberty is closer to OpenStreetMap's own. Plain draws no background at all, which is what an air-gapped instance and a schematic have in common.",
+   "fieldname": "map_style",
+   "fieldtype": "Select",
+   "label": "Basemap",
+   "options": "Follow the instance\nPositron\nBright\nLiberty\nPlain"
+  },
+  {
+   "default": "1",
+   "description": "Off leaves the shapes and takes away the words. A map with forty vehicles on it is often busy enough.",
+   "fieldname": "map_labels",
+   "fieldtype": "Check",
+   "label": "Name places on the map"
+  },
+  {
+   "fieldname": "cb_map",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Quiet",
+   "description": "Quiet drops buildings, land use and points of interest. Minimal keeps water, roads and boundaries and nothing else \u2014 the ground a route needs and no more.",
+   "fieldname": "map_detail",
+   "fieldtype": "Select",
+   "label": "How much is drawn",
+   "options": "Full\nQuiet\nMinimal"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneSpace",
+ "name": "OneSpace Map Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

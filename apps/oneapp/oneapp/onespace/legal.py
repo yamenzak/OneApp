@@ -119,14 +119,14 @@ clause(
 clause(
     document="privacy", section="modules", key="space-map-tiles", module=M,
     body="""
-        A screen that draws a map fetches its background squares from a tile
-        service, and that service therefore sees the reading device's network
-        address and roughly which part of the world is on screen. It does not
-        see the records you are looking at: what is drawn on top of the
-        background — the pins, the routes, the vehicles — never leaves the
-        workspace. Where a workspace runs on an instance whose operator hosts
-        the tiles themselves, or has turned the background off, nothing is
-        fetched at all.
+        A screen that draws a map fetches its background from a tile service,
+        and that service therefore sees the reading device's network address
+        and roughly which part of the world is on screen. It does not see the
+        records you are looking at: what is drawn on top of the background —
+        the pins, the routes, the vehicles — never leaves the workspace. A
+        workspace can turn the background off from any map it draws, and where
+        the operator hosts the tiles themselves nothing leaves the instance
+        either way.
     """, order=30,
 )
 
@@ -135,25 +135,31 @@ clause(
     body="""
         The map background is the one thing a reader's browser fetches from
         outside the workspace. Which service it comes from is set for the whole
-        instance rather than per workspace, it can be pointed at a tile store
-        the operator runs, and it can be switched off — a map with no
-        background still draws every record on it.
+        instance and can be pointed at a tile store the operator runs; a
+        workspace chooses how that background *looks* and can switch it off
+        entirely, and a map with no background still draws every record on it.
     """,
 )
 
-# A request from the reader's browser, not from the workspace: what CARTO
-# receives is an address and a tile number, which is why `data` says so rather
-# than naming a record. Named because it is the default; an instance that
+# A request from the reader's browser, not from the workspace: what the tile
+# service receives is an address and a tile number, which is why `data` says so
+# rather than naming a record. Named because it is the default; an instance that
 # configures its own tile store is not talking to them at all.
+#
+# This replaced CARTO, whose keyless basemap now returns every tile stamped
+# "API KEY REQUIRED" — a watermark is a valid PNG, so nothing in the product
+# could have noticed. OpenFreeMap needs no key and can be self-hosted, which is
+# also the shape the map is heading towards; see `onemobility/README.md` §7.
 subprocessor(
-    name="CARTO (Grupo CARTO, S.L.)", module=M,
+    name="OpenFreeMap", module=M,
     purpose="Map background tiles, drawn from OpenStreetMap data",
     data="The reading device's network address and which map squares it asked "
          "for. No record, position or search reaches them.",
-    where="CARTO's content delivery network",
-    safeguard="Standard Contractual Clauses; the default can be replaced with "
-              "a tile store the operator hosts, or switched off entirely",
-    url="https://carto.com/legal/",
+    where="OpenFreeMap's content delivery network",
+    safeguard="The default can be replaced with a tile store the operator "
+              "hosts, or switched off entirely — by the instance, or by a "
+              "workspace for its own maps",
+    url="https://openfreemap.org/",
 )
 
 # Named for the licence rather than for a data flow: the obligation is

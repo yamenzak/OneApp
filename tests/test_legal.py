@@ -38,10 +38,10 @@ LEGAL = ROOT / "apps/oneapp/oneapp/onelegal"
 HASHES = {
     "terms": "48dad46f",
     "aup": "6a531fe5",
-    "privacy": "d5e7bc06",
+    "privacy": "77c402d6",
     "cookies": "8266af8b",
     "dpa": "7fbb62c6",
-    "subprocessors": "db9adfef",
+    "subprocessors": "84ca71e7",
     "ai": "5a2cefb5",
     "licences": "c5d062c1",
 }

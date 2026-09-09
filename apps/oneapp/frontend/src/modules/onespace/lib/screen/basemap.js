@@ -10,7 +10,15 @@
  * Where the answer comes from: `onespace/basemap.py`, on the boot payload.
  * Which tile store a bench uses is a deployment fact, not a workspace's choice.
  *
- * Raster and not a vector style URL, by default. A raster source is a URL
+ * **Vector, and that is what makes the map customisable at all.** A raster tile
+ * is a picture somebody else already drew: the only thing a reader can change
+ * about it is what goes on top. A vector style is JSON the browser executes, so
+ * whether places are named and how much of the world is drawn under the records
+ * are properties on layers — `restyle` below sets them on the running map, with
+ * no reload and no second tile store.
+ *
+ * The old note, kept because the trade it describes is still real:
+ * raster and not a vector style URL, by default. A raster source is a URL
  * inside a style we own, so the style always parses and the map always fires
  * `load`; a style *URL* that 404s leaves MapLibre with no style, no `load`
  * event and a screen awaiting a promise that will never settle. A tile that
@@ -33,9 +41,31 @@ export function isDark() {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b < 128
 }
 
+/**
+ * What this workspace has said about its ground: whether to name places, and
+ * how much to draw. Read from the boot payload, so a surface that has no picker
+ * still honours the choice made on one that has.
+ */
+export function preferred() {
+  return {
+    pick: configured?.pick || 'Follow the instance',
+    labels: configured?.labels !== false,
+    detail: configured?.detail || 'Quiet',
+  }
+}
+
 /** Who to credit, for the attribution control. */
 export function attribution() {
   return (configured?.attribution || '').trim()
+}
+
+/** A style with nothing in it but a colour. Ours, so it always parses. */
+export function flatGround(background) {
+  return {
+    version: 8,
+    sources: {},
+    layers: [{ id: 'ground', type: 'background', paint: { 'background-color': background } }],
+  }
 }
 
 /**
@@ -43,18 +73,22 @@ export function attribution() {
  * a flat ground when there are none.
  *
  * @param {string} background a paintable colour for the ground
- * @param {string} override a style URL that wins over everything, if given
+ * @param {string} override a style URL that wins over everything, or one of two
+ *   words. An empty string is "I have no opinion", so a caller that has decided
+ *   something cannot say it that way: `'none'` is a flat ground on purpose, and
+ *   `'instance'` is what the *instance* configured, ignoring the workspace pick
+ *   that `style` on the payload already has baked into it. A picker needs both,
+ *   because after it has been used the payload describes the morning.
  */
 export function styleFor(background, override = '') {
-  const url = String(override || configured?.style || '').trim()
+  if (override === 'none') return flatGround(background)
+  const url = String(
+    override === 'instance' ? configured?.instance || '' : override || configured?.style || '',
+  ).trim()
   if (url) return url
 
   const tiles = String((isDark() ? configured?.dark : configured?.tiles) || '').trim()
-  const style = {
-    version: 8,
-    sources: {},
-    layers: [{ id: 'ground', type: 'background', paint: { 'background-color': background } }],
-  }
+  const style = flatGround(background)
   if (!tiles) return style
 
   style.sources.basemap = {
@@ -98,13 +132,33 @@ export function whenLoaded(map, background, within = 8000) {
 
   return once(within).then(() => {
     if (map.isStyleLoaded?.()) return undefined
-    map.setStyle({
-      version: 8,
-      sources: {},
-      layers: [{ id: 'ground', type: 'background', paint: { 'background-color': background } }],
-    })
+    map.setStyle(flatGround(background))
     return once(3000)
   })
+}
+
+/** Every host the ground could come from, for `quietTiles`. */
+function grounds() {
+  const froms = [
+    configured?.style,
+    configured?.instance,
+    configured?.tiles,
+    configured?.dark,
+    ...Object.values(configured?.styles || {}),
+  ]
+  const hosts = new Set()
+  for (const one of froms) {
+    // Absolute only, deliberately. A relative one is a ground we serve
+    // ourselves, and a 404 on that is our own bug rather than somebody else's
+    // afternoon — it should print.
+    try {
+      if (one) hosts.add(new URL(one).host)
+    } catch {
+      // Not an absolute URL. Nothing to match against, which is the safe
+      // direction: an error nobody recognised is one that still gets printed.
+    }
+  }
+  return hosts
 }
 
 /**
@@ -116,14 +170,86 @@ export function whenLoaded(map, background, within = 8000) {
  * a console full of red for something the map already handles: the ground is
  * blank and every record is still drawn on it.
  *
+ * **Matched on the host, not only on the source id.** With a raster ground the
+ * failure is a tile in a source we named `basemap`, so the id was enough. A
+ * vector style fails one step earlier — the style *document* cannot be fetched,
+ * before there is a source to blame — and that error carries no `sourceId` at
+ * all, so switching to vector quietly put a red line under every map screen on
+ * every bench with no route out.
+ *
  * Only the ground is quietened. An error about a source or a layer we added is
  * ours and still surfaces, because that one means the screen is wrong.
  */
 export function quietTiles(map) {
+  const hosts = grounds()
   map.on('error', (event) => {
     const source = event?.sourceId
     if (source === 'basemap' || event?.error?.status === 404) return
-    // eslint-disable-next-line no-console
+    const url = event?.error?.url
+    if (url) {
+      try {
+        if (hosts.has(new URL(url).host)) return
+      } catch {
+        // An error about something that is not a URL is not a ground failure.
+      }
+    }
     console.error(event?.error || event)
   })
+}
+
+
+/**
+ * How much of the world a workspace wants under its records.
+ *
+ * Matched on layer id prefixes, which is safe in a way it looks like it is not:
+ * every style here is built by planetiler against the OpenMapTiles schema, and
+ * that schema names its layers. A style that does not follow it simply matches
+ * nothing and draws in full, which is the right way for this to fail.
+ */
+const DECORATION = ['building', 'landcover', 'landuse', 'park', 'poi', 'housenumber', 'aeroway']
+
+/** What a minimal ground keeps. Everything a route needs to be placed, and no more. */
+const ESSENTIAL = ['background', 'water', 'waterway', 'road', 'bridge', 'tunnel', 'boundary']
+
+function starts(id, prefixes) {
+  const name = String(id || '').toLowerCase()
+  return prefixes.some((one) => name.startsWith(one))
+}
+
+/**
+ * Apply a workspace's basemap preferences to a map that has already loaded.
+ *
+ * On the running style rather than by fetching and patching the JSON first,
+ * which matters twice: it is instant, so a switch in the picker is a switch on
+ * the screen, and it cannot fail differently from the style that is actually
+ * drawn — there is only one copy.
+ *
+ * Only the basemap's own layers are touched. Ours are added after the style
+ * loads and are passed over by name, because a legend that hides itself when
+ * somebody turns off place names would be a surprising way to learn what this
+ * setting does.
+ */
+export function restyle(map, prefer = {}, ours = []) {
+  if (!map || !map.getStyle) return
+  const style = map.getStyle()
+  if (!style?.layers) return
+
+  const labels = prefer.labels !== false
+  const detail = prefer.detail || 'Full'
+  const mine = new Set(ours)
+
+  for (const layer of style.layers) {
+    if (mine.has(layer.id)) continue
+    let show = true
+    // A label is a symbol layer, in every style built this way.
+    if (!labels && layer.type === 'symbol') show = false
+    if (detail === 'Quiet' && starts(layer.id, DECORATION)) show = false
+    if (detail === 'Minimal' && !starts(layer.id, ESSENTIAL)) show = false
+    try {
+      map.setLayoutProperty(layer.id, 'visibility', show ? 'visible' : 'none')
+    } catch {
+      // A layer that has gone while we were walking the list. The next call
+      // rebuilds from the style as it is then.
+    }
+  }
 }

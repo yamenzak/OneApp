@@ -393,6 +393,47 @@ doctype(
 
 
 # --------------------------------------------------------------------------- #
+# What the map looks like, per workspace
+# --------------------------------------------------------------------------- #
+#
+# Three settings and no more, because a basemap has exactly three questions a
+# workspace can sensibly answer: which one, does it name things, and how much of
+# the world is drawn under the records.
+#
+# It is a workspace decision rather than a person's for the same reason the
+# marker shapes are: a control room where two screens draw the same city
+# differently is a control room arguing about which screen is right. Light and
+# dark stay a person's, because that already follows their theme.
+#
+# Possible at all only because the tiles are *vector*. A raster tile is a baked
+# picture and the only thing a reader can change about it is what sits on top;
+# a vector style is JSON the browser executes, so hiding every label is one
+# property on a layer rather than a different tile store.
+doctype(
+    "OneSpace Map Settings",
+    issingle=1,
+    fields=[
+        f("map_style", "Select", "Basemap", default="Follow the instance",
+          options="Follow the instance\nPositron\nBright\nLiberty\nPlain",
+          description="Positron is quiet grey, Bright is a conventional road "
+                      "map, Liberty is closer to OpenStreetMap's own. Plain "
+                      "draws no background at all, which is what an air-gapped "
+                      "instance and a schematic have in common."),
+        f("map_labels", "Check", "Name places on the map", default="1",
+          description="Off leaves the shapes and takes away the words. A map "
+                      "with forty vehicles on it is often busy enough."),
+        column("cb_map"),
+        f("map_detail", "Select", "How much is drawn", default="Quiet",
+          options="Full\nQuiet\nMinimal",
+          description="Quiet drops buildings, land use and points of interest. "
+                      "Minimal keeps water, roads and boundaries and nothing "
+                      "else — the ground a route needs and no more."),
+    ],
+    app="tenant",
+)
+
+
+# --------------------------------------------------------------------------- #
 # Settings (Single)
 # --------------------------------------------------------------------------- #
 doctype(

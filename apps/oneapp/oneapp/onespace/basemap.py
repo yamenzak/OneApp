@@ -22,12 +22,23 @@ Three settings, in the order they win:
 
   * ``oneapp_map_attribution`` — who to credit, when the default is not right.
 
-With none of them set the default is CARTO's Positron basemap, which is OSM
-data drawn quietly: grey ground, thin roads, low-contrast labels, so a route
-line and a moving vehicle are the loudest things on the screen. That is the
-point of choosing it over ``tile.openstreetmap.org``, whose own rendering is
-built to show OSM's data rather than to sit under someone else's, and whose
-tile usage policy asks applications not to use it as a basemap anyway.
+With none of them set the default is OpenFreeMap's Positron, a vector style
+over OSM data drawn quietly: grey ground, thin roads, low-contrast labels, so a
+route line and a moving vehicle are the loudest things on the screen. That is
+the point of choosing it over ``tile.openstreetmap.org``, whose own rendering is
+built to show OSM's data rather than to sit under someone else's, and whose tile
+usage policy asks applications not to use it as a basemap anyway.
+
+**And below the instance, a workspace.** Which tile store to talk to is the
+operator's decision; whether places are *named* and how much of the world is
+drawn under the records are not — they are about the screens this customer
+looks at all day, and a network diagram and a delivery round want different
+answers. So `OneSpace Map Settings` is a tenant single holding three: a style
+by name, whether to draw labels, and how much detail. It can only narrow what
+the instance allows — it picks between the styles in `STYLES` or turns the
+ground off entirely, and an instance that has named its own style outright
+keeps it. Because the styles are vector, the last two apply without a reload:
+`restyle` in `screen/basemap.js` walks the layers already on the map.
 
 The browser fetches tiles directly, so the tile host sees the reader's IP and
 viewport. That is a disclosure, and it is why the default is named in the
@@ -39,18 +50,61 @@ and on a bench nobody has pointed at a tile store.
 """
 
 import frappe
+from frappe import _
 
-# CARTO's Positron, over OpenStreetMap data. `{ratio}` is MapLibre's retina
-# placeholder — it resolves to "@2x" on a high-density screen and to nothing
-# otherwise, which is the whole of retina support. Not `{r}`: that is Leaflet's
-# spelling, MapLibre leaves it in the URL, and every tile 404s.
-DEFAULT_TILES = "https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{ratio}.png"
-DEFAULT_DARK = "https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{ratio}.png"
-DEFAULT_ATTRIBUTION = "© OpenStreetMap contributors © CARTO"
+#: The basemaps a workspace may choose between, as MapLibre style URLs.
+#:
+#: **Vector, and that is the whole point rather than a detail.** A raster tile
+#: is a picture somebody else has already drawn: the only thing a reader can
+#: change about it is what goes on top. A vector style is JSON the browser
+#: executes, so which layers draw, whether places are named and how much of the
+#: world is under the records are all things a workspace can decide at runtime
+#: — see `frontend/src/modules/onespace/lib/screen/basemap.js`.
+#:
+#: OpenFreeMap, because it needs no key and is self-hostable. The default was
+#: CARTO's raster Positron and it had quietly stopped being usable: their
+#: keyless endpoint now returns every tile stamped "API KEY REQUIRED", which
+#: nothing in this product could have noticed — a watermark is a valid PNG.
+STYLES = {
+	"Positron": "https://tiles.openfreemap.org/styles/positron",
+	"Bright": "https://tiles.openfreemap.org/styles/bright",
+	"Liberty": "https://tiles.openfreemap.org/styles/liberty",
+}
+
+#: Quiet grey, thin roads, low-contrast labels — so a route line and a moving
+#: vehicle are the loudest things on the screen.
+DEFAULT_STYLE = STYLES["Positron"]
+DEFAULT_ATTRIBUTION = "© OpenStreetMap contributors © OpenFreeMap"
+
+#: What a workspace gets before anybody opens the picker. Quiet rather than
+#: Full: every screen that draws a map draws *records* on it, and buildings and
+#: points of interest are competing with them for the same pixels.
+DEFAULTS = {"pick": "Follow the instance", "labels": True, "detail": "Quiet"}
 
 #: Who the default sends a request to, for the subprocessor clauses. A space
 #: that draws a map names these; see `onemobility/legal.py`.
-DEFAULT_HOSTS = ("basemaps.cartocdn.com",)
+DEFAULT_HOSTS = ("tiles.openfreemap.org",)
+
+
+def chosen() -> dict:
+	"""What this workspace has decided about its map.
+
+	`pick` is the *name* of a style and `style` on the boot payload is the URL
+	it resolves to — two different things, and calling them both "style" put a
+	word where a URL belonged and drew nothing.
+
+	Read defensively. This is on the boot payload, which the control site
+	renders too, and `OneSpace Map Settings` is a tenant doctype — so on the
+	control plane the table is simply not there, and a map still has to draw.
+	"""
+	found = dict(DEFAULTS)
+	if not frappe.db.exists("DocType", "OneSpace Map Settings"):
+		return found
+	row = frappe.get_cached_doc("OneSpace Map Settings")
+	found["pick"] = (row.get("map_style") or DEFAULTS["pick"]).strip()
+	found["labels"] = bool(row.get("map_labels"))
+	found["detail"] = (row.get("map_detail") or DEFAULTS["detail"]).strip()
+	return found
 
 
 def boot() -> dict:
@@ -58,32 +112,91 @@ def boot() -> dict:
 	style = (frappe.conf.get("oneapp_map_style") or "").strip()
 	tiles = (frappe.conf.get("oneapp_map_tiles") or "").strip()
 	dark = (frappe.conf.get("oneapp_map_tiles_dark") or "").strip()
+	prefer = chosen()
 
 	# An explicit empty string is how an instance says "no third-party tiles":
 	# `frappe.conf` cannot hold a false that is distinguishable from unset, so
 	# the opt-out is its own key rather than an empty value for another.
-	if frappe.conf.get("oneapp_map_plain"):
-		return {"style": "", "tiles": "", "dark": "", "attribution": ""}
+	#
+	# A workspace that picks Plain says the same thing for itself, which is the
+	# air-gapped instance's setting made available to one customer on a shared
+	# one. Either way nothing is fetched.
+	# The instance's own answer, before this workspace had a say. Sent alongside
+	# the resolved one because the picker resolves the *next* style itself: this
+	# payload was written when the page loaded, so a reader going back to "Follow
+	# the instance" would otherwise be handed whatever they had picked before.
+	instance = style or (DEFAULT_STYLE if not tiles else "")
 
+	if frappe.conf.get("oneapp_map_plain") or prefer["pick"] == "Plain":
+		return {"style": "", "tiles": "", "dark": "", "attribution": "", **prefer,
+		        "styles": dict(STYLES), "instance": instance, "plain": True}
+
+	# The workspace's own choice wins over the instance's default and loses to
+	# an instance that has named a style outright: an operator who has pointed
+	# a bench at their own tile store has done so for a reason, and a customer
+	# picking "Bright" should not send them back off it.
+	picked = STYLES.get(prefer["pick"], "")
 	return {
-		"style": style,
-		"tiles": tiles or DEFAULT_TILES,
-		"dark": dark or (DEFAULT_DARK if not tiles else tiles),
+		"style": style or picked or (DEFAULT_STYLE if not tiles else ""),
+		"tiles": tiles,
+		"dark": dark or tiles,
 		"attribution": (frappe.conf.get("oneapp_map_attribution") or "").strip()
 		or DEFAULT_ATTRIBUTION,
+		# By name *and* URL, for the same reason `instance` is here.
+		"styles": dict(STYLES),
+		"instance": instance,
+		"plain": False,
+		**prefer,
 	}
 
 
+@frappe.whitelist(methods=["POST"])
+def set_basemap(style: str = "", labels=None, detail: str = "") -> dict:
+	"""Change how this workspace's maps are drawn, for everybody on it.
+
+	Guarded on the workspace owner rather than on a doctype permission: this is
+	a presentation decision about every screen in the product, which is the same
+	thing branding is, and it is reached from a map rather than from the desk.
+	"""
+	# Imported here rather than at the top: `workspace` reaches into Frappe's
+	# timezone tables at import time, and this module is read by tests that
+	# stand up neither.
+	from oneapp.onespace.workspace import OWNER_ROLE, SUPPORT_ROLE
+
+	if not set(frappe.get_roles()) & {OWNER_ROLE, SUPPORT_ROLE}:
+		frappe.throw(_("Only a workspace admin can change how the map is drawn."),
+		             frappe.PermissionError)
+
+	row = frappe.get_doc("OneSpace Map Settings")
+	if style:
+		if style not in STYLES and style not in ("Follow the instance", "Plain"):
+			frappe.throw(_("There is no such basemap."))
+		row.map_style = style
+	if labels is not None:
+		row.map_labels = 1 if frappe.parse_json(labels) else 0
+	if detail:
+		if detail not in ("Full", "Quiet", "Minimal"):
+			frappe.throw(_("There is no such level of detail."))
+		row.map_detail = detail
+	row.save(ignore_permissions=True)
+	frappe.clear_document_cache("OneSpace Map Settings")
+	return chosen()
+
+
 def hosts() -> tuple[str, ...]:
-	"""The tile hosts this instance actually talks to, for a legal clause."""
-	boot_value = boot()
-	if not boot_value["tiles"] and not boot_value["style"]:
+	"""The tile hosts this instance actually talks to, for a legal clause.
+
+	Read off the *instance's* configuration rather than off `boot()`, because a
+	published agreement cannot depend on what one workspace picked this morning
+	— every curated style is the same host, so a workspace switching between
+	them changes nothing a clause has to say.
+	"""
+	if frappe.conf.get("oneapp_map_plain"):
 		return ()
-	for value in (boot_value["style"], boot_value["tiles"]):
-		if not value:
-			continue
-		if value.startswith(DEFAULT_TILES[:40]):
-			return DEFAULT_HOSTS
 	# A configured host is the operator's own business to disclose; naming it
 	# here would put a deployment detail into a published agreement.
-	return DEFAULT_HOSTS if boot_value["tiles"] == DEFAULT_TILES else ()
+	if (frappe.conf.get("oneapp_map_style") or "").strip():
+		return ()
+	if (frappe.conf.get("oneapp_map_tiles") or "").strip():
+		return ()
+	return DEFAULT_HOSTS

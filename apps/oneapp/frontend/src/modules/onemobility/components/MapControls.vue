@@ -72,6 +72,57 @@
       </Popover>
 
       <!--
+        The ground. Here for the same reason the shapes are: what is being
+        chosen is how the screen looks, and it is chosen by looking at it.
+
+        Only what a vector style makes possible. Naming places and dropping
+        detail are properties of layers on the running map, so they change in
+        the frame after the click; picking a different style is a different
+        document, so that one reloads. Under raster tiles none of it existed —
+        a tile is a picture that arrives already drawn.
+      -->
+      <Popover v-if="mayStyle" v-model:open="groundOpen" align="end">
+        <template #trigger>
+          <Button
+            variant="ghost"
+            icon="lucide-map"
+            :tooltip="__('The ground')"
+            :aria-label="__('The ground')"
+            data-slot="ground-button"
+          />
+        </template>
+        <template #default>
+          <div class="flex w-[min(17rem,90vw)] flex-col gap-3 p-3" data-slot="ground-picker">
+            <div class="flex flex-col gap-1.5">
+              <p class="text-xs font-medium text-ink-gray-7">{{ __('Basemap') }}</p>
+              <Select
+                :model-value="ground.pick"
+                :options="groundOptions"
+                @update:model-value="(one) => emit('ground', { pick: one })"
+              />
+            </div>
+            <div class="flex flex-col gap-2 border-t border-outline-gray-1 pt-3">
+              <Switch
+                :model-value="ground.labels"
+                size="sm"
+                :label="__('Name places')"
+                @update:model-value="(one) => emit('ground', { labels: one })"
+              />
+              <p class="text-xs font-medium text-ink-gray-7">{{ __('How much is drawn') }}</p>
+              <Select
+                :model-value="ground.detail"
+                :options="detailOptions"
+                @update:model-value="(one) => emit('ground', { detail: one })"
+              />
+              <p class="text-xs leading-snug text-ink-gray-5">
+                {{ __('Everyone on this workspace sees what you choose here.') }}
+              </p>
+            </div>
+          </div>
+        </template>
+      </Popover>
+
+      <!--
         The shape picker. On the map rather than in a settings screen because
         the thing being chosen is a picture, and a picture is chosen by looking
         at the map it lands on.
@@ -128,6 +179,10 @@ const props = defineProps({
   isolated: { type: Object, default: null },
   styles: { type: Array, default: () => [] },
   mayStyle: { type: Boolean, default: false },
+  /** `{ pick, labels, detail }` — what the workspace has said about its ground. */
+  ground: { type: Object, default: () => ({}) },
+  /** The style names this instance offers, from the boot payload. */
+  grounds: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits([
@@ -137,10 +192,29 @@ const emit = defineEmits([
   'update:showVehicles',
   'clear-isolate',
   'style',
+  'ground',
 ])
 
 const layersOpen = ref(false)
 const shapesOpen = ref(false)
+const groundOpen = ref(false)
+
+/**
+ * "Follow the instance" first, because it is the answer for nearly every
+ * workspace and the one an operator's own tile store arrives through, and
+ * "Plain" last, because it is the opt-out rather than a style.
+ */
+const groundOptions = computed(() => [
+  { label: __('Follow the instance'), value: 'Follow the instance' },
+  ...props.grounds.map((one) => ({ label: one, value: one })),
+  { label: __('No background'), value: 'Plain' },
+])
+
+const detailOptions = computed(() => [
+  { label: __('Full'), value: 'Full' },
+  { label: __('Quiet'), value: 'Quiet' },
+  { label: __('Minimal'), value: 'Minimal' },
+])
 
 const overlayNow = computed(() => overlayFor(props.overlay))
 
