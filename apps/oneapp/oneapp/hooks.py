@@ -106,6 +106,12 @@ doc_events = {
 	"Sales Invoice": {
 		"validate": "oneapp.onespace.retention.apply",
 	},
+	# Which source's answer the network is drawn from. Precedence is a setting
+	# a customer changes expecting the map to change, not a number that takes
+	# effect on the next delivery — see `onemobility/conflicts.py`.
+	"Transit Source": {
+		"on_update": "oneapp.onemobility.conflicts.on_source_change",
+	},
 	"Version": {
 		"after_insert": "oneapp.onespace.notifications.on_version",
 	},

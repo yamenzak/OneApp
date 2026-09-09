@@ -1,0 +1,165 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "entity",
+  "natural_key",
+  "label",
+  "source",
+  "cb_claim_verdict",
+  "verdict",
+  "contested",
+  "precedence",
+  "record",
+  "feed",
+  "seen_on",
+  "sec_claim_what",
+  "differs",
+  "claimed"
+ ],
+ "fields": [
+  {
+   "fieldname": "entity",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Kind",
+   "options": "Agency\nLine\nStop\nVehicle",
+   "reqd": 1
+  },
+  {
+   "description": "What the feed calls it. The one thing two sources are compared on.",
+   "fieldname": "natural_key",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Key",
+   "reqd": 1
+  },
+  {
+   "description": "What this source calls it, which is often the whole of the disagreement.",
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Source",
+   "options": "Transit Source",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_claim_verdict",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Drawn",
+   "description": "Drawn is what every screen shows. Overruled lost to a source with a lower precedence and is kept.",
+   "fieldname": "verdict",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Verdict",
+   "options": "Drawn\nAgrees\nOverruled"
+  },
+  {
+   "description": "Set on every claim to this key, not only the losing ones, so one filter shows the whole disagreement.",
+   "fieldname": "contested",
+   "fieldtype": "Check",
+   "label": "Contested",
+   "read_only": 1
+  },
+  {
+   "description": "The source's own, copied here so the winner is one sorted read.",
+   "fieldname": "precedence",
+   "fieldtype": "Int",
+   "label": "Precedence",
+   "read_only": 1
+  },
+  {
+   "description": "The document this key resolved to.",
+   "fieldname": "record",
+   "fieldtype": "Data",
+   "label": "Record",
+   "read_only": 1
+  },
+  {
+   "fieldname": "feed",
+   "fieldtype": "Link",
+   "label": "Seen in",
+   "options": "Transit Feed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "seen_on",
+   "fieldtype": "Datetime",
+   "label": "Last seen",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_claim_what",
+   "fieldtype": "Section Break",
+   "label": "What this source says"
+  },
+  {
+   "description": "Which fields this claim states differently from the one being drawn.",
+   "fieldname": "differs",
+   "fieldtype": "Small Text",
+   "label": "Disagrees about",
+   "read_only": 1
+  },
+  {
+   "description": "The values as this source stated them, kept whole so a disagreement can be read rather than inferred.",
+   "fieldname": "claimed",
+   "fieldtype": "Long Text",
+   "label": "Claimed",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "OneMobility",
+ "name": "Transit Claim",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "natural_key,label,source",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  },
+  {
+   "color": "color",
+   "title": "title"
+  }
+ ],
+ "title_field": "label",
+ "track_changes": 1
+}

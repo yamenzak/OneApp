@@ -192,6 +192,17 @@ SCREENS = [
 		"status_field": "status",
 	},
 	{
+		# The honest version of "select all sources": not merging, choosing
+		# whose answer to draw — and always able to show you the others. §6.
+		"screen": "claims", "label": "Disagreements", "singular": "Claim",
+		"icon": "lucide-git-compare", "document_type": "Transit Claim",
+		"fields": "entity,natural_key,label,source,precedence,differs,verdict",
+		"order_by": "natural_key asc",
+		"filters": json.dumps({"contested": 1}),
+		"view_types": "list",
+		"status_field": "verdict",
+	},
+	{
 		"screen": "feeds", "label": "Deliveries", "singular": "Delivery",
 		"icon": "lucide-file-text", "document_type": "Transit Feed",
 		"fields": "label,source,received_on,lines_seen,stops_seen,trips_seen,status",

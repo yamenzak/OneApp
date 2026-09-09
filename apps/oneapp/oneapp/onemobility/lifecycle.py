@@ -17,6 +17,9 @@ from . import model
 #: The reference doctypes, in the order they can safely be deleted — children
 #: before parents, so a link never dangles mid-way through.
 RECORDS = (
+    # First: a claim links a feed and a source and is what everything else's
+    # deletion would otherwise trip over. See `conflicts.py`.
+    "Transit Claim",
     "Transit Feed",
     "Transit Line",
     "Transit Stop",

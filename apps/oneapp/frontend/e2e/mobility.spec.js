@@ -179,6 +179,25 @@ test('a record carries its own name over to the screen that can say how it ran',
   ).toBeVisible({ timeout: 20_000 })
 })
 
+test('two sources claiming one stop both stay on the screen', async ({ page }) => {
+  // §6, which is a claim about trust rather than about data: dropping one of
+  // two disagreeing answers is the cheap version and is the one that makes a
+  // data product untrustworthy. The fixture has the GTFS feed and the planning
+  // office disagreeing about what the first stop on U6 is called, and both
+  // answers are here — one Drawn, one Overruled, naming what it disagrees
+  // about.
+  await page.goto('/one/space/onemobility?screen=claims')
+  const rows = page.locator('[data-slot="list-row"]')
+  await rows.first().waitFor({ timeout: 30_000 })
+
+  // The screen is filtered to contested keys, so every row on it is half of a
+  // disagreement — a conflict surface that also lists the thousands of keys
+  // nobody disputes is a surface nobody opens twice.
+  await expect(rows.filter({ hasText: 'Overruled' }).first()).toBeVisible()
+  await expect(rows.filter({ hasText: 'Drawn' }).first()).toBeVisible()
+  await expect(rows.filter({ hasText: 'stop_name' }).first()).toBeVisible()
+})
+
 test('a facet this tier cannot answer is refused before it is used', async ({ page }) => {
   await page.goto('/one/space/onemobility?screen=insights')
   const screen = page.locator('[data-slot="insights"]')

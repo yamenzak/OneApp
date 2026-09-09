@@ -27,6 +27,7 @@ export const SPACE_ICONS = [
   'lucide-calendar',
   'lucide-clock',
   'lucide-wrench',
+  'lucide-git-compare',
   'lucide-file-text',
   'lucide-receipt',
   'lucide-wallet',
@@ -181,6 +182,16 @@ export const SPACE_ICON_GROUPS = [
           "service",
           "repairs",
           "field"
+        ]
+      },
+      {
+        "icon": "lucide-git-compare",
+        "words": [
+          "conflicts",
+          "differences",
+          "compare",
+          "reconcile",
+          "duplicates"
         ]
       }
     ]

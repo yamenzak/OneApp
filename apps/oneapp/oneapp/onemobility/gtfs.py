@@ -30,6 +30,7 @@ from frappe import _
 from frappe.utils import cint, flt, now_datetime
 
 from ..shared import facts
+from . import conflicts
 from . import model
 
 #: How many rows of one CSV are held in memory at once. A big-city
@@ -72,18 +73,17 @@ def _seconds(value: str) -> int:
         return 0
 
 
-def _upsert(doctype: str, key_field: str, key: str, values: dict) -> str:
-    """One reference record, by natural key. The idempotence lives here."""
-    name = frappe.db.get_value(doctype, {key_field: key}, "name")
-    if name:
-        doc = frappe.get_doc(doctype, name)
-        doc.update(values)
-        doc.save(ignore_permissions=True)
-        return doc.name
+def _upsert(doctype: str, key_field: str, key: str, values: dict,
+            source: str = "", feed: str = "") -> str:
+    """One reference record, by natural key. The idempotence lives here.
 
-    doc = frappe.get_doc({"doctype": doctype, key_field: key, **values})
-    doc.insert(ignore_permissions=True)
-    return doc.name
+    Through `conflicts.record` rather than a bare save, so what this delivery
+    claims is written down beside what every other source claims for the same
+    key. Where this is the only source saying anything, that is one extra row
+    and the record is what it always was — see `conflicts.py` for why the
+    alternative, quietly overwriting, is the thing customers stop trusting.
+    """
+    return conflicts.record(doctype, key, values, source=source, feed=feed)
 
 
 def load(feed_name: str, content: bytes) -> dict:
@@ -112,6 +112,7 @@ def load(feed_name: str, content: bytes) -> dict:
                 "url": row.get("agency_url") or "",
                 "feed": feed.name,
             },
+            source=feed.source, feed=feed.name,
         )
         counts["agencies"] += 1
 
@@ -145,6 +146,7 @@ def load(feed_name: str, content: bytes) -> dict:
                 "colour": f"#{colour}" if colour else "",
                 "feed": feed.name,
             },
+            source=feed.source, feed=feed.name,
         )
         counts["lines"] += 1
 
@@ -164,6 +166,7 @@ def load(feed_name: str, content: bytes) -> dict:
                 "status": "Served",
                 "feed": feed.name,
             },
+            source=feed.source, feed=feed.name,
         )
         counts["stops"] += 1
 

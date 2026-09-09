@@ -32,6 +32,7 @@ VIEW_ICONS = (
 	# Work
 	"lucide-briefcase", "lucide-calendar",
 	"lucide-clock", "lucide-wrench",
+	"lucide-git-compare",
 	# Money
 	"lucide-file-text", "lucide-receipt",
 	"lucide-wallet", "lucide-shopping-cart",

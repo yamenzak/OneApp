@@ -37,6 +37,8 @@ SPACE_ICON_GROUPS = [
         ("lucide-calendar", ("scheduling", "calendar", "events", "bookings")),
         ("lucide-clock", ("timesheets", "attendance", "hours", "time")),
         ("lucide-wrench", ("maintenance", "service", "repairs", "field")),
+        ("lucide-git-compare", ("conflicts", "differences", "compare",
+                                "reconcile", "duplicates")),
     ]),
     ("Money", [
         ("lucide-file-text", ("documents", "invoices", "quotes", "papers")),

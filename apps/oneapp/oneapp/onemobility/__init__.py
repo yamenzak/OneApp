@@ -14,6 +14,8 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     model       the fact tables, declared against shared/facts.py
     gtfs        a GTFS zip read into that model
     sources     the four doors a delivery arrives through, and the one pipeline
+    conflicts   two sources claiming one key: whose answer is drawn, and where
+                the other one went
     streaming   the door that never closes — a socket read in bounded windows
     live        positions in, positions out, one vehicle's day for the scrubber
     arrivals    positions turned into stop visits, which is how a stop gets a number
@@ -30,6 +32,7 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     markers     which silhouette the map draws for a line, and who decides
 """
 
+from .conflicts import accept_stop, disagreements
 from .facets import offered
 from .forecast import expect, outlook, risk, unusual
 from .geo import demand, surface
@@ -44,11 +47,13 @@ from .sources import fetch_now
 from .streaming import listen_now
 
 __all__ = [
+    "accept_stop",
     "accuracy",
     "at",
     "bunching",
     "days",
     "demand",
+    "disagreements",
     "expect",
     "fetch_now",
     "fleet",

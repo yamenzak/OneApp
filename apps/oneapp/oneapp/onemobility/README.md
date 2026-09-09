@@ -356,14 +356,43 @@ recorded conflict. The customer sets **precedence per source**, the winner is
 what screens draw by default, and the loser is kept and visible. A stop that
 three sources agree on and one disagrees with says so.
 
+That is `conflicts.py` and the `Transit Claim` row behind every imported
+record. Every importer writes through it rather than saving the record, so what
+each source said is on the table beside what was drawn. Four decisions in it:
+
+**The winner is a whole claim, not a field at a time.** Taking each field from
+whichever source ranks highest for it sounds better and is worse: it is how a
+stop ends up named Alexanderplatz with Spandau's coordinates, and neither
+source ever said that. One source's answer, entire; the others one click away.
+
+**A feed never claims what the workspace chose.** A line's colour, its emoji,
+its marker shape, its status — no feed has an opinion about those, and a source
+that overwrote them on every delivery would make the record uneditable with
+nobody able to say why. `CLAIMED` names the fields a source is actually
+answering for.
+
+**Precedence is live.** A customer who reorders their sources expects the map
+to change now, not after the next delivery — which for an SFTP drop folder is
+tomorrow. Changing the number re-settles every key that source claims.
+
+**Agreeing is a third verdict.** Two sources stating the same values are not a
+conflict and are worth showing anyway: three sources agreeing and one not is a
+far stronger finding than two disagreeing. Drawn, Agrees, Overruled.
+
 That is also the honest version of the "select all sources" filter: it is not
 merging, it is choosing whose answer to draw, and it can always show you the
-others.
+others — which is the Disagreements screen, one row per source per contested
+key, and `disagreements()` behind it.
 
 Route completion and stop generation — a vehicle stopping somewhere no feed
 declares a stop — belong here too, as an **inferred** source with the lowest
 precedence, never silently promoted into the network. An inferred stop is drawn
-differently and can be accepted into the real network by a person.
+differently and is accepted into the real network by a person, through the
+Accept action on the stop; nothing else can promote one.
+
+What is not built is the conflict between two *facts* — the planned 07:38 and
+the observed 07:44 — which is a different table and is what §7a's arrival model
+reads rather than something a precedence resolves.
 
 ---
 
@@ -1028,8 +1057,11 @@ Each ships something a person can look at. **Done** is done and in the fixture.
 7. **Analysis.** Peak hours, punctuality, occupancy over time — the aggregate
    API and the charts on it. **Done:** the Insights screen.
 8. **Sources, plural.** Precedence, conflicts, inferred stops, the connection
-   surface. **Half done:** precedence is a field and inferred stops are drawn
-   differently; nothing resolves a conflict between two sources yet.
+   surface. **Done:** every import writes a `Transit Claim`, precedence decides
+   which one is drawn and re-settles the moment it changes, the losing claim is
+   kept with the fields it disagrees about named, the Disagreements screen
+   lists them, and an inferred stop is promoted only by a person. What is left
+   is the conflict between two facts rather than two records — see §6.
 9. **Forecast.** The percentile roll-up read forwards — ETAs, punctuality risk,
    bunching — the scrubber's right-hand side, and the scoring job that says
    whether any of it is any good. **Nearly done:** `serviceHour` and `stopHour`

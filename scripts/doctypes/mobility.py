@@ -82,6 +82,60 @@ doctype(
     **TENANT,
 )
 
+#: Two sources claiming one natural key. See
+#: `apps/oneapp/oneapp/onemobility/README.md` §6: software that silently drops
+#: one of two disagreeing numbers is software nobody trusts twice, and in this
+#: market the disagreement is often the interesting part.
+#:
+#: One row per source per key, so the record a screen draws is one claim and
+#: every other claim is still here to be read beside it.
+doctype(
+    "Transit Claim",
+    autoname="hash",
+    title_field="label",
+    search_fields="natural_key,label,source",
+    states=[
+        {"title": "Drawn", "color": "Green"},
+        {"title": "Agrees", "color": "Blue"},
+        {"title": "Overruled", "color": "Amber"},
+    ],
+    fields=[
+        f("entity", "Select", "Kind", reqd=1, in_list_view=1,
+          options="Agency\nLine\nStop\nVehicle"),
+        f("natural_key", "Data", "Key", reqd=1, in_list_view=1,
+          description="What the feed calls it. The one thing two sources are "
+                      "compared on."),
+        f("label", "Data", "Name", in_list_view=1,
+          description="What this source calls it, which is often the whole of "
+                      "the disagreement."),
+        f("source", "Link", "Source", options="Transit Source", reqd=1,
+          in_list_view=1),
+        column("cb_claim_verdict"),
+        f("verdict", "Select", "Verdict", in_list_view=1, default="Drawn",
+          options="Drawn\nAgrees\nOverruled",
+          description="Drawn is what every screen shows. Overruled lost to a "
+                      "source with a lower precedence and is kept."),
+        f("contested", "Check", "Contested", read_only=1,
+          description="Set on every claim to this key, not only the losing "
+                      "ones, so one filter shows the whole disagreement."),
+        f("precedence", "Int", "Precedence", read_only=1,
+          description="The source's own, copied here so the winner is one "
+                      "sorted read."),
+        f("record", "Data", "Record", read_only=1,
+          description="The document this key resolved to."),
+        f("feed", "Link", "Seen in", options="Transit Feed", read_only=1),
+        f("seen_on", "Datetime", "Last seen", read_only=1),
+        section("sec_claim_what", "What this source says"),
+        f("differs", "Small Text", "Disagrees about", read_only=1,
+          description="Which fields this claim states differently from the one "
+                      "being drawn."),
+        f("claimed", "Long Text", "Claimed", read_only=1,
+          description="The values as this source stated them, kept whole so a "
+                      "disagreement can be read rather than inferred."),
+    ],
+    **TENANT,
+)
+
 doctype(
     "Transit Feed",
     autoname="hash",

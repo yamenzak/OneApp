@@ -35,6 +35,17 @@ def actions() -> dict:
 		],
 		"onemobility/stops": [
 			{**seen, "label": "How this stop is served", "param": "stop"},
+			{
+				# A vehicle stopped somewhere no feed declares a stop, so one
+				# was inferred and drawn differently. §6's last paragraph: it
+				# is never quietly promoted, and this is the person saying it
+				# is real — which is the only thing that should be able to.
+				"key": "accept",
+				"label": "Accept into the network",
+				"icon": "lucide-check",
+				"scope": "selection",
+				"method": "oneapp.onemobility.accept_stop",
+			},
 		],
 		"onemobility/vehicles": [
 			{**seen, "label": "How this vehicle ran", "param": "vehicle"},

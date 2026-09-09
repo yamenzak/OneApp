@@ -793,7 +793,7 @@ def _seed_onemobility():
 	"""
 	from datetime import datetime, timedelta
 
-	from oneapp.onemobility import arrivals, live, model, scoring
+	from oneapp.onemobility import arrivals, conflicts, live, model, scoring
 	from oneapp.onespace import sync
 	from oneapp.shared import facts
 	from oneapp_control.spaces import onemobility as manifest
@@ -829,19 +829,44 @@ def _seed_onemobility():
 		coordinates = []
 		for stop in spec["stops"]:
 			key = f"zz-{stop['code']}"
-			stops[key] = _one("Transit Stop", "stop_key", key, {
+			# Through the claim table rather than a bare upsert, the way the
+			# real importer goes — so the fixture has the rows §6 is about
+			# instead of only the records they resolved to.
+			stops[key] = conflicts.record("Transit Stop", key, {
 				"stop_name": stop["name"], "stop_code": stop["code"],
 				"latitude": stop["lat"], "longitude": stop["lon"],
 				"status": stop.get("status", "Served"), "zone": "A", "feed": feed,
-			})
+			}, source=source, feed=feed)
 			coordinates.append([stop["lon"], stop["lat"]])
 
-		lines[spec["key"]] = _one("Transit Line", "line_key", spec["key"], {
+		lines[spec["key"]] = conflicts.record("Transit Line", spec["key"], {
 			"short_name": spec["number"], "line_name": spec["name"], "agency": agency,
 			"mode": spec["mode"], "colour": spec["colour"], "status": "Running",
 			"feed": feed,
 			"shape": json.dumps({"type": "LineString", "coordinates": coordinates}),
-		})
+		}, source=source, feed=feed)
+
+	# A second source, and a disagreement. Without one the Disagreements screen
+	# is empty, which makes a working feature indistinguishable from a broken
+	# one — the same argument as the incident day in the scoring fixture. The
+	# planning office and the vehicles disagree about what a stop is called and
+	# about which line a run belongs to, which is exactly the pair §6 opens
+	# with: the timetable says one thing and the vehicle says another.
+	planning = _one("Transit Source", "source_name", "zzVDV planning", {
+		"kind": "SFTP", "format": "VDV 452", "status": "Connected", "precedence": 60,
+		"endpoint": "vdv.zzbvg.example:22", "folder": "/out", "every_minutes": 720,
+	})
+	disputed = MOBILITY_LINES[0]
+	first = disputed["stops"][0]
+	conflicts.record("Transit Stop", f"zz-{first['code']}", {
+		"stop_name": f"{first['name']} (Bahnhof)", "stop_code": first["code"],
+		"latitude": round(first["lat"] + 0.0009, 6), "longitude": first["lon"],
+		"zone": "B",
+	}, source=planning, feed="")
+	conflicts.record("Transit Line", disputed["key"], {
+		"short_name": disputed["number"], "line_name": f"{disputed['name']} (Linie)",
+		"agency": agency, "mode": disputed["mode"],
+	}, source=planning, feed="")
 
 	vehicles = {}
 	for spec in MOBILITY_VEHICLES:
