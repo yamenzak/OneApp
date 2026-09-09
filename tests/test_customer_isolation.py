@@ -74,6 +74,13 @@ ADMIN_MAY_REACH = {
 	"domain_instructions", "request_custom_domain",
 	"marketplace", "enable_space", "disable_space", "removable",
 	"remove_space", "redeem_claim_code",
+	# The destructive one, and an Admin's rather than the owner's alone for the
+	# same reason the rest of this list is: an Admin is somebody trusted with
+	# the workspace's people and its apps, and a restore is a workspace
+	# decision rather than a billing one. It spends nothing. What stands
+	# between it and a mistake is not the role — it is the screen that counts
+	# what will be lost before the button does anything.
+	"restore_workspace",
 }
 
 

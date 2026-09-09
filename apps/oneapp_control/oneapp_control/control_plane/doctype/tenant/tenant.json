@@ -322,7 +322,7 @@
    "read_only": 1
   },
   {
-   "description": "When it last came back from cold.",
+   "description": "When this site was last rebuilt from a copy \u2014 from cold, or from a restore point the workspace asked for. Sent down the sync, where it is what tells a restored site to make the bucket agree with its database again.",
    "fieldname": "restored_on",
    "fieldtype": "Datetime",
    "label": "Restored On",

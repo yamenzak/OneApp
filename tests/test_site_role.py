@@ -205,6 +205,13 @@ def test_every_scheduled_tenant_job_is_accounted_for():
 		# OneMobility, so this enqueues nothing — once again the empty query is
 		# the answer rather than a case to branch on.
 		"oneapp.onemobility.streaming.run_streams",
+		# And the weekly walk of the bucket for objects no `File` row claims.
+		# Gated inside, and by the one check that has to be there anyway: it
+		# refuses on a site that is the control plane, and refuses again on any
+		# site whose files are not in a bucket. A sweep that deletes objects is
+		# the one place in this list where "the query comes back empty" is not
+		# a good enough reason to leave it ungated.
+		"oneapp.onespace.restore.sweep",
 	}
 	assert scheduled == known, (
 		"a scheduled job was added or renamed; decide whether it should run on "

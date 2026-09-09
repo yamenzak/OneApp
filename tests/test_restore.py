@@ -1,226 +1,260 @@
-"""Restoring a workspace from its cold copy.
+"""Going back to a backup, and the bucket that has to be made to agree.
 
-The failure this guards against is the quiet one: a restore that completes and
-produces an empty or half-configured workspace. Nobody notices until somebody
-looks for a record that is not there.
+The half of a restore nobody builds is the second one. Frappe Cloud will put
+the database back to Tuesday perfectly well; what it cannot know is that this
+product keeps attachments as objects rather than as rows, so a record restored
+away leaves its file in the bucket, referenced by nothing, invisible to every
+screen and billed for every month from then on.
+
+So these are about the two directions of that disagreement — objects no row
+claims, and rows whose object is gone — and about the three refusals that stand
+between a reconcile and deleting somebody's files for a reason that turns out to
+have been a broken database.
 """
+
+import datetime
 
 import pytest
 
 
 @pytest.fixture
-def steps(stub_frappe):
-	from oneapp_control.provisioning import steps as module
+def restore(stub_frappe):
+	from oneapp.onespace import restore as module
 
 	return module
 
 
 @pytest.fixture
-def backups(stub_frappe):
-	from oneapp_control.lifecycle import backups as module
+def backup(stub_frappe):
+	from oneapp.onespace import backup as module
 
 	return module
 
 
-class FakeJob:
-	def __init__(self, **kw):
-		self.tenant = "acme"
-		self.press_site = "acme-xyz"
-		self.agent_job_id = None
-		self.payload = "{}"
-		self.written = {}
-		self.__dict__.update(kw)
+class FakeR2:
+	"""The bucket, as the two functions here see it."""
 
-	def parsed_payload(self):
-		import json
+	def __init__(self, objects=None, configured=True):
+		self.objects = objects or []
+		self.configured = configured
+		self.deleted = []
 
-		return json.loads(self.payload)
+	def is_configured(self):
+		return self.configured
 
-	def db_set(self, field, value=None):
-		values = field if isinstance(field, dict) else {field: value}
-		self.written.update(values)
+	def list_objects(self, prefix):
+		return [row for row in self.objects if row["key"].startswith(prefix)]
 
-
-class FakeTenant:
-	def __init__(self, **kw):
-		self.name = "acme"
-		self.cold_storage_key = "cold/acme/20260601-000000"
-		self.press_site = "acme-xyz"
-		self.written = {}
-		self.__dict__.update(kw)
-
-	def get(self, key, default=None):
-		return getattr(self, key, default)
-
-	def db_set(self, field, value=None):
-		values = field if isinstance(field, dict) else {field: value}
-		self.written.update(values)
-		for k, v in values.items():
-			setattr(self, k, v)
+	def delete_keys(self, keys):
+		self.deleted.extend(keys)
+		return len(keys)
 
 
-ALL_LINKS = {
-	"database.sql.gz": "https://r2/db",
-	"public-files.tar": "https://r2/pub",
-	"private-files.tar": "https://r2/priv",
-	"site-config.json": "https://r2/conf",
-}
+def _object(key, size=100, minutes_old=120):
+	return {
+		"key": key,
+		"size": size,
+		"modified": datetime.datetime(2026, 6, 1, 12, 0, 0)
+		- datetime.timedelta(minutes=minutes_old),
+	}
 
 
-def _wire(steps, monkeypatch, *, tenant=None, links=None):
-	sent = {}
-	tenant = tenant or FakeTenant()
-	monkeypatch.setattr(steps.frappe, "get_doc", lambda *a: tenant)
+@pytest.fixture
+def bucket(restore, stub_frappe, monkeypatch):
+	"""A workspace with a tenant name and a bucket, at a fixed moment."""
+	stub_frappe.conf = {"oneapp_tenant": "acme"}
 	monkeypatch.setattr(
-		"oneapp_control.lifecycle.cold.links",
-		lambda t, ttl=3600: dict(ALL_LINKS if links is None else links),
+		restore, "now_datetime", lambda: datetime.datetime(2026, 6, 1, 12, 0, 0)
 	)
 
-	class Client:
-		def restore(self, site, files, skip_failing_patches=False):
-			sent["site"] = site
-			sent["files"] = files
-			return {"job": "AJ-1"}
+	def install(objects, known):
+		fake = FakeR2(objects)
+		monkeypatch.setattr(restore, "r2", fake)
+		monkeypatch.setattr(restore, "known_keys", lambda: set(known))
+		return fake
 
-	monkeypatch.setattr(steps, "get_client", lambda: Client())
-	return sent
-
-
-def test_a_restore_hands_press_the_database_and_the_files(steps, monkeypatch):
-	sent = _wire(steps, monkeypatch)
-	steps.restore_from_cold(FakeJob())
-
-	assert sent["site"] == "acme-xyz"
-	assert sent["files"]["database"] == "https://r2/db"
-	assert sent["files"]["public"] == "https://r2/pub"
-	assert sent["files"]["private"] == "https://r2/priv"
+	return install
 
 
-def test_the_redacted_config_is_never_restored(steps, monkeypatch):
-	"""Ours has been stripped of every secret before it was stored.
+# --------------------------------------------------------------------------- #
+# What the bucket keeps, and what it loses
+# --------------------------------------------------------------------------- #
 
-	Restoring it would overwrite the working keys `push_site_config` has just
-	written with a set of nulls — a site that comes up and cannot reach the
-	control plane, which reads as the restore having failed for reasons nobody
-	can see.
+def test_an_object_no_row_claims_is_deleted(restore, bucket):
+	"""The whole point. A file uploaded after the backup is restored away with
+	the record that held it, and its bytes would otherwise sit there forever."""
+	fake = bucket(
+		[
+			_object("tenants/acme/private/FILE-1/invoice.pdf"),
+			_object("tenants/acme/private/FILE-2/orphan.pdf", size=4096),
+		],
+		known={"tenants/acme/private/FILE-1/invoice.pdf"},
+	)
+
+	result = restore.reconcile()
+
+	assert result["deleted"] == 1
+	assert fake.deleted == ["tenants/acme/private/FILE-2/orphan.pdf"]
+	assert result["bytes"] == 4096
+	assert result["kept"] == 1
+
+
+def test_a_dry_run_says_what_it_would_take_and_takes_nothing(restore, bucket):
+	fake = bucket(
+		[_object("tenants/acme/private/FILE-2/orphan.pdf", size=10)],
+		known={"tenants/acme/public/FILE-9/logo.png"},
+	)
+
+	result = restore.reconcile(dry_run=1)
+
+	assert result["orphans"] == 1 and result["bytes"] == 10
+	assert result["deleted"] == 0 and fake.deleted == []
+
+
+def test_an_object_written_a_minute_ago_is_left_alone(restore, bucket):
+	"""A direct upload writes the object first and the row second.
+
+	Without a settling window the sweep eventually deletes a file somebody is
+	in the middle of uploading — the one failure that would be indistinguishable
+	from the product losing data at random.
 	"""
-	sent = _wire(steps, monkeypatch)
-	steps.restore_from_cold(FakeJob())
-
-	assert "config" not in sent["files"]
-
-
-def test_a_cold_copy_with_no_database_is_refused(steps, monkeypatch):
-	"""It would produce an empty workspace that looks like it worked."""
-	_wire(steps, monkeypatch, links={"public-files.tar": "https://r2/pub"})
-
-	with pytest.raises(steps.PressPermanentError):
-		steps.restore_from_cold(FakeJob())
-
-
-def test_a_workspace_with_no_cold_copy_is_refused(steps, monkeypatch):
-	_wire(steps, monkeypatch, tenant=FakeTenant(cold_storage_key=None))
-
-	with pytest.raises(steps.PressPermanentError):
-		steps.restore_from_cold(FakeJob())
-
-
-def test_the_payload_can_name_the_copy_to_restore(steps, monkeypatch):
-	"""An operator restoring a specific promotion, rather than whichever one the
-	tenant currently points at."""
-	sent = _wire(steps, monkeypatch, tenant=FakeTenant(cold_storage_key=None))
-	steps.restore_from_cold(FakeJob(payload='{"cold_storage_key": "cold/acme/older"}'))
-
-	assert sent["files"]["database"] == "https://r2/db"
-
-
-def test_finishing_a_restore_takes_the_workspace_off_the_ladder(steps, monkeypatch):
-	tenant = FakeTenant(
-		status="Archived", purge_after="2026-08-01", purge_warned_on="2026-07-01",
-		dunning_started_on="2026-01-01", dunning_stage="Archived",
-		suspended_on="2026-02-01", archived_on="2026-03-01",
+	fake = bucket(
+		[_object("tenants/acme/private/FILE-3/uploading.zip", minutes_old=1)],
+		known={"tenants/acme/private/FILE-1/invoice.pdf"},
 	)
-	monkeypatch.setattr(steps.frappe, "get_doc", lambda *a: tenant)
-	monkeypatch.setattr("oneapp_control.lifecycle.events.record", lambda *a, **k: None)
-	monkeypatch.setattr("oneapp_control.notifications.emails.restored", lambda *a: None)
-	monkeypatch.setattr(steps, "now_datetime", lambda: "2026-06-01 12:00:00")
 
-	steps.finalise_restore(FakeJob())
+	result = restore.reconcile()
 
-	assert tenant.status == "Active"
-	assert tenant.purge_after is None, "a live workspace must not sit on a purge timer"
-	assert tenant.purge_warned_on is None
-	assert tenant.dunning_started_on is None
-	assert tenant.restored_on is not None
+	assert fake.deleted == []
+	assert result["too_new"] == 1 and result["orphans"] == 0
 
 
-def test_a_restored_workspace_stops_pointing_at_its_cold_copy(steps, monkeypatch):
-	"""The objects stay — an hour ago they were somebody's only copy. What
-	changes is that retention may now expire them like any other old backup."""
-	tenant = FakeTenant()
-	monkeypatch.setattr(steps.frappe, "get_doc", lambda *a: tenant)
-	monkeypatch.setattr("oneapp_control.lifecycle.events.record", lambda *a, **k: None)
-	monkeypatch.setattr("oneapp_control.notifications.emails.restored", lambda *a: None)
+def test_a_database_claiming_nothing_at_all_is_refused(restore, bucket):
+	"""Not a workspace with no files. A workspace with no files has no objects.
 
-	steps.finalise_restore(FakeJob())
-	assert tenant.cold_storage_key is None
+	A bucket full of objects and a `File` table that claims none of them is a
+	database that is mid-restore, half-migrated or broken, and deleting on its
+	word is the worst thing this code could do.
+	"""
+	fake = bucket([_object(f"tenants/acme/private/FILE-{n}/x.pdf") for n in range(5)],
+	              known=set())
+
+	result = restore.reconcile()
+
+	assert result["ok"] is False and result["reason"] == "nothing_claimed"
+	assert fake.deleted == []
+
+
+def test_rows_whose_object_is_gone_are_counted_and_not_hidden(restore, bucket):
+	"""The other direction, which no restore can fix.
+
+	A file deleted since the backup comes back as a row, because the row is in
+	the dump. Its bytes went when the bin was emptied. The row will be there and
+	the file will not open, and saying so is the only honest thing available.
+	"""
+	bucket(
+		[_object("tenants/acme/private/FILE-1/invoice.pdf")],
+		known={
+			"tenants/acme/private/FILE-1/invoice.pdf",
+			"tenants/acme/private/FILE-7/deleted-last-week.pdf",
+		},
+	)
+
+	assert restore.reconcile()["missing"] == 1
+
+
+def test_a_workspace_with_no_bucket_reconciles_nothing(restore, stub_frappe, monkeypatch):
+	monkeypatch.setattr(restore, "r2", FakeR2(configured=False))
+	assert restore.reconcile() == {"ok": False, "reason": "no_storage"}
 
 
 # --------------------------------------------------------------------------- #
-# What retention may do to a promoted copy
+# Being told a restore happened
 # --------------------------------------------------------------------------- #
 
-def test_the_copy_a_workspace_points_at_is_never_expired(backups, monkeypatch):
-	"""It may be the only copy of somebody's business."""
-	deleted = []
-	monkeypatch.setattr(
-		backups.frappe.db, "get_value", lambda *a, **k: "cold/acme/20260601-000000"
+class FakeState:
+	def __init__(self, reconciled_for=None):
+		self.files_reconciled_for = reconciled_for
+		self.writes = []
+
+	def db_set(self, field, value):
+		self.writes.append((field, value))
+		setattr(self, field, value)
+
+
+def test_a_restore_is_noticed_and_reconciled_once(restore, stub_frappe, monkeypatch):
+	"""The site's copy of the timestamp came out of the dump, so it is always
+	older than a restore that has just happened. That is the whole mechanism."""
+	state = FakeState(reconciled_for="2026-05-01 09:00:00")
+	monkeypatch.setattr(stub_frappe, "get_single", lambda *a, **k: state)
+
+	restore.after_restore({"restored_on": "2026-06-01 11:40:00"})
+
+	assert ("files_reconciled_for", "2026-06-01 11:40:00") in state.writes
+	assert len(stub_frappe.enqueued) == 1
+	assert stub_frappe.enqueued[0][0] == "oneapp.onespace.restore.reconcile"
+
+
+def test_the_next_sync_does_not_reconcile_again(restore, stub_frappe, monkeypatch):
+	state = FakeState(reconciled_for="2026-06-01 11:40:00")
+	monkeypatch.setattr(stub_frappe, "get_single", lambda *a, **k: state)
+
+	restore.after_restore({"restored_on": "2026-06-01 11:40:00"})
+
+	assert state.writes == [] and stub_frappe.enqueued == []
+
+
+def test_a_workspace_that_was_never_restored_does_nothing(restore, stub_frappe):
+	restore.after_restore({"requested": True})
+	assert stub_frappe.enqueued == []
+
+
+# --------------------------------------------------------------------------- #
+# The stamp
+# --------------------------------------------------------------------------- #
+
+def test_a_stamp_reads_back_as_the_moment_it_names(restore):
+	assert restore._stamp_to_datetime("20260412-031500") == datetime.datetime(
+		2026, 4, 12, 3, 15, 0
 	)
+
+
+def test_something_that_is_not_a_stamp_is_not_a_moment(restore):
+	assert restore._stamp_to_datetime("") is None
+	assert restore._stamp_to_datetime("latest") is None
+
+
+# --------------------------------------------------------------------------- #
+# What a backup carries
+# --------------------------------------------------------------------------- #
+
+def test_a_workspace_with_a_bucket_does_not_tar_its_files(backup, stub_frappe, monkeypatch):
+	"""They are already objects in the bucket the backup is written into.
+
+	The tarball was a second copy of every attachment beside the first, charged
+	for monthly, and a multi-gigabyte upload every night to produce it.
+	"""
+	taken = {}
 	monkeypatch.setattr(
-		backups, "cold_sets",
-		lambda b, t: [{"stamp": "20260601-000000", "keys": ["cold/acme/20260601-000000/db"],
-		               "bytes": 1, "modified": None}],
+		backup, "now_datetime", lambda: datetime.datetime(2026, 6, 1, 12, 0, 0)
 	)
-	monkeypatch.setattr(backups.r2, "delete_keys", lambda b, k: deleted.extend(k) or len(k))
-
-	assert backups.expire_orphaned_cold("acme", "bucket", 7) == 0
-	assert deleted == []
-
-
-def test_a_superseded_copy_is_expired_like_any_old_backup(backups, monkeypatch):
-	"""A workspace that fell and recovered would otherwise accumulate permanent
-	copies of itself, under the one prefix nothing else sweeps."""
-	import datetime
-
-	deleted = []
-	monkeypatch.setattr(backups.frappe.db, "get_value", lambda *a, **k: "cold/acme/newest")
-
-	def one(stamp, days_old):
-		return {
-			"stamp": stamp,
-			"keys": [f"cold/acme/{stamp}/db"],
-			"bytes": 1,
-			"modified": datetime.datetime(2026, 6, 1) - datetime.timedelta(days=days_old),
-		}
-
+	monkeypatch.setattr(backup, "files_live_in_the_bucket", lambda: True)
 	monkeypatch.setattr(
-		backups, "cold_sets",
-		lambda b, t: [one("a", 90), one("b", 60), one("newest", 1)],
+		backup, "take", lambda with_files=True: taken.setdefault("files", with_files) or {}
 	)
-	monkeypatch.setattr(backups, "now_datetime", lambda: datetime.datetime(2026, 6, 1))
-	monkeypatch.setattr(
-		backups, "add_to_date",
-		lambda w, days=0, hours=0: w + datetime.timedelta(days=days, hours=hours),
-	)
-	monkeypatch.setattr(
-		backups, "get_datetime",
-		lambda v: v if isinstance(v, datetime.datetime)
-		else datetime.datetime.fromisoformat(str(v)[:19]),
-	)
-	monkeypatch.setattr(backups.r2, "delete_keys", lambda b, k: deleted.extend(k) or len(k))
+	monkeypatch.setattr(backup, "upload", lambda artifacts, prefix: [])
+	reported = []
+	monkeypatch.setattr(backup, "_report", lambda result: reported.append(result))
 
-	backups.expire_orphaned_cold("acme", "bucket", 7)
+	from oneapp.onestorage import r2 as storage
 
-	# The held copy never enters the candidate list at all, and of the two that
-	# do, the newest is kept the same way an ordinary backup is.
-	assert deleted == ["cold/acme/a/db"]
+	monkeypatch.setattr(storage, "is_configured", lambda: True)
+
+	result = backup.run_backup(with_files=True)
+
+	assert taken["files"] is False
+	assert result["with_files"] is False and result["files_in_bucket"] is True
+	# Said out loud, because the control plane refuses to promote a backup whose
+	# files it cannot account for — and "no tarball" has to be distinguishable
+	# from "the tarball failed".
+	assert reported[0]["files_in_bucket"] is True

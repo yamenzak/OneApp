@@ -199,6 +199,12 @@ def _make_frappe():
 	# test twice and hide the enqueue it is actually asserting.
 	frappe.enqueued = []
 	frappe.enqueue = lambda method, **k: frappe.enqueued.append((method, k))
+	# The request-local namespace. Only `site` is ever read by our code, and it
+	# is read to build a deduplicating job id — a `frappe.local` that does not
+	# exist turns that into an AttributeError inside the `except` the enqueue is
+	# wrapped in, so the job is silently never queued and the test that asserts
+	# it was passes for the wrong reason.
+	frappe.local = types.SimpleNamespace(site="stub.localhost")
 	frappe.get_doc = lambda *a, **k: None
 	frappe.get_single = lambda *a, **k: None
 	frappe.get_cached_doc = lambda *a, **k: None

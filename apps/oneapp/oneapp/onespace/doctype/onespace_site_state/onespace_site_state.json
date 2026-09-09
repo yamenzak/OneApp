@@ -17,6 +17,8 @@
   "max_users",
   "background_workers",
   "backups_per_day",
+  "backup_retention_days",
+  "files_reconciled_for",
   "sec_usage",
   "storage_used_bytes",
   "database_used_bytes",
@@ -101,6 +103,20 @@
    "fieldname": "backups_per_day",
    "fieldtype": "Int",
    "label": "Backups Per Day",
+   "read_only": 1
+  },
+  {
+   "description": "How long a copy is kept. Carried here because the list of restore points is drawn on this site, and a list with no window beside it does not say why it ends where it does.",
+   "fieldname": "backup_retention_days",
+   "fieldtype": "Int",
+   "label": "Backup Retention Days",
+   "read_only": 1
+  },
+  {
+   "description": "The restore this site has already made its bucket agree with. Compared against the control plane's own timestamp on every sync: this site's copy came out of the dump, so after a restore the two differ exactly once.",
+   "fieldname": "files_reconciled_for",
+   "fieldtype": "Data",
+   "label": "Files Reconciled For",
    "read_only": 1
   },
   {

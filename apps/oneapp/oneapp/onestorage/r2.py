@@ -166,6 +166,71 @@ def delete(key: str):
 		frappe.log_error(title="R2 delete failed", message=frappe.get_traceback())
 
 
+#: S3 caps a listing page at a thousand keys, and so does the delete batch.
+PAGE = 1000
+
+
+def list_objects(prefix: str) -> list[dict]:
+	"""Every object under a prefix, paginated. `{"key", "size", "modified"}`.
+
+	The whole listing rather than a generator, for the same reason the control
+	plane's version is: the two callers — the backup list and the reconcile —
+	both have to see the set before deciding anything about any of it.
+	"""
+	client_ = client()
+	bucket = config()["bucket"]
+	found, token = [], None
+
+	while True:
+		kwargs = {"Bucket": bucket, "Prefix": prefix, "MaxKeys": PAGE}
+		if token:
+			kwargs["ContinuationToken"] = token
+
+		page = client_.list_objects_v2(**kwargs)
+		for row in page.get("Contents") or []:
+			found.append({
+				"key": row["Key"],
+				"size": int(row.get("Size") or 0),
+				"modified": row.get("LastModified"),
+			})
+
+		token = page.get("NextContinuationToken") if page.get("IsTruncated") else None
+		if not token:
+			return found
+
+
+def delete_keys(keys: list[str]) -> int:
+	"""Delete an explicit list of objects. Returns how many R2 confirmed.
+
+	Explicit rather than by prefix: every caller here has already decided, key
+	by key, what may go — and a delete that takes its argument from a listing
+	nothing inspected is how a sweep eats a customer's files.
+	"""
+	if not keys:
+		return 0
+
+	client_ = client()
+	bucket = config()["bucket"]
+	gone = 0
+
+	for start in range(0, len(keys), PAGE):
+		batch = keys[start : start + PAGE]
+		result = client_.delete_objects(
+			Bucket=bucket, Delete={"Objects": [{"Key": k} for k in batch], "Quiet": True}
+		)
+		errors = result.get("Errors") or []
+		if errors:
+			frappe.log_error(
+				title="R2 refused some deletes",
+				message="\n".join(
+					f"{e.get('Key')}: {e.get('Code')} {e.get('Message')}" for e in errors[:50]
+				),
+			)
+		gone += len(batch) - len(errors)
+
+	return gone
+
+
 def presigned_url(key: str, ttl: int = PRESIGN_TTL) -> str:
 	return client().generate_presigned_url(
 		"get_object",

@@ -81,9 +81,14 @@ def sync(since: str | None = None):
 			"database_quota_bytes": tenant.database_quota_bytes,
 			"max_users": tenant.max_users,
 			"background_workers": tenant.background_workers,
-			# How often this workspace copies itself into R2. The site owns the
-			# schedule because it owns the files; the plan owns the number.
+			# How often this workspace copies itself into R2, and how long a copy
+			# is kept. The site owns the schedule because it owns the files; the
+			# plan owns both numbers. Retention is sent because the site is
+			# where somebody reads it — the list of restore points is drawn
+			# there, and a list with no window beside it does not say why it
+			# ends where it does.
 			"backups_per_day": int(tenant.terms.get("backups_per_day") or 0),
+			"backup_retention_days": int(tenant.terms.get("backup_retention_days") or 0),
 		},
 		# Whether the site should enforce its quotas at all, and until when if
 		# not. A workspace over its limit because a line left its subscription
@@ -94,7 +99,15 @@ def sync(since: str | None = None):
 		# before a workspace is archived. There is no channel from here into a
 		# tenant site — every wire runs the other way — so a request is something
 		# the site collects rather than something we deliver.
-		"backup": {"requested": bool(tenant.cold_copy_requested_on)},
+		"backup": {
+			"requested": bool(tenant.cold_copy_requested_on),
+			# And the other direction: when we last put this site back to a
+			# point. The site's own copy of this value came out of the dump, so
+			# it is always older than a restore that has just happened — which
+			# is what makes a restored site reconcile its files exactly once
+			# without either end keeping a list. See `onespace/restore.py`.
+			"restored_on": str(tenant.restored_on) if tenant.restored_on else None,
+		},
 		"spaces": registry.spaces_for_tenant(tenant_name),
 		"modules": registry.entitled_modules(tenant_name),
 		"roles": registry.entitled_roles(tenant_name),
@@ -400,14 +413,18 @@ def report_backup():
 def _promote_if_requested(tenant_name: str, data: dict) -> dict | None:
 	"""Promote a just-reported backup to cold storage, if one was asked for.
 
-	Only a full backup will do. An intra-day database-only run carries no files
-	and restoring from it would silently produce a workspace with every record
-	and no attachments — which looks like it worked.
+	Only a backup whose files can be found will do. Two ways that is true: the
+	run carried the tarballs, or the workspace keeps its files as objects and
+	they are sitting under `tenants/<tenant>/` in this same bucket, which the
+	purge is the only thing that deletes. What is refused is the third case — a
+	site with files on disk reporting an intra-day database-only run, where
+	restoring would silently produce a workspace with every record and no
+	attachments, which looks like it worked.
 	"""
 	tenant = frappe.get_doc("Tenant", tenant_name)
 	if not tenant.cold_copy_requested_on or tenant.cold_storage_key:
 		return None
-	if not data.get("with_files"):
+	if not (data.get("with_files") or data.get("files_in_bucket")):
 		return None
 
 	from oneapp_control.lifecycle import backups as backup_policy
@@ -745,6 +762,11 @@ def _may_be_asked() -> dict:
 		"removable": customer.removable,
 		"remove_space": customer.remove_space,
 		"redeem_claim_code": customer.redeem_claim_code,
+		# The one door here that destroys data. It is on this list rather than
+		# on the operator's because the decision belongs to whoever is losing
+		# the work — see `oneapp/onespace/restore.py`, where the count of what
+		# is lost is put in front of them first.
+		"restore_workspace": customer.restore_workspace,
 	}
 
 

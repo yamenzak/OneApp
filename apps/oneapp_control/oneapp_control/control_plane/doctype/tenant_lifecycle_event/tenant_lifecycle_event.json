@@ -77,7 +77,7 @@
    "fieldtype": "Select",
    "in_standard_filter": 1,
    "label": "Triggered By",
-   "options": "Sweep\nWebhook\nOperator\nTenant Site\nSignup"
+   "options": "Sweep\nWebhook\nOperator\nTenant Site\nCustomer\nSignup"
   },
   {
    "fieldname": "sec_detail",

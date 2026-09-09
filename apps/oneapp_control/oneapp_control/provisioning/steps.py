@@ -585,6 +585,81 @@ def finalise_restore(job):
 
 
 # --------------------------------------------------------------------------- #
+# Restore Point — a live workspace going back to one of its own backups.
+#
+# `Restore Site` above rebuilds a workspace whose site is gone. This is the
+# other restore, and it is more dangerous rather than less: the site is running,
+# somebody is using it, and what this replaces is a database with today's work
+# in it. So the decision is the customer's and is taken in front of a screen
+# that counts what will be lost — see `oneapp/onespace/restore.py` — and this
+# end does the two things that end cannot: press holds the credentials to drop a
+# live database, and only we can presign the objects it reads back.
+#
+# The files are not sent, and are not missing. Attachments are objects under
+# `tenants/<tenant>/` and the restore does not touch them; the site makes the
+# bucket agree with its new database afterwards, on the next sync.
+# --------------------------------------------------------------------------- #
+
+def restore_to_point(job):
+	"""Hand press presigned links to one rolling backup set."""
+	from oneapp_control.cloudflare import r2
+	from oneapp_control.lifecycle import backups as backup_policy
+	from oneapp_control.lifecycle import cold
+
+	tenant = frappe.get_doc("Tenant", job.tenant)
+	stamp = (job.parsed_payload().get("stamp") or "").strip()
+	if not stamp:
+		raise PressPermanentError("No restore point was named.")
+
+	bucket = cold.bucket_for(tenant)
+	if not bucket:
+		raise PressPermanentError(f"Tenant {job.tenant} has no storage bucket.")
+
+	prefix = f"{backup_policy.BACKUP_PREFIX}/{tenant.name}/{stamp}/"
+	files = {}
+	for row in r2.objects(bucket, prefix):
+		name = row["key"].rsplit("/", 1)[-1]
+		if RESTORE_FILES.get(name) and RESTORE_FILES[name] != "config":
+			files[RESTORE_FILES[name]] = r2.presign(bucket, row["key"])
+
+	if "database" not in files:
+		raise PressPermanentError(
+			f"The backup at {prefix} has no database dump. Restoring from it "
+			"would produce an empty workspace that looks like it worked."
+		)
+
+	result = get_client().restore(_site_for(job), files)
+	_capture_job_id(job, result)
+	return None
+
+
+def finalise_restore_point(job):
+	"""Record the restore, and set the clock the site reconciles against.
+
+	`restored_on` is the whole of the message to the site. It travels down the
+	ordinary sync, the site compares it with the copy that came out of the dump
+	— always older — and reconciles its bucket against its database exactly
+	once. Written last, after press says the restore landed: written earlier, a
+	restore that failed would have told a site that never changed to go and
+	delete the files it had.
+	"""
+	from oneapp_control.lifecycle import events
+
+	stamp = job.parsed_payload().get("stamp") or ""
+	tenant = frappe.get_doc("Tenant", job.tenant)
+	tenant.db_set("restored_on", now_datetime())
+
+	events.record(
+		tenant.name,
+		"Restored",
+		triggered_by="Customer",
+		reason=f"Restored to the backup taken at {stamp}, at the workspace's request.",
+		detail={"stamp": stamp},
+	)
+	return None
+
+
+# --------------------------------------------------------------------------- #
 # Install App
 #
 # A grant that needs an app the site has not got. New sites install the union of
@@ -889,6 +964,11 @@ PIPELINES = {
 		("promote_domain", promote_domain),
 		("register_mail_routing", register_mail_routing),
 		("finalise_restore", finalise_restore),
+	],
+	"Restore Point": [
+		("restore_to_point", restore_to_point),
+		("await_restore", await_agent),
+		("finalise_restore_point", finalise_restore_point),
 	],
 	"Install App": [
 		("install_app", install_app),

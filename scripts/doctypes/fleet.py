@@ -300,7 +300,10 @@ doctype(
         f("cold_stored_on", "Datetime", read_only=1),
         f("cold_storage_bytes", "Float", default="0", read_only=1),
         f("restored_on", "Datetime", read_only=1,
-          description="When it last came back from cold."),
+          description="When this site was last rebuilt from a copy — from cold, "
+                      "or from a restore point the workspace asked for. Sent "
+                      "down the sync, where it is what tells a restored site to "
+                      "make the bucket agree with its database again."),
         # Over-quota is a grace window rather than an instant block, because the
         # usual way a workspace gets here is a line disappearing from its
         # subscription rather than anything it uploaded. See docs/ONEADMIN.md, Overage.
@@ -384,7 +387,7 @@ doctype(
           description="Empty for standby pool builds, which belong to no tenant yet."),
         f("action", "Select",
           options=("Create Site\nSuspend Site\nResume Site\nBackup Site\nArchive Site\n"
-                   "Restore Site\nPurge Tenant\n"
+                   "Restore Site\nRestore Point\nPurge Tenant\n"
                    "Add Domain\nSet Primary Domain\nChange Plan\nMigrate Site\n"
                    "Install App\nUninstall App\n"
                    "Create Standby Site\nClaim Standby Site"),
@@ -463,7 +466,7 @@ doctype(
         f("from_status", "Data", read_only=1),
         f("to_status", "Data", read_only=1),
         f("triggered_by", "Select",
-          options="Sweep\nWebhook\nOperator\nTenant Site\nSignup",
+          options="Sweep\nWebhook\nOperator\nTenant Site\nCustomer\nSignup",
           default="Sweep", in_standard_filter=1,
           description="A timer and a person are answerable for different things, "
                       "so the row says which one this was."),
@@ -702,6 +705,16 @@ doctype(
           description="How many times a day this workspace copies itself into "
                       "R2. A plan term, so the schedule is a decision the "
                       "control plane makes and this site carries out."),
+        f("backup_retention_days", "Int", read_only=1,
+          description="How long a copy is kept. Carried here because the list "
+                      "of restore points is drawn on this site, and a list with "
+                      "no window beside it does not say why it ends where it "
+                      "does."),
+        f("files_reconciled_for", "Data", read_only=1,
+          description="The restore this site has already made its bucket agree "
+                      "with. Compared against the control plane's own timestamp "
+                      "on every sync: this site's copy came out of the dump, so "
+                      "after a restore the two differ exactly once."),
         section("sec_usage", "Usage"),
         f("storage_used_bytes", "Float", read_only=1),
         f("database_used_bytes", "Float", read_only=1),

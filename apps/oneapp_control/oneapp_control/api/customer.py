@@ -465,6 +465,63 @@ def request_custom_domain(workspace: str, domain: str) -> str:
 
 
 # --------------------------------------------------------------------------- #
+# Going back to a backup
+# --------------------------------------------------------------------------- #
+
+#: A restore takes minutes and drops the database. Two of them in a row, from
+#: two impatient clicks, is the second one racing the first — and the second
+#: would restore over a half-restored site.
+RESTORE_EVERY_MINUTES = 30
+
+
+@frappe.whitelist(methods=["POST"])
+def restore_workspace(workspace: str, stamp: str) -> dict:
+	"""Put a workspace back to one of its own backups.
+
+	Asked from inside the workspace, by somebody who has just been shown what it
+	will cost — the counting is done there, against the live database, because
+	only the site can see its own records. What is done here is the part the
+	site cannot do: press holds the credentials that can drop a live database,
+	and only we can presign the objects it reads back.
+
+	The refusals are the point of this function. A workspace that is suspended,
+	archived or mid-provisioning has no site to restore into, and a restore
+	within half an hour of the last one is somebody clicking twice.
+	"""
+	tenant = require_workspace_admin(workspace)
+	stamp = (stamp or "").strip()
+	if not stamp:
+		frappe.throw(_("Name the backup to go back to."))
+
+	if tenant.status != "Active":
+		frappe.throw(
+			_("This workspace is {0}. A restore replaces a running site's "
+			  "database, so it is only offered while the workspace is active.")
+			.format(tenant.status)
+		)
+
+	if tenant.restored_on:
+		since = frappe.utils.time_diff_in_seconds(
+			frappe.utils.now_datetime(), frappe.utils.get_datetime(tenant.restored_on)
+		)
+		if since < RESTORE_EVERY_MINUTES * 60:
+			frappe.throw(
+				_("This workspace was restored a few minutes ago. Give that one "
+				  "time to finish before starting another.")
+			)
+
+	from oneapp_control.provisioning import runner
+
+	job = runner.enqueue(
+		tenant.name,
+		"Restore Point",
+		{"stamp": stamp, "asked_by": frappe.session.user},
+		idempotency_key=f"restore-point:{tenant.name}:{stamp}",
+	)
+	return {"ok": True, "job": job.name, "stamp": stamp}
+
+
+# --------------------------------------------------------------------------- #
 # People
 #
 # The control plane cannot write into a tenant's database — the signed sync is

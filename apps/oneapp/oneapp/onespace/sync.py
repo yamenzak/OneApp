@@ -11,7 +11,7 @@ import json
 import frappe
 from frappe.utils import now_datetime
 
-from oneapp.onespace import branding, control_client, site
+from oneapp.onespace import branding, control_client, restore, site
 
 CACHE_KEY = "onespace_site_state"
 CACHE_TTL = 300
@@ -46,6 +46,7 @@ def state() -> dict:
 		"max_users": doc.max_users or 0,
 		"background_workers": doc.background_workers or 0,
 		"backups_per_day": doc.backups_per_day or 0,
+		"backup_retention_days": doc.backup_retention_days or 0,
 		"quota": json.loads(doc.quota_json or "{}"),
 		"credit_balance": doc.credit_balance or 0,
 		"spaces": json.loads(doc.spaces_json or "[]") + local_spaces(),
@@ -147,6 +148,7 @@ def sync_from_control_plane() -> dict:
 			"max_users": plan.get("max_users") or 0,
 			"background_workers": plan.get("background_workers") or 0,
 			"backups_per_day": plan.get("backups_per_day") or 0,
+			"backup_retention_days": plan.get("backup_retention_days") or 0,
 			# Whether to enforce quotas at all, and until when if not. Stored
 			# rather than only cached: an unreachable control plane must not
 			# silently re-block a workspace that was given a window.
@@ -181,6 +183,7 @@ def sync_from_control_plane() -> dict:
 	)
 	sync_email_account()
 	sync_backup_request(payload.get("backup") or {})
+	restore.after_restore(payload.get("backup") or {})
 	sync_branding(tenant)
 	books = sync_books(payload.get("books"))
 	sync_ai(payload.get("ai") or {}, credits)

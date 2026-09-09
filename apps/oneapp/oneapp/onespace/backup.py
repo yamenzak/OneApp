@@ -14,8 +14,18 @@ and what happens to a workspace that stops paying. See `oneapp_control/lifecycle
 
 **Why hourly.** The frequency is a plan term, so the schedule cannot be a cron
 line. This runs every hour and decides whether this hour is one of the slots the
-plan bought. The first slot of each day takes files as well; the rest are
-database-only, which is what actually changes between them.
+plan bought.
+
+**What is in one.** The database and the site config, and on a site whose files
+live on disk the two tarballs as well. On a site with a bucket — every hosted
+workspace — the tarballs are *not* taken, and that is not a saving so much as
+the correction of a duplicate: an attachment is already an object under
+`tenants/<tenant>/`, in the same bucket the backup is being written into, so a
+tarball was a second copy of the same bytes beside the first, and a big
+workspace paid for its files twice and waited on a multi-gigabyte upload every
+night to do it. What restores those files is that they were never gone —
+`File.r2_key` points at an object the purge is the only thing that deletes. See
+`onespace/restore.py` for the half that makes the two agree again afterwards.
 """
 
 import json
@@ -83,13 +93,26 @@ def is_backup_hour(hour: int, per_day: int) -> bool:
 
 
 def is_full_hour(hour: int) -> bool:
-	"""Files come along on the first slot of the day, and only there.
+	"""Whether this slot would take the file tarballs too, if they were needed.
 
-	A database dump is megabytes and changes constantly; the file tarballs are
-	gigabytes and mostly do not. Taking both four times a day would multiply the
-	bill without improving what could be restored.
+	The first of the day and no other: a database dump is megabytes and changes
+	constantly; the tarballs are gigabytes and mostly do not. On a site with a
+	bucket the answer is moot — `files_live_in_the_bucket` overrules it and
+	nothing is tarred at all.
 	"""
 	return hour == 0
+
+
+def files_live_in_the_bucket() -> bool:
+	"""Whether this workspace's attachments are objects rather than files on disk.
+
+	The one question that decides whether a backup carries files. True on every
+	hosted workspace, false on a development site and on anybody self-hosting
+	without R2 — where the tarballs are the only copy there is and are taken.
+	"""
+	from oneapp.onestorage import r2
+
+	return r2.is_configured()
 
 
 def scheduled_backup() -> dict:
@@ -120,6 +143,12 @@ def run_backup(with_files: bool = True) -> dict:
 	if not r2.is_configured():
 		return _failed("R2 is not configured on this bench.")
 
+	# Never both. The objects are already in the bucket this is being written
+	# into; tarring them up would put a second copy of every attachment beside
+	# the first and charge for it monthly.
+	in_bucket = files_live_in_the_bucket()
+	with_files = bool(with_files and not in_bucket)
+
 	try:
 		artifacts = take(with_files=with_files)
 	except Exception as e:
@@ -143,11 +172,57 @@ def run_backup(with_files: bool = True) -> dict:
 			"key": prefix,
 			"bytes": total,
 			"with_files": with_files,
+			# Said out loud so the control plane can tell a backup that
+			# deliberately has no tarballs from one that failed to take them.
+			"files_in_bucket": in_bucket,
 			"files": [row["name"] for row in uploaded],
 		}
 	)
 
-	return {"ok": True, "key": prefix, "bytes": total, "files": uploaded}
+	return {
+		"ok": True, "key": prefix, "bytes": total, "files": uploaded,
+		"with_files": with_files, "files_in_bucket": in_bucket,
+	}
+
+
+#: How long a manual backup blocks the next one. A backup is minutes of a
+#: worker and a write to the bucket, and the button is in front of anybody who
+#: administers the workspace — pressing it eleven times is eleven backups
+#: nobody wanted, and the eleventh does not say anything the first did not.
+MANUAL_EVERY_SECONDS = 600
+MANUAL_KEY = "oneapp_manual_backup_at"
+
+
+@frappe.whitelist(methods=["POST"])
+def back_up_now() -> dict:
+	"""Take one now, on request, rather than at the next slot.
+
+	Before an import, before somebody deletes something large, before an upgrade
+	they are nervous about — the three moments a schedule cannot know about and
+	a person can. Enqueued rather than run inline: a dump of a large workspace
+	outlives the request that asked for it, and a settings screen that hangs for
+	four minutes reads as broken.
+	"""
+	from oneapp.onespace import workspace
+
+	workspace.require_owner()
+
+	if frappe.cache().get_value(MANUAL_KEY):
+		frappe.throw(
+			frappe._("A backup was taken in the last few minutes. Give it a moment.")
+		)
+	frappe.cache().set_value(
+		MANUAL_KEY, str(now_datetime()), expires_in_sec=MANUAL_EVERY_SECONDS
+	)
+
+	frappe.enqueue(
+		"oneapp.onespace.backup.run_backup",
+		queue="long",
+		timeout=3600,
+		job_id=f"oneapp-manual-backup-{frappe.local.site}",
+		deduplicate=True,
+	)
+	return {"ok": True, "queued": True}
 
 
 def take(with_files: bool = True) -> dict:

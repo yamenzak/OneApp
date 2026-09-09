@@ -260,6 +260,15 @@ scheduler_events = {
 		# A workspace with no OneMobility reads an empty table.
 		"oneapp.onemobility.sources.poll",
 	],
+	"weekly_long": [
+		# Objects in the bucket that no `File` row claims any more. After a
+		# restore this is thousands and runs within the quarter hour, from the
+		# sync — this is the other case, the ones and twos left by an upload
+		# that put the object and then failed to write the row. Weekly because
+		# that is a slow leak rather than a fault, and long because listing a
+		# bucket prefix is a walk. See `onespace/restore.py`.
+		"oneapp.onespace.restore.sweep",
+	],
 }
 
 # Fetch a transit source on demand, from the screen it is listed on. Declared
