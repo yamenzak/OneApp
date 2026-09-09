@@ -26,6 +26,7 @@ site's copy came out of the dump and is therefore always older, which is what
 makes a restored site reconcile exactly once without either end keeping a list.
 """
 
+import re
 from datetime import datetime, timedelta
 
 import frappe
@@ -62,6 +63,9 @@ NEVER = {
 	"View Log", "Version", "Deleted Document", "Prepared Report",
 	"Email Queue", "Email Queue Recipient", "Document Follow",
 }
+
+#: A doctype name that may be interpolated into a table name.
+SAFE_NAME = re.compile(r"^[A-Za-z0-9 _-]+$")
 
 #: How many doctypes the preview counts. A tenant site carries about twelve
 #: hundred tables and most of them are the framework's; asking all of them would
@@ -176,7 +180,10 @@ def _counted_doctypes() -> list[str]:
 	wanted = list(ALWAYS) + granted
 	seen, out = set(), []
 	for name in wanted:
-		if name in seen or name in NEVER:
+		if name in seen or name in NEVER or not SAFE_NAME.match(name):
+			# The name goes into a table name in a query below, and it arrives
+			# from a manifest an operator writes. Nothing has ever put a
+			# backtick in one; this is here so nothing ever can.
 			continue
 		seen.add(name)
 		if frappe.db.table_exists(name):
@@ -400,7 +407,7 @@ def after_restore(block: dict) -> None:
 		return
 
 	state = frappe.get_single("OneSpace Site State")
-	if str(state.files_reconciled_for or "") == str(restored_on):
+	if str(state.get("files_reconciled_for") or "") == str(restored_on):
 		return
 
 	# Written before the work rather than after: a reconcile that dies halfway

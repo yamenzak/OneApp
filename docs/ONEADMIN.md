@@ -592,7 +592,40 @@ because one provider holding both your site and the only copy of it is not a
 backup strategy. Ours are taken by the tenant site at the frequency its plan
 bought, under `backups/<tenant>/<stamp>/`. Retention and staleness detection are
 the control plane's, not the site's — both have to keep working for a workspace
-whose site is suspended or gone.
+whose site is suspended or gone. `backup_retention_days` is the window,
+defaulting to seven, and it never takes the newest set whatever the window says:
+a workspace whose site stopped backing up a month ago has one copy left, and a
+literal reading of seven days would delete it.
+
+**A copy holds the database and the config, and no files.** The attachments are
+already objects in the same bucket, under `tenants/<tenant>/`, so a tarball was
+a second copy of every one of them beside the first — charged for monthly, and a
+multi-gigabyte upload every night to keep it current. A site with no bucket
+still tars them, because there they are the only copy. Nothing is lost by the
+change: those objects are deleted by the purge alone, which also deletes the
+cold copy, so the files outlive the site by exactly the window a restore can
+happen in.
+
+**A workspace can go back to one of its own copies**, from Settings → Backups,
+and this is the one thing a customer can do to themselves that destroys work.
+The site lists the restore points out of its own prefix and counts what the
+restore would cost — records made since that moment, records that would revert,
+files that would be deleted and how many bytes — and only then offers the
+button. `customer.restore_workspace` enqueues a `Restore Point` job: presign the
+set, hand the links to press, and press drops the database and reimports it.
+
+**Which is why a restore is two acts.** Putting the database back to Tuesday
+leaves every file uploaded since Tuesday in the bucket, owned by no row,
+invisible to every screen and billed for forever. So the site reconciles
+afterwards — list `tenants/<tenant>/`, subtract what `tabFile` still claims,
+delete the rest — and it learns that it must from `Tenant.restored_on` coming
+down the ordinary sync, because its own copy of that value came out of the dump
+and is therefore always older. Three refusals make that sweep safe to run at
+all: an object younger than fifteen minutes is never touched (a direct upload
+writes the object before the row), a database claiming *no* objects at all is
+refused outright (that is a broken database, not a workspace with no files), and
+a trashed row still counts as a claim (the bin's thirty days are a promise). The
+same sweep runs weekly for the orphans nobody made on purpose.
 
 **Email is Cloudflare in both directions.** Inbound: catch-all → Worker → parse
 recipient → HMAC POST to the right tenant, giving per-tenant functional

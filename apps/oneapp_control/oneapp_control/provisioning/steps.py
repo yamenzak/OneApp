@@ -207,18 +207,16 @@ def push_site_config(job):
 	if r2.is_configured():
 		try:
 			bucket = r2.assign(tenant.name)
-			row = frappe.db.get_value(
-				"Storage Bucket", bucket, ["name", "public_base_url", "access_key"],
-				as_dict=True,
-			) or {}
+			# The document rather than named columns, for the reason
+			# `r2._keys` reads it that way: the credential fields are younger
+			# than the table.
+			row = frappe.get_doc("Storage Bucket", bucket)
 			config["oneapp_r2_bucket"] = bucket
 			config["oneapp_r2_public_base"] = row.get("public_base_url") or ""
 			if row.get("access_key"):
-				secret = frappe.get_doc("Storage Bucket", bucket).get_password(
-					"secret_key", raise_exception=False
-				)
+				secret = row.get_password("secret_key", raise_exception=False)
 				if secret:
-					config["oneapp_r2_access_key"] = row["access_key"]
+					config["oneapp_r2_access_key"] = row.access_key
 					config["oneapp_r2_secret_key"] = secret
 		except r2.R2Error as e:
 			# Storage is a capability, not a prerequisite: the workspace works

@@ -88,6 +88,7 @@ import DomainSettings from '@/modules/onespace/components/settings/DomainSetting
 import PeopleSettings from '@/modules/onespace/components/settings/PeopleSettings.vue'
 import RoleSettings from '@/modules/onespace/components/settings/RoleSettings.vue'
 import StorageSettings from '@/modules/onespace/components/settings/StorageSettings.vue'
+import BackupSettings from '@/modules/onespace/components/settings/BackupSettings.vue'
 import NamingSettings from '@/modules/onespace/components/settings/NamingSettings.vue'
 import LegalSettings from '@/modules/onespace/components/settings/LegalSettings.vue'
 import PrintingSettings from '@/modules/onespace/components/settings/PrintingSettings.vue'
@@ -132,6 +133,7 @@ const PANELS = {
   people: PeopleSettings,
   roles: RoleSettings,
   storage: StorageSettings,
+  backups: BackupSettings,
 }
 
 const data = ref(null)

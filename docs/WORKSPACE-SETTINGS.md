@@ -32,7 +32,7 @@ An audience is a **predicate, not a role**, because one of them is not a role:
 | --- | --- | --- |
 | `everyone` | Anybody signed in | Profile, Security, Notifications, Appearance |
 | `mailbox` | Holds an address here — `mailbox._held()`, the same question every other mail endpoint asks | Mailbox |
-| `admin` | `OneSpace Workspace Owner`, or our support as Administrator | Branding, Sign in, Regional, Books, Printing, Print formats, Naming, Email, Templates, Alerts, AI, Storage, Import |
+| `admin` | `OneSpace Workspace Owner`, or our support as Administrator | Branding, Sign in, Regional, Books, Printing, Print formats, Naming, Email, Templates, Alerts, AI, Storage, Backups, Import |
 | `support` | `System Manager` alone | The control plane's own groups, through `onespace_settings_groups` |
 
 Nothing under Workspace is open to everybody, and every tab a member can open is
@@ -151,7 +151,7 @@ workspace read as not an admin, and our support read as one.
 | `force_user_to_reset_password` | Neither | Password rotation is discredited practice; offering it invites it. |
 | `allow_login_using_mobile_number`, `allow_login_using_user_name` | Neither | A workspace's identity is email. A second namespace is a second thing to administer, and a third way to be locked out. |
 | `enable_scheduler` | Ours | A workspace that can stop its own scheduler stops its own email, backups and syncs, and cannot see why. |
-| `backup_limit`, `encrypt_backup` | Ours | Backups are Frappe Cloud's, per shard. |
+| `backup_limit`, `encrypt_backup` | Ours | Frappe's own backup settings, and neither is the backup a customer has. Ours are taken by `onespace/backup.py` on the frequency the plan bought, kept for the days the plan keeps, and read back under **Backups** — where a copy can also be taken now, and where a restore is offered with a count of what it will destroy in front of it. Frappe Cloud keeps a third set, per shard, which nobody here sees. |
 | `max_file_size`, `allowed_file_extensions` | Ours | Storage is a billed quota; the cap belongs to the plan. |
 | `allow_guests_to_upload_files`, `allowed_doctypes_for_guest_uploads` | Ours | Guest write access on a multi-tenant fleet. |
 | `only_allow_system_managers_to_upload_public_files` | Ours | The owner is not a System Manager, so exposing this locks the owner out of uploads. |

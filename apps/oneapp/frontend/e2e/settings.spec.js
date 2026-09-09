@@ -93,6 +93,30 @@ test('an admin sees the workspace as well as themselves', async ({ page }, info)
   await expect(tab(page, 'branding')).toBeVisible()
 })
 
+test('backups say what is kept, and refuse a restore to a member', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name === 'mobile', 'the phone draws no rail')
+  await signInAndOpen(page)
+
+  await tab(page, 'backups').click()
+  await expect(dialog(page)).toContainText('Copies of this workspace')
+
+  // On a development site there is no bucket, so there is nothing to go back
+  // to and the panel says so rather than drawing an empty list. Which is the
+  // state worth asserting here: the tab is declared, the panel is mapped, and
+  // the endpoint behind it answers — the three that fail silently.
+  await expect(dialog(page)).toContainText('no storage yet')
+
+  // And the door itself, which is the half a screen cannot be trusted with. A
+  // restore drops the database; a member must not be able to ask for one by
+  // calling the method.
+  await signIn(page, baseURL, MEMBER)
+  const refused = await page.request.post(
+    '/api/method/oneapp.onespace.restore.start',
+    { data: { stamp: '20260101-000000' } },
+  )
+  expect(refused.ok()).toBe(false)
+})
+
 test('a member opens on a tab they have, not the one last asked for',
   async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'the phone draws no rail')

@@ -16,6 +16,27 @@ export const settings = {
       success: __('The map was changed for everyone here'),
     }),
 
+  // --- Backups --------------------------------------------------------------
+  //
+  // Three of these are the site's own — it holds the bucket keys and the
+  // records the preview counts. The fourth relays to the control plane, which
+  // is the only end that can drop a live database.
+  backupPoints: () =>
+    callMethod('oneapp.onespace.restore.points', {}, { silent: true, method: 'GET' }),
+
+  restorePreview: (stamp) =>
+    callMethod('oneapp.onespace.restore.preview', { stamp }, {
+      silent: true, method: 'GET',
+    }),
+
+  // Toasted by the panel rather than here: what to say depends on whether the
+  // workspace is about to go offline, and only the panel knows that it is.
+  restoreWorkspace: (stamp) =>
+    callMethod('oneapp.onespace.restore.start', { stamp }, { silent: true }),
+
+  backUpNow: () =>
+    callMethod('oneapp.onespace.backup.back_up_now', {}, { silent: true }),
+
   // --- Yours, not the workspace's -----------------------------------------
   //
   // `onespace/me.py`. Every one of these names no user: the server writes

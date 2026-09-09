@@ -255,16 +255,15 @@ def _keys(bucket: str | None) -> tuple[str, str]:
 	credential itself enforces. Unset, both buckets share the account-wide keys
 	and nothing changes.
 	"""
-	if bucket:
-		row = frappe.db.get_value(
-			"Storage Bucket", bucket, ["name", "access_key"], as_dict=True
-		)
-		if row and row.get("access_key"):
-			secret = frappe.get_doc("Storage Bucket", row["name"]).get_password(
-				"secret_key", raise_exception=False
-			)
+	if bucket and frappe.db.exists("Storage Bucket", bucket):
+		# The document rather than named columns: these two fields are younger
+		# than the table, and a `get_value` for a column that arrives with the
+		# next migration is a SQL error on every object call in between.
+		row = frappe.get_doc("Storage Bucket", bucket)
+		if row.get("access_key"):
+			secret = row.get_password("secret_key", raise_exception=False)
 			if secret:
-				return row["access_key"], secret
+				return row.access_key, secret
 
 	settings = frappe.get_single("OneSpace Control Settings")
 	return (

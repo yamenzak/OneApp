@@ -46,7 +46,12 @@ def state() -> dict:
 		"max_users": doc.max_users or 0,
 		"background_workers": doc.background_workers or 0,
 		"backups_per_day": doc.backups_per_day or 0,
-		"backup_retention_days": doc.backup_retention_days or 0,
+		# `get` rather than the attribute, because this field is younger than
+		# some of the sites reading it: app code deploys before `bench migrate`
+		# runs, and a Single knows only the fields its doctype had when it was
+		# loaded. An attribute here raises on every request in that window —
+		# which is every request, since the session endpoint reads this.
+		"backup_retention_days": doc.get("backup_retention_days") or 0,
 		"quota": json.loads(doc.quota_json or "{}"),
 		"credit_balance": doc.credit_balance or 0,
 		"spaces": json.loads(doc.spaces_json or "[]") + local_spaces(),

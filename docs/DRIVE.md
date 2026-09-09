@@ -141,6 +141,10 @@ copying as an idea: one row, a file, an expiry, and no session.
 * **`storage/quota.py`** — enforced at upload time rather than after the fact.
 * **`File.r2_key`** — already a custom field, for the reason `docs/` records:
   a rename or a key-scheme change cannot orphan objects we can no longer find.
+  It is also what makes a restore survivable: `onespace/restore.reconcile` is
+  the set difference between these keys and what the bucket actually holds, in
+  both directions — objects no row claims are deleted, and rows whose object is
+  gone are counted and said out loud.
 * **`spaceview/surround.py`** — `attachments`, `remove_attachment`, and the
   gallery filters.
 * **The surfaces that would become views**: `RecordFiles.vue` (the record's Files

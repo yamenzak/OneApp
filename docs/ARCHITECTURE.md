@@ -88,6 +88,12 @@ The single modules, roughly by how often they are touched:
   because Frappe evaluates it as code.
 * `jobs.py`, `backup.py`, `expiry.py`, `retention.py`, `site.py` — the scheduled
   half. Every job here is accounted for by `tests/test_site_role.py`.
+* `restore.py` — going back to one of those backups, and the half that makes it
+  survivable. A restore puts the database back and leaves the bucket where it
+  was, so this counts what a restore would destroy *before* it is asked for, and
+  reconciles the two afterwards: objects no `File` row claims are deleted, rows
+  whose object is gone are counted and said. The control plane runs the restore
+  itself — only press can drop a live database.
 * `drive/` — every file in the workspace, over Frappe's own `File` table. Five
   layers: `kinds` (what a file is, decided on insert), `query` (the places in
   the rail, as filters), `reading`, `writing`, `sharing` (a link that outlives a

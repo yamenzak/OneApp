@@ -35,6 +35,7 @@ export const TAB_ICONS = [
   'lucide-bell',
   'lucide-sparkles',
   'lucide-hard-drive',
+  'lucide-history',
   'lucide-scale',
   'lucide-user-round',
   'lucide-users',

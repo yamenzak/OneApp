@@ -173,9 +173,19 @@ def test_a_workspace_with_no_bucket_reconciles_nothing(restore, stub_frappe, mon
 # --------------------------------------------------------------------------- #
 
 class FakeState:
+	"""A Frappe Single, including the `get` that is how a young field is read.
+
+	Deliberately: `state.files_reconciled_for` raises on a site that has the new
+	app code and has not migrated yet, which is every site for the minutes
+	between the two — and this is read on the sync that runs every quarter hour.
+	"""
+
 	def __init__(self, reconciled_for=None):
 		self.files_reconciled_for = reconciled_for
 		self.writes = []
+
+	def get(self, field, default=None):
+		return getattr(self, field, default)
 
 	def db_set(self, field, value):
 		self.writes.append((field, value))

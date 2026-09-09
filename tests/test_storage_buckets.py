@@ -36,6 +36,9 @@ class FakeDoc:
 	def db_set(self, field, value):
 		setattr(self, field, value)
 
+	def get(self, field, default=None):
+		return getattr(self, field, default)
+
 	def get_password(self, field, raise_exception=False):
 		return self.passwords.get(field)
 
@@ -123,7 +126,8 @@ def test_a_tenant_keeps_the_bucket_it_has(r2, stub_frappe, monkeypatch):
 # --------------------------------------------------------------------------- #
 
 def test_without_bucket_keys_the_account_keys_are_used(r2, stub_frappe, account):
-	stub_frappe.db.values[("Storage Bucket", ("name", "access_key"))] = None
+	stub_frappe.db.records[("Storage Bucket", "oneapp-gl-abc")] = True
+	stub_frappe.get_doc = lambda *a, **k: FakeDoc({"name": "oneapp-gl-abc"})
 
 	assert r2._keys("oneapp-gl-abc") == ("account-key", "account-secret")
 
@@ -135,11 +139,8 @@ def test_a_bucket_with_its_own_keys_uses_them(r2, stub_frappe, account):
 	jurisdiction from a placement decision into something the credential itself
 	enforces.
 	"""
-	stub_frappe.db.values[("Storage Bucket", ("name", "access_key"))] = {
-		"name": "oneapp-eu-abc",
-		"access_key": "eu-key",
-	}
-	bucket = FakeDoc({"name": "oneapp-eu-abc"})
+	stub_frappe.db.records[("Storage Bucket", "oneapp-eu-abc")] = True
+	bucket = FakeDoc({"name": "oneapp-eu-abc", "access_key": "eu-key"})
 	bucket.passwords["secret_key"] = "eu-secret"
 	stub_frappe.get_doc = lambda *a, **k: bucket
 
@@ -153,11 +154,10 @@ def test_half_a_key_pair_falls_back_rather_than_signing_with_nothing(r2, stub_fr
 	falling back to the account pair is the same access the bucket had before
 	anybody started scoping it.
 	"""
-	stub_frappe.db.values[("Storage Bucket", ("name", "access_key"))] = {
-		"name": "oneapp-eu-abc",
-		"access_key": "eu-key",
-	}
-	stub_frappe.get_doc = lambda *a, **k: FakeDoc({"name": "oneapp-eu-abc"})
+	stub_frappe.db.records[("Storage Bucket", "oneapp-eu-abc")] = True
+	stub_frappe.get_doc = lambda *a, **k: FakeDoc(
+		{"name": "oneapp-eu-abc", "access_key": "eu-key"}
+	)
 
 	assert r2._keys("oneapp-eu-abc") == ("account-key", "account-secret")
 

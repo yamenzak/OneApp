@@ -137,6 +137,12 @@ TABS = [
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 	{"key": "storage", "label": "Storage", "icon": "lucide-hard-drive",
 	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
+	# Beside Storage because it is the same subject seen backwards, and an
+	# admin's rather than the owner's alone for the reason People is: it is a
+	# workspace decision and it spends nothing. What makes it safe is not the
+	# role but the count the panel puts in front of whoever opens it.
+	{"key": "backups", "label": "Backups", "icon": "lucide-history",
+	 "section": "Workspace", "kind": PANEL, "audience": "admin"},
 
 	# The first of three that used to be at a different address. Who is in this
 	# workspace is a fact about *this* workspace, so the person reading it has
