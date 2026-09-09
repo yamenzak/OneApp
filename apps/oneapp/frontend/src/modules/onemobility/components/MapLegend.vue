@@ -124,6 +124,20 @@
       </div>
     </div>
 
+    <!--
+      That these are claims rather than readings, and what they rest on.
+      First, above everything, because it changes how every other row on the
+      card should be read — a spread quietly redefined as a forecast is the
+      kind of thing a reader finds out afterwards.
+    -->
+    <div v-if="expected" class="flex flex-col gap-0.5 border-b border-outline-gray-1 pb-2">
+      <div class="flex items-center gap-1.5">
+        <span class="size-2 shrink-0 rounded-full bg-surface-amber-3" />
+        <p class="text-2xs font-medium text-ink-gray-7">{{ __('What is expected') }}</p>
+      </div>
+      <p class="text-2xs leading-snug text-ink-gray-5">{{ expected }}</p>
+    </div>
+
     <!-- What has been faded away, said in words. -->
     <p v-if="isolated" class="border-t border-outline-gray-1 pt-2 text-2xs leading-snug
                               text-ink-gray-5">
@@ -153,6 +167,8 @@ const props = defineProps({
   showStops: { type: Boolean, default: true },
   showVehicles: { type: Boolean, default: true },
   isolated: { type: Object, default: null },
+  /** One sentence when the clock is past now, empty otherwise. */
+  expected: { type: String, default: '' },
 })
 
 const open = ref(false)

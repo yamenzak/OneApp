@@ -531,6 +531,22 @@ It is also an honest design, because it makes the uncertainty visible rather
 than hiding it behind a single number. **A forecast is never drawn without its
 spread.** A confident wrong ETA costs more trust than no ETA.
 
+**Built, and it draws the network rather than the fleet.** Dragging past the
+present on today marks the clock *Expected*, empties the vehicle layer, and
+gives every route the colour of the delay it usually reaches at that hour, off
+the same `risk` read the Outlook screen uses — so the two cannot come to
+disagree about what a line is expected to do. The track carries a dashed mark
+where now is, and the hours past it are drawn fainter, because a boundary you
+can cross silently is a boundary that changes what the map means without saying
+so. The legend gains a row naming the claim and what it rests on.
+
+**The ghosts are the one part not built, and it is a data question rather than
+a rendering one.** Carrying a vehicle forward needs a timetable to carry it
+along, and this model has none: `stop_times` is the schedule, §3b says why we do
+not keep it, and a marker moved forward on a guess is exactly the confident
+wrong ETA the paragraph above refuses. Drawing the network and saying the fleet
+is not there is the honest version of the same screen.
+
 ### We have to score ourselves
 
 Every prediction is written down with what it predicted and when, and a job
@@ -988,8 +1004,9 @@ Each ships something a person can look at. **Done** is done and in the fixture.
    store their percentiles, `forecast.py` reads them forward as an arrival, a
    risk, an anomaly and a day's outlook, the Outlook screen draws them, and
    `scoring.py` writes each claim down before the answer exists and settles it
-   the night after. What is left is the scrubber's right-hand side — the same
-   gesture that shows what happened showing what is about to.
+   the night after, and the scrubber's right-hand side draws the network's
+   expected hour past the present. What is left is the ghosts on it, which need
+   a timetable this model does not keep — see §7a.
 
 Stages 1–4 are a sellable demo. Stages 5–6 are the product. Stages 7–9 are what
 renews it, and stage 9 is what makes a competitor's version look like a

@@ -388,6 +388,10 @@ def risk(facets: str = "", when: str = "", late_s: int = LATE_S,
 		if not reading["basis"]:
 			continue
 		lines.append({
+			# Both, and they are not the same thing: a chart labels a bar with
+			# the name and the map colours a *geometry* with the id, and a
+			# forecast drawn on the network needs the second.
+			"id": row["line"],
 			"line": named.get(row["line"], row["line"]),
 			"chance": _chance_over(reading, threshold),
 			"delay": reading,

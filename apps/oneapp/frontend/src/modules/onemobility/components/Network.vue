@@ -64,8 +64,9 @@
         :high="scaleHigh"
         :drawn="shapesHere"
         :show-stops="showStops"
-        :show-vehicles="showVehicles"
+        :show-vehicles="showVehicles && !ahead"
         :isolated="isolated"
+        :expected="expectedNote"
       />
 
       <!--
@@ -229,6 +230,10 @@
                 data-slot="network-time"
               >{{ clockLabel }}</span>
               <Badge v-if="livemode" theme="green" :label="__('Live')" />
+              <!-- Not the day, because the day is not what is being said. A
+                   moment past now is a claim rather than a record, and the
+                   badge is the only place on the clock that can say which. -->
+              <Badge v-else-if="ahead" theme="amber" :label="__('Expected')" />
               <Badge v-else theme="blue" :label="dayLabel" />
             </div>
           </div>
@@ -256,7 +261,18 @@
               :height="bar.h"
               :rx="1.5"
               :fill="bar.past ? accent : muted"
-              :opacity="bar.past ? 0.5 : 0.2"
+              :opacity="bar.later ? 0.12 : bar.past ? 0.5 : 0.2"
+            />
+            <!--
+              Where the present is, on a day that has one. The scrubber runs
+              through it rather than stopping at it — that is the point of §7a —
+              so the boundary has to be drawn or dragging past it is a silent
+              change of what the map means.
+            -->
+            <line
+              v-if="nowX !== null"
+              :x1="nowX" :x2="nowX" y1="0" y2="28"
+              :stroke="accent" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"
             />
             <line
               :x1="handleX" :x2="handleX" y1="0" y2="28"
@@ -547,6 +563,24 @@ const following = ref(false)
 const playing = ref(false)
 const speed = ref(1)
 
+/**
+ * The scrubber's right-hand side: the same control, past the present.
+ *
+ * README §7a asks for this in one sentence — *past on the left, forecast on the
+ * right, one control* — and the argument for it is that the gesture is already
+ * learnt. Somebody who has dragged back to nine this morning does not need
+ * teaching that dragging the other way is nine tomorrow morning.
+ *
+ * What is drawn there is **the network and not the fleet**, and that is the
+ * honest limit rather than a stage left for later. A position is a thing a
+ * vehicle reported; a moment that has not happened has none. Carrying ghosts
+ * forward on the timetable is what §7a describes, and this model has no
+ * timetable to carry them on — `stop_times` is the schedule and §3b says why we
+ * do not keep it. So the routes take the colour of what the hour is expected to
+ * do, the fleet layer empties, and the clock says Expected rather than pretending.
+ */
+const aheadAnswer = ref({})
+
 let map = null
 let library = null
 let poller = null
@@ -576,6 +610,26 @@ const dayOptions = computed(() =>
 const minuteOfDay = computed(
   () => DAY_START + ((DAY_END - DAY_START) * position.value) / 1000
 )
+
+/** Where the present is on the track, in service minutes. `null` on any day
+ *  but today, because "now" is not a point on last Tuesday. */
+const nowMinute = computed(() => {
+  const [hh, mm] = (wallClock.value || '00:00').split(':').map(Number)
+  return hh * 60 + mm
+})
+const onToday = computed(() => day.value === todayISO())
+const ahead = computed(
+  () => !livemode.value && onToday.value && minuteOfDay.value > nowMinute.value + 1
+)
+
+function todayISO() {
+  const now = new Date()
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ].join('-')
+}
 /** A clock reads the time. "Now" is what the badge beside it is for. */
 const clockLabel = computed(() => {
   if (livemode.value) return wallClock.value
@@ -603,10 +657,21 @@ const density = computed(() => {
     // the ruler rather than a gap that reads as the track ending.
     h: Math.max(2, Math.round(((byHour.get(hour) || 0) / most) * 22)),
     past: hour * 60 <= minuteOfDay.value,
+    // An hour that has not happened has no service in it to draw — what the
+    // bar shows there is the *history* for that hour, which is the right thing
+    // to aim at and the wrong thing to draw as solidly.
+    later: onToday.value && hour * 60 > nowMinute.value,
   }))
 })
 
 const handleX = computed(() => (position.value / 1000) * TRACK_W)
+
+/** The present, in the track's own coordinates, or nothing on another day. */
+const nowX = computed(() => {
+  if (!onToday.value) return null
+  const at = (nowMinute.value - DAY_START) / (DAY_END - DAY_START)
+  return at >= 0 && at <= 1 ? at * TRACK_W : null
+})
 
 const ticks = computed(() => {
   const out = []
@@ -668,6 +733,23 @@ function ground() {
   return tokenInk('--surface-gray-2', '#eceef1')
 }
 
+/**
+ * What the map is claiming while the clock is past now, in one sentence.
+ *
+ * The count of lines and the readings behind them, because a forecast without
+ * its basis is a colour somebody has to take on trust — and the first hour a
+ * workspace has no history for is exactly when this has to say so rather than
+ * draw every route the same neutral shade and let it read as "on time".
+ */
+const expectedNote = computed(() => {
+  if (!ahead.value) return ''
+  const lines = (aheadAnswer.value.lines || []).filter((one) => one.delay?.p85 !== null)
+  if (!lines.length) return __('Nothing has run at this hour before, so there is nothing to expect yet.')
+  const readings = lines.reduce((sum, one) => sum + (one.basis || 0), 0)
+  return __('Each route wears the delay it usually reaches at this hour. {0} lines, {1} readings.',
+    [String(lines.length), String(readings)])
+})
+
 /** The moment being asked about: empty for now, else a date and a time. */
 function moment() {
   if (livemode.value || !day.value) return ''
@@ -677,7 +759,62 @@ function moment() {
   return `${day.value} ${hh}:${mm}:00`
 }
 
+/**
+ * What the network is expected to do at a moment that has not happened.
+ *
+ * `risk` rather than a new endpoint: it already answers per line, at an hour,
+ * on a weekday, with the spread and what it rests on — which is exactly what
+ * the routes have to be coloured by. Reusing it also means the map and the
+ * Outlook screen cannot come to disagree about what a line is expected to do,
+ * which two queries over one table eventually would.
+ */
+async function pullAhead() {
+  try {
+    aheadAnswer.value = await network.risk({
+      when: moment(),
+      facets: JSON.stringify(facets.value),
+    })
+  } catch {
+    aheadAnswer.value = {}
+  }
+  // No vehicle reported at a time that has not arrived, and a fleet left on
+  // the screen from the last poll would be read as one that had.
+  seen.clear()
+  painted.clear()
+  drawn.value = []
+  paintAhead()
+}
+
+/**
+ * The routes, coloured by what the hour is expected to cost them.
+ *
+ * A `match` on the line's own id rather than a data join: the geometry is
+ * already on the map and only its paint changes, so a forecast arriving is one
+ * property set rather than a source replaced — which is what keeps dragging the
+ * scrubber smooth instead of restarting the layer on every settle.
+ */
+function paintAhead() {
+  if (!map || !map.getLayer('lines')) return
+  const lines = aheadAnswer.value.lines || []
+  const known = lines.filter((one) => one.id && one.delay?.p85 !== null)
+  if (!known.length) return paintIsolation()
+
+  const stops = known.flatMap((one) => [one.id, delayInk(one.delay.p85)])
+  map.setPaintProperty('lines', 'line-color', [
+    'match', ['get', 'name'], ...stops,
+    // A line with no history keeps its own colour rather than taking the
+    // middle of the scale: "we do not know" and "we expect it to be on time"
+    // are different claims and only one of them is ours to make.
+    ['get', 'colour'],
+  ])
+}
+
 async function pull() {
+  if (ahead.value) return pullAhead()
+  // Back on ground that has happened: the routes take their own colours again.
+  // Without this a line keeps the colour of a forecast while the map draws
+  // observations, which is the worst of the two states to be in.
+  paintIsolation()
   try {
     const answer = await network.at({
       when: moment(),

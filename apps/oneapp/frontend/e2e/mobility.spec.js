@@ -383,3 +383,30 @@ test('a day next week is the same lookup as a day last week', async ({ page }) =
   await expect(headline.getByText('Worst hour')).toBeVisible({ timeout: 20_000 })
   await expect(controls).toContainText('readings')
 })
+
+test('the scrubber runs past now, and says it has', async ({ page }) => {
+  await page.goto('/one/space/onemobility?screen=network')
+  const clock = page.locator('[data-slot="network-clock"]')
+  await clock.waitFor({ timeout: 30_000 })
+  await canvasIn(page, 'network')
+
+  // The forward half of README §7a: the same control, past the present. Driven
+  // to the end of the service day, which on today is always ahead of now — and
+  // on the seeded fixture is an hour the roll-up has a history for.
+  const scrub = clock.locator('input[type="range"]')
+  await scrub.evaluate((el) => {
+    el.value = '1000'
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+
+  // A moment that has not happened is a claim, and the badge is the only place
+  // on the clock that can say which of the two the reader is looking at.
+  await expect(clock.getByText('Expected', { exact: true })).toBeVisible({ timeout: 20_000 })
+  // And no vehicle reported at a time that has not arrived. A fleet left over
+  // from the last poll would be read as one that had.
+  await expect(clock.getByText('0 vehicles')).toBeVisible()
+
+  // Back to live, and the claim goes with it.
+  await clock.getByRole('button', { name: 'Live' }).click()
+  await expect(clock.getByText('Expected', { exact: true })).toHaveCount(0)
+})
