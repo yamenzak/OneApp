@@ -101,6 +101,10 @@ const viewport = flag('width')
 const browser = await chromium.launch(project.use.launchOptions)
 const context = await browser.newContext({
   viewport,
+  // `--dark` renders the page as a reader whose system is set to dark. There
+  // was no way to screenshot the dark theme before this, which is a poor
+  // reason for it to have been looked at less often than the light one.
+  colorScheme: has('dark') ? 'dark' : 'light',
   // 1x by default: these get looked at and sent around, and a retina PNG is
   // four times the bytes for something somebody will glance at.
   deviceScaleFactor: has('retina') ? 2 : 1,

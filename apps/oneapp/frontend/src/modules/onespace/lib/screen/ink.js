@@ -81,6 +81,22 @@ export function tokenInk(name, fallback = FALLBACK) {
 let cache = {}
 let themedFor = ''
 
+/**
+ * Whether the reader is on the dark ground right now.
+ *
+ * Exported because a *scale* has to know: a ramp's steps are chosen against a
+ * surface, and this theme's dark ramp is not a mirror of its light one — some
+ * families invert. A caller picking one token name for both grounds gets a
+ * scale that separates on one of them and collapses on the other.
+ */
+export function onDark() {
+  if (typeof document === 'undefined') return false
+  const set = document.documentElement.dataset.theme
+  if (set === 'dark') return true
+  if (set === 'light') return false
+  return !!window.matchMedia?.('(prefers-color-scheme: dark)')?.matches
+}
+
 function themeNow() {
   if (typeof document === 'undefined') return ''
   const root = document.documentElement

@@ -25,7 +25,7 @@
  *               fixed order, for a line whose feed declares nothing.
  */
 
-import { inkOf, paintable, tokenInk } from '@/modules/onespace/lib/screen/ink'
+import { onDark, paintable, tokenInk } from '@/modules/onespace/lib/screen/ink'
 import { __ } from '@/shared/lib/runtime/translate'
 
 /**
@@ -33,14 +33,49 @@ import { __ } from '@/shared/lib/runtime/translate'
  *
  * `floor` is the lowest percentage in the band. Ordered loosest first so a
  * lookup is a scan from the end.
+ *
+ * **Each band names a token per ground, and that is not belt-and-braces.** This
+ * theme's dark ramp is not a mirror of its light one — `ink-red-8` is L .44 on
+ * white and L .87 on black, so a scale that names one token per band separates
+ * on one ground and collapses on the other. Measured: the four bands as one
+ * token set came back with yellow and orange at ΔE 1.8 under deuteranopia in
+ * dark mode, which is no distinction at all.
+ *
+ * Both rows were chosen by running `dataviz/scripts/validate_palette.js` rather
+ * than by eye, and both pass its separation checks:
+ *
+ *     light  green-4 yellow-5 orange-6 red-8   worst adjacent ΔE 16.1 normal, 11.8 CVD
+ *     dark   green-6 yellow-7 orange-7 red-5   worst adjacent ΔE 17.8 normal, 13.8 CVD
+ *
+ * What it replaced failed four checks and had green against teal at ΔE 4.6 for
+ * *normal* vision — two bands nobody could tell apart, colourblind or not. The
+ * cause was that every band used `ink-*-3`, the palest step in each ramp: a
+ * step meant to tint a background behind text, asked to be identified at
+ * sixteen pixels on a map.
+ *
+ * The progression is ordinal and reads as one: it warms green → yellow →
+ * orange → red as the vehicle fills, and it moves *away* from the ground —
+ * darker on white, lighter on black — so fuller is always the higher-contrast
+ * thing on the screen. `unknown` sits outside the ramp in plain grey, because
+ * "nobody counted" is not a quantity and must not look like one.
  */
 export const OCCUPANCY = [
-  { key: 'unknown', floor: -1, theme: 'gray', label: () => __('Not counted') },
-  { key: 'free', floor: 0, theme: 'green', label: () => __('Seats free') },
-  { key: 'filling', floor: 40, theme: 'teal', label: () => __('Filling up') },
-  { key: 'standing', floor: 70, theme: 'orange', label: () => __('Standing') },
-  { key: 'crush', floor: 90, theme: 'red', label: () => __('Crush') },
+  { key: 'unknown', floor: -1, light: '--ink-gray-4', dark: '--ink-gray-6',
+    label: () => __('Not counted') },
+  { key: 'free', floor: 0, light: '--ink-green-4', dark: '--ink-green-6',
+    label: () => __('Seats free') },
+  { key: 'filling', floor: 40, light: '--ink-yellow-5', dark: '--ink-yellow-7',
+    label: () => __('Filling up') },
+  { key: 'standing', floor: 70, light: '--ink-orange-6', dark: '--ink-orange-7',
+    label: () => __('Standing') },
+  { key: 'crush', floor: 90, light: '--ink-red-8', dark: '--ink-red-5',
+    label: () => __('Crush') },
 ]
+
+/** A band's colour on whichever ground the reader is actually on. */
+export function bandInk(band) {
+  return tokenInk(onDark() ? band.dark : band.light, '#8b8b8b')
+}
 
 /** The band a percentage falls in. -1 means the feed did not say. */
 export function occupancyBand(percent) {
@@ -55,7 +90,7 @@ export function occupancyBand(percent) {
 
 /** That band, as something a canvas or a style specification can paint with. */
 export function occupancyInk(percent) {
-  return inkOf(occupancyBand(percent).theme)
+  return bandInk(occupancyBand(percent))
 }
 
 /**
@@ -66,7 +101,7 @@ export function occupancyScale() {
   return OCCUPANCY.map((band) => ({
     key: band.key,
     label: band.label(),
-    ink: inkOf(band.theme),
+    ink: bandInk(band),
     floor: band.floor,
   }))
 }

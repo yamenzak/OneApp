@@ -154,7 +154,7 @@ function trace(context, points, radius, scale, middle) {
  * @param {string} ring  the surface colour to outline it with
  * @param {number} ratio device pixels per CSS pixel
  */
-export function vehicleMarker(mode, fill, ring, ratio = 2) {
+export function vehicleMarker(mode, fill, ring, ratio = 2, hairline = true) {
   const size = Math.round(SIZE * ratio)
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = size
@@ -243,10 +243,12 @@ export function vehicleMarker(mode, fill, ring, ratio = 2) {
   // A hairline around the body, inside the casing. Without it a pale vehicle on
   // a white casing on a light basemap is three shades of nearly-white and the
   // shape stops having an edge.
-  trace(context, points, body.round, scale, middle)
-  context.lineWidth = Math.max(1, size * 0.022)
-  context.strokeStyle = 'rgba(15, 23, 42, 0.22)'
-  context.stroke()
+  if (hairline) {
+    trace(context, points, body.round, scale, middle)
+    context.lineWidth = Math.max(1, size * 0.022)
+    context.strokeStyle = 'rgba(15, 23, 42, 0.22)'
+    context.stroke()
+  }
 
   // `{width, height, data}` and nothing else: the pixel ratio is style-image
   // metadata and goes in `addImage`'s third argument, not in here.
