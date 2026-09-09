@@ -46,6 +46,15 @@ almost always one of these four, in this order of how much they cost:
   every edit is rebuilt into `public/frontend` — thirteen seconds against
   twenty-two for a cold `vite build`, and no step to remember. Only pay it when
   frontend source actually changed; a manifest or a Python edit does not.
+* **Running a browser pass with no worker behind it.** `dev.sh up` starts a web
+  server and nothing else, and the framework enqueues on its own — every
+  notification, every `delete_doc` link sweep. Half an hour of Playwright fills
+  the queue, Frappe refuses to enqueue past six hundred, and from then on
+  everything that writes fails: the seed dies mid-way and leaves the fixture
+  dirtier than it found it, `set_favourite` answers 503, and eight specs fail
+  on assertions that have nothing to do with it. `dev.sh seed` and `dev.sh e2e`
+  now refuse and name the fix, which is `scripts/dev.sh worker` in another
+  shell, left running.
 * **Writing a Playwright script to take a screenshot.** There is a command:
   `cd apps/oneapp/frontend && yarn shot '/one/space/rua?screen=projects'`.
   About four seconds, and `--wait=SELECTOR` is the flag worth knowing.

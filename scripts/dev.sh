@@ -64,6 +64,60 @@ require_bench() {
   mkdir -p "$BENCH/logs"
 }
 
+# Whether the background queue has silted up.
+#
+# `dev.sh up` starts a web server and nothing else, and almost everything is
+# fine with that — a request is served in the request. What is not fine is that
+# the framework enqueues on its own: every notification, every `delete_doc`
+# link sweep, every realtime fan-out. A browser pass is half an hour of that
+# with nothing draining it, and past six hundred jobs Frappe stops accepting
+# more — `QueueOverloaded` — so the *next* thing that enqueues fails.
+#
+# Which is not how it reads. It reads as the seed dying in a traceback, as a
+# 503 on `set_favourite`, as eight mobile specs failing on unrelated
+# assertions, and as an afternoon spent looking at the eight. Hence a line
+# rather than a search: the fix is one command and it is named here.
+QUEUE_LIMIT="${ONEAPP_QUEUE_LIMIT:-300}"
+
+# The queue redis, from the bench's own config rather than from a constant
+# here. Both redis instances carry `rq:queue:*` keys — the cache one holds
+# whatever an older configuration left behind — so counting both reports four
+# hundred jobs on an empty queue, and a check that cries wolf is worse than no
+# check.
+queue_redis() {
+  python3 -c "
+import json, urllib.parse
+url = json.load(open('$sites_path/common_site_config.json')).get('redis_queue', '')
+print(urllib.parse.urlparse(url).port or 11000)
+" 2>/dev/null || echo 11000
+}
+
+queue_depth() {
+  local total=0 port name
+  port="$(queue_redis)"
+  for name in $(redis-cli -p "$port" --scan --pattern 'rq:queue:*' 2>/dev/null); do
+    total=$(( total + $(redis-cli -p "$port" llen "$name" 2>/dev/null || echo 0) ))
+  done
+  echo "$total"
+}
+
+warn_if_silted() {
+  local depth
+  depth="$(queue_depth)"
+  [ "$depth" -lt "$QUEUE_LIMIT" ] && return 0
+  cat >&2 <<WARNING
+$depth background jobs are queued and nothing is draining them.
+
+Frappe refuses to enqueue past ~600, so the next thing that reaches
+frappe.enqueue fails — and it fails as a traceback in the seed, a 503 in the
+browser, or a spec that looks broken for another reason entirely.
+
+  scripts/dev.sh worker    in another shell, and leave it running
+
+WARNING
+  return 1
+}
+
 services() {
   pgrep -x mariadbd >/dev/null || service mariadb start >/dev/null 2>&1 || true
   # Ports come from common_site_config.json; starting them idempotently is
@@ -298,6 +352,10 @@ PYEOF
     # name what those provide, and anything it cannot attribute means
     # everything. So the narrow answer is always evidence and never a guess —
     # which is the part picking specs by hand got wrong, twice, in one session.
+    # Half an hour of a browser driving a site with nothing draining what it
+    # enqueues is how the queue silts up in the first place. Said here so the
+    # run either has a worker behind it or is not started.
+    warn_if_silted || exit 1
     cd "$(dirname "$0")/.."
     if [ "${2:-}" = "all" ]; then
       chosen="all"
@@ -331,6 +389,10 @@ PYEOF
     # Both sites, in order. The seeder's own docstring has always said to run
     # it twice; leaving that to whoever typed it meant the tenant — the site
     # the browser suite actually talks to — kept last week's fixture.
+    # A silted queue kills the seed halfway — after the records and before the
+    # sweeps — so the fixture is left dirtier than it started and the next
+    # browser pass fails on other runs' litter. Said before, not after.
+    warn_if_silted || exit 1
     for pair in $SITES; do
       echo "=== ${pair%%:*} ==="
       ONEAPP_SITE="${pair%%:*}" ONEAPP_PORT="${pair##*:}" \
