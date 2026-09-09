@@ -409,14 +409,25 @@ test('the scrubber runs past now, and says it has', async ({ page }) => {
   await clock.waitFor({ timeout: 30_000 })
   await canvasIn(page, 'network')
 
-  // The forward half of README §7a: the same control, past the present. Driven
-  // to the end of the service day, which on today is always ahead of now — and
-  // on the seeded fixture is an hour the roll-up has a history for.
+  // The forward half of README §7a: the same control, past the present.
+  //
+  // Tomorrow rather than later today, and the reason is not convenience. A
+  // moment "ahead" is any moment after now, and picking a future *date* is the
+  // only way to say that without depending on what hour the suite happens to
+  // run at — the seeded service day ends at eight in the evening, so an
+  // afternoon test and a late-evening one would be asking about two completely
+  // different states of the network.
   const scrub = clock.locator('input[type="range"]')
   await scrub.evaluate((el) => {
-    el.value = '1000'
+    // Mid-afternoon: inside the fixture's service day at any time of year.
+    el.value = String(Math.round(Number(el.max || 1000) * 0.6))
     el.dispatchEvent(new Event('input', { bubbles: true }))
   })
+  // frappe-ui's Select is a button and a listbox, not a native `<select>`, so
+  // it is opened and picked from rather than filled.
+  const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  await clock.getByRole('combobox').click()
+  await page.getByRole('option', { name: tomorrow, exact: true }).click()
 
   // A moment that has not happened is a claim, and the badge is the only place
   // on the clock that can say which of the two the reader is looking at.
@@ -425,7 +436,21 @@ test('the scrubber runs past now, and says it has', async ({ page }) => {
   // from the last poll would be read as one that had.
   await expect(clock.getByText('0 vehicles')).toBeVisible()
 
-  // Back to live, and the claim goes with it.
+  // The ghosts. Where each trip is *due* to be, which is the half of the
+  // forward scrubber the timetable made possible — the server answers with two
+  // stops and a fraction and the browser puts the point on the line's own
+  // drawn shape, so there is one geometry rather than two that can disagree.
+  //
+  // The sentence counts what was *drawn* rather than what was answered, which
+  // is what makes asserting it worth anything: a trip whose stops are not in
+  // the loaded network draws nothing, and an id mismatch between the timetable
+  // and the stop layer is silent in every other way.
+  const legend = page.locator('[data-slot="network-legend"]')
+  await expect(legend.getByText(/rings are trips due to be running/))
+    .toBeVisible({ timeout: 20_000 })
+
+  // Back to live, and the claim goes with it — badge, sentence and rings.
   await clock.getByRole('button', { name: 'Live' }).click()
   await expect(clock.getByText('Expected', { exact: true })).toHaveCount(0)
+  await expect(legend.getByText(/rings are trips due to be running/)).toHaveCount(0)
 })

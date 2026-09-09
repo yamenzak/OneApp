@@ -79,6 +79,15 @@ export const network = {
    * now, this one says where it keeps happening — which is the question a
    * timetable can be fixed from rather than radioed about.
    */
+  /**
+   * Where every running trip is *due* to be at a moment. Two stops and a
+   * fraction, not a position — the drawn shape lives in the browser and
+   * `motion.js` puts the point on it, so coordinates from the server would be
+   * a second geometry that can disagree about where a route goes.
+   */
+  expected: (params) =>
+    callMethod('oneapp.onemobility.expected', params, { method: 'GET' }),
+
   bunchingRisk: (params) =>
     callMethod('oneapp.onemobility.bunching_risk', params, { method: 'GET' }),
 

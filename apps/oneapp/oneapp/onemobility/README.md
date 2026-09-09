@@ -558,6 +558,34 @@ What is **not** on this list: what-if simulation — "add a bus at 07:00 and wha
 happens to load" — which is a different discipline, needs a network model
 rather than a history, and should be refused rather than approximated.
 
+### The ghosts, and where the geometry lives
+
+Drag the clock past now and every route wears the delay it usually reaches at
+that hour — and a pale amber ring sits wherever a trip is *due* to be. That is
+`timetable.expected`, and the one decision in it worth writing down is what the
+server sends: **two stops and a fraction, never a position.**
+
+The browser already holds every line's drawn shape, because it has to — it
+tweens a live vehicle along it sixty times a second between pings, which is the
+next section. Sending coordinates from the server would mean a second geometry
+implementation, and two implementations of "where is this route" eventually
+disagree about a corner. So the server answers "between Alexanderplatz and the
+Zoo, forty percent of the way in time", and `motion.js` projects both stops onto
+the shape and puts the ring between them.
+
+Fraction of *time*, not of distance: a vehicle does not cover the gap between
+two stops at a constant speed, and pretending it does is a smaller lie than
+pretending we know its speed profile. The timetable only ever claimed the two
+endpoints.
+
+A ring is drawn deliberately unlike both of its neighbours — wider and hollower
+than a stop, and nothing like a vehicle marker — because a map that draws a
+claim from a timetable and a report from the road the same way has quietly
+stopped distinguishing them. The legend counts what was *drawn* rather than what
+the server sent, which is what makes the sentence worth reading: a trip whose
+stops are not in the loaded network draws nothing, and that mismatch is silent
+in every other way.
+
 ### Moving the vehicle between pings
 
 Everything above is about minutes and hours. This is about the next second, and
@@ -1099,9 +1127,12 @@ Each ships something a person can look at. **Done** is done and in the fixture.
    whether any of it is any good. **Nearly done:** `serviceHour` and `stopHour`
    store their percentiles, `forecast.py` reads them forward as an arrival, a
    risk, an anomaly, a crowding chance, a collapsing gap and a day's outlook,
-   the Outlook screen draws all six, and `scoring.py` writes each claim down
-   before the answer exists and settles it the night after. What is left is the
-   ghosts on the scrubber, which the timetable now makes possible — see §7a.
+   the Outlook screen draws all six, `scoring.py` writes each claim down before
+   the answer exists and settles it the night after, and the scrubber's
+   right-hand side draws both the expected delay on every route and a ring
+   wherever a trip is due to be. **Done**, in other words — what is left of §7a
+   is the sentence an AI writes, which is §7a's own last section and is not
+   arithmetic.
 
 Stages 1–4 are a sellable demo. Stages 5–6 are the product. Stages 7–9 are what
 renews it, and stage 9 is what makes a competitor's version look like a

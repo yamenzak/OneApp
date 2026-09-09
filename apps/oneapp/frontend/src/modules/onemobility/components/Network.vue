@@ -341,7 +341,7 @@ import {
 } from '@/modules/onemobility/lib/art'
 import { OVERLAYS, overlayFor } from '@/modules/onemobility/lib/layers'
 import { paintSurface } from '@/modules/onemobility/lib/surface'
-import { advance, blend, prepare } from '@/modules/onemobility/lib/motion'
+import { advance, at, blend, prepare, project } from '@/modules/onemobility/lib/motion'
 import {
   bearingBetween,
   easeBearing,
@@ -512,7 +512,7 @@ const mapStyles = computed(() => Object.keys(basemap?.styles || {}))
 /** Our own layers, which a basemap preference must never hide. */
 const OURS = [
   'surface', 'lines-casing', 'lines', 'trail', 'stops', 'stops-interchange',
-  'demand', 'vehicles-chosen', 'vehicles',
+  'demand', 'ghosts', 'vehicles-chosen', 'vehicles',
 ]
 
 /**
@@ -580,6 +580,16 @@ const speed = ref(1)
  * do, the fleet layer empties, and the clock says Expected rather than pretending.
  */
 const aheadAnswer = ref({})
+const ghostAnswer = ref({})
+/**
+ * How many ghosts are actually on the map, which is not the same as how many
+ * the server sent: a trip whose stops are not in the loaded network draws
+ * nothing. The legend says this number rather than the answer's, so a sentence
+ * about rings is a sentence about rings somebody can see — the failure it
+ * catches is an id mismatch between the timetable and the stop layer, which is
+ * silent in every other way.
+ */
+const drawnGhosts = ref(0)
 
 let map = null
 let library = null
@@ -604,9 +614,37 @@ tickWallClock()
 const accent = computed(() => tokenInk('--surface-gray-9', '#334155'))
 const muted = computed(() => tokenInk('--surface-gray-5', '#94a3b8'))
 
-const dayOptions = computed(() =>
-  days.value.map((one) => ({ label: one.day, value: one.day }))
-)
+/**
+ * How far ahead the day picker reaches, matching `forecast.HORIZON_DAYS`. Past
+ * that the server refuses, and a control that offers a choice the server will
+ * not honour is a control that teaches people not to trust it — the same rule
+ * the Outlook screen's picker keeps.
+ */
+const AHEAD_DAYS = 14
+
+/**
+ * Which days the clock can be pointed at: the ones with observations behind
+ * them, and the ones the forecast can speak about.
+ *
+ * The forward half used to be reachable only within today, which made it a
+ * property of what hour somebody happened to open the screen — the whole
+ * right-hand side of §7a was unavailable every morning before the fixture's
+ * service began and every evening after it ended. A day ahead is a day the
+ * timetable and the roll-up can both answer for.
+ */
+const dayOptions = computed(() => {
+  const seen = new Set(days.value.map((one) => one.day))
+  const options = days.value.map((one) => ({ label: one.day, value: one.day }))
+  for (let step = 0; step <= AHEAD_DAYS; step += 1) {
+    const at = new Date()
+    at.setDate(at.getDate() + step)
+    const iso = at.toISOString().slice(0, 10)
+    if (seen.has(iso)) continue
+    seen.add(iso)
+    options.push({ label: iso, value: iso })
+  }
+  return options.sort((a, b) => (a.value < b.value ? -1 : 1))
+})
 const minuteOfDay = computed(
   () => DAY_START + ((DAY_END - DAY_START) * position.value) / 1000
 )
@@ -618,9 +656,21 @@ const nowMinute = computed(() => {
   return hh * 60 + mm
 })
 const onToday = computed(() => day.value === todayISO())
-const ahead = computed(
-  () => !livemode.value && onToday.value && minuteOfDay.value > nowMinute.value + 1
-)
+/**
+ * Whether the clock is pointing at a moment that has not happened.
+ *
+ * Any moment after now, not only one later today. The first version compared
+ * minutes within today and quietly made the whole forward half unreachable for
+ * a *date* in the future: pick next Tuesday and every hour of it is ahead of
+ * now, and the map was drawing observations that do not exist rather than the
+ * expectations it has. A day is either before today, today — where the minute
+ * decides — or after it.
+ */
+const ahead = computed(() => {
+  if (livemode.value || !day.value) return false
+  if (day.value > todayISO()) return true
+  return onToday.value && minuteOfDay.value > nowMinute.value + 1
+})
 
 function todayISO() {
   const now = new Date()
@@ -746,8 +796,16 @@ const expectedNote = computed(() => {
   const lines = (aheadAnswer.value.lines || []).filter((one) => one.delay?.p85 !== null)
   if (!lines.length) return __('Nothing has run at this hour before, so there is nothing to expect yet.')
   const readings = lines.reduce((sum, one) => sum + (one.basis || 0), 0)
-  return __('Each route wears the delay it usually reaches at this hour. {0} lines, {1} readings.',
+  const said = __('Each route wears the delay it usually reaches at this hour. {0} lines, {1} readings.',
     [String(lines.length), String(readings)])
+  // And what the rings are, said in the same breath. A hollow amber marker is
+  // a claim from a timetable and a filled one is a report from the road, and
+  // the legend is where that distinction has to be spelled out — the map can
+  // only show it.
+  const ghosts = drawnGhosts.value
+  return ghosts
+    ? `${said} ${__('{0} rings are trips due to be running.', [String(ghosts)])}`
+    : said
 })
 
 /** The moment being asked about: empty for now, else a date and a time. */
@@ -769,13 +827,22 @@ function moment() {
  * which two queries over one table eventually would.
  */
 async function pullAhead() {
+  const when = moment()
+  const facetted = JSON.stringify(facets.value)
   try {
-    aheadAnswer.value = await network.risk({
-      when: moment(),
-      facets: JSON.stringify(facets.value),
-    })
+    // Two reads, and they answer different halves of the same question: what
+    // the hour is expected to cost each line, and where each trip is due to
+    // be. Together rather than in sequence, because dragging the scrubber
+    // fires this on every settle and a second round trip is a visible stall.
+    const [risk, ghosts] = await Promise.all([
+      network.risk({ when, facets: facetted }),
+      network.expected({ when, facets: facetted }),
+    ])
+    aheadAnswer.value = risk
+    ghostAnswer.value = ghosts
   } catch {
     aheadAnswer.value = {}
+    ghostAnswer.value = {}
   }
   // No vehicle reported at a time that has not arrived, and a fleet left on
   // the screen from the last poll would be read as one that had.
@@ -783,6 +850,7 @@ async function pullAhead() {
   painted.clear()
   drawn.value = []
   paintAhead()
+  paintGhosts()
 }
 
 /**
@@ -809,8 +877,71 @@ function paintAhead() {
   ])
 }
 
+/**
+ * Where each trip is *due* to be, drawn as a ghost.
+ *
+ * The server answers with two stops and a fraction rather than a position —
+ * see `timetable.expected` — so the geometry happens here, where the drawn
+ * shape of every line already lives and where `motion.js` already knows how to
+ * put a point on one. Sending coordinates instead would be a second geometry
+ * implementation that can disagree with the first about where a route goes.
+ *
+ * Projected onto the shape rather than interpolated between the two stops: a
+ * straight line between consecutive stops cuts every corner, and on a route
+ * that loops around a park it draws a vehicle through the middle of it.
+ */
+function paintGhosts() {
+  if (!map || !map.getSource('ghosts')) return
+  if (!ahead.value) {
+    map.getSource('ghosts').setData({ type: 'FeatureCollection', features: [] })
+    drawnGhosts.value = 0
+    return
+  }
+
+  const where = new Map(
+    stops.value
+      .filter((one) => one.latitude || one.longitude)
+      .map((one) => [one.name, [one.longitude, one.latitude]]),
+  )
+
+  const features = []
+  for (const ghost of ghostAnswer.value.ghosts || []) {
+    const from = where.get(ghost.from_stop)
+    const to = where.get(ghost.to_stop)
+    if (!from || !to) continue
+
+    const shape = shapes.get(ghost.line) || null
+    let point
+    if (shape) {
+      const a = project(shape.points, shape.along, from[0], from[1])
+      const b = project(shape.points, shape.along, to[0], to[1])
+      point = at(shape.points, shape.along, a + (b - a) * ghost.t)
+    }
+    // A line with no drawn shape — a feed with no `shapes.txt`, a VDV delivery
+    // whose stop list is all the geometry there is — still gets a ghost, on
+    // the straight line the map is already drawing for it.
+    if (!point) {
+      point = [from[0] + (to[0] - from[0]) * ghost.t, from[1] + (to[1] - from[1]) * ghost.t]
+    }
+
+    features.push({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: point },
+      properties: {
+        trip: ghost.trip_key,
+        line: ghost.line,
+        bearing: bearingBetween(from, to),
+        mode: coarseFor(markerOf(ghost.line)),
+      },
+    })
+  }
+  map.getSource('ghosts').setData({ type: 'FeatureCollection', features })
+  drawnGhosts.value = features.length
+}
+
 async function pull() {
   if (ahead.value) return pullAhead()
+  paintGhosts()
   // Back on ground that has happened: the routes take their own colours again.
   // Without this a line keeps the colour of a forecast while the map draws
   // observations, which is the worst of the two states to be in.
@@ -1509,6 +1640,31 @@ async function draw() {
       'circle-opacity': 0.55,
       'circle-stroke-width': 1,
       'circle-stroke-color': casing,
+    },
+  })
+
+  // Where a trip is *due* to be, when the clock has been dragged past now.
+  //
+  // Below the live fleet and drawn as an outline rather than as a marker,
+  // which is the whole point: a ghost is a claim from a timetable and a
+  // vehicle is a report from the road, and a map that draws them the same way
+  // is a map that has quietly stopped distinguishing them. Amber, the colour
+  // the legend and the badge already use for what is expected.
+  map.addSource('ghosts', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+  map.addLayer({
+    id: 'ghosts',
+    type: 'circle',
+    source: 'ghosts',
+    paint: {
+      // Bigger than a stop and hollower, because that is the whole reading:
+      // at a glance a ghost has to be neither a stop nor a vehicle. A stop is
+      // a small solid dot with a dark edge; this is a wide pale ring in the
+      // amber the badge and the legend already use for what is expected.
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 5, 14, 9],
+      'circle-color': tokenInk('--surface-white', '#ffffff'),
+      'circle-opacity': 0.35,
+      'circle-stroke-width': 2.5,
+      'circle-stroke-color': tokenInk('--surface-amber-3', '#f59e0b'),
     },
   })
 
