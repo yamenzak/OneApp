@@ -178,7 +178,7 @@ doctype(
           description="Shown wherever this line is named. Empty follows the "
                       "mode's own."),
         f("marker_shape", "Select", "Drawn as",
-          options="\nBus\nTram\nMetro\nRail\nFerry\nCable\nOther",
+          options="\nmetro\ntram\ntram-old\nlight-rail\ntrain\nhigh-speed\nmonorail\nlocomotive\nfunicular\nbus\nbus-articulated\ntrolleybus\nminibus\ncoach\nshuttle\ntaxi\ncar\ntruck\nlorry\nambulance\nfire\npolice\nferry\nship\nboat\nsailing\ncable-car\ngondola\nrickshaw\nmotorcycle\nscooter\nbicycle\nwheelchair",
           description="Overrides the mode's own silhouette on the map. Empty "
                       "follows the mode."),
         f("feed", "Link", "First seen in", options="Transit Feed", read_only=1),
@@ -265,12 +265,14 @@ doctype(
 # How the network is drawn
 # --------------------------------------------------------------------------- #
 
-#: The silhouettes the map can draw, and the one word each is called by.
+#: The silhouettes the map can draw, named after their own files.
 #:
-#: Kept in step with `BODIES` in `frontend/src/modules/onemobility/lib/markers.js`
-#: — the browser draws them, this names them, and `test_marker_shapes.py` fails
-#: if the two lists drift apart.
-MARKER_SHAPES = "Bus\nTram\nMetro\nRail\nFerry\nCable\nOther"
+#: Kept in step with `frontend/src/modules/onemobility/art/` — one SVG per
+#: name — and with `onemobility/markers.py`. `test_marker_shapes.py` fails if
+#: any of the three drifts. Stored lower-case and hyphenated, which is what
+#: the file is called: this Select is read by a picker made of pictures, and
+#: prettifying the value here would only be a second spelling to keep.
+MARKER_SHAPES = "metro\ntram\ntram-old\nlight-rail\ntrain\nhigh-speed\nmonorail\nlocomotive\nfunicular\nbus\nbus-articulated\ntrolleybus\nminibus\ncoach\nshuttle\ntaxi\ncar\ntruck\nlorry\nambulance\nfire\npolice\nferry\nship\nboat\nsailing\ncable-car\ngondola\nrickshaw\nmotorcycle\nscooter\nbicycle\nwheelchair"
 
 doctype(
     "Transit Marker Style",

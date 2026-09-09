@@ -295,15 +295,45 @@ export function easeBearing(from, to, k = 0.25) {
  * Named after what the drawing *is*, not after the mode it usually belongs to —
  * a workspace can draw its Rail as a tram, and a key that then said "Train"
  * beside a tram outline would be explaining the wrong thing.
+ *
+ * One per file in `../art/`. `tests/test_marker_shapes.py` does not check this
+ * list, because a missing name falls back to the file name and is ugly rather
+ * than wrong — but a name here for a drawing that does not exist is dead code.
  */
 export const SHAPE_NAMES = {
-  bus: () => __('Bus'),
-  tram: () => __('Tram'),
-  metro: () => __('Metro'),
-  rail: () => __('Train'),
-  ferry: () => __('Ferry'),
-  cable: () => __('Cable car'),
-  other: () => __('Something else'),
+  'metro': () => __('Metro'),
+  'tram': () => __('Tram'),
+  'tram-old': () => __('Heritage tram'),
+  'light-rail': () => __('Light rail'),
+  'train': () => __('Train'),
+  'high-speed': () => __('High-speed train'),
+  'monorail': () => __('Monorail'),
+  'locomotive': () => __('Locomotive'),
+  'funicular': () => __('Funicular'),
+  'bus': () => __('Bus'),
+  'bus-articulated': () => __('Articulated bus'),
+  'trolleybus': () => __('Trolleybus'),
+  'minibus': () => __('Minibus'),
+  'coach': () => __('Coach'),
+  'shuttle': () => __('Shuttle'),
+  'taxi': () => __('Taxi'),
+  'car': () => __('Car'),
+  'truck': () => __('Truck'),
+  'lorry': () => __('Lorry'),
+  'ambulance': () => __('Ambulance'),
+  'fire': () => __('Fire engine'),
+  'police': () => __('Police car'),
+  'ferry': () => __('Ferry'),
+  'ship': () => __('Ship'),
+  'boat': () => __('Boat'),
+  'sailing': () => __('Sailing boat'),
+  'cable-car': () => __('Cable car'),
+  'gondola': () => __('Gondola'),
+  'rickshaw': () => __('Rickshaw'),
+  'motorcycle': () => __('Motorcycle'),
+  'scooter': () => __('Scooter'),
+  'bicycle': () => __('Bicycle'),
+  'wheelchair': () => __('Wheelchair'),
 }
 
 /**

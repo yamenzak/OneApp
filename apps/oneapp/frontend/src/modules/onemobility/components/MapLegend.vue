@@ -49,8 +49,10 @@
       <div v-for="one in shapes" :key="one.key" class="flex items-center gap-2">
         <!-- Larger than the map draws them: a key is read at a glance, and the
              marker's own size is a compromise with how many of them share the
-             screen, which a legend row is not. -->
-        <img :src="one.url" :alt="one.label" class="size-6 shrink-0 object-contain" />
+             screen, which a legend row is not. Below about thirty pixels these
+             drawings are a tick, which is the whole reason the map steps to a
+             squatter shape at low zoom. -->
+        <img :src="one.url" :alt="one.label" class="size-10 shrink-0 object-contain" />
         <span class="truncate text-2xs text-ink-gray-6">{{ one.label }}</span>
       </div>
     </div>
@@ -95,8 +97,9 @@
 <script setup>
 import { computed } from 'vue'
 
-import { SHAPE_NAMES, swatchUrl } from '@/modules/onemobility/lib/markers'
-import { bandInk, casingInk, OCCUPANCY } from '@/modules/onemobility/lib/palette'
+import { artUrl } from '@/modules/onemobility/lib/art'
+import { SHAPE_NAMES } from '@/modules/onemobility/lib/markers'
+import { bandInk, OCCUPANCY } from '@/modules/onemobility/lib/palette'
 import { tokenInk } from '@/modules/onespace/lib/screen/ink'
 import { __ } from '@/shared/lib/runtime/translate'
 
@@ -114,17 +117,24 @@ const props = defineProps({
 })
 
 /**
- * Painted with the same `vehicleMarker` the map registers, so the key cannot
- * come to disagree with the thing it explains. One neutral grey, because
- * colour is the *other* axis and varying both here teaches neither.
+ * The same drawings the map registers, so the key cannot come to disagree with
+ * the thing it explains. Read at legend size, where the artwork is at its best
+ * — the map's own twenty-two pixels is a compromise with how many markers share
+ * the screen, which a legend row is not.
+ *
+ * One neutral grey, because colour is the *other* axis and varying both here
+ * teaches neither.
  */
 const shapes = computed(() => {
-  const ring = casingInk()
-  const neutral = tokenInk('--ink-gray-4', '#999999')
+  // `gray-4` at forty pixels, chosen by rendering every grey against every
+  // size: paler and the drawings' own light detail disappears into the body,
+  // darker and their dark detail does. On the map the body is an occupancy
+  // colour and the question does not arise.
+  const neutral = tokenInk('--ink-gray-4', '#a1a1aa')
   return props.drawn.map((key) => ({
     key,
     label: SHAPE_NAMES[key] ? SHAPE_NAMES[key]() : key,
-    url: swatchUrl(key, neutral, ring, 2),
+    url: artUrl(key, neutral),
   }))
 })
 

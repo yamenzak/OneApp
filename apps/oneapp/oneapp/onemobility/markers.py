@@ -39,16 +39,68 @@ bar, a hover card, the key — and nowhere the thing is drawn.
 import frappe
 from frappe import _
 
-#: The outlines the browser can actually draw, lower-cased as it names them.
+#: The outlines the browser can actually draw, named after their own files.
 #:
-#: Kept deliberately here rather than derived from the doctype's Select: this
-#: is the contract with `markers.js`, and a Select option added without a
-#: drawing behind it should fail a test rather than silently draw a capsule.
-SHAPES = ("bus", "tram", "metro", "rail", "ferry", "cable", "other")
+#: Kept deliberately here rather than derived from the doctype's Select: this is
+#: the contract with `frontend/src/modules/onemobility/art/`, and a Select
+#: option added without a drawing behind it should fail a test rather than
+#: silently draw a capsule.
+SHAPES = (
+	"metro",
+	"tram",
+	"tram-old",
+	"light-rail",
+	"train",
+	"high-speed",
+	"monorail",
+	"locomotive",
+	"funicular",
+	"bus",
+	"bus-articulated",
+	"trolleybus",
+	"minibus",
+	"coach",
+	"shuttle",
+	"taxi",
+	"car",
+	"truck",
+	"lorry",
+	"ambulance",
+	"fire",
+	"police",
+	"ferry",
+	"ship",
+	"boat",
+	"sailing",
+	"cable-car",
+	"gondola",
+	"rickshaw",
+	"motorcycle",
+	"scooter",
+	"bicycle",
+	"wheelchair",
+)
 
-#: What a mode is drawn as when nobody has said otherwise. Identity, so the
-#: doctype is an override and never a thing you must fill in first.
-FALLBACK = "other"
+#: The drawing for anything we cannot place: a plain van, which is
+#: unmistakably a vehicle and unmistakably not a claim about which kind.
+FALLBACK = "minibus"
+
+#: What each mode is drawn as when nobody has said otherwise.
+#:
+#: Nearly identity, and the three that are not are the whole reason this exists:
+#: a mode is a word off a feed and a shape is a file on disk, and "Rail",
+#: "Cable" and "Other" are not the names of drawings. Mapping them here rather
+#: than hoping `normalise` guesses is the difference between a sensible default
+#: and a van standing in for every train on the network.
+BY_MODE = {
+	"bus": "bus",
+	"tram": "tram",
+	"metro": "metro",
+	"rail": "train",
+	"ferry": "ferry",
+	"cable": "cable-car",
+	"other": "minibus",
+}
 
 #: At most this many code points in an emoji.
 #:
@@ -58,25 +110,58 @@ FALLBACK = "other"
 #: `onespace/spaceview/saved.py`.
 MAX_EMOJI = 8
 
-#: What each mode wears when nobody has chosen. Not a decision about the
+#: What each shape wears when nobody has chosen. Not a decision about the
 #: customer's network — it is what a person would draw if asked, and it is
 #: overridable per mode and per line, so it costs a workspace nothing to
-#: disagree with.
+#: disagree with. One per drawing, so the glyph and the silhouette always
+#: mean the same vehicle.
 DEFAULT_EMOJI = {
-	"bus": "🚌",
-	"tram": "🚊",
 	"metro": "🚇",
-	"rail": "🚆",
+	"tram": "🚊",
+	"tram-old": "🚋",
+	"light-rail": "🚈",
+	"train": "🚆",
+	"high-speed": "🚄",
+	"monorail": "🚝",
+	"locomotive": "🚂",
+	"funicular": "🚞",
+	"bus": "🚌",
+	"bus-articulated": "🚍",
+	"trolleybus": "🚎",
+	"minibus": "🚐",
+	"coach": "🛻",
+	"shuttle": "🚖",
+	"taxi": "🚕",
+	"car": "🚗",
+	"truck": "🚚",
+	"lorry": "🚛",
+	"ambulance": "🚑",
+	"fire": "🚒",
+	"police": "🚓",
 	"ferry": "⛴️",
-	"cable": "🚡",
-	"other": "🚐",
+	"ship": "🚢",
+	"boat": "🚤",
+	"sailing": "⛵",
+	"cable-car": "🚡",
+	"gondola": "🚠",
+	"rickshaw": "🛺",
+	"motorcycle": "🏍️",
+	"scooter": "🛵",
+	"bicycle": "🚲",
+	"wheelchair": "🦽",
 }
 
 
 def normalise(word: str) -> str:
-	"""One of `SHAPES`, or the capsule. Never an empty string, never a guess."""
+	"""One of `SHAPES`. Never an empty string, never a name with no drawing.
+
+	Takes a shape's own name or a mode's, because both reach it: the doctype
+	stores shapes and the fallback ladder ends at a line's mode.
+	"""
 	key = str(word or "").strip().lower()
-	return key if key in SHAPES else FALLBACK
+	if key in SHAPES:
+		return key
+	return BY_MODE.get(key, FALLBACK)
 
 
 def emoji(value: str) -> str:
@@ -209,12 +294,12 @@ def set_marker_style(mode: str, shape: str = "", emoji_glyph: str = "") -> dict:
 	else:
 		row = frappe.new_doc("Transit Marker Style")
 		row.mode = name
-		row.shape = normalise(name).title()
+		row.shape = normalise(name)
 
 	if wanted:
-		row.shape = wanted.title()
+		row.shape = wanted
 	if emoji_glyph:
 		row.emoji = glyph
 	row.save() if existing else row.insert()
 
-	return {"mode": name, "shape": row.shape.lower(), "emoji": row.emoji or ""}
+	return {"mode": name, "shape": row.shape, "emoji": row.emoji or ""}

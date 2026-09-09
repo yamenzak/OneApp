@@ -28,7 +28,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Drawn as",
-   "options": "Bus\nTram\nMetro\nRail\nFerry\nCable\nOther",
+   "options": "metro\ntram\ntram-old\nlight-rail\ntrain\nhigh-speed\nmonorail\nlocomotive\nfunicular\nbus\nbus-articulated\ntrolleybus\nminibus\ncoach\nshuttle\ntaxi\ncar\ntruck\nlorry\nambulance\nfire\npolice\nferry\nship\nboat\nsailing\ncable-car\ngondola\nrickshaw\nmotorcycle\nscooter\nbicycle\nwheelchair",
    "reqd": 1
   },
   {

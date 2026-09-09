@@ -641,6 +641,38 @@ permissions, a history and an audit trail like every other document, and no
 screen of its own — the picker is on the map, because what is being chosen is a
 picture and a picture is chosen by looking at where it lands.
 
+**Thirty-three drawings, and a step between them and the squat ones.** The
+silhouettes in `markers.js` are drawn on a canvas and deliberately wrong about
+proportion — a real bus from above is about one to five, and at the twenty-two
+pixels a marker occupies at city zoom that is a tick. A printed transit map
+squashes for the same reason. The artwork in `frontend/src/modules/onemobility/art/`
+is right about proportion and full of detail, and it starts working at about
+thirty pixels. So the layer steps: squat below zoom thirteen, drawn above it,
+and `icon-size` lands on 0.78 at the step, which is thirty-one pixels. Both
+were rendered at every size the map actually draws before that number was
+picked.
+
+The drawings are *source assets* — nothing in this repo generates them — and
+they are relied on to obey four rules: a `viewBox="0 0 40 40"` with no intrinsic
+size, nose towards -Y and symmetric about the vertical, the body as exactly one
+path filled `#00FF00`, and flat fills in a fixed set of neutral greys with no
+gradients, filters, masks, text or external references. Every one of those is
+something a well-meaning edit breaks silently — a second `#00FF00` and half the
+vehicle stops carrying occupancy; a `<text>` element and the icon renders
+differently on a machine without that font — so `tests/test_marker_shapes.py`
+reads every file and holds them.
+
+The green is a placeholder, and it is the whole trick: MapLibre needs a raster
+and a raster cannot be recoloured, so the fill is substituted in the SVG
+*source* before it is rasterised, once per shape per occupancy band actually on
+screen. Thirty-three shapes across five bands is a hundred and sixty-five
+images and a network of buses will never use a hundred and fifty of them.
+
+A mode is not a shape here either, and now they cannot even be spelled the same:
+"Rail", "Cable" and "Other" are modes and there are no drawings of those names,
+so `markers.BY_MODE` maps them onto `train`, `cable-car` and `minibus`. Hoping
+`normalise` would guess is how every train on a network ends up drawn as a van.
+
 **And an emoji, which is a third thing and is not a marker.** A glyph is the
 fastest identifier a person has — 🚇 beside U6 is read before the U or the 6 —
 and it cannot be the thing that moves on the map. That was settled by rendering

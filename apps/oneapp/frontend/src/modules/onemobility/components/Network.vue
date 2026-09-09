@@ -311,11 +311,17 @@ import { network } from '@/modules/onemobility/lib/api'
 import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
 import MapControls from '@/modules/onemobility/components/MapControls.vue'
 import MapLegend from '@/modules/onemobility/components/MapLegend.vue'
+import {
+  coarseFor,
+  drawn as drawnArt,
+  rasterise,
+  FALLBACK as FALLBACK_SHAPE,
+  SHAPES as ART_SHAPES,
+} from '@/modules/onemobility/lib/art'
 import { OVERLAYS, overlayFor, rampStops } from '@/modules/onemobility/lib/layers'
 import { advance, blend, prepare } from '@/modules/onemobility/lib/motion'
 import {
   bearingBetween,
-  bodyFor,
   easeBearing,
   MODES,
   vehicleMarker,
@@ -655,7 +661,10 @@ function paint() {
         stale: latest.stale ? 1 : 0,
         bearing: heading,
         band: occupancyBand(latest.occupancy).key,
-        mode: markerOf(latest.line),
+        // Both: `mode` names one of the seven squat silhouettes and `shape`
+        // one of the thirty-three drawings, and the layer steps between them.
+        mode: coarseFor(markerOf(latest.line)),
+        shape: markerOf(latest.line),
         chosen: vehicle === selected.value ? 1 : 0,
       },
     })
@@ -840,8 +849,9 @@ async function restyle({ mode, shape, emoji }) {
     if (shape) one.shape = shape
     if (emoji) one.emoji = emoji
   }
-  // The images are keyed by shape and are already registered for all seven, so
-  // nothing has to be redrawn — only the features that name them.
+  // The squat silhouettes are already registered for all seven; the artwork for
+  // a shape nobody was running has to be rasterised now.
+  if (shape) await registerArt([shape])
   lines.value = [...lines.value]
 }
 
@@ -941,6 +951,43 @@ function registerMarkers() {
 }
 
 /**
+ * The drawn artwork, rasterised for the shapes this network actually runs.
+ *
+ * Only those: thirty-three shapes across five bands is a hundred and sixty-five
+ * images, and a network of buses will never use a hundred and fifty of them.
+ * Rasterising an SVG means letting the browser lay it out, so each one is an
+ * image load — cheap, but not free enough to do for a catalogue.
+ */
+async function registerArt(shapes) {
+  // At least two: these only appear once a marker is thirty pixels or more,
+  // which is where the detail in them is the point, and at that size the
+  // difference between a two- and a three-times bitmap is visible.
+  const ratio = Math.min(3, Math.max(2, window.devicePixelRatio || 1))
+  const jobs = []
+  for (const shape of shapes) {
+    if (!drawnArt(shape)) continue
+    for (const band of OCCUPANCY) {
+      const id = `art-${shape}-${band.key}`
+      if (map.hasImage(id)) continue
+      jobs.push(
+        // Forty points, the same box the canvas markers are drawn in, so
+        // `icon-size` means one thing on both sides of the step. Rasterised at
+        // the device ratio and declared at it: `pixelRatio` is how many image
+        // pixels go to a CSS pixel, so getting it wrong scales every marker.
+        rasterise(shape, occupancyInk(band.floor < 0 ? -1 : band.floor), 40, ratio)
+          .then((image) => {
+            // The map may have gone away while the browser was laying out an
+            // SVG — this screen is left and re-entered like any other.
+            if (map && !map.hasImage(id)) map.addImage(id, image, { pixelRatio: ratio })
+          })
+          .catch(() => {}),
+      )
+    }
+  }
+  await Promise.all(jobs)
+}
+
+/**
  * The legend's shape key: one drawing per mode this network actually runs.
  *
  * Off the *resolved* marker rather than the mode, so a workspace that draws
@@ -949,7 +996,7 @@ function registerMarkers() {
  */
 const shapesHere = computed(() => {
   const found = new Set(lines.value.map((one) => markerOf(one)))
-  return MODES.filter((shape) => found.has(shape))
+  return ART_SHAPES.filter((shape) => found.has(shape))
 })
 
 /**
@@ -1082,7 +1129,12 @@ function drawOverlay() {
  */
 function markerOf(line) {
   const found = typeof line === 'string' ? lines.value.find((one) => one.name === line) : line
-  return bodyFor(found?.marker || found?.mode)
+  const asked = String(found?.marker || found?.mode || '').toLowerCase()
+  // The drawing's own name, or the plain van. Never `bodyFor` here: that
+  // answers with one of the seven squat silhouettes, and this is the finer
+  // question. The server resolves this properly — `markers.BY_MODE` — so this
+  // only catches a line older than the mapping.
+  return drawnArt(asked) ? asked : FALLBACK_SHAPE
 }
 
 async function draw() {
@@ -1114,6 +1166,10 @@ async function draw() {
   await whenLoaded(map, ground())
 
   registerMarkers()
+  // Not awaited: the squat silhouettes are already registered, so the map draws
+  // immediately and the artwork appears as it finishes — which is before
+  // anybody has zoomed in far enough to see it.
+  registerArt(shapesHere.value)
 
   const casing = casingInk()
 
@@ -1264,12 +1320,25 @@ async function draw() {
     type: 'symbol',
     source: 'vehicles',
     layout: {
-      // Mode picks the silhouette, band picks the colour. One expression and
-      // no second layer: the images are registered under exactly this name.
-      'icon-image': ['concat', 'vehicle-', ['get', 'mode'], '-', ['get', 'band']],
+      // Two sets of images, and the zoom picks which.
+      //
+      // Below thirteen a marker is twenty-odd pixels on its long axis and eight
+      // across, and the drawn artwork — which is a real vehicle seen from above,
+      // at real proportions — is a tick at that size. `markers.js`'s squat
+      // silhouettes are deliberately wrong about proportion for exactly this
+      // reason, the way a printed transit map is. Above it the artwork is
+      // thirty pixels and up, which is where its detail starts being the point.
+      //
+      // Settled by rendering every shape at every size the map actually draws.
+      'icon-image': [
+        'step', ['zoom'],
+        ['concat', 'vehicle-', ['get', 'mode'], '-', ['get', 'band']],
+        13, ['concat', 'art-', ['get', 'shape'], '-', ['get', 'band']],
+      ],
       // The bitmap is forty points on its long side so a bus has room to be a
       // bus; on the map it wants to be about half a stop's width, not twice it.
-      'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.55, 14, 0.75, 16, 0.95],
+      // The step at thirteen lands on 0.78, which is thirty-one pixels.
+      'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.55, 13, 0.78, 16, 0.95],
       'icon-rotate': ['get', 'bearing'],
       'icon-rotation-alignment': 'map',
       'icon-allow-overlap': true,

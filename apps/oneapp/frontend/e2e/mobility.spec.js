@@ -231,14 +231,22 @@ test('the controls are a rail and the legend is a key', async ({ page }) => {
   await controls.locator('[data-slot="shapes-button"]').click()
   const picker = page.locator('[data-slot="marker-picker"]')
   await expect(picker).toBeVisible({ timeout: 20_000 })
-  await expect(picker.getByRole('button', { name: 'Tram' })).toHaveCount(7)
-
-  // And a glyph beside each, which is the other half of what a mode wears:
-  // the silhouette is what moves on the map, the emoji is what it is called
-  // in a list, a chip and a hover card.
+  // One row per mode, each with two controls: the silhouette the map draws and
+  // the glyph the thing is called by. Two different jobs — one moves and
+  // rotates and carries occupancy, the other sits beside a name — and the row
+  // keeps them apart because of it.
+  await expect(
+    picker.getByRole('button', { name: 'The silhouette the map draws' }),
+  ).toHaveCount(7)
   await expect(
     picker.getByRole('button', { name: 'The glyph beside this mode' }),
   ).toHaveCount(7)
+
+  // And every drawing there is behind the first of them.
+  await picker.getByRole('button', { name: 'The silhouette the map draws' }).first().click()
+  await expect(page.getByRole('button', { name: 'Articulated bus' })).toBeVisible({
+    timeout: 20_000,
+  })
   expectNoRealErrors(errors)
 })
 

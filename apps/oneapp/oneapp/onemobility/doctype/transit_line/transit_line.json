@@ -88,7 +88,7 @@
    "fieldname": "marker_shape",
    "fieldtype": "Select",
    "label": "Drawn as",
-   "options": "\nBus\nTram\nMetro\nRail\nFerry\nCable\nOther"
+   "options": "\nmetro\ntram\ntram-old\nlight-rail\ntrain\nhigh-speed\nmonorail\nlocomotive\nfunicular\nbus\nbus-articulated\ntrolleybus\nminibus\ncoach\nshuttle\ntaxi\ncar\ntruck\nlorry\nambulance\nfire\npolice\nferry\nship\nboat\nsailing\ncable-car\ngondola\nrickshaw\nmotorcycle\nscooter\nbicycle\nwheelchair"
   },
   {
    "fieldname": "feed",

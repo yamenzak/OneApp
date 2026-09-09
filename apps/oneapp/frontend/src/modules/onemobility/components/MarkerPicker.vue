@@ -14,7 +14,7 @@
     this cannot come to disagree with the thing it sets.
   -->
   <div
-    class="flex w-[min(21rem,92vw)] flex-col gap-2 p-3"
+    class="flex w-[min(19rem,92vw)] flex-col gap-2 p-3"
     data-slot="marker-picker"
   >
     <p class="text-xs font-medium text-ink-gray-7">{{ __('How each mode is drawn') }}</p>
@@ -61,25 +61,45 @@
           </template>
         </Popover>
         <span class="mx-0.5 h-4 w-px shrink-0 bg-surface-gray-3" />
-        <!-- Seven in one row and no wrapping: the point of a picker made of
-             pictures is that they are compared side by side, and a row that
-             wraps compares four with three. -->
-        <div class="flex flex-1 items-center gap-0.5">
-          <Button
-            v-for="shape in shapes"
-            :key="shape.key"
-            variant="ghost"
-            :tooltip="shape.label"
-            :aria-label="shape.label"
-            :disabled="!mayWrite"
-            :class="one.shape === shape.key
-              ? 'bg-surface-gray-3 ring-1 ring-outline-gray-3'
-              : ''"
-            @click="emit('pick', { mode: one.mode, shape: shape.key })"
-          >
-            <img :src="shape.url" :alt="shape.label" class="size-5 object-contain" />
-          </Button>
-        </div>
+        <!--
+          Thirty-three drawings behind one button rather than thirty-three
+          buttons in a row: a row that wraps compares four with three, and the
+          point of a picker made of pictures is that they sit side by side.
+        -->
+        <Popover align="end">
+          <template #trigger>
+            <Button
+              variant="ghost"
+              :disabled="!mayWrite"
+              :tooltip="__('The silhouette the map draws')"
+              :aria-label="__('The silhouette the map draws')"
+            >
+              <img
+                :src="urlFor(one.shape)"
+                :alt="nameFor(one.shape)"
+                class="size-5 object-contain"
+              />
+            </Button>
+          </template>
+          <template #default>
+            <div class="grid w-64 grid-cols-6 gap-0.5 p-2">
+              <Button
+                v-for="shape in shapes"
+                :key="shape.key"
+                variant="ghost"
+                :tooltip="shape.label"
+                :aria-label="shape.label"
+                :class="one.shape === shape.key ? 'bg-surface-gray-3' : ''"
+                @click="emit('pick', { mode: one.mode, shape: shape.key })"
+              >
+                <img :src="shape.url" :alt="shape.label" class="size-5 object-contain" />
+              </Button>
+            </div>
+          </template>
+        </Popover>
+        <span class="min-w-0 flex-1 truncate text-2xs text-ink-gray-5">
+          {{ nameFor(one.shape) }}
+        </span>
       </div>
     </div>
   </div>
@@ -88,8 +108,8 @@
 <script setup>
 import { computed } from 'vue'
 
-import { casingInk } from '@/modules/onemobility/lib/palette'
-import { MODES, SHAPE_NAMES, swatchUrl } from '@/modules/onemobility/lib/markers'
+import { artUrl, drawn, FALLBACK, SHAPES } from '@/modules/onemobility/lib/art'
+import { SHAPE_NAMES } from '@/modules/onemobility/lib/markers'
 import { tokenInk } from '@/modules/onespace/lib/screen/ink'
 import { __ } from '@/shared/lib/runtime/translate'
 import { Button, Popover } from '@/ui'
@@ -118,18 +138,29 @@ const GLYPHS = [
 ]
 
 /**
- * Every silhouette, drawn once.
+ * Every silhouette, drawn once, in one neutral grey.
  *
- * In one neutral grey: colour is the other half of what a marker says, and a
- * picker that varied both would be asking two questions in one row.
+ * The same SVGs the map registers rather than a second drawing, so this cannot
+ * come to disagree with what it sets. Grey because colour is the *other* axis —
+ * on the map the body carries occupancy — and a picker that varied both would
+ * be asking two questions in one row.
  */
-const shapes = computed(() => {
-  const ring = casingInk()
-  const neutral = tokenInk('--ink-gray-5', '#8b8b8b')
-  return MODES.map((key) => ({
+const INK = '--ink-gray-4'
+
+const shapes = computed(() =>
+  SHAPES.map((key) => ({
     key,
-    label: SHAPE_NAMES[key](),
-    url: swatchUrl(key, neutral, ring, 2),
-  }))
-})
+    label: SHAPE_NAMES[key] ? SHAPE_NAMES[key]() : key,
+    url: artUrl(key, tokenInk(INK, '#a1a1aa')),
+  })),
+)
+
+function urlFor(shape) {
+  // A shape with no drawing behind it would be a broken image; the server's
+  // ladder means it should not happen, and this is what happens if it does.
+  return artUrl(drawn(shape) ? shape : FALLBACK, tokenInk(INK, '#a1a1aa'))
+}
+function nameFor(shape) {
+  return SHAPE_NAMES[shape] ? SHAPE_NAMES[shape]() : shape
+}
 </script>
