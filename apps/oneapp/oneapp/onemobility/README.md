@@ -984,8 +984,12 @@ Each ships something a person can look at. **Done** is done and in the fixture.
    differently; nothing resolves a conflict between two sources yet.
 9. **Forecast.** The percentile roll-up read forwards — ETAs, punctuality risk,
    bunching — the scrubber's right-hand side, and the scoring job that says
-   whether any of it is any good. **Started:** `bunching` is built and
-   `facts.aggregate` computes percentiles; ETAs and the scoring job are not.
+   whether any of it is any good. **Nearly done:** `serviceHour` and `stopHour`
+   store their percentiles, `forecast.py` reads them forward as an arrival, a
+   risk, an anomaly and a day's outlook, the Outlook screen draws them, and
+   `scoring.py` writes each claim down before the answer exists and settles it
+   the night after. What is left is the scrubber's right-hand side — the same
+   gesture that shows what happened showing what is about to.
 
 Stages 1–4 are a sellable demo. Stages 5–6 are the product. Stages 7–9 are what
 renews it, and stage 9 is what makes a competitor's version look like a
