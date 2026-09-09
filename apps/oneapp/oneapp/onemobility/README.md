@@ -417,41 +417,49 @@ Both operate on the rolled-up numbers, never on raw observations, which keeps
 them cheap and keeps them compatible with a customer who has AI switched off
 entirely.
 
-## 8. What the engine is missing
+## 8. What the engine was missing, and what it now has
 
-In the order it blocks:
+Three of the five gaps below were OneSpace's rather than OneMobility's, and
+were built there so the next space inherits them. That was the whole point of
+writing this section before writing the space.
 
-1. **A map view type**, over `Geolocation`, in `lib/screen/viewTypes.js` and a
-   `MapBody` beside the other bodies.
-2. **A screen body over an aggregate API.** Every body we have reads a list of
-   documents. A body that reads grouped numbers has no precedent, and it is what
-   every chart on the dashboard needs once the source is a fact table.
-3. **Time-series charts** that survive a hundred thousand points — decimation in
-   the query, not in the browser.
-4. **A source-connection surface.** Host, key, schedule, last run, what it
-   brought. Settings-shaped but per space, and a space cannot contribute a
-   settings tab today.
-5. **A component screen that is a real product surface.** The escape hatch
-   exists and nothing has used it in anger.
+**Built, in the engine:**
 
-Two of these are not OneMobility's at all, and should be built as OneSpace's
-own so the next space inherits them:
+* **A map view type**, over `Geolocation` or over a pair of coordinate fields —
+  `spaceview/views.py` resolves which, `MapBody.vue` draws it, and a screen
+  opts in by naming `map` in its `view_types`. Any doctype with a position gets
+  a map; stops are only its first customer.
+* **The ground under it.** `onespace/basemap.py` and `lib/screen/basemap.js`
+  are the one place the product decides where tiles come from — site config, on
+  the boot payload, because which tile store a bench points at is a deployment
+  fact. Raster by default so a style that cannot be fetched cannot take the
+  whole map with it, and a flat ground when there are no tiles at all, which is
+  what a schematic looks like and is what makes this work offline.
+* **Tiered storage, declared rather than written.** `shared/facts.py`: a module
+  says "this is a fact table, keep 30 days hot, roll it up like *this*, freeze
+  the rest" and the engine does the partitioning, the nightly roll-up, the
+  freeze to R2 and the hydrate on request. Percentiles included, because p85 is
+  the number a scheduler builds a timetable from and SQL cannot compute one in
+  a grouped pass. Swept nightly from `hooks.py`; nothing in the module knows
+  which tier a row is in.
+* **A space that acts when it is enabled or removed.** `onespace/spacelife.py`:
+  a space may ship a `lifecycle.py`, and enabling, disabling or removing it
+  calls one. Fact tables have to be created before the space works and are
+  nobody's to clean up otherwise.
 
-* **The map system.** A view type over `Geolocation`, and the map primitives
-  under it — tiles, projection, clustering, the marker layer. Any doctype with
-  a position gets a map, and OneMobility is only its loudest customer.
-* **Tiered storage, declared rather than written.** A module says "this is a
-  fact table, keep 30 days hot, roll it up like *this*, freeze the rest" and
-  the engine does the partitioning, the nightly roll-up, the freeze to R2 and
-  the hydrate on request. Zero-touch in both directions — dump, hydrate, dump
-  again — and nothing in the module knows which tier a row is in.
+**Still missing, in the order it now blocks:**
 
-  OneMobility is the first module with a fact table, so it is where the seam
-  gets discovered. It must not be where it lives: the next module with
-  millions of rows of anything — mail events, AI call logs, audit trails —
-  wants exactly this and should not reimplement it.
-
-None is a reason to wait; they are the order to build in.
+1. **A screen body over an aggregate API.** Insights is a `component` screen
+   reading `onemobility/insights.py`, which works and is honest — but the next
+   space with a fact table will write the same screen again. A `dashboard` view
+   whose widgets can name an aggregate rather than a doctype is the general
+   form.
+2. **Time-series charts that survive a hundred thousand points** — decimation
+   in the query, not in the browser. The aggregate tier hides this for now
+   because it is already grouped.
+3. **A settings tab a space can contribute.** Sources are a list screen with a
+   "Fetch now" action, which is enough; they are settings-shaped and would sit
+   better in the workspace's own dialog, and a space cannot put a tab there.
 
 ---
 
@@ -485,7 +493,14 @@ What is available, and is a better answer:
   answer and a speed answer.
 * **A site per customer**, which is already true — own database, own R2 prefix,
   not a tenant column in a shared table like most of the comparable products.
-* **No subprocessor sees it**: self-hosted tiles, and AI off unless enabled.
+* **No subprocessor sees the data**: AI off unless enabled, and nothing about a
+  workspace's records leaves it. The one exception is the map's background,
+  which the *reader's browser* fetches from a tile host — so that host sees an
+  address and a tile number, and never a route, a vehicle or a search. It is
+  named in the subprocessor list, it is one config key to point at a tile store
+  we run, and `oneapp_map_plain` turns it off entirely: the map then draws its
+  ground flat and every record still on it. For the customer who asks, that is
+  a real answer rather than a reassurance.
 * **Export and hard-delete, with a receipt.** "Treasure" is often lock-in fear
   in a better suit.
 * **Their own cloud**, priced as enterprise, for the one who still says no. The
@@ -510,28 +525,33 @@ and a technical buyer will catch the overclaim.
 
 ## 11. Stages
 
-Each ships something a person can look at.
+Each ships something a person can look at. **Done** is done and in the fixture.
 
 1. **The model and one importer.** Doctypes for the reference nouns, the fact
    tables, and GTFS static from an upload — GTFS before VDV because the sample
-   data is abundant and it proves the model is not VDV-shaped.
+   data is abundant and it proves the model is not VDV-shaped. **Done.**
 2. **The map view type**, in the engine, over Geolocation. Stops on a map, and
-   every other space gets it too.
+   every other space gets it too. **Done**, with the basemap under it.
 3. **VDV 452 over SFTP.** The real acquisition path, on the pipeline stage 1
-   proved.
+   proved. **Half done:** the SFTP door is built and takes the newest file in a
+   drop folder; the VDV 452 normaliser is not written, and a source declaring
+   that format is told so plainly rather than failing as a parse error.
 4. **The network screen, static.** Lines drawn from shapes, coloured, filtered,
-   with a legend. No live data yet, and already a demo.
-5. **Live.** A socket source, the observation table, vehicles moving.
+   with a legend. **Done.**
+5. **Live.** A socket source, the observation table, vehicles moving. **Done**
+   except the socket itself: `live.report` is the door, and nothing holds a
+   long-lived connection open yet.
 6. **The scrubber.** The nightly roll-up, the day objects, and one screen with
-   two clocks.
+   two clocks. **Done.**
 7. **Analysis.** Peak hours, punctuality, occupancy over time — the aggregate
-   API and the charts on it.
+   API and the charts on it. **Done:** the Insights screen.
 8. **Sources, plural.** Precedence, conflicts, inferred stops, the connection
-   surface.
-
+   surface. **Half done:** precedence is a field and inferred stops are drawn
+   differently; nothing resolves a conflict between two sources yet.
 9. **Forecast.** The percentile roll-up read forwards — ETAs, punctuality risk,
    bunching — the scrubber's right-hand side, and the scoring job that says
-   whether any of it is any good.
+   whether any of it is any good. **Started:** `bunching` is built and
+   `facts.aggregate` computes percentiles; ETAs and the scoring job are not.
 
 Stages 1–4 are a sellable demo. Stages 5–6 are the product. Stages 7–9 are what
 renews it, and stage 9 is what makes a competitor's version look like a
