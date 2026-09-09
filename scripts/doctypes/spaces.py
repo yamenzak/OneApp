@@ -456,9 +456,43 @@ doctype(
         f("reserved_slugs", "Small Text",
           description="Additional comma or newline separated slugs to block."),
         section("sec_stripe", "Stripe"),
+        f("stripe_secret_key", "Password",
+          description="sk_live_… or sk_test_…. Held here rather than in the "
+                      "payments app: that app was carried on the control bench "
+                      "for this one field, and its gateway machinery — Payment "
+                      "Requests, portals, redirect flows — is not how anything "
+                      "here charges. An existing Stripe Settings still wins "
+                      "while it has a key, so nothing has to be moved twice."),
         f("stripe_webhook_secret", "Password",
           description="Signing secret for the Stripe webhook endpoint."),
         column("cb_stripe_set"),
+        # ------------------------------------------------------------------ #
+        # Where our own revenue lands in our own books.
+        #
+        # A Sales Invoice on its own leaves every customer permanently
+        # outstanding and reconciles against nothing: Stripe pays out the net
+        # of a batch of charges, and until the cash is booked there is no
+        # account for that payout to land against. So each invoice is settled
+        # by a Payment Entry into a clearing account, less what Stripe kept —
+        # which makes the clearing balance the payout, to the cent.
+        #
+        # Named here rather than guessed, and nothing is booked while they are
+        # blank: cash posted to the wrong account is worse than cash not
+        # posted, because the second is visible.
+        # ------------------------------------------------------------------ #
+        section("sec_books", "Books"),
+        f("books_company", "Link", options="Company", label="Company",
+          description="Which company our own invoices belong to. Falls back to "
+                      "the global default when blank."),
+        f("stripe_clearing_account", "Link", options="Account",
+          description="Bank or cash account standing for the Stripe balance. "
+                      "A payout is then a transfer out of it. Blank leaves "
+                      "invoices unpaid rather than posting a guess."),
+        column("cb_books"),
+        f("stripe_fee_account", "Link", options="Account",
+          description="Expense account for what Stripe kept — roughly 2.9% and "
+                      "thirty cents a charge. Blank books the gross, and the "
+                      "clearing account then drifts from the payout by the fees."),
         # `credits_per_currency_unit` was here and is gone: a Credit Pack names
         # the credits it grants, so there was nothing left for a conversion rate
         # to convert. Nothing had read it since the pack catalogue landed, and a

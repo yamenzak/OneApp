@@ -36,6 +36,32 @@ def _setting(key, label, **kw):
 	return Setting(key, label, targets=[(SETTINGS, key)], **kw)
 
 
+def _accounts(**filters) -> list[str]:
+	"""Accounts to choose between, as Select options.
+
+	A Select rather than a Link because the settings dialog draws a Link as a
+	plain text box — see `workspace.reference` for why the picker behind one
+	cannot run there. Narrowed by what the field is for: a chart of accounts is
+	a few hundred rows, and all of them in one dropdown is the same as none.
+	"""
+	try:
+		return sorted(
+			frappe.get_all("Account", filters={"is_group": 0, **filters},
+			               pluck="name", limit_page_length=0)
+		)
+	except Exception:
+		# ERPNext not installed, or no company set up yet. An empty list draws
+		# an empty dropdown; an exception would take the whole dialog down.
+		return []
+
+
+def _accounts_company() -> list[str]:
+	try:
+		return sorted(frappe.get_all("Company", pluck="name", limit_page_length=0))
+	except Exception:
+		return []
+
+
 def groups() -> list[dict]:
 	"""Three groups, matching the three panels `/admin` had.
 
@@ -78,9 +104,37 @@ def groups() -> list[dict]:
 				"without these; nobody can pay you."
 			),
 			"settings": [
+				_setting("stripe_secret_key", "Stripe secret key", type="Password",
+				         hint="sk_live_… or sk_test_…. Everything charged, refunded "
+				              "or cancelled goes through it."),
 				_setting("stripe_webhook_secret", "Stripe webhook secret", type="Password"),
 				_setting("ai_markup_multiplier", "AI markup", type="Float",
 				         hint="What a model's own cost is multiplied by before it is charged."),
+			],
+		},
+		{
+			"key": "control-books",
+			"label": "Books",
+			"icon": "lucide-book-open",
+			"roles": OPERATOR_ROLES,
+			"description": (
+				"Where our own revenue lands. Invoices are raised either way; "
+				"without an account to settle them into, every customer reads "
+				"as outstanding and a Stripe payout reconciles against nothing."
+			),
+			"settings": [
+				_setting("books_company", "Company", type="Select",
+				         options_from=lambda: _accounts_company(),
+				         hint="Whose books these are. The global default when blank."),
+				_setting("stripe_clearing_account", "Stripe clearing account",
+				         type="Select",
+				         options_from=lambda: _accounts(account_type=("in", ("Bank", "Cash"))),
+				         hint="Stands for the Stripe balance. A payout is a transfer "
+				              "out of it."),
+				_setting("stripe_fee_account", "Processing fee account", type="Select",
+				         options_from=lambda: _accounts(root_type="Expense"),
+				         hint="What Stripe kept. Blank books the gross, and the "
+				              "clearing account then drifts by the fees."),
 			],
 		},
 		{

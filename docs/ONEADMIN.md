@@ -363,6 +363,47 @@ subscription, is a second lifecycle: no period boundaries, no grants, its own
 branch in every billing path, and a demo that stops resembling the thing being
 demonstrated.
 
+### Our own books: an invoice, and then the cash
+
+The control site runs ERPNext, and our revenue is bookkept there rather than in
+a table of our own. A tenant becomes a `Customer` on its first payment; every
+paid Stripe invoice and every one-off checkout becomes a submitted Sales
+Invoice, keyed on the Stripe id so a redelivered webhook does not make a second.
+
+An invoice on its own is only half of it. Every invoice we raise is *already
+paid* at the moment it is raised, so a book of nothing but invoices shows every
+customer permanently outstanding, and there is nothing for a Stripe payout to
+land against. So each one is settled straight away by a Payment Entry into a
+clearing account that stands for the Stripe balance — less what Stripe kept,
+which is booked as a deduction to an expense account.
+
+The fee line is the part that makes the account reconcile. Stripe pays out the
+*net* of a batch of charges, so booking the gross leaves the clearing balance
+and the payout differing by exactly the fees. It is also the awkward part: the
+fee is not on the invoice and not on the charge, it is on the charge's balance
+transaction, and it is denominated in the account's settlement currency rather
+than the charge's. Where those differ, or Stripe cannot be reached, or the sale
+was not in the company's currency, the gross is booked and the drift is left
+visible — converting at a rate nobody chose would be worse.
+
+Three settings, under Settings → Books, and **nothing is posted until the
+clearing account is named**: a wrong entry in a submitted ledger is far more
+work to undo than one that was never made. The console's readiness list says so
+in as many words.
+
+Everything in `billing/books.py` is best-effort and never breaks a webhook: if
+bookkeeping fails the customer has still paid, their credits still land, and an
+operator gets an error log. A redelivery of the same event retries the *cash*
+half for that reason — the way to end up with an unpaid invoice here is the
+invoice landing and the Payment Entry failing.
+
+**The `payments` app is gone from the control bench.** It was carried for one
+Password field, and none of what it exists for — Payment Requests, gateway
+portals, redirect flows — is how anything here charges: we drive Stripe's API
+directly and mirror the result. The secret key lives in Control Settings; an
+existing `Stripe Settings` that still holds one is still read, so nothing has
+to be moved twice.
+
 ### Overage: never a surprise charge, never destroyed data
 
 | Resource | At the limit |

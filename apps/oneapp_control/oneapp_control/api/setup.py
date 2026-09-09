@@ -290,10 +290,30 @@ def checks() -> list[dict]:
 			"key": "stripe_gateway",
 			"group": BILLING,
 			"label": "Stripe secret key",
-			"ok": bool(frappe.db.exists("Stripe Settings", {})),
-			"detail": "Held by the payments app, so there is one place to rotate it.",
+			"ok": _secret(s, "stripe_secret_key")
+			or bool(
+				frappe.db.exists("DocType", "Stripe Settings")
+				and frappe.db.exists("Stripe Settings", {})
+			),
+			"detail": "Everything charged, refunded or cancelled goes through it.",
 			"needs": "A Stripe secret key (sk_live_… or sk_test_…).",
-			"where": "Stripe Settings (payments app)",
+			"where": "Settings → Billing",
+		},
+		{
+			"key": "books_clearing",
+			"group": BILLING,
+			"label": "Cash lands in an account",
+			"ok": bool(s.get("stripe_clearing_account")),
+			"detail": (
+				"Invoices are raised either way. Without this they are never "
+				"paid off, so every customer reads as outstanding and a Stripe "
+				"payout reconciles against nothing."
+			),
+			"needs": (
+				"A bank or cash account standing for the Stripe balance, and an "
+				"expense account for the fee Stripe keeps."
+			),
+			"where": "Settings → Books",
 		},
 		{
 			"key": "stripe_webhook",

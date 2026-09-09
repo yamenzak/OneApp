@@ -65,9 +65,9 @@ ASSUMED_APPS = ("frappe", "erpnext", "hrms", "oneapp")
 def site_apps(shard) -> list[str]:
 	"""Apps to install: what the bench group actually carries, asked of press.
 
-	Bench groups differ — a control bench carries payments and oneapp_control, a
-	tenant bench carries oneapp — and press rejects a site referencing an app the
-	bench does not have.
+	Bench groups differ — a control bench carries oneapp_control, a tenant bench
+	carries oneapp — and press rejects a site referencing an app the bench does
+	not have.
 
 	This used to be `Shard.site_apps`, a required text box somebody typed to
 	match a bench they were reading off another screen. It had to be right, it

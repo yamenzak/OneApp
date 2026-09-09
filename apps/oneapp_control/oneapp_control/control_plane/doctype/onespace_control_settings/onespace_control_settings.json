@@ -16,8 +16,14 @@
   "sec_slug",
   "reserved_slugs",
   "sec_stripe",
+  "stripe_secret_key",
   "stripe_webhook_secret",
   "cb_stripe_set",
+  "sec_books",
+  "books_company",
+  "stripe_clearing_account",
+  "cb_books",
+  "stripe_fee_account",
   "sec_cfadmin",
   "cf_admin_token",
   "sec_cfkv",
@@ -126,6 +132,12 @@
    "label": "Stripe"
   },
   {
+   "description": "sk_live_\u2026 or sk_test_\u2026. Held here rather than in the payments app: that app was carried on the control bench for this one field, and its gateway machinery \u2014 Payment Requests, portals, redirect flows \u2014 is not how anything here charges. An existing Stripe Settings still wins while it has a key, so nothing has to be moved twice.",
+   "fieldname": "stripe_secret_key",
+   "fieldtype": "Password",
+   "label": "Stripe Secret Key"
+  },
+  {
    "description": "Signing secret for the Stripe webhook endpoint.",
    "fieldname": "stripe_webhook_secret",
    "fieldtype": "Password",
@@ -134,6 +146,36 @@
   {
    "fieldname": "cb_stripe_set",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sec_books",
+   "fieldtype": "Section Break",
+   "label": "Books"
+  },
+  {
+   "description": "Which company our own invoices belong to. Falls back to the global default when blank.",
+   "fieldname": "books_company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "description": "Bank or cash account standing for the Stripe balance. A payout is then a transfer out of it. Blank leaves invoices unpaid rather than posting a guess.",
+   "fieldname": "stripe_clearing_account",
+   "fieldtype": "Link",
+   "label": "Stripe Clearing Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "cb_books",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Expense account for what Stripe kept \u2014 roughly 2.9% and thirty cents a charge. Blank books the gross, and the clearing account then drifts from the payout by the fees.",
+   "fieldname": "stripe_fee_account",
+   "fieldtype": "Link",
+   "label": "Stripe Fee Account",
+   "options": "Account"
   },
   {
    "fieldname": "sec_cfadmin",
