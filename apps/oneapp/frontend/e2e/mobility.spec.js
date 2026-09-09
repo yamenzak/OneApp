@@ -120,11 +120,33 @@ test('narrowing to one line asks the server again', async ({ page }) => {
     if (one.url().includes('onemobility.rhythm')) asked.push(one.url())
   })
 
-  // frappe-ui's Select is a combobox with a popover, not a native `<select>`,
-  // so it is opened and an option is clicked.
-  await screen.locator('[data-slot="insights-controls"]').getByRole('combobox').first().click()
-  await page.getByRole('option').nth(1).click()
+  // The facet bar's controls are Comboboxes with a button trigger — the value
+  // list is long enough on a real network that it has to be searchable — so
+  // the trigger is a button carrying the facet's name, not a `<select>`.
+  const bar = screen.locator('[data-slot="facet-bar"]')
+  await bar.getByRole('button', { name: 'Line' }).click()
+  await page.getByRole('option').first().click()
 
   await expect.poll(() => asked.length, { timeout: 15_000 }).toBeGreaterThan(0)
-  expect(asked[asked.length - 1]).toContain('line=')
+  // One vocabulary for every screen, sent as one object — see
+  // `onemobility/facets.py`. It used to be a bare `line=`, which is how the
+  // map and this screen came to have two separate filters.
+  expect(asked[asked.length - 1]).toContain('facets=')
+})
+
+test('a facet this tier cannot answer is refused before it is used', async ({ page }) => {
+  await page.goto('/one/space/onemobility?screen=insights')
+  const screen = page.locator('[data-slot="insights"]')
+  await screen.waitFor({ timeout: 30_000 })
+
+  // `serviceHour` is rolled per line and per hour and has no vehicle column,
+  // so the network tab cannot narrow by one — and says so before anybody
+  // chooses, rather than accepting the choice and quietly ignoring it.
+  const bar = screen.locator('[data-slot="facet-bar"]')
+  await expect(bar.getByRole('button', { name: 'Vehicle' })).toBeDisabled()
+
+  // The fleet tab is rolled per vehicle per day, so there it is a real
+  // control. Same bar, same vocabulary, a different table behind it.
+  await screen.getByRole('tab', { name: 'The fleet' }).click()
+  await expect(bar.getByRole('button', { name: 'Vehicle' })).toBeEnabled({ timeout: 20_000 })
 })
