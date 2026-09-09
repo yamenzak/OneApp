@@ -256,3 +256,24 @@ def _options(facet) -> list[dict]:
 		}
 		for row in rows
 	]
+
+
+def narrow(clauses: list, values: list, where: dict) -> None:
+	"""A resolved `where` appended to a hand-built SQL clause list.
+
+	`facts.aggregate` takes the same dict directly; this is for the callers that
+	write their own SQL because the question is a threshold, a distribution or a
+	spatial bin rather than a group. Column names come from the closed table
+	above, checked in `resolve` against the fact's own columns, so they are
+	interpolated and every value stays a parameter.
+	"""
+	for column, value in sorted((where or {}).items()):
+		if isinstance(value, list):
+			if not value:
+				clauses.append("1 = 0")
+				continue
+			clauses.append(f"`{column}` IN ({', '.join(['%s'] * len(value))})")
+			values.extend(value)
+		else:
+			clauses.append(f"`{column}` = %s")
+			values.append(value)

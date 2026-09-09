@@ -17,6 +17,7 @@ everything at time T" for one clock that is either now or a Tuesday in March.
     live        positions in, positions out, one vehicle's day for the scrubber
     arrivals    positions turned into stop visits, which is how a stop gets a number
     facets      one vocabulary for narrowing every screen: line, vehicle, stop, mode
+    geo         the map's analytical layers — what the network does *somewhere*
     network     the drawn network, and the numbers read off the aggregate tier
     insights    the aggregate tiers as plots — the network, the fleet, the stops
     legal       what this module adds to the agreements
@@ -24,6 +25,7 @@ everything at time T" for one clock that is either now or a Tuesday in March.
 """
 
 from .facets import offered
+from .geo import demand, surface
 from .gtfs import load_feed
 from .insights import fleet, rhythm, stops
 from .live import at, report, track
@@ -35,6 +37,7 @@ __all__ = [
     "at",
     "bunching",
     "days",
+    "demand",
     "fetch_now",
     "fleet",
     "forget_everything",
@@ -45,5 +48,6 @@ __all__ = [
     "rhythm",
     "shape",
     "stops",
+    "surface",
     "track",
 ]

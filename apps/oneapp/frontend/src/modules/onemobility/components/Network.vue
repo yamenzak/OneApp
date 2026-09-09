@@ -50,11 +50,39 @@
           class="w-full justify-start"
           variant="ghost"
           size="sm"
-          :label="__('What you are looking at')"
+          :label="__('Layers and key')"
           :icon-left="legendOpen ? 'lucide-chevron-down' : 'lucide-chevron-right'"
           @click="legendOpen = !legendOpen"
         />
-        <div v-show="legendOpen" class="flex flex-col gap-1.5 px-3 pb-3">
+        <!-- Scrolls rather than growing past the top of the map: the card now
+             carries controls as well as a key, and on a short window the two
+             together are taller than the space above the clock bar. -->
+        <div
+          v-show="legendOpen"
+          class="flex max-h-[26rem] w-56 flex-col gap-1.5 overflow-y-auto px-3 pb-3"
+        >
+          <!--
+            The controls and the key in one card, because they are one idea:
+            what is drawn, and what it means. Two floating cards was the first
+            version and they collided — which was the layout telling me what the
+            content already said.
+
+            One overlay at a time and not a stack of checkboxes: two of these
+            are tiled surfaces and two are graduated circles, and any two at
+            once is mud. The three below are independent because they are
+            different *things* — routes, stops, vehicles — rather than
+            competing answers to one question.
+          -->
+          <Select v-model="overlay" :options="overlayOptions" />
+          <p v-if="overlayNow.hint" class="text-xs leading-snug text-ink-gray-5">
+            {{ overlayNow.hint() }}
+          </p>
+          <div class="my-0.5 flex flex-col gap-2 border-y border-outline-gray-1 py-2">
+            <Switch v-model="showRoutes" size="sm" :label="__('Routes')" />
+            <Switch v-model="showStops" size="sm" :label="__('Stops')" />
+            <Switch v-model="showVehicles" size="sm" :label="__('Vehicles')" />
+          </div>
+
           <!--
             The shapes, before the colours, because a marker says two things at
             once and a legend that explains one of them teaches people that the
@@ -66,6 +94,32 @@
             Only the modes this network actually runs — a city with buses and
             nothing else should not be told what a ferry looks like.
           -->
+          <!--
+            The overlay's own key, first and only while one is on. A layer
+            without a scale beside it is a picture of some colours; and the
+            shape and load keys below belong to the markers, which the overlay
+            does not replace.
+          -->
+          <template v-if="overlayNow.kind !== 'none'">
+            <p class="text-xs font-medium text-ink-gray-7">{{ overlayNow.label() }}</p>
+            <div class="flex items-center gap-1.5">
+              <span class="tabular-nums text-xs text-ink-gray-5">{{ scaleLow }}</span>
+              <div class="flex h-2 flex-1 overflow-hidden rounded-full">
+                <div
+                  v-for="(ink, at) in scaleInks"
+                  :key="at"
+                  class="h-full flex-1"
+                  :style="{ backgroundColor: ink }"
+                />
+              </div>
+              <span class="tabular-nums text-xs text-ink-gray-5">{{ scaleHigh }}</span>
+            </div>
+            <p v-if="overlayNow.kind === 'surface'" class="text-xs text-ink-gray-5">
+              {{ __('Paler where fewer vehicles have been through') }}
+            </p>
+            <div class="my-1 border-t border-outline-gray-1" />
+          </template>
+
           <p class="text-xs font-medium text-ink-gray-7">{{ __('What runs here') }}</p>
           <div class="flex flex-col gap-1">
             <div
@@ -343,12 +397,14 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-import { Badge, Button, Select } from '@/ui'
+import { Badge, Button, Select, Switch } from '@/ui'
 import EmptyState from '@/shared/components/EmptyState.vue'
 import { __ } from '@/shared/lib/runtime/translate'
 import { network } from '@/modules/onemobility/lib/api'
 import FacetBar from '@/modules/onemobility/components/FacetBar.vue'
+import { OVERLAYS, overlayFor, rampStops } from '@/modules/onemobility/lib/layers'
 import { between, blend, prepare } from '@/modules/onemobility/lib/motion'
 import { bearingBetween, bodyFor, easeBearing, MODES, vehicleMarker } from '@/modules/onemobility/lib/markers'
 import {
@@ -396,6 +452,68 @@ const day = ref('')
 const facets = ref({})
 const offered = ref([])
 const unavailable = ref([])
+
+/**
+ * Which overlay is drawn, and which of the three base layers are on.
+ *
+ * The base layers default on because they are what the screen is; the overlay
+ * defaults off because it is a question, and a map that opens already
+ * answering one nobody asked is a map people have to undo before they can look.
+ */
+const overlay = ref('none')
+const showRoutes = ref(true)
+const showStops = ref(true)
+const showVehicles = ref(true)
+
+const overlayNow = computed(() => overlayFor(overlay.value))
+const overlayOptions = computed(() =>
+  OVERLAYS.map((one) => ({ label: one.label(), value: one.key })),
+)
+
+/** What the server said about the overlay in front: its cells, or its stops. */
+const surfaceNow = ref({ cells: [], low: 0, high: 1, size: 0.001, quiet: 1, busy: 1 })
+const demandNow = ref({ stops: [] })
+
+const scaleInks = computed(() =>
+  overlayNow.value.kind === 'surface'
+    ? overlayNow.value.ramp()
+    : [overlayNow.value.ink ? overlayNow.value.ink() : '#999999'],
+)
+
+/**
+ * The ends of the key, in the unit a person reads.
+ *
+ * Rounded against the span rather than to a fixed place: "0.63 min" is a useful
+ * end of a scale that runs to 2.47, and "36.41 %" is four characters of noise
+ * on a scale that runs to 60. A legend is read at a glance and the digits past
+ * the first are never the thing being glanced at.
+ */
+function reads(value, span) {
+  const places = span >= 10 ? 0 : 1
+  return Number(value || 0).toFixed(places)
+}
+
+const scaleLow = computed(() => {
+  const { low, high } = surfaceNow.value
+  if (overlayNow.value.kind === 'surface') {
+    return `${reads(low, high - low)} ${overlayNow.value.unit()}`
+  }
+  return `0 ${overlayNow.value.unit()}`
+})
+const scaleHigh = computed(() => {
+  const { low, high } = surfaceNow.value
+  if (overlayNow.value.kind === 'surface') {
+    return `${reads(high, high - low)} ${overlayNow.value.unit()}`
+  }
+  return `${pointHigh.value} ${overlayNow.value.unit()}`
+})
+
+/** The top of the circle scale: the biggest value any stop actually has. */
+const pointHigh = computed(() => {
+  const field = overlayNow.value.field
+  if (!field) return 0
+  return Math.max(0, ...demandNow.value.stops.map((one) => one[field] || 0))
+})
 const onlyLine = computed(() => facets.value.line || '')
 const livemode = ref(true)
 const position = ref(1000)
@@ -635,7 +753,68 @@ function cycleSpeed() {
 watch(day, () => scrubTo(0.5))
 // And the line filter, which had no handler at all: in live mode the poller
 // would have picked it up within five seconds, and in replay it never would.
-watch(facets, () => pull(), { deep: true })
+watch(facets, () => {
+  pull()
+  // The overlay is narrowed by the same bar, and its answer is a different
+  // query — a line chosen on the map has to re-ask where *that* line runs late,
+  // not filter a grid built for the whole network.
+  demandNow.value = { stops: [] }
+  if (overlayNow.value.kind !== 'none') pullOverlay()
+}, { deep: true })
+
+const route = useRoute()
+const router = useRouter()
+
+/**
+ * The chosen overlay lives in the URL as well as in the ref.
+ *
+ * Same reason the facets do on Insights: "the corridor where U6 loses its time"
+ * is a thing worth sending to somebody, and a screenshot is not a link. It is
+ * read once on arrival and written on every change, so the back button walks
+ * the layers rather than leaving the screen.
+ */
+watch(overlay, (key) => {
+  const query = { ...route.query }
+  if (key === 'none') delete query.overlay
+  else query.overlay = key
+  router.replace({ query }).catch(() => {})
+
+  if (overlayNow.value.kind === 'none') drawOverlay()
+  else pullOverlay()
+})
+
+/**
+ * Re-bin when the zoom crosses a bucket, and only then. `moveend` fires on
+ * every pan; comparing the bucket rather than the zoom is what keeps a drag
+ * across a city from being twenty identical queries.
+ */
+function onZoomed() {
+  if (overlayNow.value.kind !== 'surface') return
+  if (gridFor(map.getZoom()) === gridNow) return
+  pullOverlay()
+}
+
+/**
+ * The three base layers. Every one of them is more than a single MapLibre layer
+ * — a route is its casing and its line, a vehicle is its halo and its marker —
+ * so the toggle names the group rather than the id.
+ */
+const BASE_LAYERS = {
+  routes: ['lines-casing', 'lines'],
+  stops: ['stops', 'stops-interchange'],
+  vehicles: ['vehicles', 'vehicles-chosen'],
+}
+
+function showGroup(group, on) {
+  if (!map) return
+  for (const id of BASE_LAYERS[group]) {
+    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none')
+  }
+}
+
+watch(showRoutes, (on) => showGroup('routes', on))
+watch(showStops, (on) => showGroup('stops', on))
+watch(showVehicles, (on) => showGroup('vehicles', on))
 
 function goLive() {
   livemode.value = true
@@ -766,6 +945,126 @@ const modesHere = computed(() => {
   })
 })
 
+/**
+ * The overlay's data, fetched when it is chosen and when the facets move under
+ * it. Nothing is asked for while the overlay is off — these are the two
+ * heaviest questions this screen can put to the server, and a map that pays for
+ * them before anybody has asked one is a slow map for no reason.
+ */
+async function pullOverlay() {
+  const one = overlayNow.value
+  const params = { facets: JSON.stringify(facets.value) }
+  if (one.kind === 'surface') {
+    gridNow = gridFor(map?.getZoom() ?? 11)
+    surfaceNow.value = await network.surface({ ...params, kind: one.key, precision: gridNow })
+  } else if (one.kind === 'points' && !demandNow.value.stops.length) {
+    demandNow.value = await network.demand(params)
+  }
+  drawOverlay()
+}
+
+/**
+ * How fine the grid should be for the zoom being looked at.
+ *
+ * A hundred-metre cell is the right resolution for asking which junction loses
+ * the time, and it is invisible from across a city — at that zoom it is two
+ * pixels, under an eight-pixel route line. The first version drew the whole
+ * surface underneath the network and looked, convincingly, like nothing had
+ * happened.
+ *
+ * So the bin follows the view: kilometre cells for the shape of a city,
+ * hundred-metre for a district, ten-metre once a street fills the screen. Three
+ * buckets rather than a continuous function, so panning about at one zoom does
+ * not re-ask the server for an answer it already has.
+ */
+function gridFor(zoom) {
+  if (zoom < 12) return 2
+  if (zoom < 14.5) return 3
+  return 4
+}
+
+let gridNow = 2
+
+/** Each cell as a square of one grid step, which is how they tile without gaps. */
+function surfaceFeatures() {
+  const { cells, size } = surfaceNow.value
+  return {
+    type: 'FeatureCollection',
+    features: (cells || []).map((one) => {
+      const west = one.lon - size / 2
+      const east = one.lon + size / 2
+      const south = one.lat - size / 2
+      const north = one.lat + size / 2
+      return {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[
+            [west, south], [east, south], [east, north], [west, north], [west, south],
+          ]],
+        },
+        properties: { value: one.value, readings: one.readings },
+      }
+    }),
+  }
+}
+
+function demandFeatures() {
+  const field = overlayNow.value.field
+  return {
+    type: 'FeatureCollection',
+    features: (demandNow.value.stops || [])
+      .filter((one) => (one[field] || 0) > 0)
+      .map((one) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [one.lon, one.lat] },
+        properties: { label: one.label, value: one[field] || 0 },
+      })),
+  }
+}
+
+/**
+ * Repaint the overlay layers for whatever is chosen.
+ *
+ * The colour and the radius are set here rather than at layer creation because
+ * both depend on the range the *data* came back with — a scale fixed at build
+ * time would put a whole city in one step of the ramp the first time somebody
+ * narrowed to one line.
+ */
+function drawOverlay() {
+  if (!map || !map.getSource('surface')) return
+  const one = overlayNow.value
+
+  map.setLayoutProperty('surface', 'visibility', one.kind === 'surface' ? 'visible' : 'none')
+  map.setLayoutProperty('demand', 'visibility', one.kind === 'points' ? 'visible' : 'none')
+
+  if (one.kind === 'surface') {
+    const { low, high, quiet, busy } = surfaceNow.value
+    map.getSource('surface').setData(surfaceFeatures())
+    map.setPaintProperty('surface', 'fill-color', [
+      'interpolate', ['linear'], ['get', 'value'], ...rampStops(one.ramp(), low, high),
+    ])
+    // How much has been seen here becomes how solid the cell is. A mean over
+    // eight readings and a mean over eight hundred are both averages and only
+    // one of them is worth acting on, and opacity is where that belongs —
+    // colour is already carrying the measure.
+    map.setPaintProperty('surface', 'fill-opacity', [
+      'interpolate', ['linear'], ['get', 'readings'], quiet, 0.25, Math.max(quiet + 1, busy), 0.7,
+    ])
+  }
+
+  if (one.kind === 'points') {
+    map.getSource('demand').setData(demandFeatures())
+    const top = Math.max(1, pointHigh.value)
+    map.setPaintProperty('demand', 'circle-color', one.ink())
+    // Area, not radius, tracks the value: a circle twice as wide reads as four
+    // times as much, which is what a square root keeps honest.
+    map.setPaintProperty('demand', 'circle-radius', [
+      'interpolate', ['linear'], ['sqrt', ['get', 'value']], 0, 3, Math.sqrt(top), 26,
+    ])
+  }
+}
+
 function modeOf(line) {
   return bodyFor(lines.value.find((one) => one.name === line)?.mode)
 }
@@ -801,6 +1100,19 @@ async function draw() {
   registerMarkers()
 
   const casing = casingInk()
+
+  // The surface goes down *first*, so every route, stop and vehicle sits on top
+  // of it. It is the ground the network runs over, and a grid painted above the
+  // lines would be a grid that hides them.
+  map.addSource('surface', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+  map.addLayer({
+    id: 'surface',
+    type: 'fill',
+    source: 'surface',
+    layout: { visibility: 'none' },
+    paint: { 'fill-color': casing, 'fill-opacity': 0.6 },
+  })
+
   map.addSource('lines', { type: 'geojson', data: lineFeatures() })
 
   // The casing, and then the line. Every transit map draws a route this way,
@@ -896,6 +1208,24 @@ async function draw() {
     },
   })
 
+  // The stop overlay sits above the routes and below the vehicles: it is a
+  // property *of* the network rather than the ground under it, and a live
+  // vehicle must never be hidden by a month of history.
+  map.addSource('demand', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+  map.addLayer({
+    id: 'demand',
+    type: 'circle',
+    source: 'demand',
+    layout: { visibility: 'none' },
+    paint: {
+      'circle-radius': 6,
+      'circle-color': casing,
+      'circle-opacity': 0.55,
+      'circle-stroke-width': 1,
+      'circle-stroke-color': casing,
+    },
+  })
+
   map.addSource('vehicles', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
   // The ring under the chosen one. A separate layer rather than a second
   // marker image, so opening a vehicle does not have to redraw every icon.
@@ -932,6 +1262,8 @@ async function draw() {
     // A stale position is drawn faint. Never as though it were live.
     paint: { 'icon-opacity': ['case', ['==', ['get', 'stale'], 1], 0.4, 1] },
   })
+
+  map.on('zoomend', onZoomed)
 
   map.on('click', 'vehicles', (event) => {
     const hit = event.features?.[0]
@@ -1064,6 +1396,11 @@ onMounted(async () => {
 
     await draw()
     await pull()
+
+    // After `draw`, because choosing an overlay paints one and there is nothing
+    // to paint on until the map is up.
+    const asked = String(route.query.overlay || '')
+    if (asked && asked !== 'none' && OVERLAYS.some((one) => one.key === asked)) overlay.value = asked
 
     // The scrubber's own track, which is the aggregate tier read for a second
     // purpose — the same numbers the Insights screen plots. Fetched after the

@@ -506,6 +506,70 @@ Both operate on the rolled-up numbers, never on raw observations, which keeps
 them cheap and keeps them compatible with a customer who has AI switched off
 entirely.
 
+## 7b. Layers over the map, and why none of them is a heatmap
+
+`geo.py` answers *where*. Insights answers *when* — an hour, a weekday, a line
+— and the two are not interchangeable. A line that averages four minutes late
+is a fact about a line; that it loses all four of them on one bridge between
+two particular stops is a fact about a **place**, and it is the one an operator
+can act on. No chart in this product can hold it, because a chart has no
+geography.
+
+**MapLibre ships a `heatmap` layer and it is the wrong tool here.** It renders
+kernel *density*, so a cell with two hundred readings averaging thirty seconds
+late glows brighter than one with ten readings averaging ten minutes late.
+Weighting by delay does not fix it — density still dominates the kernel. What
+answers "where is it late" is the **mean per place**, so the rows are grouped
+into a grid and each cell carries its own average. Density becomes the
+**opacity**, which is where it belongs: a cell nobody has driven through often
+is drawn faintly, because it is a weaker claim rather than a cooler one. Below
+eight readings a cell is dropped rather than faded — the honest thing to say
+about one bus that once went through is nothing.
+
+A cell is a rounded latitude and longitude, and how rounded follows the zoom:
+kilometre cells for the shape of a city, hundred-metre for a district,
+ten-metre once a street fills the screen. Three buckets rather than a
+continuous function, so panning about at one zoom does not re-ask the server
+for an answer it already has. The first version binned at a fixed hundred
+metres and drew the whole surface at city zoom, where a cell is two pixels
+under an eight-pixel route line — it looked, convincingly, like nothing had
+happened.
+
+The colour range is the 5th and 95th percentile, not the min and the max. One
+cell where a bus sat broken down for an hour is a real reading and a terrible
+top of scale: it flattens every other cell into the first step of the ramp.
+
+There are five layers and they come in two shapes, declared once in
+`frontend/src/modules/onemobility/lib/layers.js` — which the map, the switcher
+and the key all read, because three places that have to agree about what a
+layer is called and what its colours mean is exactly enough for them to stop
+agreeing:
+
+* **surface** — a measure averaged into a grid, read off `observation` and
+  drawn as tiles *under* the routes, because it is the ground the network runs
+  over. *Where it runs late* (diverging, because lateness has a real zero) and
+  *where it fills up* (the same five colours the vehicles wear, so a reader who
+  has learnt that orange means standing does not learn a second scale).
+* **points** — a measure per stop, read off `stopHour` and drawn as graduated
+  circles *over* the routes, because it happens **at** something. *Where the
+  service goes* (visits) and *where the wait bunches* (the p85 headway over the
+  average). Area tracks the value rather than radius: a circle twice as wide
+  reads as four times as much.
+
+One overlay at a time, and not a stack of checkboxes — two of these are tiled
+surfaces and two are graduated circles, and any two at once is mud. The three
+base layers below it (routes, stops, vehicles) are independent because they are
+different *things* rather than competing answers to one question.
+
+The surface reads `observation` rather than any rolled tier, because none of
+them keeps a position: the roll-ups are per line, per vehicle and per stop, and
+a place is none of those. That bounds it to the hot window, which the screen
+says rather than hides. It is narrowed by the same facet bar as everything
+else, and the chosen layer lives in the URL — "the corridor where U6 loses its
+time" should be a link somebody can send, not a screenshot.
+
+---
+
 ## 8. What the engine was missing, and what it now has
 
 Three of the five gaps below were OneSpace's rather than OneMobility's, and

@@ -35,6 +35,16 @@ export const network = {
   stops: (params) => callMethod('oneapp.onemobility.stops', params, { method: 'GET' }),
 
   /**
+   * One measure averaged into a grid of places — where the network runs late,
+   * where it fills up. See `onemobility/geo.py` for why it is binned and
+   * averaged rather than drawn as a kernel density.
+   */
+  surface: (params) => callMethod('oneapp.onemobility.surface', params, { method: 'GET' }),
+
+  /** Every stop with its position and what happens there. */
+  demand: (params) => callMethod('oneapp.onemobility.demand', params, { method: 'GET' }),
+
+  /**
    * Every facet and the values it can take. Once per session — the vocabulary
    * is a closed table on the server and the options are doctype rows read as
    * the person asking, so this is not something a screen can assemble itself.

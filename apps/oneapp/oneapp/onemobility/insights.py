@@ -120,27 +120,6 @@ def rhythm(facets: str = "", days_back: int = 30) -> dict:
 	}
 
 
-def _narrow(clauses: list, values: list, where: dict) -> None:
-	"""A resolved facet `where` appended to a hand-built SQL clause list.
-
-	`facts.aggregate` takes the same dict directly; this is for the two places
-	here that write their own SQL because the question is a threshold or a
-	distribution rather than a group. Column names come from the closed table
-	in `facets.py`, checked there against the fact's own columns, so they are
-	interpolated and every value stays a parameter.
-	"""
-	for column, value in sorted((where or {}).items()):
-		if isinstance(value, list):
-			if not value:
-				clauses.append("1 = 0")
-				continue
-			clauses.append(f"`{column}` IN ({', '.join(['%s'] * len(value))})")
-			values.extend(value)
-		else:
-			clauses.append(f"`{column}` = %s")
-			values.append(value)
-
-
 def _label(hour) -> str:
 	return f"{cint(hour):02d}:00"
 
@@ -278,7 +257,7 @@ def _punctuality(where: dict, start, end) -> dict:
 
 	clauses = ["`at` >= %s", "`at` < %s", "`delay_s` IS NOT NULL"]
 	values = [start, end]
-	_narrow(clauses, values, where)
+	facetlib.narrow(clauses, values, where)
 
 	row = frappe.db.sql(
 		f"""SELECT COUNT(*) AS seen,
@@ -345,7 +324,7 @@ def _spread(where: dict, start, end) -> list[dict]:
 
 	clauses = ["`at` >= %s", "`at` < %s", "`delay_s` IS NOT NULL"]
 	values = [start, end]
-	_narrow(clauses, values, where)
+	facetlib.narrow(clauses, values, where)
 
 	picked = []
 	for at, (floor, _label) in enumerate(DELAY_BANDS):

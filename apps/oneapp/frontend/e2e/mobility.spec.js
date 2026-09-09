@@ -179,3 +179,33 @@ test('a facet this tier cannot answer is refused before it is used', async ({ pa
   await screen.getByRole('tab', { name: 'The fleet' }).click()
   await expect(bar.getByRole('button', { name: 'Vehicle' })).toBeEnabled({ timeout: 20_000 })
 })
+
+test('an overlay is chosen from the panel, and is a link when it is', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  await page.goto('/one/space/onemobility?screen=network')
+  const legend = page.locator('[data-slot="network-legend"]')
+  await legend.waitFor({ timeout: 30_000 })
+  await canvasIn(page, 'network')
+
+  await legend.getByRole('combobox').click()
+  await page.getByRole('option', { name: 'Where it runs late' }).click()
+
+  // The key is the proof the server answered: its ends are the 5th and 95th
+  // percentile of what came back, so a number in the unit means cells exist.
+  // Asserting on the canvas cannot work — MapLibre draws into WebGL and a
+  // painted surface and an empty one are the same DOM.
+  await expect(legend.getByText(/min$/).first()).toBeVisible({ timeout: 30_000 })
+  await expect(page).toHaveURL(/overlay=delay/)
+
+  // And the other direction: arriving at the URL opens on that layer, so the
+  // corridor somebody found is a thing they can send.
+  await page.goto('/one/space/onemobility?screen=network&overlay=occupancy')
+  const again = page.locator('[data-slot="network-legend"]')
+  await again.waitFor({ timeout: 30_000 })
+  // The switcher, not "the text on the card": the key heading names the chosen
+  // layer too, so a plain text match resolves to two elements.
+  await expect(again.getByRole('combobox')).toContainText('Where it fills up', {
+    timeout: 30_000,
+  })
+  expectNoRealErrors(errors)
+})
