@@ -7,19 +7,26 @@
     fold. The controls are a rail of icons under the zoom now, and a legend is
     a legend again.
 
-    Read-only is the point, not a limitation: everything here is a *consequence*
-    of a choice made elsewhere, and every row is present only while the thing it
-    explains is drawn. An empty map with a legend explaining four scales is how
-    people learn to stop reading the legend.
+    **Small by default, complete on demand.** The full key ran to three headed
+    lists and took two thirds of the height of the map, which is a lot of screen
+    for something a reader learns once and then remembers. So the shapes are a
+    row of swatches and the load is one bar, and the names behind them are a
+    click away. The overlay's own scale stays open at all times, because it is
+    the one thing here that *changes*.
+
+    Read-only either way, and that is the point rather than a limitation:
+    everything here is a consequence of a choice made elsewhere, and every row
+    is present only while the thing it explains is drawn. An empty map with a
+    legend explaining four scales is how people learn to stop reading legends.
   -->
   <div
-    class="pointer-events-auto absolute bottom-[11.5rem] start-4 z-10 flex w-52 flex-col gap-2.5
-           rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-3 py-2.5 shadow-sm"
+    class="pointer-events-auto absolute bottom-[11.5rem] start-4 z-10 flex w-48 flex-col gap-2
+           rounded-6 border border-outline-gray-2 bg-surface-elevation-2 px-2.5 py-2 shadow-sm"
     data-slot="network-legend"
   >
     <!-- The overlay's own scale, first and only while one is on. -->
     <div v-if="overlay.kind !== 'none'" class="flex flex-col gap-1">
-      <p class="text-xs font-medium text-ink-gray-7">{{ overlay.label() }}</p>
+      <p class="text-2xs font-medium text-ink-gray-7">{{ overlay.label() }}</p>
       <div class="flex items-center gap-1.5">
         <span class="shrink-0 text-2xs tabular-nums text-ink-gray-5">{{ low }}</span>
         <span class="flex h-1.5 flex-1 overflow-hidden rounded-full">
@@ -38,51 +45,82 @@
     </div>
 
     <!--
-      The shapes, before the colours: a marker says two things at once, and a
-      key that explains one of them teaches people the other is decoration.
-
-      Only the shapes this network actually draws — a city with buses and
-      nothing else should not be told what a ferry looks like.
+      The shapes, as a row rather than a list. Only the ones this network
+      actually draws — a city with buses and nothing else should not be told
+      what a ferry looks like — and at twenty-eight pixels, which is about where
+      these drawings stop being a tick and start being a vehicle.
     -->
-    <div v-if="shapes.length && showVehicles" class="flex flex-col gap-1">
-      <p class="text-xs font-medium text-ink-gray-7">{{ __('What runs here') }}</p>
-      <div v-for="one in shapes" :key="one.key" class="flex items-center gap-2">
-        <!-- Larger than the map draws them: a key is read at a glance, and the
-             marker's own size is a compromise with how many of them share the
-             screen, which a legend row is not. Below about thirty pixels these
-             drawings are a tick, which is the whole reason the map steps to a
-             squatter shape at low zoom. -->
-        <img :src="one.url" :alt="one.label" class="size-10 shrink-0 object-contain" />
-        <span class="truncate text-2xs text-ink-gray-6">{{ one.label }}</span>
-      </div>
+    <div v-if="shapes.length && showVehicles" class="flex flex-wrap items-center gap-1">
+      <Tooltip v-for="one in shapes" :key="one.key" :text="one.label">
+        <img :src="one.url" :alt="one.label" class="size-7 shrink-0 object-contain" />
+      </Tooltip>
     </div>
 
+    <!--
+      And the load as one bar rather than five named rows. The ordinal scale is
+      what a reader needs at a glance; which step is called "standing" is what
+      they need once, and it is under the toggle.
+    -->
     <div v-if="showVehicles" class="flex flex-col gap-1">
-      <p class="text-xs font-medium text-ink-gray-7">{{ __('How full it is') }}</p>
-      <div v-for="band in bands" :key="band.key" class="flex items-center gap-2">
-        <span class="size-2 shrink-0 rounded-full" :style="{ backgroundColor: band.ink }" />
-        <span class="flex-1 truncate text-2xs text-ink-gray-6">{{ band.label }}</span>
-        <span v-if="band.floor > 0" class="text-2xs tabular-nums text-ink-gray-5">
-          {{ band.floor }}%+
-        </span>
+      <span class="flex h-1.5 w-full overflow-hidden rounded-full">
+        <span
+          v-for="band in scale"
+          :key="band.key"
+          class="h-full flex-1"
+          :style="{ backgroundColor: band.ink }"
+        />
+      </span>
+      <div class="flex items-baseline justify-between text-2xs text-ink-gray-5">
+        <span>{{ scale[0].label }}</span>
+        <span>{{ scale[scale.length - 1].label }}</span>
       </div>
     </div>
 
-    <!-- The two things a stop's drawing says that nothing else does. -->
-    <div v-if="showStops" class="flex flex-col gap-1">
-      <div class="flex items-center gap-2">
-        <span class="size-2.5 shrink-0 rounded-full border-2 border-outline-amber-3
-                     bg-surface-elevation-2" />
-        <span class="truncate text-2xs text-ink-gray-6">{{ __('Stop nobody declared') }}</span>
+    <Button
+      class="-mx-1 justify-start"
+      variant="ghost"
+      size="sm"
+      :label="open ? __('Less') : __('What this means')"
+      :icon-left="open ? 'lucide-chevron-down' : 'lucide-chevron-right'"
+      @click="open = !open"
+    />
+
+    <div v-if="open" class="flex flex-col gap-2 border-t border-outline-gray-1 pt-2">
+      <div v-if="shapes.length && showVehicles" class="flex flex-col gap-0.5">
+        <p class="text-2xs font-medium text-ink-gray-7">{{ __('What runs here') }}</p>
+        <div v-for="one in shapes" :key="one.key" class="flex items-center gap-1.5">
+          <img :src="one.url" :alt="one.label" class="size-5 shrink-0 object-contain" />
+          <span class="truncate text-2xs text-ink-gray-6">{{ one.label }}</span>
+        </div>
       </div>
-      <div class="flex items-center gap-2">
-        <span class="flex size-2.5 shrink-0 items-center justify-center rounded-full border-2
-                     border-outline-gray-3 bg-surface-elevation-2">
-          <span class="size-1 rounded-full bg-surface-gray-7" />
-        </span>
-        <span class="truncate text-2xs text-ink-gray-6">
-          {{ __('More than one line stops here') }}
-        </span>
+
+      <div v-if="showVehicles" class="flex flex-col gap-0.5">
+        <p class="text-2xs font-medium text-ink-gray-7">{{ __('How full it is') }}</p>
+        <div v-for="band in bands" :key="band.key" class="flex items-center gap-1.5">
+          <span class="size-2 shrink-0 rounded-full" :style="{ backgroundColor: band.ink }" />
+          <span class="flex-1 truncate text-2xs text-ink-gray-6">{{ band.label }}</span>
+          <span v-if="band.floor > 0" class="text-2xs tabular-nums text-ink-gray-5">
+            {{ band.floor }}%+
+          </span>
+        </div>
+      </div>
+
+      <!-- The two things a stop's drawing says that nothing else does. -->
+      <div v-if="showStops" class="flex flex-col gap-1">
+        <div class="flex items-center gap-1.5">
+          <span class="size-2.5 shrink-0 rounded-full border-2 border-outline-amber-3
+                       bg-surface-elevation-2" />
+          <span class="truncate text-2xs text-ink-gray-6">{{ __('Stop nobody declared') }}</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="flex size-2.5 shrink-0 items-center justify-center rounded-full border-2
+                       border-outline-gray-3 bg-surface-elevation-2">
+            <span class="size-1 rounded-full bg-surface-gray-7" />
+          </span>
+          <span class="truncate text-2xs text-ink-gray-6">
+            {{ __('More than one line stops here') }}
+          </span>
+        </div>
       </div>
     </div>
 
@@ -95,13 +133,14 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 import { artUrl } from '@/modules/onemobility/lib/art'
 import { SHAPE_NAMES } from '@/modules/onemobility/lib/markers'
 import { bandInk, OCCUPANCY } from '@/modules/onemobility/lib/palette'
 import { tokenInk } from '@/modules/onespace/lib/screen/ink'
 import { __ } from '@/shared/lib/runtime/translate'
+import { Button, Tooltip } from '@/ui'
 
 const props = defineProps({
   /** The resolved overlay from `lib/layers`, `kind: 'none'` when there is none. */
@@ -116,20 +155,18 @@ const props = defineProps({
   isolated: { type: Object, default: null },
 })
 
+const open = ref(false)
+
 /**
  * The same drawings the map registers, so the key cannot come to disagree with
- * the thing it explains. Read at legend size, where the artwork is at its best
- * — the map's own twenty-two pixels is a compromise with how many markers share
- * the screen, which a legend row is not.
+ * the thing it explains.
  *
- * One neutral grey, because colour is the *other* axis and varying both here
- * teaches neither.
+ * `gray-4`, chosen by rendering every grey against every size: paler and the
+ * drawings' own light detail disappears into the body, darker and their dark
+ * detail does. On the map the body is an occupancy colour and the question does
+ * not arise.
  */
 const shapes = computed(() => {
-  // `gray-4` at forty pixels, chosen by rendering every grey against every
-  // size: paler and the drawings' own light detail disappears into the body,
-  // darker and their dark detail does. On the map the body is an occupancy
-  // colour and the question does not arise.
   const neutral = tokenInk('--ink-gray-4', '#a1a1aa')
   return props.drawn.map((key) => ({
     key,
@@ -146,4 +183,14 @@ const bands = computed(() =>
     ink: bandInk(band),
   })),
 )
+
+/**
+ * The bar leaves out "not counted".
+ *
+ * That band is a real state and belongs in the named list, but it is not a step
+ * on the scale: a neutral grey at one end of a green-to-red ramp says the two
+ * are the same kind of thing, and a reader who believes that reads an unknown
+ * as an empty vehicle.
+ */
+const scale = computed(() => bands.value.filter((band) => band.floor >= 0))
 </script>

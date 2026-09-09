@@ -583,6 +583,13 @@ legend went back to being a legend: read-only, bottom-left, and every row in it
 present only while the thing it explains is drawn. An empty map with a key
 explaining four scales is how people learn to stop reading the key.
 
+And then small: the full key was three headed lists and took two thirds of the
+height of the map, which is a lot of screen for something a reader learns once
+and then remembers. So the shapes are a row of swatches and the load is one bar,
+and the names behind them are one click away — 192 by 184 rather than 208 by
+356, measured. The overlay's own scale stays open at all times, because it is
+the one thing in the card that changes.
+
 **One line, looked at alone.** Click a route and it stays in its colour while
 everything else goes grey at a third opacity; click it again, or click the
 ground, and the network comes back. Monochrome rather than hidden, and that is
