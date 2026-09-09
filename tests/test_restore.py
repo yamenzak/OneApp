@@ -163,6 +163,33 @@ def test_rows_whose_object_is_gone_are_counted_and_not_hidden(restore, bucket):
 	assert restore.reconcile()["missing"] == 1
 
 
+def test_a_frozen_fact_day_is_not_an_orphan(restore, bucket):
+	"""The one that would have been a catastrophe, and was nearly shipped.
+
+	A fact table's aged-out days are frozen to
+	`tenants/<tenant>/facts/<table>/<day>.jsonl.gz` — the same prefix the files
+	are under, owned by no `File` row and by definition an orphan to a sweep
+	that looks at the whole of it. A OneMobility workspace would have lost every
+	frozen day of its history the first Sunday this ran. So the reconcile names
+	the two file scopes rather than the tenant.
+	"""
+	fake = bucket(
+		[
+			_object("tenants/acme/private/FILE-1/invoice.pdf"),
+			_object("tenants/acme/facts/vehiclePosition/2026-04-01.jsonl.gz", size=900_000),
+		],
+		known={"tenants/acme/private/FILE-1/invoice.pdf"},
+	)
+
+	result = restore.reconcile()
+
+	assert fake.deleted == []
+	assert result["orphans"] == 0
+	# And it was never even looked at: the count of what is kept is the files,
+	# not the files plus everything else the workspace owns.
+	assert result["kept"] == 1
+
+
 def test_a_workspace_with_no_bucket_reconciles_nothing(restore, stub_frappe, monkeypatch):
 	monkeypatch.setattr(restore, "r2", FakeR2(configured=False))
 	assert restore.reconcile() == {"ok": False, "reason": "no_storage"}

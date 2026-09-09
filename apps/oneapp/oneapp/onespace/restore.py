@@ -64,6 +64,15 @@ NEVER = {
 	"Email Queue", "Email Queue Recipient", "Document Follow",
 }
 
+#: The halves of the tenant's prefix that hold *files*, and the whole of what
+#: the reconcile will consider. Not `tenants/<tenant>/`, which is wider: a
+#: frozen fact day lands at `tenants/<tenant>/facts/<table>/<day>.jsonl.gz`, no
+#: `File` row has ever claimed one, and a sweep over the parent prefix would
+#: have deleted every one of them the first time it ran. Naming the two scopes
+#: rather than excluding the one known exception is the direction worth failing
+#: in: a prefix somebody adds next year is ignored here instead of deleted.
+FILE_SCOPES = ("private", "public")
+
 #: A doctype name that may be interpolated into a table name.
 SAFE_NAME = re.compile(r"^[A-Za-z0-9 _-]+$")
 
@@ -323,6 +332,11 @@ def reconcile(dry_run: int | bool = 0) -> dict:
 	putting the object and writing the row leaves the same kind of orphan, in
 	ones rather than thousands.
 
+	It looks at the two file scopes and nothing else. Everything else a
+	workspace keeps under its own prefix — the frozen fact days, above all — is
+	owned by something other than a `File` row and would be an orphan by this
+	function's definition.
+
 	Two refusals stand between this and a catastrophe. An object younger than
 	`SETTLE_MINUTES` is never touched, because the row that will claim it may
 	still be being written. And a database that claims *no* objects at all while
@@ -334,8 +348,9 @@ def reconcile(dry_run: int | bool = 0) -> dict:
 		return {"ok": False, "reason": "no_storage"}
 
 	dry_run = bool(int(dry_run or 0))
-	prefix = f"tenants/{_tenant()}/"
-	present = r2.list_objects(prefix)
+	present = []
+	for scope in FILE_SCOPES:
+		present.extend(r2.list_objects(f"tenants/{_tenant()}/{scope}/"))
 	if not present:
 		return {"ok": True, "deleted": 0, "bytes": 0, "kept": 0}
 
@@ -344,9 +359,9 @@ def reconcile(dry_run: int | bool = 0) -> dict:
 		frappe.log_error(
 			title="File reconcile refused",
 			message=(
-				f"{len(present)} objects under {prefix} and not one `File` row "
-				"claiming any of them. Refusing to treat that as a workspace "
-				"with no files."
+				f"{len(present)} objects under tenants/{_tenant()}/ and not one "
+				"`File` row claiming any of them. Refusing to treat that as a "
+				"workspace with no files."
 			),
 		)
 		return {"ok": False, "reason": "nothing_claimed", "objects": len(present)}
