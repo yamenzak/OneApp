@@ -198,12 +198,20 @@ def assign(tenant_name: str) -> str:
 
 
 def refresh_usage():
-	"""Scheduled. Roll tenant usage up per bucket, for the console."""
+	"""Scheduled. Roll tenant usage up per bucket, for the console.
+
+	Everything except `Purged`, which is the only status that means the bucket
+	holds nothing for this workspace — the purge deletes every prefix it owns.
+	An archived one is still in here on purpose: its files and its cold copy are
+	what the sixty-day window is *for*, and a bucket report that leaves them out
+	understates what we are paying for by however many workspaces are waiting to
+	be destroyed.
+	"""
 	for bucket in frappe.get_all("Storage Bucket", pluck="name"):
 		rows = frappe.db.sql(
 			"""
 			SELECT COUNT(*), COALESCE(SUM(storage_used_bytes), 0)
-			FROM `tabTenant` WHERE storage_bucket = %s AND status != 'Archived'
+			FROM `tabTenant` WHERE storage_bucket = %s AND status != 'Purged'
 			""",
 			bucket,
 		)[0]
