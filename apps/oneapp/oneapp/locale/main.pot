@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-10 06:32+0000\n"
-"PO-Revision-Date: 2026-09-10 06:32+0000\n"
+"POT-Creation-Date: 2026-09-10 08:39+0000\n"
+"PO-Revision-Date: 2026-09-10 08:39+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -513,6 +513,11 @@ msgstr ""
 msgid "Address removed"
 msgstr ""
 
+#. Label of the after_message (Data) field in DocType 'OneSpace Chat Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "After Message"
+msgstr ""
+
 #. Description of the 'Expires On' (Datetime) field in DocType 'File Link'
 #: oneapp/onestorage/doctype/file_link/file_link.json
 msgid "After this the link is gone and the file is not. Empty is refused on purpose: a link with no end is a file published for ever by somebody who has left."
@@ -593,6 +598,7 @@ msgstr ""
 
 #. Name of a role
 #: frontend/src/modules/onespace/components/screen/record/RecordActivity.vue:138
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 #: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 #: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 msgid "All"
@@ -761,7 +767,24 @@ msgstr ""
 msgid "Applicants"
 msgstr ""
 
+#. Option for the 'State' (Select) field in DocType 'OneSpace Chat Change'
+#: frontend/src/modules/onespace/components/chat/ChatChange.vue:98
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "Applied"
+msgstr ""
+
+#. Label of the applied_name (Data) field in DocType 'OneSpace Chat Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "Applied Name"
+msgstr ""
+
+#. Label of the applied_on (Datetime) field in DocType 'OneSpace Chat Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "Applied On"
+msgstr ""
+
 #: frontend/src/modules/onedoc/components/DocSettings.vue:94
+#: frontend/src/modules/onespace/components/chat/ChatChange.vue:57
 #: frontend/src/modules/onespace/components/screen/views/FilterPanel.vue:53
 msgid "Apply"
 msgstr ""
@@ -825,15 +848,15 @@ msgstr ""
 msgid "Ask about anything in this workspace — the records on your screens, your files, what a document says. Only what you can already open."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:65
+#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:70
 msgid "Ask about this workspace"
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:65
+#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:70
 msgid "Ask about {0}"
 msgstr ""
 
-#: oneapp/onespace/chat/assistant.py:173
+#: oneapp/onespace/chat/assistant.py:220
 msgid "Ask something first."
 msgstr ""
 
@@ -879,7 +902,7 @@ msgstr ""
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:44
 #: frontend/src/modules/onespace/components/settings/AiSettings.vue:58
 #: frontend/src/modules/onespace/lib/shell/assistant.js:42
-#: oneapp/onespace/ai/settings.py:173 oneapp/onespace/ai/settings.py:189
+#: oneapp/onespace/ai/settings.py:179 oneapp/onespace/ai/settings.py:195
 msgid "Assistant"
 msgstr ""
 
@@ -1072,6 +1095,11 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/MailSettings.vue:278
 msgid "Becomes {0}"
+msgstr ""
+
+#. Label of the before (Code) field in DocType 'OneSpace Chat Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "Before"
 msgstr ""
 
 #. Label of the h_cd_warning (Heading) field in DocType 'Compliance Document'
@@ -1562,6 +1590,10 @@ msgstr ""
 msgid "Change your password"
 msgstr ""
 
+#: oneapp/onespace/chat/changes.py:134
+msgid "Change {0} on {1}"
+msgstr ""
+
 #: frontend/src/modules/onespace/components/screen/views/BulkEditDialog.vue:15
 msgid "Change {0} record"
 msgstr ""
@@ -1570,7 +1602,9 @@ msgstr ""
 msgid "Change {0} records"
 msgstr ""
 
+#. Label of the changes (Code) field in DocType 'OneSpace Chat Change'
 #: frontend/src/modules/onespace/components/screen/record/RecordActivity.vue:140
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 msgid "Changes"
 msgstr ""
 
@@ -1906,8 +1940,10 @@ msgstr ""
 msgid "Country"
 msgstr ""
 
+#. Option for the 'Kind' (Select) field in DocType 'OneSpace Chat Change'
 #: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:138
 #: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:44
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 msgid "Create"
 msgstr ""
 
@@ -1917,6 +1953,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/fields/LinkPicker.vue:321
 msgid "Create a new {0}"
+msgstr ""
+
+#: oneapp/onespace/chat/changes.py:129
+msgid "Create a {0} on {1}"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:37
@@ -2189,8 +2229,18 @@ msgstr ""
 msgid "Disagrees about"
 msgstr ""
 
+#: frontend/src/modules/onespace/components/chat/ChatChange.vue:64
+msgid "Discard"
+msgstr ""
+
 #: frontend/src/modules/onespace/components/screen/record/CreateDialog.vue:15
 msgid "Discard and close"
+msgstr ""
+
+#. Option for the 'State' (Select) field in DocType 'OneSpace Chat Change'
+#: frontend/src/modules/onespace/components/chat/ChatChange.vue:99
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "Discarded"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/MailboxSettings.vue:252
@@ -2221,6 +2271,11 @@ msgstr ""
 #. Name of a DocType
 #: oneapp/onedoc/doctype/doc_body/doc_body.json
 msgid "Doc Body"
+msgstr ""
+
+#. Label of the docname (Data) field in DocType 'OneSpace Chat Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "Docname"
 msgstr ""
 
 #. Label of the document (Data) field in DocType 'Legal Acceptance'
@@ -2438,6 +2493,11 @@ msgstr ""
 msgid "Empty means whatever the platform recommends for this capability, which is also what tracks a better model arriving without anyone changing a setting."
 msgstr ""
 
+#. Description of the 'Docname' (Data) field in DocType 'OneSpace Chat Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "Empty on a Create."
+msgstr ""
+
 #: frontend/src/modules/onestorage/pages/Drive.vue:49
 #: frontend/src/modules/onestorage/pages/Drive.vue:50
 #: frontend/src/modules/onestorage/pages/Drive.vue:438
@@ -2497,9 +2557,11 @@ msgstr ""
 #. Label of the error (Small Text) field in DocType 'Import Issue'
 #. Label of the error (Small Text) field in DocType 'Import Run'
 #. Label of the error (Small Text) field in DocType 'Import Run Step'
+#. Label of the error (Small Text) field in DocType 'OneSpace Chat Change'
 #: oneapp/onespace/doctype/import_issue/import_issue.json
 #: oneapp/onespace/doctype/import_run/import_run.json
 #: oneapp/onespace/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 msgid "Error"
 msgstr ""
 
@@ -2681,8 +2743,10 @@ msgstr ""
 #. Option for the 'Status' (Select) field in DocType 'Import Run'
 #. Option for the 'Status' (Select) field in DocType 'Import Run Step'
 #. Label of the failed (Int) field in DocType 'Import Run Step'
+#. Option for the 'State' (Select) field in DocType 'OneSpace Chat Change'
 #: oneapp/onespace/doctype/import_run/import_run.json
 #: oneapp/onespace/doctype/import_run_step/import_run_step.json
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 msgid "Failed"
 msgstr ""
 
@@ -2770,6 +2834,11 @@ msgstr ""
 #. Label of the fieldname (Data) field in DocType 'AI Written Value'
 #: oneapp/onespace/doctype/ai_written_value/ai_written_value.json
 msgid "Fieldname"
+msgstr ""
+
+#. Description of the 'Changes' (Code) field in DocType 'OneSpace Chat Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "Fieldname to value, as it would be saved."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/printing/FormatBuilder.vue:241
@@ -3715,6 +3784,10 @@ msgstr ""
 msgid "Issued By"
 msgstr ""
 
+#: oneapp/onespace/chat/changes.py:94
+msgid "It already says that. Nothing to change."
+msgstr ""
+
 #: frontend/src/modules/onespace/pages/Marketplace.vue:191
 msgid "It can also be removed, which frees the room {0} takes. That deletes everything those hold, and the only way back is the backup we take first."
 msgstr ""
@@ -3793,11 +3866,13 @@ msgstr ""
 #. Label of the kind (Select) field in DocType 'Correspondence'
 #. Label of the entity (Select) field in DocType 'Transit Claim'
 #. Label of the kind (Select) field in DocType 'Transit Source'
+#. Label of the kind (Select) field in DocType 'OneSpace Chat Change'
 #. Label of the kind (Select) field in DocType 'File Version'
 #: frontend/src/modules/onestorage/pages/Drive.vue:631
 #: oneapp/onemail/doctype/correspondence/correspondence.json
 #: oneapp/onemobility/doctype/transit_claim/transit_claim.json
 #: oneapp/onemobility/doctype/transit_source/transit_source.json
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 #: oneapp/onestorage/doctype/file_version/file_version.json
 msgid "Kind"
 msgstr ""
@@ -4212,7 +4287,7 @@ msgstr ""
 msgid "Looking at {0}. Nothing here is being saved."
 msgstr ""
 
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:48
+#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:53
 msgid "Looking…"
 msgstr ""
 
@@ -5071,6 +5146,10 @@ msgstr ""
 msgid "No plan yet"
 msgstr ""
 
+#: oneapp/onespace/chat/changes.py:88
+msgid "No record called {0} on that screen."
+msgstr ""
+
 #: frontend/src/modules/onespace/components/settings/RoleSettings.vue:55
 msgid "No roles of your own yet"
 msgstr ""
@@ -5336,6 +5415,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/pages/Launcher.vue:44
 msgid "Nothing has been added to your workspace. An admin can add a space, and it appears here."
+msgstr ""
+
+#: oneapp/onespace/chat/changes.py:115
+msgid "Nothing has been changed. This is waiting for the person to approve it — tell them what it would do and stop there."
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/account/Overview.vue:72
@@ -5697,6 +5780,12 @@ msgstr ""
 msgid "One line stops here"
 msgstr ""
 
+#. Description of the 'Summary' (Small Text) field in DocType 'OneSpace Chat
+#. Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "One line, written here rather than by the model: what the card says has to be what the row does."
+msgstr ""
+
 #: frontend/src/modules/onespace/components/settings/NamingSettings.vue:151
 msgid "One per line, and the first is what new records use. A run of # is where the number goes and .YYYY. is the year, so ACME-.YYYY.-.##### starts counting again each January."
 msgstr ""
@@ -5742,6 +5831,11 @@ msgstr ""
 #. Name of a DocType
 #: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
 msgid "OneSpace AI Settings"
+msgstr ""
+
+#. Name of a DocType
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "OneSpace Chat Change"
 msgstr ""
 
 #. Name of a DocType
@@ -6395,6 +6489,11 @@ msgstr ""
 #. Feature Setting'
 #: oneapp/onespace/doctype/onespace_ai_feature_setting/onespace_ai_feature_setting.json
 msgid "Prompt Addendum"
+msgstr ""
+
+#. Option for the 'State' (Select) field in DocType 'OneSpace Chat Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "Proposed"
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:56
@@ -7119,6 +7218,10 @@ msgstr ""
 msgid "Say when the alert should go out."
 msgstr ""
 
+#: oneapp/onespace/chat/changes.py:74
+msgid "Say which fields to set, and to what."
+msgstr ""
+
 #: oneapp/onespace/alerts.py:252
 msgid "Say who the alert goes to."
 msgstr ""
@@ -7142,8 +7245,10 @@ msgstr ""
 msgid "Scooter"
 msgstr ""
 
+#. Label of the screen (Data) field in DocType 'OneSpace Chat Change'
 #. Label of the screen (Data) field in DocType 'OneSpace Hidden View'
 #. Label of the screen (Data) field in DocType 'OneSpace Saved View'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 #: oneapp/onespace/doctype/onespace_hidden_view/onespace_hidden_view.json
 #: oneapp/onespace/doctype/onespace_saved_view/onespace_saved_view.json
 msgid "Screen"
@@ -7252,8 +7357,8 @@ msgid "Selecting"
 msgstr ""
 
 #: frontend/src/modules/onemail/components/MailComposer.vue:109
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:74
-#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:75
+#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:79
+#: frontend/src/modules/onespace/components/chat/ChatPanel.vue:80
 msgid "Send"
 msgstr ""
 
@@ -7338,7 +7443,9 @@ msgstr ""
 msgid "Servers"
 msgstr ""
 
+#. Label of the session (Link) field in DocType 'OneSpace Chat Change'
 #. Label of the session (Link) field in DocType 'OneSpace Chat Message'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 #: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 msgid "Session"
 msgstr ""
@@ -7729,6 +7836,11 @@ msgstr ""
 msgid "Source fields that hold a path to a file rather than a value, comma separated. The file is fetched and attached here — for the picture somebody chose rather than uploaded, which is attached to nothing over there."
 msgstr ""
 
+#. Label of the space (Data) field in DocType 'OneSpace Chat Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "Space"
+msgstr ""
+
 #. Label of the space_code (Data) field in DocType 'Import Plan'
 #. Label of the space_code (Data) field in DocType 'OneSpace Hidden View'
 #. Label of the space_code (Data) field in DocType 'OneSpace Saved View'
@@ -7821,8 +7933,10 @@ msgstr ""
 msgid "Starts with"
 msgstr ""
 
+#. Label of the state (Select) field in DocType 'OneSpace Chat Change'
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:401
 #: frontend/src/modules/onespace/screens/ops/Tenant.vue:408
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 msgid "State"
 msgstr ""
 
@@ -7986,6 +8100,11 @@ msgstr ""
 msgid "Subscription"
 msgstr ""
 
+#. Label of the summary (Small Text) field in DocType 'OneSpace Chat Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "Summary"
+msgstr ""
+
 #: frontend/src/modules/onemobility/components/Outlook.vue:309
 msgid "Sunday"
 msgstr ""
@@ -8074,6 +8193,7 @@ msgstr ""
 #: oneapp/onespace/doctype/import_run/import_run.json
 #: oneapp/onespace/doctype/import_source/import_source.json
 #: oneapp/onespace/doctype/onespace_ai_settings/onespace_ai_settings.json
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
 #: oneapp/onespace/doctype/onespace_chat_message/onespace_chat_message.json
 #: oneapp/onespace/doctype/onespace_chat_session/onespace_chat_session.json
 #: oneapp/onespace/doctype/onespace_hidden_view/onespace_hidden_view.json
@@ -8241,6 +8361,19 @@ msgstr ""
 msgid "That attachment is not yours to send."
 msgstr ""
 
+#: frontend/src/modules/onespace/components/chat/ChatChange.vue:103
+#: oneapp/onespace/chat/changes.py:330
+msgid "That change could not be saved."
+msgstr ""
+
+#: oneapp/onespace/chat/changes.py:159 oneapp/onespace/chat/changes.py:194
+msgid "That change has already been answered."
+msgstr ""
+
+#: oneapp/onespace/chat/changes.py:52
+msgid "That change is not yours."
+msgstr ""
+
 #: frontend/src/modules/onespace/pages/Marketplace.vue:389
 msgid "That code worked. The space is above."
 msgstr ""
@@ -8303,6 +8436,10 @@ msgstr ""
 
 #: oneapp/onespace/printing.py:868
 msgid "That is as many letter heads as one workspace can hold."
+msgstr ""
+
+#: oneapp/onespace/chat/changes.py:76
+msgid "That is more fields than one change may set."
 msgstr ""
 
 #: oneapp/onedoc/text.py:159
@@ -8391,12 +8528,24 @@ msgstr ""
 msgid "That plan is switched off."
 msgstr ""
 
+#: oneapp/onespace/chat/changes.py:209
+msgid "That record is gone."
+msgstr ""
+
 #: oneapp/onespace/spaceview/guard.py:16
 msgid "That record is not on this screen."
 msgstr ""
 
+#: oneapp/onespace/chat/changes.py:90
+msgid "That record is not yours to change where it is."
+msgstr ""
+
 #: oneapp/onespace/spaceview/layouts.py:191
 msgid "That screen belongs to someone else."
+msgstr ""
+
+#: oneapp/onespace/chat/changes.py:71
+msgid "That screen holds no records to change."
 msgstr ""
 
 #: oneapp/onespace/naming.py:272
@@ -8634,6 +8783,12 @@ msgstr ""
 msgid "The last backup did not finish"
 msgstr ""
 
+#. Description of the 'After Message' (Data) field in DocType 'OneSpace Chat
+#. Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "The last stored turn when this was proposed. What the browser hangs the card under: everything a run proposes belongs to the answer that run gave."
+msgstr ""
+
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:36
 msgid "The mail did not load"
 msgstr ""
@@ -8765,6 +8920,11 @@ msgstr ""
 #. Issue'
 #: oneapp/onespace/doctype/import_issue/import_issue.json
 msgid "The row"
+msgstr ""
+
+#. Description of the 'Before' (Code) field in DocType 'OneSpace Chat Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "The same fields as they were when this was proposed. Apply compares against them and refuses where they have moved, so a stale proposal is a refusal rather than a silent overwrite."
 msgstr ""
 
 #: frontend/src/modules/onespace/screens/ops/TenantBilling.vue:195
@@ -9125,6 +9285,10 @@ msgstr ""
 msgid "This screen did not open"
 msgstr ""
 
+#: oneapp/onespace/chat/changes.py:81
+msgid "This screen has no field called {0}. Call describe_screen to see what it carries."
+msgstr ""
+
 #: oneapp/onespace/spaceview/surround.py:178
 msgid "This screen has no records to attach anything to."
 msgstr ""
@@ -9316,7 +9480,7 @@ msgstr ""
 msgid "Those rows were not filled from a sheet."
 msgstr ""
 
-#: oneapp/onespace/ai/settings.py:486 oneapp/onespace/printing.py:286
+#: oneapp/onespace/ai/settings.py:589 oneapp/onespace/printing.py:286
 #: oneapp/onespace/workspace.py:618
 msgid "Those settings could not be read."
 msgstr ""
@@ -9668,6 +9832,11 @@ msgstr ""
 
 #: oneapp/onemobility/insights.py:299
 msgid "Up to 5 min late"
+msgstr ""
+
+#. Option for the 'Kind' (Select) field in DocType 'OneSpace Chat Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "Update"
 msgstr ""
 
 #. Label of the updated (Int) field in DocType 'Import Run Step'
@@ -10091,6 +10260,12 @@ msgstr ""
 #. Description of the 'Title' (Data) field in DocType 'Compliance Document'
 #: oneapp/onespace/doctype/compliance_document/compliance_document.json
 msgid "What the paper is called: Trade Licence, Residence Visa."
+msgstr ""
+
+#. Description of the 'Applied Name' (Data) field in DocType 'OneSpace Chat
+#. Change'
+#: oneapp/onespace/doctype/onespace_chat_change/onespace_chat_change.json
+msgid "What the record is called once it exists. Only a created one needs it; an update already had a name."
 msgstr ""
 
 #. Description of the 'Payload' (Code) field in DocType 'Import Issue'
@@ -11138,6 +11313,10 @@ msgctxt ""
 msgid "dpa"
 msgstr ""
 
+#: frontend/src/modules/onespace/components/chat/ChatChange.vue:49
+msgid "empty"
+msgstr ""
+
 #. Option for the 'Drawn as' (Select) field in DocType 'Transit Line'
 #. Option for the 'Drawn as' (Select) field in DocType 'Transit Marker Style'
 #: oneapp/onemobility/doctype/transit_line/transit_line.json
@@ -11407,6 +11586,7 @@ msgid "privacy"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RelatedRows.vue:141
+#: oneapp/onespace/chat/changes.py:127
 msgid "record"
 msgstr ""
 
@@ -11677,7 +11857,7 @@ msgstr ""
 msgid "{0} calls in the timetable"
 msgstr ""
 
-#: oneapp/onespace/ai/settings.py:425
+#: oneapp/onespace/ai/settings.py:528
 msgid "{0} cannot be used for {1}."
 msgstr ""
 
@@ -11688,6 +11868,10 @@ msgstr ""
 #: oneapp/onespace/importer/running.py:92
 #: oneapp/onespace/importer/running.py:98
 msgid "{0} changed since this run was queued."
+msgstr ""
+
+#: oneapp/onespace/chat/changes.py:213
+msgid "{0} changed since this was suggested, so it was not applied."
 msgstr ""
 
 #: frontend/src/modules/onespace/components/versions/VersionPanel.vue:149
@@ -11872,7 +12056,7 @@ msgstr ""
 msgid "{0} is not a series on {1}."
 msgstr ""
 
-#: oneapp/onespace/ai/settings.py:383
+#: oneapp/onespace/ai/settings.py:486
 msgid "{0} is not a tone this can use."
 msgstr ""
 

@@ -360,6 +360,9 @@ msgstr "تم إنشاء العنوان"
 msgid "Address removed"
 msgstr "تمت إزالة العنوان"
 
+msgid "After Message"
+msgstr "بعد الرسالة"
+
 msgid ""
 "After this the link is gone and the file is not. Empty is refused on "
 "purpose: a link with no end is a file published for ever by somebody who "
@@ -522,6 +525,12 @@ msgstr ""
 
 msgid "Applicants"
 msgstr "المتقدمون"
+
+msgid "Applied"
+msgstr "مُطبَّق"
+
+msgid "Applied Name"
+msgstr "اسم السجل بعد التطبيق"
 
 msgid "Approaching the limit."
 msgstr "تقترب من الحد."
@@ -972,6 +981,9 @@ msgstr "غيّر بطاقتك أو نزّل فاتورة أو ألغِ من هن
 msgid "Change your password"
 msgstr "تغيير كلمة مرورك"
 
+msgid "Change {0} on {1}"
+msgstr "تغيير {0} في {1}"
+
 msgid "Change {0} record"
 msgstr "تغيير {0} سجل"
 
@@ -1139,6 +1151,9 @@ msgstr "بدء العد من"
 msgid "Create \"{0}\""
 msgstr "إنشاء \"{0}\""
 
+msgid "Create a {0} on {1}"
+msgstr "إنشاء {0} في {1}"
+
 msgid "Create another"
 msgstr "إنشاء آخر"
 
@@ -1273,6 +1288,9 @@ msgstr "مستند"
 msgid "Doc Body"
 msgstr "متن المستند"
 
+msgid "Docname"
+msgstr "اسم السجل"
+
 msgid "Document Number"
 msgstr "رقم المستند"
 
@@ -1373,6 +1391,9 @@ msgid ""
 msgstr ""
 "الفراغ يعني ما توصي به المنصة لهذه القدرة، وهو أيضًا ما يواكب وصول نموذج "
 "أفضل دون أن يغيّر أحد أي إعداد."
+
+msgid "Empty on a Create."
+msgstr "فارغ عند الإنشاء."
 
 msgid "Empty the bin"
 msgstr "إفراغ المحذوفات"
@@ -1565,6 +1586,9 @@ msgstr "مجلدات أقل"
 
 msgid "Field Map"
 msgstr "خريطة الحقول"
+
+msgid "Fieldname to value, as it would be saved."
+msgstr "اسم الحقل مقابل القيمة، كما ستُحفظ."
 
 msgid "File Link"
 msgstr "رابط الملف"
@@ -2109,6 +2133,9 @@ msgstr "تمت الدعوة — يمكنه تسجيل الدخول قريباً"
 
 msgid "Issued By"
 msgstr "صادر عن"
+
+msgid "It already says that. Nothing to change."
+msgstr "هذا ما يقوله بالفعل. لا شيء لتغييره."
 
 msgid ""
 "It can also be removed, which frees the room {0} takes. That deletes "
@@ -2835,6 +2862,9 @@ msgstr "لا توجد خطة سارية بعد"
 msgid "No plan yet"
 msgstr "لا توجد خطة بعد"
 
+msgid "No record called {0} on that screen."
+msgstr "لا يوجد سجل باسم {0} في تلك الشاشة."
+
 msgid "No roles of your own yet"
 msgstr "لا توجد أدوار خاصة بك بعد"
 
@@ -2988,6 +3018,13 @@ msgid ""
 "Nothing has been added to your workspace. An admin can add a space, and "
 "it appears here."
 msgstr "لم يُضف شيء إلى مساحة عملك. يمكن للمسؤول إضافة مساحة، فتظهر هنا."
+
+msgid ""
+"Nothing has been changed. This is waiting for the person to approve it — "
+"tell them what it would do and stop there."
+msgstr ""
+"لم يتغير شيء. هذا في انتظار موافقة الشخص — أخبره بما سيفعله وتوقف عند "
+"ذلك."
 
 msgid ""
 "Nothing has been deleted. Free some space, or add more below — new "
@@ -3265,6 +3302,13 @@ msgid "One line stops here"
 msgstr "خط واحد يتوقف هنا"
 
 msgid ""
+"One line, written here rather than by the model: what the card says has "
+"to be what the row does."
+msgstr ""
+"سطر واحد، يُكتب هنا لا بواسطة النموذج: ما تقوله البطاقة يجب أن يكون ما "
+"يفعله الصف."
+
+msgid ""
 "One per line, and the first is what new records use. A run of # is where "
 "the number goes and .YYYY. is the year, so ACME-.YYYY.-.##### starts "
 "counting again each January."
@@ -3302,6 +3346,9 @@ msgstr "إعداد ميزة الذكاء الاصطناعي في OneSpace"
 
 msgid "OneSpace AI Settings"
 msgstr "إعدادات الذكاء الاصطناعي في OneSpace"
+
+msgid "OneSpace Chat Change"
+msgstr "تغيير محادثة OneSpace"
 
 msgid "OneSpace Chat Message"
 msgstr "رسالة محادثة OneSpace"
@@ -3660,6 +3707,9 @@ msgstr "تم حفظ الملف الشخصي"
 msgid "Prompt Addendum"
 msgstr "ملحق التعليمات"
 
+msgid "Proposed"
+msgstr "مُقترَح"
+
 msgid "Published, and not run"
 msgstr "مُعلَن، ولم يُشغَّل"
 
@@ -3972,6 +4022,9 @@ msgstr "حدّد وقت البدء."
 
 msgid "Say when the alert should go out."
 msgstr "حدّد وقت إرسال التنبيه."
+
+msgid "Say which fields to set, and to what."
+msgstr "حدّد أي الحقول تُضبط، وإلى ماذا."
 
 msgid "Say who the alert goes to."
 msgstr "حدّد من يتلقى التنبيه."
@@ -4294,6 +4347,9 @@ msgstr ""
 "الملف ويُرفق هنا — للصورة التي اختارها أحدهم بدلاً من رفعها، وهي غير "
 "مرفقة بشيء هناك."
 
+msgid "Space"
+msgstr "المساحة"
+
 msgid "Space Code"
 msgstr "رمز المساحة"
 
@@ -4528,6 +4584,15 @@ msgstr "لم يُنشأ هذا التنبيه هنا ولا يمكن تغيير�
 msgid "That attachment is not yours to send."
 msgstr "هذا المرفق ليس لك لترسله."
 
+msgid "That change could not be saved."
+msgstr "تعذر حفظ هذا التغيير."
+
+msgid "That change has already been answered."
+msgstr "تمت الإجابة على هذا التغيير بالفعل."
+
+msgid "That change is not yours."
+msgstr "هذا التغيير ليس لك."
+
 msgid "That code worked. The space is above."
 msgstr "الرمز صحيح. المساحة أعلاه."
 
@@ -4575,6 +4640,9 @@ msgstr "هذا أقصى ما تحمله البطاقة."
 
 msgid "That is as many letter heads as one workspace can hold."
 msgstr "هذا أقصى عدد ترويسات يمكن أن تحمله مساحة عمل واحدة."
+
+msgid "That is more fields than one change may set."
+msgstr "هذا عدد حقول أكبر مما يجوز لتغيير واحد ضبطه."
 
 msgid "That is more text than this file can hold."
 msgstr "هذا نص أكثر مما يمكن أن يحمله هذا الملف."
@@ -4643,11 +4711,20 @@ msgstr ""
 msgid "That plan is switched off."
 msgstr "هذه الخطة موقوفة."
 
+msgid "That record is gone."
+msgstr "هذا السجل لم يعد موجوداً."
+
 msgid "That record is not on this screen."
 msgstr "هذا السجل ليس على هذه الشاشة."
 
+msgid "That record is not yours to change where it is."
+msgstr "هذا السجل ليس لك أن تغيره في وضعه الحالي."
+
 msgid "That screen belongs to someone else."
 msgstr "هذه الشاشة تخص شخصاً آخر."
+
+msgid "That screen holds no records to change."
+msgstr "تلك الشاشة لا تحتوي على سجلات لتغييرها."
 
 msgid "That series would not generate a name"
 msgstr "هذه السلسلة لن تولّد اسماً"
@@ -4891,6 +4968,14 @@ msgstr "الرمز بجانب هذه الوسيلة"
 msgid "The ground"
 msgstr "الأرضية"
 
+msgid ""
+"The last stored turn when this was proposed. What the browser hangs the "
+"card under: everything a run proposes belongs to the answer that run "
+"gave."
+msgstr ""
+"آخر دور محفوظ عند اقتراح هذا. وهو ما يعلق المتصفح البطاقة تحته: كل ما "
+"يقترحه تشغيل واحد ينتمي إلى الإجابة التي قدمها."
+
 msgid "The mail did not load"
 msgstr "لم يُحمَّل البريد"
 
@@ -5012,6 +5097,14 @@ msgstr ""
 
 msgid "The row"
 msgstr "الصف"
+
+msgid ""
+"The same fields as they were when this was proposed. Apply compares "
+"against them and refuses where they have moved, so a stale proposal is a "
+"refusal rather than a silent overwrite."
+msgstr ""
+"الحقول نفسها كما كانت عند اقتراح هذا. التطبيق يقارن بها ويرفض حيث تغيرت، "
+"فالاقتراح القديم رفض لا استبدال صامت."
 
 msgid ""
 "The screen's name. Empty is the person's own unnamed default for this "
@@ -5338,6 +5431,13 @@ msgstr "كُتب معرّف هذا السجل في الموضوع أو في ال
 
 msgid "This screen did not open"
 msgstr "لم تُفتح هذه الشاشة"
+
+msgid ""
+"This screen has no field called {0}. Call describe_screen to see what it "
+"carries."
+msgstr ""
+"هذه الشاشة لا تحتوي على حقل باسم {0}. استدعِ describe_screen لمعرفة ما "
+"تحمله."
 
 msgid "This screen has no records to attach anything to."
 msgstr "هذه الشاشة ليس فيها سجلات لإرفاق أي شيء بها."
@@ -5946,6 +6046,13 @@ msgstr ""
 
 msgid "What the paper is called: Trade Licence, Residence Visa."
 msgstr "اسم الورقة: رخصة تجارية، تأشيرة إقامة."
+
+msgid ""
+"What the record is called once it exists. Only a created one needs it; "
+"an update already had a name."
+msgstr ""
+"ما يُسمى به السجل بعد وجوده. الإنشاء وحده يحتاجه؛ أما التحديث فله اسم "
+"أصلاً."
 
 msgid "What the source said, as it said it."
 msgstr "ما قاله المصدر، كما قاله."
@@ -7106,6 +7213,9 @@ msgstr "تغيّر {0}"
 
 msgid "{0} changed since this run was queued."
 msgstr "تغيّر {0} منذ إدراج هذا التشغيل في الطابور."
+
+msgid "{0} changed since this was suggested, so it was not applied."
+msgstr "تغيّر {0} منذ اقتراح هذا، فلم يُطبَّق."
 
 msgid "{0} changes"
 msgstr "{0} تغييرات"

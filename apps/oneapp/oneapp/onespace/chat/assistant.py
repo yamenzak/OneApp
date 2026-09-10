@@ -22,7 +22,7 @@ from frappe import _
 
 from oneapp.onespace.ai import conversation
 from oneapp.onespace.ai.features import ai_feature
-from oneapp.onespace.chat import context, session as store
+from oneapp.onespace.chat import changes, context, session as store
 from oneapp.onespace.chat.toolbox import tools
 
 SYSTEM = """You are the assistant inside a OneSpace workspace. You help the \
@@ -45,9 +45,21 @@ Be brief. Give the answer first. Quote figures exactly as the tools reported \
 them and never round a total or estimate a count — call count_records instead. \
 When you name a record, give the id the tools returned so it can be found.
 
-You cannot change anything. Every tool is read-only. If you are asked to create, \
-edit, send or delete something, say that you can only read, and say where in the \
-workspace it can be done."""
+You do not change anything yourself. Two tools — propose_update and \
+propose_create — ask for a change and write nothing: they put a card in front \
+of the person with the exact fields on it, and the change happens if and when \
+they press Apply. So never say you have changed, created, updated or saved \
+something. Say what you have asked for and that it is waiting for them.
+
+Read the record before proposing a change to it, so the card shows what is \
+actually there. Set only the fields the person asked about, and never invent a \
+value for one they did not mention. If a change turns out to be several — three \
+records to close — propose each one, so each can be agreed to or refused on its \
+own.
+
+Everything else is read-only. There is no tool that deletes, submits, cancels \
+or sends, and there is no way to ask for one. If that is what is wanted, say so \
+plainly and say where in the workspace it can be done."""
 
 
 @ai_feature(
@@ -78,7 +90,14 @@ def ask(ai, session: str, question: str, on: dict | None = None) -> dict:
 	on = on or {}
 	spoken = store.transcript(session) + [{"role": "user", "content": question}]
 
-	run = conversation.run(ai, spoken, context.bound(tools(), on), context.note(on))
+	# The session is bound rather than declared, the same way the space is: a
+	# proposal belongs to the thread it was asked for in, and an argument the
+	# model can still see is one it can be talked into changing — into another
+	# person's thread, since a session id is all a proposal is filed under.
+	usable = [one.bind(session=session) if one.takes("session") else one
+	          for one in context.bound(tools(), on)]
+
+	run = conversation.run(ai, spoken, usable, context.note(on))
 
 	# Only what this ask added. `run.messages` is the whole transcript because
 	# the loop needs it; storing it whole would write every earlier turn again.
@@ -123,8 +142,13 @@ def messages(session: str) -> dict:
 	the next turn that actually says something, so a reply arrives with its whole
 	working under it.
 	"""
+	# The thread first, because `store.rows` is where the ownership check is
+	# and a refusal should happen before anything else is read.
+	stored = store.rows(session)
+	waiting = changes.for_session(session)
+
 	shown, gathered = [], []
-	for row in store.rows(session):
+	for row in stored:
 		if row["role"] == "tool":
 			continue
 
@@ -144,13 +168,40 @@ def messages(session: str) -> dict:
 			"role": row["role"],
 			"content": row.get("content") or "",
 			"looked_at": gathered,
+			"changes": [],
 			"credits": row.get("credits") or 0,
 			"stopped": row.get("stopped") or "",
 			"on": str(row.get("creation") or ""),
 		})
 		gathered = []
 
+	_hang(shown, waiting)
 	return {"session": session, "messages": shown}
+
+
+def _hang(shown: list[dict], waiting: list[dict]) -> None:
+	"""Put each proposed change under the answer that asked for it.
+
+	A change carries the last turn stored when the tool ran, which is the
+	previous run's answer or nothing at all. So it belongs to the first
+	assistant turn *after* that one — the answer this run went on to write.
+
+	The fallback is the last turn shown, and it is the case that actually
+	happens: a run that proposed something and then ran out of turns has no
+	answer of its own, and a card with nowhere to hang is a change somebody
+	agreed to that they can no longer see.
+	"""
+	if not shown:
+		return
+
+	by_name = {turn["name"]: at for at, turn in enumerate(shown)}
+	for change in waiting:
+		after = by_name.get(change.get("after_message") or "", -1)
+		landed = next(
+			(turn for turn in shown[after + 1:] if turn["role"] == "assistant"),
+			shown[-1],
+		)
+		landed["changes"].append(change)
 
 
 @frappe.whitelist(methods=["POST"])
@@ -192,6 +243,25 @@ def send(question: str, session: str = "", on: str | dict | None = None) -> dict
 		"looked_at": run.get("tool_calls") or [],
 		**messages(session),
 	}
+
+
+@frappe.whitelist(methods=["POST"])
+def apply_change(name: str) -> dict:
+	"""Make the change the assistant asked for. This is the write.
+
+	Here rather than inside the loop, and that is the whole design: the request
+	is one a person made, it runs as them, and it goes through the same save
+	the record form posts to. A model cannot reach this — there is no tool that
+	calls it, and adding one would undo the only thing that makes the pair of
+	`propose_` tools safe.
+	"""
+	return changes.apply(name)
+
+
+@frappe.whitelist(methods=["POST"])
+def discard_change(name: str) -> dict:
+	"""No. The row stays, so the thread still shows what was asked."""
+	return changes.discard(name)
 
 
 @frappe.whitelist(methods=["POST"])

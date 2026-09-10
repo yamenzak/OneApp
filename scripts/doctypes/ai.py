@@ -508,3 +508,62 @@ doctype(
         f("tool_name", read_only=1),
     ],
 )
+
+
+# --------------------------------------------------------------------------- #
+# OneSpace Chat Change — a write the assistant has asked for and not made.
+#
+# The row exists because the confirmation has to. A model that can call
+# `save` writes on its own say-so; a model that can only write one of these
+# has asked, and the write happens when a person presses Apply, in their own
+# request, through `spaceview.records.save` — the same function the form
+# posts to, with the same allowlist and the same permission checks.
+#
+# So this doctype is a proposal and never a queue. Nothing drains it, no
+# scheduler looks at it, and a row left in `Proposed` for a year is a question
+# nobody answered rather than a write that is going to happen late.
+#
+# `changes` holds what would be written and `before` what is there now, both
+# captured at proposal time. The second is what makes Apply honest: a record
+# somebody else edited in between is one this refuses rather than overwrites.
+# --------------------------------------------------------------------------- #
+doctype(
+    "OneSpace Chat Change",
+    app="tenant",
+    perms=CHAT_PERMS,
+    autoname="hash",
+    fields=[
+        f("session", "Link", options="OneSpace Chat Session", reqd=1,
+          in_list_view=1, in_standard_filter=1),
+        f("after_message", "Data", read_only=1,
+          description="The last stored turn when this was proposed. What the "
+                      "browser hangs the card under: everything a run proposes "
+                      "belongs to the answer that run gave."),
+        f("kind", "Select", options="Create\nUpdate", reqd=1, default="Update",
+          in_list_view=1),
+        column("cb_change_state"),
+        f("state", "Select", options="Proposed\nApplied\nDiscarded\nFailed",
+          default="Proposed", reqd=1, in_list_view=1, in_standard_filter=1),
+        f("applied_on", "Datetime", read_only=1),
+        f("applied_name", read_only=1,
+          description="What the record is called once it exists. Only a "
+                      "created one needs it; an update already had a name."),
+        section("sec_change_where"),
+        f("space", reqd=1, in_list_view=1),
+        f("screen", reqd=1),
+        f("docname", description="Empty on a Create."),
+        column("cb_change_what"),
+        f("summary", "Small Text",
+          description="One line, written here rather than by the model: what "
+                      "the card says has to be what the row does."),
+        section("sec_change_body"),
+        f("changes", "Code", options="JSON", reqd=1,
+          description="Fieldname to value, as it would be saved."),
+        f("before", "Code", options="JSON",
+          description="The same fields as they were when this was proposed. "
+                      "Apply compares against them and refuses where they have "
+                      "moved, so a stale proposal is a refusal rather than a "
+                      "silent overwrite."),
+        f("error", "Small Text", read_only=1),
+    ],
+)

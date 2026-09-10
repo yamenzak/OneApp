@@ -37,7 +37,12 @@
           </p>
         </div>
 
-        <ChatTurn v-for="turn in turns" :key="turn.name" :turn="turn" />
+        <ChatTurn
+          v-for="turn in turns"
+          :key="turn.name"
+          :turn="turn"
+          @changed="reload"
+        />
 
         <div
           v-if="asking"
@@ -136,6 +141,12 @@ async function ask() {
     asking.value = false
     toBottom()
   }
+}
+
+/** After a change was applied or discarded, so the card says what it became. */
+async function reload() {
+  if (!session.value) return
+  turns.value = (await workspace.assistantMessages(session.value))?.messages || turns.value
 }
 
 function toBottom() {

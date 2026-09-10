@@ -1543,9 +1543,40 @@ come back under User Permissions are all decided by the code a click goes
 through. The assistant sees what its asker could have opened by clicking, and a
 question about a space they cannot open is refused in the same words.
 
-**Everything is read-only.** Not because the loop could not carry a write, but
-because a write needs a confirmation step in front of it and there is nowhere yet
-for one to appear. §13.
+**It cannot save anything.** Two tools look as though they can and are the
+reason to read the next section: `propose_update` and `propose_create` write a
+row saying what *would* change, and return "waiting for approval". Nothing else
+in `chat/toolbox.py` writes at all, and there is no tool that deletes, submits,
+cancels or sends.
+
+### Asking to write, and the Apply that writes
+
+A model that can call `save` changes records on its own say-so, and the failure
+mode is not a wrong field — it is a wrong *record*, at the end of a chain of
+lookups nobody read. So the ask and the write are two things, `chat/changes.py`
+is the seam, and a `OneSpace Chat Change` row is what sits between them.
+
+**The write is a person's own request.** Apply is `chat.apply_change`, called by
+a click, running as them, going through `spaceview.records.save` — the same
+function the record form posts to, with the same field allowlist, the same
+`has_permission`, the same workflow rule about who may edit a document where it
+currently is. No tool calls it and adding one would undo the whole arrangement;
+`test_no_tool_can_apply_one` reads the toolbox's source and says so.
+
+**The card cannot lie about what it would do.** Everything is checked when the
+proposal is made — the screen resolves, the record is one that screen would
+list, every fieldname is one it may write, the workflow lets it be edited — so a
+model that got a field wrong is told on the turn it made the mistake, rather
+than a person finding out after they agreed. What is there now is captured
+alongside, and Apply compares: a record somebody else edited in between is
+refused, because the person agreed to a diff and it is no longer that diff. The
+card's heading is written by the server for the same reason a summary of a diff
+is not the diff.
+
+**Nothing drains it.** No scheduler, no queue, no retry. A proposal nobody
+answered is a question nobody answered; the only two things that resolve one are
+Apply and Discard, and a discarded one stays in the thread so it still shows
+what was asked.
 
 **Every turn is a whole metered call.** A question that needs three lookups is
 four calls, four holds and four settlements, and it is charged as four. That is
@@ -1733,14 +1764,14 @@ register keeps its own because a licence expiring is a fact about the licence
 rather than about a view), and **the map view** (`MapBody.vue` over
 Geolocation, with OneMobility's Network screen as the worked example).
 
-* **A write the assistant can make.** Every tool in `chat/toolbox.py` reads.
-  The loop in `ai/conversation.py` would carry a write perfectly well — that is
-  not what is missing. What is missing is the step in front of it: a model that
-  can change a record has to show what it is about to do and wait, and a chat
-  answer that arrives finished has nowhere for a "do this?" to appear. Flow's
-  own agent has the pause built in (`requires_confirmation`, a `Question` the
-  run stops on) and it is the piece worth taking next; until it has a surface,
-  a write tool is a record changed on a model's say-so.
+* **The writes the assistant still cannot ask for.** It can propose a change to
+  one record and the creation of one record (§10), and that is the whole list.
+  Deleting, submitting, cancelling and sending are not proposable, and the
+  reason is not the confirmation step — that exists now — but that each of them
+  is a different question to put in front of somebody. A card saying "delete
+  this" needs to say what else goes with it; one saying "submit this" is asking
+  about a document that stops being editable afterwards. Those are cards to
+  design, not tools to add.
 
 Also, deliberately: **Assignment is not shown in the list.** The activity column
 is a fixed 176px track already holding an age, a count and a heart. If

@@ -147,8 +147,11 @@ The single modules, roughly by how often they are touched:
   and out of their schemas, the screen and record said once in the system
   prompt, both resolved through the same checks a click goes through) →
   `session` (a conversation on disk, and as the transcript a provider is sent) →
-  `assistant` (the declaration, the system prompt, and four endpoints). Nothing
-  here can write. See `docs/ONESPACE.md` §10.
+  `changes` (a write it has asked for and not made) → `assistant` (the
+  declaration, the system prompt, and the endpoints). **No tool writes**: the
+  two `propose_` ones record what would change and return "waiting", and the
+  save happens in `chat.apply_change`, a request a person makes by pressing
+  Apply, through `spaceview.records.save`. See `docs/ONESPACE.md` §10.
 * `storage/`, `plans/` — R2, and the one bespoke
   migration plan. In `storage/`, `file.py` is the `File` override that moves an
   uploaded attachment to R2 and `direct.py` is the path a large file takes

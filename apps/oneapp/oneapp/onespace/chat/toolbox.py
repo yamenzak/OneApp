@@ -13,11 +13,11 @@ they would see if they clicked, and a question about a space they cannot open
 comes back as the same refusal the browser would get. A model that decides to
 read every quotation on the site reads the ones its asker could have opened.
 
-Everything is read-only. Not because writing is impossible — the loop in
-`ai/conversation.py` would carry it — but because a write needs a confirmation
-step in front of it and a confirmation step needs somewhere to appear. Until
-that exists, a tool that changes a record is a tool that changes it on a model's
-say-so, and `docs/ONESPACE.md` §13 says why that is not shipping.
+Nothing here writes. The two `propose_` tools look like they do and are the
+reason to read this paragraph: they record what *would* be written and return
+"waiting for approval". The write happens later, in a request a person made by
+pressing Apply, through `spaceview.records.save`. So the model's reach stops at
+asking, and `chat/changes.py` is where the asking is kept.
 """
 
 from typing import Annotated
@@ -188,6 +188,60 @@ def read_document(
 	return _clipped(body.readable(body.load(name).get("content") or ""))
 
 
+# --------------------------------------------------------------------------- #
+# Asking to write
+#
+# Neither of these saves anything, and the naming is load-bearing: a tool
+# called `update_record` is one a model will describe afterwards as having
+# updated the record, whatever its docstring said. `propose_` is what it does
+# and is what the model reads back to itself on the next turn.
+#
+# Both check everything now rather than at Apply — the screen resolves, the
+# record is one that screen would list, the fields are ones it may write — so a
+# mistake is corrected on the turn that made it, instead of becoming a card
+# that fails after somebody agreed to it.
+# --------------------------------------------------------------------------- #
+
+@tool
+def propose_update(
+	session: Annotated[str, "Filled in for you."],
+	space: Annotated[str, "A space code from list_spaces."],
+	screen: Annotated[str, "A screen from list_screens."],
+	name: Annotated[str, "The record's id, as find_records returned it."],
+	values: Annotated[
+		dict,
+		"Fieldname to new value — for example {\"status\": \"Closed\"}. "
+		"Fieldnames come from describe_screen. Only the fields that should "
+		"change; anything you leave out stays as it is.",
+	],
+) -> dict:
+	"""Ask to change one record. Nothing is written until the person approves it.
+
+	Read the record first. Say afterwards what you have asked for and that it
+	is waiting — do not say it is done, because it is not.
+	"""
+	from oneapp.onespace.chat import changes
+
+	return changes.propose(session, space, screen, values or {}, docname=name)
+
+
+@tool
+def propose_create(
+	session: Annotated[str, "Filled in for you."],
+	space: Annotated[str, "A space code from list_spaces."],
+	screen: Annotated[str, "A screen from list_screens."],
+	values: Annotated[dict, "Fieldname to value, as in propose_update."],
+) -> dict:
+	"""Ask to create one record. Nothing is written until the person approves it.
+
+	Call describe_screen first, and fill in what the person actually said.
+	Do not invent a value for a field they did not mention.
+	"""
+	from oneapp.onespace.chat import changes
+
+	return changes.propose(session, space, screen, values or {})
+
+
 #: Every tool the workspace assistant is given. A list rather than a scan of
 #: this module: a tool becomes available because it was put here, not because
 #: somebody happened to decorate a function in the right file.
@@ -195,6 +249,7 @@ TOOLBOX: list[Tool] = [
 	list_spaces, list_screens, describe_screen,
 	find_records, count_records, read_record,
 	search_files, read_document,
+	propose_update, propose_create,
 ]
 
 

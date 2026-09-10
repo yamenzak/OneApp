@@ -6,6 +6,11 @@
     quotations are open" is worth nothing without knowing whether it counted or
     guessed, and this is the difference — a line saying it called count_records
     on the quotations screen turns an assertion into something checkable.
+
+    A change it asked for is shown the same way and in the same place, and the
+    ordering is the argument: the answer, then what it read, then what it wants
+    to write. The button that writes is the last thing on the turn, under the
+    working that led to it.
   -->
   <div :class="mine ? 'self-end max-w-[85%]' : 'w-full'" data-slot="chat-turn">
     <!--
@@ -33,16 +38,31 @@
         <span class="min-w-0 break-words">{{ said(one) }}</span>
       </li>
     </ul>
+
+    <div v-if="turn.changes?.length" class="mt-2 flex flex-col gap-2">
+      <ChatChange
+        v-for="change in turn.changes"
+        :key="change.name"
+        :change="change"
+        @answered="emit('changed')"
+      />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { Icon } from '@/ui'
+import ChatChange from '@/modules/onespace/components/chat/ChatChange.vue'
 
 const props = defineProps({
   turn: { type: Object, required: true },
 })
+
+// Answering a card changes a record, so the thread is re-read rather than
+// patched here: the card's own state moves, and so may anything else the
+// conversation has been shown about that record.
+const emit = defineEmits(['changed'])
 
 const mine = computed(() => props.turn.role === 'user')
 

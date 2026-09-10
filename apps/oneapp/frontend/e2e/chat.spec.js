@@ -213,3 +213,122 @@ test('a panel opened on a record is scoped to it, server side', async ({ page },
   )
   expect(refused.ok()).toBe(false)
 })
+
+// --------------------------------------------------------------------------
+// Asking to write
+//
+// The assistant cannot save; it can put a card in front of somebody. These
+// drive that card, and the reason they are here rather than only in
+// `tests/test_chat_changes.py` is that the whole guarantee is a button: a
+// change that applies without one being pressed is the thing the design exists
+// to prevent, and only a browser can say whether the button is there.
+// --------------------------------------------------------------------------
+
+/** A project of this spec's own, so applying a change touches nobody else's. */
+async function project(page, name) {
+  const made = await page.request.post('/api/method/frappe.client.insert', {
+    data: { doc: JSON.stringify({
+      doctype: 'Project', project_name: name, custom_location: 'Deira',
+    }) },
+  })
+  expect(made.ok()).toBe(true)
+  return (await made.json()).message.name
+}
+
+/** What the assistant would have written: a proposal, unanswered. */
+async function proposed(page, session, docname, values, before) {
+  const made = await page.request.post('/api/method/frappe.client.insert', {
+    data: { doc: JSON.stringify({
+      doctype: 'OneSpace Chat Change',
+      session,
+      after_message: '',
+      kind: 'Update',
+      state: 'Proposed',
+      space: 'rua',
+      screen: 'projects',
+      docname,
+      summary: `Change ${docname} on Location`,
+      changes: JSON.stringify(values),
+      before: JSON.stringify(before),
+    }) },
+  })
+  expect(made.ok()).toBe(true)
+  return (await made.json()).message.name
+}
+
+async function field(page, docname, fieldname) {
+  const said = await page.request.get(
+    `/api/method/frappe.client.get_value?doctype=Project&filters=`
+    + `${encodeURIComponent(JSON.stringify({ name: docname }))}`
+    + `&fieldname=${fieldname}`,
+  )
+  return (await said.json()).message[fieldname]
+}
+
+test('a change is a card with the diff on it, and nothing happens until Apply',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    const made = await project(page, `Card test ${Date.now()}`)
+    const session = await thread(page, [ASKED, REPLY])
+    await proposed(page, session, made,
+                   { custom_location: 'Jumeirah' }, { custom_location: 'Deira' })
+
+    await page.goto(`/one/chat?chat=${session}`)
+    const card = page.locator('[data-slot="chat-change"]')
+    await expect(card).toHaveCount(1)
+
+    // The diff, not a sentence about it: both values, so what is being agreed
+    // to is on screen rather than described.
+    await expect(card).toContainText('Deira')
+    await expect(card).toContainText('Jumeirah')
+
+    // Drawn, read, and still not applied.
+    expect(await field(page, made, 'custom_location')).toBe('Deira')
+
+    await card.locator('[data-slot="chat-change-apply"]').click()
+    await expect(card).toContainText('Applied')
+    expect(await field(page, made, 'custom_location')).toBe('Jumeirah')
+
+    expectNoRealErrors(errors)
+  })
+
+test('discarding leaves the record alone and the card in the thread',
+  async ({ page }) => {
+    const made = await project(page, `Discard test ${Date.now()}`)
+    const session = await thread(page, [ASKED, REPLY])
+    await proposed(page, session, made,
+                   { custom_location: 'Jumeirah' }, { custom_location: 'Deira' })
+
+    await page.goto(`/one/chat?chat=${session}`)
+    const card = page.locator('[data-slot="chat-change"]')
+    await card.locator('[data-slot="chat-change-discard"]').click()
+
+    // Still there, saying what became of it: a card that vanished would leave
+    // an answer above it claiming to have asked for something with no sign of
+    // what happened next.
+    await expect(card).toContainText('Discarded')
+    await expect(card.locator('[data-slot="chat-change-apply"]')).toHaveCount(0)
+    expect(await field(page, made, 'custom_location')).toBe('Deira')
+  })
+
+test('a record that moved since is refused rather than overwritten',
+  async ({ page }) => {
+    const made = await project(page, `Stale test ${Date.now()}`)
+    const session = await thread(page, [ASKED, REPLY])
+    await proposed(page, session, made,
+                   { custom_location: 'Jumeirah' }, { custom_location: 'Deira' })
+
+    // Somebody else, between the suggestion and the button.
+    const moved = await page.request.post('/api/method/frappe.client.set_value', {
+      data: { doctype: 'Project', name: made,
+              fieldname: 'custom_location', value: 'Al Quoz' },
+    })
+    expect(moved.ok()).toBe(true)
+
+    await page.goto(`/one/chat?chat=${session}`)
+    const card = page.locator('[data-slot="chat-change"]')
+    await card.locator('[data-slot="chat-change-apply"]').click()
+
+    await expect(card).toContainText('changed since this was suggested')
+    expect(await field(page, made, 'custom_location')).toBe('Al Quoz')
+  })
