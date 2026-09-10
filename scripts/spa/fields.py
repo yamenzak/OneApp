@@ -126,6 +126,15 @@ export function valueIcon(value, states = []) {
  * nothing else — so this is how a form laid out by somebody who never heard of
  * OneSpace still gets a strip of tabs that reads as one.
  */
+/**
+ * Every glyph a field may wear: each fieldtype's own, plus the tab
+ * vocabulary a manifest may reach for when a type's icon says the wrong
+ * thing. Closed because Tailwind only emits CSS for the lucide names it saw
+ * in a source file — one that exists only in a manifest draws an empty box.
+ * `onespace/field_icons.py` holds the same list and is what enforces it.
+ */
+export const FIELD_ICONS = %(field_icons)s
+
 export const TAB_ICONS = %(tab_icons)s
 
 /** Which glyph a tab's own words earn, in order — first match wins. */
@@ -366,6 +375,9 @@ export function valueTheme(value, states = []) {
         "state_icon_words": _json.dumps(
             [[icon, list(words)] for icon, words in STATE_ICON_WORDS], indent=2),
         "tab_icons": _json.dumps(TAB_ICONS, indent=2),
+        "field_icons": _json.dumps(
+            sorted({row[2] for row in FIELD_TYPES.values()} | set(TAB_ICONS)),
+            indent=2),
         "activity_icons": _json.dumps(ACTIVITY_ICONS, indent=2, sort_keys=True),
         "default_activity_icon": DEFAULT_ACTIVITY_ICON,
         "notification_icons": _json.dumps(NOTIFICATION_ICONS, indent=2, sort_keys=True),

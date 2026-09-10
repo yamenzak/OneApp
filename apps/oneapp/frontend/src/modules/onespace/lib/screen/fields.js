@@ -550,6 +550,66 @@ export function valueIcon(value, states = []) {
  * nothing else — so this is how a form laid out by somebody who never heard of
  * OneSpace still gets a strip of tabs that reads as one.
  */
+/**
+ * Every glyph a field may wear: each fieldtype's own, plus the tab
+ * vocabulary a manifest may reach for when a type's icon says the wrong
+ * thing. Closed because Tailwind only emits CSS for the lucide names it saw
+ * in a source file — one that exists only in a manifest draws an empty box.
+ * `onespace/field_icons.py` holds the same list and is what enforces it.
+ */
+export const FIELD_ICONS = [
+  "lucide-activity",
+  "lucide-align-left",
+  "lucide-banknote",
+  "lucide-bell",
+  "lucide-braces",
+  "lucide-calculator",
+  "lucide-calendar",
+  "lucide-calendar-clock",
+  "lucide-clock",
+  "lucide-code",
+  "lucide-code-xml",
+  "lucide-file-text",
+  "lucide-hash",
+  "lucide-history",
+  "lucide-image",
+  "lucide-images",
+  "lucide-info",
+  "lucide-key-round",
+  "lucide-link",
+  "lucide-link-2",
+  "lucide-list",
+  "lucide-lock",
+  "lucide-mail",
+  "lucide-map-pin",
+  "lucide-message-circle",
+  "lucide-package",
+  "lucide-palette",
+  "lucide-panel-top",
+  "lucide-paperclip",
+  "lucide-percent",
+  "lucide-phone",
+  "lucide-pilcrow",
+  "lucide-plug",
+  "lucide-ruler",
+  "lucide-scan-barcode",
+  "lucide-settings",
+  "lucide-shapes",
+  "lucide-shield",
+  "lucide-signature",
+  "lucide-sliders",
+  "lucide-star",
+  "lucide-sticky-note",
+  "lucide-table",
+  "lucide-tags",
+  "lucide-text-cursor-input",
+  "lucide-timer",
+  "lucide-toggle-left",
+  "lucide-type",
+  "lucide-users",
+  "lucide-wallet"
+]
+
 export const TAB_ICONS = [
   "lucide-list",
   "lucide-link",

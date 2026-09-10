@@ -187,6 +187,12 @@ would offer a control the server then refuses.
 # fieldtype -> (control, cell, icon, editable)
 FIELD_TYPES = {fields}
 
+# Every glyph a field may wear: each type's own, plus the tab vocabulary a
+# manifest may reach for when a type's icon says the wrong thing. Closed
+# because Tailwind only emits CSS for the lucide names it saw in a source
+# file — a name that exists only in a manifest draws an empty box.
+FIELD_ICONS = {field_icons}
+
 LAYOUT_TYPES = {layout}
 
 DATA_OPTIONS = {data_options}
@@ -307,8 +313,13 @@ def write_fieldtypes():
     valid = {t: field_types.operators_for(t) for t in FIELD_TYPES}
     defaults = {t: field_types.default_operator(t) for t in FIELD_TYPES}
 
+    from app_icons import TAB_ICONS
+
     body = FIELDTYPES_MODULE.format(
         fields=pprint.pformat(FIELD_TYPES, width=92, sort_dicts=True),
+        field_icons=pprint.pformat(
+            tuple(sorted({row[2] for row in FIELD_TYPES.values()} | set(TAB_ICONS))),
+            width=88),
         layout=pprint.pformat(LAYOUT_TYPES, width=88),
         data_options=pprint.pformat(DATA_OPTIONS, width=88, sort_dicts=True),
         reserved=pprint.pformat(frozenset(reserved), width=88),

@@ -3,7 +3,9 @@
 import frappe
 import json
 from frappe import _
-from oneapp.onespace import collab, dashboard, docflow, fieldtypes, printing, showcase
+from oneapp.onespace import (
+	collab, dashboard, docflow, field_icons, fieldtypes, printing, showcase,
+)
 
 
 # Fetched on every screen and shown on none. `name` is how a record is opened
@@ -109,7 +111,11 @@ def _columns(meta, wanted: list[str]) -> list[dict]:
 			# The doctype's own answer to "does this belong in a list", which
 			# a child table's grid reads to pick its columns.
 			"in_list_view": int(getattr(df, "in_list_view", 0) or 0),
-			"icon": fieldtypes.icon_for(df.fieldtype),
+			# The fieldtype's glyph, unless a manifest named another for
+			# this field. One call, so the list header, the column picker,
+			# the record and the rail a document picks its tokens from all
+			# get the same answer — `onespace/field_icons.py`.
+			"icon": field_icons.icon_for(df.fieldtype, meta.name, df.fieldname),
 			# The rest of what the doctype already says about presentation, so
 			# nobody has to repeat it in a manifest.
 			"description": df.description or None,

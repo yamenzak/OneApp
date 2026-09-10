@@ -17,6 +17,7 @@
   "status_field",
   "view_types",
   "view_settings",
+  "field_icons",
   "tab_icons",
   "sec_view_query",
   "filters",
@@ -105,6 +106,13 @@
    "fieldname": "view_settings",
    "fieldtype": "Code",
    "label": "View Settings",
+   "options": "JSON"
+  },
+  {
+   "description": "Optional. `{\"status\": \"lucide-flag\"}` \u2014 a lucide name per fieldname, where the fieldtype's own icon says the wrong thing. Checked against the doctype like any other fieldname, and against the SPA's icon set: a name outside it emits no CSS and would draw an empty box.",
+   "fieldname": "field_icons",
+   "fieldtype": "Code",
+   "label": "Field Icons",
    "options": "JSON"
   },
   {

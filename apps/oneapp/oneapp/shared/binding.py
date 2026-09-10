@@ -350,7 +350,13 @@ def offer(doctype: str, levels: set[int] | None = None) -> list[dict]:
 	meta = frappe.get_meta(doctype)
 	allowed = levels
 
-	out = [{"fieldname": "name", "label": _("ID"), "fieldtype": "Data"}]
+	# The same glyph the record, the list header and the column picker draw,
+	# from the same call — `onespace/field_icons.py`. A rail that invented its
+	# own would be the fifth answer to one question.
+	from ..onespace import field_icons
+
+	out = [{"fieldname": "name", "label": _("ID"), "fieldtype": "Data",
+	        "icon": field_icons.icon_for("Data", doctype, "name")}]
 	for field in meta.fields:
 		if field.fieldtype in NEVER_BOUND or not field.fieldname:
 			continue
@@ -360,6 +366,7 @@ def offer(doctype: str, levels: set[int] | None = None) -> list[dict]:
 			"fieldname": field.fieldname,
 			"label": _(field.label or field.fieldname),
 			"fieldtype": field.fieldtype,
+			"icon": field_icons.icon_for(field.fieldtype, doctype, field.fieldname),
 		})
 	return out
 
@@ -391,6 +398,8 @@ def tables(doctype: str) -> list[dict]:
 	if not frappe.has_permission(doctype, "read"):
 		raise frappe.PermissionError(_("You cannot read {0}.").format(doctype))
 
+	from ..onespace import field_icons
+
 	# The parent's, and used for the child's columns too — a child table has
 	# no permissions of its own. See `offer`.
 	allowed = _readable_levels(doctype)
@@ -409,6 +418,7 @@ def tables(doctype: str) -> list[dict]:
 			"fieldname": field.fieldname,
 			"label": _(field.label or field.fieldname),
 			"child_doctype": field.options,
+			"icon": field_icons.icon_for(field.fieldtype, doctype, field.fieldname),
 			"columns": columns,
 			"default": _grid_columns(field.options, columns),
 		})

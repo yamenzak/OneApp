@@ -425,6 +425,56 @@ def test_a_declared_tab_icon_is_one_of_ours():
 	)
 
 
+def _field_icons() -> set:
+	"""The closed set a field icon may come from, read off the SPA."""
+	source = (ROOT / "apps/oneapp/frontend/src/modules/onespace/lib/screen/fields.js"
+	          ).read_text()
+	block = source[source.index("export const FIELD_ICONS"):]
+	return set(re.findall(r'"(lucide-[a-z0-9-]+)"', block[:block.index("]")]))
+
+
+def test_the_two_field_icon_sets_agree():
+	"""The browser reads one list and the server enforces another.
+
+	They are written by two generators from one source. A drift here is a
+	manifest the server accepts and the browser draws as an empty box.
+	"""
+	server = (ROOT / "apps/oneapp/oneapp/onespace/fieldtypes.py").read_text()
+	block = server[server.index("FIELD_ICONS = ("):]
+	held = set(re.findall(r"'(lucide-[a-z0-9-]+)'", block[:block.index(")")]))
+	assert held == _field_icons()
+
+
+def test_a_declared_field_icon_is_one_of_ours():
+	"""The manifest override, checked.
+
+	`field_icons` on a screen names an icon per fieldname — the escape hatch
+	for a field whose *type* earns the wrong glyph, `status` being a Select
+	the reader thinks of as a state. The server falls back to the fieldtype's
+	own when the name is outside the set, so a typo is quiet rather than
+	broken; this is what makes it loud for a manifest we ship.
+	"""
+	icons = _field_icons()
+	offenders = []
+	for path in sorted((ROOT / "apps").rglob("*.py")):
+		source = path.read_text()
+		if '"field_icons"' not in source:
+			continue
+		for match in re.finditer(r'"field_icons"\s*:\s*(\'\'\'|"""|")(.*?)\1', source, re.S):
+			try:
+				declared = json.loads(match.group(2))
+			except ValueError:
+				offenders.append(f"{path.name}: field_icons is not JSON")
+				continue
+			for fieldname, icon in (declared or {}).items():
+				if icon not in icons:
+					offenders.append(f"{path.name}: {fieldname} -> {icon!r}")
+	assert not offenders, (
+		"these declared field icons are outside the closed set, so the server "
+		"quietly falls back to the fieldtype's own: " + ", ".join(offenders)
+	)
+
+
 # --------------------------------------------------------------------------- #
 # Activity glyphs
 #

@@ -130,6 +130,37 @@ product does.
 
 RUA's is the worked example — see `docs/RUA.md`.
 
+### One glyph per field
+
+The small mark in front of a field's label is answered once, by
+`onespace/field_icons.py`, and every surface that draws a field reads that one
+answer: the record's own label, the list header's column, the column picker,
+a child table's grid, and the rail a document picks its tokens from. The
+fieldtype decides it — a Date is a calendar, a Currency is a wallet — and a
+screen's `field_icons` overrules it where a field means something its type
+does not say. `status` is a Select, and a list icon in front of it says "this
+is a dropdown" when what a reader wants is "this is where it stands".
+
+The override is keyed by **doctype**, not by screen. A screen declares it
+because that is where manifests are written and checked, but an icon chosen
+for Project's status is Project's status everywhere — including the surfaces
+that have no screen behind them at all, which is the whole reason it is not
+something the resolver passes down. Two screens over one doctype disagreeing
+is a manifest mistake and fails the build.
+
+The set is closed, and for a dull reason worth knowing: Tailwind emits CSS
+only for the lucide names it saw in a source file, so a name that exists only
+in a manifest draws an empty box. `FIELD_ICONS` — every fieldtype's own glyph
+plus the tab vocabulary — is written into both the SPA and the tenant app by
+the generators, and a name outside it falls back to the fieldtype's rather
+than drawing nothing.
+
+One place it deliberately does *not* appear: a table's column headers, list
+and child table alike. The glyph says what kind of field this is, which is a
+fact about the schema rather than about the data, and five near-identical
+grey marks across a header are five things to look past on the way to the
+words — `RecordTable.vue` says so where it draws them.
+
 ### A screen
 
 ```
@@ -143,6 +174,8 @@ order_by      modified desc
 view_types    list,report,board,grid,dashboard,calendar,gantt,tree   the first is the default
 view_settings {"board": {...}}    per type, what it needs beyond columns
 status_field  status              the badge, and the board's columns
+tab_icons     {"Terms": "lucide-shield"}   a tab whose words earn the wrong glyph
+field_icons   {"status": "lucide-activity"} a field whose *type* earns the wrong one
 naming_series ACME-INV-.YYYY.-.#####       a fixture, applied once
 print_formats [{...}]             a fixture, applied once
 component                         escape hatch

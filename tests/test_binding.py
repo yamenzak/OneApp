@@ -599,3 +599,24 @@ def test_more_records_than_a_workbook_is_cut(records, monkeypatch):
 	                              "fields": ["grand_total"]}
 	                             for n in range(records.MAX_RECORDS + 20)])
 	assert len(seen) == records.MAX_RECORDS
+
+
+# --------------------------------------------------------------------------- #
+# One glyph per field
+# --------------------------------------------------------------------------- #
+
+def test_a_field_carries_the_glyph_its_type_earns(binding):
+	"""The rail draws the same mark the record's own label does, from the
+	same call — a picker that invented its own would be the fifth answer to
+	one question."""
+	found = {one["fieldname"]: one["icon"] for one in binding.offer("Quotation")}
+	assert found["grand_total"] == "lucide-wallet"
+	assert found["party_name"] == "lucide-type"
+	assert found["name"] == "lucide-type"
+
+
+def test_a_child_table_and_its_columns_carry_one_too(binding):
+	table = binding.tables("Quotation")[0]
+	assert table["icon"] == "lucide-table"
+	assert {one["fieldname"]: one["icon"] for one in table["columns"]}["qty"] == \
+		"lucide-hash"

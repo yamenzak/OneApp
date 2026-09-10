@@ -118,7 +118,7 @@
                 <Skeleton v-for="n in 6" :key="n" class="h-6 w-full" />
               </div>
 
-              <div v-else class="flex flex-col">
+              <div v-else>
                 <p
                   v-if="!shownFields.length && !shownTables.length"
                   class="px-2 py-3 text-p-xs text-ink-gray-5"
@@ -126,29 +126,35 @@
                   {{ __('Nothing matched') }}
                 </p>
 
-                <Button
-                  v-for="one in shownFields"
-                  :key="one.fieldname"
-                  variant="ghost"
-                  size="sm"
-                  class="w-full !justify-start"
-                  :label="one.label"
-                  :disabled="!canWrite"
-                  :data-slot="`insert-${one.fieldname}`"
-                  @click="insertField(row, one)"
-                >
-                  <!-- What it says now, so the list is a preview rather than
-                       a schema. `ms-auto` because the label is flush left. -->
-                  <template #suffix>
-                    <span class="ms-auto shrink-0 text-p-xs text-ink-gray-4">
-                      {{ says(row, one) }}
-                    </span>
-                  </template>
-                </Button>
+                <!--
+                  Two to a row rather than one under another, and the reason
+                  is the length of the list: a real doctype offers ninety
+                  fields, and ninety full-width rows is a rail you scroll
+                  rather than read. Each carries its type's glyph — the same
+                  one the record's own label carries, from the same server
+                  answer — so the shape of the thing is legible before the
+                  word is: five calendars and a wallet.
+                -->
+                <div class="grid grid-cols-2 gap-0.5">
+                  <Button
+                    v-for="one in shownFields"
+                    :key="one.fieldname"
+                    variant="ghost"
+                    size="sm"
+                    class="min-w-0 !justify-start"
+                    :icon-left="one.icon"
+                    :label="one.label"
+                    :tooltip="tip(row, one)"
+                    :disabled="!canWrite"
+                    :data-slot="`insert-${one.fieldname}`"
+                    @click="insertField(row, one)"
+                  />
+                </div>
 
                 <!-- The blocks, under a rule of their own: inserting one puts
                      a real table in the prose, which is a different act from
-                     putting a phrase in a sentence. -->
+                     putting a phrase in a sentence. So a row each, full
+                     width, rather than in the grid above. -->
                 <template v-if="shownTables.length">
                   <p class="mt-2 px-2 pb-1 text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
                     {{ __('Tables') }}
@@ -159,7 +165,7 @@
                     variant="ghost"
                     size="sm"
                     class="w-full !justify-start"
-                    icon-left="lucide-table"
+                    :icon-left="one.icon || 'lucide-table'"
                     :label="one.label"
                     :disabled="!canWrite"
                     :data-slot="`insert-table-${one.fieldname}`"
@@ -334,12 +340,15 @@ function match(list) {
     || one.fieldname.toLowerCase().includes(asked))
 }
 
-/** What a field says right now, beside its name, so the list is a preview.
- *  Clipped, because a Long Text would push the field's own name off the rail
- *  and the preview is there to identify the field, not to be read. */
-function says(row, field) {
+/** The whole label, and what the field says now.
+ *
+ *  Two columns cost the room a preview used to sit in, and a truncated label
+ *  is the one thing a picker must not have — so both move into the tooltip.
+ *  The value only once something has resolved it: a field the prose does not
+ *  name yet has no answer, and "Grand Total — " reads as a bug. */
+function tip(row, field) {
   const text = said.value[at(row.key, field.fieldname)] || ''
-  return text.length > 18 ? `${text.slice(0, 17)}…` : text
+  return text ? `${field.label} — ${text}` : field.label
 }
 
 function toggle(row) {

@@ -91,6 +91,26 @@ doctype(
                       'card-shaped type keeps its own `card_fields`: a board '
                       'card sits under a heading naming the field it is '
                       'bucketed by and a grid card does not.'),
+        # The override, and only an override. Every field already gets a glyph
+        # from its *type* — a Date is a calendar, a Currency is a wallet —
+        # which is right nearly always and wrong exactly where a field means
+        # something its type does not say. `status` is a Select, and a list
+        # icon in front of it says "this is a dropdown" when what a reader
+        # wants is "this is where it stands".
+        #
+        # Read by every surface that draws the field, not only by this
+        # screen: `onespace/field_icons.py` keys the map by doctype, so an
+        # icon chosen here is that field's icon on the record, in the list
+        # header, in the column picker, on a child table's grid and in the
+        # rail a document picks its tokens from. Two screens over one doctype
+        # disagreeing is a manifest mistake and fails the build.
+        f("field_icons", "Code", options="JSON",
+          description='Optional. `{"status": "lucide-flag"}` — a lucide name '
+                      'per fieldname, where the fieldtype\'s own icon says '
+                      'the wrong thing. Checked against the doctype like any '
+                      'other fieldname, and against the SPA\'s icon set: a '
+                      'name outside it emits no CSS and would draw an empty '
+                      'box.'),
         # The override, and only an override. Every tab already gets a glyph
         # derived from its own label — Frappe has no icon property on a Tab
         # Break, and a doctype we do not own will never have a manifest entry —

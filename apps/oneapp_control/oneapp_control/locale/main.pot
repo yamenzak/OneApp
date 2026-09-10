@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneAdmin VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-10 16:32+0000\n"
-"PO-Revision-Date: 2026-09-10 16:32+0000\n"
+"POT-Creation-Date: 2026-09-10 17:23+0000\n"
+"PO-Revision-Date: 2026-09-10 17:23+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -1521,6 +1521,11 @@ msgstr ""
 msgid "Feature Key"
 msgstr ""
 
+#. Label of the field_icons (Code) field in DocType 'OneSpace Space Screen'
+#: oneapp_control/control_plane/doctype/onespace_space_screen/onespace_space_screen.json
+msgid "Field Icons"
+msgstr ""
+
 #. Label of the fields (Small Text) field in DocType 'OneSpace Space Screen'
 #: oneapp_control/control_plane/doctype/onespace_space_screen/onespace_space_screen.json
 msgid "Fields"
@@ -2680,6 +2685,12 @@ msgstr ""
 #. 'OneSpace Space Screen'
 #: oneapp_control/control_plane/doctype/onespace_space_screen/onespace_space_screen.json
 msgid "Optional. The screen's label in the singular, where trimming an `s` gets it wrong — People, Series, a label that is already singular."
+msgstr ""
+
+#. Description of the 'Field Icons' (Code) field in DocType 'OneSpace Space
+#. Screen'
+#: oneapp_control/control_plane/doctype/onespace_space_screen/onespace_space_screen.json
+msgid "Optional. `{\"status\": \"lucide-flag\"}` — a lucide name per fieldname, where the fieldtype's own icon says the wrong thing. Checked against the doctype like any other fieldname, and against the SPA's icon set: a name outside it emits no CSS and would draw an empty box."
 msgstr ""
 
 #. Label of the options_json (Code) field in DocType 'AI Model'
