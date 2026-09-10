@@ -3136,8 +3136,18 @@ function _setupGridInstance() {
       // now nothing surfaced number / text_length rejection — so "between 1
       // and 10" silently accepted any value. Skip the check for empty values
       // so the user can always clear a cell (matches Google Sheets).
+      //
+      // And skip it for a formula, which is the second thing this cannot
+      // check. What arrives here is the text somebody typed — `=B2*C2`, not
+      // 2000 — because the commit runs before the recompute, so a `number`
+      // rule reads a word and a `list` rule reads something that is in no
+      // list. Every formula in a validated column was refused. Google Sheets
+      // validates the *result*; this engine has no result yet at this point,
+      // and refusing every formula is worse than checking none — the result
+      // is checked where it lands, by `onesheet/rules.check` at the pull,
+      // which reads the computed slice.
       const trimmed = String(value ?? '').trim()
-      if (trimmed !== '') {
+      if (trimmed !== '' && !trimmed.startsWith('=')) {
         const v = validation.validate(id, value, writeSheet)
         // 'warn' rules let the value through but surface a transient notice;
         // 'reject' (default) blocks the edit and repaints the pre-edit value.

@@ -302,3 +302,45 @@ def test_a_child_with_nothing_worth_a_rule_seeds_no_validation(feed, stubbed):
 	assert "validation" not in seeded
 	# The headings are still the contract, whatever the columns hold.
 	assert "protection" in seeded
+
+
+# --------------------------------------------------------------------------- #
+# Formulas
+#
+# A cell in the block may be `=B2*C2`, `=Costs!D5` or `=SUM(...)`, and that is
+# the point of pricing in a grid rather than on a form. Two things follow, and
+# the second one cost a regression.
+# --------------------------------------------------------------------------- #
+
+def test_the_pull_reads_what_a_formula_came_to(rules, stubbed):
+	"""`feed._read` goes through `codec.values_map`, which is the computed
+	slice — so a rate of `=1000*2` arrives as 2000 and is checked as 2000.
+
+	Pinned as source rather than behaviour because the alternative is
+	building a workbook payload here, and what is worth guarding is the
+	choice of slice: reading `raw_map` would send `=1000*2` to a Currency
+	field, which stores zero."""
+	import inspect
+
+	from oneapp.onesheet import codec, reading
+
+	assert "values_map" in inspect.getsource(reading._read)
+	assert 'book.get("values")' in inspect.getsource(codec.values_map)
+
+
+def test_a_formula_that_came_to_an_error_is_refused(rules, stubbed):
+	"""`#REF!` in a rate column is the one thing worse than a wrong number,
+	because `feed.number` reads it as zero."""
+	stubbed.get_all = lambda doctype, **kw: ["WIDGET-1"]
+	found = rules.check("Quotation Item", COLUMNS,
+	                    [["WIDGET-1", 2, "#REF!", "Nos"]])
+	assert len(found) == 1 and "#REF!" in found[0]
+
+
+def test_a_formula_reaching_a_link_column_is_checked_as_its_answer(rules, stubbed):
+	"""A `=VLOOKUP(...)` that finds nothing comes to `#N/A`, which is not an
+	item and is named as one."""
+	stubbed.get_all = lambda doctype, **kw: ["WIDGET-1"]
+	found = rules.check("Quotation Item", COLUMNS,
+	                    [["#N/A", 2, 10, "Nos"]])
+	assert len(found) == 1 and "#N/A" in found[0]

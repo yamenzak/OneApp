@@ -80,7 +80,19 @@ props with the body in the default slot; `Popover`'s `#target`/`#body` are
 error at build time — a renamed prop is a menu that opens on "No options" and a
 dialog that opens empty.
 
-*Additions* — one, and it is four lines. `_flashProtected` shows the blocked
+*Additions* — two, and both are a line or two.
+
+`onCommit` skips data validation for a value beginning `=`. What arrives
+there is the text somebody typed, because the commit runs before the
+recompute — so a `number` rule read a word and a `list` rule read something
+in no list, and every formula in a validated column was refused. Google
+Sheets validates the result; this engine has no result at that point, and
+refusing every formula is worse than checking none. The result *is* checked
+where it lands: `onesheet/rules.check` reads the computed slice at the pull.
+Upstream never hit this because nothing upstream seeds a rule over a column
+people write formulas into.
+
+`_flashProtected` shows the blocked
 range's own `description` where it has one, falling back to their sentence
 where it does not. Upstream never writes a description, so upstream had
 nothing to show; `sheets/feed.py` writes one on the headings of a sheet that

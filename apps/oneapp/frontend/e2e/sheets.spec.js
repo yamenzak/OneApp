@@ -760,6 +760,19 @@ test('a sheet made from a child table protects its headings and knows what the c
     await grid(page).click({ position: { x: at('A2').x + 40, y: at('A2').y } })
     await expect(page.locator('.sn-dropdown-panel')).toBeVisible()
 
+    await page.keyboard.press('Escape')
+
+    // And a formula is allowed in a validated column, which is the whole
+    // point of pricing in a grid. The commit runs before the recompute, so
+    // what a rule would see is `=1000*2` — a word to a number rule, and
+    // nothing any list contains. Every formula here was refused until the
+    // rules stopped reading formula text; the *result* is what gets checked,
+    // at the pull, off the computed slice.
+    await type(page, 'C2', '=1000*2')
+    // A string, where the seeded literals come back as numbers: what the
+    // engine computed is what it stores, and it stores what it rendered.
+    await expectComputed(page, sheet.name, 'C2').toBe('2000')
+
     await clearFeeds(page, 'Quotation', quote)
     expectNoRealErrors(errors)
   })
