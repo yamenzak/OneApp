@@ -17,6 +17,7 @@ import frappe
 from frappe import _
 
 from ..onestorage import kinds
+from ..shared.binding import BOUND_FIELD
 
 #: One name for the flag, in `drive/kinds.py` beside the other columns this
 #: product adds to `File` — a sheet template and a document template are the
@@ -38,7 +39,11 @@ def listing() -> list[dict]:
             TEMPLATE_FIELD: 1,
             "custom_status": ["in", ["Active", "", None]],
         },
-        fields=["name", "file_name", "folder", "modified", "owner"],
+        # The record kind this template is for, if it is for one — the same
+        # column a document template carries, read by the picker so it can
+        # ask which record before making the workbook.
+        fields=["name", "file_name", "folder", "modified", "owner",
+                f"{BOUND_FIELD} as bound_doctype"],
         # Newest first, because the New menu shows six of these and
         # alphabetical order hides the one somebody just made behind five
         # they have not touched in a year.

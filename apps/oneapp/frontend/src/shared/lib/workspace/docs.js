@@ -63,6 +63,38 @@ export const docs = {
       silent: true, method: 'GET',
     }),
 
+  // --- the record a document is written about ------------------------------
+  // A field of that record, inside the prose: what the token says now, and
+  // the moment it stops asking. See `modules/onedoc/lib/recordField.js`.
+
+  // Ask the record again. Its own call rather than part of opening the
+  // document, because the whole point is asking a second time — it has been
+  // open for an hour and somebody wants to know whether the total moved.
+  docFields: (name) =>
+    callMethod('oneapp.onedoc.refresh', { name }, {
+      silent: true, method: 'GET',
+    }),
+
+  // Freeze every token, permanently. What a document about to be sent gets:
+  // a quotation the customer received is a fact about a day, not a view onto
+  // a record that has moved on since.
+  docSettleFields: (name) =>
+    callMethod('oneapp.onedoc.settle', { name }, { success: 'Fields fixed' }),
+
+  // Which record, for the dialog a bound template opens with. The server's
+  // own search, so what somebody is offered is what they could have opened.
+  bindableRecords: (doctype, query) =>
+    callMethod('oneapp.shared.binding.records', { doctype, query }, {
+      silent: true, method: 'GET',
+    }),
+
+  // What that doctype will answer — the picker behind Insert field. Narrowed
+  // on the server to fields this person may read; see `shared/binding.py`.
+  bindableFields: (doctype) =>
+    callMethod('oneapp.shared.binding.fields', { doctype }, {
+      silent: true, method: 'GET',
+    }),
+
   // The plain-text pair. A `.md` in the Drive is a real object, so these read
   // and write the file itself rather than a body row beside it.
   textOpen: (name) =>

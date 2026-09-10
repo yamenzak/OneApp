@@ -112,6 +112,13 @@ APPS = {
             # position as much as a rendering one.
             "maplibre-gl": "^5.0.0",
             "dompurify": "^3.2.6",
+            # The editor's own kit, named directly because the document editor
+            # declares a node of its own — the record field, which is not text
+            # but a fieldname rendered from the record the document is bound
+            # to (`modules/onedoc/lib/recordField.js`). It arrives with
+            # frappe-ui either way; declaring it says so, and pins the major
+            # the node's API is written against. MIT.
+            "@tiptap/core": "^3.30.5",
             "@iframe-resizer/child": "5.5.9",
             "@iframe-resizer/vue": "5.5.9",
         },

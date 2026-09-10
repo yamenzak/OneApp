@@ -96,6 +96,17 @@
             />
             <EditorTableMenu v-if="doc.can_write" :editor="instance" />
 
+            <!-- Only for a document written about a record. Most are prose
+                 about nothing and should not carry a strip saying so. -->
+            <FieldBar
+              v-if="bound.name"
+              :name="name"
+              :bound="bound"
+              :editor="instance"
+              :can-write="doc.can_write && !settings.locked"
+              @settled="refreshed"
+            />
+
             <!-- Paged, the scroller is a desk and the document is a stack
                  of sheets on it. Pageless, it is what it always was: prose in
                  the middle of the window with nothing behind it.
@@ -204,6 +215,16 @@
       @pick="fromTemplate"
     />
 
+    <!-- A template bound to a record kind is for *any* of them, so the one
+         thing it needs before it can be a document is which one. Asked here
+         and never again: after this the answer is the file's binding. -->
+    <RecordPicker
+      v-model="choosing"
+      :doctype="wanted?.bound_doctype || ''"
+      :said="__('The new document will be written about this record, and its fields will fill themselves in.')"
+      @pick="fromRecord"
+    />
+
     <!-- The Drive's rename, in the Drive's shape: one dialog, one field, one
          button. A document renamed here is renamed there, because they are the
          same `File`. -->
@@ -269,9 +290,12 @@ import {
 } from '@/ui'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
 import DocSettings from '@/modules/onedoc/components/DocSettings.vue'
+import FieldBar from '@/modules/onedoc/components/FieldBar.vue'
+import { RecordField } from '@/modules/onedoc/lib/recordField'
 import Outline from '@/modules/onedoc/components/Outline.vue'
 import VersionPanel from '@/modules/onespace/components/versions/VersionPanel.vue'
 import TemplatePicker from '@/modules/onestorage/components/TemplatePicker.vue'
+import RecordPicker from '@/shared/components/RecordPicker.vue'
 import BrandMark from '@/shared/components/brand/BrandMark.vue'
 import SpaceName from '@/shared/components/brand/SpaceName.vue'
 import { documentToolbar, pageClasses } from '@/modules/onedoc/components/toolbar'
@@ -295,8 +319,10 @@ const emit = defineEmits(['renamed', 'reload'])
 
 // The whole capability of the editor. RichTextKit is frappe-ui's article-grade
 // bundle, which is the right one for a document — the lighter CommentKit is
-// built for a box inside a form.
-const EXTENSIONS = [RichTextKit]
+// built for a box inside a form. Beside it, the one node that is ours: a
+// field of the record this document is written about, which is a name rather
+// than text and is rendered from the record on every read.
+const EXTENSIONS = [RichTextKit, RecordField]
 
 //: How long after the last keystroke a save goes out. Long enough that typing
 //: a sentence is one save; short enough that closing the tab mid-thought loses
@@ -306,6 +332,25 @@ const QUIET_MS = 1200
 const title = ref(props.doc.title || '')
 const content = ref(props.doc.content ? JSON.parse(props.doc.content) : null)
 const settings = ref({ ...(props.doc.settings || {}) })
+
+// The record this document is written about, if it is written about one.
+// `shared/binding.py`: for a document that is its attachment, so this is a
+// fact about the File rather than anything stored in the prose.
+const bound = ref({ ...(props.doc.bound || {}) })
+
+/**
+ * The document after its tokens were fixed — no longer names, now words.
+ *
+ * Taken from the server's answer rather than patched here, because freezing
+ * changes every token at once and the JSON it wrote is what is on disk. Not
+ * dirty afterwards: the save that produced it has already landed, and marking
+ * it otherwise would send the same body back a second later.
+ */
+function refreshed(next) {
+  if (!next) return
+  content.value = JSON.parse(next)
+  dirty.value = false
+}
 
 const editor = ref(null)
 const revision = ref(0)
@@ -500,10 +545,34 @@ watch(picking, (open) => {
     .catch(() => { templates.value = [] })
 })
 
+// The template somebody picked that still needs a record. Held rather than
+// passed through, because the answer arrives from a second dialog.
+const wanted = ref(null)
+const choosing = ref(false)
+
 async function fromTemplate(row) {
+  // A bound template cannot be made yet: a covering letter for no particular
+  // quotation has nothing to fill in, and binding it afterwards would mean a
+  // document that opened blank and corrected itself.
+  if (row.bound_doctype) {
+    wanted.value = row
+    choosing.value = true
+    return
+  }
+  await start(row, {})
+}
+
+async function fromRecord({ doctype, name }) {
+  const row = wanted.value
+  wanted.value = null
+  if (row) await start(row, { doctype, docname: name })
+}
+
+async function start(row, about) {
   const made = await workspace.docMake({
     template: row.name,
     title: __('{0} copy', [row.file_name]),
+    ...about,
   })
   router.push({ name: 'Doc', params: { name: made.name } })
 }
@@ -709,6 +778,7 @@ const menu = computed(() => [
 watch(() => props.doc, (next) => {
   title.value = next.title || ''
   isTemplate.value = !!next.is_template
+  bound.value = { ...(next.bound || {}) }
   content.value = next.content ? JSON.parse(next.content) : null
   settings.value = { ...(next.settings || {}) }
   dirty.value = false

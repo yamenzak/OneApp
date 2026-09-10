@@ -168,6 +168,50 @@ def fields(doctype: str) -> list[dict]:
 # What the record says now
 # --------------------------------------------------------------------------- #
 
+#: How many records the "which one?" picker offers at a time. A person is
+#: choosing the quotation they have in mind, not browsing — the list screen is
+#: where browsing happens, with paging and saved views.
+PICKER_ROWS = 20
+
+
+@frappe.whitelist(methods=["GET"])
+def records(doctype: str, query: str = "") -> list[dict]:
+	"""Which record, for the picker that appears when a bound template is used.
+
+	`get_list` and not `get_all`, so this is the caller's own permissions —
+	including User Permissions, which is the difference between a picker that
+	offers the three projects somebody works on and one that offers all four
+	hundred. A doctype they cannot read answers nothing rather than raising:
+	a template for a record kind somebody has no business seeing should be a
+	picker with nothing in it, not a page that fails to open.
+
+	Searched on the id and on the doctype's own title field, which is what
+	somebody has in mind — `SAL-QTN-2025-00005` is not what anybody remembers
+	about the Halloway job.
+	"""
+	if not doctype or not frappe.db.exists("DocType", doctype):
+		return []
+	if not frappe.has_permission(doctype, "read"):
+		return []
+
+	meta = frappe.get_meta(doctype)
+	title = meta.get_title_field() if meta.title_field else ""
+	fields = ["name"] + ([title] if title and title != "name" else [])
+
+	asked = (query or "").strip()[:140]
+	or_filters = {}
+	if asked:
+		or_filters = {one: ["like", f"%{asked}%"] for one in fields}
+
+	rows = frappe.get_list(
+		doctype, fields=fields, or_filters=or_filters,
+		order_by="modified desc", limit_page_length=PICKER_ROWS,
+	)
+	return [{"name": row["name"],
+	         "title": (row.get(title) if title else "") or row["name"]}
+	        for row in rows]
+
+
 @frappe.whitelist(methods=["GET"])
 def resolve(doctype: str, name: str, wanted: str | list | None = None) -> dict:
 	"""What those fields say, as both a number and as text.
