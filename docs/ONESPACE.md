@@ -1674,24 +1674,27 @@ Worth knowing before designing around it.
   one.
 * **User Permission.** Enforced on every path, and there is nowhere to grant
   one.
-* **Reminders.** A calendar draws what is there; "tell me the morning before"
-  is a scheduled job and a notification rather than a drawing. The alert rules
-  are the machinery it would hang off, and nothing points them at a date field
-  yet. The compliance register has its own, because a licence expiring is a
-  fact about the licence rather than about a view.
-* **The map view**, which a manifest may already declare — a type nothing can
-  draw is dropped rather than refused, so the screen renders as a list and
-  gains the map without a manifest edit. The calendar shipped and is below.
-* **Free-text search across a whole doctype**, drag-to-resize a column, and
-  filtering on a child table (Frappe needs a four-part filter there and a
-  three-part one names a column that is not present).
+* **Free-text search across a whole doctype.** The filter area asks a field a
+  question; there is no one box that asks every field at once. The link
+  picker's `_search` is the nearest thing and is bounded to one target.
+* **Drag-to-resize a column.** A width is a number typed into the column
+  picker, which is a setting rather than a gesture. The model already carries
+  it per column and it persists with the view, so what is missing is the
+  handle and nothing behind it.
+* **Filtering on a child table.** Frappe needs a four-part filter there and a
+  three-part one names a column that is not present.
 
-Two things were on this list and are built, and they are named here because
+Four things were on this list and are built, and they are named here because
 designing around their absence would now be designing around nothing:
 **notification rules and email templates** (`alerts.py` with its settings
-panel, and `email/templates.py` with its own) and **data import**
-(`onespace/importer/`, which maps another site's records across with a plan,
-a dry run and a report).
+panel, and `email/templates.py` with its own), **data import**
+(`onespace/importer/`, which maps another site's records across with a plan, a
+dry run and a report), **date-relative reminders** (`alerts.py` again — a rule
+counts a bounded number of days before or after any Date or Datetime field on
+the doctype, and the scheduler walks every dated rule daily; the compliance
+register keeps its own because a licence expiring is a fact about the licence
+rather than about a view), and **the map view** (`MapBody.vue` over
+Geolocation, with OneMobility's Network screen as the worked example).
 
 * **A write the assistant can make.** Every tool in `chat/toolbox.py` reads.
   The loop in `ai/conversation.py` would carry a write perfectly well — that is

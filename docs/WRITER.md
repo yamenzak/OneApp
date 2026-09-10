@@ -156,8 +156,11 @@ the other. The editor's menu is where a document becomes one.
 
 ## 8. What is not built yet
 
-* **Live collaboration**, per §3.
-* **Anchored comments**, per §3.
-* **A document as a print format.** A quotation's covering letter is prose with
-  fields in it, and the two halves — a document, and Frappe's Jinja print
-  formats — do not meet yet.
+* **Live collaboration**, per §3. A deliberate park, not a gap: it is Yjs and a
+  Node process, which changes what a shard is.
+* **Anchored comments**, per §3. Parked with it, for the same reason.
+* **A document as a print format.** The only one of the three that is a gap
+  rather than a decision. A document prints *itself* — `onedoc/export.py`
+  renders the page the browser prints — but it cannot stand as the print format
+  of a record. A quotation's covering letter is prose with fields in it, and the
+  two halves, a document and Frappe's Jinja print formats, do not meet yet.

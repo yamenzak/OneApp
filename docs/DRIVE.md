@@ -229,7 +229,11 @@ Two shapes the reader had to change to hold Stage 5:
   heart that appears on `group-hover` does not exist on half the devices this
   runs on.
 
-### Stage 1 — A file is somewhere, not just attached to something
+**Where this has got to.** Stages 1 to 6 are built and live. Stage 7 is still
+deliberately absent. The stages below are the plan as written, ticked where the
+code caught up with it.
+
+### Stage 1 — A file is somewhere, not just attached to something  ✅
 
 Folders, on `File`'s own `folder` field, which the framework already has and
 Frappe's desk already uses. Custom fields to match Drive's, minus the ones its
@@ -250,7 +254,7 @@ has `attached_to_doctype`; a file in a folder has `folder`; a file can have both
 and that is the whole trick — **the Drive and the record's Files tab are two
 queries over one table.**
 
-### Stage 2 — The reader
+### Stage 2 — The reader  ✅
 
 `pages/Drive.vue` and `components/drive/`. The layout is the one every file
 manager has had for thirty years and the reason to keep it is that nobody has to
@@ -270,7 +274,7 @@ Server side, one module — `onestorage.py` — with the reader shaped like
 `mailbox`'s: a scope, a query, and the actions. `sync.granted_doctypes()` has no
 part in it; a file is not a doctype screen.
 
-### Stage 3 — Preview, and the link that outlives a session
+### Stage 3 — Preview, and the link that outlives a session  ✅
 
 Six previewers, the same six Drive has, because they are the six that cover a
 workspace's files: image, PDF, video, audio, text, and a fallback that offers the
@@ -283,7 +287,7 @@ expiry, and a secret in the URL. Not `is_private = 0` — that is a site-wide fl
 with no expiry and no audit, and "share this one drawing with the consultant
 until Friday" is the actual request.
 
-### Stage 4 — Every attach surface becomes a picker
+### Stage 4 — Every attach surface becomes a picker  ✅
 
 The stage the request is really about, and it is small once Stage 2 exists.
 
@@ -302,7 +306,7 @@ path and one place files end up. It replaces:
 `attached_to_doctype`/`attached_to_name` — Drive's own `get_attachments` is the
 same idea, and it is the proof that the two surfaces are one.
 
-### Stage 5 — Sharing, favourites, recents, trash
+### Stage 5 — Sharing, favourites, recents, trash  ✅
 
 * **Sharing** is `DocShare` on the `File`, drawn with the share control the
   record surface already has. A folder shared is every file under it, resolved by
@@ -317,11 +321,11 @@ same idea, and it is the proof that the two surfaces are one.
   days and deletes the R2 object then rather than on the click. A deleted
   attachment coming back is the single most-missed thing on this list.
 
-### Stage 6 — The storage screen
+### Stage 6 — The storage screen  ✅
 
-The quota is enforced and invisible. A screen in Settings with what is stored,
-by kind, by biggest, by folder, and what the plan allows — reading
-`storage/quota.py`, which already computes all of it.
+Built, as `settings/StorageSettings.vue` over `storage/quota.py`: what is
+stored, by kind and by biggest, and what the plan allows. The quota was
+enforced and invisible; it is enforced and readable now.
 
 ### Stage 7 — What we deliberately do not take
 

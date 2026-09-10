@@ -10,6 +10,14 @@ Read `docs/ONEADMIN.md` §4 for the console as it stands and
 document is the part that decides *who does the enabling, and where they stand
 when they do it*.
 
+**Where this has got to.** Built, all five stages. The marketplace screen, the
+claim codes and the visible install are `entitlements/registry.py` with
+`Marketplace.vue` and `Space Claim Code`; the split §2 argues for has happened,
+so People, Roles and Domain are tabs in the workspace's own settings dialog and
+the account Space is down to the four screens that are facts about an account —
+Overview, Apps, Billing, Plan. What follows is the argument, kept because it is
+why the shape is what it is.
+
 ---
 
 ## 1. The short answers
