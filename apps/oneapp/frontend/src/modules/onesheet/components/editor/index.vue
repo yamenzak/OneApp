@@ -1921,14 +1921,37 @@ async function doSaveTabAsTemplate(tabName) {
  * not the cells that name the record — a total three formulas downstream
  * moved too, and working out which is what the recompute already does.
  */
+//: A cell worth re-resolving for. Cheap enough to run on every commit; the
+//: fetch behind it is debounced and answers nothing when nothing moved.
+const RECORD_CALL = /\bRECORD\s*\(/i
+
+//: Long enough that filling a column of them is one request rather than ten.
+const RECORD_PAUSE = 350
+let recordTimer = null
+
+/** `refreshRecords`, after the typing stops. */
+function askRecords() {
+  window.clearTimeout(recordTimer)
+  recordTimer = window.setTimeout(() => refreshRecords(), RECORD_PAUSE)
+}
+
 async function refreshRecords(bound) {
   if (bound !== undefined) setOwnRecord(bound)
   const moved = await resolveRecordFields(props.id, sheet.getAllRaw())
-  if (moved) _repopulateGrid()
-  return moved
+  if (!moved) return false
+  // The whole memo, not just the `RECORD` cells. `RECORD` is volatile so it
+  // recomputes on its own, but `=B3*0.05` is not: it was worked out while B3
+  // still said `#N/A` and would keep saying so. Everything downstream of a
+  // record is downstream of this answer.
+  sheet.invalidateMemo()
+  _repopulateGrid()
+  return true
 }
 
-onBeforeUnmount(() => forgetRecordFields())
+onBeforeUnmount(() => {
+  window.clearTimeout(recordTimer)
+  forgetRecordFields()
+})
 
 defineExpose({ insertTemplate, refreshRecords })
 
@@ -3076,6 +3099,10 @@ function _setupGridInstance() {
 
       const before = sheet.getCell(id, writeSheet)
       sheet.setCell(id, value, writeSheet)
+      // A cell that names a record has to be asked about, or it says `#N/A`
+      // until somebody presses Refresh — which is a formula that does not
+      // work when you type it. OneSpace's; see `services/recordFields.js`.
+      if (RECORD_CALL.test(value) || RECORD_CALL.test(before || '')) askRecords()
       if (writeSheet !== sheet.getCurrentSheet()) {
         switchSheet(writeSheet, { preserveEdit: true })
       }

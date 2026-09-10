@@ -73,7 +73,7 @@ const props = defineProps({
   canWrite: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['settled'])
+const emit = defineEmits(['settled', 'patching', 'patched'])
 
 const asking = ref(false)
 const listing = ref(false)
@@ -98,7 +98,14 @@ async function refresh() {
     // What is on screen, not what is on disk — the save is debounced, and a
     // field somebody just inserted is only in the editor.
     const answer = await workspace.docFields(props.name, namedFields(props.editor))
+    // Bracketed, and the two events have to stay in the same tick: patching
+    // the tokens is a ProseMirror transaction, the editor calls that a
+    // change, and a change starts the save loop. Opening a bound document
+    // would then write it — a new body, a new version, on every open, none
+    // of it anything a person did.
+    emit('patching')
     applyRecordFields(props.editor, answer?.fields || {})
+    emit('patched')
     at.value = new Date()
   } finally {
     asking.value = false

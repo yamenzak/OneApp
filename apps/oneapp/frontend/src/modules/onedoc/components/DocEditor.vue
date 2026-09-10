@@ -105,6 +105,8 @@
               :editor="instance"
               :can-write="doc.can_write && !settings.locked"
               @settled="refreshed"
+              @patching="wasDirty = dirty"
+              @patched="dirty = wasDirty"
             />
 
             <!-- Paged, the scroller is a desk and the document is a stack
@@ -332,6 +334,11 @@ const QUIET_MS = 1200
 const title = ref(props.doc.title || '')
 const content = ref(props.doc.content ? JSON.parse(props.doc.content) : null)
 const settings = ref({ ...(props.doc.settings || {}) })
+
+// Whether the document was unsaved before the tokens were patched. The two
+// events around the patch arrive in one tick, so a keystroke cannot land
+// between them and be forgotten. See `FieldBar.vue`.
+const wasDirty = ref(false)
 
 // The record this document is written about, if it is written about one.
 // `shared/binding.py`: for a document that is its attachment, so this is a
