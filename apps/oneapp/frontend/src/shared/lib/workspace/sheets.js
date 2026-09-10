@@ -86,6 +86,25 @@ export const sheets = {
       silent: true, method: 'GET',
     }),
 
+  // --- a record a workbook reads ------------------------------------------
+  // The other direction from `sheetPull`: `bound_to` says which table this
+  // sheet *feeds*, these say which record it *reads*. See `onesheet/records.py`.
+
+  // Every record the workbook's formulas name, in one request. One call and
+  // not one per cell — a schedule of forty `RECORD()` rows would otherwise be
+  // forty round trips on every open.
+  sheetRecordFields: (name, asks) =>
+    callMethod('oneapp.onesheet.record_fields', {
+      sheet: name, asks: JSON.stringify(asks || []),
+    }, { silent: true }),
+
+  // Which record this workbook is about, so the one-argument form of
+  // `RECORD()` has something to mean.
+  sheetBindRecord: (name, doctype, record) =>
+    callMethod('oneapp.onesheet.bind_record', {
+      sheet: name, doctype, name: record,
+    }, { silent: true }),
+
   sheetPull: (name, params) =>
     callMethod('oneapp.onesheet.pull', { sheet: name, ...params }, {
       success: 'Filled from the sheet',

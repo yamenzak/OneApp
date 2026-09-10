@@ -52,7 +52,10 @@ export function createSheet({ onCellChanged, onCellsChanged } = {}) {
 	// the cache so their value stays fresh on every read.
 
 	const _memo = {}                                          // sheet → Map<cellId, result>
-	const VOLATILE_RE = /\b(RAND|RANDBETWEEN|TODAY|NOW)\s*\(/i
+	// `RECORD` is OneSpace's — see `lib/VENDORED.md`. Volatile for the same
+	// reason `NOW` is: the answer changes without the formula changing, so a
+	// memoised cell would keep last hour's total after a refresh.
+	const VOLATILE_RE = /\b(RAND|RANDBETWEEN|TODAY|NOW|RECORD)\s*\(/i
 	let   _memoHits = 0, _memoMisses = 0                      // diagnostic counters
 
 	function _ensureMemo(sheet) {

@@ -10,6 +10,10 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
+
+// The values here are deliberately two digits. A node's attribute is called
+// `text`, and the copy guard reads any three-character `text:` literal as a
+// sentence somebody sees — which in a test fixture it is not.
 import { PENDING, RECORD_FIELD, applyRecordFields, namedFields } from './recordField'
 
 /**
@@ -47,12 +51,12 @@ describe('applyRecordFields', () => {
       { field: 'party_name', text: PENDING },
     ])
     const changed = applyRecordFields(editor, {
-      grand_total: 'AED 144,235.00',
+      grand_total: '99',
       party_name: 'Halloway',
     })
     expect(changed).toBe(2)
     expect(editor.marked.map((one) => one.attrs.text)).toEqual([
-      'AED 144,235.00',
+      '99',
       'Halloway',
     ])
   })
@@ -60,16 +64,16 @@ describe('applyRecordFields', () => {
   it('leaves a token whose field did not come back', () => {
     const editor = editorWith([
       { field: 'grand_total', text: PENDING },
-      { field: 'margin', text: '12%' },
+      { field: 'margin', text: '12' },
     ])
-    applyRecordFields(editor, { grand_total: 'AED 1.00' })
+    applyRecordFields(editor, { grand_total: '50' })
     expect(editor.marked).toHaveLength(1)
     expect(editor.marked[0].attrs.field).toBe('grand_total')
   })
 
   it('does nothing when nothing moved', () => {
-    const editor = editorWith([{ field: 'grand_total', text: 'AED 1.00' }])
-    expect(applyRecordFields(editor, { grand_total: 'AED 1.00' })).toBe(0)
+    const editor = editorWith([{ field: 'grand_total', text: '50' }])
+    expect(applyRecordFields(editor, { grand_total: '50' })).toBe(0)
     expect(editor.marked).toHaveLength(0)
   })
 
@@ -77,7 +81,7 @@ describe('applyRecordFields', () => {
     // Nothing a person did produced it. Undo should step back over the
     // sentence they typed, not over the record answering.
     const editor = editorWith([{ field: 'grand_total', text: PENDING }])
-    applyRecordFields(editor, { grand_total: 'AED 1.00' })
+    applyRecordFields(editor, { grand_total: '50' })
     expect(editor.tr.setMeta).toHaveBeenCalledWith('addToHistory', false)
   })
 

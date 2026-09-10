@@ -1248,6 +1248,8 @@ import { computeFillDown, computeFillRight } from '@/modules/onesheet/lib/engine
 import { detectSeries }                       from '@/modules/onesheet/lib/engine/patterns/index.js'
 import { adjustFormula }                    from '@/modules/onesheet/lib/engine/formula-adjust.js'
 import { createSheet }         from '@/modules/onesheet/lib/engine/sheet.js'
+import { forgetRecordFields, resolveRecordFields, setOwnRecord }
+  from '@/modules/onesheet/lib/services/recordFields.js'
 import { createHistory }       from '@/modules/onesheet/lib/engine/history.js'
 import { createFormatsEngine } from '@/modules/onesheet/lib/engine/formats.js'
 import { formatScope }         from '@/modules/onesheet/lib/engine/format-scope.js'
@@ -1907,7 +1909,28 @@ async function doSaveTabAsTemplate(tabName) {
   notifySuccess(`"${tabName}" is a template now.`)
 }
 
-defineExpose({ insertTemplate })
+/**
+ * Ask the records this workbook names, and redraw if anything moved.
+ *
+ * OneSpace's, not upstream's — `RECORD()` is ours, and the engine reads its
+ * answers out of a cache rather than fetching (`lib/services/recordFields.js`
+ * says why it cannot fetch). Called when the workbook opens and when the host
+ * asks; a workbook naming no records asks nothing and returns false.
+ *
+ * A full repopulate, because `RECORD` is volatile: the cells that moved are
+ * not the cells that name the record — a total three formulas downstream
+ * moved too, and working out which is what the recompute already does.
+ */
+async function refreshRecords(bound) {
+  if (bound !== undefined) setOwnRecord(bound)
+  const moved = await resolveRecordFields(props.id, sheet.getAllRaw())
+  if (moved) _repopulateGrid()
+  return moved
+}
+
+onBeforeUnmount(() => forgetRecordFields())
+
+defineExpose({ insertTemplate, refreshRecords })
 
 const { exportCSV, exportXLSX, importCSV, importXLSX } = useExportImport({
   getSheet:        () => sheet,
@@ -3230,6 +3253,11 @@ async function _loadInitialData() {
   syncFlags()
   if (props.id && props.id !== 'new') {
     await loadSheet(props.id)
+    // Once the workbook is in memory, because that is what says which
+    // records it names. Not awaited: a workbook naming none does nothing
+    // here, and one that does should not hold the grid back for a round
+    // trip — the cells say `#N/A` until the answer lands, which is honest.
+    refreshRecords()
     // sheet.restore() now fires onCellsChanged → _repopulateGrid() as a
     // single bulk pass, so the explicit call here was duplicating work
     // (parseCellId + grid.setCell × every cell, on top of the per-cell

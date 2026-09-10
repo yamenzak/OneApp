@@ -215,7 +215,37 @@ function makeCriteriaTest(c) {
 }
 
 // ─── Built-in functions ───────────────────────────────────────────────────────
+/*
+ * A field of a record, in a cell. OneSpace's, not upstream's — see
+ * `lib/VENDORED.md`, "What we changed".
+ *
+ * The engine is synchronous and must stay that way, so this reads a resolver
+ * somebody else keeps filled: `services/recordFields.js` collects every
+ * record a workbook names, fetches them in one request and recomputes. A
+ * miss is `#N/A`, which is the right answer twice — before the fetch comes
+ * back, and for a record this person may not read.
+ *
+ * Module-level rather than threaded through `evaluate`, and that is not a
+ * shortcut: the cache is keyed by record, so two workbooks open on the same
+ * quotation want the same answer, and the alternative touches two vendored
+ * files instead of one.
+ */
+let _recordResolver = null
+
+/** Give the engine somewhere to read record fields from. */
+export function setRecordResolver(fn) { _recordResolver = fn }
+
 const FUNCTIONS = {
+	// RECORD("grand_total")                        the sheet's own record
+	// RECORD("Quotation", "SAL-QTN-0005", "qty")   a record it names
+	RECORD: args => {
+		if (!_recordResolver) return '#N/A'
+		const said = args.length >= 3
+			? _recordResolver(String(args[0]), String(args[1]), String(args[2]))
+			: _recordResolver('', '', String(args[0] ?? ''))
+		return said === undefined || said === null ? '#N/A' : said
+	},
+
 	SUM:     args => flatten(args).reduce((s,v)=>isErr(v)?s:s+toNum(v), 0),
 	AVERAGE: args => {
 		const vals = flatten(args).filter(v=>!isErr(v)&&v!==''&&v!==null)
@@ -1179,6 +1209,7 @@ const FN_HINTS = {
 	ROW:'([reference])', COLUMN:'([reference])', ROWS:'(array)', COLUMNS:'(array)',
 	LARGE:'(array, k)', SMALL:'(array, k)',
 	SPARKLINE:'(data_range, [type], [color])',
+	RECORD:'([doctype], [name], fieldname)',
 }
 
 export function getFunctionNames() { return _fnNames }

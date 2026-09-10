@@ -26,10 +26,30 @@ imports anything outside this tree — is the only way to have them.
 
 ## What we changed
 
-**Nothing inside `engine/`, `canvas/` or `utils/` except the header block.**
-That is deliberate: their own unit suite comes with them and runs unmodified
-(`yarn test`), so an upstream fix can be pulled in by re-copying a file rather
-than by re-deriving a patch.
+**Nothing inside `canvas/` or `utils/` except the header block, and one thing
+inside `engine/`.** The rule is deliberate: their own unit suite comes with
+them and runs unmodified (`yarn test`), so an upstream fix can be pulled in by
+re-copying a file rather than by re-deriving a patch.
+
+The exception is `RECORD()` — a cell that reads a field off a record
+(`docs/SHEETS.md`, `oneapp/onesheet/records.py`). It is two hunks:
+
+| File | What |
+|---|---|
+| `engine/formula.js` | A `RECORD` entry in `FUNCTIONS`, its hint, and `setRecordResolver` — a module-level hook the function reads through. |
+| `engine/sheet.js` | `RECORD` added to `VOLATILE_RE`, so a cell reading a record is not memoised across a refresh. |
+
+Both are additive: nothing upstream behaves differently, and re-copying
+either file loses the feature rather than breaking the file. The hook is
+module-level rather than a seventh parameter threaded through `evaluate` and
+`createParser` because the cache behind it is keyed by *record* — two
+workbooks open on the same quotation want the same number — and because the
+parameter would have touched both files far more deeply than this does.
+
+The resolver itself is ours and is not in `engine/`:
+`services/recordFields.js`. It exists because the engine is synchronous and
+must stay that way; it collects every record a workbook names, fetches them
+in one request, and recomputes once.
 
 **The editor is modified**, and every change is one of three kinds.
 
