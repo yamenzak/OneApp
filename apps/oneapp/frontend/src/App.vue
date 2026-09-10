@@ -1,5 +1,20 @@
 <template>
   <FrappeUIProvider>
+    <!--
+      A page somebody reached with a link and no account.
+
+      Ahead of everything, and outside the shell, because the shell is the
+      workspace: a rail of spaces, a sidebar, a settings dialog, an assistant
+      and a notification feed, every one of which needs a session this reader
+      does not have. What they get instead is the file and nothing around it,
+      which is also all they were given.
+
+      `meta.public` is the only route flag that reaches this far up; the
+      router's guard reads the same one to let the navigation happen at all.
+    -->
+    <router-view v-if="$route.meta.public" />
+
+    <template v-else>
     <AppShell
       v-if="session.loaded && session.isLoggedIn"
       :scroll="false"
@@ -114,6 +129,7 @@
       half are asked separately.
     -->
     <LegalGate v-if="session.isLoggedIn" />
+    </template>
   </FrappeUIProvider>
 </template>
 

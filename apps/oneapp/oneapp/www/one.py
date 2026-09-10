@@ -9,8 +9,17 @@ from oneapp.onespace.ai import settings as ai_settings
 no_cache = 1
 
 
+# The one path below /one a stranger is allowed to reach. Every other screen
+# here is a window onto a workspace they have no account in, so the framework's
+# own answer — go and sign in — is the right one. A shared link is not: the
+# secret in the URL *is* the credential, and sending its holder to a sign-in
+# page they cannot pass sends them nowhere. See `onestorage/linked.py`.
+LINK_PREFIX = "/one/link/"
+
+
 def get_context(context):
-	if frappe.session.user == "Guest":
+	guest = frappe.session.user == "Guest"
+	if guest and not (frappe.request and frappe.request.path.startswith(LINK_PREFIX)):
 		frappe.local.flags.redirect_location = f"/login?redirect-to={frappe.request.path}"
 		raise frappe.Redirect
 
@@ -40,24 +49,32 @@ def get_context(context):
 		# wanted before first paint — a favicon that arrives after a round trip
 		# is a tab that visibly changes. See `onespace/branding.py`.
 		"brand": branding.boot(),
+		# Which language to draw in. `frappe.local.lang` is already the answer
+		# the framework worked out for this request — the reader's own if they
+		# set one, the workspace's otherwise — so this is that answer handed
+		# forward rather than a second guess at it. Before first paint because
+		# Arabic is not a repaint, it is the layout running the other way. A
+		# guest gets it too: the workspace's own language is the one its link
+		# bar should be reading in.
+		"lang": frappe.local.lang or "en",
+	}
+
+	if not guest:
+		# Everything below describes the workspace, and somebody holding a link
+		# is not in one. `Linked.vue` draws a single file: it asks for no
+		# assistant and no map.
 		# Who the assistant is. Here rather than on the AI settings resource
 		# because the chat rail, the panel header and the breadcrumb all name it
 		# before anything is fetched — and a header that says "Assistant" for a
 		# moment and then says "Rua" is the same visible flicker the favicon
 		# had. See `onespace/ai/settings.py`.
-		"assistant": ai_settings.identity(),
-		# Which language to draw in. `frappe.local.lang` is already the answer
-		# the framework worked out for this request — the reader's own if they
-		# set one, the workspace's otherwise — so this is that answer handed
-		# forward rather than a second guess at it. Before first paint because
-		# Arabic is not a repaint, it is the layout running the other way.
-		"lang": frappe.local.lang or "en",
+		context.boot["assistant"] = ai_settings.identity()
 		# Where a map gets its ground: `{ style, tiles, dark, attribution }`.
 		# A deployment fact rather than a workspace's, so it rides the boot
 		# payload rather than a screen's — every map surface reads the same
 		# answer and an air-gapped install changes it in one place. See
 		# `onespace/basemap.py`.
-		"basemap": basemap.boot(),
-	}
+		context.boot["basemap"] = basemap.boot()
+
 	context.no_cache = 1
 	return context

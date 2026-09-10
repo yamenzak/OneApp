@@ -20,9 +20,19 @@
 
 import { encodeForUpload, isDecompressionSupported, decodeFromDownload } from '@/modules/onesheet/lib/utils/compress.js'
 import { packSheet, packSheetChunked, unpackSheet, boundsOf } from '@/modules/onesheet/lib/utils/sheet-codec.js'
+import { linkSecret } from '@/shared/lib/live/link'
 
 const GET = 'oneapp.onesheet.get_sheet'
 const SAVE = 'oneapp.onesheet.save_sheet'
+
+// The other door in, for a browser that arrived at `/one/link/<secret>` with
+// no account. Two endpoints of their own rather than a flag on the two above,
+// because a guest cannot be granted a permission in Frappe — the reasoning is
+// in `onestorage/linked.py` and the whole point is that the guest's surface is
+// separately reviewable.
+const LINK_GET = 'oneapp.onestorage.open_file'
+const LINK_SAVE = 'oneapp.onestorage.save_file'
+
 
 /**
  * One request to Frappe. `keepalive` for the save that outlives the page.
@@ -80,7 +90,10 @@ function serverMessage(json) {
  */
 export async function fetchWorkbook(name) {
   const canGz = isDecompressionSupported()
-  const doc = await call(GET, { name, compressed: canGz ? 1 : 0 }, { get: true })
+  const secret = linkSecret()
+  const doc = secret
+    ? await call(LINK_GET, { secret, compressed: canGz ? 1 : 0 }, { get: true })
+    : await call(GET, { name, compressed: canGz ? 1 : 0 }, { get: true })
   const plain = canGz ? await decodeFromDownload(doc.sheets_data) : doc.sheets_data
 
   try {
@@ -173,6 +186,11 @@ function computed(sheet) {
 /** Write the workbook back. Returns the save count, or throws. */
 export async function saveWorkbook(name, title, payload, { keepalive = false } = {}) {
   const body = await encodeForUpload(payload)
+  const secret = linkSecret()
+  // No title through a link. A stranger renaming somebody's file in their
+  // Drive is not part of what "edit this" meant, and the endpoint does not
+  // take one.
+  if (secret) return call(LINK_SAVE, { secret, payload: body }, { keepalive })
   return call(SAVE, { name, title, sheets_data: body }, { keepalive })
 }
 

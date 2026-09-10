@@ -26,6 +26,8 @@ Stage 1 already made and the reason sharing, folders and the bin came free.
 """
 
 import frappe
+from frappe import _
+from frappe.utils import get_datetime, now_datetime
 
 # The cursor palette. Eight hues that stay apart on both grounds and are not
 # any of the status colours — a peer's cursor must never read as an error.
@@ -59,14 +61,28 @@ def initials_for(full_name: str, user: str) -> str:
     return (words[0][:1] + words[-1][:1]).upper()
 
 
-@frappe.whitelist(methods=["GET"])
-def admit(kind: str, name: str) -> dict:
+# `allow_guest`, and the whole security of the room is below rather than in
+# the decorator. Somebody following `/one/link/<secret>` is signed in as
+# nobody, and Frappe refuses a whitelisted method to a guest before the
+# function runs — so without this the relay asked, got a 403, and joined the
+# stranger to nothing at all. Silently: a page that works, an editor that
+# never sees anybody. What a guest gets is decided in `_through_link`, which
+# admits exactly one file and only to a link that names it.
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def admit(kind: str, name: str, link: str = "") -> dict:
     """May this person be in this room, and may they write in it?
 
     Called by the socket relay over the loopback with the caller's own session,
     so the permission check below is the caller's own. Never called from the
     browser — the browser has no use for the answer, and letting it ask would
     invite it to believe its own reply about whether it may write.
+
+    `link` is the other way in: the secret from a `File Link`, carried in the
+    socket's handshake by a page opened at `/one/link/<secret>`. It is checked
+    against *this file* and grants exactly what the link says — a stranger
+    with an editable link is in the room and a stranger with a read-only one
+    can watch. See `onestorage/linked.py` for why a guest needs its own path
+    at all.
 
     A refusal is a plain `{"ok": False}` and says nothing else, for the same
     reason `open_link` does: a refusal that explains itself is a probe that
@@ -79,11 +95,12 @@ def admit(kind: str, name: str) -> dict:
         return {"ok": False}
 
     doc = frappe.get_doc("File", name)
-    if not frappe.has_permission("File", "read", doc=doc):
-        return {"ok": False}
-
     user = frappe.session.user
+
     if user == "Guest":
+        return _through_link(doc, link)
+
+    if not frappe.has_permission("File", "read", doc=doc):
         return {"ok": False}
 
     full_name = frappe.db.get_value("User", user, "full_name") or user
@@ -99,6 +116,43 @@ def admit(kind: str, name: str) -> dict:
             "initials": initials_for(full_name, user),
             "image": image,
             "colour": colour_for(user),
+        },
+    }
+
+
+def _through_link(doc, secret: str) -> dict:
+    """A stranger, holding a link to this exact file.
+
+    Named for the link rather than for a person, because that is the truth:
+    the workspace handed out a URL and does not know who is holding it. Two
+    strangers on one link are two faces — the relay makes the id unique per
+    socket, which it can and this cannot.
+    """
+    if not secret:
+        return {"ok": False}
+
+    name = frappe.db.get_value("File Link", {"secret": secret}, "name")
+    if not name:
+        return {"ok": False}
+
+    link = frappe.get_doc("File Link", name)
+    if link.file != doc.name or link.revoked or not link.expires_on:
+        return {"ok": False}
+    if get_datetime(link.expires_on) < now_datetime():
+        return {"ok": False}
+
+    shown = link.label or _("Guest")
+    return {
+        "ok": True,
+        "name": doc.name,
+        "write": (link.level or "read") == "write",
+        "guest": True,
+        "who": {
+            "user": f"link:{link.name}",
+            "full_name": shown,
+            "initials": initials_for(shown, "?"),
+            "image": "",
+            "colour": colour_for(link.name),
         },
     }
 

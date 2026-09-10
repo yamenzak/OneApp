@@ -65,6 +65,11 @@ from .writing import (
 # same feed as one on a record.
 from .chatting import notes, say, unsay
 from .direct import abort, begin, finish, sign
+# A file a stranger can open, and — if the link says so — edit. Its own module
+# and its own three endpoints, because a guest cannot be *granted* a
+# permission in Frappe and the alternative was widening the ones everybody
+# else uses. See `docs/COLLABORATION.md` §5.
+from .linked import MAX_PAYLOAD, follow, open_file, save_file
 from .r2 import download, serve
 from .sharing import (
     DEFAULT_DAYS, MAX_DAYS, SECRET_BYTES, colleagues, links, make_link, open_link, people,
@@ -83,6 +88,7 @@ __all__ = [
     "download",
     "empty_trash",
     "finish",
+    "follow",
     "KIND_FIELD",
     "kind_of",
     "KINDS",
@@ -90,10 +96,12 @@ __all__ = [
     "listing",
     "make_folder",
     "make_link",
+    "MAX_PAYLOAD",
     "MAX_DAYS",
     "move",
     "notes",
     "on_insert",
+    "open_file",
     "open_link",
     "OPENED_FIELD",
     "PAGE",
@@ -104,6 +112,7 @@ __all__ = [
     "rename",
     "restore",
     "revoke",
+    "save_file",
     "say",
     "SECRET_BYTES",
     "set_favourite",

@@ -82,7 +82,7 @@ if (!path) {
   console.error(
     'usage: yarn shot <path> [out.png] ' +
       '[--wait=SELECTOR] [--click=SELECTOR] [--press=KEY] [--type=TEXT] [--phone] [--full] ' +
-      '[--retina] [--settle=MS] ' +
+      '[--retina] [--stranger] [--settle=MS] ' +
       '[--tokens=--a,--b]',
   )
   process.exit(1)
@@ -127,7 +127,11 @@ page.on('response', (r) => {
 })
 
 try {
-  await signIn(page, base)
+  // `--stranger` looks at the page the way somebody who followed a shared link
+  // does: no account, no session, no workspace. It is the only way to see
+  // `/one/link/<secret>` at all — signed in, that route draws the same editor
+  // through the ordinary endpoints and proves nothing about the guest half.
+  if (!has('stranger')) await signIn(page, base)
   await page.goto(base + path)
   // Clicks, keys and typed lines, in the order they were written on the command
   // line rather than grouped by kind. Grouped was the first version and it is

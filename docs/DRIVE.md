@@ -187,7 +187,10 @@ them changed:
   row pointing at the same object, rather than moving the first. The file being
   picked is usually already attached to something else, which is generally why it
   was worth picking.
-* The link is `File Link` — a secret, an expiry, a revoked flag and a count.
+* The link is `File Link` — a secret, an expiry, a revoked flag, a count and a
+  level. Where it *goes* is decided by the kind: a workbook or a document opens
+  at `/one/link/<secret>` in the editor it belongs in, at the level the link
+  says; anything else is bytes through `open_link`. `docs/COLLABORATION.md` §5.
   Guest-callable, so the secret is the whole of the authentication: every refusal
   says the same sentence, because a message that distinguished expired from wrong
   would tell a stranger whether the secret was right. Revoking marks rather than

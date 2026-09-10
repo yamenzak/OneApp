@@ -1,6 +1,17 @@
 import { watch } from 'vue'
 
 import { useResource } from '@/shared/lib/runtime/resource'
+import { sessionUser } from '@/shared/lib/runtime/boot'
+
+/**
+ * Nobody is signed in — this is a stranger who followed a link.
+ *
+ * There is a session endpoint and it would refuse them, so the fetch is a
+ * round trip whose only product is a red toast over a page that is working.
+ * Read off the boot payload rather than off the resource, because the
+ * question has to be answered before the resource is made.
+ */
+const anonymous = sessionUser === 'Guest'
 
 /**
  * One round trip on boot gives the shell everything it needs: who the user is,
@@ -11,7 +22,11 @@ import { useResource } from '@/shared/lib/runtime/resource'
  */
 export const sessionResource = useResource('oneapp.api.session', {
   cacheKey: 'oneapp-session',
-  watch: ['OneSpace Site State'],
+  // And no subscription either. `watch` asks the framework over the socket
+  // whether this person may read the doctype, which for a guest is two 403s
+  // in the console of a page that is working correctly.
+  watch: anonymous ? [] : ['OneSpace Site State'],
+  immediate: !anonymous,
 })
 
 /**
@@ -25,6 +40,8 @@ export const sessionResource = useResource('oneapp.api.session', {
  * console message, the URL simply never changed.
  */
 export const sessionReady = new Promise((resolve) => {
+  // Nothing is going to finish if nothing was asked.
+  if (anonymous) return resolve()
   watch(
     () => sessionResource.isFinished,
     (finished) => finished && resolve(),

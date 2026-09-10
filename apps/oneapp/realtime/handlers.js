@@ -98,9 +98,14 @@ function oneapp_handlers(socket) {
 			return;
 		}
 		try {
+			// The link, if this socket was opened by a page at
+			// `/one/link/<secret>`. It is the only credential a guest has, so
+			// it travels in the handshake — a browser cannot set headers on a
+			// websocket, and the secret is already in that page's URL.
+			const link = socket.handshake.query.oneapp_link || "";
 			const res = await socket.frappe_request(
 				"/api/method/oneapp.onespace.live.admit",
-				{ kind, name }
+				{ kind, name, link }
 			);
 			const { message } = await res.json();
 			if (!message || !message.ok) {
@@ -110,7 +115,13 @@ function oneapp_handlers(socket) {
 
 			// The room the *server* named, not the one the client asked for.
 			const room = roomName(kind, message.name);
-			socket.oneapp_who = message.who;
+			// Two strangers on one link are two people. Python cannot tell
+			// them apart — they are the same session and the same link — and
+			// this can, because a socket is a connection. Only for guests:
+			// a signed-in person with two tabs is deliberately one face.
+			socket.oneapp_who = message.guest
+				? { ...message.who, user: `${message.who.user}#${socket.id}` }
+				: message.who;
 			joined.set(room, { write: !!message.write });
 			socket.join(room);
 
@@ -120,7 +131,10 @@ function oneapp_handlers(socket) {
 			// would otherwise seed it twice and merge two copies of the prose.
 			const first = roster(room).length <= 1;
 
-			reply({ ok: true, room, write: !!message.write, who: message.who, first });
+			reply({
+				ok: true, room, write: !!message.write,
+				who: socket.oneapp_who, guest: !!message.guest, first,
+			});
 			announce(room);
 		} catch (err) {
 			console.warn("oneapp_join failed", err);
@@ -148,6 +162,31 @@ function oneapp_handlers(socket) {
 			event,
 			from: socket.oneapp_who ? socket.oneapp_who.user : socket.user,
 			payload,
+		});
+	});
+
+	/**
+	 * "I have just arrived — somebody tell me what this file looks like."
+	 *
+	 * A reader may do this and may not `oneapp_send`, and the difference is
+	 * the whole of why it is a separate event: an ask carries **no payload at
+	 * all**, so there is nothing in it that could be a disguised update. The
+	 * answer comes back through `oneapp_tell`, from somebody who may write.
+	 *
+	 * Without it a read-only person joining a room that already has somebody
+	 * in it received nothing, and sat looking at whatever the server last
+	 * stored while the other person typed — which is the exact case live
+	 * editing exists to fix. Found by a stranger on a read link watching an
+	 * empty page.
+	 */
+	socket.on("oneapp_ask", (room) => {
+		const seat = joined.get(room);
+		if (!seat) return;
+		if (!allowed()) return;
+
+		socket.to(room).emit("oneapp_asked", {
+			room,
+			from: socket.oneapp_who ? socket.oneapp_who.user : socket.user,
 		});
 	});
 

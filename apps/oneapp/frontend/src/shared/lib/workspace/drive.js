@@ -40,8 +40,8 @@ export const drive = {
 
   // A link somebody without an account can follow, until a date. The one thing
   // `DocShare` cannot do — see `drive/sharing`.
-  driveMakeLink: (file, days) =>
-    callMethod('oneapp.onestorage.make_link', { file, days }),
+  driveMakeLink: (file, days, level = 'read') =>
+    callMethod('oneapp.onestorage.make_link', { file, days, level }),
 
   driveLinks: (file) =>
     callMethod('oneapp.onestorage.links', { file }, {
@@ -80,6 +80,14 @@ export const drive = {
       { file, user: user || '', everyone: everyone ? 1 : 0 },
       { successMessage: __('Share removed') },
     ),
+
+  // What is at the end of a link, for the page that has to decide which
+  // editor to draw. Guest-callable, and the only thing this reader can ask
+  // for — see `onestorage/linked.py`.
+  linkFollow: (secret) =>
+    callMethod('oneapp.onestorage.follow', { secret }, {
+      silent: true, method: 'GET',
+    }),
 
   // --- what people say about a file -----------------------------------
   // Frappe's `Comment` on the `File` row, so an `@` notifies and a remark

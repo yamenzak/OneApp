@@ -9,6 +9,7 @@
  "field_order": [
   "file",
   "label",
+  "level",
   "secret",
   "cb_link_when",
   "expires_on",
@@ -32,6 +33,16 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Label"
+  },
+  {
+   "default": "read",
+   "description": "What the link hands over. `read` is the original and the default; `write` lets somebody with no account edit the file, and is offered only to somebody who may write it themselves \u2014 you cannot give away a right you do not have.",
+   "fieldname": "level",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Level",
+   "options": "read\nwrite",
+   "reqd": 1
   },
   {
    "description": "What is in the URL. Long enough not to be guessed, and the only thing standing between the link and the file.",

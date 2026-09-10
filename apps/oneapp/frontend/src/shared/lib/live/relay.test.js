@@ -21,21 +21,28 @@ const handlers = createRequire(import.meta.url)(
 )
 
 /** A socket the handler can be attached to, with everything it reaches. */
-function fakeSocket({ admit } = {}) {
+function fakeSocket({ admit, link = '', id = 'sock-1' } = {}) {
   const on = new Map()
   const sent = []
   const joined = new Set()
+  const asked = []
   const sock = {
-    id: 'sock-1',
+    id,
     user: 'someone@example.test',
+    // What a page opened at `/one/link/<secret>` puts in the handshake. A
+    // browser cannot set headers on a websocket, so this is where a guest's
+    // only credential can travel.
+    handshake: { query: link ? { oneapp_link: link } : {} },
+    asked,
     emit: (event, payload) => sent.push({ to: 'self', event, payload }),
     join: (room) => joined.add(room),
     leave: (room) => joined.delete(room),
     on: (event, fn) => on.set(event, fn),
     fire: (event, ...args) => on.get(event)?.(...args),
-    frappe_request: async () => ({
-      json: async () => ({ message: admit }),
-    }),
+    frappe_request: async (path, args) => {
+      asked.push({ path, args })
+      return { json: async () => ({ message: admit }) }
+    },
     to: (room) => ({
       emit: (event, payload) => sent.push({ to: room, event, payload }),
     }),
@@ -60,6 +67,13 @@ const WRITER = {
   who: { user: 'writer@example.test', full_name: 'Writer One' },
 }
 const READER = { ...WRITER, write: false, who: { user: 'reader@example.test' } }
+const GUEST = {
+  ok: true,
+  name: 'FILE-1',
+  write: true,
+  guest: true,
+  who: { user: 'link:LINK-1', full_name: 'Consultant' },
+}
 
 const ack = (sock, kind, name) =>
   new Promise((done) => sock.fire('oneapp_join', kind, name, done))
@@ -85,6 +99,38 @@ describe('the relay lets somebody in', () => {
   it('refuses when the framework says no', async () => {
     const sock = fakeSocket({ admit: { ok: false } })
     expect(await ack(sock, 'file', 'FILE-1')).toEqual({ ok: false })
+  })
+
+  it('hands the link from the handshake to the framework', async () => {
+    const sock = fakeSocket({ admit: WRITER, link: 'sekrit' })
+    await ack(sock, 'file', 'FILE-1')
+    // The relay never decides what a link is worth. It carries it and
+    // believes the answer.
+    expect(sock.asked[0].args).toEqual({ kind: 'file', name: 'FILE-1', link: 'sekrit' })
+  })
+
+  it('makes two strangers on one link two people', async () => {
+    // Python cannot tell them apart — same session, same link — and this
+    // can, because a socket is a connection. Without it a room with two
+    // guests in it shows one face and one cursor.
+    const one = fakeSocket({ admit: GUEST, link: 'sekrit', id: 'sock-a' })
+    const two = fakeSocket({ admit: GUEST, link: 'sekrit', id: 'sock-b' })
+    const first = await ack(one, 'file', 'FILE-1')
+    const second = await ack(two, 'file', 'FILE-1')
+
+    expect(first.who.user).not.toBe(second.who.user)
+    expect(first.who.user.startsWith('link:LINK-1')).toBe(true)
+    expect(first.guest).toBe(true)
+  })
+
+  it('leaves a signed-in person with two tabs as one face', async () => {
+    const one = fakeSocket({ admit: WRITER, id: 'sock-a' })
+    const two = fakeSocket({ admit: WRITER, id: 'sock-b' })
+    const first = await ack(one, 'file', 'FILE-1')
+    const second = await ack(two, 'file', 'FILE-1')
+
+    expect(first.who.user).toBe(second.who.user)
+    expect(first.guest).toBe(false)
   })
 })
 
@@ -118,6 +164,28 @@ describe('the relay decides who may speak', () => {
     sock.sent.length = 0
 
     sock.fire('oneapp_send', 'oneapp:file/FILE-1', 'yjs_update', { a: 1 })
+    expect(sock.sent).toEqual([])
+  })
+
+  it('lets a reader ask for the file, which is the one thing they may say', async () => {
+    sock = fakeSocket({ admit: READER })
+    await ack(sock, 'file', 'FILE-1')
+    sock.sent.length = 0
+
+    sock.fire('oneapp_ask', 'oneapp:file/FILE-1')
+    expect(sock.sent).toEqual([{
+      to: 'oneapp:file/FILE-1',
+      event: 'oneapp_asked',
+      payload: { room: 'oneapp:file/FILE-1', from: 'reader@example.test' },
+    }])
+  })
+
+  it('will not carry an ask into a room this socket never joined', async () => {
+    sock = fakeSocket({ admit: READER })
+    await ack(sock, 'file', 'FILE-1')
+    sock.sent.length = 0
+
+    sock.fire('oneapp_ask', 'oneapp:file/SOMEBODY-ELSES')
     expect(sock.sent).toEqual([])
   })
 

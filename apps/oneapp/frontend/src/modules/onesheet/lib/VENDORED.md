@@ -80,7 +80,7 @@ props with the body in the default slot; `Popover`'s `#target`/`#body` are
 error at build time — a renamed prop is a menu that opens on "No options" and a
 dialog that opens empty.
 
-*Additions* — six, and each is a line or two.
+*Additions* — seven, and each is a line or two.
 
 The topbar's `File ⌄` dropdown is a three-dot button at the *end* of the bar.
 Same options, same groups, same component — what moved is the trigger and
@@ -131,6 +131,14 @@ undo here would undo a colleague's sentence, and no `isDirty`, because the
 person who wrote it is the one whose autosave writes it down. What is left
 is the badge on the cell and the panel if it is open on it. It reaches
 `useCollaboration` as `refreshComments`, beside `getComments`.
+
+`shared` is `throughLink()`, and it turns three things off: the mark stops
+being a way back to Files, the title stops being editable, and the three-dot
+menu goes. Everything behind them is the workspace — a folder listing, an
+export, a template — and the reader is somebody who was sent a URL. The
+rename is the one worth naming: `save_file` takes no title on purpose, so an
+editable one would have looked like it worked and reverted on the next load.
+`docs/COLLABORATION.md` §5.
 
 *Removals* — the share dialog (a sheet is a `File`, and two share models for
 one object is the bug), AI Assist, the version-history trigger, Frappe's brand

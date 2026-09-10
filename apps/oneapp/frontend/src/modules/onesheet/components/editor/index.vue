@@ -61,7 +61,15 @@
              An arrow slides over the mark on hover so the click is not a
              guess — the mark is the identity at rest and the exit under the
              pointer, and neither has to be explained. -->
+        <!-- Through a link there is nowhere to go back to: Files is a place
+             in a workspace this reader has no account in, so the mark is the
+             identity and nothing more. -->
+        <span v-if="shared" class="sn-app-icon-btn" data-slot="sheet-brand">
+          <BrandMark name="onesheet" class="sn-app-icon" />
+          <SpaceName brand="onesheet" class="sn-app-name" />
+        </span>
         <button
+          v-else
           type="button"
           class="sn-app-icon-btn"
           data-slot="sheet-brand"
@@ -89,6 +97,7 @@
             name="sheet-title"
             class="sn-title-input"
             v-model="currentTitle"
+            :readonly="shared"
             placeholder="Untitled Sheet"
             spellcheck="false"
             @focus="onTitleFocus"
@@ -186,8 +195,8 @@
           somewhere else in the other. The contents are unchanged, groups and
           all — `docs/SHEETS.md` §8.
         -->
-        <span class="sn-topbar-divider" aria-hidden="true" />
-        <Dropdown :options="fileDropdownOptions" align="end">
+        <span v-if="!shared" class="sn-topbar-divider" aria-hidden="true" />
+        <Dropdown v-if="!shared" :options="fileDropdownOptions" align="end">
           <template #default="{ open }">
             <Button :variant="open ? 'subtle' : 'ghost'" size="sm" icon="lucide-more-horizontal" label="What to do with this sheet" tooltip="What to do with this sheet" />
           </template>
@@ -1288,6 +1297,7 @@ import { workbookFromTab }     from '@/modules/onesheet/lib/headless.js'
 import { saveWorkbook }        from '@/modules/onesheet/lib/store.js'
 import { notifySuccess }       from '@/shared/lib/runtime/notify'
 import { workspace as workspaceApi } from '@/shared/lib/workspace'
+import { throughLink }        from '@/shared/lib/live/link'
 import { useVersionHistory }   from '@/modules/onesheet/components/editor/useVersionHistory.js'
 import { useSplitText }        from '@/modules/onesheet/components/editor/useSplitText.js'
 import { buildCommandGroups }  from '@/modules/onesheet/components/editor/commandPalette.config.js'
@@ -2417,6 +2427,11 @@ const { isSaving, saveError, canWrite, isPublic, sheetOwner, loadError, loadShee
 // that was otherwise fully wired. The helper beside it already knew to fall
 // back to the `user_id` cookie; this line did not use it.
 const isGuest  = computed(() => !getSessionUser().user)
+// Opened through `/one/link/<secret>`. Not the same question as `isGuest`,
+// which asks whether anybody is signed in: this asks which door the workbook
+// came in by, and the answer decides whether the header offers a way back
+// into a workspace and a rename that the link's own save would drop.
+const shared = throughLink()
 const readOnly = computed(() => !canWrite.value)
 
 _sheetTabs = useSheetTabs({ sheet, formats, extras: [merge, comments, validation, protection, condFormat, sortFilter, slicers], getGrid: () => grid, activeCell, formulaValue, refreshActiveFormat, onSwitch: () => {

@@ -238,6 +238,13 @@ doctype(
                       "somebody puts in it afterwards."),
         f("label", "Data", in_list_view=1,
           description="What it was made for, in the words of whoever made it."),
+        f("level", "Select", options="read\nwrite", default="read", reqd=1,
+          in_list_view=1,
+          description="What the link hands over. `read` is the original and "
+                      "the default; `write` lets somebody with no account "
+                      "edit the file, and is offered only to somebody who may "
+                      "write it themselves \u2014 you cannot give away a right "
+                      "you do not have."),
         f("secret", "Data", reqd=1, unique=1, read_only=1,
           description="What is in the URL. Long enough not to be guessed, and "
                       "the only thing standing between the link and the file."),

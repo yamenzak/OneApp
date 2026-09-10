@@ -141,13 +141,22 @@ def unshare_with(file: str, user: str | None = None,
 # --------------------------------------------------------------------------- #
 
 @frappe.whitelist(methods=["POST"])
-def make_link(file: str, days: int = DEFAULT_DAYS, label: str = "") -> dict:
+def make_link(file: str, days: int = DEFAULT_DAYS, label: str = "",
+              level: str = "read") -> dict:
     """Hand one file to somebody who has no account here."""
     doc = frappe.get_doc("File", file)
     # `share`, not `read`. Being able to open a file and being able to publish
     # it to the internet are different permissions and Frappe already has both.
     if not frappe.has_permission("File", "share", doc=doc):
         frappe.throw(_("You cannot share that file."), frappe.PermissionError)
+
+    level = level if level in ("read", "write") else "read"
+    # And `write` on top of it, for a link that hands over the pen. You cannot
+    # give away a right you do not have: somebody a workbook was shared with
+    # read-only must not be able to publish an editable URL to it.
+    if level == "write" and not frappe.has_permission("File", "write", doc=doc):
+        frappe.throw(_("You cannot give away an edit you do not have."),
+                     frappe.PermissionError)
 
     if doc.is_folder:
         frappe.throw(_("A folder cannot be shared as a link — "
@@ -162,6 +171,7 @@ def make_link(file: str, days: int = DEFAULT_DAYS, label: str = "") -> dict:
         "file": file,
         "label": label or doc.file_name,
         "secret": secrets.token_urlsafe(SECRET_BYTES),
+        "level": level,
         "expires_on": add_days(now_datetime(), days),
     }).insert(ignore_permissions=True)
 
@@ -200,11 +210,30 @@ def revoke(name: str) -> dict:
     return {"ok": True, "revoked": name}
 
 
+def _has_an_editor(link) -> bool:
+    """Whether this link's file is one of the two this product can draw."""
+    from . import kinds
+
+    kind = frappe.db.get_value("File", link.file, kinds.KIND_FIELD)
+    return kind in (kinds.SHEET, kinds.DOC)
+
+
 def _shape(link) -> dict:
     return {
         "name": link.name,
         "label": link.label,
-        "url": f"/api/method/oneapp.onestorage.open_link?secret={link.secret}",
+        "level": link.level or "read",
+        # One row, two doors, and which one is decided by the *kind* rather
+        # than the level. A workbook or a document goes to a page, because
+        # this product can draw those and a reader would rather look at a
+        # spreadsheet than download one; the page then honours the level and
+        # hands over no pen on a read link. Everything else — a drawing, a
+        # PDF, a photograph — goes to the bytes, which is what the read-only
+        # link has always done and the only thing it could do.
+        "url": (
+            f"/one/link/{link.secret}" if _has_an_editor(link)
+            else f"/api/method/oneapp.onestorage.open_link?secret={link.secret}"
+        ),
         "expires_on": str(link.expires_on) if link.expires_on else "",
         "revoked": bool(link.revoked),
         "opened": link.opened or 0,

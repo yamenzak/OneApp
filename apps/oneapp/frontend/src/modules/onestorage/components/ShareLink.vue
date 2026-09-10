@@ -29,8 +29,33 @@
             :label="__('It stops working after')"
             :options="dayOptions"
           />
+          <!--
+            What the link hands over. Offered only where this person may
+            write the file themselves — the server refuses either way, and a
+            control that is drawn and a write that is allowed should read the
+            same flag at the same moment.
+          -->
+          <FormControl
+            v-if="canWrite"
+            v-model="level"
+            class="flex-1"
+            type="select"
+            :label="__('They can')"
+            :options="levelOptions"
+          />
           <Button variant="solid" :label="__('Make a link')" :loading="making" @click="make" />
         </div>
+
+        <!-- Said before it is made rather than after. An editable link is a
+             different thing from a read-only one and the difference is worth
+             a sentence: whoever holds it changes the file everybody else is
+             looking at, and there is no name on the change. -->
+        <Alert
+          v-if="level === 'write'"
+          theme="amber"
+          :title="__('Anybody with this link can edit')"
+          :description="__('Their changes go straight into the file and are attributed to the link, not to a person. Take it back when the work is done.')"
+        />
 
         <ErrorMessage :message="error" />
 
@@ -46,6 +71,8 @@
             <div class="min-w-0 flex-1">
               <p class="truncate text-p-xs text-ink-gray-7">{{ absolute(row) }}</p>
               <p class="text-p-xs text-ink-gray-5">
+                {{ row.level === 'write' ? __('Can edit') : __('Read only') }}
+                ·
                 {{ row.revoked ? __('Revoked') : __('Until {0}', [until(row)]) }}
                 ·
                 {{
@@ -87,7 +114,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Button, Dialog, Divider, ErrorMessage, FormControl, toast } from '@/ui'
+import { Alert, Button, Dialog, Divider, ErrorMessage, FormControl, toast } from '@/ui'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 import { errorText } from '@/shared/lib/runtime/errors'
@@ -106,7 +133,20 @@ const props = defineProps({
 
 const open = defineModel({ type: Boolean, default: false })
 
+// What the link hands over. `read` first and by default: an editable link is
+// the unusual one and should be chosen, not arrived at.
+const levelOptions = computed(() => [
+  { label: __('open it'), value: 'read' },
+  { label: __('open and edit it'), value: 'write' },
+])
+
+// Only where this person may write the file. The server refuses either way —
+// you cannot give away a right you do not have — and drawing the choice
+// anyway would be offering something that fails on the press.
+const canWrite = computed(() => props.file?.can_write !== false)
+
 const days = ref('7')
+const level = ref('read')
 const rows = ref([])
 const making = ref(false)
 const error = ref('')
@@ -131,7 +171,7 @@ async function make() {
   making.value = true
   error.value = ''
   try {
-    const made = await workspace.driveMakeLink(props.file.name, Number(days.value))
+    const made = await workspace.driveMakeLink(props.file.name, Number(days.value), level.value)
     await copy(made)
     await load()
   } catch (e) {

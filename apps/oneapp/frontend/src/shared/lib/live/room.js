@@ -47,6 +47,15 @@ function wire() {
     room._deliver(msg.event, msg.payload, msg.from)
   })
 
+  // Somebody has just joined and wants the file as it stands. Its own channel
+  // rather than a message, because a reader may ask and may not send — see
+  // `oneapp_ask` in the relay.
+  sock.on('oneapp_asked', (msg) => {
+    const room = open.get(msg?.room)
+    if (!room) return
+    room._asked(msg.from)
+  })
+
   sock.on('oneapp_here', (msg) => {
     const room = open.get(msg?.room)
     if (!room) return
@@ -108,6 +117,7 @@ async function _join(kind, name, key) {
 
   const listeners = new Map() // event → Set<cb>
   const roster = new Set()
+  const askers = new Set()
   const room = {
     name: seat.room,
     write: !!seat.write,
@@ -131,6 +141,17 @@ async function _join(kind, name, key) {
       sock.emit('oneapp_tell', room.name, to, event, payload)
     },
 
+    /**
+     * Ask the room for the file as it stands.
+     *
+     * Not `publish`, and the difference matters for exactly one person: a
+     * reader, who may not send anything into a room and would otherwise
+     * never be handed the document at all.
+     */
+    ask() {
+      sock.emit('oneapp_ask', room.name)
+    },
+
     on(event, cb) {
       if (!listeners.has(event)) listeners.set(event, new Set())
       listeners.get(event).add(cb)
@@ -152,6 +173,10 @@ async function _join(kind, name, key) {
     onPeople(cb) { roster.add(cb) },
     offPeople(cb) { roster.delete(cb) },
 
+    /** Somebody arrived and asked for the file. The callback gets their id. */
+    onAsk(cb) { askers.add(cb) },
+    offAsk(cb) { askers.delete(cb) },
+
     /**
      * One caller is done with this room. The room itself goes when the last
      * of them is — an editor and a chat panel in one tab hold one seat
@@ -168,11 +193,16 @@ async function _join(kind, name, key) {
       open.delete(room.name)
       listeners.clear()
       roster.clear()
+      askers.clear()
       sock.emit('oneapp_leave', room.name)
     },
 
     _roster() {
       for (const cb of roster) cb(room.people.value)
+    },
+
+    _asked(from) {
+      for (const cb of askers) cb(from)
     },
 
     _deliver(event, payload, from) {

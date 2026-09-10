@@ -152,6 +152,49 @@ test.describe('a workbook with two people in it', () => {
     }
   })
 
+  test('somebody who may only read still watches it happen', async ({ browser, baseURL }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a socket')
+
+    // The case that was silently broken until a stranger on a read link found
+    // it: a reader may not *send* into a room, and asking for the file as it
+    // stands used to be a send — so a reader who arrived after somebody else
+    // was never handed the document and sat on the last save while the other
+    // person typed. `oneapp_ask` is the fix and this is the claim.
+    const owner = await browser.newContext()
+    const guest = await browser.newContext()
+    const ownerPage = await owner.newPage()
+    const guestPage = await guest.newPage()
+
+    await signIn(ownerPage, baseURL)
+    await signIn(guestPage, baseURL, COLLEAGUE)
+
+    const id = await newSheet(ownerPage)
+
+    try {
+      await api(ownerPage, 'oneapp.onestorage.share_with', {
+        file: id, user: COLLEAGUE.user, level: 'read',
+      })
+
+      // Typed *before* the reader opens it and before any autosave, so what
+      // arrives can only have come through the room.
+      await clickCell(ownerPage, 0, 0)
+      await ownerPage.keyboard.type('613')
+      await ownerPage.keyboard.press('Enter')
+
+      await openSheet(guestPage, id)
+      await expect
+        .poll(() => shows(guestPage, 0, 0), { timeout: 20_000 })
+        .toBe('613')
+    } finally {
+      await api(ownerPage, 'oneapp.onestorage.unshare_with', {
+        file: id, user: COLLEAGUE.user,
+      })
+      await api(ownerPage, 'oneapp.onestorage.trash', { names: id }).catch(() => {})
+      await owner.close()
+      await guest.close()
+    }
+  })
+
   test('each person is a face in the other one\'s presence strip', async ({ browser, baseURL }, info) => {
     test.skip(info.project.name === 'mobile', 'the presence strip is a desktop control')
 
@@ -420,6 +463,140 @@ test.describe('what people say about a file', () => {
       await api(ownerPage, 'oneapp.onestorage.trash', { names: id }).catch(() => {})
       await owner.close()
       await guest.close()
+    }
+  })
+})
+
+/**
+ * A file somebody was sent, opened by somebody with no account here.
+ *
+ * The only surface in this product a stranger can reach, so it is the only
+ * one where "the permission check is somewhere else" is not an answer. Both
+ * browsers below are real: the owner is signed in and the other context has
+ * never seen a login form, which is the whole point — a spec that signed the
+ * second browser in would exercise the ordinary editor through a different
+ * URL and prove nothing.
+ */
+test.describe('a link somebody was sent', () => {
+  test.describe.configure({ mode: 'serial' })
+
+  const prose = (page) => page.locator('.ProseMirror').first()
+  const bar = (page) => page.locator('[data-slot="link-bar"]')
+
+  /** A link on this file, and the secret out of the URL it came back with. */
+  async function makeLink(page, file, level) {
+    const row = await api(page, 'oneapp.onestorage.make_link', {
+      file, days: 7, label: 'For the consultant', level,
+    })
+    // The url, not the secret: `make_link` answers with the door rather than
+    // the key, and for a workbook or a document that door is this page.
+    return String(row.url).split('/one/link/')[1]
+  }
+
+  /** A document of this spec's own, with a sentence already in it. */
+  async function newDocument(page) {
+    await page.goto('/one/files')
+    await page.getByRole('button', { name: 'New', exact: true }).click()
+    await page.getByRole('menuitem', { name: 'Document' }).click()
+    await page.waitForURL(/\/one\/docs\//, { timeout: 30_000 })
+    await expect(prose(page)).toBeVisible({ timeout: 30_000 })
+    return nameInUrl(page, '/one/docs/')
+  }
+
+  test('a stranger with a write link edits it, and the owner watches', async ({ browser, baseURL }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a socket')
+
+    const owner = await browser.newContext()
+    // No `signIn`. This context has no cookie, no session and no account, and
+    // that is the claim.
+    const street = await browser.newContext()
+    const ownerPage = await owner.newPage()
+    const strangerPage = await street.newPage()
+    const errors = collectConsoleErrors(strangerPage)
+
+    await signIn(ownerPage, baseURL)
+    const id = await newDocument(ownerPage)
+
+    try {
+      await prose(ownerPage).click()
+      await ownerPage.keyboard.type('The rate is under review.')
+
+      const secret = await makeLink(ownerPage, id, 'write')
+      await strangerPage.goto(`/one/link/${secret}`)
+
+      // The file, the label whoever shared it typed, and what the link allows.
+      await expect(bar(strangerPage)).toBeVisible({ timeout: 30_000 })
+      await expect(bar(strangerPage)).toContainText('You can edit this')
+      await expect(prose(strangerPage)).toContainText('The rate is under review.', {
+        timeout: 30_000,
+      })
+
+      // None of the workspace came with it.
+      await expect(strangerPage.locator('[data-slot="shell-topbar"]')).toHaveCount(0)
+
+      // And the stranger has the pen — live, into the owner's open editor,
+      // through the same relay two colleagues use.
+      await prose(strangerPage).click()
+      await strangerPage.keyboard.press('End')
+      await strangerPage.keyboard.type(' Please confirm by Friday.')
+      await expect(prose(ownerPage)).toContainText('Please confirm by Friday.', {
+        timeout: 20_000,
+      })
+
+      // Written down, not merely on two screens.
+      await expect
+        .poll(async () => {
+          const res = await ownerPage.request.get(
+            `/api/method/oneapp.onedoc.get_doc?name=${id}`,
+          )
+          return (await res.json()).message?.content || ''
+        }, { timeout: 30_000 })
+        .toContain('Please confirm by Friday.')
+
+      expectNoRealErrors(errors)
+    } finally {
+      await api(ownerPage, 'oneapp.onestorage.trash', { names: id }).catch(() => {})
+      await owner.close()
+      await street.close()
+    }
+  })
+
+  test('a read link opens the same document and hands over no pen', async ({ browser, baseURL }, info) => {
+    test.skip(info.project.name === 'mobile', 'one viewport is enough for a socket')
+
+    const owner = await browser.newContext()
+    const street = await browser.newContext()
+    const ownerPage = await owner.newPage()
+    const strangerPage = await street.newPage()
+
+    await signIn(ownerPage, baseURL)
+    const id = await newDocument(ownerPage)
+
+    try {
+      await prose(ownerPage).click()
+      await ownerPage.keyboard.type('Final, do not change.')
+
+      const secret = await makeLink(ownerPage, id, 'read')
+      await strangerPage.goto(`/one/link/${secret}`)
+
+      await expect(bar(strangerPage)).toContainText('Read only', { timeout: 30_000 })
+      await expect(prose(strangerPage)).toContainText('Final, do not change.', {
+        timeout: 30_000,
+      })
+      // Not a hidden toolbar or a disabled button — the editor itself.
+      await expect(prose(strangerPage)).toHaveAttribute('contenteditable', 'false')
+
+      // And the endpoint says the same thing, which is where it matters: a
+      // page can be got at with a console open.
+      const refused = await strangerPage.request.post(
+        '/api/method/oneapp.onestorage.save_file',
+        { data: { secret, payload: '{}' }, failOnStatusCode: false },
+      )
+      expect(refused.status()).toBe(403)
+    } finally {
+      await api(ownerPage, 'oneapp.onestorage.trash', { names: id }).catch(() => {})
+      await owner.close()
+      await street.close()
     }
   })
 })

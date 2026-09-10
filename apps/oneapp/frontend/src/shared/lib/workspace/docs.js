@@ -14,6 +14,14 @@
  */
 
 import { callMethod } from '@/shared/lib/runtime/resource'
+import { linkSecret } from '@/shared/lib/live/link'
+
+// The same two calls, through the door a stranger came in by. A guest cannot
+// be granted a permission — `onestorage/linked.py` says why — so the link's
+// endpoints are their own narrow surface, each resolving the secret first and
+// touching only the one file it names.
+const LINK_OPEN = 'oneapp.onestorage.open_file'
+const LINK_SAVE = 'oneapp.onestorage.save_file'
 
 export const docs = {
   docMake: (params) =>
@@ -26,17 +34,32 @@ export const docs = {
       success: 'File created',
     }),
 
-  docOpen: (name) =>
-    callMethod('oneapp.onedoc.get_doc', { name }, {
+  docOpen: (name) => {
+    const secret = linkSecret()
+    if (secret) return callMethod(LINK_OPEN, { secret }, { silent: true, method: 'GET' })
+    return callMethod('oneapp.onedoc.get_doc', { name }, {
       silent: true, method: 'GET',
-    }),
+    })
+  },
 
   // Silent: this runs every few seconds while somebody types, and a toast per
   // save is a toast every few seconds. The header says whether it landed.
-  docSave: (name, params) =>
-    callMethod('oneapp.onedoc.save_doc', { name, ...params }, {
+  docSave: (name, params) => {
+    const secret = linkSecret()
+    // The title is dropped rather than passed on: a stranger renaming
+    // somebody's file in their Drive is not part of what "edit this" meant,
+    // and the endpoint does not take one.
+    if (secret) {
+      return callMethod(
+        LINK_SAVE,
+        { secret, payload: params.content, html: params.html },
+        { silent: true },
+      )
+    }
+    return callMethod('oneapp.onedoc.save_doc', { name, ...params }, {
       silent: true,
-    }),
+    })
+  },
 
   // A template is a document with a flag on it, the same way a sheet template
   // is — `onedoc/templates.py` says why one shape rather than two.

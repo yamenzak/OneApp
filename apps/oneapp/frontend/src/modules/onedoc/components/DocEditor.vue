@@ -33,9 +33,18 @@
              does not — which is everybody on their first day. Hidden on a
              phone, where the trail is the only thing there is room for. -->
         <BrandMark name="onedoc" class="size-6 shrink-0" />
-        <SpaceName brand="onedoc" class="hidden shrink-0 text-base font-medium sm:block" />
-        <span class="hidden shrink-0 text-ink-gray-3 sm:block" aria-hidden="true">·</span>
-        <Breadcrumbs :items="crumbs" />
+        <!-- Through a link, the trail is the name and nothing else. Every
+             crumb above it is a place in a workspace this reader has no
+             account in, so following one is a redirect to a sign-in page
+             they cannot pass. -->
+        <p v-if="shared" class="min-w-0 truncate text-base font-medium text-ink-gray-8">
+          {{ title || __('Untitled document') }}
+        </p>
+        <template v-else>
+          <SpaceName brand="onedoc" class="hidden shrink-0 text-base font-medium sm:block" />
+          <span class="hidden shrink-0 text-ink-gray-3 sm:block" aria-hidden="true">·</span>
+          <Breadcrumbs :items="crumbs" />
+        </template>
       </nav>
 
       <div class="flex shrink-0 items-center gap-2">
@@ -57,7 +66,13 @@
         <PresenceStrip :people="alsoHere" />
 
         <span class="text-p-xs text-ink-gray-5">{{ state }}</span>
+        <!-- The three controls that reach past this file, and the menu that
+             does the same: the records it reads, what people have said about
+             it, and what it looked like before. Each is a window onto the
+             workspace and each of their endpoints would refuse a guest, so
+             through a link there is the document and nothing else. -->
         <Button
+          v-if="!shared"
           variant="ghost"
           icon="lucide-link"
           :label="__('Records')"
@@ -67,6 +82,7 @@
           @click="showRecords = !showRecords"
         />
         <Button
+          v-if="!shared"
           variant="ghost"
           icon="lucide-message-square"
           :label="notes ? __('Notes ({0})', [notes]) : __('Notes')"
@@ -76,6 +92,7 @@
           @click="showNotes = !showNotes"
         />
         <Button
+          v-if="!shared"
           variant="ghost"
           icon="lucide-history"
           :label="__('Version history')"
@@ -83,7 +100,7 @@
           :class="showHistory ? 'bg-surface-gray-2' : ''"
           @click="showHistory = !showHistory"
         />
-        <Dropdown :options="menu">
+        <Dropdown v-if="!shared" :options="menu">
           <Button
             variant="ghost"
             icon="lucide-more-horizontal"
@@ -361,6 +378,7 @@ import { paginate } from '@/shared/lib/paper/paginate'
 import { printHtml } from '@/shared/lib/paper/print'
 import { useLiveDocument } from '@/modules/onedoc/lib/live'
 import { useOutline } from '@/shared/composables/useOutline'
+import { throughLink } from '@/shared/lib/live/link'
 import { putFile } from '@/modules/onestorage/lib/attach'
 import { workspace } from '@/shared/lib/workspace'
 import { cameFrom } from '@/modules/onespace/lib/screen/returnTo'
@@ -374,6 +392,12 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['renamed', 'reload'])
+
+// Opened through `/one/link/<secret>` rather than from inside the workspace.
+// Read off the address bar rather than taken as a prop, for the reason
+// `shared/lib/live/link.js` gives: the secret is already there, it cannot
+// disagree with itself, and the same file's save reads it the same way.
+const shared = throughLink()
 
 // The whole capability of the editor. RichTextKit is frappe-ui's article-grade
 // bundle, which is the right one for a document — the lighter CommentKit is
@@ -721,10 +745,14 @@ const showNotes = ref(false)
 const notes = ref(0)
 
 // Asked once on open, so the button can say there is something to read
-// before anybody presses it. The panel keeps it in step after that.
-workspace.driveNotes(props.name)
-  .then((answer) => { notes.value = answer?.count || 0 })
-  .catch(() => {})
+// before anybody presses it. The panel keeps it in step after that. Not
+// through a link: there is no button to label, and the endpoint would refuse
+// a guest anyway.
+if (!shared) {
+  workspace.driveNotes(props.name)
+    .then((answer) => { notes.value = answer?.count || 0 })
+    .catch(() => {})
+}
 const renaming = ref(false)
 const draftTitle = ref('')
 const showSettings = ref(false)

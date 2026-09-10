@@ -95,6 +95,23 @@ const routes = [
     meta: { pane: true, focused: true },
   },
   {
+    // A file somebody was sent a link to, and may edit through it.
+    //
+    // The secret is the whole of the credential — there is no account behind
+    // this page — so it is in the path rather than the query: a query string
+    // is dropped by more things that pass a URL around than a path is, and a
+    // link that arrives without its secret is a link that does not work.
+    //
+    // `public`, which no other route is: the guard below lets it through
+    // without a session and `App.vue` draws it outside the shell, because
+    // every part of the shell needs a session this reader does not have.
+    path: '/link/:secret',
+    name: 'Linked',
+    component: () => import('@/modules/onestorage/pages/Linked.vue'),
+    props: true,
+    meta: { pane: true, focused: true, public: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/shared/pages/NotFound.vue'),
@@ -112,6 +129,10 @@ router.beforeEach(async (to) => {
   // `sessionReady` rather than the resource's own promise, which is renewed
   // after every response and would hang every navigation after the first.
   await sessionReady
+
+  // A link is its own credential. Sending its holder to a login form would
+  // ask them for an account they do not have and were never meant to need.
+  if (to.meta.public) return true
 
   if (!session.isLoggedIn) {
     // Hand back to Frappe's own login, which knows how to return here.

@@ -76,6 +76,15 @@ both `File` rows.
 the Node process, not on the client. Someone with read access to a shared sheet
 watches other people's cursors and cannot move their cells.
 
+There is one thing a reader may say, and it took a stranger on a read link
+staring at an empty page to find that it was missing: `oneapp_ask`, which
+carries **no payload at all** and so cannot be an update wearing a hat.
+Somebody arriving in a room has to ask for the file as it stands — a writer
+answers point-to-point — and a reader who could not ask joined an occupied room
+and was sent nothing, sitting on whatever the server last stored while the
+other person typed. That is the precise case live editing exists to fix, and it
+was broken for every read-only person, not only for a link.
+
 **A message has a size and a rate.** 512KB and 240 messages per five seconds
 per socket, across every room it is in. A fast typist is nowhere near either;
 one socket holding the connection open and pushing is.
@@ -135,6 +144,9 @@ The shape they wrote is worth keeping because it is already right:
 | `src/shared/components/PresenceStrip.vue` | Who else is here, in a header. |
 | `src/shared/components/FileChat.vue` | The conversation about a file. |
 | `oneapp/onestorage/chatting.py` | Where that conversation is stored, which is Frappe's `Comment`. |
+| `oneapp/onestorage/linked.py` | The guest surface: follow, open, save. Three endpoints, each starting with the secret. |
+| `src/shared/lib/live/link.js` | The secret, read off the address bar by the five places that need it. |
+| `src/modules/onestorage/pages/Linked.vue` | The page a link opens: a line about the link, then the editor. Drawn outside the shell. |
 
 ---
 
@@ -215,6 +227,53 @@ The shape they wrote is worth keeping because it is already right:
    second Yjs document with a floating layer over the prose; ours would be a
    mark in the document — which converges for free now — plus a panel. It is a
    real feature and a later one.
-5. **A link a stranger can edit through.** `File Link` is read-only today and
-   serves bytes through `r2.serve`. Making it editable is the one piece here
-   with a real security surface, and it is last for that reason.
+5. **A link a stranger can edit through.** Done. `File Link` grew a `level`,
+   and a `write` link opens `/one/link/<secret>` on the same two editors
+   everybody else uses.
+
+   The mechanism had to be its own, and the reason is one line of the
+   framework: **`has_controller_permissions` can deny and cannot grant** — its
+   own docstring says so. So a `has_permission` hook cannot let a guest in, and
+   the two alternatives are worse (`ignore_permissions` on the ordinary
+   endpoints widens them for everybody; a real `User` per link is an account
+   nobody asked for). `onestorage/linked.py` is instead three endpoints that
+   each resolve the secret first and touch exactly the one file it names. None
+   of them takes a doctype, a filter or a fieldname from the caller.
+
+   The relay needed two things. The secret rides the **handshake query**,
+   because a browser cannot set a header on a websocket and the secret is
+   already in that page's URL. And a guest's id is made unique per socket in
+   Node — `link:LINK-1#<socket>` — because two strangers on one link are two
+   people and Python cannot tell them apart, having been asked the same
+   question by the same session twice.
+
+   What a guest does not get, and each is a decision rather than an omission:
+   **no record rail** (a `RECORD()` formula and a document token read the
+   workspace's own data, so the payloads carry `sources: []` rather than a grid
+   of refusals), **no rename** (`save_file` takes no title — a stranger
+   renaming somebody's file in their Drive is not what "edit this" meant),
+   **no notes, no history, no sharing, no breadcrumb** (each is a window onto a
+   workspace, and the trail above the file would be a sign-in page they cannot
+   pass), and **no name**: a guest's edits are attributed to the link, because
+   that is the truth — the workspace handed out a URL and does not know who is
+   holding it. The version history says "Through the link <label>", and
+   `ShareLink.vue` says so in an amber `Alert` before the link is made.
+
+   One thing changed for the read link too. Which door a link goes to is now
+   decided by the *kind* rather than the level: a workbook or a document goes
+   to `/one/link/<secret>` whether it hands over the pen or not, because this
+   product can draw both and a reader would rather look at a spreadsheet than
+   download one. The page then honours the level — a read link gets the same
+   editor with `contenteditable` off. Everything else still goes to the bytes,
+   which is all `open_link` could ever do with a photograph.
+
+   Two things guard the write itself: a **12MB ceiling** on one save, and
+   `sanitize_html` over the document's HTML on the way in — the mail reader's
+   rule applied to the one other place this product takes markup from outside.
+
+   Two smaller pieces this needed underneath. `www/one.py` redirected every
+   guest under `/one` to a sign-in page; it now lets `/one/link/` through and
+   gives that request a boot payload with no assistant and no basemap in it.
+   And the SPA no longer fetches its session when nobody is signed in — the
+   endpoint would refuse, and the only product of the round trip was a red
+   toast over a page that was working.

@@ -37,11 +37,31 @@ function socketUrl() {
   return `${window.location.origin}/${siteName}`
 }
 
+/**
+ * The secret out of `/one/link/<secret>`, or nothing.
+ *
+ * Four lines rather than an import of `shared/lib/live/link.js`, which says
+ * the same thing: this file is generated into *both* bundles and the control
+ * plane has no `shared/lib/live` to import from. A shared module that only
+ * one of the two can reach is not shared.
+ */
+function linkSecret() {
+  const found = /\/one\/link\/([^/?#]+)/.exec(window.location.pathname)
+  return found ? decodeURIComponent(found[1]) : ''
+}
+
 export function getSocket() {
   if (socket) return socket
 
   socket = io(socketUrl(), {
     withCredentials: true,
+    // The link a page at `/one/link/<secret>` was opened with, if that is
+    // where this browser is. A guest has no session and no cookie worth
+    // anything, so the secret is the only credential — and a browser cannot
+    // set headers on a websocket, which leaves the handshake query. It is
+    // already in the address bar of the page making the connection, so this
+    // puts it nowhere it was not.
+    query: linkSecret() ? { oneapp_link: linkSecret() } : undefined,
     reconnection: true,
     reconnectionAttempts: Infinity,
     // Back off rather than hammering a bench that is restarting.

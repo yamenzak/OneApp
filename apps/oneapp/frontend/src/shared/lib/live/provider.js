@@ -20,6 +20,11 @@
 // is what their `to:` field was reaching for and could not have: pushing a
 // whole document at every open tab each time somebody arrives is the one
 // message here big enough to matter.
+//
+// One thing is ours outright: the *request* is `room.ask()`, a relay event
+// with no payload, rather than a published message. A reader may not publish
+// — that is what stops them editing — and a reader who cannot ask is a reader
+// who joins an occupied room and is never sent the document.
 
 import * as Y from 'yjs'
 
@@ -28,7 +33,6 @@ import { fromBase64, toBase64 } from '@/shared/lib/live/bytes'
 export const REMOTE_ORIGIN = Symbol('remote')
 
 const EVT_UPDATE = 'yjs_update'
-const EVT_STATE_REQUEST = 'yjs_state_request'
 const EVT_STATE = 'yjs_state'
 
 /**
@@ -85,20 +89,19 @@ export function createProvider({
     Y.applyUpdate(doc, fromBase64(payload.update), REMOTE_ORIGIN)
   }
 
-  const onStateRequest = (payload, fromUser) => {
-    if (stopped || !payload || payload.from === tag) return
+  const onAsked = (fromUser) => {
+    if (stopped || !fromUser) return
     // Anything still queued is already in the doc, so send it as part of the
     // state rather than twice — once here and again on the deferred flush.
     flush()
     room.tell(fromUser, EVT_STATE, {
-      from: tag, to: payload.from, update: toBase64(Y.encodeStateAsUpdate(doc)),
+      from: tag, update: toBase64(Y.encodeStateAsUpdate(doc)),
     })
   }
 
   let synced = false
   const onState = (payload) => {
     if (stopped || !payload || payload.from === tag) return
-    if (payload.to && payload.to !== tag) return
     Y.applyUpdate(doc, fromBase64(payload.update), REMOTE_ORIGIN)
     if (synced) return
     synced = true
@@ -107,11 +110,13 @@ export function createProvider({
 
   doc.on('update', onLocal)
   room.on(EVT_UPDATE, onUpdate)
-  room.on(EVT_STATE_REQUEST, onStateRequest)
+  room.onAsk(onAsked)
   room.on(EVT_STATE, onState)
 
   // Announce ourselves, so whoever is already here replays us what they have.
-  room.publish(EVT_STATE_REQUEST, { from: tag })
+  // `ask` rather than a published message, because a reader may not publish
+  // and this is the one thing a reader most needs to do — see `oneapp_ask`.
+  room.ask()
 
   function destroy() {
     // Before the guard, so the last burst of typing lands at the other people
@@ -121,7 +126,7 @@ export function createProvider({
     if (timer) { _clearTimeout(timer); timer = null }
     doc.off('update', onLocal)
     room.off(EVT_UPDATE, onUpdate)
-    room.off(EVT_STATE_REQUEST, onStateRequest)
+    room.offAsk(onAsked)
     room.off(EVT_STATE, onState)
   }
 
