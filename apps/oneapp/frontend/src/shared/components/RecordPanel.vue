@@ -1,22 +1,27 @@
 <!--
-  What this document reads, and everything you can put in the prose from it.
+  What this file reads, and everything you can put in it from there.
+
+  Shared by both editors, because it is one question — a document and a
+  workbook both read a *set* of records (`shared/binding.py`) and both need
+  the same four things: which records, what each one offers, is it fresh, and
+  give me that field. What differs is only what a click *does*, which is an
+  event rather than a branch: the document inserts a token, the workbook
+  writes a `RECORD()` formula into the current cell.
 
   A rail rather than a strip, and the reason is the shape of the thing: a
   document about a quotation is usually also about its customer and its
   project, and a strip that had to hold three records and their fields would
   be a strip with a menu inside a menu. Here each record is a section you open
-  and browse — its fields as phrases, its child tables as blocks — which is
-  the browsing the design turns on.
+  and browse, which is the browsing the design turns on.
 
   It also answers the question the design turns on before anybody asks it:
-  *is this fresh?* Nothing is pushed. The footer says when the numbers on
-  screen were read, and Refresh reads them again. See `shared/binding.py` and
-  `oneapp/onedoc/fields.py`.
+  *is this fresh?* Nothing is pushed. The footer says when the values on
+  screen were read, and Refresh reads them again.
 
   A slot — a source with no record yet — is what a template hands over. The
-  panel prompts for it here rather than in a dialog before the document
-  exists, because a template is a starting point and the person filling it in
-  usually wants to add a record of their own beside the ones it named.
+  panel prompts for it here rather than in a dialog before the file exists,
+  because a template is a starting point and the person filling it in usually
+  wants to add a record of their own beside the ones it named.
 -->
 <template>
   <aside
@@ -33,9 +38,9 @@
           icon="lucide-refresh-cw"
           :label="__('Read the records again')"
           :tooltip="__('Read the records again')"
-          :loading="asking"
+          :loading="busy"
           data-slot="fields-refresh"
-          @click="refresh"
+          @click="emit('refresh')"
         />
         <Button
           variant="ghost"
@@ -51,8 +56,8 @@
       <EmptyState
         v-if="!rows.length"
         icon="lucide-link"
-        :title="__('This document is about nothing yet')"
-        :description="__('Add a record and its fields become phrases you can drop into the prose.')"
+        :title="__('This file is about nothing yet')"
+        :description="__('Add a record and its fields become things you can drop in.')"
       />
 
       <div v-else class="flex flex-col gap-2 p-3">
@@ -155,7 +160,7 @@
                      a real table in the prose, which is a different act from
                      putting a phrase in a sentence. So a row each, full
                      width, rather than in the grid above. -->
-                <template v-if="shownTables.length">
+                <template v-if="blocks && shownTables.length">
                   <p class="mt-2 px-2 pb-1 text-p-xs font-medium uppercase tracking-wide text-ink-gray-5">
                     {{ __('Tables') }}
                   </p>
@@ -196,15 +201,10 @@
       class="flex shrink-0 items-center justify-between gap-2 border-t border-outline-gray-1 px-3 py-2"
     >
       <span class="min-w-0 truncate text-p-xs text-ink-gray-5">{{ read }}</span>
-      <Button
-        v-if="canWrite && rows.length"
-        variant="ghost"
-        size="sm"
-        :label="__('Fix the fields')"
-        :tooltip="__('Stop asking, and keep what they say now')"
-        data-slot="fields-settle"
-        @click="settle"
-      />
+      <!-- Whatever this editor can do with what it just read. The document
+           puts "Fix the fields" here; a workbook has nothing to put, because
+           its cells already hold what the browser computed. -->
+      <slot name="footer" :rows="rows" />
     </footer>
 
     <!-- Which kind, then which one. Two steps rather than one dialog with a
@@ -232,7 +232,7 @@
           variant="solid"
           :label="__('Next')"
           :disabled="!kind"
-          :loading="busy"
+          :loading="saving"
           @click="pickFor"
         />
       </template>
@@ -241,7 +241,7 @@
     <RecordPicker
       v-model="picking"
       :doctype="wanted?.doctype || ''"
-      :said="picked"
+      :said="said"
       @pick="took"
     />
   </aside>
@@ -261,26 +261,42 @@ import {
 import EmptyState from '@/shared/components/EmptyState.vue'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
 import RecordPicker from '@/shared/components/RecordPicker.vue'
-import {
-  applyRecordFields,
-  applyRecordTables,
-  at,
-  namedFields,
-} from '@/modules/onedoc/lib/recordField'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 
 const props = defineProps({
-  /** The document's File id. */
+  /** The file this reads for — a document or a workbook, both are `File`. */
   name: { type: String, required: true },
-  /** The sources the server sent with the document — `binding.file_sources`. */
+  /** `binding.file_sources`'s answer, held by whoever opened the file. */
   sources: { type: Array, default: () => [] },
-  /** The tiptap instance the tokens and blocks live in. */
-  editor: { type: Object, default: null },
+  /** `{"key.field": text}` — what each field says now, for the previews. */
+  values: { type: Object, default: () => ({}) },
+  /** Whether a read is in flight, so the control can say so. */
+  busy: { type: Boolean, default: false },
+  /** When the values on screen were read. The whole freshness answer. */
+  readAt: { type: [Date, null], default: null },
+  /**
+   * Whether a child table is something this editor can take.
+   *
+   * The document can: a block is a real table in the prose. A workbook
+   * cannot, and not for want of trying — a child table *is* a sheet in this
+   * product (`docs/SHEETS.md` §3), so the answer to "put the quotation's
+   * lines in a workbook" is the sheet already bound to them rather than a
+   * second reader beside `RECORD()`.
+   */
+  blocks: { type: Boolean, default: true },
+  /** One sentence saying what choosing a record will do, in the owner's words. */
+  said: { type: String, default: '' },
   canWrite: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['settled', 'patching', 'patched', 'close'])
+const emit = defineEmits([
+  'insert-field', 'insert-table', 'refresh', 'changed', 'close',
+])
+
+//: `quotation.grand_total`. The key both halves of the answer use — see
+//: `shared/binding.py` and the editors' own resolvers.
+const at = (source, field) => `${source || 'record'}.${field}`
 
 //: What the server will hold — `binding.MAX_SOURCES`. Repeated rather than
 //: fetched, because it only decides whether a button is greyed out and the
@@ -292,22 +308,16 @@ const open = ref(props.sources.find((one) => !one.reference_name)?.key
   || props.sources[0]?.key
   || '')
 
-const asking = ref(false)
 const loading = ref(false)
-const busy = ref(false)
+const saving = ref(false)
 const query = ref('')
-const readAt = ref(null)
 
 // What each doctype offers, kept by doctype rather than by source: two
 // sources of the same kind ask the same question and one answer serves both.
 const offered = ref({})
 
-// The last answers, so a field in the list can show what it would insert.
-const said = ref({})
-const drawn = ref({})
-
 const read = computed(() =>
-  (readAt.value ? __('Read at {0}', [readAt.value.toLocaleTimeString()]) : ''),
+  (props.readAt ? __('Read at {0}', [props.readAt.toLocaleTimeString()]) : ''),
 )
 
 const current = computed(() => rows.value.find((one) => one.key === open.value) || null)
@@ -347,7 +357,7 @@ function match(list) {
  *  The value only once something has resolved it: a field the prose does not
  *  name yet has no answer, and "Grand Total — " reads as a bug. */
 function tip(row, field) {
-  const text = said.value[at(row.key, field.fieldname)] || ''
+  const text = props.values[at(row.key, field.fieldname)] || ''
   return text ? `${field.label} — ${text}` : field.label
 }
 
@@ -378,69 +388,26 @@ async function load(row) {
   }
 }
 
-/**
- * Ask every record again, and patch what is on screen.
- *
- * What is in the editor, not what is on disk: the save is debounced, and a
- * token somebody inserted a second ago is only in the editor.
- */
-async function refresh() {
-  asking.value = true
-  try {
-    const answer = await workspace.docFields(props.name, namedFields(props.editor))
-    said.value = answer?.fields || {}
-    drawn.value = answer?.tables || {}
-    if (answer?.sources) rows.value = answer.sources
-    // Bracketed, and the two events have to stay in the same tick: patching
-    // is a ProseMirror transaction, the editor calls that a change, and a
-    // change starts the save loop. Opening a document would then write it.
-    emit('patching')
-    applyRecordFields(props.editor, said.value)
-    applyRecordTables(props.editor, drawn.value)
-    emit('patched')
-    readAt.value = new Date()
-  } finally {
-    asking.value = false
-  }
-}
-
 /*
- * Insert first, focus after — and never `focus()` inside the chain. The
- * reason cost an afternoon.
+ * An event, not a branch.
  *
- * Tiptap's `focus` command builds a transaction, calls `view.focus()`, and
- * then dispatches. From a control *inside* the editor that is fine, because
- * the prose already had focus and nothing happens in between. From this rail
- * it is not: the click moved focus out, so `view.focus()` really does move it
- * back, the browser fires a selection change, ProseMirror dispatches for it —
- * and the command is left holding a transaction against a document that has
- * moved. "Applying a mismatched transaction", and nothing inserted.
- *
- * So the insert goes in against the selection ProseMirror still remembers,
- * and the caret is put back afterwards through the view, which writes no
- * transaction of its own.
+ * What a click puts where is the one thing the two editors do not share: the
+ * document inserts a token that renders the field, the workbook writes a
+ * `RECORD()` formula into the cell somebody is standing on. Both are a few
+ * lines in their own page, and neither belongs in a rail whose job is to say
+ * what a record offers.
  */
-function put(run) {
-  const editor = props.editor
-  if (!editor) return
-  run(editor.commands)
-  editor.view?.focus()
-  // Straight away, so the token shows a number rather than an em dash for as
-  // long as it takes somebody to notice.
-  refresh()
-}
-
 function insertField(row, field) {
-  put((commands) => commands.insertRecordField({
+  emit('insert-field', {
     source: row.key,
     field: field.fieldname,
     label: field.label,
-    text: said.value[at(row.key, field.fieldname)] || undefined,
-  }))
+    text: props.values[at(row.key, field.fieldname)] || '',
+  })
 }
 
 function insertTable(row, table) {
-  put((commands) => commands.insertRecordTable({
+  emit('insert-table', {
     source: row.key,
     table: table.fieldname,
     label: table.label,
@@ -449,7 +416,7 @@ function insertTable(row, table) {
     // fit across a page, and the first six in schema order are Item Code and
     // five checkboxes.
     columns: table.default || [],
-  }))
+  })
 }
 
 // --- adding, choosing and dropping a record --------------------------------
@@ -463,10 +430,6 @@ const looking = ref(false)
 const picking = ref(false)
 // The source being filled, or `{doctype}` for one being added.
 const wanted = ref(null)
-
-const picked = computed(() =>
-  __('The document will read this record. Every field you have already put in the prose fills itself in.'),
-)
 
 //: Long enough that typing a name is one search rather than eleven.
 const PAUSE = 250
@@ -518,7 +481,7 @@ async function took({ doctype, name }) {
   wanted.value = null
   if (!asked) return
 
-  busy.value = true
+  saving.value = true
   try {
     if (asked.key) {
       await workspace.setSource(props.name, asked.key, name)
@@ -528,7 +491,7 @@ async function took({ doctype, name }) {
     }
     await reload()
   } finally {
-    busy.value = false
+    saving.value = false
   }
 }
 
@@ -560,28 +523,21 @@ async function reload() {
   rows.value = (await workspace.fileSources(props.name)) || []
   const showing = rows.value.find((one) => one.key === open.value)
   if (showing) await load(showing)
-  await refresh()
+  // The owner holds the sources too — it opened the file with them — and it
+  // is the one that knows how to read the records again.
+  emit('changed', rows.value)
+  emit('refresh')
 }
 
-async function settle() {
-  const answer = await workspace.docSettleFields(props.name)
-  if (answer?.content) emit('settled', answer.content)
-}
-
-// Read once when the panel appears, so the numbers are this minute's rather
-// than the last save's — a document saved on Friday and opened on Monday is
-// the ordinary case, not the strange one.
-watch(
-  () => props.editor,
-  (instance) => {
-    if (!instance) return
-    refresh()
-    if (current.value) load(current.value)
-  },
-  { immediate: true },
-)
-
-watch(() => props.sources, (next) => { rows.value = [...(next || [])] })
-
-defineExpose({ refresh })
+// Whatever section is open needs its field list, and the panel is drawn
+// before anybody clicks anything.
+watch(() => props.sources, (next) => {
+  rows.value = [...(next || [])]
+  if (!rows.value.some((one) => one.key === open.value)) {
+    open.value = rows.value.find((one) => !one.reference_name)?.key
+      || rows.value[0]?.key
+      || ''
+  }
+  if (current.value) load(current.value)
+}, { immediate: true })
 </script>

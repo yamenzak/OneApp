@@ -294,8 +294,8 @@ msgstr "إضافة صورة"
 msgid "Add a record"
 msgstr "إضافة سجل"
 
-msgid "Add a record and its fields become phrases you can drop into the prose."
-msgstr "أضف سجلاً لتصبح حقوله عبارات يمكنك إدراجها في النص."
+msgid "Add a record and its fields become things you can drop in."
+msgstr "أضف سجلاً لتصبح حقوله عناصر يمكنك إدراجها."
 
 msgid "Add a section"
 msgstr "إضافة قسم"
@@ -1910,6 +1910,9 @@ msgstr "إخفاؤه من قائمتي"
 
 msgid "Hide servers"
 msgstr "إخفاء الخوادم"
+
+msgid "Hide the records"
+msgstr "إخفاء السجلات"
 
 msgid "High-speed train"
 msgstr "قطار فائق السرعة"
@@ -3798,9 +3801,6 @@ msgstr "اقرأه كما يُعرض"
 msgid "Read the records again"
 msgstr "إعادة قراءة السجلات"
 
-msgid "Read {0} again"
-msgstr "قراءة {0} من جديد"
-
 msgid "Read {0} lines, {1} stops and {2} trips."
 msgstr "قُرئ {0} من الخطوط و{1} من المحطات و{2} من الرحلات."
 
@@ -5251,6 +5251,9 @@ msgstr ""
 "المحتوى كاملاً كما كان، بأي شكل يقرؤه مخزنه. الاستعادة تعيد كتابته دون "
 "تغيير."
 
+msgid "The workbook will read this record, and RECORD() can name its fields."
+msgstr "سيقرأ المصنف هذا السجل، ويمكن لـ RECORD() تسمية حقوله."
+
 msgid ""
 "The workbook: every tab, cell, formula, format, merge, named range, "
 "pivot and chart, as the gzipped envelope `codec.py` reads. Never edited "
@@ -5437,8 +5440,8 @@ msgstr "هذا الجهاز"
 msgid "This document has no source called {0}."
 msgstr "لا يوجد في هذا المستند مصدر باسم {0}."
 
-msgid "This document is about nothing yet"
-msgstr "هذا المستند لا يتحدث عن شيء بعد"
+msgid "This file is about nothing yet"
+msgstr "هذا الملف لا يتحدث عن شيء بعد"
 
 msgid "This has already been amended."
 msgstr "تم تعديل هذا بالفعل."

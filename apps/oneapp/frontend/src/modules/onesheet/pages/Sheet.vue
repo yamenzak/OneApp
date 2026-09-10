@@ -14,7 +14,37 @@
     standalone spreadsheet cannot — that it is a file, that it can be the one
     everybody starts from — goes into the editor's own File menu instead.
   -->
-  <SheetEditor ref="editor" :id="name" :host-menu="hostMenu" @close="close" />
+  <!-- The editor and, beside it, what this workbook reads. The rail is the
+       document editor's, unchanged: a workbook reads the same set of records
+       and needs the same four things of them —
+       `shared/components/RecordPanel.vue`. What differs is only where a
+       click puts the answer, which here is a `RECORD()` formula in the cell
+       you are standing on. -->
+  <div class="flex h-full min-h-0">
+    <SheetEditor
+      ref="editor"
+      :id="name"
+      :host-menu="hostMenu"
+      class="min-w-0 flex-1"
+      @close="close"
+    />
+
+    <RecordPanel
+      v-if="showRecords"
+      :name="name"
+      :sources="about"
+      :values="values"
+      :busy="reading"
+      :read-at="readAt"
+      :blocks="false"
+      :said="__('The workbook will read this record, and RECORD() can name its fields.')"
+      can-write
+      @insert-field="insertField"
+      @refresh="readRecords"
+      @changed="about = $event"
+      @close="showRecords = false"
+    />
+  </div>
 
   <TemplatePicker
     v-model="picking"
@@ -30,7 +60,9 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import SheetEditor from '@/modules/onesheet/components/editor/index.vue'
+import RecordPanel from '@/shared/components/RecordPanel.vue'
 import TemplatePicker from '@/modules/onestorage/components/TemplatePicker.vue'
+import { said } from '@/modules/onesheet/lib/services/recordFields'
 import { workspace } from '@/shared/lib/workspace'
 import { cameFrom } from '@/modules/onespace/lib/screen/returnTo'
 import { notifySuccess } from '@/shared/lib/runtime/notify'
@@ -87,21 +119,56 @@ workspace
  */
 const about = ref([])
 const reading = ref(false)
+const readAt = ref(null)
+const values = ref({})
+
+// The rail is open when there is something in it. A workbook that reads
+// nothing is most of them, and a panel saying so on every open is a panel
+// everybody closes.
+const showRecords = ref(false)
 
 workspace
   .sheetRecordFields(props.name, [])
-  .then((found) => { about.value = found?.sources || [] })
+  .then((found) => {
+    about.value = found?.sources || []
+    showRecords.value = !!about.value.length
+    // And read them, so the rail's footer says when rather than nothing and
+    // each field shows what it would insert. The editor does its own read
+    // once the workbook is in memory; this is the one that fills the rail,
+    // and it costs nothing extra for a workbook whose cells name no records
+    // — `resolveRecordFields` answers without a request when there is
+    // nothing to ask about.
+    if (about.value.length) readRecords()
+  })
   .catch(() => {})
 
 // The editor reads on its own once the workbook is in memory; this is the
-// second ask, the one somebody presses an hour later.
+// second ask, the one somebody presses an hour later — and the one the rail
+// presses after a source is added.
 async function readRecords() {
   reading.value = true
   try {
     await editor.value?.refreshRecords(about.value)
+    // Read back out of the cache the engine resolves through, so the rail's
+    // previews and the cells agree by construction rather than by two
+    // requests that happen to say the same thing.
+    values.value = said()
+    readAt.value = new Date()
   } finally {
     reading.value = false
   }
+}
+
+/**
+ * A field, as the formula that reads it.
+ *
+ * The keyed form, always, even for the first source: `RECORD("grand_total")`
+ * is shorter and means "whatever this workbook is mainly about", which is a
+ * different and vaguer thing than what somebody just clicked. A formula that
+ * names its source survives a second record being added above it.
+ */
+function insertField(one) {
+  editor.value?.putFormula(`=RECORD("${one.source}", "${one.field}")`)
 }
 
 function sendRows() {
@@ -184,17 +251,14 @@ const hostMenu = computed(() => [{
         onClick: () => sendRows(),
       }]
       : []),
-    // Only where the workbook reads a record at all. A sheet that names none
-    // has nothing to read again.
-    ...(about.value.length
-      ? [{
-        label: about.value.length === 1
-          ? __('Read {0} again', [about.value[0].title || about.value[0].label])
-          : __('Read the records again'),
-        icon: 'refresh-cw',
-        onClick: () => readRecords(),
-      }]
-      : []),
+    // Always offered, unlike the old "Read X again" it replaces: a workbook
+    // that reads nothing yet is exactly the one somebody opens this to give
+    // a record to, and the rail carries its own Refresh.
+    {
+      label: showRecords.value ? __('Hide the records') : __('Records'),
+      icon: 'link',
+      onClick: () => { showRecords.value = !showRecords.value },
+    },
     {
       // A template is a sheet with a flag on it, so this is the whole feature
       // — see `onesheet/templates.py`.

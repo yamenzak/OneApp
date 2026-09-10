@@ -630,3 +630,56 @@ test('a filled table says where its rows came from, and can be locked', async ({
   // And the rows are still what they were until somebody presses it.
   await expect(page.getByRole('row', { name: /Administrator/ }).first()).toBeVisible()
 })
+
+
+/**
+ * The first Quotation in the fixture, by id.
+ *
+ * Asked for rather than written down, for the reason `docs.spec.js` learnt
+ * the hard way: a spec pinned to an auto-numbered id fails the first time
+ * somebody sweeps the fixture.
+ */
+async function aQuotation(page) {
+  const res = await page.request.get(
+    '/api/method/frappe.client.get_list'
+    + '?doctype=Quotation&limit_page_length=1&fields=["name"]',
+  )
+  expect(res.ok()).toBe(true)
+  const rows = (await res.json()).message || []
+  expect(rows.length, 'the fixture has a quotation').toBeGreaterThan(0)
+  return rows[0].name
+}
+
+test('a workbook about a record picks its fields off the same rail a document does',
+  async ({ page }) => {
+    const errors = collectConsoleErrors(page)
+    const quote = await aQuotation(page)
+
+    // Made against the record, which is what seeds the workbook's first
+    // source — `shared/binding.py`, and `onesheet/writing.make`.
+    const made = await page.request.post('/api/method/oneapp.onesheet.make', {
+      data: { title: 'Estimator', doctype: 'Quotation', docname: quote },
+    })
+    expect(made.ok()).toBe(true)
+    const id = (await made.json()).message.name
+
+    await page.goto(`/one/sheets/${id}`)
+    await ready(page)
+
+    // The rail opens on its own for a workbook that reads something, and it
+    // says which record — the same component the document editor draws.
+    const rail = page.locator('[data-slot="source-record"]')
+    await expect(rail).toBeVisible()
+    await expect(rail.getByText(quote, { exact: false })).toBeVisible()
+
+    // Standing on a cell, pressing a field writes the formula that reads it.
+    await select(page, 'B2')
+    await rail.locator('[data-slot="insert-grand_total"]').click()
+
+    await expect(formulaBar(page)).toHaveValue('=RECORD("record", "grand_total")')
+    // And it resolves, which is the whole point: the server stores what the
+    // browser computed, so a number here is a number on disk.
+    await expectComputed(page, id, 'B2').not.toBe('')
+
+    expectNoRealErrors(errors)
+  })

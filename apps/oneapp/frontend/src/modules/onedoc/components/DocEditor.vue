@@ -195,13 +195,32 @@
         v-if="showRecords"
         :name="name"
         :sources="sources"
-        :editor="editor"
+        :values="said"
+        :busy="asking"
+        :read-at="readAt"
+        :said="__('The document will read this record. Every field you have already put in the prose fills itself in.')"
         :can-write="doc.can_write && !settings.locked"
-        @settled="refreshed"
-        @patching="wasDirty = dirty"
-        @patched="dirty = wasDirty"
+        @insert-field="insertField"
+        @insert-table="insertTable"
+        @refresh="readRecords"
+        @changed="sources = $event"
         @close="showRecords = false"
-      />
+      >
+        <!-- The one thing only a document can do with what it just read:
+             stop asking. A quotation the customer received is a fact about a
+             day, not a view onto a record that has moved on. -->
+        <template #footer="{ rows }">
+          <Button
+            v-if="doc.can_write && !settings.locked && rows.length"
+            variant="ghost"
+            size="sm"
+            :label="__('Fix the fields')"
+            :tooltip="__('Stop asking, and keep what they say now')"
+            data-slot="fields-settle"
+            @click="settle"
+          />
+        </template>
+      </RecordPanel>
 
       <VersionPanel
         v-if="showHistory"
@@ -290,8 +309,14 @@ import {
 } from '@/ui'
 import FadedScroll from '@/shared/components/FadedScroll.vue'
 import DocSettings from '@/modules/onedoc/components/DocSettings.vue'
-import RecordPanel from '@/modules/onedoc/components/RecordPanel.vue'
-import { RecordField, RecordTable } from '@/modules/onedoc/lib/recordField'
+import RecordPanel from '@/shared/components/RecordPanel.vue'
+import {
+  RecordField,
+  RecordTable,
+  applyRecordFields,
+  applyRecordTables,
+  namedFields,
+} from '@/modules/onedoc/lib/recordField'
 import Outline from '@/modules/onedoc/components/Outline.vue'
 import VersionPanel from '@/modules/onespace/components/versions/VersionPanel.vue'
 import TemplatePicker from '@/modules/onestorage/components/TemplatePicker.vue'
@@ -348,6 +373,10 @@ const sources = ref([...(props.doc.sources || [])])
 // everybody closes.
 const showRecords = ref(!!(props.doc.sources || []).length)
 
+// Whether the document was unsaved before the tokens were patched — see
+// `readRecords`. Declared here because both it and `dirty` are read in one
+// tick and a keystroke must not land between them.
+
 /**
  * The document after its tokens were fixed — no longer names, now words.
  *
@@ -360,6 +389,75 @@ function refreshed(next) {
   if (!next) return
   content.value = JSON.parse(next)
   dirty.value = false
+}
+
+/*
+ * What the records say, and when they were asked.
+ *
+ * Here rather than in the rail because it is the *document's* answer: the
+ * tokens in the prose are what gets patched with it, the rail only draws it
+ * as a preview beside each field. `shared/components/RecordPanel.vue`.
+ */
+const said = ref({})
+const asking = ref(false)
+const readAt = ref(null)
+
+async function readRecords() {
+  asking.value = true
+  try {
+    // What is in the editor, not what is on disk: the save is debounced, and
+    // a token somebody inserted a second ago is only in the editor.
+    const answer = await workspace.docFields(props.name, namedFields(editor.value))
+    said.value = answer?.fields || {}
+    if (answer?.sources) sources.value = answer.sources
+    // Bracketed, and the two have to stay in the same tick: patching is a
+    // ProseMirror transaction, the editor calls that a change, and a change
+    // starts the save loop. Opening a document would then write it — a new
+    // body and a new version on every open, none of it anything a person did.
+    wasDirty.value = dirty.value
+    applyRecordFields(editor.value, said.value)
+    applyRecordTables(editor.value, answer?.tables || {})
+    dirty.value = wasDirty.value
+    readAt.value = new Date()
+  } finally {
+    asking.value = false
+  }
+}
+
+/*
+ * Insert first, focus after — and never `focus()` inside the chain. The
+ * reason cost an afternoon.
+ *
+ * Tiptap's `focus` command builds a transaction, calls `view.focus()`, and
+ * then dispatches. From a control *inside* the editor that is fine, because
+ * the prose already had focus and nothing happens in between. From the rail
+ * it is not: the click moved focus out, so `view.focus()` really does move it
+ * back, the browser fires a selection change, ProseMirror dispatches for it —
+ * and the command is left holding a transaction against a document that has
+ * moved. "Applying a mismatched transaction", and nothing inserted.
+ */
+function put(run) {
+  const instance = editor.value
+  if (!instance) return
+  run(instance.commands)
+  instance.view?.focus()
+  // Straight away, so the token shows a number rather than an em dash for as
+  // long as it takes somebody to notice.
+  readRecords()
+}
+
+const insertField = (one) => put((commands) => commands.insertRecordField({
+  source: one.source, field: one.field, label: one.label,
+  text: one.text || undefined,
+}))
+
+const insertTable = (one) => put((commands) => commands.insertRecordTable({
+  source: one.source, table: one.table, label: one.label, columns: one.columns,
+}))
+
+async function settle() {
+  const answer = await workspace.docSettleFields(props.name)
+  refreshed(answer?.content)
 }
 
 /*

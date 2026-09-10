@@ -321,10 +321,10 @@ msgstr "Bild hinzufügen"
 msgid "Add a record"
 msgstr "Datensatz hinzufügen"
 
-msgid "Add a record and its fields become phrases you can drop into the prose."
+msgid "Add a record and its fields become things you can drop in."
 msgstr ""
-"Fügen Sie einen Datensatz hinzu – seine Felder werden zu Textbausteinen "
-"für den Fließtext."
+"Fügen Sie einen Datensatz hinzu – seine Felder werden zu Elementen, die "
+"Sie einfügen können."
 
 msgid "Add a section"
 msgstr "Abschnitt hinzufügen"
@@ -2013,6 +2013,9 @@ msgstr "Aus meinem Menü ausblenden"
 
 msgid "Hide servers"
 msgstr "Server ausblenden"
+
+msgid "Hide the records"
+msgstr "Datensätze ausblenden"
 
 msgid "High-speed train"
 msgstr "Hochgeschwindigkeitszug"
@@ -3973,9 +3976,6 @@ msgstr "Lesen, wie es dargestellt wird"
 msgid "Read the records again"
 msgstr "Datensätze erneut lesen"
 
-msgid "Read {0} again"
-msgstr "{0} erneut lesen"
-
 msgid "Read {0} lines, {1} stops and {2} trips."
 msgstr "{0} Linien, {1} Haltestellen und {2} Fahrten gelesen."
 
@@ -5499,6 +5499,11 @@ msgstr ""
 "Der gesamte Inhalt, wie er war, in der Form, die sein Speicher liest. "
 "Beim Wiederherstellen wird er unverändert zurückgeschrieben."
 
+msgid "The workbook will read this record, and RECORD() can name its fields."
+msgstr ""
+"Die Arbeitsmappe liest diesen Datensatz; RECORD() kann seine Felder "
+"benennen."
+
 msgid ""
 "The workbook: every tab, cell, formula, format, merge, named range, "
 "pivot and chart, as the gzipped envelope `codec.py` reads. Never edited "
@@ -5702,8 +5707,8 @@ msgstr "Dieses Gerät"
 msgid "This document has no source called {0}."
 msgstr "Dieses Dokument hat keine Quelle namens {0}."
 
-msgid "This document is about nothing yet"
-msgstr "Dieses Dokument handelt noch von nichts"
+msgid "This file is about nothing yet"
+msgstr "Diese Datei handelt noch von nichts"
 
 msgid "This has already been amended."
 msgstr "Dies wurde bereits berichtigt."

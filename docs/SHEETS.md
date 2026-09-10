@@ -627,6 +627,21 @@ A child table has no third form here and does not need one: a child table
 the quotation's lines in a workbook" is the sheet already bound to them,
 rather than a second reader beside `RECORD()`.
 
+**The rail is the document editor's, unchanged.** `shared/components/
+RecordPanel.vue` — which records this file reads, what each one offers, when
+it was last read, and give me that field. All four are the same question in
+both editors, so it is one component rather than two that drift; what differs
+is only where a click puts the answer, and that is an event the page handles.
+The document inserts a token; the workbook writes
+`=RECORD("customer", "credit_limit")` into the cell you are standing on,
+always keyed even for the first source, because a formula that names its
+source survives a second record being added above it. `blocks: false` is the
+one thing the workbook turns off, for the reason in the paragraph above.
+
+Which also fixed the gap nobody had noticed: before this there was no way in
+the UI to give a workbook a *second* record at all. The first came from the
+attachment and the rest came from the API.
+
 **Why the answer is a cache and not a fetch.** §1 is the constraint: the
 browser evaluates and the server stores what it computed. A formula engine
 that recalculates thousands of cells on one keystroke cannot await anything,

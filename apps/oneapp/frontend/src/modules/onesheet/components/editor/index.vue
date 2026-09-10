@@ -1953,7 +1953,33 @@ onBeforeUnmount(() => {
   forgetRecordFields()
 })
 
-defineExpose({ insertTemplate, refreshRecords })
+/**
+ * Put a formula in the cell somebody is standing on. What the records rail
+ * presses.
+ *
+ * `_commitFormulaBar`'s path in miniature, and through the same three calls
+ * for the same reasons: `sheet.setCell` so the engine's notify cascade runs,
+ * `_pushEditOp` so it is one undo step, and the read *before* the write so
+ * that step knows what to put back. A protected cell refuses, which is the
+ * same answer typing into it gives.
+ */
+function putFormula(text) {
+  const id = activeCell.value
+  const where = sheet.getCurrentSheet()
+  if (!text || _cellBlocked(id, where)) return false
+
+  const before = { [id]: sheet.getCell(id, where) }
+  sheet.setCell(id, text, where)
+  formulaValue.value = text
+  _pushEditOp(where, before, 'Insert a record field')
+  _repopulateGrid()
+  // The cell says `#N/A` until the record has been asked, and nobody
+  // pressing a field in the rail wants to press Refresh next.
+  askRecords()
+  return true
+}
+
+defineExpose({ insertTemplate, refreshRecords, putFormula })
 
 const { exportCSV, exportXLSX, importCSV, importXLSX } = useExportImport({
   getSheet:        () => sheet,

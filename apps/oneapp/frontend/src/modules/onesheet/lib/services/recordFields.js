@@ -91,6 +91,25 @@ export function setSources(sources) {
   })
 }
 
+/**
+ * What every source says now, keyed the way the rail reads it.
+ *
+ * `{"key.field": text}` — the *text*, not the value, because this is a
+ * preview beside a field's name and `AED 144,235.00` is what a person
+ * recognises. The cells get `value`; see the resolver above.
+ */
+export function said() {
+  const out = {}
+  for (const [key, where] of keyed) {
+    if (!key || !where.doctype || !where.name) continue
+    const answers = held.get(`${where.doctype}${SEP}${where.name}`) || {}
+    for (const [field, one] of Object.entries(answers)) {
+      out[`${key}.${field}`] = one?.text ?? ''
+    }
+  }
+  return out
+}
+
 /** Forget everything. What closing a workbook does. */
 export function forgetRecordFields() {
   held.clear()
