@@ -593,3 +593,44 @@ spills, fill series, smart fill, sort and filter, protection, comments, the
 fill handle, draggable columns, frozen panes, the command palette, find and
 replace, split text, slicers, sparklines — is here, because it came with the
 engine.
+
+---
+
+## 9. A workbook that reads a record
+
+§3 is a sheet's numbers going *into* a record. This is the other direction:
+`=RECORD("grand_total") * 0.05` in a cell, rather than a figure somebody read
+off the quotation and typed in — right on the day, wrong by the third
+revision.
+
+Two forms. `RECORD("grand_total")` means the record the workbook is bound to,
+which for a sheet is its attachment; `RECORD("Quotation", "SAL-QTN-0005",
+"qty")` names one. The second is the one that needs guarding, and it goes
+through `shared/binding.py` — the same narrowing the document editor's tokens
+go through, for the same reason: a formula is a string a person typed, and a
+whitelisted endpoint taking a doctype and a fieldname without asking is a way
+to read any column of any table on the site.
+
+**Why the answer is a cache and not a fetch.** §1 is the constraint: the
+browser evaluates and the server stores what it computed. A formula engine
+that recalculates thousands of cells on one keystroke cannot await anything,
+so `RECORD` reads a map somebody else keeps filled. `services/recordFields.js`
+walks the workbook for every record it names, resolves them in one request —
+a schedule of forty rows is one round trip, not forty — and recomputes once.
+A miss is `#N/A`: honest before the answer lands, and correct forever for a
+record this person may not read. Nineteen numbers and one `#N/A` beats a
+workbook that will not open.
+
+**Which settles freshness, and settles it the only way it can be.** A cell's
+stored value is what the browser last computed, so a `RECORD()` value on disk
+is a snapshot however it got there. What is left to choose is when to ask
+again: on open, and when somebody presses Read again. That is the contract
+every spreadsheet with an external source has, and pretending otherwise would
+mean a second formula engine on the server — which is the thing §1 spent its
+length refusing.
+
+**It changes the vendored engine**, which `lib/VENDORED.md` said nothing
+would, and says so there: a `RECORD` entry in `FUNCTIONS` reading through a
+module-level hook, and `RECORD` added to `VOLATILE_RE` so a cell reading a
+record is not memoised across a refresh. Both additive — re-copying either
+file from upstream loses the feature rather than breaking the file.

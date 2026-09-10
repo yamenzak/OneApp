@@ -79,11 +79,19 @@ def named(content: str) -> list[str]:
 	return found
 
 
-def values(doc: str, content: str = "") -> dict:
+def values(doc: str, content: str = "", asked: list | None = None) -> dict:
 	"""What this document's tokens say right now.
 
 	`{fieldname: text}` and nothing else — the editor renders text, and the
 	number half of `binding.resolve` is the workbook's business.
+
+	`asked` is the editor saying which fields are on screen, and it matters:
+	the saved body is a debounce behind what somebody is looking at, so a
+	token inserted a second ago is in the editor and not yet on disk. Reading
+	the stored body instead left every freshly inserted field showing an em
+	dash until the next save *and* the next refresh. Narrowed by
+	`binding.offer` downstream either way, so a browser naming a field it
+	should not have is answered nothing rather than obeyed.
 
 	An empty answer is the ordinary one: most documents are bound to nothing,
 	and one bound to a record whose fields nobody named has nothing to ask.
@@ -94,8 +102,11 @@ def values(doc: str, content: str = "") -> dict:
 	if not where.get("name"):
 		return {}
 
-	wanted = named(content if content else (frappe.db.get_value(
-		"Doc Body", doc, "content") or ""))
+	if asked:
+		wanted = [str(one) for one in asked if one][:binding.MAX_FIELDS]
+	else:
+		wanted = named(content if content else (frappe.db.get_value(
+			"Doc Body", doc, "content") or ""))
 	if not wanted:
 		return {}
 
@@ -181,19 +192,30 @@ def frozen_content(content: str, said: dict | None = None) -> str:
 # --------------------------------------------------------------------------- #
 
 @frappe.whitelist(methods=["GET"])
-def refresh(name: str) -> dict:
+def refresh(name: str, asked: str | list | None = None) -> dict:
 	"""Ask the record again. What the Refresh control on a bound document does.
 
 	Its own endpoint rather than part of opening the document, because the
 	whole point is asking a second time — the document has been open for an
 	hour and somebody wants to know whether the total moved.
+
+	`asked` is the field list the editor has on screen. Without it this reads
+	the saved body, which is a debounce behind: a token inserted a second ago
+	would not be in it, and the field somebody just added would show an em
+	dash until the next save.
 	"""
 	from . import body
 
 	body._mine(name, "read")
-	held = body.load(name)
+	if isinstance(asked, str):
+		asked = frappe.parse_json(asked) if asked.strip().startswith("[") else \
+			[one.strip() for one in asked.split(",") if one.strip()]
+	if not isinstance(asked, list):
+		asked = []
+
+	held = body.load(name) if not asked else {"content": ""}
 	return {"name": name, "bound": binding.bound(name),
-	        "fields": values(name, held["content"])}
+	        "fields": values(name, held["content"], asked)}
 
 
 @frappe.whitelist(methods=["POST"])

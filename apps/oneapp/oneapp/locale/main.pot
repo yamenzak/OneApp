@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OneSpace VERSION\n"
 "Report-Msgid-Bugs-To: hello@fourdegreelabs.com\n"
-"POT-Creation-Date: 2026-09-10 12:58+0000\n"
-"PO-Revision-Date: 2026-09-10 12:58+0000\n"
+"POT-Creation-Date: 2026-09-10 15:00+0000\n"
+"PO-Revision-Date: 2026-09-10 15:00+0000\n"
 "Last-Translator: hello@fourdegreelabs.com\n"
 "Language-Team: hello@fourdegreelabs.com\n"
 "MIME-Version: 1.0\n"
@@ -352,6 +352,10 @@ msgstr ""
 msgid "About"
 msgstr ""
 
+#: frontend/src/modules/onedoc/components/FieldBar.vue:21
+msgid "About {0}"
+msgstr ""
+
 #: frontend/src/modules/onespace/screens/ops/TenantSpaces.vue:101
 #: frontend/src/shared/components/SharePanel.vue:38
 msgid "Access"
@@ -682,7 +686,7 @@ msgstr ""
 msgid "An app password where the provider needs one."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:219
+#: frontend/src/modules/onedoc/components/DocEditor.vue:240
 msgid "An earlier version"
 msgstr ""
 
@@ -1026,7 +1030,7 @@ msgstr ""
 msgid "Back to your spaces"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:172
+#: frontend/src/modules/onesheet/pages/Sheet.vue:212
 msgid "Back to {0}"
 msgstr ""
 
@@ -1621,7 +1625,7 @@ msgstr ""
 msgid "Chart of accounts"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:133
+#: frontend/src/modules/onesheet/pages/Sheet.vue:164
 msgid "Charts, pivots and named ranges did not come across."
 msgstr ""
 
@@ -1888,7 +1892,7 @@ msgstr ""
 msgid "Copies of this workspace, and going back to one of them."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:680
+#: frontend/src/modules/onedoc/components/DocEditor.vue:749
 msgid "Copy as Markdown"
 msgstr ""
 
@@ -1915,7 +1919,7 @@ msgid "Correspondence"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:266
-#: frontend/src/modules/onedoc/components/DocEditor.vue:583
+#: frontend/src/modules/onedoc/components/DocEditor.vue:652
 msgid "Could not save"
 msgstr ""
 
@@ -2281,7 +2285,7 @@ msgstr ""
 #. Label of the document (Data) field in DocType 'Legal Acceptance'
 #. Label of the document (Data) field in DocType 'Legal Document Version'
 #. Label of the reference_name (Data) field in DocType 'AI Written Value'
-#: frontend/src/modules/onedoc/components/DocEditor.vue:163
+#: frontend/src/modules/onedoc/components/DocEditor.vue:174
 #: frontend/src/modules/onestorage/lib/files.js:64
 #: frontend/src/shared/composables/useNewFile.js:93
 #: oneapp/onelegal/doctype/legal_acceptance/legal_acceptance.json
@@ -2347,7 +2351,7 @@ msgstr ""
 msgid "Download PDF"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:672
+#: frontend/src/modules/onedoc/components/DocEditor.vue:741
 msgid "Download as HTML"
 msgstr ""
 
@@ -2398,7 +2402,7 @@ msgstr ""
 msgid "Due"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:688
+#: frontend/src/modules/onedoc/components/DocEditor.vue:757
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:625
 msgid "Duplicate"
 msgstr ""
@@ -2900,7 +2904,7 @@ msgstr ""
 
 #. Label of the sec_corr_files (Section Break) field in DocType
 #. 'Correspondence'
-#: frontend/src/modules/onedoc/components/DocEditor.vue:621
+#: frontend/src/modules/onedoc/components/DocEditor.vue:690
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:75
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:196
 #: frontend/src/modules/onespace/lib/shell/nav.js:183
@@ -3030,6 +3034,10 @@ msgstr ""
 #: frontend/src/modules/onemobility/components/Insights.vue:436
 #: frontend/src/modules/onemobility/components/Outlook.vue:448
 msgid "Five minutes"
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/FieldBar.vue:52
+msgid "Fix the fields"
 msgstr ""
 
 #. Label of the folder (Data) field in DocType 'Transit Source'
@@ -3576,6 +3584,7 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/views/QuickFilters.vue:147
 #: oneapp/onespace/printing.py:412 oneapp/onespace/spaceview/filters.py:125
+#: oneapp/shared/binding.py:133
 msgid "ID"
 msgstr ""
 
@@ -3713,6 +3722,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/screen/record/RecordMail.vue:164
 msgid "Inherited from the conversation this message belongs to"
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/FieldBar.vue:32
+msgid "Insert a field"
 msgstr ""
 
 #: frontend/src/modules/onemobility/components/Outlook.vue:214
@@ -4183,8 +4196,8 @@ msgstr ""
 msgid "Live"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:639
-#: frontend/src/modules/onesheet/pages/Sheet.vue:142
+#: frontend/src/modules/onedoc/components/DocEditor.vue:708
+#: frontend/src/modules/onesheet/pages/Sheet.vue:173
 #: frontend/src/modules/onestorage/components/TemplatePicker.vue:16
 msgid "Load a template"
 msgstr ""
@@ -4228,7 +4241,7 @@ msgstr ""
 msgid "Loading…"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:651
+#: frontend/src/modules/onedoc/components/DocEditor.vue:720
 msgid "Lock against typing"
 msgstr ""
 
@@ -4252,7 +4265,7 @@ msgstr ""
 msgid "Locked On"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:180
+#: frontend/src/modules/onedoc/components/DocEditor.vue:191
 msgid "Locked — unlock it from the menu to type"
 msgstr ""
 
@@ -4287,7 +4300,9 @@ msgstr ""
 msgid "Looking at {0}. Nothing here is being saved."
 msgstr ""
 
+#: frontend/src/modules/onedoc/components/FieldBar.vue:130
 #: frontend/src/modules/onespace/components/chat/ChatPanel.vue:53
+#: frontend/src/shared/components/RecordPicker.vue:26
 msgid "Looking…"
 msgstr ""
 
@@ -4781,7 +4796,7 @@ msgstr ""
 #. Label of the line_name (Data) field in DocType 'Transit Line'
 #. Label of the source_name (Data) field in DocType 'Transit Source'
 #: frontend/src/modules/onecalendar/components/EventDialog.vue:16
-#: frontend/src/modules/onedoc/components/DocEditor.vue:212
+#: frontend/src/modules/onedoc/components/DocEditor.vue:233
 #: frontend/src/modules/onemail/components/MailSidebar.vue:125
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:72
 #: frontend/src/modules/onespace/components/screen/views/ViewSwitcher.vue:52
@@ -5513,6 +5528,10 @@ msgstr ""
 msgid "Nothing kept yet"
 msgstr ""
 
+#: frontend/src/shared/components/RecordPicker.vue:26
+msgid "Nothing matched"
+msgstr ""
+
 #: frontend/src/modules/onespace/pages/ScreenHost.vue:820
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr ""
@@ -6173,7 +6192,7 @@ msgstr ""
 msgid "Page number"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:649
+#: frontend/src/modules/onedoc/components/DocEditor.vue:718
 #: frontend/src/modules/onedoc/components/DocSettings.vue:14
 msgid "Page setup"
 msgstr ""
@@ -6443,7 +6462,7 @@ msgstr ""
 msgid "Primary host"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:663
+#: frontend/src/modules/onedoc/components/DocEditor.vue:732
 #: frontend/src/modules/onesheet/components/SheetPrintDialog.vue:17
 #: frontend/src/modules/onesheet/components/SheetPrintDialog.vue:26
 #: frontend/src/modules/onesheet/components/SheetPrintDialog.vue:117
@@ -6607,6 +6626,15 @@ msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:97
 msgid "Read it as it renders"
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/FieldBar.vue:42
+#: frontend/src/modules/onedoc/components/FieldBar.vue:43
+msgid "Read the record again"
+msgstr ""
+
+#: frontend/src/modules/onesheet/pages/Sheet.vue:191
+msgid "Read {0} again"
 msgstr ""
 
 #: oneapp/onemobility/sources.py:119
@@ -6826,9 +6854,9 @@ msgstr ""
 msgid "Removed"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:210
-#: frontend/src/modules/onedoc/components/DocEditor.vue:215
-#: frontend/src/modules/onedoc/components/DocEditor.vue:644
+#: frontend/src/modules/onedoc/components/DocEditor.vue:231
+#: frontend/src/modules/onedoc/components/DocEditor.vue:236
+#: frontend/src/modules/onedoc/components/DocEditor.vue:713
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:70
 #: frontend/src/modules/onespace/components/screen/record/RecordFiles.vue:75
 #: frontend/src/modules/onespace/components/screen/record/RecordMeta.vue:149
@@ -7182,7 +7210,7 @@ msgid "Saved views"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:244
-#: frontend/src/modules/onedoc/components/DocEditor.vue:551
+#: frontend/src/modules/onedoc/components/DocEditor.vue:620
 msgid "Saved {0}"
 msgstr ""
 
@@ -7206,7 +7234,7 @@ msgid "Saving {0} cells…"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:241
-#: frontend/src/modules/onedoc/components/DocEditor.vue:548
+#: frontend/src/modules/onedoc/components/DocEditor.vue:617
 msgid "Saving…"
 msgstr ""
 
@@ -7257,6 +7285,7 @@ msgstr ""
 #: frontend/src/modules/onemail/pages/Mail.vue:747
 #: frontend/src/modules/onespace/components/screen/fields/IconPicker.vue:41
 #: frontend/src/modules/onespace/components/screen/views/ListSearch.vue:19
+#: frontend/src/shared/components/RecordPicker.vue:23
 msgid "Search"
 msgstr ""
 
@@ -7384,7 +7413,7 @@ msgstr ""
 msgid "Send the list of documents you are agreeing to."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:151
+#: frontend/src/modules/onesheet/pages/Sheet.vue:182
 msgid "Send these rows to {0}"
 msgstr ""
 
@@ -7606,7 +7635,7 @@ msgstr ""
 msgid "Show gridlines"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:174
+#: frontend/src/modules/onesheet/pages/Sheet.vue:214
 msgid "Show in Files"
 msgstr ""
 
@@ -8002,6 +8031,10 @@ msgstr ""
 msgid "Stop"
 msgstr ""
 
+#: frontend/src/modules/onedoc/components/FieldBar.vue:53
+msgid "Stop asking, and keep what they say now"
+msgstr ""
+
 #: frontend/src/modules/onespace/components/screen/record/RecordView.vue:606
 msgid "Stop following"
 msgstr ""
@@ -8024,8 +8057,8 @@ msgstr ""
 msgid "Stop this link working"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:696
-#: frontend/src/modules/onesheet/pages/Sheet.vue:159
+#: frontend/src/modules/onedoc/components/DocEditor.vue:765
+#: frontend/src/modules/onesheet/pages/Sheet.vue:199
 msgid "Stop using as a template"
 msgstr ""
 
@@ -8395,7 +8428,7 @@ msgstr ""
 msgid "That document did not open"
 msgstr ""
 
-#: oneapp/onedoc/body.py:147
+#: oneapp/onedoc/body.py:148
 msgid "That document is too big to save. Split it in two."
 msgstr ""
 
@@ -8403,11 +8436,11 @@ msgstr ""
 msgid "That file has no name."
 msgstr ""
 
-#: oneapp/onedoc/body.py:61 oneapp/onedoc/templates.py:58
+#: oneapp/onedoc/body.py:62 oneapp/onedoc/templates.py:64
 msgid "That file is not a document."
 msgstr ""
 
-#: oneapp/onesheet/book.py:32 oneapp/onesheet/templates.py:60
+#: oneapp/onesheet/book.py:32 oneapp/onesheet/templates.py:65
 msgid "That file is not a sheet."
 msgstr ""
 
@@ -8851,6 +8884,10 @@ msgstr ""
 msgid "The network itself"
 msgstr ""
 
+#: frontend/src/modules/onedoc/components/DocEditor.vue:224
+msgid "The new document will be written about this record, and its fields will fill themselves in."
+msgstr ""
+
 #. Description of the 'Watermark' (Datetime) field in DocType 'Import Step'
 #: oneapp/onespace/doctype/import_step/import_step.json
 msgid "The newest `modified` this step has taken across. The next run asks the source only for what changed after it. Clear it to import everything again."
@@ -9111,6 +9148,10 @@ msgstr ""
 msgid "There is no such version."
 msgstr ""
 
+#: oneapp/shared/binding.py:96
+msgid "There is nothing called {0} here."
+msgstr ""
+
 #: oneapp/onesheet/feed.py:460
 msgid "There is nothing here to open in a sheet."
 msgstr ""
@@ -9269,7 +9310,7 @@ msgstr ""
 msgid "This opens the screen now"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:203
+#: frontend/src/modules/onedoc/components/DocEditor.vue:214
 msgid "This opens the template as a new document. What you have here is not touched."
 msgstr ""
 
@@ -9346,7 +9387,7 @@ msgstr ""
 msgid "This screen shows a tree, but no field on it points one record at another."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:139
+#: frontend/src/modules/onesheet/pages/Sheet.vue:170
 msgid "This sheet"
 msgstr ""
 
@@ -9767,7 +9808,7 @@ msgstr ""
 msgid "Unless you are replying, or writing on a record that already has correspondence."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:651
+#: frontend/src/modules/onedoc/components/DocEditor.vue:720
 msgid "Unlock"
 msgstr ""
 
@@ -9785,7 +9826,7 @@ msgid "Unread"
 msgstr ""
 
 #: frontend/src/modules/onecode/components/CodeFile.vue:242
-#: frontend/src/modules/onedoc/components/DocEditor.vue:549
+#: frontend/src/modules/onedoc/components/DocEditor.vue:618
 msgid "Unsaved"
 msgstr ""
 
@@ -9827,7 +9868,7 @@ msgstr ""
 msgid "Untitled"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:622
+#: frontend/src/modules/onedoc/components/DocEditor.vue:691
 msgid "Untitled document"
 msgstr ""
 
@@ -9907,8 +9948,8 @@ msgstr ""
 msgid "Use a template"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:696
-#: frontend/src/modules/onesheet/pages/Sheet.vue:159
+#: frontend/src/modules/onedoc/components/DocEditor.vue:765
+#: frontend/src/modules/onesheet/pages/Sheet.vue:199
 msgid "Use as a template"
 msgstr ""
 
@@ -10564,6 +10605,10 @@ msgstr ""
 msgid "Which fields this claim states differently from the one being drawn."
 msgstr ""
 
+#: oneapp/onesheet/records.py:118
+msgid "Which kind of record?"
+msgstr ""
+
 #: frontend/src/modules/onemobility/components/Outlook.vue:150
 msgid "Which line to watch"
 msgstr ""
@@ -10623,6 +10668,10 @@ msgstr ""
 
 #: frontend/src/modules/onemobility/components/Insights.vue:204
 msgid "Which vehicles run late"
+msgstr ""
+
+#: frontend/src/shared/components/RecordPicker.vue:14
+msgid "Which {0}?"
 msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/MailboxSettings.vue:113
@@ -10850,7 +10899,9 @@ msgstr ""
 msgid "You cannot read this."
 msgstr ""
 
-#: oneapp/onespace/printing.py:389
+#: oneapp/onesheet/records.py:120 oneapp/onespace/printing.py:389
+#: oneapp/shared/binding.py:98 oneapp/shared/binding.py:128
+#: oneapp/shared/binding.py:231
 msgid "You cannot read {0}."
 msgstr ""
 
@@ -11085,6 +11136,10 @@ msgstr ""
 
 #: frontend/src/modules/onespace/components/settings/DomainSettings.vue:73
 msgid "app.yourcompany.com"
+msgstr ""
+
+#: frontend/src/modules/onedoc/components/FieldBar.vue:93
+msgid "as of {0}"
 msgstr ""
 
 #. Option for the 'Role' (Select) field in DocType 'OneSpace Chat Message'
@@ -11892,8 +11947,8 @@ msgstr ""
 msgid "{0} commented on {1} {2}"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:506
-#: frontend/src/modules/onedoc/components/DocEditor.vue:690
+#: frontend/src/modules/onedoc/components/DocEditor.vue:574
+#: frontend/src/modules/onedoc/components/DocEditor.vue:759
 msgid "{0} copy"
 msgstr ""
 
@@ -12274,7 +12329,7 @@ msgstr ""
 msgid "{0} ships with the app that defines it."
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:128
+#: frontend/src/modules/onesheet/pages/Sheet.vue:159
 msgid "{0} tabs were added."
 msgstr ""
 
@@ -12307,7 +12362,7 @@ msgstr ""
 msgid "{0} vehicles"
 msgstr ""
 
-#: frontend/src/modules/onesheet/pages/Sheet.vue:127
+#: frontend/src/modules/onesheet/pages/Sheet.vue:158
 msgid "{0} was added as a tab."
 msgstr ""
 
@@ -12315,11 +12370,11 @@ msgstr ""
 msgid "{0} was written as a template rather than drawn, so it cannot be opened here. It still prints."
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:558
+#: frontend/src/modules/onedoc/components/DocEditor.vue:627
 msgid "{0} word"
 msgstr ""
 
-#: frontend/src/modules/onedoc/components/DocEditor.vue:558
+#: frontend/src/modules/onedoc/components/DocEditor.vue:627
 msgid "{0} words"
 msgstr ""
 

@@ -32,7 +32,6 @@
         :label="__('Insert a field')"
         :loading="listing"
         data-slot="fields-insert"
-        @click="list"
       />
     </Dropdown>
     <Button
@@ -60,7 +59,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { Button, Dropdown, Icon } from '@/ui'
-import { applyRecordFields } from '@/modules/onedoc/lib/recordField'
+import { applyRecordFields, namedFields } from '@/modules/onedoc/lib/recordField'
 import { workspace } from '@/shared/lib/workspace'
 import { __ } from '@/shared/lib/runtime/translate'
 
@@ -96,7 +95,9 @@ const read = computed(() => {
 async function refresh() {
   asking.value = true
   try {
-    const answer = await workspace.docFields(props.name)
+    // What is on screen, not what is on disk — the save is debounced, and a
+    // field somebody just inserted is only in the editor.
+    const answer = await workspace.docFields(props.name, namedFields(props.editor))
     applyRecordFields(props.editor, answer?.fields || {})
     at.value = new Date()
   } finally {
@@ -105,9 +106,13 @@ async function refresh() {
 }
 
 /*
- * The fields this doctype will answer, fetched once when the menu is first
- * opened rather than when the document is. A document nobody adds a field to
- * — which is most of them, after the first sitting — asks for nothing.
+ * The fields this doctype will answer.
+ *
+ * Fetched when the strip appears rather than when the menu is opened, which
+ * was the first attempt and does not work: the trigger's click belongs to the
+ * Dropdown, so the fetch never started and the menu sat on "Looking…". One
+ * small request per bound document is the price of the menu being right the
+ * first time it is opened.
  */
 async function list() {
   if (offered.value.length || listing.value || !props.bound.doctype) return
@@ -151,7 +156,11 @@ async function settle() {
 // the ordinary case, not the strange one.
 watch(
   () => props.editor,
-  (instance) => { if (instance) refresh() },
+  (instance) => {
+    if (!instance) return
+    refresh()
+    list()
+  },
   { immediate: true },
 )
 

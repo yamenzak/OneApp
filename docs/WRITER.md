@@ -159,8 +159,61 @@ the other. The editor's menu is where a document becomes one.
 * **Live collaboration**, per §3. A deliberate park, not a gap: it is Yjs and a
   Node process, which changes what a shard is.
 * **Anchored comments**, per §3. Parked with it, for the same reason.
-* **A document as a print format.** The only one of the three that is a gap
-  rather than a decision. A document prints *itself* — `onedoc/export.py`
-  renders the page the browser prints — but it cannot stand as the print format
-  of a record. A quotation's covering letter is prose with fields in it, and the
-  two halves, a document and Frappe's Jinja print formats, do not meet yet.
+* **A document as a *selectable* print format.** Most of what this was asking
+  for is built and is described in §9: a document can be written about a
+  record and can carry that record's fields. What is still missing is the last
+  step of the plumbing — a bound document standing in the Print dialog's
+  format list beside `Standard`, so printing the quotation prints the covering
+  letter. Today the letter prints itself, from its own page.
+
+## 9. A document written about a record
+
+A quotation's covering letter is prose with the quotation's numbers in it.
+Typed out, those numbers are a second copy that goes stale the first time
+somebody changes the quotation, and the person who finds out is the customer,
+holding a letter whose total disagrees with the schedule stapled behind it.
+
+**The binding is the attachment.** `File.attached_to_doctype` and
+`attached_to_name` already exist and `onedoc/writing.make` already sets them,
+so a document written about a quotation is a document attached to it — one
+concept, and the record's Attachments panel is where somebody looks for it
+anyway. A *template* is the one case attachment cannot express, being for any
+quotation rather than one, so it carries `custom_bound_doctype`; that column
+is the whole of what `shared/binding.py` adds to the schema.
+
+**A field is a node, not text.** `RecordField` is an inline atom holding a
+fieldname, rendered as
+`<span data-record-field="grand_total">د.إ 144,235.00</span>`. An atom because
+putting a cursor inside a formatted number and deleting a comma would produce
+a figure the record never said, which is the failure the whole thing exists to
+prevent. The last answer is written into the markup rather than fetched on
+render, because three readers have no app behind them: the HTML export, a mail
+client, and the editor in the moment before the resolve lands.
+
+**What may be named is narrow, and that is the point.** A token is a string a
+person typed, so the endpoint behind it takes a doctype and a fieldname from a
+browser. `binding.offer` cuts it to the doctype's own fields, minus layout and
+table types that have no value, minus permlevels this person cannot read,
+minus `Password` — everything else on that list would render as nonsense; that
+one would render as a secret in a document somebody prints.
+
+**Live while it is a draft, frozen when it leaves.** A bound document resolves
+every time it is opened and again whenever somebody presses Refresh, and the
+strip above the editor says which record and as of when — a document open
+since this morning shows this morning's total, and saying so is the difference
+between a reader who refreshes and one who quotes a stale number down the
+phone. Export freezes: `fields.fill` asks once more, `fields.freeze` turns
+every token into the words it says, and both the HTML and the ProseMirror JSON
+are flattened together, because freezing one and not the other means the token
+comes back the moment somebody opens the document. "Fix the fields" is the
+same thing on purpose, for a document about to be sent — a quotation the
+customer received is a fact about a day, not a view onto a record that has
+moved on.
+
+Nothing is pushed. A record changing does not reach into the documents that
+mention it, and it should not: a document is read far less often than a record
+is edited, and a write fan-out over every mention would be the wrong shape for
+a workspace with four thousand files in it.
+
+`docs/SHEETS.md` §9 is the same question answered for a workbook, where the
+constraint is harder and the answer is the same.

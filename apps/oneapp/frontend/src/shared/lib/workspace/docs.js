@@ -70,10 +70,13 @@ export const docs = {
   // Ask the record again. Its own call rather than part of opening the
   // document, because the whole point is asking a second time — it has been
   // open for an hour and somebody wants to know whether the total moved.
-  docFields: (name) =>
-    callMethod('oneapp.onedoc.refresh', { name }, {
-      silent: true, method: 'GET',
-    }),
+  // `asked` is the field list the editor has on screen. Without it the
+  // server reads the saved body, which is a debounce behind: a token
+  // inserted a second ago would show an em dash until the next save.
+  docFields: (name, asked) =>
+    callMethod('oneapp.onedoc.refresh', {
+      name, asked: asked?.length ? JSON.stringify(asked) : undefined,
+    }, { silent: true, method: 'GET' }),
 
   // Freeze every token, permanently. What a document about to be sent gets:
   // a quotation the customer received is a fact about a day, not a view onto

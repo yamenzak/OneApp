@@ -303,6 +303,9 @@ msgstr "Vom KI-Modell geschriebener Wert"
 msgid "AI credits"
 msgstr "KI-Guthaben"
 
+msgid "About {0}"
+msgstr "Zu {0}"
+
 msgid "Across the whole window"
 msgstr "Über das ganze Fenster"
 
@@ -1789,6 +1792,9 @@ msgstr "Zuerst gesehen in"
 msgid "Five minutes"
 msgstr "Fünf Minuten"
 
+msgid "Fix the fields"
+msgstr "Felder festschreiben"
+
 msgid "Folder made"
 msgstr "Ordner erstellt"
 
@@ -2224,6 +2230,9 @@ msgstr ""
 
 msgid "Inherited from the conversation this message belongs to"
 msgstr "Übernommen aus der Konversation, zu der diese Nachricht gehört"
+
+msgid "Insert a field"
+msgstr "Feld einfügen"
 
 msgid "Inside the range"
 msgstr "Innerhalb des Zeitraums"
@@ -3247,6 +3256,9 @@ msgstr "Zu diesem ist noch nichts abgelegt."
 msgid "Nothing kept yet"
 msgstr "Noch nichts aufbewahrt"
 
+msgid "Nothing matched"
+msgstr "Keine Treffer"
+
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr ""
 "Nichts entspricht den Filtern. Entfernen Sie einen, um die Liste zu "
@@ -3931,6 +3943,12 @@ msgstr "Erreicht noch nichts"
 msgid "Read it as it renders"
 msgstr "Lesen, wie es dargestellt wird"
 
+msgid "Read the record again"
+msgstr "Datensatz erneut lesen"
+
+msgid "Read {0} again"
+msgstr "{0} erneut lesen"
+
 msgid "Read {0} lines, {1} stops and {2} trips."
 msgstr "{0} Linien, {1} Haltestellen und {2} Fahrten gelesen."
 
@@ -4605,6 +4623,9 @@ msgstr "Bahnhof"
 msgid "Still learning"
 msgstr "Lernt noch"
 
+msgid "Stop asking, and keep what they say now"
+msgstr "Nicht mehr abfragen und den aktuellen Stand behalten"
+
 msgid "Stop following"
 msgstr "Nicht mehr folgen"
 
@@ -5259,6 +5280,13 @@ msgid "The network itself"
 msgstr "Das Netz selbst"
 
 msgid ""
+"The new document will be written about this record, and its fields will "
+"fill themselves in."
+msgstr ""
+"Das neue Dokument handelt von diesem Datensatz, und seine Felder füllen "
+"sich selbst."
+
+msgid ""
 "The newest `modified` this step has taken across. The next run asks the "
 "source only for what changed after it. Clear it to import everything "
 "again."
@@ -5519,6 +5547,9 @@ msgstr "Eine Version vom Typ {0} gibt es nicht."
 
 msgid "There is no such version."
 msgstr "Diese Version gibt es nicht."
+
+msgid "There is nothing called {0} here."
+msgstr "Hier gibt es nichts mit dem Namen {0}."
 
 msgid "There is nothing here to open in a sheet."
 msgstr "Hier gibt es nichts, was in einer Tabelle geöffnet werden kann."
@@ -6609,6 +6640,9 @@ msgstr "Welches Feld"
 msgid "Which fields this claim states differently from the one being drawn."
 msgstr "Welche Felder diese Angabe anders angibt als die dargestellte."
 
+msgid "Which kind of record?"
+msgstr "Welche Art von Datensatz?"
+
 msgid "Which line to watch"
 msgstr "Welche Linie beobachtet wird"
 
@@ -6666,6 +6700,9 @@ msgstr ""
 
 msgid "Which vehicles run late"
 msgstr "Welche Fahrzeuge sich verspäten"
+
+msgid "Which {0}?"
+msgstr "Welche(r) {0}?"
 
 msgid "While you are away"
 msgstr "Während Ihrer Abwesenheit"

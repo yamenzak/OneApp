@@ -273,6 +273,9 @@ msgstr "قيمة كتبها الذكاء الاصطناعي"
 msgid "AI credits"
 msgstr "أرصدة الذكاء الاصطناعي"
 
+msgid "About {0}"
+msgstr "بخصوص {0}"
+
 msgid "Access"
 msgstr "الوصول"
 
@@ -1693,6 +1696,9 @@ msgstr "أول ظهور في"
 msgid "Five minutes"
 msgstr "خمس دقائق"
 
+msgid "Fix the fields"
+msgstr "تثبيت الحقول"
+
 msgid "Folder made"
 msgstr "تم إنشاء المجلد"
 
@@ -2115,6 +2121,9 @@ msgstr ""
 
 msgid "Inherited from the conversation this message belongs to"
 msgstr "موروث من المحادثة التي تنتمي إليها هذه الرسالة"
+
+msgid "Insert a field"
+msgstr "إدراج حقل"
 
 msgid "Inside the range"
 msgstr "داخل النطاق"
@@ -3114,6 +3123,9 @@ msgstr "لم يُحفظ شيء على هذا بعد."
 msgid "Nothing kept yet"
 msgstr "لم يُحفظ شيء بعد"
 
+msgid "Nothing matched"
+msgstr "لا توجد نتائج مطابقة"
+
 msgid "Nothing matches the filters. Clear one to widen the list."
 msgstr "لا شيء يطابق عوامل التصفية. امسح أحدها لتوسيع القائمة."
 
@@ -3759,6 +3771,12 @@ msgstr "لا يصل إلى شيء بعد"
 
 msgid "Read it as it renders"
 msgstr "اقرأه كما يُعرض"
+
+msgid "Read the record again"
+msgstr "قراءة السجل من جديد"
+
+msgid "Read {0} again"
+msgstr "قراءة {0} من جديد"
 
 msgid "Read {0} lines, {1} stops and {2} trips."
 msgstr "قُرئ {0} من الخطوط و{1} من المحطات و{2} من الرحلات."
@@ -4422,6 +4440,9 @@ msgstr "محطة"
 msgid "Still learning"
 msgstr "ما زال يتعلم"
 
+msgid "Stop asking, and keep what they say now"
+msgstr "التوقف عن السؤال والاحتفاظ بما تقوله الآن"
+
 msgid "Stop following"
 msgstr "إيقاف المتابعة"
 
@@ -5032,6 +5053,11 @@ msgid "The network itself"
 msgstr "الشبكة نفسها"
 
 msgid ""
+"The new document will be written about this record, and its fields will "
+"fill themselves in."
+msgstr "سيكون المستند الجديد عن هذا السجل، وستُملأ حقوله تلقائيًا."
+
+msgid ""
 "The newest `modified` this step has taken across. The next run asks the "
 "source only for what changed after it. Clear it to import everything "
 "again."
@@ -5269,6 +5295,9 @@ msgstr "لا وجود لنسخة من نوع {0}."
 
 msgid "There is no such version."
 msgstr "لا توجد نسخة كهذه."
+
+msgid "There is nothing called {0} here."
+msgstr "لا يوجد شيء هنا باسم {0}."
 
 msgid "There is nothing here to open in a sheet."
 msgstr "لا شيء هنا يمكن فتحه في جدول بيانات."
@@ -6293,6 +6322,9 @@ msgstr "أي حقل"
 msgid "Which fields this claim states differently from the one being drawn."
 msgstr "أي الحقول يذكرها هذا الادعاء بشكل مختلف عن الذي يُرسم."
 
+msgid "Which kind of record?"
+msgstr "أي نوع من السجلات؟"
+
 msgid "Which line to watch"
 msgstr "أي خط تراقب"
 
@@ -6344,6 +6376,9 @@ msgstr ""
 
 msgid "Which vehicles run late"
 msgstr "أي المركبات تتأخر"
+
+msgid "Which {0}?"
+msgstr "أي {0}؟"
 
 msgid "While you are away"
 msgstr "أثناء غيابك"
@@ -6720,6 +6755,9 @@ msgstr "و{0} أخرى."
 
 msgid "app.yourcompany.com"
 msgstr "app.sharikatuk.com"
+
+msgid "as of {0}"
+msgstr "حتى {0}"
 
 msgid "assistant"
 msgstr "المساعد"

@@ -241,3 +241,71 @@ test('a code file keeps versions too, and an old one goes back', async ({ page }
     .poll(() => storedText(page, name), { timeout: 20_000 })
     .toContain('RATE = 0.05')
 })
+
+/**
+ * A document written about a record.
+ *
+ * The claim is not that a token renders — a unit test says that. It is that
+ * the whole chain holds in a browser: a document attached to a quotation
+ * knows it, the field list is the doctype's own, inserting one puts the
+ * record's number in the prose, and fixing the fields turns the number into
+ * words that stop moving.
+ *
+ * The record is found rather than named, for the reason the chat spec learnt
+ * the hard way: a spec pinned to an auto-numbered id fails the first time
+ * somebody sweeps the fixture.
+ */
+async function aQuotation(page) {
+  const res = await page.request.get(
+    '/api/method/frappe.client.get_list'
+    + '?doctype=Quotation&limit_page_length=1&fields=["name"]',
+  )
+  expect(res.ok()).toBe(true)
+  const rows = (await res.json()).message || []
+  expect(rows.length, 'the fixture has a quotation').toBeGreaterThan(0)
+  return rows[0].name
+}
+
+test('a document about a record carries that record fields', async ({ page }) => {
+  const errors = collectConsoleErrors(page)
+  const quote = await aQuotation(page)
+
+  // Attached at creation, which is what binding *is* — see
+  // `apps/oneapp/oneapp/shared/binding.py`.
+  const made = await page.request.post('/api/method/oneapp.onedoc.make', {
+    data: { title: 'Covering letter', doctype: 'Quotation', docname: quote },
+  })
+  expect(made.ok()).toBe(true)
+  const name = (await made.json()).message.name
+
+  await page.goto(`/one/docs/${name}`)
+  await expect(prose(page)).toBeVisible()
+
+  // The strip says what it is about. That is the freshness answer, on screen.
+  await expect(page.getByText(`About ${quote}`)).toBeVisible()
+
+  await page.locator('[data-slot="fields-insert"]').click()
+  // `ID` rather than a money field: every doctype has it, its label is the
+  // same everywhere, and what it resolves to is a string this test already
+  // knows — so the assertion below is about the *value*, not about a token
+  // having appeared.
+  await page.getByRole('menuitem', { name: 'ID', exact: true }).click()
+
+  // The record's own id, rendered in the prose.
+  await expect(prose(page).getByText(quote, { exact: false })).toBeVisible()
+
+  // And a node rather than typed text, on disk.
+  await expect
+    .poll(async () => (await stored(page, name)).content, { timeout: 20_000 })
+    .toContain('recordField')
+
+  // Fixed: the token becomes words, and the document stops asking. The id
+  // is still there — freezing keeps what it says, it does not remove it.
+  await page.locator('[data-slot="fields-settle"]').click()
+  await expect
+    .poll(async () => (await stored(page, name)).content, { timeout: 20_000 })
+    .not.toContain('recordField')
+  expect((await stored(page, name)).content).toContain(quote)
+
+  expectNoRealErrors(errors)
+})
